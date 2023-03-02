@@ -613,10 +613,9 @@ export class ColumnSpecificSectionContent extends PureComponent<
 
     return (
       <div className="app-settings-formatting-section" ref={this.containerRef}>
-        <div>Default formatting for matched column names</div>
         <div className="app-settings-menu-description mb-3">
-          Applies a formatting rule to all columns that match a specified name
-          and type.
+          Customize the formatting of table columns by applying rules based on
+          matching both a column name and column type.
         </div>
 
         <TransitionGroup

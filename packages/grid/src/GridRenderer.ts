@@ -71,7 +71,7 @@ export type GridRenderState = {
   cursorRow: VisibleIndex | null;
 
   // Currently selected ranges
-  selectedRanges: GridRange[];
+  selectedRanges: readonly GridRange[];
 
   // Currently dragged column/row information
   draggingColumn: DraggingColumn | null;
@@ -659,7 +659,7 @@ export class GridRenderer {
   drawRowStripesForRows(
     context: CanvasRenderingContext2D,
     state: GridRenderState,
-    rows: VisibleIndex[],
+    rows: readonly VisibleIndex[],
     rowBackgroundColors: GridColorWay,
     minX = 0,
     maxX = state.metrics.maxX
@@ -895,8 +895,8 @@ export class GridRenderer {
   drawGridLinesForItems(
     context: CanvasRenderingContext2D,
     state: GridRenderState,
-    columns: VisibleIndex[],
-    rows: VisibleIndex[],
+    columns: readonly VisibleIndex[],
+    rows: readonly VisibleIndex[],
     columnColor: NullableGridColor,
     rowColor: NullableGridColor
   ): void {
@@ -922,7 +922,7 @@ export class GridRenderer {
   drawGridLinesForColumns(
     context: CanvasRenderingContext2D,
     state: GridRenderState,
-    columns: VisibleIndex[]
+    columns: readonly VisibleIndex[]
   ): void {
     const { metrics } = state;
     const { allColumnXs, maxY } = metrics;
@@ -937,7 +937,7 @@ export class GridRenderer {
   drawGridLinesForRows(
     context: CanvasRenderingContext2D,
     state: GridRenderState,
-    rows: VisibleIndex[]
+    rows: readonly VisibleIndex[]
   ): void {
     const { metrics } = state;
     const { allRowYs, maxX: metricsMaxX } = metrics;
@@ -969,8 +969,8 @@ export class GridRenderer {
   drawCellBackgroundsForItems(
     context: CanvasRenderingContext2D,
     state: GridRenderState,
-    columns: VisibleIndex[],
-    rows: VisibleIndex[]
+    columns: readonly VisibleIndex[],
+    rows: readonly VisibleIndex[]
   ): void {
     context.save();
 

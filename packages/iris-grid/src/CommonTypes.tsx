@@ -10,12 +10,21 @@ import { IconDefinition } from '@deephaven/icons';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import { OptionType } from './sidebar';
 
+export type RowIndex = ModelIndex;
+
 export type { AdvancedFilterOptions };
 export type ColumnName = string;
 export type AdvancedFilterMap = Map<ModelIndex, AdvancedFilter>;
 export type QuickFilterMap = Map<ModelIndex, QuickFilter>;
-export type AggregationMap = Record<AggregationOperation, ColumnName[]>;
-export type OperationMap = Record<ColumnName, AggregationOperation[]>;
+export type ReadonlyAdvancedFilterMap = ReadonlyMap<ModelIndex, AdvancedFilter>;
+export type ReadonlyQuickFilterMap = ReadonlyMap<ModelIndex, QuickFilter>;
+export type ReadonlyAggregationMap = Readonly<
+  Record<AggregationOperation, readonly ColumnName[]>
+>;
+export type OperationMap = Record<ColumnName, readonly AggregationOperation[]>;
+export type ReadonlyOperationMap = Readonly<
+  Record<ColumnName, readonly AggregationOperation[]>
+>;
 
 export type QuickFilter = {
   text: string;
@@ -67,4 +76,10 @@ export type CellData = {
   value: unknown;
   format?: Format;
 };
-export type PendingDataMap<R extends UIRow = UIRow> = Map<ModelIndex, R>;
+export type PendingDataMap<R extends UIRow = UIRow> = ReadonlyMap<RowIndex, R>;
+
+/** Maps from a row index to the errors for that row */
+export type PendingDataErrorMap<T extends Error = Error> = ReadonlyMap<
+  RowIndex,
+  readonly T[]
+>;

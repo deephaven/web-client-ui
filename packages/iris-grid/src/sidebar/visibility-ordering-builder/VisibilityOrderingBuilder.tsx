@@ -2,7 +2,7 @@ import React, { ChangeEvent, Component, ReactElement } from 'react';
 import classNames from 'classnames';
 import {
   GridUtils,
-  ModelSizeMap,
+  ModelIndex,
   MoveOperation,
   VisibleIndex,
 } from '@deephaven/grid';
@@ -50,15 +50,19 @@ const DEBOUNCE_SEARCH_COLUMN = 150;
 
 interface VisibilityOrderingBuilderProps {
   model: IrisGridModel;
-  movedColumns: MoveOperation[];
-  userColumnWidths: ModelSizeMap;
-  columnHeaderGroups: ColumnHeaderGroup[];
+  movedColumns: readonly MoveOperation[];
+  hiddenColumns: readonly ModelIndex[];
+  columnHeaderGroups: readonly ColumnHeaderGroup[];
   onColumnVisibilityChanged: (
-    columns: VisibleIndex[],
+    columns: readonly VisibleIndex[],
     isVisible: boolean
   ) => void;
-  onMovedColumnsChanged: (operations: MoveOperation[], cb?: () => void) => void;
-  onColumnHeaderGroupChanged: (groups: ColumnHeaderGroup[]) => void;
+  onReset: () => void;
+  onMovedColumnsChanged: (
+    operations: readonly MoveOperation[],
+    cb?: () => void
+  ) => void;
+  onColumnHeaderGroupChanged: (groups: readonly ColumnHeaderGroup[]) => void;
 }
 
 interface VisibilityOrderingBuilderState {
@@ -114,22 +118,18 @@ class VisibilityOrderingBuilder extends Component<
   resetVisibilityOrdering(): void {
     const {
       model,
-      onColumnVisibilityChanged,
+      onReset,
       onMovedColumnsChanged,
       onColumnHeaderGroupChanged,
     } = this.props;
-    const { columns } = model;
 
-    onColumnVisibilityChanged(
-      columns.map((_, i) => i),
-      true
-    );
     this.setState({
       selectedColumns: new Set(),
       lastSelectedColumn: '',
       searchFilter: '',
     });
 
+    onReset();
     onColumnHeaderGroupChanged(model.initialColumnHeaderGroups);
     onMovedColumnsChanged(model.initialMovedColumns);
   }
@@ -196,7 +196,7 @@ class VisibilityOrderingBuilder extends Component<
    */
   moveSelectedColumns(
     option: keyof typeof VisibilityOrderingBuilder.MOVE_OPTIONS
-  ): { newMoves: MoveOperation[]; groups: ColumnHeaderGroup[] } {
+  ): { newMoves: MoveOperation[]; groups: readonly ColumnHeaderGroup[] } {
     const { columnHeaderGroups } = this.props;
     const { selectedColumns } = this.state;
 
@@ -417,9 +417,9 @@ class VisibilityOrderingBuilder extends Component<
    * @returns The moves required to sort the grid. Includes the starting movedColumns in the array
    */
   getSortMoves(
-    itemsParam: IrisGridTreeItem[],
+    itemsParam: readonly IrisGridTreeItem[],
     option: keyof typeof VisibilityOrderingBuilder.SORTING_OPTIONS,
-    movedColumns: MoveOperation[]
+    movedColumns: readonly MoveOperation[]
   ): MoveOperation[] {
     const items = [...itemsParam];
     // Sort all the movable columns
@@ -820,8 +820,8 @@ class VisibilityOrderingBuilder extends Component<
   getMemoizedFirstMovableIndex = memoize(
     (
       model: IrisGridModel,
-      columns: Column[],
-      movedColumns: MoveOperation[]
+      columns: readonly Column[],
+      movedColumns: readonly MoveOperation[]
     ) => {
       for (let i = 0; i < columns.length; i += 1) {
         const modelIndex = GridUtils.getModelIndex(i, movedColumns);
@@ -850,8 +850,8 @@ class VisibilityOrderingBuilder extends Component<
   getMemoizedLastMovableIndex = memoize(
     (
       model: IrisGridModel,
-      columns: Column[],
-      movedColumns: MoveOperation[]
+      columns: readonly Column[],
+      movedColumns: readonly MoveOperation[]
     ) => {
       for (let i = columns.length - 1; i >= 0; i -= 1) {
         const modelIndex = GridUtils.getModelIndex(i, movedColumns);
@@ -875,19 +875,15 @@ class VisibilityOrderingBuilder extends Component<
 
   memoizedGetTreeItems = memoize(
     (
-      columns: Column[],
-      movedColumns: MoveOperation[],
-      columnHeaderGroups: ColumnHeaderGroup[],
-      userColumnWidths: ModelSizeMap,
-      selectedColumns: Set<string>
-    ) =>
-      getTreeItems(
-        columns,
-        movedColumns,
-        columnHeaderGroups,
-        userColumnWidths,
-        [...selectedColumns.values()]
-      )
+      columns: readonly Column[],
+      movedColumns: readonly MoveOperation[],
+      columnHeaderGroups: readonly ColumnHeaderGroup[],
+      hiddenColumns: readonly ModelIndex[],
+      selectedColumns: ReadonlySet<string>
+    ): readonly IrisGridTreeItem[] =>
+      getTreeItems(columns, movedColumns, columnHeaderGroups, hiddenColumns, [
+        ...selectedColumns.values(),
+      ])
   );
 
   /**
@@ -895,11 +891,11 @@ class VisibilityOrderingBuilder extends Component<
    * Use flattenItems(this.getTreeItems()) if a flat list is needed
    * @returns The movable tree items in order
    */
-  getTreeItems(): IrisGridTreeItem[] {
+  getTreeItems(): readonly IrisGridTreeItem[] {
     const {
       model,
       movedColumns,
-      userColumnWidths,
+      hiddenColumns,
       columnHeaderGroups,
     } = this.props;
     const { selectedColumns } = this.state;
@@ -908,7 +904,7 @@ class VisibilityOrderingBuilder extends Component<
       model.columns,
       movedColumns,
       columnHeaderGroups,
-      userColumnWidths,
+      hiddenColumns,
       selectedColumns
     );
   }
@@ -931,7 +927,7 @@ class VisibilityOrderingBuilder extends Component<
   }
 
   makeVisibilityOrderingList = memoize(
-    (columns: Column[], treeItems: IrisGridTreeItem[]) => {
+    (columns: readonly Column[], treeItems: readonly IrisGridTreeItem[]) => {
       const { movedColumns } = this.props;
 
       const elements = [];
@@ -1027,13 +1023,14 @@ class VisibilityOrderingBuilder extends Component<
   );
 
   render(): ReactElement {
-    const { model, userColumnWidths, onColumnVisibilityChanged } = this.props;
+    const { model, hiddenColumns, onColumnVisibilityChanged } = this.props;
     const { selectedColumns, searchFilter } = this.state;
     const hasSelection = selectedColumns.size > 0;
     const treeItems = this.getTreeItems();
     const nameToIndexes = new Map(
       flattenTree(treeItems).map(item => [item.id, item.data.modelIndex])
     );
+    const hiddenColumnsSet = new Set(hiddenColumns);
 
     const columnsToToggle = [
       // Pass through Set to dedupe model indexes
@@ -1046,9 +1043,8 @@ class VisibilityOrderingBuilder extends Component<
           : treeItems.map(item => item.data.modelIndex).flat()
       ),
     ];
-    const areSomeVisible = !GridUtils.checkAllColumnsHidden(
-      columnsToToggle,
-      userColumnWidths
+    const areSomeVisible = columnsToToggle.some(
+      column => !hiddenColumnsSet.has(column)
     );
 
     const allToggleText = areSomeVisible ? 'Hide All' : 'Show All';

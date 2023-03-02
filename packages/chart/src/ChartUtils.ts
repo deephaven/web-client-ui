@@ -30,7 +30,8 @@ import {
   ErrorBar,
   LayoutAxis,
   AxisType as PlotlyAxisType,
-  OhclData,
+  OhlcData,
+  MarkerSymbol,
 } from 'plotly.js';
 import { assertNotNull, Range } from '@deephaven/utils';
 import ChartTheme from './ChartTheme';
@@ -168,6 +169,12 @@ class ChartUtils {
 
   static SUBTITLE_LINE_HEIGHT = 25;
 
+  static DEFAULT_MARKER_SIZE = 6;
+
+  static MODE_MARKERS: PlotData['mode'] = 'markers';
+
+  static MODE_LINES: PlotData['mode'] = 'lines';
+
   /**
    * Converts the Iris plot style into a plotly chart type
    * @param plotStyle The plotStyle to use, see dh.plot.SeriesPlotStyle
@@ -210,18 +217,42 @@ class ChartUtils {
   /**
    * Converts the Iris plot style into a plotly chart mode
    * @param plotStyle The plotStyle to use, see dh.plot.SeriesPlotStyle.*
+   * @param areLinesVisible Whether lines are visible or not
+   * @param areShapesVisible Whether shapes are visible or not
    */
   static getPlotlyChartMode(
-    plotStyle: SeriesPlotStyle
+    plotStyle: SeriesPlotStyle,
+    areLinesVisible?: boolean,
+    areShapesVisible?: boolean
   ): PlotData['mode'] | undefined {
+    const modes = new Set<PlotData['mode']>();
+
     switch (plotStyle) {
       case dh.plot.SeriesPlotStyle.SCATTER:
-        return 'markers';
+        // Default to only showing shapes in scatter plots
+        if (areLinesVisible ?? false) {
+          modes.add(ChartUtils.MODE_LINES);
+        }
+        if (areShapesVisible ?? true) {
+          modes.add(ChartUtils.MODE_MARKERS);
+        }
+        break;
       case dh.plot.SeriesPlotStyle.LINE:
-        return 'lines';
+        // Default to only showing lines in line series
+        if (areLinesVisible ?? true) {
+          modes.add(ChartUtils.MODE_LINES);
+        }
+        if (areShapesVisible ?? false) {
+          modes.add(ChartUtils.MODE_MARKERS);
+        }
+        break;
       default:
-        return undefined;
+        break;
     }
+
+    return modes.size > 0
+      ? ([...modes].join('+') as PlotData['mode'])
+      : undefined;
   }
 
   /**
@@ -631,13 +662,27 @@ class ChartUtils {
     showLegend: boolean | null = null,
     theme = ChartTheme
   ): Partial<PlotData> {
-    const { name, plotStyle, lineColor, shapeColor, sources } = series;
+    const {
+      name,
+      isLinesVisible,
+      isShapesVisible,
+      plotStyle,
+      lineColor,
+      shapeColor,
+      sources,
+      shape,
+      shapeSize,
+    } = series;
 
     const isBusinessTime = sources.some(
       source => source.axis?.businessCalendar
     );
     const type = ChartUtils.getChartType(plotStyle, isBusinessTime);
-    const mode = ChartUtils.getPlotlyChartMode(plotStyle);
+    const mode = ChartUtils.getPlotlyChartMode(
+      plotStyle,
+      isLinesVisible ?? undefined,
+      isShapesVisible ?? undefined
+    );
     const orientation = ChartUtils.getPlotlySeriesOrientation(series);
     const seriesData = ChartUtils.makeSeriesData(
       type,
@@ -660,6 +705,8 @@ class ChartUtils {
       theme,
       lineColor,
       shapeColor,
+      shape,
+      shapeSize,
       seriesVisibility
     );
 
@@ -704,6 +751,8 @@ class ChartUtils {
     theme: typeof ChartTheme = ChartTheme,
     lineColor: string | null = null,
     shapeColor: string | null = null,
+    shape: string | null = null,
+    shapeSize: number | null = null,
     seriesVisibility: 'legendonly' | boolean | null = null
   ): void {
     const seriesData = seriesDataParam;
@@ -731,10 +780,10 @@ class ChartUtils {
         });
       }
     } else if (plotStyle === dh.plot.SeriesPlotStyle.OHLC) {
-      (seriesData as Partial<OhclData>).increasing = {
+      (seriesData as Partial<OhlcData>).increasing = {
         line: { color: theme.ohlc_increasing },
       };
-      (seriesData as Partial<OhclData>).decreasing = {
+      (seriesData as Partial<OhlcData>).decreasing = {
         line: { color: theme.ohlc_decreasing },
       };
     } else if (plotStyle === dh.plot.SeriesPlotStyle.PIE) {
@@ -770,10 +819,57 @@ class ChartUtils {
       seriesData.marker.color = shapeColor;
     }
 
+    if (shape != null && shape.length > 0) {
+      try {
+        seriesData.marker.symbol = ChartUtils.getMarkerSymbol(shape);
+      } catch (e) {
+        log.warn('Unable to handle shape', shape, ':', e);
+      }
+    }
+
+    if (shapeSize != null) {
+      seriesData.marker.size = shapeSize * ChartUtils.DEFAULT_MARKER_SIZE;
+    }
+
     // Skipping pie charts
     // Pie slice visibility is configured in chart layout instead of series data
     if (seriesVisibility != null && plotStyle !== dh.plot.SeriesPlotStyle.PIE) {
       seriesData.visible = seriesVisibility;
+    }
+  }
+
+  /**
+   * Get the Plotly marker symbol for the provided Deephaven shape
+   * Deephaven shapes: https://deephaven.io/enterprise/docs/plotting/visual-formatting/#point-formatting
+   * Plotly shapes: https://plotly.com/javascript/reference/scattergl/#scattergl-marker-symbol
+   * Table of plotly shapes: https://plotly.com/python/marker-style/#custom-marker-symbols
+   * @param deephavenShape Deephaven shape to get the marker symbol for
+   */
+  static getMarkerSymbol(deephavenShape: string): MarkerSymbol {
+    switch (deephavenShape) {
+      case 'SQUARE':
+        return 'square';
+      case 'CIRCLE':
+        return 'circle';
+      case 'DIAMOND':
+        return 'diamond';
+      case 'UP_TRIANGLE':
+        return 'triangle-up';
+      case 'DOWN_TRIANGLE':
+        return 'triangle-down';
+      case 'RIGHT_TRIANGLE':
+        return 'triangle-right';
+      case 'LEFT_TRIANGLE':
+        return 'triangle-left';
+      // There don't seem to be any plotly equivalents for ellipse or rectangles
+      // Rectangles could be `line-ew`, `line-ns`, or `hourglass` and `bowtie` instead?
+      // Ellipse could be `asterisk` or `diamond-wide` instead?
+      // Just throw an error, we've already got a bunch of types.
+      case 'ELLIPSE':
+      case 'HORIZONTAL_RECTANGLE':
+      case 'VERTICAL_RECTANGLE':
+      default:
+        throw new Error(`Unrecognized shape ${deephavenShape}`);
     }
   }
 

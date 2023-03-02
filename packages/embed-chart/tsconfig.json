@@ -6,15 +6,16 @@
     "noEmit": true,
     "emitDeclarationOnly": false
   },
-  "include": [
-    "src"
-  ],
+  "include": ["src"],
   "references": [
     {
       "path": "../chart"
     },
     {
       "path": "../components"
+    },
+    {
+      "path": "../jsapi-bootstrap"
     },
     {
       "path": "../jsapi-shim"

@@ -20,7 +20,9 @@ import {
   Grid,
   GridMouseHandler,
   GridPoint,
+  GridRenderer,
   isEditableGridModel,
+  isExpandableGridModel,
   ModelIndex,
 } from '@deephaven/grid';
 import dh, {
@@ -65,7 +67,9 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
   static GROUP_FILTER = ContextActions.groups.high + 50;
 
-  static GROUP_GOTO = ContextActions.groups.high + 51;
+  static GROUP_EXPAND_COLLAPSE = ContextActions.groups.high + 55;
+
+  static GROUP_GOTO = ContextActions.groups.high + 60;
 
   static GROUP_SORT = ContextActions.groups.high + 75;
 
@@ -161,6 +165,17 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     return TableUtils.isCharType(columnType)
       ? dh.FilterValue.ofString(String.fromCharCode(value as number))
       : dh.FilterValue.ofNumber(value);
+  }
+
+  static getRowOptionFormatted(
+    command: string,
+    cellValue: string,
+    len = 30
+  ): string {
+    return `${command} "${GridRenderer.truncate(
+      cellValue,
+      len - command.length - 3
+    )}"`;
   }
 
   irisGrid: IrisGrid;
@@ -417,7 +432,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     if (model.isFilterable(modelColumn)) {
       // cell data area contextmenu options
       const filterMenu = {
-        title: 'Filter By Value',
+        title: 'Filter by Value',
         icon: vsRemove,
         iconColor: filterIconColor,
         group: IrisGridContextMenuHandler.GROUP_FILTER,
@@ -549,6 +564,69 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       if (filterMenu.actions != null && filterMenu.actions.length > 0) {
         actions.push(filterMenu);
       }
+    }
+
+    // Expand/Collapse options
+    if (isExpandableGridModel(model) && model.isRowExpandable(modelRow)) {
+      // If there are grouped columns, then it is a rollup
+      // For rollups, the column number will be the depth minus one
+      const expandingColumn =
+        model.groupedColumns.length > 0 ? model.depthForRow(modelRow) - 1 : 0;
+      const cellValue = model.valueForCell(expandingColumn, modelRow);
+      const cellText =
+        cellValue == null
+          ? 'null'
+          : model.textForCell(expandingColumn, modelRow);
+
+      actions.push({
+        title: IrisGridContextMenuHandler.getRowOptionFormatted(
+          model.isRowExpanded(modelRow) ? 'Collapse' : 'Expand',
+          cellText
+        ),
+        group: IrisGridContextMenuHandler.GROUP_EXPAND_COLLAPSE,
+        order: 10,
+        action: () => {
+          model.setRowExpanded(modelRow, !model.isRowExpanded(modelRow));
+        },
+      });
+
+      if (model.isExpandAllAvailable === true) {
+        actions.push({
+          title: IrisGridContextMenuHandler.getRowOptionFormatted(
+            'Expand All in',
+            cellText
+          ),
+          group: IrisGridContextMenuHandler.GROUP_EXPAND_COLLAPSE,
+          order: 20,
+          action: () => {
+            model.setRowExpanded(modelRow, true, true);
+          },
+        });
+      }
+    }
+
+    if (
+      isExpandableGridModel(model) &&
+      model.hasExpandableRows &&
+      model.isExpandAllAvailable === true
+    ) {
+      actions.push({
+        title: 'Expand Entire Table',
+        group: IrisGridContextMenuHandler.GROUP_EXPAND_COLLAPSE,
+        order: 30,
+        action: () => {
+          model.expandAll();
+        },
+      });
+
+      actions.push({
+        title: 'Collapse Entire Table',
+        group: IrisGridContextMenuHandler.GROUP_EXPAND_COLLAPSE,
+        order: 40,
+        action: () => {
+          model.collapseAll();
+        },
+      });
     }
 
     const gotoRow = {
@@ -1629,7 +1707,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
             </span>
             <span className="title">Add Additional Sort</span>
             <span className="shortcut">
-              {ContextActionUtils.isMacPlatform() ? '⌘Click' : '^Click'}
+              {ContextActionUtils.isMacPlatform() ? '⌘Click' : 'Ctrl+Click'}
             </span>
           </div>
         ),

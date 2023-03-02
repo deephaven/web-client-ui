@@ -75,19 +75,15 @@ If you encounter an issue specific to a browser, check that your browser is up t
 
 ## Releasing a New Version
 
-When releasing a new version, you need to commit a version bump, then tag and create the release. By creating the release, the [publish-packages action](.github/workflows/publish-packages.yml) will be triggered, and will automatically publish the packages. Some of these steps below also make use of the [GitHub CLI](https://github.com/cli/cli)
+We use [lerna](https://github.com/lerna/lerna) and [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) to automatically handle incrementing the version, generate the changelog, and create the release.
 
-1. Bump the version:
-   - Run `npm run version-bump`. Select the type of version bump ([patch, minor, or major version](https://semver.org/)). Remember the version for the next steps, and fill it in instead of `<version>` (should be in semver format with `v` prefix, e.g. `v0.7.1`).
-   - Commit your changes. `git commit --all --message="Version Bump <version>"`
-   - Create a pull request. `gh pr create --fill --web`
-   - Approve the pull request and merge to `main`.
-2. Generate the changelog:
-   - Generate a [GitHub Personal access token](https://github.com/settings/tokens) with the `public_repo` scope. Copy this token and replace `<token>` with it below.
-   - Generate the changelog: `GITHUB_AUTH=<token> npm run changelog --silent -- --next-version=<version> > /tmp/changelog_<version>.md`
-3. Create the tag. Use the command line to create an annotated tag (lightweight tags will not work correctly with lerna-changelog): `git tag --annotate <version> --file /tmp/changelog_<version>.md`
-4. Push the tag: `git push origin <version>`
-5. Create the release: `gh release create <version> --notes-file /tmp/changelog_<version>.md --title <version>`
+1. Generate a [GitHub Personal access token](https://github.com/settings/tokens):
+
+- Under `Repository Access`, select `Only select repositories` and add `deephaven/web-client-ui`.
+- Under `Repository Permissions`, set `Access: Read and write` for `Contents`. This will be necessary to push your version bump and create the release.
+- Copy the token created and replace `<token>` with it in the next step.
+
+2. Bump the version, update the changelog, and create a release: `GH_TOKEN=<token> npm run version-bump`
 
 After the release is created, you can go to the [actions page](https://github.com/deephaven/web-client-ui/actions) to see the publish action being kicked off.
 
@@ -118,45 +114,6 @@ npx source-map-explorer 'packages/code-studio/build/static/js/*.js'
 
 ## Updating Snapshots
 
-Snapshots are used by end-to-end tests to visually verify the output. Sometimes changes are made requiring snapshots to be updated. Since snapshots are platform dependent, you may need to use a docker image to [update snapshots for CI](https://playwright.dev/docs/test-snapshots). You mount the current directory into a docker image and re-run the tests from there.
+Snapshots are used by end-to-end tests to visually verify the output. Sometimes changes are made requiring snapshots to be updated. Run snapshots locally to update first, by running `npm run e2e:update-snapshots`.
 
-First start with a clean repo. `node_modules` and some other build output is platform dependent.
-
-```
-npm run clean
-```
-
-Next, start the docker image and open a bash shell inside of it:
-
-```
-docker run --rm --network host -v $(pwd):/work/ -w /work/ -it mcr.microsoft.com/playwright:v1.28.1-focal /bin/bash
-```
-
-Within the docker image shell, install some build tools that are not included with the image:
-
-```
-apt-get update
-apt-get install build-essential --yes
-```
-
-Next, use nvm to install and use the correct version of node:
-
-```
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.2/install.sh | bash
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-nvm install
-```
-
-Install npm dependencies and build the production app, pointing to an API running on your machine:
-
-```
-npm ci
-VITE_CORE_API_URL=http://host.docker.internal:10000/jsapi npm run build
-```
-
-Next, run the tests and update the snapshots:
-
-```
-npm run e2e:update-snapshots
-```
+Once you are satisfied with the snapshots and everything is passing locally, you need to use a docker image to [update snapshots for CI](https://playwright.dev/docs/test-snapshots) (unless you are running the same platform as CI (Ubuntu)). Run `npm run e2e:update-ci-snapshots` to mount the current directory into a docker image and re-run the tests from there. **Note:** You must have [Docker installed](https://docs.docker.com/get-docker/), and `deephaven-core` must already be running on port 10000 on your local machine.

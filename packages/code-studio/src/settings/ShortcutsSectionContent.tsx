@@ -62,8 +62,8 @@ function ShortcutSectionContent({
   return (
     <>
       <div className="app-settings-menu-description">
-        Customize shortcuts below. Assigning shortcuts that conflict with the
-        browser or IDE shortcuts may cause unintended behavior
+        Customize shortcuts below. To prevent unexpected results, avoid
+        conflicting shortcuts with the browser or IDE editor.
       </div>
       {categories.map(category => (
         <ShortcutCategory

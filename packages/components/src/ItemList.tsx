@@ -14,6 +14,7 @@ import { ContextActionUtils } from './context-actions';
 import './ItemList.scss';
 
 const log = Log.module('ItemList');
+const MIN_DRAG_DELTA = 5;
 
 export interface DefaultListItem {
   value?: string;
@@ -45,7 +46,7 @@ export type ItemListProps<T> = {
   // Can be anything as long as it's supported by the renderItem
   // Default renderItem will look for a `displayValue` property, fallback
   // to the `value` property, or stringify the object if neither are defined
-  items: T[];
+  items: readonly T[];
   // Whether clicking a selected item should deselect in the item list or not. Defaults to true
   isDeselectOnClick: boolean;
   // Whether selection requires a double click or not
@@ -61,10 +62,10 @@ export type ItemListProps<T> = {
 
   // Fired when an item is clicked. With multiple selection, fired on double click.
   onSelect(index: number, event: React.SyntheticEvent): void;
-  onSelectionChange(ranges: Range[]): void;
+  onSelectionChange(ranges: readonly Range[]): void;
   onViewportChange(topRow: number, bottomRow: number): void;
   overscanCount: number;
-  selectedRanges: Range[];
+  selectedRanges: readonly Range[];
   disableSelect: boolean;
   renderItem: RenderItemFn<T>;
   focusSelector: string;
@@ -74,12 +75,14 @@ export type ItemListProps<T> = {
 type ItemListState = {
   focusIndex: number | null;
   mouseDownIndex: number | null;
-  selectedRanges: Range[];
+  selectedRanges: readonly Range[];
   overscanStartIndex: number;
   height: number | null;
   isDragging: boolean;
   isStuckToBottom: boolean;
   scrollOffset: number | null;
+  mouseX: number | null;
+  mouseY: number | null;
 };
 
 /**
@@ -179,6 +182,8 @@ export class ItemList<T> extends PureComponent<
       isDragging: false,
       isStuckToBottom: isStickyBottom,
       scrollOffset: null,
+      mouseX: null,
+      mouseY: null,
     };
   }
 
@@ -230,7 +235,7 @@ export class ItemList<T> extends PureComponent<
   listContainer: React.RefObject<HTMLDivElement>;
 
   getItemSelected = memoize(
-    (index: number, selectedRanges: Range[]) =>
+    (index: number, selectedRanges: readonly Range[]) =>
       RangeUtils.isSelected(selectedRanges, index),
     { max: ItemList.CACHE_SIZE }
   );
@@ -307,7 +312,11 @@ export class ItemList<T> extends PureComponent<
   });
 
   getItemData = memoize(
-    (items: T[], selectedRanges: Range[], renderItem: RenderItemFn<T>) => ({
+    (
+      items: readonly T[],
+      selectedRanges: readonly Range[],
+      renderItem: RenderItemFn<T>
+    ) => ({
       items,
       selectedRanges,
       renderItem,
@@ -414,7 +423,11 @@ export class ItemList<T> extends PureComponent<
       return;
     }
 
-    this.setState({ mouseDownIndex: index });
+    this.setState({
+      mouseDownIndex: index,
+      mouseX: e.clientX,
+      mouseY: e.clientY,
+    });
 
     window.addEventListener('mouseup', this.handleWindowMouseUp);
 
@@ -447,12 +460,15 @@ export class ItemList<T> extends PureComponent<
 
   handleItemMouseMove(itemIndex: number, e: React.MouseEvent): void {
     const { isDragSelect, isMultiSelect, disableSelect } = this.props;
-    const { mouseDownIndex, selectedRanges } = this.state;
+    const { mouseDownIndex, selectedRanges, mouseX, mouseY } = this.state;
 
     if (mouseDownIndex == null || disableSelect) return;
 
-    this.setState({ isDragging: true });
-
+    const mouseMoveX = Math.abs(e.clientX - (mouseX ?? 0));
+    const mouseMoveY = Math.abs(e.clientY - (mouseY ?? 0));
+    if (mouseMoveX > MIN_DRAG_DELTA && mouseMoveY > MIN_DRAG_DELTA) {
+      this.setState({ isDragging: true });
+    }
     if (isDragSelect || mouseDownIndex === itemIndex) {
       this.focusItem(itemIndex);
 
@@ -695,7 +711,7 @@ export class ItemList<T> extends PureComponent<
     }));
   }
 
-  setSelectedRanges(selectedRanges: Range[]): void {
+  setSelectedRanges(selectedRanges: readonly Range[]): void {
     this.setState({ selectedRanges });
   }
 

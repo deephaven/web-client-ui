@@ -15,7 +15,6 @@ import {
 } from '@deephaven/filters';
 import { Button, DateTimeInput } from '@deephaven/components';
 import { TableUtils } from '@deephaven/jsapi-utils';
-import { assertNotNull } from '@deephaven/utils';
 import classNames from 'classnames';
 import './GotoRow.scss';
 import IrisGridModel from './IrisGridModel';
@@ -86,6 +85,21 @@ function GotoRow({
   const res = 'Row number';
 
   const { rowCount } = model;
+
+  const handleGotoValueNumberKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.stopPropagation();
+      e.preventDefault();
+      onGotoValueSubmit();
+    } else if (
+      (e.key === 'Backspace' || e.key === 'Delete') &&
+      (gotoValue === `${Number.POSITIVE_INFINITY}` ||
+        gotoValue === `${Number.NEGATIVE_INFINITY}`)
+    ) {
+      onGotoValueInputChanged('');
+    }
+  };
+
   const handleGotoValueKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.stopPropagation();
@@ -96,8 +110,7 @@ function GotoRow({
 
   const index = model.getColumnIndexByName(gotoValueSelectedColumnName);
 
-  assertNotNull(index);
-  const selectedColumn = columns[index];
+  const selectedColumn = columns[index ?? 0];
 
   const columnType = selectedColumn?.type;
 
@@ -126,13 +139,22 @@ function GotoRow({
           <div className="goto-row-input">
             <input
               ref={gotoValueInputRef}
-              type="number"
               className={classNames('form-control', {
                 'is-invalid': gotoValueError !== '',
               })}
-              onKeyDown={handleGotoValueKeyDown}
+              onKeyDown={handleGotoValueNumberKeyDown}
               placeholder="value"
-              onChange={e => onGotoValueInputChanged(e.target.value)}
+              onChange={e => {
+                const value = e.target.value.toLowerCase();
+                // regex tests for
+                if (/^-?[0-9]*\.?[0-9]*$/.test(e.target.value)) {
+                  onGotoValueInputChanged(e.target.value);
+                } else if (value === '-i' || value === '-infinity') {
+                  onGotoValueInputChanged(`${Number.NEGATIVE_INFINITY}`);
+                } else if (value === 'i' || value === 'infinity') {
+                  onGotoValueInputChanged(`${Number.POSITIVE_INFINITY}`);
+                }
+              }}
               value={gotoValue}
             />
           </div>
@@ -148,6 +170,7 @@ function GotoRow({
                   'is-invalid': gotoValueError !== '',
                 }
               )}
+              defaultValue={gotoValue}
               onChange={onGotoValueInputChanged}
             />
           </div>
@@ -202,6 +225,7 @@ function GotoRow({
               }}
               value={gotoValue}
             >
+              <option aria-label="null value" key="null" value="" />
               <option key="true" value="true">
                 true
               </option>

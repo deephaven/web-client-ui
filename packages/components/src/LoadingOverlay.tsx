@@ -10,7 +10,7 @@ import './LoadingOverlay.scss';
 type LoadingOverlayProps = {
   isLoaded?: boolean;
   isLoading?: boolean;
-  errorMessage: string | null;
+  errorMessage?: string | null;
   'data-testid'?: string;
 };
 

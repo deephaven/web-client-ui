@@ -86,7 +86,10 @@ export class TableUtils {
   // Regex looking for a negative or positive integer or decimal number
   static NUMBER_REGEX = /^-?\d+(\.\d+)?$/;
 
-  static getSortIndex(sort: Sort[], columnIndex: number): number | null {
+  static getSortIndex(
+    sort: readonly Sort[],
+    columnIndex: number
+  ): number | null {
     for (let i = 0; i < sort.length; i += 1) {
       const s = sort[i];
       if (s.column?.index === columnIndex) {
@@ -102,7 +105,10 @@ export class TableUtils {
    * @param columnIndex The index of the column to get the sort for
    * @returns The sort for the column, or null if it's not sorted
    */
-  static getSortForColumn(tableSort: Sort[], columnIndex: number): Sort | null {
+  static getSortForColumn(
+    tableSort: readonly Sort[],
+    columnIndex: number
+  ): Sort | null {
     const sortIndex = TableUtils.getSortIndex(tableSort, columnIndex);
     if (sortIndex != null) {
       return tableSort[sortIndex];
@@ -152,8 +158,8 @@ export class TableUtils {
   }
 
   static getNextSort(
-    columns: Column[],
-    sorts: Sort[],
+    columns: readonly Column[],
+    sorts: readonly Sort[],
     columnIndex: number
   ): Sort | null {
     if (columns == null || columnIndex < 0 || columnIndex >= columns.length) {
@@ -171,7 +177,7 @@ export class TableUtils {
   }
 
   static makeColumnSort(
-    columns: Column[],
+    columns: readonly Column[],
     columnIndex: number,
     direction: SortDirection,
     isAbs: boolean
@@ -210,8 +216,8 @@ export class TableUtils {
    * @param addToExisting Add this sort to the existing sort
    */
   static toggleSortForColumn(
-    sorts: Sort[],
-    columns: Column[],
+    sorts: readonly Sort[],
+    columns: readonly Column[],
     columnIndex: number,
     addToExisting = false
   ): Sort[] {
@@ -230,8 +236,8 @@ export class TableUtils {
   }
 
   static sortColumn(
-    sorts: Sort[],
-    columns: Column[],
+    sorts: readonly Sort[],
+    columns: readonly Column[],
     modelColumn: number,
     direction: SortDirection,
     isAbs: boolean,
@@ -265,7 +271,7 @@ export class TableUtils {
    * @returns Returns the modified array of sorts - removing reverses
    */
   static setSortForColumn(
-    tableSort: Sort[],
+    tableSort: readonly Sort[],
     columnIndex: number,
     sort: Sort | null,
     addToExisting = false
@@ -306,6 +312,8 @@ export class TableUtils {
       case 'io.deephaven.db.tables.utils.DBDateTime':
       case 'io.deephaven.time.DateTime':
       case 'com.illumon.iris.db.tables.utils.DBDateTime':
+      case 'java.time.Instant':
+      case 'java.time.ZonedDateTime':
       case TableUtils.dataType.DATETIME:
         return TableUtils.dataType.DATETIME;
       case 'double':
@@ -345,6 +353,8 @@ export class TableUtils {
     switch (columnType) {
       case 'io.deephaven.db.tables.utils.DBDateTime':
       case 'io.deephaven.time.DateTime':
+      case 'java.time.Instant':
+      case 'java.time.ZonedDateTime':
       case 'com.illumon.iris.db.tables.utils.DBDateTime':
         return true;
       default:
@@ -1558,7 +1568,7 @@ export class TableUtils {
    * @param columns The columns to sort
    * @param isAscending Whether to sort ascending
    */
-  static sortColumns(columns: Column[], isAscending = true): Column[] {
+  static sortColumns(columns: readonly Column[], isAscending = true): Column[] {
     return [...columns].sort((a, b) => {
       const aName = a.name.toUpperCase();
       const bName = b.name.toUpperCase();

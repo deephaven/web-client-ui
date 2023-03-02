@@ -43,8 +43,8 @@ export interface GridMetricState {
   model: GridModel;
 
   // Moved columns/rows in the grid
-  movedColumns: MoveOperation[];
-  movedRows: MoveOperation[];
+  movedColumns: readonly MoveOperation[];
+  movedRows: readonly MoveOperation[];
 
   // Whether the scrollbars are currently being dragged
   isDraggingHorizontalScrollBar: boolean;
@@ -137,6 +137,12 @@ export class GridMetricCalculator {
   /** The maximum column width as a percentage of the full grid */
   static MAX_COLUMN_WIDTH = 0.8;
 
+  /** The initial row heights if any overrides from the default calculated values */
+  public initialRowHeights: ReadonlyMap<ModelIndex, number>; // Readonly so it should be safe to make public
+
+  /** The initial column widths if any overrides from the default calculated values */
+  public initialColumnWidths: ReadonlyMap<ModelIndex, number>; // Readonly so it should be safe to make public
+
   /** User set column widths */
   protected userColumnWidths: ModelSizeMap;
 
@@ -159,10 +165,10 @@ export class GridMetricCalculator {
   protected modelColumns: VisibleToModelMap;
 
   /** List of moved row operations. Need to track the previous value so we know if modelRows needs to be cleared. */
-  protected movedRows: MoveOperation[];
+  protected movedRows: readonly MoveOperation[];
 
   /** List of moved column operations. Need to track the previous value so we know if modelColumns needs to be cleared. */
-  protected movedColumns: MoveOperation[];
+  protected movedColumns: readonly MoveOperation[];
 
   constructor({
     userColumnWidths = new Map(),
@@ -172,8 +178,10 @@ export class GridMetricCalculator {
     fontWidths = new Map(),
     modelRows = new Map(),
     modelColumns = new Map(),
-    movedRows = [] as MoveOperation[],
-    movedColumns = [] as MoveOperation[],
+    movedRows = [] as readonly MoveOperation[],
+    movedColumns = [] as readonly MoveOperation[],
+    initialRowHeights = new Map(),
+    initialColumnWidths = new Map(),
   } = {}) {
     this.userColumnWidths = userColumnWidths;
     this.userRowHeights = userRowHeights;
@@ -186,6 +194,8 @@ export class GridMetricCalculator {
     this.modelColumns = modelColumns;
     this.movedRows = movedRows;
     this.movedColumns = movedColumns;
+    this.initialRowHeights = initialRowHeights;
+    this.initialColumnWidths = initialColumnWidths;
   }
 
   /**
@@ -1487,17 +1497,15 @@ export class GridMetricCalculator {
    * Get the size from the provided size map of the specified item
    * @param modelIndex The model index to get the size for
    * @param userSizes The user set sizes
-   * @param calculateSize Method to calculate the size for this item
+   * @param getDefaultSize Method to get the default size for this item
    * @returns The size from the provided size map of the specified item
    */
   getVisibleItemSize(
     modelIndex: ModelIndex,
     userSizes: ModelSizeMap,
-    calculateSize: () => number
+    getDefaultSize: () => number
   ): number {
-    // Always re-calculate the size of the item so the calculated size maps are populated
-    const calculatedSize = calculateSize();
-    return userSizes.get(modelIndex) ?? calculatedSize;
+    return userSizes.get(modelIndex) ?? getDefaultSize();
   }
 
   /**
@@ -1508,10 +1516,15 @@ export class GridMetricCalculator {
    */
   getVisibleRowHeight(row: VisibleIndex, state: GridMetricState): number {
     const modelRow = this.getModelRow(row, state);
+    const calculatedHeight = this.calculateRowHeight(row, modelRow, state); // Need to call this so calculated map is always populated
 
-    return this.getVisibleItemSize(modelRow, this.userRowHeights, () =>
-      this.calculateRowHeight(row, modelRow, state)
-    );
+    return this.getVisibleItemSize(modelRow, this.userRowHeights, () => {
+      const initialHeight = this.initialRowHeights.get(modelRow);
+      if (initialHeight !== undefined) {
+        return initialHeight;
+      }
+      return calculatedHeight;
+    });
   }
 
   /**
@@ -1530,15 +1543,22 @@ export class GridMetricCalculator {
   ): number {
     const modelColumn = this.getModelColumn(column, state);
 
-    return this.getVisibleItemSize(modelColumn, this.userColumnWidths, () =>
-      this.calculateColumnWidth(
-        column,
-        modelColumn,
-        state,
-        firstColumn,
-        treePaddingX
-      )
+    // Need to call this so calculated map is always populated
+    const calculatedWidth = this.calculateColumnWidth(
+      column,
+      modelColumn,
+      state,
+      firstColumn,
+      treePaddingX
     );
+
+    return this.getVisibleItemSize(modelColumn, this.userColumnWidths, () => {
+      const initialWidth = this.initialColumnWidths.get(modelColumn);
+      if (initialWidth !== undefined) {
+        return initialWidth;
+      }
+      return calculatedWidth;
+    });
   }
 
   /**

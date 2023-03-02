@@ -650,8 +650,8 @@ export function getShortLabelForConditionType(
  * @returns Array of format columns
  */
 export function getFormatColumns(
-  columns: Column[],
-  rules: FormattingRule[]
+  columns: readonly Column[],
+  rules: readonly FormattingRule[]
 ): CustomColumn[] {
   if (rules === undefined) {
     log.debug(`no rules passed.`);
@@ -704,6 +704,23 @@ export function getFormatColumns(
   });
 
   return result;
+}
+
+/**
+ * Validate that a given date condition + value pair is valid.
+ * @param condition
+ * @param value
+ */
+export function isDateConditionValid(condition: DateCondition, value?: string) {
+  switch (condition) {
+    case DateCondition.IS_NULL:
+    case DateCondition.IS_NOT_NULL:
+      return true;
+
+    default:
+      // Proper date validation will be addressed by Issue #1108
+      return value != null && value !== '';
+  }
 }
 
 export function isSupportedColumn({ type }: ModelColumn): boolean {

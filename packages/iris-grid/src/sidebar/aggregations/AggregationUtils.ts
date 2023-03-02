@@ -52,14 +52,14 @@ export const isValidOperation = (
 };
 
 export const filterValidColumns = (
-  columns: Column[],
+  columns: readonly Column[],
   operationType: AggregationOperation
 ): Column[] => columns.filter(c => isValidOperation(operationType, c.type));
 
 export const getOperationColumnNames = (
-  columns: Column[],
+  columns: readonly Column[],
   operationType: AggregationOperation,
-  selected: string[],
+  selected: readonly string[],
   invert: boolean
 ): string[] =>
   filterValidColumns(columns, operationType)

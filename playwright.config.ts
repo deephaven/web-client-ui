@@ -110,7 +110,7 @@ const config: PlaywrightTestConfig = {
   webServer: {
     // Only start the main code-studio server right now
     // To test embed-grid and embed-chart, should have an array set for `webServer` and run them all separately as there's a port check
-    command: 'npm run preview:app',
+    command: 'VITE_PROXY_URL=http://localhost:10000 npm run preview:app',
     port: 4000,
     timeout: 60 * 1000,
     reuseExistingServer: !process.env.CI,
