@@ -1750,6 +1750,11 @@ class DateWrapper extends LongWrapper {
 
 class TimeZone {
   static getTimeZone(id) {
+    if (id == null || id === '' || id.includes(' ')) {
+      // Usually there would be a java.lang.IllegalArgumentException for any invalid id.
+      // We at least know that '' and undefined, so throw an error.
+      throw new Error('Unsupported time zone');
+    }
     return { id };
   }
 }
