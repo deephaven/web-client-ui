@@ -34,7 +34,7 @@ jobs:
           cat ./packages/embed-grid/package.json >> $GITHUB_OUTPUT
           echo "$EOF" >> $GITHUB_OUTPUT
           echo "EMBED_CHART_JSON<<$EOF" >> $GITHUB_OUTPUT
-          cat ./packages/embed_chart/package.json >> $GITHUB_OUTPUT
+          cat ./packages/embed-chart/package.json >> $GITHUB_OUTPUT
           echo "$EOF" >> $GITHUB_OUTPUT
       - name: Update deephaven-core
         run: |
