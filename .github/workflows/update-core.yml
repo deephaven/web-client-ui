@@ -43,9 +43,9 @@ jobs:
         working-directory: ./deephaven-core
         run: |
           echo "`pwd`"
-          WEB_VERSION=${{fromJson(steps.package_jsons.outputs.CODE_STUDIO_JSON).version}}
-          GRID_VERSION=${{fromJson(steps.package_jsons.outputs.EMBED_GRID_JSON).version}}
-          CHART_VERSION=${{fromJson(steps.package_jsons.outputs.EMBED_CHART_JSON).version}}
+          echo "WEB_VERSION=${{fromJson(steps.package_jsons.outputs.CODE_STUDIO_JSON).version}}" >> $GITHUB_ENV
+          echo "GRID_VERSION=${{fromJson(steps.package_jsons.outputs.EMBED_GRID_JSON).version}}" >> $GITHUB_ENV
+          echo "CHART_VERSION=${{fromJson(steps.package_jsons.outputs.EMBED_CHART_JSON).version}}" >> $GITHUB_ENV
           echo "code-studio version is $WEB_VERSION, $GRID_VERSION, $CHART_VERSION"
           git status
           git log
