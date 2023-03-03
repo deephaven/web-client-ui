@@ -187,11 +187,7 @@ class IrisGridRenderer extends GridRenderer {
       return;
     }
 
-    // There seem to be duplicate columns with the same name, so determine the
-    // count of distinct names.
-    const numUniqueNames = new Set(groupedColumns.map(({ name }) => name)).size;
-
-    const lastVisibleGroupColumnIndex = numUniqueNames - 1;
+    const lastVisibleGroupColumnIndex = groupedColumns.length - 1;
 
     const columnX = allColumnXs.get(lastVisibleGroupColumnIndex);
     const columnWidth = allColumnWidths.get(lastVisibleGroupColumnIndex);
