@@ -9,19 +9,22 @@ const log = Log.module('PlotlyChartModel');
 
 class PlotlyChartModel extends ChartModel {
   constructor(
-    table: Table,
+    tableColumnReplacementMap: Map<Table, Map<string, string[]>>,
     data: Data[],
     layout: Partial<Layout>,
-    columnReplacements: Map<string, string[]>,
     theme: typeof ChartTheme = ChartTheme
   ) {
     super();
 
     this.handleFigureUpdated = this.handleFigureUpdated.bind(this);
 
-    this.table = table;
-    this.columnReplacements = columnReplacements;
-    this.chartData = new dh.plot.ChartData(table);
+    this.tableColumnReplacementMap = tableColumnReplacementMap;
+    this.chartDataMap = new Map();
+    this.tableSubscriptionMap = new Map();
+    tableColumnReplacementMap.forEach((_, table) =>
+      this.chartDataMap.set(table, new dh.plot.ChartData(table))
+    );
+
     this.theme = theme;
     this.data = data;
     const template = { data: {}, layout: ChartUtils.makeDefaultLayout(theme) };
@@ -33,13 +36,13 @@ class PlotlyChartModel extends ChartModel {
     this.setTitle(this.getDefaultTitle());
   }
 
-  table: Table;
+  tableSubscriptionMap: Map<Table, TableSubscription>;
 
-  tableSubscription?: TableSubscription;
+  tableSubscriptionCleanups: (() => void)[] = [];
 
-  columnReplacements: Map<string, string[]>;
+  tableColumnReplacementMap: Map<Table, Map<string, string[]>>;
 
-  chartData: ChartData;
+  chartDataMap: Map<Table, ChartData>;
 
   theme: typeof ChartTheme;
 
@@ -48,7 +51,7 @@ class PlotlyChartModel extends ChartModel {
   layout: Partial<Layout>;
 
   close(): void {
-    this.tableSubscription?.close();
+    this.tableSubscriptionMap.forEach(sub => sub.close());
     this.stopListening();
   }
 
@@ -63,23 +66,33 @@ class PlotlyChartModel extends ChartModel {
   subscribe(callback: (event: ChartEvent) => void): void {
     super.subscribe(callback);
 
-    const columnNames = new Set(this.columnReplacements.keys());
-    const columns = this.table.columns.filter(({ name }) =>
-      columnNames.has(name)
-    );
+    this.tableColumnReplacementMap.forEach((columnReplacements, table) => {
+      const columnNames = new Set(columnReplacements.keys());
+      const columns = table.columns.filter(({ name }) => columnNames.has(name));
+      this.tableSubscriptionMap.set(table, table.subscribe(columns));
+    });
 
-    this.tableSubscription = this.table.subscribe(columns);
     this.startListening();
   }
 
-  handleFigureUpdated(event: ChartEvent): void {
+  handleFigureUpdated(
+    event: ChartEvent,
+    chartData: ChartData | undefined,
+    columnReplacements: Map<string, string[]> | undefined
+  ): void {
+    if (chartData == null || columnReplacements == null) {
+      log.warn(
+        'Unknown chartData or columnReplacements for this event. Skipping update'
+      );
+      return;
+    }
     const { detail: figureUpdateEvent } = event;
-    this.chartData.update(figureUpdateEvent);
+    chartData.update(figureUpdateEvent);
 
-    this.columnReplacements.forEach((destinations, column) => {
-      const columnData = this.chartData.getColumn(
+    columnReplacements.forEach((destinations, column) => {
+      const columnData = chartData.getColumn(
         column,
-        val => val,
+        val => ChartUtils.unwrapValue(val),
         figureUpdateEvent
       );
       destinations.forEach(destination => {
@@ -104,17 +117,21 @@ class PlotlyChartModel extends ChartModel {
   }
 
   startListening(): void {
-    this.tableSubscription?.addEventListener(
-      dh.Table.EVENT_UPDATED,
-      this.handleFigureUpdated
-    );
+    this.tableSubscriptionMap.forEach((sub, table) => {
+      this.tableSubscriptionCleanups.push(
+        sub.addEventListener(dh.Table.EVENT_UPDATED, e =>
+          this.handleFigureUpdated(
+            e,
+            this.chartDataMap.get(table),
+            this.tableColumnReplacementMap.get(table)
+          )
+        )
+      );
+    });
   }
 
   stopListening(): void {
-    this.tableSubscription?.removeEventListener(
-      dh.Table.EVENT_UPDATED,
-      this.handleFigureUpdated
-    );
+    this.tableSubscriptionCleanups.forEach(cleanup => cleanup());
   }
 
   getPlotWidth(): number {

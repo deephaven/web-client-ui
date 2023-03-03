@@ -38,16 +38,14 @@ class ChartModelFactory {
   }
 
   static async makePlotlyModelFromSettings(
-    table: Table,
+    tableColumnReplacementMap: Map<Table, Map<string, string[]>>,
     plotlyConfig: PlotlyDataLayoutConfig,
-    columnReplacements: Map<string, string[]>,
     theme = ChartTheme
   ): Promise<ChartModel> {
     return new PlotlyChartModel(
-      table,
+      tableColumnReplacementMap,
       plotlyConfig.data,
       plotlyConfig.layout ?? {},
-      columnReplacements,
       theme
     );
   }

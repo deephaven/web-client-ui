@@ -8,6 +8,7 @@ import {
   useListener,
 } from '@deephaven/dashboard';
 import { dh, Table, VariableDefinition } from '@deephaven/jsapi-shim';
+import { assertNotNull } from '@deephaven/utils';
 import shortid from 'shortid';
 import type { PlotlyDataLayoutConfig } from 'plotly.js';
 import { ChartPanel } from './panels/ChartPanel';
@@ -44,37 +45,43 @@ export function PlotlyChartPlugin(
         deephaven: {
           mappings: Array<{
             table: number;
-            data_columns: Record<string, string | string[]>;
+            data_columns: Record<string, string[]>;
           }>;
           template?: unknown;
         };
         plotly: PlotlyDataLayoutConfig;
       } = JSON.parse(atob(widgetInfo.getDataAsBase64()));
-      const objects = await Promise.all(
+      const tables = await Promise.all(
         widgetInfo.exportedObjects.map(obj => obj.fetch())
       );
 
-      // Maps a column name to an array of the paths where its data should be
-      const fetchColumnMap = new Map<string, string[]>();
+      // Maps a table to a map of column name to an array of the paths where its data should be
+      const tableColumnReplacementMap = new Map<Table, Map<string, string[]>>();
+      tables.forEach(table => tableColumnReplacementMap.set(table, new Map()));
 
-      data.deephaven.mappings
-        .flatMap(({ data_columns: dataColumns }) => Object.entries(dataColumns))
-        .forEach(([columnName, dataPath]) => {
-          const existingPaths = fetchColumnMap.get(columnName);
-          const names = [dataPath].flat();
-          if (existingPaths !== undefined) {
-            existingPaths.push(...names);
-          } else {
-            fetchColumnMap.set(columnName, [...names]);
-          }
-        });
+      data.deephaven.mappings.forEach(
+        ({ table: tableIndex, data_columns: dataColumns }) => {
+          const table = tables[tableIndex];
+          const existingColumnMap = tableColumnReplacementMap.get(table);
+          assertNotNull(existingColumnMap);
+
+          // For each { columnName: [replacePaths] } in the object, add to the tableColumnReplacementMap
+          Object.entries(dataColumns).forEach(([columnName, paths]) => {
+            const existingPaths = existingColumnMap.get(columnName);
+            if (existingPaths !== undefined) {
+              existingPaths.push(...paths);
+            } else {
+              existingColumnMap.set(columnName, [...paths]);
+            }
+          });
+        }
+      );
 
       const metadata = { name: title, figure: title };
       const makeModel = () =>
         ChartModelFactory.makePlotlyModelFromSettings(
-          objects[0],
-          data.plotly,
-          fetchColumnMap
+          tableColumnReplacementMap,
+          data.plotly
         );
       const config = {
         type: 'react-component' as const,
