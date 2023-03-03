@@ -39,5 +39,4 @@ jobs:
       - name: Update deephaven-core
         run: |
           echo "`pwd`"
-          echo "${{steps.package_jsons.outputs.CODE_STUDIO_JSON}}"
-          # echo "${{fromJson(steps.package_jsons.outputs.CODE_STUDIO_JSON).version}}"
+          echo "code-studio version is ${{fromJson(steps.package_jsons.outputs.CODE_STUDIO_JSON).version}}"
