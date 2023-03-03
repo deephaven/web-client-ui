@@ -76,3 +76,4 @@ jobs:
           body: Release notes https://github.com/deephaven/web-client-ui/releases/tag/${{ env.WEB_VERSION }}
           branch: update-web-version- ${{ env.WEB_VERSION }}
           delete-branch: true
+          token: ${{ secrets.CORE_PR_TOKEN }}
