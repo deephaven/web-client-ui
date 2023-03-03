@@ -14,6 +14,7 @@ import TableUtils from './TableUtils';
 import DateUtils from './DateUtils';
 // eslint-disable-next-line import/no-relative-packages
 import IrisGridTestUtils from '../../iris-grid/src/IrisGridTestUtils';
+import { ColumnName } from './Formatter';
 
 const DEFAULT_TIME_ZONE_ID = 'America/New_York';
 const EXPECT_TIME_ZONE_PARAM = expect.objectContaining({
@@ -1503,12 +1504,14 @@ describe('Sorting', () => {
   };
 
   describe('getSortIndex', () => {
-    it.each([
-      // sort, columnName, expected
+    // sort, columnName, expected
+    const testCases: [Sort[], ColumnName, number | null][] = [
       [sortList.empty, 'name_999', null],
       [sortList.hasThree, 'non-existing', null],
       [sortList.hasThree, 'name_999', 2],
-    ] as [readonly Sort[], string, number | null][])(
+    ];
+
+    it.each(testCases)(
       'should return index of sort for matching column name: %s, %s',
       (sort, columnName, expected) => {
         expect(TableUtils.getSortIndex(sort, columnName)).toEqual(expected);
@@ -1517,12 +1520,14 @@ describe('Sorting', () => {
   });
 
   describe('getSortForColumn', () => {
-    it.each([
-      // sort, columnName, expected
+    // sort, columnName, expected
+    const testCases: [Sort[], ColumnName, Sort | null][] = [
       [sortList.empty, 'name_999', null],
       [sortList.hasThree, 'non-existing', null],
       [sortList.hasThree, 'name_999', sortList.hasThree[2]],
-    ] as [readonly Sort[], string, number | null][])(
+    ];
+
+    it.each(testCases)(
       'should return sort for matching column name: %s, %s',
       (sort, columnName, expected) => {
         expect(TableUtils.getSortForColumn(sort, columnName)).toEqual(expected);
