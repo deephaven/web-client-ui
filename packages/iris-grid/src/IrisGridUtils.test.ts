@@ -5,7 +5,7 @@ import { DateUtils } from '@deephaven/jsapi-utils';
 import type { AdvancedFilter } from './CommonTypes';
 import { FilterData } from './IrisGrid';
 import IrisGridTestUtils from './IrisGridTestUtils';
-import IrisGridUtils from './IrisGridUtils';
+import IrisGridUtils, { DehydratedSort } from './IrisGridUtils';
 
 function makeFilter() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -156,10 +156,11 @@ describe('sort exporting/importing', () => {
     const sort = [columns[3].sort(), columns[7].sort().abs().desc()];
     const table = makeTable({ columns, sort });
     const exportedSort = IrisGridUtils.dehydrateSort(sort);
-    expect(exportedSort).toEqual([
-      { columnName: columns[3].name, isAbs: false, direction: 'ASC' },
-      { columnName: columns[7].name, isAbs: true, direction: 'DESC' },
-    ]);
+    const expectExportedSort: DehydratedSort[] = [
+      { column: columns[3].name, isAbs: false, direction: 'ASC' },
+      { column: columns[7].name, isAbs: true, direction: 'DESC' },
+    ];
+    expect(exportedSort).toEqual(expectExportedSort);
 
     const importedSort = IrisGridUtils.hydrateSort(table.columns, exportedSort);
     expect(importedSort).toEqual([

@@ -88,7 +88,7 @@ export class TableUtils {
 
   static getSortIndex(
     sort: readonly Sort[],
-    columnName: string
+    columnName: ColumnName
   ): number | null {
     for (let i = 0; i < sort.length; i += 1) {
       const s = sort[i];
@@ -107,7 +107,7 @@ export class TableUtils {
    */
   static getSortForColumn(
     tableSort: readonly Sort[],
-    columnName: string
+    columnName: ColumnName
   ): Sort | null {
     const sortIndex = TableUtils.getSortIndex(tableSort, columnName);
     if (sortIndex != null) {
@@ -272,7 +272,7 @@ export class TableUtils {
    */
   static setSortForColumn(
     tableSort: readonly Sort[],
-    columnName: string,
+    columnName: ColumnName,
     sort: Sort | null,
     addToExisting = false
   ): Sort[] {
