@@ -27,16 +27,26 @@ jobs:
         run: |
           # Selecting a random character for EOF https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#example-of-a-multiline-string
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+
           echo "CODE_STUDIO_JSON<<$EOF" >> $GITHUB_OUTPUT
           cat ./packages/code-studio/package.json >> $GITHUB_OUTPUT
           echo "$EOF" >> $GITHUB_OUTPUT
-          echo "EMBED_GRID_STUDIO_JSON<<$EOF" >> $GITHUB_OUTPUT
+
+          echo "EMBED_GRID_JSON<<$EOF" >> $GITHUB_OUTPUT
           cat ./packages/embed-grid/package.json >> $GITHUB_OUTPUT
           echo "$EOF" >> $GITHUB_OUTPUT
+
           echo "EMBED_CHART_JSON<<$EOF" >> $GITHUB_OUTPUT
           cat ./packages/embed-chart/package.json >> $GITHUB_OUTPUT
           echo "$EOF" >> $GITHUB_OUTPUT
       - name: Update deephaven-core
+        working-directory: ./deephaven-core
         run: |
           echo "`pwd`"
-          echo "code-studio version is ${{fromJson(steps.package_jsons.outputs.CODE_STUDIO_JSON).version}}"
+          WEB_VERSION=${{fromJson(steps.package_jsons.outputs.CODE_STUDIO_JSON).version}}
+          GRID_VERSION=${{fromJson(steps.package_jsons.outputs.EMBED_GRID_JSON).version}}
+          CHART_VERSION=${{fromJson(steps.package_jsons.outputs.EMBED_CHART_JSON).version}}
+          echo "code-studio version is $WEB_VERSION, $GRID_VERSION, $CHART_VERSION"
+          git status
+          git log
+          git checkout -b update-web-${{WEB_VERSION}}
