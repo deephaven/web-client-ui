@@ -39,6 +39,10 @@ jobs:
           echo "EMBED_CHART_JSON<<$EOF" >> $GITHUB_OUTPUT
           cat ./packages/embed-chart/package.json >> $GITHUB_OUTPUT
           echo "$EOF" >> $GITHUB_OUTPUT
+      - name: Setup git config
+        run: |
+          git config --global user.name "Deephaven Bot"
+          git config --global user.email "ci@deephaven.io"
       - name: Update deephaven-core
         working-directory: ./deephaven-core
         env:
