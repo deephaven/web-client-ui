@@ -21,8 +21,7 @@ jobs:
       - name: Checkout latest deephaven-core
         uses: actions/checkout@v3
         with:
-          # TOOD: use deephaven/deephaven-core
-          repository: mofojed/deephaven-core
+          repository: deephaven/deephaven-core
           path: deephaven-core
           ref: main
       - name: Get web packages json
@@ -81,3 +80,5 @@ jobs:
           branch: update-web-version-${{ env.WEB_VERSION }}
           delete-branch: true
           token: ${{ secrets.CORE_PR_TOKEN }}
+          push-to-fork: mofojed/deephaven-core
+          draft: true
