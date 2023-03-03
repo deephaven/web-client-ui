@@ -54,5 +54,11 @@ jobs:
           sed -i "s/^ARG WEB_VERSION=.*/ARG WEB_VERSION=$WEB_VERSION/" ./web/client-ui/Dockerfile
           sed -i "s/^ARG GRID_VERSION=.*/ARG GRID_VERSION=$GRID_VERSION/" ./web/client-ui/Dockerfile
           sed -i "s/^ARG CHART_VERSION=.*/ARG CHART_VERSION=$CHART_VERSION/" ./web/client-ui/Dockerfile
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "No changes, versions up to date. Exiting"
+            exit 0
+          else
+            echo "Changes"
+          fi
           git status
           git diff
