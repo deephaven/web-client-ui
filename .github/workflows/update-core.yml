@@ -18,23 +18,26 @@ jobs:
       - name: Checkout latest deephaven-core
         uses: actions/checkout@v3
         with:
-          ref: main
+          repository: deephaven/deephaven-core
           path: deephaven-core
-      - name: Use Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18.x'
-      - name: Get latest web versions
-        id: package_versions
+          ref: main
+      - name: Get web packages json
+        id: package_jsons
         working-directory: ./web-client-ui
         run: |
           # Selecting a random character for EOF https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#example-of-a-multiline-string
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo npm pkg get version --ws
-          echo "VERSIONS<<$EOF" >> $GITHUB_OUTPUT
-          npm pkg get version --ws >> $GITHUB_OUTPUT
+          echo "CODE_STUDIO_JSON<<$EOF" >> $GITHUB_OUTPUT
+          cat ./packages/code-studio/package.json >> $GITHUB_OUTPUT
+          echo "$EOF" >> $GITHUB_OUTPUT
+          echo "EMBED_GRID_STUDIO_JSON<<$EOF" >> $GITHUB_OUTPUT
+          cat ./packages/embed-grid/package.json >> $GITHUB_OUTPUT
+          echo "$EOF" >> $GITHUB_OUTPUT
+          echo "EMBED_CHART_JSON<<$EOF" >> $GITHUB_OUTPUT
+          cat ./packages/embed_chart/package.json >> $GITHUB_OUTPUT
           echo "$EOF" >> $GITHUB_OUTPUT
       - name: Update deephaven-core
         run: |
           echo "`pwd`"
-          echo "${{fromJson(steps.package_versions.outputs.VERSIONS).@deephaven/code-studio}}"
+          echo "${{steps.package_jsons.outputs.CODE_STUDIO_JSON}}"
+          # echo "${{fromJson(steps.package_jsons.outputs.CODE_STUDIO_JSON).version}}"
