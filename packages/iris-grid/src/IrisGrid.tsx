@@ -4195,7 +4195,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       model.isCustomColumnsAvailable,
       model.isFormatColumnsAvailable,
       model.isRollupAvailable,
-      model.isTotalsAvailable,
+      model.isTotalsAvailable || isRollup,
       model.isSelectDistinctAvailable,
       model.isExportAvailable,
       this.toggleFilterBarAction,
