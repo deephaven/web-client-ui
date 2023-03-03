@@ -68,6 +68,10 @@ jobs:
           # git log
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
+        env:
+          WEB_VERSION: ${{fromJson(steps.package_jsons.outputs.CODE_STUDIO_JSON).version}}
+          GRID_VERSION: ${{fromJson(steps.package_jsons.outputs.EMBED_GRID_JSON).version}}
+          CHART_VERSION: ${{fromJson(steps.package_jsons.outputs.EMBED_CHART_JSON).version}}
         with:
           # TODO: We need to add a PAT so that we can push to my fork probably
           path: ./deephaven-core
