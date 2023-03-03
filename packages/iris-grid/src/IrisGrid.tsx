@@ -2654,7 +2654,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const { model } = this.props;
     const columnIndex = model.getColumnIndexByName(column.name);
     assertNotNull(columnIndex);
-    const oldSort = TableUtils.getSortForColumn(model.sort, columnIndex);
+    const columnName = model.columns[columnIndex].name;
+    const oldSort = TableUtils.getSortForColumn(model.sort, columnName);
     let newSort = null;
 
     if (oldSort == null || oldSort.direction !== direction) {
@@ -2667,7 +2668,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     const sorts = TableUtils.setSortForColumn(
       model.sort,
-      columnIndex,
+      columnName,
       newSort,
       addToExisting
     );
@@ -4153,7 +4154,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             const column = model.columns[modelColumn];
             const advancedFilter = advancedFilters.get(modelColumn);
             const { options: advancedFilterOptions } = advancedFilter || {};
-            const sort = TableUtils.getSortForColumn(model.sort, modelColumn);
+            const sort = TableUtils.getSortForColumn(model.sort, column.name);
             const sortDirection = sort ? sort.direction : null;
             const element = (
               <div

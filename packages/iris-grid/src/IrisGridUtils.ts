@@ -98,7 +98,7 @@ export type DehydratedUserColumnWidth = [ColumnName, number];
 export type DehydratedUserRowHeight = [number, number];
 
 export type DehydratedSort = {
-  column: ModelIndex;
+  columnName: ColumnName;
   isAbs: boolean;
   direction: SortDirection;
 };
@@ -770,7 +770,7 @@ class IrisGridUtils {
     return sorts.map(sort => {
       const { column, isAbs, direction } = sort;
       return {
-        column: column.index,
+        columnName: column.name,
         isAbs,
         direction,
       };
@@ -790,11 +790,11 @@ class IrisGridUtils {
     return (
       sorts
         .map(sort => {
-          const { column: columnIndex, isAbs, direction } = sort;
+          const { columnName, isAbs, direction } = sort;
           if (direction === TableUtils.sortDirection.reverse) {
             return dh.Table.reverse();
           }
-          const column = IrisGridUtils.getColumn(columns, columnIndex);
+          const column = IrisGridUtils.getColumnByName(columns, columnName);
           if (column != null) {
             let columnSort = column.sort();
             if (isAbs) {

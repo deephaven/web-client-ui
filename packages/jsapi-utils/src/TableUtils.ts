@@ -88,11 +88,11 @@ export class TableUtils {
 
   static getSortIndex(
     sort: readonly Sort[],
-    columnIndex: number
+    columnName: string
   ): number | null {
     for (let i = 0; i < sort.length; i += 1) {
       const s = sort[i];
-      if (s.column?.index === columnIndex) {
+      if (s.column?.name === columnName) {
         return i;
       }
     }
@@ -102,14 +102,14 @@ export class TableUtils {
 
   /**
    * @param tableSort The sorts from the table to get the sort from
-   * @param columnIndex The index of the column to get the sort for
+   * @param columnName The name of the column to get the sort for
    * @returns The sort for the column, or null if it's not sorted
    */
   static getSortForColumn(
     tableSort: readonly Sort[],
-    columnIndex: number
+    columnName: string
   ): Sort | null {
-    const sortIndex = TableUtils.getSortIndex(tableSort, columnIndex);
+    const sortIndex = TableUtils.getSortIndex(tableSort, columnName);
     if (sortIndex != null) {
       return tableSort[sortIndex];
     }
@@ -166,7 +166,7 @@ export class TableUtils {
       return null;
     }
 
-    const sort = TableUtils.getSortForColumn(sorts, columnIndex);
+    const sort = TableUtils.getSortForColumn(sorts, columns[columnIndex].name);
     if (sort === null) {
       return columns[columnIndex].sort().asc();
     }
@@ -229,7 +229,7 @@ export class TableUtils {
 
     return TableUtils.setSortForColumn(
       sorts,
-      columnIndex,
+      columns[columnIndex].name,
       newSort,
       addToExisting
     );
@@ -256,7 +256,7 @@ export class TableUtils {
 
     return TableUtils.setSortForColumn(
       sorts,
-      modelColumn,
+      columns[modelColumn].name,
       newSort,
       addToExisting
     );
@@ -265,18 +265,18 @@ export class TableUtils {
   /**
    * Sets the sort for the given column *and* removes any reverses
    * @param tableSort The current sorts from IrisGrid.state
-   * @param columnIndex The column index to apply the sort to
+   * @param columnName The column name to apply the sort to
    * @param sort The sort object to add
    * @param addToExisting Add this sort to the existing sort
    * @returns Returns the modified array of sorts - removing reverses
    */
   static setSortForColumn(
     tableSort: readonly Sort[],
-    columnIndex: number,
+    columnName: string,
     sort: Sort | null,
     addToExisting = false
   ): Sort[] {
-    const sortIndex = TableUtils.getSortIndex(tableSort, columnIndex);
+    const sortIndex = TableUtils.getSortIndex(tableSort, columnName);
     let sorts: Sort[] = [];
     if (addToExisting) {
       sorts = sorts.concat(

@@ -157,8 +157,8 @@ describe('sort exporting/importing', () => {
     const table = makeTable({ columns, sort });
     const exportedSort = IrisGridUtils.dehydrateSort(sort);
     expect(exportedSort).toEqual([
-      { column: 3, isAbs: false, direction: 'ASC' },
-      { column: 7, isAbs: true, direction: 'DESC' },
+      { columnName: columns[3].name, isAbs: false, direction: 'ASC' },
+      { columnName: columns[7].name, isAbs: true, direction: 'DESC' },
     ]);
 
     const importedSort = IrisGridUtils.hydrateSort(table.columns, exportedSort);

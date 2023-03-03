@@ -1505,12 +1505,12 @@ describe('Sorting', () => {
   describe('getSortIndex', () => {
     it.each([
       // sort, columnIndex, expected
-      [sortList.empty, 999, null],
-      [sortList.hasThree, 999, 2],
-    ] as [readonly Sort[], number, number | null][])(
+      [sortList.empty, 'name_999', null],
+      [sortList.hasThree, 'name_999', 2],
+    ] as [readonly Sort[], string, number | null][])(
       'should return index of sort for given column index: %s, %s',
-      (sort, columnIndex, expected) => {
-        expect(TableUtils.getSortIndex(sort, columnIndex)).toEqual(expected);
+      (sort, columnName, expected) => {
+        expect(TableUtils.getSortIndex(sort, columnName)).toEqual(expected);
       }
     );
   });
@@ -1518,14 +1518,12 @@ describe('Sorting', () => {
   describe('getSortForColumn', () => {
     it.each([
       // sort, columnIndex, expected
-      [sortList.empty, 999, null],
-      [sortList.hasThree, 999, sortList.hasThree[2]],
-    ] as [readonly Sort[], number, number | null][])(
+      [sortList.empty, 'name_999', null],
+      [sortList.hasThree, 'name_999', sortList.hasThree[2]],
+    ] as [readonly Sort[], string, number | null][])(
       'should return sort for given column index: %s, %s',
-      (sort, columnIndex, expected) => {
-        expect(TableUtils.getSortForColumn(sort, columnIndex)).toEqual(
-          expected
-        );
+      (sort, columnName, expected) => {
+        expect(TableUtils.getSortForColumn(sort, columnName)).toEqual(expected);
       }
     );
   });
