@@ -71,3 +71,7 @@ jobs:
         uses: peter-evans/create-pull-request@v4
         with:
           path: ./deephaven-core
+          branch: update-web-version
+          base: main
+          title: Update web version
+          body: Update web version
