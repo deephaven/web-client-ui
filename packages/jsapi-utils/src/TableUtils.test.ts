@@ -1504,11 +1504,12 @@ describe('Sorting', () => {
 
   describe('getSortIndex', () => {
     it.each([
-      // sort, columnIndex, expected
+      // sort, columnName, expected
       [sortList.empty, 'name_999', null],
+      [sortList.hasThree, 'non-existing', null],
       [sortList.hasThree, 'name_999', 2],
     ] as [readonly Sort[], string, number | null][])(
-      'should return index of sort for given column index: %s, %s',
+      'should return index of sort for matching column name: %s, %s',
       (sort, columnName, expected) => {
         expect(TableUtils.getSortIndex(sort, columnName)).toEqual(expected);
       }
@@ -1517,11 +1518,12 @@ describe('Sorting', () => {
 
   describe('getSortForColumn', () => {
     it.each([
-      // sort, columnIndex, expected
+      // sort, columnName, expected
       [sortList.empty, 'name_999', null],
+      [sortList.hasThree, 'non-existing', null],
       [sortList.hasThree, 'name_999', sortList.hasThree[2]],
     ] as [readonly Sort[], string, number | null][])(
-      'should return sort for given column index: %s, %s',
+      'should return sort for matching column name: %s, %s',
       (sort, columnName, expected) => {
         expect(TableUtils.getSortForColumn(sort, columnName)).toEqual(expected);
       }
