@@ -42,6 +42,17 @@ export interface CellInfo {
   rowHeight: number | null;
 }
 
+export type Token = {
+  value: string;
+  type: string;
+  start: number;
+  end: number;
+  href: string;
+  isLink?: boolean;
+};
+
+export type TokenBox = BoxCoordinates & { token: Token };
+
 export type IndexCallback<T> = (itemIndex: VisibleIndex) => T | undefined;
 
 export class GridUtils {

@@ -71,7 +71,7 @@ const theme: Partial<IrisGridThemeType> = Object.freeze({
   scrollBarActiveSelectionTickColor:
     IrisGridTheme['scroll-bar-active-selection-tick-color'],
   textColor: IrisGridTheme['text-color'],
-  textHyperLinkColor: IrisGridTheme['text-hyper-link-color'],
+  hyperlinkColor: IrisGridTheme['hyper-link-color'],
   positiveNumberColor: IrisGridTheme['positive-number-color'],
   negativeNumberColor: IrisGridTheme['negative-number-color'],
   zeroNumberColor: IrisGridTheme['zero-number-color'],

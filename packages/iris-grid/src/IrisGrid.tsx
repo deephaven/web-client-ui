@@ -122,6 +122,7 @@ import {
   IrisGridFilterMouseHandler,
   IrisGridRowTreeMouseHandler,
   IrisGridSortMouseHandler,
+  IrisGridTokenMouseHandler,
   PendingMouseHandler,
 } from './mousehandlers';
 import ToastBottomBar from './ToastBottomBar';
@@ -183,7 +184,6 @@ import {
   OperationMap,
 } from './CommonTypes';
 import ColumnHeaderGroup from './ColumnHeaderGroup';
-import IrisGridLinkMouseHandler from './mousehandlers/IrisGridLinkMouseHandler';
 
 const log = Log.module('IrisGrid');
 
@@ -724,7 +724,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const mouseHandlers = [
       new IrisGridCellOverflowMouseHandler(this),
       new IrisGridRowTreeMouseHandler(this),
-      new IrisGridLinkMouseHandler(this),
+      new IrisGridTokenMouseHandler(this),
       new IrisGridColumnSelectMouseHandler(this),
       new IrisGridColumnTooltipMouseHandler(this),
       new IrisGridSortMouseHandler(this),
@@ -3622,11 +3622,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
       return (
         <div style={wrapperStyle}>
-          <Tooltip
-            key={Date.now()}
-            options={popperOptions}
-            ref={this.handleTooltipRef}
-          >
+          <Tooltip options={popperOptions} ref={this.handleTooltipRef}>
             <div style={{ textAlign: 'left' }}>
               {linkHoverDisplayValue} - Click once to follow.
               <br />

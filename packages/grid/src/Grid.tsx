@@ -17,7 +17,7 @@ import GridRenderer, {
   EditingCellTextSelectionRange,
   GridRenderState,
 } from './GridRenderer';
-import GridUtils, { GridPoint } from './GridUtils';
+import GridUtils, { GridPoint, Token } from './GridUtils';
 import {
   GridSelectionMouseHandler,
   GridColumnMoveMouseHandler,
@@ -30,7 +30,7 @@ import {
   GridVerticalScrollBarMouseHandler,
   EditMouseHandler,
   GridSeparator,
-  GridLinkMouseHandler,
+  GridTokenMouseHandler,
 } from './mouse-handlers';
 import './Grid.scss';
 import KeyHandler, { GridKeyboardEvent } from './KeyHandler';
@@ -110,6 +110,10 @@ export type GridProps = typeof Grid.defaultProps & {
 
   // Callback when the viewport has scrolled or changed
   onViewChanged?: (metrics: GridMetrics) => void;
+
+  // Callback when a token is clicked
+  // eslint-disable-next-line react/no-unused-prop-types
+  onTokenClicked?: (token: Token) => void;
 
   // Renderer for the grid canvas
   renderer?: GridRenderer;
@@ -218,6 +222,8 @@ class Grid extends PureComponent<GridProps, GridState> {
     onMovedRowsChanged: (): void => undefined,
     onMoveRowComplete: (): void => undefined,
     onViewChanged: (): void => undefined,
+    onTokenClicked: (token: Token) =>
+      window.open(token.href, '_blank', 'noopener,noreferrer'),
     stateOverride: {} as Record<string, unknown>,
     theme: {
       autoSelectColumn: false,
@@ -369,7 +375,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       new GridHorizontalScrollBarMouseHandler(600),
       new GridScrollBarCornerMouseHandler(700),
       new GridRowTreeMouseHandler(800),
-      new GridLinkMouseHandler(825),
+      new GridTokenMouseHandler(825),
       new GridSelectionMouseHandler(900),
     ];
 
@@ -1593,8 +1599,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     if (!this.canvasContext) throw new Error('context not set');
 
     const renderState = this.getRenderState();
-    const { renderer } = this;
-    const context = this.canvasContext;
+    const { renderer, canvasContext: context } = this;
 
     context.save();
 
@@ -1691,11 +1696,13 @@ class Grid extends PureComponent<GridProps, GridState> {
     const gridPoint = this.getGridPointFromEvent(event);
     const mouseHandlers = this.getMouseHandlers();
     let cursor = null;
+
     for (let i = 0; i < mouseHandlers.length; i += 1) {
       const mouseHandler = mouseHandlers[i];
       const result =
         mouseHandler[functionName] != null &&
         mouseHandler[functionName](gridPoint, this, event);
+
       if (result !== false) {
         if (mouseHandler.cursor != null) {
           ({ cursor } = mouseHandler);

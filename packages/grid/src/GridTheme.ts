@@ -28,7 +28,7 @@ export type GridTheme = {
 
   // Color to draw text
   textColor: GridColor;
-  textHyperLinkColor: GridColor;
+  hyperlinkColor: GridColor;
 
   // Black and white to use if needed
   black: GridColor;
@@ -187,7 +187,7 @@ const defaultTheme: GridTheme = Object.freeze({
   shadowBlur: 8,
   shadowColor: '#000000',
   textColor: '#ffffff',
-  textHyperLinkColor: '#4878ea',
+  hyperlinkColor: '#4878ea',
   maxDepth: 6,
   treeDepthIndent: 10,
   treeHorizontalPadding: 5,

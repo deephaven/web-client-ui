@@ -1,9 +1,12 @@
 import { EventTarget, Event } from 'event-target-shim';
-import { find } from 'linkifyjs';
+import { find as linkifyFind } from 'linkifyjs';
 import type { IColumnHeaderGroup } from './ColumnHeaderGroup';
 import { ModelIndex } from './GridMetrics';
 import { GridColor, GridTheme, NullableGridColor } from './GridTheme';
 import memoizeClear from './memoizeClear';
+import { Token } from './GridUtils';
+
+const LINK_TRUNCATION_LENGTH = 5000;
 
 /* eslint class-methods-use-this: "off" */
 /* eslint no-unused-vars: "off" */
@@ -187,34 +190,41 @@ abstract class GridModel<
   }
 
   /**
-   * Find the links in the truncatedText including any links that may be truncated
-   * @param text The text in the cell
-   * @param truncatedText The truncated text in the cell (what is visible)
-   * @returns An array with link information
+   * Gets the tokens in the cell at column and row, based on the visible text
+   * @param column The model column
+   * @param row The model row
+   * @param visibleLength The length of the visible text
+   * @returns An array of Tokens in the cell
    */
-  findLinksInVisibleText(
-    text: string,
-    truncatedText: string
-  ): ReturnType<typeof find> {
-    return this.getCachedLinksInVisibleText(text, truncatedText);
+  tokensForCell(
+    column: ModelIndex,
+    row: ModelIndex,
+    visibleLength: number
+  ): Token[] {
+    return this.getCachedTokensForCell(column, row, visibleLength);
   }
 
-  getCachedLinksInVisibleText = memoizeClear(
-    (text: string, truncatedText: string): ReturnType<typeof find> => {
+  getCachedTokensForCell = memoizeClear(
+    (column: ModelIndex, row: ModelIndex, visibleLength: number): Token[] => {
+      const text = this.textForCell(column, row);
+
+      // If no text is truncated, then directly search in text
+      if (visibleLength === text.length) {
+        return linkifyFind(text);
+      }
+
       // To check for links, we should check to the first space after the truncatedText length
-      let lengthOfContent = text
-        .slice(truncatedText.length - 1, 5000)
+      const indexOfProceedingWhitespace = text
+        .slice(visibleLength - 1, LINK_TRUNCATION_LENGTH)
         .search(/\s/); // index or -1 if not found
 
+      let lengthOfContent = visibleLength + indexOfProceedingWhitespace;
       // If it doesn't exist, set lengthOfContent to the minimum between length of the original text and 5000
-      if (lengthOfContent === -1) {
-        lengthOfContent = Math.min(5000, text.length);
+      if (indexOfProceedingWhitespace === -1) {
+        lengthOfContent = Math.min(LINK_TRUNCATION_LENGTH, text.length);
       }
       const contentToCheckForLinks = text.substring(0, lengthOfContent);
-      return find(contentToCheckForLinks, 'url');
-    },
-    {
-      max: 10000,
+      return linkifyFind(contentToCheckForLinks);
     }
   );
 }
