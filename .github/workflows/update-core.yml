@@ -3,9 +3,12 @@ name: Update deephaven-core web version
 
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows: ['Publish Packages']
+    types:
+      - completed
+  # TODO: Remove `pull_request`, just used for debugging right now
   pull_request:
-  release:
-    types: [published]
 jobs:
   update-core:
     runs-on: ubuntu-22.04
@@ -40,10 +43,6 @@ jobs:
           echo "EMBED_CHART_JSON<<$EOF" >> $GITHUB_OUTPUT
           cat ./packages/embed-chart/package.json >> $GITHUB_OUTPUT
           echo "$EOF" >> $GITHUB_OUTPUT
-      - name: Setup git config
-        run: |
-          git config --global user.name "Deephaven Bot"
-          git config --global user.email "ci@deephaven.io"
       - name: Update deephaven-core
         working-directory: ./deephaven-core
         env:
@@ -72,7 +71,8 @@ jobs:
         with:
           # TODO: We need to add a PAT so that we can push to my fork probably
           path: ./deephaven-core
-          branch: update-web-version
           base: main
-          title: Update web version
-          body: Update web version
+          title: Update web version ${{ env.WEB_VERSION }}
+          body: Release notes https://github.com/deephaven/web-client-ui/releases/tag/${{ env.WEB_VERSION }}
+          branch: update-web-version- ${{ env.WEB_VERSION }}
+          delete-branch: true
