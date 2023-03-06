@@ -1,4 +1,4 @@
-import React, { ForwardRefExoticComponent, Suspense } from 'react';
+import React, { ForwardRefExoticComponent } from 'react';
 import Log from '@deephaven/log';
 import RemoteComponent from './RemoteComponent';
 import loadRemoteModule from './loadRemoteModule';
@@ -7,34 +7,13 @@ const log = Log.module('PluginUtils');
 
 class PluginUtils {
   /**
-   * Load a component plugin either specified in the VITE_INTERNAL_COMPONENT_PLUGINS environment variable, or from the server if it's not internal.
+   * Load a component plugin from the server.
    * @param pluginName Name of the table plugin to load
    * @returns A lazily loaded JSX.Element from the plugin
    */
   static loadComponentPlugin(
     pluginName: string
   ): ForwardRefExoticComponent<React.RefAttributes<unknown>> {
-    if (
-      import.meta.env.VITE_INTERNAL_COMPONENT_PLUGINS != null &&
-      (import.meta.env.VITE_INTERNAL_COMPONENT_PLUGINS as string)
-        .split(',')
-        .includes(pluginName)
-    ) {
-      const LazyPlugin = React.lazy(
-        () => import(/* @vite-ignore */ `./internal/${pluginName}`)
-      );
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const LocalPlugin: any = React.forwardRef((props, ref) => (
-        <Suspense fallback={<div>Loading Plugin...</div>}>
-          {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-          <LazyPlugin ref={ref} {...props} />
-        </Suspense>
-      ));
-      LocalPlugin.pluginName = pluginName;
-      LocalPlugin.displayName = 'Local Plugin';
-      return LocalPlugin;
-    }
-
     const baseUrl = new URL(
       import.meta.env.VITE_COMPONENT_PLUGINS_URL ?? '',
       `${window.location}`
