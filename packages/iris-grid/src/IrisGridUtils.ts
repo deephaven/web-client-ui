@@ -97,11 +97,18 @@ export type DehydratedUserColumnWidth = [ColumnName, number];
 
 export type DehydratedUserRowHeight = [number, number];
 
-export type DehydratedSort = {
-  column: ColumnName | ModelIndex;
+/** @deprecated Use `DehydratedSort` instead */
+export interface LegacyDehydratedSort {
+  column: ModelIndex;
   isAbs: boolean;
   direction: SortDirection;
-};
+}
+
+export interface DehydratedSort {
+  column: ColumnName;
+  isAbs: boolean;
+  direction: SortDirection;
+}
 
 export interface DehydratedIrisGridState {
   advancedFilters: readonly DehydratedAdvancedFilter[];
@@ -785,7 +792,7 @@ class IrisGridUtils {
    */
   static hydrateSort(
     columns: readonly Column[],
-    sorts: readonly DehydratedSort[]
+    sorts: readonly (DehydratedSort | LegacyDehydratedSort)[]
   ): Sort[] {
     return (
       sorts
@@ -873,7 +880,7 @@ class IrisGridUtils {
       quickFilters?: readonly DehydratedQuickFilter[];
       advancedFilters?: readonly DehydratedAdvancedFilter[];
       inputFilters?: readonly InputFilter[];
-      sorts?: readonly DehydratedSort[];
+      sorts?: readonly (DehydratedSort | LegacyDehydratedSort)[];
       partition?: unknown;
       partitionColumn?: ColumnName;
     },
