@@ -30,7 +30,7 @@ import {
   ErrorBar,
   LayoutAxis,
   AxisType as PlotlyAxisType,
-  OhclData,
+  OhlcData,
   MarkerSymbol,
 } from 'plotly.js';
 import { assertNotNull, Range } from '@deephaven/utils';
@@ -780,10 +780,10 @@ class ChartUtils {
         });
       }
     } else if (plotStyle === dh.plot.SeriesPlotStyle.OHLC) {
-      (seriesData as Partial<OhclData>).increasing = {
+      (seriesData as Partial<OhlcData>).increasing = {
         line: { color: theme.ohlc_increasing },
       };
-      (seriesData as Partial<OhclData>).decreasing = {
+      (seriesData as Partial<OhlcData>).decreasing = {
         line: { color: theme.ohlc_decreasing },
       };
     } else if (plotStyle === dh.plot.SeriesPlotStyle.PIE) {
@@ -1140,8 +1140,8 @@ class ChartUtils {
   static getChartBounds(
     figure: Figure,
     chart: Chart,
-    plotWidth = 0,
-    plotHeight = 0
+    plotWidth: number,
+    plotHeight: number
   ): ChartBounds {
     const { cols, rows } = figure;
     const { column, colspan, row, rowspan } = chart;
@@ -1154,9 +1154,11 @@ class ChartUtils {
     const yMarginSize = ChartUtils.AXIS_SIZE_PX / plotHeight;
 
     const bounds: ChartBounds = {
+      // Need to invert the row positioning so the first one defined shows up on top instead of the bottom, since coordinates start in bottom left
+      bottom: (rows - endRow) * rowSize + (endRow < rows ? yMarginSize / 2 : 0),
+      top: (rows - row) * rowSize - (row > 0 ? yMarginSize / 2 : 0),
+
       left: column * columnSize + (column > 0 ? xMarginSize / 2 : 0),
-      bottom: row * rowSize + (row > 0 ? yMarginSize / 2 : 0),
-      top: endRow * rowSize - (endRow < rows ? yMarginSize / 2 : 0),
       right: endColumn * columnSize - (endColumn < cols ? xMarginSize / 2 : 0),
     };
 

@@ -1,6 +1,6 @@
 import Log from '@deephaven/log';
 import { Column, CustomColumn } from '@deephaven/jsapi-shim';
-import { TableUtils } from '@deephaven/jsapi-utils';
+import { DateUtils, TableUtils } from '@deephaven/jsapi-utils';
 import {
   makeColumnFormatColumn,
   makeRowFormatColumn,
@@ -704,6 +704,42 @@ export function getFormatColumns(
   });
 
   return result;
+}
+
+/**
+ * Validate that a given date condition + value pair is valid.
+ * @param condition
+ * @param value
+ */
+export function isDateConditionValid(condition: DateCondition, value?: string) {
+  switch (condition) {
+    case DateCondition.IS_NULL:
+    case DateCondition.IS_NOT_NULL:
+      return true;
+
+    default: {
+      const [dateTimeString, ...rest] = (value ?? '').split(' ');
+      // Reconstitute all tokens after the first ' ' in case the user included garbage data at the end
+      // e.g. '2020-01-01 NY blah'
+      const tzCode = rest.join(' ');
+
+      try {
+        DateUtils.parseDateTimeString(dateTimeString);
+      } catch (e) {
+        log.debug('Invalid datetime string', dateTimeString);
+        return false;
+      }
+
+      try {
+        dh.i18n.TimeZone.getTimeZone(tzCode);
+      } catch (e) {
+        log.debug('Invalid timezone string', tzCode);
+        return false;
+      }
+
+      return true;
+    }
+  }
 }
 
 export function isSupportedColumn({ type }: ModelColumn): boolean {

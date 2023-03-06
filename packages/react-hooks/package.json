@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/react-hooks",
-  "version": "0.30.0",
+  "version": "0.31.0",
   "description": "Deephaven React hooks library",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",

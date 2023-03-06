@@ -14,6 +14,7 @@ import { ContextActionUtils } from './context-actions';
 import './ItemList.scss';
 
 const log = Log.module('ItemList');
+const MIN_DRAG_DELTA = 5;
 
 export interface DefaultListItem {
   value?: string;
@@ -80,6 +81,8 @@ type ItemListState = {
   isDragging: boolean;
   isStuckToBottom: boolean;
   scrollOffset: number | null;
+  mouseX: number | null;
+  mouseY: number | null;
 };
 
 /**
@@ -179,6 +182,8 @@ export class ItemList<T> extends PureComponent<
       isDragging: false,
       isStuckToBottom: isStickyBottom,
       scrollOffset: null,
+      mouseX: null,
+      mouseY: null,
     };
   }
 
@@ -418,7 +423,11 @@ export class ItemList<T> extends PureComponent<
       return;
     }
 
-    this.setState({ mouseDownIndex: index });
+    this.setState({
+      mouseDownIndex: index,
+      mouseX: e.clientX,
+      mouseY: e.clientY,
+    });
 
     window.addEventListener('mouseup', this.handleWindowMouseUp);
 
@@ -451,12 +460,15 @@ export class ItemList<T> extends PureComponent<
 
   handleItemMouseMove(itemIndex: number, e: React.MouseEvent): void {
     const { isDragSelect, isMultiSelect, disableSelect } = this.props;
-    const { mouseDownIndex, selectedRanges } = this.state;
+    const { mouseDownIndex, selectedRanges, mouseX, mouseY } = this.state;
 
     if (mouseDownIndex == null || disableSelect) return;
 
-    this.setState({ isDragging: true });
-
+    const mouseMoveX = Math.abs(e.clientX - (mouseX ?? 0));
+    const mouseMoveY = Math.abs(e.clientY - (mouseY ?? 0));
+    if (mouseMoveX > MIN_DRAG_DELTA && mouseMoveY > MIN_DRAG_DELTA) {
+      this.setState({ isDragging: true });
+    }
     if (isDragSelect || mouseDownIndex === itemIndex) {
       this.focusItem(itemIndex);
 

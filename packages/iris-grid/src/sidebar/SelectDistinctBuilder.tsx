@@ -161,12 +161,9 @@ class SelectDistinctBuilder extends Component<
 
         <div className="select-distinct-builder-footer">
           <div className="select-distinct-builder-hint">
-            Modifies a table to show unique value from a column, same as{' '}
-            <span className="inline-code-snippet">
-              selectDistinct(&quot;Column&quot;)
-            </span>
-            . Filters will be reset and the resulting table will contain only
-            the selected columns above.
+            Display only unique values from the selected table columns. Note
+            that this will reset any filters and display only the selected
+            columns.
           </div>
         </div>
       </div>
