@@ -187,6 +187,12 @@ class IrisGridRenderer extends GridRenderer {
       return;
     }
 
+    // This assumes that the engine puts the grouped columns at the start of the
+    // model, so model and visible index match for grouped columns. If we ever
+    // add freeze support for tree tables or allow moving the grouped columns,
+    // this assumption may no longer hold true. If such a change occurs, we'll
+    // need to revisit this since a single vertical divider may no longer make
+    // sense.
     const lastVisibleGroupColumnIndex = groupedColumns.length - 1;
 
     const columnX = allColumnXs.get(lastVisibleGroupColumnIndex);
