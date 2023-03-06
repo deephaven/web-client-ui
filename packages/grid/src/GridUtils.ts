@@ -42,16 +42,16 @@ export interface CellInfo {
   rowHeight: number | null;
 }
 
-export type Token = {
-  value: string;
-  type: string;
-  start: number;
-  end: number;
-  href: string;
-  isLink?: boolean;
-};
+export type Token = { value: string; type: string; start: number; end: number };
+export type LinkToken = Token & { href: string };
+export type URLToken = Token & { type: 'url' };
+export type EmailToken = Token & { type: 'email' };
 
-export type TokenBox = BoxCoordinates & { token: Token };
+export function isLinkToken(token: Token): token is LinkToken {
+  return (token as LinkToken)?.href !== undefined;
+}
+
+export type TokenBox = BoxCoordinates & { token: LinkToken };
 
 export type IndexCallback<T> = (itemIndex: VisibleIndex) => T | undefined;
 

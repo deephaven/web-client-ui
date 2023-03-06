@@ -43,7 +43,6 @@ import {
   isEditableGridModel,
   BoundedAxisRange,
   isExpandableGridModel,
-  getOrThrow,
 } from '@deephaven/grid';
 import {
   dhEye,
@@ -93,6 +92,7 @@ import {
   Pending,
   PromiseUtils,
   ValidationError,
+  getOrThrow,
 } from '@deephaven/utils';
 import {
   Type as FilterType,

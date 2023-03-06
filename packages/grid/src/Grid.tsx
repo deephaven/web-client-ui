@@ -17,7 +17,7 @@ import GridRenderer, {
   EditingCellTextSelectionRange,
   GridRenderState,
 } from './GridRenderer';
-import GridUtils, { GridPoint, Token } from './GridUtils';
+import GridUtils, { GridPoint, isLinkToken, Token } from './GridUtils';
 import {
   GridSelectionMouseHandler,
   GridColumnMoveMouseHandler,
@@ -222,8 +222,11 @@ class Grid extends PureComponent<GridProps, GridState> {
     onMovedRowsChanged: (): void => undefined,
     onMoveRowComplete: (): void => undefined,
     onViewChanged: (): void => undefined,
-    onTokenClicked: (token: Token) =>
-      window.open(token.href, '_blank', 'noopener,noreferrer'),
+    onTokenClicked: (token: Token) => {
+      if (isLinkToken(token)) {
+        window.open(token.href, '_blank', 'noopener,noreferrer');
+      }
+    },
     stateOverride: {} as Record<string, unknown>,
     theme: {
       autoSelectColumn: false,
@@ -299,6 +302,8 @@ class Grid extends PureComponent<GridProps, GridState> {
 
   metrics: GridMetrics | null;
 
+  renderState: GridRenderState | null;
+
   // Track the cursor that is currently added to the document
   // Add to document so that when dragging the cursor stays, even if mouse leaves the canvas
   // Note: on document, not body so that cursor styling can be combined with
@@ -349,6 +354,8 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     this.prevMetrics = null;
     this.metrics = null;
+
+    this.renderState = null;
 
     // Track the cursor that is currently added to the document
     // Add to document so that when dragging the cursor stays, even if mouse leaves the canvas
@@ -1598,7 +1605,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     if (!this.canvas) throw new Error('canvas is not set');
     if (!this.canvasContext) throw new Error('context not set');
 
-    const renderState = this.getRenderState();
+    const renderState = this.updateRenderState();
     const { renderer, canvasContext: context } = this;
 
     context.save();
@@ -2109,7 +2116,7 @@ class Grid extends PureComponent<GridProps, GridState> {
    * Gets the render state
    * @returns The render state
    */
-  getRenderState(): GridRenderState {
+  updateRenderState(): GridRenderState {
     if (!this.canvas) throw new Error('canvas is not set');
     if (!this.canvasContext) throw new Error('context not set');
 
@@ -2138,7 +2145,7 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     assertNotNull(metrics);
 
-    return {
+    this.renderState = {
       width,
       height,
       context,
@@ -2161,6 +2168,8 @@ class Grid extends PureComponent<GridProps, GridState> {
       cursorRow,
       ...stateOverride,
     };
+
+    return this.renderState;
   }
 
   render(): ReactNode {

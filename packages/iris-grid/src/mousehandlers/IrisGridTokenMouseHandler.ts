@@ -3,6 +3,7 @@ import {
   Grid,
   GridMouseHandler,
   GridPoint,
+  isLinkToken,
   TokenBox,
 } from '@deephaven/grid';
 import deepEqual from 'deep-equal';
@@ -43,25 +44,28 @@ class IrisGridTokenMouseHandler extends GridMouseHandler {
       }
     }
 
-    const { metricCalculator, renderer } = grid;
-    const metricState = grid.getMetricState();
-    const renderState = grid.getRenderState();
-    const linksInCell = metricCalculator.getTokenBoxesForVisibleCell(
+    const { renderer } = grid;
+    const renderState = grid.updateRenderState();
+    const linksInCell = renderer.getTokenBoxesForVisibleCell(
       column,
       row,
-      metricState,
-      renderer,
       renderState
     );
 
-    if (linksInCell == null) {
+    if (linksInCell.length === 0) {
       this.currentLinkBox = undefined;
       return false;
     }
 
     for (let i = 0; i < linksInCell.length; i += 1) {
       const { x1: left, x2: right, y1: top, y2: bottom } = linksInCell[i];
-      if (x >= left && x <= right && y >= top && y <= bottom) {
+      if (
+        x >= left &&
+        x <= right &&
+        y >= top &&
+        y <= bottom &&
+        isLinkToken(linksInCell[i].token)
+      ) {
         this.currentLinkBox = linksInCell[i];
         return true;
       }

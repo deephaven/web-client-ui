@@ -1,7 +1,7 @@
 import clamp from 'lodash.clamp';
-import { ColorUtils } from '@deephaven/utils';
+import { ColorUtils, getOrThrow } from '@deephaven/utils';
 import memoizeClear from './memoizeClear';
-import GridUtils from './GridUtils';
+import GridUtils, { TokenBox } from './GridUtils';
 import GridColorUtils from './GridColorUtils';
 import { isExpandableGridModel } from './ExpandableGridModel';
 import {
@@ -17,7 +17,6 @@ import GridMetrics, {
   Coordinate,
   VisibleIndex,
 } from './GridMetrics';
-import { getOrThrow } from './GridMetricCalculator';
 import { isEditableGridModel } from './EditableGridModel';
 import type { GridSeparator } from './mouse-handlers/GridSeparatorMouseHandler';
 import { DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
@@ -1070,14 +1069,12 @@ export class GridRenderer {
    * The textWidth returned is the width that the text can occupy accounting for any other cell markings
    * The width accounts for tree table indents and cell padding, so it is the width the text may consume
    *
-   * @param context Canvas context
    * @param state GridRenderState to get the text metrics for
    * @param column Column of cell to get text metrics for
    * @param row Row of cell to get text metrics for
    * @returns Object with width, x, and y of the text
    */
   getTextRenderMetrics(
-    context: CanvasRenderingContext2D,
     state: GridRenderState,
     column: VisibleIndex,
     row: VisibleIndex
@@ -1086,7 +1083,6 @@ export class GridRenderer {
     x: number;
     y: number;
   } {
-    const { textAlign } = context;
     const { metrics, model, theme } = state;
     const {
       firstColumn,
@@ -1101,6 +1097,7 @@ export class GridRenderer {
       treeHorizontalPadding,
     } = theme;
 
+    const textAlign = model.textAlignForCell(column, row);
     const x = getOrThrow(allColumnXs, column);
     const y = getOrThrow(allRowYs, row);
     const columnWidth = getOrThrow(allColumnWidths, column);
@@ -1169,7 +1166,7 @@ export class GridRenderer {
         width: textWidth,
         x: textX,
         y: textY,
-      } = this.getTextRenderMetrics(context, state, column, row);
+      } = this.getTextRenderMetrics(state, column, row);
 
       const fontWidth =
         fontWidths.get(context.font) ?? GridRenderer.DEFAULT_FONT_WIDTH;
@@ -3053,6 +3050,155 @@ export class GridRenderer {
 
     context.translate(-barLeft, -barTop);
   }
+
+  /**
+   * Gets the token boxes that are visible in the cell
+   * @param column The visible column
+   * @param row The visible row
+   * @param state The GridRenderState
+   * @returns An array of TokenBox of visible tokens or empty array
+   */
+  getTokenBoxesForVisibleCell(
+    column: VisibleIndex,
+    row: VisibleIndex,
+    state: GridRenderState
+  ): TokenBox[] {
+    return this.getCachedTokenBoxesForVisibleCell(column, row, state);
+  }
+
+  getCachedTokenBoxesForVisibleCell = memoizeClear(
+    (
+      column: VisibleIndex,
+      row: VisibleIndex,
+      state: GridRenderState
+    ): TokenBox[] => {
+      const { metrics, context, model, theme } = state;
+      const { modelRows, modelColumns } = metrics;
+
+      if (context == null || metrics == null) {
+        return [];
+      }
+
+      const modelRow = getOrThrow(modelRows, row);
+      const modelColumn = getOrThrow(modelColumns, column);
+
+      const text = model.textForCell(modelColumn, modelRow);
+      const {
+        width: textWidth,
+        x: textX,
+        y: textY,
+      } = this.getTextRenderMetrics(state, column, row);
+      const {
+        fontWidths,
+        gridX,
+        gridY,
+        width: gridWidth,
+        height: gridHeight,
+        verticalBarWidth,
+        horizontalBarHeight,
+      } = metrics;
+
+      // Set the font and change it back after
+      context.save();
+      context.font = theme.font;
+
+      const fontWidth =
+        fontWidths.get(context.font) ?? GridRenderer.DEFAULT_FONT_WIDTH;
+      const truncationChar = model.truncationCharForCell(modelColumn, modelRow);
+      const truncatedText = this.getCachedTruncatedString(
+        context,
+        text,
+        textWidth,
+        fontWidth,
+        truncationChar
+      );
+
+      const tokens = model.tokensForCell(
+        modelColumn,
+        modelRow,
+        truncatedText.length
+      );
+
+      // Check if the truncated text contains a link
+      if (tokens.length === 0) {
+        context.restore();
+        return [];
+      }
+
+      const {
+        actualBoundingBoxAscent,
+        actualBoundingBoxDescent,
+      } = context.measureText(truncatedText);
+      const linkHeight = actualBoundingBoxAscent + actualBoundingBoxDescent;
+
+      // Consider edge cases
+      const top = Math.max(gridY, gridY + textY - actualBoundingBoxAscent);
+      const bottom = clamp(
+        top + linkHeight,
+        top,
+        gridHeight - horizontalBarHeight
+      );
+
+      const tokenBoxes: TokenBox[] = [];
+
+      // The index where the last token ended
+      let lastTokenEnd = 0;
+      // The width of the text preceding the current token
+      let currentTextWidth = 0;
+      // Loop through array and push them to array
+      for (let i = 0; i < tokens.length; i += 1) {
+        const token = tokens[i];
+        const { start, end } = token;
+        // The last token value is calculated based on the full text so the value needs to be truncated
+        const value =
+          end > truncatedText.length
+            ? truncatedText.substring(start)
+            : token.value;
+
+        // Add the width of the text in between this token and the last token
+        currentTextWidth += context.measureText(
+          truncatedText.substring(lastTokenEnd, start)
+        ).width;
+        const tokenWidth = context.measureText(value).width;
+
+        // Calculate the box
+        const startX = currentTextWidth + textX;
+
+        // Right side is greater than gridX
+        const textIsVisible = startX + tokenWidth >= gridX;
+
+        if (textIsVisible) {
+          // Check if the x position is less than the grid x, then tokenWidth should be shifted by gridX - startX
+          const adjustedTokenWidth =
+            startX < gridX ? tokenWidth - (gridX - startX) : tokenWidth;
+
+          const left = Math.max(gridX, gridX + startX);
+          const right = clamp(
+            left + adjustedTokenWidth,
+            left,
+            gridWidth - verticalBarWidth
+          );
+
+          const newTokenBox: TokenBox = {
+            x1: left,
+            y1: top,
+            x2: right,
+            y2: bottom,
+            token,
+          };
+
+          tokenBoxes.push(newTokenBox);
+        }
+
+        lastTokenEnd = end;
+        currentTextWidth += tokenWidth;
+      }
+
+      context.restore();
+      return tokenBoxes;
+    },
+    { max: 10000 }
+  );
 }
 
 export default GridRenderer;

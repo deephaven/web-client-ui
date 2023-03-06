@@ -5,7 +5,7 @@ import { EventHandlerResult } from '../EventHandlerResult';
 import Grid from '../Grid';
 import GridMouseHandler, { GridMouseEvent } from '../GridMouseHandler';
 import GridRange from '../GridRange';
-import GridUtils, { GridPoint, TokenBox } from '../GridUtils';
+import GridUtils, { GridPoint, isLinkToken, TokenBox } from '../GridUtils';
 
 class GridTokenMouseHandler extends GridMouseHandler {
   timeoutId?: ReturnType<typeof setTimeout>;
@@ -32,19 +32,16 @@ class GridTokenMouseHandler extends GridMouseHandler {
       }
     }
 
-    const { metricCalculator, renderer } = grid;
-    const metricState = grid.getMetricState();
-    const renderState = grid.getRenderState();
-    const linksInCell = metricCalculator.getTokenBoxesForVisibleCell(
+    const { renderer } = grid;
+    const renderState = grid.updateRenderState();
+    const linksInCell = renderer.getTokenBoxesForVisibleCell(
       column,
       row,
-      metricState,
-      renderer,
       renderState
     );
 
     // If there are no links in the cell, return false
-    if (linksInCell == null) {
+    if (linksInCell.length === 0) {
       this.currentLinkBox = undefined;
       return false;
     }
@@ -52,7 +49,13 @@ class GridTokenMouseHandler extends GridMouseHandler {
     // Loop through each link and check if cursor is in bounds
     for (let i = 0; i < linksInCell.length; i += 1) {
       const { x1: left, x2: right, y1: top, y2: bottom } = linksInCell[i];
-      if (x >= left && x <= right && y >= top && y <= bottom) {
+      if (
+        x >= left &&
+        x <= right &&
+        y >= top &&
+        y <= bottom &&
+        isLinkToken(linksInCell[i].token)
+      ) {
         this.currentLinkBox = linksInCell[i];
         return true;
       }

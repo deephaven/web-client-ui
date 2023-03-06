@@ -1,4 +1,5 @@
 import clamp from 'lodash.clamp';
+import { getOrThrow } from '@deephaven/utils';
 import GridModel from './GridModel';
 import type {
   GridMetrics,
@@ -12,12 +13,10 @@ import type {
   MoveOperation,
   SizeMap,
 } from './GridMetrics';
-import GridUtils, { TokenBox } from './GridUtils';
+import GridUtils from './GridUtils';
 import { GridFont, GridTheme } from './GridTheme';
 import { isExpandableGridModel } from './ExpandableGridModel';
 import { DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
-import GridRenderer, { GridRenderState } from './GridRenderer';
-import memoizeClear from './memoizeClear';
 
 /* eslint class-methods-use-this: "off" */
 /* eslint react/destructuring-assignment: "off" */
@@ -53,27 +52,6 @@ export interface GridMetricState {
   isDraggingVerticalScrollBar: boolean;
 
   draggingColumn: DraggingColumn | null;
-}
-
-/**
- * Retrieve a value from a map. If the value is not found and no default value is provided, throw.
- * Use when the value _must_ be present
- * @param map The map to get the value from
- * @param key The key to fetch the value for
- * @param defaultValue A default value to set if the key is not present
- * @returns The value set for that key
- */
-export function getOrThrow<K, V>(
-  map: Map<K, V>,
-  key: K,
-  defaultValue: V | undefined = undefined
-): V {
-  const value = map.get(key) ?? defaultValue;
-  if (value !== undefined) {
-    return value;
-  }
-
-  throw new Error(`Missing value for key ${key}`);
 }
 
 /**
@@ -1883,154 +1861,6 @@ export class GridMetricCalculator {
     this.userRowHeights = userRowHeights;
     this.calculatedRowHeights.delete(row);
   }
-
-  /**
-   * Gets the token boxes that are visible in the cell
-   * @param column The visible column
-   * @param row The visible row
-   * @param state The GridMetricState
-   * @param renderer The GridRenderer
-   * @param renderState The GridRenderState
-   * @returns An array of TokenBox of visible tokens or null
-   */
-  getTokenBoxesForVisibleCell(
-    column: VisibleIndex,
-    row: VisibleIndex,
-    state: GridMetricState,
-    renderer: GridRenderer,
-    renderState: GridRenderState
-  ): TokenBox[] | null {
-    return this.getCachedTokenBoxesForVisibleCell(
-      column,
-      row,
-      state,
-      renderer,
-      renderState
-    );
-  }
-
-  getCachedTokenBoxesForVisibleCell = memoizeClear(
-    (
-      column: VisibleIndex,
-      row: VisibleIndex,
-      state: GridMetricState,
-      renderer: GridRenderer,
-      renderState: GridRenderState
-    ): TokenBox[] | null => {
-      const { context, model, theme } = state;
-      const metrics = this.getMetrics(state);
-
-      if (row == null || column == null || context == null || metrics == null) {
-        return null;
-      }
-
-      const modelRow = this.getModelRow(row, state);
-      const modelColumn = this.getModelColumn(column, state);
-
-      const text = model.textForCell(modelColumn, modelRow);
-      const {
-        width: textWidth,
-        x: textX,
-        y: textY,
-      } = renderer.getTextRenderMetrics(context, renderState, column, row);
-      const {
-        fontWidths,
-        gridX,
-        gridY,
-        width: gridWidth,
-        height: gridHeight,
-        verticalBarWidth,
-        horizontalBarHeight,
-      } = metrics;
-
-      // Set the font and change it back after
-      context.save();
-      context.font = theme.font;
-
-      const fontWidth =
-        fontWidths.get(context.font) ?? GridRenderer.DEFAULT_FONT_WIDTH;
-      const truncationChar = model.truncationCharForCell(modelColumn, modelRow);
-      const truncatedText = renderer.getCachedTruncatedString(
-        context,
-        text,
-        textWidth,
-        fontWidth,
-        truncationChar
-      );
-
-      const links = model.tokensForCell(
-        modelColumn,
-        modelRow,
-        truncatedText.length
-      );
-
-      // Check if the truncated text contains a link
-      if (links.length === 0) {
-        context.restore();
-        return null;
-      }
-
-      const {
-        actualBoundingBoxAscent,
-        actualBoundingBoxDescent,
-      } = context.measureText(truncatedText);
-      const linkHeight = actualBoundingBoxAscent + actualBoundingBoxDescent;
-
-      // Consider edge cases
-      const top = Math.max(gridY, gridY + textY - actualBoundingBoxAscent);
-      const bottom = clamp(
-        top + linkHeight,
-        top,
-        gridHeight - horizontalBarHeight
-      );
-
-      const tokenBoxes: TokenBox[] = [];
-
-      // Loop through the token boxes
-      for (let i = 0; i < links.length; i += 1) {
-        const { end, start } = links[i];
-        let { value } = links[i];
-
-        if (end > truncatedText.length) {
-          value = truncatedText.substring(start);
-        }
-
-        let { width: linkWidth } = context.measureText(value);
-        // Measure the width of the substring before the link
-        const startX =
-          context.measureText(truncatedText.substring(0, start)).width + textX;
-        // Right side is greater than gridX
-        const textIsVisible = startX + linkWidth >= gridX;
-
-        if (textIsVisible) {
-          // Check if the x position is less than the grid x, then linkWidth should be shifted by gridX - startX
-          linkWidth -= startX < gridX ? gridX - startX : 0;
-
-          const left = Math.max(gridX, gridX + startX);
-          const right = clamp(
-            left + linkWidth,
-            left,
-            gridWidth - verticalBarWidth
-          );
-
-          const token: TokenBox = {
-            x1: left,
-            y1: top,
-            x2: right,
-            y2: bottom,
-            token: links[i],
-          };
-
-          tokenBoxes.push(token);
-        }
-      }
-
-      // If it reaches this point, then the mouse is not hovering a link so restore context and currentLinkBox
-      context.restore();
-
-      return tokenBoxes.length === 0 ? null : tokenBoxes;
-    }
-  );
 }
 
 export default GridMetricCalculator;
