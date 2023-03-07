@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, ThemeExport } from '@deephaven/components';
@@ -29,11 +29,15 @@ export default function VisibilityOrderingGroup(
   const groupRef = useRef(group);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const colorInputRef = useRef<HTMLInputElement>(null);
+  const [isColorInputOpen, setIsColorInputOpen] = useState(false);
   const [name, setName] = useState(isNew ? '' : group.name);
   const [isEditing, setIsEditing] = useState(isNew);
-  const [hasTyped, setHasTyped] = useState(false);
+  const [shouldValidate, setShouldValidate] = useState(false);
   const nameValidationError = name !== group.name ? validateName(name) : '';
-  const isValid = (isNew && !hasTyped) || nameValidationError === '';
+  const isValid = (isNew && !shouldValidate) || nameValidationError === '';
+  const colorInputBlurHandler = useCallback(() => {
+    setIsColorInputOpen(false);
+  }, []);
 
   useEffect(
     function focusEditInput() {
@@ -59,6 +63,35 @@ export default function VisibilityOrderingGroup(
     [onDelete]
   );
 
+  useEffect(
+    function openColorInput() {
+      if (isColorInputOpen) {
+        colorInputRef.current?.click();
+        // Mostly for testing. Chrome seems to not give the hidden input focus
+        // Really would only affect screen readers
+        colorInputRef.current?.focus();
+
+        /**
+         * Adding this event handler is for Firefox on Mac
+         * There seems to be buggy behavior when multiple color inputs are on the same page
+         * Clicking between the inputs without closing the previous causes a bad state
+         * The user gets to a point where they can't open most of the pickers
+         * https://bugzilla.mozilla.org/show_bug.cgi?id=1618418
+         * https://bugzilla.mozilla.org/show_bug.cgi?id=975468
+         * Instead, we remove the color input when any focus is returned to the window
+         * This causes Firefox on Mac to mostly operate correctly
+         * Firefox seems to ignore the first click back into the window and emit no event
+         * So opening a color picker when another is open requires 2 clicks in Firefox
+         */
+        window.addEventListener('focus', colorInputBlurHandler, true);
+      }
+
+      return () =>
+        window.removeEventListener('focus', colorInputBlurHandler, true);
+    },
+    [isColorInputOpen, colorInputBlurHandler]
+  );
+
   const handleConfirm = () => {
     if (isValid) {
       onNameChange(group, name);
@@ -76,7 +109,7 @@ export default function VisibilityOrderingGroup(
   };
 
   const handleEditKeyDown = (e: React.KeyboardEvent): void => {
-    setHasTyped(true);
+    setShouldValidate(true);
     if (e.key === 'Enter') {
       e.stopPropagation();
       handleConfirm();
@@ -104,6 +137,7 @@ export default function VisibilityOrderingGroup(
             placeholder="Group Name"
             onChange={e => setName(e.target.value)}
             onKeyDown={handleEditKeyDown}
+            onBlur={() => setShouldValidate(true)}
           />
           <Button
             kind="ghost"
@@ -171,43 +205,47 @@ export default function VisibilityOrderingGroup(
             )
           }
           tooltip="Set color"
-          onClick={() => {
-            colorInputRef.current?.click();
-            // Mostly for testing. Chrome seems to not give the hidden input focus
-            // Really would only affect screen readers
-            colorInputRef.current?.focus();
-          }}
+          /**
+           * Toggle to close the picker on Chrome
+           * Prevents Firefox on Mac from getting into a stuck state
+           * Does not close on Firefox b/c the picker stays open when the element is removed
+           */
+          onClick={() => setIsColorInputOpen(val => !val)}
         />
-        <input
-          aria-label="Color input"
-          ref={colorInputRef}
-          type="color"
-          list="presetColors"
-          value={group.color ?? ThemeExport['content-bg']}
-          style={{
-            visibility: 'hidden',
-            width: 0,
-            height: 0,
-            padding: 0,
-            border: 0,
-          }}
-          onChange={e => {
-            group.color = e.target.value;
-            onColorChange(group, e.target.value);
-          }}
-        />
-        <datalist id="presetColors">
-          <option>{ThemeExport['content-bg']}</option>
-          <option>{ThemeExport.primary}</option>
-          <option>{ThemeExport.foreground}</option>
-          <option>{ThemeExport.green}</option>
-          <option>{ThemeExport.yellow}</option>
-          <option>{ThemeExport.orange}</option>
-          <option>{ThemeExport.red}</option>
-          <option>{ThemeExport.purple}</option>
-          <option>{ThemeExport.blue}</option>
-          <option>{ThemeExport['gray-400']}</option>
-        </datalist>
+        {isColorInputOpen && (
+          <>
+            <input
+              aria-label="Color input"
+              ref={colorInputRef}
+              type="color"
+              list="presetColors"
+              value={group.color ?? ThemeExport['content-bg']}
+              style={{
+                visibility: 'hidden',
+                width: 0,
+                height: 0,
+                padding: 0,
+                border: 0,
+              }}
+              onChange={e => {
+                group.color = e.target.value;
+                onColorChange(group, e.target.value);
+              }}
+            />
+            <datalist id="presetColors">
+              <option>{ThemeExport['content-bg']}</option>
+              <option>{ThemeExport.primary}</option>
+              <option>{ThemeExport.foreground}</option>
+              <option>{ThemeExport.green}</option>
+              <option>{ThemeExport.yellow}</option>
+              <option>{ThemeExport.orange}</option>
+              <option>{ThemeExport.red}</option>
+              <option>{ThemeExport.purple}</option>
+              <option>{ThemeExport.blue}</option>
+              <option>{ThemeExport['gray-400']}</option>
+            </datalist>
+          </>
+        )}
       </span>
     </div>
   );
