@@ -13,73 +13,10 @@ jobs:
   update-core:
     runs-on: ubuntu-22.04
     steps:
-      - name: Checkout latest web-client-ui
-        uses: actions/checkout@v3
-        with:
-          ref: main
-          path: web-client-ui
-      - name: Checkout latest deephaven-core
-        uses: actions/checkout@v3
-        with:
-          # TODO: change to deephaven/deephaven-core
-          repository: mofojed/deephaven-core
-          path: deephaven-core
-          ref: main
-      - name: Get web packages json
-        id: package_jsons
-        working-directory: ./web-client-ui
-        run: |
-          # Selecting a random character for EOF https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#example-of-a-multiline-string
-          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-
-          echo "CODE_STUDIO_JSON<<$EOF" >> $GITHUB_OUTPUT
-          cat ./packages/code-studio/package.json >> $GITHUB_OUTPUT
-          echo "$EOF" >> $GITHUB_OUTPUT
-
-          echo "EMBED_GRID_JSON<<$EOF" >> $GITHUB_OUTPUT
-          cat ./packages/embed-grid/package.json >> $GITHUB_OUTPUT
-          echo "$EOF" >> $GITHUB_OUTPUT
-
-          echo "EMBED_CHART_JSON<<$EOF" >> $GITHUB_OUTPUT
-          cat ./packages/embed-chart/package.json >> $GITHUB_OUTPUT
-          echo "$EOF" >> $GITHUB_OUTPUT
       - name: Update deephaven-core
-        working-directory: ./deephaven-core
-        env:
-          WEB_VERSION: ${{fromJson(steps.package_jsons.outputs.CODE_STUDIO_JSON).version}}
-          GRID_VERSION: ${{fromJson(steps.package_jsons.outputs.EMBED_GRID_JSON).version}}
-          CHART_VERSION: ${{fromJson(steps.package_jsons.outputs.EMBED_CHART_JSON).version}}
         run: |
-          echo "`pwd`"
-          echo "code-studio version is $WEB_VERSION, $GRID_VERSION, $CHART_VERSION"
-          git status
-          # git log
-          # git checkout -b update-web-$WEB_VERSION
-          sed -i "s/^ARG WEB_VERSION=.*/ARG WEB_VERSION=$WEB_VERSION/" ./web/client-ui/Dockerfile
-          sed -i "s/^ARG GRID_VERSION=.*/ARG GRID_VERSION=$GRID_VERSION/" ./web/client-ui/Dockerfile
-          sed -i "s/^ARG CHART_VERSION=.*/ARG CHART_VERSION=$CHART_VERSION/" ./web/client-ui/Dockerfile
-          # if [ -z "$(git status --porcelain)" ]; then
-          #   echo "No changes, versions up to date. Exiting"
-          #   exit 0
-          # fi
-          git status
-          git diff
-          # git commit --all --message="Update web version v$WEB_VERSION"
-          # git log
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v4
-        env:
-          WEB_VERSION: ${{fromJson(steps.package_jsons.outputs.CODE_STUDIO_JSON).version}}
-          GRID_VERSION: ${{fromJson(steps.package_jsons.outputs.EMBED_GRID_JSON).version}}
-          CHART_VERSION: ${{fromJson(steps.package_jsons.outputs.EMBED_CHART_JSON).version}}
-        with:
-          # TODO: We need to add a PAT so that we can push to my fork probably
-          path: ./deephaven-core
-          base: main
-          title: Update web version ${{ env.WEB_VERSION }}
-          body: Release notes https://github.com/deephaven/web-client-ui/releases/tag/${{ env.WEB_VERSION }}
-          branch: update-web-test-${{ env.WEB_VERSION }}
-          delete-branch: true
-          token: ${{ secrets.CORE_PR_TOKEN }}
-          # push-to-fork: mofojed/deephaven-core
-          draft: true
+          curl -L \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ secrets.PAT_TOKEN }}"\
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          https://api.github.com/repos/mofojed/deephaven-core/actions/workflows/update-web.yml/dispatches --data '{"ref": "main"}'

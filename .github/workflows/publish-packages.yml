@@ -10,17 +10,29 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.ref }}
-      - uses: actions/setup-node@v3
+      - name: Setup Node
+        uses: actions/setup-node@v3
         with:
           node-version: '18.x'
           registry-url: 'https://registry.npmjs.org'
-      - run: npm ci
-      - run: npm run build
+      - name: Install dependencies
+        run: npm ci
+      - name: Build production
+        run: npm run build
       # Need the --no-verify-access access flag since we use an automation token. Otherwise publish step fails
       # https://github.com/lerna/lerna/issues/2788
-      - run: ./node_modules/.bin/lerna publish --no-verify-access from-package --yes
+      - name: Publish packages
+        run: ./node_modules/.bin/lerna publish --no-verify-access from-package --yes
         env:
           NODE_AUTH_TOKEN: ${{ secrets.DEEPHAVENBOT_NPM_TOKEN }}
+      - name: Update deephaven-core
+        run: |
+          curl -L \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ secrets.DEEPHAVENINTERNAL_PUBLIC_TOKEN }}"\
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          https://api.github.com/repos/mofojed/deephaven-core/actions/workflows/update-web.yml/dispatches --data '{"ref": "main"}'
