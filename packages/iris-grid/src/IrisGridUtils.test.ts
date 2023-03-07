@@ -5,7 +5,10 @@ import { DateUtils } from '@deephaven/jsapi-utils';
 import type { AdvancedFilter } from './CommonTypes';
 import { FilterData } from './IrisGrid';
 import IrisGridTestUtils from './IrisGridTestUtils';
-import IrisGridUtils, { DehydratedSort } from './IrisGridUtils';
+import IrisGridUtils, {
+  DehydratedSort,
+  LegacyDehydratedSort,
+} from './IrisGridUtils';
 
 function makeFilter() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -17,7 +20,7 @@ function makeColumns(count = 30) {
 
   for (let i = 0; i < count; i += 1) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const column = new (dh as any).Column({ index: i, name: `${i}` });
+    const column = new (dh as any).Column({ index: i, name: `name_${i}` });
     columns.push(column);
   }
 
@@ -151,29 +154,51 @@ describe('sort exporting/importing', () => {
     expect(importedSort).toEqual(sort);
   });
 
-  it('exports/imports sorts', () => {
+  it('should export (dehydrate) sorts', () => {
     const columns = makeColumns();
     const sort = [columns[3].sort(), columns[7].sort().abs().desc()];
-    const table = makeTable({ columns, sort });
-    const exportedSort = IrisGridUtils.dehydrateSort(sort);
-    expect(exportedSort).toEqual<DehydratedSort[]>([
+    const dehydratedSorts = IrisGridUtils.dehydrateSort(sort);
+
+    expect(dehydratedSorts).toEqual<DehydratedSort[]>([
       { column: columns[3].name, isAbs: false, direction: 'ASC' },
       { column: columns[7].name, isAbs: true, direction: 'DESC' },
     ]);
+  });
 
-    const importedSort = IrisGridUtils.hydrateSort(table.columns, exportedSort);
-    expect(importedSort).toEqual([
-      expect.objectContaining({
-        column: columns[3],
-        isAbs: false,
-        direction: 'ASC',
-      }),
-      expect.objectContaining({
-        column: columns[7],
-        isAbs: true,
-        direction: 'DESC',
-      }),
-    ]);
+  describe('should import (hydrate) sorts', () => {
+    const columns = makeColumns();
+    const sort = [columns[3].sort(), columns[7].sort().abs().desc()];
+    const table = makeTable({ columns, sort });
+
+    const dehydratedSorts = IrisGridUtils.dehydrateSort(sort);
+
+    // Map `column` to a number to represent our LegacyDehydratedSort
+    const legacyDehydratedSorts: LegacyDehydratedSort[] = dehydratedSorts.map(
+      ({ column, ...rest }) => ({
+        column: Number(column.split('_')[1]),
+        ...rest,
+      })
+    );
+
+    it.each([
+      ['current', dehydratedSorts],
+      ['legacy', legacyDehydratedSorts],
+    ])('%s', (_label, sorts) => {
+      const importedSort = IrisGridUtils.hydrateSort(table.columns, sorts);
+
+      expect(importedSort).toEqual([
+        expect.objectContaining({
+          column: columns[3],
+          isAbs: false,
+          direction: 'ASC',
+        }),
+        expect.objectContaining({
+          column: columns[7],
+          isAbs: true,
+          direction: 'DESC',
+        }),
+      ]);
+    });
   });
 });
 
@@ -222,15 +247,15 @@ describe('pendingDataMap hydration/dehydration', () => {
         1,
         expect.objectContaining({
           data: [
-            ['3', 'Foo'],
-            ['4', 'Bar'],
+            ['name_3', 'Foo'],
+            ['name_4', 'Bar'],
           ],
         }),
       ],
       [
         10,
         expect.objectContaining({
-          data: [['7', 'Baz']],
+          data: [['name_7', 'Baz']],
         }),
       ],
     ]);
@@ -256,7 +281,7 @@ describe('remove columns in moved columns', () => {
     const newMovedColumns = IrisGridUtils.removeColumnFromMovedColumns(
       table.columns,
       movedColumns,
-      ['3']
+      ['name_3']
     );
     expect(newMovedColumns).toEqual([]);
   });
@@ -268,7 +293,7 @@ describe('remove columns in moved columns', () => {
     const newMovedColumns = IrisGridUtils.removeColumnFromMovedColumns(
       table.columns,
       movedColumns,
-      ['3']
+      ['name_3']
     );
     expect(newMovedColumns).toEqual(GridUtils.moveItem(3, 1, [])); // new move should be {from: 3, to: 1}
   });
@@ -281,7 +306,7 @@ describe('remove columns in moved columns', () => {
     const newMovedColumns = IrisGridUtils.removeColumnFromMovedColumns(
       table.columns,
       movedColumns,
-      ['3']
+      ['name_3']
     );
     // columns' original state should be [0,1,2,4,5,...] after '3' is removed;
     // columns after move should be [4,0,1,2,5,...]; after columns '3' is removed;
@@ -297,7 +322,7 @@ describe('remove columns in moved columns', () => {
     const newMovedColumns = IrisGridUtils.removeColumnFromMovedColumns(
       table.columns,
       movedColumns,
-      ['4']
+      ['name_4']
     );
     // column for is removed, the moved column moved back to it's original place, so delete the move
     expect(newMovedColumns).toEqual([]);
@@ -310,7 +335,7 @@ describe('remove columns in moved columns', () => {
     const newMovedColumns = IrisGridUtils.removeColumnFromMovedColumns(
       table.columns,
       movedColumns,
-      ['2', '3']
+      ['name_2', 'name_3']
     );
     // columns' original state should be [0,1,4,5,...] after '2' & '3' are removed;
     // columns after move should be [0,1,4,5,...]; after columns '2' & '3' are removed;
@@ -325,7 +350,7 @@ describe('remove columns in moved columns', () => {
     const newMovedColumns = IrisGridUtils.removeColumnFromMovedColumns(
       table.columns,
       movedColumns,
-      ['2', '3']
+      ['name_2', 'name_3']
     );
     // columns' original state should be [0,1,4,5,...] after '2' & '3' are removed;
     // columns after move should be [0,4,1,5,...]; after columns '2' & '3' are removed;
@@ -341,7 +366,7 @@ describe('remove columns in moved columns', () => {
     const newMovedColumns = IrisGridUtils.removeColumnFromMovedColumns(
       table.columns,
       movedColumns,
-      ['2', '3']
+      ['name_2', 'name_3']
     );
     // columns' original state should be [0,1,4,5,6...] after '2' & '3' are removed;
     // columns after moves should be [0,4,1,6,5...]; after columns '2' & '3' are removed;
@@ -461,9 +486,9 @@ describe('changeFilterColumnNamesToIndexes', () => {
   const columns = makeColumns(10);
   it('Replaces column names with indexes', () => {
     const filters = [
-      { name: '1', filter: DEFAULT_FILTER },
-      { name: '3', filter: DEFAULT_FILTER },
-      { name: '5', filter: DEFAULT_FILTER },
+      { name: 'name_1', filter: DEFAULT_FILTER },
+      { name: 'name_3', filter: DEFAULT_FILTER },
+      { name: 'name_5', filter: DEFAULT_FILTER },
     ];
     expect(
       IrisGridUtils.changeFilterColumnNamesToIndexes(columns, filters)
@@ -477,7 +502,7 @@ describe('changeFilterColumnNamesToIndexes', () => {
   it('Omits missing columns', () => {
     const filters = [
       { name: 'missing_1', filter: DEFAULT_FILTER },
-      { name: '3', filter: DEFAULT_FILTER },
+      { name: 'name_3', filter: DEFAULT_FILTER },
       { name: 'missing_2', filter: DEFAULT_FILTER },
     ];
     expect(
