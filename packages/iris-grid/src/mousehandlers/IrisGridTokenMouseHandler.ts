@@ -3,6 +3,7 @@ import {
   Grid,
   GridMouseHandler,
   GridPoint,
+  GridUtils,
   isLinkToken,
   TokenBox,
 } from '@deephaven/grid';
@@ -12,6 +13,7 @@ import IrisGrid from '../IrisGrid';
 class IrisGridTokenMouseHandler extends GridMouseHandler {
   private irisGrid: IrisGrid;
 
+  // Stores the current hovered token box if it exists with translated coordinates
   private currentLinkBox?: TokenBox;
 
   constructor(irisGrid: IrisGrid) {
@@ -24,15 +26,11 @@ class IrisGridTokenMouseHandler extends GridMouseHandler {
     this.irisGrid.setState({ linkHoverTooltipProps: null });
   }
 
-  /**
-   * A function that returns a boolean based on whether the user is hovering a link
-   * @param gridPoint The mouse information
-   * @param grid The grid
-   * @returns True if the mouse is hovering a link, false otherwise
-   */
   isHoveringLink(gridPoint: GridPoint, grid: Grid): boolean {
     const { column, row, x, y } = gridPoint;
-    if (column == null || row == null) {
+    const { renderer, metrics } = grid;
+
+    if (column == null || row == null || metrics == null) {
       this.currentLinkBox = undefined;
       return false;
     }
@@ -44,33 +42,33 @@ class IrisGridTokenMouseHandler extends GridMouseHandler {
       }
     }
 
-    const { renderer } = grid;
     const renderState = grid.updateRenderState();
-    const linksInCell = renderer.getTokenBoxesForVisibleCell(
+    const tokensInCell = renderer.getTokenBoxesForVisibleCell(
       column,
       row,
       renderState
     );
 
-    if (linksInCell.length === 0) {
-      this.currentLinkBox = undefined;
-      return false;
-    }
-
-    for (let i = 0; i < linksInCell.length; i += 1) {
-      const { x1: left, x2: right, y1: top, y2: bottom } = linksInCell[i];
+    // Loop through each link and check if cursor is in bounds
+    for (let i = 0; i < tokensInCell.length; i += 1) {
+      const translatedTokenBox = GridUtils.translateTokenBox(
+        tokensInCell[i],
+        metrics
+      );
+      const { x1: left, x2: right, y1: top, y2: bottom } = translatedTokenBox;
       if (
         x >= left &&
         x <= right &&
         y >= top &&
         y <= bottom &&
-        isLinkToken(linksInCell[i].token)
+        isLinkToken(tokensInCell[i].token)
       ) {
-        this.currentLinkBox = linksInCell[i];
+        this.currentLinkBox = translatedTokenBox;
         return true;
       }
     }
 
+    // If this point is reached, that means the cursor was not hovering any of the links or there are no links
     this.currentLinkBox = undefined;
     return false;
   }
@@ -86,7 +84,11 @@ class IrisGridTokenMouseHandler extends GridMouseHandler {
 
   onMove(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     const isUserHoveringLink = this.isHoveringLink(gridPoint, grid);
-    if (isUserHoveringLink) {
+    if (
+      isUserHoveringLink &&
+      this.currentLinkBox != null &&
+      isLinkToken(this.currentLinkBox.token)
+    ) {
       const { linkHoverTooltipProps } = this.irisGrid.state;
       if (this.currentLinkBox == null) {
         return false;

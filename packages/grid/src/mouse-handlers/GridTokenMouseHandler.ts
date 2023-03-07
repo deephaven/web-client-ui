@@ -14,13 +14,16 @@ class GridTokenMouseHandler extends GridMouseHandler {
 
   private isDown = false;
 
+  // Stores the current hovered token box if it exists with translated coordinates
   private currentLinkBox?: TokenBox;
 
   private static HOLD_LENGTH = 1000;
 
   isHoveringLink(gridPoint: GridPoint, grid: Grid): boolean {
     const { column, row, x, y } = gridPoint;
-    if (column == null || row == null) {
+    const { renderer, metrics } = grid;
+
+    if (column == null || row == null || metrics == null) {
       this.currentLinkBox = undefined;
       return false;
     }
@@ -32,36 +35,33 @@ class GridTokenMouseHandler extends GridMouseHandler {
       }
     }
 
-    const { renderer } = grid;
     const renderState = grid.updateRenderState();
-    const linksInCell = renderer.getTokenBoxesForVisibleCell(
+    const tokensInCell = renderer.getTokenBoxesForVisibleCell(
       column,
       row,
       renderState
     );
 
-    // If there are no links in the cell, return false
-    if (linksInCell.length === 0) {
-      this.currentLinkBox = undefined;
-      return false;
-    }
-
     // Loop through each link and check if cursor is in bounds
-    for (let i = 0; i < linksInCell.length; i += 1) {
-      const { x1: left, x2: right, y1: top, y2: bottom } = linksInCell[i];
+    for (let i = 0; i < tokensInCell.length; i += 1) {
+      const translatedTokenBox = GridUtils.translateTokenBox(
+        tokensInCell[i],
+        metrics
+      );
+      const { x1: left, x2: right, y1: top, y2: bottom } = translatedTokenBox;
       if (
         x >= left &&
         x <= right &&
         y >= top &&
         y <= bottom &&
-        isLinkToken(linksInCell[i].token)
+        isLinkToken(tokensInCell[i].token)
       ) {
-        this.currentLinkBox = linksInCell[i];
+        this.currentLinkBox = translatedTokenBox;
         return true;
       }
     }
 
-    // If this point is reached, that means the cursor was not hovering any of the links
+    // If this point is reached, that means the cursor was not hovering any of the links or there are no links
     this.currentLinkBox = undefined;
     return false;
   }

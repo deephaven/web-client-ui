@@ -1,4 +1,5 @@
-import { getOrThrow, trimMap } from './GridMetricCalculator';
+import { getOrThrow } from '@deephaven/utils';
+import { trimMap } from './GridMetricCalculator';
 
 describe('trimMap', () => {
   function makeMap(low = 0, high = 10): Map<number, number> {

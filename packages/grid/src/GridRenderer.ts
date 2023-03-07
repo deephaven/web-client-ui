@@ -1,7 +1,7 @@
 import clamp from 'lodash.clamp';
 import { ColorUtils, getOrThrow } from '@deephaven/utils';
 import memoizeClear from './memoizeClear';
-import GridUtils, { TokenBox } from './GridUtils';
+import GridUtils, { Token, TokenBox } from './GridUtils';
 import GridColorUtils from './GridColorUtils';
 import { isExpandableGridModel } from './ExpandableGridModel';
 import {
@@ -3063,81 +3063,94 @@ export class GridRenderer {
     row: VisibleIndex,
     state: GridRenderState
   ): TokenBox[] {
-    return this.getCachedTokenBoxesForVisibleCell(column, row, state);
+    const { metrics, context, model, theme } = state;
+    const { modelRows, modelColumns } = metrics;
+
+    if (context == null || metrics == null) {
+      return [];
+    }
+
+    const modelRow = getOrThrow(modelRows, row);
+    const modelColumn = getOrThrow(modelColumns, column);
+
+    const text = model.textForCell(modelColumn, modelRow);
+    const { width: textWidth, x: textX, y: textY } = this.getTextRenderMetrics(
+      state,
+      column,
+      row
+    );
+
+    const { fontWidths } = metrics;
+
+    // Set the font and baseline and change it back after
+    context.save();
+    context.font = theme.font;
+    context.textBaseline = 'middle';
+
+    const fontWidth =
+      fontWidths.get(context.font) ?? GridRenderer.DEFAULT_FONT_WIDTH;
+    const truncationChar = model.truncationCharForCell(modelColumn, modelRow);
+    const truncatedText = this.getCachedTruncatedString(
+      context,
+      text,
+      textWidth,
+      fontWidth,
+      truncationChar
+    );
+
+    const {
+      actualBoundingBoxAscent,
+      actualBoundingBoxDescent,
+    } = context.measureText(truncatedText);
+    const linkHeight = actualBoundingBoxAscent + actualBoundingBoxDescent;
+
+    const tokens = model.tokensForCell(
+      modelColumn,
+      modelRow,
+      truncatedText.length
+    );
+
+    context.restore();
+
+    // Check if the truncated text contains a link
+    if (tokens.length === 0) {
+      return [];
+    }
+
+    return this.getCachedTokenBoxesForVisibleCell(
+      truncatedText,
+      tokens,
+      theme.font,
+      'middle',
+      linkHeight,
+      context
+    ).map(tokenBox => ({
+      x1: tokenBox.x1 + textX,
+      y1: tokenBox.y1 + (textY - actualBoundingBoxAscent),
+      x2: tokenBox.x2 + textX,
+      y2: tokenBox.y2 + (textY - actualBoundingBoxAscent),
+      token: tokenBox.token,
+    }));
   }
 
+  /**
+   * Returns an array of token boxes with the coordinates relative to the top left corner of the text
+   */
   getCachedTokenBoxesForVisibleCell = memoizeClear(
     (
-      column: VisibleIndex,
-      row: VisibleIndex,
-      state: GridRenderState
+      truncatedText: string,
+      tokens: Token[],
+      font: string,
+      baseline: CanvasTextBaseline,
+      linkHeight: number,
+      context: CanvasRenderingContext2D
     ): TokenBox[] => {
-      const { metrics, context, model, theme } = state;
-      const { modelRows, modelColumns } = metrics;
-
-      if (context == null || metrics == null) {
-        return [];
-      }
-
-      const modelRow = getOrThrow(modelRows, row);
-      const modelColumn = getOrThrow(modelColumns, column);
-
-      const text = model.textForCell(modelColumn, modelRow);
-      const {
-        width: textWidth,
-        x: textX,
-        y: textY,
-      } = this.getTextRenderMetrics(state, column, row);
-      const {
-        fontWidths,
-        gridX,
-        gridY,
-        width: gridWidth,
-        height: gridHeight,
-        verticalBarWidth,
-        horizontalBarHeight,
-      } = metrics;
-
-      // Set the font and change it back after
       context.save();
-      context.font = theme.font;
+      context.font = font;
+      context.textBaseline = baseline;
 
-      const fontWidth =
-        fontWidths.get(context.font) ?? GridRenderer.DEFAULT_FONT_WIDTH;
-      const truncationChar = model.truncationCharForCell(modelColumn, modelRow);
-      const truncatedText = this.getCachedTruncatedString(
-        context,
-        text,
-        textWidth,
-        fontWidth,
-        truncationChar
-      );
-
-      const tokens = model.tokensForCell(
-        modelColumn,
-        modelRow,
-        truncatedText.length
-      );
-
-      // Check if the truncated text contains a link
-      if (tokens.length === 0) {
-        context.restore();
-        return [];
-      }
-
-      const {
-        actualBoundingBoxAscent,
-        actualBoundingBoxDescent,
-      } = context.measureText(truncatedText);
-      const linkHeight = actualBoundingBoxAscent + actualBoundingBoxDescent;
-
-      // Consider edge cases
-      const top = Math.max(gridY, gridY + textY - actualBoundingBoxAscent);
-      const bottom = clamp(
-        top + linkHeight,
-        top,
-        gridHeight - horizontalBarHeight
-      );
+      const top = 0;
+      const bottom = linkHeight;
 
       const tokenBoxes: TokenBox[] = [];
 
@@ -3161,34 +3174,20 @@ export class GridRenderer {
         ).width;
         const tokenWidth = context.measureText(value).width;
 
-        // Calculate the box
-        const startX = currentTextWidth + textX;
+        // Check if the x position is less than the grid x, then tokenWidth should be shifted by gridX - startX
 
-        // Right side is greater than gridX
-        const textIsVisible = startX + tokenWidth >= gridX;
+        const left = currentTextWidth;
+        const right = left + tokenWidth;
 
-        if (textIsVisible) {
-          // Check if the x position is less than the grid x, then tokenWidth should be shifted by gridX - startX
-          const adjustedTokenWidth =
-            startX < gridX ? tokenWidth - (gridX - startX) : tokenWidth;
+        const newTokenBox: TokenBox = {
+          x1: left,
+          y1: top,
+          x2: right,
+          y2: bottom,
+          token,
+        };
 
-          const left = Math.max(gridX, gridX + startX);
-          const right = clamp(
-            left + adjustedTokenWidth,
-            left,
-            gridWidth - verticalBarWidth
-          );
-
-          const newTokenBox: TokenBox = {
-            x1: left,
-            y1: top,
-            x2: right,
-            y2: bottom,
-            token,
-          };
-
-          tokenBoxes.push(newTokenBox);
-        }
+        tokenBoxes.push(newTokenBox);
 
         lastTokenEnd = end;
         currentTextWidth += tokenWidth;

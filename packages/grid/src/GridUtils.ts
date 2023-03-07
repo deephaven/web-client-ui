@@ -51,7 +51,7 @@ export function isLinkToken(token: Token): token is LinkToken {
   return (token as LinkToken)?.href !== undefined;
 }
 
-export type TokenBox = BoxCoordinates & { token: LinkToken };
+export type TokenBox = BoxCoordinates & { token: Token };
 
 export type IndexCallback<T> = (itemIndex: VisibleIndex) => T | undefined;
 
@@ -1396,6 +1396,42 @@ export class GridUtils {
       }
     }
     return mergedRanges;
+  }
+
+  /**
+   * Translates coordinates that are relative to gridX/gridY to be translated by gridX and gridY
+   * @param tokenBox The token box to translate
+   * @param metrics The grid metrics
+   * @returns The token box with translated coordinates
+   */
+  static translateTokenBox(tokenBox: TokenBox, metrics: GridMetrics): TokenBox {
+    const { x1: left, y1: top, x2: right, y2: bottom } = tokenBox;
+    const {
+      gridX,
+      gridY,
+      width: gridWidth,
+      height: gridHeight,
+      verticalBarWidth,
+      horizontalBarHeight,
+    } = metrics;
+
+    // Clamp the values within the grid
+    const newLeft = clamp(gridX + left, gridX, gridWidth - verticalBarWidth);
+    const newRight = clamp(gridX + right, gridX, gridWidth - verticalBarWidth);
+    const newTop = clamp(gridY + top, gridY, gridHeight - horizontalBarHeight);
+    const newBottom = clamp(
+      gridY + bottom,
+      gridY,
+      gridHeight - horizontalBarHeight
+    );
+
+    return {
+      x1: newLeft,
+      y1: newTop,
+      x2: newRight,
+      y2: newBottom,
+      token: tokenBox.token,
+    };
   }
 }
 

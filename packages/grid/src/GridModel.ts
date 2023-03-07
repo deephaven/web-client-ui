@@ -4,7 +4,7 @@ import type { IColumnHeaderGroup } from './ColumnHeaderGroup';
 import { ModelIndex } from './GridMetrics';
 import { GridColor, GridTheme, NullableGridColor } from './GridTheme';
 import memoizeClear from './memoizeClear';
-import { LinkToken } from './GridUtils';
+import { Token } from './GridUtils';
 
 const LINK_TRUNCATION_LENGTH = 5000;
 
@@ -200,13 +200,13 @@ abstract class GridModel<
     column: ModelIndex,
     row: ModelIndex,
     visibleLength: number = LINK_TRUNCATION_LENGTH
-  ): LinkToken[] {
+  ): Token[] {
     const text = this.textForCell(column, row);
     return this.getCachedTokensInText(text, visibleLength);
   }
 
   getCachedTokensInText = memoizeClear(
-    (text: string, visibleLength: number): LinkToken[] => {
+    (text: string, visibleLength: number): Token[] => {
       // If no text is truncated, then directly search in text
       if (visibleLength === text.length) {
         return linkifyFind(text);
