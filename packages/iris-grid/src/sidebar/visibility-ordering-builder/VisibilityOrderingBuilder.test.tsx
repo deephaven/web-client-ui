@@ -844,6 +844,35 @@ test('Only allows 1 new group at a time', async () => {
   expect(mockGroupHandler).toBeCalledWith([
     expect.objectContaining(groupObject),
   ]);
+
+  createGroupBtn.focus();
+  expect(screen.queryAllByText('Invalid name').length).toBe(1);
+});
+
+test('Shows validation error for new group on blur when never typed in', async () => {
+  const user = userEvent.setup({ delay: null });
+
+  const model = makeModelWithGroups([
+    {
+      children: [`${COLUMN_PREFIX}0`, `${COLUMN_PREFIX}1`],
+      name: `${ColumnHeaderGroup.NEW_GROUP_PREFIX}Test`,
+    },
+  ]);
+
+  const mockGroupHandler = jest.fn();
+
+  render(
+    <Builder
+      model={model}
+      columnHeaderGroups={model.columnHeaderGroups}
+      onColumnHeaderGroupChanged={mockGroupHandler}
+    />
+  );
+
+  expect(screen.queryAllByText('Invalid name').length).toBe(0);
+
+  await selectItems(user, [2]);
+  expect(screen.queryAllByText('Invalid name').length).toBe(1);
 });
 
 test('Search columns', async () => {
