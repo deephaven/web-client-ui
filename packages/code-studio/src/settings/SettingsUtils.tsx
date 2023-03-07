@@ -16,7 +16,7 @@ export type FormatOption = {
 export type FormatterItem = {
   columnType: string;
   columnName: string;
-  format: TableColumnFormat | Record<string, never>;
+  format: Partial<TableColumnFormat>;
   id?: number;
   isNewRule?: boolean;
 };

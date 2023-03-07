@@ -75,28 +75,6 @@ type HydratedIrisGridState = Pick<
   metrics: Pick<GridMetrics, 'userColumnWidths' | 'userRowHeights'>;
 };
 
-export interface TableSettings {
-  quickFilters?: readonly [
-    number,
-    {
-      text: string;
-    }
-  ][];
-  advancedFilters?: readonly [
-    number,
-    {
-      options: AdvancedFilterOptions;
-    }
-  ][];
-  inputFilters?: readonly InputFilter[];
-  sorts?: readonly {
-    column: ModelIndex;
-    isAbs: boolean;
-    direction: SortDirection;
-  }[];
-  partition?: unknown;
-  partitionColumn?: ColumnName;
-}
 export type DehydratedPendingDataMap<T> = [number, { data: [string, T][] }][];
 
 export type DehydratedAdvancedFilter = [
@@ -124,6 +102,15 @@ export type DehydratedSort = {
   isAbs: boolean;
   direction: SortDirection;
 };
+
+export interface TableSettings {
+  quickFilters?: readonly DehydratedQuickFilter[];
+  advancedFilters?: readonly DehydratedAdvancedFilter[];
+  inputFilters?: readonly InputFilter[];
+  sorts?: readonly DehydratedSort[];
+  partition?: unknown;
+  partitionColumn?: ColumnName;
+}
 
 export interface DehydratedIrisGridState {
   advancedFilters: readonly DehydratedAdvancedFilter[];
