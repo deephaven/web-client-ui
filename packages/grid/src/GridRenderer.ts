@@ -3101,7 +3101,7 @@ export class GridRenderer {
       actualBoundingBoxAscent,
       actualBoundingBoxDescent,
     } = context.measureText(truncatedText);
-    const linkHeight = actualBoundingBoxAscent + actualBoundingBoxDescent;
+    const textHeight = actualBoundingBoxAscent + actualBoundingBoxDescent;
 
     const tokens = model.tokensForCell(
       modelColumn,
@@ -3109,19 +3109,18 @@ export class GridRenderer {
       truncatedText.length
     );
 
-    context.restore();
-
     // Check if the truncated text contains a link
     if (tokens.length === 0) {
+      context.restore();
       return (EMPTY_ARRAY as unknown) as TokenBox[];
     }
 
-    return this.getCachedTokenBoxesForVisibleCell(
+    const cachedTokenBoxes = this.getCachedTokenBoxesForVisibleCell(
       truncatedText,
       tokens,
       theme.font,
       'middle',
-      linkHeight,
+      textHeight,
       context
     ).map(tokenBox => ({
       x1: tokenBox.x1 + textX,
@@ -3130,6 +3129,10 @@ export class GridRenderer {
       y2: tokenBox.y2 + (textY - actualBoundingBoxAscent),
       token: tokenBox.token,
     }));
+
+    context.restore();
+
+    return cachedTokenBoxes;
   }
 
   /**
@@ -3139,17 +3142,15 @@ export class GridRenderer {
     (
       truncatedText: string,
       tokens: Token[],
-      font: string,
-      baseline: CanvasTextBaseline,
-      linkHeight: number,
+      // _font and _baseline are passed in so value is re-calculated when they change
+      // They should already be set on the `context`, so they are not used in this method
+      _font: string,
+      _baseline: CanvasTextBaseline,
+      textHeight: number,
       context: CanvasRenderingContext2D
     ): TokenBox[] => {
-      context.save();
-      context.font = font;
-      context.textBaseline = baseline;
-
       const top = 0;
-      const bottom = linkHeight;
+      const bottom = textHeight;
 
       const tokenBoxes: TokenBox[] = [];
 
@@ -3192,7 +3193,6 @@ export class GridRenderer {
         currentTextWidth += tokenWidth;
       }
 
-      context.restore();
       return tokenBoxes;
     },
     { max: 10000 }
