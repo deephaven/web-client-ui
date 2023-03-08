@@ -18,6 +18,7 @@ import { GridFont, GridTheme } from './GridTheme';
 import { isExpandableGridModel } from './ExpandableGridModel';
 import { DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
 
+export { getOrThrow } from '@deephaven/utils';
 /* eslint class-methods-use-this: "off" */
 /* eslint react/destructuring-assignment: "off" */
 

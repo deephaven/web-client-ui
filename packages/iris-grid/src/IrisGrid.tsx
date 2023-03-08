@@ -3652,7 +3652,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       return (
         <div style={wrapperStyle}>
           <Tooltip options={popperOptions} ref={this.handleTooltipRef}>
-            <div style={{ textAlign: 'left' }}>
+            <div className="link-hover-tooltip">
               {linkHoverDisplayValue} - Click once to follow.
               <br />
               Click and hold to select this cell.

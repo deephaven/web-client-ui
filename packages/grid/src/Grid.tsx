@@ -806,11 +806,10 @@ class Grid extends PureComponent<GridProps, GridState> {
   }
 
   updateCanvas(metrics = this.updateMetrics()): void {
-    if (!this.canvasContext) throw new Error('canvasContext not set');
-
     this.updateCanvasScale();
     this.updateRenderState();
-    this.renderer.configureContext(this.canvasContext, this.renderState);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    this.renderer.configureContext(this.canvasContext!, this.renderState);
 
     const { onViewChanged } = this.props;
     onViewChanged(metrics);
@@ -1705,13 +1704,11 @@ class Grid extends PureComponent<GridProps, GridState> {
     const gridPoint = this.getGridPointFromEvent(event);
     const mouseHandlers = this.getMouseHandlers();
     let cursor = null;
-
     for (let i = 0; i < mouseHandlers.length; i += 1) {
       const mouseHandler = mouseHandlers[i];
       const result =
         mouseHandler[functionName] != null &&
         mouseHandler[functionName](gridPoint, this, event);
-
       if (result !== false) {
         if (mouseHandler.cursor != null) {
           ({ cursor } = mouseHandler);
