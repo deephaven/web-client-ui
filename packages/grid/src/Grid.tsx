@@ -302,7 +302,7 @@ class Grid extends PureComponent<GridProps, GridState> {
 
   metrics: GridMetrics | null;
 
-  renderState: GridRenderState | null;
+  renderState: GridRenderState;
 
   // Track the cursor that is currently added to the document
   // Add to document so that when dragging the cursor stays, even if mouse leaves the canvas
@@ -355,7 +355,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.prevMetrics = null;
     this.metrics = null;
 
-    this.renderState = null;
+    this.renderState = {} as GridRenderState;
 
     // Track the cursor that is currently added to the document
     // Add to document so that when dragging the cursor stays, even if mouse leaves the canvas
@@ -458,7 +458,6 @@ class Grid extends PureComponent<GridProps, GridState> {
     });
     window.addEventListener('resize', this.handleResize);
 
-    this.updateCanvasScale();
     this.updateCanvas();
 
     // apply on mount, so that it works with a static model
@@ -807,7 +806,11 @@ class Grid extends PureComponent<GridProps, GridState> {
   }
 
   updateCanvas(metrics = this.updateMetrics()): void {
+    if (!this.canvasContext) throw new Error('canvasContext not set');
+
     this.updateCanvasScale();
+    this.updateRenderState();
+    this.renderer.configureContext(this.canvasContext, this.renderState);
 
     const { onViewChanged } = this.props;
     onViewChanged(metrics);
@@ -815,7 +818,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.drawCanvas(metrics);
   }
 
-  updateCanvasScale(): void {
+  private updateCanvasScale(): void {
     const { canvas, canvasContext } = this;
     if (!canvas) throw new Error('canvas not set');
     if (!canvasContext) throw new Error('canvasContext not set');
@@ -1601,12 +1604,11 @@ class Grid extends PureComponent<GridProps, GridState> {
    * must be very quick.
    * @param metrics Metrics to use for rendering the grid
    */
-  drawCanvas(metrics = this.updateMetrics()): void {
+  private drawCanvas(metrics = this.updateMetrics()): void {
     if (!this.canvas) throw new Error('canvas is not set');
     if (!this.canvasContext) throw new Error('context not set');
 
-    const renderState = this.updateRenderState();
-    const { renderer, canvasContext: context } = this;
+    const { renderer, canvasContext: context, renderState } = this;
 
     context.save();
 
@@ -1790,7 +1792,6 @@ class Grid extends PureComponent<GridProps, GridState> {
      * of doing outside of a full componentDidUpdate() call, so we force the update.
      * Ideally, we could verify state/metrics without the forced update.
      */
-    this.updateCanvasScale();
     this.updateCanvas();
 
     if (!this.metrics) throw new Error('metrics not set');

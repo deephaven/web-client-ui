@@ -44,20 +44,16 @@ class GridTokenMouseHandler extends GridMouseHandler {
 
     // Loop through each link and check if cursor is in bounds
     for (let i = 0; i < tokensInCell.length; i += 1) {
-      const translatedTokenBox = GridUtils.translateTokenBox(
-        tokensInCell[i],
-        metrics
-      );
-      const { x1: left, x2: right, y1: top, y2: bottom } = translatedTokenBox;
-      if (
-        x >= left &&
-        x <= right &&
-        y >= top &&
-        y <= bottom &&
-        isLinkToken(tokensInCell[i].token)
-      ) {
-        this.currentLinkBox = translatedTokenBox;
-        return true;
+      if (isLinkToken(tokensInCell[i].token)) {
+        const translatedTokenBox = GridUtils.translateTokenBox(
+          tokensInCell[i],
+          metrics
+        );
+        const { x1: left, x2: right, y1: top, y2: bottom } = translatedTokenBox;
+        if (x >= left && x <= right && y >= top && y <= bottom) {
+          this.currentLinkBox = translatedTokenBox;
+          return true;
+        }
       }
     }
 

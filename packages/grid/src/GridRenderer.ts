@@ -1,5 +1,5 @@
 import clamp from 'lodash.clamp';
-import { ColorUtils, getOrThrow } from '@deephaven/utils';
+import { ColorUtils, EMPTY_ARRAY, getOrThrow } from '@deephaven/utils';
 import memoizeClear from './memoizeClear';
 import GridUtils, { Token, TokenBox } from './GridUtils';
 import GridColorUtils from './GridColorUtils';
@@ -3056,7 +3056,7 @@ export class GridRenderer {
    * @param column The visible column
    * @param row The visible row
    * @param state The GridRenderState
-   * @returns An array of TokenBox of visible tokens or empty array
+   * @returns An array of TokenBox of visible tokens or empty array with coordinates relative to gridX and gridY
    */
   getTokenBoxesForVisibleCell(
     column: VisibleIndex,
@@ -3064,12 +3064,12 @@ export class GridRenderer {
     state: GridRenderState
   ): TokenBox[] {
     const { metrics, context, model, theme } = state;
-    const { modelRows, modelColumns } = metrics;
 
     if (context == null || metrics == null) {
-      return [];
+      return (EMPTY_ARRAY as unknown) as TokenBox[];
     }
 
+    const { modelRows, modelColumns } = metrics;
     const modelRow = getOrThrow(modelRows, row);
     const modelColumn = getOrThrow(modelColumns, column);
 
@@ -3084,11 +3084,10 @@ export class GridRenderer {
 
     // Set the font and baseline and change it back after
     context.save();
-    context.font = theme.font;
-    context.textBaseline = 'middle';
+    this.configureContext(context, state);
 
     const fontWidth =
-      fontWidths.get(context.font) ?? GridRenderer.DEFAULT_FONT_WIDTH;
+      fontWidths?.get(context.font) ?? GridRenderer.DEFAULT_FONT_WIDTH;
     const truncationChar = model.truncationCharForCell(modelColumn, modelRow);
     const truncatedText = this.getCachedTruncatedString(
       context,
@@ -3114,7 +3113,7 @@ export class GridRenderer {
 
     // Check if the truncated text contains a link
     if (tokens.length === 0) {
-      return [];
+      return (EMPTY_ARRAY as unknown) as TokenBox[];
     }
 
     return this.getCachedTokenBoxesForVisibleCell(

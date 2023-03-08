@@ -208,7 +208,7 @@ abstract class GridModel<
   getCachedTokensInText = memoizeClear(
     (text: string, visibleLength: number): Token[] => {
       // If no text is truncated, then directly search in text
-      if (visibleLength === text.length) {
+      if (visibleLength >= text.length) {
         return linkifyFind(text);
       }
 

@@ -2311,7 +2311,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   );
 
   handleAnimationLoop(): void {
-    this.grid?.updateCanvasScale();
     this.grid?.updateCanvas();
 
     if (this.isAnimating) {

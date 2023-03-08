@@ -1,7 +1,7 @@
 import { AxisRange } from './GridAxisRange';
 import GridMetrics, { ModelIndex, MoveOperation } from './GridMetrics';
 import GridRange, { GridRangeIndex } from './GridRange';
-import GridUtils from './GridUtils';
+import GridUtils, { Token, TokenBox } from './GridUtils';
 import type { BoundedAxisRange } from './GridAxisRange';
 
 function expectModelIndexes(
@@ -21,6 +21,16 @@ function expectVisibleIndexes(
     expect(GridUtils.getVisibleIndex(i, movedItems)).toBe(indexes[i]);
   }
 }
+
+const makeMockGridMetrics = (): GridMetrics =>
+  ({
+    gridX: 0,
+    gridY: 30,
+    width: 1000,
+    height: 500,
+    verticalBarWidth: 20,
+    horizontalBarHeight: 20,
+  } as GridMetrics);
 
 describe('move items', () => {
   it('returns the proper model/visible index when one column is moved', () => {
@@ -1031,5 +1041,27 @@ describe('for each', () => {
       [1, 4],
       [7, 11],
     ]);
+  });
+});
+
+describe('translateTokenBox', () => {
+  it('should translate coordinates that are relative to gridX/gridY to relative to the canvas', () => {
+    const metrics = makeMockGridMetrics();
+    const input: TokenBox = {
+      x1: -20,
+      y1: 10,
+      x2: 50,
+      y2: 30,
+      token: {} as Token,
+    };
+    const expectedValue: TokenBox = {
+      x1: 0,
+      y1: 40,
+      x2: 50,
+      y2: 60,
+      token: {} as Token,
+    };
+
+    expect(GridUtils.translateTokenBox(input, metrics)).toEqual(expectedValue);
   });
 });

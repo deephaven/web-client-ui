@@ -42,7 +42,13 @@ export interface CellInfo {
   rowHeight: number | null;
 }
 
-export type Token = { value: string; type: string; start: number; end: number };
+export type Token = {
+  value: string;
+  type: string;
+  start: number;
+  end: number;
+  isLink?: boolean;
+};
 export type LinkToken = Token & { href: string };
 export type URLToken = Token & { type: 'url' };
 export type EmailToken = Token & { type: 'email' };
