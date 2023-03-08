@@ -83,11 +83,11 @@ export default function VisibilityOrderingGroup(
          * Firefox seems to ignore the first click back into the window and emit no event
          * So opening a color picker when another is open requires 2 clicks in Firefox
          */
-        window.addEventListener('focus', colorInputBlurHandler, true);
+        window.addEventListener('click', colorInputBlurHandler, true);
       }
 
       return () =>
-        window.removeEventListener('focus', colorInputBlurHandler, true);
+        window.removeEventListener('click', colorInputBlurHandler, true);
     },
     [isColorInputOpen, colorInputBlurHandler]
   );
