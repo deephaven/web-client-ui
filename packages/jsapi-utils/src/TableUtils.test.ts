@@ -160,7 +160,7 @@ describe('quick filter tests', () => {
   function makeFilterColumn(type = 'string') {
     const filter = makeFilter();
     const column = IrisGridTestUtils.makeColumn('test placeholder', type, 13);
-    column.filter = jest.fn(() => filter);
+    column.filter = jest.fn(() => filter as FilterValue);
     return column;
   }
 
