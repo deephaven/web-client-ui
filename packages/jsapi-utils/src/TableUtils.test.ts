@@ -381,6 +381,306 @@ describe('quick filter tests', () => {
     });
   });
 
+  describe('makeAdvancedValueFilter', () => {
+    const filterTypesWithArgument: FilterTypeValue[] = [
+      FilterType.eq,
+      FilterType.eqIgnoreCase,
+      FilterType.notEq,
+      FilterType.notEqIgnoreCase,
+      FilterType.greaterThan,
+      FilterType.greaterThanOrEqualTo,
+      FilterType.lessThan,
+      FilterType.lessThanOrEqualTo,
+    ];
+
+    const filterTypesWithNoArguments: FilterTypeValue[] = [
+      FilterType.isTrue,
+      FilterType.isFalse,
+      FilterType.isNull,
+    ];
+
+    const invalidFilterTypes: FilterTypeValue[] = [
+      FilterType.in,
+      FilterType.inIgnoreCase,
+      FilterType.notIn,
+      FilterType.notInIgnoreCase,
+      FilterType.invoke,
+    ];
+
+    function testInvokeFilter(type, operation, value, timezone, ...args) {
+      const column = makeFilterColumn(type);
+      const filter = column.filter() as MockFilter;
+
+      const nullResult = makeFilterCondition();
+      const notResult = makeFilterCondition();
+      const invokeResult = makeFilterCondition();
+      const expectedResult = makeFilterCondition();
+
+      filter.isNull.mockReturnValueOnce(nullResult);
+
+      (nullResult.not as jest.Mock).mockReturnValueOnce(notResult);
+
+      filter.invoke.mockReturnValueOnce(invokeResult);
+
+      (notResult.and as jest.Mock).mockReturnValueOnce(expectedResult);
+
+      const result = TableUtils.makeAdvancedValueFilter(
+        column,
+        operation,
+        value,
+        timezone
+      );
+
+      expect(filter.isNull).toHaveBeenCalled();
+      expect(nullResult.not).toHaveBeenCalled();
+      expect(notResult.and).toHaveBeenCalledWith(invokeResult);
+
+      if (args.length > 0) {
+        expect(filter.invoke).toHaveBeenCalledWith(...args);
+      } else {
+        expect(filter.invoke).toHaveBeenCalled();
+      }
+      expect(result).toBe(expectedResult);
+    }
+
+    const testFilterWithOperation = (
+      functionName,
+      value,
+      expectedFn,
+      operation: FilterTypeValue,
+      timezone: string,
+      type: string,
+      ...args
+    ) => {
+      const column = makeFilterColumn(type);
+      const filter = column.filter();
+
+      const expectedResult = makeFilterCondition();
+
+      filter[expectedFn].mockReturnValueOnce(expectedResult);
+
+      const result = TableUtils[functionName](
+        column,
+        operation,
+        value,
+        timezone
+      );
+
+      if (args.length > 0) {
+        expect(filter[expectedFn]).toHaveBeenCalledWith(...args);
+      } else {
+        expect(filter[expectedFn]).toHaveBeenCalled();
+      }
+      expect(result).toBe(expectedResult);
+    };
+
+    const testAdvancedValueFilter = (
+      value,
+      expectedFn,
+      operation: FilterTypeValue,
+      timezone: string,
+      type: string,
+      ...args
+    ) => {
+      testFilterWithOperation(
+        'makeAdvancedValueFilter',
+        value,
+        expectedFn,
+        operation,
+        timezone,
+        type,
+        ...args
+      );
+    };
+
+    it('should return a date filter if column type is date', () => {
+      testAdvancedValueFilter(
+        '2022-11-12',
+        FilterType.greaterThanOrEqualTo,
+        'greaterThanOrEqualTo',
+        DEFAULT_TIME_ZONE_ID,
+        'io.deephaven.time.DateTime'
+      );
+    });
+
+    it('should return a number filter if column type is number', () => {
+      testAdvancedValueFilter(
+        '200',
+        FilterType.eq,
+        FilterType.eq,
+        DEFAULT_TIME_ZONE_ID,
+        'int'
+      );
+    });
+
+    it('should return a char filter if column type is char', () => {
+      testAdvancedValueFilter(
+        'c',
+        FilterType.notEq,
+        FilterType.notEq,
+        DEFAULT_TIME_ZONE_ID,
+        'char'
+      );
+    });
+
+    describe('column type is not date, number, or char', () => {
+      it('should call eq function with the value if operation is "eq"', () => {
+        testAdvancedValueFilter(
+          'test',
+          FilterType.eq,
+          FilterType.eq,
+          DEFAULT_TIME_ZONE_ID,
+          'java.lang.String',
+          'test'
+        );
+      });
+
+      it('should call eqIgnoreCase function with the value if operation is "eqIgnoreCase"', () => {
+        testAdvancedValueFilter(
+          'test',
+          FilterType.eqIgnoreCase,
+          FilterType.eqIgnoreCase,
+          DEFAULT_TIME_ZONE_ID,
+          'java.lang.String',
+          'test'
+        );
+      });
+
+      it('should call notEq function with the value if operation is "notEq"', () => {
+        testAdvancedValueFilter(
+          'true',
+          FilterType.notEq,
+          FilterType.notEq,
+          DEFAULT_TIME_ZONE_ID,
+          'boolean',
+          'true'
+        );
+      });
+
+      it('should call notEqIgnoreCase function with the value if operation is "notEq"', () => {
+        testAdvancedValueFilter(
+          'true',
+          FilterType.notEq,
+          FilterType.notEq,
+          DEFAULT_TIME_ZONE_ID,
+          'boolean',
+          'true'
+        );
+      });
+
+      it('handles filter types with argument of value (eq, eqIgnoreCase, notEq, notEqIgnoreCase, greaterThan, greaterThanOrEqualTo, lessThan, lessThanOrEqualTo)', () => {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const value of filterTypesWithArgument) {
+          testAdvancedValueFilter(
+            'test',
+            value,
+            value,
+            DEFAULT_TIME_ZONE_ID,
+            'java.lang.String',
+            'test'
+          );
+        }
+      });
+
+      it('handles filter types with no arguments (isTrue, isFalse, isNull)', () => {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const value of filterTypesWithNoArguments) {
+          testAdvancedValueFilter(
+            'test',
+            value,
+            value,
+            DEFAULT_TIME_ZONE_ID,
+            'java.lang.String'
+          );
+        }
+      });
+
+      it('handles contains', () => {
+        testInvokeFilter(
+          'java.lang.String',
+          FilterType.contains,
+          'test',
+          DEFAULT_TIME_ZONE_ID,
+          'matches',
+          `(?s)(?i).*\\Qtest\\E.*`
+        );
+      });
+
+      it('handles notContains', () => {
+        const column = makeFilterColumn('java.lang.String');
+        const filter = column.filter() as MockFilter;
+
+        const nullResult = makeFilterCondition();
+        const notResult = makeFilterColumn();
+        const invokeResult = makeFilterCondition();
+        const expectedResult = makeFilterCondition();
+
+        filter.isNull.mockReturnValueOnce(nullResult);
+
+        filter.invoke.mockReturnValueOnce(invokeResult);
+
+        invokeResult.not.mockReturnValueOnce(notResult);
+
+        (nullResult.or as jest.Mock).mockReturnValueOnce(expectedResult);
+
+        const result = TableUtils.makeAdvancedValueFilter(
+          column,
+          FilterType.notContains,
+          'test',
+          DEFAULT_TIME_ZONE_ID
+        );
+
+        expect(filter.isNull).toHaveBeenCalled();
+        expect(nullResult.or).toHaveBeenCalledWith(notResult);
+
+        expect(filter.invoke).toHaveBeenCalledWith(
+          'matches',
+          `(?s)(?i).*\\Qtest\\E.*`
+        );
+
+        expect(result).toBe(expectedResult);
+      });
+
+      it('handles startsWith', () => {
+        testInvokeFilter(
+          'java.lang.String',
+          FilterType.startsWith,
+          'test',
+          DEFAULT_TIME_ZONE_ID,
+          'matches',
+          `(?s)(?i)^\\Qtest\\E.*`
+        );
+      });
+
+      it('handles endsWith', () => {
+        testInvokeFilter(
+          'java.lang.String',
+          FilterType.endsWith,
+          'test',
+          DEFAULT_TIME_ZONE_ID,
+          'matches',
+          `(?s)(?i).*\\Qtest\\E$`
+        );
+      });
+
+      it('should throw an error for unexpected filter operations', () => {
+        const column = makeFilterColumn('java.lang.String');
+
+        // eslint-disable-next-line no-restricted-syntax
+        for (const operation of invalidFilterTypes) {
+          expect(() =>
+            TableUtils.makeAdvancedValueFilter(
+              column,
+              operation,
+              'test',
+              DEFAULT_TIME_ZONE_ID
+            )
+          ).toThrowError(`Unexpected filter operation: ${operation}`);
+        }
+      });
+    });
+  });
+
   describe('quick number filters', () => {
     function testNumberFilter(text, expectedFn, ...args) {
       testFilter('makeQuickNumberFilter', text, expectedFn, ...args);
