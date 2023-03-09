@@ -1090,6 +1090,8 @@ export class GridRenderer {
       allColumnWidths,
       allRowYs,
       allRowHeights,
+      modelRows,
+      modelColumns,
     } = metrics;
     const {
       cellHorizontalPadding,
@@ -1097,7 +1099,9 @@ export class GridRenderer {
       treeHorizontalPadding,
     } = theme;
 
-    const textAlign = model.textAlignForCell(column, row);
+    const modelRow = getOrThrow(modelRows, row);
+    const modelColumn = getOrThrow(modelColumns, column);
+    const textAlign = model.textAlignForCell(modelColumn, modelRow);
     const x = getOrThrow(allColumnXs, column);
     const y = getOrThrow(allRowYs, row);
     const columnWidth = getOrThrow(allColumnWidths, column);
