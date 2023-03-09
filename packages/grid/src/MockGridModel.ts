@@ -35,6 +35,15 @@ class MockGridModel extends GridModel implements EditableGridModel {
     floatingRightColumnCount = 0,
     isEditable = false,
     editedData = [],
+  }: {
+    rowCount?: number;
+    columnCount?: number;
+    floatingTopRowCount?: number;
+    floatingBottomRowCount?: number;
+    floatingLeftColumnCount?: number;
+    floatingRightColumnCount?: number;
+    isEditable?: boolean;
+    editedData?: string[][];
   } = {}) {
     super();
 

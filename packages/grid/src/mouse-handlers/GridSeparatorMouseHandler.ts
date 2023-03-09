@@ -1,8 +1,8 @@
+import { getOrThrow } from '@deephaven/utils';
 import type Grid from '../Grid';
 import type { GridMetricCalculator } from '../GridMetricCalculator';
 import type GridModel from '../GridModel';
 import { EventHandlerResult } from '../EventHandlerResult';
-import { getOrThrow } from '../GridMetricCalculator';
 import GridMetrics, { ModelIndex, VisibleIndex } from '../GridMetrics';
 import GridMouseHandler from '../GridMouseHandler';
 import type { GridTheme } from '../GridTheme';

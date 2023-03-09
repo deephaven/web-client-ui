@@ -7,3 +7,4 @@ export { default as IrisGridFilterMouseHandler } from './IrisGridFilterMouseHand
 export { default as IrisGridRowTreeMouseHandler } from './IrisGridRowTreeMouseHandler';
 export { default as IrisGridSortMouseHandler } from './IrisGridSortMouseHandler';
 export { default as PendingMouseHandler } from './PendingMouseHandler';
+export { default as IrisGridTokenMouseHandler } from './IrisGridTokenMouseHandler';
