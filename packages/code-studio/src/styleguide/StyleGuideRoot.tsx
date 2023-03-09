@@ -1,13 +1,15 @@
 import React from 'react';
 import { Provider } from 'react-redux';
+import 'fira';
+import '@deephaven/components/scss/BaseStyleSheet.scss';
 import { MonacoUtils } from '@deephaven/console';
 import { store } from '@deephaven/redux';
 import MonacoWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
-import AppRouter from './main/AppRouter';
-import DownloadServiceWorkerUtils from './DownloadServiceWorkerUtils';
-import { unregister } from './serviceWorker';
+import DownloadServiceWorkerUtils from '../DownloadServiceWorkerUtils';
+import { unregister } from '../serviceWorker';
+import StyleGuideInit from './StyleGuideInit';
 
-export function AppRoot() {
+export function StyleGuideRoot() {
   unregister();
   DownloadServiceWorkerUtils.registerOnLoaded();
   MonacoUtils.init({ getWorker: () => new MonacoWorker() });
@@ -19,9 +21,9 @@ export function AppRoot() {
 
   return (
     <Provider store={store}>
-      <AppRouter />
+      <StyleGuideInit />
     </Provider>
   );
 }
 
-export default AppRoot;
+export default StyleGuideRoot;

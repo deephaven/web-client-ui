@@ -1,10 +1,12 @@
 import { Column } from '@deephaven/jsapi-shim';
 import IrisGridTestUtils from '../../IrisGridTestUtils';
 import {
+  DateCondition,
   FormatStyleType,
   FormatterType,
   FormattingRule,
   getFormatColumns,
+  isDateConditionValid,
   StringCondition,
 } from './ConditionalFormattingUtils';
 
@@ -214,4 +216,62 @@ describe('getFormatColumns', () => {
       `[row] 1 - ${FormatStyleType.WARN} : 0 - ${FormatStyleType.POSITIVE} : null`,
     ]);
   });
+});
+
+describe('isDateConditionValid', () => {
+  const values = {
+    valid: [
+      '2023-02-23T11:46:31.000000000 NY',
+      '2023-02-23T00:00:00 NY',
+      '2023-02-23 NY',
+    ],
+    invalid: ['blah', '2023-02-23', '2023-02-23T00:00:00 NY blah'],
+    empty: '',
+    undefined,
+  };
+
+  const conditions = {
+    valueNotRequired: [DateCondition.IS_NULL, DateCondition.IS_NOT_NULL],
+    valueRequired: [
+      DateCondition.IS_AFTER,
+      DateCondition.IS_AFTER_OR_EQUAL,
+      DateCondition.IS_BEFORE_OR_EQUAL,
+      DateCondition.IS_BEFORE,
+      DateCondition.IS_EXACTLY,
+      DateCondition.IS_NOT_EXACTLY,
+    ],
+  };
+
+  describe.each(conditions.valueNotRequired)(
+    'Not-Required condition: %s',
+    condition => {
+      it.each([
+        ...values.valid,
+        ...values.invalid,
+        values.empty,
+        values.undefined,
+      ])('should ignore value when not required: %s', testValue => {
+        expect(isDateConditionValid(condition, testValue)).toBeTruthy();
+      });
+    }
+  );
+
+  describe.each(conditions.valueRequired)(
+    'Required condition: %s',
+    condition => {
+      it.each([
+        [values.empty, false],
+        [values.undefined, false],
+        [values.invalid, false],
+        [values.valid, true],
+      ] as const)(
+        'should return true only if value is valid date format: %s, %s',
+        (testValues, expected) => {
+          [testValues].flat().forEach(value => {
+            expect(isDateConditionValid(condition, value)).toEqual(expected);
+          });
+        }
+      );
+    }
+  );
 });

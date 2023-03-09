@@ -8,6 +8,7 @@ import {
   getConditionConfig,
   getDefaultStyleConfig,
   ModelColumn,
+  FormatStyleType,
 } from './ConditionalFormattingUtils';
 import ConditionEditor from './ConditionEditor';
 import StyleEditor from './StyleEditor';
@@ -83,14 +84,20 @@ function ColumnFormatEditor(props: ColumnFormatEditorProps): JSX.Element {
 
   useEffect(
     function updateColumnFormat() {
+      let isValid = conditionValid;
+
       if (selectedColumn === undefined) {
-        log.debug('Column is not selected, skip update.');
-        return;
+        log.debug('Column is not selected, invalidating update.');
+        isValid = false;
       }
-      if (selectedStyle === undefined) {
-        log.debug('Style is not selected, skip update.');
-        return;
+      if (
+        selectedStyle === undefined ||
+        selectedStyle.type === FormatStyleType.NO_FORMATTING
+      ) {
+        log.debug('Style is not selected, invalidating update.');
+        isValid = false;
       }
+
       const { type, name } = selectedColumn;
       const column = { type, name };
       onChange(
@@ -99,7 +106,7 @@ function ColumnFormatEditor(props: ColumnFormatEditorProps): JSX.Element {
           style: selectedStyle,
           ...conditionConfig,
         },
-        conditionValid
+        isValid
       );
     },
     [onChange, selectedColumn, selectedStyle, conditionConfig, conditionValid]

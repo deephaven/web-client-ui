@@ -136,6 +136,10 @@ function isValidIndex(x: number, array: readonly unknown[]): boolean {
   return x >= 0 && x < array.length;
 }
 
+function isDateWrapper(value: unknown): value is DateWrapper {
+  return (value as DateWrapper).asDate != null;
+}
+
 class IrisGridUtils {
   /**
    * Exports the state from Grid component to a JSON stringifiable object
@@ -1659,6 +1663,34 @@ class IrisGridUtils {
     });
 
     return { groups: [...groupMap.values()], maxDepth, groupMap, parentMap };
+  }
+
+  /**
+   * @param value The value of the cell in a column
+   * @param columnType The type of the column
+   * @returns The value of the cell converted to text
+   */
+  static convertValueToText(value: unknown, columnType: string): string {
+    if (
+      columnType != null &&
+      TableUtils.isCharType(columnType) &&
+      value != null &&
+      typeof value === 'number'
+    ) {
+      return String.fromCharCode(value);
+    }
+    if (TableUtils.isDateType(columnType) && isDateWrapper(value)) {
+      const date = new Date(value.asDate());
+      const offset = date.getTimezoneOffset();
+      const offsetDate = new Date(date.getTime() - offset * 60 * 1000);
+      const dateText = offsetDate.toISOString();
+      const formattedText = dateText.replace('T', ' ').substring(0, 23);
+      return formattedText;
+    }
+    if (value == null) {
+      return '';
+    }
+    return `${value}`;
   }
 }
 

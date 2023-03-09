@@ -517,8 +517,8 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
                     // eslint-disable-next-line react/jsx-props-no-spreading
                     {...provided.droppableProps}
                   >
-                    Create rollup by dragging columns here, from the available
-                    columns list below.
+                    To create a rollup, drag columns from the list below and
+                    drop them into this area.
                   </div>
                 )}
               </Droppable>
