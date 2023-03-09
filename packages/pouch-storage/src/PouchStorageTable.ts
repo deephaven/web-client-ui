@@ -114,7 +114,7 @@ function sortWithConfigs(
 
 export class PouchStorageTable<T extends StorageItem = StorageItem>
   implements StorageTable<T> {
-  private db: PouchDB.Database<T & PouchStorageItem>;
+  protected db: PouchDB.Database<T & PouchStorageItem>;
 
   private listeners: ViewportUpdateCallback<T>[] = [];
 
@@ -276,7 +276,7 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
     }
   }
 
-  private dbUpdate(event: PouchDB.Core.ChangesResponseChange<T>): void {
+  protected dbUpdate(event: PouchDB.Core.ChangesResponseChange<T>): void {
     log.debug('Update received', event);
 
     this.refreshInfo();
@@ -312,31 +312,44 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
     }
   }
 
+  /**
+   * Fetch data for the given viewport, selector, and sort.
+   * @param viewport
+   * @param selector
+   * @param sort
+   */
+  protected async fetchViewportData(
+    viewport: StorageTableViewport,
+    selector: PouchDB.Find.Selector,
+    sort: PouchDBSort
+  ): Promise<ViewportData<T>> {
+    return this.db
+      .find({
+        selector,
+        skip: viewport.top,
+        limit: viewport.bottom - viewport.top + 1,
+        sort,
+        fields: ['id', 'name'],
+      })
+      .then(findResult => ({
+        items: findResult.docs,
+        offset: viewport.top,
+      }));
+  }
+
   private async refreshData(): Promise<ViewportData<T> | undefined> {
     if (!this.currentViewport) {
       return;
     }
 
     try {
-      const { currentViewport: viewport } = this;
-
+      const selector = selectorWithFilters(this.currentFilter ?? []);
       const sort = sortWithConfigs(this.currentSort, this.currentReverse);
 
       this.viewportUpdatePromise?.cancel();
 
       this.viewportUpdatePromise = PromiseUtils.makeCancelable(
-        this.db
-          .find({
-            selector: selectorWithFilters(this.currentFilter ?? []),
-            skip: viewport.top,
-            limit: viewport.bottom - viewport.top + 1,
-            sort,
-            fields: ['id', 'name'],
-          })
-          .then(findResult => ({
-            items: findResult.docs,
-            offset: viewport.top,
-          }))
+        this.fetchViewportData(this.currentViewport, selector, sort)
       );
 
       const viewportData = await this.viewportUpdatePromise;
