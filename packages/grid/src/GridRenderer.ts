@@ -1592,7 +1592,6 @@ export class GridRenderer {
       modelColumns,
       allColumnXs,
       gridX,
-      calculatedColumnWidths,
       userColumnWidths,
       allColumnWidths,
       movedColumns,
@@ -1660,10 +1659,9 @@ export class GridRenderer {
               break;
             }
 
-            // Use this instead of visibleColumnWidths b/c the columns may be off screen
             const prevColumnWidth =
               userColumnWidths.get(prevModelIndex) ??
-              calculatedColumnWidths.get(prevModelIndex) ??
+              allColumnWidths.get(prevColumnIndex) ??
               columnWidth;
 
             columnGroupLeft -= prevColumnWidth;
@@ -1687,10 +1685,9 @@ export class GridRenderer {
               break;
             }
 
-            // Use this instead of visibleColumnWidths b/c the columns may be off screen
             const nextColumnWidth =
               userColumnWidths.get(nextModelIndex) ??
-              calculatedColumnWidths.get(nextModelIndex) ??
+              allColumnWidths.get(nextColumnIndex) ??
               columnWidth;
 
             columnGroupRight += nextColumnWidth;

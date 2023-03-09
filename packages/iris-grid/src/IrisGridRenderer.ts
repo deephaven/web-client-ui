@@ -450,7 +450,13 @@ class IrisGridRenderer extends GridRenderer {
       return;
     }
 
-    const sort = TableUtils.getSortForColumn(model.sort, modelColumn);
+    const columnName = model.columns[modelColumn]?.name;
+
+    if (columnName == null) {
+      return;
+    }
+
+    const sort = TableUtils.getSortForColumn(model.sort, columnName);
 
     if (!sort) {
       return;

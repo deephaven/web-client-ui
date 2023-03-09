@@ -97,11 +97,18 @@ export type DehydratedUserColumnWidth = [ColumnName, number];
 
 export type DehydratedUserRowHeight = [number, number];
 
-export type DehydratedSort = {
+/** @deprecated Use `DehydratedSort` instead */
+export interface LegacyDehydratedSort {
   column: ModelIndex;
   isAbs: boolean;
   direction: SortDirection;
-};
+}
+
+export interface DehydratedSort {
+  column: ColumnName;
+  isAbs: boolean;
+  direction: SortDirection;
+}
 
 export interface DehydratedIrisGridState {
   advancedFilters: readonly DehydratedAdvancedFilter[];
@@ -770,7 +777,7 @@ class IrisGridUtils {
     return sorts.map(sort => {
       const { column, isAbs, direction } = sort;
       return {
-        column: column.index,
+        column: column.name,
         isAbs,
         direction,
       };
@@ -785,16 +792,21 @@ class IrisGridUtils {
    */
   static hydrateSort(
     columns: readonly Column[],
-    sorts: readonly DehydratedSort[]
+    sorts: readonly (DehydratedSort | LegacyDehydratedSort)[]
   ): Sort[] {
     return (
       sorts
         .map(sort => {
-          const { column: columnIndex, isAbs, direction } = sort;
+          const { column: columnIndexOrName, isAbs, direction } = sort;
           if (direction === TableUtils.sortDirection.reverse) {
             return dh.Table.reverse();
           }
-          const column = IrisGridUtils.getColumn(columns, columnIndex);
+
+          const column =
+            typeof columnIndexOrName === 'string'
+              ? IrisGridUtils.getColumnByName(columns, columnIndexOrName)
+              : IrisGridUtils.getColumn(columns, columnIndexOrName);
+
           if (column != null) {
             let columnSort = column.sort();
             if (isAbs) {
@@ -868,7 +880,7 @@ class IrisGridUtils {
       quickFilters?: readonly DehydratedQuickFilter[];
       advancedFilters?: readonly DehydratedAdvancedFilter[];
       inputFilters?: readonly InputFilter[];
-      sorts?: readonly DehydratedSort[];
+      sorts?: readonly (DehydratedSort | LegacyDehydratedSort)[];
       partition?: unknown;
       partitionColumn?: ColumnName;
     },

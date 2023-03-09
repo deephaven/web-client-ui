@@ -64,6 +64,37 @@ column_header_group = column_header_group.layout_hints(column_groups=column_grou
   await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
 });
 
+test('can open a table with column header groups and hidden columns', async ({
+  page,
+}) => {
+  await page.goto('');
+  const consoleInput = page.locator('.console-input');
+  await consoleInput.click();
+
+  const command = `${makeTableCommand('column_header_group')}
+column_groups = [{ 'name': 'YandZ', 'children': ['y', 'z'] }, { 'name': 'All', 'children': ['x', 'YandZ'], 'color': 'white' }]
+column_header_group = column_header_group.layout_hints(column_groups=column_groups, hide=['y', 'z'])`;
+
+  await pasteInMonaco(consoleInput, command);
+  await page.keyboard.press('Enter');
+
+  // Wait for the panel to show
+  await expect(page.locator('.iris-grid-panel')).toHaveCount(1);
+
+  // Wait until it's done loading
+  await expect(page.locator('.iris-grid-panel .loading-spinner')).toHaveCount(
+    0
+  );
+
+  // Model is loaded, need to make sure table data is also loaded
+  await expect(
+    page.locator('.iris-grid .iris-grid-loading-status')
+  ).toHaveCount(0);
+
+  // Now we should be able to check the snapshot
+  await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
+});
+
 test.describe('tests table operations', () => {
   let page: Page;
 

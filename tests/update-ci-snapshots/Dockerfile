@@ -69,4 +69,4 @@ RUN SKIP_POSTINSTALL=1 npm ci
 COPY . .
 
 # Now build the app. We only need the code-studio built for e2e tests.
-RUN VITE_CORE_API_URL=http://host.docker.internal:10000/jsapi npm run build:app
+RUN npm run build:app

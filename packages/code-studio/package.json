@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/code-studio",
-  "version": "0.31.0",
+  "version": "0.31.1",
   "description": "Deephaven Code Studio",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -80,9 +80,9 @@
     "@deephaven/prettier-config": "file:../prettier-config",
     "@deephaven/stylelint-config": "file:../stylelint-config",
     "@deephaven/tsconfig": "file:../tsconfig",
-    "@vitejs/plugin-react": "^2.0.0",
+    "@vitejs/plugin-react-swc": "^3.2.0",
     "autoprefixer": "^10.4.8",
-    "vite": "^3.1.0"
+    "vite": "^4.1.4"
   },
   "publishConfig": {
     "access": "public"

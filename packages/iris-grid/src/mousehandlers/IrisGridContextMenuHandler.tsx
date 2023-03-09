@@ -229,7 +229,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     } = theme;
 
     const modelSort = model.sort;
-    const columnSort = TableUtils.getSortForColumn(modelSort, modelIndex);
+    const columnSort = TableUtils.getSortForColumn(modelSort, column.name);
     const hasReverse = reverseType !== TableUtils.REVERSE_TYPE.NONE;
     const { userColumnWidths } = metrics;
     const isColumnHidden = [...userColumnWidths.values()].some(

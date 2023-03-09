@@ -844,11 +844,49 @@ test('Only allows 1 new group at a time', async () => {
   expect(mockGroupHandler).toBeCalledWith([
     expect.objectContaining(groupObject),
   ]);
+
+  createGroupBtn.focus();
+  expect(screen.queryAllByText('Invalid name').length).toBe(1);
+});
+
+test('Shows validation error for new group on blur when never typed in', async () => {
+  const user = userEvent.setup({ delay: null });
+
+  const model = makeModelWithGroups([
+    {
+      children: [`${COLUMN_PREFIX}0`, `${COLUMN_PREFIX}1`],
+      name: `${ColumnHeaderGroup.NEW_GROUP_PREFIX}Test`,
+    },
+  ]);
+
+  const mockGroupHandler = jest.fn();
+
+  render(
+    <Builder
+      model={model}
+      columnHeaderGroups={model.columnHeaderGroups}
+      onColumnHeaderGroupChanged={mockGroupHandler}
+    />
+  );
+
+  expect(screen.queryAllByText('Invalid name').length).toBe(0);
+
+  await selectItems(user, [2]);
+  expect(screen.queryAllByText('Invalid name').length).toBe(1);
 });
 
 test('Search columns', async () => {
   const user = userEvent.setup({ delay: null });
-  render(<BuilderWithGroups />);
+
+  const model = makeModelWithGroups([
+    ...COLUMN_HEADER_GROUPS,
+    {
+      name: `${ColumnHeaderGroup.NEW_GROUP_PREFIX}Test`,
+      children: [COLUMNS[9].name],
+    },
+  ]);
+
+  render(<BuilderWithGroups model={model} />);
 
   const searchInput = screen.getByPlaceholderText('Search');
 
@@ -861,19 +899,20 @@ test('Search columns', async () => {
   expectSelection([1, 2, 3, 4, 5, 6]);
 
   await user.type(searchInput, 'One');
-
   jest.advanceTimersByTime(500);
-
   expectSelection([1, 2, 3]);
 
   await user.clear(searchInput);
-
   jest.advanceTimersByTime(500);
-
   expectSelection([]);
 
   await user.type(searchInput, 'asdf');
+  jest.advanceTimersByTime(500);
+  expectSelection([]);
 
+  await user.clear(searchInput);
+  jest.advanceTimersByTime(500);
+  await user.type(searchInput, ColumnHeaderGroup.NEW_GROUP_PREFIX);
   jest.advanceTimersByTime(500);
   expectSelection([]);
 });
