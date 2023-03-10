@@ -26,7 +26,7 @@ const DB_PREFIX = 'Deephaven.';
 
 PouchDB.plugin(PouchDBFind);
 
-interface PouchStorageItem {
+export interface PouchStorageItem {
   _id?: string;
 }
 
@@ -288,15 +288,25 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
     this.refreshData();
   }
 
+  /**
+   * Fetch infor for a given selector.
+   * @param selector
+   */
+  protected async fetchInfo(
+    selector: PouchDB.Find.Selector
+  ): Promise<PouchDB.Find.FindResponse<T & PouchStorageItem>> {
+    return this.db.find({
+      selector,
+      fields: [],
+    });
+  }
+
   private async refreshInfo() {
     try {
       this.infoUpdatePromise?.cancel();
 
       this.infoUpdatePromise = PromiseUtils.makeCancelable(
-        this.db.find({
-          selector: selectorWithFilters(this.currentFilter ?? []),
-          fields: [],
-        })
+        this.fetchInfo(selectorWithFilters(this.currentFilter ?? []))
       );
 
       const findResult = await this.infoUpdatePromise;
