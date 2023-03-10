@@ -1,7 +1,12 @@
 import { EventTarget, Event } from 'event-target-shim';
+import { find as linkifyFind } from 'linkifyjs';
 import type { IColumnHeaderGroup } from './ColumnHeaderGroup';
 import { ModelIndex } from './GridMetrics';
 import { GridColor, GridTheme, NullableGridColor } from './GridTheme';
+import memoizeClear from './memoizeClear';
+import { Token } from './GridUtils';
+
+const LINK_TRUNCATION_LENGTH = 5000;
 
 /* eslint class-methods-use-this: "off" */
 /* eslint no-unused-vars: "off" */
@@ -183,6 +188,44 @@ abstract class GridModel<
   ): IColumnHeaderGroup | undefined {
     return undefined;
   }
+
+  /**
+   * Gets the tokens in the cell at column and row, based on the visible text
+   * @param column The model column
+   * @param row The model row
+   * @param visibleLength The length of the visible text
+   * @returns An array of Tokens in the cell
+   */
+  tokensForCell(
+    column: ModelIndex,
+    row: ModelIndex,
+    visibleLength: number = LINK_TRUNCATION_LENGTH
+  ): Token[] {
+    const text = this.textForCell(column, row);
+    return this.getCachedTokensInText(text, visibleLength);
+  }
+
+  getCachedTokensInText = memoizeClear(
+    (text: string, visibleLength: number): Token[] => {
+      // If no text is truncated, then directly search in text
+      if (visibleLength >= text.length) {
+        return linkifyFind(text);
+      }
+
+      // To check for links, we should check to the first space after the truncatedText length
+      const indexOfProceedingWhitespace = text
+        .slice(visibleLength - 1, LINK_TRUNCATION_LENGTH)
+        .search(/\s/); // index or -1 if not found
+
+      let lengthOfContent = visibleLength + indexOfProceedingWhitespace;
+      // If it doesn't exist, set lengthOfContent to the minimum between length of the original text and 5000
+      if (indexOfProceedingWhitespace === -1) {
+        lengthOfContent = Math.min(LINK_TRUNCATION_LENGTH, text.length);
+      }
+      const contentToCheckForLinks = text.substring(0, lengthOfContent);
+      return linkifyFind(contentToCheckForLinks);
+    }
+  );
 }
 
 export default GridModel;

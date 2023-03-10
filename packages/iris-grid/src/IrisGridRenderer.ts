@@ -13,7 +13,6 @@ import {
   BoundedAxisRange,
   BoxCoordinates,
   Coordinate,
-  getOrThrow,
   GridMetrics,
   GridRangeIndex,
   GridRenderer,
@@ -24,7 +23,7 @@ import {
 } from '@deephaven/grid';
 import { Sort } from '@deephaven/jsapi-shim';
 import { TableUtils, ReverseType } from '@deephaven/jsapi-utils';
-import { assertNotNull } from '@deephaven/utils';
+import { assertNotNull, getOrThrow } from '@deephaven/utils';
 import {
   ReadonlyAdvancedFilterMap,
   ReadonlyQuickFilterMap,
@@ -918,7 +917,6 @@ class IrisGridRenderer extends GridRenderer {
   // This will shrink the size the text may take when the overflow button is rendered
   // The text will truncate to a smaller width and won't overlap the button
   getTextRenderMetrics(
-    context: CanvasRenderingContext2D,
     state: IrisGridRenderState,
     column: VisibleIndex,
     row: VisibleIndex
@@ -927,7 +925,7 @@ class IrisGridRenderer extends GridRenderer {
     x: Coordinate;
     y: Coordinate;
   } {
-    const textMetrics = super.getTextRenderMetrics(context, state, column, row);
+    const textMetrics = super.getTextRenderMetrics(state, column, row);
 
     const { mouseX, mouseY, metrics } = state;
 
@@ -973,12 +971,7 @@ class IrisGridRenderer extends GridRenderer {
     }
 
     const text = model.textForCell(modelColumn, modelRow) ?? '';
-    const { width: textWidth } = super.getTextRenderMetrics(
-      context,
-      state,
-      column,
-      row
-    );
+    const { width: textWidth } = super.getTextRenderMetrics(state, column, row);
     const fontWidth =
       metrics.fontWidths.get(theme.font) ?? IrisGridRenderer.DEFAULT_FONT_WIDTH;
 
