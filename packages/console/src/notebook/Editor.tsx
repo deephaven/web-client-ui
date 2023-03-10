@@ -89,6 +89,7 @@ class Editor extends Component<EditorProps, Record<string, never>> {
       tabCompletion: 'on',
       value: '',
       wordWrap: 'off',
+      links: true,
       ...settings,
     };
     assertNotNull(this.container);
@@ -111,6 +112,39 @@ class Editor extends Component<EditorProps, Record<string, never>> {
     });
     this.editor.layout();
     MonacoUtils.removeConflictingKeybindings(this.editor);
+    console.log(this?.editor.getModel()?.getLanguageId());
+    monaco.languages.registerLinkProvider('plaintext', {
+      provideLinks: (model, token) => {
+        const text = model.getValue();
+        console.log('here');
+        return {
+          links: [
+            {
+              range: new monaco.Range(1, 3, 1, 6),
+              url: 'https://google.com',
+              tooltip: 'test',
+            },
+          ],
+        };
+      },
+      resolveLink: (link, token) => {
+        console.log('here');
+        if (typeof link.url === 'string') {
+          // window.open(link.url, '_blank');
+        }
+        return link;
+      },
+    });
+
+    this.editor.onMouseDown(e => {
+      if (e.target.type === monaco.editor.MouseTargetType.CONTENT_TEXT) {
+        if (e.event.leftButton) {
+          window.open(e.target.href);
+        }
+        e.event.preventDefault();
+        e.event.stopPropagation();
+      }
+    });
 
     onEditorInitialized(this.editor);
   }
