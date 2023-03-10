@@ -1795,6 +1795,134 @@ describe('quick filter tests', () => {
       testCharFilter('null', FilterType.isNull);
     });
   });
+
+  describe('makeSelectValueFilter', () => {
+    const testNoSelectedItems = (type: string, expectedValue: unknown) => {
+      const column = makeFilterColumn(type);
+      const filter = column.filter();
+
+      const eqResult = makeFilterCondition();
+      const notEqResult = makeFilterCondition();
+      const expectedResult = makeFilterCondition();
+
+      (filter.eq as jest.Mock).mockReturnValueOnce(eqResult);
+      (filter.notEq as jest.Mock).mockReturnValueOnce(notEqResult);
+      eqResult.and.mockReturnValueOnce(expectedResult);
+
+      expect(TableUtils.makeSelectValueFilter(column, [], false)).toBe(
+        expectedResult
+      );
+      expect(filter.eq).toHaveBeenCalledWith(expectedValue);
+      expect(filter.notEq).toHaveBeenCalledWith(expectedValue);
+      expect(eqResult.and).toHaveBeenCalledWith(notEqResult);
+    };
+
+    it('should return null if there are no selected values and invertSelection is true', () => {
+      const column = {} as Column;
+
+      expect(TableUtils.makeSelectValueFilter(column, [], true)).toBeNull();
+    });
+
+    it('handles different column types when there are no selected values and invertSelection is false', () => {
+      testNoSelectedItems('java.lang.String', 'a');
+      testNoSelectedItems('boolean', true);
+      testNoSelectedItems(
+        'io.deephaven.db.tables.utils.DBDateTime',
+        expect.any(Number)
+      );
+      testNoSelectedItems('int', 0);
+    });
+
+    it('handles non-empty selected values with null values and invertSelection is true', () => {
+      const column = makeFilterColumn('java.lang.String');
+      const filter = column.filter();
+
+      const isNullResult = makeFilterCondition();
+      const notResult = makeFilterCondition();
+      const notInResult = makeFilterCondition();
+      const expectedResult = makeFilterCondition();
+
+      (filter.notIn as jest.Mock).mockReturnValueOnce(notInResult);
+      (filter.isNull as jest.Mock).mockReturnValueOnce(isNullResult);
+      isNullResult.not.mockReturnValueOnce(notResult);
+      notResult.and.mockReturnValueOnce(expectedResult);
+      expect(
+        TableUtils.makeSelectValueFilter(column, [null, 'string'], true)
+      ).toBe(expectedResult);
+      expect(filter.notIn).toHaveBeenCalledWith(['string']);
+      expect(notResult.and).toHaveBeenCalledWith(notInResult);
+    });
+
+    it('handles non-empty selected values with null values and invertSelection is false', () => {
+      const column = makeFilterColumn('boolean');
+      const filter = column.filter();
+
+      const isNullResult = makeFilterCondition();
+      const inResult = makeFilterCondition();
+      const expectedResult = makeFilterCondition();
+
+      (filter.isNull as jest.Mock).mockReturnValueOnce(isNullResult);
+      (filter.in as jest.Mock).mockReturnValueOnce(inResult);
+      isNullResult.or.mockReturnValueOnce(expectedResult);
+      expect(
+        TableUtils.makeSelectValueFilter(column, [null, true, false], false)
+      ).toBe(expectedResult);
+      expect(filter.in).toHaveBeenCalledWith([true, false]);
+      expect(isNullResult.or).toHaveBeenCalledWith(inResult);
+    });
+
+    it('handles all null values as selected values and invertSelection true', () => {
+      const column = makeFilterColumn('boolean');
+      const filter = column.filter();
+
+      const isNullResult = makeFilterCondition();
+      const expectedResult = makeFilterCondition();
+
+      (filter.isNull as jest.Mock).mockReturnValueOnce(isNullResult);
+      isNullResult.not.mockReturnValueOnce(expectedResult);
+      expect(
+        TableUtils.makeSelectValueFilter(column, [null, null, null], true)
+      ).toBe(expectedResult);
+    });
+
+    it('handles all null values as selected values and invertSelection false', () => {
+      const column = makeFilterColumn('boolean');
+      const filter = column.filter();
+
+      const isNullResult = makeFilterCondition();
+
+      (filter.isNull as jest.Mock).mockReturnValueOnce(isNullResult);
+      expect(
+        TableUtils.makeSelectValueFilter(column, [null, null, null], false)
+      ).toBe(isNullResult);
+    });
+
+    it('handles non-empty selected values but no null values and invertSelection is true', () => {
+      const column = makeFilterColumn('int');
+      const filter = column.filter();
+
+      const expectedResult = makeFilterCondition();
+
+      (filter.notIn as jest.Mock).mockReturnValueOnce(expectedResult);
+      expect(TableUtils.makeSelectValueFilter(column, [1, 2, 3], true)).toBe(
+        expectedResult
+      );
+      expect(filter.notIn).toHaveBeenCalledWith([1, 2, 3]);
+    });
+
+    it('handles non-empty selected values but no null values and invertSelection is false', () => {
+      const column = makeFilterColumn('int');
+      const filter = column.filter();
+
+      const expectedResult = makeFilterCondition();
+
+      (filter.in as jest.Mock).mockReturnValueOnce(expectedResult);
+      expect(TableUtils.makeSelectValueFilter(column, [1, 2, 3], false)).toBe(
+        expectedResult
+      );
+      expect(filter.in).toHaveBeenCalledWith([1, 2, 3]);
+    });
+  });
 });
 
 describe('makeCancelableTableEventPromise', () => {
