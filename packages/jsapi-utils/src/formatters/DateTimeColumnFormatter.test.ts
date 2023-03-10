@@ -37,6 +37,17 @@ const {
   DEFAULT_TIME_ZONE_ID,
 } = DateTimeColumnFormatter;
 
+const VALID_FORMATS = [
+  DEFAULT_DATETIME_FORMAT_STRING,
+  'yyyy-MM-dd HH:mm:ss',
+  'yyyy-MM-dd HH:mm:ss.SSSSSSSSS',
+  'yyyy-MM-dd',
+  'MM-dd-yyyy',
+  'HH:mm:ss',
+  'HH:mm:ss.SSS',
+  'HH:mm:ss.SSSSSSSSS',
+];
+
 it('should not throw if constructor called with no arguments', () => {
   expect(makeFormatter).not.toThrow();
 });
@@ -185,46 +196,13 @@ describe('calls to iris format and time zone functions', () => {
 
 describe('isValid', () => {
   it('should return true if a format is valid', () => {
-    expect(
-      DateTimeColumnFormatter.isValid({
-        formatString: DEFAULT_DATETIME_FORMAT_STRING,
-      })
-    ).toBe(true);
-    expect(
-      DateTimeColumnFormatter.isValid({
-        formatString: 'yyyy-MM-dd HH:mm:ss',
-      })
-    ).toBe(true);
-    expect(
-      DateTimeColumnFormatter.isValid({
-        formatString: 'yyyy-MM-dd HH:mm:ss.SSSSSSSSS',
-      })
-    ).toBe(true);
-    expect(
-      DateTimeColumnFormatter.isValid({
-        formatString: 'yyyy-MM-dd',
-      })
-    ).toBe(true);
-    expect(
-      DateTimeColumnFormatter.isValid({
-        formatString: 'MM-dd-yyyy',
-      })
-    ).toBe(true);
-    expect(
-      DateTimeColumnFormatter.isValid({
-        formatString: 'HH:mm:ss',
-      })
-    ).toBe(true);
-    expect(
-      DateTimeColumnFormatter.isValid({
-        formatString: 'HH:mm:ss.SSS',
-      })
-    ).toBe(true);
-    expect(
-      DateTimeColumnFormatter.isValid({
-        formatString: 'HH:mm:ss.SSSSSSSSS',
-      })
-    ).toBe(true);
+    for (let i = 0; i < VALID_FORMATS.length; i += 1) {
+      expect(
+        DateTimeColumnFormatter.isValid({
+          formatString: VALID_FORMATS[i],
+        })
+      ).toBe(true);
+    }
   });
 });
 

@@ -908,10 +908,6 @@ describe('quick filter tests', () => {
       const column = makeFilterColumn();
       expect(TableUtils.makeQuickNumberFilter(column, '>=NaN')).toBeNull();
     });
-
-    // it('should handle long type', () => {
-    //   const column = makeFilterColumn('long');
-    // });
   });
 
   describe('quick boolean filters', () => {
@@ -1729,7 +1725,7 @@ describe('quick filter tests', () => {
       );
     });
 
-    it('throws an error if filter for andCoomponent is null', () => {
+    it('throws an error if filter for andComponent is null', () => {
       const column = makeFilterColumn('char');
       expect(() =>
         TableUtils.makeQuickFilter(column, '12a && 13 || 12')
