@@ -151,8 +151,10 @@ class VisibilityOrderingBuilder extends Component<
 
   searchColumns(searchFilter: string): void {
     const flattenedItems = flattenTree(this.getTreeItems());
-    const itemsMatch = flattenedItems.filter(({ id }) =>
-      id.toLowerCase().includes(searchFilter.toLowerCase())
+    const itemsMatch = flattenedItems.filter(
+      ({ id, data }) =>
+        !(data.group?.isNew ?? false) &&
+        id.toLowerCase().includes(searchFilter.toLowerCase())
     );
 
     const columnsMatch = itemsMatch.map(({ id }) => id);

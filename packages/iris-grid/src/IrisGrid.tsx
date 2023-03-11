@@ -43,7 +43,6 @@ import {
   isEditableGridModel,
   BoundedAxisRange,
   isExpandableGridModel,
-  getOrThrow,
 } from '@deephaven/grid';
 import {
   dhEye,
@@ -93,6 +92,7 @@ import {
   Pending,
   PromiseUtils,
   ValidationError,
+  getOrThrow,
 } from '@deephaven/utils';
 import {
   Type as FilterType,
@@ -122,6 +122,7 @@ import {
   IrisGridFilterMouseHandler,
   IrisGridRowTreeMouseHandler,
   IrisGridSortMouseHandler,
+  IrisGridTokenMouseHandler,
   PendingMouseHandler,
 } from './mousehandlers';
 import ToastBottomBar from './ToastBottomBar';
@@ -413,6 +414,8 @@ export interface IrisGridState {
   overflowButtonTooltipProps: CSSProperties | null;
   expandCellTooltipProps: CSSProperties | null;
   expandTooltipDisplayValue: string;
+  linkHoverTooltipProps: CSSProperties | null;
+  linkHoverDisplayValue: string;
 
   gotoRow: string;
   gotoRowError: string;
@@ -721,6 +724,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const mouseHandlers = [
       new IrisGridCellOverflowMouseHandler(this),
       new IrisGridRowTreeMouseHandler(this),
+      new IrisGridTokenMouseHandler(this),
       new IrisGridColumnSelectMouseHandler(this),
       new IrisGridColumnTooltipMouseHandler(this),
       new IrisGridSortMouseHandler(this),
@@ -839,6 +843,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       overflowButtonTooltipProps: null,
       expandCellTooltipProps: null,
       expandTooltipDisplayValue: 'expand',
+      linkHoverTooltipProps: null,
+      linkHoverDisplayValue: '',
       isGotoShown: false,
       gotoRow: '',
       gotoRowError: '',
@@ -2305,7 +2311,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   );
 
   handleAnimationLoop(): void {
-    this.grid?.updateCanvasScale();
     this.grid?.updateCanvas();
 
     if (this.isAnimating) {
@@ -2654,7 +2659,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const { model } = this.props;
     const columnIndex = model.getColumnIndexByName(column.name);
     assertNotNull(columnIndex);
-    const oldSort = TableUtils.getSortForColumn(model.sort, columnIndex);
+    const columnName = model.columns[columnIndex].name;
+    const oldSort = TableUtils.getSortForColumn(model.sort, columnName);
     let newSort = null;
 
     if (oldSort == null || oldSort.direction !== direction) {
@@ -2667,7 +2673,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     const sorts = TableUtils.setSortForColumn(
       model.sort,
-      columnIndex,
+      columnName,
       newSort,
       addToExisting
     );
@@ -3626,6 +3632,38 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
   );
 
+  getLinkHoverTooltip = memoize(
+    (linkHoverTooltipProps: CSSProperties): ReactNode => {
+      if (linkHoverTooltipProps == null) {
+        return null;
+      }
+
+      const { linkHoverDisplayValue } = this.state;
+
+      const wrapperStyle: CSSProperties = {
+        position: 'absolute',
+        ...linkHoverTooltipProps,
+        pointerEvents: 'none',
+      };
+
+      const popperOptions: PopperOptions = {
+        placement: 'bottom',
+      };
+
+      return (
+        <div style={wrapperStyle}>
+          <Tooltip options={popperOptions} ref={this.handleTooltipRef}>
+            <div className="link-hover-tooltip">
+              {linkHoverDisplayValue} - Click once to follow.
+              <br />
+              Click and hold to select this cell.
+            </div>
+          </Tooltip>
+        </div>
+      );
+    }
+  );
+
   handleGotoRowSelectedRowNumberSubmit(): void {
     const { gotoRow: rowNumber } = this.state;
     this.focusRowInGrid(rowNumber);
@@ -3885,6 +3923,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       overflowText,
       overflowButtonTooltipProps,
       expandCellTooltipProps,
+      linkHoverTooltipProps,
       isGotoShown,
       gotoRow,
       gotoRowError,
@@ -4153,7 +4192,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             const column = model.columns[modelColumn];
             const advancedFilter = advancedFilters.get(modelColumn);
             const { options: advancedFilterOptions } = advancedFilter || {};
-            const sort = TableUtils.getSortForColumn(model.sort, modelColumn);
+            const sort = TableUtils.getSortForColumn(model.sort, column.name);
             const sortDirection = sort ? sort.direction : null;
             const element = (
               <div
@@ -4195,7 +4234,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       model.isCustomColumnsAvailable,
       model.isFormatColumnsAvailable,
       model.isRollupAvailable,
-      model.isTotalsAvailable,
+      model.isTotalsAvailable || isRollup,
       model.isSelectDistinctAvailable,
       model.isExportAvailable,
       this.toggleFilterBarAction,
@@ -4497,6 +4536,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               this.getOverflowButtonTooltip(overflowButtonTooltipProps)}
             {expandCellTooltipProps &&
               this.getExpandCellTooltip(expandCellTooltipProps)}
+            {linkHoverTooltipProps &&
+              this.getLinkHoverTooltip(linkHoverTooltipProps)}
           </div>
           <GotoRow
             model={model}

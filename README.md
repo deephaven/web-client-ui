@@ -34,11 +34,10 @@ We are still using node 16.x and npm 8.x. If you are [using nvm](https://github.
 - `npm run e2e`: Runs the Playwright end-to-end tests locally.
 - `npm run e2e:headed`: Runs end-to-end tests in headed mode debug mode. Useful if you need to debug why a particular test isn't work. For example, to debug the `table.spec.ts` test directly, you could run `npm run e2e:headed -- ./tests/table.spec.ts`.
 
-Edit `.env.local` in each package to contain the following pointing to your local DHC address. These are needed for the session websocket and for things like notebooks to be proxied correctly by Vite.
+If your DHC address is different from the default `http://localhost:10000`, edit `.env.local` in each package to point to your local DHC. This is needed for the session websocket and for things like notebooks to be proxied correctly by Vite.
 
 ```
-VITE_CORE_API_URL=http://localhost:10000/jsapi
-VITE_PROXY_URL=http://localhost:10000
+VITE_PROXY_URL=http://<dhc-host>:<port>
 ```
 
 ## Package Overview
@@ -114,6 +113,18 @@ npx source-map-explorer 'packages/code-studio/build/static/js/*.js'
 
 ## Updating Snapshots
 
-Snapshots are used by end-to-end tests to visually verify the output. Sometimes changes are made requiring snapshots to be updated. Run snapshots locally to update first, by running `npm run e2e:update-snapshots`.
+**Note:** You must have [Docker installed](https://docs.docker.com/get-docker/), and `deephaven-core` must already be running on port 10000 on your local machine for all e2e tests.
 
-Once you are satisfied with the snapshots and everything is passing locally, you need to use a docker image to [update snapshots for CI](https://playwright.dev/docs/test-snapshots) (unless you are running the same platform as CI (Ubuntu)). Run `npm run e2e:update-ci-snapshots` to mount the current directory into a docker image and re-run the tests from there. **Note:** You must have [Docker installed](https://docs.docker.com/get-docker/), and `deephaven-core` must already be running on port 10000 on your local machine.
+Snapshots are used by end-to-end tests to visually verify the output. Sometimes changes are made requiring snapshots to be updated. Before running snapshots locally, you must be running the development server with `npm start` or have run `npm run build` recently. Run snapshots locally by running `npm run e2e:update-snapshots`.
+
+Once you are satisfied with the snapshots and everything is passing locally, you need to use a docker image to [update snapshots for CI](https://playwright.dev/docs/test-snapshots) (unless you are running the same platform as CI (Ubuntu)). Run `npm run e2e:update-ci-snapshots` which will mount the current directory into a docker image and re-run the tests from there. Test results will be written to your local directories.
+
+## Updating Dependencies
+
+Periodically dependencies should be updated such that we're using the latest and greatest.
+
+- Security updates: Run `npm audit fix` weekly to ensure any known security vulnerabilities are updated.
+- Dependency updates: At the beginning of a release cycle, run `npm update` to update the `package-lock.json` with the latest version of dependencies. Afterwards, run `npm outdated` to see if there are any dependencies with major version changes that can be updated. There are two ways you can upgrade a dependency:
+  - Run a tool like [lerna-update-wizard](https://github.com/Anifacted/lerna-update-wizard) by running `npx lerna-update-wizard` to go through steps to automatically update all child packages, OR
+  - Manually update the `package.json` of all packages with that dependency to the latest version.
+- When updating the major version of dependencies, be sure to check the release notes for any breaking changes/migration notes. After updating dependencies, run an `npm install` and `npm test` to make sure all tests pass.

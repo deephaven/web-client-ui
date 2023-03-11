@@ -336,3 +336,9 @@ $cell-invalid-box-shadow: 0 0 0 2px $danger, 0 0 0 5px rgba($danger, 0.25);
     background-color: $iris-grid-bar-bg-highlight;
   }
 }
+
+.link-hover-tooltip {
+  text-align: left;
+  max-width: 500px;
+  overflow-wrap: break-word;
+}

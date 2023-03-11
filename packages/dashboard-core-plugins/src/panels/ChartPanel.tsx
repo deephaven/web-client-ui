@@ -24,6 +24,7 @@ import {
   DehydratedSort,
   DehydratedAdvancedFilter,
   DehydratedQuickFilter,
+  LegacyDehydratedSort,
 } from '@deephaven/iris-grid';
 import dh, {
   FigureDescriptor,
@@ -107,7 +108,7 @@ export interface ChartPanelTableSettings {
   quickFilters?: readonly DehydratedQuickFilter[];
   advancedFilters?: readonly DehydratedAdvancedFilter[];
   inputFilters?: readonly InputFilter[];
-  sorts?: readonly DehydratedSort[];
+  sorts?: readonly (DehydratedSort | LegacyDehydratedSort)[];
   partition?: unknown;
   partitionColumn?: string;
 }

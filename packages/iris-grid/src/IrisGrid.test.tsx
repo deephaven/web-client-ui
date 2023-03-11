@@ -1,8 +1,8 @@
 import React from 'react';
 import TestRenderer from 'react-test-renderer';
-import { DateUtils } from '@deephaven/jsapi-utils';
+import { DateUtils, Settings } from '@deephaven/jsapi-utils';
 import { TestUtils } from '@deephaven/utils';
-import { IrisGrid, Settings } from './IrisGrid';
+import { IrisGrid } from './IrisGrid';
 import IrisGridTestUtils from './IrisGridTestUtils';
 
 class MockPath2D {

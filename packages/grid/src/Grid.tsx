@@ -3,7 +3,7 @@ import React, { CSSProperties, PureComponent, ReactNode } from 'react';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
 import clamp from 'lodash.clamp';
-import { EMPTY_ARRAY } from '@deephaven/utils';
+import { assertNotNull, EMPTY_ARRAY } from '@deephaven/utils';
 import GridMetricCalculator, { GridMetricState } from './GridMetricCalculator';
 import GridModel from './GridModel';
 import GridMouseHandler, {
@@ -15,8 +15,9 @@ import GridRange, { GridRangeIndex, SELECTION_DIRECTION } from './GridRange';
 import GridRenderer, {
   EditingCell,
   EditingCellTextSelectionRange,
+  GridRenderState,
 } from './GridRenderer';
-import GridUtils, { GridPoint } from './GridUtils';
+import GridUtils, { GridPoint, isLinkToken, Token } from './GridUtils';
 import {
   GridSelectionMouseHandler,
   GridColumnMoveMouseHandler,
@@ -29,6 +30,7 @@ import {
   GridVerticalScrollBarMouseHandler,
   EditMouseHandler,
   GridSeparator,
+  GridTokenMouseHandler,
 } from './mouse-handlers';
 import './Grid.scss';
 import KeyHandler, { GridKeyboardEvent } from './KeyHandler';
@@ -108,6 +110,10 @@ export type GridProps = typeof Grid.defaultProps & {
 
   // Callback when the viewport has scrolled or changed
   onViewChanged?: (metrics: GridMetrics) => void;
+
+  // Callback when a token is clicked
+  // eslint-disable-next-line react/no-unused-prop-types
+  onTokenClicked?: (token: Token) => void;
 
   // Renderer for the grid canvas
   renderer?: GridRenderer;
@@ -216,6 +222,11 @@ class Grid extends PureComponent<GridProps, GridState> {
     onMovedRowsChanged: (): void => undefined,
     onMoveRowComplete: (): void => undefined,
     onViewChanged: (): void => undefined,
+    onTokenClicked: (token: Token) => {
+      if (isLinkToken(token)) {
+        window.open(token.href, '_blank', 'noopener,noreferrer');
+      }
+    },
     stateOverride: {} as Record<string, unknown>,
     theme: {
       autoSelectColumn: false,
@@ -291,6 +302,8 @@ class Grid extends PureComponent<GridProps, GridState> {
 
   metrics: GridMetrics | null;
 
+  renderState: GridRenderState;
+
   // Track the cursor that is currently added to the document
   // Add to document so that when dragging the cursor stays, even if mouse leaves the canvas
   // Note: on document, not body so that cursor styling can be combined with
@@ -342,6 +355,8 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.prevMetrics = null;
     this.metrics = null;
 
+    this.renderState = {} as GridRenderState;
+
     // Track the cursor that is currently added to the document
     // Add to document so that when dragging the cursor stays, even if mouse leaves the canvas
     // Note: on document, not body so that cursor styling can be combined with
@@ -367,6 +382,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       new GridHorizontalScrollBarMouseHandler(600),
       new GridScrollBarCornerMouseHandler(700),
       new GridRowTreeMouseHandler(800),
+      new GridTokenMouseHandler(825),
       new GridSelectionMouseHandler(900),
     ];
 
@@ -442,7 +458,6 @@ class Grid extends PureComponent<GridProps, GridState> {
     });
     window.addEventListener('resize', this.handleResize);
 
-    this.updateCanvasScale();
     this.updateCanvas();
 
     // apply on mount, so that it works with a static model
@@ -792,6 +807,9 @@ class Grid extends PureComponent<GridProps, GridState> {
 
   updateCanvas(metrics = this.updateMetrics()): void {
     this.updateCanvasScale();
+    this.updateRenderState();
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    this.renderer.configureContext(this.canvasContext!, this.renderState);
 
     const { onViewChanged } = this.props;
     onViewChanged(metrics);
@@ -799,7 +817,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.drawCanvas(metrics);
   }
 
-  updateCanvasScale(): void {
+  private updateCanvasScale(): void {
     const { canvas, canvasContext } = this;
     if (!canvas) throw new Error('canvas not set');
     if (!canvasContext) throw new Error('canvasContext not set');
@@ -1585,56 +1603,11 @@ class Grid extends PureComponent<GridProps, GridState> {
    * must be very quick.
    * @param metrics Metrics to use for rendering the grid
    */
-  drawCanvas(metrics = this.updateMetrics()): void {
+  private drawCanvas(metrics = this.updateMetrics()): void {
     if (!this.canvas) throw new Error('canvas is not set');
     if (!this.canvasContext) throw new Error('context not set');
 
-    const {
-      cursorColumn,
-      cursorRow,
-      draggingColumn,
-      draggingColumnSeparator,
-      draggingRow,
-      draggingRowOffset,
-      draggingRowSeparator,
-      editingCell,
-      isDraggingHorizontalScrollBar,
-      isDraggingVerticalScrollBar,
-      isDragging,
-      mouseX,
-      mouseY,
-      selectedRanges,
-    } = this.state;
-    const { model, stateOverride } = this.props;
-    const { renderer } = this;
-    const context = this.canvasContext;
-    const theme = this.getTheme();
-    const width = this.canvas.clientWidth;
-    const height = this.canvas.clientHeight;
-
-    const renderState = {
-      width,
-      height,
-      context,
-      theme,
-      model,
-      metrics,
-      mouseX,
-      mouseY,
-      selectedRanges,
-      draggingColumn,
-      draggingColumnSeparator,
-      draggingRow,
-      draggingRowOffset,
-      draggingRowSeparator,
-      editingCell,
-      isDraggingHorizontalScrollBar,
-      isDraggingVerticalScrollBar,
-      isDragging,
-      cursorColumn,
-      cursorRow,
-      ...stateOverride,
-    };
+    const { renderer, canvasContext: context, renderState } = this;
 
     context.save();
 
@@ -1816,7 +1789,6 @@ class Grid extends PureComponent<GridProps, GridState> {
      * of doing outside of a full componentDidUpdate() call, so we force the update.
      * Ideally, we could verify state/metrics without the forced update.
      */
-    this.updateCanvasScale();
     this.updateCanvas();
 
     if (!this.metrics) throw new Error('metrics not set');
@@ -2136,6 +2108,66 @@ class Grid extends PureComponent<GridProps, GridState> {
         />
       </div>
     );
+  }
+
+  /**
+   * Gets the render state
+   * @returns The render state
+   */
+  updateRenderState(): GridRenderState {
+    if (!this.canvas) throw new Error('canvas is not set');
+    if (!this.canvasContext) throw new Error('context not set');
+
+    const {
+      cursorColumn,
+      cursorRow,
+      draggingColumn,
+      draggingColumnSeparator,
+      draggingRow,
+      draggingRowOffset,
+      draggingRowSeparator,
+      editingCell,
+      isDraggingHorizontalScrollBar,
+      isDraggingVerticalScrollBar,
+      isDragging,
+      mouseX,
+      mouseY,
+      selectedRanges,
+    } = this.state;
+    const { model, stateOverride } = this.props;
+    const { metrics } = this;
+    const context = this.canvasContext;
+    const theme = this.getTheme();
+    const width = this.canvas.clientWidth;
+    const height = this.canvas.clientHeight;
+
+    assertNotNull(metrics);
+
+    this.renderState = {
+      width,
+      height,
+      context,
+      theme,
+      model,
+      metrics,
+      mouseX,
+      mouseY,
+      selectedRanges,
+      draggingColumn,
+      draggingColumnSeparator,
+      draggingRow,
+      draggingRowOffset,
+      draggingRowSeparator,
+      editingCell,
+      isDraggingHorizontalScrollBar,
+      isDraggingVerticalScrollBar,
+      isDragging,
+      cursorColumn,
+      cursorRow,
+      ...stateOverride,
+    };
+
+    return this.renderState;
   }
 
   render(): ReactNode {

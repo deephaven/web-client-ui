@@ -1,4 +1,5 @@
 import clamp from 'lodash.clamp';
+import { getOrThrow } from '@deephaven/utils';
 import GridModel from './GridModel';
 import type {
   GridMetrics,
@@ -17,6 +18,7 @@ import { GridFont, GridTheme } from './GridTheme';
 import { isExpandableGridModel } from './ExpandableGridModel';
 import { DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
 
+export { getOrThrow } from '@deephaven/utils';
 /* eslint class-methods-use-this: "off" */
 /* eslint react/destructuring-assignment: "off" */
 
@@ -51,27 +53,6 @@ export interface GridMetricState {
   isDraggingVerticalScrollBar: boolean;
 
   draggingColumn: DraggingColumn | null;
-}
-
-/**
- * Retrieve a value from a map. If the value is not found and no default value is provided, throw.
- * Use when the value _must_ be present
- * @param map The map to get the value from
- * @param key The key to fetch the value for
- * @param defaultValue A default value to set if the key is not present
- * @returns The value set for that key
- */
-export function getOrThrow<K, V>(
-  map: Map<K, V>,
-  key: K,
-  defaultValue: V | undefined = undefined
-): V {
-  const value = map.get(key) ?? defaultValue;
-  if (value !== undefined) {
-    return value;
-  }
-
-  throw new Error(`Missing value for key ${key}`);
 }
 
 /**

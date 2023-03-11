@@ -524,11 +524,6 @@ export interface OneClick {
 }
 
 export interface Column {
-  /**
-   * @deprecated
-   */
-  readonly index: number;
-
   readonly type: string;
   readonly name: string;
   readonly description: string;

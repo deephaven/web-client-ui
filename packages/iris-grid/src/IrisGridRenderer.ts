@@ -13,7 +13,6 @@ import {
   BoundedAxisRange,
   BoxCoordinates,
   Coordinate,
-  getOrThrow,
   GridMetrics,
   GridRangeIndex,
   GridRenderer,
@@ -24,7 +23,7 @@ import {
 } from '@deephaven/grid';
 import { Sort } from '@deephaven/jsapi-shim';
 import { TableUtils, ReverseType } from '@deephaven/jsapi-utils';
-import { assertNotNull } from '@deephaven/utils';
+import { assertNotNull, getOrThrow } from '@deephaven/utils';
 import {
   ReadonlyAdvancedFilterMap,
   ReadonlyQuickFilterMap,
@@ -178,7 +177,7 @@ class IrisGridRenderer extends GridRenderer {
     state: IrisGridRenderState
   ): void {
     const { metrics, model, theme } = state;
-    const { groupedColumns, columns } = model;
+    const { groupedColumns } = model;
     const { maxY, allColumnWidths, allColumnXs } = metrics;
     if (
       groupedColumns.length === 0 ||
@@ -187,12 +186,16 @@ class IrisGridRenderer extends GridRenderer {
       return;
     }
 
-    const lastGroupedColumn = groupedColumns[groupedColumns.length - 1];
-    const modelIndex = columns.findIndex(
-      c => c.name === lastGroupedColumn.name
-    );
-    const columnX = allColumnXs.get(modelIndex);
-    const columnWidth = allColumnWidths.get(modelIndex);
+    // This assumes that the engine puts the grouped columns at the start of the
+    // model, so model and visible index match for grouped columns. If we ever
+    // add freeze support for tree tables or allow moving the grouped columns,
+    // this assumption may no longer hold true. If such a change occurs, we'll
+    // need to revisit this since a single vertical divider may no longer make
+    // sense.
+    const lastVisibleGroupColumnIndex = groupedColumns.length - 1;
+
+    const columnX = allColumnXs.get(lastVisibleGroupColumnIndex);
+    const columnWidth = allColumnWidths.get(lastVisibleGroupColumnIndex);
     if (columnX == null || columnWidth == null) {
       return;
     }
@@ -450,7 +453,13 @@ class IrisGridRenderer extends GridRenderer {
       return;
     }
 
-    const sort = TableUtils.getSortForColumn(model.sort, modelColumn);
+    const columnName = model.columns[modelColumn]?.name;
+
+    if (columnName == null) {
+      return;
+    }
+
+    const sort = TableUtils.getSortForColumn(model.sort, columnName);
 
     if (!sort) {
       return;
@@ -908,7 +917,6 @@ class IrisGridRenderer extends GridRenderer {
   // This will shrink the size the text may take when the overflow button is rendered
   // The text will truncate to a smaller width and won't overlap the button
   getTextRenderMetrics(
-    context: CanvasRenderingContext2D,
     state: IrisGridRenderState,
     column: VisibleIndex,
     row: VisibleIndex
@@ -917,7 +925,7 @@ class IrisGridRenderer extends GridRenderer {
     x: Coordinate;
     y: Coordinate;
   } {
-    const textMetrics = super.getTextRenderMetrics(context, state, column, row);
+    const textMetrics = super.getTextRenderMetrics(state, column, row);
 
     const { mouseX, mouseY, metrics } = state;
 
@@ -963,12 +971,7 @@ class IrisGridRenderer extends GridRenderer {
     }
 
     const text = model.textForCell(modelColumn, modelRow) ?? '';
-    const { width: textWidth } = super.getTextRenderMetrics(
-      context,
-      state,
-      column,
-      row
-    );
+    const { width: textWidth } = super.getTextRenderMetrics(state, column, row);
     const fontWidth =
       metrics.fontWidths.get(theme.font) ?? IrisGridRenderer.DEFAULT_FONT_WIDTH;
 

@@ -2,6 +2,7 @@ import dh, {
   Column,
   DateWrapper,
   FilterValue,
+  Sort,
   Table,
 } from '@deephaven/jsapi-shim';
 import {
@@ -13,6 +14,7 @@ import TableUtils from './TableUtils';
 import DateUtils from './DateUtils';
 // eslint-disable-next-line import/no-relative-packages
 import IrisGridTestUtils from '../../iris-grid/src/IrisGridTestUtils';
+import { ColumnName } from './Formatter';
 
 const DEFAULT_TIME_ZONE_ID = 'America/New_York';
 const EXPECT_TIME_ZONE_PARAM = expect.objectContaining({
@@ -20,7 +22,7 @@ const EXPECT_TIME_ZONE_PARAM = expect.objectContaining({
 });
 
 function makeColumns(count = 5): Column[] {
-  const columns = [];
+  const columns: Column[] = [];
 
   for (let i = 0; i < count; i += 1) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -35,7 +37,7 @@ it('toggles sort properly', () => {
   const columns = makeColumns();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const table: Table = new (dh as any).Table({ columns });
-  let tableSorts = [];
+  let tableSorts: Sort[] = [];
 
   expect(table).not.toBe(null);
   expect(table.sort.length).toBe(0);
@@ -81,7 +83,9 @@ it('toggles sort properly', () => {
 });
 
 describe('quick filter tests', () => {
-  function makeFilterCondition(type = '') {
+  type MockFilterCondition = Record<'not' | 'and' | 'or', jest.Mock>;
+
+  function makeFilterCondition(type = ''): MockFilterCondition {
     return {
       not: jest.fn(() => makeFilterCondition(`${type}.${FilterType.eq}`)),
       and: jest.fn(() => makeFilterCondition(`${type}.${FilterType.eq}`)),
@@ -140,14 +144,14 @@ describe('quick filter tests', () => {
     };
   }
 
-  function makeFilterColumn(type = 'string') {
+  function makeFilterColumn(type = 'string'): Column {
     const filter = makeFilter();
     const column = IrisGridTestUtils.makeColumn('test placeholder', type, 13);
     column.filter = jest.fn(() => filter);
     return column;
   }
 
-  function mockFilterConditionReturnValue(filterToMock) {
+  function mockFilterConditionReturnValue(filterToMock): MockFilterCondition {
     const expectFilterCondition = makeFilterCondition();
     filterToMock.mockReturnValueOnce(expectFilterCondition);
     return expectFilterCondition;
@@ -181,8 +185,8 @@ describe('quick filter tests', () => {
     const column = makeFilterColumn(columnType);
 
     const columnFilter = column.filter();
-    const filters = [];
-    const joinFilters = [];
+    const filters: MockFilterCondition[] = [];
+    const joinFilters: MockFilterCondition[] = [];
     for (let i = 0; i < expectedFilters.length; i += 1) {
       const [expectedFn, expectedOperator] = expectedFilters[i];
       const filter = makeFilterCondition();
@@ -411,8 +415,8 @@ describe('quick filter tests', () => {
       const column = makeFilterColumn();
       const columnFilter = column.filter();
 
-      let expectFilterCondition = null;
-      let expectAndFilterCondition = null;
+      let expectFilterCondition: MockFilterCondition | null = null;
+      let expectAndFilterCondition: MockFilterCondition | null = null;
 
       expectFilterCondition = mockFilterConditionReturnValue(
         dh.FilterCondition.invoke
@@ -1484,5 +1488,50 @@ describe('range operations', () => {
     testIsRangeOperation('', false);
     testIsRangeOperation('!~', false);
     testIsRangeOperation('~', false);
+  });
+});
+
+describe('Sorting', () => {
+  function mockSort(index: number): Sort {
+    return ({
+      column: { index, name: `name_${index}` },
+    } as unknown) as Sort;
+  }
+
+  const sortList = {
+    empty: [] as Sort[],
+    hasThree: [mockSort(333), mockSort(444), mockSort(999)],
+  };
+
+  describe('getSortIndex', () => {
+    // sort, columnName, expected
+    const testCases: [Sort[], ColumnName, number | null][] = [
+      [sortList.empty, 'name_999', null],
+      [sortList.hasThree, 'non-existing', null],
+      [sortList.hasThree, 'name_999', 2],
+    ];
+
+    it.each(testCases)(
+      'should return index of sort for matching column name: %s, %s',
+      (sort, columnName, expected) => {
+        expect(TableUtils.getSortIndex(sort, columnName)).toEqual(expected);
+      }
+    );
+  });
+
+  describe('getSortForColumn', () => {
+    // sort, columnName, expected
+    const testCases: [Sort[], ColumnName, Sort | null][] = [
+      [sortList.empty, 'name_999', null],
+      [sortList.hasThree, 'non-existing', null],
+      [sortList.hasThree, 'name_999', sortList.hasThree[2]],
+    ];
+
+    it.each(testCases)(
+      'should return sort for matching column name: %s, %s',
+      (sort, columnName, expected) => {
+        expect(TableUtils.getSortForColumn(sort, columnName)).toEqual(expected);
+      }
+    );
   });
 });

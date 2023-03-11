@@ -83,22 +83,41 @@ class ChartTestUtils {
     series = [ChartTestUtils.makeSeries()],
     axes = ChartTestUtils.makeDefaultAxes(),
     showLegend = null,
+    rowspan = 1,
+    colspan = 1,
+    row = 0,
+    column = 0,
   }: {
     title?: string;
     series?: Series[];
     axes?: Axis[];
     showLegend?: boolean | null;
+    rowspan?: number;
+    colspan?: number;
+    row?: number;
+    column?: number;
   } = {}): Chart {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return new (dh as any).Chart({ title, series, axes, showLegend });
+    return new (dh as any).Chart({
+      title,
+      series,
+      axes,
+      showLegend,
+      row,
+      column,
+      rowspan,
+      colspan,
+    });
   }
 
   static makeFigure({
     title = 'Figure',
     charts = [ChartTestUtils.makeChart()],
+    rows = 1,
+    cols = 1,
   } = {}): Figure {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return new (dh as any).plot.Figure({ title, charts });
+    return new (dh as any).plot.Figure({ title, charts, rows, cols });
   }
 }
 

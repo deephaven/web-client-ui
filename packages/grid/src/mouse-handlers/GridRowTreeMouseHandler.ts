@@ -1,7 +1,7 @@
 /* eslint class-methods-use-this: "off" */
+import { getOrThrow } from '@deephaven/utils';
 import { EventHandlerResult } from '../EventHandlerResult';
 import Grid from '../Grid';
-import { getOrThrow } from '../GridMetricCalculator';
 import GridMouseHandler from '../GridMouseHandler';
 import GridUtils, { GridPoint } from '../GridUtils';
 
