@@ -80,7 +80,10 @@ class LayoutUtils {
    * @param config Tab config to match
    * @returns True if the tab is active
    */
-  static isActiveTab(root: ContentItem, config: Config): boolean {
+  static isActiveTab(
+    root: ContentItem,
+    config: Partial<ReactComponentConfig>
+  ): boolean {
     const stack = LayoutUtils.getStackForRoot(root, config, false);
     if (!stack) {
       log.error('Could not find stack for config', config);

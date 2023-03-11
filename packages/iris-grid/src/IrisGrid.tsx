@@ -2481,7 +2481,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     return canToggleSearch;
   }
 
-  toggleSearchBar(): void {
+  toggleSearchBar(): string {
     const { showSearchBar } = this.state;
     if (!this.isTableSearchAvailable()) {
       return;
