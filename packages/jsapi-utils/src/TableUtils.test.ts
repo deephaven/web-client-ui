@@ -37,17 +37,12 @@ function makeColumns(count = 5): Column[] {
 }
 
 type MockFilterCondition = Record<'not' | 'and' | 'or', jest.Mock>;
+
 function makeFilterCondition(type = ''): MockFilterCondition {
   return {
-    not: jest.fn(
-      () => makeFilterCondition(`${type}.${FilterType.eq}`) as FilterCondition
-    ),
-    and: jest.fn(
-      () => makeFilterCondition(`${type}.${FilterType.eq}`) as FilterCondition
-    ),
-    or: jest.fn(
-      () => makeFilterCondition(`${type}.${FilterType.eq}`) as FilterCondition
-    ),
+    not: jest.fn(() => makeFilterCondition(`${type}.${FilterType.eq}`)),
+    and: jest.fn(() => makeFilterCondition(`${type}.${FilterType.eq}`)),
+    or: jest.fn(() => makeFilterCondition(`${type}.${FilterType.eq}`)),
   };
 }
 
@@ -109,6 +104,7 @@ describe('toggleSortForColumn', () => {
 
 describe('quick filter tests', () => {
   type MockFilter = ReturnType<typeof makeFilter>;
+  type MockColumn = Omit<Column, 'filter'> & { filter(): MockFilter };
 
   function makeFilter(type = '') {
     return {
@@ -159,11 +155,11 @@ describe('quick filter tests', () => {
     };
   }
 
-  function makeFilterColumn(type = 'string'): Column {
+  function makeFilterColumn(type = 'string'): MockColumn {
     const filter = makeFilter();
     const column = IrisGridTestUtils.makeColumn('test placeholder', type, 13);
-    column.filter = jest.fn(() => filter as FilterValue);
-    return column;
+    column.filter = jest.fn(() => filter);
+    return column as MockColumn;
   }
 
   function mockFilterConditionReturnValue(filterToMock): MockFilterCondition {
@@ -182,11 +178,7 @@ describe('quick filter tests', () => {
 
     const result = TableUtils[functionName](column, text);
 
-    if (args.length > 0) {
-      expect(filter[expectedFn]).toHaveBeenCalledWith(...args);
-    } else {
-      expect(filter[expectedFn]).toHaveBeenCalled();
-    }
+    expect(filter[expectedFn]).toHaveBeenCalledWith(...args);
     expect(result).toBe(expectedResult);
   }
 
@@ -206,11 +198,7 @@ describe('quick filter tests', () => {
 
     const result = TableUtils[functionName](column, text);
 
-    if (args.length > 0) {
-      expect(filter[expectedFn]).toHaveBeenCalledWith(...args);
-    } else {
-      expect(filter[expectedFn]).toHaveBeenCalled();
-    }
+    expect(filter[expectedFn]).toHaveBeenCalledWith(...args);
     expect(result).toBe(expectedResult);
   }
 
@@ -282,7 +270,7 @@ describe('quick filter tests', () => {
     };
 
     dh.FilterCondition = {
-      invoke: jest.fn(type => makeFilterCondition(type) as FilterCondition),
+      invoke: jest.fn(type => makeFilterCondition(type)),
       search: jest.fn(),
     };
 
@@ -435,11 +423,7 @@ describe('quick filter tests', () => {
       expect(nullResult.not).toHaveBeenCalled();
       expect(notResult.and).toHaveBeenCalledWith(invokeResult);
 
-      if (args.length > 0) {
-        expect(filter.invoke).toHaveBeenCalledWith(...args);
-      } else {
-        expect(filter.invoke).toHaveBeenCalled();
-      }
+      expect(filter.invoke).toHaveBeenCalledWith(...args);
       expect(result).toBe(expectedResult);
     }
 
@@ -466,11 +450,7 @@ describe('quick filter tests', () => {
         timezone
       );
 
-      if (args.length > 0) {
-        expect(filter[expectedFn]).toHaveBeenCalledWith(...args);
-      } else {
-        expect(filter[expectedFn]).toHaveBeenCalled();
-      }
+      expect(filter[expectedFn]).toHaveBeenCalledWith(...args);
       expect(result).toBe(expectedResult);
     };
 
@@ -494,12 +474,17 @@ describe('quick filter tests', () => {
     };
 
     it('should return a date filter if column type is date', () => {
+      const [startValue] = DateUtils.parseDateRange(
+        '2022-11-12',
+        DEFAULT_TIME_ZONE_ID
+      );
       testAdvancedValueFilter(
         '2022-11-12',
         FilterType.greaterThanOrEqualTo,
         'greaterThanOrEqualTo',
         DEFAULT_TIME_ZONE_ID,
-        'io.deephaven.time.DateTime'
+        'io.deephaven.time.DateTime',
+        startValue
       );
     });
 
@@ -509,7 +494,8 @@ describe('quick filter tests', () => {
         FilterType.eq,
         FilterType.eq,
         DEFAULT_TIME_ZONE_ID,
-        'int'
+        'int',
+        200
       );
     });
 
@@ -519,7 +505,8 @@ describe('quick filter tests', () => {
         FilterType.notEq,
         FilterType.notEq,
         DEFAULT_TIME_ZONE_ID,
-        'char'
+        'char',
+        'c'
       );
     });
 
@@ -621,7 +608,7 @@ describe('quick filter tests', () => {
 
         invokeResult.not.mockReturnValueOnce(notResult);
 
-        (nullResult.or as jest.Mock).mockReturnValueOnce(expectedResult);
+        nullResult.or.mockReturnValueOnce(expectedResult);
 
         const result = TableUtils.makeAdvancedValueFilter(
           column,
@@ -693,10 +680,6 @@ describe('quick filter tests', () => {
     it('handles empty cases', () => {
       const column = makeFilterColumn();
 
-      // @ts-expect-error text is generally a string
-      expect(TableUtils.makeQuickNumberFilter(column, null)).toBe(null);
-      // @ts-expect-error text is generally a string
-      expect(TableUtils.makeQuickNumberFilter(column, undefined)).toBe(null);
       expect(TableUtils.makeQuickNumberFilter(column, '')).toBe(null);
     });
 
@@ -928,10 +911,6 @@ describe('quick filter tests', () => {
     it('handles empty cases', () => {
       const column = makeFilterColumn();
 
-      // @ts-expect-error text is generally a string
-      expect(TableUtils.makeQuickBooleanFilter(column, null)).toBe(null);
-      // @ts-expect-error text is generally a string
-      expect(TableUtils.makeQuickBooleanFilter(column, undefined)).toBe(null);
       expect(TableUtils.makeQuickBooleanFilter(column, '')).toBe(null);
     });
 
@@ -1038,12 +1017,6 @@ describe('quick filter tests', () => {
     it('handles invalid cases', () => {
       const column = makeFilterColumn();
 
-      // @ts-expect-error text is generally a string
-      expect(() => TableUtils.makeQuickDateFilter(column, null, '')).toThrow();
-      expect(() =>
-        // @ts-expect-error text is generally a string
-        TableUtils.makeQuickDateFilter(column, undefined, '')
-      ).toThrow();
       expect(() => TableUtils.makeQuickDateFilter(column, '', '')).toThrow();
 
       expect(() => TableUtils.makeQuickDateFilter(column, '>', '')).toThrow();
@@ -1593,11 +1566,11 @@ describe('quick filter tests', () => {
 
       filter.isNull.mockReturnValueOnce(nullResult);
 
-      (nullResult.not as jest.Mock).mockReturnValueOnce(notResult);
+      nullResult.not.mockReturnValueOnce(notResult);
 
       filter.invoke.mockReturnValueOnce(invokeResult);
 
-      (notResult.and as jest.Mock).mockReturnValueOnce(expectedResult);
+      notResult.and.mockReturnValueOnce(expectedResult);
 
       const result = TableUtils.makeQuickTextFilter(column, text);
 
@@ -1605,20 +1578,13 @@ describe('quick filter tests', () => {
       expect(nullResult.not).toHaveBeenCalled();
       expect(notResult.and).toHaveBeenCalledWith(invokeResult);
 
-      if (args.length > 0) {
-        expect(filter.invoke).toHaveBeenCalledWith(...args);
-      } else {
-        expect(filter.invoke).toHaveBeenCalled();
-      }
+      expect(filter.invoke).toHaveBeenCalledWith(...args);
       expect(result).toBe(expectedResult);
     }
 
     it('handles empty cases', () => {
       const column = makeFilterColumn();
 
-      expect(TableUtils.makeQuickTextFilter(column, null)).toBe(null);
-      // @ts-expect-error text is generally a string
-      expect(TableUtils.makeQuickTextFilter(column, undefined)).toBe(null);
       expect(TableUtils.makeQuickTextFilter(column, '')).toBe(null);
     });
 
@@ -1637,9 +1603,7 @@ describe('quick filter tests', () => {
       filter.isNull.mockReturnValueOnce(expectedNullFilter);
 
       const expectedNotFilter = makeFilterCondition();
-      (expectedNullFilter.not as jest.Mock).mockReturnValueOnce(
-        expectedNotFilter
-      );
+      expectedNullFilter.not.mockReturnValueOnce(expectedNotFilter);
 
       const result = TableUtils.makeQuickTextFilter(column, '!null');
       expect(filter.isNull).toHaveBeenCalled();
@@ -1745,10 +1709,6 @@ describe('quick filter tests', () => {
     it('handles empty cases', () => {
       const column = makeFilterColumn();
 
-      // @ts-expect-error text is generally a string
-      expect(TableUtils.makeQuickCharFilter(column, null)).toBe(null);
-      // @ts-expect-error text is generally a string
-      expect(TableUtils.makeQuickCharFilter(column, undefined)).toBe(null);
       expect(TableUtils.makeQuickCharFilter(column, '')).toBe(null);
     });
 
@@ -1801,8 +1761,8 @@ describe('quick filter tests', () => {
       const notEqResult = makeFilterCondition();
       const expectedResult = makeFilterCondition();
 
-      (filter.eq as jest.Mock).mockReturnValueOnce(eqResult);
-      (filter.notEq as jest.Mock).mockReturnValueOnce(notEqResult);
+      filter.eq.mockReturnValueOnce(eqResult);
+      filter.notEq.mockReturnValueOnce(notEqResult);
       eqResult.and.mockReturnValueOnce(expectedResult);
 
       expect(TableUtils.makeSelectValueFilter(column, [], false)).toBe(
@@ -1814,7 +1774,7 @@ describe('quick filter tests', () => {
     };
 
     it('should return null if there are no selected values and invertSelection is true', () => {
-      const column = {} as Column;
+      const column = makeFilterColumn();
 
       expect(TableUtils.makeSelectValueFilter(column, [], true)).toBeNull();
     });
@@ -1838,8 +1798,8 @@ describe('quick filter tests', () => {
       const notInResult = makeFilterCondition();
       const expectedResult = makeFilterCondition();
 
-      (filter.notIn as jest.Mock).mockReturnValueOnce(notInResult);
-      (filter.isNull as jest.Mock).mockReturnValueOnce(isNullResult);
+      filter.notIn.mockReturnValueOnce(notInResult);
+      filter.isNull.mockReturnValueOnce(isNullResult);
       isNullResult.not.mockReturnValueOnce(notResult);
       notResult.and.mockReturnValueOnce(expectedResult);
       expect(
@@ -1857,8 +1817,8 @@ describe('quick filter tests', () => {
       const inResult = makeFilterCondition();
       const expectedResult = makeFilterCondition();
 
-      (filter.isNull as jest.Mock).mockReturnValueOnce(isNullResult);
-      (filter.in as jest.Mock).mockReturnValueOnce(inResult);
+      filter.isNull.mockReturnValueOnce(isNullResult);
+      filter.in.mockReturnValueOnce(inResult);
       isNullResult.or.mockReturnValueOnce(expectedResult);
       expect(
         TableUtils.makeSelectValueFilter(column, [null, true, false], false)
@@ -1874,7 +1834,7 @@ describe('quick filter tests', () => {
       const isNullResult = makeFilterCondition();
       const expectedResult = makeFilterCondition();
 
-      (filter.isNull as jest.Mock).mockReturnValueOnce(isNullResult);
+      filter.isNull.mockReturnValueOnce(isNullResult);
       isNullResult.not.mockReturnValueOnce(expectedResult);
       expect(
         TableUtils.makeSelectValueFilter(column, [null, null, null], true)
@@ -1887,7 +1847,7 @@ describe('quick filter tests', () => {
 
       const isNullResult = makeFilterCondition();
 
-      (filter.isNull as jest.Mock).mockReturnValueOnce(isNullResult);
+      filter.isNull.mockReturnValueOnce(isNullResult);
       expect(
         TableUtils.makeSelectValueFilter(column, [null, null, null], false)
       ).toBe(isNullResult);
@@ -1899,7 +1859,7 @@ describe('quick filter tests', () => {
 
       const expectedResult = makeFilterCondition();
 
-      (filter.notIn as jest.Mock).mockReturnValueOnce(expectedResult);
+      filter.notIn.mockReturnValueOnce(expectedResult);
       expect(TableUtils.makeSelectValueFilter(column, [1, 2, 3], true)).toBe(
         expectedResult
       );
@@ -1912,7 +1872,7 @@ describe('quick filter tests', () => {
 
       const expectedResult = makeFilterCondition();
 
-      (filter.in as jest.Mock).mockReturnValueOnce(expectedResult);
+      filter.in.mockReturnValueOnce(expectedResult);
       expect(TableUtils.makeSelectValueFilter(column, [1, 2, 3], false)).toBe(
         expectedResult
       );
@@ -2118,9 +2078,7 @@ describe('isTreeTable', () => {
 });
 
 describe('makeNumberValue', () => {
-  it('should return null if text is null, "null", or ""', () => {
-    // @ts-expect-error text is generally a string
-    expect(TableUtils.makeNumberValue(null)).toBeNull();
+  it('should return null if text is "null" or ""', () => {
     expect(TableUtils.makeNumberValue('null')).toBeNull();
     expect(TableUtils.makeNumberValue('')).toBeNull();
   });
@@ -2201,17 +2159,15 @@ describe('makeBooleanValue', () => {
 describe('makeValue', () => {
   const testMakeValue = (
     columnType: string,
-    text: string | null,
+    text: string,
     expectedValue: unknown,
     timeZone = 'America/New_York'
   ) => {
-    // @ts-expect-error text is generally a string
     expect(TableUtils.makeValue(columnType, text, timeZone)).toEqual(
       expectedValue
     );
   };
-  it('should return null if text is null or "null"', () => {
-    testMakeValue('decimal', null, null);
+  it('should return null if text is "null"', () => {
     testMakeValue('decimal', 'null', null);
   });
 
@@ -2402,10 +2358,8 @@ describe('makeColumnSort', () => {
     ).toEqual(expectedValue);
   };
 
-  it('should return null if columns is null, columnIndex is less than 0, or columnIndex is greater than or equal to columns.length', () => {
+  it('should return null if columnIndex is less than 0, or columnIndex is greater than or equal to columns.length', () => {
     const columns = makeColumns();
-    // @ts-expect-error test null columns array
-    testMakeColumnSort(null, 0, 'ASC', true, null);
     testMakeColumnSort(columns, -1, 'ASC', true, null);
     testMakeColumnSort(columns, 6, 'ASC', true, null);
   });
@@ -2462,19 +2416,17 @@ describe('sortColumns', () => {
 
 describe('getNextSort', () => {
   const testGetNextSort = (
-    columns: readonly Column[] | null,
+    columns: readonly Column[],
     sorts: readonly Sort[],
     columnIndex: number,
     expectedValue
   ) => {
-    // @ts-expect-error test what happens when columns is null
     expect(TableUtils.getNextSort(columns, sorts, columnIndex)).toEqual(
       expectedValue
     );
   };
-  it('should return null if columns is null or columnIndex is out of range', () => {
+  it('should return null if columnIndex is out of range', () => {
     const columns = makeColumns();
-    testGetNextSort(null, [], 0, null);
     testGetNextSort(columns, [], -1, null);
     testGetNextSort(columns, [], 10, null);
   });
@@ -2482,7 +2434,7 @@ describe('getNextSort', () => {
 
 describe('sortColumn', () => {
   const testSortColumn = (
-    sorts: readonly Sort[] | null,
+    sorts: readonly Sort[],
     columns: readonly Column[],
     modelColumn: number,
     direction: SortDirection,
@@ -2492,7 +2444,6 @@ describe('sortColumn', () => {
   ) => {
     expect(
       TableUtils.sortColumn(
-        // @ts-expect-error test what happens when columns is null
         sorts,
         columns,
         modelColumn,
@@ -2503,9 +2454,8 @@ describe('sortColumn', () => {
     ).toEqual(expectedValue);
   };
 
-  it('should return an empty array if sorts is null or columnIndex is out of range', () => {
+  it('should return an empty array if columnIndex is out of range', () => {
     const columns = makeColumns();
-    testSortColumn(null, [], 0, 'ASC', true, true, []);
     testSortColumn([], columns, -1, 'ASC', true, true, []);
     testSortColumn([], columns, 10, 'ASC', true, true, []);
   });

@@ -162,7 +162,7 @@ export class TableUtils {
     sorts: readonly Sort[],
     columnIndex: number
   ): Sort | null {
-    if (columns == null || columnIndex < 0 || columnIndex >= columns.length) {
+    if (columnIndex < 0 || columnIndex >= columns.length) {
       return null;
     }
 
@@ -182,7 +182,7 @@ export class TableUtils {
     direction: SortDirection,
     isAbs: boolean
   ): Sort | null {
-    if (columns == null || columnIndex < 0 || columnIndex >= columns.length) {
+    if (columnIndex < 0 || columnIndex >= columns.length) {
       return null;
     }
 
@@ -243,7 +243,7 @@ export class TableUtils {
     isAbs: boolean,
     addToExisting: boolean
   ): Sort[] {
-    if (sorts == null || modelColumn < 0 || modelColumn >= columns.length) {
+    if (modelColumn < 0 || modelColumn >= columns.length) {
       return [];
     }
 
@@ -555,10 +555,6 @@ export class TableUtils {
     column: Column,
     text: string
   ): FilterCondition | null {
-    if (text == null) {
-      return null;
-    }
-
     const columnFilter = column.filter();
     let filter = null;
 
@@ -649,12 +645,8 @@ export class TableUtils {
 
   static makeQuickTextFilter(
     column: Column,
-    text: string | null
+    text: string
   ): FilterCondition | null {
-    if (text == null) {
-      return null;
-    }
-
     const cleanText = `${text}`.trim();
     const regex = /^(!~|!=|~|=|!)?(.*)/;
     const result = regex.exec(cleanText);
@@ -796,10 +788,6 @@ export class TableUtils {
     column: Column,
     text: string | number
   ): FilterCondition | null {
-    if (text == null) {
-      return null;
-    }
-
     const regex = /^(!=|=|!)?(.*)/;
     const result = regex.exec(`${text}`.trim());
     if (result === null) {
@@ -898,10 +886,6 @@ export class TableUtils {
     operation: FilterTypeValue,
     timeZone: string
   ): FilterCondition {
-    if (column == null) {
-      throw new Error('Column is null');
-    }
-
     const [startDate, endDate] = DateUtils.parseDateRange(text, timeZone);
 
     const startValue =
@@ -988,10 +972,6 @@ export class TableUtils {
     column: Column,
     text: string
   ): FilterCondition | null {
-    if (text == null) {
-      return null;
-    }
-
     const cleanText = `${text}`.trim();
     const regex = /^(>=|<=|=>|=<|>|<|!=|=|!)?(null|"."|'.'|.)?(.*)/;
     const result = regex.exec(cleanText);
@@ -1265,7 +1245,7 @@ export class TableUtils {
     text: string,
     timeZone: string
   ): string | number | boolean | LongWrapper | null {
-    if (text == null || text === 'null') {
+    if (text === 'null') {
       return null;
     }
     if (TableUtils.isTextType(columnType)) {
@@ -1322,7 +1302,7 @@ export class TableUtils {
   }
 
   static makeNumberValue(text: string): number | null {
-    if (text == null || text === 'null' || text === '') {
+    if (text === 'null' || text === '') {
       return null;
     }
 
