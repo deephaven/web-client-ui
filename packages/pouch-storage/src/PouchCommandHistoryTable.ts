@@ -9,13 +9,14 @@ import {
   StorageUtils,
   ViewportData,
 } from '@deephaven/storage';
+import { siftPrunableItems } from './pouchCommandHistoryUtils';
 import PouchStorageTable, {
   PouchDBSort,
   PouchStorageItem,
 } from './PouchStorageTable';
 
-// Max number of history items that will be loaded
-const DISPLAY_COMMAND_HISTORY_LIMIT = 1000;
+const COMMAND_HISTORY_ITEMS_MAX = 2500;
+const COMMAND_HISTORY_ITEMS_PRUNE = 2000;
 
 const log = Log.module('PouchCommandHistoryTable');
 
@@ -53,12 +54,10 @@ export class PouchCommandHistoryTable
 
     // Debounced search to minimize querying the PouchDB db while user types
     this.setSearchDebounceTimeout = window.setTimeout(() => {
-      log.debug('Clearing cache and setting search filters', searchText);
-      log.debug('db.name', this.db.name);
+      log.debug('Setting search filters', searchText);
 
-      PouchCommandHistoryTable.cache[this.cacheKey] = null;
+      this.searchText = searchText.trim().toLowerCase();
 
-      this.searchText = searchText;
       this.setFilters(
         searchText
           ? [
@@ -87,11 +86,15 @@ export class PouchCommandHistoryTable
 
   /**
    * Fetch command history data from `PouchCommandHistoryTable.cache` or from
-   * PouchDB if data is not found in the cache.
+   * PouchDB if data is not found in the cache. If the number of total items in
+   * the db exceeds COMMAND_HISTORY_ITEMS_MAX, the database will be pruned down
+   * to COMMAND_HISTORY_ITEMS_PRUNE total items. Note that PouchDB doesn't
+   * actually remove them from the underlying IndexDB, they are just marked
+   * as deleted and won't be present in our query results.
    * @param selector
    */
   private async fetchData(
-    selector: PouchDB.Find.Selector
+    _selector: PouchDB.Find.Selector
   ): Promise<
     PouchDB.Find.FindResponse<CommandHistoryStorageItem & PouchStorageItem>
   > {
@@ -100,45 +103,52 @@ export class PouchCommandHistoryTable
     } else {
       log.debug('Fetching from PouchDB', this.searchText, this.viewport);
 
-      // PouchDB `find` queries require scanning the entire table which can have
-      // a significant performance impact on large tables. Therefore we only
-      // call db.find when there is a search applied. Otherwise we use the faster
-      // `allDocs` method. We also apply an optimzation by reverse sorting the
-      // query and then reversing back the results.
-      const queryResult = this.searchText
-        ? this.db.find({
-            selector,
-            fields: ['id', 'name'],
-            limit: DISPLAY_COMMAND_HISTORY_LIMIT,
-            sort: [{ id: 'desc' }],
-          })
-        : this.db
-            .allDocs({
-              include_docs: true,
-              descending: true,
-              // There is an extra row returned by `allDocs` that is not part of
-              // the command history. We add 1 to the limit to account for it but
-              // filter it out of the result set below.
-              limit: DISPLAY_COMMAND_HISTORY_LIMIT + 1,
-            })
-            .then(result => ({
-              docs: result.rows
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                .map(row => row.doc!)
-                .filter(({ name }) => name),
-            }));
+      PouchCommandHistoryTable.cache[this.cacheKey] = this.db
+        .allDocs({
+          include_docs: true,
+        })
+        .then(result => {
+          const allItems = result.rows
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            .map(row => row.doc!)
+            .filter(({ name }) => name);
 
-      // reverse the doc order and cache the query results.
-      PouchCommandHistoryTable.cache[this.cacheKey] = queryResult.then(
-        result => {
-          result.docs.reverse();
-          return result;
-        }
-      );
+          log.debug(`Fetched ${allItems.length} command history items`);
+
+          const { toKeep, toPrune } = siftPrunableItems(
+            allItems,
+            COMMAND_HISTORY_ITEMS_MAX,
+            COMMAND_HISTORY_ITEMS_PRUNE
+          );
+
+          // If number of items in PouchDB has exceeded COMMAND_HISTORY_ITEMS_MAX
+          // prune them down so we have COMMAND_HISTORY_ITEMS_PRUNE left
+          if (toPrune.length) {
+            log.debug(`Pruning ${toPrune.length} command history items`);
+            this.db.bulkDocs(
+              toPrune.map(item => ({ ...item, _deleted: true }))
+            );
+          }
+
+          return {
+            docs: toKeep,
+          };
+        });
     }
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return PouchCommandHistoryTable.cache[this.cacheKey]!;
+    const result = PouchCommandHistoryTable.cache[this.cacheKey]!;
+
+    if (this.searchText === '') {
+      return result;
+    }
+
+    return {
+      ...result,
+      docs: (await result).docs.filter(({ name }) =>
+        name.toLowerCase().includes(this.searchText)
+      ),
+    };
   }
 
   /**
