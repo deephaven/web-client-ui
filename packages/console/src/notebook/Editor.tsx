@@ -4,6 +4,7 @@
 import React, { Component, ReactElement } from 'react';
 import classNames from 'classnames';
 import * as monaco from 'monaco-editor';
+import { find as linkifyFind } from 'linkifyjs';
 import { assertNotNull } from '@deephaven/utils';
 import MonacoUtils from '../monaco/MonacoUtils';
 
@@ -112,38 +113,38 @@ class Editor extends Component<EditorProps, Record<string, never>> {
     });
     this.editor.layout();
     MonacoUtils.removeConflictingKeybindings(this.editor);
-    console.log(this?.editor.getModel()?.getLanguageId());
+
     monaco.languages.registerLinkProvider('plaintext', {
-      provideLinks: (model, token) => {
+      provideLinks: (model: monaco.editor.ITextModel) => {
         const text = model.getValue();
-        console.log('here');
+        const newTokens: monaco.languages.ILink[] = [];
+
+        const tokens = linkifyFind(text);
+        const uniqueTokens: Set<string> = new Set(
+          tokens.map(item => item.value)
+        );
+        const valuesToHref: Map<string, string> = new Map();
+
+        tokens.forEach(item => {
+          valuesToHref.set(item.value, item.href);
+        });
+
+        uniqueTokens.forEach(value => {
+          const matches = this.editor
+            ?.getModel()
+            ?.findMatches(value, false, false, false, null, true);
+          matches?.forEach(match => {
+            newTokens.push({
+              url: valuesToHref.get(value),
+              range: match.range,
+            });
+          });
+        });
+
         return {
-          links: [
-            {
-              range: new monaco.Range(1, 3, 1, 6),
-              url: 'https://google.com',
-              tooltip: 'test',
-            },
-          ],
+          links: newTokens,
         };
       },
-      resolveLink: (link, token) => {
-        console.log('here');
-        if (typeof link.url === 'string') {
-          // window.open(link.url, '_blank');
-        }
-        return link;
-      },
-    });
-
-    this.editor.onMouseDown(e => {
-      if (e.target.type === monaco.editor.MouseTargetType.CONTENT_TEXT) {
-        if (e.event.leftButton) {
-          window.open(e.target.href);
-        }
-        e.event.preventDefault();
-        e.event.stopPropagation();
-      }
     });
 
     onEditorInitialized(this.editor);
