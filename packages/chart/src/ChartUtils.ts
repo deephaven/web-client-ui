@@ -38,9 +38,9 @@ import ChartTheme from './ChartTheme';
 
 export interface ChartModelSettings {
   hiddenSeries?: string[];
-  type: keyof SeriesPlotStyle;
-  series: string[];
-  xAxis: string;
+  type?: keyof SeriesPlotStyle;
+  series?: string[];
+  xAxis?: string;
   title?: string;
 }
 
@@ -1805,10 +1805,13 @@ class ChartUtils {
    */
   static hydrateSettings(
     settings: ChartModelSettings
-  ): Omit<ChartModelSettings, 'type'> & { type: SeriesPlotStyle } {
+  ): Omit<ChartModelSettings, 'type'> & { type?: SeriesPlotStyle } {
     return {
       ...settings,
-      type: dh.plot.SeriesPlotStyle[settings.type],
+      type:
+        settings.type != null
+          ? dh.plot.SeriesPlotStyle[settings.type]
+          : undefined,
     };
   }
 
@@ -1816,7 +1819,7 @@ class ChartUtils {
     const {
       series,
       xAxis,
-      title = `${series.join(', ')} by ${xAxis}`,
+      title = `${(series ?? []).join(', ')} by ${xAxis}`,
     } = settings;
 
     return title;
@@ -1872,13 +1875,13 @@ class ChartUtils {
         {
           chartType: `${dh.plot.ChartType.XY}`,
           axes: [xAxis, yAxis],
-          series: series.map(name => ({
+          series: (series ?? []).map(name => ({
             plotStyle: `${type}`,
             name,
             dataSources: [
               {
                 type: `${dh.plot.SourceType.X}`,
-                columnName: settingsAxis,
+                columnName: settingsAxis ?? '',
                 axis: xAxis,
                 table,
               },

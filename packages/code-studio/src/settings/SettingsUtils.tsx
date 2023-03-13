@@ -4,6 +4,7 @@ import {
   IntegerColumnFormatter,
   DecimalColumnFormatter,
   TableColumnFormat,
+  FormattingRule,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 
@@ -13,12 +14,13 @@ export type FormatOption = {
   defaultFormatString?: string;
 };
 
-export type FormatterItem = {
-  columnType: string;
-  columnName: string;
-  format: Partial<TableColumnFormat>;
+export type ValidFormatterItem = FormattingRule & {
   id?: number;
   isNewRule?: boolean;
+};
+
+export type FormatterItem = Omit<ValidFormatterItem, 'format'> & {
+  format: Partial<TableColumnFormat>;
 };
 
 function isFormatStringFormat(
@@ -92,13 +94,15 @@ export function isValidFormat(
 }
 
 export function removeFormatRuleExtraProps(
-  item: FormatterItem
-): Omit<FormatterItem, 'id' | 'isNewRule'> {
+  item: ValidFormatterItem
+): FormattingRule {
   const { id, isNewRule, ...rest } = item;
   return rest;
 }
 
-export function isFormatRuleValidForSave(rule: FormatterItem): boolean {
+export function isFormatRuleValidForSave(
+  rule: FormatterItem
+): rule is ValidFormatterItem {
   return (
     isValidColumnName(rule.columnName) &&
     isValidFormat(rule.columnType, rule.format)
