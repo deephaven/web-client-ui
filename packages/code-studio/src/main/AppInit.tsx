@@ -377,7 +377,7 @@ const mapStateToProps = (state: RootState) => ({
   workspaceStorage: getWorkspaceStorage(state),
 });
 
-export default connect(mapStateToProps, {
+const ConnectedAppInit = connect(mapStateToProps, {
   setActiveTool: setActiveToolAction,
   setCommandHistoryStorage: setCommandHistoryStorageAction,
   setDashboardData: setDashboardDataAction,
@@ -391,3 +391,5 @@ export default connect(mapStateToProps, {
   setWorkspaceStorage: setWorkspaceStorageAction,
   setServerConfigValues: setServerConfigValuesAction,
 })(AppInit);
+
+export default ConnectedAppInit;

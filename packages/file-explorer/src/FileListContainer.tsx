@@ -2,10 +2,10 @@ import { ContextAction, ContextActions } from '@deephaven/components';
 import { assertNotNull } from '@deephaven/utils';
 import React, { useCallback, useMemo, useState } from 'react';
 import FileList, {
-  renderFileListItem,
-  DEFAULT_ROW_HEIGHT,
+  RenderFileListItem,
   FileListRenderItemProps,
 } from './FileList';
+import { DEFAULT_ROW_HEIGHT } from './FileListUtils';
 import { FileStorageItem, FileStorageTable, isDirectory } from './FileStorage';
 import SHORTCUTS from './FileExplorerShortcuts';
 import './FileExplorer.scss';
@@ -191,7 +191,7 @@ export function FileListContainer(props: FileListContainerProps): JSX.Element {
     (itemProps: FileListRenderItemProps): JSX.Element => {
       const { item } = itemProps;
       if (renameItem && renameItem.filename === item.filename) {
-        return renderFileListItem({
+        return RenderFileListItem({
           ...itemProps,
           children: (
             <FileListItemEditor
@@ -203,7 +203,7 @@ export function FileListContainer(props: FileListContainerProps): JSX.Element {
           ),
         });
       }
-      return renderFileListItem(itemProps);
+      return RenderFileListItem(itemProps);
     },
     [handleRenameCancel, handleRenameSubmit, renameItem, validateRenameItem]
   );

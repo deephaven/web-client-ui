@@ -50,7 +50,7 @@ export type AggregationsProps = {
   onEdit: (aggregation: Aggregation) => void;
 };
 
-export const SELECTABLE_OPTIONS = [
+const SELECTABLE_OPTIONS = [
   AggregationOperation.SUM,
   AggregationOperation.ABS_SUM,
   AggregationOperation.MIN,

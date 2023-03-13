@@ -632,6 +632,8 @@ const mapStateToProps = (state: RootState) => ({
   settings: getSettings(state),
 });
 
-export default connect(mapStateToProps, { saveSettings: saveSettingsAction })(
-  FormattingSectionContent
-);
+const ConnectedFormattingSectionContent = connect(mapStateToProps, {
+  saveSettings: saveSettingsAction,
+})(FormattingSectionContent);
+
+export default ConnectedFormattingSectionContent;

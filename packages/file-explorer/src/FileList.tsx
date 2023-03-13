@@ -20,6 +20,7 @@ import React, {
 import { FileStorageItem, FileStorageTable, isDirectory } from './FileStorage';
 import './FileList.scss';
 import FileUtils, { MIME_TYPE } from './FileUtils';
+import { DEFAULT_ROW_HEIGHT } from './FileListUtils';
 
 const log = Log.module('FileList');
 
@@ -66,21 +67,19 @@ export interface FileListProps {
   overscanCount?: number;
 }
 
-export const getPathFromItem = (file: FileStorageItem): string =>
+const getPathFromItem = (file: FileStorageItem): string =>
   isDirectory(file)
     ? FileUtils.makePath(file.filename)
     : FileUtils.getPath(file.filename);
 
-export const DEFAULT_ROW_HEIGHT = 26;
-
 // How long you need to hover over a directory before it expands
-export const DRAG_HOVER_TIMEOUT = 500;
+const DRAG_HOVER_TIMEOUT = 500;
 
 const ITEM_LIST_CLASS_NAME = 'item-list-scroll-pane';
 
-export const renderFileListItem = (
+export function RenderFileListItem(
   props: FileListRenderItemProps
-): JSX.Element => {
+): JSX.Element {
   const {
     children,
     draggedItems,
@@ -156,14 +155,14 @@ export const renderFileListItem = (
       </span>
     </div>
   );
-};
+}
 
 /**
  * Get the icon definition for a file or folder item
  * @param item Item to get the icon for
  * @returns Icon definition to pass in the FontAwesomeIcon icon prop
  */
-export function getItemIcon(item: FileStorageItem): IconDefinition {
+function getItemIcon(item: FileStorageItem): IconDefinition {
   if (isDirectory(item)) {
     return item.isExpanded ? vsFolderOpened : vsFolder;
   }
@@ -179,7 +178,7 @@ export function getItemIcon(item: FileStorageItem): IconDefinition {
 /**
  * Get the move operation for the current selection and the given target. Throws if the operation is invalid.
  */
-export function getMoveOperation(
+function getMoveOperation(
   draggedItems: FileStorageItem[],
   targetItem: FileStorageItem
 ): { files: FileStorageItem[]; targetPath: string } {
@@ -220,7 +219,7 @@ export function FileList(props: FileListProps): JSX.Element {
     onMove,
     onSelect,
     onSelectionChange = () => undefined,
-    renderItem = renderFileListItem,
+    renderItem = RenderFileListItem,
     rowHeight = DEFAULT_ROW_HEIGHT,
     overscanCount = ItemList.DEFAULT_OVERSCAN,
   } = props;

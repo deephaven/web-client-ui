@@ -8,6 +8,7 @@ import logInit from '../log/LogInit';
 
 logInit();
 
+// eslint-disable-next-line react-refresh/only-export-components
 const StyleGuideRoot = React.lazy(() => import('./StyleGuideRoot'));
 
 ReactDOM.render(

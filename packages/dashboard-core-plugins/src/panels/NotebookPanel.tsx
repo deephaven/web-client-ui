@@ -1317,9 +1317,11 @@ const mapStateToProps = (
   };
 };
 
-export default connect(
+const ConnectedNotebookPanel = connect(
   mapStateToProps,
   { saveSettings: saveSettingsAction },
   null,
   { forwardRef: true }
 )(NotebookPanel);
+
+export default ConnectedNotebookPanel;

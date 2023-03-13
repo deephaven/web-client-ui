@@ -11,6 +11,7 @@ import { LoadingOverlay } from '@deephaven/components';
 import { ApiBootstrap } from '@deephaven/jsapi-bootstrap';
 import './index.scss';
 
+// eslint-disable-next-line react-refresh/only-export-components
 const App = React.lazy(() => import('./App'));
 
 ReactDOM.render(

@@ -793,4 +793,6 @@ export class DropdownFilterPanel extends Component<
   }
 }
 
-export default connector(DropdownFilterPanel);
+const ConnectedDropdownFilterPanel = connector(DropdownFilterPanel);
+
+export default ConnectedDropdownFilterPanel;

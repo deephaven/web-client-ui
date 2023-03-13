@@ -1360,6 +1360,8 @@ const mapStateToProps = (
   settings: getSettings(state),
 });
 
-export default connect(mapStateToProps, null, null, { forwardRef: true })(
-  IrisGridPanel
-);
+const ConnectedIrisGridPanel = connect(mapStateToProps, null, null, {
+  forwardRef: true,
+})(IrisGridPanel);
+
+export default ConnectedIrisGridPanel;

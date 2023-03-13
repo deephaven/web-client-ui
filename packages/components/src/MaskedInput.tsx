@@ -2,6 +2,7 @@ import React, { useMemo, useEffect, useCallback } from 'react';
 import classNames from 'classnames';
 import Log from '@deephaven/log';
 import { useForwardedRef } from '@deephaven/react-hooks';
+import { DEFAULT_GET_PREFERRED_REPLACEMENT_STRING } from './MaskedInputUtils';
 import './MaskedInput.scss';
 
 const log = Log.module('MaskedInput');
@@ -18,18 +19,6 @@ const SELECTION_DIRECTION = {
  */
 const FIXED_WIDTH_SPACE = '\u2007';
 
-export function DEFAULT_GET_PREFERRED_REPLACEMENT_STRING(
-  value: string,
-  replaceIndex: number,
-  newChar: string
-): string {
-  return (
-    value.substring(0, replaceIndex) +
-    newChar +
-    value.substring(replaceIndex + 1)
-  );
-}
-
 /**
  * Fill the string on the right side with the example value to the given length
  * @param checkValue Initial string to pad
@@ -37,7 +26,7 @@ export function DEFAULT_GET_PREFERRED_REPLACEMENT_STRING(
  * @param length Target length
  * @returns String padded with the given example value
  */
-export function fillToLength(
+function fillToLength(
   checkValue: string,
   exampleValue: string,
   length: number
@@ -53,7 +42,7 @@ export function fillToLength(
  * @param emptyMask Empty mask
  * @returns Trimmed string
  */
-export function trimTrailingMask(value: string, emptyMask: string): string {
+function trimTrailingMask(value: string, emptyMask: string): string {
   let { length } = value;
   for (let i = value.length - 1; i >= 0; i -= 1) {
     if (emptyMask[i] === value[i]) {

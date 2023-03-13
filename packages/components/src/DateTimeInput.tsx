@@ -26,7 +26,7 @@ type DateTimeInputProps = {
   'data-testid'?: string;
 };
 
-export function fixIncompleteValue(value: string): string {
+function fixIncompleteValue(value: string): string {
   if (value != null && value.length >= DATE_VALUE_STRING.length) {
     return `${value.substring(0, DATE_VALUE_STRING.length)}${value
       .substring(DATE_VALUE_STRING.length)
@@ -35,7 +35,7 @@ export function fixIncompleteValue(value: string): string {
   return value;
 }
 
-export function addSeparators(value: string): string {
+function addSeparators(value: string): string {
   const dateTimeMillis = value.substring(0, 23);
   const micros = value.substring(23, 26);
   const nanos = value.substring(26);

@@ -22,7 +22,7 @@ import IrisGridProxyModel from './IrisGridProxyModel';
 import IrisGridBottomBar from './IrisGridBottomBar';
 import { ColumnName } from './CommonTypes';
 
-export function isIrisGridProxyModel(
+function isIrisGridProxyModel(
   model: IrisGridModel
 ): model is IrisGridProxyModel {
   return (model as IrisGridProxyModel).model !== undefined;
