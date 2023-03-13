@@ -110,6 +110,15 @@ export interface DehydratedSort {
   direction: SortDirection;
 }
 
+export interface TableSettings {
+  quickFilters?: readonly DehydratedQuickFilter[];
+  advancedFilters?: readonly DehydratedAdvancedFilter[];
+  inputFilters?: readonly InputFilter[];
+  sorts?: readonly (DehydratedSort | LegacyDehydratedSort)[];
+  partition?: unknown;
+  partitionColumn?: ColumnName;
+}
+
 export interface DehydratedIrisGridState {
   advancedFilters: readonly DehydratedAdvancedFilter[];
   aggregationSettings: AggregationSettings;
@@ -876,14 +885,7 @@ class IrisGridUtils {
    */
   static applyTableSettings(
     table: Table,
-    tableSettings: {
-      quickFilters?: readonly DehydratedQuickFilter[];
-      advancedFilters?: readonly DehydratedAdvancedFilter[];
-      inputFilters?: readonly InputFilter[];
-      sorts?: readonly (DehydratedSort | LegacyDehydratedSort)[];
-      partition?: unknown;
-      partitionColumn?: ColumnName;
-    },
+    tableSettings: TableSettings,
     timeZone: string
   ): void {
     const { columns } = table;
