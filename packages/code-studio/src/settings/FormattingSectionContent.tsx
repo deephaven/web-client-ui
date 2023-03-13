@@ -15,7 +15,6 @@ import {
   IntegerColumnFormatter,
   DecimalColumnFormatter,
   TableUtils,
-  FormattingRule,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
@@ -363,7 +362,7 @@ export class FormattingSectionContent extends PureComponent<
     const { settings, saveSettings } = this.props;
     const newSettings: WorkspaceSettings = {
       ...settings,
-      formatter: formatter as FormattingRule[],
+      formatter,
       defaultDateTimeFormat,
       showTimeZone,
       showTSeparator,

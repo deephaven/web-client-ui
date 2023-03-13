@@ -248,8 +248,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
         isNewRule: true,
       };
       return {
-        formatSettings:
-          formatSettings != null ? [...formatSettings, newFormat] : [newFormat],
+        formatSettings: [...formatSettings, newFormat],
         formatRulesChanged: true,
       };
     });

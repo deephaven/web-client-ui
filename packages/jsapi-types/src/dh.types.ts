@@ -281,7 +281,7 @@ export interface Figure extends Evented {
   readonly EVENT_SERIES_ADDED: string;
 
   /** Given a client-created figure descriptor, generate a figure that can be subscribed to */
-  create(figure: Partial<FigureDescriptor>): Figure;
+  create(figure: Partial<FigureDescriptor>): Promise<Figure>;
 
   readonly title: string;
   readonly titleFont: string;
