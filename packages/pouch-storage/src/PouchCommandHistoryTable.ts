@@ -24,11 +24,21 @@ type CommandHistoryStorageItemFindRespose = PouchDB.Find.FindResponse<
   CommandHistoryStorageItem & PouchStorageItem
 >;
 
+type CommandHistoryDoc = PouchDB.Core.ExistingDocument<
+  CommandHistoryStorageItem & PouchStorageItem & PouchDB.Core.AllDocsMeta
+>;
+
 export class PouchCommandHistoryTable
   extends PouchStorageTable<CommandHistoryStorageItem>
   implements CommandHistoryTable {
   constructor(language: string) {
-    super(`CommandHistoryStorage.${language}`);
+    super(`CommandHistoryStorage.${language}`, ({
+      // Optimizations to cut down on growing table size. These should be safe
+      // since we don't care about revision history for command history
+      // documents.
+      auto_compaction: true,
+      revs_limit: 1,
+    } as unknown) as PouchDB.HttpAdapter.HttpAdapterConfiguration);
   }
 
   /**
@@ -41,7 +51,7 @@ export class PouchCommandHistoryTable
     Promise<CommandHistoryStorageItemFindRespose> | null
   > = {};
 
-  private searchText = '';
+  private searchText?: string;
 
   private get cacheKey(): string {
     return this.db.name;
@@ -124,10 +134,7 @@ export class PouchCommandHistoryTable
           // If number of items in PouchDB has exceeded COMMAND_HISTORY_ITEMS_MAX
           // prune them down so we have COMMAND_HISTORY_ITEMS_PRUNE left
           if (toPrune.length) {
-            log.debug(`Pruning ${toPrune.length} command history items`);
-            this.db.bulkDocs(
-              toPrune.map(item => ({ ...item, _deleted: true }))
-            );
+            this.pruneItems(toPrune);
           }
 
           return {
@@ -139,14 +146,15 @@ export class PouchCommandHistoryTable
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const result = PouchCommandHistoryTable.cache[this.cacheKey]!;
 
-    if (this.searchText === '') {
+    if (this.searchText == null || this.searchText === '') {
       return result;
     }
 
     return {
       ...result,
       docs: (await result).docs.filter(({ name }) =>
-        name.toLowerCase().includes(this.searchText)
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        name.toLowerCase().includes(this.searchText!)
       ),
     };
   }
@@ -191,6 +199,26 @@ export class PouchCommandHistoryTable
       items: data.docs.slice(viewport.top, viewport.bottom + 1),
       offset: viewport.top,
     };
+  }
+
+  /**
+   * Mark given items as `_deleted` in the database.
+   * @param items
+   */
+  async pruneItems(items: CommandHistoryDoc[]) {
+    try {
+      log.debug(`Pruning ${items.length} command history items`);
+
+      // Disable change notifications while we bulk delete to avoid locking up
+      // the app
+      this.changes?.cancel();
+      await this.db.bulkDocs(items.map(item => ({ ...item, _deleted: true })));
+      this.listenForChanges();
+
+      log.debug('Finished pruning command history items');
+    } catch (err) {
+      log.error('An error occurred while pruning db', err);
+    }
   }
 }
 

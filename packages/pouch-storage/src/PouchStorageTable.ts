@@ -116,6 +116,8 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
   implements StorageTable<T> {
   protected db: PouchDB.Database<T & PouchStorageItem>;
 
+  protected changes?: PouchDB.Core.Changes<T & PouchStorageItem>;
+
   private listeners: ViewportUpdateCallback<T>[] = [];
 
   private itemListeners: Map<string, StorageItemListener<T>[]> = new Map();
@@ -138,20 +140,34 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
 
   private currentViewportData?: ViewportData<T>;
 
-  constructor(databaseName: string) {
-    this.db = new PouchDB<T & PouchStorageItem>(`${DB_PREFIX}${databaseName}`);
+  constructor(
+    databaseName: string,
+    dbOptions?: PouchDB.HttpAdapter.HttpAdapterConfiguration
+  ) {
+    this.db = new PouchDB<T & PouchStorageItem>(
+      `${DB_PREFIX}${databaseName}`,
+      dbOptions
+    );
 
     // Need to set `_remote` to false to remove deprecation warnings: https://github.com/pouchdb/pouchdb/issues/6106
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
     (this.db as any)._remote = false;
 
-    this.db
-      .changes({ live: true, since: 'now', include_docs: true })
-      .on('change', this.dbUpdate.bind(this));
+    this.listenForChanges();
 
     this.db.createIndex({ index: { fields: ['id', 'name'] } });
 
     this.refreshInfo();
+  }
+
+  /**
+   * Listen for db changes. This can be cancelled by calling
+   * `this.changes?.cancel()`
+   */
+  listenForChanges(): void {
+    this.changes = this.db
+      .changes({ live: true, since: 'now', include_docs: true })
+      .on('change', this.dbUpdate.bind(this));
   }
 
   onUpdate(callback: ViewportUpdateCallback<T>): StorageListenerRemover {
