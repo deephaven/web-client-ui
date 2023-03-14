@@ -175,12 +175,18 @@ function AppInit(props: AppInitProps) {
         ? // Fall back to the old API for anonymous auth if the new API is not supported
           createConnection()
         : coreClient.getAsIdeConnection());
+      connection.addEventListener(dh.IdeConnection.EVENT_DISCONNECT, event => {
+        const { detail } = event;
+        log.error('Disconnected', `${JSON.stringify(detail)}`);
+        setError(`Unable to connect:  ${detail ?? 'Unknown Error'}`);
+      });
       connection.addEventListener(
-        dh.IdeConnection.HACK_CONNECTION_FAILURE,
-        event => {
+        dh.IdeConnection.EVENT_RECONNECT,
+        async event => {
           const { detail } = event;
-          log.error('Connection failure', `${JSON.stringify(detail)}`);
-          setError(`Unable to connect:  ${detail.details ?? 'Unknown Error'}`);
+          log.info('Reconnected', `${JSON.stringify(detail)}`);
+          setError(null);
+          await coreClient.login(await getLoginOptions(authType));
         }
       );
 

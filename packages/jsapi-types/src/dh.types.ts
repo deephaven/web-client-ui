@@ -970,7 +970,11 @@ export interface IdeConnectionOptions {
 }
 
 export interface IdeConnectionConstructor {
+  /** @deprecated Use EVENT_DISCONNECT and EVENT_RECONNECT instead */
   HACK_CONNECTION_FAILURE: string;
+  EVENT_DISCONNECT: string;
+  EVENT_RECONNECT: string;
+
   new (serverUrl: string, options?: IdeConnectionOptions): IdeConnection;
 }
 
