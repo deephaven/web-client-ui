@@ -1,11 +1,15 @@
 import Formatter from './Formatter';
-import FormatterUtils from './FormatterUtils';
+import FormatterUtils, {
+  getColumnFormats,
+  getDateTimeFormatterOptions,
+} from './FormatterUtils';
 import {
   TableColumnFormat,
   TableColumnFormatter,
   TableColumnFormatType,
 } from './formatters';
 import TableUtils from './TableUtils';
+import { ColumnFormatSettings, DateTimeFormatSettings } from './Settings';
 
 function makeFormatter(...settings: ConstructorParameters<typeof Formatter>) {
   return new Formatter(...settings);
@@ -81,5 +85,56 @@ describe('isCustomColumnFormatDefined', () => {
         TableUtils.dataType.DECIMAL
       )
     ).toBe(false);
+  });
+});
+
+describe('getColumnFormats', () => {
+  it('should return an array of format rules', () => {
+    const settings: ColumnFormatSettings = {
+      formatter: [
+        {
+          columnType: 'integer',
+          columnName: 'test1',
+          format: {
+            label: 'test1',
+            formatString: '0.0',
+            type: 'type-context-custom',
+          },
+        },
+        {
+          columnType: 'decimal',
+          columnName: 'test2',
+          format: {
+            label: 'test2',
+            formatString: '0.0',
+            type: 'type-context-custom',
+          },
+        },
+      ],
+    };
+
+    expect(getColumnFormats(settings)).toEqual(settings.formatter);
+  });
+
+  it('should return undefined if settings or settings.formatter is undefined', () => {
+    expect(getColumnFormats()).toBeUndefined();
+  });
+});
+
+describe('getDateTimeFormatterOptions', () => {
+  it('should return an object containing date and time formatter options', () => {
+    const settings: DateTimeFormatSettings = {
+      timeZone: 'America/New_York',
+      defaultDateTimeFormat: 'yyyy-MM-dd HH:mm:ss.SSS',
+      showTimeZone: true,
+      showTSeparator: false,
+    };
+    const expectedObject = {
+      ...settings,
+      defaultDateTimeFormatString: 'yyyy-MM-dd HH:mm:ss.SSS',
+    };
+    delete expectedObject.defaultDateTimeFormat;
+
+    expect(getDateTimeFormatterOptions(settings)).toEqual(expectedObject);
   });
 });

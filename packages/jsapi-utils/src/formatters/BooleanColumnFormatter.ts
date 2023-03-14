@@ -2,7 +2,7 @@
 /* eslint no-unused-vars: "off" */
 import TableColumnFormatter from './TableColumnFormatter';
 
-/** Column formatter for chars */
+/** Column formatter for booleans */
 class BooleanColumnFormatter extends TableColumnFormatter<boolean | number> {
   format(value: boolean | number): string {
     switch (value) {

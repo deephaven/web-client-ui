@@ -1,16 +1,19 @@
 import dh, {
   Column,
   DateWrapper,
+  FilterCondition,
   FilterValue,
+  LongWrapper,
   Sort,
   Table,
+  TreeTable,
 } from '@deephaven/jsapi-shim';
 import {
   Operator as FilterOperator,
   Type as FilterType,
   TypeValue as FilterTypeValue,
 } from '@deephaven/filters';
-import TableUtils from './TableUtils';
+import TableUtils, { DataType, SortDirection } from './TableUtils';
 import DateUtils from './DateUtils';
 // eslint-disable-next-line import/no-relative-packages
 import IrisGridTestUtils from '../../iris-grid/src/IrisGridTestUtils';
@@ -33,67 +36,75 @@ function makeColumns(count = 5): Column[] {
   return columns;
 }
 
-it('toggles sort properly', () => {
-  const columns = makeColumns();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const table: Table = new (dh as any).Table({ columns });
-  let tableSorts: Sort[] = [];
+type MockFilterCondition = Record<'not' | 'and' | 'or', jest.Mock>;
 
-  expect(table).not.toBe(null);
-  expect(table.sort.length).toBe(0);
+function makeFilterCondition(type = ''): MockFilterCondition {
+  return {
+    not: jest.fn(() => makeFilterCondition(`${type}.${FilterType.eq}`)),
+    and: jest.fn(() => makeFilterCondition(`${type}.${FilterType.eq}`)),
+    or: jest.fn(() => makeFilterCondition(`${type}.${FilterType.eq}`)),
+  };
+}
 
-  tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 0, true);
-  table.applySort(tableSorts);
-  expect(table.sort.length).toBe(1);
-  expect(table.sort[0].column).toBe(columns[0]);
-  expect(table.sort[0].direction).toBe(TableUtils.sortDirection.ascending);
+describe('toggleSortForColumn', () => {
+  it('toggles sort properly', () => {
+    const columns = makeColumns();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const table: Table = new (dh as any).Table({ columns });
+    let tableSorts: Sort[] = [];
 
-  tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 3, true);
-  table.applySort(tableSorts);
-  expect(table.sort.length).toBe(2);
-  expect(table.sort[0].column).toBe(columns[0]);
-  expect(table.sort[0].direction).toBe(TableUtils.sortDirection.ascending);
-  expect(table.sort[1].column).toBe(columns[3]);
-  expect(table.sort[1].direction).toBe(TableUtils.sortDirection.ascending);
+    expect(table).not.toBe(null);
+    expect(table.sort.length).toBe(0);
 
-  tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 0, true);
-  table.applySort(tableSorts);
-  expect(table.sort.length).toBe(2);
-  expect(table.sort[0].column).toBe(columns[3]);
-  expect(table.sort[0].direction).toBe(TableUtils.sortDirection.ascending);
-  expect(table.sort[1].column).toBe(columns[0]);
-  expect(table.sort[1].direction).toBe(TableUtils.sortDirection.descending);
+    tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 0, true);
+    table.applySort(tableSorts);
+    expect(table.sort.length).toBe(1);
+    expect(table.sort[0].column).toBe(columns[0]);
+    expect(table.sort[0].direction).toBe(TableUtils.sortDirection.ascending);
 
-  tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 0, true);
-  table.applySort(tableSorts);
-  expect(table.sort.length).toBe(1);
-  expect(table.sort[0].column).toBe(columns[3]);
-  expect(table.sort[0].direction).toBe(TableUtils.sortDirection.ascending);
+    tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 3, true);
+    table.applySort(tableSorts);
+    expect(table.sort.length).toBe(2);
+    expect(table.sort[0].column).toBe(columns[0]);
+    expect(table.sort[0].direction).toBe(TableUtils.sortDirection.ascending);
+    expect(table.sort[1].column).toBe(columns[3]);
+    expect(table.sort[1].direction).toBe(TableUtils.sortDirection.ascending);
 
-  tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 3, true);
-  table.applySort(tableSorts);
-  expect(table.sort.length).toBe(1);
-  expect(table.sort[0].column).toBe(columns[3]);
-  expect(table.sort[0].direction).toBe(TableUtils.sortDirection.descending);
+    tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 0, true);
+    table.applySort(tableSorts);
+    expect(table.sort.length).toBe(2);
+    expect(table.sort[0].column).toBe(columns[3]);
+    expect(table.sort[0].direction).toBe(TableUtils.sortDirection.ascending);
+    expect(table.sort[1].column).toBe(columns[0]);
+    expect(table.sort[1].direction).toBe(TableUtils.sortDirection.descending);
 
-  tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 3, true);
-  table.applySort(tableSorts);
+    tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 0, true);
+    table.applySort(tableSorts);
+    expect(table.sort.length).toBe(1);
+    expect(table.sort[0].column).toBe(columns[3]);
+    expect(table.sort[0].direction).toBe(TableUtils.sortDirection.ascending);
 
-  expect(table.sort.length).toBe(0);
+    tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 3, true);
+    table.applySort(tableSorts);
+    expect(table.sort.length).toBe(1);
+    expect(table.sort[0].column).toBe(columns[3]);
+    expect(table.sort[0].direction).toBe(TableUtils.sortDirection.descending);
+
+    tableSorts = TableUtils.toggleSortForColumn(tableSorts, columns, 3, true);
+    table.applySort(tableSorts);
+
+    expect(table.sort.length).toBe(0);
+  });
+
+  it('should return an empty array if columnIndex is out of range', () => {
+    const columns = makeColumns();
+    expect(TableUtils.toggleSortForColumn([], columns, -1)).toEqual([]);
+  });
 });
 
 describe('quick filter tests', () => {
-  type MockFilterCondition = Record<'not' | 'and' | 'or', jest.Mock>;
-
-  function makeFilterCondition(type = ''): MockFilterCondition {
-    return {
-      not: jest.fn(() => makeFilterCondition(`${type}.${FilterType.eq}`)),
-      and: jest.fn(() => makeFilterCondition(`${type}.${FilterType.eq}`)),
-      or: jest.fn(() => makeFilterCondition(`${type}.${FilterType.eq}`)),
-    };
-  }
-
   type MockFilter = ReturnType<typeof makeFilter>;
+  type MockColumn = Omit<Column, 'filter'> & { filter(): MockFilter };
 
   function makeFilter(type = '') {
     return {
@@ -144,11 +155,11 @@ describe('quick filter tests', () => {
     };
   }
 
-  function makeFilterColumn(type = 'string'): Column {
+  function makeFilterColumn(type = 'string'): MockColumn {
     const filter = makeFilter();
     const column = IrisGridTestUtils.makeColumn('test placeholder', type, 13);
     column.filter = jest.fn(() => filter);
-    return column;
+    return column as MockColumn;
   }
 
   function mockFilterConditionReturnValue(filterToMock): MockFilterCondition {
@@ -167,11 +178,27 @@ describe('quick filter tests', () => {
 
     const result = TableUtils[functionName](column, text);
 
-    if (args.length > 0) {
-      expect(filter[expectedFn]).toHaveBeenCalledWith(...args);
-    } else {
-      expect(filter[expectedFn]).toHaveBeenCalled();
-    }
+    expect(filter[expectedFn]).toHaveBeenCalledWith(...args);
+    expect(result).toBe(expectedResult);
+  }
+
+  function testFilterWithType(
+    functionName: string,
+    text,
+    expectedFn,
+    type,
+    ...args
+  ) {
+    const column = makeFilterColumn(type);
+    const filter = column.filter();
+
+    const expectedResult = makeFilterCondition();
+
+    filter[expectedFn].mockReturnValueOnce(expectedResult);
+
+    const result = TableUtils[functionName](column, text);
+
+    expect(filter[expectedFn]).toHaveBeenCalledWith(...args);
     expect(result).toBe(expectedResult);
   }
 
@@ -267,6 +294,380 @@ describe('quick filter tests', () => {
       (Date.parse(dateString) as unknown) as DateWrapper;
   });
 
+  describe('makeQuickFilterFromComponent', () => {
+    const testComponentFilter = (
+      text: string | boolean | number,
+      expectedFn,
+      type,
+      ...args
+    ) => {
+      testFilterWithType(
+        'makeQuickFilterFromComponent',
+        text,
+        expectedFn,
+        type,
+        ...args
+      );
+    };
+
+    it('should return a number filter if column type is number', () => {
+      testComponentFilter('52', FilterType.eq, 'int', 52);
+      testComponentFilter('>-9', FilterType.greaterThan, 'short', -9);
+    });
+
+    it('should return a boolean filter if column type is boolean', () => {
+      testComponentFilter('true', FilterType.isTrue, 'boolean');
+      testComponentFilter(false, FilterType.isFalse, 'boolean');
+      testComponentFilter(1, FilterType.isTrue, 'boolean');
+      testComponentFilter('null', FilterType.isNull, 'java.lang.Boolean');
+    });
+
+    it('should return a date filter if column type is date', () => {
+      testMultiFilter(
+        'io.deephaven.time.DateTime',
+        'makeQuickFilterFromComponent',
+        '>2018',
+        'America/New_York',
+        [[FilterType.greaterThanOrEqualTo, null, new Date(2019, 0).getTime()]]
+      );
+      testMultiFilter(
+        'io.deephaven.db.tables.utils.DBDateTime',
+        'makeQuickFilterFromComponent',
+        '2018-9-7',
+        'America/New_York',
+        [
+          [
+            FilterType.greaterThanOrEqualTo,
+            FilterOperator.and,
+            new Date(2018, 8, 7).getTime(),
+          ],
+          [FilterType.lessThan, null, new Date(2018, 8, 8).getTime()],
+        ]
+      );
+    });
+
+    it('should return a char filter if column type is char', () => {
+      testComponentFilter('d', FilterType.eq, 'char', 'd');
+      testComponentFilter('!c', FilterType.notEq, 'java.lang.Character', 'c');
+      testComponentFilter(
+        '>=c',
+        FilterType.greaterThanOrEqualTo,
+        'char',
+        '"c"'
+      );
+      testComponentFilter('null', FilterType.isNull, 'char');
+    });
+
+    it('should return a text filter for any other column type', () => {
+      testComponentFilter(
+        '\\*foo',
+        FilterType.eqIgnoreCase,
+        'notatype',
+        '*foo'
+      );
+      testComponentFilter('foo', FilterType.eqIgnoreCase, 'string', 'foo');
+    });
+  });
+
+  describe('makeAdvancedValueFilter', () => {
+    const filterTypesWithArgument: FilterTypeValue[] = [
+      FilterType.eq,
+      FilterType.eqIgnoreCase,
+      FilterType.notEq,
+      FilterType.notEqIgnoreCase,
+      FilterType.greaterThan,
+      FilterType.greaterThanOrEqualTo,
+      FilterType.lessThan,
+      FilterType.lessThanOrEqualTo,
+    ];
+
+    const filterTypesWithNoArguments: FilterTypeValue[] = [
+      FilterType.isTrue,
+      FilterType.isFalse,
+      FilterType.isNull,
+    ];
+
+    const invalidFilterTypes: FilterTypeValue[] = [
+      FilterType.in,
+      FilterType.inIgnoreCase,
+      FilterType.notIn,
+      FilterType.notInIgnoreCase,
+      FilterType.invoke,
+    ];
+
+    function testInvokeFilter(type, operation, value, timezone, ...args) {
+      const column = makeFilterColumn(type);
+      const filter = column.filter() as MockFilter;
+
+      const nullResult = makeFilterCondition();
+      const notResult = makeFilterCondition();
+      const invokeResult = makeFilterCondition();
+      const expectedResult = makeFilterCondition();
+
+      filter.isNull.mockReturnValueOnce(nullResult);
+
+      (nullResult.not as jest.Mock).mockReturnValueOnce(notResult);
+
+      filter.invoke.mockReturnValueOnce(invokeResult);
+
+      (notResult.and as jest.Mock).mockReturnValueOnce(expectedResult);
+
+      const result = TableUtils.makeAdvancedValueFilter(
+        column,
+        operation,
+        value,
+        timezone
+      );
+
+      expect(filter.isNull).toHaveBeenCalled();
+      expect(nullResult.not).toHaveBeenCalled();
+      expect(notResult.and).toHaveBeenCalledWith(invokeResult);
+
+      expect(filter.invoke).toHaveBeenCalledWith(...args);
+      expect(result).toBe(expectedResult);
+    }
+
+    const testFilterWithOperation = (
+      functionName,
+      value,
+      expectedFn,
+      operation: FilterTypeValue,
+      timezone: string,
+      type: string,
+      ...args
+    ) => {
+      const column = makeFilterColumn(type);
+      const filter = column.filter();
+
+      const expectedResult = makeFilterCondition();
+
+      filter[expectedFn].mockReturnValueOnce(expectedResult);
+
+      const result = TableUtils[functionName](
+        column,
+        operation,
+        value,
+        timezone
+      );
+
+      expect(filter[expectedFn]).toHaveBeenCalledWith(...args);
+      expect(result).toBe(expectedResult);
+    };
+
+    const testAdvancedValueFilter = (
+      value,
+      expectedFn,
+      operation: FilterTypeValue,
+      timezone: string,
+      type: string,
+      ...args
+    ) => {
+      testFilterWithOperation(
+        'makeAdvancedValueFilter',
+        value,
+        expectedFn,
+        operation,
+        timezone,
+        type,
+        ...args
+      );
+    };
+
+    it('should return a date filter if column type is date', () => {
+      const [startValue] = DateUtils.parseDateRange(
+        '2022-11-12',
+        DEFAULT_TIME_ZONE_ID
+      );
+      testAdvancedValueFilter(
+        '2022-11-12',
+        FilterType.greaterThanOrEqualTo,
+        'greaterThanOrEqualTo',
+        DEFAULT_TIME_ZONE_ID,
+        'io.deephaven.time.DateTime',
+        startValue
+      );
+    });
+
+    it('should return a number filter if column type is number', () => {
+      testAdvancedValueFilter(
+        '200',
+        FilterType.eq,
+        FilterType.eq,
+        DEFAULT_TIME_ZONE_ID,
+        'int',
+        200
+      );
+    });
+
+    it('should return a char filter if column type is char', () => {
+      testAdvancedValueFilter(
+        'c',
+        FilterType.notEq,
+        FilterType.notEq,
+        DEFAULT_TIME_ZONE_ID,
+        'char',
+        'c'
+      );
+    });
+
+    describe('column type is not date, number, or char', () => {
+      it('should call eq function with the value if operation is "eq"', () => {
+        testAdvancedValueFilter(
+          'test',
+          FilterType.eq,
+          FilterType.eq,
+          DEFAULT_TIME_ZONE_ID,
+          'java.lang.String',
+          'test'
+        );
+      });
+
+      it('should call eqIgnoreCase function with the value if operation is "eqIgnoreCase"', () => {
+        testAdvancedValueFilter(
+          'test',
+          FilterType.eqIgnoreCase,
+          FilterType.eqIgnoreCase,
+          DEFAULT_TIME_ZONE_ID,
+          'java.lang.String',
+          'test'
+        );
+      });
+
+      it('should call notEq function with the value if operation is "notEq"', () => {
+        testAdvancedValueFilter(
+          'true',
+          FilterType.notEq,
+          FilterType.notEq,
+          DEFAULT_TIME_ZONE_ID,
+          'boolean',
+          'true'
+        );
+      });
+
+      it('should call notEqIgnoreCase function with the value if operation is "notEq"', () => {
+        testAdvancedValueFilter(
+          'true',
+          FilterType.notEq,
+          FilterType.notEq,
+          DEFAULT_TIME_ZONE_ID,
+          'boolean',
+          'true'
+        );
+      });
+
+      it('handles filter types with argument of value (eq, eqIgnoreCase, notEq, notEqIgnoreCase, greaterThan, greaterThanOrEqualTo, lessThan, lessThanOrEqualTo)', () => {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const value of filterTypesWithArgument) {
+          testAdvancedValueFilter(
+            'test',
+            value,
+            value,
+            DEFAULT_TIME_ZONE_ID,
+            'java.lang.String',
+            'test'
+          );
+        }
+      });
+
+      it('handles filter types with no arguments (isTrue, isFalse, isNull)', () => {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const value of filterTypesWithNoArguments) {
+          testAdvancedValueFilter(
+            'test',
+            value,
+            value,
+            DEFAULT_TIME_ZONE_ID,
+            'java.lang.String'
+          );
+        }
+      });
+
+      it('handles contains', () => {
+        testInvokeFilter(
+          'java.lang.String',
+          FilterType.contains,
+          'test',
+          DEFAULT_TIME_ZONE_ID,
+          'matches',
+          `(?s)(?i).*\\Qtest\\E.*`
+        );
+      });
+
+      it('handles notContains', () => {
+        const column = makeFilterColumn('java.lang.String');
+        const filter = column.filter() as MockFilter;
+
+        const nullResult = makeFilterCondition();
+        const notResult = makeFilterColumn();
+        const invokeResult = makeFilterCondition();
+        const expectedResult = makeFilterCondition();
+
+        filter.isNull.mockReturnValueOnce(nullResult);
+
+        filter.invoke.mockReturnValueOnce(invokeResult);
+
+        invokeResult.not.mockReturnValueOnce(notResult);
+
+        nullResult.or.mockReturnValueOnce(expectedResult);
+
+        const result = TableUtils.makeAdvancedValueFilter(
+          column,
+          FilterType.notContains,
+          'test',
+          DEFAULT_TIME_ZONE_ID
+        );
+
+        expect(filter.isNull).toHaveBeenCalled();
+        expect(nullResult.or).toHaveBeenCalledWith(notResult);
+
+        expect(filter.invoke).toHaveBeenCalledWith(
+          'matches',
+          `(?s)(?i).*\\Qtest\\E.*`
+        );
+
+        expect(result).toBe(expectedResult);
+      });
+
+      it('handles startsWith', () => {
+        testInvokeFilter(
+          'java.lang.String',
+          FilterType.startsWith,
+          'test',
+          DEFAULT_TIME_ZONE_ID,
+          'matches',
+          `(?s)(?i)^\\Qtest\\E.*`
+        );
+      });
+
+      it('handles endsWith', () => {
+        testInvokeFilter(
+          'java.lang.String',
+          FilterType.endsWith,
+          'test',
+          DEFAULT_TIME_ZONE_ID,
+          'matches',
+          `(?s)(?i).*\\Qtest\\E$`
+        );
+      });
+
+      it('should throw an error for unexpected filter operations', () => {
+        const column = makeFilterColumn('java.lang.String');
+
+        // eslint-disable-next-line no-restricted-syntax
+        for (const operation of invalidFilterTypes) {
+          expect(() =>
+            TableUtils.makeAdvancedValueFilter(
+              column,
+              operation,
+              'test',
+              DEFAULT_TIME_ZONE_ID
+            )
+          ).toThrowError(`Unexpected filter operation: ${operation}`);
+        }
+      });
+    });
+  });
+
   describe('quick number filters', () => {
     function testNumberFilter(text, expectedFn, ...args) {
       testFilter('makeQuickNumberFilter', text, expectedFn, ...args);
@@ -279,8 +680,6 @@ describe('quick filter tests', () => {
     it('handles empty cases', () => {
       const column = makeFilterColumn();
 
-      expect(TableUtils.makeQuickNumberFilter(column, null)).toBe(null);
-      expect(TableUtils.makeQuickNumberFilter(column, undefined)).toBe(null);
       expect(TableUtils.makeQuickNumberFilter(column, '')).toBe(null);
     });
 
@@ -487,6 +886,11 @@ describe('quick filter tests', () => {
       TableUtils.makeQuickNumberFilter(column, '!= null');
       expect(expectFilterCondition.not).toHaveBeenCalledTimes(1);
     });
+
+    it('should return null if it is an abnormal value with unsupported operations', () => {
+      const column = makeFilterColumn();
+      expect(TableUtils.makeQuickNumberFilter(column, '>=NaN')).toBeNull();
+    });
   });
 
   describe('quick boolean filters', () => {
@@ -507,8 +911,6 @@ describe('quick filter tests', () => {
     it('handles empty cases', () => {
       const column = makeFilterColumn();
 
-      expect(TableUtils.makeQuickBooleanFilter(column, null)).toBe(null);
-      expect(TableUtils.makeQuickBooleanFilter(column, undefined)).toBe(null);
       expect(TableUtils.makeQuickBooleanFilter(column, '')).toBe(null);
     });
 
@@ -615,10 +1017,6 @@ describe('quick filter tests', () => {
     it('handles invalid cases', () => {
       const column = makeFilterColumn();
 
-      expect(() => TableUtils.makeQuickDateFilter(column, null, '')).toThrow();
-      expect(() =>
-        TableUtils.makeQuickDateFilter(column, undefined, '')
-      ).toThrow();
       expect(() => TableUtils.makeQuickDateFilter(column, '', '')).toThrow();
 
       expect(() => TableUtils.makeQuickDateFilter(column, '>', '')).toThrow();
@@ -1180,19 +1578,13 @@ describe('quick filter tests', () => {
       expect(nullResult.not).toHaveBeenCalled();
       expect(notResult.and).toHaveBeenCalledWith(invokeResult);
 
-      if (args.length > 0) {
-        expect(filter.invoke).toHaveBeenCalledWith(...args);
-      } else {
-        expect(filter.invoke).toHaveBeenCalled();
-      }
+      expect(filter.invoke).toHaveBeenCalledWith(...args);
       expect(result).toBe(expectedResult);
     }
 
     it('handles empty cases', () => {
       const column = makeFilterColumn();
 
-      expect(TableUtils.makeQuickTextFilter(column, null)).toBe(null);
-      expect(TableUtils.makeQuickTextFilter(column, undefined)).toBe(null);
       expect(TableUtils.makeQuickTextFilter(column, '')).toBe(null);
     });
 
@@ -1296,6 +1688,13 @@ describe('quick filter tests', () => {
         ]
       );
     });
+
+    it('throws an error if filter for andComponent is null', () => {
+      const column = makeFilterColumn('char');
+      expect(() =>
+        TableUtils.makeQuickFilter(column, '12a && 13 || 12')
+      ).toThrowError('Unable to parse quick filter from text 12a && 13 || 12');
+    });
   });
 
   describe('quick char filters', () => {
@@ -1310,8 +1709,6 @@ describe('quick filter tests', () => {
     it('handles empty cases', () => {
       const column = makeFilterColumn();
 
-      expect(TableUtils.makeQuickCharFilter(column, null)).toBe(null);
-      expect(TableUtils.makeQuickCharFilter(column, undefined)).toBe(null);
       expect(TableUtils.makeQuickCharFilter(column, '')).toBe(null);
     });
 
@@ -1352,6 +1749,134 @@ describe('quick filter tests', () => {
 
     it('handles null', () => {
       testCharFilter('null', FilterType.isNull);
+    });
+  });
+
+  describe('makeSelectValueFilter', () => {
+    const testNoSelectedItems = (type: string, expectedValue: unknown) => {
+      const column = makeFilterColumn(type);
+      const filter = column.filter();
+
+      const eqResult = makeFilterCondition();
+      const notEqResult = makeFilterCondition();
+      const expectedResult = makeFilterCondition();
+
+      filter.eq.mockReturnValueOnce(eqResult);
+      filter.notEq.mockReturnValueOnce(notEqResult);
+      eqResult.and.mockReturnValueOnce(expectedResult);
+
+      expect(TableUtils.makeSelectValueFilter(column, [], false)).toBe(
+        expectedResult
+      );
+      expect(filter.eq).toHaveBeenCalledWith(expectedValue);
+      expect(filter.notEq).toHaveBeenCalledWith(expectedValue);
+      expect(eqResult.and).toHaveBeenCalledWith(notEqResult);
+    };
+
+    it('should return null if there are no selected values and invertSelection is true', () => {
+      const column = makeFilterColumn();
+
+      expect(TableUtils.makeSelectValueFilter(column, [], true)).toBeNull();
+    });
+
+    it('handles different column types when there are no selected values and invertSelection is false', () => {
+      testNoSelectedItems('java.lang.String', 'a');
+      testNoSelectedItems('boolean', true);
+      testNoSelectedItems(
+        'io.deephaven.db.tables.utils.DBDateTime',
+        expect.any(Number)
+      );
+      testNoSelectedItems('int', 0);
+    });
+
+    it('handles non-empty selected values with null values and invertSelection is true', () => {
+      const column = makeFilterColumn('java.lang.String');
+      const filter = column.filter();
+
+      const isNullResult = makeFilterCondition();
+      const notResult = makeFilterCondition();
+      const notInResult = makeFilterCondition();
+      const expectedResult = makeFilterCondition();
+
+      filter.notIn.mockReturnValueOnce(notInResult);
+      filter.isNull.mockReturnValueOnce(isNullResult);
+      isNullResult.not.mockReturnValueOnce(notResult);
+      notResult.and.mockReturnValueOnce(expectedResult);
+      expect(
+        TableUtils.makeSelectValueFilter(column, [null, 'string'], true)
+      ).toBe(expectedResult);
+      expect(filter.notIn).toHaveBeenCalledWith(['string']);
+      expect(notResult.and).toHaveBeenCalledWith(notInResult);
+    });
+
+    it('handles non-empty selected values with null values and invertSelection is false', () => {
+      const column = makeFilterColumn('boolean');
+      const filter = column.filter();
+
+      const isNullResult = makeFilterCondition();
+      const inResult = makeFilterCondition();
+      const expectedResult = makeFilterCondition();
+
+      filter.isNull.mockReturnValueOnce(isNullResult);
+      filter.in.mockReturnValueOnce(inResult);
+      isNullResult.or.mockReturnValueOnce(expectedResult);
+      expect(
+        TableUtils.makeSelectValueFilter(column, [null, true, false], false)
+      ).toBe(expectedResult);
+      expect(filter.in).toHaveBeenCalledWith([true, false]);
+      expect(isNullResult.or).toHaveBeenCalledWith(inResult);
+    });
+
+    it('handles all null values as selected values and invertSelection true', () => {
+      const column = makeFilterColumn('boolean');
+      const filter = column.filter();
+
+      const isNullResult = makeFilterCondition();
+      const expectedResult = makeFilterCondition();
+
+      filter.isNull.mockReturnValueOnce(isNullResult);
+      isNullResult.not.mockReturnValueOnce(expectedResult);
+      expect(
+        TableUtils.makeSelectValueFilter(column, [null, null, null], true)
+      ).toBe(expectedResult);
+    });
+
+    it('handles all null values as selected values and invertSelection false', () => {
+      const column = makeFilterColumn('boolean');
+      const filter = column.filter();
+
+      const isNullResult = makeFilterCondition();
+
+      filter.isNull.mockReturnValueOnce(isNullResult);
+      expect(
+        TableUtils.makeSelectValueFilter(column, [null, null, null], false)
+      ).toBe(isNullResult);
+    });
+
+    it('handles non-empty selected values but no null values and invertSelection is true', () => {
+      const column = makeFilterColumn('int');
+      const filter = column.filter();
+
+      const expectedResult = makeFilterCondition();
+
+      filter.notIn.mockReturnValueOnce(expectedResult);
+      expect(TableUtils.makeSelectValueFilter(column, [1, 2, 3], true)).toBe(
+        expectedResult
+      );
+      expect(filter.notIn).toHaveBeenCalledWith([1, 2, 3]);
+    });
+
+    it('handles non-empty selected values but no null values and invertSelection is false', () => {
+      const column = makeFilterColumn('int');
+      const filter = column.filter();
+
+      const expectedResult = makeFilterCondition();
+
+      filter.in.mockReturnValueOnce(expectedResult);
+      expect(TableUtils.makeSelectValueFilter(column, [1, 2, 3], false)).toBe(
+        expectedResult
+      );
+      expect(filter.in).toHaveBeenCalledWith([1, 2, 3]);
     });
   });
 });
@@ -1533,5 +2058,584 @@ describe('Sorting', () => {
         expect(TableUtils.getSortForColumn(sort, columnName)).toEqual(expected);
       }
     );
+  });
+});
+
+describe('isTreeTable', () => {
+  it('should return true if table is a TreeTable', () => {
+    const table: TreeTable = ({
+      expand: jest.fn(),
+      collapse: jest.fn(),
+    } as unknown) as TreeTable;
+
+    expect(TableUtils.isTreeTable(table)).toBe(true);
+  });
+
+  it('should return false if table is not a TreeTable', () => {
+    const table = null;
+    expect(TableUtils.isTreeTable(table)).toBe(false);
+  });
+});
+
+describe('makeNumberValue', () => {
+  it('should return null if text is "null" or ""', () => {
+    expect(TableUtils.makeNumberValue('null')).toBeNull();
+    expect(TableUtils.makeNumberValue('')).toBeNull();
+  });
+
+  it('should return positive infinity if text is ∞, infinity, or inf', () => {
+    expect(TableUtils.makeNumberValue('∞')).toBe(Number.POSITIVE_INFINITY);
+    expect(TableUtils.makeNumberValue('infinity')).toBe(
+      Number.POSITIVE_INFINITY
+    );
+    expect(TableUtils.makeNumberValue('inf')).toBe(Number.POSITIVE_INFINITY);
+  });
+
+  it('should return positive infinity if text is -∞, -infinity, or -inf', () => {
+    expect(TableUtils.makeNumberValue('-∞')).toBe(Number.NEGATIVE_INFINITY);
+    expect(TableUtils.makeNumberValue('-infinity')).toBe(
+      Number.NEGATIVE_INFINITY
+    );
+    expect(TableUtils.makeNumberValue('-inf')).toBe(Number.NEGATIVE_INFINITY);
+  });
+
+  it('should return a number if text is a number', () => {
+    expect(TableUtils.makeNumberValue('123')).toBe(123);
+  });
+
+  it('should throw an error if the text is not a number of any of the special values', () => {
+    expect(() => TableUtils.makeNumberValue('test')).toThrowError(
+      `Invalid number 'test'`
+    );
+  });
+});
+
+describe('makeBooleanValue', () => {
+  const testMakeBooleanValue = (
+    text: string,
+    expectedValue: boolean | null,
+    allowEmpty = false
+  ) => {
+    expect(TableUtils.makeBooleanValue(text, allowEmpty)).toBe(expectedValue);
+  };
+
+  it('should return null if text is empty and allowEmpty is true', () => {
+    testMakeBooleanValue('', null, true);
+  });
+
+  it('should return null if text is "null"', () => {
+    testMakeBooleanValue('null', null);
+  });
+
+  it('shouhld return false for different variations of false', () => {
+    testMakeBooleanValue('0', false);
+    testMakeBooleanValue('f', false);
+    testMakeBooleanValue('fa', false);
+    testMakeBooleanValue('fal', false);
+    testMakeBooleanValue('fals', false);
+    testMakeBooleanValue('false', false);
+    testMakeBooleanValue('n', false);
+    testMakeBooleanValue('no', false);
+  });
+
+  it('should return false for different variations of false', () => {
+    testMakeBooleanValue('1', true);
+    testMakeBooleanValue('t', true);
+    testMakeBooleanValue('tr', true);
+    testMakeBooleanValue('tru', true);
+    testMakeBooleanValue('true', true);
+    testMakeBooleanValue('y', true);
+    testMakeBooleanValue('ye', true);
+    testMakeBooleanValue('yes', true);
+  });
+
+  it('should throw an error if text is not one of the above listed values', () => {
+    expect(() => TableUtils.makeBooleanValue('test')).toThrowError(
+      `Invalid boolean 'test'`
+    );
+  });
+});
+
+describe('makeValue', () => {
+  const testMakeValue = (
+    columnType: string,
+    text: string,
+    expectedValue: unknown,
+    timeZone = 'America/New_York'
+  ) => {
+    expect(TableUtils.makeValue(columnType, text, timeZone)).toEqual(
+      expectedValue
+    );
+  };
+  it('should return null if text is "null"', () => {
+    testMakeValue('decimal', 'null', null);
+  });
+
+  it('should return text if columnType is string or char', () => {
+    testMakeValue('char', 'test', 'test');
+    testMakeValue('java.lang.Character', 'test', 'test');
+    testMakeValue('java.lang.String', 'test', 'test');
+  });
+
+  it('should return a LongWrapper if columnType is long', () => {
+    const expectedLongWrapper = {
+      asNumber: expect.any(Function),
+      valueOf: expect.any(Function),
+      toString: expect.any(Function),
+      ofString: expect.any(Function),
+    };
+    dh.LongWrapper = {
+      asNumber: jest.fn(),
+      valueOf: jest.fn(),
+      toString: jest.fn(),
+      ofString: jest.fn(
+        (str: string): LongWrapper => ({
+          asNumber: jest.fn(),
+          valueOf: jest.fn(),
+          toString: jest.fn(),
+          ofString: jest.fn(),
+        })
+      ),
+    };
+    expect(
+      TableUtils.makeValue('long', 'test', 'America/New_York')
+    ).toMatchObject(expectedLongWrapper);
+    expect(
+      TableUtils.makeValue('java.lang.Long', 'test', 'America/New_York')
+    ).toMatchObject(expectedLongWrapper);
+  });
+
+  it('should return a boolean value if columnType is boolean', () => {
+    testMakeValue('boolean', '', null);
+    testMakeValue('java.lang.Boolean', 'null', null);
+    testMakeValue('boolean', 'true', true);
+    testMakeValue('boolean', 'false', false);
+  });
+
+  it('should return a DateWrapper object if columnType is date', () => {
+    const now = new Date(Date.now());
+    const currentDate = DateUtils.makeDateWrapper(
+      'America/New_York',
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
+    );
+    const yesterdayDate = DateUtils.makeDateWrapper(
+      'America/New_York',
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() - 1
+    );
+    testMakeValue(
+      'io.deephaven.db.tables.utils.DBDateTime',
+      'today',
+      currentDate
+    );
+    testMakeValue('io.deephaven.time.DateTime', 'null', null);
+    testMakeValue(
+      'com.illumon.iris.db.tables.utils.DBDateTime',
+      'yesterday',
+      yesterdayDate
+    );
+  });
+
+  it('should return a number if columnType is number', () => {
+    testMakeValue('int', '2', 2);
+    testMakeValue('java.lang.Integer', '2', 2);
+    testMakeValue('java.math.BigInteger', '2222222222222222', 2222222222222222);
+    testMakeValue('short', '32767', 32767);
+    testMakeValue('java.lang.Short', '32767', 32767);
+    testMakeValue('byte', '127', 127);
+    testMakeValue('java.lang.Byte', '127', 127);
+
+    testMakeValue('double', '1.1111111111', 1.1111111111);
+    testMakeValue('java.lang.Double', '1.1111111111', 1.1111111111);
+    testMakeValue(
+      'java.math.BigDecimal',
+      '123.11111111111111',
+      123.11111111111111
+    );
+    testMakeValue('float', '1.111111111', 1.111111111);
+    testMakeValue('java.lang.Float', '1.111111111', 1.111111111);
+  });
+
+  it('returns null if the column type does not match any of the types', () => {
+    testMakeValue('invalid_type', 'test', null);
+  });
+});
+
+describe('getFilterText', () => {
+  it('should return the filter text', () => {
+    const filter = makeFilterCondition();
+    filter.toString = jest.fn(() => 'text');
+    expect(TableUtils.getFilterText(filter as FilterCondition)).toBe('text');
+  });
+
+  it('should return null if filter is null', () => {
+    expect(TableUtils.getFilterText()).toBeNull();
+    expect(TableUtils.getFilterText(null)).toBeNull();
+  });
+});
+
+describe('getFilterTypes', () => {
+  const testGetFilterTypes = (
+    columnTypes: string[],
+    expectedArray: FilterTypeValue[]
+  ) => {
+    columnTypes.forEach(element => {
+      expect(TableUtils.getFilterTypes(element)).toEqual(expectedArray);
+    });
+  };
+
+  it('should return the valid filter types for boolean column type', () => {
+    const columnTypes = ['boolean', 'java.lang.Boolean'];
+    testGetFilterTypes(columnTypes, ['isTrue', 'isFalse', 'isNull']);
+  });
+
+  it('should return the valid filter types for char, number, or date column type', () => {
+    const columnTypes = [
+      'char',
+      'java.lang.Character',
+      'int',
+      'java.lang.Integer',
+      'java.math.BigInteger',
+      'long',
+      'java.lang.Long',
+      'short',
+      'java.lang.Short',
+      'byte',
+      'java.lang.Byte',
+      'double',
+      'java.lang.Double',
+      'java.math.BigDecimal',
+      'float',
+      'java.lang.Float',
+      'io.deephaven.db.tables.utils.DBDateTime',
+      'io.deephaven.time.DateTime',
+      'com.illumon.iris.db.tables.utils.DBDateTime',
+    ];
+    const expectedArray: FilterTypeValue[] = [
+      'eq',
+      'notEq',
+      'greaterThan',
+      'greaterThanOrEqualTo',
+      'lessThan',
+      'lessThanOrEqualTo',
+    ];
+    testGetFilterTypes(columnTypes, expectedArray);
+  });
+
+  it('should return the valid filter types for text column type', () => {
+    const columnTypes = ['java.lang.String'];
+    const expectedArray: FilterTypeValue[] = [
+      'eq',
+      'eqIgnoreCase',
+      'notEq',
+      'notEqIgnoreCase',
+      'contains',
+      'notContains',
+      'startsWith',
+      'endsWith',
+    ];
+    testGetFilterTypes(columnTypes, expectedArray);
+  });
+
+  it('should return an empty array if the column type is not one of the types listed above', () => {
+    testGetFilterTypes(['test'], []);
+  });
+});
+
+describe('makeColumnSort', () => {
+  const testMakeColumnSort = (
+    columns: readonly Column[],
+    columnIndex: number,
+    direction: SortDirection,
+    isAbs: boolean,
+    expectedValue: Partial<Sort> | null
+  ) => {
+    expect(
+      TableUtils.makeColumnSort(columns, columnIndex, direction, isAbs)
+    ).toEqual(expectedValue);
+  };
+
+  it('should return null if columnIndex is less than 0, or columnIndex is greater than or equal to columns.length', () => {
+    const columns = makeColumns();
+    testMakeColumnSort(columns, -1, 'ASC', true, null);
+    testMakeColumnSort(columns, 6, 'ASC', true, null);
+  });
+
+  it('should return null if direction is null', () => {
+    const columns = makeColumns();
+    testMakeColumnSort(columns, 0, null, true, null);
+  });
+
+  it('should return an ascending sort if direction is ASC', () => {
+    const columns = makeColumns();
+    const expectedValue: Partial<Sort> = {
+      column: columns[0],
+      direction: 'ASC',
+      isAbs: true,
+    };
+    testMakeColumnSort(columns, 0, 'ASC', true, expectedValue);
+  });
+
+  it('should return an descending sort if direction is DESC', () => {
+    const columns = makeColumns();
+    const expectedValue: Partial<Sort> = {
+      column: columns[1],
+      direction: 'DESC',
+      isAbs: false,
+    };
+    testMakeColumnSort(columns, 1, 'DESC', false, expectedValue);
+  });
+
+  it('should return the default sort if direction is REVERSE', () => {
+    const columns = makeColumns();
+    const expectedValue: Partial<Sort> = {
+      column: columns[2],
+      direction: 'ASC',
+      isAbs: true,
+    };
+    testMakeColumnSort(columns, 2, 'REVERSE', true, expectedValue);
+  });
+});
+
+describe('sortColumns', () => {
+  it('should sort the columns in ascending order based on column name', () => {
+    const columns = makeColumns();
+    expect(TableUtils.sortColumns(columns, true)).toEqual(columns);
+  });
+
+  it('should sort the columns in descending order based on column name', () => {
+    const columns = makeColumns();
+    const reversed = columns.reverse();
+
+    expect(TableUtils.sortColumns(columns, false)).toEqual(reversed);
+  });
+});
+
+describe('getNextSort', () => {
+  const testGetNextSort = (
+    columns: readonly Column[],
+    sorts: readonly Sort[],
+    columnIndex: number,
+    expectedValue
+  ) => {
+    expect(TableUtils.getNextSort(columns, sorts, columnIndex)).toEqual(
+      expectedValue
+    );
+  };
+  it('should return null if columnIndex is out of range', () => {
+    const columns = makeColumns();
+    testGetNextSort(columns, [], -1, null);
+    testGetNextSort(columns, [], 10, null);
+  });
+});
+
+describe('sortColumn', () => {
+  const testSortColumn = (
+    sorts: readonly Sort[],
+    columns: readonly Column[],
+    modelColumn: number,
+    direction: SortDirection,
+    isAbs: boolean,
+    addToExisting: boolean,
+    expectedValue
+  ) => {
+    expect(
+      TableUtils.sortColumn(
+        sorts,
+        columns,
+        modelColumn,
+        direction,
+        isAbs,
+        addToExisting
+      )
+    ).toEqual(expectedValue);
+  };
+
+  it('should return an empty array if columnIndex is out of range', () => {
+    const columns = makeColumns();
+    testSortColumn([], columns, -1, 'ASC', true, true, []);
+    testSortColumn([], columns, 10, 'ASC', true, true, []);
+  });
+
+  it('applies sort properly', () => {
+    const columns = makeColumns();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const table: Table = new (dh as any).Table({ columns });
+    let tableSorts: Sort[] = [];
+
+    expect(table).not.toBe(null);
+    expect(table.sort.length).toBe(0);
+
+    tableSorts = TableUtils.sortColumn(
+      tableSorts,
+      columns,
+      0,
+      'ASC',
+      true,
+      true
+    );
+    table.applySort(tableSorts);
+    expect(table.sort.length).toBe(1);
+    expect(table.sort[0].column).toBe(columns[0]);
+    expect(table.sort[0].direction).toBe(TableUtils.sortDirection.ascending);
+    expect(table.sort[0].isAbs).toBe(true);
+
+    tableSorts = TableUtils.sortColumn(
+      tableSorts,
+      columns,
+      3,
+      'ASC',
+      false,
+      true
+    );
+    table.applySort(tableSorts);
+    expect(table.sort.length).toBe(2);
+    expect(table.sort[0].column).toBe(columns[0]);
+    expect(table.sort[0].direction).toBe(TableUtils.sortDirection.ascending);
+    expect(table.sort[0].isAbs).toBe(true);
+    expect(table.sort[1].column).toBe(columns[3]);
+    expect(table.sort[1].direction).toBe(TableUtils.sortDirection.ascending);
+    expect(table.sort[1].isAbs).toBe(false);
+
+    tableSorts = TableUtils.sortColumn(
+      tableSorts,
+      columns,
+      0,
+      'DESC',
+      false,
+      true
+    );
+    table.applySort(tableSorts);
+    expect(table.sort.length).toBe(2);
+    expect(table.sort[0].column).toBe(columns[3]);
+    expect(table.sort[0].direction).toBe(TableUtils.sortDirection.ascending);
+    expect(table.sort[0].isAbs).toBe(false);
+    expect(table.sort[1].column).toBe(columns[0]);
+    expect(table.sort[1].direction).toBe(TableUtils.sortDirection.descending);
+    expect(table.sort[1].isAbs).toBe(false);
+
+    tableSorts = TableUtils.sortColumn(
+      tableSorts,
+      columns,
+      3,
+      'DESC',
+      false,
+      false
+    );
+    table.applySort(tableSorts);
+    expect(table.sort.length).toBe(1);
+    expect(table.sort[0].column).toBe(columns[3]);
+    expect(table.sort[0].direction).toBe(TableUtils.sortDirection.descending);
+    expect(table.sort[0].isAbs).toBe(false);
+  });
+});
+
+describe('getNormalizedType', () => {
+  const testGetNormalizedType = (
+    columnType: string | null,
+    expectedValue: DataType
+  ) => {
+    expect(TableUtils.getNormalizedType(columnType)).toBe(expectedValue);
+  };
+
+  it('returns the boolean data type for boolean column type', () => {
+    testGetNormalizedType('boolean', 'boolean');
+    testGetNormalizedType('java.lang.Boolean', 'boolean');
+  });
+
+  it('returns the character data type for character column type', () => {
+    testGetNormalizedType('char', 'char');
+    testGetNormalizedType('java.lang.Character', 'char');
+  });
+
+  it('returns the string data type for string column type', () => {
+    testGetNormalizedType('string', 'string');
+    testGetNormalizedType('java.lang.String', 'string');
+  });
+
+  it('returns the date time data type for date time column type', () => {
+    testGetNormalizedType(
+      'io.deephaven.db.tables.utils.DBDateTime',
+      'datetime'
+    );
+    testGetNormalizedType('io.deephaven.time.DateTime', 'datetime');
+    testGetNormalizedType(
+      'com.illumon.iris.db.tables.utils.DBDateTime',
+      'datetime'
+    );
+    testGetNormalizedType('datetime', 'datetime');
+  });
+
+  it('returns the decimal data type for double, float, and bigdecimal column type', () => {
+    testGetNormalizedType('double', 'decimal');
+    testGetNormalizedType('java.lang.Double', 'decimal');
+    testGetNormalizedType('float', 'decimal');
+    testGetNormalizedType('java.lang.Float', 'decimal');
+    testGetNormalizedType('java.math.BigDecimal', 'decimal');
+    testGetNormalizedType('decimal', 'decimal');
+  });
+
+  it('returns the int data type for int, long, short, byte, and biginteger column type', () => {
+    testGetNormalizedType('int', 'int');
+    testGetNormalizedType('java.lang.Integer', 'int');
+    testGetNormalizedType('long', 'int');
+    testGetNormalizedType('java.lang.Long', 'int');
+    testGetNormalizedType('short', 'int');
+    testGetNormalizedType('java.lang.Short', 'int');
+    testGetNormalizedType('byte', 'int');
+    testGetNormalizedType('java.lang.Byte', 'int');
+    testGetNormalizedType('java.math.BigInteger', 'int');
+  });
+
+  it('returns unknown for any unknown column type', () => {
+    testGetNormalizedType('test', 'unknown');
+    testGetNormalizedType('unknown', 'unknown');
+    testGetNormalizedType(null, 'unknown');
+  });
+});
+
+describe('isBigDecimalType', () => {
+  it('should return true if the column type is big decimal', () => {
+    expect(TableUtils.isBigDecimalType('java.math.BigDecimal')).toBe(true);
+  });
+
+  it('should return false if column type is not big decimal', () => {
+    expect(TableUtils.isBigDecimalType('test')).toBe(false);
+  });
+});
+
+describe('isBigIntegerType', () => {
+  it('should return true if the column type is big integer', () => {
+    expect(TableUtils.isBigIntegerType('java.math.BigInteger')).toBe(true);
+  });
+
+  it('should return false if column type is not big integer', () => {
+    expect(TableUtils.isBigIntegerType('test')).toBe(false);
+  });
+});
+
+describe('getBaseType', () => {
+  it('should return the base column type', () => {
+    expect(TableUtils.getBaseType('test')).toBe('test');
+    expect(TableUtils.getBaseType('test1[]test2')).toBe('test1');
+  });
+});
+
+describe('isCompatibleType', () => {
+  it('should return true if two types are compatible', () => {
+    expect(TableUtils.isCompatibleType('boolean', 'java.lang.Boolean')).toBe(
+      true
+    );
+    expect(TableUtils.isCompatibleType()).toBe(true);
+    expect(TableUtils.isCompatibleType('int', 'long')).toBe(true);
+  });
+
+  it('should return false if two types are not compatible', () => {
+    expect(TableUtils.isCompatibleType('boolean', 'int')).toBe(false);
+    expect(TableUtils.isCompatibleType('boolean')).toBe(false);
+    expect(TableUtils.isCompatibleType('int', 'double')).toBe(false);
   });
 });

@@ -73,6 +73,12 @@ describe('makeColumnFormatMap', () => {
       formatMap.get(TableUtils.dataType.DECIMAL)?.get(conflictingColumnName)
     ).toBe(lastFormat);
   });
+
+  it('returns an empty map if columnFormattingRules is null', () => {
+    // @ts-expect-error test null columnFormattingRules
+    const formatMap = Formatter.makeColumnFormatMap(null);
+    expect(formatMap.size).toBe(0);
+  });
 });
 
 it('returns correct formatters for given column types', () => {
@@ -136,6 +142,11 @@ describe('getColumnFormat', () => {
 });
 
 describe('getFormattedString', () => {
+  it('returns an empty string when value is null', () => {
+    const formatter = makeFormatter();
+    expect(formatter.getFormattedString(null, 'decimal')).toBe('');
+  });
+
   it('passes undefined to formatter.format for column with no custom format', () => {
     const value = 'randomValue';
     const columnType = TYPE_DATETIME;
@@ -180,5 +191,29 @@ describe('getFormattedString', () => {
       columnFormat
     );
     columnTypeFormatter.format = originalFormatFn;
+  });
+});
+
+describe('getColumnFormatMapForType', () => {
+  it('should get columnFormatMap for a given column type and create new map entry', () => {
+    const formatter = makeFormatter();
+    const formatMap = formatter.getColumnFormatMapForType('decimal', true);
+    if (formatMap) {
+      expect(formatMap).not.toBeUndefined();
+      expect(formatMap.size).toBe(0);
+    }
+  });
+
+  it('returns undefined if no formatmap exists and createIfNecessary is false', () => {
+    const formatter = new Formatter();
+    const formatMap = formatter.getColumnFormatMapForType('decimal');
+    expect(formatMap).toBeUndefined();
+  });
+});
+
+describe('timeZone', () => {
+  it('should return the time zone name', () => {
+    const formatter = makeFormatter();
+    expect(formatter.timeZone).toBe('America/New_York');
   });
 });

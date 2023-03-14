@@ -51,4 +51,68 @@ numberColumnFormatters.forEach(({ name, formatter: NumberColumnFormatter }) => {
       expect(formatter.format(null)).toBe('');
     });
   });
+
+  describe(`${name}.makePresetFormat`, () => {
+    it('should return an object with preset type', () => {
+      const expectedObject = {
+        label: 'test',
+        formatString: '##0.00%',
+        type: 'type-context-preset',
+        multiplier: 2,
+      };
+
+      expect(
+        NumberColumnFormatter.makePresetFormat('test', '##0.00%', 2)
+      ).toEqual(expectedObject);
+    });
+  });
+
+  describe(`${name}.makeCustomFormat`, () => {
+    it('should return an object with preset type', () => {
+      const expectedObject = {
+        label: 'Custom Format',
+        formatString: '##0.00%',
+        type: 'type-context-custom',
+        multiplier: 2,
+      };
+
+      expect(NumberColumnFormatter.makeCustomFormat('##0.00%', 2)).toEqual(
+        expectedObject
+      );
+    });
+  });
+
+  describe(`${name}.isSameFormat`, () => {
+    it('should return true if two format objects are the same excluding label', () => {
+      const format1 = NumberColumnFormatter.makeFormat(
+        'format1',
+        '##0.00%',
+        'type-context-custom',
+        2
+      );
+      const format2 = NumberColumnFormatter.makeFormat(
+        'format2',
+        '##0.00%',
+        'type-context-custom',
+        2
+      );
+      expect(NumberColumnFormatter.isSameFormat(format1, format2)).toBe(true);
+    });
+
+    it('should return false if two format objects are different excluding label', () => {
+      const format1 = NumberColumnFormatter.makeFormat(
+        'format1',
+        '##0.00%',
+        'type-context-custom',
+        2
+      );
+      const format2 = NumberColumnFormatter.makeFormat(
+        'format2',
+        '##0.000%',
+        'type-context-preset',
+        3
+      );
+      expect(NumberColumnFormatter.isSameFormat(format1, format2)).toBe(false);
+    });
+  });
 });
