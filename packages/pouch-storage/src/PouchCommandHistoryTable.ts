@@ -41,6 +41,8 @@ export class PouchCommandHistoryTable
     if (!PouchCommandHistoryCache.tableRegistry.has(this.cacheKey)) {
       PouchCommandHistoryCache.tableRegistry.set(this.cacheKey, new Set());
     }
+    
+    log.debug('Adding table to registry', this.cacheKey)
     PouchCommandHistoryCache.tableRegistry.get(this.cacheKey)?.add(this);
   }
 
@@ -195,7 +197,7 @@ export class PouchCommandHistoryTable
     _sort: PouchDBSort
   ): Promise<ViewportData<CommandHistoryStorageItem>> {
     const data = await this.fetchData(selector);
-    log.debug('fetchViewportData', data);
+    log.debug('Fetching viewport data', viewport.top, viewport.bottom + 1, data);
     return {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       items: data.docs.slice(viewport.top, viewport.bottom + 1),
@@ -235,6 +237,7 @@ export class PouchCommandHistoryTable
 
   override close(): void {
     PouchCommandHistoryCache.tableRegistry.get(this.cacheKey)?.delete(this);
+    this.changes?.cancel();
     super.close();
   }
 }
