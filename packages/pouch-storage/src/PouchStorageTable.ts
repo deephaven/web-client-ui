@@ -116,7 +116,7 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
   implements StorageTable<T> {
   protected db: PouchDB.Database<T & PouchStorageItem>;
 
-  protected changes?: PouchDB.Core.Changes<T & PouchStorageItem>;
+  changes?: PouchDB.Core.Changes<T & PouchStorageItem>;
 
   private listeners: ViewportUpdateCallback<T>[] = [];
 

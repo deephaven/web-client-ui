@@ -25,7 +25,7 @@ export class PouchCommandHistoryStorage implements CommandHistoryStorage {
   }
 
   async getTable(language: string): Promise<PouchCommandHistoryTable> {
-    return this.getUpdateTable(language);
+    return new PouchCommandHistoryTable(language);
   }
 
   async addItem(
