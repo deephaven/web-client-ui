@@ -12,7 +12,7 @@ type DatabaseName = string;
 const log = Log.module('PouchCommandHistoryCache');
 
 /**
- * Static cache for tracking things shared across multiople
+ * Cache for tracking things shared across multiple
  * `PouchCommandHistoryTable` instances.
  */
 class PouchCommandHistoryCache {
@@ -45,7 +45,7 @@ class PouchCommandHistoryCache {
   tableRegistry: Map<DatabaseName, Set<PouchCommandHistoryTable>>;
 
   /**
-   * Pauses PouchDB change listeners for any `PouchCommandHistoryTables` with
+   * Pauses PouchDB change listeners for any `PouchCommandHistoryTable` with
    * the given database name. This will cancel existing subscriptions and
    * return a callback that can be used to re-subscribe them.
    * @param dbName
