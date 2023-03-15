@@ -16,30 +16,33 @@ const log = Log.module('PouchCommandHistoryCache');
  * `PouchCommandHistoryTable` instances.
  */
 class PouchCommandHistoryCache {
+  constructor() {
+    this.isPruning = new Map();
+    this.response = new Map();
+    this.tableRegistry = new Map();
+  }
+
   /**
    * Keep track of pruning status for a database. This helps ensure only 1
    * pruning operation gets executed if multiple instances of a PouchCommandHistory
    * table load data at the same time.
    */
-  static isPruning: Map<DatabaseName, boolean> = new Map();
+  isPruning: Map<DatabaseName, boolean>;
 
   /**
    * Cache for command history query results keyed by db name. The cached data
    * will be shared across all `PouchCommandHistoryTable` instances that have
    * the same db name.
    */
-  static response: Map<
+  response: Map<
     DatabaseName,
     Promise<CommandHistoryStorageItemFindResponse> | null
-  > = new Map();
+  >;
 
   /**
    * Keeps track of all `PouchCommandHistoryTable` instances.
    */
-  static tableRegistry: Map<
-    DatabaseName,
-    Set<PouchCommandHistoryTable>
-  > = new Map();
+  tableRegistry: Map<DatabaseName, Set<PouchCommandHistoryTable>>;
 
   /**
    * Pauses PouchDB change listeners for any `PouchCommandHistoryTables` with
@@ -47,7 +50,7 @@ class PouchCommandHistoryCache {
    * return a callback that can be used to re-subscribe them.
    * @param dbName
    */
-  static pauseChangeListeners(dbName: DatabaseName): () => void {
+  pauseChangeListeners(dbName: DatabaseName): () => void {
     const pausedTables: PouchCommandHistoryTable[] = [];
 
     this.tableRegistry.get(dbName)?.forEach(table => {

@@ -28,7 +28,7 @@ type CommandHistoryDoc = PouchDB.Core.ExistingDocument<
 export class PouchCommandHistoryTable
   extends PouchStorageTable<CommandHistoryStorageItem>
   implements CommandHistoryTable {
-  constructor(language: string) {
+  constructor(language: string, private cache: PouchCommandHistoryCache) {
     super(`CommandHistoryStorage.${language}`, ({
       // Optimizations to cut down on growing table size. These should be safe
       // since we don't care about revision history for command history
@@ -38,12 +38,13 @@ export class PouchCommandHistoryTable
     } as unknown) as PouchDB.HttpAdapter.HttpAdapterConfiguration);
 
     // Add this table instance to `allTables`
-    if (!PouchCommandHistoryCache.tableRegistry.has(this.cacheKey)) {
-      PouchCommandHistoryCache.tableRegistry.set(this.cacheKey, new Set());
+    if (!this.cache.tableRegistry.has(this.cacheKey)) {
+      this.cache.tableRegistry.set(this.cacheKey, new Set());
     }
     
     log.debug('Adding table to registry', this.cacheKey)
-    PouchCommandHistoryCache.tableRegistry.get(this.cacheKey)?.add(this);
+    this.cache.tableRegistry.get(this.cacheKey)?.add(this);
+
   }
 
   private searchText?: string;
@@ -87,13 +88,13 @@ export class PouchCommandHistoryTable
   ): void {
     log.debug('Clearing cache and refreshing data', event);
 
-    PouchCommandHistoryCache.response.delete(this.cacheKey);
+    this.cache.response.delete(this.cacheKey);
 
     super.dbUpdate(event);
   }
 
   /**
-   * Fetch command history data from `PouchCommandHistoryCache.cache` or from
+   * Fetch command history data from `this.cache.response` or from
    * PouchDB if data is not found in the cache. If the number of total items in
    * the db exceeds COMMAND_HISTORY_ITEMS_MAX, the database will be pruned down
    * to COMMAND_HISTORY_ITEMS_PRUNE total items. Note that PouchDB doesn't
@@ -106,12 +107,12 @@ export class PouchCommandHistoryTable
   ): Promise<
     PouchDB.Find.FindResponse<CommandHistoryStorageItem & PouchStorageItem>
   > {
-    if (PouchCommandHistoryCache.response.has(this.cacheKey)) {
+    if (this.cache.response.has(this.cacheKey)) {
       log.debug('Fetching from cache', this.searchText, this.viewport);
     } else {
       log.debug('Fetching from PouchDB', this.searchText, this.viewport);
 
-      PouchCommandHistoryCache.response.set(
+      this.cache.response.set(
         this.cacheKey,
         this.db
           .allDocs({
@@ -145,7 +146,7 @@ export class PouchCommandHistoryTable
     }
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const result = PouchCommandHistoryCache.response.get(this.cacheKey)!;
+    const result = this.cache.response.get(this.cacheKey)!;
 
     if (this.searchText == null || this.searchText === '') {
       return result;
@@ -210,7 +211,7 @@ export class PouchCommandHistoryTable
    * @param items
    */
   async pruneItems(items: CommandHistoryDoc[]) {
-    if (PouchCommandHistoryCache.isPruning.has(this.cacheKey)) {
+    if (this.cache.isPruning.has(this.cacheKey)) {
       return;
     }
 
@@ -219,13 +220,13 @@ export class PouchCommandHistoryTable
 
       // Disable change notifications while we bulk delete to avoid locking up
       // the app
-      const resumeListeners = PouchCommandHistoryCache.pauseChangeListeners(
+      const resumeListeners = this.cache.pauseChangeListeners(
         this.cacheKey
       );
 
-      PouchCommandHistoryCache.isPruning.set(this.cacheKey, true);
+      this.cache.isPruning.set(this.cacheKey, true);
       await this.db.bulkDocs(items.map(item => ({ ...item, _deleted: true })));
-      PouchCommandHistoryCache.isPruning.set(this.cacheKey, false);
+      this.cache.isPruning.set(this.cacheKey, false);
 
       resumeListeners();
 
@@ -236,7 +237,7 @@ export class PouchCommandHistoryTable
   }
 
   override close(): void {
-    PouchCommandHistoryCache.tableRegistry.get(this.cacheKey)?.delete(this);
+    this.cache.tableRegistry.get(this.cacheKey)?.delete(this);
     this.changes?.cancel();
     super.close();
   }
