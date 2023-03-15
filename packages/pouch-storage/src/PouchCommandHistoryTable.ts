@@ -38,7 +38,7 @@ export class PouchCommandHistoryTable
       revs_limit: 1,
     } as unknown) as PouchDB.HttpAdapter.HttpAdapterConfiguration);
 
-    // Add this table instance to `allTables`
+    // Add this table instance to the table registry
     if (!this.cache.tableRegistry.has(this.cacheKey)) {
       this.cache.tableRegistry.set(this.cacheKey, new Set());
     }
@@ -167,7 +167,7 @@ export class PouchCommandHistoryTable
 
   /**
    * Override `PouchStorageTable.fetchInfo` so we can make use of
-   * `PouchCommandHistoryCache.cache`
+   * `PouchCommandHistoryCache`
    * @param selector
    */
   // Our current version of eslint + prettier doesn't always like the `override`
@@ -177,7 +177,7 @@ export class PouchCommandHistoryTable
   ): Promise<
     PouchDB.Find.FindResponse<CommandHistoryStorageItem & PouchStorageItem>
   > {
-    return PromiseUtils.withTimeout(0, () => this.fetchData(selector));
+    return this.fetchData(selector);
   }
 
   /**
@@ -210,7 +210,6 @@ export class PouchCommandHistoryTable
       data
     );
     return {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       items: data.docs.slice(viewport.top, viewport.bottom + 1),
       offset: viewport.top,
     };
@@ -234,15 +233,9 @@ export class PouchCommandHistoryTable
       const resumeListeners = this.cache.pauseChangeListeners(this.cacheKey);
 
       this.cache.isPruning.set(this.cacheKey, true);
-      try {
-        await this.db.bulkDocs(
-          items.map(item => ({ ...item, _deleted: true }))
-        );
-      } catch (err) {
-        log.debug('An error occurred while pruning', err);
-      }
-
+      await this.db.bulkDocs(items.map(item => ({ ...item, _deleted: true })));
       this.cache.isPruning.set(this.cacheKey, false);
+
       resumeListeners();
 
       log.debug('Finished pruning command history items');
