@@ -1,5 +1,6 @@
 /* eslint-disable no-bitwise */
 import * as monaco from 'monaco-editor';
+import { screen } from '@testing-library/react';
 import { Shortcut, KEY, MODIFIER } from '@deephaven/components';
 import MonacoUtils from './MonacoUtils';
 
@@ -148,5 +149,23 @@ describe('Mac shortcuts', () => {
     expect(MonacoUtils.getMonacoKeyCodeFromShortcut(s)).toEqual(
       monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyB
     );
+  });
+});
+
+describe('registerLinkProvider', () => {
+  it('should register a link provider', () => {
+    const container = document.createElement('div');
+    container.style.height = '500px';
+    const editor = monaco.editor.create(container, {
+      value: 'google.com',
+      language: 'javascript',
+      automaticLayout: true,
+    });
+    MonacoUtils.registerLinkProvider();
+
+    expect(editor).toBeDefined();
+    screen.debug();
+    console.log(screen.getByText('google.com'));
+    console.log(container.querySelector('.detected-link'));
   });
 });

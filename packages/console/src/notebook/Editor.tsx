@@ -4,7 +4,6 @@
 import React, { Component, ReactElement } from 'react';
 import classNames from 'classnames';
 import * as monaco from 'monaco-editor';
-import { find as linkifyFind } from 'linkifyjs';
 import { assertNotNull } from '@deephaven/utils';
 import MonacoUtils from '../monaco/MonacoUtils';
 
@@ -114,38 +113,7 @@ class Editor extends Component<EditorProps, Record<string, never>> {
     this.editor.layout();
     MonacoUtils.removeConflictingKeybindings(this.editor);
 
-    monaco.languages.registerLinkProvider('plaintext', {
-      provideLinks: (model: monaco.editor.ITextModel) => {
-        const text = model.getValue();
-        const newTokens: monaco.languages.ILink[] = [];
-
-        const tokens = linkifyFind(text);
-        const uniqueTokens: Set<string> = new Set(
-          tokens.map(item => item.value)
-        );
-        const valuesToHref: Map<string, string> = new Map();
-
-        tokens.forEach(item => {
-          valuesToHref.set(item.value, item.href);
-        });
-
-        uniqueTokens.forEach(value => {
-          const matches = this.editor
-            ?.getModel()
-            ?.findMatches(value, false, false, false, null, true);
-          matches?.forEach(match => {
-            newTokens.push({
-              url: valuesToHref.get(value),
-              range: match.range,
-            });
-          });
-        });
-
-        return {
-          links: newTokens,
-        };
-      },
-    });
+    MonacoUtils.registerLinkProvider(this.editor);
 
     onEditorInitialized(this.editor);
   }
