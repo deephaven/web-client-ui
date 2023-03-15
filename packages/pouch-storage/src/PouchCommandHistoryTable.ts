@@ -30,13 +30,13 @@ export class PouchCommandHistoryTable
   extends PouchStorageTable<CommandHistoryStorageItem>
   implements CommandHistoryTable {
   constructor(language: string, private cache: PouchCommandHistoryCache) {
-    super(`CommandHistoryStorage.${language}`, ({
+    super(`CommandHistoryStorage.${language}`, {
       // Optimizations to cut down on growing table size. These should be safe
       // since we don't care about revision history for command history
       // documents.
       auto_compaction: true,
       revs_limit: 1,
-    } as unknown) as PouchDB.HttpAdapter.HttpAdapterConfiguration);
+    });
 
     // Add this table instance to the table registry
     if (!this.cache.tableRegistry.has(this.cacheKey)) {

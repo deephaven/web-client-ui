@@ -142,7 +142,7 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
 
   constructor(
     databaseName: string,
-    dbOptions?: PouchDB.HttpAdapter.HttpAdapterConfiguration
+    dbOptions?: PouchDB.Configuration.DatabaseConfiguration
   ) {
     this.db = new PouchDB<T & PouchStorageItem>(
       `${DB_PREFIX}${databaseName}`,
