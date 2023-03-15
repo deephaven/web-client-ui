@@ -9,6 +9,7 @@ import {
   StorageUtils,
   ViewportData,
 } from '@deephaven/storage';
+import { PromiseUtils } from '@deephaven/utils';
 import PouchCommandHistoryCache from './PouchCommandHistoryCache';
 import { siftPrunableItems } from './pouchCommandHistoryUtils';
 import PouchStorageTable, {
@@ -41,10 +42,9 @@ export class PouchCommandHistoryTable
     if (!this.cache.tableRegistry.has(this.cacheKey)) {
       this.cache.tableRegistry.set(this.cacheKey, new Set());
     }
-    
-    log.debug('Adding table to registry', this.cacheKey)
-    this.cache.tableRegistry.get(this.cacheKey)?.add(this);
 
+    log.debug('Adding table to registry', this.cacheKey);
+    this.cache.tableRegistry.get(this.cacheKey)?.add(this);
   }
 
   private searchText?: string;
@@ -80,10 +80,9 @@ export class PouchCommandHistoryTable
     }, 500);
   }
 
-  // Our current version of eslint + prettier doesn't like `override` + `async` keyword.
-  // We should be able to remove this whenever we upgrade.
-  // eslint-disable-next-line prettier/prettier
-  override dbUpdate(
+  // Our current version of eslint + prettier doesn't always like the `override`
+  // keyword. Whenever we upgrade, we should annotate this function with `override`.
+  dbUpdate(
     event: PouchDB.Core.ChangesResponseChange<CommandHistoryStorageItem>
   ): void {
     log.debug('Clearing cache and refreshing data', event);
@@ -107,58 +106,63 @@ export class PouchCommandHistoryTable
   ): Promise<
     PouchDB.Find.FindResponse<CommandHistoryStorageItem & PouchStorageItem>
   > {
-    if (this.cache.response.has(this.cacheKey)) {
-      log.debug('Fetching from cache', this.searchText, this.viewport);
-    } else {
-      log.debug('Fetching from PouchDB', this.searchText, this.viewport);
+    // Wrapping this in a setTimeout so that it executes on next call stack.
+    // This is necessary to ensure `this.cache` has been initialized due to some
+    // nuances with property initilization with inherited classes.
+    return PromiseUtils.withTimeout(0, async () => {
+      if (this.cache.response.has(this.cacheKey)) {
+        log.debug('Fetching from cache', this.searchText, this.viewport);
+      } else {
+        log.debug('Fetching from PouchDB', this.searchText, this.viewport);
 
-      this.cache.response.set(
-        this.cacheKey,
-        this.db
-          .allDocs({
-            include_docs: true,
-          })
-          .then(result => {
-            const allItems = result.rows
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              .map(row => row.doc!)
-              .filter(({ name }) => name);
+        this.cache.response.set(
+          this.cacheKey,
+          this.db
+            .allDocs({
+              include_docs: true,
+            })
+            .then(result => {
+              const allItems = result.rows
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                .map(row => row.doc!)
+                .filter(({ name }) => name);
 
-            log.debug(`Fetched ${allItems.length} command history items`);
+              log.debug(`Fetched ${allItems.length} command history items`);
 
-            const { toKeep, toPrune } = siftPrunableItems(
-              allItems,
-              COMMAND_HISTORY_ITEMS_MAX,
-              COMMAND_HISTORY_ITEMS_PRUNE
-            );
+              const { toKeep, toPrune } = siftPrunableItems(
+                allItems,
+                COMMAND_HISTORY_ITEMS_MAX,
+                COMMAND_HISTORY_ITEMS_PRUNE
+              );
 
-            // If number of items in PouchDB has exceeded COMMAND_HISTORY_ITEMS_MAX
-            // prune them down so we have COMMAND_HISTORY_ITEMS_PRUNE left
-            if (toPrune.length) {
-              this.pruneItems(toPrune);
-            }
+              // If number of items in PouchDB has exceeded COMMAND_HISTORY_ITEMS_MAX
+              // prune them down so we have COMMAND_HISTORY_ITEMS_PRUNE left
+              if (toPrune.length) {
+                this.pruneItems(toPrune);
+              }
 
-            return {
-              docs: toKeep,
-            };
-          })
-      );
-    }
+              return {
+                docs: toKeep,
+              };
+            })
+        );
+      }
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const result = this.cache.response.get(this.cacheKey)!;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const result = this.cache.response.get(this.cacheKey)!;
 
-    if (this.searchText == null || this.searchText === '') {
-      return result;
-    }
+      if (this.searchText == null || this.searchText === '') {
+        return result;
+      }
 
-    return {
-      ...result,
-      docs: (await result).docs.filter(({ name }) =>
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        name.toLowerCase().includes(this.searchText!)
-      ),
-    };
+      return {
+        ...result,
+        docs: (await result).docs.filter(({ name }) =>
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          name.toLowerCase().includes(this.searchText!)
+        ),
+      };
+    });
   }
 
   /**
@@ -166,15 +170,14 @@ export class PouchCommandHistoryTable
    * `PouchCommandHistoryCache.cache`
    * @param selector
    */
-  // Our current version of eslint + prettier doesn't like `override` + `async` keyword.
-  // We should be able to remove this whenever we upgrade.
-  // eslint-disable-next-line prettier/prettier
-  override async fetchInfo(
+  // Our current version of eslint + prettier doesn't always like the `override`
+  // keyword. Whenever we upgrade, we should annotate this function with `override`.
+  async fetchInfo(
     selector: PouchDB.Find.Selector
   ): Promise<
     PouchDB.Find.FindResponse<CommandHistoryStorageItem & PouchStorageItem>
   > {
-    return this.fetchData(selector);
+    return PromiseUtils.withTimeout(0, () => this.fetchData(selector));
   }
 
   /**
@@ -192,13 +195,20 @@ export class PouchCommandHistoryTable
    * @param _sort
    * @returns Promise to array of command history storage items
    */
-  override async fetchViewportData(
+  // Our current version of eslint + prettier doesn't always like the `override`
+  // keyword. Whenever we upgrade, we should annotate this function with `override`.
+  async fetchViewportData(
     viewport: StorageTableViewport,
     selector: PouchDB.Find.Selector,
     _sort: PouchDBSort
   ): Promise<ViewportData<CommandHistoryStorageItem>> {
     const data = await this.fetchData(selector);
-    log.debug('Fetching viewport data', viewport.top, viewport.bottom + 1, data);
+    log.debug(
+      'Fetching viewport data',
+      viewport.top,
+      viewport.bottom + 1,
+      data
+    );
     return {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       items: data.docs.slice(viewport.top, viewport.bottom + 1),
@@ -212,6 +222,7 @@ export class PouchCommandHistoryTable
    */
   async pruneItems(items: CommandHistoryDoc[]) {
     if (this.cache.isPruning.has(this.cacheKey)) {
+      log.debug('Pruning already in progress. Skipping.');
       return;
     }
 
@@ -220,14 +231,18 @@ export class PouchCommandHistoryTable
 
       // Disable change notifications while we bulk delete to avoid locking up
       // the app
-      const resumeListeners = this.cache.pauseChangeListeners(
-        this.cacheKey
-      );
+      const resumeListeners = this.cache.pauseChangeListeners(this.cacheKey);
 
       this.cache.isPruning.set(this.cacheKey, true);
-      await this.db.bulkDocs(items.map(item => ({ ...item, _deleted: true })));
-      this.cache.isPruning.set(this.cacheKey, false);
+      try {
+        await this.db.bulkDocs(
+          items.map(item => ({ ...item, _deleted: true }))
+        );
+      } catch (err) {
+        log.debug('An error occurred while pruning', err);
+      }
 
+      this.cache.isPruning.set(this.cacheKey, false);
       resumeListeners();
 
       log.debug('Finished pruning command history items');
@@ -236,7 +251,14 @@ export class PouchCommandHistoryTable
     }
   }
 
-  override close(): void {
+  // Our current version of eslint + prettier doesn't always like the `override`
+  // keyword. Whenever we upgrade, we should annotate this function with `override`.
+  close(): void {
+    log.debug(
+      'Closing table',
+      this,
+      this.cache.tableRegistry.get(this.cacheKey)?.size
+    );
     this.cache.tableRegistry.get(this.cacheKey)?.delete(this);
     this.changes?.cancel();
     super.close();

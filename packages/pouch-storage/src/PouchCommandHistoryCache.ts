@@ -64,8 +64,11 @@ class PouchCommandHistoryCache {
 
     return () => {
       pausedTables.forEach(table => {
-        log.debug(`Resuming event listeners on '${dbName}' table`, table);
-        table.listenForChanges();
+        // Resume listening for changes if the table is still in the registry
+        if (this.tableRegistry.get(dbName)?.has(table) ?? false) {
+          log.debug(`Resuming event listeners on '${dbName}' table`, table);
+          table.listenForChanges();
+        }
       });
     };
   }
