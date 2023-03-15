@@ -20,7 +20,11 @@ import React, {
 import { FileStorageItem, FileStorageTable, isDirectory } from './FileStorage';
 import './FileList.scss';
 import FileUtils, { MIME_TYPE } from './FileUtils';
-import { DEFAULT_ROW_HEIGHT } from './FileListUtils';
+import {
+  DEFAULT_ROW_HEIGHT,
+  getMoveOperation,
+  getPathFromItem,
+} from './FileListUtils';
 
 const log = Log.module('FileList');
 
@@ -66,11 +70,6 @@ export interface FileListProps {
 
   overscanCount?: number;
 }
-
-const getPathFromItem = (file: FileStorageItem): string =>
-  isDirectory(file)
-    ? FileUtils.makePath(file.filename)
-    : FileUtils.getPath(file.filename);
 
 // How long you need to hover over a directory before it expands
 const DRAG_HOVER_TIMEOUT = 500;
@@ -173,39 +172,6 @@ function getItemIcon(item: FileStorageItem): IconDefinition {
     default:
       return vsCode;
   }
-}
-
-/**
- * Get the move operation for the current selection and the given target. Throws if the operation is invalid.
- */
-function getMoveOperation(
-  draggedItems: FileStorageItem[],
-  targetItem: FileStorageItem
-): { files: FileStorageItem[]; targetPath: string } {
-  if (draggedItems.length === 0 || targetItem == null) {
-    throw new Error('No items to move');
-  }
-
-  const targetPath = getPathFromItem(targetItem);
-  if (
-    draggedItems.some(
-      ({ filename }) => FileUtils.getPath(filename) === targetPath
-    )
-  ) {
-    // Cannot drop if target is one of the dragged items is already in the target folder
-    throw new Error('File already in the destination folder');
-  }
-  if (
-    draggedItems.some(
-      item =>
-        isDirectory(item) &&
-        targetPath.startsWith(FileUtils.makePath(item.filename))
-    )
-  ) {
-    // Cannot drop if target is a child of one of the directories being moved
-    throw new Error('Destination folder cannot be a child of a dragged folder');
-  }
-  return { files: draggedItems, targetPath };
 }
 
 /**
