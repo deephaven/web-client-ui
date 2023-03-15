@@ -36,7 +36,9 @@ function fixIncompleteValue(value: string): string {
   return value;
 }
 
-const removeSeparators = (value: string) => value.replace(/\u200B/g, '');
+function removeSeparators(value: string): string {
+  return value.replace(/\u200B/g, '');
+}
 
 const EXAMPLES = [addSeparators(DEFAULT_VALUE_STRING)];
 

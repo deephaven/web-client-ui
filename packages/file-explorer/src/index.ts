@@ -3,6 +3,7 @@ import FileExplorer from './FileExplorer';
 export * from './FileExplorer';
 export * from './FileListContainer';
 export * from './FileList';
+export * from './FileListItem';
 export * from './FileListUtils';
 export * from './FileStorage';
 export { default as FileExistsError } from './FileExistsError';
