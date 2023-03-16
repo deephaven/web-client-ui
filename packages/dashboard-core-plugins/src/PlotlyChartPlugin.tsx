@@ -15,7 +15,7 @@ import type { RootState } from '@deephaven/redux';
 import { assertNotNull } from '@deephaven/utils';
 import shortid from 'shortid';
 import type { PlotlyDataLayoutConfig } from 'plotly.js';
-import { ChartPanel as PlotlyChartPanel, ChartPanelProps } from './panels';
+import { ChartPanel, ChartPanelProps } from './panels';
 import { getDashboardConnection } from './redux';
 
 export type PlotlyChartPluginProps = Partial<DashboardPluginComponentProps>;
@@ -138,7 +138,7 @@ export function PlotlyChartPlugin(
         );
       const config = {
         type: 'react-component' as const,
-        component: 'PlotlyChartPanel',
+        component: 'PlotlyPanel',
         props: {
           localDashboardId: id,
           id: panelId,
@@ -159,8 +159,8 @@ export function PlotlyChartPlugin(
     function registerComponentsAndReturnCleanup() {
       const cleanups = [
         registerComponent(
-          'PlotlyChartPanel',
-          PlotlyChartPanel,
+          'PlotlyPanel',
+          ChartPanel,
           hydrate as PanelHydrateFunction
         ),
       ];
