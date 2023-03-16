@@ -1,6 +1,5 @@
 /* eslint-disable no-bitwise */
 import * as monaco from 'monaco-editor';
-import { screen } from '@testing-library/react';
 import { Shortcut, KEY, MODIFIER } from '@deephaven/components';
 import MonacoUtils from './MonacoUtils';
 
@@ -152,20 +151,29 @@ describe('Mac shortcuts', () => {
   });
 });
 
-describe('registerLinkProvider', () => {
-  it('should register a link provider', () => {
-    const container = document.createElement('div');
-    container.style.height = '500px';
-    const editor = monaco.editor.create(container, {
-      value: 'google.com',
-      language: 'javascript',
-      automaticLayout: true,
-    });
-    MonacoUtils.registerLinkProvider();
+describe('getProvideLinks', () => {
+  it('it should get a provideLinks function which should return an object with the links', () => {
+    const provideLinks = MonacoUtils.getProvideLinks();
+    const mockModel: monaco.editor.ITextModel = ({
+      getLineCount: jest.fn(() => 2),
+      getLineContent: jest.fn(lineNumber =>
+        lineNumber === 1
+          ? 'google.com http://www.example.com/'
+          : 'mail@gmail.com'
+      ),
+    } as unknown) as monaco.editor.ITextModel;
 
-    expect(editor).toBeDefined();
-    screen.debug();
-    console.log(screen.getByText('google.com'));
-    console.log(container.querySelector('.detected-link'));
+    const expectedValue = {
+      links: [
+        { url: 'http://google.com', range: new monaco.Range(1, 1, 1, 11) },
+        {
+          url: 'http://www.example.com/',
+          range: new monaco.Range(1, 12, 1, 35),
+        },
+        { url: 'mailto:mail@gmail.com', range: new monaco.Range(2, 1, 2, 15) },
+      ],
+    };
+
+    expect(provideLinks(mockModel)).toEqual(expectedValue);
   });
 });

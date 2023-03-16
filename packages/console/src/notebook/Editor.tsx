@@ -113,7 +113,9 @@ class Editor extends Component<EditorProps, Record<string, never>> {
     this.editor.layout();
     MonacoUtils.removeConflictingKeybindings(this.editor);
 
-    MonacoUtils.registerLinkProvider(this.editor);
+    monaco.languages.registerLinkProvider('plaintext', {
+      provideLinks: MonacoUtils.getProvideLinks(),
+    });
 
     onEditorInitialized(this.editor);
   }

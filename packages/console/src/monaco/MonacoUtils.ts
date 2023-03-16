@@ -452,29 +452,25 @@ class MonacoUtils {
     );
   }
 
-  static registerLinkProvider() {
-    monaco.languages.registerLinkProvider('plaintext', {
-      provideLinks: (model: monaco.editor.ITextModel) => {
-        const newTokens: monaco.languages.ILink[] = [];
+  static getProvideLinks = () => (model: monaco.editor.ITextModel) => {
+    const newTokens: monaco.languages.ILink[] = [];
 
-        for (let i = 1; i <= model.getLineCount(); i += 1) {
-          const lineText = model.getLineContent(i);
-          const tokens = linkifyFind(lineText);
-          // map the tokens to the ranges - you know the line number now, use the token start/end as the startColumn/endColumn
-          tokens.forEach(token => {
-            newTokens.push({
-              url: token.href,
-              range: new monaco.Range(i, token.start + 1, i, token.end + 1),
-            });
-          });
-        }
+    for (let i = 1; i <= model.getLineCount(); i += 1) {
+      const lineText = model.getLineContent(i);
+      const tokens = linkifyFind(lineText);
+      // map the tokens to the ranges - you know the line number now, use the token start/end as the startColumn/endColumn
+      tokens.forEach(token => {
+        newTokens.push({
+          url: token.href,
+          range: new monaco.Range(i, token.start + 1, i, token.end + 1),
+        });
+      });
+    }
 
-        return {
-          links: newTokens,
-        };
-      },
-    });
-  }
+    return {
+      links: newTokens,
+    };
+  };
 }
 
 export default MonacoUtils;
