@@ -1,4 +1,4 @@
-import { useCallback, DragEvent } from 'react';
+import { useCallback, DragEvent, useEffect } from 'react';
 import { ChartModelFactory } from '@deephaven/chart';
 import {
   assertIsDashboardPluginProps,
@@ -6,20 +6,107 @@ import {
   LayoutUtils,
   PanelEvent,
   useListener,
+  DEFAULT_DASHBOARD_ID,
+  PanelHydrateFunction,
 } from '@deephaven/dashboard';
-import { dh, Table, VariableDefinition } from '@deephaven/jsapi-shim';
+import { Table, VariableDefinition } from '@deephaven/jsapi-shim';
+import { useSelector } from 'react-redux';
+import type { RootState } from '@deephaven/redux';
 import { assertNotNull } from '@deephaven/utils';
 import shortid from 'shortid';
 import type { PlotlyDataLayoutConfig } from 'plotly.js';
-import { ChartPanel } from './panels/ChartPanel';
+import { ChartPanel as PlotlyChartPanel, ChartPanelProps } from './panels';
+import { getDashboardConnection } from './redux';
 
 export type PlotlyChartPluginProps = Partial<DashboardPluginComponentProps>;
+
+interface PlotlyChartWidget {
+  getDataAsBase64(): string;
+  exportedObjects: { fetch(): Promise<Table> }[];
+}
+
+interface PlotlyChartWidgetData {
+  deephaven: {
+    mappings: Array<{
+      table: number;
+      data_columns: Record<string, string[]>;
+    }>;
+    is_user_set_template: boolean;
+  };
+  plotly: PlotlyDataLayoutConfig;
+}
+
+function getWidgetData(widgetInfo: PlotlyChartWidget): PlotlyChartWidgetData {
+  return JSON.parse(atob(widgetInfo.getDataAsBase64()));
+}
+
+async function getDataMappings(
+  widgetInfo: PlotlyChartWidget
+): Promise<Map<Table, Map<string, string[]>>> {
+  const data = getWidgetData(widgetInfo);
+  const tables = await Promise.all(
+    widgetInfo.exportedObjects.map(obj => obj.fetch())
+  );
+
+  // Maps a table to a map of column name to an array of the paths where its data should be
+  const tableColumnReplacementMap = new Map<Table, Map<string, string[]>>();
+  tables.forEach(table => tableColumnReplacementMap.set(table, new Map()));
+
+  data.deephaven.mappings.forEach(
+    ({ table: tableIndex, data_columns: dataColumns }) => {
+      const table = tables[tableIndex];
+      const existingColumnMap = tableColumnReplacementMap.get(table);
+      assertNotNull(existingColumnMap);
+
+      // For each { columnName: [replacePaths] } in the object, add to the tableColumnReplacementMap
+      Object.entries(dataColumns).forEach(([columnName, paths]) => {
+        const existingPaths = existingColumnMap.get(columnName);
+        if (existingPaths !== undefined) {
+          existingPaths.push(...paths);
+        } else {
+          existingColumnMap.set(columnName, [...paths]);
+        }
+      });
+    }
+  );
+
+  return tableColumnReplacementMap;
+}
 
 export function PlotlyChartPlugin(
   props: PlotlyChartPluginProps
 ): JSX.Element | null {
   assertIsDashboardPluginProps(props);
+  const connection = useSelector((state: RootState) =>
+    getDashboardConnection(state, DEFAULT_DASHBOARD_ID)
+  );
   const { id, layout, registerComponent } = props;
+
+  const hydrate: PanelHydrateFunction<ChartPanelProps> = useCallback(
+    (hydrateProps, localDashboardId) => {
+      const makeModel = async () => {
+        const widgetInfo = ((await connection.getObject({
+          type: 'deephaven.plugin.chart.DeephavenFigure',
+          name: hydrateProps.metadata.name,
+        })) as unknown) as PlotlyChartWidget;
+
+        const data = getWidgetData(widgetInfo);
+        const tableColumnReplacementMap = await getDataMappings(widgetInfo);
+        return ChartModelFactory.makePlotlyModelFromSettings(
+          tableColumnReplacementMap,
+          data.plotly,
+          !data.deephaven.is_user_set_template
+        );
+      };
+      return {
+        ...hydrateProps,
+        localDashboardId,
+        makeModel,
+      };
+    },
+    [connection]
+  );
+
   const handlePanelOpen = useCallback(
     async ({
       dragEvent,
@@ -28,64 +115,30 @@ export function PlotlyChartPlugin(
       widget,
     }: {
       dragEvent?: DragEvent;
-      fetch: () => Promise<{
-        getDataAsBase64(): string;
-        exportedObjects: { fetch(): Promise<Table> }[];
-      }>;
+      fetch: () => Promise<PlotlyChartWidget>;
       panelId?: string;
       widget: VariableDefinition;
     }) => {
       const { type, title } = widget;
-      if ((type as unknown) !== 'deephaven.plugin.chart.DeephavenFigure') {
+      if (type !== 'deephaven.plugin.chart.DeephavenFigure') {
         return;
       }
 
       const widgetInfo = await fetch();
-      const data: {
-        deephaven: {
-          mappings: Array<{
-            table: number;
-            data_columns: Record<string, string[]>;
-          }>;
-          template?: unknown;
-        };
-        plotly: PlotlyDataLayoutConfig;
-      } = JSON.parse(atob(widgetInfo.getDataAsBase64()));
-      const tables = await Promise.all(
-        widgetInfo.exportedObjects.map(obj => obj.fetch())
-      );
 
-      // Maps a table to a map of column name to an array of the paths where its data should be
-      const tableColumnReplacementMap = new Map<Table, Map<string, string[]>>();
-      tables.forEach(table => tableColumnReplacementMap.set(table, new Map()));
+      const data = getWidgetData(widgetInfo);
+      const tableColumnReplacementMap = await getDataMappings(widgetInfo);
 
-      data.deephaven.mappings.forEach(
-        ({ table: tableIndex, data_columns: dataColumns }) => {
-          const table = tables[tableIndex];
-          const existingColumnMap = tableColumnReplacementMap.get(table);
-          assertNotNull(existingColumnMap);
-
-          // For each { columnName: [replacePaths] } in the object, add to the tableColumnReplacementMap
-          Object.entries(dataColumns).forEach(([columnName, paths]) => {
-            const existingPaths = existingColumnMap.get(columnName);
-            if (existingPaths !== undefined) {
-              existingPaths.push(...paths);
-            } else {
-              existingColumnMap.set(columnName, [...paths]);
-            }
-          });
-        }
-      );
-
-      const metadata = { name: title, figure: title };
+      const metadata = { name: title, figure: title, type };
       const makeModel = () =>
         ChartModelFactory.makePlotlyModelFromSettings(
           tableColumnReplacementMap,
-          data.plotly
+          data.plotly,
+          !data.deephaven.is_user_set_template
         );
       const config = {
         type: 'react-component' as const,
-        component: ChartPanel.COMPONENT,
+        component: 'PlotlyChartPanel',
         props: {
           localDashboardId: id,
           id: panelId,
@@ -102,21 +155,21 @@ export function PlotlyChartPlugin(
     [id, layout]
   );
 
-  // useEffect(
-  //   function registerComponentsAndReturnCleanup() {
-  //     const cleanups = [
-  //       registerComponent(
-  //         ChartPanel.COMPONENT,
-  //         ChartPanel,
-  //         hydrate as PanelHydrateFunction
-  //       ),
-  //     ];
-  //     return () => {
-  //       cleanups.forEach(cleanup => cleanup());
-  //     };
-  //   },
-  //   [hydrate, registerComponent]
-  // );
+  useEffect(
+    function registerComponentsAndReturnCleanup() {
+      const cleanups = [
+        registerComponent(
+          'PlotlyChartPanel',
+          PlotlyChartPanel,
+          hydrate as PanelHydrateFunction
+        ),
+      ];
+      return () => {
+        cleanups.forEach(cleanup => cleanup());
+      };
+    },
+    [registerComponent, hydrate]
+  );
 
   useListener(layout.eventHub, PanelEvent.OPEN, handlePanelOpen);
 

@@ -1,37 +1,54 @@
-import dh, { ChartData, Table, TableSubscription } from '@deephaven/jsapi-shim';
+import dh from '@deephaven/jsapi-shim';
+import type {
+  ChartData,
+  Table,
+  TableSubscription,
+} from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import { Layout, Data } from 'plotly.js';
 import ChartModel, { ChartEvent } from './ChartModel';
-import ChartUtils from './ChartUtils';
+import ChartUtils, { isPlotData } from './ChartUtils';
 import ChartTheme from './ChartTheme';
 
 const log = Log.module('PlotlyChartModel');
 
 class PlotlyChartModel extends ChartModel {
   constructor(
-    tableColumnReplacementMap: Map<Table, Map<string, string[]>>,
+    tableColumnReplacementMap: ReadonlyMap<Table, Map<string, string[]>>,
     data: Data[],
     layout: Partial<Layout>,
+    isDefaultTemplate = true,
     theme: typeof ChartTheme = ChartTheme
   ) {
     super();
 
     this.handleFigureUpdated = this.handleFigureUpdated.bind(this);
 
-    this.tableColumnReplacementMap = tableColumnReplacementMap;
+    this.tableColumnReplacementMap = new Map(tableColumnReplacementMap);
     this.chartDataMap = new Map();
     this.tableSubscriptionMap = new Map();
-    tableColumnReplacementMap.forEach((_, table) =>
-      this.chartDataMap.set(table, new dh.plot.ChartData(table))
-    );
 
     this.theme = theme;
     this.data = data;
-    const template = { data: {}, layout: ChartUtils.makeDefaultLayout(theme) };
+    const template = { layout: ChartUtils.makeDefaultLayout(theme) };
+
+    if (!isDefaultTemplate) {
+      template.layout.colorway = layout.template?.layout?.colorway;
+    }
+
     this.layout = {
       ...layout,
       template,
     };
+
+    // Remove colors set on traces by plotly on the server
+    for (let i = 0; i < this.data.length; i += 1) {
+      const d = this.data[i];
+      if (isPlotData(d)) {
+        delete d.marker?.color;
+        delete d.line?.color;
+      }
+    }
 
     this.setTitle(this.getDefaultTitle());
   }
@@ -46,14 +63,9 @@ class PlotlyChartModel extends ChartModel {
 
   theme: typeof ChartTheme;
 
-  data: Partial<Data>[];
+  data: Data[];
 
   layout: Partial<Layout>;
-
-  close(): void {
-    this.tableSubscriptionMap.forEach(sub => sub.close());
-    this.stopListening();
-  }
 
   getData(): Partial<Data>[] {
     return this.data;
@@ -66,6 +78,10 @@ class PlotlyChartModel extends ChartModel {
   subscribe(callback: (event: ChartEvent) => void): void {
     super.subscribe(callback);
 
+    this.tableColumnReplacementMap.forEach((_, table) =>
+      this.chartDataMap.set(table, new dh.plot.ChartData(table))
+    );
+
     this.tableColumnReplacementMap.forEach((columnReplacements, table) => {
       const columnNames = new Set(columnReplacements.keys());
       const columns = table.columns.filter(({ name }) => columnNames.has(name));
@@ -73,6 +89,15 @@ class PlotlyChartModel extends ChartModel {
     });
 
     this.startListening();
+  }
+
+  unsubscribe(callback: (event: ChartEvent) => void): void {
+    super.unsubscribe(callback);
+
+    this.stopListening();
+
+    this.tableSubscriptionMap.forEach(sub => sub.close());
+    this.chartDataMap.clear();
   }
 
   handleFigureUpdated(

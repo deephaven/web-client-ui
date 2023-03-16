@@ -205,7 +205,8 @@ export class Chart extends Component<ChartProps, ChartState> {
       downsamplingError: unknown,
       isDownsampleFinished: boolean,
       isDownsampleInProgress: boolean,
-      isDownsamplingDisabled: boolean
+      isDownsamplingDisabled: boolean,
+      is3d: boolean
     ) => {
       const customButtons = [];
       const hasDownsampleError = Boolean(downsamplingError);
@@ -255,8 +256,10 @@ export class Chart extends Component<ChartProps, ChartState> {
         modeBarButtons: [
           customButtons,
           ['toImage'],
-          ['zoom2d', 'pan2d'],
-          ['zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d'],
+          is3d ? ['zoom3d', 'pan3d'] : ['zoom2d', 'pan2d'],
+          is3d
+            ? ['orbitRotation', 'tableRotation', 'resetCameraDefault3d']
+            : ['zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d'],
         ],
       };
     }
@@ -548,7 +551,8 @@ export class Chart extends Component<ChartProps, ChartState> {
       downsamplingError,
       isDownsampleFinished,
       isDownsampleInProgress,
-      isDownsamplingDisabled
+      isDownsamplingDisabled,
+      data?.[0].type?.includes('3d') ?? false
     );
     const isPlotShown = data != null;
     return (

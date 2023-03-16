@@ -65,9 +65,7 @@ export interface CalendarStatic {
 
 export type VariableTypeUnion = typeof VariableType[keyof typeof VariableType];
 
-export interface VariableDefinition<
-  T extends VariableTypeUnion = VariableTypeUnion
-> {
+export interface VariableDefinition<T extends string = string> {
   type: T;
 
   /**
@@ -1112,4 +1110,4 @@ declare class ChartData {
   removeColumn(columnName: string, mappingFunc: (input: any) => any): void;
 }
 
-export { ChartData };
+export type { ChartData };

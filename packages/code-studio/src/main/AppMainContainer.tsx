@@ -804,7 +804,6 @@ export class AppMainContainer extends Component<
       user,
       workspace,
       serverConfigValues,
-      connection,
     } = this.props;
     const { data: workspaceData } = workspace;
     const { layoutConfig } = workspaceData;

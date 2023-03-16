@@ -77,10 +77,12 @@ export type InputFilterMap = Map<string, InputFilter>;
 export type LinkedColumnMap = Map<string, { name: string; type: string }>;
 
 export type ChartPanelFigureMetadata = {
+  name: string;
   figure: string;
 };
 
 export type ChartPanelTableMetadata = {
+  name: string;
   table: string;
   sourcePanelId: string;
   settings: {
