@@ -183,16 +183,13 @@ export class PouchCommandHistoryTable
   /**
    * Override `PouchStorageTable.fetchViewportData` to fetch command history
    * storage items. This override provides caching + optimizations specific to
-   * command history.
-   *
-   * 1. The table doesn't support sorting, so ignore the sort param.
-   * 2. We cache the results to avoid excessive PouchDB queries during scrolling.
-   * The cache should only need to be invalidated when search filter changes or
-   * commands are added to the storage history.
+   * command history. We cache the results to avoid excessive PouchDB queries
+   * during scrolling. The cache should only need to be invalidated when search
+   * filter changes or commands are added to the storage history.
    *
    * @param viewport
    * @param selector
-   * @param _sort
+   * @param sort
    * @returns Promise to array of command history storage items
    */
   // Our current version of eslint + prettier doesn't always like the `override`
@@ -200,17 +197,24 @@ export class PouchCommandHistoryTable
   async fetchViewportData(
     viewport: StorageTableViewport,
     selector: PouchDB.Find.Selector,
-    _sort: PouchDBSort
+    sort: PouchDBSort
   ): Promise<ViewportData<CommandHistoryStorageItem>> {
     const data = await this.fetchData(selector);
+
     log.debug(
       'Fetching viewport data',
       viewport.top,
       viewport.bottom + 1,
+      sort,
       data
     );
+
+    const isReversed = typeof sort[0] === 'object' && sort[0].id === 'desc';
+    const docs = isReversed ? data.docs.slice(0).reverse() : data.docs;
+    const items = docs.slice(viewport.top, viewport.bottom + 1);
+
     return {
-      items: data.docs.slice(viewport.top, viewport.bottom + 1),
+      items,
       offset: viewport.top,
     };
   }
