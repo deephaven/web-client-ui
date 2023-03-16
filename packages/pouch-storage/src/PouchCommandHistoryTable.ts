@@ -53,31 +53,24 @@ export class PouchCommandHistoryTable
     return this.db.name;
   }
 
-  setSearchDebounceTimeout?: number;
-
   setSearch(searchText: string): void {
-    clearTimeout(this.setSearchDebounceTimeout);
+    log.debug('Setting search filters', searchText);
 
-    // Debounced search to minimize querying the PouchDB db while user types
-    this.setSearchDebounceTimeout = window.setTimeout(() => {
-      log.debug('Setting search filters', searchText);
+    this.searchText = searchText.trim().toLowerCase();
 
-      this.searchText = searchText.trim().toLowerCase();
-
-      this.setFilters(
-        searchText
-          ? [
-              StorageUtils.makeFilterConfig([
-                StorageUtils.makeFilterItem(
-                  'name',
-                  FilterType.contains,
-                  searchText
-                ),
-              ]),
-            ]
-          : []
-      );
-    }, 500);
+    this.setFilters(
+      searchText
+        ? [
+            StorageUtils.makeFilterConfig([
+              StorageUtils.makeFilterItem(
+                'name',
+                FilterType.contains,
+                searchText
+              ),
+            ]),
+          ]
+        : []
+    );
   }
 
   // Our current version of eslint + prettier doesn't always like the `override`

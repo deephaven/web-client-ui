@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from 'react';
+import debounce from 'lodash.debounce';
 import throttle from 'lodash.throttle';
 import {
   StorageTableViewport,
@@ -21,6 +22,8 @@ export type CommandHistoryViewportUpdaterProps = {
   onUpdate: ViewportUpdateCallback<CommandHistoryStorageItem>;
 };
 
+const SET_SEARCH_DEBOUNCE_MS = 500;
+
 const UPDATE_DELAY = 150;
 
 const ROW_BUFFER_PAGES = 3;
@@ -36,6 +39,14 @@ function CommandHistoryViewportUpdater({
   isReversed = false,
   onUpdate,
 }: CommandHistoryViewportUpdaterProps): null {
+  const debounceSetSearch = useMemo(
+    () =>
+      debounce((searchText?: string) => {
+        table.setSearch(searchText ?? '');
+      }, SET_SEARCH_DEBOUNCE_MS),
+    [table]
+  );
+
   const throttledUpdateViewport = useMemo(
     () =>
       throttle((viewport: StorageTableViewport) => {
@@ -76,9 +87,9 @@ function CommandHistoryViewportUpdater({
 
   useEffect(
     function setSearchText() {
-      table.setSearch(search ?? '');
+      debounceSetSearch(search);
     },
-    [table, search]
+    [debounceSetSearch, search]
   );
   useEffect(
     function updateViewport() {
