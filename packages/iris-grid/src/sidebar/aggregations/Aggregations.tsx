@@ -27,7 +27,7 @@ import {
 import type { DraggableRenderItemProps, Range } from '@deephaven/components';
 import { ModelIndex } from '@deephaven/grid';
 import AggregationOperation from './AggregationOperation';
-import AggregationUtils from './AggregationUtils';
+import AggregationUtils, { SELECTABLE_OPTIONS } from './AggregationUtils';
 import './Aggregations.scss';
 
 const log = Log.module('Aggregations');
@@ -49,22 +49,6 @@ export type AggregationsProps = {
   onChange: (settings: AggregationSettings) => void;
   onEdit: (aggregation: Aggregation) => void;
 };
-
-export const SELECTABLE_OPTIONS = [
-  AggregationOperation.SUM,
-  AggregationOperation.ABS_SUM,
-  AggregationOperation.MIN,
-  AggregationOperation.MAX,
-  AggregationOperation.VAR,
-  AggregationOperation.AVG,
-  AggregationOperation.STD,
-  AggregationOperation.FIRST,
-  AggregationOperation.LAST,
-  AggregationOperation.COUNT_DISTINCT,
-  AggregationOperation.DISTINCT,
-  AggregationOperation.COUNT,
-  AggregationOperation.UNIQUE,
-];
 
 function Aggregations({
   isRollup,

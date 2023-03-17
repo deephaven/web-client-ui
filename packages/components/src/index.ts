@@ -29,6 +29,7 @@ export { default as DropdownMenu } from './menu-actions';
 export * from './menu-actions';
 export { default as MaskedInput } from './MaskedInput';
 export * from './MaskedInput';
+export * from './MaskedInputUtils';
 export * from './navigation';
 export { default as Option } from './Option';
 export * from './popper';

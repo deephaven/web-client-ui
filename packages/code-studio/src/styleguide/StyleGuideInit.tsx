@@ -44,6 +44,8 @@ const mapStateToProps = (state: RootState) => ({
   workspace: getWorkspace(state),
 });
 
-export default connect(mapStateToProps, {
+const ConnectedStyleGuideInit = connect(mapStateToProps, {
   setWorkspace: setWorkspaceAction,
 })(StyleGuideInit);
+
+export default ConnectedStyleGuideInit;

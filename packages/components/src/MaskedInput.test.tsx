@@ -1,6 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import MaskedInput, { fillToLength, trimTrailingMask } from './MaskedInput';
+import MaskedInput from './MaskedInput';
+import { fillToLength, trimTrailingMask } from './MaskedInputUtils';
 
 const TIME_PATTERN = '([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]';
 

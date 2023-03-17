@@ -24,9 +24,7 @@ export type CellInputFieldProps = {
   style?: React.CSSProperties;
 };
 
-export const directionForKey = (
-  key: string
-): SELECTION_DIRECTION | undefined => {
+const directionForKey = (key: string): SELECTION_DIRECTION | undefined => {
   switch (key) {
     case 'ArrowDown':
       return SELECTION_DIRECTION.DOWN;

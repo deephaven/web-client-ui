@@ -255,6 +255,8 @@ const mapStateToProps = (
   };
 };
 
-export default connect(mapStateToProps, null, null, { forwardRef: true })(
-  MarkdownPanel
-);
+const ConnectedMarkdownPanel = connect(mapStateToProps, null, null, {
+  forwardRef: true,
+})(MarkdownPanel);
+
+export default ConnectedMarkdownPanel;
