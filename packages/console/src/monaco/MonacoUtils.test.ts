@@ -151,9 +151,9 @@ describe('Mac shortcuts', () => {
   });
 });
 
-describe('getProvideLinks', () => {
+describe('provideLinks', () => {
   it('it should get a provideLinks function which should return an object with the links', () => {
-    const provideLinks = MonacoUtils.getProvideLinks();
+    const { provideLinks } = MonacoUtils;
     const mockModel: monaco.editor.ITextModel = ({
       getLineCount: jest.fn(() => 2),
       getLineContent: jest.fn(lineNumber =>
