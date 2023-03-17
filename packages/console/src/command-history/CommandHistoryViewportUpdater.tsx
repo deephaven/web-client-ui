@@ -22,7 +22,7 @@ export type CommandHistoryViewportUpdaterProps = {
   onUpdate: ViewportUpdateCallback<CommandHistoryStorageItem>;
 };
 
-const SET_SEARCH_DEBOUNCE_MS = 500;
+const SET_SEARCH_DEBOUNCE_MS = 150;
 
 const UPDATE_DELAY = 150;
 
