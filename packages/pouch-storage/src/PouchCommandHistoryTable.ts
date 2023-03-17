@@ -217,7 +217,7 @@ export class PouchCommandHistoryTable
    * @param items
    */
   async pruneItems(items: CommandHistoryDoc[]) {
-    if (this.cache.isPruning.has(this.cacheKey)) {
+    if (this.cache.isPruning.get(this.cacheKey) === true) {
       log.debug('Pruning already in progress. Skipping.');
       return;
     }
