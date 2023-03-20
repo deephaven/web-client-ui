@@ -59,12 +59,6 @@ const DateTimeInput = React.forwardRef<HTMLInputElement, DateTimeInputProps>(
     );
     const [selection, setSelection] = useState<SelectionSegment>();
 
-    const handleSubmit = useCallback(
-      (event: KeyboardEvent<HTMLInputElement>): void => {
-        onSubmit?.(event);
-      },
-      [onSubmit]
-    );
     const handleChange = useCallback(
       (newValue: string): void => {
         log.debug('handleChange', newValue);
@@ -94,7 +88,7 @@ const DateTimeInput = React.forwardRef<HTMLInputElement, DateTimeInputProps>(
           getNextSegmentValue={getNextSegmentValue}
           onChange={handleChange}
           onSelect={setSelection}
-          onSubmit={handleSubmit}
+          onSubmit={onSubmit}
           pattern={FULL_DATE_PATTERN}
           placeholder={FULL_DATE_FORMAT}
           selection={selection}

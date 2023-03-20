@@ -22,18 +22,18 @@ function makeMaskedInput({
   );
 }
 
-it('mounts and unmounts properly', async () => {
+it('mounts and unmounts properly', () => {
+  const { unmount } = makeMaskedInput();
+  unmount();
+});
+
+it('onSubmit works properly', async () => {
   const onSubmit = jest.fn();
   const { unmount } = makeMaskedInput({ onSubmit });
   const input: HTMLInputElement = screen.getByRole('textbox');
   const user = userEvent.setup();
   await user.type(input, '{enter}');
   expect(onSubmit).toBeCalledTimes(1);
-  unmount();
-});
-
-it('mounts and unmounts properly', () => {
-  const { unmount } = makeMaskedInput();
   unmount();
 });
 

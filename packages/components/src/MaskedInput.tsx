@@ -391,6 +391,7 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
       }
       if (key === 'Enter') {
         onSubmit?.(event);
+        return;
       }
       if (key.startsWith('Arrow')) {
         handleArrowKey(event);

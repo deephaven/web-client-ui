@@ -102,12 +102,10 @@ function GotoRow({
     }
   };
 
-  const handleGotoValueKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.stopPropagation();
-      e.preventDefault();
-      onGotoValueSubmit();
-    }
+  const handleGotoValueKeySubmit = (e: KeyboardEvent<HTMLInputElement>) => {
+    e.stopPropagation();
+    e.preventDefault();
+    onGotoValueSubmit();
   };
 
   const index = model.getColumnIndexByName(gotoValueSelectedColumnName);
@@ -175,7 +173,7 @@ function GotoRow({
               )}
               defaultValue={gotoValue}
               onChange={onGotoValueInputChanged}
-              onSubmit={handleGotoValueKeyDown}
+              onSubmit={handleGotoValueKeySubmit}
             />
           </div>
         );
@@ -212,7 +210,7 @@ function GotoRow({
                 className={classNames('form-control', {
                   'is-invalid': gotoValueError !== '',
                 })}
-                onKeyDown={handleGotoValueKeyDown}
+                onKeyDown={handleGotoValueKeySubmit}
                 placeholder="value"
                 onChange={e => onGotoValueInputChanged(e.target.value)}
                 value={gotoValue}
@@ -246,7 +244,7 @@ function GotoRow({
             <input
               ref={gotoValueInputRef}
               className="form-control"
-              onKeyDown={handleGotoValueKeyDown}
+              onKeyDown={handleGotoValueKeySubmit}
               placeholder="value"
               onChange={e => onGotoValueInputChanged(e.target.value)}
               value={gotoValue}
