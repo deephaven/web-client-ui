@@ -382,6 +382,8 @@ const mapStateToProps = (
   timeZone: getTimeZone(state),
 });
 
-export default connect(mapStateToProps, null, null, { forwardRef: true })(
-  ConsolePanel
-);
+const ConnectedConsolePanel = connect(mapStateToProps, null, null, {
+  forwardRef: true,
+})(ConsolePanel);
+
+export default ConnectedConsolePanel;

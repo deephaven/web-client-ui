@@ -1,7 +1,8 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import DateTimeInput, { addSeparators } from './DateTimeInput';
+import DateTimeInput from './DateTimeInput';
+import { addSeparators } from './DateTimeInputUtils';
 
 const DEFAULT_DATE_TIME = '2022-02-22 00:00:00.000000000';
 // Zero width space

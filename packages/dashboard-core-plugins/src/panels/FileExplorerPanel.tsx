@@ -279,4 +279,6 @@ export class FileExplorerPanel extends React.Component<
   }
 }
 
-export default connector(FileExplorerPanel);
+const ConnectedFileExplorerPanel = connector(FileExplorerPanel);
+
+export default ConnectedFileExplorerPanel;

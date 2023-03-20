@@ -2,6 +2,22 @@ import type { Column } from '@deephaven/jsapi-shim';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import AggregationOperation from './AggregationOperation';
 
+export const SELECTABLE_OPTIONS = [
+  AggregationOperation.SUM,
+  AggregationOperation.ABS_SUM,
+  AggregationOperation.MIN,
+  AggregationOperation.MAX,
+  AggregationOperation.VAR,
+  AggregationOperation.AVG,
+  AggregationOperation.STD,
+  AggregationOperation.FIRST,
+  AggregationOperation.LAST,
+  AggregationOperation.COUNT_DISTINCT,
+  AggregationOperation.DISTINCT,
+  AggregationOperation.COUNT,
+  AggregationOperation.UNIQUE,
+];
+
 /**
  * Check if an operation requires a rollup/table grouping
  * @param type The operation to check

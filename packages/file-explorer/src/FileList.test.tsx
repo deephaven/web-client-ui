@@ -9,7 +9,7 @@ import {
   FileStorageItem,
   FileStorageTable,
 } from './FileStorage';
-import FileList, { FileListProps, getMoveOperation } from './FileList';
+import FileList, { FileListProps } from './FileList';
 import {
   makeDirectories,
   makeDirectory,
@@ -17,6 +17,7 @@ import {
   makeFiles,
   makeNested,
 } from './FileTestUtils';
+import { getMoveOperation } from './FileListUtils';
 
 const renderFileList = ({
   table = {} as FileStorageTable,

@@ -644,6 +644,8 @@ const mapStateToProps = (state: RootState) => ({
   settings: getSettings(state),
 });
 
-export default connect(mapStateToProps, { saveSettings: saveSettingsAction })(
-  ColumnSpecificSectionContent
-);
+const ConnectedColumnSpecificSectionContent = connect(mapStateToProps, {
+  saveSettings: saveSettingsAction,
+})(ColumnSpecificSectionContent);
+
+export default ConnectedColumnSpecificSectionContent;

@@ -44,7 +44,7 @@ export type ConsolePluginProps = DashboardPluginComponentProps & {
   notebooksUrl: string;
 };
 
-export function assertIsConsolePluginProps(
+function assertIsConsolePluginProps(
   props: Partial<ConsolePluginProps>
 ): asserts props is ConsolePluginProps {
   assertIsDashboardPluginProps(props);
