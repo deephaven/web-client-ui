@@ -12,8 +12,15 @@ const F = '\u2007';
 function makeDateTimeInput({
   value = DEFAULT_DATE_TIME,
   onChange = jest.fn(),
+  onSubmit = jest.fn(),
 } = {}) {
-  return render(<DateTimeInput defaultValue={value} onChange={onChange} />);
+  return render(
+    <DateTimeInput
+      defaultValue={value}
+      onChange={onChange}
+      onSubmit={onSubmit}
+    />
+  );
 }
 
 it('mounts and unmounts properly', () => {
@@ -137,4 +144,17 @@ describe('addSeparators', () => {
     );
     expect(addSeparators('2022-02-22')).toBe(`2022-02-22`);
   });
+});
+
+it('onSubmit works correctly', async () => {
+  const onSubmit = jest.fn();
+  const { unmount } = makeDateTimeInput({
+    value: '2022-02-22 00:00:00.000',
+    onSubmit,
+  });
+  const input: HTMLInputElement = screen.getByRole('textbox');
+  const user = userEvent.setup();
+  await user.type(input, '{enter}');
+  expect(onSubmit).toBeCalledTimes(1);
+  unmount();
 });
