@@ -46,6 +46,7 @@ interface GotoRowProps {
 
   gotoValueSelectedColumnName: ColumnName;
   gotoValue: string;
+  gotoValueFilter: FilterTypeValue;
   onGotoValueSelectedColumnNameChanged: (columnName: ColumnName) => void;
   onGotoValueSelectedFilterChanged: (filter: FilterTypeValue) => void;
   onGotoValueChanged: (input: string) => void;
@@ -67,6 +68,7 @@ function GotoRow({
   onClose,
   gotoValueSelectedColumnName,
   gotoValue,
+  gotoValueFilter,
   onGotoValueSelectedColumnNameChanged,
   onGotoValueSelectedFilterChanged,
   onGotoValueChanged,
@@ -163,6 +165,7 @@ function GotoRow({
         return (
           <div className="goto-value-date-time-input">
             <DateTimeInput
+              ref={gotoValueInputRef}
               className={classNames(
                 'form-control',
                 'goto-value-date-time-input',
@@ -172,6 +175,7 @@ function GotoRow({
               )}
               defaultValue={gotoValue}
               onChange={onGotoValueInputChanged}
+              onSubmit={handleGotoValueKeyDown}
             />
           </div>
         );
@@ -186,6 +190,7 @@ function GotoRow({
                     event.target.value as FilterTypeValue
                   );
                 }}
+                value={gotoValueFilter}
               >
                 <option key={FilterType.eq} value={FilterType.eq}>
                   Equals
