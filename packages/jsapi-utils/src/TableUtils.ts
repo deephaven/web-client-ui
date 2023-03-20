@@ -678,7 +678,7 @@ export class TableUtils {
         case '!':
           return filter.isNull().not();
         default:
-          return null;
+        // For all other operations, treat null as a string value
       }
     }
 
