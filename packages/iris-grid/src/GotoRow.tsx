@@ -103,9 +103,11 @@ function GotoRow({
   };
 
   const handleGotoValueKeySubmit = (e: KeyboardEvent<HTMLInputElement>) => {
-    e.stopPropagation();
-    e.preventDefault();
-    onGotoValueSubmit();
+    if (e.key === 'Enter') {
+      e.stopPropagation();
+      e.preventDefault();
+      onGotoValueSubmit(e.shiftKey);
+    }
   };
 
   const index = model.getColumnIndexByName(gotoValueSelectedColumnName);
