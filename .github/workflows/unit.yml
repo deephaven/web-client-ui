@@ -4,9 +4,13 @@ name: Unit Tests
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - 'release/**'
   pull_request:
-    branches: [main]
+    branches:
+      - main
+      - 'release/**'
 jobs:
   unit:
     runs-on: ubuntu-22.04
