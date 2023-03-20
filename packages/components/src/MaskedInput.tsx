@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useCallback } from 'react';
+import React, { useMemo, useEffect, useCallback, KeyboardEvent } from 'react';
 import classNames from 'classnames';
 import Log from '@deephaven/log';
 import { useForwardedRef } from '@deephaven/react-hooks';
@@ -46,6 +46,8 @@ type MaskedInputProps = {
   onChange?(value: string): void;
   /** Called when selection changes */
   onSelect?(segment: SelectionSegment): void;
+  /** Called when enter is pressed */
+  onSubmit?(event?: KeyboardEvent<HTMLInputElement>): void;
   /** Retrieve the next value for a provided segment */
   getNextSegmentValue?(
     segment: SelectionSegment,
@@ -82,6 +84,7 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
       getPreferredReplacementString = DEFAULT_GET_PREFERRED_REPLACEMENT_STRING,
       onChange = () => false,
       onSelect = () => false,
+      onSubmit,
       pattern,
       placeholder,
       selection,
@@ -386,7 +389,10 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
         );
         return;
       }
-
+      if (key === 'Enter') {
+        onSubmit?.(event);
+        return;
+      }
       if (key.startsWith('Arrow')) {
         handleArrowKey(event);
         return;

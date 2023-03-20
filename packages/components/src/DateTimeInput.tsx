@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { KeyboardEvent, useCallback, useState } from 'react';
 import classNames from 'classnames';
 import Log from '@deephaven/log';
 import MaskedInput, { SelectionSegment } from './MaskedInput';
@@ -24,6 +24,7 @@ type DateTimeInputProps = {
   defaultValue?: string;
   onFocus?(): void;
   onBlur?(): void;
+  onSubmit?(event?: KeyboardEvent<HTMLInputElement>): void;
   'data-testid'?: string;
 };
 
@@ -50,6 +51,7 @@ const DateTimeInput = React.forwardRef<HTMLInputElement, DateTimeInputProps>(
       defaultValue = '',
       onFocus = () => undefined,
       onBlur = () => undefined,
+      onSubmit,
       'data-testid': dataTestId,
     } = props;
     const [value, setValue] = useState(
@@ -86,6 +88,7 @@ const DateTimeInput = React.forwardRef<HTMLInputElement, DateTimeInputProps>(
           getNextSegmentValue={getNextSegmentValue}
           onChange={handleChange}
           onSelect={setSelection}
+          onSubmit={onSubmit}
           pattern={FULL_DATE_PATTERN}
           placeholder={FULL_DATE_FORMAT}
           selection={selection}

@@ -3336,7 +3336,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         case TableUtils.dataType.CHAR:
         case TableUtils.dataType.STRING: {
           rowIndex = await model.seekRow(
-            isBackwards === true ? searchFromRow - 1 : searchFromRow + 1,
+            searchFromRow,
             selectedColumn,
             dh.ValueType.STRING,
             inputString,
@@ -3352,7 +3352,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             formatter.timeZone
           );
           rowIndex = await model.seekRow(
-            isBackwards === true ? searchFromRow - 1 : searchFromRow + 1,
+            searchFromRow,
             selectedColumn,
             dh.ValueType.DATETIME,
             startDate,
@@ -3930,6 +3930,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       gotoValueError,
       gotoValueSelectedColumnName,
       gotoValue,
+      gotoValueSelectedFilter,
     } = this.state;
     if (!isReady) {
       return null;
@@ -4557,6 +4558,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             onExited={this.handleAnimationEnd}
             gotoValueSelectedColumnName={gotoValueSelectedColumnName}
             gotoValue={gotoValue}
+            gotoValueFilter={gotoValueSelectedFilter}
             onGotoValueSelectedColumnNameChanged={
               this.handleGotoValueSelectedColumnNameChanged
             }
