@@ -17,7 +17,7 @@ import {
   ToolType,
 } from '@deephaven/dashboard-core-plugins';
 import { FileStorage } from '@deephaven/file-explorer';
-import dh, { IdeConnection } from '@deephaven/jsapi-shim';
+import dh, { CoreClient, IdeConnection } from '@deephaven/jsapi-shim';
 import {
   DecimalColumnFormatter,
   IntegerColumnFormatter,
@@ -45,14 +45,7 @@ import {
 import { setLayoutStorage as setLayoutStorageAction } from '../redux/actions';
 import App from './App';
 import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
-import {
-  AUTH_TYPE,
-  createConnection,
-  createCoreClient,
-  createSessionWrapper,
-  getAuthType,
-  getLoginOptions,
-} from './SessionUtils';
+import { createCoreClient, createSessionWrapper } from './SessionUtils';
 import { PluginUtils } from '../plugins';
 import LayoutStorage from '../storage/LayoutStorage';
 import { isNoConsolesError } from './NoConsolesError';
@@ -156,8 +149,9 @@ function AppInit(props: AppInitProps) {
   // General error means the app is dead and is unlikely to recover
   const [error, setError] = useState<unknown>();
   // Disconnect error may be temporary, so just show an error overlaid on the app
-  const [disconnectError, setDisconnectError] = useState<unknown>();
   const [isFontLoading, setIsFontLoading] = useState(true);
+  const [client, setClient] = useState<CoreClient>();
+  const [LoginPlugin, setLoginPlugin] = useState<typeof React.Component>();
 
   const initClient = useCallback(async () => {
     try {
@@ -167,123 +161,151 @@ function AppInit(props: AppInitProps) {
         navigator.userAgent
       );
 
-      const coreClient = createCoreClient();
-      const authType = getAuthType();
-      log.info(`Login using auth type ${authType}...`);
-      await coreClient.login(await getLoginOptions(authType));
-
       const newPlugins = await loadPlugins();
-      const connection = await (authType === AUTH_TYPE.ANONYMOUS &&
-      coreClient.getAsIdeConnection == null
-        ? // Fall back to the old API for anonymous auth if the new API is not supported
-          createConnection()
-        : coreClient.getAsIdeConnection());
-      connection.addEventListener(dh.IdeConnection.EVENT_SHUTDOWN, event => {
-        const { detail } = event;
-        log.info('Shutdown', `${JSON.stringify(detail)}`);
-        setError(`Server shutdown: ${detail ?? 'Unknown reason'}`);
-        setDisconnectError(null);
-      });
+      const loginPlugins = [...newPlugins.entries()].filter(
+        ([, plugin]: [string, { AuthPlugin?: typeof React.Component }]) =>
+          plugin.AuthPlugin != null
+      ) as [string, { AuthPlugin: typeof React.Component }][];
 
-      const sessionWrapper = await loadSessionWrapper(connection);
-      const name = 'user';
-
-      const storageService = coreClient.getStorageService();
-      const layoutStorage = new GrpcLayoutStorage(
-        storageService,
-        import.meta.env.VITE_LAYOUTS_URL ?? ''
-      );
-      const fileStorage = new GrpcFileStorage(
-        storageService,
-        import.meta.env.VITE_NOTEBOOKS_URL ?? ''
-      );
-
-      const workspaceStorage = new LocalWorkspaceStorage(layoutStorage);
-      const commandHistoryStorage = new PouchCommandHistoryStorage();
-
-      const loadedWorkspace = await workspaceStorage.load({
-        isConsoleAvailable: sessionWrapper !== undefined,
-      });
-      const { data } = loadedWorkspace;
-
-      // Fill in settings that have not yet been set
-      const { settings } = data;
-      if (settings.defaultDecimalFormatOptions === undefined) {
-        settings.defaultDecimalFormatOptions = {
-          defaultFormatString: DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
-        };
+      if (loginPlugins.length === 0) {
+        throw new Error(
+          'No login plugins found, please register a login plugin'
+        );
+      } else if (loginPlugins.length > 1) {
+        log.warn(
+          'More than one login plugin found, will use the first one: ',
+          loginPlugins.map(([name]) => name).join(', ')
+        );
       }
 
-      if (settings.defaultIntegerFormatOptions === undefined) {
-        settings.defaultIntegerFormatOptions = {
-          defaultFormatString: IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
-        };
-      }
+      const [loginPluginName, NewLoginPlugin] = loginPlugins[0];
+      log.info('Using LoginPlugin', loginPluginName);
 
-      if (settings.truncateNumbersWithPound === undefined) {
-        settings.truncateNumbersWithPound = false;
-      }
+      const newClient = createCoreClient();
 
-      // Set any shortcuts that user has overridden on this platform
-      const { shortcutOverrides = {} } = settings;
-      const isMac = Shortcut.isMacPlatform;
-      const platformOverrides = isMac
-        ? shortcutOverrides.mac ?? {}
-        : shortcutOverrides.windows ?? {};
-
-      Object.entries(platformOverrides).forEach(([id, keyState]) => {
-        ShortcutRegistry.get(id)?.setKeyState(keyState);
-      });
-
-      const dashboardData = {
-        filterSets: data.filterSets,
-        links: data.links,
-      };
-
-      const configs = await coreClient.getServerConfigValues();
-      const serverConfig = new Map(configs);
-
-      const user: User = {
-        name,
-        operateAs: name,
-        groups: [],
-        permissions: {
-          isSuperUser: false,
-          isQueryViewOnly: false,
-          isNonInteractive: false,
-          canUsePanels: true,
-          canCreateDashboard: true,
-          canCreateCodeStudio: true,
-          canCreateQueryMonitor: true,
-          canCopy: !(
-            serverConfig.get('internal.webClient.appInit.canCopy') === 'false'
-          ),
-          canDownloadCsv: !(
-            serverConfig.get('internal.webClient.appInit.canDownloadCsv') ===
-            'false'
-          ),
-        },
-      };
-
-      setActiveTool(ToolType.DEFAULT);
-      setServerConfigValues(serverConfig);
-      setCommandHistoryStorage(commandHistoryStorage);
-      setDashboardData(DEFAULT_DASHBOARD_ID, dashboardData);
-      setFileStorage(fileStorage);
-      setLayoutStorage(layoutStorage);
-      setDashboardConnection(DEFAULT_DASHBOARD_ID, connection);
-      if (sessionWrapper !== undefined) {
-        setDashboardSessionWrapper(DEFAULT_DASHBOARD_ID, sessionWrapper);
-      }
       setPlugins(newPlugins);
-      setUser(user);
-      setWorkspaceStorage(workspaceStorage);
-      setWorkspace(loadedWorkspace);
-    } catch (e: unknown) {
+      setClient(newClient);
+      setLoginPlugin(() => NewLoginPlugin.AuthPlugin);
+    } catch (e) {
       log.error(e);
       setError(e);
     }
+  }, [setPlugins]);
+
+  const handleLoginSuccess = useCallback(() => {
+    async function initApp() {
+      if (client == null) {
+        return;
+      }
+      try {
+        const connection = await client.getAsIdeConnection();
+        connection.addEventListener(dh.IdeConnection.EVENT_SHUTDOWN, event => {
+          const { detail } = event;
+          log.info('Shutdown', `${JSON.stringify(detail)}`);
+          setError(`Server shutdown: ${detail ?? 'Unknown reason'}`);
+        });
+
+        const sessionWrapper = await loadSessionWrapper(connection);
+        const name = 'user';
+
+        const storageService = client.getStorageService();
+        const layoutStorage = new GrpcLayoutStorage(
+          storageService,
+          import.meta.env.VITE_LAYOUTS_URL ?? ''
+        );
+        const fileStorage = new GrpcFileStorage(
+          storageService,
+          import.meta.env.VITE_NOTEBOOKS_URL ?? ''
+        );
+
+        const workspaceStorage = new LocalWorkspaceStorage(layoutStorage);
+        const commandHistoryStorage = new PouchCommandHistoryStorage();
+
+        const loadedWorkspace = await workspaceStorage.load({
+          isConsoleAvailable: sessionWrapper !== undefined,
+        });
+        const { data } = loadedWorkspace;
+
+        // Fill in settings that have not yet been set
+        const { settings } = data;
+        if (settings.defaultDecimalFormatOptions === undefined) {
+          settings.defaultDecimalFormatOptions = {
+            defaultFormatString: DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
+          };
+        }
+
+        if (settings.defaultIntegerFormatOptions === undefined) {
+          settings.defaultIntegerFormatOptions = {
+            defaultFormatString: IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
+          };
+        }
+
+        if (settings.truncateNumbersWithPound === undefined) {
+          settings.truncateNumbersWithPound = false;
+        }
+
+        // Set any shortcuts that user has overridden on this platform
+        const { shortcutOverrides = {} } = settings;
+        const isMac = Shortcut.isMacPlatform;
+        const platformOverrides = isMac
+          ? shortcutOverrides.mac ?? {}
+          : shortcutOverrides.windows ?? {};
+
+        Object.entries(platformOverrides).forEach(([id, keyState]) => {
+          ShortcutRegistry.get(id)?.setKeyState(keyState);
+        });
+
+        const dashboardData = {
+          filterSets: data.filterSets,
+          links: data.links,
+        };
+
+        const configs = await client.getServerConfigValues();
+        const serverConfig = new Map(configs);
+
+        const user: User = {
+          name,
+          operateAs: name,
+          groups: [],
+          permissions: {
+            isSuperUser: false,
+            isQueryViewOnly: false,
+            isNonInteractive: false,
+            canUsePanels: true,
+            canCreateDashboard: true,
+            canCreateCodeStudio: true,
+            canCreateQueryMonitor: true,
+            canCopy: !(
+              serverConfig.get('internal.webClient.appInit.canCopy') === 'false'
+            ),
+            canDownloadCsv: !(
+              serverConfig.get('internal.webClient.appInit.canDownloadCsv') ===
+              'false'
+            ),
+          },
+        };
+
+        setActiveTool(ToolType.DEFAULT);
+        setServerConfigValues(serverConfig);
+        setCommandHistoryStorage(commandHistoryStorage);
+        setDashboardData(DEFAULT_DASHBOARD_ID, dashboardData);
+        setFileStorage(fileStorage);
+        setLayoutStorage(layoutStorage);
+        setDashboardConnection(DEFAULT_DASHBOARD_ID, connection);
+        if (sessionWrapper !== undefined) {
+          setDashboardSessionWrapper(DEFAULT_DASHBOARD_ID, sessionWrapper);
+        }
+        setUser(user);
+        setWorkspaceStorage(workspaceStorage);
+        setWorkspace(loadedWorkspace);
+      } catch (e: unknown) {
+        log.error(e);
+        setError(e);
+      }
+    }
+    initApp();
   }, [
+    client,
     setActiveTool,
     setCommandHistoryStorage,
     setDashboardData,
@@ -291,12 +313,15 @@ function AppInit(props: AppInitProps) {
     setLayoutStorage,
     setDashboardConnection,
     setDashboardSessionWrapper,
-    setPlugins,
     setUser,
     setWorkspace,
     setWorkspaceStorage,
     setServerConfigValues,
   ]);
+
+  const handleLoginFailure = useCallback((e: unknown) => {
+    setError(e);
+  }, []);
 
   const initFonts = useCallback(() => {
     if (document.fonts != null) {
@@ -317,19 +342,28 @@ function AppInit(props: AppInitProps) {
     [initClient, initFonts]
   );
 
-  const isLoading = (workspace == null && error == null) || isFontLoading;
-  const isLoaded = !isLoading && error == null;
-  const errorMessage =
-    error != null || disconnectError != null
-      ? `${error ?? disconnectError}`
-      : null;
+  const isPluginLoading = LoginPlugin == null || isFontLoading;
+  const isPluginLoaded = !isPluginLoading && error == null;
+  const isAppLoading =
+    (workspace == null && error == null) ||
+    LoginPlugin == null ||
+    isFontLoading;
+  const isAppLoaded = !isAppLoading && error == null;
+  const errorMessage = error != null ? `${error}` : null;
 
   return (
     <>
-      {isLoaded && <App />}
+      {isAppLoaded && <App />}
+      {isPluginLoaded && !isAppLoaded && (
+        <LoginPlugin
+          client={client}
+          onSuccess={handleLoginSuccess}
+          onFailure={handleLoginFailure}
+        />
+      )}
       <LoadingOverlay
-        isLoading={isLoading}
-        isLoaded={isLoaded}
+        isLoading={isPluginLoading && errorMessage == null}
+        isLoaded={isPluginLoaded}
         errorMessage={errorMessage}
       />
       {/*
