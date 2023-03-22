@@ -255,10 +255,8 @@ class IrisGridRenderer extends GridRenderer {
 
     const { allColumnWidths, allColumnXs, maxY } = metrics;
 
-    const x = allColumnXs.get(hoverSelectColumn);
-    const columnWidth = allColumnWidths.get(hoverSelectColumn);
-    assertNotNull(x);
-    assertNotNull(columnWidth);
+    const x = getOrThrow(allColumnXs, hoverSelectColumn);
+    const columnWidth = getOrThrow(allColumnWidths, hoverSelectColumn);
 
     context.fillStyle = theme.linkerColumnHoverBackgroundColor;
     context.fillRect(x, 0, columnWidth, maxY);
