@@ -844,7 +844,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       gotoRowError: '',
       gotoValueError: '',
 
-      gotoValueSelectedColumnName: model.columns[0].name,
+      gotoValueSelectedColumnName: model.columns[0]?.name ?? '',
       gotoValueSelectedFilter: FilterType.eq,
       gotoValue: '',
       columnHeaderGroups: columnHeaderGroups ?? model.initialColumnHeaderGroups,
