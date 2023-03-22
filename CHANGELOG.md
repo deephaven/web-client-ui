@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.31.2](https://github.com/deephaven/web-client-ui/compare/v0.31.1...v0.31.2) (2023-03-22)
+
+### Bug Fixes
+
+- DH-12163 - Column grouping sidebar test failure fixes (cherry-pick) ([#1158](https://github.com/deephaven/web-client-ui/issues/1158)) ([e1960be](https://github.com/deephaven/web-client-ui/commit/e1960be82909b558a2740de00d78673a46051408))
+
 ## [0.31.1](https://github.com/deephaven/web-client-ui/compare/v0.31.0...v0.31.1) (2023-03-03)
 
 ### Bug Fixes

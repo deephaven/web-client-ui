@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/iris-grid",
-  "version": "0.31.1",
+  "version": "0.31.2",
   "description": "Deephaven Iris Grid",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
