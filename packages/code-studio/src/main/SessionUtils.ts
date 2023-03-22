@@ -1,9 +1,9 @@
-import { SessionWrapper } from '@deephaven/dashboard-core-plugins';
-import dh, {
-  CoreClient,
-  IdeConnection,
-  LoginOptions,
-} from '@deephaven/jsapi-shim';
+import {
+  LoginOptionsResponse,
+  SessionDetails,
+  SessionWrapper,
+} from '@deephaven/dashboard-core-plugins';
+import dh, { CoreClient, IdeConnection } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import shortid from 'shortid';
 import NoConsolesError from './NoConsolesError';
@@ -50,7 +50,8 @@ export function createConnection(): IdeConnection {
  * @returns A session and config that is ready to use
  */
 export async function createSessionWrapper(
-  connection: IdeConnection
+  connection: IdeConnection,
+  sessionDetails: SessionDetails
 ): Promise<SessionWrapper> {
   log.info('Getting console types...');
 
@@ -70,9 +71,17 @@ export async function createSessionWrapper(
 
   const config = { type, id: shortid.generate() };
 
+  const { workerName, processInfoId } = sessionDetails;
+
   log.info('Console session established', config);
 
-  return { session, config, connection };
+  return {
+    session,
+    config,
+    connection,
+    workerName,
+    processInfoId,
+  };
 }
 
 export function createCoreClient(): CoreClient {
@@ -83,7 +92,7 @@ export function createCoreClient(): CoreClient {
   return new dh.CoreClient(websocketUrl);
 }
 
-export async function requestParentLoginOptions(): Promise<LoginOptions> {
+export async function requestParentLoginOptions(): Promise<LoginOptionsResponse> {
   if (window.opener == null) {
     throw new Error('window.opener is null, unable to send auth request.');
   }
@@ -91,7 +100,7 @@ export async function requestParentLoginOptions(): Promise<LoginOptions> {
     const listener = (
       event: MessageEvent<{
         message: string;
-        payload: LoginOptions;
+        payload: LoginOptionsResponse;
       }>
     ) => {
       const { data } = event;
@@ -110,7 +119,7 @@ export async function requestParentLoginOptions(): Promise<LoginOptions> {
 
 export async function getLoginOptions(
   authType: AUTH_TYPE
-): Promise<LoginOptions> {
+): Promise<LoginOptionsResponse> {
   switch (authType) {
     case AUTH_TYPE.PARENT:
       return requestParentLoginOptions();

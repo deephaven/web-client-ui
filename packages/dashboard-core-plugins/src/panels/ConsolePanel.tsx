@@ -320,7 +320,13 @@ export class ConsolePanel extends PureComponent<
       unzip,
     } = this.props;
     const { consoleSettings, error, objectMap } = this.state;
-    const { config, session, connection } = sessionWrapper;
+    const {
+      config,
+      session,
+      connection,
+      workerName,
+      processInfoId,
+    } = sessionWrapper;
     const { id: sessionId, type: language } = config;
 
     return (
@@ -349,6 +355,19 @@ export class ConsolePanel extends PureComponent<
               <>
                 <div>&nbsp;</div>
                 <div>{ConsoleConstants.LANGUAGE_MAP.get(language)}</div>
+                {workerName != null && (
+                  <>
+                    <div>&nbsp;•&nbsp;</div>
+                    {workerName}
+                  </>
+                )}
+                {processInfoId != null && (
+                  <>
+                    <div>&nbsp;•&nbsp;</div>
+                    {processInfoId}
+                    <div>&nbsp;•</div>
+                  </>
+                )}
                 <div>&nbsp;</div>
                 <div>
                   <HeapUsage

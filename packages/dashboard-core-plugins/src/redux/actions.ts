@@ -3,7 +3,7 @@ import { updateDashboardData } from '@deephaven/dashboard';
 import { ThunkAction } from 'redux-thunk';
 import { RootState } from '@deephaven/redux';
 import { Action } from 'redux';
-import { IdeConnection, IdeSession } from '@deephaven/jsapi-shim';
+import { IdeConnection, IdeSession, LoginOptions } from '@deephaven/jsapi-shim';
 import { getLinksForDashboard } from './selectors';
 import { FilterSet } from '../panels';
 import { Link } from '../linker/LinkerUtils';
@@ -14,11 +14,18 @@ export interface SessionConfig {
   id: string;
 }
 
-export interface SessionWrapper {
+export interface SessionDetails {
+  workerName?: string;
+  processInfoId?: string;
+}
+
+export type SessionWrapper = SessionDetails & {
   session: IdeSession;
   connection: IdeConnection;
   config: SessionConfig;
-}
+};
+
+export type LoginOptionsResponse = LoginOptions & SessionDetails;
 
 /**
  * Set the connection for the dashboard specified

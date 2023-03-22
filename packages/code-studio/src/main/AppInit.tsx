@@ -11,6 +11,7 @@ import {
   setDashboardData as setDashboardDataAction,
 } from '@deephaven/dashboard';
 import {
+  SessionDetails,
   SessionWrapper,
   setDashboardConnection as setDashboardConnectionAction,
   setDashboardSessionWrapper as setDashboardSessionWrapperAction,
@@ -98,11 +99,12 @@ async function loadPlugins(): Promise<DeephavenPluginModuleMap> {
 }
 
 async function loadSessionWrapper(
-  connection: IdeConnection
+  connection: IdeConnection,
+  sessionDetails: SessionDetails
 ): Promise<SessionWrapper | undefined> {
   let sessionWrapper: SessionWrapper | undefined;
   try {
-    sessionWrapper = await createSessionWrapper(connection);
+    sessionWrapper = await createSessionWrapper(connection, sessionDetails);
   } catch (e) {
     // Consoles may be disabled on the server, but we should still be able to start up and open existing objects
     if (!isNoConsolesError(e)) {
@@ -170,7 +172,8 @@ function AppInit(props: AppInitProps) {
       const coreClient = createCoreClient();
       const authType = getAuthType();
       log.info(`Login using auth type ${authType}...`);
-      await coreClient.login(await getLoginOptions(authType));
+      const loginOptions = await getLoginOptions(authType);
+      await coreClient.login(loginOptions);
 
       const newPlugins = await loadPlugins();
       const connection = await (authType === AUTH_TYPE.ANONYMOUS &&
@@ -185,7 +188,7 @@ function AppInit(props: AppInitProps) {
         setDisconnectError(null);
       });
 
-      const sessionWrapper = await loadSessionWrapper(connection);
+      const sessionWrapper = await loadSessionWrapper(connection, loginOptions);
       const name = 'user';
 
       const storageService = coreClient.getStorageService();
