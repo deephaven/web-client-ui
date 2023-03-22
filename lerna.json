@@ -4,7 +4,7 @@
   "useNx": false,
   "version": "0.31.1",
   "command": {
-    "version": {
+    "publish": {
       "distTag": "v0.31"
     }
   }
