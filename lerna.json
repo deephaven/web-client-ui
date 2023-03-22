@@ -2,5 +2,10 @@
   "packages": ["packages/*"],
   "useWorkspaces": true,
   "useNx": false,
-  "version": "0.31.1"
+  "version": "0.31.1",
+  "command": {
+    "version": {
+      "distTag": "v0.31"
+    }
+  }
 }
