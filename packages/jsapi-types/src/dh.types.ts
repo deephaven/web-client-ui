@@ -1057,4 +1057,6 @@ export interface CoreClient extends CoreClientContructor {
   getAsIdeConnection(): Promise<IdeConnection>;
   getStorageService(): StorageService;
   getServerConfigValues(): [string, string][];
+  getAuthConfigValues(): [string, string][];
+  disconnect(): void;
 }

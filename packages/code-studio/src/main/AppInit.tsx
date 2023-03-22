@@ -152,8 +152,12 @@ function AppInit(props: AppInitProps) {
   const [isFontLoading, setIsFontLoading] = useState(true);
   const [client, setClient] = useState<CoreClient>();
   const [LoginPlugin, setLoginPlugin] = useState<typeof React.Component>();
+  const [authConfigValues, setAuthConfigValues] = useState(
+    new Map<string, string>()
+  );
 
   const initClient = useCallback(async () => {
+    const newClient = createCoreClient();
     try {
       log.info(
         'Initializing Web UI',
@@ -161,6 +165,12 @@ function AppInit(props: AppInitProps) {
         navigator.userAgent
       );
 
+      const newAuthConfigValues = new Map(
+        await newClient.getAuthConfigValues()
+      );
+      // TODO: Should we be filtering login plugins by the supported types?
+      // const authHandlers = newAuthConfigValues.get('AuthHandlers').split(',')
+      console.log('MJB authConfigValues', newAuthConfigValues);
       const newPlugins = await loadPlugins();
       const loginPlugins = [...newPlugins.entries()].filter(
         ([, plugin]: [string, { AuthPlugin?: typeof React.Component }]) =>
@@ -181,12 +191,12 @@ function AppInit(props: AppInitProps) {
       const [loginPluginName, NewLoginPlugin] = loginPlugins[0];
       log.info('Using LoginPlugin', loginPluginName);
 
-      const newClient = createCoreClient();
-
+      setAuthConfigValues(newAuthConfigValues);
       setPlugins(newPlugins);
       setClient(newClient);
       setLoginPlugin(() => NewLoginPlugin.AuthPlugin);
     } catch (e) {
+      newClient.disconnect();
       log.error(e);
       setError(e);
     }
@@ -356,6 +366,7 @@ function AppInit(props: AppInitProps) {
       {isAppLoaded && <App />}
       {isPluginLoaded && !isAppLoaded && (
         <LoginPlugin
+          authConfigValues={authConfigValues}
           client={client}
           onSuccess={handleLoginSuccess}
           onFailure={handleLoginFailure}
