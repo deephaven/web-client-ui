@@ -1267,6 +1267,9 @@ class IdeConnection extends DeephavenObject {
   }
 }
 
+IdeConnection.EVENT_DISCONNECT = 'disconnect';
+IdeConnection.EVENT_RECONNECT = 'reconnect';
+
 class IdeSession extends DeephavenObject {
   constructor(language) {
     super();

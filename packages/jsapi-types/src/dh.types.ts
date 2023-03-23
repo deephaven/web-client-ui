@@ -974,6 +974,7 @@ export interface IdeConnectionConstructor {
   HACK_CONNECTION_FAILURE: string;
   EVENT_DISCONNECT: string;
   EVENT_RECONNECT: string;
+  EVENT_SHUTDOWN: string;
 
   new (serverUrl: string, options?: IdeConnectionOptions): IdeConnection;
 }
