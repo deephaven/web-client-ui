@@ -60,7 +60,7 @@ VITE_PROXY_URL=http://<dhc-host>:<port>
 
 ## Debugging from VSCode
 
-We have a pre-defined launch config that lets you set breakpoints directly in VSCode for debugging browser code. The `Launch Code Studio` config will launch a new Chrome window that stores its data in your repo workspace. With this setup, you only need to install the React and Redux devtool extensions once. They will persist to future launches using the launch config.
+We have a pre-defined launch config that lets you set breakpoints directly in VSCode for debugging browser code. The `Launch Deephaven` config will launch a new Chrome window that stores its data in your repo workspace. With this setup, you only need to install the React and Redux devtool extensions once. They will persist to future launches using the launch config.
 
 If you are not using Chrome (e.g. Chromium on Linux), then you add a new configuration to VSCode and copy the launch config from [`settings.json`](./.vscode/settings.json). Then add the `runtimeExecutable` prop to point to your browser executable. VSCode unfortnuately does not merge workspace `settings.launch` with workspace `launch.json`, so if we add more launch configs you would need to copy to your `.vscode/launch.json` file to get the configs.
 
