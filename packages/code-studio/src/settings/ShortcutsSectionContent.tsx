@@ -143,7 +143,9 @@ const mapStateToProps = (state: RootState) => ({
 
 const mapDispatchToProps = { saveSettings: saveSettingsAction };
 
-export default connect(
+const ConnectedShortcutSectionContent = connect(
   mapStateToProps,
   mapDispatchToProps
 )(ShortcutSectionContent);
+
+export default ConnectedShortcutSectionContent;

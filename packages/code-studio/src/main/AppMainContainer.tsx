@@ -904,8 +904,10 @@ const mapStateToProps = (state: RootState) => ({
   serverConfigValues: getServerConfigValues(state),
 });
 
-export default connect(mapStateToProps, {
+const ConnectedAppMainContainer = connect(mapStateToProps, {
   setActiveTool: setActiveToolAction,
   updateDashboardData: updateDashboardDataAction,
   updateWorkspaceData: updateWorkspaceDataAction,
 })(withRouter(AppMainContainer));
+
+export default ConnectedAppMainContainer;

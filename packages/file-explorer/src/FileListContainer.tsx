@@ -1,11 +1,9 @@
 import { ContextAction, ContextActions } from '@deephaven/components';
 import { assertNotNull } from '@deephaven/utils';
 import React, { useCallback, useMemo, useState } from 'react';
-import FileList, {
-  renderFileListItem,
-  DEFAULT_ROW_HEIGHT,
-  FileListRenderItemProps,
-} from './FileList';
+import FileList from './FileList';
+import { FileListItem, FileListRenderItemProps } from './FileListItem';
+import { DEFAULT_ROW_HEIGHT } from './FileListUtils';
 import { FileStorageItem, FileStorageTable, isDirectory } from './FileStorage';
 import SHORTCUTS from './FileExplorerShortcuts';
 import './FileExplorer.scss';
@@ -191,19 +189,20 @@ export function FileListContainer(props: FileListContainerProps): JSX.Element {
     (itemProps: FileListRenderItemProps): JSX.Element => {
       const { item } = itemProps;
       if (renameItem && renameItem.filename === item.filename) {
-        return renderFileListItem({
-          ...itemProps,
-          children: (
+        return (
+          // eslint-disable-next-line react/jsx-props-no-spreading
+          <FileListItem {...itemProps}>
             <FileListItemEditor
               item={item}
               validate={validateRenameItem}
               onSubmit={handleRenameSubmit}
               onCancel={handleRenameCancel}
             />
-          ),
-        });
+          </FileListItem>
+        );
       }
-      return renderFileListItem(itemProps);
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      return <FileListItem {...itemProps} />;
     },
     [handleRenameCancel, handleRenameSubmit, renameItem, validateRenameItem]
   );

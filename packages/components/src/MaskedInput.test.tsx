@@ -1,6 +1,8 @@
 import React from 'react';
-import { render } from '@testing-library/react';
-import MaskedInput, { fillToLength, trimTrailingMask } from './MaskedInput';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import MaskedInput from './MaskedInput';
+import { fillToLength, trimTrailingMask } from './MaskedInputUtils';
 
 const TIME_PATTERN = '([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]';
 
@@ -8,14 +10,30 @@ function makeMaskedInput({
   value = '00:00:00',
   pattern = TIME_PATTERN,
   example = '12:34:56',
+  onSubmit = jest.fn(),
 } = {}) {
   return render(
-    <MaskedInput value={value} pattern={pattern} example={example} />
+    <MaskedInput
+      value={value}
+      pattern={pattern}
+      example={example}
+      onSubmit={onSubmit}
+    />
   );
 }
 
 it('mounts and unmounts properly', () => {
   const { unmount } = makeMaskedInput();
+  unmount();
+});
+
+it('onSubmit works properly', async () => {
+  const onSubmit = jest.fn();
+  const { unmount } = makeMaskedInput({ onSubmit });
+  const input: HTMLInputElement = screen.getByRole('textbox');
+  const user = userEvent.setup();
+  await user.type(input, '{enter}');
+  expect(onSubmit).toBeCalledTimes(1);
   unmount();
 });
 

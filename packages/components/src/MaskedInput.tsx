@@ -1,7 +1,12 @@
-import React, { useMemo, useEffect, useCallback } from 'react';
+import React, { useMemo, useEffect, useCallback, KeyboardEvent } from 'react';
 import classNames from 'classnames';
 import Log from '@deephaven/log';
 import { useForwardedRef } from '@deephaven/react-hooks';
+import {
+  DEFAULT_GET_PREFERRED_REPLACEMENT_STRING,
+  fillToLength,
+  trimTrailingMask,
+} from './MaskedInputUtils';
 import './MaskedInput.scss';
 
 const log = Log.module('MaskedInput');
@@ -17,53 +22,6 @@ const SELECTION_DIRECTION = {
  * https://www.fileformat.info/info/unicode/char/2007/index.htm
  */
 const FIXED_WIDTH_SPACE = '\u2007';
-
-export function DEFAULT_GET_PREFERRED_REPLACEMENT_STRING(
-  value: string,
-  replaceIndex: number,
-  newChar: string
-): string {
-  return (
-    value.substring(0, replaceIndex) +
-    newChar +
-    value.substring(replaceIndex + 1)
-  );
-}
-
-/**
- * Fill the string on the right side with the example value to the given length
- * @param checkValue Initial string to pad
- * @param exampleValue Example value
- * @param length Target length
- * @returns String padded with the given example value
- */
-export function fillToLength(
-  checkValue: string,
-  exampleValue: string,
-  length: number
-): string {
-  return checkValue.length < length
-    ? `${checkValue}${exampleValue.substring(checkValue.length, length)}`
-    : checkValue;
-}
-
-/**
- * Trim all characters matching the empty mask on the right side of the given value
- * @param value String to trim
- * @param emptyMask Empty mask
- * @returns Trimmed string
- */
-export function trimTrailingMask(value: string, emptyMask: string): string {
-  let { length } = value;
-  for (let i = value.length - 1; i >= 0; i -= 1) {
-    if (emptyMask[i] === value[i]) {
-      length = i;
-    } else {
-      break;
-    }
-  }
-  return value.substring(0, length);
-}
 
 export type SelectionSegment = {
   selectionStart: number;
@@ -88,6 +46,8 @@ type MaskedInputProps = {
   onChange?(value: string): void;
   /** Called when selection changes */
   onSelect?(segment: SelectionSegment): void;
+  /** Called when enter is pressed */
+  onSubmit?(event?: KeyboardEvent<HTMLInputElement>): void;
   /** Retrieve the next value for a provided segment */
   getNextSegmentValue?(
     segment: SelectionSegment,
@@ -124,6 +84,7 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
       getPreferredReplacementString = DEFAULT_GET_PREFERRED_REPLACEMENT_STRING,
       onChange = () => false,
       onSelect = () => false,
+      onSubmit,
       pattern,
       placeholder,
       selection,
@@ -428,7 +389,10 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
         );
         return;
       }
-
+      if (key === 'Enter') {
+        onSubmit?.(event);
+        return;
+      }
       if (key.startsWith('Arrow')) {
         handleArrowKey(event);
         return;

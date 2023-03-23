@@ -131,6 +131,8 @@ const mapStateToProps = (
     ?.session,
 });
 
-export default connect(mapStateToProps, null, null, { forwardRef: true })(
-  LogPanel
-);
+const ConnectedLogPanel = connect(mapStateToProps, null, null, {
+  forwardRef: true,
+})(LogPanel);
+
+export default ConnectedLogPanel;

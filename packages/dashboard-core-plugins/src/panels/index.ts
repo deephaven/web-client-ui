@@ -1,5 +1,6 @@
 export { default as ChartPanel } from './ChartPanel';
 export * from './ChartPanel';
+export * from './ChartPanelUtils';
 export { default as CommandHistoryPanel } from './CommandHistoryPanel';
 export { default as ConsolePanel } from './ConsolePanel';
 export { default as DropdownFilterPanel } from './DropdownFilterPanel';

@@ -423,7 +423,7 @@ const mapStateToProps = (
   };
 };
 
-export default connect(
+const ConnectedFilterSetManagerPanel = connect(
   mapStateToProps,
   {
     setDashboardFilterSets: setDashboardFilterSetsAction,
@@ -431,3 +431,5 @@ export default connect(
   null,
   { forwardRef: true }
 )(FilterSetManagerPanel);
+
+export default ConnectedFilterSetManagerPanel;

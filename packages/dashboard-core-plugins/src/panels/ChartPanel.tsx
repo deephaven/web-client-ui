@@ -65,6 +65,7 @@ import ChartColumnSelectorOverlay, {
 import './ChartPanel.scss';
 import { Link } from '../linker/LinkerUtils';
 import { PanelState as IrisGridPanelState } from './IrisGridPanel';
+import { isChartPanelTableMetadata } from './ChartPanelUtils';
 import { ColumnSelectionValidator } from '../linker/ColumnSelectionValidator';
 
 const log = Log.module('ChartPanel');
@@ -76,11 +77,6 @@ export type FilterMap = Map<string, string>;
 
 export type LinkedColumnMap = Map<string, { name: string; type: string }>;
 
-export function isChartPanelTableMetadata(
-  metadata: ChartPanelMetadata
-): metadata is ChartPanelTableMetadata {
-  return (metadata as ChartPanelTableMetadata).settings !== undefined;
-}
 export type ChartPanelFigureMetadata = {
   figure: string;
 };
@@ -1198,7 +1194,7 @@ const mapStateToProps = (
   };
 };
 
-export default connect(
+const ConnectedChartPanel = connect(
   mapStateToProps,
   {
     setActiveTool: setActiveToolAction,
@@ -1207,3 +1203,5 @@ export default connect(
   null,
   { forwardRef: true }
 )(ChartPanel);
+
+export default ConnectedChartPanel;

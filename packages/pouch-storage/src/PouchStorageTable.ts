@@ -26,7 +26,7 @@ const DB_PREFIX = 'Deephaven.';
 
 PouchDB.plugin(PouchDBFind);
 
-interface PouchStorageItem {
+export interface PouchStorageItem {
   _id?: string;
 }
 
@@ -114,7 +114,9 @@ function sortWithConfigs(
 
 export class PouchStorageTable<T extends StorageItem = StorageItem>
   implements StorageTable<T> {
-  private db: PouchDB.Database<T & PouchStorageItem>;
+  protected db: PouchDB.Database<T & PouchStorageItem>;
+
+  changes?: PouchDB.Core.Changes<T & PouchStorageItem>;
 
   private listeners: ViewportUpdateCallback<T>[] = [];
 
@@ -138,20 +140,34 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
 
   private currentViewportData?: ViewportData<T>;
 
-  constructor(databaseName: string) {
-    this.db = new PouchDB<T & PouchStorageItem>(`${DB_PREFIX}${databaseName}`);
+  constructor(
+    databaseName: string,
+    dbOptions?: PouchDB.Configuration.DatabaseConfiguration
+  ) {
+    this.db = new PouchDB<T & PouchStorageItem>(
+      `${DB_PREFIX}${databaseName}`,
+      dbOptions
+    );
 
     // Need to set `_remote` to false to remove deprecation warnings: https://github.com/pouchdb/pouchdb/issues/6106
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
     (this.db as any)._remote = false;
 
-    this.db
-      .changes({ live: true, since: 'now', include_docs: true })
-      .on('change', this.dbUpdate.bind(this));
+    this.listenForChanges();
 
     this.db.createIndex({ index: { fields: ['id', 'name'] } });
 
     this.refreshInfo();
+  }
+
+  /**
+   * Listen for db changes. This can be cancelled by calling
+   * `this.changes?.cancel()`
+   */
+  listenForChanges(): void {
+    this.changes = this.db
+      .changes({ live: true, since: 'now', include_docs: true })
+      .on('change', this.dbUpdate.bind(this));
   }
 
   onUpdate(callback: ViewportUpdateCallback<T>): StorageListenerRemover {
@@ -276,7 +292,7 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
     }
   }
 
-  private dbUpdate(event: PouchDB.Core.ChangesResponseChange<T>): void {
+  protected dbUpdate(event: PouchDB.Core.ChangesResponseChange<T>): void {
     log.debug('Update received', event);
 
     this.refreshInfo();
@@ -288,15 +304,25 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
     this.refreshData();
   }
 
+  /**
+   * Fetch infor for a given selector.
+   * @param selector
+   */
+  protected async fetchInfo(
+    selector: PouchDB.Find.Selector
+  ): Promise<PouchDB.Find.FindResponse<T & PouchStorageItem>> {
+    return this.db.find({
+      selector,
+      fields: [],
+    });
+  }
+
   private async refreshInfo() {
     try {
       this.infoUpdatePromise?.cancel();
 
       this.infoUpdatePromise = PromiseUtils.makeCancelable(
-        this.db.find({
-          selector: selectorWithFilters(this.currentFilter ?? []),
-          fields: [],
-        })
+        this.fetchInfo(selectorWithFilters(this.currentFilter ?? []))
       );
 
       const findResult = await this.infoUpdatePromise;
@@ -312,31 +338,44 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
     }
   }
 
+  /**
+   * Fetch data for the given viewport, selector, and sort.
+   * @param viewport
+   * @param selector
+   * @param sort
+   */
+  protected async fetchViewportData(
+    viewport: StorageTableViewport,
+    selector: PouchDB.Find.Selector,
+    sort: PouchDBSort
+  ): Promise<ViewportData<T>> {
+    return this.db
+      .find({
+        selector,
+        skip: viewport.top,
+        limit: viewport.bottom - viewport.top + 1,
+        sort,
+        fields: ['id', 'name'],
+      })
+      .then(findResult => ({
+        items: findResult.docs,
+        offset: viewport.top,
+      }));
+  }
+
   private async refreshData(): Promise<ViewportData<T> | undefined> {
     if (!this.currentViewport) {
       return;
     }
 
     try {
-      const { currentViewport: viewport } = this;
-
+      const selector = selectorWithFilters(this.currentFilter ?? []);
       const sort = sortWithConfigs(this.currentSort, this.currentReverse);
 
       this.viewportUpdatePromise?.cancel();
 
       this.viewportUpdatePromise = PromiseUtils.makeCancelable(
-        this.db
-          .find({
-            selector: selectorWithFilters(this.currentFilter ?? []),
-            skip: viewport.top,
-            limit: viewport.bottom - viewport.top + 1,
-            sort,
-            fields: ['id', 'name'],
-          })
-          .then(findResult => ({
-            items: findResult.docs,
-            offset: viewport.top,
-          }))
+        this.fetchViewportData(this.currentViewport, selector, sort)
       );
 
       const viewportData = await this.viewportUpdatePromise;
