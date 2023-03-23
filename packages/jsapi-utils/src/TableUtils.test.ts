@@ -1199,6 +1199,14 @@ describe('quick filter tests', () => {
       testTextFilter('=null', FilterType.isNull);
     });
 
+    it('handles in/starts with/ends with null cases', () => {
+      testInvokeFilter('~null', 'matches', '(?s)(?i).*\\Qnull\\E.*');
+      testInvokeFilter('null*', 'matches', '(?s)(?i)^\\Qnull\\E.*');
+      testInvokeFilter('=null*', 'matches', '(?s)(?i)^\\Qnull\\E.*');
+      testInvokeFilter('*null', 'matches', '(?s)(?i).*\\Qnull\\E$');
+      testInvokeFilter('=*null', 'matches', '(?s)(?i).*\\Qnull\\E$');
+    });
+
     it('handles not null cases', () => {
       const column = makeFilterColumn();
       const filter = column.filter() as MockFilter;
