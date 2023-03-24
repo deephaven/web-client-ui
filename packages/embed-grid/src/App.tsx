@@ -108,8 +108,11 @@ function App(): JSX.Element {
 
           // Create the `IrisGridModel` for use with the `IrisGrid` component
           log.debug(`Creating model...`);
-
-          const newModel = await IrisGridModelFactory.makeModel(table);
+          const tableUtils = new TableUtils(dh);
+          const newModel = await IrisGridModelFactory.makeModel(
+            table,
+            tableUtils
+          );
 
           setModel(newModel);
 

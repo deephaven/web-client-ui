@@ -10,9 +10,11 @@ import dh, {
   TableViewportSubscription,
   TreeTable,
 } from '@deephaven/jsapi-shim';
-import { Formatter } from '@deephaven/jsapi-utils';
+import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import type { LayoutHints } from '@deephaven/jsapi-shim';
 import IrisGridProxyModel from './IrisGridProxyModel';
+
+const tableUtils = new TableUtils(dh);
 
 class IrisGridTestUtils {
   static DEFAULT_TYPE = 'java.lang.String';
@@ -124,7 +126,7 @@ class IrisGridTestUtils {
     formatter = new Formatter(),
     inputTable: InputTable | null = null
   ): IrisGridProxyModel {
-    return new IrisGridProxyModel(table, formatter, inputTable);
+    return new IrisGridProxyModel(table, tableUtils, formatter, inputTable);
   }
 }
 

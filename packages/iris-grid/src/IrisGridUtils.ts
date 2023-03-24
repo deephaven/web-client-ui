@@ -353,7 +353,8 @@ class IrisGridUtils {
    */
   static hydrateIrisGridState(
     model: IrisGridModel,
-    irisGridState: DehydratedIrisGridState
+    irisGridState: DehydratedIrisGridState,
+    tableUtils: TableUtils
   ): Omit<HydratedIrisGridState, 'metrics'> & {
     userColumnWidths: ModelSizeMap;
     userRowHeights: ModelSizeMap;
@@ -386,6 +387,7 @@ class IrisGridUtils {
       advancedFilters: IrisGridUtils.hydrateAdvancedFilters(
         columns,
         advancedFilters,
+        tableUtils,
         formatter.timeZone
       ),
       aggregationSettings,
@@ -394,6 +396,7 @@ class IrisGridUtils {
       quickFilters: IrisGridUtils.hydrateQuickFilters(
         columns,
         quickFilters,
+        tableUtils,
         formatter.timeZone
       ),
       sorts: IrisGridUtils.hydrateSort(columns, sorts),
@@ -542,6 +545,7 @@ class IrisGridUtils {
   static hydrateQuickFilters(
     columns: readonly Column[],
     savedQuickFilters: readonly DehydratedQuickFilter[],
+    tableUtils: TableUtils,
     timeZone?: string
   ): ReadonlyQuickFilterMap {
     const importedFilters = savedQuickFilters.map(
@@ -555,7 +559,7 @@ class IrisGridUtils {
         try {
           const column = IrisGridUtils.getColumn(columns, columnIndex);
           if (column != null) {
-            filter = TableUtils.makeQuickFilter(column, text, timeZone);
+            filter = tableUtils.makeQuickFilter(column, text, timeZone);
           }
         } catch (error) {
           log.error('hydrateQuickFilters error with', text, error);
@@ -599,6 +603,7 @@ class IrisGridUtils {
   static hydrateAdvancedFilters(
     columns: readonly Column[],
     savedAdvancedFilters: readonly DehydratedAdvancedFilter[],
+    tableUtils: TableUtils,
     timeZone: string
   ): ReadonlyAdvancedFilterMap {
     const importedFilters = savedAdvancedFilters.map(
@@ -617,7 +622,7 @@ class IrisGridUtils {
         try {
           const columnRetrieved = IrisGridUtils.getColumn(columns, columnIndex);
           if (columnRetrieved != null) {
-            filter = TableUtils.makeAdvancedFilter(column, options, timeZone);
+            filter = tableUtils.makeAdvancedFilter(column, options, timeZone);
           }
         } catch (error) {
           log.error('hydrateAdvancedFilters error with', options, error);
@@ -886,6 +891,7 @@ class IrisGridUtils {
   static applyTableSettings(
     table: Table,
     tableSettings: TableSettings,
+    tableUtils: TableUtils,
     timeZone: string
   ): void {
     const { columns } = table;
@@ -896,6 +902,7 @@ class IrisGridUtils {
         IrisGridUtils.hydrateQuickFilters(
           columns,
           tableSettings.quickFilters,
+          tableUtils,
           timeZone
         )
       );
@@ -907,12 +914,14 @@ class IrisGridUtils {
         IrisGridUtils.hydrateAdvancedFilters(
           columns,
           tableSettings.advancedFilters,
+          tableUtils,
           timeZone
         )
       );
     }
     const inputFilters = IrisGridUtils.getFiltersFromInputFilters(
       columns,
+      tableUtils,
       tableSettings.inputFilters,
       timeZone
     );
@@ -956,6 +965,7 @@ class IrisGridUtils {
 
   static getFiltersFromInputFilters(
     columns: readonly Column[],
+    tableUtils: TableUtils,
     inputFilters: readonly InputFilter[] = [],
     timeZone?: string
   ): FilterCondition[] {
@@ -967,7 +977,7 @@ class IrisGridUtils {
         );
         if (column) {
           try {
-            return TableUtils.makeQuickFilter(column, value, timeZone);
+            return tableUtils.makeQuickFilter(column, value, timeZone);
           } catch (e) {
             // It may be unable to create it because user hasn't completed their input
             log.debug('Unable to create input filter', e);

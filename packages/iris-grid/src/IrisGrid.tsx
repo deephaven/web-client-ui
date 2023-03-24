@@ -61,7 +61,9 @@ import {
   vsSymbolOperator,
   vsTools,
 } from '@deephaven/icons';
-import dh, {
+import {
+  dh as defaultDh,
+  dhType,
   Column,
   ColumnGroup,
   CustomColumn,
@@ -251,6 +253,7 @@ export type FilterMap = Map<
 >;
 export interface IrisGridProps {
   children: React.ReactNode;
+  dh: dhType;
   advancedFilters: ReadonlyAdvancedFilterMap;
   advancedSettings: Map<AdvancedSettingsType, boolean>;
   alwaysFetchColumns: readonly ColumnName[];
@@ -438,6 +441,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   static defaultProps = {
     children: null,
+    dh: defaultDh,
     advancedFilters: EMPTY_MAP,
     advancedSettings: EMPTY_MAP,
     alwaysFetchColumns: EMPTY_ARRAY,
@@ -504,19 +508,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     theme: IrisGridTheme,
     canToggleSearch: true,
   };
-
-  static makeQuickFilter(
-    column: Column,
-    text: string,
-    timeZone: string
-  ): FilterCondition | null {
-    try {
-      return TableUtils.makeQuickFilter(column, text, timeZone);
-    } catch (err) {
-      log.error('Error creating quick filter', err);
-    }
-    return null;
-  }
 
   constructor(props: IrisGridProps) {
     super(props);
@@ -688,6 +679,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     ];
 
     const {
+      dh,
       aggregationSettings,
       conditionalFormats,
       customColumnFormatMap,
@@ -759,6 +751,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       model.columns,
       invertSearchColumns
     );
+
+    this.tableUtils = new TableUtils(dh);
 
     this.state = {
       isFilterBarShown,
@@ -1025,6 +1019,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   contextActions: ContextAction[];
 
+  tableUtils: TableUtils;
+
   getAdvancedMenuOpenedHandler = memoize(
     (column: ModelIndex) => this.handleAdvancedMenuOpened.bind(this, column),
     { max: 100 }
@@ -1036,7 +1032,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       column: Column,
       advancedFilterOptions: AdvancedFilterOptions | undefined,
       sortDirection: SortDirection | undefined,
-      formatter: Formatter
+      formatter: Formatter,
+      tableUtils: TableUtils
     ) => (
       <AdvancedFilterCreator
         model={model}
@@ -1046,7 +1043,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         onDone={this.handleAdvancedFilterDone}
         options={advancedFilterOptions}
         sortDirection={sortDirection}
+        // TODO: use formatter and tableUtils from the model?
         formatter={formatter}
+        tableUtils={tableUtils}
       />
     ),
     { max: 50 }
@@ -1424,6 +1423,19 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     return GridUtils.getVisibleIndex(modelIndex, movedColumns);
   }
 
+  makeQuickFilter(
+    column: Column,
+    text: string,
+    timeZone: string
+  ): FilterCondition | null {
+    try {
+      return this.tableUtils.makeQuickFilter(column, text, timeZone);
+    } catch (err) {
+      log.error('Error creating quick filter', err);
+    }
+    return null;
+  }
+
   /**
    * Applies the provided input filters as quick filters,
    * and clears any existing quickFilters or advancedFilters on that column
@@ -1491,7 +1503,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       }
       quickFilters.set(modelIndex, {
         text: value,
-        filter: IrisGrid.makeQuickFilter(column, value, formatter.timeZone),
+        filter: this.makeQuickFilter(column, value, formatter.timeZone),
       });
       return true;
     }
@@ -1583,7 +1595,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         const { formatter } = model;
         this.setQuickFilter(
           columnIndex,
-          IrisGrid.makeQuickFilter(column, combinedText, formatter.timeZone),
+          this.makeQuickFilter(column, combinedText, formatter.timeZone),
           `${combinedText}`
         );
       }
@@ -1678,7 +1690,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     advancedFilters.forEach((value, key) => {
       const { options } = value;
       const column = columns[key];
-      const filter = TableUtils.makeAdvancedFilter(
+      const filter = this.tableUtils.makeAdvancedFilter(
         column,
         options,
         formatter.timeZone
@@ -1694,7 +1706,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       const column = columns[key];
       newQuickFilters.set(key, {
         text,
-        filter: IrisGrid.makeQuickFilter(column, text, formatter.timeZone),
+        filter: this.makeQuickFilter(column, text, formatter.timeZone),
       });
     });
 
@@ -3396,7 +3408,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             searchFromRow,
             selectedColumn,
             dh.ValueType.STRING,
-            TableUtils.makeValue(
+            this.tableUtils.makeValue(
               selectedColumn.type,
               inputString,
               formatter.timeZone
@@ -4213,7 +4225,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                     column,
                     advancedFilterOptions,
                     sortDirection,
-                    formatter
+                    formatter,
+                    // TODO:
+                    this.tableUtils
                   )}
                 </Popper>
               </div>

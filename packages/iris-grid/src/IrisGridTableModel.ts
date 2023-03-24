@@ -36,15 +36,17 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
 
   /**
    * @param table Iris data table to be used in the model
+   * TODO:
    * @param formatter The formatter to use when getting formats
    * @param inputTable Iris input table associated with this table
    */
   constructor(
     table: Table,
+    tableUtils: TableUtils,
     formatter = new Formatter(),
     inputTable: InputTable | null = null
   ) {
-    super(table, formatter, inputTable);
+    super(table, tableUtils, formatter, inputTable);
     this.customColumnList = [];
     this.formatColumnList = [];
   }
@@ -341,7 +343,10 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
       for (let c = 0; c < keyColumns.length; c += 1) {
         const column = keyColumns[c];
         const value = row[c];
-        const filterValue = TableUtils.makeFilterRawValue(column.type, value);
+        const filterValue = this.tableUtils.makeFilterRawValue(
+          column.type,
+          value
+        );
         const filter = column.filter().eq(filterValue);
         columnFilters.push(filter);
       }

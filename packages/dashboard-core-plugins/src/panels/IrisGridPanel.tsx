@@ -61,8 +61,9 @@ import {
   PromiseUtils,
 } from '@deephaven/utils';
 import { ContextAction, ContextMenuRoot } from '@deephaven/components';
-import {
+import defaultDh, {
   Column,
+  dhType,
   FilterCondition,
   Sort,
   VariableTypeUnion,
@@ -125,6 +126,7 @@ export interface PanelState {
 
 export interface IrisGridPanelProps {
   children?: ReactNode;
+  dh?: dhType;
   glContainer: Container;
   glEventHub: EventEmitter;
   metadata: Metadata;
@@ -207,6 +209,7 @@ export class IrisGridPanel extends PureComponent<
   static defaultProps = {
     onStateChange: (): void => undefined,
     onPanelStateUpdate: (): void => undefined,
+    dh: defaultDh,
   };
 
   static displayName = 'IrisGridPanel';
@@ -244,9 +247,10 @@ export class IrisGridPanel extends PureComponent<
     this.irisGrid = React.createRef();
     this.pluginRef = React.createRef();
 
-    const { panelState } = props;
+    const { panelState, dh = defaultDh } = props;
 
     this.pluginState = null;
+    this.tableUtils = new TableUtils(dh);
 
     this.state = {
       error: null,
@@ -340,6 +344,8 @@ export class IrisGridPanel extends PureComponent<
   gridState?: GridState;
 
   pluginState: unknown;
+
+  tableUtils: TableUtils;
 
   getTableName(): string {
     const { metadata } = this.props;
@@ -609,6 +615,7 @@ export class IrisGridPanel extends PureComponent<
     const { columns, formatter } = model;
     const pluginFilters = IrisGridUtils.getFiltersFromInputFilters(
       columns,
+      this.tableUtils,
       filters,
       formatter.timeZone
     );
@@ -944,11 +951,13 @@ export class IrisGridPanel extends PureComponent<
       quickFilters: IrisGridUtils.hydrateQuickFilters(
         columns,
         indexedQuickFilters,
+        this.tableUtils,
         formatter.timeZone
       ),
       advancedFilters: IrisGridUtils.hydrateAdvancedFilters(
         columns,
         indexedAdvancedFilters,
+        this.tableUtils,
         formatter.timeZone
       ),
     });
@@ -1037,10 +1046,14 @@ export class IrisGridPanel extends PureComponent<
         frozenColumns,
         conditionalFormats,
         columnHeaderGroups,
-      } = IrisGridUtils.hydrateIrisGridState(model, {
-        ...irisGridState,
-        ...irisGridStateOverrides,
-      });
+      } = IrisGridUtils.hydrateIrisGridState(
+        model,
+        {
+          ...irisGridState,
+          ...irisGridStateOverrides,
+        },
+        this.tableUtils
+      );
       const {
         isStuckToBottom,
         isStuckToRight,
@@ -1295,6 +1308,7 @@ export class IrisGridPanel extends PureComponent<
             customColumnFormatMap={customColumnFormatMap}
             columnSelectionValidator={this.isColumnSelectionValid}
             conditionalFormats={conditionalFormats}
+            dh={dh}
             inputFilters={this.getGridInputFilters(model.columns, inputFilters)}
             applyInputFiltersOnInit={panelState == null}
             isFilterBarShown={isFilterBarShown}
