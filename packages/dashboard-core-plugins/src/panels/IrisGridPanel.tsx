@@ -39,6 +39,7 @@ import {
   ChartBuilderSettings,
   DehydratedIrisGridState,
   ColumnHeaderGroup,
+  ContextMenuData,
 } from '@deephaven/iris-grid';
 import {
   AdvancedFilterOptions,
@@ -60,15 +61,18 @@ import {
   CancelablePromise,
   PromiseUtils,
 } from '@deephaven/utils';
-import { ContextAction, ContextMenuRoot } from '@deephaven/components';
+import {
+  ContextMenuRoot,
+  ResolvableContextAction,
+} from '@deephaven/components';
 import {
   Column,
   FilterCondition,
   Sort,
   VariableTypeUnion,
 } from '@deephaven/jsapi-shim';
+import { Table } from '@deephaven/jsapi-types';
 import {
-  GridRangeIndex,
   GridState,
   ModelIndex,
   ModelSizeMap,
@@ -146,10 +150,73 @@ export interface IrisGridPanelProps {
   getDownloadWorker: () => Promise<ServiceWorker>;
 
   // Load a plugin defined by the table
-  loadPlugin: (pluginName: string) => Plugin;
+  loadPlugin: (pluginName: string) => TablePlugin;
 
   theme: IrisGridThemeType;
 }
+
+export interface TablePluginElement {
+  getMenu?: (data: ContextMenuData) => ResolvableContextAction[];
+}
+
+export interface TablePluginProps {
+  /**
+   * Apply filters to the table
+   * @param filters Filters to apply to the table
+   */
+  filter: (filters: InputFilter[]) => void;
+
+  /** @deprecated Use `filter` instead */
+  onFilter: (filters: InputFilter[]) => void;
+
+  /**
+   * Set columns that should always be fetched, even if they're outside the viewport
+   * @param pluginFetchColumns Names of columns to always fetch
+   */
+  fetchColumns: (pluginFetchColumns: ColumnName[]) => void;
+
+  /** @deprecated Use `fetchColumns` instead */
+  onFetchColumns: (pluginFetchColumns: ColumnName[]) => void;
+
+  /**
+   * The table this plugin was associated with
+   */
+  table: Table;
+
+  /**
+   * The IrisGridPanel displaying this table
+   */
+  panel: IrisGridPanel;
+
+  /** @deprecated Import components from @deephaven/components and @deephaven/iris-grid packages instead */
+  components: typeof PLUGIN_COMPONENTS;
+
+  /**
+   * Current user information
+   */
+  user: User;
+
+  /**
+   * Current user workspace data
+   */
+  workspace: Workspace;
+
+  /**
+   * Notify of a state change in the plugin state. Will be saved with the panel data.
+   * Should be an object that can be serialized to JSON.
+   * @param pluginState State of the plugin to save
+   */
+  onStateChange: (pluginState: PanelState['pluginState']) => void;
+
+  /**
+   * Current plugin state. Use to load.
+   */
+  pluginState: PanelState['pluginState'];
+}
+
+export type TablePlugin = React.ForwardRefExoticComponent<
+  TablePluginProps & React.RefAttributes<TablePluginElement>
+>;
 
 interface IrisGridPanelState {
   error: unknown;
@@ -186,7 +253,7 @@ interface IrisGridPanelState {
   searchValue: string;
   selectedSearchColumns?: readonly string[];
   invertSearchColumns: boolean;
-  Plugin?: Plugin;
+  Plugin?: TablePlugin;
   pluginFilters: readonly FilterCondition[];
   pluginFetchColumns: readonly string[];
   modelQueue: ModelQueue;
@@ -330,8 +397,7 @@ export class IrisGridPanel extends PureComponent<
 
   irisGrid: RefObject<IrisGrid>;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  pluginRef: RefObject<any>;
+  pluginRef: RefObject<TablePluginElement>;
 
   modelPromise?: CancelablePromise<IrisGridModel>;
 
@@ -382,8 +448,7 @@ export class IrisGridPanel extends PureComponent<
 
   getPluginContent = memoize(
     (
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      Plugin: any,
+      Plugin: TablePlugin | undefined,
       model: IrisGridModel | undefined,
       user: User,
       workspace: Workspace,
@@ -619,17 +684,8 @@ export class IrisGridPanel extends PureComponent<
     this.setState({ pluginFetchColumns });
   }
 
-  handleContextMenu(obj: {
-    model: IrisGridModel;
-    value: unknown;
-    valueText: string | null;
-    column: Column;
-    rowIndex: GridRangeIndex;
-    columnIndex: GridRangeIndex;
-    modelRow: GridRangeIndex;
-    modelColumn: GridRangeIndex;
-  }): ContextAction {
-    return this.pluginRef.current?.getMenu?.(obj) ?? [];
+  handleContextMenu(data: ContextMenuData): ResolvableContextAction[] {
+    return this.pluginRef.current?.getMenu?.(data) ?? [];
   }
 
   isColumnSelectionValid(tableColumn: Column | null): boolean {

@@ -74,7 +74,7 @@ class ContextActions extends Component<
     element: Element,
     clientX: number,
     clientY: number,
-    actions: ContextAction[]
+    actions: ResolvableContextAction[]
   ): void {
     if (actions.length === 0) {
       return;

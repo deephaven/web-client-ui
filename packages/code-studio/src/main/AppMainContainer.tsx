@@ -4,7 +4,6 @@ import React, {
   Component,
   ReactElement,
   RefObject,
-  ForwardRefExoticComponent,
 } from 'react';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
@@ -59,6 +58,7 @@ import {
   ColumnSelectionValidator,
   SessionConfig,
   getDashboardConnection,
+  TablePlugin,
 } from '@deephaven/dashboard-core-plugins';
 import { vsGear, dhShapes, dhPanels } from '@deephaven/icons';
 import dh, {
@@ -611,9 +611,7 @@ export class AppMainContainer extends Component<
    * @param pluginName The name of the plugin to load
    * @returns An element from the plugin
    */
-  handleLoadTablePlugin(
-    pluginName: string
-  ): ForwardRefExoticComponent<React.RefAttributes<unknown>> {
+  handleLoadTablePlugin(pluginName: string): TablePlugin {
     const { plugins } = this.props;
 
     // First check if we have any plugin modules loaded that match the TablePlugin.
@@ -623,11 +621,11 @@ export class AppMainContainer extends Component<
       (pluginModule as { TablePlugin: ReactElement }).TablePlugin != null
     ) {
       return (pluginModule as {
-        TablePlugin: ForwardRefExoticComponent<React.RefAttributes<unknown>>;
+        TablePlugin: TablePlugin;
       }).TablePlugin;
     }
 
-    return PluginUtils.loadComponentPlugin(pluginName);
+    return PluginUtils.loadComponentPlugin(pluginName) as TablePlugin;
   }
 
   hydrateDefault(
@@ -677,9 +675,7 @@ export class AppMainContainer extends Component<
     type: VariableTypeUnion = dh.VariableType.TABLE
   ): T & {
     getDownloadWorker: () => Promise<ServiceWorker>;
-    loadPlugin: (
-      pluginName: string
-    ) => React.ForwardRefExoticComponent<React.RefAttributes<unknown>>;
+    loadPlugin: (pluginName: string) => TablePlugin;
     localDashboardId: string;
     makeModel: () => Promise<IrisGridModel>;
   } {

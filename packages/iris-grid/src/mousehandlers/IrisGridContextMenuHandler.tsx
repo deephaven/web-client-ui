@@ -14,6 +14,7 @@ import {
   ContextActions,
   ContextActionUtils,
   GLOBAL_SHORTCUTS,
+  ResolvableContextAction,
 } from '@deephaven/components';
 import {
   EventHandlerResult,
@@ -693,7 +694,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
     const { columnHeaderHeight, gridY, columnHeaderMaxDepth } = metrics;
 
-    const actions = [] as ContextAction[];
+    const actions: ResolvableContextAction[] = [];
 
     if (modelColumn != null && modelRow != null) {
       const value = model.valueForCell(modelColumn, modelRow);
@@ -705,7 +706,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
       if (column != null) {
         actions.push(
-          onContextMenu({
+          ...onContextMenu({
             model,
             value,
             valueText,

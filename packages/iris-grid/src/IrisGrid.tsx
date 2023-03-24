@@ -25,6 +25,7 @@ import {
   ReferenceObject,
   Button,
   ContextActionUtils,
+  ResolvableContextAction,
 } from '@deephaven/components';
 import {
   Grid,
@@ -249,6 +250,18 @@ export type FilterMap = Map<
     filterList: FilterData[];
   }
 >;
+
+export interface ContextMenuData {
+  model: IrisGridModel;
+  value: unknown;
+  valueText: string | null;
+  column: Column;
+  rowIndex: GridRangeIndex;
+  columnIndex: GridRangeIndex;
+  modelRow: GridRangeIndex;
+  modelColumn: GridRangeIndex;
+}
+
 export interface IrisGridProps {
   children: React.ReactNode;
   advancedFilters: ReadonlyAdvancedFilterMap;
@@ -304,16 +317,7 @@ export interface IrisGridProps {
   invertSearchColumns: boolean;
 
   // eslint-disable-next-line react/no-unused-prop-types
-  onContextMenu: (obj: {
-    model: IrisGridModel;
-    value: unknown;
-    valueText: string | null;
-    column: Column;
-    rowIndex: GridRangeIndex;
-    columnIndex: GridRangeIndex;
-    modelRow: GridRangeIndex;
-    modelColumn: GridRangeIndex;
-  }) => ContextAction;
+  onContextMenu: (data: ContextMenuData) => ResolvableContextAction[];
 
   pendingDataMap?: PendingDataMap;
   getDownloadWorker: () => Promise<ServiceWorker>;
