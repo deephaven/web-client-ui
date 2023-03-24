@@ -19,6 +19,8 @@ import {
   Popper,
   ContextAction,
   Button,
+  InfoModal,
+  LoadingSpinner,
 } from '@deephaven/components';
 import {
   IrisGridModel,
@@ -60,7 +62,12 @@ import {
   SessionConfig,
   getDashboardConnection,
 } from '@deephaven/dashboard-core-plugins';
-import { vsGear, dhShapes, dhPanels } from '@deephaven/icons';
+import {
+  vsGear,
+  dhShapes,
+  dhPanels,
+  vsDebugDisconnect,
+} from '@deephaven/icons';
 import dh, {
   IdeConnection,
   IdeSession,
@@ -149,6 +156,7 @@ interface AppMainContainerProps {
 
 interface AppMainContainerState {
   contextActions: ContextAction[];
+  isDisconnected: boolean;
   isPanelsMenuShown: boolean;
   isSettingsMenuShown: boolean;
   widgets: VariableDefinition[];
@@ -203,6 +211,8 @@ export class AppMainContainer extends Component<
     this.hydratePandas = this.hydratePandas.bind(this);
     this.hydrateDefault = this.hydrateDefault.bind(this);
     this.openNotebookFromURL = this.openNotebookFromURL.bind(this);
+    this.handleDisconnect = this.handleDisconnect.bind(this);
+    this.handleReconnect = this.handleReconnect.bind(this);
 
     this.importElement = React.createRef();
 
@@ -232,6 +242,7 @@ export class AppMainContainer extends Component<
           isGlobal: true,
         },
       ],
+      isDisconnected: false,
       isPanelsMenuShown: false,
       isSettingsMenuShown: false,
       widgets: [],
@@ -240,6 +251,7 @@ export class AppMainContainer extends Component<
 
   componentDidMount(): void {
     this.initWidgets();
+    this.startListeningForDisconnect();
 
     window.addEventListener(
       'beforeunload',
@@ -256,6 +268,7 @@ export class AppMainContainer extends Component<
 
   componentWillUnmount(): void {
     this.deinitWidgets();
+    this.stopListeningForDisconnect();
 
     window.removeEventListener(
       'beforeunload',
@@ -534,6 +547,14 @@ export class AppMainContainer extends Component<
     }
   }
 
+  handleDisconnect() {
+    this.setState({ isDisconnected: true });
+  }
+
+  handleReconnect() {
+    this.setState({ isDisconnected: false });
+  }
+
   /**
    * Import the provided file and set it in the workspace data (which should then load it in the dashboard)
    * @param file JSON file to import
@@ -628,6 +649,30 @@ export class AppMainContainer extends Component<
     }
 
     return PluginUtils.loadComponentPlugin(pluginName);
+  }
+
+  startListeningForDisconnect() {
+    const { connection } = this.props;
+    connection.addEventListener(
+      dh.IdeConnection.EVENT_DISCONNECT,
+      this.handleDisconnect
+    );
+    connection.addEventListener(
+      dh.IdeConnection.EVENT_RECONNECT,
+      this.handleReconnect
+    );
+  }
+
+  stopListeningForDisconnect() {
+    const { connection } = this.props;
+    connection.removeEventListener(
+      dh.IdeConnection.EVENT_DISCONNECT,
+      this.handleDisconnect
+    );
+    connection.removeEventListener(
+      dh.IdeConnection.EVENT_RECONNECT,
+      this.handleReconnect
+    );
   }
 
   hydrateDefault(
@@ -743,6 +788,7 @@ export class AppMainContainer extends Component<
     const { canUsePanels } = permissions;
     const {
       contextActions,
+      isDisconnected,
       isPanelsMenuShown,
       isSettingsMenuShown,
       widgets,
@@ -881,6 +927,16 @@ export class AppMainContainer extends Component<
           accept=".json"
           style={{ display: 'none' }}
           onChange={this.handleImportLayoutFiles}
+        />
+        <InfoModal
+          isOpen={isDisconnected}
+          icon={vsDebugDisconnect}
+          title={
+            <>
+              <LoadingSpinner /> Attempting to reconnect...
+            </>
+          }
+          subtitle="Please check your network connection."
         />
       </div>
     );

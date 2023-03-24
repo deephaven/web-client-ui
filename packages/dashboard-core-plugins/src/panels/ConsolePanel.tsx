@@ -1,16 +1,13 @@
 // Wrapper for the Console for use in a golden layout container
 // Will probably need to handle window popping out from golden layout here.
 import React, { PureComponent, ReactElement, RefObject } from 'react';
-import classNames from 'classnames';
 import shortid from 'shortid';
 import debounce from 'lodash.debounce';
 import { connect } from 'react-redux';
-import { LoadingSpinner } from '@deephaven/components';
 import {
   CommandHistoryStorage,
   Console,
   ConsoleConstants,
-  ConsoleHistoryItemResult,
   HeapUsage,
 } from '@deephaven/console';
 import { PanelEvent } from '@deephaven/dashboard';
@@ -63,7 +60,6 @@ interface ConsolePanelProps {
 }
 
 interface ConsolePanelState {
-  connected: boolean;
   consoleSettings: ConsoleSettings;
   itemIds: ItemIds;
 
@@ -92,8 +88,6 @@ export class ConsolePanel extends PureComponent<
     this.handleSettingsChange = this.handleSettingsChange.bind(this);
     this.handleShow = this.handleShow.bind(this);
     this.handlePanelMount = this.handlePanelMount.bind(this);
-    this.handleDisconnect = this.handleDisconnect.bind(this);
-    this.handleReconnect = this.handleReconnect.bind(this);
 
     this.consoleRef = React.createRef();
 
@@ -105,7 +99,6 @@ export class ConsolePanel extends PureComponent<
     const { consoleSettings, itemIds } = panelState;
 
     this.state = {
-      connected: true,
       consoleSettings,
       itemIds: new Map(itemIds),
 
@@ -123,7 +116,6 @@ export class ConsolePanel extends PureComponent<
     this.closeDisconnectedPanels();
     glEventHub.on(PanelEvent.MOUNT, this.handlePanelMount);
     this.subscribeToFieldUpdates();
-    this.startListeningForDisconnect();
   }
 
   componentDidUpdate(
@@ -144,7 +136,6 @@ export class ConsolePanel extends PureComponent<
     this.savePanelState.flush();
     glEventHub.off(PanelEvent.MOUNT, this.handlePanelMount);
     this.objectSubscriptionCleanup?.();
-    this.stopListeningForDisconnect();
   }
 
   consoleRef: RefObject<Console>;
@@ -182,32 +173,6 @@ export class ConsolePanel extends PureComponent<
           return { objectMap: newObjectMap };
         });
       }
-    );
-  }
-
-  startListeningForDisconnect() {
-    const { sessionWrapper } = this.props;
-    const { connection } = sessionWrapper;
-    connection.addEventListener(
-      dh.IdeConnection.EVENT_DISCONNECT,
-      this.handleDisconnect
-    );
-    connection.addEventListener(
-      dh.IdeConnection.EVENT_RECONNECT,
-      this.handleReconnect
-    );
-  }
-
-  stopListeningForDisconnect() {
-    const { sessionWrapper } = this.props;
-    const { connection } = sessionWrapper;
-    connection.removeEventListener(
-      dh.IdeConnection.EVENT_DISCONNECT,
-      this.handleDisconnect
-    );
-    connection.removeEventListener(
-      dh.IdeConnection.EVENT_RECONNECT,
-      this.handleReconnect
     );
   }
 
@@ -252,17 +217,6 @@ export class ConsolePanel extends PureComponent<
   handleFocusCommandHistory(): void {
     const { glEventHub } = this.props;
     glEventHub.emit(ConsoleEvent.FOCUS_HISTORY);
-  }
-
-  handleDisconnect(): void {
-    this.setState({ connected: false });
-  }
-
-  handleReconnect(): void {
-    this.setState({ connected: true }, () => {
-      // Need to update dimensions or the console input isn't focusable
-      this.updateDimensions();
-    });
   }
 
   handleResize(): void {
@@ -365,15 +319,13 @@ export class ConsolePanel extends PureComponent<
       timeZone,
       unzip,
     } = this.props;
-    const { connected, consoleSettings, error, objectMap } = this.state;
+    const { consoleSettings, error, objectMap } = this.state;
     const { config, session, connection } = sessionWrapper;
     const { id: sessionId, type: language } = config;
 
     return (
       <Panel
-        className={classNames('iris-panel-console', {
-          disconnected: !connected,
-        })}
+        className="iris-panel-console"
         componentPanel={this}
         glContainer={glContainer}
         glEventHub={glEventHub}
@@ -393,15 +345,6 @@ export class ConsolePanel extends PureComponent<
             commandHistoryStorage={commandHistoryStorage}
             onSettingsChange={this.handleSettingsChange}
             language={language}
-            historyChildren={
-              !connected ? (
-                <div className="console-history-footer">
-                  <ConsoleHistoryItemResult>
-                    <LoadingSpinner /> Disconnected. Reconnecting...
-                  </ConsoleHistoryItemResult>
-                </div>
-              ) : null
-            }
             statusBarChildren={
               <>
                 <div>&nbsp;</div>
@@ -422,7 +365,6 @@ export class ConsolePanel extends PureComponent<
             timeZone={timeZone}
             objectMap={objectMap}
             unzip={unzip}
-            disabled={!connected}
           />
         )}
       </Panel>
