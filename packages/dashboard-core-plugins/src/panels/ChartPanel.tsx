@@ -14,9 +14,11 @@ import {
 } from '@deephaven/chart';
 import type PlotlyType from 'plotly.js';
 import {
+  DashboardPanelProps,
   getOpenedPanelMapForDashboard,
   LayoutUtils,
   PanelComponent,
+  PanelMetadata,
   PanelProps,
 } from '@deephaven/dashboard';
 import {
@@ -45,7 +47,6 @@ import {
   PromiseUtils,
   TextUtils,
 } from '@deephaven/utils';
-import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import WidgetPanel from './WidgetPanel';
 import ToolType from '../linker/ToolType';
 import { InputFilterEvent, ChartEvent } from '../events';
@@ -74,13 +75,14 @@ export type InputFilterMap = Map<string, InputFilter>;
 
 export type LinkedColumnMap = Map<string, { name: string; type: string }>;
 
-export type ChartPanelFigureMetadata = {
-  name: string;
-  figure: string;
-};
+export interface ChartPanelFigureMetadata extends PanelMetadata {
+  /**
+   * @deprecated use `name` instead
+   */
+  figure?: string;
+}
 
-export type ChartPanelTableMetadata = {
-  name: string;
+export interface ChartPanelTableMetadata extends PanelMetadata {
   table: string;
   sourcePanelId: string;
   settings: {
@@ -91,7 +93,7 @@ export type ChartPanelTableMetadata = {
     type: keyof SeriesPlotStyle;
   };
   tableSettings: TableSettings;
-};
+}
 
 export type ChartPanelMetadata =
   | ChartPanelFigureMetadata
@@ -115,9 +117,7 @@ export interface GLChartPanelState {
   table?: string;
   figure?: string;
 }
-export interface ChartPanelProps {
-  glContainer: Container;
-  glEventHub: EventEmitter;
+export interface ChartPanelProps extends DashboardPanelProps {
   metadata: ChartPanelMetadata;
   /** Function to build the ChartModel used by this ChartPanel. Can return a promise. */
   makeModel: () => Promise<ChartModel>;

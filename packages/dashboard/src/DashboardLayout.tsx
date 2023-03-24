@@ -17,6 +17,7 @@ import Log from '@deephaven/log';
 import { usePrevious } from '@deephaven/react-hooks';
 import { RootState } from '@deephaven/redux';
 import { useDispatch, useSelector } from 'react-redux';
+import shortid from 'shortid';
 import PanelManager, { ClosedPanels } from './PanelManager';
 import PanelErrorBoundary from './PanelErrorBoundary';
 import LayoutUtils from './layout/LayoutUtils';
@@ -133,6 +134,8 @@ export function DashboardLayout({
           <PanelErrorBoundary glContainer={glContainer} glEventHub={glEventHub}>
             {/* eslint-disable-next-line react/jsx-props-no-spreading */}
             <PanelWrapperType {...props}>
+              {/* TODO: Verify the id is getting populated from somewhere */}
+              {/* <CType id={shortid.generate()} {...props} ref={ref} /> */}
               {/* eslint-disable-next-line react/jsx-props-no-spreading */}
               <CType {...props} ref={ref} />
             </PanelWrapperType>

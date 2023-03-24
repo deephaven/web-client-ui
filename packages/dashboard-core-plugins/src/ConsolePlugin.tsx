@@ -4,6 +4,8 @@ import {
   DashboardPanelProps,
   DashboardPluginComponentProps,
   DashboardUtils,
+  DehydratedDashboardPanelProps,
+  DehydratedPanelProps,
   LayoutUtils,
   PanelComponent,
   PanelHydrateFunction,
@@ -534,7 +536,10 @@ export function ConsolePlugin(
   );
 
   const hydrateNotebook = useCallback(
-    (panelProps: PanelProps, panelDashboardId: string): DashboardPanelProps =>
+    (
+      panelProps: DehydratedDashboardPanelProps,
+      panelDashboardId: string
+    ): DehydratedDashboardPanelProps =>
       DashboardUtils.hydrate(
         {
           ...panelProps,
@@ -554,7 +559,7 @@ export function ConsolePlugin(
         registerComponent(LogPanel.COMPONENT, LogPanel),
         registerComponent(
           NotebookPanel.COMPONENT,
-          NotebookPanel,
+          NotebookPanel as any,
           hydrateNotebook
         ),
       ];

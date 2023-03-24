@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import {
   ClosedPanel,
   ClosedPanels,
+  DashboardPanelProps,
   getClosedPanelsForDashboard,
   LayoutUtils,
   PanelEvent,
@@ -29,9 +30,7 @@ interface PanelState {
   content?: string;
 }
 
-interface MarkdownPanelProps {
-  glContainer: Container;
-  glEventHub: EventEmitter;
+interface MarkdownPanelProps extends DashboardPanelProps {
   panelState: PanelState;
   closedPanels: ClosedPanel[];
 }

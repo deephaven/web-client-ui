@@ -13,12 +13,9 @@ import { getTimeZone, store } from '@deephaven/redux';
 import {
   ChartPanelMetadata,
   GLChartPanelState,
+  IrisGridPanelMetadata,
   isChartPanelTableMetadata,
 } from '@deephaven/dashboard-core-plugins';
-
-export type GridPanelMetadata = {
-  table: string;
-};
 
 export const createChartModel = async (
   dh: DhType,
@@ -39,7 +36,7 @@ export const createChartModel = async (
   } else {
     settings = {};
     tableName = '';
-    figureName = metadata.figure;
+    figureName = metadata.name ?? metadata.figure;
     tableSettings = {};
   }
   if (panelState !== undefined) {
@@ -90,11 +87,14 @@ export const createChartModel = async (
 export const createGridModel = async (
   dh: DhType,
   connection: IdeConnection,
-  metadata: GridPanelMetadata,
-  type: string = dh.VariableType.TABLE
+  metadata: IrisGridPanelMetadata
 ): Promise<IrisGridModel> => {
-  const { table: tableName } = metadata;
-  const definition = { title: tableName, name: tableName, type };
+  const { name: tableName } = metadata;
+  const definition = {
+    title: tableName,
+    name: tableName,
+    type: metadata.type,
+  };
   const table = (await connection.getObject(definition)) as Table;
   return IrisGridModelFactory.makeModel(dh, table);
 };

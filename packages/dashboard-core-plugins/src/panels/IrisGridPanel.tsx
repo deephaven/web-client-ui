@@ -10,9 +10,11 @@ import memoize from 'memoize-one';
 import { connect } from 'react-redux';
 import debounce from 'lodash.debounce';
 import {
+  DashboardPanelProps,
   DEFAULT_DASHBOARD_ID,
   LayoutUtils,
   PanelComponent,
+  PanelMetadata,
 } from '@deephaven/dashboard';
 import {
   AdvancedSettings,
@@ -72,7 +74,6 @@ import {
   ModelSizeMap,
   MoveOperation,
 } from '@deephaven/grid';
-import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import { ConsoleEvent, InputFilterEvent, IrisGridEvent } from '../events';
 import {
   getInputFiltersForDashboard,
@@ -84,6 +85,10 @@ import './IrisGridPanel.scss';
 import { Link, LinkColumn } from '../linker/LinkerUtils';
 import IrisGridPanelTooltip from './IrisGridPanelTooltip';
 import TablePlugin, { TablePluginElement } from './TablePlugin';
+import {
+  isIrisGridPanelMetadata,
+  isLegacyIrisGridPanelMetadata,
+} from './IrisGridPanelTypes';
 
 const log = Log.module('IrisGridPanel');
 
@@ -94,13 +99,6 @@ const PLUGIN_COMPONENTS = { IrisGrid, IrisGridTableModel, ContextMenuRoot };
 type ModelQueueFunction = (model: IrisGridModel) => void;
 
 type ModelQueue = ModelQueueFunction[];
-
-interface Metadata {
-  table: string;
-  type?: string;
-  query?: string;
-  querySerial?: string;
-}
 
 export interface PanelState {
   gridState: {
@@ -122,22 +120,20 @@ export interface PanelState {
   pluginState: unknown;
 }
 
+// TODO: Remove this
 // Some of the properties in the loaded panel state may be omitted
 // even though they can't be undefined in the dehydrated state.
 // This can happen when loading the state saved before the properties were added.
-type LoadedPanelState = PanelState & {
-  irisGridPanelState: PanelState['irisGridPanelState'] &
-    Partial<
-      Pick<PanelState['irisGridPanelState'], 'partition' | 'partitionColumn'>
-    >;
-};
+// type LoadedPanelState = PanelState & {
+//   irisGridPanelState: PanelState['irisGridPanelState'] &
+//     Partial<
+//       Pick<PanelState['irisGridPanelState'], 'partition' | 'partitionColumn'>
+//     >;
+// };
 
-export interface IrisGridPanelProps {
+export interface IrisGridPanelProps extends DashboardPanelProps {
   children?: ReactNode;
-  glContainer: Container;
-  glEventHub: EventEmitter;
-  metadata: Metadata;
-  panelState: LoadedPanelState | null;
+  panelState: PanelState | null;
   makeModel: () => IrisGridModel | Promise<IrisGridModel>;
   inputFilters: InputFilter[];
   links: Link[];
@@ -207,6 +203,20 @@ interface IrisGridPanelState {
   panelState: PanelState | null; // Dehydrated panel state that can load this panel
   irisGridStateOverrides: Partial<DehydratedIrisGridState>;
   gridStateOverrides: Partial<GridState>;
+}
+
+function getTableName(metadata?: PanelMetadata): string {
+  if (metadata == null) {
+    throw new Error('No metadata provided');
+  }
+  if (isIrisGridPanelMetadata(metadata)) {
+    return metadata.name;
+  }
+  if (isLegacyIrisGridPanelMetadata(metadata)) {
+    return metadata.table;
+  }
+
+  throw new Error(`Unrecognized metadata: ${metadata}`);
 }
 
 export class IrisGridPanel extends PureComponent<
@@ -354,7 +364,7 @@ export class IrisGridPanel extends PureComponent<
 
   getTableName(): string {
     const { metadata } = this.props;
-    return metadata.table;
+    return getTableName(metadata);
   }
 
   getGridInputFilters = memoize(
@@ -712,8 +722,8 @@ export class IrisGridPanel extends PureComponent<
     this.setState(
       () => null,
       () => {
-        const { glEventHub, inputFilters, metadata } = this.props;
-        const { table } = metadata;
+        const { glEventHub, inputFilters } = this.props;
+        const table = this.getTableName();
         const { panelState } = this.state;
         const sourcePanelId = LayoutUtils.getIdFromPanel(this);
         let tableSettings;
@@ -1248,7 +1258,7 @@ export class IrisGridPanel extends PureComponent<
     } = this.state;
     const errorMessage =
       error != null ? `Unable to open table. ${error}` : undefined;
-    const { table: name } = metadata;
+    const name = getTableName(metadata);
     const description = model?.description ?? undefined;
     const pluginState = panelState?.pluginState ?? null;
     const childrenContent =

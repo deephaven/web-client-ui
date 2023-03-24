@@ -3,6 +3,13 @@ import ReactDOM from 'react-dom';
 import $ from 'jquery';
 import type ItemContainer from '../container/ItemContainer';
 import type { ReactComponentConfig } from '../config/ItemConfig';
+import { Container } from '../container';
+import EventEmitter from './EventEmitter';
+
+export type GLPanelProps = {
+  glContainer: Container;
+  glEventHub: EventEmitter;
+};
 
 /**
  * A specialised GoldenLayout component that binds GoldenLayout container
