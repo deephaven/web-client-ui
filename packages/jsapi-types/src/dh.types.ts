@@ -112,15 +112,37 @@ export interface TextEdit {
   range: DocumentRange;
 }
 
+export interface MarkupContent {
+  value: string;
+  kind: 'markdown' | 'plaintext';
+}
+
 export interface CompletionItem {
   label: string;
   kind: number;
   detail: string;
-  documentation: string;
+  documentation: MarkupContent;
   sortText: string;
   filterText: string;
   textEdit: TextEdit;
   insertTextFormat: number;
+}
+
+export interface ParameterInfo {
+  label: string;
+  documentation: string;
+}
+
+export interface SignatureInfo {
+  label: string;
+  documentation?: MarkupContent;
+  parameters?: ParameterInfo[];
+  activeParameter: number;
+}
+
+export interface Hover {
+  contents?: MarkupContent;
+  range?: DocumentRange;
 }
 
 export interface IdeSessionStatic {
@@ -164,6 +186,8 @@ export interface IdeSession extends Evented {
     userTimeZone: string
   ): Promise<Table>;
   getCompletionItems(params: unknown): Promise<CompletionItem[]>;
+  getSignatureHelp?(params: unknown): Promise<SignatureInfo[]>;
+  getHover?(params: unknown): Promise<Hover>;
   closeDocument(params: unknown): void;
   openDocument(params: unknown): void;
   changeDocument(params: unknown): void;
