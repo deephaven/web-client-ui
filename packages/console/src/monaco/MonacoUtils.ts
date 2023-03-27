@@ -141,6 +141,10 @@ class MonacoUtils {
       'input.background': MonacoTheme['input-background'],
       'input.foreground': MonacoTheme['input-foreground'],
       'input.border': MonacoTheme['input-border'],
+      'textLink.foreground': MonacoTheme['text-link-foreground'],
+      'textLink.activeForeground': MonacoTheme['text-link-active-foreground'],
+      'editorLink.activeForeground':
+        MonacoTheme['editor-link-active-foreground'],
     };
 
     monaco.editor.defineTheme('dh-dark', {
