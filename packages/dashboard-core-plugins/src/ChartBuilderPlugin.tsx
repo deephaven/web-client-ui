@@ -45,7 +45,7 @@ export function ChartBuilderPlugin(
     }) => {
       const { settings } = metadata;
       const makeModel = () =>
-        ChartModelFactory.makeModelFromSettings(settings, table);
+        ChartModelFactory.makeModelFromSettings(settings, table, dh);
       const title = ChartUtils.titleFromSettings(settings);
 
       const config = {

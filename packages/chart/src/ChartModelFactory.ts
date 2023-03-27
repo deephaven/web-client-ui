@@ -1,4 +1,4 @@
-import dh, { Figure, Table } from '@deephaven/jsapi-shim';
+import { dhType, Figure, Table } from '@deephaven/jsapi-shim';
 import ChartUtils, { ChartModelSettings } from './ChartUtils';
 import FigureChartModel from './FigureChartModel';
 import ChartTheme from './ChartTheme';
@@ -23,13 +23,15 @@ class ChartModelFactory {
   static async makeModelFromSettings(
     settings: ChartModelSettings,
     table: Table,
+    dh: dhType,
     theme = ChartTheme
   ): Promise<ChartModel> {
     const figure = await ChartModelFactory.makeFigureFromSettings(
+      dh,
       settings,
       table
     );
-    return new FigureChartModel(figure, settings, theme);
+    return new FigureChartModel(figure, dh, settings, theme);
   }
 
   /**
@@ -45,6 +47,7 @@ class ChartModelFactory {
    * @returns The Figure created with the settings provided
    */
   static async makeFigureFromSettings(
+    dh: dhType,
     settings: ChartModelSettings,
     table: Table
   ): Promise<Figure> {
@@ -58,7 +61,7 @@ class ChartModelFactory {
     tableCopy.applySort(table.sort);
 
     return dh.plot.Figure.create(
-      ChartUtils.makeFigureSettings(settings, tableCopy)
+      ChartUtils.makeFigureSettings(dh, settings, tableCopy)
     );
   }
 
@@ -80,9 +83,10 @@ class ChartModelFactory {
   static async makeModel(
     settings: ChartModelSettings | undefined,
     figure: Figure,
+    dh: dhType,
     theme = ChartTheme
   ): Promise<ChartModel> {
-    return new FigureChartModel(figure, settings, theme);
+    return new FigureChartModel(figure, dh, settings, theme);
   }
 }
 

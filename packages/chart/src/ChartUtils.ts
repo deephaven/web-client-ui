@@ -5,12 +5,13 @@ import {
   TableColumnFormatter,
   TableUtils,
 } from '@deephaven/jsapi-utils';
-import dh, {
+import {
   Axis,
   AxisPosition,
   AxisType,
   Chart,
   DateWrapper,
+  dhType,
   Figure,
   Holiday,
   LongWrapper,
@@ -35,6 +36,8 @@ import {
 } from 'plotly.js';
 import { assertNotNull, Range } from '@deephaven/utils';
 import ChartTheme from './ChartTheme';
+
+const dh = undefined;
 
 export interface ChartModelSettings {
   hiddenSeries?: string[];
@@ -184,6 +187,7 @@ class ChartUtils {
     plotStyle: SeriesPlotStyle,
     isBusinessTime: boolean
   ): PlotType | undefined {
+    const { dh } = this;
     switch (plotStyle) {
       case dh.plot.SeriesPlotStyle.SCATTER:
         // scattergl mode is more performant, but doesn't support the rangebreaks we need for businessTime calendars
@@ -221,6 +225,7 @@ class ChartUtils {
    * @param areShapesVisible Whether shapes are visible or not
    */
   static getPlotlyChartMode(
+    dh: dhType,
     plotStyle: SeriesPlotStyle,
     areLinesVisible?: boolean,
     areShapesVisible?: boolean
@@ -261,6 +266,7 @@ class ChartUtils {
    * @param sourceType The source type for the series
    */
   static getPlotlyProperty(
+    dh: dhType,
     plotStyle: SeriesPlotStyle,
     sourceType: SourceType
   ): string {
@@ -347,7 +353,10 @@ class ChartUtils {
     }
   }
 
-  static getPlotlySeriesOrientation(series: Series): 'h' | 'v' | undefined {
+  static getPlotlySeriesOrientation(
+    dh: dhType,
+    series: Series
+  ): 'h' | 'v' | undefined {
     const { sources } = series;
     if (sources.length === 2 && sources[0]?.axis?.type === dh.plot.AxisType.Y) {
       return ChartUtils.ORIENTATION.HORIZONTAL;
@@ -381,6 +390,7 @@ class ChartUtils {
   }
 
   static getPlotlyDateFormat(
+    dh: dhType,
     formatter: Formatter | null,
     columnType: string,
     formatPattern: string
@@ -505,6 +515,7 @@ class ChartUtils {
    * @param formatter The current formatter for formatting data
    */
   static getPlotlyAxisFormat(
+    dh: dhType,
     source: SeriesDataSource,
     formatter: Formatter | null = null
   ): Partial<PlotlyAxis> | null {
@@ -514,6 +525,7 @@ class ChartUtils {
     let axisFormat = null;
     if (TableUtils.isDateType(columnType)) {
       axisFormat = ChartUtils.getPlotlyDateFormat(
+        dh,
         formatter,
         columnType,
         formatPattern
@@ -656,6 +668,7 @@ class ChartUtils {
    * @returns The series data (trace) object for use with plotly.
    */
   static makeSeriesDataFromSeries(
+    dh: dhType,
     series: Series,
     axisTypeMap: AxisTypeMap,
     seriesVisibility: boolean | 'legendonly',
@@ -677,13 +690,14 @@ class ChartUtils {
     const isBusinessTime = sources.some(
       source => source.axis?.businessCalendar
     );
-    const type = ChartUtils.getChartType(plotStyle, isBusinessTime);
+    const type = ChartUtils.getChartType(dh, plotStyle, isBusinessTime);
     const mode = ChartUtils.getPlotlyChartMode(
+      dh,
       plotStyle,
       isLinesVisible ?? undefined,
       isShapesVisible ?? undefined
     );
-    const orientation = ChartUtils.getPlotlySeriesOrientation(series);
+    const orientation = ChartUtils.getPlotlySeriesOrientation(dh, series);
     const seriesData = ChartUtils.makeSeriesData(
       type,
       mode,
@@ -693,6 +707,7 @@ class ChartUtils {
     );
 
     ChartUtils.addSourcesToSeriesData(
+      dh,
       seriesData,
       plotStyle,
       sources,
@@ -700,6 +715,7 @@ class ChartUtils {
     );
 
     ChartUtils.addStylingToSeriesData(
+      dh,
       seriesData,
       plotStyle,
       theme,
@@ -714,6 +730,7 @@ class ChartUtils {
   }
 
   static addSourcesToSeriesData(
+    dh: dhType,
     seriesDataParam: Partial<PlotData>,
     plotStyle: SeriesPlotStyle,
     sources: SeriesDataSource[],
@@ -725,13 +742,14 @@ class ChartUtils {
       const { axis, type: sourceType } = source;
 
       const dataAttributeName = ChartUtils.getPlotlyProperty(
+        dh,
         plotStyle,
         sourceType
       );
       set(seriesData, dataAttributeName, []);
 
       const axisProperty =
-        axis != null ? ChartUtils.getAxisPropertyName(axis.type) : null;
+        axis != null ? ChartUtils.getAxisPropertyName(dh, axis.type) : null;
       if (axisProperty != null) {
         const axes = axisTypeMap.get(axis.type);
         if (axes) {
@@ -746,6 +764,7 @@ class ChartUtils {
   }
 
   static addStylingToSeriesData(
+    dh: dhType,
     seriesDataParam: Partial<PlotData>,
     plotStyle: SeriesPlotStyle,
     theme: typeof ChartTheme = ChartTheme,
@@ -881,6 +900,7 @@ class ChartUtils {
    * @returns A map of axis layout property names to axis formats
    */
   static getAxisFormats(
+    dh: dhType,
     figure: Figure,
     formatter: Formatter
   ): Map<LayoutAxisKey, Partial<PlotlyAxis>> {
@@ -905,7 +925,7 @@ class ChartUtils {
           const typeAxes = axisTypeMap.get(axisType);
           assertNotNull(typeAxes);
           const axisIndex = typeAxes.indexOf(axis);
-          const axisProperty = ChartUtils.getAxisPropertyName(axisType);
+          const axisProperty = ChartUtils.getAxisPropertyName(dh, axisType);
           if (axisProperty != null) {
             const axisLayoutProperty = ChartUtils.getAxisLayoutProperty(
               axisProperty,
@@ -917,6 +937,7 @@ class ChartUtils {
             } else {
               log.debug(`Adding ${axisLayoutProperty} to axisFormats.`);
               const axisFormat = ChartUtils.getPlotlyAxisFormat(
+                dh,
                 source,
                 formatter
               );
@@ -949,6 +970,7 @@ class ChartUtils {
                   if (holidays.length > 0) {
                     rangebreaks.push(
                       ...ChartUtils.createRangeBreakValuesFromHolidays(
+                        dh,
                         holidays,
                         calendarTimeZone,
                         formatterTimeZone
@@ -992,6 +1014,7 @@ class ChartUtils {
   }
 
   static getChartType(
+    dh: dhType,
     plotStyle: SeriesPlotStyle,
     isBusinessTime: boolean
   ): PlotType | undefined {
@@ -1001,7 +1024,7 @@ class ChartUtils {
         // plot.ly to calculate the bins and sum values, just convert it to a bar chart
         return 'bar';
       default:
-        return ChartUtils.getPlotlyChartType(plotStyle, isBusinessTime);
+        return ChartUtils.getPlotlyChartType(dh, plotStyle, isBusinessTime);
     }
   }
 
@@ -1009,7 +1032,7 @@ class ChartUtils {
    * Return the plotly axis property name
    * @param axisType The axis type to get the property name for
    */
-  static getAxisPropertyName(axisType: AxisType): 'x' | 'y' | null {
+  static getAxisPropertyName(dh: dhType, axisType: AxisType): 'x' | 'y' | null {
     switch (axisType) {
       case dh.plot.AxisType.X:
         return 'x';
@@ -1025,6 +1048,7 @@ class ChartUtils {
    * @param axisPosition The Iris AxisPosition of the axis
    */
   static getAxisSide(
+    dh: dhType,
     axisPosition: AxisPosition
   ): LayoutAxis['side'] | undefined {
     switch (axisPosition) {
@@ -1104,6 +1128,7 @@ class ChartUtils {
    * @param theme Theme used for displaying the plot
    */
   static updateFigureAxes(
+    dh: dhType,
     layoutParam: Partial<Layout>,
     figure: Figure,
     chartAxisRangeParser?: ChartAxisRangeParser,
@@ -1117,12 +1142,14 @@ class ChartUtils {
       const chart = figure.charts[i];
       const axisRangeParser = chartAxisRangeParser?.(chart);
       const bounds = ChartUtils.getChartBounds(
+        dh,
         figure,
         chart,
         plotWidth,
         plotHeight
       );
       ChartUtils.updateLayoutAxes(
+        dh,
         layout,
         chart.axes,
         figureAxes,
@@ -1138,6 +1165,7 @@ class ChartUtils {
   }
 
   static getChartBounds(
+    dh: dhType,
     figure: Figure,
     chart: Chart,
     plotWidth: number,
@@ -1200,6 +1228,7 @@ class ChartUtils {
    * @param axisRangeParser A function to retrieve the range parser for a given axis
    */
   static updateLayoutAxes(
+    dh: dhType,
     layoutParam: Partial<Layout>,
     chartAxes: Axis[],
     figureAxes: Axis[],
@@ -1237,7 +1266,7 @@ class ChartUtils {
     const figureAxisTypeMap = ChartUtils.groupArray(figureAxes, 'type');
     for (let j = 0; j < axisTypes.length; j += 1) {
       const axisType = axisTypes[j];
-      const axisProperty = ChartUtils.getAxisPropertyName(axisType);
+      const axisProperty = ChartUtils.getAxisPropertyName(dh, axisType);
       if (axisProperty != null) {
         const typeAxes = axisTypeMap.get(axisType);
         const figureTypeAxes = figureAxisTypeMap.get(axisType);
@@ -1259,6 +1288,7 @@ class ChartUtils {
           );
           if (layout[axisLayoutProperty] == null) {
             layout[axisLayoutProperty] = ChartUtils.makeLayoutAxis(
+              dh,
               axisType,
               theme
             );
@@ -1267,6 +1297,7 @@ class ChartUtils {
           const layoutAxis = layout[axisLayoutProperty];
           if (layoutAxis != null) {
             ChartUtils.updateLayoutAxis(
+              dh,
               layoutAxis,
               axis,
               chartAxisIndex,
@@ -1317,7 +1348,7 @@ class ChartUtils {
       assertNotNull(typeAxes);
       let axisIndex = typeAxes.length;
       // Delete any axes that may no longer exist
-      const axisProperty = ChartUtils.getAxisPropertyName(axisType);
+      const axisProperty = ChartUtils.getAxisPropertyName(dh, axisType);
       if (axisProperty != null) {
         let axisLayoutProperty = ChartUtils.getAxisLayoutProperty(
           axisProperty,
@@ -1354,6 +1385,7 @@ class ChartUtils {
    * @param bounds The bounds of the axes domains
    */
   static updateLayoutAxis(
+    dh: dhType,
     layoutAxisParam: Partial<LayoutAxis>,
     axis: Axis,
     axisIndex: number,
@@ -1386,11 +1418,11 @@ class ChartUtils {
       layoutAxis.type = 'log';
     }
 
-    layoutAxis.side = ChartUtils.getAxisSide(axis.position);
+    layoutAxis.side = ChartUtils.getAxisSide(dh, axis.position);
 
     if (axisIndex > 0) {
       layoutAxis.overlaying =
-        ChartUtils.getAxisPropertyName(axis.type) ?? undefined;
+        ChartUtils.getAxisPropertyName(dh, axis.type) ?? undefined;
 
       const positionAxes = axisPositionMap.get(axis.position) ?? [];
       const sideIndex = positionAxes.indexOf(axis);
@@ -1495,6 +1527,7 @@ class ChartUtils {
    * @param formatterTimeZone the time zone for the formatter
    */
   static createRangeBreakValuesFromHolidays(
+    dh: dhType,
     holidays: Holiday[],
     calendarTimeZone: TimeZone,
     formatterTimeZone?: TimeZone
@@ -1516,6 +1549,7 @@ class ChartUtils {
       } else {
         fullHolidays.push(
           ChartUtils.createFullHoliday(
+            dh,
             holiday,
             calendarTimeZone,
             formatterTimeZone
@@ -1534,11 +1568,13 @@ class ChartUtils {
    * @param formatterTimeZone the time zone for the formatter
    */
   static createFullHoliday(
+    dh: dhType,
     holiday: Holiday,
     calendarTimeZone: TimeZone,
     formatterTimeZone?: TimeZone
   ): string {
     return ChartUtils.adjustDateForTimeZone(
+      dh,
       `${holiday.date.toString()} 00:00:00.000000`,
       calendarTimeZone,
       formatterTimeZone
@@ -1583,6 +1619,7 @@ class ChartUtils {
       if (startClose !== endClose) {
         const values = [
           ChartUtils.adjustDateForTimeZone(
+            dh,
             `${dateString} ${startClose}:00.000000`,
             calendarTimeZone,
             formatterTimeZone
@@ -1606,6 +1643,7 @@ class ChartUtils {
    * @param formatterTimeZone the time zone for the formatter
    */
   static adjustDateForTimeZone(
+    dh: dhType,
     dateString: string,
     calendarTimeZone: TimeZone,
     formatterTimeZone?: TimeZone
@@ -1615,7 +1653,9 @@ class ChartUtils {
       formatterTimeZone.standardOffset !== calendarTimeZone.standardOffset
     ) {
       return ChartUtils.unwrapValue(
+        dh,
         ChartUtils.wrapValue(
+          dh,
           dateString,
           BUSINESS_COLUMN_TYPE,
           calendarTimeZone
@@ -1649,7 +1689,7 @@ class ChartUtils {
    * Unwraps a value provided from API to a value plotly can understand
    * Eg. Unwraps DateWrapper, LongWrapper objects.
    */
-  static unwrapValue(value: unknown, timeZone?: TimeZone): unknown {
+  static unwrapValue(dh: dhType, value: unknown, timeZone?: TimeZone): unknown {
     if (value != null) {
       if (isDateWrapper(value)) {
         return dh.i18n.DateTimeFormat.format(
@@ -1674,6 +1714,7 @@ class ChartUtils {
    * @param timeZone The time zone if applicable
    */
   static wrapValue(
+    dh: dhType,
     value: unknown,
     columnType: string,
     timeZone: TimeZone | null = null
@@ -1714,6 +1755,7 @@ class ChartUtils {
   }
 
   static makeLayoutAxis(
+    dh: dhType,
     type: AxisType,
     theme = ChartTheme
   ): Partial<LayoutAxis> {
@@ -1770,7 +1812,7 @@ class ChartUtils {
     return colorway;
   }
 
-  static makeDefaultLayout(theme = ChartTheme): Partial<Layout> {
+  static makeDefaultLayout(dh: dhType, theme = ChartTheme): Partial<Layout> {
     const layout: Partial<Layout> = {
       ...theme,
       autosize: true,
@@ -1792,8 +1834,8 @@ class ChartUtils {
         },
       },
       margin: { ...ChartUtils.DEFAULT_MARGIN },
-      xaxis: ChartUtils.makeLayoutAxis(dh.plot.AxisType.X, theme),
-      yaxis: ChartUtils.makeLayoutAxis(dh.plot.AxisType.Y, theme),
+      xaxis: ChartUtils.makeLayoutAxis(dh, dh.plot.AxisType.X, theme),
+      yaxis: ChartUtils.makeLayoutAxis(dh, dh.plot.AxisType.Y, theme),
     };
     layout.datarevision = 0;
     return layout;
@@ -1838,6 +1880,7 @@ class ChartUtils {
    * @param settings.type The plot style for this figure
    */
   static makeFigureSettings(
+    dh: dhType,
     settings: ChartModelSettings,
     table: TableTemplate
   ): {

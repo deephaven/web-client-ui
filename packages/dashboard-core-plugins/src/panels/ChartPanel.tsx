@@ -26,7 +26,8 @@ import {
   DehydratedQuickFilter,
   LegacyDehydratedSort,
 } from '@deephaven/iris-grid';
-import dh, {
+import {
+  dhType,
   FigureDescriptor,
   SeriesPlotStyle,
   TableTemplate,
@@ -128,6 +129,7 @@ export interface ChartPanelProps {
   glContainer: Container;
   glEventHub: EventEmitter;
 
+  dh: dhType;
   metadata: ChartPanelMetadata;
   /** Function to build the ChartModel used by this ChartPanel. Can return a promise. */
   makeModel: () => Promise<ChartModel>;
@@ -455,6 +457,8 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
 
   startListeningToSource(table: TableTemplate): void {
     log.debug('startListeningToSource', table);
+    // TODO: unsub/resub on change
+    const { dh } = this.props;
 
     table.addEventListener(
       dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
@@ -472,6 +476,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
 
   stopListeningToSource(table: TableTemplate): void {
     log.debug('stopListeningToSource', table);
+    const { dh } = this.props;
 
     table.removeEventListener(
       dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
@@ -607,7 +612,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
   }
 
   updateModelFromSource(): void {
-    const { metadata, source } = this.props;
+    const { metadata, source, dh } = this.props;
     const { isLinked, model } = this.state;
     if (!isLinked || !model || !source) {
       log.debug2('updateModelFromSource ignoring', isLinked, model, source);
@@ -622,6 +627,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
         .add(
           dh.plot.Figure.create(
             (ChartUtils.makeFigureSettings(
+              dh,
               settings,
               source
             ) as unknown) as FigureDescriptor
