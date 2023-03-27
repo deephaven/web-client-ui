@@ -1005,7 +1005,7 @@ class IrisGridRenderer extends GridRenderer {
     height: number | null;
   } {
     const NULL_POSITION = { left: null, top: null, width: null, height: null };
-    if (mouseX == null || mouseY == null || !metrics) {
+    if (mouseX == null || mouseY == null || metrics == null) {
       return NULL_POSITION;
     }
     const { rowHeight, columnWidth, left, top } = GridUtils.getCellInfoFromXY(
@@ -1014,9 +1014,10 @@ class IrisGridRenderer extends GridRenderer {
       metrics
     );
 
-    assertNotNull(left);
-    assertNotNull(columnWidth);
-    assertNotNull(top);
+    if (left == null || columnWidth == null || top == null) {
+      return NULL_POSITION;
+    }
+
     const { width: gridWidth, verticalBarWidth } = metrics;
     const { cellHorizontalPadding } = theme;
 
