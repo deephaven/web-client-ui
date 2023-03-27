@@ -150,3 +150,30 @@ describe('Mac shortcuts', () => {
     );
   });
 });
+
+describe('provideLinks', () => {
+  it('it should get a provideLinks function which should return an object with the links', () => {
+    const { provideLinks } = MonacoUtils;
+    const mockModel: monaco.editor.ITextModel = ({
+      getLineCount: jest.fn(() => 2),
+      getLineContent: jest.fn(lineNumber =>
+        lineNumber === 1
+          ? 'google.com http://www.example.com/'
+          : 'mail@gmail.com'
+      ),
+    } as unknown) as monaco.editor.ITextModel;
+
+    const expectedValue = {
+      links: [
+        { url: 'http://google.com', range: new monaco.Range(1, 1, 1, 11) },
+        {
+          url: 'http://www.example.com/',
+          range: new monaco.Range(1, 12, 1, 35),
+        },
+        { url: 'mailto:mail@gmail.com', range: new monaco.Range(2, 1, 2, 15) },
+      ],
+    };
+
+    expect(provideLinks(mockModel)).toEqual(expectedValue);
+  });
+});
