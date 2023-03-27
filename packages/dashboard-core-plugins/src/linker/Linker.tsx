@@ -748,4 +748,6 @@ export class Linker extends Component<LinkerProps, LinkerState> {
   }
 }
 
-export default connector(Linker);
+const ConnectedLinker = connector(Linker);
+
+export default ConnectedLinker;

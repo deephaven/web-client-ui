@@ -247,6 +247,8 @@ const mapStateToProps = (
   };
 };
 
-export default connect(mapStateToProps, null, null, { forwardRef: true })(
-  InputFilterPanel
-);
+const ConnectedInputFilterPanel = connect(mapStateToProps, null, null, {
+  forwardRef: true,
+})(InputFilterPanel);
+
+export default ConnectedInputFilterPanel;

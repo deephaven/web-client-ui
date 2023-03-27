@@ -90,8 +90,10 @@ class IrisGridColumnSelectMouseHandler extends GridMouseHandler {
 
     if (this.isValidColumn(tableColumn)) {
       this.cursor = columnAllowedCursor;
+      this.irisGrid.setState({ hoverSelectColumn: column });
     } else {
       this.cursor = columnNotAllowedCursor;
+      this.irisGrid.setState({ hoverSelectColumn: null });
     }
 
     // don't block wheel event from scrolling

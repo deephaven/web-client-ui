@@ -1,8 +1,9 @@
 import React from 'react';
 import { render, RenderResult, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import Aggregations, { Aggregation, SELECTABLE_OPTIONS } from './Aggregations';
+import Aggregations, { Aggregation } from './Aggregations';
 import AggregationOperation from './AggregationOperation';
+import { SELECTABLE_OPTIONS } from './AggregationUtils';
 
 function makeAggregation({
   operation = AggregationOperation.SUM,

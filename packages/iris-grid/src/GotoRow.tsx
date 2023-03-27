@@ -22,7 +22,7 @@ import IrisGridProxyModel from './IrisGridProxyModel';
 import IrisGridBottomBar from './IrisGridBottomBar';
 import { ColumnName } from './CommonTypes';
 
-export function isIrisGridProxyModel(
+function isIrisGridProxyModel(
   model: IrisGridModel
 ): model is IrisGridProxyModel {
   return (model as IrisGridProxyModel).model !== undefined;
@@ -46,6 +46,7 @@ interface GotoRowProps {
 
   gotoValueSelectedColumnName: ColumnName;
   gotoValue: string;
+  gotoValueFilter: FilterTypeValue;
   onGotoValueSelectedColumnNameChanged: (columnName: ColumnName) => void;
   onGotoValueSelectedFilterChanged: (filter: FilterTypeValue) => void;
   onGotoValueChanged: (input: string) => void;
@@ -67,6 +68,7 @@ function GotoRow({
   onClose,
   gotoValueSelectedColumnName,
   gotoValue,
+  gotoValueFilter,
   onGotoValueSelectedColumnNameChanged,
   onGotoValueSelectedFilterChanged,
   onGotoValueChanged,
@@ -100,11 +102,11 @@ function GotoRow({
     }
   };
 
-  const handleGotoValueKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+  const handleGotoValueKeySubmit = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.stopPropagation();
       e.preventDefault();
-      onGotoValueSubmit();
+      onGotoValueSubmit(e.shiftKey);
     }
   };
 
@@ -163,6 +165,7 @@ function GotoRow({
         return (
           <div className="goto-value-date-time-input">
             <DateTimeInput
+              ref={gotoValueInputRef}
               className={classNames(
                 'form-control',
                 'goto-value-date-time-input',
@@ -172,6 +175,7 @@ function GotoRow({
               )}
               defaultValue={gotoValue}
               onChange={onGotoValueInputChanged}
+              onSubmit={handleGotoValueKeySubmit}
             />
           </div>
         );
@@ -186,6 +190,7 @@ function GotoRow({
                     event.target.value as FilterTypeValue
                   );
                 }}
+                value={gotoValueFilter}
               >
                 <option key={FilterType.eq} value={FilterType.eq}>
                   Equals
@@ -207,7 +212,7 @@ function GotoRow({
                 className={classNames('form-control', {
                   'is-invalid': gotoValueError !== '',
                 })}
-                onKeyDown={handleGotoValueKeyDown}
+                onKeyDown={handleGotoValueKeySubmit}
                 placeholder="value"
                 onChange={e => onGotoValueInputChanged(e.target.value)}
                 value={gotoValue}
@@ -241,7 +246,7 @@ function GotoRow({
             <input
               ref={gotoValueInputRef}
               className="form-control"
-              onKeyDown={handleGotoValueKeyDown}
+              onKeyDown={handleGotoValueKeySubmit}
               placeholder="value"
               onChange={e => onGotoValueInputChanged(e.target.value)}
               value={gotoValue}

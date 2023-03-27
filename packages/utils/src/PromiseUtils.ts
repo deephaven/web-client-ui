@@ -56,4 +56,21 @@ export class PromiseUtils {
   static isTimedOut(error: unknown): boolean {
     return error instanceof TimeoutError;
   }
+
+  /**
+   * Wrap a callback call in a Promise + setTimeout.
+   * @param timeoutMs
+   * @param callback
+   */
+  static withTimeout<T>(timeoutMs: number, callback: () => T): Promise<T> {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        try {
+          resolve(callback());
+        } catch (err) {
+          reject(err);
+        }
+      }, timeoutMs);
+    });
+  }
 }

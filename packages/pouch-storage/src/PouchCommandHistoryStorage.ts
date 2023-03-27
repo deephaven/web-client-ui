@@ -10,22 +10,28 @@ import {
   StorageListenerRemover,
 } from '@deephaven/storage';
 import PouchCommandHistoryTable from './PouchCommandHistoryTable';
+import PouchCommandHistoryCache from './PouchCommandHistoryCache';
 
 const log = Log.module('PouchCommandHistoryStorage');
 
 export class PouchCommandHistoryStorage implements CommandHistoryStorage {
+  private cache = new PouchCommandHistoryCache();
+
   private updateTableMap = new Map<string, PouchCommandHistoryTable>();
 
   private getUpdateTable(language: string): PouchCommandHistoryTable {
     if (!this.updateTableMap.has(language)) {
-      this.updateTableMap.set(language, new PouchCommandHistoryTable(language));
+      this.updateTableMap.set(
+        language,
+        new PouchCommandHistoryTable(language, this.cache)
+      );
     }
 
     return this.updateTableMap.get(language) as PouchCommandHistoryTable;
   }
 
   async getTable(language: string): Promise<PouchCommandHistoryTable> {
-    return new PouchCommandHistoryTable(language);
+    return new PouchCommandHistoryTable(language, this.cache);
   }
 
   async addItem(

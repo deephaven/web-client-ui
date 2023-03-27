@@ -12,7 +12,7 @@ import { Table, VariableDefinition } from '@deephaven/jsapi-shim';
 import shortid from 'shortid';
 import { IrisGridPanel, IrisGridPanelProps } from './panels';
 
-export const SUPPORTED_TYPES: string[] = [
+const SUPPORTED_TYPES: string[] = [
   dh.VariableType.TABLE,
   dh.VariableType.TREETABLE,
   dh.VariableType.HIERARCHICALTABLE,

@@ -238,6 +238,8 @@ const mapStateToProps = (
   };
 };
 
-export default connect(mapStateToProps, null, null, { forwardRef: true })(
-  CommandHistoryPanel
-);
+const ConnectedCommandHistoryPanel = connect(mapStateToProps, null, null, {
+  forwardRef: true,
+})(CommandHistoryPanel);
+
+export default ConnectedCommandHistoryPanel;

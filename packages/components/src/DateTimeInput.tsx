@@ -1,8 +1,9 @@
-import React, { useCallback, useState } from 'react';
+import React, { KeyboardEvent, useCallback, useState } from 'react';
 import classNames from 'classnames';
 import Log from '@deephaven/log';
 import MaskedInput, { SelectionSegment } from './MaskedInput';
 import { getNextSegmentValue } from './DateInputUtils';
+import { addSeparators } from './DateTimeInputUtils';
 
 const log = Log.module('DateTimeInput');
 
@@ -23,10 +24,11 @@ type DateTimeInputProps = {
   defaultValue?: string;
   onFocus?(): void;
   onBlur?(): void;
+  onSubmit?(event?: KeyboardEvent<HTMLInputElement>): void;
   'data-testid'?: string;
 };
 
-export function fixIncompleteValue(value: string): string {
+function fixIncompleteValue(value: string): string {
   if (value != null && value.length >= DATE_VALUE_STRING.length) {
     return `${value.substring(0, DATE_VALUE_STRING.length)}${value
       .substring(DATE_VALUE_STRING.length)
@@ -35,14 +37,9 @@ export function fixIncompleteValue(value: string): string {
   return value;
 }
 
-export function addSeparators(value: string): string {
-  const dateTimeMillis = value.substring(0, 23);
-  const micros = value.substring(23, 26);
-  const nanos = value.substring(26);
-  return [dateTimeMillis, micros, nanos].filter(v => v !== '').join('\u200B');
+function removeSeparators(value: string): string {
+  return value.replace(/\u200B/g, '');
 }
-
-const removeSeparators = (value: string) => value.replace(/\u200B/g, '');
 
 const EXAMPLES = [addSeparators(DEFAULT_VALUE_STRING)];
 
@@ -54,6 +51,7 @@ const DateTimeInput = React.forwardRef<HTMLInputElement, DateTimeInputProps>(
       defaultValue = '',
       onFocus = () => undefined,
       onBlur = () => undefined,
+      onSubmit,
       'data-testid': dataTestId,
     } = props;
     const [value, setValue] = useState(
@@ -90,6 +88,7 @@ const DateTimeInput = React.forwardRef<HTMLInputElement, DateTimeInputProps>(
           getNextSegmentValue={getNextSegmentValue}
           onChange={handleChange}
           onSelect={setSelection}
+          onSubmit={onSubmit}
           pattern={FULL_DATE_PATTERN}
           placeholder={FULL_DATE_FORMAT}
           selection={selection}

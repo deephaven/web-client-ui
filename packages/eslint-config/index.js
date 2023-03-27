@@ -5,7 +5,14 @@ module.exports = {
     es6: true,
   },
   extends: ['react-app', 'airbnb', 'plugin:react/recommended', 'prettier'],
-  plugins: ['es', 'prettier', 'react', 'react-hooks', 'import'],
+  plugins: [
+    'es',
+    'prettier',
+    'react',
+    'react-hooks',
+    'import',
+    'react-refresh',
+  ],
   rules: {
     'prettier/prettier': ['error'],
     'react/forbid-prop-types': 'off',
@@ -45,6 +52,7 @@ module.exports = {
     'react/default-props-match-prop-types': 'off',
     'react/require-default-props': 'off',
     'react/jsx-no-bind': 'off',
+    'react-refresh/only-export-components': 'warn',
   },
   parserOptions: {
     ecmaFeatures: {
