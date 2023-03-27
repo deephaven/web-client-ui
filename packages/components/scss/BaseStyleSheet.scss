@@ -683,7 +683,7 @@ input[type='number']::-webkit-inner-spin-button {
   }
 
   .monaco-hover hr {
-    margin-bottom: 4px !important;
+    margin-bottom: 4px !important; // Monaco sets this to -4 which causes items below a dividing line to collide w/ the line
   }
 
   .parameter-hints-widget {
