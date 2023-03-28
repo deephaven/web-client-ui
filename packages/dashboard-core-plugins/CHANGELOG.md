@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.33.0](https://github.com/deephaven/web-client-ui/compare/v0.32.0...v0.33.0) (2023-03-28)
+
+### Code Refactoring
+
+- Fix fast refresh invalidations ([#1150](https://github.com/deephaven/web-client-ui/issues/1150)) ([2606826](https://github.com/deephaven/web-client-ui/commit/26068267c2cd67bc971b9537f8ce4108372167f5)), closes [#727](https://github.com/deephaven/web-client-ui/issues/727)
+- TypeScript Type Improvements ([#1056](https://github.com/deephaven/web-client-ui/issues/1056)) ([0be0850](https://github.com/deephaven/web-client-ui/commit/0be0850a25e422150c61fbb7a6eff94614546f90)), closes [#1122](https://github.com/deephaven/web-client-ui/issues/1122)
+
+### BREAKING CHANGES
+
+- Renamed `renderFileListItem` to `FileListItem`.
+  Renamed `RenderFileListItemProps` to `FileListItemProps`.
+  Removed exports for `ConsolePlugin.assertIsConsolePluginProps`,
+  `GridPlugin.SUPPORTED_TYPES`, `FileList.getPathFromItem`,
+  `FileList.DRAG_HOVER_TIMEOUT`, `FileList.getItemIcon`,
+  `Grid.directionForKey`, `GotoRow.isIrisGridProxyModel`, and
+  `Aggregations.SELECTABLE_OPTIONS`. These were all only being consumed
+  within their own file and are not consumed in enterprise
+- Selector Type removed from redux
+
 # [0.32.0](https://github.com/deephaven/web-client-ui/compare/v0.31.1...v0.32.0) (2023-03-10)
 
 ### Code Refactoring
