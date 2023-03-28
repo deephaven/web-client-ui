@@ -13,15 +13,8 @@ jest.mock('@deephaven/console', () => ({
   default: props => mockConsole(props),
 }));
 
-function makeSession(): IdeSession {
-  return ({
-    addEventListener: jest.fn(),
-    subscribeToFieldUpdates: jest.fn(() => () => null),
-    removeEventListener: jest.fn(),
-    getTable: jest.fn(),
-    getObject: jest.fn(),
-    runCode: jest.fn(),
-  } as unknown) as IdeSession;
+function makeSession(language = 'TEST_LANG'): IdeSession {
+  return (new dh.IdeSession(language) as unknown) as IdeSession;
 }
 
 function makeConnection({

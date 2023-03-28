@@ -1042,7 +1042,12 @@ export interface StorageService {
   createDirectory(path: string): Promise<void>;
 }
 
-export interface CoreClientContructor {
+export interface CoreClientContructor extends Evented {
+  EVENT_CONNECT: string;
+  EVENT_DISCONNECT: string;
+  EVENT_RECONNECT: string;
+  EVENT_RECONNECT_AUTH_FAILED: string;
+  EVENT_REFRESH_TOKEN_UPDATED: string;
   LOGIN_TYPE_ANONYMOUS: string;
   new (serverUrl: string): CoreClient;
 }
