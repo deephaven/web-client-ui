@@ -31,12 +31,13 @@ class FigureChartModel extends ChartModel {
   static ADD_SERIES_DEBOUNCE = 50;
 
   /**
+   * TODO: jsdoc
    * @param figure The figure object created by the API
    * @param settings Chart settings
    */
   constructor(
-    figure: Figure,
     dh: dhType,
+    figure: Figure,
     settings: Partial<ChartModelSettings> = {},
     theme: typeof ChartTheme = ChartTheme
   ) {
@@ -59,7 +60,7 @@ class FigureChartModel extends ChartModel {
     this.data = [];
     const template = {
       data: {},
-      layout: ChartUtils.makeDefaultLayout(dh, theme),
+      layout: this.getChartUtils().makeDefaultLayout(theme),
     };
     this.layout = {
       grid: {
@@ -177,8 +178,7 @@ class FigureChartModel extends ChartModel {
     const { dh } = this;
     const axisTypeMap: AxisTypeMap = ChartUtils.groupArray(axes, 'type');
 
-    const seriesData = ChartUtils.makeSeriesDataFromSeries(
-      dh,
+    const seriesData = this.getChartUtils().makeSeriesDataFromSeries(
       series,
       axisTypeMap,
       ChartUtils.getSeriesVisibility(series.name, this.settings),
@@ -365,7 +365,7 @@ class FigureChartModel extends ChartModel {
     (columnType: string, formatter: Formatter | undefined) => {
       const timeZone = this.getTimeZone(columnType, formatter);
       return (value: unknown) =>
-        ChartUtils.unwrapValue(this.dh, value, timeZone);
+        this.getChartUtils().unwrapValue(value, timeZone);
     }
   );
 
@@ -374,7 +374,7 @@ class FigureChartModel extends ChartModel {
     (columnType: string, formatter: Formatter | undefined) => {
       const timeZone = this.getTimeZone(columnType, formatter);
       return (value: unknown) =>
-        ChartUtils.wrapValue(this.dh, value, columnType, timeZone);
+        this.getChartUtils().wrapValue(value, columnType, timeZone);
     }
   );
 
@@ -596,8 +596,7 @@ class FigureChartModel extends ChartModel {
   updateAxisPositions(): void {
     const plotWidth = this.getPlotWidth();
     const plotHeight = this.getPlotHeight();
-    ChartUtils.updateFigureAxes(
-      this.dh,
+    this.getChartUtils().updateFigureAxes(
       this.layout,
       this.figure,
       chart => this.getAxisRangeParser(chart, this.formatter),
@@ -615,8 +614,7 @@ class FigureChartModel extends ChartModel {
       return;
     }
 
-    const axisFormats = ChartUtils.getAxisFormats(
-      this.dh,
+    const axisFormats = this.getChartUtils().getAxisFormats(
       this.figure,
       this.formatter
     );
@@ -648,10 +646,12 @@ class FigureChartModel extends ChartModel {
     dataArray: unknown[]
   ): void {
     const { name, plotStyle } = series;
-    const { dh } = this;
 
     const seriesData = this.seriesDataMap.get(name);
-    const property = ChartUtils.getPlotlyProperty(dh, plotStyle, sourceType);
+    const property = this.getChartUtils().getPlotlyProperty(
+      plotStyle,
+      sourceType
+    );
 
     if (seriesData) {
       set(seriesData, property, dataArray);

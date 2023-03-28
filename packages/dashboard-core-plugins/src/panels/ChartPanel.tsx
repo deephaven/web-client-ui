@@ -626,8 +626,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
       this.pending
         .add(
           dh.plot.Figure.create(
-            (ChartUtils.makeFigureSettings(
-              dh,
+            (new ChartUtils(dh).makeFigureSettings(
               settings,
               source
             ) as unknown) as FigureDescriptor

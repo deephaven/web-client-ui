@@ -68,7 +68,7 @@ export const createChartModel = async (
     };
     const figure = await connection.getObject(definition);
 
-    return ChartModelFactory.makeModel(settings, figure, dh);
+    return ChartModelFactory.makeModel(dh, settings, figure);
   }
 
   const definition = {
@@ -86,7 +86,7 @@ export const createChartModel = async (
   );
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return ChartModelFactory.makeModelFromSettings(settings as any, table, dh);
+  return ChartModelFactory.makeModelFromSettings(dh, settings as any, table);
 };
 
 export const createGridModel = async (

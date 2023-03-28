@@ -68,9 +68,9 @@ function App(): JSX.Element {
           log.debug(`Creating model...`);
 
           const newModel = await ChartModelFactory.makeModel(
+            dh,
             undefined,
-            figure,
-            dh
+            figure
           );
 
           setModel(newModel);
