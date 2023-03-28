@@ -2,6 +2,16 @@ import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import {
+  AuthPlugin,
+  AuthPluginComponent,
+  isAuthPlugin,
+} from '@deephaven/auth-plugin';
+import {
+  AuthPluginAnonymous,
+  AuthPluginParent,
+  AuthPluginPsk,
+} from '@deephaven/auth-core-plugins';
+import {
   LoadingOverlay,
   Shortcut,
   ShortcutRegistry,
@@ -151,7 +161,7 @@ function AppInit(props: AppInitProps) {
   // Disconnect error may be temporary, so just show an error overlaid on the app
   const [isFontLoading, setIsFontLoading] = useState(true);
   const [client, setClient] = useState<CoreClient>();
-  const [LoginPlugin, setLoginPlugin] = useState<typeof React.Component>();
+  const [LoginPlugin, setLoginPlugin] = useState<AuthPluginComponent>();
   const [authConfigValues, setAuthConfigValues] = useState(
     new Map<string, string>()
   );
@@ -168,33 +178,49 @@ function AppInit(props: AppInitProps) {
       const newAuthConfigValues = new Map(
         await newClient.getAuthConfigValues()
       );
-      // TODO: Should we be filtering login plugins by the supported types?
-      // const authHandlers = newAuthConfigValues.get('AuthHandlers').split(',')
-      console.log('MJB authConfigValues', newAuthConfigValues);
+      const newAuthHandlers =
+        newAuthConfigValues.get('AuthHandlers')?.split(',') ?? [];
       const newPlugins = await loadPlugins();
-      const loginPlugins = [...newPlugins.entries()].filter(
-        ([, plugin]: [string, { AuthPlugin?: typeof React.Component }]) =>
-          plugin.AuthPlugin != null
-      ) as [string, { AuthPlugin: typeof React.Component }][];
+      const authPlugins = [
+        ...newPlugins.entries(),
+      ].filter(([, plugin]: [string, { AuthPlugin?: AuthPlugin }]) =>
+        isAuthPlugin(plugin.AuthPlugin)
+      ) as [string, { AuthPlugin: AuthPlugin }][];
 
-      if (loginPlugins.length === 0) {
+      // Add all the core plugins in priority
+      authPlugins.push(['AuthPluginPsk', { AuthPlugin: AuthPluginPsk }]);
+      authPlugins.push(['AuthPluginParent', { AuthPlugin: AuthPluginParent }]);
+      authPlugins.push([
+        'AuthPluginAnonymous',
+        { AuthPlugin: AuthPluginAnonymous },
+      ]);
+
+      const availableAuthPlugins = authPlugins.filter(([name, plugin]) =>
+        plugin.AuthPlugin.isAvailable(
+          newClient,
+          newAuthHandlers,
+          newAuthConfigValues
+        )
+      );
+
+      if (availableAuthPlugins.length === 0) {
         throw new Error(
-          'No login plugins found, please register a login plugin'
+          `No login plugins found, please register a login plugin for auth handlers: ${newAuthHandlers}`
         );
-      } else if (loginPlugins.length > 1) {
+      } else if (availableAuthPlugins.length > 1) {
         log.warn(
-          'More than one login plugin found, will use the first one: ',
-          loginPlugins.map(([name]) => name).join(', ')
+          'More than one login plugin available, will use the first one: ',
+          availableAuthPlugins.map(([name]) => name).join(', ')
         );
       }
 
-      const [loginPluginName, NewLoginPlugin] = loginPlugins[0];
+      const [loginPluginName, NewLoginPlugin] = availableAuthPlugins[0];
       log.info('Using LoginPlugin', loginPluginName);
 
       setAuthConfigValues(newAuthConfigValues);
       setPlugins(newPlugins);
       setClient(newClient);
-      setLoginPlugin(() => NewLoginPlugin.AuthPlugin);
+      setLoginPlugin(() => NewLoginPlugin.AuthPlugin.Component);
     } catch (e) {
       newClient.disconnect();
       log.error(e);
@@ -353,7 +379,7 @@ function AppInit(props: AppInitProps) {
   );
 
   const isPluginLoading = LoginPlugin == null || isFontLoading;
-  const isPluginLoaded = !isPluginLoading && error == null;
+  const isPluginLoaded = client != null && !isPluginLoading && error == null;
   const isAppLoading =
     (workspace == null && error == null) ||
     LoginPlugin == null ||

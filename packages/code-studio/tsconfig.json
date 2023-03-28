@@ -10,6 +10,12 @@
   "exclude": ["node_modules", "src/**/*.test.*", "src/**/__mocks__/*"],
   "references": [
     {
+      "path": "../auth-plugin"
+    },
+    {
+      "path": "../auth-core-plugins"
+    },
+    {
       "path": "../chart"
     },
     {

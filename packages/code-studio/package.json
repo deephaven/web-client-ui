@@ -11,6 +11,8 @@
     "directory": "packages/code-studio"
   },
   "dependencies": {
+    "@deephaven/auth-plugin": "file:../auth-plugin",
+    "@deephaven/auth-core-plugins": "file:../auth-core-plugins",
     "@deephaven/chart": "file:../chart",
     "@deephaven/components": "file:../components",
     "@deephaven/console": "file:../console",
