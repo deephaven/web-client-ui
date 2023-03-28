@@ -10,7 +10,7 @@ class MockPath2D {
   addPath = jest.fn();
 }
 
-window.Path2D = MockPath2D;
+window.Path2D = (MockPath2D as unknown) as new () => Path2D;
 
 const VIEW_SIZE = 5000;
 
@@ -61,7 +61,8 @@ function makeComponent(
       createNodeMock,
     }
   );
-  return testRenderer.getInstance();
+  return testRenderer.getInstance() as TestRenderer.ReactTestInstance &
+    IrisGrid;
 }
 
 function keyDown(key, component, extraArgs?) {
@@ -192,4 +193,16 @@ it('handles undefined operator, should default to eq', () => {
     expect.anything(),
     'any'
   );
+});
+
+it('should set gotoValueSelectedColumnName to empty string if no columns are given', () => {
+  const component = makeComponent(
+    IrisGridTestUtils.makeModel(
+      IrisGridTestUtils.makeTable({
+        columns: [],
+      })
+    )
+  );
+
+  expect(component.state.gotoValueSelectedColumnName).toEqual('');
 });
