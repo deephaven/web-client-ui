@@ -15,7 +15,7 @@ function getWindowToken(): string {
  * AuthPlugin that tries to login using a pre-shared key.
  * Add the `psk=<token>` parameter to your URL string to set the token.
  */
-export function Component({
+function Component({
   client,
   onSuccess,
   onFailure,
@@ -51,7 +51,7 @@ export function Component({
   );
 }
 
-export const AuthPluginPsk: AuthPlugin = {
+const AuthPluginPsk: AuthPlugin = {
   Component,
   isAvailable: (client, authHandlers, authConfigValues) =>
     authHandlers.includes(AUTH_TYPE),

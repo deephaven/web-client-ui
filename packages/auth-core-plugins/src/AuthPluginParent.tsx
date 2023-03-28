@@ -9,7 +9,7 @@ const log = Log.module('AuthPluginParent');
 /**
  * AuthPlugin that tries to delegate to the parent window for authentication. Fails if there is no parent window.
  */
-export function Component({
+function Component({
   client,
   onSuccess,
   onFailure,
@@ -64,7 +64,7 @@ export function Component({
   );
 }
 
-export const AuthPluginParent: AuthPlugin = {
+const AuthPluginParent: AuthPlugin = {
   Component,
   isAvailable: () => window.opener != null,
 };

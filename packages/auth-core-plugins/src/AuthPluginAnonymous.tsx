@@ -11,7 +11,7 @@ const AUTH_TYPE = 'io.deephaven.auth.AnonymousAuthenticationHandler';
 /**
  * AuthPlugin that tries to login anonymously. Fails if anonymous login fails
  */
-export function Component({
+function Component({
   client,
   onSuccess,
   onFailure,
@@ -43,7 +43,7 @@ export function Component({
   );
 }
 
-export const AuthPluginAnonymous: AuthPlugin = {
+const AuthPluginAnonymous: AuthPlugin = {
   Component,
   isAvailable: (client, authHandlers, authConfigValues) =>
     authHandlers.includes(AUTH_TYPE),
