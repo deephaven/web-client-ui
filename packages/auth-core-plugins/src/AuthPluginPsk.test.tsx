@@ -1,9 +1,8 @@
 import React from 'react';
 import { act, render, screen } from '@testing-library/react';
-import { ApiContext } from '@deephaven/jsapi-bootstrap';
 import { dh } from '@deephaven/jsapi-shim';
-import AuthPluginAnonymous from './AuthPluginAnonymous';
-import { AUTH_HANDLER_TYPE_ANONYMOUS as AUTH_TYPE } from './AuthHandlerTypes';
+import AuthPluginPsk from './AuthPluginPsk';
+import { AUTH_HANDLER_TYPE_PSK as AUTH_TYPE } from './AuthHandlerTypes';
 
 function makeCoreClient() {
   return new dh.CoreClient('wss://test.mockurl.example.com');
@@ -24,19 +23,40 @@ describe('availability tests', () => {
     'returns availability based on auth handlers: %s',
     (authHandlers, result) => {
       expect(
-        AuthPluginAnonymous.isAvailable(client, authHandlers, authConfigValues)
+        AuthPluginPsk.isAvailable(client, authHandlers, authConfigValues)
       ).toBe(result);
     }
   );
 });
 
 function expectLoading() {
-  expect(screen.queryByTestId('auth-anonymous-loading')).not.toBeNull();
+  expect(screen.queryByTestId('auth-psk-loading')).not.toBeNull();
 }
 
 describe('component tests', () => {
   const authConfigValues = new Map();
-  it('attempts to login on mount, calls success', async () => {
+  it('fails if no psk is provided on query URL string', () => {
+    const onSuccess = jest.fn();
+    const onFailure = jest.fn();
+    const mockLogin = jest.fn();
+    const client = makeCoreClient();
+    client.login = mockLogin;
+    render(
+      <AuthPluginPsk.Component
+        authConfigValues={authConfigValues}
+        client={client}
+        onFailure={onFailure}
+        onSuccess={onSuccess}
+      />
+    );
+    expect(onSuccess).not.toHaveBeenCalled();
+    expect(onFailure).toHaveBeenCalled();
+    expect(mockLogin).not.toHaveBeenCalled();
+  });
+
+  it('uses the psk provided on the query URL string', async () => {
+    const mockToken = 'mock-token';
+    window.history.pushState({}, 'Test Title', `/test.html?psk=${mockToken}`);
     const loginPromise = Promise.resolve();
     const onSuccess = jest.fn();
     const onFailure = jest.fn();
@@ -44,57 +64,55 @@ describe('component tests', () => {
     const client = makeCoreClient();
     client.login = mockLogin;
     render(
-      <ApiContext.Provider value={dh}>
-        <AuthPluginAnonymous.Component
-          authConfigValues={authConfigValues}
-          client={client}
-          onFailure={onFailure}
-          onSuccess={onSuccess}
-        />
-      </ApiContext.Provider>
+      <AuthPluginPsk.Component
+        authConfigValues={authConfigValues}
+        client={client}
+        onFailure={onFailure}
+        onSuccess={onSuccess}
+      />
     );
     expectLoading();
     expect(onSuccess).not.toHaveBeenCalled();
     expect(onFailure).not.toHaveBeenCalled();
     expect(mockLogin).toHaveBeenCalledWith(
       expect.objectContaining({
-        type: dh.CoreClient.LOGIN_TYPE_ANONYMOUS,
+        type: AUTH_TYPE,
+        token: mockToken,
       })
     );
-
     await loginPromise;
 
     expect(onSuccess).toHaveBeenCalled();
     expect(onFailure).not.toHaveBeenCalled();
   });
 
-  it('attempts to login on mount, calls failure if login fails', async () => {
-    const error = 'Mock test error';
-    const loginPromise = Promise.reject(error);
+  it('reports failure if the psk provided on the query URL string fails login', async () => {
+    const mockToken = 'mock-token';
+    window.history.pushState({}, 'Test Title', `/test.html?psk=${mockToken}`);
+    const loginError = 'Invalid token';
+    const loginPromise = Promise.reject(loginError);
     const onSuccess = jest.fn();
     const onFailure = jest.fn();
     const mockLogin = jest.fn(() => loginPromise);
     const client = makeCoreClient();
     client.login = mockLogin;
     render(
-      <ApiContext.Provider value={dh}>
-        <AuthPluginAnonymous.Component
-          authConfigValues={authConfigValues}
-          client={client}
-          onFailure={onFailure}
-          onSuccess={onSuccess}
-        />
-      </ApiContext.Provider>
+      <AuthPluginPsk.Component
+        authConfigValues={authConfigValues}
+        client={client}
+        onFailure={onFailure}
+        onSuccess={onSuccess}
+      />
     );
     expectLoading();
     expect(onSuccess).not.toHaveBeenCalled();
     expect(onFailure).not.toHaveBeenCalled();
     expect(mockLogin).toHaveBeenCalledWith(
       expect.objectContaining({
-        type: dh.CoreClient.LOGIN_TYPE_ANONYMOUS,
+        type: AUTH_TYPE,
+        token: mockToken,
       })
     );
-
     await act(async () => {
       try {
         await loginPromise;
@@ -104,6 +122,6 @@ describe('component tests', () => {
     });
 
     expect(onSuccess).not.toHaveBeenCalled();
-    expect(onFailure).toHaveBeenCalledWith(error);
+    expect(onFailure).toHaveBeenCalledWith(loginError);
   });
 });

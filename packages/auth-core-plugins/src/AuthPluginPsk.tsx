@@ -23,6 +23,7 @@ function Component({
   const [error, setError] = useState<unknown>();
   const [token] = useState(() => getWindowToken());
   useEffect(() => {
+    let isCanceled = false;
     async function login() {
       try {
         if (!token) {
@@ -32,18 +33,30 @@ function Component({
         }
         log.info('Logging in with found token...');
         await client.login({ type: AUTH_TYPE, token });
+        if (isCanceled) {
+          log.info('Previous login result canceled');
+          return;
+        }
         log.info('Logged in successfully.');
         onSuccess();
       } catch (e) {
+        if (isCanceled) {
+          log.info('Previous login failure canceled');
+          return;
+        }
         log.error('Unable to login:', e);
         setError(e);
         onFailure(e);
       }
     }
     login();
+    return () => {
+      isCanceled = true;
+    };
   }, [client, onFailure, onSuccess, token]);
   return (
     <LoadingOverlay
+      data-testid="auth-psk-loading"
       isLoading
       isLoaded={false}
       errorMessage={error != null ? `${error}` : null}

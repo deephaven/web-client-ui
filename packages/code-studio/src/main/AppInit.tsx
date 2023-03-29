@@ -175,32 +175,30 @@ function AppInit(props: AppInitProps) {
         navigator.userAgent
       );
 
-      const newAuthConfigValues = new Map(
-        await newClient.getAuthConfigValues()
-      );
+      const [newAuthConfigValues, newPlugins] = await Promise.all([
+        newClient.getAuthConfigValues().then(values => new Map(values)),
+        loadPlugins(),
+      ]);
       const newAuthHandlers =
         newAuthConfigValues.get('AuthHandlers')?.split(',') ?? [];
-      const newPlugins = await loadPlugins();
-      const authPlugins = [
+      // Filter out all the plugins that are auth plugins, and then map them to [pluginName, AuthPlugin] pairs
+      // Uses some pretty disgusting casting, because TypeScript wants to treat it as an (string | AuthPlugin)[] array instead
+      const authPlugins = ([
         ...newPlugins.entries(),
       ].filter(([, plugin]: [string, { AuthPlugin?: AuthPlugin }]) =>
         isAuthPlugin(plugin.AuthPlugin)
-      ) as [string, { AuthPlugin: AuthPlugin }][];
+      ) as [string, { AuthPlugin: AuthPlugin }][]).map(([name, plugin]) => [
+        name,
+        plugin.AuthPlugin,
+      ]) as [string, AuthPlugin][];
 
       // Add all the core plugins in priority
-      authPlugins.push(['AuthPluginPsk', { AuthPlugin: AuthPluginPsk }]);
-      authPlugins.push(['AuthPluginParent', { AuthPlugin: AuthPluginParent }]);
-      authPlugins.push([
-        'AuthPluginAnonymous',
-        { AuthPlugin: AuthPluginAnonymous },
-      ]);
+      authPlugins.push(['AuthPluginPsk', AuthPluginPsk]);
+      authPlugins.push(['AuthPluginParent', AuthPluginParent]);
+      authPlugins.push(['AuthPluginAnonymous', AuthPluginAnonymous]);
 
-      const availableAuthPlugins = authPlugins.filter(([name, plugin]) =>
-        plugin.AuthPlugin.isAvailable(
-          newClient,
-          newAuthHandlers,
-          newAuthConfigValues
-        )
+      const availableAuthPlugins = authPlugins.filter(([name, authPlugin]) =>
+        authPlugin.isAvailable(newClient, newAuthHandlers, newAuthConfigValues)
       );
 
       if (availableAuthPlugins.length === 0) {
@@ -220,7 +218,7 @@ function AppInit(props: AppInitProps) {
       setAuthConfigValues(newAuthConfigValues);
       setPlugins(newPlugins);
       setClient(newClient);
-      setLoginPlugin(() => NewLoginPlugin.AuthPlugin.Component);
+      setLoginPlugin(() => NewLoginPlugin.Component);
     } catch (e) {
       newClient.disconnect();
       log.error(e);
@@ -334,7 +332,7 @@ function AppInit(props: AppInitProps) {
         setUser(user);
         setWorkspaceStorage(workspaceStorage);
         setWorkspace(loadedWorkspace);
-      } catch (e: unknown) {
+      } catch (e) {
         log.error(e);
         setError(e);
       }

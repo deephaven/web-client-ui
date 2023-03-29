@@ -57,6 +57,7 @@ function Component({
   }, [client, onFailure, onSuccess]);
   return (
     <LoadingOverlay
+      data-testid="auth-parent-loading"
       isLoading
       isLoaded={false}
       errorMessage={error != null ? `${error}` : null}
