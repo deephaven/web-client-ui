@@ -1418,6 +1418,12 @@ class IdeSession extends DeephavenObject {
   getCompletionItems() {
     return Promise.resolve([]);
   }
+  getSignatureHelp() {
+    return Promise.resolve([]);
+  }
+  getHover() {
+    return Promise.resolve({});
+  }
   closeDocument() {}
 
   newTable(columnNames, types, data, userTimeZone) {

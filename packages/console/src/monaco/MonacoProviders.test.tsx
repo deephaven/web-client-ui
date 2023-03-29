@@ -47,7 +47,8 @@ it('registers/deregisters completion provider properly', () => {
   expect(disposable.dispose).toHaveBeenCalledTimes(1);
 });
 
-it('provides completion items properly', async () => {
+// Enterprise provides no documentation. Community provides MarkupContent
+it('provides completion items with no documentation object', async () => {
   const disposable = { dispose: jest.fn() };
   const newText = 'test';
   const myRegister = jest.fn(() => disposable);
@@ -92,6 +93,82 @@ it('provides completion items properly', async () => {
   expect(suggestions[0]).toMatchObject({
     insertText: newText,
     label: newText,
+    documentation: undefined,
+  });
+});
+
+it('provides completion items properly with documentation object', async () => {
+  const disposable = { dispose: jest.fn() };
+  const newText = 'test';
+  const myRegister = jest.fn(() => disposable);
+  monaco.languages.registerCompletionItemProvider = myRegister;
+  const items = [
+    {
+      label: newText,
+      kind: 0,
+      textEdit: {
+        range: {
+          start: { line: 5, character: 30 },
+          end: { line: 10, character: 60 },
+        },
+        text: newText,
+      },
+      documentation: {
+        value: 'markdown',
+        kind: 'markdown',
+      },
+    },
+    {
+      label: `${newText}2`,
+      kind: 0,
+      textEdit: {
+        range: {
+          start: { line: 5, character: 30 },
+          end: { line: 10, character: 60 },
+        },
+        text: `${newText}2`,
+      },
+      documentation: {
+        value: 'plaintext',
+        kind: 'plaintext',
+      },
+    },
+  ];
+  const promiseItems = Promise.resolve(items);
+  const language = DEFAULT_LANGUAGE;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const session = new (dh as any).IdeSession(language);
+  session.getCompletionItems = jest.fn(() => promiseItems);
+
+  const model = { uri: { path: 'test' }, getVersionId: jest.fn(() => 1) };
+  makeProviders(language, session, model);
+  const position = { lineNumber: 1, column: 1 };
+  expect(myRegister).toHaveBeenCalledTimes(1);
+  expect.assertions(5);
+
+  const calls: {
+    provideCompletionItems: (
+      model: unknown,
+      position: unknown
+    ) => Promise<{ suggestions: unknown[] }>;
+  }[] = myRegister.mock.calls[0];
+  const fn = calls[1];
+
+  const resultItems = await fn.provideCompletionItems(model, position);
+  expect(session.getCompletionItems).toHaveBeenCalled();
+  const { suggestions } = resultItems;
+  expect(suggestions.length).toBe(items.length);
+  expect(suggestions[0]).toMatchObject({
+    insertText: newText,
+    label: newText,
+    documentation: {
+      value: 'markdown',
+    },
+  });
+  expect(suggestions[1]).toMatchObject({
+    insertText: `${newText}2`,
+    label: `${newText}2`,
+    documentation: 'plaintext',
   });
 });
 
@@ -111,6 +188,24 @@ it('registers/deregisters signature help provider properly', () => {
   wrapper.unmount();
 
   expect(disposable.dispose).toHaveBeenCalledTimes(1);
+});
+
+it('does not register signature help if it is not available', () => {
+  const disposable = { dispose: jest.fn() };
+
+  monaco.languages.registerSignatureHelpProvider = jest.fn(() => disposable);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const session = new (dh as any).IdeSession(DEFAULT_LANGUAGE);
+  session.getSignatureHelp = undefined;
+
+  const wrapper = makeProviders(DEFAULT_LANGUAGE, session);
+
+  expect(monaco.languages.registerSignatureHelpProvider).not.toHaveBeenCalled();
+
+  wrapper.unmount();
+
+  expect(disposable.dispose).not.toHaveBeenCalled();
 });
 
 it('provides signature help properly', async () => {
@@ -187,6 +282,24 @@ it('registers/deregisters hover provider properly', () => {
   wrapper.unmount();
 
   expect(disposable.dispose).toHaveBeenCalledTimes(1);
+});
+
+it('does not register hover if it is not available', () => {
+  const disposable = { dispose: jest.fn() };
+
+  monaco.languages.registerHoverProvider = jest.fn(() => disposable);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const session = new (dh as any).IdeSession(DEFAULT_LANGUAGE);
+  session.getHover = undefined;
+
+  const wrapper = makeProviders(DEFAULT_LANGUAGE, session);
+
+  expect(monaco.languages.registerHoverProvider).not.toHaveBeenCalled();
+
+  wrapper.unmount();
+
+  expect(disposable.dispose).not.toHaveBeenCalled();
 });
 
 it('provides hover info properly', async () => {

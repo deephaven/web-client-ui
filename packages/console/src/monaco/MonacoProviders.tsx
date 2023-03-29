@@ -4,7 +4,7 @@
 import { PureComponent } from 'react';
 import * as monaco from 'monaco-editor';
 import Log from '@deephaven/log';
-import { IdeSession } from '@deephaven/jsapi-shim';
+import { DocumentRange, IdeSession, Position } from '@deephaven/jsapi-shim';
 
 const log = Log.module('MonacoCompletionProvider');
 
@@ -23,10 +23,11 @@ class MonacoProviders extends PureComponent<
 > {
   /**
    * Converts LSP CompletionItemKind to Monaco CompletionItemKind
+   * https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItemKind
    * @param kind The LSP kind
    * @returns Monaco kind
    */
-  static lspToMonacoKind(kind: number): number {
+  static lspToMonacoKind(kind: number | undefined): number {
     const monacoKinds = monaco.languages.CompletionItemKind;
     switch (kind) {
       case 1:
@@ -84,6 +85,40 @@ class MonacoProviders extends PureComponent<
     }
   }
 
+  /**
+   * Converts an LSP document range to a monaco range
+   * Accounts for LSP indexing from 0 and monaco indexing from 1
+   *
+   * @param range The LSP document range to convert
+   * @returns The corresponding monaco range
+   */
+  static lspToMonacoRange(range: DocumentRange): monaco.IRange {
+    const { start, end } = range;
+
+    // Monaco expects the columns/ranges to start at 1. LSP starts at 0
+    return {
+      startLineNumber: start.line + 1,
+      startColumn: start.character + 1,
+      endLineNumber: end.line + 1,
+      endColumn: end.character + 1,
+    };
+  }
+
+  /**
+   * Converts a monaco position to an LSP position
+   * Accounts for LSP indexing from 0 and monaco indexing from 1
+   *
+   * @param position The monaco position
+   * @returns The corresponding LSP position
+   */
+  static monacoToLspPosition(position: monaco.IPosition): Position {
+    // Monaco 1-indexes Position. LSP 0-indexes Position
+    return {
+      line: position.lineNumber - 1,
+      character: position.column - 1,
+    };
+  }
+
   constructor(props: MonacoProviderProps) {
     super(props);
 
@@ -93,30 +128,34 @@ class MonacoProviders extends PureComponent<
   }
 
   componentDidMount(): void {
-    const { language } = this.props;
+    const { language, session } = this.props;
 
     this.registeredCompletionProvider = monaco.languages.registerCompletionItemProvider(
-      language ?? '',
+      language,
       {
         provideCompletionItems: this.handleCompletionRequest,
-        triggerCharacters: ['.'],
+        triggerCharacters: ['.', '"', "'", '/'],
       }
     );
 
-    this.registeredSignatureProvider = monaco.languages.registerSignatureHelpProvider(
-      language ?? '',
-      {
-        provideSignatureHelp: this.handleSignatureRequest,
-        signatureHelpTriggerCharacters: ['(', ','],
-      }
-    );
+    if (session.getSignatureHelp) {
+      this.registeredSignatureProvider = monaco.languages.registerSignatureHelpProvider(
+        language,
+        {
+          provideSignatureHelp: this.handleSignatureRequest,
+          signatureHelpTriggerCharacters: ['(', ','],
+        }
+      );
+    }
 
-    this.registeredHoverProvider = monaco.languages.registerHoverProvider(
-      language ?? '',
-      {
-        provideHover: this.handleHoverRequest,
-      }
-    );
+    if (session.getHover) {
+      this.registeredHoverProvider = monaco.languages.registerHoverProvider(
+        language,
+        {
+          provideHover: this.handleHoverRequest,
+        }
+      );
+    }
   }
 
   componentWillUnmount(): void {
@@ -146,22 +185,17 @@ class MonacoProviders extends PureComponent<
         uri: `${model.uri}`,
         version: model.getVersionId(),
       },
-      // Monaco 1-indexes Position. LSP 0-indexes Position
-      position: {
-        line: position.lineNumber - 1,
-        character: position.column - 1,
-      },
+      position: MonacoProviders.monacoToLspPosition(position),
       context,
     };
 
     const completionItems = session.getCompletionItems(params);
+    log.debug('Requested completion items', params);
 
     const monacoCompletionItems = completionItems
       .then(items => {
-        log.debug('Completion items received: ', params, completionItems);
+        log.debug('Completion items received: ', params, items);
 
-        // Annoying that the LSP protocol returns completion items with a range that's slightly different than what Monaco expects
-        // Need to remap the items here
         const suggestions = items.map(item => {
           const {
             label,
@@ -173,16 +207,6 @@ class MonacoProviders extends PureComponent<
             textEdit,
             insertTextFormat,
           } = item;
-
-          const { start, end } = textEdit.range;
-
-          // Monaco expects the columns/ranges to start at 1.
-          const range = {
-            startLineNumber: start.line + 1,
-            startColumn: start.character + 1,
-            endLineNumber: end.line + 1,
-            endColumn: end.character + 1,
-          };
 
           return {
             label,
@@ -199,7 +223,7 @@ class MonacoProviders extends PureComponent<
             // semantically equivalent to monaco's insertTextRules===4.
             // Why microsoft is using almost-but-not-LSP apis is beyond me....
             insertTextRules: insertTextFormat === 2 ? 4 : insertTextFormat,
-            range,
+            range: MonacoProviders.lspToMonacoRange(textEdit.range),
           };
         });
 
@@ -216,7 +240,6 @@ class MonacoProviders extends PureComponent<
     return monacoCompletionItems;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   handleSignatureRequest(
     model: monaco.editor.ITextModel,
     position: monaco.Position,
@@ -244,15 +267,12 @@ class MonacoProviders extends PureComponent<
         uri: `${model.uri}`,
         version: model.getVersionId(),
       },
-      // Monaco 1-indexes Position. LSP 0-indexes Position
-      position: {
-        line: position.lineNumber - 1,
-        character: position.column - 1,
-      },
+      position: MonacoProviders.monacoToLspPosition(position),
       context,
     };
 
     const signatureItems = session.getSignatureHelp(params);
+    log.debug('Requested signature help', params);
 
     const monacoSignatures = signatureItems
       .then(items => {
@@ -297,7 +317,6 @@ class MonacoProviders extends PureComponent<
     return monacoSignatures;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   handleHoverRequest(
     model: monaco.editor.ITextModel,
     position: monaco.Position
@@ -312,14 +331,11 @@ class MonacoProviders extends PureComponent<
         uri: `${model.uri}`,
         version: model.getVersionId(),
       },
-      // Monaco 1-indexes Position. LSP 0-indexes Position
-      position: {
-        line: position.lineNumber - 1,
-        character: position.column - 1,
-      },
+      position: MonacoProviders.monacoToLspPosition(position),
     };
 
     const hover = session.getHover(params);
+    log.debug('Requested hover', params);
 
     const monacoHover = hover
       .then(hoverItem => {
