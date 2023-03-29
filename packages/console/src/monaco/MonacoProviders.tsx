@@ -134,7 +134,7 @@ class MonacoProviders extends PureComponent<
       language,
       {
         provideCompletionItems: this.handleCompletionRequest,
-        triggerCharacters: ['.', '"', "'", '/'],
+        triggerCharacters: ['.', '"', "'"],
       }
     );
 
