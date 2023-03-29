@@ -116,7 +116,9 @@ We use [lerna](https://github.com/lerna/lerna) and [Conventional Commits](https:
 
 2. Checkout the branch you want to release. `main` or `release/*`
 
-3. Run this npm script to bump the version, update the changelog, and create a release on GitHub: `GH_TOKEN=<token> npm run version-bump`
+3. Run this npm script to bump the version, update the changelog, and create a release on GitHub. If your local remote name for the upstream repo is not origin, then set the proper `git-remote` (e.g. `upstream`).
+
+   `GH_TOKEN=<token> npm run version-bump -- --git-remote origin`
 
 4. **IMPORTANT**: If releasing a `release/*` branch, you need to reset the `latest` tag on GitHub. To do that, go to the [releases page](https://github.com/deephaven/web-client-ui/releases) and find the release that is actually the `latest` based on the version `main` is on.
 
