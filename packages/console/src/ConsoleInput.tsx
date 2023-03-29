@@ -14,7 +14,7 @@ import {
   CommandHistoryStorageItem,
   CommandHistoryTable,
 } from './command-history';
-import { MonacoCompletionProvider, MonacoTheme, MonacoUtils } from './monaco';
+import { MonacoProviders, MonacoTheme, MonacoUtils } from './monaco';
 import './ConsoleInput.scss';
 
 const log = Log.module('ConsoleInput');
@@ -513,7 +513,7 @@ export class ConsoleInput extends PureComponent<
             style={{ height: commandEditorHeight }}
           />
           {model && (
-            <MonacoCompletionProvider
+            <MonacoProviders
               model={model}
               language={language}
               session={session}

@@ -8,7 +8,7 @@ import { IdeSession } from '@deephaven/jsapi-shim';
 import { assertNotNull } from '@deephaven/utils';
 import { editor, IDisposable } from 'monaco-editor';
 import Editor from './Editor';
-import { MonacoCompletionProvider, MonacoUtils } from '../monaco';
+import { MonacoProviders, MonacoUtils } from '../monaco';
 import './ScriptEditor.scss';
 import SHORTCUTS from '../ConsoleShortcuts';
 
@@ -366,7 +366,7 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
                 />
                 {completionProviderEnabled != null &&
                   completionProviderEnabled && (
-                    <MonacoCompletionProvider
+                    <MonacoProviders
                       model={model}
                       language={editorLanguage}
                       session={session}

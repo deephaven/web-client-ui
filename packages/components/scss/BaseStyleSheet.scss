@@ -677,8 +677,17 @@ input[type='number']::-webkit-inner-spin-button {
 
 .monaco-editor {
   // Hide the "Loading..." and "No suggestions" message in the suggest widget in monaco to make it feel faster
-  .editor-widget.suggest-widget.message {
+  .editor-widget.suggest-widget.message,
+  .parameter-hints-widget.message {
     display: none;
+  }
+
+  .monaco-hover hr {
+    margin-bottom: 4px !important; // Monaco sets this to -4 which causes items below a dividing line to collide w/ the line
+  }
+
+  .parameter-hints-widget {
+    z-index: 30 !important; // Need to make above golden-layout, but below completion item widget at z=40
   }
 
   .find-widget {
