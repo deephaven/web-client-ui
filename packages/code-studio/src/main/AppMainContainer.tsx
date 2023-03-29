@@ -21,6 +21,7 @@ import {
   Button,
   InfoModal,
   LoadingSpinner,
+  BasicModal,
 } from '@deephaven/components';
 import {
   IrisGridModel,
@@ -156,6 +157,7 @@ interface AppMainContainerProps {
 
 interface AppMainContainerState {
   contextActions: ContextAction[];
+  isAuthFailed: boolean;
   isDisconnected: boolean;
   isPanelsMenuShown: boolean;
   isSettingsMenuShown: boolean;
@@ -183,6 +185,11 @@ export class AppMainContainer extends Component<
       },
       id
     );
+  }
+
+  static handleRefresh() {
+    log.info('Refreshing application');
+    window.location.reload();
   }
 
   constructor(props: AppMainContainerProps & RouteComponentProps) {
@@ -213,6 +220,7 @@ export class AppMainContainer extends Component<
     this.openNotebookFromURL = this.openNotebookFromURL.bind(this);
     this.handleDisconnect = this.handleDisconnect.bind(this);
     this.handleReconnect = this.handleReconnect.bind(this);
+    this.handleReconnectAuthFailed = this.handleReconnectAuthFailed.bind(this);
 
     this.importElement = React.createRef();
 
@@ -242,6 +250,7 @@ export class AppMainContainer extends Component<
           isGlobal: true,
         },
       ],
+      isAuthFailed: false,
       isDisconnected: false,
       isPanelsMenuShown: false,
       isSettingsMenuShown: false,
@@ -555,6 +564,10 @@ export class AppMainContainer extends Component<
     this.setState({ isDisconnected: false });
   }
 
+  handleReconnectAuthFailed() {
+    this.setState({ isAuthFailed: true });
+  }
+
   /**
    * Import the provided file and set it in the workspace data (which should then load it in the dashboard)
    * @param file JSON file to import
@@ -661,6 +674,10 @@ export class AppMainContainer extends Component<
       dh.IdeConnection.EVENT_RECONNECT,
       this.handleReconnect
     );
+    connection.addEventListener(
+      dh.CoreClient.EVENT_RECONNECT_AUTH_FAILED,
+      this.handleReconnectAuthFailed
+    );
   }
 
   stopListeningForDisconnect() {
@@ -672,6 +689,10 @@ export class AppMainContainer extends Component<
     connection.removeEventListener(
       dh.IdeConnection.EVENT_RECONNECT,
       this.handleReconnect
+    );
+    connection.removeEventListener(
+      dh.CoreClient.EVENT_RECONNECT_AUTH_FAILED,
+      this.handleReconnectAuthFailed
     );
   }
 
@@ -788,6 +809,7 @@ export class AppMainContainer extends Component<
     const { canUsePanels } = permissions;
     const {
       contextActions,
+      isAuthFailed,
       isDisconnected,
       isPanelsMenuShown,
       isSettingsMenuShown,
@@ -929,7 +951,7 @@ export class AppMainContainer extends Component<
           onChange={this.handleImportLayoutFiles}
         />
         <InfoModal
-          isOpen={isDisconnected}
+          isOpen={isDisconnected && !isAuthFailed}
           icon={vsDebugDisconnect}
           title={
             <>
@@ -937,6 +959,13 @@ export class AppMainContainer extends Component<
             </>
           }
           subtitle="Please check your network connection."
+        />
+        <BasicModal
+          confirmButtonText="Refresh"
+          onConfirm={AppMainContainer.handleRefresh}
+          isOpen={isAuthFailed}
+          headerText="Authentication failed"
+          bodyText="Credentials are invalid. Please refresh your browser to try and reconnect."
         />
       </div>
     );

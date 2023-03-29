@@ -184,13 +184,6 @@ function AppInit(props: AppInitProps) {
         setError(`Server shutdown: ${detail ?? 'Unknown reason'}`);
         setDisconnectError(null);
       });
-      connection.addEventListener(
-        dh.CoreClient.EVENT_RECONNECT_AUTH_FAILED,
-        event => {
-          log.warn('Reconnect authentication failed');
-          setError('Reconnect authentication failed');
-        }
-      );
 
       const sessionWrapper = await loadSessionWrapper(connection);
       const name = 'user';
