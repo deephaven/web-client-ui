@@ -1233,13 +1233,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       getFormatColumns(columns, rules)
   );
 
-  // customColumns arg is needed to invalidate the cache
-  // eslint-disable-next-line no-unused-vars
-  getCachedModelColumns = memoize(
-    (model: IrisGridModel, customColumns: readonly ColumnName[]) =>
-      model.columns
-  );
-
   /**
    * Builds formatColumns array based on the provided formatting rules with optional preview
    * @param columns Array of columns
@@ -4491,7 +4484,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                   this.grid?.state.draggingColumn?.range
                 )}
                 formatColumns={this.getCachedPreviewFormatColumns(
-                  this.getCachedModelColumns(model, customColumns),
+                  model.columns,
                   conditionalFormats,
                   conditionalFormatPreview,
                   // Disable the preview format when we press Back on the format edit page
