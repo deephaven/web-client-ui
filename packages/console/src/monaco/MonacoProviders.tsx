@@ -23,7 +23,9 @@ class MonacoProviders extends PureComponent<
 > {
   /**
    * Converts LSP CompletionItemKind to Monaco CompletionItemKind
+   * Defaults to Variable if no LSP kind was provided
    * https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItemKind
+   *
    * @param kind The LSP kind
    * @returns Monaco kind
    */
