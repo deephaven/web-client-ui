@@ -15,7 +15,6 @@ import {
   PromiseUtils,
   assertNotNull,
 } from '@deephaven/utils';
-import WritableStream from './WritableStream';
 import IrisGridUtils from '../IrisGridUtils';
 
 const log = Log.module('TableSaver');
