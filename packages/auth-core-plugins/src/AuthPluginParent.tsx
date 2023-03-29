@@ -6,6 +6,10 @@ import { AuthPlugin, AuthPluginProps } from '@deephaven/auth-plugin';
 
 const log = Log.module('AuthPluginParent');
 
+function getWindowAuthProvider(): string {
+  return new URLSearchParams(window.location.search).get('authProvider') ?? '';
+}
+
 /**
  * AuthPlugin that tries to delegate to the parent window for authentication. Fails if there is no parent window.
  */
@@ -67,7 +71,8 @@ function Component({
 
 const AuthPluginParent: AuthPlugin = {
   Component,
-  isAvailable: () => window.opener != null,
+  isAvailable: () =>
+    window.opener != null && getWindowAuthProvider() === 'parent',
 };
 
 export default AuthPluginParent;

@@ -13,6 +13,11 @@ describe('availability tests', () => {
   const authConfigValues = new Map();
   it('is available when window opener is set', () => {
     window.opener = { postMessage: jest.fn() };
+    window.history.pushState(
+      {},
+      'Test Title',
+      `/test.html?authProvider=parent`
+    );
     expect(
       AuthPluginParent.isAvailable(client, authHandlers, authConfigValues)
     ).toBe(true);
