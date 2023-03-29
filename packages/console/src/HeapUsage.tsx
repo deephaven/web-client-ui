@@ -1,9 +1,12 @@
+import React, { useEffect, useState, ReactElement, useRef } from 'react';
+import classNames from 'classnames';
 import { Tooltip } from '@deephaven/components';
 import { QueryConnectable } from '@deephaven/jsapi-shim';
-import React, { useEffect, useState, ReactElement, useRef } from 'react';
 import { Plot, ChartTheme } from '@deephaven/chart';
+import Log from '@deephaven/log';
 import './HeapUsage.scss';
-import classNames from 'classnames';
+
+const log = Log.module('HeapUsage');
 
 interface HeapUsageProps {
   connection: QueryConnectable;
@@ -38,28 +41,32 @@ function HeapUsage({
   useEffect(
     function setUsageUpdateInterval() {
       const fetchAndUpdate = async () => {
-        const newUsage = await connection.getWorkerHeapInfo();
-        setMemoryUsage(newUsage);
+        try {
+          const newUsage = await connection.getWorkerHeapInfo();
+          setMemoryUsage(newUsage);
 
-        if (bgMonitoring || isOpen) {
-          const currentUsage =
-            (newUsage.totalHeapSize - newUsage.freeMemory) /
-            newUsage.maximumHeapSize;
-          const currentTime = Date.now();
+          if (bgMonitoring || isOpen) {
+            const currentUsage =
+              (newUsage.totalHeapSize - newUsage.freeMemory) /
+              newUsage.maximumHeapSize;
+            const currentTime = Date.now();
 
-          const { timestamps, usages } = historyUsage.current;
-          while (
-            timestamps.length !== 0 &&
-            currentTime - timestamps[0] > monitorDuration * 1.5
-          ) {
-            timestamps.shift();
-            usages.shift();
+            const { timestamps, usages } = historyUsage.current;
+            while (
+              timestamps.length !== 0 &&
+              currentTime - timestamps[0] > monitorDuration * 1.5
+            ) {
+              timestamps.shift();
+              usages.shift();
+            }
+
+            timestamps.push(currentTime);
+            usages.push(currentUsage);
+          } else {
+            historyUsage.current = { timestamps: [], usages: [] };
           }
-
-          timestamps.push(currentTime);
-          usages.push(currentUsage);
-        } else {
-          historyUsage.current = { timestamps: [], usages: [] };
+        } catch (e) {
+          log.warn('Unable to get heap usage', e);
         }
       };
       fetchAndUpdate();

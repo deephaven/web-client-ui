@@ -22,9 +22,9 @@ import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import { assertNotNull } from '@deephaven/utils';
 import type { JSZipObject } from 'jszip';
 import { ConsoleEvent } from '../events';
-import './ConsolePanel.scss';
 import Panel from './Panel';
 import { getDashboardSessionWrapper, SessionWrapper } from '../redux';
+import './ConsolePanel.scss';
 
 const log = Log.module('ConsolePanel');
 
@@ -325,6 +325,7 @@ export class ConsolePanel extends PureComponent<
 
     return (
       <Panel
+        className="iris-panel-console"
         componentPanel={this}
         glContainer={glContainer}
         glEventHub={glEventHub}
