@@ -797,8 +797,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
     ContextActions.triggerMenu(
       irisGrid.gridWrapper,
-      event.pageX,
-      event.pageY,
+      event.clientX,
+      event.clientY,
       actions
     );
     return true;
