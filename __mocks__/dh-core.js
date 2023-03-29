@@ -2027,3 +2027,6 @@ const dh = {
     FileContents: FileContents,
   },
 };
+
+// The actual library just sets a global window object, we do the same
+window.dh = dh;

@@ -1,3 +1,4 @@
+import defaultDh from '@deephaven/jsapi-shim';
 import ChartModel from './ChartModel';
 import ChartTheme from './ChartTheme';
 import ChartUtils from './ChartUtils';
@@ -151,8 +152,8 @@ class MockChartModel extends ChartModel {
     return [areaPattern, trendLine, line, errorBand];
   }
 
-  static makeDefaultLayout() {
-    const layout = ChartUtils.makeDefaultLayout(ChartTheme);
+  static makeDefaultLayout(dh) {
+    const layout = new ChartUtils(dh).makeDefaultLayout(ChartTheme);
     layout.title = 'Chart';
     layout.xaxis.title = 'Datestamp';
     layout.yaxis.title = 'Price';
@@ -161,7 +162,7 @@ class MockChartModel extends ChartModel {
 
   constructor({
     data = MockChartModel.makeRandomData(),
-    layout = MockChartModel.makeDefaultLayout(),
+    layout = MockChartModel.makeDefaultLayout(defaultDh),
     filterFields = [],
   } = {}) {
     super();

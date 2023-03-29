@@ -634,7 +634,7 @@ class ChartUtils {
 
   constructor(dh: dhType) {
     this.dh = dh;
-    this.days = Object.freeze(this.dh.calendar.DayOfWeek.values());
+    this.days = Object.freeze(dh.calendar.DayOfWeek.values());
   }
 
   /**
