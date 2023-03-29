@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import * as monaco from 'monaco-editor';
-import dh from '@deephaven/jsapi-shim';
+import dh, { DocumentRange, Position } from '@deephaven/jsapi-shim';
 import MonacoProviders from './MonacoProviders';
 
 const DEFAULT_LANGUAGE = 'test';
@@ -341,4 +341,36 @@ it('provides hover info properly', async () => {
   expect(contents[0]).toMatchObject({
     value: newText,
   });
+});
+
+it('converts lsp to monaco range', () => {
+  const lspRange: DocumentRange = {
+    start: { line: 0, character: 0 },
+    end: { line: 1, character: 1 },
+  };
+
+  const expectedMonacoRange: monaco.IRange = {
+    startLineNumber: 1,
+    startColumn: 1,
+    endLineNumber: 2,
+    endColumn: 2,
+  };
+
+  const monacoRange = MonacoProviders.lspToMonacoRange(lspRange);
+  expect(monacoRange).toMatchObject(expectedMonacoRange);
+});
+
+it('converts monaco to lsp position', () => {
+  const monacoPosition: monaco.IPosition = {
+    lineNumber: 1,
+    column: 1,
+  };
+
+  const expectedLspPosition: Position = {
+    line: 0,
+    character: 0,
+  };
+
+  const lspPosition = MonacoProviders.monacoToLspPosition(monacoPosition);
+  expect(lspPosition).toMatchObject(expectedLspPosition);
 });
