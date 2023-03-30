@@ -278,11 +278,6 @@ export function ConsolePlugin(
 
   const unregisterFilePanel = useCallback(
     (fileMetadata: FileMetadata, isPreview: boolean) => {
-      // Note: unregister event is triggered AFTER new register when switching from preview to edit mode
-      // due to the LayoutUtils implementation (new tab added before deleting the old one)
-      // This doesn't cause any issues because previews and editable files are stored in different maps,
-      // but this situation could be completely avoided by sending an event to the tab
-      // to make it switch from preview to edit mode without re-mounting and re-registering
       log.debug('unregisterFileTab', fileMetadata, isPreview);
       if (fileMetadata == null || fileMetadata.id == null) {
         log.debug('Ignore empty file id', fileMetadata);
