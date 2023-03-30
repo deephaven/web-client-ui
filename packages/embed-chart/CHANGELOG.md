@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.31.3](https://github.com/deephaven/web-client-ui/compare/v0.31.2...v0.31.3) (2023-03-30)
+
+**Note:** Version bump only for package @deephaven/embed-chart
+
 # [0.31.0](https://github.com/deephaven/web-client-ui/compare/v0.30.1...v0.31.0) (2023-03-03)
 
 **Note:** Version bump only for package @deephaven/embed-chart
