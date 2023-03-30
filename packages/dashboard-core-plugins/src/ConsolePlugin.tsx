@@ -453,7 +453,7 @@ export function ConsolePlugin(
           ? previewId
           : getPanelIdForFileMetadata(fileMetadata);
 
-      if (!panelId) {
+      if (panelId == null || panelId === '') {
         throw new Error(
           'Unable to retrieve or create panelId for metadata',
           fileMetadata
