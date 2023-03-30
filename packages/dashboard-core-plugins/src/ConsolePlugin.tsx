@@ -446,47 +446,24 @@ export function ConsolePlugin(
       const isFileOpen = fileIsOpen(fileMetadata);
       const isFileOpenAsPreview = fileIsOpenAsPreview(fileMetadata);
 
-      // If the file is already open, just show and focus it if necessary
-      if (isFileOpen) {
-        showFilePanel(fileMetadata);
-        if (shouldFocus) {
-          const panelId = getPanelIdForFileMetadata(fileMetadata);
-          focusPanelById(panelId);
-        }
-        return;
+      const [previewId] = [...previewFileMap.values()];
+      const isPreview = !shouldFocus;
+      const panelId =
+        isPreview && previewId
+          ? previewId
+          : getPanelIdForFileMetadata(fileMetadata);
+
+      if (!panelId) {
+        throw new Error(
+          'Unable to retrieve or create panelId for metadata',
+          fileMetadata
+        );
       }
 
-      // If the file is already open as a preview and we're not focusing it, just show it
-      // If we're focusing it, that means we need to replace the panel anyway with a non-preview panel, so just fall into the logic below
-      if (isFileOpenAsPreview && !shouldFocus) {
+      // If the file is already open, show it
+      if (isFileOpen || isFileOpenAsPreview) {
         showFilePanel(fileMetadata);
-        return;
-      }
-
-      // By this point, the user has double clicked the panel
-
-      const [previewTabName] = Array.from(previewFileMap.keys());
-      const previewTabId = previewFileMap.get(previewTabName);
-      let panelId: string | undefined;
-      if (previewTabId != null) {
-        panelId = previewTabId;
-
-        const stack = LayoutUtils.getStackForConfig(layout.root, {
-          component: NotebookPanel.COMPONENT,
-          id: panelId,
-        });
-
-        const item = LayoutUtils.getContentItemInStack(stack, {
-          component: NotebookPanel.COMPONENT,
-          id: previewTabId,
-        });
-        if (item && isComponent(item)) {
-          item.container.emit(NotebookEvent.PROMOTE_FROM_PREVIEW);
-          deletePreviewFileMapEntry(previewTabName);
-          addOpenFileMapEntry(previewTabName, previewTabId);
-        }
       } else {
-        panelId = getPanelIdForFileMetadata(fileMetadata);
         const stack = LayoutUtils.getStackForComponentTypes(layout.root, [
           NotebookPanel.COMPONENT,
         ]);
@@ -497,14 +474,34 @@ export function ConsolePlugin(
           fileMetadata,
           session,
           sessionLanguage,
-          isPreview: !shouldFocus,
+          isPreview,
         });
 
+        // This will replace the existing preview by panelId if needed
         LayoutUtils.openComponentInStack(stack, config);
       }
 
+      // If the file is open as a preview and focused, promote to non-preview
+      if (isFileOpenAsPreview && shouldFocus) {
+        const fileId = fileMetadata.id;
+        const stack = LayoutUtils.getStackForConfig(layout.root, {
+          component: NotebookPanel.COMPONENT,
+          id: panelId,
+        });
+
+        const item = LayoutUtils.getContentItemInStack(stack, {
+          component: NotebookPanel.COMPONENT,
+          id: panelId,
+        });
+        if (item && isComponent(item)) {
+          item.container.emit(NotebookEvent.PROMOTE_FROM_PREVIEW);
+          deletePreviewFileMapEntry(fileId);
+          addOpenFileMapEntry(fileId, panelId);
+        }
+      }
+
       if (shouldFocus) {
-        // Focus the tab we just opened if we're supposed to
+        // Focus the tab if we're supposed to
         focusPanelById(panelId);
       }
     },
