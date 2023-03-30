@@ -536,7 +536,7 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     this.requestUpdateCanvas();
 
-    this.checkMetricsUpdates();
+    this.checkStickyScroll();
 
     if (this.validateSelection()) {
       this.checkSelectionChange(prevState);
@@ -832,7 +832,10 @@ class Grid extends PureComponent<GridProps, GridState> {
     }
   }
 
-  checkMetricsUpdates() {
+  /**
+   * Compares the current metrics with the previous metrics to see if we need to scroll when it is stuck to the bottom or the right
+   */
+  checkStickyScroll() {
     if (!this.metrics) {
       return;
     }
