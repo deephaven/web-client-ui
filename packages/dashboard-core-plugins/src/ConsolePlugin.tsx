@@ -11,7 +11,7 @@ import {
   useListener,
 } from '@deephaven/dashboard';
 import { FileUtils } from '@deephaven/file-explorer';
-import { CloseOptions } from '@deephaven/golden-layout';
+import { CloseOptions, isComponent } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -168,7 +168,7 @@ export function ConsolePlugin(
       if (createIfNecessary as boolean) {
         return shortid.generate();
       }
-      return null;
+      return undefined;
     },
     [openFileMap, previewFileMap]
   );
@@ -463,31 +463,46 @@ export function ConsolePlugin(
         return;
       }
 
-      const [previewTabId] = Array.from(previewFileMap.values());
-      let panelId = null;
-      let stack = null;
+      // By this point, the user has double clicked the panel
+
+      const [previewTabName] = Array.from(previewFileMap.keys());
+      const previewTabId = previewFileMap.get(previewTabName);
+      let panelId: string | undefined;
       if (previewTabId != null) {
         panelId = previewTabId;
-        stack = LayoutUtils.getStackForConfig(layout.root, {
+
+        const stack = LayoutUtils.getStackForConfig(layout.root, {
           component: NotebookPanel.COMPONENT,
           id: panelId,
         });
-      }
-      if (stack == null) {
+
+        const item = LayoutUtils.getContentItemInStack(stack, {
+          component: NotebookPanel.COMPONENT,
+          id: previewTabId,
+        });
+        if (item && isComponent(item)) {
+          item.container.emit(NotebookEvent.PROMOTE_FROM_PREVIEW);
+          deletePreviewFileMapEntry(previewTabName);
+          addOpenFileMapEntry(previewTabName, previewTabId);
+        }
+      } else {
         panelId = getPanelIdForFileMetadata(fileMetadata);
-        stack = LayoutUtils.getStackForComponentTypes(layout.root, [
+        const stack = LayoutUtils.getStackForComponentTypes(layout.root, [
           NotebookPanel.COMPONENT,
         ]);
+
+        const config = makeConfig({
+          id: panelId,
+          settings,
+          fileMetadata,
+          session,
+          sessionLanguage,
+          isPreview: !shouldFocus,
+        });
+
+        LayoutUtils.openComponentInStack(stack, config);
       }
-      const config = makeConfig({
-        id: panelId,
-        settings,
-        fileMetadata,
-        session,
-        sessionLanguage,
-        isPreview: !shouldFocus,
-      });
-      LayoutUtils.openComponentInStack(stack, config);
+
       if (shouldFocus) {
         // Focus the tab we just opened if we're supposed to
         focusPanelById(panelId);
@@ -502,6 +517,8 @@ export function ConsolePlugin(
       layout.root,
       makeConfig,
       previewFileMap,
+      deletePreviewFileMapEntry,
+      addOpenFileMapEntry,
     ]
   );
 
