@@ -49,8 +49,7 @@
     "prop-types": "^15.7.2",
     "react-beautiful-dnd": "^13.1.0",
     "react-transition-group": "^4.4.2",
-    "shortid": "^2.2.16",
-    "web-streams-polyfill": "^2.1.0"
+    "shortid": "^2.2.16"
   },
   "peerDependencies": {
     "react": "^17.x",
