@@ -1,9 +1,19 @@
 import {
-  LoginOptionsResponse,
   SessionDetails,
   SessionWrapper,
 } from '@deephaven/dashboard-core-plugins';
-import dh, { CoreClient, IdeConnection } from '@deephaven/jsapi-shim';
+import dh, {
+  CoreClient,
+  IdeConnection,
+  LoginOptions,
+} from '@deephaven/jsapi-shim';
+import {
+  LOGIN_OPTIONS_REQUEST,
+  LOGIN_OPTIONS_RESPONSE,
+  requestParentResponse,
+  SESSION_DETAILS_REQUEST,
+  SESSION_DETAILS_RESPONSE,
+} from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import shortid from 'shortid';
 import NoConsolesError from './NoConsolesError';
@@ -51,7 +61,7 @@ export function createConnection(): IdeConnection {
  */
 export async function createSessionWrapper(
   connection: IdeConnection,
-  sessionDetails: SessionDetails
+  details: SessionDetails
 ): Promise<SessionWrapper> {
   log.info('Getting console types...');
 
@@ -71,16 +81,13 @@ export async function createSessionWrapper(
 
   const config = { type, id: shortid.generate() };
 
-  const { workerName, processInfoId } = sessionDetails;
-
   log.info('Console session established', config);
 
   return {
     session,
     config,
     connection,
-    workerName,
-    processInfoId,
+    details,
   };
 }
 
@@ -92,39 +99,41 @@ export function createCoreClient(): CoreClient {
   return new dh.CoreClient(websocketUrl);
 }
 
-export async function requestParentLoginOptions(): Promise<LoginOptionsResponse> {
-  if (window.opener == null) {
-    throw new Error('window.opener is null, unable to send auth request.');
-  }
-  return new Promise(resolve => {
-    const listener = (
-      event: MessageEvent<{
-        message: string;
-        payload: LoginOptionsResponse;
-      }>
-    ) => {
-      const { data } = event;
-      log.debug('Received message', data);
-      if (data?.message !== 'loginOptions') {
-        log.debug('Ignore received message', data);
-        return;
-      }
-      window.removeEventListener('message', listener);
-      resolve(data.payload);
-    };
-    window.addEventListener('message', listener);
-    window.opener.postMessage('requestLoginOptionsFromParent', '*');
-  });
+async function requestParentLoginOptions(): Promise<LoginOptions> {
+  return requestParentResponse<LoginOptions>(
+    LOGIN_OPTIONS_REQUEST,
+    LOGIN_OPTIONS_RESPONSE
+  );
+}
+
+async function requestParentSessionDetails(): Promise<SessionDetails> {
+  return requestParentResponse<SessionDetails>(
+    SESSION_DETAILS_REQUEST,
+    SESSION_DETAILS_RESPONSE
+  );
 }
 
 export async function getLoginOptions(
   authType: AUTH_TYPE
-): Promise<LoginOptionsResponse> {
+): Promise<LoginOptions> {
   switch (authType) {
     case AUTH_TYPE.PARENT:
       return requestParentLoginOptions();
     case AUTH_TYPE.ANONYMOUS:
       return { type: dh.CoreClient.LOGIN_TYPE_ANONYMOUS };
+    default:
+      throw new Error(`Unknown auth type: ${authType}`);
+  }
+}
+
+export async function getSessionDetails(
+  authType: AUTH_TYPE
+): Promise<SessionDetails> {
+  switch (authType) {
+    case AUTH_TYPE.PARENT:
+      return requestParentSessionDetails();
+    case AUTH_TYPE.ANONYMOUS:
+      return {};
     default:
       throw new Error(`Unknown auth type: ${authType}`);
   }

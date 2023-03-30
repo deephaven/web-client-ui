@@ -53,6 +53,7 @@ import {
   createSessionWrapper,
   getAuthType,
   getLoginOptions,
+  getSessionDetails,
 } from './SessionUtils';
 import { PluginUtils } from '../plugins';
 import LayoutStorage from '../storage/LayoutStorage';
@@ -173,6 +174,7 @@ function AppInit(props: AppInitProps) {
       const authType = getAuthType();
       log.info(`Login using auth type ${authType}...`);
       const loginOptions = await getLoginOptions(authType);
+      const sessionDetails = await getSessionDetails(authType);
       await coreClient.login(loginOptions);
 
       const newPlugins = await loadPlugins();
@@ -188,7 +190,10 @@ function AppInit(props: AppInitProps) {
         setDisconnectError(null);
       });
 
-      const sessionWrapper = await loadSessionWrapper(connection, loginOptions);
+      const sessionWrapper = await loadSessionWrapper(
+        connection,
+        sessionDetails
+      );
       const name = 'user';
 
       const storageService = coreClient.getStorageService();

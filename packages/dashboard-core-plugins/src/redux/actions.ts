@@ -19,13 +19,12 @@ export interface SessionDetails {
   processInfoId?: string;
 }
 
-export type SessionWrapper = SessionDetails & {
+export interface SessionWrapper {
   session: IdeSession;
   connection: IdeConnection;
   config: SessionConfig;
-};
-
-export type LoginOptionsResponse = LoginOptions & SessionDetails;
+  details: SessionDetails;
+}
 
 /**
  * Set the connection for the dashboard specified
