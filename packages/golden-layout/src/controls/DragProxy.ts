@@ -96,9 +96,11 @@ export default class DragProxy extends EventEmitter {
 
     this._updateTree();
     this._layoutManager._$calculateItemAreas();
-    this._setDimensions();
 
     $(document.body).append(this.element);
+
+    // Need to set dimensions after adding the element, or `Component.setSize()` will not pass the `.is('visible')` test and won't update
+    this._setDimensions();
 
     // there's no content tab to use yet, use the proxy tab size for placeholder sizing, after it's created
     if (!this._contentItem.tab && this._proxyTab.length) {

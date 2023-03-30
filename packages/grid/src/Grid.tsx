@@ -536,31 +536,7 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     this.requestUpdateCanvas();
 
-    if (!this.metrics || !this.prevMetrics) {
-      return;
-    }
-
-    const { rowCount, columnCount, height, width } = this.metrics;
-    const {
-      rowCount: prevRowCount,
-      columnCount: prevColumnCount,
-      height: prevHeight,
-      width: prevWidth,
-    } = this.prevMetrics;
-
-    if (prevRowCount !== rowCount || height !== prevHeight) {
-      const { isStuckToBottom } = this.state;
-      if (isStuckToBottom) {
-        this.scrollToBottom();
-      }
-    }
-
-    if (prevColumnCount !== columnCount || width !== prevWidth) {
-      const { isStuckToRight } = this.state;
-      if (isStuckToRight) {
-        this.scrollToRight();
-      }
-    }
+    this.checkStickyScroll();
 
     if (this.validateSelection()) {
       this.checkSelectionChange(prevState);
@@ -799,17 +775,23 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.animationFrame = requestAnimationFrame(() => {
       this.animationFrame = null;
 
-      if (!this.metrics) throw new Error('Metrics not set');
-
-      this.updateCanvas(this.metrics);
+      this.updateCanvas();
     });
   }
 
-  updateCanvas(metrics = this.updateMetrics()): void {
+  updateCanvas(): void {
     this.updateCanvasScale();
+
+    this.updateMetrics();
+
     this.updateRenderState();
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    this.renderer.configureContext(this.canvasContext!, this.renderState);
+
+    const { canvasContext, metrics, renderState } = this;
+    assertNotNull(canvasContext);
+    assertNotNull(metrics);
+    assertNotNull(renderState);
+
+    this.renderer.configureContext(canvasContext, renderState);
 
     const { onViewChanged } = this.props;
     onViewChanged(metrics);
@@ -848,6 +830,40 @@ class Grid extends PureComponent<GridProps, GridState> {
     if (top > lastTop) {
       this.setState({ top: lastTop, topOffset: 0 });
     }
+  }
+
+  /**
+   * Compares the current metrics with the previous metrics to see if we need to scroll when it is stuck to the bottom or the right
+   */
+  checkStickyScroll() {
+    if (!this.metrics) {
+      return;
+    }
+
+    if (this.prevMetrics) {
+      const { rowCount, columnCount, height, width } = this.metrics;
+      const {
+        rowCount: prevRowCount,
+        columnCount: prevColumnCount,
+        height: prevHeight,
+        width: prevWidth,
+      } = this.prevMetrics;
+
+      if (prevRowCount !== rowCount || height !== prevHeight) {
+        const { isStuckToBottom } = this.state;
+        if (isStuckToBottom) {
+          this.scrollToBottom();
+        }
+      }
+
+      if (prevColumnCount !== columnCount || width !== prevWidth) {
+        const { isStuckToRight } = this.state;
+        if (isStuckToRight) {
+          this.scrollToRight();
+        }
+      }
+    }
+    this.prevMetrics = this.metrics;
   }
 
   updateMetrics(state = this.state): GridMetrics {
