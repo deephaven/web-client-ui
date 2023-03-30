@@ -1,5 +1,5 @@
 // Wrapper for the Notebook for use in a golden layout container
-import React, { Component, MouseEvent, ReactElement } from 'react';
+import React, { Component, ReactElement } from 'react';
 import ReactDOM from 'react-dom';
 import memoize from 'memoize-one';
 import { connect } from 'react-redux';
@@ -176,7 +176,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.handleLinkClick = this.handleLinkClick.bind(this);
     this.handleLoadSuccess = this.handleLoadSuccess.bind(this);
     this.handleLoadError = this.handleLoadError.bind(this);
-    this.handlePanelTabClick = this.handlePanelTabClick.bind(this);
+    this.handleTabClick = this.handleTabClick.bind(this);
     this.handleRenameFile = this.handleRenameFile.bind(this);
     this.handleResize = this.handleResize.bind(this);
     this.handleRunCommand = this.handleRunCommand.bind(this);
@@ -283,7 +283,6 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     if (tab != null) this.initTab(tab);
     this.initNotebookContent();
     glEventHub.on(NotebookEvent.RENAME_FILE, this.handleRenameFile);
-    glContainer.on('tabClicked', this.handlePanelTabClick);
   }
 
   componentDidUpdate(
@@ -312,11 +311,10 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.debouncedSavePanelState.flush();
     this.pending.cancel();
 
-    const { glContainer, glEventHub } = this.props;
+    const { glEventHub } = this.props;
 
     const { fileMetadata, isPreview } = this.state;
     glEventHub.off(NotebookEvent.RENAME_FILE, this.handleRenameFile);
-    glContainer.off('tabClicked', this.handlePanelTabClick);
     glEventHub.emit(NotebookEvent.UNREGISTER_FILE, fileMetadata, isPreview);
   }
 
@@ -736,7 +734,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   /**
    * @param event The click event from clicking on the link
    */
-  handleLinkClick(event: MouseEvent<HTMLAnchorElement>) {
+  handleLinkClick(event: React.MouseEvent<HTMLAnchorElement>) {
     const { notebooksUrl, session, sessionLanguage } = this.props;
     const { href } = event.currentTarget;
     if (!href || !href.startsWith(notebooksUrl)) {
@@ -960,9 +958,12 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     });
   }
 
-  handlePanelTabClick(): void {
-    log.debug('handlePanelTabClick');
+  handleTabClick(e: MouseEvent): void {
+    log.debug('handle NotebookPanel tab click');
     this.focus();
+    if (e.detail === 2) {
+      this.removePreviewStatus();
+    }
   }
 
   /**
@@ -1173,6 +1174,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
           onTab={this.handleTab}
           onResize={this.handleResize}
           onShow={this.handleShow}
+          onTabClicked={this.handleTabClick}
           onTabFocus={this.handleTabFocus}
           onTabBlur={this.handleTabBlur}
           onSessionOpen={this.handleSessionOpened}

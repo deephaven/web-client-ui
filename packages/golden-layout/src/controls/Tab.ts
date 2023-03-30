@@ -236,7 +236,6 @@ export default class Tab {
         isComponent(this.contentItem)
       ) {
         this.header.parent.setActiveContentItem(this.contentItem);
-        this.contentItem.container.emit('tabClicked');
       } else if (
         isComponent(this.contentItem) &&
         !this.contentItem.container._contentElement[0].contains(
@@ -246,10 +245,10 @@ export default class Tab {
         // if no focus inside put focus onto the container
         // so focusin always fires for tabclicks
         this.contentItem.container._contentElement.focus();
+      }
 
-        // still emit tab clicked event, so panels can also
-        // do it's own focus handling if desired
-        this.contentItem.container.emit('tabClicked');
+      if (isComponent(this.contentItem)) {
+        this.contentItem.container.emit('tabClicked', event);
       }
 
       // might have been called from the dropdown
