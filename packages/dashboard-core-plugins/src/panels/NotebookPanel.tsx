@@ -957,9 +957,12 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     });
   }
 
-  handlePanelTabClick(): void {
+  handlePanelTabClick(e: MouseEvent): void {
     log.debug('handlePanelTabClick');
     this.focus();
+    if (e.detail === 2) {
+      this.removePreviewStatus();
+    }
   }
 
   /**
