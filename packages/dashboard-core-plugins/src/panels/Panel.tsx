@@ -40,7 +40,7 @@ interface PanelProps {
   onFocus: FocusEventHandler<HTMLDivElement>;
   onBlur: FocusEventHandler<HTMLDivElement>;
   onTab: (tab: Tab) => void;
-  onTabClicked: (...args: unknown[]) => void;
+  onTabClicked: (e: MouseEvent) => void;
   onClearAllFilters: (...args: unknown[]) => void;
   onHide: (...args: unknown[]) => void;
   onResize: (...args: unknown[]) => void;
@@ -180,9 +180,9 @@ class Panel extends PureComponent<PanelProps, PanelState> {
     onTab(tab);
   }
 
-  handleTabClicked(...args: unknown[]): void {
+  handleTabClicked(e: MouseEvent): void {
     const { onTabClicked } = this.props;
-    onTabClicked(...args);
+    onTabClicked(e);
   }
 
   handleClearAllFilters(...args: unknown[]): void {
