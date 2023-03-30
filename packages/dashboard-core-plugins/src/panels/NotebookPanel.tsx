@@ -119,8 +119,6 @@ interface NotebookPanelState {
   scriptCode: string;
 
   itemName?: string;
-
-  shouldPromptClose: boolean;
 }
 
 class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
@@ -274,8 +272,6 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       showSaveAsModal: false,
 
       scriptCode: '',
-
-      shouldPromptClose: true,
     };
 
     log.debug('constructor', props, this.state);
@@ -348,6 +344,13 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.initTabClasses(tab);
   }
 
+  /**
+   * Adds a beforeClose handler to check if a notebook needs to be saved
+   * Call panel close with force if the check can be skipped
+   *
+   * Note that firing a close event manually may trigger before state update occurs
+   * In those instances, use force
+   */
   initTabCloseOverride() {
     const { glContainer } = this.props;
     glContainer.beforeClose((options?: CloseOptions) => {
@@ -355,8 +358,8 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
         return true;
       }
 
-      const { changeCount, savedChangeCount, shouldPromptClose } = this.state;
-      if (changeCount !== savedChangeCount && shouldPromptClose) {
+      const { changeCount, savedChangeCount } = this.state;
+      if (changeCount !== savedChangeCount) {
         this.setState({ showCloseModal: true });
         return false;
       }
@@ -589,21 +592,21 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   }
 
   handleCloseDiscard(): void {
-    this.setState({ shouldPromptClose: false, showCloseModal: false });
+    this.setState({ showCloseModal: false });
     const { glContainer } = this.props;
-    glContainer.close();
+    glContainer.close({ force: true });
   }
 
   handleCloseSave(): void {
-    this.setState({ shouldPromptClose: false, showCloseModal: false });
+    this.setState({ showCloseModal: false });
     if (this.save()) {
       const { glContainer } = this.props;
-      glContainer.close();
+      glContainer.close({ force: true });
     }
   }
 
   handleCloseCancel(): void {
-    this.setState({ shouldPromptClose: true, showCloseModal: false });
+    this.setState({ showCloseModal: false });
   }
 
   /**
@@ -1032,7 +1035,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   }
 
   runCommand(command?: string): void {
-    if (command === undefined) {
+    if (command === undefined || command === '') {
       log.debug('Ignoring empty command.');
       return;
     }
