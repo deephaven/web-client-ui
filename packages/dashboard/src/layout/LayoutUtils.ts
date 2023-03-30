@@ -559,8 +559,6 @@ class LayoutUtils {
       searchConfig
     );
 
-    console.log(oldContentItem, searchConfig);
-
     if (replaceExisting && oldContentItem && stack) {
       const index = stack?.contentItems.indexOf(oldContentItem);
 
