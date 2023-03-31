@@ -1,14 +1,13 @@
-import shortid from 'shortid';
 import Log from '@deephaven/log';
 import { TimeoutError } from '@deephaven/utils';
 
 const log = Log.module('MessageUtils');
 
-export const LOGIN_OPTIONS_REQUEST = 'requestLoginOptionsFromParent';
-export const LOGIN_OPTIONS_RESPONSE = 'loginOptions';
+export const LOGIN_OPTIONS_REQUEST = 'io.deephaven.loginOptions.request';
+export const LOGIN_OPTIONS_RESPONSE = 'io.deephaven.loginOptions.response';
 
-export const SESSION_DETAILS_REQUEST = 'requestSessionDetailsFromParent';
-export const SESSION_DETAILS_RESPONSE = 'sessionDetails';
+export const SESSION_DETAILS_REQUEST = 'io.deephaven.sessionDetails.request';
+export const SESSION_DETAILS_RESPONSE = 'io.deephaven.sessionDetails.response';
 
 export interface Message<T> {
   message: string;
@@ -16,12 +15,8 @@ export interface Message<T> {
   id?: string;
 }
 
-export function makeMessage<T>(
-  message: string,
-  id?: string,
-  payload?: T
-): Message<T> {
-  return { id, message, payload };
+export function makeMessage<T>(message: string, payload?: T): Message<T> {
+  return { message, payload };
 }
 
 /**
@@ -41,12 +36,10 @@ export async function requestParentResponse<T>(
   }
   return new Promise((resolve, reject) => {
     let timeoutId: NodeJS.Timeout;
-    const id = shortid();
     const listener = (event: MessageEvent<Message<T>>) => {
       const { data } = event;
       log.debug('Received message', data);
-      // TODO: checking just the id should be enough, can probably drop the response message check?
-      if (data?.id !== id || data?.message !== response) {
+      if (data?.message !== response) {
         log.debug('Ignore received message', data);
         return;
       }
@@ -55,10 +48,10 @@ export async function requestParentResponse<T>(
       resolve(data.payload);
     };
     window.addEventListener('message', listener);
-    window.opener.postMessage(makeMessage(request, id), '*');
     timeoutId = setTimeout(() => {
       window.removeEventListener('message', listener);
       reject(new TimeoutError('Request timed out'));
     }, timeout);
+    window.opener.postMessage(makeMessage(request), '*');
   });
 }

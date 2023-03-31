@@ -8,57 +8,57 @@ import { makeMessage, requestParentResponse } from './MessageUtils';
 jest.useFakeTimers();
 
 describe('requestParentResponse', () => {
-  let messageId;
-  const mockPostMessage = jest.fn(({ id }) => {
-    messageId = id;
-  });
+  const mockPostMessage = jest.fn();
   let addListenerSpy: jest.SpyInstance;
   let removeListenerSpy: jest.SpyInstance;
   let listenerCallback;
-
+  const originalWindowOpener = window.opener;
   beforeEach(() => {
     addListenerSpy = jest
       .spyOn(window, 'addEventListener')
       .mockImplementation((event, cb) => {
         listenerCallback = cb;
       });
-    messageId = undefined;
     removeListenerSpy = jest.spyOn(window, 'removeEventListener');
+    window.opener = { postMessage: mockPostMessage };
   });
   afterEach(() => {
     addListenerSpy.mockRestore();
     removeListenerSpy.mockRestore();
     mockPostMessage.mockClear();
+    window.opener = originalWindowOpener;
   });
 
   it('Posts message to parent and subscribes to response', async () => {
-    window.opener = { postMessage: mockPostMessage };
     requestParentResponse<string>('request', 'response');
-    expect(mockPostMessage).toBeCalledWith(
-      expect.objectContaining({ message: 'request', id: expect.any(String) }),
+    expect(mockPostMessage).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'request' }),
       '*'
     );
-    expect(addListenerSpy).toBeCalledWith('message', expect.any(Function));
+    expect(addListenerSpy).toHaveBeenCalledWith(
+      'message',
+      expect.any(Function)
+    );
   });
 
   it('Resolves with the payload from the parent window response and unsubscribes', async () => {
-    window.opener = { postMessage: mockPostMessage };
     const PAYLOAD = 'PAYLOAD';
     const promise = requestParentResponse<string>('request', 'response');
     listenerCallback({
-      data: makeMessage<string>('response', messageId, PAYLOAD),
+      data: makeMessage<string>('response', PAYLOAD),
     });
     const result = await promise;
     expect(result).toBe(PAYLOAD);
-    expect(removeListenerSpy).toBeCalledWith('message', listenerCallback);
+    expect(removeListenerSpy).toHaveBeenCalledWith('message', listenerCallback);
   });
 
-  // it('Rejects on time out', async () => {
-  //   window.opener = { postMessage: mockPostMessage };
-  //   const promise = requestParentResponse<string>('request', 'response', 10000);
-  //   jest.runOnlyPendingTimers();
-  //   expect(await promise).rejects.toMatch('Request timed out');
-  // });
+  it('Rejects on time out', async () => {
+    const promise = requestParentResponse<string>('request', 'response');
+    expect(removeListenerSpy).not.toHaveBeenCalled();
+    jest.runOnlyPendingTimers();
+    expect(removeListenerSpy).toHaveBeenCalled();
+    await expect(promise).rejects.toThrow(TimeoutError);
+  });
 
   // it('Ignores unrelated messages', async () => {
   //   window.opener = { postMessage: mockPostMessage };
