@@ -153,7 +153,10 @@ function AppInit(props: AppInitProps) {
     setServerConfigValues,
   } = props;
 
+  // General error means the app is dead and is unlikely to recover
   const [error, setError] = useState<unknown>();
+  // Disconnect error may be temporary, so just show an error overlaid on the app
+  const [disconnectError, setDisconnectError] = useState<unknown>();
   const [isFontLoading, setIsFontLoading] = useState(true);
 
   const initClient = useCallback(async () => {
@@ -175,14 +178,12 @@ function AppInit(props: AppInitProps) {
         ? // Fall back to the old API for anonymous auth if the new API is not supported
           createConnection()
         : coreClient.getAsIdeConnection());
-      connection.addEventListener(
-        dh.IdeConnection.HACK_CONNECTION_FAILURE,
-        event => {
-          const { detail } = event;
-          log.error('Connection failure', `${JSON.stringify(detail)}`);
-          setError(`Unable to connect:  ${detail.details ?? 'Unknown Error'}`);
-        }
-      );
+      connection.addEventListener(dh.IdeConnection.EVENT_SHUTDOWN, event => {
+        const { detail } = event;
+        log.info('Shutdown', `${JSON.stringify(detail)}`);
+        setError(`Server shutdown: ${detail ?? 'Unknown reason'}`);
+        setDisconnectError(null);
+      });
 
       const sessionWrapper = await loadSessionWrapper(connection);
       const name = 'user';
@@ -318,7 +319,10 @@ function AppInit(props: AppInitProps) {
 
   const isLoading = (workspace == null && error == null) || isFontLoading;
   const isLoaded = !isLoading && error == null;
-  const errorMessage = error != null ? `${error}` : null;
+  const errorMessage =
+    error != null || disconnectError != null
+      ? `${error ?? disconnectError}`
+      : null;
 
   return (
     <>

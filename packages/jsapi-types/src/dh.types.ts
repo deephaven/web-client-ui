@@ -112,15 +112,37 @@ export interface TextEdit {
   range: DocumentRange;
 }
 
+export interface MarkupContent {
+  value: string;
+  kind: 'markdown' | 'plaintext';
+}
+
 export interface CompletionItem {
   label: string;
   kind: number;
   detail: string;
-  documentation: string;
+  documentation: MarkupContent;
   sortText: string;
   filterText: string;
   textEdit: TextEdit;
   insertTextFormat: number;
+}
+
+export interface ParameterInfo {
+  label: string;
+  documentation: string;
+}
+
+export interface SignatureInfo {
+  label: string;
+  documentation?: MarkupContent;
+  parameters?: ParameterInfo[];
+  activeParameter: number;
+}
+
+export interface Hover {
+  contents?: MarkupContent;
+  range?: DocumentRange;
 }
 
 export interface IdeSessionStatic {
@@ -164,6 +186,8 @@ export interface IdeSession extends Evented {
     userTimeZone: string
   ): Promise<Table>;
   getCompletionItems(params: unknown): Promise<CompletionItem[]>;
+  getSignatureHelp?(params: unknown): Promise<SignatureInfo[]>;
+  getHover?(params: unknown): Promise<Hover>;
   closeDocument(params: unknown): void;
   openDocument(params: unknown): void;
   changeDocument(params: unknown): void;
@@ -970,7 +994,12 @@ export interface IdeConnectionOptions {
 }
 
 export interface IdeConnectionConstructor {
+  /** @deprecated Use EVENT_DISCONNECT and EVENT_RECONNECT instead */
   HACK_CONNECTION_FAILURE: string;
+  EVENT_DISCONNECT: string;
+  EVENT_RECONNECT: string;
+  EVENT_SHUTDOWN: string;
+
   new (serverUrl: string, options?: IdeConnectionOptions): IdeConnection;
 }
 
@@ -1037,7 +1066,12 @@ export interface StorageService {
   createDirectory(path: string): Promise<void>;
 }
 
-export interface CoreClientContructor {
+export interface CoreClientContructor extends Evented {
+  EVENT_CONNECT: string;
+  EVENT_DISCONNECT: string;
+  EVENT_RECONNECT: string;
+  EVENT_RECONNECT_AUTH_FAILED: string;
+  EVENT_REFRESH_TOKEN_UPDATED: string;
   LOGIN_TYPE_ANONYMOUS: string;
   new (serverUrl: string): CoreClient;
 }

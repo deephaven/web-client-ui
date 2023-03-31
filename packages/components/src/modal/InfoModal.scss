@@ -1,0 +1,27 @@
+@import '../../scss/custom.scss';
+
+$info-modal-icon-font-size: 120px;
+$info-modal-message-header: 24px;
+$info-modal-padding-bottom: 18px;
+
+.info-modal {
+  text-align: center;
+  padding-bottom: $info-modal-padding-bottom;
+  .message-icon {
+    font-size: $info-modal-icon-font-size;
+    text-align: center;
+    line-height: 1;
+    .svg-inline--fa {
+      font-size: inherit;
+    }
+  }
+  .message-header {
+    font-size: $info-modal-message-header;
+    .svg-inline--fa {
+      font-size: inherit;
+    }
+  }
+  .message-content {
+    font-style: italic;
+  }
+}

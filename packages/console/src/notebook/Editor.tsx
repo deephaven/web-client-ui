@@ -6,6 +6,7 @@ import classNames from 'classnames';
 import * as monaco from 'monaco-editor';
 import { assertNotNull } from '@deephaven/utils';
 import MonacoUtils from '../monaco/MonacoUtils';
+import './Editor.scss';
 
 interface EditorProps {
   className: string;
@@ -89,6 +90,7 @@ class Editor extends Component<EditorProps, Record<string, never>> {
       tabCompletion: 'on',
       value: '',
       wordWrap: 'off',
+      links: true,
       ...settings,
     };
     assertNotNull(this.container);
@@ -111,6 +113,10 @@ class Editor extends Component<EditorProps, Record<string, never>> {
     });
     this.editor.layout();
     MonacoUtils.removeConflictingKeybindings(this.editor);
+
+    monaco.languages.registerLinkProvider('plaintext', {
+      provideLinks: MonacoUtils.provideLinks,
+    });
 
     onEditorInitialized(this.editor);
   }

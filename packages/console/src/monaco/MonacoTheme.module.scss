@@ -65,4 +65,9 @@
   editor-suggest-widget-selected-background: mix($primary, $gray-700, 15%);
   editor-suggest-widget-highlightForeground: $primary;
   list-hover-background: $gray-600;
+
+  // links
+  text-link-foreground: $link-color;
+  text-link-active-foreground: $link-hover-color;
+  editor-link-active-foreground: $link-hover-color;
 }

@@ -10,7 +10,13 @@ const TABLE = IrisGridTestUtils.makeTable({
   size: 100,
 });
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const BAD_TABLE = new (dh as any).Table({});
+const BAD_TABLE = IrisGridTestUtils.makeTable({
+  columns: COLUMN_NAMES.map(name => IrisGridTestUtils.makeColumn(name)),
+  size: 100,
+});
+BAD_TABLE.freeze = jest.fn(() =>
+  Promise.reject(new Error('Test invalid error'))
+);
 
 function makeTableCsvExporterWrapper({
   name = 'TEST',

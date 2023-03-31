@@ -426,6 +426,20 @@ class DeephavenObject {
       callbacks[i](event);
     }
   }
+
+  nextEvent(name, timeout) {
+    let cleanup;
+    return new Promise((resolve, reject) => {
+      cleanup = this.addEventListener(name, detail => {
+        resolve(detail);
+        cleanup();
+      });
+    });
+  }
+
+  hasListeners(name) {
+    return (this._listeners[name]?.length ?? 0) > 0;
+  }
 }
 
 class Sort {
@@ -615,6 +629,11 @@ class Table extends DeephavenObject {
     size = ROW_COUNT,
     suppressFilter = false,
     customColumns = [],
+    description = 'Mock Table',
+    layoutHints = null,
+    hasInputTable = false,
+    pluginName = null,
+    totalsTableConfig = {},
   } = {}) {
     super({ sort, filter, columns, size });
 
@@ -623,6 +642,7 @@ class Table extends DeephavenObject {
     this.columns = columns;
     this.customColumns = customColumns;
     this.size = size;
+    this.totalSize = size;
     this.suppressFilter = suppressFilter;
 
     this.startRow = 0;
@@ -631,6 +651,11 @@ class Table extends DeephavenObject {
     this.pendingViewportUpdate = false;
     this.isClosed = false;
     this.isUncoalesced = false;
+    this.description = description;
+    this.layoutHints = layoutHints;
+    this.hasInputTable = hasInputTable;
+    this.pluginName = pluginName;
+    this.totalsTableConfig = totalsTableConfig;
   }
 
   close() {}
@@ -665,7 +690,7 @@ class Table extends DeephavenObject {
     const { startRow, endRow, viewportColumns, size, filter } = this;
 
     if (startRow == null || endRow == null || viewportColumns == null) {
-      return null;
+      throw new Error('Viewport not set');
     }
 
     let rows = [];
@@ -686,13 +711,17 @@ class Table extends DeephavenObject {
     return viewportData;
   }
 
+  findColumn(name) {
+    const column = this.columns.find(col => col.name === name);
+    if (column === undefined) {
+      throw new Error(`Column ${name} not found`);
+    }
+    return column;
+  }
+
   findColumns(names) {
     return names.map(name => {
-      const column = this.columns.find(col => col.name === name);
-      if (column === undefined) {
-        throw new Error(`Column ${name} not found`);
-      }
-      return column;
+      return this.findColumn(name);
     });
   }
 
@@ -744,6 +773,10 @@ class Table extends DeephavenObject {
     });
   }
 
+  getGrandTotalsTable() {
+    return this.getTotalsTable();
+  }
+
   selectDistinct() {
     return new Promise((resolve, reject) => {
       const table = makeDummyTable();
@@ -758,8 +791,44 @@ class Table extends DeephavenObject {
     });
   }
 
+  reverse() {
+    return this.copy();
+  }
+
   rollup() {
     return this.copy();
+  }
+
+  treeTable() {
+    return this.copy();
+  }
+
+  inputTable() {
+    return Promise.resolve(new InputTable());
+  }
+
+  freeze() {
+    return this.copy();
+  }
+
+  snapshot() {
+    return this.copy();
+  }
+
+  join() {
+    return this.copy();
+  }
+
+  byExternal() {
+    return this.copy();
+  }
+
+  seekRow() {
+    return Promise.resolve(-1);
+  }
+
+  getColumnStatistics() {
+    return Promise.reject(new Error('Column statistics not implemented'));
   }
 
   subscribe(columns, updateInterval = UPDATE_INTERVAL) {
@@ -783,6 +852,8 @@ Table.EVENT_UPDATED = 'updated';
 Table.EVENT_CONNECT = 'connect';
 Table.EVENT_DISCONNECT = 'disconnect';
 Table.EVENT_RECONNECT = 'reconnect';
+Table.EVENT_RECONNECTFAILED = 'reconnectfailed';
+Table.SIZE_UNCOALESCED = 'sizeuncoalesced';
 
 class TableViewportSubscription extends DeephavenObject {
   constructor({ table = makeDummyTable() } = {}) {
@@ -1267,6 +1338,9 @@ class IdeConnection extends DeephavenObject {
   }
 }
 
+IdeConnection.EVENT_DISCONNECT = 'disconnect';
+IdeConnection.EVENT_RECONNECT = 'reconnect';
+
 class IdeSession extends DeephavenObject {
   constructor(language) {
     super();
@@ -1274,9 +1348,34 @@ class IdeSession extends DeephavenObject {
     this.language = language;
     this.tables = [];
     this.widgets = [];
+    this.logMessageCallbacks = [];
+    this.subscribeCallbacks = [];
   }
 
-  onLogMessage(callback) {}
+  onLogMessage(callback) {
+    this.logMessageCallbacks.push(callback);
+    return () => {
+      this.logMessageCallbacks = this.logMessageCallbacks.filter(
+        cb => cb !== callback
+      );
+    };
+  }
+
+  subscribeToFieldUpdates(callback) {
+    this.subscribeCallbacks.push(callback);
+    return () => {
+      this.subscribeCallbacks = this.subscribeCallbacks.filter(
+        cb => cb !== callback
+      );
+    };
+  }
+
+  notifySubscribeCallbacks(changes) {
+    const callbacks = [...this.subscribeCallbacks];
+    callbacks.forEach(cb => {
+      cb(changes);
+    });
+  }
 
   close() {}
   /**
@@ -1374,6 +1473,8 @@ class IdeSession extends DeephavenObject {
       }
 
       timer = setTimeout(() => {
+        this.notifySubscribeCallbacks(tableChanges);
+        this.notifySubscribeCallbacks(widgetChanges);
         resolve(result);
       }, delay);
     });
@@ -1413,10 +1514,33 @@ class IdeSession extends DeephavenObject {
     });
   }
 
+  getTreeTable(name) {
+    // We're just going to use a regular table for TreeTable
+    // Actual impl is different, but should be fine for mock
+    this.getTable(name);
+  }
+
+  getObject(variableDefinition) {
+    switch (variableDefinition.type) {
+      case dh.VariableType.FIGURE:
+        return this.getFigure(variableDefinition.title);
+      case dh.VariableType.TreeTable:
+        return this.getTreeTable(variableDefinition.title);
+      default:
+        return this.getTable(variableDefinition.title);
+    }
+  }
+
   openDocument() {}
   changeDocument() {}
   getCompletionItems() {
     return Promise.resolve([]);
+  }
+  getSignatureHelp() {
+    return Promise.resolve([]);
+  }
+  getHover() {
+    return Promise.resolve({});
   }
   closeDocument() {}
 
@@ -1864,6 +1988,8 @@ const dh = {
   TotalsTableConfig: TotalsTableConfig,
   TableViewportSubscription,
   TableSubscription,
+  // TreeTable and Table are different in actual implementation, but should be okay for the mock
+  TreeTable: Table,
   Column: Column,
   RangeSet,
   Row: Row,
