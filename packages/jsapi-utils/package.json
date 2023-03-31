@@ -24,7 +24,8 @@
     "@deephaven/filters": "file:../filters",
     "@deephaven/jsapi-shim": "file:../jsapi-shim",
     "@deephaven/log": "file:../log",
-    "@deephaven/utils": "file:../utils"
+    "@deephaven/utils": "file:../utils",
+    "shortid": "^2.2.16"
   },
   "devDependencies": {
     "@deephaven/tsconfig": "file:../tsconfig"
