@@ -136,7 +136,8 @@ export function PlotlyChartPlugin(
         ChartModelFactory.makePlotlyModelFromSettings(
           tableColumnReplacementMap,
           data.plotly,
-          !data.deephaven.is_user_set_template
+          !data.deephaven.is_user_set_template,
+          !data.deephaven.is_user_set_color
         );
       const config = {
         type: 'react-component' as const,
