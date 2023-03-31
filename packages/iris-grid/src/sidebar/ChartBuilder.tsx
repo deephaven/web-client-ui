@@ -10,7 +10,7 @@ import {
   vsCircleLargeFilled,
   vsTrash,
 } from '@deephaven/icons';
-import dh, { Column, SeriesPlotStyle } from '@deephaven/jsapi-shim';
+import { Column, dhType, SeriesPlotStyle } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import shortid from 'shortid';
 import {
@@ -37,6 +37,7 @@ export type SeriesItem = {
 };
 
 interface ChartBuilderProps {
+  dh: dhType;
   model: IrisGridModel;
   onSubmit: (obj: ChartBuilderSettings) => void;
   onChange: (obj: ChartBuilderSettings) => void;
@@ -58,20 +59,25 @@ interface ChartBuilderState {
  * Form for configuring all the settings when creating a console.
  */
 class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
-  static types = [
-    dh.plot.SeriesPlotStyle.LINE,
-    dh.plot.SeriesPlotStyle.BAR,
-    dh.plot.SeriesPlotStyle.SCATTER,
-    dh.plot.SeriesPlotStyle.PIE,
-    // IDS-6808: Disable Histogram in Chart Builder until we pipe histogram creation through the API
-    // dh.plot.SeriesPlotStyle.HISTOGRAM,
-  ];
+  static getTypes(dh: dhType) {
+    return [
+      dh.plot.SeriesPlotStyle.LINE,
+      dh.plot.SeriesPlotStyle.BAR,
+      dh.plot.SeriesPlotStyle.SCATTER,
+      dh.plot.SeriesPlotStyle.PIE,
+      // IDS-6808: Disable Histogram in Chart Builder until we pipe histogram creation through the API
+      // dh.plot.SeriesPlotStyle.HISTOGRAM,
+    ];
+  }
 
   /**
    * Converts the provided chart type into a readable type.
    * Just replaces underscores with spaces and capitals the first letter of each word.
    */
-  static getTypeName(type: SeriesPlotStyle): string | SeriesPlotStyle {
+  static getTypeName(
+    dh: dhType,
+    type: SeriesPlotStyle
+  ): string | SeriesPlotStyle {
     switch (type) {
       case dh.plot.SeriesPlotStyle.LINE:
         return 'Line';
@@ -88,7 +94,10 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     }
   }
 
-  static getTypeIcon(type: SeriesPlotStyle): React.ReactElement | null {
+  static getTypeIcon(
+    dh: dhType,
+    type: SeriesPlotStyle
+  ): React.ReactElement | null {
     switch (type) {
       case dh.plot.SeriesPlotStyle.LINE:
         return <LineIcon />;
@@ -105,7 +114,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     }
   }
 
-  static getMaxSeriesCount(type: SeriesPlotStyle): number {
+  static getMaxSeriesCount(dh: dhType, type: SeriesPlotStyle): number {
     switch (type) {
       case dh.plot.SeriesPlotStyle.PIE:
         return 1;
@@ -116,7 +125,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     }
   }
 
-  static getXAxisLabel(type: SeriesPlotStyle): string {
+  static getXAxisLabel(dh: dhType, type: SeriesPlotStyle): string {
     switch (type) {
       case dh.plot.SeriesPlotStyle.PIE:
         return 'Labels';
@@ -127,7 +136,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     }
   }
 
-  static getSeriesLabel(type: SeriesPlotStyle): string {
+  static getSeriesLabel(dh: dhType, type: SeriesPlotStyle): string {
     switch (type) {
       case dh.plot.SeriesPlotStyle.PIE:
         return 'Values';
@@ -141,10 +150,11 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
   }
 
   static makeDefaultSeriesItems(
+    dh: dhType,
     type: SeriesPlotStyle,
     columns: readonly Column[]
   ): SeriesItem[] {
-    const maxSeriesCount = ChartBuilder.getMaxSeriesCount(type);
+    const maxSeriesCount = ChartBuilder.getMaxSeriesCount(dh, type);
     if (maxSeriesCount === 0 || columns == null || columns.length === 0) {
       return [];
     }
@@ -177,12 +187,14 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     this.handleXAxisChange = this.handleXAxisChange.bind(this);
     this.sendChange = this.sendChange.bind(this);
 
-    const { model } = props;
+    const { dh, model } = props;
     const { columns } = model;
 
-    const type = ChartBuilder.types[0];
+    const type = ChartBuilder.getTypes(dh)[0];
     const xAxis = ChartBuilder.getDefaultXAxis(type, columns) as string;
-    const seriesItems = ChartBuilder.makeDefaultSeriesItems(type, columns);
+    const seriesItems = ChartBuilder.makeDefaultSeriesItems(dh, type, columns);
+
+    this.dh = dh;
 
     this.state = {
       /** The selected chart type */
@@ -198,6 +210,8 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
       isLinked: true,
     };
   }
+
+  private dh: dhType;
 
   handleAddSeries(): void {
     this.setState(state => {
@@ -223,9 +237,13 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     const { model } = this.props;
     const { columns } = model;
 
-    const type = ChartBuilder.types[0];
+    const type = ChartBuilder.getTypes(dh)[0];
     const xAxis = ChartBuilder.getDefaultXAxis(type, columns) as string;
-    const seriesItems = ChartBuilder.makeDefaultSeriesItems(type, columns);
+    const seriesItems = ChartBuilder.makeDefaultSeriesItems(
+      this.dh,
+      type,
+      columns
+    );
     const isLinked = true;
 
     this.setState({ type, seriesItems, xAxis, isLinked }, this.sendChange);
@@ -280,18 +298,22 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     const index = changeEvent.target.getAttribute('data-index') as string;
     const intIndex = parseInt(index, 10);
 
-    const type = ChartBuilder.types[intIndex];
+    const type = ChartBuilder.getTypes(dh)[intIndex];
 
     log.debug2('handleTypeSelect', type);
 
     this.setState(state => {
-      const maxSeriesCount = ChartBuilder.getMaxSeriesCount(type);
+      const maxSeriesCount = ChartBuilder.getMaxSeriesCount(this.dh, type);
       let { seriesItems } = state;
       seriesItems = seriesItems.slice(0, maxSeriesCount);
       if (seriesItems.length === 0 && maxSeriesCount > 0) {
         const { model } = this.props;
         const { columns } = model;
-        seriesItems = ChartBuilder.makeDefaultSeriesItems(type, columns);
+        seriesItems = ChartBuilder.makeDefaultSeriesItems(
+          this.dh,
+          type,
+          columns
+        );
       }
 
       return { type, seriesItems };
@@ -314,12 +336,12 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
   }
 
   render(): JSX.Element {
-    const { model } = this.props;
+    const { model, dh } = this.props;
     const { columns } = model;
     const { seriesItems, type, xAxis, isLinked } = this.state;
-    const maxSeriesCount = ChartBuilder.getMaxSeriesCount(type);
-    const xAxisLabel = ChartBuilder.getXAxisLabel(type);
-    const seriesLabel = ChartBuilder.getSeriesLabel(type);
+    const maxSeriesCount = ChartBuilder.getMaxSeriesCount(dh, type);
+    const xAxisLabel = ChartBuilder.getXAxisLabel(dh, type);
+    const seriesLabel = ChartBuilder.getSeriesLabel(dh, type);
     const isSeriesVisible = seriesItems.length > 0;
     const isAddSeriesVisible = seriesItems.length < maxSeriesCount;
 
@@ -329,7 +351,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
           <div className="form-row">
             <label>Select Chart Type</label>
             <div className="form-row">
-              {ChartBuilder.types.map((chartType, index) => {
+              {ChartBuilder.getTypes(dh).map((chartType, index) => {
                 const key = (chartType as unknown) as React.Key;
                 return (
                   <div key={key} className="col col-chart-type">
@@ -346,8 +368,8 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
                       data-index={index}
                       onClick={this.handleTypeClick}
                     >
-                      {ChartBuilder.getTypeIcon(chartType)}
-                      {ChartBuilder.getTypeName(chartType)}
+                      {ChartBuilder.getTypeIcon(this.dh, chartType)}
+                      {ChartBuilder.getTypeName(this.dh, chartType)}
                     </button>
                   </div>
                 );

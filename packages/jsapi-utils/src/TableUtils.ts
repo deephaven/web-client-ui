@@ -1117,7 +1117,7 @@ export class TableUtils {
     timeZone: string
   ): FilterCondition {
     const { dh } = this;
-    const [startDate, endDate] = DateUtils.parseDateRange(text, timeZone);
+    const [startDate, endDate] = DateUtils.parseDateRange(dh, text, timeZone);
 
     const startValue =
       startDate != null ? dh.FilterValue.ofNumber(startDate) : null;
@@ -1462,7 +1462,7 @@ export class TableUtils {
       return TableUtils.makeBooleanValue(text, true);
     }
     if (TableUtils.isDateType(columnType)) {
-      const [date] = DateUtils.parseDateRange(text, timeZone);
+      const [date] = DateUtils.parseDateRange(dh, text, timeZone);
       return date;
     }
 

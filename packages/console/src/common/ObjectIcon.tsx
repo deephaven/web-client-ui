@@ -1,22 +1,24 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhPandas, dhTable, vsGraph, vsPreview } from '@deephaven/icons';
-import dh from '@deephaven/jsapi-shim';
+import { dhType } from '@deephaven/jsapi-shim';
 
 export type ObjectIconProps = {
+  dh: dhType;
   type: string;
 };
 
-function ObjectIcon({ type }: ObjectIconProps): JSX.Element {
+function ObjectIcon({ type, dh }: ObjectIconProps): JSX.Element {
+  const { VariableType } = dh;
   switch (type) {
-    case dh.VariableType.TABLE:
-    case dh.VariableType.TABLEMAP:
-    case dh.VariableType.TREETABLE:
-    case dh.VariableType.HIERARCHICALTABLE:
+    case VariableType.TABLE:
+    case VariableType.TABLEMAP:
+    case VariableType.TREETABLE:
+    case VariableType.HIERARCHICALTABLE:
       return <FontAwesomeIcon icon={dhTable} />;
-    case dh.VariableType.FIGURE:
+    case VariableType.FIGURE:
       return <FontAwesomeIcon icon={vsGraph} />;
-    case dh.VariableType.PANDAS:
+    case VariableType.PANDAS:
       return <FontAwesomeIcon icon={dhPandas} />;
     default:
       return <FontAwesomeIcon icon={vsPreview} />;

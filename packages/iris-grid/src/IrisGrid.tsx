@@ -3304,7 +3304,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       gotoValueSelectedColumnName: selectedColumnName,
       gotoValueSelectedFilter,
     } = this.state;
-    const { model } = this.props;
+    const { model, dh } = this.props;
     if (!model.isSeekRowAvailable) {
       return;
     }
@@ -3354,6 +3354,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         }
         case TableUtils.dataType.DATETIME: {
           const [startDate] = DateUtils.parseDateRange(
+            dh,
             inputString,
             formatter.timeZone
           );
@@ -3848,6 +3849,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   render(): ReactElement | null {
     const {
+      dh,
       children,
       customFilters,
       getDownloadWorker,
@@ -4268,6 +4270,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           return (
             <ChartBuilder
               model={model}
+              dh={dh}
               onChange={this.handleChartChange}
               onSubmit={this.handleChartCreate}
               key={OptionType.CHART_BUILDER}

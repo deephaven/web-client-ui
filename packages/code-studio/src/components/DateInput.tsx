@@ -1,5 +1,5 @@
 import React, { useState, ReactElement } from 'react';
-import dh, { DateWrapper } from '@deephaven/jsapi-shim';
+import { DateWrapper, dhType } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import { MaskedInput, SelectionSegment } from '@deephaven/components';
 
@@ -16,13 +16,13 @@ const DH_FORMAT_PATTERN = 'yyyy-MM-dd HH:mm:ss.SSSSSSSSS';
 const DEFAULT_VALUE_STRING = '2019-01-01 00:00:00.000\u200B000\u200B000';
 const EXAMPLES = [DEFAULT_VALUE_STRING];
 
-const parseDateString = (dateString: string) =>
+const parseDateString = (dh: dhType, dateString: string) =>
   dh.i18n.DateTimeFormat.parse(
     DH_FORMAT_PATTERN,
     dateString.replace(/\u200B/g, '')
   );
 
-const formatDateAsString = (date: number | DateWrapper | Date) => {
+const formatDateAsString = (dh: dhType, date: number | DateWrapper | Date) => {
   const formattedString = dh.i18n.DateTimeFormat.format(
     DH_FORMAT_PATTERN,
     date
@@ -36,17 +36,19 @@ const formatDateAsString = (date: number | DateWrapper | Date) => {
 };
 
 interface DateInputProps {
+  dh: dhType;
   className?: string;
   defaultValue?: DateWrapper;
   onChange?: (value: string) => void;
 }
 
 function DateInput({
+  dh,
   className = '',
-  defaultValue = parseDateString(DEFAULT_VALUE_STRING),
+  defaultValue = parseDateString(dh, DEFAULT_VALUE_STRING),
   onChange = (): void => undefined,
 }: DateInputProps): ReactElement {
-  const [value, setValue] = useState(formatDateAsString(defaultValue));
+  const [value, setValue] = useState(formatDateAsString(dh, defaultValue));
   const [selection, setSelection] = useState<SelectionSegment | undefined>(
     undefined
   );

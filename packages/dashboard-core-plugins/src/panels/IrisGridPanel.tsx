@@ -445,6 +445,7 @@ export class IrisGridPanel extends PureComponent<
 
   getDehydratedIrisGridState = memoize(
     (
+      dh: dhType,
       model: IrisGridModel,
       sorts: readonly Sort[],
       advancedFilters: ReadonlyAdvancedFilterMap,
@@ -467,7 +468,7 @@ export class IrisGridPanel extends PureComponent<
       conditionalFormats: readonly SidebarFormattingRule[],
       columnHeaderGroups: readonly ColumnHeaderGroup[]
     ) =>
-      IrisGridUtils.dehydrateIrisGridState(model, {
+      IrisGridUtils.dehydrateIrisGridState(dh, model, {
         advancedFilters,
         aggregationSettings,
         customColumnFormatMap,
@@ -955,6 +956,7 @@ export class IrisGridPanel extends PureComponent<
         formatter.timeZone
       ),
       advancedFilters: IrisGridUtils.hydrateAdvancedFilters(
+        dh,
         columns,
         indexedAdvancedFilters,
         this.tableUtils,
@@ -1047,6 +1049,7 @@ export class IrisGridPanel extends PureComponent<
         conditionalFormats,
         columnHeaderGroups,
       } = IrisGridUtils.hydrateIrisGridState(
+        dh,
         model,
         {
           ...irisGridState,
@@ -1102,7 +1105,7 @@ export class IrisGridPanel extends PureComponent<
   savePanelState = debounce(() => {
     const { irisGridState, gridState, pluginState } = this;
     assertNotNull(irisGridState);
-    const { onPanelStateUpdate } = this.props;
+    const { onPanelStateUpdate, dh } = this.props;
     const {
       model,
       panelState: oldPanelState,
@@ -1152,6 +1155,9 @@ export class IrisGridPanel extends PureComponent<
         advancedSettings
       ),
       this.getDehydratedIrisGridState(
+        // dh is set to defaultDh in defaultProps
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        dh!,
         model,
         sorts,
         advancedFilters,
