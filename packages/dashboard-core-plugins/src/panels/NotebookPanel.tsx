@@ -196,6 +196,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.handleTabBlur = this.handleTabBlur.bind(this);
     this.handleTransformLinkUri = this.handleTransformLinkUri.bind(this);
     this.handleOverwrite = this.handleOverwrite.bind(this);
+    this.handlePreviewPromotion = this.handlePreviewPromotion.bind(this);
     this.getDropdownOverflowActions = this.getDropdownOverflowActions.bind(
       this
     );
@@ -283,6 +284,10 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     if (tab != null) this.initTab(tab);
     this.initNotebookContent();
     glEventHub.on(NotebookEvent.RENAME_FILE, this.handleRenameFile);
+    glContainer.on(
+      NotebookEvent.PROMOTE_FROM_PREVIEW,
+      this.handlePreviewPromotion
+    );
   }
 
   componentDidUpdate(
@@ -311,10 +316,14 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.debouncedSavePanelState.flush();
     this.pending.cancel();
 
-    const { glEventHub } = this.props;
+    const { glEventHub, glContainer } = this.props;
 
     const { fileMetadata, isPreview } = this.state;
     glEventHub.off(NotebookEvent.RENAME_FILE, this.handleRenameFile);
+    glContainer.off(
+      NotebookEvent.PROMOTE_FROM_PREVIEW,
+      this.handlePreviewPromotion
+    );
     glEventHub.emit(NotebookEvent.UNREGISTER_FILE, fileMetadata, isPreview);
   }
 
@@ -512,6 +521,10 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     } else {
       this.tabTitleElement.classList.remove('is-preview');
     }
+  }
+
+  handlePreviewPromotion() {
+    this.removePreviewStatus();
   }
 
   getSettings = memoize(
