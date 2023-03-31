@@ -41,6 +41,7 @@ class ChartModelFactory {
     tableColumnReplacementMap: Map<Table, Map<string, string[]>>,
     plotlyConfig: PlotlyDataLayoutConfig,
     isDefaultTemplate = true,
+    isDefaultColors = true,
     theme = ChartTheme
   ): Promise<ChartModel> {
     return new PlotlyChartModel(
@@ -48,6 +49,7 @@ class ChartModelFactory {
       plotlyConfig.data,
       plotlyConfig.layout ?? {},
       isDefaultTemplate,
+      isDefaultColors,
       theme
     );
   }

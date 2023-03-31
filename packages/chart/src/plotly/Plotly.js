@@ -4,6 +4,8 @@
 
 import Plotly from 'plotly.js/lib/core.js';
 import bar from 'plotly.js/lib/bar.js';
+import box from 'plotly.js/lib/box.js';
+import candlestick from 'plotly.js/lib/candlestick.js';
 import funnel from 'plotly.js/lib/funnel.js';
 import funnelarea from 'plotly.js/lib/funnelarea.js';
 import histogram from 'plotly.js/lib/histogram.js';
@@ -21,6 +23,8 @@ import violin from 'plotly.js/lib/violin.js';
 // Load in the trace types we need/support
 Plotly.register([
   bar,
+  box,
+  candlestick,
   funnel,
   funnelarea,
   histogram,

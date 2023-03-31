@@ -32,6 +32,7 @@ interface PlotlyChartWidgetData {
       data_columns: Record<string, string[]>;
     }>;
     is_user_set_template: boolean;
+    is_user_set_color: boolean;
   };
   plotly: PlotlyDataLayoutConfig;
 }
@@ -95,7 +96,8 @@ export function PlotlyChartPlugin(
         return ChartModelFactory.makePlotlyModelFromSettings(
           tableColumnReplacementMap,
           data.plotly,
-          !data.deephaven.is_user_set_template
+          !data.deephaven.is_user_set_template,
+          !data.deephaven.is_user_set_color
         );
       };
       return {

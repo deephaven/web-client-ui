@@ -18,6 +18,7 @@ class PlotlyChartModel extends ChartModel {
     data: Data[],
     layout: Partial<Layout>,
     isDefaultTemplate = true,
+    isDefaultColors = true,
     theme: typeof ChartTheme = ChartTheme
   ) {
     super();
@@ -41,12 +42,14 @@ class PlotlyChartModel extends ChartModel {
       template,
     };
 
-    // Remove colors set on traces by plotly on the server
-    for (let i = 0; i < this.data.length; i += 1) {
-      const d = this.data[i];
-      if (isPlotData(d)) {
-        delete d.marker?.color;
-        delete d.line?.color;
+    if (isDefaultColors) {
+      // Remove colors set on traces by plotly on the server
+      for (let i = 0; i < this.data.length; i += 1) {
+        const d = this.data[i];
+        if (isPlotData(d)) {
+          delete d.marker?.color;
+          delete d.line?.color;
+        }
       }
     }
 
