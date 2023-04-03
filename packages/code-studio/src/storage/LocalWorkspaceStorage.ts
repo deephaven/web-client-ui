@@ -38,18 +38,7 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
       settings: {
         defaultDateTimeFormat:
           DateTimeColumnFormatter.DEFAULT_DATETIME_FORMAT_STRING,
-        formatter: [
-          {
-            columnType: 'decimal',
-            columnName: 'Bid',
-            format: {
-              label: '',
-              type: 'type-global',
-              formatString: '###,##0.00###',
-              multiplier: null,
-            },
-          },
-        ],
+        formatter: [],
         timeZone: DateTimeColumnFormatter.DEFAULT_TIME_ZONE_ID,
         showTimeZone: false,
         showTSeparator: true,
