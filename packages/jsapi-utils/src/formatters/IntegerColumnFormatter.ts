@@ -8,7 +8,7 @@ import TableColumnFormatter, {
 const log = Log.module('IntegerColumnFormatter');
 
 export type IntegerColumnFormat = TableColumnFormat & {
-  multiplier?: number;
+  multiplier?: number | null;
 };
 
 export type IntegerColumnFormatterOptions = {
@@ -150,7 +150,7 @@ export class IntegerColumnFormatter extends TableColumnFormatter<number> {
         ? format.formatString
         : this.defaultFormatString;
     const value =
-      format.multiplier !== undefined && format.multiplier !== 0
+      format.multiplier != null && format.multiplier !== 0
         ? valueParam * format.multiplier
         : valueParam;
     try {
