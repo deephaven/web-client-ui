@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.31.4](https://github.com/deephaven/web-client-ui/compare/v0.31.2...v0.31.4) (2023-04-03)
+
+### Bug Fixes
+
+- DH-14436 Handling no columns ([#1170](https://github.com/deephaven/web-client-ui/issues/1170)) ([#1179](https://github.com/deephaven/web-client-ui/issues/1179)) ([a7498d5](https://github.com/deephaven/web-client-ui/commit/a7498d5e6580909f812b5ccea3f9cab6c96fe3e7)), closes [#1169](https://github.com/deephaven/web-client-ui/issues/1169)
+- DH-14439 Fix QueryMonitor breaking on null in default search filter ([#1174](https://github.com/deephaven/web-client-ui/issues/1174)) ([ba18c7b](https://github.com/deephaven/web-client-ui/commit/ba18c7bdb3737443468c7dd222fc9fe7b7669789)), closes [#1159](https://github.com/deephaven/web-client-ui/issues/1159)
+- Fix column data appearing incorrectly when multiplier null ([#1194](https://github.com/deephaven/web-client-ui/issues/1194)) ([#1196](https://github.com/deephaven/web-client-ui/issues/1196)) ([bd8cbfb](https://github.com/deephaven/web-client-ui/commit/bd8cbfbc23e5cc722ae7bb67177056f493678740)), closes [#1193](https://github.com/deephaven/web-client-ui/issues/1193) [#0](https://github.com/deephaven/web-client-ui/issues/0)
+
 ## [0.31.3](https://github.com/deephaven/web-client-ui/compare/v0.31.2...v0.31.3) (2023-03-30)
 
 ### Bug Fixes

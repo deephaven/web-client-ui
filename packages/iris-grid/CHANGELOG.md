@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.31.4](https://github.com/deephaven/web-client-ui/compare/v0.31.2...v0.31.4) (2023-04-03)
+
+### Bug Fixes
+
+- DH-14436 Handling no columns ([#1170](https://github.com/deephaven/web-client-ui/issues/1170)) ([#1179](https://github.com/deephaven/web-client-ui/issues/1179)) ([a7498d5](https://github.com/deephaven/web-client-ui/commit/a7498d5e6580909f812b5ccea3f9cab6c96fe3e7)), closes [#1169](https://github.com/deephaven/web-client-ui/issues/1169)
+
 ## [0.31.3](https://github.com/deephaven/web-client-ui/compare/v0.31.2...v0.31.3) (2023-03-30)
 
 ### Bug Fixes
