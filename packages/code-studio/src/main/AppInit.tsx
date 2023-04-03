@@ -248,6 +248,7 @@ function AppInit(props: AppInitProps) {
         operateAs: name,
         groups: [],
         permissions: {
+          isACLEditor: false,
           isSuperUser: false,
           isQueryViewOnly: false,
           isNonInteractive: false,
