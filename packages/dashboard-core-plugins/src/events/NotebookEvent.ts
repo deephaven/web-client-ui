@@ -14,6 +14,8 @@ class NotebookEvent {
   static SEND_TO_NOTEBOOK = 'NotebookEvent.sendToNotebook';
 
   static UNREGISTER_FILE = 'NotebookEvent.unregisterFile';
+
+  static PROMOTE_FROM_PREVIEW = 'NotebookEvent.promoteFromPreview';
 }
 
 export default NotebookEvent;

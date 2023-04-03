@@ -2,7 +2,7 @@
   "packages": ["packages/*"],
   "useWorkspaces": true,
   "useNx": false,
-  "version": "0.33.0",
+  "version": "0.34.0",
   "command": {
     "publish": {
       "distTag": "latest"
