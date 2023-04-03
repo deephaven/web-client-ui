@@ -3198,6 +3198,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.setState({
       rollupConfig,
       movedColumns: [],
+      frozenColumns: [],
       sorts: [],
       reverseType: TableUtils.REVERSE_TYPE.NONE,
       selectDistinctColumns: [],

@@ -3,7 +3,7 @@ import memoize from 'memoize-one';
 import { GridRange, ModelIndex } from '@deephaven/grid';
 import { Column, TreeRow, TreeTable } from '@deephaven/jsapi-shim';
 import { assertNotNull } from '@deephaven/utils';
-import { UIRow } from './CommonTypes';
+import { UIRow, ColumnName } from './CommonTypes';
 import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
 
 export interface UITreeRow extends UIRow {
@@ -182,6 +182,10 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
         )
       )
   );
+
+  updateFrozenColumns(columns: ColumnName[]): void {
+    this.frozenColumns = columns;
+  }
 }
 
 export default IrisGridTreeTableModel;
