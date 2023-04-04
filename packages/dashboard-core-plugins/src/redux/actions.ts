@@ -23,7 +23,7 @@ export interface SessionWrapper {
   session: IdeSession;
   connection: IdeConnection;
   config: SessionConfig;
-  details: SessionDetails;
+  details?: SessionDetails;
 }
 
 /**

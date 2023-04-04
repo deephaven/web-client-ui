@@ -9,10 +9,8 @@ import dh, {
 } from '@deephaven/jsapi-shim';
 import {
   LOGIN_OPTIONS_REQUEST,
-  LOGIN_OPTIONS_RESPONSE,
   requestParentResponse,
   SESSION_DETAILS_REQUEST,
-  SESSION_DETAILS_RESPONSE,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import shortid from 'shortid';
@@ -100,17 +98,11 @@ export function createCoreClient(): CoreClient {
 }
 
 async function requestParentLoginOptions(): Promise<LoginOptions> {
-  return requestParentResponse<LoginOptions>(
-    LOGIN_OPTIONS_REQUEST,
-    LOGIN_OPTIONS_RESPONSE
-  );
+  return requestParentResponse<LoginOptions>(LOGIN_OPTIONS_REQUEST);
 }
 
 async function requestParentSessionDetails(): Promise<SessionDetails> {
-  return requestParentResponse<SessionDetails>(
-    SESSION_DETAILS_REQUEST,
-    SESSION_DETAILS_RESPONSE
-  );
+  return requestParentResponse<SessionDetails>(SESSION_DETAILS_REQUEST);
 }
 
 export async function getLoginOptions(

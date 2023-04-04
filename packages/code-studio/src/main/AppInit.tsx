@@ -173,8 +173,10 @@ function AppInit(props: AppInitProps) {
       const coreClient = createCoreClient();
       const authType = getAuthType();
       log.info(`Login using auth type ${authType}...`);
-      const loginOptions = await getLoginOptions(authType);
-      const sessionDetails = await getSessionDetails(authType);
+      const [loginOptions, sessionDetails] = await Promise.all([
+        getLoginOptions(authType),
+        getSessionDetails(authType),
+      ]);
       await coreClient.login(loginOptions);
 
       const newPlugins = await loadPlugins();

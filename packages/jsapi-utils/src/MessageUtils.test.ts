@@ -1,17 +1,24 @@
-import { TimeoutError } from '@deephaven/utils';
-import { makeMessage, requestParentResponse } from './MessageUtils';
+import {
+  makeMessage,
+  makeResponse,
+  Message,
+  requestParentResponse,
+} from './MessageUtils';
 
-// describe('Throws exception if called on a window without parent', async () => {
-//   expect(await requestParentResponse<string>('request', 'response')).toThrow();
-// });
-
-jest.useFakeTimers();
+it('Throws an exception if called on a window without parent', async () => {
+  await expect(requestParentResponse('request')).rejects.toThrow(
+    'window.opener is null, unable to send request.'
+  );
+});
 
 describe('requestParentResponse', () => {
-  const mockPostMessage = jest.fn();
   let addListenerSpy: jest.SpyInstance;
   let removeListenerSpy: jest.SpyInstance;
   let listenerCallback;
+  let messageId;
+  const mockPostMessage = jest.fn((data: Message<unknown>) => {
+    messageId = data.id;
+  });
   const originalWindowOpener = window.opener;
   beforeEach(() => {
     addListenerSpy = jest
@@ -27,12 +34,13 @@ describe('requestParentResponse', () => {
     removeListenerSpy.mockRestore();
     mockPostMessage.mockClear();
     window.opener = originalWindowOpener;
+    messageId = undefined;
   });
 
   it('Posts message to parent and subscribes to response', async () => {
-    requestParentResponse<string>('request', 'response');
+    requestParentResponse('request');
     expect(mockPostMessage).toHaveBeenCalledWith(
-      expect.objectContaining({ message: 'request' }),
+      expect.objectContaining(makeMessage('request', messageId)),
       '*'
     );
     expect(addListenerSpy).toHaveBeenCalledWith(
@@ -43,31 +51,32 @@ describe('requestParentResponse', () => {
 
   it('Resolves with the payload from the parent window response and unsubscribes', async () => {
     const PAYLOAD = 'PAYLOAD';
-    const promise = requestParentResponse<string>('request', 'response');
+    const promise = requestParentResponse('request');
     listenerCallback({
-      data: makeMessage<string>('response', PAYLOAD),
+      data: makeResponse(messageId, PAYLOAD),
     });
     const result = await promise;
     expect(result).toBe(PAYLOAD);
     expect(removeListenerSpy).toHaveBeenCalledWith('message', listenerCallback);
   });
 
-  it('Rejects on time out', async () => {
-    const promise = requestParentResponse<string>('request', 'response');
-    expect(removeListenerSpy).not.toHaveBeenCalled();
+  it('Ignores unrelated response, rejects on timeout', async () => {
+    jest.useFakeTimers();
+    const promise = requestParentResponse('request');
+    listenerCallback({
+      data: makeMessage('wrong-id'),
+    });
     jest.runOnlyPendingTimers();
-    expect(removeListenerSpy).toHaveBeenCalled();
-    await expect(promise).rejects.toThrow(TimeoutError);
+    await expect(promise).rejects.toThrow('Request timed out');
+    jest.useRealTimers();
   });
 
-  // it('Ignores unrelated messages', async () => {
-  //   window.opener = { postMessage: mockPostMessage };
-  //   const PAYLOAD = 'PAYLOAD';
-  //   const promise = requestParentResponse<string>('request', 'response');
-  //   listenerCallback({
-  //     data: makeMessage<string>('response', `TEST_${messageId}`, PAYLOAD),
-  //   });
-  //   const result = await promise;
-  //   expect(result).toBe(PAYLOAD);
-  // });
+  it('Times out if no response', async () => {
+    jest.useFakeTimers();
+    const promise = requestParentResponse('request');
+    jest.runOnlyPendingTimers();
+    expect(removeListenerSpy).toHaveBeenCalled();
+    await expect(promise).rejects.toThrow('Request timed out');
+    jest.useRealTimers();
+  });
 });
