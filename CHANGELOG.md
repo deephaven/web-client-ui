@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.35.0](https://github.com/deephaven/web-client-ui/compare/v0.34.0...v0.35.0) (2023-04-04)
+
+### Bug Fixes
+
+- Fix column data appearing incorrectly when multiplier null ([#1194](https://github.com/deephaven/web-client-ui/issues/1194)) ([e22e68d](https://github.com/deephaven/web-client-ui/commit/e22e68d46c98df0eca6ebd38d1487d8784377575)), closes [#1193](https://github.com/deephaven/web-client-ui/issues/1193) [#0](https://github.com/deephaven/web-client-ui/issues/0)
+- Fixed generic selector types ([#1199](https://github.com/deephaven/web-client-ui/issues/1199)) ([de9b751](https://github.com/deephaven/web-client-ui/commit/de9b751ee0ba3255b68c1daf50dad417ef7eded4)), closes [#1197](https://github.com/deephaven/web-client-ui/issues/1197)
+
+### Features
+
+- Added isACLEditor prop to Redux state ([#1201](https://github.com/deephaven/web-client-ui/issues/1201)) ([f39100a](https://github.com/deephaven/web-client-ui/commit/f39100a94ec195552a8f6cebf1f484c215f6c79a)), closes [#1200](https://github.com/deephaven/web-client-ui/issues/1200)
+- Created ValueOf<T> util type ([#1203](https://github.com/deephaven/web-client-ui/issues/1203)) ([19fcf0e](https://github.com/deephaven/web-client-ui/commit/19fcf0e7efa9290bf4aa072b3dd8a2826f16cc75)), closes [#1202](https://github.com/deephaven/web-client-ui/issues/1202)
+
 # [0.34.0](https://github.com/deephaven/web-client-ui/compare/v0.33.0...v0.34.0) (2023-03-31)
 
 ### Bug Fixes
