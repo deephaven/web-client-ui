@@ -918,10 +918,8 @@ export class AppMainContainer extends Component<
           <ConsolePlugin
             hydrateConsole={AppMainContainer.hydrateConsole}
             notebooksUrl={
-              new URL(
-                `${import.meta.env.VITE_NOTEBOOKS_URL}/`,
-                `${window.location}`
-              ).href
+              new URL(`${import.meta.env.VITE_NOTEBOOKS_URL}/`, import.meta.url)
+                .href
             }
           />
           <FilterPlugin />
