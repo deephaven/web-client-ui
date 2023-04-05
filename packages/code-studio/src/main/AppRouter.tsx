@@ -1,10 +1,5 @@
 import React, { ReactElement } from 'react';
-import {
-  BrowserRouter as Router,
-  Route,
-  Redirect,
-  Switch,
-} from 'react-router-dom';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import AppInit from './AppInit';
 
 function AppRouter(): ReactElement {
