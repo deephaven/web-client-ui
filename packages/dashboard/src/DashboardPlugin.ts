@@ -1,4 +1,4 @@
-import { Component, ComponentType } from 'react';
+import { Component, ComponentType, NamedExoticComponent } from 'react';
 import { ConnectedComponent } from 'react-redux';
 import GoldenLayout from '@deephaven/golden-layout';
 import type {
@@ -8,6 +8,11 @@ import type {
 } from '@deephaven/golden-layout';
 import PanelManager from './PanelManager';
 
+export type PanelFunctionComponentType<P> = NamedExoticComponent<P> & {
+  COMPONENT?: string;
+  TITLE?: string;
+};
+
 export type WrappedComponentType<
   P extends PanelProps,
   C extends ComponentType<P>
@@ -16,7 +21,11 @@ export type WrappedComponentType<
 export type PanelComponentType<
   P extends PanelProps = PanelProps,
   C extends ComponentType<P> = ComponentType<P>
-> = (ComponentType<P> | WrappedComponentType<P, C>) & { COMPONENT?: string };
+> = (
+  | ComponentType<P>
+  | WrappedComponentType<P, C>
+  | PanelFunctionComponentType<P>
+) & { COMPONENT?: string; TITLE?: string };
 
 export function isWrappedComponent<
   P extends PanelProps,

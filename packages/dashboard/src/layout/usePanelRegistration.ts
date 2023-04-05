@@ -20,9 +20,7 @@ export default function usePanelRegistration<
   C extends React.ComponentType<P>
 >(
   registerComponent: DashboardPluginComponentProps['registerComponent'],
-  ComponentType:
-    | PanelComponentType<P, C>
-    | (React.NamedExoticComponent<P> & { COMPONENT?: string }),
+  ComponentType: PanelComponentType<P, C>,
   hydrate?: PanelHydrateFunction<P>,
   dehydrate?: PanelDehydrateFunction
 ) {
