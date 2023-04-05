@@ -20,15 +20,13 @@ export default function usePanelRegistration<
   C extends React.ComponentType<P>
 >(
   registerComponent: DashboardPluginComponentProps['registerComponent'],
-  ComponentType: PanelComponentType<P, C> | React.NamedExoticComponent<P>,
+  ComponentType:
+    | PanelComponentType<P, C>
+    | (React.NamedExoticComponent<P> & { COMPONENT?: string }),
   hydrate?: PanelHydrateFunction<P>,
   dehydrate?: PanelDehydrateFunction
 ) {
-  // Look for static `COMPONENT` or `displayName` attribute
-  const name =
-    'COMPONENT' in ComponentType
-      ? ComponentType.COMPONENT
-      : ComponentType.displayName;
+  const name = ComponentType.COMPONENT ?? ComponentType.displayName;
 
   if (name == null) {
     throw new Error(
