@@ -16,7 +16,7 @@ export type WrappedComponentType<
 export type PanelComponentType<
   P extends PanelProps = PanelProps,
   C extends ComponentType<P> = ComponentType<P>
-> = ComponentType<P> | WrappedComponentType<P, C>;
+> = (ComponentType<P> | WrappedComponentType<P, C>) & { COMPONENT?: string };
 
 export function isWrappedComponent<
   P extends PanelProps,
