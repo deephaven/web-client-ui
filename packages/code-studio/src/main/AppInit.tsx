@@ -191,11 +191,11 @@ function AppInit(props: AppInitProps) {
       const storageService = coreClient.getStorageService();
       const layoutStorage = new GrpcLayoutStorage(
         storageService,
-        new URL(import.meta.env.VITE_LAYOUTS_URL ?? '', import.meta.url).href
+        import.meta.env.VITE_NOTEBOOKS_URL ?? ''
       );
       const fileStorage = new GrpcFileStorage(
         storageService,
-        new URL(import.meta.env.VITE_NOTEBOOKS_URL ?? '', import.meta.url).href
+        import.meta.env.VITE_NOTEBOOKS_URL ?? ''
       );
 
       const workspaceStorage = new LocalWorkspaceStorage(layoutStorage);
