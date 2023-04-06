@@ -1812,11 +1812,10 @@ class NumberFormat {
   }
 
   static format(pattern, number) {
-    if (pattern.indexOf('.') >= 0) {
-      return number.toFixed(4);
-    } else {
-      return number.toFixed(0);
-    }
+    const decimalIndex = pattern.indexOf('.');
+    const decimalCount =
+      decimalIndex >= 0 ? pattern.length - decimalIndex - 1 : 0;
+    return number.toFixed(decimalCount);
   }
 }
 
