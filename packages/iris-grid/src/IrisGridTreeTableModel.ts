@@ -184,7 +184,9 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   );
 
   updateFrozenColumns(columns: ColumnName[]): void {
-    this.frozenColumns = columns;
+    if (columns.length > 0) {
+      throw new Error('Cannot freeze columns on a tree table');
+    }
   }
 }
 

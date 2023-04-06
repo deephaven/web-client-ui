@@ -275,16 +275,9 @@ abstract class IrisGridModel<
   /**
    * @returns Names of columns which should be frozen to the front and floating
    */
-  get frozenColumns(): ColumnName[] {
+  get frozenColumns(): readonly ColumnName[] {
     return EMPTY_ARRAY;
   }
-
-  // /**
-  //  * @param columns Names of columns which should be frozen to the front and floating
-  //  */
-  // set frozenColumns(columns: ColumnName[]) {
-  //   this.frozenColumns = columns;
-  // }
 
   /**
    * @param index The column index to check
