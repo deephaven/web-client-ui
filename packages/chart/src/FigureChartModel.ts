@@ -103,7 +103,7 @@ class FigureChartModel extends ChartModel {
 
   filterColumnMap: FilterColumnMap;
 
-  lastFilter: Map<string, string>;
+  lastFilter: Map<string, unknown>;
 
   isConnected: boolean; // Assume figure is connected to start
 
@@ -703,7 +703,7 @@ class FigureChartModel extends ChartModel {
    * Sets the filter on the model. Will only set the values that have changed.
    * @param filterMap Map of filter column names to values
    */
-  setFilter(filterMap: Map<string, string>): void {
+  setFilter(filterMap: Map<string, unknown>): void {
     if (this.oneClicks.length === 0) {
       log.warn('Trying to set a filter, but no one click!');
       return;

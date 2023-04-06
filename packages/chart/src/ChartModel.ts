@@ -71,7 +71,7 @@ class ChartModel {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  setFilter(filter: Map<string, string>): void {}
+  setFilter(filter: Map<string, unknown>): void {}
 
   /**
    * Close this model, clean up any underlying subscriptions

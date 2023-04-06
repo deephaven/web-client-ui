@@ -353,6 +353,19 @@ export class Linker extends Component<LinkerProps, LinkerState> {
           this.deleteLinks(linksToDelete);
           break;
         }
+        case 'chartLink': {
+          const existingLinkEnd = isReversed === true ? start : end;
+          log.debug('creating chartlink', { existingLinkEnd, start, end });
+          // Don't allow linking more than one column per source to each chart column
+          const linksToDelete = links.filter(
+            ({ end: panelLinkEnd }) =>
+              panelLinkEnd?.panelId === existingLinkEnd.panelId &&
+              panelLinkEnd?.columnName === existingLinkEnd.columnName &&
+              panelLinkEnd?.columnType === existingLinkEnd.columnType
+          );
+          this.deleteLinks(linksToDelete);
+          break;
+        }
         case 'tableLink':
           // No-op
           break;
@@ -642,15 +655,17 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     }
   }
 
-  updateLinkInProgressType(
-    linkInProgress: Link,
-    type: LinkType = 'invalid'
-  ): void {
-    this.setState({
-      linkInProgress: {
-        ...linkInProgress,
-        type,
-      },
+  updateLinkInProgressType(type: LinkType = 'invalid'): void {
+    this.setState(({ linkInProgress }) => {
+      if (linkInProgress !== undefined) {
+        return {
+          linkInProgress: {
+            ...linkInProgress,
+            type,
+          },
+        };
+      }
+      return null;
     });
   }
 
@@ -664,7 +679,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     if (tableColumn == null) {
       if (linkInProgress?.start != null) {
         // Link started, end point is not a valid target
-        this.updateLinkInProgressType(linkInProgress);
+        this.updateLinkInProgressType();
       }
       return false;
     }
@@ -673,7 +688,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     if (!isLinkableColumn(tableColumn)) {
       log.debug2('Column is not filterable', tableColumn.description);
       if (linkInProgress?.start != null) {
-        this.updateLinkInProgressType(linkInProgress, 'invalid');
+        this.updateLinkInProgressType('invalid');
       }
       return false;
     }
@@ -701,7 +716,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
         ? LinkerUtils.getLinkType(end, start, isolatedLinkerPanelId)
         : LinkerUtils.getLinkType(start, end, isolatedLinkerPanelId);
 
-    this.updateLinkInProgressType(linkInProgress, type);
+    this.updateLinkInProgressType(type);
 
     return type !== 'invalid';
   }
