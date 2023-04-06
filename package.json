@@ -54,6 +54,7 @@
   },
   "repository": "https://github.com/deephaven/web-client-ui",
   "devDependencies": {
+    "@adobe/react-spectrum": "^3.26.0",
     "@babel/cli": "7.20.7",
     "@babel/core": "7.20.12",
     "@deephaven/components": "file:../components",

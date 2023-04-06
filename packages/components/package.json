@@ -46,6 +46,7 @@
     "shortid": "^2.2.16"
   },
   "peerDependencies": {
+    "@adobe/react-spectrum": "^3.x",
     "react": "^17.x",
     "react-dom": "^17.x"
   },
