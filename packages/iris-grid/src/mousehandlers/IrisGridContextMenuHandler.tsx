@@ -236,7 +236,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       columnWidth => columnWidth === 0
     );
     const isColumnFreezable =
-      model.getColumnHeaderParentGroup(modelIndex, 0) === undefined;
+      model.getColumnHeaderParentGroup(modelIndex, 0) === undefined &&
+      !(isExpandableGridModel(model) && model.hasExpandableRows);
     const isColumnFrozen = model.isColumnFrozen(modelIndex);
     actions.push({
       title: 'Hide Column',
