@@ -42,6 +42,7 @@ export { default as SelectValueList } from './SelectValueList';
 export * from './SelectValueList';
 export * from './shortcuts';
 export { default as SocketedButton } from './SocketedButton';
+export { default as SpectrumProvider } from './SpectrumProvider';
 export { default as ThemeExport } from './ThemeExport';
 export { default as TimeInput } from './TimeInput';
 export { default as TimeSlider } from './TimeSlider';
