@@ -41,6 +41,7 @@ import {
   Workspace,
   WorkspaceStorage,
   ServerConfigValues,
+  DeephavenPluginModule,
 } from '@deephaven/redux';
 import { setLayoutStorage as setLayoutStorageAction } from '../redux/actions';
 import App from './App';
@@ -73,7 +74,7 @@ async function loadPlugins(): Promise<DeephavenPluginModuleMap> {
     );
 
     log.debug('Plugin manifest loaded:', manifest);
-    const pluginPromises = [];
+    const pluginPromises: Promise<DeephavenPluginModule>[] = [];
     for (let i = 0; i < manifest.plugins.length; i += 1) {
       const { name, main } = manifest.plugins[i];
       const pluginMainUrl = `${
@@ -81,12 +82,17 @@ async function loadPlugins(): Promise<DeephavenPluginModuleMap> {
       }/${name}/${main}`;
       pluginPromises.push(PluginUtils.loadModulePlugin(pluginMainUrl));
     }
-    const pluginModules = await Promise.all(pluginPromises);
+    const pluginModules = await Promise.allSettled(pluginPromises);
 
-    const pluginMap = new Map();
+    const pluginMap: DeephavenPluginModuleMap = new Map();
     for (let i = 0; i < pluginModules.length; i += 1) {
+      const module = pluginModules[i];
       const { name } = manifest.plugins[i];
-      pluginMap.set(name, pluginModules[i]);
+      if (module.status === 'fulfilled') {
+        pluginMap.set(name, module.value);
+      } else {
+        log.error(`Unable to load plugin ${name}`, module.reason);
+      }
     }
     log.info('Plugins loaded:', pluginMap);
 

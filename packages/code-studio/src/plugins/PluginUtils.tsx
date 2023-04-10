@@ -1,4 +1,5 @@
 import React, { ForwardRefExoticComponent } from 'react';
+import { DeephavenPluginModule } from '@deephaven/redux';
 import Log from '@deephaven/log';
 import RemoteComponent from './RemoteComponent';
 import loadRemoteModule from './loadRemoteModule';
@@ -45,7 +46,9 @@ class PluginUtils {
    * @param pluginUrl The URL of the plugin to load
    * @returns The loaded module
    */
-  static async loadModulePlugin(pluginUrl: string): Promise<unknown> {
+  static async loadModulePlugin(
+    pluginUrl: string
+  ): Promise<DeephavenPluginModule> {
     const myModule = await loadRemoteModule(pluginUrl);
     return myModule;
   }
@@ -58,21 +61,16 @@ class PluginUtils {
   static async loadJson(
     jsonUrl: string
   ): Promise<{ plugins: { name: string; main: string }[] }> {
-    return new Promise((resolve, reject) => {
-      const request = new XMLHttpRequest();
-      request.addEventListener('load', () => {
-        try {
-          const json = JSON.parse(request.responseText);
-          resolve(json);
-        } catch (err) {
-          reject(err);
+    return fetch(jsonUrl).then(res => {
+      if (!res.ok) {
+        if (res.status !== 404) {
+          // The browser already logs an error for 404
+          log.error(`Error loading plugins from ${jsonUrl}:`, res.statusText);
         }
-      });
-      request.addEventListener('error', err => {
-        reject(err);
-      });
-      request.open('GET', jsonUrl);
-      request.send();
+        return { plugins: [] };
+      }
+
+      return res.json();
     });
   }
 }
