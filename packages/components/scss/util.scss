@@ -7,13 +7,13 @@
  *
  * Example usage:
  *
- *   #{multiply-specificity-n('.some-selector', 2)} {
- *   }
+ * #{multiply-specificity-n('.some-selector', 2)} {
+ * }
  *
- *   would produce
+ * would produce
  *
- *   .some-selector.some-selector {
- *   }
+ * .some-selector.some-selector {
+ * }
  */
 @function multiply-specificity-n($selector, $n) {
   $result: $selector;
