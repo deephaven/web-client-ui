@@ -1,0 +1,10 @@
+/**
+  This module contains overrides of React Spectrum css variables for the default
+  `dark` Deephaven theme.
+*/
+@use './bootstrap_overrides' as bootstrap;
+@use './util' as *;
+
+#{multiply-specificity-n('.dh-spectrum-theme--dark', 2)} {
+  --spectrum-alias-background-color-default: #{bootstrap.$interfaceblack};
+}
