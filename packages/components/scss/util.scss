@@ -1,0 +1,25 @@
+/**
+ * Utilty for increasing specificity by repeating a given selector n number of
+ * times. 
+ * It should work for selectors that can be concatenated without delimiters
+ * such as '.some-selector.some-selector', '#some-id#some-id', or '&&'. A
+ * case where it would not work would be with an element selector e.g. 'divdiv'.
+ *
+ * Example usage:
+ *
+ *   #{multiply-specificity-n('.some-selector', 2)} {
+ *   }
+ *
+ *   would produce
+ *
+ *   .some-selector.some-selector {
+ *   }
+ */
+@function multiply-specificity-n($selector, $n) {
+  $result: $selector;
+  @for $i from 2 through $n {
+    $result: selector-append($result, $selector);
+  }
+
+  @return $result;
+}
