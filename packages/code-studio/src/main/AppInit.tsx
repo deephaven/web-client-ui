@@ -73,6 +73,10 @@ async function loadPlugins(): Promise<DeephavenPluginModuleMap> {
       `${import.meta.env.VITE_MODULE_PLUGINS_URL}/manifest.json`
     );
 
+    if (!Array.isArray(manifest.plugins)) {
+      throw new Error('Plugin manifest JSON does not contain plugins array');
+    }
+
     log.debug('Plugin manifest loaded:', manifest);
     const pluginPromises: Promise<unknown>[] = [];
     for (let i = 0; i < manifest.plugins.length; i += 1) {

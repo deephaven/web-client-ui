@@ -67,7 +67,12 @@ class PluginUtils {
         return { plugins: [] };
       }
 
-      return res.json();
+      try {
+        return res.json();
+      } catch {
+        log.error('Plugin manifest could not be converted to JSON');
+        return { plugins: [] };
+      }
     });
   }
 }
