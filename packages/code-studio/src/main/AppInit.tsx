@@ -74,7 +74,7 @@ async function loadPlugins(): Promise<DeephavenPluginModuleMap> {
     );
 
     log.debug('Plugin manifest loaded:', manifest);
-    const pluginPromises: Promise<DeephavenPluginModule>[] = [];
+    const pluginPromises: Promise<unknown>[] = [];
     for (let i = 0; i < manifest.plugins.length; i += 1) {
       const { name, main } = manifest.plugins[i];
       const pluginMainUrl = `${
@@ -89,7 +89,7 @@ async function loadPlugins(): Promise<DeephavenPluginModuleMap> {
       const module = pluginModules[i];
       const { name } = manifest.plugins[i];
       if (module.status === 'fulfilled') {
-        pluginMap.set(name, module.value);
+        pluginMap.set(name, module.value as DeephavenPluginModule);
       } else {
         log.error(`Unable to load plugin ${name}`, module.reason);
       }

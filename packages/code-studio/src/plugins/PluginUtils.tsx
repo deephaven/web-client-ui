@@ -1,5 +1,4 @@
 import React, { ForwardRefExoticComponent } from 'react';
-import { DeephavenPluginModule } from '@deephaven/redux';
 import Log from '@deephaven/log';
 import RemoteComponent from './RemoteComponent';
 import loadRemoteModule from './loadRemoteModule';
@@ -46,9 +45,7 @@ class PluginUtils {
    * @param pluginUrl The URL of the plugin to load
    * @returns The loaded module
    */
-  static async loadModulePlugin(
-    pluginUrl: string
-  ): Promise<DeephavenPluginModule> {
+  static async loadModulePlugin(pluginUrl: string): Promise<unknown> {
     const myModule = await loadRemoteModule(pluginUrl);
     return myModule;
   }
