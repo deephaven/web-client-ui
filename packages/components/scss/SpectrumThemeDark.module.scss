@@ -5,6 +5,8 @@
 @use './bootstrap_overrides' as bootstrap;
 @use './util' as *;
 
+// Doubling specificity to ensure this takes precedence over default Spectrum
+// styles.
 #{multiply-specificity-n('.dh-spectrum-theme--dark', 2)} {
   --spectrum-alias-background-color-default: #{bootstrap.$interfaceblack};
 }
