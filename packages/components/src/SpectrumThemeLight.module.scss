@@ -2,8 +2,8 @@
   This module contains overrides of React Spectrum css variables for the default
   `light` Deephaven theme.
 */
-@use './bootstrap_overrides' as bootstrap;
-@use './util' as *;
+@use '../scss/bootstrap_overrides' as bootstrap;
+@use '../scss/util' as *;
 
 // Doubling specificity to ensure this takes precedence over default Spectrum
 // styles.
