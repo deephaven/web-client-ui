@@ -17,8 +17,13 @@ import type {
   DateTimeColumnFormatter,
   Formatter,
 } from '@deephaven/jsapi-utils';
-import ChartModel, { ChartEvent, FilterColumnMap } from './ChartModel';
-import ChartUtils, { AxisTypeMap, ChartModelSettings } from './ChartUtils';
+import ChartModel, { ChartEvent } from './ChartModel';
+import ChartUtils, {
+  AxisTypeMap,
+  ChartModelSettings,
+  FilterColumnMap,
+  FilterMap,
+} from './ChartUtils';
 import ChartTheme from './ChartTheme';
 
 const log = Log.module('FigureChartModel');
@@ -103,7 +108,7 @@ class FigureChartModel extends ChartModel {
 
   filterColumnMap: FilterColumnMap;
 
-  lastFilter: Map<string, unknown>;
+  lastFilter: FilterMap;
 
   isConnected: boolean; // Assume figure is connected to start
 
@@ -703,7 +708,7 @@ class FigureChartModel extends ChartModel {
    * Sets the filter on the model. Will only set the values that have changed.
    * @param filterMap Map of filter column names to values
    */
-  setFilter(filterMap: Map<string, unknown>): void {
+  setFilter(filterMap: FilterMap): void {
     if (this.oneClicks.length === 0) {
       log.warn('Trying to set a filter, but no one click!');
       return;

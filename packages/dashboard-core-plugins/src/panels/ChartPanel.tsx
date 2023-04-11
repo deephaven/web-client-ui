@@ -9,6 +9,7 @@ import {
   ChartModel,
   ChartModelSettings,
   ChartUtils,
+  FilterMap,
   isFigureChartModel,
 } from '@deephaven/chart';
 import {
@@ -72,8 +73,6 @@ const log = Log.module('ChartPanel');
 const UPDATE_MODEL_DEBOUNCE = 150;
 
 export type InputFilterMap = Map<string, InputFilter>;
-
-export type FilterMap = Map<string, unknown>;
 
 export type LinkedColumnMap = Map<string, { name: string; type: string }>;
 
