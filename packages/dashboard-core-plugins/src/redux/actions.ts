@@ -14,10 +14,16 @@ export interface SessionConfig {
   id: string;
 }
 
+export interface SessionDetails {
+  workerName?: string;
+  processInfoId?: string;
+}
+
 export interface SessionWrapper {
   session: IdeSession;
   connection: IdeConnection;
   config: SessionConfig;
+  details?: SessionDetails;
 }
 
 /**

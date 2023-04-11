@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { LoginOptions } from '@deephaven/jsapi-types';
+import {
+  LOGIN_OPTIONS_REQUEST,
+  requestParentResponse,
+} from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { LoadingOverlay } from '@deephaven/components';
 import { AuthPlugin, AuthPluginProps } from '@deephaven/auth-plugin';
@@ -28,25 +32,9 @@ function Component({
           );
         }
         log.info('Logging in by delegating to parent window...');
-        const loginOptions = await new Promise<LoginOptions>(resolve => {
-          const listener = (
-            event: MessageEvent<{
-              message: string;
-              payload: LoginOptions;
-            }>
-          ) => {
-            const { data } = event;
-            log.debug('Received message', data);
-            if (data?.message !== 'loginOptions') {
-              log.debug('Ignore received message', data);
-              return;
-            }
-            window.removeEventListener('message', listener);
-            resolve(data.payload);
-          };
-          window.addEventListener('message', listener);
-          window.opener.postMessage('requestLoginOptionsFromParent', '*');
-        });
+        const loginOptions = await requestParentResponse<LoginOptions>(
+          LOGIN_OPTIONS_REQUEST
+        );
 
         await client.login(loginOptions);
         log.info('Logged in successfully.');

@@ -1,5 +1,4 @@
 import { PureComponent } from 'react';
-import { WritableStream as ponyfillWritableStream } from 'web-streams-polyfill/ponyfill';
 import dh, {
   Column,
   DateWrapper,
@@ -10,7 +9,6 @@ import dh, {
 } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import { GridRange, GridRangeIndex, memoizeClear } from '@deephaven/grid';
-
 import { Formatter, FormatterUtils, TableUtils } from '@deephaven/jsapi-utils';
 import {
   CancelablePromise,
@@ -97,9 +95,6 @@ export default class TableSaver extends PureComponent<
     this.snapshotPending = 0;
     this.cancelableSnapshots = [];
 
-    // WritableStream is not supported in Firefox (also IE) yet. use ponyfillWritableStream instead
-    this.WritableStream = window.WritableStream ?? ponyfillWritableStream;
-
     // Due to an open issue in Chromium, readableStream.cancel() is never called when a user cancel the stream from Chromium's UI and the stream goes on even it's canceled.
     // Instead, we  monitor the pull() behavior from the readableStream called when the stream wants more data to write.
     // If the stream doesn't pull for long enough time, chances are the stream is already canceled, so we stop the stream.
@@ -174,12 +169,6 @@ export default class TableSaver extends PureComponent<
   snapshotPending: number;
 
   cancelableSnapshots: (CancelablePromise<unknown> | null)[];
-
-  // WritableStream is not supported in Firefox (also IE) yet. use ponyfillWritableStream instead
-
-  // TODO: Fix type error
-  WritableStream = window.WritableStream ?? ponyfillWritableStream;
-  //  WritableStream: typeof window.WritableStream | typeof ponyfillWritableStream;
 
   // Due to an open issue in Chromium, readableStream.cancel() is never called when a user cancel the stream from Chromium's UI and the stream goes on even it's canceled.
   // Instead, we  monitor the pull() behavior from the readableStream called when the stream wants more data to write.
@@ -257,7 +246,7 @@ export default class TableSaver extends PureComponent<
       };
     }
 
-    return new this.WritableStream(streamConfig);
+    return new WritableStream(streamConfig);
   }
 
   startDownload(

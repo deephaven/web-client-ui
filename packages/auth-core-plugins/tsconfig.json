@@ -20,6 +20,9 @@
       "path": "../jsapi-types"
     },
     {
+      "path": "../jsapi-utils"
+    },
+    {
       "path": "../log"
     }
   ]

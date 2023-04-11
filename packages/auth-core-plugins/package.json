@@ -35,7 +35,8 @@
     "@deephaven/components": "file:../components",
     "@deephaven/log": "file:../log",
     "@deephaven/jsapi-bootstrap": "file:../jsapi-bootstrap",
-    "@deephaven/jsapi-types": "file:../jsapi-types"
+    "@deephaven/jsapi-types": "file:../jsapi-types",
+    "@deephaven/jsapi-utils": "file:../jsapi-utils"
   },
   "devDependencies": {
     "@deephaven/tsconfig": "file:../tsconfig",

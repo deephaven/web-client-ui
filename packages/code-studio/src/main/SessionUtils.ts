@@ -1,19 +1,17 @@
-import { SessionWrapper } from '@deephaven/dashboard-core-plugins';
-import dh, {
-  CoreClient,
-  IdeConnection,
-  LoginOptions,
-} from '@deephaven/jsapi-shim';
+import {
+  SessionDetails,
+  SessionWrapper,
+} from '@deephaven/dashboard-core-plugins';
+import dh, { CoreClient, IdeConnection } from '@deephaven/jsapi-shim';
+import {
+  requestParentResponse,
+  SESSION_DETAILS_REQUEST,
+} from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import shortid from 'shortid';
 import NoConsolesError from './NoConsolesError';
 
 const log = Log.module('SessionUtils');
-
-export enum AUTH_TYPE {
-  ANONYMOUS = 'anonymous',
-  PARENT = 'parent',
-}
 
 export function getBaseUrl(): URL {
   return new URL(import.meta.env.VITE_CORE_API_URL ?? '', `${window.location}`);
@@ -30,7 +28,7 @@ export function getAuthType(): AUTH_TYPE {
     case 'parent':
       return AUTH_TYPE.PARENT;
     default:
-      return AUTH_TYPE.ANONYMOUS;
+      return AUTH_TYPE.PLUGIN;
   }
 }
 
@@ -50,7 +48,8 @@ export function createConnection(): IdeConnection {
  * @returns A session and config that is ready to use
  */
 export async function createSessionWrapper(
-  connection: IdeConnection
+  connection: IdeConnection,
+  details: SessionDetails
 ): Promise<SessionWrapper> {
   log.info('Getting console types...');
 
@@ -72,7 +71,12 @@ export async function createSessionWrapper(
 
   log.info('Console session established', config);
 
-  return { session, config, connection };
+  return {
+    session,
+    config,
+    connection,
+    details,
+  };
 }
 
 export function createCoreClient(): CoreClient {
@@ -83,42 +87,17 @@ export function createCoreClient(): CoreClient {
   return new dh.CoreClient(websocketUrl);
 }
 
-export async function requestParentLoginOptions(): Promise<LoginOptions> {
-  if (window.opener == null) {
-    throw new Error('window.opener is null, unable to send auth request.');
-  }
-  return new Promise(resolve => {
-    const listener = (
-      event: MessageEvent<{
-        message: string;
-        payload: LoginOptions;
-      }>
-    ) => {
-      const { data } = event;
-      log.debug('Received message', data);
-      if (data?.message !== 'loginOptions') {
-        log.debug('Ignore received message', data);
-        return;
-      }
-      window.removeEventListener('message', listener);
-      resolve(data.payload);
-    };
-    window.addEventListener('message', listener);
-    window.opener.postMessage('requestLoginOptionsFromParent', '*');
-  });
+async function requestParentSessionDetails(): Promise<SessionDetails> {
+  return requestParentResponse<SessionDetails>(SESSION_DETAILS_REQUEST);
 }
 
-export async function getLoginOptions(
-  authType: AUTH_TYPE
-): Promise<LoginOptions> {
-  switch (authType) {
-    case AUTH_TYPE.PARENT:
-      return requestParentLoginOptions();
-    case AUTH_TYPE.ANONYMOUS:
-      return { type: dh.CoreClient.LOGIN_TYPE_ANONYMOUS };
-    default:
-      throw new Error(`Unknown auth type: ${authType}`);
+export async function getSessionDetails(): Promise<SessionDetails> {
+  const searchParams = new URLSearchParams(window.location.search);
+  switch (searchParams.get('authProvider')) {
+    case 'parent':
+      return requestParentSessionDetails();
   }
+  return {};
 }
 
 export default { createSessionWrapper };

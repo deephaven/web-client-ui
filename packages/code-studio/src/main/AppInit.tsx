@@ -21,6 +21,7 @@ import {
   setDashboardData as setDashboardDataAction,
 } from '@deephaven/dashboard';
 import {
+  SessionDetails,
   SessionWrapper,
   setDashboardConnection as setDashboardConnectionAction,
   setDashboardSessionWrapper as setDashboardSessionWrapperAction,
@@ -55,7 +56,11 @@ import {
 import { setLayoutStorage as setLayoutStorageAction } from '../redux/actions';
 import App from './App';
 import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
-import { createCoreClient, createSessionWrapper } from './SessionUtils';
+import {
+  createCoreClient,
+  createSessionWrapper,
+  getSessionDetails,
+} from './SessionUtils';
 import { PluginUtils } from '../plugins';
 import LayoutStorage from '../storage/LayoutStorage';
 import { isNoConsolesError } from './NoConsolesError';
@@ -101,11 +106,12 @@ async function loadPlugins(): Promise<DeephavenPluginModuleMap> {
 }
 
 async function loadSessionWrapper(
-  connection: IdeConnection
+  connection: IdeConnection,
+  sessionDetails: SessionDetails
 ): Promise<SessionWrapper | undefined> {
   let sessionWrapper: SessionWrapper | undefined;
   try {
-    sessionWrapper = await createSessionWrapper(connection);
+    sessionWrapper = await createSessionWrapper(connection, sessionDetails);
   } catch (e) {
     // Consoles may be disabled on the server, but we should still be able to start up and open existing objects
     if (!isNoConsolesError(e)) {
@@ -232,14 +238,20 @@ function AppInit(props: AppInitProps) {
         return;
       }
       try {
-        const connection = await client.getAsIdeConnection();
+        const [connection, sessionDetails] = await Promise.all([
+          client.getAsIdeConnection(),
+          getSessionDetails(),
+        ]);
         connection.addEventListener(dh.IdeConnection.EVENT_SHUTDOWN, event => {
           const { detail } = event;
           log.info('Shutdown', `${JSON.stringify(detail)}`);
           setError(`Server shutdown: ${detail ?? 'Unknown reason'}`);
         });
 
-        const sessionWrapper = await loadSessionWrapper(connection);
+        const sessionWrapper = await loadSessionWrapper(
+          connection,
+          sessionDetails
+        );
         const name = 'user';
 
         const storageService = client.getStorageService();
