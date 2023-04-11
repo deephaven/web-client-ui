@@ -52,6 +52,7 @@ import {
   createCoreClient,
   createSessionWrapper,
   getAuthType,
+  getEnvoyPrefix,
   getLoginOptions,
   getSessionDetails,
 } from './SessionUtils';
@@ -170,7 +171,12 @@ function AppInit(props: AppInitProps) {
         navigator.userAgent
       );
 
-      const coreClient = createCoreClient();
+      const envoyPrefix = getEnvoyPrefix();
+      const options =
+        envoyPrefix != null
+          ? { headers: { 'envoy-prefix': envoyPrefix } }
+          : undefined;
+      const coreClient = createCoreClient(options);
       const authType = getAuthType();
       log.info(`Login using auth type ${authType}...`);
       const [loginOptions, sessionDetails] = await Promise.all([
