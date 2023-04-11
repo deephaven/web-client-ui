@@ -59,6 +59,7 @@ function App(): JSX.Element {
           log.debug(`Starting connection...`);
           const connection = new dh.IdeConnection(websocketUrl);
 
+          // TODO: Need to login here
           log.debug('Loading figure', name, '...');
 
           // Load the figure up.

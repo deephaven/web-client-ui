@@ -89,6 +89,7 @@ function App(): JSX.Element {
           if (name == null) {
             throw new Error('No name param provided');
           }
+          // TOOD: Need to login here
 
           // Connect to the Web API server
           const baseUrl = new URL(
