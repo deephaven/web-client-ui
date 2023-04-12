@@ -5,6 +5,7 @@ import { ModelIndex } from './GridMetrics';
 import { GridColor, GridTheme, NullableGridColor } from './GridTheme';
 import memoizeClear from './memoizeClear';
 import { Token } from './GridUtils';
+import { CellRendererType } from './CellRenderer';
 
 const LINK_TRUNCATION_LENGTH = 5000;
 
@@ -226,6 +227,10 @@ abstract class GridModel<
       return linkifyFind(contentToCheckForLinks);
     }
   );
+
+  rendererForCell(column: ModelIndex, row: ModelIndex): CellRendererType {
+    return 'text';
+  }
 }
 
 export default GridModel;

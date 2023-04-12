@@ -17,6 +17,7 @@ import GridUtils from './GridUtils';
 import { GridFont, GridTheme } from './GridTheme';
 import { isExpandableGridModel } from './ExpandableGridModel';
 import { DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
+import { isDataBarGridModel } from './MockDataBarGridModel';
 
 export { getOrThrow } from '@deephaven/utils';
 /* eslint class-methods-use-this: "off" */
@@ -1762,6 +1763,10 @@ export class GridMetricCalculator {
       ),
       cellHorizontalPadding * 2
     );
+
+    if (isDataBarGridModel(model)) {
+      return columnWidth + 90;
+    }
 
     return columnWidth;
   }

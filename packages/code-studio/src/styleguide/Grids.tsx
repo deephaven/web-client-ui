@@ -12,6 +12,7 @@ import StaticExample from './grid-examples/StaticExample';
 import QuadrillionExample from './grid-examples/QuadrillionExample';
 import TreeExample from './grid-examples/TreeExample';
 import AsyncExample from './grid-examples/AsyncExample';
+import DataBarExample from './grid-examples/DataBarExample';
 
 type GridsState = {
   irisGridModel: MockIrisGridTreeModel;
@@ -62,6 +63,10 @@ class Grids extends PureComponent<Record<string, never>, GridsState> {
         <h2 className="ui-title">Iris Grid</h2>
         <div style={{ height: 500 }}>
           <IrisGrid model={irisGridModel} />
+        </div>
+        <h2 className="ui-title">Data Bar</h2>
+        <div style={{ height: 500 }}>
+          <DataBarExample />
         </div>
       </div>
     );

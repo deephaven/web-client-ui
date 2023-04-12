@@ -5,6 +5,7 @@ import {
   GridPoint,
   GridUtils,
   isLinkToken,
+  TextCellRenderer,
   TokenBox,
 } from '@deephaven/grid';
 import deepEqual from 'deep-equal';
@@ -43,7 +44,10 @@ class IrisGridTokenMouseHandler extends GridMouseHandler {
     }
 
     const renderState = grid.updateRenderState();
-    const tokensInCell = renderer.getTokenBoxesForVisibleCell(
+    const textCellRenderer = renderer.getCellRenderer(
+      'text'
+    ) as TextCellRenderer;
+    const tokensInCell = textCellRenderer.getTokenBoxesForVisibleCell(
       column,
       row,
       renderState
