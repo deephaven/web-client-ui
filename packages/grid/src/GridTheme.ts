@@ -87,11 +87,6 @@ const defaultTheme: GridTheme = Object.freeze({
   // Divider colors between the floating parts and the grid
   floatingDividerOuterColor: '#000000',
   floatingDividerInnerColor: '#cccccc',
-
-  // Databar
-  zeroLineColor: '#6c757d',
-  positiveColor: '#9cdb6c',
-  negativeColor: '#f25a80',
 });
 
 export default defaultTheme;

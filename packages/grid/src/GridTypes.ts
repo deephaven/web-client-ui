@@ -188,10 +188,6 @@ export type GridTheme = {
   // Divider colors between the floating parts and the grid
   floatingDividerOuterColor: GridColor;
   floatingDividerInnerColor: GridColor;
-
-  zeroLineColor: GridColor;
-  positiveColor: GridColor;
-  negativeColor: GridColor;
 };
 
 export type GridMetrics = {
