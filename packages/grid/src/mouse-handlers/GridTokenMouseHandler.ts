@@ -3,9 +3,10 @@
 import { isEditableGridModel } from '../EditableGridModel';
 import { EventHandlerResult } from '../EventHandlerResult';
 import Grid from '../Grid';
-import GridMouseHandler, { GridMouseEvent } from '../GridMouseHandler';
+import GridMouseHandler from '../GridMouseHandler';
 import GridRange from '../GridRange';
-import GridUtils, { GridPoint, isLinkToken, TokenBox } from '../GridUtils';
+import { TokenBox, GridPoint, isLinkToken, GridMouseEvent } from '../GridTypes';
+import GridUtils from '../GridUtils';
 
 class GridTokenMouseHandler extends GridMouseHandler {
   timeoutId?: ReturnType<typeof setTimeout>;

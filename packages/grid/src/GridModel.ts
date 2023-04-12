@@ -1,10 +1,14 @@
 import { EventTarget, Event } from 'event-target-shim';
 import { find as linkifyFind } from 'linkifyjs';
 import type { IColumnHeaderGroup } from './ColumnHeaderGroup';
-import { ModelIndex } from './GridMetrics';
-import { GridColor, GridTheme, NullableGridColor } from './GridTheme';
+import {
+  GridColor,
+  GridTheme,
+  NullableGridColor,
+  ModelIndex,
+  Token,
+} from './GridTypes';
 import memoizeClear from './memoizeClear';
-import { Token } from './GridUtils';
 
 const LINK_TRUNCATION_LENGTH = 5000;
 
