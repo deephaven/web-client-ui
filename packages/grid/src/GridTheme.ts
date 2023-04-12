@@ -1,138 +1,4 @@
-/** A color parsed as CSS color value, eg. '#FF0000' */
-export type GridColor = string;
-
-/** A nullable color, eg. pass `null` to skip drawing this item */
-export type NullableGridColor = GridColor | null;
-
-/** One or more colors parsed as CSS color value separated by space, eg. '#FF0000 #00FF00' */
-export type GridColorWay = string;
-
-/** A font parsed as CSS font value */
-export type GridFont = string;
-
-export type GridTheme = {
-  // Allow column/row resizing
-  allowColumnResize: boolean;
-  allowRowResize: boolean;
-
-  // Select the full row/column upon selection
-  autoSelectRow: boolean;
-  autoSelectColumn: boolean;
-
-  // Automatically size rows/columns to fit contents
-  autoSizeColumns: boolean;
-  autoSizeRows: boolean;
-
-  // The background color for the whole grid
-  backgroundColor: GridColor;
-
-  // Color to draw text
-  textColor: GridColor;
-  hyperlinkColor: GridColor;
-
-  // Black and white to use if needed
-  black: GridColor;
-  white: GridColor;
-
-  // Amount of padding within a cell and header
-  cellHorizontalPadding: number;
-  headerHorizontalPadding: number;
-
-  // The font to use in the grid
-  font: GridFont;
-
-  // Colors to draw grid lines between columns and rows
-  gridColumnColor: NullableGridColor;
-  gridRowColor: NullableGridColor;
-
-  // Colors for drawing the column and row headers
-  headerBackgroundColor: GridColor;
-  headerSeparatorColor: GridColor;
-  headerSeparatorHoverColor: GridColor;
-  headerSeparatorHandleSize: number;
-  headerHiddenSeparatorSize: number;
-  headerHiddenSeparatorHoverColor: GridColor;
-  headerColor: GridColor;
-  headerFont: GridFont;
-
-  // Background color to highlight entire column/row if set
-  columnHoverBackgroundColor: NullableGridColor;
-  selectedColumnHoverBackgroundColor: NullableGridColor;
-  rowHoverBackgroundColor: NullableGridColor;
-  selectedRowHoverBackgroundColor: NullableGridColor;
-
-  // Background colors to draw for each row, cycling through each value (eg. alternating stripes)
-  rowBackgroundColors: GridColorWay;
-
-  // Scroll bar look and sizing
-  minScrollHandleSize: number;
-  scrollBarBackgroundColor: GridColor;
-  scrollBarHoverBackgroundColor: GridColor;
-  scrollBarCasingColor: GridColor;
-  scrollBarCornerColor: GridColor;
-  scrollBarColor: GridColor;
-  scrollBarHoverColor: GridColor;
-  scrollBarActiveColor: GridColor;
-  scrollBarSize: number;
-  scrollBarHoverSize: number;
-  scrollBarCasingWidth: number;
-  scrollSnapToColumn: boolean;
-  scrollSnapToRow: boolean;
-
-  scrollBarSelectionTick: boolean;
-  scrollBarSelectionTickColor: NullableGridColor;
-  scrollBarActiveSelectionTickColor: NullableGridColor;
-
-  // Look of the current selection
-  selectionColor: GridColor;
-  selectionOutlineColor: GridColor;
-  selectionOutlineCasingColor: GridColor;
-
-  // Shadows to draw when representing a hierarchy, eg. when one row is a higher "depth" than the row above it
-  shadowBlur: number;
-  shadowColor: GridColor;
-  maxDepth: number; // max depth of the shadowing
-
-  // Other tree table metrics
-  treeDepthIndent: number;
-  treeHorizontalPadding: number;
-  treeLineColor: GridColor;
-  treeMarkerColor: GridColor;
-  treeMarkerHoverColor: GridColor;
-
-  // Default row height/column width
-  rowHeight: number;
-  columnWidth: number;
-  minRowHeight: number;
-  minColumnWidth: number;
-
-  // Default row/column header/footers width/height
-  columnHeaderHeight: number;
-  rowHeaderWidth: number;
-  rowFooterWidth: number;
-
-  // When resizing the header, will snap to the auto size of the header within this threshold
-  headerResizeSnapThreshold: number;
-  headerResizeHiddenSnapThreshold: number;
-
-  // Allow moving/reordering columns/rows
-  allowColumnReorder: boolean;
-  allowRowReorder: boolean;
-
-  // The number of pixels to offset a column/row while it is being dragged to move
-  reorderOffset: number;
-
-  // Colors for the grid in floating sections
-  floatingGridColumnColor: NullableGridColor;
-  floatingGridRowColor: NullableGridColor;
-
-  // Background row colors for grid in the floating sections
-  floatingRowBackgroundColors: GridColorWay;
-
-  // Divider colors between the floating parts and the grid
-  floatingDividerOuterColor: GridColor;
-  floatingDividerInnerColor: GridColor;
-};
+import { GridTheme } from './GridTypes';
 
 /**
  * Default theme for a Grid.
@@ -221,6 +87,11 @@ const defaultTheme: GridTheme = Object.freeze({
   // Divider colors between the floating parts and the grid
   floatingDividerOuterColor: '#000000',
   floatingDividerInnerColor: '#cccccc',
+
+  // Databar
+  zeroLineColor: '#6c757d',
+  positiveColor: '#9cdb6c',
+  negativeColor: '#f25a80',
 });
 
 export default defaultTheme;

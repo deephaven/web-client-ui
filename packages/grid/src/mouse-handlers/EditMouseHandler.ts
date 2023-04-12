@@ -4,7 +4,7 @@ import { EventHandlerResult } from '../EventHandlerResult';
 import Grid from '../Grid';
 import GridMouseHandler from '../GridMouseHandler';
 import GridRange from '../GridRange';
-import { GridPoint } from '../GridUtils';
+import { GridPoint } from '../GridTypes';
 
 /**
  * Handles clicking on a cell to edit it in an editable grid

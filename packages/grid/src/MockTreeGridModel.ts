@@ -3,7 +3,7 @@
 import MockGridModel from './MockGridModel';
 import memoizeClear from './memoizeClear';
 import ExpandableGridModel from './ExpandableGridModel';
-import { ModelIndex } from './GridMetrics';
+import { ModelIndex } from './GridTypes';
 
 type ChildrenTreeMap = Map<ModelIndex, MockTreeGridModel>;
 

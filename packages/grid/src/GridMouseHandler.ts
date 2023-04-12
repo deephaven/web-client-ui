@@ -2,26 +2,7 @@
 /* eslint no-unused-vars: "off" */
 import { EventHandlerResult } from './EventHandlerResult';
 import Grid from './Grid';
-import { GridPoint } from './GridUtils';
-
-/**
- * Some events we listen to are a native mouse event, and others are wrapped with React's SyntheticEvent.
- * The GridMouseHandler shouldn't care though - the properties it accesses should be common on both types of events.
- */
-export type GridMouseEvent = MouseEvent | React.MouseEvent;
-
-export type GridWheelEvent = WheelEvent | React.WheelEvent;
-
-export type GridMouseHandlerFunctionName =
-  | 'onDown'
-  | 'onMove'
-  | 'onDrag'
-  | 'onLeave'
-  | 'onClick'
-  | 'onContextMenu'
-  | 'onDoubleClick'
-  | 'onUp'
-  | 'onWheel';
+import { GridMouseEvent, GridPoint } from './GridTypes';
 
 /**
  * Define a region in the grid that interacts with the mouse on a grid.

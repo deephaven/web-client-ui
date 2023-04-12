@@ -2,7 +2,8 @@
 import { EventHandlerResult } from '../EventHandlerResult';
 import Grid from '../Grid';
 import GridUtils from '../GridUtils';
-import KeyHandler, { GridKeyboardEvent } from '../KeyHandler';
+import KeyHandler from '../KeyHandler';
+import { GridKeyboardEvent } from '../GridTypes';
 
 /**
  * Parse out data from an HTML table. Currently does not support colspan/rowspan

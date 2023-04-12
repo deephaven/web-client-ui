@@ -2,9 +2,10 @@
 import GridUtils from '../GridUtils';
 import Grid from '../Grid';
 import GridRange from '../GridRange';
-import KeyHandler, { GridKeyboardEvent } from '../KeyHandler';
+import KeyHandler from '../KeyHandler';
 import { isEditableGridModel } from '../EditableGridModel';
 import { EventHandlerResult } from '../EventHandlerResult';
+import { GridKeyboardEvent } from '../GridTypes';
 
 class EditKeyHandler extends KeyHandler {
   onDown(event: GridKeyboardEvent, grid: Grid): EventHandlerResult {

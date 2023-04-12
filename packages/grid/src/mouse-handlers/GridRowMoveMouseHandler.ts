@@ -2,7 +2,8 @@ import { getOrThrow } from '@deephaven/utils';
 import { EventHandlerResult } from '../EventHandlerResult';
 import Grid from '../Grid';
 import GridMouseHandler from '../GridMouseHandler';
-import GridUtils, { GridPoint } from '../GridUtils';
+import { GridPoint } from '../GridTypes';
+import GridUtils from '../GridUtils';
 
 class GridRowMoveMouseHandler extends GridMouseHandler {
   cursor = 'move';

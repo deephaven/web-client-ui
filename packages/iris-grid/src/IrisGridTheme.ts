@@ -1,5 +1,8 @@
-import type { GridThemeType } from '@deephaven/grid';
-import { GridColor, NullableGridColor } from '@deephaven/grid/src/GridTheme';
+import type {
+  GridThemeType,
+  GridColor,
+  NullableGridColor,
+} from '@deephaven/grid';
 import IrisGridTheme from './IrisGridTheme.module.scss';
 
 export type IrisGridThemeType = GridThemeType & {

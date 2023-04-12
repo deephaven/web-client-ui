@@ -3,28 +3,25 @@ import type Grid from '../Grid';
 import type { GridMetricCalculator } from '../GridMetricCalculator';
 import type GridModel from '../GridModel';
 import { EventHandlerResult } from '../EventHandlerResult';
-import GridMetrics, { ModelIndex, VisibleIndex } from '../GridMetrics';
 import GridMouseHandler from '../GridMouseHandler';
-import type { GridTheme } from '../GridTheme';
-import type { GridPoint } from '../GridUtils';
-
-// The different properties that can be used by implementing classes, whether for rows or columns
-export type PointProperty = 'x' | 'y';
-export type UserSizeProperty = 'userRowHeights' | 'userColumnWidths';
-export type VisibleOffsetProperty = 'visibleRowYs' | 'visibleColumnXs';
-export type VisibleSizeProperty = 'visibleRowHeights' | 'visibleColumnWidths';
-export type MarginProperty = 'columnHeaderHeight' | 'rowHeaderWidth';
-export type CalculatedSizeProperty =
-  | 'calculatedRowHeights'
-  | 'calculatedColumnWidths';
-export type InitialSizeProperty = 'initialRowHeights' | 'initialColumnWidths';
-export type ModelIndexesProperty = 'modelRows' | 'modelColumns';
-export type FirstIndexProperty = 'firstRow' | 'firstColumn';
-export type TreePaddingProperty = 'treePaddingX' | 'treePaddingY';
-export interface GridSeparator {
-  index: VisibleIndex;
-  depth: number;
-}
+import {
+  GridTheme,
+  PointProperty,
+  UserSizeProperty,
+  VisibleOffsetProperty,
+  VisibleSizeProperty,
+  MarginProperty,
+  CalculatedSizeProperty,
+  InitialSizeProperty,
+  ModelIndexesProperty,
+  FirstIndexProperty,
+  TreePaddingProperty,
+  GridSeparator,
+  GridMetrics,
+  ModelIndex,
+  VisibleIndex,
+  GridPoint,
+} from '../GridTypes';
 
 /**
  * Abstract class that should be extended for column/row behaviour

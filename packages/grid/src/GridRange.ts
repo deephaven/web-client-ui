@@ -1,10 +1,11 @@
-export type GridRangeIndex = number | null;
-type LeftIndex = GridRangeIndex;
-type RightIndex = GridRangeIndex;
-type TopIndex = GridRangeIndex;
-type BottomIndex = GridRangeIndex;
-
-export type GridCell = { column: number; row: number };
+import {
+  GridRangeIndex,
+  LeftIndex,
+  RightIndex,
+  TopIndex,
+  BottomIndex,
+  GridCell,
+} from './GridTypes';
 
 export interface BoundedGridRange extends GridRange {
   startColumn: number;

@@ -1,10 +1,4 @@
-import type { GridRangeIndex } from './GridRange';
-import type { VisibleIndex } from './GridMetrics';
-
-export type Range<T> = [start: T, end: T];
-
-export type AxisRange = Range<GridRangeIndex>;
-export type BoundedAxisRange = Range<VisibleIndex>;
+import { AxisRange, BoundedAxisRange } from './GridTypes';
 
 export function isAxisRange(range: unknown): range is AxisRange {
   return (

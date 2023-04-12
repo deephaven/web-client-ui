@@ -4,7 +4,8 @@ import { EventHandlerResult } from '../EventHandlerResult';
 import Grid from '../Grid';
 import GridRange from '../GridRange';
 import GridUtils from '../GridUtils';
-import KeyHandler, { GridKeyboardEvent } from '../KeyHandler';
+import KeyHandler from '../KeyHandler';
+import { GridKeyboardEvent } from '../GridTypes';
 
 class SelectionKeyHandler extends KeyHandler {
   onDown(event: GridKeyboardEvent, grid: Grid): EventHandlerResult {

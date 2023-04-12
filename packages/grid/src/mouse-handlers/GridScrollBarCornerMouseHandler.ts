@@ -2,7 +2,7 @@
 import { EventHandlerResult } from '../EventHandlerResult';
 import Grid from '../Grid';
 import GridMouseHandler from '../GridMouseHandler';
-import { GridPoint } from '../GridUtils';
+import { GridPoint } from '../GridTypes';
 
 /**
  * Used to eat the mouse event in the bottom right corner of the scroll bar

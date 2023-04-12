@@ -1,7 +1,7 @@
 import GridRange from './GridRange';
-import { ModelIndex } from './GridMetrics';
 import GridModel from './GridModel';
 import { AssertionError } from './errors';
+import { ModelIndex, EditOperation } from './GridTypes';
 
 export function isEditableGridModel(
   model: GridModel
@@ -18,25 +18,6 @@ export function assertIsEditableGridModel(
     );
   }
 }
-
-/**
- * Edit operation when applying multiple edits
- */
-export type EditOperation = {
-  /** Column to set the value for */
-  column: ModelIndex;
-
-  /** Row to set the value for */
-  row: ModelIndex;
-
-  /** Text value to set */
-  text: string;
-
-  /** @deprecated use `column` instead */
-  x?: ModelIndex;
-  /** @deprecated use `row` instead */
-  y?: ModelIndex;
-};
 
 /**
  * Model for an editable grid

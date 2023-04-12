@@ -1,13 +1,16 @@
 /* eslint class-methods-use-this: "off" */
 import Grid from '../Grid';
 import GridMetricCalculator from '../GridMetricCalculator';
-import type { ModelIndex, GridMetrics } from '../GridMetrics';
 import type GridModel from '../GridModel';
-import { GridTheme } from '../GridTheme';
-import GridUtils, { GridPoint } from '../GridUtils';
-import GridSeparatorMouseHandler, {
+import {
+  GridPoint,
+  GridMetrics,
+  GridTheme,
   GridSeparator,
-} from './GridSeparatorMouseHandler';
+  ModelIndex,
+} from '../GridTypes';
+import GridUtils from '../GridUtils';
+import GridSeparatorMouseHandler from './GridSeparatorMouseHandler';
 
 class GridRowSeparatorMouseHandler extends GridSeparatorMouseHandler {
   static getRowSeparator(

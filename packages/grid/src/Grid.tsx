@@ -6,18 +6,11 @@ import clamp from 'lodash.clamp';
 import { assertNotNull, EMPTY_ARRAY } from '@deephaven/utils';
 import GridMetricCalculator, { GridMetricState } from './GridMetricCalculator';
 import GridModel from './GridModel';
-import GridMouseHandler, {
-  GridMouseEvent,
-  GridMouseHandlerFunctionName,
-} from './GridMouseHandler';
-import GridTheme, { GridTheme as GridThemeType } from './GridTheme';
-import GridRange, { GridRangeIndex, SELECTION_DIRECTION } from './GridRange';
-import GridRenderer, {
-  EditingCell,
-  EditingCellTextSelectionRange,
-  GridRenderState,
-} from './GridRenderer';
-import GridUtils, { GridPoint, isLinkToken, Token } from './GridUtils';
+import GridMouseHandler from './GridMouseHandler';
+import GridTheme from './GridTheme';
+import GridRange, { SELECTION_DIRECTION } from './GridRange';
+import GridRenderer from './GridRenderer';
+import GridUtils from './GridUtils';
 import {
   GridSelectionMouseHandler,
   GridColumnMoveMouseHandler,
@@ -29,11 +22,10 @@ import {
   GridScrollBarCornerMouseHandler,
   GridVerticalScrollBarMouseHandler,
   EditMouseHandler,
-  GridSeparator,
   GridTokenMouseHandler,
 } from './mouse-handlers';
 import './Grid.scss';
-import KeyHandler, { GridKeyboardEvent } from './KeyHandler';
+import KeyHandler from './KeyHandler';
 import {
   EditKeyHandler,
   PasteKeyHandler,
@@ -42,22 +34,36 @@ import {
 } from './key-handlers';
 import CellInputField from './CellInputField';
 import PasteError from './errors/PasteError';
-import GridMetrics, {
-  Coordinate,
-  ModelIndex,
-  MoveOperation,
-  VisibleIndex,
-} from './GridMetrics';
+
 import { isExpandableGridModel } from './ExpandableGridModel';
 import {
   assertIsEditableGridModel,
-  EditOperation,
   isEditableGridModel,
 } from './EditableGridModel';
 import { EventHandlerResultOptions } from './EventHandlerResult';
 import { assertIsDefined } from './errors';
 import ThemeContext from './ThemeContext';
-import { DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
+import {
+  EditingCell,
+  GridRenderState,
+  EditOperation,
+  EditingCellTextSelectionRange,
+  DraggingColumn,
+  GridMetrics,
+  Coordinate,
+  ModelIndex,
+  MoveOperation,
+  VisibleIndex,
+  GridSeparator,
+  GridRangeIndex,
+  GridTheme as GridThemeType,
+  GridPoint,
+  isLinkToken,
+  Token,
+  GridMouseEvent,
+  GridMouseHandlerFunctionName,
+  GridKeyboardEvent,
+} from './GridTypes';
 
 type LegacyCanvasRenderingContext2D = CanvasRenderingContext2D & {
   webkitBackingStorePixelRatio?: number;
@@ -873,6 +879,8 @@ class Grid extends PureComponent<GridProps, GridState> {
     const metricState = this.getMetricState(state);
     this.metrics = metricCalculator.getMetrics(metricState);
     this.updateScrollBounds();
+
+    assertNotNull(this.metrics);
 
     return this.metrics;
   }

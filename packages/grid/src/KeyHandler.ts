@@ -8,12 +8,7 @@
 import React from 'react';
 import { EventHandlerResult } from './EventHandlerResult';
 import type Grid from './Grid';
-
-/**
- * Some events we listen to are a native keyboard event, and others are wrapped with React's SyntheticEvent.
- * The KeyHandler shouldn't care though - the properties it accesses should be common on both types of events.
- */
-export type GridKeyboardEvent = KeyboardEvent | React.KeyboardEvent;
+import { GridKeyboardEvent } from './GridTypes';
 
 export class KeyHandler {
   order: number;

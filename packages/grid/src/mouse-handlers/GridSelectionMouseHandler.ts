@@ -1,8 +1,8 @@
 import { EventHandlerResult } from '../EventHandlerResult';
 import Grid from '../Grid';
-import { BoxCoordinates } from '../GridMetrics';
-import GridMouseHandler, { GridMouseEvent } from '../GridMouseHandler';
-import GridUtils, { GridPoint } from '../GridUtils';
+import GridMouseHandler from '../GridMouseHandler';
+import GridUtils from '../GridUtils';
+import { BoxCoordinates, GridMouseEvent, GridPoint } from '../GridTypes';
 
 const DEFAULT_INTERVAL_MS = 100;
 

@@ -1,10 +1,7 @@
 import GridRange from './GridRange';
-import type {
-  GridCell,
-  GridRangeIndex,
-  SELECTION_DIRECTION,
-} from './GridRange';
+import type { SELECTION_DIRECTION } from './GridRange';
 import GridTestUtils from './GridTestUtils';
+import { GridRangeIndex, GridCell } from './GridTypes';
 
 const { LEFT, RIGHT, UP, DOWN } = GridRange.SELECTION_DIRECTION;
 

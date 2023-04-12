@@ -1,5 +1,4 @@
-import { MoveOperation } from './GridMetrics';
-import { BoundedAxisRange } from './GridAxisRange';
+import { MoveOperation, BoundedAxisRange } from './GridTypes';
 
 export interface IColumnHeaderGroup {
   name: string;

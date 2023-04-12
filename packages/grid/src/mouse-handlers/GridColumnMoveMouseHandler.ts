@@ -1,29 +1,25 @@
 import clamp from 'lodash.clamp';
 import Grid from '../Grid';
-import GridUtils, { GridPoint } from '../GridUtils';
-import GridMouseHandler, { GridMouseEvent } from '../GridMouseHandler';
+import GridUtils from '../GridUtils';
+import GridMouseHandler from '../GridMouseHandler';
 import { EventHandlerResult } from '../EventHandlerResult';
-import type {
-  VisibleIndex,
-  ModelIndex,
-  GridMetrics,
-  MoveOperation,
-  Coordinate,
-} from '../GridMetrics';
-import type { BoundedAxisRange } from '../GridAxisRange';
+
 import type GridModel from '../GridModel';
 import type { IColumnHeaderGroup } from '../ColumnHeaderGroup';
+import {
+  BoundedAxisRange,
+  DraggingColumn,
+  GridMetrics,
+  ModelIndex,
+  VisibleIndex,
+  MoveOperation,
+  GridMouseEvent,
+  GridPoint,
+} from '../GridTypes';
 
 const SLOPPY_CLICK_DISTANCE = 5;
 const SCROLL_INTERVAL = 1000 / 60;
 const SCROLL_DELTA = 10;
-
-export interface DraggingColumn {
-  range: BoundedAxisRange;
-  depth: number;
-  left: Coordinate;
-  width: number;
-}
 
 interface ColumnInfo {
   visibleIndex: VisibleIndex;
@@ -148,7 +144,7 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
     this.scrollingDirection = direction;
     this.scrollingInterval = window.setInterval(() => {
       const { metrics } = grid;
-      if (!metrics) {
+      if (metrics == null) {
         return;
       }
 

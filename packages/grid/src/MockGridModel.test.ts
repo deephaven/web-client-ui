@@ -1,5 +1,5 @@
-import { LinkToken } from './GridUtils';
 import MockGridModel from './MockGridModel';
+import { LinkToken } from './GridTypes';
 
 describe('tokensForCell', () => {
   it('should return tokens for a cell', () => {

@@ -1,7 +1,7 @@
 import React from 'react';
 import clamp from 'lodash.clamp';
 import { EMPTY_ARRAY } from '@deephaven/utils';
-import GridRange, { GridRangeIndex } from './GridRange';
+import GridRange from './GridRange';
 import {
   BoxCoordinates,
   Coordinate,
@@ -12,54 +12,19 @@ import {
   ModelSizeMap,
   MoveOperation,
   SizeMap,
-} from './GridMetrics';
-import type { GridMetrics } from './GridMetrics';
-import { GridTheme } from './GridTheme';
-import { GridWheelEvent } from './GridMouseHandler';
-import {
+  GridRangeIndex,
+  GridTheme,
   AxisRange,
   BoundedAxisRange,
-  isBoundedAxisRange,
   Range,
-} from './GridAxisRange';
-
-export type GridPoint = {
-  x: Coordinate;
-  y: Coordinate;
-  column: GridRangeIndex;
-  row: GridRangeIndex;
-  columnHeaderDepth?: number;
-};
-
-export interface CellInfo {
-  row: VisibleIndex | null;
-  column: VisibleIndex | null;
-  modelRow: ModelIndex | null;
-  modelColumn: ModelIndex | null;
-  left: Coordinate | null;
-  top: Coordinate | null;
-  columnWidth: number | null;
-  rowHeight: number | null;
-}
-
-export type Token = {
-  value: string;
-  type: string;
-  start: number;
-  end: number;
-  isLink?: boolean;
-};
-export type LinkToken = Token & { href: string };
-export type URLToken = Token & { type: 'url' };
-export type EmailToken = Token & { type: 'email' };
-
-export function isLinkToken(token: Token): token is LinkToken {
-  return (token as LinkToken)?.href !== undefined;
-}
-
-export type TokenBox = BoxCoordinates & { token: Token };
-
-export type IndexCallback<T> = (itemIndex: VisibleIndex) => T | undefined;
+  GridMetrics,
+  CellInfo,
+  GridPoint,
+  IndexCallback,
+  TokenBox,
+  GridWheelEvent,
+} from './GridTypes';
+import { isBoundedAxisRange } from './GridAxisRange';
 
 export class GridUtils {
   // use same constant as chrome source for windows
