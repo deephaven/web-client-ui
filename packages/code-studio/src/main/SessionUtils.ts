@@ -3,6 +3,7 @@ import {
   SessionWrapper,
 } from '@deephaven/dashboard-core-plugins';
 import dh, {
+  ConnectOptions,
   CoreClient,
   IdeConnection,
   LoginOptions,
@@ -40,6 +41,11 @@ export function getAuthType(): AUTH_TYPE {
     default:
       return AUTH_TYPE.ANONYMOUS;
   }
+}
+
+export function getEnvoyPrefix(): string | null {
+  const searchParams = new URLSearchParams(window.location.search);
+  return searchParams.get('envoyPrefix');
 }
 
 /**
@@ -89,12 +95,12 @@ export async function createSessionWrapper(
   };
 }
 
-export function createCoreClient(): CoreClient {
+export function createCoreClient(options?: ConnectOptions): CoreClient {
   const websocketUrl = getWebsocketUrl();
 
   log.info('createCoreClient', websocketUrl);
 
-  return new dh.CoreClient(websocketUrl);
+  return new dh.CoreClient(websocketUrl, options);
 }
 
 async function requestParentLoginOptions(): Promise<LoginOptions> {
