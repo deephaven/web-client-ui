@@ -80,10 +80,10 @@ async function loadPlugins(): Promise<DeephavenPluginModuleMap> {
     log.debug('Plugin manifest loaded:', manifest);
     const pluginPromises: Promise<unknown>[] = [];
     for (let i = 0; i < manifest.plugins.length; i += 1) {
-      const { name, main } = manifest.plugins[i];
+      const { main } = manifest.plugins[i];
       const pluginMainUrl = `${
         import.meta.env.VITE_MODULE_PLUGINS_URL
-      }/${name}/${main}`;
+      }/${main}`;
       pluginPromises.push(PluginUtils.loadModulePlugin(pluginMainUrl));
     }
     const pluginModules = await Promise.allSettled(pluginPromises);
