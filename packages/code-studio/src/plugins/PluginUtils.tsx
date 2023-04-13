@@ -58,22 +58,15 @@ class PluginUtils {
   static async loadJson(
     jsonUrl: string
   ): Promise<{ plugins: { name: string; main: string }[] }> {
-    return fetch(jsonUrl).then(res => {
-      if (!res.ok) {
-        if (res.status !== 404) {
-          // The browser already logs an error for 404
-          log.error(`Error loading plugins from ${jsonUrl}:`, res.statusText);
-        }
-        return { plugins: [] };
-      }
-
-      try {
-        return res.json();
-      } catch {
-        log.error('Plugin manifest could not be converted to JSON');
-        return { plugins: [] };
-      }
-    });
+    const res = await fetch(jsonUrl);
+    if (!res.ok) {
+      throw res.statusText;
+    }
+    try {
+      return await res.json();
+    } catch {
+      throw new Error('Plugin manifest could not be parsed as JSON');
+    }
   }
 }
 
