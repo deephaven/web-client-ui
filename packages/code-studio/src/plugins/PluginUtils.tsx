@@ -65,7 +65,7 @@ class PluginUtils {
     try {
       return await res.json();
     } catch {
-      throw new Error('Plugin manifest could not be parsed as JSON');
+      throw new Error('Could not be parsed as JSON');
     }
   }
 }
