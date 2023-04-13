@@ -42,6 +42,9 @@
     "scss",
     "css"
   ],
+  "sideEffects": [
+    "*.css"
+  ],
   "publishConfig": {
     "access": "public"
   },

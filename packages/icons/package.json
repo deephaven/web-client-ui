@@ -9,6 +9,7 @@
   "files": [
     "dist"
   ],
+  "sideEffects": false,
   "scripts": {
     "prestart": "npm run build",
     "start": "npm run watch",

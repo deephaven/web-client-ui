@@ -63,7 +63,7 @@
     "dist"
   ],
   "sideEffects": [
-    "*.scss"
+    "*.css"
   ],
   "publishConfig": {
     "access": "public"
