@@ -131,7 +131,6 @@ export default defineConfig(({ mode }) => {
       },
     },
     optimizeDeps: {
-      force: true,
       esbuildOptions: {
         // Some packages need this to start properly if they reference global
         define: {
