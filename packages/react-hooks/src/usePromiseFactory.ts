@@ -1,5 +1,5 @@
 /* eslint-disable import/prefer-default-export */
-import React from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 /**
  * Configuration options for `usePromiseFactory` hook.
@@ -31,12 +31,12 @@ export interface UsePromiseFactoryResult<T> {
   isLoading: boolean;
 
   /** Reload the promise factory. */
-  reload: () => Promise<T | null>;
+  reload: () => Promise<void>;
 }
 
 /**
  * Manages the result of a promise factory function in a synchronous way.
- * @param promiseFactory
+ * @param promiseFactory The factory function which creates the promise to be awaited.
  * @param args arguments to pass to the factory function.
  * @returns object containing resolved data or error information.
  */
@@ -45,29 +45,27 @@ export default function usePromiseFactory<T, TArgs extends unknown[]>(
   args: TArgs,
   { autoLoad = true }: UsePromiseFactoryOptions = {}
 ): UsePromiseFactoryResult<T> {
-  const [data, setData] = React.useState<T | null>(null);
-  const [error, setError] = React.useState<Error | string | null>(null);
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [data, setData] = useState<T | null>(null);
+  const [error, setError] = useState<Error | string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const loadPromise = React.useCallback(async () => {
+  const loadPromise = useCallback(async () => {
     setIsLoading(true);
 
     try {
       const resolved = await promiseFactory(...args);
       setData(resolved);
       setError(null);
-      return resolved;
     } catch (err) {
       setData(null);
       setError(err as Error | string);
-      return null;
     } finally {
       setIsLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [promiseFactory, ...args]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (autoLoad) {
       loadPromise();
     }
