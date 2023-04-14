@@ -60,7 +60,7 @@ class PluginUtils {
   ): Promise<{ plugins: { name: string; main: string }[] }> {
     const res = await fetch(jsonUrl);
     if (!res.ok) {
-      throw res.statusText;
+      throw new Error(res.statusText);
     }
     try {
       return await res.json();
