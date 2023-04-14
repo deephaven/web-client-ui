@@ -7,3 +7,4 @@ export * from './FormatterUtils';
 export * from './MessageUtils';
 export * from './Settings';
 export * from './TableUtils';
+export * from './ViewportDataUtils';

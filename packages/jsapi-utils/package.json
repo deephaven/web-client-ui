@@ -30,6 +30,9 @@
   "devDependencies": {
     "@deephaven/tsconfig": "file:../tsconfig"
   },
+  "peerDependencies": {
+    "@adobe/react-spectrum": "^3.x"
+  },
   "files": [
     "dist"
   ],
