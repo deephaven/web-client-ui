@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.36.0](https://github.com/deephaven/web-client-ui/compare/v0.35.0...v0.36.0) (2023-04-14)
+
+### Features
+
+- usePanelRegistration hook ([#1208](https://github.com/deephaven/web-client-ui/issues/1208)) ([d8db9ca](https://github.com/deephaven/web-client-ui/commit/d8db9ca6afc3833020e397d05a791bb96e24c14d)), closes [#1207](https://github.com/deephaven/web-client-ui/issues/1207)
+
 # [0.35.0](https://github.com/deephaven/web-client-ui/compare/v0.34.0...v0.35.0) (2023-04-04)
 
 **Note:** Version bump only for package @deephaven/dashboard
