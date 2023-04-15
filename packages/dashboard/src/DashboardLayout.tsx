@@ -16,7 +16,7 @@ import type {
 import Log from '@deephaven/log';
 import { usePrevious } from '@deephaven/react-hooks';
 import { RootState } from '@deephaven/redux';
-import { Provider, useDispatch, useSelector, useStore } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import PanelManager, { ClosedPanels } from './PanelManager';
 import PanelErrorBoundary from './PanelErrorBoundary';
 import LayoutUtils from './layout/LayoutUtils';
@@ -94,7 +94,6 @@ export function DashboardLayout({
 
   const hydrateMap = useMemo(() => new Map(), []);
   const dehydrateMap = useMemo(() => new Map(), []);
-  const store = useStore();
   const registerComponent = useCallback(
     (
       name: string,
@@ -123,15 +122,10 @@ export function DashboardLayout({
         // eslint-disable-next-line react/prop-types
         const { glContainer, glEventHub } = props;
         return (
-          <Provider store={store}>
-            <PanelErrorBoundary
-              glContainer={glContainer}
-              glEventHub={glEventHub}
-            >
-              {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-              <CType {...props} ref={ref} />
-            </PanelErrorBoundary>
-          </Provider>
+          <PanelErrorBoundary glContainer={glContainer} glEventHub={glEventHub}>
+            {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+            <CType {...props} ref={ref} />
+          </PanelErrorBoundary>
         );
       }
 
@@ -141,7 +135,7 @@ export function DashboardLayout({
       dehydrateMap.set(name, componentDehydrate);
       return cleanup;
     },
-    [hydrate, dehydrate, hydrateMap, dehydrateMap, layout, store]
+    [hydrate, dehydrate, hydrateMap, dehydrateMap, layout]
   );
   const hydrateComponent = useCallback(
     (name, props) => (hydrateMap.get(name) ?? FALLBACK_CALLBACK)(props, id),

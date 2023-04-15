@@ -238,7 +238,7 @@ export default abstract class AbstractContentItem extends EventEmitter {
    */
   replaceChild(
     oldChild: AbstractContentItem,
-    newChild: AbstractContentItem,
+    newChild: AbstractContentItem | ItemConfigType,
     _$destroyOldChild = false
   ) {
     newChild = this.layoutManager._$normalizeContentItem(newChild);

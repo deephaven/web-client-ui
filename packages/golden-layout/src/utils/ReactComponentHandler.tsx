@@ -30,13 +30,31 @@ export default class ReactComponentHandler {
   }
 
   /**
+   * Gets the unique key to use for the react component
+   * @returns Unique key for the component
+   */
+  _key() {
+    return this._container._config.id;
+  }
+
+  /**
    * Creates the react class and component and hydrates it with
    * the initial state - if one is present
    *
    * By default, react's getInitialState will be used
+   *
+   * Creates a portal so the non-react golden-layout code still works,
+   * but also allows us to mount the React components in the app's tree
+   * instead of separate sibling root trees
    */
   _render() {
-    ReactDOM.render(this._getReactComponent(), this._container.getElement()[0]);
+    this._container.layoutManager.addReactChild(
+      this._key(),
+      ReactDOM.createPortal(
+        this._getReactComponent(),
+        this._container.getElement()[0]
+      )
+    );
   }
 
   /**
@@ -67,7 +85,7 @@ export default class ReactComponentHandler {
    * Removes the component from the DOM and thus invokes React's unmount lifecycle
    */
   _destroy() {
-    ReactDOM.unmountComponentAtNode(this._container.getElement()[0]);
+    this._container.layoutManager.removeReactChild(this._key());
     this._container.off('open', this._render, this);
     this._container.off('destroy', this._destroy, this);
   }
@@ -125,6 +143,9 @@ export default class ReactComponentHandler {
       ref: this._gotReactComponent.bind(this),
     };
     var props = $.extend(defaultProps, this._container._config.props);
-    return React.createElement(this._reactClass, props);
+    return React.createElement(this._reactClass, {
+      ...props,
+      key: this._key(),
+    });
   }
 }

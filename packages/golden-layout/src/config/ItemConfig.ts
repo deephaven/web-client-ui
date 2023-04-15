@@ -76,6 +76,8 @@ export interface ComponentConfig extends ItemConfig {
 }
 
 export interface ReactComponentConfig extends ItemConfig {
+  id: string;
+
   componentName?: string;
   /**
    * The name of the component as specified in layout.registerComponent. Mandatory if type is 'react-component'

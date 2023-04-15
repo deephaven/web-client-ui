@@ -170,7 +170,11 @@ export default class RowOrColumn extends AbstractContentItem {
    * @param oldChild
    * @param newChild
    */
-  replaceChild(oldChild: AbstractContentItem, newChild: AbstractContentItem) {
+  replaceChild(
+    oldChild: AbstractContentItem,
+    newChild: AbstractContentItem | ItemConfigType
+  ) {
+    newChild = this.layoutManager._$normalizeContentItem(newChild, this);
     var size = oldChild.config[this._dimension];
     super.replaceChild(oldChild, newChild);
     newChild.config[this._dimension] = size;

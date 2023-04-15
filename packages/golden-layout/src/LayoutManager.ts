@@ -102,6 +102,7 @@ export default class LayoutManager extends EventEmitter {
   private _dragSources: DragSource[] = [];
   private _updatingColumnsResponsive = false;
   private _firstLoad = true;
+  private _reactChildren = new Map<string, React.ReactNode>();
 
   width: number | null = null;
   height: number | null = null;
@@ -367,6 +368,35 @@ export default class LayoutManager extends EventEmitter {
     this.isInitialised = true;
     this._adjustColumnsResponsive();
     this.emit('initialised');
+  }
+
+  /**
+   * Adds a react child to the layout manager
+   * @param id Unique panel id
+   * @param element The React element
+   */
+  addReactChild(id: string, element: React.ReactNode) {
+    this._reactChildren.set(id, element);
+  }
+
+  /**
+   * Removes a react child from the layout manager
+   * @param id Unique panel id
+   */
+  removeReactChild(id: string) {
+    this._reactChildren.delete(id);
+  }
+
+  /**
+   * Gets the react children in the layout
+   *
+   * Used in @deephaven/dashboard to mount the react elements
+   * inside the app's React tree
+   *
+   * @returns The react children to mount for this layout manager
+   */
+  getReactChildren() {
+    return [...this._reactChildren.values()];
   }
 
   /**
