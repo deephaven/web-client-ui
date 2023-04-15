@@ -314,6 +314,7 @@ export class LinkerLink extends Component<LinkerLinkProps, LinkerLinkState> {
             onMouseEnter={this.handleMouseEnter}
             onMouseLeave={this.handleMouseLeave}
             clipPath={`url(#${clipPathId})`}
+            data-testid="link-select"
           />
           <path className="link-background" d={path} />
           <path className="link-foreground" d={path} />

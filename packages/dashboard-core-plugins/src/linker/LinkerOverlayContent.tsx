@@ -329,6 +329,7 @@ export class LinkerOverlayContent extends Component<
           })}
           ref={this.dialogRef}
           style={{ bottom: dialog?.y, right: dialog?.x }}
+          data-testid="linker-toast-dialog"
         >
           <Button
             draggable
