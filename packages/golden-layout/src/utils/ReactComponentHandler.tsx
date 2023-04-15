@@ -34,7 +34,16 @@ export default class ReactComponentHandler {
    * @returns Unique key for the component
    */
   _key() {
-    return this._container._config.id;
+    const id = this._container._config.id;
+    if (!id) {
+      throw new Error('Cannot mount panel without id');
+    }
+
+    if (Array.isArray(id)) {
+      return id.join();
+    }
+
+    return id;
   }
 
   /**
@@ -52,7 +61,8 @@ export default class ReactComponentHandler {
       this._key(),
       ReactDOM.createPortal(
         this._getReactComponent(),
-        this._container.getElement()[0]
+        this._container.getElement()[0],
+        this._key()
       )
     );
   }
@@ -143,9 +153,6 @@ export default class ReactComponentHandler {
       ref: this._gotReactComponent.bind(this),
     };
     var props = $.extend(defaultProps, this._container._config.props);
-    return React.createElement(this._reactClass, {
-      ...props,
-      key: this._key(),
-    });
+    return React.createElement(this._reactClass, props);
   }
 }

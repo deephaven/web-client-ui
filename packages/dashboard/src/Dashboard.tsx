@@ -127,30 +127,22 @@ export function Dashboard({
     [handleResize]
   );
 
-  // The layoutConfig will update if any panels are added/removed
-  // The children will be a new array each time, but the elements will be
-  // in the same order with a stable key, so React shouldn't re-render unnecessarily
-  const layoutChildren = layout?.getReactChildren();
-
   return (
     <div className="dashboard-container w-100 h-100">
       <div className="w-100 h-100" ref={layoutElement} />
       {isInitialized && layout && (
-        <>
-          <DashboardLayout
-            emptyDashboard={emptyDashboard}
-            id={id}
-            layout={layout}
-            layoutConfig={layoutConfig}
-            onLayoutChange={onLayoutConfigChange}
-            onLayoutInitialized={onLayoutInitialized}
-            hydrate={hydrate}
-            dehydrate={dehydrate}
-          >
-            {children}
-          </DashboardLayout>
-          {layoutChildren}
-        </>
+        <DashboardLayout
+          emptyDashboard={emptyDashboard}
+          id={id}
+          layout={layout}
+          layoutConfig={layoutConfig}
+          onLayoutChange={onLayoutConfigChange}
+          onLayoutInitialized={onLayoutInitialized}
+          hydrate={hydrate}
+          dehydrate={dehydrate}
+        >
+          {children}
+        </DashboardLayout>
       )}
     </div>
   );

@@ -293,6 +293,11 @@ export function DashboardLayout({
     ]
   );
 
+  // The layoutConfig will update if any panels are added/removed
+  // The children will be a new array each time, but the elements will be
+  // in the same order with a stable key, so React shouldn't re-render unnecessarily
+  const layoutChildren = layout.getReactChildren();
+
   return (
     <>
       {isDashboardEmpty && emptyDashboard}
@@ -306,6 +311,7 @@ export function DashboardLayout({
             })
           : null
       )}
+      {layoutChildren}
     </>
   );
 }
