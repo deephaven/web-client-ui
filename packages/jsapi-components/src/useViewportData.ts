@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react';
-import { useListData } from '@react-stately/data';
+import { ListData, useListData } from '@react-stately/data';
 import { Table, TreeTable } from '@deephaven/jsapi-shim';
 import {
   KeyedItem,
@@ -20,24 +20,30 @@ export interface UseViewportDataProps<T> {
   deserializeRow?: RowDeserializer<T>;
 }
 
+export interface UseViewportDataResult<T> {
+  viewportData: ListData<KeyedItem<T>>;
+  size: number;
+  setViewport: (firstRow: number) => void;
+}
+
 export default function useViewportData<T>({
   table,
   viewportSize = 10,
   viewportPadding = 50,
   deserializeRow = defaultRowDeserializer,
-}: UseViewportDataProps<T>) {
-  const viewport = useListData<KeyedItem<T>>({});
+}: UseViewportDataProps<T>): UseViewportDataResult<T> {
+  const viewportData = useListData<KeyedItem<T>>({});
 
   // We only want this to fire 1x once the table exists. Note that `useListData`
   // has no way to respond to a reference change of the `table` instance so we
   // have to manually delete any previous keyed items from the list.
   useEffect(() => {
     if (table) {
-      if (viewport.items.length) {
-        viewport.remove(...viewport.items.keys());
+      if (viewportData.items.length) {
+        viewportData.remove(...viewportData.items.keys());
       }
 
-      viewport.insert(0, ...generateEmptyKeyedItems<T>(getSize(table)));
+      viewportData.insert(0, ...generateEmptyKeyedItems<T>(getSize(table)));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [table]);
@@ -58,7 +64,7 @@ export default function useViewportData<T>({
   useTableListener(
     table,
     dh.Table.EVENT_UPDATED,
-    createOnTableUpdatedHandler(table, viewport, deserializeRow)
+    createOnTableUpdatedHandler(table, viewportData, deserializeRow)
   );
 
   useEffect(() => {
@@ -68,7 +74,7 @@ export default function useViewportData<T>({
   }, [table, viewportPadding, viewportSize]);
 
   return {
-    viewport,
+    viewportData,
     size: getSize(table),
     setViewport,
   };
