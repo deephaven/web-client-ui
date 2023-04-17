@@ -3,14 +3,7 @@
 
 import { Formatter } from '@deephaven/jsapi-utils';
 import { Layout, PlotData } from 'plotly.js';
-
-export type FilterColumnMap = Map<
-  string,
-  {
-    name: string;
-    type: string;
-  }
->;
+import { FilterColumnMap, FilterMap } from './ChartUtils';
 
 export type ChartEvent = CustomEvent;
 /**
@@ -71,7 +64,7 @@ class ChartModel {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  setFilter(filter: Map<string, string>): void {}
+  setFilter(filter: FilterMap): void {}
 
   /**
    * Close this model, clean up any underlying subscriptions
