@@ -1,11 +1,8 @@
-import {
-  SessionDetails,
-  SessionWrapper,
-} from '@deephaven/dashboard-core-plugins';
 import dh, {
   ConnectOptions,
   CoreClient,
   IdeConnection,
+  IdeSession,
 } from '@deephaven/jsapi-shim';
 import {
   requestParentResponse,
@@ -13,19 +10,49 @@ import {
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import shortid from 'shortid';
-import NoConsolesError from './NoConsolesError';
+import NoConsolesError, { isNoConsolesError } from './NoConsolesError';
 
 const log = Log.module('SessionUtils');
 
-export function getBaseUrl(): URL {
-  return new URL(import.meta.env.VITE_CORE_API_URL ?? '', `${window.location}`);
+export interface SessionConfig {
+  type: string;
+  id: string;
 }
 
-export function getWebsocketUrl(): string {
-  const baseUrl = getBaseUrl();
-  return `${baseUrl.protocol}//${baseUrl.host}`;
+export interface SessionDetails {
+  workerName?: string;
+  processInfoId?: string;
 }
 
+export interface SessionWrapper {
+  session: IdeSession;
+  connection: IdeConnection;
+  config: SessionConfig;
+  details?: SessionDetails;
+}
+
+/**
+ * Get the base URL of the API
+ * @param coreApiUrl Configured Core API URL
+ * @returns URL for the base of the API
+ */
+export function getBaseUrl(coreApiUrl: string): URL {
+  return new URL(coreApiUrl, `${window.location}`);
+}
+
+/**
+ * Get the websocket URL for the API
+ * @param baseURL URL for the base of the API
+ * @returns Websocket URL for the API
+ */
+export function getWebsocketUrl(baseURL: URL): string {
+  return `${baseURL.protocol}//${baseURL.host}`;
+}
+
+/**
+ * Get the Envoy prefix header value
+ * @returns Envoy prefix header value
+ */
 export function getEnvoyPrefix(): string | null {
   const searchParams = new URLSearchParams(window.location.search);
   return searchParams.get('envoyPrefix');
@@ -34,9 +61,7 @@ export function getEnvoyPrefix(): string | null {
 /**
  * @returns New connection to the server
  */
-export function createConnection(): IdeConnection {
-  const websocketUrl = getWebsocketUrl();
-
+export function createConnection(websocketUrl: string): IdeConnection {
   log.info(`Starting connection to '${websocketUrl}'...`);
 
   return new dh.IdeConnection(websocketUrl);
@@ -78,9 +103,10 @@ export async function createSessionWrapper(
   };
 }
 
-export function createCoreClient(options?: ConnectOptions): CoreClient {
-  const websocketUrl = getWebsocketUrl();
-
+export function createCoreClient(
+  websocketUrl: string,
+  options?: ConnectOptions
+): CoreClient {
   log.info('createCoreClient', websocketUrl);
 
   return new dh.CoreClient(websocketUrl, options);
@@ -99,4 +125,18 @@ export async function getSessionDetails(): Promise<SessionDetails> {
   return {};
 }
 
-export default { createSessionWrapper };
+export async function loadSessionWrapper(
+  connection: IdeConnection,
+  sessionDetails: SessionDetails
+): Promise<SessionWrapper | undefined> {
+  let sessionWrapper: SessionWrapper | undefined;
+  try {
+    sessionWrapper = await createSessionWrapper(connection, sessionDetails);
+  } catch (e) {
+    // Consoles may be disabled on the server, but we should still be able to start up and open existing objects
+    if (!isNoConsolesError(e)) {
+      throw e;
+    }
+  }
+  return sessionWrapper;
+}

@@ -7,8 +7,9 @@
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx"],
   "exclude": ["node_modules", "src/**/*.test.*", "src/**/__mocks__/*"],
   "references": [
-    {
-      "path": "../log"
-    }
+    { "path": "../auth-plugin" },
+    { "path": "../auth-core-plugins" },
+    { "path": "../jsapi-types" },
+    { "path": "../log" }
   ]
 }

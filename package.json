@@ -168,7 +168,7 @@
     "@deephaven/jsapi-utils": "file:packages/jsapi-utils",
     "@deephaven/log": "file:packages/log",
     "@deephaven/mocks": "file:packages/mocks",
-    "@deephaven/plugin-utils": "file:packages/plugin-utils",
+    "@deephaven/app-utils": "file:packages/app-utils",
     "@deephaven/prettier-config": "file:packages/prettier-config",
     "@deephaven/react-hooks": "file:packages/react-hooks",
     "@deephaven/redux": "file:packages/redux",

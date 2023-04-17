@@ -12,6 +12,6 @@
     { "path": "../file-explorer" },
     { "path": "../jsapi-utils" },
     { "path": "../log" },
-    { "path": "../plugin-utils" }
+    { "path": "../app-utils" }
   ]
 }

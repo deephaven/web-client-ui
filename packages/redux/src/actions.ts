@@ -2,7 +2,7 @@ import type { Action } from 'redux';
 import type { ThunkAction } from 'redux-thunk';
 import type { CommandHistoryStorage } from '@deephaven/console';
 import type { FileStorage } from '@deephaven/file-explorer';
-import type { DeephavenPluginModuleMap } from '@deephaven/plugin-utils';
+import type { DeephavenPluginModuleMap } from '@deephaven/app-utils';
 import {
   SET_PLUGINS,
   SET_USER,

@@ -1,11 +1,11 @@
 import { getDashboardData } from '@deephaven/dashboard';
 import { Column, IdeConnection, Table } from '@deephaven/jsapi-shim';
+import { SessionWrapper } from '@deephaven/jsapi-utils';
 import { RootState } from '@deephaven/redux';
 import { FilterChangeEvent } from '../FilterPlugin';
 import { Link } from '../linker/LinkerUtils';
 import { FilterSet } from '../panels';
 import { ColumnSelectionValidator } from '../linker/ColumnSelectionValidator';
-import { SessionWrapper } from './actions';
 
 const EMPTY_MAP = new Map();
 

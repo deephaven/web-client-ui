@@ -1,9 +1,20 @@
 import React, { ForwardRefExoticComponent } from 'react';
+import {
+  AuthPlugin,
+  AuthPluginComponent,
+  isAuthPlugin,
+} from '@deephaven/auth-plugin';
+import {
+  AuthPluginAnonymous,
+  AuthPluginParent,
+  AuthPluginPsk,
+} from '@deephaven/auth-core-plugins';
+import { CoreClient } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import RemoteComponent from './RemoteComponent';
 import loadRemoteModule from './loadRemoteModule';
 
-const log = Log.module('@deephaven/plugin-utils.PluginUtils');
+const log = Log.module('@deephaven/app-utils.PluginUtils');
 
 // A DeephavenPluginModule. This interface should have new fields added to it from different levels of plugins.
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -114,4 +125,72 @@ export async function loadModulePlugins(
     log.error('Unable to load plugins:', e);
     return new Map();
   }
+}
+
+export function getAuthHandlers(
+  authConfigValues: Map<string, string>
+): string[] {
+  return authConfigValues.get('AuthHandlers')?.split(',') ?? [];
+}
+
+/**
+ * Get the auth plugin component from the plugin map and current configuration
+ * Throws if no auth plugin is available
+ *
+ * @param pluginMap Map of plugins loaded from the server
+ * @param authConfigValues Auth config values from the server
+ * @returns The auth plugin component to render
+ */
+export function getAuthPluginComponent(
+  client: CoreClient,
+  pluginMap: DeephavenPluginModuleMap,
+  authConfigValues: Map<string, string>
+): AuthPluginComponent {
+  const authHandlers = getAuthHandlers(authConfigValues);
+  // Filter out all the plugins that are auth plugins, and then map them to [pluginName, AuthPlugin] pairs
+  // Uses some pretty disgusting casting, because TypeScript wants to treat it as an (string | AuthPlugin)[] array instead
+  const authPlugins = ([
+    ...pluginMap.entries(),
+  ].filter(([, plugin]: [string, { AuthPlugin?: AuthPlugin }]) =>
+    isAuthPlugin(plugin.AuthPlugin)
+  ) as [string, { AuthPlugin: AuthPlugin }][]).map(([name, plugin]) => [
+    name,
+    plugin.AuthPlugin,
+  ]) as [string, AuthPlugin][];
+
+  // Add all the core plugins in priority
+  authPlugins.push([
+    '@deephaven/auth-core-plugins.AuthPluginPsk',
+    AuthPluginPsk,
+  ]);
+  authPlugins.push([
+    '@deephaven/auth-core-plugins.AuthPluginParent',
+    AuthPluginParent,
+  ]);
+  authPlugins.push([
+    '@deephaven/auth-core-plugins.AuthPluginAnonymous',
+    AuthPluginAnonymous,
+  ]);
+
+  // Filter the available auth plugins
+
+  const availableAuthPlugins = authPlugins.filter(([name, authPlugin]) =>
+    authPlugin.isAvailable(client, authHandlers, authConfigValues)
+  );
+
+  if (availableAuthPlugins.length === 0) {
+    throw new Error(
+      `No login plugins found, please register a login plugin for auth handlers: ${authHandlers}`
+    );
+  } else if (availableAuthPlugins.length > 1) {
+    log.warn(
+      'More than one login plugin available, will use the first one: ',
+      availableAuthPlugins.map(([name]) => name).join(', ')
+    );
+  }
+
+  const [loginPluginName, NewLoginPlugin] = availableAuthPlugins[0];
+  log.info('Using LoginPlugin', loginPluginName);
+
+  return NewLoginPlugin.Component;
 }

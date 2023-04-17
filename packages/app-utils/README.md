@@ -1,4 +1,4 @@
-# @deephaven/plugin-utils
+# @deephaven/app-utils
 
 A library with some utility functions used by Deephaven to load and manage plugins.
 
@@ -7,5 +7,5 @@ For more details on using Deephaven JS Plugins, see the [deephaven-js-plugins re
 ## Install
 
 ```bash
-npm install --save @deephaven/plugin-utils
+npm install --save @deephaven/app-utils
 ```

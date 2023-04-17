@@ -1,16 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import {
-  AuthPlugin,
-  AuthPluginComponent,
-  isAuthPlugin,
-} from '@deephaven/auth-plugin';
-import {
-  AuthPluginAnonymous,
-  AuthPluginParent,
-  AuthPluginPsk,
-} from '@deephaven/auth-core-plugins';
+import { AuthPluginComponent } from '@deephaven/auth-plugin';
 import {
   LoadingOverlay,
   Shortcut,
@@ -21,8 +12,6 @@ import {
   setDashboardData as setDashboardDataAction,
 } from '@deephaven/dashboard';
 import {
-  SessionDetails,
-  SessionWrapper,
   setDashboardConnection as setDashboardConnectionAction,
   setDashboardSessionWrapper as setDashboardSessionWrapperAction,
   ToolType,
@@ -30,8 +19,15 @@ import {
 import { FileStorage } from '@deephaven/file-explorer';
 import dh, { CoreClient, IdeConnection } from '@deephaven/jsapi-shim';
 import {
+  createCoreClient,
   DecimalColumnFormatter,
+  getBaseUrl,
+  getEnvoyPrefix,
+  getSessionDetails,
+  getWebsocketUrl,
   IntegerColumnFormatter,
+  loadSessionWrapper,
+  SessionWrapper,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { PouchCommandHistoryStorage } from '@deephaven/pouch-storage';
@@ -54,39 +50,17 @@ import {
 } from '@deephaven/redux';
 import {
   DeephavenPluginModuleMap,
+  getAuthPluginComponent,
   loadModulePlugins,
-} from '@deephaven/plugin-utils';
+} from '@deephaven/app-utils';
 import { setLayoutStorage as setLayoutStorageAction } from '../redux/actions';
 import App from './App';
 import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
-import {
-  createCoreClient,
-  createSessionWrapper,
-  getEnvoyPrefix,
-  getSessionDetails,
-} from './SessionUtils';
 import LayoutStorage from '../storage/LayoutStorage';
-import { isNoConsolesError } from './NoConsolesError';
 import GrpcLayoutStorage from '../storage/grpc/GrpcLayoutStorage';
 import GrpcFileStorage from '../storage/grpc/GrpcFileStorage';
 
 const log = Log.module('AppInit');
-
-async function loadSessionWrapper(
-  connection: IdeConnection,
-  sessionDetails: SessionDetails
-): Promise<SessionWrapper | undefined> {
-  let sessionWrapper: SessionWrapper | undefined;
-  try {
-    sessionWrapper = await createSessionWrapper(connection, sessionDetails);
-  } catch (e) {
-    // Consoles may be disabled on the server, but we should still be able to start up and open existing objects
-    if (!isNoConsolesError(e)) {
-      throw e;
-    }
-  }
-  return sessionWrapper;
-}
 
 interface AppInitProps {
   workspace: Workspace;
@@ -140,12 +114,14 @@ function AppInit(props: AppInitProps) {
   );
 
   const initClient = useCallback(async () => {
+    const baseUrl = getBaseUrl(import.meta.env.VITE_CORE_API_URL);
+    const websocketUrl = getWebsocketUrl(baseUrl);
     const envoyPrefix = getEnvoyPrefix();
     const options =
       envoyPrefix != null
         ? { headers: { 'envoy-prefix': envoyPrefix } }
         : undefined;
-    const newClient = createCoreClient(options);
+    const newClient = createCoreClient(websocketUrl, options);
     try {
       log.info(
         'Initializing Web UI',
@@ -157,46 +133,16 @@ function AppInit(props: AppInitProps) {
         newClient.getAuthConfigValues().then(values => new Map(values)),
         loadModulePlugins(import.meta.env.VITE_MODULE_PLUGINS_URL),
       ]);
-      const newAuthHandlers =
-        newAuthConfigValues.get('AuthHandlers')?.split(',') ?? [];
-      // Filter out all the plugins that are auth plugins, and then map them to [pluginName, AuthPlugin] pairs
-      // Uses some pretty disgusting casting, because TypeScript wants to treat it as an (string | AuthPlugin)[] array instead
-      const authPlugins = ([
-        ...newPlugins.entries(),
-      ].filter(([, plugin]: [string, { AuthPlugin?: AuthPlugin }]) =>
-        isAuthPlugin(plugin.AuthPlugin)
-      ) as [string, { AuthPlugin: AuthPlugin }][]).map(([name, plugin]) => [
-        name,
-        plugin.AuthPlugin,
-      ]) as [string, AuthPlugin][];
-
-      // Add all the core plugins in priority
-      authPlugins.push(['AuthPluginPsk', AuthPluginPsk]);
-      authPlugins.push(['AuthPluginParent', AuthPluginParent]);
-      authPlugins.push(['AuthPluginAnonymous', AuthPluginAnonymous]);
-
-      const availableAuthPlugins = authPlugins.filter(([name, authPlugin]) =>
-        authPlugin.isAvailable(newClient, newAuthHandlers, newAuthConfigValues)
+      const NewLoginPluginComponent = getAuthPluginComponent(
+        newClient,
+        newPlugins,
+        newAuthConfigValues
       );
-
-      if (availableAuthPlugins.length === 0) {
-        throw new Error(
-          `No login plugins found, please register a login plugin for auth handlers: ${newAuthHandlers}`
-        );
-      } else if (availableAuthPlugins.length > 1) {
-        log.warn(
-          'More than one login plugin available, will use the first one: ',
-          availableAuthPlugins.map(([name]) => name).join(', ')
-        );
-      }
-
-      const [loginPluginName, NewLoginPlugin] = availableAuthPlugins[0];
-      log.info('Using LoginPlugin', loginPluginName);
 
       setAuthConfigValues(newAuthConfigValues);
       setPlugins(newPlugins);
       setClient(newClient);
-      setLoginPlugin(() => NewLoginPlugin.Component);
+      setLoginPlugin(() => NewLoginPluginComponent);
     } catch (e) {
       newClient.disconnect();
       log.error(e);

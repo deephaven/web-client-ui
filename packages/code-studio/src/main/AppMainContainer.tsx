@@ -60,7 +60,6 @@ import {
   PandasPanelProps,
   IrisGridPanelProps,
   ColumnSelectionValidator,
-  SessionConfig,
   getDashboardConnection,
 } from '@deephaven/dashboard-core-plugins';
 import {
@@ -79,7 +78,7 @@ import Log from '@deephaven/log';
 import {
   DeephavenPluginModuleMap,
   loadComponentPlugin,
-} from '@deephaven/plugin-utils';
+} from '@deephaven/app-utils';
 import {
   getActiveTool,
   getWorkspace,
@@ -112,6 +111,7 @@ import EmptyDashboard from './EmptyDashboard';
 import UserLayoutUtils from './UserLayoutUtils';
 import DownloadServiceWorkerUtils from '../DownloadServiceWorkerUtils';
 import LayoutStorage from '../storage/LayoutStorage';
+import { SessionConfig } from '@deephaven/jsapi-utils';
 
 const log = Log.module('AppMainContainer');
 
