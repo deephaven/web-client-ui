@@ -12,11 +12,21 @@ export type OnTableUpdatedEvent = CustomEvent<{
   rows: ViewportRow[];
 }>;
 
-export type ViewportRow = Row & { offsetInSnapshot: number };
-
 export type RowDeserializer<T> = (row: ViewportRow, columns: Column[]) => T;
 
+export type ViewportRow = Row & { offsetInSnapshot: number };
+
 const log = Log.module('ViewportDataUtils');
+
+export function createKeyedItemFromRow<T>(
+  columns: Column[],
+  row: ViewportRow,
+  offset: number,
+  deserializeRow: RowDeserializer<T>
+): KeyedItem<T> {
+  const item = deserializeRow(row, columns);
+  return { key: String(offset + row.offsetInSnapshot), item };
+}
 
 export function createOnTableUpdatedHandler<T>(
   table: Table | TreeTable | null,
@@ -49,14 +59,22 @@ export function createOnTableUpdatedHandler<T>(
   };
 }
 
-export function padFirstAndLastRow(
-  firstRow: number,
-  viewportSize: number,
-  padding: number
-): [number, number] {
-  const firstRowAdjusted = Math.max(0, firstRow - padding);
-  const lastRow = firstRowAdjusted + viewportSize + padding - 1;
-  return [firstRowAdjusted, lastRow];
+/**
+ * Maps a Row to a key / value object. Keys are mapped ver batim from column
+ * names.
+ * @param row
+ * @param columns
+ * @returns A key / value object for the row.
+ */
+export function defaultRowDeserializer<T>(
+  row: ViewportRow,
+  columns: Column[]
+): T {
+  return columns.reduce((result, col) => {
+    // eslint-disable-next-line no-param-reassign
+    result[col.name as keyof T] = row.get(col);
+    return result;
+  }, {} as T);
 }
 
 /**
@@ -98,30 +116,14 @@ export function isClosed(table: Table | TreeTable): boolean {
   return false;
 }
 
-export function createKeyedItemFromRow<T>(
-  columns: Column[],
-  row: ViewportRow,
-  offset: number,
-  deserializeRow: RowDeserializer<T>
-): KeyedItem<T> {
-  const item = deserializeRow(row, columns);
-  return { key: String(offset + row.offsetInSnapshot), item };
-}
-
-/**
- * Maps a Row to a key / value object. Keys are mapped ver batim from column
- * names.
- * @param row
- * @param columns
- * @returns A key / value object for the row.
- */
-export function defaultRowDeserializer<T>(
-  row: ViewportRow,
-  columns: Column[]
-): T {
-  return columns.reduce((result, col) => {
-    // eslint-disable-next-line no-param-reassign
-    result[col.name as keyof T] = row.get(col);
-    return result;
-  }, {} as T);
+export function padFirstAndLastRow(
+  firstRow: number,
+  viewportSize: number,
+  padding: number,
+  tableSize: number
+): [number, number] {
+  const firstRowAdjusted = Math.max(0, firstRow - padding);
+  const lastRow =
+    Math.min(tableSize, firstRowAdjusted + viewportSize + padding) - 1;
+  return [firstRowAdjusted, lastRow];
 }

@@ -47,7 +47,8 @@ export default function useViewportData<T>({
       const [first, last] = padFirstAndLastRow(
         firstRow,
         viewportSize,
-        viewportPadding
+        viewportPadding,
+        getSize(table)
       );
       table?.setViewport(first, last);
     },
