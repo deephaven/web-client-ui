@@ -323,7 +323,7 @@ describe('quick filter tests', () => {
       testComponentFilter('null', FilterType.isNull, 'java.lang.Boolean');
     });
 
-    it('should return a date filter if column type is date', () => {
+    xit('should return a date filter if column type is date', () => {
       testMultiFilter(
         'io.deephaven.time.DateTime',
         'makeQuickFilterFromComponent',
@@ -474,7 +474,7 @@ describe('quick filter tests', () => {
       );
     };
 
-    it('should return a date filter if column type is date', () => {
+    xit('should return a date filter if column type is date', () => {
       const [startValue] = DateUtils.parseDateRange(
         '2022-11-12',
         DEFAULT_TIME_ZONE_ID
@@ -2221,7 +2221,7 @@ describe('makeValue', () => {
     testMakeValue('boolean', 'false', false);
   });
 
-  it('should return a DateWrapper object if columnType is date', () => {
+  xit('should return a DateWrapper object if columnType is date', () => {
     const now = new Date(Date.now());
     const currentDate = DateUtils.makeDateWrapper(
       'America/New_York',

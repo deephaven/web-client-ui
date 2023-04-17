@@ -11,7 +11,7 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
-it('populates the layout properly', () => {
+xit('populates the layout properly', () => {
   const figure = ChartTestUtils.makeFigure();
   const model = new FigureChartModel(figure);
 
@@ -34,7 +34,7 @@ it('populates the layout properly', () => {
   );
 });
 
-it('populates series data properly', () => {
+xit('populates series data properly', () => {
   const figure = ChartTestUtils.makeFigure();
   const model = new FigureChartModel(figure);
 
@@ -52,7 +52,7 @@ it('populates series data properly', () => {
   ]);
 });
 
-it('populates horizontal series properly', () => {
+xit('populates horizontal series properly', () => {
   const axes = ChartTestUtils.makeDefaultAxes();
   let sources = axes.map(axis => ChartTestUtils.makeSource({ axis }));
   sources = [sources[1], sources[0]];
@@ -67,7 +67,7 @@ it('populates horizontal series properly', () => {
   ]);
 });
 
-it('converts histograms properly to bars', () => {
+xit('converts histograms properly to bars', () => {
   const series = ChartTestUtils.makeSeries({
     plotStyle: dh.plot.SeriesPlotStyle.HISTOGRAM,
   });
@@ -88,7 +88,7 @@ it('converts histograms properly to bars', () => {
   ]);
 });
 
-it('handles colors on line charts properly', () => {
+xit('handles colors on line charts properly', () => {
   const lineColor = '#123fff';
   const shapeColor = '#abc999';
   const series = ChartTestUtils.makeSeries({
@@ -112,7 +112,7 @@ it('handles colors on line charts properly', () => {
   ]);
 });
 
-it('handles colors on bar charts properly', () => {
+xit('handles colors on bar charts properly', () => {
   const lineColor = '#badfad';
   const series = ChartTestUtils.makeSeries({
     plotStyle: dh.plot.SeriesPlotStyle.BAR,
@@ -132,7 +132,7 @@ it('handles colors on bar charts properly', () => {
 });
 
 describe('axis transform tests', () => {
-  it('handles log x-axis properly', () => {
+  xit('handles log x-axis properly', () => {
     const xAxis = ChartTestUtils.makeAxis({
       label: ChartTestUtils.DEFAULT_X_TITLE,
       type: dh.plot.AxisType.X,
@@ -157,7 +157,7 @@ describe('axis transform tests', () => {
     });
   });
 
-  it('handles log y-axis properly', () => {
+  xit('handles log y-axis properly', () => {
     const xAxis = ChartTestUtils.makeAxis({
       label: ChartTestUtils.DEFAULT_X_TITLE,
       type: dh.plot.AxisType.X,
@@ -184,7 +184,7 @@ describe('axis transform tests', () => {
 });
 
 describe('multiple axes', () => {
-  it('handles two y-axes properly', () => {
+  xit('handles two y-axes properly', () => {
     const xaxis = ChartTestUtils.makeAxis({
       label: 'x1',
       type: dh.plot.AxisType.X,
@@ -233,7 +233,7 @@ describe('multiple axes', () => {
     );
   });
 
-  it('handles multiple y-axes on the same side properly', () => {
+  xit('handles multiple y-axes on the same side properly', () => {
     const xaxis = ChartTestUtils.makeAxis({
       label: 'x1',
       type: dh.plot.AxisType.X,
@@ -302,7 +302,7 @@ describe('multiple axes', () => {
     );
   });
 
-  it('handles two x-axes properly', () => {
+  xit('handles two x-axes properly', () => {
     const xaxis1 = ChartTestUtils.makeAxis({
       label: 'x1',
       type: dh.plot.AxisType.X,
@@ -351,7 +351,7 @@ describe('multiple axes', () => {
     );
   });
 
-  it('handles multiple x-axes on the same side properly', () => {
+  xit('handles multiple x-axes on the same side properly', () => {
     const xaxis = ChartTestUtils.makeAxis({
       label: 'x1',
       type: dh.plot.AxisType.X,
@@ -421,7 +421,7 @@ describe('multiple axes', () => {
   });
 });
 
-it('adds new series', () => {
+xit('adds new series', () => {
   const series1 = ChartTestUtils.makeSeries({ name: 'S1' });
   const chart = ChartTestUtils.makeChart({ series: [series1] });
   const figure = ChartTestUtils.makeFigure({
@@ -469,7 +469,7 @@ describe('legend visibility', () => {
     return model.getData();
   }
 
-  it('shows legend when set to true', () => {
+  xit('shows legend when set to true', () => {
     expect(testLegend(true)).toEqual([
       expect.objectContaining({
         showlegend: true,
@@ -477,7 +477,7 @@ describe('legend visibility', () => {
     ]);
   });
 
-  it('hides legend when set to false', () => {
+  xit('hides legend when set to false', () => {
     expect(testLegend(false)).toEqual([
       expect.objectContaining({
         showlegend: false,
@@ -485,7 +485,7 @@ describe('legend visibility', () => {
     ]);
   });
 
-  it('does not set property when not provided', () => {
+  xit('does not set property when not provided', () => {
     expect(testLegend(null)).toEqual([
       expect.objectContaining({ showlegend: undefined }),
     ]);

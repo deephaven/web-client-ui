@@ -9,9 +9,9 @@ import {
 } from '@deephaven/dashboard';
 import { IrisGridModelFactory, IrisGridThemeType } from '@deephaven/iris-grid';
 import { Table, VariableDefinition } from '@deephaven/jsapi-shim';
+import { TableUtils } from '@deephaven/jsapi-utils';
 import shortid from 'shortid';
 import { IrisGridPanel, IrisGridPanelProps } from './panels';
-import { TableUtils } from '@deephaven/jsapi-utils';
 
 const SUPPORTED_TYPES: string[] = [
   dh.VariableType.TABLE,

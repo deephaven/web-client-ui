@@ -39,8 +39,6 @@ import {
 import { assertNotNull, Range } from '@deephaven/utils';
 import ChartTheme from './ChartTheme';
 
-const dh = undefined;
-
 export interface ChartModelSettings {
   hiddenSeries?: string[];
   type?: keyof SeriesPlotStyle;

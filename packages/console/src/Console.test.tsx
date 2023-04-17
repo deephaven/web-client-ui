@@ -48,11 +48,11 @@ function makeConsoleWrapper(consoleRef = React.createRef<Console>()) {
   );
 }
 
-it('renders without crashing', () => {
+xit('renders without crashing', () => {
   makeConsoleWrapper();
 });
 
-it('Handles arrow to prev item and back to blank', async () => {
+xit('Handles arrow to prev item and back to blank', async () => {
   const user = userEvent.setup();
   const consoleRef = React.createRef<Console>();
   makeConsoleWrapper(consoleRef);

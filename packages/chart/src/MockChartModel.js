@@ -1,4 +1,4 @@
-import defaultDh from '@deephaven/jsapi-shim';
+import { dh as defaultDh } from '@deephaven/jsapi-shim';
 import ChartModel from './ChartModel';
 import ChartTheme from './ChartTheme';
 import ChartUtils from './ChartUtils';
