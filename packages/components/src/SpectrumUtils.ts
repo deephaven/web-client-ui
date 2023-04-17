@@ -1,8 +1,8 @@
-import { defaultTheme } from '@adobe/react-spectrum';
+import { theme } from '@react-spectrum/theme-default';
 import darkDH from './SpectrumThemeDark.module.scss';
 import lightDH from './SpectrumThemeLight.module.scss';
 
-const { global, light, dark, medium, large } = defaultTheme;
+const { global, light, dark, medium, large } = theme;
 
 /**
  * Extend light + dark theme variables with DH defaults.

@@ -1,9 +1,9 @@
-import { defaultTheme } from '@adobe/react-spectrum';
+import { theme } from '@react-spectrum/theme-default';
 import { themeDHDefault } from './SpectrumUtils';
 
 describe('themeDHDefault', () => {
   it('should merge Spectrum default with DH custom styles', () => {
-    const { global, light, dark, medium, large } = defaultTheme;
+    const { global, light, dark, medium, large } = theme;
 
     expect(themeDHDefault).toEqual({
       global,
