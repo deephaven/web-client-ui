@@ -53,6 +53,7 @@ import {
   WorkspaceStorage,
   ServerConfigValues,
 } from '@deephaven/redux';
+import { loadJson, loadModulePlugin } from '@deephaven/plugin-utils';
 import { setLayoutStorage as setLayoutStorageAction } from '../redux/actions';
 import App from './App';
 import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
@@ -61,7 +62,6 @@ import {
   createSessionWrapper,
   getSessionDetails,
 } from './SessionUtils';
-import { PluginUtils } from '../plugins';
 import LayoutStorage from '../storage/LayoutStorage';
 import { isNoConsolesError } from './NoConsolesError';
 import GrpcLayoutStorage from '../storage/grpc/GrpcLayoutStorage';
@@ -76,7 +76,7 @@ const log = Log.module('AppInit');
 async function loadPlugins(): Promise<DeephavenPluginModuleMap> {
   log.debug('Loading plugins...');
   try {
-    const manifest = await PluginUtils.loadJson(
+    const manifest = await loadJson(
       `${import.meta.env.VITE_MODULE_PLUGINS_URL}/manifest.json`
     );
 
@@ -87,7 +87,7 @@ async function loadPlugins(): Promise<DeephavenPluginModuleMap> {
       const pluginMainUrl = `${
         import.meta.env.VITE_MODULE_PLUGINS_URL
       }/${name}/${main}`;
-      pluginPromises.push(PluginUtils.loadModulePlugin(pluginMainUrl));
+      pluginPromises.push(loadModulePlugin(pluginMainUrl));
     }
     const pluginModules = await Promise.all(pluginPromises);
 
@@ -314,6 +314,7 @@ function AppInit(props: AppInitProps) {
           operateAs: name,
           groups: [],
           permissions: {
+            isACLEditor: false,
             isSuperUser: false,
             isQueryViewOnly: false,
             isNonInteractive: false,

@@ -1,0 +1,47 @@
+{
+  "name": "@deephaven/plugin-utils",
+  "version": "0.35.0",
+  "description": "Deephaven Plugin Utils",
+  "author": "Deephaven Data Labs LLC",
+  "license": "Apache-2.0",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/deephaven/web-client-ui.git",
+    "directory": "packages/plugin-utils"
+  },
+  "source": "src/index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "engines": {
+    "node": ">=16"
+  },
+  "scripts": {
+    "build": "cross-env NODE_ENV=production run-p build:*",
+    "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward"
+  },
+  "devDependencies": {
+    "react": "^17.x",
+    "react-dom": "^17.x",
+    "react-redux": "^7.x",
+    "redux": "^4.x"
+  },
+  "dependencies": {
+    "@deephaven/log": "file:../log",
+    "@paciolan/remote-component": "2.13.0",
+    "@paciolan/remote-module-loader": "^3.0.2"
+  },
+  "peerDependencies": {
+    "react": "^17.x",
+    "react-dom": "^17.x",
+    "react-redux": "^7.x",
+    "redux": "^4.x"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

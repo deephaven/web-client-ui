@@ -22,16 +22,6 @@ export function getWebsocketUrl(): string {
   return `${baseUrl.protocol}//${baseUrl.host}`;
 }
 
-export function getAuthType(): AUTH_TYPE {
-  const searchParams = new URLSearchParams(window.location.search);
-  switch (searchParams.get('authProvider')) {
-    case 'parent':
-      return AUTH_TYPE.PARENT;
-    default:
-      return AUTH_TYPE.PLUGIN;
-  }
-}
-
 /**
  * @returns New connection to the server
  */

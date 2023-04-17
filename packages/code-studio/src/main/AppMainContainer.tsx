@@ -108,8 +108,8 @@ import {
 import EmptyDashboard from './EmptyDashboard';
 import UserLayoutUtils from './UserLayoutUtils';
 import DownloadServiceWorkerUtils from '../DownloadServiceWorkerUtils';
-import { PluginUtils } from '../plugins';
 import LayoutStorage from '../storage/LayoutStorage';
+import { loadComponentPlugin } from '@deephaven/plugin-utils';
 
 const log = Log.module('AppMainContainer');
 
@@ -660,8 +660,11 @@ export class AppMainContainer extends Component<
         TablePlugin: ForwardRefExoticComponent<React.RefAttributes<unknown>>;
       }).TablePlugin;
     }
-
-    return PluginUtils.loadComponentPlugin(pluginName);
+    const baseURL = new URL(
+      import.meta.env.VITE_COMPONENT_PLUGINS_URL ?? '',
+      `${window.location}`
+    );
+    return loadComponentPlugin(baseURL, pluginName);
   }
 
   startListeningForDisconnect() {
