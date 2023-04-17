@@ -14,8 +14,8 @@ import classNames from 'classnames';
 import memoize from 'memoize-one';
 import throttle from 'lodash.throttle';
 import type { JSZipObject } from 'jszip';
-import dh from '@deephaven/jsapi-shim';
 import type {
+  dhType,
   IdeSession,
   LogItem,
   VariableChanges,
@@ -53,6 +53,7 @@ const DEFAULT_SETTINGS: Settings = {
 } as const;
 
 interface ConsoleProps {
+  dh: dhType;
   statusBarChildren: ReactNode;
   settings: Partial<Settings>;
   focusCommandHistory: () => void;
@@ -215,7 +216,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
   componentDidMount(): void {
     this.initConsoleLogging();
 
-    const { session } = this.props;
+    const { session, dh } = this.props;
     session.addEventListener(
       dh.IdeSession.EVENT_COMMANDSTARTED,
       this.handleCommandStarted
@@ -234,7 +235,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
   }
 
   componentWillUnmount(): void {
-    const { session } = this.props;
+    const { session, dh } = this.props;
 
     session.removeEventListener(
       dh.IdeSession.EVENT_COMMANDSTARTED,
@@ -733,7 +734,13 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
   }
 
   handleOpenCsvTable(title: string): void {
-    const { openObject, commandHistoryStorage, language, scope } = this.props;
+    const {
+      openObject,
+      commandHistoryStorage,
+      language,
+      scope,
+      dh,
+    } = this.props;
     const { consoleHistory, objectMap } = this.state;
     const object = { name: title, title, type: dh.VariableType.TABLE };
     const isExistingObject = objectMap.has(title);
@@ -951,6 +958,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
       timeZone,
       disabled,
       unzip,
+      dh,
     } = this.props;
     const {
       consoleHeight,
@@ -1012,6 +1020,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
                 openObject={openObject}
                 language={language}
                 disabled={disabled}
+                dh={dh}
               />
               {historyChildren}
             </div>

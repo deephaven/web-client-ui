@@ -876,6 +876,7 @@ export class AppMainContainer extends Component<
                       onImportLayout={this.handleImportLayoutClick}
                       onResetLayout={this.handleResetLayoutClick}
                       onSelect={this.handleWidgetSelect}
+                      dh={dh}
                     />
                   </Popper>
                 </Button>

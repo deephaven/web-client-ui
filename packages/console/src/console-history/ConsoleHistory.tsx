@@ -2,7 +2,7 @@
  * Console display for use in the Iris environment.
  */
 import React, { Component, ReactElement } from 'react';
-import { VariableDefinition } from '@deephaven/jsapi-shim';
+import { dhType, VariableDefinition } from '@deephaven/jsapi-shim';
 import ConsoleHistoryItem from './ConsoleHistoryItem';
 
 import './ConsoleHistory.scss';
@@ -13,6 +13,7 @@ interface ConsoleHistoryProps {
   language: string;
   openObject: (object: VariableDefinition) => void;
   disabled?: boolean;
+  dh: dhType;
 }
 
 class ConsoleHistory extends Component<
@@ -30,7 +31,7 @@ class ConsoleHistory extends Component<
   }
 
   render(): ReactElement {
-    const { disabled, items, language, openObject } = this.props;
+    const { disabled, items, language, openObject, dh } = this.props;
     const historyElements = [];
     for (let i = 0; i < items.length; i += 1) {
       const item = items[i];
@@ -41,6 +42,7 @@ class ConsoleHistory extends Component<
           item={item}
           openObject={openObject}
           language={language}
+          dh={dh}
         />
       );
       historyElements.push(historyElement);

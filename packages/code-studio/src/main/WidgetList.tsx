@@ -14,7 +14,7 @@ import {
   vsPreview,
   vsRefresh,
 } from '@deephaven/icons';
-import { VariableDefinition } from '@deephaven/jsapi-shim';
+import { dhType, VariableDefinition } from '@deephaven/jsapi-shim';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import './WidgetList.scss';
 
@@ -36,6 +36,7 @@ export interface WidgetListProps {
   onImportLayout: () => void;
   onResetLayout: () => void;
   widgets?: VariableDefinition[];
+  dh: dhType;
 }
 
 /**
@@ -50,6 +51,7 @@ export function WidgetList(props: WidgetListProps): JSX.Element {
     onResetLayout,
     onSelect,
     widgets = [],
+    dh,
   } = props;
   const [disableDoubleClick, setDisableDoubleClick] = useState(false);
   const [searchText, setSearchText] = useState('');
@@ -154,11 +156,12 @@ export function WidgetList(props: WidgetListProps): JSX.Element {
               // no-op: click is handled by onMouseDown and onMouseUp attributes
             }}
           >
-            <ObjectIcon type={widget.type} /> {widget.name ?? ''}
+            <ObjectIcon type={widget.type} dh={dh} /> {widget.name ?? ''}
           </Button>
         </li>
       )),
     [
+      dh,
       filteredWidgets,
       disableDoubleClick,
       handleMouseDown,

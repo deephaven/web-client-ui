@@ -4,7 +4,7 @@
 import React, { PureComponent, ReactElement } from 'react';
 import { Button } from '@deephaven/components';
 import Log from '@deephaven/log';
-import { VariableDefinition } from '@deephaven/jsapi-shim';
+import { dhType, VariableDefinition } from '@deephaven/jsapi-shim';
 import classNames from 'classnames';
 import { Code, ObjectIcon } from '../common';
 import ConsoleHistoryItemResult from './ConsoleHistoryItemResult';
@@ -20,6 +20,7 @@ interface ConsoleHistoryItemProps {
   language: string;
   openObject: (object: VariableDefinition) => void;
   disabled?: boolean;
+  dh: dhType;
 }
 
 class ConsoleHistoryItem extends PureComponent<
@@ -53,7 +54,7 @@ class ConsoleHistoryItem extends PureComponent<
   }
 
   render(): ReactElement {
-    const { disabled, item, language } = this.props;
+    const { disabled, item, language, dh } = this.props;
     const { disabledObjects, result } = item;
 
     let commandElement = null;
@@ -91,7 +92,7 @@ class ConsoleHistoryItem extends PureComponent<
               onClick={() => this.handleObjectClick(object)}
               className="btn-console-object"
               disabled={btnDisabled}
-              icon={<ObjectIcon type={object.type} />}
+              icon={<ObjectIcon type={object.type} dh={dh} />}
             >
               {title}
             </Button>
