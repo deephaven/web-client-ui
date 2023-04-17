@@ -5,7 +5,7 @@ import { TypeValue as FilterTypeValue } from '@deephaven/filters';
 import Log from '@deephaven/log';
 import { ChartPanel, IrisGridPanel, DropdownFilterPanel } from '../panels';
 
-export type LinkType = 'invalid' | 'filterSource' | 'tableLink';
+export type LinkType = 'invalid' | 'filterSource' | 'tableLink' | 'chartLink';
 
 export type LinkPoint = {
   panelId: string | string[];
@@ -154,6 +154,7 @@ class LinkerUtils {
     // If all checks pass, link type is determined by the target panel component
     switch (end.panelComponent) {
       case LayoutUtils.getComponentName(ChartPanel):
+        return 'chartLink';
       case LayoutUtils.getComponentName(IrisGridPanel):
         return 'tableLink';
       case LayoutUtils.getComponentName(DropdownFilterPanel):

@@ -62,6 +62,7 @@ import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
 import {
   createCoreClient,
   createSessionWrapper,
+  getEnvoyPrefix,
   getSessionDetails,
 } from './SessionUtils';
 import LayoutStorage from '../storage/LayoutStorage';
@@ -139,7 +140,12 @@ function AppInit(props: AppInitProps) {
   );
 
   const initClient = useCallback(async () => {
-    const newClient = createCoreClient();
+    const envoyPrefix = getEnvoyPrefix();
+    const options =
+      envoyPrefix != null
+        ? { headers: { 'envoy-prefix': envoyPrefix } }
+        : undefined;
+    const newClient = createCoreClient(options);
     try {
       log.info(
         'Initializing Web UI',

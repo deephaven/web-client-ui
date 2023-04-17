@@ -1,7 +1,7 @@
 import DragUtils from './DragUtils';
 
 function makeItems(count = 5) {
-  const items = [];
+  const items: number[] = [];
 
   for (let i = 0; i < count; i += 1) {
     items.push(i);

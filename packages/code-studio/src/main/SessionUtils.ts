@@ -2,7 +2,11 @@ import {
   SessionDetails,
   SessionWrapper,
 } from '@deephaven/dashboard-core-plugins';
-import dh, { CoreClient, IdeConnection } from '@deephaven/jsapi-shim';
+import dh, {
+  ConnectOptions,
+  CoreClient,
+  IdeConnection,
+} from '@deephaven/jsapi-shim';
 import {
   requestParentResponse,
   SESSION_DETAILS_REQUEST,
@@ -20,6 +24,11 @@ export function getBaseUrl(): URL {
 export function getWebsocketUrl(): string {
   const baseUrl = getBaseUrl();
   return `${baseUrl.protocol}//${baseUrl.host}`;
+}
+
+export function getEnvoyPrefix(): string | null {
+  const searchParams = new URLSearchParams(window.location.search);
+  return searchParams.get('envoyPrefix');
 }
 
 /**
@@ -69,12 +78,12 @@ export async function createSessionWrapper(
   };
 }
 
-export function createCoreClient(): CoreClient {
+export function createCoreClient(options?: ConnectOptions): CoreClient {
   const websocketUrl = getWebsocketUrl();
 
   log.info('createCoreClient', websocketUrl);
 
-  return new dh.CoreClient(websocketUrl);
+  return new dh.CoreClient(websocketUrl, options);
 }
 
 async function requestParentSessionDetails(): Promise<SessionDetails> {

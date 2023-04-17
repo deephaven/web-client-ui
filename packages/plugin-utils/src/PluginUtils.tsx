@@ -61,22 +61,15 @@ export async function loadModulePlugin(pluginUrl: string): Promise<unknown> {
 export async function loadJson(
   jsonUrl: string
 ): Promise<{ plugins: { name: string; main: string }[] }> {
-  return new Promise((resolve, reject) => {
-    const request = new XMLHttpRequest();
-    request.addEventListener('load', () => {
-      try {
-        const json = JSON.parse(request.responseText);
-        resolve(json);
-      } catch (err) {
-        reject(err);
-      }
-    });
-    request.addEventListener('error', err => {
-      reject(err);
-    });
-    request.open('GET', jsonUrl);
-    request.send();
-  });
+  const res = await fetch(jsonUrl);
+  if (!res.ok) {
+    throw new Error(res.statusText);
+  }
+  try {
+    return await res.json();
+  } catch {
+    throw new Error('Could not be parsed as JSON');
+  }
 }
 
 /**
@@ -89,21 +82,30 @@ export async function loadModulePlugins(
 ): Promise<DeephavenPluginModuleMap> {
   log.debug('Loading plugins...');
   try {
-    const manifest = await loadJson(`${modulePluginsUrl}/manifest.json`);
+    const manifest = await loadJson(modulePluginsUrl);
+
+    if (!Array.isArray(manifest.plugins)) {
+      throw new Error('Plugin manifest JSON does not contain plugins array');
+    }
 
     log.debug('Plugin manifest loaded:', manifest);
-    const pluginPromises = [];
+    const pluginPromises: Promise<unknown>[] = [];
     for (let i = 0; i < manifest.plugins.length; i += 1) {
       const { name, main } = manifest.plugins[i];
       const pluginMainUrl = `${modulePluginsUrl}/${name}/${main}`;
       pluginPromises.push(loadModulePlugin(pluginMainUrl));
     }
-    const pluginModules = await Promise.all(pluginPromises);
+    const pluginModules = await Promise.allSettled(pluginPromises);
 
-    const pluginMap = new Map();
+    const pluginMap: DeephavenPluginModuleMap = new Map();
     for (let i = 0; i < pluginModules.length; i += 1) {
+      const module = pluginModules[i];
       const { name } = manifest.plugins[i];
-      pluginMap.set(name, pluginModules[i]);
+      if (module.status === 'fulfilled') {
+        pluginMap.set(name, module.value as DeephavenPluginModule);
+      } else {
+        log.error(`Unable to load plugin ${name}`, module.reason);
+      }
     }
     log.info('Plugins loaded:', pluginMap);
 

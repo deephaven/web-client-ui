@@ -14,6 +14,7 @@ import {
 import Log from '@deephaven/log';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import './LinkerLink.scss';
+import { LinkType } from './LinkerUtils';
 
 const log = Log.module('LinkerLink');
 
@@ -37,6 +38,7 @@ export type LinkerLinkProps = {
   y2: number;
   id: string;
   className: string;
+  type: LinkType;
   operator: FilterTypeValue;
   isSelected: boolean;
   startColumnType: string | null;
@@ -202,6 +204,7 @@ export class LinkerLink extends Component<LinkerLinkProps, LinkerLinkState> {
       y2,
       id,
       startColumnType,
+      type,
     } = this.props;
     const { isHovering } = this.state;
 
@@ -297,6 +300,8 @@ export class LinkerLink extends Component<LinkerLinkProps, LinkerLinkState> {
       }
     }
 
+    const showOperator = type !== 'chartLink' && type !== 'filterSource';
+
     return (
       <>
         <svg
@@ -314,6 +319,7 @@ export class LinkerLink extends Component<LinkerLinkProps, LinkerLinkState> {
             onMouseEnter={this.handleMouseEnter}
             onMouseLeave={this.handleMouseLeave}
             clipPath={`url(#${clipPathId})`}
+            data-testid="link-select"
           />
           <path className="link-background" d={path} />
           <path className="link-foreground" d={path} />
@@ -322,32 +328,34 @@ export class LinkerLink extends Component<LinkerLinkProps, LinkerLinkState> {
         </svg>
         {startColumnType != null && isSelected && (
           <>
-            <Button
-              kind="primary"
-              className="btn-fab btn-operator"
-              style={{
-                top: midY + (slopeAtMid >= 0 ? topOffsetY : bottomOffsetY),
-                left: midX + (slopeAtMid >= 0 ? topOffsetX : bottomOffsetX),
-              }}
-              onClick={() => {
-                // no-op: click is handled in `DropdownMenu'
-              }}
-              icon={
-                <div className="fa-md fa-layers">
-                  <b>{symbol}</b>
-                  <FontAwesomeIcon
-                    icon={vsTriangleDown}
-                    transform="right-8 down-9 shrink-5"
-                  />
-                </div>
-              }
-              tooltip="Change comparison operator"
-            >
-              <DropdownMenu
-                actions={this.getDropdownActions}
-                popperOptions={{ placement: 'bottom-start' }}
-              />
-            </Button>
+            {showOperator && (
+              <Button
+                kind="primary"
+                className="btn-fab btn-operator"
+                style={{
+                  top: midY + (slopeAtMid >= 0 ? topOffsetY : bottomOffsetY),
+                  left: midX + (slopeAtMid >= 0 ? topOffsetX : bottomOffsetX),
+                }}
+                onClick={() => {
+                  // no-op: click is handled in `DropdownMenu'
+                }}
+                icon={
+                  <div className="fa-md fa-layers">
+                    <b>{symbol}</b>
+                    <FontAwesomeIcon
+                      icon={vsTriangleDown}
+                      transform="right-8 down-9 shrink-5"
+                    />
+                  </div>
+                }
+                tooltip="Change comparison operator"
+              >
+                <DropdownMenu
+                  actions={this.getDropdownActions}
+                  popperOptions={{ placement: 'bottom-start' }}
+                />
+              </Button>
+            )}
             <Button
               kind="primary"
               className="btn-fab btn-delete"
