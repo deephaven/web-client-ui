@@ -2,7 +2,7 @@
 /* eslint func-names: "off" */
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import dh from '@deephaven/jsapi-shim';
+import { dh } from '@deephaven/jsapi-shim';
 import { MockChartModel } from '@deephaven/chart';
 import type { Container } from '@deephaven/golden-layout';
 import { PanelComponent } from '@deephaven/dashboard';
@@ -85,6 +85,7 @@ function makeChartPanelWrapper({
 } = {}) {
   return (
     <ChartPanel
+      dh={dh}
       columnSelectionValidator={columnSelectionValidator}
       makeModel={makeModel}
       metadata={metadata as ChartPanelMetadata}

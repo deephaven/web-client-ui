@@ -24,7 +24,7 @@ export interface SessionWrapper {
   connection: IdeConnection;
   config: SessionConfig;
   details?: SessionDetails;
-  dh?: dhType;
+  dh: dhType;
 }
 
 /**

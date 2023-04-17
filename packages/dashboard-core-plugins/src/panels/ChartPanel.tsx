@@ -26,7 +26,7 @@ import {
   DehydratedQuickFilter,
   LegacyDehydratedSort,
 } from '@deephaven/iris-grid';
-import defaultDh, {
+import {
   dhType,
   FigureDescriptor,
   SeriesPlotStyle,
