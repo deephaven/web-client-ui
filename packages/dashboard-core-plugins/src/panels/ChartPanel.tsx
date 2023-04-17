@@ -797,7 +797,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
           return;
         }
         if (filterList.length < 1) {
-          log.error('Invalid filterMap, filterList is empty', filterMapParam);
+          log.debug('Ignoring empty filterList for column', columnName);
           return;
         }
         const { value } = filterList[0];

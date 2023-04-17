@@ -355,10 +355,12 @@ export class Linker extends Component<LinkerProps, LinkerState> {
         }
         case 'chartLink': {
           const existingLinkEnd = isReversed === true ? start : end;
+          const existingLinkStart = isReversed === true ? end : start;
           log.debug('creating chartlink', { existingLinkEnd, start, end });
           // Don't allow linking more than one column per source to each chart column
           const linksToDelete = links.filter(
-            ({ end: panelLinkEnd }) =>
+            ({ end: panelLinkEnd, start: panelLinkStart }) =>
+              panelLinkStart?.panelId === existingLinkStart.panelId &&
               panelLinkEnd?.panelId === existingLinkEnd.panelId &&
               panelLinkEnd?.columnName === existingLinkEnd.columnName &&
               panelLinkEnd?.columnType === existingLinkEnd.columnType
