@@ -2,9 +2,10 @@ import {
   SessionDetails,
   SessionWrapper,
 } from '@deephaven/dashboard-core-plugins';
-import dh, {
+import {
   ConnectOptions,
   CoreClient,
+  dhType,
   IdeConnection,
   LoginOptions,
 } from '@deephaven/jsapi-shim';
@@ -64,6 +65,7 @@ export function createConnection(): IdeConnection {
  * @returns A session and config that is ready to use
  */
 export async function createSessionWrapper(
+  dh: dhType,
   connection: IdeConnection,
   details: SessionDetails
 ): Promise<SessionWrapper> {
@@ -92,6 +94,7 @@ export async function createSessionWrapper(
     config,
     connection,
     details,
+    dh,
   };
 }
 

@@ -106,7 +106,7 @@ async function loadSessionWrapper(
 ): Promise<SessionWrapper | undefined> {
   let sessionWrapper: SessionWrapper | undefined;
   try {
-    sessionWrapper = await createSessionWrapper(connection, sessionDetails);
+    sessionWrapper = await createSessionWrapper(dh, connection, sessionDetails);
   } catch (e) {
     // Consoles may be disabled on the server, but we should still be able to start up and open existing objects
     if (!isNoConsolesError(e)) {
