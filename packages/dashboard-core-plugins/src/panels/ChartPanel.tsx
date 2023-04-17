@@ -9,6 +9,7 @@ import {
   ChartModel,
   ChartModelSettings,
   ChartUtils,
+  FilterMap,
   isFigureChartModel,
 } from '@deephaven/chart';
 import {
@@ -62,7 +63,7 @@ import ChartColumnSelectorOverlay, {
   SelectorColumn,
 } from './ChartColumnSelectorOverlay';
 import './ChartPanel.scss';
-import { Link } from '../linker/LinkerUtils';
+import { Link, LinkFilterMap } from '../linker/LinkerUtils';
 import { PanelState as IrisGridPanelState } from './IrisGridPanel';
 import { ColumnSelectionValidator } from '../linker/ColumnSelectionValidator';
 
@@ -70,8 +71,6 @@ const log = Log.module('ChartPanel');
 const UPDATE_MODEL_DEBOUNCE = 150;
 
 export type InputFilterMap = Map<string, InputFilter>;
-
-export type FilterMap = Map<string, string>;
 
 export type LinkedColumnMap = Map<string, { name: string; type: string }>;
 
@@ -112,7 +111,7 @@ export interface ChartPanelTableSettings {
   partitionColumn?: string;
 }
 export interface GLChartPanelState {
-  filterValueMap: [string, string][];
+  filterValueMap: [string, unknown][];
   settings: Partial<ChartModelSettings>;
   tableSettings: ChartPanelTableSettings;
   irisGridState?: {
@@ -162,10 +161,10 @@ interface ChartPanelState {
 
   // Map of all non-empty filters applied to the chart.
   // Initialize the filter map to the previously stored values; input filters will be applied after load.
-  filterMap: Map<string, string>;
+  filterMap: FilterMap;
   // Map of filter values set from links, stored in panelState.
   // Combined with inputFilters to get applied filters (filterMap).
-  filterValueMap: Map<string, string>;
+  filterValueMap: FilterMap;
   model?: ChartModel;
   columnMap: ColumnMap;
 
@@ -789,20 +788,22 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
    * Set chart filters based on the filter map
    * @param filterMapParam Filter map
    */
-  setFilterMap(
-    filterMapParam: Map<string, { columnType: string; value: string }>
-  ): void {
+  setFilterMap(filterMapParam: LinkFilterMap): void {
     log.debug('setFilterMap', filterMapParam);
     this.setState(state => {
       const { columnMap, filterMap } = state;
-      let updatedFilterMap: null | Map<string, string> = null;
+      let updatedFilterMap: null | FilterMap = null;
       const filterValueMap = new Map(state.filterValueMap);
-
-      filterMapParam.forEach(({ columnType, value }, columnName) => {
+      filterMapParam.forEach(({ columnType, filterList }, columnName) => {
         const column = columnMap.get(columnName);
         if (column == null || column.type !== columnType) {
           return;
         }
+        if (filterList.length < 1) {
+          log.debug('Ignoring empty filterList for column', columnName);
+          return;
+        }
+        const { value } = filterList[0];
         filterValueMap.set(columnName, value);
         if (filterMap.get(columnName) !== value) {
           if (updatedFilterMap === null) {
