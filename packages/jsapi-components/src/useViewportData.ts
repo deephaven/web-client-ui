@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react';
-import { useListData } from '@adobe/react-spectrum';
+import { useListData } from '@react-stately/data';
 import { Table, TreeTable } from '@deephaven/jsapi-shim';
 import {
   KeyedItem,

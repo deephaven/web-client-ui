@@ -25,13 +25,11 @@
     "@deephaven/jsapi-shim": "file:../jsapi-shim",
     "@deephaven/log": "file:../log",
     "@deephaven/utils": "file:../utils",
+    "@react-stately/data": "^3.9.1",
     "shortid": "^2.2.16"
   },
   "devDependencies": {
     "@deephaven/tsconfig": "file:../tsconfig"
-  },
-  "peerDependencies": {
-    "@adobe/react-spectrum": "^3.x"
   },
   "files": [
     "dist"

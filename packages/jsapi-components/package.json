@@ -30,6 +30,7 @@
     "@deephaven/log": "file:../log",
     "@deephaven/react-hooks": "file:../log",
     "@deephaven/utils": "file:../utils",
+    "@react-stately/data": "^3.9.1",
     "classnames": "^2.3.2",
     "prop-types": "^15.8.1"
   },
@@ -39,7 +40,6 @@
     "react-test-renderer": "^17.0.2"
   },
   "peerDependencies": {
-    "@adobe/react-spectrum": "^3.x",
     "react": "^17.x"
   },
   "files": [

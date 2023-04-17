@@ -1,4 +1,4 @@
-import { ListData } from '@adobe/react-spectrum';
+import { ListData } from '@react-stately/data';
 import { Column, Row, Table, TreeTable } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 
