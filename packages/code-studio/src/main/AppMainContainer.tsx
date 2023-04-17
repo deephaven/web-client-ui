@@ -77,6 +77,10 @@ import dh, {
 } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 import {
+  DeephavenPluginModuleMap,
+  loadComponentPlugin,
+} from '@deephaven/plugin-utils';
+import {
   getActiveTool,
   getWorkspace,
   getUser,
@@ -84,7 +88,6 @@ import {
   updateWorkspaceData as updateWorkspaceDataAction,
   getPlugins,
   Workspace,
-  DeephavenPluginModuleMap,
   WorkspaceData,
   RootState,
   UserPermissions,
@@ -109,7 +112,6 @@ import EmptyDashboard from './EmptyDashboard';
 import UserLayoutUtils from './UserLayoutUtils';
 import DownloadServiceWorkerUtils from '../DownloadServiceWorkerUtils';
 import LayoutStorage from '../storage/LayoutStorage';
-import { loadComponentPlugin } from '@deephaven/plugin-utils';
 
 const log = Log.module('AppMainContainer');
 

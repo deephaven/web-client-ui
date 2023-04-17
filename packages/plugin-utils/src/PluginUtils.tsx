@@ -82,7 +82,7 @@ export async function loadModulePlugins(
 ): Promise<DeephavenPluginModuleMap> {
   log.debug('Loading plugins...');
   try {
-    const manifest = await loadJson(modulePluginsUrl);
+    const manifest = await loadJson(`${modulePluginsUrl}/manifest.json`);
 
     if (!Array.isArray(manifest.plugins)) {
       throw new Error('Plugin manifest JSON does not contain plugins array');
