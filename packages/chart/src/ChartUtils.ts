@@ -36,6 +36,16 @@ import {
 import { assertNotNull, Range } from '@deephaven/utils';
 import ChartTheme from './ChartTheme';
 
+export type FilterColumnMap = Map<
+  string,
+  {
+    name: string;
+    type: string;
+  }
+>;
+
+export type FilterMap = Map<string, unknown>;
+
 export interface ChartModelSettings {
   hiddenSeries?: string[];
   type: keyof SeriesPlotStyle;
