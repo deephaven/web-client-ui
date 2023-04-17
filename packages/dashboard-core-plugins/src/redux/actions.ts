@@ -3,7 +3,7 @@ import { updateDashboardData } from '@deephaven/dashboard';
 import { ThunkAction } from 'redux-thunk';
 import { RootState } from '@deephaven/redux';
 import { Action } from 'redux';
-import { IdeConnection, IdeSession } from '@deephaven/jsapi-shim';
+import { dhType, IdeConnection, IdeSession } from '@deephaven/jsapi-shim';
 import { getLinksForDashboard } from './selectors';
 import { FilterSet } from '../panels';
 import { Link } from '../linker/LinkerUtils';

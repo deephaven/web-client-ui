@@ -129,7 +129,7 @@ export interface ChartPanelProps {
   glContainer: Container;
   glEventHub: EventEmitter;
 
-  dh?: dhType;
+  dh: dhType;
   metadata: ChartPanelMetadata;
   /** Function to build the ChartModel used by this ChartPanel. Can return a promise. */
   makeModel: () => Promise<ChartModel>;
@@ -188,7 +188,6 @@ function hasPanelState(
 
 export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
   public static defaultProps = {
-    dh: defaultDh,
     columnSelectionValidator: null,
     isLinkerActive: false,
     source: null,

@@ -1404,7 +1404,7 @@ class IrisGridTableModelTemplate<
     }
 
     if (tableRanges.length > 0) {
-      const rangeSet = IrisGridUtils.rangeSetFromRanges(tableRanges);
+      const rangeSet = IrisGridUtils.rangeSetFromRanges(dh, tableRanges);
       const snapshot = await this.subscription.snapshot(rangeSet, columns);
       result.push(
         ...snapshot.rows.map(rowData =>

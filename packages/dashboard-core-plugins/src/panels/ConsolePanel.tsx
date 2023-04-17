@@ -337,7 +337,7 @@ export class ConsolePanel extends PureComponent<
       >
         {session != null && (
           <Console
-            dh={dh}
+            dh={dh!}
             ref={this.consoleRef}
             settings={consoleSettings}
             session={session}
