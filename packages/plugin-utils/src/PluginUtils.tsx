@@ -5,6 +5,12 @@ import loadRemoteModule from './loadRemoteModule';
 
 const log = Log.module('@deephaven/plugin-utils.PluginUtils');
 
+// A DeephavenPluginModule. This interface should have new fields added to it from different levels of plugins.
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface DeephavenPluginModule {}
+
+export type DeephavenPluginModuleMap = Map<string, DeephavenPluginModule>;
+
 /**
  * Load a component plugin from the server.
  * @param baseURL Base URL of the plugin server
@@ -71,4 +77,39 @@ export async function loadJson(
     request.open('GET', jsonUrl);
     request.send();
   });
+}
+
+/**
+ * Load all plugin modules available.
+ * @param modulePluginsUrl The base URL of the module plugins to load
+ * @returns A map from the name of the plugin to the plugin module that was loaded
+ */
+export async function loadModulePlugins(
+  modulePluginsUrl: string
+): Promise<DeephavenPluginModuleMap> {
+  log.debug('Loading plugins...');
+  try {
+    const manifest = await loadJson(`${modulePluginsUrl}/manifest.json`);
+
+    log.debug('Plugin manifest loaded:', manifest);
+    const pluginPromises = [];
+    for (let i = 0; i < manifest.plugins.length; i += 1) {
+      const { name, main } = manifest.plugins[i];
+      const pluginMainUrl = `${modulePluginsUrl}/${name}/${main}`;
+      pluginPromises.push(loadModulePlugin(pluginMainUrl));
+    }
+    const pluginModules = await Promise.all(pluginPromises);
+
+    const pluginMap = new Map();
+    for (let i = 0; i < pluginModules.length; i += 1) {
+      const { name } = manifest.plugins[i];
+      pluginMap.set(name, pluginModules[i]);
+    }
+    log.info('Plugins loaded:', pluginMap);
+
+    return pluginMap;
+  } catch (e) {
+    log.error('Unable to load plugins:', e);
+    return new Map();
+  }
 }

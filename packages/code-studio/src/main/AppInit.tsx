@@ -36,7 +36,6 @@ import {
 import Log from '@deephaven/log';
 import { PouchCommandHistoryStorage } from '@deephaven/pouch-storage';
 import {
-  DeephavenPluginModuleMap,
   getWorkspace,
   getWorkspaceStorage,
   RootState,
@@ -53,7 +52,10 @@ import {
   WorkspaceStorage,
   ServerConfigValues,
 } from '@deephaven/redux';
-import { loadJson, loadModulePlugin } from '@deephaven/plugin-utils';
+import {
+  DeephavenPluginModuleMap,
+  loadModulePlugins,
+} from '@deephaven/plugin-utils';
 import { setLayoutStorage as setLayoutStorageAction } from '../redux/actions';
 import App from './App';
 import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
@@ -68,42 +70,6 @@ import GrpcLayoutStorage from '../storage/grpc/GrpcLayoutStorage';
 import GrpcFileStorage from '../storage/grpc/GrpcFileStorage';
 
 const log = Log.module('AppInit');
-
-/**
- * Load all plugin modules available.
- * @returns A map from the name of the plugin to the plugin module that was loaded
- */
-async function loadPlugins(): Promise<DeephavenPluginModuleMap> {
-  log.debug('Loading plugins...');
-  try {
-    const manifest = await loadJson(
-      `${import.meta.env.VITE_MODULE_PLUGINS_URL}/manifest.json`
-    );
-
-    log.debug('Plugin manifest loaded:', manifest);
-    const pluginPromises = [];
-    for (let i = 0; i < manifest.plugins.length; i += 1) {
-      const { name, main } = manifest.plugins[i];
-      const pluginMainUrl = `${
-        import.meta.env.VITE_MODULE_PLUGINS_URL
-      }/${name}/${main}`;
-      pluginPromises.push(loadModulePlugin(pluginMainUrl));
-    }
-    const pluginModules = await Promise.all(pluginPromises);
-
-    const pluginMap = new Map();
-    for (let i = 0; i < pluginModules.length; i += 1) {
-      const { name } = manifest.plugins[i];
-      pluginMap.set(name, pluginModules[i]);
-    }
-    log.info('Plugins loaded:', pluginMap);
-
-    return pluginMap;
-  } catch (e) {
-    log.error('Unable to load plugins:', e);
-    return new Map();
-  }
-}
 
 async function loadSessionWrapper(
   connection: IdeConnection,
@@ -183,7 +149,7 @@ function AppInit(props: AppInitProps) {
 
       const [newAuthConfigValues, newPlugins] = await Promise.all([
         newClient.getAuthConfigValues().then(values => new Map(values)),
-        loadPlugins(),
+        loadModulePlugins(import.meta.env.VITE_MODULE_PLUGINS_URL),
       ]);
       const newAuthHandlers =
         newAuthConfigValues.get('AuthHandlers')?.split(',') ?? [];

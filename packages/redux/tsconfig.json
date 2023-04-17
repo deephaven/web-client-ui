@@ -7,20 +7,11 @@
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx"],
   "exclude": ["node_modules", "src/**/*.test.*", "src/**/__mocks__/*"],
   "references": [
-    {
-      "path": "../components"
-    },
-    {
-      "path": "../console"
-    },
-    {
-      "path": "../file-explorer"
-    },
-    {
-      "path": "../jsapi-utils"
-    },
-    {
-      "path": "../log"
-    }
+    { "path": "../components" },
+    { "path": "../console" },
+    { "path": "../file-explorer" },
+    { "path": "../jsapi-utils" },
+    { "path": "../log" },
+    { "path": "../plugin-utils" }
   ]
 }
