@@ -58,6 +58,13 @@ export function getEnvoyPrefix(): string | null {
   return searchParams.get('envoyPrefix');
 }
 
+export function getClientOptions(): ConnectOptions {
+  const envoyPrefix = getEnvoyPrefix();
+  return envoyPrefix != null
+    ? { headers: { 'envoy-prefix': envoyPrefix } }
+    : {};
+}
+
 /**
  * @returns New connection to the server
  */

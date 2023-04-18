@@ -22,7 +22,7 @@ import {
   createCoreClient,
   DecimalColumnFormatter,
   getBaseUrl,
-  getEnvoyPrefix,
+  getClientOptions,
   getSessionDetails,
   getWebsocketUrl,
   IntegerColumnFormatter,
@@ -116,11 +116,7 @@ function AppInit(props: AppInitProps) {
   const initClient = useCallback(async () => {
     const baseUrl = getBaseUrl(import.meta.env.VITE_CORE_API_URL);
     const websocketUrl = getWebsocketUrl(baseUrl);
-    const envoyPrefix = getEnvoyPrefix();
-    const options =
-      envoyPrefix != null
-        ? { headers: { 'envoy-prefix': envoyPrefix } }
-        : undefined;
+    const options = getClientOptions();
     const newClient = createCoreClient(websocketUrl, options);
     try {
       log.info(
