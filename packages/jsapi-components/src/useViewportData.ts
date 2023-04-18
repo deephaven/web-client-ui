@@ -1,16 +1,16 @@
-import { useCallback, useEffect } from 'react';
-import { ListData, useListData } from '@react-stately/data';
+import { useEffect } from 'react';
+import { ListData } from '@react-stately/data';
 import { Table, TreeTable } from '@deephaven/jsapi-shim';
 import {
   KeyedItem,
   RowDeserializer,
   createOnTableUpdatedHandler,
   defaultRowDeserializer,
-  generateEmptyKeyedItems,
   getSize,
   isClosed,
-  padFirstAndLastRow,
 } from '@deephaven/jsapi-utils';
+import useInitializeViewportData from './useInitializeViewportData';
+import useSetPaddedViewportCallback from './useSetPaddedViewportCallback';
 import useTableListener from './useTableListener';
 
 export interface UseViewportDataProps<T> {
@@ -21,44 +21,38 @@ export interface UseViewportDataProps<T> {
 }
 
 export interface UseViewportDataResult<T> {
+  /** Manages deserialized row items associated with a DH Table */
   viewportData: ListData<KeyedItem<T>>;
+  /** Size of the underlying Table */
   size: number;
+  /** Set the viewport of the Table */
   setViewport: (firstRow: number) => void;
 }
 
+/**
+ * Setups up state management for windowed Table viewports. Returns a ListData
+ * instance for managing items associated with the Table + a `setViewport`
+ * callback for changing the current viewport.
+ *
+ * IMPORTANT: this will create an empty KeyedItem object for every row in the
+ * source table. This is intended for "human" sized tables such as those used in
+ * admin panels. This is not suitable for "machine" scale with millions+ rows.
+ * @param table
+ * @param viewportSize
+ * @param viewportPadding
+ */
 export default function useViewportData<T>({
   table,
   viewportSize = 10,
   viewportPadding = 50,
   deserializeRow = defaultRowDeserializer,
 }: UseViewportDataProps<T>): UseViewportDataResult<T> {
-  const viewportData = useListData<KeyedItem<T>>({});
+  const viewportData = useInitializeViewportData<T>(table);
 
-  // We only want this to fire 1x once the table exists. Note that `useListData`
-  // has no way to respond to a reference change of the `table` instance so we
-  // have to manually delete any previous keyed items from the list.
-  useEffect(() => {
-    if (table) {
-      if (viewportData.items.length) {
-        viewportData.remove(...viewportData.items.keys());
-      }
-
-      viewportData.insert(0, ...generateEmptyKeyedItems<T>(getSize(table)));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [table]);
-
-  const setViewport = useCallback(
-    (firstRow: number) => {
-      const [first, last] = padFirstAndLastRow(
-        firstRow,
-        viewportSize,
-        viewportPadding,
-        getSize(table)
-      );
-      table?.setViewport(first, last);
-    },
-    [table, viewportPadding, viewportSize]
+  const setViewport = useSetPaddedViewportCallback(
+    table,
+    viewportSize,
+    viewportPadding
   );
 
   useTableListener(
@@ -69,9 +63,9 @@ export default function useViewportData<T>({
 
   useEffect(() => {
     if (table && !isClosed(table)) {
-      table.setViewport(0, viewportSize + viewportPadding - 1);
+      setViewport(0);
     }
-  }, [table, viewportPadding, viewportSize]);
+  }, [table, setViewport]);
 
   return {
     viewportData,
