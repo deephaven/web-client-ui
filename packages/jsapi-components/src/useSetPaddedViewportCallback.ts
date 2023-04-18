@@ -18,7 +18,7 @@ export default function useSetPaddedViewportCallback(
   viewportPadding: number
 ) {
   return useCallback(
-    (firstRow: number) => {
+    function setPaddedViewport(firstRow: number) {
       const [first, last] = padFirstAndLastRow(
         firstRow,
         viewportSize,
