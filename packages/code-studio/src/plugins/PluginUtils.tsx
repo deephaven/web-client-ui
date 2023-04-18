@@ -58,22 +58,15 @@ class PluginUtils {
   static async loadJson(
     jsonUrl: string
   ): Promise<{ plugins: { name: string; main: string }[] }> {
-    return new Promise((resolve, reject) => {
-      const request = new XMLHttpRequest();
-      request.addEventListener('load', () => {
-        try {
-          const json = JSON.parse(request.responseText);
-          resolve(json);
-        } catch (err) {
-          reject(err);
-        }
-      });
-      request.addEventListener('error', err => {
-        reject(err);
-      });
-      request.open('GET', jsonUrl);
-      request.send();
-    });
+    const res = await fetch(jsonUrl);
+    if (!res.ok) {
+      throw new Error(res.statusText);
+    }
+    try {
+      return await res.json();
+    } catch {
+      throw new Error('Could not be parsed as JSON');
+    }
   }
 }
 

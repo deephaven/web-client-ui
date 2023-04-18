@@ -42,6 +42,7 @@ import {
   Workspace,
   WorkspaceStorage,
   ServerConfigValues,
+  DeephavenPluginModule,
 } from '@deephaven/redux';
 import { setLayoutStorage as setLayoutStorageAction } from '../redux/actions';
 import App from './App';
@@ -52,6 +53,7 @@ import {
   createCoreClient,
   createSessionWrapper,
   getAuthType,
+  getEnvoyPrefix,
   getLoginOptions,
   getSessionDetails,
 } from './SessionUtils';
@@ -74,8 +76,12 @@ async function loadPlugins(): Promise<DeephavenPluginModuleMap> {
       `${import.meta.env.VITE_MODULE_PLUGINS_URL}/manifest.json`
     );
 
+    if (!Array.isArray(manifest.plugins)) {
+      throw new Error('Plugin manifest JSON does not contain plugins array');
+    }
+
     log.debug('Plugin manifest loaded:', manifest);
-    const pluginPromises = [];
+    const pluginPromises: Promise<unknown>[] = [];
     for (let i = 0; i < manifest.plugins.length; i += 1) {
       const { name, main } = manifest.plugins[i];
       const pluginMainUrl = `${
@@ -83,12 +89,17 @@ async function loadPlugins(): Promise<DeephavenPluginModuleMap> {
       }/${name}/${main}`;
       pluginPromises.push(PluginUtils.loadModulePlugin(pluginMainUrl));
     }
-    const pluginModules = await Promise.all(pluginPromises);
+    const pluginModules = await Promise.allSettled(pluginPromises);
 
-    const pluginMap = new Map();
+    const pluginMap: DeephavenPluginModuleMap = new Map();
     for (let i = 0; i < pluginModules.length; i += 1) {
+      const module = pluginModules[i];
       const { name } = manifest.plugins[i];
-      pluginMap.set(name, pluginModules[i]);
+      if (module.status === 'fulfilled') {
+        pluginMap.set(name, module.value as DeephavenPluginModule);
+      } else {
+        log.error(`Unable to load plugin ${name}`, module.reason);
+      }
     }
     log.info('Plugins loaded:', pluginMap);
 
@@ -170,7 +181,12 @@ function AppInit(props: AppInitProps) {
         navigator.userAgent
       );
 
-      const coreClient = createCoreClient();
+      const envoyPrefix = getEnvoyPrefix();
+      const options =
+        envoyPrefix != null
+          ? { headers: { 'envoy-prefix': envoyPrefix } }
+          : undefined;
+      const coreClient = createCoreClient(options);
       const authType = getAuthType();
       log.info(`Login using auth type ${authType}...`);
       const [loginOptions, sessionDetails] = await Promise.all([
