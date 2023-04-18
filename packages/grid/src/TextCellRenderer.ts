@@ -4,79 +4,10 @@ import CellRenderer from './CellRenderer';
 import { isExpandableGridModel } from './ExpandableGridModel';
 import { VisibleIndex } from './GridMetrics';
 import GridRenderer, { GridRenderState } from './GridRenderer';
-import { TokenBox, Token } from './GridUtils';
+import GridUtils, { TokenBox, Token } from './GridUtils';
 import memoizeClear from './memoizeClear';
 
 class TextCellRenderer extends CellRenderer {
-  /**
-   * Gets textWidth and X-Y position for a specific cell
-   * The textWidth returned is the width that the text can occupy accounting for any other cell markings
-   * The width accounts for tree table indents and cell padding, so it is the width the text may consume
-   *
-   * @param state GridRenderState to get the text metrics for
-   * @param column Column of cell to get text metrics for
-   * @param row Row of cell to get text metrics for
-   * @returns Object with width, x, and y of the text
-   */
-  getTextRenderMetrics(
-    state: GridRenderState,
-    column: VisibleIndex,
-    row: VisibleIndex
-  ): {
-    width: number;
-    x: number;
-    y: number;
-  } {
-    const { metrics, model, theme } = state;
-    const {
-      firstColumn,
-      allColumnXs,
-      allColumnWidths,
-      allRowYs,
-      allRowHeights,
-      modelRows,
-      modelColumns,
-    } = metrics;
-    const {
-      cellHorizontalPadding,
-      treeDepthIndent,
-      treeHorizontalPadding,
-    } = theme;
-
-    const modelRow = getOrThrow(modelRows, row);
-    const modelColumn = getOrThrow(modelColumns, column);
-    const textAlign = model.textAlignForCell(modelColumn, modelRow);
-    const x = getOrThrow(allColumnXs, column);
-    const y = getOrThrow(allRowYs, row);
-    const columnWidth = getOrThrow(allColumnWidths, column);
-    const rowHeight = getOrThrow(allRowHeights, row);
-    const isFirstColumn = column === firstColumn;
-    let treeIndent = 0;
-    if (
-      isExpandableGridModel(model) &&
-      model.hasExpandableRows &&
-      isFirstColumn
-    ) {
-      treeIndent =
-        treeDepthIndent * (model.depthForRow(row) + 1) + treeHorizontalPadding;
-    }
-    const textWidth = columnWidth - treeIndent;
-    let textX = x + cellHorizontalPadding;
-    const textY = y + rowHeight * 0.5;
-    if (textAlign === 'right') {
-      textX = x + textWidth - cellHorizontalPadding;
-    } else if (textAlign === 'center') {
-      textX = x + textWidth * 0.5;
-    }
-    textX += treeIndent;
-
-    return {
-      width: textWidth - cellHorizontalPadding * 2,
-      x: textX,
-      y: textY,
-    };
-  }
-
   drawCellContent(
     context: CanvasRenderingContext2D,
     state: GridRenderState,
@@ -114,7 +45,7 @@ class TextCellRenderer extends CellRenderer {
         width: textWidth,
         x: textX,
         y: textY,
-      } = this.getTextRenderMetrics(state, column, row);
+      } = GridUtils.getTextRenderMetrics(state, column, row);
 
       const fontWidth =
         fontWidths.get(context.font) ?? GridRenderer.DEFAULT_FONT_WIDTH;
@@ -204,11 +135,11 @@ class TextCellRenderer extends CellRenderer {
     const modelColumn = getOrThrow(modelColumns, column);
 
     const text = model.textForCell(modelColumn, modelRow);
-    const { width: textWidth, x: textX, y: textY } = this.getTextRenderMetrics(
-      state,
-      column,
-      row
-    );
+    const {
+      width: textWidth,
+      x: textX,
+      y: textY,
+    } = GridUtils.getTextRenderMetrics(state, column, row);
 
     const { fontWidths } = metrics;
 

@@ -59,6 +59,35 @@ function DataBarExample() {
   data.push([50, 20, 10, 0, 0, -10, -30, 10, 90, 20, 40]);
   data.push([-100, -90, -80, -70, -60, -50, -40, -30, -20, -10, 0]);
   data.push(columnData.slice());
+  // Decimals
+  data.push([
+    100,
+    10.5,
+    11.234,
+    -20.5,
+    -50,
+    -2.5,
+    -15.1234,
+    94.254,
+    25,
+    44.4444,
+    -50.5,
+  ]);
+
+  // Big values
+  data.push([
+    1000000,
+    10,
+    200,
+    -20000,
+    -2000000,
+    -25,
+    -900000,
+    800000,
+    100000,
+    450000,
+    1,
+  ]);
   const [model] = useState(
     () =>
       new MockDataBarGridModel(

@@ -134,8 +134,8 @@ export type GridTheme = {
   floatingDividerInnerColor: GridColor;
 
   zeroLineColor: GridColor;
-  positiveColor: GridColor;
-  negativeColor: GridColor;
+  positiveBarColor: GridColor;
+  negativeBarColor: GridColor;
 };
 
 /**
@@ -227,9 +227,9 @@ const defaultTheme: GridTheme = Object.freeze({
   floatingDividerInnerColor: '#cccccc',
 
   // Databar
-  zeroLineColor: '#6c757d',
-  positiveColor: '#9cdb6c',
-  negativeColor: '#f25a80',
+  zeroLineColor: '#888888',
+  positiveBarColor: '#00ff00',
+  negativeBarColor: '#ff0000',
 });
 
 export default defaultTheme;

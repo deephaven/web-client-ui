@@ -1,6 +1,6 @@
 import React from 'react';
 import clamp from 'lodash.clamp';
-import { EMPTY_ARRAY } from '@deephaven/utils';
+import { EMPTY_ARRAY, getOrThrow } from '@deephaven/utils';
 import GridRange, { GridRangeIndex } from './GridRange';
 import {
   BoxCoordinates,
@@ -22,6 +22,8 @@ import {
   isBoundedAxisRange,
   Range,
 } from './GridAxisRange';
+import { GridRenderState } from './GridRenderer';
+import { isExpandableGridModel } from './ExpandableGridModel';
 
 export type GridPoint = {
   x: Coordinate;
@@ -1437,6 +1439,75 @@ export class GridUtils {
       x2: newRight,
       y2: newBottom,
       token: tokenBox.token,
+    };
+  }
+
+  /**
+   * Gets textWidth and X-Y position for a specific cell
+   * The textWidth returned is the width that the text can occupy accounting for any other cell markings
+   * The width accounts for tree table indents and cell padding, so it is the width the text may consume
+   *
+   * @param state GridRenderState to get the text metrics for
+   * @param column Column of cell to get text metrics for
+   * @param row Row of cell to get text metrics for
+   * @returns Object with width, x, and y of the text
+   */
+  static getTextRenderMetrics(
+    state: GridRenderState,
+    column: VisibleIndex,
+    row: VisibleIndex
+  ): {
+    width: number;
+    x: number;
+    y: number;
+  } {
+    const { metrics, model, theme } = state;
+    const {
+      firstColumn,
+      allColumnXs,
+      allColumnWidths,
+      allRowYs,
+      allRowHeights,
+      modelRows,
+      modelColumns,
+    } = metrics;
+    const {
+      cellHorizontalPadding,
+      treeDepthIndent,
+      treeHorizontalPadding,
+    } = theme;
+
+    const modelRow = getOrThrow(modelRows, row);
+    const modelColumn = getOrThrow(modelColumns, column);
+    const textAlign = model.textAlignForCell(modelColumn, modelRow);
+    const x = getOrThrow(allColumnXs, column);
+    const y = getOrThrow(allRowYs, row);
+    const columnWidth = getOrThrow(allColumnWidths, column);
+    const rowHeight = getOrThrow(allRowHeights, row);
+    const isFirstColumn = column === firstColumn;
+    let treeIndent = 0;
+    if (
+      isExpandableGridModel(model) &&
+      model.hasExpandableRows &&
+      isFirstColumn
+    ) {
+      treeIndent =
+        treeDepthIndent * (model.depthForRow(row) + 1) + treeHorizontalPadding;
+    }
+    const textWidth = columnWidth - treeIndent;
+    let textX = x + cellHorizontalPadding;
+    const textY = y + rowHeight * 0.5;
+    if (textAlign === 'right') {
+      textX = x + textWidth - cellHorizontalPadding;
+    } else if (textAlign === 'center') {
+      textX = x + textWidth * 0.5;
+    }
+    textX += treeIndent;
+
+    return {
+      width: textWidth - cellHorizontalPadding * 2,
+      x: textX,
+      y: textY,
     };
   }
 }

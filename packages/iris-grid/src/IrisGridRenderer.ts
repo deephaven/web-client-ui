@@ -12,8 +12,6 @@ import {
 import {
   BoundedAxisRange,
   BoxCoordinates,
-  CellRenderer,
-  CellRendererType,
   Coordinate,
   GridMetrics,
   GridRangeIndex,
@@ -75,8 +73,6 @@ class IrisGridRenderer extends GridRenderer {
   }
 
   protected textCellRenderer = new IrisGridTextCellRenderer();
-
-  // protected dataBarCellRenderer = new DataBarCellRenderer();
 
   constructor() {
     super();
@@ -158,14 +154,16 @@ class IrisGridRenderer extends GridRenderer {
     column: VisibleIndex,
     row: VisibleIndex
   ): void {
-    const { metrics } = state;
-    const { modelColumns } = metrics;
+    const { metrics, model } = state;
+    const { modelColumns, modelRows } = metrics;
     const modelColumn = modelColumns.get(column);
+    const modelRow = getOrThrow(modelRows, row);
     if (modelColumn === undefined) {
       return;
     }
 
-    const cellRenderer = this.getCellRenderer('text');
+    const rendererType = model.rendererForCell(modelColumn, modelRow);
+    const cellRenderer = this.getCellRenderer(rendererType);
     cellRenderer.drawCellContent(context, state, column, row);
   }
 
@@ -241,10 +239,6 @@ class IrisGridRenderer extends GridRenderer {
     context.fill(icon);
 
     context.restore();
-  }
-
-  getCellRenderer(rendererType: CellRendererType): CellRenderer {
-    return this.textCellRenderer;
   }
 
   drawGroupedColumnLine(

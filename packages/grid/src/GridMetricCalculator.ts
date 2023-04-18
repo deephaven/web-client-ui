@@ -17,7 +17,7 @@ import GridUtils from './GridUtils';
 import { GridFont, GridTheme } from './GridTheme';
 import { isExpandableGridModel } from './ExpandableGridModel';
 import { DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
-import { isDataBarGridModel } from './MockDataBarGridModel';
+import { isDataBarGridModel } from './DataBarGridModel';
 
 export { getOrThrow } from '@deephaven/utils';
 /* eslint class-methods-use-this: "off" */

@@ -1,5 +1,6 @@
 /* eslint class-methods-use-this: "off" */
 
+import { getOrThrow } from '@deephaven/utils';
 import { isEditableGridModel } from '../EditableGridModel';
 import { EventHandlerResult } from '../EventHandlerResult';
 import Grid from '../Grid';
@@ -22,10 +23,20 @@ class GridTokenMouseHandler extends GridMouseHandler {
 
   isHoveringLink(gridPoint: GridPoint, grid: Grid): boolean {
     const { column, row, x, y } = gridPoint;
-    const { renderer, metrics } = grid;
+    const { renderer, metrics, props } = grid;
+    const { model } = props;
 
     if (column == null || row == null || metrics == null) {
       this.currentLinkBox = undefined;
+      return false;
+    }
+
+    const { modelRows, modelColumns } = metrics;
+    const modelRow = getOrThrow(modelRows, row);
+    const modelColumn = getOrThrow(modelColumns, column);
+
+    const rendererType = model.rendererForCell(modelColumn, modelRow);
+    if (rendererType !== 'text') {
       return false;
     }
 
@@ -37,8 +48,9 @@ class GridTokenMouseHandler extends GridMouseHandler {
     }
 
     const renderState = grid.updateRenderState();
+
     const textCellRenderer = renderer.getCellRenderer(
-      'text'
+      rendererType
     ) as TextCellRenderer;
     const tokensInCell = textCellRenderer.getTokenBoxesForVisibleCell(
       column,
