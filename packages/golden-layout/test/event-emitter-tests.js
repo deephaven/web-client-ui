@@ -109,6 +109,25 @@ describe('the EventEmitter works', function () {
     expect(myListener.callback.calls.length).toEqual(3);
   });
 
+  it('throws an exception when trying to unsubscribe for a non existing method', function () {
+    var myObject = EmitterImplementor();
+    var myListener = { callback: function () {} };
+
+    myObject.on('someEvent', myListener.callback);
+
+    expect(function () {
+      myObject.unbind('someEvent', function () {});
+    }).toThrow();
+
+    expect(function () {
+      myObject.unbind('doesNotExist', myListener.callback);
+    }).toThrow();
+
+    expect(function () {
+      myObject.unbind('someEvent', myListener.callback);
+    }).not.toThrow();
+  });
+
   it('throws an exception when attempting to bind a non-function', function () {
     var myObject = EmitterImplementor();
 

@@ -91,6 +91,9 @@ export function DashboardLayout({
     (data as DashboardData)?.closed ?? []
   );
   const [isDashboardInitialized, setIsDashboardInitialized] = useState(false);
+  const [layoutChildren, setLayoutChildren] = useState(
+    layout.getReactChildren()
+  );
 
   const hydrateMap = useMemo(() => new Map(), []);
   const dehydrateMap = useMemo(() => new Map(), []);
@@ -200,6 +203,8 @@ export function DashboardLayout({
       setLastConfig(dehydratedLayoutConfig);
 
       onLayoutChange(dehydratedLayoutConfig);
+
+      setLayoutChildren(layout.getReactChildren());
     }
   }, [
     dehydrateComponent,
@@ -248,6 +253,10 @@ export function DashboardLayout({
     item.element.addClass(cssClass);
   }, []);
 
+  const handleReactChildrenChange = useCallback(() => {
+    setLayoutChildren(layout.getReactChildren());
+  }, [layout]);
+
   useListener(layout, 'stateChanged', handleLayoutStateChanged);
   useListener(layout, 'itemPickedUp', handleLayoutItemPickedUp);
   useListener(layout, 'itemDropped', handleLayoutItemDropped);
@@ -257,6 +266,7 @@ export function DashboardLayout({
     PanelEvent.TITLE_CHANGED,
     handleLayoutStateChanged
   );
+  useListener(layout, 'reactChildrenChanged', handleReactChildrenChange);
 
   const previousLayoutConfig = usePrevious(layoutConfig);
   useEffect(
@@ -293,14 +303,10 @@ export function DashboardLayout({
     ]
   );
 
-  // The layoutConfig will update if any panels are added/removed
-  // The children will be a new array each time, but the elements will be
-  // in the same order with a stable key, so React shouldn't re-render unnecessarily
-  const layoutChildren = layout.getReactChildren();
-
   return (
     <>
       {isDashboardEmpty && emptyDashboard}
+      {layoutChildren}
       {React.Children.map(children, child =>
         child != null
           ? React.cloneElement(child as ReactElement, {
@@ -311,7 +317,6 @@ export function DashboardLayout({
             })
           : null
       )}
-      {layoutChildren}
     </>
   );
 }

@@ -33,14 +33,16 @@ export default class ReactComponentHandler {
    * Gets the unique key to use for the react component
    * @returns Unique key for the component
    */
-  _key() {
+  _key(): string {
     const id = this._container._config.id;
     if (!id) {
       throw new Error('Cannot mount panel without id');
     }
 
+    // If addId is called multiple times, an element can have multiple IDs in golden-layout
+    // We don't use it, but changing the type requires many changes and a separate PR
     if (Array.isArray(id)) {
-      return id.join();
+      return id.join(',');
     }
 
     return id;

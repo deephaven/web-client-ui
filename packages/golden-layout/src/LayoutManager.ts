@@ -102,7 +102,8 @@ export default class LayoutManager extends EventEmitter {
   private _dragSources: DragSource[] = [];
   private _updatingColumnsResponsive = false;
   private _firstLoad = true;
-  private _reactChildren = new Map<string, React.ReactNode>();
+  private _reactChildMap = new Map<string, React.ReactNode>();
+  private _reactChildren: React.ReactNode = null;
 
   width: number | null = null;
   height: number | null = null;
@@ -376,7 +377,9 @@ export default class LayoutManager extends EventEmitter {
    * @param element The React element
    */
   addReactChild(id: string, element: React.ReactNode) {
-    this._reactChildren.set(id, element);
+    this._reactChildMap.set(id, element);
+    this._reactChildren = [...this._reactChildMap.values()];
+    this.emit('reactChildrenChanged');
   }
 
   /**
@@ -384,7 +387,9 @@ export default class LayoutManager extends EventEmitter {
    * @param id Unique panel id
    */
   removeReactChild(id: string) {
-    this._reactChildren.delete(id);
+    this._reactChildMap.delete(id);
+    this._reactChildren = [...this._reactChildMap.values()];
+    this.emit('reactChildrenChanged');
   }
 
   /**
@@ -396,7 +401,7 @@ export default class LayoutManager extends EventEmitter {
    * @returns The react children to mount for this layout manager
    */
   getReactChildren() {
-    return [...this._reactChildren.values()];
+    return this._reactChildren;
   }
 
   /**
