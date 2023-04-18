@@ -59,8 +59,6 @@ class MockDataBarGridModel extends GridModel implements DataBarGridModel {
 
   markers: MarkerMap;
 
-  hasGradients: GradientMap;
-
   constructor(
     data: unknown[][],
     columnAxes = new Map(),
@@ -70,8 +68,7 @@ class MockDataBarGridModel extends GridModel implements DataBarGridModel {
     opacities = new Map(),
     directions = new Map(),
     textAlignments = new Map(),
-    markers: MarkerMap = new Map(),
-    hasGradients: GradientMap = new Map()
+    markers: MarkerMap = new Map()
   ) {
     super();
 
@@ -88,7 +85,6 @@ class MockDataBarGridModel extends GridModel implements DataBarGridModel {
     this.numberOfColumns = data.length;
     this.columnMins = new Map();
     this.columnMaxs = new Map();
-    this.hasGradients = hasGradients;
 
     for (let i = 0; i < data.length; i += 1) {
       const column = data[i];
@@ -150,17 +146,11 @@ class MockDataBarGridModel extends GridModel implements DataBarGridModel {
       columnMax,
       axis,
       color,
-      positiveColor,
-      negativeColor,
       valuePlacement,
       opacity,
       markers,
       direction,
     };
-  }
-
-  hasGradientForCell(column: ModelIndex, row: ModelIndex): boolean {
-    return this.hasGradients.get(column) ?? false;
   }
 }
 

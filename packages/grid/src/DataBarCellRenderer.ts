@@ -71,11 +71,10 @@ class DataBarCellRenderer extends CellRenderer {
       valuePlacement,
       opacity,
       markers,
-      positiveColor,
-      negativeColor,
+      direction,
     } = model.dataBarOptionsForCell(modelColumn, modelRow);
 
-    const hasGradient = model.hasGradientForCell(modelColumn, modelRow);
+    const hasGradient = Array.isArray(dataBarColor);
     if (columnMin == null || columnMax == null) {
       return;
     }
@@ -93,7 +92,13 @@ class DataBarCellRenderer extends CellRenderer {
 
     context.save();
     context.textAlign = textAlign;
-    context.fillStyle = dataBarColor;
+    if (hasGradient) {
+      const color =
+        value >= 0 ? dataBarColor[dataBarColor.length - 1] : dataBarColor[0];
+      context.fillStyle = color;
+    } else {
+      context.fillStyle = dataBarColor;
+    }
     context.textBaseline = 'middle';
     context.font = theme.font;
 
@@ -105,16 +110,8 @@ class DataBarCellRenderer extends CellRenderer {
     if (hasGradient) {
       // Draw gradient bar
 
-      const positiveColorOklab = GridColorUtils.linearSRGBToOklab(
-        GridColorUtils.hexToRgb(positiveColor)
-      );
-      const negativeColorOklab = GridColorUtils.linearSRGBToOklab(
-        GridColorUtils.hexToRgb(negativeColor)
-      );
-      const middleColor = GridColorUtils.lerpColor(
-        negativeColorOklab,
-        positiveColorOklab,
-        0.5
+      const dataBarColorsOklab: Oklab[] = dataBarColor.map(color =>
+        GridColorUtils.linearSRGBToOklab(GridColorUtils.hexToRgb(color))
       );
 
       context.save();
@@ -125,27 +122,100 @@ class DataBarCellRenderer extends CellRenderer {
       context.clip();
 
       if (value < 0) {
-        this.drawGradient(
-          context,
-          negativeColorOklab,
-          middleColor,
-          Math.round(leftmostPosition),
-          rowY + 1,
-          Math.round((Math.abs(columnMin) / totalValueRange) * maxWidth),
-          rowHeight - 2
-        );
-      } else {
-        this.drawGradient(
-          context,
-          middleColor,
-          positiveColorOklab,
-          Math.round(zeroPosition),
-          rowY + 1,
+        if (direction === 'LTR') {
+          const totalGradientWidth = Math.round(
+            (Math.abs(columnMin) / totalValueRange) * maxWidth
+          );
+          const partGradientWidth =
+            totalGradientWidth / (dataBarColor.length - 1);
+          let gradientX = Math.round(leftmostPosition);
+          for (let i = 0; i < dataBarColor.length - 1; i += 1) {
+            const leftColor = dataBarColorsOklab[i];
+            const rightColor = dataBarColorsOklab[i + 1];
+            this.drawGradient(
+              context,
+              leftColor,
+              rightColor,
+              gradientX,
+              rowY + 1,
+              partGradientWidth,
+              rowHeight - 2
+            );
+
+            gradientX += partGradientWidth;
+          }
+        } else if (direction === 'RTL') {
+          const totalGradientWidth = Math.round(
+            maxWidth - (Math.abs(columnMax) / totalValueRange) * maxWidth
+          );
+          const partGradientWidth =
+            totalGradientWidth / (dataBarColor.length - 1);
+          let gradientX = Math.round(zeroPosition);
+          for (let i = dataBarColor.length - 1; i > 0; i -= 1) {
+            const leftColor = dataBarColorsOklab[i];
+            const rightColor = dataBarColorsOklab[i - 1];
+            this.drawGradient(
+              context,
+              leftColor,
+              rightColor,
+              gradientX,
+              rowY + 1,
+              partGradientWidth,
+              rowHeight - 2
+            );
+
+            gradientX += partGradientWidth;
+          }
+        }
+      } else if (direction === 'LTR') {
+        // Value is greater than or equal to 0
+        const totalGradientWidth =
           Math.round(
             maxWidth - (Math.abs(columnMin) / totalValueRange) * maxWidth
-          ) - 1,
-          rowHeight - 2
+          ) - 1;
+        const partGradientWidth =
+          totalGradientWidth / (dataBarColor.length - 1);
+        let gradientX = Math.round(zeroPosition);
+
+        for (let i = 0; i < dataBarColor.length - 1; i += 1) {
+          const leftColor = dataBarColorsOklab[i];
+          const rightColor = dataBarColorsOklab[i + 1];
+          this.drawGradient(
+            context,
+            leftColor,
+            rightColor,
+            gradientX,
+            rowY + 1,
+            partGradientWidth,
+            rowHeight - 2
+          );
+
+          gradientX += partGradientWidth;
+        }
+      } else if (direction === 'RTL') {
+        // Value is greater than or equal to 0
+        const totalGradientWidth = Math.round(
+          (Math.abs(columnMax) / totalValueRange) * maxWidth
         );
+        const partGradientWidth =
+          totalGradientWidth / (dataBarColor.length - 1);
+        let gradientX = Math.round(leftmostPosition);
+
+        for (let i = dataBarColor.length - 1; i > 0; i -= 1) {
+          const leftColor = dataBarColorsOklab[i];
+          const rightColor = dataBarColorsOklab[i - 1];
+          this.drawGradient(
+            context,
+            leftColor,
+            rightColor,
+            gradientX,
+            rowY + 1,
+            partGradientWidth,
+            rowHeight - 2
+          );
+
+          gradientX += partGradientWidth;
+        }
       }
 
       // restore clip

@@ -8,8 +8,11 @@ export type ValuePlacementOption = 'beside' | 'overlap' | 'hide';
 export type DirectionOption = 'LTR' | 'RTL';
 /** Map from ModelIndex to the axis option of the column */
 export type ColumnAxisMap = Map<ModelIndex, AxisOption>;
-/** Map from ModelIndex to a color */
-export type ColorMap = Map<ModelIndex, string>;
+/** Map from ModelIndex to a color or an array of colors
+ * If given an array, then the bar will be a gradient
+ * The colors should be given left to right (e.g. it should be like ['yellow', 'green'] for positive color and ['red', 'yellow'] for negative color)
+ */
+export type ColorMap = Map<ModelIndex, GridColor | GridColor[]>;
 /** Map from ModelIndex to the value placement option of the column */
 export type ValuePlacementMap = Map<ModelIndex, ValuePlacementOption>;
 /** Map from ModelIndex to the opacity of the column */
@@ -31,9 +34,7 @@ export interface DataBarOptions {
   columnMin: number;
   columnMax: number;
   axis: AxisOption;
-  color: GridColor;
-  positiveColor: GridColor;
-  negativeColor: GridColor;
+  color: GridColor | GridColor[];
   valuePlacement: ValuePlacementOption;
   opacity: number;
   markers: Marker[];
@@ -68,9 +69,5 @@ export interface DataBarGridModel extends GridModel {
 
   markers: MarkerMap;
 
-  hasGradients: GradientMap;
-
   dataBarOptionsForCell(column: ModelIndex, row: ModelIndex): DataBarOptions;
-
-  hasGradientForCell(column: ModelIndex, row: ModelIndex): boolean;
 }

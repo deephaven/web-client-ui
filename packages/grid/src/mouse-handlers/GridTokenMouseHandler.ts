@@ -7,7 +7,7 @@ import Grid from '../Grid';
 import GridMouseHandler, { GridMouseEvent } from '../GridMouseHandler';
 import GridRange from '../GridRange';
 import GridUtils, { GridPoint, isLinkToken, TokenBox } from '../GridUtils';
-import TextCellRenderer from '../TextCellRenderer';
+import { isTokenBoxCellRenderer } from '../TokenBoxCellRenderer';
 
 class GridTokenMouseHandler extends GridMouseHandler {
   timeoutId?: ReturnType<typeof setTimeout>;
@@ -35,8 +35,9 @@ class GridTokenMouseHandler extends GridMouseHandler {
     const modelRow = getOrThrow(modelRows, row);
     const modelColumn = getOrThrow(modelColumns, column);
 
-    const rendererType = model.rendererForCell(modelColumn, modelRow);
-    if (rendererType !== 'text') {
+    const cellRendererType = model.rendererForCell(modelColumn, modelRow);
+    const cellRenderer = renderer.getCellRenderer(cellRendererType);
+    if (!isTokenBoxCellRenderer(cellRenderer)) {
       return false;
     }
 
@@ -49,10 +50,7 @@ class GridTokenMouseHandler extends GridMouseHandler {
 
     const renderState = grid.updateRenderState();
 
-    const textCellRenderer = renderer.getCellRenderer(
-      rendererType
-    ) as TextCellRenderer;
-    const tokensInCell = textCellRenderer.getTokenBoxesForVisibleCell(
+    const tokensInCell = cellRenderer.getTokenBoxesForVisibleCell(
       column,
       row,
       renderState

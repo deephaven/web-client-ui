@@ -6,8 +6,9 @@ import { VisibleIndex } from './GridMetrics';
 import GridRenderer, { GridRenderState } from './GridRenderer';
 import GridUtils, { TokenBox, Token } from './GridUtils';
 import memoizeClear from './memoizeClear';
+import TokenBoxCellRenderer from './TokenBoxCellRenderer';
 
-class TextCellRenderer extends CellRenderer {
+class TextCellRenderer extends CellRenderer implements TokenBoxCellRenderer {
   drawCellContent(
     context: CanvasRenderingContext2D,
     state: GridRenderState,
