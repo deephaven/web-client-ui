@@ -8,7 +8,6 @@ import {
   DataBarGridModel,
   DataBarOptions,
   DirectionMap,
-  GradientMap,
   MarkerMap,
   MaxMap,
   MinMap,
