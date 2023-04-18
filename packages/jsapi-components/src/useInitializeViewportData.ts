@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useListData } from '@react-stately/data';
+import { ListData, useListData } from '@react-stately/data';
 import { Table, TreeTable } from '@deephaven/jsapi-shim';
 import {
   KeyedItem,
@@ -21,7 +21,7 @@ import {
  */
 export default function useInitializeViewportData<T>(
   table: Table | TreeTable | null
-) {
+): ListData<KeyedItem<T>> {
   const viewportData = useListData<KeyedItem<T>>({});
 
   // We only want this to fire 1x once the table exists. Note that `useListData`
@@ -30,11 +30,12 @@ export default function useInitializeViewportData<T>(
   useEffect(() => {
     if (table) {
       if (viewportData.items.length) {
-        viewportData.remove(...viewportData.items.keys());
+        viewportData.remove(...viewportData.items.map(({ key }) => key));
       }
 
       viewportData.insert(0, ...generateEmptyKeyedItems<T>(getSize(table)));
     }
+    // Intentionally excluding viewportData since it changes on every render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [table]);
 
