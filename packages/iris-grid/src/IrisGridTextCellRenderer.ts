@@ -52,7 +52,7 @@ class IrisGridTextCellRenderer extends TextCellRenderer {
     x: Coordinate;
     y: Coordinate;
   } {
-    const textMetrics = super.getTextRenderMetrics(state, column, row);
+    const textMetrics = GridUtils.getTextRenderMetrics(state, column, row);
 
     const { mouseX, mouseY, metrics, theme } = state;
 
@@ -144,7 +144,11 @@ class IrisGridTextCellRenderer extends TextCellRenderer {
     }
 
     const text = model.textForCell(modelColumn, modelRow) ?? '';
-    const { width: textWidth } = super.getTextRenderMetrics(state, column, row);
+    const { width: textWidth } = GridUtils.getTextRenderMetrics(
+      state,
+      column,
+      row
+    );
     const fontWidth =
       metrics.fontWidths.get(theme.font) ?? IrisGridRenderer.DEFAULT_FONT_WIDTH;
 
