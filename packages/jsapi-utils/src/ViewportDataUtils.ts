@@ -1,4 +1,5 @@
 import { ListData } from '@react-stately/data';
+import clamp from 'lodash.clamp';
 import { Column, Row, Table, TreeTable } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
 
@@ -147,8 +148,11 @@ export function padFirstAndLastRow(
   padding: number,
   tableSize: number
 ): [number, number] {
-  const firstRowAdjusted = Math.max(0, firstRow - padding);
-  const lastRow =
-    Math.min(tableSize, firstRowAdjusted + viewportSize + padding) - 1;
-  return [firstRowAdjusted, lastRow];
+  const lastRow = firstRow + viewportSize - 1;
+  const [min, max] = [0, tableSize - 1];
+
+  const first = clamp(firstRow - padding, min, max);
+  const last = clamp(lastRow + padding, min, max);
+
+  return [first, last];
 }

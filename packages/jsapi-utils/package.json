@@ -25,6 +25,7 @@
     "@deephaven/jsapi-shim": "file:../jsapi-shim",
     "@deephaven/log": "file:../log",
     "@deephaven/utils": "file:../utils",
+    "lodash.clamp": "^4.0.3",
     "@react-stately/data": "^3.9.1",
     "shortid": "^2.2.16"
   },
