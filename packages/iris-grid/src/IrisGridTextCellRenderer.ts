@@ -32,8 +32,7 @@ class IrisGridTextCellRenderer extends TextCellRenderer {
       if (value === null || value === '') {
         const originalFont = context.font;
         context.font = `italic ${originalFont}`;
-        const displayValue = value === null ? 'null' : 'empty';
-        super.drawCellContent(context, state, column, row, displayValue);
+        super.drawCellContent(context, state, column, row);
         context.font = originalFont;
         return;
       }

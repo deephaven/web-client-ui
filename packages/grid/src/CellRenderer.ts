@@ -12,8 +12,7 @@ abstract class CellRenderer {
     context: CanvasRenderingContext2D,
     state: GridRenderState,
     column: VisibleIndex,
-    row: VisibleIndex,
-    textOverride?: string
+    row: VisibleIndex
   ): void;
 
   drawCellRowTreeMarker(

@@ -34,8 +34,7 @@ class DataBarCellRenderer extends CellRenderer {
     context: CanvasRenderingContext2D,
     state: GridRenderState,
     column: VisibleIndex,
-    row: VisibleIndex,
-    textOverride?: string
+    row: VisibleIndex
   ) {
     const { metrics, model, theme } = state;
     if (!isDataBarGridModel(model)) {
@@ -55,7 +54,7 @@ class DataBarCellRenderer extends CellRenderer {
     const modelColumn = getOrThrow(modelColumns, column);
     const rowY = getOrThrow(allRowYs, row);
     const textAlign = model.textAlignForCell(modelColumn, modelRow);
-    const text = textOverride ?? model.textForCell(modelColumn, modelRow);
+    const text = model.textForCell(modelColumn, modelRow);
     const value = Number(text);
     const { x: textX, y: textY } = GridUtils.getTextRenderMetrics(
       state,

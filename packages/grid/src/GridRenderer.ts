@@ -1075,8 +1075,7 @@ export class GridRenderer {
     context: CanvasRenderingContext2D,
     state: GridRenderState,
     column: VisibleIndex,
-    row: VisibleIndex,
-    textOverride?: string
+    row: VisibleIndex
   ): void {
     const { metrics, model } = state;
     const { modelColumns, modelRows } = metrics;
@@ -1084,7 +1083,7 @@ export class GridRenderer {
     const modelColumn = getOrThrow(modelColumns, column);
     const rendererType = model.rendererForCell(modelColumn, modelRow);
     const cellRenderer = this.getCellRenderer(rendererType);
-    cellRenderer.drawCellContent(context, state, column, row, textOverride);
+    cellRenderer.drawCellContent(context, state, column, row);
   }
 
   getCellRenderer(rendererType: CellRendererType): CellRenderer {

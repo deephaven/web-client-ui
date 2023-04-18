@@ -13,8 +13,7 @@ class TextCellRenderer extends CellRenderer implements TokenBoxCellRenderer {
     context: CanvasRenderingContext2D,
     state: GridRenderState,
     column: VisibleIndex,
-    row: VisibleIndex,
-    textOverride?: string
+    row: VisibleIndex
   ): void {
     const { metrics, model, theme } = state;
     const {
@@ -29,7 +28,7 @@ class TextCellRenderer extends CellRenderer implements TokenBoxCellRenderer {
     const rowHeight = getOrThrow(allRowHeights, row);
     const modelRow = getOrThrow(modelRows, row);
     const modelColumn = getOrThrow(modelColumns, column);
-    const text = textOverride ?? model.textForCell(modelColumn, modelRow);
+    const text = model.textForCell(modelColumn, modelRow);
     const truncationChar = model.truncationCharForCell(modelColumn, modelRow);
 
     if (text && rowHeight > 0) {

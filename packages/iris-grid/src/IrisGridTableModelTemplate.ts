@@ -525,7 +525,16 @@ class IrisGridTableModelTemplate<
         return '*';
       }
     }
-    return text ?? '';
+
+    if (text === null) {
+      return 'null';
+    }
+
+    if (text === '') {
+      return 'empty';
+    }
+
+    return text;
   }
 
   truncationCharForCell(x: ModelIndex): '#' | undefined {
