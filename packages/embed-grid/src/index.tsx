@@ -14,6 +14,12 @@ import './index.scss';
 // eslint-disable-next-line react-refresh/only-export-components
 const App = React.lazy(() => import('./App'));
 
+// eslint-disable-next-line react-refresh/only-export-components
+const AppBootstrap = React.lazy(async () => {
+  const module = await import('@deephaven/app-utils');
+  return { default: module.AppBootstrap };
+});
+
 ReactDOM.render(
   <ApiBootstrap
     apiUrl={`${import.meta.env.VITE_CORE_API_URL}/${
@@ -22,7 +28,13 @@ ReactDOM.render(
     setGlobally
   >
     <Suspense fallback={<LoadingOverlay />}>
-      <App />
+      <AppBootstrap
+        baseUrl={import.meta.env.BASE_URL}
+        apiUrl={import.meta.env.VITE_CORE_API_URL}
+        pluginsUrl={import.meta.env.VITE_MODULE_PLUGINS_URL}
+      >
+        <App />
+      </AppBootstrap>
     </Suspense>
   </ApiBootstrap>,
   document.getElementById('root')
