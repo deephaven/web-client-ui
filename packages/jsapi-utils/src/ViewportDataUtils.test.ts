@@ -61,6 +61,35 @@ describe('createKeyFromOffsetRow', () => {
 });
 
 describe('createOnTableUpdatedHandler', () => {
+  const rows: ViewportRow[] = [
+    mockViewportRow(0),
+    mockViewportRow(1),
+    mockViewportRow(2),
+  ];
+
+  it('should do nothing if Table is null', () => {
+    const table = null;
+
+    const { result: viewportDataRef } = renderHook(() =>
+      useListData<KeyedItem<unknown>>({})
+    );
+
+    const handler = createOnTableUpdatedHandler(
+      table,
+      viewportDataRef.current,
+      deserializeRow
+    );
+
+    const event = mockUpdateEvent(5, rows);
+
+    act(() => {
+      handler(event);
+    });
+
+    expect(deserializeRow).not.toHaveBeenCalled();
+    expect(viewportDataRef.current.items.length).toEqual(0);
+  });
+
   it('should create a handler that adds items to a ListData of KeyedItems', () => {
     const table = TestUtils.createMockProxy<Table>({ columns: [] });
 
@@ -75,12 +104,6 @@ describe('createOnTableUpdatedHandler', () => {
     );
 
     const offset = 5;
-    const rows: ViewportRow[] = [
-      mockViewportRow(0),
-      mockViewportRow(1),
-      mockViewportRow(2),
-    ];
-
     const event = mockUpdateEvent(offset, rows);
     const expectedItems = [
       { key: '5', item: rows[0] },
