@@ -40,6 +40,7 @@ export interface UseViewportDataResult<T> {
  * @param table
  * @param viewportSize
  * @param viewportPadding
+ * @returns An object for managing Table viewport state.
  */
 export default function useViewportData<T>({
   table,
