@@ -14,6 +14,7 @@ export default function useSelectDistinctTable(
 ) {
   const selectDistinct = useCallback(
     async () => table?.selectDistinct(table.findColumns(columnNames)) ?? null,
+    // Disabling the exhaustive checks due to the spreading of `columnNames`
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [table, ...columnNames]
   );

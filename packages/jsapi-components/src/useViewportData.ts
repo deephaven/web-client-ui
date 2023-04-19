@@ -64,6 +64,8 @@ export default function useViewportData<T>({
 
   useEffect(() => {
     if (table && !isClosed(table)) {
+      // Hydrate the viewport with real data. This will fetch data from index
+      // 0 to the end of the viewport + padding.
       setViewport(0);
     }
   }, [table, setViewport]);

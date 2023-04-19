@@ -9,7 +9,7 @@ import {
 
 /**
  * Initializes a ListData instance that can be used for windowed views of a
- * Table. The list must always contain a KeyedItem for ever record in the table,
+ * Table. The list must always contain a KeyedItem for every record in the table,
  * so it is pre-populated with empty items that can be updated with real data as
  * the window changes.
  *
@@ -28,13 +28,16 @@ export default function useInitializeViewportData<T>(
   // has no way to respond to a reference change of the `table` instance so we
   // have to manually delete any previous keyed items from the list.
   useEffect(() => {
-    if (table) {
-      if (viewportData.items.length) {
-        viewportData.remove(...viewportData.items.map(({ key }) => key));
-      }
-
-      viewportData.insert(0, ...generateEmptyKeyedItems<T>(getSize(table)));
+    if (!table) {
+      return;
     }
+
+    if (viewportData.items.length) {
+      viewportData.remove(...viewportData.items.map(({ key }) => key));
+    }
+
+    viewportData.insert(0, ...generateEmptyKeyedItems<T>(getSize(table)));
+
     // Intentionally excluding viewportData since it changes on every render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [table]);
