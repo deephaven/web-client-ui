@@ -2,7 +2,7 @@
 import { getOrThrow } from '@deephaven/utils';
 import { isExpandableGridModel } from './ExpandableGridModel';
 import { VisibleIndex, Coordinate, BoxCoordinates } from './GridMetrics';
-import { GridRenderState } from './GridRenderer';
+import { GridRenderState } from './GridRendererTypes';
 import { GridColor } from './GridTheme';
 
 export type CellRendererType = 'text' | 'databar';

@@ -22,8 +22,8 @@ import {
   isBoundedAxisRange,
   Range,
 } from './GridAxisRange';
-import { GridRenderState } from './GridRenderer';
 import { isExpandableGridModel } from './ExpandableGridModel';
+import { GridRenderState } from './GridRendererTypes';
 
 export type GridPoint = {
   x: Coordinate;

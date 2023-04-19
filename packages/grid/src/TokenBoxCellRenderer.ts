@@ -1,6 +1,6 @@
 import CellRenderer from './CellRenderer';
 import { VisibleIndex } from './GridMetrics';
-import { GridRenderState } from './GridRenderer';
+import { GridRenderState } from './GridRendererTypes';
 import { TokenBox } from './GridUtils';
 
 export function isTokenBoxCellRenderer(

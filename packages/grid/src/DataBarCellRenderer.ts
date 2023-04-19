@@ -4,10 +4,10 @@ import CellRenderer from './CellRenderer';
 import { isExpandableGridModel } from './ExpandableGridModel';
 import { isDataBarGridModel } from './DataBarGridModel';
 import { VisibleIndex } from './GridMetrics';
-import { GridRenderState } from './GridRenderer';
 import GridColorUtils, { Oklab } from './GridColorUtils';
 import GridUtils from './GridUtils';
 import memoizeClear from './memoizeClear';
+import { GridRenderState } from './GridRendererTypes';
 
 interface DataBarRenderMetrics {
   /** The total width the entire bar from the min to max value can take up (rightmostPosition - leftmostPosition) */
