@@ -1,13 +1,10 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 import { Table } from '@deephaven/jsapi-shim';
 import { KeyedItem } from '@deephaven/jsapi-utils';
+import { TestUtils } from '@deephaven/utils';
 import useInitializeViewportData from './useInitializeViewportData';
 
-function mockTable(size: number): Table {
-  return { size } as Table;
-}
-
-const tableA = mockTable(4);
+const tableA = TestUtils.createMockProxy<Table>({ size: 4 });
 const expectedInitialA: KeyedItem<unknown>[] = [
   { key: '0' },
   { key: '1' },
@@ -15,7 +12,7 @@ const expectedInitialA: KeyedItem<unknown>[] = [
   { key: '3' },
 ];
 
-const tableB = mockTable(2);
+const tableB = TestUtils.createMockProxy<Table>({ size: 2 });
 const expectedInitialB = [{ key: '0' }, { key: '1' }];
 
 it('should initialize a ListData object based on Table size', () => {

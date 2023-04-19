@@ -1,4 +1,5 @@
 import { Column, Table, TreeTable } from '@deephaven/jsapi-shim';
+import { TestUtils } from '@deephaven/utils';
 import { useListData } from '@react-stately/data';
 import { act, renderHook } from '@testing-library/react-hooks';
 import {
@@ -14,15 +15,6 @@ import {
   isClosed,
   padFirstAndLastRow,
 } from './ViewportDataUtils';
-
-/** Create a mock Table with minimal methods for our tests. */
-function mockTable(): Table {
-  const columns: Column[] = [];
-
-  return {
-    columns,
-  } as Table;
-}
 
 function mockViewportRow(offsetInSnapshot: number): ViewportRow {
   return { offsetInSnapshot } as ViewportRow;
@@ -70,7 +62,7 @@ describe('createKeyFromOffsetRow', () => {
 
 describe('createOnTableUpdatedHandler', () => {
   it('should create a handler that adds items to a ListData of KeyedItems', () => {
-    const table = mockTable();
+    const table = TestUtils.createMockProxy<Table>({ columns: [] });
 
     const { result: viewportDataRef } = renderHook(() =>
       useListData<KeyedItem<unknown>>({})
@@ -104,7 +96,7 @@ describe('createOnTableUpdatedHandler', () => {
   });
 
   it('should create a handler that updates existing items in a ListData', () => {
-    const table = mockTable();
+    const table = TestUtils.createMockProxy<Table>({ columns: [] });
 
     const { result: viewportDataRef } = renderHook(() =>
       useListData<KeyedItem<unknown>>({})

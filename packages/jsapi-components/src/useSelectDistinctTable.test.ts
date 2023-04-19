@@ -1,19 +1,7 @@
 import { Table } from '@deephaven/jsapi-shim';
+import { TestUtils } from '@deephaven/utils';
 import { renderHook } from '@testing-library/react-hooks';
 import useSelectDistinctTable from './useSelectDistinctTable';
-
-/** Create a mock Table with minimal methods for our tests. */
-function mockTable(): Table {
-  const selectDistinct: Table['selectDistinct'] = jest.fn();
-  const findColumns: Table['findColumns'] = jest.fn();
-  const close: Table['close'] = jest.fn();
-
-  return {
-    selectDistinct,
-    findColumns,
-    close,
-  } as Table;
-}
 
 let table: Table;
 let derivedTable: Table;
@@ -21,8 +9,8 @@ let derivedTable: Table;
 beforeEach(() => {
   jest.clearAllMocks();
 
-  table = mockTable();
-  derivedTable = mockTable();
+  table = TestUtils.createMockProxy<Table>();
+  derivedTable = TestUtils.createMockProxy<Table>();
 
   (table.selectDistinct as jest.Mock).mockResolvedValue(derivedTable);
 });
