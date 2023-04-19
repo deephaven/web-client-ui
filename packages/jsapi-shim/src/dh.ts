@@ -7,6 +7,7 @@ declare global {
   var dh: dhType;
 }
 
+console.log('MJB getting global shim');
 const { dh } = globalThis;
 
 export default dh;

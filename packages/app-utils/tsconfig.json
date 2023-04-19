@@ -9,7 +9,10 @@
   "references": [
     { "path": "../auth-plugin" },
     { "path": "../auth-core-plugins" },
+    { "path": "../jsapi-bootstrap" },
     { "path": "../jsapi-types" },
-    { "path": "../log" }
+    { "path": "../jsapi-utils" },
+    { "path": "../log" },
+    { "path": "../redux" }
   ]
 }

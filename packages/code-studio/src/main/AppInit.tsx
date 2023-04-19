@@ -1,7 +1,6 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { AuthPluginComponent } from '@deephaven/auth-plugin';
 import {
   LoadingOverlay,
   Shortcut,
@@ -17,14 +16,10 @@ import {
   ToolType,
 } from '@deephaven/dashboard-core-plugins';
 import { FileStorage } from '@deephaven/file-explorer';
-import dh, { CoreClient, IdeConnection } from '@deephaven/jsapi-shim';
+import { IdeConnection } from '@deephaven/jsapi-types';
 import {
-  createCoreClient,
   DecimalColumnFormatter,
-  getBaseUrl,
-  getClientOptions,
   getSessionDetails,
-  getWebsocketUrl,
   IntegerColumnFormatter,
   loadSessionWrapper,
   SessionWrapper,
@@ -47,12 +42,9 @@ import {
   Workspace,
   WorkspaceStorage,
   ServerConfigValues,
-} from '@deephaven/redux';
-import {
   DeephavenPluginModuleMap,
-  getAuthPluginComponent,
-  loadModulePlugins,
-} from '@deephaven/app-utils';
+} from '@deephaven/redux';
+import { useClient, useConnection, usePlugins } from '@deephaven/app-utils';
 import { setLayoutStorage as setLayoutStorageAction } from '../redux/actions';
 import App from './App';
 import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
@@ -103,249 +95,159 @@ function AppInit(props: AppInitProps) {
     setServerConfigValues,
   } = props;
 
+  const client = useClient();
+  const connection = useConnection();
+  const plugins = usePlugins();
   // General error means the app is dead and is unlikely to recover
   const [error, setError] = useState<unknown>();
-  // Disconnect error may be temporary, so just show an error overlaid on the app
-  const [isFontLoading, setIsFontLoading] = useState(true);
-  const [client, setClient] = useState<CoreClient>();
-  const [LoginPlugin, setLoginPlugin] = useState<AuthPluginComponent>();
-  const [authConfigValues, setAuthConfigValues] = useState(
-    new Map<string, string>()
-  );
-
-  const initClient = useCallback(async () => {
-    const baseUrl = getBaseUrl(import.meta.env.VITE_CORE_API_URL);
-    const websocketUrl = getWebsocketUrl(baseUrl);
-    const options = getClientOptions();
-    const newClient = createCoreClient(websocketUrl, options);
-    try {
-      log.info(
-        'Initializing Web UI',
-        import.meta.env.npm_package_version,
-        navigator.userAgent
-      );
-
-      const [newAuthConfigValues, newPlugins] = await Promise.all([
-        newClient.getAuthConfigValues().then(values => new Map(values)),
-        loadModulePlugins(import.meta.env.VITE_MODULE_PLUGINS_URL),
-      ]);
-      const NewLoginPluginComponent = getAuthPluginComponent(
-        newClient,
-        newPlugins,
-        newAuthConfigValues
-      );
-
-      setAuthConfigValues(newAuthConfigValues);
-      setPlugins(newPlugins);
-      setClient(newClient);
-      setLoginPlugin(() => NewLoginPluginComponent);
-    } catch (e) {
-      newClient.disconnect();
-      log.error(e);
-      setError(e);
-    }
-  }, [setPlugins]);
-
-  const handleLoginSuccess = useCallback(() => {
-    async function initApp() {
-      if (client == null) {
-        return;
-      }
-      try {
-        const [connection, sessionDetails] = await Promise.all([
-          client.getAsIdeConnection(),
-          getSessionDetails(),
-        ]);
-        connection.addEventListener(dh.IdeConnection.EVENT_SHUTDOWN, event => {
-          const { detail } = event;
-          log.info('Shutdown', `${JSON.stringify(detail)}`);
-          setError(`Server shutdown: ${detail ?? 'Unknown reason'}`);
-        });
-
-        const sessionWrapper = await loadSessionWrapper(
-          connection,
-          sessionDetails
-        );
-        const name = 'user';
-
-        const storageService = client.getStorageService();
-        const layoutStorage = new GrpcLayoutStorage(
-          storageService,
-          import.meta.env.VITE_LAYOUTS_URL ?? ''
-        );
-        const fileStorage = new GrpcFileStorage(
-          storageService,
-          import.meta.env.VITE_NOTEBOOKS_URL ?? ''
-        );
-
-        const workspaceStorage = new LocalWorkspaceStorage(layoutStorage);
-        const commandHistoryStorage = new PouchCommandHistoryStorage();
-
-        const loadedWorkspace = await workspaceStorage.load({
-          isConsoleAvailable: sessionWrapper !== undefined,
-        });
-        const { data } = loadedWorkspace;
-
-        // Fill in settings that have not yet been set
-        const { settings } = data;
-        if (settings.defaultDecimalFormatOptions === undefined) {
-          settings.defaultDecimalFormatOptions = {
-            defaultFormatString: DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
-          };
-        }
-
-        if (settings.defaultIntegerFormatOptions === undefined) {
-          settings.defaultIntegerFormatOptions = {
-            defaultFormatString: IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
-          };
-        }
-
-        if (settings.truncateNumbersWithPound === undefined) {
-          settings.truncateNumbersWithPound = false;
-        }
-
-        // Set any shortcuts that user has overridden on this platform
-        const { shortcutOverrides = {} } = settings;
-        const isMac = Shortcut.isMacPlatform;
-        const platformOverrides = isMac
-          ? shortcutOverrides.mac ?? {}
-          : shortcutOverrides.windows ?? {};
-
-        Object.entries(platformOverrides).forEach(([id, keyState]) => {
-          ShortcutRegistry.get(id)?.setKeyState(keyState);
-        });
-
-        const dashboardData = {
-          filterSets: data.filterSets,
-          links: data.links,
-        };
-
-        const configs = await client.getServerConfigValues();
-        const serverConfig = new Map(configs);
-
-        const user: User = {
-          name,
-          operateAs: name,
-          groups: [],
-          permissions: {
-            isACLEditor: false,
-            isSuperUser: false,
-            isQueryViewOnly: false,
-            isNonInteractive: false,
-            canUsePanels: true,
-            canCreateDashboard: true,
-            canCreateCodeStudio: true,
-            canCreateQueryMonitor: true,
-            canCopy: !(
-              serverConfig.get('internal.webClient.appInit.canCopy') === 'false'
-            ),
-            canDownloadCsv: !(
-              serverConfig.get('internal.webClient.appInit.canDownloadCsv') ===
-              'false'
-            ),
-          },
-        };
-
-        setActiveTool(ToolType.DEFAULT);
-        setServerConfigValues(serverConfig);
-        setCommandHistoryStorage(commandHistoryStorage);
-        setDashboardData(DEFAULT_DASHBOARD_ID, dashboardData);
-        setFileStorage(fileStorage);
-        setLayoutStorage(layoutStorage);
-        setDashboardConnection(DEFAULT_DASHBOARD_ID, connection);
-        if (sessionWrapper !== undefined) {
-          setDashboardSessionWrapper(DEFAULT_DASHBOARD_ID, sessionWrapper);
-        }
-        setUser(user);
-        setWorkspaceStorage(workspaceStorage);
-        setWorkspace(loadedWorkspace);
-      } catch (e) {
-        log.error(e);
-        setError(e);
-      }
-    }
-    initApp();
-  }, [
-    client,
-    setActiveTool,
-    setCommandHistoryStorage,
-    setDashboardData,
-    setFileStorage,
-    setLayoutStorage,
-    setDashboardConnection,
-    setDashboardSessionWrapper,
-    setUser,
-    setWorkspace,
-    setWorkspaceStorage,
-    setServerConfigValues,
-  ]);
-
-  const handleLoginFailure = useCallback((e: unknown) => {
-    setError(e);
-  }, []);
-
-  const initFonts = useCallback(() => {
-    if (document.fonts != null) {
-      document.fonts.ready.then(() => {
-        setIsFontLoading(false);
-      });
-    } else {
-      // If document.fonts isn't supported, just best guess assume they're loaded
-      setIsFontLoading(false);
-    }
-  }, []);
 
   useEffect(
-    function initClientAndFonts() {
-      initClient();
-      initFonts();
+    function setReduxPlugins() {
+      setPlugins(plugins);
     },
-    [initClient, initFonts]
+    [plugins, setPlugins]
   );
 
-  const isPluginLoading = LoginPlugin == null || isFontLoading;
-  const isPluginLoaded = client != null && !isPluginLoading && error == null;
-  const isAppLoading =
-    (workspace == null && error == null) ||
-    LoginPlugin == null ||
-    isFontLoading;
-  const isAppLoaded = !isAppLoading && error == null;
+  useEffect(
+    function initApp() {
+      async function loadApp() {
+        try {
+          const sessionDetails = await getSessionDetails();
+          const sessionWrapper = await loadSessionWrapper(
+            connection,
+            sessionDetails
+          );
+          const name = 'user';
+
+          const storageService = client.getStorageService();
+          const layoutStorage = new GrpcLayoutStorage(
+            storageService,
+            import.meta.env.VITE_LAYOUTS_URL ?? ''
+          );
+          const fileStorage = new GrpcFileStorage(
+            storageService,
+            import.meta.env.VITE_NOTEBOOKS_URL ?? ''
+          );
+
+          const workspaceStorage = new LocalWorkspaceStorage(layoutStorage);
+          const commandHistoryStorage = new PouchCommandHistoryStorage();
+
+          const loadedWorkspace = await workspaceStorage.load({
+            isConsoleAvailable: sessionWrapper !== undefined,
+          });
+          const { data } = loadedWorkspace;
+
+          // Fill in settings that have not yet been set
+          const { settings } = data;
+          if (settings.defaultDecimalFormatOptions === undefined) {
+            settings.defaultDecimalFormatOptions = {
+              defaultFormatString: DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
+            };
+          }
+
+          if (settings.defaultIntegerFormatOptions === undefined) {
+            settings.defaultIntegerFormatOptions = {
+              defaultFormatString: IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
+            };
+          }
+
+          if (settings.truncateNumbersWithPound === undefined) {
+            settings.truncateNumbersWithPound = false;
+          }
+
+          // Set any shortcuts that user has overridden on this platform
+          const { shortcutOverrides = {} } = settings;
+          const isMac = Shortcut.isMacPlatform;
+          const platformOverrides = isMac
+            ? shortcutOverrides.mac ?? {}
+            : shortcutOverrides.windows ?? {};
+
+          Object.entries(platformOverrides).forEach(([id, keyState]) => {
+            ShortcutRegistry.get(id)?.setKeyState(keyState);
+          });
+
+          const dashboardData = {
+            filterSets: data.filterSets,
+            links: data.links,
+          };
+
+          const configs = await client.getServerConfigValues();
+          const serverConfig = new Map(configs);
+
+          const user: User = {
+            name,
+            operateAs: name,
+            groups: [],
+            permissions: {
+              isACLEditor: false,
+              isSuperUser: false,
+              isQueryViewOnly: false,
+              isNonInteractive: false,
+              canUsePanels: true,
+              canCreateDashboard: true,
+              canCreateCodeStudio: true,
+              canCreateQueryMonitor: true,
+              canCopy: !(
+                serverConfig.get('internal.webClient.appInit.canCopy') ===
+                'false'
+              ),
+              canDownloadCsv: !(
+                serverConfig.get(
+                  'internal.webClient.appInit.canDownloadCsv'
+                ) === 'false'
+              ),
+            },
+          };
+
+          setActiveTool(ToolType.DEFAULT);
+          setServerConfigValues(serverConfig);
+          setCommandHistoryStorage(commandHistoryStorage);
+          setDashboardData(DEFAULT_DASHBOARD_ID, dashboardData);
+          setFileStorage(fileStorage);
+          setLayoutStorage(layoutStorage);
+          setDashboardConnection(DEFAULT_DASHBOARD_ID, connection);
+          if (sessionWrapper !== undefined) {
+            setDashboardSessionWrapper(DEFAULT_DASHBOARD_ID, sessionWrapper);
+          }
+          setUser(user);
+          setWorkspaceStorage(workspaceStorage);
+          setWorkspace(loadedWorkspace);
+        } catch (e) {
+          log.error(e);
+          setError(e);
+        }
+      }
+      loadApp();
+    },
+    [
+      client,
+      connection,
+      setActiveTool,
+      setCommandHistoryStorage,
+      setDashboardData,
+      setFileStorage,
+      setLayoutStorage,
+      setDashboardConnection,
+      setDashboardSessionWrapper,
+      setUser,
+      setWorkspace,
+      setWorkspaceStorage,
+      setServerConfigValues,
+    ]
+  );
+
+  const isLoading = workspace == null && error == null;
+  const isLoaded = !isLoading && error == null;
   const errorMessage = error != null ? `${error}` : null;
 
   return (
     <>
-      {isAppLoaded && <App />}
-      {isPluginLoaded && !isAppLoaded && (
-        <LoginPlugin
-          authConfigValues={authConfigValues}
-          client={client}
-          onSuccess={handleLoginSuccess}
-          onFailure={handleLoginFailure}
-        />
-      )}
+      {isLoaded && <App />}
       <LoadingOverlay
-        isLoading={isPluginLoading && errorMessage == null}
-        isLoaded={isPluginLoaded}
+        isLoading={isLoading && errorMessage == null}
+        isLoaded={isLoaded}
         errorMessage={errorMessage}
       />
-      {/*
-      Need to preload any monaco and Deephaven grid fonts.
-      We hide text with all the fonts we need on the root app.jsx page
-      Load the Fira Mono font so that Monaco calculates word wrapping properly.
-      This element doesn't need to be visible, just load the font and stay hidden.
-      https://github.com/microsoft/vscode/issues/88689
-      Can be replaced with a rel="preload" when firefox adds support
-      https://developer.mozilla.org/en-US/docs/Web/HTML/Preloading_content
-       */}
-      <div
-        id="preload-fonts"
-        style={{ visibility: 'hidden', position: 'absolute', top: -10000 }}
-      >
-        {/* trigger loading of fonts needed by monaco and iris grid */}
-        <p className="fira-sans-regular">preload</p>
-        <p className="fira-sans-semibold">preload</p>
-        <p className="fira-mono">preload</p>
-      </div>
     </>
   );
 }

@@ -22,6 +22,7 @@
     "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward"
   },
   "devDependencies": {
+    "@deephaven/redux": "file:../redux",
     "react": "^17.x",
     "react-dom": "^17.x",
     "react-redux": "^7.x",
@@ -30,12 +31,16 @@
   "dependencies": {
     "@deephaven/auth-plugin": "file:../auth-plugin",
     "@deephaven/auth-core-plugins": "file:../auth-core-plugins",
+    "@deephaven/components": "file:../components",
+    "@deephaven/jsapi-bootstrap": "file:../jsapi-bootstrap",
     "@deephaven/jsapi-types": "file:../jsapi-types",
     "@deephaven/log": "file:../log",
     "@paciolan/remote-component": "2.13.0",
-    "@paciolan/remote-module-loader": "^3.0.2"
+    "@paciolan/remote-module-loader": "^3.0.2",
+    "fira": "mozilla/fira#4.202"
   },
   "peerDependencies": {
+    "@deephaven/redux": "file:../redux",
     "react": "^17.x",
     "react-dom": "^17.x",
     "react-redux": "^7.x",

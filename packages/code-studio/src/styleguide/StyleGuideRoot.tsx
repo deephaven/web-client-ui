@@ -6,11 +6,9 @@ import { MonacoUtils } from '@deephaven/console';
 import { store } from '@deephaven/redux';
 import MonacoWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 import DownloadServiceWorkerUtils from '../DownloadServiceWorkerUtils';
-import { unregister } from '../serviceWorker';
 import StyleGuideInit from './StyleGuideInit';
 
 export function StyleGuideRoot() {
-  unregister();
   DownloadServiceWorkerUtils.registerOnLoaded();
   MonacoUtils.init({ getWorker: () => new MonacoWorker() });
 

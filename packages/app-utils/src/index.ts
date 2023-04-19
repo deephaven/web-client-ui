@@ -1,2 +1,3 @@
-export * from './PluginUtils';
-export { default as RemoteComponent } from './RemoteComponent';
+export * from './components';
+export * from './plugins';
+export * from './utils';

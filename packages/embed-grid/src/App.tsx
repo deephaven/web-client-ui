@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ContextMenuRoot, LoadingOverlay } from '@deephaven/components'; // Use the loading spinner from the Deephaven components package
 import {
   InputFilter,
@@ -6,7 +6,12 @@ import {
   IrisGridModel,
   IrisGridModelFactory,
 } from '@deephaven/iris-grid'; // iris-grid is used to display Deephaven tables
-import dh, { IdeConnection, Sort, Table } from '@deephaven/jsapi-shim'; // Import the shim to use the JS API
+import dh, {
+  CoreClient,
+  IdeConnection,
+  Sort,
+  Table,
+} from '@deephaven/jsapi-shim'; // Import the shim to use the JS API
 import { fetchVariableDefinition, TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import './App.scss'; // Styles for in this app
@@ -67,6 +72,7 @@ async function loadTable(
  * See create-react-app docs for how to update these env vars: https://create-react-app.dev/docs/adding-custom-environment-variables/
  */
 function App(): JSX.Element {
+  const [client, setClient] = useState<CoreClient>();
   const [model, setModel] = useState<IrisGridModel>();
   const [error, setError] = useState<string>();
   const [inputFilters, setInputFilters] = useState<InputFilter[]>();
@@ -81,47 +87,34 @@ function App(): JSX.Element {
 
   useEffect(
     function initializeApp() {
-      async function initApp() {
-        try {
-          // Get the table name from the query param `name`.
-          const name = searchParams.get('name');
-
-          if (name == null) {
-            throw new Error('No name param provided');
-          }
-          // TOOD: Need to login here
-
-          // Connect to the Web API server
-          const baseUrl = new URL(
-            import.meta.env.VITE_CORE_API_URL ?? '',
-            `${window.location}`
-          );
-
-          const websocketUrl = `${baseUrl.protocol}//${baseUrl.host}`;
-
-          log.debug(`Starting connection...`);
-          const connection = new dh.IdeConnection(websocketUrl);
-
-          log.debug('Loading table', name, '...');
-
-          // Load the table up.
-          const table = await loadTable(connection, name);
-
-          // Create the `IrisGridModel` for use with the `IrisGrid` component
-          log.debug(`Creating model...`);
-
-          const newModel = await IrisGridModelFactory.makeModel(table);
-
-          setModel(newModel);
-
-          log.debug('Table successfully loaded!');
-        } catch (e: unknown) {
-          log.error('Unable to load table', e);
-          setError(`${e}`);
-        }
-        setIsLoading(false);
-      }
-      initApp();
+      // async function initApp() {
+      //   try {
+      //     // Get the table name from the query param `name`.
+      //     const name = searchParams.get('name');
+      //     if (name == null) {
+      //       throw new Error('No name param provided');
+      //     }
+      //     // TOOD: Need to login here
+      //     // Connect to the Web API server
+      //     const baseUrl = getBaseUrl(import.meta.env.VITE_CORE_API_URL);
+      //     const websocketUrl = getWebsocketUrl(baseUrl);
+      //     const options = getClientOptions();
+      //     const newClient = createCoreClient(websocketUrl, options);
+      //     log.debug('Loading table', name, '...');
+      //     // Load the table up.
+      //     const table = await loadTable(connection, name);
+      //     // Create the `IrisGridModel` for use with the `IrisGrid` component
+      //     log.debug(`Creating model...`);
+      //     const newModel = await IrisGridModelFactory.makeModel(table);
+      //     setModel(newModel);
+      //     log.debug('Table successfully loaded!');
+      //   } catch (e: unknown) {
+      //     log.error('Unable to load table', e);
+      //     setError(`${e}`);
+      //   }
+      //   setIsLoading(false);
+      // }
+      // initApp();
     },
     [searchParams]
   );
@@ -176,6 +169,33 @@ function App(): JSX.Element {
     },
     [model]
   );
+
+  // const handleLoginSuccess = useCallback(() => {
+  //   async function initApp() {
+  //     if (client == null) {
+  //       return;
+  //     }
+  //     try {
+  //       const [connection, sessionDetails] = await Promise.all([
+  //         client.getAsIdeConnection(),
+  //         getSessionDetails(),
+  //       ]);
+  //       connection.addEventListener(dh.IdeConnection.EVENT_SHUTDOWN, event => {
+  //         const { detail } = event;
+  //         log.info('Shutdown', `${JSON.stringify(detail)}`);
+  //         setError(`Server shutdown: ${detail ?? 'Unknown reason'}`);
+  //       });
+  //     } catch (e) {
+  //       log.error('Unable to connect to server', e);
+  //       setError(`${e}`);
+  //     }
+  //   }
+  //   initApp();
+  // }, [client]);
+
+  // const handleLoginFailure = useCallback((e: unknown) => {
+  //   setError(e);
+  // }, []);
 
   const isLoaded = model != null;
 

@@ -1,5 +1,5 @@
 import dh from '@deephaven/jsapi-shim';
-import type { DateWrapper } from '@deephaven/jsapi-shim';
+import type { DateWrapper } from '@deephaven/jsapi-types';
 
 interface DateParts<T> {
   year: T;

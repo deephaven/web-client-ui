@@ -26,12 +26,14 @@
     "build": "cross-env NODE_ENV=production run-p build:*",
     "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward"
   },
+  "dependencies": {
+    "@deephaven/jsapi-types": "file:../jsapi-types"
+  },
   "devDependencies": {
     "@deephaven/tsconfig": "file:../tsconfig",
     "@types/react": "^17.0.2"
   },
   "peerDependencies": {
-    "@deephaven/jsapi-types": "file:../jsapi-types",
     "react": "^17.x"
   },
   "files": [

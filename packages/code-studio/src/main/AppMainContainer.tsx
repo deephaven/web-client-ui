@@ -75,10 +75,7 @@ import dh, {
   VariableTypeUnion,
 } from '@deephaven/jsapi-shim';
 import Log from '@deephaven/log';
-import {
-  DeephavenPluginModuleMap,
-  loadComponentPlugin,
-} from '@deephaven/app-utils';
+import { loadComponentPlugin } from '@deephaven/app-utils';
 import {
   getActiveTool,
   getWorkspace,
@@ -91,6 +88,7 @@ import {
   RootState,
   UserPermissions,
   ServerConfigValues,
+  DeephavenPluginModuleMap,
 } from '@deephaven/redux';
 import { PromiseUtils } from '@deephaven/utils';
 import GoldenLayout from '@deephaven/golden-layout';

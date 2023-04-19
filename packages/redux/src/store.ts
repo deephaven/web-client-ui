@@ -2,11 +2,16 @@ import { applyMiddleware, createStore, compose, combineReducers } from 'redux';
 import type { FileStorage } from '@deephaven/file-explorer';
 import type { ValidKeyState } from '@deephaven/components';
 import type { FormattingRule } from '@deephaven/jsapi-utils';
-import type { DeephavenPluginModuleMap } from '@deephaven/app-utils';
 import type { PayloadAction } from './actions';
 import rootMiddleware from './middleware';
 import reducers from './reducers';
 import reducerRegistry from './reducerRegistry';
+
+// A DeephavenPluginModule. This interface should have new fields added to it from different levels of plugins.
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface DeephavenPluginModule {}
+
+export type DeephavenPluginModuleMap = Map<string, DeephavenPluginModule>;
 
 export interface UserPermissions {
   isACLEditor: boolean;

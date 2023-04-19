@@ -21,6 +21,7 @@
     { "path": "../grid" },
     { "path": "../iris-grid" },
     { "path": "../jsapi-bootstrap" },
+    { "path": "../jsapi-components" },
     { "path": "../jsapi-shim" },
     { "path": "../jsapi-types" },
     { "path": "../jsapi-utils" },

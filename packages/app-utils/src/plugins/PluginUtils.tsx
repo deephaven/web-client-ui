@@ -4,23 +4,16 @@ import {
   AuthPluginComponent,
   isAuthPlugin,
 } from '@deephaven/auth-plugin';
-import {
-  AuthPluginAnonymous,
-  AuthPluginParent,
-  AuthPluginPsk,
-} from '@deephaven/auth-core-plugins';
 import { CoreClient } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
+import {
+  DeephavenPluginModule,
+  DeephavenPluginModuleMap,
+} from '@deephaven/redux';
 import RemoteComponent from './RemoteComponent';
 import loadRemoteModule from './loadRemoteModule';
 
 const log = Log.module('@deephaven/app-utils.PluginUtils');
-
-// A DeephavenPluginModule. This interface should have new fields added to it from different levels of plugins.
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface DeephavenPluginModule {}
-
-export type DeephavenPluginModuleMap = Map<string, DeephavenPluginModule>;
 
 /**
  * Load a component plugin from the server.
@@ -139,12 +132,14 @@ export function getAuthHandlers(
  *
  * @param pluginMap Map of plugins loaded from the server
  * @param authConfigValues Auth config values from the server
+ * @param corePlugins Map of core auth plugins to include in the list. They are added after the loaded plugins
  * @returns The auth plugin component to render
  */
 export function getAuthPluginComponent(
   client: CoreClient,
   pluginMap: DeephavenPluginModuleMap,
-  authConfigValues: Map<string, string>
+  authConfigValues: Map<string, string>,
+  corePlugins?: Map<string, AuthPlugin>
 ): AuthPluginComponent {
   const authHandlers = getAuthHandlers(authConfigValues);
   // Filter out all the plugins that are auth plugins, and then map them to [pluginName, AuthPlugin] pairs
@@ -159,18 +154,7 @@ export function getAuthPluginComponent(
   ]) as [string, AuthPlugin][];
 
   // Add all the core plugins in priority
-  authPlugins.push([
-    '@deephaven/auth-core-plugins.AuthPluginPsk',
-    AuthPluginPsk,
-  ]);
-  authPlugins.push([
-    '@deephaven/auth-core-plugins.AuthPluginParent',
-    AuthPluginParent,
-  ]);
-  authPlugins.push([
-    '@deephaven/auth-core-plugins.AuthPluginAnonymous',
-    AuthPluginAnonymous,
-  ]);
+  authPlugins.push(...(corePlugins ?? []));
 
   // Filter the available auth plugins
 
