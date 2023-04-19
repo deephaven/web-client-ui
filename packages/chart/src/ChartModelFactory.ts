@@ -1,10 +1,8 @@
 import type { dh as DhType, Figure, Table } from '@deephaven/jsapi-types';
-import type { PlotlyDataLayoutConfig } from 'plotly.js';
 import ChartUtils, { ChartModelSettings } from './ChartUtils';
 import FigureChartModel from './FigureChartModel';
 import ChartTheme from './ChartTheme';
 import ChartModel from './ChartModel';
-import PlotlyChartModel from './PlotlyChartModel';
 
 class ChartModelFactory {
   /**
@@ -35,23 +33,6 @@ class ChartModelFactory {
       table
     );
     return new FigureChartModel(dh, figure, settings, theme);
-  }
-
-  static async makePlotlyModelFromSettings(
-    tableColumnReplacementMap: Map<Table, Map<string, string[]>>,
-    plotlyConfig: PlotlyDataLayoutConfig,
-    isDefaultTemplate = true,
-    isDefaultColors = true,
-    theme = ChartTheme
-  ): Promise<ChartModel> {
-    return new PlotlyChartModel(
-      tableColumnReplacementMap,
-      plotlyConfig.data,
-      plotlyConfig.layout ?? {},
-      isDefaultTemplate,
-      isDefaultColors,
-      theme
-    );
   }
 
   /**

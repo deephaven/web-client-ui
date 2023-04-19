@@ -1,1 +1,4 @@
 __mocks__/dh-core.js
+node_modules/
+dist/
+build/

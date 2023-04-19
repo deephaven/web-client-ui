@@ -96,10 +96,10 @@ export function PlotlyChartPlugin(
         return ChartModelFactory.makePlotlyModelFromSettings(
           tableColumnReplacementMap,
           data.plotly,
-          !data.deephaven.is_user_set_template,
-          !data.deephaven.is_user_set_color
+          !data.deephaven.is_user_set_template
         );
       };
+
       return {
         ...hydrateProps,
         localDashboardId,
@@ -136,8 +136,7 @@ export function PlotlyChartPlugin(
         ChartModelFactory.makePlotlyModelFromSettings(
           tableColumnReplacementMap,
           data.plotly,
-          !data.deephaven.is_user_set_template,
-          !data.deephaven.is_user_set_color
+          !data.deephaven.is_user_set_template
         );
       const config = {
         type: 'react-component' as const,

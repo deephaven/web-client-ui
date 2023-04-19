@@ -16,9 +16,8 @@ class PlotlyChartModel extends ChartModel {
   constructor(
     tableColumnReplacementMap: ReadonlyMap<Table, Map<string, string[]>>,
     data: Data[],
-    layout: Partial<Layout>,
+    plotlyLayout: Partial<Layout>,
     isDefaultTemplate = true,
-    isDefaultColors = true,
     theme: typeof ChartTheme = ChartTheme
   ) {
     super();
@@ -33,25 +32,20 @@ class PlotlyChartModel extends ChartModel {
     this.data = data;
     const template = { layout: ChartUtils.makeDefaultLayout(theme) };
 
+    // For now we will only use the plotly theme colorway since most plotly themes are light mode
     if (!isDefaultTemplate) {
-      template.layout.colorway = layout.template?.layout?.colorway;
+      template.layout.colorway =
+        plotlyLayout.template?.layout?.colorway ?? template.layout.colorway;
     }
 
+    this.plotlyLayout = plotlyLayout;
+
     this.layout = {
-      ...layout,
+      ...plotlyLayout,
       template,
     };
 
-    if (isDefaultColors) {
-      // Remove colors set on traces by plotly on the server
-      for (let i = 0; i < this.data.length; i += 1) {
-        const d = this.data[i];
-        if (isPlotData(d)) {
-          delete d.marker?.color;
-          delete d.line?.color;
-        }
-      }
-    }
+    this.applyColorwayToData();
 
     this.setTitle(this.getDefaultTitle());
   }
@@ -70,12 +64,47 @@ class PlotlyChartModel extends ChartModel {
 
   layout: Partial<Layout>;
 
+  plotlyLayout: Partial<Layout>;
+
   getData(): Partial<Data>[] {
     return this.data;
   }
 
   getLayout(): Partial<Layout> {
     return this.layout;
+  }
+
+  /**
+   * Applies the model template colorway to the data unless the data color is not its default value
+   * Data color is not default if the user set the color specifically or the plot type sets it
+   */
+  applyColorwayToData(): void {
+    const colorway = this.layout?.template?.layout?.colorway ?? [];
+    const plotlyColorway = this.plotlyLayout?.template?.layout?.colorway ?? [];
+
+    if (colorway.length === 0) {
+      return;
+    }
+
+    // Remove colors set on traces by plotly on the server
+    for (let i = 0; i < this.data.length; i += 1) {
+      const d = this.data[i];
+      const color = colorway[i % colorway.length];
+
+      // If length is 0, plotlyColorway[NaN] is undefined and does not throw
+      const plotlyColor = plotlyColorway[i % plotlyColorway.length] ?? '';
+
+      if (isPlotData(d)) {
+        const { marker, line } = d;
+        if (marker?.color === plotlyColor && color != null) {
+          marker.color = color;
+        }
+
+        if (line?.color === plotlyColor && color != null) {
+          line.color = color;
+        }
+      }
+    }
   }
 
   subscribe(callback: (event: ChartEvent) => void): void {

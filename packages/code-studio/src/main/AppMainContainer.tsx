@@ -931,7 +931,7 @@ export class AppMainContainer extends Component<
           <PandasPlugin hydrate={this.hydratePandas} />
           <MarkdownPlugin />
           <LinkerPlugin />
-          <PlotlyChartPlugin />
+          {/* <PlotlyChartPlugin /> */}
           {dashboardPlugins}
         </Dashboard>
         <CSSTransition
