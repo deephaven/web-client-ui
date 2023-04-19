@@ -4,6 +4,7 @@ import { ContextMenuRoot, LoadingOverlay } from '@deephaven/components'; // Use 
 import dh, { IdeConnection } from '@deephaven/jsapi-shim'; // Import the shim to use the JS API
 import Log from '@deephaven/log';
 import './App.scss'; // Styles for in this app
+import { useConnection } from '@deephaven/app-utils';
 
 const log = Log.module('EmbedChart.App');
 
@@ -36,6 +37,7 @@ function App(): JSX.Element {
     () => new URLSearchParams(window.location.search),
     []
   );
+  const connection = useConnection();
 
   useEffect(
     function initializeApp() {
@@ -48,18 +50,6 @@ function App(): JSX.Element {
             throw new Error('No name param provided');
           }
 
-          // Connect to the Web API server
-          const baseUrl = new URL(
-            import.meta.env.VITE_CORE_API_URL ?? '',
-            `${window.location}`
-          );
-
-          const websocketUrl = `${baseUrl.protocol}//${baseUrl.host}`;
-
-          log.debug(`Starting connection...`);
-          const connection = new dh.IdeConnection(websocketUrl);
-
-          // TODO: Need to login here
           log.debug('Loading figure', name, '...');
 
           // Load the figure up.
@@ -81,7 +71,7 @@ function App(): JSX.Element {
       }
       initApp();
     },
-    [searchParams]
+    [connection, searchParams]
   );
 
   const isLoaded = model != null;

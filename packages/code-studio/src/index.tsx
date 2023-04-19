@@ -7,6 +7,7 @@ import logInit from './log/LogInit';
 
 logInit();
 
+// Lazy load components for code splitting and also to avoid importing the jsapi-shim before API is bootstrapped.
 // eslint-disable-next-line react-refresh/only-export-components
 const AppRoot = React.lazy(() => import('./AppRoot'));
 

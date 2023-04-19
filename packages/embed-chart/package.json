@@ -16,6 +16,7 @@
     "build"
   ],
   "dependencies": {
+    "@deephaven/app-utils": "file:../app-utils",
     "@deephaven/chart": "file:../chart",
     "@deephaven/components": "file:../components",
     "@deephaven/jsapi-bootstrap": "file:../jsapi-bootstrap",

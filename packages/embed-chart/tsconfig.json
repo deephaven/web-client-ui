@@ -8,23 +8,11 @@
   },
   "include": ["src"],
   "references": [
-    {
-      "path": "../chart"
-    },
-    {
-      "path": "../components"
-    },
-    {
-      "path": "../jsapi-bootstrap"
-    },
-    {
-      "path": "../jsapi-shim"
-    },
-    {
-      "path": "../jsapi-utils"
-    },
-    {
-      "path": "../log"
-    }
+    { "path": "../chart" },
+    { "path": "../components" },
+    { "path": "../jsapi-bootstrap" },
+    { "path": "../jsapi-shim" },
+    { "path": "../jsapi-utils" },
+    { "path": "../log" }
   ]
 }
