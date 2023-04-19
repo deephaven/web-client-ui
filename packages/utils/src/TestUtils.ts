@@ -147,7 +147,8 @@ class TestUtils {
   /**
    * Creates a mock object for a type `T` using a Proxy object. Each prop can
    * optionally be set via the constructor. Any prop that is not set will be set
-   * to a jest.fn() instance on first access.
+   * to a jest.fn() instance on first access with the exeption of "then" which
+   * will not be automatically proxied.
    * @param props Optional props to set on the Proxy.
    * @returns
    */
