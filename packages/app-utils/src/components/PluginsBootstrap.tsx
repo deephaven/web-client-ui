@@ -1,10 +1,7 @@
 import React, { createContext, useEffect, useState } from 'react';
-import { DeephavenPluginModuleMap } from '@deephaven/redux';
-import { loadModulePlugins } from '../plugins';
+import { PluginModuleMap, loadModulePlugins } from '../plugins';
 
-export const PluginsContext = createContext<DeephavenPluginModuleMap | null>(
-  null
-);
+export const PluginsContext = createContext<PluginModuleMap | null>(null);
 
 export type PluginsBootstrapProps = {
   /**
@@ -26,7 +23,7 @@ export function PluginsBootstrap({
   pluginsUrl,
   children,
 }: PluginsBootstrapProps) {
-  const [plugins, setPlugins] = useState<DeephavenPluginModuleMap | null>(null);
+  const [plugins, setPlugins] = useState<PluginModuleMap | null>(null);
   useEffect(
     function initPlugins() {
       let isCancelled = false;

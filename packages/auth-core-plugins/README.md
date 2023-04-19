@@ -1,23 +1,13 @@
-# @deephaven/jsapi-utils
+# @deephaven/auth-core-plugins
 
-A library with some JS utility methods for interacting with the JSAPI.
+Core authentication plugins for Deephaven. Used by [AuthBootstrap](../app-utils/src/components/AuthBootstrap.tsx) to provide default authentication if no custom plugins are loaded. For mode details on custom plugins, see [deephaven-js-plugins repository](https://github.com/deephaven/deephaven-js-plugins).
 
 ## Install
 
 ```bash
-npm install --save @deephaven/jsapi-utils
+npm install --save @deephaven/auth-core-plugins
 ```
 
-## Usage
+# Legal Notices
 
-```javascript
-import { TableUtils } from '@deephaven/jsapi-utils';
-
-if (TableUtils.isDateType(columnType)) {
-  console.log('Date type', columnType);
-} else if (TableUtils.isNumberType(columnType)) {
-  console.log('Number type', columnType);
-} else {
-  console.log('Unrecognized type', columnType);
-}
-```
+Deephaven Data Labs and any contributors grant you a license to the content of this repository under the Apache 2.0 License, see the [LICENSE](../../LICENSE) file.

@@ -1,8 +1,8 @@
-import { LoadingOverlay } from '@deephaven/components';
-import { ApiBootstrap } from '@deephaven/jsapi-bootstrap';
-import '@deephaven/components/scss/BaseStyleSheet.scss';
 import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom';
+import '@deephaven/components/scss/BaseStyleSheet.scss';
+import { LoadingOverlay } from '@deephaven/components';
+import { ApiBootstrap } from '@deephaven/jsapi-bootstrap';
 import logInit from './log/LogInit';
 
 logInit();

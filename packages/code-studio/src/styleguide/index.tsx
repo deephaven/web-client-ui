@@ -10,6 +10,12 @@ logInit();
 // eslint-disable-next-line react-refresh/only-export-components
 const StyleGuideRoot = React.lazy(() => import('./StyleGuideRoot'));
 
+// eslint-disable-next-line react-refresh/only-export-components
+const FontBootstrap = React.lazy(async () => {
+  const module = await import('@deephaven/app-utils');
+  return { default: module.FontBootstrap };
+});
+
 ReactDOM.render(
   <ApiBootstrap
     apiUrl={`${import.meta.env.VITE_CORE_API_URL}/${
@@ -18,7 +24,9 @@ ReactDOM.render(
     setGlobally
   >
     <Suspense fallback={<LoadingOverlay />}>
-      <StyleGuideRoot />
+      <FontBootstrap>
+        <StyleGuideRoot />
+      </FontBootstrap>
     </Suspense>
   </ApiBootstrap>,
   document.getElementById('root')

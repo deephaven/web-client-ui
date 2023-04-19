@@ -6,14 +6,16 @@ import {
 } from '@deephaven/auth-plugin';
 import { CoreClient } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
-import {
-  DeephavenPluginModule,
-  DeephavenPluginModuleMap,
-} from '@deephaven/redux';
 import RemoteComponent from './RemoteComponent';
 import loadRemoteModule from './loadRemoteModule';
 
 const log = Log.module('@deephaven/app-utils.PluginUtils');
+
+// A PluginModule. This interface should have new fields added to it from different levels of plugins.
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface PluginModule {}
+
+export type PluginModuleMap = Map<string, PluginModule>;
 
 /**
  * Load a component plugin from the server.
@@ -83,7 +85,7 @@ export async function loadJson(
  */
 export async function loadModulePlugins(
   modulePluginsUrl: string
-): Promise<DeephavenPluginModuleMap> {
+): Promise<PluginModuleMap> {
   log.debug('Loading plugins...');
   try {
     const manifest = await loadJson(`${modulePluginsUrl}/manifest.json`);
@@ -101,12 +103,12 @@ export async function loadModulePlugins(
     }
     const pluginModules = await Promise.allSettled(pluginPromises);
 
-    const pluginMap: DeephavenPluginModuleMap = new Map();
+    const pluginMap: PluginModuleMap = new Map();
     for (let i = 0; i < pluginModules.length; i += 1) {
       const module = pluginModules[i];
       const { name } = manifest.plugins[i];
       if (module.status === 'fulfilled') {
-        pluginMap.set(name, module.value as DeephavenPluginModule);
+        pluginMap.set(name, module.value as PluginModule);
       } else {
         log.error(`Unable to load plugin ${name}`, module.reason);
       }
@@ -137,7 +139,7 @@ export function getAuthHandlers(
  */
 export function getAuthPluginComponent(
   client: CoreClient,
-  pluginMap: DeephavenPluginModuleMap,
+  pluginMap: PluginModuleMap,
   authConfigValues: Map<string, string>,
   corePlugins?: Map<string, AuthPlugin>
 ): AuthPluginComponent {
