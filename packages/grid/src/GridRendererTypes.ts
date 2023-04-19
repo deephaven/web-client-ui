@@ -2,8 +2,8 @@ import GridMetrics, { VisibleIndex, Coordinate } from './GridMetrics';
 import GridModel from './GridModel';
 import GridRange from './GridRange';
 import { GridTheme } from './GridTheme';
-import { GridSeparator } from './mouse-handlers';
 import { DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
+import { GridSeparator } from './mouse-handlers/GridSeparatorMouseHandler';
 
 export type EditingCellTextSelectionRange = [start: number, end: number];
 
