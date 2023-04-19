@@ -30,7 +30,7 @@ export interface UseViewportDataResult<T> {
 }
 
 /**
- * Setups up state management for windowed Table viewports. Returns a ListData
+ * Sets up state management for windowed Table viewports. Returns a ListData
  * instance for managing items associated with the Table + a `setViewport`
  * callback for changing the current viewport.
  *
