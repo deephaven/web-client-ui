@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import '@deephaven/components/scss/BaseStyleSheet.scss';
 import FontBootstrap from './FontBootstrap';
 import AppRootBootstrap from './AppRootBootstrap';

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Provider } from 'react-redux';
-import 'fira';
+import { FontBootstrap } from '@deephaven/app-utils';
 import '@deephaven/components/scss/BaseStyleSheet.scss';
 import { MonacoUtils } from '@deephaven/console';
 import { store } from '@deephaven/redux';
@@ -18,9 +18,11 @@ export function StyleGuideRoot() {
   window['__react-beautiful-dnd-disable-dev-warnings'] = true;
 
   return (
-    <Provider store={store}>
-      <StyleGuideInit />
-    </Provider>
+    <FontBootstrap>
+      <Provider store={store}>
+        <StyleGuideInit />
+      </Provider>
+    </FontBootstrap>
   );
 }
 

@@ -74,6 +74,7 @@ import dh, {
   VariableDefinition,
   VariableTypeUnion,
 } from '@deephaven/jsapi-shim';
+import { SessionConfig } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { loadComponentPlugin } from '@deephaven/app-utils';
 import {
@@ -109,7 +110,6 @@ import EmptyDashboard from './EmptyDashboard';
 import UserLayoutUtils from './UserLayoutUtils';
 import DownloadServiceWorkerUtils from '../DownloadServiceWorkerUtils';
 import LayoutStorage from '../storage/LayoutStorage';
-import { SessionConfig } from '@deephaven/jsapi-utils';
 
 const log = Log.module('AppMainContainer');
 

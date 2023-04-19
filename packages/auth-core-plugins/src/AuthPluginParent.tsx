@@ -26,11 +26,6 @@ function Component({
   useEffect(() => {
     async function login() {
       try {
-        if (window.opener == null) {
-          throw new Error(
-            'window.opener is null, unable to send auth request.'
-          );
-        }
         log.info('Logging in by delegating to parent window...');
         const loginOptions = await requestParentResponse<LoginOptions>(
           LOGIN_OPTIONS_REQUEST

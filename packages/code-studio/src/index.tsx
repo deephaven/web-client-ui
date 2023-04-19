@@ -16,12 +16,13 @@ const AppBootstrap = React.lazy(async () => {
   return { default: module.AppBootstrap };
 });
 
-const apiUrl = `${import.meta.env.VITE_CORE_API_URL}/${
-  import.meta.env.VITE_CORE_API_NAME
-}`;
-
 ReactDOM.render(
-  <ApiBootstrap apiUrl={apiUrl} setGlobally>
+  <ApiBootstrap
+    apiUrl={`${import.meta.env.VITE_CORE_API_URL}/${
+      import.meta.env.VITE_CORE_API_NAME
+    }`}
+    setGlobally
+  >
     <Suspense fallback={<LoadingOverlay />}>
       <AppBootstrap
         baseUrl={import.meta.env.BASE_URL}
