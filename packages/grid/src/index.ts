@@ -30,3 +30,4 @@ export type { default as CellRenderer, CellRendererType } from './CellRenderer';
 export { default as TextCellRenderer } from './TextCellRenderer';
 export { default as DataBarCellRenderer } from './DataBarCellRenderer';
 export * from './TokenBoxCellRenderer';
+export * from './GridRendererTypes';
