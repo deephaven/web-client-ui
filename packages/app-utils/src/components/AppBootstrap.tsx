@@ -1,12 +1,13 @@
 import React from 'react';
 import '@deephaven/components/scss/BaseStyleSheet.scss';
 import FontBootstrap from './FontBootstrap';
-import AppRootBootstrap from './AppRootBootstrap';
+import ClientBootstrap from './ClientBootstrap';
+import PluginsBootstrap from './PluginsBootstrap';
+import AuthBootstrap from './AuthBootstrap';
+import ConnectionBootstrap from './ConnectionBootstrap';
+import { getBaseUrl, getConnectOptions, getWebsocketUrl } from '../utils';
 
 export type AppBootstrapProps = {
-  /** Base URL of the app. */
-  baseUrl: string;
-
   /** URL of the API to load. */
   apiUrl: string;
 
@@ -22,28 +23,27 @@ export type AppBootstrapProps = {
   children: React.ReactNode;
 };
 
-// const AppRootBootstrap = React.lazy(() => import('./AppRootBootstrap'));
-
 /**
- * AppBootstrap component. Handles initializing the API, client, and authentication.
+ * AppBootstrap component. Handles loading the fonts, client, and authentication.
  * Will display the children when everything is loaded and authenticated.
  */
 export function AppBootstrap({
   apiUrl,
-  baseUrl,
   fontClassNames,
   pluginsUrl,
   children,
 }: AppBootstrapProps) {
+  const websocketUrl = getWebsocketUrl(getBaseUrl(apiUrl));
+  const clientOptions = getConnectOptions();
   return (
     <FontBootstrap fontClassNames={fontClassNames}>
-      <AppRootBootstrap
-        apiUrl={apiUrl}
-        baseUrl={baseUrl}
-        pluginsUrl={pluginsUrl}
-      >
-        {children}
-      </AppRootBootstrap>
+      <ClientBootstrap websocketUrl={websocketUrl} options={clientOptions}>
+        <PluginsBootstrap pluginsUrl={pluginsUrl}>
+          <AuthBootstrap>
+            <ConnectionBootstrap>{children}</ConnectionBootstrap>
+          </AuthBootstrap>
+        </PluginsBootstrap>
+      </ClientBootstrap>
     </FontBootstrap>
   );
 }

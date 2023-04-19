@@ -1,5 +1,4 @@
 export * from './AppBootstrap';
-export * from './AppRootBootstrap';
 export * from './AuthBootstrap';
 export * from './ClientBootstrap';
 export * from './ConnectionBootstrap';
