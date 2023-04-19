@@ -46,22 +46,29 @@ const options: UseViewportDataProps<unknown> = {
   deserializeRow,
 };
 
+const optionsUseDefaults: UseViewportDataProps<unknown> = {
+  table,
+};
+
 beforeEach(() => {
   jest.clearAllMocks();
 });
 
-it('should initialize viewport data', () => {
-  const { result } = renderHook(() => useViewportData(options));
+it.each([options, optionsUseDefaults])(
+  'should initialize viewport data: %o',
+  opt => {
+    const { result } = renderHook(() => useViewportData(opt));
 
-  const expected = {
-    initialItems: [...generateEmptyKeyedItems(table.size)],
-    viewportEnd: viewportSize + viewportPadding - 1,
-  };
+    const expected = {
+      initialItems: [...generateEmptyKeyedItems(table.size)],
+      viewportEnd: (opt.viewportSize ?? 10) + (opt.viewportPadding ?? 50) - 1,
+    };
 
-  expect(result.current.viewportData.items).toEqual(expected.initialItems);
-  expect(result.current.size).toEqual(table.size);
-  expect(table.setViewport).toHaveBeenCalledWith(0, expected.viewportEnd);
-});
+    expect(result.current.viewportData.items).toEqual(expected.initialItems);
+    expect(result.current.size).toEqual(table.size);
+    expect(table.setViewport).toHaveBeenCalledWith(0, expected.viewportEnd);
+  }
+);
 
 it('should update state on dh.Table.EVENT_UPDATED event', () => {
   const { result } = renderHook(() => useViewportData(options));
