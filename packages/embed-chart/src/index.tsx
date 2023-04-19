@@ -27,7 +27,6 @@ ReactDOM.render(
   >
     <Suspense fallback={<LoadingOverlay />}>
       <AppBootstrap
-        baseUrl={import.meta.env.BASE_URL}
         apiUrl={import.meta.env.VITE_CORE_API_URL}
         pluginsUrl={import.meta.env.VITE_MODULE_PLUGINS_URL}
       >

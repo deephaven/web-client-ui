@@ -8,6 +8,7 @@
   },
   "include": ["src"],
   "references": [
+    { "path": "../app-utils" },
     { "path": "../chart" },
     { "path": "../components" },
     { "path": "../jsapi-bootstrap" },
