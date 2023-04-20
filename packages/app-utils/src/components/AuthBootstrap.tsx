@@ -35,6 +35,8 @@ const CORE_AUTH_PLUGINS = new Map([
  */
 export function AuthBootstrap({ children }: AuthBootstrapProps) {
   const client = useClient();
+  // `useContext` instead of `usePlugins` so that we don't have to wait for the plugins to load
+  // We want to load the auth config values in parallel with the plugins
   const plugins = useContext(PluginsContext);
   const [authConfig, setAuthConfig] = useState<AuthConfigMap>();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
