@@ -526,15 +526,17 @@ class IrisGridTableModelTemplate<
       }
     }
 
-    if (text === null) {
-      return 'null';
+    if (TableUtils.isTextType(this.columns[x]?.type)) {
+      if (text === null) {
+        return 'null';
+      }
+
+      if (text === '') {
+        return 'empty';
+      }
     }
 
-    if (text === '') {
-      return 'empty';
-    }
-
-    return text;
+    return text ?? '';
   }
 
   truncationCharForCell(x: ModelIndex): '#' | undefined {
