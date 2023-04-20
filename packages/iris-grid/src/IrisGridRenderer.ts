@@ -11,7 +11,6 @@ import {
 } from '@deephaven/icons';
 import {
   BoundedAxisRange,
-  BoxCoordinates,
   Coordinate,
   GridMetrics,
   GridRangeIndex,
@@ -33,6 +32,7 @@ import {
 import { IrisGridThemeType } from './IrisGridTheme';
 import IrisGridModel from './IrisGridModel';
 import IrisGridTextCellRenderer from './IrisGridTextCellRenderer';
+import IrisGridDataBarCellRenderer from './IrisGridDataBarCellRenderer';
 
 const ICON_NAMES = Object.freeze({
   SORT_UP: 'sortUp',
@@ -73,6 +73,8 @@ class IrisGridRenderer extends GridRenderer {
   }
 
   protected textCellRenderer = new IrisGridTextCellRenderer();
+
+  protected dataBarCellRenderer = new IrisGridDataBarCellRenderer();
 
   constructor() {
     super();
@@ -849,30 +851,6 @@ class IrisGridRenderer extends GridRenderer {
     const rectHeight = filterBarCollapsedHeight - 1; // for casing bottom
     context.fillRect(x, y, rectWidth, rectHeight);
 
-    context.restore();
-  }
-
-  drawTreeMarker(
-    context: CanvasRenderingContext2D,
-    state: IrisGridRenderState,
-    columnX: Coordinate,
-    rowY: Coordinate,
-    treeBox: BoxCoordinates,
-    color: string,
-    isExpanded: boolean
-  ): void {
-    context.save();
-    const { x1, y1 } = treeBox;
-    const markerIcon = isExpanded
-      ? this.getIcon(ICON_NAMES.CARET_DOWN)
-      : this.getIcon(ICON_NAMES.CARET_RIGHT);
-    const iconX = columnX + x1 - 2;
-    const iconY = rowY + y1 + 2.5;
-
-    context.fillStyle = color;
-    context.textAlign = 'center';
-    context.translate(iconX, iconY);
-    context.fill(markerIcon);
     context.restore();
   }
 

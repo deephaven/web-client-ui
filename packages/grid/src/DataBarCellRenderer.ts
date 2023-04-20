@@ -3,11 +3,12 @@ import { getOrThrow } from '@deephaven/utils';
 import CellRenderer from './CellRenderer';
 import { isExpandableGridModel } from './ExpandableGridModel';
 import { isDataBarGridModel } from './DataBarGridModel';
-import { VisibleIndex } from './GridMetrics';
+import { ModelIndex, VisibleIndex, VisibleToModelMap } from './GridMetrics';
 import GridColorUtils, { Oklab } from './GridColorUtils';
 import GridUtils from './GridUtils';
 import memoizeClear from './memoizeClear';
 import { GridRenderState } from './GridRendererTypes';
+import GridModel from './GridModel';
 
 interface DataBarRenderMetrics {
   /** The total width the entire bar from the min to max value can take up (rightmostPosition - leftmostPosition) */
@@ -276,6 +277,7 @@ class DataBarCellRenderer extends CellRenderer {
       allRowYs,
       modelColumns,
       modelRows,
+      visibleRows,
     } = metrics;
     const {
       cellHorizontalPadding,
@@ -311,8 +313,10 @@ class DataBarCellRenderer extends CellRenderer {
     } = model.dataBarOptionsForCell(modelColumn, modelRow);
     const longestValueWidth = this.getCachedWidestValueForColumn(
       context,
-      state,
-      column
+      visibleRows,
+      modelRows,
+      model,
+      modelColumn
     );
 
     const leftPadding = 2;
@@ -538,25 +542,22 @@ class DataBarCellRenderer extends CellRenderer {
   getCachedWidestValueForColumn = memoizeClear(
     (
       context: CanvasRenderingContext2D,
-      state: GridRenderState,
-      column: VisibleIndex
+      visibleRows: readonly VisibleIndex[],
+      modelRows: VisibleToModelMap,
+      model: GridModel,
+      column: ModelIndex
     ): number => {
-      const { metrics, model } = state;
-      const { visibleRows, modelColumns, modelRows } = metrics;
-      const modelColumn = getOrThrow(modelColumns, column);
       let widestValue = 0;
       for (let i = 0; i < visibleRows.length; i += 1) {
         const row = visibleRows[i];
         const modelRow = getOrThrow(modelRows, row);
-        const value = Number(model.textForCell(modelColumn, modelRow));
-        widestValue = Math.max(
-          widestValue,
-          context.measureText(`${value}`).width
-        );
+        const text = model.textForCell(column, modelRow);
+        widestValue = Math.max(widestValue, context.measureText(text).width);
       }
 
       return widestValue;
-    }
+    },
+    { max: 1000 }
   );
 }
 
