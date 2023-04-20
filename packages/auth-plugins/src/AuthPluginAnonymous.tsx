@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useApi } from '@deephaven/jsapi-bootstrap';
-import { AuthPlugin, AuthPluginProps } from '@deephaven/auth-plugin';
 import Log from '@deephaven/log';
 import { LoadingOverlay } from '@deephaven/components';
 import { AUTH_HANDLER_TYPE_ANONYMOUS } from './AuthHandlerTypes';
+import { AuthPlugin, AuthPluginProps } from './AuthPlugin';
 
 const log = Log.module('AuthPluginAnonymous');
 
@@ -57,7 +57,7 @@ function Component({
 
 const AuthPluginAnonymous: AuthPlugin = {
   Component,
-  isAvailable: (client, authHandlers, authConfigValues) =>
+  isAvailable: authHandlers =>
     authHandlers.includes(AUTH_HANDLER_TYPE_ANONYMOUS),
 };
 

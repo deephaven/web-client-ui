@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Log from '@deephaven/log';
 import { LoadingOverlay } from '@deephaven/components';
-import { AuthPlugin, AuthPluginProps } from '@deephaven/auth-plugin';
+import { AuthPlugin, AuthPluginProps } from './AuthPlugin';
 
 const log = Log.module('AuthPluginPsk');
 
@@ -66,8 +66,7 @@ function Component({
 
 const AuthPluginPsk: AuthPlugin = {
   Component,
-  isAvailable: (client, authHandlers, authConfigValues) =>
-    authHandlers.includes(AUTH_TYPE),
+  isAvailable: authHandlers => authHandlers.includes(AUTH_TYPE),
 };
 
 export default AuthPluginPsk;

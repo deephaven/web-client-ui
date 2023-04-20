@@ -5,8 +5,8 @@ import { ConnectOptions, CoreClient } from '@deephaven/jsapi-types';
 export const ClientContext = createContext<CoreClient | null>(null);
 
 export type ClientBootstrapProps = {
-  /** URL of the client websocket to connect to */
-  websocketUrl: string;
+  /** URL of the server to connect to */
+  serverUrl: string;
 
   /** Connection options to pass to CoreClient when connecting */
   options?: ConnectOptions;
@@ -22,7 +22,7 @@ export type ClientBootstrapProps = {
  * ClientBootstrap component. Handles creating the client.
  */
 export function ClientBootstrap({
-  websocketUrl,
+  serverUrl,
   options,
   children,
 }: ClientBootstrapProps) {
@@ -30,13 +30,13 @@ export function ClientBootstrap({
   const [client, setClient] = useState<CoreClient>();
   useEffect(
     function initClient() {
-      const newClient = new api.CoreClient(websocketUrl, options);
+      const newClient = new api.CoreClient(serverUrl, options);
       setClient(newClient);
       return () => {
         newClient.disconnect();
       };
     },
-    [api, options, websocketUrl]
+    [api, options, serverUrl]
   );
 
   if (client == null) {

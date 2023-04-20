@@ -1,16 +1,20 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { AuthPluginComponent } from '@deephaven/auth-plugin';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import {
+  AuthConfigMap,
   AuthPluginAnonymous,
   AuthPluginParent,
   AuthPluginPsk,
-} from '@deephaven/auth-core-plugins';
+} from '@deephaven/auth-plugins';
 import { LoadingOverlay } from '@deephaven/components';
 import { PluginsContext } from './PluginsBootstrap';
 import { getAuthPluginComponent } from '../plugins';
 import useClient from './useClient';
-
-export type AuthConfigMap = Map<string, string>;
 
 export type AuthBootstrapProps = {
   /**
@@ -21,9 +25,9 @@ export type AuthBootstrapProps = {
 
 /** Core auth plugins that are always loaded */
 const CORE_AUTH_PLUGINS = new Map([
-  ['@deephaven/auth-core-plugins.AuthPluginPsk', AuthPluginPsk],
-  ['@deephaven/auth-core-plugins.AuthPluginParent', AuthPluginParent],
-  ['@deephaven/auth-core-plugins.AuthPluginAnonymous', AuthPluginAnonymous],
+  ['@deephaven/auth-plugins.AuthPluginPsk', AuthPluginPsk],
+  ['@deephaven/auth-plugins.AuthPluginParent', AuthPluginParent],
+  ['@deephaven/auth-plugins.AuthPluginAnonymous', AuthPluginAnonymous],
 ]);
 
 /**
@@ -33,7 +37,6 @@ export function AuthBootstrap({ children }: AuthBootstrapProps) {
   const client = useClient();
   const plugins = useContext(PluginsContext);
   const [authConfig, setAuthConfig] = useState<AuthConfigMap>();
-  const [AuthComponent, setAuthComponent] = useState<AuthPluginComponent>();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [error, setError] = useState<unknown>();
 
@@ -60,22 +63,18 @@ export function AuthBootstrap({ children }: AuthBootstrapProps) {
     [client]
   );
 
-  useEffect(
-    function initAuthPluginComponent() {
-      if (plugins == null || authConfig == null) {
-        return;
-      }
+  const AuthComponent = useMemo(() => {
+    if (plugins == null || authConfig == null) {
+      return undefined;
+    }
 
-      const NewAuthComponent = getAuthPluginComponent(
-        client,
-        plugins,
-        authConfig,
-        CORE_AUTH_PLUGINS
-      );
-      setAuthComponent(() => NewAuthComponent);
-    },
-    [authConfig, client, plugins]
-  );
+    return getAuthPluginComponent(
+      client,
+      plugins,
+      authConfig,
+      CORE_AUTH_PLUGINS
+    );
+  }, [authConfig, client, plugins]);
 
   const handleLoginSuccess = useCallback(() => {
     setIsLoggedIn(true);
@@ -87,26 +86,28 @@ export function AuthBootstrap({ children }: AuthBootstrapProps) {
   }, []);
 
   const isLoading = AuthComponent == null || authConfig == null;
-  const isLoaded = !isLoading && error == null;
-  return (
-    <>
-      {isLoaded && !isLoggedIn && (
-        <AuthComponent
-          authConfigValues={authConfig}
-          client={client}
-          onSuccess={handleLoginSuccess}
-          onFailure={handleLoginFailure}
-        />
-      )}
-      {isLoaded && isLoggedIn && children}
-      {(isLoading || error != null) && (
-        <LoadingOverlay
-          isLoading={isLoading}
-          errorMessage={error != null ? `${error}` : undefined}
-        />
-      )}
-    </>
-  );
+
+  if (isLoading || error != null) {
+    return (
+      <LoadingOverlay
+        isLoading={isLoading}
+        errorMessage={error != null ? `${error}` : undefined}
+      />
+    );
+  }
+  if (!isLoggedIn) {
+    return (
+      <AuthComponent
+        authConfigValues={authConfig}
+        client={client}
+        onSuccess={handleLoginSuccess}
+        onFailure={handleLoginFailure}
+      />
+    );
+  }
+
+  // eslint-disable-next-line react/jsx-no-useless-fragment
+  return <>{children}</>;
 }
 
 export default AuthBootstrap;

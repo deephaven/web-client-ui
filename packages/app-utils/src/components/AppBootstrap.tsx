@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import '@deephaven/components/scss/BaseStyleSheet.scss';
-import FontBootstrap from './FontBootstrap';
+import { LoadingOverlay } from '@deephaven/components';
+import FontBootstrap, { FontsLoadedContext } from './FontBootstrap';
 import ClientBootstrap from './ClientBootstrap';
 import PluginsBootstrap from './PluginsBootstrap';
 import AuthBootstrap from './AuthBootstrap';
 import ConnectionBootstrap from './ConnectionBootstrap';
-import { getBaseUrl, getConnectOptions, getWebsocketUrl } from '../utils';
+import { getBaseUrl, getConnectOptions } from '../utils';
+import FontsLoaded from './FontsLoaded';
 
 export type AppBootstrapProps = {
   /** URL of the API to load. */
@@ -33,14 +35,17 @@ export function AppBootstrap({
   pluginsUrl,
   children,
 }: AppBootstrapProps) {
-  const websocketUrl = getWebsocketUrl(getBaseUrl(apiUrl));
+  const serverUrl = getBaseUrl(apiUrl).origin;
   const clientOptions = getConnectOptions();
+  const isFontsLoaded = useContext(FontsLoadedContext);
   return (
     <FontBootstrap fontClassNames={fontClassNames}>
-      <ClientBootstrap websocketUrl={websocketUrl} options={clientOptions}>
+      <ClientBootstrap serverUrl={serverUrl} options={clientOptions}>
         <PluginsBootstrap pluginsUrl={pluginsUrl}>
           <AuthBootstrap>
-            <ConnectionBootstrap>{children}</ConnectionBootstrap>
+            <ConnectionBootstrap>
+              <FontsLoaded>{children}</FontsLoaded>
+            </ConnectionBootstrap>
           </AuthBootstrap>
         </PluginsBootstrap>
       </ClientBootstrap>

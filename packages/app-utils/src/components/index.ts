@@ -3,6 +3,7 @@ export * from './AuthBootstrap';
 export * from './ClientBootstrap';
 export * from './ConnectionBootstrap';
 export * from './FontBootstrap';
+export * from './FontsLoaded';
 export * from './PluginsBootstrap';
 export * from './usePlugins';
 export * from './useClient';

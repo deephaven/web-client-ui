@@ -69,14 +69,11 @@ describe('component tests', () => {
     expect(onFailure).not.toHaveBeenCalled();
     expect(mockLogin).not.toHaveBeenCalled();
 
-    // Send a message that should be ignored
-
-    expect(mockLogin).not.toHaveBeenCalled();
-    expect(onSuccess).not.toHaveBeenCalled();
-
     mockResolve(loginOptions);
 
     await mockParentResponse;
+    expect(onSuccess).not.toHaveBeenCalled();
+    expect(onFailure).not.toHaveBeenCalled();
     expect(mockLogin).toHaveBeenCalledWith(loginOptions);
 
     await loginPromise;

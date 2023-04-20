@@ -2,20 +2,11 @@ import { ConnectOptions } from '@deephaven/jsapi-types';
 
 /**
  * Get the base URL of the API
- * @param coreApiUrl Configured Core API URL
+ * @param apiUrl API URL
  * @returns URL for the base of the API
  */
-export function getBaseUrl(coreApiUrl: string): URL {
-  return new URL(coreApiUrl, `${window.location}`);
-}
-
-/**
- * Get the websocket URL for the API
- * @param baseURL URL for the base of the API
- * @returns Websocket URL for the API
- */
-export function getWebsocketUrl(baseURL: URL): string {
-  return `${baseURL.protocol}//${baseURL.host}`;
+export function getBaseUrl(apiUrl: string): URL {
+  return new URL(apiUrl, `${window.location}`);
 }
 
 /**

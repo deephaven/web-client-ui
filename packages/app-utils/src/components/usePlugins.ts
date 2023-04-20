@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import { PluginsContext } from './PluginsBootstrap';
 
-export const usePlugins = () => {
+export function usePlugins() {
   const plugins = useContext(PluginsContext);
   if (plugins == null) {
     throw new Error(
@@ -9,6 +9,6 @@ export const usePlugins = () => {
     );
   }
   return plugins;
-};
+}
 
 export default usePlugins;

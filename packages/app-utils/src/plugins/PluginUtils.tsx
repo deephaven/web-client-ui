@@ -3,7 +3,7 @@ import {
   AuthPlugin,
   AuthPluginComponent,
   isAuthPlugin,
-} from '@deephaven/auth-plugin';
+} from '@deephaven/auth-plugins';
 import { CoreClient } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import RemoteComponent from './RemoteComponent';
@@ -161,7 +161,7 @@ export function getAuthPluginComponent(
   // Filter the available auth plugins
 
   const availableAuthPlugins = authPlugins.filter(([name, authPlugin]) =>
-    authPlugin.isAvailable(client, authHandlers, authConfigValues)
+    authPlugin.isAvailable(authHandlers)
   );
 
   if (availableAuthPlugins.length === 0) {

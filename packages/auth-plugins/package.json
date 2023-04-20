@@ -1,12 +1,16 @@
 {
-  "name": "@deephaven/auth-plugin",
+  "name": "@deephaven/auth-plugins",
   "version": "0.32.0",
-  "description": "Deephaven Auth Plugin",
+  "description": "Deephaven Auth Plugins",
   "keywords": [
     "Deephaven",
     "plugin",
     "deephaven-js-plugin",
-    "auth"
+    "auth",
+    "anonymous",
+    "parent",
+    "psk",
+    "Pre-shared key"
   ],
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -14,7 +18,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/deephaven/web-client-ui.git",
-    "directory": "packages/auth-plugin"
+    "directory": "packages/auth-plugins"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -27,7 +31,11 @@
     "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward"
   },
   "dependencies": {
-    "@deephaven/jsapi-types": "file:../jsapi-types"
+    "@deephaven/components": "file:../components",
+    "@deephaven/log": "file:../log",
+    "@deephaven/jsapi-bootstrap": "file:../jsapi-bootstrap",
+    "@deephaven/jsapi-types": "file:../jsapi-types",
+    "@deephaven/jsapi-utils": "file:../jsapi-utils"
   },
   "devDependencies": {
     "@deephaven/tsconfig": "file:../tsconfig",
@@ -39,6 +47,7 @@
   "files": [
     "dist"
   ],
+  "sideEffects": false,
   "publishConfig": {
     "access": "public"
   }

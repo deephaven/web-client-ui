@@ -52,11 +52,11 @@ export async function createSessionWrapper(
 
   const types = await connection.getConsoleTypes();
 
-  log.info('Available types:', types);
-
   if (types.length === 0) {
     throw new NoConsolesError('No console types available');
   }
+
+  log.info('Available types:', types);
 
   const type = types[0];
 

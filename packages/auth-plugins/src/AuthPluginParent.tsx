@@ -6,7 +6,7 @@ import {
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { LoadingOverlay } from '@deephaven/components';
-import { AuthPlugin, AuthPluginProps } from '@deephaven/auth-plugin';
+import { AuthPlugin, AuthPluginProps } from './AuthPlugin';
 
 const log = Log.module('AuthPluginParent');
 

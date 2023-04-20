@@ -59,25 +59,29 @@ export function ConnectionBootstrap({ children }: ConnectionBootstrapProps) {
         log.info('Shutdown', `${JSON.stringify(detail)}`);
         setError(`Server shutdown: ${detail ?? 'Unknown reason'}`);
       }
-      return connection.addEventListener(
+
+      const removerFn = connection.addEventListener(
         api.IdeConnection.EVENT_SHUTDOWN,
         handleShutdown
       );
+      return removerFn;
     },
     [api, connection]
   );
 
+  if (connection == null || error != null) {
+    return (
+      <LoadingOverlay
+        isLoading={connection == null}
+        errorMessage={`${error}`}
+      />
+    );
+  }
+
   return (
-    <>
-      {connection != null && error == null && (
-        <ConnectionContext.Provider value={connection}>
-          {children}
-        </ConnectionContext.Provider>
-      )}
-      {error != null && (
-        <LoadingOverlay isLoading={false} errorMessage={`${error}`} />
-      )}
-    </>
+    <ConnectionContext.Provider value={connection}>
+      {children}
+    </ConnectionContext.Provider>
   );
 }
 

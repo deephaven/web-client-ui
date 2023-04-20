@@ -13,7 +13,7 @@ export type FontBootstrapProps = {
    * The children to render wrapped with the FontsLoadedContext.
    * Note that it renders the children even if the fonts aren't loaded yet.
    */
-  children: JSX.Element;
+  children: React.ReactNode;
 };
 
 /**
@@ -25,14 +25,9 @@ export function FontBootstrap({
 }: FontBootstrapProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   useEffect(function initFonts() {
-    if (document.fonts != null) {
-      document.fonts.ready.then(() => {
-        setIsLoaded(true);
-      });
-    } else {
-      // If document.fonts isn't supported, just best guess assume they're loaded
+    document.fonts.ready.then(() => {
       setIsLoaded(true);
-    }
+    });
   }, []);
 
   return (
