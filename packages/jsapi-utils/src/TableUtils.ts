@@ -5,7 +5,8 @@ import {
   OperatorValue as FilterOperatorValue,
 } from '@deephaven/filters';
 import Log from '@deephaven/log';
-import dh, {
+import dh from '@deephaven/jsapi-shim';
+import {
   Column,
   FilterCondition,
   FilterValue,
@@ -14,7 +15,7 @@ import dh, {
   Sort,
   Table,
   TreeTable,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import {
   CancelablePromise,
   PromiseUtils,

@@ -16,6 +16,7 @@
     "build"
   ],
   "dependencies": {
+    "@deephaven/app-utils": "file:../app-utils",
     "@deephaven/components": "file:../components",
     "@deephaven/iris-grid": "file:../iris-grid",
     "@deephaven/jsapi-bootstrap": "file:../jsapi-bootstrap",

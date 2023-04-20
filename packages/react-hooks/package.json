@@ -25,7 +25,7 @@
     "@deephaven/utils": "file:../utils"
   },
   "peerDependencies": {
-    "react": "^17.0.0"
+    "react": "^17.x"
   },
   "devDependencies": {
     "@deephaven/tsconfig": "file:../tsconfig"

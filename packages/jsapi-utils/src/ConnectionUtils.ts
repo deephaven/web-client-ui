@@ -2,7 +2,7 @@ import {
   IdeConnection,
   VariableChanges,
   VariableDefinition,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import { TimeoutError } from '@deephaven/utils';
 
 /** Default timeout for fetching a variable definition */

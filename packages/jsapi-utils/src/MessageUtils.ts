@@ -60,7 +60,7 @@ export async function requestParentResponse<T>(
     throw new Error('window.opener is null, unable to send request.');
   }
   return new Promise((resolve, reject) => {
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: number;
     const id = shortid();
     const listener = (event: MessageEvent<Response<T>>) => {
       const { data } = event;
@@ -69,12 +69,12 @@ export async function requestParentResponse<T>(
         log.debug("Ignore message, id doesn't match", data);
         return;
       }
-      clearTimeout(timeoutId);
+      window.clearTimeout(timeoutId);
       window.removeEventListener('message', listener);
       resolve(data.payload);
     };
     window.addEventListener('message', listener);
-    timeoutId = setTimeout(() => {
+    timeoutId = window.setTimeout(() => {
       window.removeEventListener('message', listener);
       reject(new TimeoutError('Request timed out'));
     }, timeout);

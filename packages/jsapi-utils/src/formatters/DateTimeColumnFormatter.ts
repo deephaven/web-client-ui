@@ -1,5 +1,6 @@
 /* eslint class-methods-use-this: "off" */
-import dh, { DateWrapper, TimeZone } from '@deephaven/jsapi-shim';
+import dh from '@deephaven/jsapi-shim';
+import type { DateWrapper, TimeZone } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import TableColumnFormatter, {
   TableColumnFormat,
