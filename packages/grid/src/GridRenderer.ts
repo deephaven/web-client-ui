@@ -10,7 +10,7 @@ import { isEditableGridModel } from './EditableGridModel';
 import GridColumnSeparatorMouseHandler from './mouse-handlers/GridColumnSeparatorMouseHandler';
 import { BoundedAxisRange } from './GridAxisRange';
 import { GridRenderState } from './GridRendererTypes';
-import CellRenderer, { CellRendererType } from './CellRenderer';
+import CellRenderer, { CellRenderType } from './CellRenderer';
 import DataBarCellRenderer from './DataBarCellRenderer';
 import TextCellRenderer from './TextCellRenderer';
 
@@ -1010,14 +1010,14 @@ export class GridRenderer {
     const { modelColumns, modelRows } = metrics;
     const modelRow = getOrThrow(modelRows, row);
     const modelColumn = getOrThrow(modelColumns, column);
-    const rendererType = model.rendererForCell(modelColumn, modelRow);
-    const cellRenderer = this.getCellRenderer(rendererType);
+    const renderType = model.renderTypeForCell(modelColumn, modelRow);
+    const cellRenderer = this.getCellRenderer(renderType);
     cellRenderer.drawCellContent(context, state, column, row);
   }
 
-  getCellRenderer(rendererType: CellRendererType): CellRenderer {
-    switch (rendererType) {
-      case 'databar':
+  getCellRenderer(renderType: CellRenderType): CellRenderer {
+    switch (renderType) {
+      case 'dataBar':
         return this.dataBarCellRenderer;
       default:
         return this.textCellRenderer;

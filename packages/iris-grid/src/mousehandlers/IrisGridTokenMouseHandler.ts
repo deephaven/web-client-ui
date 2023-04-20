@@ -42,8 +42,8 @@ class IrisGridTokenMouseHandler extends GridMouseHandler {
     const modelRow = getOrThrow(modelRows, row);
     const modelColumn = getOrThrow(modelColumns, column);
 
-    const cellRendererType = model.rendererForCell(modelColumn, modelRow);
-    const cellRenderer = renderer.getCellRenderer(cellRendererType);
+    const renderType = model.renderTypeForCell(modelColumn, modelRow);
+    const cellRenderer = renderer.getCellRenderer(renderType);
     if (!isTokenBoxCellRenderer(cellRenderer)) {
       return false;
     }

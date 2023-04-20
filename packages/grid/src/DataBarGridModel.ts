@@ -39,35 +39,15 @@ export interface DataBarOptions {
   opacity: number;
   markers: Marker[];
   direction: DirectionOption;
+  value: number;
 }
 
 export function isDataBarGridModel(
   model: GridModel
 ): model is DataBarGridModel {
-  return (model as DataBarGridModel)?.columnAxes !== undefined;
+  return (model as DataBarGridModel)?.dataBarOptionsForCell !== undefined;
 }
 
 export interface DataBarGridModel extends GridModel {
-  columnMins: MinMap;
-
-  columnMaxs: MaxMap;
-
-  columnAxes: ColumnAxisMap;
-
-  valuePlacements: ValuePlacementMap;
-
-  directions: DirectionMap;
-
-  positiveColors: ColorMap;
-
-  negativeColors: ColorMap;
-
-  // Opacities should be between 0 and 1
-  opacities: OpacityMap;
-
-  textAlignments: TextAlignmentMap;
-
-  markers: MarkerMap;
-
   dataBarOptionsForCell(column: ModelIndex, row: ModelIndex): DataBarOptions;
 }

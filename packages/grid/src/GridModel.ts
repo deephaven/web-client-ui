@@ -5,7 +5,7 @@ import { ModelIndex } from './GridMetrics';
 import { GridColor, GridTheme, NullableGridColor } from './GridTheme';
 import memoizeClear from './memoizeClear';
 import { Token } from './GridUtils';
-import { CellRendererType } from './CellRenderer';
+import { CellRenderType } from './CellRenderer';
 
 const LINK_TRUNCATION_LENGTH = 5000;
 
@@ -228,7 +228,7 @@ abstract class GridModel<
     }
   );
 
-  rendererForCell(column: ModelIndex, row: ModelIndex): CellRendererType {
+  renderTypeForCell(column: ModelIndex, row: ModelIndex): CellRenderType {
     return 'text';
   }
 }

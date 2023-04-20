@@ -98,6 +98,9 @@ function DataBarExample() {
 
   // RTL gradient with multiple colors
   data.push(columnData.slice());
+
+  // Both data bar and text
+  data.push(columnData.slice());
   const [model] = useState(
     () =>
       new MockDataBarGridModel(

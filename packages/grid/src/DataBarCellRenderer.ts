@@ -55,7 +55,6 @@ class DataBarCellRenderer extends CellRenderer {
     const rowY = getOrThrow(allRowYs, row);
     const textAlign = model.textAlignForCell(modelColumn, modelRow);
     const text = model.textForCell(modelColumn, modelRow);
-    const value = Number(text);
     const { x: textX, y: textY } = GridUtils.getTextRenderMetrics(
       state,
       column,
@@ -71,6 +70,7 @@ class DataBarCellRenderer extends CellRenderer {
       opacity,
       markers,
       direction,
+      value,
     } = model.dataBarOptionsForCell(modelColumn, modelRow);
 
     const hasGradient = Array.isArray(dataBarColor);
@@ -289,8 +289,6 @@ class DataBarCellRenderer extends CellRenderer {
     const y = getOrThrow(allRowYs, row);
     const columnWidth = getOrThrow(allColumnWidths, column);
     const isFirstColumn = column === firstColumn;
-    const text = model.textForCell(modelColumn, modelRow);
-    const value = Number(text);
     let treeIndent = 0;
     if (
       isExpandableGridModel(model) &&
@@ -309,6 +307,7 @@ class DataBarCellRenderer extends CellRenderer {
       valuePlacement,
       markers,
       direction,
+      value,
     } = model.dataBarOptionsForCell(modelColumn, modelRow);
     const longestValueWidth = this.getCachedWidestValueForColumn(
       context,

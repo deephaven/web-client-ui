@@ -162,8 +162,8 @@ class IrisGridRenderer extends GridRenderer {
       return;
     }
 
-    const rendererType = model.rendererForCell(modelColumn, modelRow);
-    const cellRenderer = this.getCellRenderer(rendererType);
+    const renderType = model.renderTypeForCell(modelColumn, modelRow);
+    const cellRenderer = this.getCellRenderer(renderType);
     cellRenderer.drawCellContent(context, state, column, row);
   }
 

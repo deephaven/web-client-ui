@@ -1,6 +1,6 @@
 /* eslint-disable class-methods-use-this */
 import { getOrThrow } from '@deephaven/utils';
-import { CellRendererType } from './CellRenderer';
+import { CellRenderType } from './CellRenderer';
 import {
   AxisOption,
   ColorMap,
@@ -114,8 +114,11 @@ class MockDataBarGridModel extends GridModel implements DataBarGridModel {
     return this.textAlignments.get(column) ?? DEFAULT_TEXT_ALIGNMENT;
   }
 
-  rendererForCell(column: ModelIndex, row: ModelIndex): CellRendererType {
-    return 'databar';
+  renderTypeForCell(column: ModelIndex, row: ModelIndex): CellRenderType {
+    if (column < 20) {
+      return 'dataBar';
+    }
+    return column % 2 === row % 2 ? 'dataBar' : 'text';
   }
 
   dataBarOptionsForCell(column: ModelIndex, row: ModelIndex): DataBarOptions {
@@ -149,6 +152,7 @@ class MockDataBarGridModel extends GridModel implements DataBarGridModel {
       opacity,
       markers,
       direction,
+      value,
     };
   }
 }

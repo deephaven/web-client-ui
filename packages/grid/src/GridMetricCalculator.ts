@@ -17,7 +17,6 @@ import GridUtils from './GridUtils';
 import { GridFont, GridTheme } from './GridTheme';
 import { isExpandableGridModel } from './ExpandableGridModel';
 import { DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
-import { isDataBarGridModel } from './DataBarGridModel';
 
 export { getOrThrow } from '@deephaven/utils';
 /* eslint class-methods-use-this: "off" */
@@ -1732,6 +1731,7 @@ export class GridMetricCalculator {
     } = theme;
 
     let columnWidth = 0;
+    let hasDataBar = false;
 
     const fontWidth = this.getWidthForFont(font, state);
     const rowsPerPage = height / rowHeight;
@@ -1745,12 +1745,19 @@ export class GridMetricCalculator {
       row => {
         const modelRow = this.getModelRow(row, state);
         const text = model.textForCell(modelColumn, modelRow);
+        const cellRenderType = model.renderTypeForCell(modelColumn, modelRow);
+
         if (text) {
           const cellPadding = cellHorizontalPadding * 2;
           columnWidth = Math.max(
             columnWidth,
             text.length * fontWidth + cellPadding
           );
+        }
+
+        if (cellRenderType === 'dataBar') {
+          // columnWidth = Math.max(columnWidth, columnWidth + 90);
+          hasDataBar = true;
         }
       }
     );
@@ -1764,8 +1771,8 @@ export class GridMetricCalculator {
       cellHorizontalPadding * 2
     );
 
-    if (isDataBarGridModel(model)) {
-      return columnWidth + 90;
+    if (hasDataBar) {
+      columnWidth += 90;
     }
 
     return columnWidth;

@@ -5,7 +5,7 @@ import { VisibleIndex, Coordinate, BoxCoordinates } from './GridMetrics';
 import { GridRenderState } from './GridRendererTypes';
 import { GridColor } from './GridTheme';
 
-export type CellRendererType = 'text' | 'databar';
+export type CellRenderType = 'text' | 'dataBar';
 
 abstract class CellRenderer {
   abstract drawCellContent(
