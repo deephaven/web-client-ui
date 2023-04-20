@@ -111,3 +111,24 @@ describe('click', () => {
     expect(rightClickHandler.mock.calls[0][0].shiftKey).toBeTruthy();
   });
 });
+
+describe('createMockProxy', () => {
+  it('should proxy property access as jest.fn() unless explicitly set', () => {
+    const mock = TestUtils.createMockProxy<Record<string, unknown>>({
+      name: 'mock.name',
+    });
+
+    expect(mock.name).toEqual('mock.name');
+    expect(mock.propA).toBeInstanceOf(jest.fn().constructor);
+    expect(mock.propB).toBeInstanceOf(jest.fn().constructor);
+  });
+
+  it('should not interfere with `await` by not proxying `then` property', async () => {
+    const mock = TestUtils.createMockProxy<Record<string, unknown>>({});
+    expect(mock.then).toBeUndefined();
+
+    const result = await mock;
+
+    expect(result).toBe(mock);
+  });
+});

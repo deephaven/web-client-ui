@@ -5,13 +5,13 @@ import Log from '@deephaven/log';
 const log = Log.module('useTableListener');
 
 export const useTableListener = (
-  eventEmitter: Evented | undefined,
+  eventEmitter: Evented | undefined | null,
   eventName: string,
   callback: EventListener
 ): void =>
   useEffect(
     function initEventEmitter() {
-      if (eventEmitter === undefined) {
+      if (eventEmitter == null) {
         log.debug2('Emitter undefined, skipping addEventListener', eventName);
         return;
       }
