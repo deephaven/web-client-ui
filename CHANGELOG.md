@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.37.0](https://github.com/deephaven/web-client-ui/compare/v0.36.0...v0.37.0) (2023-04-20)
+
+### Bug Fixes
+
+- Fix OneClick links not filtering plots ([#1217](https://github.com/deephaven/web-client-ui/issues/1217)) ([9b20f9e](https://github.com/deephaven/web-client-ui/commit/9b20f9e8f3912959e32ae8d8d597ee584357ad70)), closes [#1198](https://github.com/deephaven/web-client-ui/issues/1198)
+
+### Features
+
+- **@deephaven/components:** Custom React Spectrum Provider ([#1211](https://github.com/deephaven/web-client-ui/issues/1211)) ([609c57e](https://github.com/deephaven/web-client-ui/commit/609c57ed38a4a905e52e1d3e2588d3e7079a1b81)), closes [#1210](https://github.com/deephaven/web-client-ui/issues/1210)
+- Added support for null in useTableListener ([#1227](https://github.com/deephaven/web-client-ui/issues/1227)) ([e485c86](https://github.com/deephaven/web-client-ui/commit/e485c868b6e82a0ff44a1e2682812a368d05eb7e)), closes [#1228](https://github.com/deephaven/web-client-ui/issues/1228)
+- Core authentication plugins ([#1180](https://github.com/deephaven/web-client-ui/issues/1180)) ([1624309](https://github.com/deephaven/web-client-ui/commit/16243090aae7e2731a0c43d09fa8b43e5dfff8fc)), closes [#1058](https://github.com/deephaven/web-client-ui/issues/1058)
+- DH-14630 useViewportData + supporting utils ([#1230](https://github.com/deephaven/web-client-ui/issues/1230)) ([2f9c020](https://github.com/deephaven/web-client-ui/commit/2f9c020bfcb1ae508e219759e216a5ef7a63162d)), closes [#1221](https://github.com/deephaven/web-client-ui/issues/1221)
+- Improve plugin load error handling ([#1214](https://github.com/deephaven/web-client-ui/issues/1214)) ([8ac7dc8](https://github.com/deephaven/web-client-ui/commit/8ac7dc826af579e129431b222524cb657b326099))
+- usePromiseFactory hook ([#1226](https://github.com/deephaven/web-client-ui/issues/1226)) ([f8c4ba3](https://github.com/deephaven/web-client-ui/commit/f8c4ba311b20958ab1b83c086fc94d9f61bf9ddd)), closes [#1221](https://github.com/deephaven/web-client-ui/issues/1221)
+
 # [0.36.0](https://github.com/deephaven/web-client-ui/compare/v0.35.0...v0.36.0) (2023-04-14)
 
 ### Bug Fixes
