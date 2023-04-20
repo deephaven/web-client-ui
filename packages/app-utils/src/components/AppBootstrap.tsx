@@ -1,7 +1,6 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import '@deephaven/components/scss/BaseStyleSheet.scss';
-import { LoadingOverlay } from '@deephaven/components';
-import FontBootstrap, { FontsLoadedContext } from './FontBootstrap';
+import FontBootstrap from './FontBootstrap';
 import ClientBootstrap from './ClientBootstrap';
 import PluginsBootstrap from './PluginsBootstrap';
 import AuthBootstrap from './AuthBootstrap';
@@ -37,7 +36,6 @@ export function AppBootstrap({
 }: AppBootstrapProps) {
   const serverUrl = getBaseUrl(apiUrl).origin;
   const clientOptions = getConnectOptions();
-  const isFontsLoaded = useContext(FontsLoadedContext);
   return (
     <FontBootstrap fontClassNames={fontClassNames}>
       <ClientBootstrap serverUrl={serverUrl} options={clientOptions}>

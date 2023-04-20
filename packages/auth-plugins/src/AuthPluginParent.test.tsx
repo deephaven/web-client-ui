@@ -15,9 +15,7 @@ function makeCoreClient() {
 }
 
 describe('availability tests', () => {
-  const client = makeCoreClient();
   const authHandlers = [];
-  const authConfigValues = new Map();
   it('is available when window opener is set', () => {
     window.opener = { postMessage: jest.fn() };
     window.history.pushState(
@@ -25,15 +23,11 @@ describe('availability tests', () => {
       'Test Title',
       `/test.html?authProvider=parent`
     );
-    expect(
-      AuthPluginParent.isAvailable(client, authHandlers, authConfigValues)
-    ).toBe(true);
+    expect(AuthPluginParent.isAvailable(authHandlers)).toBe(true);
   });
   it('is not available when window opener not set', () => {
     delete window.opener;
-    expect(
-      AuthPluginParent.isAvailable(client, authHandlers, authConfigValues)
-    ).toBe(false);
+    expect(AuthPluginParent.isAvailable(authHandlers)).toBe(false);
   });
 });
 

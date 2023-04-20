@@ -10,8 +10,6 @@ function makeCoreClient() {
 }
 
 describe('availability tests', () => {
-  const client = makeCoreClient();
-  const authConfigValues = new Map();
   it.each([
     [[AUTH_TYPE], true],
     [['another.type', AUTH_TYPE], true],
@@ -23,9 +21,7 @@ describe('availability tests', () => {
   ])(
     'returns availability based on auth handlers: %s',
     (authHandlers, result) => {
-      expect(
-        AuthPluginAnonymous.isAvailable(client, authHandlers, authConfigValues)
-      ).toBe(result);
+      expect(AuthPluginAnonymous.isAvailable(authHandlers)).toBe(result);
     }
   );
 });
