@@ -4,7 +4,6 @@ import {
   AuthPluginComponent,
   isAuthPlugin,
 } from '@deephaven/auth-plugins';
-import { CoreClient } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import RemoteComponent from './RemoteComponent';
 import loadRemoteModule from './loadRemoteModule';
@@ -138,7 +137,6 @@ export function getAuthHandlers(
  * @returns The auth plugin component to render
  */
 export function getAuthPluginComponent(
-  client: CoreClient,
   pluginMap: PluginModuleMap,
   authConfigValues: Map<string, string>,
   corePlugins?: Map<string, AuthPlugin>

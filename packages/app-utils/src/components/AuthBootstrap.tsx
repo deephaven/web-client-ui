@@ -68,13 +68,12 @@ export function AuthBootstrap({ children }: AuthBootstrapProps) {
       return undefined;
     }
 
-    return getAuthPluginComponent(
-      client,
-      plugins,
-      authConfig,
-      CORE_AUTH_PLUGINS
-    );
-  }, [authConfig, client, plugins]);
+    try {
+      return getAuthPluginComponent(plugins, authConfig, CORE_AUTH_PLUGINS);
+    } catch (e) {
+      setError(e);
+    }
+  }, [authConfig, plugins]);
 
   const handleLoginSuccess = useCallback(() => {
     setIsLoggedIn(true);

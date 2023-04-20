@@ -72,6 +72,7 @@ export function ConnectionBootstrap({ children }: ConnectionBootstrapProps) {
   if (connection == null || error != null) {
     return (
       <LoadingOverlay
+        data-testid="connection-bootstrap-loading"
         isLoading={connection == null}
         errorMessage={`${error}`}
       />

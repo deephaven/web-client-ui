@@ -11,7 +11,7 @@ export function FontsLoaded({ children }: FontsLoadedProps) {
   const isFontsLoaded = useContext(FontsLoadedContext);
 
   if (!isFontsLoaded) {
-    return <LoadingOverlay />;
+    return <LoadingOverlay data-testid="fonts-loaded-loading" />;
   }
 
   // eslint-disable-next-line react/jsx-no-useless-fragment

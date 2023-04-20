@@ -1,7 +1,10 @@
 import React from 'react';
 import { CoreClient } from '@deephaven/jsapi-types';
 
-/** Map from auth config keys to their values */
+/**
+ * Map from auth config keys to their values
+ * E.g. Map { AuthHandlers → "io.deephaven.auth.AnonymousAuthenticationHandler" }
+ */
 export type AuthConfigMap = Map<string, string>;
 
 /**
@@ -9,7 +12,7 @@ export type AuthConfigMap = Map<string, string>;
  */
 export type AuthPluginProps = {
   /** Map from config keys to their values */
-  authConfigValues: Map<string, string>;
+  authConfigValues: AuthConfigMap;
 
   /** Client to check auth configuration on */
   client: CoreClient;
