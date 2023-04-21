@@ -2,14 +2,6 @@
 /* eslint class-methods-use-this: "off" */
 /* eslint no-param-reassign: "off" */
 import {
-  dhSortDown,
-  dhSortUp,
-  vsTriangleDown,
-  vsTriangleRight,
-  vsLinkExternal,
-  IconDefinition,
-} from '@deephaven/icons';
-import {
   BoundedAxisRange,
   Coordinate,
   GridMetrics,
@@ -33,6 +25,7 @@ import { IrisGridThemeType } from './IrisGridTheme';
 import IrisGridModel from './IrisGridModel';
 import IrisGridTextCellRenderer from './IrisGridTextCellRenderer';
 import IrisGridDataBarCellRenderer from './IrisGridDataBarCellRenderer';
+import { getIcon } from './IrisGridIcons';
 
 const ICON_NAMES = Object.freeze({
   SORT_UP: 'sortUp',
@@ -43,7 +36,6 @@ const ICON_NAMES = Object.freeze({
 });
 
 const EXPAND_ICON_SIZE = 10;
-const ICON_SIZE = 16;
 
 export type IrisGridRenderState = GridRenderState & {
   model: IrisGridModel;
@@ -76,51 +68,15 @@ class IrisGridRenderer extends GridRenderer {
 
   protected dataBarCellRenderer = new IrisGridDataBarCellRenderer();
 
-  constructor() {
-    super();
-    this.icons = {};
-
-    this.initIcons();
-  }
-
-  icons: Record<string, Path2D>;
-
-  initIcons(): void {
-    this.setIcon(ICON_NAMES.SORT_UP, dhSortUp);
-    this.setIcon(ICON_NAMES.SORT_DOWN, dhSortDown);
-    this.setIcon(ICON_NAMES.CARET_DOWN, vsTriangleDown);
-    this.setIcon(ICON_NAMES.CARET_RIGHT, vsTriangleRight);
-    this.setIcon(ICON_NAMES.CELL_OVERFLOW, vsLinkExternal);
-  }
-
-  // Scales the icon to be square and match the global ICON_SIZE
-  setIcon(name: string, faIcon: IconDefinition): void {
-    const path = Array.isArray(faIcon.icon[4])
-      ? faIcon.icon[4][0]
-      : faIcon.icon[4];
-    const icon = new Path2D(path);
-    const scaledIcon = new Path2D();
-    const scaleMatrix = {
-      a: ICON_SIZE / faIcon.icon[0],
-      d: ICON_SIZE / faIcon.icon[1],
-    };
-    scaledIcon.addPath(icon, scaleMatrix);
-    this.icons[name] = scaledIcon;
-  }
-
-  getIcon(name: string): Path2D {
-    return this.icons[name];
-  }
-
   getSortIcon(sort: Sort | null): Path2D | null {
     if (!sort) {
       return null;
     }
     if (sort.direction === TableUtils.sortDirection.ascending) {
-      return this.getIcon(ICON_NAMES.SORT_UP);
+      return getIcon(ICON_NAMES.SORT_UP);
     }
     if (sort.direction === TableUtils.sortDirection.descending) {
-      return this.getIcon(ICON_NAMES.SORT_DOWN);
+      return getIcon(ICON_NAMES.SORT_DOWN);
     }
     return null;
   }
@@ -234,7 +190,7 @@ class IrisGridRenderer extends GridRenderer {
     } else if (overflowButtonColor != null) {
       context.fillStyle = overflowButtonColor;
     }
-    const icon = this.getIcon(ICON_NAMES.CELL_OVERFLOW);
+    const icon = getIcon(ICON_NAMES.CELL_OVERFLOW);
     if (buttonLeft != null && buttonTop != null) {
       context.translate(buttonLeft + cellHorizontalPadding, buttonTop + 2);
     }

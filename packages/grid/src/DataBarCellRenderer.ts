@@ -31,6 +31,8 @@ interface DataBarRenderMetrics {
   markerXs: number[];
 }
 class DataBarCellRenderer extends CellRenderer {
+  private heightOfDigits?: number;
+
   drawCellContent(
     context: CanvasRenderingContext2D,
     state: GridRenderState,
@@ -56,11 +58,7 @@ class DataBarCellRenderer extends CellRenderer {
     const rowY = getOrThrow(allRowYs, row);
     const textAlign = model.textAlignForCell(modelColumn, modelRow);
     const text = model.textForCell(modelColumn, modelRow);
-    const { x: textX, y: textY } = GridUtils.getTextRenderMetrics(
-      state,
-      column,
-      row
-    );
+    const { x: textX } = GridUtils.getTextRenderMetrics(state, column, row);
 
     const {
       columnMin,
@@ -90,6 +88,14 @@ class DataBarCellRenderer extends CellRenderer {
       dataBarWidth,
     } = this.getDataBarRenderMetrics(context, state, column, row);
 
+    if (this.heightOfDigits === undefined) {
+      const {
+        actualBoundingBoxAscent,
+        actualBoundingBoxDescent,
+      } = context.measureText('1234567890');
+      this.heightOfDigits = actualBoundingBoxAscent + actualBoundingBoxDescent;
+    }
+
     context.save();
     context.textAlign = textAlign;
     if (hasGradient) {
@@ -99,14 +105,15 @@ class DataBarCellRenderer extends CellRenderer {
     } else {
       context.fillStyle = dataBarColor;
     }
-    context.textBaseline = 'middle';
+    context.textBaseline = 'top';
     context.font = theme.font;
 
     if (valuePlacement !== 'hide') {
-      // The vertical alignment is off
-      // https://stackoverflow.com/a/63239887/20005358
-      const { actualBoundingBoxDescent } = context.measureText('H');
-      context.fillText(text, textX, textY + actualBoundingBoxDescent / 2);
+      context.fillText(
+        text,
+        textX,
+        rowY + (rowHeight - this.heightOfDigits) / 2
+      );
     }
 
     // Draw bar
@@ -142,7 +149,7 @@ class DataBarCellRenderer extends CellRenderer {
               gradientX,
               rowY + 1,
               partGradientWidth,
-              rowHeight - 2
+              rowHeight
             );
 
             gradientX += partGradientWidth;
@@ -164,7 +171,7 @@ class DataBarCellRenderer extends CellRenderer {
               gradientX,
               rowY + 1,
               partGradientWidth,
-              rowHeight - 2
+              rowHeight
             );
 
             gradientX += partGradientWidth;
@@ -241,8 +248,19 @@ class DataBarCellRenderer extends CellRenderer {
       context.fillRect(markerX, dataBarY, 1, rowHeight - 2);
     });
 
+    const shouldRenderDashedLine = !(
+      axis === 'directional' &&
+      ((valuePlacement === 'beside' &&
+        textAlign === 'right' &&
+        direction === 'LTR') ||
+        (valuePlacement === 'beside' &&
+          textAlign === 'left' &&
+          direction === 'RTL') ||
+        valuePlacement !== 'beside')
+    );
+
     // Draw dashed line
-    if (axis !== 'directional' || valuePlacement === 'beside') {
+    if (shouldRenderDashedLine) {
       context.strokeStyle = theme.zeroLineColor;
       context.beginPath();
       context.setLineDash([2, 1]);
@@ -457,9 +475,11 @@ class DataBarCellRenderer extends CellRenderer {
 
     // Offset all values by the actual x value and padding
     if (direction === 'LTR') {
-      zeroPosition += x + leftPadding;
-      dataBarX += x + leftPadding;
-      markerXs = markerXs.map(markerX => markerX + x + leftPadding);
+      zeroPosition += x + leftPadding + treeIndent;
+      dataBarX += x + leftPadding + treeIndent;
+      markerXs = markerXs.map(
+        markerX => markerX + x + leftPadding + treeIndent
+      );
 
       if (valuePlacement === 'beside' && textAlign === 'left') {
         zeroPosition += longestValueWidth + cellHorizontalPadding;
@@ -482,13 +502,13 @@ class DataBarCellRenderer extends CellRenderer {
       }
     }
 
-    leftmostPosition += x;
+    leftmostPosition += x + treeIndent;
     rightmostPosition += x;
 
     return {
       maxWidth,
       x: dataBarX,
-      y: y + 1,
+      y: y + 1.5,
       zeroPosition,
       leftmostPosition,
       rightmostPosition,

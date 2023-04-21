@@ -101,6 +101,7 @@ function DataBarExample() {
 
   // Both data bar and text
   data.push(columnData.slice());
+  data.push(columnData.slice());
   const [model] = useState(
     () =>
       new MockDataBarGridModel(

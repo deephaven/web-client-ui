@@ -1728,10 +1728,10 @@ export class GridMetricCalculator {
       rowHeaderWidth,
       rowFooterWidth,
       scrollBarSize,
+      dataBarHorizontalPadding,
     } = theme;
 
     let columnWidth = 0;
-    let hasDataBar = false;
 
     const fontWidth = this.getWidthForFont(font, state);
     const rowsPerPage = height / rowHeight;
@@ -1747,18 +1747,17 @@ export class GridMetricCalculator {
         const text = model.textForCell(modelColumn, modelRow);
         const cellRenderType = model.renderTypeForCell(modelColumn, modelRow);
 
+        let cellWidth = 0;
         if (text) {
           const cellPadding = cellHorizontalPadding * 2;
-          columnWidth = Math.max(
-            columnWidth,
-            text.length * fontWidth + cellPadding
-          );
+          cellWidth = text.length * fontWidth + cellPadding;
         }
 
         if (cellRenderType === 'dataBar') {
-          // columnWidth = Math.max(columnWidth, columnWidth + 90);
-          hasDataBar = true;
+          cellWidth += dataBarHorizontalPadding;
         }
+
+        columnWidth = Math.max(columnWidth, cellWidth);
       }
     );
 
@@ -1770,10 +1769,6 @@ export class GridMetricCalculator {
       ),
       cellHorizontalPadding * 2
     );
-
-    if (hasDataBar) {
-      columnWidth += 90;
-    }
 
     return columnWidth;
   }
