@@ -25,6 +25,7 @@ export default function useSetPaddedViewportCallback(
         viewportPadding,
         getSize(table)
       );
+
       table?.setViewport(first, last);
     },
     [table, viewportPadding, viewportSize]
