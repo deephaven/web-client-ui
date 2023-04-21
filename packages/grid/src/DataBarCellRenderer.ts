@@ -103,7 +103,10 @@ class DataBarCellRenderer extends CellRenderer {
     context.font = theme.font;
 
     if (valuePlacement !== 'hide') {
-      context.fillText(text, textX, textY);
+      // The vertical alignment is off
+      // https://stackoverflow.com/a/63239887/20005358
+      const { actualBoundingBoxDescent } = context.measureText('H');
+      context.fillText(text, textX, textY + actualBoundingBoxDescent / 2);
     }
 
     // Draw bar

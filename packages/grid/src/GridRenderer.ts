@@ -5,7 +5,7 @@ import GridUtils from './GridUtils';
 import GridColorUtils from './GridColorUtils';
 import { isExpandableGridModel } from './ExpandableGridModel';
 import { GridColor, GridColorWay, NullableGridColor } from './GridTheme';
-import { BoxCoordinates, Coordinate, VisibleIndex } from './GridMetrics';
+import { Coordinate, VisibleIndex } from './GridMetrics';
 import { isEditableGridModel } from './EditableGridModel';
 import GridColumnSeparatorMouseHandler from './mouse-handlers/GridColumnSeparatorMouseHandler';
 import { BoundedAxisRange } from './GridAxisRange';
