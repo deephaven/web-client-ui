@@ -6,6 +6,7 @@ import {
   generateEmptyKeyedItems,
   getSize,
 } from '@deephaven/jsapi-utils';
+import { usePrevious } from '@deephaven/react-hooks';
 
 /**
  * Initializes a ListData instance that can be used for windowed views of a
@@ -24,23 +25,37 @@ export default function useInitializeViewportData<T>(
 ): ListData<KeyedItem<T>> {
   const viewportData = useListData<KeyedItem<T>>({});
 
+  const prevTable = usePrevious(table);
+
+  // If the table changes size, we need to re-initialize it.
+  const size = Math.max(0, getSize(table));
+
   // We only want this to fire 1x once the table exists. Note that `useListData`
   // has no way to respond to a reference change of the `table` instance so we
   // have to manually delete any previous keyed items from the list.
   useEffect(() => {
+    // If our table instance has changed, we want to clear all items from state
+    if (table !== prevTable && viewportData.items.length) {
+      viewportData.remove(...viewportData.items.map(({ key }) => key));
+    }
+
     if (!table) {
       return;
     }
 
-    if (viewportData.items.length) {
-      viewportData.remove(...viewportData.items.map(({ key }) => key));
+    if (size > viewportData.items.length) {
+      viewportData.insert(
+        viewportData.items.length,
+        ...generateEmptyKeyedItems<T>(viewportData.items.length, size - 1)
+      );
+    } else if (size < viewportData.items.length) {
+      const keys = viewportData.items.slice(size).map(({ key }) => key);
+      viewportData.remove(...keys);
     }
-
-    viewportData.insert(0, ...generateEmptyKeyedItems<T>(getSize(table)));
 
     // Intentionally excluding viewportData since it changes on every render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [table]);
+  }, [size, table]);
 
   return viewportData;
 }
