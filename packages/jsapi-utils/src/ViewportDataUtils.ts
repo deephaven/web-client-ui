@@ -106,6 +106,19 @@ export function* generateEmptyKeyedItems<T>(
 }
 
 /**
+ * Get items from a given ListData by a list of keys.
+ * @param listData ListData to get items from
+ * @param keys Keys to items to be retrieved
+ * @returns An array of items matching the given keys
+ */
+export function getItems<T>(
+  listData: ListData<KeyedItem<T>>,
+  ...keys: string[]
+): KeyedItem<T>[] {
+  return keys.map(key => listData.getItem(key));
+}
+
+/**
  * Check a Table to see if it is closed before checking its size property. This
  * is important because calling Table.size on a closed table throws an error. If
  * the table is null or closed, return zero. Otherwise, return the current size.
