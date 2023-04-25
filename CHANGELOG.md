@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.37.1](https://github.com/deephaven/web-client-ui/compare/v0.37.0...v0.37.1) (2023-04-25)
+
+### Bug Fixes
+
+- Fixed dependency mapping ([#1247](https://github.com/deephaven/web-client-ui/issues/1247)) ([1e250a9](https://github.com/deephaven/web-client-ui/commit/1e250a9d096e03c77915495f277dabd717695319)), closes [#1246](https://github.com/deephaven/web-client-ui/issues/1246)
+
 # [0.37.0](https://github.com/deephaven/web-client-ui/compare/v0.36.0...v0.37.0) (2023-04-20)
 
 ### Bug Fixes
