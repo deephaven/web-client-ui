@@ -8,6 +8,7 @@ import Log from '@deephaven/log';
 import dh from '@deephaven/jsapi-shim';
 import {
   Column,
+  CustomColumn,
   FilterCondition,
   FilterValue,
   LongWrapper,
@@ -86,6 +87,43 @@ export class TableUtils {
 
   // Regex looking for a negative or positive integer or decimal number
   static NUMBER_REGEX = /^-?\d+(\.\d+)?$/;
+
+  /**
+   * Apply custom columns to a given table. Return a Promise that resolves with
+   * the table once the dh.Table.EVENT_CUSTOMCOLUMNSCHANGED event has fired.
+   * @param table The table to apply custom columns to.
+   * @param columns The list of column expressions or definitions to apply.
+   * @returns A Promise that will be resolved with the given table after the
+   * columns are applied.
+   */
+  static applyCustomColumns = async (
+    table: Table | null,
+    columns: (string | CustomColumn)[]
+  ): Promise<Table | null> => {
+    if (table == null) {
+      return null;
+    }
+
+    return new Promise(resolve => {
+      function handleColumnsChanged() {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        table!.removeEventListener(
+          dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
+          handleColumnsChanged
+        );
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        resolve(table!);
+      }
+
+      table.addEventListener(
+        dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
+        handleColumnsChanged
+      );
+
+      table.applyCustomColumns(columns);
+    });
+  };
 
   static getSortIndex(
     sort: readonly Sort[],
