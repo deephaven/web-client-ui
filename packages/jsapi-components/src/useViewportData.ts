@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { ListData } from '@react-stately/data';
 import { Table, TreeTable } from '@deephaven/jsapi-types';
 import {
@@ -25,6 +25,8 @@ export interface UseViewportDataResult<T> {
   viewportData: ListData<KeyedItem<T>>;
   /** Size of the underlying Table */
   size: number;
+  /** Apply filters and refresh viewport. */
+  applyFiltersAndRefresh: (filters: FilterCondition[]) => void;
   /** Set the viewport of the Table */
   setViewport: (firstRow: number) => void;
 }
@@ -56,6 +58,14 @@ export default function useViewportData<T>({
     viewportPadding
   );
 
+  const applyFiltersAndRefresh = useCallback(
+    (filters: FilterCondition[]) => {
+      table?.applyFilter(filters);
+      setViewport(0);
+    },
+    [setViewport, table]
+  );
+
   useTableListener(
     table,
     dh.Table.EVENT_UPDATED,
@@ -75,6 +85,7 @@ export default function useViewportData<T>({
   return {
     viewportData,
     size: getSize(table),
+    applyFiltersAndRefresh,
     setViewport,
   };
 }
