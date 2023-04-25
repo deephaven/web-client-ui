@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.37.3](https://github.com/deephaven/web-client-ui/compare/v0.37.2...v0.37.3) (2023-04-25)
+
+### Bug Fixes
+
+- Move @deephaven/redux to be a dependency instead ([#1249](https://github.com/deephaven/web-client-ui/issues/1249)) ([3f24e11](https://github.com/deephaven/web-client-ui/commit/3f24e110ca08c5afa7e39d58d0171f2ce4999404))
+
 ## [0.37.2](https://github.com/deephaven/web-client-ui/compare/v0.37.1...v0.37.2) (2023-04-25)
 
 **Note:** Version bump only for package @deephaven/dashboard
