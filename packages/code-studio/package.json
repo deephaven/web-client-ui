@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/code-studio",
-  "version": "0.36.0",
+  "version": "0.37.1",
   "description": "Deephaven Code Studio",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -11,6 +11,8 @@
     "directory": "packages/code-studio"
   },
   "dependencies": {
+    "@deephaven/app-utils": "file:../app-utils",
+    "@deephaven/auth-plugins": "file:../auth-plugins",
     "@deephaven/chart": "file:../chart",
     "@deephaven/components": "file:../components",
     "@deephaven/console": "file:../console",
@@ -23,6 +25,7 @@
     "@deephaven/icons": "file:../icons",
     "@deephaven/iris-grid": "file:../iris-grid",
     "@deephaven/jsapi-bootstrap": "file:../jsapi-bootstrap",
+    "@deephaven/jsapi-components": "file:../jsapi-components",
     "@deephaven/jsapi-shim": "file:../jsapi-shim",
     "@deephaven/jsapi-types": "file:../jsapi-types",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
@@ -34,11 +37,8 @@
     "@deephaven/utils": "file:../utils",
     "@fortawesome/fontawesome-svg-core": "^6.2.1",
     "@fortawesome/react-fontawesome": "^0.2.0",
-    "@paciolan/remote-component": "2.7.2",
-    "@paciolan/remote-module-loader": "^3.0.2",
     "classnames": "^2.3.1",
     "event-target-shim": "^6.0.2",
-    "fira": "mozilla/fira#4.202",
     "jszip": "3.2.2",
     "lodash.debounce": "^4.0.8",
     "lodash.throttle": "^4.1.1",

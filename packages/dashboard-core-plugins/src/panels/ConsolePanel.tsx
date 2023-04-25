@@ -12,6 +12,7 @@ import {
 } from '@deephaven/console';
 import { PanelEvent } from '@deephaven/dashboard';
 import { IdeSession, VariableDefinition } from '@deephaven/jsapi-shim';
+import { SessionWrapper } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
   getCommandHistoryStorage,
@@ -23,7 +24,7 @@ import { assertNotNull } from '@deephaven/utils';
 import type { JSZipObject } from 'jszip';
 import { ConsoleEvent } from '../events';
 import Panel from './Panel';
-import { getDashboardSessionWrapper, SessionWrapper } from '../redux';
+import { getDashboardSessionWrapper } from '../redux';
 import './ConsolePanel.scss';
 
 const log = Log.module('ConsolePanel');

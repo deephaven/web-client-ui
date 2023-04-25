@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useConnection } from '@deephaven/app-utils';
 import { ContextMenuRoot, LoadingOverlay } from '@deephaven/components'; // Use the loading spinner from the Deephaven components package
 import {
   InputFilter,
@@ -67,6 +68,7 @@ async function loadTable(
  * See create-react-app docs for how to update these env vars: https://create-react-app.dev/docs/adding-custom-environment-variables/
  */
 function App(): JSX.Element {
+  const connection = useConnection();
   const [model, setModel] = useState<IrisGridModel>();
   const [error, setError] = useState<string>();
   const [inputFilters, setInputFilters] = useState<InputFilter[]>();
@@ -85,34 +87,16 @@ function App(): JSX.Element {
         try {
           // Get the table name from the query param `name`.
           const name = searchParams.get('name');
-
           if (name == null) {
             throw new Error('No name param provided');
           }
-
-          // Connect to the Web API server
-          const baseUrl = new URL(
-            import.meta.env.VITE_CORE_API_URL ?? '',
-            `${window.location}`
-          );
-
-          const websocketUrl = `${baseUrl.protocol}//${baseUrl.host}`;
-
-          log.debug(`Starting connection...`);
-          const connection = new dh.IdeConnection(websocketUrl);
-
           log.debug('Loading table', name, '...');
-
           // Load the table up.
           const table = await loadTable(connection, name);
-
           // Create the `IrisGridModel` for use with the `IrisGrid` component
           log.debug(`Creating model...`);
-
           const newModel = await IrisGridModelFactory.makeModel(table);
-
           setModel(newModel);
-
           log.debug('Table successfully loaded!');
         } catch (e: unknown) {
           log.error('Unable to load table', e);
@@ -122,7 +106,7 @@ function App(): JSX.Element {
       }
       initApp();
     },
-    [searchParams]
+    [connection, searchParams]
   );
 
   useEffect(

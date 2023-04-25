@@ -18,6 +18,7 @@ module.exports = {
       __dirname,
       './__mocks__/fileMock.js'
     ),
+    '^fira$': 'identity-obj-proxy',
     '^monaco-editor$': path.join(
       __dirname,
       'node_modules',

@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => {
   // Vite does not have a "any unknown fallback to proxy" like CRA
   // It is possible to add one with a custom middleware though if this list grows
   if (env.VITE_PROXY_URL) {
-    [env.VITE_CORE_API_URL].forEach(p => {
+    [env.VITE_CORE_API_URL, env.VITE_MODULE_PLUGINS_URL].forEach(p => {
       proxy[p] = {
         target: env.VITE_PROXY_URL,
         changeOrigin: true,

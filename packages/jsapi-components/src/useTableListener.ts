@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Evented, EventListener } from '@deephaven/jsapi-shim';
+import { Evented, EventListener } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 
 const log = Log.module('useTableListener');

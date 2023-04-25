@@ -60,7 +60,6 @@ import {
   PandasPanelProps,
   IrisGridPanelProps,
   ColumnSelectionValidator,
-  SessionConfig,
   getDashboardConnection,
 } from '@deephaven/dashboard-core-plugins';
 import {
@@ -75,7 +74,9 @@ import dh, {
   VariableDefinition,
   VariableTypeUnion,
 } from '@deephaven/jsapi-shim';
+import { SessionConfig } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
+import { getBaseUrl, loadComponentPlugin } from '@deephaven/app-utils';
 import {
   getActiveTool,
   getWorkspace,
@@ -84,11 +85,11 @@ import {
   updateWorkspaceData as updateWorkspaceDataAction,
   getPlugins,
   Workspace,
-  DeephavenPluginModuleMap,
   WorkspaceData,
   RootState,
   UserPermissions,
   ServerConfigValues,
+  DeephavenPluginModuleMap,
 } from '@deephaven/redux';
 import { PromiseUtils } from '@deephaven/utils';
 import GoldenLayout from '@deephaven/golden-layout';
@@ -108,7 +109,6 @@ import {
 import EmptyDashboard from './EmptyDashboard';
 import UserLayoutUtils from './UserLayoutUtils';
 import DownloadServiceWorkerUtils from '../DownloadServiceWorkerUtils';
-import { PluginUtils } from '../plugins';
 import LayoutStorage from '../storage/LayoutStorage';
 
 const log = Log.module('AppMainContainer');
@@ -660,8 +660,8 @@ export class AppMainContainer extends Component<
         TablePlugin: ForwardRefExoticComponent<React.RefAttributes<unknown>>;
       }).TablePlugin;
     }
-
-    return PluginUtils.loadComponentPlugin(pluginName);
+    const baseURL = getBaseUrl(import.meta.env.VITE_COMPONENT_PLUGINS_URL);
+    return loadComponentPlugin(baseURL, pluginName);
   }
 
   startListeningForDisconnect() {
@@ -918,10 +918,7 @@ export class AppMainContainer extends Component<
           <ConsolePlugin
             hydrateConsole={AppMainContainer.hydrateConsole}
             notebooksUrl={
-              new URL(
-                `${import.meta.env.VITE_NOTEBOOKS_URL}/`,
-                `${window.location}`
-              ).href
+              getBaseUrl(`${import.meta.env.VITE_NOTEBOOKS_URL}/`).href
             }
           />
           <FilterPlugin />

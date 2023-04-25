@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/dashboard",
-  "version": "0.36.0",
+  "version": "0.37.0",
   "description": "Deephaven Dashboard",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -26,7 +26,6 @@
     "@deephaven/golden-layout": "file:../golden-layout",
     "@deephaven/log": "file:../log",
     "@deephaven/react-hooks": "file:../react-hooks",
-    "@deephaven/redux": "file:../redux",
     "@deephaven/utils": "file:../utils",
     "deep-equal": "^2.0.5",
     "lodash.ismatch": "^4.1.1",
@@ -35,12 +34,14 @@
     "shortid": "^2.2.16"
   },
   "peerDependencies": {
+    "@deephaven/redux": "file:../redux",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
     "react-redux": "^7.2.4"
   },
   "devDependencies": {
     "@deephaven/mocks": "file:../mocks",
+    "@deephaven/redux": "file:../redux",
     "@deephaven/tsconfig": "file:../tsconfig",
     "@types/lodash.ismatch": "^4.4.0"
   },

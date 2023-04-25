@@ -1,30 +1,14 @@
 import deepEqual from 'deep-equal';
-import { updateDashboardData } from '@deephaven/dashboard';
 import { ThunkAction } from 'redux-thunk';
+import { updateDashboardData } from '@deephaven/dashboard';
+import { SessionWrapper } from '@deephaven/jsapi-utils';
 import { RootState } from '@deephaven/redux';
 import { Action } from 'redux';
-import { IdeConnection, IdeSession } from '@deephaven/jsapi-shim';
+import { IdeConnection } from '@deephaven/jsapi-shim';
 import { getLinksForDashboard } from './selectors';
 import { FilterSet } from '../panels';
 import { Link } from '../linker/LinkerUtils';
 import { ColumnSelectionValidator } from '../linker/ColumnSelectionValidator';
-
-export interface SessionConfig {
-  type: string;
-  id: string;
-}
-
-export interface SessionDetails {
-  workerName?: string;
-  processInfoId?: string;
-}
-
-export interface SessionWrapper {
-  session: IdeSession;
-  connection: IdeConnection;
-  config: SessionConfig;
-  details?: SessionDetails;
-}
 
 /**
  * Set the connection for the dashboard specified

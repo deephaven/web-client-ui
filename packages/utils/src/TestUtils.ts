@@ -143,6 +143,42 @@ class TestUtils {
     }
     await user.keyboard('{/Shift}');
   }
+
+  /**
+   * Creates a mock object for a type `T` using a Proxy object. Each prop can
+   * optionally be set via the constructor. Any prop that is not set will be set
+   * to a jest.fn() instance on first access with the exeption of "then" which
+   * will not be automatically proxied.
+   * @param props Optional props to set on the Proxy.
+   * @returns
+   */
+  static createMockProxy<T>(props: Partial<T> = {}): T {
+    return new Proxy(
+      {
+        props: {
+          // Disable auto proxying of `then` to avoid issues with `await`
+          // treating the object as a thenable.
+          then: undefined,
+          ...props,
+        },
+        proxies: {} as Record<keyof T, jest.Mock>,
+      },
+      {
+        get(target, name) {
+          if (name in target.props) {
+            return target.props[name as keyof T];
+          }
+
+          if (target.proxies[name as keyof T] == null) {
+            // eslint-disable-next-line no-param-reassign
+            target.proxies[name as keyof T] = jest.fn();
+          }
+
+          return target.proxies[name as keyof T];
+        },
+      }
+    ) as T;
+  }
 }
 
 export default TestUtils;
