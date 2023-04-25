@@ -28,7 +28,7 @@
     "@deephaven/jsapi-types": "file:../jsapi-types",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
-    "@deephaven/react-hooks": "file:../log",
+    "@deephaven/react-hooks": "file:../react-hooks",
     "@deephaven/utils": "file:../utils",
     "@react-stately/data": "^3.9.1",
     "classnames": "^2.3.2",
