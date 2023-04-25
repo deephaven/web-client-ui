@@ -92,13 +92,15 @@ export function defaultRowDeserializer<T>(
  * each row in the backing table (even if these rows haven't been loaded yet).
  * This is needed internally by react-spectrum so it can calculate the content
  * area size. This generator can create a range of empty `KeyedItem` objects.
- * @param count The number of items to generate
+ * @param start The starting index to generate
+ * @param end The ending index to generate
  */
 export function* generateEmptyKeyedItems<T>(
-  count: number
+  start: number,
+  end: number
 ): Generator<KeyedItem<T>, void, unknown> {
   // eslint-disable-next-line no-plusplus
-  for (let i = 0; i < count; ++i) {
+  for (let i = start; i <= end; ++i) {
     yield { key: String(i) };
   }
 }
