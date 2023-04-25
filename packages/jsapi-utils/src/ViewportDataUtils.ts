@@ -10,6 +10,7 @@ export interface KeyedItem<T> {
 
 export type OnTableUpdatedEvent = CustomEvent<{
   offset: number;
+  columns: Column[];
   rows: ViewportRow[];
 }>;
 
@@ -35,13 +36,11 @@ export function createKeyFromOffsetRow(row: ViewportRow, offset: number) {
  * Creates a handler function for a `dh.Table.EVENT_UPDATED` event. Rows that
  * get passed to the handler will be added to or updated in the given
  * `viewportData` object.
- * @param table DH table instance.
  * @param viewportData State object for managing a list of KeyedItem data.
  * @param deserializeRow Converts a DH Row to an item object.
  * @returns Handler function for a `dh.Table.EVENT_UPDATED` event.
  */
 export function createOnTableUpdatedHandler<T>(
-  table: Table | TreeTable | null,
   viewportData: ListData<KeyedItem<T>>,
   deserializeRow: RowDeserializer<T>
 ): (event: OnTableUpdatedEvent) => void {
@@ -49,16 +48,12 @@ export function createOnTableUpdatedHandler<T>(
    * Handler for a `dh.Table.EVENT_UPDATED` event.
    */
   return function onTableUpdated(event: OnTableUpdatedEvent) {
-    if (table == null) {
-      return;
-    }
-
-    const { offset, rows } = event.detail;
+    const { columns, offset, rows } = event.detail;
 
     log.debug('table updated', event.detail);
 
     rows.forEach(row => {
-      const item = deserializeRow(row, table.columns);
+      const item = deserializeRow(row, columns);
 
       const keyedItem = {
         key: createKeyFromOffsetRow(row, offset),

@@ -59,8 +59,10 @@ export default function useViewportData<T>({
   useTableListener(
     table,
     dh.Table.EVENT_UPDATED,
-    createOnTableUpdatedHandler(table, viewportData, deserializeRow)
+    createOnTableUpdatedHandler(viewportData, deserializeRow)
   );
+
+  const size = getSize(table);
 
   useEffect(() => {
     if (table && !isClosed(table)) {
@@ -68,7 +70,7 @@ export default function useViewportData<T>({
       // 0 to the end of the viewport + padding.
       setViewport(0);
     }
-  }, [table, setViewport]);
+  }, [table, setViewport, size]);
 
   return {
     viewportData,
