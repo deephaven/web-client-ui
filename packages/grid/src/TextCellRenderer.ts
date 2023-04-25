@@ -3,8 +3,7 @@ import { EMPTY_ARRAY, getOrThrow } from '@deephaven/utils';
 import CellRenderer from './CellRenderer';
 import { isExpandableGridModel } from './ExpandableGridModel';
 import { VisibleIndex } from './GridMetrics';
-import GridRenderer from './GridRenderer';
-import { GridRenderState } from './GridRendererTypes';
+import { DEFAULT_FONT_WIDTH, GridRenderState } from './GridRendererTypes';
 import GridUtils, { TokenBox, Token } from './GridUtils';
 import memoizeClear from './memoizeClear';
 import TokenBoxCellRenderer from './TokenBoxCellRenderer';
@@ -48,8 +47,7 @@ class TextCellRenderer extends CellRenderer implements TokenBoxCellRenderer {
         y: textY,
       } = GridUtils.getTextRenderMetrics(state, column, row);
 
-      const fontWidth =
-        fontWidths.get(context.font) ?? GridRenderer.DEFAULT_FONT_WIDTH;
+      const fontWidth = fontWidths.get(context.font) ?? DEFAULT_FONT_WIDTH;
       const truncatedText = this.getCachedTruncatedString(
         context,
         text,
@@ -148,8 +146,7 @@ class TextCellRenderer extends CellRenderer implements TokenBoxCellRenderer {
     context.save();
     this.configureContext(context, state);
 
-    const fontWidth =
-      fontWidths?.get(context.font) ?? GridRenderer.DEFAULT_FONT_WIDTH;
+    const fontWidth = fontWidths?.get(context.font) ?? DEFAULT_FONT_WIDTH;
     const truncationChar = model.truncationCharForCell(modelColumn, modelRow);
     const truncatedText = this.getCachedTruncatedString(
       context,
@@ -206,24 +203,6 @@ class TextCellRenderer extends CellRenderer implements TokenBoxCellRenderer {
     context.textBaseline = 'middle';
     context.lineCap = 'butt';
   }
-
-  getCachedTruncatedString = memoizeClear(
-    (
-      context: CanvasRenderingContext2D,
-      text: string,
-      width: number,
-      fontWidth: number,
-      truncationChar?: string
-    ): string =>
-      GridRenderer.truncateToWidth(
-        context,
-        text,
-        width,
-        fontWidth,
-        truncationChar
-      ),
-    { max: 10000 }
-  );
 
   /**
    * Returns an array of token boxes with the coordinates relative to the top left corner of the text

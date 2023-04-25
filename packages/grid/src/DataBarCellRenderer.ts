@@ -7,7 +7,7 @@ import { ModelIndex, VisibleIndex, VisibleToModelMap } from './GridMetrics';
 import GridColorUtils, { Oklab } from './GridColorUtils';
 import GridUtils from './GridUtils';
 import memoizeClear from './memoizeClear';
-import { GridRenderState } from './GridRendererTypes';
+import { DEFAULT_FONT_WIDTH, GridRenderState } from './GridRendererTypes';
 import GridModel from './GridModel';
 
 interface DataBarRenderMetrics {
@@ -49,6 +49,7 @@ class DataBarCellRenderer extends CellRenderer {
       allRowHeights,
       allRowYs,
       firstColumn,
+      fontWidths,
     } = metrics;
 
     const isFirstColumn = column === firstColumn;
@@ -58,7 +59,21 @@ class DataBarCellRenderer extends CellRenderer {
     const rowY = getOrThrow(allRowYs, row);
     const textAlign = model.textAlignForCell(modelColumn, modelRow);
     const text = model.textForCell(modelColumn, modelRow);
-    const { x: textX } = GridUtils.getTextRenderMetrics(state, column, row);
+    const { x: textX, width: textWidth } = GridUtils.getTextRenderMetrics(
+      state,
+      column,
+      row
+    );
+
+    const fontWidth = fontWidths?.get(context.font) ?? DEFAULT_FONT_WIDTH;
+    const truncationChar = model.truncationCharForCell(modelColumn, modelRow);
+    const truncatedText = this.getCachedTruncatedString(
+      context,
+      text,
+      textWidth,
+      fontWidth,
+      truncationChar
+    );
 
     const {
       columnMin,
@@ -110,7 +125,7 @@ class DataBarCellRenderer extends CellRenderer {
 
     if (valuePlacement !== 'hide') {
       context.fillText(
-        text,
+        truncatedText,
         textX,
         rowY + (rowHeight - this.heightOfDigits) / 2
       );
@@ -243,10 +258,12 @@ class DataBarCellRenderer extends CellRenderer {
     }
 
     // Draw markers
-    markerXs.forEach((markerX, index) => {
-      context.fillStyle = markers[index].color;
-      context.fillRect(markerX, dataBarY, 1, rowHeight - 2);
-    });
+    if (maxWidth > 0) {
+      markerXs.forEach((markerX, index) => {
+        context.fillStyle = markers[index].color;
+        context.fillRect(markerX, dataBarY, 1, rowHeight - 2);
+      });
+    }
 
     const shouldRenderDashedLine = !(
       axis === 'directional' &&
@@ -359,11 +376,17 @@ class DataBarCellRenderer extends CellRenderer {
       maxWidth = maxWidth - cellHorizontalPadding - longestValueWidth;
     }
 
+    if (maxWidth < 0) {
+      maxWidth = 0;
+    }
+
     const columnLongest = Math.max(Math.abs(columnMin), Math.abs(columnMax));
     // If axis is proportional, totalValueRange is proportional to maxWidth
     let dataBarWidth = (Math.abs(value) / totalValueRange) * maxWidth;
 
-    if (axis === 'middle') {
+    if (maxWidth === 0) {
+      dataBarWidth = 0;
+    } else if (axis === 'middle') {
       // The longest bar is proportional to half of the maxWidth
       dataBarWidth = (Math.abs(value) / columnLongest) * (maxWidth / 2);
     } else if (axis === 'directional') {

@@ -9,7 +9,7 @@ import { Coordinate, VisibleIndex } from './GridMetrics';
 import { isEditableGridModel } from './EditableGridModel';
 import GridColumnSeparatorMouseHandler from './mouse-handlers/GridColumnSeparatorMouseHandler';
 import { BoundedAxisRange } from './GridAxisRange';
-import { GridRenderState } from './GridRendererTypes';
+import { DEFAULT_FONT_WIDTH, GridRenderState } from './GridRendererTypes';
 import CellRenderer, { CellRenderType } from './CellRenderer';
 import DataBarCellRenderer from './DataBarCellRenderer';
 import TextCellRenderer from './TextCellRenderer';
@@ -27,9 +27,6 @@ type NoneNullRowRange = { startRow: number; endRow: number };
  * your own methods to customize drawing of the grid (eg. Draw icons or special features)
  */
 export class GridRenderer {
-  // Default font width in pixels if it cannot be retrieved from the context
-  static DEFAULT_FONT_WIDTH = 10;
-
   // Default radius in pixels for corners for some elements (like the active cell)
   static DEFAULT_EDGE_RADIUS = 2;
 
@@ -125,7 +122,7 @@ export class GridRenderer {
     context: CanvasRenderingContext2D,
     str: string,
     width: number,
-    fontWidth = GridRenderer.DEFAULT_FONT_WIDTH,
+    fontWidth = DEFAULT_FONT_WIDTH,
     truncationChar?: string
   ): string {
     if (width <= 0 || str.length <= 0) {
@@ -1540,8 +1537,7 @@ export class GridRenderer {
       white,
     } = theme;
     const { fontWidths, width } = metrics;
-    const fontWidth =
-      fontWidths.get(context.font) ?? GridRenderer.DEFAULT_FONT_WIDTH;
+    const fontWidth = fontWidths.get(context.font) ?? DEFAULT_FONT_WIDTH;
 
     const maxWidth = columnWidth - headerHorizontalPadding * 2;
     const maxLength = maxWidth / fontWidth;

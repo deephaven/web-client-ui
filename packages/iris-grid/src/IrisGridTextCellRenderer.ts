@@ -2,6 +2,7 @@
 import {
   BoxCoordinates,
   Coordinate,
+  DEFAULT_FONT_WIDTH,
   getOrThrow,
   GridMetrics,
   GridThemeType,
@@ -10,7 +11,7 @@ import {
   VisibleIndex,
 } from '@deephaven/grid';
 import { TableUtils } from '@deephaven/jsapi-utils';
-import IrisGridRenderer, { IrisGridRenderState } from './IrisGridRenderer';
+import { IrisGridRenderState } from './IrisGridRenderer';
 import { ICON_SIZE, getIcon } from './IrisGridIcons';
 
 class IrisGridTextCellRenderer extends TextCellRenderer {
@@ -148,8 +149,7 @@ class IrisGridTextCellRenderer extends TextCellRenderer {
       column,
       row
     );
-    const fontWidth =
-      metrics.fontWidths.get(theme.font) ?? IrisGridRenderer.DEFAULT_FONT_WIDTH;
+    const fontWidth = metrics.fontWidths.get(theme.font) ?? DEFAULT_FONT_WIDTH;
 
     context.save();
     context.font = theme.font;

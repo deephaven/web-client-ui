@@ -2,8 +2,10 @@
 import { getOrThrow } from '@deephaven/utils';
 import { isExpandableGridModel } from './ExpandableGridModel';
 import { VisibleIndex, Coordinate, BoxCoordinates } from './GridMetrics';
+import GridRenderer from './GridRenderer';
 import { GridRenderState } from './GridRendererTypes';
 import { GridColor } from './GridTheme';
+import memoizeClear from './memoizeClear';
 
 export type CellRenderType = 'text' | 'dataBar';
 
@@ -79,6 +81,24 @@ abstract class CellRenderer {
     context.textAlign = 'center';
     context.fillText(markerText, textX, textY);
   }
+
+  getCachedTruncatedString = memoizeClear(
+    (
+      context: CanvasRenderingContext2D,
+      text: string,
+      width: number,
+      fontWidth: number,
+      truncationChar?: string
+    ): string =>
+      GridRenderer.truncateToWidth(
+        context,
+        text,
+        width,
+        fontWidth,
+        truncationChar
+      ),
+    { max: 10000 }
+  );
 }
 
 export default CellRenderer;

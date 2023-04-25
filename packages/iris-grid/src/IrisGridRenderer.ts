@@ -4,6 +4,7 @@
 import {
   BoundedAxisRange,
   Coordinate,
+  DEFAULT_FONT_WIDTH,
   GridMetrics,
   GridRangeIndex,
   GridRenderer,
@@ -500,8 +501,7 @@ class IrisGridRenderer extends GridRenderer {
       return;
     }
 
-    const fontWidth =
-      fontWidths.get(context.font) ?? GridRenderer.DEFAULT_FONT_WIDTH;
+    const fontWidth = fontWidths.get(context.font) ?? DEFAULT_FONT_WIDTH;
     assertNotNull(fontWidth);
     const textWidth = text.length * fontWidth;
     const textRight = gridX + columnX + textWidth + headerHorizontalPadding;
