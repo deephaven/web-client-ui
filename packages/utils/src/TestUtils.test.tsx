@@ -4,6 +4,10 @@ import userEvent from '@testing-library/user-event';
 
 import TestUtils from './TestUtils';
 
+beforeEach(() => {
+  jest.clearAllMocks();
+});
+
 describe('makeMockContext', () => {
   it('should make a MockContext object', () => {
     const mockContext = TestUtils.makeMockContext();
@@ -131,4 +135,37 @@ describe('createMockProxy', () => {
 
     expect(result).toBe(mock);
   });
+});
+
+describe('extractCallArgs', () => {
+  const fn = (a: string, b: string) => a.length + b.length;
+  const mockFn = jest.fn(fn);
+
+  it('should return null if no calls have been made', () => {
+    const args = TestUtils.extractCallArgs(mockFn, 0);
+    expect(args).toBeNull();
+  });
+
+  it('should return null if not given a mock fn', () => {
+    fn('john', 'doe');
+    const args = TestUtils.extractCallArgs(fn, 0);
+    expect(args).toBeNull();
+  });
+
+  it.each([
+    [0, ['aaa', '111']],
+    [1, ['bbb', '222']],
+    [2, ['ccc', '333']],
+    [3, null],
+  ] as const)(
+    'should return call args if index in range',
+    (callIndex, expected) => {
+      mockFn('aaa', '111');
+      mockFn('bbb', '222');
+      mockFn('ccc', '333');
+
+      const args = TestUtils.extractCallArgs(mockFn, callIndex);
+      expect(args).toEqual(expected);
+    }
+  );
 });

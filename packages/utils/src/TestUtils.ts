@@ -179,6 +179,24 @@ class TestUtils {
       }
     ) as T;
   }
+
+  /**
+   * Attempt to extract the args for the nth call to a given function. This will
+   * only work if the given fn is a jest.Mock function. Otherwise, it returns
+   * null.
+   * @param fn
+   * @param callIndex Index of the function call.
+   */
+  static extractCallArgs = <TArgs extends unknown[], TResult>(
+    fn: (...args: TArgs) => TResult,
+    callIndex: number
+  ): TArgs | null => {
+    try {
+      return ((fn as jest.Mock).mock.calls[callIndex] ?? null) as TArgs | null;
+    } catch (err) {
+      return null;
+    }
+  };
 }
 
 export default TestUtils;
