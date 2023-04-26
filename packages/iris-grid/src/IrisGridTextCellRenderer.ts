@@ -12,7 +12,8 @@ import {
 } from '@deephaven/grid';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import { IrisGridRenderState } from './IrisGridRenderer';
-import { ICON_SIZE, getIcon } from './IrisGridIcons';
+import { ICON_SIZE } from './IrisGridIcons';
+import IrisGridCellRendererUtils from './IrisGridCellRendererUtils';
 
 class IrisGridTextCellRenderer extends TextCellRenderer {
   drawCellContent(
@@ -175,19 +176,15 @@ class IrisGridTextCellRenderer extends TextCellRenderer {
     color: string,
     isExpanded: boolean
   ): void {
-    context.save();
-    const { x1, y1 } = treeBox;
-    const markerIcon = isExpanded
-      ? getIcon('caretDown')
-      : getIcon('caretRight');
-    const iconX = columnX + x1 - 2;
-    const iconY = rowY + y1 + 2.5;
-
-    context.fillStyle = color;
-    context.textAlign = 'center';
-    context.translate(iconX, iconY);
-    context.fill(markerIcon);
-    context.restore();
+    IrisGridCellRendererUtils.drawTreeMarker(
+      context,
+      state,
+      columnX,
+      rowY,
+      treeBox,
+      color,
+      isExpanded
+    );
   }
 }
 

@@ -5,7 +5,7 @@ import {
   DataBarCellRenderer,
 } from '@deephaven/grid';
 import { IrisGridRenderState } from './IrisGridRenderer';
-import { getIcon } from './IrisGridIcons';
+import IrisGridCellRendererUtils from './IrisGridCellRendererUtils';
 
 class IrisGridDataBarCellRenderer extends DataBarCellRenderer {
   drawTreeMarker(
@@ -17,19 +17,15 @@ class IrisGridDataBarCellRenderer extends DataBarCellRenderer {
     color: string,
     isExpanded: boolean
   ): void {
-    context.save();
-    const { x1, y1 } = treeBox;
-    const markerIcon = isExpanded
-      ? getIcon('caretDown')
-      : getIcon('caretRight');
-    const iconX = columnX + x1 - 2;
-    const iconY = rowY + y1 + 2.5;
-
-    context.fillStyle = color;
-    context.textAlign = 'center';
-    context.translate(iconX, iconY);
-    context.fill(markerIcon);
-    context.restore();
+    IrisGridCellRendererUtils.drawTreeMarker(
+      context,
+      state,
+      columnX,
+      rowY,
+      treeBox,
+      color,
+      isExpanded
+    );
   }
 }
 
