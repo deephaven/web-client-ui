@@ -1,6 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import {
+  UserOverrideContext,
+  UserPermissionsOverrideContext,
+} from '@deephaven/auth-plugins';
 import {
   LoadingOverlay,
   Shortcut,
@@ -16,6 +20,7 @@ import {
   ToolType,
 } from '@deephaven/dashboard-core-plugins';
 import { FileStorage } from '@deephaven/file-explorer';
+import { useClient } from '@deephaven/jsapi-bootstrap';
 import { IdeConnection } from '@deephaven/jsapi-types';
 import {
   DecimalColumnFormatter,
@@ -44,7 +49,7 @@ import {
   ServerConfigValues,
   DeephavenPluginModuleMap,
 } from '@deephaven/redux';
-import { useClient, useConnection, usePlugins } from '@deephaven/app-utils';
+import { useConnection, usePlugins } from '@deephaven/app-utils';
 import { setLayoutStorage as setLayoutStorageAction } from '../redux/actions';
 import App from './App';
 import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
@@ -98,6 +103,9 @@ function AppInit(props: AppInitProps) {
   const client = useClient();
   const connection = useConnection();
   const plugins = usePlugins();
+  const userOverrides = useContext(UserOverrideContext);
+  const userPermissionsOverrides = useContext(UserPermissionsOverrideContext);
+
   // General error means the app is dead and is unlikely to recover
   const [error, setError] = useState<unknown>();
 
@@ -117,7 +125,6 @@ function AppInit(props: AppInitProps) {
             connection,
             sessionDetails
           );
-          const name = 'user';
 
           const storageService = client.getStorageService();
           const layoutStorage = new GrpcLayoutStorage(
@@ -132,9 +139,13 @@ function AppInit(props: AppInitProps) {
           const workspaceStorage = new LocalWorkspaceStorage(layoutStorage);
           const commandHistoryStorage = new PouchCommandHistoryStorage();
 
-          const loadedWorkspace = await workspaceStorage.load({
-            isConsoleAvailable: sessionWrapper !== undefined,
-          });
+          const [configs, loadedWorkspace] = await Promise.all([
+            client.getServerConfigValues(),
+            workspaceStorage.load({
+              isConsoleAvailable: sessionWrapper !== undefined,
+            }),
+          ]);
+
           const { data } = loadedWorkspace;
 
           // Fill in settings that have not yet been set
@@ -171,13 +182,14 @@ function AppInit(props: AppInitProps) {
             links: data.links,
           };
 
-          const configs = await client.getServerConfigValues();
           const serverConfig = new Map(configs);
 
+          const name = 'Anonymous';
           const user: User = {
             name,
             operateAs: name,
             groups: [],
+            ...userOverrides,
             permissions: {
               isACLEditor: false,
               isSuperUser: false,
@@ -196,6 +208,8 @@ function AppInit(props: AppInitProps) {
                   'internal.webClient.appInit.canDownloadCsv'
                 ) === 'false'
               ),
+              canLogout: true,
+              ...userPermissionsOverrides,
             },
           };
 
@@ -233,6 +247,8 @@ function AppInit(props: AppInitProps) {
       setWorkspace,
       setWorkspaceStorage,
       setServerConfigValues,
+      userOverrides,
+      userPermissionsOverrides,
     ]
   );
 

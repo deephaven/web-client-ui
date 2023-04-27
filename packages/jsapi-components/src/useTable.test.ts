@@ -6,6 +6,12 @@ import TableDisconnectError from './TableDisconnectError';
 
 import useTable from './useTable';
 
+const mockDh = dh;
+jest.mock('@deephaven/jsapi-bootstrap', () => ({
+  ...jest.requireActual('@deephaven/jsapi-bootstrap'),
+  useApi: jest.fn(() => mockDh),
+}));
+
 function makeColumns(count = 5) {
   const columns: Column[] = [];
 

@@ -1,0 +1,86 @@
+@import '@deephaven/components/scss/custom.scss';
+
+$login-box-width: 605px;
+$login-box-min-height: 310px;
+$logo-background-color: $gray-100;
+$footer-color: $gray-300;
+$login-box-animation-scale: 0.8;
+
+.login-container {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .login-box {
+    position: relative;
+    display: flex;
+    width: $login-box-width;
+    box-shadow: $box-shadow;
+    opacity: 0;
+    animation: $transition-long ease-out 0s 1 forwards animateLoginBox;
+
+    .logo {
+      background-color: $logo-background-color;
+      border-radius: $border-radius 0 0 $border-radius;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: $login-box-min-height;
+      min-width: $login-box-width * 0.5;
+      pointer-events: none;
+      user-select: none;
+
+      img {
+        max-width: 225px;
+      }
+    }
+
+    .footer {
+      padding: $spacer-3 0;
+      position: absolute;
+      width: 100%;
+      bottom: 0;
+      margin: 0;
+      transform: translateY(100%);
+      text-align: center;
+      color: $footer-color;
+      font-size: 12px;
+    }
+  }
+}
+
+@keyframes animateLoginBox {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@include media-breakpoint-down(sm) {
+  .login-container {
+    .login-box {
+      flex-direction: column;
+      margin: $spacer-5;
+      .logo {
+        width: 100%;
+        min-height: 165px;
+        border-radius: $border-radius $border-radius 0 0;
+        img {
+          width: 80%;
+          max-width: 350px;
+        }
+      }
+      .form {
+        max-width: 100%;
+        border-radius: 0 0 $border-radius $border-radius;
+      }
+    }
+  }
+}

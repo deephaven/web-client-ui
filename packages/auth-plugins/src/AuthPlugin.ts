@@ -1,5 +1,4 @@
 import React from 'react';
-import { CoreClient } from '@deephaven/jsapi-types';
 
 /**
  * Map from auth config keys to their values
@@ -14,14 +13,10 @@ export type AuthPluginProps = {
   /** Map from config keys to their values */
   authConfigValues: AuthConfigMap;
 
-  /** Client to check auth configuration on */
-  client: CoreClient;
-
-  /** Called when authentication is sucessful */
-  onSuccess(): void;
-
-  /** Called when authentication fails */
-  onFailure(error: unknown): void;
+  /**
+   * The children to render after authentication is completed.
+   */
+  children: React.ReactNode;
 };
 
 export type AuthPluginComponent = React.FunctionComponent<AuthPluginProps>;
@@ -29,7 +24,10 @@ export type AuthPluginComponent = React.FunctionComponent<AuthPluginProps>;
 /**
  * Whether the auth plugin is available given the current configuration
  */
-export type AuthPluginIsAvailableFunction = (authHandlers: string[]) => boolean;
+export type AuthPluginIsAvailableFunction = (
+  authHandlers: string[],
+  authConfig: AuthConfigMap
+) => boolean;
 
 export type AuthPlugin = {
   Component: AuthPluginComponent;

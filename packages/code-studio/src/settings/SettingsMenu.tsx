@@ -6,9 +6,16 @@ import {
   vsRecordKeys,
   vsInfo,
   vsLayers,
+  dhUserIncognito,
+  dhUser,
 } from '@deephaven/icons';
 import { Button, CopyButton, Tooltip } from '@deephaven/components';
-import { ServerConfigValues } from '@deephaven/redux';
+import { ServerConfigValues, User } from '@deephaven/redux';
+import {
+  BROADCAST_CHANNEL_NAME,
+  BROADCAST_LOGOUT_MESSAGE,
+  makeMessage,
+} from '@deephaven/jsapi-utils';
 import Logo from './community-wordmark-app.svg';
 import FormattingSectionContent from './FormattingSectionContent';
 import LegalNotice from './LegalNotice';
@@ -20,6 +27,7 @@ import ColumnSpecificSectionContent from './ColumnSpecificSectionContent';
 
 interface SettingsMenuProps {
   serverConfigValues: ServerConfigValues;
+  user: User;
   onDone: () => void;
 }
 
@@ -57,8 +65,10 @@ export class SettingsMenu extends Component<
     this.handleScrollTo = this.handleScrollTo.bind(this);
     this.handleSectionToggle = this.handleSectionToggle.bind(this);
     this.handleExportSupportLogs = this.handleExportSupportLogs.bind(this);
+    this.handleLogout = this.handleLogout.bind(this);
 
     this.menuContentRef = React.createRef();
+    this.broadcastChannel = new BroadcastChannel(BROADCAST_CHANNEL_NAME);
 
     this.state = {
       expandedSectionKey: SettingsMenu.FORMATTING_SECTION_KEY,
@@ -69,11 +79,21 @@ export class SettingsMenu extends Component<
     SettingsMenu.focusFirstInputInContainer(this.menuContentRef.current);
   }
 
+  componentWillUnmount(): void {
+    this.broadcastChannel.close();
+  }
+
   menuContentRef: RefObject<HTMLDivElement>;
+
+  broadcastChannel: BroadcastChannel;
 
   isSectionExpanded(sectionKey: string): boolean {
     const { expandedSectionKey } = this.state;
     return expandedSectionKey === sectionKey;
+  }
+
+  handleLogout(): void {
+    this.broadcastChannel.postMessage(makeMessage(BROADCAST_LOGOUT_MESSAGE));
   }
 
   handleScrollTo(x: number, y: number): void {
@@ -102,7 +122,7 @@ export class SettingsMenu extends Component<
     const supportLink = import.meta.env.VITE_SUPPORT_LINK;
     const docsLink = import.meta.env.VITE_DOCS_LINK;
 
-    const { serverConfigValues } = this.props;
+    const { serverConfigValues, user } = this.props;
     const barrageVersion = serverConfigValues.get('barrage.version');
     const javaVersion = serverConfigValues.get('java.version');
     const deephavenVersion = serverConfigValues.get('deephaven.version');
@@ -114,10 +134,45 @@ export class SettingsMenu extends Component<
       </>
     );
 
+    const userDisplayName = user.displayName ?? user.name;
+    const hasUserImage = user.image != null && user.image !== '';
     return (
       <div className="app-settings-menu">
         <header className="app-settings-menu-header">
-          <div className="flex-spacer" />
+          <div className="user-info">
+            <div className="user-image">
+              {!hasUserImage && (
+                <FontAwesomeIcon icon={dhUser} transform="grow-8" />
+              )}
+              {hasUserImage && <img src={user.image} alt={userDisplayName} />}
+            </div>
+            <div className="user-details">
+              <div className="user-name">
+                {userDisplayName}
+                {user.operateAs != null && user.name !== user.operateAs && (
+                  <>
+                    <span className="font-weight-light font-italic"> as </span>
+                    <span className="operating-as-user">
+                      <FontAwesomeIcon
+                        icon={dhUserIncognito}
+                        className="mr-1"
+                      />
+                      {user.operateAs}
+                    </span>
+                  </>
+                )}
+              </div>
+              {user.permissions.canLogout && (
+                <button
+                  type="button"
+                  className="btn btn-link"
+                  onClick={this.handleLogout}
+                >
+                  logout
+                </button>
+              )}
+            </div>
+          </div>
           <Button
             kind="ghost"
             className="btn-close-settings-menu"

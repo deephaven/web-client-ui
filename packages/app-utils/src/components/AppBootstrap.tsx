@@ -1,7 +1,11 @@
-import React from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import '@deephaven/components/scss/BaseStyleSheet.scss';
+import { ClientBootstrap } from '@deephaven/jsapi-bootstrap';
+import {
+  RefreshTokenBootstrap,
+  useBroadcastLoginListener,
+} from '@deephaven/jsapi-components';
 import FontBootstrap from './FontBootstrap';
-import ClientBootstrap from './ClientBootstrap';
 import PluginsBootstrap from './PluginsBootstrap';
 import AuthBootstrap from './AuthBootstrap';
 import ConnectionBootstrap from './ConnectionBootstrap';
@@ -35,18 +39,32 @@ export function AppBootstrap({
   children,
 }: AppBootstrapProps) {
   const serverUrl = getBaseUrl(apiUrl).origin;
-  const clientOptions = getConnectOptions();
+  const clientOptions = useMemo(() => getConnectOptions(), []);
+
+  // On logout, we reset the client and have user login again
+  const [logoutCount, setLogoutCount] = useState(0);
+  const onLogin = useCallback(() => undefined, []);
+  const onLogout = useCallback(() => {
+    setLogoutCount(value => value + 1);
+  }, []);
+  useBroadcastLoginListener(onLogin, onLogout);
   return (
     <FontBootstrap fontClassNames={fontClassNames}>
-      <ClientBootstrap serverUrl={serverUrl} options={clientOptions}>
-        <PluginsBootstrap pluginsUrl={pluginsUrl}>
-          <AuthBootstrap>
-            <ConnectionBootstrap>
-              <FontsLoaded>{children}</FontsLoaded>
-            </ConnectionBootstrap>
-          </AuthBootstrap>
-        </PluginsBootstrap>
-      </ClientBootstrap>
+      <PluginsBootstrap pluginsUrl={pluginsUrl}>
+        <ClientBootstrap
+          serverUrl={serverUrl}
+          options={clientOptions}
+          key={logoutCount}
+        >
+          <RefreshTokenBootstrap>
+            <AuthBootstrap>
+              <ConnectionBootstrap>
+                <FontsLoaded>{children}</FontsLoaded>
+              </ConnectionBootstrap>
+            </AuthBootstrap>
+          </RefreshTokenBootstrap>
+        </ClientBootstrap>
+      </PluginsBootstrap>
     </FontBootstrap>
   );
 }

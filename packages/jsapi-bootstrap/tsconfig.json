@@ -8,8 +8,8 @@
   "exclude": ["node_modules", "src/**/*.test.*", "src/**/__mocks__/*"],
   "references": [
     { "path": "../components" },
-    { "path": "../jsapi-shim" },
-    { "path": "../jsapi-utils" },
-    { "path": "../log" }
+    { "path": "../jsapi-types" },
+    { "path": "../log" },
+    { "path": "../react-hooks" }
   ]
 }

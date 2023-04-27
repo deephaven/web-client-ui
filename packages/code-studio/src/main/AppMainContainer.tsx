@@ -87,7 +87,7 @@ import {
   Workspace,
   WorkspaceData,
   RootState,
-  UserPermissions,
+  User,
   ServerConfigValues,
   DeephavenPluginModuleMap,
 } from '@deephaven/redux';
@@ -128,13 +128,6 @@ export type AppDashboardData = {
   links: Link[];
   openedMap: Map<string | string[], Component>;
 };
-
-interface User {
-  name: string;
-  operateAs: string;
-  groups: string[];
-  permissions: UserPermissions;
-}
 
 interface AppMainContainerProps {
   activeTool: string;
@@ -883,7 +876,8 @@ export class AppMainContainer extends Component<
               <Button
                 kind="ghost"
                 className={classNames('btn-settings-menu', {
-                  'text-warning': user.operateAs !== user.name,
+                  'text-warning':
+                    user.operateAs != null && user.operateAs !== user.name,
                 })}
                 onClick={this.handleSettingsMenuShow}
                 icon={
@@ -937,6 +931,7 @@ export class AppMainContainer extends Component<
           <SettingsMenu
             serverConfigValues={serverConfigValues}
             onDone={this.handleSettingsMenuHide}
+            user={user}
           />
         </CSSTransition>
         <ContextActions actions={contextActions} />
@@ -957,6 +952,7 @@ export class AppMainContainer extends Component<
           }
           subtitle="Please check your network connection."
         />
+        {/* TODO: Reconnect auth fail - part of the plugin?? AppBootstrap? */}
         <BasicModal
           confirmButtonText="Refresh"
           onConfirm={AppMainContainer.handleRefresh}

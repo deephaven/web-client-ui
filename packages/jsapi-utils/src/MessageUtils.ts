@@ -10,15 +10,67 @@ export const LOGIN_OPTIONS_REQUEST =
 export const SESSION_DETAILS_REQUEST =
   'io.deephaven.message.SessionDetails.request';
 
+/**
+ * Use a BroadcastChannel for sending messages between tabs, such as when the user logs out.
+ * Something that isn't clear from the docs - for inter-browser communication, you must use `postMessage` and `onmessage`.
+ * `BroadcastChannel` is an `EventTarget`, and does support `addEventListener`/`dispatchEvent` etc... but that's only within the same instance of that object!
+ * https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API
+ */
+export const BROADCAST_CHANNEL_NAME = 'io.deephaven.broadcast';
+
+/**
+ * Event emitted when the user has logged in successfully
+ */
+export const BROADCAST_LOGIN_MESSAGE = 'io.deephaven.broadcast.Login';
+
+/**
+ * Event emitted when the user has logged out
+ */
+export const BROADCAST_LOGOUT_MESSAGE = 'io.deephaven.broadcast.Logout';
+
 export interface Message<T> {
+  id: string;
   message: string;
   payload?: T;
-  id: string;
+}
+
+export interface BroadcastLoginMessage extends Message<void> {
+  message: typeof BROADCAST_LOGIN_MESSAGE;
+}
+
+export interface BroadcastLogoutMessage extends Message<void> {
+  message: typeof BROADCAST_LOGOUT_MESSAGE;
 }
 
 export interface Response<T> {
   id: string;
   payload: T;
+}
+
+export function isMessage<T>(obj: unknown): obj is Message<T> {
+  const message = obj as Message<T>;
+  return (
+    message != null &&
+    typeof message.id === 'string' &&
+    typeof message.message === 'string'
+  );
+}
+
+export function isBroadcastLoginMessage(
+  obj: unknown
+): obj is BroadcastLoginMessage {
+  return isMessage(obj) && obj.message === BROADCAST_LOGIN_MESSAGE;
+}
+
+export function isBroadcastLogoutMessage(
+  obj: unknown
+): obj is BroadcastLogoutMessage {
+  return isMessage(obj) && obj.message === BROADCAST_LOGOUT_MESSAGE;
+}
+
+export function isResponse<T>(obj: unknown): obj is Response<T> {
+  const response = obj as Response<T>;
+  return response != null && typeof response.id === 'string';
 }
 
 /**
@@ -62,8 +114,12 @@ export async function requestParentResponse<T>(
   return new Promise((resolve, reject) => {
     let timeoutId: number;
     const id = shortid();
-    const listener = (event: MessageEvent<Response<T>>) => {
+    const listener = (event: MessageEvent) => {
       const { data } = event;
+      if (!isResponse<T>(data)) {
+        log.debug('Ignoring non-deephaven response', data);
+        return;
+      }
       log.debug('Received message', data);
       if (data?.id !== id) {
         log.debug("Ignore message, id doesn't match", data);

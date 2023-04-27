@@ -1,66 +1,213 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { CSSTransition } from 'react-transition-group';
+import { LoadingOverlay, ThemeExport } from '@deephaven/components';
+import { useClient } from '@deephaven/jsapi-bootstrap';
+import { useBroadcastLoginListener } from '@deephaven/jsapi-components';
 import Log from '@deephaven/log';
-import { LoadingOverlay } from '@deephaven/components';
+import Cookies from 'js-cookie';
 import { AuthPlugin, AuthPluginProps } from './AuthPlugin';
-
-const log = Log.module('AuthPluginPsk');
+import LoginForm from './LoginForm';
+import Login from './Login';
 
 const AUTH_TYPE = 'io.deephaven.authentication.psk.PskAuthenticationHandler';
 
-function getWindowToken(): string {
-  return new URLSearchParams(window.location.search).get('psk') ?? '';
+const PSK_QUERY_PARAM_KEY = 'psk';
+
+const PSK_TOKEN_KEY = 'io.deephaven.web.client.auth.psk.token';
+
+const log = Log.module('AuthPluginPsk');
+
+function getWindowToken(): string | null {
+  return new URLSearchParams(window.location.search).get(PSK_QUERY_PARAM_KEY);
+}
+
+function clearWindowToken() {
+  log.debug2('clearWindowToken');
+  const params = new URLSearchParams(window.location.search);
+  params.delete(PSK_QUERY_PARAM_KEY);
+
+  let queryString = `${params}`;
+  if (queryString.length > 0) {
+    queryString = `?${queryString}`;
+  }
+  const newPath = `${window.location.pathname}${queryString}${window.location.hash}`;
+  window.history.replaceState(null, '', newPath);
+}
+
+function readCookieToken(): string | null {
+  return Cookies.get(PSK_TOKEN_KEY) ?? null;
+}
+
+function storeCookieToken(token: string | null): void {
+  log.debug2('Storing token in cookie', token);
+  if (token != null) {
+    Cookies.set(PSK_TOKEN_KEY, token, { secure: true, sameSite: 'strict' });
+  } else {
+    Cookies.remove(PSK_TOKEN_KEY);
+  }
 }
 
 /**
  * AuthPlugin that tries to login using a pre-shared key.
  * Add the `psk=<token>` parameter to your URL string to set the token.
  */
-function Component({
-  client,
-  onSuccess,
-  onFailure,
-}: AuthPluginProps): JSX.Element {
+function Component({ children }: AuthPluginProps): JSX.Element {
+  const client = useClient();
+  const inputField = useRef<HTMLInputElement>(null);
+  const loginPromise = useRef<Promise<void> | null>(null);
   const [error, setError] = useState<unknown>();
-  const [token] = useState(() => getWindowToken());
-  useEffect(() => {
-    let isCanceled = false;
-    async function login() {
+  const [isInputRequired, setIsInputRequired] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [token, setToken] = useState('');
+
+  const login = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-inferrable-types
+    async (loginToken: string, showError: boolean = true) => {
+      log.info('Logging in...');
+      setIsLoggingIn(true);
+      let newLoginPromise: Promise<void> | null = null;
       try {
-        if (!token) {
-          throw new Error(
-            'No Pre-shared key token found. Add `psk=<token>` parameter to your URL'
+        newLoginPromise = client.login({ type: AUTH_TYPE, token: loginToken });
+        loginPromise.current = newLoginPromise;
+        await newLoginPromise;
+
+        log.info('Logged in successfully');
+        if (loginPromise.current !== newLoginPromise) {
+          return;
+        }
+        storeCookieToken(loginToken);
+        setIsLoggedIn(true);
+      } catch (e) {
+        if (loginPromise.current !== newLoginPromise) {
+          return;
+        }
+        setIsInputRequired(true);
+        if (showError) {
+          setError(
+            (e as CustomEvent)?.detail ?? 'Unable to login: Verify credentials.'
           );
         }
-        log.info('Logging in with found token...');
-        await client.login({ type: AUTH_TYPE, token });
-        if (isCanceled) {
-          log.info('Previous login result canceled');
-          return;
+      }
+      setIsLoggingIn(false);
+    },
+    [client]
+  );
+
+  const cancelLogin = useCallback(() => {
+    loginPromise.current = null;
+    setIsLoggingIn(false);
+  }, []);
+
+  const onLogin = useCallback(async () => {
+    log.debug('onLogin');
+
+    // User logged in successfully in another tab, we should be able to read the token from the cookie and login
+    const newToken = readCookieToken();
+    if (isLoggedIn || isLoggingIn || newToken == null) {
+      return;
+    }
+
+    login(newToken, false);
+  }, [isLoggedIn, isLoggingIn, login]);
+  const onLogout = useCallback(() => {
+    storeCookieToken(null);
+  }, []);
+  useBroadcastLoginListener(onLogin, onLogout);
+
+  useEffect(() => {
+    let isCanceled = false;
+    async function initialLogin() {
+      const initialToken = getWindowToken() ?? readCookieToken();
+      clearWindowToken();
+
+      if (initialToken == null) {
+        setIsInputRequired(true);
+        return;
+      }
+
+      setIsLoggingIn(true);
+      try {
+        await client.login({ type: AUTH_TYPE, token: initialToken });
+        if (!isCanceled) {
+          storeCookieToken(initialToken);
+          setIsLoggedIn(true);
+          setIsLoggingIn(false);
         }
-        log.info('Logged in successfully.');
-        onSuccess();
       } catch (e) {
-        if (isCanceled) {
-          log.info('Previous login failure canceled');
-          return;
+        if (!isCanceled) {
+          setIsInputRequired(true);
+          setIsLoggingIn(false);
         }
-        log.error('Unable to login:', e);
-        setError(e);
-        onFailure(e);
       }
     }
-    login();
+    initialLogin();
     return () => {
       isCanceled = true;
     };
-  }, [client, onFailure, onSuccess, token]);
+  }, [client]);
+
+  const handleSubmit = useCallback(() => {
+    if (!isLoggingIn) {
+      login(token);
+    } else {
+      cancelLogin();
+    }
+  }, [cancelLogin, isLoggingIn, login, token]);
+
+  useEffect(
+    function autoFocusInput() {
+      inputField.current?.focus();
+    },
+    [inputField, isInputRequired]
+  );
+
   return (
-    <LoadingOverlay
-      data-testid="auth-psk-loading"
-      isLoading
-      isLoaded={false}
-      errorMessage={error != null ? `${error}` : null}
-    />
+    <>
+      {isLoggedIn && children}
+      {isInputRequired && (
+        <CSSTransition
+          in={!isLoggedIn}
+          timeout={ThemeExport.transitionMs}
+          classNames="fade"
+          mountOnEnter
+          unmountOnExit
+        >
+          <Login>
+            <LoginForm
+              errorMessage={error != null ? `${error}` : undefined}
+              isLoggingIn={isLoggingIn}
+              onSubmit={handleSubmit}
+            >
+              <div className="form-group">
+                <label htmlFor="auth-psk-token-input">Token</label>
+                <input
+                  id="auth-psk-token-input"
+                  name="token"
+                  className="input-token form-control"
+                  type="text"
+                  autoComplete="username"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck="false"
+                  ref={inputField}
+                  value={token}
+                  onChange={event => {
+                    setError(undefined);
+                    setToken(event.target.value);
+                  }}
+                />
+              </div>
+            </LoginForm>
+          </Login>
+        </CSSTransition>
+      )}
+      <LoadingOverlay
+        data-testid="auth-psk-loading"
+        isLoaded={isLoggedIn || isInputRequired}
+        isLoading={!isLoggedIn && !isInputRequired}
+      />
+    </>
   );
 }
 
