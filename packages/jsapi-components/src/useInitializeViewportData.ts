@@ -7,6 +7,7 @@ import {
   getSize,
 } from '@deephaven/jsapi-utils';
 import { usePrevious } from '@deephaven/react-hooks';
+import useTableSize from './useTableSize';
 
 /**
  * Initializes a ListData instance that can be used for windowed views of a
@@ -28,7 +29,7 @@ export default function useInitializeViewportData<T>(
   const prevTable = usePrevious(table);
 
   // If the table changes size, we need to re-initialize it.
-  const size = Math.max(0, getSize(table));
+  const size = Math.max(0, useTableSize(table));
 
   // We only want this to fire 1x once the table exists. Note that `useListData`
   // has no way to respond to a reference change of the `table` instance so we
