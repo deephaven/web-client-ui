@@ -64,7 +64,6 @@ export default function useViewportData<I, T extends Table | TreeTable>({
     (filters: FilterCondition[]) => {
       table?.applyFilter(filters);
       setViewport(0);
-      console.log('[TESTING4] filter applied', filters);
     },
     [setViewport, table]
   );
