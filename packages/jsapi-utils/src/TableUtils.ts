@@ -125,6 +125,23 @@ export class TableUtils {
     });
   };
 
+  /**
+   * Apply a filter to a table that won't match anything.
+   * @table The table to apply the filter to
+   * @columnName The name of the column to apploy the filter to
+   */
+  static applyNeverFilter(
+    table: Table | TreeTable | null | undefined,
+    columnName: string
+  ): FilterCondition[] | null {
+    if (table == null) {
+      return null;
+    }
+
+    const column = table.findColumn(columnName);
+    return table.applyFilter([TableUtils.makeNeverFilter(column)]);
+  }
+
   static getSortIndex(
     sort: readonly Sort[],
     columnName: ColumnName
@@ -1490,6 +1507,30 @@ export class TableUtils {
   }
 
   /**
+   * Create a filter condition that results in zero results for a given column
+   * @param column
+   */
+  static makeNeverFilter(column: Column): FilterCondition {
+    let value = null;
+
+    if (TableUtils.isTextType(column.type)) {
+      // Use 'a' so that it can work for String or Character types
+      value = dh.FilterValue.ofString('a');
+    } else if (TableUtils.isBooleanType(column.type)) {
+      value = dh.FilterValue.ofBoolean(true);
+    } else if (TableUtils.isDateType(column.type)) {
+      value = dh.FilterValue.ofNumber(dh.DateWrapper.ofJsDate(new Date()));
+    } else {
+      value = dh.FilterValue.ofNumber(0);
+    }
+
+    const eqFilter = column.filter().eq(value);
+    const notEqFilter = column.filter().notEq(value);
+
+    return eqFilter.and(notEqFilter);
+  }
+
+  /**
    * Create a filter using the selected items
    * Has a flag for invertSelection as we start from a "Select All" state and a user just deselects items.
    * Since there may be millions of distinct items, it's easier to build an inverse filter.
@@ -1498,36 +1539,23 @@ export class TableUtils {
    * @param invertSelection Invert the selection (eg. All items are selected, then you deselect items)
    * @returns Returns a `in` or `notIn` FilterCondition as necessary, or null if no filtering should be applied (everything selected)
    */
-  static makeSelectValueFilter(
+  static makeSelectValueFilter<TInvert extends boolean>(
     column: Column,
     selectedValues: unknown[],
-    invertSelection: boolean
-  ): FilterCondition | null {
+    invertSelection: TInvert
+  ): TInvert extends true ? FilterCondition | null : FilterCondition {
     if (selectedValues.length === 0) {
       if (invertSelection) {
         // No filter means select everything
-        return null;
+        return null as TInvert extends true
+          ? FilterCondition | null
+          : FilterCondition;
       }
 
       // KLUDGE: Return a conflicting filter to show no results.
       // Could recognize this situation at a higher or lower level and pause updates on the
       // table, but this situation should be rare and that wouldn't be much gains for some added complexity
-      let value = null;
-
-      if (TableUtils.isTextType(column.type)) {
-        // Use 'a' so that it can work for String or Character types
-        value = dh.FilterValue.ofString('a');
-      } else if (TableUtils.isBooleanType(column.type)) {
-        value = dh.FilterValue.ofBoolean(true);
-      } else if (TableUtils.isDateType(column.type)) {
-        value = dh.FilterValue.ofNumber(dh.DateWrapper.ofJsDate(new Date()));
-      } else {
-        value = dh.FilterValue.ofNumber(0);
-      }
-
-      const eqFilter = column.filter().eq(value);
-      const notEqFilter = column.filter().notEq(value);
-      return eqFilter.and(notEqFilter);
+      return TableUtils.makeNeverFilter(column);
     }
 
     const values = [];
