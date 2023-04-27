@@ -10,6 +10,7 @@ export { default as useTableListener } from './useTableListener';
 export { default as useRollupTable } from './useRollupTable';
 export { default as useSelectDistinctTable } from './useSelectDistinctTable';
 export { default as useSetPaddedViewportCallback } from './useSetPaddedViewportCallback';
+export { default as useTableCloseOnUnmount } from './useTableCloseOnUnmount';
 export { default as useTableSize } from './useTableSize';
 export { default as useViewportData } from './useViewportData';
 export type { UseRollupTableResult } from './useRollupTable';
