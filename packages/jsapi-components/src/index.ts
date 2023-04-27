@@ -3,6 +3,7 @@ export * from './RefreshTokenBootstrap';
 export * from './RefreshTokenUtils';
 export { default as useBroadcastChannel } from './useBroadcastChannel';
 export { default as useBroadcastLoginListener } from './useBroadcastLoginListener';
+export { default as useDebouncedViewportSearch } from './useDebouncedViewportSearch';
 export { default as useInitializeViewportData } from './useInitializeViewportData';
 export { default as useTable } from './useTable';
 export { default as useTableColumn } from './useTableColumn';

@@ -29,6 +29,7 @@
     "@deephaven/log": "file:../log",
     "@deephaven/react-hooks": "file:../react-hooks",
     "@deephaven/utils": "file:../utils",
+    "lodash.debounce": "^4.0.8",
     "@react-stately/data": "^3.9.1",
     "@types/js-cookie": "^3.0.3",
     "classnames": "^2.3.2",
