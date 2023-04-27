@@ -13,18 +13,20 @@ import useInitializeViewportData from './useInitializeViewportData';
 import useSetPaddedViewportCallback from './useSetPaddedViewportCallback';
 import useTableListener from './useTableListener';
 
-export interface UseViewportDataProps<T> {
-  table: Table | TreeTable | null;
+export interface UseViewportDataProps<I, T extends Table | TreeTable> {
+  table: T | null;
   viewportSize?: number;
   viewportPadding?: number;
-  deserializeRow?: RowDeserializer<T>;
+  deserializeRow?: RowDeserializer<I>;
 }
 
-export interface UseViewportDataResult<T> {
+export interface UseViewportDataResult<I, T extends Table | TreeTable> {
   /** Manages deserialized row items associated with a DH Table */
-  viewportData: ListData<KeyedItem<T>>;
+  viewportData: ListData<KeyedItem<I>>;
   /** Size of the underlying Table */
   size: number;
+
+  table: T | null;
   /** Apply filters and refresh viewport. */
   applyFiltersAndRefresh: (filters: FilterCondition[]) => void;
   /** Set the viewport of the Table */
@@ -44,13 +46,13 @@ export interface UseViewportDataResult<T> {
  * @param viewportPadding
  * @returns An object for managing Table viewport state.
  */
-export default function useViewportData<T>({
+export default function useViewportData<I, T extends Table | TreeTable>({
   table,
   viewportSize = 10,
   viewportPadding = 50,
   deserializeRow = defaultRowDeserializer,
-}: UseViewportDataProps<T>): UseViewportDataResult<T> {
-  const viewportData = useInitializeViewportData<T>(table);
+}: UseViewportDataProps<I, T>): UseViewportDataResult<I, T> {
+  const viewportData = useInitializeViewportData<I>(table);
 
   const setViewport = useSetPaddedViewportCallback(
     table,
@@ -62,6 +64,7 @@ export default function useViewportData<T>({
     (filters: FilterCondition[]) => {
       table?.applyFilter(filters);
       setViewport(0);
+      console.log('[TESTING4] filter applied', filters);
     },
     [setViewport, table]
   );
@@ -85,6 +88,7 @@ export default function useViewportData<T>({
   return {
     viewportData,
     size: getSize(table),
+    table,
     applyFiltersAndRefresh,
     setViewport,
   };
