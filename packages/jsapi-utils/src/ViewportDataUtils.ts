@@ -111,7 +111,7 @@ export function* generateEmptyKeyedItems<T>(
  * @param keys Keys to items to be retrieved
  * @returns An array of items matching the given keys
  */
-export function getItems<T>(
+export function getItemsFromListData<T>(
   listData: ListData<KeyedItem<T>>,
   ...keys: string[]
 ): KeyedItem<T>[] {
