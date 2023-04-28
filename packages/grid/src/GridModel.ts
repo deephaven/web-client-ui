@@ -209,7 +209,14 @@ abstract class GridModel<
     (text: string, visibleLength: number): Token[] => {
       // If no text is truncated, then directly search in text
       if (visibleLength >= text.length) {
-        return linkifyFind(text);
+        const tokens = linkifyFind(text);
+
+        return tokens.filter(token => {
+          if (token.type === 'url') {
+            return /^https?:\/\//.test(token.value);
+          }
+          return true;
+        });
       }
 
       // To check for links, we should check to the first space after the truncatedText length
@@ -223,7 +230,15 @@ abstract class GridModel<
         lengthOfContent = Math.min(LINK_TRUNCATION_LENGTH, text.length);
       }
       const contentToCheckForLinks = text.substring(0, lengthOfContent);
-      return linkifyFind(contentToCheckForLinks);
+
+      const tokens = linkifyFind(contentToCheckForLinks);
+
+      return tokens.filter(token => {
+        if (token.type === 'url') {
+          return /^https?:\/\//.test(token.value);
+        }
+        return true;
+      });
     }
   );
 }
