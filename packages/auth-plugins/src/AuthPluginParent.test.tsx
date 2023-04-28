@@ -107,7 +107,8 @@ describe('component tests', () => {
       mockResolve = resolve;
     });
 
-    const error = new Error('mock test Invalid login credentials');
+    const errorMessage = 'mock test Invalid login credentials';
+    const error = new Error(errorMessage);
     const loginOptions = { token: 'mockParentToken' };
     const loginPromise = Promise.reject(error);
     const mockLogin = jest.fn(() => loginPromise);
@@ -136,6 +137,6 @@ describe('component tests', () => {
     expectLoading().not.toBeInTheDocument();
     expectMockChild().not.toBeInTheDocument();
     expectError().toBeInTheDocument();
-    expect(screen.getByText(`${error}`)).toBeInTheDocument();
+    expect(screen.getByText(errorMessage)).toBeInTheDocument();
   });
 });

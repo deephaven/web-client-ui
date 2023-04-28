@@ -11,16 +11,6 @@ import ToolType from './ToolType';
 import { Linker } from './Linker';
 import { Link, LinkPoint, LinkType } from './LinkerUtils';
 
-// Disable CSSTransition delays to make testing simpler
-jest.mock('react-transition-group', () => ({
-  // eslint-disable-next-line react/display-name, react/prop-types
-  Transition: ({ children, in: inProp }) =>
-    inProp !== false ? children : null,
-  // eslint-disable-next-line react/display-name, react/prop-types
-  CSSTransition: ({ children, in: inProp }) =>
-    inProp !== false ? children : null,
-}));
-
 function makeLayout() {
   return new GoldenLayout({} as Config, undefined);
 }

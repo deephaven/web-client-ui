@@ -3,7 +3,8 @@ import { LoadingOverlay } from '@deephaven/components';
 import { useClient } from '@deephaven/jsapi-bootstrap';
 import Log from '@deephaven/log';
 import { LoginOptions } from '@deephaven/jsapi-types';
-import { CanceledPromiseError } from '@deephaven/utils';
+import { CanceledPromiseError, getErrorMessage } from '@deephaven/utils';
+import AuthenticationError from './AuthenticationError';
 
 const log = Log.module('AuthPluginBase');
 
@@ -52,7 +53,9 @@ function AuthPluginBase({
       } catch (e) {
         if (!isCanceled) {
           log.error('Unable to login:', e);
-          setError(e);
+          const message =
+            getErrorMessage(e) ?? 'Unable to login. Verify credentials.';
+          setError(new AuthenticationError(message));
           setIsLoggedIn(false);
         }
       }
@@ -69,7 +72,7 @@ function AuthPluginBase({
         data-testid="auth-base-loading"
         isLoading={error == null}
         isLoaded={false}
-        errorMessage={error != null ? `${error}` : null}
+        errorMessage={getErrorMessage(error)}
       />
     );
   }

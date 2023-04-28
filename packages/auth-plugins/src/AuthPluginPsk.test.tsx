@@ -19,12 +19,6 @@ jest.mock('@deephaven/jsapi-components', () => ({
   }),
 }));
 
-// Disable CSSTransition delays to make testing simpler
-jest.mock('react-transition-group', () => ({
-  CSSTransition: ({ children, in: inProp }) =>
-    inProp !== false ? children : null,
-}));
-
 jest.mock('js-cookie');
 const mockedCookie = Cookies as jest.Mocked<typeof Cookies>;
 const mockChildText = 'Mock Auth Psk Child';

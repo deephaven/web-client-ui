@@ -26,6 +26,10 @@ module.exports = {
     ),
     // Handle monaco worker files
     '\\.worker.*$': 'identity-obj-proxy',
+    'react-transition-group': path.join(
+      __dirname,
+      './__mocks__/react-transition-group.js'
+    ),
     '^@deephaven/icons$': path.join(
       __dirname,
       './packages/icons/dist/index.js'

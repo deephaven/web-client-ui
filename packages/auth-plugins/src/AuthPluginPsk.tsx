@@ -4,10 +4,12 @@ import { LoadingOverlay, ThemeExport } from '@deephaven/components';
 import { useClient } from '@deephaven/jsapi-bootstrap';
 import { useBroadcastLoginListener } from '@deephaven/jsapi-components';
 import Log from '@deephaven/log';
+import { getErrorMessage } from '@deephaven/utils';
 import Cookies from 'js-cookie';
 import { AuthPlugin, AuthPluginProps } from './AuthPlugin';
 import LoginForm from './LoginForm';
 import Login from './Login';
+import AuthenticationError from './AuthenticationError';
 
 const AUTH_TYPE = 'io.deephaven.authentication.psk.PskAuthenticationHandler';
 
@@ -84,9 +86,10 @@ function Component({ children }: AuthPluginProps): JSX.Element {
         }
         setIsInputRequired(true);
         if (showError) {
-          setError(
-            (e as CustomEvent)?.detail ?? 'Unable to login: Verify credentials.'
-          );
+          log.error('Unable to login', e);
+          const message =
+            getErrorMessage(e) ?? 'Unable to login: Verify credentials.';
+          setError(new AuthenticationError(message));
         }
       }
       setIsLoggingIn(false);
@@ -175,7 +178,7 @@ function Component({ children }: AuthPluginProps): JSX.Element {
         >
           <Login>
             <LoginForm
-              errorMessage={error != null ? `${error}` : undefined}
+              errorMessage={getErrorMessage(error)}
               isLoggingIn={isLoggingIn}
               onSubmit={handleSubmit}
             >
