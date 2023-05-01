@@ -35,21 +35,24 @@ export default function useInitializeViewportData<T>(
   // has no way to respond to a reference change of the `table` instance so we
   // have to manually delete any previous keyed items from the list.
   useEffect(() => {
+    let currentSize = viewportData.items.length;
+
     // If our table instance has changed, we want to clear all items from state
-    if (table !== prevTable && viewportData.items.length) {
+    if (table !== prevTable && currentSize) {
       viewportData.remove(...viewportData.items.map(({ key }) => key));
+      currentSize = 0;
     }
 
     if (!table) {
       return;
     }
 
-    if (size > viewportData.items.length) {
+    if (size > currentSize) {
       viewportData.insert(
-        viewportData.items.length,
-        ...generateEmptyKeyedItems<T>(viewportData.items.length, size - 1)
+        currentSize,
+        ...generateEmptyKeyedItems<T>(currentSize, size - 1)
       );
-    } else if (size < viewportData.items.length) {
+    } else if (size < currentSize) {
       const keys = viewportData.items.slice(size).map(({ key }) => key);
       viewportData.remove(...keys);
     }
