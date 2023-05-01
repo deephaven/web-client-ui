@@ -79,6 +79,8 @@ export class TableUtils {
     none: null,
   } as const;
 
+  static APPLY_TABLE_CHANGE_TIMEOUT_MS = 30000;
+
   static REVERSE_TYPE = Object.freeze({
     NONE: 'none',
     PRE_SORT: 'pre-sort',
@@ -98,49 +100,112 @@ export class TableUtils {
    */
   static applyCustomColumns = async (
     table: Table | null,
-    columns: (string | CustomColumn)[]
+    columns: (string | CustomColumn)[],
+    timeout = TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
   ): Promise<Table | null> => {
     if (table == null) {
       return null;
     }
 
-    return new Promise(resolve => {
-      function handleColumnsChanged() {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        table!.removeEventListener(
-          dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
-          handleColumnsChanged
-        );
+    const eventPromise = TableUtils.makeCancelableTableEventPromise(
+      table,
+      dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
+      timeout
+    );
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        resolve(table!);
-      }
+    table.applyCustomColumns(columns);
 
-      table.addEventListener(
-        dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
-        handleColumnsChanged
-      );
+    await eventPromise;
 
-      table.applyCustomColumns(columns);
-    });
+    return table;
+  };
+
+  /**
+   * Apply filters to a given table.
+   * @param table Table to apply filters to
+   * @param filters Filters to apply
+   * @param timeout Timeout before cancelling the promise that waits for the next
+   * dh.Table.EVENT_FILTERCHANGED event
+   * @returns a Promise to the Table that resolves after the next
+   * dh.Table.EVENT_FILTERCHANGED event
+   */
+  static applyFilter = async (
+    table: Table | TreeTable | null | undefined,
+    filters: FilterCondition[],
+    timeout = TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
+  ) => {
+    if (table == null) {
+      return null;
+    }
+
+    const eventPromise = TableUtils.makeCancelableTableEventPromise(
+      table,
+      dh.Table.EVENT_FILTERCHANGED,
+      timeout
+    );
+
+    table.applyFilter(filters);
+
+    await eventPromise;
+
+    return table;
   };
 
   /**
    * Apply a filter to a table that won't match anything.
    * @table The table to apply the filter to
    * @columnName The name of the column to apploy the filter to
+   * @param timeout Timeout before cancelling the promise that waits for the next
+   * dh.Table.EVENT_FILTERCHANGED event
+   * @returns a Promise to the Table that resolves after the next
+   * dh.Table.EVENT_FILTERCHANGED event
    */
-  static applyNeverFilter(
-    table: Table | TreeTable | null | undefined,
-    columnName: string
-  ): FilterCondition[] | null {
+  static applyNeverFilter = async <T extends Table | TreeTable>(
+    table: T | null | undefined,
+    columnName: string,
+    timeout = TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
+  ): Promise<T | null> => {
     if (table == null) {
       return null;
     }
 
     const column = table.findColumn(columnName);
-    return table.applyFilter([TableUtils.makeNeverFilter(column)]);
-  }
+
+    await TableUtils.applyFilter(table, [TableUtils.makeNeverFilter(column)]);
+
+    return table;
+  };
+
+  /**
+   * Apply sorts to a given Table.
+   * @param table The table to apply sorts to
+   * @param sorts The sorts to apply
+   * @param timeout Timeout before cancelling the promise that waits for the next
+   * dh.Table.EVENT_SORTCHANGED event
+   * @returns a Promise to the Table that resolves after the next
+   * dh.Table.EVENT_SORTCHANGED event
+   */
+  static applySort = async <T extends Table | TreeTable>(
+    table: T | null | undefined,
+    sorts: Sort[],
+    timeout = TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
+  ): Promise<T | null> => {
+    if (table == null) {
+      return null;
+    }
+
+    const eventPromise = TableUtils.makeCancelableTableEventPromise(
+      table,
+      dh.Table.EVENT_SORTCHANGED,
+      timeout
+    );
+
+    table.applySort(sorts);
+
+    await eventPromise;
+
+    return table;
+  };
 
   static getSortIndex(
     sort: readonly Sort[],
