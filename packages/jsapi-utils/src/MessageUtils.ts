@@ -28,7 +28,7 @@ export const BROADCAST_LOGIN_MESSAGE = 'io.deephaven.broadcast.Login';
  */
 export const BROADCAST_LOGOUT_MESSAGE = 'io.deephaven.broadcast.Logout';
 
-export interface Message<T> {
+export interface Message<T = unknown> {
   id: string;
   message: string;
   payload?: T;
@@ -42,13 +42,13 @@ export interface BroadcastLogoutMessage extends Message<void> {
   message: typeof BROADCAST_LOGOUT_MESSAGE;
 }
 
-export interface Response<T> {
+export interface Response<T = unknown> {
   id: string;
   payload: T;
 }
 
-export function isMessage<T>(obj: unknown): obj is Message<T> {
-  const message = obj as Message<T>;
+export function isMessage(obj: unknown): obj is Message {
+  const message = obj as Message;
   return (
     message != null &&
     typeof message.id === 'string' &&
@@ -68,8 +68,8 @@ export function isBroadcastLogoutMessage(
   return isMessage(obj) && obj.message === BROADCAST_LOGOUT_MESSAGE;
 }
 
-export function isResponse<T>(obj: unknown): obj is Response<T> {
-  const response = obj as Response<T>;
+export function isResponse(obj: unknown): obj is Response {
+  const response = obj as Response;
   return response != null && typeof response.id === 'string';
 }
 
