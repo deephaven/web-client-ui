@@ -86,7 +86,7 @@ export default function useViewportData<I, T extends Table | TreeTable>({
 
   return {
     viewportData,
-    size: getSize(table),
+    size,
     table,
     applyFiltersAndRefresh,
     setViewport,
