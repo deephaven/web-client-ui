@@ -137,19 +137,16 @@ export class SettingsMenu extends Component<
     const userDisplayName = user.displayName ?? user.name;
     const hasUserImage = user.image != null && user.image !== '';
     const showUserName = userDisplayName !== '';
-    const showUserImage = hasUserImage || showUserName;
     return (
       <div className="app-settings-menu">
         <header className="app-settings-menu-header">
           <div className="user-info">
-            {showUserImage && (
-              <div className="user-image">
-                {!hasUserImage && (
-                  <FontAwesomeIcon icon={dhUser} transform="grow-8" />
-                )}
-                {hasUserImage && <img src={user.image} alt={userDisplayName} />}
-              </div>
-            )}
+            <div className="user-image">
+              {!hasUserImage && (
+                <FontAwesomeIcon icon={dhUser} transform="grow-8" />
+              )}
+              {hasUserImage && <img src={user.image} alt={userDisplayName} />}
+            </div>
             <div className="user-details">
               {showUserName && (
                 <div className="user-name">
