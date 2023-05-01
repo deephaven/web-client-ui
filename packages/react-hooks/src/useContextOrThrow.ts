@@ -1,9 +1,9 @@
 import React, { useContext } from 'react';
 
 /**
- * Fetch a given context or throw an error if it is null.
- * @param context Context to use
- * @param message Message to throw if context is null
+ * Fetch a given context or throw an error if it is null or undefined.
+ * @param context Context to use.
+ * @param message Message to throw if context is null or undefined.
  * @returns Context, or throws
  */
 export function useContextOrThrow<T>(
