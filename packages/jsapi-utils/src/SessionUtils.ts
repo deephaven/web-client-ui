@@ -85,8 +85,16 @@ export function createCoreClient(
   return new dh.CoreClient(websocketUrl, options);
 }
 
+function isSessionDetails(obj: unknown): obj is SessionDetails {
+  return obj != null && typeof obj === 'object';
+}
+
 async function requestParentSessionDetails(): Promise<SessionDetails> {
-  return requestParentResponse<SessionDetails>(SESSION_DETAILS_REQUEST);
+  const response = await requestParentResponse(SESSION_DETAILS_REQUEST);
+  if (!isSessionDetails(response)) {
+    throw new Error(`Unexpected session details response: ${response}`);
+  }
+  return response;
 }
 
 export async function getSessionDetails(): Promise<SessionDetails> {

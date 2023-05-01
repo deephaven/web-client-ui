@@ -101,10 +101,10 @@ export function makeResponse<T>(messageId: string, payload: T): Response<T> {
  * @param timeout Timeout in ms
  * @returns Payload of the given type, or undefined
  */
-export async function requestParentResponse<T>(
+export async function requestParentResponse(
   request: string,
   timeout = 30000
-): Promise<T> {
+): Promise<unknown> {
   if (window.opener == null) {
     throw new Error('window.opener is null, unable to send request.');
   }
@@ -124,7 +124,7 @@ export async function requestParentResponse<T>(
       }
       window.clearTimeout(timeoutId);
       window.removeEventListener('message', listener);
-      resolve(data.payload as T);
+      resolve(data.payload);
     };
     window.addEventListener('message', listener);
     timeoutId = window.setTimeout(() => {

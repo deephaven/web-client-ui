@@ -76,7 +76,7 @@ describe('component tests', () => {
     mockParentResponse = new Promise(resolve => {
       mockResolve = resolve;
     });
-    const loginOptions = { token: 'mockParentToken' };
+    const loginOptions = { type: 'mocktest', token: 'mockParentToken' };
     const loginPromise = Promise.resolve();
     const mockLogin = jest.fn(() => loginPromise);
     const client = makeCoreClient();
@@ -109,7 +109,7 @@ describe('component tests', () => {
 
     const errorMessage = 'mock test Invalid login credentials';
     const error = new Error(errorMessage);
-    const loginOptions = { token: 'mockParentToken' };
+    const loginOptions = { type: 'mocktest', token: 'mockParentToken' };
     const loginPromise = Promise.reject(error);
     const mockLogin = jest.fn(() => loginPromise);
     const client = makeCoreClient();
