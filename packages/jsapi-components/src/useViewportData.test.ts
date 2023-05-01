@@ -39,14 +39,14 @@ const viewportSize = 10;
 const viewportPadding = 4;
 const deserializeRow = jest.fn().mockImplementation(row => row);
 
-const options: UseViewportDataProps<unknown> = {
+const options: UseViewportDataProps<unknown, Table> = {
   table,
   viewportSize,
   viewportPadding,
   deserializeRow,
 };
 
-const optionsUseDefaults: UseViewportDataProps<unknown> = {
+const optionsUseDefaults: UseViewportDataProps<unknown, Table> = {
   table,
 };
 
@@ -60,7 +60,7 @@ it.each([options, optionsUseDefaults])(
     const { result } = renderHook(() => useViewportData(opt));
 
     const expected = {
-      initialItems: [...generateEmptyKeyedItems(table.size)],
+      initialItems: [...generateEmptyKeyedItems(0, table.size - 1)],
       viewportEnd: (opt.viewportSize ?? 10) + (opt.viewportPadding ?? 50) - 1,
     };
 
@@ -89,7 +89,7 @@ it('should update state on dh.Table.EVENT_UPDATED event', () => {
   });
 
   const expectedKeyIndex = offset + row.offsetInSnapshot;
-  const expectedInitialItems = [...generateEmptyKeyedItems(table.size)];
+  const expectedInitialItems = [...generateEmptyKeyedItems(0, table.size - 1)];
   const expectedItems = [
     ...expectedInitialItems.slice(0, expectedKeyIndex),
     {
