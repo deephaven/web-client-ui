@@ -44,11 +44,16 @@ function storeCookieToken(token: string | null): void {
   }
 }
 
+export type AuthPluginPskProps = AuthPluginProps & {
+  /** Custom path to a logo to display on the login screen */
+  logoPath?: string;
+};
+
 /**
  * AuthPlugin that tries to login using a pre-shared key.
  * Add the `psk=<token>` parameter to your URL string to set the token.
  */
-function Component({ children }: AuthPluginProps): JSX.Element {
+function Component({ children, logoPath }: AuthPluginPskProps): JSX.Element {
   const client = useClient();
   const inputField = useRef<HTMLInputElement>(null);
   const loginPromise = useRef<Promise<void> | null>(null);
@@ -171,7 +176,7 @@ function Component({ children }: AuthPluginProps): JSX.Element {
           mountOnEnter
           unmountOnExit
         >
-          <Login>
+          <Login logoPath={logoPath}>
             <LoginForm
               errorMessage={getErrorMessage(error)}
               isLoggingIn={isLoggingIn}
