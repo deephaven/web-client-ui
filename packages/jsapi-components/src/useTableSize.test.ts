@@ -33,13 +33,17 @@ it('should re-render if dh.Table.EVENT_SIZECHANGED event occurs', () => {
 
   const { result } = renderHook(() => useTableSize(table));
 
-  const [, , callback] = TestUtils.extractCallArgs(useTableListener, 0) ?? [];
+  const [eventEmitter, eventName, onSizeChangeHandler] =
+    TestUtils.extractCallArgs(useTableListener, 0) ?? [];
+
+  expect(eventEmitter).toBe(table);
+  expect(eventName).toEqual(dh.Table.EVENT_SIZECHANGED);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (table as any).size = 4;
 
   act(() => {
-    callback?.({} as CustomEvent);
+    onSizeChangeHandler?.({} as CustomEvent);
   });
 
   expect(result.current).toEqual(4);
