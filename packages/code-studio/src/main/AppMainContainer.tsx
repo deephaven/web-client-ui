@@ -952,7 +952,6 @@ export class AppMainContainer extends Component<
           }
           subtitle="Please check your network connection."
         />
-        {/* TODO: Reconnect auth fail - part of the plugin?? AppBootstrap? */}
         <BasicModal
           confirmButtonText="Refresh"
           onConfirm={AppMainContainer.handleRefresh}
