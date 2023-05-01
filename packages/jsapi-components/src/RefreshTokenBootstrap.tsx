@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useApi, useClient } from '@deephaven/jsapi-bootstrap';
-import useBroadcastChannel from './useBroadcastChannel';
 import useBroadcastLoginListener from './useBroadcastLoginListener';
 import {
   readRefreshToken,
@@ -23,7 +22,6 @@ export function RefreshTokenBootstrap({
 }: RefreshTokenBootstrapProps) {
   const api = useApi();
   const client = useClient();
-  const channel = useBroadcastChannel();
   const [token, setToken] = useState(readRefreshToken());
 
   useEffect(
@@ -38,7 +36,7 @@ export function RefreshTokenBootstrap({
       );
       return cleanup;
     },
-    [api, channel, client, token]
+    [api, client, token]
   );
 
   const onLogin = useCallback(() => {
