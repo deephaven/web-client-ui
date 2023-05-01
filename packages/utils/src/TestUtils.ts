@@ -149,7 +149,7 @@ class TestUtils {
    * optionally be set via the constructor. Any prop that is not set will be set
    * to a jest.fn() instance on first access with the exeption of "then" which
    * will not be automatically proxied.
-   * @param props Optional props to set on the Proxy.
+   * @param props Optional props to explicitly set on the Proxy.
    * @returns
    */
   static createMockProxy<T>(props: Partial<T> = {}): T {
@@ -177,6 +177,10 @@ class TestUtils {
           }
 
           return target.proxies[name as keyof T];
+        },
+        // Only consider explicitly defined props as "in" the proxy
+        has(target, name) {
+          return name in target.props;
         },
       }
     ) as T;
