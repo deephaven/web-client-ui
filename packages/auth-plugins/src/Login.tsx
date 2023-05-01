@@ -1,5 +1,6 @@
 import React from 'react';
 import { RandomAreaPlotAnimation } from '@deephaven/components';
+import Logo from './logo.png';
 import './Login.scss';
 
 interface LoginProps {
@@ -13,7 +14,7 @@ export function Login({ children }: LoginProps) {
       <RandomAreaPlotAnimation />
       <div className="login-box">
         <div className="logo">
-          <img src="/logo" alt="Deephaven Data Labs" />
+          <img src={Logo} alt="Deephaven Data Labs" />
         </div>
         {children}
         <p className="footer">
