@@ -25,15 +25,10 @@ function getWindowToken(): string | null {
 
 function clearWindowToken() {
   log.debug2('clearWindowToken');
-  const params = new URLSearchParams(window.location.search);
-  params.delete(PSK_QUERY_PARAM_KEY);
+  const url = new URL(window.location.href);
+  url.searchParams.delete(PSK_QUERY_PARAM_KEY);
 
-  let queryString = `${params}`;
-  if (queryString.length > 0) {
-    queryString = `?${queryString}`;
-  }
-  const newPath = `${window.location.pathname}${queryString}${window.location.hash}`;
-  window.history.replaceState(null, '', newPath);
+  window.history.replaceState(null, '', url.href);
 }
 
 function readCookieToken(): string | null {
