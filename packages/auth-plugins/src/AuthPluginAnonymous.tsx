@@ -17,7 +17,7 @@ function Component({ children }: AuthPluginProps): JSX.Element {
   const dh = useApi();
 
   const getLoginOptions = useCallback(
-    async () => ({ type: dh.CoreClient.LOGIN_TYPE_ANONYMOUS }),
+    () => ({ type: dh.CoreClient.LOGIN_TYPE_ANONYMOUS }),
     [dh]
   );
 

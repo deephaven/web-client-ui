@@ -18,7 +18,7 @@ export type AuthPluginBaseProps = {
    * Retrieve the login options for logging in to the client
    * @returns A promise for the login options
    */
-  getLoginOptions: () => Promise<LoginOptions>;
+  getLoginOptions: () => LoginOptions | Promise<LoginOptions>;
 };
 
 /**
