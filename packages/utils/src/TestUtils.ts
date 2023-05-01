@@ -156,8 +156,10 @@ class TestUtils {
     return new Proxy(
       {
         props: {
-          // Disable auto proxying of `then` to avoid issues with `await`
-          // treating the object as a thenable.
+          // Disable auto-proxying of certain properties that cause trouble.
+          // - Symbol.iterator - returning a jest.fn() throws a TypeError
+          // - then - avoid issues with `await` treating object as "thenable"
+          [Symbol.iterator]: undefined,
           then: undefined,
           ...props,
         },
