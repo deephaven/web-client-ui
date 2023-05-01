@@ -1,10 +1,10 @@
 /* eslint-disable react/prop-types */
 export function Transition({ children, in: inProp }) {
-  return inProp !== false ? children : null;
+  return inProp ? children : null;
 }
 
 export function CSSTransition({ children, in: inProp }) {
-  return inProp !== false ? children : null;
+  return inProp ? children : null;
 }
 
 export function TransitionGroup({ children }) {
