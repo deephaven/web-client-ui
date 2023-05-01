@@ -5,8 +5,9 @@ import useTableListener from './useTableListener';
 
 /**
  * React hook that returns the size of a given table or zero if table is null or
- * undefined. The hook subscribes to the dh.Table.EVENT_SIZECHANGED and cause a
- * re-render if any events are received to ensure we have the current size.
+ * undefined. The hook subscribes to the dh.Table.EVENT_SIZECHANGED event and
+ * triggers a re-render if any events are received to ensure we have the current
+ * size.
  * @param table The table to check the size on.
  */
 export default function useTableSize(
