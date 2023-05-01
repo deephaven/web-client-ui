@@ -12,9 +12,6 @@ export const SESSION_DETAILS_REQUEST =
 
 /**
  * Use a BroadcastChannel for sending messages between tabs, such as when the user logs out.
- * Something that isn't clear from the docs - for inter-browser communication, you must use `postMessage` and `onmessage`.
- * `BroadcastChannel` is an `EventTarget`, and does support `addEventListener`/`dispatchEvent` etc... but that's only within the same instance of that object!
- * https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API
  */
 export const BROADCAST_CHANNEL_NAME = 'io.deephaven.broadcast';
 
@@ -116,7 +113,7 @@ export async function requestParentResponse<T>(
     const id = shortid();
     const listener = (event: MessageEvent) => {
       const { data } = event;
-      if (!isResponse<T>(data)) {
+      if (!isResponse(data)) {
         log.debug('Ignoring non-deephaven response', data);
         return;
       }
@@ -127,7 +124,7 @@ export async function requestParentResponse<T>(
       }
       window.clearTimeout(timeoutId);
       window.removeEventListener('message', listener);
-      resolve(data.payload);
+      resolve(data.payload as T);
     };
     window.addEventListener('message', listener);
     timeoutId = window.setTimeout(() => {

@@ -22,7 +22,7 @@ export function useBroadcastChannel(
   );
 
   useEffect(() => {
-    channel.onmessage = (event: MessageEvent) => {
+    function handleEvent(event: MessageEvent) {
       const { data } = event;
       if (!isMessage(data)) {
         log.debug('Ignoring non-deephaven message', data);
@@ -30,6 +30,10 @@ export function useBroadcastChannel(
       }
       log.debug('event received', data);
       onEvent(event);
+    }
+    channel.addEventListener('message', handleEvent);
+    return () => {
+      channel.removeEventListener('message', handleEvent);
     };
   }, [channel, onEvent]);
 
