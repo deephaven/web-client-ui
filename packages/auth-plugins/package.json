@@ -50,7 +50,8 @@
     "@types/react": "^17.0.2"
   },
   "peerDependencies": {
-    "react": "^17.x"
+    "react": "^17.x",
+    "react-dom": "^17.x"
   },
   "files": [
     "dist"
