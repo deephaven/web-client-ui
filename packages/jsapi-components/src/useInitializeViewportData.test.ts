@@ -25,13 +25,13 @@ beforeEach(() => {
   (useTableSize as jest.Mock).mockImplementation(table => table.size);
 });
 
-it.skip('should initialize a ListData object based on Table size', () => {
+it('should initialize a ListData object based on Table size', () => {
   const { result } = renderHook(() => useInitializeViewportData(tableA));
 
   expect(result.current.items).toEqual(expectedInitialA);
 });
 
-it.skip('should re-initialize a ListData object if Table reference changes', () => {
+it('should re-initialize a ListData object if Table reference changes', () => {
   const { result, rerender } = renderHook(
     ({ table }) => useInitializeViewportData(table),
     {
@@ -58,7 +58,7 @@ it.each([
   [3, [...expectedInitialA.slice(0, -1)]],
   [5, [...expectedInitialA, { key: '4' }]],
 ])(
-  'should re-initialize a ListData object Table size changes',
+  'should re-initialize a ListData object if Table size changes',
   (newSize, expectedAfterSizeChange) => {
     const { result, rerender } = renderHook(
       ({ table }) => useInitializeViewportData(table),
