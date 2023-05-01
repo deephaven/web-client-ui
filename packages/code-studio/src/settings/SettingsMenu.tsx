@@ -136,32 +136,41 @@ export class SettingsMenu extends Component<
 
     const userDisplayName = user.displayName ?? user.name;
     const hasUserImage = user.image != null && user.image !== '';
+    const showUserName = userDisplayName !== '';
+    const showUserImage = hasUserImage || showUserName;
     return (
       <div className="app-settings-menu">
         <header className="app-settings-menu-header">
           <div className="user-info">
-            <div className="user-image">
-              {!hasUserImage && (
-                <FontAwesomeIcon icon={dhUser} transform="grow-8" />
-              )}
-              {hasUserImage && <img src={user.image} alt={userDisplayName} />}
-            </div>
-            <div className="user-details">
-              <div className="user-name">
-                {userDisplayName}
-                {user.operateAs != null && user.name !== user.operateAs && (
-                  <>
-                    <span className="font-weight-light font-italic"> as </span>
-                    <span className="operating-as-user">
-                      <FontAwesomeIcon
-                        icon={dhUserIncognito}
-                        className="mr-1"
-                      />
-                      {user.operateAs}
-                    </span>
-                  </>
+            {showUserImage && (
+              <div className="user-image">
+                {!hasUserImage && (
+                  <FontAwesomeIcon icon={dhUser} transform="grow-8" />
                 )}
+                {hasUserImage && <img src={user.image} alt={userDisplayName} />}
               </div>
+            )}
+            <div className="user-details">
+              {showUserName && (
+                <div className="user-name">
+                  {userDisplayName}
+                  {user.operateAs != null && user.name !== user.operateAs && (
+                    <>
+                      <span className="font-weight-light font-italic">
+                        {' '}
+                        as{' '}
+                      </span>
+                      <span className="operating-as-user">
+                        <FontAwesomeIcon
+                          icon={dhUserIncognito}
+                          className="mr-1"
+                        />
+                        {user.operateAs}
+                      </span>
+                    </>
+                  )}
+                </div>
+              )}
               {user.permissions.canLogout && (
                 <button
                   type="button"

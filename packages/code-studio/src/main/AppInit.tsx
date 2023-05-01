@@ -184,7 +184,7 @@ function AppInit(props: AppInitProps) {
 
           const serverConfig = new Map(configs);
 
-          const name = 'Anonymous';
+          const name = '';
           const user: User = {
             name,
             operateAs: name,
