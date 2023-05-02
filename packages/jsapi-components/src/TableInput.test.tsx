@@ -1,5 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react';
+import { ApiContext } from '@deephaven/jsapi-bootstrap';
 import { DateUtils } from '@deephaven/jsapi-utils';
 import dh from '@deephaven/jsapi-shim';
 import TableInput from './TableInput';
@@ -26,13 +27,15 @@ function makeTableInput({
   table = makeTable(),
 } = {}) {
   return render(
-    <TableInput
-      columnName={columnName}
-      settings={settings}
-      defaultValue={[]}
-      onChange={() => undefined}
-      table={table}
-    />
+    <ApiContext.Provider value={dh}>
+      <TableInput
+        columnName={columnName}
+        settings={settings}
+        defaultValue={[]}
+        onChange={() => undefined}
+        table={table}
+      />
+    </ApiContext.Provider>
   );
 }
 

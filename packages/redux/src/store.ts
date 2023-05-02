@@ -24,13 +24,17 @@ export interface UserPermissions {
   canCreateQueryMonitor: boolean;
   canCopy: boolean;
   canDownloadCsv: boolean;
+  canLogout: boolean;
 }
 
 export interface User {
   permissions: UserPermissions;
   name: string;
-  operateAs: string;
+  operateAs?: string;
   groups: string[];
+  displayName?: string;
+  fullName?: string;
+  image?: string;
 }
 
 export type ServerConfigValues = Map<string, string>;

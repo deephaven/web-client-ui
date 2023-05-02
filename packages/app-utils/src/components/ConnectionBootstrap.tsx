@@ -1,9 +1,8 @@
 import React, { createContext, useEffect, useState } from 'react';
 import { LoadingOverlay } from '@deephaven/components';
-import { useApi } from '@deephaven/jsapi-bootstrap';
+import { useApi, useClient } from '@deephaven/jsapi-bootstrap';
 import { IdeConnection } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
-import useClient from './useClient';
 
 const log = Log.module('@deephaven/jsapi-components.ConnectionBootstrap');
 
@@ -27,16 +26,16 @@ export function ConnectionBootstrap({ children }: ConnectionBootstrapProps) {
   const [connection, setConnection] = useState<IdeConnection>();
   useEffect(
     function initConnection() {
-      let isCancelled = false;
+      let isCanceled = false;
       async function loadConnection() {
         try {
           const newConnection = await client.getAsIdeConnection();
-          if (isCancelled) {
+          if (isCanceled) {
             return;
           }
           setConnection(newConnection);
         } catch (e) {
-          if (isCancelled) {
+          if (isCanceled) {
             return;
           }
           setError(e);
@@ -44,7 +43,7 @@ export function ConnectionBootstrap({ children }: ConnectionBootstrapProps) {
       }
       loadConnection();
       return () => {
-        isCancelled = true;
+        isCanceled = true;
       };
     },
     [api, client]
@@ -74,7 +73,7 @@ export function ConnectionBootstrap({ children }: ConnectionBootstrapProps) {
       <LoadingOverlay
         data-testid="connection-bootstrap-loading"
         isLoading={connection == null}
-        errorMessage={`${error}`}
+        errorMessage={error != null ? `${error}` : undefined}
       />
     );
   }

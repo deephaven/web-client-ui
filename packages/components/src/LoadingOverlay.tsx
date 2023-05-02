@@ -23,6 +23,10 @@ function LoadingOverlay({
   errorMessage = null,
   'data-testid': dataTestId,
 }: LoadingOverlayProps): JSX.Element {
+  const messageTestId =
+    dataTestId != null ? `${dataTestId}-message` : undefined;
+  const spinnerTestId =
+    dataTestId != null ? `${dataTestId}-spinner` : undefined;
   return (
     <CSSTransition
       in={Boolean(errorMessage) || !isLoaded || isLoading}
@@ -41,12 +45,16 @@ function LoadingOverlay({
         >
           <div className="message-content">
             <div className="message-icon">
-              {isLoading && <LoadingSpinner />}
+              {isLoading && <LoadingSpinner data-testid={spinnerTestId} />}
               {!isLoading && errorMessage != null && (
                 <FontAwesomeIcon icon={vsWarning} />
               )}
             </div>
-            <div className="message-text">{errorMessage}</div>
+            {errorMessage != null && (
+              <div className="message-text" data-testid={messageTestId}>
+                {errorMessage}
+              </div>
+            )}
           </div>
         </div>
       </div>

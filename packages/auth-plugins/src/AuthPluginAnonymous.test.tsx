@@ -1,12 +1,45 @@
 import React from 'react';
 import { act, render, screen } from '@testing-library/react';
-import { ApiContext } from '@deephaven/jsapi-bootstrap';
+import { ApiContext, ClientContext } from '@deephaven/jsapi-bootstrap';
 import { dh } from '@deephaven/jsapi-shim';
+import { CoreClient } from '@deephaven/jsapi-types';
 import AuthPluginAnonymous from './AuthPluginAnonymous';
 import { AUTH_HANDLER_TYPE_ANONYMOUS as AUTH_TYPE } from './AuthHandlerTypes';
+import { AuthConfigMap } from './AuthPlugin';
+
+const mockChildText = 'Mock Auth Anonymous Child';
+const mockChild = <div>{mockChildText}</div>;
+const authConfigMap = new Map();
+
+function expectMockChild() {
+  return expect(screen.queryByText(mockChildText));
+}
+
+function expectLoading() {
+  return expect(screen.queryByTestId('auth-base-loading-spinner'));
+}
+
+function expectError() {
+  return expect(screen.queryByTestId('auth-base-loading-message'));
+}
 
 function makeCoreClient() {
   return new dh.CoreClient('wss://test.mockurl.example.com');
+}
+
+function renderComponent(
+  authConfigValues: AuthConfigMap,
+  client: CoreClient = makeCoreClient()
+) {
+  return render(
+    <ApiContext.Provider value={dh}>
+      <ClientContext.Provider value={client}>
+        <AuthPluginAnonymous.Component authConfigValues={authConfigValues}>
+          {mockChild}
+        </AuthPluginAnonymous.Component>
+      </ClientContext.Provider>
+    </ApiContext.Provider>
+  );
 }
 
 describe('availability tests', () => {
@@ -21,76 +54,47 @@ describe('availability tests', () => {
   ])(
     'returns availability based on auth handlers: %s',
     (authHandlers, result) => {
-      expect(AuthPluginAnonymous.isAvailable(authHandlers)).toBe(result);
+      expect(AuthPluginAnonymous.isAvailable(authHandlers, authConfigMap)).toBe(
+        result
+      );
     }
   );
 });
-
-function expectLoading() {
-  expect(screen.queryByTestId('auth-anonymous-loading')).not.toBeNull();
-}
 
 describe('component tests', () => {
   const authConfigValues = new Map();
   it('attempts to login on mount, calls success', async () => {
     const loginPromise = Promise.resolve();
-    const onSuccess = jest.fn();
-    const onFailure = jest.fn();
     const mockLogin = jest.fn(() => loginPromise);
     const client = makeCoreClient();
     client.login = mockLogin;
-    render(
-      <ApiContext.Provider value={dh}>
-        <AuthPluginAnonymous.Component
-          authConfigValues={authConfigValues}
-          client={client}
-          onFailure={onFailure}
-          onSuccess={onSuccess}
-        />
-      </ApiContext.Provider>
-    );
-    expectLoading();
-    expect(onSuccess).not.toHaveBeenCalled();
-    expect(onFailure).not.toHaveBeenCalled();
+    renderComponent(authConfigValues, client);
+    expectLoading().toBeInTheDocument();
+    expectError().not.toBeInTheDocument();
+    expectMockChild().not.toBeInTheDocument();
+    await act(async () => {
+      await loginPromise;
+    });
     expect(mockLogin).toHaveBeenCalledWith(
       expect.objectContaining({
         type: dh.CoreClient.LOGIN_TYPE_ANONYMOUS,
       })
     );
 
-    await loginPromise;
-
-    expect(onSuccess).toHaveBeenCalled();
-    expect(onFailure).not.toHaveBeenCalled();
+    expectMockChild().toBeInTheDocument();
+    expectError().not.toBeInTheDocument();
   });
 
   it('attempts to login on mount, calls failure if login fails', async () => {
-    const error = 'Mock test error';
+    const error = new Error('Mock test error');
     const loginPromise = Promise.reject(error);
-    const onSuccess = jest.fn();
-    const onFailure = jest.fn();
     const mockLogin = jest.fn(() => loginPromise);
     const client = makeCoreClient();
     client.login = mockLogin;
-    render(
-      <ApiContext.Provider value={dh}>
-        <AuthPluginAnonymous.Component
-          authConfigValues={authConfigValues}
-          client={client}
-          onFailure={onFailure}
-          onSuccess={onSuccess}
-        />
-      </ApiContext.Provider>
-    );
-    expectLoading();
-    expect(onSuccess).not.toHaveBeenCalled();
-    expect(onFailure).not.toHaveBeenCalled();
-    expect(mockLogin).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: dh.CoreClient.LOGIN_TYPE_ANONYMOUS,
-      })
-    );
-
+    renderComponent(authConfigValues, client);
+    expectLoading().toBeInTheDocument();
+    expectMockChild().not.toBeInTheDocument();
+    expectError().not.toBeInTheDocument();
     await act(async () => {
       try {
         await loginPromise;
@@ -98,8 +102,13 @@ describe('component tests', () => {
         // We know it fails
       }
     });
+    expect(mockLogin).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: dh.CoreClient.LOGIN_TYPE_ANONYMOUS,
+      })
+    );
 
-    expect(onSuccess).not.toHaveBeenCalled();
-    expect(onFailure).toHaveBeenCalledWith(error);
+    expectMockChild().not.toBeInTheDocument();
+    expectError().toBeInTheDocument();
   });
 });

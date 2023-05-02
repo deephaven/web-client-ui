@@ -1,14 +1,11 @@
-import { useContext } from 'react';
+import { useContextOrThrow } from '@deephaven/react-hooks';
 import { ConnectionContext } from './ConnectionBootstrap';
 
 export function useConnection() {
-  const connection = useContext(ConnectionContext);
-  if (connection == null) {
-    throw new Error(
-      'No IdeConnection available in useConnection. Was code wrapped in ConnectionBootstrap or ConnectionContext.Provider?'
-    );
-  }
-  return connection;
+  return useContextOrThrow(
+    ConnectionContext,
+    'No IdeConnection available in useConnection. Was code wrapped in ConnectionBootstrap or ConnectionContext.Provider?'
+  );
 }
 
 export default useConnection;

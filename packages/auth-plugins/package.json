@@ -29,21 +29,29 @@
   },
   "scripts": {
     "build": "cross-env NODE_ENV=production run-p build:*",
-    "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward"
+    "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward",
+    "build:sass": "sass --embed-sources --load-path=../../node_modules ./src:./dist"
   },
   "dependencies": {
     "@deephaven/components": "file:../components",
     "@deephaven/jsapi-bootstrap": "file:../jsapi-bootstrap",
+    "@deephaven/jsapi-components": "file:../jsapi-components",
     "@deephaven/jsapi-types": "file:../jsapi-types",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
-    "@deephaven/log": "file:../log"
+    "@deephaven/log": "file:../log",
+    "@deephaven/utils": "file:../utils",
+    "@deephaven/redux": "file:../redux",
+    "classnames": "^2.3.1",
+    "react-transition-group": "^4.4.2",
+    "js-cookie": "^3.0.5"
   },
   "devDependencies": {
     "@deephaven/tsconfig": "file:../tsconfig",
     "@types/react": "^17.0.2"
   },
   "peerDependencies": {
-    "react": "^17.x"
+    "react": "^17.x",
+    "react-dom": "^17.x"
   },
   "files": [
     "dist"

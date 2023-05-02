@@ -1,0 +1,68 @@
+@import '@deephaven/components/scss/custom.scss';
+
+$login-box-width: 605px;
+$login-box-min-height: 310px;
+
+.login-form {
+  max-width: $login-box-width * 0.5;
+  min-height: $login-box-min-height;
+  background: $gray-700;
+  border-radius: 0 $border-radius $border-radius 0;
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacer 0;
+
+  fieldset {
+    padding: 0;
+    margin: 0;
+  }
+
+  .flex-wrapper {
+    width: 85%;
+  }
+
+  .flex-spacer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+    width: 85%;
+  }
+
+  .flex-spacer:empty {
+    content: ''; // just to make a empty div to have height
+  }
+
+  .status-message {
+    color: $gray-400;
+  }
+
+  .error-message {
+    color: $danger;
+    width: 100%;
+    word-break: break-word;
+    margin-top: $spacer-1;
+    margin-bottom: $spacer-1;
+  }
+
+  .btn-primary {
+    min-width: 118px;
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .is-initializing {
+    opacity: 0;
+    animation: fade-in $transition 1s forwards;
+  }
+}

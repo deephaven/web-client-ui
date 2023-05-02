@@ -8,6 +8,7 @@ export * from './EventTargetShimUtils';
 export { default as Pending } from './Pending';
 export * from './PromiseUtils';
 export * from './Asserts';
+export * from './ErrorUtils';
 export { default as RangeUtils } from './RangeUtils';
 export type { Range } from './RangeUtils';
 export { default as TextUtils } from './TextUtils';

@@ -36,6 +36,7 @@ export * from './popper';
 export * from './modal';
 export { default as RadioGroup } from './RadioGroup';
 export { default as RadioItem } from './RadioItem';
+export { default as RandomAreaPlotAnimation } from './RandomAreaPlotAnimation';
 export { default as Select } from './Select';
 export { default as SearchInput } from './SearchInput';
 export { default as SelectValueList } from './SelectValueList';

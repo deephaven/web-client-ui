@@ -8,10 +8,12 @@
   "exclude": ["node_modules", "src/**/*.test.*", "src/**/__mocks__/*"],
   "references": [
     { "path": "../auth-plugins" },
+    { "path": "../components" },
     { "path": "../jsapi-bootstrap" },
+    { "path": "../jsapi-components" },
     { "path": "../jsapi-types" },
     { "path": "../jsapi-utils" },
     { "path": "../log" },
-    { "path": "../redux" }
+    { "path": "../react-hooks" }
   ]
 }
