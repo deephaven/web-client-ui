@@ -13,7 +13,7 @@ afterEach(() => {
 
 it('populates the layout properly', () => {
   const figure = ChartTestUtils.makeFigure();
-  const model = new FigureChartModel(figure);
+  const model = new FigureChartModel(dh, figure);
 
   expect(model.getLayout()).toEqual(
     expect.objectContaining({
@@ -36,7 +36,7 @@ it('populates the layout properly', () => {
 
 it('populates series data properly', () => {
   const figure = ChartTestUtils.makeFigure();
-  const model = new FigureChartModel(figure);
+  const model = new FigureChartModel(dh, figure);
 
   expect(model.getData()).toEqual([
     expect.objectContaining({
@@ -60,7 +60,7 @@ it('populates horizontal series properly', () => {
   const chart = ChartTestUtils.makeChart({ series: [series], axes });
   const figure = ChartTestUtils.makeFigure({ charts: [chart] });
 
-  const model = new FigureChartModel(figure);
+  const model = new FigureChartModel(dh, figure);
 
   expect(model.getData()).toEqual([
     expect.objectContaining({ orientation: 'h' }),
@@ -73,7 +73,7 @@ it('converts histograms properly to bars', () => {
   });
   const chart = ChartTestUtils.makeChart({ series: [series] });
   const figure = ChartTestUtils.makeFigure({ charts: [chart] });
-  const model = new FigureChartModel(figure);
+  const model = new FigureChartModel(dh, figure);
 
   expect(model.getData()).toEqual([
     expect.objectContaining({
@@ -98,7 +98,7 @@ it('handles colors on line charts properly', () => {
   });
   const chart = ChartTestUtils.makeChart({ series: [series] });
   const figure = ChartTestUtils.makeFigure({ charts: [chart] });
-  const model = new FigureChartModel(figure);
+  const model = new FigureChartModel(dh, figure);
 
   expect(model.getData()).toEqual([
     expect.objectContaining({
@@ -120,7 +120,7 @@ it('handles colors on bar charts properly', () => {
   });
   const chart = ChartTestUtils.makeChart({ series: [series] });
   const figure = ChartTestUtils.makeFigure({ charts: [chart] });
-  const model = new FigureChartModel(figure);
+  const model = new FigureChartModel(dh, figure);
 
   expect(model.getData()).toEqual([
     expect.objectContaining({
@@ -147,7 +147,7 @@ describe('axis transform tests', () => {
     const series = ChartTestUtils.makeSeries({ sources });
     const chart = ChartTestUtils.makeChart({ series: [series], axes });
     const figure = ChartTestUtils.makeFigure({ charts: [chart] });
-    const model = new FigureChartModel(figure);
+    const model = new FigureChartModel(dh, figure);
 
     expect(model.getLayout().xaxis).toMatchObject({
       type: 'log',
@@ -172,7 +172,7 @@ describe('axis transform tests', () => {
     const series = ChartTestUtils.makeSeries({ sources });
     const chart = ChartTestUtils.makeChart({ series: [series], axes });
     const figure = ChartTestUtils.makeFigure({ charts: [chart] });
-    const model = new FigureChartModel(figure);
+    const model = new FigureChartModel(dh, figure);
 
     expect(model.getLayout().xaxis).not.toMatchObject({
       type: 'log',
@@ -206,7 +206,7 @@ describe('multiple axes', () => {
 
     const chart = ChartTestUtils.makeChart({ axes });
     const figure = ChartTestUtils.makeFigure({ charts: [chart] });
-    const model = new FigureChartModel(figure);
+    const model = new FigureChartModel(dh, figure);
 
     const layout = model.getLayout();
 
@@ -262,7 +262,7 @@ describe('multiple axes', () => {
 
     const chart = ChartTestUtils.makeChart({ axes });
     const figure = ChartTestUtils.makeFigure({ charts: [chart] });
-    const model = new FigureChartModel(figure);
+    const model = new FigureChartModel(dh, figure);
 
     const layout = model.getLayout();
 
@@ -324,7 +324,7 @@ describe('multiple axes', () => {
 
     const chart = ChartTestUtils.makeChart({ axes });
     const figure = ChartTestUtils.makeFigure({ charts: [chart] });
-    const model = new FigureChartModel(figure);
+    const model = new FigureChartModel(dh, figure);
 
     const layout = model.getLayout();
 
@@ -380,7 +380,7 @@ describe('multiple axes', () => {
 
     const chart = ChartTestUtils.makeChart({ axes });
     const figure = ChartTestUtils.makeFigure({ charts: [chart] });
-    const model = new FigureChartModel(figure);
+    const model = new FigureChartModel(dh, figure);
 
     const layout = model.getLayout();
 
@@ -427,8 +427,8 @@ it('adds new series', () => {
   const figure = ChartTestUtils.makeFigure({
     charts: [chart],
   });
-  const model = new FigureChartModel(figure);
-  model.subscribe(jest.fn(), jest.fn());
+  const model = new FigureChartModel(dh, figure);
+  model.subscribe(jest.fn());
 
   expect(model.getData()).toEqual([
     expect.objectContaining({
@@ -463,8 +463,8 @@ describe('legend visibility', () => {
     const figure = ChartTestUtils.makeFigure({
       charts: [chart],
     });
-    const model = new FigureChartModel(figure);
-    model.subscribe(jest.fn(), jest.fn());
+    const model = new FigureChartModel(dh, figure);
+    model.subscribe(jest.fn());
 
     return model.getData();
   }

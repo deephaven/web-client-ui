@@ -27,7 +27,8 @@ import {
   DehydratedQuickFilter,
   LegacyDehydratedSort,
 } from '@deephaven/iris-grid';
-import dh, {
+import {
+  dhType,
   FigureDescriptor,
   SeriesPlotStyle,
   TableTemplate,
@@ -124,9 +125,9 @@ export interface GLChartPanelState {
   figure?: string;
 }
 export interface ChartPanelProps {
+  makeApi: () => Promise<dhType>;
   glContainer: Container;
   glEventHub: EventEmitter;
-
   metadata: ChartPanelMetadata;
   /** Function to build the ChartModel used by this ChartPanel. Can return a promise. */
   makeModel: () => Promise<ChartModel>;
@@ -184,7 +185,7 @@ function hasPanelState(
 }
 
 export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
-  static defaultProps = {
+  public static defaultProps = {
     columnSelectionValidator: null,
     isLinkerActive: false,
     source: null,
@@ -234,6 +235,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     const { filterValueMap = [], settings = {} } = panelState ?? {};
 
     this.state = {
+      dh: undefined,
       settings,
       error: undefined,
       isActive: false,
@@ -326,8 +328,9 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
   componentWillUnmount(): void {
     this.pending.cancel();
 
+    const { dh } = this.state;
     const { source } = this.props;
-    if (source) {
+    if (dh != null && source) {
       this.stopListeningToSource(source);
     }
   }
@@ -341,11 +344,17 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
   initModel(): void {
     this.setState({ isLoading: true, isLoaded: false, error: undefined });
 
-    const { makeModel } = this.props;
+    const { makeApi, makeModel } = this.props;
     this.pending
-      .add(makeModel(), resolved => {
-        resolved.close();
+      .add(makeApi())
+      .then(dh => {
+        this.setState({ dh });
       })
+      .then(() =>
+        this.pending.add(makeModel(), resolved => {
+          resolved.close();
+        })
+      )
       .then(this.handleLoadSuccess, this.handleLoadError);
   }
 
@@ -454,6 +463,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
 
   startListeningToSource(table: TableTemplate): void {
     log.debug('startListeningToSource', table);
+    const { dh } = this.state;
 
     table.addEventListener(
       dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
@@ -471,6 +481,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
 
   stopListeningToSource(table: TableTemplate): void {
     log.debug('stopListeningToSource', table);
+    const { dh } = this.state;
 
     table.removeEventListener(
       dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
@@ -607,7 +618,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
 
   updateModelFromSource(): void {
     const { metadata, source } = this.props;
-    const { isLinked, model } = this.state;
+    const { dh, isLinked, model } = this.state;
     if (!isLinked || !model || !source) {
       log.debug2('updateModelFromSource ignoring', isLinked, model, source);
       return;
@@ -620,7 +631,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
       this.pending
         .add(
           dh.plot.Figure.create(
-            (ChartUtils.makeFigureSettings(
+            (new ChartUtils(dh).makeFigureSettings(
               settings,
               source
             ) as unknown) as FigureDescriptor

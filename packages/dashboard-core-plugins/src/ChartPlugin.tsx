@@ -39,7 +39,7 @@ export function ChartPlugin(props: ChartPluginProps): JSX.Element | null {
       const metadata = { name, figure: name };
       const makeModel = () =>
         fetch().then((figure: Figure) =>
-          ChartModelFactory.makeModel(undefined, figure)
+          ChartModelFactory.makeModel(dh, undefined, figure)
         );
       const config = {
         type: 'react-component' as const,

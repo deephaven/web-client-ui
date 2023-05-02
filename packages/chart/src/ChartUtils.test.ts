@@ -5,6 +5,8 @@ import ChartUtils from './ChartUtils';
 import ChartTestUtils from './ChartTestUtils';
 import ChartTheme from './ChartTheme';
 
+const chartUtils = new ChartUtils(dh);
+
 function makeFormatter() {
   return new Formatter();
 }
@@ -34,8 +36,8 @@ it('groups the axes by type properly', () => {
 });
 
 it('returns a newly composed layout object each time', () => {
-  const layout1 = ChartUtils.makeDefaultLayout(ChartTheme);
-  const layout2 = ChartUtils.makeDefaultLayout(ChartTheme);
+  const layout1 = chartUtils.makeDefaultLayout(ChartTheme);
+  const layout2 = chartUtils.makeDefaultLayout(ChartTheme);
 
   expect(layout1).not.toBe(layout2);
   expect(layout1.xaxis).not.toBe(layout2.xaxis);
@@ -50,7 +52,7 @@ describe('date format string translations', () => {
     formatter = makeFormatter()
   ) {
     expect(
-      ChartUtils.getPlotlyDateFormat(formatter, columnType, format)
+      chartUtils.getPlotlyDateFormat(formatter, columnType, format)
     ).toEqual(expect.objectContaining({ tickformat: expected }));
   }
 
@@ -191,7 +193,7 @@ describe('updating layout axes', () => {
   it('adds new axes', () => {
     const layout = {};
     const axes = makeTwinAxes();
-    ChartUtils.updateLayoutAxes(layout, axes, axes);
+    chartUtils.updateLayoutAxes(layout, axes, axes);
     expect(layout).toEqual(
       expect.objectContaining({
         xaxis: expect.objectContaining({
@@ -213,11 +215,11 @@ describe('updating layout axes', () => {
   it('keeps the same axis objects, updates domain', () => {
     const layout: Partial<Layout> = {};
     const axes = makeTwinAxes();
-    ChartUtils.updateLayoutAxes(layout, axes, axes, 10);
+    chartUtils.updateLayoutAxes(layout, axes, axes, 10);
 
     const { xaxis } = layout;
     const xDomain = [...(xaxis?.domain ?? [])];
-    ChartUtils.updateLayoutAxes(layout, axes, axes, 1000);
+    chartUtils.updateLayoutAxes(layout, axes, axes, 1000);
 
     expect(layout.xaxis).toBe(xaxis);
     expect(xDomain).not.toBe(xaxis?.domain);
@@ -228,7 +230,7 @@ describe('updating layout axes', () => {
     const axes = makeTwinAxes();
     const chart = ChartTestUtils.makeChart({ axes });
     const figure = ChartTestUtils.makeFigure({ charts: [chart] });
-    ChartUtils.updateFigureAxes(layout, figure);
+    chartUtils.updateFigureAxes(layout, figure);
     expect(layout).toEqual(
       expect.objectContaining({
         xaxis: expect.objectContaining({}),
@@ -238,7 +240,7 @@ describe('updating layout axes', () => {
     );
 
     axes.pop();
-    ChartUtils.updateFigureAxes(layout, figure);
+    chartUtils.updateFigureAxes(layout, figure);
     expect(layout).toEqual(
       expect.objectContaining({
         xaxis: expect.objectContaining({}),
@@ -278,7 +280,7 @@ describe('updating layout axes', () => {
     const expectedDomain = [0, 0.5];
 
     it('gets the chart bounds correctly', () => {
-      const bounds = ChartUtils.getChartBounds(figure, chart, width, height);
+      const bounds = chartUtils.getChartBounds(figure, chart, width, height);
       expect(bounds).toEqual(
         expect.objectContaining({
           bottom: 0,
@@ -291,9 +293,9 @@ describe('updating layout axes', () => {
 
     it('positions multiple axes on the same side correctly', () => {
       const layout = {};
-      const bounds = ChartUtils.getChartBounds(figure, chart, width, height);
+      const bounds = chartUtils.getChartBounds(figure, chart, width, height);
       const figureAxes = ChartUtils.getAllAxes(figure);
-      ChartUtils.updateLayoutAxes(
+      chartUtils.updateLayoutAxes(
         layout,
         axes,
         figureAxes,
@@ -329,10 +331,10 @@ describe('handles subplots and columns/rows correctly', () => {
     ];
     const figure = ChartTestUtils.makeFigure({ charts, rows: 2 });
     expect(
-      ChartUtils.getChartBounds(figure, charts[0], width, height)
+      chartUtils.getChartBounds(figure, charts[0], width, height)
     ).toEqual({ bottom: 0.5 + halfYMargin, top: 1, left: 0, right: 1 });
     expect(
-      ChartUtils.getChartBounds(figure, charts[1], width, height)
+      chartUtils.getChartBounds(figure, charts[1], width, height)
     ).toEqual({ bottom: 0, top: 0.5 - halfYMargin, left: 0, right: 1 });
   });
 
@@ -344,10 +346,10 @@ describe('handles subplots and columns/rows correctly', () => {
     ];
     const figure = ChartTestUtils.makeFigure({ charts, cols: 2 });
     expect(
-      ChartUtils.getChartBounds(figure, charts[0], width, height)
+      chartUtils.getChartBounds(figure, charts[0], width, height)
     ).toEqual({ bottom: 0, top: 1, left: 0, right: 0.5 - halfXMargin });
     expect(
-      ChartUtils.getChartBounds(figure, charts[1], width, height)
+      chartUtils.getChartBounds(figure, charts[1], width, height)
     ).toEqual({ bottom: 0, top: 1, left: 0.5 + halfXMargin, right: 1 });
   });
 
@@ -359,7 +361,7 @@ describe('handles subplots and columns/rows correctly', () => {
       ChartTestUtils.makeChart({ axes, row: 1, colspan: 2 }),
     ];
     const figure = ChartTestUtils.makeFigure({ charts, cols: 2, rows: 2 });
-    expect(ChartUtils.getChartBounds(figure, charts[0], width, height)).toEqual(
+    expect(chartUtils.getChartBounds(figure, charts[0], width, height)).toEqual(
       {
         bottom: 0.5 + halfYMargin,
         top: 1,
@@ -367,7 +369,7 @@ describe('handles subplots and columns/rows correctly', () => {
         right: 0.5 - halfXMargin,
       }
     );
-    expect(ChartUtils.getChartBounds(figure, charts[1], width, height)).toEqual(
+    expect(chartUtils.getChartBounds(figure, charts[1], width, height)).toEqual(
       {
         bottom: 0.5 + halfYMargin,
         top: 1,
@@ -376,7 +378,7 @@ describe('handles subplots and columns/rows correctly', () => {
       }
     );
     expect(
-      ChartUtils.getChartBounds(figure, charts[2], width, height)
+      chartUtils.getChartBounds(figure, charts[2], width, height)
     ).toEqual({ bottom: 0, top: 0.5 - halfYMargin, left: 0, right: 1 });
   });
 
@@ -388,7 +390,7 @@ describe('handles subplots and columns/rows correctly', () => {
       ChartTestUtils.makeChart({ axes, column: 1, rowspan: 2 }),
     ];
     const figure = ChartTestUtils.makeFigure({ charts, cols: 2, rows: 2 });
-    expect(ChartUtils.getChartBounds(figure, charts[0], width, height)).toEqual(
+    expect(chartUtils.getChartBounds(figure, charts[0], width, height)).toEqual(
       {
         bottom: 0.5 + halfYMargin,
         top: 1,
@@ -396,7 +398,7 @@ describe('handles subplots and columns/rows correctly', () => {
         right: 0.5 - halfXMargin,
       }
     );
-    expect(ChartUtils.getChartBounds(figure, charts[1], width, height)).toEqual(
+    expect(chartUtils.getChartBounds(figure, charts[1], width, height)).toEqual(
       {
         bottom: 0,
         top: 0.5 - halfYMargin,
@@ -405,7 +407,7 @@ describe('handles subplots and columns/rows correctly', () => {
       }
     );
     expect(
-      ChartUtils.getChartBounds(figure, charts[2], width, height)
+      chartUtils.getChartBounds(figure, charts[2], width, height)
     ).toEqual({ bottom: 0, top: 1, left: 0.5 + halfXMargin, right: 1 });
   });
 });
@@ -413,7 +415,7 @@ describe('handles subplots and columns/rows correctly', () => {
 describe('returns the axis layout ranges properly', () => {
   function makeLayout(layout) {
     return {
-      ...ChartUtils.makeDefaultLayout(ChartTheme),
+      ...chartUtils.makeDefaultLayout(ChartTheme),
       ...layout,
     };
   }
@@ -421,13 +423,13 @@ describe('returns the axis layout ranges properly', () => {
     expect(ChartUtils.getLayoutRanges(makeLayout(layout))).toEqual(ranges);
   }
 
-  const xaxis = ChartUtils.makeLayoutAxis(dh.plot.AxisType.X);
+  const xaxis = chartUtils.makeLayoutAxis(dh.plot.AxisType.X);
   xaxis.range = [0, 1];
-  const xaxis2 = ChartUtils.makeLayoutAxis(dh.plot.AxisType.X);
+  const xaxis2 = chartUtils.makeLayoutAxis(dh.plot.AxisType.X);
   xaxis2.range = [2, 3];
-  const yaxis = ChartUtils.makeLayoutAxis(dh.plot.AxisType.Y);
+  const yaxis = chartUtils.makeLayoutAxis(dh.plot.AxisType.Y);
   yaxis.range = [4, 5];
-  const yaxis2 = ChartUtils.makeLayoutAxis(dh.plot.AxisType.Y);
+  const yaxis2 = chartUtils.makeLayoutAxis(dh.plot.AxisType.Y);
   yaxis2.range = [6, 7];
 
   it('handles empty', () => {
@@ -468,7 +470,7 @@ it('converts a period time to decimal correctly', () => {
 
 it('creates correct bounds from business days', () => {
   expect(
-    ChartUtils.createBoundsFromDays([
+    chartUtils.createBoundsFromDays([
       'MONDAY',
       'TUESDAY',
       'WEDNESDAY',
@@ -477,7 +479,7 @@ it('creates correct bounds from business days', () => {
     ])
   ).toStrictEqual([[6, 1]]);
   expect(
-    ChartUtils.createBoundsFromDays([
+    chartUtils.createBoundsFromDays([
       'TUESDAY',
       'WEDNESDAY',
       'THURSDAY',
@@ -485,7 +487,7 @@ it('creates correct bounds from business days', () => {
     ])
   ).toStrictEqual([[6, 2]]);
   expect(
-    ChartUtils.createBoundsFromDays([
+    chartUtils.createBoundsFromDays([
       'MONDAY',
       'TUESDAY',
       'WEDNESDAY',
@@ -493,13 +495,13 @@ it('creates correct bounds from business days', () => {
     ])
   ).toStrictEqual([[5, 1]]);
   expect(
-    ChartUtils.createBoundsFromDays(['MONDAY', 'TUESDAY', 'THURSDAY', 'FRIDAY'])
+    chartUtils.createBoundsFromDays(['MONDAY', 'TUESDAY', 'THURSDAY', 'FRIDAY'])
   ).toStrictEqual([
     [6, 1],
     [3, 4],
   ]);
   expect(
-    ChartUtils.createBoundsFromDays([
+    chartUtils.createBoundsFromDays([
       'MONDAY',
       'TUESDAY',
       'WEDNESDAY',
@@ -507,14 +509,14 @@ it('creates correct bounds from business days', () => {
     ])
   ).toStrictEqual([[5, 1]]);
   expect(
-    ChartUtils.createBoundsFromDays(['MONDAY', 'WEDNESDAY', 'FRIDAY'])
+    chartUtils.createBoundsFromDays(['MONDAY', 'WEDNESDAY', 'FRIDAY'])
   ).toStrictEqual([
     [6, 1],
     [2, 3],
     [4, 5],
   ]);
   expect(
-    ChartUtils.createBoundsFromDays(['WEDNESDAY', 'THURSDAY'])
+    chartUtils.createBoundsFromDays(['WEDNESDAY', 'THURSDAY'])
   ).toStrictEqual([[5, 3]]);
 });
 
@@ -528,7 +530,7 @@ it('creates range breaks from holidays correctly', () => {
       new dh.BusinessPeriod('21:00', '22:00'),
     ]),
   ];
-  expect(ChartUtils.createRangeBreakValuesFromHolidays(holidays)).toStrictEqual(
+  expect(chartUtils.createRangeBreakValuesFromHolidays(holidays)).toStrictEqual(
     [
       { values: ['2020-06-22 00:00:00.000000', '2020-08-23 00:00:00.000000'] },
       {
@@ -557,22 +559,22 @@ it('creates range breaks from holidays correctly', () => {
 
 describe('axis property name', () => {
   it('gets x/y axis property names correctly', () => {
-    expect(ChartUtils.getAxisPropertyName(dh.plot.AxisType.X)).toBe('x');
-    expect(ChartUtils.getAxisPropertyName(dh.plot.AxisType.Y)).toBe('y');
+    expect(chartUtils.getAxisPropertyName(dh.plot.AxisType.X)).toBe('x');
+    expect(chartUtils.getAxisPropertyName(dh.plot.AxisType.Y)).toBe('y');
   });
 
   it('returns null for all other properties', () => {
-    expect(ChartUtils.getAxisPropertyName(dh.plot.AxisType.COLOR)).toBe(null);
-    expect(ChartUtils.getAxisPropertyName(dh.plot.AxisType.LABEL)).toBe(null);
-    expect(ChartUtils.getAxisPropertyName(dh.plot.AxisType.SHAPE)).toBe(null);
-    expect(ChartUtils.getAxisPropertyName(dh.plot.AxisType.SIZE)).toBe(null);
-    expect(ChartUtils.getAxisPropertyName(dh.plot.AxisType.Z)).toBe(null);
+    expect(chartUtils.getAxisPropertyName(dh.plot.AxisType.COLOR)).toBe(null);
+    expect(chartUtils.getAxisPropertyName(dh.plot.AxisType.LABEL)).toBe(null);
+    expect(chartUtils.getAxisPropertyName(dh.plot.AxisType.SHAPE)).toBe(null);
+    expect(chartUtils.getAxisPropertyName(dh.plot.AxisType.SIZE)).toBe(null);
+    expect(chartUtils.getAxisPropertyName(dh.plot.AxisType.Z)).toBe(null);
   });
 });
 
 describe('getPlotlyChartMode', () => {
   const { LINE, SCATTER } = dh.plot.SeriesPlotStyle;
-  const { getPlotlyChartMode } = ChartUtils;
+  const getPlotlyChartMode = chartUtils.getPlotlyChartMode.bind(chartUtils);
   test('scatter plots', () => {
     expect(getPlotlyChartMode(SCATTER, null, null)).toBe('markers');
     expect(getPlotlyChartMode(SCATTER, null, false)).toBe(undefined);
