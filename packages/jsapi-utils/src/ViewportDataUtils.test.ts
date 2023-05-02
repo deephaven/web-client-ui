@@ -28,12 +28,14 @@ function mockColumn(name: string) {
 
 function mockUpdateEvent(
   offset: number,
-  rows: ViewportRow[]
+  rows: ViewportRow[],
+  columns: Column[]
 ): OnTableUpdatedEvent {
   return {
     detail: {
       offset,
       rows,
+      columns,
     },
   } as OnTableUpdatedEvent;
 }
@@ -67,44 +69,20 @@ describe('createOnTableUpdatedHandler', () => {
     mockViewportRow(2),
   ];
 
-  it('should do nothing if Table is null', () => {
-    const table = null;
-
-    const { result: viewportDataRef } = renderHook(() =>
-      useListData<KeyedItem<unknown>>({})
-    );
-
-    const handler = createOnTableUpdatedHandler(
-      table,
-      viewportDataRef.current,
-      deserializeRow
-    );
-
-    const event = mockUpdateEvent(5, rows);
-
-    act(() => {
-      handler(event);
-    });
-
-    expect(deserializeRow).not.toHaveBeenCalled();
-    expect(viewportDataRef.current.items.length).toEqual(0);
-  });
+  const cols: Column[] = [];
 
   it('should create a handler that adds items to a ListData of KeyedItems', () => {
-    const table = TestUtils.createMockProxy<Table>({ columns: [] });
-
     const { result: viewportDataRef } = renderHook(() =>
       useListData<KeyedItem<unknown>>({})
     );
 
     const handler = createOnTableUpdatedHandler(
-      table,
       viewportDataRef.current,
       deserializeRow
     );
 
     const offset = 5;
-    const event = mockUpdateEvent(offset, rows);
+    const event = mockUpdateEvent(offset, rows, cols);
     const expectedItems = [
       { key: '5', item: rows[0] },
       { key: '6', item: rows[1] },
@@ -115,12 +93,13 @@ describe('createOnTableUpdatedHandler', () => {
       handler(event);
     });
 
+    rows.forEach(row => {
+      expect(deserializeRow).toHaveBeenCalledWith(row, cols);
+    });
     expect(viewportDataRef.current.items).toEqual(expectedItems);
   });
 
   it('should create a handler that updates existing items in a ListData', () => {
-    const table = TestUtils.createMockProxy<Table>({ columns: [] });
-
     const { result: viewportDataRef } = renderHook(() =>
       useListData<KeyedItem<unknown>>({})
     );
@@ -134,10 +113,9 @@ describe('createOnTableUpdatedHandler', () => {
 
     const offset = 0;
     const row = mockViewportRow(0);
-    const event = mockUpdateEvent(offset, [row]);
+    const event = mockUpdateEvent(offset, [row], cols);
 
     const handler = createOnTableUpdatedHandler(
-      table,
       viewportDataRef.current,
       deserializeRow
     );
@@ -146,6 +124,7 @@ describe('createOnTableUpdatedHandler', () => {
       handler(event);
     });
 
+    expect(deserializeRow).toHaveBeenCalledWith(row, cols);
     expect(viewportDataRef.current.items).toEqual([{ key: '0', item: row }]);
   });
 });
@@ -179,7 +158,7 @@ describe('generateEmptyKeyedItems', () => {
   ] as const)(
     'should generate a sequence of string keys for the given count: %s',
     (count, expected) => {
-      const actual = [...generateEmptyKeyedItems(count)];
+      const actual = [...generateEmptyKeyedItems(0, count - 1)];
       expect(actual).toEqual(expected);
     }
   );
