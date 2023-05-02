@@ -1,12 +1,15 @@
 import { act, renderHook } from '@testing-library/react-hooks';
-import { Table } from '@deephaven/jsapi-shim';
+import { FilterCondition, Table } from '@deephaven/jsapi-shim';
 import {
   OnTableUpdatedEvent,
   ViewportRow,
   generateEmptyKeyedItems,
 } from '@deephaven/jsapi-utils';
 import { TestUtils } from '@deephaven/utils';
+import useTableSize from './useTableSize';
 import useViewportData, { UseViewportDataProps } from './useViewportData';
+
+jest.mock('./useTableSize');
 
 function mockViewportRow(offsetInSnapshot: number): ViewportRow {
   return { offsetInSnapshot } as ViewportRow;
@@ -29,7 +32,7 @@ function getLastRegisteredEventHandler(
   table: Table,
   eventName: string
 ): ((event: OnTableUpdatedEvent) => void) | undefined {
-  const { calls } = (table.addEventListener as jest.Mock).mock;
+  const { calls } = TestUtils.asMock(table.addEventListener).mock;
   const [lastCall] = calls.filter(call => call[0] === eventName).slice(-1);
   return lastCall?.[1];
 }
@@ -52,6 +55,7 @@ const optionsUseDefaults: UseViewportDataProps<unknown, Table> = {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  TestUtils.asMock(useTableSize).mockImplementation(t => t?.size ?? 0);
 });
 
 it.each([options, optionsUseDefaults])(
@@ -69,6 +73,38 @@ it.each([options, optionsUseDefaults])(
     expect(table.setViewport).toHaveBeenCalledWith(0, expected.viewportEnd);
   }
 );
+
+it('should return table', () => {
+  const { result } = renderHook(() => useViewportData(options));
+  expect(result.current.table).toBe(options.table);
+});
+
+it('should return a callback that can apply filters and refresh viewport', () => {
+  const { result } = renderHook(() => useViewportData(options));
+  jest.clearAllMocks();
+
+  const filters: FilterCondition[] = [];
+
+  result.current.applyFiltersAndRefresh(filters);
+
+  expect(options.table?.applyFilter).toHaveBeenCalledWith(filters);
+  expect(options.table?.setViewport).toHaveBeenCalledWith(
+    0,
+    options.viewportSize! + options.viewportPadding! - 1
+  );
+});
+
+it('should set viewport if table size changes', () => {
+  const { rerender } = renderHook(() => useViewportData(options));
+  jest.clearAllMocks();
+
+  rerender();
+  expect(options.table?.setViewport).not.toHaveBeenCalled();
+
+  TestUtils.asMock(useTableSize).mockReturnValue(table.size - 5);
+  rerender();
+  expect(options.table?.setViewport).toHaveBeenCalled();
+});
 
 it('should update state on dh.Table.EVENT_UPDATED event', () => {
   const { result } = renderHook(() => useViewportData(options));
