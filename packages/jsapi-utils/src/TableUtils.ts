@@ -91,6 +91,41 @@ export class TableUtils {
   static NUMBER_REGEX = /^-?\d+(\.\d+)?$/;
 
   /**
+   * Executes a callback on a given table and returns a Promise that will resolve
+   * the next time a particular event type fires on the table.
+   * @param exec Callback function to execute.
+   * @param table Table that gets passed to the `exec` function and that is
+   * subscribed to for a given `eventType`.
+   * @param eventType The event type to listen for.
+   * @param timeout If the event doesn't fire within the timeout, the returned
+   * Promise will be rejected.
+   * @returns a Promise to the original table that resolves on next `eventType`
+   * event
+   */
+  static executeAndWaitForEvent = async <T extends Table | TreeTable>(
+    exec: (maybeTable: T | null | undefined) => void,
+    table: T | null | undefined,
+    eventType: string,
+    timeout = TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
+  ): Promise<T | null> => {
+    if (table == null) {
+      return null;
+    }
+
+    const eventPromise = TableUtils.makeCancelableTableEventPromise(
+      table,
+      eventType,
+      timeout
+    );
+
+    exec(table);
+
+    await eventPromise;
+
+    return table;
+  };
+
+  /**
    * Apply custom columns to a given table. Return a Promise that resolves with
    * the table once the dh.Table.EVENT_CUSTOMCOLUMNSCHANGED event has fired.
    * @param table The table to apply custom columns to.
@@ -99,26 +134,16 @@ export class TableUtils {
    * columns are applied.
    */
   static applyCustomColumns = async (
-    table: Table | null,
+    table: Table | null | undefined,
     columns: (string | CustomColumn)[],
     timeout = TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
-  ): Promise<Table | null> => {
-    if (table == null) {
-      return null;
-    }
-
-    const eventPromise = TableUtils.makeCancelableTableEventPromise(
+  ): Promise<Table | null> =>
+    TableUtils.executeAndWaitForEvent(
+      t => t?.applyCustomColumns(columns),
       table,
       dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
       timeout
     );
-
-    table.applyCustomColumns(columns);
-
-    await eventPromise;
-
-    return table;
-  };
 
   /**
    * Apply filters to a given table.
@@ -133,23 +158,13 @@ export class TableUtils {
     table: T | null | undefined,
     filters: FilterCondition[],
     timeout = TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
-  ): Promise<T | null> => {
-    if (table == null) {
-      return null;
-    }
-
-    const eventPromise = TableUtils.makeCancelableTableEventPromise(
+  ): Promise<T | null> =>
+    TableUtils.executeAndWaitForEvent(
+      t => t?.applyFilter(filters),
       table,
       dh.Table.EVENT_FILTERCHANGED,
       timeout
     );
-
-    table.applyFilter(filters);
-
-    await eventPromise;
-
-    return table;
-  };
 
   /**
    * Apply a filter to a table that won't match anything.
@@ -170,12 +185,9 @@ export class TableUtils {
     }
 
     const column = table.findColumn(columnName);
+    const filters = [TableUtils.makeNeverFilter(column)];
 
-    await TableUtils.applyFilter(
-      table,
-      [TableUtils.makeNeverFilter(column)],
-      timeout
-    );
+    await TableUtils.applyFilter(table, filters, timeout);
 
     return table;
   };
@@ -193,23 +205,13 @@ export class TableUtils {
     table: T | null | undefined,
     sorts: Sort[],
     timeout = TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
-  ): Promise<T | null> => {
-    if (table == null) {
-      return null;
-    }
-
-    const eventPromise = TableUtils.makeCancelableTableEventPromise(
+  ): Promise<T | null> =>
+    TableUtils.executeAndWaitForEvent(
+      t => t?.applySort(sorts),
       table,
       dh.Table.EVENT_SORTCHANGED,
       timeout
     );
-
-    table.applySort(sorts);
-
-    await eventPromise;
-
-    return table;
-  };
 
   static getSortIndex(
     sort: readonly Sort[],
