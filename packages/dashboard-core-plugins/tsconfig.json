@@ -35,6 +35,9 @@
       "path": "../iris-grid"
     },
     {
+      "path": "../jsapi-bootstrap"
+    },
+    {
       "path": "../jsapi-shim"
     },
     {

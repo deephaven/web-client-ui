@@ -63,7 +63,7 @@ export function ChartPlugin(props: ChartPluginProps): JSX.Element | null {
       const { root } = layout;
       LayoutUtils.openComponent({ root, config, dragEvent });
     },
-    [id, layout]
+    [dh, id, layout]
   );
 
   useEffect(
