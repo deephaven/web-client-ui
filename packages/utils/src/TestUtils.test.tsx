@@ -168,6 +168,17 @@ describe('createMockProxy', () => {
 
     expect(result).toBe(mock);
   });
+
+  it('should only show `in` for explicit properties', () => {
+    const mock = TestUtils.createMockProxy<Record<string, unknown>>({
+      name: 'mock.name',
+      age: 42,
+    });
+
+    expect('name' in mock).toBeTruthy();
+    expect('age' in mock).toBeTruthy();
+    expect('blah' in mock).toBeFalsy();
+  });
 });
 
 describe('extractCallArgs', () => {
