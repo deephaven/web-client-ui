@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react';
 import { ListData } from '@react-stately/data';
-import { Table, TreeTable } from '@deephaven/jsapi-types';
+import { FilterCondition, Table, TreeTable } from '@deephaven/jsapi-types';
 import {
   KeyedItem,
   RowDeserializer,
