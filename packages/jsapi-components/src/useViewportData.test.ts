@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react-hooks';
-import { FilterCondition, Table } from '@deephaven/jsapi-shim';
+import type { FilterCondition, Table } from '@deephaven/jsapi-types';
 import {
   OnTableUpdatedEvent,
   ViewportRow,

@@ -1,4 +1,4 @@
-import { Column, Table, TreeTable } from '@deephaven/jsapi-shim';
+import type { Column, Table, TreeTable } from '@deephaven/jsapi-types';
 import { TestUtils } from '@deephaven/utils';
 import { ListData, useListData } from '@react-stately/data';
 import { act, renderHook } from '@testing-library/react-hooks';

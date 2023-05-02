@@ -1,5 +1,5 @@
 import debounce from 'lodash.debounce';
-import { Table, TreeTable } from '@deephaven/jsapi-shim';
+import type { Table, TreeTable } from '@deephaven/jsapi-types';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import { useMemo } from 'react';
 import { UseViewportDataResult } from './useViewportData';

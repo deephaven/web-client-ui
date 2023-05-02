@@ -1,10 +1,10 @@
 import { renderHook } from '@testing-library/react-hooks';
-import {
+import type {
   Column,
   FilterCondition,
   FilterValue,
   Table,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import { TestUtils } from '@deephaven/utils';
 import useDebouncedViewportSearch from './useDebouncedViewportSearch';

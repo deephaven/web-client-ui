@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Table, TreeTable } from '@deephaven/jsapi-shim';
+import type { Table, TreeTable } from '@deephaven/jsapi-types';
 import { getSize } from '@deephaven/jsapi-utils';
 import useTableListener from './useTableListener';
 

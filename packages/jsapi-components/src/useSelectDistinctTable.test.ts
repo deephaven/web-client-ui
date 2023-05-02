@@ -1,4 +1,4 @@
-import { Table } from '@deephaven/jsapi-shim';
+import type { Table } from '@deephaven/jsapi-types';
 import { TestUtils } from '@deephaven/utils';
 import { renderHook } from '@testing-library/react-hooks';
 import useSelectDistinctTable from './useSelectDistinctTable';

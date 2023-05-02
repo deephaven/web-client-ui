@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react-hooks';
-import { Table } from '@deephaven/jsapi-shim';
+import type { Table } from '@deephaven/jsapi-types';
 import { KeyedItem } from '@deephaven/jsapi-utils';
 import { TestUtils } from '@deephaven/utils';
 import useInitializeViewportData from './useInitializeViewportData';
