@@ -548,7 +548,6 @@ class ChartUtils {
     figure: Figure,
     formatter: Formatter
   ): Map<LayoutAxisKey, Partial<PlotlyAxis>> {
-    const { dh } = this;
     const axisFormats = new Map();
     const nullFormat = { tickformat: null, ticksuffix: null };
 
