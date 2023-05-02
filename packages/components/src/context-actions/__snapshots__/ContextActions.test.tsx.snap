@@ -37,8 +37,8 @@ exports[`renders a menu from a promise returned from a function 1`] = `
         >
           <svg
             aria-hidden="true"
-            className="svg-inline--fa fa-circle-large-outline text-white-50"
-            data-icon="circle-large-outline"
+            className="svg-inline--fa fa-circle-large text-white-50"
+            data-icon="circle-large"
             data-prefix="vs"
             focusable="false"
             role="img"
@@ -206,8 +206,8 @@ exports[`renders an empty menu for a rejected promise 1`] = `
         >
           <svg
             aria-hidden="true"
-            className="svg-inline--fa fa-circle-large-outline text-white-50"
-            data-icon="circle-large-outline"
+            className="svg-inline--fa fa-circle-large text-white-50"
+            data-icon="circle-large"
             data-prefix="vs"
             focusable="false"
             role="img"
