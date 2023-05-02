@@ -106,6 +106,73 @@ describe('applyCustomColumns', () => {
   });
 });
 
+describe('executeAndWaitForEvent', () => {
+  const table = TestUtils.createMockProxy<Table>({
+    addEventListener: jest.fn(() => jest.fn()),
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it.each([null, undefined])(
+    'should resolve to null if given null or undefined: %s',
+    async notTable => {
+      const exec = jest.fn();
+      const actual = await TableUtils.executeAndWaitForEvent(
+        exec,
+        notTable,
+        'mock.event'
+      );
+
+      expect(actual).toBeNull();
+      expect(exec).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each(['mock.eventA', 'mock.eventB'])(
+    'should call execute callback and wait for next `eventType` event: %s',
+    async eventType => {
+      const exec = jest.fn();
+      const tablePromise = TableUtils.executeAndWaitForEvent(
+        exec,
+        table,
+        eventType
+      );
+
+      expect(exec).toHaveBeenCalledWith(table);
+
+      sendEventToLastRegisteredHandler(table, eventType);
+
+      const result = await tablePromise;
+
+      expect(result).toBe(table);
+    }
+  );
+
+  it.each(['mock.eventA', 'mock.eventB'])(
+    'should execute callback and reject promise if event timeout expires: %s',
+    async eventType => {
+      jest.useFakeTimers();
+
+      const exec = jest.fn();
+      const timeout = 3000;
+      const tablePromise = TableUtils.executeAndWaitForEvent(
+        exec,
+        table,
+        eventType,
+        timeout
+      );
+
+      expect(exec).toHaveBeenCalledWith(table);
+
+      jest.advanceTimersByTime(timeout);
+
+      expect(tablePromise).rejects.toThrow(`Event "${eventType}" timed out.`);
+    }
+  );
+});
+
 describe('applyFilter', () => {
   const table = TestUtils.createMockProxy<Table>({
     addEventListener: jest.fn(() => jest.fn()),
