@@ -44,8 +44,9 @@ export function ChartBuilderPlugin(
       table: Table;
     }) => {
       const { settings } = metadata;
+      const makeApi = () => dh;
       const makeModel = () =>
-        ChartModelFactory.makeModelFromSettings(settings, table);
+        ChartModelFactory.makeModelFromSettings(dh, settings, table);
       const title = ChartUtils.titleFromSettings(settings);
 
       const config = {
@@ -55,6 +56,7 @@ export function ChartBuilderPlugin(
           localDashboardId: id,
           id: panelId,
           metadata,
+          makeApi,
           makeModel,
         },
         title,

@@ -149,6 +149,7 @@ export interface ChartPanelProps {
 }
 
 interface ChartPanelState {
+  dh: dhType | undefined;
   settings: Partial<ChartModelSettings>;
   error?: unknown;
   isActive: boolean;
@@ -185,7 +186,7 @@ function hasPanelState(
 }
 
 export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
-  public static defaultProps = {
+  static defaultProps = {
     columnSelectionValidator: null,
     isLinkerActive: false,
     source: null,
@@ -464,7 +465,10 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
   startListeningToSource(table: TableTemplate): void {
     log.debug('startListeningToSource', table);
     const { dh } = this.state;
-
+    if (dh == null) {
+      log.error('API is not defined');
+      return;
+    }
     table.addEventListener(
       dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
       this.handleSourceColumnChange
@@ -482,7 +486,10 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
   stopListeningToSource(table: TableTemplate): void {
     log.debug('stopListeningToSource', table);
     const { dh } = this.state;
-
+    if (dh == null) {
+      log.error('API is not defined');
+      return;
+    }
     table.removeEventListener(
       dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
       this.handleSourceColumnChange
@@ -619,7 +626,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
   updateModelFromSource(): void {
     const { metadata, source } = this.props;
     const { dh, isLinked, model } = this.state;
-    if (!isLinked || !model || !source) {
+    if (!dh || !isLinked || !model || !source) {
       log.debug2('updateModelFromSource ignoring', isLinked, model, source);
       return;
     }

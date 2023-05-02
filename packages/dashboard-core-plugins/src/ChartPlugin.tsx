@@ -37,6 +37,7 @@ export function ChartPlugin(props: ChartPluginProps): JSX.Element | null {
       }
 
       const metadata = { name, figure: name };
+      const makeApi = () => dh;
       const makeModel = () =>
         fetch().then((figure: Figure) =>
           ChartModelFactory.makeModel(dh, undefined, figure)
@@ -48,6 +49,7 @@ export function ChartPlugin(props: ChartPluginProps): JSX.Element | null {
           localDashboardId: id,
           id: panelId,
           metadata,
+          makeApi,
           makeModel,
         },
         title: name,

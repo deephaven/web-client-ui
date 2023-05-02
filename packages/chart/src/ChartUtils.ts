@@ -581,11 +581,7 @@ class ChartUtils {
               log.debug(`${axisLayoutProperty} already added.`);
             } else {
               log.debug(`Adding ${axisLayoutProperty} to axisFormats.`);
-              const axisFormat = ChartUtils.getPlotlyAxisFormat(
-                dh,
-                source,
-                formatter
-              );
+              const axisFormat = this.getPlotlyAxisFormat(source, formatter);
               if (axisFormat === null) {
                 axisFormats.set(axisLayoutProperty, nullFormat);
               } else {
