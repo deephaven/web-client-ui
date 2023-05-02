@@ -1,11 +1,20 @@
 import { FormEvent, useCallback, useMemo } from 'react';
 import type { FocusableRefValue } from '@react-types/shared';
 
-/** Generate a unique id that increments on every call. */
-let uniqueFormId = 0;
-function generateId() {
-  uniqueFormId += 1;
-  return `useSubmitButtonRef-${uniqueFormId}`;
+/**
+ * This class just keeps track of an incrementing counter value. Implementing
+ * it as a class makes it easier to spy on / mock for testing purposes.
+ */
+export class Counter {
+  private static i = 0;
+
+  /**
+   * Increment the internal counter and return the result.
+   */
+  static next(): number {
+    Counter.i += 1;
+    return Counter.i;
+  }
 }
 
 function preventDefault(event: FormEvent): void {
@@ -42,7 +51,7 @@ export interface UseFormWithDetachedSubmitButtonResult {
 export default function useFormWithDetachedSubmitButton(
   preventDefaultFormSubmit = false
 ): UseFormWithDetachedSubmitButtonResult {
-  const formId = useMemo(() => generateId(), []);
+  const formId = useMemo(() => `useSubmitButtonRef-${Counter.next()}`, []);
 
   const submitButtonRef = useCallback(
     (buttonEl: FocusableRefValue<HTMLButtonElement> | null) => {
