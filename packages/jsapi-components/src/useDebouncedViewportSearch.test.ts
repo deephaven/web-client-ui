@@ -7,7 +7,9 @@ import type {
 } from '@deephaven/jsapi-types';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import { TestUtils } from '@deephaven/utils';
-import useDebouncedViewportSearch from './useDebouncedViewportSearch';
+import useDebouncedViewportSearch, {
+  DEBOUNCE_VIEWPORT_SEARCH_MS,
+} from './useDebouncedViewportSearch';
 import { UseViewportDataResult } from './useViewportData';
 
 // Mock js api objects
@@ -33,27 +35,48 @@ beforeEach(() => {
   jest.spyOn(TableUtils, 'makeFilterValue').mockReturnValue(matchFilterValue);
 });
 
-it('should return a funciton that debounces search filtering', () => {
+it.each([undefined, 400])(
+  'should return a funciton that debounces search filtering',
+  debounceMs => {
+    const searchText = 'mock.searchText';
+
+    const { result } = renderHook(() =>
+      useDebouncedViewportSearch(viewportData, 'mock.column', debounceMs)
+    );
+
+    result.current(searchText);
+
+    expect(viewportData.applyFiltersAndRefresh).not.toHaveBeenCalled();
+
+    jest.advanceTimersByTime(debounceMs ?? DEBOUNCE_VIEWPORT_SEARCH_MS);
+
+    expect(TableUtils.makeFilterValue).toHaveBeenCalledWith(
+      column.type,
+      searchText
+    );
+    expect(viewportData.applyFiltersAndRefresh).toHaveBeenCalledWith([
+      filterCondition,
+    ]);
+  }
+);
+
+it('should return a function that safely ignores no table', () => {
+  const viewportNoTable = TestUtils.createMockProxy<
+    UseViewportDataResult<unknown, Table>
+  >({ table: null });
+
   const searchText = 'mock.searchText';
   const debounceMs = 400;
 
   const { result } = renderHook(() =>
-    useDebouncedViewportSearch(viewportData, 'mock.column', debounceMs)
+    useDebouncedViewportSearch(viewportNoTable, 'mock.column', debounceMs)
   );
 
   result.current(searchText);
-
-  expect(viewportData.applyFiltersAndRefresh).not.toHaveBeenCalled();
-
   jest.advanceTimersByTime(debounceMs);
 
-  expect(TableUtils.makeFilterValue).toHaveBeenCalledWith(
-    column.type,
-    searchText
-  );
-  expect(viewportData.applyFiltersAndRefresh).toHaveBeenCalledWith([
-    filterCondition,
-  ]);
+  expect(TableUtils.makeFilterValue).not.toHaveBeenCalled();
+  expect(viewportNoTable.applyFiltersAndRefresh).not.toHaveBeenCalled();
 });
 
 it('should trim search text', () => {

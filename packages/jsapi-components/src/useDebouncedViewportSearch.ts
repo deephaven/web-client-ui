@@ -4,6 +4,8 @@ import { TableUtils } from '@deephaven/jsapi-utils';
 import { useMemo } from 'react';
 import { UseViewportDataResult } from './useViewportData';
 
+export const DEBOUNCE_VIEWPORT_SEARCH_MS = 200;
+
 /**
  * React hook that returns a debounced search callback for filtering a table
  * viewport.
@@ -17,7 +19,7 @@ export default function useDebouncedViewportSearch<
 >(
   viewportData: UseViewportDataResult<I, T>,
   columnName: string,
-  debounceMs = 200
+  debounceMs = DEBOUNCE_VIEWPORT_SEARCH_MS
 ): (searchText: string) => void {
   return useMemo(
     () =>
