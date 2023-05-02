@@ -2,19 +2,32 @@ import { FormEvent, useCallback, useMemo } from 'react';
 import type { FocusableRefValue } from '@react-types/shared';
 
 /**
- * This class just keeps track of an incrementing counter value. Implementing
- * it as a class makes it easier to spy on / mock for testing purposes.
+ * This class just keeps track of an incrementing counter value.
  */
 export class Counter {
   private static i = 0;
 
   /**
-   * Increment the internal counter and return the result.
+   * Get current value.
    */
-  static next(): number {
-    Counter.i += 1;
+  static get current() {
     return Counter.i;
   }
+
+  /**
+   * Increment the internal counter and return the result.
+   */
+  static next = (): number => {
+    Counter.i += 1;
+    return Counter.i;
+  };
+
+  /**
+   * Reset counter.
+   */
+  static reset = (): void => {
+    Counter.i = 0;
+  };
 }
 
 function preventDefault(event: FormEvent): void {
