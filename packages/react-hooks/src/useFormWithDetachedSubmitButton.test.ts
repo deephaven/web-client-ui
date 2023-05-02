@@ -44,25 +44,40 @@ describe('useFormWithDetachedSubmitButton', () => {
     expect(Counter.current).toEqual(2);
   });
 
+  it('should generate form and button props', () => {
+    const { result } = renderHook(() => useFormWithDetachedSubmitButton());
+
+    const formId = `useSubmitButtonRef-${Counter.current}`;
+
+    expect(result.current).toEqual({
+      formProps: {
+        id: formId,
+        onSubmit: undefined,
+      },
+      submitButtonProps: {
+        form: formId,
+        ref: expect.any(Function),
+      },
+    });
+  });
+
   it.each([true, false])(
-    'should generate form and button props: %s',
+    'should include preventDefault function if preventDefault is true: %s',
     preventDefault => {
       const { result } = renderHook(() =>
         useFormWithDetachedSubmitButton(preventDefault)
       );
 
-      const formId = `useSubmitButtonRef-${Counter.current}`;
+      expect(result.current.formProps.onSubmit).toEqual(
+        preventDefault ? expect.any(Function) : undefined
+      );
 
-      expect(result.current).toEqual({
-        formProps: {
-          id: formId,
-          onSubmit: preventDefault ? expect.any(Function) : undefined,
-        },
-        submitButtonProps: {
-          form: formId,
-          ref: expect.any(Function),
-        },
-      });
+      if (preventDefault) {
+        const event = TestUtils.createMockProxy<React.FormEvent<Element>>({});
+        result.current.formProps.onSubmit?.(event);
+
+        expect(event.preventDefault).toHaveBeenCalled();
+      }
     }
   );
 
