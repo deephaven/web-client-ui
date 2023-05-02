@@ -1,6 +1,6 @@
 import { Column, Table, TreeTable } from '@deephaven/jsapi-shim';
 import { TestUtils } from '@deephaven/utils';
-import { useListData } from '@react-stately/data';
+import { ListData, useListData } from '@react-stately/data';
 import { act, renderHook } from '@testing-library/react-hooks';
 import {
   KeyedItem,
@@ -14,6 +14,7 @@ import {
   getSize,
   isClosed,
   padFirstAndLastRow,
+  getItemsFromListData,
 } from './ViewportDataUtils';
 
 function mockViewportRow(offsetInSnapshot: number): ViewportRow {
@@ -152,16 +153,38 @@ describe('defaultRowDeserializer', () => {
 
 describe('generateEmptyKeyedItems', () => {
   it.each([
-    [1, [{ key: '0' }]],
-    [2, [{ key: '0' }, { key: '1' }]],
-    [5, [{ key: '0' }, { key: '1' }, { key: '2' }, { key: '3' }, { key: '4' }]],
+    [0, 0, [{ key: '0' }]],
+    [0, 1, [{ key: '0' }, { key: '1' }]],
+    [
+      0,
+      4,
+      [{ key: '0' }, { key: '1' }, { key: '2' }, { key: '3' }, { key: '4' }],
+    ],
+    [3, 5, [{ key: '3' }, { key: '4' }, { key: '5' }]],
   ] as const)(
-    'should generate a sequence of string keys for the given count: %s',
-    (count, expected) => {
-      const actual = [...generateEmptyKeyedItems(0, count - 1)];
+    'should generate a sequence of string keys for the given range: %s',
+    (start, end, expected) => {
+      const actual = [...generateEmptyKeyedItems(start, end)];
       expect(actual).toEqual(expected);
     }
   );
+});
+
+describe('getItemsFromListData', () => {
+  it('should return items matching given keys', () => {
+    const keys = ['2', '4', '9'];
+    const listData = TestUtils.createMockProxy<ListData<KeyedItem<unknown>>>({
+      getItem: jest.fn(key => ({ key: key as string, item: `item-${key}` })),
+    });
+
+    const result = getItemsFromListData(listData, ...keys);
+
+    expect(result).toEqual([
+      { key: '2', item: 'item-2' },
+      { key: '4', item: 'item-4' },
+      { key: '9', item: 'item-9' },
+    ]);
+  });
 });
 
 describe('getSize', () => {
