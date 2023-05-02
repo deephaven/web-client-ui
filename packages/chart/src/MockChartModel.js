@@ -1,9 +1,8 @@
-import defaultDh from '@deephaven/jsapi-shim';
 import ChartModel from './ChartModel';
 import ChartTheme from './ChartTheme';
 import ChartUtils from './ChartUtils';
 
-/** Displays a basic random chark */
+/** Displays a basic random chart */
 class MockChartModel extends ChartModel {
   static smoothing = 1.5;
 
@@ -160,11 +159,14 @@ class MockChartModel extends ChartModel {
     return layout;
   }
 
-  constructor({
-    data = MockChartModel.makeRandomData(),
-    layout = MockChartModel.makeDefaultLayout(defaultDh),
-    filterFields = [],
-  } = {}) {
+  constructor(
+    dh,
+    {
+      data = MockChartModel.makeRandomData(),
+      layout = MockChartModel.makeDefaultLayout(dh),
+      filterFields = [],
+    } = {}
+  ) {
     super();
 
     this.data = data;

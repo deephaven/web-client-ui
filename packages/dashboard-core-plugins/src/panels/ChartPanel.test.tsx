@@ -43,6 +43,10 @@ function makeGlComponent() {
   };
 }
 
+function makeChartModel(options) {
+  return new MockChartModel(dh, options);
+}
+
 function makeTable() {
   const table = new (dh as any).Table();
   const { addEventListener, removeEventListener } = table;
@@ -63,7 +67,7 @@ function makeChartPanelWrapper({
   glEventHub = makeGlComponent(),
   columnSelectionValidator = undefined,
   makeApi = () => Promise.resolve(dh),
-  makeModel = () => Promise.resolve(new MockChartModel()),
+  makeModel = () => Promise.resolve(makeChartModel()),
   metadata = { figure: 'testFigure' },
   inputFilters = [],
   links = [],
@@ -155,7 +159,7 @@ it('mounts/unmounts without crashing', () => {
 });
 
 it('unmounts while still resolving the model successfully', async () => {
-  const model = new MockChartModel();
+  const model = makeChartModel();
   let modelResolve = null;
   const modelPromise = new Promise(resolve => {
     modelResolve = resolve;
@@ -170,7 +174,7 @@ it('unmounts while still resolving the model successfully', async () => {
 });
 
 it('handles a model passed in as a promise, and shows the loading spinner until it is loaded and an event is received', async () => {
-  const model = new MockChartModel();
+  const model = makeChartModel();
   const modelPromise = Promise.resolve(model);
   const makeModel = () => modelPromise;
 
@@ -208,7 +212,7 @@ it('shows an error properly if model loading fails', async () => {
 
 it('shows a prompt if input filters are required, and removes when they are set', async () => {
   const filterFields = ['Field_A', 'Field_B'];
-  const model = new MockChartModel({ filterFields });
+  const model = makeChartModel({ filterFields });
   const modelPromise = Promise.resolve(model);
   const makeModel = () => modelPromise;
 
@@ -255,7 +259,7 @@ it('shows a prompt if input filters are required, and removes when they are set'
 
 it('shows loading spinner until an error is received', async () => {
   const filterFields = ['Field_A', 'Field_B'];
-  const model = new MockChartModel({ filterFields });
+  const model = makeChartModel({ filterFields });
   const modelPromise = Promise.resolve(model);
   const makeModel = () => modelPromise;
 
@@ -290,7 +294,7 @@ it('shows prompt if input filters are removed', async () => {
     type: 'java.lang.String',
     value: 'Test',
   }));
-  const model = new MockChartModel({ filterFields });
+  const model = makeChartModel({ filterFields });
   const modelPromise = Promise.resolve(model);
   const makeModel = () => modelPromise;
 
@@ -334,7 +338,7 @@ it('shows prompt if input filters are cleared', async () => {
     type: 'java.lang.String',
     value: 'Test',
   }));
-  const model = new MockChartModel({ filterFields });
+  const model = makeChartModel({ filterFields });
   const modelPromise = Promise.resolve(model);
   const makeModel = () => modelPromise;
 
@@ -363,7 +367,7 @@ it('shows prompt if input filters are cleared', async () => {
 
 it('shows loading spinner until an error is received B', async () => {
   const filterFields = [];
-  const model = new MockChartModel({ filterFields });
+  const model = makeChartModel({ filterFields });
   const modelPromise = Promise.resolve(model);
   const makeModel = () => modelPromise;
 
@@ -391,7 +395,7 @@ it('shows loading spinner until an error is received B', async () => {
 
 describe('linker column selection', () => {
   it('does not show overlay if linker active but no filterable columns', async () => {
-    const model = new MockChartModel();
+    const model = makeChartModel();
     const modelPromise = Promise.resolve(model);
     const makeModel = () => modelPromise;
 
@@ -416,7 +420,7 @@ describe('linker column selection', () => {
       disabledColumnNames.find(
         disabledColumn => disabledColumn === column.name
       ) == null;
-    const model = new MockChartModel({
+    const model = makeChartModel({
       filterFields: columnNames,
     });
     const modelPromise = Promise.resolve(model);
@@ -488,7 +492,7 @@ describe('linker column selection', () => {
 });
 
 it('adds listeners to the source table when passed in and linked', async () => {
-  const model = new MockChartModel();
+  const model = makeChartModel;
   const modelPromise = Promise.resolve(model);
   const makeModel = () => modelPromise;
   const apiPromise = Promise.resolve(dh);
