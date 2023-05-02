@@ -22,6 +22,11 @@ beforeEach(() => {
   TestUtils.asMock(useTableSize).mockImplementation(table => table?.size ?? 0);
 });
 
+it.each([null])('should safely handle no table: %s', noTable => {
+  const { result } = renderHook(() => useInitializeViewportData(noTable));
+  expect(result.current.items).toEqual([]);
+});
+
 it('should initialize a ListData object based on Table size', () => {
   const { result } = renderHook(() => useInitializeViewportData(tableA));
 
