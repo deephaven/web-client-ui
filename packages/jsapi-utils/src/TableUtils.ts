@@ -129,11 +129,11 @@ export class TableUtils {
    * @returns a Promise to the Table that resolves after the next
    * dh.Table.EVENT_FILTERCHANGED event
    */
-  static applyFilter = async (
-    table: Table | TreeTable | null | undefined,
+  static applyFilter = async <T extends Table | TreeTable>(
+    table: T | null | undefined,
     filters: FilterCondition[],
     timeout = TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
-  ) => {
+  ): Promise<T | null> => {
     if (table == null) {
       return null;
     }
@@ -171,7 +171,11 @@ export class TableUtils {
 
     const column = table.findColumn(columnName);
 
-    await TableUtils.applyFilter(table, [TableUtils.makeNeverFilter(column)]);
+    await TableUtils.applyFilter(
+      table,
+      [TableUtils.makeNeverFilter(column)],
+      timeout
+    );
 
     return table;
   };

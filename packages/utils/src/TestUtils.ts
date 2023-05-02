@@ -51,6 +51,16 @@ class TestUtils {
     fn: (...args: TArgs) => TResult
   ): jest.Mock<TResult, TArgs> => (fn as unknown) as jest.Mock<TResult, TArgs>;
 
+  /**
+   * Find the last mock function call matching a given predicate.
+   * @param fn jest.Mock function
+   * @param predicate Predicate function to match calls against
+   */
+  static findLastCall = <TResult, TArgs extends unknown[]>(
+    fn: (...args: TArgs) => TResult,
+    predicate: (args: TArgs) => boolean
+  ) => TestUtils.asMock(fn).mock.calls.reverse().find(predicate);
+
   static makeMockContext(): MockContext {
     return {
       arc: jest.fn(),
