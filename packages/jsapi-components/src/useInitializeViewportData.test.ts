@@ -5,10 +5,7 @@ import { TestUtils } from '@deephaven/utils';
 import useInitializeViewportData from './useInitializeViewportData';
 import useTableSize from './useTableSize';
 
-jest.mock('./useTableSize', () => ({
-  __esModule: true,
-  default: jest.fn(),
-}));
+jest.mock('./useTableSize');
 
 const tableA = TestUtils.createMockProxy<Table>({ size: 4 });
 const expectedInitialA: KeyedItem<unknown>[] = [
