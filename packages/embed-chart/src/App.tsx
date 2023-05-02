@@ -58,7 +58,11 @@ function App(): JSX.Element {
           // Create the `ChartModel` for use with the `Chart` component
           log.debug(`Creating model...`);
 
-          const newModel = await ChartModelFactory.makeModel(undefined, figure);
+          const newModel = await ChartModelFactory.makeModel(
+            dh,
+            undefined,
+            figure
+          );
 
           setModel(newModel);
 
