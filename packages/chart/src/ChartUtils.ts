@@ -11,7 +11,7 @@ import {
   AxisType,
   Chart,
   DateWrapper,
-  dhType,
+  dh as dhType,
   Figure,
   Holiday,
   LongWrapper,
@@ -21,7 +21,7 @@ import {
   SourceType,
   TableTemplate,
   TimeZone,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import set from 'lodash.set';
 import {
   Layout,
@@ -700,8 +700,8 @@ class ChartUtils {
    */
   getPlotlyChartMode(
     plotStyle: SeriesPlotStyle,
-    areLinesVisible?: boolean,
-    areShapesVisible?: boolean
+    areLinesVisible?: boolean | null,
+    areShapesVisible?: boolean | null
   ): PlotData['mode'] | undefined {
     const { dh } = this;
     const modes = new Set<PlotData['mode']>();

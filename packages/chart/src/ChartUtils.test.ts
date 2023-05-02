@@ -574,30 +574,47 @@ describe('axis property name', () => {
 
 describe('getPlotlyChartMode', () => {
   const { LINE, SCATTER } = dh.plot.SeriesPlotStyle;
-  const getPlotlyChartMode = chartUtils.getPlotlyChartMode.bind(chartUtils);
-  test('scatter plots', () => {
-    expect(getPlotlyChartMode(SCATTER, null, null)).toBe('markers');
-    expect(getPlotlyChartMode(SCATTER, null, false)).toBe(undefined);
-    expect(getPlotlyChartMode(SCATTER, null, true)).toBe('markers');
-    expect(getPlotlyChartMode(SCATTER, false, null)).toBe('markers');
-    expect(getPlotlyChartMode(SCATTER, false, false)).toBe(undefined);
-    expect(getPlotlyChartMode(SCATTER, false, true)).toBe('markers');
-    expect(getPlotlyChartMode(SCATTER, true, null)).toBe('lines+markers');
-    expect(getPlotlyChartMode(SCATTER, true, false)).toBe('lines');
-    expect(getPlotlyChartMode(SCATTER, true, true)).toBe('lines+markers');
-  });
+  test.each([
+    [null, null, 'markers'],
+    [null, false, undefined],
+    [null, true, 'markers'],
+    [false, null, 'markers'],
+    [false, false, undefined],
+    [false, true, 'markers'],
+    [true, null, 'lines+markers'],
+    [true, false, 'lines'],
+    [true, true, 'lines+markers'],
+  ])(
+    'returns the expected scatter plotly type for %s %s %s',
+    (areLinesVisible, areShapesVisible, result) => {
+      expect(
+        chartUtils.getPlotlyChartMode(
+          SCATTER,
+          areLinesVisible,
+          areShapesVisible
+        )
+      ).toBe(result);
+    }
+  );
 
-  test('line plots', () => {
-    expect(getPlotlyChartMode(LINE, null, null)).toBe('lines');
-    expect(getPlotlyChartMode(LINE, null, false)).toBe('lines');
-    expect(getPlotlyChartMode(LINE, null, true)).toBe('lines+markers');
-    expect(getPlotlyChartMode(LINE, false, null)).toBe(undefined);
-    expect(getPlotlyChartMode(LINE, false, false)).toBe(undefined);
-    expect(getPlotlyChartMode(LINE, false, true)).toBe('markers');
-    expect(getPlotlyChartMode(LINE, true, null)).toBe('lines');
-    expect(getPlotlyChartMode(LINE, true, false)).toBe('lines');
-    expect(getPlotlyChartMode(LINE, true, true)).toBe('lines+markers');
-  });
+  test.each([
+    [null, null, 'lines'],
+    [null, false, 'lines'],
+    [null, true, 'lines+markers'],
+    [false, null, undefined],
+    [false, false, undefined],
+    [false, true, 'markers'],
+    [true, null, 'lines'],
+    [true, false, 'lines'],
+    [true, true, 'lines+markers'],
+  ])(
+    'returns the expected line plotly type for %s %s %s',
+    (areLinesVisible, areShapesVisible, result) => {
+      expect(
+        chartUtils.getPlotlyChartMode(LINE, areLinesVisible, areShapesVisible)
+      ).toBe(result);
+    }
+  );
 });
 
 describe('getMarkerSymbol', () => {

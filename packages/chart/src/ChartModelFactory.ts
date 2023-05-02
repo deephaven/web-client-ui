@@ -1,4 +1,4 @@
-import { dhType, Figure, Table } from '@deephaven/jsapi-shim';
+import { dh as dhType, Figure, Table } from '@deephaven/jsapi-types';
 import ChartUtils, { ChartModelSettings } from './ChartUtils';
 import FigureChartModel from './FigureChartModel';
 import ChartTheme from './ChartTheme';

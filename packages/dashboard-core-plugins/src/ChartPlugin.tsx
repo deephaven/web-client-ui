@@ -8,7 +8,8 @@ import {
   PanelHydrateFunction,
   useListener,
 } from '@deephaven/dashboard';
-import { Figure, VariableDefinition } from '@deephaven/jsapi-shim';
+import { Figure, VariableDefinition } from '@deephaven/jsapi-types';
+import { useApi } from '@deephaven/jsapi-bootstrap';
 import shortid from 'shortid';
 import { ChartPanel, ChartPanelProps } from './panels';
 
@@ -19,6 +20,9 @@ export type ChartPluginProps = Partial<DashboardPluginComponentProps> & {
 export function ChartPlugin(props: ChartPluginProps): JSX.Element | null {
   assertIsDashboardPluginProps(props);
   const { id, layout, registerComponent, hydrate } = props;
+
+  const dh = useApi();
+
   const handlePanelOpen = useCallback(
     ({
       dragEvent,
@@ -37,7 +41,7 @@ export function ChartPlugin(props: ChartPluginProps): JSX.Element | null {
       }
 
       const metadata = { name, figure: name };
-      const makeApi = () => dh;
+      const makeApi = () => Promise.resolve(dh);
       const makeModel = () =>
         fetch().then((figure: Figure) =>
           ChartModelFactory.makeModel(dh, undefined, figure)

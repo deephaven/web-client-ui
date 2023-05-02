@@ -5,12 +5,12 @@ import set from 'lodash.set';
 import {
   Axis,
   Chart,
-  dhType,
+  dh as dhType,
   Figure,
   OneClick,
   Series,
   SourceType,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { Range } from '@deephaven/utils';
 import { Layout, PlotData } from 'plotly.js';
@@ -59,13 +59,14 @@ class FigureChartModel extends ChartModel {
     this.handleRequestFailed = this.handleRequestFailed.bind(this);
 
     this.dh = dh;
+    this.chartUtils = new ChartUtils(dh);
     this.figure = figure;
     this.settings = settings;
     this.theme = theme;
     this.data = [];
     const template = {
       data: {},
-      layout: this.getChartUtils().makeDefaultLayout(theme),
+      layout: this.chartUtils.makeDefaultLayout(theme),
     };
     this.layout = {
       grid: {
@@ -88,6 +89,8 @@ class FigureChartModel extends ChartModel {
     this.updateAxisPositions();
     this.startListeningFigure();
   }
+
+  chartUtils: ChartUtils;
 
   dh: dhType;
 
@@ -127,12 +130,6 @@ class FigureChartModel extends ChartModel {
     this.figure.close();
     this.addPendingSeries.cancel();
     this.stopListeningFigure();
-  }
-
-  getCachedChartUtils = memoize((dh: dhType) => new ChartUtils(dh), { max: 1 });
-
-  getChartUtils(): ChartUtils {
-    return this.getCachedChartUtils(this.dh);
   }
 
   getDefaultTitle(): string {
@@ -183,7 +180,7 @@ class FigureChartModel extends ChartModel {
     const { dh } = this;
     const axisTypeMap: AxisTypeMap = ChartUtils.groupArray(axes, 'type');
 
-    const seriesData = this.getChartUtils().makeSeriesDataFromSeries(
+    const seriesData = this.chartUtils.makeSeriesDataFromSeries(
       series,
       axisTypeMap,
       ChartUtils.getSeriesVisibility(series.name, this.settings),
@@ -369,8 +366,7 @@ class FigureChartModel extends ChartModel {
   getValueTranslator = memoize(
     (columnType: string, formatter: Formatter | undefined) => {
       const timeZone = this.getTimeZone(columnType, formatter);
-      return (value: unknown) =>
-        this.getChartUtils().unwrapValue(value, timeZone);
+      return (value: unknown) => this.chartUtils.unwrapValue(value, timeZone);
     }
   );
 
@@ -379,7 +375,7 @@ class FigureChartModel extends ChartModel {
     (columnType: string, formatter: Formatter | undefined) => {
       const timeZone = this.getTimeZone(columnType, formatter);
       return (value: unknown) =>
-        this.getChartUtils().wrapValue(value, columnType, timeZone);
+        this.chartUtils.wrapValue(value, columnType, timeZone);
     }
   );
 
@@ -601,7 +597,7 @@ class FigureChartModel extends ChartModel {
   updateAxisPositions(): void {
     const plotWidth = this.getPlotWidth();
     const plotHeight = this.getPlotHeight();
-    this.getChartUtils().updateFigureAxes(
+    this.chartUtils.updateFigureAxes(
       this.layout,
       this.figure,
       chart => this.getAxisRangeParser(chart, this.formatter),
@@ -619,7 +615,7 @@ class FigureChartModel extends ChartModel {
       return;
     }
 
-    const axisFormats = this.getChartUtils().getAxisFormats(
+    const axisFormats = this.chartUtils.getAxisFormats(
       this.figure,
       this.formatter
     );
@@ -653,10 +649,7 @@ class FigureChartModel extends ChartModel {
     const { name, plotStyle } = series;
 
     const seriesData = this.seriesDataMap.get(name);
-    const property = this.getChartUtils().getPlotlyProperty(
-      plotStyle,
-      sourceType
-    );
+    const property = this.chartUtils.getPlotlyProperty(plotStyle, sourceType);
 
     if (seriesData) {
       set(seriesData, property, dataArray);

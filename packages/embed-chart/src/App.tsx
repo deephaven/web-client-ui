@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Chart, ChartModel, ChartModelFactory } from '@deephaven/chart'; // chart is used to display Deephaven charts
 import { ContextMenuRoot, LoadingOverlay } from '@deephaven/components'; // Use the loading spinner from the Deephaven components package
-import dh, { IdeConnection } from '@deephaven/jsapi-shim'; // Import the shim to use the JS API
+import { IdeConnection } from '@deephaven/jsapi-types'; // Import the shim to use the JS API
 import Log from '@deephaven/log';
 import './App.scss'; // Styles for in this app
+import { useApi } from '@deephaven/jsapi-bootstrap';
 import { useConnection } from '@deephaven/app-utils';
 
 const log = Log.module('EmbedChart.App');
@@ -38,6 +39,7 @@ function App(): JSX.Element {
     []
   );
   const connection = useConnection();
+  const dh = useApi();
 
   useEffect(
     function initializeApp() {
@@ -75,7 +77,7 @@ function App(): JSX.Element {
       }
       initApp();
     },
-    [connection, searchParams]
+    [dh, connection, searchParams]
   );
 
   const isLoaded = model != null;
