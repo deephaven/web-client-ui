@@ -26,12 +26,16 @@ const EXPECT_TIME_ZONE_PARAM = expect.objectContaining({
   id: DEFAULT_TIME_ZONE_ID,
 });
 
-function sendEventToLastRegisteredHandler(table: Table, eventName: string) {
+/**
+ * Sends a mock event to the last registered event handler with the given event
+ * type.
+ */
+function sendEventToLastRegisteredHandler(table: Table, eventType: string) {
   const event = TestUtils.createMockProxy<CustomEvent>({});
 
   const lastRegisteredEventListener = TestUtils.findLastCall(
     table.addEventListener,
-    ([eventType]) => eventType === eventName
+    ([et]) => et === eventType
   )?.[1];
 
   lastRegisteredEventListener?.(event);
