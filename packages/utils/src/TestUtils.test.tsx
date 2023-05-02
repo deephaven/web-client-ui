@@ -18,6 +18,29 @@ describe('asMock', () => {
   expect(someFunc('a,b,c')).toEqual(3);
 });
 
+describe('findLastCall', () => {
+  it('should return undefined if call not matched', () => {
+    const fn = jest.fn<void, [string, number]>();
+
+    fn('AAA', 1);
+
+    const result = TestUtils.findLastCall(fn, ([text, _num]) => text === 'BBB');
+    expect(result).toBeUndefined();
+  });
+
+  it('should find the last mock call matching the predicate', () => {
+    const fn = jest.fn<void, [string, number]>();
+
+    fn('AAA', 1);
+    fn('BBB', 1);
+    fn('BBB', 2);
+    fn('CCC', 1);
+
+    const result = TestUtils.findLastCall(fn, ([text, _num]) => text === 'BBB');
+    expect(result).toEqual(['BBB', 2]);
+  });
+});
+
 describe('makeMockContext', () => {
   it('should make a MockContext object', () => {
     const mockContext = TestUtils.makeMockContext();
