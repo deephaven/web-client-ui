@@ -60,49 +60,113 @@ function makeFilterCondition(type = ''): MockFilterCondition {
 }
 
 describe('applyCustomColumns', () => {
-  const table = TestUtils.createMockProxy<Table>({
-    addEventListener: jest.fn(() => jest.fn()),
-  });
+  const table = TestUtils.createMockProxy<Table>({});
   const columns = [TestUtils.createMockProxy<CustomColumn>({})];
 
-  afterEach(() => {
-    jest.useRealTimers();
-  });
-
-  it.each([null, undefined])(
-    'should resolve to null if given null or undefined',
-    async notTable => {
-      const actual = await TableUtils.applyCustomColumns(notTable, columns);
-      expect(actual).toBeNull();
-    }
-  );
-
-  it('should apply columns and wait for next dh.Table.EVENT_CUSTOMCOLUMNSCHANGED event', async () => {
-    const tablePromise = TableUtils.applyCustomColumns(table, columns);
-
-    expect(table.applyCustomColumns).toHaveBeenCalledWith(columns);
-
-    sendEventToLastRegisteredHandler(
-      table,
-      dh.Table.EVENT_CUSTOMCOLUMNSCHANGED
+  it('should call table.applyCustomColumns and wait for dh.Table.EVENT_CUSTOMCOLUMNSCHANGED event', () => {
+    const executeAndWaitForEvent = jest.spyOn(
+      TableUtils,
+      'executeAndWaitForEvent'
     );
-
-    const result = await tablePromise;
-
-    expect(result).toBe(table);
-  });
-
-  it('should reject promise if timeout expires', async () => {
-    jest.useFakeTimers();
 
     const timeout = 3000;
-    const tablePromise = TableUtils.applyCustomColumns(table, columns, timeout);
 
-    jest.advanceTimersByTime(timeout);
+    TableUtils.applyCustomColumns(table, columns, timeout);
 
-    expect(tablePromise).rejects.toThrow(
-      'Event "customcolumnschanged" timed out.'
+    expect(TableUtils.executeAndWaitForEvent).toHaveBeenCalledWith(
+      expect.any(Function),
+      table,
+      dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
+      timeout
     );
+
+    const exec = executeAndWaitForEvent.mock.lastCall?.[0];
+    exec?.(table);
+    expect(table.applyCustomColumns).toHaveBeenCalledWith(columns);
+  });
+});
+
+describe('applyFilter', () => {
+  const table = TestUtils.createMockProxy<Table>({});
+  const filters = [TestUtils.createMockProxy<FilterCondition>({})];
+
+  it('should call table.applyFilter and wait for dh.Table.EVENT_FILTERCHANGED event', () => {
+    const executeAndWaitForEvent = jest.spyOn(
+      TableUtils,
+      'executeAndWaitForEvent'
+    );
+
+    const timeout = 3000;
+
+    TableUtils.applyFilter(table, filters, timeout);
+
+    expect(TableUtils.executeAndWaitForEvent).toHaveBeenCalledWith(
+      expect.any(Function),
+      table,
+      dh.Table.EVENT_FILTERCHANGED,
+      timeout
+    );
+
+    const exec = executeAndWaitForEvent.mock.lastCall?.[0];
+    exec?.(table);
+    expect(table.applyFilter).toHaveBeenCalledWith(filters);
+  });
+});
+
+describe('applyNeverFilter', () => {
+  const column = TestUtils.createMockProxy<Column>({});
+  const neverFilter = TestUtils.createMockProxy<FilterCondition>({});
+  const makeNeverFilter = jest.spyOn(TableUtils, 'makeNeverFilter');
+
+  const table = TestUtils.createMockProxy<Table>({
+    findColumn: jest.fn().mockReturnValue(column),
+  });
+
+  beforeEach(() => {
+    makeNeverFilter.mockReturnValue(neverFilter);
+  });
+
+  afterEach(() => {
+    makeNeverFilter.mockRestore();
+  });
+
+  it('should call TableUtils.applyFilter with a "never filter"', () => {
+    const applyFilter = jest.spyOn(TableUtils, 'applyFilter');
+
+    const columnName = 'mock.column';
+    const timeout = 3000;
+
+    TableUtils.applyNeverFilter(table, columnName, timeout);
+
+    expect(makeNeverFilter).toHaveBeenCalledWith(column);
+    expect(applyFilter).toHaveBeenCalledWith(table, [neverFilter], timeout);
+  });
+});
+
+describe('applySort', () => {
+  const table = TestUtils.createMockProxy<Table>({});
+  const sorts = [TestUtils.createMockProxy<Sort>({})];
+
+  it('should call table.applySort and wait for dh.Table.EVENT_SORTCHANGED event', () => {
+    const executeAndWaitForEvent = jest.spyOn(
+      TableUtils,
+      'executeAndWaitForEvent'
+    );
+
+    const timeout = 3000;
+
+    TableUtils.applySort(table, sorts, timeout);
+
+    expect(TableUtils.executeAndWaitForEvent).toHaveBeenCalledWith(
+      expect.any(Function),
+      table,
+      dh.Table.EVENT_SORTCHANGED,
+      timeout
+    );
+
+    const exec = executeAndWaitForEvent.mock.lastCall?.[0];
+    exec?.(table);
+    expect(table.applySort).toHaveBeenCalledWith(sorts);
   });
 });
 
@@ -171,90 +235,6 @@ describe('executeAndWaitForEvent', () => {
       expect(tablePromise).rejects.toThrow(`Event "${eventType}" timed out.`);
     }
   );
-});
-
-describe('applyFilter', () => {
-  const table = TestUtils.createMockProxy<Table>({
-    addEventListener: jest.fn(() => jest.fn()),
-  });
-  const filters = [TestUtils.createMockProxy<FilterCondition>({})];
-
-  afterEach(() => {
-    jest.useRealTimers();
-  });
-
-  it.each([null, undefined])(
-    'should resolve to null if given null or undefined',
-    async notTable => {
-      const actual = await TableUtils.applyFilter(notTable, filters);
-      expect(actual).toBeNull();
-    }
-  );
-
-  it('should apply columns and wait for next dh.Table.EVENT_FILTERCHANGED event', async () => {
-    const tablePromise = TableUtils.applyFilter(table, filters);
-
-    expect(table.applyFilter).toHaveBeenCalledWith(filters);
-
-    sendEventToLastRegisteredHandler(table, dh.Table.EVENT_FILTERCHANGED);
-
-    const result = await tablePromise;
-
-    expect(result).toBe(table);
-  });
-
-  it('should reject promise if timeout expires', async () => {
-    jest.useFakeTimers();
-
-    const timeout = 3000;
-    const tablePromise = TableUtils.applyFilter(table, filters, timeout);
-
-    jest.advanceTimersByTime(timeout);
-
-    expect(tablePromise).rejects.toThrow('Event "filterchanged" timed out.');
-  });
-});
-
-describe('applySort', () => {
-  const table = TestUtils.createMockProxy<Table>({
-    addEventListener: jest.fn(() => jest.fn()),
-  });
-  const sorts = [TestUtils.createMockProxy<Sort>({})];
-
-  afterEach(() => {
-    jest.useRealTimers();
-  });
-
-  it.each([null, undefined])(
-    'should resolve to null if given null or undefined',
-    async notTable => {
-      const actual = await TableUtils.applySort(notTable, sorts);
-      expect(actual).toBeNull();
-    }
-  );
-
-  it('should apply columns and wait for next dh.Table.EVENT_SORTCHANGED event', async () => {
-    const tablePromise = TableUtils.applySort(table, sorts);
-
-    expect(table.applySort).toHaveBeenCalledWith(sorts);
-
-    sendEventToLastRegisteredHandler(table, dh.Table.EVENT_SORTCHANGED);
-
-    const result = await tablePromise;
-
-    expect(result).toBe(table);
-  });
-
-  it('should reject promise if timeout expires', async () => {
-    jest.useFakeTimers();
-
-    const timeout = 3000;
-    const tablePromise = TableUtils.applySort(table, sorts, timeout);
-
-    jest.advanceTimersByTime(timeout);
-
-    expect(tablePromise).rejects.toThrow('Event "sortchanged" timed out.');
-  });
 });
 
 describe('toggleSortForColumn', () => {
