@@ -26,9 +26,9 @@ beforeEach(() => {
   jest.clearAllMocks();
   jest.useFakeTimers();
 
-  (column.filter as jest.Mock).mockReturnValue(columnFilterValue);
-  (columnFilterValue.contains as jest.Mock).mockReturnValue(filterCondition);
-  (table.findColumn as jest.Mock).mockReturnValue(column);
+  TestUtils.asMock(column.filter).mockReturnValue(columnFilterValue);
+  TestUtils.asMock(columnFilterValue.contains).mockReturnValue(filterCondition);
+  TestUtils.asMock(table.findColumn).mockReturnValue(column);
 
   jest.spyOn(TableUtils, 'makeFilterValue').mockReturnValue(matchFilterValue);
 });

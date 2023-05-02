@@ -22,7 +22,7 @@ const tableB = TestUtils.createMockProxy<Table>({ size: 2 });
 const expectedInitialB = [{ key: '0' }, { key: '1' }];
 
 beforeEach(() => {
-  (useTableSize as jest.Mock).mockImplementation(table => table.size);
+  TestUtils.asMock(useTableSize).mockImplementation(table => table?.size ?? 0);
 });
 
 it('should initialize a ListData object based on Table size', () => {
@@ -70,7 +70,7 @@ it.each([
     expect(result.current.items).toEqual(expectedInitialA);
 
     // Re-render with new size
-    (useTableSize as jest.Mock).mockImplementation(() => newSize);
+    TestUtils.asMock(useTableSize).mockImplementation(() => newSize);
     rerender({ table: tableA });
 
     expect(result.current.items).toEqual(expectedAfterSizeChange);

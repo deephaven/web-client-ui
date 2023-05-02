@@ -12,7 +12,7 @@ beforeEach(() => {
   table = TestUtils.createMockProxy<Table>();
   derivedTable = TestUtils.createMockProxy<Table>();
 
-  (table.selectDistinct as jest.Mock).mockResolvedValue(derivedTable);
+  TestUtils.asMock(table.selectDistinct).mockResolvedValue(derivedTable);
 });
 
 it('should create and subscribe to a `selectDistinct` derivation of a given table', async () => {

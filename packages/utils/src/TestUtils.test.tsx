@@ -8,6 +8,16 @@ beforeEach(() => {
   jest.clearAllMocks();
 });
 
+describe('asMock', () => {
+  const someFunc: (name: string) => number = jest.fn(
+    (name: string): number => name.length
+  );
+
+  TestUtils.asMock(someFunc).mockImplementation(name => name.split(',').length);
+
+  expect(someFunc('a,b,c')).toEqual(3);
+});
+
 describe('makeMockContext', () => {
   it('should make a MockContext object', () => {
     const mockContext = TestUtils.makeMockContext();

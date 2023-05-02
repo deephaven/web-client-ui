@@ -44,7 +44,7 @@ beforeEach(() => {
   jest.clearAllMocks();
 
   // Mock deserializer just returns the row given to it.
-  (deserializeRow as jest.Mock).mockImplementation(row => row);
+  TestUtils.asMock(deserializeRow).mockImplementation(row => row);
 });
 
 describe('createKeyFromOffsetRow', () => {
