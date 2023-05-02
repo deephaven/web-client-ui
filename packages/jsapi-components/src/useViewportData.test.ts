@@ -101,9 +101,30 @@ it('should set viewport if table size changes', () => {
   rerender();
   expect(options.table?.setViewport).not.toHaveBeenCalled();
 
+  // Change table size
   TestUtils.asMock(useTableSize).mockReturnValue(table.size - 5);
+
   rerender();
   expect(options.table?.setViewport).toHaveBeenCalled();
+});
+
+it('should set viewport if table reference changes', () => {
+  const { rerender } = renderHook(
+    t => useViewportData({ ...options, table: t }),
+    {
+      initialProps: table,
+    }
+  );
+  jest.clearAllMocks();
+
+  rerender(table);
+  expect(table.setViewport).not.toHaveBeenCalled();
+
+  // pass a new Table reference
+  const table2 = TestUtils.createMockProxy<Table>({ size: table.size });
+  rerender(table2);
+
+  expect(table2.setViewport).toHaveBeenCalled();
 });
 
 it('should update state on dh.Table.EVENT_UPDATED event', () => {
