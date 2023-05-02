@@ -492,7 +492,7 @@ describe('linker column selection', () => {
 });
 
 it('adds listeners to the source table when passed in and linked', async () => {
-  const model = makeChartModel;
+  const model = makeChartModel();
   const modelPromise = Promise.resolve(model);
   const makeModel = () => modelPromise;
   const apiPromise = Promise.resolve(dh);
