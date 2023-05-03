@@ -19,7 +19,7 @@ import {
   Table,
   TreeTable,
   ValueTypeUnion,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import {
   EditableGridModel,
   isEditableGridModel,

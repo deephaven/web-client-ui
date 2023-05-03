@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EventShimCustomEvent } from '@deephaven/utils';
+import dh from '@deephaven/jsapi-shim';
 import CustomColumnBuilder, {
   CustomColumnBuilderProps,
 } from './CustomColumnBuilder';
@@ -9,7 +10,7 @@ import IrisGridTestUtils from '../IrisGridTestUtils';
 import IrisGridModel from '../IrisGridModel';
 
 function Builder({
-  model = IrisGridTestUtils.makeModel(),
+  model = IrisGridTestUtils.makeModel(dh),
   customColumns = [],
   onSave = jest.fn(),
   onCancel = jest.fn(),
@@ -44,7 +45,7 @@ test('Calls on save', async () => {
 test('Switches to loader button while saving', async () => {
   jest.useFakeTimers();
   const user = userEvent.setup({ delay: null });
-  const model = IrisGridTestUtils.makeModel();
+  const model = IrisGridTestUtils.makeModel(dh);
   const mockSave = jest.fn(() =>
     setTimeout(() => {
       model.dispatchEvent(
@@ -99,7 +100,7 @@ test('Ignores deleted formulas on save', async () => {
   // This test instead creates the new text, saves, then removes it to test the same behavior
   jest.useFakeTimers();
   const user = userEvent.setup({ delay: null });
-  const model = IrisGridTestUtils.makeModel();
+  const model = IrisGridTestUtils.makeModel(dh);
   const mockSave = jest.fn(() =>
     setTimeout(() => {
       model.dispatchEvent(
@@ -150,7 +151,7 @@ test('Deletes columns', async () => {
 
 test('Displays request failure message', async () => {
   const user = userEvent.setup();
-  const model = IrisGridTestUtils.makeModel();
+  const model = IrisGridTestUtils.makeModel(dh);
   render(<Builder model={model} customColumns={['foo=bar']} />);
 
   // Should ignore this since not in saving state

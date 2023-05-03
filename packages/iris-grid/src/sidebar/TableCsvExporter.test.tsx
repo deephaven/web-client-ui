@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import dh from '@deephaven/jsapi-shim';
 import TableCsvExporter from './TableCsvExporter';
 import IrisGridTestUtils from '../IrisGridTestUtils';
 
@@ -30,7 +31,7 @@ function makeTableCsvExporterWrapper({
   selectedRanges = [],
   userColumnWidths = IrisGridTestUtils.makeUserColumnWidths(),
   movedColumns = [],
-  model = IrisGridTestUtils.makeModel(TABLE),
+  model = IrisGridTestUtils.makeModel(dh, TABLE),
 } = {}) {
   return render(
     <TableCsvExporter
@@ -72,7 +73,7 @@ it('cancels download when something goes wrong', async () => {
   const onDownloadStart = jest.fn();
   const onDownload = jest.fn();
   const onCancel = jest.fn();
-  const model = IrisGridTestUtils.makeModel(BAD_TABLE);
+  const model = IrisGridTestUtils.makeModel(dh, BAD_TABLE);
   makeTableCsvExporterWrapper({
     onDownloadStart,
     onDownload,

@@ -1,4 +1,5 @@
-import dh, {
+import dh from '@deephaven/jsapi-shim';
+import {
   Column,
   CustomColumn,
   DateWrapper,
@@ -8,7 +9,7 @@ import dh, {
   Sort,
   Table,
   TreeTable,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import {
   Operator as FilterOperator,
   Type as FilterType,
@@ -698,6 +699,7 @@ describe('quick filter tests', () => {
 
     it('should return a date filter if column type is date', () => {
       const [startValue] = DateUtils.parseDateRange(
+        dh,
         '2022-11-12',
         DEFAULT_TIME_ZONE_ID
       );
@@ -2446,12 +2448,14 @@ describe('makeValue', () => {
   it('should return a DateWrapper object if columnType is date', () => {
     const now = new Date(Date.now());
     const currentDate = DateUtils.makeDateWrapper(
+      dh,
       'America/New_York',
       now.getFullYear(),
       now.getMonth(),
       now.getDate()
     );
     const yesterdayDate = DateUtils.makeDateWrapper(
+      dh,
       'America/New_York',
       now.getFullYear(),
       now.getMonth(),

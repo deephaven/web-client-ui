@@ -3,7 +3,7 @@ import React, { PureComponent } from 'react';
 import { CSSTransition } from 'react-transition-group';
 import classNames from 'classnames';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
-import { FilterCondition, Table } from '@deephaven/jsapi-shim';
+import { FilterCondition, Table } from '@deephaven/jsapi-types';
 import { Button } from '@deephaven/components';
 import AdvancedFilterCreatorSelectValueList from './AdvancedFilterCreatorSelectValueList';
 import './AdvancedFilterCreatorSelectValue.scss';

@@ -1,4 +1,5 @@
-import type { ColumnGroup } from '@deephaven/jsapi-shim';
+import dh from '@deephaven/jsapi-shim';
+import { ColumnGroup } from '@deephaven/jsapi-types';
 import IrisGridTestUtils from '../../IrisGridTestUtils';
 import {
   moveItemsFromDrop,
@@ -47,6 +48,7 @@ const NESTED_COLUMN_HEADER_GROUPS: ColumnGroup[] = [
 
 function makeTreeItems(groups: ColumnGroup[] = []) {
   const model = IrisGridTestUtils.makeModel(
+    dh,
     IrisGridTestUtils.makeTable({
       columns: COLUMNS,
       layoutHints: { columnGroups: groups },

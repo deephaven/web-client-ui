@@ -9,7 +9,7 @@ import {
   LayoutHints,
   Table,
   ValueTypeUnion,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import {

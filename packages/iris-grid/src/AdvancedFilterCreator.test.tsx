@@ -1,9 +1,9 @@
 import React from 'react';
-import { Formatter } from '@deephaven/jsapi-utils';
+import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import { render } from '@testing-library/react';
-import { Column } from '@deephaven/jsapi-shim';
+import { Column } from '@deephaven/jsapi-types';
 // import userEvent from '@testing-library/user-event';
-// import dh from '@deephaven/jsapi-shim';
+import dh from '@deephaven/jsapi-shim';
 // import {
 //   Type as FilterType,
 //   Operator as FilterOperator,
@@ -32,23 +32,26 @@ import IrisGridModel from './IrisGridModel';
 
 function makeAdvancedFilterCreatorWrapper(
   {
+    tableUtils,
     options,
     model,
     column,
     formatter,
   }: {
+    tableUtils: TableUtils;
     options: AdvancedFilterOptions;
     model: IrisGridModel;
     column: Column;
     formatter: Formatter;
   } = {
+    tableUtils: new TableUtils(dh),
     options: {
       filterItems: [],
       filterOperators: [],
       invertSelection: false,
       selectedValues: [],
     },
-    model: IrisGridTestUtils.makeModel(),
+    model: IrisGridTestUtils.makeModel(dh),
     column: IrisGridTestUtils.makeColumn(),
     formatter: new Formatter(),
   }
@@ -62,6 +65,7 @@ function makeAdvancedFilterCreatorWrapper(
       onSortChange={() => null}
       onDone={() => null}
       options={options}
+      tableUtils={tableUtils}
     />
   );
 
