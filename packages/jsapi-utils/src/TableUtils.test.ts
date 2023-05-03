@@ -150,13 +150,20 @@ describe.each([undefined, 400])('applyNeverFilter - timeout: %s', timeout => {
     }
   );
 
-  it('should call TableUtils.applyFilter with a "never filter": %s', () => {
-    const applyFilter = jest.spyOn(TableUtils, 'applyFilter');
+  it('should call TableUtils.applyFilter with a "never filter": %s', async () => {
+    const applyFilter = jest
+      .spyOn(TableUtils, 'applyFilter')
+      .mockResolvedValue(table);
 
     const columnName = 'mock.column';
 
-    TableUtils.applyNeverFilter(table, columnName, timeout);
+    const result = await TableUtils.applyNeverFilter(
+      table,
+      columnName,
+      timeout
+    );
 
+    expect(result).toBe(table);
     expect(makeNeverFilter).toHaveBeenCalledWith(column);
     expect(applyFilter).toHaveBeenCalledWith(
       table,
