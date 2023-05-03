@@ -55,7 +55,8 @@ export default defineConfig(({ mode }) => {
     // Vite does not have a "any unknown fallback to proxy" like CRA
     // It is possible to add one with a custom middleware though if this list grows
     [env.VITE_CORE_API_URL, env.VITE_MODULE_PLUGINS_URL].forEach(p => {
-      proxy[new URL(p, baseURL).pathname] = {
+      const route = new URL(p, baseURL).pathname;
+      proxy[`^${route}`] = {
         target: env.VITE_PROXY_URL,
         changeOrigin: true,
       };
@@ -64,7 +65,8 @@ export default defineConfig(({ mode }) => {
     // Proxy deep-linking routes to the base itself
     // Need to add for each deep-linking route
     [env.VITE_ROUTE_NOTEBOOKS].forEach(p => {
-      proxy[new URL(p, baseURL).pathname] = {
+      const route = new URL(p, baseURL).pathname;
+      proxy[`^${route}`] = {
         target: baseURL.toString(),
         rewrite: () => '',
       };
