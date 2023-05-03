@@ -917,7 +917,7 @@ export class AppMainContainer extends Component<
             notebooksUrl={
               new URL(
                 `${import.meta.env.VITE_NOTEBOOKS_URL}/`,
-                `${import.meta.url}`
+                `${document.baseURI}`
               ).href
             }
           />
