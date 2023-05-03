@@ -6,11 +6,11 @@ interface LoginProps {
   /** What to show in the login input part of the login form. */
   children: React.ReactNode;
 
-  /** Path to the logo. Defaults to `/logo.png` */
+  /** Path to the custom logo, relative to document base */
   logoPath?: string;
 }
 
-export function Login({ children, logoPath = '/logo.png' }: LoginProps) {
+export function Login({ children, logoPath = './logo.png' }: LoginProps) {
   return (
     <div className="login-container">
       <RandomAreaPlotAnimation />
