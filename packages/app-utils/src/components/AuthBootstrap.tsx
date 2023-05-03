@@ -78,10 +78,7 @@ export function AuthBootstrap({ children }: AuthBootstrapProps) {
     return (
       <LoadingOverlay
         isLoading={isLoading && error == null}
-        errorMessage={
-          getErrorMessage(error) ??
-          'Unable to load authentication configuration.'
-        }
+        errorMessage={getErrorMessage(error)}
       />
     );
   }
