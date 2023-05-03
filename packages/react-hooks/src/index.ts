@@ -7,3 +7,4 @@ export type {
   UsePromiseFactoryOptions,
   UsePromiseFactoryResult,
 } from './usePromiseFactory';
+export * from './useDebouncedValue';

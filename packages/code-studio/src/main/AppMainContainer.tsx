@@ -22,6 +22,7 @@ import {
   InfoModal,
   LoadingSpinner,
   BasicModal,
+  DebouncedModal,
 } from '@deephaven/components';
 import {
   IrisGridModel,
@@ -549,14 +550,17 @@ export class AppMainContainer extends Component<
   }
 
   handleDisconnect() {
+    log.info('Disconnected from server');
     this.setState({ isDisconnected: true });
   }
 
   handleReconnect() {
+    log.info('Reconnected to server');
     this.setState({ isDisconnected: false });
   }
 
   handleReconnectAuthFailed() {
+    log.warn('Reconnect authentication failed');
     this.setState({ isAuthFailed: true });
   }
 
@@ -948,16 +952,20 @@ export class AppMainContainer extends Component<
           style={{ display: 'none' }}
           onChange={this.handleImportLayoutFiles}
         />
-        <InfoModal
+        <DebouncedModal
           isOpen={isDisconnected && !isAuthFailed}
-          icon={vsDebugDisconnect}
-          title={
-            <>
-              <LoadingSpinner /> Attempting to reconnect...
-            </>
-          }
-          subtitle="Please check your network connection."
-        />
+          debounceMs={250}
+        >
+          <InfoModal
+            icon={vsDebugDisconnect}
+            title={
+              <>
+                <LoadingSpinner /> Attempting to reconnect...
+              </>
+            }
+            subtitle="Please check your network connection."
+          />
+        </DebouncedModal>
         <BasicModal
           confirmButtonText="Refresh"
           onConfirm={AppMainContainer.handleRefresh}
