@@ -45,7 +45,7 @@ function renderComponent(client: CoreClient) {
   });
   return render(
     <ApiContext.Provider value={api}>
-      <AppBootstrap apiUrl={API_URL} pluginsUrl={PLUGINS_URL}>
+      <AppBootstrap serverUrl={API_URL} pluginsUrl={PLUGINS_URL}>
         {mockChild}
       </AppBootstrap>
     </ApiContext.Provider>
@@ -59,7 +59,7 @@ beforeEach(() => {
 it('should throw if api has not been bootstrapped', () => {
   expect(() =>
     render(
-      <AppBootstrap apiUrl={API_URL} pluginsUrl={PLUGINS_URL}>
+      <AppBootstrap serverUrl={API_URL} pluginsUrl={PLUGINS_URL}>
         {mockChild}
       </AppBootstrap>
     )

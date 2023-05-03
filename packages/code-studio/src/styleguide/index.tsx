@@ -16,13 +16,13 @@ const FontBootstrap = React.lazy(async () => {
   return { default: module.FontBootstrap };
 });
 
+const apiURL = new URL(
+  `${import.meta.env.VITE_CORE_API_URL}/${import.meta.env.VITE_CORE_API_NAME}`,
+  document.baseURI
+);
+
 ReactDOM.render(
-  <ApiBootstrap
-    apiUrl={`${import.meta.env.VITE_CORE_API_URL}/${
-      import.meta.env.VITE_CORE_API_NAME
-    }`}
-    setGlobally
-  >
+  <ApiBootstrap apiUrl={apiURL.href} setGlobally>
     <Suspense fallback={<LoadingOverlay />}>
       <FontBootstrap>
         <StyleGuideRoot />

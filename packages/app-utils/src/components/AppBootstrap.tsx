@@ -9,12 +9,12 @@ import FontBootstrap from './FontBootstrap';
 import PluginsBootstrap from './PluginsBootstrap';
 import AuthBootstrap from './AuthBootstrap';
 import ConnectionBootstrap from './ConnectionBootstrap';
-import { getBaseUrl, getConnectOptions } from '../utils';
+import { getConnectOptions } from '../utils';
 import FontsLoaded from './FontsLoaded';
 
 export type AppBootstrapProps = {
-  /** URL of the API to load. */
-  apiUrl: string;
+  /** URL of the server. */
+  serverUrl: string;
 
   /** URL of the plugins to load. */
   pluginsUrl: string;
@@ -33,12 +33,11 @@ export type AppBootstrapProps = {
  * Will display the children when everything is loaded and authenticated.
  */
 export function AppBootstrap({
-  apiUrl,
   fontClassNames,
   pluginsUrl,
+  serverUrl,
   children,
 }: AppBootstrapProps) {
-  const serverUrl = getBaseUrl(apiUrl).origin;
   const clientOptions = useMemo(() => getConnectOptions(), []);
 
   // On logout, we reset the client and have user login again

@@ -32,7 +32,7 @@ export default defineConfig(({ mode }) => {
     // Proxy styleguide here instead of as a route in our app router
     // That way, it is not included in the production build
     '/styleguide': {
-      target: `http://localhost:${port}/src/styleguide/index.html`,
+      target: `http://localhost:${port}/ide/src/styleguide/index.html`,
       rewrite: () => '',
     },
 
@@ -54,10 +54,8 @@ export default defineConfig(({ mode }) => {
   // It is possible to add one with a custom middleware though if this list grows
   if (env.VITE_PROXY_URL) {
     [
-      env.VITE_CORE_API_URL,
-      env.VITE_NOTEBOOKS_URL,
-      env.VITE_LAYOUTS_URL,
-      env.VITE_MODULE_PLUGINS_URL,
+      path.resolve(env.BASE_URL, env.VITE_CORE_API_URL),
+      path.resolve(env.BASE_URL, env.VITE_MODULE_PLUGINS_URL),
     ].forEach(p => {
       proxy[p] = {
         target: env.VITE_PROXY_URL,
