@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/auth-plugins",
-  "version": "0.37.2",
+  "version": "0.38.0",
   "description": "Deephaven Auth Plugins",
   "keywords": [
     "Deephaven",
@@ -42,8 +42,8 @@
     "@deephaven/redux": "file:../redux",
     "@deephaven/utils": "file:../utils",
     "classnames": "^2.3.1",
-    "react-transition-group": "^4.4.2",
-    "js-cookie": "^3.0.5"
+    "js-cookie": "^3.0.5",
+    "react-transition-group": "^4.4.2"
   },
   "devDependencies": {
     "@deephaven/tsconfig": "file:../tsconfig",

@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/eslint-config",
-  "version": "0.37.2",
+  "version": "0.38.0",
   "description": "Deephaven ESLint configuration",
   "repository": {
     "type": "git",
