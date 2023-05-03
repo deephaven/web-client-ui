@@ -91,7 +91,7 @@ it('should display an error if no login plugin matches the provided auth handler
   expect(mockLogin).not.toHaveBeenCalled();
   expect(
     screen.queryByText(
-      'Error: No login plugins found, please register a login plugin for auth handlers: MockAuthHandler'
+      'No login plugins found, please register a login plugin for auth handlers: MockAuthHandler'
     )
   ).not.toBeNull();
 });
