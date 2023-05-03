@@ -32,7 +32,7 @@ export default defineConfig(({ mode }) => {
   const proxy = {
     // Proxy styleguide here instead of as a route in our app router
     // That way, it is not included in the production build
-    '^/styleguide': {
+    '/styleguide': {
       target: new URL(`src/styleguide/index.html`, baseURL).toString(),
       rewrite: () => '',
     },
@@ -56,7 +56,7 @@ export default defineConfig(({ mode }) => {
     // It is possible to add one with a custom middleware though if this list grows
     [env.VITE_CORE_API_URL, env.VITE_MODULE_PLUGINS_URL].forEach(p => {
       const route = new URL(p, baseURL).pathname;
-      proxy[`^${route}`] = {
+      proxy[route] = {
         target: env.VITE_PROXY_URL,
         changeOrigin: true,
       };

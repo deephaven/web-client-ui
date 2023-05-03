@@ -7,7 +7,7 @@ import {
 } from 'react-router-dom';
 import AppInit from './AppInit';
 
-const basename = new URL(document.baseURI).pathname;
+const basename = document.location.pathname;
 function AppRouter(): ReactElement {
   return (
     <Router basename={basename}>
