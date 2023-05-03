@@ -21,7 +21,7 @@ it('should return the initial value after the debounce time has elapsed', () => 
   expect(result.current).toBe(value);
   rerender();
   act(() => {
-    jest.advanceTimersByTime(DEFAULT_DEBOUNCE_MS + 5);
+    jest.advanceTimersByTime(DEFAULT_DEBOUNCE_MS);
   });
   expect(result.current).toBe(value);
 });
@@ -35,7 +35,7 @@ it('should return the updated value after the debounce time has elapsed', () => 
   expect(result.current).toBe(value);
   rerender(newValue);
   act(() => {
-    jest.advanceTimersByTime(DEFAULT_DEBOUNCE_MS + 5);
+    jest.advanceTimersByTime(DEFAULT_DEBOUNCE_MS);
   });
   expect(result.current).toBe(newValue);
 });
@@ -59,7 +59,7 @@ it('should not return an intermediate value if the debounce time has not elapsed
   });
   expect(result.current).toBe(value);
   act(() => {
-    jest.advanceTimersByTime(DEFAULT_DEBOUNCE_MS + 5);
+    jest.advanceTimersByTime(DEFAULT_DEBOUNCE_MS);
   });
   expect(result.current).toBe(newValue);
 });
