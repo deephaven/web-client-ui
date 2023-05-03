@@ -76,7 +76,6 @@ import dh, {
 } from '@deephaven/jsapi-shim';
 import { SessionConfig } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
-import { getBaseUrl, loadComponentPlugin } from '@deephaven/app-utils';
 import {
   getActiveTool,
   getWorkspace,
@@ -653,8 +652,12 @@ export class AppMainContainer extends Component<
         TablePlugin: ForwardRefExoticComponent<React.RefAttributes<unknown>>;
       }).TablePlugin;
     }
-    const baseURL = getBaseUrl(import.meta.env.VITE_COMPONENT_PLUGINS_URL);
-    return loadComponentPlugin(baseURL, pluginName);
+
+    const errorMessage = `Unable to find table plugin ${pluginName}.`;
+    log.error(errorMessage);
+    return ((
+      <div className="error-message">{`${errorMessage}`}</div>
+    ) as unknown) as ForwardRefExoticComponent<React.RefAttributes<unknown>>;
   }
 
   startListeningForDisconnect() {
@@ -912,7 +915,10 @@ export class AppMainContainer extends Component<
           <ConsolePlugin
             hydrateConsole={AppMainContainer.hydrateConsole}
             notebooksUrl={
-              getBaseUrl(`${import.meta.env.VITE_NOTEBOOKS_URL}/`).href
+              new URL(
+                `${import.meta.env.VITE_ROUTE_NOTEBOOKS}`,
+                document.baseURI
+              ).href
             }
           />
           <FilterPlugin />

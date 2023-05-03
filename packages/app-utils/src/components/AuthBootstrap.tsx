@@ -7,6 +7,7 @@ import {
 } from '@deephaven/auth-plugins';
 import { LoadingOverlay } from '@deephaven/components';
 import { useClient } from '@deephaven/jsapi-bootstrap';
+import { getErrorMessage } from '@deephaven/utils';
 import { PluginsContext } from './PluginsBootstrap';
 import { getAuthPluginComponent } from '../plugins';
 import LoginNotifier from './LoginNotifier';
@@ -76,8 +77,8 @@ export function AuthBootstrap({ children }: AuthBootstrapProps) {
   if (isLoading || error != null) {
     return (
       <LoadingOverlay
-        isLoading={isLoading}
-        errorMessage={error != null ? `${error}` : undefined}
+        isLoading={isLoading && error == null}
+        errorMessage={getErrorMessage(error)}
       />
     );
   }

@@ -22,13 +22,21 @@ module.exports = api => ({
   plugins: [
     api.env('test')
       ? [
-          // This is needed to replace import.meta w/ process in Jest
+          // This is needed to replace import.meta.env w/ process in Jest
           // Jest does not play nicely w/ ESM and Vite uses import.meta
           // import.meta is only avaialable in ESM
           path.resolve(__dirname, 'importMetaEnvPlugin'),
         ]
-      : // The add-import-extension plugin causes Jest to error, but is needed for proper ESM builds
-        ['babel-plugin-add-import-extension'],
+      : false,
+    api.env('test')
+      ? [
+          // Also need to handle import.meta.url
+          'babel-plugin-transform-import-meta',
+        ]
+      : false,
+    api.env('test')
+      ? false // The add-import-extension plugin causes Jest to error, but is needed for proper ESM builds
+      : ['babel-plugin-add-import-extension'],
     [
       'transform-rename-import',
       {
