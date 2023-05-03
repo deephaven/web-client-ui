@@ -4559,6 +4559,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               this.getLinkHoverTooltip(linkHoverTooltipProps)}
           </div>
           <GotoRow
+            dh={dh}
             model={model}
             isShown={isGotoShown}
             gotoRow={gotoRow}

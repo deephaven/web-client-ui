@@ -195,6 +195,7 @@ class IrisGridTableModelTemplate<
   private _movedColumns: MoveOperation[] | null = null;
 
   /**
+   * @param dh JSAPI instance
    * @param table Iris data table to be used in the model
    * @param formatter The formatter to use when getting formats
    * @param inputTable Iris input table associated with this table

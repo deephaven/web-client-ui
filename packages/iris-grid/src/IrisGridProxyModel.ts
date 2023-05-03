@@ -11,6 +11,7 @@ import {
   Column,
   ColumnStatistics,
   CustomColumn,
+  dh as DhType,
   FilterCondition,
   InputTable,
   LayoutHints,
@@ -43,15 +44,15 @@ import type ColumnHeaderGroup from './ColumnHeaderGroup';
 const log = Log.module('IrisGridProxyModel');
 
 function makeModel(
+  dh: DhType,
   table: Table | TreeTable,
-  tableUtils: TableUtils,
   formatter?: Formatter,
   inputTable?: InputTable | null
 ): IrisGridModel {
   if (TableUtils.isTreeTable(table)) {
-    return new IrisGridTreeTableModel(table, tableUtils, formatter);
+    return new IrisGridTreeTableModel(dh, table, formatter);
   }
-  return new IrisGridTableModel(table, tableUtils, formatter, inputTable);
+  return new IrisGridTableModel(dh, table, formatter, inputTable);
 }
 
 /**
@@ -65,6 +66,8 @@ class IrisGridProxyModel extends IrisGridModel {
    * @param inputTable Iris input table associated with this table
    */
 
+  dh: DhType;
+
   originalModel: IrisGridModel;
 
   model: IrisGridModel;
@@ -75,11 +78,9 @@ class IrisGridProxyModel extends IrisGridModel {
 
   selectDistinct: ColumnName[];
 
-  tableUtils: TableUtils;
-
   constructor(
+    dh: DhType,
     table: Table | TreeTable,
-    tableUtils: TableUtils,
     formatter = new Formatter(),
     inputTable: InputTable | null = null
   ) {
@@ -87,13 +88,13 @@ class IrisGridProxyModel extends IrisGridModel {
 
     this.handleModelEvent = this.handleModelEvent.bind(this);
 
-    const model = makeModel(table, tableUtils, formatter, inputTable);
+    const model = makeModel(dh, table, formatter, inputTable);
+    this.dh = dh;
     this.originalModel = model;
     this.model = model;
     this.modelPromise = null;
     this.rollup = null;
     this.selectDistinct = [];
-    this.tableUtils = tableUtils;
   }
 
   close(): void {
@@ -526,7 +527,7 @@ class IrisGridProxyModel extends IrisGridModel {
     ) {
       modelPromise = this.originalModel.table
         .rollup(rollupConfig)
-        .then(table => makeModel(table, this.tableUtils, this.formatter));
+        .then(table => makeModel(this.dh, table, this.formatter));
     }
     this.setNextModel(modelPromise);
   }
@@ -564,7 +565,7 @@ class IrisGridProxyModel extends IrisGridModel {
     ) {
       modelPromise = this.originalModel.table
         .selectDistinct(selectDistinctColumns)
-        .then(table => makeModel(table, this.tableUtils, this.formatter));
+        .then(table => makeModel(this.dh, table, this.formatter));
     }
     this.setNextModel(modelPromise);
   }

@@ -17,7 +17,7 @@ jest.mock('./ConditionalFormattingAPIUtils', () => ({
       `${rule.column.name} - ${rule.style.type} : ${prevRule}`
   ),
   makeColumnFormatColumn: jest.fn((col, rule) => `[col] ${rule}`),
-  makeRowFormatColumn: jest.fn(dh, rule => `[row] ${rule}`),
+  makeRowFormatColumn: jest.fn((dh, rule) => `[row] ${rule}`),
 }));
 
 describe('getFormatColumns', () => {
