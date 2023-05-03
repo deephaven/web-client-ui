@@ -744,6 +744,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     });
     const searchColumns = selectedSearchColumns ?? [];
     const searchFilter = CrossColumnSearch.createSearchFilter(
+      dh,
       searchValue,
       searchColumns,
       model.columns,
@@ -1224,8 +1225,11 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   );
 
   getCachedFormatColumns = memoize(
-    (columns: readonly Column[], rules: readonly SidebarFormattingRule[]) =>
-      getFormatColumns(columns, rules)
+    (
+      dh: DhType,
+      columns: readonly Column[],
+      rules: readonly SidebarFormattingRule[]
+    ) => getFormatColumns(dh, columns, rules)
   );
 
   /**
@@ -1238,6 +1242,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    */
   getCachedPreviewFormatColumns = memoize(
     (
+      dh: DhType,
       columns: readonly Column[],
       rulesParam: readonly SidebarFormattingRule[],
       preview?: SidebarFormattingRule,
@@ -1252,10 +1257,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       if (preview !== undefined && editIndex !== undefined) {
         const rules = [...rulesParam];
         rules[editIndex] = preview;
-        return this.getCachedFormatColumns(columns, rules);
+        return this.getCachedFormatColumns(dh, columns, rules);
       }
 
-      return this.getCachedFormatColumns(columns, rulesParam);
+      return this.getCachedFormatColumns(dh, columns, rulesParam);
     }
   );
 
@@ -1850,6 +1855,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   initState(): void {
     const {
       applyInputFiltersOnInit,
+      dh,
       inputFilters,
       sorts,
       model,
@@ -1862,6 +1868,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     const searchColumns = selectedSearchColumns ?? [];
     const searchFilter = CrossColumnSearch.createSearchFilter(
+      dh,
       searchValue,
       searchColumns,
       model.columns,
@@ -2301,7 +2308,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       columns: readonly Column[],
       invertSearchColumns: boolean
     ): void => {
+      const { dh } = this.props;
       const searchFilter = CrossColumnSearch.createSearchFilter(
+        dh,
         searchValue,
         selectedSearchColumns,
         columns,
@@ -4499,6 +4508,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                   this.grid?.state.draggingColumn?.range
                 )}
                 formatColumns={this.getCachedPreviewFormatColumns(
+                  dh,
                   model.columns,
                   conditionalFormats,
                   conditionalFormatPreview,

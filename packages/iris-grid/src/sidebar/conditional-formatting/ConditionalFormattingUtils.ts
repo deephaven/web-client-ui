@@ -1,5 +1,5 @@
 import Log from '@deephaven/log';
-import { Column, CustomColumn } from '@deephaven/jsapi-types';
+import { Column, CustomColumn, dh as DhType } from '@deephaven/jsapi-types';
 import { DateUtils, TableUtils } from '@deephaven/jsapi-utils';
 import {
   makeColumnFormatColumn,
@@ -650,6 +650,7 @@ export function getShortLabelForConditionType(
  * @returns Array of format columns
  */
 export function getFormatColumns(
+  dh: DhType,
   columns: readonly Column[],
   rules: readonly FormattingRule[]
 ): CustomColumn[] {
@@ -694,7 +695,7 @@ export function getFormatColumns(
     const formatColumn =
       formatterType === FormatterType.CONDITIONAL
         ? makeColumnFormatColumn(col, rule)
-        : makeRowFormatColumn(rule);
+        : makeRowFormatColumn(dh, rule);
     result.push(formatColumn);
     if (formatterType === FormatterType.CONDITIONAL) {
       columnFormatConfigMap.set(col.name, [rule, formatColumn]);
@@ -711,7 +712,11 @@ export function getFormatColumns(
  * @param condition
  * @param value
  */
-export function isDateConditionValid(condition: DateCondition, value?: string) {
+export function isDateConditionValid(
+  dh: DhType,
+  condition: DateCondition,
+  value?: string
+) {
   switch (condition) {
     case DateCondition.IS_NULL:
     case DateCondition.IS_NOT_NULL:

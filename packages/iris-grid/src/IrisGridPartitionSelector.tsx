@@ -4,7 +4,7 @@ import { DropdownMenu, Tooltip } from '@deephaven/components';
 import { vsTriangleDown, vsClose } from '@deephaven/icons';
 import Log from '@deephaven/log';
 import debounce from 'lodash.debounce';
-import { Table } from '@deephaven/jsapi-types';
+import { dh as DhType, Table } from '@deephaven/jsapi-types';
 import PartitionSelectorSearch from './PartitionSelectorSearch';
 import './IrisGridPartitionSelector.scss';
 import { ColumnName } from './CommonTypes';
@@ -13,6 +13,7 @@ const log = Log.module('IrisGridPartitionSelector');
 
 const PARTITION_CHANGE_DEBOUNCE_MS = 250;
 interface IrisGridPartitionSelectorProps<T> {
+  dh: dhType;
   getFormattedString: (value: T, type: string, name: string) => string;
   table: Table;
   columnName: ColumnName;
@@ -155,10 +156,11 @@ class IrisGridPartitionSelector<T> extends Component<
   }
 
   render(): JSX.Element {
-    const { columnName, getFormattedString, onDone, table } = this.props;
+    const { columnName, dh, getFormattedString, onDone, table } = this.props;
     const { partition } = this.state;
     const partitionSelectorSearch = (
       <PartitionSelectorSearch
+        dh={dh}
         key="search"
         getFormattedString={getFormattedString}
         table={table}

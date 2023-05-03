@@ -8,7 +8,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Column } from '@deephaven/jsapi-types';
+import { dh as DhType, Column } from '@deephaven/jsapi-types';
 import {
   Type as FilterType,
   TypeValue as FilterTypeValue,
@@ -31,6 +31,7 @@ function isIrisGridProxyModel(
 const DEFAULT_FORMAT_STRING = '###,##0';
 
 interface GotoRowProps {
+  dh: DhType;
   gotoRow: string;
   gotoRowError: string;
   gotoValueError: string;
@@ -54,6 +55,7 @@ interface GotoRowProps {
 }
 
 function GotoRow({
+  dh,
   gotoRow,
   gotoRowError,
   gotoValueError,

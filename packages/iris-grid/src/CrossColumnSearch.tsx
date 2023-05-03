@@ -34,6 +34,7 @@ class CrossColumnSearch extends PureComponent<
   CrossColumnSearchState
 > {
   static createSearchFilter(
+    dh: DhType,
     searchValue: string,
     selectedColumns: readonly ColumnName[],
     columns: readonly Column[],

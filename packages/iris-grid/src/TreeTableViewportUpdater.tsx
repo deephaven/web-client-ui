@@ -93,7 +93,7 @@ class TreeTableViewportUpdater extends PureComponent<
       return;
     }
 
-    const { dh, table, updateInterval } = this.props;
+    const { table, updateInterval } = this.props;
     const viewSize = bottom - top;
     const viewportTop = Math.max(0, top - viewSize * 3);
     const viewportBottom = bottom + viewSize * 3 + 1;
@@ -106,7 +106,7 @@ class TreeTableViewportUpdater extends PureComponent<
     );
 
     if (!this.listenerCleanup) {
-      const { onViewportUpdate } = this.props;
+      const { dh, onViewportUpdate } = this.props;
       this.listenerCleanup = table.addEventListener(
         dh.TreeTable.EVENT_UPDATED,
         onViewportUpdate

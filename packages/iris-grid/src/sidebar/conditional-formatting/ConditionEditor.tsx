@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { TableUtils } from '@deephaven/jsapi-utils';
+import { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import {
   StringCondition,
@@ -22,6 +23,7 @@ import {
 const log = Log.module('ConditionEditor');
 
 export interface ConditionEditorProps {
+  dh: DhType;
   column: ModelColumn;
   config: ConditionConfig;
   onChange?: (config: ConditionConfig, isValid: boolean) => void;
@@ -253,7 +255,7 @@ function getCharInputs(
 }
 
 function ConditionEditor(props: ConditionEditorProps): JSX.Element {
-  const { column, config, onChange = DEFAULT_CALLBACK } = props;
+  const { column, config, dh, onChange = DEFAULT_CALLBACK } = props;
   const selectedColumnType = column.type;
   const [prevColumnType, setPrevColumnType] = useState(selectedColumnType);
   const [selectedCondition, setCondition] = useState(config.condition);
@@ -341,6 +343,7 @@ function ConditionEditor(props: ConditionEditorProps): JSX.Element {
       } else if (
         TableUtils.isDateType(column.type) &&
         !isDateConditionValid(
+          dh,
           selectedCondition as DateCondition,
           conditionValue
         )

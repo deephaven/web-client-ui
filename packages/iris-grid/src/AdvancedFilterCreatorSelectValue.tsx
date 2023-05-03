@@ -3,13 +3,14 @@ import React, { PureComponent } from 'react';
 import { CSSTransition } from 'react-transition-group';
 import classNames from 'classnames';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
-import { FilterCondition, Table } from '@deephaven/jsapi-types';
+import { dh as DhType, FilterCondition, Table } from '@deephaven/jsapi-types';
 import { Button } from '@deephaven/components';
 import AdvancedFilterCreatorSelectValueList from './AdvancedFilterCreatorSelectValueList';
 import './AdvancedFilterCreatorSelectValue.scss';
 import { ColumnName } from './CommonTypes';
 
 interface AdvancedFilterCreatorSelectValueProps<T> {
+  dh: DhType;
   invertSelection: boolean;
   selectedValues: T[];
   table?: Table;
@@ -267,7 +268,7 @@ class AdvancedFilterCreatorSelectValue<T = unknown> extends PureComponent<
       searchText,
       table,
     } = this.state;
-    const { formatter, showSearch } = this.props;
+    const { dh, formatter, showSearch } = this.props;
     const columnName = this.getColumnName();
     const displayedValuesText = this.getDisplayedValueText();
     const placeholderText = columnName ? `Find ${columnName}...` : '';

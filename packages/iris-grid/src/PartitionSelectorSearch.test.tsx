@@ -13,6 +13,7 @@ function makePartitionSelectorSearch({
 } = {}) {
   return render(
     <PartitionSelectorSearch
+      dh={dh}
       table={table}
       onSelect={onSelect}
       getFormattedString={getFormattedString}

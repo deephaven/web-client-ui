@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import debounce from 'lodash.debounce';
-import dh, { Table } from '@deephaven/jsapi-types';
+import { dh as DhType, Table } from '@deephaven/jsapi-types';
 import { ItemList, LoadingSpinner } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { CanceledPromiseError } from '@deephaven/utils';
@@ -17,6 +17,7 @@ interface Item {
 }
 
 interface PartitionSelectorSearchProps<T> {
+  dh: DhType;
   getFormattedString: (value: T, type: string, name: string) => string;
   table: Table;
   initialPageSize: number;
@@ -255,7 +256,7 @@ class PartitionSelectorSearch<T> extends Component<
   }
 
   startListening(): void {
-    const { initialPageSize, table } = this.props;
+    const { dh, initialPageSize, table } = this.props;
     table.addEventListener(dh.Table.EVENT_UPDATED, this.handleTableUpdate);
     table.addEventListener(
       dh.Table.EVENT_FILTERCHANGED,
@@ -265,7 +266,7 @@ class PartitionSelectorSearch<T> extends Component<
   }
 
   stopListening(): void {
-    const { table } = this.props;
+    const { dh, table } = this.props;
     table.removeEventListener(dh.Table.EVENT_UPDATED, this.handleTableUpdate);
     table.removeEventListener(
       dh.Table.EVENT_FILTERCHANGED,
@@ -274,7 +275,7 @@ class PartitionSelectorSearch<T> extends Component<
   }
 
   updateFilter(): void {
-    const { initialPageSize, table } = this.props;
+    const { dh, initialPageSize, table } = this.props;
     const { text } = this.state;
     const filterText = text.trim();
     const filters = [];

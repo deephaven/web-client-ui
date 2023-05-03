@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import Log from '@deephaven/log';
+import { dh as DhType } from '@deephaven/jsapi-types';
 import { ComboBox } from '@deephaven/components';
 import {
   BaseFormatConfig,
@@ -17,6 +18,7 @@ const log = Log.module('RowFormatEditor');
 export interface RowFormatEditorProps {
   columns: ModelColumn[];
   config?: BaseFormatConfig;
+  dh: DhType;
   onChange?: ChangeCallback;
 }
 
@@ -37,6 +39,7 @@ function RowFormatEditor(props: RowFormatEditorProps): JSX.Element {
   const {
     columns,
     config = makeDefaultConfig(columns),
+    dh,
     onChange = DEFAULT_CALLBACK,
   } = props;
 
@@ -129,6 +132,7 @@ function RowFormatEditor(props: RowFormatEditorProps): JSX.Element {
           <ConditionEditor
             column={selectedColumn}
             config={conditionConfig}
+            dh={dh}
             onChange={handleConditionChange}
           />
           <StyleEditor config={selectedStyle} onChange={handleStyleChange} />
