@@ -1,7 +1,7 @@
 import { GridUtils, GridRange, MoveOperation } from '@deephaven/grid';
 import dh, { Column, Table, Sort } from '@deephaven/jsapi-shim';
 import { TypeValue as FilterTypeValue } from '@deephaven/filters';
-import { DateUtils } from '@deephaven/jsapi-utils';
+import { DateUtils, TableUtils } from '@deephaven/jsapi-utils';
 import type { AdvancedFilter } from './CommonTypes';
 import { FilterData } from './IrisGrid';
 import IrisGridTestUtils from './IrisGridTestUtils';
@@ -9,6 +9,8 @@ import IrisGridUtils, {
   DehydratedSort,
   LegacyDehydratedSort,
 } from './IrisGridUtils';
+
+const tableUtils = new TableUtils(dh);
 
 function makeFilter() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -51,7 +53,8 @@ describe('quickfilters tests', () => {
 
     const importedFilters = IrisGridUtils.hydrateQuickFilters(
       table.columns,
-      exportedFilters
+      exportedFilters,
+      tableUtils
     );
     expect(importedFilters).toEqual(filters);
   });
@@ -70,7 +73,8 @@ describe('quickfilters tests', () => {
 
     const importedFilters = IrisGridUtils.hydrateQuickFilters(
       table.columns,
-      exportedFilters
+      exportedFilters,
+      tableUtils
     );
     expect(importedFilters).toEqual(
       new Map([
@@ -99,6 +103,7 @@ describe('advanced filter tests', () => {
     const importedFilters = IrisGridUtils.hydrateAdvancedFilters(
       table.columns,
       exportedFilters,
+      tableUtils,
       'America/New_York'
     );
     expect(importedFilters).toEqual(filters);
@@ -127,6 +132,7 @@ describe('advanced filter tests', () => {
     const importedFilters = IrisGridUtils.hydrateAdvancedFilters(
       table.columns,
       exportedFilters,
+      tableUtils,
       'America/New_York'
     );
     expect(importedFilters).toEqual(

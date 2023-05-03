@@ -53,6 +53,7 @@ interface AdvancedFilterCreatorProps {
   options: AdvancedFilterOptions;
   sortDirection: SortDirection;
   formatter: Formatter;
+  tableUtils: TableUtils;
 }
 
 interface AdvancedFilterItem {
@@ -409,7 +410,7 @@ class AdvancedFilterCreator extends PureComponent<
       invertSelection,
       selectedValues,
     } = this.state;
-    const { column, onFilterChange, model } = this.props;
+    const { column, onFilterChange, model, tableUtils } = this.props;
     const { formatter } = model;
 
     const items = filterItems.filter(
@@ -435,7 +436,7 @@ class AdvancedFilterCreator extends PureComponent<
       selectedValues,
     };
 
-    const filter = TableUtils.makeAdvancedFilter(
+    const filter = tableUtils.makeAdvancedFilter(
       column,
       options,
       formatter.timeZone
@@ -445,7 +446,7 @@ class AdvancedFilterCreator extends PureComponent<
   }
 
   render(): JSX.Element {
-    const { column, model, sortDirection, formatter } = this.props;
+    const { column, model, sortDirection, formatter, tableUtils } = this.props;
     const {
       filterItems,
       filterOperators,
@@ -475,6 +476,7 @@ class AdvancedFilterCreator extends PureComponent<
             selectedType={selectedType}
             value={value}
             formatter={formatter}
+            tableUtils={tableUtils}
           />
         );
         filterItemElements.push(element);
@@ -595,6 +597,7 @@ class AdvancedFilterCreator extends PureComponent<
                   formatter={formatter}
                   showSearch={!isDateType}
                   timeZone={formatter.timeZone}
+                  tableUtils={tableUtils}
                 />
               </div>
             </>

@@ -7,10 +7,11 @@ import {
   MoveOperation,
   VisibleIndex,
 } from '@deephaven/grid';
-import dh, {
+import {
   Column,
   ColumnGroup,
   DateWrapper,
+  dhType,
   FilterCondition,
   LongWrapper,
   RangeSet,
@@ -278,6 +279,7 @@ class IrisGridUtils {
    * @param irisGridState The current state of the IrisGrid
    */
   static dehydrateIrisGridState(
+    dh: dhType,
     model: IrisGridModel,
     irisGridState: HydratedIrisGridState
   ): DehydratedIrisGridState {
@@ -307,6 +309,7 @@ class IrisGridUtils {
     const { columns } = model;
     return {
       advancedFilters: IrisGridUtils.dehydrateAdvancedFilters(
+        dh,
         columns,
         advancedFilters
       ),
@@ -334,6 +337,7 @@ class IrisGridUtils {
       selectedSearchColumns,
       invertSearchColumns,
       pendingDataMap: IrisGridUtils.dehydratePendingDataMap(
+        dh,
         columns,
         pendingDataMap
       ),
@@ -352,8 +356,10 @@ class IrisGridUtils {
    * @param irisGridState The saved IrisGrid state
    */
   static hydrateIrisGridState(
+    dh: dhType,
     model: IrisGridModel,
-    irisGridState: DehydratedIrisGridState
+    irisGridState: DehydratedIrisGridState,
+    tableUtils: TableUtils
   ): Omit<HydratedIrisGridState, 'metrics'> & {
     userColumnWidths: ModelSizeMap;
     userRowHeights: ModelSizeMap;
@@ -384,8 +390,10 @@ class IrisGridUtils {
 
     return {
       advancedFilters: IrisGridUtils.hydrateAdvancedFilters(
+        dh,
         columns,
         advancedFilters,
+        tableUtils,
         formatter.timeZone
       ),
       aggregationSettings,
@@ -394,9 +402,10 @@ class IrisGridUtils {
       quickFilters: IrisGridUtils.hydrateQuickFilters(
         columns,
         quickFilters,
+        tableUtils,
         formatter.timeZone
       ),
-      sorts: IrisGridUtils.hydrateSort(columns, sorts),
+      sorts: IrisGridUtils.hydrateSort(dh, columns, sorts),
       userColumnWidths: new Map(
         userColumnWidths
           .map(([column, width]: [string | number, number]): [
@@ -427,6 +436,7 @@ class IrisGridUtils {
       selectedSearchColumns,
       invertSearchColumns,
       pendingDataMap: IrisGridUtils.hydratePendingDataMap(
+        dh,
         columns,
         pendingDataMap
       ) as PendingDataMap<UIRow>,
@@ -542,6 +552,7 @@ class IrisGridUtils {
   static hydrateQuickFilters(
     columns: readonly Column[],
     savedQuickFilters: readonly DehydratedQuickFilter[],
+    tableUtils: TableUtils,
     timeZone?: string
   ): ReadonlyQuickFilterMap {
     const importedFilters = savedQuickFilters.map(
@@ -555,7 +566,7 @@ class IrisGridUtils {
         try {
           const column = IrisGridUtils.getColumn(columns, columnIndex);
           if (column != null) {
-            filter = TableUtils.makeQuickFilter(column, text, timeZone);
+            filter = tableUtils.makeQuickFilter(column, text, timeZone);
           }
         } catch (error) {
           log.error('hydrateQuickFilters error with', text, error);
@@ -575,6 +586,7 @@ class IrisGridUtils {
    * @returns The dehydrated advanced filters
    */
   static dehydrateAdvancedFilters(
+    dh: dhType,
     columns: readonly Column[],
     advancedFilters: ReadonlyAdvancedFilterMap
   ): DehydratedAdvancedFilter[] {
@@ -582,6 +594,7 @@ class IrisGridUtils {
       const column = IrisGridUtils.getColumn(columns, columnIndex);
       assertNotNull(column);
       const options = IrisGridUtils.dehydrateAdvancedFilterOptions(
+        dh,
         column,
         advancedFilter.options
       );
@@ -597,8 +610,10 @@ class IrisGridUtils {
    * @returns The advanced filters to apply to the columns
    */
   static hydrateAdvancedFilters(
+    dh: dhType,
     columns: readonly Column[],
     savedAdvancedFilters: readonly DehydratedAdvancedFilter[],
+    tableUtils: TableUtils,
     timeZone: string
   ): ReadonlyAdvancedFilterMap {
     const importedFilters = savedAdvancedFilters.map(
@@ -609,6 +624,7 @@ class IrisGridUtils {
         const column = IrisGridUtils.getColumn(columns, columnIndex);
         assertNotNull(column);
         const options = IrisGridUtils.hydrateAdvancedFilterOptions(
+          dh,
           column,
           advancedFilter.options
         );
@@ -617,7 +633,7 @@ class IrisGridUtils {
         try {
           const columnRetrieved = IrisGridUtils.getColumn(columns, columnIndex);
           if (columnRetrieved != null) {
-            filter = TableUtils.makeAdvancedFilter(column, options, timeZone);
+            filter = tableUtils.makeAdvancedFilter(column, options, timeZone);
           }
         } catch (error) {
           log.error('hydrateAdvancedFilters error with', options, error);
@@ -631,32 +647,35 @@ class IrisGridUtils {
   }
 
   static dehydrateAdvancedFilterOptions(
+    dh: dhType,
     column: Column,
     options: AdvancedFilterOptions
   ): AdvancedFilterOptions {
     const { selectedValues, ...otherOptions } = options;
     return {
       selectedValues: selectedValues?.map((value: unknown) =>
-        IrisGridUtils.dehydrateValue(value, column?.type)
+        IrisGridUtils.dehydrateValue(dh, value, column?.type)
       ),
       ...otherOptions,
     };
   }
 
   static hydrateAdvancedFilterOptions(
+    dh: dhType,
     column: Column,
     options: AdvancedFilterOptions
   ): AdvancedFilterOptions {
     const { selectedValues, ...otherOptions } = options;
     return {
       selectedValues: selectedValues?.map(value =>
-        IrisGridUtils.hydrateValue(value, column?.type)
+        IrisGridUtils.hydrateValue(dh, value, column?.type)
       ),
       ...otherOptions,
     };
   }
 
   static dehydratePendingDataMap(
+    dh: dhType,
     columns: readonly Column[],
     pendingDataMap: ReadonlyMap<
       ModelIndex,
@@ -670,13 +689,14 @@ class IrisGridUtils {
       {
         data: [...data].map(([c, value]) => [
           columns[c].name,
-          IrisGridUtils.dehydrateValue(value, columns[c].type),
+          IrisGridUtils.dehydrateValue(dh, value, columns[c].type),
         ]),
       },
     ]);
   }
 
   static hydratePendingDataMap(
+    dh: dhType,
     columns: readonly Column[],
     pendingDataMap: DehydratedPendingDataMap<CellData | string | null>
   ): Map<
@@ -708,7 +728,7 @@ class IrisGridUtils {
                 assertNotNull(index);
                 return [
                   getColumnIndex(columnName) ?? null,
-                  IrisGridUtils.hydrateValue(value, columns[index].type),
+                  IrisGridUtils.hydrateValue(dh, value, columns[index].type),
                 ];
               })
             ),
@@ -723,9 +743,14 @@ class IrisGridUtils {
    * @param  value The value to dehydrate
    * @param  columnType The column type
    */
-  static dehydrateValue<T>(value: T, columnType: string): string | T | null {
+  static dehydrateValue<T>(
+    dh: dhType,
+    value: T,
+    columnType: string
+  ): string | T | null {
     if (TableUtils.isDateType(columnType)) {
       return IrisGridUtils.dehydrateDateTime(
+        dh,
         (value as unknown) as number | DateWrapper | Date
       );
     }
@@ -743,27 +768,31 @@ class IrisGridUtils {
    * @param  columnType The type of column
    */
   static hydrateValue<T>(
+    dh: dhType,
     value: T,
     columnType: string
   ): DateWrapper | LongWrapper | T | null {
     if (TableUtils.isDateType(columnType)) {
-      return IrisGridUtils.hydrateDateTime((value as unknown) as string);
+      return IrisGridUtils.hydrateDateTime(dh, (value as unknown) as string);
     }
 
     if (TableUtils.isLongType(columnType)) {
-      return IrisGridUtils.hydrateLong((value as unknown) as string);
+      return IrisGridUtils.hydrateLong(dh, (value as unknown) as string);
     }
 
     return value;
   }
 
-  static dehydrateDateTime(value: number | DateWrapper | Date): string | null {
+  static dehydrateDateTime(
+    dh: dhType,
+    value: number | DateWrapper | Date
+  ): string | null {
     return value != null
       ? dh.i18n.DateTimeFormat.format(DateUtils.FULL_DATE_FORMAT, value)
       : null;
   }
 
-  static hydrateDateTime(value: string): DateWrapper | null {
+  static hydrateDateTime(dh: dhType, value: string): DateWrapper | null {
     return value != null
       ? dh.i18n.DateTimeFormat.parse(DateUtils.FULL_DATE_FORMAT, value)
       : null;
@@ -773,7 +802,7 @@ class IrisGridUtils {
     return value != null ? `${value}` : null;
   }
 
-  static hydrateLong(value: string): LongWrapper | null {
+  static hydrateLong(dh: dhType, value: string): LongWrapper | null {
     return value != null ? dh.LongWrapper.ofString(value) : null;
   }
 
@@ -800,6 +829,7 @@ class IrisGridUtils {
    * @returns The sorts to apply to the table
    */
   static hydrateSort(
+    dh: dhType,
     columns: readonly Column[],
     sorts: readonly (DehydratedSort | LegacyDehydratedSort)[]
   ): Sort[] {
@@ -884,8 +914,10 @@ class IrisGridUtils {
    * @param  timeZone The time zone to make this value in if it is a date type. E.g. America/New_York
    */
   static applyTableSettings(
+    dh: dhType,
     table: Table,
     tableSettings: TableSettings,
+    tableUtils: TableUtils,
     timeZone: string
   ): void {
     const { columns } = table;
@@ -896,6 +928,7 @@ class IrisGridUtils {
         IrisGridUtils.hydrateQuickFilters(
           columns,
           tableSettings.quickFilters,
+          tableUtils,
           timeZone
         )
       );
@@ -905,21 +938,24 @@ class IrisGridUtils {
     if (tableSettings.advancedFilters) {
       advancedFilters = IrisGridUtils.getFiltersFromFilterMap(
         IrisGridUtils.hydrateAdvancedFilters(
+          dh,
           columns,
           tableSettings.advancedFilters,
+          tableUtils,
           timeZone
         )
       );
     }
     const inputFilters = IrisGridUtils.getFiltersFromInputFilters(
       columns,
+      tableUtils,
       tableSettings.inputFilters,
       timeZone
     );
 
     let sorts: Sort[] = [];
     if (tableSettings.sorts) {
-      sorts = IrisGridUtils.hydrateSort(columns, tableSettings.sorts);
+      sorts = IrisGridUtils.hydrateSort(dh, columns, tableSettings.sorts);
     }
 
     let filters = [...quickFilters, ...advancedFilters];
@@ -956,6 +992,7 @@ class IrisGridUtils {
 
   static getFiltersFromInputFilters(
     columns: readonly Column[],
+    tableUtils: TableUtils,
     inputFilters: readonly InputFilter[] = [],
     timeZone?: string
   ): FilterCondition[] {
@@ -967,7 +1004,7 @@ class IrisGridUtils {
         );
         if (column) {
           try {
-            return TableUtils.makeQuickFilter(column, value, timeZone);
+            return tableUtils.makeQuickFilter(column, value, timeZone);
           } catch (e) {
             // It may be unable to create it because user hasn't completed their input
             log.debug('Unable to create input filter', e);
@@ -1251,7 +1288,10 @@ class IrisGridUtils {
    * @param  ranges The ranges to get the range set for
    * @returns The rangeset for the provided ranges
    */
-  static rangeSetFromRanges(ranges: readonly GridRange[]): RangeSet {
+  static rangeSetFromRanges(
+    dh: dhType,
+    ranges: readonly GridRange[]
+  ): RangeSet {
     const rangeSets = ranges
       .slice()
       .sort((a, b): number => {

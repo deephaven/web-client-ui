@@ -17,6 +17,7 @@ interface AdvancedFilterCreatorSelectValueProps<T> {
   onChange: (selectedValues: T[], invertSelection: boolean) => void;
   showSearch: boolean;
   timeZone: string;
+  tableUtils: TableUtils;
 }
 
 interface AdvancedFilterCreatorSelectValueState<T> {
@@ -222,7 +223,7 @@ class AdvancedFilterCreatorSelectValue<T = unknown> extends PureComponent<
 
   updateTableFilter(): void {
     const { table, searchText } = this.state;
-    const { timeZone } = this.props;
+    const { timeZone, tableUtils } = this.props;
     const column = table?.columns[0];
     const filters = [];
     if (column == null) {
@@ -233,14 +234,14 @@ class AdvancedFilterCreatorSelectValue<T = unknown> extends PureComponent<
       let filter = null;
       if (TableUtils.isCharType(column.type)) {
         // Just exact match for char
-        filter = TableUtils.makeQuickFilter(column, searchText);
+        filter = tableUtils.makeQuickFilter(column, searchText);
       } else if (TableUtils.isTextType(column.type)) {
         // case insensitive & contains search text
-        filter = TableUtils.makeQuickFilter(column, `~${searchText}`, timeZone);
+        filter = tableUtils.makeQuickFilter(column, `~${searchText}`, timeZone);
       } else {
         // greater than or equal search for everything else
         // we may want to be smarter with some other types (like dates)
-        filter = TableUtils.makeQuickFilter(
+        filter = tableUtils.makeQuickFilter(
           column,
           `>=${searchText}`,
           timeZone

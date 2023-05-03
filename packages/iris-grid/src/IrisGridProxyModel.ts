@@ -44,13 +44,14 @@ const log = Log.module('IrisGridProxyModel');
 
 function makeModel(
   table: Table | TreeTable,
+  tableUtils: TableUtils,
   formatter?: Formatter,
   inputTable?: InputTable | null
 ): IrisGridModel {
   if (TableUtils.isTreeTable(table)) {
-    return new IrisGridTreeTableModel(table, formatter);
+    return new IrisGridTreeTableModel(table, tableUtils, formatter);
   }
-  return new IrisGridTableModel(table, formatter, inputTable);
+  return new IrisGridTableModel(table, tableUtils, formatter, inputTable);
 }
 
 /**
@@ -74,8 +75,11 @@ class IrisGridProxyModel extends IrisGridModel {
 
   selectDistinct: ColumnName[];
 
+  tableUtils: TableUtils;
+
   constructor(
     table: Table | TreeTable,
+    tableUtils: TableUtils,
     formatter = new Formatter(),
     inputTable: InputTable | null = null
   ) {
@@ -83,12 +87,13 @@ class IrisGridProxyModel extends IrisGridModel {
 
     this.handleModelEvent = this.handleModelEvent.bind(this);
 
-    const model = makeModel(table, formatter, inputTable);
+    const model = makeModel(table, tableUtils, formatter, inputTable);
     this.originalModel = model;
     this.model = model;
     this.modelPromise = null;
     this.rollup = null;
     this.selectDistinct = [];
+    this.tableUtils = tableUtils;
   }
 
   close(): void {
@@ -521,7 +526,7 @@ class IrisGridProxyModel extends IrisGridModel {
     ) {
       modelPromise = this.originalModel.table
         .rollup(rollupConfig)
-        .then(table => makeModel(table, this.formatter));
+        .then(table => makeModel(table, this.tableUtils, this.formatter));
     }
     this.setNextModel(modelPromise);
   }
@@ -559,7 +564,7 @@ class IrisGridProxyModel extends IrisGridModel {
     ) {
       modelPromise = this.originalModel.table
         .selectDistinct(selectDistinctColumns)
-        .then(table => makeModel(table, this.formatter));
+        .then(table => makeModel(table, this.tableUtils, this.formatter));
     }
     this.setNextModel(modelPromise);
   }

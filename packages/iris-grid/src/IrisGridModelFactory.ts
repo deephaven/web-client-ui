@@ -14,13 +14,14 @@ class IrisGridModelFactory {
    */
   static async makeModel(
     table: Table | TreeTable,
+    tableUtils: TableUtils,
     formatter = new Formatter()
   ): Promise<IrisGridModel> {
     let inputTable = null;
     if (!TableUtils.isTreeTable(table) && table.hasInputTable) {
       inputTable = await table.inputTable();
     }
-    return new IrisGridProxyModel(table, formatter, inputTable);
+    return new IrisGridProxyModel(table, tableUtils, formatter, inputTable);
   }
 }
 

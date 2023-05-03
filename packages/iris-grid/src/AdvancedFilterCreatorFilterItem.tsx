@@ -30,6 +30,7 @@ export interface AdvancedFilterCreatorFilterItemProps {
   selectedType?: FilterTypeValue;
   value?: string;
   formatter: Formatter;
+  tableUtils: TableUtils;
 }
 
 export type AdvancedFilterCreatorFilterItemState = AdvancedFilterItemType;
@@ -135,13 +136,14 @@ export class AdvancedFilterCreatorFilterItem extends PureComponent<
       column: Column,
       operation: FilterTypeValue,
       value: string,
-      timeZone: string
+      timeZone: string,
+      tableUtils: TableUtils
     ): boolean => {
       try {
         // We don't want to show an error for an empty value
         return (
           !value ||
-          TableUtils.makeAdvancedValueFilter(
+          tableUtils.makeAdvancedValueFilter(
             column,
             operation,
             value,
@@ -155,7 +157,7 @@ export class AdvancedFilterCreatorFilterItem extends PureComponent<
   );
 
   render(): JSX.Element {
-    const { column, filterTypes, formatter } = this.props;
+    const { column, filterTypes, formatter, tableUtils } = this.props;
     const { selectedType, value } = this.state;
     const showValueInput = !TableUtils.isBooleanType(column.type);
     const typeOptionElements = [];
@@ -163,7 +165,8 @@ export class AdvancedFilterCreatorFilterItem extends PureComponent<
       column,
       selectedType,
       value,
-      formatter.timeZone
+      formatter.timeZone,
+      tableUtils
     );
     for (let i = 0; i < filterTypes.length; i += 1) {
       const type = filterTypes[i];

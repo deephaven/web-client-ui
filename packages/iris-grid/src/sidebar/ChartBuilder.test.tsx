@@ -16,7 +16,12 @@ function makeChartBuilderWrapper({
   ),
 } = {}) {
   return render(
-    <ChartBuilder onChange={onChange} onSubmit={onSubmit} model={model} />
+    <ChartBuilder
+      onChange={onChange}
+      onSubmit={onSubmit}
+      model={model}
+      dh={dh}
+    />
   );
 }
 
