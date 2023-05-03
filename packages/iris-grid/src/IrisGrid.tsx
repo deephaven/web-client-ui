@@ -62,17 +62,16 @@ import {
   vsTools,
 } from '@deephaven/icons';
 import {
-  dh as defaultDh,
-  dhType,
   Column,
   ColumnGroup,
   CustomColumn,
   DateWrapper,
+  dh as DhType,
   FilterCondition,
   Sort,
   Table,
   TableViewportSubscription,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import {
   DateUtils,
   Formatter,
@@ -253,7 +252,7 @@ export type FilterMap = Map<
 >;
 export interface IrisGridProps {
   children: React.ReactNode;
-  dh: dhType;
+  dh: DhType;
   advancedFilters: ReadonlyAdvancedFilterMap;
   advancedSettings: Map<AdvancedSettingsType, boolean>;
   alwaysFetchColumns: readonly ColumnName[];
@@ -441,7 +440,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   static defaultProps = {
     children: null,
-    dh: defaultDh,
     advancedFilters: EMPTY_MAP,
     advancedSettings: EMPTY_MAP,
     alwaysFetchColumns: EMPTY_ARRAY,
@@ -1032,8 +1030,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       column: Column,
       advancedFilterOptions: AdvancedFilterOptions | undefined,
       sortDirection: SortDirection | undefined,
-      formatter: Formatter,
-      tableUtils: TableUtils
+      formatter: Formatter
     ) => (
       <AdvancedFilterCreator
         model={model}
@@ -1043,9 +1040,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         onDone={this.handleAdvancedFilterDone}
         options={advancedFilterOptions}
         sortDirection={sortDirection}
-        // TODO: use formatter and tableUtils from the model?
         formatter={formatter}
-        tableUtils={tableUtils}
+        tableUtils={this.tableUtils}
       />
     ),
     { max: 50 }
@@ -1362,7 +1358,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     rowIndex: GridRangeIndex,
     rawValue = false
   ): string | unknown {
-    const { model } = this.props;
+    const { dh, model } = this.props;
     const modelColumn = this.getModelColumn(columnIndex);
     const modelRow = this.getModelRow(rowIndex);
     if (rawValue && modelColumn != null && modelRow != null) {
@@ -1928,6 +1924,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   updatePartition(partition: string, partitionColumn: Column): void {
+    const { dh } = this.props;
     const partitionFilter = partitionColumn
       .filter()
       .eq(dh.FilterValue.ofString(partition));
@@ -2473,7 +2470,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   isTableSearchAvailable(): boolean {
-    const { model, canToggleSearch } = this.props;
+    const { dh, model, canToggleSearch } = this.props;
     const searchDisplayMode = model?.layoutHints?.searchDisplayMode;
 
     if (searchDisplayMode === dh.SearchDisplayMode?.SEARCH_DISPLAY_HIDE) {
@@ -3304,7 +3301,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       gotoValueSelectedColumnName: selectedColumnName,
       gotoValueSelectedFilter,
     } = this.state;
-    const { model, dh } = this.props;
+    const { dh, model } = this.props;
     if (!model.isSeekRowAvailable) {
       return;
     }
@@ -4227,9 +4224,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                     column,
                     advancedFilterOptions,
                     sortDirection,
-                    formatter,
-                    // TODO:
-                    this.tableUtils
+                    formatter
                   )}
                 </Popper>
               </div>

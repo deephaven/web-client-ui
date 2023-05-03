@@ -8,10 +8,10 @@ import {
   useListener,
 } from '@deephaven/dashboard';
 import { IrisGridModelFactory } from '@deephaven/iris-grid';
-import { Table } from '@deephaven/jsapi-shim';
+import { Table } from '@deephaven/jsapi-types';
+import { TableUtils } from '@deephaven/jsapi-utils';
 import shortid from 'shortid';
 import { PandasPanel, PandasPanelProps } from './panels';
-import { TableUtils } from '@deephaven/jsapi-utils';
 
 export type PandasPluginProps = Partial<DashboardPluginComponentProps> & {
   hydrate: PanelHydrateFunction<PandasPanelProps>;

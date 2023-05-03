@@ -61,13 +61,13 @@ import {
   PromiseUtils,
 } from '@deephaven/utils';
 import { ContextAction, ContextMenuRoot } from '@deephaven/components';
-import defaultDh, {
+import {
   Column,
-  dhType,
+  dh as DhType,
   FilterCondition,
   Sort,
   VariableTypeUnion,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import {
   GridRangeIndex,
   GridState,
@@ -126,7 +126,7 @@ export interface PanelState {
 
 export interface IrisGridPanelProps {
   children?: ReactNode;
-  dh?: dhType;
+  dh: DhType;
   glContainer: Container;
   glEventHub: EventEmitter;
   metadata: Metadata;
@@ -209,7 +209,6 @@ export class IrisGridPanel extends PureComponent<
   static defaultProps = {
     onStateChange: (): void => undefined,
     onPanelStateUpdate: (): void => undefined,
-    dh: defaultDh,
   };
 
   static displayName = 'IrisGridPanel';
@@ -247,10 +246,11 @@ export class IrisGridPanel extends PureComponent<
     this.irisGrid = React.createRef();
     this.pluginRef = React.createRef();
 
-    const { panelState, dh = defaultDh } = props;
+    const { panelState, dh } = props;
 
     this.pluginState = null;
-    this.tableUtils = new TableUtils(dh);
+    this.dh = dh;
+    this.irisGridUtils = new IrisGridUtils(dh);
 
     this.state = {
       error: null,
@@ -345,7 +345,9 @@ export class IrisGridPanel extends PureComponent<
 
   pluginState: unknown;
 
-  tableUtils: TableUtils;
+  private dh: DhType;
+
+  private irisGridUtils: IrisGridUtils;
 
   getTableName(): string {
     const { metadata } = this.props;
@@ -445,7 +447,6 @@ export class IrisGridPanel extends PureComponent<
 
   getDehydratedIrisGridState = memoize(
     (
-      dh: dhType,
       model: IrisGridModel,
       sorts: readonly Sort[],
       advancedFilters: ReadonlyAdvancedFilterMap,
@@ -468,7 +469,7 @@ export class IrisGridPanel extends PureComponent<
       conditionalFormats: readonly SidebarFormattingRule[],
       columnHeaderGroups: readonly ColumnHeaderGroup[]
     ) =>
-      IrisGridUtils.dehydrateIrisGridState(dh, model, {
+      this.irisGridUtils.dehydrateIrisGridState(model, {
         advancedFilters,
         aggregationSettings,
         customColumnFormatMap,
@@ -614,9 +615,8 @@ export class IrisGridPanel extends PureComponent<
     const { model } = this.state;
     assertNotNull(model);
     const { columns, formatter } = model;
-    const pluginFilters = IrisGridUtils.getFiltersFromInputFilters(
+    const pluginFilters = this.irisGridUtils.getFiltersFromInputFilters(
       columns,
-      this.tableUtils,
       filters,
       formatter.timeZone
     );
@@ -949,17 +949,14 @@ export class IrisGridPanel extends PureComponent<
 
     irisGrid.clearAllFilters();
     irisGrid.setFilters({
-      quickFilters: IrisGridUtils.hydrateQuickFilters(
+      quickFilters: this.irisGridUtils.hydrateQuickFilters(
         columns,
         indexedQuickFilters,
-        this.tableUtils,
         formatter.timeZone
       ),
-      advancedFilters: IrisGridUtils.hydrateAdvancedFilters(
-        dh,
+      advancedFilters: this.irisGridUtils.hydrateAdvancedFilters(
         columns,
         indexedAdvancedFilters,
-        this.tableUtils,
         formatter.timeZone
       ),
     });
@@ -1048,15 +1045,10 @@ export class IrisGridPanel extends PureComponent<
         frozenColumns,
         conditionalFormats,
         columnHeaderGroups,
-      } = IrisGridUtils.hydrateIrisGridState(
-        dh,
-        model,
-        {
-          ...irisGridState,
-          ...irisGridStateOverrides,
-        },
-        this.tableUtils
-      );
+      } = this.irisGridUtils.hydrateIrisGridState(model, {
+        ...irisGridState,
+        ...irisGridStateOverrides,
+      });
       const {
         isStuckToBottom,
         isStuckToRight,
@@ -1105,7 +1097,7 @@ export class IrisGridPanel extends PureComponent<
   savePanelState = debounce(() => {
     const { irisGridState, gridState, pluginState } = this;
     assertNotNull(irisGridState);
-    const { onPanelStateUpdate, dh } = this.props;
+    const { onPanelStateUpdate } = this.props;
     const {
       model,
       panelState: oldPanelState,
@@ -1155,9 +1147,6 @@ export class IrisGridPanel extends PureComponent<
         advancedSettings
       ),
       this.getDehydratedIrisGridState(
-        // dh is set to defaultDh in defaultProps
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        dh!,
         model,
         sorts,
         advancedFilters,
