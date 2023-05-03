@@ -3,7 +3,9 @@ import { useEffect, useState } from 'react';
 export const DEFAULT_DEBOUNCE_MS = 250;
 
 /**
- * Debounces a value. Returns the value after the debounce time has elapsed.
+ * Debounces a value.
+ * Returns the initial value immediately.
+ * Returns the latest value after no changes have occurred for the debounce duration.
  * @param value Value to debounce
  * @param debounceMs Amount of time to debounce
  * @returns The debounced value
