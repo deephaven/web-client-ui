@@ -946,9 +946,11 @@ export class AppMainContainer extends Component<
           style={{ display: 'none' }}
           onChange={this.handleImportLayoutFiles}
         />
-        <DebouncedModal isOpen={isDisconnected && !isAuthFailed}>
+        <DebouncedModal
+          isOpen={isDisconnected && !isAuthFailed}
+          debounceMs={5000}
+        >
           <InfoModal
-            isOpen={isDisconnected && !isAuthFailed}
             icon={vsDebugDisconnect}
             title={
               <>

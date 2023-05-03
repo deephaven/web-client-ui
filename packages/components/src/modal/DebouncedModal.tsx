@@ -6,7 +6,7 @@ export type DebouncedModalProps = {
   blockInteraction?: boolean;
 
   /** Children to render after the alloted debounce time */
-  children: React.ReactNode;
+  children: React.ReactElement;
 
   /** Time to debounce */
   debounceMs?: number;
@@ -15,7 +15,7 @@ export type DebouncedModalProps = {
    * Will render the `children` `debounceMs` after `isOpen` is set to `true.
    * Will stop rendering immediately after `isOpen` is set to `false`.
    */
-  isOpen: boolean;
+  isOpen?: boolean;
 };
 
 /**
@@ -26,7 +26,7 @@ function DebouncedModal({
   blockInteraction = true,
   children,
   debounceMs = DEFAULT_DEBOUNCE_MS,
-  isOpen,
+  isOpen = false,
 }: DebouncedModalProps) {
   const debouncedIsOpen = useDebouncedValue(isOpen, debounceMs);
 
@@ -34,11 +34,12 @@ function DebouncedModal({
     <>
       {blockInteraction && isOpen && (
         <div
-          className="modal-backdrop transparent"
+          className="modal-backdrop"
+          style={{ backgroundColor: 'transparent' }}
           data-testid="debounced-modal-backdrop"
         />
       )}
-      {isOpen && debouncedIsOpen && children}
+      {React.cloneElement(children, { isOpen: isOpen && debouncedIsOpen })}
     </>
   );
 }

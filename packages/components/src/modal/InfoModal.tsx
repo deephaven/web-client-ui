@@ -19,7 +19,7 @@ type InfoModalProps = {
   subtitle?: React.ReactNode;
 
   /** Whether the modal is open/visible or not. */
-  isOpen: boolean;
+  isOpen?: boolean;
 };
 
 /**
@@ -29,7 +29,7 @@ type InfoModalProps = {
 function InfoModal({
   className,
   icon,
-  isOpen,
+  isOpen = false,
   subtitle,
   title,
 }: InfoModalProps): JSX.Element {

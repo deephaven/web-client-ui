@@ -2,6 +2,14 @@ import React from 'react';
 import { DEFAULT_DEBOUNCE_MS } from '@deephaven/react-hooks';
 import { act, render, screen } from '@testing-library/react';
 import DebouncedModal from './DebouncedModal';
+import Modal from './Modal';
+
+const mockChildText = 'Mock Child';
+const children = (
+  <Modal>
+    <div>{mockChildText}</div>
+  </Modal>
+);
 
 beforeAll(() => {
   jest.useFakeTimers();
@@ -13,8 +21,6 @@ afterAll(() => {
 
 describe('display modal after debounce', () => {
   it('should render the modal after the debounce time has passed', () => {
-    const mockChildText = 'Mock Child';
-    const children = <div>{mockChildText}</div>;
     const { rerender } = render(
       <DebouncedModal isOpen={false}>{children}</DebouncedModal>
     );
@@ -35,8 +41,6 @@ describe('display modal after debounce', () => {
   });
 
   it('should not block interaction if set to false', () => {
-    const mockChildText = 'Mock Child';
-    const children = <div>{mockChildText}</div>;
     const { rerender } = render(
       <DebouncedModal isOpen={false} blockInteraction={false}>
         {children}
