@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
 
-export const DEFAULT_DEBOUNCE_MS = 250;
-
 /**
  * Debounces a value.
  * Returns the initial value immediately.
@@ -10,10 +8,7 @@ export const DEFAULT_DEBOUNCE_MS = 250;
  * @param debounceMs Amount of time to debounce
  * @returns The debounced value
  */
-export function useDebouncedValue<T>(
-  value: T,
-  debounceMs = DEFAULT_DEBOUNCE_MS
-) {
+export function useDebouncedValue<T>(value: T, debounceMs: number) {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
   useEffect(() => {
     const timeoutId = setTimeout(() => {

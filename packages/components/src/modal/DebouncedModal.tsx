@@ -1,5 +1,5 @@
 import React from 'react';
-import { DEFAULT_DEBOUNCE_MS, useDebouncedValue } from '@deephaven/react-hooks';
+import { useDebouncedValue } from '@deephaven/react-hooks';
 
 export type DebouncedModalProps = {
   /** Whether to block interaction immediately */
@@ -9,7 +9,7 @@ export type DebouncedModalProps = {
   children: React.ReactElement;
 
   /** Time to debounce */
-  debounceMs?: number;
+  debounceMs: number;
 
   /**
    * Will render the `children` `debounceMs` after `isOpen` is set to `true.
@@ -25,7 +25,7 @@ export type DebouncedModalProps = {
 function DebouncedModal({
   blockInteraction = true,
   children,
-  debounceMs = DEFAULT_DEBOUNCE_MS,
+  debounceMs,
   isOpen = false,
 }: DebouncedModalProps) {
   const debouncedIsOpen = useDebouncedValue(isOpen, debounceMs);

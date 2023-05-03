@@ -948,7 +948,7 @@ export class AppMainContainer extends Component<
         />
         <DebouncedModal
           isOpen={isDisconnected && !isAuthFailed}
-          debounceMs={5000}
+          debounceMs={250}
         >
           <InfoModal
             icon={vsDebugDisconnect}
