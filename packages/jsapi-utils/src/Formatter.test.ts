@@ -1,3 +1,4 @@
+import dh from '@deephaven/jsapi-shim';
 import Formatter from './Formatter';
 import {
   BooleanColumnFormatter,
@@ -82,7 +83,7 @@ describe('makeColumnFormatMap', () => {
 });
 
 it('returns correct formatters for given column types', () => {
-  const formatter = makeFormatter();
+  const formatter = makeFormatter(dh);
   expect(formatter.getColumnTypeFormatter(TYPE_DATETIME)).toBeInstanceOf(
     DateTimeColumnFormatter
   );
@@ -102,7 +103,7 @@ it('returns correct formatters for given column types', () => {
 
 it('uses default formatter for types that have no custom formatter', () => {
   expect(
-    makeFormatter().getColumnTypeFormatter('randomTypeWithNoCustomFormatter')
+    makeFormatter(dh).getColumnTypeFormatter('randomTypeWithNoCustomFormatter')
   ).toBeInstanceOf(DefaultColumnFormatter);
 });
 
@@ -121,7 +122,7 @@ describe('getColumnFormat', () => {
     ),
   ];
 
-  const formatter = makeFormatter(columnFormats);
+  const formatter = makeFormatter(dh, columnFormats);
   it('returns null for DateTime column with no custom format', () => {
     const formatString = formatter.getColumnFormat(
       TYPE_DATETIME,
@@ -143,7 +144,7 @@ describe('getColumnFormat', () => {
 
 describe('getFormattedString', () => {
   it('returns an empty string when value is null', () => {
-    const formatter = makeFormatter();
+    const formatter = makeFormatter(dh);
     expect(formatter.getFormattedString(null, 'decimal')).toBe('');
   });
 
@@ -151,7 +152,7 @@ describe('getFormattedString', () => {
     const value = 'randomValue';
     const columnType = TYPE_DATETIME;
     const columnName = 'randomColumnName';
-    const formatter = makeFormatter();
+    const formatter = makeFormatter(dh);
     const columnTypeFormatter = formatter.getColumnTypeFormatter(columnType);
     const originalFormatFn = columnTypeFormatter.format;
     columnTypeFormatter.format = jest.fn();
@@ -176,7 +177,7 @@ describe('getFormattedString', () => {
         customFormat
       ),
     ];
-    const formatter = makeFormatter(customColumnFormats);
+    const formatter = makeFormatter(dh, customColumnFormats);
 
     const columnTypeFormatter = formatter.getColumnTypeFormatter(columnType);
     const originalFormatFn = columnTypeFormatter.format;
@@ -196,7 +197,7 @@ describe('getFormattedString', () => {
 
 describe('getColumnFormatMapForType', () => {
   it('should get columnFormatMap for a given column type and create new map entry', () => {
-    const formatter = makeFormatter();
+    const formatter = makeFormatter(dh);
     const formatMap = formatter.getColumnFormatMapForType('decimal', true);
     if (formatMap) {
       expect(formatMap).not.toBeUndefined();
@@ -205,7 +206,7 @@ describe('getColumnFormatMapForType', () => {
   });
 
   it('returns undefined if no formatmap exists and createIfNecessary is false', () => {
-    const formatter = new Formatter();
+    const formatter = makeFormatter(dh);
     const formatMap = formatter.getColumnFormatMapForType('decimal');
     expect(formatMap).toBeUndefined();
   });
@@ -213,7 +214,7 @@ describe('getColumnFormatMapForType', () => {
 
 describe('timeZone', () => {
   it('should return the time zone name', () => {
-    const formatter = makeFormatter();
+    const formatter = makeFormatter(dh);
     expect(formatter.timeZone).toBe('America/New_York');
   });
 });

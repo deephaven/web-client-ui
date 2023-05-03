@@ -25,7 +25,7 @@ it('handles mounting and unmount core plugins properly', () => {
           <GridPlugin hydrate={() => undefined} />
           <ChartPlugin hydrate={() => undefined} />
           <ConsolePlugin />
-          <LinkerPlugin />
+          <LinkerPlugin dh={dh} />
           <MarkdownPlugin />
           <PandasPlugin hydrate={() => undefined} />
         </Dashboard>

@@ -1,5 +1,5 @@
 /* eslint class-methods-use-this: "off" */
-import dh from '@deephaven/jsapi-shim';
+import { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import TableColumnFormatter, {
   TableColumnFormat,
@@ -20,10 +20,14 @@ export type IntegerColumnFormatterOptions = {
 export class IntegerColumnFormatter extends TableColumnFormatter<number> {
   /**
    * Validates format object
+   * @param dh JSAPI instance
    * @param format Format object
    * @returns true for valid object
    */
-  static isValid(format: Pick<TableColumnFormat, 'formatString'>): boolean {
+  static isValid(
+    dh: DhType,
+    format: Pick<TableColumnFormat, 'formatString'>
+  ): boolean {
     try {
       dh.i18n.NumberFormat.format(format.formatString, 0);
       return true;
@@ -125,13 +129,18 @@ export class IntegerColumnFormatter extends TableColumnFormatter<number> {
     '0.0000E0'
   );
 
+  dh: DhType;
+
   defaultFormatString: string;
 
-  constructor({
-    defaultFormatString = IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
-  }: IntegerColumnFormatterOptions = {}) {
+  constructor(
+    dh: DhType,
+    {
+      defaultFormatString = IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
+    }: IntegerColumnFormatterOptions = {}
+  ) {
     super();
-
+    this.dh = dh;
     this.defaultFormatString = defaultFormatString;
   }
 
@@ -154,7 +163,7 @@ export class IntegerColumnFormatter extends TableColumnFormatter<number> {
         ? valueParam * format.multiplier
         : valueParam;
     try {
-      return dh.i18n.NumberFormat.format(formatString, value);
+      return this.dh.i18n.NumberFormat.format(formatString, value);
     } catch (e) {
       log.error('Invalid format arguments');
     }

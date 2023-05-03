@@ -1,7 +1,8 @@
+import dh from '@deephaven/jsapi-shim';
 import IntegerColumnFormatter from './IntegerColumnFormatter';
 
 describe('multiplier tests', () => {
-  const formatter = new IntegerColumnFormatter();
+  const formatter = new IntegerColumnFormatter(dh);
   const value = 10;
   it('handles null multiplier correctly', () => {
     expect(

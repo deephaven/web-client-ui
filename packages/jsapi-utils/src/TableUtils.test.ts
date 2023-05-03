@@ -131,7 +131,7 @@ describe.each([undefined, 400])('applyNeverFilter - timeout: %s', timeout => {
   });
 
   beforeEach(() => {
-    makeNeverFilter = jest.spyOn(TableUtils, 'makeNeverFilter');
+    makeNeverFilter = jest.spyOn(TableUtils.prototype, 'makeNeverFilter');
     makeNeverFilter.mockReturnValue(neverFilter);
   });
 

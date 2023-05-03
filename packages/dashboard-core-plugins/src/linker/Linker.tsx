@@ -17,6 +17,7 @@ import {
   RowDataMap,
   TableUtils,
 } from '@deephaven/jsapi-utils';
+import { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { Type as FilterType } from '@deephaven/filters';
 import {
@@ -56,6 +57,7 @@ interface StateProps {
 }
 
 interface OwnProps {
+  dh: DhType;
   layout: GoldenLayout;
   panelManager: PanelManager;
   localDashboardId: string;
@@ -479,7 +481,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
 
   handleUpdateValues(panel: PanelComponent, dataMap: RowDataMap): void {
     const panelId = LayoutUtils.getIdFromPanel(panel);
-    const { links, timeZone } = this.props;
+    const { dh, links, timeZone } = this.props;
     // Map of panel ID to filterMap
     const panelFilterMap = new Map();
     // Instead of setting filters one by one for each link,
@@ -508,7 +510,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
           value = undefined;
         }
         if (columnType != null && TableUtils.isDateType(columnType)) {
-          const dateFilterFormatter = new DateTimeColumnFormatter({
+          const dateFilterFormatter = new DateTimeColumnFormatter(dh, {
             timeZone,
             showTimeZone: false,
             showTSeparator: true,

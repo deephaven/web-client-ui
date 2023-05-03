@@ -15,7 +15,7 @@ class IrisGridModelFactory {
   static async makeModel(
     dh: DhType,
     table: Table | TreeTable,
-    formatter = new Formatter()
+    formatter = new Formatter(dh)
   ): Promise<IrisGridModel> {
     let inputTable = null;
     if (!TableUtils.isTreeTable(table) && table.hasInputTable) {

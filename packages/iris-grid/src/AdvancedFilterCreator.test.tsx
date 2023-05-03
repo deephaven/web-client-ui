@@ -53,7 +53,7 @@ function makeAdvancedFilterCreatorWrapper(
     },
     model: IrisGridTestUtils.makeModel(dh),
     column: IrisGridTestUtils.makeColumn(),
-    formatter: new Formatter(),
+    formatter: new Formatter(dh),
   }
 ) {
   const wrapper = render(

@@ -16,6 +16,7 @@ import {
   DecimalColumnFormatter,
   TableUtils,
 } from '@deephaven/jsapi-utils';
+import { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import {
   getDefaultDateTimeFormat,
@@ -48,6 +49,7 @@ import TimeZoneOptions from './TimeZoneOptions';
 const log = Log.module('FormattingSectionContent');
 
 interface FormattingSectionContentProps {
+  dh: DhType;
   formatter: FormatterItem[];
   defaultDateTimeFormat: string;
   showTimeZone: boolean;
@@ -185,8 +187,10 @@ export class FormattingSectionContent extends PureComponent<
       legacyGlobalFormat?: string
     ) => {
       const { timestampAtMenuOpen } = this.state;
+      const { dh } = this.props;
       return (
         <DateTimeOptions
+          dh={dh}
           timestamp={timestampAtMenuOpen}
           timeZone={timeZone}
           showTimeZone={showTimeZone}
@@ -353,10 +357,11 @@ export class FormattingSectionContent extends PureComponent<
       defaultIntegerFormatOptions,
       truncateNumbersWithPound,
     } = this.state;
+    const { dh } = this.props;
 
     const formatter =
       formatSettings
-        .filter(isFormatRuleValidForSave)
+        .filter(format => isFormatRuleValidForSave(dh, format))
         .map(removeFormatRuleExtraProps) ?? [];
 
     const { settings, saveSettings } = this.props;
@@ -371,6 +376,7 @@ export class FormattingSectionContent extends PureComponent<
     };
     if (
       isValidFormat(
+        dh,
         TableUtils.dataType.DECIMAL,
         DecimalColumnFormatter.makeCustomFormat(
           defaultDecimalFormatOptions.defaultFormatString
@@ -381,6 +387,7 @@ export class FormattingSectionContent extends PureComponent<
     }
     if (
       isValidFormat(
+        dh,
         TableUtils.dataType.INT,
         IntegerColumnFormatter.makeCustomFormat(
           defaultIntegerFormatOptions.defaultFormatString
@@ -393,7 +400,7 @@ export class FormattingSectionContent extends PureComponent<
   }
 
   render(): ReactElement {
-    const { defaults } = this.props;
+    const { defaults, dh } = this.props;
     const {
       defaultDateTimeFormat,
       defaultDecimalFormatOptions,
@@ -532,6 +539,7 @@ export class FormattingSectionContent extends PureComponent<
                   'default-decimal-format-input',
                   {
                     'is-invalid': !isValidFormat(
+                      dh,
                       TableUtils.dataType.DECIMAL,
                       DecimalColumnFormatter.makeCustomFormat(
                         defaultDecimalFormatString
@@ -575,6 +583,7 @@ export class FormattingSectionContent extends PureComponent<
                   'default-integer-format-input',
                   {
                     'is-invalid': !isValidFormat(
+                      dh,
                       TableUtils.dataType.INT,
                       IntegerColumnFormatter.makeCustomFormat(
                         defaultIntegerFormatString

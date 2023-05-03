@@ -1,6 +1,5 @@
 /* eslint class-methods-use-this: "off" */
-import dh from '@deephaven/jsapi-shim';
-import type { DateWrapper, TimeZone } from '@deephaven/jsapi-types';
+import { dh as DhType, DateWrapper, TimeZone } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import TableColumnFormatter, {
   TableColumnFormat,
@@ -27,10 +26,14 @@ export class DateTimeColumnFormatter extends TableColumnFormatter<
 > {
   /**
    * Validates format object
+   * @param dh JSAPI instance
    * @param format Format object
    * @returns true for valid object
    */
-  static isValid(format: Pick<TableColumnFormat, 'formatString'>): boolean {
+  static isValid(
+    dh: DhType,
+    format: Pick<TableColumnFormat, 'formatString'>
+  ): boolean {
     try {
       dh.i18n.DateTimeFormat.format(format.formatString, new Date());
       return true;
@@ -134,6 +137,8 @@ export class DateTimeColumnFormatter extends TableColumnFormatter<
     return [...formatStringMap.keys()];
   }
 
+  dh: DhType;
+
   dhTimeZone: TimeZone;
 
   defaultDateTimeFormatString: string;
@@ -144,12 +149,15 @@ export class DateTimeColumnFormatter extends TableColumnFormatter<
 
   formatStringMap: Map<string, string>;
 
-  constructor({
-    timeZone: timeZoneParam = '',
-    showTimeZone = true,
-    showTSeparator = false,
-    defaultDateTimeFormatString = DateTimeColumnFormatter.DEFAULT_DATETIME_FORMAT_STRING,
-  }: DateTimeColumnFormatterOptions = {}) {
+  constructor(
+    dh: DhType,
+    {
+      timeZone: timeZoneParam = '',
+      showTimeZone = true,
+      showTSeparator = false,
+      defaultDateTimeFormatString = DateTimeColumnFormatter.DEFAULT_DATETIME_FORMAT_STRING,
+    }: DateTimeColumnFormatterOptions = {}
+  ) {
     super();
 
     const timeZone =
@@ -163,7 +171,7 @@ export class DateTimeColumnFormatter extends TableColumnFormatter<
         DateTimeColumnFormatter.DEFAULT_TIME_ZONE_ID
       );
     }
-
+    this.dh = dh;
     this.defaultDateTimeFormatString = defaultDateTimeFormatString;
     this.showTimeZone = showTimeZone;
     this.showTSeparator = showTSeparator;
@@ -187,7 +195,7 @@ export class DateTimeColumnFormatter extends TableColumnFormatter<
         : this.defaultDateTimeFormatString;
     const formatString = this.getEffectiveFormatString(baseFormatString);
     try {
-      return dh.i18n.DateTimeFormat.format(
+      return this.dh.i18n.DateTimeFormat.format(
         formatString,
         value,
         this.dhTimeZone

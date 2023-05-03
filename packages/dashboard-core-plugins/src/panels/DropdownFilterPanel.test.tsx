@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import type { Container, EventHub } from '@deephaven/golden-layout';
+import dh from '@deephaven/jsapi-shim';
 import {
   DropdownFilterPanel,
   DropdownFilterPanelProps,
@@ -31,6 +32,8 @@ function makeContainer({
 }: Partial<DropdownFilterPanelProps> = {}) {
   return render(
     <DropdownFilterPanel
+      // TODO: makeApi
+      dh={dh}
       glContainer={container}
       glEventHub={eventHub}
       localDashboardId="TEST DASHBOARD"

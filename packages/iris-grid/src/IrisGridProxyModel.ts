@@ -81,7 +81,7 @@ class IrisGridProxyModel extends IrisGridModel {
   constructor(
     dh: DhType,
     table: Table | TreeTable,
-    formatter = new Formatter(),
+    formatter = new Formatter(dh),
     inputTable: InputTable | null = null
   ) {
     super();

@@ -1,7 +1,8 @@
+import dh from '@deephaven/jsapi-shim';
 import DecimalColumnFormatter from './DecimalColumnFormatter';
 
 describe('multiplier tests', () => {
-  const formatter = new DecimalColumnFormatter();
+  const formatter = new DecimalColumnFormatter(dh);
   const value = 10.4;
   it('handles null multiplier correctly', () => {
     expect(

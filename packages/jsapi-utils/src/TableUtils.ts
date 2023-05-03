@@ -1530,7 +1530,8 @@ export class TableUtils {
    * Create a filter condition that results in zero results for a given column
    * @param column
    */
-  static makeNeverFilter(column: Column): FilterCondition {
+  makeNeverFilter(column: Column): FilterCondition {
+    const { dh } = this;
     let value = null;
 
     if (TableUtils.isTextType(column.type)) {
@@ -1653,7 +1654,7 @@ export class TableUtils {
       // KLUDGE: Return a conflicting filter to show no results.
       // Could recognize this situation at a higher or lower level and pause updates on the
       // table, but this situation should be rare and that wouldn't be much gains for some added complexity
-      return TableUtils.makeNeverFilter(column);
+      return this.makeNeverFilter(column);
     }
 
     const values = [];

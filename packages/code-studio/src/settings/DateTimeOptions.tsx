@@ -4,8 +4,10 @@ import {
   DateTimeColumnFormatter,
   TableUtils,
 } from '@deephaven/jsapi-utils';
+import { dh as DhType } from '@deephaven/jsapi-types';
 
 interface DateTimeOptionProps {
+  dh: DhType;
   timestamp: Date;
   timeZone: string;
   showTimeZone: boolean;
@@ -18,6 +20,7 @@ export default function DateTimeOptions(
   props: DateTimeOptionProps
 ): ReactElement {
   const {
+    dh,
     timestamp,
     timeZone,
     showTimeZone,
@@ -26,7 +29,7 @@ export default function DateTimeOptions(
     legacyGlobalFormat,
   } = props;
 
-  const formatter = new Formatter([], {
+  const formatter = new Formatter(dh, [], {
     timeZone,
     showTimeZone,
     showTSeparator,

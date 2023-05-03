@@ -2,6 +2,7 @@ import {
   DecimalColumnFormat,
   DecimalColumnFormatter,
 } from '@deephaven/jsapi-utils';
+import { dh as DhType } from '@deephaven/jsapi-types';
 import FormatContextMenuUtils, {
   FormatContextMenuOption,
 } from './FormatContextMenuUtils';
@@ -17,11 +18,13 @@ class DecimalFormatContextMenu {
 
   /**
    * Creates list of formatting options for Decimal context menu
+   * @param dh JSAPI instance
    * @param selectedFormat Selected format object, null for no selected format
    * @param onCustomFormatChange Callback to call when the custom format is changed
    * @returns Array of formatting options for the context menu
    */
   static getOptions(
+    dh: DhType,
     selectedFormat: DecimalColumnFormat,
     onCustomFormatChange: (value: DecimalColumnFormat | null) => void
   ): FormatContextMenuOption[] {
@@ -90,7 +93,7 @@ class DecimalFormatContextMenu {
           const newCustomFormat = DecimalColumnFormatter.makeCustomFormat(
             formatString
           );
-          if (DecimalColumnFormatter.isValid(newCustomFormat)) {
+          if (DecimalColumnFormatter.isValid(dh, newCustomFormat)) {
             onCustomFormatChange(newCustomFormat);
           }
         } else {

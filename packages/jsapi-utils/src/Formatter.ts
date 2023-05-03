@@ -1,3 +1,4 @@
+import { dh as DhType } from '@deephaven/jsapi-types';
 import TableUtils, { DataType } from './TableUtils';
 import {
   BooleanColumnFormatter,
@@ -65,6 +66,7 @@ export class Formatter {
   }
 
   /**
+   * @param dh JSAPI instance
    * @param columnFormattingRules Optional array of column formatting rules
    * @param dateTimeOptions Optional object with DateTime configuration
    * @param decimalFormatOptions Optional object with Decimal configuration
@@ -72,14 +74,15 @@ export class Formatter {
    * @param truncateNumbersWithPound Determine if numbers should be truncated w/ repeating # instead of ellipsis at the end
    */
   constructor(
+    dh: DhType,
     columnFormattingRules: FormattingRule[] = [],
-    dateTimeOptions?: ConstructorParameters<typeof DateTimeColumnFormatter>[0],
+    dateTimeOptions?: ConstructorParameters<typeof DateTimeColumnFormatter>[1],
     decimalFormatOptions?: ConstructorParameters<
       typeof DecimalColumnFormatter
-    >[0],
+    >[1],
     integerFormatOptions?: ConstructorParameters<
       typeof IntegerColumnFormatter
-    >[0],
+    >[1],
     truncateNumbersWithPound = false
   ) {
     // Formatting order:
@@ -95,15 +98,15 @@ export class Formatter {
       [TableUtils.dataType.CHAR, new CharColumnFormatter()],
       [
         TableUtils.dataType.DATETIME,
-        new DateTimeColumnFormatter(dateTimeOptions),
+        new DateTimeColumnFormatter(dh, dateTimeOptions),
       ],
       [
         TableUtils.dataType.DECIMAL,
-        new DecimalColumnFormatter(decimalFormatOptions),
+        new DecimalColumnFormatter(dh, decimalFormatOptions),
       ],
       [
         TableUtils.dataType.INT,
-        new IntegerColumnFormatter(integerFormatOptions),
+        new IntegerColumnFormatter(dh, integerFormatOptions),
       ],
       [TableUtils.dataType.STRING, new StringColumnFormatter()],
     ]);

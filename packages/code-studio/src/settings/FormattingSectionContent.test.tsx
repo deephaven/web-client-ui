@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import dh from '@deephaven/jsapi-shim';
 import { DateTimeColumnFormatter } from '@deephaven/jsapi-utils';
 import { WorkspaceSettings } from '@deephaven/redux';
 import { assertNotNull } from '@deephaven/utils';
@@ -46,6 +47,7 @@ function renderSectionContent({
 } = {}) {
   return render(
     <FormattingSectionContent
+      dh={dh}
       settings={settings as WorkspaceSettings}
       formatter={formatter}
       showTimeZone={showTimeZone}

@@ -4,8 +4,13 @@ import debounce from 'lodash.debounce';
 import deepEqual from 'deep-equal';
 import memoize from 'memoizee';
 import { DashboardPanelProps, LayoutUtils } from '@deephaven/dashboard';
-import dh from '@deephaven/jsapi-shim';
-import type { Column, Row, Table, TableTemplate } from '@deephaven/jsapi-shim';
+import {
+  dh as DhType,
+  Column,
+  Row,
+  Table,
+  TableTemplate,
+} from '@deephaven/jsapi-types';
 import {
   DateTimeColumnFormatter,
   Formatter,
@@ -98,7 +103,9 @@ const connector = connect(mapStateToProps, null, null, { forwardRef: true });
 
 export type DropdownFilterPanelProps = OwnProps &
   StateProps &
-  ConnectedProps<typeof connector>;
+  ConnectedProps<typeof connector> & {
+    dh: DhType;
+  };
 
 interface DropdownFilterPanelState {
   column?: DropdownFilterColumn;
@@ -131,13 +138,6 @@ export class DropdownFilterPanel extends Component<
 
   static MAX_TABLE_SIZE = 256;
 
-  // Filter dropdown needs to show and send full timestamp format with nanoseconds
-  static DATETIME_FORMATTER = new DateTimeColumnFormatter({
-    showTimeZone: false,
-    showTSeparator: true,
-    defaultDateTimeFormatString: `yyyy-MM-dd HH:mm:ss.SSSSSSSSS`,
-  });
-
   static SOURCE_COLUMN = Object.freeze({
     name: 'FilterSource',
     type: null,
@@ -165,14 +165,20 @@ export class DropdownFilterPanel extends Component<
     this.panelContainer = React.createRef();
     this.pending = new Pending();
 
-    const { panelState, settings } = props;
+    const { dh, panelState, settings } = props;
     this.columnFormats = FormatterUtils.getColumnFormats(settings);
+    // Filter dropdown needs to show and send full timestamp format with nanoseconds
+    this.dateTimeFormatter = new DateTimeColumnFormatter(dh, {
+      showTimeZone: false,
+      showTSeparator: true,
+      defaultDateTimeFormatString: `yyyy-MM-dd HH:mm:ss.SSSSSSSSS`,
+    });
     const { value = '', isValueShown = false, name, type, timestamp } =
       panelState ?? {};
     const column = name != null && type != null ? { name, type } : undefined;
     this.state = {
       column,
-      formatter: new Formatter(this.columnFormats),
+      formatter: new Formatter(dh, this.columnFormats),
       valuesTable: undefined,
       valuesColumn: undefined,
       sourceSize: 0,
@@ -266,6 +272,8 @@ export class DropdownFilterPanel extends Component<
     }
   }
 
+  dateTimeFormatter: DateTimeColumnFormatter;
+
   dropdownFilterRef: RefObject<DropdownFilter>;
 
   panelContainer: RefObject<HTMLDivElement>;
@@ -284,7 +292,7 @@ export class DropdownFilterPanel extends Component<
     ) => {
       if (type !== undefined && TableUtils.isDateType(type)) {
         return rawValues.map(value =>
-          DropdownFilterPanel.DATETIME_FORMATTER.format(value as number)
+          this.dateTimeFormatter.format(value as number)
         );
       }
       return rawValues.map(value =>
@@ -684,10 +692,11 @@ export class DropdownFilterPanel extends Component<
   updateFormatterSettings(settings: {
     formatter?: FormattingRule[] | undefined;
   }): void {
+    const { dh } = this.props;
     const columnFormats = FormatterUtils.getColumnFormats(settings);
     if (!deepEqual(this.columnFormats, columnFormats)) {
       this.columnFormats = columnFormats;
-      this.setState({ formatter: new Formatter(columnFormats) });
+      this.setState({ formatter: new Formatter(dh, columnFormats) });
     }
   }
 

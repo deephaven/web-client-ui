@@ -51,7 +51,7 @@ describe('isCustomColumnFormatDefined', () => {
   ];
 
   it('is true for columns with custom or preset formats', () => {
-    const formatter = makeFormatter(columnFormats);
+    const formatter = makeFormatter(dh, columnFormats);
     expect(
       FormatterUtils.isCustomColumnFormatDefined(
         formatter,
@@ -69,7 +69,7 @@ describe('isCustomColumnFormatDefined', () => {
   });
 
   it('is false for columns with global or no format', () => {
-    const formatter = makeFormatter(columnFormats);
+    const formatter = makeFormatter(dh, columnFormats);
     expect(
       FormatterUtils.isCustomColumnFormatDefined(
         formatter,

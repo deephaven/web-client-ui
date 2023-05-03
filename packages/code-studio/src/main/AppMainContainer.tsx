@@ -930,7 +930,7 @@ export class AppMainContainer extends Component<
           <FilterPlugin />
           <PandasPlugin hydrate={this.hydratePandas} />
           <MarkdownPlugin />
-          <LinkerPlugin />
+          <LinkerPlugin dh={dh} />
           {dashboardPlugins}
         </Dashboard>
         <CSSTransition

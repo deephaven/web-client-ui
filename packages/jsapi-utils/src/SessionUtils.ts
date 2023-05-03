@@ -1,6 +1,7 @@
 import type {
   ConnectOptions,
   CoreClient,
+  dh as DhType,
   IdeConnection,
   IdeSession,
 } from '@deephaven/jsapi-types';
@@ -34,7 +35,10 @@ export interface SessionWrapper {
 /**
  * @returns New connection to the server
  */
-export function createConnection(websocketUrl: string): IdeConnection {
+export function createConnection(
+  dh: DhType,
+  websocketUrl: string
+): IdeConnection {
   log.info(`Starting connection to '${websocketUrl}'...`);
 
   return new dh.IdeConnection(websocketUrl);
@@ -77,6 +81,7 @@ export async function createSessionWrapper(
 }
 
 export function createCoreClient(
+  dh: DhType,
   websocketUrl: string,
   options?: ConnectOptions
 ): CoreClient {

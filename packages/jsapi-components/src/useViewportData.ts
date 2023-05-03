@@ -8,6 +8,7 @@ import {
   defaultRowDeserializer,
   isClosed,
 } from '@deephaven/jsapi-utils';
+import { useApi } from '@deephaven/jsapi-bootstrap';
 import useInitializeViewportData from './useInitializeViewportData';
 import useSetPaddedViewportCallback from './useSetPaddedViewportCallback';
 import useTableListener from './useTableListener';
@@ -73,6 +74,8 @@ export default function useViewportData<
     },
     [setViewport, table]
   );
+
+  const dh = useApi();
 
   useTableListener(
     table,
