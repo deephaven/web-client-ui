@@ -11,6 +11,7 @@ import { IrisGridModelFactory } from '@deephaven/iris-grid';
 import { Table } from '@deephaven/jsapi-shim';
 import shortid from 'shortid';
 import { PandasPanel, PandasPanelProps } from './panels';
+import { TableUtils } from '@deephaven/jsapi-utils';
 
 export type PandasPluginProps = Partial<DashboardPluginComponentProps> & {
   hydrate: PanelHydrateFunction<PandasPanelProps>;
@@ -28,8 +29,11 @@ export function PandasPlugin(props: PandasPluginProps): JSX.Element | null {
       }
 
       const metadata = { name, table: name };
+      const tableUtils = new TableUtils(dh);
       const makeModel = () =>
-        fetch().then((table: Table) => IrisGridModelFactory.makeModel(table));
+        fetch().then((table: Table) =>
+          IrisGridModelFactory.makeModel(table, tableUtils)
+        );
       const config = {
         type: 'react-component' as const,
         component: PandasPanel.COMPONENT,
