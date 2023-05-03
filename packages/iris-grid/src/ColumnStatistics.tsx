@@ -6,7 +6,7 @@ import { dhFreeze, dhRefresh, vsLock } from '@deephaven/icons';
 import {
   Column,
   ColumnStatistics as APIColumnStatistics,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
 import { isExpandableGridModel } from '@deephaven/grid';

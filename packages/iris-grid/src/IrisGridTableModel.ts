@@ -5,6 +5,7 @@ import {
   Column,
   ColumnStatistics,
   CustomColumn,
+  dh as DhType,
   InputTable,
   LayoutHints,
   Table,
@@ -36,17 +37,16 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
 
   /**
    * @param table Iris data table to be used in the model
-   * TODO:
    * @param formatter The formatter to use when getting formats
    * @param inputTable Iris input table associated with this table
    */
   constructor(
+    dh: DhType,
     table: Table,
-    tableUtils: TableUtils,
     formatter = new Formatter(),
     inputTable: InputTable | null = null
   ) {
-    super(table, tableUtils, formatter, inputTable);
+    super(dh, table, formatter, inputTable);
     this.customColumnList = [];
     this.formatColumnList = [];
   }

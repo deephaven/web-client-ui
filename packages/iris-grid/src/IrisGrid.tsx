@@ -719,7 +719,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       new IrisGridColumnTooltipMouseHandler(this),
       new IrisGridSortMouseHandler(this),
       new IrisGridFilterMouseHandler(this),
-      new IrisGridContextMenuHandler(this),
+      new IrisGridContextMenuHandler(this, dh),
       new IrisGridDataSelectMouseHandler(this),
       new PendingMouseHandler(this),
     ];
@@ -4347,6 +4347,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         case OptionType.TABLE_EXPORTER:
           return (
             <TableCsvExporter
+              dh={dh}
               model={model}
               name={name}
               userColumnWidths={userColumnWidths}
@@ -4475,6 +4476,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             />
             {isVisible && (
               <IrisGridModelUpdater
+                dh={dh}
                 model={model}
                 modelColumns={model.columns}
                 top={top}
@@ -4599,6 +4601,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             onExited={this.handleAnimationEnd}
           />
           <TableSaver
+            dh={dh}
             ref={tableSaver => {
               this.tableSaver = tableSaver;
             }}

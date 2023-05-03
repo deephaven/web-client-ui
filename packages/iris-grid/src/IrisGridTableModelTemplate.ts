@@ -11,10 +11,11 @@ import {
   MoveOperation,
   VisibleIndex,
 } from '@deephaven/grid';
-import dh, {
+import {
   Column,
   ColumnStatistics,
   CustomColumn,
+  dh as DhType,
   FilterCondition,
   Format,
   InputTable,
@@ -28,7 +29,7 @@ import dh, {
   TotalsTable,
   ValueTypeUnion,
   ViewportData,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import {
   CancelablePromise,
@@ -140,9 +141,13 @@ class IrisGridTableModelTemplate<
     return this.table.columns;
   }
 
-  private irisFormatter: Formatter;
+  dh: DhType;
+
+  irisGridUtils: IrisGridUtils;
 
   tableUtils: TableUtils;
+
+  private irisFormatter: Formatter;
 
   inputTable: InputTable | null;
 
@@ -195,8 +200,8 @@ class IrisGridTableModelTemplate<
    * @param inputTable Iris input table associated with this table
    */
   constructor(
+    dh: DhType,
     table: T,
-    tableUtils: TableUtils,
     formatter = new Formatter(),
     inputTable: InputTable | null = null
   ) {
@@ -211,11 +216,13 @@ class IrisGridTableModelTemplate<
       this
     );
 
+    this.dh = dh;
     this.irisFormatter = formatter;
+    this.irisGridUtils = new IrisGridUtils(dh);
     this.inputTable = inputTable;
     this.subscription = null;
     this.table = table;
-    this.tableUtils = tableUtils;
+    this.tableUtils = new TableUtils(dh);
     this.viewport = null;
     this.viewportData = null;
     this.formattedStringData = [];
@@ -252,6 +259,8 @@ class IrisGridTableModelTemplate<
   startListening(): void {
     super.startListening();
 
+    const { dh } = this;
+
     this.table.addEventListener(
       dh.Table.EVENT_DISCONNECT,
       this.handleTableDisconnect
@@ -279,6 +288,8 @@ class IrisGridTableModelTemplate<
 
   stopListening(): void {
     super.stopListening();
+
+    const { dh } = this;
 
     this.table.removeEventListener(
       dh.Table.EVENT_DISCONNECT,
@@ -1415,7 +1426,7 @@ class IrisGridTableModelTemplate<
     }
 
     if (tableRanges.length > 0) {
-      const rangeSet = IrisGridUtils.rangeSetFromRanges(dh, tableRanges);
+      const rangeSet = this.irisGridUtils.rangeSetFromRanges(tableRanges);
       const snapshot = await this.subscription.snapshot(rangeSet, columns);
       result.push(
         ...snapshot.rows.map(rowData =>

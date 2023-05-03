@@ -10,7 +10,7 @@ import {
   vsCircleLargeFilled,
   vsTrash,
 } from '@deephaven/icons';
-import { Column, dhType, SeriesPlotStyle } from '@deephaven/jsapi-shim';
+import { Column, dh as DhType, SeriesPlotStyle } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import shortid from 'shortid';
 import {
@@ -37,7 +37,7 @@ export type SeriesItem = {
 };
 
 interface ChartBuilderProps {
-  dh: dhType;
+  dh: DhType;
   model: IrisGridModel;
   onSubmit: (obj: ChartBuilderSettings) => void;
   onChange: (obj: ChartBuilderSettings) => void;
@@ -59,7 +59,7 @@ interface ChartBuilderState {
  * Form for configuring all the settings when creating a console.
  */
 class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
-  static getMaxSeriesCount(dh: dhType, type: SeriesPlotStyle): number {
+  static getMaxSeriesCount(dh: DhType, type: SeriesPlotStyle): number {
     switch (type) {
       case dh.plot.SeriesPlotStyle.PIE:
         return 1;
@@ -75,7 +75,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
   }
 
   static makeDefaultSeriesItems(
-    dh: dhType,
+    dh: DhType,
     type: SeriesPlotStyle,
     columns: readonly Column[]
   ): SeriesItem[] {

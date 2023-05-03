@@ -292,6 +292,7 @@ class AdvancedFilterCreatorSelectValue<T = unknown> extends PureComponent<
           )}
         </div>
         <AdvancedFilterCreatorSelectValueList
+          dh={dh}
           table={table}
           filters={filters}
           invertSelection={invertSelection}

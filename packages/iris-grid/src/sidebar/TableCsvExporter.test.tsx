@@ -35,6 +35,7 @@ function makeTableCsvExporterWrapper({
 } = {}) {
   return render(
     <TableCsvExporter
+      dh={dh}
       name={name}
       isDownloading={isDownloading}
       tableDownloadStatus={tableDownloadStatus}

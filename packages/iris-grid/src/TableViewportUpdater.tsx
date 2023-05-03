@@ -8,7 +8,7 @@ import {
   Sort,
   Table,
   TableViewportSubscription,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { ColumnName } from './CommonTypes';
 

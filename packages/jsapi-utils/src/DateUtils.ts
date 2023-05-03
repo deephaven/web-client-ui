@@ -1,5 +1,4 @@
-import { dhType } from '@deephaven/jsapi-shim';
-import type { DateWrapper } from '@deephaven/jsapi-shim';
+import { DateWrapper, dh as DhType } from '@deephaven/jsapi-types';
 
 interface DateParts<T> {
   year: T;
@@ -41,7 +40,7 @@ export class DateUtils {
    * @param ns The nanoseconds
    */
   static makeDateWrapper(
-    dh: dhType,
+    dh: DhType,
     timeZone: string,
     year: number,
     month = 0,
@@ -90,7 +89,7 @@ export class DateUtils {
    * @returns Returns the DateWrapper for the next date, or null if a full date was passed in
    */
   static getNextDate(
-    dh: dhType,
+    dh: DhType,
     components: DateParts<string>,
     values: DateParts<number>,
     timeZone: string
@@ -257,7 +256,7 @@ export class DateUtils {
    * @returns A tuple with the start and end value/null for that date range, or both null
    */
   static parseDateRange(
-    dh: dhType,
+    dh: DhType,
     text: string,
     timeZone: string
   ): [DateWrapper, DateWrapper | null] | [null, null] {

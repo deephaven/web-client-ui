@@ -21,7 +21,7 @@ import {
 import { Button, ContextActionUtils } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
-import { Column, FilterCondition, Table } from '@deephaven/jsapi-shim';
+import { Column, FilterCondition, Table } from '@deephaven/jsapi-types';
 import shortid from 'shortid';
 import AdvancedFilterCreatorFilterItem from './AdvancedFilterCreatorFilterItem';
 import AdvancedFilterCreatorSelectValue from './AdvancedFilterCreatorSelectValue';

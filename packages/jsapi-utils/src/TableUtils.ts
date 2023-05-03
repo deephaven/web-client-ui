@@ -8,6 +8,7 @@ import Log from '@deephaven/log';
 import {
   Column,
   CustomColumn,
+  dh as DhType,
   FilterCondition,
   FilterValue,
   LongWrapper,
@@ -16,7 +17,6 @@ import {
   Table,
   TreeTable,
 } from '@deephaven/jsapi-types';
-import { dhType } from '@deephaven/jsapi-shim';
 import {
   CancelablePromise,
   PromiseUtils,
@@ -831,9 +831,9 @@ export class TableUtils {
     });
   }
 
-  dh: dhType;
+  dh: DhType;
 
-  constructor(dh: dhType) {
+  constructor(dh: DhType) {
     this.dh = dh;
   }
 

@@ -1,7 +1,8 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import dh, { Table } from '@deephaven/jsapi-shim';
+import dh from '@deephaven/jsapi-shim';
+import { Table } from '@deephaven/jsapi-types';
 import PartitionSelectorSearch from './PartitionSelectorSearch';
 import IrisGridTestUtils from './IrisGridTestUtils';
 

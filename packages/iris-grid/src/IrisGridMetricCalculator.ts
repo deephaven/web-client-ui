@@ -1,6 +1,6 @@
 import { GridMetricCalculator, ModelSizeMap } from '@deephaven/grid';
 import type { GridMetricState } from '@deephaven/grid';
-import type { FilterCondition, Sort } from '@deephaven/jsapi-shim';
+import type { FilterCondition, Sort } from '@deephaven/jsapi-types';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import type IrisGridModel from './IrisGridModel';
 import { IrisGridThemeType } from './IrisGridTheme';

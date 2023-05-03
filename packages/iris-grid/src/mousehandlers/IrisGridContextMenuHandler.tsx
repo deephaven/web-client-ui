@@ -25,12 +25,13 @@ import {
   isExpandableGridModel,
   ModelIndex,
 } from '@deephaven/grid';
-import dh, {
+import {
   Column,
+  dh as DhType,
   FilterCondition,
   FilterValue,
   Sort,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import {
   TableColumnFormatter,
   DateTimeColumnFormatter,
@@ -127,46 +128,6 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     return operator === '&&' ? 'And' : 'Or';
   }
 
-  /**
-   * Gets an equality filter for the provided numeric value
-   * @param column The column to make the filter for
-   * @param value The value to get the equality filter for
-   */
-  static getNumberValueEqualsFilter(
-    column: Column,
-    value: number
-  ): FilterCondition {
-    const columnFilter = column.filter();
-    if (value === Number.POSITIVE_INFINITY) {
-      return dh.FilterCondition.invoke('isInf', columnFilter).and(
-        columnFilter.greaterThan(dh.FilterValue.ofNumber(0))
-      );
-    }
-    if (value === Number.NEGATIVE_INFINITY) {
-      return dh.FilterCondition.invoke('isInf', columnFilter).and(
-        columnFilter.lessThan(dh.FilterValue.ofNumber(0))
-      );
-    }
-    if (Number.isNaN(value)) {
-      return dh.FilterCondition.invoke('isNaN', columnFilter);
-    }
-
-    const filterValue = IrisGridContextMenuHandler.getFilterValueForNumberOrChar(
-      column.type,
-      value
-    );
-    return columnFilter.eq(filterValue);
-  }
-
-  static getFilterValueForNumberOrChar(
-    columnType: string,
-    value: unknown
-  ): FilterValue {
-    return TableUtils.isCharType(columnType)
-      ? dh.FilterValue.ofString(String.fromCharCode(value as number))
-      : dh.FilterValue.ofNumber(value);
-  }
-
   static getRowOptionFormatted(
     command: string,
     cellValue: string,
@@ -184,7 +145,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     (modelIndex: number, selectedFormat: TableColumnFormat | null) => void
   >;
 
-  constructor(irisGrid: IrisGrid) {
+  constructor(irisGrid: IrisGrid, dh: DhType) {
     super();
 
     this.debouncedUpdateCustomFormat = debounce(
@@ -192,12 +153,15 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       DEBOUNCE_UPDATE_FORMAT
     );
 
+    this.dh = dh;
     this.irisGrid = irisGrid;
   }
 
   componentWillUnmount(): void {
     this.debouncedUpdateCustomFormat.flush();
   }
+
+  dh: DhType;
 
   getHeaderActions(
     modelIndex: ModelIndex,
@@ -664,6 +628,42 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     return actions;
   }
 
+  /**
+   * Gets an equality filter for the provided numeric value
+   * @param column The column to make the filter for
+   * @param value The value to get the equality filter for
+   */
+  getNumberValueEqualsFilter(column: Column, value: number): FilterCondition {
+    const { dh } = this;
+    const columnFilter = column.filter();
+    if (value === Number.POSITIVE_INFINITY) {
+      return dh.FilterCondition.invoke('isInf', columnFilter).and(
+        columnFilter.greaterThan(dh.FilterValue.ofNumber(0))
+      );
+    }
+    if (value === Number.NEGATIVE_INFINITY) {
+      return dh.FilterCondition.invoke('isInf', columnFilter).and(
+        columnFilter.lessThan(dh.FilterValue.ofNumber(0))
+      );
+    }
+    if (Number.isNaN(value)) {
+      return dh.FilterCondition.invoke('isNaN', columnFilter);
+    }
+
+    const filterValue = this.getFilterValueForNumberOrChar(column.type, value);
+    return columnFilter.eq(filterValue);
+  }
+
+  getFilterValueForNumberOrChar(
+    columnType: string,
+    value: unknown
+  ): FilterValue {
+    const { dh } = this;
+    return TableUtils.isCharType(columnType)
+      ? dh.FilterValue.ofString(String.fromCharCode(value as number))
+      : dh.FilterValue.ofNumber(value);
+  }
+
   onContextMenu(
     gridPoint: GridPoint,
     grid: Grid,
@@ -899,6 +899,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     quickFilter?: QuickFilter,
     operator?: '&&' | '||' | null
   ): ContextAction[] {
+    const { dh } = this;
     const filterValue = dh.FilterValue.ofString(value);
     let newQuickFilter:
       | {
@@ -1065,10 +1066,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     quickFilter?: QuickFilter | null,
     operator?: '&&' | '||' | null
   ): ContextAction[] {
-    const filterValue = IrisGridContextMenuHandler.getFilterValueForNumberOrChar(
-      column.type,
-      value
-    );
+    const filterValue = this.getFilterValueForNumberOrChar(column.type, value);
     let filter: FilterCondition | null = null;
     let filterText: string | null = null;
     if (quickFilter) {
@@ -1099,7 +1097,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       title: 'is equal to',
       description: `Show only rows where ${column.name} is ${valueText}`,
       action: () => {
-        const valueFilter = IrisGridContextMenuHandler.getNumberValueEqualsFilter(
+        const valueFilter = this.getNumberValueEqualsFilter(
           column,
           value as number
         );
@@ -1124,7 +1122,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       title: 'is not equal to',
       description: `Show only rows where ${column.name} is not ${valueText}`,
       action: () => {
-        const valueFilter = IrisGridContextMenuHandler.getNumberValueEqualsFilter(
+        const valueFilter = this.getNumberValueEqualsFilter(
           column,
           value as number
         ).not();
@@ -1361,6 +1359,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     quickFilter?: QuickFilter | null,
     operator?: '&&' | '||' | null
   ): ContextAction[] {
+    const { dh } = this;
     const filterValue = dh.FilterValue.ofNumber(value);
 
     let filter: FilterCondition | null = null;

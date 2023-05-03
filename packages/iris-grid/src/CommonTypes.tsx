@@ -4,7 +4,7 @@ import {
   TotalsTableConfig,
   FilterCondition,
   Format,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import { Shortcut } from '@deephaven/components';
 import { IconDefinition } from '@deephaven/icons';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
