@@ -36,7 +36,7 @@ beforeEach(() => {
 });
 
 it.each([undefined, 400])(
-  'should return a funciton that debounces search filtering',
+  'should return a function that debounces search filtering',
   debounceMs => {
     const searchText = 'mock.searchText';
 
@@ -113,3 +113,20 @@ it.each(['', '    '])(
     expect(viewportData.applyFiltersAndRefresh).toHaveBeenCalledWith([]);
   }
 );
+
+it('should cancel debounce on unmount', () => {
+  const searchText = 'mock.searchText';
+  const debounceMs = 400;
+
+  const { result, unmount } = renderHook(() =>
+    useDebouncedViewportSearch(viewportData, 'mock.column', debounceMs)
+  );
+
+  result.current(searchText);
+  jest.advanceTimersByTime(5);
+  unmount();
+  jest.advanceTimersByTime(debounceMs);
+
+  expect(TableUtils.makeFilterValue).not.toHaveBeenCalled();
+  expect(viewportData.applyFiltersAndRefresh).not.toHaveBeenCalled();
+});

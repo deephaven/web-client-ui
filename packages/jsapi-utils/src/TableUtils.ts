@@ -133,17 +133,18 @@ export class TableUtils {
    * @returns A Promise that will be resolved with the given table after the
    * columns are applied.
    */
-  static applyCustomColumns = async (
+  static async applyCustomColumns(
     table: Table | null | undefined,
     columns: (string | CustomColumn)[],
     timeout = TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
-  ): Promise<Table | null> =>
-    TableUtils.executeAndWaitForEvent(
+  ): Promise<Table | null> {
+    return TableUtils.executeAndWaitForEvent(
       t => t?.applyCustomColumns(columns),
       table,
       dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
       timeout
     );
+  }
 
   /**
    * Apply filters to a given table.
@@ -154,17 +155,18 @@ export class TableUtils {
    * @returns a Promise to the Table that resolves after the next
    * dh.Table.EVENT_FILTERCHANGED event
    */
-  static applyFilter = async <T extends Table | TreeTable>(
+  static async applyFilter<T extends Table | TreeTable>(
     table: T | null | undefined,
     filters: FilterCondition[],
     timeout = TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
-  ): Promise<T | null> =>
-    TableUtils.executeAndWaitForEvent(
+  ): Promise<T | null> {
+    return TableUtils.executeAndWaitForEvent(
       t => t?.applyFilter(filters),
       table,
       dh.Table.EVENT_FILTERCHANGED,
       timeout
     );
+  }
 
   /**
    * Apply a filter to a table that won't match anything.
@@ -175,11 +177,11 @@ export class TableUtils {
    * @returns a Promise to the Table that resolves after the next
    * dh.Table.EVENT_FILTERCHANGED event
    */
-  static applyNeverFilter = async <T extends Table | TreeTable>(
+  static async applyNeverFilter<T extends Table | TreeTable>(
     table: T | null | undefined,
     columnName: string,
     timeout = TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
-  ): Promise<T | null> => {
+  ): Promise<T | null> {
     if (table == null) {
       return null;
     }
@@ -190,7 +192,7 @@ export class TableUtils {
     await TableUtils.applyFilter(table, filters, timeout);
 
     return table;
-  };
+  }
 
   /**
    * Apply sorts to a given Table.
@@ -201,17 +203,18 @@ export class TableUtils {
    * @returns a Promise to the Table that resolves after the next
    * dh.Table.EVENT_SORTCHANGED event
    */
-  static applySort = async <T extends Table | TreeTable>(
+  static async applySort<T extends Table | TreeTable>(
     table: T | null | undefined,
     sorts: Sort[],
     timeout = TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
-  ): Promise<T | null> =>
-    TableUtils.executeAndWaitForEvent(
+  ): Promise<T | null> {
+    return TableUtils.executeAndWaitForEvent(
       t => t?.applySort(sorts),
       table,
       dh.Table.EVENT_SORTCHANGED,
       timeout
     );
+  }
 
   static getSortIndex(
     sort: readonly Sort[],
