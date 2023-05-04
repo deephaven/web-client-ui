@@ -1,34 +1,6 @@
 import { FormEvent, useCallback, useMemo } from 'react';
+import shortid from 'shortid';
 import type { FocusableRefValue } from '@react-types/shared';
-
-/**
- * This class just keeps track of an incrementing counter value.
- */
-export class Counter {
-  private static i = 0;
-
-  /**
-   * Get current value.
-   */
-  static get current() {
-    return Counter.i;
-  }
-
-  /**
-   * Increment the internal counter and return the result.
-   */
-  static next = (): number => {
-    Counter.i += 1;
-    return Counter.i;
-  };
-
-  /**
-   * Reset counter.
-   */
-  static reset = (): void => {
-    Counter.i = 0;
-  };
-}
 
 function preventDefault(event: FormEvent): void {
   event.preventDefault();
@@ -58,13 +30,13 @@ export interface UseFormWithDetachedSubmitButtonResult {
  * <form {...formProps}></form>
  * <button {...submitButtonProps} type="submit">Submit</button>
  *
- * @param preventDefaultFormSubmit Optionally disable default form submit behavior.
+ * @param enableDefaultFormSubmitBehavior Optionally enable default form submit behavior.
  * @returns props that can be spread on a form component + a submit button component.
  */
 export default function useFormWithDetachedSubmitButton(
-  preventDefaultFormSubmit = false
+  enableDefaultFormSubmitBehavior = false
 ): UseFormWithDetachedSubmitButtonResult {
-  const formId = useMemo(() => `useSubmitButtonRef-${Counter.next()}`, []);
+  const formId = useMemo(() => `useSubmitButtonRef-${shortid()}`, []);
 
   const submitButtonRef = useCallback(
     (buttonEl: FocusableRefValue<HTMLButtonElement> | null) => {
@@ -73,14 +45,24 @@ export default function useFormWithDetachedSubmitButton(
     [formId]
   );
 
-  return {
-    formProps: {
+  const formProps = useMemo(
+    () => ({
       id: formId,
-      onSubmit: preventDefaultFormSubmit ? preventDefault : undefined,
-    },
-    submitButtonProps: {
+      onSubmit: enableDefaultFormSubmitBehavior ? undefined : preventDefault,
+    }),
+    [formId, enableDefaultFormSubmitBehavior]
+  );
+
+  const submitButtonProps = useMemo(
+    () => ({
       form: formId,
       ref: submitButtonRef,
-    },
+    }),
+    [formId, submitButtonRef]
+  );
+
+  return {
+    formProps,
+    submitButtonProps,
   };
 }

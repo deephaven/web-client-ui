@@ -22,7 +22,8 @@
   },
   "dependencies": {
     "@deephaven/log": "file:../log",
-    "@deephaven/utils": "file:../utils"
+    "@deephaven/utils": "file:../utils",
+    "shortid": "^2.2.16"
   },
   "peerDependencies": {
     "react": "^17.x"

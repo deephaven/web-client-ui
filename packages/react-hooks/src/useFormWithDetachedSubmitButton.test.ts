@@ -1,58 +1,45 @@
+import shortid from 'shortid';
 import { TestUtils } from '@deephaven/utils';
 import { renderHook } from '@testing-library/react-hooks';
 import type { FocusableRefValue } from '@react-types/shared';
-import useFormWithDetachedSubmitButton, {
-  Counter,
-} from './useFormWithDetachedSubmitButton';
+import useFormWithDetachedSubmitButton from './useFormWithDetachedSubmitButton';
+
+jest.mock('shortid');
+
+let shortIdCount = 0;
 
 beforeEach(() => {
   jest.clearAllMocks();
-  Counter.reset();
-});
 
-describe('Counter', () => {
-  it('should increment a value', () => {
-    expect(Counter.current).toEqual(0);
-
-    [1, 2, 3].forEach(i => {
-      expect(Counter.next()).toEqual(i);
-      expect(Counter.current).toEqual(i);
-    });
-  });
-
-  it('should reset', () => {
-    Counter.next();
-    Counter.next();
-    expect(Counter.current).toEqual(2);
-
-    Counter.reset();
-    expect(Counter.current).toEqual(0);
+  TestUtils.asMock(shortid).mockImplementation(() => {
+    shortIdCount += 1;
+    return String(shortIdCount);
   });
 });
 
 describe('useFormWithDetachedSubmitButton', () => {
   it('should generate new formId on mount', () => {
     const { rerender } = renderHook(() => useFormWithDetachedSubmitButton());
-    expect(Counter.current).toEqual(1);
+    expect(shortIdCount).toEqual(1);
 
     // Should not generate new id on re-render
     rerender();
-    expect(Counter.current).toEqual(1);
+    expect(shortIdCount).toEqual(1);
 
     // Should generate new id if fresh mount
     renderHook(() => useFormWithDetachedSubmitButton());
-    expect(Counter.current).toEqual(2);
+    expect(shortIdCount).toEqual(2);
   });
 
   it('should generate form and button props', () => {
     const { result } = renderHook(() => useFormWithDetachedSubmitButton());
 
-    const formId = `useSubmitButtonRef-${Counter.current}`;
+    const formId = `useSubmitButtonRef-${shortIdCount}`;
 
     expect(result.current).toEqual({
       formProps: {
         id: formId,
-        onSubmit: undefined,
+        onSubmit: expect.any(Function),
       },
       submitButtonProps: {
         form: formId,
@@ -63,16 +50,16 @@ describe('useFormWithDetachedSubmitButton', () => {
 
   it.each([true, false])(
     'should include preventDefault function if preventDefault is true: %s',
-    preventDefault => {
+    enableDefaultFormSubmitBehavior => {
       const { result } = renderHook(() =>
-        useFormWithDetachedSubmitButton(preventDefault)
+        useFormWithDetachedSubmitButton(enableDefaultFormSubmitBehavior)
       );
 
       expect(result.current.formProps.onSubmit).toEqual(
-        preventDefault ? expect.any(Function) : undefined
+        enableDefaultFormSubmitBehavior ? undefined : expect.any(Function)
       );
 
-      if (preventDefault) {
+      if (!enableDefaultFormSubmitBehavior) {
         const event = TestUtils.createMockProxy<React.FormEvent<Element>>({});
         result.current.formProps.onSubmit?.(event);
 
@@ -94,7 +81,7 @@ describe('useFormWithDetachedSubmitButton', () => {
 
     result.current.submitButtonProps.ref(buttonRef);
 
-    const formId = `useSubmitButtonRef-${Counter.current}`;
+    const formId = `useSubmitButtonRef-${shortIdCount}`;
 
     expect(button.setAttribute).toHaveBeenCalledWith('form', formId);
   });
