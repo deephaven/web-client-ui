@@ -45,4 +45,5 @@ it('should close previous table if reference changes', () => {
   rerender(nextTable);
 
   expect(table.close).toHaveBeenCalled();
+  expect(nextTable.close).not.toHaveBeenCalled();
 });
