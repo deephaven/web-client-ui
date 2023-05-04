@@ -8,6 +8,7 @@ import Log from '@deephaven/log';
 import dh from '@deephaven/jsapi-shim';
 import {
   Column,
+  CustomColumn,
   FilterCondition,
   FilterValue,
   LongWrapper,
@@ -78,6 +79,8 @@ export class TableUtils {
     none: null,
   } as const;
 
+  static APPLY_TABLE_CHANGE_TIMEOUT_MS = 30000;
+
   static REVERSE_TYPE = Object.freeze({
     NONE: 'none',
     PRE_SORT: 'pre-sort',
@@ -86,6 +89,132 @@ export class TableUtils {
 
   // Regex looking for a negative or positive integer or decimal number
   static NUMBER_REGEX = /^-?\d+(\.\d+)?$/;
+
+  /**
+   * Executes a callback on a given table and returns a Promise that will resolve
+   * the next time a particular event type fires on the table.
+   * @param exec Callback function to execute.
+   * @param table Table that gets passed to the `exec` function and that is
+   * subscribed to for a given `eventType`.
+   * @param eventType The event type to listen for.
+   * @param timeout If the event doesn't fire within the timeout, the returned
+   * Promise will be rejected.
+   * @returns a Promise to the original table that resolves on next `eventType`
+   * event
+   */
+  static executeAndWaitForEvent = async <T extends Table | TreeTable>(
+    exec: (maybeTable: T | null | undefined) => void,
+    table: T | null | undefined,
+    eventType: string,
+    timeout = TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
+  ): Promise<T | null> => {
+    if (table == null) {
+      return null;
+    }
+
+    const eventPromise = TableUtils.makeCancelableTableEventPromise(
+      table,
+      eventType,
+      timeout
+    );
+
+    exec(table);
+
+    await eventPromise;
+
+    return table;
+  };
+
+  /**
+   * Apply custom columns to a given table. Return a Promise that resolves with
+   * the table once the dh.Table.EVENT_CUSTOMCOLUMNSCHANGED event has fired.
+   * @param table The table to apply custom columns to.
+   * @param columns The list of column expressions or definitions to apply.
+   * @returns A Promise that will be resolved with the given table after the
+   * columns are applied.
+   */
+  static async applyCustomColumns(
+    table: Table | null | undefined,
+    columns: (string | CustomColumn)[],
+    timeout = TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
+  ): Promise<Table | null> {
+    return TableUtils.executeAndWaitForEvent(
+      t => t?.applyCustomColumns(columns),
+      table,
+      dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
+      timeout
+    );
+  }
+
+  /**
+   * Apply filters to a given table.
+   * @param table Table to apply filters to
+   * @param filters Filters to apply
+   * @param timeout Timeout before cancelling the promise that waits for the next
+   * dh.Table.EVENT_FILTERCHANGED event
+   * @returns a Promise to the Table that resolves after the next
+   * dh.Table.EVENT_FILTERCHANGED event
+   */
+  static async applyFilter<T extends Table | TreeTable>(
+    table: T | null | undefined,
+    filters: FilterCondition[],
+    timeout = TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
+  ): Promise<T | null> {
+    return TableUtils.executeAndWaitForEvent(
+      t => t?.applyFilter(filters),
+      table,
+      dh.Table.EVENT_FILTERCHANGED,
+      timeout
+    );
+  }
+
+  /**
+   * Apply a filter to a table that won't match anything.
+   * @table The table to apply the filter to
+   * @columnName The name of the column to apploy the filter to
+   * @param timeout Timeout before cancelling the promise that waits for the next
+   * dh.Table.EVENT_FILTERCHANGED event
+   * @returns a Promise to the Table that resolves after the next
+   * dh.Table.EVENT_FILTERCHANGED event
+   */
+  static async applyNeverFilter<T extends Table | TreeTable>(
+    table: T | null | undefined,
+    columnName: string,
+    timeout = TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
+  ): Promise<T | null> {
+    if (table == null) {
+      return null;
+    }
+
+    const column = table.findColumn(columnName);
+    const filters = [TableUtils.makeNeverFilter(column)];
+
+    await TableUtils.applyFilter(table, filters, timeout);
+
+    return table;
+  }
+
+  /**
+   * Apply sorts to a given Table.
+   * @param table The table to apply sorts to
+   * @param sorts The sorts to apply
+   * @param timeout Timeout before cancelling the promise that waits for the next
+   * dh.Table.EVENT_SORTCHANGED event
+   * @returns a Promise to the Table that resolves after the next
+   * dh.Table.EVENT_SORTCHANGED event
+   */
+  static async applySort<T extends Table | TreeTable>(
+    table: T | null | undefined,
+    sorts: Sort[],
+    timeout = TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
+  ): Promise<T | null> {
+    return TableUtils.executeAndWaitForEvent(
+      t => t?.applySort(sorts),
+      table,
+      dh.Table.EVENT_SORTCHANGED,
+      timeout
+    );
+  }
 
   static getSortIndex(
     sort: readonly Sort[],
@@ -1452,6 +1581,30 @@ export class TableUtils {
   }
 
   /**
+   * Create a filter condition that results in zero results for a given column
+   * @param column
+   */
+  static makeNeverFilter(column: Column): FilterCondition {
+    let value = null;
+
+    if (TableUtils.isTextType(column.type)) {
+      // Use 'a' so that it can work for String or Character types
+      value = dh.FilterValue.ofString('a');
+    } else if (TableUtils.isBooleanType(column.type)) {
+      value = dh.FilterValue.ofBoolean(true);
+    } else if (TableUtils.isDateType(column.type)) {
+      value = dh.FilterValue.ofNumber(dh.DateWrapper.ofJsDate(new Date()));
+    } else {
+      value = dh.FilterValue.ofNumber(0);
+    }
+
+    const eqFilter = column.filter().eq(value);
+    const notEqFilter = column.filter().notEq(value);
+
+    return eqFilter.and(notEqFilter);
+  }
+
+  /**
    * Create a filter using the selected items
    * Has a flag for invertSelection as we start from a "Select All" state and a user just deselects items.
    * Since there may be millions of distinct items, it's easier to build an inverse filter.
@@ -1460,36 +1613,23 @@ export class TableUtils {
    * @param invertSelection Invert the selection (eg. All items are selected, then you deselect items)
    * @returns Returns a `in` or `notIn` FilterCondition as necessary, or null if no filtering should be applied (everything selected)
    */
-  static makeSelectValueFilter(
+  static makeSelectValueFilter<TInvert extends boolean>(
     column: Column,
     selectedValues: unknown[],
-    invertSelection: boolean
-  ): FilterCondition | null {
+    invertSelection: TInvert
+  ): TInvert extends true ? FilterCondition | null : FilterCondition {
     if (selectedValues.length === 0) {
       if (invertSelection) {
         // No filter means select everything
-        return null;
+        return null as TInvert extends true
+          ? FilterCondition | null
+          : FilterCondition;
       }
 
       // KLUDGE: Return a conflicting filter to show no results.
       // Could recognize this situation at a higher or lower level and pause updates on the
       // table, but this situation should be rare and that wouldn't be much gains for some added complexity
-      let value = null;
-
-      if (TableUtils.isTextType(column.type)) {
-        // Use 'a' so that it can work for String or Character types
-        value = dh.FilterValue.ofString('a');
-      } else if (TableUtils.isBooleanType(column.type)) {
-        value = dh.FilterValue.ofBoolean(true);
-      } else if (TableUtils.isDateType(column.type)) {
-        value = dh.FilterValue.ofNumber(dh.DateWrapper.ofJsDate(new Date()));
-      } else {
-        value = dh.FilterValue.ofNumber(0);
-      }
-
-      const eqFilter = column.filter().eq(value);
-      const notEqFilter = column.filter().notEq(value);
-      return eqFilter.and(notEqFilter);
+      return TableUtils.makeNeverFilter(column);
     }
 
     const values = [];

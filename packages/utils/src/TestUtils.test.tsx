@@ -4,6 +4,43 @@ import userEvent from '@testing-library/user-event';
 
 import TestUtils from './TestUtils';
 
+beforeEach(() => {
+  jest.clearAllMocks();
+});
+
+describe('asMock', () => {
+  const someFunc: (name: string) => number = jest.fn(
+    (name: string): number => name.length
+  );
+
+  TestUtils.asMock(someFunc).mockImplementation(name => name.split(',').length);
+
+  expect(someFunc('a,b,c')).toEqual(3);
+});
+
+describe('findLastCall', () => {
+  it('should return undefined if call not matched', () => {
+    const fn = jest.fn<void, [string, number]>();
+
+    fn('AAA', 1);
+
+    const result = TestUtils.findLastCall(fn, ([text, _num]) => text === 'BBB');
+    expect(result).toBeUndefined();
+  });
+
+  it('should find the last mock call matching the predicate', () => {
+    const fn = jest.fn<void, [string, number]>();
+
+    fn('AAA', 1);
+    fn('BBB', 1);
+    fn('BBB', 2);
+    fn('CCC', 1);
+
+    const result = TestUtils.findLastCall(fn, ([text, _num]) => text === 'BBB');
+    expect(result).toEqual(['BBB', 2]);
+  });
+});
+
 describe('makeMockContext', () => {
   it('should make a MockContext object', () => {
     const mockContext = TestUtils.makeMockContext();
@@ -131,4 +168,48 @@ describe('createMockProxy', () => {
 
     expect(result).toBe(mock);
   });
+
+  it('should only show `in` for explicit properties', () => {
+    const mock = TestUtils.createMockProxy<Record<string, unknown>>({
+      name: 'mock.name',
+      age: 42,
+    });
+
+    expect('name' in mock).toBeTruthy();
+    expect('age' in mock).toBeTruthy();
+    expect('blah' in mock).toBeFalsy();
+  });
+});
+
+describe('extractCallArgs', () => {
+  const fn = (a: string, b: string) => a.length + b.length;
+  const mockFn = jest.fn(fn);
+
+  it('should return null if no calls have been made', () => {
+    const args = TestUtils.extractCallArgs(mockFn, 0);
+    expect(args).toBeNull();
+  });
+
+  it('should return null if not given a mock fn', () => {
+    fn('john', 'doe');
+    const args = TestUtils.extractCallArgs(fn, 0);
+    expect(args).toBeNull();
+  });
+
+  it.each([
+    [0, ['aaa', '111']],
+    [1, ['bbb', '222']],
+    [2, ['ccc', '333']],
+    [3, null],
+  ] as const)(
+    'should return call args if index in range',
+    (callIndex, expected) => {
+      mockFn('aaa', '111');
+      mockFn('bbb', '222');
+      mockFn('ccc', '333');
+
+      const args = TestUtils.extractCallArgs(mockFn, callIndex);
+      expect(args).toEqual(expected);
+    }
+  );
 });

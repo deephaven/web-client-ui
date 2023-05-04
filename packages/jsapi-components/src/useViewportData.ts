@@ -1,30 +1,37 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { ListData } from '@react-stately/data';
-import { Table, TreeTable } from '@deephaven/jsapi-types';
+import type { FilterCondition, Table, TreeTable } from '@deephaven/jsapi-types';
 import {
   KeyedItem,
   RowDeserializer,
   createOnTableUpdatedHandler,
   defaultRowDeserializer,
-  getSize,
   isClosed,
 } from '@deephaven/jsapi-utils';
 import useInitializeViewportData from './useInitializeViewportData';
 import useSetPaddedViewportCallback from './useSetPaddedViewportCallback';
 import useTableListener from './useTableListener';
+import useTableSize from './useTableSize';
 
-export interface UseViewportDataProps<T> {
-  table: Table | TreeTable | null;
+export interface UseViewportDataProps<TItem, TTable extends Table | TreeTable> {
+  table: TTable | null;
   viewportSize?: number;
   viewportPadding?: number;
-  deserializeRow?: RowDeserializer<T>;
+  deserializeRow?: RowDeserializer<TItem>;
 }
 
-export interface UseViewportDataResult<T> {
+export interface UseViewportDataResult<
+  TItem,
+  TTable extends Table | TreeTable
+> {
   /** Manages deserialized row items associated with a DH Table */
-  viewportData: ListData<KeyedItem<T>>;
+  viewportData: ListData<KeyedItem<TItem>>;
   /** Size of the underlying Table */
   size: number;
+
+  table: TTable | null;
+  /** Apply filters and refresh viewport. */
+  applyFiltersAndRefresh: (filters: FilterCondition[]) => void;
   /** Set the viewport of the Table */
   setViewport: (firstRow: number) => void;
 }
@@ -42,13 +49,16 @@ export interface UseViewportDataResult<T> {
  * @param viewportPadding
  * @returns An object for managing Table viewport state.
  */
-export default function useViewportData<T>({
+export default function useViewportData<
+  TItem,
+  TTable extends Table | TreeTable
+>({
   table,
   viewportSize = 10,
   viewportPadding = 50,
   deserializeRow = defaultRowDeserializer,
-}: UseViewportDataProps<T>): UseViewportDataResult<T> {
-  const viewportData = useInitializeViewportData<T>(table);
+}: UseViewportDataProps<TItem, TTable>): UseViewportDataResult<TItem, TTable> {
+  const viewportData = useInitializeViewportData<TItem>(table);
 
   const setViewport = useSetPaddedViewportCallback(
     table,
@@ -56,11 +66,21 @@ export default function useViewportData<T>({
     viewportPadding
   );
 
+  const applyFiltersAndRefresh = useCallback(
+    (filters: FilterCondition[]) => {
+      table?.applyFilter(filters);
+      setViewport(0);
+    },
+    [setViewport, table]
+  );
+
   useTableListener(
     table,
     dh.Table.EVENT_UPDATED,
-    createOnTableUpdatedHandler(table, viewportData, deserializeRow)
+    createOnTableUpdatedHandler(viewportData, deserializeRow)
   );
+
+  const size = useTableSize(table);
 
   useEffect(() => {
     if (table && !isClosed(table)) {
@@ -68,11 +88,13 @@ export default function useViewportData<T>({
       // 0 to the end of the viewport + padding.
       setViewport(0);
     }
-  }, [table, setViewport]);
+  }, [table, setViewport, size]);
 
   return {
     viewportData,
-    size: getSize(table),
+    size,
+    table,
+    applyFiltersAndRefresh,
     setViewport,
   };
 }

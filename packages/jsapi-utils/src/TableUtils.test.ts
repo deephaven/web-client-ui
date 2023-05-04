@@ -1,5 +1,6 @@
 import dh, {
   Column,
+  CustomColumn,
   DateWrapper,
   FilterCondition,
   FilterValue,
@@ -13,6 +14,7 @@ import {
   Type as FilterType,
   TypeValue as FilterTypeValue,
 } from '@deephaven/filters';
+import { TestUtils } from '@deephaven/utils';
 import TableUtils, { DataType, SortDirection } from './TableUtils';
 import DateUtils from './DateUtils';
 // eslint-disable-next-line import/no-relative-packages
@@ -23,6 +25,21 @@ const DEFAULT_TIME_ZONE_ID = 'America/New_York';
 const EXPECT_TIME_ZONE_PARAM = expect.objectContaining({
   id: DEFAULT_TIME_ZONE_ID,
 });
+
+/**
+ * Sends a mock event to the last registered event handler with the given event
+ * type.
+ */
+function sendEventToLastRegisteredHandler(table: Table, eventType: string) {
+  const event = TestUtils.createMockProxy<CustomEvent>({});
+
+  const lastRegisteredEventListener = TestUtils.findLastCall(
+    table.addEventListener,
+    ([et]) => et === eventType
+  )?.[1];
+
+  lastRegisteredEventListener?.(event);
+}
 
 function makeColumns(count = 5): Column[] {
   const columns: Column[] = [];
@@ -45,6 +62,211 @@ function makeFilterCondition(type = ''): MockFilterCondition {
     or: jest.fn(() => makeFilterCondition(`${type}.${FilterType.eq}`)),
   };
 }
+
+describe('applyCustomColumns', () => {
+  const table = TestUtils.createMockProxy<Table>({});
+  const columns = [TestUtils.createMockProxy<CustomColumn>({})];
+
+  it.each([undefined, 400])(
+    'should call table.applyCustomColumns and wait for dh.Table.EVENT_CUSTOMCOLUMNSCHANGED event: %s',
+    timeout => {
+      const executeAndWaitForEvent = jest.spyOn(
+        TableUtils,
+        'executeAndWaitForEvent'
+      );
+
+      TableUtils.applyCustomColumns(table, columns, timeout);
+
+      expect(TableUtils.executeAndWaitForEvent).toHaveBeenCalledWith(
+        expect.any(Function),
+        table,
+        dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
+        timeout ?? TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
+      );
+
+      const exec = executeAndWaitForEvent.mock.lastCall?.[0];
+      exec?.(table);
+      expect(table.applyCustomColumns).toHaveBeenCalledWith(columns);
+    }
+  );
+});
+
+describe('applyFilter', () => {
+  const table = TestUtils.createMockProxy<Table>({});
+  const filters = [TestUtils.createMockProxy<FilterCondition>({})];
+
+  it.each([undefined, 400])(
+    'should call table.applyFilter and wait for dh.Table.EVENT_FILTERCHANGED event: %s',
+    timeout => {
+      const executeAndWaitForEvent = jest.spyOn(
+        TableUtils,
+        'executeAndWaitForEvent'
+      );
+
+      TableUtils.applyFilter(table, filters, timeout);
+
+      expect(TableUtils.executeAndWaitForEvent).toHaveBeenCalledWith(
+        expect.any(Function),
+        table,
+        dh.Table.EVENT_FILTERCHANGED,
+        timeout ?? TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
+      );
+
+      const exec = executeAndWaitForEvent.mock.lastCall?.[0];
+      exec?.(table);
+      expect(table.applyFilter).toHaveBeenCalledWith(filters);
+    }
+  );
+});
+
+describe.each([undefined, 400])('applyNeverFilter - timeout: %s', timeout => {
+  const column = TestUtils.createMockProxy<Column>({});
+  const neverFilter = TestUtils.createMockProxy<FilterCondition>({});
+  let makeNeverFilter: jest.SpyInstance<FilterCondition, [column: Column]>;
+
+  const table = TestUtils.createMockProxy<Table>({
+    findColumn: jest.fn().mockReturnValue(column),
+  });
+
+  beforeEach(() => {
+    makeNeverFilter = jest.spyOn(TableUtils, 'makeNeverFilter');
+    makeNeverFilter.mockReturnValue(neverFilter);
+  });
+
+  afterEach(() => {
+    makeNeverFilter.mockRestore();
+  });
+
+  it.each([null, undefined])(
+    'should resolve to null when not given a table: %s',
+    async notTable => {
+      const columnName = 'mock.column';
+      const result = await TableUtils.applyNeverFilter(
+        notTable,
+        columnName,
+        timeout
+      );
+      expect(result).toBeNull();
+    }
+  );
+
+  it('should call TableUtils.applyFilter with a "never filter": %s', async () => {
+    const applyFilter = jest
+      .spyOn(TableUtils, 'applyFilter')
+      .mockResolvedValue(table);
+
+    const columnName = 'mock.column';
+
+    const result = await TableUtils.applyNeverFilter(
+      table,
+      columnName,
+      timeout
+    );
+
+    expect(result).toBe(table);
+    expect(makeNeverFilter).toHaveBeenCalledWith(column);
+    expect(applyFilter).toHaveBeenCalledWith(
+      table,
+      [neverFilter],
+      timeout ?? TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
+    );
+  });
+});
+
+describe('applySort', () => {
+  const table = TestUtils.createMockProxy<Table>({});
+  const sorts = [TestUtils.createMockProxy<Sort>({})];
+
+  it.each([undefined, 400])(
+    'should call table.applySort and wait for dh.Table.EVENT_SORTCHANGED event: %s',
+    timeout => {
+      const executeAndWaitForEvent = jest.spyOn(
+        TableUtils,
+        'executeAndWaitForEvent'
+      );
+
+      TableUtils.applySort(table, sorts, timeout);
+
+      expect(TableUtils.executeAndWaitForEvent).toHaveBeenCalledWith(
+        expect.any(Function),
+        table,
+        dh.Table.EVENT_SORTCHANGED,
+        timeout ?? TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
+      );
+
+      const exec = executeAndWaitForEvent.mock.lastCall?.[0];
+      exec?.(table);
+      expect(table.applySort).toHaveBeenCalledWith(sorts);
+    }
+  );
+});
+
+describe('executeAndWaitForEvent', () => {
+  const table = TestUtils.createMockProxy<Table>({
+    addEventListener: jest.fn(() => jest.fn()),
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it.each([null, undefined])(
+    'should resolve to null if given null or undefined: %s',
+    async notTable => {
+      const exec = jest.fn();
+      const actual = await TableUtils.executeAndWaitForEvent(
+        exec,
+        notTable,
+        'mock.event'
+      );
+
+      expect(actual).toBeNull();
+      expect(exec).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each(['mock.eventA', 'mock.eventB'])(
+    'should call execute callback and wait for next `eventType` event: %s',
+    async eventType => {
+      const exec = jest.fn();
+      const tablePromise = TableUtils.executeAndWaitForEvent(
+        exec,
+        table,
+        eventType
+      );
+
+      expect(exec).toHaveBeenCalledWith(table);
+
+      sendEventToLastRegisteredHandler(table, eventType);
+
+      const result = await tablePromise;
+
+      expect(result).toBe(table);
+    }
+  );
+
+  it.each(['mock.eventA', 'mock.eventB'])(
+    'should execute callback and reject promise if event timeout expires: %s',
+    async eventType => {
+      jest.useFakeTimers();
+
+      const exec = jest.fn();
+      const timeout = 3000;
+      const tablePromise = TableUtils.executeAndWaitForEvent(
+        exec,
+        table,
+        eventType,
+        timeout
+      );
+
+      expect(exec).toHaveBeenCalledWith(table);
+
+      jest.advanceTimersByTime(timeout);
+
+      expect(tablePromise).rejects.toThrow(`Event "${eventType}" timed out.`);
+    }
+  );
+});
 
 describe('toggleSortForColumn', () => {
   it('toggles sort properly', () => {

@@ -1,6 +1,6 @@
-import { Column, Table, TreeTable } from '@deephaven/jsapi-shim';
+import type { Column, Table, TreeTable } from '@deephaven/jsapi-types';
 import { TestUtils } from '@deephaven/utils';
-import { useListData } from '@react-stately/data';
+import { ListData, useListData } from '@react-stately/data';
 import { act, renderHook } from '@testing-library/react-hooks';
 import {
   KeyedItem,
@@ -14,6 +14,7 @@ import {
   getSize,
   isClosed,
   padFirstAndLastRow,
+  getItemsFromListData,
 } from './ViewportDataUtils';
 
 function mockViewportRow(offsetInSnapshot: number): ViewportRow {
@@ -28,12 +29,14 @@ function mockColumn(name: string) {
 
 function mockUpdateEvent(
   offset: number,
-  rows: ViewportRow[]
+  rows: ViewportRow[],
+  columns: Column[]
 ): OnTableUpdatedEvent {
   return {
     detail: {
       offset,
       rows,
+      columns,
     },
   } as OnTableUpdatedEvent;
 }
@@ -44,7 +47,7 @@ beforeEach(() => {
   jest.clearAllMocks();
 
   // Mock deserializer just returns the row given to it.
-  (deserializeRow as jest.Mock).mockImplementation(row => row);
+  TestUtils.asMock(deserializeRow).mockImplementation(row => row);
 });
 
 describe('createKeyFromOffsetRow', () => {
@@ -67,44 +70,20 @@ describe('createOnTableUpdatedHandler', () => {
     mockViewportRow(2),
   ];
 
-  it('should do nothing if Table is null', () => {
-    const table = null;
-
-    const { result: viewportDataRef } = renderHook(() =>
-      useListData<KeyedItem<unknown>>({})
-    );
-
-    const handler = createOnTableUpdatedHandler(
-      table,
-      viewportDataRef.current,
-      deserializeRow
-    );
-
-    const event = mockUpdateEvent(5, rows);
-
-    act(() => {
-      handler(event);
-    });
-
-    expect(deserializeRow).not.toHaveBeenCalled();
-    expect(viewportDataRef.current.items.length).toEqual(0);
-  });
+  const cols: Column[] = [];
 
   it('should create a handler that adds items to a ListData of KeyedItems', () => {
-    const table = TestUtils.createMockProxy<Table>({ columns: [] });
-
     const { result: viewportDataRef } = renderHook(() =>
       useListData<KeyedItem<unknown>>({})
     );
 
     const handler = createOnTableUpdatedHandler(
-      table,
       viewportDataRef.current,
       deserializeRow
     );
 
     const offset = 5;
-    const event = mockUpdateEvent(offset, rows);
+    const event = mockUpdateEvent(offset, rows, cols);
     const expectedItems = [
       { key: '5', item: rows[0] },
       { key: '6', item: rows[1] },
@@ -115,12 +94,13 @@ describe('createOnTableUpdatedHandler', () => {
       handler(event);
     });
 
+    rows.forEach(row => {
+      expect(deserializeRow).toHaveBeenCalledWith(row, cols);
+    });
     expect(viewportDataRef.current.items).toEqual(expectedItems);
   });
 
   it('should create a handler that updates existing items in a ListData', () => {
-    const table = TestUtils.createMockProxy<Table>({ columns: [] });
-
     const { result: viewportDataRef } = renderHook(() =>
       useListData<KeyedItem<unknown>>({})
     );
@@ -134,10 +114,9 @@ describe('createOnTableUpdatedHandler', () => {
 
     const offset = 0;
     const row = mockViewportRow(0);
-    const event = mockUpdateEvent(offset, [row]);
+    const event = mockUpdateEvent(offset, [row], cols);
 
     const handler = createOnTableUpdatedHandler(
-      table,
       viewportDataRef.current,
       deserializeRow
     );
@@ -146,6 +125,7 @@ describe('createOnTableUpdatedHandler', () => {
       handler(event);
     });
 
+    expect(deserializeRow).toHaveBeenCalledWith(row, cols);
     expect(viewportDataRef.current.items).toEqual([{ key: '0', item: row }]);
   });
 });
@@ -173,16 +153,38 @@ describe('defaultRowDeserializer', () => {
 
 describe('generateEmptyKeyedItems', () => {
   it.each([
-    [1, [{ key: '0' }]],
-    [2, [{ key: '0' }, { key: '1' }]],
-    [5, [{ key: '0' }, { key: '1' }, { key: '2' }, { key: '3' }, { key: '4' }]],
+    [0, 0, [{ key: '0' }]],
+    [0, 1, [{ key: '0' }, { key: '1' }]],
+    [
+      0,
+      4,
+      [{ key: '0' }, { key: '1' }, { key: '2' }, { key: '3' }, { key: '4' }],
+    ],
+    [3, 5, [{ key: '3' }, { key: '4' }, { key: '5' }]],
   ] as const)(
-    'should generate a sequence of string keys for the given count: %s',
-    (count, expected) => {
-      const actual = [...generateEmptyKeyedItems(count)];
+    'should generate a sequence of string keys for the given range: %s',
+    (start, end, expected) => {
+      const actual = [...generateEmptyKeyedItems(start, end)];
       expect(actual).toEqual(expected);
     }
   );
+});
+
+describe('getItemsFromListData', () => {
+  it('should return items matching given keys', () => {
+    const keys = ['2', '4', '9'];
+    const listData = TestUtils.createMockProxy<ListData<KeyedItem<unknown>>>({
+      getItem: jest.fn(key => ({ key: key as string, item: `item-${key}` })),
+    });
+
+    const result = getItemsFromListData(listData, ...keys);
+
+    expect(result).toEqual([
+      { key: '2', item: 'item-2' },
+      { key: '4', item: 'item-4' },
+      { key: '9', item: 'item-9' },
+    ]);
+  });
 });
 
 describe('getSize', () => {
