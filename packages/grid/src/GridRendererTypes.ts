@@ -5,6 +5,9 @@ import { GridTheme } from './GridTheme';
 import { DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
 import { GridSeparator } from './mouse-handlers/GridSeparatorMouseHandler';
 
+// Default font width in pixels if it cannot be retrieved from the context
+export const DEFAULT_FONT_WIDTH = 10;
+
 export type EditingCellTextSelectionRange = [start: number, end: number];
 
 export type EditingCell = {
