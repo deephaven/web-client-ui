@@ -4413,6 +4413,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             <div className="iris-grid-partition-selector-wrapper iris-grid-bar iris-grid-bar-primary">
               {partitionTable && partitionColumn && partition != null && (
                 <IrisGridPartitionSelector
+                  dh={dh}
                   table={partitionTable}
                   getFormattedString={(
                     value: unknown,

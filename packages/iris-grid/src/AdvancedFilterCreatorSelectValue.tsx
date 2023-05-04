@@ -18,7 +18,6 @@ interface AdvancedFilterCreatorSelectValueProps<T> {
   onChange: (selectedValues: T[], invertSelection: boolean) => void;
   showSearch: boolean;
   timeZone: string;
-  tableUtils: TableUtils;
 }
 
 interface AdvancedFilterCreatorSelectValueState<T> {
@@ -52,7 +51,9 @@ class AdvancedFilterCreatorSelectValue<T = unknown> extends PureComponent<
     this.handleSearchChange = this.handleSearchChange.bind(this);
     this.handleUpdateFilterTimeout = this.handleUpdateFilterTimeout.bind(this);
 
-    const { invertSelection, selectedValues } = props;
+    const { dh, invertSelection, selectedValues } = props;
+
+    this.tableUtils = new TableUtils(dh);
 
     this.state = {
       filters: [],
@@ -110,6 +111,8 @@ class AdvancedFilterCreatorSelectValue<T = unknown> extends PureComponent<
   }
 
   searchTablePromise?: Promise<Table>;
+
+  tableUtils: TableUtils;
 
   updateFilterTimer?: ReturnType<typeof setTimeout>;
 
@@ -224,7 +227,8 @@ class AdvancedFilterCreatorSelectValue<T = unknown> extends PureComponent<
 
   updateTableFilter(): void {
     const { table, searchText } = this.state;
-    const { timeZone, tableUtils } = this.props;
+    const { timeZone } = this.props;
+    const { tableUtils } = this;
     const column = table?.columns[0];
     const filters = [];
     if (column == null) {

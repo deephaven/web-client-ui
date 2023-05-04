@@ -12,7 +12,7 @@ import {
   TableViewportSubscription,
   TreeTable,
 } from '@deephaven/jsapi-types';
-import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
+import { Formatter } from '@deephaven/jsapi-utils';
 import IrisGridProxyModel from './IrisGridProxyModel';
 
 class IrisGridTestUtils {
@@ -126,12 +126,7 @@ class IrisGridTestUtils {
     formatter = new Formatter(),
     inputTable: InputTable | null = null
   ): IrisGridProxyModel {
-    return new IrisGridProxyModel(
-      table,
-      new TableUtils(dh),
-      formatter,
-      inputTable
-    );
+    return new IrisGridProxyModel(dh, table, formatter, inputTable);
   }
 }
 

@@ -29,10 +29,9 @@ export function PandasPlugin(props: PandasPluginProps): JSX.Element | null {
       }
 
       const metadata = { name, table: name };
-      const tableUtils = new TableUtils(dh);
       const makeModel = () =>
         fetch().then((table: Table) =>
-          IrisGridModelFactory.makeModel(table, tableUtils)
+          IrisGridModelFactory.makeModel(dh, table)
         );
       const config = {
         type: 'react-component' as const,

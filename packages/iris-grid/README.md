@@ -15,8 +15,8 @@ import { useApi } from '@deephaven/jsapi-bootstrap';
 import { IrisGrid, IrisGridModelFactory } from '@deephaven/iris-grid';
 
 // In your initialization, create the model async
-const model = await IrisGridModelFactory.makeModel(table);
 const dh = useApi();
+const model = await IrisGridModelFactory.makeModel(dh, table);
 
 // In your render function
 <IrisGrid dh={dh} model={model} />

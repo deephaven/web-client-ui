@@ -13,7 +13,7 @@ const log = Log.module('IrisGridPartitionSelector');
 
 const PARTITION_CHANGE_DEBOUNCE_MS = 250;
 interface IrisGridPartitionSelectorProps<T> {
-  dh: dhType;
+  dh: DhType;
   getFormattedString: (value: T, type: string, name: string) => string;
   table: Table;
   columnName: ColumnName;

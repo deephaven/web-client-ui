@@ -9,7 +9,6 @@ import {
 } from '@deephaven/dashboard';
 import { IrisGridModelFactory, IrisGridThemeType } from '@deephaven/iris-grid';
 import { Table, VariableDefinition } from '@deephaven/jsapi-shim';
-import { TableUtils } from '@deephaven/jsapi-utils';
 import shortid from 'shortid';
 import { IrisGridPanel, IrisGridPanelProps } from './panels';
 
@@ -55,10 +54,9 @@ export function GridPlugin(props: GridPluginProps): JSX.Element | null {
       }
 
       const metadata = { name, table: name, type: widget.type };
-      const tableUtils = new TableUtils(dh);
       const makeModel = () =>
         fetch().then((table: Table) =>
-          IrisGridModelFactory.makeModel(table, tableUtils)
+          IrisGridModelFactory.makeModel(dh, table)
         );
       const config = {
         type: 'react-component' as const,

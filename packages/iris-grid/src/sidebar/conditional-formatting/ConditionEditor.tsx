@@ -368,6 +368,7 @@ function ConditionEditor(props: ConditionEditorProps): JSX.Element {
     [
       onChange,
       column.type,
+      dh,
       selectedCondition,
       conditionValue,
       startValue,

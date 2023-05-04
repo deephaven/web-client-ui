@@ -44,7 +44,10 @@ function makeGlComponent() {
 }
 
 function makeMakeModel(table = makeTable()) {
-  return () => Promise.resolve(table).then(IrisGridModelFactory.makeModel);
+  return () =>
+    Promise.resolve(table).then(resolved =>
+      IrisGridModelFactory.makeModel(dh, resolved)
+    );
 }
 
 function makeIrisGridPanelWrapper(

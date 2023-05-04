@@ -589,7 +589,8 @@ class AdvancedFilterCreator extends PureComponent<
             <>
               {!isBoolean && <hr />}
               <div className="form-group">
-                <AdvancedFilterCreatorSelectValue<unknown>
+                <AdvancedFilterCreatorSelectValue
+                  dh={dh}
                   table={valuesTable}
                   onChange={this.handleSelectValueChange}
                   invertSelection={invertSelection}
@@ -597,7 +598,6 @@ class AdvancedFilterCreator extends PureComponent<
                   formatter={formatter}
                   showSearch={!isDateType}
                   timeZone={formatter.timeZone}
-                  tableUtils={tableUtils}
                 />
               </div>
             </>

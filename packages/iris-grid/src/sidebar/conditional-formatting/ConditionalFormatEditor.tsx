@@ -130,6 +130,7 @@ function ConditionalFormatEditor(
       {selectedFormatter === FormatterType.CONDITIONAL && (
         <ColumnFormatEditor
           columns={columns}
+          dh={dh}
           config={rule?.config}
           onChange={handleRuleChange}
         />
@@ -138,6 +139,7 @@ function ConditionalFormatEditor(
         <RowFormatEditor
           columns={columns}
           config={rule?.config}
+          dh={dh}
           onChange={handleRuleChange}
         />
       )}
