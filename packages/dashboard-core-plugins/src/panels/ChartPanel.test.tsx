@@ -102,7 +102,7 @@ function callErrorFunction() {
 
 function expectLoading(container) {
   expect(
-    container.querySelector("[data-icon='circle-large-outline']")
+    container.querySelector("[data-icon='circle-large']")
   ).toBeInTheDocument();
   expect(container.querySelector("[data-icon='loading']")).toBeInTheDocument();
 }
