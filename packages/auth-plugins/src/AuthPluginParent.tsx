@@ -1,14 +1,33 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { LoginOptions } from '@deephaven/jsapi-types';
 import {
   LOGIN_OPTIONS_REQUEST,
   requestParentResponse,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
-import { LoadingOverlay } from '@deephaven/components';
 import { AuthPlugin, AuthPluginProps } from './AuthPlugin';
+import AuthPluginBase from './AuthPluginBase';
+import {
+  UserPermissionsOverride,
+  UserPermissionsOverrideContext,
+} from './UserContexts';
 
 const log = Log.module('AuthPluginParent');
+
+const permissionsOverrides: UserPermissionsOverride = { canLogout: false };
+
+function isLoginOptions(options: unknown): options is LoginOptions {
+  return options != null && typeof (options as LoginOptions).type === 'string';
+}
+
+async function getLoginOptions(): Promise<LoginOptions> {
+  log.info('Logging in by delegating to parent window...');
+  const response = await requestParentResponse(LOGIN_OPTIONS_REQUEST);
+  if (!isLoginOptions(response)) {
+    throw new Error(`Unexpected login options response: ${response}`);
+  }
+  return response;
+}
 
 function getWindowAuthProvider(): string {
   return new URLSearchParams(window.location.search).get('authProvider') ?? '';
@@ -17,38 +36,13 @@ function getWindowAuthProvider(): string {
 /**
  * AuthPlugin that tries to delegate to the parent window for authentication. Fails if there is no parent window.
  */
-function Component({
-  client,
-  onSuccess,
-  onFailure,
-}: AuthPluginProps): JSX.Element {
-  const [error, setError] = useState<unknown>();
-  useEffect(() => {
-    async function login() {
-      try {
-        log.info('Logging in by delegating to parent window...');
-        const loginOptions = await requestParentResponse<LoginOptions>(
-          LOGIN_OPTIONS_REQUEST
-        );
-
-        await client.login(loginOptions);
-        log.info('Logged in successfully.');
-        onSuccess();
-      } catch (e) {
-        log.error('Unable to login:', e);
-        setError(e);
-        onFailure(e);
-      }
-    }
-    login();
-  }, [client, onFailure, onSuccess]);
+function Component({ children }: AuthPluginProps): JSX.Element {
   return (
-    <LoadingOverlay
-      data-testid="auth-parent-loading"
-      isLoading
-      isLoaded={false}
-      errorMessage={error != null ? `${error}` : null}
-    />
+    <AuthPluginBase getLoginOptions={getLoginOptions}>
+      <UserPermissionsOverrideContext.Provider value={permissionsOverrides}>
+        {children}
+      </UserPermissionsOverrideContext.Provider>
+    </AuthPluginBase>
   );
 }
 

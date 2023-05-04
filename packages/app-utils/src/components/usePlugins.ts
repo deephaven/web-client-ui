@@ -1,14 +1,11 @@
-import { useContext } from 'react';
+import { useContextOrThrow } from '@deephaven/react-hooks';
 import { PluginsContext } from './PluginsBootstrap';
 
 export function usePlugins() {
-  const plugins = useContext(PluginsContext);
-  if (plugins == null) {
-    throw new Error(
-      'No Plugins available in usePlugins. Was code wrapped in PluginsBootstrap or PluginsContext.Provider?'
-    );
-  }
-  return plugins;
+  return useContextOrThrow(
+    PluginsContext,
+    'No Plugins available in usePlugins. Was code wrapped in PluginsBootstrap or PluginsContext.Provider?'
+  );
 }
 
 export default usePlugins;

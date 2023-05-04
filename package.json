@@ -101,7 +101,7 @@
     "@types/react-window": "^1.8.5",
     "@types/shell-quote": "^1.7.1",
     "@types/shortid": "0.0.29",
-    "@vscode/codicons": "0.0.32",
+    "@vscode/codicons": "0.0.33",
     "chokidar-cli": "^2.1.0",
     "cross-env": "^7.0.2",
     "eslint": "^8.29.0",

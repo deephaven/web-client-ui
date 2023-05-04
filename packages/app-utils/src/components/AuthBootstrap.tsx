@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import {
   AuthConfigMap,
   AuthPluginAnonymous,
@@ -12,9 +6,11 @@ import {
   AuthPluginPsk,
 } from '@deephaven/auth-plugins';
 import { LoadingOverlay } from '@deephaven/components';
+import { useClient } from '@deephaven/jsapi-bootstrap';
+import { getErrorMessage } from '@deephaven/utils';
 import { PluginsContext } from './PluginsBootstrap';
 import { getAuthPluginComponent } from '../plugins';
-import useClient from './useClient';
+import LoginNotifier from './LoginNotifier';
 
 export type AuthBootstrapProps = {
   /**
@@ -39,27 +35,26 @@ export function AuthBootstrap({ children }: AuthBootstrapProps) {
   // We want to load the auth config values in parallel with the plugins
   const plugins = useContext(PluginsContext);
   const [authConfig, setAuthConfig] = useState<AuthConfigMap>();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [error, setError] = useState<unknown>();
 
   useEffect(
     function initAuthConfigValues() {
-      let isCancelled = false;
+      let isCanceled = false;
       async function loadAuthConfigValues() {
         try {
           const newAuthConfigValues = await client.getAuthConfigValues();
-          if (!isCancelled) {
+          if (!isCanceled) {
             setAuthConfig(new Map(newAuthConfigValues));
           }
         } catch (e) {
-          if (!isCancelled) {
+          if (!isCanceled) {
             setError(e);
           }
         }
       }
       loadAuthConfigValues();
       return () => {
-        isCancelled = true;
+        isCanceled = true;
       };
     },
     [client]
@@ -77,38 +72,24 @@ export function AuthBootstrap({ children }: AuthBootstrapProps) {
     }
   }, [authConfig, plugins]);
 
-  const handleLoginSuccess = useCallback(() => {
-    setIsLoggedIn(true);
-  }, []);
-
-  const handleLoginFailure = useCallback((e: unknown) => {
-    setIsLoggedIn(false);
-    setError(e);
-  }, []);
-
   const isLoading = AuthComponent == null || authConfig == null;
 
   if (isLoading || error != null) {
     return (
       <LoadingOverlay
-        isLoading={isLoading}
-        errorMessage={error != null ? `${error}` : undefined}
+        isLoading={isLoading && error == null}
+        errorMessage={getErrorMessage(error)}
       />
     );
   }
-  if (!isLoggedIn) {
-    return (
-      <AuthComponent
-        authConfigValues={authConfig}
-        client={client}
-        onSuccess={handleLoginSuccess}
-        onFailure={handleLoginFailure}
-      />
-    );
-  }
-
-  // eslint-disable-next-line react/jsx-no-useless-fragment
-  return <>{children}</>;
+  return (
+    <AuthComponent authConfigValues={authConfig}>
+      <>
+        <LoginNotifier />
+        {children}
+      </>
+    </AuthComponent>
+  );
 }
 
 export default AuthBootstrap;

@@ -26,16 +26,16 @@ export function PluginsBootstrap({
   const [plugins, setPlugins] = useState<PluginModuleMap | null>(null);
   useEffect(
     function initPlugins() {
-      let isCancelled = false;
+      let isCanceled = false;
       async function loadPlugins() {
         const pluginModules = await loadModulePlugins(pluginsUrl);
-        if (!isCancelled) {
+        if (!isCanceled) {
           setPlugins(pluginModules);
         }
       }
       loadPlugins();
       return () => {
-        isCancelled = true;
+        isCanceled = true;
       };
     },
     [pluginsUrl]

@@ -22,6 +22,7 @@ import {
   InfoModal,
   LoadingSpinner,
   BasicModal,
+  DebouncedModal,
 } from '@deephaven/components';
 import {
   IrisGridModel,
@@ -76,7 +77,6 @@ import dh, {
 } from '@deephaven/jsapi-shim';
 import { SessionConfig } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
-import { getBaseUrl, loadComponentPlugin } from '@deephaven/app-utils';
 import {
   getActiveTool,
   getWorkspace,
@@ -87,7 +87,7 @@ import {
   Workspace,
   WorkspaceData,
   RootState,
-  UserPermissions,
+  User,
   ServerConfigValues,
   DeephavenPluginModuleMap,
 } from '@deephaven/redux';
@@ -128,13 +128,6 @@ export type AppDashboardData = {
   links: Link[];
   openedMap: Map<string | string[], Component>;
 };
-
-interface User {
-  name: string;
-  operateAs: string;
-  groups: string[];
-  permissions: UserPermissions;
-}
 
 interface AppMainContainerProps {
   activeTool: string;
@@ -557,14 +550,17 @@ export class AppMainContainer extends Component<
   }
 
   handleDisconnect() {
+    log.info('Disconnected from server');
     this.setState({ isDisconnected: true });
   }
 
   handleReconnect() {
+    log.info('Reconnected to server');
     this.setState({ isDisconnected: false });
   }
 
   handleReconnectAuthFailed() {
+    log.warn('Reconnect authentication failed');
     this.setState({ isAuthFailed: true });
   }
 
@@ -660,8 +656,12 @@ export class AppMainContainer extends Component<
         TablePlugin: ForwardRefExoticComponent<React.RefAttributes<unknown>>;
       }).TablePlugin;
     }
-    const baseURL = getBaseUrl(import.meta.env.VITE_COMPONENT_PLUGINS_URL);
-    return loadComponentPlugin(baseURL, pluginName);
+
+    const errorMessage = `Unable to find table plugin ${pluginName}.`;
+    log.error(errorMessage);
+    return ((
+      <div className="error-message">{`${errorMessage}`}</div>
+    ) as unknown) as ForwardRefExoticComponent<React.RefAttributes<unknown>>;
   }
 
   startListeningForDisconnect() {
@@ -883,7 +883,8 @@ export class AppMainContainer extends Component<
               <Button
                 kind="ghost"
                 className={classNames('btn-settings-menu', {
-                  'text-warning': user.operateAs !== user.name,
+                  'text-warning':
+                    user.operateAs != null && user.operateAs !== user.name,
                 })}
                 onClick={this.handleSettingsMenuShow}
                 icon={
@@ -918,7 +919,10 @@ export class AppMainContainer extends Component<
           <ConsolePlugin
             hydrateConsole={AppMainContainer.hydrateConsole}
             notebooksUrl={
-              getBaseUrl(`${import.meta.env.VITE_NOTEBOOKS_URL}/`).href
+              new URL(
+                `${import.meta.env.VITE_ROUTE_NOTEBOOKS}`,
+                document.baseURI
+              ).href
             }
           />
           <FilterPlugin />
@@ -937,6 +941,7 @@ export class AppMainContainer extends Component<
           <SettingsMenu
             serverConfigValues={serverConfigValues}
             onDone={this.handleSettingsMenuHide}
+            user={user}
           />
         </CSSTransition>
         <ContextActions actions={contextActions} />
@@ -947,16 +952,20 @@ export class AppMainContainer extends Component<
           style={{ display: 'none' }}
           onChange={this.handleImportLayoutFiles}
         />
-        <InfoModal
+        <DebouncedModal
           isOpen={isDisconnected && !isAuthFailed}
-          icon={vsDebugDisconnect}
-          title={
-            <>
-              <LoadingSpinner /> Attempting to reconnect...
-            </>
-          }
-          subtitle="Please check your network connection."
-        />
+          debounceMs={250}
+        >
+          <InfoModal
+            icon={vsDebugDisconnect}
+            title={
+              <>
+                <LoadingSpinner /> Attempting to reconnect...
+              </>
+            }
+            subtitle="Please check your network connection."
+          />
+        </DebouncedModal>
         <BasicModal
           confirmButtonText="Refresh"
           onConfirm={AppMainContainer.handleRefresh}

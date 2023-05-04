@@ -18,18 +18,20 @@ const AppBootstrap = React.lazy(async () => {
   return { default: module.AppBootstrap };
 });
 
+const apiURL = new URL(
+  `${import.meta.env.VITE_CORE_API_URL}/${import.meta.env.VITE_CORE_API_NAME}`,
+  document.baseURI
+);
+
+const pluginsURL = new URL(
+  import.meta.env.VITE_MODULE_PLUGINS_URL,
+  document.baseURI
+);
+
 ReactDOM.render(
-  <ApiBootstrap
-    apiUrl={`${import.meta.env.VITE_CORE_API_URL}/${
-      import.meta.env.VITE_CORE_API_NAME
-    }`}
-    setGlobally
-  >
+  <ApiBootstrap apiUrl={apiURL.href} setGlobally>
     <Suspense fallback={<LoadingOverlay />}>
-      <AppBootstrap
-        apiUrl={import.meta.env.VITE_CORE_API_URL}
-        pluginsUrl={import.meta.env.VITE_MODULE_PLUGINS_URL}
-      >
+      <AppBootstrap serverUrl={apiURL.origin} pluginsUrl={pluginsURL.href}>
         <App />
       </AppBootstrap>
     </Suspense>

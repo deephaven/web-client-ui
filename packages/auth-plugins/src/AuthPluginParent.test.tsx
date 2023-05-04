@@ -1,8 +1,10 @@
 import React from 'react';
 import { act, render, screen } from '@testing-library/react';
+import { ApiContext, ClientContext } from '@deephaven/jsapi-bootstrap';
 import { dh } from '@deephaven/jsapi-shim';
-import { LoginOptions } from '@deephaven/jsapi-types';
+import { CoreClient, LoginOptions } from '@deephaven/jsapi-types';
 import AuthPluginParent from './AuthPluginParent';
+import { AuthConfigMap } from './AuthPlugin';
 
 let mockParentResponse: Promise<LoginOptions>;
 jest.mock('@deephaven/jsapi-utils', () => ({
@@ -10,8 +12,39 @@ jest.mock('@deephaven/jsapi-utils', () => ({
   requestParentResponse: jest.fn(() => mockParentResponse),
 }));
 
+const mockChildText = 'Mock Auth Parent Child';
+const mockChild = <div>{mockChildText}</div>;
+const authConfigMap = new Map();
+
+function expectMockChild() {
+  return expect(screen.queryByText(mockChildText));
+}
+
+function expectLoading() {
+  return expect(screen.queryByTestId('auth-base-loading-spinner'));
+}
+
+function expectError() {
+  return expect(screen.queryByTestId('auth-base-loading-message'));
+}
+
 function makeCoreClient() {
   return new dh.CoreClient('wss://test.mockurl.example.com');
+}
+
+function renderComponent(
+  authConfigValues: AuthConfigMap,
+  client: CoreClient = makeCoreClient()
+) {
+  return render(
+    <ApiContext.Provider value={dh}>
+      <ClientContext.Provider value={client}>
+        <AuthPluginParent.Component authConfigValues={authConfigValues}>
+          {mockChild}
+        </AuthPluginParent.Component>
+      </ClientContext.Provider>
+    </ApiContext.Provider>
+  );
 }
 
 describe('availability tests', () => {
@@ -23,17 +56,17 @@ describe('availability tests', () => {
       'Test Title',
       `/test.html?authProvider=parent`
     );
-    expect(AuthPluginParent.isAvailable(authHandlers)).toBe(true);
+    expect(AuthPluginParent.isAvailable(authHandlers, authConfigMap)).toBe(
+      true
+    );
   });
   it('is not available when window opener not set', () => {
     delete window.opener;
-    expect(AuthPluginParent.isAvailable(authHandlers)).toBe(false);
+    expect(AuthPluginParent.isAvailable(authHandlers, authConfigMap)).toBe(
+      false
+    );
   });
 });
-
-function expectLoading() {
-  expect(screen.queryByTestId('auth-parent-loading')).not.toBeNull();
-}
 
 describe('component tests', () => {
   const authConfigValues = new Map();
@@ -43,36 +76,29 @@ describe('component tests', () => {
     mockParentResponse = new Promise(resolve => {
       mockResolve = resolve;
     });
-    const loginOptions = { token: 'mockParentToken' };
+    const loginOptions = { type: 'mocktest', token: 'mockParentToken' };
     const loginPromise = Promise.resolve();
-    const onSuccess = jest.fn();
-    const onFailure = jest.fn();
     const mockLogin = jest.fn(() => loginPromise);
     const client = makeCoreClient();
     client.login = mockLogin;
-    render(
-      <AuthPluginParent.Component
-        authConfigValues={authConfigValues}
-        client={client}
-        onFailure={onFailure}
-        onSuccess={onSuccess}
-      />
-    );
-    expectLoading();
-    expect(onSuccess).not.toHaveBeenCalled();
-    expect(onFailure).not.toHaveBeenCalled();
+    renderComponent(authConfigValues, client);
+    expectLoading().toBeInTheDocument();
+    expectMockChild().not.toBeInTheDocument();
+    expectError().not.toBeInTheDocument();
     expect(mockLogin).not.toHaveBeenCalled();
 
     mockResolve(loginOptions);
 
-    await mockParentResponse;
-    expect(onSuccess).not.toHaveBeenCalled();
-    expect(onFailure).not.toHaveBeenCalled();
+    await act(async () => {
+      await mockParentResponse;
+    });
     expect(mockLogin).toHaveBeenCalledWith(loginOptions);
 
-    await loginPromise;
-    expect(onSuccess).toHaveBeenCalled();
-    expect(onFailure).not.toHaveBeenCalled();
+    await act(async () => {
+      await loginPromise;
+    });
+    expectMockChild().toBeInTheDocument();
+    expectError().not.toBeInTheDocument();
   });
 
   it('reports failure if login credentials are invalid', async () => {
@@ -81,30 +107,24 @@ describe('component tests', () => {
       mockResolve = resolve;
     });
 
-    const error = 'mock test Invalid login credentials';
-    const loginOptions = { token: 'mockParentToken' };
+    const errorMessage = 'mock test Invalid login credentials';
+    const error = new Error(errorMessage);
+    const loginOptions = { type: 'mocktest', token: 'mockParentToken' };
     const loginPromise = Promise.reject(error);
-    const onSuccess = jest.fn();
-    const onFailure = jest.fn();
     const mockLogin = jest.fn(() => loginPromise);
     const client = makeCoreClient();
     client.login = mockLogin;
-    render(
-      <AuthPluginParent.Component
-        authConfigValues={authConfigValues}
-        client={client}
-        onFailure={onFailure}
-        onSuccess={onSuccess}
-      />
-    );
-    expectLoading();
-    expect(onSuccess).not.toHaveBeenCalled();
-    expect(onFailure).not.toHaveBeenCalled();
+    renderComponent(authConfigValues, client);
+    expectLoading().toBeInTheDocument();
+    expectMockChild().not.toBeInTheDocument();
+    expectError().not.toBeInTheDocument();
     expect(mockLogin).not.toHaveBeenCalled();
 
     // Send a message with the login details
     mockResolve(loginOptions);
-    await mockParentResponse;
+    await act(async () => {
+      await mockParentResponse;
+    });
     expect(mockLogin).toHaveBeenCalledWith(loginOptions);
 
     await act(async () => {
@@ -114,7 +134,9 @@ describe('component tests', () => {
         // expecting promise to fail
       }
     });
-    expect(onSuccess).not.toHaveBeenCalled();
-    expect(onFailure).toHaveBeenCalledWith(error);
+    expectLoading().not.toBeInTheDocument();
+    expectMockChild().not.toBeInTheDocument();
+    expectError().toBeInTheDocument();
+    expect(screen.getByText(errorMessage)).toBeInTheDocument();
   });
 });

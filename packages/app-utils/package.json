@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/app-utils",
-  "version": "0.37.0",
+  "version": "0.38.0",
   "description": "Deephaven App Utils",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -22,7 +22,6 @@
     "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward"
   },
   "devDependencies": {
-    "@deephaven/redux": "file:../redux",
     "react": "^17.x",
     "react-dom": "^17.x",
     "react-redux": "^7.x",
@@ -32,14 +31,17 @@
     "@deephaven/auth-plugins": "file:../auth-plugins",
     "@deephaven/components": "file:../components",
     "@deephaven/jsapi-bootstrap": "file:../jsapi-bootstrap",
+    "@deephaven/jsapi-components": "file:../jsapi-components",
     "@deephaven/jsapi-types": "file:../jsapi-types",
+    "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
+    "@deephaven/react-hooks": "file:../react-hooks",
+    "@deephaven/utils": "file:../utils",
     "@paciolan/remote-component": "2.13.0",
     "@paciolan/remote-module-loader": "^3.0.2",
     "fira": "mozilla/fira#4.202"
   },
   "peerDependencies": {
-    "@deephaven/redux": "file:../redux",
     "react": "^17.x",
     "react-dom": "^17.x",
     "react-redux": "^7.x",

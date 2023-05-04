@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { ListData, useListData } from '@react-stately/data';
-import { Table, TreeTable } from '@deephaven/jsapi-shim';
+import { Table, TreeTable } from '@deephaven/jsapi-types';
 import {
   KeyedItem,
   generateEmptyKeyedItems,

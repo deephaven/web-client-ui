@@ -1,5 +1,6 @@
 import React from 'react';
 import clamp from 'lodash.clamp';
+import { find as linkifyFind } from 'linkifyjs';
 import { EMPTY_ARRAY, getOrThrow } from '@deephaven/utils';
 import GridRange, { GridRangeIndex } from './GridRange';
 import {
@@ -1509,6 +1510,22 @@ export class GridUtils {
       x: textX,
       y: textY,
     };
+  }
+
+  /**
+   * Finds tokens in text (urls, emails) that start with https:// or http://
+   * @param text The text to search in
+   * @returns An array of tokens
+   */
+  static findTokensWithProtocolInText(text: string): Token[] {
+    const tokens = linkifyFind(text);
+
+    return tokens.filter(token => {
+      if (token.type === 'url') {
+        return /^https?:\/\//.test(token.value);
+      }
+      return true;
+    });
   }
 }
 

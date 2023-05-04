@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import dh from '@deephaven/jsapi-shim';
+import { useApi } from '@deephaven/jsapi-bootstrap';
 import { Column, Row, Table } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import useTableListener from './useTableListener';
@@ -18,6 +18,7 @@ const useTable = (
   data: unknown[][];
   error: Error | null;
 } => {
+  const dh = useApi();
   const [columns, setColumns] = useState<Column[] | undefined>(undefined);
   const [data, setData] = useState<unknown[][]>([]);
   const [columnError, setColumnError] = useState<Error | null>(null);

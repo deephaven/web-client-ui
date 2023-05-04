@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/babel-preset",
-  "version": "0.37.0",
+  "version": "0.38.0",
   "description": "Deephaven Babel preset",
   "repository": {
     "type": "git",
@@ -17,6 +17,7 @@
     "@babel/preset-react": "^7.18.0",
     "@babel/preset-typescript": "^7.18.0",
     "babel-plugin-add-import-extension": "^1.6.0",
+    "babel-plugin-transform-import-meta": "^2.2.0",
     "babel-plugin-transform-rename-import": "^2.3.0"
   },
   "publishConfig": {

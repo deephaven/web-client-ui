@@ -1,6 +1,6 @@
-import React, { createContext, useEffect, useState } from 'react';
-import { useApi } from '@deephaven/jsapi-bootstrap';
+import React, { createContext } from 'react';
 import { ConnectOptions, CoreClient } from '@deephaven/jsapi-types';
+import useCreateClient from './useCreateClient';
 
 export const ClientContext = createContext<CoreClient | null>(null);
 
@@ -26,22 +26,7 @@ export function ClientBootstrap({
   options,
   children,
 }: ClientBootstrapProps) {
-  const api = useApi();
-  const [client, setClient] = useState<CoreClient>();
-  useEffect(
-    function initClient() {
-      const newClient = new api.CoreClient(serverUrl, options);
-      setClient(newClient);
-      return () => {
-        newClient.disconnect();
-      };
-    },
-    [api, options, serverUrl]
-  );
-
-  if (client == null) {
-    return null;
-  }
+  const client = useCreateClient(serverUrl, options);
   return (
     <ClientContext.Provider value={client}>{children}</ClientContext.Provider>
   );

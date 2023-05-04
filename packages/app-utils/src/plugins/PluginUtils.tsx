@@ -159,7 +159,7 @@ export function getAuthPluginComponent(
   // Filter the available auth plugins
 
   const availableAuthPlugins = authPlugins.filter(([name, authPlugin]) =>
-    authPlugin.isAvailable(authHandlers)
+    authPlugin.isAvailable(authHandlers, authConfigValues)
   );
 
   if (availableAuthPlugins.length === 0) {

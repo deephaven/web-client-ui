@@ -20,16 +20,6 @@ jest.mock('@deephaven/dashboard', () => ({
   },
 }));
 
-// Disable CSSTransition delays to make testing simpler
-jest.mock('react-transition-group', () => ({
-  // eslint-disable-next-line react/display-name, react/prop-types
-  Transition: ({ children, in: inProp }) =>
-    inProp !== false ? children : null,
-  // eslint-disable-next-line react/display-name, react/prop-types
-  CSSTransition: ({ children, in: inProp }) =>
-    inProp !== false ? children : null,
-}));
-
 const MockChart = jest.fn(() => null);
 
 jest.mock('@deephaven/chart', () => {
@@ -112,7 +102,7 @@ function callErrorFunction() {
 
 function expectLoading(container) {
   expect(
-    container.querySelector("[data-icon='circle-large-outline']")
+    container.querySelector("[data-icon='circle-large']")
   ).toBeInTheDocument();
   expect(container.querySelector("[data-icon='loading']")).toBeInTheDocument();
 }

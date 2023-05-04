@@ -1,10 +1,9 @@
 import { EventTarget, Event } from 'event-target-shim';
-import { find as linkifyFind } from 'linkifyjs';
 import type { IColumnHeaderGroup } from './ColumnHeaderGroup';
 import { ModelIndex } from './GridMetrics';
 import { GridColor, GridTheme, NullableGridColor } from './GridTheme';
 import memoizeClear from './memoizeClear';
-import { Token } from './GridUtils';
+import GridUtils, { Token } from './GridUtils';
 import { CellRenderType } from './CellRenderer';
 
 const LINK_TRUNCATION_LENGTH = 5000;
@@ -210,7 +209,7 @@ abstract class GridModel<
     (text: string, visibleLength: number): Token[] => {
       // If no text is truncated, then directly search in text
       if (visibleLength >= text.length) {
-        return linkifyFind(text);
+        return GridUtils.findTokensWithProtocolInText(text);
       }
 
       // To check for links, we should check to the first space after the truncatedText length
@@ -224,7 +223,8 @@ abstract class GridModel<
         lengthOfContent = Math.min(LINK_TRUNCATION_LENGTH, text.length);
       }
       const contentToCheckForLinks = text.substring(0, lengthOfContent);
-      return linkifyFind(contentToCheckForLinks);
+
+      return GridUtils.findTokensWithProtocolInText(contentToCheckForLinks);
     }
   );
 

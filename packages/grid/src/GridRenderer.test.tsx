@@ -108,7 +108,11 @@ describe('getTokenBoxesForVisibleCell', () => {
     renderState = makeMockGridRenderState({
       model: new MockGridModel({
         editedData: [
-          ['google.com', 'google', 'google.com youtube.com email@gmail.com'],
+          [
+            'https://google.com',
+            'google',
+            'http://google.com youtube.com email@gmail.com',
+          ],
         ],
       }),
     });
@@ -139,11 +143,11 @@ describe('getTokenBoxesForVisibleCell', () => {
 
     const expectedValue: LinkToken = {
       type: 'url',
-      value: 'google.com',
-      href: 'http://google.com',
+      value: 'https://google.com',
+      href: 'https://google.com',
       isLink: true,
       start: 0,
-      end: 10,
+      end: 18,
     };
 
     expect(tokens).not.toBeNull();
@@ -163,35 +167,27 @@ describe('getTokenBoxesForVisibleCell', () => {
     const expectedValue: LinkToken[] = [
       {
         type: 'url',
-        value: 'google.com',
+        value: 'http://google.com',
         isLink: true,
         href: 'http://google.com',
         start: 0,
-        end: 10,
+        end: 17,
       },
-      {
-        type: 'url',
-        value: 'youtube.com',
-        isLink: true,
-        href: 'http://youtube.com',
-        start: 11,
-        end: 22,
-      },
+
       {
         type: 'email',
         value: 'email@gmail.com',
         isLink: true,
         href: 'mailto:email@gmail.com',
-        start: 23,
-        end: 38,
+        start: 30,
+        end: 45,
       },
     ];
 
     expect(tokens).not.toBeNull();
-    expect(tokens?.length).toBe(3);
+    expect(tokens?.length).toBe(2);
     expect(tokens?.[0].token).toEqual(expectedValue[0]);
     expect(tokens?.[1].token).toEqual(expectedValue[1]);
-    expect(tokens?.[2].token).toEqual(expectedValue[2]);
   });
 
   it('should return empty array if there are no tokens', () => {

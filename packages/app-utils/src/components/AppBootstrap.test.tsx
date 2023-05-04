@@ -1,6 +1,7 @@
 import React from 'react';
 import { AUTH_HANDLER_TYPE_ANONYMOUS } from '@deephaven/auth-plugins';
 import { ApiContext } from '@deephaven/jsapi-bootstrap';
+import { BROADCAST_LOGIN_MESSAGE } from '@deephaven/jsapi-utils';
 import {
   CoreClient,
   IdeConnection,
@@ -19,6 +20,16 @@ jest.mock('../plugins', () => ({
   loadModulePlugins: jest.fn(() => mockPluginsPromise),
 }));
 
+const mockChannel = {
+  postMessage: jest.fn(),
+};
+jest.mock('@deephaven/jsapi-components', () => ({
+  ...jest.requireActual('@deephaven/jsapi-components'),
+  RefreshTokenBootstrap: jest.fn(({ children }) => children),
+  useBroadcastChannel: jest.fn(() => mockChannel),
+  useBroadcastLoginListener: jest.fn(),
+}));
+
 const mockChildText = 'Mock Child';
 const mockChild = <div>{mockChildText}</div>;
 
@@ -26,10 +37,29 @@ function expectMockChild() {
   return expect(screen.queryByText(mockChildText));
 }
 
+function renderComponent(client: CoreClient) {
+  const api = TestUtils.createMockProxy<DhType>({
+    CoreClient: (jest
+      .fn()
+      .mockImplementation(() => client) as unknown) as CoreClient,
+  });
+  return render(
+    <ApiContext.Provider value={api}>
+      <AppBootstrap serverUrl={API_URL} pluginsUrl={PLUGINS_URL}>
+        {mockChild}
+      </AppBootstrap>
+    </ApiContext.Provider>
+  );
+}
+
+beforeEach(() => {
+  jest.clearAllMocks();
+});
+
 it('should throw if api has not been bootstrapped', () => {
   expect(() =>
     render(
-      <AppBootstrap apiUrl={API_URL} pluginsUrl={PLUGINS_URL}>
+      <AppBootstrap serverUrl={API_URL} pluginsUrl={PLUGINS_URL}>
         {mockChild}
       </AppBootstrap>
     )
@@ -49,19 +79,7 @@ it('should display an error if no login plugin matches the provided auth handler
     getAuthConfigValues: mockGetAuthConfigValues,
     login: mockLogin,
   });
-  const api = TestUtils.createMockProxy<DhType>({
-    CoreClient: (jest
-      .fn()
-      .mockImplementation(() => client) as unknown) as CoreClient,
-  });
-
-  render(
-    <ApiContext.Provider value={api}>
-      <AppBootstrap apiUrl={API_URL} pluginsUrl={PLUGINS_URL}>
-        {mockChild}
-      </AppBootstrap>
-    </ApiContext.Provider>
-  );
+  renderComponent(client);
   expectMockChild().toBeNull();
   expect(mockGetAuthConfigValues).toHaveBeenCalled();
 
@@ -73,7 +91,7 @@ it('should display an error if no login plugin matches the provided auth handler
   expect(mockLogin).not.toHaveBeenCalled();
   expect(
     screen.queryByText(
-      'Error: No login plugins found, please register a login plugin for auth handlers: MockAuthHandler'
+      'No login plugins found, please register a login plugin for auth handlers: MockAuthHandler'
     )
   ).not.toBeNull();
 });
@@ -105,19 +123,8 @@ it('should log in automatically when the anonymous handler is supported', async 
     login: mockLogin,
     getAsIdeConnection: mockGetAsConnection,
   });
-  const api = TestUtils.createMockProxy<DhType>({
-    CoreClient: (jest
-      .fn()
-      .mockImplementation(() => client) as unknown) as CoreClient,
-  });
 
-  render(
-    <ApiContext.Provider value={api}>
-      <AppBootstrap apiUrl={API_URL} pluginsUrl={PLUGINS_URL}>
-        <div>{mockChild}</div>
-      </AppBootstrap>
-    </ApiContext.Provider>
-  );
+  renderComponent(client);
 
   expectMockChild().toBeNull();
   expect(mockLogin).not.toHaveBeenCalled();
@@ -127,25 +134,31 @@ it('should log in automatically when the anonymous handler is supported', async 
     await mockPluginsPromise;
   });
 
+  expect(mockChannel.postMessage).not.toHaveBeenCalled();
   expectMockChild().toBeNull();
   expect(mockLogin).toHaveBeenCalled();
-  expect(screen.queryByTestId('auth-anonymous-loading')).not.toBeNull();
+  expect(screen.queryByTestId('auth-base-loading')).not.toBeNull();
 
   // Wait for login to complete
   await act(async () => {
     mockLoginResolve();
   });
 
-  expect(screen.queryByTestId('auth-anonymous-loading')).toBeNull();
+  expect(screen.queryByTestId('auth-base-loading')).toBeNull();
   expect(screen.queryByTestId('connection-bootstrap-loading')).not.toBeNull();
   expect(screen.queryByText(mockChildText)).toBeNull();
+  expect(mockChannel.postMessage).toHaveBeenCalledWith(
+    expect.objectContaining({
+      message: BROADCAST_LOGIN_MESSAGE,
+    })
+  );
 
   // Wait for IdeConnection to resolve
   await act(async () => {
     mockConnectionResolve(mockConnection);
   });
 
-  expect(screen.queryByTestId('auth-anonymous-loading')).toBeNull();
+  expect(screen.queryByTestId('auth-base-loading')).toBeNull();
   expect(screen.queryByTestId('connection-bootstrap-loading')).toBeNull();
   expectMockChild().not.toBeNull();
 });
