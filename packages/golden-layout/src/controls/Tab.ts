@@ -184,7 +184,9 @@ export default class Tab {
     // being erroneously marked as focused if the user's DOM element
     // is removed and they click another tab. To prevent this, we
     // remove existing "lm_focusin" classes first.
-    $('lm_focusin').removeClass('lm_focusin');
+    $('.lm_focusin', this._layoutManager.root.element).removeClass(
+      'lm_focusin'
+    );
 
     this.element.addClass('lm_focusin');
   }
