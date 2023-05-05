@@ -62,7 +62,6 @@ import {
   IrisGridPanelProps,
   ColumnSelectionValidator,
   getDashboardConnection,
-  PlotlyChartPlugin,
 } from '@deephaven/dashboard-core-plugins';
 import {
   vsGear,
@@ -931,7 +930,6 @@ export class AppMainContainer extends Component<
           <PandasPlugin hydrate={this.hydratePandas} />
           <MarkdownPlugin />
           <LinkerPlugin />
-          {/* <PlotlyChartPlugin /> */}
           {dashboardPlugins}
         </Dashboard>
         <CSSTransition

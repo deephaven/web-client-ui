@@ -33,11 +33,6 @@ import {
   AxisType as PlotlyAxisType,
   OhlcData,
   MarkerSymbol,
-  BoxPlotData,
-  ViolinData,
-  CandlestickData,
-  PieData,
-  Data,
 } from 'plotly.js';
 import { assertNotNull, Range } from '@deephaven/utils';
 import ChartTheme from './ChartTheme';
@@ -155,37 +150,6 @@ function isRangedPlotlyAxis(value: unknown): value is { range: Range[] } {
     ((value as PlotlyAxis).autorange === false ||
       (value as PlotlyAxis).autorange === undefined)
   );
-}
-
-export function isPlotData(data: Data): data is PlotData {
-  return (
-    // BoxPlot extends PlotData
-    // The rest do not extend PlotData
-    !isViolinPlotData(data) &&
-    !isOhlcPlotData(data) &&
-    !isCandlestickPlotData(data) &&
-    !isPiePlotData(data)
-  );
-}
-
-export function isBoxPlotData(data: Data): data is BoxPlotData {
-  return data.type === 'box';
-}
-
-export function isViolinPlotData(data: Data): data is ViolinData {
-  return data.type === 'violin';
-}
-
-export function isOhlcPlotData(data: Data): data is OhlcData {
-  return data.type === 'ohlc';
-}
-
-export function isCandlestickPlotData(data: Data): data is CandlestickData {
-  return data.type === 'candlestick';
-}
-
-export function isPiePlotData(data: Data): data is PieData {
-  return data.type === 'pie';
 }
 
 class ChartUtils {
