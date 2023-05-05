@@ -126,11 +126,11 @@ export interface PanelState {
 
 export interface IrisGridPanelProps {
   children?: ReactNode;
-  dh: DhType;
   glContainer: Container;
   glEventHub: EventEmitter;
   metadata: Metadata;
   panelState: PanelState | null;
+  makeApi: () => DhType | Promise<DhType>;
   makeModel: () => IrisGridModel | Promise<IrisGridModel>;
   inputFilters: InputFilter[];
   links: Link[];
@@ -246,11 +246,11 @@ export class IrisGridPanel extends PureComponent<
     this.irisGrid = React.createRef();
     this.pluginRef = React.createRef();
 
-    const { panelState, dh } = props;
+    const { panelState } = props;
 
     this.pluginState = null;
-    this.dh = dh;
-    this.irisGridUtils = new IrisGridUtils(dh);
+    this.dh = null;
+    this.irisGridUtils = null;
 
     this.state = {
       error: null,
@@ -345,9 +345,9 @@ export class IrisGridPanel extends PureComponent<
 
   pluginState: unknown;
 
-  private dh: DhType;
+  private dh: DhType | null;
 
-  private irisGridUtils: IrisGridUtils;
+  private irisGridUtils: IrisGridUtils | null;
 
   getTableName(): string {
     const { metadata } = this.props;
@@ -468,8 +468,9 @@ export class IrisGridPanel extends PureComponent<
       frozenColumns: readonly ColumnName[],
       conditionalFormats: readonly SidebarFormattingRule[],
       columnHeaderGroups: readonly ColumnHeaderGroup[]
-    ) =>
-      this.irisGridUtils.dehydrateIrisGridState(model, {
+    ) => {
+      assertNotNull(this.irisGridUtils);
+      return this.irisGridUtils.dehydrateIrisGridState(model, {
         advancedFilters,
         aggregationSettings,
         customColumnFormatMap,
@@ -492,7 +493,8 @@ export class IrisGridPanel extends PureComponent<
         frozenColumns,
         conditionalFormats,
         columnHeaderGroups,
-      })
+      });
+    }
   );
 
   getDehydratedGridState = memoize(
@@ -527,12 +529,17 @@ export class IrisGridPanel extends PureComponent<
 
   initModel(): void {
     this.setState({ isModelReady: false, isLoading: true, error: null });
-    const { makeModel } = this.props;
+    const { makeApi, makeModel } = this.props;
     if (this.modelPromise != null) {
       this.modelPromise.cancel();
     }
-    this.modelPromise = PromiseUtils.makeCancelable(makeModel(), resolved =>
-      resolved.close()
+    this.modelPromise = PromiseUtils.makeCancelable(
+      Promise.resolve(makeApi()).then(dh => {
+        this.dh = dh;
+        this.irisGridUtils = new IrisGridUtils(dh);
+        return makeModel();
+      }),
+      resolved => resolved.close()
     );
     this.modelPromise.then(this.handleLoadSuccess).catch(this.handleLoadError);
   }
@@ -615,11 +622,12 @@ export class IrisGridPanel extends PureComponent<
     const { model } = this.state;
     assertNotNull(model);
     const { columns, formatter } = model;
-    const pluginFilters = this.irisGridUtils.getFiltersFromInputFilters(
-      columns,
-      filters,
-      formatter.timeZone
-    );
+    const pluginFilters =
+      this.irisGridUtils?.getFiltersFromInputFilters(
+        columns,
+        filters,
+        formatter.timeZone
+      ) ?? [];
     this.setState({ pluginFilters });
   }
 
@@ -946,7 +954,7 @@ export class IrisGridPanel extends PureComponent<
       model.columns,
       advancedFilters
     ).filter(([columnIndex]) => model.isFilterable(columnIndex));
-
+    assertNotNull(this.irisGridUtils);
     irisGrid.clearAllFilters();
     irisGrid.setFilters({
       quickFilters: this.irisGridUtils.hydrateQuickFilters(
@@ -1024,6 +1032,7 @@ export class IrisGridPanel extends PureComponent<
         partitionColumn,
         advancedSettings,
       } = IrisGridUtils.hydrateIrisGridPanelState(model, irisGridPanelState);
+      assertNotNull(this.irisGridUtils);
       const {
         advancedFilters,
         customColumns,
@@ -1196,6 +1205,7 @@ export class IrisGridPanel extends PureComponent<
   }
 
   render(): ReactElement {
+    const { dh } = this;
     const {
       children,
       glContainer,
@@ -1288,7 +1298,7 @@ export class IrisGridPanel extends PureComponent<
           />
         )}
       >
-        {isModelReady && model && (
+        {isModelReady && model && dh && (
           <IrisGrid
             advancedFilters={advancedFilters}
             aggregationSettings={aggregationSettings}
