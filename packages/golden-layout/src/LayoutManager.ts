@@ -386,10 +386,16 @@ export default class LayoutManager extends EventEmitter {
    * Removes a react child from the layout manager
    * @param id Unique panel id
    */
-  removeReactChild(id: string) {
-    this._reactChildMap.delete(id);
-    this._reactChildren = [...this._reactChildMap.values()];
-    this.emit('reactChildrenChanged');
+  removeReactChild(id: string, element: React.ReactNode) {
+    const mapElem = this._reactChildMap.get(id);
+    if (mapElem === element) {
+      // If an element was replaced it may be destroyed after the other is created
+      // In that case, the new element would be removed
+      // Make sure the element being removed is the current element associated with its id
+      this._reactChildMap.delete(id);
+      this._reactChildren = [...this._reactChildMap.values()];
+      this.emit('reactChildrenChanged');
+    }
   }
 
   /**

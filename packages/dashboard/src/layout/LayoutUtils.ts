@@ -518,7 +518,12 @@ class LayoutUtils {
     }
     if (replaceExisting && oldContentItem) {
       const index = stack.contentItems.indexOf(oldContentItem);
-      stack.replaceChild(oldContentItem, config);
+
+      // Using remove/add here instead of replaceChild because I was getting errors with replaceChild... should be the same.
+      // Add first so that the stack doesn't get screwed up
+      stack.addChild(config, index + 1);
+      stack.removeChild(oldContentItem);
+
       stack.setActiveContentItem(stack.contentItems[index]);
     } else {
       stack.addChild(config);
@@ -556,7 +561,12 @@ class LayoutUtils {
 
     if (replaceExisting && oldContentItem && stack) {
       const index = stack?.contentItems.indexOf(oldContentItem);
-      stack.replaceChild(oldContentItem, config);
+
+      // Using remove/add here instead of replaceChild because I was getting errors with replaceChild... should be the same.
+      // Add first so that the stack doesn't get screwed up
+      stack.addChild(config, index + 1);
+      stack.removeChild(oldContentItem);
+
       stack.setActiveContentItem(stack.contentItems[index]);
     } else {
       stack?.addChild(config);

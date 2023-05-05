@@ -15,12 +15,14 @@ export default class ReactComponentHandler {
   private _container: ItemContainer<ReactComponentConfig>;
 
   private _reactComponent: React.Component | null = null;
+  private _portalComponent: React.ReactPortal | null = null;
   private _originalComponentWillUpdate: Function | null = null;
   private _initialState: unknown;
   private _reactClass: React.ComponentClass;
 
   constructor(container: ItemContainer<ReactComponentConfig>, state?: unknown) {
     this._reactComponent = null;
+    this._portalComponent = null;
     this._originalComponentWillUpdate = null;
     this._container = container;
     this._initialState = state;
@@ -59,14 +61,14 @@ export default class ReactComponentHandler {
    * instead of separate sibling root trees
    */
   _render() {
-    this._container.layoutManager.addReactChild(
-      this._key(),
-      ReactDOM.createPortal(
-        this._getReactComponent(),
-        this._container.getElement()[0],
-        this._key()
-      )
+    const key = this._key();
+    this._portalComponent = ReactDOM.createPortal(
+      this._getReactComponent(),
+      this._container.getElement()[0],
+      key
     );
+
+    this._container.layoutManager.addReactChild(key, this._portalComponent);
   }
 
   /**
@@ -97,7 +99,10 @@ export default class ReactComponentHandler {
    * Removes the component from the DOM and thus invokes React's unmount lifecycle
    */
   _destroy() {
-    this._container.layoutManager.removeReactChild(this._key());
+    this._container.layoutManager.removeReactChild(
+      this._key(),
+      this._portalComponent
+    );
     this._container.off('open', this._render, this);
     this._container.off('destroy', this._destroy, this);
   }
