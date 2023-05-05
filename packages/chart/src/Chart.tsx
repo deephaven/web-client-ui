@@ -38,6 +38,7 @@ interface ChartProps {
   model: ChartModel;
   settings: FormatterSettings;
   isActive: boolean;
+  PlotComponent?: typeof Plot;
   onDisconnect: () => void;
   onReconnect: () => void;
   onUpdate: (obj: { isLoading: boolean }) => void;
@@ -65,6 +66,7 @@ export class Chart extends Component<ChartProps, ChartState> {
       showTSeparator: true,
       formatter: [],
     },
+    PlotComponent: Plot,
     onDisconnect: (): void => undefined,
     onReconnect: (): void => undefined,
     onUpdate: (): void => undefined,
@@ -538,6 +540,7 @@ export class Chart extends Component<ChartProps, ChartState> {
   }
 
   render(): ReactElement {
+    const { PlotComponent } = this.props;
     const {
       data,
       downsamplingError,
@@ -558,7 +561,7 @@ export class Chart extends Component<ChartProps, ChartState> {
     return (
       <div className="h-100 w-100 chart-wrapper" ref={this.plotWrapper}>
         {isPlotShown && (
-          <Plot
+          <PlotComponent
             ref={this.plot}
             data={data}
             layout={layout}
