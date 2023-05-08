@@ -56,7 +56,7 @@ const optionsUseDefaults: UseViewportDataProps<unknown, Table> = {
   table,
 };
 
-const wrapper = ({ children }) => (
+const wrapper: React.FC<Table> = ({ children }) => (
   <ApiContext.Provider value={dh}>{children}</ApiContext.Provider>
 );
 

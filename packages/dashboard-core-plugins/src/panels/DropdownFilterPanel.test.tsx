@@ -32,7 +32,6 @@ function makeContainer({
 }: Partial<DropdownFilterPanelProps> = {}) {
   return render(
     <DropdownFilterPanel
-      // TODO: makeApi
       dh={dh}
       glContainer={container}
       glEventHub={eventHub}
