@@ -41,6 +41,7 @@ import {
   isValidFormat,
   removeFormatRuleExtraProps,
   isFormatRuleValidForSave,
+  ValidFormatterItem,
 } from './SettingsUtils';
 import type { FormatterItem, FormatOption } from './SettingsUtils';
 import DateTimeOptions from './DateTimeOptions';
@@ -361,7 +362,9 @@ export class FormattingSectionContent extends PureComponent<
 
     const formatter =
       formatSettings
-        .filter(format => isFormatRuleValidForSave(dh, format))
+        .filter((format): format is ValidFormatterItem =>
+          isFormatRuleValidForSave(dh, format)
+        )
         .map(removeFormatRuleExtraProps) ?? [];
 
     const { settings, saveSettings } = this.props;

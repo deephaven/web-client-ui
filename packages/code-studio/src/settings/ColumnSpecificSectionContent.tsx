@@ -43,6 +43,7 @@ import {
   isValidFormat,
   removeFormatRuleExtraProps,
   isFormatRuleValidForSave,
+  ValidFormatterItem,
 } from './SettingsUtils';
 import type { FormatterItem, FormatOption } from './SettingsUtils';
 import ColumnTypeOptions from './ColumnTypeOptions';
@@ -296,7 +297,9 @@ export class ColumnSpecificSectionContent extends PureComponent<
 
     const formatter =
       formatSettings
-        .filter(format => isFormatRuleValidForSave(dh, format))
+        .filter((format): format is ValidFormatterItem =>
+          isFormatRuleValidForSave(dh, format)
+        )
         .map(removeFormatRuleExtraProps) ?? [];
 
     const { settings, saveSettings } = this.props;
