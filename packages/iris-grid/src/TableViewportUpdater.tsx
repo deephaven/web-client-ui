@@ -2,7 +2,7 @@ import { PureComponent } from 'react';
 import memoize from 'memoize-one';
 import throttle from 'lodash.throttle';
 import { GridUtils, MoveOperation } from '@deephaven/grid';
-import {
+import type {
   Column,
   FilterCondition,
   Sort,

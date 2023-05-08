@@ -61,7 +61,7 @@ import {
   vsSymbolOperator,
   vsTools,
 } from '@deephaven/icons';
-import {
+import type {
   Column,
   ColumnGroup,
   CustomColumn,

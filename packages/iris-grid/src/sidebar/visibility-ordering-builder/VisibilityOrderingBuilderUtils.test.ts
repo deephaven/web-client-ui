@@ -1,5 +1,5 @@
 import dh from '@deephaven/jsapi-shim';
-import { ColumnGroup } from '@deephaven/jsapi-types';
+import type { ColumnGroup } from '@deephaven/jsapi-types';
 import IrisGridTestUtils from '../../IrisGridTestUtils';
 import {
   moveItemsFromDrop,

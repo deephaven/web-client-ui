@@ -1,4 +1,4 @@
-import { DateWrapper, dh as DhType } from '@deephaven/jsapi-types';
+import type { DateWrapper, dh as DhType } from '@deephaven/jsapi-types';
 
 interface DateParts<T> {
   year: T;

@@ -1,7 +1,7 @@
 /* eslint class-methods-use-this: "off" */
 import memoize from 'memoize-one';
 import { GridRange, ModelIndex } from '@deephaven/grid';
-import {
+import type {
   Column,
   ColumnStatistics,
   CustomColumn,

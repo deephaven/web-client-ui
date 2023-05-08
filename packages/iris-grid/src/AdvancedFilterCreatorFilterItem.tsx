@@ -9,7 +9,7 @@ import {
   TypeValue as FilterTypeValue,
 } from '@deephaven/filters';
 import { vsTrash } from '@deephaven/icons';
-import { Column } from '@deephaven/jsapi-types';
+import type { Column } from '@deephaven/jsapi-types';
 import {
   AdvancedFilterItemType,
   Formatter,

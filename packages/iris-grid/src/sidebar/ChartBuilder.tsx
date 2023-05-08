@@ -10,7 +10,11 @@ import {
   vsCircleLargeFilled,
   vsTrash,
 } from '@deephaven/icons';
-import { Column, dh as DhType, SeriesPlotStyle } from '@deephaven/jsapi-types';
+import type {
+  Column,
+  dh as DhType,
+  SeriesPlotStyle,
+} from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import shortid from 'shortid';
 import {

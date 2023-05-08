@@ -1,5 +1,5 @@
 import dh from '@deephaven/jsapi-shim';
-import {
+import type {
   Column,
   CustomColumn,
   DateWrapper,

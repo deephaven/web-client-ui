@@ -1,6 +1,6 @@
 import { PureComponent } from 'react';
 import throttle from 'lodash.throttle';
-import {
+import type {
   dh as DhType,
   EventListener,
   FilterCondition,

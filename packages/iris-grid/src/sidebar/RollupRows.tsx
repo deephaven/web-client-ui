@@ -26,7 +26,7 @@ import debounce from 'lodash.debounce';
 import Log from '@deephaven/log';
 import { assertNotNull } from '@deephaven/utils';
 import './RollupRows.scss';
-import { Column } from '@deephaven/jsapi-types';
+import type { Column } from '@deephaven/jsapi-types';
 import IrisGridModel from '../IrisGridModel';
 import { ColumnName } from '../CommonTypes';
 

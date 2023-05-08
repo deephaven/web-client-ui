@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhNewCircleLargeFilled, vsTrash } from '@deephaven/icons';
 import { Button } from '@deephaven/components';
 import Log from '@deephaven/log';
-import { Column } from '@deephaven/jsapi-types';
+import type { Column } from '@deephaven/jsapi-types';
 import { ModelIndex } from '@deephaven/grid';
 import IrisGridModel from '../IrisGridModel';
 

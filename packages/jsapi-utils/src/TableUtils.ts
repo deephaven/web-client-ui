@@ -5,7 +5,7 @@ import {
   OperatorValue as FilterOperatorValue,
 } from '@deephaven/filters';
 import Log from '@deephaven/log';
-import {
+import type {
   Column,
   CustomColumn,
   dh as DhType,

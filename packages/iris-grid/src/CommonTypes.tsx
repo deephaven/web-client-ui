@@ -1,6 +1,6 @@
 import { AdvancedFilterOptions } from '@deephaven/jsapi-utils';
 import { ModelIndex } from '@deephaven/grid';
-import {
+import type {
   TotalsTableConfig,
   FilterCondition,
   Format,

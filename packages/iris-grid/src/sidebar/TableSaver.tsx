@@ -1,5 +1,5 @@
 import { PureComponent } from 'react';
-import {
+import type {
   Column,
   dh as DhType,
   DateWrapper,

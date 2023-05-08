@@ -15,7 +15,7 @@ import {
   MoveOperation,
 } from '@deephaven/grid';
 import { vsWarning } from '@deephaven/icons';
-import {
+import type {
   dh as DhType,
   Table,
   TableViewportSubscription,

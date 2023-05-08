@@ -7,7 +7,7 @@ import {
   MoveOperation,
   VisibleIndex,
 } from '@deephaven/grid';
-import {
+import type {
   Column,
   ColumnGroup,
   DateWrapper,

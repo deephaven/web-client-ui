@@ -1,5 +1,5 @@
 import dh from '@deephaven/jsapi-shim';
-import { Column } from '@deephaven/jsapi-types';
+import type { Column } from '@deephaven/jsapi-types';
 import IrisGridTestUtils from '../../IrisGridTestUtils';
 import {
   DateCondition,

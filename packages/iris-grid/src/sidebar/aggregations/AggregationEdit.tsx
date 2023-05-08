@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import { CSSTransition } from 'react-transition-group';
 import { Button, Checkbox, ItemList, ThemeExport } from '@deephaven/components';
 import { dhSortAlphaDown, dhSortAlphaUp } from '@deephaven/icons';
-import { Column } from '@deephaven/jsapi-types';
+import type { Column } from '@deephaven/jsapi-types';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import { Aggregation } from './Aggregations';
 import { filterValidColumns } from './AggregationUtils';

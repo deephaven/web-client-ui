@@ -25,7 +25,7 @@ import {
   isExpandableGridModel,
   ModelIndex,
 } from '@deephaven/grid';
-import {
+import type {
   Column,
   dh as DhType,
   FilterCondition,

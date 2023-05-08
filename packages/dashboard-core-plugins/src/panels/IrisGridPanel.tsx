@@ -61,7 +61,7 @@ import {
   PromiseUtils,
 } from '@deephaven/utils';
 import { ContextAction, ContextMenuRoot } from '@deephaven/components';
-import {
+import type {
   Column,
   dh as DhType,
   FilterCondition,

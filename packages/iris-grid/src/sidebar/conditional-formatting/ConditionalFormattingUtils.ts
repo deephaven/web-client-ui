@@ -1,5 +1,9 @@
 import Log from '@deephaven/log';
-import { Column, CustomColumn, dh as DhType } from '@deephaven/jsapi-types';
+import type {
+  Column,
+  CustomColumn,
+  dh as DhType,
+} from '@deephaven/jsapi-types';
 import { DateUtils, TableUtils } from '@deephaven/jsapi-utils';
 import {
   makeColumnFormatColumn,

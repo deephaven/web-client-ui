@@ -1,7 +1,7 @@
 /* eslint-disable react/require-default-props */
 /* eslint-disable no-param-reassign */
 import React, { useEffect, useMemo } from 'react';
-import {
+import type {
   Column,
   CustomColumn,
   dh as DhType,

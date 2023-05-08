@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import debounce from 'lodash.debounce';
-import { dh as DhType, Table } from '@deephaven/jsapi-types';
+import type { dh as DhType, Table } from '@deephaven/jsapi-types';
 import { ItemList, LoadingSpinner } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { CanceledPromiseError } from '@deephaven/utils';

@@ -1,4 +1,4 @@
-import { dh as DhType, Table, TreeTable } from '@deephaven/jsapi-types';
+import type { dh as DhType, Table, TreeTable } from '@deephaven/jsapi-types';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import IrisGridModel from './IrisGridModel';
 import IrisGridProxyModel from './IrisGridProxyModel';

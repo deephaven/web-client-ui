@@ -1,5 +1,5 @@
 import { waitFor } from '@testing-library/react';
-import {
+import type {
   InputTable,
   Table,
   TableViewportSubscription,

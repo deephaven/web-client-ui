@@ -1,6 +1,6 @@
 import { GridUtils, GridRange, MoveOperation } from '@deephaven/grid';
 import dh from '@deephaven/jsapi-shim';
-import { Column, Table, Sort } from '@deephaven/jsapi-types';
+import type { Column, Table, Sort } from '@deephaven/jsapi-types';
 import { TypeValue as FilterTypeValue } from '@deephaven/filters';
 import { DateUtils } from '@deephaven/jsapi-utils';
 import type { AdvancedFilter } from './CommonTypes';

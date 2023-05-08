@@ -5,7 +5,7 @@ import { GridUtils } from '@deephaven/grid';
 import type { MoveOperation } from '@deephaven/grid';
 import { assertNotNull, TestUtils } from '@deephaven/utils';
 import dh from '@deephaven/jsapi-shim';
-import { ColumnGroup } from '@deephaven/jsapi-types';
+import type { ColumnGroup } from '@deephaven/jsapi-types';
 import VisibilityOrderingBuilder from './VisibilityOrderingBuilder';
 import IrisGridTestUtils from '../../IrisGridTestUtils';
 import ColumnHeaderGroup from '../../ColumnHeaderGroup';

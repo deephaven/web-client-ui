@@ -1,4 +1,8 @@
-import { Column, dh as DhType, CustomColumn } from '@deephaven/jsapi-types';
+import type {
+  Column,
+  dh as DhType,
+  CustomColumn,
+} from '@deephaven/jsapi-types';
 import {
   BaseFormatConfig,
   getConditionDBString,

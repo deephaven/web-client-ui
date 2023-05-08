@@ -9,7 +9,11 @@ import {
   dhWarningCircleFilled,
   vsCircleLargeFilled,
 } from '@deephaven/icons';
-import { Column, dh as DhType, FilterCondition } from '@deephaven/jsapi-types';
+import type {
+  Column,
+  dh as DhType,
+  FilterCondition,
+} from '@deephaven/jsapi-types';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import './CrossColumnSearch.scss';
 import { ColumnName } from './CommonTypes';

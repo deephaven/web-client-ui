@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import Log from '@deephaven/log';
-import { dh as DhType } from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import { ComboBox } from '@deephaven/components';
 import {
   BaseFormatConfig,

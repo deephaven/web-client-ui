@@ -7,7 +7,7 @@ import {
   EventShimCustomEvent,
   PromiseUtils,
 } from '@deephaven/utils';
-import {
+import type {
   Column,
   ColumnStatistics,
   CustomColumn,

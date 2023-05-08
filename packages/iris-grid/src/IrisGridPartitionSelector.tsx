@@ -4,7 +4,7 @@ import { DropdownMenu, Tooltip } from '@deephaven/components';
 import { vsTriangleDown, vsClose } from '@deephaven/icons';
 import Log from '@deephaven/log';
 import debounce from 'lodash.debounce';
-import { dh as DhType, Table } from '@deephaven/jsapi-types';
+import type { dh as DhType, Table } from '@deephaven/jsapi-types';
 import PartitionSelectorSearch from './PartitionSelectorSearch';
 import './IrisGridPartitionSelector.scss';
 import { ColumnName } from './CommonTypes';

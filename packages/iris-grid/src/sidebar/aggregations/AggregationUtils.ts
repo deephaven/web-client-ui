@@ -1,4 +1,4 @@
-import { Column } from '@deephaven/jsapi-types';
+import type { Column } from '@deephaven/jsapi-types';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import AggregationOperation from './AggregationOperation';
 
