@@ -65,7 +65,6 @@ import type {
   Column,
   FilterCondition,
   Sort,
-  VariableTypeUnion,
 } from '@deephaven/jsapi-types';
 import {
   GridRangeIndex,
@@ -98,7 +97,7 @@ type ModelQueue = ModelQueueFunction[];
 
 interface Metadata {
   table: string;
-  type?: VariableTypeUnion;
+  type?: string;
   query?: string;
   querySerial?: string;
 }

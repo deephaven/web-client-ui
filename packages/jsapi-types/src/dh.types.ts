@@ -63,8 +63,6 @@ export interface CalendarStatic {
   DayOfWeek: { values: () => string[] };
 }
 
-export type VariableTypeUnion = typeof VariableType[keyof typeof VariableType];
-
 export interface VariableDefinition<T extends string = string> {
   type: T;
 

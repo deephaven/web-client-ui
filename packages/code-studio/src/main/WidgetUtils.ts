@@ -2,7 +2,6 @@ import { ChartModel, ChartModelFactory } from '@deephaven/chart';
 import type {
   dh as DhType,
   Table,
-  VariableTypeUnion,
   IdeConnection,
 } from '@deephaven/jsapi-types';
 import {
@@ -92,7 +91,7 @@ export const createGridModel = async (
   dh: DhType,
   connection: IdeConnection,
   metadata: GridPanelMetadata,
-  type: VariableTypeUnion = dh.VariableType.TABLE
+  type: string = dh.VariableType.TABLE
 ): Promise<IrisGridModel> => {
   const { table: tableName } = metadata;
   const definition = { title: tableName, name: tableName, type };

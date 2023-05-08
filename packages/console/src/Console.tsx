@@ -20,7 +20,6 @@ import type {
   LogItem,
   VariableChanges,
   VariableDefinition,
-  VariableTypeUnion,
 } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { assertNotNull, Pending, PromiseUtils } from '@deephaven/utils';
@@ -877,11 +876,9 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     });
   }
 
-  getObjects = memoize(
-    (objectMap: Map<string, VariableDefinition<VariableTypeUnion>>) => [
-      ...objectMap.values(),
-    ]
-  );
+  getObjects = memoize((objectMap: Map<string, VariableDefinition>) => [
+    ...objectMap.values(),
+  ]);
 
   getContextActions = memoize((actions: DropdownAction[]) => [
     ...actions,
