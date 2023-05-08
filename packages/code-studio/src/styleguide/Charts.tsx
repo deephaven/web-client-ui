@@ -4,7 +4,7 @@ import { useApi } from '@deephaven/jsapi-bootstrap';
 
 function Charts(): ReactElement {
   const dh = useApi();
-  const [model] = useState(new MockChartModel(dh));
+  const [model] = useState(() => new MockChartModel(dh));
 
   return (
     <div>

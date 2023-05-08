@@ -7,47 +7,20 @@
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx"],
   "exclude": ["node_modules", "src/**/*.test.*", "src/**/__mocks__/*"],
   "references": [
-    {
-      "path": "../chart"
-    },
-    {
-      "path": "../components"
-    },
-    {
-      "path": "../console"
-    },
-    {
-      "path": "../dashboard"
-    },
-    {
-      "path": "../file-explorer"
-    },
-    {
-      "path": "../filters"
-    },
-    {
-      "path": "../golden-layout"
-    },
-    {
-      "path": "../grid"
-    },
-    {
-      "path": "../iris-grid"
-    },
-    {
-      "path": "../jsapi-bootstrap"
-    },
-    {
-      "path": "../jsapi-shim"
-    },
-    {
-      "path": "../log"
-    },
-    {
-      "path": "../react-hooks"
-    },
-    {
-      "path": "../redux"
-    }
+    { "path": "../chart" },
+    { "path": "../components" },
+    { "path": "../console" },
+    { "path": "../dashboard" },
+    { "path": "../file-explorer" },
+    { "path": "../filters" },
+    { "path": "../golden-layout" },
+    { "path": "../grid" },
+    { "path": "../iris-grid" },
+    { "path": "../jsapi-bootstrap" },
+    { "path": "../jsapi-shim" },
+    { "path": "../jsapi-types" },
+    { "path": "../log" },
+    { "path": "../react-hooks" },
+    { "path": "../redux" }
   ]
 }
