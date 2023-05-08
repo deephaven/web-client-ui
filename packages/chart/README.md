@@ -14,5 +14,5 @@ Then, import and use the component from the package:
 import { Chart } from '@deephaven/chart';
 
 // In your render function
-<Chart model={model} />
+<Chart dh={dh} model={model} />
 ```

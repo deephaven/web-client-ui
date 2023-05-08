@@ -10,7 +10,7 @@ function Charts(): ReactElement {
     <div>
       <h2 className="ui-title">Chart</h2>
       <div style={{ height: 500 }}>
-        <Chart model={model as ChartModel} />
+        <Chart dh={dh} model={model as ChartModel} />
       </div>
     </div>
   );

@@ -1056,6 +1056,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     } = this.props;
     const {
       columnMap,
+      dh,
       filterMap,
       error,
       model,
@@ -1123,8 +1124,9 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
           className="chart-panel-container h-100 w-100"
         >
           <div className="chart-container h-100 w-100">
-            {isLoaded && model && (
+            {isLoaded && model && dh && (
               <Chart
+                dh={dh}
                 isActive={isActive}
                 model={model}
                 settings={settings}

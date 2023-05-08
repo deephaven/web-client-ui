@@ -57,7 +57,7 @@ const optionsUseDefaults: UseViewportDataProps<unknown, Table> = {
 };
 
 const wrapper = ({ children }) => (
-  <ApiContext.Provider value={dh}> {children} </ApiContext.Provider>
+  <ApiContext.Provider value={dh}>{children}</ApiContext.Provider>
 );
 
 beforeEach(() => {
@@ -82,12 +82,12 @@ it.each([options, optionsUseDefaults])(
 );
 
 it('should return table', () => {
-  const { result } = renderHook(() => useViewportData(options));
+  const { result } = renderHook(() => useViewportData(options), { wrapper });
   expect(result.current.table).toBe(options.table);
 });
 
 it('should return a callback that can apply filters and refresh viewport', () => {
-  const { result } = renderHook(() => useViewportData(options));
+  const { result } = renderHook(() => useViewportData(options), { wrapper });
   jest.clearAllMocks();
 
   const filters: FilterCondition[] = [];
@@ -102,7 +102,7 @@ it('should return a callback that can apply filters and refresh viewport', () =>
 });
 
 it('should set viewport if table size changes', () => {
-  const { rerender } = renderHook(() => useViewportData(options));
+  const { rerender } = renderHook(() => useViewportData(options), { wrapper });
   jest.clearAllMocks();
 
   rerender();
@@ -120,6 +120,7 @@ it('should set viewport if table reference changes', () => {
     t => useViewportData({ ...options, table: t }),
     {
       initialProps: table,
+      wrapper,
     }
   );
   jest.clearAllMocks();

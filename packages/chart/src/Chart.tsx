@@ -7,6 +7,7 @@ import {
   dhWarningFilled,
   IconDefinition,
 } from '@deephaven/icons';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
   Formatter,
   FormatterUtils,
@@ -35,6 +36,7 @@ type FormatterSettings = ColumnFormatSettings &
   };
 
 interface ChartProps {
+  dh: DhType;
   model: ChartModel;
   settings: FormatterSettings;
   isActive: boolean;
@@ -505,7 +507,9 @@ export class Chart extends Component<ChartProps, ChartState> {
   }
 
   updateFormatter(): void {
+    const { dh } = this.props;
     const formatter = new Formatter(
+      dh,
       this.columnFormats,
       this.dateTimeFormatterOptions,
       this.decimalFormatOptions,

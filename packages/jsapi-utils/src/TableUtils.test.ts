@@ -77,7 +77,7 @@ describe('applyCustomColumns', () => {
         'executeAndWaitForEvent'
       );
 
-      TableUtils.applyCustomColumns(table, columns, timeout);
+      tableUtils.applyCustomColumns(table, columns, timeout);
 
       expect(TableUtils.executeAndWaitForEvent).toHaveBeenCalledWith(
         expect.any(Function),
@@ -105,7 +105,7 @@ describe('applyFilter', () => {
         'executeAndWaitForEvent'
       );
 
-      TableUtils.applyFilter(table, filters, timeout);
+      tableUtils.applyFilter(table, filters, timeout);
 
       expect(TableUtils.executeAndWaitForEvent).toHaveBeenCalledWith(
         expect.any(Function),
@@ -143,7 +143,7 @@ describe.each([undefined, 400])('applyNeverFilter - timeout: %s', timeout => {
     'should resolve to null when not given a table: %s',
     async notTable => {
       const columnName = 'mock.column';
-      const result = await TableUtils.applyNeverFilter(
+      const result = await tableUtils.applyNeverFilter(
         notTable,
         columnName,
         timeout
@@ -154,12 +154,12 @@ describe.each([undefined, 400])('applyNeverFilter - timeout: %s', timeout => {
 
   it('should call TableUtils.applyFilter with a "never filter": %s', async () => {
     const applyFilter = jest
-      .spyOn(TableUtils, 'applyFilter')
+      .spyOn(TableUtils.prototype, 'applyFilter')
       .mockResolvedValue(table);
 
     const columnName = 'mock.column';
 
-    const result = await TableUtils.applyNeverFilter(
+    const result = await tableUtils.applyNeverFilter(
       table,
       columnName,
       timeout
@@ -187,7 +187,7 @@ describe('applySort', () => {
         'executeAndWaitForEvent'
       );
 
-      TableUtils.applySort(table, sorts, timeout);
+      tableUtils.applySort(table, sorts, timeout);
 
       expect(TableUtils.executeAndWaitForEvent).toHaveBeenCalledWith(
         expect.any(Function),
