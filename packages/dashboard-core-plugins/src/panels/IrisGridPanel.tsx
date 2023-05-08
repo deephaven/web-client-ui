@@ -126,7 +126,6 @@ export interface PanelState {
 
 export interface IrisGridPanelProps {
   children?: ReactNode;
-  dh: DhType;
   glContainer: Container;
   glEventHub: EventEmitter;
   metadata: Metadata;
@@ -247,7 +246,7 @@ export class IrisGridPanel extends PureComponent<
     this.irisGrid = React.createRef();
     this.pluginRef = React.createRef();
 
-    const { panelState, dh } = props;
+    const { panelState } = props;
 
     this.pluginState = null;
     this.dh = null;

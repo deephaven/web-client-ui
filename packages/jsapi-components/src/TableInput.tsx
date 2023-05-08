@@ -11,7 +11,7 @@ import {
   SearchInput,
   SelectValueList,
 } from '@deephaven/components';
-import { LongWrapper, Table } from '@deephaven/jsapi-types';
+import type { LongWrapper, Table } from '@deephaven/jsapi-types';
 import { PromiseUtils } from '@deephaven/utils';
 import Log from '@deephaven/log';
 import { Formatter, FormatterUtils, Settings } from '@deephaven/jsapi-utils';

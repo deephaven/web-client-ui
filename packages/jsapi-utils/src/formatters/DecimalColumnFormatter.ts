@@ -1,5 +1,5 @@
 /* eslint class-methods-use-this: "off" */
-import { dh as DhType } from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import TableColumnFormatter, {
   TableColumnFormat,

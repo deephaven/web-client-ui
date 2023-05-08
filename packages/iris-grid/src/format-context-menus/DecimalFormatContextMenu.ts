@@ -2,7 +2,7 @@ import {
   DecimalColumnFormat,
   DecimalColumnFormatter,
 } from '@deephaven/jsapi-utils';
-import { dh as DhType } from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import FormatContextMenuUtils, {
   FormatContextMenuOption,
 } from './FormatContextMenuUtils';

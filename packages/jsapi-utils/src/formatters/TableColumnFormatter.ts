@@ -4,7 +4,7 @@
  * Extend this class and register with TableUtils to make use of it.
  */
 
-import { dh as DhType } from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 
 export type TableColumnFormatType =
   | 'type-global'

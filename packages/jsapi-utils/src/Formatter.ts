@@ -1,4 +1,4 @@
-import { dh as DhType } from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import TableUtils, { DataType } from './TableUtils';
 import {
   BooleanColumnFormatter,
