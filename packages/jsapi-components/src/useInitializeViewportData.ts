@@ -15,7 +15,8 @@ import useTableSize from './useTableSize';
  * source table. This is intended for "human" sized tables such as those used in
  * admin panels. This is not suitable for "machine" scale with millions+ rows.
  * @param table The table that will be used to determine the list size.
- * @returns
+ * @returns a React Stately ListData object. Note that this object is recreated
+ * by React Stately on every render.
  */
 export default function useInitializeViewportData<T>(
   table: Table | TreeTable | null
