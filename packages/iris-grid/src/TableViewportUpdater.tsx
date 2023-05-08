@@ -2,13 +2,13 @@ import { PureComponent } from 'react';
 import memoize from 'memoize-one';
 import throttle from 'lodash.throttle';
 import { GridUtils, MoveOperation } from '@deephaven/grid';
-import {
+import type {
   Column,
   FilterCondition,
   Sort,
   Table,
   TableViewportSubscription,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { ColumnName } from './CommonTypes';
 

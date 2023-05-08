@@ -1,5 +1,6 @@
 import { GridUtils, GridRange, MoveOperation } from '@deephaven/grid';
-import dh, { Column, Table, Sort } from '@deephaven/jsapi-shim';
+import dh from '@deephaven/jsapi-shim';
+import type { Column, Table, Sort } from '@deephaven/jsapi-types';
 import { TypeValue as FilterTypeValue } from '@deephaven/filters';
 import { DateUtils } from '@deephaven/jsapi-utils';
 import type { AdvancedFilter } from './CommonTypes';
@@ -9,6 +10,8 @@ import IrisGridUtils, {
   DehydratedSort,
   LegacyDehydratedSort,
 } from './IrisGridUtils';
+
+const irisGridUtils = new IrisGridUtils(dh);
 
 function makeFilter() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -49,7 +52,7 @@ describe('quickfilters tests', () => {
     const exportedFilters = IrisGridUtils.dehydrateQuickFilters(filters);
     expect(exportedFilters).toEqual([]);
 
-    const importedFilters = IrisGridUtils.hydrateQuickFilters(
+    const importedFilters = irisGridUtils.hydrateQuickFilters(
       table.columns,
       exportedFilters
     );
@@ -68,7 +71,7 @@ describe('quickfilters tests', () => {
       [column, expect.objectContaining({ text })],
     ]);
 
-    const importedFilters = IrisGridUtils.hydrateQuickFilters(
+    const importedFilters = irisGridUtils.hydrateQuickFilters(
       table.columns,
       exportedFilters
     );
@@ -90,13 +93,13 @@ describe('advanced filter tests', () => {
   it('exports/imports empty list', () => {
     const table = makeTable();
     const filters = new Map();
-    const exportedFilters = IrisGridUtils.dehydrateAdvancedFilters(
+    const exportedFilters = irisGridUtils.dehydrateAdvancedFilters(
       table.columns,
       filters
     );
     expect(exportedFilters).toEqual([]);
 
-    const importedFilters = IrisGridUtils.hydrateAdvancedFilters(
+    const importedFilters = irisGridUtils.hydrateAdvancedFilters(
       table.columns,
       exportedFilters,
       'America/New_York'
@@ -116,7 +119,7 @@ describe('advanced filter tests', () => {
     };
     const filters = new Map([[column, { filter, options }]]);
 
-    const exportedFilters = IrisGridUtils.dehydrateAdvancedFilters(
+    const exportedFilters = irisGridUtils.dehydrateAdvancedFilters(
       table.columns,
       filters as Map<number, AdvancedFilter>
     );
@@ -124,7 +127,7 @@ describe('advanced filter tests', () => {
       [column, expect.objectContaining({ options })],
     ]);
 
-    const importedFilters = IrisGridUtils.hydrateAdvancedFilters(
+    const importedFilters = irisGridUtils.hydrateAdvancedFilters(
       table.columns,
       exportedFilters,
       'America/New_York'
@@ -150,7 +153,7 @@ describe('sort exporting/importing', () => {
     const exportedSort = IrisGridUtils.dehydrateSort(sort);
     expect(exportedSort).toEqual([]);
 
-    const importedSort = IrisGridUtils.hydrateSort(table.columns, exportedSort);
+    const importedSort = irisGridUtils.hydrateSort(table.columns, exportedSort);
     expect(importedSort).toEqual(sort);
   });
 
@@ -184,7 +187,7 @@ describe('sort exporting/importing', () => {
       ['current', dehydratedSorts],
       ['legacy', legacyDehydratedSorts],
     ])('%s', (_label, sorts) => {
-      const importedSort = IrisGridUtils.hydrateSort(table.columns, sorts);
+      const importedSort = irisGridUtils.hydrateSort(table.columns, sorts);
 
       expect(importedSort).toEqual([
         expect.objectContaining({
@@ -206,13 +209,13 @@ describe('pendingDataMap hydration/dehydration', () => {
   it('dehydrates/hydrates empty map', () => {
     const pendingDataMap = new Map();
     const columns = makeColumns();
-    const dehydratedMap = IrisGridUtils.dehydratePendingDataMap(
+    const dehydratedMap = irisGridUtils.dehydratePendingDataMap(
       columns,
       pendingDataMap
     );
     expect(dehydratedMap).toEqual([]);
 
-    const hydratedMap = IrisGridUtils.hydratePendingDataMap(
+    const hydratedMap = irisGridUtils.hydratePendingDataMap(
       columns,
       dehydratedMap
     );
@@ -238,7 +241,7 @@ describe('pendingDataMap hydration/dehydration', () => {
       ],
     ]);
     const columns = makeColumns();
-    const dehydratedMap = IrisGridUtils.dehydratePendingDataMap(
+    const dehydratedMap = irisGridUtils.dehydratePendingDataMap(
       columns,
       pendingDataMap
     );
@@ -260,7 +263,7 @@ describe('pendingDataMap hydration/dehydration', () => {
       ],
     ]);
 
-    const hydratedMap = IrisGridUtils.hydratePendingDataMap(
+    const hydratedMap = irisGridUtils.hydratePendingDataMap(
       columns,
       dehydratedMap
     );

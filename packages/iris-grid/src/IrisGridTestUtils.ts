@@ -1,17 +1,18 @@
 import { GridRangeIndex, ModelSizeMap } from '@deephaven/grid';
-import dh, {
+import type {
   Column,
+  dh as DhType,
   FilterCondition,
   InputTable,
+  LayoutHints,
   RollupConfig,
   Row,
   Sort,
   Table,
   TableViewportSubscription,
   TreeTable,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
-import type { LayoutHints } from '@deephaven/jsapi-shim';
 import IrisGridProxyModel from './IrisGridProxyModel';
 
 class IrisGridTestUtils {
@@ -120,11 +121,12 @@ class IrisGridTestUtils {
   }
 
   static makeModel(
+    dh: DhType,
     table = IrisGridTestUtils.makeTable(),
     formatter = new Formatter(),
     inputTable: InputTable | null = null
   ): IrisGridProxyModel {
-    return new IrisGridProxyModel(table, formatter, inputTable);
+    return new IrisGridProxyModel(dh, table, formatter, inputTable);
   }
 }
 

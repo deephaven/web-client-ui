@@ -1,7 +1,11 @@
 /* eslint react/no-did-update-set-state: "off" */
 import React, { PureComponent } from 'react';
 import { CSSTransition } from 'react-transition-group';
-import dh, { FilterCondition, Table } from '@deephaven/jsapi-shim';
+import type {
+  dh as DhType,
+  FilterCondition,
+  Table,
+} from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
 import {
   LoadingSpinner,
@@ -13,6 +17,7 @@ import Log from '@deephaven/log';
 const log = Log.module('AdvancedFilterCreatorSelectValueList');
 
 interface AdvancedFilterCreatorSelectValueListProps<T> {
+  dh: DhType;
   selectedValues: T[];
   table?: Table;
   filters: FilterCondition[];
@@ -73,9 +78,10 @@ class AdvancedFilterCreatorSelectValueList<T = unknown> extends PureComponent<
     this.handleSelectionUpdate = this.handleSelectionUpdate.bind(this);
     this.handleTableUpdate = this.handleTableUpdate.bind(this);
 
-    this.list = null;
+    const { selectedValues, dh } = this.props;
 
-    const { selectedValues } = this.props;
+    this.dh = dh;
+    this.list = null;
 
     this.state = {
       itemCount: 0,
@@ -119,6 +125,8 @@ class AdvancedFilterCreatorSelectValueList<T = unknown> extends PureComponent<
     const { table } = this.props;
     if (table) this.stopListening(table);
   }
+
+  dh: DhType;
 
   list: SelectValueList<T> | null;
 
@@ -207,11 +215,14 @@ class AdvancedFilterCreatorSelectValueList<T = unknown> extends PureComponent<
   }
 
   startListening(table: Table): void {
-    table.addEventListener(dh.Table.EVENT_UPDATED, this.handleTableUpdate);
+    table.addEventListener(this.dh.Table.EVENT_UPDATED, this.handleTableUpdate);
   }
 
   stopListening(table: Table): void {
-    table.removeEventListener(dh.Table.EVENT_UPDATED, this.handleTableUpdate);
+    table.removeEventListener(
+      this.dh.Table.EVENT_UPDATED,
+      this.handleTableUpdate
+    );
   }
 
   resetViewport(): void {

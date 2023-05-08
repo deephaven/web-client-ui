@@ -1,13 +1,14 @@
 /* eslint-disable react/require-default-props */
 /* eslint-disable no-param-reassign */
 import React, { useEffect, useMemo } from 'react';
-import dh, {
+import type {
   Column,
   CustomColumn,
+  dh as DhType,
   FilterCondition,
   RollupConfig,
   Sort,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import { ModelIndex, MoveOperation } from '@deephaven/grid';
 import { Formatter, ReverseType, TableUtils } from '@deephaven/jsapi-utils';
 import { EMPTY_ARRAY, EMPTY_MAP } from '@deephaven/utils';
@@ -19,6 +20,7 @@ import type ColumnHeaderGroup from './ColumnHeaderGroup';
 const COLUMN_BUFFER_PAGES = 1;
 
 interface IrisGridModelUpdaterProps {
+  dh: DhType;
   model: IrisGridModel;
   modelColumns: readonly Column[];
   top: number;
@@ -48,6 +50,7 @@ interface IrisGridModelUpdaterProps {
  */
 const IrisGridModelUpdater = React.memo(
   ({
+    dh,
     model,
     modelColumns,
     top,
@@ -106,7 +109,7 @@ const IrisGridModelUpdater = React.memo(
         }
         model.sort = sortsForModel;
       },
-      [model, sorts, reverseType]
+      [dh, model, sorts, reverseType]
     );
     useEffect(
       function updateFormatter() {

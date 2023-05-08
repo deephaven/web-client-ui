@@ -1,9 +1,10 @@
 import { ChartModel, ChartModelFactory } from '@deephaven/chart';
-import dh, {
+import {
+  dh as DhType,
   Table,
   VariableTypeUnion,
   IdeConnection,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import {
   IrisGridModel,
   IrisGridModelFactory,
@@ -21,6 +22,7 @@ export type GridPanelMetadata = {
 };
 
 export const createChartModel = async (
+  dh: DhType,
   connection: IdeConnection,
   metadata: ChartPanelMetadata,
   panelState?: GLChartPanelState
@@ -76,8 +78,7 @@ export const createChartModel = async (
     type: dh.VariableType.TABLE,
   };
   const table = await connection.getObject(definition);
-
-  IrisGridUtils.applyTableSettings(
+  new IrisGridUtils(dh).applyTableSettings(
     table,
     tableSettings,
     getTimeZone(store.getState())
@@ -88,6 +89,7 @@ export const createChartModel = async (
 };
 
 export const createGridModel = async (
+  dh: DhType,
   connection: IdeConnection,
   metadata: GridPanelMetadata,
   type: VariableTypeUnion = dh.VariableType.TABLE
@@ -95,7 +97,7 @@ export const createGridModel = async (
   const { table: tableName } = metadata;
   const definition = { title: tableName, name: tableName, type };
   const table = (await connection.getObject(definition)) as Table;
-  return IrisGridModelFactory.makeModel(table);
+  return IrisGridModelFactory.makeModel(dh, table);
 };
 
 export default { createChartModel, createGridModel };

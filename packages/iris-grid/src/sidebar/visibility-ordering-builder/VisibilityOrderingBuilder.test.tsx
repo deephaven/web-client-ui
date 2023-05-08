@@ -4,7 +4,8 @@ import userEvent from '@testing-library/user-event';
 import { GridUtils } from '@deephaven/grid';
 import type { MoveOperation } from '@deephaven/grid';
 import { assertNotNull, TestUtils } from '@deephaven/utils';
-import type { ColumnGroup } from '@deephaven/jsapi-shim';
+import dh from '@deephaven/jsapi-shim';
+import type { ColumnGroup } from '@deephaven/jsapi-types';
 import VisibilityOrderingBuilder from './VisibilityOrderingBuilder';
 import IrisGridTestUtils from '../../IrisGridTestUtils';
 import ColumnHeaderGroup from '../../ColumnHeaderGroup';
@@ -89,12 +90,14 @@ function BuilderWithNestedGroups({
 
 function makeModel() {
   return IrisGridTestUtils.makeModel(
+    dh,
     IrisGridTestUtils.makeTable({ columns: COLUMNS })
   );
 }
 
 function makeModelWithGroups(groups = COLUMN_HEADER_GROUPS) {
   return IrisGridTestUtils.makeModel(
+    dh,
     IrisGridTestUtils.makeTable({
       columns: COLUMNS,
       layoutHints: { columnGroups: groups },
@@ -155,6 +158,7 @@ test('Renders all children', () => {
 
 test('Renders immovable items', () => {
   const model = IrisGridTestUtils.makeModel(
+    dh,
     IrisGridTestUtils.makeTable({
       columns: COLUMNS,
       layoutHints: {
@@ -178,6 +182,7 @@ test('Renders immovable items', () => {
 
 test('Renders a grid of only immovable items', () => {
   const model = IrisGridTestUtils.makeModel(
+    dh,
     IrisGridTestUtils.makeTable({
       columns: IrisGridTestUtils.makeColumns(1, COLUMN_PREFIX),
       layoutHints: {

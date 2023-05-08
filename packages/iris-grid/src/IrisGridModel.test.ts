@@ -1,11 +1,11 @@
 import { waitFor } from '@testing-library/react';
-import {
+import type {
   InputTable,
   Table,
   TableViewportSubscription,
   TotalsTable,
   TreeTable,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
 import IrisGridModel from './IrisGridModel';
 import IrisGridTestUtils from './IrisGridTestUtils';
@@ -27,7 +27,7 @@ describe('viewport and subscription tests', () => {
     table.applyCustomColumns = jest.fn(val => val as string[]);
     subscription.setViewport = jest.fn();
     subscription.close = jest.fn();
-    model = IrisGridTestUtils.makeModel(table);
+    model = IrisGridTestUtils.makeModel(dh, table);
   });
 
   it('applies viewport to existing subscription', () => {
@@ -133,7 +133,7 @@ it('updates the model correctly when adding and removing a rollup config', async
   );
 
   table.rollup = mock;
-  const model = IrisGridTestUtils.makeModel(table);
+  const model = IrisGridTestUtils.makeModel(dh, table);
 
   expect(mock).not.toHaveBeenCalled();
 
@@ -151,7 +151,7 @@ it('updates the model correctly when adding and removing a rollup config', async
 it('closes the table correctly when the model is closed', () => {
   const table = IrisGridTestUtils.makeTable();
   table.close = jest.fn();
-  const model = IrisGridTestUtils.makeModel(table);
+  const model = IrisGridTestUtils.makeModel(dh, table);
 
   model.close();
 
@@ -177,7 +177,7 @@ describe('totals table tests', () => {
     table.getTotalsTable = jest.fn(() => Promise.resolve(totalsTable));
     totalsTable.close = jest.fn();
 
-    model = IrisGridTestUtils.makeModel(table);
+    model = IrisGridTestUtils.makeModel(dh, table);
   });
 
   it('opens a totals table correctly and closes it when done', async () => {
@@ -228,7 +228,7 @@ describe('pending new rows tests', () => {
 
     inputTable = IrisGridTestUtils.makeInputTable(table.columns.slice(0, 3));
 
-    model = IrisGridTestUtils.makeModel(table, new Formatter(), inputTable);
+    model = IrisGridTestUtils.makeModel(dh, table, new Formatter(), inputTable);
     model.pendingRowCount = PENDING_ROW_COUNT;
   });
 

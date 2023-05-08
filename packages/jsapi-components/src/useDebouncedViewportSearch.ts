@@ -1,6 +1,7 @@
 import debounce from 'lodash.debounce';
 import type { Table, TreeTable } from '@deephaven/jsapi-types';
 import { TableUtils } from '@deephaven/jsapi-utils';
+import { useApi } from '@deephaven/jsapi-bootstrap';
 import { useEffect, useMemo } from 'react';
 import { UseViewportDataResult } from './useViewportData';
 
@@ -21,6 +22,8 @@ export default function useDebouncedViewportSearch<
   columnName: string,
   debounceMs = DEBOUNCE_VIEWPORT_SEARCH_MS
 ): (searchText: string) => void {
+  const dh = useApi();
+  const tableUtils = useMemo(() => new TableUtils(dh), [dh]);
   const debouncedSearch = useMemo(
     () =>
       debounce((searchText: string) => {
@@ -36,7 +39,7 @@ export default function useDebouncedViewportSearch<
         }
 
         const column = viewportData.table.findColumn(columnName);
-        const value = TableUtils.makeFilterValue(
+        const value = tableUtils.makeFilterValue(
           column.type,
           searchTextTrimmed
         );
@@ -44,7 +47,7 @@ export default function useDebouncedViewportSearch<
 
         viewportData.applyFiltersAndRefresh(filter);
       }, debounceMs),
-    [columnName, debounceMs, viewportData]
+    [columnName, debounceMs, tableUtils, viewportData]
   );
 
   useEffect(

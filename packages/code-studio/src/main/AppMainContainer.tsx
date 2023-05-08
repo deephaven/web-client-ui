@@ -755,7 +755,8 @@ export class AppMainContainer extends Component<
       getDownloadWorker: DownloadServiceWorkerUtils.getServiceWorker,
       loadPlugin: this.handleLoadTablePlugin,
       localDashboardId: id,
-      makeModel: () => createGridModel(connection, props.metadata, type),
+      makeApi: () => Promise.resolve(dh),
+      makeModel: () => createGridModel(dh, connection, props.metadata, type),
     };
   }
 
@@ -767,7 +768,7 @@ export class AppMainContainer extends Component<
       makeApi: () => Promise.resolve(dh),
       makeModel: () => {
         const { metadata, panelState } = props;
-        return createChartModel(connection, metadata, panelState);
+        return createChartModel(dh, connection, metadata, panelState);
       },
     };
   }

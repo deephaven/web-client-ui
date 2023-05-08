@@ -3,13 +3,18 @@ import React, { PureComponent } from 'react';
 import { CSSTransition } from 'react-transition-group';
 import classNames from 'classnames';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
-import { FilterCondition, Table } from '@deephaven/jsapi-shim';
+import type {
+  dh as DhType,
+  FilterCondition,
+  Table,
+} from '@deephaven/jsapi-types';
 import { Button } from '@deephaven/components';
 import AdvancedFilterCreatorSelectValueList from './AdvancedFilterCreatorSelectValueList';
 import './AdvancedFilterCreatorSelectValue.scss';
 import { ColumnName } from './CommonTypes';
 
 interface AdvancedFilterCreatorSelectValueProps<T> {
+  dh: DhType;
   invertSelection: boolean;
   selectedValues: T[];
   table?: Table;
@@ -50,7 +55,9 @@ class AdvancedFilterCreatorSelectValue<T = unknown> extends PureComponent<
     this.handleSearchChange = this.handleSearchChange.bind(this);
     this.handleUpdateFilterTimeout = this.handleUpdateFilterTimeout.bind(this);
 
-    const { invertSelection, selectedValues } = props;
+    const { dh, invertSelection, selectedValues } = props;
+
+    this.tableUtils = new TableUtils(dh);
 
     this.state = {
       filters: [],
@@ -108,6 +115,8 @@ class AdvancedFilterCreatorSelectValue<T = unknown> extends PureComponent<
   }
 
   searchTablePromise?: Promise<Table>;
+
+  tableUtils: TableUtils;
 
   updateFilterTimer?: ReturnType<typeof setTimeout>;
 
@@ -223,6 +232,7 @@ class AdvancedFilterCreatorSelectValue<T = unknown> extends PureComponent<
   updateTableFilter(): void {
     const { table, searchText } = this.state;
     const { timeZone } = this.props;
+    const { tableUtils } = this;
     const column = table?.columns[0];
     const filters = [];
     if (column == null) {
@@ -233,14 +243,14 @@ class AdvancedFilterCreatorSelectValue<T = unknown> extends PureComponent<
       let filter = null;
       if (TableUtils.isCharType(column.type)) {
         // Just exact match for char
-        filter = TableUtils.makeQuickFilter(column, searchText);
+        filter = tableUtils.makeQuickFilter(column, searchText);
       } else if (TableUtils.isTextType(column.type)) {
         // case insensitive & contains search text
-        filter = TableUtils.makeQuickFilter(column, `~${searchText}`, timeZone);
+        filter = tableUtils.makeQuickFilter(column, `~${searchText}`, timeZone);
       } else {
         // greater than or equal search for everything else
         // we may want to be smarter with some other types (like dates)
-        filter = TableUtils.makeQuickFilter(
+        filter = tableUtils.makeQuickFilter(
           column,
           `>=${searchText}`,
           timeZone
@@ -266,7 +276,7 @@ class AdvancedFilterCreatorSelectValue<T = unknown> extends PureComponent<
       searchText,
       table,
     } = this.state;
-    const { formatter, showSearch } = this.props;
+    const { dh, formatter, showSearch } = this.props;
     const columnName = this.getColumnName();
     const displayedValuesText = this.getDisplayedValueText();
     const placeholderText = columnName ? `Find ${columnName}...` : '';
@@ -291,6 +301,7 @@ class AdvancedFilterCreatorSelectValue<T = unknown> extends PureComponent<
           )}
         </div>
         <AdvancedFilterCreatorSelectValueList
+          dh={dh}
           table={table}
           filters={filters}
           invertSelection={invertSelection}

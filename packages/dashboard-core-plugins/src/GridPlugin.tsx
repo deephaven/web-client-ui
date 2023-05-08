@@ -54,8 +54,11 @@ export function GridPlugin(props: GridPluginProps): JSX.Element | null {
       }
 
       const metadata = { name, table: name, type: widget.type };
+      const makeApi = () => Promise.resolve(dh);
       const makeModel = () =>
-        fetch().then((table: Table) => IrisGridModelFactory.makeModel(table));
+        fetch().then((table: Table) =>
+          IrisGridModelFactory.makeModel(dh, table)
+        );
       const config = {
         type: 'react-component' as const,
         component: IrisGridPanel.COMPONENT,
@@ -65,6 +68,7 @@ export function GridPlugin(props: GridPluginProps): JSX.Element | null {
           localDashboardId: id,
           id: panelId,
           metadata,
+          makeApi,
           makeModel,
           theme,
         },

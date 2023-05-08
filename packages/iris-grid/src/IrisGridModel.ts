@@ -19,7 +19,7 @@ import type {
   Sort,
   Table,
   ValueTypeUnion,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
 import {
   ColumnName,

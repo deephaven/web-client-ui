@@ -1,4 +1,5 @@
-import { Column } from '@deephaven/jsapi-shim';
+import dh from '@deephaven/jsapi-shim';
+import type { Column } from '@deephaven/jsapi-types';
 import IrisGridTestUtils from '../../IrisGridTestUtils';
 import {
   DateCondition,
@@ -16,7 +17,7 @@ jest.mock('./ConditionalFormattingAPIUtils', () => ({
       `${rule.column.name} - ${rule.style.type} : ${prevRule}`
   ),
   makeColumnFormatColumn: jest.fn((col, rule) => `[col] ${rule}`),
-  makeRowFormatColumn: jest.fn(rule => `[row] ${rule}`),
+  makeRowFormatColumn: jest.fn((_dh, rule) => `[row] ${rule}`),
 }));
 
 describe('getFormatColumns', () => {
@@ -47,12 +48,12 @@ describe('getFormatColumns', () => {
   }
 
   it('returns empty array for empty rules array', () => {
-    expect(getFormatColumns(makeColumns(), [])).toEqual([]);
+    expect(getFormatColumns(dh, makeColumns(), [])).toEqual([]);
   });
 
   it('returns mocked formatColumn for a given config', () => {
     expect(
-      getFormatColumns(makeColumns(), [
+      getFormatColumns(dh, makeColumns(), [
         makeFormatRule({
           columnName: '0',
           styleType: FormatStyleType.POSITIVE,
@@ -63,7 +64,7 @@ describe('getFormatColumns', () => {
 
   it('ignores rules referring to missing columns', () => {
     expect(
-      getFormatColumns(makeColumns(1), [
+      getFormatColumns(dh, makeColumns(1), [
         makeFormatRule({
           columnName: '2',
           styleType: FormatStyleType.POSITIVE,
@@ -82,7 +83,7 @@ describe('getFormatColumns', () => {
 
   it('stacks multiple rules for the same column in the correct order', () => {
     expect(
-      getFormatColumns(makeColumns(), [
+      getFormatColumns(dh, makeColumns(), [
         makeFormatRule({
           columnName: '0',
           styleType: FormatStyleType.POSITIVE,
@@ -99,7 +100,7 @@ describe('getFormatColumns', () => {
 
   it('returns one rule stack for each column', () => {
     expect(
-      getFormatColumns(makeColumns(), [
+      getFormatColumns(dh, makeColumns(), [
         makeFormatRule({
           columnName: '0',
           styleType: FormatStyleType.POSITIVE,
@@ -125,7 +126,7 @@ describe('getFormatColumns', () => {
 
   it('keeps column/row rule stacks based on the same column separate', () => {
     expect(
-      getFormatColumns(makeColumns(), [
+      getFormatColumns(dh, makeColumns(), [
         makeFormatRule({
           columnName: '0',
           styleType: FormatStyleType.POSITIVE,
@@ -155,7 +156,7 @@ describe('getFormatColumns', () => {
 
   it('handles rules with mixed column order correctly', () => {
     expect(
-      getFormatColumns(makeColumns(), [
+      getFormatColumns(dh, makeColumns(), [
         makeFormatRule({
           columnName: '0',
           styleType: FormatStyleType.POSITIVE,
@@ -181,7 +182,7 @@ describe('getFormatColumns', () => {
 
   it('returns a single condition for multiple rules on the same column', () => {
     expect(
-      getFormatColumns(makeColumns(), [
+      getFormatColumns(dh, makeColumns(), [
         makeFormatRule({
           columnName: '0',
           formatterType: FormatterType.ROWS,
@@ -200,7 +201,7 @@ describe('getFormatColumns', () => {
 
   it('returns a single condition for row rules on different columns', () => {
     expect(
-      getFormatColumns(makeColumns(), [
+      getFormatColumns(dh, makeColumns(), [
         makeFormatRule({
           columnName: '0',
           formatterType: FormatterType.ROWS,
@@ -251,7 +252,7 @@ describe('isDateConditionValid', () => {
         values.empty,
         values.undefined,
       ])('should ignore value when not required: %s', testValue => {
-        expect(isDateConditionValid(condition, testValue)).toBeTruthy();
+        expect(isDateConditionValid(dh, condition, testValue)).toBeTruthy();
       });
     }
   );
@@ -268,7 +269,9 @@ describe('isDateConditionValid', () => {
         'should return true only if value is valid date format: %s, %s',
         (testValues, expected) => {
           [testValues].flat().forEach(value => {
-            expect(isDateConditionValid(condition, value)).toEqual(expected);
+            expect(isDateConditionValid(dh, condition, value)).toEqual(
+              expected
+            );
           });
         }
       );

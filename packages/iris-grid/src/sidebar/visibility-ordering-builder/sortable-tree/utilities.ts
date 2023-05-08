@@ -1,5 +1,5 @@
 import { arrayMove } from '@dnd-kit/sortable';
-import type { Column } from '@deephaven/jsapi-shim';
+import type { Column } from '@deephaven/jsapi-types';
 import { GridUtils, ModelIndex, MoveOperation } from '@deephaven/grid';
 import type ColumnHeaderGroup from '../../../ColumnHeaderGroup';
 import { isFlattenedTreeItem, ReadonlyTreeItems } from './types';

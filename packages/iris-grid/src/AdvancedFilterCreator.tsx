@@ -21,7 +21,7 @@ import {
 import { Button, ContextActionUtils } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
-import { Column, FilterCondition, Table } from '@deephaven/jsapi-shim';
+import type { Column, FilterCondition, Table } from '@deephaven/jsapi-types';
 import shortid from 'shortid';
 import AdvancedFilterCreatorFilterItem from './AdvancedFilterCreatorFilterItem';
 import AdvancedFilterCreatorSelectValue from './AdvancedFilterCreatorSelectValue';
@@ -53,6 +53,7 @@ interface AdvancedFilterCreatorProps {
   options: AdvancedFilterOptions;
   sortDirection: SortDirection;
   formatter: Formatter;
+  tableUtils: TableUtils;
 }
 
 interface AdvancedFilterItem {
@@ -409,7 +410,7 @@ class AdvancedFilterCreator extends PureComponent<
       invertSelection,
       selectedValues,
     } = this.state;
-    const { column, onFilterChange, model } = this.props;
+    const { column, onFilterChange, model, tableUtils } = this.props;
     const { formatter } = model;
 
     const items = filterItems.filter(
@@ -435,7 +436,7 @@ class AdvancedFilterCreator extends PureComponent<
       selectedValues,
     };
 
-    const filter = TableUtils.makeAdvancedFilter(
+    const filter = tableUtils.makeAdvancedFilter(
       column,
       options,
       formatter.timeZone
@@ -445,7 +446,7 @@ class AdvancedFilterCreator extends PureComponent<
   }
 
   render(): JSX.Element {
-    const { column, model, sortDirection, formatter } = this.props;
+    const { column, model, sortDirection, formatter, tableUtils } = this.props;
     const {
       filterItems,
       filterOperators,
@@ -475,6 +476,7 @@ class AdvancedFilterCreator extends PureComponent<
             selectedType={selectedType}
             value={value}
             formatter={formatter}
+            tableUtils={tableUtils}
           />
         );
         filterItemElements.push(element);
@@ -587,7 +589,8 @@ class AdvancedFilterCreator extends PureComponent<
             <>
               {!isBoolean && <hr />}
               <div className="form-group">
-                <AdvancedFilterCreatorSelectValue<unknown>
+                <AdvancedFilterCreatorSelectValue
+                  dh={dh}
                   table={valuesTable}
                   onChange={this.handleSelectValueChange}
                   invertSelection={invertSelection}

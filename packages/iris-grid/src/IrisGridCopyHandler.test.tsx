@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { GridTestUtils } from '@deephaven/grid';
 import { copyToClipboard } from '@deephaven/utils';
+import dh from '@deephaven/jsapi-shim';
 import IrisGridTestUtils from './IrisGridTestUtils';
 import IrisGridCopyHandler, { CopyOperation } from './IrisGridCopyHandler';
 
@@ -41,7 +42,7 @@ function makeCopyOperation(
 }
 
 function makeModel() {
-  const model = IrisGridTestUtils.makeModel();
+  const model = IrisGridTestUtils.makeModel(dh);
   model.textSnapshot = makeSnapshotFn();
   return model;
 }

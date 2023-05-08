@@ -13,7 +13,7 @@ import {
   GridUtils,
   VisibleIndex,
 } from '@deephaven/grid';
-import { Sort } from '@deephaven/jsapi-shim';
+import type { Sort } from '@deephaven/jsapi-types';
 import { TableUtils, ReverseType } from '@deephaven/jsapi-utils';
 import { assertNotNull, getOrThrow } from '@deephaven/utils';
 import {

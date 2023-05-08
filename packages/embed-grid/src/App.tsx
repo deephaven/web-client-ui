@@ -95,7 +95,7 @@ function App(): JSX.Element {
           const table = await loadTable(connection, name);
           // Create the `IrisGridModel` for use with the `IrisGrid` component
           log.debug(`Creating model...`);
-          const newModel = await IrisGridModelFactory.makeModel(table);
+          const newModel = await IrisGridModelFactory.makeModel(dh, table);
           setModel(newModel);
           log.debug('Table successfully loaded!');
         } catch (e: unknown) {
@@ -168,6 +168,7 @@ function App(): JSX.Element {
         <IrisGrid
           canCopy={canCopy}
           canDownloadCsv={canDownloadCsv}
+          dh={dh}
           model={model}
           inputFilters={inputFilters}
           sorts={sorts}

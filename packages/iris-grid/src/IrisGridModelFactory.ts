@@ -1,4 +1,4 @@
-import { Table, TreeTable } from '@deephaven/jsapi-shim';
+import type { dh as DhType, Table, TreeTable } from '@deephaven/jsapi-types';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import IrisGridModel from './IrisGridModel';
 import IrisGridProxyModel from './IrisGridProxyModel';
@@ -13,6 +13,7 @@ class IrisGridModelFactory {
    * @returns An IrisGridModel that uses the table provided
    */
   static async makeModel(
+    dh: DhType,
     table: Table | TreeTable,
     formatter = new Formatter()
   ): Promise<IrisGridModel> {
@@ -20,7 +21,7 @@ class IrisGridModelFactory {
     if (!TableUtils.isTreeTable(table) && table.hasInputTable) {
       inputTable = await table.inputTable();
     }
-    return new IrisGridProxyModel(table, formatter, inputTable);
+    return new IrisGridProxyModel(dh, table, formatter, inputTable);
   }
 }
 

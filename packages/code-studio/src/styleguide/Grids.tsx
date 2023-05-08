@@ -1,12 +1,13 @@
-import React, { PureComponent } from 'react';
+import React, { ReactElement, useState } from 'react';
 import {
   Grid,
+  GridThemeType,
   MockGridModel,
   MockTreeGridModel,
   ThemeContext,
-  GridThemeType,
 } from '@deephaven/grid';
 import { IrisGrid } from '@deephaven/iris-grid';
+import { useApi } from '@deephaven/jsapi-bootstrap';
 import MockIrisGridTreeModel from './MockIrisGridTreeModel';
 import StaticExample from './grid-examples/StaticExample';
 import QuadrillionExample from './grid-examples/QuadrillionExample';
@@ -14,40 +15,30 @@ import TreeExample from './grid-examples/TreeExample';
 import AsyncExample from './grid-examples/AsyncExample';
 import DataBarExample from './grid-examples/DataBarExample';
 
-type GridsState = {
-  irisGridModel: MockIrisGridTreeModel;
-  model: MockGridModel;
-  theme: Partial<GridThemeType>;
-  contextTheme: Partial<GridThemeType>;
-};
+function Grids(): ReactElement {
+  const [irisGridModel] = useState(
+    new MockIrisGridTreeModel(new MockTreeGridModel())
+  );
+  const [model] = useState(new MockGridModel());
+  const [theme] = useState<Partial<GridThemeType>>({ autoSelectRow: true });
+  const [contextTheme] = useState<Partial<GridThemeType>>({ rowHeight: 40 });
+  const dh = useApi();
 
-class Grids extends PureComponent<Record<string, never>, GridsState> {
-  constructor(props: Record<string, never>) {
-    super(props);
-
-    this.state = {
-      irisGridModel: new MockIrisGridTreeModel(new MockTreeGridModel()),
-      model: new MockGridModel(),
-      theme: { autoSelectRow: true },
-      contextTheme: { rowHeight: 40 },
-    };
-  }
-
-  render(): React.ReactElement {
-    const { contextTheme, irisGridModel, model, theme } = this.state;
-
-    return (
-      <div>
-        <ThemeContext.Provider value={contextTheme}>
-          <h2 className="ui-title">Grid</h2>
-          <div>
-            <Grid model={model} theme={theme} />
-          </div>
-          <h2 className="ui-title">Static Data</h2>
-          <div style={{ height: 200 }}>
-            <StaticExample />
-          </div>
-        </ThemeContext.Provider>
+  return (
+    <div>
+      <ThemeContext.Provider value={contextTheme}>
+        <h2 className="ui-title">Grid</h2>
+        <div>
+          <Grid model={model} theme={theme} />
+        </div>
+        <h2 className="ui-title">Static Data</h2>
+        <div style={{ height: 200 }}>
+          <StaticExample />
+        </div>
+        <h2 className="ui-title">Data Bar</h2>
+        <div style={{ height: 500 }}>
+          <DataBarExample />
+        </div>
         <h2 className="ui-title">Quadrillion rows and columns</h2>
         <div style={{ height: 500, position: 'relative' }}>
           <QuadrillionExample />
@@ -62,15 +53,11 @@ class Grids extends PureComponent<Record<string, never>, GridsState> {
         </div>
         <h2 className="ui-title">Iris Grid</h2>
         <div style={{ height: 500 }}>
-          <IrisGrid model={irisGridModel} />
+          <IrisGrid dh={dh} model={irisGridModel} />
         </div>
-        <h2 className="ui-title">Data Bar</h2>
-        <div style={{ height: 500 }}>
-          <DataBarExample />
-        </div>
-      </div>
-    );
-  }
+      </ThemeContext.Provider>
+    </div>
+  );
 }
 
 export default Grids;
