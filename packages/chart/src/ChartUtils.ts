@@ -5,13 +5,13 @@ import {
   TableColumnFormatter,
   TableUtils,
 } from '@deephaven/jsapi-utils';
-import {
+import type {
   Axis,
   AxisPosition,
   AxisType,
   Chart,
   DateWrapper,
-  dh as dhType,
+  dh as DhType,
   Figure,
   Holiday,
   LongWrapper,
@@ -528,11 +528,11 @@ class ChartUtils {
     return title;
   }
 
-  private dh: dhType;
+  private dh: DhType;
 
   private daysOfWeek: readonly string[];
 
-  constructor(dh: dhType) {
+  constructor(dh: DhType) {
     this.dh = dh;
     this.daysOfWeek = Object.freeze(dh.calendar.DayOfWeek.values());
   }

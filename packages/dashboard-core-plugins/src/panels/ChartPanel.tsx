@@ -27,12 +27,12 @@ import {
   DehydratedQuickFilter,
   LegacyDehydratedSort,
 } from '@deephaven/iris-grid';
-import {
-  dhType,
+import type {
+  dh as DhType,
   FigureDescriptor,
   SeriesPlotStyle,
   TableTemplate,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import { ThemeExport } from '@deephaven/components';
 import Log from '@deephaven/log';
 import {
@@ -125,7 +125,7 @@ export interface GLChartPanelState {
   figure?: string;
 }
 export interface ChartPanelProps {
-  makeApi: () => Promise<dhType>;
+  makeApi: () => Promise<DhType>;
   glContainer: Container;
   glEventHub: EventEmitter;
   metadata: ChartPanelMetadata;
@@ -149,7 +149,7 @@ export interface ChartPanelProps {
 }
 
 interface ChartPanelState {
-  dh: dhType | undefined;
+  dh: DhType | undefined;
   settings: Partial<ChartModelSettings>;
   error?: unknown;
   isActive: boolean;

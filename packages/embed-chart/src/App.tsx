@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Chart, ChartModel, ChartModelFactory } from '@deephaven/chart'; // chart is used to display Deephaven charts
 import { ContextMenuRoot, LoadingOverlay } from '@deephaven/components'; // Use the loading spinner from the Deephaven components package
-import { IdeConnection } from '@deephaven/jsapi-types'; // Import the shim to use the JS API
+import type { IdeConnection } from '@deephaven/jsapi-types'; // Import the shim to use the JS API
 import Log from '@deephaven/log';
 import './App.scss'; // Styles for in this app
 import { useApi } from '@deephaven/jsapi-bootstrap';

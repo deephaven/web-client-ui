@@ -1,4 +1,4 @@
-import { dh as dhType, Figure, Table } from '@deephaven/jsapi-types';
+import type { dh as DhType, Figure, Table } from '@deephaven/jsapi-types';
 import ChartUtils, { ChartModelSettings } from './ChartUtils';
 import FigureChartModel from './FigureChartModel';
 import ChartTheme from './ChartTheme';
@@ -22,7 +22,7 @@ class ChartModelFactory {
    * This causes TS issues in 1 or 2 spots. Once this is TS it can be returned to just FigureChartModel
    */
   static async makeModelFromSettings(
-    dh: dhType,
+    dh: DhType,
     settings: ChartModelSettings,
     table: Table,
     theme = ChartTheme
@@ -49,7 +49,7 @@ class ChartModelFactory {
    * @returns The Figure created with the settings provided
    */
   static async makeFigureFromSettings(
-    dh: dhType,
+    dh: DhType,
     settings: ChartModelSettings,
     table: Table
   ): Promise<Figure> {
@@ -84,7 +84,7 @@ class ChartModelFactory {
    * This causes TS issues in 1 or 2 spots. Once this is TS it can be returned to just FigureChartModel
    */
   static async makeModel(
-    dh: dhType,
+    dh: DhType,
     settings: ChartModelSettings | undefined,
     figure: Figure,
     theme = ChartTheme

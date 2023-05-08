@@ -2,10 +2,10 @@
 import memoize from 'memoizee';
 import debounce from 'lodash.debounce';
 import set from 'lodash.set';
-import {
+import type {
   Axis,
   Chart,
-  dh as dhType,
+  dh as DhType,
   Figure,
   OneClick,
   Series,
@@ -41,7 +41,7 @@ class FigureChartModel extends ChartModel {
    * @param settings Chart settings
    */
   constructor(
-    dh: dhType,
+    dh: DhType,
     figure: Figure,
     settings: Partial<ChartModelSettings> = {},
     theme: typeof ChartTheme = ChartTheme
@@ -92,7 +92,7 @@ class FigureChartModel extends ChartModel {
 
   chartUtils: ChartUtils;
 
-  dh: dhType;
+  dh: DhType;
 
   figure: Figure;
 
