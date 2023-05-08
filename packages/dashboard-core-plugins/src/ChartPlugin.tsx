@@ -8,7 +8,8 @@ import {
   PanelHydrateFunction,
   useListener,
 } from '@deephaven/dashboard';
-import { Figure, VariableDefinition } from '@deephaven/jsapi-shim';
+import type { Figure, VariableDefinition } from '@deephaven/jsapi-types';
+import { useApi } from '@deephaven/jsapi-bootstrap';
 import shortid from 'shortid';
 import { ChartPanel, ChartPanelProps } from './panels';
 
@@ -19,6 +20,9 @@ export type ChartPluginProps = Partial<DashboardPluginComponentProps> & {
 export function ChartPlugin(props: ChartPluginProps): JSX.Element | null {
   assertIsDashboardPluginProps(props);
   const { id, layout, registerComponent, hydrate } = props;
+
+  const dh = useApi();
+
   const handlePanelOpen = useCallback(
     ({
       dragEvent,
@@ -37,9 +41,10 @@ export function ChartPlugin(props: ChartPluginProps): JSX.Element | null {
       }
 
       const metadata = { name, figure: name };
+      const makeApi = () => Promise.resolve(dh);
       const makeModel = () =>
         fetch().then((figure: Figure) =>
-          ChartModelFactory.makeModel(undefined, figure)
+          ChartModelFactory.makeModel(dh, undefined, figure)
         );
       const config = {
         type: 'react-component' as const,
@@ -48,6 +53,7 @@ export function ChartPlugin(props: ChartPluginProps): JSX.Element | null {
           localDashboardId: id,
           id: panelId,
           metadata,
+          makeApi,
           makeModel,
         },
         title: name,
@@ -57,7 +63,7 @@ export function ChartPlugin(props: ChartPluginProps): JSX.Element | null {
       const { root } = layout;
       LayoutUtils.openComponent({ root, config, dragEvent });
     },
-    [id, layout]
+    [dh, id, layout]
   );
 
   useEffect(

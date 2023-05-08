@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint func-names: "off" */
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import dh from '@deephaven/jsapi-shim';
 import { MockChartModel } from '@deephaven/chart';
 import type { Container } from '@deephaven/golden-layout';
@@ -43,6 +43,10 @@ function makeGlComponent() {
   };
 }
 
+function makeChartModel(options) {
+  return new MockChartModel(dh, options);
+}
+
 function makeTable() {
   const table = new (dh as any).Table();
   const { addEventListener, removeEventListener } = table;
@@ -62,7 +66,8 @@ function makeChartPanelWrapper({
   glContainer = makeGlComponent(),
   glEventHub = makeGlComponent(),
   columnSelectionValidator = undefined,
-  makeModel = () => Promise.resolve(new MockChartModel()),
+  makeApi = () => Promise.resolve(dh),
+  makeModel = () => Promise.resolve(makeChartModel()),
   metadata = { figure: 'testFigure' },
   inputFilters = [],
   links = [],
@@ -75,6 +80,7 @@ function makeChartPanelWrapper({
 } = {}) {
   return (
     <ChartPanel
+      makeApi={makeApi}
       columnSelectionValidator={columnSelectionValidator}
       makeModel={makeModel}
       metadata={metadata as ChartPanelMetadata}
@@ -153,7 +159,7 @@ it('mounts/unmounts without crashing', () => {
 });
 
 it('unmounts while still resolving the model successfully', async () => {
-  const model = new MockChartModel();
+  const model = makeChartModel();
   let modelResolve = null;
   const modelPromise = new Promise(resolve => {
     modelResolve = resolve;
@@ -168,14 +174,14 @@ it('unmounts while still resolving the model successfully', async () => {
 });
 
 it('handles a model passed in as a promise, and shows the loading spinner until it is loaded and an event is received', async () => {
-  const model = new MockChartModel();
+  const model = makeChartModel();
   const modelPromise = Promise.resolve(model);
   const makeModel = () => modelPromise;
 
   const { container } = render(makeChartPanelWrapper({ makeModel }));
   expectLoading(container);
 
-  await expect(modelPromise).resolves.toBe(model);
+  await act(() => expect(modelPromise).resolves.toBe(model));
 
   expect(MockChart).toHaveBeenLastCalledWith(
     expect.objectContaining({ model }),
@@ -206,13 +212,13 @@ it('shows an error properly if model loading fails', async () => {
 
 it('shows a prompt if input filters are required, and removes when they are set', async () => {
   const filterFields = ['Field_A', 'Field_B'];
-  const model = new MockChartModel({ filterFields });
+  const model = makeChartModel({ filterFields });
   const modelPromise = Promise.resolve(model);
   const makeModel = () => modelPromise;
 
   const { rerender, container } = render(makeChartPanelWrapper({ makeModel }));
 
-  await expect(modelPromise).resolves.toBe(model);
+  await act(() => expect(modelPromise).resolves.toBe(model));
 
   callUpdateFunction();
   const prompt =
@@ -253,7 +259,7 @@ it('shows a prompt if input filters are required, and removes when they are set'
 
 it('shows loading spinner until an error is received', async () => {
   const filterFields = ['Field_A', 'Field_B'];
-  const model = new MockChartModel({ filterFields });
+  const model = makeChartModel({ filterFields });
   const modelPromise = Promise.resolve(model);
   const makeModel = () => modelPromise;
 
@@ -270,7 +276,7 @@ it('shows loading spinner until an error is received', async () => {
 
   expectLoading(container);
 
-  await expect(modelPromise).resolves.toBe(model);
+  await act(() => expect(modelPromise).resolves.toBe(model));
 
   // Overlays shouldn't appear yet because we haven't received an update or error event, should just see loading
   expectLoading(container);
@@ -288,7 +294,7 @@ it('shows prompt if input filters are removed', async () => {
     type: 'java.lang.String',
     value: 'Test',
   }));
-  const model = new MockChartModel({ filterFields });
+  const model = makeChartModel({ filterFields });
   const modelPromise = Promise.resolve(model);
   const makeModel = () => modelPromise;
 
@@ -296,12 +302,14 @@ it('shows prompt if input filters are removed', async () => {
     makeChartPanelWrapper({ makeModel, inputFilters })
   );
 
-  await expect(modelPromise).resolves.toBe(model);
+  await act(() => expect(modelPromise).resolves.toBe(model));
 
   expectLoading(container);
 
   // Loading spinner should be shown until the update event is received
   callUpdateFunction();
+
+  await act(() => Promise.resolve());
 
   expectNotLoading(container);
 
@@ -312,6 +320,8 @@ it('shows prompt if input filters are removed', async () => {
       inputFilters: [inputFilters[0]],
     })
   );
+
+  await act(() => Promise.resolve());
 
   checkPanelOverlays({
     container,
@@ -328,7 +338,7 @@ it('shows prompt if input filters are cleared', async () => {
     type: 'java.lang.String',
     value: 'Test',
   }));
-  const model = new MockChartModel({ filterFields });
+  const model = makeChartModel({ filterFields });
   const modelPromise = Promise.resolve(model);
   const makeModel = () => modelPromise;
 
@@ -336,7 +346,7 @@ it('shows prompt if input filters are cleared', async () => {
     makeChartPanelWrapper({ makeModel, inputFilters })
   );
 
-  await expect(modelPromise).resolves.toBe(model);
+  await act(() => expect(modelPromise).resolves.toBe(model));
 
   callUpdateFunction();
 
@@ -345,6 +355,8 @@ it('shows prompt if input filters are cleared', async () => {
   updatedFilters[0] = { ...updatedFilters[0], value: '' };
 
   rerender(makeChartPanelWrapper({ makeModel, inputFilters: updatedFilters }));
+
+  await act(() => Promise.resolve());
 
   checkPanelOverlays({
     container,
@@ -355,7 +367,7 @@ it('shows prompt if input filters are cleared', async () => {
 
 it('shows loading spinner until an error is received B', async () => {
   const filterFields = [];
-  const model = new MockChartModel({ filterFields });
+  const model = makeChartModel({ filterFields });
   const modelPromise = Promise.resolve(model);
   const makeModel = () => modelPromise;
 
@@ -370,7 +382,7 @@ it('shows loading spinner until an error is received B', async () => {
     })
   );
 
-  await expect(modelPromise).resolves.toBe(model);
+  await act(() => expect(modelPromise).resolves.toBe(model));
 
   // Overlays shouldn't appear yet because we haven't received an update or error event, should just see loading
   checkPanelOverlays({ container, isLoading: true });
@@ -383,7 +395,7 @@ it('shows loading spinner until an error is received B', async () => {
 
 describe('linker column selection', () => {
   it('does not show overlay if linker active but no filterable columns', async () => {
-    const model = new MockChartModel();
+    const model = makeChartModel();
     const modelPromise = Promise.resolve(model);
     const makeModel = () => modelPromise;
 
@@ -394,7 +406,7 @@ describe('linker column selection', () => {
       })
     );
 
-    await expect(modelPromise).resolves.toBe(model);
+    await act(() => expect(modelPromise).resolves.toBe(model));
 
     callUpdateFunction();
 
@@ -408,7 +420,7 @@ describe('linker column selection', () => {
       disabledColumnNames.find(
         disabledColumn => disabledColumn === column.name
       ) == null;
-    const model = new MockChartModel({
+    const model = makeChartModel({
       filterFields: columnNames,
     });
     const modelPromise = Promise.resolve(model);
@@ -420,7 +432,7 @@ describe('linker column selection', () => {
         isLinkerActive: true,
       })
     );
-    await expect(modelPromise).resolves.toBe(model);
+    await act(() => expect(modelPromise).resolves.toBe(model));
     callUpdateFunction();
     checkPanelOverlays({ container, isSelectingColumn: true });
     expect(container.querySelectorAll('.btn-socketed').length).toBe(
@@ -480,27 +492,31 @@ describe('linker column selection', () => {
 });
 
 it('adds listeners to the source table when passed in and linked', async () => {
-  const model = new MockChartModel();
+  const model = makeChartModel();
   const modelPromise = Promise.resolve(model);
   const makeModel = () => modelPromise;
+  const apiPromise = Promise.resolve(dh);
+  const makeApi = () => apiPromise;
   const { rerender } = render(
     makeChartPanelWrapper({
+      makeApi,
       makeModel,
       metadata: { settings: { isLinked: true } },
       source: null,
       sourcePanel: null,
     })
   );
-  await expect(modelPromise).resolves.toBe(model);
   const source = makeTable();
   rerender(
     makeChartPanelWrapper({
+      makeApi,
       makeModel,
       metadata: { settings: { isLinked: true } },
       source,
       sourcePanel: null,
     })
   );
+  await act(() => Promise.resolve());
   expect(source.addEventListener.mock.calls.length).toBe(3);
   expect([
     source.addEventListener.mock.calls[0][0],

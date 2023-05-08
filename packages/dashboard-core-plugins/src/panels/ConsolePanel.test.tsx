@@ -2,7 +2,7 @@ import React from 'react';
 import { render } from '@testing-library/react';
 import { CommandHistoryStorage } from '@deephaven/console';
 import type { Container } from '@deephaven/golden-layout';
-import { IdeConnection, IdeSession } from '@deephaven/jsapi-types';
+import type { IdeConnection, IdeSession } from '@deephaven/jsapi-types';
 import { SessionConfig, SessionWrapper } from '@deephaven/jsapi-utils';
 import { ConsolePanel } from './ConsolePanel';
 

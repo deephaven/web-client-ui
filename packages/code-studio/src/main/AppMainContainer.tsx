@@ -764,6 +764,7 @@ export class AppMainContainer extends Component<
     return {
       ...props,
       localDashboardId: id,
+      makeApi: () => Promise.resolve(dh),
       makeModel: () => {
         const { metadata, panelState } = props;
         return createChartModel(connection, metadata, panelState);

@@ -21,7 +21,7 @@ import {
 } from '@deephaven/dashboard-core-plugins';
 import { FileStorage } from '@deephaven/file-explorer';
 import { useClient } from '@deephaven/jsapi-bootstrap';
-import { IdeConnection } from '@deephaven/jsapi-types';
+import type { IdeConnection } from '@deephaven/jsapi-types';
 import {
   DecimalColumnFormatter,
   getSessionDetails,
