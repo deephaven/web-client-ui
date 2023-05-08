@@ -1,3 +1,4 @@
+import React from 'react';
 import { renderHook } from '@testing-library/react-hooks';
 import type {
   Column,
@@ -5,12 +6,20 @@ import type {
   FilterValue,
   Table,
 } from '@deephaven/jsapi-types';
+import dh from '@deephaven/jsapi-shim';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import { TestUtils } from '@deephaven/utils';
+import { ApiContext } from '@deephaven/jsapi-bootstrap';
 import useDebouncedViewportSearch, {
   DEBOUNCE_VIEWPORT_SEARCH_MS,
 } from './useDebouncedViewportSearch';
 import { UseViewportDataResult } from './useViewportData';
+
+const tableUtils = new TableUtils(dh);
+
+const wrapper = ({ children }) => (
+  <ApiContext.Provider value={dh}>{children}</ApiContext.Provider>
+);
 
 // Mock js api objects
 const column = TestUtils.createMockProxy<Column>({
@@ -32,7 +41,9 @@ beforeEach(() => {
   TestUtils.asMock(columnFilterValue.contains).mockReturnValue(filterCondition);
   TestUtils.asMock(table.findColumn).mockReturnValue(column);
 
-  jest.spyOn(TableUtils, 'makeFilterValue').mockReturnValue(matchFilterValue);
+  jest
+    .spyOn(TableUtils.prototype, 'makeFilterValue')
+    .mockReturnValue(matchFilterValue);
 });
 
 it.each([undefined, 400])(
@@ -40,8 +51,9 @@ it.each([undefined, 400])(
   debounceMs => {
     const searchText = 'mock.searchText';
 
-    const { result } = renderHook(() =>
-      useDebouncedViewportSearch(viewportData, 'mock.column', debounceMs)
+    const { result } = renderHook(
+      () => useDebouncedViewportSearch(viewportData, 'mock.column', debounceMs),
+      { wrapper }
     );
 
     result.current(searchText);
@@ -50,7 +62,7 @@ it.each([undefined, 400])(
 
     jest.advanceTimersByTime(debounceMs ?? DEBOUNCE_VIEWPORT_SEARCH_MS);
 
-    expect(TableUtils.makeFilterValue).toHaveBeenCalledWith(
+    expect(tableUtils.makeFilterValue).toHaveBeenCalledWith(
       column.type,
       searchText
     );
@@ -68,14 +80,16 @@ it('should return a function that safely ignores no table', () => {
   const searchText = 'mock.searchText';
   const debounceMs = 400;
 
-  const { result } = renderHook(() =>
-    useDebouncedViewportSearch(viewportNoTable, 'mock.column', debounceMs)
+  const { result } = renderHook(
+    () =>
+      useDebouncedViewportSearch(viewportNoTable, 'mock.column', debounceMs),
+    { wrapper }
   );
 
   result.current(searchText);
   jest.advanceTimersByTime(debounceMs);
 
-  expect(TableUtils.makeFilterValue).not.toHaveBeenCalled();
+  expect(tableUtils.makeFilterValue).not.toHaveBeenCalled();
   expect(viewportNoTable.applyFiltersAndRefresh).not.toHaveBeenCalled();
 });
 
@@ -84,14 +98,15 @@ it('should trim search text', () => {
   const trimmedSearchText = 'mock.searchText';
   const debounceMs = 400;
 
-  const { result } = renderHook(() =>
-    useDebouncedViewportSearch(viewportData, 'mock.column', debounceMs)
+  const { result } = renderHook(
+    () => useDebouncedViewportSearch(viewportData, 'mock.column', debounceMs),
+    { wrapper }
   );
 
   result.current(searchText);
   jest.advanceTimersByTime(debounceMs);
 
-  expect(TableUtils.makeFilterValue).toHaveBeenCalledWith(
+  expect(tableUtils.makeFilterValue).toHaveBeenCalledWith(
     column.type,
     trimmedSearchText
   );
@@ -102,14 +117,15 @@ it.each(['', '    '])(
   searchText => {
     const debounceMs = 400;
 
-    const { result } = renderHook(() =>
-      useDebouncedViewportSearch(viewportData, 'mock.column', debounceMs)
+    const { result } = renderHook(
+      () => useDebouncedViewportSearch(viewportData, 'mock.column', debounceMs),
+      { wrapper }
     );
 
     result.current(searchText);
     jest.advanceTimersByTime(debounceMs);
 
-    expect(TableUtils.makeFilterValue).not.toHaveBeenCalled();
+    expect(tableUtils.makeFilterValue).not.toHaveBeenCalled();
     expect(viewportData.applyFiltersAndRefresh).toHaveBeenCalledWith([]);
   }
 );
@@ -118,8 +134,9 @@ it('should cancel debounce on unmount', () => {
   const searchText = 'mock.searchText';
   const debounceMs = 400;
 
-  const { result, unmount } = renderHook(() =>
-    useDebouncedViewportSearch(viewportData, 'mock.column', debounceMs)
+  const { result, unmount } = renderHook(
+    () => useDebouncedViewportSearch(viewportData, 'mock.column', debounceMs),
+    { wrapper }
   );
 
   result.current(searchText);
@@ -127,6 +144,6 @@ it('should cancel debounce on unmount', () => {
   unmount();
   jest.advanceTimersByTime(debounceMs);
 
-  expect(TableUtils.makeFilterValue).not.toHaveBeenCalled();
+  expect(tableUtils.makeFilterValue).not.toHaveBeenCalled();
   expect(viewportData.applyFiltersAndRefresh).not.toHaveBeenCalled();
 });
