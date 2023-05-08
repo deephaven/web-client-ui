@@ -755,6 +755,7 @@ export class AppMainContainer extends Component<
       getDownloadWorker: DownloadServiceWorkerUtils.getServiceWorker,
       loadPlugin: this.handleLoadTablePlugin,
       localDashboardId: id,
+      makeApi: () => Promise.resolve(dh),
       makeModel: () => createGridModel(dh, connection, props.metadata, type),
     };
   }
