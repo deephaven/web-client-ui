@@ -209,7 +209,7 @@ export class SettingsMenu extends Component<
             }
             onToggle={this.handleSectionToggle}
           >
-            <FormattingSectionContent dh={dh} />
+            <FormattingSectionContent />
           </SettingsMenuSection>
 
           <SettingsMenuSection
@@ -229,10 +229,7 @@ export class SettingsMenu extends Component<
             }
             onToggle={this.handleSectionToggle}
           >
-            <ColumnSpecificSectionContent
-              dh={dh}
-              scrollTo={this.handleScrollTo}
-            />
+            <ColumnSpecificSectionContent scrollTo={this.handleScrollTo} />
           </SettingsMenuSection>
 
           <SettingsMenuSection

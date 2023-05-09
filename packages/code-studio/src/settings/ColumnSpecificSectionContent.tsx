@@ -21,6 +21,7 @@ import {
 } from '@deephaven/jsapi-utils';
 import { dh as DhType } from '@deephaven/jsapi-types';
 import {
+  getApi,
   getDefaultDateTimeFormat,
   getDefaultDecimalFormatOptions,
   getDefaultIntegerFormatOptions,
@@ -646,6 +647,7 @@ const mapStateToProps = (state: RootState) => ({
   defaultDateTimeFormat: getDefaultDateTimeFormat(state),
   defaultDecimalFormatOptions: getDefaultDecimalFormatOptions(state),
   defaultIntegerFormatOptions: getDefaultIntegerFormatOptions(state),
+  dh: getApi(state),
   showTimeZone: getShowTimeZone(state),
   showTSeparator: getShowTSeparator(state),
   truncateNumbersWithPound: getTruncateNumbersWithPound(state),

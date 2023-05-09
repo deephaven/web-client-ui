@@ -19,7 +19,12 @@ import {
   TableUtils,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
-import { getActiveTool, getSettings, RootState } from '@deephaven/redux';
+import {
+  getActiveTool,
+  getApi,
+  getSettings,
+  RootState,
+} from '@deephaven/redux';
 import { Pending, PromiseUtils } from '@deephaven/utils';
 import DropdownFilter, {
   DropdownFilterColumn,
@@ -57,6 +62,7 @@ type StateProps = {
   columns: Column[];
   columnSelectionValidator?: ColumnSelectionValidator;
   dashboardLinks: Link[];
+  dh: DhType;
   disableLinking: boolean;
   isLinkerActive: boolean;
   panelTableMap: PanelTableMap;
@@ -91,6 +97,7 @@ const mapStateToProps = (state: RootState, ownProps: OwnProps): StateProps => {
       state,
       localDashboardId
     ),
+    dh: getApi(state),
     isLinkerActive,
     disableLinking,
     settings: getSettings(state),
@@ -103,9 +110,7 @@ const connector = connect(mapStateToProps, null, null, { forwardRef: true });
 
 export type DropdownFilterPanelProps = OwnProps &
   StateProps &
-  ConnectedProps<typeof connector> & {
-    dh: DhType;
-  };
+  ConnectedProps<typeof connector>;
 
 interface DropdownFilterPanelState {
   column?: DropdownFilterColumn;
@@ -403,6 +408,7 @@ export class DropdownFilterPanel extends Component<
   }
 
   startListeningToSource(sourceTable: TableTemplate): void {
+    const { dh } = this.props;
     log.debug('startListeningToSource');
     sourceTable.addEventListener(
       dh.Table.EVENT_FILTERCHANGED,
@@ -427,6 +433,7 @@ export class DropdownFilterPanel extends Component<
   }
 
   stopListeningToSource(sourceTable: TableTemplate): void {
+    const { dh } = this.props;
     log.debug('stopListeningToSource');
     sourceTable.removeEventListener(
       dh.Table.EVENT_FILTERCHANGED,
@@ -658,6 +665,7 @@ export class DropdownFilterPanel extends Component<
   }
 
   updateViewportListener(valuesTable: TableTemplate): void {
+    const { dh } = this.props;
     log.debug('updateViewportListener', valuesTable?.size);
 
     if (this.cleanup) {
