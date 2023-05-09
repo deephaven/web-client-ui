@@ -2,8 +2,11 @@ import debounce from 'lodash.debounce';
 import type { Table, TreeTable } from '@deephaven/jsapi-types';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import { useApi } from '@deephaven/jsapi-bootstrap';
+import Log from '@deephaven/log';
 import { useEffect, useMemo } from 'react';
 import { UseViewportDataResult } from './useViewportData';
+
+const log = Log.module('useDebouncedViewportSearch');
 
 export const DEBOUNCE_VIEWPORT_SEARCH_MS = 200;
 
@@ -13,6 +16,7 @@ export const DEBOUNCE_VIEWPORT_SEARCH_MS = 200;
  * @param viewportData Table viewport to filter
  * @param columnName Column name to filter by
  * @param debounceMs Millisecond value to debounce
+ * @returns A debounced search function
  */
 export default function useDebouncedViewportSearch<
   I,
@@ -24,34 +28,39 @@ export default function useDebouncedViewportSearch<
 ): (searchText: string) => void {
   const dh = useApi();
   const tableUtils = useMemo(() => new TableUtils(dh), [dh]);
+  const { table, applyFiltersAndRefresh } = viewportData;
+
   const debouncedSearch = useMemo(
     () =>
       debounce((searchText: string) => {
-        if (viewportData.table == null) {
+        log.debug(`Applying debounced searchText '${searchText}'`);
+
+        if (table == null) {
           return;
         }
 
         const searchTextTrimmed = searchText.trim();
 
         if (searchTextTrimmed === '') {
-          viewportData.applyFiltersAndRefresh([]);
+          applyFiltersAndRefresh([]);
           return;
         }
 
-        const column = viewportData.table.findColumn(columnName);
+        const column = table.findColumn(columnName);
         const value = tableUtils.makeFilterValue(
           column.type,
           searchTextTrimmed
         );
         const filter = [column.filter().contains(value)];
 
-        viewportData.applyFiltersAndRefresh(filter);
+        applyFiltersAndRefresh(filter);
       }, debounceMs),
-    [columnName, debounceMs, tableUtils, viewportData]
+    [applyFiltersAndRefresh, columnName, debounceMs, table, tableUtils]
   );
 
   useEffect(
     () => () => {
+      log.debug('Cancelling debounced search function');
       debouncedSearch.cancel();
     },
     [debouncedSearch]
