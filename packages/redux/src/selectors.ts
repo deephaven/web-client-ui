@@ -8,6 +8,9 @@ export type Selector<State extends RootState, R> = (store: State) => R;
 
 type Settings<State extends RootState> = State['workspace']['data']['settings'];
 
+export const getApi = <State extends RootState>(store: State): State['api'] =>
+  store.api;
+
 // User
 export const getUser = <State extends RootState>(store: State): State['user'] =>
   store.user;
