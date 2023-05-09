@@ -25,6 +25,7 @@ import {
   getTimeZone,
   setActiveTool as setActiveToolAction,
   RootState,
+  getApi,
 } from '@deephaven/redux';
 import {
   getIsolatedLinkerPanelIdForDashboard,
@@ -51,13 +52,13 @@ const log = Log.module('Linker');
 
 interface StateProps {
   activeTool: string;
+  dh: DhType;
   isolatedLinkerPanelId?: string;
   links: Link[];
   timeZone: string;
 }
 
 interface OwnProps {
-  dh: DhType;
   layout: GoldenLayout;
   panelManager: PanelManager;
   localDashboardId: string;
@@ -65,6 +66,7 @@ interface OwnProps {
 
 const mapState = (state: RootState, ownProps: OwnProps): StateProps => ({
   activeTool: getActiveTool(state),
+  dh: getApi(state),
   isolatedLinkerPanelId: getIsolatedLinkerPanelIdForDashboard(
     state,
     ownProps.localDashboardId
