@@ -17,15 +17,15 @@ import {
   RowDataMap,
   TableUtils,
 } from '@deephaven/jsapi-utils';
-import { dh as DhType } from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { Type as FilterType } from '@deephaven/filters';
 import {
   getActiveTool,
+  getApi,
   getTimeZone,
   setActiveTool as setActiveToolAction,
   RootState,
-  getApi,
 } from '@deephaven/redux';
 import {
   getIsolatedLinkerPanelIdForDashboard,
