@@ -47,7 +47,10 @@ export interface UseViewportDataResult<
  * @param table
  * @param viewportSize
  * @param viewportPadding
- * @returns An object for managing Table viewport state.
+ * @returns An object for managing Table viewport state. Note that the returned
+ * object changes on every render due to the `viewportData` not being memoized.
+ * This is due to the underlying React Stately `useListData` implementation that
+ * also changes its returned object on every render.
  */
 export default function useViewportData<
   TItem,
