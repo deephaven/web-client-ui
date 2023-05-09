@@ -1,13 +1,12 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useMemo } from 'react';
 import {
   Formatter,
   DateTimeColumnFormatter,
   TableUtils,
 } from '@deephaven/jsapi-utils';
-import { dh as DhType } from '@deephaven/jsapi-types';
+import { useApi } from '@deephaven/jsapi-bootstrap';
 
 interface DateTimeOptionProps {
-  dh: DhType;
   timestamp: Date;
   timeZone: string;
   showTimeZone: boolean;
@@ -20,7 +19,6 @@ export default function DateTimeOptions(
   props: DateTimeOptionProps
 ): ReactElement {
   const {
-    dh,
     timestamp,
     timeZone,
     showTimeZone,
@@ -29,11 +27,17 @@ export default function DateTimeOptions(
     legacyGlobalFormat,
   } = props;
 
-  const formatter = new Formatter(dh, [], {
-    timeZone,
-    showTimeZone,
-    showTSeparator,
-  });
+  const dh = useApi();
+
+  const formatter = useMemo(
+    () =>
+      new Formatter(dh, [], {
+        timeZone,
+        showTimeZone,
+        showTSeparator,
+      }),
+    [dh, showTimeZone, showTSeparator, timeZone]
+  );
   const formats = isGlobalOptions
     ? DateTimeColumnFormatter.getGlobalFormats(showTimeZone, showTSeparator)
     : DateTimeColumnFormatter.getFormats(showTimeZone, showTSeparator);

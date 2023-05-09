@@ -188,10 +188,8 @@ export class FormattingSectionContent extends PureComponent<
       legacyGlobalFormat?: string
     ) => {
       const { timestampAtMenuOpen } = this.state;
-      const { dh } = this.props;
       return (
         <DateTimeOptions
-          dh={dh}
           timestamp={timestampAtMenuOpen}
           timeZone={timeZone}
           showTimeZone={showTimeZone}

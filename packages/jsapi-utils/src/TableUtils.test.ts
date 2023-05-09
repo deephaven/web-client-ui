@@ -130,12 +130,16 @@ describe.each([undefined, 400])('applyNeverFilter - timeout: %s', timeout => {
     findColumn: jest.fn().mockReturnValue(column),
   });
 
-  beforeEach(() => {
+  beforeAll(() => {
     makeNeverFilter = jest.spyOn(TableUtils.prototype, 'makeNeverFilter');
     makeNeverFilter.mockReturnValue(neverFilter);
   });
 
-  afterEach(() => {
+  beforeEach(() => {
+    makeNeverFilter.mockClear();
+  });
+
+  afterAll(() => {
     makeNeverFilter.mockRestore();
   });
 

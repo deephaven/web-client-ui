@@ -4,7 +4,7 @@ import debounce from 'lodash.debounce';
 import deepEqual from 'deep-equal';
 import memoize from 'memoizee';
 import { DashboardPanelProps, LayoutUtils } from '@deephaven/dashboard';
-import {
+import type {
   dh as DhType,
   Column,
   Row,
