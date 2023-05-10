@@ -10,6 +10,7 @@
     { "path": "../components" },
     { "path": "../console" },
     { "path": "../file-explorer" },
+    { "path": "../jsapi-types" },
     { "path": "../jsapi-utils" },
     { "path": "../log" }
   ]

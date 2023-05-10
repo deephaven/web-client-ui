@@ -1,5 +1,5 @@
 import { ChartModel, ChartModelFactory } from '@deephaven/chart';
-import {
+import type {
   dh as DhType,
   Table,
   VariableTypeUnion,

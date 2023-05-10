@@ -360,7 +360,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     gridPoint: GridPoint
   ): ContextAction[] {
     assertNotNull(modelColumn);
-    const { irisGrid } = this;
+    const { dh, irisGrid } = this;
     const { column: columnIndex, row: rowIndex } = gridPoint;
     const { model, canCopy } = irisGrid.props;
     const { columns } = model;
@@ -378,13 +378,13 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const { filterIconColor } = theme;
     const { settings } = irisGrid.props;
 
-    const dateFilterFormatter = new DateTimeColumnFormatter({
+    const dateFilterFormatter = new DateTimeColumnFormatter(dh, {
       timeZone: settings?.timeZone,
       showTimeZone: false,
       showTSeparator: true,
       defaultDateTimeFormatString: CONTEXT_MENU_DATE_FORMAT,
     });
-    const previewFilterFormatter = new DateTimeColumnFormatter({
+    const previewFilterFormatter = new DateTimeColumnFormatter(dh, {
       timeZone: settings?.timeZone,
       showTimeZone: settings?.showTimeZone,
       showTSeparator: settings?.showTSeparator,
@@ -840,6 +840,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   numberFormatActions(column: Column): ContextAction[] | null {
     const { model } = this.irisGrid.props;
     const { formatter } = model;
+    const { dh } = this;
     const selectedFormat = formatter.getColumnFormat(
       column.type,
       column.name
@@ -849,6 +850,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const columnIndex = model.getColumnIndexByName(column.name);
     if (TableUtils.isDecimalType(column.type)) {
       formatOptions = DecimalFormatContextMenu.getOptions(
+        dh,
         selectedFormat,
         format => {
           assertNotNull(columnIndex);
@@ -857,6 +859,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       );
     } else if (TableUtils.isIntegerType(column.type)) {
       formatOptions = IntegerFormatContextMenu.getOptions(
+        dh,
         selectedFormat,
         format => {
           assertNotNull(columnIndex);

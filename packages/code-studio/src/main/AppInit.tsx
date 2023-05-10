@@ -20,8 +20,8 @@ import {
   ToolType,
 } from '@deephaven/dashboard-core-plugins';
 import { FileStorage } from '@deephaven/file-explorer';
-import { useClient } from '@deephaven/jsapi-bootstrap';
-import type { IdeConnection } from '@deephaven/jsapi-types';
+import { useApi, useClient } from '@deephaven/jsapi-bootstrap';
+import type { dh as DhType, IdeConnection } from '@deephaven/jsapi-types';
 import {
   DecimalColumnFormatter,
   getSessionDetails,
@@ -36,6 +36,7 @@ import {
   getWorkspaceStorage,
   RootState,
   setActiveTool as setActiveToolAction,
+  setApi as setApiAction,
   setCommandHistoryStorage as setCommandHistoryStorageAction,
   setFileStorage as setFileStorageAction,
   setPlugins as setPluginsAction,
@@ -64,6 +65,7 @@ interface AppInitProps {
   workspaceStorage: WorkspaceStorage;
 
   setActiveTool: (type: typeof ToolType[keyof typeof ToolType]) => void;
+  setApi: (api: DhType) => void;
   setCommandHistoryStorage: (storage: PouchCommandHistoryStorage) => void;
   setDashboardData: (
     id: string,
@@ -87,6 +89,7 @@ function AppInit(props: AppInitProps) {
   const {
     workspace,
     setActiveTool,
+    setApi,
     setCommandHistoryStorage,
     setDashboardData,
     setFileStorage,
@@ -100,6 +103,7 @@ function AppInit(props: AppInitProps) {
     setServerConfigValues,
   } = props;
 
+  const api = useApi();
   const client = useClient();
   const connection = useConnection();
   const plugins = usePlugins();
@@ -212,7 +216,7 @@ function AppInit(props: AppInitProps) {
               ...userPermissionsOverrides,
             },
           };
-
+          setApi(api);
           setActiveTool(ToolType.DEFAULT);
           setServerConfigValues(serverConfig);
           setCommandHistoryStorage(commandHistoryStorage);
@@ -234,9 +238,11 @@ function AppInit(props: AppInitProps) {
       loadApp();
     },
     [
+      api,
       client,
       connection,
       setActiveTool,
+      setApi,
       setCommandHistoryStorage,
       setDashboardData,
       setFileStorage,
@@ -297,6 +303,7 @@ const mapStateToProps = (state: RootState) => ({
 
 const ConnectedAppInit = connect(mapStateToProps, {
   setActiveTool: setActiveToolAction,
+  setApi: setApiAction,
   setCommandHistoryStorage: setCommandHistoryStorageAction,
   setDashboardData: setDashboardDataAction,
   setFileStorage: setFileStorageAction,

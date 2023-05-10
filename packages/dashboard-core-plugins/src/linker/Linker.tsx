@@ -17,10 +17,12 @@ import {
   RowDataMap,
   TableUtils,
 } from '@deephaven/jsapi-utils';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { Type as FilterType } from '@deephaven/filters';
 import {
   getActiveTool,
+  getApi,
   getTimeZone,
   setActiveTool as setActiveToolAction,
   RootState,
@@ -50,6 +52,7 @@ const log = Log.module('Linker');
 
 interface StateProps {
   activeTool: string;
+  dh: DhType;
   isolatedLinkerPanelId?: string;
   links: Link[];
   timeZone: string;
@@ -63,6 +66,7 @@ interface OwnProps {
 
 const mapState = (state: RootState, ownProps: OwnProps): StateProps => ({
   activeTool: getActiveTool(state),
+  dh: getApi(state),
   isolatedLinkerPanelId: getIsolatedLinkerPanelIdForDashboard(
     state,
     ownProps.localDashboardId
@@ -479,7 +483,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
 
   handleUpdateValues(panel: PanelComponent, dataMap: RowDataMap): void {
     const panelId = LayoutUtils.getIdFromPanel(panel);
-    const { links, timeZone } = this.props;
+    const { dh, links, timeZone } = this.props;
     // Map of panel ID to filterMap
     const panelFilterMap = new Map();
     // Instead of setting filters one by one for each link,
@@ -508,7 +512,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
           value = undefined;
         }
         if (columnType != null && TableUtils.isDateType(columnType)) {
-          const dateFilterFormatter = new DateTimeColumnFormatter({
+          const dateFilterFormatter = new DateTimeColumnFormatter(dh, {
             timeZone,
             showTimeZone: false,
             showTSeparator: true,

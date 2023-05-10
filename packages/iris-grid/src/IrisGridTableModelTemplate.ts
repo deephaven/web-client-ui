@@ -203,7 +203,7 @@ class IrisGridTableModelTemplate<
   constructor(
     dh: DhType,
     table: T,
-    formatter = new Formatter(),
+    formatter = new Formatter(dh),
     inputTable: InputTable | null = null
   ) {
     super();

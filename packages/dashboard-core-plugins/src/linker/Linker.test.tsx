@@ -6,6 +6,7 @@ import {
   PanelManager,
 } from '@deephaven/dashboard';
 import GoldenLayout, { Config } from '@deephaven/golden-layout';
+import dh from '@deephaven/jsapi-shim';
 import { TypeValue as FilterTypeValue } from '@deephaven/filters';
 import ToolType from './ToolType';
 import { Linker } from './Linker';
@@ -77,6 +78,7 @@ function mountLinker({
 } = {}) {
   return render(
     <Linker
+      dh={dh}
       links={links}
       timeZone={timeZone}
       activeTool={activeTool}

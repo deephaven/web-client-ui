@@ -228,7 +228,12 @@ describe('pending new rows tests', () => {
 
     inputTable = IrisGridTestUtils.makeInputTable(table.columns.slice(0, 3));
 
-    model = IrisGridTestUtils.makeModel(dh, table, new Formatter(), inputTable);
+    model = IrisGridTestUtils.makeModel(
+      dh,
+      table,
+      new Formatter(dh),
+      inputTable
+    );
     model.pendingRowCount = PENDING_ROW_COUNT;
   });
 

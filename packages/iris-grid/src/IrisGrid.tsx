@@ -793,7 +793,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
       shownColumnTooltip: null,
 
-      formatter: new Formatter(),
+      formatter: new Formatter(dh),
       isMenuShown: false,
       customColumnFormatMap: new Map(customColumnFormatMap),
 
@@ -1822,6 +1822,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     forceUpdate = true
   ): void {
     const { customColumnFormatMap } = this.state;
+    const { dh } = this.props;
     const update = {
       customColumnFormatMap,
       ...updatedFormats,
@@ -1831,6 +1832,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       ...update.customColumnFormatMap.values(),
     ];
     const formatter = new Formatter(
+      dh,
       mergedColumnFormats,
       this.dateTimeFormatterOptions,
       this.decimalFormatOptions,

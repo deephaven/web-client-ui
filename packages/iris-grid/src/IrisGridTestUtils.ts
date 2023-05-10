@@ -123,7 +123,7 @@ class IrisGridTestUtils {
   static makeModel(
     dh: DhType,
     table = IrisGridTestUtils.makeTable(),
-    formatter = new Formatter(),
+    formatter = new Formatter(dh),
     inputTable: InputTable | null = null
   ): IrisGridProxyModel {
     return new IrisGridProxyModel(dh, table, formatter, inputTable);

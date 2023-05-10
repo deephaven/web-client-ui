@@ -1,5 +1,8 @@
+import React from 'react';
 import { act, renderHook } from '@testing-library/react-hooks';
 import type { FilterCondition, Table } from '@deephaven/jsapi-types';
+import { ApiContext } from '@deephaven/jsapi-bootstrap';
+import dh from '@deephaven/jsapi-shim';
 import {
   OnTableUpdatedEvent,
   ViewportRow,
@@ -53,6 +56,10 @@ const optionsUseDefaults: UseViewportDataProps<unknown, Table> = {
   table,
 };
 
+const wrapper: React.FC<Table> = ({ children }) => (
+  <ApiContext.Provider value={dh}>{children}</ApiContext.Provider>
+);
+
 beforeEach(() => {
   jest.clearAllMocks();
   TestUtils.asMock(useTableSize).mockImplementation(t => t?.size ?? 0);
@@ -61,7 +68,7 @@ beforeEach(() => {
 it.each([options, optionsUseDefaults])(
   'should initialize viewport data: %o',
   opt => {
-    const { result } = renderHook(() => useViewportData(opt));
+    const { result } = renderHook(() => useViewportData(opt), { wrapper });
 
     const expected = {
       initialItems: [...generateEmptyKeyedItems(0, table.size - 1)],
@@ -75,12 +82,12 @@ it.each([options, optionsUseDefaults])(
 );
 
 it('should return table', () => {
-  const { result } = renderHook(() => useViewportData(options));
+  const { result } = renderHook(() => useViewportData(options), { wrapper });
   expect(result.current.table).toBe(options.table);
 });
 
 it('should return a callback that can apply filters and refresh viewport', () => {
-  const { result } = renderHook(() => useViewportData(options));
+  const { result } = renderHook(() => useViewportData(options), { wrapper });
   jest.clearAllMocks();
 
   const filters: FilterCondition[] = [];
@@ -95,7 +102,7 @@ it('should return a callback that can apply filters and refresh viewport', () =>
 });
 
 it('should set viewport if table size changes', () => {
-  const { rerender } = renderHook(() => useViewportData(options));
+  const { rerender } = renderHook(() => useViewportData(options), { wrapper });
   jest.clearAllMocks();
 
   rerender();
@@ -113,6 +120,7 @@ it('should set viewport if table reference changes', () => {
     t => useViewportData({ ...options, table: t }),
     {
       initialProps: table,
+      wrapper,
     }
   );
   jest.clearAllMocks();
@@ -128,7 +136,7 @@ it('should set viewport if table reference changes', () => {
 });
 
 it('should update state on dh.Table.EVENT_UPDATED event', () => {
-  const { result } = renderHook(() => useViewportData(options));
+  const { result } = renderHook(() => useViewportData(options), { wrapper });
 
   // Extract the last event handler that was registered since it should have
   // a closure over our latest `viewportData` instance.

@@ -84,7 +84,7 @@ function App(): JSX.Element {
 
   return (
     <div className="App">
-      {isLoaded && <Chart model={model} />}
+      {isLoaded && <Chart dh={dh} model={model} />}
       {!isLoaded && (
         <LoadingOverlay
           isLoaded={isLoaded}

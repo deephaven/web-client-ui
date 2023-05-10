@@ -6,9 +6,10 @@ import {
   TableColumnFormat,
   FormattingRule,
 } from '@deephaven/jsapi-utils';
+import { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 
-const log = Log.module('FormattingSectionContent');
+const log = Log.module('SettingsUtils');
 
 export type FormatOption = {
   defaultFormatString?: string;
@@ -68,6 +69,7 @@ export function isValidColumnName(name: string): boolean {
 }
 
 export function isValidFormat(
+  dh: DhType,
   columnType: string,
   format: Partial<TableColumnFormat>
 ): boolean {
@@ -81,11 +83,11 @@ export function isValidFormat(
   }
   switch (columnType) {
     case 'datetime':
-      return DateTimeColumnFormatter.isValid(format);
+      return DateTimeColumnFormatter.isValid(dh, format);
     case 'decimal':
-      return DecimalColumnFormatter.isValid(format);
+      return DecimalColumnFormatter.isValid(dh, format);
     case 'int':
-      return IntegerColumnFormatter.isValid(format);
+      return IntegerColumnFormatter.isValid(dh, format);
     default: {
       log.warn('Trying to validate format of unknown type');
       return true;
@@ -101,11 +103,12 @@ export function removeFormatRuleExtraProps(
 }
 
 export function isFormatRuleValidForSave(
+  dh: DhType,
   rule: FormatterItem
 ): rule is ValidFormatterItem {
   return (
     isValidColumnName(rule.columnName) &&
-    isValidFormat(rule.columnType, rule.format)
+    isValidFormat(dh, rule.columnType, rule.format)
   );
 }
 

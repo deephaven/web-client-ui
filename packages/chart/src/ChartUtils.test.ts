@@ -8,7 +8,7 @@ import ChartTheme from './ChartTheme';
 const chartUtils = new ChartUtils(dh);
 
 function makeFormatter() {
-  return new Formatter();
+  return new Formatter(dh);
 }
 
 it('groups the axes by type properly', () => {

@@ -1,6 +1,7 @@
 import { applyMiddleware, createStore, compose, combineReducers } from 'redux';
 import type { FileStorage } from '@deephaven/file-explorer';
 import type { ValidKeyState } from '@deephaven/components';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import type { FormattingRule } from '@deephaven/jsapi-utils';
 import type { PayloadAction } from './actions';
 import rootMiddleware from './middleware';
@@ -91,6 +92,7 @@ export interface WorkspaceStorage {
 }
 
 export type RootState = {
+  api: DhType;
   activeTool: string;
   plugins: DeephavenPluginModuleMap;
   storage: Storage;
