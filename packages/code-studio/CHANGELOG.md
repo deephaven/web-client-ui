@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.38.1](https://github.com/deephaven/web-client-ui/compare/v0.38.0...v0.38.1) (2023-05-10)
+
+**Note:** Version bump only for package @deephaven/code-studio
+
 # [0.38.0](https://github.com/deephaven/web-client-ui/compare/v0.37.3...v0.38.0) (2023-05-03)
 
 ### Bug Fixes

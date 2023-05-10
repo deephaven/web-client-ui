@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.38.1](https://github.com/deephaven/web-client-ui/compare/v0.38.0...v0.38.1) (2023-05-10)
+
+### Bug Fixes
+
+- cherry-pick Select distinct throwing for tables with multiple columns ([#1289](https://github.com/deephaven/web-client-ui/issues/1289)) ([1c35278](https://github.com/deephaven/web-client-ui/commit/1c35278f10439d18c1150b73a62b235e03d27e69)), closes [#1286](https://github.com/deephaven/web-client-ui/issues/1286) [#1275](https://github.com/deephaven/web-client-ui/issues/1275)
+
 # [0.38.0](https://github.com/deephaven/web-client-ui/compare/v0.37.3...v0.38.0) (2023-05-03)
 
 **Note:** Version bump only for package @deephaven/iris-grid
