@@ -4206,8 +4206,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           if (modelColumn != null) {
             const column = model.columns[modelColumn];
             if (column == null) {
+              // Grid metrics is likely out of sync with model
               log.warn(
-                `Column does not exist at index: ${modelColumn}. This is likely caused by grid metrics being out of sync during a render`
+                `Column does not exist at index ${modelColumn} for column array of length ${model.columns.length}`
               );
               // eslint-disable-next-line no-continue
               continue;
