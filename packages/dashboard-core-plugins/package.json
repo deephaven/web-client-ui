@@ -33,7 +33,6 @@
     "@deephaven/icons": "file:../icons",
     "@deephaven/iris-grid": "file:../iris-grid",
     "@deephaven/jsapi-bootstrap": "file:../jsapi-bootstrap",
-    "@deephaven/jsapi-shim": "file:../jsapi-shim",
     "@deephaven/jsapi-types": "file:../jsapi-types",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
@@ -64,6 +63,7 @@
   },
   "devDependencies": {
     "@deephaven/mocks": "file:../mocks",
+    "@deephaven/jsapi-shim": "file:../jsapi-shim",
     "@deephaven/tsconfig": "file:../tsconfig"
   },
   "files": [

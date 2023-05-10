@@ -22,7 +22,6 @@
   },
   "dependencies": {
     "@deephaven/filters": "file:../filters",
-    "@deephaven/jsapi-shim": "file:../jsapi-shim",
     "@deephaven/jsapi-types": "file:../jsapi-types",
     "@deephaven/log": "file:../log",
     "@deephaven/utils": "file:../utils",
@@ -31,6 +30,7 @@
     "shortid": "^2.2.16"
   },
   "devDependencies": {
+    "@deephaven/jsapi-shim": "file:../jsapi-shim",
     "@deephaven/tsconfig": "file:../tsconfig"
   },
   "files": [
