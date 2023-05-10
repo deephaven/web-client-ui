@@ -4205,6 +4205,13 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           const modelColumn = this.getModelColumn(columnIndex);
           if (modelColumn != null) {
             const column = model.columns[modelColumn];
+            if (column == null) {
+              log.warn(
+                `Column does not exist at index: ${modelColumn}. This is likely caused by grid metrics being out of sync during a render`
+              );
+              // eslint-disable-next-line no-continue
+              continue;
+            }
             const advancedFilter = advancedFilters.get(modelColumn);
             const { options: advancedFilterOptions } = advancedFilter || {};
             const sort = TableUtils.getSortForColumn(model.sort, column.name);
