@@ -4,7 +4,7 @@
 import React, { Component, ReactElement, RefObject } from 'react';
 import { LoadingOverlay, ShortcutRegistry } from '@deephaven/components';
 import Log from '@deephaven/log';
-import { IdeSession } from '@deephaven/jsapi-shim';
+import type { IdeSession } from '@deephaven/jsapi-types';
 import { assertNotNull } from '@deephaven/utils';
 import { editor, IDisposable } from 'monaco-editor';
 import Editor from './Editor';

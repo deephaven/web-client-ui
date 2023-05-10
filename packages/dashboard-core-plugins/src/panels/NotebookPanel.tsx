@@ -47,7 +47,7 @@ import type {
   Tab,
   CloseOptions,
 } from '@deephaven/golden-layout';
-import { IdeSession } from '@deephaven/jsapi-shim';
+import type { IdeSession } from '@deephaven/jsapi-types';
 import { ConsoleEvent, NotebookEvent } from '../events';
 import { getDashboardSessionWrapper } from '../redux';
 import Panel from './Panel';

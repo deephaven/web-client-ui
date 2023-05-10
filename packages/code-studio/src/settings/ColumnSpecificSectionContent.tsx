@@ -19,7 +19,7 @@ import {
   TableColumnFormat,
   FormattingRule,
 } from '@deephaven/jsapi-utils';
-import { dh as DhType } from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
   getApi,
   getDefaultDateTimeFormat,

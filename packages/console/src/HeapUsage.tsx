@@ -1,7 +1,7 @@
 import React, { useEffect, useState, ReactElement, useRef } from 'react';
 import classNames from 'classnames';
 import { Tooltip } from '@deephaven/components';
-import { QueryConnectable } from '@deephaven/jsapi-shim';
+import type { QueryConnectable } from '@deephaven/jsapi-types';
 import { Plot, ChartTheme } from '@deephaven/chart';
 import Log from '@deephaven/log';
 import './HeapUsage.scss';

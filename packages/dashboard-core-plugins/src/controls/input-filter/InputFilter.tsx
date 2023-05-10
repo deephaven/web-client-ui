@@ -13,7 +13,7 @@ import React, {
 import { Button, CardFlip } from '@deephaven/components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsGear } from '@deephaven/icons';
-import { Column } from '@deephaven/jsapi-shim';
+import type { Column } from '@deephaven/jsapi-types';
 import memoizee from 'memoizee';
 import debounce from 'lodash.debounce';
 import Log from '@deephaven/log';

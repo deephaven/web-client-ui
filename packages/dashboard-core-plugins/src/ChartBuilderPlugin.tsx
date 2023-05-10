@@ -6,7 +6,7 @@ import {
   LayoutUtils,
   useListener,
 } from '@deephaven/dashboard';
-import { SeriesPlotStyle, Table } from '@deephaven/jsapi-shim';
+import type { SeriesPlotStyle, Table } from '@deephaven/jsapi-types';
 import shortid from 'shortid';
 import { IrisGridEvent } from './events';
 import { ChartPanel } from './panels';

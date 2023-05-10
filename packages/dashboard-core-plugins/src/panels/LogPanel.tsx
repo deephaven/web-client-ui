@@ -3,7 +3,7 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import { LogView } from '@deephaven/console';
-import { IdeSession } from '@deephaven/jsapi-shim';
+import type { IdeSession } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import { RootState } from '@deephaven/redux';

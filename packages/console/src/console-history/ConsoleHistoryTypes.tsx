@@ -1,5 +1,5 @@
 import { CancelablePromise } from '@deephaven/utils';
-import { VariableChanges } from '@deephaven/jsapi-shim';
+import type { VariableChanges } from '@deephaven/jsapi-types';
 
 export type ConsoleHistoryError =
   | string

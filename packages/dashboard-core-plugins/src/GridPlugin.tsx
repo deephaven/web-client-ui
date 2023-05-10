@@ -8,7 +8,7 @@ import {
   useListener,
 } from '@deephaven/dashboard';
 import { IrisGridModelFactory, IrisGridThemeType } from '@deephaven/iris-grid';
-import { Table, VariableDefinition } from '@deephaven/jsapi-shim';
+import type { Table, VariableDefinition } from '@deephaven/jsapi-types';
 import shortid from 'shortid';
 import { IrisGridPanel, IrisGridPanelProps } from './panels';
 

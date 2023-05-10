@@ -1,7 +1,7 @@
 import React from 'react';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import { render } from '@testing-library/react';
-import { Column } from '@deephaven/jsapi-types';
+import type { Column } from '@deephaven/jsapi-types';
 // import userEvent from '@testing-library/user-event';
 import dh from '@deephaven/jsapi-shim';
 // import {

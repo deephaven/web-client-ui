@@ -1,7 +1,7 @@
 import React from 'react';
 import { act, render, screen } from '@testing-library/react';
 import { ClientContext } from '@deephaven/jsapi-bootstrap';
-import { CoreClient } from '@deephaven/jsapi-types';
+import type { CoreClient } from '@deephaven/jsapi-types';
 import { TestUtils } from '@deephaven/utils';
 import AuthPluginBase from './AuthPluginBase';
 

@@ -1,4 +1,4 @@
-import { StorageService } from '@deephaven/jsapi-shim';
+import type { StorageService } from '@deephaven/jsapi-types';
 import LayoutStorage, { ExportedLayout } from '../LayoutStorage';
 
 export class GrpcLayoutStorage implements LayoutStorage {

@@ -1,5 +1,5 @@
 import React, { createContext } from 'react';
-import { ConnectOptions, CoreClient } from '@deephaven/jsapi-types';
+import type { ConnectOptions, CoreClient } from '@deephaven/jsapi-types';
 import useCreateClient from './useCreateClient';
 
 export const ClientContext = createContext<CoreClient | null>(null);

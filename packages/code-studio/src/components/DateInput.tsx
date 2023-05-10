@@ -1,5 +1,6 @@
 import React, { useState, ReactElement } from 'react';
-import dh, { DateWrapper } from '@deephaven/jsapi-shim';
+import dh from '@deephaven/jsapi-shim';
+import type { DateWrapper } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { MaskedInput, SelectionSegment } from '@deephaven/components';
 

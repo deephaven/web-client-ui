@@ -14,7 +14,7 @@ import {
   vsPreview,
   vsRefresh,
 } from '@deephaven/icons';
-import { VariableDefinition } from '@deephaven/jsapi-shim';
+import type { VariableDefinition } from '@deephaven/jsapi-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import './WidgetList.scss';
 

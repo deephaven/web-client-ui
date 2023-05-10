@@ -2,7 +2,7 @@ import React from 'react';
 import { act, render, screen } from '@testing-library/react';
 import { ApiContext, ClientContext } from '@deephaven/jsapi-bootstrap';
 import { dh } from '@deephaven/jsapi-shim';
-import { CoreClient, LoginOptions } from '@deephaven/jsapi-types';
+import type { CoreClient, LoginOptions } from '@deephaven/jsapi-types';
 import AuthPluginParent from './AuthPluginParent';
 import { AuthConfigMap } from './AuthPlugin';
 

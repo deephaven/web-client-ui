@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react-hooks';
-import { Table } from '@deephaven/jsapi-shim';
+import type { Table } from '@deephaven/jsapi-types';
 import { TestUtils } from '@deephaven/utils';
 import useTableSize from './useTableSize';
 import useTableListener from './useTableListener';

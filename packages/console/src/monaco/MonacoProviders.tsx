@@ -4,7 +4,11 @@
 import { PureComponent } from 'react';
 import * as monaco from 'monaco-editor';
 import Log from '@deephaven/log';
-import { DocumentRange, IdeSession, Position } from '@deephaven/jsapi-shim';
+import type {
+  DocumentRange,
+  IdeSession,
+  Position,
+} from '@deephaven/jsapi-types';
 
 const log = Log.module('MonacoCompletionProvider');
 

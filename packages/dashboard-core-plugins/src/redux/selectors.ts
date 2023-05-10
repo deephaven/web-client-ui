@@ -1,5 +1,5 @@
 import { getDashboardData } from '@deephaven/dashboard';
-import { Column, IdeConnection, Table } from '@deephaven/jsapi-shim';
+import type { Column, IdeConnection, Table } from '@deephaven/jsapi-types';
 import { SessionWrapper } from '@deephaven/jsapi-utils';
 import { RootState } from '@deephaven/redux';
 import { FilterChangeEvent } from '../FilterPlugin';

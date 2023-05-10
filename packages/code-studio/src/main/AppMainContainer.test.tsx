@@ -2,11 +2,12 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { ToolType } from '@deephaven/dashboard-core-plugins';
-import dh, {
+import dh from '@deephaven/jsapi-shim';
+import type {
   IdeConnection,
   IdeSession,
   VariableChanges,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import { TestUtils } from '@deephaven/utils';
 import { Workspace } from '@deephaven/redux';
 import userEvent from '@testing-library/user-event';

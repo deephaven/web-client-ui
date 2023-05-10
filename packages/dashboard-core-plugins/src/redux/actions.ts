@@ -4,7 +4,7 @@ import { updateDashboardData } from '@deephaven/dashboard';
 import { SessionWrapper } from '@deephaven/jsapi-utils';
 import { RootState } from '@deephaven/redux';
 import { Action } from 'redux';
-import { IdeConnection } from '@deephaven/jsapi-shim';
+import type { IdeConnection } from '@deephaven/jsapi-types';
 import { getLinksForDashboard } from './selectors';
 import { FilterSet } from '../panels';
 import { Link } from '../linker/LinkerUtils';

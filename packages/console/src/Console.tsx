@@ -21,7 +21,7 @@ import type {
   VariableChanges,
   VariableDefinition,
   VariableTypeUnion,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { assertNotNull, Pending, PromiseUtils } from '@deephaven/utils';
 import ConsoleHistory from './console-history/ConsoleHistory';

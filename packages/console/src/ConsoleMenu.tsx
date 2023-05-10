@@ -19,7 +19,7 @@ import {
   vsTriangleDown,
 } from '@deephaven/icons';
 import Log from '@deephaven/log';
-import { VariableDefinition } from '@deephaven/jsapi-shim';
+import type { VariableDefinition } from '@deephaven/jsapi-types';
 import memoize from 'memoize-one';
 import './ConsoleMenu.scss';
 import ConsoleUtils from './common/ConsoleUtils';

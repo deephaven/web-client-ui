@@ -1,10 +1,11 @@
-import dh, {
+import dh from '@deephaven/jsapi-shim';
+import type {
   Axis,
   Chart,
   Figure,
   Series,
   SeriesDataSource,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 
 class ChartTestUtils {
   static DEFAULT_CHART_TITLE = 'Chart Title';

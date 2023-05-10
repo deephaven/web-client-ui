@@ -1,6 +1,6 @@
 import { ListData } from '@react-stately/data';
 import clamp from 'lodash.clamp';
-import { Column, Row, Table, TreeTable } from '@deephaven/jsapi-shim';
+import type { Column, Row, Table, TreeTable } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 
 export interface KeyedItem<T> {
