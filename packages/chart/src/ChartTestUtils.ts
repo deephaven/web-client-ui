@@ -1,12 +1,10 @@
 import type {
+  Axis,
   AxisFormatType,
   AxisPosition,
   AxisType,
-  dh as DhType,
-} from '@deephaven/jsapi-types';
-import type {
-  Axis,
   Chart,
+  dh as DhType,
   Figure,
   Series,
   SeriesDataSource,
