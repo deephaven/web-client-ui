@@ -21,7 +21,12 @@ import {
 import { Button, ContextActionUtils } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
-import type { Column, FilterCondition, Table } from '@deephaven/jsapi-types';
+import type {
+  Column,
+  dh as DhType,
+  FilterCondition,
+  Table,
+} from '@deephaven/jsapi-types';
 import shortid from 'shortid';
 import AdvancedFilterCreatorFilterItem from './AdvancedFilterCreatorFilterItem';
 import AdvancedFilterCreatorSelectValue from './AdvancedFilterCreatorSelectValue';
@@ -37,6 +42,7 @@ type FilterChangeHandler = (
 ) => void;
 
 interface AdvancedFilterCreatorProps {
+  dh: DhType;
   model: IrisGridModel;
   column: Column;
   onFilterChange: (
@@ -446,7 +452,14 @@ class AdvancedFilterCreator extends PureComponent<
   }
 
   render(): JSX.Element {
-    const { column, model, sortDirection, formatter, tableUtils } = this.props;
+    const {
+      column,
+      dh,
+      model,
+      sortDirection,
+      formatter,
+      tableUtils,
+    } = this.props;
     const {
       filterItems,
       filterOperators,

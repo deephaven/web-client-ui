@@ -24,6 +24,8 @@ const DEFAULT_SETTINGS: Settings = {
   truncateNumbersWithPound: false,
 };
 
+const irisGridTestUtils = new IrisGridTestUtils(dh);
+
 function makeMockCanvas() {
   return {
     clientWidth: VIEW_SIZE,
@@ -53,7 +55,7 @@ function createNodeMock(element) {
 }
 
 function makeComponent(
-  model = IrisGridTestUtils.makeModel(dh),
+  model = irisGridTestUtils.makeModel(),
   settings = DEFAULT_SETTINGS
 ) {
   const testRenderer = TestRenderer.create(
@@ -198,9 +200,8 @@ it('handles undefined operator, should default to eq', () => {
 
 it('should set gotoValueSelectedColumnName to empty string if no columns are given', () => {
   const component = makeComponent(
-    IrisGridTestUtils.makeModel(
-      dh,
-      IrisGridTestUtils.makeTable({
+    irisGridTestUtils.makeModel(
+      irisGridTestUtils.makeTable({
         columns: [],
       })
     )

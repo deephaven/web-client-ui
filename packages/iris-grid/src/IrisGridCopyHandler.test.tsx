@@ -17,6 +17,8 @@ const mockedCopyToClipboard = copyToClipboard as jest.MockedFunction<
 
 jest.useFakeTimers();
 
+const irisGridTestUtils = new IrisGridTestUtils(dh);
+
 const DEFAULT_EXPECTED_TEXT = `0,0\t0,1\t0,2\t0,3\t0,4
 1,0\t1,1\t1,2\t1,3\t1,4
 2,0\t2,1\t2,2\t2,3\t2,4
@@ -31,7 +33,7 @@ function makeCopyOperation(
   ranges = GridTestUtils.makeRanges(),
   includeHeaders = false,
   movedColumns = [],
-  userColumnWidths = IrisGridTestUtils.makeUserColumnWidths()
+  userColumnWidths = irisGridTestUtils.makeUserColumnWidths()
 ): CopyOperation {
   return {
     ranges,
@@ -42,7 +44,7 @@ function makeCopyOperation(
 }
 
 function makeModel() {
-  const model = IrisGridTestUtils.makeModel(dh);
+  const model = irisGridTestUtils.makeModel();
   model.textSnapshot = makeSnapshotFn();
   return model;
 }

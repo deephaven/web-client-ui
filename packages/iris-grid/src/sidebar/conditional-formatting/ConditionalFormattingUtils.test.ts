@@ -11,6 +11,8 @@ import {
   StringCondition,
 } from './ConditionalFormattingUtils';
 
+const irisGridTestUtils = new IrisGridTestUtils(dh);
+
 jest.mock('./ConditionalFormattingAPIUtils', () => ({
   makeTernaryFormatRule: jest.fn(
     (rule, prevRule = null) =>
@@ -22,7 +24,7 @@ jest.mock('./ConditionalFormattingAPIUtils', () => ({
 
 describe('getFormatColumns', () => {
   function makeColumns(count = 5): Column[] {
-    return IrisGridTestUtils.makeColumns(count);
+    return irisGridTestUtils.makeColumns(count);
   }
 
   function makeFormatRule({

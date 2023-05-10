@@ -6,6 +6,7 @@ import {
   LayoutUtils,
   useListener,
 } from '@deephaven/dashboard';
+import { useApi } from '@deephaven/jsapi-bootstrap';
 import type { SeriesPlotStyle, Table } from '@deephaven/jsapi-types';
 import shortid from 'shortid';
 import { IrisGridEvent } from './events';
@@ -22,6 +23,7 @@ export function ChartBuilderPlugin(
 ): JSX.Element | null {
   assertIsDashboardPluginProps(props);
   const { id, layout } = props;
+  const dh = useApi();
   const handleCreateChart = useCallback(
     ({
       metadata,
@@ -66,7 +68,7 @@ export function ChartBuilderPlugin(
       const { root } = layout;
       LayoutUtils.openComponent({ root, config });
     },
-    [id, layout]
+    [dh, id, layout]
   );
 
   useListener(layout.eventHub, IrisGridEvent.CREATE_CHART, handleCreateChart);

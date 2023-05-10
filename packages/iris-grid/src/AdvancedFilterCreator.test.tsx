@@ -13,6 +13,8 @@ import { AdvancedFilterOptions } from './CommonTypes';
 import IrisGridTestUtils from './IrisGridTestUtils';
 import IrisGridModel from './IrisGridModel';
 
+const irisGridTestUtils = new IrisGridTestUtils(dh);
+
 // let mockFilterHandlers = [];
 // let mockSelectedType;
 // let mockValue;
@@ -51,8 +53,8 @@ function makeAdvancedFilterCreatorWrapper(
       invertSelection: false,
       selectedValues: [],
     },
-    model: IrisGridTestUtils.makeModel(dh),
-    column: IrisGridTestUtils.makeColumn(),
+    model: irisGridTestUtils.makeModel(),
+    column: irisGridTestUtils.makeColumn(),
     formatter: new Formatter(dh),
   }
 ) {

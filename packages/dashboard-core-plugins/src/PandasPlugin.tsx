@@ -8,6 +8,7 @@ import {
   useListener,
 } from '@deephaven/dashboard';
 import { IrisGridModelFactory } from '@deephaven/iris-grid';
+import { useApi } from '@deephaven/jsapi-bootstrap';
 import type { Table } from '@deephaven/jsapi-types';
 import shortid from 'shortid';
 import { PandasPanel, PandasPanelProps } from './panels';
@@ -19,6 +20,8 @@ export type PandasPluginProps = Partial<DashboardPluginComponentProps> & {
 export function PandasPlugin(props: PandasPluginProps): JSX.Element | null {
   assertIsDashboardPluginProps(props);
   const { hydrate, id, layout, registerComponent } = props;
+
+  const dh = useApi();
 
   const handlePanelOpen = useCallback(
     ({ dragEvent, fetch, panelId = shortid.generate(), widget }) => {

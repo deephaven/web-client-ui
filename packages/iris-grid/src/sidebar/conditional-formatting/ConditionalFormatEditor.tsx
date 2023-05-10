@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import classNames from 'classnames';
 import { Button } from '@deephaven/components';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { FormatColumnWhereIcon, FormatRowWhereIcon } from '../icons';
 import ColumnFormatEditor from './ColumnFormatEditor';
@@ -23,6 +24,7 @@ export type UpdateCallback = (rule?: FormattingRule) => void;
 export type CancelCallback = () => void;
 
 export interface ConditionalFormatEditorProps {
+  dh: DhType;
   columns: readonly ModelColumn[];
   rule?: FormattingRule;
   onCancel?: CancelCallback;
@@ -57,6 +59,7 @@ function ConditionalFormatEditor(
 ): JSX.Element {
   const {
     columns: originalColumns,
+    dh,
     onSave = DEFAULT_CALLBACK,
     onUpdate = DEFAULT_CALLBACK,
     onCancel = DEFAULT_CALLBACK,
