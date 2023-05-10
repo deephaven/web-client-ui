@@ -6,6 +6,7 @@ import ChartTestUtils from './ChartTestUtils';
 import ChartTheme from './ChartTheme';
 
 const chartUtils = new ChartUtils(dh);
+const chartTestUtils = new ChartTestUtils(dh);
 
 function makeFormatter() {
   return new Formatter(dh);
@@ -176,13 +177,13 @@ describe('number format string translations', () => {
 describe('updating layout axes', () => {
   function makeTwinAxes() {
     return [
-      ChartTestUtils.makeAxis({ label: 'X Axis' }),
-      ChartTestUtils.makeAxis({
+      chartTestUtils.makeAxis({ label: 'X Axis' }),
+      chartTestUtils.makeAxis({
         label: 'Y Axis',
         type: dh.plot.AxisType.Y,
         position: dh.plot.AxisPosition.RIGHT,
       }),
-      ChartTestUtils.makeAxis({
+      chartTestUtils.makeAxis({
         label: 'Y2 Axis',
         type: dh.plot.AxisType.Y,
         position: dh.plot.AxisPosition.LEFT,
@@ -228,8 +229,8 @@ describe('updating layout axes', () => {
   it('removes stale axes', () => {
     const layout = {};
     const axes = makeTwinAxes();
-    const chart = ChartTestUtils.makeChart({ axes });
-    const figure = ChartTestUtils.makeFigure({ charts: [chart] });
+    const chart = chartTestUtils.makeChart({ axes });
+    const figure = chartTestUtils.makeFigure({ charts: [chart] });
     chartUtils.updateFigureAxes(layout, figure);
     expect(layout).toEqual(
       expect.objectContaining({
@@ -256,25 +257,25 @@ describe('updating layout axes', () => {
 
   describe('multiple axes', () => {
     const axes = [
-      ChartTestUtils.makeAxis({ label: 'X Axis' }),
-      ChartTestUtils.makeAxis({
+      chartTestUtils.makeAxis({ label: 'X Axis' }),
+      chartTestUtils.makeAxis({
         label: 'Y Axis',
         type: dh.plot.AxisType.Y,
         position: dh.plot.AxisPosition.RIGHT,
       }),
-      ChartTestUtils.makeAxis({
+      chartTestUtils.makeAxis({
         label: 'Y2 Axis',
         type: dh.plot.AxisType.Y,
         position: dh.plot.AxisPosition.RIGHT,
       }),
-      ChartTestUtils.makeAxis({
+      chartTestUtils.makeAxis({
         label: 'Y3 Axis',
         type: dh.plot.AxisType.Y,
         position: dh.plot.AxisPosition.RIGHT,
       }),
     ];
-    const chart = ChartTestUtils.makeChart({ axes });
-    const figure = ChartTestUtils.makeFigure({ charts: [chart] });
+    const chart = chartTestUtils.makeChart({ axes });
+    const figure = chartTestUtils.makeFigure({ charts: [chart] });
     const width = 400;
     const height = 1000;
     const expectedDomain = [0, 0.5];
@@ -324,12 +325,12 @@ describe('handles subplots and columns/rows correctly', () => {
   const halfYMargin = ChartUtils.AXIS_SIZE_PX / height / 2;
 
   it('handles row location correctly', () => {
-    const axes = ChartTestUtils.makeDefaultAxes();
+    const axes = chartTestUtils.makeDefaultAxes();
     const charts = [
-      ChartTestUtils.makeChart({ axes, row: 0 }),
-      ChartTestUtils.makeChart({ axes, row: 1 }),
+      chartTestUtils.makeChart({ axes, row: 0 }),
+      chartTestUtils.makeChart({ axes, row: 1 }),
     ];
-    const figure = ChartTestUtils.makeFigure({ charts, rows: 2 });
+    const figure = chartTestUtils.makeFigure({ charts, rows: 2 });
     expect(
       chartUtils.getChartBounds(figure, charts[0], width, height)
     ).toEqual({ bottom: 0.5 + halfYMargin, top: 1, left: 0, right: 1 });
@@ -339,12 +340,12 @@ describe('handles subplots and columns/rows correctly', () => {
   });
 
   it('handles column location correctly', () => {
-    const axes = ChartTestUtils.makeDefaultAxes();
+    const axes = chartTestUtils.makeDefaultAxes();
     const charts = [
-      ChartTestUtils.makeChart({ axes, column: 0 }),
-      ChartTestUtils.makeChart({ axes, column: 1 }),
+      chartTestUtils.makeChart({ axes, column: 0 }),
+      chartTestUtils.makeChart({ axes, column: 1 }),
     ];
-    const figure = ChartTestUtils.makeFigure({ charts, cols: 2 });
+    const figure = chartTestUtils.makeFigure({ charts, cols: 2 });
     expect(
       chartUtils.getChartBounds(figure, charts[0], width, height)
     ).toEqual({ bottom: 0, top: 1, left: 0, right: 0.5 - halfXMargin });
@@ -354,13 +355,13 @@ describe('handles subplots and columns/rows correctly', () => {
   });
 
   it('handles colspan', () => {
-    const axes = ChartTestUtils.makeDefaultAxes();
+    const axes = chartTestUtils.makeDefaultAxes();
     const charts = [
-      ChartTestUtils.makeChart({ axes, column: 0 }),
-      ChartTestUtils.makeChart({ axes, column: 1 }),
-      ChartTestUtils.makeChart({ axes, row: 1, colspan: 2 }),
+      chartTestUtils.makeChart({ axes, column: 0 }),
+      chartTestUtils.makeChart({ axes, column: 1 }),
+      chartTestUtils.makeChart({ axes, row: 1, colspan: 2 }),
     ];
-    const figure = ChartTestUtils.makeFigure({ charts, cols: 2, rows: 2 });
+    const figure = chartTestUtils.makeFigure({ charts, cols: 2, rows: 2 });
     expect(chartUtils.getChartBounds(figure, charts[0], width, height)).toEqual(
       {
         bottom: 0.5 + halfYMargin,
@@ -383,13 +384,13 @@ describe('handles subplots and columns/rows correctly', () => {
   });
 
   it('handles rowspan', () => {
-    const axes = ChartTestUtils.makeDefaultAxes();
+    const axes = chartTestUtils.makeDefaultAxes();
     const charts = [
-      ChartTestUtils.makeChart({ axes, row: 0 }),
-      ChartTestUtils.makeChart({ axes, row: 1 }),
-      ChartTestUtils.makeChart({ axes, column: 1, rowspan: 2 }),
+      chartTestUtils.makeChart({ axes, row: 0 }),
+      chartTestUtils.makeChart({ axes, row: 1 }),
+      chartTestUtils.makeChart({ axes, column: 1, rowspan: 2 }),
     ];
-    const figure = ChartTestUtils.makeFigure({ charts, cols: 2, rows: 2 });
+    const figure = chartTestUtils.makeFigure({ charts, cols: 2, rows: 2 });
     expect(chartUtils.getChartBounds(figure, charts[0], width, height)).toEqual(
       {
         bottom: 0.5 + halfYMargin,

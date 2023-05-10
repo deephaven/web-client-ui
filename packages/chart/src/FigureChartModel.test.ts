@@ -3,6 +3,8 @@ import { PlotData } from 'plotly.js';
 import ChartTestUtils from './ChartTestUtils';
 import FigureChartModel from './FigureChartModel';
 
+const chartTestUtils = new ChartTestUtils(dh);
+
 beforeEach(() => {
   jest.useFakeTimers();
 });
@@ -12,7 +14,7 @@ afterEach(() => {
 });
 
 it('populates the layout properly', () => {
-  const figure = ChartTestUtils.makeFigure();
+  const figure = chartTestUtils.makeFigure();
   const model = new FigureChartModel(dh, figure);
 
   expect(model.getLayout()).toEqual(
@@ -35,7 +37,7 @@ it('populates the layout properly', () => {
 });
 
 it('populates series data properly', () => {
-  const figure = ChartTestUtils.makeFigure();
+  const figure = chartTestUtils.makeFigure();
   const model = new FigureChartModel(dh, figure);
 
   expect(model.getData()).toEqual([
@@ -53,12 +55,12 @@ it('populates series data properly', () => {
 });
 
 it('populates horizontal series properly', () => {
-  const axes = ChartTestUtils.makeDefaultAxes();
-  let sources = axes.map(axis => ChartTestUtils.makeSource({ axis }));
+  const axes = chartTestUtils.makeDefaultAxes();
+  let sources = axes.map(axis => chartTestUtils.makeSource({ axis }));
   sources = [sources[1], sources[0]];
-  const series = ChartTestUtils.makeSeries({ sources });
-  const chart = ChartTestUtils.makeChart({ series: [series], axes });
-  const figure = ChartTestUtils.makeFigure({ charts: [chart] });
+  const series = chartTestUtils.makeSeries({ sources });
+  const chart = chartTestUtils.makeChart({ series: [series], axes });
+  const figure = chartTestUtils.makeFigure({ charts: [chart] });
 
   const model = new FigureChartModel(dh, figure);
 
@@ -68,11 +70,11 @@ it('populates horizontal series properly', () => {
 });
 
 it('converts histograms properly to bars', () => {
-  const series = ChartTestUtils.makeSeries({
+  const series = chartTestUtils.makeSeries({
     plotStyle: dh.plot.SeriesPlotStyle.HISTOGRAM,
   });
-  const chart = ChartTestUtils.makeChart({ series: [series] });
-  const figure = ChartTestUtils.makeFigure({ charts: [chart] });
+  const chart = chartTestUtils.makeChart({ series: [series] });
+  const figure = chartTestUtils.makeFigure({ charts: [chart] });
   const model = new FigureChartModel(dh, figure);
 
   expect(model.getData()).toEqual([
@@ -91,13 +93,13 @@ it('converts histograms properly to bars', () => {
 it('handles colors on line charts properly', () => {
   const lineColor = '#123fff';
   const shapeColor = '#abc999';
-  const series = ChartTestUtils.makeSeries({
+  const series = chartTestUtils.makeSeries({
     plotStyle: dh.plot.SeriesPlotStyle.LINE,
     lineColor,
     shapeColor,
   });
-  const chart = ChartTestUtils.makeChart({ series: [series] });
-  const figure = ChartTestUtils.makeFigure({ charts: [chart] });
+  const chart = chartTestUtils.makeChart({ series: [series] });
+  const figure = chartTestUtils.makeFigure({ charts: [chart] });
   const model = new FigureChartModel(dh, figure);
 
   expect(model.getData()).toEqual([
@@ -114,12 +116,12 @@ it('handles colors on line charts properly', () => {
 
 it('handles colors on bar charts properly', () => {
   const lineColor = '#badfad';
-  const series = ChartTestUtils.makeSeries({
+  const series = chartTestUtils.makeSeries({
     plotStyle: dh.plot.SeriesPlotStyle.BAR,
     lineColor,
   });
-  const chart = ChartTestUtils.makeChart({ series: [series] });
-  const figure = ChartTestUtils.makeFigure({ charts: [chart] });
+  const chart = chartTestUtils.makeChart({ series: [series] });
+  const figure = chartTestUtils.makeFigure({ charts: [chart] });
   const model = new FigureChartModel(dh, figure);
 
   expect(model.getData()).toEqual([
@@ -133,20 +135,20 @@ it('handles colors on bar charts properly', () => {
 
 describe('axis transform tests', () => {
   it('handles log x-axis properly', () => {
-    const xAxis = ChartTestUtils.makeAxis({
+    const xAxis = chartTestUtils.makeAxis({
       label: ChartTestUtils.DEFAULT_X_TITLE,
       type: dh.plot.AxisType.X,
       log: true,
     });
-    const yAxis = ChartTestUtils.makeAxis({
+    const yAxis = chartTestUtils.makeAxis({
       label: ChartTestUtils.DEFAULT_Y_TITLE,
       type: dh.plot.AxisType.Y,
     });
     const axes = [xAxis, yAxis];
-    const sources = axes.map(axis => ChartTestUtils.makeSource({ axis }));
-    const series = ChartTestUtils.makeSeries({ sources });
-    const chart = ChartTestUtils.makeChart({ series: [series], axes });
-    const figure = ChartTestUtils.makeFigure({ charts: [chart] });
+    const sources = axes.map(axis => chartTestUtils.makeSource({ axis }));
+    const series = chartTestUtils.makeSeries({ sources });
+    const chart = chartTestUtils.makeChart({ series: [series], axes });
+    const figure = chartTestUtils.makeFigure({ charts: [chart] });
     const model = new FigureChartModel(dh, figure);
 
     expect(model.getLayout().xaxis).toMatchObject({
@@ -158,20 +160,20 @@ describe('axis transform tests', () => {
   });
 
   it('handles log y-axis properly', () => {
-    const xAxis = ChartTestUtils.makeAxis({
+    const xAxis = chartTestUtils.makeAxis({
       label: ChartTestUtils.DEFAULT_X_TITLE,
       type: dh.plot.AxisType.X,
     });
-    const yAxis = ChartTestUtils.makeAxis({
+    const yAxis = chartTestUtils.makeAxis({
       label: ChartTestUtils.DEFAULT_Y_TITLE,
       type: dh.plot.AxisType.Y,
       log: true,
     });
     const axes = [xAxis, yAxis];
-    const sources = axes.map(axis => ChartTestUtils.makeSource({ axis }));
-    const series = ChartTestUtils.makeSeries({ sources });
-    const chart = ChartTestUtils.makeChart({ series: [series], axes });
-    const figure = ChartTestUtils.makeFigure({ charts: [chart] });
+    const sources = axes.map(axis => chartTestUtils.makeSource({ axis }));
+    const series = chartTestUtils.makeSeries({ sources });
+    const chart = chartTestUtils.makeChart({ series: [series], axes });
+    const figure = chartTestUtils.makeFigure({ charts: [chart] });
     const model = new FigureChartModel(dh, figure);
 
     expect(model.getLayout().xaxis).not.toMatchObject({
@@ -185,27 +187,27 @@ describe('axis transform tests', () => {
 
 describe('multiple axes', () => {
   it('handles two y-axes properly', () => {
-    const xaxis = ChartTestUtils.makeAxis({
+    const xaxis = chartTestUtils.makeAxis({
       label: 'x1',
       type: dh.plot.AxisType.X,
       position: dh.plot.AxisPosition.BOTTOM,
     });
 
-    const yaxis1 = ChartTestUtils.makeAxis({
+    const yaxis1 = chartTestUtils.makeAxis({
       label: 'y1',
       type: dh.plot.AxisType.Y,
       position: dh.plot.AxisPosition.LEFT,
     });
 
-    const yaxis2 = ChartTestUtils.makeAxis({
+    const yaxis2 = chartTestUtils.makeAxis({
       label: 'y2',
       type: dh.plot.AxisType.Y,
       position: dh.plot.AxisPosition.RIGHT,
     });
     const axes = [xaxis, yaxis1, yaxis2];
 
-    const chart = ChartTestUtils.makeChart({ axes });
-    const figure = ChartTestUtils.makeFigure({ charts: [chart] });
+    const chart = chartTestUtils.makeChart({ axes });
+    const figure = chartTestUtils.makeFigure({ charts: [chart] });
     const model = new FigureChartModel(dh, figure);
 
     const layout = model.getLayout();
@@ -234,25 +236,25 @@ describe('multiple axes', () => {
   });
 
   it('handles multiple y-axes on the same side properly', () => {
-    const xaxis = ChartTestUtils.makeAxis({
+    const xaxis = chartTestUtils.makeAxis({
       label: 'x1',
       type: dh.plot.AxisType.X,
       position: dh.plot.AxisPosition.BOTTOM,
     });
 
-    const yaxis1 = ChartTestUtils.makeAxis({
+    const yaxis1 = chartTestUtils.makeAxis({
       label: 'y1',
       type: dh.plot.AxisType.Y,
       position: dh.plot.AxisPosition.RIGHT,
     });
 
-    const yaxis2 = ChartTestUtils.makeAxis({
+    const yaxis2 = chartTestUtils.makeAxis({
       label: 'y2',
       type: dh.plot.AxisType.Y,
       position: dh.plot.AxisPosition.RIGHT,
     });
 
-    const yaxis3 = ChartTestUtils.makeAxis({
+    const yaxis3 = chartTestUtils.makeAxis({
       label: 'y3',
       type: dh.plot.AxisType.Y,
       position: dh.plot.AxisPosition.RIGHT,
@@ -260,8 +262,8 @@ describe('multiple axes', () => {
 
     const axes = [xaxis, yaxis1, yaxis2, yaxis3];
 
-    const chart = ChartTestUtils.makeChart({ axes });
-    const figure = ChartTestUtils.makeFigure({ charts: [chart] });
+    const chart = chartTestUtils.makeChart({ axes });
+    const figure = chartTestUtils.makeFigure({ charts: [chart] });
     const model = new FigureChartModel(dh, figure);
 
     const layout = model.getLayout();
@@ -303,27 +305,27 @@ describe('multiple axes', () => {
   });
 
   it('handles two x-axes properly', () => {
-    const xaxis1 = ChartTestUtils.makeAxis({
+    const xaxis1 = chartTestUtils.makeAxis({
       label: 'x1',
       type: dh.plot.AxisType.X,
       position: dh.plot.AxisPosition.BOTTOM,
     });
 
-    const xaxis2 = ChartTestUtils.makeAxis({
+    const xaxis2 = chartTestUtils.makeAxis({
       label: 'x2',
       type: dh.plot.AxisType.X,
       position: dh.plot.AxisPosition.TOP,
     });
 
-    const yaxis = ChartTestUtils.makeAxis({
+    const yaxis = chartTestUtils.makeAxis({
       label: 'y1',
       type: dh.plot.AxisType.Y,
       position: dh.plot.AxisPosition.LEFT,
     });
     const axes = [xaxis1, xaxis2, yaxis];
 
-    const chart = ChartTestUtils.makeChart({ axes });
-    const figure = ChartTestUtils.makeFigure({ charts: [chart] });
+    const chart = chartTestUtils.makeChart({ axes });
+    const figure = chartTestUtils.makeFigure({ charts: [chart] });
     const model = new FigureChartModel(dh, figure);
 
     const layout = model.getLayout();
@@ -352,25 +354,25 @@ describe('multiple axes', () => {
   });
 
   it('handles multiple x-axes on the same side properly', () => {
-    const xaxis = ChartTestUtils.makeAxis({
+    const xaxis = chartTestUtils.makeAxis({
       label: 'x1',
       type: dh.plot.AxisType.X,
       position: dh.plot.AxisPosition.TOP,
     });
 
-    const xaxis2 = ChartTestUtils.makeAxis({
+    const xaxis2 = chartTestUtils.makeAxis({
       label: 'x2',
       type: dh.plot.AxisType.X,
       position: dh.plot.AxisPosition.TOP,
     });
 
-    const xaxis3 = ChartTestUtils.makeAxis({
+    const xaxis3 = chartTestUtils.makeAxis({
       label: 'x3',
       type: dh.plot.AxisType.X,
       position: dh.plot.AxisPosition.TOP,
     });
 
-    const yaxis = ChartTestUtils.makeAxis({
+    const yaxis = chartTestUtils.makeAxis({
       label: 'y1',
       type: dh.plot.AxisType.Y,
       position: dh.plot.AxisPosition.LEFT,
@@ -378,8 +380,8 @@ describe('multiple axes', () => {
 
     const axes = [xaxis, xaxis2, xaxis3, yaxis];
 
-    const chart = ChartTestUtils.makeChart({ axes });
-    const figure = ChartTestUtils.makeFigure({ charts: [chart] });
+    const chart = chartTestUtils.makeChart({ axes });
+    const figure = chartTestUtils.makeFigure({ charts: [chart] });
     const model = new FigureChartModel(dh, figure);
 
     const layout = model.getLayout();
@@ -422,9 +424,9 @@ describe('multiple axes', () => {
 });
 
 it('adds new series', () => {
-  const series1 = ChartTestUtils.makeSeries({ name: 'S1' });
-  const chart = ChartTestUtils.makeChart({ series: [series1] });
-  const figure = ChartTestUtils.makeFigure({
+  const series1 = chartTestUtils.makeSeries({ name: 'S1' });
+  const chart = chartTestUtils.makeChart({ series: [series1] });
+  const figure = chartTestUtils.makeFigure({
     charts: [chart],
   });
   const model = new FigureChartModel(dh, figure);
@@ -437,7 +439,7 @@ it('adds new series', () => {
     }),
   ]);
 
-  const series2 = ChartTestUtils.makeSeries({ name: 'S2' });
+  const series2 = chartTestUtils.makeSeries({ name: 'S2' });
   chart.series = [...chart.series, series2];
 
   figure.fireEvent(dh.plot.Figure.EVENT_SERIES_ADDED, series2);
@@ -458,9 +460,9 @@ it('adds new series', () => {
 
 describe('legend visibility', () => {
   function testLegend(showLegend: boolean | null): Partial<PlotData>[] {
-    const series1 = ChartTestUtils.makeSeries({ name: 'S1' });
-    const chart = ChartTestUtils.makeChart({ series: [series1], showLegend });
-    const figure = ChartTestUtils.makeFigure({
+    const series1 = chartTestUtils.makeSeries({ name: 'S1' });
+    const chart = chartTestUtils.makeChart({ series: [series1], showLegend });
+    const figure = chartTestUtils.makeFigure({
       charts: [chart],
     });
     const model = new FigureChartModel(dh, figure);
