@@ -1340,6 +1340,7 @@ export class TableUtils {
     value: string,
     timeZone: string
   ): FilterCondition | null {
+    const { dh } = this;
     if (TableUtils.isDateType(column.type)) {
       return this.makeQuickDateFilterWithOperation(
         column,
