@@ -51,7 +51,7 @@ export function PandasPlugin(props: PandasPluginProps): JSX.Element | null {
       const { root } = layout;
       LayoutUtils.openComponent({ root, config, dragEvent });
     },
-    [id, layout]
+    [dh, id, layout]
   );
 
   useEffect(

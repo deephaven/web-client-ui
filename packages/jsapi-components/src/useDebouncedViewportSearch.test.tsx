@@ -1,4 +1,3 @@
-import React from 'react';
 import { renderHook } from '@testing-library/react-hooks';
 import type {
   Column,
@@ -9,17 +8,15 @@ import type {
 import dh from '@deephaven/jsapi-shim';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import { TestUtils } from '@deephaven/utils';
-import { ApiContext } from '@deephaven/jsapi-bootstrap';
 import useDebouncedViewportSearch, {
   DEBOUNCE_VIEWPORT_SEARCH_MS,
 } from './useDebouncedViewportSearch';
 import { UseViewportDataResult } from './useViewportData';
+import { makeApiContextWrapper } from './HookTestUtils';
 
 const tableUtils = new TableUtils(dh);
 
-const wrapper = ({ children }) => (
-  <ApiContext.Provider value={dh}>{children}</ApiContext.Provider>
-);
+const wrapper = makeApiContextWrapper(dh);
 
 // Mock js api objects
 const column = TestUtils.createMockProxy<Column>({

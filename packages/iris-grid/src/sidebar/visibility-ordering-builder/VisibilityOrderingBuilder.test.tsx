@@ -92,7 +92,6 @@ function BuilderWithNestedGroups({
 
 function makeModel() {
   return irisGridTestUtils.makeModel(
-    dh,
     irisGridTestUtils.makeTable({ columns: COLUMNS })
   );
 }

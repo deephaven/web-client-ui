@@ -33,7 +33,7 @@ function makeCopyOperation(
   ranges = GridTestUtils.makeRanges(),
   includeHeaders = false,
   movedColumns = [],
-  userColumnWidths = irisGridTestUtils.makeUserColumnWidths()
+  userColumnWidths = IrisGridTestUtils.makeUserColumnWidths()
 ): CopyOperation {
   return {
     ranges,

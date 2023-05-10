@@ -1,7 +1,5 @@
-import React from 'react';
 import { act, renderHook } from '@testing-library/react-hooks';
 import type { FilterCondition, Table } from '@deephaven/jsapi-types';
-import { ApiContext } from '@deephaven/jsapi-bootstrap';
 import dh from '@deephaven/jsapi-shim';
 import {
   OnTableUpdatedEvent,
@@ -11,6 +9,7 @@ import {
 import { TestUtils } from '@deephaven/utils';
 import useTableSize from './useTableSize';
 import useViewportData, { UseViewportDataProps } from './useViewportData';
+import { makeApiContextWrapper } from './HookTestUtils';
 
 jest.mock('./useTableSize');
 
@@ -56,9 +55,7 @@ const optionsUseDefaults: UseViewportDataProps<unknown, Table> = {
   table,
 };
 
-const wrapper: React.FC<Table> = ({ children }) => (
-  <ApiContext.Provider value={dh}>{children}</ApiContext.Provider>
-);
+const wrapper: React.FC<Table> = makeApiContextWrapper(dh);
 
 beforeEach(() => {
   jest.clearAllMocks();
