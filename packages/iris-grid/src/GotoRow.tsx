@@ -17,6 +17,7 @@ import { Button, DateTimeInput } from '@deephaven/components';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import classNames from 'classnames';
 import './GotoRow.scss';
+import shortid from 'shortid';
 import IrisGridModel from './IrisGridModel';
 import IrisGridProxyModel from './IrisGridProxyModel';
 import IrisGridBottomBar from './IrisGridBottomBar';
@@ -86,9 +87,9 @@ function GotoRow({
     ({ columns } = model.table);
   }
 
-  const res = 'Row number';
-
   const { rowCount } = model;
+
+  const gotoRowInputId = `goto-row-input-${shortid()}`;
 
   const handleGotoValueNumberKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -160,6 +161,7 @@ function GotoRow({
                 }
               }}
               value={gotoValue}
+              aria-label="value-input"
             />
           </div>
         );
@@ -178,6 +180,7 @@ function GotoRow({
               defaultValue={gotoValue}
               onChange={onGotoValueInputChanged}
               onSubmit={handleGotoValueKeySubmit}
+              aria-label="value-input"
             />
           </div>
         );
@@ -193,18 +196,25 @@ function GotoRow({
                   );
                 }}
                 value={gotoValueFilter}
+                aria-label="filter-type-select"
               >
+                <option
+                  key={FilterType.eqIgnoreCase}
+                  value={FilterType.eqIgnoreCase}
+                >
+                  Equals (case-insensitive)
+                </option>
+                <option
+                  key={FilterType.containsIgnoreCase}
+                  value={FilterType.containsIgnoreCase}
+                >
+                  Contains (case-insensitive)
+                </option>
                 <option key={FilterType.eq} value={FilterType.eq}>
                   Equals
                 </option>
                 <option key={FilterType.contains} value={FilterType.contains}>
                   Contains
-                </option>
-                <option
-                  key={FilterType.eqIgnoreCase}
-                  value={FilterType.eqIgnoreCase}
-                >
-                  EqIgnoreCase
                 </option>
               </select>
             </div>
@@ -218,6 +228,7 @@ function GotoRow({
                 placeholder="value"
                 onChange={e => onGotoValueInputChanged(e.target.value)}
                 value={gotoValue}
+                aria-label="value-input"
               />
             </div>
           </>
@@ -231,6 +242,7 @@ function GotoRow({
                 onGotoValueInputChanged(event.target.value);
               }}
               value={gotoValue}
+              aria-label="value-input"
             >
               <option aria-label="null value" key="null" value="" />
               <option key="true" value="true">
@@ -252,6 +264,7 @@ function GotoRow({
               placeholder="value"
               onChange={e => onGotoValueInputChanged(e.target.value)}
               value={gotoValue}
+              aria-label="value-input"
             />
           </div>
         );
@@ -279,10 +292,13 @@ function GotoRow({
             onFocus={() => setIsGotoRowActive(true)}
             role="group"
           >
-            <div className="goto-row-text">Go to row</div>
+            <label className="goto-row-text" htmlFor={gotoRowInputId}>
+              Go to row
+            </label>
             <div className="goto-row-input">
               <input
                 ref={gotoRowInputRef}
+                data-testid="goto-row-input"
                 type="number"
                 onKeyDown={e => {
                   if (e.key === 'Enter') {
@@ -294,11 +310,12 @@ function GotoRow({
                 className={classNames('form-control', {
                   'is-invalid': gotoRowError !== '',
                 })}
-                placeholder={res}
+                placeholder="Row number"
                 onChange={event => {
                   onGotoRowNumberChanged(event);
                 }}
                 value={gotoRow}
+                id={gotoRowInputId}
               />
             </div>
             <div className="goto-row-text">
@@ -314,7 +331,7 @@ function GotoRow({
         </div>
         {model.isSeekRowAvailable && (
           <div className="goto-row-row">
-            <div
+            <fieldset
               className={classNames('goto-row-wrapper', {
                 'is-inactive': isGotoRowActive,
               })}
@@ -322,7 +339,9 @@ function GotoRow({
               onFocus={() => setIsGotoRowActive(false)}
               role="group"
             >
-              <div className="goto-row-text">Go to value</div>
+              <div>
+                <legend className="goto-row-text">Go to value</legend>
+              </div>
               <div className="goto-row-input">
                 <select
                   className="custom-select"
@@ -331,6 +350,7 @@ function GotoRow({
                     onGotoValueSelectedColumnNameChanged(columnName);
                   }}
                   value={gotoValueSelectedColumnName}
+                  aria-label="column-name-select"
                 >
                   {columns.map(column => (
                     <option key={column.name} value={column.name}>
@@ -365,7 +385,7 @@ function GotoRow({
               {gotoValueError && (
                 <div className="text-danger">{gotoValueError}</div>
               )}
-            </div>
+            </fieldset>
           </div>
         )}
       </>

@@ -844,7 +844,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       gotoValueError: '',
 
       gotoValueSelectedColumnName: model.columns[0]?.name ?? '',
-      gotoValueSelectedFilter: FilterType.eq,
+      gotoValueSelectedFilter: FilterType.eqIgnoreCase,
       gotoValue: '',
       columnHeaderGroups: columnHeaderGroups ?? model.initialColumnHeaderGroups,
     };
@@ -3339,10 +3339,12 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       searchFromRow = 0;
     }
 
-    const isContains = gotoValueSelectedFilter === FilterType.contains;
-    const isEquals =
-      gotoValueSelectedFilter === FilterType.eq ||
-      gotoValueSelectedFilter === FilterType.eqIgnoreCase;
+    const isContains =
+      gotoValueSelectedFilter === FilterType.contains ||
+      gotoValueSelectedFilter === FilterType.containsIgnoreCase;
+    const isIgnoreCase =
+      gotoValueSelectedFilter === FilterType.eqIgnoreCase ||
+      gotoValueSelectedFilter === FilterType.containsIgnoreCase;
 
     try {
       const { formatter } = model;
@@ -3358,7 +3360,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             selectedColumn,
             dh.ValueType.STRING,
             inputString,
-            isEquals,
+            isIgnoreCase,
             isContains,
             isBackwards ?? false
           );
