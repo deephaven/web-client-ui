@@ -12,9 +12,10 @@ import {
   getTreeItems,
 } from './sortable-tree/utilities';
 
+const irisGridTestUtils = new IrisGridTestUtils(dh);
 const COLUMN_PREFIX = 'TestColumn';
 const GROUP_PREFIX = 'TestGroup';
-const COLUMNS = IrisGridTestUtils.makeColumns(10, COLUMN_PREFIX);
+const COLUMNS = irisGridTestUtils.makeColumns(10, COLUMN_PREFIX);
 const SINGLE_HEADER_GROUPS: ColumnGroup[] = [
   {
     name: `${GROUP_PREFIX}OneAndThree`,
@@ -47,9 +48,8 @@ const NESTED_COLUMN_HEADER_GROUPS: ColumnGroup[] = [
 ];
 
 function makeTreeItems(groups: ColumnGroup[] = []) {
-  const model = IrisGridTestUtils.makeModel(
-    dh,
-    IrisGridTestUtils.makeTable({
+  const model = irisGridTestUtils.makeModel(
+    irisGridTestUtils.makeTable({
       columns: COLUMNS,
       layoutHints: { columnGroups: groups },
     })

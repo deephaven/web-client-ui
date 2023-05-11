@@ -1,5 +1,6 @@
 import ShellQuote, { ParseEntry, ControlOperator } from 'shell-quote';
-import dh, { VariableTypeUnion } from '@deephaven/jsapi-shim';
+import dh from '@deephaven/jsapi-shim';
+import type { VariableTypeUnion } from '@deephaven/jsapi-types';
 
 class ConsoleUtils {
   static hasComment(arg: ParseEntry): arg is { comment: string } {

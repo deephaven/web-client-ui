@@ -1653,7 +1653,7 @@ class IrisGridUtils {
       if (partitionColumn) {
         const partitionFilter = partitionColumn
           .filter()
-          .eq(dh.FilterValue.ofString(partition));
+          .eq(this.dh.FilterValue.ofString(partition));
         filters = [partitionFilter, ...filters];
       }
     }

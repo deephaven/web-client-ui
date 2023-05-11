@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Chart, ChartModel, ChartModelFactory } from '@deephaven/chart'; // chart is used to display Deephaven charts
 import { ContextMenuRoot, LoadingOverlay } from '@deephaven/components'; // Use the loading spinner from the Deephaven components package
-import type { IdeConnection } from '@deephaven/jsapi-types'; // Import the shim to use the JS API
+import type { dh as DhType, IdeConnection } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import './App.scss'; // Styles for in this app
 import { useApi } from '@deephaven/jsapi-bootstrap';
@@ -11,11 +11,12 @@ const log = Log.module('EmbedChart.App');
 
 /**
  * Load an existing Deephaven figure with the connection provided
+ * @param dh JSAPI instance
  * @param connection The Deephaven session object
  * @param name Name of the figure to load
  * @returns Deephaven figure
  */
-async function loadFigure(connection: IdeConnection, name: string) {
+async function loadFigure(dh: DhType, connection: IdeConnection, name: string) {
   log.info(`Fetching figure ${name}...`);
 
   const definition = { name, type: dh.VariableType.FIGURE };
@@ -55,7 +56,7 @@ function App(): JSX.Element {
           log.debug('Loading figure', name, '...');
 
           // Load the figure up.
-          const figure = await loadFigure(connection, name);
+          const figure = await loadFigure(dh, connection, name);
 
           // Create the `ChartModel` for use with the `Chart` component
           log.debug(`Creating model...`);

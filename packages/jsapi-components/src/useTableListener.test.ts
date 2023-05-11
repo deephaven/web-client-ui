@@ -1,5 +1,5 @@
 import { renderHook } from '@testing-library/react-hooks';
-import { Evented } from '@deephaven/jsapi-types';
+import type { Evented } from '@deephaven/jsapi-types';
 import useTableListener from './useTableListener';
 
 const eventName = 'mock.event';

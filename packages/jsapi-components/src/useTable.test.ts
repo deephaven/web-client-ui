@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react-hooks';
-import type { Column } from '@deephaven/jsapi-shim';
 import dh from '@deephaven/jsapi-shim';
+import type { Column } from '@deephaven/jsapi-types';
 import ColumnNameError from './ColumnNameError';
 import TableDisconnectError from './TableDisconnectError';
 

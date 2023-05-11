@@ -13,10 +13,12 @@ import { flattenTree, getTreeItems } from './sortable-tree/utilities';
 
 jest.useFakeTimers();
 
+const irisGridTestUtils = new IrisGridTestUtils(dh);
+
 const ALL_PREFIX = 'Test';
 const COLUMN_PREFIX = 'TestColumn';
 const GROUP_PREFIX = 'TestGroup';
-const COLUMNS = IrisGridTestUtils.makeColumns(10, COLUMN_PREFIX);
+const COLUMNS = irisGridTestUtils.makeColumns(10, COLUMN_PREFIX);
 const SELECTED_CLASS = 'isSelected';
 const COLUMN_HEADER_GROUPS: ColumnGroup[] = [
   {
@@ -89,16 +91,14 @@ function BuilderWithNestedGroups({
 }
 
 function makeModel() {
-  return IrisGridTestUtils.makeModel(
-    dh,
-    IrisGridTestUtils.makeTable({ columns: COLUMNS })
+  return irisGridTestUtils.makeModel(
+    irisGridTestUtils.makeTable({ columns: COLUMNS })
   );
 }
 
 function makeModelWithGroups(groups = COLUMN_HEADER_GROUPS) {
-  return IrisGridTestUtils.makeModel(
-    dh,
-    IrisGridTestUtils.makeTable({
+  return irisGridTestUtils.makeModel(
+    irisGridTestUtils.makeTable({
       columns: COLUMNS,
       layoutHints: { columnGroups: groups },
     })
@@ -157,9 +157,8 @@ test('Renders all children', () => {
 });
 
 test('Renders immovable items', () => {
-  const model = IrisGridTestUtils.makeModel(
-    dh,
-    IrisGridTestUtils.makeTable({
+  const model = irisGridTestUtils.makeModel(
+    irisGridTestUtils.makeTable({
       columns: COLUMNS,
       layoutHints: {
         frozenColumns: [`${COLUMN_PREFIX}2`, `${COLUMN_PREFIX}4`],
@@ -181,10 +180,9 @@ test('Renders immovable items', () => {
 });
 
 test('Renders a grid of only immovable items', () => {
-  const model = IrisGridTestUtils.makeModel(
-    dh,
-    IrisGridTestUtils.makeTable({
-      columns: IrisGridTestUtils.makeColumns(1, COLUMN_PREFIX),
+  const model = irisGridTestUtils.makeModel(
+    irisGridTestUtils.makeTable({
+      columns: irisGridTestUtils.makeColumns(1, COLUMN_PREFIX),
       layoutHints: {
         frozenColumns: [`${COLUMN_PREFIX}0`],
       },

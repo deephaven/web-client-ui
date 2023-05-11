@@ -27,6 +27,7 @@ const EXPECT_TIME_ZONE_PARAM = expect.objectContaining({
   id: DEFAULT_TIME_ZONE_ID,
 });
 const tableUtils = new TableUtils(dh);
+const irisGridTestUtils = new IrisGridTestUtils(dh);
 
 /**
  * Sends a mock event to the last registered event handler with the given event
@@ -385,7 +386,7 @@ describe('quick filter tests', () => {
 
   function makeFilterColumn(type = 'string'): MockColumn {
     const filter = makeFilter();
-    const column = IrisGridTestUtils.makeColumn('test placeholder', type, 13);
+    const column = irisGridTestUtils.makeColumn('test placeholder', type, 13);
     column.filter = jest.fn(() => filter);
     return column as MockColumn;
   }

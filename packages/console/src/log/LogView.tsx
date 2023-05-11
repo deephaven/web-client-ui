@@ -2,7 +2,7 @@ import React, { PureComponent, ReactElement } from 'react';
 import { Button, DropdownActions, DropdownMenu } from '@deephaven/components';
 import { vsGear, dhTrashUndo } from '@deephaven/icons';
 import { assertNotNull } from '@deephaven/utils';
-import { IdeSession, LogItem } from '@deephaven/jsapi-shim';
+import type { IdeSession, LogItem } from '@deephaven/jsapi-types';
 import { Placement } from 'popper.js';
 import * as monaco from 'monaco-editor';
 import ConsoleUtils from '../common/ConsoleUtils';

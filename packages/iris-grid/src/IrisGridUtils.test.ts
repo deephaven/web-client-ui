@@ -12,6 +12,7 @@ import IrisGridUtils, {
 } from './IrisGridUtils';
 
 const irisGridUtils = new IrisGridUtils(dh);
+const irisGridTestUtils = new IrisGridTestUtils(dh);
 
 function makeFilter() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -38,7 +39,7 @@ function makeTable({
   return new (dh as any).Table({ columns, sort });
 }
 function makeColumn(index: number): Column {
-  return IrisGridTestUtils.makeColumn(
+  return irisGridTestUtils.makeColumn(
     `${index}`,
     IrisGridTestUtils.DEFAULT_TYPE,
     index
@@ -47,7 +48,7 @@ function makeColumn(index: number): Column {
 
 describe('quickfilters tests', () => {
   it('exports/imports empty list', () => {
-    const table = IrisGridTestUtils.makeTable();
+    const table = irisGridTestUtils.makeTable();
     const filters = new Map();
     const exportedFilters = IrisGridUtils.dehydrateQuickFilters(filters);
     expect(exportedFilters).toEqual([]);
@@ -382,7 +383,7 @@ describe('remove columns in moved columns', () => {
 });
 
 describe('getPrevVisibleColumns', () => {
-  const columns = IrisGridTestUtils.makeColumns(5);
+  const columns = irisGridTestUtils.makeColumns(5);
   it('returns [] for startIndex < 0', () => {
     expect(IrisGridUtils.getPrevVisibleColumns(columns, -1, 1, [], [])).toEqual(
       []
@@ -407,7 +408,7 @@ describe('getPrevVisibleColumns', () => {
 });
 
 describe('getNextVisibleColumns', () => {
-  const columns = IrisGridTestUtils.makeColumns(5);
+  const columns = irisGridTestUtils.makeColumns(5);
   it('returns [] for startIndex >= columns.length', () => {
     expect(
       IrisGridUtils.getNextVisibleColumns(columns, columns.length, 1, [], [])

@@ -30,21 +30,27 @@ class IrisGridTestUtils {
     return value;
   }
 
-  static makeColumn(
+  private dh: DhType;
+
+  constructor(dh: DhType) {
+    this.dh = dh;
+  }
+
+  makeColumn(
     name?: string,
     type: string = IrisGridTestUtils.DEFAULT_TYPE,
     index = 0
   ): Column {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return new (dh as any).Column({ index, name, type });
+    return new (this.dh as any).Column({ index, name, type });
   }
 
-  static makeRollupTableConfig(): RollupConfig {
+  makeRollupTableConfig(): RollupConfig {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return new (dh as any).RollupTableConfig();
+    return new (this.dh as any).RollupTableConfig();
   }
 
-  static makeColumns(count = 5, prefix = ''): Column[] {
+  makeColumns(count = 5, prefix = ''): Column[] {
     const columns = [];
     for (let i = 0; i < count; i += 1) {
       columns.push(
@@ -62,9 +68,9 @@ class IrisGridTestUtils {
     return userColumnWidths;
   }
 
-  static makeRow(i: number): Row {
+  makeRow(i: number): Row {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const row = new (dh as any).Row({ index: i, name: `${i}` });
+    const row = new (this.dh as any).Row({ index: i, name: `${i}` });
 
     row.get = jest.fn(column =>
       IrisGridTestUtils.valueForCell(i, column.index)
@@ -73,60 +79,63 @@ class IrisGridTestUtils {
     return row;
   }
 
-  static makeFilter(): FilterCondition {
+  makeFilter(): FilterCondition {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return new (dh as any).FilterCondition();
+    return new (this.dh as any).FilterCondition();
   }
 
-  static makeSort(): Sort {
+  makeSort(): Sort {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return new (dh as any).Sort();
+    return new (this.dh as any).Sort();
   }
 
-  static makeTable({
-    columns = IrisGridTestUtils.makeColumns(),
+  makeTable({
+    columns = this.makeColumns(),
     size = 1000000000,
     sort = [],
     layoutHints = {} as LayoutHints,
   } = {}): Table {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const table = new (dh as any).Table({ columns, size, sort });
+    const table = new (this.dh as any).Table({ columns, size, sort });
     table.copy = jest.fn(() => Promise.resolve(table));
     table.freeze = jest.fn(() => Promise.resolve(table));
     table.layoutHints = layoutHints;
     return table;
   }
 
-  static makeTreeTable(
-    columns = IrisGridTestUtils.makeColumns(),
+  makeTreeTable(
+    columns = this.makeColumns(),
     size = 1000000000,
     sort = []
   ): TreeTable {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const table = new (dh as any).TreeTable({ columns, size, sort });
+    const table = new (this.dh as any).TreeTable({ columns, size, sort });
     table.copy = jest.fn(() => Promise.resolve(table));
     return table;
   }
 
-  static makeInputTable(keyColumns: Column[] = []): InputTable {
+  makeInputTable(keyColumns: Column[] = []): InputTable {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return new (dh as any).InputTable(keyColumns);
+    return new (this.dh as any).InputTable(keyColumns);
   }
 
-  static makeSubscription(
-    table = IrisGridTestUtils.makeTable()
-  ): TableViewportSubscription {
+  makeSubscription(table = this.makeTable()): TableViewportSubscription {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return new (dh as any).TableViewportSubscription({ table });
+    return new (this.dh as any).TableViewportSubscription({ table });
   }
 
-  static makeModel(
-    dh: DhType,
-    table = IrisGridTestUtils.makeTable(),
-    formatter = new Formatter(dh),
+  makeModel(
+    table = this.makeTable(),
+    formatter: Formatter | null = null,
     inputTable: InputTable | null = null
   ): IrisGridProxyModel {
-    return new IrisGridProxyModel(dh, table, formatter, inputTable);
+    const { dh } = this;
+    return new IrisGridProxyModel(
+      dh,
+      table,
+      formatter ?? new Formatter(dh),
+      inputTable
+    );
   }
 }
 

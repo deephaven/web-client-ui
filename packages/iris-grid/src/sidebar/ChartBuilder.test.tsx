@@ -7,13 +7,14 @@ import IrisGridTestUtils from '../IrisGridTestUtils';
 
 const COLUMN_NAMES = ['A', 'B', 'C', 'D'];
 
+const irisGridTestUtils = new IrisGridTestUtils(dh);
+
 function makeChartBuilderWrapper({
   onChange = () => null,
   onSubmit = () => null,
-  model = IrisGridTestUtils.makeModel(
-    dh,
-    IrisGridTestUtils.makeTable({
-      columns: COLUMN_NAMES.map(name => IrisGridTestUtils.makeColumn(name)),
+  model = irisGridTestUtils.makeModel(
+    irisGridTestUtils.makeTable({
+      columns: COLUMN_NAMES.map(name => irisGridTestUtils.makeColumn(name)),
     })
   ),
 } = {}) {

@@ -9,6 +9,8 @@ type MakeContainerProps = Partial<DropdownFilterProps> & {
   ref?: React.RefObject<DropdownFilter>;
 };
 
+const irisGridTestUtils = new IrisGridTestUtils(dh);
+
 function makeContainer({
   column,
   columns = [],
@@ -109,7 +111,7 @@ it('mounts properly with no columns correctly', () => {
 });
 
 describe('options when source is selected', () => {
-  const columns = IrisGridTestUtils.makeColumns();
+  const columns = irisGridTestUtils.makeColumns();
   const column = columns[1];
   const source = makeSource({
     columnName: columns[0].name,
@@ -442,9 +444,9 @@ describe('options when source is selected', () => {
 
 it('differentiates between columns with the same name by adding type', () => {
   const columns = [
-    IrisGridTestUtils.makeColumn('C0', 'java.lang.Double'),
-    IrisGridTestUtils.makeColumn('C1', 'java.lang.Double'),
-    IrisGridTestUtils.makeColumn('C1', 'java.lang.Float'),
+    irisGridTestUtils.makeColumn('C0', 'java.lang.Double'),
+    irisGridTestUtils.makeColumn('C1', 'java.lang.Double'),
+    irisGridTestUtils.makeColumn('C1', 'java.lang.Float'),
   ];
   const source = makeSource({
     columnName: columns[0].name,

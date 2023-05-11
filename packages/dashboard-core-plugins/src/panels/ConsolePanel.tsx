@@ -11,7 +11,7 @@ import {
   HeapUsage,
 } from '@deephaven/console';
 import { PanelEvent } from '@deephaven/dashboard';
-import { IdeSession, VariableDefinition } from '@deephaven/jsapi-shim';
+import type { IdeSession, VariableDefinition } from '@deephaven/jsapi-types';
 import { SessionWrapper } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {

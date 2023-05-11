@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useApi } from '@deephaven/jsapi-bootstrap';
-import { Column, Row, Table } from '@deephaven/jsapi-types';
+import type { Column, Row, Table } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import useTableListener from './useTableListener';
 import ColumnNameError from './ColumnNameError';

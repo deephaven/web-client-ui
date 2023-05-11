@@ -21,7 +21,7 @@ import type {
   Column,
   CustomColumn,
   ValueTypeUnion,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
 
 // We need to cast our CustomEvent so it's happy with event-target-shim

@@ -1,5 +1,5 @@
 import React from 'react';
-import { LoginOptions } from '@deephaven/jsapi-types';
+import type { LoginOptions } from '@deephaven/jsapi-types';
 import {
   LOGIN_OPTIONS_REQUEST,
   requestParentResponse,

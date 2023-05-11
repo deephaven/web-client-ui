@@ -1032,19 +1032,23 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       advancedFilterOptions: AdvancedFilterOptions | undefined,
       sortDirection: SortDirection | undefined,
       formatter: Formatter
-    ) => (
-      <AdvancedFilterCreator
-        model={model}
-        column={column}
-        onFilterChange={this.handleAdvancedFilterChange}
-        onSortChange={this.handleAdvancedFilterSortChange}
-        onDone={this.handleAdvancedFilterDone}
-        options={advancedFilterOptions}
-        sortDirection={sortDirection}
-        formatter={formatter}
-        tableUtils={this.tableUtils}
-      />
-    ),
+    ) => {
+      const { dh } = this.props;
+      return (
+        <AdvancedFilterCreator
+          dh={dh}
+          model={model}
+          column={column}
+          onFilterChange={this.handleAdvancedFilterChange}
+          onSortChange={this.handleAdvancedFilterSortChange}
+          onDone={this.handleAdvancedFilterDone}
+          options={advancedFilterOptions}
+          sortDirection={sortDirection}
+          formatter={formatter}
+          tableUtils={this.tableUtils}
+        />
+      );
+    },
     { max: 50 }
   );
 
@@ -4318,6 +4322,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           assertNotNull(this.handleConditionalFormatEditorUpdate);
           return (
             <ConditionalFormatEditor
+              dh={dh}
               columns={model.columns}
               rule={conditionalFormatPreview}
               onUpdate={this.handleConditionalFormatEditorUpdate}

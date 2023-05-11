@@ -69,12 +69,13 @@ import {
   dhPanels,
   vsDebugDisconnect,
 } from '@deephaven/icons';
-import dh, {
+import dh from '@deephaven/jsapi-shim';
+import type {
   IdeConnection,
   IdeSession,
   VariableDefinition,
   VariableTypeUnion,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import { SessionConfig } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {

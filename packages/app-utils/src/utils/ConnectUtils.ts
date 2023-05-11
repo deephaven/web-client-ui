@@ -1,4 +1,4 @@
-import { ConnectOptions } from '@deephaven/jsapi-types';
+import type { ConnectOptions } from '@deephaven/jsapi-types';
 
 /**
  * Get the base URL of the API

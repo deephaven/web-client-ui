@@ -1,6 +1,7 @@
 import React, { PureComponent, ReactElement, ReactNode } from 'react';
 import classNames from 'classnames';
-import dh, { IdeSession, VariableDefinition } from '@deephaven/jsapi-shim';
+import dh from '@deephaven/jsapi-shim';
+import type { IdeSession, VariableDefinition } from '@deephaven/jsapi-types';
 import { DropdownAction, Tooltip } from '@deephaven/components';
 import { CanceledPromiseError, Pending } from '@deephaven/utils';
 import ConsoleMenu from './ConsoleMenu';

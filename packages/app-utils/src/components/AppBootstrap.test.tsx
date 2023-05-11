@@ -2,7 +2,7 @@ import React from 'react';
 import { AUTH_HANDLER_TYPE_ANONYMOUS } from '@deephaven/auth-plugins';
 import { ApiContext } from '@deephaven/jsapi-bootstrap';
 import { BROADCAST_LOGIN_MESSAGE } from '@deephaven/jsapi-utils';
-import {
+import type {
   CoreClient,
   IdeConnection,
   dh as DhType,

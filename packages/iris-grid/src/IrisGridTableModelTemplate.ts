@@ -321,6 +321,7 @@ class IrisGridTableModelTemplate<
   }
 
   addTotalsListeners(totalsTable: TotalsTable): void {
+    const { dh } = this;
     totalsTable.addEventListener(
       dh.Table.EVENT_UPDATED,
       this.handleTotalsUpdate
@@ -331,6 +332,7 @@ class IrisGridTableModelTemplate<
   }
 
   removeTotalsListeners(totalsTable: TotalsTable): void {
+    const { dh } = this;
     totalsTable.removeEventListener(
       dh.Table.EVENT_UPDATED,
       this.handleTotalsUpdate

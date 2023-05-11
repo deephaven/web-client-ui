@@ -1,7 +1,7 @@
 import React from 'react';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import { render } from '@testing-library/react';
-import { Column } from '@deephaven/jsapi-types';
+import type { Column } from '@deephaven/jsapi-types';
 // import userEvent from '@testing-library/user-event';
 import dh from '@deephaven/jsapi-shim';
 // import {
@@ -12,6 +12,8 @@ import AdvancedFilterCreator from './AdvancedFilterCreator';
 import { AdvancedFilterOptions } from './CommonTypes';
 import IrisGridTestUtils from './IrisGridTestUtils';
 import IrisGridModel from './IrisGridModel';
+
+const irisGridTestUtils = new IrisGridTestUtils(dh);
 
 // let mockFilterHandlers = [];
 // let mockSelectedType;
@@ -51,8 +53,8 @@ function makeAdvancedFilterCreatorWrapper(
       invertSelection: false,
       selectedValues: [],
     },
-    model: IrisGridTestUtils.makeModel(dh),
-    column: IrisGridTestUtils.makeColumn(),
+    model: irisGridTestUtils.makeModel(),
+    column: irisGridTestUtils.makeColumn(),
     formatter: new Formatter(dh),
   }
 ) {

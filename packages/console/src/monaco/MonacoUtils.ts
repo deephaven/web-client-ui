@@ -3,7 +3,7 @@
  * Exports a function for initializing monaco with the deephaven theme/config
  */
 import { Shortcut } from '@deephaven/components';
-import { IdeSession } from '@deephaven/jsapi-shim';
+import type { IdeSession } from '@deephaven/jsapi-types';
 import { assertNotNull } from '@deephaven/utils';
 import { find as linkifyFind } from 'linkifyjs';
 import * as monaco from 'monaco-editor';

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useApi } from '@deephaven/jsapi-bootstrap';
 import type { Table, TreeTable } from '@deephaven/jsapi-types';
 import { getSize } from '@deephaven/jsapi-utils';
 import useTableListener from './useTableListener';
@@ -14,6 +15,8 @@ export default function useTableSize(
   table: Table | TreeTable | null | undefined
 ): number {
   const [, forceRerender] = useState(0);
+
+  const dh = useApi();
 
   useTableListener(table, dh.Table.EVENT_SIZECHANGED, () => {
     forceRerender(i => i + 1);

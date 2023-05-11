@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react';
-import { Table, TreeTable } from '@deephaven/jsapi-types';
+import type { Table, TreeTable } from '@deephaven/jsapi-types';
 import { usePromiseFactory } from '@deephaven/react-hooks';
 
 /**

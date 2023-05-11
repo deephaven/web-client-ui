@@ -4,7 +4,7 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ApiContext, ClientContext } from '@deephaven/jsapi-bootstrap';
 import { dh } from '@deephaven/jsapi-shim';
-import { CoreClient } from '@deephaven/jsapi-types';
+import type { CoreClient } from '@deephaven/jsapi-types';
 import AuthPluginPsk from './AuthPluginPsk';
 import { AUTH_HANDLER_TYPE_PSK as AUTH_TYPE } from './AuthHandlerTypes';
 import { AuthConfigMap } from './AuthPlugin';
