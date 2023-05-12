@@ -161,7 +161,7 @@ function GotoRow({
                 }
               }}
               value={gotoValue}
-              aria-label="value-input"
+              aria-label="Value Input"
             />
           </div>
         );
@@ -180,7 +180,7 @@ function GotoRow({
               defaultValue={gotoValue}
               onChange={onGotoValueInputChanged}
               onSubmit={handleGotoValueKeySubmit}
-              aria-label="value-input"
+              aria-label="Value Input"
             />
           </div>
         );
@@ -228,7 +228,7 @@ function GotoRow({
                 placeholder="value"
                 onChange={e => onGotoValueInputChanged(e.target.value)}
                 value={gotoValue}
-                aria-label="value-input"
+                aria-label="Value Input"
               />
             </div>
           </>
@@ -242,7 +242,7 @@ function GotoRow({
                 onGotoValueInputChanged(event.target.value);
               }}
               value={gotoValue}
-              aria-label="value-input"
+              aria-label="Value Input"
             >
               <option aria-label="null value" key="null" value="" />
               <option key="true" value="true">
@@ -264,7 +264,7 @@ function GotoRow({
               placeholder="value"
               onChange={e => onGotoValueInputChanged(e.target.value)}
               value={gotoValue}
-              aria-label="value-input"
+              aria-label="Value Input"
             />
           </div>
         );
@@ -331,7 +331,7 @@ function GotoRow({
         </div>
         {model.isSeekRowAvailable && (
           <div className="goto-row-row">
-            <fieldset
+            <div
               className={classNames('goto-row-wrapper', {
                 'is-inactive': isGotoRowActive,
               })}
@@ -339,9 +339,7 @@ function GotoRow({
               onFocus={() => setIsGotoRowActive(false)}
               role="group"
             >
-              <div>
-                <legend className="goto-row-text">Go to value</legend>
-              </div>
+              <div className="goto-row-text">Go to value</div>
               <div className="goto-row-input">
                 <select
                   className="custom-select"
@@ -385,7 +383,7 @@ function GotoRow({
               {gotoValueError && (
                 <div className="text-danger">{gotoValueError}</div>
               )}
-            </fieldset>
+            </div>
           </div>
         )}
       </>
