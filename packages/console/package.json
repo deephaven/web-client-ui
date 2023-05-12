@@ -26,7 +26,7 @@
     "@deephaven/chart": "file:../chart",
     "@deephaven/components": "file:../components",
     "@deephaven/icons": "file:../icons",
-    "@deephaven/jsapi-bootstrap": "file:../icons",
+    "@deephaven/jsapi-bootstrap": "file:../jsapi-bootstrap",
     "@deephaven/log": "file:../log",
     "@deephaven/storage": "file:../storage",
     "@deephaven/utils": "file:../utils",
