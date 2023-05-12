@@ -280,6 +280,7 @@ AppInit.propTypes = {
   workspaceStorage: PropTypes.shape({ close: PropTypes.func }),
 
   setActiveTool: PropTypes.func.isRequired,
+  setApi: PropTypes.func.isRequired,
   setCommandHistoryStorage: PropTypes.func.isRequired,
   setDashboardData: PropTypes.func.isRequired,
   setFileStorage: PropTypes.func.isRequired,
