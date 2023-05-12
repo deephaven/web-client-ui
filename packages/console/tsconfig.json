@@ -11,6 +11,12 @@
       "path": "../components"
     },
     {
+      "path": "../jsapi-bootstrap"
+    },
+    {
+      "path": "../jsapi-types"
+    },
+    {
       "path": "../jsapi-shim"
     },
     {

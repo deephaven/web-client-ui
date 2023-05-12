@@ -126,6 +126,7 @@ function AppInit(props: AppInitProps) {
         try {
           const sessionDetails = await getSessionDetails();
           const sessionWrapper = await loadSessionWrapper(
+            api,
             connection,
             sessionDetails
           );

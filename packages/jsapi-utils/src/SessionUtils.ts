@@ -30,6 +30,7 @@ export interface SessionWrapper {
   connection: IdeConnection;
   config: SessionConfig;
   details?: SessionDetails;
+  dh: DhType;
 }
 
 /**
@@ -49,6 +50,7 @@ export function createConnection(
  * @returns A session and config that is ready to use
  */
 export async function createSessionWrapper(
+  dh: DhType,
   connection: IdeConnection,
   details: SessionDetails
 ): Promise<SessionWrapper> {
@@ -77,6 +79,7 @@ export async function createSessionWrapper(
     config,
     connection,
     details,
+    dh,
   };
 }
 
@@ -112,12 +115,13 @@ export async function getSessionDetails(): Promise<SessionDetails> {
 }
 
 export async function loadSessionWrapper(
+  dh: DhType,
   connection: IdeConnection,
   sessionDetails: SessionDetails
 ): Promise<SessionWrapper | undefined> {
   let sessionWrapper: SessionWrapper | undefined;
   try {
-    sessionWrapper = await createSessionWrapper(connection, sessionDetails);
+    sessionWrapper = await createSessionWrapper(dh, connection, sessionDetails);
   } catch (e) {
     // Consoles may be disabled on the server, but we should still be able to start up and open existing objects
     if (!isNoConsolesError(e)) {
