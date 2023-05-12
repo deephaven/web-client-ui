@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { dh, IconDefinition } from '@deephaven/icons';
+import {
+  dh,
+  IconDefinition,
+  vsOrganization,
+  dhSquareFilled,
+  dhAddSmall,
+} from '@deephaven/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button } from '@deephaven/components';
 import PropTypes from 'prop-types';
@@ -105,11 +111,79 @@ function Icons(): React.ReactElement {
       );
     });
 
+  const compositionExample = `
+  <div className="fa-md fa-layers">
+    <FontAwesomeIcon
+      mask={vsOrganization}
+      icon={dhSquareFilled}
+      transform="down-7 right-7"
+    />
+    <FontAwesomeIcon icon={dhAddSmall} />
+  </div>`;
+
   return (
     <div>
       <h2 className="ui-title">Icons</h2>
+
       <div className="row">
         <div className="col">
+          <h4>Icon Composition</h4>
+          <p>
+            Icons can be used indivudally or composed together using
+            font-awesome composition:
+          </p>
+          <div className="icons">
+            <div className="icon card">
+              <FontAwesomeIcon icon={vsOrganization} />
+            </div>
+            <div className="icon card">
+              <FontAwesomeIcon icon={dhSquareFilled} />
+            </div>
+            <div className="icon card">
+              <FontAwesomeIcon icon={dhAddSmall} />
+            </div>
+            <div className="icon card">=</div>
+            <Button
+              kind="inline"
+              className="card"
+              onClick={() => {
+                // new object, so it always flashes even on same string
+                copyText(compositionExample)
+                  .then(() => {
+                    setFlashText({
+                      text: <span>Copied composition example</span>,
+                    });
+                  })
+                  .catch(err => {
+                    setFlashText({
+                      text: <span className="text-danger">{err.message}</span>,
+                    });
+                  });
+              }}
+            >
+              <div className="icon">
+                <div className="fa-md fa-layers">
+                  <FontAwesomeIcon
+                    mask={vsOrganization}
+                    icon={dhSquareFilled}
+                    transform="down-7 right-7"
+                  />
+                  <FontAwesomeIcon icon={dhAddSmall} />
+                </div>
+              </div>
+              <label>Custom</label>
+            </Button>
+          </div>
+        </div>
+      </div>
+      <hr />
+      <div className="row">
+        <div className="col">
+          <h4>All available icons</h4>
+          <p>
+            If you cannot find or compose a relevant icon for your use case,
+            please request a new one to be created from design.
+          </p>
           <div className="form-inline mb-3">
             <input
               type="search"
