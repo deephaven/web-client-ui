@@ -44,10 +44,10 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
   constructor(
     dh: DhType,
     table: Table,
-    formatter = new Formatter(dh),
+    formatter: Formatter | null = null,
     inputTable: InputTable | null = null
   ) {
-    super(dh, table, formatter, inputTable);
+    super(dh, table, formatter ?? new Formatter(dh), inputTable);
     this.customColumnList = [];
     this.formatColumnList = [];
   }

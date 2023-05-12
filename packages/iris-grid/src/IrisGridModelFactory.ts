@@ -15,13 +15,18 @@ class IrisGridModelFactory {
   static async makeModel(
     dh: DhType,
     table: Table | TreeTable,
-    formatter = new Formatter(dh)
+    formatter: Formatter | null = null
   ): Promise<IrisGridModel> {
     let inputTable = null;
     if (!TableUtils.isTreeTable(table) && table.hasInputTable) {
       inputTable = await table.inputTable();
     }
-    return new IrisGridProxyModel(dh, table, formatter, inputTable);
+    return new IrisGridProxyModel(
+      dh,
+      table,
+      formatter ?? new Formatter(dh),
+      inputTable
+    );
   }
 }
 
