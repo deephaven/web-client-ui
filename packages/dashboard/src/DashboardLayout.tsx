@@ -13,6 +13,7 @@ import type {
   ItemConfigType,
   ReactComponentConfig,
 } from '@deephaven/golden-layout';
+import { ApiContext, useApi } from '@deephaven/jsapi-bootstrap';
 import Log from '@deephaven/log';
 import { usePrevious } from '@deephaven/react-hooks';
 import { RootState } from '@deephaven/redux';
@@ -79,6 +80,7 @@ export function DashboardLayout({
   hydrate = hydrateDefault,
   dehydrate = dehydrateDefault,
 }: DashboardLayoutProps): JSX.Element {
+  const dh = useApi();
   const dispatch = useDispatch();
   const data =
     useSelector<RootState>(state => getDashboardData(state, id)) ??
@@ -123,15 +125,17 @@ export function DashboardLayout({
         // eslint-disable-next-line react/prop-types
         const { glContainer, glEventHub } = props;
         return (
-          <Provider store={store}>
-            <PanelErrorBoundary
-              glContainer={glContainer}
-              glEventHub={glEventHub}
-            >
-              {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-              <CType {...props} ref={ref} />
-            </PanelErrorBoundary>
-          </Provider>
+          <ApiContext.Provider value={dh}>
+            <Provider store={store}>
+              <PanelErrorBoundary
+                glContainer={glContainer}
+                glEventHub={glEventHub}
+              >
+                {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+                <CType {...props} ref={ref} />
+              </PanelErrorBoundary>
+            </Provider>
+          </ApiContext.Provider>
         );
       }
 
@@ -141,7 +145,7 @@ export function DashboardLayout({
       dehydrateMap.set(name, componentDehydrate);
       return cleanup;
     },
-    [hydrate, dehydrate, hydrateMap, dehydrateMap, layout, store]
+    [dh, hydrate, dehydrate, hydrateMap, dehydrateMap, layout, store]
   );
   const hydrateComponent = useCallback(
     (name, props) => (hydrateMap.get(name) ?? FALLBACK_CALLBACK)(props, id),
