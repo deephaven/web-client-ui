@@ -14,6 +14,7 @@ import type {
   ReactComponentConfig,
 } from '@deephaven/golden-layout';
 import { ApiContext, useApi } from '@deephaven/jsapi-bootstrap';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { usePrevious } from '@deephaven/react-hooks';
 import { RootState } from '@deephaven/redux';
@@ -80,7 +81,7 @@ export function DashboardLayout({
   hydrate = hydrateDefault,
   dehydrate = dehydrateDefault,
 }: DashboardLayoutProps): JSX.Element {
-  const dh = useApi();
+  const defaultDh = useApi();
   const dispatch = useDispatch();
   const data =
     useSelector<RootState>(state => getDashboardData(state, id)) ??
@@ -113,7 +114,7 @@ export function DashboardLayout({
       );
 
       function renderComponent(
-        props: { glContainer: Container; glEventHub: EventEmitter },
+        props: { dh: DhType; glContainer: Container; glEventHub: EventEmitter },
         ref: unknown
       ) {
         // Cast it to an `any` type so we can pass the ref in correctly.
@@ -123,9 +124,11 @@ export function DashboardLayout({
 
         // Props supplied by GoldenLayout
         // eslint-disable-next-line react/prop-types
-        const { glContainer, glEventHub } = props;
+        const { dh, glContainer, glEventHub } = props;
         return (
-          <ApiContext.Provider value={dh}>
+          // Enterprise should be able to override the JSAPI
+          // for each panel via the props
+          <ApiContext.Provider value={dh ?? defaultDh}>
             <Provider store={store}>
               <PanelErrorBoundary
                 glContainer={glContainer}
@@ -145,7 +148,7 @@ export function DashboardLayout({
       dehydrateMap.set(name, componentDehydrate);
       return cleanup;
     },
-    [dh, hydrate, dehydrate, hydrateMap, dehydrateMap, layout, store]
+    [defaultDh, hydrate, dehydrate, hydrateMap, dehydrateMap, layout, store]
   );
   const hydrateComponent = useCallback(
     (name, props) => (hydrateMap.get(name) ?? FALLBACK_CALLBACK)(props, id),
