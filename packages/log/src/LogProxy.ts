@@ -49,6 +49,19 @@ export class LogProxy {
     );
   };
 
+  private handleUncaughtRejection = (event: PromiseRejectionEvent) => {
+    const messages: string[] = [];
+    if (event.promise != null) {
+      messages.push(event.promise.toString());
+    }
+    if (event.reason as string) {
+      messages.push(event.reason as string);
+    }
+    this.eventTarget.dispatchEvent(
+      makeEvent(LOG_PROXY_TYPE.UNCAUGHT_ERROR, messages)
+    );
+  };
+
   constructor() {
     this.debug = console.debug;
     this.log = console.log;
@@ -83,6 +96,7 @@ export class LogProxy {
     };
 
     window.addEventListener('error', this.handleUncaughtError);
+    window.addEventListener('unhandledrejection', this.handleUncaughtRejection);
 
     // This forces logger to update its reference to the overriding functions instead of the original
     Log.setLogLevel(Log.level);
@@ -98,6 +112,10 @@ export class LogProxy {
     console.warn = this.warn;
     console.error = this.error;
     window.removeEventListener('error', this.handleUncaughtError);
+    window.removeEventListener(
+      'unhandledrejection',
+      this.handleUncaughtRejection
+    );
     Log.setLogLevel(Log.level);
     this.isEnabled = false;
   }
