@@ -81,19 +81,14 @@ class IrisGridProxyModel extends IrisGridModel {
   constructor(
     dh: DhType,
     table: Table | TreeTable,
-    formatter: Formatter | null = null,
+    formatter = new Formatter(dh),
     inputTable: InputTable | null = null
   ) {
     super();
 
     this.handleModelEvent = this.handleModelEvent.bind(this);
 
-    const model = makeModel(
-      dh,
-      table,
-      formatter ?? new Formatter(dh),
-      inputTable
-    );
+    const model = makeModel(dh, table, formatter, inputTable);
     this.dh = dh;
     this.originalModel = model;
     this.model = model;
