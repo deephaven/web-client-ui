@@ -116,8 +116,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     this.sendChange = this.sendChange.bind(this);
 
     const { model } = props;
-    const { dh } = model;
-    const { columns } = model;
+    const { columns, dh } = model;
 
     const type = this.getTypes()[0];
     const xAxis = ChartBuilder.getDefaultXAxis(type, columns) as string;
