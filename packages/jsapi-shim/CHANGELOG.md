@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.39.0](https://github.com/deephaven/web-client-ui/compare/v0.38.0...v0.39.0) (2023-05-15)
+
+### Features
+
+- De-globalize JSAPI in Chart package ([#1258](https://github.com/deephaven/web-client-ui/issues/1258)) ([87fa2ef](https://github.com/deephaven/web-client-ui/commit/87fa2ef76e0482a1d641d8fea2d33fdad2996ef5))
+
+### BREAKING CHANGES
+
+- - `ChartUtils` class now needs to be instantiated with a JSAPI object,
+    most of the methods converted from static to instance methods.
+
+* All `ChartModelFactory` methods require JSAPI object as the first
+  argument.
+* `FigureChartModel` constructor requires JSAPI object as the first
+  argument.
+
 # [0.38.0](https://github.com/deephaven/web-client-ui/compare/v0.37.3...v0.38.0) (2023-05-03)
 
 **Note:** Version bump only for package @deephaven/jsapi-shim

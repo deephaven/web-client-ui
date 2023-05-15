@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.39.0](https://github.com/deephaven/web-client-ui/compare/v0.38.0...v0.39.0) (2023-05-15)
+
+### Features
+
+- De-globalize JSAPI in Console package ([#1292](https://github.com/deephaven/web-client-ui/issues/1292)) ([3f12dd3](https://github.com/deephaven/web-client-ui/commit/3f12dd38a4db172697b3a7b39e6fbbd83d9f8519))
+
+### BREAKING CHANGES
+
+- - Components `IrisGrid`, `Chart`, `ChartBuilder`,
+    `AdvancedFilterCreator`, `GotoRow`, `IrisGridModelUpdater`,
+    `TableCSVExporter` get the JSAPI reference from the `model` prop. `dh`
+    prop removed.
+
+* `makeApi` props in `IrisGridPanel` and `ChartPanel` removed.
+* Components `Console`, `ConsoleMenu`, `ConsoleStatusBar` now require
+  the JSAPI instance in the `dh` prop.
+* `ConsoleUtils`: static methods `isTableType`, `isWidgetType`,
+  `isOpenableType`, `isFigureType`, `isPandas` require JSAPI instance
+  passed in the first argument.
+* `SessionUtils`: static methods `createSessionWrapper`,
+  `loadSessionWrapper` require JSAPI instance passed in the first
+  argument.
+* Class `IrisGridModel` requires JSAPI instance passed in the
+  constructor args.
+* Components `DashboardLayout`, `ObjectIcon` has to be wrapped in
+  `ApiContext.Provider` passing the JSAPI instance.
+
 # [0.38.0](https://github.com/deephaven/web-client-ui/compare/v0.37.3...v0.38.0) (2023-05-03)
 
 ### Bug Fixes

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.39.0](https://github.com/deephaven/web-client-ui/compare/v0.38.0...v0.39.0) (2023-05-15)
+
+### Features
+
+- add uncaught rejections to support logs ([#1293](https://github.com/deephaven/web-client-ui/issues/1293)) ([29ed459](https://github.com/deephaven/web-client-ui/commit/29ed459c130dae9d6a1f3876716d25fb2f0a5fea)), closes [#1253](https://github.com/deephaven/web-client-ui/issues/1253)
+
 # [0.38.0](https://github.com/deephaven/web-client-ui/compare/v0.37.3...v0.38.0) (2023-05-03)
 
 **Note:** Version bump only for package @deephaven/log
