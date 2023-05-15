@@ -456,10 +456,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
   startListeningToSource(table: TableTemplate): void {
     log.debug('startListeningToSource', table);
     const { model } = this.state;
-    if (model == null) {
-      log.error('Model is not defined');
-      return;
-    }
+    assertNotNull(model);
     const { dh } = model;
     table.addEventListener(
       dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
@@ -478,10 +475,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
   stopListeningToSource(table: TableTemplate): void {
     log.debug('stopListeningToSource', table);
     const { model } = this.state;
-    if (model == null) {
-      log.error('Model is not defined');
-      return;
-    }
+    assertNotNull(model);
     const { dh } = model;
     table.removeEventListener(
       dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
