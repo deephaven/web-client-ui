@@ -70,9 +70,11 @@ function Icons(): React.ReactElement {
   const renderIcons = Object.values(dh)
     .filter((icon: IconDefinition): boolean => {
       const matchesFilter =
-        (icon.prefix.toLowerCase() + icon.iconName.toLowerCase()).indexOf(
-          search.toLowerCase()
-        ) !== -1;
+        getPrefixedName(icon.iconName, icon.prefix)
+          .toLowerCase()
+          .indexOf(
+            search.replace(/\s/g, '').replace(/-/g, '').toLowerCase()
+          ) !== -1;
       const isDH = dhFilter && (icon.prefix as string) === DH_PREFIX;
       const isVS = vsFilter && (icon.prefix as string) === VS_PREFIX;
       return matchesFilter && (isDH || isVS);
