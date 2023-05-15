@@ -252,7 +252,6 @@ export type FilterMap = Map<
 >;
 export interface IrisGridProps {
   children: React.ReactNode;
-  dh: DhType;
   advancedFilters: ReadonlyAdvancedFilterMap;
   advancedSettings: Map<AdvancedSettingsType, boolean>;
   alwaysFetchColumns: readonly ColumnName[];
@@ -677,7 +676,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     ];
 
     const {
-      dh,
       aggregationSettings,
       conditionalFormats,
       customColumnFormatMap,
@@ -711,6 +709,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     if (canCopy) {
       keyHandlers.push(new CopyKeyHandler(this));
     }
+    const { dh } = model;
     const mouseHandlers = [
       new IrisGridCellOverflowMouseHandler(this),
       new IrisGridRowTreeMouseHandler(this),
@@ -1032,23 +1031,19 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       advancedFilterOptions: AdvancedFilterOptions | undefined,
       sortDirection: SortDirection | undefined,
       formatter: Formatter
-    ) => {
-      const { dh } = this.props;
-      return (
-        <AdvancedFilterCreator
-          dh={dh}
-          model={model}
-          column={column}
-          onFilterChange={this.handleAdvancedFilterChange}
-          onSortChange={this.handleAdvancedFilterSortChange}
-          onDone={this.handleAdvancedFilterDone}
-          options={advancedFilterOptions}
-          sortDirection={sortDirection}
-          formatter={formatter}
-          tableUtils={this.tableUtils}
-        />
-      );
-    },
+    ) => (
+      <AdvancedFilterCreator
+        model={model}
+        column={column}
+        onFilterChange={this.handleAdvancedFilterChange}
+        onSortChange={this.handleAdvancedFilterSortChange}
+        onDone={this.handleAdvancedFilterDone}
+        options={advancedFilterOptions}
+        sortDirection={sortDirection}
+        formatter={formatter}
+        tableUtils={this.tableUtils}
+      />
+    ),
     { max: 50 }
   );
 
@@ -1367,7 +1362,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     rowIndex: GridRangeIndex,
     rawValue = false
   ): string | unknown {
-    const { dh, model } = this.props;
+    const { model } = this.props;
+    const { dh } = model;
     const modelColumn = this.getModelColumn(columnIndex);
     const modelRow = this.getModelRow(rowIndex);
     if (rawValue && modelColumn != null && modelRow != null) {
@@ -1826,7 +1822,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     forceUpdate = true
   ): void {
     const { customColumnFormatMap } = this.state;
-    const { dh } = this.props;
+    const { model } = this.props;
     const update = {
       customColumnFormatMap,
       ...updatedFormats,
@@ -1836,7 +1832,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       ...update.customColumnFormatMap.values(),
     ];
     const formatter = new Formatter(
-      dh,
+      model.dh,
       mergedColumnFormats,
       this.dateTimeFormatterOptions,
       this.decimalFormatOptions,
@@ -1861,7 +1857,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   initState(): void {
     const {
       applyInputFiltersOnInit,
-      dh,
       inputFilters,
       sorts,
       model,
@@ -1874,7 +1869,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     const searchColumns = selectedSearchColumns ?? [];
     const searchFilter = CrossColumnSearch.createSearchFilter(
-      dh,
+      model.dh,
       searchValue,
       searchColumns,
       model.columns,
@@ -1937,10 +1932,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   updatePartition(partition: string, partitionColumn: Column): void {
-    const { dh } = this.props;
+    const { model } = this.props;
     const partitionFilter = partitionColumn
       .filter()
-      .eq(dh.FilterValue.ofString(partition));
+      .eq(model.dh.FilterValue.ofString(partition));
     const partitionFilters = [partitionFilter];
     this.setState({
       partition,
@@ -2314,9 +2309,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       columns: readonly Column[],
       invertSearchColumns: boolean
     ): void => {
-      const { dh } = this.props;
+      const { model } = this.props;
       const searchFilter = CrossColumnSearch.createSearchFilter(
-        dh,
+        model.dh,
         searchValue,
         selectedSearchColumns,
         columns,
@@ -2485,7 +2480,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   isTableSearchAvailable(): boolean {
-    const { dh, model, canToggleSearch } = this.props;
+    const { model, canToggleSearch } = this.props;
+    const { dh } = model;
     const searchDisplayMode = model?.layoutHints?.searchDisplayMode;
 
     if (searchDisplayMode === dh.SearchDisplayMode?.SEARCH_DISPLAY_HIDE) {
@@ -3316,7 +3312,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       gotoValueSelectedColumnName: selectedColumnName,
       gotoValueSelectedFilter,
     } = this.state;
-    const { dh, model } = this.props;
+    const { model } = this.props;
+    const { dh } = model;
     if (!model.isSeekRowAvailable) {
       return;
     }
@@ -3861,7 +3858,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   render(): ReactElement | null {
     const {
-      dh,
       children,
       customFilters,
       getDownloadWorker,
@@ -4288,7 +4284,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           return (
             <ChartBuilder
               model={model}
-              dh={dh}
               onChange={this.handleChartChange}
               onSubmit={this.handleChartCreate}
               key={OptionType.CHART_BUILDER}
@@ -4322,7 +4317,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           assertNotNull(this.handleConditionalFormatEditorUpdate);
           return (
             <ConditionalFormatEditor
-              dh={dh}
+              dh={model.dh}
               columns={model.columns}
               rule={conditionalFormatPreview}
               onUpdate={this.handleConditionalFormatEditorUpdate}
@@ -4371,7 +4366,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         case OptionType.TABLE_EXPORTER:
           return (
             <TableCsvExporter
-              dh={dh}
               model={model}
               name={name}
               userColumnWidths={userColumnWidths}
@@ -4428,7 +4422,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             <div className="iris-grid-partition-selector-wrapper iris-grid-bar iris-grid-bar-primary">
               {partitionTable && partitionColumn && partition != null && (
                 <IrisGridPartitionSelector
-                  dh={dh}
+                  dh={model.dh}
                   table={partitionTable}
                   getFormattedString={(
                     value: unknown,
@@ -4501,7 +4495,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             />
             {isVisible && (
               <IrisGridModelUpdater
-                dh={dh}
                 model={model}
                 modelColumns={model.columns}
                 top={top}
@@ -4524,7 +4517,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                   this.grid?.state.draggingColumn?.range
                 )}
                 formatColumns={this.getCachedPreviewFormatColumns(
-                  dh,
+                  model.dh,
                   model.columns,
                   conditionalFormats,
                   conditionalFormatPreview,
@@ -4575,7 +4568,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               this.getLinkHoverTooltip(linkHoverTooltipProps)}
           </div>
           <GotoRow
-            dh={dh}
             model={model}
             isShown={isGotoShown}
             gotoRow={gotoRow}
@@ -4628,7 +4620,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             onExited={this.handleAnimationEnd}
           />
           <TableSaver
-            dh={dh}
+            dh={model.dh}
             ref={tableSaver => {
               this.tableSaver = tableSaver;
             }}

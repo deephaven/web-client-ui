@@ -53,7 +53,7 @@ function Grids(): ReactElement {
         </div>
         <h2 className="ui-title">Iris Grid</h2>
         <div style={{ height: 500 }}>
-          <IrisGrid dh={dh} model={irisGridModel} />
+          <IrisGrid model={irisGridModel} />
         </div>
       </ThemeContext.Provider>
     </div>

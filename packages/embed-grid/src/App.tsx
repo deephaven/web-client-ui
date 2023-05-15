@@ -169,7 +169,6 @@ function App(): JSX.Element {
         <IrisGrid
           canCopy={canCopy}
           canDownloadCsv={canDownloadCsv}
-          dh={dh}
           model={model}
           inputFilters={inputFilters}
           sorts={sorts}

@@ -1302,7 +1302,6 @@ export class IrisGridPanel extends PureComponent<
             customColumnFormatMap={customColumnFormatMap}
             columnSelectionValidator={this.isColumnSelectionValid}
             conditionalFormats={conditionalFormats}
-            dh={model.dh}
             inputFilters={this.getGridInputFilters(model.columns, inputFilters)}
             applyInputFiltersOnInit={panelState == null}
             isFilterBarShown={isFilterBarShown}

@@ -41,7 +41,6 @@ export type SeriesItem = {
 };
 
 interface ChartBuilderProps {
-  dh: DhType;
   model: IrisGridModel;
   onSubmit: (obj: ChartBuilderSettings) => void;
   onChange: (obj: ChartBuilderSettings) => void;
@@ -116,7 +115,8 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     this.handleXAxisChange = this.handleXAxisChange.bind(this);
     this.sendChange = this.sendChange.bind(this);
 
-    const { dh, model } = props;
+    const { model } = props;
+    const { dh } = model;
     const { columns } = model;
 
     const type = this.getTypes()[0];
@@ -139,7 +139,8 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
   }
 
   getTypes() {
-    const { dh } = this.props;
+    const { model } = this.props;
+    const { dh } = model;
     return [
       dh.plot.SeriesPlotStyle.LINE,
       dh.plot.SeriesPlotStyle.BAR,
@@ -155,7 +156,8 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
    * Just replaces underscores with spaces and capitals the first letter of each word.
    */
   getTypeName(type: SeriesPlotStyle): string | SeriesPlotStyle {
-    const { dh } = this.props;
+    const { model } = this.props;
+    const { dh } = model;
     switch (type) {
       case dh.plot.SeriesPlotStyle.LINE:
         return 'Line';
@@ -173,7 +175,8 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
   }
 
   getTypeIcon(type: SeriesPlotStyle): React.ReactElement | null {
-    const { dh } = this.props;
+    const { model } = this.props;
+    const { dh } = model;
     switch (type) {
       case dh.plot.SeriesPlotStyle.LINE:
         return <LineIcon />;
@@ -191,7 +194,8 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
   }
 
   getXAxisLabel(type: SeriesPlotStyle): string {
-    const { dh } = this.props;
+    const { model } = this.props;
+    const { dh } = model;
     switch (type) {
       case dh.plot.SeriesPlotStyle.PIE:
         return 'Labels';
@@ -203,7 +207,8 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
   }
 
   getSeriesLabel(type: SeriesPlotStyle): string {
-    const { dh } = this.props;
+    const { model } = this.props;
+    const { dh } = model;
     switch (type) {
       case dh.plot.SeriesPlotStyle.PIE:
         return 'Values';
@@ -233,8 +238,8 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
   }
 
   handleReset(): void {
-    const { dh, model } = this.props;
-    const { columns } = model;
+    const { model } = this.props;
+    const { columns, dh } = model;
 
     const type = this.getTypes()[0];
     const xAxis = ChartBuilder.getDefaultXAxis(type, columns) as string;
@@ -298,7 +303,8 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     log.debug2('handleTypeSelect', type);
 
     this.setState(state => {
-      const { dh, model } = this.props;
+      const { model } = this.props;
+      const { dh } = model;
       const maxSeriesCount = ChartBuilder.getMaxSeriesCount(dh, type);
       let { seriesItems } = state;
       seriesItems = seriesItems.slice(0, maxSeriesCount);
@@ -327,8 +333,8 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
   }
 
   render(): JSX.Element {
-    const { dh, model } = this.props;
-    const { columns } = model;
+    const { model } = this.props;
+    const { columns, dh } = model;
     const { seriesItems, type, xAxis, isLinked } = this.state;
     const maxSeriesCount = ChartBuilder.getMaxSeriesCount(dh, type);
     const xAxisLabel = this.getXAxisLabel(type);
