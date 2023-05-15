@@ -1,7 +1,8 @@
 import React, { useCallback } from 'react';
 import classNames from 'classnames';
 import { Draggable } from 'react-beautiful-dnd';
-import { Button } from '@deephaven/components';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Button, Tooltip } from '@deephaven/components';
 import { vsTrash, vsGripper } from '@deephaven/icons';
 import { DbNameValidator } from '@deephaven/utils';
 import InputEditor from './InputEditor';
@@ -27,10 +28,6 @@ const INPUT_TYPE = Object.freeze({
   NAME: 'name',
   FORMULA: 'formula',
 });
-
-const EMPTY_FN = () => {
-  // no-op
-};
 
 function CustomColumnInput({
   eventKey,
@@ -92,15 +89,16 @@ function CustomColumnInput({
                   tooltip="Delete custom column"
                 />
 
-                <Button
-                  kind="ghost"
-                  className="btn-drag-handle"
-                  onClick={EMPTY_FN}
+                {/* // Can't use our button component with prop spreading */}
+                <button
+                  type="button"
+                  className="btn btn-link btn-link-icon px-2 btn-drag-handle"
                   // eslint-disable-next-line react/jsx-props-no-spreading
                   {...provided.dragHandleProps}
-                  icon={vsGripper}
-                  tooltip="Drag column to re-order"
-                />
+                >
+                  <Tooltip>Drag column to re-order</Tooltip>
+                  <FontAwesomeIcon icon={vsGripper} />
+                </button>
               </div>
               {(!isValidName || isDuplicate) && (
                 <p className="validate-label-error text-danger mb-0 mt-2 pl-1">
