@@ -13,7 +13,6 @@ import StaticExample from './grid-examples/StaticExample';
 import QuadrillionExample from './grid-examples/QuadrillionExample';
 import TreeExample from './grid-examples/TreeExample';
 import AsyncExample from './grid-examples/AsyncExample';
-import DataBarExample from './grid-examples/DataBarExample';
 
 function Grids(): ReactElement {
   const [irisGridModel] = useState(
@@ -34,10 +33,6 @@ function Grids(): ReactElement {
         <h2 className="ui-title">Static Data</h2>
         <div style={{ height: 200 }}>
           <StaticExample />
-        </div>
-        <h2 className="ui-title">Data Bar</h2>
-        <div style={{ height: 500 }}>
-          <DataBarExample />
         </div>
         <h2 className="ui-title">Quadrillion rows and columns</h2>
         <div style={{ height: 500, position: 'relative' }}>

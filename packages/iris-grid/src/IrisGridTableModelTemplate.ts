@@ -543,17 +543,6 @@ class IrisGridTableModelTemplate<
         return '*';
       }
     }
-
-    if (TableUtils.isTextType(this.columns[x]?.type)) {
-      if (text === null) {
-        return 'null';
-      }
-
-      if (text === '') {
-        return 'empty';
-      }
-    }
-
     return text ?? '';
   }
 
