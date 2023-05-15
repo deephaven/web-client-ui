@@ -63,7 +63,6 @@ import {
 import { ContextAction, ContextMenuRoot } from '@deephaven/components';
 import type {
   Column,
-  dh as DhType,
   FilterCondition,
   Sort,
   VariableTypeUnion,
@@ -130,7 +129,6 @@ export interface IrisGridPanelProps {
   glEventHub: EventEmitter;
   metadata: Metadata;
   panelState: PanelState | null;
-  makeApi: () => DhType | Promise<DhType>;
   makeModel: () => IrisGridModel | Promise<IrisGridModel>;
   inputFilters: InputFilter[];
   links: Link[];
@@ -249,7 +247,6 @@ export class IrisGridPanel extends PureComponent<
     const { panelState } = props;
 
     this.pluginState = null;
-    this.dh = null;
     this.irisGridUtils = null;
 
     this.state = {
@@ -344,8 +341,6 @@ export class IrisGridPanel extends PureComponent<
   gridState?: GridState;
 
   pluginState: unknown;
-
-  private dh: DhType | null;
 
   private irisGridUtils: IrisGridUtils | null;
 
@@ -529,17 +524,12 @@ export class IrisGridPanel extends PureComponent<
 
   initModel(): void {
     this.setState({ isModelReady: false, isLoading: true, error: null });
-    const { makeApi, makeModel } = this.props;
+    const { makeModel } = this.props;
     if (this.modelPromise != null) {
       this.modelPromise.cancel();
     }
-    this.modelPromise = PromiseUtils.makeCancelable(
-      Promise.resolve(makeApi()).then(dh => {
-        this.dh = dh;
-        this.irisGridUtils = new IrisGridUtils(dh);
-        return makeModel();
-      }),
-      resolved => resolved.close()
+    this.modelPromise = PromiseUtils.makeCancelable(makeModel(), resolved =>
+      resolved.close()
     );
     this.modelPromise.then(this.handleLoadSuccess).catch(this.handleLoadError);
   }
@@ -548,7 +538,7 @@ export class IrisGridPanel extends PureComponent<
     const model = modelParam;
     const { panelState, irisGridStateOverrides } = this.state;
     const modelQueue: ((m: IrisGridModel) => void)[] = [];
-
+    this.irisGridUtils = new IrisGridUtils(model.dh);
     if (panelState != null) {
       const { irisGridState } = panelState;
       const {
@@ -1205,7 +1195,6 @@ export class IrisGridPanel extends PureComponent<
   }
 
   render(): ReactElement {
-    const { dh } = this;
     const {
       children,
       glContainer,
@@ -1298,7 +1287,7 @@ export class IrisGridPanel extends PureComponent<
           />
         )}
       >
-        {isModelReady && model && dh && (
+        {isModelReady && model && (
           <IrisGrid
             advancedFilters={advancedFilters}
             aggregationSettings={aggregationSettings}
@@ -1313,7 +1302,6 @@ export class IrisGridPanel extends PureComponent<
             customColumnFormatMap={customColumnFormatMap}
             columnSelectionValidator={this.isColumnSelectionValid}
             conditionalFormats={conditionalFormats}
-            dh={dh}
             inputFilters={this.getGridInputFilters(model.columns, inputFilters)}
             applyInputFiltersOnInit={panelState == null}
             isFilterBarShown={isFilterBarShown}

@@ -15,13 +15,13 @@ import TreeExample from './grid-examples/TreeExample';
 import AsyncExample from './grid-examples/AsyncExample';
 
 function Grids(): ReactElement {
+  const dh = useApi();
   const [irisGridModel] = useState(
-    new MockIrisGridTreeModel(new MockTreeGridModel())
+    new MockIrisGridTreeModel(dh, new MockTreeGridModel())
   );
   const [model] = useState(new MockGridModel());
   const [theme] = useState<Partial<GridThemeType>>({ autoSelectRow: true });
   const [contextTheme] = useState<Partial<GridThemeType>>({ rowHeight: 40 });
-  const dh = useApi();
 
   return (
     <div>
@@ -48,7 +48,7 @@ function Grids(): ReactElement {
         </div>
         <h2 className="ui-title">Iris Grid</h2>
         <div style={{ height: 500 }}>
-          <IrisGrid dh={dh} model={irisGridModel} />
+          <IrisGrid model={irisGridModel} />
         </div>
       </ThemeContext.Provider>
     </div>

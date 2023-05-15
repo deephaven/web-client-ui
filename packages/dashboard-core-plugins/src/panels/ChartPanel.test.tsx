@@ -66,7 +66,6 @@ function makeChartPanelWrapper({
   glContainer = makeGlComponent(),
   glEventHub = makeGlComponent(),
   columnSelectionValidator = undefined,
-  makeApi = () => Promise.resolve(dh),
   makeModel = () => Promise.resolve(makeChartModel()),
   metadata = { figure: 'testFigure' },
   inputFilters = [],
@@ -80,7 +79,6 @@ function makeChartPanelWrapper({
 } = {}) {
   return (
     <ChartPanel
-      makeApi={makeApi}
       columnSelectionValidator={columnSelectionValidator}
       makeModel={makeModel}
       metadata={metadata as ChartPanelMetadata}
@@ -495,11 +493,8 @@ it('adds listeners to the source table when passed in and linked', async () => {
   const model = makeChartModel();
   const modelPromise = Promise.resolve(model);
   const makeModel = () => modelPromise;
-  const apiPromise = Promise.resolve(dh);
-  const makeApi = () => apiPromise;
   const { rerender } = render(
     makeChartPanelWrapper({
-      makeApi,
       makeModel,
       metadata: { settings: { isLinked: true } },
       source: null,
@@ -509,7 +504,6 @@ it('adds listeners to the source table when passed in and linked', async () => {
   const source = makeTable();
   rerender(
     makeChartPanelWrapper({
-      makeApi,
       makeModel,
       metadata: { settings: { isLinked: true } },
       source,

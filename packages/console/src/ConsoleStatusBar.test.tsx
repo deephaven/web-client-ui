@@ -15,6 +15,7 @@ function makeConsoleStatusBarWrapper(
   const session = new (dh as any).IdeSession('test');
   const wrapper = render(
     <ConsoleStatusBar
+      dh={dh}
       session={session}
       openObject={() => undefined}
       objects={[]}

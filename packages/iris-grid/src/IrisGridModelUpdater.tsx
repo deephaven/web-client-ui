@@ -4,7 +4,6 @@ import React, { useEffect, useMemo } from 'react';
 import type {
   Column,
   CustomColumn,
-  dh as DhType,
   FilterCondition,
   RollupConfig,
   Sort,
@@ -20,7 +19,6 @@ import type ColumnHeaderGroup from './ColumnHeaderGroup';
 const COLUMN_BUFFER_PAGES = 1;
 
 interface IrisGridModelUpdaterProps {
-  dh: DhType;
   model: IrisGridModel;
   modelColumns: readonly Column[];
   top: number;
@@ -50,7 +48,6 @@ interface IrisGridModelUpdaterProps {
  */
 const IrisGridModelUpdater = React.memo(
   ({
-    dh,
     model,
     modelColumns,
     top,
@@ -105,11 +102,11 @@ const IrisGridModelUpdater = React.memo(
       function updateSorts() {
         const sortsForModel = [...sorts];
         if (reverseType !== TableUtils.REVERSE_TYPE.NONE) {
-          sortsForModel.push(dh.Table.reverse());
+          sortsForModel.push(model.dh.Table.reverse());
         }
         model.sort = sortsForModel;
       },
-      [dh, model, sorts, reverseType]
+      [model, sorts, reverseType]
     );
     useEffect(
       function updateFormatter() {

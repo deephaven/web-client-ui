@@ -29,7 +29,6 @@ import IrisGridUtils from '../IrisGridUtils';
 
 const log = Log.module('TableCsvExporter');
 interface TableCsvExporterProps {
-  dh: DhType;
   model: IrisGridModel;
   name: string;
   userColumnWidths: ModelSizeMap;
@@ -131,9 +130,9 @@ class TableCsvExporter extends Component<
       this
     );
 
-    const { dh, name } = props;
+    const { model, name } = props;
     this.state = {
-      fileName: `${name}-${TableCsvExporter.getDateString(dh)}.csv`,
+      fileName: `${name}-${TableCsvExporter.getDateString(model.dh)}.csv`,
 
       downloadRowOption: TableCsvExporter.DOWNLOAD_ROW_OPTIONS.ALL_ROWS,
       customizedDownloadRowOption:
