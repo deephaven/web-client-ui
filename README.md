@@ -69,7 +69,7 @@ We prefer launching a new window instead of attaching to existing windows becaus
 ### Linux
 If you are using Linux, you will likely need to use the direct install from the VSCode website (deb or rpm file) and not through a package manager. On Ubuntu, apt installs via `snap` and some Linux flavors may use `flatpak`. Both of these sandbox the VSCode instance in such a way that the launch debug configs will likely not work.
 
-If you are not using Chrome (e.g. Chromium), then you may need to do one of the following.
+If you are not using Chrome (e.g. Chromium), you may need to do one of the following if the launch config is not working.
 
 1. Alias `google-chrome-stable` to launch `chromium-browser`. The launch config by default should try to launch `google-chrome-stable`, so if you can launch the browser with `google-chrome-stable` from a terminal, it should work.
 
