@@ -93,6 +93,7 @@ function CustomColumnInput({
                 <button
                   type="button"
                   className="btn btn-link btn-link-icon px-2 btn-drag-handle"
+                  aria-label="Drag column to re-order"
                   // eslint-disable-next-line react/jsx-props-no-spreading
                   {...provided.dragHandleProps}
                 >
