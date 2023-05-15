@@ -206,7 +206,7 @@ class IrisGridTableModelTemplate<
     formatter = new Formatter(dh),
     inputTable: InputTable | null = null
   ) {
-    super();
+    super(dh);
 
     this.handleTableDisconnect = this.handleTableDisconnect.bind(this);
     this.handleTableReconnect = this.handleTableReconnect.bind(this);

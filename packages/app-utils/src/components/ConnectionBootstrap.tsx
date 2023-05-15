@@ -1,7 +1,7 @@
 import React, { createContext, useEffect, useState } from 'react';
 import { LoadingOverlay } from '@deephaven/components';
 import { useApi, useClient } from '@deephaven/jsapi-bootstrap';
-import { IdeConnection } from '@deephaven/jsapi-types';
+import type { IdeConnection } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 
 const log = Log.module('@deephaven/jsapi-components.ConnectionBootstrap');

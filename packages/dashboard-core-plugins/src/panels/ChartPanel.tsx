@@ -125,7 +125,6 @@ export interface GLChartPanelState {
   figure?: string;
 }
 export interface ChartPanelProps {
-  makeApi: () => Promise<DhType>;
   glContainer: Container;
   glEventHub: EventEmitter;
   metadata: ChartPanelMetadata;
@@ -345,17 +344,12 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
   initModel(): void {
     this.setState({ isLoading: true, isLoaded: false, error: undefined });
 
-    const { makeApi, makeModel } = this.props;
+    const { makeModel } = this.props;
+
     this.pending
-      .add(makeApi())
-      .then(dh => {
-        this.setState({ dh });
+      .add(makeModel(), resolved => {
+        resolved.close();
       })
-      .then(() =>
-        this.pending.add(makeModel(), resolved => {
-          resolved.close();
-        })
-      )
       .then(this.handleLoadSuccess, this.handleLoadError);
   }
 
@@ -581,6 +575,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     this.setState(
       {
         model,
+        dh: model.dh,
         isLoaded: true,
       },
       () => {

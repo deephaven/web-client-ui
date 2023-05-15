@@ -167,7 +167,7 @@ class MockChartModel extends ChartModel {
       filterFields = [],
     } = {}
   ) {
-    super();
+    super(dh);
 
     this.data = data;
     this.layout = layout;

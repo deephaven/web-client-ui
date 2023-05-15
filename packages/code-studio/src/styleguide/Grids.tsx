@@ -16,13 +16,13 @@ import AsyncExample from './grid-examples/AsyncExample';
 import DataBarExample from './grid-examples/DataBarExample';
 
 function Grids(): ReactElement {
+  const dh = useApi();
   const [irisGridModel] = useState(
-    new MockIrisGridTreeModel(new MockTreeGridModel())
+    new MockIrisGridTreeModel(dh, new MockTreeGridModel())
   );
   const [model] = useState(new MockGridModel());
   const [theme] = useState<Partial<GridThemeType>>({ autoSelectRow: true });
   const [contextTheme] = useState<Partial<GridThemeType>>({ rowHeight: 40 });
-  const dh = useApi();
 
   return (
     <div>

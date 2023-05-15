@@ -20,6 +20,7 @@ import {
 import type {
   Column,
   CustomColumn,
+  dh as DhType,
   ValueTypeUnion,
 } from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
@@ -44,8 +45,8 @@ class MockIrisGridTreeModel
 
   protected editedData: string[][];
 
-  constructor(model = new MockTreeGridModel()) {
-    super();
+  constructor(dh: DhType, model = new MockTreeGridModel()) {
+    super(dh);
 
     this.model = model;
     this.editedData = [];

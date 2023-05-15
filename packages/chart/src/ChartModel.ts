@@ -1,6 +1,7 @@
 /* eslint class-methods-use-this: "off" */
 /* eslint no-unused-vars: "off" */
 
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
 import { Layout, PlotData } from 'plotly.js';
 import { FilterColumnMap, FilterMap } from './ChartUtils';
@@ -28,10 +29,13 @@ class ChartModel {
 
   static EVENT_LOADFINISHED = 'ChartModel.EVENT_LOADFINISHED';
 
-  constructor() {
+  constructor(dh: DhType) {
+    this.dh = dh;
     this.listeners = [];
     this.isDownsamplingDisabled = false;
   }
+
+  dh: DhType;
 
   listeners: ((event: ChartEvent) => void)[];
 
