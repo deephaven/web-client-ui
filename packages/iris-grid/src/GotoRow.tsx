@@ -5,6 +5,7 @@ import React, {
   KeyboardEvent,
   ReactElement,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -89,7 +90,7 @@ function GotoRow({
 
   const { rowCount } = model;
 
-  const gotoRowInputId = `goto-row-input-${shortid()}`;
+  const gotoRowInputId = useMemo(() => `goto-row-input-${shortid()}`, []);
 
   const handleGotoValueNumberKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
