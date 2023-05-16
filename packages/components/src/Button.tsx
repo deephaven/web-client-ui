@@ -106,6 +106,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       tabIndex,
       'data-testid': dataTestId,
       'aria-label': ariaLabel,
+      ...rest
     } = props;
 
     const iconOnly = Boolean(icon && children == null);
@@ -167,6 +168,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={disabled}
         tabIndex={tabIndex}
         aria-label={ariaLabelString}
+        // eslint-disable-next-line react/jsx-props-no-spreading
+        {...rest}
       >
         {icon && iconElem}
         {children}
