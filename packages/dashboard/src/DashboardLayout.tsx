@@ -12,7 +12,6 @@ import type {
   ItemConfigType,
   ReactComponentConfig,
 } from '@deephaven/golden-layout';
-import { ApiContext } from '@deephaven/jsapi-bootstrap';
 import Log from '@deephaven/log';
 import { usePrevious } from '@deephaven/react-hooks';
 import { RootState } from '@deephaven/redux';
@@ -121,23 +120,13 @@ export function DashboardLayout({
 
         // Props supplied by GoldenLayout
         // eslint-disable-next-line react/prop-types
-        const { dh, glContainer, glEventHub } = props;
-        const panel = (
+        const { glContainer, glEventHub } = props;
+        return (
           <PanelErrorBoundary glContainer={glContainer} glEventHub={glEventHub}>
             {/* eslint-disable-next-line react/jsx-props-no-spreading */}
             <CType {...props} ref={ref} />
           </PanelErrorBoundary>
         );
-
-        if (dh != null) {
-          return (
-            // Enterprise should be able to override the JSAPI
-            // for each panel via the props
-            <ApiContext.Provider value={dh}>{panel}</ApiContext.Provider>
-          );
-        }
-
-        return panel;
       }
 
       const wrappedComponent = React.forwardRef(renderComponent);
