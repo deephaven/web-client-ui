@@ -47,10 +47,9 @@ $lm-splitter-active-color: $gray-300;
 }
 
 .lm_maximised {
-  border: 15px solid rgba($black, 0.25);
+  border: 15px solid rgba($black, 0.85);
   height: 100% !important;
   width: 100% !important;
-  background-color: rgba(0, 0, 0, 50%); // mimic underlay effect of modals
   .lm_items {
     box-shadow: $box-shadow-900;
   }
