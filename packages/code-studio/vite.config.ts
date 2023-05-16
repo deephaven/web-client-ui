@@ -8,17 +8,6 @@ import path from 'path';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
-  // https://github.com/vitejs/vite/issues/3105#issuecomment-939703781
-  const htmlPlugin = () => ({
-    name: 'html-transform',
-    transformIndexHtml: {
-      enforce: 'pre' as const,
-      transform(html: string) {
-        return html.replace(/#(.*?)#/g, (_, p1) => env[p1]);
-      },
-    },
-  });
-
   const packagesDir = path.resolve(__dirname, '..');
 
   let port = Number.parseInt(env.PORT, 10);
@@ -148,6 +137,6 @@ export default defineConfig(({ mode }) => {
     css: {
       devSourcemap: true,
     },
-    plugins: [htmlPlugin(), react()],
+    plugins: [react()],
   };
 });
