@@ -1,17 +1,19 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import dh from '@deephaven/jsapi-shim';
 import TableCsvExporter from './TableCsvExporter';
 import IrisGridTestUtils from '../IrisGridTestUtils';
 
+const irisGridTestUtils = new IrisGridTestUtils(dh);
 const COLUMN_NAMES = ['A', 'B', 'C', 'D'];
-const TABLE = IrisGridTestUtils.makeTable({
-  columns: COLUMN_NAMES.map(name => IrisGridTestUtils.makeColumn(name)),
+const TABLE = irisGridTestUtils.makeTable({
+  columns: COLUMN_NAMES.map(name => irisGridTestUtils.makeColumn(name)),
   size: 100,
 });
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const BAD_TABLE = IrisGridTestUtils.makeTable({
-  columns: COLUMN_NAMES.map(name => IrisGridTestUtils.makeColumn(name)),
+const BAD_TABLE = irisGridTestUtils.makeTable({
+  columns: COLUMN_NAMES.map(name => irisGridTestUtils.makeColumn(name)),
   size: 100,
 });
 BAD_TABLE.freeze = jest.fn(() =>
@@ -30,10 +32,11 @@ function makeTableCsvExporterWrapper({
   selectedRanges = [],
   userColumnWidths = IrisGridTestUtils.makeUserColumnWidths(),
   movedColumns = [],
-  model = IrisGridTestUtils.makeModel(TABLE),
+  model = irisGridTestUtils.makeModel(TABLE),
 } = {}) {
   return render(
     <TableCsvExporter
+      dh={dh}
       name={name}
       isDownloading={isDownloading}
       tableDownloadStatus={tableDownloadStatus}
@@ -72,7 +75,7 @@ it('cancels download when something goes wrong', async () => {
   const onDownloadStart = jest.fn();
   const onDownload = jest.fn();
   const onCancel = jest.fn();
-  const model = IrisGridTestUtils.makeModel(BAD_TABLE);
+  const model = irisGridTestUtils.makeModel(BAD_TABLE);
   makeTableCsvExporterWrapper({
     onDownloadStart,
     onDownload,

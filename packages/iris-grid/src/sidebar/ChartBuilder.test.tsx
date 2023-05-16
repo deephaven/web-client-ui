@@ -1,17 +1,20 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import dh from '@deephaven/jsapi-shim';
 import ChartBuilder from './ChartBuilder';
 import IrisGridTestUtils from '../IrisGridTestUtils';
 
 const COLUMN_NAMES = ['A', 'B', 'C', 'D'];
 
+const irisGridTestUtils = new IrisGridTestUtils(dh);
+
 function makeChartBuilderWrapper({
   onChange = () => null,
   onSubmit = () => null,
-  model = IrisGridTestUtils.makeModel(
-    IrisGridTestUtils.makeTable({
-      columns: COLUMN_NAMES.map(name => IrisGridTestUtils.makeColumn(name)),
+  model = irisGridTestUtils.makeModel(
+    irisGridTestUtils.makeTable({
+      columns: COLUMN_NAMES.map(name => irisGridTestUtils.makeColumn(name)),
     })
   ),
 } = {}) {

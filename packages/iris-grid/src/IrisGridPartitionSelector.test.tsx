@@ -1,16 +1,18 @@
 import React from 'react';
 import { render } from '@testing-library/react';
+import dh from '@deephaven/jsapi-shim';
 import IrisGridPartitionSelector from './IrisGridPartitionSelector';
 import IrisGridTestUtils from './IrisGridTestUtils';
 
 function makeIrisGridPartitionSelector(
-  table = IrisGridTestUtils.makeTable(),
+  table = new IrisGridTestUtils(dh).makeTable(),
   onChange = jest.fn(),
   onDone = jest.fn(),
   getFormattedString = jest.fn(value => `${value}`)
 ) {
   return render(
     <IrisGridPartitionSelector
+      dh={dh}
       table={table}
       columnName="0"
       getFormattedString={getFormattedString}

@@ -8,7 +8,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Column } from '@deephaven/jsapi-shim';
+import type { Column } from '@deephaven/jsapi-types';
 import {
   Type as FilterType,
   TypeValue as FilterTypeValue,
@@ -86,7 +86,7 @@ function GotoRow({
 
   const res = 'Row number';
 
-  const { rowCount } = model;
+  const { dh, rowCount } = model;
 
   const handleGotoValueNumberKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {

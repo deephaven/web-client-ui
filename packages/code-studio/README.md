@@ -22,14 +22,6 @@ One common setup is to override the API server URL to point to another server. F
 VITE_CORE_API_URL=https://www.myserver.com/jsapi
 ```
 
-### VITE_NOTEBOOKS_URL
-
-One common setup is to override the API server URL to point to another server. For example, add the following block to `.env.development.local` to have `npm start` point to a remote server for the API:
-
-```shell
-VITE_CORE_API_URL=https://www.myserver.com/notebooks
-```
-
 ### VITE_LOG_LEVEL
 
 Printing detailed logs when debugging can be handy. The highest level of logging is already set in your `.env.development` file. You can change it in `.env.development.local` if desired.

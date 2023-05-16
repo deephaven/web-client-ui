@@ -1,3 +1,4 @@
+export { default as DebouncedModal } from './DebouncedModal';
 export { default as InfoModal } from './InfoModal';
 export { default as Modal } from './Modal';
 export { default as ModalBody } from './ModalBody';

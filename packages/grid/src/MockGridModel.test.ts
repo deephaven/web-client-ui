@@ -3,15 +3,15 @@ import MockGridModel from './MockGridModel';
 
 describe('tokensForCell', () => {
   it('should return tokens for a cell', () => {
-    const model = new MockGridModel({ editedData: [['google.com']] });
+    const model = new MockGridModel({ editedData: [['https://google.com']] });
     const expectedValue: LinkToken[] = [
       {
         type: 'url',
-        value: 'google.com',
+        value: 'https://google.com',
         isLink: true,
-        href: 'http://google.com',
+        href: 'https://google.com',
         start: 0,
-        end: 10,
+        end: 18,
       },
     ];
 
@@ -21,41 +21,34 @@ describe('tokensForCell', () => {
   });
 
   it('should return multiple tokens for a cell', () => {
-    const text = 'google.com youtube.com blah@gmail.com';
+    const text = 'https://google.com youtube.com blah@gmail.com';
     const model = new MockGridModel({ editedData: [[text]] });
     const expectedValue: LinkToken[] = [
       {
         type: 'url',
-        value: 'google.com',
+        value: 'https://google.com',
         isLink: true,
-        href: 'http://google.com',
+        href: 'https://google.com',
         start: 0,
-        end: 10,
+        end: 18,
       },
-      {
-        type: 'url',
-        value: 'youtube.com',
-        isLink: true,
-        href: 'http://youtube.com',
-        start: 11,
-        end: 22,
-      },
+
       {
         type: 'email',
         value: 'blah@gmail.com',
         isLink: true,
         href: 'mailto:blah@gmail.com',
-        start: 23,
-        end: 37,
+        start: 31,
+        end: 45,
       },
     ];
 
     const tokens = model.tokensForCell(0, 0, text.length);
-    expect(tokens).toHaveLength(3);
+    expect(tokens).toHaveLength(2);
     expect(tokens).toEqual(expectedValue);
   });
 
-  it('should an empty array for a cell with no tokens', () => {
+  it('should return an empty array for a cell with no tokens', () => {
     const text = 'google youtube';
     const model = new MockGridModel({ editedData: [[text]] });
     const expectedValue: LinkToken[] = [];

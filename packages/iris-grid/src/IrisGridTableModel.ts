@@ -1,17 +1,18 @@
 /* eslint class-methods-use-this: "off" */
 import memoize from 'memoize-one';
 import { GridRange, ModelIndex } from '@deephaven/grid';
-import {
+import type {
   Column,
   ColumnStatistics,
   CustomColumn,
+  dh as DhType,
   InputTable,
   LayoutHints,
   Table,
   ValueTypeUnion,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
-import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
+import { Formatter } from '@deephaven/jsapi-utils';
 import {
   EventShimCustomEvent,
   PromiseUtils,
@@ -35,16 +36,18 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
   formatColumnList: CustomColumn[];
 
   /**
+   * @param dh JSAPI instance
    * @param table Iris data table to be used in the model
    * @param formatter The formatter to use when getting formats
    * @param inputTable Iris input table associated with this table
    */
   constructor(
+    dh: DhType,
     table: Table,
-    formatter = new Formatter(),
+    formatter = new Formatter(dh),
     inputTable: InputTable | null = null
   ) {
-    super(table, formatter, inputTable);
+    super(dh, table, formatter, inputTable);
     this.customColumnList = [];
     this.formatColumnList = [];
   }
@@ -341,7 +344,10 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
       for (let c = 0; c < keyColumns.length; c += 1) {
         const column = keyColumns[c];
         const value = row[c];
-        const filterValue = TableUtils.makeFilterRawValue(column.type, value);
+        const filterValue = this.tableUtils.makeFilterRawValue(
+          column.type,
+          value
+        );
         const filter = column.filter().eq(filterValue);
         columnFilters.push(filter);
       }

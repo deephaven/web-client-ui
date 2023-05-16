@@ -1,5 +1,7 @@
-import dh, {
+import dh from '@deephaven/jsapi-shim';
+import type {
   Column,
+  CustomColumn,
   DateWrapper,
   FilterCondition,
   FilterValue,
@@ -7,12 +9,13 @@ import dh, {
   Sort,
   Table,
   TreeTable,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import {
   Operator as FilterOperator,
   Type as FilterType,
   TypeValue as FilterTypeValue,
 } from '@deephaven/filters';
+import { TestUtils } from '@deephaven/utils';
 import TableUtils, { DataType, SortDirection } from './TableUtils';
 import DateUtils from './DateUtils';
 // eslint-disable-next-line import/no-relative-packages
@@ -23,6 +26,23 @@ const DEFAULT_TIME_ZONE_ID = 'America/New_York';
 const EXPECT_TIME_ZONE_PARAM = expect.objectContaining({
   id: DEFAULT_TIME_ZONE_ID,
 });
+const tableUtils = new TableUtils(dh);
+const irisGridTestUtils = new IrisGridTestUtils(dh);
+
+/**
+ * Sends a mock event to the last registered event handler with the given event
+ * type.
+ */
+function sendEventToLastRegisteredHandler(table: Table, eventType: string) {
+  const event = TestUtils.createMockProxy<CustomEvent>({});
+
+  const lastRegisteredEventListener = TestUtils.findLastCall(
+    table.addEventListener,
+    ([et]) => et === eventType
+  )?.[1];
+
+  lastRegisteredEventListener?.(event);
+}
 
 function makeColumns(count = 5): Column[] {
   const columns: Column[] = [];
@@ -45,6 +65,215 @@ function makeFilterCondition(type = ''): MockFilterCondition {
     or: jest.fn(() => makeFilterCondition(`${type}.${FilterType.eq}`)),
   };
 }
+
+describe('applyCustomColumns', () => {
+  const table = TestUtils.createMockProxy<Table>({});
+  const columns = [TestUtils.createMockProxy<CustomColumn>({})];
+
+  it.each([undefined, 400])(
+    'should call table.applyCustomColumns and wait for dh.Table.EVENT_CUSTOMCOLUMNSCHANGED event: %s',
+    timeout => {
+      const executeAndWaitForEvent = jest.spyOn(
+        TableUtils,
+        'executeAndWaitForEvent'
+      );
+
+      tableUtils.applyCustomColumns(table, columns, timeout);
+
+      expect(TableUtils.executeAndWaitForEvent).toHaveBeenCalledWith(
+        expect.any(Function),
+        table,
+        dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
+        timeout ?? TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
+      );
+
+      const exec = executeAndWaitForEvent.mock.lastCall?.[0];
+      exec?.(table);
+      expect(table.applyCustomColumns).toHaveBeenCalledWith(columns);
+    }
+  );
+});
+
+describe('applyFilter', () => {
+  const table = TestUtils.createMockProxy<Table>({});
+  const filters = [TestUtils.createMockProxy<FilterCondition>({})];
+
+  it.each([undefined, 400])(
+    'should call table.applyFilter and wait for dh.Table.EVENT_FILTERCHANGED event: %s',
+    timeout => {
+      const executeAndWaitForEvent = jest.spyOn(
+        TableUtils,
+        'executeAndWaitForEvent'
+      );
+
+      tableUtils.applyFilter(table, filters, timeout);
+
+      expect(TableUtils.executeAndWaitForEvent).toHaveBeenCalledWith(
+        expect.any(Function),
+        table,
+        dh.Table.EVENT_FILTERCHANGED,
+        timeout ?? TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
+      );
+
+      const exec = executeAndWaitForEvent.mock.lastCall?.[0];
+      exec?.(table);
+      expect(table.applyFilter).toHaveBeenCalledWith(filters);
+    }
+  );
+});
+
+describe.each([undefined, 400])('applyNeverFilter - timeout: %s', timeout => {
+  const column = TestUtils.createMockProxy<Column>({});
+  const neverFilter = TestUtils.createMockProxy<FilterCondition>({});
+  let makeNeverFilter: jest.SpyInstance<FilterCondition, [column: Column]>;
+
+  const table = TestUtils.createMockProxy<Table>({
+    findColumn: jest.fn().mockReturnValue(column),
+  });
+
+  beforeAll(() => {
+    makeNeverFilter = jest.spyOn(TableUtils.prototype, 'makeNeverFilter');
+    makeNeverFilter.mockReturnValue(neverFilter);
+  });
+
+  beforeEach(() => {
+    makeNeverFilter.mockClear();
+  });
+
+  afterAll(() => {
+    makeNeverFilter.mockRestore();
+  });
+
+  it.each([null, undefined])(
+    'should resolve to null when not given a table: %s',
+    async notTable => {
+      const columnName = 'mock.column';
+      const result = await tableUtils.applyNeverFilter(
+        notTable,
+        columnName,
+        timeout
+      );
+      expect(result).toBeNull();
+    }
+  );
+
+  it('should call TableUtils.applyFilter with a "never filter": %s', async () => {
+    const applyFilter = jest
+      .spyOn(TableUtils.prototype, 'applyFilter')
+      .mockResolvedValue(table);
+
+    const columnName = 'mock.column';
+
+    const result = await tableUtils.applyNeverFilter(
+      table,
+      columnName,
+      timeout
+    );
+
+    expect(result).toBe(table);
+    expect(makeNeverFilter).toHaveBeenCalledWith(column);
+    expect(applyFilter).toHaveBeenCalledWith(
+      table,
+      [neverFilter],
+      timeout ?? TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
+    );
+  });
+});
+
+describe('applySort', () => {
+  const table = TestUtils.createMockProxy<Table>({});
+  const sorts = [TestUtils.createMockProxy<Sort>({})];
+
+  it.each([undefined, 400])(
+    'should call table.applySort and wait for dh.Table.EVENT_SORTCHANGED event: %s',
+    timeout => {
+      const executeAndWaitForEvent = jest.spyOn(
+        TableUtils,
+        'executeAndWaitForEvent'
+      );
+
+      tableUtils.applySort(table, sorts, timeout);
+
+      expect(TableUtils.executeAndWaitForEvent).toHaveBeenCalledWith(
+        expect.any(Function),
+        table,
+        dh.Table.EVENT_SORTCHANGED,
+        timeout ?? TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
+      );
+
+      const exec = executeAndWaitForEvent.mock.lastCall?.[0];
+      exec?.(table);
+      expect(table.applySort).toHaveBeenCalledWith(sorts);
+    }
+  );
+});
+
+describe('executeAndWaitForEvent', () => {
+  const table = TestUtils.createMockProxy<Table>({
+    addEventListener: jest.fn(() => jest.fn()),
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it.each([null, undefined])(
+    'should resolve to null if given null or undefined: %s',
+    async notTable => {
+      const exec = jest.fn();
+      const actual = await TableUtils.executeAndWaitForEvent(
+        exec,
+        notTable,
+        'mock.event'
+      );
+
+      expect(actual).toBeNull();
+      expect(exec).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each(['mock.eventA', 'mock.eventB'])(
+    'should call execute callback and wait for next `eventType` event: %s',
+    async eventType => {
+      const exec = jest.fn();
+      const tablePromise = TableUtils.executeAndWaitForEvent(
+        exec,
+        table,
+        eventType
+      );
+
+      expect(exec).toHaveBeenCalledWith(table);
+
+      sendEventToLastRegisteredHandler(table, eventType);
+
+      const result = await tablePromise;
+
+      expect(result).toBe(table);
+    }
+  );
+
+  it.each(['mock.eventA', 'mock.eventB'])(
+    'should execute callback and reject promise if event timeout expires: %s',
+    async eventType => {
+      jest.useFakeTimers();
+
+      const exec = jest.fn();
+      const timeout = 3000;
+      const tablePromise = TableUtils.executeAndWaitForEvent(
+        exec,
+        table,
+        eventType,
+        timeout
+      );
+
+      expect(exec).toHaveBeenCalledWith(table);
+
+      jest.advanceTimersByTime(timeout);
+
+      expect(tablePromise).rejects.toThrow(`Event "${eventType}" timed out.`);
+    }
+  );
+});
 
 describe('toggleSortForColumn', () => {
   it('toggles sort properly', () => {
@@ -157,7 +386,7 @@ describe('quick filter tests', () => {
 
   function makeFilterColumn(type = 'string'): MockColumn {
     const filter = makeFilter();
-    const column = IrisGridTestUtils.makeColumn('test placeholder', type, 13);
+    const column = irisGridTestUtils.makeColumn('test placeholder', type, 13);
     column.filter = jest.fn(() => filter);
     return column as MockColumn;
   }
@@ -176,7 +405,7 @@ describe('quick filter tests', () => {
 
     filter[expectedFn].mockReturnValueOnce(expectedResult);
 
-    const result = TableUtils[functionName](column, text);
+    const result = tableUtils[functionName](column, text);
 
     expect(filter[expectedFn]).toHaveBeenCalledWith(...args);
     expect(result).toBe(expectedResult);
@@ -196,7 +425,7 @@ describe('quick filter tests', () => {
 
     filter[expectedFn].mockReturnValueOnce(expectedResult);
 
-    const result = TableUtils[functionName](column, text);
+    const result = tableUtils[functionName](column, text);
 
     expect(filter[expectedFn]).toHaveBeenCalledWith(...args);
     expect(result).toBe(expectedResult);
@@ -232,7 +461,7 @@ describe('quick filter tests', () => {
       }
     }
 
-    const result = TableUtils[testFunction](column, text, timeZone);
+    const result = tableUtils[testFunction](column, text, timeZone);
 
     for (let i = 0; i < expectedFilters.length; i += 1) {
       const [expectedFn, expectedOperator, ...args] = expectedFilters[i];
@@ -412,7 +641,7 @@ describe('quick filter tests', () => {
 
       (notResult.and as jest.Mock).mockReturnValueOnce(expectedResult);
 
-      const result = TableUtils.makeAdvancedValueFilter(
+      const result = tableUtils.makeAdvancedValueFilter(
         column,
         operation,
         value,
@@ -443,7 +672,7 @@ describe('quick filter tests', () => {
 
       filter[expectedFn].mockReturnValueOnce(expectedResult);
 
-      const result = TableUtils[functionName](
+      const result = tableUtils[functionName](
         column,
         operation,
         value,
@@ -475,6 +704,7 @@ describe('quick filter tests', () => {
 
     it('should return a date filter if column type is date', () => {
       const [startValue] = DateUtils.parseDateRange(
+        dh,
         '2022-11-12',
         DEFAULT_TIME_ZONE_ID
       );
@@ -610,7 +840,7 @@ describe('quick filter tests', () => {
 
         nullResult.or.mockReturnValueOnce(expectedResult);
 
-        const result = TableUtils.makeAdvancedValueFilter(
+        const result = tableUtils.makeAdvancedValueFilter(
           column,
           FilterType.notContains,
           'test',
@@ -656,7 +886,7 @@ describe('quick filter tests', () => {
         // eslint-disable-next-line no-restricted-syntax
         for (const operation of invalidFilterTypes) {
           expect(() =>
-            TableUtils.makeAdvancedValueFilter(
+            tableUtils.makeAdvancedValueFilter(
               column,
               operation,
               'test',
@@ -680,21 +910,21 @@ describe('quick filter tests', () => {
     it('handles empty cases', () => {
       const column = makeFilterColumn();
 
-      expect(TableUtils.makeQuickNumberFilter(column, '')).toBe(null);
+      expect(tableUtils.makeQuickNumberFilter(column, '')).toBe(null);
     });
 
     it('handles invalid cases', () => {
       const column = makeFilterColumn();
 
-      expect(TableUtils.makeQuickNumberFilter(column, 'j*($%U#@(')).toBe(null);
-      expect(TableUtils.makeQuickNumberFilter(column, '<=')).toBe(null);
-      expect(TableUtils.makeQuickNumberFilter(column, '<=> 50')).toBe(null);
-      expect(TableUtils.makeQuickNumberFilter(column, '== 50')).toBe(null);
-      expect(TableUtils.makeQuickNumberFilter(column, '> x')).toBe(null);
-      expect(TableUtils.makeQuickNumberFilter(column, '50>')).toBe(null);
-      expect(TableUtils.makeQuickNumberFilter(column, '4,00')).toBe(null);
-      expect(TableUtils.makeQuickNumberFilter(column, '4,00000')).toBe(null);
-      expect(TableUtils.makeQuickNumberFilter(column, '40.40.40')).toBe(null);
+      expect(tableUtils.makeQuickNumberFilter(column, 'j*($%U#@(')).toBe(null);
+      expect(tableUtils.makeQuickNumberFilter(column, '<=')).toBe(null);
+      expect(tableUtils.makeQuickNumberFilter(column, '<=> 50')).toBe(null);
+      expect(tableUtils.makeQuickNumberFilter(column, '== 50')).toBe(null);
+      expect(tableUtils.makeQuickNumberFilter(column, '> x')).toBe(null);
+      expect(tableUtils.makeQuickNumberFilter(column, '50>')).toBe(null);
+      expect(tableUtils.makeQuickNumberFilter(column, '4,00')).toBe(null);
+      expect(tableUtils.makeQuickNumberFilter(column, '4,00000')).toBe(null);
+      expect(tableUtils.makeQuickNumberFilter(column, '40.40.40')).toBe(null);
     });
 
     it('handles default operation', () => {
@@ -775,38 +1005,38 @@ describe('quick filter tests', () => {
     it('handles NaN cases', () => {
       const column = makeFilterColumn();
       const columnFilter = column.filter();
-      TableUtils.makeQuickNumberFilter(column, 'NAN');
+      tableUtils.makeQuickNumberFilter(column, 'NAN');
       expect(dh.FilterCondition.invoke).toBeCalledWith('isNaN', columnFilter);
-      TableUtils.makeQuickNumberFilter(column, 'NaN');
+      tableUtils.makeQuickNumberFilter(column, 'NaN');
       expect(dh.FilterCondition.invoke).toBeCalledWith('isNaN', columnFilter);
-      TableUtils.makeQuickNumberFilter(column, 'nan');
+      tableUtils.makeQuickNumberFilter(column, 'nan');
       expect(dh.FilterCondition.invoke).toBeCalledWith('isNaN', columnFilter);
     });
     it('handles infinity cases', () => {
       const column = makeFilterColumn();
       const columnFilter = column.filter();
 
-      TableUtils.makeQuickNumberFilter(column, 'inf  ');
+      tableUtils.makeQuickNumberFilter(column, 'inf  ');
       expect(dh.FilterCondition.invoke).toBeCalledWith('isInf', columnFilter);
       expect(columnFilter.greaterThan).toHaveBeenCalled();
 
-      TableUtils.makeQuickNumberFilter(column, '  infinity');
+      tableUtils.makeQuickNumberFilter(column, '  infinity');
       expect(dh.FilterCondition.invoke).toBeCalledWith('isInf', columnFilter);
       expect(columnFilter.greaterThan).toHaveBeenCalled();
 
-      TableUtils.makeQuickNumberFilter(column, ' - infinity');
+      tableUtils.makeQuickNumberFilter(column, ' - infinity');
       expect(dh.FilterCondition.invoke).toBeCalledWith('isInf', columnFilter);
       expect(columnFilter.lessThan).toHaveBeenCalled();
 
-      TableUtils.makeQuickNumberFilter(column, 'INFINITY');
+      tableUtils.makeQuickNumberFilter(column, 'INFINITY');
       expect(dh.FilterCondition.invoke).toBeCalledWith('isInf', columnFilter);
       expect(columnFilter.greaterThan).toHaveBeenCalled();
 
-      TableUtils.makeQuickNumberFilter(column, '\u221E');
+      tableUtils.makeQuickNumberFilter(column, '\u221E');
       expect(dh.FilterCondition.invoke).toBeCalledWith('isInf', columnFilter);
       expect(columnFilter.greaterThan).toHaveBeenCalled();
 
-      TableUtils.makeQuickNumberFilter(column, '- \u221E');
+      tableUtils.makeQuickNumberFilter(column, '- \u221E');
       expect(dh.FilterCondition.invoke).toBeCalledWith('isInf', columnFilter);
       expect(columnFilter.lessThan).toHaveBeenCalled();
     });
@@ -820,21 +1050,21 @@ describe('quick filter tests', () => {
       expectFilterCondition = mockFilterConditionReturnValue(
         dh.FilterCondition.invoke
       );
-      TableUtils.makeQuickNumberFilter(column, '!NAN');
+      tableUtils.makeQuickNumberFilter(column, '!NAN');
       expect(dh.FilterCondition.invoke).toBeCalledWith('isNaN', columnFilter);
       expect(expectFilterCondition.not).toHaveBeenCalledTimes(1);
 
       expectFilterCondition = mockFilterConditionReturnValue(
         dh.FilterCondition.invoke
       );
-      TableUtils.makeQuickNumberFilter(column, '!=nan');
+      tableUtils.makeQuickNumberFilter(column, '!=nan');
       expect(dh.FilterCondition.invoke).toBeCalledWith('isNaN', columnFilter);
       expect(expectFilterCondition.not).toHaveBeenCalledTimes(1);
 
       expectFilterCondition = mockFilterConditionReturnValue(
         dh.FilterCondition.invoke
       );
-      TableUtils.makeQuickNumberFilter(column, '!= NaN');
+      tableUtils.makeQuickNumberFilter(column, '!= NaN');
       expect(dh.FilterCondition.invoke).toBeCalledWith('isNaN', columnFilter);
       expect(expectFilterCondition.not).toHaveBeenCalledTimes(1);
 
@@ -844,7 +1074,7 @@ describe('quick filter tests', () => {
       expectAndFilterCondition = mockFilterConditionReturnValue(
         expectFilterCondition.and
       );
-      TableUtils.makeQuickNumberFilter(column, '!INFINITY');
+      tableUtils.makeQuickNumberFilter(column, '!INFINITY');
       expect(dh.FilterCondition.invoke).toBeCalledWith('isInf', columnFilter);
       expect(columnFilter.greaterThan).toHaveBeenCalled();
       expect(expectFilterCondition.and).toHaveBeenCalledTimes(1);
@@ -856,7 +1086,7 @@ describe('quick filter tests', () => {
       expectAndFilterCondition = mockFilterConditionReturnValue(
         expectFilterCondition.and
       );
-      TableUtils.makeQuickNumberFilter(column, '!= inf');
+      tableUtils.makeQuickNumberFilter(column, '!= inf');
       expect(dh.FilterCondition.invoke).toBeCalledWith('isInf', columnFilter);
       expect(columnFilter.greaterThan).toHaveBeenCalled();
       expect(expectFilterCondition.and).toHaveBeenCalledTimes(1);
@@ -868,7 +1098,7 @@ describe('quick filter tests', () => {
       expectAndFilterCondition = mockFilterConditionReturnValue(
         expectFilterCondition.and
       );
-      TableUtils.makeQuickNumberFilter(column, '!= - \u221E');
+      tableUtils.makeQuickNumberFilter(column, '!= - \u221E');
       expect(dh.FilterCondition.invoke).toBeCalledWith('isInf', columnFilter);
       expect(columnFilter.lessThan).toHaveBeenCalled();
       expect(expectFilterCondition.and).toHaveBeenCalledTimes(1);
@@ -877,19 +1107,19 @@ describe('quick filter tests', () => {
       expectFilterCondition = mockFilterConditionReturnValue(
         columnFilter.isNull
       );
-      TableUtils.makeQuickNumberFilter(column, '!null');
+      tableUtils.makeQuickNumberFilter(column, '!null');
       expect(expectFilterCondition.not).toHaveBeenCalledTimes(1);
 
       expectFilterCondition = mockFilterConditionReturnValue(
         columnFilter.isNull
       );
-      TableUtils.makeQuickNumberFilter(column, '!= null');
+      tableUtils.makeQuickNumberFilter(column, '!= null');
       expect(expectFilterCondition.not).toHaveBeenCalledTimes(1);
     });
 
     it('should return null if it is an abnormal value with unsupported operations', () => {
       const column = makeFilterColumn();
-      expect(TableUtils.makeQuickNumberFilter(column, '>=NaN')).toBeNull();
+      expect(tableUtils.makeQuickNumberFilter(column, '>=NaN')).toBeNull();
     });
   });
 
@@ -911,22 +1141,22 @@ describe('quick filter tests', () => {
     it('handles empty cases', () => {
       const column = makeFilterColumn();
 
-      expect(TableUtils.makeQuickBooleanFilter(column, '')).toBe(null);
+      expect(tableUtils.makeQuickBooleanFilter(column, '')).toBe(null);
     });
 
     it('handles invalid cases', () => {
       const column = makeFilterColumn();
 
-      expect(TableUtils.makeQuickBooleanFilter(column, 'U()$#@')).toBe(null);
-      expect(TableUtils.makeQuickBooleanFilter(column, 'invalid str')).toBe(
+      expect(tableUtils.makeQuickBooleanFilter(column, 'U()$#@')).toBe(null);
+      expect(tableUtils.makeQuickBooleanFilter(column, 'invalid str')).toBe(
         null
       );
-      expect(TableUtils.makeQuickBooleanFilter(column, 'nu ll')).toBe(null);
-      expect(TableUtils.makeQuickBooleanFilter(column, 'truel')).toBe(null);
-      expect(TableUtils.makeQuickBooleanFilter(column, 'falsel')).toBe(null);
-      expect(TableUtils.makeQuickBooleanFilter(column, 'truefalse')).toBe(null);
-      expect(TableUtils.makeQuickBooleanFilter(column, 'falsetrue')).toBe(null);
-      expect(TableUtils.makeQuickBooleanFilter(column, 4)).toBe(null);
+      expect(tableUtils.makeQuickBooleanFilter(column, 'nu ll')).toBe(null);
+      expect(tableUtils.makeQuickBooleanFilter(column, 'truel')).toBe(null);
+      expect(tableUtils.makeQuickBooleanFilter(column, 'falsel')).toBe(null);
+      expect(tableUtils.makeQuickBooleanFilter(column, 'truefalse')).toBe(null);
+      expect(tableUtils.makeQuickBooleanFilter(column, 'falsetrue')).toBe(null);
+      expect(tableUtils.makeQuickBooleanFilter(column, 4)).toBe(null);
     });
 
     it('handles true/false properly', () => {
@@ -1017,31 +1247,31 @@ describe('quick filter tests', () => {
     it('handles invalid cases', () => {
       const column = makeFilterColumn();
 
-      expect(() => TableUtils.makeQuickDateFilter(column, '', '')).toThrow();
+      expect(() => tableUtils.makeQuickDateFilter(column, '', '')).toThrow();
 
-      expect(() => TableUtils.makeQuickDateFilter(column, '>', '')).toThrow();
+      expect(() => tableUtils.makeQuickDateFilter(column, '>', '')).toThrow();
       expect(() =>
-        TableUtils.makeQuickDateFilter(column, 'U()$#@', '')
+        tableUtils.makeQuickDateFilter(column, 'U()$#@', '')
       ).toThrow();
       expect(() =>
-        TableUtils.makeQuickDateFilter(column, 'invalid str', '')
+        tableUtils.makeQuickDateFilter(column, 'invalid str', '')
       ).toThrow();
       expect(() =>
-        TableUtils.makeQuickDateFilter(column, 'nu ll', '')
+        tableUtils.makeQuickDateFilter(column, 'nu ll', '')
       ).toThrow();
       expect(() =>
-        TableUtils.makeQuickDateFilter(column, '20193-02-02', '')
+        tableUtils.makeQuickDateFilter(column, '20193-02-02', '')
       ).toThrow();
       expect(() =>
-        TableUtils.makeQuickDateFilter(column, '302-111-303', '')
+        tableUtils.makeQuickDateFilter(column, '302-111-303', '')
       ).toThrow();
       expect(() =>
-        TableUtils.makeQuickDateFilter(column, (4 as unknown) as string, '')
+        tableUtils.makeQuickDateFilter(column, (4 as unknown) as string, '')
       ).toThrow();
 
       // Missing time zone
       expect(() =>
-        TableUtils.makeQuickDateFilter(column, '2021-10-19', '')
+        tableUtils.makeQuickDateFilter(column, '2021-10-19', '')
       ).toThrow();
     });
 
@@ -1572,7 +1802,7 @@ describe('quick filter tests', () => {
 
       notResult.and.mockReturnValueOnce(expectedResult);
 
-      const result = TableUtils.makeQuickTextFilter(column, text);
+      const result = tableUtils.makeQuickTextFilter(column, text);
 
       expect(filter.isNull).toHaveBeenCalled();
       expect(nullResult.not).toHaveBeenCalled();
@@ -1585,7 +1815,7 @@ describe('quick filter tests', () => {
     it('handles empty cases', () => {
       const column = makeFilterColumn();
 
-      expect(TableUtils.makeQuickTextFilter(column, '')).toBe(null);
+      expect(tableUtils.makeQuickTextFilter(column, '')).toBe(null);
     });
 
     it('handles null cases', () => {
@@ -1613,7 +1843,7 @@ describe('quick filter tests', () => {
       const expectedNotFilter = makeFilterCondition();
       expectedNullFilter.not.mockReturnValueOnce(expectedNotFilter);
 
-      const result = TableUtils.makeQuickTextFilter(column, '!null');
+      const result = tableUtils.makeQuickTextFilter(column, '!null');
       expect(filter.isNull).toHaveBeenCalled();
       expect(expectedNullFilter.not).toHaveBeenCalled();
       expect(result).toBe(expectedNotFilter);
@@ -1700,7 +1930,7 @@ describe('quick filter tests', () => {
     it('throws an error if filter for andComponent is null', () => {
       const column = makeFilterColumn('char');
       expect(() =>
-        TableUtils.makeQuickFilter(column, '12a && 13 || 12')
+        tableUtils.makeQuickFilter(column, '12a && 13 || 12')
       ).toThrowError('Unable to parse quick filter from text 12a && 13 || 12');
     });
   });
@@ -1717,17 +1947,17 @@ describe('quick filter tests', () => {
     it('handles empty cases', () => {
       const column = makeFilterColumn();
 
-      expect(TableUtils.makeQuickCharFilter(column, '')).toBe(null);
+      expect(tableUtils.makeQuickCharFilter(column, '')).toBe(null);
     });
 
     it('handles invalid cases', () => {
       const column = makeFilterColumn();
 
-      expect(TableUtils.makeQuickCharFilter(column, 'j*($%U#@(')).toBe(null);
-      expect(TableUtils.makeQuickCharFilter(column, '<=')).toBe(null);
-      expect(TableUtils.makeQuickCharFilter(column, '<=> c')).toBe(null);
-      expect(TableUtils.makeQuickCharFilter(column, '== c')).toBe(null);
-      expect(TableUtils.makeQuickCharFilter(column, 'c>')).toBe(null);
+      expect(tableUtils.makeQuickCharFilter(column, 'j*($%U#@(')).toBe(null);
+      expect(tableUtils.makeQuickCharFilter(column, '<=')).toBe(null);
+      expect(tableUtils.makeQuickCharFilter(column, '<=> c')).toBe(null);
+      expect(tableUtils.makeQuickCharFilter(column, '== c')).toBe(null);
+      expect(tableUtils.makeQuickCharFilter(column, 'c>')).toBe(null);
     });
 
     it('handles default operation', () => {
@@ -1773,7 +2003,7 @@ describe('quick filter tests', () => {
       filter.notEq.mockReturnValueOnce(notEqResult);
       eqResult.and.mockReturnValueOnce(expectedResult);
 
-      expect(TableUtils.makeSelectValueFilter(column, [], false)).toBe(
+      expect(tableUtils.makeSelectValueFilter(column, [], false)).toBe(
         expectedResult
       );
       expect(filter.eq).toHaveBeenCalledWith(expectedValue);
@@ -1784,7 +2014,7 @@ describe('quick filter tests', () => {
     it('should return null if there are no selected values and invertSelection is true', () => {
       const column = makeFilterColumn();
 
-      expect(TableUtils.makeSelectValueFilter(column, [], true)).toBeNull();
+      expect(tableUtils.makeSelectValueFilter(column, [], true)).toBeNull();
     });
 
     it('handles different column types when there are no selected values and invertSelection is false', () => {
@@ -1811,7 +2041,7 @@ describe('quick filter tests', () => {
       isNullResult.not.mockReturnValueOnce(notResult);
       notResult.and.mockReturnValueOnce(expectedResult);
       expect(
-        TableUtils.makeSelectValueFilter(column, [null, 'string'], true)
+        tableUtils.makeSelectValueFilter(column, [null, 'string'], true)
       ).toBe(expectedResult);
       expect(filter.notIn).toHaveBeenCalledWith(['string']);
       expect(notResult.and).toHaveBeenCalledWith(notInResult);
@@ -1829,7 +2059,7 @@ describe('quick filter tests', () => {
       filter.in.mockReturnValueOnce(inResult);
       isNullResult.or.mockReturnValueOnce(expectedResult);
       expect(
-        TableUtils.makeSelectValueFilter(column, [null, true, false], false)
+        tableUtils.makeSelectValueFilter(column, [null, true, false], false)
       ).toBe(expectedResult);
       expect(filter.in).toHaveBeenCalledWith([true, false]);
       expect(isNullResult.or).toHaveBeenCalledWith(inResult);
@@ -1845,7 +2075,7 @@ describe('quick filter tests', () => {
       filter.isNull.mockReturnValueOnce(isNullResult);
       isNullResult.not.mockReturnValueOnce(expectedResult);
       expect(
-        TableUtils.makeSelectValueFilter(column, [null, null, null], true)
+        tableUtils.makeSelectValueFilter(column, [null, null, null], true)
       ).toBe(expectedResult);
     });
 
@@ -1857,7 +2087,7 @@ describe('quick filter tests', () => {
 
       filter.isNull.mockReturnValueOnce(isNullResult);
       expect(
-        TableUtils.makeSelectValueFilter(column, [null, null, null], false)
+        tableUtils.makeSelectValueFilter(column, [null, null, null], false)
       ).toBe(isNullResult);
     });
 
@@ -1868,7 +2098,7 @@ describe('quick filter tests', () => {
       const expectedResult = makeFilterCondition();
 
       filter.notIn.mockReturnValueOnce(expectedResult);
-      expect(TableUtils.makeSelectValueFilter(column, [1, 2, 3], true)).toBe(
+      expect(tableUtils.makeSelectValueFilter(column, [1, 2, 3], true)).toBe(
         expectedResult
       );
       expect(filter.notIn).toHaveBeenCalledWith([1, 2, 3]);
@@ -1881,7 +2111,7 @@ describe('quick filter tests', () => {
       const expectedResult = makeFilterCondition();
 
       filter.in.mockReturnValueOnce(expectedResult);
-      expect(TableUtils.makeSelectValueFilter(column, [1, 2, 3], false)).toBe(
+      expect(tableUtils.makeSelectValueFilter(column, [1, 2, 3], false)).toBe(
         expectedResult
       );
       expect(filter.in).toHaveBeenCalledWith([1, 2, 3]);
@@ -2171,7 +2401,7 @@ describe('makeValue', () => {
     expectedValue: unknown,
     timeZone = 'America/New_York'
   ) => {
-    expect(TableUtils.makeValue(columnType, text, timeZone)).toEqual(
+    expect(tableUtils.makeValue(columnType, text, timeZone)).toEqual(
       expectedValue
     );
   };
@@ -2206,10 +2436,10 @@ describe('makeValue', () => {
       ),
     };
     expect(
-      TableUtils.makeValue('long', 'test', 'America/New_York')
+      tableUtils.makeValue('long', 'test', 'America/New_York')
     ).toMatchObject(expectedLongWrapper);
     expect(
-      TableUtils.makeValue('java.lang.Long', 'test', 'America/New_York')
+      tableUtils.makeValue('java.lang.Long', 'test', 'America/New_York')
     ).toMatchObject(expectedLongWrapper);
   });
 
@@ -2223,12 +2453,14 @@ describe('makeValue', () => {
   it('should return a DateWrapper object if columnType is date', () => {
     const now = new Date(Date.now());
     const currentDate = DateUtils.makeDateWrapper(
+      dh,
       'America/New_York',
       now.getFullYear(),
       now.getMonth(),
       now.getDate()
     );
     const yesterdayDate = DateUtils.makeDateWrapper(
+      dh,
       'America/New_York',
       now.getFullYear(),
       now.getMonth(),

@@ -13,17 +13,10 @@
   ],
   "exclude": ["node_modules", "src/**/*.test.*", "src/**/__mocks__/*"],
   "references": [
-    {
-      "path": "../filters"
-    },
-    {
-      "path": "../jsapi-shim"
-    },
-    {
-      "path": "../log"
-    },
-    {
-      "path": "../utils"
-    }
+    { "path": "../filters" },
+    { "path": "../jsapi-shim" },
+    { "path": "../jsapi-types" },
+    { "path": "../log" },
+    { "path": "../utils" }
   ]
 }

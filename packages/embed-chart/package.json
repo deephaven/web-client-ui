@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/embed-chart",
-  "version": "0.36.0",
+  "version": "0.39.0",
   "description": "Deephaven Embedded Chart",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -16,10 +16,11 @@
     "build"
   ],
   "dependencies": {
+    "@deephaven/app-utils": "file:../app-utils",
     "@deephaven/chart": "file:../chart",
     "@deephaven/components": "file:../components",
     "@deephaven/jsapi-bootstrap": "file:../jsapi-bootstrap",
-    "@deephaven/jsapi-shim": "file:../jsapi-shim",
+    "@deephaven/jsapi-types": "file:../jsapi-types",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
     "fira": "mozilla/fira#4.202",
@@ -37,9 +38,7 @@
     "@deephaven/mocks": "file:../mocks",
     "@deephaven/prettier-config": "file:../prettier-config",
     "@deephaven/stylelint-config": "file:../stylelint-config",
-    "@deephaven/tsconfig": "file:../tsconfig",
-    "@vitejs/plugin-react-swc": "^3.2.0",
-    "vite": "^4.1.4"
+    "@deephaven/tsconfig": "file:../tsconfig"
   },
   "publishConfig": {
     "access": "public"

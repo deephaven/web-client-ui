@@ -7,7 +7,8 @@ import { WorkspaceSettings } from '@deephaven/redux';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { Formatter } from '@deephaven/jsapi-utils';
-
+import { ApiContext } from '@deephaven/jsapi-bootstrap';
+import dh from '@deephaven/jsapi-shim';
 import {
   ColumnSpecificSectionContent,
   ColumnSpecificSectionContentProps,
@@ -34,19 +35,22 @@ function renderContent({
   },
 }: Partial<ColumnSpecificSectionContentProps> = {}) {
   return render(
-    <ColumnSpecificSectionContent
-      formatter={formatter}
-      defaultDateTimeFormat={defaultDateTimeFormat}
-      showTimeZone={showTimeZone}
-      showTSeparator={showTSeparator}
-      timeZone={timeZone}
-      truncateNumbersWithPound={truncateNumbersWithPound}
-      settings={settings}
-      saveSettings={saveSettings}
-      scrollTo={scrollTo}
-      defaultDecimalFormatOptions={defaultDecimalFormatOptions}
-      defaultIntegerFormatOptions={defaultIntegerFormatOptions}
-    />
+    <ApiContext.Provider value={dh}>
+      <ColumnSpecificSectionContent
+        dh={dh}
+        formatter={formatter}
+        defaultDateTimeFormat={defaultDateTimeFormat}
+        showTimeZone={showTimeZone}
+        showTSeparator={showTSeparator}
+        timeZone={timeZone}
+        truncateNumbersWithPound={truncateNumbersWithPound}
+        settings={settings}
+        saveSettings={saveSettings}
+        scrollTo={scrollTo}
+        defaultDecimalFormatOptions={defaultDecimalFormatOptions}
+        defaultIntegerFormatOptions={defaultIntegerFormatOptions}
+      />
+    </ApiContext.Provider>
   );
 }
 

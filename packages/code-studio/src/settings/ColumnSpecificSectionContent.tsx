@@ -19,7 +19,9 @@ import {
   TableColumnFormat,
   FormattingRule,
 } from '@deephaven/jsapi-utils';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
+  getApi,
   getDefaultDateTimeFormat,
   getDefaultDecimalFormatOptions,
   getDefaultIntegerFormatOptions,
@@ -42,12 +44,14 @@ import {
   isValidFormat,
   removeFormatRuleExtraProps,
   isFormatRuleValidForSave,
+  ValidFormatterItem,
 } from './SettingsUtils';
 import type { FormatterItem, FormatOption } from './SettingsUtils';
 import ColumnTypeOptions from './ColumnTypeOptions';
 import DateTimeOptions from './DateTimeOptions';
 
 export interface ColumnSpecificSectionContentProps {
+  dh: DhType;
   formatter: FormatterItem[];
   defaultDateTimeFormat: string;
   showTimeZone: boolean;
@@ -288,10 +292,13 @@ export class ColumnSpecificSectionContent extends PureComponent<
       defaultIntegerFormatOptions,
       truncateNumbersWithPound,
     } = this.state;
+    const { dh } = this.props;
 
     const formatter =
       formatSettings
-        .filter(isFormatRuleValidForSave)
+        .filter((format): format is ValidFormatterItem =>
+          isFormatRuleValidForSave(dh, format)
+        )
         .map(removeFormatRuleExtraProps) ?? [];
 
     const { settings, saveSettings } = this.props;
@@ -306,6 +313,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
     };
     if (
       isValidFormat(
+        dh,
         TableUtils.dataType.DECIMAL,
         DecimalColumnFormatter.makeCustomFormat(
           defaultDecimalFormatOptions.defaultFormatString
@@ -316,6 +324,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
     }
     if (
       isValidFormat(
+        dh,
         TableUtils.dataType.INT,
         IntegerColumnFormatter.makeCustomFormat(
           defaultIntegerFormatOptions.defaultFormatString
@@ -339,6 +348,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
   getRuleError(
     rule: FormatterItem
   ): { hasColumnNameError: boolean; hasFormatError: boolean; message: string } {
+    const { dh } = this.props;
     const error = {
       hasColumnNameError: false,
       hasFormatError: false,
@@ -369,7 +379,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
     ) {
       error.hasFormatError = true;
       errorMessages.push('Empty formatting rule.');
-    } else if (!isValidFormat(rule.columnType, rule.format)) {
+    } else if (!isValidFormat(dh, rule.columnType, rule.format)) {
       error.hasFormatError = true;
       errorMessages.push('Invalid formatting rule.');
     }
@@ -637,6 +647,7 @@ const mapStateToProps = (state: RootState) => ({
   defaultDateTimeFormat: getDefaultDateTimeFormat(state),
   defaultDecimalFormatOptions: getDefaultDecimalFormatOptions(state),
   defaultIntegerFormatOptions: getDefaultIntegerFormatOptions(state),
+  dh: getApi(state),
   showTimeZone: getShowTimeZone(state),
   showTSeparator: getShowTSeparator(state),
   truncateNumbersWithPound: getTruncateNumbersWithPound(state),

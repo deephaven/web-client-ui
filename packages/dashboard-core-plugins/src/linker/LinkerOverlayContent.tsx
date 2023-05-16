@@ -17,6 +17,7 @@ import {
   Link,
   LinkerCoordinate,
   LinkPoint,
+  LinkType,
 } from './LinkerUtils';
 import LinkerLink from './LinkerLink';
 import './LinkerOverlayContent.scss';
@@ -30,6 +31,7 @@ export type VisibleLink = {
   y2: number;
   id: string;
   className: string;
+  type: LinkType;
   operator: FilterTypeValue;
   startColumnType: string | null;
 };
@@ -290,6 +292,7 @@ export class LinkerOverlayContent extends Component<
             className,
             operator,
             startColumnType,
+            type,
           };
         } catch (error) {
           log.warn('Unable to get point for link', link, error);
@@ -305,7 +308,17 @@ export class LinkerOverlayContent extends Component<
         })}
       >
         {visibleLinks.map(
-          ({ x1, y1, x2, y2, id, className, operator, startColumnType }) => (
+          ({
+            x1,
+            y1,
+            x2,
+            y2,
+            id,
+            className,
+            operator,
+            startColumnType,
+            type,
+          }) => (
             <LinkerLink
               className={className}
               id={id}
@@ -319,6 +332,7 @@ export class LinkerOverlayContent extends Component<
               isSelected={selectedIds.has(id)}
               operator={operator}
               startColumnType={startColumnType}
+              type={type}
               onOperatorChanged={this.handleOperatorChanged}
             />
           )
@@ -329,6 +343,7 @@ export class LinkerOverlayContent extends Component<
           })}
           ref={this.dialogRef}
           style={{ bottom: dialog?.y, right: dialog?.x }}
+          data-testid="linker-toast-dialog"
         >
           <Button
             draggable

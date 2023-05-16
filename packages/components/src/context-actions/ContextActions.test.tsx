@@ -34,11 +34,6 @@ type ContextMenuMock = {
   parentElement: ContextMenuMock | null;
 };
 
-jest.mock('react-transition-group', () => ({
-  CSSTransition: 'cssTransition',
-  TransitionGroup: 'transitionGroup',
-}));
-
 const TEST_MENU_1 = [
   { title: 'Test1' },
   { title: 'Test2' },

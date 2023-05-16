@@ -1,12 +1,13 @@
 import { PureComponent } from 'react';
-import dh, {
+import type {
   Column,
+  dh as DhType,
   DateWrapper,
   Table,
   TableData,
   TableViewportSubscription,
   UpdateEventData,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { GridRange, GridRangeIndex, memoizeClear } from '@deephaven/grid';
 import { Formatter, FormatterUtils, TableUtils } from '@deephaven/jsapi-utils';
@@ -22,6 +23,7 @@ const log = Log.module('TableSaver');
 const UNFORMATTED_DATE_PATTERN = `yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS z`;
 
 interface TableSaverProps {
+  dh: DhType;
   getDownloadWorker: () => Promise<ServiceWorker>;
   isDownloading: boolean;
   onDownloadCompleted: () => void;
@@ -511,7 +513,7 @@ export default class TableSaver extends PureComponent<
   convertSnapshotIntoCsv(snapshot: UpdateEventData): string {
     let csvString = '';
     const snapshotIterator = snapshot.added.iterator();
-    const { formatter } = this.props;
+    const { dh, formatter } = this.props;
 
     const rows = [];
     while (snapshotIterator.hasNext()) {
@@ -576,6 +578,7 @@ export default class TableSaver extends PureComponent<
     if (n <= 0) {
       return;
     }
+    const { dh } = this.props;
     assertNotNull(this.gridRangeCounter);
     let i = 0;
     let currentGridRange = this.gridRanges[this.gridRangeCounter];

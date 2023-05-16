@@ -12,11 +12,7 @@ import GridMouseHandler, {
 } from './GridMouseHandler';
 import GridTheme, { GridTheme as GridThemeType } from './GridTheme';
 import GridRange, { GridRangeIndex, SELECTION_DIRECTION } from './GridRange';
-import GridRenderer, {
-  EditingCell,
-  EditingCellTextSelectionRange,
-  GridRenderState,
-} from './GridRenderer';
+import GridRenderer from './GridRenderer';
 import GridUtils, { GridPoint, isLinkToken, Token } from './GridUtils';
 import {
   GridSelectionMouseHandler,
@@ -58,6 +54,11 @@ import { EventHandlerResultOptions } from './EventHandlerResult';
 import { assertIsDefined } from './errors';
 import ThemeContext from './ThemeContext';
 import { DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
+import {
+  EditingCell,
+  GridRenderState,
+  EditingCellTextSelectionRange,
+} from './GridRendererTypes';
 
 type LegacyCanvasRenderingContext2D = CanvasRenderingContext2D & {
   webkitBackingStorePixelRatio?: number;

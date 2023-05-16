@@ -61,12 +61,12 @@ import {
   PromiseUtils,
 } from '@deephaven/utils';
 import { ContextAction, ContextMenuRoot } from '@deephaven/components';
-import {
+import type {
   Column,
   FilterCondition,
   Sort,
   VariableTypeUnion,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import {
   GridRangeIndex,
   GridState,
@@ -247,6 +247,7 @@ export class IrisGridPanel extends PureComponent<
     const { panelState } = props;
 
     this.pluginState = null;
+    this.irisGridUtils = null;
 
     this.state = {
       error: null,
@@ -340,6 +341,8 @@ export class IrisGridPanel extends PureComponent<
   gridState?: GridState;
 
   pluginState: unknown;
+
+  private irisGridUtils: IrisGridUtils | null;
 
   getTableName(): string {
     const { metadata } = this.props;
@@ -460,8 +463,9 @@ export class IrisGridPanel extends PureComponent<
       frozenColumns: readonly ColumnName[],
       conditionalFormats: readonly SidebarFormattingRule[],
       columnHeaderGroups: readonly ColumnHeaderGroup[]
-    ) =>
-      IrisGridUtils.dehydrateIrisGridState(model, {
+    ) => {
+      assertNotNull(this.irisGridUtils);
+      return this.irisGridUtils.dehydrateIrisGridState(model, {
         advancedFilters,
         aggregationSettings,
         customColumnFormatMap,
@@ -484,7 +488,8 @@ export class IrisGridPanel extends PureComponent<
         frozenColumns,
         conditionalFormats,
         columnHeaderGroups,
-      })
+      });
+    }
   );
 
   getDehydratedGridState = memoize(
@@ -533,7 +538,7 @@ export class IrisGridPanel extends PureComponent<
     const model = modelParam;
     const { panelState, irisGridStateOverrides } = this.state;
     const modelQueue: ((m: IrisGridModel) => void)[] = [];
-
+    this.irisGridUtils = new IrisGridUtils(model.dh);
     if (panelState != null) {
       const { irisGridState } = panelState;
       const {
@@ -607,11 +612,12 @@ export class IrisGridPanel extends PureComponent<
     const { model } = this.state;
     assertNotNull(model);
     const { columns, formatter } = model;
-    const pluginFilters = IrisGridUtils.getFiltersFromInputFilters(
-      columns,
-      filters,
-      formatter.timeZone
-    );
+    const pluginFilters =
+      this.irisGridUtils?.getFiltersFromInputFilters(
+        columns,
+        filters,
+        formatter.timeZone
+      ) ?? [];
     this.setState({ pluginFilters });
   }
 
@@ -938,15 +944,15 @@ export class IrisGridPanel extends PureComponent<
       model.columns,
       advancedFilters
     ).filter(([columnIndex]) => model.isFilterable(columnIndex));
-
+    assertNotNull(this.irisGridUtils);
     irisGrid.clearAllFilters();
     irisGrid.setFilters({
-      quickFilters: IrisGridUtils.hydrateQuickFilters(
+      quickFilters: this.irisGridUtils.hydrateQuickFilters(
         columns,
         indexedQuickFilters,
         formatter.timeZone
       ),
-      advancedFilters: IrisGridUtils.hydrateAdvancedFilters(
+      advancedFilters: this.irisGridUtils.hydrateAdvancedFilters(
         columns,
         indexedAdvancedFilters,
         formatter.timeZone
@@ -1016,6 +1022,7 @@ export class IrisGridPanel extends PureComponent<
         partitionColumn,
         advancedSettings,
       } = IrisGridUtils.hydrateIrisGridPanelState(model, irisGridPanelState);
+      assertNotNull(this.irisGridUtils);
       const {
         advancedFilters,
         customColumns,
@@ -1037,7 +1044,7 @@ export class IrisGridPanel extends PureComponent<
         frozenColumns,
         conditionalFormats,
         columnHeaderGroups,
-      } = IrisGridUtils.hydrateIrisGridState(model, {
+      } = this.irisGridUtils.hydrateIrisGridState(model, {
         ...irisGridState,
         ...irisGridStateOverrides,
       });

@@ -20,8 +20,9 @@ import {
 import type {
   Column,
   CustomColumn,
+  dh as DhType,
   ValueTypeUnion,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
 
 // We need to cast our CustomEvent so it's happy with event-target-shim
@@ -44,8 +45,8 @@ class MockIrisGridTreeModel
 
   protected editedData: string[][];
 
-  constructor(model = new MockTreeGridModel()) {
-    super();
+  constructor(dh: DhType, model = new MockTreeGridModel()) {
+    super(dh);
 
     this.model = model;
     this.editedData = [];

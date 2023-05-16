@@ -83,11 +83,6 @@ export default class Tab {
       this.contentItem.container._contentElement
         .on('focusin', this._onTabContentFocusIn)
         .on('focusout', this._onTabContentFocusOut);
-      this.contentItem.container._contentElement[0].addEventListener(
-        'click',
-        this._onTabContentFocusIn,
-        true // capture, so it occurs before onClick from react events
-      );
 
       this.contentItem.container.tab = this;
       this.contentItem.container.emit('tab', this);
@@ -181,25 +176,18 @@ export default class Tab {
 
   /**
    * Callback when the contentItem is focused in
-   *
-   * Why [0].focus():
-   * https://github.com/jquery/jquery/commit/fe5f04de8fde9c69ed48283b99280aa6df3795c7
-   * From jquery source: "If this is an inner synthetic event for an event with a bubbling surrogate (focus or blur),
-   * assume that the surrogate already propagated from triggering the native event and prevent that from happening
-   * again here. This technically gets the ordering wrong w.r.t. to `.trigger()` (in which the bubbling surrogate
-   * propagates *after* the non-bubbling base), but that seems less bad than duplication."
    */
   _onTabContentFocusIn() {
-    if (
-      isComponent(this.contentItem) &&
-      !this.contentItem.container._contentElement[0].contains(
-        document.activeElement
-      )
-    ) {
-      // jquery 3.4.0 and later, jquery method optimizes out the focus from
-      // happening in proper order. Can use HTMLElement.focus() to avoid.
-      this.contentItem.container._contentElement[0].focus(); // [0] needed to use dom focus, not jquery method
-    }
+    // Ensure only one tab is marked as having focus at a time.
+    // In Firefox, if the focused element is removed from the DOM,
+    // the focusout event won't trigger. This can result in two tabs
+    // being erroneously marked as focused if the user's DOM element
+    // is removed and they click another tab. To prevent this, we
+    // remove existing "lm_focusin" classes first.
+    $('.lm_focusin', this._layoutManager.root.element).removeClass(
+      'lm_focusin'
+    );
+
     this.element.addClass('lm_focusin');
   }
 

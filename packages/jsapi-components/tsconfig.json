@@ -7,17 +7,11 @@
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx"],
   "exclude": ["node_modules", "src/**/*.test.*", "src/**/__mocks__/*"],
   "references": [
-    {
-      "path": "../components"
-    },
-    {
-      "path": "../jsapi-shim"
-    },
-    {
-      "path": "../jsapi-utils"
-    },
-    {
-      "path": "../log"
-    }
+    { "path": "../components" },
+    { "path": "../jsapi-bootstrap" },
+    { "path": "../jsapi-shim" },
+    { "path": "../jsapi-types" },
+    { "path": "../jsapi-utils" },
+    { "path": "../log" }
   ]
 }

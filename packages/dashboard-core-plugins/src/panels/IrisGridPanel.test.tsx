@@ -44,7 +44,10 @@ function makeGlComponent() {
 }
 
 function makeMakeModel(table = makeTable()) {
-  return () => Promise.resolve(table).then(IrisGridModelFactory.makeModel);
+  return () =>
+    Promise.resolve(table).then(resolved =>
+      IrisGridModelFactory.makeModel(dh, resolved)
+    );
 }
 
 function makeIrisGridPanelWrapper(
@@ -81,7 +84,7 @@ function makeIrisGridPanelWrapper(
 async function expectLoading(container) {
   await waitFor(() =>
     expect(
-      container.querySelector("[data-icon='circle-large-outline']")
+      container.querySelector("[data-icon='circle-large']")
     ).toBeInTheDocument()
   );
   expect(container.querySelector("[data-icon='loading']")).toBeInTheDocument();

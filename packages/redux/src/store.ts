@@ -1,6 +1,7 @@
 import { applyMiddleware, createStore, compose, combineReducers } from 'redux';
 import type { FileStorage } from '@deephaven/file-explorer';
 import type { ValidKeyState } from '@deephaven/components';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import type { FormattingRule } from '@deephaven/jsapi-utils';
 import type { PayloadAction } from './actions';
 import rootMiddleware from './middleware';
@@ -24,13 +25,17 @@ export interface UserPermissions {
   canCreateQueryMonitor: boolean;
   canCopy: boolean;
   canDownloadCsv: boolean;
+  canLogout: boolean;
 }
 
 export interface User {
   permissions: UserPermissions;
   name: string;
-  operateAs: string;
+  operateAs?: string;
   groups: string[];
+  displayName?: string;
+  fullName?: string;
+  image?: string;
 }
 
 export type ServerConfigValues = Map<string, string>;
@@ -87,6 +92,7 @@ export interface WorkspaceStorage {
 }
 
 export type RootState = {
+  api: DhType;
   activeTool: string;
   plugins: DeephavenPluginModuleMap;
   storage: Storage;

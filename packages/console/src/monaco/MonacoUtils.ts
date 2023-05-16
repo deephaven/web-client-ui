@@ -3,7 +3,7 @@
  * Exports a function for initializing monaco with the deephaven theme/config
  */
 import { Shortcut } from '@deephaven/components';
-import { IdeSession } from '@deephaven/jsapi-shim';
+import type { IdeSession } from '@deephaven/jsapi-types';
 import { assertNotNull } from '@deephaven/utils';
 import { find as linkifyFind } from 'linkifyjs';
 import * as monaco from 'monaco-editor';
@@ -463,7 +463,14 @@ class MonacoUtils {
 
     for (let i = 1; i <= model.getLineCount(); i += 1) {
       const lineText = model.getLineContent(i);
-      const tokens = linkifyFind(lineText);
+      const originalTokens = linkifyFind(lineText);
+
+      const tokens = originalTokens.filter(token => {
+        if (token.type === 'url') {
+          return /^https?:\/\//.test(token.value);
+        }
+        return true;
+      });
       // map the tokens to the ranges - you know the line number now, use the token start/end as the startColumn/endColumn
       tokens.forEach(token => {
         newTokens.push({

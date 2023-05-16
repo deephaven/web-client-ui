@@ -8,7 +8,7 @@ import {
   PromiseUtils,
 } from '@deephaven/utils';
 import { ViewportData } from '@deephaven/storage';
-import { IdeSession } from '@deephaven/jsapi-shim';
+import type { IdeSession } from '@deephaven/jsapi-types';
 import {
   CommandHistoryStorage,
   CommandHistoryStorageItem,

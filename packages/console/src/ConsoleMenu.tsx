@@ -19,7 +19,7 @@ import {
   vsTriangleDown,
 } from '@deephaven/icons';
 import Log from '@deephaven/log';
-import { VariableDefinition } from '@deephaven/jsapi-shim';
+import type { dh as DhType, VariableDefinition } from '@deephaven/jsapi-types';
 import memoize from 'memoize-one';
 import './ConsoleMenu.scss';
 import ConsoleUtils from './common/ConsoleUtils';
@@ -27,6 +27,7 @@ import ConsoleUtils from './common/ConsoleUtils';
 const log = Log.module('ConsoleMenu');
 
 interface ConsoleMenuProps {
+  dh: DhType;
   openObject: (object: VariableDefinition) => void;
   objects: VariableDefinition[];
   overflowActions: () => DropdownAction[];
@@ -103,8 +104,9 @@ class ConsoleMenu extends PureComponent<ConsoleMenuProps, ConsoleMenuState> {
       filterText: string,
       openObject: (object: VariableDefinition) => void
     ): DropdownAction[] => {
+      const { dh } = this.props;
       const tables = objects.filter(object =>
-        ConsoleUtils.isTableType(object.type)
+        ConsoleUtils.isTableType(dh, object.type)
       );
       return ConsoleMenu.makeItemActions(
         tables,
@@ -124,8 +126,9 @@ class ConsoleMenu extends PureComponent<ConsoleMenuProps, ConsoleMenuState> {
       filterText: string,
       openObject: (object: VariableDefinition) => void
     ): DropdownAction[] => {
+      const { dh } = this.props;
       const widgets = objects.filter(object =>
-        ConsoleUtils.isWidgetType(object.type)
+        ConsoleUtils.isWidgetType(dh, object.type)
       );
       return ConsoleMenu.makeItemActions(
         widgets,

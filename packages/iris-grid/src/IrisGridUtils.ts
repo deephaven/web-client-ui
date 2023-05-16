@@ -7,10 +7,11 @@ import {
   MoveOperation,
   VisibleIndex,
 } from '@deephaven/grid';
-import dh, {
+import type {
   Column,
   ColumnGroup,
   DateWrapper,
+  dh as DhType,
   FilterCondition,
   LongWrapper,
   RangeSet,
@@ -18,7 +19,7 @@ import dh, {
   Sort,
   Table,
   TableData,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import {
   DateUtils,
   TableUtils,
@@ -273,172 +274,6 @@ class IrisGridUtils {
   }
 
   /**
-   * Exports the state from IrisGrid to a JSON stringifiable object
-   * @param model The table model to export the state for
-   * @param irisGridState The current state of the IrisGrid
-   */
-  static dehydrateIrisGridState(
-    model: IrisGridModel,
-    irisGridState: HydratedIrisGridState
-  ): DehydratedIrisGridState {
-    const {
-      aggregationSettings = { aggregations: EMPTY_ARRAY, showOnTop: false },
-      advancedFilters,
-      customColumnFormatMap,
-      isFilterBarShown,
-      metrics,
-      quickFilters,
-      customColumns,
-      conditionalFormats = EMPTY_ARRAY,
-      reverseType,
-      rollupConfig = undefined,
-      showSearchBar,
-      searchValue,
-      selectDistinctColumns = EMPTY_ARRAY,
-      selectedSearchColumns,
-      sorts,
-      invertSearchColumns,
-      pendingDataMap = EMPTY_MAP,
-      frozenColumns,
-      columnHeaderGroups,
-    } = irisGridState;
-    assertNotNull(metrics);
-    const { userColumnWidths, userRowHeights } = metrics;
-    const { columns } = model;
-    return {
-      advancedFilters: IrisGridUtils.dehydrateAdvancedFilters(
-        columns,
-        advancedFilters
-      ),
-      aggregationSettings,
-      customColumnFormatMap: [...customColumnFormatMap],
-      isFilterBarShown,
-      quickFilters: IrisGridUtils.dehydrateQuickFilters(quickFilters),
-      sorts: IrisGridUtils.dehydrateSort(sorts),
-      userColumnWidths: [...userColumnWidths]
-        .filter(
-          ([columnIndex]) =>
-            columnIndex != null &&
-            columnIndex >= 0 &&
-            columnIndex < columns.length
-        )
-        .map(([columnIndex, width]) => [columns[columnIndex].name, width]),
-      userRowHeights: [...userRowHeights],
-      customColumns: [...customColumns],
-      conditionalFormats: [...conditionalFormats],
-      reverseType,
-      rollupConfig,
-      showSearchBar,
-      searchValue,
-      selectDistinctColumns: [...selectDistinctColumns],
-      selectedSearchColumns,
-      invertSearchColumns,
-      pendingDataMap: IrisGridUtils.dehydratePendingDataMap(
-        columns,
-        pendingDataMap
-      ),
-      frozenColumns,
-      columnHeaderGroups: columnHeaderGroups?.map(item => ({
-        name: item.name,
-        children: item.children,
-        color: item.color,
-      })),
-    };
-  }
-
-  /**
-   * Import a state for IrisGrid that was exported with {{@link dehydrateIrisGridState}}
-   * @param model The table model to import the state with
-   * @param irisGridState The saved IrisGrid state
-   */
-  static hydrateIrisGridState(
-    model: IrisGridModel,
-    irisGridState: DehydratedIrisGridState
-  ): Omit<HydratedIrisGridState, 'metrics'> & {
-    userColumnWidths: ModelSizeMap;
-    userRowHeights: ModelSizeMap;
-  } {
-    const {
-      advancedFilters,
-      aggregationSettings = { aggregations: [], showOnTop: false },
-      customColumnFormatMap,
-      isFilterBarShown,
-      quickFilters,
-      sorts,
-      customColumns,
-      conditionalFormats,
-      userColumnWidths,
-      userRowHeights,
-      reverseType,
-      rollupConfig = undefined,
-      showSearchBar,
-      searchValue,
-      selectDistinctColumns,
-      selectedSearchColumns,
-      invertSearchColumns = true,
-      pendingDataMap = [],
-      frozenColumns,
-      columnHeaderGroups,
-    } = irisGridState;
-    const { columns, formatter } = model;
-
-    return {
-      advancedFilters: IrisGridUtils.hydrateAdvancedFilters(
-        columns,
-        advancedFilters,
-        formatter.timeZone
-      ),
-      aggregationSettings,
-      customColumnFormatMap: new Map(customColumnFormatMap),
-      isFilterBarShown,
-      quickFilters: IrisGridUtils.hydrateQuickFilters(
-        columns,
-        quickFilters,
-        formatter.timeZone
-      ),
-      sorts: IrisGridUtils.hydrateSort(columns, sorts),
-      userColumnWidths: new Map(
-        userColumnWidths
-          .map(([column, width]: [string | number, number]): [
-            number,
-            number
-          ] => {
-            if (
-              typeof column === 'string' ||
-              (column as unknown) instanceof String
-            ) {
-              return [columns.findIndex(({ name }) => name === column), width];
-            }
-            return [column, width];
-          })
-          .filter(
-            ([column]) =>
-              column != null && column >= 0 && column < columns.length
-          )
-      ),
-      customColumns,
-      conditionalFormats,
-      userRowHeights: new Map(userRowHeights),
-      reverseType,
-      rollupConfig,
-      showSearchBar,
-      searchValue,
-      selectDistinctColumns,
-      selectedSearchColumns,
-      invertSearchColumns,
-      pendingDataMap: IrisGridUtils.hydratePendingDataMap(
-        columns,
-        pendingDataMap
-      ) as PendingDataMap<UIRow>,
-      frozenColumns,
-      columnHeaderGroups: IrisGridUtils.parseColumnHeaderGroups(
-        model,
-        columnHeaderGroups ?? model.layoutHints?.columnGroups ?? []
-      ).groups,
-    };
-  }
-
-  /**
    * Export the IrisGridPanel state.
    * @param model The table model the state is being dehydrated with
    * @param irisGridPanelState The current IrisGridPanel state
@@ -532,249 +367,8 @@ class IrisGridUtils {
     });
   }
 
-  /**
-   * Import the saved quick filters to apply to the columns. Does not actually apply the filters.
-   * @param  columns The columns the filters will be applied to
-   * @param  savedQuickFilters Exported quick filters definitions
-   * @param  timeZone The time zone to make this value in if it is a date type. E.g. America/New_York
-   * @returns The quick filters to apply to the columns
-   */
-  static hydrateQuickFilters(
-    columns: readonly Column[],
-    savedQuickFilters: readonly DehydratedQuickFilter[],
-    timeZone?: string
-  ): ReadonlyQuickFilterMap {
-    const importedFilters = savedQuickFilters.map(
-      ([columnIndex, quickFilter]: DehydratedQuickFilter): [
-        number,
-        { text: string; filter: FilterCondition | null }
-      ] => {
-        const { text } = quickFilter;
-
-        let filter = null;
-        try {
-          const column = IrisGridUtils.getColumn(columns, columnIndex);
-          if (column != null) {
-            filter = TableUtils.makeQuickFilter(column, text, timeZone);
-          }
-        } catch (error) {
-          log.error('hydrateQuickFilters error with', text, error);
-        }
-
-        return [columnIndex, { text, filter }];
-      }
-    );
-
-    return new Map(importedFilters);
-  }
-
-  /**
-   * Export the advanced filters from the provided columns to JSON striginfiable object
-   * @param columns The columns for the filters
-   * @param advancedFilters The advanced filters to dehydrate
-   * @returns The dehydrated advanced filters
-   */
-  static dehydrateAdvancedFilters(
-    columns: readonly Column[],
-    advancedFilters: ReadonlyAdvancedFilterMap
-  ): DehydratedAdvancedFilter[] {
-    return [...advancedFilters].map(([columnIndex, advancedFilter]) => {
-      const column = IrisGridUtils.getColumn(columns, columnIndex);
-      assertNotNull(column);
-      const options = IrisGridUtils.dehydrateAdvancedFilterOptions(
-        column,
-        advancedFilter.options
-      );
-      return [columnIndex, { options }];
-    });
-  }
-
-  /**
-   * Import the saved advanced filters to apply to the columns. Does not actually apply the filters.
-   * @param  columns The columns the filters will be applied to
-   * @param  savedAdvancedFilters Exported advanced filters definitions
-   * @param  timeZone The time zone to make this filter in if it is a date type. E.g. America/New_York
-   * @returns The advanced filters to apply to the columns
-   */
-  static hydrateAdvancedFilters(
-    columns: readonly Column[],
-    savedAdvancedFilters: readonly DehydratedAdvancedFilter[],
-    timeZone: string
-  ): ReadonlyAdvancedFilterMap {
-    const importedFilters = savedAdvancedFilters.map(
-      ([columnIndex, advancedFilter]: DehydratedAdvancedFilter): [
-        number,
-        { options: AdvancedFilterOptions; filter: FilterCondition | null }
-      ] => {
-        const column = IrisGridUtils.getColumn(columns, columnIndex);
-        assertNotNull(column);
-        const options = IrisGridUtils.hydrateAdvancedFilterOptions(
-          column,
-          advancedFilter.options
-        );
-        let filter = null;
-
-        try {
-          const columnRetrieved = IrisGridUtils.getColumn(columns, columnIndex);
-          if (columnRetrieved != null) {
-            filter = TableUtils.makeAdvancedFilter(column, options, timeZone);
-          }
-        } catch (error) {
-          log.error('hydrateAdvancedFilters error with', options, error);
-        }
-
-        return [columnIndex, { options, filter }];
-      }
-    );
-
-    return new Map(importedFilters);
-  }
-
-  static dehydrateAdvancedFilterOptions(
-    column: Column,
-    options: AdvancedFilterOptions
-  ): AdvancedFilterOptions {
-    const { selectedValues, ...otherOptions } = options;
-    return {
-      selectedValues: selectedValues?.map((value: unknown) =>
-        IrisGridUtils.dehydrateValue(value, column?.type)
-      ),
-      ...otherOptions,
-    };
-  }
-
-  static hydrateAdvancedFilterOptions(
-    column: Column,
-    options: AdvancedFilterOptions
-  ): AdvancedFilterOptions {
-    const { selectedValues, ...otherOptions } = options;
-    return {
-      selectedValues: selectedValues?.map(value =>
-        IrisGridUtils.hydrateValue(value, column?.type)
-      ),
-      ...otherOptions,
-    };
-  }
-
-  static dehydratePendingDataMap(
-    columns: readonly Column[],
-    pendingDataMap: ReadonlyMap<
-      ModelIndex,
-      {
-        data: Map<ModelIndex, CellData | string>;
-      }
-    >
-  ): DehydratedPendingDataMap<CellData | string | null> {
-    return [...pendingDataMap].map(([rowIndex, { data }]) => [
-      rowIndex,
-      {
-        data: [...data].map(([c, value]) => [
-          columns[c].name,
-          IrisGridUtils.dehydrateValue(value, columns[c].type),
-        ]),
-      },
-    ]);
-  }
-
-  static hydratePendingDataMap(
-    columns: readonly Column[],
-    pendingDataMap: DehydratedPendingDataMap<CellData | string | null>
-  ): Map<
-    number,
-    { data: Map<ModelIndex | null, string | CellData | LongWrapper | null> }
-  > {
-    const columnMap = new Map<ColumnName, number>();
-    const getColumnIndex = (columnName: ColumnName) => {
-      if (!columnMap.has(columnName)) {
-        columnMap.set(
-          columnName,
-          columns.findIndex(({ name }) => name === columnName)
-        );
-      }
-      return columnMap.get(columnName);
-    };
-
-    return new Map(
-      pendingDataMap.map(
-        ([rowIndex, { data }]: [
-          number,
-          { data: [string, CellData | string | null][] }
-        ]) => [
-          rowIndex,
-          {
-            data: new Map(
-              data.map(([columnName, value]) => {
-                const index = getColumnIndex(columnName);
-                assertNotNull(index);
-                return [
-                  getColumnIndex(columnName) ?? null,
-                  IrisGridUtils.hydrateValue(value, columns[index].type),
-                ];
-              })
-            ),
-          },
-        ]
-      )
-    );
-  }
-
-  /**
-   * Dehydrates/serializes a value for storage.
-   * @param  value The value to dehydrate
-   * @param  columnType The column type
-   */
-  static dehydrateValue<T>(value: T, columnType: string): string | T | null {
-    if (TableUtils.isDateType(columnType)) {
-      return IrisGridUtils.dehydrateDateTime(
-        (value as unknown) as number | DateWrapper | Date
-      );
-    }
-
-    if (TableUtils.isLongType(columnType)) {
-      return IrisGridUtils.dehydrateLong(value);
-    }
-
-    return value;
-  }
-
-  /**
-   * Hydrate a value from it's serialized state
-   * @param  value The dehydrated value that needs to be hydrated
-   * @param  columnType The type of column
-   */
-  static hydrateValue<T>(
-    value: T,
-    columnType: string
-  ): DateWrapper | LongWrapper | T | null {
-    if (TableUtils.isDateType(columnType)) {
-      return IrisGridUtils.hydrateDateTime((value as unknown) as string);
-    }
-
-    if (TableUtils.isLongType(columnType)) {
-      return IrisGridUtils.hydrateLong((value as unknown) as string);
-    }
-
-    return value;
-  }
-
-  static dehydrateDateTime(value: number | DateWrapper | Date): string | null {
-    return value != null
-      ? dh.i18n.DateTimeFormat.format(DateUtils.FULL_DATE_FORMAT, value)
-      : null;
-  }
-
-  static hydrateDateTime(value: string): DateWrapper | null {
-    return value != null
-      ? dh.i18n.DateTimeFormat.parse(DateUtils.FULL_DATE_FORMAT, value)
-      : null;
-  }
-
   static dehydrateLong<T>(value: T): string | null {
     return value != null ? `${value}` : null;
-  }
-
-  static hydrateLong(value: string): LongWrapper | null {
-    return value != null ? dh.LongWrapper.ofString(value) : null;
   }
 
   /**
@@ -791,54 +385,6 @@ class IrisGridUtils {
         direction,
       };
     });
-  }
-
-  /**
-   * Import the saved sorts to apply to the table. Does not actually apply the sort.
-   * @param  columns The columns the sorts will be applied to
-   * @param  sorts Exported sort definitions
-   * @returns The sorts to apply to the table
-   */
-  static hydrateSort(
-    columns: readonly Column[],
-    sorts: readonly (DehydratedSort | LegacyDehydratedSort)[]
-  ): Sort[] {
-    return (
-      sorts
-        .map(sort => {
-          const { column: columnIndexOrName, isAbs, direction } = sort;
-          if (direction === TableUtils.sortDirection.reverse) {
-            return dh.Table.reverse();
-          }
-
-          const column =
-            typeof columnIndexOrName === 'string'
-              ? IrisGridUtils.getColumnByName(columns, columnIndexOrName)
-              : IrisGridUtils.getColumn(columns, columnIndexOrName);
-
-          if (column != null) {
-            let columnSort = column.sort();
-            if (isAbs) {
-              columnSort = columnSort.abs();
-            }
-            if (direction === TableUtils.sortDirection.descending) {
-              columnSort = columnSort.desc();
-            } else {
-              columnSort = columnSort.asc();
-            }
-            return columnSort;
-          }
-
-          return null;
-        })
-        // If we can't find the column any more, it's null, filter it out
-        // If the item is a reverse sort item, filter it out - it will get applied with the `reverseType` property
-        // This should only happen when loading a legacy dashboard
-        .filter(
-          item =>
-            item != null && item.direction !== TableUtils.sortDirection.reverse
-        ) as Sort[]
-    );
   }
 
   /**
@@ -877,71 +423,6 @@ class IrisGridUtils {
     };
   }
 
-  /**
-   * Applies the passed in table settings directly to the provided table
-   * @param  table The table to apply the settings to
-   * @param  tableSettings Dehydrated table settings extracted with `extractTableSettings`
-   * @param  timeZone The time zone to make this value in if it is a date type. E.g. America/New_York
-   */
-  static applyTableSettings(
-    table: Table,
-    tableSettings: TableSettings,
-    timeZone: string
-  ): void {
-    const { columns } = table;
-
-    let quickFilters: FilterCondition[] = [];
-    if (tableSettings.quickFilters) {
-      quickFilters = IrisGridUtils.getFiltersFromFilterMap(
-        IrisGridUtils.hydrateQuickFilters(
-          columns,
-          tableSettings.quickFilters,
-          timeZone
-        )
-      );
-    }
-
-    let advancedFilters: FilterCondition[] = [];
-    if (tableSettings.advancedFilters) {
-      advancedFilters = IrisGridUtils.getFiltersFromFilterMap(
-        IrisGridUtils.hydrateAdvancedFilters(
-          columns,
-          tableSettings.advancedFilters,
-          timeZone
-        )
-      );
-    }
-    const inputFilters = IrisGridUtils.getFiltersFromInputFilters(
-      columns,
-      tableSettings.inputFilters,
-      timeZone
-    );
-
-    let sorts: Sort[] = [];
-    if (tableSettings.sorts) {
-      sorts = IrisGridUtils.hydrateSort(columns, tableSettings.sorts);
-    }
-
-    let filters = [...quickFilters, ...advancedFilters];
-    const { partition, partitionColumn: partitionColumnName } = tableSettings;
-    if (partition != null && partitionColumnName != null) {
-      const partitionColumn = IrisGridUtils.getColumnByName(
-        columns,
-        partitionColumnName
-      );
-      if (partitionColumn) {
-        const partitionFilter = partitionColumn
-          .filter()
-          .eq(dh.FilterValue.ofString(partition));
-        filters = [partitionFilter, ...filters];
-      }
-    }
-    filters = [...inputFilters, ...filters];
-
-    table.applyFilter(filters);
-    table.applySort(sorts);
-  }
-
   static getInputFiltersForColumns(
     columns: readonly Column[],
     inputFilters: readonly InputFilter[] = []
@@ -952,31 +433,6 @@ class IrisGridUtils {
           columnName === name && columnType === type
       )
     );
-  }
-
-  static getFiltersFromInputFilters(
-    columns: readonly Column[],
-    inputFilters: readonly InputFilter[] = [],
-    timeZone?: string
-  ): FilterCondition[] {
-    return inputFilters
-      .map(({ name, type, value }) => {
-        const column = columns.find(
-          ({ name: columnName, type: columnType }) =>
-            columnName === name && columnType === type
-        );
-        if (column) {
-          try {
-            return TableUtils.makeQuickFilter(column, value, timeZone);
-          } catch (e) {
-            // It may be unable to create it because user hasn't completed their input
-            log.debug('Unable to create input filter', e);
-          }
-        }
-
-        return null;
-      })
-      .filter(filter => filter != null) as FilterCondition[];
   }
 
   static getFiltersFromFilterMap(
@@ -1242,30 +698,6 @@ class IrisGridUtils {
       bufferedColumns,
       alwaysFetchColumnNames
     );
-  }
-
-  /**
-   * Get the dh.RangeSet representation of the provided ranges.
-   * Ranges are sorted prior to creating the RangeSet. Only the rows are taken into account,
-   * RangeSet does not have an option for columns.
-   * @param  ranges The ranges to get the range set for
-   * @returns The rangeset for the provided ranges
-   */
-  static rangeSetFromRanges(ranges: readonly GridRange[]): RangeSet {
-    const rangeSets = ranges
-      .slice()
-      .sort((a, b): number => {
-        assertNotNull(a.startRow);
-        assertNotNull(b.startRow);
-        return a.startRow - b.startRow;
-      })
-      .map(range => {
-        const { startRow, endRow } = range;
-        assertNotNull(startRow);
-        assertNotNull(endRow);
-        return dh.RangeSet.ofRange(startRow, endRow);
-      });
-    return dh.RangeSet.ofRanges(rangeSets);
   }
 
   /**
@@ -1705,6 +1137,580 @@ class IrisGridUtils {
       return '';
     }
     return `${value}`;
+  }
+
+  private dh: DhType;
+
+  private tableUtils: TableUtils;
+
+  constructor(dh: DhType) {
+    this.dh = dh;
+    this.tableUtils = new TableUtils(dh);
+  }
+
+  /**
+   * Exports the state from IrisGrid to a JSON stringifiable object
+   * @param model The table model to export the state for
+   * @param irisGridState The current state of the IrisGrid
+   */
+  dehydrateIrisGridState(
+    model: IrisGridModel,
+    irisGridState: HydratedIrisGridState
+  ): DehydratedIrisGridState {
+    const {
+      aggregationSettings = { aggregations: EMPTY_ARRAY, showOnTop: false },
+      advancedFilters,
+      customColumnFormatMap,
+      isFilterBarShown,
+      metrics,
+      quickFilters,
+      customColumns,
+      conditionalFormats = EMPTY_ARRAY,
+      reverseType,
+      rollupConfig = undefined,
+      showSearchBar,
+      searchValue,
+      selectDistinctColumns = EMPTY_ARRAY,
+      selectedSearchColumns,
+      sorts,
+      invertSearchColumns,
+      pendingDataMap = EMPTY_MAP,
+      frozenColumns,
+      columnHeaderGroups,
+    } = irisGridState;
+    assertNotNull(metrics);
+    const { userColumnWidths, userRowHeights } = metrics;
+    const { columns } = model;
+    return {
+      advancedFilters: this.dehydrateAdvancedFilters(columns, advancedFilters),
+      aggregationSettings,
+      customColumnFormatMap: [...customColumnFormatMap],
+      isFilterBarShown,
+      quickFilters: IrisGridUtils.dehydrateQuickFilters(quickFilters),
+      sorts: IrisGridUtils.dehydrateSort(sorts),
+      userColumnWidths: [...userColumnWidths]
+        .filter(
+          ([columnIndex]) =>
+            columnIndex != null &&
+            columnIndex >= 0 &&
+            columnIndex < columns.length
+        )
+        .map(([columnIndex, width]) => [columns[columnIndex].name, width]),
+      userRowHeights: [...userRowHeights],
+      customColumns: [...customColumns],
+      conditionalFormats: [...conditionalFormats],
+      reverseType,
+      rollupConfig,
+      showSearchBar,
+      searchValue,
+      selectDistinctColumns: [...selectDistinctColumns],
+      selectedSearchColumns,
+      invertSearchColumns,
+      pendingDataMap: this.dehydratePendingDataMap(columns, pendingDataMap),
+      frozenColumns,
+      columnHeaderGroups: columnHeaderGroups?.map(item => ({
+        name: item.name,
+        children: item.children,
+        color: item.color,
+      })),
+    };
+  }
+
+  /**
+   * Import a state for IrisGrid that was exported with {{@link dehydrateIrisGridState}}
+   * @param model The table model to import the state with
+   * @param irisGridState The saved IrisGrid state
+   */
+  hydrateIrisGridState(
+    model: IrisGridModel,
+    irisGridState: DehydratedIrisGridState
+  ): Omit<HydratedIrisGridState, 'metrics'> & {
+    userColumnWidths: ModelSizeMap;
+    userRowHeights: ModelSizeMap;
+  } {
+    const {
+      advancedFilters,
+      aggregationSettings = { aggregations: [], showOnTop: false },
+      customColumnFormatMap,
+      isFilterBarShown,
+      quickFilters,
+      sorts,
+      customColumns,
+      conditionalFormats,
+      userColumnWidths,
+      userRowHeights,
+      reverseType,
+      rollupConfig = undefined,
+      showSearchBar,
+      searchValue,
+      selectDistinctColumns,
+      selectedSearchColumns,
+      invertSearchColumns = true,
+      pendingDataMap = [],
+      frozenColumns,
+      columnHeaderGroups,
+    } = irisGridState;
+    const { columns, formatter } = model;
+
+    return {
+      advancedFilters: this.hydrateAdvancedFilters(
+        columns,
+        advancedFilters,
+        formatter.timeZone
+      ),
+      aggregationSettings,
+      customColumnFormatMap: new Map(customColumnFormatMap),
+      isFilterBarShown,
+      quickFilters: this.hydrateQuickFilters(
+        columns,
+        quickFilters,
+        formatter.timeZone
+      ),
+      sorts: this.hydrateSort(columns, sorts),
+      userColumnWidths: new Map(
+        userColumnWidths
+          .map(([column, width]: [string | number, number]): [
+            number,
+            number
+          ] => {
+            if (
+              typeof column === 'string' ||
+              (column as unknown) instanceof String
+            ) {
+              return [columns.findIndex(({ name }) => name === column), width];
+            }
+            return [column, width];
+          })
+          .filter(
+            ([column]) =>
+              column != null && column >= 0 && column < columns.length
+          )
+      ),
+      customColumns,
+      conditionalFormats,
+      userRowHeights: new Map(userRowHeights),
+      reverseType,
+      rollupConfig,
+      showSearchBar,
+      searchValue,
+      selectDistinctColumns,
+      selectedSearchColumns,
+      invertSearchColumns,
+      pendingDataMap: this.hydratePendingDataMap(
+        columns,
+        pendingDataMap
+      ) as PendingDataMap<UIRow>,
+      frozenColumns,
+      columnHeaderGroups: IrisGridUtils.parseColumnHeaderGroups(
+        model,
+        columnHeaderGroups ?? model.layoutHints?.columnGroups ?? []
+      ).groups,
+    };
+  }
+
+  /**
+   * Import the saved quick filters to apply to the columns. Does not actually apply the filters.
+   * @param  columns The columns the filters will be applied to
+   * @param  savedQuickFilters Exported quick filters definitions
+   * @param  timeZone The time zone to make this value in if it is a date type. E.g. America/New_York
+   * @returns The quick filters to apply to the columns
+   */
+  hydrateQuickFilters(
+    columns: readonly Column[],
+    savedQuickFilters: readonly DehydratedQuickFilter[],
+    timeZone?: string
+  ): ReadonlyQuickFilterMap {
+    const importedFilters = savedQuickFilters.map(
+      ([columnIndex, quickFilter]: DehydratedQuickFilter): [
+        number,
+        { text: string; filter: FilterCondition | null }
+      ] => {
+        const { text } = quickFilter;
+
+        let filter = null;
+        try {
+          const column = IrisGridUtils.getColumn(columns, columnIndex);
+          if (column != null) {
+            filter = this.tableUtils.makeQuickFilter(column, text, timeZone);
+          }
+        } catch (error) {
+          log.error('hydrateQuickFilters error with', text, error);
+        }
+
+        return [columnIndex, { text, filter }];
+      }
+    );
+
+    return new Map(importedFilters);
+  }
+
+  /**
+   * Export the advanced filters from the provided columns to JSON striginfiable object
+   * @param columns The columns for the filters
+   * @param advancedFilters The advanced filters to dehydrate
+   * @returns The dehydrated advanced filters
+   */
+  dehydrateAdvancedFilters(
+    columns: readonly Column[],
+    advancedFilters: ReadonlyAdvancedFilterMap
+  ): DehydratedAdvancedFilter[] {
+    return [...advancedFilters].map(([columnIndex, advancedFilter]) => {
+      const column = IrisGridUtils.getColumn(columns, columnIndex);
+      assertNotNull(column);
+      const options = this.dehydrateAdvancedFilterOptions(
+        column,
+        advancedFilter.options
+      );
+      return [columnIndex, { options }];
+    });
+  }
+
+  /**
+   * Import the saved advanced filters to apply to the columns. Does not actually apply the filters.
+   * @param  columns The columns the filters will be applied to
+   * @param  savedAdvancedFilters Exported advanced filters definitions
+   * @param  timeZone The time zone to make this filter in if it is a date type. E.g. America/New_York
+   * @returns The advanced filters to apply to the columns
+   */
+  hydrateAdvancedFilters(
+    columns: readonly Column[],
+    savedAdvancedFilters: readonly DehydratedAdvancedFilter[],
+    timeZone: string
+  ): ReadonlyAdvancedFilterMap {
+    const importedFilters = savedAdvancedFilters.map(
+      ([columnIndex, advancedFilter]: DehydratedAdvancedFilter): [
+        number,
+        { options: AdvancedFilterOptions; filter: FilterCondition | null }
+      ] => {
+        const column = IrisGridUtils.getColumn(columns, columnIndex);
+        assertNotNull(column);
+        const options = this.hydrateAdvancedFilterOptions(
+          column,
+          advancedFilter.options
+        );
+        let filter = null;
+
+        try {
+          const columnRetrieved = IrisGridUtils.getColumn(columns, columnIndex);
+          if (columnRetrieved != null) {
+            filter = this.tableUtils.makeAdvancedFilter(
+              column,
+              options,
+              timeZone
+            );
+          }
+        } catch (error) {
+          log.error('hydrateAdvancedFilters error with', options, error);
+        }
+
+        return [columnIndex, { options, filter }];
+      }
+    );
+
+    return new Map(importedFilters);
+  }
+
+  dehydrateAdvancedFilterOptions(
+    column: Column,
+    options: AdvancedFilterOptions
+  ): AdvancedFilterOptions {
+    const { selectedValues, ...otherOptions } = options;
+    return {
+      selectedValues: selectedValues?.map((value: unknown) =>
+        this.dehydrateValue(value, column?.type)
+      ),
+      ...otherOptions,
+    };
+  }
+
+  hydrateAdvancedFilterOptions(
+    column: Column,
+    options: AdvancedFilterOptions
+  ): AdvancedFilterOptions {
+    const { selectedValues, ...otherOptions } = options;
+    return {
+      selectedValues: selectedValues?.map(value =>
+        this.hydrateValue(value, column?.type)
+      ),
+      ...otherOptions,
+    };
+  }
+
+  dehydratePendingDataMap(
+    columns: readonly Column[],
+    pendingDataMap: ReadonlyMap<
+      ModelIndex,
+      {
+        data: Map<ModelIndex, CellData | string>;
+      }
+    >
+  ): DehydratedPendingDataMap<CellData | string | null> {
+    return [...pendingDataMap].map(([rowIndex, { data }]) => [
+      rowIndex,
+      {
+        data: [...data].map(([c, value]) => [
+          columns[c].name,
+          this.dehydrateValue(value, columns[c].type),
+        ]),
+      },
+    ]);
+  }
+
+  hydratePendingDataMap(
+    columns: readonly Column[],
+    pendingDataMap: DehydratedPendingDataMap<CellData | string | null>
+  ): Map<
+    number,
+    { data: Map<ModelIndex | null, string | CellData | LongWrapper | null> }
+  > {
+    const columnMap = new Map<ColumnName, number>();
+    const getColumnIndex = (columnName: ColumnName) => {
+      if (!columnMap.has(columnName)) {
+        columnMap.set(
+          columnName,
+          columns.findIndex(({ name }) => name === columnName)
+        );
+      }
+      return columnMap.get(columnName);
+    };
+
+    return new Map(
+      pendingDataMap.map(
+        ([rowIndex, { data }]: [
+          number,
+          { data: [string, CellData | string | null][] }
+        ]) => [
+          rowIndex,
+          {
+            data: new Map(
+              data.map(([columnName, value]) => {
+                const index = getColumnIndex(columnName);
+                assertNotNull(index);
+                return [
+                  getColumnIndex(columnName) ?? null,
+                  this.hydrateValue(value, columns[index].type),
+                ];
+              })
+            ),
+          },
+        ]
+      )
+    );
+  }
+
+  /**
+   * Dehydrates/serializes a value for storage.
+   * @param  value The value to dehydrate
+   * @param  columnType The column type
+   */
+  dehydrateValue<T>(value: T, columnType: string): string | T | null {
+    if (TableUtils.isDateType(columnType)) {
+      return this.dehydrateDateTime(
+        (value as unknown) as number | DateWrapper | Date
+      );
+    }
+
+    if (TableUtils.isLongType(columnType)) {
+      return IrisGridUtils.dehydrateLong(value);
+    }
+
+    return value;
+  }
+
+  /**
+   * Hydrate a value from it's serialized state
+   * @param  value The dehydrated value that needs to be hydrated
+   * @param  columnType The type of column
+   */
+  hydrateValue<T>(
+    value: T,
+    columnType: string
+  ): DateWrapper | LongWrapper | T | null {
+    if (TableUtils.isDateType(columnType)) {
+      return this.hydrateDateTime((value as unknown) as string);
+    }
+
+    if (TableUtils.isLongType(columnType)) {
+      return this.hydrateLong((value as unknown) as string);
+    }
+
+    return value;
+  }
+
+  dehydrateDateTime(value: number | DateWrapper | Date): string | null {
+    return value != null
+      ? this.dh.i18n.DateTimeFormat.format(DateUtils.FULL_DATE_FORMAT, value)
+      : null;
+  }
+
+  hydrateDateTime(value: string): DateWrapper | null {
+    return value != null
+      ? this.dh.i18n.DateTimeFormat.parse(DateUtils.FULL_DATE_FORMAT, value)
+      : null;
+  }
+
+  hydrateLong(value: string): LongWrapper | null {
+    return value != null ? this.dh.LongWrapper.ofString(value) : null;
+  }
+
+  /**
+   * Import the saved sorts to apply to the table. Does not actually apply the sort.
+   * @param  columns The columns the sorts will be applied to
+   * @param  sorts Exported sort definitions
+   * @returns The sorts to apply to the table
+   */
+  hydrateSort(
+    columns: readonly Column[],
+    sorts: readonly (DehydratedSort | LegacyDehydratedSort)[]
+  ): Sort[] {
+    const { dh } = this;
+    return (
+      sorts
+        .map(sort => {
+          const { column: columnIndexOrName, isAbs, direction } = sort;
+          if (direction === TableUtils.sortDirection.reverse) {
+            return dh.Table.reverse();
+          }
+
+          const column =
+            typeof columnIndexOrName === 'string'
+              ? IrisGridUtils.getColumnByName(columns, columnIndexOrName)
+              : IrisGridUtils.getColumn(columns, columnIndexOrName);
+
+          if (column != null) {
+            let columnSort = column.sort();
+            if (isAbs) {
+              columnSort = columnSort.abs();
+            }
+            if (direction === TableUtils.sortDirection.descending) {
+              columnSort = columnSort.desc();
+            } else {
+              columnSort = columnSort.asc();
+            }
+            return columnSort;
+          }
+
+          return null;
+        })
+        // If we can't find the column any more, it's null, filter it out
+        // If the item is a reverse sort item, filter it out - it will get applied with the `reverseType` property
+        // This should only happen when loading a legacy dashboard
+        .filter(
+          item =>
+            item != null && item.direction !== TableUtils.sortDirection.reverse
+        ) as Sort[]
+    );
+  }
+
+  /**
+   * Applies the passed in table settings directly to the provided table
+   * @param  table The table to apply the settings to
+   * @param  tableSettings Dehydrated table settings extracted with `extractTableSettings`
+   * @param  timeZone The time zone to make this value in if it is a date type. E.g. America/New_York
+   */
+  applyTableSettings(
+    table: Table,
+    tableSettings: TableSettings,
+    timeZone: string
+  ): void {
+    const { columns } = table;
+
+    let quickFilters: FilterCondition[] = [];
+    if (tableSettings.quickFilters) {
+      quickFilters = IrisGridUtils.getFiltersFromFilterMap(
+        this.hydrateQuickFilters(columns, tableSettings.quickFilters, timeZone)
+      );
+    }
+
+    let advancedFilters: FilterCondition[] = [];
+    if (tableSettings.advancedFilters) {
+      advancedFilters = IrisGridUtils.getFiltersFromFilterMap(
+        this.hydrateAdvancedFilters(
+          columns,
+          tableSettings.advancedFilters,
+          timeZone
+        )
+      );
+    }
+    const inputFilters = this.getFiltersFromInputFilters(
+      columns,
+      tableSettings.inputFilters,
+      timeZone
+    );
+
+    let sorts: Sort[] = [];
+    if (tableSettings.sorts) {
+      sorts = this.hydrateSort(columns, tableSettings.sorts);
+    }
+
+    let filters = [...quickFilters, ...advancedFilters];
+    const { partition, partitionColumn: partitionColumnName } = tableSettings;
+    if (partition != null && partitionColumnName != null) {
+      const partitionColumn = IrisGridUtils.getColumnByName(
+        columns,
+        partitionColumnName
+      );
+      if (partitionColumn) {
+        const partitionFilter = partitionColumn
+          .filter()
+          .eq(this.dh.FilterValue.ofString(partition));
+        filters = [partitionFilter, ...filters];
+      }
+    }
+    filters = [...inputFilters, ...filters];
+
+    table.applyFilter(filters);
+    table.applySort(sorts);
+  }
+
+  getFiltersFromInputFilters(
+    columns: readonly Column[],
+    inputFilters: readonly InputFilter[] = [],
+    timeZone?: string
+  ): FilterCondition[] {
+    return inputFilters
+      .map(({ name, type, value }) => {
+        const column = columns.find(
+          ({ name: columnName, type: columnType }) =>
+            columnName === name && columnType === type
+        );
+        if (column) {
+          try {
+            return this.tableUtils.makeQuickFilter(column, value, timeZone);
+          } catch (e) {
+            // It may be unable to create it because user hasn't completed their input
+            log.debug('Unable to create input filter', e);
+          }
+        }
+
+        return null;
+      })
+      .filter(filter => filter != null) as FilterCondition[];
+  }
+
+  /**
+   * Get the dh.RangeSet representation of the provided ranges.
+   * Ranges are sorted prior to creating the RangeSet. Only the rows are taken into account,
+   * RangeSet does not have an option for columns.
+   * @param  ranges The ranges to get the range set for
+   * @returns The rangeset for the provided ranges
+   */
+  rangeSetFromRanges(ranges: readonly GridRange[]): RangeSet {
+    const { dh } = this;
+    const rangeSets = ranges
+      .slice()
+      .sort((a, b): number => {
+        assertNotNull(a.startRow);
+        assertNotNull(b.startRow);
+        return a.startRow - b.startRow;
+      })
+      .map(range => {
+        const { startRow, endRow } = range;
+        assertNotNull(startRow);
+        assertNotNull(endRow);
+        return dh.RangeSet.ofRange(startRow, endRow);
+      });
+    return dh.RangeSet.ofRanges(rangeSets);
   }
 }
 

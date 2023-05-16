@@ -1,4 +1,4 @@
-import React, { DragEvent, useCallback, useEffect } from 'react';
+import React, { DragEvent, useCallback, useEffect, useMemo } from 'react';
 import {
   assertIsDashboardPluginProps,
   DashboardPluginComponentProps,
@@ -8,15 +8,10 @@ import {
   useListener,
 } from '@deephaven/dashboard';
 import { IrisGridModelFactory, IrisGridThemeType } from '@deephaven/iris-grid';
-import { Table, VariableDefinition } from '@deephaven/jsapi-shim';
+import { useApi } from '@deephaven/jsapi-bootstrap';
+import type { Table, VariableDefinition } from '@deephaven/jsapi-types';
 import shortid from 'shortid';
 import { IrisGridPanel, IrisGridPanelProps } from './panels';
-
-const SUPPORTED_TYPES: string[] = [
-  dh.VariableType.TABLE,
-  dh.VariableType.TREETABLE,
-  dh.VariableType.HIERARCHICALTABLE,
-];
 
 export type GridPluginProps = Partial<DashboardPluginComponentProps> & {
   getDownloadWorker?: () => Promise<ServiceWorker>;
@@ -36,6 +31,15 @@ export function GridPlugin(props: GridPluginProps): JSX.Element | null {
     hydrate,
     theme,
   } = props;
+  const dh = useApi();
+  const supportedTypes: string[] = useMemo(
+    () => [
+      dh.VariableType.TABLE,
+      dh.VariableType.TREETABLE,
+      dh.VariableType.HIERARCHICALTABLE,
+    ],
+    [dh]
+  );
   const handlePanelOpen = useCallback(
     ({
       dragEvent,
@@ -49,13 +53,14 @@ export function GridPlugin(props: GridPluginProps): JSX.Element | null {
       widget: VariableDefinition;
     }) => {
       const { name, type } = widget;
-      if (!SUPPORTED_TYPES.includes(type)) {
+      if (!supportedTypes.includes(type)) {
         return;
       }
-
       const metadata = { name, table: name, type: widget.type };
       const makeModel = () =>
-        fetch().then((table: Table) => IrisGridModelFactory.makeModel(table));
+        fetch().then((table: Table) =>
+          IrisGridModelFactory.makeModel(dh, table)
+        );
       const config = {
         type: 'react-component' as const,
         component: IrisGridPanel.COMPONENT,
@@ -75,7 +80,7 @@ export function GridPlugin(props: GridPluginProps): JSX.Element | null {
       const { root } = layout;
       LayoutUtils.openComponent({ root, config, dragEvent });
     },
-    [getDownloadWorker, id, layout, loadPlugin, theme]
+    [dh, getDownloadWorker, id, layout, loadPlugin, supportedTypes, theme]
   );
 
   useEffect(

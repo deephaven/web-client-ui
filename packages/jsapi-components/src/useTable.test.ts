@@ -1,10 +1,16 @@
 import { renderHook, act } from '@testing-library/react-hooks';
-import type { Column } from '@deephaven/jsapi-shim';
 import dh from '@deephaven/jsapi-shim';
+import type { Column } from '@deephaven/jsapi-types';
 import ColumnNameError from './ColumnNameError';
 import TableDisconnectError from './TableDisconnectError';
 
 import useTable from './useTable';
+
+const mockDh = dh;
+jest.mock('@deephaven/jsapi-bootstrap', () => ({
+  ...jest.requireActual('@deephaven/jsapi-bootstrap'),
+  useApi: jest.fn(() => mockDh),
+}));
 
 function makeColumns(count = 5) {
   const columns: Column[] = [];

@@ -25,3 +25,4 @@ export * from './mouse-handlers';
 export * from './errors';
 export * from './EventHandlerResult';
 export { default as ThemeContext } from './ThemeContext';
+export * from './GridRendererTypes';

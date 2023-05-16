@@ -22,6 +22,7 @@ import {
   InfoModal,
   LoadingSpinner,
   BasicModal,
+  DebouncedModal,
 } from '@deephaven/components';
 import {
   IrisGridModel,
@@ -60,7 +61,6 @@ import {
   PandasPanelProps,
   IrisGridPanelProps,
   ColumnSelectionValidator,
-  SessionConfig,
   getDashboardConnection,
 } from '@deephaven/dashboard-core-plugins';
 import {
@@ -69,12 +69,14 @@ import {
   dhPanels,
   vsDebugDisconnect,
 } from '@deephaven/icons';
-import dh, {
+import dh from '@deephaven/jsapi-shim';
+import type {
   IdeConnection,
   IdeSession,
   VariableDefinition,
   VariableTypeUnion,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
+import { SessionConfig } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
   getActiveTool,
@@ -84,11 +86,11 @@ import {
   updateWorkspaceData as updateWorkspaceDataAction,
   getPlugins,
   Workspace,
-  DeephavenPluginModuleMap,
   WorkspaceData,
   RootState,
-  UserPermissions,
+  User,
   ServerConfigValues,
+  DeephavenPluginModuleMap,
 } from '@deephaven/redux';
 import { PromiseUtils } from '@deephaven/utils';
 import GoldenLayout from '@deephaven/golden-layout';
@@ -108,7 +110,6 @@ import {
 import EmptyDashboard from './EmptyDashboard';
 import UserLayoutUtils from './UserLayoutUtils';
 import DownloadServiceWorkerUtils from '../DownloadServiceWorkerUtils';
-import { PluginUtils } from '../plugins';
 import LayoutStorage from '../storage/LayoutStorage';
 
 const log = Log.module('AppMainContainer');
@@ -128,13 +129,6 @@ export type AppDashboardData = {
   links: Link[];
   openedMap: Map<string | string[], Component>;
 };
-
-interface User {
-  name: string;
-  operateAs: string;
-  groups: string[];
-  permissions: UserPermissions;
-}
 
 interface AppMainContainerProps {
   activeTool: string;
@@ -557,14 +551,17 @@ export class AppMainContainer extends Component<
   }
 
   handleDisconnect() {
+    log.info('Disconnected from server');
     this.setState({ isDisconnected: true });
   }
 
   handleReconnect() {
+    log.info('Reconnected to server');
     this.setState({ isDisconnected: false });
   }
 
   handleReconnectAuthFailed() {
+    log.warn('Reconnect authentication failed');
     this.setState({ isAuthFailed: true });
   }
 
@@ -661,7 +658,11 @@ export class AppMainContainer extends Component<
       }).TablePlugin;
     }
 
-    return PluginUtils.loadComponentPlugin(pluginName);
+    const errorMessage = `Unable to find table plugin ${pluginName}.`;
+    log.error(errorMessage);
+    return ((
+      <div className="error-message">{`${errorMessage}`}</div>
+    ) as unknown) as ForwardRefExoticComponent<React.RefAttributes<unknown>>;
   }
 
   startListeningForDisconnect() {
@@ -755,7 +756,7 @@ export class AppMainContainer extends Component<
       getDownloadWorker: DownloadServiceWorkerUtils.getServiceWorker,
       loadPlugin: this.handleLoadTablePlugin,
       localDashboardId: id,
-      makeModel: () => createGridModel(connection, props.metadata, type),
+      makeModel: () => createGridModel(dh, connection, props.metadata, type),
     };
   }
 
@@ -766,7 +767,7 @@ export class AppMainContainer extends Component<
       localDashboardId: id,
       makeModel: () => {
         const { metadata, panelState } = props;
-        return createChartModel(connection, metadata, panelState);
+        return createChartModel(dh, connection, metadata, panelState);
       },
     };
   }
@@ -883,7 +884,8 @@ export class AppMainContainer extends Component<
               <Button
                 kind="ghost"
                 className={classNames('btn-settings-menu', {
-                  'text-warning': user.operateAs !== user.name,
+                  'text-warning':
+                    user.operateAs != null && user.operateAs !== user.name,
                 })}
                 onClick={this.handleSettingsMenuShow}
                 icon={
@@ -919,8 +921,8 @@ export class AppMainContainer extends Component<
             hydrateConsole={AppMainContainer.hydrateConsole}
             notebooksUrl={
               new URL(
-                `${import.meta.env.VITE_NOTEBOOKS_URL}/`,
-                `${window.location}`
+                `${import.meta.env.VITE_ROUTE_NOTEBOOKS}`,
+                document.baseURI
               ).href
             }
           />
@@ -940,6 +942,7 @@ export class AppMainContainer extends Component<
           <SettingsMenu
             serverConfigValues={serverConfigValues}
             onDone={this.handleSettingsMenuHide}
+            user={user}
           />
         </CSSTransition>
         <ContextActions actions={contextActions} />
@@ -950,16 +953,20 @@ export class AppMainContainer extends Component<
           style={{ display: 'none' }}
           onChange={this.handleImportLayoutFiles}
         />
-        <InfoModal
+        <DebouncedModal
           isOpen={isDisconnected && !isAuthFailed}
-          icon={vsDebugDisconnect}
-          title={
-            <>
-              <LoadingSpinner /> Attempting to reconnect...
-            </>
-          }
-          subtitle="Please check your network connection."
-        />
+          debounceMs={250}
+        >
+          <InfoModal
+            icon={vsDebugDisconnect}
+            title={
+              <>
+                <LoadingSpinner /> Attempting to reconnect...
+              </>
+            }
+            subtitle="Please check your network connection."
+          />
+        </DebouncedModal>
         <BasicModal
           confirmButtonText="Refresh"
           onConfirm={AppMainContainer.handleRefresh}

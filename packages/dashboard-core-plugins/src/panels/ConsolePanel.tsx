@@ -11,7 +11,8 @@ import {
   HeapUsage,
 } from '@deephaven/console';
 import { PanelEvent } from '@deephaven/dashboard';
-import { IdeSession, VariableDefinition } from '@deephaven/jsapi-shim';
+import type { IdeSession, VariableDefinition } from '@deephaven/jsapi-types';
+import { SessionWrapper } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
   getCommandHistoryStorage,
@@ -23,7 +24,7 @@ import { assertNotNull } from '@deephaven/utils';
 import type { JSZipObject } from 'jszip';
 import { ConsoleEvent } from '../events';
 import Panel from './Panel';
-import { getDashboardSessionWrapper, SessionWrapper } from '../redux';
+import { getDashboardSessionWrapper } from '../redux';
 import './ConsolePanel.scss';
 
 const log = Log.module('ConsolePanel');
@@ -320,7 +321,7 @@ export class ConsolePanel extends PureComponent<
       unzip,
     } = this.props;
     const { consoleSettings, error, objectMap } = this.state;
-    const { config, session, connection, details = {} } = sessionWrapper;
+    const { config, session, connection, details = {}, dh } = sessionWrapper;
     const { workerName, processInfoId } = details;
     const { id: sessionId, type: language } = config;
 
@@ -337,6 +338,7 @@ export class ConsolePanel extends PureComponent<
       >
         {session != null && (
           <Console
+            dh={dh}
             ref={this.consoleRef}
             settings={consoleSettings}
             session={session}

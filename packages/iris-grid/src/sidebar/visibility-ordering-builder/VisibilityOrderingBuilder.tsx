@@ -22,7 +22,7 @@ import {
   vsCircleLargeFilled,
   vsAdd,
 } from '@deephaven/icons';
-import type { Column } from '@deephaven/jsapi-shim';
+import type { Column } from '@deephaven/jsapi-types';
 import memoize from 'memoizee';
 import debounce from 'lodash.debounce';
 import { Button, SearchInput } from '@deephaven/components';

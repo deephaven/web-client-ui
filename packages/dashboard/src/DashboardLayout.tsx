@@ -9,10 +9,10 @@ import PropTypes from 'prop-types';
 import GoldenLayout from '@deephaven/golden-layout';
 import type {
   Container,
-  EventEmitter,
   ItemConfigType,
   ReactComponentConfig,
 } from '@deephaven/golden-layout';
+import { ApiContext } from '@deephaven/jsapi-bootstrap';
 import Log from '@deephaven/log';
 import { usePrevious } from '@deephaven/react-hooks';
 import { RootState } from '@deephaven/redux';
@@ -31,6 +31,7 @@ import {
   PanelComponentType,
   PanelDehydrateFunction,
   PanelHydrateFunction,
+  PanelProps,
 } from './DashboardPlugin';
 
 export type DashboardLayoutConfig = ItemConfigType[];
@@ -112,10 +113,7 @@ export function DashboardLayout({
         componentDehydrate
       );
 
-      function renderComponent(
-        props: { glContainer: Container; glEventHub: EventEmitter },
-        ref: unknown
-      ) {
+      function renderComponent(props: PanelProps, ref: unknown) {
         // Cast it to an `any` type so we can pass the ref in correctly.
         // ComponentType doesn't seem to work right, ReactNode is also incorrect
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -123,13 +121,23 @@ export function DashboardLayout({
 
         // Props supplied by GoldenLayout
         // eslint-disable-next-line react/prop-types
-        const { glContainer, glEventHub } = props;
-        return (
+        const { dh, glContainer, glEventHub } = props;
+        const panel = (
           <PanelErrorBoundary glContainer={glContainer} glEventHub={glEventHub}>
             {/* eslint-disable-next-line react/jsx-props-no-spreading */}
             <CType {...props} ref={ref} />
           </PanelErrorBoundary>
         );
+
+        if (dh != null) {
+          return (
+            // Enterprise should be able to override the JSAPI
+            // for each panel via the props
+            <ApiContext.Provider value={dh}>{panel}</ApiContext.Provider>
+          );
+        }
+
+        return panel;
       }
 
       const wrappedComponent = React.forwardRef(renderComponent);

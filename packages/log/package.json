@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/log",
-  "version": "0.36.0",
+  "version": "0.39.0",
   "description": "Deephaven Logger",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",

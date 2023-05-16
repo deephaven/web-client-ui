@@ -2,14 +2,15 @@
 import memoize from 'memoizee';
 import debounce from 'lodash.debounce';
 import set from 'lodash.set';
-import dh, {
+import type {
   Axis,
   Chart,
+  dh as DhType,
   Figure,
   OneClick,
   Series,
   SourceType,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { Range } from '@deephaven/utils';
 import { Layout, PlotData } from 'plotly.js';
@@ -17,8 +18,13 @@ import type {
   DateTimeColumnFormatter,
   Formatter,
 } from '@deephaven/jsapi-utils';
-import ChartModel, { ChartEvent, FilterColumnMap } from './ChartModel';
-import ChartUtils, { AxisTypeMap, ChartModelSettings } from './ChartUtils';
+import ChartModel, { ChartEvent } from './ChartModel';
+import ChartUtils, {
+  AxisTypeMap,
+  ChartModelSettings,
+  FilterColumnMap,
+  FilterMap,
+} from './ChartUtils';
 import ChartTheme from './ChartTheme';
 
 const log = Log.module('FigureChartModel');
@@ -30,15 +36,17 @@ class FigureChartModel extends ChartModel {
   static ADD_SERIES_DEBOUNCE = 50;
 
   /**
+   * @param dh JSAPI instance
    * @param figure The figure object created by the API
    * @param settings Chart settings
    */
   constructor(
+    dh: DhType,
     figure: Figure,
     settings: Partial<ChartModelSettings> = {},
     theme: typeof ChartTheme = ChartTheme
   ) {
-    super();
+    super(dh);
 
     this.handleFigureUpdated = this.handleFigureUpdated.bind(this);
     this.handleFigureDisconnected = this.handleFigureDisconnected.bind(this);
@@ -50,11 +58,16 @@ class FigureChartModel extends ChartModel {
     this.handleDownsampleNeeded = this.handleDownsampleNeeded.bind(this);
     this.handleRequestFailed = this.handleRequestFailed.bind(this);
 
+    this.dh = dh;
+    this.chartUtils = new ChartUtils(dh);
     this.figure = figure;
     this.settings = settings;
     this.theme = theme;
     this.data = [];
-    const template = { data: {}, layout: ChartUtils.makeDefaultLayout(theme) };
+    const template = {
+      data: {},
+      layout: this.chartUtils.makeDefaultLayout(theme),
+    };
     this.layout = {
       grid: {
         rows: figure.rows,
@@ -76,6 +89,10 @@ class FigureChartModel extends ChartModel {
     this.updateAxisPositions();
     this.startListeningFigure();
   }
+
+  chartUtils: ChartUtils;
+
+  dh: DhType;
 
   figure: Figure;
 
@@ -103,7 +120,7 @@ class FigureChartModel extends ChartModel {
 
   filterColumnMap: FilterColumnMap;
 
-  lastFilter: Map<string, string>;
+  lastFilter: FilterMap;
 
   isConnected: boolean; // Assume figure is connected to start
 
@@ -160,9 +177,10 @@ class FigureChartModel extends ChartModel {
    * @param showLegend Whether this series should show the legend or not
    */
   addSeries(series: Series, axes: Axis[], showLegend: boolean | null): void {
+    const { dh } = this;
     const axisTypeMap: AxisTypeMap = ChartUtils.groupArray(axes, 'type');
 
-    const seriesData = ChartUtils.makeSeriesDataFromSeries(
+    const seriesData = this.chartUtils.makeSeriesDataFromSeries(
       series,
       axisTypeMap,
       ChartUtils.getSeriesVisibility(series.name, this.settings),
@@ -244,8 +262,8 @@ class FigureChartModel extends ChartModel {
 
     this.figure.subscribe(
       this.isDownsamplingDisabled
-        ? dh.plot.DownsampleOptions.DISABLE
-        : dh.plot.DownsampleOptions.DEFAULT
+        ? this.dh.plot.DownsampleOptions.DISABLE
+        : this.dh.plot.DownsampleOptions.DEFAULT
     );
   }
 
@@ -254,6 +272,7 @@ class FigureChartModel extends ChartModel {
   }
 
   startListeningFigure(): void {
+    const { dh } = this;
     this.figure.addEventListener(
       dh.plot.Figure.EVENT_UPDATED,
       this.handleFigureUpdated
@@ -293,6 +312,7 @@ class FigureChartModel extends ChartModel {
   }
 
   stopListeningFigure(): void {
+    const { dh } = this;
     this.figure.removeEventListener(
       dh.plot.Figure.EVENT_UPDATED,
       this.handleFigureUpdated
@@ -346,7 +366,7 @@ class FigureChartModel extends ChartModel {
   getValueTranslator = memoize(
     (columnType: string, formatter: Formatter | undefined) => {
       const timeZone = this.getTimeZone(columnType, formatter);
-      return (value: unknown) => ChartUtils.unwrapValue(value, timeZone);
+      return (value: unknown) => this.chartUtils.unwrapValue(value, timeZone);
     }
   );
 
@@ -355,7 +375,7 @@ class FigureChartModel extends ChartModel {
     (columnType: string, formatter: Formatter | undefined) => {
       const timeZone = this.getTimeZone(columnType, formatter);
       return (value: unknown) =>
-        ChartUtils.wrapValue(value, columnType, timeZone);
+        this.chartUtils.wrapValue(value, columnType, timeZone);
     }
   );
 
@@ -577,7 +597,7 @@ class FigureChartModel extends ChartModel {
   updateAxisPositions(): void {
     const plotWidth = this.getPlotWidth();
     const plotHeight = this.getPlotHeight();
-    ChartUtils.updateFigureAxes(
+    this.chartUtils.updateFigureAxes(
       this.layout,
       this.figure,
       chart => this.getAxisRangeParser(chart, this.formatter),
@@ -595,7 +615,10 @@ class FigureChartModel extends ChartModel {
       return;
     }
 
-    const axisFormats = ChartUtils.getAxisFormats(this.figure, this.formatter);
+    const axisFormats = this.chartUtils.getAxisFormats(
+      this.figure,
+      this.formatter
+    );
     axisFormats.forEach((axisFormat, axisLayoutProperty) => {
       log.debug(
         `Assigning ${axisLayoutProperty}`,
@@ -626,7 +649,7 @@ class FigureChartModel extends ChartModel {
     const { name, plotStyle } = series;
 
     const seriesData = this.seriesDataMap.get(name);
-    const property = ChartUtils.getPlotlyProperty(plotStyle, sourceType);
+    const property = this.chartUtils.getPlotlyProperty(plotStyle, sourceType);
 
     if (seriesData) {
       set(seriesData, property, dataArray);
@@ -640,6 +663,7 @@ class FigureChartModel extends ChartModel {
    * @param series The series to clean the data for
    */
   cleanSeries(series: Series): void {
+    const { dh } = this;
     const { name, plotStyle } = series;
     const seriesData = this.seriesDataMap.get(name);
     if (seriesData == null) {
@@ -703,7 +727,7 @@ class FigureChartModel extends ChartModel {
    * Sets the filter on the model. Will only set the values that have changed.
    * @param filterMap Map of filter column names to values
    */
-  setFilter(filterMap: Map<string, string>): void {
+  setFilter(filterMap: FilterMap): void {
     if (this.oneClicks.length === 0) {
       log.warn('Trying to set a filter, but no one click!');
       return;

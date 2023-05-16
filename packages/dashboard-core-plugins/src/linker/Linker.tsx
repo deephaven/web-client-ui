@@ -17,10 +17,12 @@ import {
   RowDataMap,
   TableUtils,
 } from '@deephaven/jsapi-utils';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { Type as FilterType } from '@deephaven/filters';
 import {
   getActiveTool,
+  getApi,
   getTimeZone,
   setActiveTool as setActiveToolAction,
   RootState,
@@ -50,6 +52,7 @@ const log = Log.module('Linker');
 
 interface StateProps {
   activeTool: string;
+  dh: DhType;
   isolatedLinkerPanelId?: string;
   links: Link[];
   timeZone: string;
@@ -63,6 +66,7 @@ interface OwnProps {
 
 const mapState = (state: RootState, ownProps: OwnProps): StateProps => ({
   activeTool: getActiveTool(state),
+  dh: getApi(state),
   isolatedLinkerPanelId: getIsolatedLinkerPanelIdForDashboard(
     state,
     ownProps.localDashboardId
@@ -353,6 +357,21 @@ export class Linker extends Component<LinkerProps, LinkerState> {
           this.deleteLinks(linksToDelete);
           break;
         }
+        case 'chartLink': {
+          const existingLinkEnd = isReversed === true ? start : end;
+          const existingLinkStart = isReversed === true ? end : start;
+          log.debug('creating chartlink', { existingLinkEnd, start, end });
+          // Don't allow linking more than one column per source to each chart column
+          const linksToDelete = links.filter(
+            ({ end: panelLinkEnd, start: panelLinkStart }) =>
+              panelLinkStart?.panelId === existingLinkStart.panelId &&
+              panelLinkEnd?.panelId === existingLinkEnd.panelId &&
+              panelLinkEnd?.columnName === existingLinkEnd.columnName &&
+              panelLinkEnd?.columnType === existingLinkEnd.columnType
+          );
+          this.deleteLinks(linksToDelete);
+          break;
+        }
         case 'tableLink':
           // No-op
           break;
@@ -464,7 +483,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
 
   handleUpdateValues(panel: PanelComponent, dataMap: RowDataMap): void {
     const panelId = LayoutUtils.getIdFromPanel(panel);
-    const { links, timeZone } = this.props;
+    const { dh, links, timeZone } = this.props;
     // Map of panel ID to filterMap
     const panelFilterMap = new Map();
     // Instead of setting filters one by one for each link,
@@ -493,7 +512,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
           value = undefined;
         }
         if (columnType != null && TableUtils.isDateType(columnType)) {
-          const dateFilterFormatter = new DateTimeColumnFormatter({
+          const dateFilterFormatter = new DateTimeColumnFormatter(dh, {
             timeZone,
             showTimeZone: false,
             showTSeparator: true,
@@ -642,15 +661,17 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     }
   }
 
-  updateLinkInProgressType(
-    linkInProgress: Link,
-    type: LinkType = 'invalid'
-  ): void {
-    this.setState({
-      linkInProgress: {
-        ...linkInProgress,
-        type,
-      },
+  updateLinkInProgressType(type: LinkType = 'invalid'): void {
+    this.setState(({ linkInProgress }) => {
+      if (linkInProgress !== undefined) {
+        return {
+          linkInProgress: {
+            ...linkInProgress,
+            type,
+          },
+        };
+      }
+      return null;
     });
   }
 
@@ -664,7 +685,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     if (tableColumn == null) {
       if (linkInProgress?.start != null) {
         // Link started, end point is not a valid target
-        this.updateLinkInProgressType(linkInProgress);
+        this.updateLinkInProgressType();
       }
       return false;
     }
@@ -673,7 +694,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     if (!isLinkableColumn(tableColumn)) {
       log.debug2('Column is not filterable', tableColumn.description);
       if (linkInProgress?.start != null) {
-        this.updateLinkInProgressType(linkInProgress, 'invalid');
+        this.updateLinkInProgressType('invalid');
       }
       return false;
     }
@@ -701,7 +722,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
         ? LinkerUtils.getLinkType(end, start, isolatedLinkerPanelId)
         : LinkerUtils.getLinkType(start, end, isolatedLinkerPanelId);
 
-    this.updateLinkInProgressType(linkInProgress, type);
+    this.updateLinkInProgressType(type);
 
     return type !== 'invalid';
   }

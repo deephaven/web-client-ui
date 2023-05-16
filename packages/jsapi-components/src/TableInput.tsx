@@ -11,10 +11,11 @@ import {
   SearchInput,
   SelectValueList,
 } from '@deephaven/components';
-import type { LongWrapper, Table } from '@deephaven/jsapi-shim';
+import type { LongWrapper, Table } from '@deephaven/jsapi-types';
 import { PromiseUtils } from '@deephaven/utils';
 import Log from '@deephaven/log';
 import { Formatter, FormatterUtils, Settings } from '@deephaven/jsapi-utils';
+import { useApi } from '@deephaven/jsapi-bootstrap';
 import useTableColumn from './useTableColumn';
 
 import './TableInput.scss';
@@ -54,6 +55,7 @@ function TableInput(props: TableInputProps): JSX.Element {
     table: tablePromise,
   } = props;
   const parentRef = useRef<HTMLDivElement>(null);
+  const dh = useApi();
   const formatter = useMemo(() => {
     const columnFormats = FormatterUtils.getColumnFormats(settings);
     const dateTimeFormatterOptions = FormatterUtils.getDateTimeFormatterOptions(
@@ -64,12 +66,13 @@ function TableInput(props: TableInputProps): JSX.Element {
       defaultIntegerFormatOptions = {},
     } = settings;
     return new Formatter(
+      dh,
       columnFormats,
       dateTimeFormatterOptions,
       defaultDecimalFormatOptions,
       defaultIntegerFormatOptions
     );
-  }, [settings]);
+  }, [dh, settings]);
   const [searchValue, setSearchValue] = useState('');
   const [selection, setSelection] = useState(new Set(defaultValue));
   const [table, setTable] = useState<Table | undefined>();

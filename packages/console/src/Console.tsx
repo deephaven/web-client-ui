@@ -14,14 +14,14 @@ import classNames from 'classnames';
 import memoize from 'memoize-one';
 import throttle from 'lodash.throttle';
 import type { JSZipObject } from 'jszip';
-import dh from '@deephaven/jsapi-shim';
 import type {
+  dh as DhType,
   IdeSession,
   LogItem,
   VariableChanges,
   VariableDefinition,
   VariableTypeUnion,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { assertNotNull, Pending, PromiseUtils } from '@deephaven/utils';
 import ConsoleHistory from './console-history/ConsoleHistory';
@@ -53,6 +53,7 @@ const DEFAULT_SETTINGS: Settings = {
 } as const;
 
 interface ConsoleProps {
+  dh: DhType;
   statusBarChildren: ReactNode;
   settings: Partial<Settings>;
   focusCommandHistory: () => void;
@@ -215,7 +216,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
   componentDidMount(): void {
     this.initConsoleLogging();
 
-    const { session } = this.props;
+    const { dh, session } = this.props;
     session.addEventListener(
       dh.IdeSession.EVENT_COMMANDSTARTED,
       this.handleCommandStarted
@@ -234,7 +235,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
   }
 
   componentWillUnmount(): void {
-    const { session } = this.props;
+    const { dh, session } = this.props;
 
     session.removeEventListener(
       dh.IdeSession.EVENT_COMMANDSTARTED,
@@ -733,7 +734,13 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
   }
 
   handleOpenCsvTable(title: string): void {
-    const { openObject, commandHistoryStorage, language, scope } = this.props;
+    const {
+      dh,
+      openObject,
+      commandHistoryStorage,
+      language,
+      scope,
+    } = this.props;
     const { consoleHistory, objectMap } = this.state;
     const object = { name: title, title, type: dh.VariableType.TABLE };
     const isExistingObject = objectMap.has(title);
@@ -941,6 +948,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
   render(): ReactElement {
     const {
       actions,
+      dh,
       historyChildren,
       language,
       statusBarChildren,
@@ -974,6 +982,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
       >
         <div className="console-pane" ref={this.consolePane}>
           <ConsoleStatusBar
+            dh={dh}
             session={session}
             overflowActions={this.handleOverflowActions}
             openObject={openObject}

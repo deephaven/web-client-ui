@@ -505,14 +505,14 @@ export class Chart extends Component<ChartProps, ChartState> {
   }
 
   updateFormatter(): void {
+    const { model } = this.props;
     const formatter = new Formatter(
+      model.dh,
       this.columnFormats,
       this.dateTimeFormatterOptions,
       this.decimalFormatOptions,
       this.integerFormatOptions
     );
-
-    const { model } = this.props;
     model.setFormatter(formatter);
   }
 

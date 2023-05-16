@@ -1,6 +1,10 @@
 import React, { PureComponent, ReactElement, ReactNode } from 'react';
 import classNames from 'classnames';
-import dh, { IdeSession, VariableDefinition } from '@deephaven/jsapi-shim';
+import type {
+  dh as DhType,
+  IdeSession,
+  VariableDefinition,
+} from '@deephaven/jsapi-types';
 import { DropdownAction, Tooltip } from '@deephaven/components';
 import { CanceledPromiseError, Pending } from '@deephaven/utils';
 import ConsoleMenu from './ConsoleMenu';
@@ -8,6 +12,7 @@ import './ConsoleStatusBar.scss';
 
 interface ConsoleStatusBarProps {
   children: ReactNode;
+  dh: DhType;
   session: IdeSession;
   openObject: (object: VariableDefinition) => void;
   objects: VariableDefinition[];
@@ -53,7 +58,7 @@ export class ConsoleStatusBar extends PureComponent<
   pending: Pending;
 
   startListening(): void {
-    const { session } = this.props;
+    const { dh, session } = this.props;
     session.addEventListener(
       dh.IdeSession.EVENT_COMMANDSTARTED,
       this.handleCommandStarted
@@ -61,7 +66,7 @@ export class ConsoleStatusBar extends PureComponent<
   }
 
   stopListening(): void {
-    const { session } = this.props;
+    const { dh, session } = this.props;
     session.removeEventListener(
       dh.IdeSession.EVENT_COMMANDSTARTED,
       this.handleCommandStarted
@@ -95,7 +100,7 @@ export class ConsoleStatusBar extends PureComponent<
   }
 
   render(): ReactElement {
-    const { children, openObject, overflowActions, objects } = this.props;
+    const { children, dh, openObject, overflowActions, objects } = this.props;
     const { isDisconnected, isCommandRunning } = this.state;
 
     let statusIconClass = null;
@@ -122,6 +127,7 @@ export class ConsoleStatusBar extends PureComponent<
         </div>
         {children}
         <ConsoleMenu
+          dh={dh}
           overflowActions={overflowActions}
           openObject={openObject}
           objects={objects}

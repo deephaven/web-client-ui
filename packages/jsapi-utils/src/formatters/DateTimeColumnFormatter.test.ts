@@ -1,4 +1,5 @@
-import dh, { TimeZone } from '@deephaven/jsapi-shim';
+import dh from '@deephaven/jsapi-shim';
+import type { TimeZone } from '@deephaven/jsapi-types';
 import DateTimeColumnFormatter from './DateTimeColumnFormatter';
 import { TableColumnFormat } from './TableColumnFormatter';
 
@@ -13,7 +14,7 @@ function makeFormatter({
   showTSeparator?: boolean;
   defaultDateTimeFormatString?: string;
 } = {}) {
-  return new DateTimeColumnFormatter({
+  return new DateTimeColumnFormatter(dh, {
     timeZone,
     showTimeZone,
     showTSeparator,
@@ -198,7 +199,7 @@ describe('isValid', () => {
   it('should return true if a format is valid', () => {
     for (let i = 0; i < VALID_FORMATS.length; i += 1) {
       expect(
-        DateTimeColumnFormatter.isValid({
+        DateTimeColumnFormatter.isValid(dh, {
           formatString: VALID_FORMATS[i],
         })
       ).toBe(true);

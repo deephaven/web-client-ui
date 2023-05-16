@@ -3,10 +3,10 @@ import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, CopyButton, LoadingSpinner } from '@deephaven/components';
 import { dhFreeze, dhRefresh, vsLock } from '@deephaven/icons';
-import {
+import type {
   Column,
   ColumnStatistics as APIColumnStatistics,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
 import { isExpandableGridModel } from '@deephaven/grid';

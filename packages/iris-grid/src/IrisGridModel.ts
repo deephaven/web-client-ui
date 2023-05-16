@@ -11,6 +11,7 @@ import type {
   Column,
   ColumnStatistics,
   CustomColumn,
+  dh as DhType,
   FilterCondition,
   Format,
   LayoutHints,
@@ -19,7 +20,7 @@ import type {
   Sort,
   Table,
   ValueTypeUnion,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
 import {
   ColumnName,
@@ -65,11 +66,14 @@ abstract class IrisGridModel<
     PENDING_DATA_UPDATED: 'PENDING_DATA_UPDATED',
   } as const);
 
-  constructor() {
+  constructor(dh: DhType) {
     super();
 
+    this.dh = dh;
     this.listenerCount = 0;
   }
+
+  dh: DhType;
 
   listenerCount: number;
 

@@ -8,17 +8,27 @@ import {
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 
-const log = Log.module('@deephaven/code-studio');
+const log = Log.module('@deephaven/jsapi-bootstrap.ApiBootstrap');
 
 export const ApiContext = createContext<DhType | null>(null);
 
 export type ApiBootstrapProps = {
+  /** URL of the API to load */
   apiUrl: string;
+
+  /** Children to render when the API has loaded */
   children: JSX.Element;
+
+  /** Element to display if there is a failure loading the API */
   failureElement?: JSX.Element;
+
+  /** Whether to set the API globally on window.dh when it has loaded */
   setGlobally?: boolean;
 };
 
+/**
+ * ApiBootstrap loads the API from the provided URL, rendering the children once loaded.
+ */
 export function ApiBootstrap({
   apiUrl,
   children,

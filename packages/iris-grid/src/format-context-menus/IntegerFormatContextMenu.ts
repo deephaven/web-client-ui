@@ -2,6 +2,7 @@ import {
   IntegerColumnFormat,
   IntegerColumnFormatter,
 } from '@deephaven/jsapi-utils';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import FormatContextMenuUtils, {
   FormatContextMenuOption,
 } from './FormatContextMenuUtils';
@@ -15,11 +16,13 @@ class IntegerFormatContextMenu {
 
   /**
    * Creates list of formatting options for Integer context menu
+   * @param dh JSAPI instance
    * @param selectedFormat Selected format object, null for no selected format
    * @param onCustomFormatChange Callback to call when the custom format is changed
    * @returns Array of formatting options for the context menu
    */
   static getOptions(
+    dh: DhType,
     selectedFormat: IntegerColumnFormat,
     onCustomFormatChange: (value: IntegerColumnFormat | null) => void
   ): FormatContextMenuOption[] {
@@ -68,7 +71,7 @@ class IntegerFormatContextMenu {
           const newCustomFormat = IntegerColumnFormatter.makeCustomFormat(
             formatString
           );
-          if (IntegerColumnFormatter.isValid(newCustomFormat)) {
+          if (IntegerColumnFormatter.isValid(dh, newCustomFormat)) {
             onCustomFormatChange(newCustomFormat);
           }
         } else {

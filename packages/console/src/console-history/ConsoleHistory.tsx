@@ -2,7 +2,7 @@
  * Console display for use in the Iris environment.
  */
 import React, { Component, ReactElement } from 'react';
-import { VariableDefinition } from '@deephaven/jsapi-shim';
+import type { VariableDefinition } from '@deephaven/jsapi-types';
 import ConsoleHistoryItem from './ConsoleHistoryItem';
 
 import './ConsoleHistory.scss';

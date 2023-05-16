@@ -9,6 +9,7 @@ describe('creating model from metadata', () => {
     const table = new (dh as any).Table({ columns });
     const settings = { series: ['C'], xAxis: 'name', type: 'PIE' as const };
     const model = await ChartModelFactory.makeModelFromSettings(
+      dh,
       settings,
       table
     );

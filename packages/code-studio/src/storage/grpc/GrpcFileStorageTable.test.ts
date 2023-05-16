@@ -1,5 +1,5 @@
 import { FileUtils } from '@deephaven/file-explorer';
-import { ItemDetails, StorageService } from '@deephaven/jsapi-shim';
+import type { ItemDetails, StorageService } from '@deephaven/jsapi-types';
 import GrpcFileStorageTable from './GrpcFileStorageTable';
 
 let storageService: StorageService;

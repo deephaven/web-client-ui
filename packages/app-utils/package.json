@@ -1,0 +1,59 @@
+{
+  "name": "@deephaven/app-utils",
+  "version": "0.39.0",
+  "description": "Deephaven App Utils",
+  "author": "Deephaven Data Labs LLC",
+  "license": "Apache-2.0",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/deephaven/web-client-ui.git",
+    "directory": "packages/app-utils"
+  },
+  "source": "src/index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "engines": {
+    "node": ">=16"
+  },
+  "scripts": {
+    "build": "cross-env NODE_ENV=production run-p build:*",
+    "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward"
+  },
+  "devDependencies": {
+    "react": "^17.x",
+    "react-dom": "^17.x",
+    "react-redux": "^7.x",
+    "redux": "^4.x"
+  },
+  "dependencies": {
+    "@deephaven/auth-plugins": "file:../auth-plugins",
+    "@deephaven/components": "file:../components",
+    "@deephaven/jsapi-bootstrap": "file:../jsapi-bootstrap",
+    "@deephaven/jsapi-components": "file:../jsapi-components",
+    "@deephaven/jsapi-types": "file:../jsapi-types",
+    "@deephaven/jsapi-utils": "file:../jsapi-utils",
+    "@deephaven/log": "file:../log",
+    "@deephaven/react-hooks": "file:../react-hooks",
+    "@deephaven/utils": "file:../utils",
+    "@paciolan/remote-component": "2.13.0",
+    "@paciolan/remote-module-loader": "^3.0.2",
+    "fira": "mozilla/fira#4.202"
+  },
+  "peerDependencies": {
+    "react": "^17.x",
+    "react-dom": "^17.x",
+    "react-redux": "^7.x",
+    "redux": "^4.x"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": [
+    "*.css"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -2,6 +2,7 @@ import type { Action } from 'redux';
 import type { ThunkAction } from 'redux-thunk';
 import type { CommandHistoryStorage } from '@deephaven/console';
 import type { FileStorage } from '@deephaven/file-explorer';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
   SET_PLUGINS,
   SET_USER,
@@ -11,6 +12,7 @@ import {
   SET_ACTIVE_TOOL,
   SET_FILE_STORAGE,
   SET_SERVER_CONFIG_VALUES,
+  SET_API,
 } from './actionTypes';
 import type {
   DeephavenPluginModuleMap,
@@ -32,6 +34,11 @@ export type PayloadActionCreator<P> = (payload: P) => PayloadAction<P>;
 export const setUser: PayloadActionCreator<User> = user => ({
   type: SET_USER,
   payload: user,
+});
+
+export const setApi: PayloadActionCreator<DhType> = api => ({
+  type: SET_API,
+  payload: api,
 });
 
 export const setWorkspace: PayloadActionCreator<Workspace> = workspace => ({

@@ -26,13 +26,14 @@ export default defineConfig(({ mode }) => {
     port = 4000;
   }
 
+  const baseURL = new URL(env.BASE_URL, `http://localhost:${port}/`);
   // These are paths which should be proxied to the core server
   // https://vitejs.dev/config/server-options.html#server-proxy
   const proxy = {
     // Proxy styleguide here instead of as a route in our app router
     // That way, it is not included in the production build
     '/styleguide': {
-      target: `http://localhost:${port}/src/styleguide/index.html`,
+      target: new URL(`src/styleguide/index.html`, baseURL).toString(),
       rewrite: () => '',
     },
 
@@ -49,19 +50,25 @@ export default defineConfig(({ mode }) => {
     },
   };
 
-  // Some paths need to proxy to the engine server
-  // Vite does not have a "any unknown fallback to proxy" like CRA
-  // It is possible to add one with a custom middleware though if this list grows
   if (env.VITE_PROXY_URL) {
-    [
-      env.VITE_CORE_API_URL,
-      env.VITE_NOTEBOOKS_URL,
-      env.VITE_LAYOUTS_URL,
-      env.VITE_MODULE_PLUGINS_URL,
-    ].forEach(p => {
-      proxy[p] = {
+    // Some paths need to proxy to the engine server
+    // Vite does not have a "any unknown fallback to proxy" like CRA
+    // It is possible to add one with a custom middleware though if this list grows
+    [env.VITE_CORE_API_URL, env.VITE_MODULE_PLUGINS_URL].forEach(p => {
+      const route = new URL(p, baseURL).pathname;
+      proxy[route] = {
         target: env.VITE_PROXY_URL,
         changeOrigin: true,
+      };
+    });
+
+    // Proxy deep-linking routes to the base itself
+    // Need to add for each deep-linking route
+    [env.VITE_ROUTE_NOTEBOOKS].forEach(p => {
+      const route = new URL(p, baseURL).pathname;
+      proxy[`^${route}`] = {
+        target: baseURL.toString(),
+        rewrite: () => '',
       };
     });
   }

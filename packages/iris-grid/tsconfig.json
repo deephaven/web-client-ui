@@ -4,47 +4,19 @@
     "rootDir": "src/",
     "outDir": "dist/"
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "src/**/*.js",
-    "src/**/*.jsx"
-  ],
-  "exclude": [
-    "node_modules",
-    "src/**/*.test.*",
-    "src/**/__mocks__/*"
-  ],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx"],
+  "exclude": ["node_modules", "src/**/*.test.*", "src/**/__mocks__/*"],
   "references": [
-    {
-      "path": "../console"
-    },
-    {
-      "path": "../components"
-    },
-    {
-      "path": "../filters"
-    },
-    {
-      "path": "../grid"
-    },
-    {
-      "path": "../jsapi-shim"
-    },
-    {
-      "path": "../jsapi-utils"
-    },
-    {
-      "path": "../log"
-    },
-    {
-      "path": "../react-hooks"
-    },
-    {
-      "path": "../storage"
-    },
-    {
-      "path": "../utils"
-    }
+    { "path": "../console" },
+    { "path": "../components" },
+    { "path": "../filters" },
+    { "path": "../grid" },
+    { "path": "../jsapi-shim" },
+    { "path": "../jsapi-types" },
+    { "path": "../jsapi-utils" },
+    { "path": "../log" },
+    { "path": "../react-hooks" },
+    { "path": "../storage" },
+    { "path": "../utils" }
   ]
 }

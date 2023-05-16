@@ -12,7 +12,7 @@ import Log from '@deephaven/log';
 import { getCommandHistoryStorage, RootState } from '@deephaven/redux';
 import { assertNotNull, Pending } from '@deephaven/utils';
 import type { Container, EventEmitter } from '@deephaven/golden-layout';
-import { IdeSession } from '@deephaven/jsapi-shim';
+import type { IdeSession } from '@deephaven/jsapi-types';
 import { ConsoleEvent, NotebookEvent } from '../events';
 import './CommandHistoryPanel.scss';
 import Panel from './Panel';

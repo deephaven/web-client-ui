@@ -31,6 +31,36 @@ export interface ClickOptions {
 }
 
 class TestUtils {
+  /**
+   * Type assertion to "cast" a function to it's corresponding jest.Mock
+   * function type. Note that this is a types only helper for type assertions.
+   * It will not actually convert a non-mock function.
+   *
+   * e.g.
+   *
+   * // This is actually a jest.Mock fn, but the type annotation hides this.
+   * const someFunc: (name: string) => number = jest.fn(
+   *   (name: string): number => name.length
+   * );
+   *
+   * // `asMock` will infer the type as jest.Mock<number, [string]> which gives
+   * // us the ability to call `mockImplementation` in a type safe way.
+   * TestUtils.asMock(someFunc).mockImplementation(name => name.split(',').length)
+   */
+  static asMock = <TResult, TArgs extends unknown[]>(
+    fn: (...args: TArgs) => TResult
+  ): jest.Mock<TResult, TArgs> => (fn as unknown) as jest.Mock<TResult, TArgs>;
+
+  /**
+   * Find the last mock function call matching a given predicate.
+   * @param fn jest.Mock function
+   * @param predicate Predicate function to match calls against
+   */
+  static findLastCall = <TResult, TArgs extends unknown[]>(
+    fn: (...args: TArgs) => TResult,
+    predicate: (args: TArgs) => boolean
+  ) => TestUtils.asMock(fn).mock.calls.reverse().find(predicate);
+
   static makeMockContext(): MockContext {
     return {
       arc: jest.fn(),
@@ -143,6 +173,66 @@ class TestUtils {
     }
     await user.keyboard('{/Shift}');
   }
+
+  /**
+   * Creates a mock object for a type `T` using a Proxy object. Each prop can
+   * optionally be set via the constructor. Any prop that is not set will be set
+   * to a jest.fn() instance on first access with the exeption of "then" which
+   * will not be automatically proxied.
+   * @param props Optional props to explicitly set on the Proxy.
+   * @returns
+   */
+  static createMockProxy<T>(props: Partial<T> = {}): T {
+    return new Proxy(
+      {
+        props: {
+          // Disable auto-proxying of certain properties that cause trouble.
+          // - Symbol.iterator - returning a jest.fn() throws a TypeError
+          // - then - avoid issues with `await` treating object as "thenable"
+          [Symbol.iterator]: undefined,
+          then: undefined,
+          ...props,
+        },
+        proxies: {} as Record<keyof T, jest.Mock>,
+      },
+      {
+        get(target, name) {
+          if (name in target.props) {
+            return target.props[name as keyof T];
+          }
+
+          if (target.proxies[name as keyof T] == null) {
+            // eslint-disable-next-line no-param-reassign
+            target.proxies[name as keyof T] = jest.fn();
+          }
+
+          return target.proxies[name as keyof T];
+        },
+        // Only consider explicitly defined props as "in" the proxy
+        has(target, name) {
+          return name in target.props;
+        },
+      }
+    ) as T;
+  }
+
+  /**
+   * Attempt to extract the args for the nth call to a given function. This will
+   * only work if the given fn is a jest.Mock function. Otherwise, it returns
+   * null.
+   * @param fn
+   * @param callIndex Index of the function call.
+   */
+  static extractCallArgs = <TArgs extends unknown[], TResult>(
+    fn: (...args: TArgs) => TResult,
+    callIndex: number
+  ): TArgs | null => {
+    try {
+      return ((fn as jest.Mock).mock.calls[callIndex] ?? null) as TArgs | null;
+    } catch (err) {
+      return null;
+    }
+  };
 }
 
 export default TestUtils;

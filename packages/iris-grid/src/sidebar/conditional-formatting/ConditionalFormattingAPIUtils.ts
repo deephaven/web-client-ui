@@ -1,4 +1,8 @@
-import { Column, CustomColumn } from '@deephaven/jsapi-shim';
+import type {
+  Column,
+  dh as DhType,
+  CustomColumn,
+} from '@deephaven/jsapi-types';
 import {
   BaseFormatConfig,
   getConditionDBString,
@@ -21,7 +25,7 @@ export function makeTernaryFormatRule(
   return `${conditionDBString} ? ${styleDBString} : ${prevRule}`;
 }
 
-export function makeRowFormatColumn(rule: string): CustomColumn {
+export function makeRowFormatColumn(dh: DhType, rule: string): CustomColumn {
   return dh.Column.formatRowColor(rule);
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/components",
-  "version": "0.36.0",
+  "version": "0.39.0",
   "description": "Deephaven React component library",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -29,6 +29,7 @@
     "@deephaven/utils": "file:../utils",
     "@fortawesome/fontawesome-svg-core": "^6.2.1",
     "@fortawesome/react-fontawesome": "^0.2.0",
+    "@react-spectrum/theme-default": "^3.5.1",
     "bootstrap": "4.6.2",
     "classnames": "^2.3.1",
     "event-target-shim": "^6.0.2",
@@ -40,7 +41,7 @@
     "prop-types": "^15.7.2",
     "react-beautiful-dnd": "^13.1.0",
     "react-transition-group": "^4.4.2",
-    "react-virtualized-auto-sizer": "^1.0.6",
+    "react-virtualized-auto-sizer": "1.0.6",
     "react-window": "^1.8.6",
     "shortid": "^2.2.16"
   },

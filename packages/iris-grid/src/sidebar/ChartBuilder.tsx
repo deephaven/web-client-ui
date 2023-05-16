@@ -10,7 +10,11 @@ import {
   vsCircleLargeFilled,
   vsTrash,
 } from '@deephaven/icons';
-import dh, { Column, SeriesPlotStyle } from '@deephaven/jsapi-shim';
+import type {
+  Column,
+  dh as DhType,
+  SeriesPlotStyle,
+} from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import shortid from 'shortid';
 import {
@@ -58,54 +62,7 @@ interface ChartBuilderState {
  * Form for configuring all the settings when creating a console.
  */
 class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
-  static types = [
-    dh.plot.SeriesPlotStyle.LINE,
-    dh.plot.SeriesPlotStyle.BAR,
-    dh.plot.SeriesPlotStyle.SCATTER,
-    dh.plot.SeriesPlotStyle.PIE,
-    // IDS-6808: Disable Histogram in Chart Builder until we pipe histogram creation through the API
-    // dh.plot.SeriesPlotStyle.HISTOGRAM,
-  ];
-
-  /**
-   * Converts the provided chart type into a readable type.
-   * Just replaces underscores with spaces and capitals the first letter of each word.
-   */
-  static getTypeName(type: SeriesPlotStyle): string | SeriesPlotStyle {
-    switch (type) {
-      case dh.plot.SeriesPlotStyle.LINE:
-        return 'Line';
-      case dh.plot.SeriesPlotStyle.BAR:
-        return 'Bar';
-      case dh.plot.SeriesPlotStyle.SCATTER:
-        return 'Scatter';
-      case dh.plot.SeriesPlotStyle.PIE:
-        return 'Pie';
-      case dh.plot.SeriesPlotStyle.HISTOGRAM:
-        return 'Histogram';
-      default:
-        return type;
-    }
-  }
-
-  static getTypeIcon(type: SeriesPlotStyle): React.ReactElement | null {
-    switch (type) {
-      case dh.plot.SeriesPlotStyle.LINE:
-        return <LineIcon />;
-      case dh.plot.SeriesPlotStyle.BAR:
-        return <BarIcon />;
-      case dh.plot.SeriesPlotStyle.SCATTER:
-        return <ScatterIcon />;
-      case dh.plot.SeriesPlotStyle.PIE:
-        return <PieIcon />;
-      case dh.plot.SeriesPlotStyle.HISTOGRAM:
-        return <HistogramIcon />;
-      default:
-        return null;
-    }
-  }
-
-  static getMaxSeriesCount(type: SeriesPlotStyle): number {
+  static getMaxSeriesCount(dh: DhType, type: SeriesPlotStyle): number {
     switch (type) {
       case dh.plot.SeriesPlotStyle.PIE:
         return 1;
@@ -116,35 +73,16 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     }
   }
 
-  static getXAxisLabel(type: SeriesPlotStyle): string {
-    switch (type) {
-      case dh.plot.SeriesPlotStyle.PIE:
-        return 'Labels';
-      case dh.plot.SeriesPlotStyle.HISTOGRAM:
-        return 'Data';
-      default:
-        return 'X-Axis';
-    }
-  }
-
-  static getSeriesLabel(type: SeriesPlotStyle): string {
-    switch (type) {
-      case dh.plot.SeriesPlotStyle.PIE:
-        return 'Values';
-      default:
-        return 'Series';
-    }
-  }
-
   static makeSeriesItem(value: string): SeriesItem {
     return { id: shortid.generate(), value };
   }
 
   static makeDefaultSeriesItems(
+    dh: DhType,
     type: SeriesPlotStyle,
     columns: readonly Column[]
   ): SeriesItem[] {
-    const maxSeriesCount = ChartBuilder.getMaxSeriesCount(type);
+    const maxSeriesCount = ChartBuilder.getMaxSeriesCount(dh, type);
     if (maxSeriesCount === 0 || columns == null || columns.length === 0) {
       return [];
     }
@@ -178,11 +116,11 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     this.sendChange = this.sendChange.bind(this);
 
     const { model } = props;
-    const { columns } = model;
+    const { columns, dh } = model;
 
-    const type = ChartBuilder.types[0];
+    const type = this.getTypes()[0];
     const xAxis = ChartBuilder.getDefaultXAxis(type, columns) as string;
-    const seriesItems = ChartBuilder.makeDefaultSeriesItems(type, columns);
+    const seriesItems = ChartBuilder.makeDefaultSeriesItems(dh, type, columns);
 
     this.state = {
       /** The selected chart type */
@@ -197,6 +135,85 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
       /** Whether the newly created chart should be linked with the table (update when filters update) */
       isLinked: true,
     };
+  }
+
+  getTypes() {
+    const { model } = this.props;
+    const { dh } = model;
+    return [
+      dh.plot.SeriesPlotStyle.LINE,
+      dh.plot.SeriesPlotStyle.BAR,
+      dh.plot.SeriesPlotStyle.SCATTER,
+      dh.plot.SeriesPlotStyle.PIE,
+      // IDS-6808: Disable Histogram in Chart Builder until we pipe histogram creation through the API
+      // dh.plot.SeriesPlotStyle.HISTOGRAM,
+    ];
+  }
+
+  /**
+   * Converts the provided chart type into a readable type.
+   * Just replaces underscores with spaces and capitals the first letter of each word.
+   */
+  getTypeName(type: SeriesPlotStyle): string | SeriesPlotStyle {
+    const { model } = this.props;
+    const { dh } = model;
+    switch (type) {
+      case dh.plot.SeriesPlotStyle.LINE:
+        return 'Line';
+      case dh.plot.SeriesPlotStyle.BAR:
+        return 'Bar';
+      case dh.plot.SeriesPlotStyle.SCATTER:
+        return 'Scatter';
+      case dh.plot.SeriesPlotStyle.PIE:
+        return 'Pie';
+      case dh.plot.SeriesPlotStyle.HISTOGRAM:
+        return 'Histogram';
+      default:
+        return type;
+    }
+  }
+
+  getTypeIcon(type: SeriesPlotStyle): React.ReactElement | null {
+    const { model } = this.props;
+    const { dh } = model;
+    switch (type) {
+      case dh.plot.SeriesPlotStyle.LINE:
+        return <LineIcon />;
+      case dh.plot.SeriesPlotStyle.BAR:
+        return <BarIcon />;
+      case dh.plot.SeriesPlotStyle.SCATTER:
+        return <ScatterIcon />;
+      case dh.plot.SeriesPlotStyle.PIE:
+        return <PieIcon />;
+      case dh.plot.SeriesPlotStyle.HISTOGRAM:
+        return <HistogramIcon />;
+      default:
+        return null;
+    }
+  }
+
+  getXAxisLabel(type: SeriesPlotStyle): string {
+    const { model } = this.props;
+    const { dh } = model;
+    switch (type) {
+      case dh.plot.SeriesPlotStyle.PIE:
+        return 'Labels';
+      case dh.plot.SeriesPlotStyle.HISTOGRAM:
+        return 'Data';
+      default:
+        return 'X-Axis';
+    }
+  }
+
+  getSeriesLabel(type: SeriesPlotStyle): string {
+    const { model } = this.props;
+    const { dh } = model;
+    switch (type) {
+      case dh.plot.SeriesPlotStyle.PIE:
+        return 'Values';
+      default:
+        return 'Series';
+    }
   }
 
   handleAddSeries(): void {
@@ -221,11 +238,11 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
 
   handleReset(): void {
     const { model } = this.props;
-    const { columns } = model;
+    const { columns, dh } = model;
 
-    const type = ChartBuilder.types[0];
+    const type = this.getTypes()[0];
     const xAxis = ChartBuilder.getDefaultXAxis(type, columns) as string;
-    const seriesItems = ChartBuilder.makeDefaultSeriesItems(type, columns);
+    const seriesItems = ChartBuilder.makeDefaultSeriesItems(dh, type, columns);
     const isLinked = true;
 
     this.setState({ type, seriesItems, xAxis, isLinked }, this.sendChange);
@@ -280,18 +297,19 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     const index = changeEvent.target.getAttribute('data-index') as string;
     const intIndex = parseInt(index, 10);
 
-    const type = ChartBuilder.types[intIndex];
+    const type = this.getTypes()[intIndex];
 
     log.debug2('handleTypeSelect', type);
 
     this.setState(state => {
-      const maxSeriesCount = ChartBuilder.getMaxSeriesCount(type);
+      const { model } = this.props;
+      const { dh } = model;
+      const maxSeriesCount = ChartBuilder.getMaxSeriesCount(dh, type);
       let { seriesItems } = state;
       seriesItems = seriesItems.slice(0, maxSeriesCount);
       if (seriesItems.length === 0 && maxSeriesCount > 0) {
-        const { model } = this.props;
         const { columns } = model;
-        seriesItems = ChartBuilder.makeDefaultSeriesItems(type, columns);
+        seriesItems = ChartBuilder.makeDefaultSeriesItems(dh, type, columns);
       }
 
       return { type, seriesItems };
@@ -315,11 +333,11 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
 
   render(): JSX.Element {
     const { model } = this.props;
-    const { columns } = model;
+    const { columns, dh } = model;
     const { seriesItems, type, xAxis, isLinked } = this.state;
-    const maxSeriesCount = ChartBuilder.getMaxSeriesCount(type);
-    const xAxisLabel = ChartBuilder.getXAxisLabel(type);
-    const seriesLabel = ChartBuilder.getSeriesLabel(type);
+    const maxSeriesCount = ChartBuilder.getMaxSeriesCount(dh, type);
+    const xAxisLabel = this.getXAxisLabel(type);
+    const seriesLabel = this.getSeriesLabel(type);
     const isSeriesVisible = seriesItems.length > 0;
     const isAddSeriesVisible = seriesItems.length < maxSeriesCount;
 
@@ -329,7 +347,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
           <div className="form-row">
             <label>Select Chart Type</label>
             <div className="form-row">
-              {ChartBuilder.types.map((chartType, index) => {
+              {this.getTypes().map((chartType, index) => {
                 const key = (chartType as unknown) as React.Key;
                 return (
                   <div key={key} className="col col-chart-type">
@@ -346,8 +364,8 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
                       data-index={index}
                       onClick={this.handleTypeClick}
                     >
-                      {ChartBuilder.getTypeIcon(chartType)}
-                      {ChartBuilder.getTypeName(chartType)}
+                      {this.getTypeIcon(chartType)}
+                      {this.getTypeName(chartType)}
                     </button>
                   </div>
                 );

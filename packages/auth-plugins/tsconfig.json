@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "src/",
+    "outDir": "dist/"
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx"],
+  "exclude": ["node_modules", "src/**/*.test.*", "src/**/__mocks__/*"],
+  "references": [
+    { "path": "../components" },
+    { "path": "../jsapi-bootstrap" },
+    { "path": "../jsapi-components" },
+    { "path": "../jsapi-types" },
+    { "path": "../jsapi-utils" },
+    { "path": "../log" },
+    { "path": "../redux" },
+    { "path": "../utils" }
+  ]
+}

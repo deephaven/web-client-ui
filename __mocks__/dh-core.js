@@ -1259,6 +1259,8 @@ class CoreClient {
   }
 }
 
+CoreClient.LOGIN_TYPE_ANONYMOUS = 'MOCK_LOGIN_ANONYNOUS';
+
 class FileContents {
   static text(...text) {
     return new FileContents(text.join(''));
