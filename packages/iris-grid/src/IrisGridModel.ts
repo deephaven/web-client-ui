@@ -11,6 +11,7 @@ import type {
   Column,
   ColumnStatistics,
   CustomColumn,
+  dh as DhType,
   FilterCondition,
   Format,
   LayoutHints,
@@ -65,11 +66,14 @@ abstract class IrisGridModel<
     PENDING_DATA_UPDATED: 'PENDING_DATA_UPDATED',
   } as const);
 
-  constructor() {
+  constructor(dh: DhType) {
     super();
 
+    this.dh = dh;
     this.listenerCount = 0;
   }
+
+  dh: DhType;
 
   listenerCount: number;
 

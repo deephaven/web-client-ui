@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.39.0](https://github.com/deephaven/web-client-ui/compare/v0.38.0...v0.39.0) (2023-05-15)
+
+### Features
+
+- remove click handler setting onTabContentFocusIn ([#1263](https://github.com/deephaven/web-client-ui/issues/1263)) ([7d56f97](https://github.com/deephaven/web-client-ui/commit/7d56f97aceae6329a188b13f89a7df2e7add7395))
+
 # [0.38.0](https://github.com/deephaven/web-client-ui/compare/v0.37.3...v0.38.0) (2023-05-03)
 
 **Note:** Version bump only for package @deephaven/golden-layout

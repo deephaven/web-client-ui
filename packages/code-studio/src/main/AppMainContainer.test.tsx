@@ -2,6 +2,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { ToolType } from '@deephaven/dashboard-core-plugins';
+import { ApiContext } from '@deephaven/jsapi-bootstrap';
 import dh from '@deephaven/jsapi-shim';
 import type {
   IdeConnection,
@@ -69,27 +70,29 @@ function renderAppMainContainer({
   plugins = new Map(),
 } = {}) {
   return render(
-    <AppMainContainer
-      dashboardData={dashboardData as AppDashboardData}
-      layoutStorage={layoutStorage as LayoutStorage}
-      saveWorkspace={saveWorkspace}
-      updateDashboardData={updateDashboardData}
-      updateWorkspaceData={updateWorkspaceData}
-      user={user}
-      workspace={workspace as Workspace}
-      workspaceStorage={workspaceStorage}
-      activeTool={activeTool}
-      setActiveTool={setActiveTool}
-      setDashboardIsolatedLinkerPanelId={setDashboardIsolatedLinkerPanelId}
-      client={client}
-      serverConfigValues={serverConfigValues}
-      dashboardOpenedPanelMaps={dashboardOpenedPanelMaps}
-      connection={connection}
-      session={(session as unknown) as IdeSession}
-      sessionConfig={sessionConfig}
-      match={match}
-      plugins={plugins}
-    />
+    <ApiContext.Provider value={dh}>
+      <AppMainContainer
+        dashboardData={dashboardData as AppDashboardData}
+        layoutStorage={layoutStorage as LayoutStorage}
+        saveWorkspace={saveWorkspace}
+        updateDashboardData={updateDashboardData}
+        updateWorkspaceData={updateWorkspaceData}
+        user={user}
+        workspace={workspace as Workspace}
+        workspaceStorage={workspaceStorage}
+        activeTool={activeTool}
+        setActiveTool={setActiveTool}
+        setDashboardIsolatedLinkerPanelId={setDashboardIsolatedLinkerPanelId}
+        client={client}
+        serverConfigValues={serverConfigValues}
+        dashboardOpenedPanelMaps={dashboardOpenedPanelMaps}
+        connection={connection}
+        session={(session as unknown) as IdeSession}
+        sessionConfig={sessionConfig}
+        match={match}
+        plugins={plugins}
+      />
+    </ApiContext.Provider>
   );
 }
 let mockProp = {};

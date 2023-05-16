@@ -46,7 +46,7 @@ class FigureChartModel extends ChartModel {
     settings: Partial<ChartModelSettings> = {},
     theme: typeof ChartTheme = ChartTheme
   ) {
-    super();
+    super(dh);
 
     this.handleFigureUpdated = this.handleFigureUpdated.bind(this);
     this.handleFigureDisconnected = this.handleFigureDisconnected.bind(this);

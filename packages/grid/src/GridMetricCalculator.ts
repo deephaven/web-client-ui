@@ -1728,7 +1728,6 @@ export class GridMetricCalculator {
       rowHeaderWidth,
       rowFooterWidth,
       scrollBarSize,
-      dataBarHorizontalPadding,
     } = theme;
 
     let columnWidth = 0;
@@ -1745,19 +1744,13 @@ export class GridMetricCalculator {
       row => {
         const modelRow = this.getModelRow(row, state);
         const text = model.textForCell(modelColumn, modelRow);
-        const cellRenderType = model.renderTypeForCell(modelColumn, modelRow);
-
-        let cellWidth = 0;
         if (text) {
           const cellPadding = cellHorizontalPadding * 2;
-          cellWidth = text.length * fontWidth + cellPadding;
+          columnWidth = Math.max(
+            columnWidth,
+            text.length * fontWidth + cellPadding
+          );
         }
-
-        if (cellRenderType === 'dataBar') {
-          cellWidth += dataBarHorizontalPadding;
-        }
-
-        columnWidth = Math.max(columnWidth, cellWidth);
       }
     );
 

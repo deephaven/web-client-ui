@@ -61,6 +61,7 @@ function makeModel(
  */
 class IrisGridProxyModel extends IrisGridModel {
   /**
+   * @param dh JSAPI instance
    * @param table Iris data table to be used in the model
    * @param formatter The formatter to use when getting formats
    * @param inputTable Iris input table associated with this table
@@ -84,7 +85,7 @@ class IrisGridProxyModel extends IrisGridModel {
     formatter = new Formatter(dh),
     inputTable: InputTable | null = null
   ) {
-    super();
+    super(dh);
 
     this.handleModelEvent = this.handleModelEvent.bind(this);
 

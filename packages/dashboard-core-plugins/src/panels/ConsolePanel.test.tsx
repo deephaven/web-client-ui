@@ -39,7 +39,7 @@ function makeSessionWrapper({
   connection = makeConnection(),
   session = makeSession(),
 } = {}): SessionWrapper {
-  return { session, connection, config };
+  return { session, connection, config, dh };
 }
 
 function makeEventHub() {

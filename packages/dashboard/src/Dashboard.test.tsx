@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, RenderResult } from '@testing-library/react';
+import { ApiContext } from '@deephaven/jsapi-bootstrap';
 import Dashboard, { DashboardProps } from './Dashboard';
 
 const mockDispatch = jest.fn();
@@ -20,16 +21,18 @@ function makeDashboard({
   onLayoutConfigChange,
 }: DashboardProps = {}): RenderResult {
   return render(
-    <Dashboard
-      id={id}
-      fallbackComponent={fallbackComponent}
-      layoutSettings={layoutSettings}
-      layoutConfig={layoutConfig}
-      onLayoutConfigChange={onLayoutConfigChange}
-      onGoldenLayoutChange={onGoldenLayoutChange}
-    >
-      {children}
-    </Dashboard>
+    <ApiContext.Provider value={dh}>
+      <Dashboard
+        id={id}
+        fallbackComponent={fallbackComponent}
+        layoutSettings={layoutSettings}
+        layoutConfig={layoutConfig}
+        onLayoutConfigChange={onLayoutConfigChange}
+        onGoldenLayoutChange={onGoldenLayoutChange}
+      >
+        {children}
+      </Dashboard>
+    </ApiContext.Provider>
   );
 }
 

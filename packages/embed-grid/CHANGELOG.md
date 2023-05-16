@@ -3,6 +3,80 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.39.0](https://github.com/deephaven/web-client-ui/compare/v0.38.0...v0.39.0) (2023-05-15)
+
+### Features
+
+- De-globalize JSAPI in Console package ([#1292](https://github.com/deephaven/web-client-ui/issues/1292)) ([3f12dd3](https://github.com/deephaven/web-client-ui/commit/3f12dd38a4db172697b3a7b39e6fbbd83d9f8519))
+- De-globalize JSAPI in IrisGrid package ([#1262](https://github.com/deephaven/web-client-ui/issues/1262)) ([588cb8f](https://github.com/deephaven/web-client-ui/commit/588cb8fd080ac992da40e9b732d82e206032c9eb))
+
+### BREAKING CHANGES
+
+- - Components `IrisGrid`, `Chart`, `ChartBuilder`,
+    `AdvancedFilterCreator`, `GotoRow`, `IrisGridModelUpdater`,
+    `TableCSVExporter` get the JSAPI reference from the `model` prop. `dh`
+    prop removed.
+
+* `makeApi` props in `IrisGridPanel` and `ChartPanel` removed.
+* Components `Console`, `ConsoleMenu`, `ConsoleStatusBar` now require
+  the JSAPI instance in the `dh` prop.
+* `ConsoleUtils`: static methods `isTableType`, `isWidgetType`,
+  `isOpenableType`, `isFigureType`, `isPandas` require JSAPI instance
+  passed in the first argument.
+* `SessionUtils`: static methods `createSessionWrapper`,
+  `loadSessionWrapper` require JSAPI instance passed in the first
+  argument.
+* Class `IrisGridModel` requires JSAPI instance passed in the
+  constructor args.
+* Components `DashboardLayout`, `ObjectIcon` has to be wrapped in
+  `ApiContext.Provider` passing the JSAPI instance.
+
+- - `DateUtils` static methods `makeDateWrapper`, `getNextDate `,
+    `parseDateRange` now require the JSAPI object as the first argument.
+
+* `IrisGridUtils` static methods `dehydrateIrisGridState`,
+  `hydrateIrisGridState`, `hydrateQuickFilters`,
+  `dehydrateAdvancedFilters`, `hydrateAdvancedFilters`,
+  `dehydrateAdvancedFilterOptions`, `hydrateAdvancedFilterOptions`,
+  `dehydratePendingDataMap`, `hydratePendingDataMap`, `dehydrateValue`,
+  `hydrateValue`, `dehydrateDateTime`, `hydrateDateTime`, `hydrateLong`,
+  `hydrateSort`, `applyTableSettings`, `getFiltersFromInputFilters`,
+  `rangeSetFromRanges` converted to instance methods. Consumers now need
+  to create an `IrisGridUtils` instance and pass the JSAPI object to the
+  constructor.
+* `TableUtils` static methods `makeQuickFilter`,
+  `makeQuickFilterFromComponent`, `makeQuickNumberFilter`,
+  `makeQuickTextFilter`, `makeQuickBooleanFilter`, `makeQuickDateFilter`,
+  `makeQuickDateFilterWithOperation`, `makeQuickCharFilter`,
+  `makeAdvancedFilter`, `makeAdvancedValueFilter`, `makeFilterValue`,
+  `makeFilterRawValue`, `makeValue`, `makeSelectValueFilter` converted to
+  instance methods. Consumers now need to create a `TableUtils` instance
+  and pass the JSAPI object to the constructor.
+* `IrisGridTableModel`, `IrisGridTableModelTemplate`,
+  `IrisGridProxyModel` constructors require the JSAPI object in the first
+  argument.
+* `IrisGridTestUtils.makeModel`, `IrisGridModelFactory.makeModel` now
+  require the JSAPI object in the first argument.
+* `IrisGridContextMenuHandler` constructor requires the JSAPI object in
+  the second argument.
+* `IrisGridPanel` requires a new `makeApi` prop, a function that
+  resolves with the JSAPI instance.
+* `CrossColumnSearch.createSearchFilter` requires the JSAPI object
+  argument.
+* Components `AdvancedFilterCreatorSelectValue`,
+  `AdvancedFilterCreatorSelectValueList`, `ChartBuilder`, `GotoRow`,
+  `IrisGrid`, `IrisGridModelUpdater`, `IrisGridPartitionSelector`,
+  `PartitionSelectorSearch`, `TableCSVExporter`, `TableSaver`,
+  `TreeTableViewportUpdater`, `RowFormatEditor`, `ColumnFormatEditor`,
+  `ConditionEditor` now require the JSAPI object passed in the new prop
+  `dh`.
+* Components `AdvancedFilterCreator`, `AdvancedFilterCreatorFilterItem`
+  require the `TableUtils` instance pass in the new prop `tableUtils`.
+* `ConditionalFormattingUtils` static methods `getFormatColumns`,
+  `isDateConditionValid` require the JSAPI object in the first argument.
+* `ConditionalFormattingAPIUtils` static method `makeRowFormatColumn`
+  requires the JSAPI object in the first argument.
+
 # [0.38.0](https://github.com/deephaven/web-client-ui/compare/v0.37.3...v0.38.0) (2023-05-03)
 
 ### Features

@@ -37,6 +37,7 @@ function makeConsoleWrapper(consoleRef = React.createRef<Console>()) {
   const commandHistoryStorage = makeMockCommandHistoryStorage();
   return render(
     <Console
+      dh={dh}
       ref={consoleRef}
       commandHistoryStorage={commandHistoryStorage}
       focusCommandHistory={() => undefined}

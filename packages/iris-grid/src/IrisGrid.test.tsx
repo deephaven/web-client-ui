@@ -59,7 +59,7 @@ function makeComponent(
   settings = DEFAULT_SETTINGS
 ) {
   const testRenderer = TestRenderer.create(
-    <IrisGrid dh={dh} model={model} settings={settings} />,
+    <IrisGrid model={model} settings={settings} />,
     {
       createNodeMock,
     }

@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/dashboard-core-plugins",
-  "version": "0.38.0",
+  "version": "0.39.0",
   "description": "Deephaven Dashboard Core Plugins",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -62,8 +62,8 @@
     "react-redux": "^7.2.4"
   },
   "devDependencies": {
-    "@deephaven/mocks": "file:../mocks",
     "@deephaven/jsapi-shim": "file:../jsapi-shim",
+    "@deephaven/mocks": "file:../mocks",
     "@deephaven/tsconfig": "file:../tsconfig"
   },
   "files": [

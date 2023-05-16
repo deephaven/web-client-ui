@@ -30,6 +30,8 @@ In order to use the UI, you must also be running a [deephaven-core](https://gith
 
 We recommend using [Visual Studio Code](https://code.visualstudio.com/) and installing the [recommended workspace extensions](https://github.com/deephaven/web-client-ui/blob/main/.vscode/extensions.json) which VS Code will suggest when you open the repo or when you browse the extensions panel. There are a few [workspace settings](https://github.com/deephaven/web-client-ui/tree/main/.vscode) configured with the repo.
 
+If using Linux, we recommend installing directly from the deb or rpm file from the VSCode website rather than through a package manager or store such as `snap` or `flatpak`. The other install methods (for example, apt on Ubuntu installs via snap) may end up in a sandboxed environment that cannot use the debug launch configs properly.
+
 We use Chrome for development with the React and Redux extensions.
 
 - [React Developer Tools](https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi): Allows inspection/changing the props/state of react components.
@@ -62,9 +64,16 @@ VITE_PROXY_URL=http://<dhc-host>:<port>
 
 We have a pre-defined launch config that lets you set breakpoints directly in VSCode for debugging browser code. The `Launch Deephaven` config will launch a new Chrome window that stores its data in your repo workspace. With this setup, you only need to install the React and Redux devtool extensions once. They will persist to future launches using the launch config.
 
-If you are not using Chrome (e.g. Chromium on Linux), then you add a new configuration to VSCode and copy the launch config from [`settings.json`](./.vscode/settings.json). Then add the `runtimeExecutable` prop to point to your browser executable. VSCode unfortnuately does not merge workspace `settings.launch` with workspace `launch.json`, so if we add more launch configs you would need to copy to your `.vscode/launch.json` file to get the configs.
-
 We prefer launching a new window instead of attaching to existing windows because it provides a cleaner debug environment (only development extensions). You would also need to launch Chrome with the remote debugging flag in order to attach to an existing instance.
+
+### Linux
+If you are using Linux, you will likely need to use the direct install from the VSCode website (deb or rpm file) and not through a package manager. On Ubuntu, apt installs via `snap` and some Linux flavors may use `flatpak`. Both of these sandbox the VSCode instance in such a way that the launch debug configs will likely not work.
+
+If you are not using Chrome (e.g. Chromium), you may need to do one of the following if the launch config is not working.
+
+1. Alias `google-chrome-stable` to launch `chromium-browser`. The launch config by default should try to launch `google-chrome-stable`, so if you can launch the browser with `google-chrome-stable` from a terminal, it should work.
+
+2. Add a new configuration to VSCode and copy the launch config from [`settings.json`](./.vscode/settings.json). Then add the `runtimeExecutable` prop to point to your browser executable. VSCode unfortnuately does not merge workspace `settings.launch` with workspace `launch.json`, so if we add more launch configs you would need to copy to your `.vscode/launch.json` file to get the configs.
 
 ## Creating a New Package
 

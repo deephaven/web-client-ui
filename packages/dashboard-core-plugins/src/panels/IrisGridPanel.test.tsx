@@ -50,13 +50,8 @@ function makeMakeModel(table = makeTable()) {
     );
 }
 
-function makeMakeApi() {
-  return () => dh;
-}
-
 function makeIrisGridPanelWrapper(
   makeModel = makeMakeModel(),
-  makeApi = makeMakeApi(),
   metadata = { table: 'table' },
   glContainer = makeGlComponent(),
   glEventHub = makeGlComponent(),
@@ -69,7 +64,6 @@ function makeIrisGridPanelWrapper(
 ) {
   return render(
     <IrisGridPanel
-      makeApi={makeApi}
       makeModel={makeModel}
       metadata={metadata}
       glContainer={(glContainer as unknown) as Container}

@@ -1,13 +1,14 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhPandas, dhTable, vsGraph, vsPreview } from '@deephaven/icons';
-import dh from '@deephaven/jsapi-shim';
+import { useApi } from '@deephaven/jsapi-bootstrap';
 
 export type ObjectIconProps = {
   type: string;
 };
 
 function ObjectIcon({ type }: ObjectIconProps): JSX.Element {
+  const dh = useApi();
   switch (type) {
     case dh.VariableType.TABLE:
     case dh.VariableType.TABLEMAP:

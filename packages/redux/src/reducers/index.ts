@@ -1,3 +1,4 @@
+import api from './api';
 import activeTool from './activeTool';
 import plugins from './plugins';
 import storage from './storage';
@@ -7,6 +8,7 @@ import serverConfigValues from './serverConfigValues';
 
 const reducers = {
   activeTool,
+  api,
   plugins,
   storage,
   user,

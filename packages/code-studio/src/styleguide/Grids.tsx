@@ -13,16 +13,15 @@ import StaticExample from './grid-examples/StaticExample';
 import QuadrillionExample from './grid-examples/QuadrillionExample';
 import TreeExample from './grid-examples/TreeExample';
 import AsyncExample from './grid-examples/AsyncExample';
-import DataBarExample from './grid-examples/DataBarExample';
 
 function Grids(): ReactElement {
+  const dh = useApi();
   const [irisGridModel] = useState(
-    new MockIrisGridTreeModel(new MockTreeGridModel())
+    new MockIrisGridTreeModel(dh, new MockTreeGridModel())
   );
   const [model] = useState(new MockGridModel());
   const [theme] = useState<Partial<GridThemeType>>({ autoSelectRow: true });
   const [contextTheme] = useState<Partial<GridThemeType>>({ rowHeight: 40 });
-  const dh = useApi();
 
   return (
     <div>
@@ -34,10 +33,6 @@ function Grids(): ReactElement {
         <h2 className="ui-title">Static Data</h2>
         <div style={{ height: 200 }}>
           <StaticExample />
-        </div>
-        <h2 className="ui-title">Data Bar</h2>
-        <div style={{ height: 500 }}>
-          <DataBarExample />
         </div>
         <h2 className="ui-title">Quadrillion rows and columns</h2>
         <div style={{ height: 500, position: 'relative' }}>
@@ -53,7 +48,7 @@ function Grids(): ReactElement {
         </div>
         <h2 className="ui-title">Iris Grid</h2>
         <div style={{ height: 500 }}>
-          <IrisGrid dh={dh} model={irisGridModel} />
+          <IrisGrid model={irisGridModel} />
         </div>
       </ThemeContext.Provider>
     </div>

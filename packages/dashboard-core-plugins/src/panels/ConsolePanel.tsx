@@ -321,7 +321,7 @@ export class ConsolePanel extends PureComponent<
       unzip,
     } = this.props;
     const { consoleSettings, error, objectMap } = this.state;
-    const { config, session, connection, details = {} } = sessionWrapper;
+    const { config, session, connection, details = {}, dh } = sessionWrapper;
     const { workerName, processInfoId } = details;
     const { id: sessionId, type: language } = config;
 
@@ -338,6 +338,7 @@ export class ConsolePanel extends PureComponent<
       >
         {session != null && (
           <Console
+            dh={dh}
             ref={this.consoleRef}
             settings={consoleSettings}
             session={session}

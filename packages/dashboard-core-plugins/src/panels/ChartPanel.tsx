@@ -28,7 +28,6 @@ import {
   LegacyDehydratedSort,
 } from '@deephaven/iris-grid';
 import type {
-  dh as DhType,
   FigureDescriptor,
   SeriesPlotStyle,
   TableTemplate,
@@ -125,7 +124,6 @@ export interface GLChartPanelState {
   figure?: string;
 }
 export interface ChartPanelProps {
-  makeApi: () => Promise<DhType>;
   glContainer: Container;
   glEventHub: EventEmitter;
   metadata: ChartPanelMetadata;
@@ -149,7 +147,6 @@ export interface ChartPanelProps {
 }
 
 interface ChartPanelState {
-  dh: DhType | undefined;
   settings: Partial<ChartModelSettings>;
   error?: unknown;
   isActive: boolean;
@@ -236,7 +233,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     const { filterValueMap = [], settings = {} } = panelState ?? {};
 
     this.state = {
-      dh: undefined,
       settings,
       error: undefined,
       isActive: false,
@@ -329,9 +325,9 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
   componentWillUnmount(): void {
     this.pending.cancel();
 
-    const { dh } = this.state;
+    const { model } = this.state;
     const { source } = this.props;
-    if (dh != null && source) {
+    if (model != null && source) {
       this.stopListeningToSource(source);
     }
   }
@@ -345,17 +341,12 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
   initModel(): void {
     this.setState({ isLoading: true, isLoaded: false, error: undefined });
 
-    const { makeApi, makeModel } = this.props;
+    const { makeModel } = this.props;
+
     this.pending
-      .add(makeApi())
-      .then(dh => {
-        this.setState({ dh });
+      .add(makeModel(), resolved => {
+        resolved.close();
       })
-      .then(() =>
-        this.pending.add(makeModel(), resolved => {
-          resolved.close();
-        })
-      )
       .then(this.handleLoadSuccess, this.handleLoadError);
   }
 
@@ -464,11 +455,9 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
 
   startListeningToSource(table: TableTemplate): void {
     log.debug('startListeningToSource', table);
-    const { dh } = this.state;
-    if (dh == null) {
-      log.error('API is not defined');
-      return;
-    }
+    const { model } = this.state;
+    assertNotNull(model);
+    const { dh } = model;
     table.addEventListener(
       dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
       this.handleSourceColumnChange
@@ -485,11 +474,9 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
 
   stopListeningToSource(table: TableTemplate): void {
     log.debug('stopListeningToSource', table);
-    const { dh } = this.state;
-    if (dh == null) {
-      log.error('API is not defined');
-      return;
-    }
+    const { model } = this.state;
+    assertNotNull(model);
+    const { dh } = model;
     table.removeEventListener(
       dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
       this.handleSourceColumnChange
@@ -625,12 +612,12 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
 
   updateModelFromSource(): void {
     const { metadata, source } = this.props;
-    const { dh, isLinked, model } = this.state;
-    if (!dh || !isLinked || !model || !source) {
+    const { isLinked, model } = this.state;
+    if (!isLinked || !model || !source) {
       log.debug2('updateModelFromSource ignoring', isLinked, model, source);
       return;
     }
-
+    const { dh } = model;
     // By now the model has already been loaded, which is the only other cancelable thing in pending
     this.pending.cancel();
     if (isChartPanelTableMetadata(metadata)) {
@@ -1056,7 +1043,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     } = this.props;
     const {
       columnMap,
-      dh,
       filterMap,
       error,
       model,
@@ -1124,9 +1110,8 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
           className="chart-panel-container h-100 w-100"
         >
           <div className="chart-container h-100 w-100">
-            {isLoaded && model && dh && (
+            {isLoaded && model && (
               <Chart
-                dh={dh}
                 isActive={isActive}
                 model={model}
                 settings={settings}

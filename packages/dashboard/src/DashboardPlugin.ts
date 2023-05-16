@@ -12,6 +12,7 @@ import type {
   EventEmitter,
   Container,
 } from '@deephaven/golden-layout';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import PanelManager from './PanelManager';
 
 /**
@@ -65,6 +66,7 @@ export function isWrappedComponent<
 }
 
 export type PanelProps = {
+  dh?: DhType;
   glContainer: Container;
   glEventHub: EventEmitter;
 };
