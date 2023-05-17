@@ -102,6 +102,8 @@ export default class LayoutManager extends EventEmitter {
   private _dragSources: DragSource[] = [];
   private _updatingColumnsResponsive = false;
   private _firstLoad = true;
+  private _reactChildMap = new Map<string, React.ReactNode>();
+  private _reactChildren: React.ReactNode = null;
 
   width: number | null = null;
   height: number | null = null;
@@ -367,6 +369,47 @@ export default class LayoutManager extends EventEmitter {
     this.isInitialised = true;
     this._adjustColumnsResponsive();
     this.emit('initialised');
+  }
+
+  /**
+   * Adds a react child to the layout manager
+   * @param id Unique panel id
+   * @param element The React element
+   */
+  addReactChild(id: string, element: React.ReactNode) {
+    this._reactChildMap.set(id, element);
+    this._reactChildren = [...this._reactChildMap.values()];
+    this.emit('reactChildrenChanged');
+  }
+
+  /**
+   * Removes a react child from the layout manager
+   * Only removes if the elements for the panelId has not been replaced by a different element
+   * @param id Unique panel id
+   * @param element The React element
+   */
+  removeReactChild(id: string, element: React.ReactNode) {
+    const mapElem = this._reactChildMap.get(id);
+    if (mapElem === element) {
+      // If an element was replaced it may be destroyed after the other is created
+      // In that case, the new element would be removed
+      // Make sure the element being removed is the current element associated with its id
+      this._reactChildMap.delete(id);
+      this._reactChildren = [...this._reactChildMap.values()];
+      this.emit('reactChildrenChanged');
+    }
+  }
+
+  /**
+   * Gets the react children in the layout
+   *
+   * Used in @deephaven/dashboard to mount the react elements
+   * inside the app's React tree
+   *
+   * @returns The react children to mount for this layout manager
+   */
+  getReactChildren() {
+    return this._reactChildren;
   }
 
   /**

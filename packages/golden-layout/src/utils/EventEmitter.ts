@@ -88,7 +88,7 @@ class EventEmitter {
    */
   unbind(eventName: string, callback?: Function, context?: unknown) {
     if (!this._mSubscriptions[eventName]) {
-      throw new Error('No subscribtions to unsubscribe for event ' + eventName);
+      throw new Error('No subscriptions to unsubscribe for event ' + eventName);
     }
 
     let bUnbound = false;

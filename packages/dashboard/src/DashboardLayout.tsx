@@ -12,11 +12,10 @@ import type {
   ItemConfigType,
   ReactComponentConfig,
 } from '@deephaven/golden-layout';
-import { ApiContext, useApi } from '@deephaven/jsapi-bootstrap';
 import Log from '@deephaven/log';
 import { usePrevious } from '@deephaven/react-hooks';
 import { RootState } from '@deephaven/redux';
-import { Provider, useDispatch, useSelector, useStore } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import PanelManager, { ClosedPanels } from './PanelManager';
 import PanelErrorBoundary from './PanelErrorBoundary';
 import LayoutUtils from './layout/LayoutUtils';
@@ -80,7 +79,6 @@ export function DashboardLayout({
   hydrate = hydrateDefault,
   dehydrate = dehydrateDefault,
 }: DashboardLayoutProps): JSX.Element {
-  const defaultDh = useApi();
   const dispatch = useDispatch();
   const data =
     useSelector<RootState>(state => getDashboardData(state, id)) ??
@@ -93,10 +91,12 @@ export function DashboardLayout({
     (data as DashboardData)?.closed ?? []
   );
   const [isDashboardInitialized, setIsDashboardInitialized] = useState(false);
+  const [layoutChildren, setLayoutChildren] = useState(
+    layout.getReactChildren()
+  );
 
   const hydrateMap = useMemo(() => new Map(), []);
   const dehydrateMap = useMemo(() => new Map(), []);
-  const store = useStore();
   const registerComponent = useCallback(
     (
       name: string,
@@ -120,21 +120,12 @@ export function DashboardLayout({
 
         // Props supplied by GoldenLayout
         // eslint-disable-next-line react/prop-types
-        const { dh, glContainer, glEventHub } = props;
+        const { glContainer, glEventHub } = props;
         return (
-          // Enterprise should be able to override the JSAPI
-          // for each panel via the props
-          <ApiContext.Provider value={dh ?? defaultDh}>
-            <Provider store={store}>
-              <PanelErrorBoundary
-                glContainer={glContainer}
-                glEventHub={glEventHub}
-              >
-                {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-                <CType {...props} ref={ref} />
-              </PanelErrorBoundary>
-            </Provider>
-          </ApiContext.Provider>
+          <PanelErrorBoundary glContainer={glContainer} glEventHub={glEventHub}>
+            {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+            <CType {...props} ref={ref} />
+          </PanelErrorBoundary>
         );
       }
 
@@ -144,7 +135,7 @@ export function DashboardLayout({
       dehydrateMap.set(name, componentDehydrate);
       return cleanup;
     },
-    [defaultDh, hydrate, dehydrate, hydrateMap, dehydrateMap, layout, store]
+    [hydrate, dehydrate, hydrateMap, dehydrateMap, layout]
   );
   const hydrateComponent = useCallback(
     (name, props) => (hydrateMap.get(name) ?? FALLBACK_CALLBACK)(props, id),
@@ -209,6 +200,8 @@ export function DashboardLayout({
       setLastConfig(dehydratedLayoutConfig);
 
       onLayoutChange(dehydratedLayoutConfig);
+
+      setLayoutChildren(layout.getReactChildren());
     }
   }, [
     dehydrateComponent,
@@ -257,6 +250,10 @@ export function DashboardLayout({
     item.element.addClass(cssClass);
   }, []);
 
+  const handleReactChildrenChange = useCallback(() => {
+    setLayoutChildren(layout.getReactChildren());
+  }, [layout]);
+
   useListener(layout, 'stateChanged', handleLayoutStateChanged);
   useListener(layout, 'itemPickedUp', handleLayoutItemPickedUp);
   useListener(layout, 'itemDropped', handleLayoutItemDropped);
@@ -266,6 +263,7 @@ export function DashboardLayout({
     PanelEvent.TITLE_CHANGED,
     handleLayoutStateChanged
   );
+  useListener(layout, 'reactChildrenChanged', handleReactChildrenChange);
 
   const previousLayoutConfig = usePrevious(layoutConfig);
   useEffect(
@@ -305,6 +303,7 @@ export function DashboardLayout({
   return (
     <>
       {isDashboardEmpty && emptyDashboard}
+      {layoutChildren}
       {React.Children.map(children, child =>
         child != null
           ? React.cloneElement(child as ReactElement, {
