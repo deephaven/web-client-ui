@@ -95,6 +95,7 @@
     "@types/react": "^17.0.2",
     "@types/react-beautiful-dnd": "^13.1.2",
     "@types/react-dom": "^17.0.9",
+    "@types/react-plotly.js": "^2.6.0",
     "@types/react-router-dom": "^5.1.2",
     "@types/react-test-renderer": "^17.0.1",
     "@types/react-transition-group": "^4.4.0",
@@ -147,6 +148,7 @@
     ]
   },
   "dependencies": {
+    "@deephaven/app-utils": "file:packages/app-utils",
     "@deephaven/babel-preset": "file:packages/babel-preset",
     "@deephaven/chart": "file:packages/chart",
     "@deephaven/code-studio": "file:packages/code-studio",
@@ -169,7 +171,6 @@
     "@deephaven/jsapi-utils": "file:packages/jsapi-utils",
     "@deephaven/log": "file:packages/log",
     "@deephaven/mocks": "file:packages/mocks",
-    "@deephaven/app-utils": "file:packages/app-utils",
     "@deephaven/prettier-config": "file:packages/prettier-config",
     "@deephaven/react-hooks": "file:packages/react-hooks",
     "@deephaven/redux": "file:packages/redux",

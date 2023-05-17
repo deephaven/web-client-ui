@@ -23,7 +23,7 @@ import type {
   TimeZone,
 } from '@deephaven/jsapi-types';
 import set from 'lodash.set';
-import {
+import type {
   Layout,
   PlotData,
   PlotType,
@@ -443,7 +443,7 @@ class ChartUtils {
    * @param layout The plotly layout object to get the ranges from
    * @returns An object mapping the axis name to it's range
    */
-  static getLayoutRanges(layout: Layout): Record<string, Range[]> {
+  static getLayoutRanges(layout: Partial<Layout>): Record<string, Range[]> {
     const ranges: Record<string, Range[]> = {};
     const keys: (keyof Layout)[] = Object.keys(layout).filter(
       key => key.indexOf('axis') >= 0
@@ -1866,6 +1866,7 @@ class ChartUtils {
       colorway: ChartUtils.getColorwayFromTheme(theme),
       font: {
         family: "'Fira Sans', sans-serif",
+        color: '#ffffff',
       },
       title: {
         font: {

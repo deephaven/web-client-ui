@@ -13,7 +13,7 @@ import type {
 } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { Range } from '@deephaven/utils';
-import { Layout, Data, PlotData } from 'plotly.js';
+import type { Layout, Data, PlotData } from 'plotly.js';
 import type {
   DateTimeColumnFormatter,
   Formatter,

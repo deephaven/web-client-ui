@@ -19,9 +19,17 @@ import {
   DateTimeFormatSettings,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
-import { Layout, Icon, Data, PlotData } from 'plotly.js';
+import {
+  Config as PlotlyConfig,
+  Layout,
+  Icon,
+  Data,
+  PlotData,
+  ModeBarButtonAny,
+} from 'plotly.js';
+import type { PlotParams } from 'react-plotly.js';
+import createPlotlyComponent from 'react-plotly.js/factory.js';
 import Plotly from './plotly/Plotly';
-import Plot from './plotly/Plot';
 import ChartModel from './ChartModel';
 import ChartUtils, { ChartModelSettings } from './ChartUtils';
 import './Chart.scss';
@@ -38,7 +46,7 @@ interface ChartProps {
   model: ChartModel;
   settings: FormatterSettings;
   isActive: boolean;
-  PlotComponent?: typeof Plot;
+  Plotly: typeof Plotly;
   onDisconnect: () => void;
   onReconnect: () => void;
   onUpdate: (obj: { isLoading: boolean }) => void;
@@ -66,7 +74,7 @@ export class Chart extends Component<ChartProps, ChartState> {
       showTSeparator: true,
       formatter: [],
     },
-    PlotComponent: Plot,
+    Plotly,
     onDisconnect: (): void => undefined,
     onReconnect: (): void => undefined,
     onUpdate: (): void => undefined,
@@ -126,6 +134,7 @@ export class Chart extends Component<ChartProps, ChartState> {
     this.handleRelayout = this.handleRelayout.bind(this);
     this.handleRestyle = this.handleRestyle.bind(this);
 
+    this.PlotComponent = createPlotlyComponent(props.Plotly);
     this.plot = React.createRef();
     this.plotWrapper = React.createRef();
     this.columnFormats = [];
@@ -182,7 +191,9 @@ export class Chart extends Component<ChartProps, ChartState> {
 
   currentSeries: number;
 
-  plot: RefObject<typeof Plot>;
+  PlotComponent: React.ComponentType<PlotParams>;
+
+  plot: RefObject<typeof this.PlotComponent>;
 
   plotWrapper: RefObject<HTMLDivElement>;
 
@@ -209,12 +220,13 @@ export class Chart extends Component<ChartProps, ChartState> {
       isDownsampleInProgress: boolean,
       isDownsamplingDisabled: boolean,
       is3d: boolean
-    ) => {
-      const customButtons = [];
+    ): Partial<PlotlyConfig> => {
+      const customButtons: ModeBarButtonAny[] = [];
       const hasDownsampleError = Boolean(downsamplingError);
       if (hasDownsampleError) {
         customButtons.push({
           name: `Downsampling failed: ${downsamplingError}`,
+          title: 'Downsampling failed',
           click: () => undefined,
           icon: Chart.convertIcon(dhWarningFilled),
           attr: 'fill-warning',
@@ -239,6 +251,7 @@ export class Chart extends Component<ChartProps, ChartState> {
         const icon = isDownsampleInProgress ? vsLoading : dhGraphLineDown;
         customButtons.push({
           name,
+          title: 'Downsampling status',
           icon: Chart.convertIcon(icon),
           click: this.handleDownsampleClick,
           attr,
@@ -252,7 +265,9 @@ export class Chart extends Component<ChartProps, ChartState> {
         // Yes, the value is a boolean or the string 'hover': https://github.com/plotly/plotly.js/blob/master/src/plot_api/plot_config.js#L249
         displayModeBar:
           // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-          isDownsampleInProgress || hasDownsampleError ? true : 'hover',
+          isDownsampleInProgress || hasDownsampleError
+            ? true
+            : ('hover' as const),
 
         // Each array gets grouped together in the mode bar
         modeBarButtons: [
@@ -403,7 +418,7 @@ export class Chart extends Component<ChartProps, ChartState> {
     }
   }
 
-  handlePlotUpdate(figure: { layout: Layout }): void {
+  handlePlotUpdate(figure: Readonly<{ layout: Partial<Layout> }>): void {
     // User could have modified zoom/pan here, update the model dimensions
     // We don't need to update the datarevision, as we don't have any data changes
     // until an update comes back from the server anyway
@@ -432,7 +447,7 @@ export class Chart extends Component<ChartProps, ChartState> {
     this.updateModelDimensions();
   }
 
-  handleRestyle([changes, seriesIndexes]: [
+  handleRestyle([changes, seriesIndexes]: readonly [
     Record<string, unknown>,
     number[]
   ]): void {
@@ -523,6 +538,7 @@ export class Chart extends Component<ChartProps, ChartState> {
 
   updateDimensions(): void {
     const rect = this.getPlotRect();
+    const { Plotly: PlotlyProp } = this.props;
     if (
       this.plot.current != null &&
       rect != null &&
@@ -531,16 +547,19 @@ export class Chart extends Component<ChartProps, ChartState> {
     ) {
       // Call relayout to resize avoiding the debouncing plotly does
       // https://github.com/plotly/plotly.js/issues/2769#issuecomment-402099552
-      Plotly.relayout(this.plot.current.el, { autosize: true }).catch(
-        (e: unknown) => {
-          log.debug('Unable to resize, promise rejected', e);
+      PlotlyProp.relayout(
+        ((this.plot.current as unknown) as { el: HTMLElement }).el,
+        {
+          autosize: true,
         }
-      );
+      ).catch((e: unknown) => {
+        log.debug('Unable to resize, promise rejected', e);
+      });
     }
   }
 
   render(): ReactElement {
-    const { PlotComponent } = this.props;
+    const { PlotComponent } = this;
     const {
       data,
       downsamplingError,
@@ -562,6 +581,8 @@ export class Chart extends Component<ChartProps, ChartState> {
       <div className="h-100 w-100 chart-wrapper" ref={this.plotWrapper}>
         {isPlotShown && (
           <PlotComponent
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
             ref={this.plot}
             data={data}
             layout={layout}

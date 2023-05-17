@@ -12,6 +12,7 @@ import {
   FilterMap,
   isFigureChartModel,
 } from '@deephaven/chart';
+import type PlotlyType from 'plotly.js';
 import {
   getOpenedPanelMapForDashboard,
   LayoutUtils,
@@ -143,6 +144,7 @@ export interface ChartPanelProps {
     id: string,
     secondParam: undefined
   ) => void;
+  Plotly?: typeof PlotlyType;
 
   panelState: GLChartPanelState;
   settings: Partial<WorkspaceSettings>;
@@ -1042,6 +1044,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
       links,
       metadata,
       settings,
+      Plotly,
     } = this.props;
     const {
       columnMap,
@@ -1123,6 +1126,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
                 onUpdate={this.handleUpdate}
                 onError={this.handleError}
                 onSettingsChanged={this.handleSettingsChanged}
+                Plotly={Plotly}
               />
             )}
           </div>
