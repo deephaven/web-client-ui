@@ -61,11 +61,7 @@ import {
   PromiseUtils,
 } from '@deephaven/utils';
 import { ContextAction, ContextMenuRoot } from '@deephaven/components';
-import type {
-  Column,
-  FilterCondition,
-  Sort,
-} from '@deephaven/jsapi-types';
+import type { Column, FilterCondition, Sort } from '@deephaven/jsapi-types';
 import {
   GridRangeIndex,
   GridState,

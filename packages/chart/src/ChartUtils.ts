@@ -1866,7 +1866,6 @@ class ChartUtils {
       colorway: ChartUtils.getColorwayFromTheme(theme),
       font: {
         family: "'Fira Sans', sans-serif",
-        color: '#ffffff',
       },
       title: {
         font: {
