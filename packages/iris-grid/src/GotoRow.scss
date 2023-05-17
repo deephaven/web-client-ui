@@ -26,6 +26,8 @@
 
   .goto-row-text {
     min-width: 10ch;
+    margin: 0;
+    font-size: 14px;
   }
 
   .goto-row-close {
@@ -36,7 +38,7 @@
     max-width: calc($input-padding-x + 12ch + $input-padding-x);
   }
   select {
-    max-width: calc($input-padding-x + 20ch + $input-padding-x);
+    max-width: calc($input-padding-x + 25ch + $input-padding-x);
   }
   .is-inactive {
     color: $gray-400;

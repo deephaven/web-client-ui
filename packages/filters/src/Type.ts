@@ -36,6 +36,8 @@ export class Type {
 
   static readonly notContains = 'notContains';
 
+  static readonly containsIgnoreCase = 'containsIgnoreCase';
+
   static readonly startsWith = 'startsWith';
 
   static readonly endsWith = 'endsWith';
