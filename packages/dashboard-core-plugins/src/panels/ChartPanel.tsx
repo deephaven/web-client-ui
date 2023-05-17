@@ -1173,7 +1173,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
 
 const mapStateToProps = (
   state: RootState,
-  ownProps: { localDashboardId: string; metadata: { sourcePanelId: string } }
+  ownProps: { localDashboardId: string; metadata: { sourcePanelId?: string } }
 ) => {
   const { localDashboardId, metadata } = ownProps;
 
