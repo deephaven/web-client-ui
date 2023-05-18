@@ -203,7 +203,7 @@ describe('createMockProxy', () => {
 
   it('should return internal storage by name', () => {
     const overrides = {
-      name: 'mock.nam',
+      name: 'mock.name',
       age: 42,
     };
 
