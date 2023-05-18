@@ -179,6 +179,61 @@ describe('createMockProxy', () => {
     expect('age' in mock).toBeTruthy();
     expect('blah' in mock).toBeFalsy();
   });
+
+  it.each([
+    Symbol.iterator,
+    'then',
+    'asymmetricMatch',
+    'hasAttribute',
+    'nodeType',
+    'tagName',
+    'toJSON',
+  ])('should return undefined for default props', prop => {
+    const mock = TestUtils.createMockProxy();
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect((mock as any)[prop]).toBeUndefined();
+  });
+
+  it('should return custom Symbol.toStringTag', () => {
+    const mock = TestUtils.createMockProxy();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect((mock as any)[Symbol.toStringTag]).toEqual('Mock Proxy');
+  });
+
+  it('should return internal storage by name', () => {
+    const overrides = {
+      name: 'mock.nam',
+      age: 42,
+    };
+
+    const mock = TestUtils.createMockProxy<{
+      name: string;
+      age: number;
+      testMethod: () => void;
+    }>(overrides);
+
+    mock.testMethod();
+
+    /* eslint-disable @typescript-eslint/no-explicit-any, no-underscore-dangle */
+    expect((mock as any).__mockProxyDefaultProps).toEqual({
+      then: undefined,
+      asymmetricMatch: undefined,
+      hasAttribute: undefined,
+      nodeType: undefined,
+      tagName: undefined,
+      toJSON: undefined,
+      [Symbol.iterator]: undefined,
+    });
+
+    expect((mock as any).__mockProxyOverrides).toEqual(overrides);
+
+    expect((mock as any).__mockProxyProxies).toEqual({
+      testMethod: expect.any(Function),
+    });
+    expect(mock.testMethod).toBeInstanceOf(jest.fn().constructor);
+    /* eslint-enable @typescript-eslint/no-explicit-any, no-underscore-dangle */
+  });
 });
 
 describe('extractCallArgs', () => {
