@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.40.0](https://github.com/deephaven/web-client-ui/compare/v0.39.0...v0.40.0) (2023-05-19)
+
+### Bug Fixes
+
+- drag to re-arrange custom columns not working ([#1299](https://github.com/deephaven/web-client-ui/issues/1299)) ([5e23e4a](https://github.com/deephaven/web-client-ui/commit/5e23e4a9f69eaf6fcb55e0e30ceb490ad913966e)), closes [#1282](https://github.com/deephaven/web-client-ui/issues/1282) [#1013](https://github.com/deephaven/web-client-ui/issues/1013)
+- Export useTableUtils ([#1309](https://github.com/deephaven/web-client-ui/issues/1309)) ([9212107](https://github.com/deephaven/web-client-ui/commit/9212107142ae3863201bbb107e701e768c11f44f)), closes [#1308](https://github.com/deephaven/web-client-ui/issues/1308)
+- Search icon styleguide using prefixed string ([#1300](https://github.com/deephaven/web-client-ui/issues/1300)) ([0d02ab9](https://github.com/deephaven/web-client-ui/commit/0d02ab9b3d1284edfbce08e7650a1aea875012f3))
+
+### Features
+
+- add contains ignore case in go to row ([#1291](https://github.com/deephaven/web-client-ui/issues/1291)) ([d67712e](https://github.com/deephaven/web-client-ui/commit/d67712e4d031723ea76b429c79465b122ca4efc4)), closes [#1274](https://github.com/deephaven/web-client-ui/issues/1274)
+- Mount layout panels inside the main react tree ([#1229](https://github.com/deephaven/web-client-ui/issues/1229)) ([f8f8d61](https://github.com/deephaven/web-client-ui/commit/f8f8d61829cfc409b369fa5af85db60d6107eedf))
+
 # [0.39.0](https://github.com/deephaven/web-client-ui/compare/v0.38.0...v0.39.0) (2023-05-15)
 
 ### Bug Fixes
