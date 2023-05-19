@@ -219,7 +219,7 @@ export class Chart extends Component<ChartProps, ChartState> {
       isDownsampleFinished: boolean,
       isDownsampleInProgress: boolean,
       isDownsamplingDisabled: boolean,
-      is3d: boolean
+      data: Partial<Data>[]
     ): Partial<PlotlyConfig> => {
       const customButtons: ModeBarButtonAny[] = [];
       const hasDownsampleError = Boolean(downsamplingError);
@@ -258,6 +258,25 @@ export class Chart extends Component<ChartProps, ChartState> {
         });
       }
 
+      const has2D = data.some(
+        ({ type }) => type != null && !type.includes('3d')
+      );
+      const has3D = data.some(
+        ({ type }) => type != null && type.includes('3d')
+      );
+
+      const buttons2D = [
+        'zoomIn2d',
+        'zoomOut2d',
+        'autoScale2d',
+        'resetScale2d',
+      ] as const;
+      const buttons3D = [
+        'orbitRotation',
+        'tableRotation',
+        'resetCameraDefault3d',
+      ] as const;
+
       return {
         displaylogo: false,
 
@@ -273,10 +292,8 @@ export class Chart extends Component<ChartProps, ChartState> {
         modeBarButtons: [
           customButtons,
           ['toImage'],
-          is3d ? ['zoom3d', 'pan3d'] : ['zoom2d', 'pan2d'],
-          is3d
-            ? ['orbitRotation', 'tableRotation', 'resetCameraDefault3d']
-            : ['zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d'],
+          ['zoom2d', 'pan2d'], // These work the same for both 2d and 3d
+          [...(has2D ? buttons2D : []), ...(has3D ? buttons3D : [])],
         ],
       };
     }
@@ -574,7 +591,7 @@ export class Chart extends Component<ChartProps, ChartState> {
       isDownsampleFinished,
       isDownsampleInProgress,
       isDownsamplingDisabled,
-      data?.[0].type?.includes('3d') ?? false
+      data ?? []
     );
     const isPlotShown = data != null;
     return (
