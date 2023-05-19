@@ -63,6 +63,12 @@ export interface CalendarStatic {
   DayOfWeek: { values: () => string[] };
 }
 
+/**
+ * @deprecated
+ * Used to be a string union, but it can really be any string
+ */
+export type VariableTypeUnion = string;
+
 export interface VariableDefinition<T extends string = string> {
   type: T;
 
