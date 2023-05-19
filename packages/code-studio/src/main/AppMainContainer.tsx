@@ -74,7 +74,6 @@ import type {
   IdeConnection,
   IdeSession,
   VariableDefinition,
-  VariableTypeUnion,
 } from '@deephaven/jsapi-types';
 import { SessionConfig } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
@@ -699,7 +698,7 @@ export class AppMainContainer extends Component<
 
   hydrateDefault(
     props: {
-      metadata?: { type?: VariableTypeUnion; id?: string; name?: string };
+      metadata?: { type?: string; id?: string; name?: string };
     } & PanelProps,
     id: string
   ): DashboardPanelProps & { fetch?: () => Promise<unknown> } {
@@ -741,7 +740,7 @@ export class AppMainContainer extends Component<
   hydrateTable<T extends { metadata: GridPanelMetadata }>(
     props: T,
     id: string,
-    type: VariableTypeUnion = dh.VariableType.TABLE
+    type: string = dh.VariableType.TABLE
   ): T & {
     getDownloadWorker: () => Promise<ServiceWorker>;
     loadPlugin: (

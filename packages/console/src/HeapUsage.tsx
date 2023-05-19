@@ -173,7 +173,6 @@ function HeapUsage({
                 height: '100px',
               }}
               layout={{
-                legend: false,
                 margin: { l: 2, t: 2, r: 2, b: 2 },
                 plot_bgcolor: 'transparent',
                 paper_bgcolor: 'transparent',

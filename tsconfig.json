@@ -24,6 +24,9 @@
     ],
   },
   "files": [],
+  "exclude": [
+    "**/node_modules/**/*"
+  ],
   "watchOptions": {
     "excludeDirectories": [
       "**/node_modules",

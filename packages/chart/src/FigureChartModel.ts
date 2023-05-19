@@ -13,7 +13,7 @@ import type {
 } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { Range } from '@deephaven/utils';
-import { Layout, PlotData } from 'plotly.js';
+import type { Layout, Data, PlotData } from 'plotly.js';
 import type {
   DateTimeColumnFormatter,
   Formatter,
@@ -100,7 +100,7 @@ class FigureChartModel extends ChartModel {
 
   theme: typeof ChartTheme;
 
-  data: Partial<PlotData>[];
+  data: Partial<Data>[];
 
   layout: Partial<Layout>;
 
@@ -398,7 +398,7 @@ class FigureChartModel extends ChartModel {
   getAxisRangeParser = memoize(
     (chart: Chart, formatter?: Formatter) => (axis: Axis) => {
       const source = ChartUtils.getSourceForAxis(chart, axis);
-      if (source) {
+      if (source != null) {
         return this.getRangeParser(source.columnType, formatter);
       }
 
@@ -704,7 +704,7 @@ class FigureChartModel extends ChartModel {
     }
   }
 
-  getData(): Partial<PlotData>[] {
+  getData(): Partial<Data>[] {
     return this.data;
   }
 
