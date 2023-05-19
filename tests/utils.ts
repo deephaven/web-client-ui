@@ -1,4 +1,4 @@
-import { Locator, Page } from '@playwright/test';
+import { Locator } from '@playwright/test';
 import shortid from 'shortid';
 
 /**
@@ -41,6 +41,7 @@ export async function typeInMonaco(
   // Give the monaco editor focus so we can start typing
   await locator.click();
   for (let i = 0; i < splitByLine.length; i += 1) {
+    /* eslint-disable no-await-in-loop */
     await page.keyboard.type(splitByLine[i]);
     // Pressing space and then backspace escapes any autocomplete suggestions that may appear
     // Pressing shift+Enter moves the cursor to a new line
@@ -51,6 +52,7 @@ export async function typeInMonaco(
     // Automatic indenting can screw up some of our commands, so delete any automatic indent - we'll put our own indent there with the copied command
     await page.keyboard.press('Shift+Home', { delay: 50 });
     await page.keyboard.press('Delete', { delay: 50 });
+    /* eslint-enable no-await-in-loop */
   }
 }
 
