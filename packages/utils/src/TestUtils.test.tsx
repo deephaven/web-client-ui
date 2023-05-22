@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import TestUtils from './TestUtils';
+import createMockProxy from './MockProxy';
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -150,90 +151,7 @@ describe('click', () => {
 });
 
 describe('createMockProxy', () => {
-  it('should proxy property access as jest.fn() unless explicitly set', () => {
-    const mock = TestUtils.createMockProxy<Record<string, unknown>>({
-      name: 'mock.name',
-    });
-
-    expect(mock.name).toEqual('mock.name');
-    expect(mock.propA).toBeInstanceOf(jest.fn().constructor);
-    expect(mock.propB).toBeInstanceOf(jest.fn().constructor);
-  });
-
-  it('should not interfere with `await` by not proxying `then` property', async () => {
-    const mock = TestUtils.createMockProxy<Record<string, unknown>>({});
-    expect(mock.then).toBeUndefined();
-
-    const result = await mock;
-
-    expect(result).toBe(mock);
-  });
-
-  it('should only show `in` for explicit properties', () => {
-    const mock = TestUtils.createMockProxy<Record<string, unknown>>({
-      name: 'mock.name',
-      age: 42,
-    });
-
-    expect('name' in mock).toBeTruthy();
-    expect('age' in mock).toBeTruthy();
-    expect('blah' in mock).toBeFalsy();
-  });
-
-  it.each([
-    Symbol.iterator,
-    'then',
-    'asymmetricMatch',
-    'hasAttribute',
-    'nodeType',
-    'tagName',
-    'toJSON',
-  ])('should return undefined for default props', prop => {
-    const mock = TestUtils.createMockProxy();
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect((mock as any)[prop]).toBeUndefined();
-  });
-
-  it('should return custom Symbol.toStringTag', () => {
-    const mock = TestUtils.createMockProxy();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect((mock as any)[Symbol.toStringTag]).toEqual('Mock Proxy');
-  });
-
-  it('should return internal storage by name', () => {
-    const overrides = {
-      name: 'mock.name',
-      age: 42,
-    };
-
-    const mock = TestUtils.createMockProxy<{
-      name: string;
-      age: number;
-      testMethod: () => void;
-    }>(overrides);
-
-    mock.testMethod();
-
-    /* eslint-disable @typescript-eslint/no-explicit-any, no-underscore-dangle */
-    expect((mock as any).__mockProxyDefaultProps).toEqual({
-      then: undefined,
-      asymmetricMatch: undefined,
-      hasAttribute: undefined,
-      nodeType: undefined,
-      tagName: undefined,
-      toJSON: undefined,
-      [Symbol.iterator]: undefined,
-    });
-
-    expect((mock as any).__mockProxyOverrides).toEqual(overrides);
-
-    expect((mock as any).__mockProxyProxies).toEqual({
-      testMethod: expect.any(Function),
-    });
-    expect(mock.testMethod).toBeInstanceOf(jest.fn().constructor);
-    /* eslint-enable @typescript-eslint/no-explicit-any, no-underscore-dangle */
-  });
+  expect(TestUtils.createMockProxy).toBe(createMockProxy);
 });
 
 describe('extractCallArgs', () => {

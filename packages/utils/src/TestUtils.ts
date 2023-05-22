@@ -1,4 +1,5 @@
 import type userEvent from '@testing-library/user-event';
+import createMockProxy from './MockProxy';
 
 interface MockContext {
   arc: jest.Mock<void>;
@@ -180,71 +181,8 @@ class TestUtils {
    * to a jest.fn() instance on first access with the exeption of "then" which
    * will not be automatically proxied.
    * @param overrides Optional props to explicitly set on the Proxy.
-   * @returns
    */
-  static createMockProxy<T>(overrides: Partial<T> = {}): T {
-    /* eslint-disable no-underscore-dangle */
-    return new Proxy(
-      {
-        // Set default values on certain properties so they don't get automatically
-        // proxied as jest.fn() instances.
-        __mockProxyDefaultProps: {
-          // `Symbol.iterator` - returning a jest.fn() throws a TypeError
-          // `then` - avoid issues with `await` treating object as "thenable"
-          [Symbol.iterator]: undefined,
-          then: undefined,
-          // Jest makes calls to `asymmetricMatch`, `hasAttribute`, `nodeType`
-          // `tagName`, and `toJSON`
-          asymmetricMatch: undefined,
-          hasAttribute: undefined,
-          nodeType: undefined,
-          tagName: undefined,
-          toJSON: undefined,
-        },
-        __mockProxyOverrides: overrides,
-        __mockProxyProxies: {} as Record<keyof T, jest.Mock>,
-      },
-      {
-        get(target, name) {
-          if (name === Symbol.toStringTag) {
-            return 'Mock Proxy';
-          }
-
-          // Reserved attributes for the proxy
-          if (String(name).startsWith('__mockProxy')) {
-            return target[name as keyof typeof target];
-          }
-
-          // Properties that have been explicitly overriden
-          if (name in target.__mockProxyOverrides) {
-            return target.__mockProxyOverrides[name as keyof T];
-          }
-
-          // Properties that have defaults set
-          if (name in target.__mockProxyDefaultProps) {
-            return target.__mockProxyDefaultProps[
-              name as keyof typeof target.__mockProxyDefaultProps
-            ];
-          }
-
-          // Any other property access will create and cache a jest.fn() instance
-          if (target.__mockProxyProxies[name as keyof T] == null) {
-            // eslint-disable-next-line no-param-reassign
-            target.__mockProxyProxies[name as keyof T] = jest
-              .fn()
-              .mockName(String(name));
-          }
-
-          return target.__mockProxyProxies[name as keyof T];
-        },
-        // Only consider explicitly defined props as "in" the proxy
-        has(target, name) {
-          return name in target.__mockProxyOverrides;
-        },
-      }
-    ) as T;
-    /* eslint-enable no-underscore-dangle */
-  }
+  static createMockProxy = createMockProxy;
 
   /**
    * Attempt to extract the args for the nth call to a given function. This will
