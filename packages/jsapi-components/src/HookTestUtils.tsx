@@ -2,8 +2,8 @@ import React, { forwardRef, ReactNode } from 'react';
 import { ApiContext } from '@deephaven/jsapi-bootstrap';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 
-export function makeApiContextWrapper(dh: DhType) {
-  return forwardRef(function ApiContextWrapper(
+export function makeApiContextWrapper<TProps, TRef = unknown>(dh: DhType) {
+  return forwardRef<TRef, TProps>(function ApiContextWrapper(
     {
       children,
     }: {
