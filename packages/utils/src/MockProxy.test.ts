@@ -37,6 +37,7 @@ describe('createMockProxy', () => {
     'asymmetricMatch',
     'hasAttribute',
     'nodeType',
+    'ref',
     'tagName',
     'toJSON',
   ])('should return undefined for default props', prop => {
@@ -71,6 +72,7 @@ describe('createMockProxy', () => {
       asymmetricMatch: undefined,
       hasAttribute: undefined,
       nodeType: undefined,
+      ref: undefined,
       tagName: undefined,
       toJSON: undefined,
       [Symbol.iterator]: undefined,
