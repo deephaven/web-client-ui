@@ -1,6 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 
-// Run tests serially since they all use the same table
+// Run tests serially
 test.describe.configure({ mode: 'serial' });
 
 test.describe('tests golden-layout operations', () => {
@@ -9,8 +9,7 @@ test.describe('tests golden-layout operations', () => {
   test.beforeAll(async ({ browser }) => {
     page = await browser.newPage();
     await page.goto('');
-  });
-  test.beforeEach(async () => {
+
     // reset the layout before each test
     await page.getByTestId('app-main-panels-button').click();
     // start listener before click
@@ -19,23 +18,39 @@ test.describe('tests golden-layout operations', () => {
     const fileChooser = await fileChooserPromise;
     // load a test layout that uses the panel placeholder
     await fileChooser.setFiles('tests/deephaven-app-layout.test.json');
+
+    // expect a tab "test-a" to have been successfully loaded
+    await expect(
+      page.locator('.lm_tab').filter({ has: page.getByText('test-a') })
+    ).toHaveCount(1);
   });
 
-  test.afterEach(async () => {
+  test.afterAll(async () => {
+    //  reset layout
     await page.getByTestId('app-main-panels-button').click();
     await page.getByLabel('Reset Layout').click();
+
+    await expect(
+      page.locator('.lm_tab').filter({ has: page.getByText('test-a') })
+    ).toHaveCount(0);
   });
 
   test('golden-layout can import a layout', async () => {
+    // general overall visual check of layout
     await expect(page.locator('.lm_root')).toHaveScreenshot();
   });
 
   test('golden-layout can maximize the first stack', async () => {
     await page.getByTitle('Maximize').first().click();
+    // visual check for maximized tab
     await expect(page.locator('.lm_root')).toHaveScreenshot();
+
+    // minimize it again for next test
+    await page.getByTitle('Minimize').first().click();
+    await expect(page.getByTitle('Minimize')).toHaveCount(0);
   });
 
-  test('golden-layout can open additional tabs menu', async () => {
+  test('golden-layout can use additional tabs menu', async () => {
     // open the first additional tab drop down
     await page.getByTitle('Additional tabs').first().click();
 
@@ -43,11 +58,6 @@ test.describe('tests golden-layout operations', () => {
     await expect(
       page.locator('.lm_tabdropdown_list').locator('visible=true')
     ).toHaveScreenshot();
-  });
-
-  test('golden-layout can open tab from additional tabs menu', async () => {
-    // open the first additional tab drop down
-    await page.getByTitle('Additional tabs').first().click();
 
     // test search
     await page
@@ -67,6 +77,7 @@ test.describe('tests golden-layout operations', () => {
       .click();
 
     // check that it is shown in header as expected
+    // and visuals are styled correctly, scrolled into view etc
     await expect(page.locator('.lm_header').first()).toHaveScreenshot();
 
     // check that the selected panel is open
@@ -78,18 +89,28 @@ test.describe('tests golden-layout operations', () => {
   test('golden-layout can close a tab', async () => {
     await page
       .locator('.lm_tab')
-      .filter({ has: page.getByText('test-b') })
+      .filter({ has: page.getByText('test-y') })
       .getByLabel('Close tab')
       .click();
 
     // check that the selected panel is open
-    await expect(page.getByText('test-b')).toHaveCount(0);
+    await expect(page.getByText('test-y')).toHaveCount(0);
+
+    // check middle click closes tab
+    await page
+      .locator('.lm_tab')
+      .filter({ has: page.getByText('test-x') })
+      .getByLabel('Close tab')
+      .click({ button: 'middle' });
+
+    // check that the selected panel is open
+    await expect(page.getByText('test-x')).toHaveCount(0);
   });
 
   test('golden-layout can drag tab to left edge', async () => {
     const dragTab = await page
       .locator('.lm_tab')
-      .filter({ has: page.getByText('test-a') });
+      .filter({ has: page.getByText('test-z') });
 
     const dropTargetIndicator = page.locator('.lm_dropTargetIndicator');
 
