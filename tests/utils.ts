@@ -1,6 +1,11 @@
 import { Locator, Page } from '@playwright/test';
 import shortid from 'shortid';
 
+export enum TableTypes {
+  Number,
+  StringAndNumber,
+}
+
 /**
  * Generate a unique python variable name
  * @param prefix Prefix to give the variable name
@@ -20,9 +25,24 @@ export function generateVarName(prefix = 'v'): string {
  * @param tableName Name of the variable to assign the table to
  * @returns String of the command to create a table
  */
-export function makeTableCommand(tableName = generateVarName('t')): string {
-  return `from deephaven import empty_table
+export function makeTableCommand(
+  tableName = generateVarName('t'),
+  type = TableTypes.Number
+): string {
+  switch (type) { 
+    case TableTypes.StringAndNumber:
+      return `from deephaven import new_table
+from deephaven.column import string_col, double_col
+
+${tableName} = new_table([
+double_col("Doubles", [3.1, 5.45, -1.0, 1.0, 3.0, 4.20]),
+string_col("Strings", ["Creating", "New", "Tables", "Tables", "New", "Creating"])
+])`;
+    case TableTypes.Number:
+    default:
+      return `from deephaven import empty_table
 ${tableName} = empty_table(100).update(["x=i", "y=Math.sin(i)", "z=Math.cos(i)"])`;
+  }
 }
 
 /**

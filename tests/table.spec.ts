@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { makeTableCommand, pasteInMonaco } from './utils';
+import { makeTableCommand, pasteInMonaco, TableTypes } from './utils';
 
 // Run tests serially since they all use the same table
 test.describe.configure({ mode: 'serial' });
@@ -94,8 +94,55 @@ column_header_group = column_header_group.layout_hints(column_groups=column_grou
   // Now we should be able to check the snapshot
   await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
 });
+test.describe('tests complex table operations', () => {
+  test('can select distinct values', async ({ page }) => {
+    await page.goto('');
+    const consoleInput = page.locator('.console-input');
+    await consoleInput.click();
 
-test.describe('tests table operations', () => {
+    const command = `${makeTableCommand(
+      undefined,
+      TableTypes.StringAndNumber
+    )}`;
+
+    await pasteInMonaco(consoleInput, command);
+    await page.keyboard.press('Enter');
+
+    // Wait for the panel to show
+    await expect(page.locator('.iris-grid-panel')).toHaveCount(1);
+
+    // Wait until it's done loading
+    await expect(page.locator('.iris-grid-panel .loading-spinner')).toHaveCount(
+      0
+    );
+
+    // Model is loaded, need to make sure table data is also loaded
+    await expect(
+      page.locator('.iris-grid .iris-grid-loading-status') 
+    ).toHaveCount(0);
+
+    const tableOperationsMenu = page.locator(
+      'data-testid=btn-iris-grid-settings-button-table'
+    );
+    await tableOperationsMenu.click();
+
+    // Wait for Table Options menu to show
+    await expect(page.locator('.table-sidebar')).toHaveCount(1);
+
+    // open Select Distinct panel
+    await page.locator('data-testid=menu-item-Select Distinct Values').click();
+
+    const columnSelect = page.getByRole('combobox');
+    await expect(columnSelect).toHaveCount(1);
+
+    await columnSelect.selectOption('Strings');
+
+    // Check snapshot
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  });
+});
+
+test.describe('tests simple table operations', () => {
   let page: Page;
 
   test.beforeAll(async ({ browser }) => {
