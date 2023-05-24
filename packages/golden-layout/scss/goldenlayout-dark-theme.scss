@@ -201,11 +201,6 @@ $color10: #ffffff; // Appears 2 time
   }
 }
 
-.lm_transition_indicator {
-  background-color: $color0;
-  border: 1px dashed $color9;
-}
-
 // If a specific Pane is Popped Out, so move it to a different Browser Window, Icon to restore original position is:
 .lm_popin {
   cursor: pointer;
