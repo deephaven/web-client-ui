@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.40.1](https://github.com/deephaven/web-client-ui/compare/v0.40.0...v0.40.1) (2023-05-24)
+
+### Bug Fixes
+
+- makeApiContextWrapper and createMockProxy ([#1312](https://github.com/deephaven/web-client-ui/issues/1312)) ([d389963](https://github.com/deephaven/web-client-ui/commit/d3899631c329e4a34f397158c4aae5da4f2f3084)), closes [#1311](https://github.com/deephaven/web-client-ui/issues/1311)
+
 # [0.40.0](https://github.com/deephaven/web-client-ui/compare/v0.39.0...v0.40.0) (2023-05-19)
 
 ### Bug Fixes
