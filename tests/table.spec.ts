@@ -118,7 +118,7 @@ test.describe('tests complex table operations', () => {
 
     // Model is loaded, need to make sure table data is also loaded
     await expect(
-      page.locator('.iris-grid .iris-grid-loading-status') 
+      page.locator('.iris-grid .iris-grid-loading-status')
     ).toHaveCount(0);
 
     const tableOperationsMenu = page.locator(
@@ -139,6 +139,148 @@ test.describe('tests complex table operations', () => {
 
     // Check snapshot
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  });
+
+  test('can organize columns', async ({ page }) => {
+    await page.goto('');
+    const consoleInput = page.locator('.console-input');
+    await consoleInput.click();
+
+    const command = `${makeTableCommand(
+      undefined,
+      TableTypes.StringAndNumber
+    )}`;
+
+    await pasteInMonaco(consoleInput, command);
+    await page.keyboard.press('Enter');
+
+    // Wait for the panel to show
+    await expect(page.locator('.iris-grid-panel')).toHaveCount(1);
+
+    // Wait until it's done loading
+    await expect(page.locator('.iris-grid-panel .loading-spinner')).toHaveCount(
+      0
+    );
+
+    // Model is loaded, need to make sure table data is also loaded
+    await expect(
+      page.locator('.iris-grid .iris-grid-loading-status')
+    ).toHaveCount(0);
+
+    const tableOperationsMenu = page.locator(
+      'data-testid=btn-iris-grid-settings-button-table'
+    );
+    await tableOperationsMenu.click();
+
+    await expect(page.locator('.table-sidebar')).toHaveCount(1);
+
+    await page.locator('data-testid=menu-item-Organize Columns').click();
+
+    // await test.step('Drag', async () => {
+    //   await page
+    //     .getByRole('button', {
+    //       name: 'Toggle visibility Doubles',
+    //     })
+    //     .hover();
+    //   await page.mouse.down();
+    //   await page.mouse.move(-200, -200);
+    //   await page.mouse.up();
+    // });
+
+    await test.step('Search', async () => {
+      await page.getByPlaceholder('Search').click();
+      await page.keyboard.type('d');
+
+      await expect(
+        page.locator('.visibility-ordering-builder')
+      ).toHaveScreenshot();
+    });
+
+    await test.step('Hide Selected', async () => {
+      await page.getByRole('button', { name: 'Hide Selected' }).click();
+
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
+
+    await test.step('Move Selection Down', async () => {
+      await page.getByRole('button', { name: 'Move selection down' }).click();
+
+      await expect(
+        page.locator('.visibility-ordering-builder')
+      ).toHaveScreenshot();
+    });
+
+    await test.step('Move Selection Up', async () => {
+      await page.getByRole('button', { name: 'Move selection up' }).click();
+
+      await expect(
+        page.locator('.visibility-ordering-builder')
+      ).toHaveScreenshot();
+    });
+
+    await test.step('Move Selection to Bottom', async () => {
+      await page
+        .getByRole('button', { name: 'Move selection to bottom' })
+        .click();
+
+      await expect(
+        page.locator('.visibility-ordering-builder')
+      ).toHaveScreenshot();
+    });
+
+    await test.step('Move Selection to Top', async () => {
+      await page.getByRole('button', { name: 'Move selection to top' }).click();
+
+      await expect(
+        page.locator('.visibility-ordering-builder')
+      ).toHaveScreenshot();
+    });
+
+    await test.step('Sort Descending', async () => {
+      await page.getByRole('button', { name: 'Sort descending' }).click();
+
+      await expect(
+        page.locator('.visibility-ordering-builder')
+      ).toHaveScreenshot();
+    });
+
+    await test.step('Sort Ascending', async () => {
+      await page.getByRole('button', { name: 'Sort ascending' }).click();
+
+      await expect(
+        page.locator('.visibility-ordering-builder')
+      ).toHaveScreenshot();
+    });
+
+    await test.step('Reset', async () => {
+      await page.getByRole('button', { name: 'Reset' }).click();
+
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+      await expect(
+        page.locator('.visibility-ordering-builder')
+      ).toHaveScreenshot();
+    });
+
+    // await test.step('Drag', async () => {
+    //   await page
+    //     .getByRole('button', { name: 'Toggle visibility Doubles' })
+    //     .dragTo(page.locator('visibility-ordering-list'), {
+    //       force: true,
+    //       targetPosition: {
+    //         x: 0,
+    //         y: 50,
+    //       },
+    //     });
+    // });
+
+    await test.step('Toggle Visibility', async () => {
+      await page
+        .getByRole('button', { name: 'Toggle visibility Doubles' })
+        .getByRole('button', { name: 'Toggle visibility' })
+        .click();
+
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
   });
 });
 
