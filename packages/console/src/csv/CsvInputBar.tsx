@@ -8,7 +8,7 @@ import React, {
 import classNames from 'classnames';
 import type { JSZipObject } from 'jszip';
 import { Button, Checkbox } from '@deephaven/components';
-import { IdeSession, Table } from '@deephaven/jsapi-types';
+import type { IdeSession, Table } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { DbNameValidator } from '@deephaven/utils';
 import CsvOverlay from './CsvOverlay';
