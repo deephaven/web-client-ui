@@ -86,7 +86,7 @@ body:not(.lm_dragging) .lm_header .lm_tab .lm_close_tab:hover {
     .lm_tab,
     .lm_tab.lm_active {
       border: 0;
-      box-shadow: none;
+      box-shadow: $box-shadow;
     }
   }
 }
