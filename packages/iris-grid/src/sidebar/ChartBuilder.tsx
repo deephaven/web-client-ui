@@ -31,7 +31,7 @@ const log = Log.module('ChartBuilder');
 
 export type ChartBuilderSettings = {
   type: SeriesPlotStyle;
-  series: unknown;
+  series: string[];
   xAxis: string;
   isLinked: boolean;
 };
@@ -285,7 +285,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     const { type, seriesItems, xAxis, isLinked } = this.state;
     const series = seriesItems.map(item => item.value);
     onSubmit({
-      type: (`${type}` as unknown) as SeriesPlotStyle,
+      type,
       series,
       xAxis,
       isLinked,

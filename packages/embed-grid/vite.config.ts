@@ -7,14 +7,6 @@ import path from 'path';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
-  // https://github.com/vitejs/vite/issues/3105#issuecomment-939703781
-  const htmlPlugin = () => ({
-    name: 'html-transform',
-    transformIndexHtml(html: string) {
-      return html.replace(/#(.*?)#/g, (_, p1) => env[p1]);
-    },
-  });
-
   const packagesDir = path.resolve(__dirname, '..');
 
   let port = Number.parseInt(env.PORT, 10);
@@ -22,6 +14,7 @@ export default defineConfig(({ mode }) => {
     port = 4010;
   }
 
+  const baseURL = new URL(env.BASE_URL, `http://localhost:${port}/`);
   // These are paths which should be proxied to the core server
   // https://vitejs.dev/config/server-options.html#server-proxy
   const proxy = {
@@ -42,11 +35,9 @@ export default defineConfig(({ mode }) => {
   // Vite does not have a "any unknown fallback to proxy" like CRA
   // It is possible to add one with a custom middleware though if this list grows
   if (env.VITE_PROXY_URL) {
-    [
-      path.resolve(env.BASE_URL, env.VITE_CORE_API_URL),
-      path.resolve(env.BASE_URL, env.VITE_MODULE_PLUGINS_URL),
-    ].forEach(p => {
-      proxy[p] = {
+    [env.VITE_CORE_API_URL, env.VITE_MODULE_PLUGINS_URL].forEach(p => {
+      const route = new URL(p, baseURL).pathname;
+      proxy[route] = {
         target: env.VITE_PROXY_URL,
         changeOrigin: true,
       };
@@ -119,6 +110,6 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
-    plugins: [htmlPlugin(), react()],
+    plugins: [react()],
   };
 });

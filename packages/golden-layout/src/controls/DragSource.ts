@@ -62,10 +62,5 @@ export default class DragSource {
         contentItem,
         null
       );
-
-    this._layoutManager.transitionIndicator?.transitionElements(
-      this._element,
-      dragProxy.element
-    );
   }
 }

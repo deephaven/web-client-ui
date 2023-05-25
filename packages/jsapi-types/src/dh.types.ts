@@ -63,11 +63,13 @@ export interface CalendarStatic {
   DayOfWeek: { values: () => string[] };
 }
 
-export type VariableTypeUnion = typeof VariableType[keyof typeof VariableType];
+/**
+ * @deprecated
+ * Used to be a string union, but it can really be any string
+ */
+export type VariableTypeUnion = string;
 
-export interface VariableDefinition<
-  T extends VariableTypeUnion = VariableTypeUnion
-> {
+export interface VariableDefinition<T extends string = string> {
   type: T;
 
   /**
@@ -217,6 +219,8 @@ export interface Plot {
   SeriesDescriptor: SeriesDescriptor;
   SourceDescriptor: SourceDescriptor;
   DownsampleOptions: DownsampleOptions;
+
+  ChartData: typeof ChartData;
 }
 
 export interface RemoverFn {
@@ -1088,3 +1092,26 @@ export interface CoreClient extends CoreClientContructor {
   getAuthConfigValues(): Promise<[string, string][]>;
   disconnect(): void;
 }
+
+/**
+ * Helper class to manage snapshots and deltas and keep not only a contiguous JS array of data per column in the
+ * underlying table, but also support a mapping function to let client code translate data in some way for display and
+ * keep that cached as well.
+ */
+declare class ChartData {
+  constructor(table: Table);
+
+  update(eventDetail: object): void;
+  getColumn(
+    columnName: string,
+    mappingFunc: (input: any) => any,
+    currentUpdate: TableData
+  ): Array<any>;
+  /**
+   * Removes some column from the cache, avoiding extra computation on incoming events, and possibly freeing some
+   * memory. If this pair of column name and map function are requested again, it will be recomputed from scratch.
+   */
+  removeColumn(columnName: string, mappingFunc: (input: any) => any): void;
+}
+
+export type { ChartData };

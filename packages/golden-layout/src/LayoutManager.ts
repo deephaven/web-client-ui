@@ -15,7 +15,6 @@ import {
   DragSource,
   DragSourceFromEvent,
   DropTargetIndicator,
-  TransitionIndicator,
 } from './controls';
 import { ConfigurationError } from './errors';
 import {
@@ -116,7 +115,6 @@ export default class LayoutManager extends EventEmitter {
   container: JQuery<HTMLElement>;
   private _originalContainer: JQuery<HTMLElement> | HTMLElement | undefined;
   dropTargetIndicator: DropTargetIndicator | null = null;
-  transitionIndicator: TransitionIndicator | null = null;
   tabDropPlaceholder = $('<div class="lm_drop_tab_placeholder"></div>');
 
   private _typeToItem: {
@@ -362,7 +360,6 @@ export default class LayoutManager extends EventEmitter {
 
     this._setContainer();
     this.dropTargetIndicator = new DropTargetIndicator();
-    this.transitionIndicator = new TransitionIndicator();
     this.updateSize();
     this._create(this.config);
     this._bindEvents();
@@ -450,7 +447,6 @@ export default class LayoutManager extends EventEmitter {
     this.root.contentItems = [];
     this.tabDropPlaceholder.remove();
     this.dropTargetIndicator?.destroy();
-    this.transitionIndicator?.destroy();
     this.eventHub.destroy();
 
     this._dragSources.forEach(function (dragSource) {

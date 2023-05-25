@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.40.1](https://github.com/deephaven/web-client-ui/compare/v0.40.0...v0.40.1) (2023-05-24)
+
+**Note:** Version bump only for package @deephaven/jsapi-components
+
+# [0.40.0](https://github.com/deephaven/web-client-ui/compare/v0.39.0...v0.40.0) (2023-05-19)
+
+### Bug Fixes
+
+- Export useTableUtils ([#1309](https://github.com/deephaven/web-client-ui/issues/1309)) ([9212107](https://github.com/deephaven/web-client-ui/commit/9212107142ae3863201bbb107e701e768c11f44f)), closes [#1308](https://github.com/deephaven/web-client-ui/issues/1308)
+
 # [0.39.0](https://github.com/deephaven/web-client-ui/compare/v0.38.0...v0.39.0) (2023-05-15)
 
 ### Bug Fixes
