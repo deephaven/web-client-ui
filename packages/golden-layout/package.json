@@ -10,6 +10,7 @@
   "source": "src/index.ts",
   "type": "module",
   "dependencies": {
+    "@deephaven/components": "file:../components",
     "jquery": "^3.6.0"
   },
   "peerDependencies": {
