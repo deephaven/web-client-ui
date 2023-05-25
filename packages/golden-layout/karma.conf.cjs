@@ -14,8 +14,7 @@ module.exports = function (config) {
     files: ['./test/helper.js', './test/**'],
 
     // list of files to exclude
-    // karma doesn't understand the scss import in GoldenLayoutThemeExport
-    exclude: ['dist/GoldenLayoutThemeExport.js'],
+    exclude: [],
 
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
