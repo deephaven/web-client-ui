@@ -297,7 +297,7 @@ body:not(.lm_dragging) .lm_header .lm_tab .lm_close_tab:hover {
   }
 }
 
-.lm_tabdropdown_list {
+.lm_header .lm_tabdropdown_list {
   z-index: $zindex-dropdown;
   background: $lm-tab-background;
   top: 22px;
