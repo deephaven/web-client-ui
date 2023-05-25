@@ -7,4 +7,3 @@ export { default as Header } from './Header';
 export { default as HeaderButton } from './HeaderButton';
 export { default as Splitter } from './Splitter';
 export { default as Tab } from './Tab';
-export { default as TransitionIndicator } from './TransitionIndicator';

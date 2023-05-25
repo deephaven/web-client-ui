@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/console",
-  "version": "0.39.0",
+  "version": "0.40.1",
   "description": "Deephaven Console",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -27,6 +27,7 @@
     "@deephaven/components": "file:../components",
     "@deephaven/icons": "file:../icons",
     "@deephaven/jsapi-bootstrap": "file:../jsapi-bootstrap",
+    "@deephaven/jsapi-types": "file:../jsapi-types",
     "@deephaven/log": "file:../log",
     "@deephaven/storage": "file:../storage",
     "@deephaven/utils": "file:../utils",

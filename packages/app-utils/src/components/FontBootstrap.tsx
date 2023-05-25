@@ -20,7 +20,7 @@ export type FontBootstrapProps = {
  * FontBootstrap component. Handles preloading fonts.
  */
 export function FontBootstrap({
-  fontClassNames = ['fira-sans-regular', 'fira-sans-bold', 'fira-mono'],
+  fontClassNames = ['fira-sans-regular', 'fira-sans-semibold', 'fira-mono'],
   children,
 }: FontBootstrapProps) {
   const [isLoaded, setIsLoaded] = useState(false);

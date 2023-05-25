@@ -20,7 +20,7 @@ export default class Tab {
     '<li class="lm_tab">',
     '<span class="lm_title_before"></span>',
     '<span class="lm_title"></span>',
-    '<div class="lm_close_tab"></div>',
+    '<div class="lm_close_tab" aria-label="Close tab"></div>',
     '</li>',
   ].join('');
 

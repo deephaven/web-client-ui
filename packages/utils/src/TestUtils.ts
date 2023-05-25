@@ -1,4 +1,5 @@
 import type userEvent from '@testing-library/user-event';
+import createMockProxy from './MockProxy';
 
 interface MockContext {
   arc: jest.Mock<void>;
@@ -179,42 +180,9 @@ class TestUtils {
    * optionally be set via the constructor. Any prop that is not set will be set
    * to a jest.fn() instance on first access with the exeption of "then" which
    * will not be automatically proxied.
-   * @param props Optional props to explicitly set on the Proxy.
-   * @returns
+   * @param overrides Optional props to explicitly set on the Proxy.
    */
-  static createMockProxy<T>(props: Partial<T> = {}): T {
-    return new Proxy(
-      {
-        props: {
-          // Disable auto-proxying of certain properties that cause trouble.
-          // - Symbol.iterator - returning a jest.fn() throws a TypeError
-          // - then - avoid issues with `await` treating object as "thenable"
-          [Symbol.iterator]: undefined,
-          then: undefined,
-          ...props,
-        },
-        proxies: {} as Record<keyof T, jest.Mock>,
-      },
-      {
-        get(target, name) {
-          if (name in target.props) {
-            return target.props[name as keyof T];
-          }
-
-          if (target.proxies[name as keyof T] == null) {
-            // eslint-disable-next-line no-param-reassign
-            target.proxies[name as keyof T] = jest.fn();
-          }
-
-          return target.proxies[name as keyof T];
-        },
-        // Only consider explicitly defined props as "in" the proxy
-        has(target, name) {
-          return name in target.props;
-        },
-      }
-    ) as T;
-  }
+  static createMockProxy = createMockProxy;
 
   /**
    * Attempt to extract the args for the nth call to a given function. This will
