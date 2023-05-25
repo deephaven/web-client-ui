@@ -14,8 +14,7 @@ module.exports = function (config) {
     files: ['./test/helper.js', './test/**'],
 
     // list of files to exclude
-    // karma doesn't understand the scss import in GoldenLayoutThemeExport
-    exclude: ['dist/GoldenLayoutThemeExport.js'],
+    exclude: [],
 
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
@@ -25,7 +24,14 @@ module.exports = function (config) {
     },
 
     browserify: {
+      debug: true,
       plugin: ['esmify'],
+      // ignored because it doesn't understand the scss import in GoldenLayoutThemeExport
+      configure: function (bundle) {
+        bundle.on('prebundle', function () {
+          bundle.ignore('./dist/GoldenLayoutThemeExport.js');
+        });
+      },
     },
 
     // test results reporter to use
