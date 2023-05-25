@@ -176,17 +176,6 @@ test.describe('tests complex table operations', () => {
 
     await page.locator('data-testid=menu-item-Organize Columns').click();
 
-    // await test.step('Drag', async () => {
-    //   await page
-    //     .getByRole('button', {
-    //       name: 'Toggle visibility Doubles',
-    //     })
-    //     .hover();
-    //   await page.mouse.down();
-    //   await page.mouse.move(-200, -200);
-    //   await page.mouse.up();
-    // });
-
     await test.step('Search', async () => {
       await page.getByPlaceholder('Search').click();
       await page.keyboard.type('d');
@@ -261,17 +250,59 @@ test.describe('tests complex table operations', () => {
       ).toHaveScreenshot();
     });
 
+    // TO DO: Mimic drag function
+    // Note; Playwright dragTo function and mouse.down() + mouse.move() don't work as expected
     // await test.step('Drag', async () => {
-    //   await page
-    //     .getByRole('button', { name: 'Toggle visibility Doubles' })
-    //     .dragTo(page.locator('visibility-ordering-list'), {
-    //       force: true,
-    //       targetPosition: {
-    //         x: 0,
-    //         y: 50,
-    //       },
-    //     });
+    //   const columnOpt = page.getByRole('button', {
+    //     name: 'Toggle visibility Strings',
+    //   });
+    //   const panelAbove = page.locator('.item-list-scroll-pane');
+
+    //   await columnOpt.dragTo(panelAbove);
+
+    //   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    //   await expect(
+    //     page.locator('.visibility-ordering-builder')
+    //   ).toHaveScreenshot();
     // });
+
+    await test.step('Create Group', async () => {
+      await page
+        .getByRole('button', { name: 'Toggle visibility Doubles' })
+        .click();
+      await page.getByRole('button', { name: 'Group' }).click();
+      await page.getByPlaceholder('Group Name').click();
+      await page.keyboard.type('test');
+      await page.keyboard.press('Enter');
+
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+      await expect(
+        page.locator('.visibility-ordering-builder')
+      ).toHaveScreenshot();
+
+      // Edit Group Name
+      await page.getByRole('button', { name: 'Edit', exact: true }).click();
+      await page.keyboard.type('new_test');
+      await page.keyboard.press('Enter');
+
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+      await expect(
+        page.locator('.visibility-ordering-builder')
+      ).toHaveScreenshot();
+
+      // Delete Group
+      await page
+        .getByRole('button', { name: 'Delete group', exact: true })
+        .click();
+
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+      await expect(
+        page.locator('.visibility-ordering-builder')
+      ).toHaveScreenshot();
+
+      // TO DO: Select Color Option
+      // Note: page.getBy functions can't navigate to one of the color options
+    });
 
     await test.step('Toggle Visibility', async () => {
       await page
