@@ -118,7 +118,7 @@ test.describe('tests complex table operations', () => {
 
     // Model is loaded, need to make sure table data is also loaded
     await expect(
-      page.locator('.iris-grid .iris-grid-loading-status') 
+      page.locator('.iris-grid .iris-grid-loading-status')
     ).toHaveCount(0);
 
     const tableOperationsMenu = page.locator(
@@ -138,6 +138,176 @@ test.describe('tests complex table operations', () => {
     await columnSelect.selectOption('Strings');
 
     // Check snapshot
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    await page
+      .locator('.iris-grid')
+      .locator('data-testid=btn-page-close')
+      .first()
+      .click();
+
+    await expect(page.locator('.iris-grid .table-sidebar')).toHaveCount(0);
+  });
+
+  test('can conditional format', async ({ page }) => {
+    await page.goto('');
+    const consoleInput = page.locator('.console-input');
+    await consoleInput.click();
+
+    const command = `${makeTableCommand(
+      undefined,
+      TableTypes.StringAndNumber
+    )}`;
+
+    await pasteInMonaco(consoleInput, command);
+    await page.keyboard.press('Enter');
+
+    // Wait for the panel to show
+    await expect(page.locator('.iris-grid-panel')).toHaveCount(1);
+
+    // Wait until it's done loading
+    await expect(page.locator('.iris-grid-panel .loading-spinner')).toHaveCount(
+      0
+    );
+
+    // Model is loaded, need to make sure table data is also loaded
+    await expect(
+      page.locator('.iris-grid .iris-grid-loading-status')
+    ).toHaveCount(0);
+
+    const tableOperationsMenu = page.locator(
+      'data-testid=btn-iris-grid-settings-button-table'
+    );
+    await tableOperationsMenu.click();
+
+    // Wait for Table Options menu to show
+    await expect(page.locator('.table-sidebar')).toHaveCount(1);
+
+    // Open Conditional Formatting Panel
+    await page.locator('data-testid=menu-item-Conditional Formatting').click();
+
+    // Create New Formatting Rule
+    await page.getByRole('button', { name: 'Add New Rule' }).click();
+    await page.getByPlaceholder('Enter value').click();
+    await page.keyboard.type('3');
+    await page.getByRole('button', { name: 'No formatting' }).click();
+    await page.getByRole('button', { name: 'Positive' }).click();
+
+    const delayForGridRender = 500;
+    const conditionSelect = page.locator('#condition-select');
+
+    // Is Equal To
+    await page.getByRole('button', { name: 'Rows' }).click();
+    await page.waitForTimeout(delayForGridRender);
+
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    await page.getByRole('button', { name: 'Conditional' }).click();
+    await page.waitForTimeout(delayForGridRender);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    // Is Not Equal To
+    await conditionSelect.selectOption('is-not-equal');
+
+    await page.getByRole('button', { name: 'Rows' }).click();
+    await page.waitForTimeout(delayForGridRender);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    await page.getByRole('button', { name: 'Conditional' }).click();
+    await page.waitForTimeout(delayForGridRender);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    // Greater Than
+    await conditionSelect.selectOption('greater-than');
+
+    await page.getByRole('button', { name: 'Rows' }).click();
+    await page.waitForTimeout(delayForGridRender);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    await page.getByRole('button', { name: 'Conditional' }).click();
+    await page.waitForTimeout(delayForGridRender);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    // Greater Than Or Equal To
+    await conditionSelect.selectOption('greater-than-or-equal');
+
+    await page.getByRole('button', { name: 'Rows' }).click();
+    await page.waitForTimeout(delayForGridRender);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    await page.getByRole('button', { name: 'Conditional' }).click();
+    await page.waitForTimeout(delayForGridRender);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    // Less Than
+    await conditionSelect.selectOption('less-than');
+
+    await page.getByRole('button', { name: 'Rows' }).click();
+    await page.waitForTimeout(delayForGridRender);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    await page.getByRole('button', { name: 'Conditional' }).click();
+    await page.waitForTimeout(delayForGridRender);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    // Less Than Or Equal
+    await conditionSelect.selectOption('less-than-or-equal');
+
+    await page.getByRole('button', { name: 'Rows' }).click();
+    await page.waitForTimeout(delayForGridRender);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    await page.getByRole('button', { name: 'Conditional' }).click();
+    await page.waitForTimeout(delayForGridRender);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    // Between
+    await conditionSelect.selectOption('is-between');
+    await page.getByPlaceholder('Start value').click();
+    await page.keyboard.type('3');
+    await page.getByPlaceholder('end value').click();
+    await page.keyboard.type('10');
+
+    await page.getByRole('button', { name: 'Rows' }).click();
+    await page.waitForTimeout(delayForGridRender);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    await page.getByRole('button', { name: 'Conditional' }).click();
+    await page.waitForTimeout(delayForGridRender);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    // Null
+    await conditionSelect.selectOption('is-null');
+
+    await page.getByRole('button', { name: 'Rows' }).click();
+    await page.waitForTimeout(delayForGridRender);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    await page.getByRole('button', { name: 'Conditional' }).click();
+    await page.waitForTimeout(delayForGridRender);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    // Not Null
+    await conditionSelect.selectOption('is-not-null');
+    await page.getByRole('button', { name: 'Rows' }).click();
+    await page.waitForTimeout(delayForGridRender);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    await page.getByRole('button', { name: 'Conditional' }).click();
+    await page.waitForTimeout(delayForGridRender);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    // Delete
+    await page.getByRole('button', { name: 'Done' }).click();
+    await page.getByRole('button', { name: 'Delete rule' }).click();
+
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    // Cancel
+    await page.getByRole('button', { name: 'Add New Rule' }).click();
+    await page.locator('#condition-select').first().selectOption('is-not-null');
+
+    await page.getByRole('button', { name: 'Cancel' }).click();
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });
 });
