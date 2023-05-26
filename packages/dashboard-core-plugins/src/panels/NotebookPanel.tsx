@@ -48,6 +48,7 @@ import type {
   CloseOptions,
 } from '@deephaven/golden-layout';
 import type { IdeSession } from '@deephaven/jsapi-types';
+import { PanelEvent } from '@deephaven/dashboard';
 import { ConsoleEvent, NotebookEvent } from '../events';
 import { getDashboardSessionWrapper } from '../redux';
 import Panel from './Panel';
@@ -176,7 +177,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.handleLinkClick = this.handleLinkClick.bind(this);
     this.handleLoadSuccess = this.handleLoadSuccess.bind(this);
     this.handleLoadError = this.handleLoadError.bind(this);
-    this.handleTabClick = this.handleTabClick.bind(this);
+    this.handlePanelDropped = this.handlePanelDropped.bind(this);
     this.handleRenameFile = this.handleRenameFile.bind(this);
     this.handleResize = this.handleResize.bind(this);
     this.handleRunCommand = this.handleRunCommand.bind(this);
@@ -192,8 +193,9 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.handleShow = this.handleShow.bind(this);
     this.handleShowRename = this.handleShowRename.bind(this);
     this.handleTab = this.handleTab.bind(this);
-    this.handleTabFocus = this.handleTabFocus.bind(this);
     this.handleTabBlur = this.handleTabBlur.bind(this);
+    this.handleTabClick = this.handleTabClick.bind(this);
+    this.handleTabFocus = this.handleTabFocus.bind(this);
     this.handleTransformLinkUri = this.handleTransformLinkUri.bind(this);
     this.handleOverwrite = this.handleOverwrite.bind(this);
     this.handlePreviewPromotion = this.handlePreviewPromotion.bind(this);
@@ -284,6 +286,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     if (tab != null) this.initTab(tab);
     this.initNotebookContent();
     glEventHub.on(NotebookEvent.RENAME_FILE, this.handleRenameFile);
+    glEventHub.on(PanelEvent.DROPPED, this.handlePanelDropped);
     glContainer.on(
       NotebookEvent.PROMOTE_FROM_PREVIEW,
       this.handlePreviewPromotion
@@ -320,6 +323,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
 
     const { fileMetadata, isPreview } = this.state;
     glEventHub.off(NotebookEvent.RENAME_FILE, this.handleRenameFile);
+    glEventHub.off(PanelEvent.DROPPED, this.handlePanelDropped);
     glContainer.off(
       NotebookEvent.PROMOTE_FROM_PREVIEW,
       this.handlePreviewPromotion
@@ -942,6 +946,14 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   handleShow(): void {
     log.debug('handleShow');
     this.notebook?.updateDimensions();
+  }
+
+  handlePanelDropped(droppedId: string): void {
+    const {
+      metadata: { id },
+    } = this.props;
+    // re-render necessary for portal after being dropped
+    if (droppedId === id) this.forceUpdate();
   }
 
   handleShowRename(): void {
