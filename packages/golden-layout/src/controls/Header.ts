@@ -62,6 +62,7 @@ export default class Header extends EventEmitter {
   // mouse hold acceleration
   START_SPEED = 0.01;
   ACCELERATION = 0.0005;
+  PADDING = 10 as const;
   SCROLL_LEFT = 'left' as const;
   SCROLL_RIGHT = 'right' as const;
 
@@ -293,6 +294,7 @@ export default class Header extends EventEmitter {
   // when and item is picked up, attach mouse enter listeners to next/previous buttons
   _handleItemPickedUp() {
     this.isDraggingTab = true;
+    if (this.isDropdownShown) this._hideAdditionalTabsDropdown();
     this.controlsContainer.on('mouseenter', this._handleNextMouseEnter);
     this.tabPreviousButton.on('mouseenter', this._handlePreviousMouseEnter);
   }
@@ -632,6 +634,10 @@ export default class Header extends EventEmitter {
       .children()
       .removeClass('lm_active');
 
+    // move it to be absolutely positioned in document root
+    // as header has overflow hidden, and we need to escape that
+    $(document.body).append(this.tabDropdownContainer);
+
     // show the dropdown
     this.tabDropdownContainer.show();
     this.isDropdownShown = true;
@@ -654,12 +660,13 @@ export default class Header extends EventEmitter {
 
   // enables synthetic keyboard navigation of the list
   _handleFilterKeydown(e: JQuery.TriggeredEvent) {
-    if (this.dropdownKeyIndex === -1) return;
-
     if (e.key === 'Escape') {
       this._hideAdditionalTabsDropdown();
       return;
     }
+
+    //escape should always close, even if list is empty
+    if (this.dropdownKeyIndex === -1) return;
 
     if (e.key === 'Enter' || e.key === ' ') {
       // simulate "click"
@@ -773,6 +780,9 @@ export default class Header extends EventEmitter {
     this.tabDropdownContainer.hide();
     this.isDropdownShown = false;
 
+    // put it back in the header dom
+    this.element.append(this.tabDropdownContainer);
+
     // remove the current tab list
     this.tabDropdownContainer.find('.lm_tabs').remove();
 
@@ -780,24 +790,50 @@ export default class Header extends EventEmitter {
   }
 
   /**
-   * Ensures additional tab drop down doesn't overflow screen, and instead becomes scrollable.
+   * Ensures additional tab drop down which is absolutely positioned in the root
+   * doesn't overflow the screen, and instead becomes scrollable. Positions the
+   * floating menu in the correct location relative to the dropdown button.
    */
   _updateAdditionalTabsDropdown() {
-    this.tabDropdownContainer.css('max-height', '');
-    const h = this.tabDropdownContainer[0].scrollHeight;
-    if (h === 0) return; // height can be zero if called on a hidden or empty list
+    if (!this.isDropdownShown) return;
+    if (!this.tabDropdownList || this.tabDropdownList.length == 0) return;
 
-    const y =
-      (this.tabDropdownContainer.offset()?.top ?? 0) -
-      ($(window).scrollTop() ?? 0);
+    const scrollHeight = this.tabDropdownContainer.get(0)?.scrollHeight ?? 0;
+    if (scrollHeight === 0) return; // height can be zero if called on a hidden or empty list
 
-    // set max height of tab dropdown to be less then the viewport height - dropdown offset
-    if (y + h > ($(window).height() ?? 0)) {
-      this.tabDropdownContainer.css(
-        'max-height',
-        ($(window).height() ?? 0) - y - 10
-      ); // 10 being a padding value
-    }
+    const list_rect = this.tabDropdownContainer[0].getBoundingClientRect();
+    const windowHeight = $(window).height() ?? 0;
+    const windowWidth = $(window).width() ?? 0;
+
+    // position relative to the dropdown button
+    if (!this.tabDropdownButton) return;
+    const button_rect = this.tabDropdownButton.element[0].getBoundingClientRect();
+
+    // If it fits below button, put it there. If it doesn't and there is more
+    // than 60% space above, then flip to displaying menu above button
+    const hasSpaceBelow = scrollHeight < windowHeight - button_rect.bottom;
+    const shouldFlip =
+      !hasSpaceBelow && button_rect.bottom > windowHeight * 0.6; // 0.6 bias to not flipping rather than strictly 0.5
+
+    // keep from going of right edge
+    // when flipped offset to right edge of button
+    const left = Math.min(
+      button_rect.left + (shouldFlip ? button_rect.width : 0),
+      windowWidth - list_rect.width - this.PADDING
+    );
+    // flip, with limit of top of screen
+    const top = shouldFlip
+      ? Math.max(button_rect.top - scrollHeight, this.PADDING)
+      : button_rect.bottom;
+
+    // if needs scroll to fit, apply a max-height
+    const maxHeight = windowHeight - top - this.PADDING;
+
+    this.tabDropdownContainer.css({
+      'max-height': maxHeight,
+      top,
+      left,
+    });
   }
 
   /**
@@ -841,6 +877,11 @@ export default class Header extends EventEmitter {
     }
 
     const tabsContainer = this.tabsContainer.get(0);
+
+    if (this.isDropdownShown) {
+      // resize the dropdown list too as it is currently open
+      this._updateAdditionalTabsDropdown();
+    }
 
     if (!tabsContainer) {
       return;
