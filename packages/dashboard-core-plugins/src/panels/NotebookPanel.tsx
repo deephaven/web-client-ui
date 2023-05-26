@@ -952,7 +952,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     const {
       metadata: { id },
     } = this.props;
-    // re-render portal after being dropped
+    // re-render necessary for portal after being dropped
     if (droppedId === id) this.forceUpdate();
   }
 
