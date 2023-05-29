@@ -95,7 +95,15 @@ column_header_group = column_header_group.layout_hints(column_groups=column_grou
   await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
 });
 test.describe('tests complex table operations', () => {
-  test('can select distinct values', async ({ page }) => {
+  let page: Page;
+
+  test.beforeAll(async ({ browser }) => {
+    page = await browser.newPage();
+    await page.goto('');
+    // await openSimpleTable(page);
+  });
+
+  test.beforeEach(async () => {
     await page.goto('');
     const consoleInput = page.locator('.console-input');
     await consoleInput.click();
@@ -128,7 +136,9 @@ test.describe('tests complex table operations', () => {
 
     // Wait for Table Options menu to show
     await expect(page.locator('.table-sidebar')).toHaveCount(1);
+  });
 
+  test('can select distinct values', async () => {
     // open Select Distinct panel
     await page.locator('data-testid=menu-item-Select Distinct Values').click();
 
@@ -149,40 +159,7 @@ test.describe('tests complex table operations', () => {
     await expect(page.locator('.iris-grid .table-sidebar')).toHaveCount(0);
   });
 
-  test('can conditional format', async ({ page }) => {
-    await page.goto('');
-    const consoleInput = page.locator('.console-input');
-    await consoleInput.click();
-
-    const command = `${makeTableCommand(
-      undefined,
-      TableTypes.StringAndNumber
-    )}`;
-
-    await pasteInMonaco(consoleInput, command);
-    await page.keyboard.press('Enter');
-
-    // Wait for the panel to show
-    await expect(page.locator('.iris-grid-panel')).toHaveCount(1);
-
-    // Wait until it's done loading
-    await expect(page.locator('.iris-grid-panel .loading-spinner')).toHaveCount(
-      0
-    );
-
-    // Model is loaded, need to make sure table data is also loaded
-    await expect(
-      page.locator('.iris-grid .iris-grid-loading-status')
-    ).toHaveCount(0);
-
-    const tableOperationsMenu = page.locator(
-      'data-testid=btn-iris-grid-settings-button-table'
-    );
-    await tableOperationsMenu.click();
-
-    // Wait for Table Options menu to show
-    await expect(page.locator('.table-sidebar')).toHaveCount(1);
-
+  test('can conditional format', async () => {
     // Open Conditional Formatting Panel
     await page.locator('data-testid=menu-item-Conditional Formatting').click();
 
@@ -311,40 +288,7 @@ test.describe('tests complex table operations', () => {
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });
 
-  test('can search', async ({ page }) => {
-    await page.goto('');
-    const consoleInput = page.locator('.console-input');
-    await consoleInput.click();
-
-    const command = `${makeTableCommand(
-      undefined,
-      TableTypes.StringAndNumber
-    )}`;
-
-    await pasteInMonaco(consoleInput, command);
-    await page.keyboard.press('Enter');
-
-    // Wait for the panel to show
-    await expect(page.locator('.iris-grid-panel')).toHaveCount(1);
-
-    // Wait until it's done loading
-    await expect(page.locator('.iris-grid-panel .loading-spinner')).toHaveCount(
-      0
-    );
-
-    // Model is loaded, need to make sure table data is also loaded
-    await expect(
-      page.locator('.iris-grid .iris-grid-loading-status')
-    ).toHaveCount(0);
-
-    const tableOperationsMenu = page.locator(
-      'data-testid=btn-iris-grid-settings-button-table'
-    );
-    await tableOperationsMenu.click();
-
-    // Wait for Table Options menu to show
-    await expect(page.locator('.table-sidebar')).toHaveCount(1);
-
+  test('can search', async () => {
     // open Select Distinct panel
     await page.locator('data-testid=menu-item-Search Bar').click();
 
