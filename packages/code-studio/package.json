@@ -11,7 +11,7 @@
     "directory": "packages/code-studio"
   },
   "dependencies": {
-    "@deephaven/app-utils": "^0.39.0",
+    "@deephaven/app-utils": "file:../app-utils",
     "@deephaven/auth-plugins": "file:../auth-plugins",
     "@deephaven/chart": "file:../chart",
     "@deephaven/components": "file:../components",
