@@ -1,10 +1,13 @@
 import deepEqual from 'deep-equal';
 import shortid from 'shortid';
 import isMatch from 'lodash.ismatch';
-import { DragEvent } from 'react';
 import Log from '@deephaven/log';
-import { isComponent, isRoot, isStack } from '@deephaven/golden-layout';
-import type GoldenLayout from '@deephaven/golden-layout';
+import GoldenLayout, {
+  isComponent,
+  isRoot,
+  isStack,
+  GoldenLayoutThemeExport,
+} from '@deephaven/golden-layout';
 import type {
   ComponentConfig,
   Config,
@@ -16,9 +19,9 @@ import type {
   Stack,
   Tab,
   CloseOptions,
+  DragSourceEvent,
 } from '@deephaven/golden-layout';
 import { assertNotNull } from '@deephaven/utils';
-import GoldenLayoutThemeExport from './GoldenLayoutThemeExport';
 import { DashboardLayoutConfig } from '../DashboardLayout';
 import { PanelConfig } from '../DashboardPlugin';
 
@@ -465,7 +468,7 @@ class LayoutUtils {
     replaceConfig?: Partial<ItemConfigType>;
     createNewStack?: boolean;
     focusElement?: string;
-    dragEvent?: DragEvent;
+    dragEvent?: DragSourceEvent;
   } = {}): void {
     // attempt to retain focus after dom manipulation, which can break focus
     const maintainFocusElement = document.activeElement;
@@ -475,7 +478,7 @@ class LayoutUtils {
       config.id = shortid.generate();
     }
 
-    if (dragEvent) {
+    if (dragEvent !== undefined) {
       root?.layoutManager.createDragSourceFromEvent(config, dragEvent);
       return;
     }
