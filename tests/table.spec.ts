@@ -32,6 +32,8 @@ async function changeCondFormatComparison(page: Page, condition: string) {
   const conditionSelect = page.locator('data-testid=condition-select');
   const highlightCell = page.getByRole('button', { name: 'Conditional' });
 
+  await expect(formattingRule).toHaveCount(1);
+  await expect(conditionSelect).toHaveCount(0);
   await expect(highlightCell).toHaveCount(0);
 
   await formattingRule.click();
@@ -58,6 +60,7 @@ async function changeCondFormatHighlight(page: Page) {
   const formattingRule = page.locator('.formatting-item');
   const highlightRow = page.getByRole('button', { name: 'Rows' });
 
+  await expect(formattingRule).toHaveCount(1);
   await expect(highlightRow).toHaveCount(0);
 
   await formattingRule.click();
