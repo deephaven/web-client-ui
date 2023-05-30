@@ -431,7 +431,7 @@ function ConditionEditor(props: ConditionEditorProps): JSX.Element {
     <div className="condition-editor mb-2">
       <select
         value={selectedCondition}
-        id="condition-select"
+        data-testid="condition-select"
         className="custom-select mb-2"
         onChange={handleConditionChange}
       >

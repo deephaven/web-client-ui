@@ -27,6 +27,44 @@ async function openSimpleTable(page: Page) {
   ).toHaveCount(0);
 }
 
+async function changeCondFormatComparison(page: Page, condition: string) {
+  const formattingRule = page.locator('.formatting-item');
+  const conditionSelect = page.locator('data-testid=condition-select');
+  const highlightCell = page.getByRole('button', { name: 'Conditional' });
+
+  await expect(highlightCell).toHaveCount(0);
+
+  await formattingRule.click();
+  await highlightCell.click();
+
+  await conditionSelect.selectOption(condition);
+  if (condition === 'is-between') {
+    const startInput = page.getByPlaceholder('Start value');
+    const endInput = page.getByPlaceholder('end value');
+
+    expect(startInput).toHaveCount(1);
+    expect(endInput).toHaveCount(1);
+
+    await startInput.click();
+    await page.keyboard.type('3');
+    await endInput.click();
+    await page.keyboard.type('10');
+  }
+
+  await page.getByRole('button', { name: 'Done' }).click();
+}
+
+async function changeCondFormatHighlight(page: Page) {
+  const formattingRule = page.locator('.formatting-item');
+  const highlightRow = page.getByRole('button', { name: 'Rows' });
+
+  await expect(highlightRow).toHaveCount(0);
+
+  await formattingRule.click();
+  await highlightRow.click();
+  await page.getByRole('button', { name: 'Done' }).click();
+}
+
 test('can open a simple table', async ({ page }) => {
   await page.goto('');
   await openSimpleTable(page);
@@ -96,12 +134,6 @@ column_header_group = column_header_group.layout_hints(column_groups=column_grou
 });
 test.describe('tests complex table operations', () => {
   let page: Page;
-  const delayForGridRender = 500;
-
-  // test.beforeAll(async ({ browser }) => {
-  //   page = await browser.newPage();
-  //   await page.goto('');
-  // });
 
   test.beforeEach(async ({ browser }) => {
     page = await browser.newPage();
@@ -127,10 +159,10 @@ test.describe('tests complex table operations', () => {
     );
 
     // Model is loaded, need to make sure table data is also loaded
-    // await expect(
-    //   page.locator('.iris-grid .iris-grid-loading-status')
-    // ).toHaveCount(0);
-    await page.waitForTimeout(delayForGridRender);
+    await expect(
+      page.locator('.iris-grid .iris-grid-loading-status')
+    ).toHaveCount(0);
+    // await page.waitForTimeout(delayForGridRender);
 
     const tableOperationsMenu = page.locator(
       'data-testid=btn-iris-grid-settings-button-table'
@@ -158,181 +190,89 @@ test.describe('tests complex table operations', () => {
     // Open Conditional Formatting Panel
     await page.locator('data-testid=menu-item-Conditional Formatting').click();
 
-    // Create New Formatting Rule
+    // Setup New Formatting Rule
     await page.getByRole('button', { name: 'Add New Rule' }).click();
+    await page.locator('.style-editor').click();
+    await page.getByRole('button', { name: 'Positive' }).click();
     await page.getByPlaceholder('Enter value').click();
     await page.keyboard.type('3');
-    await page.getByRole('button', { name: 'No formatting' }).click();
-    await page.getByRole('button', { name: 'Positive' }).click();
-
-    const conditionSelect = page.locator('#condition-select');
+    await page.getByRole('button', { name: 'Done' }).click();
 
     // Is Equal To
-    await page.getByRole('button', { name: 'Rows' }).click();
-    // await expect(
-    //   page.locator('.iris-grid .iris-grid-loading-status')
-    // ).toHaveCount(0);
-    await page.waitForTimeout(delayForGridRender);
-
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
-    await page.getByRole('button', { name: 'Conditional' }).click();
-    // await expect(
-    //   page.locator('.iris-grid .iris-grid-loading-status')
-    // ).toHaveCount(0);
-    await page.waitForTimeout(delayForGridRender);
+    await changeCondFormatHighlight(page);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
     // Is Not Equal To
-    await conditionSelect.selectOption('is-not-equal');
-
-    await page.getByRole('button', { name: 'Rows' }).click();
-    // await expect(
-    //   page.locator('.iris-grid .iris-grid-loading-status')
-    // ).toHaveCount(0);
-    await page.waitForTimeout(delayForGridRender);
+    await changeCondFormatComparison(page, 'is-not-equal');
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
-    await page.getByRole('button', { name: 'Conditional' }).click();
-    // await expect(
-    //   page.locator('.iris-grid .iris-grid-loading-status')
-    // ).toHaveCount(0);
-    await page.waitForTimeout(delayForGridRender);
+    await changeCondFormatHighlight(page);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
     // Greater Than
-    await conditionSelect.selectOption('greater-than');
-
-    await page.getByRole('button', { name: 'Rows' }).click();
-    // await expect(
-    //   page.locator('.iris-grid .iris-grid-loading-status')
-    // ).toHaveCount(0);
-    await page.waitForTimeout(delayForGridRender);
+    await changeCondFormatComparison(page, 'greater-than');
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
-    await page.getByRole('button', { name: 'Conditional' }).click();
-    // await expect(
-    //   page.locator('.iris-grid .iris-grid-loading-status')
-    // ).toHaveCount(0);
-    await page.waitForTimeout(delayForGridRender);
+    await changeCondFormatHighlight(page);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
     // Greater Than Or Equal To
-    await conditionSelect.selectOption('greater-than-or-equal');
-
-    await page.getByRole('button', { name: 'Rows' }).click();
-    // await expect(
-    //   page.locator('.iris-grid .iris-grid-loading-status')
-    // ).toHaveCount(0);
-    await page.waitForTimeout(delayForGridRender);
+    await changeCondFormatComparison(page, 'greater-than-or-equal');
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
-    await page.getByRole('button', { name: 'Conditional' }).click();
-    // await expect(
-    //   page.locator('.iris-grid .iris-grid-loading-status')
-    // ).toHaveCount(0);
-    await page.waitForTimeout(delayForGridRender);
+    await changeCondFormatHighlight(page);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
     // Less Than
-    await conditionSelect.selectOption('less-than');
-
-    await page.getByRole('button', { name: 'Rows' }).click();
-    // await expect(
-    //   page.locator('.iris-grid .iris-grid-loading-status')
-    // ).toHaveCount(0);
-    await page.waitForTimeout(delayForGridRender);
+    await changeCondFormatComparison(page, 'less-than');
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
-    await page.getByRole('button', { name: 'Conditional' }).click();
-    // await expect(
-    //   page.locator('.iris-grid .iris-grid-loading-status')
-    // ).toHaveCount(0);
-    await page.waitForTimeout(delayForGridRender);
+    await changeCondFormatHighlight(page);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
-    // Less Than Or Equal
-    await conditionSelect.selectOption('less-than-or-equal');
-
-    await page.getByRole('button', { name: 'Rows' }).click();
-    // await expect(
-    //   page.locator('.iris-grid .iris-grid-loading-status')
-    // ).toHaveCount(0);
-    await page.waitForTimeout(delayForGridRender);
+    // Less Than Or Equal To
+    await changeCondFormatComparison(page, 'less-than-or-equal');
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
-    await page.getByRole('button', { name: 'Conditional' }).click();
-    // await expect(
-    //   page.locator('.iris-grid .iris-grid-loading-status')
-    // ).toHaveCount(0);
-    await page.waitForTimeout(delayForGridRender);
+    await changeCondFormatHighlight(page);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
     // Between
-    await conditionSelect.selectOption('is-between');
-    await page.getByPlaceholder('Start value').click();
-    await page.keyboard.type('3');
-    await page.getByPlaceholder('end value').click();
-    await page.keyboard.type('10');
-
-    await page.getByRole('button', { name: 'Rows' }).click();
-    // await expect(
-    //   page.locator('.iris-grid .iris-grid-loading-status')
-    // ).toHaveCount(0);
-    await page.waitForTimeout(delayForGridRender);
+    await changeCondFormatComparison(page, 'is-between');
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
-    await page.getByRole('button', { name: 'Conditional' }).click();
-    // await expect(
-    //   page.locator('.iris-grid .iris-grid-loading-status')
-    // ).toHaveCount(0);
-    await page.waitForTimeout(delayForGridRender);
+    await changeCondFormatHighlight(page);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
     // Null
-    await conditionSelect.selectOption('is-null');
-
-    await page.getByRole('button', { name: 'Rows' }).click();
-    // await expect(
-    //   page.locator('.iris-grid .iris-grid-loading-status')
-    // ).toHaveCount(0);
-    await page.waitForTimeout(delayForGridRender);
+    await changeCondFormatComparison(page, 'is-null');
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
-    await page.getByRole('button', { name: 'Conditional' }).click();
-    // await expect(
-    //   page.locator('.iris-grid .iris-grid-loading-status')
-    // ).toHaveCount(0);
-    await page.waitForTimeout(delayForGridRender);
+    await changeCondFormatHighlight(page);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
     // Not Null
-    await conditionSelect.selectOption('is-not-null');
-    await page.getByRole('button', { name: 'Rows' }).click();
-    // await expect(
-    //   page.locator('.iris-grid .iris-grid-loading-status')
-    // ).toHaveCount(0);
-    await page.waitForTimeout(delayForGridRender);
+    await changeCondFormatComparison(page, 'is-not-null');
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
-    await page.getByRole('button', { name: 'Conditional' }).click();
-    // await expect(
-    //   page.locator('.iris-grid .iris-grid-loading-status')
-    // ).toHaveCount(0);
-    await page.waitForTimeout(delayForGridRender);
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-
-    // Delete
-    await page.getByRole('button', { name: 'Done' }).click();
-    await page.getByRole('button', { name: 'Delete rule' }).click();
-
+    await changeCondFormatHighlight(page);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
     // Cancel
-    await page.getByRole('button', { name: 'Add New Rule' }).click();
-    await page.locator('#condition-select').first().selectOption('is-not-null');
+    const formattingRule = page.locator('.formatting-item');
+    const conditionSelect = page.locator('data-testid=condition-select');
 
-    await page.getByRole('button', { name: 'Cancel' }).click();
+    await expect(conditionSelect).toHaveCount(0);
+
+    await formattingRule.click();
+    await conditionSelect.selectOption('is-null');
+    await page.getByRole('button', { name: 'Cancel' }).first().click();
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    // Delete
+    await page.getByRole('button', { name: 'Delete rule' }).click();
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });
 
