@@ -313,6 +313,58 @@ test.describe('tests complex table operations', () => {
       await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
     });
   });
+
+  test('can search', async ({ page }) => {
+    await page.goto('');
+    const consoleInput = page.locator('.console-input');
+    await consoleInput.click();
+
+    const command = `${makeTableCommand(
+      undefined,
+      TableTypes.StringAndNumber
+    )}`;
+
+    await pasteInMonaco(consoleInput, command);
+    await page.keyboard.press('Enter');
+
+    // Wait for the panel to show
+    await expect(page.locator('.iris-grid-panel')).toHaveCount(1);
+
+    // Wait until it's done loading
+    await expect(page.locator('.iris-grid-panel .loading-spinner')).toHaveCount(
+      0
+    );
+
+    // Model is loaded, need to make sure table data is also loaded
+    await expect(
+      page.locator('.iris-grid .iris-grid-loading-status')
+    ).toHaveCount(0);
+
+    const tableOperationsMenu = page.locator(
+      'data-testid=btn-iris-grid-settings-button-table'
+    );
+    await tableOperationsMenu.click();
+
+    await expect(page.locator('.table-sidebar')).toHaveCount(1);
+
+    // open Search Bar panel
+    await page.locator('data-testid=menu-item-Search Bar').click();
+
+    const searchBar = page.getByPlaceholder('Search Data...');
+    await expect(searchBar).toHaveCount(1);
+
+    await searchBar.click();
+    await page.keyboard.type('C');
+    // await pasteInMonaco(searchBar, 'Creating');
+
+    // Check snapshot
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    await page.keyboard.press('Backspace');
+
+    // Check snapshot
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  });
 });
 
 test.describe('tests simple table operations', () => {

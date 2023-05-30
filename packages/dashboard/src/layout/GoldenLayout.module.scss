@@ -1,9 +1,0 @@
-@import '@deephaven/components/scss/custom.scss';
-@import './GoldenLayout.scss';
-
-// Exported variables for use in GoldenLayoutThemeExport.js
-/* stylelint-disable property-no-unknown */
-:export {
-  tab-height: $tab-height;
-  drag-border-width: $drag-border-width;
-}
