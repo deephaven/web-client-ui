@@ -11,7 +11,7 @@ const PanelPlaceholder = React.forwardRef(
     const component = LayoutUtils.getComponentNameFromPanel({ props });
     return (
       <div ref={ref} className="panel-placeholder">
-        <div>Component &quot;{component}&quot; is not registered.</div>
+        Component &quot;{component}&quot; is not registered.
       </div>
     );
   }

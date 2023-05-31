@@ -43,8 +43,6 @@ export type ComponentConstructor<
   new (container: ItemContainer<C>, state: unknown): unknown;
 };
 
-export type DragSourceEvent = JQuery.TriggeredEvent;
-
 /**
  * The main class that will be exposed as GoldenLayout.
  *
