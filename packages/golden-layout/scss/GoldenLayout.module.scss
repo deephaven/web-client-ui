@@ -1,0 +1,8 @@
+@use './goldenlayout-dark-theme.scss' as theme;
+
+// Exported variables for use in GoldenLayoutThemeExport.js
+/* stylelint-disable property-no-unknown */
+:export {
+  tab-height: theme.$tab-height;
+  drag-border-width: theme.$drag-border-width;
+}
