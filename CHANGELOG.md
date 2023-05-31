@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.40.2](https://github.com/deephaven/web-client-ui/compare/v0.40.1...v0.40.2) (2023-05-31)
+
+### Bug Fixes
+
+- disable screenshot tests in debug mode ([#1328](https://github.com/deephaven/web-client-ui/issues/1328)) ([cbe8f72](https://github.com/deephaven/web-client-ui/commit/cbe8f72267a270c41dcb7fd241e6da424fade296)), closes [#1327](https://github.com/deephaven/web-client-ui/issues/1327)
+- failing linter test from de-globalize PR ([#1321](https://github.com/deephaven/web-client-ui/issues/1321)) ([6ae174c](https://github.com/deephaven/web-client-ui/commit/6ae174c9b6ae222abc515f09d609747976d9d6d6))
+- notebook panel unsaved indicator not showing after dragging a panel ([#1325](https://github.com/deephaven/web-client-ui/issues/1325)) ([99818a8](https://github.com/deephaven/web-client-ui/commit/99818a8ee4b505da7708914105a4197abdc502d8))
+- truncated column headers ([#1319](https://github.com/deephaven/web-client-ui/issues/1319)) ([db7716e](https://github.com/deephaven/web-client-ui/commit/db7716ebe953611ab4b4eec781e2e03204380ebd)), closes [#1318](https://github.com/deephaven/web-client-ui/issues/1318)
+- Worker plugin definitions, optional panel wrapper for Dashboards ([#1329](https://github.com/deephaven/web-client-ui/issues/1329)) ([c32ffbc](https://github.com/deephaven/web-client-ui/commit/c32ffbcf66826c4e2da3ac82e5b5086524d05ec8))
+
 ## [0.40.1](https://github.com/deephaven/web-client-ui/compare/v0.40.0...v0.40.1) (2023-05-24)
 
 ### Bug Fixes
