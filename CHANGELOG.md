@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.40.3](https://github.com/deephaven/web-client-ui/compare/v0.40.2...v0.40.3) (2023-05-31)
+
+### Bug Fixes
+
+- today/yesterday keywords failed on last/first day of month ([#1336](https://github.com/deephaven/web-client-ui/issues/1336)) ([4c3fe24](https://github.com/deephaven/web-client-ui/commit/4c3fe24c083a827b0d8ec57219a0083c84bb894c)), closes [#1335](https://github.com/deephaven/web-client-ui/issues/1335)
+
+### Reverts
+
+- "refactor: Clean up golden-layout css ([#1322](https://github.com/deephaven/web-client-ui/issues/1322))" ([#1334](https://github.com/deephaven/web-client-ui/issues/1334)) ([2f7928a](https://github.com/deephaven/web-client-ui/commit/2f7928a67e14f2026aef73cee542045ce7477351))
+
 ## [0.40.2](https://github.com/deephaven/web-client-ui/compare/v0.40.1...v0.40.2) (2023-05-31)
 
 ### Bug Fixes
