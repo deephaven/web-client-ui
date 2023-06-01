@@ -2459,12 +2459,17 @@ describe('makeValue', () => {
       now.getMonth(),
       now.getDate()
     );
-    const yesterdayDate = DateUtils.makeDateWrapper(
-      dh,
-      'America/New_York',
+    const yesterday = new Date(
       now.getFullYear(),
       now.getMonth(),
       now.getDate() - 1
+    );
+    const yesterdayDate = DateUtils.makeDateWrapper(
+      dh,
+      'America/New_York',
+      yesterday.getFullYear(),
+      yesterday.getMonth(),
+      yesterday.getDate()
     );
     testMakeValue(
       'io.deephaven.db.tables.utils.DBDateTime',
