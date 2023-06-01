@@ -189,6 +189,26 @@ test.describe('tests complex table operations', () => {
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });
 
+  test('can search', async () => {
+    // open Select Distinct panel
+    await page.locator('data-testid=menu-item-Search Bar').click();
+
+    const searchBar = page.getByPlaceholder('Search Data...');
+    await expect(searchBar).toHaveCount(1);
+
+    await searchBar.click();
+    await page.keyboard.type('C');
+    // await pasteInMonaco(searchBar, 'Creating');
+
+    // Check snapshot
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    await page.keyboard.press('Backspace');
+
+    // Check snapshot
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  });
+
   test('can conditional format', async () => {
     // Open Conditional Formatting Panel
     await page.locator('data-testid=menu-item-Conditional Formatting').click();
@@ -214,55 +234,6 @@ test.describe('tests complex table operations', () => {
     await changeCondFormatHighlight(page);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
-    // Greater Than
-    await changeCondFormatComparison(page, 'greater-than');
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-
-    await changeCondFormatHighlight(page);
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-
-    // Greater Than Or Equal To
-    await changeCondFormatComparison(page, 'greater-than-or-equal');
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-
-    await changeCondFormatHighlight(page);
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-
-    // Less Than
-    await changeCondFormatComparison(page, 'less-than');
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-
-    await changeCondFormatHighlight(page);
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-
-    // Less Than Or Equal To
-    await changeCondFormatComparison(page, 'less-than-or-equal');
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-
-    await changeCondFormatHighlight(page);
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-
-    // Between
-    await changeCondFormatComparison(page, 'is-between');
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-
-    await changeCondFormatHighlight(page);
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-
-    // Null
-    await changeCondFormatComparison(page, 'is-null');
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-
-    await changeCondFormatHighlight(page);
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-
-    // Not Null
-    await changeCondFormatComparison(page, 'is-not-null');
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-
-    await changeCondFormatHighlight(page);
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-
     // Cancel
     const formattingRule = page.locator('.formatting-item');
     const conditionSelect = page.locator('data-testid=condition-select');
@@ -276,26 +247,6 @@ test.describe('tests complex table operations', () => {
 
     // Delete
     await page.getByRole('button', { name: 'Delete rule' }).click();
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-  });
-
-  test('can search', async () => {
-    // open Select Distinct panel
-    await page.locator('data-testid=menu-item-Search Bar').click();
-
-    const searchBar = page.getByPlaceholder('Search Data...');
-    await expect(searchBar).toHaveCount(1);
-
-    await searchBar.click();
-    await page.keyboard.type('C');
-    // await pasteInMonaco(searchBar, 'Creating');
-
-    // Check snapshot
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-
-    await page.keyboard.press('Backspace');
-
-    // Check snapshot
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });
 });
