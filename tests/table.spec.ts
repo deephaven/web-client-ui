@@ -95,15 +95,16 @@ column_header_group = column_header_group.layout_hints(column_groups=column_grou
   await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
 });
 test.describe('tests complex table operations', () => {
-  test('can select distinct values', async ({ page }) => {
+  let page: Page;
+
+  test.beforeEach(async ({ browser }) => {
+    page = await browser.newPage();
     await page.goto('');
+
     const consoleInput = page.locator('.console-input');
     await consoleInput.click();
 
-    const command = `${makeTableCommand(
-      undefined,
-      TableTypes.StringAndNumber
-    )}`;
+    const command = `${makeTableCommand(undefined, TableTypes.ManyColumns)}`;
 
     await pasteInMonaco(consoleInput, command);
     await page.keyboard.press('Enter');
@@ -120,6 +121,7 @@ test.describe('tests complex table operations', () => {
     await expect(
       page.locator('.iris-grid .iris-grid-loading-status')
     ).toHaveCount(0);
+    // await page.waitForTimeout(delayForGridRender);
 
     const tableOperationsMenu = page.locator(
       'data-testid=btn-iris-grid-settings-button-table'
@@ -128,61 +130,105 @@ test.describe('tests complex table operations', () => {
 
     // Wait for Table Options menu to show
     await expect(page.locator('.table-sidebar')).toHaveCount(1);
+  });
 
+  test('can select distinct values', async () => {
     // open Select Distinct panel
     await page.locator('data-testid=menu-item-Select Distinct Values').click();
 
     const columnSelect = page.getByRole('combobox');
     await expect(columnSelect).toHaveCount(1);
 
-    await columnSelect.selectOption('Strings');
+    await columnSelect.selectOption('String');
 
     // Check snapshot
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });
 
-  test('can organize columns', async ({ page }) => {
-    await page.goto('');
-    const consoleInput = page.locator('.console-input');
-    await consoleInput.click();
+  test('can search', async () => {
+    // open Search Bar panel
+    await page.locator('data-testid=menu-item-Search Bar').click();
 
-    const command = `${makeTableCommand(
-      undefined,
-      TableTypes.StringAndNumber
-    )}`;
+    const searchBar = page.getByPlaceholder('Search Data...');
+    await expect(searchBar).toHaveCount(1);
 
-    await pasteInMonaco(consoleInput, command);
-    await page.keyboard.press('Enter');
-
-    // Wait for the panel to show
-    await expect(page.locator('.iris-grid-panel')).toHaveCount(1);
+    await searchBar.click();
+    await page.keyboard.type('2');
 
     // Wait until it's done loading
-    await expect(page.locator('.iris-grid-panel .loading-spinner')).toHaveCount(
-      0
-    );
-
-    // Model is loaded, need to make sure table data is also loaded
     await expect(
       page.locator('.iris-grid .iris-grid-loading-status')
     ).toHaveCount(0);
 
-    const tableOperationsMenu = page.locator(
-      'data-testid=btn-iris-grid-settings-button-table'
-    );
-    await tableOperationsMenu.click();
+    await expect(searchBar).toHaveValue('2');
 
-    await expect(page.locator('.table-sidebar')).toHaveCount(1);
+    // Check snapshot
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
+    // Clear search query
+    await page.keyboard.press('Backspace');
+
+    await expect(searchBar).toHaveValue('');
+
+    // Wait until it's done loading
+    await expect(
+      page.locator('.iris-grid .iris-grid-loading-status')
+    ).toHaveCount(0);
+
+    // Check snapshot
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  });
+
+  test('can organize columns', async () => {
     await page.locator('data-testid=menu-item-Organize Columns').click();
 
     await test.step('Search', async () => {
       await page.getByPlaceholder('Search').click();
-      await page.keyboard.type('d');
+      await page.keyboard.type('dou');
 
       await expect(
         page.locator('.visibility-ordering-builder')
       ).toHaveScreenshot();
+    });
+
+    await test.step('Move Selection Down', async () => {
+      await page
+        .getByRole('button', { name: 'Move selection down' })
+        .click({ clickCount: 2 });
+
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
+
+    await test.step('Move Selection Up', async () => {
+      await page.getByRole('button', { name: 'Move selection up' }).click();
+
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
+
+    await test.step('Move Selection to Bottom', async () => {
+      await page
+        .getByRole('button', { name: 'Move selection to bottom' })
+        .click();
+
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
+
+    await test.step('Move Selection to Top', async () => {
+      await page.getByRole('button', { name: 'Move selection to top' }).click();
+
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
+
+    await test.step('Sort Descending', async () => {
+      await page.getByRole('button', { name: 'Sort descending' }).click();
+
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
+
+    await test.step('Sort Ascending', async () => {
+      await page.getByRole('button', { name: 'Sort ascending' }).click();
+
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
     });
 
     await test.step('Hide Selected', async () => {
@@ -191,94 +237,50 @@ test.describe('tests complex table operations', () => {
       await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
     });
 
-    await test.step('Move Selection Down', async () => {
-      await page.getByRole('button', { name: 'Move selection down' }).click();
-
-      await expect(
-        page.locator('.visibility-ordering-builder')
-      ).toHaveScreenshot();
-    });
-
-    await test.step('Move Selection Up', async () => {
-      await page.getByRole('button', { name: 'Move selection up' }).click();
-
-      await expect(
-        page.locator('.visibility-ordering-builder')
-      ).toHaveScreenshot();
-    });
-
-    await test.step('Move Selection to Bottom', async () => {
-      await page
-        .getByRole('button', { name: 'Move selection to bottom' })
-        .click();
-
-      await expect(
-        page.locator('.visibility-ordering-builder')
-      ).toHaveScreenshot();
-    });
-
-    await test.step('Move Selection to Top', async () => {
-      await page.getByRole('button', { name: 'Move selection to top' }).click();
-
-      await expect(
-        page.locator('.visibility-ordering-builder')
-      ).toHaveScreenshot();
-    });
-
-    await test.step('Sort Descending', async () => {
-      await page.getByRole('button', { name: 'Sort descending' }).click();
-
-      await expect(
-        page.locator('.visibility-ordering-builder')
-      ).toHaveScreenshot();
-    });
-
-    await test.step('Sort Ascending', async () => {
-      await page.getByRole('button', { name: 'Sort ascending' }).click();
-
-      await expect(
-        page.locator('.visibility-ordering-builder')
-      ).toHaveScreenshot();
-    });
-
     await test.step('Reset', async () => {
       await page.getByRole('button', { name: 'Reset' }).click();
 
       await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-      await expect(
-        page.locator('.visibility-ordering-builder')
-      ).toHaveScreenshot();
     });
 
-    // TO DO: Mimic drag function
-    // Note; Playwright dragTo function and mouse.down() + mouse.move() don't work as expected
-    // await test.step('Drag', async () => {
-    //   const columnOpt = page.getByRole('button', {
-    //     name: 'Toggle visibility Strings',
-    //   });
-    //   const panelAbove = page.locator('.item-list-scroll-pane');
+    await test.step('Drag', async () => {
+      const dragColumnButton = page.getByRole('button', {
+        name: 'Toggle visibility Float',
+      });
+      const [x, y] = await dragColumnButton
+        .boundingBox()
+        .then(pos => (pos && pos.x && pos.y ? [pos.x, pos.y - 50] : [0, 0]));
+      await dragColumnButton.hover();
+      await page.mouse.down();
+      await page.mouse.move(x, y, { steps: 500 });
+      await page.mouse.up();
 
-    //   await columnOpt.dragTo(panelAbove);
-
-    //   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-    //   await expect(
-    //     page.locator('.visibility-ordering-builder')
-    //   ).toHaveScreenshot();
-    // });
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
 
     await test.step('Create Group', async () => {
       await page
-        .getByRole('button', { name: 'Toggle visibility Doubles' })
+        .getByRole('button', { name: 'Toggle visibility String' })
         .click();
       await page.getByRole('button', { name: 'Group' }).click();
       await page.getByPlaceholder('Group Name').click();
       await page.keyboard.type('test');
       await page.keyboard.press('Enter');
 
+      const dragColumnButton = page.getByRole('button', {
+        name: 'Toggle visibility Long',
+      });
+      const [x, y] = await dragColumnButton
+        .boundingBox()
+        .then(pos =>
+          pos && pos.x && pos.y ? [pos.x + 200, pos.y - 75] : [0, 0]
+        );
+      await dragColumnButton.hover();
+      await page.mouse.down();
+      await page.mouse.move(x, y, { steps: 500 });
+      await page.mouse.up();
+
       await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-      await expect(
-        page.locator('.visibility-ordering-builder')
-      ).toHaveScreenshot();
 
       // Edit Group Name
       await page.getByRole('button', { name: 'Edit', exact: true }).click();
@@ -286,9 +288,6 @@ test.describe('tests complex table operations', () => {
       await page.keyboard.press('Enter');
 
       await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-      await expect(
-        page.locator('.visibility-ordering-builder')
-      ).toHaveScreenshot();
 
       // Delete Group
       await page
@@ -296,74 +295,16 @@ test.describe('tests complex table operations', () => {
         .click();
 
       await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-      await expect(
-        page.locator('.visibility-ordering-builder')
-      ).toHaveScreenshot();
-
-      // TO DO: Select Color Option
-      // Note: page.getBy functions can't navigate to one of the color options
     });
 
     await test.step('Toggle Visibility', async () => {
       await page
-        .getByRole('button', { name: 'Toggle visibility Doubles' })
+        .getByRole('button', { name: 'Toggle visibility Double' })
         .getByRole('button', { name: 'Toggle visibility' })
         .click();
 
       await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
     });
-  });
-
-  test('can search', async ({ page }) => {
-    await page.goto('');
-    const consoleInput = page.locator('.console-input');
-    await consoleInput.click();
-
-    const command = `${makeTableCommand(
-      undefined,
-      TableTypes.StringAndNumber
-    )}`;
-
-    await pasteInMonaco(consoleInput, command);
-    await page.keyboard.press('Enter');
-
-    // Wait for the panel to show
-    await expect(page.locator('.iris-grid-panel')).toHaveCount(1);
-
-    // Wait until it's done loading
-    await expect(page.locator('.iris-grid-panel .loading-spinner')).toHaveCount(
-      0
-    );
-
-    // Model is loaded, need to make sure table data is also loaded
-    await expect(
-      page.locator('.iris-grid .iris-grid-loading-status')
-    ).toHaveCount(0);
-
-    const tableOperationsMenu = page.locator(
-      'data-testid=btn-iris-grid-settings-button-table'
-    );
-    await tableOperationsMenu.click();
-
-    await expect(page.locator('.table-sidebar')).toHaveCount(1);
-
-    // open Search Bar panel
-    await page.locator('data-testid=menu-item-Search Bar').click();
-
-    const searchBar = page.getByPlaceholder('Search Data...');
-    await expect(searchBar).toHaveCount(1);
-
-    await searchBar.click();
-    await page.keyboard.type('C');
-    // await pasteInMonaco(searchBar, 'Creating');
-
-    // Check snapshot
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-
-    await page.keyboard.press('Backspace');
-
-    // Check snapshot
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });
 });
 
