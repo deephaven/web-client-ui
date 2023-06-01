@@ -104,10 +104,7 @@ test.describe('tests complex table operations', () => {
     const consoleInput = page.locator('.console-input');
     await consoleInput.click();
 
-    const command = `${makeTableCommand(
-      undefined,
-      TableTypes.StringAndNumber
-    )}`;
+    const command = `${makeTableCommand(undefined, TableTypes.ManyColumns)}`;
 
     await pasteInMonaco(consoleInput, command);
     await page.keyboard.press('Enter');
@@ -142,7 +139,7 @@ test.describe('tests complex table operations', () => {
     const columnSelect = page.getByRole('combobox');
     await expect(columnSelect).toHaveCount(1);
 
-    await columnSelect.selectOption('Strings');
+    await columnSelect.selectOption('String');
 
     // Check snapshot
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
@@ -156,14 +153,14 @@ test.describe('tests complex table operations', () => {
     await expect(searchBar).toHaveCount(1);
 
     await searchBar.click();
-    await page.keyboard.type('C');
+    await page.keyboard.type('2');
 
     // Wait until it's done loading
     await expect(
       page.locator('.iris-grid .iris-grid-loading-status')
     ).toHaveCount(0);
 
-    await expect(searchBar).toHaveValue('C');
+    await expect(searchBar).toHaveValue('2');
 
     // Check snapshot
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
@@ -179,6 +176,92 @@ test.describe('tests complex table operations', () => {
     ).toHaveCount(0);
 
     // Check snapshot
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  });
+
+  test('can custom column', async () => {
+    // open Custom Columns panel
+    await page.locator('data-testid=menu-item-Custom Columns').click();
+
+    // Create 1st Custom Column
+    const columnName = page.getByPlaceholder('Column Name');
+    await expect(columnName).toHaveCount(1);
+    await columnName.click();
+    await page.keyboard.type('Test');
+
+    const columnFormula = page
+      .getByTestId('custom-column-formula')
+      .getByRole('textbox', {
+        name: 'Editor content;Press Alt+F1 for Accessibility Options.',
+      });
+    await expect(columnFormula).toHaveCount(1);
+    await columnFormula.fill('Double * 2');
+
+    // Create 2nd Custom Column from 1st
+    const addColumnButton = page.getByRole('button', {
+      name: 'Add Another Column',
+    });
+    await addColumnButton.click();
+
+    const newColumnName = page.getByPlaceholder('Column Name').nth(1);
+    await newColumnName.click();
+    await page.keyboard.type('Test2');
+
+    const newColumnFormula = page
+      .getByTestId('custom-column-formula')
+      .getByRole('textbox')
+      .nth(1);
+    await newColumnFormula.fill('Test * 2');
+
+    const saveButton = page.getByRole('button', { name: 'Save Column' });
+    await saveButton.click();
+
+    await expect(
+      page.locator('.iris-grid .iris-grid-loading-status')
+    ).toHaveCount(0);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    // Drag
+    await addColumnButton.click();
+
+    const dragColumn = page.getByPlaceholder('Column Name').nth(2);
+    await dragColumn.click();
+    await page.keyboard.type('Drag');
+
+    const dragColumnFormula = page
+      .getByTestId('custom-column-formula')
+      .getByRole('textbox')
+      .nth(2);
+    await dragColumnFormula.fill('String');
+
+    const reorderButton = page
+      .getByRole('button', { name: 'Drag column to re-order' })
+      .nth(2);
+    const [x, y] = await reorderButton
+      .boundingBox()
+      .then(pos => (pos && pos.x && pos.y ? [pos.x, pos.y - 100] : [0, 0]));
+    await reorderButton.hover();
+    await page.mouse.down();
+    await page.mouse.move(x, y, { steps: 500 });
+    await page.mouse.up();
+
+    await saveButton.click();
+
+    await expect(
+      page.locator('.iris-grid .iris-grid-loading-status')
+    ).toHaveCount(0);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    // Delete
+    const deleteLastColumnButton = page
+      .getByRole('button', { name: 'Delete custom column' })
+      .nth(1);
+    await deleteLastColumnButton.click();
+    await saveButton.click();
+
+    await expect(
+      page.locator('.iris-grid .iris-grid-loading-status')
+    ).toHaveCount(0);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });
 });
