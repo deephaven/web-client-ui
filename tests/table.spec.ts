@@ -145,10 +145,7 @@ test.describe('tests complex table operations', () => {
     const consoleInput = page.locator('.console-input');
     await consoleInput.click();
 
-    const command = `${makeTableCommand(
-      undefined,
-      TableTypes.StringAndNumber
-    )}`;
+    const command = `${makeTableCommand(undefined, TableTypes.ManyColumns)}`;
 
     await pasteInMonaco(consoleInput, command);
     await page.keyboard.press('Enter');
@@ -183,27 +180,41 @@ test.describe('tests complex table operations', () => {
     const columnSelect = page.getByRole('combobox');
     await expect(columnSelect).toHaveCount(1);
 
-    await columnSelect.selectOption('Strings');
+    await columnSelect.selectOption('String');
 
     // Check snapshot
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });
 
   test('can search', async () => {
-    // open Select Distinct panel
+    // open Search Bar panel
     await page.locator('data-testid=menu-item-Search Bar').click();
 
     const searchBar = page.getByPlaceholder('Search Data...');
     await expect(searchBar).toHaveCount(1);
 
     await searchBar.click();
-    await page.keyboard.type('C');
-    // await pasteInMonaco(searchBar, 'Creating');
+    await page.keyboard.type('2');
+
+    // Wait until it's done loading
+    await expect(
+      page.locator('.iris-grid .iris-grid-loading-status')
+    ).toHaveCount(0);
+
+    await expect(searchBar).toHaveValue('2');
 
     // Check snapshot
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
+    // Clear search query
     await page.keyboard.press('Backspace');
+
+    await expect(searchBar).toHaveValue('');
+
+    // Wait until it's done loading
+    await expect(
+      page.locator('.iris-grid .iris-grid-loading-status')
+    ).toHaveCount(0);
 
     // Check snapshot
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();

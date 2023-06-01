@@ -2287,6 +2287,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     invertSearchColumns: boolean
   ): void {
     const { model } = this.props;
+    this.startLoading('Updating search filter');
 
     this.updateSearchFilter(
       searchValue,
@@ -2318,6 +2319,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         invertSearchColumns
       );
       this.setState({ searchFilter });
+      this.stopLoading();
     },
     SET_FILTER_DEBOUNCE
   );
