@@ -31,30 +31,25 @@ async function changeCondFormatComparison(page: Page, condition: string) {
   const formattingRule = page.locator('.formatting-item');
   const conditionSelect = page.locator('data-testid=condition-select');
   const highlightCell = page.getByRole('button', { name: 'Conditional' });
+  const doneButton = page.getByRole('button', { name: 'Done' });
 
   await expect(formattingRule).toHaveCount(1);
   await expect(conditionSelect).toHaveCount(0);
   await expect(highlightCell).toHaveCount(0);
 
   await formattingRule.click();
+
+  await expect(formattingRule).toHaveCount(0);
+  await expect(conditionSelect).toHaveCount(1);
+  await expect(highlightCell).toHaveCount(1);
+
   await highlightCell.click();
-
   await conditionSelect.selectOption(condition);
-  if (condition === 'is-between') {
-    const startInput = page.getByPlaceholder('Start value');
-    const endInput = page.getByPlaceholder('end value');
+  await doneButton.click();
 
-    expect(startInput).toHaveCount(1);
-    expect(endInput).toHaveCount(1);
-
-    await startInput.click();
-    await page.keyboard.type('3');
-    await endInput.click();
-    await page.keyboard.type('10');
-  }
-
-  await page.getByRole('button', { name: 'Done' }).click();
-
+  await expect(formattingRule).toHaveCount(1);
+  await expect(conditionSelect).toHaveCount(0);
+  await expect(highlightCell).toHaveCount(0);
   await expect(
     page.locator('.iris-grid .iris-grid-loading-status')
   ).toHaveCount(0);
@@ -63,14 +58,23 @@ async function changeCondFormatComparison(page: Page, condition: string) {
 async function changeCondFormatHighlight(page: Page) {
   const formattingRule = page.locator('.formatting-item');
   const highlightRow = page.getByRole('button', { name: 'Rows' });
+  const doneButton = page.getByRole('button', { name: 'Done' });
 
   await expect(formattingRule).toHaveCount(1);
   await expect(highlightRow).toHaveCount(0);
+  await expect(doneButton).toHaveCount(0);
 
   await formattingRule.click();
-  await highlightRow.click();
-  await page.getByRole('button', { name: 'Done' }).click();
 
+  await expect(highlightRow).toHaveCount(1);
+  await expect(doneButton).toHaveCount(1);
+
+  await highlightRow.click();
+  await doneButton.click();
+
+  await expect(formattingRule).toHaveCount(1);
+  await expect(highlightRow).toHaveCount(0);
+  await expect(doneButton).toHaveCount(0);
   await expect(
     page.locator('.iris-grid .iris-grid-loading-status')
   ).toHaveCount(0);
@@ -261,10 +265,18 @@ test.describe('tests complex table operations', () => {
     await formattingRule.click();
     await conditionSelect.selectOption('is-null');
     await page.getByRole('button', { name: 'Cancel' }).first().click();
+
+    await expect(
+      page.locator('.iris-grid .iris-grid-loading-status')
+    ).toHaveCount(0);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
     // Delete
     await page.getByRole('button', { name: 'Delete rule' }).click();
+
+    await expect(
+      page.locator('.iris-grid .iris-grid-loading-status')
+    ).toHaveCount(0);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });
 });
