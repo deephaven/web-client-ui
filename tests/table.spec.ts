@@ -54,6 +54,10 @@ async function changeCondFormatComparison(page: Page, condition: string) {
   }
 
   await page.getByRole('button', { name: 'Done' }).click();
+
+  await expect(
+    page.locator('.iris-grid .iris-grid-loading-status')
+  ).toHaveCount(0);
 }
 
 async function changeCondFormatHighlight(page: Page) {
@@ -66,6 +70,10 @@ async function changeCondFormatHighlight(page: Page) {
   await formattingRule.click();
   await highlightRow.click();
   await page.getByRole('button', { name: 'Done' }).click();
+
+  await expect(
+    page.locator('.iris-grid .iris-grid-loading-status')
+  ).toHaveCount(0);
 }
 
 test('can open a simple table', async ({ page }) => {
@@ -228,18 +236,17 @@ test.describe('tests complex table operations', () => {
     await page.getByRole('button', { name: 'Add New Rule' }).click();
     await page.locator('.style-editor').click();
     await page.getByRole('button', { name: 'Positive' }).click();
-    await page.getByPlaceholder('Enter value').click();
-    await page.keyboard.type('3');
     await page.getByRole('button', { name: 'Done' }).click();
 
-    // Is Equal To
+    // Is Null
+    await changeCondFormatComparison(page, 'is-null');
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
     await changeCondFormatHighlight(page);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
-    // Is Not Equal To
-    await changeCondFormatComparison(page, 'is-not-equal');
+    // Is Not Null
+    await changeCondFormatComparison(page, 'is-not-null');
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
     await changeCondFormatHighlight(page);
