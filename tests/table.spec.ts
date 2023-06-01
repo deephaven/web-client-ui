@@ -189,13 +189,10 @@ test.describe('tests complex table operations', () => {
     await columnName.click();
     await page.keyboard.type('Test');
 
-    const columnFormula = page
-      .getByTestId('custom-column-formula')
-      .getByRole('textbox', {
-        name: 'Editor content;Press Alt+F1 for Accessibility Options.',
-      });
+    const columnFormula = page.locator('.editor-container');
     await expect(columnFormula).toHaveCount(1);
-    await columnFormula.fill('Double * 2');
+    await columnFormula.click({ force: true });
+    await page.keyboard.type('Double * 2');
 
     // Create 2nd Custom Column from 1st
     const addColumnButton = page.getByRole('button', {
@@ -207,11 +204,9 @@ test.describe('tests complex table operations', () => {
     await newColumnName.click();
     await page.keyboard.type('Test2');
 
-    const newColumnFormula = page
-      .getByTestId('custom-column-formula')
-      .getByRole('textbox')
-      .nth(1);
-    await newColumnFormula.fill('Test * 2');
+    const newColumnFormula = page.locator('.editor-container').nth(1);
+    await newColumnFormula.click();
+    await page.keyboard.type('Test * 2');
 
     const saveButton = page.getByRole('button', { name: 'Save Column' });
     await saveButton.click();
@@ -228,11 +223,9 @@ test.describe('tests complex table operations', () => {
     await dragColumn.click();
     await page.keyboard.type('Drag');
 
-    const dragColumnFormula = page
-      .getByTestId('custom-column-formula')
-      .getByRole('textbox')
-      .nth(2);
-    await dragColumnFormula.fill('String');
+    const dragColumnFormula = page.locator('.editor-container').nth(2);
+    await dragColumnFormula.click();
+    await page.keyboard.type('String');
 
     const reorderButton = page
       .getByRole('button', { name: 'Drag column to re-order' })
