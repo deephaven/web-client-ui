@@ -16,6 +16,14 @@ export interface PluginModule {}
 
 export type PluginModuleMap = Map<string, PluginModule>;
 
+export type PluginManifestPluginInfo = {
+  name: string;
+  main: string;
+  version: string;
+};
+
+export type PluginManifest = { plugins: PluginManifestPluginInfo[] };
+
 /**
  * Load a component plugin from the server.
  * @param baseURL Base URL of the plugin server
@@ -53,7 +61,9 @@ export function loadComponentPlugin(
  * @param pluginUrl The URL of the plugin to load
  * @returns The loaded module
  */
-export async function loadModulePlugin(pluginUrl: string): Promise<unknown> {
+export async function loadModulePlugin(
+  pluginUrl: string
+): Promise<PluginModule> {
   const myModule = await loadRemoteModule(pluginUrl);
   return myModule;
 }
@@ -63,9 +73,7 @@ export async function loadModulePlugin(pluginUrl: string): Promise<unknown> {
  * @param jsonUrl The URL of the JSON file to load
  * @returns The JSON object of the manifest file
  */
-export async function loadJson(
-  jsonUrl: string
-): Promise<{ plugins: { name: string; main: string }[] }> {
+export async function loadJson(jsonUrl: string): Promise<PluginManifest> {
   const res = await fetch(jsonUrl);
   if (!res.ok) {
     throw new Error(res.statusText);
@@ -94,7 +102,7 @@ export async function loadModulePlugins(
     }
 
     log.debug('Plugin manifest loaded:', manifest);
-    const pluginPromises: Promise<unknown>[] = [];
+    const pluginPromises: Promise<PluginModule>[] = [];
     for (let i = 0; i < manifest.plugins.length; i += 1) {
       const { name, main } = manifest.plugins[i];
       const pluginMainUrl = `${modulePluginsUrl}/${name}/${main}`;
@@ -107,7 +115,7 @@ export async function loadModulePlugins(
       const module = pluginModules[i];
       const { name } = manifest.plugins[i];
       if (module.status === 'fulfilled') {
-        pluginMap.set(name, module.value as PluginModule);
+        pluginMap.set(name, module.value);
       } else {
         log.error(`Unable to load plugin ${name}`, module.reason);
       }

@@ -10,7 +10,7 @@ test.describe('tests golden-layout operations', () => {
     page = await browser.newPage();
     await page.goto('');
 
-    // load a custom layout for the tests
+    // reset the layout before each test
     await page.getByTestId('app-main-panels-button').click();
     // start listener before click
     const fileChooserPromise = page.waitForEvent('filechooser');
