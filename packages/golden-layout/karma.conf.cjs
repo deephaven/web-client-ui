@@ -24,14 +24,7 @@ module.exports = function (config) {
     },
 
     browserify: {
-      debug: true,
       plugin: ['esmify'],
-      // ignored because it doesn't understand the scss import in GoldenLayoutThemeExport
-      configure: function (bundle) {
-        bundle.on('prebundle', function () {
-          bundle.ignore('./dist/GoldenLayoutThemeExport.js');
-        });
-      },
     },
 
     // test results reporter to use

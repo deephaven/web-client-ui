@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.40.3](https://github.com/deephaven/web-client-ui/compare/v0.40.2...v0.40.3) (2023-05-31)
+
+### Bug Fixes
+
+- today/yesterday keywords failed on last/first day of month ([#1336](https://github.com/deephaven/web-client-ui/issues/1336)) ([4c3fe24](https://github.com/deephaven/web-client-ui/commit/4c3fe24c083a827b0d8ec57219a0083c84bb894c)), closes [#1335](https://github.com/deephaven/web-client-ui/issues/1335)
+
 ## [0.40.1](https://github.com/deephaven/web-client-ui/compare/v0.40.0...v0.40.1) (2023-05-24)
 
 **Note:** Version bump only for package @deephaven/jsapi-utils

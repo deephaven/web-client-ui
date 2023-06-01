@@ -225,15 +225,68 @@ describe('parseDateRange', () => {
     ]);
   });
 
-  it('should return a range from today to tomorrow if text is "today"', () => {
-    const range = DateUtils.parseDateRange(dh, 'today', 'America/New_York');
-    const start = range[0];
-    const end = range[1];
-    if (start && end) {
+  describe('a range from today to tomorrow if text is keyword "today"', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    test.each([
+      [new Date(2023, 4, 15)],
+      [new Date(2023, 4, 1)],
+      [new Date(2023, 4, 31)],
+      [new Date(2023, 0, 1)],
+      [new Date(2023, 11, 31)],
+    ])('should work with keyword "today" for date %s', date => {
+      jest.setSystemTime(date);
+      const range = DateUtils.parseDateRange(dh, 'today', 'America/New_York');
+      const start = range[0];
+      const end = range[1];
       const startDate = start?.asDate();
       const endDate = end?.asDate();
+      expect(startDate).toEqual(date);
+      expect(endDate).toEqual(
+        new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1)
+      );
       expect(dateDiffInMillisseconds(startDate, endDate)).toBe(MS_PER_DAY);
-    }
+    });
+  });
+
+  describe('a range from yesterday to today if text is keyword "yesterday"', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    test.each([
+      [new Date(2023, 4, 15)],
+      [new Date(2023, 4, 1)],
+      [new Date(2023, 4, 31)],
+      [new Date(2023, 0, 1)],
+      [new Date(2023, 11, 31)],
+    ])('should work with keyword "yesterday" for date %s', date => {
+      jest.setSystemTime(date);
+      const range = DateUtils.parseDateRange(
+        dh,
+        'yesterday',
+        'America/New_York'
+      );
+      const start = range[0];
+      const end = range[1];
+      const startDate = start?.asDate();
+      const endDate = end?.asDate();
+      expect(startDate).toEqual(
+        new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1)
+      );
+      expect(endDate).toEqual(date);
+      expect(dateDiffInMillisseconds(startDate, endDate)).toBe(MS_PER_DAY);
+    });
   });
 
   it('should return null as the end range if text is "now"', () => {
