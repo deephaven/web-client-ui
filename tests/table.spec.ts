@@ -33,7 +33,7 @@ async function dragComponent(
   element: Locator,
   offsetX: number,
   offsetY: number,
-  stepNumber: number = 500
+  stepNumber: number = 100
 ) {
   // flipped the sign for offSetY since coordinates are from top-left of window
   const [x, y] = await element
@@ -219,66 +219,20 @@ test.describe('tests complex table operations', () => {
       ?.browserType()
       .name();
 
-    const stringDropdownPos =
-      browserName === 'firefox' ? { x: 20, y: 78 } : { x: 19, y: 80 };
-    await page
-      .locator('.iris-grid .grid-wrapper')
-      .click({ position: stringDropdownPos });
-
-    const [stringColX, stringColY] = await stringColumn
-      .boundingBox()
-      .then(e => (e && e.x && e.y ? [e?.x, e?.y] : [0, 0]));
-
-    await page.mouse.move(stringColX, stringColY, { steps: 100 }); // move mouse to prevent row highlight
     await expect(
       page.locator('.iris-grid .iris-grid-loading-status')
     ).toHaveCount(0);
 
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot({
-      maxDiffPixels: browserName === 'firefox' ? 60 : 0,
-    });
-
-    // Rollup int column after string
-    const intColumn = page.getByRole('button', { name: 'Int', exact: true });
-    await dragComponent(page, intColumn, 200, 80);
-    await page.mouse.move(stringColX, stringColY, { steps: 100 }); // move mouse to prevent row highlight
-
-    const intDropdownPos =
-      browserName === 'firefox' ? { x: 31, y: 97 } : { x: 34, y: 98 };
-    await page
-      .locator('.iris-grid .grid-wrapper')
-      .click({ position: stringDropdownPos });
-
-    await page.mouse.move(stringColX, stringColY, { steps: 100 }); // move mouse to prevent row highlight
-
-    await page
-      .locator('.iris-grid .grid-wrapper')
-      .click({ position: intDropdownPos });
-
-    await page.mouse.move(stringColX, stringColY, { steps: 100 }); // move mouse to prevent row highlight
-    await expect(
-      page.locator('.iris-grid .iris-grid-loading-status')
-    ).toHaveCount(0);
-
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot({
-      maxDiffPixels: browserName === 'firefox' ? 60 : 0,
-    });
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
     // Toggle Constituents
     await page.getByText('Constituents').click();
 
-    await page
-      .locator('.iris-grid .grid-wrapper')
-      .click({ position: stringDropdownPos });
-
-    await page.mouse.move(stringColX, stringColY, { steps: 100 }); // move mouse to prevent row highlight
     await expect(
       page.locator('.iris-grid .iris-grid-loading-status')
     ).toHaveCount(0);
 
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot({
-      maxDiffPixels: browserName === 'firefox' ? 60 : 0,
-    });
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
     // Toggle Non-Aggregated Columns
     await page.getByText('Non-Aggregated Columns').click();
@@ -287,9 +241,17 @@ test.describe('tests complex table operations', () => {
       page.locator('.iris-grid .iris-grid-loading-status')
     ).toHaveCount(0);
 
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot({
-      maxDiffPixels: browserName === 'firefox' ? 60 : 0,
-    });
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    // Rollup int column after string
+    const intColumn = page.getByRole('button', { name: 'Int', exact: true });
+    await dragComponent(page, intColumn, 200, 80);
+
+    await expect(
+      page.locator('.iris-grid .iris-grid-loading-status')
+    ).toHaveCount(0);
+
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });
 });
 
