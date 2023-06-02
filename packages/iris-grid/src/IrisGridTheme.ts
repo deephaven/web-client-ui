@@ -13,6 +13,7 @@ export type IrisGridThemeType = GridThemeType & {
   minScrimTransitionTime: number;
   maxScrimTransitionTime: number;
   nullStringColor: GridColor;
+  filterBarNullStringColor: GridColor;
   pendingTextColor: GridColor;
   dateColor: GridColor;
   positiveNumberColor: GridColor;
@@ -79,6 +80,7 @@ const theme: Partial<IrisGridThemeType> = Object.freeze({
   pendingTextColor: IrisGridTheme['pending-text-color'],
   errorTextColor: IrisGridTheme['error-text-color'],
   nullStringColor: IrisGridTheme['null-string-color'],
+  filterBarNullStringColor: IrisGridTheme['filter-bar-null-string-color'],
   filterBarActiveBackgroundColor: IrisGridTheme['filter-bar-active-bg'],
   filterBarExpandedBackgroundColor: IrisGridTheme['filter-bar-expanded-bg'],
   filterBarExpandedActiveBackgroundColor:

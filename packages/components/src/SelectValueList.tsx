@@ -6,7 +6,7 @@ import Checkbox from './Checkbox';
 
 export interface SelectItem<T> {
   value: T;
-  displayValue?: string;
+  displayValue?: string | JSX.Element;
   isSelected: boolean;
 }
 
@@ -72,7 +72,7 @@ class SelectValueList<T> extends PureComponent<SelectValueListProps<T>> {
       itemIndex: number,
       key: number,
       value: T,
-      displayValue: string | undefined,
+      displayValue: string | JSX.Element | undefined,
       rowHeight: number,
       isSelected: boolean,
       disabled: boolean

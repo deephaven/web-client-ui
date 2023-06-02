@@ -62,4 +62,9 @@
       }
     }
   }
+
+  &.null-style .iris-grid-input-field {
+    font-style: italic;
+    color: $gray-300;
+  }
 }

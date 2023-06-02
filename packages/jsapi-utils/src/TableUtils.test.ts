@@ -541,6 +541,7 @@ describe('quick filter tests', () => {
 
     it('should return a number filter if column type is number', () => {
       testComponentFilter('52', FilterType.eq, 'int', 52);
+      testComponentFilter('!52', FilterType.notEq, 'int', 52);
       testComponentFilter('>-9', FilterType.greaterThan, 'short', -9);
     });
 
@@ -587,14 +588,27 @@ describe('quick filter tests', () => {
       testComponentFilter('null', FilterType.isNull, 'char');
     });
 
-    it('should return a text filter for any other column type', () => {
-      testComponentFilter(
-        '\\*foo',
-        FilterType.eqIgnoreCase,
-        'notatype',
-        '*foo'
-      );
+    it('should return a text filter if column type is string', () => {
       testComponentFilter('foo', FilterType.eqIgnoreCase, 'string', 'foo');
+      testComponentFilter('=foo', FilterType.eqIgnoreCase, 'string', 'foo');
+      testComponentFilter('!=foo', FilterType.notEqIgnoreCase, 'string', 'foo');
+      testComponentFilter('\\*foo', FilterType.eqIgnoreCase, 'string', '*foo');
+      testComponentFilter(
+        'fish\\*',
+        FilterType.eqIgnoreCase,
+        'string',
+        'fish*'
+      );
+      testComponentFilter(
+        'test*test',
+        FilterType.eqIgnoreCase,
+        'string',
+        'test*test'
+      );
+    });
+
+    it('should return a text filter for any other column type', () => {
+      testComponentFilter('foo', FilterType.eqIgnoreCase, 'notatype', 'foo');
     });
   });
 

@@ -611,6 +611,8 @@ class IrisGridRenderer extends GridRenderer {
       filterBarErrorColor,
       filterBarHorizontalPadding,
       headerColor,
+      filterBarNullStringColor,
+      font,
     } = theme;
     const columnHeaderHeight = gridY - filterBarHeight;
     const modelColumn = modelColumns.get(column);
@@ -681,7 +683,13 @@ class IrisGridRenderer extends GridRenderer {
     if (text != null && text !== '') {
       const textX = columnX + filterBarHorizontalPadding;
       const textY = columnHeaderHeight + filterBarHeight * 0.5 + 1; // + 1 for border
-      context.fillStyle = headerColor;
+
+      if (TableUtils.isNullStyleQuickFilter(text)) {
+        context.fillStyle = filterBarNullStringColor;
+        context.font = `italic ${font}`;
+      } else {
+        context.fillStyle = headerColor;
+      }
       context.fillText(text, textX, textY);
     }
 

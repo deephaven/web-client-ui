@@ -1,5 +1,5 @@
 /* eslint react/no-did-update-set-state: "off" */
-import React, { PureComponent } from 'react';
+import React, { PureComponent, ReactElement } from 'react';
 import { CSSTransition } from 'react-transition-group';
 import type {
   dh as DhType,
@@ -182,11 +182,18 @@ class AdvancedFilterCreatorSelectValueList<T = unknown> extends PureComponent<
     for (let r = 0; r < data.rows.length; r += 1) {
       const row = data.rows[r];
       const value = row.get(column);
-      const displayValue = formatter.getFormattedString(
-        value,
-        column.type,
-        column.name
-      );
+      let displayValue: string | JSX.Element;
+      if (value == null) {
+        displayValue = <i className="text-muted">null</i>;
+      } else if (value === '') {
+        displayValue = <i className="text-muted">empty</i>;
+      } else {
+        displayValue = formatter.getFormattedString(
+          value,
+          column.type,
+          column.name
+        );
+      }
       const isSelected = this.isValueSelected(value);
       items.push({
         displayValue,
@@ -263,7 +270,7 @@ class AdvancedFilterCreatorSelectValueList<T = unknown> extends PureComponent<
     table.setViewport(topRow, bottomRow);
   }
 
-  render(): React.ReactElement {
+  render(): ReactElement {
     const { offset, isLoading, items, itemCount } = this.state;
 
     return (

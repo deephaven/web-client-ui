@@ -515,6 +515,23 @@ export class TableUtils {
   }
 
   /**
+   * Check if a quick filter is a null filter. Not expected to work
+   *  within && or || statements, as input can't be rich text formatted.
+   * @returns True, if it requires null styling
+   */
+  static isNullStyleQuickFilter(value: string): boolean {
+    switch (value) {
+      case 'null':
+      case '=null':
+      case '!=null':
+      case '!null':
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /**
    * Adds quotes to a value if they're not already added
    * @param value Value to add quotes around
    */
@@ -927,7 +944,12 @@ export class TableUtils {
       }
     }
 
-    if (value == null || value.length === 0) {
+    if (value == null) {
+      return null;
+    }
+
+    // allow empty strings, but only for equal and not equal
+    if (value.length === 0 && !(operation === '=' || operation === '!=')) {
       return null;
     }
 
@@ -951,7 +973,7 @@ export class TableUtils {
 
     let prefix = null;
     let suffix = null;
-    if (value.startsWith('*')) {
+    if (value.startsWith('*') && !value.startsWith('\\*')) {
       prefix = '*';
       value = value.substring(1);
     } else if (value.endsWith('*') && !value.endsWith('\\*')) {
@@ -959,6 +981,7 @@ export class TableUtils {
       value = value.substring(0, value.length - 1);
     }
 
+    // sus, can't write a filter containing a backslash
     value = value.replace('\\', '');
 
     switch (operation) {
@@ -1014,7 +1037,6 @@ export class TableUtils {
         return filter.notEqIgnoreCase(
           dh.FilterValue.ofString(value.toLowerCase())
         );
-
       case '=':
         if (prefix === '*') {
           // Ends with
