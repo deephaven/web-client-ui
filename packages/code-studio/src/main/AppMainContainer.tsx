@@ -867,6 +867,9 @@ export class AppMainContainer extends Component<
                     isShown={isPanelsMenuShown}
                     className="panels-menu-popper"
                     onExited={this.handleWidgetsMenuClose}
+                    options={{
+                      placement: 'bottom',
+                    }}
                     closeOnBlur
                     interactive
                   >
