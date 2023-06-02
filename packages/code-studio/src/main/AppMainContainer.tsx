@@ -68,6 +68,7 @@ import {
   dhShapes,
   dhPanels,
   vsDebugDisconnect,
+  dhSquareFilled,
 } from '@deephaven/icons';
 import dh from '@deephaven/jsapi-shim';
 import type {
@@ -891,12 +892,32 @@ export class AppMainContainer extends Component<
                 })}
                 onClick={this.handleSettingsMenuShow}
                 icon={
-                  <FontAwesomeIcon
-                    icon={vsGear}
-                    transform="grow-3 right-1 down-1"
-                  />
+                  <span className="fa-layers">
+                    <FontAwesomeIcon
+                      icon={vsGear}
+                      transform="grow-3 right-1 down-1"
+                    />
+                    {isDisconnected && !isAuthFailed && (
+                      <>
+                        <FontAwesomeIcon
+                          icon={dhSquareFilled}
+                          color={ThemeExport.background}
+                          transform="grow-2 right-8 down-8.5 rotate-45"
+                        />
+                        <FontAwesomeIcon
+                          icon={vsDebugDisconnect}
+                          color={ThemeExport.danger}
+                          transform="shrink-5 right-6 down-6"
+                        />
+                      </>
+                    )}
+                  </span>
                 }
-                tooltip="User Settings"
+                tooltip={
+                  isDisconnected && !isAuthFailed
+                    ? 'Server disconnected'
+                    : 'User Settings'
+                }
               />
             </div>
           </div>
@@ -957,7 +978,7 @@ export class AppMainContainer extends Component<
         />
         <DebouncedModal
           isOpen={isDisconnected && !isAuthFailed}
-          debounceMs={250}
+          debounceMs={1000}
         >
           <InfoModal
             icon={vsDebugDisconnect}
