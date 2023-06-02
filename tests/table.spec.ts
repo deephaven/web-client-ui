@@ -204,20 +204,13 @@ test.describe('tests complex table operations', () => {
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });
 
-  test('can rollup rows', async () => {
+  test('can rollup rows and aggregrate columns', async () => {
     // open Rollup Rows panel
     await page.locator('data-testid=menu-item-Rollup Rows').click();
 
     // Rollup string column
     const stringColumn = page.getByRole('button', { name: 'String' });
     await dragComponent(page, stringColumn, -100, 100);
-
-    const browserName = stringColumn
-      .page()
-      .context()
-      .browser()
-      ?.browserType()
-      .name();
 
     await expect(
       page.locator('.iris-grid .iris-grid-loading-status')
@@ -246,6 +239,20 @@ test.describe('tests complex table operations', () => {
     // Rollup int column after string
     const intColumn = page.getByRole('button', { name: 'Int', exact: true });
     await dragComponent(page, intColumn, 200, 80);
+
+    await expect(
+      page.locator('.iris-grid .iris-grid-loading-status')
+    ).toHaveCount(0);
+
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    // Aggregrate Columns
+    await page.getByText('Constituents').click();
+    await page.getByText('Non-Aggregated Columns').click();
+
+    await page.getByTestId('btn-page-back').click();
+    await page.getByTestId('menu-item-Aggregate Columns').click();
+    await page.getByRole('button', { name: 'Add Aggregation' }).click();
 
     await expect(
       page.locator('.iris-grid .iris-grid-loading-status')
