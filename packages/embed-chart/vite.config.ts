@@ -56,20 +56,23 @@ export default defineConfig(({ mode }) => {
       proxy,
     },
     resolve: {
-      alias: [
-        {
-          find: /^@deephaven\/(.*)\/scss\/(.*)/,
-          replacement: `${packagesDir}/$1/scss/$2`,
-        },
-        {
-          find: /^@deephaven\/icons$/,
-          replacement: `${packagesDir}/icons/dist/index.es.js`,
-        },
-        {
-          find: /^@deephaven\/(.*)/,
-          replacement: `${packagesDir}/$1/src`,
-        },
-      ],
+      alias:
+        mode === 'development'
+          ? [
+              {
+                find: /^@deephaven\/(.*)\/scss\/(.*)/,
+                replacement: `${packagesDir}/$1/scss/$2`,
+              },
+              {
+                find: /^@deephaven\/icons$/,
+                replacement: `${packagesDir}/icons/dist/index.es.js`,
+              },
+              {
+                find: /^@deephaven\/(.*)/,
+                replacement: `${packagesDir}/$1/src`,
+              },
+            ]
+          : [],
     },
     build: {
       outDir: env.VITE_BUILD_PATH,
