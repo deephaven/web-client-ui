@@ -2319,7 +2319,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         invertSearchColumns
       );
       this.setState({ searchFilter });
-      this.stopLoading();
     },
     SET_FILTER_DEBOUNCE
   );
