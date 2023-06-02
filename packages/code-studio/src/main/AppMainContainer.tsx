@@ -910,7 +910,11 @@ export class AppMainContainer extends Component<
                     )}
                   </span>
                 }
-                tooltip="User Settings"
+                tooltip={
+                  isDisconnected && !isAuthFailed
+                    ? 'Server disconnected'
+                    : 'User Settings'
+                }
               />
             </div>
           </div>
