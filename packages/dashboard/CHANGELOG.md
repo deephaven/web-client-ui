@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.40.4](https://github.com/deephaven/web-client-ui/compare/v0.40.3...v0.40.4) (2023-06-02)
+
+### Bug Fixes
+
+- Add a default DashboardPanelWrapper ([#1346](https://github.com/deephaven/web-client-ui/issues/1346)) ([ddd92cf](https://github.com/deephaven/web-client-ui/commit/ddd92cf94ee038da9f6b998b12f533d17a400bc4)), closes [#1329](https://github.com/deephaven/web-client-ui/issues/1329)
+
 ## [0.40.3](https://github.com/deephaven/web-client-ui/compare/v0.40.2...v0.40.3) (2023-05-31)
 
 ### Reverts
