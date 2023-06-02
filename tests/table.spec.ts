@@ -22,6 +22,10 @@ async function openSimpleTable(page: Page) {
   );
 
   // Model is loaded, need to make sure table data is also loaded
+  await waitForLoadingDone(page);
+}
+
+async function waitForLoadingDone(page: Page) {
   await expect(
     page.locator('.iris-grid .iris-grid-loading-status')
   ).toHaveCount(0);
@@ -56,9 +60,7 @@ column_header_group = column_header_group.layout_hints(column_groups=column_grou
   );
 
   // Model is loaded, need to make sure table data is also loaded
-  await expect(
-    page.locator('.iris-grid .iris-grid-loading-status')
-  ).toHaveCount(0);
+  await waitForLoadingDone(page);
 
   // Now we should be able to check the snapshot
   await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
@@ -87,9 +89,7 @@ column_header_group = column_header_group.layout_hints(column_groups=column_grou
   );
 
   // Model is loaded, need to make sure table data is also loaded
-  await expect(
-    page.locator('.iris-grid .iris-grid-loading-status')
-  ).toHaveCount(0);
+  await waitForLoadingDone(page);
 
   // Now we should be able to check the snapshot
   await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
@@ -104,7 +104,7 @@ test.describe('tests complex table operations', () => {
     const consoleInput = page.locator('.console-input');
     await consoleInput.click();
 
-    const command = `${makeTableCommand(undefined, TableTypes.ManyColumns)}`;
+    const command = `${makeTableCommand(undefined, TableTypes.AllTypes)}`;
 
     await pasteInMonaco(consoleInput, command);
     await page.keyboard.press('Enter');
@@ -118,10 +118,7 @@ test.describe('tests complex table operations', () => {
     );
 
     // Model is loaded, need to make sure table data is also loaded
-    await expect(
-      page.locator('.iris-grid .iris-grid-loading-status')
-    ).toHaveCount(0);
-    // await page.waitForTimeout(delayForGridRender);
+    await waitForLoadingDone(page);
 
     const tableOperationsMenu = page.locator(
       'data-testid=btn-iris-grid-settings-button-table'
@@ -155,12 +152,10 @@ test.describe('tests complex table operations', () => {
     await searchBar.click();
     await page.keyboard.type('2');
 
-    // Wait until it's done loading
-    await expect(
-      page.locator('.iris-grid .iris-grid-loading-status')
-    ).toHaveCount(0);
-
     await expect(searchBar).toHaveValue('2');
+
+    // Wait until it's done loading
+    await waitForLoadingDone(page);
 
     // Check snapshot
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
@@ -171,9 +166,7 @@ test.describe('tests complex table operations', () => {
     await expect(searchBar).toHaveValue('');
 
     // Wait until it's done loading
-    await expect(
-      page.locator('.iris-grid .iris-grid-loading-status')
-    ).toHaveCount(0);
+    await waitForLoadingDone(page);
 
     // Check snapshot
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
@@ -249,7 +242,9 @@ test.describe('tests complex table operations', () => {
       });
       const [x, y] = await dragColumnButton
         .boundingBox()
-        .then(pos => (pos && pos.x && pos.y ? [pos.x, pos.y - 50] : [0, 0]));
+        .then(pos =>
+          pos && pos.x != null && pos.y != null ? [pos.x, pos.y - 50] : [0, 0]
+        );
       await dragColumnButton.hover();
       await page.mouse.down();
       await page.mouse.move(x, y, { steps: 500 });
@@ -273,7 +268,9 @@ test.describe('tests complex table operations', () => {
       const [x, y] = await dragColumnButton
         .boundingBox()
         .then(pos =>
-          pos && pos.x && pos.y ? [pos.x + 200, pos.y - 75] : [0, 0]
+          pos && pos.x != null && pos.y != null
+            ? [pos.x + 200, pos.y - 75]
+            : [0, 0]
         );
       await dragColumnButton.hover();
       await page.mouse.down();
@@ -479,9 +476,7 @@ test.describe('tests simple table operations', () => {
     await page.keyboard.type('>37');
 
     // Wait until it's done loading
-    await expect(
-      page.locator('.iris-grid .iris-grid-loading-status')
-    ).toHaveCount(0);
+    await waitForLoadingDone(page);
 
     // Check snapshot
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
