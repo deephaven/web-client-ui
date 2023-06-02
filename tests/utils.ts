@@ -4,7 +4,7 @@ import shortid from 'shortid';
 export enum TableTypes {
   Number,
   StringAndNumber,
-  ManyColumns
+  AllTypes
 }
 
 /**
@@ -31,7 +31,7 @@ export function makeTableCommand(
   type = TableTypes.Number
 ): string {
   switch (type) { 
-    case TableTypes.ManyColumns:
+    case TableTypes.AllTypes:
       return `from deephaven import empty_table, time_table
 size = 20
 scale = 999
