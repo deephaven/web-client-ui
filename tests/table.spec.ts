@@ -62,7 +62,10 @@ async function changeCondFormatComparison(
     await page.getByRole('button', { name: column, exact: true }).click();
 
     await page.locator('.style-editor').click();
-    await page.getByRole('button', { name: 'Positive' }).click();
+    await page
+      .locator('.style-options')
+      .getByRole('button', { name: 'Positive' })
+      .click();
   }
   await conditionSelect.selectOption(condition);
   await doneButton.click();
