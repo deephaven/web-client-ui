@@ -520,7 +520,7 @@ export class TableUtils {
    * @returns True, if it requires null styling
    */
   static isNullStyleQuickFilter(value: string): boolean {
-    switch (value) {
+    switch (value.trim().toLowerCase()) {
       case 'null':
       case '=null':
       case '!=null':
