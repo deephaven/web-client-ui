@@ -433,79 +433,78 @@ test.describe('tests complex table operations', () => {
     // open Custom Columns panel
     await page.locator('data-testid=menu-item-Custom Columns').click();
 
-    // Create 1st Custom Column
-    const columnName = page.getByPlaceholder('Column Name');
-    await expect(columnName).toHaveCount(1);
-    await columnName.click();
-    await page.keyboard.type('Test');
+    await test.step('Create custom column', async () => {
+      const columnName = page.getByPlaceholder('Column Name');
+      await expect(columnName).toHaveCount(1);
+      await columnName.click();
+      await page.keyboard.type('Test');
 
-    const columnFormula = page.locator('.editor-container');
-    await expect(columnFormula).toHaveCount(1);
-    await columnFormula.click({ force: true });
-    await page.keyboard.type('Double * 2');
+      const columnFormula = page.locator('.editor-container');
+      await expect(columnFormula).toHaveCount(1);
+      await columnFormula.click({ force: true });
+      await page.keyboard.type('Double * 2');
+    });
 
-    // Create 2nd Custom Column from 1st
     const addColumnButton = page.getByRole('button', {
       name: 'Add Another Column',
     });
-    await addColumnButton.click();
-
-    const newColumnName = page.getByPlaceholder('Column Name').nth(1);
-    await newColumnName.click();
-    await page.keyboard.type('Test2');
-
-    const newColumnFormula = page.locator('.editor-container').nth(1);
-    await newColumnFormula.click();
-    await page.keyboard.type('Test * 2');
-
     const saveButton = page.getByRole('button', { name: 'Save Column' });
-    await saveButton.click();
 
-    await expect(
-      page.locator('.iris-grid .iris-grid-loading-status')
-    ).toHaveCount(0);
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    await test.step('Create 2nd custom columns from 1st', async () => {
+      await addColumnButton.click();
 
-    // Drag
-    await addColumnButton.click();
+      const newColumnName = page.getByPlaceholder('Column Name').nth(1);
+      await newColumnName.click();
+      await page.keyboard.type('Test2');
 
-    const dragColumn = page.getByPlaceholder('Column Name').nth(2);
-    await dragColumn.click();
-    await page.keyboard.type('Drag');
+      const newColumnFormula = page.locator('.editor-container').nth(1);
+      await newColumnFormula.click();
+      await page.keyboard.type('Test * 2');
 
-    const dragColumnFormula = page.locator('.editor-container').nth(2);
-    await dragColumnFormula.click();
-    await page.keyboard.type('String');
+      await saveButton.click();
 
-    const reorderButton = page
-      .getByRole('button', { name: 'Drag column to re-order' })
-      .nth(2);
-    const [x, y] = await reorderButton
-      .boundingBox()
-      .then(pos => (pos && pos.x && pos.y ? [pos.x, pos.y - 100] : [0, 0]));
-    await reorderButton.hover();
-    await page.mouse.down();
-    await page.mouse.move(x, y, { steps: 500 });
-    await page.mouse.up();
+      await waitForLoadingDone(page);
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
 
-    await saveButton.click();
+    await test.step('Drag', async () => {
+      await addColumnButton.click();
 
-    await expect(
-      page.locator('.iris-grid .iris-grid-loading-status')
-    ).toHaveCount(0);
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+      const dragColumn = page.getByPlaceholder('Column Name').nth(2);
+      await dragColumn.click();
+      await page.keyboard.type('Drag');
 
-    // Delete
-    const deleteLastColumnButton = page
-      .getByRole('button', { name: 'Delete custom column' })
-      .nth(1);
-    await deleteLastColumnButton.click();
-    await saveButton.click();
+      const dragColumnFormula = page.locator('.editor-container').nth(2);
+      await dragColumnFormula.click();
+      await page.keyboard.type('String');
 
-    await expect(
-      page.locator('.iris-grid .iris-grid-loading-status')
-    ).toHaveCount(0);
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+      const reorderButton = page
+        .getByRole('button', { name: 'Drag column to re-order' })
+        .nth(2);
+      const [x, y] = await reorderButton
+        .boundingBox()
+        .then(pos => (pos && pos.x && pos.y ? [pos.x, pos.y - 100] : [0, 0]));
+      await reorderButton.hover();
+      await page.mouse.down();
+      await page.mouse.move(x, y, { steps: 500 });
+      await page.mouse.up();
+
+      await saveButton.click();
+
+      await waitForLoadingDone(page);
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
+
+    await test.step('Delete', async () => {
+      const deleteLastColumnButton = page
+        .getByRole('button', { name: 'Delete custom column' })
+        .nth(1);
+      await deleteLastColumnButton.click();
+      await saveButton.click();
+
+      await waitForLoadingDone(page);
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
   });
 });
 
