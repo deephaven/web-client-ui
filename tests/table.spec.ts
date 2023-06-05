@@ -33,7 +33,7 @@ async function dragComponent(
   element: Locator,
   offsetX: number,
   offsetY: number,
-  stepNumber: number = 100
+  stepNumber: number = 500
 ) {
   // flipped the sign for offSetY since coordinates are from top-left of window
   const [x, y] = await element
@@ -253,6 +253,27 @@ test.describe('tests complex table operations', () => {
     await page.getByTestId('btn-page-back').click();
     await page.getByTestId('menu-item-Aggregate Columns').click();
     await page.getByRole('button', { name: 'Add Aggregation' }).click();
+
+    await expect(
+      page.locator('.iris-grid .iris-grid-loading-status')
+    ).toHaveCount(0);
+
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    // Edit Aggregated Columns
+    await page
+      .getByRole('button', { name: 'Edit Columns', exact: true })
+      .click();
+    await page.getByText('Double', { exact: true }).click();
+
+    await expect(
+      page.locator('.iris-grid .iris-grid-loading-status')
+    ).toHaveCount(0);
+
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+    // Reset Aggregated Columns
+    await page.getByRole('button', { name: 'Reset' }).click();
 
     await expect(
       page.locator('.iris-grid .iris-grid-loading-status')
