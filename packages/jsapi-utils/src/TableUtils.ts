@@ -931,11 +931,12 @@ export class TableUtils {
       return null;
     }
 
-    // allow empty strings, but only for equal and not equal
+    // allow empty strings, but only for explicit equal and not equal
     if (value.length === 0 && !(operation === '=' || operation === '!=')) {
       return null;
     }
 
+    // no operation is treated as an implicit equals
     if (operation == null) {
       operation = '=';
     }
