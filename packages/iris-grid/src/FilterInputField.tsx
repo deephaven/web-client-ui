@@ -6,7 +6,6 @@ import './FilterInputField.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { DebouncedFunc } from 'lodash';
 import { Button } from '@deephaven/components';
-import { TableUtils } from '@deephaven/jsapi-utils';
 
 interface FilterInputFieldProps {
   className: string;
