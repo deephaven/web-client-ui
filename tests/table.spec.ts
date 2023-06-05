@@ -22,9 +22,82 @@ async function openSimpleTable(page: Page) {
   );
 
   // Model is loaded, need to make sure table data is also loaded
+  await waitForLoadingDone(page);
+}
+
+async function waitForLoadingDone(page: Page) {
   await expect(
     page.locator('.iris-grid .iris-grid-loading-status')
   ).toHaveCount(0);
+}
+
+async function changeCondFormatComparison(
+  page: Page,
+  condition: string,
+  column: string = ''
+) {
+  const formattingRule = page.locator('.formatting-item');
+  const conditionSelect = page.locator('data-testid=condition-select');
+  const highlightCell = page.getByRole('button', { name: 'Conditional' });
+  const doneButton = page.getByRole('button', { name: 'Done' });
+  const columnSelect = page
+    .locator('.conditional-rule-editor')
+    .getByRole('button')
+    .first();
+
+  await expect(formattingRule).toHaveCount(1);
+  await expect(conditionSelect).toHaveCount(0);
+  await expect(highlightCell).toHaveCount(0);
+
+  await formattingRule.click();
+
+  await expect(formattingRule).toHaveCount(0);
+  await expect(conditionSelect).toHaveCount(1);
+  await expect(highlightCell).toHaveCount(1);
+  await expect(columnSelect).toHaveCount(1);
+
+  await highlightCell.click();
+  if (column !== '') {
+    await columnSelect.click();
+    await page.getByRole('button', { name: column, exact: true }).click();
+
+    await page.locator('.style-editor').click();
+    await page
+      .locator('.style-options')
+      .getByRole('button', { name: 'Positive' })
+      .click();
+  }
+  await conditionSelect.selectOption(condition);
+  await doneButton.click();
+
+  await expect(formattingRule).toHaveCount(1);
+  await expect(conditionSelect).toHaveCount(0);
+  await expect(highlightCell).toHaveCount(0);
+  await expect(columnSelect).toHaveCount(0);
+  await waitForLoadingDone(page);
+}
+
+async function changeCondFormatHighlight(page: Page) {
+  const formattingRule = page.locator('.formatting-item');
+  const highlightRow = page.getByRole('button', { name: 'Rows' });
+  const doneButton = page.getByRole('button', { name: 'Done' });
+
+  await expect(formattingRule).toHaveCount(1);
+  await expect(highlightRow).toHaveCount(0);
+  await expect(doneButton).toHaveCount(0);
+
+  await formattingRule.click();
+
+  await expect(highlightRow).toHaveCount(1);
+  await expect(doneButton).toHaveCount(1);
+
+  await highlightRow.click();
+  await doneButton.click();
+
+  await expect(formattingRule).toHaveCount(1);
+  await expect(highlightRow).toHaveCount(0);
+  await expect(doneButton).toHaveCount(0);
+  await waitForLoadingDone(page);
 }
 
 test('can open a simple table', async ({ page }) => {
@@ -56,9 +129,7 @@ column_header_group = column_header_group.layout_hints(column_groups=column_grou
   );
 
   // Model is loaded, need to make sure table data is also loaded
-  await expect(
-    page.locator('.iris-grid .iris-grid-loading-status')
-  ).toHaveCount(0);
+  await waitForLoadingDone(page);
 
   // Now we should be able to check the snapshot
   await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
@@ -87,9 +158,7 @@ column_header_group = column_header_group.layout_hints(column_groups=column_grou
   );
 
   // Model is loaded, need to make sure table data is also loaded
-  await expect(
-    page.locator('.iris-grid .iris-grid-loading-status')
-  ).toHaveCount(0);
+  await waitForLoadingDone(page);
 
   // Now we should be able to check the snapshot
   await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
@@ -104,7 +173,7 @@ test.describe('tests complex table operations', () => {
     const consoleInput = page.locator('.console-input');
     await consoleInput.click();
 
-    const command = `${makeTableCommand(undefined, TableTypes.ManyColumns)}`;
+    const command = `${makeTableCommand(undefined, TableTypes.AllTypes)}`;
 
     await pasteInMonaco(consoleInput, command);
     await page.keyboard.press('Enter');
@@ -118,10 +187,7 @@ test.describe('tests complex table operations', () => {
     );
 
     // Model is loaded, need to make sure table data is also loaded
-    await expect(
-      page.locator('.iris-grid .iris-grid-loading-status')
-    ).toHaveCount(0);
-    // await page.waitForTimeout(delayForGridRender);
+    await waitForLoadingDone(page);
 
     const tableOperationsMenu = page.locator(
       'data-testid=btn-iris-grid-settings-button-table'
@@ -155,12 +221,10 @@ test.describe('tests complex table operations', () => {
     await searchBar.click();
     await page.keyboard.type('2');
 
-    // Wait until it's done loading
-    await expect(
-      page.locator('.iris-grid .iris-grid-loading-status')
-    ).toHaveCount(0);
-
     await expect(searchBar).toHaveValue('2');
+
+    // Wait until it's done loading
+    await waitForLoadingDone(page);
 
     // Check snapshot
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
@@ -171,12 +235,198 @@ test.describe('tests complex table operations', () => {
     await expect(searchBar).toHaveValue('');
 
     // Wait until it's done loading
-    await expect(
-      page.locator('.iris-grid .iris-grid-loading-status')
-    ).toHaveCount(0);
+    await waitForLoadingDone(page);
 
     // Check snapshot
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  });
+
+  test('can conditional format', async () => {
+    await page.locator('data-testid=menu-item-Conditional Formatting').click();
+
+    await test.step(' Setup new formatting rule', async () => {
+      await page.getByRole('button', { name: 'Add New Rule' }).click();
+      await page.locator('.style-editor').click();
+      await page.getByRole('button', { name: 'Positive' }).click();
+      await page.getByRole('button', { name: 'Done' }).click();
+    });
+
+    await test.step('Is null', async () => {
+      await changeCondFormatComparison(page, 'is-null');
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+      await changeCondFormatHighlight(page);
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
+
+    await test.step('Is not null', async () => {
+      await changeCondFormatComparison(page, 'is-not-null');
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+      await changeCondFormatHighlight(page);
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
+
+    await test.step('Change column', async () => {
+      await changeCondFormatComparison(page, 'is-not-null', 'Int');
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+      await changeCondFormatHighlight(page);
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
+
+    await test.step('Cancel', async () => {
+      const formattingRule = page.locator('.formatting-item');
+      const conditionSelect = page.locator('data-testid=condition-select');
+
+      await expect(conditionSelect).toHaveCount(0);
+
+      await formattingRule.click();
+      await conditionSelect.selectOption('is-null');
+      await page.getByRole('button', { name: 'Cancel' }).first().click();
+
+      await waitForLoadingDone(page);
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
+
+    await test.step('Delete', async () => {
+      await page.getByRole('button', { name: 'Delete rule' }).click();
+
+      await waitForLoadingDone(page);
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
+  });
+
+  test('can organize columns', async () => {
+    await page.locator('data-testid=menu-item-Organize Columns').click();
+
+    await test.step('Search', async () => {
+      await page.getByPlaceholder('Search').click();
+      await page.keyboard.type('dou');
+
+      await expect(
+        page.locator('.visibility-ordering-builder')
+      ).toHaveScreenshot();
+    });
+
+    await test.step('Move Selection Down', async () => {
+      await page
+        .getByRole('button', { name: 'Move selection down' })
+        .click({ clickCount: 2 });
+
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
+
+    await test.step('Move Selection Up', async () => {
+      await page.getByRole('button', { name: 'Move selection up' }).click();
+
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
+
+    await test.step('Move Selection to Bottom', async () => {
+      await page
+        .getByRole('button', { name: 'Move selection to bottom' })
+        .click();
+
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
+
+    await test.step('Move Selection to Top', async () => {
+      await page.getByRole('button', { name: 'Move selection to top' }).click();
+
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
+
+    await test.step('Sort Descending', async () => {
+      await page.getByRole('button', { name: 'Sort descending' }).click();
+
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
+
+    await test.step('Sort Ascending', async () => {
+      await page.getByRole('button', { name: 'Sort ascending' }).click();
+
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
+
+    await test.step('Hide Selected', async () => {
+      await page.getByRole('button', { name: 'Hide Selected' }).click();
+
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
+
+    await test.step('Reset', async () => {
+      await page.getByRole('button', { name: 'Reset' }).click();
+
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
+
+    await test.step('Drag', async () => {
+      const dragColumnButton = page.getByRole('button', {
+        name: 'Toggle visibility Float',
+      });
+      const [x, y] = await dragColumnButton
+        .boundingBox()
+        .then(pos =>
+          pos && pos.x != null && pos.y != null ? [pos.x, pos.y - 50] : [0, 0]
+        );
+      await dragColumnButton.hover();
+      await page.mouse.down();
+      await page.mouse.move(x, y, { steps: 50 });
+      await page.mouse.up();
+
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
+
+    await test.step('Create Group', async () => {
+      await page
+        .getByRole('button', { name: 'Toggle visibility String' })
+        .click();
+      await page.getByRole('button', { name: 'Group' }).click();
+      await page.getByPlaceholder('Group Name').click();
+      await page.keyboard.type('test');
+      await page.keyboard.press('Enter');
+
+      const dragColumnButton = page.getByRole('button', {
+        name: 'Toggle visibility Long',
+      });
+      const [x, y] = await dragColumnButton
+        .boundingBox()
+        .then(pos =>
+          pos && pos.x != null && pos.y != null
+            ? [pos.x + 200, pos.y - 75]
+            : [0, 0]
+        );
+      await dragColumnButton.hover();
+      await page.mouse.down();
+      await page.mouse.move(x, y, { steps: 50 });
+      await page.mouse.up();
+
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+      // Edit Group Name
+      await page.getByRole('button', { name: 'Edit', exact: true }).click();
+      await page.keyboard.type('new_test');
+      await page.keyboard.press('Enter');
+
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+      // Delete Group
+      await page
+        .getByRole('button', { name: 'Delete group', exact: true })
+        .click();
+
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
+
+    await test.step('Toggle Visibility', async () => {
+      await page
+        .getByRole('button', { name: 'Toggle visibility Double' })
+        .getByRole('button', { name: 'Toggle visibility' })
+        .click();
+
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
   });
 
   test('can custom column', async () => {
@@ -430,9 +680,7 @@ test.describe('tests simple table operations', () => {
     await page.keyboard.type('>37');
 
     // Wait until it's done loading
-    await expect(
-      page.locator('.iris-grid .iris-grid-loading-status')
-    ).toHaveCount(0);
+    await waitForLoadingDone(page);
 
     // Check snapshot
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();

@@ -33,6 +33,7 @@ import {
   PanelHydrateFunction,
   PanelProps,
 } from './DashboardPlugin';
+import DashboardPanelWrapper from './DashboardPanelWrapper';
 
 export type DashboardLayoutConfig = ItemConfigType[];
 
@@ -82,8 +83,7 @@ export function DashboardLayout({
   onLayoutInitialized = DEFAULT_CALLBACK,
   hydrate = hydrateDefault,
   dehydrate = dehydrateDefault,
-  // eslint-disable-next-line react/jsx-no-useless-fragment
-  panelWrapper = ({ children: panelChildren }) => <>{panelChildren}</>,
+  panelWrapper = DashboardPanelWrapper,
 }: DashboardLayoutProps): JSX.Element {
   const dispatch = useDispatch();
   const data =

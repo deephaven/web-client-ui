@@ -4,7 +4,7 @@ import shortid from 'shortid';
 export enum TableTypes {
   Number,
   StringAndNumber,
-  ManyColumns
+  AllTypes,
 }
 
 /**
@@ -30,15 +30,16 @@ export function makeTableCommand(
   tableName = generateVarName('t'),
   type = TableTypes.Number
 ): string {
-  switch (type) { 
-    case TableTypes.ManyColumns:
-      return `from deephaven import empty_table, time_table
-
+  switch (type) {
+    case TableTypes.AllTypes:
+      return (
+        `from deephaven import empty_table, time_table
 size = 20
 scale = 999
-
 ${tableName} = empty_table(size).update([
-"String=(i%11==0? null : ` + '`a`' +`+(int)(scale*(i%2==0? i+1 : 1)))",
+"String=(i%11==0? null : ` +
+        '`a`' +
+        `+(int)(scale*(i%2==0? i+1 : 1)))",
 "Int=(i%12==0 ? null : (int)(scale*(i*2-1)))",
 "Long=(i%13==0 ? null : (long)(scale*(i*2-1)))",
 "Float=(float)(i%14==0 ? null : i%10==0 ? 1.0F/0.0F: i%5==0 ? -1.0F/0.0F : (float) scale*(i*2-1))",
@@ -50,6 +51,7 @@ ${tableName} = empty_table(size).update([
 "BigInt=(i%22==0 ? null : new java.math.BigInteger(Integer.toString((int)(scale*(i*2-1)))))",
 "Byte=(Byte)(i%19==0 ? null : new Byte( Integer.toString((int)(i))))",
 ])`
+      );
     case TableTypes.StringAndNumber:
       return `from deephaven import new_table
 from deephaven.column import string_col, double_col
