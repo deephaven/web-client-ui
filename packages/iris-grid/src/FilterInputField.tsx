@@ -211,9 +211,7 @@ class FilterInputField extends PureComponent<
     return (
       <div
         style={style}
-        className={classNames('iris-grid-input-autosized-wrapper', {
-          'null-style': TableUtils.isNullStyleQuickFilter(value),
-        })}
+        className="iris-grid-input-autosized-wrapper"
         data-value={value} // used by css based autosizer
       >
         <input

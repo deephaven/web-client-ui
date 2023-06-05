@@ -515,23 +515,6 @@ export class TableUtils {
   }
 
   /**
-   * Check if a quick filter is a null filter. Not expected to work
-   *  within && or || statements, as input can't be rich text formatted.
-   * @returns True, if it requires null styling
-   */
-  static isNullStyleQuickFilter(value: string): boolean {
-    switch (value.trim().toLowerCase()) {
-      case 'null':
-      case '=null':
-      case '!=null':
-      case '!null':
-        return true;
-      default:
-        return false;
-    }
-  }
-
-  /**
    * Adds quotes to a value if they're not already added
    * @param value Value to add quotes around
    */
