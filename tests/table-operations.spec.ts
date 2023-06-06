@@ -100,6 +100,7 @@ async function changeCondFormatHighlight(page: Page) {
   await expect(doneButton).toHaveCount(1);
 
   await highlightRow.click();
+  await expect(highlightRow).toHaveClass('btn btn-icon btn-formatter-type active');
   await doneButton.click();
 
   await expect(formattingRule).toHaveCount(1);
@@ -425,7 +426,7 @@ test('can custom column', async ({ page }) => {
     const [x, y] = await reorderButton
       .boundingBox()
       .then(pos =>
-        pos && pos.x && pos.y ? [pos.x, pos.y - 100] : [1235, 402.5]
+        pos && pos.x && pos.y ? [pos.x, pos.y - 100] : [1235, 302.5]
       );
     await reorderButton.hover();
     await page.mouse.down();
