@@ -429,7 +429,11 @@ test('can custom column', async ({ page }) => {
       .then(pos => (pos && pos.x && pos.y ? [pos.x, pos.y - 100] : [0, 0]));
     await reorderButton.hover();
     await page.mouse.down();
-    await page.mouse.move(x, y, { steps: 500 });
+    await page.mouse.move(x, y, { steps: 1000 });
+
+    const dropTargetIndicator = page.locator('.droppable-container');
+    expect(dropTargetIndicator).toBeVisible();
+
     await page.mouse.up();
 
     await saveButton.click();
