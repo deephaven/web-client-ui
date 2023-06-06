@@ -54,9 +54,7 @@ async function dragComponent(
 
   await page.mouse.up();
 
-  await expect(
-    page.locator('.iris-grid .iris-grid-loading-status')
-  ).toHaveCount(0);
+  await waitForLoadingDone(page);
 }
 
 async function changeCondFormatComparison(
@@ -536,81 +534,66 @@ test.describe('tests complex table operations', () => {
   });
 
   test('can rollup rows and aggregrate columns', async () => {
-    // open Rollup Rows panel
     await page.locator('data-testid=menu-item-Rollup Rows').click();
 
-    // Rollup string column
-    const stringColumn = page.getByRole('button', { name: 'String' });
-    await dragComponent(page, stringColumn, -150, 100);
+    await test.step('Rollup column', async () => {
+      const stringColumn = page.getByRole('button', { name: 'String' });
+      await dragComponent(page, stringColumn, -150, 100);
 
-    await expect(
-      page.locator('.iris-grid .iris-grid-loading-status')
-    ).toHaveCount(0);
+      await waitForLoadingDone(page);
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
 
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    await test.step('Toggle constituents', async () => {
+      await page.getByText('Constituents').click();
 
-    // Toggle Constituents
-    await page.getByText('Constituents').click();
+      await waitForLoadingDone(page);
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
 
-    await expect(
-      page.locator('.iris-grid .iris-grid-loading-status')
-    ).toHaveCount(0);
+    await test.step('Toggle non-aggregated columns', async () => {
+      await page.getByText('Non-Aggregated Columns').click();
 
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+      await waitForLoadingDone(page);
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
 
-    // Toggle Non-Aggregated Columns
-    await page.getByText('Non-Aggregated Columns').click();
+    await test.step('Rollup another column', async () => {
+      const intColumn = page.getByRole('button', { name: 'Int', exact: true });
+      await dragComponent(page, intColumn, 150, 80);
 
-    await expect(
-      page.locator('.iris-grid .iris-grid-loading-status')
-    ).toHaveCount(0);
+      await waitForLoadingDone(page);
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
 
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    await test.step('Aggregate columns', async () => {
+      await page.getByText('Constituents').click();
+      await page.getByText('Non-Aggregated Columns').click();
 
-    // Rollup int column after string
-    const intColumn = page.getByRole('button', { name: 'Int', exact: true });
-    await dragComponent(page, intColumn, 150, 80);
+      await page.getByTestId('btn-page-back').click();
+      await page.getByTestId('menu-item-Aggregate Columns').click();
+      await page.getByRole('button', { name: 'Add Aggregation' }).click();
 
-    await expect(
-      page.locator('.iris-grid .iris-grid-loading-status')
-    ).toHaveCount(0);
+      await waitForLoadingDone(page);
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
 
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    await test.step('Edit aggregated columns', async () => {
+      await page
+        .getByRole('button', { name: 'Edit Columns', exact: true })
+        .click();
+      await page.getByText('Double', { exact: true }).click();
 
-    // Aggregrate Columns
-    await page.getByText('Constituents').click();
-    await page.getByText('Non-Aggregated Columns').click();
+      await waitForLoadingDone(page);
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
 
-    await page.getByTestId('btn-page-back').click();
-    await page.getByTestId('menu-item-Aggregate Columns').click();
-    await page.getByRole('button', { name: 'Add Aggregation' }).click();
+    await test.step('Reset aggregated columns', async () => {
+      await page.getByRole('button', { name: 'Reset' }).click();
 
-    await expect(
-      page.locator('.iris-grid .iris-grid-loading-status')
-    ).toHaveCount(0);
-
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-
-    // Edit Aggregated Columns
-    await page
-      .getByRole('button', { name: 'Edit Columns', exact: true })
-      .click();
-    await page.getByText('Double', { exact: true }).click();
-
-    await expect(
-      page.locator('.iris-grid .iris-grid-loading-status')
-    ).toHaveCount(0);
-
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-
-    // Reset Aggregated Columns
-    await page.getByRole('button', { name: 'Reset' }).click();
-
-    await expect(
-      page.locator('.iris-grid .iris-grid-loading-status')
-    ).toHaveCount(0);
-
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+      await waitForLoadingDone(page);
+      await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    });
   });
 });
 
