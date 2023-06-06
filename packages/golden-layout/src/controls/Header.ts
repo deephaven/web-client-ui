@@ -665,7 +665,7 @@ export default class Header extends EventEmitter {
       return;
     }
 
-    //escape should always close, even if list is empty
+    // a negative dropdownKeyIndex means the list is filtered to an empty state
     if (this.dropdownKeyIndex === -1) return;
 
     if (e.key === 'Enter' || e.key === ' ') {
@@ -780,7 +780,7 @@ export default class Header extends EventEmitter {
     this.tabDropdownContainer.hide();
     this.isDropdownShown = false;
 
-    // put it back in the header dom
+    // put it back in the header dom to keep the root tidy
     this.element.append(this.tabDropdownContainer);
 
     // remove the current tab list
