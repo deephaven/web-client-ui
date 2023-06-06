@@ -21,7 +21,9 @@ async function dragComponent(
   const [x, y] = await element
     .boundingBox()
     .then(pos =>
-      pos && pos.x && pos.y ? [pos.x + offsetX, pos.y - offsetY] : [0, 0]
+      pos && pos.x !== null && pos.y != null
+        ? [pos.x + offsetX, pos.y - offsetY]
+        : [1130, 470.5]
     );
 
   await element.hover();
@@ -137,9 +139,6 @@ test.beforeEach(async ({ page }) => {
   await expect(page.locator('.table-sidebar')).toHaveCount(1);
 });
 
-// test.afterEach(async () => {
-//   await page.close();
-// });
 
 test('can select distinct values', async ({ page }) => {
   // open Select Distinct panel
@@ -373,7 +372,6 @@ test('can organize columns', async ({ page }) => {
 });
 
 test('can custom column', async ({ page }) => {
-  // open Custom Columns panel
   await page.locator('data-testid=menu-item-Custom Columns').click();
 
   await test.step('Create custom column', async () => {
@@ -426,7 +424,9 @@ test('can custom column', async ({ page }) => {
       .nth(2);
     const [x, y] = await reorderButton
       .boundingBox()
-      .then(pos => (pos && pos.x && pos.y ? [pos.x, pos.y - 100] : [0, 0]));
+      .then(pos =>
+        pos && pos.x && pos.y ? [pos.x, pos.y - 100] : [1235, 402.5]
+      );
     await reorderButton.hover();
     await page.mouse.down();
     await page.mouse.move(x, y, { steps: 1000 });
