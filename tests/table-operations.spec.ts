@@ -1,4 +1,5 @@
 import { test, expect, Page, Locator } from '@playwright/test';
+import { string } from 'prop-types';
 import { makeTableCommand, pasteInMonaco, TableTypes } from './utils';
 
 // Run tests serially since they all use the same table
@@ -139,7 +140,6 @@ test.beforeEach(async ({ page }) => {
   await expect(page.locator('.table-sidebar')).toHaveCount(1);
 });
 
-
 test('can select distinct values', async ({ page }) => {
   // open Select Distinct panel
   await page.locator('data-testid=menu-item-Select Distinct Values').click();
@@ -225,7 +225,7 @@ test('can conditional format', async ({ page }) => {
 
     await formattingRule.click();
     await conditionSelect.selectOption('is-null');
-    await page.getByRole('button', { name: 'Cancel' }).first().click();
+    await page.getByRole('button', { name: 'Cancel' }).click();
 
     await waitForLoadingDone(page);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
@@ -382,7 +382,7 @@ test('can custom column', async ({ page }) => {
 
     const columnFormula = page.locator('.editor-container');
     await expect(columnFormula).toHaveCount(1);
-    await columnFormula.click({ force: true });
+    await columnFormula.click();
     await page.keyboard.type('Double * 2');
   });
 
@@ -459,6 +459,7 @@ test('can rollup rows and aggregrate columns', async ({ page }) => {
 
   await test.step('Rollup column', async () => {
     const stringColumn = page.getByRole('button', { name: 'String' });
+    expect(stringColumn).toBeTruthy();
     await dragComponent(page, stringColumn, -150, 100);
 
     await waitForLoadingDone(page);
@@ -481,6 +482,7 @@ test('can rollup rows and aggregrate columns', async ({ page }) => {
 
   await test.step('Rollup another column', async () => {
     const intColumn = page.getByRole('button', { name: 'Int', exact: true });
+    expect(intColumn).toBeTruthy();
     await dragComponent(page, intColumn, 150, 80);
 
     await waitForLoadingDone(page);
