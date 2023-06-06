@@ -38,4 +38,5 @@ packages/*/package-lock.json
 /test-results/
 /playwright-report/
 /playwright/.cache/
-/tests/*/*darwin.png
+/tests/*-snapshots/*
+!/tests/*-snapshots/*-linux*
