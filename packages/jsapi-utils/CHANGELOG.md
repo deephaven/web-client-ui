@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.40.4](https://github.com/deephaven/web-client-ui/compare/v0.40.3...v0.40.4) (2023-06-02)
+
+### Bug Fixes
+
+- DateWrapper fails on first day of month ([#1342](https://github.com/deephaven/web-client-ui/issues/1342)) ([a4677eb](https://github.com/deephaven/web-client-ui/commit/a4677eb0215b9f3746d68068b0ae13b36736a228)), closes [#1341](https://github.com/deephaven/web-client-ui/issues/1341)
+
 ## [0.40.3](https://github.com/deephaven/web-client-ui/compare/v0.40.2...v0.40.3) (2023-05-31)
 
 ### Bug Fixes
