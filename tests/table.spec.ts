@@ -1,5 +1,4 @@
 import { test, expect, Page, Locator } from '@playwright/test';
-import { string } from 'prop-types';
 import { makeTableCommand, pasteInMonaco, TableTypes } from './utils';
 
 // Run tests serially since they all use the same table
@@ -33,7 +32,7 @@ async function dragComponent(
   element: Locator,
   offsetX: number,
   offsetY: number,
-  stepNumber: number = 500
+  stepNumber: number = 1000
 ) {
   // flipped the sign for offSetY since coordinates are from top-left of window
   const [x, y] = await element
@@ -45,6 +44,10 @@ async function dragComponent(
   await element.hover();
   await page.mouse.down();
   await page.mouse.move(x, y, { steps: stepNumber });
+  
+  const dropTargetIndicator = page.locator('.is-dropping');
+  expect(dropTargetIndicator).toBeVisible();
+
   await page.mouse.up();
 
   await expect(
@@ -210,7 +213,7 @@ test.describe('tests complex table operations', () => {
 
     // Rollup string column
     const stringColumn = page.getByRole('button', { name: 'String' });
-    await dragComponent(page, stringColumn, -100, 100);
+    await dragComponent(page, stringColumn, -150, 100);
 
     await expect(
       page.locator('.iris-grid .iris-grid-loading-status')
@@ -238,7 +241,7 @@ test.describe('tests complex table operations', () => {
 
     // Rollup int column after string
     const intColumn = page.getByRole('button', { name: 'Int', exact: true });
-    await dragComponent(page, intColumn, 200, 80);
+    await dragComponent(page, intColumn, 150, 80);
 
     await expect(
       page.locator('.iris-grid .iris-grid-loading-status')
