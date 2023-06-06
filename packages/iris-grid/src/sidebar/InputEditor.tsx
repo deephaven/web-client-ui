@@ -172,6 +172,7 @@ export default class InputEditor extends Component<
           ref={editorContainer => {
             this.editorContainer = editorContainer;
           }}
+          data-testid="custom-column-formula"
         />
         {isEditorEmpty && !value && (
           <div className="editor-placeholder text-muted">Column Formula</div>
