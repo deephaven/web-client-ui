@@ -1,4 +1,5 @@
 import React, { ChangeEvent, Component, ReactElement, RefObject } from 'react';
+import debounce from 'lodash.debounce';
 import {
   ContextActions,
   ItemList,
@@ -55,6 +56,7 @@ interface CommandHistoryState {
   offset: number;
   selectedRanges: Range[];
   searchText: string;
+  debouncedSearchText: string;
 }
 
 class CommandHistory extends Component<
@@ -64,6 +66,8 @@ class CommandHistory extends Component<
   static ITEM_HEIGHT = 29;
 
   static MAX_SELECTION_COUNT = 10000;
+
+  static SET_SEARCH_DEBOUNCE_MS = 150;
 
   static menuGroups = {
     send: ContextActions.groups.medium + 100,
@@ -189,10 +193,12 @@ class CommandHistory extends Component<
       offset: 0,
       selectedRanges: [],
       searchText: '',
+      debouncedSearchText: '',
     };
   }
 
   componentWillUnmount(): void {
+    this.debouncedSearchChange.cancel();
     this.pending.cancel();
   }
 
@@ -271,6 +277,14 @@ class CommandHistory extends Component<
       .catch(log.error);
   }
 
+  debouncedSearchChange = debounce((): void => {
+    this.setState(({ searchText }) => ({
+      debouncedSearchText: searchText,
+      // clear selected range, as old selection could be filtered from list
+      selectedRanges: [],
+    }));
+  }, CommandHistory.SET_SEARCH_DEBOUNCE_MS);
+
   sendToNotebook(): void {
     this.getSelectedCommandText()
       .then(commandText => {
@@ -316,8 +330,8 @@ class CommandHistory extends Component<
   }
 
   handleSearchChange(e: ChangeEvent<HTMLInputElement>): void {
-    // clear selected range, as old selection could be filtered from list
-    this.setState({ searchText: e.target.value, selectedRanges: [] });
+    this.setState({ searchText: e.target.value });
+    this.debouncedSearchChange();
   }
 
   handleViewportUpdate({
@@ -361,6 +375,7 @@ class CommandHistory extends Component<
       actions,
       historyActions,
       searchText,
+      debouncedSearchText,
       top,
       bottom,
       items,
@@ -404,7 +419,7 @@ class CommandHistory extends Component<
             table={table}
             top={top}
             bottom={bottom}
-            search={searchText}
+            search={debouncedSearchText}
             onUpdate={this.handleViewportUpdate}
           />
           <ContextActions actions={actions} />
