@@ -278,24 +278,34 @@ export class DateUtils {
         now.getMonth(),
         now.getDate()
       );
-      const endDate = DateUtils.makeDateWrapper(
-        dh,
-        timeZone,
+      const tomorrow = new Date(
         now.getFullYear(),
         now.getMonth(),
         now.getDate() + 1
+      );
+      const endDate = DateUtils.makeDateWrapper(
+        dh,
+        timeZone,
+        tomorrow.getFullYear(),
+        tomorrow.getMonth(),
+        tomorrow.getDate()
       );
       return [startDate, endDate];
     }
 
     if (cleanText === 'yesterday') {
       const now = new Date(Date.now());
-      const startDate = DateUtils.makeDateWrapper(
-        dh,
-        timeZone,
+      const yesterday = new Date(
         now.getFullYear(),
         now.getMonth(),
         now.getDate() - 1
+      );
+      const startDate = DateUtils.makeDateWrapper(
+        dh,
+        timeZone,
+        yesterday.getFullYear(),
+        yesterday.getMonth(),
+        yesterday.getDate()
       );
       const endDate = DateUtils.makeDateWrapper(
         dh,

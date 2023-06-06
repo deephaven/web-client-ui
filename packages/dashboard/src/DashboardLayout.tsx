@@ -1,4 +1,5 @@
 import React, {
+  ComponentType,
   ReactElement,
   useCallback,
   useEffect,
@@ -32,6 +33,7 @@ import {
   PanelHydrateFunction,
   PanelProps,
 } from './DashboardPlugin';
+import DashboardPanelWrapper from './DashboardPanelWrapper';
 
 export type DashboardLayoutConfig = ItemConfigType[];
 
@@ -63,6 +65,9 @@ interface DashboardLayoutProps {
   data?: DashboardData;
   children?: React.ReactNode | React.ReactNode[];
   emptyDashboard?: React.ReactNode;
+
+  /** Component to wrap each panel with */
+  panelWrapper?: ComponentType;
 }
 
 /**
@@ -78,6 +83,7 @@ export function DashboardLayout({
   onLayoutInitialized = DEFAULT_CALLBACK,
   hydrate = hydrateDefault,
   dehydrate = dehydrateDefault,
+  panelWrapper = DashboardPanelWrapper,
 }: DashboardLayoutProps): JSX.Element {
   const dispatch = useDispatch();
   const data =
@@ -117,6 +123,8 @@ export function DashboardLayout({
         // ComponentType doesn't seem to work right, ReactNode is also incorrect
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const CType = componentType as any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const PanelWrapperType = panelWrapper as any;
 
         // Props supplied by GoldenLayout
         // eslint-disable-next-line react/prop-types
@@ -124,7 +132,10 @@ export function DashboardLayout({
         return (
           <PanelErrorBoundary glContainer={glContainer} glEventHub={glEventHub}>
             {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-            <CType {...props} ref={ref} />
+            <PanelWrapperType {...props}>
+              {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+              <CType {...props} ref={ref} />
+            </PanelWrapperType>
           </PanelErrorBoundary>
         );
       }
@@ -135,7 +146,7 @@ export function DashboardLayout({
       dehydrateMap.set(name, componentDehydrate);
       return cleanup;
     },
-    [hydrate, dehydrate, hydrateMap, dehydrateMap, layout]
+    [hydrate, dehydrate, hydrateMap, dehydrateMap, layout, panelWrapper]
   );
   const hydrateComponent = useCallback(
     (name, props) => (hydrateMap.get(name) ?? FALLBACK_CALLBACK)(props, id),

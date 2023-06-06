@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.40.4](https://github.com/deephaven/web-client-ui/compare/v0.40.3...v0.40.4) (2023-06-02)
+
+### Bug Fixes
+
+- DH-14657 Disconnect handling increase debounce timeout ([#1347](https://github.com/deephaven/web-client-ui/issues/1347)) ([66bdad8](https://github.com/deephaven/web-client-ui/commit/66bdad8b548e62c938cc13bc9fe0dd7ca1257943))
+- panels menu should only open downwards ([#1340](https://github.com/deephaven/web-client-ui/issues/1340)) ([a25be7f](https://github.com/deephaven/web-client-ui/commit/a25be7f0c0e043340bed88ad5a5923ab852917ee))
+
+## [0.40.3](https://github.com/deephaven/web-client-ui/compare/v0.40.2...v0.40.3) (2023-05-31)
+
+**Note:** Version bump only for package @deephaven/code-studio
+
+## [0.40.2](https://github.com/deephaven/web-client-ui/compare/v0.40.1...v0.40.2) (2023-05-31)
+
+### Bug Fixes
+
+- Worker plugin definitions, optional panel wrapper for Dashboards ([#1329](https://github.com/deephaven/web-client-ui/issues/1329)) ([c32ffbc](https://github.com/deephaven/web-client-ui/commit/c32ffbcf66826c4e2da3ac82e5b5086524d05ec8))
+
 ## [0.40.1](https://github.com/deephaven/web-client-ui/compare/v0.40.0...v0.40.1) (2023-05-24)
 
 **Note:** Version bump only for package @deephaven/code-studio

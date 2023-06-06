@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.40.4](https://github.com/deephaven/web-client-ui/compare/v0.40.3...v0.40.4) (2023-06-02)
+
+**Note:** Version bump only for package @deephaven/app-utils
+
+## [0.40.3](https://github.com/deephaven/web-client-ui/compare/v0.40.2...v0.40.3) (2023-05-31)
+
+**Note:** Version bump only for package @deephaven/app-utils
+
+## [0.40.2](https://github.com/deephaven/web-client-ui/compare/v0.40.1...v0.40.2) (2023-05-31)
+
+### Bug Fixes
+
+- truncated column headers ([#1319](https://github.com/deephaven/web-client-ui/issues/1319)) ([db7716e](https://github.com/deephaven/web-client-ui/commit/db7716ebe953611ab4b4eec781e2e03204380ebd)), closes [#1318](https://github.com/deephaven/web-client-ui/issues/1318)
+- Worker plugin definitions, optional panel wrapper for Dashboards ([#1329](https://github.com/deephaven/web-client-ui/issues/1329)) ([c32ffbc](https://github.com/deephaven/web-client-ui/commit/c32ffbcf66826c4e2da3ac82e5b5086524d05ec8))
+
 ## [0.40.1](https://github.com/deephaven/web-client-ui/compare/v0.40.0...v0.40.1) (2023-05-24)
 
 **Note:** Version bump only for package @deephaven/app-utils

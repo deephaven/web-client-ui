@@ -9,6 +9,7 @@
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx"],
   "exclude": ["node_modules", "src/**/*.test.*", "src/**/__mocks__/*"],
   "references": [
+    { "path": "../app-utils" },
     { "path": "../auth-plugins" },
     { "path": "../chart" },
     { "path": "../components" },

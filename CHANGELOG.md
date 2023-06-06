@@ -3,6 +3,35 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.40.4](https://github.com/deephaven/web-client-ui/compare/v0.40.3...v0.40.4) (2023-06-02)
+
+### Bug Fixes
+
+- Add a default DashboardPanelWrapper ([#1346](https://github.com/deephaven/web-client-ui/issues/1346)) ([ddd92cf](https://github.com/deephaven/web-client-ui/commit/ddd92cf94ee038da9f6b998b12f533d17a400bc4)), closes [#1329](https://github.com/deephaven/web-client-ui/issues/1329)
+- DateWrapper fails on first day of month ([#1342](https://github.com/deephaven/web-client-ui/issues/1342)) ([a4677eb](https://github.com/deephaven/web-client-ui/commit/a4677eb0215b9f3746d68068b0ae13b36736a228)), closes [#1341](https://github.com/deephaven/web-client-ui/issues/1341)
+- DH-14657 Disconnect handling increase debounce timeout ([#1347](https://github.com/deephaven/web-client-ui/issues/1347)) ([66bdad8](https://github.com/deephaven/web-client-ui/commit/66bdad8b548e62c938cc13bc9fe0dd7ca1257943))
+- panels menu should only open downwards ([#1340](https://github.com/deephaven/web-client-ui/issues/1340)) ([a25be7f](https://github.com/deephaven/web-client-ui/commit/a25be7f0c0e043340bed88ad5a5923ab852917ee))
+
+## [0.40.3](https://github.com/deephaven/web-client-ui/compare/v0.40.2...v0.40.3) (2023-05-31)
+
+### Bug Fixes
+
+- today/yesterday keywords failed on last/first day of month ([#1336](https://github.com/deephaven/web-client-ui/issues/1336)) ([4c3fe24](https://github.com/deephaven/web-client-ui/commit/4c3fe24c083a827b0d8ec57219a0083c84bb894c)), closes [#1335](https://github.com/deephaven/web-client-ui/issues/1335)
+
+### Reverts
+
+- "refactor: Clean up golden-layout css ([#1322](https://github.com/deephaven/web-client-ui/issues/1322))" ([#1334](https://github.com/deephaven/web-client-ui/issues/1334)) ([2f7928a](https://github.com/deephaven/web-client-ui/commit/2f7928a67e14f2026aef73cee542045ce7477351))
+
+## [0.40.2](https://github.com/deephaven/web-client-ui/compare/v0.40.1...v0.40.2) (2023-05-31)
+
+### Bug Fixes
+
+- disable screenshot tests in debug mode ([#1328](https://github.com/deephaven/web-client-ui/issues/1328)) ([cbe8f72](https://github.com/deephaven/web-client-ui/commit/cbe8f72267a270c41dcb7fd241e6da424fade296)), closes [#1327](https://github.com/deephaven/web-client-ui/issues/1327)
+- failing linter test from de-globalize PR ([#1321](https://github.com/deephaven/web-client-ui/issues/1321)) ([6ae174c](https://github.com/deephaven/web-client-ui/commit/6ae174c9b6ae222abc515f09d609747976d9d6d6))
+- notebook panel unsaved indicator not showing after dragging a panel ([#1325](https://github.com/deephaven/web-client-ui/issues/1325)) ([99818a8](https://github.com/deephaven/web-client-ui/commit/99818a8ee4b505da7708914105a4197abdc502d8))
+- truncated column headers ([#1319](https://github.com/deephaven/web-client-ui/issues/1319)) ([db7716e](https://github.com/deephaven/web-client-ui/commit/db7716ebe953611ab4b4eec781e2e03204380ebd)), closes [#1318](https://github.com/deephaven/web-client-ui/issues/1318)
+- Worker plugin definitions, optional panel wrapper for Dashboards ([#1329](https://github.com/deephaven/web-client-ui/issues/1329)) ([c32ffbc](https://github.com/deephaven/web-client-ui/commit/c32ffbcf66826c4e2da3ac82e5b5086524d05ec8))
+
 ## [0.40.1](https://github.com/deephaven/web-client-ui/compare/v0.40.0...v0.40.1) (2023-05-24)
 
 ### Bug Fixes
