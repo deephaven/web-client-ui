@@ -1,7 +1,3 @@
-import Log from '@deephaven/log';
-
-const log = Log.module('EventEmitter');
-
 /**
  * A generic and very fast EventEmitter
  * implementation. On top of emitting the
@@ -72,7 +68,7 @@ class EventEmitter {
         try {
           subs[i].fn.apply(ctx, args);
         } catch (e) {
-          log.error('Error while emitting event:', e);
+          console.error('Error while emitting event:', e);
         }
       }
     }
@@ -86,7 +82,7 @@ class EventEmitter {
       try {
         allEventSubs[i].fn.apply(ctx, args);
       } catch (e) {
-        log.error('Error while emitting event to allEventSubs:', e);
+        console.error('Error while emitting event to allEventSubs:', e);
       }
     }
   }

@@ -5,6 +5,5 @@
     "outDir": "dist/"
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx"],
-  "exclude": ["node_modules"],
-  "references": [{ "path": "../components" }, { "path": "../log" }]
+  "exclude": ["node_modules"]
 }
