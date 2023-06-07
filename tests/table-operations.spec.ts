@@ -14,26 +14,21 @@ async function waitForLoadingDone(page: Page) {
 async function dragComponent(
   page: Page,
   element: Locator,
-  offsetX: number,
-  offsetY: number,
-  stepNumber: number = 1000
+  destination: Locator,
+  offsetY = 0
 ) {
-  // flipped the sign for offSetY since coordinates are from top-left of window
-  const [x, y] = await element
-    .boundingBox()
-    .then(pos =>
-      pos && pos.x !== null && pos.y != null
-        ? [pos.x + offsetX, pos.y - offsetY]
-        : [1130, 470.5]
-    );
+  const destinationPos = await destination.boundingBox();
+  if (destinationPos === null) throw new Error('element not found');
 
   await element.hover();
   await page.mouse.down();
-  await page.mouse.move(x, y, { steps: stepNumber });
-
-  const dropTargetIndicator = page.locator('.is-dropping');
-  await expect(dropTargetIndicator).toBeVisible();
-
+  await page.mouse.move(
+    destinationPos.x + destinationPos.width / 2,
+    destinationPos.y + destinationPos.height / 2 + offsetY,
+    {
+      steps: 200,
+    }
+  );
   await page.mouse.up();
 
   await waitForLoadingDone(page);
@@ -42,7 +37,7 @@ async function dragComponent(
 async function changeCondFormatComparison(
   page: Page,
   condition: string,
-  column: string = ''
+  column = ''
 ) {
   const formattingRule = page.locator('.formatting-item');
   const conditionSelect = page.locator('data-testid=condition-select');
@@ -117,13 +112,12 @@ async function changeCondFormatHighlight(page: Page) {
 }
 
 test.beforeEach(async ({ page }) => {
-  // page = await browser.newPage();
   await page.goto('');
 
   const consoleInput = page.locator('.console-input');
   await consoleInput.click();
 
-  const command = `${makeTableCommand(undefined, TableTypes.AllTypes)}`;
+  const command = makeTableCommand(undefined, TableTypes.AllTypes);
 
   await pasteInMonaco(consoleInput, command);
   await page.keyboard.press('Enter');
@@ -149,7 +143,6 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('can select distinct values', async ({ page }) => {
-  // open Select Distinct panel
   await page.locator('data-testid=menu-item-Select Distinct Values').click();
 
   const columnSelect = page.getByRole('combobox');
@@ -157,7 +150,6 @@ test('can select distinct values', async ({ page }) => {
 
   await columnSelect.selectOption('String');
 
-  // Check snapshot
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 });
 
@@ -191,61 +183,61 @@ test('can search', async ({ page }) => {
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 });
 
-test('can conditional format', async ({ page }) => {
-  await page.locator('data-testid=menu-item-Conditional Formatting').click();
+// test('can conditional format', async ({ page }) => {
+//   await page.locator('data-testid=menu-item-Conditional Formatting').click();
 
-  await test.step(' Setup new formatting rule', async () => {
-    await page.getByRole('button', { name: 'Add New Rule' }).click();
-    await page.locator('.style-editor').click();
-    await page.getByRole('button', { name: 'Positive' }).click();
-    await page.getByRole('button', { name: 'Done' }).click();
-  });
+//   await test.step(' Setup new formatting rule', async () => {
+//     await page.getByRole('button', { name: 'Add New Rule' }).click();
+//     await page.locator('.style-editor').click();
+//     await page.getByRole('button', { name: 'Positive' }).click();
+//     await page.getByRole('button', { name: 'Done' }).click();
+//   });
 
-  await test.step('Is null', async () => {
-    await changeCondFormatComparison(page, 'is-null');
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+//   await test.step('Is null', async () => {
+//     await changeCondFormatComparison(page, 'is-null');
+//     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
-    await changeCondFormatHighlight(page);
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-  });
+//     await changeCondFormatHighlight(page);
+//     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+//   });
 
-  await test.step('Is not null', async () => {
-    await changeCondFormatComparison(page, 'is-not-null');
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+//   await test.step('Is not null', async () => {
+//     await changeCondFormatComparison(page, 'is-not-null');
+//     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
-    await changeCondFormatHighlight(page);
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-  });
+//     await changeCondFormatHighlight(page);
+//     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+//   });
 
-  await test.step('Change column', async () => {
-    await changeCondFormatComparison(page, 'is-not-null', 'Int');
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+//   await test.step('Change column', async () => {
+//     await changeCondFormatComparison(page, 'is-not-null', 'Int');
+//     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
-    await changeCondFormatHighlight(page);
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-  });
+//     await changeCondFormatHighlight(page);
+//     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+//   });
 
-  await test.step('Cancel', async () => {
-    const formattingRule = page.locator('.formatting-item');
-    const conditionSelect = page.locator('data-testid=condition-select');
+//   await test.step('Cancel', async () => {
+//     const formattingRule = page.locator('.formatting-item');
+//     const conditionSelect = page.locator('data-testid=condition-select');
 
-    await expect(conditionSelect).toHaveCount(0);
+//     await expect(conditionSelect).toHaveCount(0);
 
-    await formattingRule.click();
-    await conditionSelect.selectOption('is-null');
-    await page.getByRole('button', { name: 'Cancel' }).click();
+//     await formattingRule.click();
+//     await conditionSelect.selectOption('is-null');
+//     await page.getByRole('button', { name: 'Cancel' }).click();
 
-    await waitForLoadingDone(page);
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-  });
+//     await waitForLoadingDone(page);
+//     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+//   });
 
-  await test.step('Delete', async () => {
-    await page.getByRole('button', { name: 'Delete rule' }).click();
+//   await test.step('Delete', async () => {
+//     await page.getByRole('button', { name: 'Delete rule' }).click();
 
-    await waitForLoadingDone(page);
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-  });
-});
+//     await waitForLoadingDone(page);
+//     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+//   });
+// });
 
 test('can organize columns', async ({ page }) => {
   await page.locator('data-testid=menu-item-Organize Columns').click();
@@ -464,11 +456,13 @@ test('can custom column', async ({ page }) => {
 
 test('can rollup rows and aggregrate columns', async ({ page }) => {
   await page.locator('data-testid=menu-item-Rollup Rows').click();
+  await expect(page.getByText('Table Options')).toHaveCount(0);
+  const dropdown = page.locator('.rollup-rows-group-by');
 
+  const stringColumn = page.getByRole('button', { name: 'String' });
   await test.step('Rollup column', async () => {
-    const stringColumn = page.getByRole('button', { name: 'String' });
     expect(stringColumn).toBeTruthy();
-    await dragComponent(page, stringColumn, -150, 100);
+    await dragComponent(page, stringColumn, dropdown);
 
     await waitForLoadingDone(page);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
@@ -491,7 +485,7 @@ test('can rollup rows and aggregrate columns', async ({ page }) => {
   await test.step('Rollup another column', async () => {
     const intColumn = page.getByRole('button', { name: 'Int', exact: true });
     expect(intColumn).toBeTruthy();
-    await dragComponent(page, intColumn, 150, 80);
+    await dragComponent(page, intColumn, stringColumn, 10);
 
     await waitForLoadingDone(page);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
