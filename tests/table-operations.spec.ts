@@ -32,7 +32,7 @@ async function dragComponent(
   await page.mouse.move(x, y, { steps: stepNumber });
 
   const dropTargetIndicator = page.locator('.is-dropping');
-  expect(dropTargetIndicator).toBeVisible();
+  await expect(dropTargetIndicator).toBeVisible();
 
   await page.mouse.up();
 
@@ -65,6 +65,9 @@ async function changeCondFormatComparison(
   await expect(columnSelect).toHaveCount(1);
 
   await highlightCell.click();
+  await expect(highlightCell).toHaveClass(
+    'btn btn-icon btn-formatter-type active'
+  );
   if (column !== '') {
     await columnSelect.click();
     await page.getByRole('button', { name: column, exact: true }).click();
@@ -76,6 +79,8 @@ async function changeCondFormatComparison(
       .click();
   }
   await conditionSelect.selectOption(condition);
+  await expect(conditionSelect).toHaveValue(condition);
+
   await doneButton.click();
 
   await expect(formattingRule).toHaveCount(1);
@@ -100,7 +105,9 @@ async function changeCondFormatHighlight(page: Page) {
   await expect(doneButton).toHaveCount(1);
 
   await highlightRow.click();
-  await expect(highlightRow).toHaveClass('btn btn-icon btn-formatter-type active');
+  await expect(highlightRow).toHaveClass(
+    'btn btn-icon btn-formatter-type active'
+  );
   await doneButton.click();
 
   await expect(formattingRule).toHaveCount(1);
