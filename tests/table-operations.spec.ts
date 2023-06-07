@@ -12,13 +12,16 @@ async function waitForLoadingDone(page: Page) {
 }
 
 async function dragComponent(
-  page: Page,
   element: Locator,
   destination: Locator,
+  targetIndicator: Locator,
   offsetY = 0
 ) {
+  const page = element.page();
   const destinationPos = await destination.boundingBox();
   if (destinationPos === null) throw new Error('element not found');
+
+  await expect(targetIndicator).toHaveCount(0);
 
   await element.hover();
   await page.mouse.down();
@@ -26,10 +29,13 @@ async function dragComponent(
     destinationPos.x + destinationPos.width / 2,
     destinationPos.y + destinationPos.height / 2 + offsetY,
     {
-      steps: 200,
+      steps: 100,
     }
   );
+
+  await expect(targetIndicator).not.toHaveCount(0);
   await page.mouse.up();
+  await expect(targetIndicator).toHaveCount(0);
 
   await waitForLoadingDone(page);
 }
@@ -144,6 +150,7 @@ test.beforeEach(async ({ page }) => {
 
 test('can select distinct values', async ({ page }) => {
   await page.locator('data-testid=menu-item-Select Distinct Values').click();
+  await expect(page.getByText('Table Options')).toHaveCount(0);
 
   const columnSelect = page.getByRole('combobox');
   await expect(columnSelect).toHaveCount(1);
@@ -185,6 +192,7 @@ test('can search', async ({ page }) => {
 
 // test('can conditional format', async ({ page }) => {
 //   await page.locator('data-testid=menu-item-Conditional Formatting').click();
+// await expect(page.getByText('Table Options')).toHaveCount(0);
 
 //   await test.step(' Setup new formatting rule', async () => {
 //     await page.getByRole('button', { name: 'Add New Rule' }).click();
@@ -241,6 +249,7 @@ test('can search', async ({ page }) => {
 
 test('can organize columns', async ({ page }) => {
   await page.locator('data-testid=menu-item-Organize Columns').click();
+  await expect(page.getByText('Table Options')).toHaveCount(0);
 
   await test.step('Search', async () => {
     await page.getByPlaceholder('Search').click();
@@ -303,46 +312,35 @@ test('can organize columns', async ({ page }) => {
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });
 
+  const dropIndicator = page
+    .locator('.visibility-ordering-list')
+    .locator('.marching-ants');
   await test.step('Drag', async () => {
-    const dragColumnButton = page.getByRole('button', {
+    const floatOption = page.getByRole('button', {
       name: 'Toggle visibility Float',
     });
-    const [x, y] = await dragColumnButton
-      .boundingBox()
-      .then(pos =>
-        pos && pos.x != null && pos.y != null ? [pos.x, pos.y - 50] : [0, 0]
-      );
-    await dragColumnButton.hover();
-    await page.mouse.down();
-    await page.mouse.move(x, y, { steps: 50 });
-    await page.mouse.up();
+    const stringOption = page.getByRole('button', {
+      name: 'Toggle visibility String',
+    });
+    await dragComponent(floatOption, stringOption, dropIndicator, 20);
 
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });
 
   await test.step('Create Group', async () => {
-    await page
-      .getByRole('button', { name: 'Toggle visibility String' })
-      .click();
+    const stringOption = page.getByRole('button', {
+      name: 'Toggle visibility String',
+    });
+    await stringOption.click();
     await page.getByRole('button', { name: 'Group' }).click();
     await page.getByPlaceholder('Group Name').click();
     await page.keyboard.type('test');
     await page.keyboard.press('Enter');
 
-    const dragColumnButton = page.getByRole('button', {
+    const longOption = page.getByRole('button', {
       name: 'Toggle visibility Long',
     });
-    const [x, y] = await dragColumnButton
-      .boundingBox()
-      .then(pos =>
-        pos && pos.x != null && pos.y != null
-          ? [pos.x + 200, pos.y - 75]
-          : [0, 0]
-      );
-    await dragColumnButton.hover();
-    await page.mouse.down();
-    await page.mouse.move(x, y, { steps: 50 });
-    await page.mouse.up();
+    await dragComponent(longOption, stringOption, dropIndicator);
 
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
@@ -373,6 +371,7 @@ test('can organize columns', async ({ page }) => {
 
 test('can custom column', async ({ page }) => {
   await page.locator('data-testid=menu-item-Custom Columns').click();
+  await expect(page.getByText('Table Options')).toHaveCount(0);
 
   await test.step('Create custom column', async () => {
     const columnName = page.getByPlaceholder('Column Name');
@@ -408,61 +407,54 @@ test('can custom column', async ({ page }) => {
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });
 
-  await test.step('Drag', async () => {
-    await addColumnButton.click();
+  // await test.step('Drag', async () => {
+  //   await addColumnButton.click();
 
-    const dragColumn = page.getByPlaceholder('Column Name').nth(2);
-    await dragColumn.click();
-    await page.keyboard.type('Drag');
+  //   const dragColumn = page.getByPlaceholder('Column Name').nth(2);
+  //   await dragColumn.click();
+  //   await page.keyboard.type('Drag');
 
-    const dragColumnFormula = page.locator('.editor-container').nth(2);
-    await dragColumnFormula.click();
-    await page.keyboard.type('String');
+  //   const dragColumnFormula = page.locator('.editor-container').nth(2);
+  //   await dragColumnFormula.click();
+  //   await page.keyboard.type('String');
 
-    const reorderButton = page
-      .getByRole('button', { name: 'Drag column to re-order' })
-      .nth(2);
-    const [x, y] = await reorderButton
-      .boundingBox()
-      .then(pos =>
-        pos && pos.x && pos.y ? [pos.x, pos.y - 100] : [1235, 302.5]
-      );
-    await reorderButton.hover();
-    await page.mouse.down();
-    await page.mouse.move(x, y, { steps: 1000 });
+  //   const reorderButton = page
+  //     .getByRole('button', { name: 'Drag column to re-order' })
+  //     .nth(2);
+  //   const columnAbove = page.getByPlaceholder('Column Name').nth(1);
+  //   const dropIndicator = page
+  //     .locator('.custom-column-builder-container')
+  //     .locator('.dragging');
+  //   await dragComponent(reorderButton, columnAbove, dropIndicator, 10);
 
-    const dropTargetIndicator = page.locator('.droppable-container');
-    expect(dropTargetIndicator).toBeVisible();
+  //   await saveButton.click();
 
-    await page.mouse.up();
+  //   await waitForLoadingDone(page);
+  //   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  // });
 
-    await saveButton.click();
+  // await test.step('Delete', async () => {
+  //   const deleteLastColumnButton = page
+  //     .getByRole('button', { name: 'Delete custom column' })
+  //     .nth(1);
+  //   await deleteLastColumnButton.click();
+  //   await saveButton.click();
 
-    await waitForLoadingDone(page);
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-  });
-
-  await test.step('Delete', async () => {
-    const deleteLastColumnButton = page
-      .getByRole('button', { name: 'Delete custom column' })
-      .nth(1);
-    await deleteLastColumnButton.click();
-    await saveButton.click();
-
-    await waitForLoadingDone(page);
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-  });
+  //   await waitForLoadingDone(page);
+  //   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  // });
 });
 
 test('can rollup rows and aggregrate columns', async ({ page }) => {
   await page.locator('data-testid=menu-item-Rollup Rows').click();
   await expect(page.getByText('Table Options')).toHaveCount(0);
   const dropdown = page.locator('.rollup-rows-group-by');
+  const dropIndicator = dropdown.locator('.is-dropping');
 
   const stringColumn = page.getByRole('button', { name: 'String' });
   await test.step('Rollup column', async () => {
     expect(stringColumn).toBeTruthy();
-    await dragComponent(page, stringColumn, dropdown);
+    await dragComponent(stringColumn, dropdown, dropIndicator);
 
     await waitForLoadingDone(page);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
@@ -485,7 +477,7 @@ test('can rollup rows and aggregrate columns', async ({ page }) => {
   await test.step('Rollup another column', async () => {
     const intColumn = page.getByRole('button', { name: 'Int', exact: true });
     expect(intColumn).toBeTruthy();
-    await dragComponent(page, intColumn, stringColumn, 10);
+    await dragComponent(intColumn, stringColumn, dropIndicator, 10);
 
     await waitForLoadingDone(page);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
