@@ -32,7 +32,7 @@
                     {
                       "type": "react-component",
                       "component": "test-b",
-                      "title": "test-b"
+                      "title": "test-b-I-am-extra-super-duper-long-example-for-title"
                     },
                     {
                       "type": "react-component",
