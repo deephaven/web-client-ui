@@ -175,10 +175,26 @@ export async function dragComponent(
   await waitForLoadingDone(page);
 }
 
+/**
+ * Open the specified table option in the table sidebar
+ * @param page Test page to execute on
+ * @param tableOption Name of the table option to open.
+ */
+export async function openTableOption(
+  page: Page,
+  tableOption: string
+): Promise<void> {
+  await page.locator(`data-testid=menu-item-${tableOption}`).click();
+
+  // Wait until the table option has fully appeared, by checking that the top level menu is no longer visible
+  await expect(page.getByText('Table Options')).toHaveCount(0);
+}
+
 export default {
   generateVarName,
   pasteInMonaco,
   typeInMonaco,
   waitForLoadingDone,
   dragComponent,
+  openTableOption,
 };

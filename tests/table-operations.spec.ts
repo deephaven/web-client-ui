@@ -5,6 +5,7 @@ import {
   TableTypes,
   dragComponent,
   waitForLoadingDone,
+  openTableOption,
 } from './utils';
 
 // Run tests serially since they all use the same table
@@ -119,9 +120,8 @@ test.beforeEach(async ({ page }) => {
   await expect(page.locator('.table-sidebar')).toHaveCount(1);
 });
 
-test('can select distinct values', async ({ page }) => {
-  await page.locator('data-testid=menu-item-Select Distinct Values').click();
-  await expect(page.getByText('Table Options')).toHaveCount(0);
+test('select distinct values', async ({ page }) => {
+  await openTableOption(page, 'Select Distinct Values');
 
   const columnSelect = page.getByRole('combobox');
   await expect(columnSelect).toHaveCount(1);
@@ -131,8 +131,7 @@ test('can select distinct values', async ({ page }) => {
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 });
 
-test('can search', async ({ page }) => {
-  // open Search Bar panel
+test('search', async ({ page }) => {
   await page.locator('data-testid=menu-item-Search Bar').click();
 
   const searchBar = page.getByPlaceholder('Search Data...');
@@ -161,11 +160,10 @@ test('can search', async ({ page }) => {
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 });
 
-test('can conditional format', async ({ page }) => {
-  await page.locator('data-testid=menu-item-Conditional Formatting').click();
-  await expect(page.getByText('Table Options')).toHaveCount(0);
+test('conditional format', async ({ page }) => {
+  await openTableOption(page, 'Conditional Formatting');
 
-  await test.step(' Setup new formatting rule', async () => {
+  await test.step('Setup new formatting rule', async () => {
     await page.getByRole('button', { name: 'Add New Rule' }).click();
     await page.locator('.style-editor').click();
     await page.getByRole('button', { name: 'Positive' }).click();
@@ -221,9 +219,8 @@ test('can conditional format', async ({ page }) => {
   });
 });
 
-test('can organize columns', async ({ page }) => {
-  await page.locator('data-testid=menu-item-Organize Columns').click();
-  await expect(page.getByText('Table Options')).toHaveCount(0);
+test('organize columns', async ({ page }) => {
+  await openTableOption(page, 'Organize Columns');
 
   await test.step('Search', async () => {
     await page.getByPlaceholder('Search').click();
@@ -343,9 +340,9 @@ test('can organize columns', async ({ page }) => {
   });
 });
 
-test('can custom column', async ({ page }) => {
-  await page.locator('data-testid=menu-item-Custom Columns').click();
-  await expect(page.getByText('Table Options')).toHaveCount(0);
+// TODO: Figure out why webkit drag doesn't work if steps aren't insanely high when generating linux snapshot (#1360)
+test('custom column', async ({ page }) => {
+  await openTableOption(page, 'Custom Columns');
 
   await test.step('Create custom column', async () => {
     const columnName = page.getByPlaceholder('Column Name');
@@ -429,9 +426,9 @@ test('can custom column', async ({ page }) => {
   });
 });
 
-test('can rollup rows and aggregrate columns', async ({ page }) => {
-  await page.locator('data-testid=menu-item-Rollup Rows').click();
-  await expect(page.getByText('Table Options')).toHaveCount(0);
+test('rollup rows and aggregrate columns', async ({ page }) => {
+  await openTableOption(page, 'Rollup Rows');
+
   const dropdown = page.locator('.rollup-rows-group-by');
   const dropIndicator = dropdown.locator('.is-dropping');
 
@@ -472,7 +469,7 @@ test('can rollup rows and aggregrate columns', async ({ page }) => {
     await page.getByText('Non-Aggregated Columns').click();
 
     await page.getByTestId('btn-page-back').click();
-    await page.getByTestId('menu-item-Aggregate Columns').click();
+    await openTableOption(page, 'Aggregate Columns');
     await page.getByRole('button', { name: 'Add Aggregation' }).click();
 
     await waitForLoadingDone(page);
