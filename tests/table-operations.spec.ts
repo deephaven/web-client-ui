@@ -89,6 +89,14 @@ async function changeCondFormatHighlight(page: Page) {
   await waitForLoadingDone(page);
 }
 
+async function artificialWait(page: Page) {
+  const tableOperationsMenu = page
+    .locator('data-testid=btn-iris-grid-settings-button-table')
+    .nth(1);
+  await tableOperationsMenu.click();
+  await page.getByTestId('btn-page-close').first().click();
+}
+
 test.beforeEach(async ({ page }) => {
   await page.goto('');
 
@@ -495,71 +503,11 @@ test('rollup rows and aggregrate columns', async ({ page }) => {
 });
 
 test('advanced settings', async ({ page }) => {
-  const advancedSettingsOpt = page.locator(
-    'data-testid=menu-item-Advanced Settings'
-  );
-  await advancedSettingsOpt.click();
-  await expect(page.getByText('Table Options')).toHaveCount(0);
-
-  await test.step('toggle settings', async () => {
-    await page
-      .getByTestId(
-        'menu-item-Clear current table filters before applying new filters from a control'
-      )
-      .click();
-    await page
-      .getByTestId(
-        'menu-item-Clear current table filters before applying new filters from an incoming link filter'
-      )
-      .click();
-    await page.getByTestId('btn-page-back').click();
-  });
-
-  await test.step('create input filter', async () => {
-    await page.getByRole('button', { name: 'Controls' }).click();
-
-    const inputFilter = page.getByRole('button', { name: 'Input Filter' });
-    const target = page.getByText('Command History');
-    const dropIndicator = page.locator('.lm_dragProxy');
-    await dragComponent(inputFilter, target, dropIndicator);
-
-    await page.getByTestId('btn-page-close').click();
-  });
-
-  await test.step('toggle quick filter', async () => {
-    const stringColumn = page.locator('.iris-grid .grid-wrapper');
-
-    await stringColumn.click({ position: { x: 20, y: 10 }, button: 'right' });
-    await page.getByRole('button', { name: 'Quick Filters' }).click();
-
-    await page.keyboard.type('null');
-    await waitForLoadingDone(page);
-
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-  });
-
-  await test.step('use input filter', async () => {
-    const stringColumnOpt = '10';
-    await page.getByRole('combobox').selectOption(stringColumnOpt);
-    await page.getByRole('button', { name: 'Save' }).click();
-
-    await expect(page.getByPlaceholder('Enter value...')).toHaveCount(1);
-    await page.getByPlaceholder('Enter value...').fill('~a9');
-    await page.getByPlaceholder('Enter value...').click();
-    // await page.keyboard.type('~a9');
-    await page.keyboard.press('Enter');
-
-    await waitForLoadingDone(page);
-
-    // await expect(page.locator('.input-filter-value-card')).toHaveScreenshot();
-    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-  });
-
   await test.step('create 2nd table', async () => {
     const consoleInput = page.locator('.console-input');
     await consoleInput.click();
 
-    const command = makeTableCommand(undefined, TableTypes.AllTypes);
+    const command = makeTableCommand('test_z', TableTypes.AllTypes);
 
     await pasteInMonaco(consoleInput, command);
     await page.keyboard.press('Enter');
@@ -569,20 +517,32 @@ test('advanced settings', async ({ page }) => {
     // opening up this menu makes it easier to drag to that corner
     await page
       .getByTestId('btn-iris-grid-settings-button-table')
-      .nth(1)
+      .first()
       .click();
 
-    const table = page.locator('.lm_tabs').nth(2).locator('.lm_tab').first();
+    const table = page
+      .locator('.lm_tab')
+      .filter({ has: page.getByText('test_z') });
     const target = page.getByText('Command History');
     const dropIndicator = page.locator('.lm_dragProxy');
     await dragComponent(table, target, dropIndicator, 300);
 
     await page.getByTestId('btn-page-close').first().click();
+    await page.getByTestId('btn-page-close').nth(1).click();
 
     await waitForLoadingDone(page);
   });
 
-  await test.step('create link', async () => {
+  await test.step('add input filter to int column', async () => {
+    await page.getByRole('button', { name: 'Controls' }).click();
+
+    const inputFilter = page.getByRole('button', { name: 'Input Filter' });
+    const target = page.getByText('Command History');
+    const dropIndicator = page.locator('.lm_dragProxy');
+    await dragComponent(inputFilter, target, dropIndicator);
+  });
+
+  await test.step('add linker filter to string column', async () => {
     await page.getByRole('button', { name: 'Controls' }).click();
     await page.getByRole('button', { name: 'Linker' }).click();
 
@@ -601,9 +561,100 @@ test('advanced settings', async ({ page }) => {
       .locator('.iris-grid .grid-wrapper')
       .first()
       .dblclick({
-        position: { x: 20, y: 40 },
+        position: { x: 20, y: 60 },
       });
+
+    await waitForLoadingDone(page, 1);
   });
 
-  await expect(page.locator('.iris-grid-column').nth(1)).toHaveScreenshot();
+  await test.step('use input filter', async () => {
+    const intColumnOpt = '7';
+    await page.getByRole('combobox').selectOption(intColumnOpt);
+    await page.getByRole('button', { name: 'Save' }).click();
+
+    await expect(page.getByPlaceholder('Enter value...')).toHaveCount(1);
+    await page.getByPlaceholder('Enter value...').click();
+    await page.keyboard.type('>1000');
+    await expect(page.getByPlaceholder('Enter value...')).toHaveValue('>1000');
+
+    await waitForLoadingDone(page);
+    await waitForLoadingDone(page, 1);
+    await artificialWait(page);
+
+    await expect(page.locator('.iris-grid-column').nth(1)).toHaveScreenshot();
+  });
+
+  await test.step('toggle control setting', async () => {
+    const tableOperationsMenu = page
+      .locator('data-testid=btn-iris-grid-settings-button-table')
+      .nth(1);
+    await tableOperationsMenu.click();
+
+    await expect(page.locator('.table-sidebar')).toHaveCount(1);
+
+    await openTableOption(page, 'Advanced Settings');
+    await page
+      .getByTestId(
+        'menu-item-Clear current table filters before applying new filters from a control'
+      )
+      .click();
+    await page.getByTestId('btn-page-close').click();
+  });
+
+  await test.step('use input filter', async () => {
+    await expect(page.getByPlaceholder('Enter value...')).toHaveCount(1);
+    await page.getByPlaceholder('Enter value...').fill('>5000');
+    await expect(page.getByPlaceholder('Enter value...')).toHaveValue('>5000');
+
+    await waitForLoadingDone(page);
+    await waitForLoadingDone(page, 1);
+    await artificialWait(page);
+
+    await expect(page.locator('.iris-grid-column').nth(1)).toHaveScreenshot();
+  });
+
+  await test.step('use linker filter', async () => {
+    await page
+      .locator('.iris-grid .grid-wrapper')
+      .first()
+      .dblclick({
+        position: { x: 20, y: 60 },
+      });
+
+    await waitForLoadingDone(page, 1);
+    await artificialWait(page);
+
+    await expect(page.locator('.iris-grid-column').nth(1)).toHaveScreenshot();
+  });
+
+  await test.step('toggle linker setting', async () => {
+    const tableOperationsMenu = page
+      .locator('data-testid=btn-iris-grid-settings-button-table')
+      .nth(1);
+    await tableOperationsMenu.click();
+
+    await expect(page.locator('.table-sidebar')).toHaveCount(1);
+
+    await openTableOption(page, 'Advanced Settings');
+    await page
+      .getByTestId(
+        'menu-item-Clear current table filters before applying new filters from an incoming link filter'
+      )
+      .click();
+    await page.getByTestId('btn-page-close').click();
+  });
+
+  await test.step('use linker filter', async () => {
+    await page
+      .locator('.iris-grid .grid-wrapper')
+      .first()
+      .dblclick({
+        position: { x: 20, y: 60 },
+      });
+
+    await waitForLoadingDone(page, 1);
+    await artificialWait(page);
+
+    await expect(page.locator('.iris-grid-column').nth(1)).toHaveScreenshot();
+  });
 });
