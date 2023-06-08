@@ -34,6 +34,7 @@ async function changeCondFormatComparison(
   await expect(conditionSelect).toHaveCount(1);
   await expect(highlightCell).toHaveCount(1);
   await expect(columnSelect).toHaveCount(1);
+  await expect(page.getByText('Edit Formatting Rule')).toHaveCount(1);
 
   await highlightCell.click();
   await expect(highlightCell).toHaveClass(
@@ -160,63 +161,62 @@ test('can search', async ({ page }) => {
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 });
 
-// TODO: fix 'Is not null' step failing on webkit linux
-// test('can conditional format', async ({ page }) => {
-//   await page.locator('data-testid=menu-item-Conditional Formatting').click();
-//   await expect(page.getByText('Table Options')).toHaveCount(0);
+test('can conditional format', async ({ page }) => {
+  await page.locator('data-testid=menu-item-Conditional Formatting').click();
+  await expect(page.getByText('Table Options')).toHaveCount(0);
 
-//   await test.step(' Setup new formatting rule', async () => {
-//     await page.getByRole('button', { name: 'Add New Rule' }).click();
-//     await page.locator('.style-editor').click();
-//     await page.getByRole('button', { name: 'Positive' }).click();
-//     await page.getByRole('button', { name: 'Done' }).click();
-//   });
+  await test.step(' Setup new formatting rule', async () => {
+    await page.getByRole('button', { name: 'Add New Rule' }).click();
+    await page.locator('.style-editor').click();
+    await page.getByRole('button', { name: 'Positive' }).click();
+    await page.getByRole('button', { name: 'Done' }).click();
+  });
 
-//   await test.step('Is null', async () => {
-//     await changeCondFormatComparison(page, 'is-null');
-//     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  await test.step('Is null', async () => {
+    await changeCondFormatComparison(page, 'is-null');
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
-//     await changeCondFormatHighlight(page);
-//     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-//   });
+    await changeCondFormatHighlight(page);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  });
 
-//   await test.step('Is not null', async () => {
-//     await changeCondFormatComparison(page, 'is-not-null');
-//     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  await test.step('Is not null', async () => {
+    await changeCondFormatComparison(page, 'is-not-null');
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
-//     await changeCondFormatHighlight(page);
-//     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-//   });
+    await changeCondFormatHighlight(page);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  });
 
-//   await test.step('Change column', async () => {
-//     await changeCondFormatComparison(page, 'is-not-null', 'Int');
-//     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  await test.step('Change column', async () => {
+    await changeCondFormatComparison(page, 'is-not-null', 'Int');
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
-//     await changeCondFormatHighlight(page);
-//     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-//   });
+    await changeCondFormatHighlight(page);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  });
 
-//   await test.step('Cancel', async () => {
-//     const formattingRule = page.locator('.formatting-item');
-//     const conditionSelect = page.locator('data-testid=condition-select');
+  await test.step('Cancel', async () => {
+    const formattingRule = page.locator('.formatting-item');
+    const conditionSelect = page.locator('data-testid=condition-select');
 
-//     await expect(conditionSelect).toHaveCount(0);
+    await expect(conditionSelect).toHaveCount(0);
 
-//     await formattingRule.click();
-//     await conditionSelect.selectOption('is-null');
-//     await page.getByRole('button', { name: 'Cancel' }).click();
+    await formattingRule.click();
+    await conditionSelect.selectOption('is-null');
+    await page.getByRole('button', { name: 'Cancel' }).click();
 
-//     await waitForLoadingDone(page);
-//     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-//   });
+    await waitForLoadingDone(page);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  });
 
-//   await test.step('Delete', async () => {
-//     await page.getByRole('button', { name: 'Delete rule' }).click();
+  await test.step('Delete', async () => {
+    await page.getByRole('button', { name: 'Delete rule' }).click();
 
-//     await waitForLoadingDone(page);
-//     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-//   });
-// });
+    await waitForLoadingDone(page);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  });
+});
 
 test('can organize columns', async ({ page }) => {
   await page.locator('data-testid=menu-item-Organize Columns').click();
