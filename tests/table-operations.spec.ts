@@ -1,5 +1,4 @@
 import { test, expect, Page, Locator } from '@playwright/test';
-import { string } from 'prop-types';
 import { makeTableCommand, pasteInMonaco, TableTypes } from './utils';
 
 // Run tests serially since they all use the same table
@@ -193,7 +192,7 @@ test('can search', async ({ page }) => {
 
 // test('can conditional format', async ({ page }) => {
 //   await page.locator('data-testid=menu-item-Conditional Formatting').click();
-// await expect(page.getByText('Table Options')).toHaveCount(0);
+//   await expect(page.getByText('Table Options')).toHaveCount(0);
 
 //   await test.step(' Setup new formatting rule', async () => {
 //     await page.getByRole('button', { name: 'Add New Rule' }).click();
@@ -446,7 +445,7 @@ test('can custom column', async ({ page }) => {
       panelAbove,
       dropIndicator,
       0,
-      browser === 'webkit' ? 500 : undefined
+      browser === 'webkit' ? 1000 : undefined
     );
 
     await saveButton.click();
