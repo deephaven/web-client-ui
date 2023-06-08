@@ -38,3 +38,5 @@ packages/*/package-lock.json
 /test-results/
 /playwright-report/
 /playwright/.cache/
+/tests/*-snapshots/*
+!/tests/*-snapshots/*-linux*
