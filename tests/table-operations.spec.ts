@@ -493,3 +493,46 @@ test('can rollup rows and aggregrate columns', async ({ page }) => {
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });
 });
+
+test('can advanced settings', async ({ page }) => {
+  const advancedSettingsOpt = page.locator(
+    'data-testid=menu-item-Advanced Settings'
+  );
+  await advancedSettingsOpt.click();
+  await expect(page.getByText('Table Options')).toHaveCount(0);
+
+  await test.step('toggle settings', async () => {
+    await page
+      .getByTestId(
+        'menu-item-Clear current table filters before applying new filters from a control'
+      )
+      .click();
+    await page
+      .getByTestId(
+        'menu-item-Clear current table filters before applying new filters from an incoming link filter'
+      )
+      .click();
+    await page.getByTestId('btn-page-back').click();
+  });
+
+  await test.step('create input filter', async () => {
+    await page.getByRole('button', { name: 'Controls' }).click();
+
+    const inputFilter = page.getByRole('button', { name: 'Input Filter' });
+    const target = page.getByText('Command History');
+    const dropIndicator = page.locator('.lm_dragProxy');
+
+    await dragComponent(inputFilter, target, dropIndicator);
+    await page.getByTestId('btn-page-close').click();
+  });
+
+  await test.step('toggle quick filter', async () => {});
+
+  await test.step('use input filter', async () => {
+    await page.getByRole('combobox').selectOption('10');
+    await page.getByRole('button', { name: 'Save' }).click();
+
+    await page.keyboard.type('~a9');
+    await page.keyboard.press('Enter');
+  });
+});
