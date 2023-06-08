@@ -15,7 +15,8 @@ async function dragComponent(
   element: Locator,
   destination: Locator,
   targetIndicator: Locator,
-  offsetY = 0
+  offsetY = 0,
+  steps = 100
 ) {
   const page = element.page();
   const destinationPos = await destination.boundingBox();
@@ -29,7 +30,7 @@ async function dragComponent(
     destinationPos.x + destinationPos.width / 2,
     destinationPos.y + destinationPos.height / 2 + offsetY,
     {
-      steps: 100,
+      steps,
     }
   );
 
@@ -407,42 +408,52 @@ test('can custom column', async ({ page }) => {
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });
 
-  // await test.step('Drag', async () => {
-  //   await addColumnButton.click();
+  await test.step('Delete', async () => {
+    const deleteLastColumnButton = page
+      .getByRole('button', { name: 'Delete custom column' })
+      .nth(1);
+    await deleteLastColumnButton.click();
+    await saveButton.click();
 
-  //   const dragColumn = page.getByPlaceholder('Column Name').nth(2);
-  //   await dragColumn.click();
-  //   await page.keyboard.type('Drag');
+    await waitForLoadingDone(page);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  });
 
-  //   const dragColumnFormula = page.locator('.editor-container').nth(2);
-  //   await dragColumnFormula.click();
-  //   await page.keyboard.type('String');
+  await test.step('Drag', async () => {
+    await addColumnButton.click();
 
-  //   const reorderButton = page
-  //     .getByRole('button', { name: 'Drag column to re-order' })
-  //     .nth(2);
-  //   const columnAbove = page.getByPlaceholder('Column Name').nth(1);
-  //   const dropIndicator = page
-  //     .locator('.custom-column-builder-container')
-  //     .locator('.dragging');
-  //   await dragComponent(reorderButton, columnAbove, dropIndicator, 10);
+    const dragColumn = page.getByPlaceholder('Column Name').nth(1);
+    await dragColumn.click();
+    await page.keyboard.type('Drag');
 
-  //   await saveButton.click();
+    const dragColumnFormula = page.locator('.editor-container').nth(1);
+    await dragColumnFormula.click();
+    await page.keyboard.type('String');
 
-  //   await waitForLoadingDone(page);
-  //   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-  // });
+    const dragButton = page
+      .getByRole('button', { name: 'Drag column to re-order' })
+      .nth(1);
+    const panelAbove = page
+      .getByRole('button', { name: 'Drag column to re-order' })
+      .first();
+    const dropIndicator = page
+      .locator('.custom-column-builder-container')
+      .locator('.dragging');
 
-  // await test.step('Delete', async () => {
-  //   const deleteLastColumnButton = page
-  //     .getByRole('button', { name: 'Delete custom column' })
-  //     .nth(1);
-  //   await deleteLastColumnButton.click();
-  //   await saveButton.click();
+    const browser = dragButton.page().context().browser()?.browserType().name();
+    await dragComponent(
+      dragButton,
+      panelAbove,
+      dropIndicator,
+      0,
+      browser === 'webkit' ? 500 : undefined
+    );
 
-  //   await waitForLoadingDone(page);
-  //   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-  // });
+    await saveButton.click();
+
+    await waitForLoadingDone(page);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  });
 });
 
 test('can rollup rows and aggregrate columns', async ({ page }) => {
