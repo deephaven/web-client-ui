@@ -379,10 +379,7 @@ export class AppMainContainer extends Component<
     this.setState({ isSettingsMenuShown: true });
   }
 
-  handleControlSelect(
-    type: string,
-    dragEvent: KeyboardEvent | null = null
-  ): void {
+  handleControlSelect(type: string, dragEvent?: KeyboardEvent): void {
     log.debug('handleControlSelect', type);
 
     switch (type) {

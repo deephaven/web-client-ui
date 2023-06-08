@@ -478,7 +478,7 @@ class LayoutUtils {
       config.id = shortid.generate();
     }
 
-    if (dragEvent !== undefined) {
+    if (dragEvent != null) {
       root?.layoutManager.createDragSourceFromEvent(config, dragEvent);
       return;
     }
