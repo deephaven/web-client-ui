@@ -1,44 +1,14 @@
-import { test, expect, Page, Locator } from '@playwright/test';
-import { makeTableCommand, pasteInMonaco, TableTypes } from './utils';
+import { test, expect, Page } from '@playwright/test';
+import {
+  makeTableCommand,
+  pasteInMonaco,
+  TableTypes,
+  dragComponent,
+  waitForLoadingDone,
+} from './utils';
 
 // Run tests serially since they all use the same table
 test.describe.configure({ mode: 'serial' });
-
-async function waitForLoadingDone(page: Page) {
-  await expect(
-    page.locator('.iris-grid .iris-grid-loading-status')
-  ).toHaveCount(0);
-}
-
-async function dragComponent(
-  element: Locator,
-  destination: Locator,
-  targetIndicator: Locator,
-  offsetY = 0,
-  steps = 100
-) {
-  const page = element.page();
-  const destinationPos = await destination.boundingBox();
-  if (destinationPos === null) throw new Error('element not found');
-
-  await expect(targetIndicator).toHaveCount(0);
-
-  await element.hover();
-  await page.mouse.down();
-  await page.mouse.move(
-    destinationPos.x + destinationPos.width / 2,
-    destinationPos.y + destinationPos.height / 2 + offsetY,
-    {
-      steps,
-    }
-  );
-
-  await expect(targetIndicator).not.toHaveCount(0);
-  await page.mouse.up();
-  await expect(targetIndicator).toHaveCount(0);
-
-  await waitForLoadingDone(page);
-}
 
 async function changeCondFormatComparison(
   page: Page,
@@ -190,6 +160,7 @@ test('can search', async ({ page }) => {
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 });
 
+// TODO: fix 'Is not null' step failing on webkit linux
 // test('can conditional format', async ({ page }) => {
 //   await page.locator('data-testid=menu-item-Conditional Formatting').click();
 //   await expect(page.getByText('Table Options')).toHaveCount(0);

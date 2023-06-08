@@ -1,4 +1,4 @@
-import { Locator } from '@playwright/test';
+import { Locator, expect, Page } from '@playwright/test';
 import shortid from 'shortid';
 
 export enum TableTypes {
@@ -122,4 +122,63 @@ export async function pasteInMonaco(
   }
 }
 
-export default { generateVarName, pasteInMonaco, typeInMonaco };
+/**
+ * Wait for loading status of iris grid to disappear
+ * @param page
+ */
+
+export async function waitForLoadingDone(page: Page) {
+  await expect(
+    page.locator('.iris-grid .iris-grid-loading-status')
+  ).toHaveCount(0);
+}
+
+/**
+ * Drags element to target and waits for drop indicator to show before releasing. Origin is the top-left of the page.
+ *
+ * Note: Can slow down drag by increasing the # of steps. Webkit is especially finicky if the drag happens too quick
+ * Not too sure why but if this is no longer the case the steps param can be removed
+ *
+ * @param element Locator for element to be dragged
+ * @param target Locator for element to drag to
+ * @param targetIndicator Locator for droppable area that shows a dropping state
+ * @param offsetY Vertical adjustment from destination element
+ * @param steps Intermediate mouse move events on the way to destination
+ */
+export async function dragComponent(
+  element: Locator,
+  target: Locator,
+  targetIndicator: Locator,
+  offsetY = 0,
+  steps = 100
+) {
+  const page = element.page();
+  const destinationPos = await target.boundingBox();
+  if (destinationPos === null) throw new Error('element not found');
+
+  await expect(targetIndicator).toHaveCount(0);
+
+  await element.hover();
+  await page.mouse.down();
+  await page.mouse.move(
+    destinationPos.x + destinationPos.width / 2,
+    destinationPos.y + destinationPos.height / 2 + offsetY,
+    {
+      steps,
+    }
+  );
+
+  await expect(targetIndicator).not.toHaveCount(0);
+  await page.mouse.up();
+  await expect(targetIndicator).toHaveCount(0);
+
+  await waitForLoadingDone(page);
+}
+
+export default {
+  generateVarName,
+  pasteInMonaco,
+  typeInMonaco,
+  waitForLoadingDone,
+  dragComponent,
+};
