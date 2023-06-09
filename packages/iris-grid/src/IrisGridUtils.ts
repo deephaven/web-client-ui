@@ -284,14 +284,14 @@ class IrisGridUtils {
     irisGridPanelState: {
       // This needs to be changed after IrisGridPanel is done
       isSelectingPartition: boolean;
-      partition: string | undefined;
-      partitionColumn: Column | undefined;
+      partition: string | null;
+      partitionColumn: Column | null;
       advancedSettings: Map<AdvancedSettingsType, boolean>;
     }
   ): {
     isSelectingPartition: boolean;
-    partition: string | undefined;
-    partitionColumn: ColumnName | undefined;
+    partition: string | null;
+    partitionColumn: ColumnName | null;
     advancedSettings: [AdvancedSettingsType, boolean][];
   } {
     const {
@@ -301,11 +301,11 @@ class IrisGridUtils {
       advancedSettings,
     } = irisGridPanelState;
 
+    // Return value will be serialized, should not contain undefined
     return {
       isSelectingPartition,
       partition,
-      partitionColumn:
-        partitionColumn != null ? partitionColumn.name : undefined,
+      partitionColumn: partitionColumn != null ? partitionColumn.name : null,
       advancedSettings: [...advancedSettings],
     };
   }
@@ -321,14 +321,14 @@ class IrisGridUtils {
     irisGridPanelState: {
       // This needs to be changed after IrisGridPanel is done
       isSelectingPartition: boolean;
-      partition: string | undefined;
-      partitionColumn: ColumnName | undefined;
+      partition: string | null | undefined;
+      partitionColumn: ColumnName | null | undefined;
       advancedSettings: [AdvancedSettingsType, boolean][];
     }
   ): {
     isSelectingPartition: boolean;
-    partition?: string;
-    partitionColumn?: Column;
+    partition: string | null;
+    partitionColumn: Column | null;
     advancedSettings: Map<AdvancedSettingsType, boolean>;
   } {
     const {
@@ -341,11 +341,11 @@ class IrisGridUtils {
     const { columns } = model;
     return {
       isSelectingPartition,
-      partition,
+      partition: partition ?? null,
       partitionColumn:
         partitionColumn != null
-          ? IrisGridUtils.getColumnByName(columns, partitionColumn)
-          : undefined,
+          ? IrisGridUtils.getColumnByName(columns, partitionColumn) ?? null
+          : null,
       advancedSettings: new Map([
         ...AdvancedSettings.DEFAULTS,
         ...advancedSettings,
@@ -1181,6 +1181,7 @@ class IrisGridUtils {
     assertNotNull(metrics);
     const { userColumnWidths, userRowHeights } = metrics;
     const { columns } = model;
+    // Return value will be serialized, should not contain undefined
     return {
       advancedFilters: this.dehydrateAdvancedFilters(columns, advancedFilters),
       aggregationSettings,
