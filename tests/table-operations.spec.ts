@@ -90,6 +90,13 @@ async function changeCondFormatHighlight(page: Page) {
   await waitForLoadingDone(page);
 }
 
+/**
+ * Acts as a small time buffer so that the table has time to update before the screenshot.
+ * Can be deleted in the future if the timing is figured out with the polling intervals for advanced settings.
+ * Without it the snapshot is taken before the table is updated.
+ * Attempt was made to check for loading status bar with custom polling intervals but no luck
+ * @param page
+ */
 async function artificialWait(page: Page) {
   const tableOperationsMenu = page
     .locator('data-testid=btn-iris-grid-settings-button-table')
