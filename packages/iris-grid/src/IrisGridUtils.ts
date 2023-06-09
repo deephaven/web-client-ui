@@ -117,7 +117,7 @@ export interface TableSettings {
   inputFilters?: readonly InputFilter[];
   sorts?: readonly (DehydratedSort | LegacyDehydratedSort)[];
   partition?: unknown;
-  partitionColumn?: ColumnName;
+  partitionColumn?: ColumnName | null;
 }
 
 export interface DehydratedIrisGridState {
