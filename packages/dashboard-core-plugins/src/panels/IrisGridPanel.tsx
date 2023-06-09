@@ -110,20 +110,30 @@ export interface PanelState {
   };
   irisGridState: DehydratedIrisGridState;
   irisGridPanelState: {
-    partitionColumn: ColumnName | null | undefined;
-    partition: string | null | undefined;
+    partitionColumn: ColumnName | null;
+    partition: string | null;
     isSelectingPartition: boolean;
     advancedSettings: [AdvancedSettingsType, boolean][];
   };
   pluginState: unknown;
 }
 
+// Some of the properties in the loaded panel state may be omitted
+// even though they can't be undefined in the dehydrated state.
+// This can happen when loading the state saved before the properties were added.
+type LoadedPanelState = PanelState & {
+  irisGridPanelState: PanelState['irisGridPanelState'] &
+    Partial<
+      Pick<PanelState['irisGridPanelState'], 'partition' | 'partitionColumn'>
+    >;
+};
+
 export interface IrisGridPanelProps {
   children?: ReactNode;
   glContainer: Container;
   glEventHub: EventEmitter;
   metadata: Metadata;
-  panelState: PanelState | null;
+  panelState: LoadedPanelState | null;
   makeModel: () => IrisGridModel | Promise<IrisGridModel>;
   inputFilters: InputFilter[];
   links: Link[];
