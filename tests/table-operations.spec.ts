@@ -97,10 +97,10 @@ async function changeCondFormatHighlight(page: Page) {
  * Attempt was made to check for loading status bar with custom polling intervals but no luck
  * @param page
  */
-async function artificialWait(page: Page) {
+async function artificialWait(page: Page, tableNumber = 0) {
   const tableOperationsMenu = page
     .locator('data-testid=btn-iris-grid-settings-button-table')
-    .nth(1);
+    .nth(tableNumber);
   await tableOperationsMenu.click();
   await page.getByTestId('btn-page-close').first().click();
 }
@@ -591,9 +591,9 @@ test('advanced settings', async ({ page }) => {
     await page.keyboard.type('>1000');
     await expect(page.getByPlaceholder('Enter value...')).toHaveValue('>1000');
 
+    await artificialWait(page, 1);
     await waitForLoadingDone(page);
     await waitForLoadingDone(page, 1);
-    await artificialWait(page);
 
     await expect(page.locator('.iris-grid-column').nth(1)).toHaveScreenshot();
   });
@@ -620,9 +620,9 @@ test('advanced settings', async ({ page }) => {
     await page.getByPlaceholder('Enter value...').fill('>5000');
     await expect(page.getByPlaceholder('Enter value...')).toHaveValue('>5000');
 
+    await artificialWait(page, 1);
     await waitForLoadingDone(page);
     await waitForLoadingDone(page, 1);
-    await artificialWait(page);
 
     await expect(page.locator('.iris-grid-column').nth(1)).toHaveScreenshot();
   });
@@ -635,8 +635,8 @@ test('advanced settings', async ({ page }) => {
         position: { x: 20, y: 60 },
       });
 
+    await artificialWait(page, 1);
     await waitForLoadingDone(page, 1);
-    await artificialWait(page);
 
     await expect(page.locator('.iris-grid-column').nth(1)).toHaveScreenshot();
   });
@@ -666,8 +666,8 @@ test('advanced settings', async ({ page }) => {
         position: { x: 20, y: 60 },
       });
 
+    await artificialWait(page, 1);
     await waitForLoadingDone(page, 1);
-    await artificialWait(page);
 
     await expect(page.locator('.iris-grid-column').nth(1)).toHaveScreenshot();
   });
