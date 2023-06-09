@@ -536,6 +536,7 @@ test('advanced settings', async ({ page }) => {
   await test.step('add input filter to int column', async () => {
     await page.getByRole('button', { name: 'Controls' }).click();
 
+    // Note: do not have to drag to use linker filter I just wanted it in this position
     const inputFilter = page.getByRole('button', { name: 'Input Filter' });
     const target = page.getByText('Command History');
     const dropIndicator = page.locator('.lm_dragProxy');
@@ -553,7 +554,10 @@ test('advanced settings', async ({ page }) => {
       position: { x: 20, y: 10 },
     });
 
-    await page.getByRole('button', { name: 'Done' }).click();
+    await page
+      .locator('.linker-toast-dialog')
+      .getByRole('button', { name: 'Done' })
+      .click();
   });
 
   await test.step('use linker filter', async () => {
