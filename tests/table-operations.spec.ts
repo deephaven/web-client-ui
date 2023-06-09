@@ -6,6 +6,7 @@ import {
   dragComponent,
   waitForLoadingDone,
   openTableOption,
+  generateVarName,
 } from './utils';
 
 // Run tests serially since they all use the same table
@@ -503,11 +504,13 @@ test('rollup rows and aggregrate columns', async ({ page }) => {
 });
 
 test('advanced settings', async ({ page }) => {
+  const table2Name = generateVarName('t2');
+
   await test.step('create 2nd table', async () => {
     const consoleInput = page.locator('.console-input');
     await consoleInput.click();
 
-    const command = makeTableCommand('test_z', TableTypes.AllTypes);
+    const command = makeTableCommand(table2Name, TableTypes.AllTypes);
 
     await pasteInMonaco(consoleInput, command);
     await page.keyboard.press('Enter');
@@ -522,7 +525,7 @@ test('advanced settings', async ({ page }) => {
 
     const table = page
       .locator('.lm_tab')
-      .filter({ has: page.getByText('test_z') });
+      .filter({ has: page.getByText(table2Name) });
     const target = page.getByText('Command History');
     const dropIndicator = page.locator('.lm_dragProxy');
     await dragComponent(table, target, dropIndicator, 300);
@@ -541,11 +544,11 @@ test('advanced settings', async ({ page }) => {
     const dropIndicator = page.locator('.lm_dragProxy');
     await dragComponent(inputFilter, target, dropIndicator);
   });
-  
+
   await test.step('add linker filter to string column', async () => {
     await page.getByRole('button', { name: 'Controls' }).click();
     await page.getByRole('button', { name: 'Linker' }).click();
-    
+
     // Note: do not have to drag to use linker filter I just wanted it in this position
     const firstStringCol = page.locator('.iris-grid .grid-wrapper').first();
     await firstStringCol.click({ position: { x: 20, y: 10 } });
@@ -572,8 +575,7 @@ test('advanced settings', async ({ page }) => {
   });
 
   await test.step('use input filter', async () => {
-    const intColumnOpt = '7';
-    await page.getByRole('combobox').selectOption(intColumnOpt);
+    await page.getByRole('combobox').selectOption({ label: 'Int' });
     await page.getByRole('button', { name: 'Save' }).click();
 
     await expect(page.getByPlaceholder('Enter value...')).toHaveCount(1);
