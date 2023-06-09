@@ -523,6 +523,81 @@ describe('quick filter tests', () => {
       (Date.parse(dateString) as unknown) as DateWrapper;
   });
 
+  describe('escapeQuickTextFilter', () => {
+    expect(TableUtils.escapeQuickTextFilter('')).toBe('');
+    expect(TableUtils.escapeQuickTextFilter(' ')).toBe(' ');
+    expect(TableUtils.escapeQuickTextFilter(null)).toBe(null);
+    expect(TableUtils.escapeQuickTextFilter('test')).toBe('test');
+    expect(TableUtils.escapeQuickTextFilter('test\\test')).toBe('test\\test');
+    expect(TableUtils.escapeQuickTextFilter('null\\null')).toBe('null\\null');
+    expect(TableUtils.escapeQuickTextFilter('\\null\\null')).toBe(
+      '\\null\\null'
+    );
+    expect(TableUtils.escapeQuickTextFilter('=test')).toBe('\\=test');
+    expect(TableUtils.escapeQuickTextFilter('\\=test')).toBe('\\=test');
+    expect(TableUtils.escapeQuickTextFilter('\\test')).toBe('\\test');
+    expect(TableUtils.escapeQuickTextFilter('null')).toBe('\\null');
+    expect(TableUtils.escapeQuickTextFilter('NULL')).toBe('\\NULL');
+    expect(TableUtils.escapeQuickTextFilter('\\null')).toBe('\\\\null');
+    expect(TableUtils.escapeQuickTextFilter('\\testnull')).toBe('\\testnull');
+    expect(TableUtils.escapeQuickTextFilter('\\nulll')).toBe('\\nulll');
+    expect(TableUtils.escapeQuickTextFilter('\\\\null')).toBe('\\\\\\null');
+    expect(TableUtils.escapeQuickTextFilter('=null')).toBe('\\=null');
+    expect(TableUtils.escapeQuickTextFilter('!null')).toBe('\\!null');
+    expect(TableUtils.escapeQuickTextFilter('!=null')).toBe('\\!=null');
+    expect(TableUtils.escapeQuickTextFilter('*fish')).toBe('\\*fish');
+    expect(TableUtils.escapeQuickTextFilter('\\*fish')).toBe('\\*fish');
+    expect(TableUtils.escapeQuickTextFilter('=*fish')).toBe('\\=*fish');
+    expect(TableUtils.escapeQuickTextFilter('shooting*')).toBe('shooting\\*');
+    expect(TableUtils.escapeQuickTextFilter('shooting\\*')).toBe('shooting\\*');
+    expect(TableUtils.escapeQuickTextFilter('!=shooting*')).toBe(
+      '\\!=shooting*'
+    );
+    expect(TableUtils.escapeQuickTextFilter('==')).toBe('\\==');
+    expect(TableUtils.escapeQuickTextFilter('=')).toBe('\\=');
+    expect(TableUtils.escapeQuickTextFilter('!=')).toBe('\\!=');
+    expect(TableUtils.escapeQuickTextFilter('!~')).toBe('\\!~');
+    expect(TableUtils.escapeQuickTextFilter('~')).toBe('\\~');
+    expect(TableUtils.escapeQuickTextFilter('!')).toBe('\\!');
+  });
+
+  describe('unescapeQuickTextFilter', () => {
+    expect(TableUtils.unescapeQuickTextFilter('')).toBe('');
+    expect(TableUtils.unescapeQuickTextFilter(' ')).toBe(' ');
+    expect(TableUtils.unescapeQuickTextFilter('test')).toBe('test');
+    expect(TableUtils.unescapeQuickTextFilter('test\\test')).toBe('test\\test');
+    expect(TableUtils.unescapeQuickTextFilter('null\\null')).toBe('null\\null');
+    expect(TableUtils.unescapeQuickTextFilter('\\null\\null')).toBe(
+      '\\null\\null'
+    );
+    expect(TableUtils.unescapeQuickTextFilter('\\=test')).toBe('=test');
+    expect(TableUtils.unescapeQuickTextFilter('=test')).toBe('=test');
+    expect(TableUtils.unescapeQuickTextFilter('\\test')).toBe('\\test');
+    expect(TableUtils.unescapeQuickTextFilter('null')).toBe('null');
+    expect(TableUtils.unescapeQuickTextFilter('\\null')).toBe('null');
+    expect(TableUtils.unescapeQuickTextFilter('\\\\null')).toBe('\\null');
+    expect(TableUtils.unescapeQuickTextFilter('\\NULL')).toBe('NULL');
+    expect(TableUtils.unescapeQuickTextFilter('\\=null')).toBe('=null');
+    expect(TableUtils.unescapeQuickTextFilter('\\!null')).toBe('!null');
+    expect(TableUtils.unescapeQuickTextFilter('\\!=null')).toBe('!=null');
+    expect(TableUtils.unescapeQuickTextFilter('\\*fish')).toBe('*fish');
+    expect(TableUtils.unescapeQuickTextFilter('*fish')).toBe('*fish');
+    expect(TableUtils.unescapeQuickTextFilter('\\=*fish')).toBe('=*fish');
+    expect(TableUtils.unescapeQuickTextFilter('shooting\\*')).toBe('shooting*');
+    expect(TableUtils.unescapeQuickTextFilter('shooting*')).toBe('shooting*');
+    expect(TableUtils.unescapeQuickTextFilter('\\!=shooting*')).toBe(
+      '!=shooting*'
+    );
+    expect(TableUtils.unescapeQuickTextFilter('=')).toBe('=');
+    expect(TableUtils.unescapeQuickTextFilter('==')).toBe('==');
+    expect(TableUtils.unescapeQuickTextFilter('\\==')).toBe('==');
+    expect(TableUtils.unescapeQuickTextFilter('\\=')).toBe('=');
+    expect(TableUtils.unescapeQuickTextFilter('\\!=')).toBe('!=');
+    expect(TableUtils.unescapeQuickTextFilter('\\!~')).toBe('!~');
+    expect(TableUtils.unescapeQuickTextFilter('\\~')).toBe('~');
+    expect(TableUtils.unescapeQuickTextFilter('\\!')).toBe('!');
+  });
+
   describe('makeQuickFilterFromComponent', () => {
     const testComponentFilter = (
       text: string | boolean | number,

@@ -940,15 +940,9 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const { model } = this.irisGrid.props;
     const columnIndex = model.getColumnIndexByName(column.name);
 
-    let quickFilterValueText: string | null;
-    // this doesn't currently handle escaping for all cases properly
-    // ex. "\null" should be "\\null" or "*fish" should be "\*fish"
-    if (valueText === 'null') {
-      // if is string "null", show it as escaped \null in quickfilter
-      quickFilterValueText = '\\null';
-    } else {
-      quickFilterValueText = valueText;
-    }
+    const quickFilterValueText:
+      | string
+      | null = TableUtils.escapeQuickTextFilter(valueText);
 
     assertNotNull(columnIndex);
 
@@ -978,7 +972,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           ),
           IrisGridContextMenuHandler.getQuickFilterText(
             filterText,
-            `=${quickFilterValueText}`,
+            `${quickFilterValueText}`,
             operator
           )
         );
