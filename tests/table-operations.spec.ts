@@ -176,6 +176,7 @@ test('search', async ({ page }) => {
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 });
 
+// TODO: Fix flakiness of this test by linking loading status bar to this menu (#1367)
 // test('conditional format', async ({ page }) => {
 //   await openTableOption(page, 'Conditional Formatting');
 
