@@ -176,7 +176,7 @@ export function FilterPlugin(props: FilterPluginProps): JSX.Element | null {
       id = shortid.generate(),
       focusElement = LayoutUtils.DEFAULT_FOCUS_SELECTOR,
       createNewStack = false,
-      dragEvent = null,
+      dragEvent = undefined,
     }) => {
       const config = {
         type: 'react-component' as const,

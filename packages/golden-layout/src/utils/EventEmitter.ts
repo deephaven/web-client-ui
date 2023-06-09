@@ -65,7 +65,11 @@ class EventEmitter {
     if (subs) {
       for (let i = 0; i < subs.length; i++) {
         const ctx = subs[i].ctx || {};
-        subs[i].fn.apply(ctx, args);
+        try {
+          subs[i].fn.apply(ctx, args);
+        } catch (e) {
+          console.error('Error while emitting event:', e);
+        }
       }
     }
 
@@ -75,7 +79,11 @@ class EventEmitter {
 
     for (let i = 0; i < allEventSubs.length; i++) {
       const ctx = allEventSubs[i].ctx || {};
-      allEventSubs[i].fn.apply(ctx, args);
+      try {
+        allEventSubs[i].fn.apply(ctx, args);
+      } catch (e) {
+        console.error('Error while emitting event to allEventSubs:', e);
+      }
     }
   }
 

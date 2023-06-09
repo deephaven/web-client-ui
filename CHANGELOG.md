@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.41.1](https://github.com/deephaven/web-client-ui/compare/v0.41.0...v0.41.1) (2023-06-08)
+
+### Bug Fixes
+
+- Cannot add control from Controls menu with click ([#1363](https://github.com/deephaven/web-client-ui/issues/1363)) ([65c0925](https://github.com/deephaven/web-client-ui/commit/65c09253608f7c8c887ca4e70cc5632e81673301)), closes [#1362](https://github.com/deephaven/web-client-ui/issues/1362)
+
+# [0.41.0](https://github.com/deephaven/web-client-ui/compare/v0.40.4...v0.41.0) (2023-06-08)
+
+### Bug Fixes
+
+- Catch errors when emitting events to prevent breaking entire layout ([#1353](https://github.com/deephaven/web-client-ui/issues/1353)) ([aac5bd2](https://github.com/deephaven/web-client-ui/commit/aac5bd2ad4aeb88ac1fb18236f7bfb983ae35cf0)), closes [#1352](https://github.com/deephaven/web-client-ui/issues/1352)
+- DH-14972 Remove setSearch debounce in CommandHistoryViewportUpdater ([#1351](https://github.com/deephaven/web-client-ui/issues/1351)) ([2601146](https://github.com/deephaven/web-client-ui/commit/26011467be3bb5947a2cf34d78eaaaedc47d909b))
+
+### Features
+
+- Improve golden layout tab overflow drop down behaviour ([#1330](https://github.com/deephaven/web-client-ui/issues/1330)) ([9331822](https://github.com/deephaven/web-client-ui/commit/933182277eb4226caa45871d651789a70fc573d3))
+
 ## [0.40.4](https://github.com/deephaven/web-client-ui/compare/v0.40.3...v0.40.4) (2023-06-02)
 
 ### Bug Fixes

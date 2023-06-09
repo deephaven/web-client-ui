@@ -1,10 +1,10 @@
-import { Locator } from '@playwright/test';
+import { Locator, expect, Page } from '@playwright/test';
 import shortid from 'shortid';
 
 export enum TableTypes {
   Number,
   StringAndNumber,
-  AllTypes
+  AllTypes,
 }
 
 /**
@@ -30,13 +30,16 @@ export function makeTableCommand(
   tableName = generateVarName('t'),
   type = TableTypes.Number
 ): string {
-  switch (type) { 
+  switch (type) {
     case TableTypes.AllTypes:
-      return `from deephaven import empty_table, time_table
+      return (
+        `from deephaven import empty_table, time_table
 size = 20
 scale = 999
 ${tableName} = empty_table(size).update([
-"String=(i%11==0? null : ` + '`a`' +`+(int)(scale*(i%2==0? i+1 : 1)))",
+"String=(i%11==0? null : ` +
+        '`a`' +
+        `+(int)(scale*(i%2==0? i+1 : 1)))",
 "Int=(i%12==0 ? null : (int)(scale*(i*2-1)))",
 "Long=(i%13==0 ? null : (long)(scale*(i*2-1)))",
 "Float=(float)(i%14==0 ? null : i%10==0 ? 1.0F/0.0F: i%5==0 ? -1.0F/0.0F : (float) scale*(i*2-1))",
@@ -48,6 +51,7 @@ ${tableName} = empty_table(size).update([
 "BigInt=(i%22==0 ? null : new java.math.BigInteger(Integer.toString((int)(scale*(i*2-1)))))",
 "Byte=(Byte)(i%19==0 ? null : new Byte( Integer.toString((int)(i))))",
 ])`
+      );
     case TableTypes.StringAndNumber:
       return `from deephaven import new_table
 from deephaven.column import string_col, double_col
@@ -118,4 +122,79 @@ export async function pasteInMonaco(
   }
 }
 
-export default { generateVarName, pasteInMonaco, typeInMonaco };
+/**
+ * Wait for loading status of iris grid to disappear
+ * @param page
+ */
+
+export async function waitForLoadingDone(page: Page) {
+  await expect(
+    page.locator('.iris-grid .iris-grid-loading-status')
+  ).toHaveCount(0);
+}
+
+/**
+ * Drags element to target and waits for drop indicator to show before releasing. Origin is the top-left of the page.
+ *
+ * Note: Can slow down drag by increasing the # of steps. Webkit is especially finicky if the drag happens too quick
+ * Not too sure why but if this is no longer the case the steps param can be removed
+ *
+ * @param element Locator for element to be dragged
+ * @param target Locator for element to drag to
+ * @param targetIndicator Locator for droppable area that shows a dropping state
+ * @param offsetY Vertical adjustment from destination element
+ * @param steps Intermediate mouse move events on the way to destination
+ */
+export async function dragComponent(
+  element: Locator,
+  target: Locator,
+  targetIndicator: Locator,
+  offsetY = 0,
+  steps = 100
+) {
+  const page = element.page();
+  const destinationPos = await target.boundingBox();
+  if (destinationPos === null) throw new Error('element not found');
+
+  await expect(targetIndicator).toHaveCount(0);
+
+  await element.hover();
+  await page.mouse.down();
+  await page.mouse.move(
+    destinationPos.x + destinationPos.width / 2,
+    destinationPos.y + destinationPos.height / 2 + offsetY,
+    {
+      steps,
+    }
+  );
+
+  await expect(targetIndicator).not.toHaveCount(0);
+  await page.mouse.up();
+  await expect(targetIndicator).toHaveCount(0);
+
+  await waitForLoadingDone(page);
+}
+
+/**
+ * Open the specified table option in the table sidebar
+ * @param page Test page to execute on
+ * @param tableOption Name of the table option to open.
+ */
+export async function openTableOption(
+  page: Page,
+  tableOption: string
+): Promise<void> {
+  await page.locator(`data-testid=menu-item-${tableOption}`).click();
+
+  // Wait until the table option has fully appeared, by checking that the top level menu is no longer visible
+  await expect(page.getByText('Table Options')).toHaveCount(0);
+}
+
+export default {
+  generateVarName,
+  pasteInMonaco,
+  typeInMonaco,
+  waitForLoadingDone,
+  dragComponent,
+  openTableOption,
+};
