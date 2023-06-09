@@ -2025,7 +2025,7 @@ class IrisGridTableModelTemplate<
     }
   }
 
-  editValueForCell(x: ModelIndex, y: ModelIndex): string | null {
+  editValueForCell(x: ModelIndex, y: ModelIndex): string | null | undefined {
     return this.textValueForCell(x, y);
   }
 
