@@ -110,8 +110,8 @@ export interface PanelState {
   };
   irisGridState: DehydratedIrisGridState;
   irisGridPanelState: {
-    partitionColumn: ColumnName | undefined;
-    partition: string | undefined;
+    partitionColumn: ColumnName | null | undefined;
+    partition: string | null | undefined;
     isSelectingPartition: boolean;
     advancedSettings: [AdvancedSettingsType, boolean][];
   };
@@ -174,8 +174,8 @@ interface IrisGridPanelState {
   movedColumns: readonly MoveOperation[];
   movedRows: readonly MoveOperation[];
   isSelectingPartition: boolean;
-  partition?: string;
-  partitionColumn?: Column;
+  partition: string | null;
+  partitionColumn: Column | null;
   rollupConfig?: UIRollupConfig;
   showSearchBar: boolean;
   searchValue: string;
@@ -267,8 +267,8 @@ export class IrisGridPanel extends PureComponent<
       movedColumns: [],
       movedRows: [],
       isSelectingPartition: false,
-      partition: undefined,
-      partitionColumn: undefined,
+      partition: null,
+      partitionColumn: null,
       rollupConfig: undefined,
       showSearchBar: false,
       searchValue: '',
@@ -423,8 +423,8 @@ export class IrisGridPanel extends PureComponent<
     (
       model: IrisGridModel,
       isSelectingPartition: boolean,
-      partition: string | undefined,
-      partitionColumn: Column | undefined,
+      partition: string | null,
+      partitionColumn: Column | null,
       advancedSettings: Map<AdvancedSettingsType, boolean>
     ) =>
       IrisGridUtils.dehydrateIrisGridPanelState(model, {

@@ -396,13 +396,13 @@ class IrisGridUtils {
     panelState: {
       irisGridState: { advancedFilters: AF; quickFilters: QF; sorts: S };
       irisGridPanelState: {
-        partitionColumn?: ColumnName;
-        partition?: unknown;
+        partitionColumn: ColumnName | null;
+        partition: unknown;
       };
     },
     inputFilters: InputFilter[] = []
   ): {
-    partitionColumn: ColumnName | undefined;
+    partitionColumn: ColumnName | null;
     partition: unknown;
     advancedFilters: AF;
     inputFilters: InputFilter[];
