@@ -536,17 +536,17 @@ test('advanced settings', async ({ page }) => {
   await test.step('add input filter to int column', async () => {
     await page.getByRole('button', { name: 'Controls' }).click();
 
-    // Note: do not have to drag to use linker filter I just wanted it in this position
     const inputFilter = page.getByRole('button', { name: 'Input Filter' });
     const target = page.getByText('Command History');
     const dropIndicator = page.locator('.lm_dragProxy');
     await dragComponent(inputFilter, target, dropIndicator);
   });
-
+  
   await test.step('add linker filter to string column', async () => {
     await page.getByRole('button', { name: 'Controls' }).click();
     await page.getByRole('button', { name: 'Linker' }).click();
-
+    
+    // Note: do not have to drag to use linker filter I just wanted it in this position
     const firstStringCol = page.locator('.iris-grid .grid-wrapper').first();
     await firstStringCol.click({ position: { x: 20, y: 10 } });
     const secondStringCol = page.locator('.iris-grid .grid-wrapper').nth(1);
