@@ -108,7 +108,7 @@ export interface ChartPanelTableSettings {
   inputFilters?: readonly InputFilter[];
   sorts?: readonly (DehydratedSort | LegacyDehydratedSort)[];
   partition?: unknown;
-  partitionColumn?: string;
+  partitionColumn?: string | null;
 }
 export interface GLChartPanelState {
   filterValueMap: [string, unknown][];
