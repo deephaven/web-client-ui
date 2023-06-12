@@ -20,16 +20,29 @@ describe('asMock', () => {
 });
 
 describe('disableConsoleOutput', () => {
+  const arg0 = 'mock arg';
+  const allMethodNames = ['log', 'warn', 'error', 'info', 'debug'] as const;
+
+  it('should disable all methods if given no method names', () => {
+    TestUtils.disableConsoleOutput();
+
+    allMethodNames.forEach(methodName => {
+      // eslint-disable-next-line no-console
+      console[methodName](arg0);
+
+      // eslint-disable-next-line no-console
+      expect(console[methodName]).toHaveBeenCalledWith(arg0);
+    });
+  });
+
   it.each([
     [['log']],
     [['warn']],
     [['error']],
     [['info']],
     [['debug']],
-    [['log', 'warn', 'error', 'info', 'debug']],
+    [allMethodNames],
   ] as const)('should mock console method implementations: %s', methodNames => {
-    const arg0 = 'mock arg';
-
     TestUtils.disableConsoleOutput(...methodNames);
 
     methodNames.forEach(methodName => {

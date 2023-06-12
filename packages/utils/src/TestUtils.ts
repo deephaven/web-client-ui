@@ -54,11 +54,17 @@ class TestUtils {
 
   /**
    * Selectively disable logging methods on `console` object. Uses spyOn so that
-   * changes will be reverted after leaving the test scope that it is set in.
+   * changes will be reverted after leaving the test scope that it is set in. If
+   * no method names are given, all will be disabled.
    */
   static disableConsoleOutput = (
     ...methodNames: ('log' | 'warn' | 'error' | 'info' | 'debug')[]
   ): void => {
+    if (methodNames.length === 0) {
+      // eslint-disable-next-line no-param-reassign
+      methodNames = ['log', 'warn', 'error', 'info', 'debug'];
+    }
+
     methodNames.forEach(methodName => {
       jest.spyOn(console, methodName).mockImplementation();
     });
