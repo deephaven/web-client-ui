@@ -110,20 +110,30 @@ export interface PanelState {
   };
   irisGridState: DehydratedIrisGridState;
   irisGridPanelState: {
-    partitionColumn: ColumnName | undefined;
-    partition: string | undefined;
+    partitionColumn: ColumnName | null;
+    partition: string | null;
     isSelectingPartition: boolean;
     advancedSettings: [AdvancedSettingsType, boolean][];
   };
   pluginState: unknown;
 }
 
+// Some of the properties in the loaded panel state may be omitted
+// even though they can't be undefined in the dehydrated state.
+// This can happen when loading the state saved before the properties were added.
+type LoadedPanelState = PanelState & {
+  irisGridPanelState: PanelState['irisGridPanelState'] &
+    Partial<
+      Pick<PanelState['irisGridPanelState'], 'partition' | 'partitionColumn'>
+    >;
+};
+
 export interface IrisGridPanelProps {
   children?: ReactNode;
   glContainer: Container;
   glEventHub: EventEmitter;
   metadata: Metadata;
-  panelState: PanelState | null;
+  panelState: LoadedPanelState | null;
   makeModel: () => IrisGridModel | Promise<IrisGridModel>;
   inputFilters: InputFilter[];
   links: Link[];
@@ -174,8 +184,8 @@ interface IrisGridPanelState {
   movedColumns: readonly MoveOperation[];
   movedRows: readonly MoveOperation[];
   isSelectingPartition: boolean;
-  partition?: string;
-  partitionColumn?: Column;
+  partition: string | null;
+  partitionColumn: Column | null;
   rollupConfig?: UIRollupConfig;
   showSearchBar: boolean;
   searchValue: string;
@@ -267,8 +277,8 @@ export class IrisGridPanel extends PureComponent<
       movedColumns: [],
       movedRows: [],
       isSelectingPartition: false,
-      partition: undefined,
-      partitionColumn: undefined,
+      partition: null,
+      partitionColumn: null,
       rollupConfig: undefined,
       showSearchBar: false,
       searchValue: '',
@@ -423,8 +433,8 @@ export class IrisGridPanel extends PureComponent<
     (
       model: IrisGridModel,
       isSelectingPartition: boolean,
-      partition: string | undefined,
-      partitionColumn: Column | undefined,
+      partition: string | null,
+      partitionColumn: Column | null,
       advancedSettings: Map<AdvancedSettingsType, boolean>
     ) =>
       IrisGridUtils.dehydrateIrisGridPanelState(model, {

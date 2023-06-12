@@ -23,10 +23,7 @@ import {
   IrisGridUtils,
   InputFilter,
   ColumnName,
-  DehydratedSort,
-  DehydratedAdvancedFilter,
-  DehydratedQuickFilter,
-  LegacyDehydratedSort,
+  TableSettings,
 } from '@deephaven/iris-grid';
 import type {
   FigureDescriptor,
@@ -93,7 +90,7 @@ export type ChartPanelTableMetadata = {
     series: string[];
     type: keyof SeriesPlotStyle;
   };
-  tableSettings: ChartPanelTableSettings;
+  tableSettings: TableSettings;
 };
 
 export type ChartPanelMetadata =
@@ -102,18 +99,10 @@ export type ChartPanelMetadata =
 
 type Settings = Record<string, unknown>;
 
-export interface ChartPanelTableSettings {
-  quickFilters?: readonly DehydratedQuickFilter[];
-  advancedFilters?: readonly DehydratedAdvancedFilter[];
-  inputFilters?: readonly InputFilter[];
-  sorts?: readonly (DehydratedSort | LegacyDehydratedSort)[];
-  partition?: unknown;
-  partitionColumn?: string;
-}
 export interface GLChartPanelState {
   filterValueMap: [string, unknown][];
   settings: Partial<ChartModelSettings>;
-  tableSettings: ChartPanelTableSettings;
+  tableSettings: TableSettings;
   irisGridState?: {
     advancedFilters: unknown;
     quickFilters: unknown;
