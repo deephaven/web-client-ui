@@ -31,6 +31,17 @@ export interface ClickOptions {
   rightClick?: boolean;
 }
 
+/**
+ * Filters a type down to only method properties.
+ */
+export type PickMethods<T> = {
+  [K in keyof T as T[K] extends (...args: unknown[]) => unknown
+    ? K
+    : never]: T[K];
+};
+
+export type ConsoleMethodName = keyof PickMethods<Console>;
+
 class TestUtils {
   /**
    * Type assertion to "cast" a function to it's corresponding jest.Mock
@@ -51,6 +62,27 @@ class TestUtils {
   static asMock = <TResult, TArgs extends unknown[]>(
     fn: (...args: TArgs) => TResult
   ): jest.Mock<TResult, TArgs> => (fn as unknown) as jest.Mock<TResult, TArgs>;
+
+  /**
+   * Selectively disable logging methods on `console` object. Uses spyOn so that
+   * changes will be reverted after leaving the test scope that it is set in. If
+   * no method names are given, all will be disabled.
+   * @param methodNames The console methods to disable.
+   */
+  static disableConsoleOutput = (...methodNames: ConsoleMethodName[]): void => {
+    if (methodNames.length === 0) {
+      // eslint-disable-next-line no-param-reassign
+      methodNames = Object.getOwnPropertyNames(console).filter(
+        (name): name is ConsoleMethodName =>
+          // eslint-disable-next-line no-console
+          typeof console[name as keyof Console] === 'function'
+      );
+    }
+
+    methodNames.forEach(methodName => {
+      jest.spyOn(console, methodName).mockImplementation();
+    });
+  };
 
   /**
    * Find the last mock function call matching a given predicate.

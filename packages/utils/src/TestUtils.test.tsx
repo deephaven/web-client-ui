@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import TestUtils from './TestUtils';
+import TestUtils, { ConsoleMethodName } from './TestUtils';
 import createMockProxy from './MockProxy';
 
 beforeEach(() => {
@@ -18,6 +18,42 @@ describe('asMock', () => {
 
   expect(someFunc('a,b,c')).toEqual(3);
 });
+
+/* eslint-disable no-console */
+describe('disableConsoleOutput', () => {
+  const arg0 = 'mock arg';
+  const allMethodNames = Object.getOwnPropertyNames(console).filter(
+    (name): name is ConsoleMethodName =>
+      typeof console[name as keyof Console] === 'function'
+  );
+
+  it('should disable all methods if given no method names', () => {
+    TestUtils.disableConsoleOutput();
+
+    allMethodNames.forEach(methodName => {
+      console[methodName]();
+
+      expect(console[methodName]).toHaveBeenCalled();
+    });
+  });
+
+  it.each([
+    [['log']],
+    [['warn']],
+    [['error']],
+    [['info']],
+    [['debug']],
+    [allMethodNames],
+  ] as const)('should mock console method implementations: %s', methodNames => {
+    TestUtils.disableConsoleOutput(...methodNames);
+
+    methodNames.forEach(methodName => {
+      console[methodName](arg0);
+      expect(console[methodName]).toHaveBeenCalledWith(arg0);
+    });
+  });
+});
+/* eslint-enable no-console */
 
 describe('findLastCall', () => {
   it('should return undefined if call not matched', () => {
