@@ -31,6 +31,8 @@ export interface ClickOptions {
   rightClick?: boolean;
 }
 
+export type ConsoleMethodName = keyof Omit<Console, 'Console'>;
+
 class TestUtils {
   /**
    * Type assertion to "cast" a function to it's corresponding jest.Mock
@@ -56,13 +58,16 @@ class TestUtils {
    * Selectively disable logging methods on `console` object. Uses spyOn so that
    * changes will be reverted after leaving the test scope that it is set in. If
    * no method names are given, all will be disabled.
+   * @param methodNames The console methods to disable.
    */
-  static disableConsoleOutput = (
-    ...methodNames: ('log' | 'warn' | 'error' | 'info' | 'debug')[]
-  ): void => {
+  static disableConsoleOutput = (...methodNames: ConsoleMethodName[]): void => {
     if (methodNames.length === 0) {
       // eslint-disable-next-line no-param-reassign
-      methodNames = ['log', 'warn', 'error', 'info', 'debug'];
+      methodNames = Object.getOwnPropertyNames(console).filter(
+        (name): name is ConsoleMethodName =>
+          // eslint-disable-next-line no-console
+          typeof console[name as keyof Console] === 'function'
+      );
     }
 
     methodNames.forEach(methodName => {
