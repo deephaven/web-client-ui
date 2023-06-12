@@ -127,9 +127,12 @@ export async function pasteInMonaco(
  * @param page
  */
 
-export async function waitForLoadingDone(page: Page) {
+export async function waitForLoadingDone(page: Page, tableNumber = 0) {
   await expect(
-    page.locator('.iris-grid .iris-grid-loading-status')
+    page
+      .locator('.iris-grid')
+      .nth(tableNumber)
+      .locator('.iris-grid-loading-status')
   ).toHaveCount(0);
 }
 
