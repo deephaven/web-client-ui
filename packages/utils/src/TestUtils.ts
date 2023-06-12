@@ -31,7 +31,16 @@ export interface ClickOptions {
   rightClick?: boolean;
 }
 
-export type ConsoleMethodName = keyof Omit<Console, 'Console'>;
+/**
+ * Filters a type down to only method properties.
+ */
+export type PickMethods<T> = {
+  [K in keyof T as T[K] extends (...args: unknown[]) => unknown
+    ? K
+    : never]: T[K];
+};
+
+export type ConsoleMethodName = keyof PickMethods<Console>;
 
 class TestUtils {
   /**
