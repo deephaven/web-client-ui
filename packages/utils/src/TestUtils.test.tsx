@@ -19,6 +19,29 @@ describe('asMock', () => {
   expect(someFunc('a,b,c')).toEqual(3);
 });
 
+describe('disableConsoleOutput', () => {
+  it.each([
+    [['log']],
+    [['warn']],
+    [['error']],
+    [['info']],
+    [['debug']],
+    [['log', 'warn', 'error', 'info', 'debug']],
+  ] as const)('should mock console method implementations: %s', methodNames => {
+    const arg0 = 'mock arg';
+
+    TestUtils.disableConsoleOutput(...methodNames);
+
+    methodNames.forEach(methodName => {
+      // eslint-disable-next-line no-console
+      console[methodName](arg0);
+
+      // eslint-disable-next-line no-console
+      expect(console[methodName]).toHaveBeenCalledWith(arg0);
+    });
+  });
+});
+
 describe('findLastCall', () => {
   it('should return undefined if call not matched', () => {
     const fn = jest.fn<void, [string, number]>();

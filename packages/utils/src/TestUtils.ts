@@ -53,6 +53,18 @@ class TestUtils {
   ): jest.Mock<TResult, TArgs> => (fn as unknown) as jest.Mock<TResult, TArgs>;
 
   /**
+   * Selectively disable logging methods on `console` object. Uses spyOn so that
+   * changes will be reverted after leaving the test scope that it is set in.
+   */
+  static disableConsoleOutput = (
+    ...methodNames: ('log' | 'warn' | 'error' | 'info' | 'debug')[]
+  ): void => {
+    methodNames.forEach(methodName => {
+      jest.spyOn(console, methodName).mockImplementation();
+    });
+  };
+
+  /**
    * Find the last mock function call matching a given predicate.
    * @param fn jest.Mock function
    * @param predicate Predicate function to match calls against
