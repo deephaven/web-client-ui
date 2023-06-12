@@ -271,8 +271,8 @@ export interface IrisGridProps {
   onStateChange: (irisGridState: IrisGridState, gridState: GridState) => void;
   onPartitionAppend: (partitionColumn: Column, value: string) => void;
   onAdvancedSettingsChange: AdvancedSettingsMenuCallback;
-  partition: string;
-  partitionColumn: Column;
+  partition: string | null;
+  partitionColumn: Column | null;
   sorts: readonly Sort[];
   reverseType: ReverseType;
   quickFilters: ReadonlyQuickFilterMap | null;
