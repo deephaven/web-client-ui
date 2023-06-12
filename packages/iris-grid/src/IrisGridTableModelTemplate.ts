@@ -496,7 +496,7 @@ class IrisGridTableModelTemplate<
     }
   }
 
-  textValueForCell(x: ModelIndex, y: ModelIndex): string | null {
+  textValueForCell(x: ModelIndex, y: ModelIndex): string | null | undefined {
     // First check if there's any pending values we should read from
     if (this.pendingStringData[x]?.[y] !== undefined) {
       return this.pendingStringData[x][y];
@@ -505,8 +505,11 @@ class IrisGridTableModelTemplate<
     // Use a separate cache from memoization just for the strings that are currently displayed
     if (this.formattedStringData[x]?.[y] === undefined) {
       const value = this.valueForCell(x, y);
-      if (value == null) {
+      if (value === null) {
         return null;
+      }
+      if (value === undefined) {
+        return undefined;
       }
 
       const column = this.totalsColumn(x, y) ?? this.columns[x];
@@ -543,6 +546,17 @@ class IrisGridTableModelTemplate<
         return '*';
       }
     }
+
+    if (TableUtils.isTextType(this.columns[x]?.type)) {
+      if (text === null) {
+        return 'null';
+      }
+
+      if (text === '') {
+        return 'empty';
+      }
+    }
+
     return text ?? '';
   }
 
@@ -2011,7 +2025,7 @@ class IrisGridTableModelTemplate<
     }
   }
 
-  editValueForCell(x: ModelIndex, y: ModelIndex): string | null {
+  editValueForCell(x: ModelIndex, y: ModelIndex): string | null | undefined {
     return this.textValueForCell(x, y);
   }
 
