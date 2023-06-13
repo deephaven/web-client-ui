@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.41.2](https://github.com/deephaven/web-client-ui/compare/v0.41.1...v0.41.2) (2023-06-13)
+
+### Bug Fixes
+
+- DH-15032: Fix incorrect warning about updated shared state ([#1364](https://github.com/deephaven/web-client-ui/issues/1364)) ([#1371](https://github.com/deephaven/web-client-ui/issues/1371)) ([109f47e](https://github.com/deephaven/web-client-ui/commit/109f47ed799e9d1000e542c548663893edb0579b))
+
 # [0.41.0](https://github.com/deephaven/web-client-ui/compare/v0.40.4...v0.41.0) (2023-06-08)
 
 **Note:** Version bump only for package @deephaven/iris-grid
