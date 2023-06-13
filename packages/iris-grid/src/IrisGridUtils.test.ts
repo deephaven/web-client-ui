@@ -1,3 +1,4 @@
+import deepEqual from 'deep-equal';
 import { GridUtils, GridRange, MoveOperation } from '@deephaven/grid';
 import dh from '@deephaven/jsapi-shim';
 import type { Column, Table, Sort } from '@deephaven/jsapi-types';
@@ -648,5 +649,34 @@ describe('convert other column types to text', () => {
         'io.deephaven.time.DateTime'
       )
     ).toEqual('2022-02-03 02:14:59.000');
+  });
+});
+
+describe('dehydration methods', () => {
+  it.each([
+    [
+      'dehydrateIrisGridPanelState',
+      IrisGridUtils.dehydrateIrisGridPanelState(irisGridTestUtils.makeModel(), {
+        isSelectingPartition: false,
+        partition: null,
+        partitionColumn: null,
+        advancedSettings: new Map(),
+      }),
+    ],
+    [
+      'dehydrateIrisGridState',
+      IrisGridUtils.dehydrateGridState(irisGridTestUtils.makeModel(), {
+        isStuckToBottom: false,
+        isStuckToRight: false,
+        movedRows: [],
+        movedColumns: [],
+      }),
+    ],
+  ])('%s should be serializable', (_label, result) => {
+    expect(
+      // This makes sure the result doesn't contain undefined
+      // so it can be serialized and de-serialized without changes
+      deepEqual(result, JSON.parse(JSON.stringify(result)), { strict: true })
+    ).toBe(true);
   });
 });
