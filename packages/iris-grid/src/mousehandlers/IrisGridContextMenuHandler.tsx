@@ -435,8 +435,6 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
             actions: this.emptyStringFilterActions(
               column,
-              valueText,
-              value,
               quickFilters.get(modelColumn),
               '&&'
             ),
@@ -444,9 +442,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
             group: ContextActions.groups.high,
           });
         }
-        filterMenu.actions.push(
-          ...this.emptyStringFilterActions(column, valueText, value)
-        );
+        filterMenu.actions.push(...this.emptyStringFilterActions(column));
       } else if (TableUtils.isBooleanType(column.type)) {
         // boolean should have OR condition, and handles it's own null menu options
         if (quickFilters.get(modelColumn)) {
@@ -1561,13 +1557,11 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
   emptyStringFilterActions(
     column: Column,
-    valueText: string,
-    value: unknown,
     quickFilter?: QuickFilter,
     operator?: '&&' | '||' | null
   ): ContextAction[] {
     const { dh } = this;
-    const filterValue = dh.FilterValue.ofString(value);
+    const filterValue = dh.FilterValue.ofString('');
     let newQuickFilter:
       | {
           filter: null | FilterCondition | undefined;
@@ -1610,7 +1604,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           ),
           IrisGridContextMenuHandler.getQuickFilterText(
             filterText,
-            `=${valueText}`,
+            `=`,
             operator
           )
         );
@@ -1631,7 +1625,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           ),
           IrisGridContextMenuHandler.getQuickFilterText(
             filterText,
-            `!=${valueText}`,
+            `!=`,
             operator
           )
         );

@@ -523,18 +523,16 @@ describe('quick filter tests', () => {
       (Date.parse(dateString) as unknown) as DateWrapper;
   });
 
-  describe('escapeQuickTextFilter', () => {
-    // test case, expected result
+  describe('Escape/UnescapeQuickTextFilter', () => {
+    // unescaped, escaped
     test.each([
       ['', ''],
       [' ', ' '],
-      [null, null],
       ['test', 'test'],
       ['test\\test', 'test\\test'],
       ['null\\null', 'null\\null'],
       ['\\null\\null', '\\null\\null'],
       ['=test', '\\=test'],
-      ['\\=test', '\\=test'],
       ['\\test', '\\test'],
       ['null', '\\null'],
       ['NULL', '\\NULL'],
@@ -546,10 +544,8 @@ describe('quick filter tests', () => {
       ['!null', '\\!null'],
       ['!=null', '\\!=null'],
       ['*fish', '\\*fish'],
-      ['\\*fish', '\\*fish'],
       ['=*fish', '\\=*fish'],
       ['shooting*', 'shooting\\*'],
-      ['shooting\\*', 'shooting\\*'],
       ['!=shooting*', '\\!=shooting*'],
       ['==', '\\=='],
       ['=', '\\='],
@@ -558,46 +554,34 @@ describe('quick filter tests', () => {
       ['~', '\\~'],
       ['!', '\\!'],
     ])(
+      'given %p, escape quick filter should return %p and vice versa',
+      (unescaped, escaped) => {
+        expect(TableUtils.escapeQuickTextFilter(unescaped)).toBe(escaped);
+        expect(TableUtils.unescapeQuickTextFilter(escaped)).toBe(unescaped);
+      }
+    );
+
+    // escape specific test cases
+    test.each([
+      [null, null],
+      ['\\=test', '\\=test'],
+      ['\\*fish', '\\*fish'],
+      ['shooting\\*', 'shooting\\*'],
+    ])(
       'given %p, escape quick filter should return %p',
       (testCase, expectedResult) => {
         expect(TableUtils.escapeQuickTextFilter(testCase)).toBe(expectedResult);
       }
     );
-  });
 
-  describe('unescapeQuickTextFilter', () => {
-    // test case, expected result
+    // unescape specific test cases
     test.each([
-      ['', ''],
-      [' ', ' '],
-      ['test', 'test'],
-      ['test\\test', 'test\\test'],
-      ['null\\null', 'null\\null'],
-      ['\\null\\null', '\\null\\null'],
-      ['\\=test', '=test'],
       ['=test', '=test'],
-      ['\\test', '\\test'],
       ['null', 'null'],
-      ['\\null', 'null'],
-      ['\\\\null', '\\null'],
-      ['\\NULL', 'NULL'],
-      ['\\=null', '=null'],
-      ['\\!null', '!null'],
-      ['\\!=null', '!=null'],
-      ['\\*fish', '*fish'],
       ['*fish', '*fish'],
-      ['\\=*fish', '=*fish'],
-      ['shooting\\*', 'shooting*'],
       ['shooting*', 'shooting*'],
-      ['\\!=shooting*', '!=shooting*'],
       ['=', '='],
       ['==', '=='],
-      ['\\==', '=='],
-      ['\\=', '='],
-      ['\\!=', '!='],
-      ['\\!~', '!~'],
-      ['\\~', '~'],
-      ['\\!', '!'],
     ])(
       'given %p, unescape quick filter should return %p',
       (testCase, expectedResult) => {
