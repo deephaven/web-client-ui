@@ -523,6 +523,75 @@ describe('quick filter tests', () => {
       (Date.parse(dateString) as unknown) as DateWrapper;
   });
 
+  describe('Escape/UnescapeQuickTextFilter', () => {
+    // unescaped, escaped
+    test.each([
+      ['', ''],
+      [' ', ' '],
+      ['test', 'test'],
+      ['test\\test', 'test\\test'],
+      ['null\\null', 'null\\null'],
+      ['\\null\\null', '\\null\\null'],
+      ['=test', '\\=test'],
+      ['\\test', '\\test'],
+      ['null', '\\null'],
+      ['NULL', '\\NULL'],
+      ['\\null', '\\\\null'],
+      ['\\testnull', '\\testnull'],
+      ['\\nulll', '\\nulll'],
+      ['\\\\null', '\\\\\\null'],
+      ['=null', '\\=null'],
+      ['!null', '\\!null'],
+      ['!=null', '\\!=null'],
+      ['*fish', '\\*fish'],
+      ['=*fish', '\\=*fish'],
+      ['shooting*', 'shooting\\*'],
+      ['!=shooting*', '\\!=shooting*'],
+      ['==', '\\=='],
+      ['=', '\\='],
+      ['!=', '\\!='],
+      ['!~', '\\!~'],
+      ['~', '\\~'],
+      ['!', '\\!'],
+    ])(
+      'given %p, escape quick filter should return %p and vice versa',
+      (unescaped, escaped) => {
+        expect(TableUtils.escapeQuickTextFilter(unescaped)).toBe(escaped);
+        expect(TableUtils.unescapeQuickTextFilter(escaped)).toBe(unescaped);
+      }
+    );
+
+    // escape specific test cases
+    test.each([
+      [null, null],
+      ['\\=test', '\\=test'],
+      ['\\*fish', '\\*fish'],
+      ['shooting\\*', 'shooting\\*'],
+    ])(
+      'given %p, escape quick filter should return %p',
+      (testCase, expectedResult) => {
+        expect(TableUtils.escapeQuickTextFilter(testCase)).toBe(expectedResult);
+      }
+    );
+
+    // unescape specific test cases
+    test.each([
+      ['=test', '=test'],
+      ['null', 'null'],
+      ['*fish', '*fish'],
+      ['shooting*', 'shooting*'],
+      ['=', '='],
+      ['==', '=='],
+    ])(
+      'given %p, unescape quick filter should return %p',
+      (testCase, expectedResult) => {
+        expect(TableUtils.unescapeQuickTextFilter(testCase)).toBe(
+          expectedResult
+        );
+      }
+    );
+  });
+
   describe('makeQuickFilterFromComponent', () => {
     const testComponentFilter = (
       text: string | boolean | number,
@@ -541,6 +610,7 @@ describe('quick filter tests', () => {
 
     it('should return a number filter if column type is number', () => {
       testComponentFilter('52', FilterType.eq, 'int', 52);
+      testComponentFilter('!52', FilterType.notEq, 'int', 52);
       testComponentFilter('>-9', FilterType.greaterThan, 'short', -9);
     });
 
@@ -587,14 +657,27 @@ describe('quick filter tests', () => {
       testComponentFilter('null', FilterType.isNull, 'char');
     });
 
-    it('should return a text filter for any other column type', () => {
-      testComponentFilter(
-        '\\*foo',
-        FilterType.eqIgnoreCase,
-        'notatype',
-        '*foo'
-      );
+    it('should return a text filter if column type is string', () => {
       testComponentFilter('foo', FilterType.eqIgnoreCase, 'string', 'foo');
+      testComponentFilter('=foo', FilterType.eqIgnoreCase, 'string', 'foo');
+      testComponentFilter('!=foo', FilterType.notEqIgnoreCase, 'string', 'foo');
+      testComponentFilter('\\*foo', FilterType.eqIgnoreCase, 'string', '*foo');
+      testComponentFilter(
+        'fish\\*',
+        FilterType.eqIgnoreCase,
+        'string',
+        'fish*'
+      );
+      testComponentFilter(
+        'test*test',
+        FilterType.eqIgnoreCase,
+        'string',
+        'test*test'
+      );
+    });
+
+    it('should return a text filter for any other column type', () => {
+      testComponentFilter('foo', FilterType.eqIgnoreCase, 'notatype', 'foo');
     });
   });
 

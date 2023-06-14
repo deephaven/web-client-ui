@@ -912,6 +912,79 @@ export class TableUtils {
     return TableUtils.makeRangeFilterWithOperation(filter, operation, value);
   }
 
+  /**
+   * Given a text string from a table, escape quick filter operators in string with \
+   * ex. =test returns \=test, null returns \null
+   * @param string quickfilter string to escape
+   * @returns escaped string
+   */
+  static escapeQuickTextFilter(quickFilterText: string | null): string | null {
+    if (quickFilterText == null) return null;
+    const regex = /^(!~|!=|~|=|!)?(.*)/;
+    // starts with zero or more \ followed by and ending with null
+    const nullRegex = /^\\*null$/;
+    const result = regex.exec(quickFilterText);
+    let operation: string | null = null;
+    let value: string | null = null;
+    if (result !== null && result.length > 2) {
+      [, operation, value] = result;
+    }
+
+    if (operation != null) {
+      return `\\${operation}${value ?? ''}`;
+    }
+
+    if (value != null && nullRegex.test(value.toLowerCase())) {
+      // adds an extra escape character to matching value
+      return `\\${value}`;
+    }
+    if (value != null && value.startsWith('*')) {
+      return `\\${value}`;
+    }
+    if (value != null && value.endsWith('*') && !value.endsWith('\\*')) {
+      value = value.substring(0, value.length - 1);
+      return `${value}\\*`;
+    }
+
+    return `${operation ?? ''}${value ?? ``}`;
+  }
+
+  /**
+   * Given an escaped quick filter, unescape the operators for giving it to the js api
+   * ex. \=test returns =test, \null returns null
+   * @param string quickfilter string to escape
+   * @returns escaped string
+   */
+  static unescapeQuickTextFilter(quickFilterText: string): string {
+    const regex = /^(\\!~|\\!=|\\~|\\=|\\!)?(.*)/;
+    // starts with zero or more \ followed by and ending with null
+    const nullRegex = /^\\*null$/;
+    const result = regex.exec(quickFilterText);
+    let operation: string | null = null;
+    let value: string | null = null;
+    if (result !== null && result.length > 2) {
+      [, operation, value] = result;
+    }
+
+    if (operation != null) {
+      operation = operation.replace('\\', '');
+    }
+
+    if (value != null && nullRegex.test(value.toLowerCase())) {
+      // removes the first occurance of the backslash
+      value = value.replace('\\', '');
+    }
+    if (operation == null && value != null && value.startsWith('\\*')) {
+      value = value.substring(1);
+    }
+    if (operation == null && value != null && value.endsWith('\\*')) {
+      value = value.substring(0, value.length - 2);
+      return `${value}*`;
+    }
+
+    return `${operation ?? ''}${value ?? ``}`;
+  }
+
   makeQuickTextFilter(column: Column, text: string): FilterCondition | null {
     const { dh } = this;
     const cleanText = `${text}`.trim();
@@ -927,10 +1000,16 @@ export class TableUtils {
       }
     }
 
-    if (value == null || value.length === 0) {
+    if (value == null) {
       return null;
     }
 
+    // allow empty strings, but only for explicit equal and not equal
+    if (value.length === 0 && !(operation === '=' || operation === '!=')) {
+      return null;
+    }
+
+    // no operation is treated as an implicit equals
     if (operation == null) {
       operation = '=';
     }
@@ -959,7 +1038,8 @@ export class TableUtils {
       value = value.substring(0, value.length - 1);
     }
 
-    value = value.replace('\\', '');
+    // unescape any escaped operators to allow search for literal operators
+    value = TableUtils.unescapeQuickTextFilter(value);
 
     switch (operation) {
       case '~': {
@@ -1014,7 +1094,6 @@ export class TableUtils {
         return filter.notEqIgnoreCase(
           dh.FilterValue.ofString(value.toLowerCase())
         );
-
       case '=':
         if (prefix === '*') {
           // Ends with
