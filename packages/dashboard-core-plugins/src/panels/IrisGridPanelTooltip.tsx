@@ -29,12 +29,12 @@ function IrisGridPanelTooltip(props: IrisGridPanelTooltipProps): ReactElement {
       description={description}
     >
       <hr className="tab-tooltip-divider" />
-      <span>Number of Rows</span>
-      <span className="tab-tooltip-statistic-value">{formattedRowCount}</span>
       <span>Number of Columns</span>
       <span className="tab-tooltip-statistic-value">
         {formattedcolumnCount}
       </span>
+      <span>Number of Rows</span>
+      <span className="tab-tooltip-statistic-value">{formattedRowCount}</span>
     </WidgetPanelTooltip>
   );
 }
