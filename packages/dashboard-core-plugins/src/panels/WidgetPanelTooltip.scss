@@ -5,7 +5,7 @@ $tooltip-container-width: 300px;
 .tab-tooltip-grid-container {
   display: grid;
   grid-template-columns: auto 1fr;
-  align-items: first baseline;;
+  align-items: first baseline;
   max-width: $tooltip-container-width;
   text-align: left;
 
