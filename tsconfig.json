@@ -3,45 +3,24 @@
   "compilerOptions": {
     "baseUrl": ".",
     // Override node_modules/@types
-    "typeRoots": [
-      "./@types",
-      "./node_modules/@types"
-    ],
+    "typeRoots": ["./@types", "./node_modules/@types"],
     "paths": {
-      "@deephaven/*": [
-        "./packages/*/src"
-      ],
+      "@deephaven/*": ["./packages/*/src"],
       // This is used to override node_modules/@types
       // https://github.com/microsoft/TypeScript/issues/22217
-      "*": [
-        "*",
-        "./@types/*"
-      ]
+      "*": ["*", "./@types/*"]
     },
-    "types": [
-      "jest",
-      "node"
-    ],
+    "types": ["jest", "node"]
   },
   "files": [],
-  "exclude": [
-    "**/node_modules/**/*"
-  ],
+  "exclude": ["**/node_modules/**/*"],
   "watchOptions": {
-    "excludeDirectories": [
-      "**/node_modules",
-      "**/dist"
-    ]
+    "excludeDirectories": ["**/node_modules", "**/dist"]
   },
   "references": [
-    {
-      "path": "./packages/code-studio"
-    },
-    {
-      "path": "./packages/embed-grid"
-    },
-    {
-      "path": "./packages/embed-chart"
-    }
+    { "path": "./packages/code-studio" },
+    { "path": "./packages/embed-grid" },
+    { "path": "./packages/embed-chart" },
+    { "path": "./packages/golden-layout" }
   ]
 }

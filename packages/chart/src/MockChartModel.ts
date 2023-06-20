@@ -1,3 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
+
 import ChartModel from './ChartModel';
 import ChartTheme from './ChartTheme';
 import ChartUtils from './ChartUtils';

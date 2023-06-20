@@ -10,7 +10,6 @@ export * from './GridMouseHandler';
 export * from './GridRange';
 export * from './GridAxisRange';
 export * from './GridRenderer';
-export { default as GridTestUtils } from './GridTestUtils';
 export { default as GridTheme } from './GridTheme';
 export type { GridTheme as GridThemeType } from './GridTheme';
 export * from './GridUtils';
