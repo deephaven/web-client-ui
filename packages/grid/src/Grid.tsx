@@ -222,7 +222,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     onMoveColumnComplete: (): void => undefined,
     onMovedRowsChanged: (): void => undefined,
     onMoveRowComplete: (): void => undefined,
-    onViewChanged: (): void => undefined,
+    onViewChanged: (metrics: GridMetrics): void => undefined,
     onTokenClicked: (token: Token) => {
       if (isLinkToken(token)) {
         window.open(token.href, '_blank', 'noopener,noreferrer');
