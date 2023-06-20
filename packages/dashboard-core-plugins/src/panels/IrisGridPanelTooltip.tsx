@@ -18,6 +18,9 @@ function IrisGridPanelTooltip(props: IrisGridPanelTooltipProps): ReactElement {
   const rowCount = (model?.rowCount ?? 0) - (model?.pendingRowCount ?? 0);
   const formattedRowCount = model?.displayString(rowCount, 'long');
 
+  const columnCount = model?.columnCount ?? 0;
+  const formattedcolumnCount = model?.displayString(columnCount, 'long');
+
   return (
     <WidgetPanelTooltip
       widgetType="Table"
@@ -25,10 +28,13 @@ function IrisGridPanelTooltip(props: IrisGridPanelTooltipProps): ReactElement {
       glContainer={glContainer}
       description={description}
     >
-      <div className="column-statistics-grid">
-        <span className="column-statistic-operation">Number of Rows</span>
-        <span className="column-statistic-value">{formattedRowCount}</span>
-      </div>
+      <hr className="tab-tooltip-divider" />
+      <span>Number of Rows</span>
+      <span className="tab-tooltip-statistic-value">{formattedRowCount}</span>
+      <span>Number of Columns</span>
+      <span className="tab-tooltip-statistic-value">
+        {formattedcolumnCount}
+      </span>
     </WidgetPanelTooltip>
   );
 }

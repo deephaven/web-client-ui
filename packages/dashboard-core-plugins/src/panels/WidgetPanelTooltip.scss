@@ -1,23 +1,47 @@
-$tooltip-container-width: 300px;
-$tooltip-title-width: 110px;
+@import '@deephaven/components/scss/custom.scss';
 
-.tab-tooltip-container {
-  padding: 5px 15px;
+$tooltip-container-width: 300px;
+
+.tab-tooltip-grid-container {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: first baseline;;
   max-width: $tooltip-container-width;
   text-align: left;
 
   .tab-tooltip-title {
-    min-width: $tooltip-title-width;
+    font-weight: 700;
+  }
+
+  .tab-tooltip-name-wrapper {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: first baseline;
+    gap: $spacer-1;
   }
 
   .tab-tooltip-name {
-    max-width: $tooltip-container-width - $tooltip-title-width;
     word-break: break-word;
-    padding-left: 5px;
   }
 
-  .tab-tooltip-copy {
-    margin-left: 2px;
-    margin-top: -4px;
+  hr.tab-tooltip-divider {
+    grid-column: span 2;
+    width: 100%;
+    margin: $spacer-1 0;
+    border-color: $gray-500;
+  }
+
+  .tab-tooltip-description {
+    grid-column: span 2;
+    color: $text-muted;
+    padding-bottom: $spacer-1;
+  }
+
+  .tab-tooltip-statistic-value {
+    font-feature-settings: 'tnum';
+    text-align: right;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
   }
 }
