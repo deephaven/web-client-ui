@@ -1,6 +1,7 @@
 import React from 'react';
 import type { LoginOptions } from '@deephaven/jsapi-types';
 import {
+  getWindowParent,
   LOGIN_OPTIONS_REQUEST,
   requestParentResponse,
 } from '@deephaven/jsapi-utils';
@@ -49,7 +50,7 @@ function Component({ children }: AuthPluginProps): JSX.Element {
 const AuthPluginParent: AuthPlugin = {
   Component,
   isAvailable: () =>
-    window.opener != null && getWindowAuthProvider() === 'parent',
+    getWindowParent() != null && getWindowAuthProvider() === 'parent',
 };
 
 export default AuthPluginParent;
