@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.41.3](https://github.com/deephaven/web-client-ui/compare/v0.41.2...v0.41.3) (2023-06-21)
+
+**Note:** Version bump only for package @deephaven/embed-grid
+
 ## [0.41.2](https://github.com/deephaven/web-client-ui/compare/v0.41.1...v0.41.2) (2023-06-13)
 
 **Note:** Version bump only for package @deephaven/embed-grid

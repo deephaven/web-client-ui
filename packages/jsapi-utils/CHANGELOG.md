@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.41.3](https://github.com/deephaven/web-client-ui/compare/v0.41.2...v0.41.3) (2023-06-21)
+
+### Bug Fixes
+
+- AuthPluginParent wasn't working when embedded in an iframe ([#1383](https://github.com/deephaven/web-client-ui/issues/1383)) ([#1384](https://github.com/deephaven/web-client-ui/issues/1384)) ([7e38af3](https://github.com/deephaven/web-client-ui/commit/7e38af3459b3f97bf82a730447f2c219234fbe1a)), closes [#1373](https://github.com/deephaven/web-client-ui/issues/1373)
+
 # [0.41.0](https://github.com/deephaven/web-client-ui/compare/v0.40.4...v0.41.0) (2023-06-08)
 
 **Note:** Version bump only for package @deephaven/jsapi-utils
