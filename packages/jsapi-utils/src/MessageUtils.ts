@@ -95,6 +95,16 @@ export function makeResponse<T>(messageId: string, payload: T): Response<T> {
   return { id: messageId, payload };
 }
 
+export function getWindowParent(): Window | null {
+  if (window.opener != null) {
+    return window.opener;
+  }
+  if (window.parent != null && window.parent !== window) {
+    return window.parent;
+  }
+  return null;
+}
+
 /**
  * Request data from the parent window and wait for response
  * @param request Request message to send to the parent window
@@ -105,8 +115,9 @@ export async function requestParentResponse(
   request: string,
   timeout = 30000
 ): Promise<unknown> {
-  if (window.opener == null) {
-    throw new Error('window.opener is null, unable to send request.');
+  const parent = getWindowParent();
+  if (parent == null) {
+    throw new Error('window parent is null, unable to send request.');
   }
   return new Promise((resolve, reject) => {
     let timeoutId: number;
@@ -131,6 +142,6 @@ export async function requestParentResponse(
       window.removeEventListener('message', listener);
       reject(new TimeoutError('Request timed out'));
     }, timeout);
-    window.opener.postMessage(makeMessage(request, id), '*');
+    parent.postMessage(makeMessage(request, id), '*');
   });
 }
