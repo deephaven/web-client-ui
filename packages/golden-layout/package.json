@@ -11,7 +11,7 @@
   "type": "module",
   "dependencies": {
     "@deephaven/components": "file:../components",
-    "jquery": "^3.6.0"
+    "jquery": "^3.7.0"
   },
   "peerDependencies": {
     "react": "^17.x",

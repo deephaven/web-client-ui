@@ -45,13 +45,20 @@ export type ComponentConstructor<
 
 export type DragSourceEvent = JQuery.TriggeredEvent;
 
+// function testFunc(dragEvent?: DragSourceEvent): void {
+//   console.log('testFunc', dragEvent);
+// }
+
+// let myDragEvent: DragEvent | undefined;
+// testFunc(14);
+
 /**
  * The main class that will be exposed as GoldenLayout.
  *
  * @param config
  * @param container Can be a jQuery selector string or a Dom element. Defaults to body
  */
-export default class LayoutManager extends EventEmitter {
+export class LayoutManager extends EventEmitter {
   /**
    * Hook that allows to access private classes
    */
@@ -655,7 +662,7 @@ export default class LayoutManager extends EventEmitter {
    */
   createDragSourceFromEvent(
     itemConfig: ItemConfig | (() => ItemConfig),
-    event: JQuery.TriggeredEvent
+    event: DragSourceEvent
   ) {
     this.config.settings.constrainDragToContainer = false;
     return new DragSourceFromEvent(itemConfig, this, event);
@@ -1254,3 +1261,5 @@ export default class LayoutManager extends EventEmitter {
     });
   }
 }
+
+export default LayoutManager;

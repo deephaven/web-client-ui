@@ -20,7 +20,6 @@
   "references": [
     { "path": "./packages/code-studio" },
     { "path": "./packages/embed-grid" },
-    { "path": "./packages/embed-chart" },
-    { "path": "./packages/golden-layout" }
+    { "path": "./packages/embed-chart" }
   ]
 }

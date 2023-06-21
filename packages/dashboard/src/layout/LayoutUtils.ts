@@ -441,6 +441,10 @@ class LayoutUtils {
     return hydratedConfig;
   }
 
+  static myTestFunc(val: string) {
+    log.debug('myTestFunc', val);
+  }
+
   /**
    * Opens a component. It will try and open the component in an existing stack of the same component.
    * If `replaceExisting` is true and there is a component found with the same `config.id`, it will replace that component with this one.

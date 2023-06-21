@@ -1,4 +1,4 @@
-import React, { DragEvent, useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import {
   assertIsDashboardPluginProps,
   DashboardPluginComponentProps,
@@ -7,6 +7,7 @@ import {
   PanelHydrateFunction,
   useListener,
 } from '@deephaven/dashboard';
+import type { DragSourceEvent } from '@deephaven/golden-layout';
 import { IrisGridModelFactory, IrisGridThemeType } from '@deephaven/iris-grid';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import type { Table, VariableDefinition } from '@deephaven/jsapi-types';
@@ -19,6 +20,19 @@ export type GridPluginProps = Partial<DashboardPluginComponentProps> & {
   hydrate: PanelHydrateFunction<IrisGridPanelProps>;
   theme?: Partial<IrisGridThemeType>;
 };
+
+function testFunc(dragEvent?: DragSourceEvent): void {
+  console.log('testFunc', dragEvent);
+}
+
+let myDragEvent: DragEvent | undefined;
+testFunc(14);
+
+// function testStrFunc(str?: string): void {
+//   console.log('testStrFunc', str);
+// }
+// let myInt: number | undefined;
+// testStrFunc(myInt);
 
 export function GridPlugin(props: GridPluginProps): JSX.Element | null {
   assertIsDashboardPluginProps(props);
@@ -77,6 +91,11 @@ export function GridPlugin(props: GridPluginProps): JSX.Element | null {
         id: panelId,
       };
 
+      // const myStr = 'hello';
+      // const myInt: number = myStr;
+      // console.log('My int is ', myInt);
+      // LayoutUtils.myTestFunc(41);
+      testFunc(dragEvent);
       const { root } = layout;
       LayoutUtils.openComponent({ root, config, dragEvent });
     },
