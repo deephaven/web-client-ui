@@ -3,11 +3,13 @@ import { act, render, screen } from '@testing-library/react';
 import { ApiContext, ClientContext } from '@deephaven/jsapi-bootstrap';
 import { dh } from '@deephaven/jsapi-shim';
 import type { CoreClient, LoginOptions } from '@deephaven/jsapi-types';
+import { TestUtils } from '@deephaven/utils';
 import AuthPluginParent from './AuthPluginParent';
 import { AuthConfigMap } from './AuthPlugin';
 
 let mockParentResponse: Promise<LoginOptions>;
 jest.mock('@deephaven/jsapi-utils', () => ({
+  ...jest.requireActual('@deephaven/jsapi-utils'),
   LOGIN_OPTIONS_REQUEST: 'mock-login-options-request',
   requestParentResponse: jest.fn(() => mockParentResponse),
 }));
@@ -49,8 +51,14 @@ function renderComponent(
 
 describe('availability tests', () => {
   const authHandlers = [];
+
   it('is available when window opener is set', () => {
-    window.opener = { postMessage: jest.fn() };
+    const oldWindowOpener = window.opener;
+    // Can't use a spy because window.opener isn't set by default
+    // Still using a var to set the old value, in case that behaviour ever changes
+    window.opener = TestUtils.createMockProxy<Window>({
+      postMessage: jest.fn(),
+    });
     window.history.pushState(
       {},
       'Test Title',
@@ -59,12 +67,31 @@ describe('availability tests', () => {
     expect(AuthPluginParent.isAvailable(authHandlers, authConfigMap)).toBe(
       true
     );
+    window.opener = oldWindowOpener;
   });
-  it('is not available when window opener not set', () => {
-    delete window.opener;
+
+  it('is available when window parent is set', () => {
+    const parentSpy = jest.spyOn(window, 'parent', 'get').mockReturnValue(
+      TestUtils.createMockProxy<Window>({ postMessage: jest.fn() })
+    );
+    window.history.pushState(
+      {},
+      'Test Title',
+      `/test.html?authProvider=parent`
+    );
+    expect(AuthPluginParent.isAvailable(authHandlers, authConfigMap)).toBe(
+      true
+    );
+    parentSpy.mockRestore();
+  });
+
+  it('is not available when window opener and parent are not set', () => {
+    const oldWindowOpener = window.opener;
+    window.opener = null;
     expect(AuthPluginParent.isAvailable(authHandlers, authConfigMap)).toBe(
       false
     );
+    window.opener = oldWindowOpener;
   });
 });
 

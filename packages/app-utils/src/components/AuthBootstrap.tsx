@@ -21,8 +21,8 @@ export type AuthBootstrapProps = {
 
 /** Core auth plugins that are always loaded */
 const CORE_AUTH_PLUGINS = new Map([
-  ['@deephaven/auth-plugins.AuthPluginPsk', AuthPluginPsk],
   ['@deephaven/auth-plugins.AuthPluginParent', AuthPluginParent],
+  ['@deephaven/auth-plugins.AuthPluginPsk', AuthPluginPsk],
   ['@deephaven/auth-plugins.AuthPluginAnonymous', AuthPluginAnonymous],
 ]);
 
