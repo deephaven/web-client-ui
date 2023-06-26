@@ -1,4 +1,3 @@
-// import $ from 'jquery';
 import React, { DragEvent, useCallback, useEffect, useMemo } from 'react';
 import {
   assertIsDashboardPluginProps,

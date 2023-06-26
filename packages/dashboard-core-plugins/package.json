@@ -43,7 +43,6 @@
     "@fortawesome/react-fontawesome": "^0.2.0",
     "classnames": "^2.3.1",
     "deep-equal": "^2.0.5",
-    "jquery": "^3.7.0",
     "lodash.clamp": "^4.0.3",
     "lodash.debounce": "^4.0.8",
     "lodash.throttle": "^4.1.1",
