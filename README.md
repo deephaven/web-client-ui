@@ -67,6 +67,7 @@ We have a pre-defined launch config that lets you set breakpoints directly in VS
 We prefer launching a new window instead of attaching to existing windows because it provides a cleaner debug environment (only development extensions). You would also need to launch Chrome with the remote debugging flag in order to attach to an existing instance.
 
 ### Linux
+
 If you are using Linux, you will likely need to use the direct install from the VSCode website (deb or rpm file) and not through a package manager. On Ubuntu, apt installs via `snap` and some Linux flavors may use `flatpak`. Both of these sandbox the VSCode instance in such a way that the launch debug configs will likely not work.
 
 If you are not using Chrome (e.g. Chromium), you may need to do one of the following if the launch config is not working.
@@ -89,7 +90,7 @@ A component/library package that can be imported into other packages. Recommend 
 
 ## Updating E2E Snapshots
 
-**Note:** You must have [Docker installed](https://docs.docker.com/get-docker/), and `deephaven-core` must already be running on port 10000 on your local machine for all e2e tests.
+**Note:** You must have [Docker installed](https://docs.docker.com/get-docker/), and `deephaven-core` must already be running on port 10000 with anonymous authentication on your local machine for all e2e tests. To enable anonymous authentication, pass the flag through `START_OPTS`, e.g.: `docker run --detach --publish 10000:10000 --name dh-core-server --env "START_OPTS=-Xmx4g -DAuthHandlers=io.deephaven.auth.AnonymousAuthenticationHandler" ghcr.io/deephaven/server:edge` or `START_OPTS="-DAuthHandlers=io.deephaven.auth.AnonymousAuthenticationHandler" ./gradlew server-jetty-app:run`.
 
 Snapshots are used by end-to-end tests to visually verify the output. Sometimes changes are made requiring snapshots to be updated. Before running snapshots locally, you must be running the development server with `npm start` or have run `npm run build` recently. Run snapshots locally by running `npm run e2e:update-snapshots`.
 
