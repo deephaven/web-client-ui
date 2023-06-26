@@ -20,9 +20,6 @@
     "build": "cross-env NODE_ENV=production run-p build:*",
     "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward"
   },
-  "devDependencies": {
-    "@deephaven/tsconfig": "file:../tsconfig"
-  },
   "files": [
     "dist"
   ],

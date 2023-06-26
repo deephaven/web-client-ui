@@ -79,7 +79,6 @@
     "@deephaven/mocks": "file:../mocks",
     "@deephaven/prettier-config": "file:../prettier-config",
     "@deephaven/stylelint-config": "file:../stylelint-config",
-    "@deephaven/tsconfig": "file:../tsconfig",
     "autoprefixer": "^10.4.8"
   },
   "publishConfig": {

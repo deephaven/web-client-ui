@@ -28,9 +28,6 @@
   "peerDependencies": {
     "react": "^17.x"
   },
-  "devDependencies": {
-    "@deephaven/tsconfig": "file:../tsconfig"
-  },
   "files": [
     "dist"
   ],

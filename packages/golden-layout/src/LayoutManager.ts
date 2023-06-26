@@ -45,6 +45,8 @@ export type ComponentConstructor<
 
 export type DragSourceEvent = JQuery.TriggeredEvent;
 
+export type DragReactEvent = React.DragEvent;
+
 // function testFunc(dragEvent?: DragSourceEvent): void {
 //   console.log('testFunc', dragEvent);
 // }

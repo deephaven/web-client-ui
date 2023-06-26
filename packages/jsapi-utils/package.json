@@ -30,8 +30,7 @@
     "shortid": "^2.2.16"
   },
   "devDependencies": {
-    "@deephaven/jsapi-shim": "file:../jsapi-shim",
-    "@deephaven/tsconfig": "file:../tsconfig"
+    "@deephaven/jsapi-shim": "file:../jsapi-shim"
   },
   "files": [
     "dist"

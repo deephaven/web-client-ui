@@ -9,8 +9,7 @@
       // This is used to override node_modules/@types
       // https://github.com/microsoft/TypeScript/issues/22217
       "*": ["*", "./@types/*"]
-    },
-    "types": ["jest", "node"]
+    }
   },
   "files": [],
   "exclude": ["**/node_modules/**/*"],

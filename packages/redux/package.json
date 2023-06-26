@@ -28,9 +28,6 @@
     "deep-equal": "^2.0.5",
     "redux-thunk": "2.4.1"
   },
-  "devDependencies": {
-    "@deephaven/tsconfig": "file:../tsconfig"
-  },
   "peerDependencies": {
     "redux": "^4.2.0"
   },

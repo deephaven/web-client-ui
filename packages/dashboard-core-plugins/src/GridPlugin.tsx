@@ -1,3 +1,4 @@
+// import $ from 'jquery';
 import React, { useCallback, useEffect, useMemo } from 'react';
 import {
   assertIsDashboardPluginProps,
@@ -7,7 +8,7 @@ import {
   PanelHydrateFunction,
   useListener,
 } from '@deephaven/dashboard';
-import type { DragSourceEvent } from '@deephaven/golden-layout';
+import type { DragReactEvent, DragSourceEvent } from '@deephaven/golden-layout';
 import { IrisGridModelFactory, IrisGridThemeType } from '@deephaven/iris-grid';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import type { Table, VariableDefinition } from '@deephaven/jsapi-types';
@@ -26,7 +27,16 @@ function testFunc(dragEvent?: DragSourceEvent): void {
 }
 
 let myDragEvent: DragEvent | undefined;
-testFunc(14);
+testFunc('hello');
+
+// function testReactFunc(dragEvent?: DragReactEvent): void {
+//   console.log('testReactFunc', dragEvent);
+// }
+
+// // let myDragReactEvent: DragReactEvent | undefined;
+// testReactFunc('hello');
+
+export type DragSourceEventAnother = DragSourceEvent;
 
 // function testStrFunc(str?: string): void {
 //   console.log('testStrFunc', str);

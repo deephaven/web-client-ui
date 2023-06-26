@@ -28,7 +28,6 @@
     "@deephaven/react-hooks": "file:../react-hooks"
   },
   "devDependencies": {
-    "@deephaven/tsconfig": "file:../tsconfig",
     "react": "^17.x"
   },
   "peerDependencies": {
