@@ -36,23 +36,13 @@ import {
   getUniqueId,
   stripTags,
 } from './utils';
+import { DragListenerEvent } from './utils/DragListener';
 
 export type ComponentConstructor<
   C extends ComponentConfig | ReactComponentConfig = ComponentConfig
 > = {
   new (container: ItemContainer<C>, state: unknown): unknown;
 };
-
-export type DragSourceEvent = JQuery.TriggeredEvent;
-
-export type DragReactEvent = React.DragEvent;
-
-// function testFunc(dragEvent?: DragSourceEvent): void {
-//   console.log('testFunc', dragEvent);
-// }
-
-// let myDragEvent: DragEvent | undefined;
-// testFunc(14);
 
 /**
  * The main class that will be exposed as GoldenLayout.
@@ -664,7 +654,7 @@ export class LayoutManager extends EventEmitter {
    */
   createDragSourceFromEvent(
     itemConfig: ItemConfig | (() => ItemConfig),
-    event: DragSourceEvent
+    event: DragListenerEvent
   ) {
     this.config.settings.constrainDragToContainer = false;
     return new DragSourceFromEvent(itemConfig, this, event);

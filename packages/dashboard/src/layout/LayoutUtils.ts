@@ -19,7 +19,7 @@ import type {
   Stack,
   Tab,
   CloseOptions,
-  DragSourceEvent,
+  DragListenerEvent,
 } from '@deephaven/golden-layout';
 import { assertNotNull } from '@deephaven/utils';
 import { DashboardLayoutConfig } from '../DashboardLayout';
@@ -472,7 +472,7 @@ class LayoutUtils {
     replaceConfig?: Partial<ItemConfigType>;
     createNewStack?: boolean;
     focusElement?: string;
-    dragEvent?: DragSourceEvent;
+    dragEvent?: DragListenerEvent;
   } = {}): void {
     // attempt to retain focus after dom manipulation, which can break focus
     const maintainFocusElement = document.activeElement;

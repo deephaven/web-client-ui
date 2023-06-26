@@ -1,6 +1,11 @@
 import $ from 'jquery';
 import EventEmitter from './EventEmitter';
 
+export type DragListenerEvent = Pick<
+  JQuery.TriggeredEvent,
+  'button' | 'pageX' | 'pageY' | 'preventDefault'
+>;
+
 class DragListener extends EventEmitter {
   private _eElement: JQuery<HTMLElement> | undefined;
   private _oDocument: JQuery<Document> | undefined;
@@ -59,7 +64,7 @@ class DragListener extends EventEmitter {
     this._timeout = undefined;
   }
 
-  onMouseDown(oEvent: JQuery.TriggeredEvent) {
+  onMouseDown(oEvent: DragListenerEvent) {
     oEvent.preventDefault();
 
     if (oEvent.button === 0) {
@@ -75,7 +80,7 @@ class DragListener extends EventEmitter {
     }
   }
 
-  onMouseMove(oEvent: JQuery.TriggeredEvent) {
+  onMouseMove(oEvent: DragListenerEvent) {
     if (this._timeout != null) {
       oEvent.preventDefault();
 
@@ -99,7 +104,7 @@ class DragListener extends EventEmitter {
     }
   }
 
-  onMouseUp(oEvent: JQuery.TriggeredEvent) {
+  onMouseUp(oEvent: DragListenerEvent) {
     if (this._timeout != null) {
       clearTimeout(this._timeout);
       this._oDocument?.unbind('mousemove', this.onMouseMove);
@@ -131,7 +136,7 @@ class DragListener extends EventEmitter {
     this.emit('dragStart', this._nOriginalX, this._nOriginalY);
   }
 
-  _getCoordinates(event: JQuery.TriggeredEvent) {
+  _getCoordinates(event: DragListenerEvent) {
     return {
       x: event.pageX ?? 0,
       y: event.pageY ?? 0,
