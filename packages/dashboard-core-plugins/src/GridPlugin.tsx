@@ -1,5 +1,5 @@
 // import $ from 'jquery';
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { DragEvent, useCallback, useEffect, useMemo } from 'react';
 import {
   assertIsDashboardPluginProps,
   DashboardPluginComponentProps,
@@ -8,7 +8,6 @@ import {
   PanelHydrateFunction,
   useListener,
 } from '@deephaven/dashboard';
-import { DragListenerEvent } from '@deephaven/golden-layout';
 import { IrisGridModelFactory, IrisGridThemeType } from '@deephaven/iris-grid';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import type { Table, VariableDefinition } from '@deephaven/jsapi-types';
@@ -49,7 +48,7 @@ export function GridPlugin(props: GridPluginProps): JSX.Element | null {
       panelId = shortid.generate(),
       widget,
     }: {
-      dragEvent?: DragListenerEvent;
+      dragEvent?: DragEvent;
       fetch: () => Promise<Table>;
       panelId?: string;
       widget: VariableDefinition;

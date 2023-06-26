@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { DragEvent, useCallback, useEffect } from 'react';
 import { ChartModelFactory } from '@deephaven/chart';
 import {
   assertIsDashboardPluginProps,
@@ -8,7 +8,6 @@ import {
   PanelHydrateFunction,
   useListener,
 } from '@deephaven/dashboard';
-import { DragListenerEvent } from '@deephaven/golden-layout';
 import type { Figure, VariableDefinition } from '@deephaven/jsapi-types';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import shortid from 'shortid';
@@ -31,7 +30,7 @@ export function ChartPlugin(props: ChartPluginProps): JSX.Element | null {
       panelId = shortid.generate(),
       widget,
     }: {
-      dragEvent?: DragListenerEvent;
+      dragEvent?: DragEvent;
       fetch: () => Promise<Figure>;
       panelId?: string;
       widget: VariableDefinition;
