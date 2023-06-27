@@ -42,7 +42,6 @@
   },
   "devDependencies": {
     "@deephaven/mocks": "file:../mocks",
-    "@deephaven/tsconfig": "file:../tsconfig",
     "@types/lodash.ismatch": "^4.4.0"
   },
   "files": [

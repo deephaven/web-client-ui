@@ -37,8 +37,7 @@
     "@deephaven/eslint-config": "file:../eslint-config",
     "@deephaven/mocks": "file:../mocks",
     "@deephaven/prettier-config": "file:../prettier-config",
-    "@deephaven/stylelint-config": "file:../stylelint-config",
-    "@deephaven/tsconfig": "file:../tsconfig"
+    "@deephaven/stylelint-config": "file:../stylelint-config"
   },
   "publishConfig": {
     "access": "public"

@@ -23,9 +23,6 @@
   "dependencies": {
     "event-target-shim": "^6.0.2"
   },
-  "devDependencies": {
-    "@deephaven/tsconfig": "file:../tsconfig"
-  },
   "files": [
     "dist"
   ],

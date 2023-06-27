@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Grid, ViewportDataGridModel } from '@deephaven/grid';
+import { Grid, GridMetrics, ViewportDataGridModel } from '@deephaven/grid';
 
 /**
  * An example showing data loading asnychronously for a grid.
@@ -9,7 +9,7 @@ function AsyncExample() {
   const [model] = useState(
     () => new ViewportDataGridModel(1_000_000_000, 1_000_000)
   );
-  const grid = useRef();
+  const grid = useRef<Grid>(null);
 
   // The current viewport
   const [viewport, setViewport] = useState({
@@ -19,7 +19,7 @@ function AsyncExample() {
     right: 0,
   });
 
-  const handleViewChanged = useCallback(metrics => {
+  const handleViewChanged = useCallback((metrics: GridMetrics) => {
     // Pull out the viewport from the metrics
     const { top, bottom, left, right } = metrics;
     setViewport({ top, bottom, left, right });
@@ -50,7 +50,7 @@ function AsyncExample() {
         };
 
         // Refresh the grid
-        grid.current.forceUpdate();
+        grid.current?.forceUpdate();
       }, 250);
       return () => {
         isCancelled = true;

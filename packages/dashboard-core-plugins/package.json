@@ -63,8 +63,7 @@
   },
   "devDependencies": {
     "@deephaven/jsapi-shim": "file:../jsapi-shim",
-    "@deephaven/mocks": "file:../mocks",
-    "@deephaven/tsconfig": "file:../tsconfig"
+    "@deephaven/mocks": "file:../mocks"
   },
   "files": [
     "dist"

@@ -24,9 +24,6 @@
     "@deephaven/jsapi-types": "file:../jsapi-types",
     "prop-types": "^15.7.2"
   },
-  "devDependencies": {
-    "@deephaven/tsconfig": "file:../tsconfig"
-  },
   "files": [
     "dist"
   ],

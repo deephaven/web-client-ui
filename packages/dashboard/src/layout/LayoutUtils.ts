@@ -1,3 +1,4 @@
+import { DragEvent } from 'react';
 import deepEqual from 'deep-equal';
 import shortid from 'shortid';
 import isMatch from 'lodash.ismatch';
@@ -19,7 +20,6 @@ import type {
   Stack,
   Tab,
   CloseOptions,
-  DragSourceEvent,
 } from '@deephaven/golden-layout';
 import { assertNotNull } from '@deephaven/utils';
 import { DashboardLayoutConfig } from '../DashboardLayout';
@@ -468,7 +468,7 @@ class LayoutUtils {
     replaceConfig?: Partial<ItemConfigType>;
     createNewStack?: boolean;
     focusElement?: string;
-    dragEvent?: DragSourceEvent;
+    dragEvent?: DragEvent;
   } = {}): void {
     // attempt to retain focus after dom manipulation, which can break focus
     const maintainFocusElement = document.activeElement;

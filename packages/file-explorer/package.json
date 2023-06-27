@@ -37,8 +37,7 @@
     "react": "^17.0.0"
   },
   "devDependencies": {
-    "@deephaven/mocks": "file:../mocks",
-    "@deephaven/tsconfig": "file:../tsconfig"
+    "@deephaven/mocks": "file:../mocks"
   },
   "files": [
     "dist"
