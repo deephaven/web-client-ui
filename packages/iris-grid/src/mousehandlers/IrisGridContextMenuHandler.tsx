@@ -203,6 +203,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       model.getColumnHeaderParentGroup(modelIndex, 0) === undefined &&
       !(isExpandableGridModel(model) && model.hasExpandableRows);
     const isColumnFrozen = model.isColumnFrozen(modelIndex);
+    const isColumnSortable = column.isSortable;
     actions.push({
       title: 'Hide Column',
       group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
@@ -274,6 +275,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       group: IrisGridContextMenuHandler.GROUP_SORT,
       order: 10,
       actions: this.sortByActions(column, modelIndex, columnSort),
+      disabled: !isColumnSortable,
     });
     actions.push({
       title: 'Add Additional Sort',
@@ -289,7 +291,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         (columnSort && modelSort.length === 1) ||
         (hasReverse && modelSort.length === 1) ||
         (columnSort && hasReverse && modelSort.length === 2) ||
-        modelSort.length === 0,
+        modelSort.length === 0 ||
+        !isColumnSortable,
       group: IrisGridContextMenuHandler.GROUP_SORT,
       order: 20,
       actions: this.additionalSortActions(column, modelIndex),

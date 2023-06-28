@@ -292,6 +292,14 @@ abstract class IrisGridModel<
   }
 
   /**
+   * @param index The column index to check
+   * @returns Whether the column is sortable
+   */
+  isColumnSortable(index: ModelIndex): boolean {
+    return false;
+  }
+
+  /**
    * @returns True if this model requires a filter to be set
    */
   get isFilterRequired(): boolean {
