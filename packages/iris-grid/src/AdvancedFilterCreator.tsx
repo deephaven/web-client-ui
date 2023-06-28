@@ -202,9 +202,10 @@ class AdvancedFilterCreator extends PureComponent<
     );
     this.valuesTablePromise
       .then(valuesTable => {
-        const sort = valuesTable.columns[0].sort().asc();
-        valuesTable.applySort([sort]);
-
+        if (valuesTable.columns[0].isSortable) {
+          const sort = valuesTable.columns[0].sort().asc();
+          valuesTable.applySort([sort]);
+        }
         this.setState({ valuesTable });
       })
       .catch(error => {
@@ -384,7 +385,9 @@ class AdvancedFilterCreator extends PureComponent<
    */
   sortTable(direction: SortDirection, addToExisting = false): void {
     const { column, onSortChange } = this.props;
-    onSortChange(column, direction, addToExisting);
+    if (column.isSortable) {
+      onSortChange(column, direction, addToExisting);
+    }
   }
 
   startUpdateTimer(): void {
@@ -565,6 +568,7 @@ class AdvancedFilterCreator extends PureComponent<
                 onClick={this.handleSortDown}
                 icon={dhSortAmountDown}
                 tooltip={`Sort ${column.name} Descending`}
+                disabled={!column.isSortable}
               />
               <Button
                 kind="ghost"
@@ -576,6 +580,7 @@ class AdvancedFilterCreator extends PureComponent<
                   <FontAwesomeIcon icon={dhSortAmountDown} rotation={180} />
                 }
                 tooltip={`Sort ${column.name} Ascending`}
+                disabled={!column.isSortable}
               />
             </div>
           </div>
