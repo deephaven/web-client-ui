@@ -2410,8 +2410,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       modelColumn,
       addToExisting
     );
-    if (model.columns[columnIndex].isSortable) {
+    if (model.columns[columnIndex].isSortable ?? false) {
       this.updateSorts(sorts);
+    } else {
+      log.debug('Column type was not sortable', model.columns[columnIndex]);
     }
   }
 

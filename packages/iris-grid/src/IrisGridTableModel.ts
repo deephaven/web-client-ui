@@ -270,7 +270,7 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
   }
 
   isColumnSortable(modelIndex: ModelIndex): boolean {
-    return this.columns[modelIndex].isSortable;
+    return this.columns[modelIndex].isSortable ?? false;
   }
 
   async delete(ranges: GridRange[]): Promise<void> {

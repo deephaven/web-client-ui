@@ -558,7 +558,7 @@ export interface Column {
   readonly constituentType: string;
 
   readonly isPartitionColumn: boolean;
-  readonly isSortable: boolean;
+  readonly isSortable?: boolean;
 
   filter(): FilterValue;
   sort(): Sort;
