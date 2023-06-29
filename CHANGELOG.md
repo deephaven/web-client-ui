@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.42.0](https://github.com/deephaven/web-client-ui/compare/v0.41.1...v0.42.0) (2023-06-29)
+
+### Bug Fixes
+
+- AuthPluginParent wasn't working when embedded in an iframe ([#1383](https://github.com/deephaven/web-client-ui/issues/1383)) ([e23695d](https://github.com/deephaven/web-client-ui/commit/e23695d4baf232720ca89cb7d24e9a918f3fe913)), closes [#1373](https://github.com/deephaven/web-client-ui/issues/1373)
+- DH-15032: Fix incorrect warning about updated shared state ([#1364](https://github.com/deephaven/web-client-ui/issues/1364)) ([9e53dd2](https://github.com/deephaven/web-client-ui/commit/9e53dd2796b84963bd90e7043122a6b2c4d3cf46))
+- Ran npm audit fix on packages ([#1357](https://github.com/deephaven/web-client-ui/issues/1357)) ([0830099](https://github.com/deephaven/web-client-ui/commit/083009992e5f727f6f9dc9e9c2280b614315ab99))
+
+### Features
+
+- add column count to table tooltip ([#1382](https://github.com/deephaven/web-client-ui/issues/1382)) ([004ac6c](https://github.com/deephaven/web-client-ui/commit/004ac6cc1bd7772477b8e922075a344a4f8e71d3))
+- add sort-slash icon ([#1381](https://github.com/deephaven/web-client-ui/issues/1381)) ([9a7b910](https://github.com/deephaven/web-client-ui/commit/9a7b910f2075b252c81c08c7cc54f61bbe4458db)), closes [#1380](https://github.com/deephaven/web-client-ui/issues/1380)
+- Console output test util ([#1370](https://github.com/deephaven/web-client-ui/issues/1370)) ([626de83](https://github.com/deephaven/web-client-ui/commit/626de830ba4f580c90b0d0e2ee51ce8fd0452ad9)), closes [#1369](https://github.com/deephaven/web-client-ui/issues/1369)
+- improvements to null and empty strings filters in grid ([#1348](https://github.com/deephaven/web-client-ui/issues/1348)) ([ed3a8c5](https://github.com/deephaven/web-client-ui/commit/ed3a8c5f224094306ff55f9b41706cb58ff709e2)), closes [#1243](https://github.com/deephaven/web-client-ui/issues/1243)
+
+### Reverts
+
+- adding back "Table rendering support for databars ([#1212](https://github.com/deephaven/web-client-ui/issues/1212))" ([#1365](https://github.com/deephaven/web-client-ui/issues/1365)) ([8586d4d](https://github.com/deephaven/web-client-ui/commit/8586d4d99e55def1747eb820e824b61703990e58))
+
 ## [0.41.1](https://github.com/deephaven/web-client-ui/compare/v0.41.0...v0.41.1) (2023-06-08)
 
 ### Bug Fixes

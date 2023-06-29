@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.42.0](https://github.com/deephaven/web-client-ui/compare/v0.41.1...v0.42.0) (2023-06-29)
+
+### Features
+
+- add sort-slash icon ([#1381](https://github.com/deephaven/web-client-ui/issues/1381)) ([9a7b910](https://github.com/deephaven/web-client-ui/commit/9a7b910f2075b252c81c08c7cc54f61bbe4458db)), closes [#1380](https://github.com/deephaven/web-client-ui/issues/1380)
+
 # [0.41.0](https://github.com/deephaven/web-client-ui/compare/v0.40.4...v0.41.0) (2023-06-08)
 
 **Note:** Version bump only for package @deephaven/icons

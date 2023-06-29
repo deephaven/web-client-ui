@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.42.0](https://github.com/deephaven/web-client-ui/compare/v0.41.1...v0.42.0) (2023-06-29)
+
+### Bug Fixes
+
+- DH-15032: Fix incorrect warning about updated shared state ([#1364](https://github.com/deephaven/web-client-ui/issues/1364)) ([9e53dd2](https://github.com/deephaven/web-client-ui/commit/9e53dd2796b84963bd90e7043122a6b2c4d3cf46))
+
+### Features
+
+- add column count to table tooltip ([#1382](https://github.com/deephaven/web-client-ui/issues/1382)) ([004ac6c](https://github.com/deephaven/web-client-ui/commit/004ac6cc1bd7772477b8e922075a344a4f8e71d3))
+
 ## [0.41.1](https://github.com/deephaven/web-client-ui/compare/v0.41.0...v0.41.1) (2023-06-08)
 
 ### Bug Fixes
