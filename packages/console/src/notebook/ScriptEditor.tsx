@@ -138,7 +138,15 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
     const wholeLineRange = range
       .setStartPosition(startLineNumber, startLineMinColumn)
       .setEndPosition(endLineNumber, endLineMaxColumn);
-    return model?.getValueInRange(wholeLineRange);
+
+    // Un-indent lines in case a user selected only lines within a block to run
+    const lines = model?.getValueInRange(wholeLineRange).split('\n');
+    const minIndent = Math.min(
+      ...lines.map(line => line.length - line.trimStart().length)
+    );
+    const value = lines.map(line => line.slice(minIndent)).join('\n');
+
+    return value;
   }
 
   handleEditorInitialized(innerEditor: editor.IStandaloneCodeEditor): void {
