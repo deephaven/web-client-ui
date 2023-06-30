@@ -5,7 +5,7 @@ import React, { Component, ReactElement, RefObject } from 'react';
 import { LoadingOverlay, ShortcutRegistry } from '@deephaven/components';
 import Log from '@deephaven/log';
 import type { IdeSession } from '@deephaven/jsapi-types';
-import { assertNotNull } from '@deephaven/utils';
+import { assertNotNull, TextUtils } from '@deephaven/utils';
 import { editor, IDisposable } from 'monaco-editor';
 import Editor from './Editor';
 import { MonacoProviders, MonacoUtils } from '../monaco';
@@ -133,20 +133,13 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
     if (endColumn === 1 && endLineNumber > startLineNumber) {
       endLineNumber -= 1;
     }
-    const startLineMinColumn = model?.getLineMinColumn(startLineNumber);
-    const endLineMaxColumn = model?.getLineMaxColumn(endLineNumber);
+    const startLineMinColumn = model.getLineMinColumn(startLineNumber);
+    const endLineMaxColumn = model.getLineMaxColumn(endLineNumber);
     const wholeLineRange = range
       .setStartPosition(startLineNumber, startLineMinColumn)
       .setEndPosition(endLineNumber, endLineMaxColumn);
 
-    // Un-indent lines in case a user selected only lines within a block to run
-    const lines = model?.getValueInRange(wholeLineRange).split('\n');
-    const minIndent = Math.min(
-      ...lines.map(line => line.length - line.trimStart().length)
-    );
-    const value = lines.map(line => line.slice(minIndent)).join('\n');
-
-    return value;
+    return TextUtils.outdentCode(model.getValueInRange(wholeLineRange));
   }
 
   handleEditorInitialized(innerEditor: editor.IStandaloneCodeEditor): void {
