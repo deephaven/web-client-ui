@@ -104,6 +104,11 @@ describe('outdent code', () => {
       output: '\n\na\n\n  b\nc',
       case: 'blank lines in the code',
     },
+    {
+      input: '',
+      output: '',
+      case: 'empty string',
+    },
   ])('outdentCode with $case', ({ input, output }) => {
     expect(TextUtils.outdentCode(input)).toBe(output);
   });
