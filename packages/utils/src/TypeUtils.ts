@@ -11,7 +11,7 @@
  * // Compiler will complain
  * type NotDirection = Extends<Direction, 'blah'>
  */
-export type Extends<T, U extends T> = U;
+export type Extends<T, U extends T> = U extends T ? U : never;
 
 /**
  * Util type to extract the value from an object.
