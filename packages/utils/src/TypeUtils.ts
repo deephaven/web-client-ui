@@ -6,10 +6,10 @@
  * declare type Direction = 'north' | 'south' | 'east' | 'west'
  *
  * // This works
- * type Down = Subset<Direction, 'south'> // 'south'
+ * type Down = Extends<Direction, 'south'> // 'south'
  *
  * // Compiler will complain
- * type NotDirection = Subset<Direction, 'blah'>
+ * type NotDirection = Extends<Direction, 'blah'>
  */
 export type Extends<T, U extends T> = U;
 
