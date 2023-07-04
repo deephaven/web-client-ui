@@ -14,6 +14,7 @@ export type { Range } from './RangeUtils';
 export { default as TextUtils } from './TextUtils';
 export { default as TimeoutError } from './TimeoutError';
 export { default as TimeUtils } from './TimeUtils';
+export * from './TypeUtils';
 export { default as InvalidMetadataError } from './InvalidMetadataError';
 export { default as ValidationError } from './ValidationError';
 export { default as TestUtils } from './TestUtils';
