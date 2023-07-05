@@ -567,7 +567,11 @@ class AdvancedFilterCreator extends PureComponent<
                 })}
                 onClick={this.handleSortDown}
                 icon={dhSortAmountDown}
-                tooltip={`Sort ${column.name} Descending`}
+                tooltip={
+                  column.isSortable ?? false
+                    ? `Sort ${column.name} Descending`
+                    : 'Not sortable'
+                }
                 disabled={!(column.isSortable ?? false)}
               />
               <Button
@@ -579,7 +583,11 @@ class AdvancedFilterCreator extends PureComponent<
                 icon={
                   <FontAwesomeIcon icon={dhSortAmountDown} rotation={180} />
                 }
-                tooltip={`Sort ${column.name} Ascending`}
+                tooltip={
+                  column.isSortable ?? false
+                    ? `Sort ${column.name} Ascending`
+                    : 'Not sortable'
+                }
                 disabled={!(column.isSortable ?? false)}
               />
             </div>
