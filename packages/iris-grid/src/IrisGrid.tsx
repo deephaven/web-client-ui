@@ -2401,16 +2401,17 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     log.info('Toggling sort for column', columnIndex);
 
     const { model } = this.props;
-    const { sorts: currentSorts } = this.state;
     const modelColumn = this.getModelColumn(columnIndex);
     assertNotNull(modelColumn);
-    const sorts = TableUtils.toggleSortForColumn(
-      currentSorts,
-      model.columns,
-      modelColumn,
-      addToExisting
-    );
-    if (model.columns[columnIndex].isSortable ?? false) {
+    if (model.isColumnSortable(columnIndex)) {
+      const { sorts: currentSorts } = this.state;
+      const sorts = TableUtils.toggleSortForColumn(
+        currentSorts,
+        model.columns,
+        modelColumn,
+        addToExisting
+      );
+
       this.updateSorts(sorts);
     } else {
       log.debug('Column type was not sortable', model.columns[columnIndex]);

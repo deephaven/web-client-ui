@@ -214,11 +214,7 @@ class AdvancedFilterCreator extends PureComponent<
     );
     this.valuesTablePromise
       .then(valuesTable => {
-        const columnIndex = model.getColumnIndexByName(
-          valuesTable.columns[0].name
-        );
-        assertNotNull(columnIndex);
-        if (model.isColumnSortable(columnIndex)) {
+        if (valuesTable.columns[0].isSortable ?? true) {
           const sort = valuesTable.columns[0].sort().asc();
           valuesTable.applySort([sort]);
         }
