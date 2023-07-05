@@ -5,12 +5,13 @@ import React, { Component, ReactElement, RefObject } from 'react';
 import { LoadingOverlay, ShortcutRegistry } from '@deephaven/components';
 import Log from '@deephaven/log';
 import type { IdeSession } from '@deephaven/jsapi-types';
-import { assertNotNull, TextUtils } from '@deephaven/utils';
+import { assertNotNull } from '@deephaven/utils';
 import { editor, IDisposable } from 'monaco-editor';
 import Editor from './Editor';
 import { MonacoProviders, MonacoUtils } from '../monaco';
 import './ScriptEditor.scss';
 import SHORTCUTS from '../ConsoleShortcuts';
+import ScriptEditorUtils from './ScriptEditorUtils';
 
 const log = Log.module('ScriptEditor');
 
@@ -139,7 +140,7 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
       .setStartPosition(startLineNumber, startLineMinColumn)
       .setEndPosition(endLineNumber, endLineMaxColumn);
 
-    return TextUtils.outdentCode(model.getValueInRange(wholeLineRange));
+    return ScriptEditorUtils.outdentCode(model.getValueInRange(wholeLineRange));
   }
 
   handleEditorInitialized(innerEditor: editor.IStandaloneCodeEditor): void {

@@ -58,24 +58,6 @@ class TextUtils {
     }
     return 0;
   }
-
-  /**
-   * Outdent (opposite of indent) a string so the lowest indent level is 0
-   * Assumes each line is indented with the same characters (i.e. no mixed tabs/spaces)
-   * @param code The code to outdent
-   * @returns A code block where the minimum indent level of a line is 0
-   */
-  static outdentCode(code: string) {
-    const lines = code.split('\n');
-    const minIndent = lines.reduce((min, line) => {
-      const indentLength = line.length - line.trimStart().length;
-      if (indentLength === line.length) {
-        return min;
-      }
-      return indentLength < min ? indentLength : min;
-    }, Number.MAX_SAFE_INTEGER);
-    return lines.map(line => line.slice(minIndent)).join('\n');
-  }
 }
 
 export default TextUtils;

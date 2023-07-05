@@ -85,31 +85,3 @@ describe('sort text', () => {
     expect(TextUtils.sort('A', 'A', false)).toBe(0);
   });
 });
-
-describe('outdent code', () => {
-  test.each([
-    { input: '\n\n\n', output: '\n\n\n', case: 'empty lines' },
-    {
-      input: 'a\n  b\n  c\nd',
-      output: 'a\n  b\n  c\nd',
-      case: 'some lines not indented',
-    },
-    {
-      input: '  a\n  b\n  c',
-      output: 'a\nb\nc',
-      case: 'all lines same indent',
-    },
-    {
-      input: '\n\n  a\n\n    b\n  c',
-      output: '\n\na\n\n  b\nc',
-      case: 'blank lines in the code',
-    },
-    {
-      input: '',
-      output: '',
-      case: 'empty string',
-    },
-  ])('outdentCode with $case', ({ input, output }) => {
-    expect(TextUtils.outdentCode(input)).toBe(output);
-  });
-});
