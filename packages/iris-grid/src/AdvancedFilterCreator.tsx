@@ -20,7 +20,11 @@ import {
 } from '@deephaven/jsapi-utils';
 import { Button, ContextActionUtils } from '@deephaven/components';
 import Log from '@deephaven/log';
-import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
+import {
+  assertNotNull,
+  CancelablePromise,
+  PromiseUtils,
+} from '@deephaven/utils';
 import type { Column, FilterCondition, Table } from '@deephaven/jsapi-types';
 import shortid from 'shortid';
 import AdvancedFilterCreatorFilterItem from './AdvancedFilterCreatorFilterItem';
@@ -75,6 +79,8 @@ interface AdvancedFilterCreatorState {
 
   valuesTableError: null;
   valuesTable?: Table;
+
+  isSortable: boolean;
 }
 
 class AdvancedFilterCreator extends PureComponent<
@@ -119,7 +125,7 @@ class AdvancedFilterCreator extends PureComponent<
 
     this.focusTrapContainer = React.createRef();
 
-    const { options } = props;
+    const { model, column, options } = props;
     let { filterOperators, invertSelection, selectedValues } = options;
 
     // can be null or an empty array
@@ -142,6 +148,10 @@ class AdvancedFilterCreator extends PureComponent<
       selectedValues = [];
     }
 
+    const columnIndex = model.getColumnIndexByName(column.name);
+    assertNotNull(columnIndex);
+    const isSortable = model.isColumnSortable(columnIndex);
+
     this.state = {
       // Filter items
       filterItems,
@@ -155,6 +165,8 @@ class AdvancedFilterCreator extends PureComponent<
 
       valuesTableError: null,
       valuesTable: undefined,
+
+      isSortable,
     };
   }
 
@@ -202,7 +214,11 @@ class AdvancedFilterCreator extends PureComponent<
     );
     this.valuesTablePromise
       .then(valuesTable => {
-        if (valuesTable.columns[0].isSortable ?? false) {
+        const columnIndex = model.getColumnIndexByName(
+          valuesTable.columns[0].name
+        );
+        assertNotNull(columnIndex);
+        if (model.isColumnSortable(columnIndex)) {
           const sort = valuesTable.columns[0].sort().asc();
           valuesTable.applySort([sort]);
         }
@@ -385,7 +401,8 @@ class AdvancedFilterCreator extends PureComponent<
    */
   sortTable(direction: SortDirection, addToExisting = false): void {
     const { column, onSortChange } = this.props;
-    if (column.isSortable ?? false) {
+    const { isSortable } = this.state;
+    if (isSortable) {
       onSortChange(column, direction, addToExisting);
     }
   }
@@ -457,6 +474,7 @@ class AdvancedFilterCreator extends PureComponent<
       selectedValues,
       valuesTable,
       valuesTableError,
+      isSortable,
     } = this.state;
     const { dh, isValuesTableAvailable } = model;
     const isBoolean = TableUtils.isBooleanType(column.type);
@@ -568,11 +586,9 @@ class AdvancedFilterCreator extends PureComponent<
                 onClick={this.handleSortDown}
                 icon={dhSortAmountDown}
                 tooltip={
-                  column.isSortable ?? false
-                    ? `Sort ${column.name} Descending`
-                    : 'Not sortable'
+                  isSortable ? `Sort ${column.name} Descending` : 'Not sortable'
                 }
-                disabled={!(column.isSortable ?? false)}
+                disabled={!isSortable}
               />
               <Button
                 kind="ghost"
@@ -584,11 +600,9 @@ class AdvancedFilterCreator extends PureComponent<
                   <FontAwesomeIcon icon={dhSortAmountDown} rotation={180} />
                 }
                 tooltip={
-                  column.isSortable ?? false
-                    ? `Sort ${column.name} Ascending`
-                    : 'Not sortable'
+                  isSortable ? `Sort ${column.name} Ascending` : 'Not sortable'
                 }
-                disabled={!(column.isSortable ?? false)}
+                disabled={!isSortable}
               />
             </div>
           </div>

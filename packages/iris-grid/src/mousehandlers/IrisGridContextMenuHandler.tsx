@@ -203,7 +203,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       model.getColumnHeaderParentGroup(modelIndex, 0) === undefined &&
       !(isExpandableGridModel(model) && model.hasExpandableRows);
     const isColumnFrozen = model.isColumnFrozen(modelIndex);
-    const isColumnSortable = column.isSortable ?? false;
+    const isColumnSortable = model.isColumnSortable(modelIndex);
     actions.push({
       title: 'Hide Column',
       group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
