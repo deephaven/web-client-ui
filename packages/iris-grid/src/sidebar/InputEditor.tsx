@@ -4,6 +4,8 @@ import classNames from 'classnames';
 import './InputEditor.scss';
 
 interface InputEditorProps {
+  className?: string;
+  placeholder?: string;
   value: string;
   onContentChanged: (value?: string) => void;
   editorSettings: Partial<monaco.editor.IStandaloneEditorConstructionOptions>;
@@ -20,10 +22,7 @@ interface InputEditorState {
  * A monaco editor that looks like an general input
  */
 
-export default class InputEditor extends Component<
-  InputEditorProps,
-  InputEditorState
-> {
+export class InputEditor extends Component<InputEditorProps, InputEditorState> {
   static defaultProps = {
     value: '',
     onContentChanged: (): void => undefined,
@@ -156,14 +155,18 @@ export default class InputEditor extends Component<
   }
 
   render(): ReactElement {
-    const { value, invalid } = this.props;
+    const { className, invalid, placeholder, value } = this.props;
     const { isEditorFocused, isEditorEmpty } = this.state;
     return (
       <div
-        className={classNames('input-editor-wrapper', {
-          focused: isEditorFocused,
-          invalid,
-        })}
+        className={classNames(
+          'input-editor-wrapper',
+          {
+            focused: isEditorFocused,
+            invalid,
+          },
+          className
+        )}
         role="presentation"
         onClick={this.handleContainerClick}
       >
@@ -175,9 +178,13 @@ export default class InputEditor extends Component<
           data-testid="custom-column-formula"
         />
         {isEditorEmpty && !value && (
-          <div className="editor-placeholder text-muted">Column Formula</div>
+          <div className="editor-placeholder text-muted">
+            {placeholder ?? 'Column Formula'}
+          </div>
         )}
       </div>
     );
   }
 }
+
+export default InputEditor;
