@@ -11,6 +11,7 @@ import Editor from './Editor';
 import { MonacoProviders, MonacoUtils } from '../monaco';
 import './ScriptEditor.scss';
 import SHORTCUTS from '../ConsoleShortcuts';
+import ScriptEditorUtils from './ScriptEditorUtils';
 
 const log = Log.module('ScriptEditor');
 
@@ -133,12 +134,13 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
     if (endColumn === 1 && endLineNumber > startLineNumber) {
       endLineNumber -= 1;
     }
-    const startLineMinColumn = model?.getLineMinColumn(startLineNumber);
-    const endLineMaxColumn = model?.getLineMaxColumn(endLineNumber);
+    const startLineMinColumn = model.getLineMinColumn(startLineNumber);
+    const endLineMaxColumn = model.getLineMaxColumn(endLineNumber);
     const wholeLineRange = range
       .setStartPosition(startLineNumber, startLineMinColumn)
       .setEndPosition(endLineNumber, endLineMaxColumn);
-    return model?.getValueInRange(wholeLineRange);
+
+    return ScriptEditorUtils.outdentCode(model.getValueInRange(wholeLineRange));
   }
 
   handleEditorInitialized(innerEditor: editor.IStandaloneCodeEditor): void {
