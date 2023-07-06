@@ -155,7 +155,7 @@ export class InputEditor extends Component<InputEditorProps, InputEditorState> {
   }
 
   render(): ReactElement {
-    const { className, invalid, placeholder, value } = this.props;
+    const { className, invalid, placeholder = '', value } = this.props;
     const { isEditorFocused, isEditorEmpty } = this.state;
     return (
       <div
@@ -177,10 +177,8 @@ export class InputEditor extends Component<InputEditorProps, InputEditorState> {
           }}
           data-testid="custom-column-formula"
         />
-        {isEditorEmpty && !value && (
-          <div className="editor-placeholder text-muted">
-            {placeholder ?? 'Column Formula'}
-          </div>
+        {isEditorEmpty && !value && placeholder.length > 0 && (
+          <div className="editor-placeholder text-muted">{placeholder}</div>
         )}
       </div>
     );
