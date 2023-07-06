@@ -54,7 +54,7 @@ function makeAdvancedFilterCreatorWrapper(
       selectedValues: [],
     },
     model: irisGridTestUtils.makeModel(),
-    column: irisGridTestUtils.makeColumn(),
+    column: irisGridTestUtils.makeColumn('0'), // needs to match column name in makeModel so that columnIndex can be found when rendering
     formatter: new Formatter(dh),
   }
 ) {
