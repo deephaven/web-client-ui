@@ -36,6 +36,7 @@
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
     "@deephaven/react-hooks": "file:../react-hooks",
+    "@deephaven/redux": "file:../redux",
     "@deephaven/utils": "file:../utils",
     "@paciolan/remote-component": "2.13.0",
     "@paciolan/remote-module-loader": "^3.0.2",
