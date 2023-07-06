@@ -10,3 +10,5 @@ export const UserOverrideContext = createContext<UserOverride>({});
 export const UserPermissionsOverrideContext = createContext<UserPermissionsOverride>(
   {}
 );
+
+export const UserContext = createContext<User | null>(null);

@@ -1,10 +1,11 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useEffect, useState } from 'react';
 import { LoadingOverlay } from '@deephaven/components';
 import { useClient } from '@deephaven/jsapi-bootstrap';
 import { getErrorMessage } from '@deephaven/utils';
-import { PluginsContext } from './PluginsBootstrap';
-import { getAuthPluginComponent } from '../plugins';
-import LoginNotifier from './LoginNotifier';
+
+export const ServerConfigContext = createContext<Map<string, string> | null>(
+  null
+);
 
 export type ServerConfigBootstrapProps = {
   /**
@@ -57,8 +58,11 @@ export function ServerConfigBootstrap({
     );
   }
 
-  // TODO: Set a context here with the server config here
-  return <>{children}</>;
+  return (
+    <ServerConfigContext.Provider value={serverConfig}>
+      {children}
+    </ServerConfigContext.Provider>
+  );
 }
 
 export default ServerConfigBootstrap;

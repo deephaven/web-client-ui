@@ -1,11 +1,6 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import {
-  getUserFromConfig,
-  UserOverrideContext,
-  UserPermissionsOverrideContext,
-} from '@deephaven/auth-plugins';
 import {
   LoadingOverlay,
   Shortcut,
@@ -51,7 +46,12 @@ import {
   ServerConfigValues,
   DeephavenPluginModuleMap,
 } from '@deephaven/redux';
-import { useConnection, usePlugins } from '@deephaven/app-utils';
+import {
+  useConnection,
+  usePlugins,
+  useServerConfig,
+  useUser,
+} from '@deephaven/app-utils';
 import { setLayoutStorage as setLayoutStorageAction } from '../redux/actions';
 import App from './App';
 import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
@@ -108,8 +108,8 @@ function AppInit(props: AppInitProps) {
   const client = useClient();
   const connection = useConnection();
   const plugins = usePlugins();
-  const userOverrides = useContext(UserOverrideContext);
-  const userPermissionsOverrides = useContext(UserPermissionsOverrideContext);
+  const serverConfig = useServerConfig();
+  const user = useUser();
 
   // General error means the app is dead and is unlikely to recover
   const [error, setError] = useState<unknown>();
@@ -145,12 +145,9 @@ function AppInit(props: AppInitProps) {
           const workspaceStorage = new LocalWorkspaceStorage(layoutStorage);
           const commandHistoryStorage = new PouchCommandHistoryStorage();
 
-          const [configs, loadedWorkspace] = await Promise.all([
-            client.getServerConfigValues(),
-            workspaceStorage.load({
-              isConsoleAvailable: sessionWrapper !== undefined,
-            }),
-          ]);
+          const loadedWorkspace = await workspaceStorage.load({
+            isConsoleAvailable: sessionWrapper !== undefined,
+          });
 
           const { data } = loadedWorkspace;
 
@@ -188,13 +185,6 @@ function AppInit(props: AppInitProps) {
             links: data.links,
           };
 
-          const serverConfig = new Map(configs);
-
-          const user = getUserFromConfig(
-            serverConfig,
-            userOverrides,
-            userPermissionsOverrides
-          );
           setApi(api);
           setActiveTool(ToolType.DEFAULT);
           setServerConfigValues(serverConfig);
@@ -220,6 +210,7 @@ function AppInit(props: AppInitProps) {
       api,
       client,
       connection,
+      serverConfig,
       setActiveTool,
       setApi,
       setCommandHistoryStorage,
@@ -232,8 +223,7 @@ function AppInit(props: AppInitProps) {
       setWorkspace,
       setWorkspaceStorage,
       setServerConfigValues,
-      userOverrides,
-      userPermissionsOverrides,
+      user,
     ]
   );
 

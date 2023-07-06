@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useConnection } from '@deephaven/app-utils';
+import { useConnection, useUser } from '@deephaven/app-utils';
 import { ContextMenuRoot, LoadingOverlay } from '@deephaven/components'; // Use the loading spinner from the Deephaven components package
 import {
   InputFilter,
@@ -70,6 +70,7 @@ async function loadTable(
  */
 function App(): JSX.Element {
   const connection = useConnection();
+  const user = useUser();
   const [model, setModel] = useState<IrisGridModel>();
   const [error, setError] = useState<string>();
   const [inputFilters, setInputFilters] = useState<InputFilter[]>();
@@ -79,8 +80,8 @@ function App(): JSX.Element {
     () => new URLSearchParams(window.location.search),
     []
   );
-  const canCopy = searchParams.get('canCopy') != null;
-  const canDownloadCsv = searchParams.get('canDownloadCsv') != null;
+  const { permissions } = user;
+  const { canCopy, canDownloadCsv } = permissions;
 
   useEffect(
     function initializeApp() {
