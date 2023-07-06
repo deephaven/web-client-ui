@@ -1,4 +1,4 @@
-import { getAppInitValue, getUser } from './UserUtils';
+import { getAppInitValue, getUserFromConfig } from './UserUtils';
 
 it('returns the value for the AppInit key', () => {
   const serverConfig = new Map<string, string>();
@@ -17,7 +17,7 @@ it('returns the value for the AppInit key', () => {
 describe('getUser', () => {
   it('returns the default user and permissions', () => {
     const serverConfig = new Map<string, string>();
-    expect(getUser(serverConfig)).toEqual({
+    expect(getUserFromConfig(serverConfig)).toEqual({
       name: '',
       operateAs: '',
       groups: [],
@@ -56,7 +56,7 @@ describe('getUser', () => {
     serverConfig.set('internal.webClient.appInit.canCopy', 'false');
     serverConfig.set('internal.webClient.appInit.canDownloadCsv', 'false');
     serverConfig.set('internal.webClient.appInit.canLogout', 'false');
-    expect(getUser(serverConfig)).toEqual({
+    expect(getUserFromConfig(serverConfig)).toEqual({
       name: 'test',
       operateAs: 'test-operator',
       groups: ['group1', 'group2'],
@@ -96,7 +96,7 @@ describe('getUser', () => {
     serverConfig.set('internal.webClient.appInit.canDownloadCsv', 'false');
     serverConfig.set('internal.webClient.appInit.canLogout', 'false');
     expect(
-      getUser(
+      getUserFromConfig(
         serverConfig,
         {
           name: 'test2',

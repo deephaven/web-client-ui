@@ -15,7 +15,6 @@
     { "path": "../jsapi-utils" },
     { "path": "../log" },
     { "path": "../react-hooks" },
-    { "path": "../redux" },
     { "path": "../utils" }
   ]
 }

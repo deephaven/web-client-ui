@@ -20,7 +20,7 @@ export function getAppInitValue(
  * @param permissionsOverrides Override specific permissions for the user
  * @returns The user object
  */
-export function getUser(
+export function getUserFromConfig(
   serverConfig: Map<string, string>,
   overrides: Partial<Omit<User, 'permissions'>> = {},
   permissionsOverrides: Partial<UserPermissions> = {}
@@ -71,4 +71,4 @@ export function getUser(
   };
 }
 
-export default { getAppInitValue, getUser };
+export default { getAppInitValue, getUser: getUserFromConfig };

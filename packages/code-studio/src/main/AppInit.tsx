@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import {
+  getUserFromConfig,
   UserOverrideContext,
   UserPermissionsOverrideContext,
 } from '@deephaven/auth-plugins';
@@ -189,34 +190,11 @@ function AppInit(props: AppInitProps) {
 
           const serverConfig = new Map(configs);
 
-          const name = '';
-          const user: User = {
-            name,
-            operateAs: name,
-            groups: [],
-            ...userOverrides,
-            permissions: {
-              isACLEditor: false,
-              isSuperUser: false,
-              isQueryViewOnly: false,
-              isNonInteractive: false,
-              canUsePanels: true,
-              canCreateDashboard: true,
-              canCreateCodeStudio: true,
-              canCreateQueryMonitor: true,
-              canCopy: !(
-                serverConfig.get('internal.webClient.appInit.canCopy') ===
-                'false'
-              ),
-              canDownloadCsv: !(
-                serverConfig.get(
-                  'internal.webClient.appInit.canDownloadCsv'
-                ) === 'false'
-              ),
-              canLogout: true,
-              ...userPermissionsOverrides,
-            },
-          };
+          const user = getUserFromConfig(
+            serverConfig,
+            userOverrides,
+            userPermissionsOverrides
+          );
           setApi(api);
           setActiveTool(ToolType.DEFAULT);
           setServerConfigValues(serverConfig);
