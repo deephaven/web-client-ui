@@ -15,14 +15,7 @@ export interface DeephavenPluginModule {}
 export type DeephavenPluginModuleMap = Map<string, DeephavenPluginModule>;
 
 export interface UserPermissions {
-  isACLEditor: boolean;
-  isSuperUser: boolean;
-  isQueryViewOnly: boolean;
-  isNonInteractive: boolean;
   canUsePanels: boolean;
-  canCreateDashboard: boolean;
-  canCreateCodeStudio: boolean;
-  canCreateQueryMonitor: boolean;
   canCopy: boolean;
   canDownloadCsv: boolean;
   canLogout: boolean;

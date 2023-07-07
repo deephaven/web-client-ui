@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useConnection } from '@deephaven/app-utils';
+import { useConnection, useUser } from '@deephaven/app-utils';
 import { ContextMenuRoot, LoadingOverlay } from '@deephaven/components'; // Use the loading spinner from the Deephaven components package
 import {
   InputFilter,
@@ -9,7 +9,7 @@ import {
 } from '@deephaven/iris-grid'; // iris-grid is used to display Deephaven tables
 import dh from '@deephaven/jsapi-shim'; // Import the shim to use the JS API
 import type { IdeConnection, Sort, Table } from '@deephaven/jsapi-types';
-import { fetchVariableDefinition, TableUtils } from '@deephaven/jsapi-utils';
+import { fetchVariableDefinition } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import './App.scss'; // Styles for in this app
 
@@ -70,6 +70,7 @@ async function loadTable(
  */
 function App(): JSX.Element {
   const connection = useConnection();
+  const user = useUser();
   const [model, setModel] = useState<IrisGridModel>();
   const [error, setError] = useState<string>();
   const [inputFilters, setInputFilters] = useState<InputFilter[]>();
@@ -79,8 +80,8 @@ function App(): JSX.Element {
     () => new URLSearchParams(window.location.search),
     []
   );
-  const canCopy = searchParams.get('canCopy') != null;
-  const canDownloadCsv = searchParams.get('canDownloadCsv') != null;
+  const { permissions } = user;
+  const { canCopy, canDownloadCsv } = permissions;
 
   useEffect(
     function initializeApp() {
@@ -129,7 +130,7 @@ function App(): JSX.Element {
                 return {
                   name,
                   value: filterValue,
-                  type: TableUtils.getNormalizedType(column.type),
+                  type: column.type,
                 };
               }
             );

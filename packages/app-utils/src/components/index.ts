@@ -6,3 +6,5 @@ export * from './FontsLoaded';
 export * from './PluginsBootstrap';
 export * from './usePlugins';
 export * from './useConnection';
+export * from './useServerConfig';
+export * from './useUser';

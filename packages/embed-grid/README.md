@@ -11,8 +11,6 @@ This project uses [Vite](https://vitejs.dev/). It is to provide an example React
 ## Query Parameters
 
 - `name`: Required. The name of the table to load
-- `canCopy`: Optional. Add this query param to enable copy functionality (no value required)
-- `canDownloadCsv`: Optional. Add this query param to enable exporting to CSV functionality (no value required)
 
 ## API
 
@@ -34,7 +32,7 @@ Example: `document.getElementById('my-iframe').contentWindow.postMessage({ comma
 
 ### Application Mode
 
-See the guide for how to set up core in Application Mode: https://deephaven.io/core/docs/how-to-guides/app-mode/
+See the guide for how to set up core in Application Mode: https://deephaven.io/core/docs/how-to-guides/application-mode/
 
 Once Deephaven is running, you can open a table with a specific name by adding the query param `name`, e.g. http://localhost:4010/?name=world
 

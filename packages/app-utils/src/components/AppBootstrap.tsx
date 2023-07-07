@@ -11,6 +11,8 @@ import AuthBootstrap from './AuthBootstrap';
 import ConnectionBootstrap from './ConnectionBootstrap';
 import { getConnectOptions } from '../utils';
 import FontsLoaded from './FontsLoaded';
+import UserBootstrap from './UserBootstrap';
+import ServerConfigBootstrap from './ServerConfigBootstrap';
 
 export type AppBootstrapProps = {
   /** URL of the server. */
@@ -57,9 +59,13 @@ export function AppBootstrap({
         >
           <RefreshTokenBootstrap>
             <AuthBootstrap>
-              <ConnectionBootstrap>
-                <FontsLoaded>{children}</FontsLoaded>
-              </ConnectionBootstrap>
+              <ServerConfigBootstrap>
+                <UserBootstrap>
+                  <ConnectionBootstrap>
+                    <FontsLoaded>{children}</FontsLoaded>
+                  </ConnectionBootstrap>
+                </UserBootstrap>
+              </ServerConfigBootstrap>
             </AuthBootstrap>
           </RefreshTokenBootstrap>
         </ClientBootstrap>
