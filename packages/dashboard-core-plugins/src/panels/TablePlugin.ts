@@ -1,19 +1,24 @@
 import React from 'react';
-import {
+import IrisGrid, {
   ColumnName,
   InputFilter,
   IrisGridContextMenuData,
   IrisGridModel,
+  IrisGridTableModel,
 } from '@deephaven/iris-grid';
-import { ResolvableContextAction } from '@deephaven/components';
+import {
+  ContextMenuRoot,
+  ResolvableContextAction,
+} from '@deephaven/components';
 import type { Table } from '@deephaven/jsapi-types';
+import { User, Workspace } from '@deephaven/redux';
 import { IrisGridPanel, PanelState } from './IrisGridPanel';
 
 export interface TablePluginElement {
   getMenu?: (data: IrisGridContextMenuData) => ResolvableContextAction[];
 }
 
-export interface TablePluginProps {
+export interface TablePluginProps extends DeprecatedTablePluginProps {
   /**
    * Apply filters to the table
    * @param filters Filters to apply to the table
@@ -52,6 +57,33 @@ export interface TablePluginProps {
    * Current plugin state. Use to load.
    */
   pluginState: PanelState['pluginState'];
+}
+
+export interface DeprecatedTablePluginProps {
+  /** @deprecated Import components from @deephaven/components and @deephaven/iris-grid packages instead */
+  components: {
+    IrisGrid: typeof IrisGrid;
+    IrisGridTableModel: typeof IrisGridTableModel;
+    ContextMenuRoot: typeof ContextMenuRoot;
+  };
+
+  /** @deprecated Use `fetchColumns` instead */
+  onFetchColumns: (pluginFetchColumns: ColumnName[]) => void;
+
+  /** @deprecated Use `filter` instead */
+  onFilter: (filters: InputFilter[]) => void;
+
+  /**
+   * Current user information
+   * @deprecated Use `getUser` from `@deephaven/redux` instead
+   */
+  user: User;
+
+  /**
+   * Current user workspace data
+   * @deprecated Use `getWorkspace` from `@deephaven/redux` instead
+   */
+  workspace: Workspace;
 }
 
 export type TablePlugin = React.ForwardRefExoticComponent<

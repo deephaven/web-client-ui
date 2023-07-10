@@ -39,6 +39,7 @@ import {
   DehydratedIrisGridState,
   ColumnHeaderGroup,
   IrisGridContextMenuData,
+  IrisGridTableModel,
 } from '@deephaven/iris-grid';
 import {
   AdvancedFilterOptions,
@@ -47,13 +48,23 @@ import {
   TableUtils,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
-import { getSettings, getUser, RootState, User } from '@deephaven/redux';
+import {
+  getSettings,
+  getUser,
+  getWorkspace,
+  RootState,
+  User,
+  Workspace,
+} from '@deephaven/redux';
 import {
   assertNotNull,
   CancelablePromise,
   PromiseUtils,
 } from '@deephaven/utils';
-import { ResolvableContextAction } from '@deephaven/components';
+import {
+  ContextMenuRoot,
+  ResolvableContextAction,
+} from '@deephaven/components';
 import type { Column, FilterCondition, Sort } from '@deephaven/jsapi-types';
 import {
   GridState,
@@ -77,6 +88,8 @@ import TablePlugin, { TablePluginElement } from './TablePlugin';
 const log = Log.module('IrisGridPanel');
 
 const DEBOUNCE_PANEL_STATE_UPDATE = 500;
+
+const PLUGIN_COMPONENTS = { IrisGrid, IrisGridTableModel, ContextMenuRoot };
 
 type ModelQueueFunction = (model: IrisGridModel) => void;
 
@@ -135,6 +148,7 @@ export interface IrisGridPanelProps {
   onStateChange?: (irisGridState: IrisGridState, gridState: GridState) => void;
   onPanelStateUpdate?: (panelState: PanelState) => void;
   user: User;
+  workspace: Workspace;
   settings: { timeZone: string };
 
   // Retrieve a download worker for optimizing exporting tables
@@ -381,6 +395,8 @@ export class IrisGridPanel extends PureComponent<
     (
       Plugin: TablePlugin | undefined,
       model: IrisGridModel | undefined,
+      user: User,
+      workspace: Workspace,
       pluginState: unknown
     ) => {
       if (
@@ -403,6 +419,11 @@ export class IrisGridPanel extends PureComponent<
             panel={this}
             onStateChange={this.handlePluginStateChange}
             pluginState={pluginState}
+            onFilter={this.handlePluginFilter}
+            onFetchColumns={this.handlePluginFetchColumns}
+            user={user}
+            workspace={workspace}
+            components={PLUGIN_COMPONENTS}
           />
         </div>
       );
@@ -1182,6 +1203,7 @@ export class IrisGridPanel extends PureComponent<
       metadata,
       panelState,
       user,
+      workspace,
       settings,
       theme,
     } = this.props;
@@ -1230,7 +1252,8 @@ export class IrisGridPanel extends PureComponent<
     const description = model?.description ?? undefined;
     const pluginState = panelState?.pluginState ?? null;
     const childrenContent =
-      children ?? this.getPluginContent(Plugin, model, pluginState);
+      children ??
+      this.getPluginContent(Plugin, model, user, workspace, pluginState);
     const { permissions } = user;
     const { canCopy, canDownloadCsv } = permissions;
 
@@ -1337,6 +1360,7 @@ const mapStateToProps = (
     localDashboardId
   ),
   user: getUser(state),
+  workspace: getWorkspace(state),
   settings: getSettings(state),
 });
 
