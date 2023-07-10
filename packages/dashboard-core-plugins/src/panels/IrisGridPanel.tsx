@@ -19,7 +19,6 @@ import {
   IrisGrid,
   IrisGridModel,
   IrisGridUtils,
-  IrisGridTableModel,
   isIrisGridTableModelTemplate,
   ColumnName,
   PendingDataMap,
@@ -39,7 +38,7 @@ import {
   ChartBuilderSettings,
   DehydratedIrisGridState,
   ColumnHeaderGroup,
-  ContextMenuData,
+  IrisGridContextMenuData,
 } from '@deephaven/iris-grid';
 import {
   AdvancedFilterOptions,
@@ -48,29 +47,14 @@ import {
   TableUtils,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
-import {
-  getSettings,
-  getUser,
-  getWorkspace,
-  RootState,
-  User,
-  Workspace,
-} from '@deephaven/redux';
+import { getSettings, getUser, RootState, User } from '@deephaven/redux';
 import {
   assertNotNull,
   CancelablePromise,
   PromiseUtils,
 } from '@deephaven/utils';
-import {
-  ContextMenuRoot,
-  ResolvableContextAction,
-} from '@deephaven/components';
-import type {
-  Column,
-  FilterCondition,
-  Sort,
-  Table,
-} from '@deephaven/jsapi-types';
+import { ResolvableContextAction } from '@deephaven/components';
+import type { Column, FilterCondition, Sort } from '@deephaven/jsapi-types';
 import {
   GridState,
   ModelIndex,
@@ -88,12 +72,11 @@ import WidgetPanel from './WidgetPanel';
 import './IrisGridPanel.scss';
 import { Link, LinkColumn } from '../linker/LinkerUtils';
 import IrisGridPanelTooltip from './IrisGridPanelTooltip';
+import TablePlugin, { TablePluginElement } from './TablePlugin';
 
 const log = Log.module('IrisGridPanel');
 
 const DEBOUNCE_PANEL_STATE_UPDATE = 500;
-
-const PLUGIN_COMPONENTS = { IrisGrid, IrisGridTableModel, ContextMenuRoot };
 
 type ModelQueueFunction = (model: IrisGridModel) => void;
 
@@ -152,7 +135,6 @@ export interface IrisGridPanelProps {
   onStateChange?: (irisGridState: IrisGridState, gridState: GridState) => void;
   onPanelStateUpdate?: (panelState: PanelState) => void;
   user: User;
-  workspace: Workspace;
   settings: { timeZone: string };
 
   // Retrieve a download worker for optimizing exporting tables
@@ -163,69 +145,6 @@ export interface IrisGridPanelProps {
 
   theme: IrisGridThemeType;
 }
-
-export interface TablePluginElement {
-  getMenu?: (data: ContextMenuData) => ResolvableContextAction[];
-}
-
-export interface TablePluginProps {
-  /**
-   * Apply filters to the table
-   * @param filters Filters to apply to the table
-   */
-  filter: (filters: InputFilter[]) => void;
-
-  /** @deprecated Use `filter` instead */
-  onFilter: (filters: InputFilter[]) => void;
-
-  /**
-   * Set columns that should always be fetched, even if they're outside the viewport
-   * @param pluginFetchColumns Names of columns to always fetch
-   */
-  fetchColumns: (pluginFetchColumns: ColumnName[]) => void;
-
-  /** @deprecated Use `fetchColumns` instead */
-  onFetchColumns: (pluginFetchColumns: ColumnName[]) => void;
-
-  /**
-   * The table this plugin was associated with
-   */
-  table: Table;
-
-  /**
-   * The IrisGridPanel displaying this table
-   */
-  panel: IrisGridPanel;
-
-  /** @deprecated Import components from @deephaven/components and @deephaven/iris-grid packages instead */
-  components: typeof PLUGIN_COMPONENTS;
-
-  /**
-   * Current user information
-   */
-  user: User;
-
-  /**
-   * Current user workspace data
-   */
-  workspace: Workspace;
-
-  /**
-   * Notify of a state change in the plugin state. Will be saved with the panel data.
-   * Should be an object that can be serialized to JSON.
-   * @param pluginState State of the plugin to save
-   */
-  onStateChange: (pluginState: PanelState['pluginState']) => void;
-
-  /**
-   * Current plugin state. Use to load.
-   */
-  pluginState: PanelState['pluginState'];
-}
-
-export type TablePlugin = React.ForwardRefExoticComponent<
-  TablePluginProps & React.RefAttributes<TablePluginElement>
->;
 
 interface IrisGridPanelState {
   error: unknown;
@@ -462,8 +381,6 @@ export class IrisGridPanel extends PureComponent<
     (
       Plugin: TablePlugin | undefined,
       model: IrisGridModel | undefined,
-      user: User,
-      workspace: Workspace,
       pluginState: unknown
     ) => {
       if (
@@ -480,16 +397,10 @@ export class IrisGridPanel extends PureComponent<
           <Plugin
             ref={this.pluginRef}
             filter={this.handlePluginFilter}
-            // onFilter is deprecated
-            onFilter={this.handlePluginFilter}
             fetchColumns={this.handlePluginFetchColumns}
-            // onFetchColumns is deprecated
-            onFetchColumns={this.handlePluginFetchColumns}
+            model={model}
             table={model.table}
-            user={user}
             panel={this}
-            workspace={workspace}
-            components={PLUGIN_COMPONENTS}
             onStateChange={this.handlePluginStateChange}
             pluginState={pluginState}
           />
@@ -699,7 +610,7 @@ export class IrisGridPanel extends PureComponent<
     this.setState({ pluginFetchColumns });
   }
 
-  handleContextMenu(data: ContextMenuData): ResolvableContextAction[] {
+  handleContextMenu(data: IrisGridContextMenuData): ResolvableContextAction[] {
     return this.pluginRef.current?.getMenu?.(data) ?? [];
   }
 
@@ -1271,7 +1182,6 @@ export class IrisGridPanel extends PureComponent<
       metadata,
       panelState,
       user,
-      workspace,
       settings,
       theme,
     } = this.props;
@@ -1320,8 +1230,7 @@ export class IrisGridPanel extends PureComponent<
     const description = model?.description ?? undefined;
     const pluginState = panelState?.pluginState ?? null;
     const childrenContent =
-      children ??
-      this.getPluginContent(Plugin, model, user, workspace, pluginState);
+      children ?? this.getPluginContent(Plugin, model, pluginState);
     const { permissions } = user;
     const { canCopy, canDownloadCsv } = permissions;
 
@@ -1428,7 +1337,6 @@ const mapStateToProps = (
     localDashboardId
   ),
   user: getUser(state),
-  workspace: getWorkspace(state),
   settings: getSettings(state),
 });
 

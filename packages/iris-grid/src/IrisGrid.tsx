@@ -252,7 +252,7 @@ export type FilterMap = Map<
   }
 >;
 
-export interface ContextMenuData {
+export interface IrisGridContextMenuData {
   model: IrisGridModel;
   value: unknown;
   valueText: string | null;
@@ -318,7 +318,7 @@ export interface IrisGridProps {
   invertSearchColumns: boolean;
 
   // eslint-disable-next-line react/no-unused-prop-types
-  onContextMenu: (data: ContextMenuData) => ResolvableContextAction[];
+  onContextMenu: (data: IrisGridContextMenuData) => ResolvableContextAction[];
 
   pendingDataMap?: PendingDataMap;
   getDownloadWorker: () => Promise<ServiceWorker>;
