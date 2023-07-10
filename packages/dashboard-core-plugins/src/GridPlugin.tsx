@@ -1,4 +1,4 @@
-import React, { DragEvent, useCallback, useEffect, useMemo } from 'react';
+import { DragEvent, useCallback, useEffect, useMemo } from 'react';
 import {
   assertIsDashboardPluginProps,
   DashboardPluginComponentProps,
