@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/redux",
-  "version": "0.32.0",
+  "version": "0.44.0",
   "description": "Deephaven Redux",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -22,13 +22,11 @@
     "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward"
   },
   "dependencies": {
+    "@deephaven/jsapi-types": "file:../jsapi-types",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
     "deep-equal": "^2.0.5",
     "redux-thunk": "2.4.1"
-  },
-  "devDependencies": {
-    "@deephaven/tsconfig": "file:../tsconfig"
   },
   "peerDependencies": {
     "redux": "^4.2.0"
@@ -36,6 +34,7 @@
   "files": [
     "dist"
   ],
+  "sideEffects": false,
   "publishConfig": {
     "access": "public"
   }

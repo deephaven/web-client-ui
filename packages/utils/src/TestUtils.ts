@@ -1,4 +1,5 @@
 import type userEvent from '@testing-library/user-event';
+import createMockProxy from './MockProxy';
 
 interface MockContext {
   arc: jest.Mock<void>;
@@ -30,7 +31,69 @@ export interface ClickOptions {
   rightClick?: boolean;
 }
 
+/**
+ * Filters a type down to only method properties.
+ */
+export type PickMethods<T> = {
+  [K in keyof T as T[K] extends (...args: unknown[]) => unknown
+    ? K
+    : never]: T[K];
+};
+
+export type ConsoleMethodName = keyof PickMethods<Console>;
+
 class TestUtils {
+  /**
+   * Type assertion to "cast" a function to it's corresponding jest.Mock
+   * function type. Note that this is a types only helper for type assertions.
+   * It will not actually convert a non-mock function.
+   *
+   * e.g.
+   *
+   * // This is actually a jest.Mock fn, but the type annotation hides this.
+   * const someFunc: (name: string) => number = jest.fn(
+   *   (name: string): number => name.length
+   * );
+   *
+   * // `asMock` will infer the type as jest.Mock<number, [string]> which gives
+   * // us the ability to call `mockImplementation` in a type safe way.
+   * TestUtils.asMock(someFunc).mockImplementation(name => name.split(',').length)
+   */
+  static asMock = <TResult, TArgs extends unknown[]>(
+    fn: (...args: TArgs) => TResult
+  ): jest.Mock<TResult, TArgs> => (fn as unknown) as jest.Mock<TResult, TArgs>;
+
+  /**
+   * Selectively disable logging methods on `console` object. Uses spyOn so that
+   * changes will be reverted after leaving the test scope that it is set in. If
+   * no method names are given, all will be disabled.
+   * @param methodNames The console methods to disable.
+   */
+  static disableConsoleOutput = (...methodNames: ConsoleMethodName[]): void => {
+    if (methodNames.length === 0) {
+      // eslint-disable-next-line no-param-reassign
+      methodNames = Object.getOwnPropertyNames(console).filter(
+        (name): name is ConsoleMethodName =>
+          // eslint-disable-next-line no-console
+          typeof console[name as keyof Console] === 'function'
+      );
+    }
+
+    methodNames.forEach(methodName => {
+      jest.spyOn(console, methodName).mockImplementation();
+    });
+  };
+
+  /**
+   * Find the last mock function call matching a given predicate.
+   * @param fn jest.Mock function
+   * @param predicate Predicate function to match calls against
+   */
+  static findLastCall = <TResult, TArgs extends unknown[]>(
+    fn: (...args: TArgs) => TResult,
+    predicate: (args: TArgs) => boolean
+  ) => TestUtils.asMock(fn).mock.calls.reverse().find(predicate);
+
   static makeMockContext(): MockContext {
     return {
       arc: jest.fn(),
@@ -63,15 +126,10 @@ class TestUtils {
     operateAs: 'test',
     groups: ['allusers', 'test'],
     permissions: {
-      isSuperUser: false,
-      isQueryViewOnly: false,
-      isNonInteractive: false,
       canUsePanels: true,
-      canCreateDashboard: true,
-      canCreateCodeStudio: true,
-      canCreateQueryMonitor: true,
       canCopy: true,
       canDownloadCsv: true,
+      canLogout: true,
     },
   };
 
@@ -143,6 +201,33 @@ class TestUtils {
     }
     await user.keyboard('{/Shift}');
   }
+
+  /**
+   * Creates a mock object for a type `T` using a Proxy object. Each prop can
+   * optionally be set via the constructor. Any prop that is not set will be set
+   * to a jest.fn() instance on first access with the exeption of "then" which
+   * will not be automatically proxied.
+   * @param overrides Optional props to explicitly set on the Proxy.
+   */
+  static createMockProxy = createMockProxy;
+
+  /**
+   * Attempt to extract the args for the nth call to a given function. This will
+   * only work if the given fn is a jest.Mock function. Otherwise, it returns
+   * null.
+   * @param fn
+   * @param callIndex Index of the function call.
+   */
+  static extractCallArgs = <TArgs extends unknown[], TResult>(
+    fn: (...args: TArgs) => TResult,
+    callIndex: number
+  ): TArgs | null => {
+    try {
+      return ((fn as jest.Mock).mock.calls[callIndex] ?? null) as TArgs | null;
+    } catch (err) {
+      return null;
+    }
+  };
 }
 
 export default TestUtils;

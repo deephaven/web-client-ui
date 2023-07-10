@@ -1,4 +1,5 @@
 import React, {
+  ComponentType,
   ReactElement,
   useCallback,
   useEffect,
@@ -9,14 +10,13 @@ import PropTypes from 'prop-types';
 import GoldenLayout from '@deephaven/golden-layout';
 import type {
   Container,
-  EventEmitter,
   ItemConfigType,
   ReactComponentConfig,
 } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
 import { usePrevious } from '@deephaven/react-hooks';
 import { RootState } from '@deephaven/redux';
-import { Provider, useDispatch, useSelector, useStore } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import PanelManager, { ClosedPanels } from './PanelManager';
 import PanelErrorBoundary from './PanelErrorBoundary';
 import LayoutUtils from './layout/LayoutUtils';
@@ -31,7 +31,9 @@ import {
   PanelComponentType,
   PanelDehydrateFunction,
   PanelHydrateFunction,
+  PanelProps,
 } from './DashboardPlugin';
+import DashboardPanelWrapper from './DashboardPanelWrapper';
 
 export type DashboardLayoutConfig = ItemConfigType[];
 
@@ -63,6 +65,9 @@ interface DashboardLayoutProps {
   data?: DashboardData;
   children?: React.ReactNode | React.ReactNode[];
   emptyDashboard?: React.ReactNode;
+
+  /** Component to wrap each panel with */
+  panelWrapper?: ComponentType;
 }
 
 /**
@@ -78,6 +83,7 @@ export function DashboardLayout({
   onLayoutInitialized = DEFAULT_CALLBACK,
   hydrate = hydrateDefault,
   dehydrate = dehydrateDefault,
+  panelWrapper = DashboardPanelWrapper,
 }: DashboardLayoutProps): JSX.Element {
   const dispatch = useDispatch();
   const data =
@@ -91,10 +97,12 @@ export function DashboardLayout({
     (data as DashboardData)?.closed ?? []
   );
   const [isDashboardInitialized, setIsDashboardInitialized] = useState(false);
+  const [layoutChildren, setLayoutChildren] = useState(
+    layout.getReactChildren()
+  );
 
   const hydrateMap = useMemo(() => new Map(), []);
   const dehydrateMap = useMemo(() => new Map(), []);
-  const store = useStore();
   const registerComponent = useCallback(
     (
       name: string,
@@ -110,28 +118,25 @@ export function DashboardLayout({
         componentDehydrate
       );
 
-      function renderComponent(
-        props: { glContainer: Container; glEventHub: EventEmitter },
-        ref: unknown
-      ) {
+      function renderComponent(props: PanelProps, ref: unknown) {
         // Cast it to an `any` type so we can pass the ref in correctly.
         // ComponentType doesn't seem to work right, ReactNode is also incorrect
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const CType = componentType as any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const PanelWrapperType = panelWrapper as any;
 
         // Props supplied by GoldenLayout
         // eslint-disable-next-line react/prop-types
         const { glContainer, glEventHub } = props;
         return (
-          <Provider store={store}>
-            <PanelErrorBoundary
-              glContainer={glContainer}
-              glEventHub={glEventHub}
-            >
+          <PanelErrorBoundary glContainer={glContainer} glEventHub={glEventHub}>
+            {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+            <PanelWrapperType {...props}>
               {/* eslint-disable-next-line react/jsx-props-no-spreading */}
               <CType {...props} ref={ref} />
-            </PanelErrorBoundary>
-          </Provider>
+            </PanelWrapperType>
+          </PanelErrorBoundary>
         );
       }
 
@@ -141,7 +146,7 @@ export function DashboardLayout({
       dehydrateMap.set(name, componentDehydrate);
       return cleanup;
     },
-    [hydrate, dehydrate, hydrateMap, dehydrateMap, layout, store]
+    [hydrate, dehydrate, hydrateMap, dehydrateMap, layout, panelWrapper]
   );
   const hydrateComponent = useCallback(
     (name, props) => (hydrateMap.get(name) ?? FALLBACK_CALLBACK)(props, id),
@@ -206,6 +211,8 @@ export function DashboardLayout({
       setLastConfig(dehydratedLayoutConfig);
 
       onLayoutChange(dehydratedLayoutConfig);
+
+      setLayoutChildren(layout.getReactChildren());
     }
   }, [
     dehydrateComponent,
@@ -254,6 +261,10 @@ export function DashboardLayout({
     item.element.addClass(cssClass);
   }, []);
 
+  const handleReactChildrenChange = useCallback(() => {
+    setLayoutChildren(layout.getReactChildren());
+  }, [layout]);
+
   useListener(layout, 'stateChanged', handleLayoutStateChanged);
   useListener(layout, 'itemPickedUp', handleLayoutItemPickedUp);
   useListener(layout, 'itemDropped', handleLayoutItemDropped);
@@ -263,6 +274,7 @@ export function DashboardLayout({
     PanelEvent.TITLE_CHANGED,
     handleLayoutStateChanged
   );
+  useListener(layout, 'reactChildrenChanged', handleReactChildrenChange);
 
   const previousLayoutConfig = usePrevious(layoutConfig);
   useEffect(
@@ -302,6 +314,7 @@ export function DashboardLayout({
   return (
     <>
       {isDashboardEmpty && emptyDashboard}
+      {layoutChildren}
       {React.Children.map(children, child =>
         child != null
           ? React.cloneElement(child as ReactElement, {

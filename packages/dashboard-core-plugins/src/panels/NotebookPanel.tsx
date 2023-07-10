@@ -1,5 +1,5 @@
 // Wrapper for the Notebook for use in a golden layout container
-import React, { Component, MouseEvent, ReactElement } from 'react';
+import React, { Component, ReactElement } from 'react';
 import ReactDOM from 'react-dom';
 import memoize from 'memoize-one';
 import { connect } from 'react-redux';
@@ -47,7 +47,8 @@ import type {
   Tab,
   CloseOptions,
 } from '@deephaven/golden-layout';
-import { IdeSession } from '@deephaven/jsapi-shim';
+import type { IdeSession } from '@deephaven/jsapi-types';
+import { PanelEvent } from '@deephaven/dashboard';
 import { ConsoleEvent, NotebookEvent } from '../events';
 import { getDashboardSessionWrapper } from '../redux';
 import Panel from './Panel';
@@ -119,8 +120,6 @@ interface NotebookPanelState {
   scriptCode: string;
 
   itemName?: string;
-
-  shouldPromptClose: boolean;
 }
 
 class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
@@ -178,7 +177,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.handleLinkClick = this.handleLinkClick.bind(this);
     this.handleLoadSuccess = this.handleLoadSuccess.bind(this);
     this.handleLoadError = this.handleLoadError.bind(this);
-    this.handlePanelTabClick = this.handlePanelTabClick.bind(this);
+    this.handlePanelDropped = this.handlePanelDropped.bind(this);
     this.handleRenameFile = this.handleRenameFile.bind(this);
     this.handleResize = this.handleResize.bind(this);
     this.handleRunCommand = this.handleRunCommand.bind(this);
@@ -194,10 +193,12 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.handleShow = this.handleShow.bind(this);
     this.handleShowRename = this.handleShowRename.bind(this);
     this.handleTab = this.handleTab.bind(this);
-    this.handleTabFocus = this.handleTabFocus.bind(this);
     this.handleTabBlur = this.handleTabBlur.bind(this);
+    this.handleTabClick = this.handleTabClick.bind(this);
+    this.handleTabFocus = this.handleTabFocus.bind(this);
     this.handleTransformLinkUri = this.handleTransformLinkUri.bind(this);
     this.handleOverwrite = this.handleOverwrite.bind(this);
+    this.handlePreviewPromotion = this.handlePreviewPromotion.bind(this);
     this.getDropdownOverflowActions = this.getDropdownOverflowActions.bind(
       this
     );
@@ -274,8 +275,6 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       showSaveAsModal: false,
 
       scriptCode: '',
-
-      shouldPromptClose: true,
     };
 
     log.debug('constructor', props, this.state);
@@ -287,7 +286,11 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     if (tab != null) this.initTab(tab);
     this.initNotebookContent();
     glEventHub.on(NotebookEvent.RENAME_FILE, this.handleRenameFile);
-    glContainer.on('tabClicked', this.handlePanelTabClick);
+    glEventHub.on(PanelEvent.DROPPED, this.handlePanelDropped);
+    glContainer.on(
+      NotebookEvent.PROMOTE_FROM_PREVIEW,
+      this.handlePreviewPromotion
+    );
   }
 
   componentDidUpdate(
@@ -316,11 +319,15 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.debouncedSavePanelState.flush();
     this.pending.cancel();
 
-    const { glContainer, glEventHub } = this.props;
+    const { glEventHub, glContainer } = this.props;
 
     const { fileMetadata, isPreview } = this.state;
     glEventHub.off(NotebookEvent.RENAME_FILE, this.handleRenameFile);
-    glContainer.off('tabClicked', this.handlePanelTabClick);
+    glEventHub.off(PanelEvent.DROPPED, this.handlePanelDropped);
+    glContainer.off(
+      NotebookEvent.PROMOTE_FROM_PREVIEW,
+      this.handlePreviewPromotion
+    );
     glEventHub.emit(NotebookEvent.UNREGISTER_FILE, fileMetadata, isPreview);
   }
 
@@ -348,6 +355,13 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.initTabClasses(tab);
   }
 
+  /**
+   * Adds a beforeClose handler to check if a notebook needs to be saved
+   * Call panel close with force if the check can be skipped
+   *
+   * Note that firing a close event manually may trigger before state update occurs
+   * In those instances, use force
+   */
   initTabCloseOverride() {
     const { glContainer } = this.props;
     glContainer.beforeClose((options?: CloseOptions) => {
@@ -355,8 +369,8 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
         return true;
       }
 
-      const { changeCount, savedChangeCount, shouldPromptClose } = this.state;
-      if (changeCount !== savedChangeCount && shouldPromptClose) {
+      const { changeCount, savedChangeCount } = this.state;
+      if (changeCount !== savedChangeCount) {
         this.setState({ showCloseModal: true });
         return false;
       }
@@ -513,6 +527,10 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     }
   }
 
+  handlePreviewPromotion() {
+    this.removePreviewStatus();
+  }
+
   getSettings = memoize(
     (
       initialSettings: editor.IStandaloneEditorConstructionOptions,
@@ -589,21 +607,21 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   }
 
   handleCloseDiscard(): void {
-    this.setState({ shouldPromptClose: false, showCloseModal: false });
+    this.setState({ showCloseModal: false });
     const { glContainer } = this.props;
-    glContainer.close();
+    glContainer.close({ force: true });
   }
 
   handleCloseSave(): void {
-    this.setState({ shouldPromptClose: false, showCloseModal: false });
+    this.setState({ showCloseModal: false });
     if (this.save()) {
       const { glContainer } = this.props;
-      glContainer.close();
+      glContainer.close({ force: true });
     }
   }
 
   handleCloseCancel(): void {
-    this.setState({ shouldPromptClose: true, showCloseModal: false });
+    this.setState({ showCloseModal: false });
   }
 
   /**
@@ -733,7 +751,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   /**
    * @param event The click event from clicking on the link
    */
-  handleLinkClick(event: MouseEvent<HTMLAnchorElement>) {
+  handleLinkClick(event: React.MouseEvent<HTMLAnchorElement>) {
     const { notebooksUrl, session, sessionLanguage } = this.props;
     const { href } = event.currentTarget;
     if (!href || !href.startsWith(notebooksUrl)) {
@@ -930,6 +948,14 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.notebook?.updateDimensions();
   }
 
+  handlePanelDropped(droppedId: string): void {
+    const {
+      metadata: { id },
+    } = this.props;
+    // re-render necessary for portal after being dropped
+    if (droppedId === id) this.forceUpdate();
+  }
+
   handleShowRename(): void {
     this.setState({ showSaveAsModal: true });
   }
@@ -957,9 +983,12 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     });
   }
 
-  handlePanelTabClick(): void {
-    log.debug('handlePanelTabClick');
+  handleTabClick(e: MouseEvent): void {
+    log.debug('handle NotebookPanel tab click');
     this.focus();
+    if (e.detail === 2) {
+      this.removePreviewStatus();
+    }
   }
 
   /**
@@ -1032,7 +1061,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   }
 
   runCommand(command?: string): void {
-    if (command === undefined) {
+    if (command === undefined || command === '') {
       log.debug('Ignoring empty command.');
       return;
     }
@@ -1170,6 +1199,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
           onTab={this.handleTab}
           onResize={this.handleResize}
           onShow={this.handleShow}
+          onTabClicked={this.handleTabClick}
           onTabFocus={this.handleTabFocus}
           onTabBlur={this.handleTabBlur}
           onSessionOpen={this.handleSessionOpened}

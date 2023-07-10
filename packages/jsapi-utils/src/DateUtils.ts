@@ -1,5 +1,4 @@
-import dh from '@deephaven/jsapi-shim';
-import type { DateWrapper } from '@deephaven/jsapi-shim';
+import type { DateWrapper, dh as DhType } from '@deephaven/jsapi-types';
 
 interface DateParts<T> {
   year: T;
@@ -41,6 +40,7 @@ export class DateUtils {
    * @param ns The nanoseconds
    */
   static makeDateWrapper(
+    dh: DhType,
     timeZone: string,
     year: number,
     month = 0,
@@ -89,6 +89,7 @@ export class DateUtils {
    * @returns Returns the DateWrapper for the next date, or null if a full date was passed in
    */
   static getNextDate(
+    dh: DhType,
     components: DateParts<string>,
     values: DateParts<number>,
     timeZone: string
@@ -125,6 +126,7 @@ export class DateUtils {
     // Still need to add nanos after, and the overflow from that is already added to seconds above
     const jsDate = new Date(year, month, date, hours, minutes, seconds);
     return DateUtils.makeDateWrapper(
+      dh,
       timeZone,
       jsDate.getFullYear(),
       jsDate.getMonth(),
@@ -254,6 +256,7 @@ export class DateUtils {
    * @returns A tuple with the start and end value/null for that date range, or both null
    */
   static parseDateRange(
+    dh: DhType,
     text: string,
     timeZone: string
   ): [DateWrapper, DateWrapper | null] | [null, null] {
@@ -269,29 +272,43 @@ export class DateUtils {
     if (cleanText === 'today') {
       const now = new Date(Date.now());
       const startDate = DateUtils.makeDateWrapper(
+        dh,
         timeZone,
         now.getFullYear(),
         now.getMonth(),
         now.getDate()
       );
-      const endDate = DateUtils.makeDateWrapper(
-        timeZone,
+      const tomorrow = new Date(
         now.getFullYear(),
         now.getMonth(),
         now.getDate() + 1
+      );
+      const endDate = DateUtils.makeDateWrapper(
+        dh,
+        timeZone,
+        tomorrow.getFullYear(),
+        tomorrow.getMonth(),
+        tomorrow.getDate()
       );
       return [startDate, endDate];
     }
 
     if (cleanText === 'yesterday') {
       const now = new Date(Date.now());
-      const startDate = DateUtils.makeDateWrapper(
-        timeZone,
+      const yesterday = new Date(
         now.getFullYear(),
         now.getMonth(),
         now.getDate() - 1
       );
+      const startDate = DateUtils.makeDateWrapper(
+        dh,
+        timeZone,
+        yesterday.getFullYear(),
+        yesterday.getMonth(),
+        yesterday.getDate()
+      );
       const endDate = DateUtils.makeDateWrapper(
+        dh,
         timeZone,
         now.getFullYear(),
         now.getMonth(),
@@ -330,6 +347,7 @@ export class DateUtils {
     }
 
     const startDate = DateUtils.makeDateWrapper(
+      dh,
       timeZone,
       values.year,
       values.month,
@@ -340,7 +358,7 @@ export class DateUtils {
       values.nanos
     );
 
-    const endDate = DateUtils.getNextDate(components, values, timeZone);
+    const endDate = DateUtils.getNextDate(dh, components, values, timeZone);
     return [startDate, endDate];
   }
 

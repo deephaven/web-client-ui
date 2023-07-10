@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { makeTableCommand, pasteInMonaco } from './utils';
+import { makeTableCommand, pasteInMonaco, TableTypes } from './utils';
 
 // Run tests serially since they all use the same table
 test.describe.configure({ mode: 'serial' });
@@ -22,6 +22,10 @@ async function openSimpleTable(page: Page) {
   );
 
   // Model is loaded, need to make sure table data is also loaded
+  await waitForLoadingDone(page);
+}
+
+async function waitForLoadingDone(page: Page) {
   await expect(
     page.locator('.iris-grid .iris-grid-loading-status')
   ).toHaveCount(0);
@@ -56,9 +60,7 @@ column_header_group = column_header_group.layout_hints(column_groups=column_grou
   );
 
   // Model is loaded, need to make sure table data is also loaded
-  await expect(
-    page.locator('.iris-grid .iris-grid-loading-status')
-  ).toHaveCount(0);
+  await waitForLoadingDone(page);
 
   // Now we should be able to check the snapshot
   await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
@@ -87,15 +89,13 @@ column_header_group = column_header_group.layout_hints(column_groups=column_grou
   );
 
   // Model is loaded, need to make sure table data is also loaded
-  await expect(
-    page.locator('.iris-grid .iris-grid-loading-status')
-  ).toHaveCount(0);
+  await waitForLoadingDone(page);
 
   // Now we should be able to check the snapshot
   await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
 });
 
-test.describe('tests table operations', () => {
+test.describe('tests simple table operations', () => {
   let page: Page;
 
   test.beforeAll(async ({ browser }) => {
@@ -266,9 +266,7 @@ test.describe('tests table operations', () => {
     await page.keyboard.type('>37');
 
     // Wait until it's done loading
-    await expect(
-      page.locator('.iris-grid .iris-grid-loading-status')
-    ).toHaveCount(0);
+    await waitForLoadingDone(page);
 
     // Check snapshot
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();

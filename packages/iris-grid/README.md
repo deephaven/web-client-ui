@@ -11,11 +11,13 @@ npm install --save @deephaven/iris-grid
 
 Then, import and use the component from the package:
 ```
+import { useApi } from '@deephaven/jsapi-bootstrap';
 import { IrisGrid, IrisGridModelFactory } from '@deephaven/iris-grid';
 
 // In your initialization, create the model async
-const model = await IrisGridModelFactory.makeModel(table);
+const dh = useApi();
+const model = await IrisGridModelFactory.makeModel(dh, table);
 
 // In your render function
-<IrisGrid model={model} />
+<IrisGrid dh={dh} model={model} />
 ```

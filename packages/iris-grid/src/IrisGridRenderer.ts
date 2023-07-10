@@ -2,17 +2,9 @@
 /* eslint class-methods-use-this: "off" */
 /* eslint no-param-reassign: "off" */
 import {
-  dhSortDown,
-  dhSortUp,
-  vsTriangleDown,
-  vsTriangleRight,
-  vsLinkExternal,
-  IconDefinition,
-} from '@deephaven/icons';
-import {
   BoundedAxisRange,
-  BoxCoordinates,
   Coordinate,
+  DEFAULT_FONT_WIDTH,
   GridMetrics,
   GridRangeIndex,
   GridRenderer,
@@ -21,7 +13,7 @@ import {
   GridUtils,
   VisibleIndex,
 } from '@deephaven/grid';
-import { Sort } from '@deephaven/jsapi-shim';
+import type { Sort } from '@deephaven/jsapi-types';
 import { TableUtils, ReverseType } from '@deephaven/jsapi-utils';
 import { assertNotNull, getOrThrow } from '@deephaven/utils';
 import {
@@ -32,6 +24,9 @@ import {
 } from './CommonTypes';
 import { IrisGridThemeType } from './IrisGridTheme';
 import IrisGridModel from './IrisGridModel';
+import IrisGridTextCellRenderer from './IrisGridTextCellRenderer';
+import IrisGridDataBarCellRenderer from './IrisGridDataBarCellRenderer';
+import { getIcon } from './IrisGridIcons';
 
 const ICON_NAMES = Object.freeze({
   SORT_UP: 'sortUp',
@@ -42,7 +37,6 @@ const ICON_NAMES = Object.freeze({
 });
 
 const EXPAND_ICON_SIZE = 10;
-const ICON_SIZE = 16;
 
 export type IrisGridRenderState = GridRenderState & {
   model: IrisGridModel;
@@ -71,51 +65,19 @@ class IrisGridRenderer extends GridRenderer {
     return isAdvancedFilterValid && isQuickFilterValid;
   }
 
-  constructor() {
-    super();
-    this.icons = {};
+  protected textCellRenderer = new IrisGridTextCellRenderer();
 
-    this.initIcons();
-  }
-
-  icons: Record<string, Path2D>;
-
-  initIcons(): void {
-    this.setIcon(ICON_NAMES.SORT_UP, dhSortUp);
-    this.setIcon(ICON_NAMES.SORT_DOWN, dhSortDown);
-    this.setIcon(ICON_NAMES.CARET_DOWN, vsTriangleDown);
-    this.setIcon(ICON_NAMES.CARET_RIGHT, vsTriangleRight);
-    this.setIcon(ICON_NAMES.CELL_OVERFLOW, vsLinkExternal);
-  }
-
-  // Scales the icon to be square and match the global ICON_SIZE
-  setIcon(name: string, faIcon: IconDefinition): void {
-    const path = Array.isArray(faIcon.icon[4])
-      ? faIcon.icon[4][0]
-      : faIcon.icon[4];
-    const icon = new Path2D(path);
-    const scaledIcon = new Path2D();
-    const scaleMatrix = {
-      a: ICON_SIZE / faIcon.icon[0],
-      d: ICON_SIZE / faIcon.icon[1],
-    };
-    scaledIcon.addPath(icon, scaleMatrix);
-    this.icons[name] = scaledIcon;
-  }
-
-  getIcon(name: string): Path2D {
-    return this.icons[name];
-  }
+  protected dataBarCellRenderer = new IrisGridDataBarCellRenderer();
 
   getSortIcon(sort: Sort | null): Path2D | null {
     if (!sort) {
       return null;
     }
     if (sort.direction === TableUtils.sortDirection.ascending) {
-      return this.getIcon(ICON_NAMES.SORT_UP);
+      return getIcon(ICON_NAMES.SORT_UP);
     }
     if (sort.direction === TableUtils.sortDirection.descending) {
-      return this.getIcon(ICON_NAMES.SORT_DOWN);
+      return getIcon(ICON_NAMES.SORT_DOWN);
     }
     return null;
   }
@@ -153,23 +115,89 @@ class IrisGridRenderer extends GridRenderer {
   ): void {
     const { metrics, model } = state;
     const { modelColumns, modelRows } = metrics;
-    const modelRow = getOrThrow(modelRows, row);
     const modelColumn = modelColumns.get(column);
+    const modelRow = getOrThrow(modelRows, row);
     if (modelColumn === undefined) {
       return;
     }
-    const value = model.valueForCell(modelColumn, modelRow);
-    if (TableUtils.isTextType(model.columns[modelColumn]?.type)) {
-      if (value === null || value === '') {
-        const originalFont = context.font;
-        context.font = `italic ${originalFont}`;
-        const displayValue = value === null ? 'null' : 'empty';
-        super.drawCellContent(context, state, column, row, displayValue);
-        context.font = originalFont;
-        return;
-      }
+
+    const renderType = model.renderTypeForCell(modelColumn, modelRow);
+    const cellRenderer = this.getCellRenderer(renderType);
+    cellRenderer.drawCellContent(context, state, column, row);
+  }
+
+  getCellOverflowButtonPosition({
+    mouseX,
+    mouseY,
+    metrics,
+    theme,
+  }: {
+    mouseX: Coordinate | null;
+    mouseY: Coordinate | null;
+    metrics: GridMetrics | undefined;
+    theme: GridThemeType;
+  }): {
+    left: Coordinate | null;
+    top: Coordinate | null;
+    width: number | null;
+    height: number | null;
+  } {
+    return this.textCellRenderer.getCellOverflowButtonPosition(
+      mouseX,
+      mouseY,
+      metrics,
+      theme
+    );
+  }
+
+  shouldRenderOverflowButton(state: IrisGridRenderState): boolean {
+    return this.textCellRenderer.shouldRenderOverflowButton(state);
+  }
+
+  drawCellOverflowButton(state: IrisGridRenderState): void {
+    const { context, mouseX, mouseY, theme } = state;
+    if (mouseX == null || mouseY == null) return;
+
+    if (!this.shouldRenderOverflowButton(state)) {
+      return;
     }
-    super.drawCellContent(context, state, column, row);
+
+    const {
+      left: buttonLeft,
+      top: buttonTop,
+      width: buttonWidth,
+      height: buttonHeight,
+    } = this.getCellOverflowButtonPosition(state);
+
+    const {
+      cellHorizontalPadding,
+      overflowButtonColor,
+      overflowButtonHoverColor,
+    } = theme;
+
+    context.save();
+    if (
+      overflowButtonHoverColor != null &&
+      buttonLeft != null &&
+      buttonWidth != null &&
+      buttonTop != null &&
+      buttonHeight != null &&
+      mouseX >= buttonLeft &&
+      mouseX <= buttonLeft + buttonWidth &&
+      mouseY >= buttonTop &&
+      mouseY <= buttonTop + buttonHeight
+    ) {
+      context.fillStyle = overflowButtonHoverColor;
+    } else if (overflowButtonColor != null) {
+      context.fillStyle = overflowButtonColor;
+    }
+    const icon = getIcon(ICON_NAMES.CELL_OVERFLOW);
+    if (buttonLeft != null && buttonTop != null) {
+      context.translate(buttonLeft + cellHorizontalPadding, buttonTop + 2);
+    }
+    context.fill(icon);
+
+    context.restore();
   }
 
   drawGroupedColumnLine(
@@ -473,8 +501,7 @@ class IrisGridRenderer extends GridRenderer {
       return;
     }
 
-    const fontWidth =
-      fontWidths.get(context.font) ?? GridRenderer.DEFAULT_FONT_WIDTH;
+    const fontWidth = fontWidths.get(context.font) ?? DEFAULT_FONT_WIDTH;
     assertNotNull(fontWidth);
     const textWidth = text.length * fontWidth;
     const textRight = gridX + columnX + textWidth + headerHorizontalPadding;
@@ -783,30 +810,6 @@ class IrisGridRenderer extends GridRenderer {
     context.restore();
   }
 
-  drawTreeMarker(
-    context: CanvasRenderingContext2D,
-    state: IrisGridRenderState,
-    columnX: Coordinate,
-    rowY: Coordinate,
-    treeBox: BoxCoordinates,
-    color: string,
-    isExpanded: boolean
-  ): void {
-    context.save();
-    const { x1, y1 } = treeBox;
-    const markerIcon = isExpanded
-      ? this.getIcon(ICON_NAMES.CARET_DOWN)
-      : this.getIcon(ICON_NAMES.CARET_RIGHT);
-    const iconX = columnX + x1 - 2;
-    const iconY = rowY + y1 + 2.5;
-
-    context.fillStyle = color;
-    context.textAlign = 'center';
-    context.translate(iconX, iconY);
-    context.fill(markerIcon);
-    context.restore();
-  }
-
   drawRowFooters(
     context: CanvasRenderingContext2D,
     state: IrisGridRenderState
@@ -910,173 +913,6 @@ class IrisGridRenderer extends GridRenderer {
     }
 
     context.translate(-gridX, -gridY);
-  }
-
-  // This will shrink the size the text may take when the overflow button is rendered
-  // The text will truncate to a smaller width and won't overlap the button
-  getTextRenderMetrics(
-    state: IrisGridRenderState,
-    column: VisibleIndex,
-    row: VisibleIndex
-  ): {
-    width: number;
-    x: Coordinate;
-    y: Coordinate;
-  } {
-    const textMetrics = super.getTextRenderMetrics(state, column, row);
-
-    const { mouseX, mouseY, metrics } = state;
-
-    if (mouseX == null || mouseY == null) {
-      return textMetrics;
-    }
-
-    const { column: mouseColumn, row: mouseRow } = GridUtils.getGridPointFromXY(
-      mouseX,
-      mouseY,
-      metrics
-    );
-
-    if (column === mouseColumn && row === mouseRow) {
-      const { left } = this.getCellOverflowButtonPosition(state);
-      if (this.shouldRenderOverflowButton(state) && left != null) {
-        textMetrics.width = left - metrics.gridX - textMetrics.x;
-      }
-    }
-    return textMetrics;
-  }
-
-  shouldRenderOverflowButton(state: IrisGridRenderState): boolean {
-    const { context, mouseX, mouseY, metrics, model, theme } = state;
-    if (mouseX == null || mouseY == null) {
-      return false;
-    }
-
-    const { row, column, modelRow, modelColumn } = GridUtils.getCellInfoFromXY(
-      mouseX,
-      mouseY,
-      metrics
-    );
-
-    if (
-      row == null ||
-      column == null ||
-      modelRow == null ||
-      modelColumn == null ||
-      !TableUtils.isStringType(model.columns[modelColumn].type)
-    ) {
-      return false;
-    }
-
-    const text = model.textForCell(modelColumn, modelRow) ?? '';
-    const { width: textWidth } = super.getTextRenderMetrics(state, column, row);
-    const fontWidth =
-      metrics.fontWidths.get(theme.font) ?? IrisGridRenderer.DEFAULT_FONT_WIDTH;
-
-    context.save();
-    context.font = theme.font;
-
-    const truncatedText = this.getCachedTruncatedString(
-      context,
-      text,
-      textWidth,
-      fontWidth,
-      model.truncationCharForCell(modelColumn, modelRow)
-    );
-    context.restore();
-
-    return text !== '' && truncatedText !== text;
-  }
-
-  getCellOverflowButtonPosition({
-    mouseX,
-    mouseY,
-    metrics,
-    theme,
-  }: {
-    mouseX: Coordinate | null;
-    mouseY: Coordinate | null;
-    metrics: GridMetrics | undefined;
-    theme: GridThemeType;
-  }): {
-    left: Coordinate | null;
-    top: Coordinate | null;
-    width: number | null;
-    height: number | null;
-  } {
-    const NULL_POSITION = { left: null, top: null, width: null, height: null };
-    if (mouseX == null || mouseY == null || !metrics) {
-      return NULL_POSITION;
-    }
-    const { rowHeight, columnWidth, left, top } = GridUtils.getCellInfoFromXY(
-      mouseX,
-      mouseY,
-      metrics
-    );
-
-    assertNotNull(left);
-    assertNotNull(columnWidth);
-    assertNotNull(top);
-    const { width: gridWidth, verticalBarWidth } = metrics;
-    const { cellHorizontalPadding } = theme;
-
-    const width = ICON_SIZE + 2 * cellHorizontalPadding;
-    const height = rowHeight;
-    // Right edge of column or of visible grid, whichever is smaller
-    const right = Math.min(
-      metrics.gridX + left + columnWidth,
-      gridWidth - verticalBarWidth
-    );
-    const buttonLeft = right - width;
-    const buttonTop = metrics.gridY + top;
-
-    return { left: buttonLeft, top: buttonTop, width, height };
-  }
-
-  drawCellOverflowButton(state: IrisGridRenderState): void {
-    const { context, mouseX, mouseY, theme } = state;
-    if (mouseX == null || mouseY == null) return;
-
-    if (!this.shouldRenderOverflowButton(state)) {
-      return;
-    }
-
-    const {
-      left: buttonLeft,
-      top: buttonTop,
-      width: buttonWidth,
-      height: buttonHeight,
-    } = this.getCellOverflowButtonPosition(state);
-
-    const {
-      cellHorizontalPadding,
-      overflowButtonColor,
-      overflowButtonHoverColor,
-    } = theme;
-
-    context.save();
-    if (
-      overflowButtonHoverColor != null &&
-      buttonLeft != null &&
-      buttonWidth != null &&
-      buttonTop != null &&
-      buttonHeight != null &&
-      mouseX >= buttonLeft &&
-      mouseX <= buttonLeft + buttonWidth &&
-      mouseY >= buttonTop &&
-      mouseY <= buttonTop + buttonHeight
-    ) {
-      context.fillStyle = overflowButtonHoverColor;
-    } else if (overflowButtonColor != null) {
-      context.fillStyle = overflowButtonColor;
-    }
-    const icon = this.getIcon(ICON_NAMES.CELL_OVERFLOW);
-    if (buttonLeft != null && buttonTop != null) {
-      context.translate(buttonLeft + cellHorizontalPadding, buttonTop + 2);
-    }
-    context.fill(icon);
-
-    context.restore();
   }
 
   getExpandButtonPosition(

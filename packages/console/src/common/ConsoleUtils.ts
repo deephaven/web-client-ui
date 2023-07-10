@@ -1,5 +1,5 @@
 import ShellQuote, { ParseEntry, ControlOperator } from 'shell-quote';
-import dh, { VariableTypeUnion } from '@deephaven/jsapi-shim';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 
 class ConsoleUtils {
   static hasComment(arg: ParseEntry): arg is { comment: string } {
@@ -52,7 +52,7 @@ class ConsoleUtils {
     return `${hours}:${minutes}:${seconds}.${milliseconds}`;
   }
 
-  static isTableType(type: VariableTypeUnion): boolean {
+  static isTableType(dh: DhType, type: string): boolean {
     return (
       type === dh.VariableType.TABLE ||
       type === dh.VariableType.TREETABLE ||
@@ -60,7 +60,7 @@ class ConsoleUtils {
     );
   }
 
-  static isWidgetType(type: VariableTypeUnion): boolean {
+  static isWidgetType(dh: DhType, type: string): boolean {
     return (
       type === dh.VariableType.FIGURE ||
       type === dh.VariableType.OTHERWIDGET ||
@@ -68,15 +68,17 @@ class ConsoleUtils {
     );
   }
 
-  static isOpenableType(type: VariableTypeUnion): boolean {
-    return ConsoleUtils.isTableType(type) || ConsoleUtils.isWidgetType(type);
+  static isOpenableType(dh: DhType, type: string): boolean {
+    return (
+      ConsoleUtils.isTableType(dh, type) || ConsoleUtils.isWidgetType(dh, type)
+    );
   }
 
-  static isFigureType(type: VariableTypeUnion): boolean {
+  static isFigureType(dh: DhType, type: string): boolean {
     return type === dh.VariableType.FIGURE;
   }
 
-  static isPandas(type: VariableTypeUnion): boolean {
+  static isPandas(dh: DhType, type: string): boolean {
     return type === dh.VariableType.PANDAS;
   }
 }

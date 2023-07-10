@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/file-explorer",
-  "version": "0.32.0",
+  "version": "0.44.0",
   "description": "Deephaven File Explorer React component",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -37,11 +37,13 @@
     "react": "^17.0.0"
   },
   "devDependencies": {
-    "@deephaven/mocks": "file:../mocks",
-    "@deephaven/tsconfig": "file:../tsconfig"
+    "@deephaven/mocks": "file:../mocks"
   },
   "files": [
     "dist"
+  ],
+  "sideEffects": [
+    "*.css"
   ],
   "publishConfig": {
     "access": "public"

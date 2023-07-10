@@ -29,3 +29,9 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: jest.fn(),
   })),
 });
+
+Object.defineProperty(document, 'fonts', {
+  value: {
+    ready: Promise.resolve(),
+  },
+});

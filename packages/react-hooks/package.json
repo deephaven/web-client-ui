@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/react-hooks",
-  "version": "0.32.0",
+  "version": "0.44.0",
   "description": "Deephaven React hooks library",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -22,17 +22,16 @@
   },
   "dependencies": {
     "@deephaven/log": "file:../log",
-    "@deephaven/utils": "file:../utils"
+    "@deephaven/utils": "file:../utils",
+    "shortid": "^2.2.16"
   },
   "peerDependencies": {
-    "react": "^17.0.0"
-  },
-  "devDependencies": {
-    "@deephaven/tsconfig": "file:../tsconfig"
+    "react": "^17.x"
   },
   "files": [
     "dist"
   ],
+  "sideEffects": false,
   "publishConfig": {
     "access": "public"
   }

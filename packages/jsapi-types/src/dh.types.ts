@@ -63,11 +63,13 @@ export interface CalendarStatic {
   DayOfWeek: { values: () => string[] };
 }
 
-export type VariableTypeUnion = typeof VariableType[keyof typeof VariableType];
+/**
+ * @deprecated
+ * Used to be a string union, but it can really be any string
+ */
+export type VariableTypeUnion = string;
 
-export interface VariableDefinition<
-  T extends VariableTypeUnion = VariableTypeUnion
-> {
+export interface VariableDefinition<T extends string = string> {
   type: T;
 
   /**
@@ -112,15 +114,37 @@ export interface TextEdit {
   range: DocumentRange;
 }
 
+export interface MarkupContent {
+  value: string;
+  kind: 'markdown' | 'plaintext';
+}
+
 export interface CompletionItem {
   label: string;
   kind: number;
   detail: string;
-  documentation: string;
+  documentation: MarkupContent;
   sortText: string;
   filterText: string;
   textEdit: TextEdit;
   insertTextFormat: number;
+}
+
+export interface ParameterInfo {
+  label: string;
+  documentation: string;
+}
+
+export interface SignatureInfo {
+  label: string;
+  documentation?: MarkupContent;
+  parameters?: ParameterInfo[];
+  activeParameter: number;
+}
+
+export interface Hover {
+  contents?: MarkupContent;
+  range?: DocumentRange;
 }
 
 export interface IdeSessionStatic {
@@ -164,6 +188,8 @@ export interface IdeSession extends Evented {
     userTimeZone: string
   ): Promise<Table>;
   getCompletionItems(params: unknown): Promise<CompletionItem[]>;
+  getSignatureHelp?(params: unknown): Promise<SignatureInfo[]>;
+  getHover?(params: unknown): Promise<Hover>;
   closeDocument(params: unknown): void;
   openDocument(params: unknown): void;
   changeDocument(params: unknown): void;
@@ -193,6 +219,8 @@ export interface Plot {
   SeriesDescriptor: SeriesDescriptor;
   SourceDescriptor: SourceDescriptor;
   DownsampleOptions: DownsampleOptions;
+
+  ChartData: typeof ChartData;
 }
 
 export interface RemoverFn {
@@ -530,6 +558,7 @@ export interface Column {
   readonly constituentType: string;
 
   readonly isPartitionColumn: boolean;
+  readonly isSortable?: boolean;
 
   filter(): FilterValue;
   sort(): Sort;
@@ -970,7 +999,12 @@ export interface IdeConnectionOptions {
 }
 
 export interface IdeConnectionConstructor {
+  /** @deprecated Use EVENT_DISCONNECT and EVENT_RECONNECT instead */
   HACK_CONNECTION_FAILURE: string;
+  EVENT_DISCONNECT: string;
+  EVENT_RECONNECT: string;
+  EVENT_SHUTDOWN: string;
+
   new (serverUrl: string, options?: IdeConnectionOptions): IdeConnection;
 }
 
@@ -1037,14 +1071,48 @@ export interface StorageService {
   createDirectory(path: string): Promise<void>;
 }
 
-export interface CoreClientContructor {
+export interface ConnectOptions {
+  headers?: Record<string, string>;
+}
+
+export interface CoreClientContructor extends Evented {
+  EVENT_CONNECT: string;
+  EVENT_DISCONNECT: string;
+  EVENT_RECONNECT: string;
+  EVENT_RECONNECT_AUTH_FAILED: string;
+  EVENT_REFRESH_TOKEN_UPDATED: string;
   LOGIN_TYPE_ANONYMOUS: string;
-  new (serverUrl: string): CoreClient;
+  new (serverUrl: string, options?: ConnectOptions): CoreClient;
 }
 
 export interface CoreClient extends CoreClientContructor {
   login(options: LoginOptions): Promise<void>;
   getAsIdeConnection(): Promise<IdeConnection>;
   getStorageService(): StorageService;
-  getServerConfigValues(): [string, string][];
+  getServerConfigValues(): Promise<[string, string][]>;
+  getAuthConfigValues(): Promise<[string, string][]>;
+  disconnect(): void;
 }
+
+/**
+ * Helper class to manage snapshots and deltas and keep not only a contiguous JS array of data per column in the
+ * underlying table, but also support a mapping function to let client code translate data in some way for display and
+ * keep that cached as well.
+ */
+declare class ChartData {
+  constructor(table: Table);
+
+  update(eventDetail: object): void;
+  getColumn(
+    columnName: string,
+    mappingFunc: (input: any) => any,
+    currentUpdate: TableData
+  ): Array<any>;
+  /**
+   * Removes some column from the cache, avoiding extra computation on incoming events, and possibly freeing some
+   * memory. If this pair of column name and map function are requested again, it will be recomputed from scratch.
+   */
+  removeColumn(columnName: string, mappingFunc: (input: any) => any): void;
+}
+
+export type { ChartData };

@@ -1,12 +1,13 @@
+import { DragEvent } from 'react';
 import deepEqual from 'deep-equal';
 import shortid from 'shortid';
 import isMatch from 'lodash.ismatch';
-import { DragEvent } from 'react';
 import Log from '@deephaven/log';
 import GoldenLayout, {
   isComponent,
   isRoot,
   isStack,
+  GoldenLayoutThemeExport,
 } from '@deephaven/golden-layout';
 import type {
   ComponentConfig,
@@ -21,7 +22,6 @@ import type {
   CloseOptions,
 } from '@deephaven/golden-layout';
 import { assertNotNull } from '@deephaven/utils';
-import GoldenLayoutThemeExport from './GoldenLayoutThemeExport';
 import { DashboardLayoutConfig } from '../DashboardLayout';
 import { PanelConfig } from '../DashboardPlugin';
 
@@ -478,7 +478,7 @@ class LayoutUtils {
       config.id = shortid.generate();
     }
 
-    if (dragEvent) {
+    if (dragEvent != null) {
       root?.layoutManager.createDragSourceFromEvent(config, dragEvent);
       return;
     }

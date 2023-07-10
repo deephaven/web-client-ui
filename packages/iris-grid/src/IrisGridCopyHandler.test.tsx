@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { GridTestUtils } from '@deephaven/grid';
 import { copyToClipboard } from '@deephaven/utils';
+import dh from '@deephaven/jsapi-shim';
 import IrisGridTestUtils from './IrisGridTestUtils';
 import IrisGridCopyHandler, { CopyOperation } from './IrisGridCopyHandler';
 
@@ -15,6 +16,8 @@ const mockedCopyToClipboard = copyToClipboard as jest.MockedFunction<
 >;
 
 jest.useFakeTimers();
+
+const irisGridTestUtils = new IrisGridTestUtils(dh);
 
 const DEFAULT_EXPECTED_TEXT = `0,0\t0,1\t0,2\t0,3\t0,4
 1,0\t1,1\t1,2\t1,3\t1,4
@@ -41,7 +44,7 @@ function makeCopyOperation(
 }
 
 function makeModel() {
-  const model = IrisGridTestUtils.makeModel();
+  const model = irisGridTestUtils.makeModel();
   model.textSnapshot = makeSnapshotFn();
   return model;
 }

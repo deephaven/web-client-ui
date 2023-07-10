@@ -5,6 +5,7 @@
     "packages/*/src/**/**.tsx",
     "packages/*/src/**/**.js",
     "packages/*/src/**/**.jsx",
+    "tests/**/**.ts"
   ],
   "exclude": []
 }

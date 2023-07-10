@@ -6,9 +6,5 @@
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx"],
   "exclude": ["node_modules", "src/**/*.test.*", "src/**/__mocks__/*"],
-  "references": [
-    {
-      "path": "../utils"
-    }
-  ]
+  "references": [{ "path": "../utils" }]
 }

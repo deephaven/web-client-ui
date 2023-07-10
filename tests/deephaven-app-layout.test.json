@@ -1,0 +1,238 @@
+{
+  "filterSets": [],
+  "layoutConfig": [
+    {
+      "type": "column",
+      "isClosable": true,
+      "isFocusOnShow": true,
+      "reorderEnabled": true,
+      "title": "",
+      "content": [
+        {
+          "type": "row",
+          "content": [
+            {
+              "type": "column",
+              "width": 61.803,
+              "content": [
+                {
+                  "type": "stack",
+                  "isClosable": true,
+                  "isFocusOnShow": true,
+                  "reorderEnabled": true,
+                  "title": "",
+                  "height": 61.803,
+                  "activeItemIndex": 0,
+                  "content": [
+                    {
+                      "type": "react-component",
+                      "component": "test-a",
+                      "title": "test-a"
+                    },
+                    {
+                      "type": "react-component",
+                      "component": "test-b",
+                      "title": "test-b-I-am-extra-super-duper-long-example-for-title"
+                    },
+                    {
+                      "type": "react-component",
+                      "component": "test-c",
+                      "title": "test-c"
+                    },
+                    {
+                      "type": "react-component",
+                      "component": "test-d",
+                      "title": "test-d"
+                    },
+                    {
+                      "type": "react-component",
+                      "component": "test-e",
+                      "title": "test-e"
+                    },
+                    {
+                      "type": "react-component",
+                      "component": "test-f",
+                      "title": "test-f"
+                    },
+                    {
+                      "type": "react-component",
+                      "component": "test-g",
+                      "title": "test-g"
+                    },
+                    {
+                      "type": "react-component",
+                      "component": "test-h",
+                      "title": "test-h"
+                    },
+                    {
+                      "type": "react-component",
+                      "component": "test-i",
+                      "title": "test-i"
+                    },
+                    {
+                      "type": "react-component",
+                      "component": "test-j",
+                      "title": "test-j"
+                    },
+                    {
+                      "type": "react-component",
+                      "component": "test-k",
+                      "title": "test-k"
+                    },
+                    {
+                      "type": "react-component",
+                      "component": "test-l",
+                      "title": "test-l"
+                    },
+                    {
+                      "type": "react-component",
+                      "component": "test-m",
+                      "title": "test-m"
+                    },
+                    {
+                      "type": "react-component",
+                      "component": "test-n",
+                      "title": "test-n"
+                    },
+                    {
+                      "type": "react-component",
+                      "component": "test-o",
+                      "title": "test-o"
+                    },
+                    {
+                      "type": "react-component",
+                      "component": "test-p",
+                      "title": "test-p"
+                    },
+                    {
+                      "type": "react-component",
+                      "component": "test-q",
+                      "title": "test-q"
+                    },
+                    {
+                      "type": "react-component",
+                      "component": "test-r",
+                      "title": "test-r"
+                    },
+                    {
+                      "type": "react-component",
+                      "component": "test-s",
+                      "title": "test-s"
+                    },
+                    {
+                      "type": "react-component",
+                      "component": "test-t",
+                      "title": "test-t"
+                    },
+                    {
+                      "type": "react-component",
+                      "component": "test-u",
+                      "title": "test-u"
+                    },
+                    {
+                      "type": "react-component",
+                      "component": "test-v",
+                      "title": "test-v"
+                    },
+                    {
+                      "type": "react-component",
+                      "component": "test-w",
+                      "title": "test-w"
+                    },
+                    {
+                      "type": "react-component",
+                      "component": "test-x",
+                      "title": "test-x"
+                    },
+                    {
+                      "type": "react-component",
+                      "component": "test-y",
+                      "title": "test-y"
+                    },
+                    {
+                      "type": "react-component",
+                      "component": "test-z",
+                      "title": "test-z"
+                    }
+                  ]
+                },
+                {
+                  "type": "react-component",
+                  "component": "test"
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "width": 38.197,
+              "content": [
+                {
+                  "type": "react-component",
+                  "component": "test",
+                  "height": 61.803
+                },
+                {
+                  "type": "row",
+                  "content": [
+                    {
+                      "type": "column",
+                      "width": 61.803,
+                      "content": [
+                        {
+                          "type": "row",
+                          "content": [
+                            {
+                              "type": "react-component",
+                              "component": "test",
+                              "width": 61.803
+                            },
+                            {
+                              "type": "column",
+                              "content": [
+                                {
+                                  "type": "react-component",
+                                  "component": "test",
+                                  "height": 61.803
+                                },
+                                {
+                                  "type": "row",
+                                  "content": [
+                                    {
+                                      "type": "react-component",
+                                      "component": "test"
+                                    },
+                                    {
+                                      "type": "react-component",
+                                      "component": "test",
+                                      "width": 61.803
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "react-component",
+                          "component": "test",
+                          "height": 38.197
+                        }
+                      ]
+                    },
+                    {
+                      "type": "react-component",
+                      "component": "test",
+                      "width": 61.803
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "links": [],
+  "version": 2
+}

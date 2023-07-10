@@ -1,16 +1,15 @@
 import { PureComponent } from 'react';
-import { WritableStream as ponyfillWritableStream } from 'web-streams-polyfill/ponyfill';
-import dh, {
+import type {
   Column,
+  dh as DhType,
   DateWrapper,
   Table,
   TableData,
   TableViewportSubscription,
   UpdateEventData,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { GridRange, GridRangeIndex, memoizeClear } from '@deephaven/grid';
-
 import { Formatter, FormatterUtils, TableUtils } from '@deephaven/jsapi-utils';
 import {
   CancelablePromise,
@@ -24,6 +23,7 @@ const log = Log.module('TableSaver');
 const UNFORMATTED_DATE_PATTERN = `yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS z`;
 
 interface TableSaverProps {
+  dh: DhType;
   getDownloadWorker: () => Promise<ServiceWorker>;
   isDownloading: boolean;
   onDownloadCompleted: () => void;
@@ -96,9 +96,6 @@ export default class TableSaver extends PureComponent<
     this.currentSnapshotIndex = 0;
     this.snapshotPending = 0;
     this.cancelableSnapshots = [];
-
-    // WritableStream is not supported in Firefox (also IE) yet. use ponyfillWritableStream instead
-    this.WritableStream = window.WritableStream ?? ponyfillWritableStream;
 
     // Due to an open issue in Chromium, readableStream.cancel() is never called when a user cancel the stream from Chromium's UI and the stream goes on even it's canceled.
     // Instead, we  monitor the pull() behavior from the readableStream called when the stream wants more data to write.
@@ -174,12 +171,6 @@ export default class TableSaver extends PureComponent<
   snapshotPending: number;
 
   cancelableSnapshots: (CancelablePromise<unknown> | null)[];
-
-  // WritableStream is not supported in Firefox (also IE) yet. use ponyfillWritableStream instead
-
-  // TODO: Fix type error
-  WritableStream = window.WritableStream ?? ponyfillWritableStream;
-  //  WritableStream: typeof window.WritableStream | typeof ponyfillWritableStream;
 
   // Due to an open issue in Chromium, readableStream.cancel() is never called when a user cancel the stream from Chromium's UI and the stream goes on even it's canceled.
   // Instead, we  monitor the pull() behavior from the readableStream called when the stream wants more data to write.
@@ -257,7 +248,7 @@ export default class TableSaver extends PureComponent<
       };
     }
 
-    return new this.WritableStream(streamConfig);
+    return new WritableStream(streamConfig);
   }
 
   startDownload(
@@ -522,7 +513,7 @@ export default class TableSaver extends PureComponent<
   convertSnapshotIntoCsv(snapshot: UpdateEventData): string {
     let csvString = '';
     const snapshotIterator = snapshot.added.iterator();
-    const { formatter } = this.props;
+    const { dh, formatter } = this.props;
 
     const rows = [];
     while (snapshotIterator.hasNext()) {
@@ -587,6 +578,7 @@ export default class TableSaver extends PureComponent<
     if (n <= 0) {
       return;
     }
+    const { dh } = this.props;
     assertNotNull(this.gridRangeCounter);
     let i = 0;
     let currentGridRange = this.gridRanges[this.gridRangeCounter];

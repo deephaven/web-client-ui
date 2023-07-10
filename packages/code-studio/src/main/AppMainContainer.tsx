@@ -18,6 +18,10 @@ import {
   Popper,
   ContextAction,
   Button,
+  InfoModal,
+  LoadingSpinner,
+  BasicModal,
+  DebouncedModal,
 } from '@deephaven/components';
 import {
   IrisGridModel,
@@ -56,17 +60,23 @@ import {
   PandasPanelProps,
   IrisGridPanelProps,
   ColumnSelectionValidator,
-  SessionConfig,
   getDashboardConnection,
   TablePlugin,
 } from '@deephaven/dashboard-core-plugins';
-import { vsGear, dhShapes, dhPanels } from '@deephaven/icons';
-import dh, {
+import {
+  vsGear,
+  dhShapes,
+  dhPanels,
+  vsDebugDisconnect,
+  dhSquareFilled,
+} from '@deephaven/icons';
+import dh from '@deephaven/jsapi-shim';
+import type {
   IdeConnection,
   IdeSession,
   VariableDefinition,
-  VariableTypeUnion,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
+import { SessionConfig } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
   getActiveTool,
@@ -76,11 +86,11 @@ import {
   updateWorkspaceData as updateWorkspaceDataAction,
   getPlugins,
   Workspace,
-  DeephavenPluginModuleMap,
   WorkspaceData,
   RootState,
-  UserPermissions,
+  User,
   ServerConfigValues,
+  DeephavenPluginModuleMap,
 } from '@deephaven/redux';
 import { PromiseUtils } from '@deephaven/utils';
 import GoldenLayout from '@deephaven/golden-layout';
@@ -100,7 +110,6 @@ import {
 import EmptyDashboard from './EmptyDashboard';
 import UserLayoutUtils from './UserLayoutUtils';
 import DownloadServiceWorkerUtils from '../DownloadServiceWorkerUtils';
-import { PluginUtils } from '../plugins';
 import LayoutStorage from '../storage/LayoutStorage';
 
 const log = Log.module('AppMainContainer');
@@ -120,13 +129,6 @@ export type AppDashboardData = {
   links: Link[];
   openedMap: Map<string | string[], Component>;
 };
-
-interface User {
-  name: string;
-  operateAs: string;
-  groups: string[];
-  permissions: UserPermissions;
-}
 
 interface AppMainContainerProps {
   activeTool: string;
@@ -149,6 +151,8 @@ interface AppMainContainerProps {
 
 interface AppMainContainerState {
   contextActions: ContextAction[];
+  isAuthFailed: boolean;
+  isDisconnected: boolean;
   isPanelsMenuShown: boolean;
   isSettingsMenuShown: boolean;
   widgets: VariableDefinition[];
@@ -177,6 +181,11 @@ export class AppMainContainer extends Component<
     );
   }
 
+  static handleRefresh() {
+    log.info('Refreshing application');
+    window.location.reload();
+  }
+
   constructor(props: AppMainContainerProps & RouteComponentProps) {
     super(props);
     this.handleSettingsMenuHide = this.handleSettingsMenuHide.bind(this);
@@ -203,6 +212,9 @@ export class AppMainContainer extends Component<
     this.hydratePandas = this.hydratePandas.bind(this);
     this.hydrateDefault = this.hydrateDefault.bind(this);
     this.openNotebookFromURL = this.openNotebookFromURL.bind(this);
+    this.handleDisconnect = this.handleDisconnect.bind(this);
+    this.handleReconnect = this.handleReconnect.bind(this);
+    this.handleReconnectAuthFailed = this.handleReconnectAuthFailed.bind(this);
 
     this.importElement = React.createRef();
 
@@ -232,6 +244,8 @@ export class AppMainContainer extends Component<
           isGlobal: true,
         },
       ],
+      isAuthFailed: false,
+      isDisconnected: false,
       isPanelsMenuShown: false,
       isSettingsMenuShown: false,
       widgets: [],
@@ -240,6 +254,7 @@ export class AppMainContainer extends Component<
 
   componentDidMount(): void {
     this.initWidgets();
+    this.startListeningForDisconnect();
 
     window.addEventListener(
       'beforeunload',
@@ -256,6 +271,7 @@ export class AppMainContainer extends Component<
 
   componentWillUnmount(): void {
     this.deinitWidgets();
+    this.stopListeningForDisconnect();
 
     window.removeEventListener(
       'beforeunload',
@@ -363,10 +379,7 @@ export class AppMainContainer extends Component<
     this.setState({ isSettingsMenuShown: true });
   }
 
-  handleControlSelect(
-    type: string,
-    dragEvent: KeyboardEvent | null = null
-  ): void {
+  handleControlSelect(type: string, dragEvent?: KeyboardEvent): void {
     log.debug('handleControlSelect', type);
 
     switch (type) {
@@ -534,6 +547,21 @@ export class AppMainContainer extends Component<
     }
   }
 
+  handleDisconnect() {
+    log.info('Disconnected from server');
+    this.setState({ isDisconnected: true });
+  }
+
+  handleReconnect() {
+    log.info('Reconnected to server');
+    this.setState({ isDisconnected: false });
+  }
+
+  handleReconnectAuthFailed() {
+    log.warn('Reconnect authentication failed');
+    this.setState({ isAuthFailed: true });
+  }
+
   /**
    * Import the provided file and set it in the workspace data (which should then load it in the dashboard)
    * @param file JSON file to import
@@ -625,12 +653,46 @@ export class AppMainContainer extends Component<
       }).TablePlugin;
     }
 
-    return PluginUtils.loadComponentPlugin(pluginName) as TablePlugin;
+    const errorMessage = `Unable to find table plugin ${pluginName}.`;
+    log.error(errorMessage);
+    throw new Error(errorMessage);
+  }
+
+  startListeningForDisconnect() {
+    const { connection } = this.props;
+    connection.addEventListener(
+      dh.IdeConnection.EVENT_DISCONNECT,
+      this.handleDisconnect
+    );
+    connection.addEventListener(
+      dh.IdeConnection.EVENT_RECONNECT,
+      this.handleReconnect
+    );
+    connection.addEventListener(
+      dh.CoreClient.EVENT_RECONNECT_AUTH_FAILED,
+      this.handleReconnectAuthFailed
+    );
+  }
+
+  stopListeningForDisconnect() {
+    const { connection } = this.props;
+    connection.removeEventListener(
+      dh.IdeConnection.EVENT_DISCONNECT,
+      this.handleDisconnect
+    );
+    connection.removeEventListener(
+      dh.IdeConnection.EVENT_RECONNECT,
+      this.handleReconnect
+    );
+    connection.removeEventListener(
+      dh.CoreClient.EVENT_RECONNECT_AUTH_FAILED,
+      this.handleReconnectAuthFailed
+    );
   }
 
   hydrateDefault(
     props: {
-      metadata?: { type?: VariableTypeUnion; id?: string; name?: string };
+      metadata?: { type?: string; id?: string; name?: string };
     } & PanelProps,
     id: string
   ): DashboardPanelProps & { fetch?: () => Promise<unknown> } {
@@ -672,7 +734,7 @@ export class AppMainContainer extends Component<
   hydrateTable<T extends { metadata: GridPanelMetadata }>(
     props: T,
     id: string,
-    type: VariableTypeUnion = dh.VariableType.TABLE
+    type: string = dh.VariableType.TABLE
   ): T & {
     getDownloadWorker: () => Promise<ServiceWorker>;
     loadPlugin: (pluginName: string) => TablePlugin;
@@ -685,7 +747,7 @@ export class AppMainContainer extends Component<
       getDownloadWorker: DownloadServiceWorkerUtils.getServiceWorker,
       loadPlugin: this.handleLoadTablePlugin,
       localDashboardId: id,
-      makeModel: () => createGridModel(connection, props.metadata, type),
+      makeModel: () => createGridModel(dh, connection, props.metadata, type),
     };
   }
 
@@ -696,7 +758,7 @@ export class AppMainContainer extends Component<
       localDashboardId: id,
       makeModel: () => {
         const { metadata, panelState } = props;
-        return createChartModel(connection, metadata, panelState);
+        return createChartModel(dh, connection, metadata, panelState);
       },
     };
   }
@@ -739,6 +801,8 @@ export class AppMainContainer extends Component<
     const { canUsePanels } = permissions;
     const {
       contextActions,
+      isAuthFailed,
+      isDisconnected,
       isPanelsMenuShown,
       isSettingsMenuShown,
       widgets,
@@ -795,6 +859,9 @@ export class AppMainContainer extends Component<
                     isShown={isPanelsMenuShown}
                     className="panels-menu-popper"
                     onExited={this.handleWidgetsMenuClose}
+                    options={{
+                      placement: 'bottom',
+                    }}
                     closeOnBlur
                     interactive
                   >
@@ -811,16 +878,37 @@ export class AppMainContainer extends Component<
               <Button
                 kind="ghost"
                 className={classNames('btn-settings-menu', {
-                  'text-warning': user.operateAs !== user.name,
+                  'text-warning':
+                    user.operateAs != null && user.operateAs !== user.name,
                 })}
                 onClick={this.handleSettingsMenuShow}
                 icon={
-                  <FontAwesomeIcon
-                    icon={vsGear}
-                    transform="grow-3 right-1 down-1"
-                  />
+                  <span className="fa-layers">
+                    <FontAwesomeIcon
+                      icon={vsGear}
+                      transform="grow-3 right-1 down-1"
+                    />
+                    {isDisconnected && !isAuthFailed && (
+                      <>
+                        <FontAwesomeIcon
+                          icon={dhSquareFilled}
+                          color={ThemeExport.background}
+                          transform="grow-2 right-8 down-8.5 rotate-45"
+                        />
+                        <FontAwesomeIcon
+                          icon={vsDebugDisconnect}
+                          color={ThemeExport.danger}
+                          transform="shrink-5 right-6 down-6"
+                        />
+                      </>
+                    )}
+                  </span>
                 }
-                tooltip="User Settings"
+                tooltip={
+                  isDisconnected && !isAuthFailed
+                    ? 'Server disconnected'
+                    : 'User Settings'
+                }
               />
             </div>
           </div>
@@ -847,8 +935,8 @@ export class AppMainContainer extends Component<
             hydrateConsole={AppMainContainer.hydrateConsole}
             notebooksUrl={
               new URL(
-                `${import.meta.env.VITE_NOTEBOOKS_URL}/`,
-                `${window.location}`
+                `${import.meta.env.VITE_ROUTE_NOTEBOOKS}`,
+                document.baseURI
               ).href
             }
           />
@@ -868,6 +956,7 @@ export class AppMainContainer extends Component<
           <SettingsMenu
             serverConfigValues={serverConfigValues}
             onDone={this.handleSettingsMenuHide}
+            user={user}
           />
         </CSSTransition>
         <ContextActions actions={contextActions} />
@@ -877,6 +966,27 @@ export class AppMainContainer extends Component<
           accept=".json"
           style={{ display: 'none' }}
           onChange={this.handleImportLayoutFiles}
+        />
+        <DebouncedModal
+          isOpen={isDisconnected && !isAuthFailed}
+          debounceMs={1000}
+        >
+          <InfoModal
+            icon={vsDebugDisconnect}
+            title={
+              <>
+                <LoadingSpinner /> Attempting to reconnect...
+              </>
+            }
+            subtitle="Please check your network connection."
+          />
+        </DebouncedModal>
+        <BasicModal
+          confirmButtonText="Refresh"
+          onConfirm={AppMainContainer.handleRefresh}
+          isOpen={isAuthFailed}
+          headerText="Authentication failed"
+          bodyText="Credentials are invalid. Please refresh your browser to try and reconnect."
         />
       </div>
     );

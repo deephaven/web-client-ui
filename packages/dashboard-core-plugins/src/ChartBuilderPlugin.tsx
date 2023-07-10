@@ -1,12 +1,17 @@
 import { useCallback } from 'react';
-import { ChartModelFactory, ChartUtils } from '@deephaven/chart';
+import {
+  ChartModelFactory,
+  ChartModelSettings,
+  ChartUtils,
+} from '@deephaven/chart';
 import {
   assertIsDashboardPluginProps,
   DashboardPluginComponentProps,
   LayoutUtils,
   useListener,
 } from '@deephaven/dashboard';
-import { SeriesPlotStyle, Table } from '@deephaven/jsapi-shim';
+import { useApi } from '@deephaven/jsapi-bootstrap';
+import type { Table } from '@deephaven/jsapi-types';
 import shortid from 'shortid';
 import { IrisGridEvent } from './events';
 import { ChartPanel } from './panels';
@@ -22,6 +27,7 @@ export function ChartBuilderPlugin(
 ): JSX.Element | null {
   assertIsDashboardPluginProps(props);
   const { id, layout } = props;
+  const dh = useApi();
   const handleCreateChart = useCallback(
     ({
       metadata,
@@ -29,23 +35,16 @@ export function ChartBuilderPlugin(
       table,
     }: {
       metadata: {
-        settings: {
-          type: keyof SeriesPlotStyle;
-          series: string[];
-          xAxis: string;
-          isLinked: boolean;
-          hiddenSeries?: string[];
-        };
+        settings: ChartModelSettings;
         sourcePanelId: string;
         table: string;
-        tableSettings: Record<string, unknown>;
       };
       panelId?: string;
       table: Table;
     }) => {
       const { settings } = metadata;
       const makeModel = () =>
-        ChartModelFactory.makeModelFromSettings(settings, table);
+        ChartModelFactory.makeModelFromSettings(dh, settings, table);
       const title = ChartUtils.titleFromSettings(settings);
 
       const config = {
@@ -64,7 +63,7 @@ export function ChartBuilderPlugin(
       const { root } = layout;
       LayoutUtils.openComponent({ root, config });
     },
-    [id, layout]
+    [dh, id, layout]
   );
 
   useListener(layout.eventHub, IrisGridEvent.CREATE_CHART, handleCreateChart);

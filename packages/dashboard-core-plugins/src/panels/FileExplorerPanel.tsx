@@ -10,7 +10,7 @@ import FileExplorer, {
 } from '@deephaven/file-explorer';
 import React, { ReactNode } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
-import { IdeSession } from '@deephaven/jsapi-shim';
+import type { IdeSession } from '@deephaven/jsapi-types';
 import Panel from './Panel';
 import { NotebookEvent } from '../events';
 import './FileExplorerPanel.scss';

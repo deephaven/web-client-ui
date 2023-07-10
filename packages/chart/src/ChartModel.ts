@@ -1,16 +1,10 @@
 /* eslint class-methods-use-this: "off" */
 /* eslint no-unused-vars: "off" */
 
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
-import { Layout, PlotData } from 'plotly.js';
-
-export type FilterColumnMap = Map<
-  string,
-  {
-    name: string;
-    type: string;
-  }
->;
+import type { Layout, Data } from 'plotly.js';
+import { FilterColumnMap, FilterMap } from './ChartUtils';
 
 export type ChartEvent = CustomEvent;
 /**
@@ -35,10 +29,13 @@ class ChartModel {
 
   static EVENT_LOADFINISHED = 'ChartModel.EVENT_LOADFINISHED';
 
-  constructor() {
+  constructor(dh: DhType) {
+    this.dh = dh;
     this.listeners = [];
     this.isDownsamplingDisabled = false;
   }
+
+  dh: DhType;
 
   listeners: ((event: ChartEvent) => void)[];
 
@@ -50,7 +47,7 @@ class ChartModel {
 
   title?: string;
 
-  getData(): Partial<PlotData>[] {
+  getData(): Partial<Data>[] {
     return [];
   }
 
@@ -71,7 +68,7 @@ class ChartModel {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  setFilter(filter: Map<string, string>): void {}
+  setFilter(filter: FilterMap): void {}
 
   /**
    * Close this model, clean up any underlying subscriptions

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Column, Table } from '@deephaven/jsapi-shim';
+import type { Column, Table } from '@deephaven/jsapi-types';
 import useTable from './useTable';
 
 /**

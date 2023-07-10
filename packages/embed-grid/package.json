@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/embed-grid",
-  "version": "0.32.0",
+  "version": "0.44.0",
   "description": "Deephaven Embedded Grid",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -16,6 +16,7 @@
     "build"
   ],
   "dependencies": {
+    "@deephaven/app-utils": "file:../app-utils",
     "@deephaven/components": "file:../components",
     "@deephaven/iris-grid": "file:../iris-grid",
     "@deephaven/jsapi-bootstrap": "file:../jsapi-bootstrap",
@@ -36,10 +37,7 @@
     "@deephaven/eslint-config": "file:../eslint-config",
     "@deephaven/mocks": "file:../mocks",
     "@deephaven/prettier-config": "file:../prettier-config",
-    "@deephaven/stylelint-config": "file:../stylelint-config",
-    "@deephaven/tsconfig": "file:../tsconfig",
-    "@vitejs/plugin-react-swc": "^3.2.0",
-    "vite": "^4.1.4"
+    "@deephaven/stylelint-config": "file:../stylelint-config"
   },
   "publishConfig": {
     "access": "public"

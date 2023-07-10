@@ -1,13 +1,13 @@
 /* eslint-disable react/require-default-props */
 /* eslint-disable no-param-reassign */
 import React, { useEffect, useMemo } from 'react';
-import dh, {
+import type {
   Column,
   CustomColumn,
   FilterCondition,
   RollupConfig,
   Sort,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import { ModelIndex, MoveOperation } from '@deephaven/grid';
 import { Formatter, ReverseType, TableUtils } from '@deephaven/jsapi-utils';
 import { EMPTY_ARRAY, EMPTY_MAP } from '@deephaven/utils';
@@ -102,7 +102,7 @@ const IrisGridModelUpdater = React.memo(
       function updateSorts() {
         const sortsForModel = [...sorts];
         if (reverseType !== TableUtils.REVERSE_TYPE.NONE) {
-          sortsForModel.push(dh.Table.reverse());
+          sortsForModel.push(model.dh.Table.reverse());
         }
         model.sort = sortsForModel;
       },

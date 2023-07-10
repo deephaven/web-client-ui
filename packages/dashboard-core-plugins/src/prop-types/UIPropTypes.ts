@@ -31,15 +31,10 @@ const User = PropTypes.shape({
   operateAs: PropTypes.string.isRequired,
   groups: PropTypes.arrayOf(PropTypes.string).isRequired,
   permissions: PropTypes.shape({
-    isSuperUser: PropTypes.bool.isRequired,
-    isQueryViewOnly: PropTypes.bool.isRequired,
-    isNonInteractive: PropTypes.bool.isRequired,
     canUsePanels: PropTypes.bool.isRequired,
-    canCreateDashboard: PropTypes.bool.isRequired,
-    canCreateCodeStudio: PropTypes.bool.isRequired,
-    canCreateQueryMonitor: PropTypes.bool.isRequired,
     canCopy: PropTypes.bool.isRequired,
     canDownloadCsv: PropTypes.bool.isRequired,
+    canLogout: PropTypes.bool.isRequired,
   }).isRequired,
 });
 

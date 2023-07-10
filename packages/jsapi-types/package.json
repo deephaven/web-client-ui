@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/jsapi-types",
-  "version": "0.32.0",
+  "version": "0.44.0",
   "description": "Deephaven JSAPI Types",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -20,12 +20,10 @@
     "build": "cross-env NODE_ENV=production run-p build:*",
     "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward"
   },
-  "devDependencies": {
-    "@deephaven/tsconfig": "file:../tsconfig"
-  },
   "files": [
     "dist"
   ],
+  "sideEffects": false,
   "publishConfig": {
     "access": "public"
   }

@@ -4,6 +4,8 @@
  * Extend this class and register with TableUtils to make use of it.
  */
 
+import type { dh as DhType } from '@deephaven/jsapi-types';
+
 export type TableColumnFormatType =
   | 'type-global'
   | 'type-context-preset'
@@ -24,10 +26,11 @@ export class TableColumnFormatter<T = unknown> {
 
   /**
    * Validates format object
+   * @param dh JSAPI instance
    * @param format Format object
    * @returns true for valid object
    */
-  static isValid(format: TableColumnFormat): boolean {
+  static isValid(dh: DhType, format: TableColumnFormat): boolean {
     return true;
   }
 

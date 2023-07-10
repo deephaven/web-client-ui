@@ -1,11 +1,11 @@
 import { waitFor } from '@testing-library/react';
-import {
+import type {
   InputTable,
   Table,
   TableViewportSubscription,
   TotalsTable,
   TreeTable,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
 import IrisGridModel from './IrisGridModel';
 import IrisGridTestUtils from './IrisGridTestUtils';
@@ -13,21 +13,23 @@ import { UITotalsTableConfig } from './CommonTypes';
 
 jest.useFakeTimers();
 
+const irisGridTestUtils = new IrisGridTestUtils(dh);
+
 describe('viewport and subscription tests', () => {
   let table: Table;
   let subscription: TableViewportSubscription;
   let model: IrisGridModel;
 
   beforeEach(() => {
-    table = IrisGridTestUtils.makeTable();
-    subscription = IrisGridTestUtils.makeSubscription(table);
+    table = irisGridTestUtils.makeTable();
+    subscription = irisGridTestUtils.makeSubscription(table);
     table.setViewport = jest.fn(() => subscription);
     table.applyFilter = jest.fn(val => val);
     table.applySort = jest.fn(val => val);
     table.applyCustomColumns = jest.fn(val => val as string[]);
     subscription.setViewport = jest.fn();
     subscription.close = jest.fn();
-    model = IrisGridTestUtils.makeModel(table);
+    model = irisGridTestUtils.makeModel(table);
   });
 
   it('applies viewport to existing subscription', () => {
@@ -70,15 +72,15 @@ describe('viewport and subscription tests', () => {
     expect(subscription.close).not.toHaveBeenCalled();
     jest.clearAllMocks();
 
-    model.filter = [IrisGridTestUtils.makeFilter()];
+    model.filter = [irisGridTestUtils.makeFilter()];
     jest.runAllTimers();
     expect(table.setViewport).toHaveBeenCalledTimes(1);
     expect(subscription.setViewport).not.toHaveBeenCalled();
     expect(subscription.close).toHaveBeenCalled();
 
     jest.clearAllMocks();
-    model.filter = [IrisGridTestUtils.makeFilter()];
-    model.sort = [IrisGridTestUtils.makeSort()];
+    model.filter = [irisGridTestUtils.makeFilter()];
+    model.sort = [irisGridTestUtils.makeSort()];
     model.customColumns = ['A=i'];
     jest.runAllTimers();
     expect(subscription.close).toHaveBeenCalled();
@@ -124,16 +126,16 @@ describe('viewport and subscription tests', () => {
 });
 
 it('updates the model correctly when adding and removing a rollup config', async () => {
-  const table = IrisGridTestUtils.makeTable();
-  const rollupTable = IrisGridTestUtils.makeTable();
-  const rollupConfig = IrisGridTestUtils.makeRollupTableConfig();
+  const table = irisGridTestUtils.makeTable();
+  const rollupTable = irisGridTestUtils.makeTable();
+  const rollupConfig = irisGridTestUtils.makeRollupTableConfig();
 
   const mock = jest.fn(() =>
     Promise.resolve((rollupTable as unknown) as TreeTable)
   );
 
   table.rollup = mock;
-  const model = IrisGridTestUtils.makeModel(table);
+  const model = irisGridTestUtils.makeModel(table);
 
   expect(mock).not.toHaveBeenCalled();
 
@@ -149,9 +151,9 @@ it('updates the model correctly when adding and removing a rollup config', async
 });
 
 it('closes the table correctly when the model is closed', () => {
-  const table = IrisGridTestUtils.makeTable();
+  const table = irisGridTestUtils.makeTable();
   table.close = jest.fn();
-  const model = IrisGridTestUtils.makeModel(table);
+  const model = irisGridTestUtils.makeModel(table);
 
   model.close();
 
@@ -170,14 +172,14 @@ describe('totals table tests', () => {
   let model: IrisGridModel;
 
   beforeEach(() => {
-    table = IrisGridTestUtils.makeTable();
-    totalsTable = IrisGridTestUtils.makeTable();
+    table = irisGridTestUtils.makeTable();
+    totalsTable = irisGridTestUtils.makeTable();
 
     table.close = jest.fn();
     table.getTotalsTable = jest.fn(() => Promise.resolve(totalsTable));
     totalsTable.close = jest.fn();
 
-    model = IrisGridTestUtils.makeModel(table);
+    model = irisGridTestUtils.makeModel(table);
   });
 
   it('opens a totals table correctly and closes it when done', async () => {
@@ -220,15 +222,15 @@ describe('pending new rows tests', () => {
   let model: IrisGridModel;
 
   beforeEach(() => {
-    table = IrisGridTestUtils.makeTable({
-      columns: IrisGridTestUtils.makeColumns(),
+    table = irisGridTestUtils.makeTable({
+      columns: irisGridTestUtils.makeColumns(),
       size: TABLE_SIZE,
     });
     table.close = jest.fn();
 
-    inputTable = IrisGridTestUtils.makeInputTable(table.columns.slice(0, 3));
+    inputTable = irisGridTestUtils.makeInputTable(table.columns.slice(0, 3));
 
-    model = IrisGridTestUtils.makeModel(table, new Formatter(), inputTable);
+    model = irisGridTestUtils.makeModel(table, new Formatter(dh), inputTable);
     model.pendingRowCount = PENDING_ROW_COUNT;
   });
 

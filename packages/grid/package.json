@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/grid",
-  "version": "0.32.0",
+  "version": "0.44.0",
   "description": "Deephaven React grid component",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -22,13 +22,13 @@
     "build:sass": "sass --embed-sources --load-path=../../node_modules ./src:./dist"
   },
   "peerDependencies": {
-    "react": "^17.0.0"
-  },
-  "devDependencies": {
-    "@deephaven/tsconfig": "file:../tsconfig"
+    "react": "^17.x"
   },
   "files": [
     "dist"
+  ],
+  "sideEffects": [
+    "*.css"
   ],
   "dependencies": {
     "@deephaven/utils": "file:../utils",

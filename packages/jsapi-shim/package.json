@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/jsapi-shim",
-  "version": "0.32.0",
+  "version": "0.44.0",
   "description": "Deephaven JSAPI Shim",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -24,12 +24,10 @@
     "@deephaven/jsapi-types": "file:../jsapi-types",
     "prop-types": "^15.7.2"
   },
-  "devDependencies": {
-    "@deephaven/tsconfig": "file:../tsconfig"
-  },
   "files": [
     "dist"
   ],
+  "sideEffects": false,
   "publishConfig": {
     "access": "public"
   }

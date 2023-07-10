@@ -15,7 +15,7 @@ export function getColumnFormats(
 
 export function getDateTimeFormatterOptions(
   settings?: DateTimeFormatSettings | null
-): ConstructorParameters<typeof DateTimeColumnFormatter>[0] {
+): ConstructorParameters<typeof DateTimeColumnFormatter>[1] {
   return {
     timeZone: settings?.timeZone,
     defaultDateTimeFormatString: settings?.defaultDateTimeFormat,

@@ -2,11 +2,11 @@ import React, { Component, Key } from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, CopyButton, LoadingSpinner } from '@deephaven/components';
-import { dhFreeze, dhRefresh, vsLock } from '@deephaven/icons';
-import {
+import { dhFreeze, dhRefresh, dhSortSlash, vsLock } from '@deephaven/icons';
+import type {
   Column,
   ColumnStatistics as APIColumnStatistics,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
 import { isExpandableGridModel } from '@deephaven/grid';
@@ -202,6 +202,12 @@ class ColumnStatistics extends Component<
         </div>
         {description != null && (
           <div className="column-statistics-description">{description}</div>
+        )}
+        {columnIndex != null && !model.isColumnSortable(columnIndex) && (
+          <div className="column-statistics-status">
+            <FontAwesomeIcon icon={dhSortSlash} className="mr-1" />
+            Not sortable
+          </div>
         )}
         {columnIndex != null && !model.isColumnMovable(columnIndex) && (
           <div className="column-statistics-status">

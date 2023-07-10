@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import {
@@ -11,25 +11,28 @@ import {
   setDashboardData as setDashboardDataAction,
 } from '@deephaven/dashboard';
 import {
-  SessionWrapper,
   setDashboardConnection as setDashboardConnectionAction,
   setDashboardSessionWrapper as setDashboardSessionWrapperAction,
   ToolType,
 } from '@deephaven/dashboard-core-plugins';
 import { FileStorage } from '@deephaven/file-explorer';
-import dh, { IdeConnection } from '@deephaven/jsapi-shim';
+import { useApi, useClient } from '@deephaven/jsapi-bootstrap';
+import type { dh as DhType, IdeConnection } from '@deephaven/jsapi-types';
 import {
   DecimalColumnFormatter,
+  getSessionDetails,
   IntegerColumnFormatter,
+  loadSessionWrapper,
+  SessionWrapper,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { PouchCommandHistoryStorage } from '@deephaven/pouch-storage';
 import {
-  DeephavenPluginModuleMap,
   getWorkspace,
   getWorkspaceStorage,
   RootState,
   setActiveTool as setActiveToolAction,
+  setApi as setApiAction,
   setCommandHistoryStorage as setCommandHistoryStorageAction,
   setFileStorage as setFileStorageAction,
   setPlugins as setPluginsAction,
@@ -41,82 +44,29 @@ import {
   Workspace,
   WorkspaceStorage,
   ServerConfigValues,
+  DeephavenPluginModuleMap,
 } from '@deephaven/redux';
+import {
+  useConnection,
+  usePlugins,
+  useServerConfig,
+  useUser,
+} from '@deephaven/app-utils';
 import { setLayoutStorage as setLayoutStorageAction } from '../redux/actions';
 import App from './App';
 import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
-import {
-  AUTH_TYPE,
-  createConnection,
-  createCoreClient,
-  createSessionWrapper,
-  getAuthType,
-  getLoginOptions,
-} from './SessionUtils';
-import { PluginUtils } from '../plugins';
 import LayoutStorage from '../storage/LayoutStorage';
-import { isNoConsolesError } from './NoConsolesError';
 import GrpcLayoutStorage from '../storage/grpc/GrpcLayoutStorage';
 import GrpcFileStorage from '../storage/grpc/GrpcFileStorage';
 
 const log = Log.module('AppInit');
-
-/**
- * Load all plugin modules available.
- * @returns A map from the name of the plugin to the plugin module that was loaded
- */
-async function loadPlugins(): Promise<DeephavenPluginModuleMap> {
-  log.debug('Loading plugins...');
-  try {
-    const manifest = await PluginUtils.loadJson(
-      `${import.meta.env.VITE_MODULE_PLUGINS_URL}/manifest.json`
-    );
-
-    log.debug('Plugin manifest loaded:', manifest);
-    const pluginPromises = [];
-    for (let i = 0; i < manifest.plugins.length; i += 1) {
-      const { name, main } = manifest.plugins[i];
-      const pluginMainUrl = `${
-        import.meta.env.VITE_MODULE_PLUGINS_URL
-      }/${name}/${main}`;
-      pluginPromises.push(PluginUtils.loadModulePlugin(pluginMainUrl));
-    }
-    const pluginModules = await Promise.all(pluginPromises);
-
-    const pluginMap = new Map();
-    for (let i = 0; i < pluginModules.length; i += 1) {
-      const { name } = manifest.plugins[i];
-      pluginMap.set(name, pluginModules[i]);
-    }
-    log.info('Plugins loaded:', pluginMap);
-
-    return pluginMap;
-  } catch (e) {
-    log.error('Unable to load plugins:', e);
-    return new Map();
-  }
-}
-
-async function loadSessionWrapper(
-  connection: IdeConnection
-): Promise<SessionWrapper | undefined> {
-  let sessionWrapper: SessionWrapper | undefined;
-  try {
-    sessionWrapper = await createSessionWrapper(connection);
-  } catch (e) {
-    // Consoles may be disabled on the server, but we should still be able to start up and open existing objects
-    if (!isNoConsolesError(e)) {
-      throw e;
-    }
-  }
-  return sessionWrapper;
-}
 
 interface AppInitProps {
   workspace: Workspace;
   workspaceStorage: WorkspaceStorage;
 
   setActiveTool: (type: typeof ToolType[keyof typeof ToolType]) => void;
+  setApi: (api: DhType) => void;
   setCommandHistoryStorage: (storage: PouchCommandHistoryStorage) => void;
   setDashboardData: (
     id: string,
@@ -140,6 +90,7 @@ function AppInit(props: AppInitProps) {
   const {
     workspace,
     setActiveTool,
+    setApi,
     setCommandHistoryStorage,
     setDashboardData,
     setFileStorage,
@@ -153,170 +104,130 @@ function AppInit(props: AppInitProps) {
     setServerConfigValues,
   } = props;
 
+  const api = useApi();
+  const client = useClient();
+  const connection = useConnection();
+  const plugins = usePlugins();
+  const serverConfig = useServerConfig();
+  const user = useUser();
+
+  // General error means the app is dead and is unlikely to recover
   const [error, setError] = useState<unknown>();
-  const [isFontLoading, setIsFontLoading] = useState(true);
-
-  const initClient = useCallback(async () => {
-    try {
-      log.info(
-        'Initializing Web UI',
-        import.meta.env.npm_package_version,
-        navigator.userAgent
-      );
-
-      const coreClient = createCoreClient();
-      const authType = getAuthType();
-      log.info(`Login using auth type ${authType}...`);
-      await coreClient.login(await getLoginOptions(authType));
-
-      const newPlugins = await loadPlugins();
-      const connection = await (authType === AUTH_TYPE.ANONYMOUS &&
-      coreClient.getAsIdeConnection == null
-        ? // Fall back to the old API for anonymous auth if the new API is not supported
-          createConnection()
-        : coreClient.getAsIdeConnection());
-      connection.addEventListener(
-        dh.IdeConnection.HACK_CONNECTION_FAILURE,
-        event => {
-          const { detail } = event;
-          log.error('Connection failure', `${JSON.stringify(detail)}`);
-          setError(`Unable to connect:  ${detail.details ?? 'Unknown Error'}`);
-        }
-      );
-
-      const sessionWrapper = await loadSessionWrapper(connection);
-      const name = 'user';
-
-      const storageService = coreClient.getStorageService();
-      const layoutStorage = new GrpcLayoutStorage(
-        storageService,
-        import.meta.env.VITE_LAYOUTS_URL ?? ''
-      );
-      const fileStorage = new GrpcFileStorage(
-        storageService,
-        import.meta.env.VITE_NOTEBOOKS_URL ?? ''
-      );
-
-      const workspaceStorage = new LocalWorkspaceStorage(layoutStorage);
-      const commandHistoryStorage = new PouchCommandHistoryStorage();
-
-      const loadedWorkspace = await workspaceStorage.load({
-        isConsoleAvailable: sessionWrapper !== undefined,
-      });
-      const { data } = loadedWorkspace;
-
-      // Fill in settings that have not yet been set
-      const { settings } = data;
-      if (settings.defaultDecimalFormatOptions === undefined) {
-        settings.defaultDecimalFormatOptions = {
-          defaultFormatString: DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
-        };
-      }
-
-      if (settings.defaultIntegerFormatOptions === undefined) {
-        settings.defaultIntegerFormatOptions = {
-          defaultFormatString: IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
-        };
-      }
-
-      if (settings.truncateNumbersWithPound === undefined) {
-        settings.truncateNumbersWithPound = false;
-      }
-
-      // Set any shortcuts that user has overridden on this platform
-      const { shortcutOverrides = {} } = settings;
-      const isMac = Shortcut.isMacPlatform;
-      const platformOverrides = isMac
-        ? shortcutOverrides.mac ?? {}
-        : shortcutOverrides.windows ?? {};
-
-      Object.entries(platformOverrides).forEach(([id, keyState]) => {
-        ShortcutRegistry.get(id)?.setKeyState(keyState);
-      });
-
-      const dashboardData = {
-        filterSets: data.filterSets,
-        links: data.links,
-      };
-
-      const configs = await coreClient.getServerConfigValues();
-      const serverConfig = new Map(configs);
-
-      const user: User = {
-        name,
-        operateAs: name,
-        groups: [],
-        permissions: {
-          isSuperUser: false,
-          isQueryViewOnly: false,
-          isNonInteractive: false,
-          canUsePanels: true,
-          canCreateDashboard: true,
-          canCreateCodeStudio: true,
-          canCreateQueryMonitor: true,
-          canCopy: !(
-            serverConfig.get('internal.webClient.appInit.canCopy') === 'false'
-          ),
-          canDownloadCsv: !(
-            serverConfig.get('internal.webClient.appInit.canDownloadCsv') ===
-            'false'
-          ),
-        },
-      };
-
-      setActiveTool(ToolType.DEFAULT);
-      setServerConfigValues(serverConfig);
-      setCommandHistoryStorage(commandHistoryStorage);
-      setDashboardData(DEFAULT_DASHBOARD_ID, dashboardData);
-      setFileStorage(fileStorage);
-      setLayoutStorage(layoutStorage);
-      setDashboardConnection(DEFAULT_DASHBOARD_ID, connection);
-      if (sessionWrapper !== undefined) {
-        setDashboardSessionWrapper(DEFAULT_DASHBOARD_ID, sessionWrapper);
-      }
-      setPlugins(newPlugins);
-      setUser(user);
-      setWorkspaceStorage(workspaceStorage);
-      setWorkspace(loadedWorkspace);
-    } catch (e: unknown) {
-      log.error(e);
-      setError(e);
-    }
-  }, [
-    setActiveTool,
-    setCommandHistoryStorage,
-    setDashboardData,
-    setFileStorage,
-    setLayoutStorage,
-    setDashboardConnection,
-    setDashboardSessionWrapper,
-    setPlugins,
-    setUser,
-    setWorkspace,
-    setWorkspaceStorage,
-    setServerConfigValues,
-  ]);
-
-  const initFonts = useCallback(() => {
-    if (document.fonts != null) {
-      document.fonts.ready.then(() => {
-        setIsFontLoading(false);
-      });
-    } else {
-      // If document.fonts isn't supported, just best guess assume they're loaded
-      setIsFontLoading(false);
-    }
-  }, []);
 
   useEffect(
-    function initClientAndFonts() {
-      initClient();
-      initFonts();
+    function setReduxPlugins() {
+      setPlugins(plugins);
     },
-    [initClient, initFonts]
+    [plugins, setPlugins]
   );
 
-  const isLoading = (workspace == null && error == null) || isFontLoading;
+  useEffect(
+    function initApp() {
+      async function loadApp() {
+        try {
+          const sessionDetails = await getSessionDetails();
+          const sessionWrapper = await loadSessionWrapper(
+            api,
+            connection,
+            sessionDetails
+          );
+
+          const storageService = client.getStorageService();
+          const layoutStorage = new GrpcLayoutStorage(
+            storageService,
+            import.meta.env.VITE_STORAGE_PATH_LAYOUTS ?? ''
+          );
+          const fileStorage = new GrpcFileStorage(
+            storageService,
+            import.meta.env.VITE_STORAGE_PATH_NOTEBOOKS ?? ''
+          );
+
+          const workspaceStorage = new LocalWorkspaceStorage(layoutStorage);
+          const commandHistoryStorage = new PouchCommandHistoryStorage();
+
+          const loadedWorkspace = await workspaceStorage.load({
+            isConsoleAvailable: sessionWrapper !== undefined,
+          });
+
+          const { data } = loadedWorkspace;
+
+          // Fill in settings that have not yet been set
+          const { settings } = data;
+          if (settings.defaultDecimalFormatOptions === undefined) {
+            settings.defaultDecimalFormatOptions = {
+              defaultFormatString: DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
+            };
+          }
+
+          if (settings.defaultIntegerFormatOptions === undefined) {
+            settings.defaultIntegerFormatOptions = {
+              defaultFormatString: IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
+            };
+          }
+
+          if (settings.truncateNumbersWithPound === undefined) {
+            settings.truncateNumbersWithPound = false;
+          }
+
+          // Set any shortcuts that user has overridden on this platform
+          const { shortcutOverrides = {} } = settings;
+          const isMac = Shortcut.isMacPlatform;
+          const platformOverrides = isMac
+            ? shortcutOverrides.mac ?? {}
+            : shortcutOverrides.windows ?? {};
+
+          Object.entries(platformOverrides).forEach(([id, keyState]) => {
+            ShortcutRegistry.get(id)?.setKeyState(keyState);
+          });
+
+          const dashboardData = {
+            filterSets: data.filterSets,
+            links: data.links,
+          };
+
+          setApi(api);
+          setActiveTool(ToolType.DEFAULT);
+          setServerConfigValues(serverConfig);
+          setCommandHistoryStorage(commandHistoryStorage);
+          setDashboardData(DEFAULT_DASHBOARD_ID, dashboardData);
+          setFileStorage(fileStorage);
+          setLayoutStorage(layoutStorage);
+          setDashboardConnection(DEFAULT_DASHBOARD_ID, connection);
+          if (sessionWrapper !== undefined) {
+            setDashboardSessionWrapper(DEFAULT_DASHBOARD_ID, sessionWrapper);
+          }
+          setUser(user);
+          setWorkspaceStorage(workspaceStorage);
+          setWorkspace(loadedWorkspace);
+        } catch (e) {
+          log.error(e);
+          setError(e);
+        }
+      }
+      loadApp();
+    },
+    [
+      api,
+      client,
+      connection,
+      serverConfig,
+      setActiveTool,
+      setApi,
+      setCommandHistoryStorage,
+      setDashboardData,
+      setFileStorage,
+      setLayoutStorage,
+      setDashboardConnection,
+      setDashboardSessionWrapper,
+      setUser,
+      setWorkspace,
+      setWorkspaceStorage,
+      setServerConfigValues,
+      user,
+    ]
+  );
+
+  const isLoading = workspace == null && error == null;
   const isLoaded = !isLoading && error == null;
   const errorMessage = error != null ? `${error}` : null;
 
@@ -324,28 +235,10 @@ function AppInit(props: AppInitProps) {
     <>
       {isLoaded && <App />}
       <LoadingOverlay
-        isLoading={isLoading}
+        isLoading={isLoading && errorMessage == null}
         isLoaded={isLoaded}
         errorMessage={errorMessage}
       />
-      {/*
-      Need to preload any monaco and Deephaven grid fonts.
-      We hide text with all the fonts we need on the root app.jsx page
-      Load the Fira Mono font so that Monaco calculates word wrapping properly.
-      This element doesn't need to be visible, just load the font and stay hidden.
-      https://github.com/microsoft/vscode/issues/88689
-      Can be replaced with a rel="preload" when firefox adds support
-      https://developer.mozilla.org/en-US/docs/Web/HTML/Preloading_content
-       */}
-      <div
-        id="preload-fonts"
-        style={{ visibility: 'hidden', position: 'absolute', top: -10000 }}
-      >
-        {/* trigger loading of fonts needed by monaco and iris grid */}
-        <p className="fira-sans-regular">preload</p>
-        <p className="fira-sans-semibold">preload</p>
-        <p className="fira-mono">preload</p>
-      </div>
     </>
   );
 }
@@ -355,6 +248,7 @@ AppInit.propTypes = {
   workspaceStorage: PropTypes.shape({ close: PropTypes.func }),
 
   setActiveTool: PropTypes.func.isRequired,
+  setApi: PropTypes.func.isRequired,
   setCommandHistoryStorage: PropTypes.func.isRequired,
   setDashboardData: PropTypes.func.isRequired,
   setFileStorage: PropTypes.func.isRequired,
@@ -379,6 +273,7 @@ const mapStateToProps = (state: RootState) => ({
 
 const ConnectedAppInit = connect(mapStateToProps, {
   setActiveTool: setActiveToolAction,
+  setApi: setApiAction,
   setCommandHistoryStorage: setCommandHistoryStorageAction,
   setDashboardData: setDashboardDataAction,
   setFileStorage: setFileStorageAction,

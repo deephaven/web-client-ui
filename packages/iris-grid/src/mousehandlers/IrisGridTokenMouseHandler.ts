@@ -1,11 +1,13 @@
 import {
   EventHandlerResult,
+  getOrThrow,
   Grid,
   GridMouseHandler,
   GridPoint,
   GridUtils,
   isLinkToken,
   TokenBox,
+  isTokenBoxCellRenderer,
 } from '@deephaven/grid';
 import deepEqual from 'deep-equal';
 import IrisGrid from '../IrisGrid';
@@ -28,10 +30,21 @@ class IrisGridTokenMouseHandler extends GridMouseHandler {
 
   isHoveringLink(gridPoint: GridPoint, grid: Grid): boolean {
     const { column, row, x, y } = gridPoint;
-    const { renderer, metrics } = grid;
+    const { renderer, metrics, props } = grid;
+    const { model } = props;
 
     if (column == null || row == null || metrics == null) {
       this.currentLinkBox = undefined;
+      return false;
+    }
+
+    const { modelRows, modelColumns } = metrics;
+    const modelRow = getOrThrow(modelRows, row);
+    const modelColumn = getOrThrow(modelColumns, column);
+
+    const renderType = model.renderTypeForCell(modelColumn, modelRow);
+    const cellRenderer = renderer.getCellRenderer(renderType);
+    if (!isTokenBoxCellRenderer(cellRenderer)) {
       return false;
     }
 
@@ -43,7 +56,7 @@ class IrisGridTokenMouseHandler extends GridMouseHandler {
     }
 
     const renderState = grid.updateRenderState();
-    const tokensInCell = renderer.getTokenBoxesForVisibleCell(
+    const tokensInCell = cellRenderer.getTokenBoxesForVisibleCell(
       column,
       row,
       renderState

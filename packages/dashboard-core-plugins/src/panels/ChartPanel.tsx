@@ -9,8 +9,10 @@ import {
   ChartModel,
   ChartModelSettings,
   ChartUtils,
+  FilterMap,
   isFigureChartModel,
 } from '@deephaven/chart';
+import type PlotlyType from 'plotly.js';
 import {
   getOpenedPanelMapForDashboard,
   LayoutUtils,
@@ -21,16 +23,13 @@ import {
   IrisGridUtils,
   InputFilter,
   ColumnName,
-  DehydratedSort,
-  DehydratedAdvancedFilter,
-  DehydratedQuickFilter,
-  LegacyDehydratedSort,
+  TableSettings,
 } from '@deephaven/iris-grid';
-import dh, {
+import type {
   FigureDescriptor,
   SeriesPlotStyle,
   TableTemplate,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import { ThemeExport } from '@deephaven/components';
 import Log from '@deephaven/log';
 import {
@@ -63,7 +62,7 @@ import ChartColumnSelectorOverlay, {
   SelectorColumn,
 } from './ChartColumnSelectorOverlay';
 import './ChartPanel.scss';
-import { Link } from '../linker/LinkerUtils';
+import { Link, LinkFilterMap } from '../linker/LinkerUtils';
 import { PanelState as IrisGridPanelState } from './IrisGridPanel';
 import { isChartPanelTableMetadata } from './ChartPanelUtils';
 import { ColumnSelectionValidator } from '../linker/ColumnSelectionValidator';
@@ -73,15 +72,15 @@ const UPDATE_MODEL_DEBOUNCE = 150;
 
 export type InputFilterMap = Map<string, InputFilter>;
 
-export type FilterMap = Map<string, string>;
-
 export type LinkedColumnMap = Map<string, { name: string; type: string }>;
 
 export type ChartPanelFigureMetadata = {
+  name: string;
   figure: string;
 };
 
 export type ChartPanelTableMetadata = {
+  name: string;
   table: string;
   sourcePanelId: string;
   settings: {
@@ -91,7 +90,7 @@ export type ChartPanelTableMetadata = {
     series: string[];
     type: keyof SeriesPlotStyle;
   };
-  tableSettings: ChartPanelTableSettings;
+  tableSettings: TableSettings;
 };
 
 export type ChartPanelMetadata =
@@ -100,18 +99,10 @@ export type ChartPanelMetadata =
 
 type Settings = Record<string, unknown>;
 
-export interface ChartPanelTableSettings {
-  quickFilters?: readonly DehydratedQuickFilter[];
-  advancedFilters?: readonly DehydratedAdvancedFilter[];
-  inputFilters?: readonly InputFilter[];
-  sorts?: readonly (DehydratedSort | LegacyDehydratedSort)[];
-  partition?: unknown;
-  partitionColumn?: string;
-}
 export interface GLChartPanelState {
-  filterValueMap: [string, string][];
+  filterValueMap: [string, unknown][];
   settings: Partial<ChartModelSettings>;
-  tableSettings: ChartPanelTableSettings;
+  tableSettings: TableSettings;
   irisGridState?: {
     advancedFilters: unknown;
     quickFilters: unknown;
@@ -127,7 +118,6 @@ export interface GLChartPanelState {
 export interface ChartPanelProps {
   glContainer: Container;
   glEventHub: EventEmitter;
-
   metadata: ChartPanelMetadata;
   /** Function to build the ChartModel used by this ChartPanel. Can return a promise. */
   makeModel: () => Promise<ChartModel>;
@@ -143,6 +133,7 @@ export interface ChartPanelProps {
     id: string,
     secondParam: undefined
   ) => void;
+  Plotly?: typeof PlotlyType;
 
   panelState: GLChartPanelState;
   settings: Partial<WorkspaceSettings>;
@@ -159,10 +150,10 @@ interface ChartPanelState {
 
   // Map of all non-empty filters applied to the chart.
   // Initialize the filter map to the previously stored values; input filters will be applied after load.
-  filterMap: Map<string, string>;
+  filterMap: FilterMap;
   // Map of filter values set from links, stored in panelState.
   // Combined with inputFilters to get applied filters (filterMap).
-  filterValueMap: Map<string, string>;
+  filterValueMap: FilterMap;
   model?: ChartModel;
   columnMap: ColumnMap;
 
@@ -327,8 +318,9 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
   componentWillUnmount(): void {
     this.pending.cancel();
 
+    const { model } = this.state;
     const { source } = this.props;
-    if (source) {
+    if (model != null && source) {
       this.stopListeningToSource(source);
     }
   }
@@ -343,6 +335,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     this.setState({ isLoading: true, isLoaded: false, error: undefined });
 
     const { makeModel } = this.props;
+
     this.pending
       .add(makeModel(), resolved => {
         resolved.close();
@@ -455,7 +448,9 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
 
   startListeningToSource(table: TableTemplate): void {
     log.debug('startListeningToSource', table);
-
+    const { model } = this.state;
+    assertNotNull(model);
+    const { dh } = model;
     table.addEventListener(
       dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
       this.handleSourceColumnChange
@@ -472,7 +467,9 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
 
   stopListeningToSource(table: TableTemplate): void {
     log.debug('stopListeningToSource', table);
-
+    const { model } = this.state;
+    assertNotNull(model);
+    const { dh } = model;
     table.removeEventListener(
       dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
       this.handleSourceColumnChange
@@ -613,7 +610,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
       log.debug2('updateModelFromSource ignoring', isLinked, model, source);
       return;
     }
-
+    const { dh } = model;
     // By now the model has already been loaded, which is the only other cancelable thing in pending
     this.pending.cancel();
     if (isChartPanelTableMetadata(metadata)) {
@@ -621,7 +618,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
       this.pending
         .add(
           dh.plot.Figure.create(
-            (ChartUtils.makeFigureSettings(
+            (new ChartUtils(dh).makeFigureSettings(
               settings,
               source
             ) as unknown) as FigureDescriptor
@@ -786,20 +783,22 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
    * Set chart filters based on the filter map
    * @param filterMapParam Filter map
    */
-  setFilterMap(
-    filterMapParam: Map<string, { columnType: string; value: string }>
-  ): void {
+  setFilterMap(filterMapParam: LinkFilterMap): void {
     log.debug('setFilterMap', filterMapParam);
     this.setState(state => {
       const { columnMap, filterMap } = state;
-      let updatedFilterMap: null | Map<string, string> = null;
+      let updatedFilterMap: null | FilterMap = null;
       const filterValueMap = new Map(state.filterValueMap);
-
-      filterMapParam.forEach(({ columnType, value }, columnName) => {
+      filterMapParam.forEach(({ columnType, filterList }, columnName) => {
         const column = columnMap.get(columnName);
         if (column == null || column.type !== columnType) {
           return;
         }
+        if (filterList.length < 1) {
+          log.debug('Ignoring empty filterList for column', columnName);
+          return;
+        }
+        const { value } = filterList[0];
         filterValueMap.set(columnName, value);
         if (filterMap.get(columnName) !== value) {
           if (updatedFilterMap === null) {
@@ -1034,6 +1033,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
       links,
       metadata,
       settings,
+      Plotly,
     } = this.props;
     const {
       columnMap,
@@ -1115,6 +1115,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
                 onUpdate={this.handleUpdate}
                 onError={this.handleError}
                 onSettingsChanged={this.handleSettingsChanged}
+                Plotly={Plotly}
               />
             )}
           </div>
@@ -1161,7 +1162,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
 
 const mapStateToProps = (
   state: RootState,
-  ownProps: { localDashboardId: string; metadata: { sourcePanelId: string } }
+  ownProps: { localDashboardId: string; metadata: { sourcePanelId?: string } }
 ) => {
   const { localDashboardId, metadata } = ownProps;
 

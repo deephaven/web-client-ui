@@ -111,6 +111,7 @@ function CustomColumnInput({
             <InputEditor
               editorSettings={{ language: 'deephavenDb' }}
               editorIndex={inputIndex}
+              placeholder="Column Formula"
               value={formula}
               onContentChanged={handleFormulaEditorContentChanged}
               onTab={onTabInEditor}

@@ -3,8 +3,9 @@
  * Exports a function for initializing monaco with the deephaven theme/config
  */
 import { Shortcut } from '@deephaven/components';
-import { IdeSession } from '@deephaven/jsapi-shim';
+import type { IdeSession } from '@deephaven/jsapi-types';
 import { assertNotNull } from '@deephaven/utils';
+import { find as linkifyFind } from 'linkifyjs';
 import * as monaco from 'monaco-editor';
 import type { Environment } from 'monaco-editor';
 // @ts-ignore
@@ -140,6 +141,10 @@ class MonacoUtils {
       'input.background': MonacoTheme['input-background'],
       'input.foreground': MonacoTheme['input-foreground'],
       'input.border': MonacoTheme['input-border'],
+      'textLink.foreground': MonacoTheme['text-link-foreground'],
+      'textLink.activeForeground': MonacoTheme['text-link-active-foreground'],
+      'editorLink.activeForeground':
+        MonacoTheme['editor-link-active-foreground'],
     };
 
     monaco.editor.defineTheme('dh-dark', {
@@ -449,6 +454,35 @@ class MonacoUtils {
       (keyState.metaKey ? monaco.KeyMod.WinCtrl : 0) |
       KeyCodeUtils.fromString(keyValue)
     );
+  }
+
+  static provideLinks(
+    model: monaco.editor.ITextModel
+  ): { links: monaco.languages.ILink[] } {
+    const newTokens: monaco.languages.ILink[] = [];
+
+    for (let i = 1; i <= model.getLineCount(); i += 1) {
+      const lineText = model.getLineContent(i);
+      const originalTokens = linkifyFind(lineText);
+
+      const tokens = originalTokens.filter(token => {
+        if (token.type === 'url') {
+          return /^https?:\/\//.test(token.value);
+        }
+        return true;
+      });
+      // map the tokens to the ranges - you know the line number now, use the token start/end as the startColumn/endColumn
+      tokens.forEach(token => {
+        newTokens.push({
+          url: token.href,
+          range: new monaco.Range(i, token.start + 1, i, token.end + 1),
+        });
+      });
+    }
+
+    return {
+      links: newTokens,
+    };
   }
 }
 

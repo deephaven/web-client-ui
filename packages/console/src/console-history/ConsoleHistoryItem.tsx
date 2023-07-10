@@ -4,7 +4,7 @@
 import React, { PureComponent, ReactElement } from 'react';
 import { Button } from '@deephaven/components';
 import Log from '@deephaven/log';
-import { VariableDefinition } from '@deephaven/jsapi-shim';
+import type { VariableDefinition } from '@deephaven/jsapi-types';
 import classNames from 'classnames';
 import { Code, ObjectIcon } from '../common';
 import ConsoleHistoryItemResult from './ConsoleHistoryItemResult';

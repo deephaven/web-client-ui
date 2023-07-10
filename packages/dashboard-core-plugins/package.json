@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/dashboard-core-plugins",
-  "version": "0.32.0",
+  "version": "0.44.0",
   "description": "Deephaven Dashboard Core Plugins",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -32,7 +32,7 @@
     "@deephaven/grid": "file:../grid",
     "@deephaven/icons": "file:../icons",
     "@deephaven/iris-grid": "file:../iris-grid",
-    "@deephaven/jsapi-shim": "file:../jsapi-shim",
+    "@deephaven/jsapi-bootstrap": "file:../jsapi-bootstrap",
     "@deephaven/jsapi-types": "file:../jsapi-types",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
@@ -62,11 +62,14 @@
     "react-redux": "^7.2.4"
   },
   "devDependencies": {
-    "@deephaven/mocks": "file:../mocks",
-    "@deephaven/tsconfig": "file:../tsconfig"
+    "@deephaven/jsapi-shim": "file:../jsapi-shim",
+    "@deephaven/mocks": "file:../mocks"
   },
   "files": [
     "dist"
+  ],
+  "sideEffects": [
+    "*.css"
   ],
   "publishConfig": {
     "access": "public"

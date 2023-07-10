@@ -26,12 +26,13 @@ import {
   isExpandableGridModel,
   ModelIndex,
 } from '@deephaven/grid';
-import dh, {
+import type {
   Column,
+  dh as DhType,
   FilterCondition,
   FilterValue,
   Sort,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import {
   TableColumnFormatter,
   DateTimeColumnFormatter,
@@ -128,46 +129,6 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     return operator === '&&' ? 'And' : 'Or';
   }
 
-  /**
-   * Gets an equality filter for the provided numeric value
-   * @param column The column to make the filter for
-   * @param value The value to get the equality filter for
-   */
-  static getNumberValueEqualsFilter(
-    column: Column,
-    value: number
-  ): FilterCondition {
-    const columnFilter = column.filter();
-    if (value === Number.POSITIVE_INFINITY) {
-      return dh.FilterCondition.invoke('isInf', columnFilter).and(
-        columnFilter.greaterThan(dh.FilterValue.ofNumber(0))
-      );
-    }
-    if (value === Number.NEGATIVE_INFINITY) {
-      return dh.FilterCondition.invoke('isInf', columnFilter).and(
-        columnFilter.lessThan(dh.FilterValue.ofNumber(0))
-      );
-    }
-    if (Number.isNaN(value)) {
-      return dh.FilterCondition.invoke('isNaN', columnFilter);
-    }
-
-    const filterValue = IrisGridContextMenuHandler.getFilterValueForNumberOrChar(
-      column.type,
-      value
-    );
-    return columnFilter.eq(filterValue);
-  }
-
-  static getFilterValueForNumberOrChar(
-    columnType: string,
-    value: unknown
-  ): FilterValue {
-    return TableUtils.isCharType(columnType)
-      ? dh.FilterValue.ofString(String.fromCharCode(value as number))
-      : dh.FilterValue.ofNumber(value);
-  }
-
   static getRowOptionFormatted(
     command: string,
     cellValue: string,
@@ -185,7 +146,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     (modelIndex: number, selectedFormat: TableColumnFormat | null) => void
   >;
 
-  constructor(irisGrid: IrisGrid) {
+  constructor(irisGrid: IrisGrid, dh: DhType) {
     super();
 
     this.debouncedUpdateCustomFormat = debounce(
@@ -193,12 +154,15 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       DEBOUNCE_UPDATE_FORMAT
     );
 
+    this.dh = dh;
     this.irisGrid = irisGrid;
   }
 
   componentWillUnmount(): void {
     this.debouncedUpdateCustomFormat.flush();
   }
+
+  dh: DhType;
 
   getHeaderActions(
     modelIndex: ModelIndex,
@@ -237,8 +201,10 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       columnWidth => columnWidth === 0
     );
     const isColumnFreezable =
-      model.getColumnHeaderParentGroup(modelIndex, 0) === undefined;
+      model.getColumnHeaderParentGroup(modelIndex, 0) === undefined &&
+      !(isExpandableGridModel(model) && model.hasExpandableRows);
     const isColumnFrozen = model.isColumnFrozen(modelIndex);
+    const isColumnSortable = model.isColumnSortable(modelIndex);
     actions.push({
       title: 'Hide Column',
       group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
@@ -310,6 +276,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       group: IrisGridContextMenuHandler.GROUP_SORT,
       order: 10,
       actions: this.sortByActions(column, modelIndex, columnSort),
+      disabled: !isColumnSortable,
     });
     actions.push({
       title: 'Add Additional Sort',
@@ -325,7 +292,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         (columnSort && modelSort.length === 1) ||
         (hasReverse && modelSort.length === 1) ||
         (columnSort && hasReverse && modelSort.length === 2) ||
-        modelSort.length === 0,
+        modelSort.length === 0 ||
+        !isColumnSortable,
       group: IrisGridContextMenuHandler.GROUP_SORT,
       order: 20,
       actions: this.additionalSortActions(column, modelIndex),
@@ -396,7 +364,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     gridPoint: GridPoint
   ): ContextAction[] {
     assertNotNull(modelColumn);
-    const { irisGrid } = this;
+    const { dh, irisGrid } = this;
     const { column: columnIndex, row: rowIndex } = gridPoint;
     const { model, canCopy } = irisGrid.props;
     const { columns } = model;
@@ -414,13 +382,13 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const { filterIconColor } = theme;
     const { settings } = irisGrid.props;
 
-    const dateFilterFormatter = new DateTimeColumnFormatter({
+    const dateFilterFormatter = new DateTimeColumnFormatter(dh, {
       timeZone: settings?.timeZone,
       showTimeZone: false,
       showTSeparator: true,
       defaultDateTimeFormatString: CONTEXT_MENU_DATE_FORMAT,
     });
-    const previewFilterFormatter = new DateTimeColumnFormatter({
+    const previewFilterFormatter = new DateTimeColumnFormatter(dh, {
       timeZone: settings?.timeZone,
       showTimeZone: settings?.showTimeZone,
       showTSeparator: settings?.showTSeparator,
@@ -449,6 +417,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       };
 
       if (value == null) {
+        // null gets a special menu
         if (quickFilters.get(modelColumn)) {
           filterMenu.actions.push({
             title: 'And',
@@ -462,6 +431,22 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           });
         }
         filterMenu.actions.push(...this.nullFilterActions(column));
+      } else if (value === '') {
+        // empty string gets a special menu
+        if (quickFilters.get(modelColumn)) {
+          filterMenu.actions.push({
+            title: 'And',
+
+            actions: this.emptyStringFilterActions(
+              column,
+              quickFilters.get(modelColumn),
+              '&&'
+            ),
+            order: 2,
+            group: ContextActions.groups.high,
+          });
+        }
+        filterMenu.actions.push(...this.emptyStringFilterActions(column));
       } else if (TableUtils.isBooleanType(column.type)) {
         // boolean should have OR condition, and handles it's own null menu options
         if (quickFilters.get(modelColumn)) {
@@ -664,6 +649,42 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     return actions;
   }
 
+  /**
+   * Gets an equality filter for the provided numeric value
+   * @param column The column to make the filter for
+   * @param value The value to get the equality filter for
+   */
+  getNumberValueEqualsFilter(column: Column, value: number): FilterCondition {
+    const { dh } = this;
+    const columnFilter = column.filter();
+    if (value === Number.POSITIVE_INFINITY) {
+      return dh.FilterCondition.invoke('isInf', columnFilter).and(
+        columnFilter.greaterThan(dh.FilterValue.ofNumber(0))
+      );
+    }
+    if (value === Number.NEGATIVE_INFINITY) {
+      return dh.FilterCondition.invoke('isInf', columnFilter).and(
+        columnFilter.lessThan(dh.FilterValue.ofNumber(0))
+      );
+    }
+    if (Number.isNaN(value)) {
+      return dh.FilterCondition.invoke('isNaN', columnFilter);
+    }
+
+    const filterValue = this.getFilterValueForNumberOrChar(column.type, value);
+    return columnFilter.eq(filterValue);
+  }
+
+  getFilterValueForNumberOrChar(
+    columnType: string,
+    value: unknown
+  ): FilterValue {
+    const { dh } = this;
+    return TableUtils.isCharType(columnType)
+      ? dh.FilterValue.ofString(String.fromCharCode(value as number))
+      : dh.FilterValue.ofNumber(value);
+  }
+
   onContextMenu(
     gridPoint: GridPoint,
     grid: Grid,
@@ -798,8 +819,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
     ContextActions.triggerMenu(
       irisGrid.gridWrapper,
-      event.pageX,
-      event.pageY,
+      event.clientX,
+      event.clientY,
       actions
     );
     return true;
@@ -840,6 +861,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   numberFormatActions(column: Column): ContextAction[] | null {
     const { model } = this.irisGrid.props;
     const { formatter } = model;
+    const { dh } = this;
     const selectedFormat = formatter.getColumnFormat(
       column.type,
       column.name
@@ -849,6 +871,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const columnIndex = model.getColumnIndexByName(column.name);
     if (TableUtils.isDecimalType(column.type)) {
       formatOptions = DecimalFormatContextMenu.getOptions(
+        dh,
         selectedFormat,
         format => {
           assertNotNull(columnIndex);
@@ -857,6 +880,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       );
     } else if (TableUtils.isIntegerType(column.type)) {
       formatOptions = IntegerFormatContextMenu.getOptions(
+        dh,
         selectedFormat,
         format => {
           assertNotNull(columnIndex);
@@ -899,6 +923,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     quickFilter?: QuickFilter,
     operator?: '&&' | '||' | null
   ): ContextAction[] {
+    const { dh } = this;
     const filterValue = dh.FilterValue.ofString(value);
     let newQuickFilter:
       | {
@@ -914,6 +939,11 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const actions = [];
     const { model } = this.irisGrid.props;
     const columnIndex = model.getColumnIndexByName(column.name);
+
+    const quickFilterValueText:
+      | string
+      | null = TableUtils.escapeQuickTextFilter(valueText);
+
     assertNotNull(columnIndex);
 
     actions.push({
@@ -942,7 +972,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           ),
           IrisGridContextMenuHandler.getQuickFilterText(
             filterText,
-            `=${valueText}`,
+            `${quickFilterValueText}`,
             operator
           )
         );
@@ -963,7 +993,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           ),
           IrisGridContextMenuHandler.getQuickFilterText(
             filterText,
-            `!=${valueText}`,
+            `!=${quickFilterValueText}`,
             operator
           )
         );
@@ -979,12 +1009,16 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           columnIndex,
           IrisGridContextMenuHandler.getQuickFilterCondition(
             filter,
-            column.filter().contains(filterValue),
+            column
+              .filter()
+              .isNull()
+              .not()
+              .and(column.filter().contains(filterValue)),
             operator
           ),
           IrisGridContextMenuHandler.getQuickFilterText(
             filterText,
-            `~${valueText}`,
+            `~${quickFilterValueText}`,
             operator
           )
         );
@@ -1000,12 +1034,15 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           columnIndex,
           IrisGridContextMenuHandler.getQuickFilterCondition(
             filter,
-            column.filter().contains(filterValue).not(),
+            column
+              .filter()
+              .isNull()
+              .or(column.filter().contains(filterValue).not()),
             operator
           ),
           IrisGridContextMenuHandler.getQuickFilterText(
             filterText,
-            `!~${valueText}`,
+            `!~${quickFilterValueText}`,
             operator
           )
         );
@@ -1021,12 +1058,16 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           columnIndex,
           IrisGridContextMenuHandler.getQuickFilterCondition(
             filter,
-            column.filter().invoke('startsWith', filterValue),
+            column
+              .filter()
+              .isNull()
+              .not()
+              .and(column.filter().invoke('startsWith', filterValue)),
             operator
           ),
           IrisGridContextMenuHandler.getQuickFilterText(
             filterText,
-            `${valueText}*`,
+            `${quickFilterValueText}*`,
             operator
           )
         );
@@ -1042,12 +1083,16 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           columnIndex,
           IrisGridContextMenuHandler.getQuickFilterCondition(
             filter,
-            column.filter().invoke('endsWith', filterValue),
+            column
+              .filter()
+              .isNull()
+              .not()
+              .and(column.filter().invoke('endsWith', filterValue)),
             operator
           ),
           IrisGridContextMenuHandler.getQuickFilterText(
             filterText,
-            `*${valueText}`,
+            `*${quickFilterValueText}`,
             operator
           )
         );
@@ -1065,10 +1110,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     quickFilter?: QuickFilter | null,
     operator?: '&&' | '||' | null
   ): ContextAction[] {
-    const filterValue = IrisGridContextMenuHandler.getFilterValueForNumberOrChar(
-      column.type,
-      value
-    );
+    const filterValue = this.getFilterValueForNumberOrChar(column.type, value);
     let filter: FilterCondition | null = null;
     let filterText: string | null = null;
     if (quickFilter) {
@@ -1099,7 +1141,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       title: 'is equal to',
       description: `Show only rows where ${column.name} is ${valueText}`,
       action: () => {
-        const valueFilter = IrisGridContextMenuHandler.getNumberValueEqualsFilter(
+        const valueFilter = this.getNumberValueEqualsFilter(
           column,
           value as number
         );
@@ -1124,7 +1166,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       title: 'is not equal to',
       description: `Show only rows where ${column.name} is not ${valueText}`,
       action: () => {
-        const valueFilter = IrisGridContextMenuHandler.getNumberValueEqualsFilter(
+        const valueFilter = this.getNumberValueEqualsFilter(
           column,
           value as number
         ).not();
@@ -1361,6 +1403,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     quickFilter?: QuickFilter | null,
     operator?: '&&' | '||' | null
   ): ContextAction[] {
+    const { dh } = this;
     const filterValue = dh.FilterValue.ofNumber(value);
 
     let filter: FilterCondition | null = null;
@@ -1516,6 +1559,88 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     return actions;
   }
 
+  emptyStringFilterActions(
+    column: Column,
+    quickFilter?: QuickFilter,
+    operator?: '&&' | '||' | null
+  ): ContextAction[] {
+    const { dh } = this;
+    const filterValue = dh.FilterValue.ofString('');
+    let newQuickFilter:
+      | {
+          filter: null | FilterCondition | undefined;
+          text: string | null;
+        }
+      | undefined
+      | null = quickFilter;
+    if (!newQuickFilter) {
+      newQuickFilter = { filter: null, text: null };
+    }
+    const { filter, text: filterText } = newQuickFilter;
+    const actions = [];
+    const { model } = this.irisGrid.props;
+    const columnIndex = model.getColumnIndexByName(column.name);
+    assertNotNull(columnIndex);
+
+    actions.push({
+      menuElement: (
+        <div className="iris-grid-filter-menu-item-value">
+          {operator
+            ? IrisGridContextMenuHandler.getOperatorAsText(operator)
+            : ''}{' '}
+          <i className="text-muted">empty</i>
+        </div>
+      ),
+      order: 1,
+      group: ContextActions.groups.high,
+    });
+
+    actions.push({
+      title: 'is empty string',
+      description: `Show only rows where ${column.name} is empty`,
+      action: () => {
+        this.irisGrid.setQuickFilter(
+          columnIndex,
+          IrisGridContextMenuHandler.getQuickFilterCondition(
+            filter,
+            column.filter().eq(filterValue),
+            operator
+          ),
+          IrisGridContextMenuHandler.getQuickFilterText(
+            filterText,
+            `=`,
+            operator
+          )
+        );
+      },
+      order: 10,
+      group: ContextActions.groups.low,
+    });
+    actions.push({
+      title: 'is not empty string',
+      description: `Show only rows where ${column.name} is not empty`,
+      action: () => {
+        this.irisGrid.setQuickFilter(
+          columnIndex,
+          IrisGridContextMenuHandler.getQuickFilterCondition(
+            filter,
+            column.filter().notEq(filterValue),
+            operator
+          ),
+          IrisGridContextMenuHandler.getQuickFilterText(
+            filterText,
+            `!=`,
+            operator
+          )
+        );
+      },
+      order: 20,
+      group: ContextActions.groups.low,
+    });
+
+    return actions;
+  }
+
   nullFilterActions(
     column: Column,
     quickFilter?: QuickFilter,
@@ -1538,7 +1663,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           {operator
             ? IrisGridContextMenuHandler.getOperatorAsText(operator)
             : ''}{' '}
-          &quot;null&quot;
+          <i className="text-muted">null</i>
         </div>
       ),
       order: 1,

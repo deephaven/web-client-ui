@@ -1,16 +1,14 @@
 import React from 'react';
 import { Provider } from 'react-redux';
-import 'fira';
+import { FontBootstrap } from '@deephaven/app-utils';
 import '@deephaven/components/scss/BaseStyleSheet.scss';
 import { MonacoUtils } from '@deephaven/console';
 import { store } from '@deephaven/redux';
 import MonacoWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 import DownloadServiceWorkerUtils from '../DownloadServiceWorkerUtils';
-import { unregister } from '../serviceWorker';
 import StyleGuideInit from './StyleGuideInit';
 
 export function StyleGuideRoot() {
-  unregister();
   DownloadServiceWorkerUtils.registerOnLoaded();
   MonacoUtils.init({ getWorker: () => new MonacoWorker() });
 
@@ -20,9 +18,11 @@ export function StyleGuideRoot() {
   window['__react-beautiful-dnd-disable-dev-warnings'] = true;
 
   return (
-    <Provider store={store}>
-      <StyleGuideInit />
-    </Provider>
+    <FontBootstrap>
+      <Provider store={store}>
+        <StyleGuideInit />
+      </Provider>
+    </FontBootstrap>
   );
 }
 

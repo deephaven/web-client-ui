@@ -18,11 +18,9 @@ function WidgetPanelTooltip(props: WidgetPanelTooltipProps): ReactElement {
   const panelTitle = LayoutUtils.getTitleFromContainer(glContainer);
 
   return (
-    <div className="tab-tooltip-container">
-      <div className="row flex-nowrap align-items-start">
-        <span className="tab-tooltip-title">
-          <b>{widgetType} Name </b>
-        </span>
+    <div className="tab-tooltip-grid-container">
+      <span className="tab-tooltip-title">{widgetType} Name</span>
+      <div className="tab-tooltip-name-wrapper">
         <span className="tab-tooltip-name">{widgetName}</span>
         <CopyButton
           className="tab-tooltip-copy"
@@ -31,17 +29,13 @@ function WidgetPanelTooltip(props: WidgetPanelTooltipProps): ReactElement {
         />
       </div>
       {widgetName !== panelTitle && (
-        <div className="row">
-          <span className="tab-tooltip-title">
-            <b>Display Name</b>
-          </span>
+        <>
+          <span className="tab-tooltip-title">Display Name</span>
           <span className="tab-tooltip-name">{panelTitle}</span>
-        </div>
+        </>
       )}
       {description && (
-        <div className="row">
-          <span className="tab-tooltip-description">{description}</span>
-        </div>
+        <div className="tab-tooltip-description">{description}</div>
       )}
       {children}
     </div>

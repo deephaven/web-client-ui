@@ -3,6 +3,230 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.44.0](https://github.com/deephaven/web-client-ui/compare/v0.42.0...v0.44.0) (2023-07-07)
+
+### Features
+
+- DH-14538: Export InputEditor and added options ([#1398](https://github.com/deephaven/web-client-ui/issues/1398)) ([405f42f](https://github.com/deephaven/web-client-ui/commit/405f42f9dfc880319c7d5afbf80d81b04965ec52)), closes [#1397](https://github.com/deephaven/web-client-ui/issues/1397)
+- disable column sorting on unsupported types ([#1390](https://github.com/deephaven/web-client-ui/issues/1390)) ([3a89bbf](https://github.com/deephaven/web-client-ui/commit/3a89bbf4d28494c03541d474deb408c2ece4606a)), closes [#1380](https://github.com/deephaven/web-client-ui/issues/1380)
+
+# [0.43.0](https://github.com/deephaven/web-client-ui/compare/v0.42.0...v0.43.0) (2023-07-07)
+
+### Features
+
+- DH-14538: Export InputEditor and added options ([#1398](https://github.com/deephaven/web-client-ui/issues/1398)) ([405f42f](https://github.com/deephaven/web-client-ui/commit/405f42f9dfc880319c7d5afbf80d81b04965ec52)), closes [#1397](https://github.com/deephaven/web-client-ui/issues/1397)
+- disable column sorting on unsupported types ([#1390](https://github.com/deephaven/web-client-ui/issues/1390)) ([3a89bbf](https://github.com/deephaven/web-client-ui/commit/3a89bbf4d28494c03541d474deb408c2ece4606a)), closes [#1380](https://github.com/deephaven/web-client-ui/issues/1380)
+
+# [0.42.0](https://github.com/deephaven/web-client-ui/compare/v0.41.1...v0.42.0) (2023-06-29)
+
+### Bug Fixes
+
+- DH-15032: Fix incorrect warning about updated shared state ([#1364](https://github.com/deephaven/web-client-ui/issues/1364)) ([9e53dd2](https://github.com/deephaven/web-client-ui/commit/9e53dd2796b84963bd90e7043122a6b2c4d3cf46))
+
+### Features
+
+- improvements to null and empty strings filters in grid ([#1348](https://github.com/deephaven/web-client-ui/issues/1348)) ([ed3a8c5](https://github.com/deephaven/web-client-ui/commit/ed3a8c5f224094306ff55f9b41706cb58ff709e2)), closes [#1243](https://github.com/deephaven/web-client-ui/issues/1243)
+
+### Reverts
+
+- adding back "Table rendering support for databars ([#1212](https://github.com/deephaven/web-client-ui/issues/1212))" ([#1365](https://github.com/deephaven/web-client-ui/issues/1365)) ([8586d4d](https://github.com/deephaven/web-client-ui/commit/8586d4d99e55def1747eb820e824b61703990e58))
+
+# [0.41.0](https://github.com/deephaven/web-client-ui/compare/v0.40.4...v0.41.0) (2023-06-08)
+
+**Note:** Version bump only for package @deephaven/iris-grid
+
+## [0.40.4](https://github.com/deephaven/web-client-ui/compare/v0.40.3...v0.40.4) (2023-06-02)
+
+**Note:** Version bump only for package @deephaven/iris-grid
+
+## [0.40.3](https://github.com/deephaven/web-client-ui/compare/v0.40.2...v0.40.3) (2023-05-31)
+
+**Note:** Version bump only for package @deephaven/iris-grid
+
+## [0.40.2](https://github.com/deephaven/web-client-ui/compare/v0.40.1...v0.40.2) (2023-05-31)
+
+**Note:** Version bump only for package @deephaven/iris-grid
+
+## [0.40.1](https://github.com/deephaven/web-client-ui/compare/v0.40.0...v0.40.1) (2023-05-24)
+
+**Note:** Version bump only for package @deephaven/iris-grid
+
+# [0.40.0](https://github.com/deephaven/web-client-ui/compare/v0.39.0...v0.40.0) (2023-05-19)
+
+### Features
+
+- add contains ignore case in go to row ([#1291](https://github.com/deephaven/web-client-ui/issues/1291)) ([d67712e](https://github.com/deephaven/web-client-ui/commit/d67712e4d031723ea76b429c79465b122ca4efc4)), closes [#1274](https://github.com/deephaven/web-client-ui/issues/1274)
+
+# [0.39.0](https://github.com/deephaven/web-client-ui/compare/v0.38.0...v0.39.0) (2023-05-15)
+
+### Bug Fixes
+
+- add word-break to long column names in column tooltip ([#1290](https://github.com/deephaven/web-client-ui/issues/1290)) ([02215b6](https://github.com/deephaven/web-client-ui/commit/02215b6323c58678ae37578ea9d0e0dda68ff880)), closes [#1283](https://github.com/deephaven/web-client-ui/issues/1283)
+- Select distinct throwing for tables with multiple columns ([#1286](https://github.com/deephaven/web-client-ui/issues/1286)) ([4b40e4b](https://github.com/deephaven/web-client-ui/commit/4b40e4b831c3dae4f7b869b71c7f6185560f929e)), closes [#1275](https://github.com/deephaven/web-client-ui/issues/1275)
+
+### Features
+
+- Table rendering support for databars ([#1212](https://github.com/deephaven/web-client-ui/issues/1212)) ([a17cc0e](https://github.com/deephaven/web-client-ui/commit/a17cc0eb2b4e8ba9240c891a15b9d4b7659fb721)), closes [#1151](https://github.com/deephaven/web-client-ui/issues/1151)
+- De-globalize JSAPI in Console package ([#1292](https://github.com/deephaven/web-client-ui/issues/1292)) ([3f12dd3](https://github.com/deephaven/web-client-ui/commit/3f12dd38a4db172697b3a7b39e6fbbd83d9f8519))
+- De-globalize JSAPI in IrisGrid package ([#1262](https://github.com/deephaven/web-client-ui/issues/1262)) ([588cb8f](https://github.com/deephaven/web-client-ui/commit/588cb8fd080ac992da40e9b732d82e206032c9eb))
+- De-globalize utils, formatters, linker ([#1278](https://github.com/deephaven/web-client-ui/issues/1278)) ([cb0e9ba](https://github.com/deephaven/web-client-ui/commit/cb0e9ba432a096cdb61c76787cff66c09a337372))
+
+### Reverts
+
+- Revert "feat: Table rendering support for databars ([#1212](https://github.com/deephaven/web-client-ui/issues/1212))" ([#1296](https://github.com/deephaven/web-client-ui/issues/1296)) ([a80c6fc](https://github.com/deephaven/web-client-ui/commit/a80c6fc608466351d03358f47b9c7d062b28c9cf))
+
+### BREAKING CHANGES
+
+- - Components `IrisGrid`, `Chart`, `ChartBuilder`,
+    `AdvancedFilterCreator`, `GotoRow`, `IrisGridModelUpdater`,
+    `TableCSVExporter` get the JSAPI reference from the `model` prop. `dh`
+    prop removed.
+
+* `makeApi` props in `IrisGridPanel` and `ChartPanel` removed.
+* Components `Console`, `ConsoleMenu`, `ConsoleStatusBar` now require
+  the JSAPI instance in the `dh` prop.
+* `ConsoleUtils`: static methods `isTableType`, `isWidgetType`,
+  `isOpenableType`, `isFigureType`, `isPandas` require JSAPI instance
+  passed in the first argument.
+* `SessionUtils`: static methods `createSessionWrapper`,
+  `loadSessionWrapper` require JSAPI instance passed in the first
+  argument.
+* Class `IrisGridModel` requires JSAPI instance passed in the
+  constructor args.
+* Components `DashboardLayout`, `ObjectIcon` has to be wrapped in
+  `ApiContext.Provider` passing the JSAPI instance.
+
+- - Class `Formatter` requires the JSAPI instance as the first argument.
+
+* Classes `DateTimeColumnFormatter`, `DecimalColumnFormatter`,
+  `IntegerColumnFormatter`, `TableColumnFormatter`: static method
+  `isValid` and constructor require the JSAPI instance in the first
+  argument.
+* Component `Chart` requires the JSAPI instance passed in the new prop
+  `dh`.
+* `WidgetUtils`: methods `createChartModel`, `createGridModel` methods
+  require the JSAPI instance passed in the first argument.
+* Components `DateTimeOptions`, `TableInput`, `useViewportData` have to
+  be wrapped in `ApiContext.Provider` passing the JSAPI instance.
+* `SettingsUtils`: methods `isValidFormat` and
+  `isFormatRuleValidForSave` require the JSAPI instance passed in the
+  first argument.
+* `SessionUtils`: methods `createConnection`, `createCoreClient` require
+  the JSAPI instance passed in the first argument.
+* `TableUtils` static methods `applyCustomColumns`, `applyFilter`,
+  `applyNeverFilter`, `applySort` converted to instance methods.
+* Components `DropdownFilterPanel`, `Linker` now get the JSAPI instance
+  from redux store.
+* `DecimalFormatContextMenu.getOptions`,
+  `IntegerFormatContextMenu.getOptions` now require the JSAPI instance in
+  the first argument.
+
+- - `DateUtils` static methods `makeDateWrapper`, `getNextDate `,
+    `parseDateRange` now require the JSAPI object as the first argument.
+
+* `IrisGridUtils` static methods `dehydrateIrisGridState`,
+  `hydrateIrisGridState`, `hydrateQuickFilters`,
+  `dehydrateAdvancedFilters`, `hydrateAdvancedFilters`,
+  `dehydrateAdvancedFilterOptions`, `hydrateAdvancedFilterOptions`,
+  `dehydratePendingDataMap`, `hydratePendingDataMap`, `dehydrateValue`,
+  `hydrateValue`, `dehydrateDateTime`, `hydrateDateTime`, `hydrateLong`,
+  `hydrateSort`, `applyTableSettings`, `getFiltersFromInputFilters`,
+  `rangeSetFromRanges` converted to instance methods. Consumers now need
+  to create an `IrisGridUtils` instance and pass the JSAPI object to the
+  constructor.
+* `TableUtils` static methods `makeQuickFilter`,
+  `makeQuickFilterFromComponent`, `makeQuickNumberFilter`,
+  `makeQuickTextFilter`, `makeQuickBooleanFilter`, `makeQuickDateFilter`,
+  `makeQuickDateFilterWithOperation`, `makeQuickCharFilter`,
+  `makeAdvancedFilter`, `makeAdvancedValueFilter`, `makeFilterValue`,
+  `makeFilterRawValue`, `makeValue`, `makeSelectValueFilter` converted to
+  instance methods. Consumers now need to create a `TableUtils` instance
+  and pass the JSAPI object to the constructor.
+* `IrisGridTableModel`, `IrisGridTableModelTemplate`,
+  `IrisGridProxyModel` constructors require the JSAPI object in the first
+  argument.
+* `IrisGridTestUtils.makeModel`, `IrisGridModelFactory.makeModel` now
+  require the JSAPI object in the first argument.
+* `IrisGridContextMenuHandler` constructor requires the JSAPI object in
+  the second argument.
+* `IrisGridPanel` requires a new `makeApi` prop, a function that
+  resolves with the JSAPI instance.
+* `CrossColumnSearch.createSearchFilter` requires the JSAPI object
+  argument.
+* Components `AdvancedFilterCreatorSelectValue`,
+  `AdvancedFilterCreatorSelectValueList`, `ChartBuilder`, `GotoRow`,
+  `IrisGrid`, `IrisGridModelUpdater`, `IrisGridPartitionSelector`,
+  `PartitionSelectorSearch`, `TableCSVExporter`, `TableSaver`,
+  `TreeTableViewportUpdater`, `RowFormatEditor`, `ColumnFormatEditor`,
+  `ConditionEditor` now require the JSAPI object passed in the new prop
+  `dh`.
+* Components `AdvancedFilterCreator`, `AdvancedFilterCreatorFilterItem`
+  require the `TableUtils` instance pass in the new prop `tableUtils`.
+* `ConditionalFormattingUtils` static methods `getFormatColumns`,
+  `isDateConditionValid` require the JSAPI object in the first argument.
+* `ConditionalFormattingAPIUtils` static method `makeRowFormatColumn`
+  requires the JSAPI object in the first argument.
+
+# [0.38.0](https://github.com/deephaven/web-client-ui/compare/v0.37.3...v0.38.0) (2023-05-03)
+
+**Note:** Version bump only for package @deephaven/iris-grid
+
+## [0.37.2](https://github.com/deephaven/web-client-ui/compare/v0.37.1...v0.37.2) (2023-04-25)
+
+**Note:** Version bump only for package @deephaven/iris-grid
+
+# [0.37.0](https://github.com/deephaven/web-client-ui/compare/v0.36.0...v0.37.0) (2023-04-20)
+
+**Note:** Version bump only for package @deephaven/iris-grid
+
+# [0.36.0](https://github.com/deephaven/web-client-ui/compare/v0.35.0...v0.36.0) (2023-04-14)
+
+### Bug Fixes
+
+- Freezing a tree table column crashes the panel ([#1192](https://github.com/deephaven/web-client-ui/issues/1192)) ([5142a4d](https://github.com/deephaven/web-client-ui/commit/5142a4d7fc216034d2bd4218b928bfe0768c6dff)), closes [#1136](https://github.com/deephaven/web-client-ui/issues/1136)
+
+# [0.35.0](https://github.com/deephaven/web-client-ui/compare/v0.34.0...v0.35.0) (2023-04-04)
+
+**Note:** Version bump only for package @deephaven/iris-grid
+
+# [0.34.0](https://github.com/deephaven/web-client-ui/compare/v0.33.0...v0.34.0) (2023-03-31)
+
+### Bug Fixes
+
+- Conditional formatting not being applied to custom columns ([#1181](https://github.com/deephaven/web-client-ui/issues/1181)) ([1e4f8f9](https://github.com/deephaven/web-client-ui/commit/1e4f8f92e246b417bb2c083a16978ca42ae63e61)), closes [#1135](https://github.com/deephaven/web-client-ui/issues/1135)
+- Context menu does not appear when right-clicking IrisGrid component in styleguide ([#1184](https://github.com/deephaven/web-client-ui/issues/1184)) ([696cc2d](https://github.com/deephaven/web-client-ui/commit/696cc2d556081ccc0a70c6fc479d661a59c80c4a)), closes [#1065](https://github.com/deephaven/web-client-ui/issues/1065)
+- Typing for WritableStream ([#1186](https://github.com/deephaven/web-client-ui/issues/1186)) ([dfdf356](https://github.com/deephaven/web-client-ui/commit/dfdf356e59a387811794884f13abbd95a163d247)), closes [#803](https://github.com/deephaven/web-client-ui/issues/803)
+
+### Features
+
+- JS API reconnect ([#1149](https://github.com/deephaven/web-client-ui/issues/1149)) ([15551df](https://github.com/deephaven/web-client-ui/commit/15551df634b2e67e0697d7e16328d9573b9d4af5)), closes [#1140](https://github.com/deephaven/web-client-ui/issues/1140)
+
+# [0.33.0](https://github.com/deephaven/web-client-ui/compare/v0.32.0...v0.33.0) (2023-03-28)
+
+### Bug Fixes
+
+- Error thrown when cell overflow position is unknown ([#1177](https://github.com/deephaven/web-client-ui/issues/1177)) ([bb24f61](https://github.com/deephaven/web-client-ui/commit/bb24f61018c5af9325c3e3dc36abd63c3b10d51a)), closes [#1116](https://github.com/deephaven/web-client-ui/issues/1116)
+- Goto Value Skips Rows on String Column, Displays Incorrect Filter, and `shift+enter` Doesn't go to Previous ([#1162](https://github.com/deephaven/web-client-ui/issues/1162)) ([e83d7c9](https://github.com/deephaven/web-client-ui/commit/e83d7c9f7265fc6402a347fa8826cef16ad3c93f)), closes [#1156](https://github.com/deephaven/web-client-ui/issues/1156) [#1157](https://github.com/deephaven/web-client-ui/issues/1157)
+- Handling no columns ([#1170](https://github.com/deephaven/web-client-ui/issues/1170)) ([2ac25ae](https://github.com/deephaven/web-client-ui/commit/2ac25aed8afb51272c46050a1a0d278da9a87bc6)), closes [#1169](https://github.com/deephaven/web-client-ui/issues/1169)
+- Scrolling horizontally in Linker mode renders empty cells ([#1160](https://github.com/deephaven/web-client-ui/issues/1160)) ([e314be6](https://github.com/deephaven/web-client-ui/commit/e314be6d32792aea3791ee5189fd45d37c86011c)), closes [#1146](https://github.com/deephaven/web-client-ui/issues/1146)
+
+### Code Refactoring
+
+- Fix fast refresh invalidations ([#1150](https://github.com/deephaven/web-client-ui/issues/1150)) ([2606826](https://github.com/deephaven/web-client-ui/commit/26068267c2cd67bc971b9537f8ce4108372167f5)), closes [#727](https://github.com/deephaven/web-client-ui/issues/727)
+- TypeScript Type Improvements ([#1056](https://github.com/deephaven/web-client-ui/issues/1056)) ([0be0850](https://github.com/deephaven/web-client-ui/commit/0be0850a25e422150c61fbb7a6eff94614546f90)), closes [#1122](https://github.com/deephaven/web-client-ui/issues/1122)
+
+### BREAKING CHANGES
+
+- Renamed `renderFileListItem` to `FileListItem`.
+  Renamed `RenderFileListItemProps` to `FileListItemProps`.
+  Removed exports for `ConsolePlugin.assertIsConsolePluginProps`,
+  `GridPlugin.SUPPORTED_TYPES`, `FileList.getPathFromItem`,
+  `FileList.DRAG_HOVER_TIMEOUT`, `FileList.getItemIcon`,
+  `Grid.directionForKey`, `GotoRow.isIrisGridProxyModel`, and
+  `Aggregations.SELECTABLE_OPTIONS`. These were all only being consumed
+  within their own file and are not consumed in enterprise
+- Selector Type removed from redux
+
 # [0.32.0](https://github.com/deephaven/web-client-ui/compare/v0.31.1...v0.32.0) (2023-03-10)
 
 ### Bug Fixes

@@ -15,12 +15,14 @@ export default class ReactComponentHandler {
   private _container: ItemContainer<ReactComponentConfig>;
 
   private _reactComponent: React.Component | null = null;
+  private _portalComponent: React.ReactPortal | null = null;
   private _originalComponentWillUpdate: Function | null = null;
   private _initialState: unknown;
   private _reactClass: React.ComponentClass;
 
   constructor(container: ItemContainer<ReactComponentConfig>, state?: unknown) {
     this._reactComponent = null;
+    this._portalComponent = null;
     this._originalComponentWillUpdate = null;
     this._container = container;
     this._initialState = state;
@@ -30,13 +32,43 @@ export default class ReactComponentHandler {
   }
 
   /**
+   * Gets the unique key to use for the react component
+   * @returns Unique key for the component
+   */
+  _key(): string {
+    const id = this._container._config.id;
+    if (!id) {
+      throw new Error('Cannot mount panel without id');
+    }
+
+    // If addId is called multiple times, an element can have multiple IDs in golden-layout
+    // We don't use it, but changing the type requires many changes and a separate PR
+    if (Array.isArray(id)) {
+      return id.join(',');
+    }
+
+    return id;
+  }
+
+  /**
    * Creates the react class and component and hydrates it with
    * the initial state - if one is present
    *
    * By default, react's getInitialState will be used
+   *
+   * Creates a portal so the non-react golden-layout code still works,
+   * but also allows us to mount the React components in the app's tree
+   * instead of separate sibling root trees
    */
   _render() {
-    ReactDOM.render(this._getReactComponent(), this._container.getElement()[0]);
+    const key = this._key();
+    this._portalComponent = ReactDOM.createPortal(
+      this._getReactComponent(),
+      this._container.getElement()[0],
+      key
+    );
+
+    this._container.layoutManager.addReactChild(key, this._portalComponent);
   }
 
   /**
@@ -67,7 +99,10 @@ export default class ReactComponentHandler {
    * Removes the component from the DOM and thus invokes React's unmount lifecycle
    */
   _destroy() {
-    ReactDOM.unmountComponentAtNode(this._container.getElement()[0]);
+    this._container.layoutManager.removeReactChild(
+      this._key(),
+      this._portalComponent
+    );
     this._container.off('open', this._render, this);
     this._container.off('destroy', this._destroy, this);
   }

@@ -65,13 +65,12 @@ import {
   ContextMenuRoot,
   ResolvableContextAction,
 } from '@deephaven/components';
-import {
+import type {
   Column,
   FilterCondition,
   Sort,
-  VariableTypeUnion,
-} from '@deephaven/jsapi-shim';
-import { Table } from '@deephaven/jsapi-types';
+  Table,
+} from '@deephaven/jsapi-types';
 import {
   GridState,
   ModelIndex,
@@ -102,7 +101,7 @@ type ModelQueue = ModelQueueFunction[];
 
 interface Metadata {
   table: string;
-  type?: VariableTypeUnion;
+  type?: string;
   query?: string;
   querySerial?: string;
 }
@@ -119,20 +118,30 @@ export interface PanelState {
   };
   irisGridState: DehydratedIrisGridState;
   irisGridPanelState: {
-    partitionColumn: ColumnName | undefined;
-    partition: string | undefined;
+    partitionColumn: ColumnName | null;
+    partition: string | null;
     isSelectingPartition: boolean;
     advancedSettings: [AdvancedSettingsType, boolean][];
   };
   pluginState: unknown;
 }
 
+// Some of the properties in the loaded panel state may be omitted
+// even though they can't be undefined in the dehydrated state.
+// This can happen when loading the state saved before the properties were added.
+type LoadedPanelState = PanelState & {
+  irisGridPanelState: PanelState['irisGridPanelState'] &
+    Partial<
+      Pick<PanelState['irisGridPanelState'], 'partition' | 'partitionColumn'>
+    >;
+};
+
 export interface IrisGridPanelProps {
   children?: ReactNode;
   glContainer: Container;
   glEventHub: EventEmitter;
   metadata: Metadata;
-  panelState: PanelState | null;
+  panelState: LoadedPanelState | null;
   makeModel: () => IrisGridModel | Promise<IrisGridModel>;
   inputFilters: InputFilter[];
   links: Link[];
@@ -246,8 +255,8 @@ interface IrisGridPanelState {
   movedColumns: readonly MoveOperation[];
   movedRows: readonly MoveOperation[];
   isSelectingPartition: boolean;
-  partition?: string;
-  partitionColumn?: Column;
+  partition: string | null;
+  partitionColumn: Column | null;
   rollupConfig?: UIRollupConfig;
   showSearchBar: boolean;
   searchValue: string;
@@ -314,6 +323,7 @@ export class IrisGridPanel extends PureComponent<
     const { panelState } = props;
 
     this.pluginState = null;
+    this.irisGridUtils = null;
 
     this.state = {
       error: null,
@@ -338,8 +348,8 @@ export class IrisGridPanel extends PureComponent<
       movedColumns: [],
       movedRows: [],
       isSelectingPartition: false,
-      partition: undefined,
-      partitionColumn: undefined,
+      partition: null,
+      partitionColumn: null,
       rollupConfig: undefined,
       showSearchBar: false,
       searchValue: '',
@@ -406,6 +416,8 @@ export class IrisGridPanel extends PureComponent<
   gridState?: GridState;
 
   pluginState: unknown;
+
+  private irisGridUtils: IrisGridUtils | null;
 
   getTableName(): string {
     const { metadata } = this.props;
@@ -490,8 +502,8 @@ export class IrisGridPanel extends PureComponent<
     (
       model: IrisGridModel,
       isSelectingPartition: boolean,
-      partition: string | undefined,
-      partitionColumn: Column | undefined,
+      partition: string | null,
+      partitionColumn: Column | null,
       advancedSettings: Map<AdvancedSettingsType, boolean>
     ) =>
       IrisGridUtils.dehydrateIrisGridPanelState(model, {
@@ -525,8 +537,9 @@ export class IrisGridPanel extends PureComponent<
       frozenColumns: readonly ColumnName[],
       conditionalFormats: readonly SidebarFormattingRule[],
       columnHeaderGroups: readonly ColumnHeaderGroup[]
-    ) =>
-      IrisGridUtils.dehydrateIrisGridState(model, {
+    ) => {
+      assertNotNull(this.irisGridUtils);
+      return this.irisGridUtils.dehydrateIrisGridState(model, {
         advancedFilters,
         aggregationSettings,
         customColumnFormatMap,
@@ -549,7 +562,8 @@ export class IrisGridPanel extends PureComponent<
         frozenColumns,
         conditionalFormats,
         columnHeaderGroups,
-      })
+      });
+    }
   );
 
   getDehydratedGridState = memoize(
@@ -598,7 +612,7 @@ export class IrisGridPanel extends PureComponent<
     const model = modelParam;
     const { panelState, irisGridStateOverrides } = this.state;
     const modelQueue: ((m: IrisGridModel) => void)[] = [];
-
+    this.irisGridUtils = new IrisGridUtils(model.dh);
     if (panelState != null) {
       const { irisGridState } = panelState;
       const {
@@ -672,11 +686,12 @@ export class IrisGridPanel extends PureComponent<
     const { model } = this.state;
     assertNotNull(model);
     const { columns, formatter } = model;
-    const pluginFilters = IrisGridUtils.getFiltersFromInputFilters(
-      columns,
-      filters,
-      formatter.timeZone
-    );
+    const pluginFilters =
+      this.irisGridUtils?.getFiltersFromInputFilters(
+        columns,
+        filters,
+        formatter.timeZone
+      ) ?? [];
     this.setState({ pluginFilters });
   }
 
@@ -994,15 +1009,15 @@ export class IrisGridPanel extends PureComponent<
       model.columns,
       advancedFilters
     ).filter(([columnIndex]) => model.isFilterable(columnIndex));
-
+    assertNotNull(this.irisGridUtils);
     irisGrid.clearAllFilters();
     irisGrid.setFilters({
-      quickFilters: IrisGridUtils.hydrateQuickFilters(
+      quickFilters: this.irisGridUtils.hydrateQuickFilters(
         columns,
         indexedQuickFilters,
         formatter.timeZone
       ),
-      advancedFilters: IrisGridUtils.hydrateAdvancedFilters(
+      advancedFilters: this.irisGridUtils.hydrateAdvancedFilters(
         columns,
         indexedAdvancedFilters,
         formatter.timeZone
@@ -1072,6 +1087,7 @@ export class IrisGridPanel extends PureComponent<
         partitionColumn,
         advancedSettings,
       } = IrisGridUtils.hydrateIrisGridPanelState(model, irisGridPanelState);
+      assertNotNull(this.irisGridUtils);
       const {
         advancedFilters,
         customColumns,
@@ -1093,7 +1109,7 @@ export class IrisGridPanel extends PureComponent<
         frozenColumns,
         conditionalFormats,
         columnHeaderGroups,
-      } = IrisGridUtils.hydrateIrisGridState(model, {
+      } = this.irisGridUtils.hydrateIrisGridState(model, {
         ...irisGridState,
         ...irisGridStateOverrides,
       });

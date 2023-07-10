@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/jsapi-utils",
-  "version": "0.32.0",
+  "version": "0.44.0",
   "description": "Deephaven JSAPI Utils",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -22,16 +22,20 @@
   },
   "dependencies": {
     "@deephaven/filters": "file:../filters",
-    "@deephaven/jsapi-shim": "file:../jsapi-shim",
+    "@deephaven/jsapi-types": "file:../jsapi-types",
     "@deephaven/log": "file:../log",
-    "@deephaven/utils": "file:../utils"
+    "@deephaven/utils": "file:../utils",
+    "@react-stately/data": "^3.9.1",
+    "lodash.clamp": "^4.0.3",
+    "shortid": "^2.2.16"
   },
   "devDependencies": {
-    "@deephaven/tsconfig": "file:../tsconfig"
+    "@deephaven/jsapi-shim": "file:../jsapi-shim"
   },
   "files": [
     "dist"
   ],
+  "sideEffects": false,
   "publishConfig": {
     "access": "public"
   }

@@ -1,5 +1,6 @@
 import React from 'react';
 import TestRenderer from 'react-test-renderer';
+import dh from '@deephaven/jsapi-shim';
 import { DateUtils, Settings } from '@deephaven/jsapi-utils';
 import { TestUtils } from '@deephaven/utils';
 import { IrisGrid } from './IrisGrid';
@@ -22,6 +23,8 @@ const DEFAULT_SETTINGS: Settings = {
   formatter: [],
   truncateNumbersWithPound: false,
 };
+
+const irisGridTestUtils = new IrisGridTestUtils(dh);
 
 function makeMockCanvas() {
   return {
@@ -52,7 +55,7 @@ function createNodeMock(element) {
 }
 
 function makeComponent(
-  model = IrisGridTestUtils.makeModel(),
+  model = irisGridTestUtils.makeModel(),
   settings = DEFAULT_SETTINGS
 ) {
   const testRenderer = TestRenderer.create(
@@ -197,8 +200,8 @@ it('handles undefined operator, should default to eq', () => {
 
 it('should set gotoValueSelectedColumnName to empty string if no columns are given', () => {
   const component = makeComponent(
-    IrisGridTestUtils.makeModel(
-      IrisGridTestUtils.makeTable({
+    irisGridTestUtils.makeModel(
+      irisGridTestUtils.makeTable({
         columns: [],
       })
     )

@@ -24,7 +24,7 @@ import type {
 } from '@deephaven/golden-layout';
 import { assertNotNull } from '@deephaven/utils';
 import Log from '@deephaven/log';
-import { IdeSession } from '@deephaven/jsapi-shim';
+import type { IdeSession } from '@deephaven/jsapi-types';
 import { ConsoleEvent, InputFilterEvent, TabEvent } from '../events';
 import PanelContextMenu from './PanelContextMenu';
 import RenameDialog from './RenameDialog';
@@ -40,7 +40,7 @@ interface PanelProps {
   onFocus: FocusEventHandler<HTMLDivElement>;
   onBlur: FocusEventHandler<HTMLDivElement>;
   onTab: (tab: Tab) => void;
-  onTabClicked: (...args: unknown[]) => void;
+  onTabClicked: (e: MouseEvent) => void;
   onClearAllFilters: (...args: unknown[]) => void;
   onHide: (...args: unknown[]) => void;
   onResize: (...args: unknown[]) => void;
@@ -180,9 +180,9 @@ class Panel extends PureComponent<PanelProps, PanelState> {
     onTab(tab);
   }
 
-  handleTabClicked(...args: unknown[]): void {
+  handleTabClicked(e: MouseEvent): void {
     const { onTabClicked } = this.props;
-    onTabClicked(...args);
+    onTabClicked(e);
   }
 
   handleClearAllFilters(...args: unknown[]): void {

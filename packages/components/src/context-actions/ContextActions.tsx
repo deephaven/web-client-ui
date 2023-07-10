@@ -61,7 +61,7 @@ class ContextActions extends Component<
    * Items within groups are ordered by their order property, then by their title.
    */
   static groups = {
-    default: null,
+    default: undefined,
     high: 100,
     medium: 5000,
     low: 10000,

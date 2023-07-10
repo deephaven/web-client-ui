@@ -1,4 +1,4 @@
-export type FilterValue = number | string;
+export type FilterValue = number | string | string[];
 
 export type FilterConfigItem = {
   columnName: string;

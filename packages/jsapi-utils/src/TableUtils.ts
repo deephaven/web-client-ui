@@ -5,8 +5,10 @@ import {
   OperatorValue as FilterOperatorValue,
 } from '@deephaven/filters';
 import Log from '@deephaven/log';
-import dh, {
+import type {
   Column,
+  CustomColumn,
+  dh as DhType,
   FilterCondition,
   FilterValue,
   LongWrapper,
@@ -14,7 +16,7 @@ import dh, {
   Sort,
   Table,
   TreeTable,
-} from '@deephaven/jsapi-shim';
+} from '@deephaven/jsapi-types';
 import {
   CancelablePromise,
   PromiseUtils,
@@ -77,6 +79,8 @@ export class TableUtils {
     none: null,
   } as const;
 
+  static APPLY_TABLE_CHANGE_TIMEOUT_MS = 30000;
+
   static REVERSE_TYPE = Object.freeze({
     NONE: 'none',
     PRE_SORT: 'pre-sort',
@@ -85,6 +89,41 @@ export class TableUtils {
 
   // Regex looking for a negative or positive integer or decimal number
   static NUMBER_REGEX = /^-?\d+(\.\d+)?$/;
+
+  /**
+   * Executes a callback on a given table and returns a Promise that will resolve
+   * the next time a particular event type fires on the table.
+   * @param exec Callback function to execute.
+   * @param table Table that gets passed to the `exec` function and that is
+   * subscribed to for a given `eventType`.
+   * @param eventType The event type to listen for.
+   * @param timeout If the event doesn't fire within the timeout, the returned
+   * Promise will be rejected.
+   * @returns a Promise to the original table that resolves on next `eventType`
+   * event
+   */
+  static executeAndWaitForEvent = async <T extends Table | TreeTable>(
+    exec: (maybeTable: T | null | undefined) => void,
+    table: T | null | undefined,
+    eventType: string,
+    timeout = TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
+  ): Promise<T | null> => {
+    if (table == null) {
+      return null;
+    }
+
+    const eventPromise = TableUtils.makeCancelableTableEventPromise(
+      table,
+      eventType,
+      timeout
+    );
+
+    exec(table);
+
+    await eventPromise;
+
+    return table;
+  };
 
   static getSortIndex(
     sort: readonly Sort[],
@@ -476,470 +515,6 @@ export class TableUtils {
   }
 
   /**
-   * Create filter with the provided column and text. Handles multiple filters joined with && or ||
-   * @param column The column to set the filter on
-   * @param text The text string to create the filter from
-   * @param timeZone The time zone to make this value in if it is a date type. E.g. America/New_York
-   * @returns Returns the created filter, null if text could not be parsed
-   */
-  static makeQuickFilter(
-    column: Column,
-    text: string,
-    timeZone?: string
-  ): FilterCondition | null {
-    const orComponents = text.split('||');
-    let orFilter = null;
-    for (let i = 0; i < orComponents.length; i += 1) {
-      const orComponent = orComponents[i];
-      const andComponents = orComponent.split('&&');
-      let andFilter = null;
-      for (let j = 0; j < andComponents.length; j += 1) {
-        const andComponent = andComponents[j].trim();
-        if (andComponent.length > 0) {
-          const filter = TableUtils.makeQuickFilterFromComponent(
-            column,
-            andComponent,
-            timeZone
-          );
-          if (filter) {
-            if (andFilter) {
-              andFilter = andFilter.and(filter);
-            } else {
-              andFilter = filter;
-            }
-          } else {
-            throw new Error(`Unable to parse quick filter from text ${text}`);
-          }
-        }
-      }
-
-      if (orFilter && andFilter) {
-        orFilter = orFilter.or(andFilter);
-      } else {
-        orFilter = andFilter;
-      }
-    }
-
-    return orFilter;
-  }
-
-  /**
-   * Create filter with the provided column and text of one component (no multiple conditions)
-   * @param column The column to set the filter on
-   * @param text The text string to create the filter from
-   * @param timeZone The time zone to make this filter in if it is a date type. E.g. America/New_York
-   * @returns Returns the created filter, null if text could not be parsed
-   */
-  static makeQuickFilterFromComponent(
-    column: Column,
-    text: string,
-    timeZone?: string
-  ): FilterCondition | null {
-    const { type } = column;
-    if (TableUtils.isNumberType(type)) {
-      return this.makeQuickNumberFilter(column, text);
-    }
-    if (TableUtils.isBooleanType(type)) {
-      return this.makeQuickBooleanFilter(column, text);
-    }
-    if (timeZone != null && TableUtils.isDateType(type)) {
-      return this.makeQuickDateFilter(column, text, timeZone);
-    }
-    if (TableUtils.isCharType(type)) {
-      return this.makeQuickCharFilter(column, text);
-    }
-    return this.makeQuickTextFilter(column, text);
-  }
-
-  static makeQuickNumberFilter(
-    column: Column,
-    text: string
-  ): FilterCondition | null {
-    const columnFilter = column.filter();
-    let filter = null;
-
-    const regex = /\s*(>=|<=|=>|=<|>|<|!=|=|!)?(\s*-\s*)?(\s*\d*(?:,\d{3})*(?:\.\d*)?\s*)?(null|nan|infinity|inf|\u221E)?(.*)/i;
-    const result = regex.exec(text);
-
-    let operation = null;
-    let negativeSign = null;
-    let value = null;
-    let abnormalValue = null; // includes nan, null and infinity(positive & negative)
-    let overflow = null;
-
-    if (result !== null && result.length > 3) {
-      [, operation, negativeSign, value, abnormalValue, overflow] = result;
-    }
-
-    if (overflow != null && overflow.trim().length > 0) {
-      // Some bad characters after the number, bail out!
-      return null;
-    }
-
-    if (operation == null) {
-      operation = '=';
-    }
-
-    if (abnormalValue != null) {
-      if (!(operation === '=' || operation === '!' || operation === '!=')) {
-        // only equal and not equal operations are supported for abnormal value filter
-        return null;
-      }
-      abnormalValue = abnormalValue.trim().toLowerCase();
-      switch (abnormalValue) {
-        case 'null':
-          filter = columnFilter.isNull();
-          break;
-        case 'nan':
-          filter = dh.FilterCondition.invoke('isNaN', columnFilter);
-          break;
-        case 'infinity':
-        case 'inf':
-        case '\u221E':
-          if (negativeSign != null) {
-            filter = dh.FilterCondition.invoke('isInf', columnFilter).and(
-              columnFilter.lessThan(dh.FilterValue.ofNumber(0))
-            );
-          } else {
-            filter = dh.FilterCondition.invoke('isInf', columnFilter).and(
-              columnFilter.greaterThan(dh.FilterValue.ofNumber(0))
-            );
-          }
-          break;
-        default:
-          break;
-      }
-      if (filter !== null && (operation === '!' || operation === '!=')) {
-        filter = filter.not();
-      }
-      return filter;
-    }
-
-    if (value == null) {
-      return null;
-    }
-
-    value = TableUtils.removeCommas(value);
-    if (TableUtils.isLongType(column.type)) {
-      try {
-        value = dh.FilterValue.ofNumber(
-          dh.LongWrapper.ofString(`${negativeSign != null ? '-' : ''}${value}`)
-        );
-      } catch (error) {
-        log.warn('Unable to create long filter', error);
-        return null;
-      }
-    } else {
-      value = parseFloat(value);
-      if (value == null || Number.isNaN(value)) {
-        return null;
-      }
-
-      value = dh.FilterValue.ofNumber(negativeSign != null ? 0 - value : value);
-    }
-
-    filter = column.filter();
-
-    return TableUtils.makeRangeFilterWithOperation(filter, operation, value);
-  }
-
-  static makeQuickTextFilter(
-    column: Column,
-    text: string
-  ): FilterCondition | null {
-    const cleanText = `${text}`.trim();
-    const regex = /^(!~|!=|~|=|!)?(.*)/;
-    const result = regex.exec(cleanText);
-
-    let operation = null;
-    let value = null;
-    if (result !== null && result.length > 2) {
-      [, operation, value] = result;
-      if (value != null) {
-        value = value.trim();
-      }
-    }
-
-    if (value == null || value.length === 0) {
-      return null;
-    }
-
-    if (operation == null) {
-      operation = '=';
-    }
-
-    const filter = column.filter();
-    if (value.toLowerCase() === 'null') {
-      // Null is a special case!
-      switch (operation) {
-        case '=':
-          return filter.isNull();
-        case '!=':
-        case '!':
-          return filter.isNull().not();
-        default:
-        // For all other operations, treat null as a string value
-      }
-    }
-
-    let prefix = null;
-    let suffix = null;
-    if (value.startsWith('*')) {
-      prefix = '*';
-      value = value.substring(1);
-    } else if (value.endsWith('*') && !value.endsWith('\\*')) {
-      suffix = '*';
-      value = value.substring(0, value.length - 1);
-    }
-
-    value = value.replace('\\', '');
-
-    switch (operation) {
-      case '~': {
-        return filter
-          .isNull()
-          .not()
-          .and(
-            filter.invoke(
-              'matches',
-              dh.FilterValue.ofString(`(?s)(?i).*\\Q${value}\\E.*`)
-            )
-          );
-      }
-      case '!~':
-        return filter
-          .isNull()
-          .or(
-            filter
-              .invoke(
-                'matches',
-                dh.FilterValue.ofString(`(?s)(?i).*\\Q${value}\\E.*`)
-              )
-              .not()
-          );
-      case '!=':
-        if (prefix === '*') {
-          // Does not end with
-          return filter
-            .isNull()
-            .or(
-              filter
-                .invoke(
-                  'matches',
-                  dh.FilterValue.ofString(`(?s)(?i).*\\Q${value}\\E$`)
-                )
-                .not()
-            );
-        }
-        if (suffix === '*') {
-          // Does not start with
-          return filter
-            .isNull()
-            .or(
-              filter
-                .invoke(
-                  'matches',
-                  dh.FilterValue.ofString(`(?s)(?i)^\\Q${value}\\E.*`)
-                )
-                .not()
-            );
-        }
-        return filter.notEqIgnoreCase(
-          dh.FilterValue.ofString(value.toLowerCase())
-        );
-
-      case '=':
-        if (prefix === '*') {
-          // Ends with
-          return filter
-            .isNull()
-            .not()
-            .and(
-              filter.invoke(
-                'matches',
-                dh.FilterValue.ofString(`(?s)(?i).*\\Q${value}\\E$`)
-              )
-            );
-        }
-        if (suffix === '*') {
-          // Starts with
-          return filter
-            .isNull()
-            .not()
-            .and(
-              filter.invoke(
-                'matches',
-                dh.FilterValue.ofString(`(?s)(?i)^\\Q${value}\\E.*`)
-              )
-            );
-        }
-        return filter.eqIgnoreCase(
-          dh.FilterValue.ofString(value.toLowerCase())
-        );
-
-      default:
-        break;
-    }
-
-    return null;
-  }
-
-  static makeQuickBooleanFilter(
-    column: Column,
-    text: string | number
-  ): FilterCondition | null {
-    const regex = /^(!=|=|!)?(.*)/;
-    const result = regex.exec(`${text}`.trim());
-    if (result === null) {
-      return null;
-    }
-    const [, operation, value] = result;
-    const notEqual = operation === '!' || operation === '!=';
-    const cleanValue = value.trim().toLowerCase();
-
-    let filter: FilterCondition | FilterValue = column.filter();
-
-    try {
-      const boolValue = TableUtils.makeBooleanValue(cleanValue);
-      if (boolValue != null && boolValue) {
-        filter = filter.isTrue();
-      } else if (boolValue === null) {
-        filter = filter.isNull();
-      } else {
-        filter = filter.isFalse();
-      }
-
-      return notEqual ? filter.not() : filter;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  /**
-   * Builds a date filter parsed from the text string which may or may not include an operator.
-   * @param column The column to build the filter from, with or without a leading operator.
-   * @param text The date string text to parse.
-   * @param timeZone The time zone to make this filter in if it is a date type. E.g. America/New_York
-   */
-  static makeQuickDateFilter(
-    column: Column,
-    text: string,
-    timeZone: string
-  ): FilterCondition {
-    const cleanText = text.trim();
-    const regex = /\s*(>=|<=|=>|=<|>|<|!=|!|=)?(.*)/;
-    const result = regex.exec(cleanText);
-    if (result == null || result.length <= 2) {
-      throw new Error(`Unable to parse date filter: ${text}`);
-    }
-
-    let operation = null;
-    let dateText = null;
-
-    [, operation, dateText] = result;
-
-    let filterOperation: FilterTypeValue = FilterType.eq;
-    switch (operation) {
-      case '<':
-        filterOperation = FilterType.lessThan;
-        break;
-      case '<=':
-      case '=<':
-        filterOperation = FilterType.lessThanOrEqualTo;
-        break;
-      case '>':
-        filterOperation = FilterType.greaterThan;
-        break;
-      case '>=':
-      case '=>':
-        filterOperation = FilterType.greaterThanOrEqualTo;
-        break;
-      case '!=':
-      case '!':
-        filterOperation = FilterType.notEq;
-        break;
-      case '=':
-      case '==':
-      default:
-        filterOperation = FilterType.eq;
-        break;
-    }
-
-    return TableUtils.makeQuickDateFilterWithOperation(
-      column,
-      dateText,
-      filterOperation,
-      timeZone
-    );
-  }
-
-  /**
-   * Builds a date filter parsed from the text string with the provided filter.
-   * @param column The column to build the filter from.
-   * @param text The date string text to parse, without an operator.
-   * @param operation The filter operation to use.
-   * @param timeZone The time zone to make this filter with. E.g. America/New_York
-   */
-  static makeQuickDateFilterWithOperation(
-    column: Column,
-    text: string,
-    operation: FilterTypeValue,
-    timeZone: string
-  ): FilterCondition {
-    const [startDate, endDate] = DateUtils.parseDateRange(text, timeZone);
-
-    const startValue =
-      startDate != null ? dh.FilterValue.ofNumber(startDate) : null;
-    const endValue = endDate != null ? dh.FilterValue.ofNumber(endDate) : null;
-
-    const filter = column.filter();
-    if (startValue == null) {
-      return operation === FilterType.notEq
-        ? filter.isNull().not()
-        : filter.isNull();
-    }
-
-    switch (operation) {
-      case FilterType.eq: {
-        if (endValue != null) {
-          const startFilter = filter.greaterThanOrEqualTo(startValue);
-          const endFilter = filter.lessThan(endValue);
-          return startFilter.and(endFilter);
-        }
-        return filter.eq(startValue);
-      }
-      case FilterType.lessThan: {
-        return filter.lessThan(startValue);
-      }
-      case FilterType.lessThanOrEqualTo: {
-        if (endValue != null) {
-          return filter.lessThan(endValue);
-        }
-        return filter.lessThanOrEqualTo(startValue);
-      }
-      case FilterType.greaterThan: {
-        if (endValue != null) {
-          return filter.greaterThanOrEqualTo(endValue);
-        }
-        return filter.greaterThan(startValue);
-      }
-      case FilterType.greaterThanOrEqualTo:
-        return filter.greaterThanOrEqualTo(startValue);
-      case FilterType.notEq: {
-        if (endValue != null) {
-          const startFilter = filter.lessThan(startValue);
-          const endFilter = filter.greaterThanOrEqualTo(endValue);
-          return startFilter.or(endFilter);
-        }
-        return filter.notEq(startValue);
-      }
-
-      default:
-        throw new Error(`Invalid operator: ${operation}`);
-    }
-  }
-
-  /**
    * Adds quotes to a value if they're not already added
    * @param value Value to add quotes around
    */
@@ -966,60 +541,6 @@ export class TableUtils {
       default:
         return false;
     }
-  }
-
-  static makeQuickCharFilter(
-    column: Column,
-    text: string
-  ): FilterCondition | null {
-    const cleanText = `${text}`.trim();
-    const regex = /^(>=|<=|=>|=<|>|<|!=|=|!)?(null|"."|'.'|.)?(.*)/;
-    const result = regex.exec(cleanText);
-
-    let operation = null;
-    let value = null;
-    let overflow = null;
-    if (result !== null && result.length > 3) {
-      [, operation, value, overflow] = result;
-    }
-    if (overflow != null && overflow.trim().length > 0) {
-      // Some bad characters after the number, bail out!
-      return null;
-    }
-
-    if (value == null || value.length === 0) {
-      return null;
-    }
-
-    if (operation == null) {
-      operation = '=';
-    }
-
-    const filter = column.filter();
-    if (value.toLowerCase() === 'null') {
-      // Null is a special case!
-      switch (operation) {
-        case '=':
-          return filter.isNull();
-        case '!=':
-        case '!':
-          return filter.isNull().not();
-        default:
-          return null;
-      }
-    }
-
-    // We need to put quotes around range operations or else the API fails
-    const filterValue = dh.FilterValue.ofString(
-      TableUtils.isRangeOperation(operation)
-        ? TableUtils.quoteValue(value)
-        : value
-    );
-    return TableUtils.makeRangeFilterWithOperation(
-      filter,
-      operation,
-      filterValue
-    );
   }
 
   /**
@@ -1115,159 +636,8 @@ export class TableUtils {
     return wrappedPromise;
   }
 
-  static makeAdvancedFilter(
-    column: Column,
-    options: AdvancedFilterOptions,
-    timeZone: string
-  ): FilterCondition | null {
-    const {
-      filterItems,
-      filterOperators,
-      invertSelection,
-      selectedValues,
-    } = options;
-    let filter = null;
-    for (let i = 0; i < filterItems.length; i += 1) {
-      const filterItem = filterItems[i];
-      const { selectedType, value } = filterItem;
-      if (
-        selectedType != null &&
-        selectedType.length > 0 &&
-        value != null &&
-        value.length > 0
-      ) {
-        try {
-          const newFilter = TableUtils.makeAdvancedValueFilter(
-            column,
-            selectedType,
-            value,
-            timeZone
-          );
-          if (newFilter != null) {
-            if (i === 0) {
-              filter = newFilter;
-            } else if (filter !== null && i - 1 < filterOperators.length) {
-              const filterOperator = filterOperators[i - 1];
-              if (filterOperator === FilterOperator.and) {
-                filter = filter.and(newFilter);
-              } else if (filterOperator === FilterOperator.or) {
-                filter = filter.or(newFilter);
-              } else {
-                log.error(
-                  'Unexpected filter operator',
-                  filterOperator,
-                  newFilter
-                );
-                filter = null;
-                break;
-              }
-            }
-          } else {
-            log.debug2('Empty filter ignored for', selectedType, value);
-          }
-        } catch (err) {
-          log.error('Unable to create filter', err);
-          filter = null;
-          break;
-        }
-      }
-    }
-
-    const selectValueFilter = TableUtils.makeSelectValueFilter(
-      column,
-      selectedValues,
-      invertSelection
-    );
-    if (selectValueFilter != null) {
-      if (filter != null) {
-        filter = filter.and(selectValueFilter);
-      } else {
-        filter = selectValueFilter;
-      }
-    }
-
-    return filter;
-  }
-
   static removeCommas(value: string): string {
     return value.replace(/[\s|,]/g, '');
-  }
-
-  /**
-   * @param columnType The column type to make the filter value from.
-   * @param value The value to make the filter value from.
-   * @returns The FilterValue item for this column/value combination
-   */
-  static makeFilterValue(columnType: string, value: string): FilterValue {
-    const type = TableUtils.getBaseType(columnType);
-    if (TableUtils.isTextType(type)) {
-      return dh.FilterValue.ofString(value);
-    }
-    if (TableUtils.isLongType(type)) {
-      return dh.FilterValue.ofNumber(
-        dh.LongWrapper.ofString(TableUtils.removeCommas(value))
-      );
-    }
-
-    return dh.FilterValue.ofNumber(TableUtils.removeCommas(value));
-  }
-
-  /**
-   * Takes a value and converts it to an `dh.FilterValue`
-   *
-   * @param columnType The column type to make the filter value from.
-   * @param value The value to actually set
-   * @returns The FilterValue item for this column/value combination
-   */
-  static makeFilterRawValue(
-    columnType: string,
-    rawValue: unknown
-  ): FilterValue {
-    if (TableUtils.isTextType(columnType)) {
-      return dh.FilterValue.ofString(rawValue);
-    }
-
-    if (TableUtils.isBooleanType(columnType)) {
-      return dh.FilterValue.ofBoolean(rawValue);
-    }
-
-    return dh.FilterValue.ofNumber(rawValue);
-  }
-
-  /**
-   * Converts a string value to a value appropriate for the column
-   * @param columnType The column type to make the value for
-   * @param text The string value to make a type for
-   * @param timeZone The time zone to make this value in if it is a date type. E.g. America/New_York
-   */
-  static makeValue(
-    columnType: string,
-    text: string,
-    timeZone: string
-  ): string | number | boolean | LongWrapper | null {
-    if (text === 'null') {
-      return null;
-    }
-    if (TableUtils.isTextType(columnType)) {
-      return text;
-    }
-    if (TableUtils.isLongType(columnType)) {
-      return dh.LongWrapper.ofString(TableUtils.removeCommas(text));
-    }
-    if (TableUtils.isBooleanType(columnType)) {
-      return TableUtils.makeBooleanValue(text, true);
-    }
-    if (TableUtils.isDateType(columnType)) {
-      const [date] = DateUtils.parseDateRange(text, timeZone);
-      return date;
-    }
-
-    if (TableUtils.isNumberType(columnType)) {
-      return TableUtils.makeNumberValue(text);
-    }
-
-    log.error('Unexpected column type', columnType);
-    return null;
   }
 
   static makeBooleanValue(text: string, allowEmpty = false): boolean | null {
@@ -1349,14 +719,709 @@ export class TableUtils {
     }
   }
 
-  static makeAdvancedValueFilter(
+  static isTreeTable(table: unknown): table is TreeTable {
+    return (
+      table != null &&
+      (table as TreeTable).expand !== undefined &&
+      (table as TreeTable).collapse !== undefined
+    );
+  }
+
+  /**
+   * Copies the provided array, sorts by column name case insensitive, and returns the sorted array.
+   * @param columns The columns to sort
+   * @param isAscending Whether to sort ascending
+   */
+  static sortColumns(columns: readonly Column[], isAscending = true): Column[] {
+    return [...columns].sort((a, b) => {
+      const aName = a.name.toUpperCase();
+      const bName = b.name.toUpperCase();
+      return TextUtils.sort(aName, bName, isAscending);
+    });
+  }
+
+  dh: DhType;
+
+  constructor(dh: DhType) {
+    this.dh = dh;
+  }
+
+  /**
+   * Create filter with the provided column and text. Handles multiple filters joined with && or ||
+   * @param column The column to set the filter on
+   * @param text The text string to create the filter from
+   * @param timeZone The time zone to make this value in if it is a date type. E.g. America/New_York
+   * @returns Returns the created filter, null if text could not be parsed
+   */
+  makeQuickFilter(
+    column: Column,
+    text: string,
+    timeZone?: string
+  ): FilterCondition | null {
+    const orComponents = text.split('||');
+    let orFilter = null;
+    for (let i = 0; i < orComponents.length; i += 1) {
+      const orComponent = orComponents[i];
+      const andComponents = orComponent.split('&&');
+      let andFilter = null;
+      for (let j = 0; j < andComponents.length; j += 1) {
+        const andComponent = andComponents[j].trim();
+        if (andComponent.length > 0) {
+          const filter = this.makeQuickFilterFromComponent(
+            column,
+            andComponent,
+            timeZone
+          );
+          if (filter) {
+            if (andFilter) {
+              andFilter = andFilter.and(filter);
+            } else {
+              andFilter = filter;
+            }
+          } else {
+            throw new Error(`Unable to parse quick filter from text ${text}`);
+          }
+        }
+      }
+
+      if (orFilter && andFilter) {
+        orFilter = orFilter.or(andFilter);
+      } else {
+        orFilter = andFilter;
+      }
+    }
+
+    return orFilter;
+  }
+
+  /**
+   * Create filter with the provided column and text of one component (no multiple conditions)
+   * @param column The column to set the filter on
+   * @param text The text string to create the filter from
+   * @param timeZone The time zone to make this filter in if it is a date type. E.g. America/New_York
+   * @returns Returns the created filter, null if text could not be parsed
+   */
+  makeQuickFilterFromComponent(
+    column: Column,
+    text: string,
+    timeZone?: string
+  ): FilterCondition | null {
+    const { type } = column;
+    if (TableUtils.isNumberType(type)) {
+      return this.makeQuickNumberFilter(column, text);
+    }
+    if (TableUtils.isBooleanType(type)) {
+      return this.makeQuickBooleanFilter(column, text);
+    }
+    if (timeZone != null && TableUtils.isDateType(type)) {
+      return this.makeQuickDateFilter(column, text, timeZone);
+    }
+    if (TableUtils.isCharType(type)) {
+      return this.makeQuickCharFilter(column, text);
+    }
+    return this.makeQuickTextFilter(column, text);
+  }
+
+  makeQuickNumberFilter(column: Column, text: string): FilterCondition | null {
+    const columnFilter = column.filter();
+    const { dh } = this;
+    let filter = null;
+
+    const regex = /\s*(>=|<=|=>|=<|>|<|!=|=|!)?(\s*-\s*)?(\s*\d*(?:,\d{3})*(?:\.\d*)?\s*)?(null|nan|infinity|inf|\u221E)?(.*)/i;
+    const result = regex.exec(text);
+
+    let operation = null;
+    let negativeSign = null;
+    let value = null;
+    let abnormalValue = null; // includes nan, null and infinity(positive & negative)
+    let overflow = null;
+
+    if (result !== null && result.length > 3) {
+      [, operation, negativeSign, value, abnormalValue, overflow] = result;
+    }
+
+    if (overflow != null && overflow.trim().length > 0) {
+      // Some bad characters after the number, bail out!
+      return null;
+    }
+
+    if (operation == null) {
+      operation = '=';
+    }
+
+    if (abnormalValue != null) {
+      if (!(operation === '=' || operation === '!' || operation === '!=')) {
+        // only equal and not equal operations are supported for abnormal value filter
+        return null;
+      }
+      abnormalValue = abnormalValue.trim().toLowerCase();
+      switch (abnormalValue) {
+        case 'null':
+          filter = columnFilter.isNull();
+          break;
+        case 'nan':
+          filter = dh.FilterCondition.invoke('isNaN', columnFilter);
+          break;
+        case 'infinity':
+        case 'inf':
+        case '\u221E':
+          if (negativeSign != null) {
+            filter = dh.FilterCondition.invoke('isInf', columnFilter).and(
+              columnFilter.lessThan(dh.FilterValue.ofNumber(0))
+            );
+          } else {
+            filter = dh.FilterCondition.invoke('isInf', columnFilter).and(
+              columnFilter.greaterThan(dh.FilterValue.ofNumber(0))
+            );
+          }
+          break;
+        default:
+          break;
+      }
+      if (filter !== null && (operation === '!' || operation === '!=')) {
+        filter = filter.not();
+      }
+      return filter;
+    }
+
+    if (value == null) {
+      return null;
+    }
+
+    value = TableUtils.removeCommas(value);
+    if (TableUtils.isLongType(column.type)) {
+      try {
+        value = dh.FilterValue.ofNumber(
+          dh.LongWrapper.ofString(`${negativeSign != null ? '-' : ''}${value}`)
+        );
+      } catch (error) {
+        log.warn('Unable to create long filter', error);
+        return null;
+      }
+    } else {
+      value = parseFloat(value);
+      if (value == null || Number.isNaN(value)) {
+        return null;
+      }
+
+      value = dh.FilterValue.ofNumber(negativeSign != null ? 0 - value : value);
+    }
+
+    filter = column.filter();
+
+    return TableUtils.makeRangeFilterWithOperation(filter, operation, value);
+  }
+
+  /**
+   * Given a text string from a table, escape quick filter operators in string with \
+   * ex. =test returns \=test, null returns \null
+   * @param string quickfilter string to escape
+   * @returns escaped string
+   */
+  static escapeQuickTextFilter(quickFilterText: string | null): string | null {
+    if (quickFilterText == null) return null;
+    const regex = /^(!~|!=|~|=|!)?(.*)/;
+    // starts with zero or more \ followed by and ending with null
+    const nullRegex = /^\\*null$/;
+    const result = regex.exec(quickFilterText);
+    let operation: string | null = null;
+    let value: string | null = null;
+    if (result !== null && result.length > 2) {
+      [, operation, value] = result;
+    }
+
+    if (operation != null) {
+      return `\\${operation}${value ?? ''}`;
+    }
+
+    if (value != null && nullRegex.test(value.toLowerCase())) {
+      // adds an extra escape character to matching value
+      return `\\${value}`;
+    }
+    if (value != null && value.startsWith('*')) {
+      return `\\${value}`;
+    }
+    if (value != null && value.endsWith('*') && !value.endsWith('\\*')) {
+      value = value.substring(0, value.length - 1);
+      return `${value}\\*`;
+    }
+
+    return `${operation ?? ''}${value ?? ``}`;
+  }
+
+  /**
+   * Given an escaped quick filter, unescape the operators for giving it to the js api
+   * ex. \=test returns =test, \null returns null
+   * @param string quickfilter string to escape
+   * @returns escaped string
+   */
+  static unescapeQuickTextFilter(quickFilterText: string): string {
+    const regex = /^(\\!~|\\!=|\\~|\\=|\\!)?(.*)/;
+    // starts with zero or more \ followed by and ending with null
+    const nullRegex = /^\\*null$/;
+    const result = regex.exec(quickFilterText);
+    let operation: string | null = null;
+    let value: string | null = null;
+    if (result !== null && result.length > 2) {
+      [, operation, value] = result;
+    }
+
+    if (operation != null) {
+      operation = operation.replace('\\', '');
+    }
+
+    if (value != null && nullRegex.test(value.toLowerCase())) {
+      // removes the first occurance of the backslash
+      value = value.replace('\\', '');
+    }
+    if (operation == null && value != null && value.startsWith('\\*')) {
+      value = value.substring(1);
+    }
+    if (operation == null && value != null && value.endsWith('\\*')) {
+      value = value.substring(0, value.length - 2);
+      return `${value}*`;
+    }
+
+    return `${operation ?? ''}${value ?? ``}`;
+  }
+
+  makeQuickTextFilter(column: Column, text: string): FilterCondition | null {
+    const { dh } = this;
+    const cleanText = `${text}`.trim();
+    const regex = /^(!~|!=|~|=|!)?(.*)/;
+    const result = regex.exec(cleanText);
+
+    let operation = null;
+    let value = null;
+    if (result !== null && result.length > 2) {
+      [, operation, value] = result;
+      if (value != null) {
+        value = value.trim();
+      }
+    }
+
+    if (value == null) {
+      return null;
+    }
+
+    // allow empty strings, but only for explicit equal and not equal
+    if (value.length === 0 && !(operation === '=' || operation === '!=')) {
+      return null;
+    }
+
+    // no operation is treated as an implicit equals
+    if (operation == null) {
+      operation = '=';
+    }
+
+    const filter = column.filter();
+    if (value.toLowerCase() === 'null') {
+      // Null is a special case!
+      switch (operation) {
+        case '=':
+          return filter.isNull();
+        case '!=':
+        case '!':
+          return filter.isNull().not();
+        default:
+        // For all other operations, treat null as a string value
+      }
+    }
+
+    let prefix = null;
+    let suffix = null;
+    if (value.startsWith('*')) {
+      prefix = '*';
+      value = value.substring(1);
+    } else if (value.endsWith('*') && !value.endsWith('\\*')) {
+      suffix = '*';
+      value = value.substring(0, value.length - 1);
+    }
+
+    // unescape any escaped operators to allow search for literal operators
+    value = TableUtils.unescapeQuickTextFilter(value);
+
+    switch (operation) {
+      case '~': {
+        return filter
+          .isNull()
+          .not()
+          .and(
+            filter.invoke(
+              'matches',
+              dh.FilterValue.ofString(`(?s)(?i).*\\Q${value}\\E.*`)
+            )
+          );
+      }
+      case '!~':
+        return filter
+          .isNull()
+          .or(
+            filter
+              .invoke(
+                'matches',
+                dh.FilterValue.ofString(`(?s)(?i).*\\Q${value}\\E.*`)
+              )
+              .not()
+          );
+      case '!=':
+        if (prefix === '*') {
+          // Does not end with
+          return filter
+            .isNull()
+            .or(
+              filter
+                .invoke(
+                  'matches',
+                  dh.FilterValue.ofString(`(?s)(?i).*\\Q${value}\\E$`)
+                )
+                .not()
+            );
+        }
+        if (suffix === '*') {
+          // Does not start with
+          return filter
+            .isNull()
+            .or(
+              filter
+                .invoke(
+                  'matches',
+                  dh.FilterValue.ofString(`(?s)(?i)^\\Q${value}\\E.*`)
+                )
+                .not()
+            );
+        }
+        return filter.notEqIgnoreCase(
+          dh.FilterValue.ofString(value.toLowerCase())
+        );
+      case '=':
+        if (prefix === '*') {
+          // Ends with
+          return filter
+            .isNull()
+            .not()
+            .and(
+              filter.invoke(
+                'matches',
+                dh.FilterValue.ofString(`(?s)(?i).*\\Q${value}\\E$`)
+              )
+            );
+        }
+        if (suffix === '*') {
+          // Starts with
+          return filter
+            .isNull()
+            .not()
+            .and(
+              filter.invoke(
+                'matches',
+                dh.FilterValue.ofString(`(?s)(?i)^\\Q${value}\\E.*`)
+              )
+            );
+        }
+        return filter.eqIgnoreCase(
+          dh.FilterValue.ofString(value.toLowerCase())
+        );
+
+      default:
+        break;
+    }
+
+    return null;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  makeQuickBooleanFilter(
+    column: Column,
+    text: string | number
+  ): FilterCondition | null {
+    const regex = /^(!=|=|!)?(.*)/;
+    const result = regex.exec(`${text}`.trim());
+    if (result === null) {
+      return null;
+    }
+    const [, operation, value] = result;
+    const notEqual = operation === '!' || operation === '!=';
+    const cleanValue = value.trim().toLowerCase();
+
+    let filter: FilterCondition | FilterValue = column.filter();
+
+    try {
+      const boolValue = TableUtils.makeBooleanValue(cleanValue);
+      if (boolValue != null && boolValue) {
+        filter = filter.isTrue();
+      } else if (boolValue === null) {
+        filter = filter.isNull();
+      } else {
+        filter = filter.isFalse();
+      }
+
+      return notEqual ? filter.not() : filter;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /**
+   * Builds a date filter parsed from the text string which may or may not include an operator.
+   * @param column The column to build the filter from, with or without a leading operator.
+   * @param text The date string text to parse.
+   * @param timeZone The time zone to make this filter in if it is a date type. E.g. America/New_York
+   */
+  makeQuickDateFilter(
+    column: Column,
+    text: string,
+    timeZone: string
+  ): FilterCondition {
+    const cleanText = text.trim();
+    const regex = /\s*(>=|<=|=>|=<|>|<|!=|!|=)?(.*)/;
+    const result = regex.exec(cleanText);
+    if (result == null || result.length <= 2) {
+      throw new Error(`Unable to parse date filter: ${text}`);
+    }
+
+    let operation = null;
+    let dateText = null;
+
+    [, operation, dateText] = result;
+
+    let filterOperation: FilterTypeValue = FilterType.eq;
+    switch (operation) {
+      case '<':
+        filterOperation = FilterType.lessThan;
+        break;
+      case '<=':
+      case '=<':
+        filterOperation = FilterType.lessThanOrEqualTo;
+        break;
+      case '>':
+        filterOperation = FilterType.greaterThan;
+        break;
+      case '>=':
+      case '=>':
+        filterOperation = FilterType.greaterThanOrEqualTo;
+        break;
+      case '!=':
+      case '!':
+        filterOperation = FilterType.notEq;
+        break;
+      case '=':
+      case '==':
+      default:
+        filterOperation = FilterType.eq;
+        break;
+    }
+
+    return this.makeQuickDateFilterWithOperation(
+      column,
+      dateText,
+      filterOperation,
+      timeZone
+    );
+  }
+
+  /**
+   * Builds a date filter parsed from the text string with the provided filter.
+   * @param column The column to build the filter from.
+   * @param text The date string text to parse, without an operator.
+   * @param operation The filter operation to use.
+   * @param timeZone The time zone to make this filter with. E.g. America/New_York
+   */
+  makeQuickDateFilterWithOperation(
+    column: Column,
+    text: string,
+    operation: FilterTypeValue,
+    timeZone: string
+  ): FilterCondition {
+    const { dh } = this;
+    const [startDate, endDate] = DateUtils.parseDateRange(dh, text, timeZone);
+
+    const startValue =
+      startDate != null ? dh.FilterValue.ofNumber(startDate) : null;
+    const endValue = endDate != null ? dh.FilterValue.ofNumber(endDate) : null;
+
+    const filter = column.filter();
+    if (startValue == null) {
+      return operation === FilterType.notEq
+        ? filter.isNull().not()
+        : filter.isNull();
+    }
+
+    switch (operation) {
+      case FilterType.eq: {
+        if (endValue != null) {
+          const startFilter = filter.greaterThanOrEqualTo(startValue);
+          const endFilter = filter.lessThan(endValue);
+          return startFilter.and(endFilter);
+        }
+        return filter.eq(startValue);
+      }
+      case FilterType.lessThan: {
+        return filter.lessThan(startValue);
+      }
+      case FilterType.lessThanOrEqualTo: {
+        if (endValue != null) {
+          return filter.lessThan(endValue);
+        }
+        return filter.lessThanOrEqualTo(startValue);
+      }
+      case FilterType.greaterThan: {
+        if (endValue != null) {
+          return filter.greaterThanOrEqualTo(endValue);
+        }
+        return filter.greaterThan(startValue);
+      }
+      case FilterType.greaterThanOrEqualTo:
+        return filter.greaterThanOrEqualTo(startValue);
+      case FilterType.notEq: {
+        if (endValue != null) {
+          const startFilter = filter.lessThan(startValue);
+          const endFilter = filter.greaterThanOrEqualTo(endValue);
+          return startFilter.or(endFilter);
+        }
+        return filter.notEq(startValue);
+      }
+
+      default:
+        throw new Error(`Invalid operator: ${operation}`);
+    }
+  }
+
+  makeQuickCharFilter(column: Column, text: string): FilterCondition | null {
+    const { dh } = this;
+    const cleanText = `${text}`.trim();
+    const regex = /^(>=|<=|=>|=<|>|<|!=|=|!)?(null|"."|'.'|.)?(.*)/;
+    const result = regex.exec(cleanText);
+
+    let operation = null;
+    let value = null;
+    let overflow = null;
+    if (result !== null && result.length > 3) {
+      [, operation, value, overflow] = result;
+    }
+    if (overflow != null && overflow.trim().length > 0) {
+      // Some bad characters after the number, bail out!
+      return null;
+    }
+
+    if (value == null || value.length === 0) {
+      return null;
+    }
+
+    if (operation == null) {
+      operation = '=';
+    }
+
+    const filter = column.filter();
+    if (value.toLowerCase() === 'null') {
+      // Null is a special case!
+      switch (operation) {
+        case '=':
+          return filter.isNull();
+        case '!=':
+        case '!':
+          return filter.isNull().not();
+        default:
+          return null;
+      }
+    }
+
+    // We need to put quotes around range operations or else the API fails
+    const filterValue = dh.FilterValue.ofString(
+      TableUtils.isRangeOperation(operation)
+        ? TableUtils.quoteValue(value)
+        : value
+    );
+    return TableUtils.makeRangeFilterWithOperation(
+      filter,
+      operation,
+      filterValue
+    );
+  }
+
+  makeAdvancedFilter(
+    column: Column,
+    options: AdvancedFilterOptions,
+    timeZone: string
+  ): FilterCondition | null {
+    const {
+      filterItems,
+      filterOperators,
+      invertSelection,
+      selectedValues,
+    } = options;
+    let filter = null;
+    for (let i = 0; i < filterItems.length; i += 1) {
+      const filterItem = filterItems[i];
+      const { selectedType, value } = filterItem;
+      if (
+        selectedType != null &&
+        selectedType.length > 0 &&
+        value != null &&
+        value.length > 0
+      ) {
+        try {
+          const newFilter = this.makeAdvancedValueFilter(
+            column,
+            selectedType,
+            value,
+            timeZone
+          );
+          if (newFilter != null) {
+            if (i === 0) {
+              filter = newFilter;
+            } else if (filter !== null && i - 1 < filterOperators.length) {
+              const filterOperator = filterOperators[i - 1];
+              if (filterOperator === FilterOperator.and) {
+                filter = filter.and(newFilter);
+              } else if (filterOperator === FilterOperator.or) {
+                filter = filter.or(newFilter);
+              } else {
+                log.error(
+                  'Unexpected filter operator',
+                  filterOperator,
+                  newFilter
+                );
+                filter = null;
+                break;
+              }
+            }
+          } else {
+            log.debug2('Empty filter ignored for', selectedType, value);
+          }
+        } catch (err) {
+          log.error('Unable to create filter', err);
+          filter = null;
+          break;
+        }
+      }
+    }
+
+    const selectValueFilter = this.makeSelectValueFilter(
+      column,
+      selectedValues,
+      invertSelection
+    );
+    if (selectValueFilter != null) {
+      if (filter != null) {
+        filter = filter.and(selectValueFilter);
+      } else {
+        filter = selectValueFilter;
+      }
+    }
+
+    return filter;
+  }
+
+  makeAdvancedValueFilter(
     column: Column,
     operation: FilterTypeValue,
     value: string,
     timeZone: string
   ): FilterCondition | null {
+    const { dh } = this;
     if (TableUtils.isDateType(column.type)) {
-      return TableUtils.makeQuickDateFilterWithOperation(
+      return this.makeQuickDateFilterWithOperation(
         column,
         value,
         operation,
@@ -1368,13 +1433,13 @@ export class TableUtils {
       TableUtils.isNumberType(column.type) ||
       TableUtils.isCharType(column.type)
     ) {
-      return TableUtils.makeQuickFilter(
+      return this.makeQuickFilter(
         column,
         `${TableUtils.getFilterOperatorString(operation)}${value}`
       );
     }
 
-    const filterValue = TableUtils.makeFilterValue(column.type, value);
+    const filterValue = this.makeFilterValue(column.type, value);
     const filter = column.filter();
     switch (operation) {
       case FilterType.eq:
@@ -1451,6 +1516,202 @@ export class TableUtils {
   }
 
   /**
+   * Apply a filter to a table that won't match anything.
+   * @table The table to apply the filter to
+   * @columnName The name of the column to apploy the filter to
+   * @param timeout Timeout before cancelling the promise that waits for the next
+   * dh.Table.EVENT_FILTERCHANGED event
+   * @returns a Promise to the Table that resolves after the next
+   * dh.Table.EVENT_FILTERCHANGED event
+   */
+  async applyNeverFilter<T extends Table | TreeTable>(
+    table: T | null | undefined,
+    columnName: string,
+    timeout = TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
+  ): Promise<T | null> {
+    if (table == null) {
+      return null;
+    }
+
+    const column = table.findColumn(columnName);
+    const filters = [this.makeNeverFilter(column)];
+
+    await this.applyFilter(table, filters, timeout);
+
+    return table;
+  }
+
+  /**
+   * Apply custom columns to a given table. Return a Promise that resolves with
+   * the table once the dh.Table.EVENT_CUSTOMCOLUMNSCHANGED event has fired.
+   * @param table The table to apply custom columns to.
+   * @param columns The list of column expressions or definitions to apply.
+   * @returns A Promise that will be resolved with the given table after the
+   * columns are applied.
+   */
+  async applyCustomColumns(
+    table: Table | null | undefined,
+    columns: (string | CustomColumn)[],
+    timeout = TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
+  ): Promise<Table | null> {
+    const { dh } = this;
+    return TableUtils.executeAndWaitForEvent(
+      t => t?.applyCustomColumns(columns),
+      table,
+      dh.Table.EVENT_CUSTOMCOLUMNSCHANGED,
+      timeout
+    );
+  }
+
+  /**
+   * Apply filters to a given table.
+   * @param table Table to apply filters to
+   * @param filters Filters to apply
+   * @param timeout Timeout before cancelling the promise that waits for the next
+   * dh.Table.EVENT_FILTERCHANGED event
+   * @returns a Promise to the Table that resolves after the next
+   * dh.Table.EVENT_FILTERCHANGED event
+   */
+  async applyFilter<T extends Table | TreeTable>(
+    table: T | null | undefined,
+    filters: FilterCondition[],
+    timeout = TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
+  ): Promise<T | null> {
+    const { dh } = this;
+    return TableUtils.executeAndWaitForEvent(
+      t => t?.applyFilter(filters),
+      table,
+      dh.Table.EVENT_FILTERCHANGED,
+      timeout
+    );
+  }
+
+  /**
+   * Apply sorts to a given Table.
+   * @param table The table to apply sorts to
+   * @param sorts The sorts to apply
+   * @param timeout Timeout before cancelling the promise that waits for the next
+   * dh.Table.EVENT_SORTCHANGED event
+   * @returns a Promise to the Table that resolves after the next
+   * dh.Table.EVENT_SORTCHANGED event
+   */
+  async applySort<T extends Table | TreeTable>(
+    table: T | null | undefined,
+    sorts: Sort[],
+    timeout = TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
+  ): Promise<T | null> {
+    const { dh } = this;
+    return TableUtils.executeAndWaitForEvent(
+      t => t?.applySort(sorts),
+      table,
+      dh.Table.EVENT_SORTCHANGED,
+      timeout
+    );
+  }
+
+  /**
+   * Create a filter condition that results in zero results for a given column
+   * @param column
+   */
+  makeNeverFilter(column: Column): FilterCondition {
+    const { dh } = this;
+    let value = null;
+
+    if (TableUtils.isTextType(column.type)) {
+      // Use 'a' so that it can work for String or Character types
+      value = dh.FilterValue.ofString('a');
+    } else if (TableUtils.isBooleanType(column.type)) {
+      value = dh.FilterValue.ofBoolean(true);
+    } else if (TableUtils.isDateType(column.type)) {
+      value = dh.FilterValue.ofNumber(dh.DateWrapper.ofJsDate(new Date()));
+    } else {
+      value = dh.FilterValue.ofNumber(0);
+    }
+
+    const eqFilter = column.filter().eq(value);
+    const notEqFilter = column.filter().notEq(value);
+
+    return eqFilter.and(notEqFilter);
+  }
+
+  /**
+   * @param columnType The column type to make the filter value from.
+   * @param value The value to make the filter value from.
+   * @returns The FilterValue item for this column/value combination
+   */
+  makeFilterValue(columnType: string, value: string): FilterValue {
+    const { dh } = this;
+    const type = TableUtils.getBaseType(columnType);
+    if (TableUtils.isTextType(type)) {
+      return dh.FilterValue.ofString(value);
+    }
+    if (TableUtils.isLongType(type)) {
+      return dh.FilterValue.ofNumber(
+        dh.LongWrapper.ofString(TableUtils.removeCommas(value))
+      );
+    }
+
+    return dh.FilterValue.ofNumber(TableUtils.removeCommas(value));
+  }
+
+  /**
+   * Takes a value and converts it to an `dh.FilterValue`
+   *
+   * @param columnType The column type to make the filter value from.
+   * @param value The value to actually set
+   * @returns The FilterValue item for this column/value combination
+   */
+  makeFilterRawValue(columnType: string, rawValue: unknown): FilterValue {
+    const { dh } = this;
+    if (TableUtils.isTextType(columnType)) {
+      return dh.FilterValue.ofString(rawValue);
+    }
+
+    if (TableUtils.isBooleanType(columnType)) {
+      return dh.FilterValue.ofBoolean(rawValue);
+    }
+
+    return dh.FilterValue.ofNumber(rawValue);
+  }
+
+  /**
+   * Converts a string value to a value appropriate for the column
+   * @param columnType The column type to make the value for
+   * @param text The string value to make a type for
+   * @param timeZone The time zone to make this value in if it is a date type. E.g. America/New_York
+   */
+  makeValue(
+    columnType: string,
+    text: string,
+    timeZone: string
+  ): string | number | boolean | LongWrapper | null {
+    const { dh } = this;
+    if (text === 'null') {
+      return null;
+    }
+    if (TableUtils.isTextType(columnType)) {
+      return text;
+    }
+    if (TableUtils.isLongType(columnType)) {
+      return dh.LongWrapper.ofString(TableUtils.removeCommas(text));
+    }
+    if (TableUtils.isBooleanType(columnType)) {
+      return TableUtils.makeBooleanValue(text, true);
+    }
+    if (TableUtils.isDateType(columnType)) {
+      const [date] = DateUtils.parseDateRange(dh, text, timeZone);
+      return date;
+    }
+
+    if (TableUtils.isNumberType(columnType)) {
+      return TableUtils.makeNumberValue(text);
+    }
+
+    log.error('Unexpected column type', columnType);
+    return null;
+  }
+
+  /**
    * Create a filter using the selected items
    * Has a flag for invertSelection as we start from a "Select All" state and a user just deselects items.
    * Since there may be millions of distinct items, it's easier to build an inverse filter.
@@ -1459,36 +1720,24 @@ export class TableUtils {
    * @param invertSelection Invert the selection (eg. All items are selected, then you deselect items)
    * @returns Returns a `in` or `notIn` FilterCondition as necessary, or null if no filtering should be applied (everything selected)
    */
-  static makeSelectValueFilter(
+  makeSelectValueFilter<TInvert extends boolean>(
     column: Column,
     selectedValues: unknown[],
-    invertSelection: boolean
-  ): FilterCondition | null {
+    invertSelection: TInvert
+  ): TInvert extends true ? FilterCondition | null : FilterCondition {
+    const { dh } = this;
     if (selectedValues.length === 0) {
       if (invertSelection) {
         // No filter means select everything
-        return null;
+        return null as TInvert extends true
+          ? FilterCondition | null
+          : FilterCondition;
       }
 
       // KLUDGE: Return a conflicting filter to show no results.
       // Could recognize this situation at a higher or lower level and pause updates on the
       // table, but this situation should be rare and that wouldn't be much gains for some added complexity
-      let value = null;
-
-      if (TableUtils.isTextType(column.type)) {
-        // Use 'a' so that it can work for String or Character types
-        value = dh.FilterValue.ofString('a');
-      } else if (TableUtils.isBooleanType(column.type)) {
-        value = dh.FilterValue.ofBoolean(true);
-      } else if (TableUtils.isDateType(column.type)) {
-        value = dh.FilterValue.ofNumber(dh.DateWrapper.ofJsDate(new Date()));
-      } else {
-        value = dh.FilterValue.ofNumber(0);
-      }
-
-      const eqFilter = column.filter().eq(value);
-      const notEqFilter = column.filter().notEq(value);
-      return eqFilter.and(notEqFilter);
+      return this.makeNeverFilter(column);
     }
 
     const values = [];
@@ -1533,27 +1782,6 @@ export class TableUtils {
     }
 
     return column.filter().in(values);
-  }
-
-  static isTreeTable(table: unknown): table is TreeTable {
-    return (
-      table != null &&
-      (table as TreeTable).expand !== undefined &&
-      (table as TreeTable).collapse !== undefined
-    );
-  }
-
-  /**
-   * Copies the provided array, sorts by column name case insensitive, and returns the sorted array.
-   * @param columns The columns to sort
-   * @param isAscending Whether to sort ascending
-   */
-  static sortColumns(columns: readonly Column[], isAscending = true): Column[] {
-    return [...columns].sort((a, b) => {
-      const aName = a.name.toUpperCase();
-      const bName = b.name.toUpperCase();
-      return TextUtils.sort(aName, bName, isAscending);
-    });
   }
 }
 
