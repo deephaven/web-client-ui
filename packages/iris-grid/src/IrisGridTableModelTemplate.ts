@@ -1581,6 +1581,10 @@ class IrisGridTableModelTemplate<
     return !this.isKeyColumn(modelIndex);
   }
 
+  isColumnSortable(index: number): boolean {
+    return this.columns[index].isSortable ?? true;
+  }
+
   isKeyColumn(x: ModelIndex): boolean {
     return x < (this.inputTable?.keyColumns.length ?? 0);
   }
