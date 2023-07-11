@@ -1,4 +1,4 @@
-import React, { DragEvent, useCallback, useEffect, useMemo } from 'react';
+import { DragEvent, useCallback, useEffect, useMemo } from 'react';
 import {
   assertIsDashboardPluginProps,
   DashboardPluginComponentProps,
@@ -11,11 +11,11 @@ import { IrisGridModelFactory, IrisGridThemeType } from '@deephaven/iris-grid';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import type { Table, VariableDefinition } from '@deephaven/jsapi-types';
 import shortid from 'shortid';
-import { IrisGridPanel, IrisGridPanelProps } from './panels';
+import { IrisGridPanel, IrisGridPanelProps, TablePlugin } from './panels';
 
 export type GridPluginProps = Partial<DashboardPluginComponentProps> & {
   getDownloadWorker?: () => Promise<ServiceWorker>;
-  loadPlugin?: (name: string) => ReturnType<typeof React.forwardRef>;
+  loadPlugin?: (name: string) => TablePlugin;
   hydrate: PanelHydrateFunction<IrisGridPanelProps>;
   theme?: Partial<IrisGridThemeType>;
 };
