@@ -12,21 +12,25 @@ npm install --save @deephaven/auth-plugins
 
 Export an `AuthPlugin` from a module to register an authentication plugin. Authentication plugins must implement the [AuthPlugin interface](./src/AuthPlugin.ts#L32). Authentication plugins can display a UI which then triggers how to login.
 
-The Web UI loads all plugins on initialization, and uses the first available authentication plugin for authenticating. A sequence diagram of this flow at a high level, where `AuthPlugin` is the first authentication plugin that is available.
+The Web UI loads all plugins on initialization, and uses the first available authentication plugin for authenticating. A sequence diagram of this flow at a high level, where `AuthPlugin` is the first authentication plugin that returns true when the `isAvailable` method is called.
 
 ```mermaid
 sequenceDiagram
   participant U as User
   participant W as Web UI
-  participant S as Server
   participant P as AuthPlugin
-  participant J as JS API
+  participant S as Server
   U->>W: Open app
-  W->>S: Load plugin modules
-  S-->>W: PluginModule[]
+  activate W
+    W->>S: Load plugin modules
+    S-->>W: PluginModule[]
+    W->>S: client.getAuthConfigValues()
+    S-->>W: Auth config [string, string][]
+    W->>W: Select first available AuthPlugin
+  deactivate W
   W->>P: Login
-  P->>J: client.login()
-  J-->>P: Login success
+  P->>S: client.login()
+  S-->>P: Login success
   P-->>W: Login success
 ```
 
@@ -104,15 +108,13 @@ sequenceDiagram
   participant T as Auth0 Tenant
   participant J as JS API
   U->>W: Open app
-  W->>S: Load plugin modules
-  S-->>W: PluginModule[]
+  W->>W: Select first available AuthPlugin
   W->>P: Login
   P->>T: Authorization code request to /authorize
   T->>U: Redirect to login/authorization prompt
   U-->>T: Authenticate and Consent
   T->>W: Authorization code
-  W->>S: Load plugin modules
-  S-->>W: PluginModule[]
+  W->>W: Select first available AuthPlugin
   W->>P: Login
   P->>T: Authorization Code + Client ID + Client Secret to /oauth/token
   T->>T: Validate Authorization Code + Client ID + Client Secret
