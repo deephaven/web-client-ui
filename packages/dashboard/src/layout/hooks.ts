@@ -1,7 +1,6 @@
 import { ComponentType, useCallback, useEffect } from 'react';
 import type {
   EventEmitter,
-  GLPanelProps,
   ReactComponentConfig,
 } from '@deephaven/golden-layout';
 import shortid from 'shortid';

@@ -102,7 +102,7 @@ export type ChartPanelMetadata =
 type Settings = Record<string, unknown>;
 
 export interface GLChartPanelState {
-  filterValueMap: [string, unknown][];
+  filterValueMap?: [string, unknown][];
   settings: Partial<ChartModelSettings>;
   tableSettings: TableSettings;
   irisGridState?: {

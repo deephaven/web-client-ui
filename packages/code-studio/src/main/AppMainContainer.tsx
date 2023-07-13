@@ -56,13 +56,13 @@ import {
   ChartBuilderPlugin,
   FilterSet,
   Link,
-  ChartPanelProps,
   ColumnSelectionValidator,
   getDashboardConnection,
   TablePlugin,
   IrisGridPanelMetadata,
   isIrisGridPanelMetadata,
   isLegacyIrisGridPanelMetadata,
+  isChartPanelDehydratedProps,
 } from '@deephaven/dashboard-core-plugins';
 import {
   vsGear,
@@ -731,6 +731,7 @@ export class AppMainContainer extends Component<
   } {
     const { connection } = this.props;
     let metadata: IrisGridPanelMetadata;
+    // TODO: Why is this showing a TS error in eslint in VSCode??
     if (isIrisGridPanelMetadata(props.metadata)) {
       metadata = props.metadata;
     } else if (isLegacyIrisGridPanelMetadata(props.metadata)) {
@@ -749,11 +750,6 @@ export class AppMainContainer extends Component<
     };
   }
 
-  // TODO: Need to clean up all these types... and make the hydration/component registration process more seamless
-  // Specifically the PanelEvent.OPEN method has event detail that is included; to use with the `hydrate` function need to translate the metadata...
-  // But we could also be re-hydrating from a specific dehydrate method, which may include different data.
-  // Some panels use similar names (metadata, panelState), but we kind of gloss over it in a lot of spots...
-
   hydrateChart(
     props: DehydratedDashboardPanelProps,
     id: string
@@ -765,7 +761,14 @@ export class AppMainContainer extends Component<
       ...props,
       localDashboardId: id,
       makeModel: () => {
-        const { metadata, panelState } = props;
+        const { metadata } = props;
+        const panelState = isChartPanelDehydratedProps(props)
+          ? props.panelState
+          : undefined;
+        if (metadata == null) {
+          throw new Error('Metadata is required for chart panel');
+        }
+
         return createChartModel(dh, connection, metadata, panelState);
       },
     };

@@ -10,11 +10,7 @@ import {
   PanelEvent,
 } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
-import type {
-  Container,
-  EventEmitter,
-  ReactComponentConfig,
-} from '@deephaven/golden-layout';
+import type { ReactComponentConfig } from '@deephaven/golden-layout';
 import type * as monaco from 'monaco-editor';
 import { assertNotNull } from '@deephaven/utils';
 import { RootState } from '@deephaven/redux';

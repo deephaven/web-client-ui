@@ -1,15 +1,12 @@
 import { ScriptEditor } from '@deephaven/console';
 import {
   assertIsDashboardPluginProps,
-  DashboardPanelProps,
   DashboardPluginComponentProps,
   DashboardUtils,
   DehydratedDashboardPanelProps,
-  DehydratedPanelProps,
   LayoutUtils,
   PanelComponent,
   PanelHydrateFunction,
-  PanelProps,
   useListener,
 } from '@deephaven/dashboard';
 import { FileUtils } from '@deephaven/file-explorer';
@@ -559,7 +556,7 @@ export function ConsolePlugin(
         registerComponent(LogPanel.COMPONENT, LogPanel),
         registerComponent(
           NotebookPanel.COMPONENT,
-          NotebookPanel as any,
+          NotebookPanel,
           hydrateNotebook
         ),
       ];

@@ -1,10 +1,4 @@
-import {
-  DashboardPanelProps,
-  DehydratedDashboardPanelProps,
-  DehydratedPanelProps,
-  PanelConfig,
-  PanelProps,
-} from './DashboardPlugin';
+import { DehydratedDashboardPanelProps, PanelConfig } from './DashboardPlugin';
 
 /**
  * Dehydrate an existing panel to allow it to be serialized/saved.
