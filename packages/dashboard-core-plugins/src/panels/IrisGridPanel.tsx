@@ -120,20 +120,19 @@ export interface PanelState {
   pluginState: unknown;
 }
 
-// TODO: Remove this
 // Some of the properties in the loaded panel state may be omitted
 // even though they can't be undefined in the dehydrated state.
 // This can happen when loading the state saved before the properties were added.
-// type LoadedPanelState = PanelState & {
-//   irisGridPanelState: PanelState['irisGridPanelState'] &
-//     Partial<
-//       Pick<PanelState['irisGridPanelState'], 'partition' | 'partitionColumn'>
-//     >;
-// };
+type LoadedPanelState = PanelState & {
+  irisGridPanelState: PanelState['irisGridPanelState'] &
+    Partial<
+      Pick<PanelState['irisGridPanelState'], 'partition' | 'partitionColumn'>
+    >;
+};
 
 export interface IrisGridPanelProps extends DashboardPanelProps {
   children?: ReactNode;
-  panelState: PanelState | null;
+  panelState: LoadedPanelState | null;
   makeModel: () => IrisGridModel | Promise<IrisGridModel>;
   inputFilters: InputFilter[];
   links: Link[];

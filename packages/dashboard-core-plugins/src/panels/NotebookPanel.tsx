@@ -58,7 +58,6 @@ const log = Log.module('NotebookPanel');
 
 const DEBOUNCE_PANEL_STATE_UPDATE = 400;
 
-// TODO: This type is probably wrong...
 interface Metadata extends PanelMetadata {
   id: string;
 }
