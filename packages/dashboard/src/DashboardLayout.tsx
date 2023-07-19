@@ -133,8 +133,6 @@ export function DashboardLayout({
           <PanelErrorBoundary glContainer={glContainer} glEventHub={glEventHub}>
             {/* eslint-disable-next-line react/jsx-props-no-spreading */}
             <PanelWrapperType {...props}>
-              {/* TODO: Verify the id is getting populated from somewhere */}
-              {/* <CType id={shortid.generate()} {...props} ref={ref} /> */}
               {/* eslint-disable-next-line react/jsx-props-no-spreading */}
               <CType {...props} ref={ref} />
             </PanelWrapperType>

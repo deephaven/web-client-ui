@@ -1,8 +1,5 @@
-import { ComponentType, useCallback, useEffect } from 'react';
-import type {
-  EventEmitter,
-  ReactComponentConfig,
-} from '@deephaven/golden-layout';
+import { ComponentType, useCallback } from 'react';
+import type { ReactComponentConfig } from '@deephaven/golden-layout';
 import shortid from 'shortid';
 import {
   DashboardPanelProps,
@@ -13,37 +10,42 @@ import {
   PanelHydrateFunction,
 } from '../DashboardPlugin';
 import PanelEvent, { PanelOpenEventDetail } from '../PanelEvent';
-import { LayoutUtils } from '.';
+import LayoutUtils from './LayoutUtils';
+import useListener from './useListener';
+import usePanelRegistration from './usePanelRegistration';
 
-export function useListener(
-  eventEmitter: EventEmitter,
-  eventName: string,
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  callback: Function
-) {
-  useEffect(
-    function initEventEmitter() {
-      eventEmitter.on(eventName, callback);
-
-      return () => {
-        eventEmitter.off(eventName, callback);
-      };
-    },
-    [eventEmitter, eventName, callback]
-  );
-}
-
-export function useComponent<
+/**
+ * Register a panel that will be opened when one of the `supportedTypes` objects is triggered.
+ */
+export function useDashboardPanel<
   P extends DashboardPanelProps,
   C extends ComponentType<P>
->(
-  dashboardProps: DashboardPluginComponentProps,
-  componentName: string,
-  component: PanelComponentType<P, C>,
-  variableName: string | string[],
-  hydrate?: PanelHydrateFunction,
-  dehydrate?: PanelDehydrateFunction
-) {
+>({
+  dashboardProps,
+  componentName,
+  component,
+  supportedTypes,
+  hydrate,
+  dehydrate,
+}: {
+  /** Props from the dashboard this panel is being registered in */
+  dashboardProps: DashboardPluginComponentProps;
+
+  /** Name of the component to register */
+  componentName: string;
+
+  /** Component type to register */
+  component: PanelComponentType<P, C>;
+
+  /** Names of the supported variable types this panel opens for */
+  supportedTypes: string | string[];
+
+  /** Custom hydration function to call when opening a panel */
+  hydrate?: PanelHydrateFunction;
+
+  /** Custom dehydration function to call when saving a panel's state to the layout */
+  dehydrate?: PanelDehydrateFunction;
+}) {
   const { id, layout, registerComponent } = dashboardProps;
 
   const handlePanelOpen = useCallback(
@@ -56,8 +58,8 @@ export function useComponent<
       const { id: widgetId, type } = widget;
       const name = widget.title ?? widget.name;
       const isSupportedType =
-        (Array.isArray(variableName) && variableName.includes(type)) ||
-        type === variableName;
+        (Array.isArray(supportedTypes) && supportedTypes.includes(type)) ||
+        type === supportedTypes;
       if (!isSupportedType) {
         // Only want to listen for your custom variable types
         return;
@@ -65,7 +67,6 @@ export function useComponent<
       const metadata = { id: widgetId, name, type };
       let props: DehydratedDashboardPanelProps & { fetch?: typeof fetch } = {
         localDashboardId: id,
-        id: panelId,
         metadata,
         fetch,
       };
@@ -83,21 +84,13 @@ export function useComponent<
       const { root } = layout;
       LayoutUtils.openComponent({ root, config, dragEvent });
     },
-    [componentName, hydrate, id, layout, variableName]
+    [componentName, hydrate, id, layout, supportedTypes]
   );
 
   /**
    * Register our custom component type so the layout know hows to open it
    */
-  useEffect(() => {
-    const cleanups = [
-      registerComponent(componentName, component, hydrate, dehydrate),
-    ];
-
-    return () => {
-      cleanups.forEach(cleanup => cleanup());
-    };
-  }, [component, componentName, dehydrate, hydrate, registerComponent]);
+  usePanelRegistration(registerComponent, component, hydrate, dehydrate);
 
   /**
    * Listen for panel open events so we know when to open a panel
@@ -105,4 +98,4 @@ export function useComponent<
   useListener(layout.eventHub, PanelEvent.OPEN, handlePanelOpen);
 }
 
-export default { useComponent, useListener };
+export default useDashboardPanel;

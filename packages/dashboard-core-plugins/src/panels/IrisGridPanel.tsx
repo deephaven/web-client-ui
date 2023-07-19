@@ -204,7 +204,7 @@ interface IrisGridPanelState {
   gridStateOverrides: Partial<GridState>;
 }
 
-function getTableName(metadata?: PanelMetadata): string {
+function getTableNameFromMetadata(metadata: PanelMetadata | undefined): string {
   if (metadata == null) {
     throw new Error('No metadata provided');
   }
@@ -215,7 +215,7 @@ function getTableName(metadata?: PanelMetadata): string {
     return metadata.table;
   }
 
-  throw new Error(`Unrecognized metadata: ${metadata}`);
+  throw new Error(`Unable to determine table name from metadata: ${metadata}`);
 }
 
 export class IrisGridPanel extends PureComponent<
@@ -363,7 +363,7 @@ export class IrisGridPanel extends PureComponent<
 
   getTableName(): string {
     const { metadata } = this.props;
-    return getTableName(metadata);
+    return getTableNameFromMetadata(metadata);
   }
 
   getGridInputFilters = memoize(
@@ -1257,7 +1257,7 @@ export class IrisGridPanel extends PureComponent<
     } = this.state;
     const errorMessage =
       error != null ? `Unable to open table. ${error}` : undefined;
-    const name = getTableName(metadata);
+    const name = getTableNameFromMetadata(metadata);
     const description = model?.description ?? undefined;
     const pluginState = panelState?.pluginState ?? null;
     const childrenContent =

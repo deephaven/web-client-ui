@@ -1,7 +1,7 @@
 import { EventEmitter } from '@deephaven/golden-layout';
 import { TestUtils } from '@deephaven/utils';
 import { renderHook } from '@testing-library/react-hooks';
-import { useListener } from './hooks';
+import useListener from './useListener';
 
 it('should register listener on mount and deregister on unmount', () => {
   const listener = jest.fn();

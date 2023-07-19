@@ -3,7 +3,7 @@ import {
   assertIsDashboardPluginProps,
   DashboardPluginComponentProps,
   PanelHydrateFunction,
-  useComponent,
+  useDashboardPanel,
 } from '@deephaven/dashboard';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import { IrisGridPanel } from './panels';
@@ -25,13 +25,13 @@ export function GridPlugin(props: GridPluginProps): JSX.Element | null {
     [dh]
   );
 
-  useComponent(
-    props,
-    IrisGridPanel.COMPONENT,
-    IrisGridPanel,
+  useDashboardPanel({
+    dashboardProps: props,
+    componentName: IrisGridPanel.COMPONENT,
+    component: IrisGridPanel,
     supportedTypes,
-    hydrate
-  );
+    hydrate,
+  });
 
   return null;
 }

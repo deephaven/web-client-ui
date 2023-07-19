@@ -75,6 +75,7 @@ export type InputFilterMap = Map<string, InputFilter>;
 
 export type LinkedColumnMap = Map<string, { name: string; type: string }>;
 
+/** @deprecated Use `PanelMetadata` instead, providing a `name` instead of `figure` */
 export interface ChartPanelFigureMetadata extends PanelMetadata {
   /**
    * @deprecated use `name` instead

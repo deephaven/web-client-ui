@@ -2,7 +2,7 @@ import {
   assertIsDashboardPluginProps,
   DashboardPluginComponentProps,
   PanelHydrateFunction,
-  useComponent,
+  useDashboardPanel,
 } from '@deephaven/dashboard';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import { PandasPanel } from './panels';
@@ -16,13 +16,13 @@ export function PandasPlugin(props: PandasPluginProps): JSX.Element | null {
   const { hydrate } = props;
   const dh = useApi();
 
-  useComponent(
-    props,
-    PandasPanel.COMPONENT,
-    PandasPanel,
-    dh.VariableType.PANDAS,
-    hydrate
-  );
+  useDashboardPanel({
+    dashboardProps: props,
+    componentName: PandasPanel.COMPONENT,
+    component: PandasPanel,
+    supportedTypes: dh.VariableType.PANDAS,
+    hydrate,
+  });
 
   return null;
 }

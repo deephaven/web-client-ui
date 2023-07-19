@@ -731,7 +731,6 @@ export class AppMainContainer extends Component<
   } {
     const { connection } = this.props;
     let metadata: IrisGridPanelMetadata;
-    // TODO: Why is this showing a TS error in eslint in VSCode??
     if (isIrisGridPanelMetadata(props.metadata)) {
       metadata = props.metadata;
     } else if (isLegacyIrisGridPanelMetadata(props.metadata)) {
@@ -739,6 +738,8 @@ export class AppMainContainer extends Component<
         name: props.metadata.table,
         type: props.metadata.type ?? dh.VariableType.TABLE,
       };
+    } else {
+      throw new Error('Metadata is required for table panel');
     }
 
     return {

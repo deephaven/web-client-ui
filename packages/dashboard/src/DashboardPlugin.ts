@@ -6,8 +6,11 @@ import type {
   RefAttributes,
 } from 'react';
 import { ConnectedComponent } from 'react-redux';
-import GoldenLayout, { GLPanelProps } from '@deephaven/golden-layout';
-import type { ReactComponentConfig } from '@deephaven/golden-layout';
+import GoldenLayout from '@deephaven/golden-layout';
+import type {
+  GLPanelProps,
+  ReactComponentConfig,
+} from '@deephaven/golden-layout';
 import PanelManager from './PanelManager';
 
 /**
@@ -63,7 +66,6 @@ export function isWrappedComponent<
 export type PanelMetadata = { id?: string; name?: string; type?: string };
 
 export type PanelProps = GLPanelProps & {
-  id: string;
   metadata?: PanelMetadata;
 };
 

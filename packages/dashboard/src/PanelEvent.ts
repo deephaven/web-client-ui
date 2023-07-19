@@ -4,7 +4,7 @@ export type WidgetDefinition = {
   type: string;
 
   /**
-   * @deprecated
+   * @deprecated Use `title` instead.
    */
   name?: string;
 

@@ -2,7 +2,7 @@ import {
   assertIsDashboardPluginProps,
   DashboardPluginComponentProps,
   PanelHydrateFunction,
-  useComponent,
+  useDashboardPanel,
 } from '@deephaven/dashboard';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import { ChartPanel } from './panels';
@@ -15,13 +15,13 @@ export function ChartPlugin(props: ChartPluginProps): JSX.Element | null {
   assertIsDashboardPluginProps(props);
   const { hydrate } = props;
   const dh = useApi();
-  useComponent(
-    props,
-    ChartPanel.COMPONENT,
-    ChartPanel,
-    dh.VariableType.FIGURE,
-    hydrate
-  );
+  useDashboardPanel({
+    dashboardProps: props,
+    componentName: ChartPanel.COMPONENT,
+    component: ChartPanel,
+    supportedTypes: dh.VariableType.FIGURE,
+    hydrate,
+  });
 
   return null;
 }

@@ -17,12 +17,12 @@ import {
   isChartPanelTableMetadata,
 } from '@deephaven/dashboard-core-plugins';
 
-export const createChartModel = async (
+export async function createChartModel(
   dh: DhType,
   connection: IdeConnection,
   metadata: ChartPanelMetadata,
   panelState?: GLChartPanelState
-): Promise<ChartModel> => {
+): Promise<ChartModel> {
   let settings;
   let tableName;
   let figureName;
@@ -82,18 +82,18 @@ export const createChartModel = async (
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return ChartModelFactory.makeModelFromSettings(dh, settings as any, table);
-};
+}
 
 export const createGridModel = async (
   dh: DhType,
   connection: IdeConnection,
   metadata: IrisGridPanelMetadata
 ): Promise<IrisGridModel> => {
-  const { name: tableName } = metadata;
+  const { name: tableName, type } = metadata;
   const definition = {
     title: tableName,
     name: tableName,
-    type: metadata.type,
+    type,
   };
   const table = (await connection.getObject(definition)) as Table;
   return IrisGridModelFactory.makeModel(dh, table);

@@ -8,6 +8,7 @@ import {
   PanelComponent,
   PanelHydrateFunction,
   useListener,
+  usePanelRegistration,
 } from '@deephaven/dashboard';
 import { FileUtils } from '@deephaven/file-explorer';
 import { CloseOptions, isComponent } from '@deephaven/golden-layout';
@@ -547,26 +548,11 @@ export function ConsolePlugin(
     [notebooksUrl]
   );
 
-  useEffect(
-    function registerComponentsAndReturnCleanup() {
-      const cleanups = [
-        registerComponent(ConsolePanel.COMPONENT, ConsolePanel, hydrateConsole),
-        registerComponent(CommandHistoryPanel.COMPONENT, CommandHistoryPanel),
-        registerComponent(FileExplorerPanel.COMPONENT, FileExplorerPanel),
-        registerComponent(LogPanel.COMPONENT, LogPanel),
-        registerComponent(
-          NotebookPanel.COMPONENT,
-          NotebookPanel,
-          hydrateNotebook
-        ),
-      ];
-
-      return () => {
-        cleanups.forEach(cleanup => cleanup());
-      };
-    },
-    [registerComponent, hydrateConsole, hydrateNotebook]
-  );
+  usePanelRegistration(registerComponent, ConsolePanel, hydrateConsole);
+  usePanelRegistration(registerComponent, CommandHistoryPanel);
+  usePanelRegistration(registerComponent, FileExplorerPanel);
+  usePanelRegistration(registerComponent, LogPanel);
+  usePanelRegistration(registerComponent, NotebookPanel, hydrateNotebook);
 
   useListener(layout.eventHub, ConsoleEvent.SEND_COMMAND, handleSendCommand);
   useListener(
