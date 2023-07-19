@@ -850,6 +850,20 @@ export interface Format {
   readonly color: string;
   readonly backgroundColor: string;
   readonly formatString: string;
+  readonly formatDataBar: DatabarFormat;
+}
+
+export interface DatabarFormat {
+  axis: string;
+  direction: string;
+  max: number;
+  min: number;
+  negativeColor: string | string[];
+  opacity: number;
+  positiveColor: string | string[];
+  valuePlacement: string;
+  value: number;
+  // markers: Map<number, string>;
 }
 
 export interface ColumnStatistics {

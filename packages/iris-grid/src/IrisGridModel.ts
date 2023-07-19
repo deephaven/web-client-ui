@@ -1,6 +1,8 @@
 /* eslint-disable class-methods-use-this */
 import type { Event, EventTarget } from 'event-target-shim';
 import {
+  DataBarGridModel,
+  DataBarOptions,
   GridModel,
   GridRange,
   ModelIndex,
@@ -46,12 +48,14 @@ const EMPTY_ARRAY: never[] = [];
  * those out as well, so there's no dependency on IrisAPI at all, but it's a lot of work for no real gain at this time.
  */
 abstract class IrisGridModel<
-  TEventMap extends Record<string, Event<string>> = Record<
-    string,
-    Event<string>
-  >,
-  TMode extends 'standard' | 'strict' = 'standard'
-> extends GridModel<TEventMap & IrisGridModelEventMap, TMode> {
+    TEventMap extends Record<string, Event<string>> = Record<
+      string,
+      Event<string>
+    >,
+    TMode extends 'standard' | 'strict' = 'standard'
+  >
+  extends GridModel<TEventMap & IrisGridModelEventMap, TMode>
+  implements DataBarGridModel {
   static EVENT = Object.freeze({
     UPDATED: 'UPDATED',
     FORMATTER_UPDATED: 'FORMATTER_UPDATED',
@@ -531,6 +535,10 @@ abstract class IrisGridModel<
     modelIndex: ModelIndex,
     depth: number
   ): ColumnHeaderGroup | undefined;
+
+  dataBarOptionsForCell(column: number, row: number): DataBarOptions {
+    throw new Error('Method not implemented.');
+  }
 }
 
 export default IrisGridModel;

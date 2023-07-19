@@ -3,6 +3,7 @@
 import memoize from 'memoize-one';
 import throttle from 'lodash.throttle';
 import {
+  CellRenderType,
   EditOperation,
   GridRange,
   GridUtils,
@@ -38,6 +39,12 @@ import {
   assertNotNull,
 } from '@deephaven/utils';
 import { TableUtils, Formatter, FormatterUtils } from '@deephaven/jsapi-utils';
+import {
+  AxisOption,
+  DataBarOptions,
+  DirectionOption,
+  ValuePlacementOption,
+} from 'packages/grid/src/DataBarGridModel';
 import IrisGridModel from './IrisGridModel';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import IrisGridUtils from './IrisGridUtils';
@@ -51,7 +58,7 @@ import {
   UIViewportData,
   PendingDataErrorMap,
 } from './CommonTypes';
-import { IrisGridThemeType } from './IrisGridTheme';
+import theme, { IrisGridThemeType } from './IrisGridTheme';
 import ColumnHeaderGroup, { isColumnHeaderGroup } from './ColumnHeaderGroup';
 
 const log = Log.module('IrisGridTableModel');
@@ -573,13 +580,17 @@ class IrisGridTableModelTemplate<
     return undefined;
   }
 
-  colorForCell(x: ModelIndex, y: ModelIndex, theme: IrisGridThemeType): string {
+  colorForCell(
+    x: ModelIndex,
+    y: ModelIndex,
+    customTheme: IrisGridThemeType
+  ): string {
     const data = this.dataForCell(x, y);
     if (data) {
       const { format, value } = data;
       if (value == null || value === '') {
-        assertNotNull(theme.nullStringColor);
-        return theme.nullStringColor;
+        assertNotNull(customTheme.nullStringColor);
+        return customTheme.nullStringColor;
       }
       if (format && format.color) {
         return format.color;
@@ -587,36 +598,36 @@ class IrisGridTableModelTemplate<
 
       if (this.isPendingRow(y)) {
         // Data entered in a pending row
-        assertNotNull(theme.pendingTextColor);
-        return theme.pendingTextColor;
+        assertNotNull(customTheme.pendingTextColor);
+        return customTheme.pendingTextColor;
       }
 
       // Fallback to formatting based on the value/type of the cell
       if (value != null) {
         const column = this.totalsColumn(x, y) ?? this.columns[x];
         if (TableUtils.isDateType(column.type) || column.name === 'Date') {
-          assertNotNull(theme.dateColor);
-          return theme.dateColor;
+          assertNotNull(customTheme.dateColor);
+          return customTheme.dateColor;
         }
         if (TableUtils.isNumberType(column.type)) {
           if ((value as number) > 0) {
-            assertNotNull(theme.positiveNumberColor);
-            return theme.positiveNumberColor;
+            assertNotNull(customTheme.positiveNumberColor);
+            return customTheme.positiveNumberColor;
           }
           if ((value as number) < 0) {
-            assertNotNull(theme.negativeNumberColor);
-            return theme.negativeNumberColor;
+            assertNotNull(customTheme.negativeNumberColor);
+            return customTheme.negativeNumberColor;
           }
-          assertNotNull(theme.zeroNumberColor);
-          return theme.zeroNumberColor;
+          assertNotNull(customTheme.zeroNumberColor);
+          return customTheme.zeroNumberColor;
         }
       }
     } else if (this.isPendingRow(y) && this.isKeyColumn(x)) {
-      assertNotNull(theme.errorTextColor);
-      return theme.errorTextColor;
+      assertNotNull(customTheme.errorTextColor);
+      return customTheme.errorTextColor;
     }
 
-    return theme.textColor;
+    return customTheme.textColor;
   }
 
   backgroundColorForCell(x: ModelIndex, y: ModelIndex): string | null {
@@ -634,6 +645,49 @@ class IrisGridTableModelTemplate<
       return 'center';
     }
     return 'left';
+  }
+
+  dataBarOptionsForCell(column: ModelIndex, row: ModelIndex): DataBarOptions {
+    const format = this.formatForCell(column, row);
+    assertNotNull(format);
+    const {
+      axis,
+      direction,
+      max,
+      min,
+      negativeColor,
+      opacity,
+      positiveColor,
+      valuePlacement,
+      value,
+      // markers,
+    } = format.formatDataBar;
+    const posColor = positiveColor ?? theme.positiveBarColor;
+    const negColor = negativeColor ?? theme.negativeBarColor;
+    let databarColor: string | string[] =
+      format.color ?? (value >= 0 ? posColor : negColor);
+    if (databarColor.includes(',')) {
+      databarColor = databarColor.split(',');
+    }
+
+    const databarOptions = {
+      axis: axis as AxisOption,
+      direction: direction as DirectionOption,
+      columnMax: max,
+      columnMin: min,
+      opacity: valuePlacement === 'overlap' ? 0.5 : opacity,
+      color: databarColor,
+      valuePlacement: valuePlacement as ValuePlacementOption,
+      value,
+      markers: [],
+    };
+
+    return databarOptions;
+  }
+
+  renderTypeForCell(column: ModelIndex, row: ModelIndex): CellRenderType {
+    const format = this.formatForCell(column, row);
+    return format?.formatDataBar != null ? 'dataBar' : 'text';
   }
 
   textForColumnHeader(x: ModelIndex, depth = 0): string | undefined {
