@@ -196,7 +196,8 @@ class ChartUtils {
   static getPlotlyErrorBars(
     x: number[],
     xLow: number[],
-    xHigh: number[]
+    xHigh: number[],
+    theme = ChartTheme
   ): ErrorBar {
     const array = xHigh.map((value, i) => value - x[i]);
     const arrayminus = xLow.map((value, i) => x[i] - value);
@@ -205,6 +206,7 @@ class ChartUtils {
       symmetric: false,
       array,
       arrayminus,
+      color: theme.error_band_line_color,
     };
   }
 
