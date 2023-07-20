@@ -136,6 +136,7 @@ export type GridTheme = {
   zeroLineColor: GridColor;
   positiveBarColor: GridColor;
   negativeBarColor: GridColor;
+  markerBarColor: GridColor;
 
   dataBarHorizontalPadding: number;
 };
@@ -232,6 +233,7 @@ const defaultTheme: GridTheme = Object.freeze({
   zeroLineColor: '#888888',
   positiveBarColor: '#00ff00',
   negativeBarColor: '#ff0000',
+  markerBarColor: '#ffffff',
 
   dataBarHorizontalPadding: 90,
 });

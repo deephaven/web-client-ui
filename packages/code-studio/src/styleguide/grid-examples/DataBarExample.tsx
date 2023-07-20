@@ -112,8 +112,8 @@ function DataBarExample() {
         valuePlacements,
         opacities,
         directions,
-        textAlignments,
-        markers
+        textAlignments
+        // markers
       )
   );
 

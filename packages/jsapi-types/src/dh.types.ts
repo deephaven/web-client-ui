@@ -863,7 +863,8 @@ export interface DatabarFormat {
   positiveColor: string | string[];
   valuePlacement: string;
   value: number;
-  // markers: Map<number, string>;
+  marker: number;
+  markerColor: string | string[];
 }
 
 export interface ColumnStatistics {

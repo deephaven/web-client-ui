@@ -43,6 +43,7 @@ import {
   AxisOption,
   DataBarOptions,
   DirectionOption,
+  Marker,
   ValuePlacementOption,
 } from 'packages/grid/src/DataBarGridModel';
 import IrisGridModel from './IrisGridModel';
@@ -655,31 +656,43 @@ class IrisGridTableModelTemplate<
       direction,
       max,
       min,
-      negativeColor,
-      opacity,
-      positiveColor,
       valuePlacement,
       value,
-      // markers,
+      marker,
     } = format.formatDataBar;
-    const posColor = positiveColor ?? theme.positiveBarColor;
-    const negColor = negativeColor ?? theme.negativeBarColor;
+    let {
+      positiveColor,
+      negativeColor,
+      markerColor,
+      opacity,
+    } = format.formatDataBar;
+
+    positiveColor = positiveColor ?? theme.positiveBarColor;
+    negativeColor = negativeColor ?? theme.negativeBarColor;
     let databarColor: string | string[] =
-      format.color ?? (value >= 0 ? posColor : negColor);
+      format.color ?? (value >= 0 ? positiveColor : negativeColor);
     if (databarColor.includes(',')) {
       databarColor = databarColor.split(',');
     }
+    markerColor = markerColor ?? theme.markerBarColor;
+
+    opacity = valuePlacement === 'overlap' ? 0.5 : opacity;
 
     const databarOptions = {
       axis: axis as AxisOption,
       direction: direction as DirectionOption,
       columnMax: max,
       columnMin: min,
-      opacity: valuePlacement === 'overlap' ? 0.5 : opacity,
+      opacity,
       color: databarColor,
       valuePlacement: valuePlacement as ValuePlacementOption,
       value,
-      markers: [],
+      markers: [
+        {
+          value: marker,
+          color: markerColor,
+        },
+      ] as Marker[],
     };
 
     return databarOptions;
