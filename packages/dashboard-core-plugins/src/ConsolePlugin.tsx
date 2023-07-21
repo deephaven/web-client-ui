@@ -13,7 +13,7 @@ import {
 import { FileUtils } from '@deephaven/file-explorer';
 import { CloseOptions, isComponent } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import shortid from 'shortid';
 import { ConsoleEvent, NotebookEvent } from './events';
