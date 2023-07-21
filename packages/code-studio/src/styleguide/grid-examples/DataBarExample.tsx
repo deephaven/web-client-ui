@@ -54,8 +54,8 @@ function DataBarExample() {
     [
       12,
       [
-        { column: 13, color: 'white' },
-        { column: 14, color: 'gray' },
+        { value: 13, color: 'white' },
+        { value: 14, color: 'gray' },
       ],
     ],
   ]);
@@ -112,8 +112,8 @@ function DataBarExample() {
         valuePlacements,
         opacities,
         directions,
-        textAlignments
-        // markers
+        textAlignments,
+        markers
       )
   );
 
