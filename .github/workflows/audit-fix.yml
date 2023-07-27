@@ -16,6 +16,8 @@ jobs:
           node-version-file: '.nvmrc'
           registry-url: 'https://registry.npmjs.org'
       - name: Run npm audit fix
+        # There may be some packages that can't be updated automatically. We don't want that to error out this step.
+        continue-on-error: true
         run: npm audit fix
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
