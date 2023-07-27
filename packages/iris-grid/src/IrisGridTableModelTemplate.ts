@@ -679,13 +679,13 @@ class IrisGridTableModelTemplate<
     opacity = valuePlacement === 'overlap' ? 0.5 : opacity;
 
     const databarOptions = {
-      axis: axis as AxisOption,
-      direction: direction as DirectionOption,
+      axis: axis.toLowerCase() as AxisOption,
+      direction: direction.toUpperCase() as DirectionOption,
       columnMax: max,
       columnMin: min,
       opacity,
       color: databarColor,
-      valuePlacement: valuePlacement as ValuePlacementOption,
+      valuePlacement: valuePlacement.toLowerCase() as ValuePlacementOption,
       value,
       markers: [
         {
