@@ -23,6 +23,6 @@ jobs:
         uses: peter-evans/create-pull-request@v5
         with:
           base: main
-          title: npm audit fix
+          title: 'fix: npm audit fix'
           branch: deephaven-bot/npm-audit-fix
           delete-branch: true
