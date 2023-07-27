@@ -1,4 +1,4 @@
-# This workflow will automatically run `npm audit fix` every Thursday morning and open a PR if there are changes
+# Automatically run `npm audit fix` every Thursday morning and open a PR if there are changes
 name: Audit fix
 on:
   schedule:
