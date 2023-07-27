@@ -42,6 +42,17 @@ export interface ConditionConfig {
   end?: string;
 }
 
+export interface DataBarConfig {
+  column: ModelColumn;
+  min?: number;
+  max?: number;
+  positiveColor?: string;
+  negativeColor?: string;
+  axis?: DataBarAxisOptions;
+  direction?: DataBarDirectionOptions;
+  valuePlacement?: DataBarValuePlacementOptions;
+}
+
 export type ChangeCallback = (
   ruleConfig: BaseFormatConfig,
   isValid: boolean
@@ -50,6 +61,7 @@ export type ChangeCallback = (
 export enum FormatterType {
   CONDITIONAL = 'conditional',
   ROWS = 'rows',
+  DATA_BAR = 'data bar',
 }
 
 export interface FormattingRule {
@@ -114,6 +126,23 @@ export enum FormatStyleType {
   ACCENT_1 = 'accent-1',
   ACCENT_2 = 'accent-2',
   CUSTOM = 'custom',
+}
+
+export enum DataBarAxisOptions {
+  PROPORTIONAL = 'Proportional',
+  MIDDLE = 'Middle',
+  DIRECTIONAL = 'Directional',
+}
+
+export enum DataBarValuePlacementOptions {
+  BESIDE = 'Show values beside bar',
+  OVERLAP = 'Show values on top of nar',
+  HIDE = 'Hide values',
+}
+
+export enum DataBarDirectionOptions {
+  LTR = 'Left to right',
+  RTL = 'Right to left',
 }
 
 export interface FormatStyleConfig {

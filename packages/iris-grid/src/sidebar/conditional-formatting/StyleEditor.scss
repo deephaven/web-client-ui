@@ -11,7 +11,7 @@ $cs-option-hover-opacity: 0.8;
     justify-content: space-between;
     border-radius: $border-radius;
     border: $input-border-width solid $input-border-color;
-    min-width: 14rem;
+    min-width: 10rem;
     &:focus {
       border-color: $input-focus-border-color;
     }

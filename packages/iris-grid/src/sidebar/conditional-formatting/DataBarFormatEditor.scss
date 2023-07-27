@@ -1,0 +1,52 @@
+// .conditional-rule-editor {
+//   font-size: 0.9rem;
+// }
+.column-range-container {
+  display: grid;
+  grid-template-columns: 1fr 5fr;
+  grid-gap: 20px 5px;
+}
+
+.column-range-container > label {
+  display: flex;
+  align-items: center;
+}
+
+.min-max-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 0px 5px;
+}
+
+.min-max-container > label {
+  margin-bottom: 2px;
+}
+
+.bar-style-container {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  grid-gap: 10px;
+}
+
+.bar-style-container > label {
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  margin-bottom: 0;
+}
+
+.marker-style-container {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  grid-gap: 10px;
+  background-color: #373438;
+  padding: 8px 10px 3px;
+  border-radius: 5px;
+}
+
+.marker-style-container > label {
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  margin-bottom: 0;
+}

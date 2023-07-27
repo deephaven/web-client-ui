@@ -33,12 +33,13 @@ const DEFAULT_DROPDOWN_WIDTH = 200;
 export interface ConditionEditorProps {
   config: FormatStyleConfig;
   onChange?: (config: FormatStyleConfig) => void;
+  showLabel?: boolean;
 }
 
 const DEFAULT_CALLBACK = () => undefined;
 
 function StyleEditor(props: ConditionEditorProps): JSX.Element {
-  const { config, onChange = DEFAULT_CALLBACK } = props;
+  const { config, onChange = DEFAULT_CALLBACK, showLabel = true } = props;
   const [styleType, setStyleType] = useState(config.type);
   const [background, setBackground] = useState(
     config.customConfig?.background ?? DEFAULT_BACKGROUND
@@ -149,7 +150,7 @@ function StyleEditor(props: ConditionEditorProps): JSX.Element {
   return (
     <div className="style-editor">
       <div className="mb-2" ref={csContainer}>
-        <label className="mb-0">Style</label>
+        {showLabel && <label className="mb-0">Style</label>}
         <Button
           kind="inline"
           className="cs-dropdown"
