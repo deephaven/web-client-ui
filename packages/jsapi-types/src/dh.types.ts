@@ -597,6 +597,8 @@ export interface FilterValue {
   isTrue(): FilterCondition;
   isNull(): FilterCondition;
   invoke(method: string, ...args: FilterValue[]): FilterCondition;
+  matches(value: FilterValue): FilterCondition;
+  matchesIgnoreCase(value: FilterValue): FilterCondition;
 }
 
 export interface FilterConditionStatic {
