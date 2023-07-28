@@ -19,7 +19,6 @@ import {
   IrisGrid,
   IrisGridModel,
   IrisGridUtils,
-  IrisGridTableModel,
   isIrisGridTableModelTemplate,
   ColumnName,
   PendingDataMap,
@@ -39,6 +38,8 @@ import {
   ChartBuilderSettings,
   DehydratedIrisGridState,
   ColumnHeaderGroup,
+  IrisGridContextMenuData,
+  IrisGridTableModel,
 } from '@deephaven/iris-grid';
 import {
   AdvancedFilterOptions,
@@ -60,10 +61,12 @@ import {
   CancelablePromise,
   PromiseUtils,
 } from '@deephaven/utils';
-import { ContextAction, ContextMenuRoot } from '@deephaven/components';
+import {
+  ContextMenuRoot,
+  ResolvableContextAction,
+} from '@deephaven/components';
 import type { Column, FilterCondition, Sort } from '@deephaven/jsapi-types';
 import {
-  GridRangeIndex,
   GridState,
   ModelIndex,
   ModelSizeMap,
@@ -80,6 +83,7 @@ import WidgetPanel from './WidgetPanel';
 import './IrisGridPanel.scss';
 import { Link, LinkColumn } from '../linker/LinkerUtils';
 import IrisGridPanelTooltip from './IrisGridPanelTooltip';
+import TablePlugin, { TablePluginElement } from './TablePlugin';
 
 const log = Log.module('IrisGridPanel');
 
@@ -151,7 +155,7 @@ export interface IrisGridPanelProps {
   getDownloadWorker: () => Promise<ServiceWorker>;
 
   // Load a plugin defined by the table
-  loadPlugin: (pluginName: string) => Plugin;
+  loadPlugin: (pluginName: string) => TablePlugin;
 
   theme: IrisGridThemeType;
 }
@@ -191,7 +195,7 @@ interface IrisGridPanelState {
   searchValue: string;
   selectedSearchColumns?: readonly string[];
   invertSearchColumns: boolean;
-  Plugin?: Plugin;
+  Plugin?: TablePlugin;
   pluginFilters: readonly FilterCondition[];
   pluginFetchColumns: readonly string[];
   modelQueue: ModelQueue;
@@ -336,8 +340,7 @@ export class IrisGridPanel extends PureComponent<
 
   irisGrid: RefObject<IrisGrid>;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  pluginRef: RefObject<any>;
+  pluginRef: RefObject<TablePluginElement>;
 
   modelPromise?: CancelablePromise<IrisGridModel>;
 
@@ -390,8 +393,7 @@ export class IrisGridPanel extends PureComponent<
 
   getPluginContent = memoize(
     (
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      Plugin: any,
+      Plugin: TablePlugin | undefined,
       model: IrisGridModel | undefined,
       user: User,
       workspace: Workspace,
@@ -411,18 +413,17 @@ export class IrisGridPanel extends PureComponent<
           <Plugin
             ref={this.pluginRef}
             filter={this.handlePluginFilter}
-            // onFilter is deprecated
-            onFilter={this.handlePluginFilter}
             fetchColumns={this.handlePluginFetchColumns}
-            // onFetchColumns is deprecated
-            onFetchColumns={this.handlePluginFetchColumns}
+            model={model}
             table={model.table}
-            user={user}
             panel={this}
-            workspace={workspace}
-            components={PLUGIN_COMPONENTS}
             onStateChange={this.handlePluginStateChange}
             pluginState={pluginState}
+            onFilter={this.handlePluginFilter}
+            onFetchColumns={this.handlePluginFetchColumns}
+            user={user}
+            workspace={workspace}
+            components={PLUGIN_COMPONENTS}
           />
         </div>
       );
@@ -630,17 +631,8 @@ export class IrisGridPanel extends PureComponent<
     this.setState({ pluginFetchColumns });
   }
 
-  handleContextMenu(obj: {
-    model: IrisGridModel;
-    value: unknown;
-    valueText: string | null;
-    column: Column;
-    rowIndex: GridRangeIndex;
-    columnIndex: GridRangeIndex;
-    modelRow: GridRangeIndex;
-    modelColumn: GridRangeIndex;
-  }): ContextAction {
-    return this.pluginRef.current?.getMenu?.(obj) ?? [];
+  handleContextMenu(data: IrisGridContextMenuData): ResolvableContextAction[] {
+    return this.pluginRef.current?.getMenu?.(data) ?? [];
   }
 
   isColumnSelectionValid(tableColumn: Column | null): boolean {

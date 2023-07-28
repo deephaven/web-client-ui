@@ -269,10 +269,6 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
     return this.frozenColumns.includes(this.columns[modelIndex].name);
   }
 
-  isColumnSortable(modelIndex: ModelIndex): boolean {
-    return this.columns[modelIndex].isSortable ?? true;
-  }
-
   async delete(ranges: GridRange[]): Promise<void> {
     if (!this.isDeletableRanges(ranges)) {
       throw new Error(`Undeletable ranges ${ranges}`);

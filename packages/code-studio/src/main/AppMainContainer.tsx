@@ -4,7 +4,6 @@ import React, {
   Component,
   ReactElement,
   RefObject,
-  ForwardRefExoticComponent,
 } from 'react';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
@@ -62,6 +61,7 @@ import {
   IrisGridPanelProps,
   ColumnSelectionValidator,
   getDashboardConnection,
+  TablePlugin,
 } from '@deephaven/dashboard-core-plugins';
 import {
   vsGear,
@@ -639,9 +639,7 @@ export class AppMainContainer extends Component<
    * @param pluginName The name of the plugin to load
    * @returns An element from the plugin
    */
-  handleLoadTablePlugin(
-    pluginName: string
-  ): ForwardRefExoticComponent<React.RefAttributes<unknown>> {
+  handleLoadTablePlugin(pluginName: string): TablePlugin {
     const { plugins } = this.props;
 
     // First check if we have any plugin modules loaded that match the TablePlugin.
@@ -651,15 +649,13 @@ export class AppMainContainer extends Component<
       (pluginModule as { TablePlugin: ReactElement }).TablePlugin != null
     ) {
       return (pluginModule as {
-        TablePlugin: ForwardRefExoticComponent<React.RefAttributes<unknown>>;
+        TablePlugin: TablePlugin;
       }).TablePlugin;
     }
 
     const errorMessage = `Unable to find table plugin ${pluginName}.`;
     log.error(errorMessage);
-    return ((
-      <div className="error-message">{`${errorMessage}`}</div>
-    ) as unknown) as ForwardRefExoticComponent<React.RefAttributes<unknown>>;
+    throw new Error(errorMessage);
   }
 
   startListeningForDisconnect() {
@@ -741,9 +737,7 @@ export class AppMainContainer extends Component<
     type: string = dh.VariableType.TABLE
   ): T & {
     getDownloadWorker: () => Promise<ServiceWorker>;
-    loadPlugin: (
-      pluginName: string
-    ) => React.ForwardRefExoticComponent<React.RefAttributes<unknown>>;
+    loadPlugin: (pluginName: string) => TablePlugin;
     localDashboardId: string;
     makeModel: () => Promise<IrisGridModel>;
   } {

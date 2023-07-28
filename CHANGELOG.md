@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.44.1](https://github.com/deephaven/web-client-ui/compare/v0.44.0...v0.44.1) (2023-07-11)
+
+### Bug Fixes
+
+- tree and rollup default to non-sortable ([#1404](https://github.com/deephaven/web-client-ui/issues/1404)) ([5a8f34d](https://github.com/deephaven/web-client-ui/commit/5a8f34def53f03796fab265e2d1b1951480b5ecb)), closes [#1402](https://github.com/deephaven/web-client-ui/issues/1402)
+
 # [0.44.0](https://github.com/deephaven/web-client-ui/compare/v0.42.0...v0.44.0) (2023-07-07)
 
 ### Bug Fixes
