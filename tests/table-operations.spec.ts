@@ -406,41 +406,50 @@ test('custom column', async ({ page }) => {
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });
 
-  // await test.step('Drag', async () => {
-  //   await addColumnButton.click();
+  await test.step('Drag', async () => {
+    await addColumnButton.click();
 
-  //   const dragColumn = page.getByPlaceholder('Column Name').nth(1);
-  //   await dragColumn.click();
-  //   await page.keyboard.type('Drag');
+    const dragColumn = page.getByPlaceholder('Column Name').nth(1);
+    await dragColumn.click();
+    await page.keyboard.type('Drag');
 
-  //   const dragColumnFormula = page.locator('.editor-container').nth(1);
-  //   await dragColumnFormula.click();
-  //   await page.keyboard.type('String');
+    const dragColumnFormula = page.locator('.editor-container').nth(1);
+    await dragColumnFormula.click();
+    await page.keyboard.type('String');
 
-  //   const dragButton = page
-  //     .getByRole('button', { name: 'Drag column to re-order' })
-  //     .nth(1);
-  //   const panelAbove = page
-  //     .getByRole('button', { name: 'Drag column to re-order' })
-  //     .first();
-  //   const dropIndicator = page
-  //     .locator('.custom-column-builder-container')
-  //     .locator('.dragging');
+    const dragButton = page
+      .getByRole('button', { name: 'Drag column to re-order' })
+      .nth(1);
+    const panelAbove = page
+      .getByRole('button', { name: 'Drag column to re-order' })
+      .first();
+    const dropIndicator = page
+      .locator('.custom-column-builder-container')
+      .locator('.dragging');
 
-  //   const browser = dragButton.page().context().browser()?.browserType().name();
-  //   await dragComponent(
-  //     dragButton,
-  //     panelAbove,
-  //     dropIndicator,
-  //     0,
-  //     browser === 'webkit' ? 1000 : undefined
-  //   );
+    // const browser = dragButton.page().context().browser()?.browserType().name();
+    await dragComponent(
+      dragButton,
+      panelAbove,
+      dropIndicator,
+      0
+      // browser === 'webkit' ? 1000 : undefined
+    );
+    // if (browser === 'webkit') {
+    //   await dragComponent(
+    //     dragButton,
+    //     panelAbove,
+    //     dropIndicator,
+    //     0
+    //     // browser === 'webkit' ? 1000 : undefined
+    //   );
+    // }
 
-  //   await saveButton.click();
+    await saveButton.click();
 
-  //   await waitForLoadingDone(page);
-  //   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-  // });
+    await waitForLoadingDone(page);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  });
 });
 
 test('rollup rows and aggregrate columns', async ({ page }) => {
