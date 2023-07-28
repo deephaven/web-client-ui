@@ -59,7 +59,7 @@ import {
   UIViewportData,
   PendingDataErrorMap,
 } from './CommonTypes';
-import theme, { IrisGridThemeType } from './IrisGridTheme';
+import { IrisGridThemeType } from './IrisGridTheme';
 import ColumnHeaderGroup, { isColumnHeaderGroup } from './ColumnHeaderGroup';
 
 const log = Log.module('IrisGridTableModel');
@@ -581,17 +581,13 @@ class IrisGridTableModelTemplate<
     return undefined;
   }
 
-  colorForCell(
-    x: ModelIndex,
-    y: ModelIndex,
-    customTheme: IrisGridThemeType
-  ): string {
+  colorForCell(x: ModelIndex, y: ModelIndex, theme: IrisGridThemeType): string {
     const data = this.dataForCell(x, y);
     if (data) {
       const { format, value } = data;
       if (value == null || value === '') {
-        assertNotNull(customTheme.nullStringColor);
-        return customTheme.nullStringColor;
+        assertNotNull(theme.nullStringColor);
+        return theme.nullStringColor;
       }
       if (format && format.color) {
         return format.color;
@@ -599,36 +595,36 @@ class IrisGridTableModelTemplate<
 
       if (this.isPendingRow(y)) {
         // Data entered in a pending row
-        assertNotNull(customTheme.pendingTextColor);
-        return customTheme.pendingTextColor;
+        assertNotNull(theme.pendingTextColor);
+        return theme.pendingTextColor;
       }
 
       // Fallback to formatting based on the value/type of the cell
       if (value != null) {
         const column = this.totalsColumn(x, y) ?? this.columns[x];
         if (TableUtils.isDateType(column.type) || column.name === 'Date') {
-          assertNotNull(customTheme.dateColor);
-          return customTheme.dateColor;
+          assertNotNull(theme.dateColor);
+          return theme.dateColor;
         }
         if (TableUtils.isNumberType(column.type)) {
           if ((value as number) > 0) {
-            assertNotNull(customTheme.positiveNumberColor);
-            return customTheme.positiveNumberColor;
+            assertNotNull(theme.positiveNumberColor);
+            return theme.positiveNumberColor;
           }
           if ((value as number) < 0) {
-            assertNotNull(customTheme.negativeNumberColor);
-            return customTheme.negativeNumberColor;
+            assertNotNull(theme.negativeNumberColor);
+            return theme.negativeNumberColor;
           }
-          assertNotNull(customTheme.zeroNumberColor);
-          return customTheme.zeroNumberColor;
+          assertNotNull(theme.zeroNumberColor);
+          return theme.zeroNumberColor;
         }
       }
     } else if (this.isPendingRow(y) && this.isKeyColumn(x)) {
-      assertNotNull(customTheme.errorTextColor);
-      return customTheme.errorTextColor;
+      assertNotNull(theme.errorTextColor);
+      return theme.errorTextColor;
     }
 
-    return customTheme.textColor;
+    return theme.textColor;
   }
 
   backgroundColorForCell(x: ModelIndex, y: ModelIndex): string | null {
@@ -648,7 +644,11 @@ class IrisGridTableModelTemplate<
     return 'left';
   }
 
-  dataBarOptionsForCell(column: ModelIndex, row: ModelIndex): DataBarOptions {
+  dataBarOptionsForCell(
+    column: ModelIndex,
+    row: ModelIndex,
+    theme: IrisGridThemeType
+  ): DataBarOptions {
     const format = this.formatForCell(column, row);
     assertNotNull(format);
     const {

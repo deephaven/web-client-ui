@@ -1,3 +1,4 @@
+import { GridThemeType } from '.';
 import { ModelIndex } from './GridMetrics';
 import GridModel from './GridModel';
 import { GridColor } from './GridTheme';
@@ -49,5 +50,9 @@ export function isDataBarGridModel(
 }
 
 export interface DataBarGridModel extends GridModel {
-  dataBarOptionsForCell(column: ModelIndex, row: ModelIndex): DataBarOptions;
+  dataBarOptionsForCell(
+    column: ModelIndex,
+    row: ModelIndex,
+    theme: GridThemeType
+  ): DataBarOptions;
 }

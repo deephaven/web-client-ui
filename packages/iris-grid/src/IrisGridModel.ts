@@ -31,6 +31,7 @@ import {
   PendingDataErrorMap,
 } from './CommonTypes';
 import ColumnHeaderGroup from './ColumnHeaderGroup';
+import { IrisGridThemeType } from './IrisGridTheme';
 
 type IrisGridModelEventNames = typeof IrisGridModel.EVENT[keyof typeof IrisGridModel.EVENT];
 
@@ -536,7 +537,11 @@ abstract class IrisGridModel<
     depth: number
   ): ColumnHeaderGroup | undefined;
 
-  dataBarOptionsForCell(column: number, row: number): DataBarOptions {
+  dataBarOptionsForCell(
+    column: number,
+    row: number,
+    theme: IrisGridThemeType
+  ): DataBarOptions {
     throw new Error('Method not implemented.');
   }
 }

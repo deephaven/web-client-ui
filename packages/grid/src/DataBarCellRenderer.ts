@@ -85,7 +85,7 @@ class DataBarCellRenderer extends CellRenderer {
       markers,
       direction,
       value,
-    } = model.dataBarOptionsForCell(modelColumn, modelRow);
+    } = model.dataBarOptionsForCell(modelColumn, modelRow, theme);
 
     const hasGradient = Array.isArray(dataBarColor);
     if (columnMin == null || columnMax == null) {
@@ -348,7 +348,7 @@ class DataBarCellRenderer extends CellRenderer {
       markers,
       direction,
       value,
-    } = model.dataBarOptionsForCell(modelColumn, modelRow);
+    } = model.dataBarOptionsForCell(modelColumn, modelRow, theme);
     const longestValueWidth = this.getCachedWidestValueForColumn(
       context,
       visibleRows,
