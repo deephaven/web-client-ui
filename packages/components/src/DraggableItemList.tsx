@@ -239,23 +239,18 @@ class DraggableItemList<T> extends PureComponent<
       draggablePrefix: string,
       isDragDisabled: boolean,
       renderItem: DraggableRenderItemFn<T>
-    ) => ({
-      item,
-      itemIndex,
-      isFocused,
-      isSelected,
-      style,
-    }: RenderItemProps<T>) =>
-      this.getCachedDraggableItem(
-        draggablePrefix,
-        renderItem,
-        item,
-        itemIndex,
-        isFocused,
-        isSelected,
-        isDragDisabled,
-        style
-      ),
+    ) =>
+      ({ item, itemIndex, isFocused, isSelected, style }: RenderItemProps<T>) =>
+        this.getCachedDraggableItem(
+          draggablePrefix,
+          renderItem,
+          item,
+          itemIndex,
+          isFocused,
+          isSelected,
+          isDragDisabled,
+          style
+        ),
     { max: 1 }
   );
 
@@ -265,45 +260,46 @@ class DraggableItemList<T> extends PureComponent<
       items: readonly T[],
       offset: number,
       renderItem: DraggableRenderItemFn<T>
+    ): DraggableChildrenFn =>
       // eslint-disable-next-line react/no-unstable-nested-components, react/display-name, react/function-component-definition
-    ): DraggableChildrenFn => (provided, snapshot, rubric) => {
-      // eslint-disable-next-line react/no-this-in-sfc
-      const { selectedCount } = this.state;
-      const { draggableProps, dragHandleProps, innerRef } = provided;
-      const { index: itemIndex } = rubric.source;
-      const item = items[itemIndex - offset];
-      return (
-        <div
-          className={classNames(
-            'draggable-item-list-dragging-item-container',
-            draggingItemClassName
-          )}
-          // eslint-disable-next-line react/jsx-props-no-spreading
-          {...draggableProps}
-          // eslint-disable-next-line react/jsx-props-no-spreading
-          {...dragHandleProps}
-          ref={innerRef}
-        >
+      (provided, snapshot, rubric) => {
+        // eslint-disable-next-line react/no-this-in-sfc
+        const { selectedCount } = this.state;
+        const { draggableProps, dragHandleProps, innerRef } = provided;
+        const { index: itemIndex } = rubric.source;
+        const item = items[itemIndex - offset];
+        return (
           <div
             className={classNames(
-              'draggable-item-list-dragging-item',
-              { 'two-dragged': selectedCount === 2 },
-              { 'multiple-dragged': selectedCount > 2 }
+              'draggable-item-list-dragging-item-container',
+              draggingItemClassName
             )}
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            {...draggableProps}
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            {...dragHandleProps}
+            ref={innerRef}
           >
-            {renderItem({
-              item,
-              itemIndex,
-              isFocused: false,
-              isSelected: true,
-              style: {},
-              isClone: true,
-              selectedCount,
-            })}
+            <div
+              className={classNames(
+                'draggable-item-list-dragging-item',
+                { 'two-dragged': selectedCount === 2 },
+                { 'multiple-dragged': selectedCount > 2 }
+              )}
+            >
+              {renderItem({
+                item,
+                itemIndex,
+                isFocused: false,
+                isSelected: true,
+                style: {},
+                isClone: true,
+                selectedCount,
+              })}
+            </div>
           </div>
-        </div>
-      );
-    },
+        );
+      },
     { max: 1 }
   );
 

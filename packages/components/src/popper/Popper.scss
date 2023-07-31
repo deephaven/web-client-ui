@@ -14,7 +14,9 @@ $animation-offset: 10px;
   background: $tooltip-bg;
   color: $tooltip-color;
   border-radius: $border-radius;
-  transition: visibility $transition, opacity $transition;
+  transition:
+    visibility $transition,
+    opacity $transition;
   pointer-events: none;
   outline: 0;
 

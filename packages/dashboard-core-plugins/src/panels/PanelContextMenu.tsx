@@ -44,8 +44,8 @@ class PanelContextMenu extends PureComponent<
 
     // No need to check if isClosable, golden-layout returns
     // false when attempting to close tabs that you can't
-    tabs.forEach(tab =>
-      ((tab?.contentItem as unknown) as HasContainer).container?.close()
+    tabs.forEach(
+      tab => (tab?.contentItem as unknown as HasContainer).container?.close()
     );
   }
 
@@ -62,7 +62,7 @@ class PanelContextMenu extends PureComponent<
       }
 
       // eslint-disable-next-line no-unused-expressions
-      ((tabs[i]?.contentItem as unknown) as HasContainer).container?.close();
+      (tabs[i]?.contentItem as unknown as HasContainer).container?.close();
     }
   }
 

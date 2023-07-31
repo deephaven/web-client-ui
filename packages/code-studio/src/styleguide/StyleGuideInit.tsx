@@ -24,7 +24,7 @@ function StyleGuideInit(props: {
   useEffect(() => {
     LocalWorkspaceStorage.makeDefaultWorkspace({
       getLayouts: async () => [] as string[],
-      getLayout: async () => ({} as ExportedLayout),
+      getLayout: async () => ({}) as ExportedLayout,
     }).then(setWorkspace);
   }, [setWorkspace]);
 

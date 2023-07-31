@@ -342,13 +342,11 @@ class ContextMenu extends PureComponent<ContextMenuProps, ContextMenuState> {
     // as the number of menu items can change (actions can bubble)
     // and menu should always be positioned relative to spawn point
     let { top, left } = this.initialPosition;
-    const {
-      width,
-      height,
-    } = this.container.current?.getBoundingClientRect() ?? {
-      width: 0,
-      height: 0,
-    };
+    const { width, height } =
+      this.container.current?.getBoundingClientRect() ?? {
+        width: 0,
+        height: 0,
+      };
     const hasOverflow =
       (this.container.current?.scrollHeight ?? 0) > window.innerHeight;
 
@@ -430,7 +428,7 @@ class ContextMenu extends PureComponent<ContextMenuProps, ContextMenuState> {
       if (oldFocus >= 0 && oldFocus < menuItems.length) {
         this.handleMenuItemClick(
           menuItems[oldFocus],
-          (e as React.SyntheticEvent) as React.MouseEvent
+          e as React.SyntheticEvent as React.MouseEvent
         );
       }
       return;

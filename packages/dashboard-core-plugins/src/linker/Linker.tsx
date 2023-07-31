@@ -81,7 +81,8 @@ const connector = connect(mapState, {
   addDashboardLinks: addDashboardLinksAction,
   deleteDashboardLinks: deleteDashboardLinksAction,
   setDashboardIsolatedLinkerPanelId: setDashboardIsolatedLinkerPanelIdAction,
-  setDashboardColumnSelectionValidator: setDashboardColumnSelectionValidatorAction,
+  setDashboardColumnSelectionValidator:
+    setDashboardColumnSelectionValidatorAction,
 });
 
 export type LinkerProps = OwnProps &

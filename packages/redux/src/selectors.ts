@@ -57,14 +57,14 @@ export const getDefaultDateTimeFormat = <State extends RootState>(
   getSettings(store).defaultDateTimeFormat;
 
 export const getDefaultDecimalFormatOptions = <
-  State extends RootState = RootState
+  State extends RootState = RootState,
 >(
   store: State
 ): Settings<State>['defaultDecimalFormatOptions'] =>
   getSettings(store).defaultDecimalFormatOptions ?? EMPTY_OBJECT;
 
 export const getDefaultIntegerFormatOptions = <
-  State extends RootState = RootState
+  State extends RootState = RootState,
 >(
   store: State
 ): Settings<State>['defaultIntegerFormatOptions'] =>
@@ -87,7 +87,7 @@ export const getShowTSeparator = <State extends RootState>(
 ): Settings<State>['showTSeparator'] => getSettings(store).showTSeparator;
 
 export const getTruncateNumbersWithPound = <
-  State extends RootState = RootState
+  State extends RootState = RootState,
 >(
   store: State
 ): Settings<State>['truncateNumbersWithPound'] =>

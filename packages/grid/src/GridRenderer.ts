@@ -1823,14 +1823,8 @@ export class GridRenderer {
     context: CanvasRenderingContext2D,
     state: GridRenderState
   ): void {
-    const {
-      mouseX,
-      mouseY,
-      metrics,
-      model,
-      theme,
-      draggingRowSeparator,
-    } = state;
+    const { mouseX, mouseY, metrics, model, theme, draggingRowSeparator } =
+      state;
     const {
       gridY,
       gridX,
@@ -2226,10 +2220,8 @@ export class GridRenderer {
       return;
     }
 
-    const {
-      range: draggingColumnVisibleRange,
-      depth: draggingColumnDepth,
-    } = draggingColumn;
+    const { range: draggingColumnVisibleRange, depth: draggingColumnDepth } =
+      draggingColumn;
 
     const {
       gridX,

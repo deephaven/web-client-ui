@@ -29,7 +29,7 @@ const ROW_BUFFER_PAGES = 3;
 const log = Log.module('StorageTableViewportUpdater');
 
 export function StorageTableViewportUpdater<
-  T extends StorageItem = StorageItem
+  T extends StorageItem = StorageItem,
 >({
   table,
   columns,

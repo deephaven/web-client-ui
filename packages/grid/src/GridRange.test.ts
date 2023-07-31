@@ -14,13 +14,13 @@ describe('contains tests', () => {
       GridRangeIndex,
       GridRangeIndex,
       GridRangeIndex,
-      GridRangeIndex
+      GridRangeIndex,
     ],
     range2Values: [
       GridRangeIndex,
       GridRangeIndex,
       GridRangeIndex,
-      GridRangeIndex
+      GridRangeIndex,
     ]
   ) {
     const range1 = new GridRange(...range1Values);
@@ -56,13 +56,13 @@ describe('touching tests', () => {
       GridRangeIndex,
       GridRangeIndex,
       GridRangeIndex,
-      GridRangeIndex
+      GridRangeIndex,
     ],
     range2Values: [
       GridRangeIndex,
       GridRangeIndex,
       GridRangeIndex,
-      GridRangeIndex
+      GridRangeIndex,
     ]
   ) {
     const range1 = new GridRange(...range1Values);

@@ -40,9 +40,9 @@ function expectMockChild() {
 
 function renderComponent(client: CoreClient) {
   const api = TestUtils.createMockProxy<DhType>({
-    CoreClient: (jest
+    CoreClient: jest
       .fn()
-      .mockImplementation(() => client) as unknown) as CoreClient,
+      .mockImplementation(() => client) as unknown as CoreClient,
   });
   return render(
     <ApiContext.Provider value={api}>

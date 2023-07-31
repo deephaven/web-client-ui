@@ -30,7 +30,7 @@ const makeMockGridMetrics = (): GridMetrics =>
     height: 500,
     verticalBarWidth: 20,
     horizontalBarHeight: 20,
-  } as GridMetrics);
+  }) as GridMetrics;
 
 describe('move items', () => {
   it('returns the proper model/visible index when one column is moved', () => {

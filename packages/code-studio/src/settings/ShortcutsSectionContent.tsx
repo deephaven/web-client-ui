@@ -116,9 +116,10 @@ function ShortcutCategory({
     setShortcuts(s => [...s]);
   }
 
-  const displayTexts = useMemo(() => shortcuts.map(s => s.getDisplayText()), [
-    shortcuts,
-  ]);
+  const displayTexts = useMemo(
+    () => shortcuts.map(s => s.getDisplayText()),
+    [shortcuts]
+  );
 
   return (
     <div className="mt-3">

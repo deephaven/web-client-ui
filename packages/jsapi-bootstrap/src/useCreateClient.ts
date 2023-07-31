@@ -7,11 +7,10 @@ export function useCreateClient(
   options?: ConnectOptions
 ): CoreClient {
   const api = useApi();
-  const client = useMemo(() => new api.CoreClient(serverUrl, options), [
-    api,
-    serverUrl,
-    options,
-  ]);
+  const client = useMemo(
+    () => new api.CoreClient(serverUrl, options),
+    [api, serverUrl, options]
+  );
   useEffect(
     () => () => {
       client.disconnect();

@@ -197,11 +197,8 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
       onTabClicked,
     } = this.props;
 
-    const {
-      isPanelDisconnected,
-      isWidgetDisconnected,
-      isPanelInactive,
-    } = this.state;
+    const { isPanelDisconnected, isWidgetDisconnected, isPanelInactive } =
+      this.state;
     const errorMessage = this.getErrorMessage();
     const doRenderTabTooltip =
       renderTabTooltip ??

@@ -154,7 +154,8 @@ describe('Go to value', () => {
     const user = userEvent.setup({ delay: null });
     const onGotoValueSelectedColumnNameChangedMock = jest.fn();
     const component = makeGotoRow({
-      onGotoValueSelectedColumnNameChanged: onGotoValueSelectedColumnNameChangedMock,
+      onGotoValueSelectedColumnNameChanged:
+        onGotoValueSelectedColumnNameChangedMock,
     });
 
     const inputElement = screen.getByLabelText('column-name-select');

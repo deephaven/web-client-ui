@@ -34,13 +34,13 @@ const layoutConfig: ItemConfigType[] = [
     type: 'TestComponentType',
   },
 ];
-const layoutV3 = ({
+const layoutV3 = {
   links,
   filterSets,
   layoutConfig,
   another: 'another test property',
   version: 3,
-} as unknown) as ExportedLayout;
+} as unknown as ExportedLayout;
 const layoutV2: ExportedLayoutV2 = {
   links,
   filterSets,

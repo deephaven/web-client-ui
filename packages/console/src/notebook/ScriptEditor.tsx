@@ -330,14 +330,8 @@ class ScriptEditor extends Component<ScriptEditorProps, ScriptEditorState> {
   }
 
   render(): ReactElement {
-    const {
-      error,
-      isLoaded,
-      isLoading,
-      session,
-      sessionLanguage,
-      settings,
-    } = this.props;
+    const { error, isLoaded, isLoading, session, sessionLanguage, settings } =
+      this.props;
     const { model } = this.state;
     const errorMessage = error ? `Unable to open document. ${error}` : null;
     const editorLanguage = settings ? settings.language ?? null : null;

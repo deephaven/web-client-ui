@@ -11,7 +11,7 @@ const transitions = {
 } as const;
 
 type Theme = {
-  [Property in keyof typeof transitions]: typeof transitions[Property];
+  [Property in keyof typeof transitions]: (typeof transitions)[Property];
 } & { [key: string]: string };
 
 export default Object.freeze({

@@ -1,7 +1,7 @@
 import store from './store';
 
 export function createMockStore(): typeof store {
-  return ({
+  return {
     dispatch: jest.fn(() => undefined),
     getState: jest.fn(() => ({
       dashboardData: {},
@@ -12,7 +12,7 @@ export function createMockStore(): typeof store {
       },
     })),
     subscribe: jest.fn(() => undefined),
-  } as unknown) as typeof store;
+  } as unknown as typeof store;
 }
 
 export default createMockStore;

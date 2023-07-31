@@ -218,9 +218,8 @@ describe('Move to group', () => {
 
 describe('Move items from drop', () => {
   test('Move an item into a group from above', () => {
-    const { flattenedItems, groups, movedColumns } = makeTreeItems(
-      SINGLE_HEADER_GROUPS
-    );
+    const { flattenedItems, groups, movedColumns } =
+      makeTreeItems(SINGLE_HEADER_GROUPS);
     const fromItem = getItem(flattenedItems, COLUMNS[0].name);
     const toItem = getProjectedItem(
       flattenedItems,
@@ -250,9 +249,8 @@ describe('Move items from drop', () => {
   });
 
   test('Drop an item on a group from above', () => {
-    const { flattenedItems, groups, movedColumns } = makeTreeItems(
-      SINGLE_HEADER_GROUPS
-    );
+    const { flattenedItems, groups, movedColumns } =
+      makeTreeItems(SINGLE_HEADER_GROUPS);
     // Should move into the group at the top
     const fromItem = getItem(flattenedItems, COLUMNS[0].name);
     const toItem = getProjectedItem(
@@ -283,9 +281,8 @@ describe('Move items from drop', () => {
   });
 
   test('Move an item into a group from below', () => {
-    const { flattenedItems, groups, movedColumns } = makeTreeItems(
-      SINGLE_HEADER_GROUPS
-    );
+    const { flattenedItems, groups, movedColumns } =
+      makeTreeItems(SINGLE_HEADER_GROUPS);
     const fromItem = getItem(flattenedItems, COLUMNS[7].name);
     const toItem = getProjectedItem(
       flattenedItems,
@@ -317,9 +314,8 @@ describe('Move items from drop', () => {
   });
 
   test('Drop an item on a group from below', () => {
-    const { flattenedItems, groups, movedColumns } = makeTreeItems(
-      SINGLE_HEADER_GROUPS
-    );
+    const { flattenedItems, groups, movedColumns } =
+      makeTreeItems(SINGLE_HEADER_GROUPS);
     // Should move past the group
     const fromItem = getItem(flattenedItems, COLUMNS[7].name);
     const toItem = getProjectedItem(
@@ -347,9 +343,8 @@ describe('Move items from drop', () => {
   });
 
   test('Move the item below a group to the bottom of the group', () => {
-    const { flattenedItems, groups, movedColumns } = makeTreeItems(
-      SINGLE_HEADER_GROUPS
-    );
+    const { flattenedItems, groups, movedColumns } =
+      makeTreeItems(SINGLE_HEADER_GROUPS);
     const fromItem = getItem(flattenedItems, COLUMNS[2].name);
     const toItem = getProjectedItem(
       flattenedItems,
@@ -381,9 +376,8 @@ describe('Move items from drop', () => {
   });
 
   test('Move the group directly below a group to the bottom of the group', () => {
-    const { flattenedItems, groups, movedColumns } = makeTreeItems(
-      COLUMN_HEADER_GROUPS
-    );
+    const { flattenedItems, groups, movedColumns } =
+      makeTreeItems(COLUMN_HEADER_GROUPS);
     const fromItem = getItem(flattenedItems, COLUMN_HEADER_GROUPS[1].name);
     const toItem = getProjectedItem(
       flattenedItems,
@@ -416,9 +410,8 @@ describe('Move items from drop', () => {
   });
 
   test('Move a group onto a group from above', () => {
-    const { flattenedItems, groups, movedColumns } = makeTreeItems(
-      COLUMN_HEADER_GROUPS
-    );
+    const { flattenedItems, groups, movedColumns } =
+      makeTreeItems(COLUMN_HEADER_GROUPS);
     const fromItem = getItem(flattenedItems, groups[0].name);
     const toItem = getProjectedItem(
       flattenedItems,
@@ -496,9 +489,8 @@ describe('Move items from drop', () => {
   });
 
   test('Move multiple, disjoint items including a group', () => {
-    const { flattenedItems, groups, movedColumns } = makeTreeItems(
-      COLUMN_HEADER_GROUPS
-    );
+    const { flattenedItems, groups, movedColumns } =
+      makeTreeItems(COLUMN_HEADER_GROUPS);
     let fromItemOne = getItem(flattenedItems, COLUMN_HEADER_GROUPS[0].name);
     let fromItemTwo = getItem(flattenedItems, COLUMNS[8].name);
 

@@ -36,9 +36,8 @@ export default class BrowserPopout extends EventEmitter {
   private _parentId: string;
   private _indexInParent: number;
   private _layoutManager: LayoutManager;
-  private _popoutWindow:
-    | (Window & { __glInstance: LayoutManager })
-    | null = null;
+  private _popoutWindow: (Window & { __glInstance: LayoutManager }) | null =
+    null;
   private _id = null;
 
   constructor(
@@ -62,7 +61,7 @@ export default class BrowserPopout extends EventEmitter {
     if (this.isInitialised === false) {
       throw new Error("Can't create config, layout not yet initialised");
     }
-    return ({
+    return {
       dimensions: {
         width: this.getGlInstance()?.width,
         height: this.getGlInstance()?.height,
@@ -73,7 +72,7 @@ export default class BrowserPopout extends EventEmitter {
       content: this.getGlInstance()?.toConfig().content,
       parentId: this._parentId,
       indexInParent: this._indexInParent,
-    } as unknown) as PopoutConfig;
+    } as unknown as PopoutConfig;
   }
 
   getGlInstance() {

@@ -11,8 +11,10 @@ const UNKNOWN = 'unknown';
 const MAX_INT = 2147483647;
 const MIN_INT = -2147483648;
 
-const DATE_TIME_REGEX = /^[0-9]{4}-[0-1][0-9]-[0-3][0-9][ T][0-2][0-9]:[0-5][0-9]:[0-6][0-9](?:\.[0-9]{1,9})?(?: [a-zA-Z]+)?$/;
-const LOCAL_TIME_REGEX = /^([0-9]+T)?([0-9]+):([0-9]+)(:[0-9]+)?(?:\.[0-9]{1,9})?$/;
+const DATE_TIME_REGEX =
+  /^[0-9]{4}-[0-1][0-9]-[0-3][0-9][ T][0-2][0-9]:[0-5][0-9]:[0-6][0-9](?:\.[0-9]{1,9})?(?: [a-zA-Z]+)?$/;
+const LOCAL_TIME_REGEX =
+  /^([0-9]+T)?([0-9]+):([0-9]+)(:[0-9]+)?(?:\.[0-9]{1,9})?$/;
 
 /**
  * Determines the type of each column in a CSV file by parsing it and looking at every value.
@@ -52,7 +54,7 @@ class CsvTypeParser {
   // Allows for cusomt rules in addition to isNaN
   static isNotParsableNumber(s: string): boolean {
     return (
-      isNaN((s as unknown) as number) || s === 'Infinity' || s === '-Infinity'
+      isNaN(s as unknown as number) || s === 'Infinity' || s === '-Infinity'
     );
   }
 

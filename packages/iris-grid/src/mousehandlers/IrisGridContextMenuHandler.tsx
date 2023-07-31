@@ -839,9 +839,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const actions = [];
 
     for (let i = 0; i < formatOptions.length; i += 1) {
-      const { description, format, group, isSelected, title } = formatOptions[
-        i
-      ];
+      const { description, format, group, isSelected, title } =
+        formatOptions[i];
       actions.push({
         title,
         description,
@@ -940,9 +939,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const { model } = this.irisGrid.props;
     const columnIndex = model.getColumnIndexByName(column.name);
 
-    const quickFilterValueText:
-      | string
-      | null = TableUtils.escapeQuickTextFilter(valueText);
+    const quickFilterValueText: string | null =
+      TableUtils.escapeQuickTextFilter(valueText);
 
     assertNotNull(columnIndex);
 

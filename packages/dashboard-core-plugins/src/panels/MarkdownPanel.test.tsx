@@ -30,7 +30,7 @@ function mountMarkdownPanel(
 ) {
   return render(
     <MarkdownPanel
-      glContainer={(glContainer as unknown) as Container}
+      glContainer={glContainer as unknown as Container}
       glEventHub={glEventHub}
       panelState={panelState}
       closedPanels={closedPanels}

@@ -9,7 +9,7 @@ import { GridRenderState } from './GridRendererTypes';
 
 const makeMockContext = (): CanvasRenderingContext2D =>
   // Just return a partial mock
-  (({
+  ({
     arc: jest.fn(),
     beginPath: jest.fn(),
     clip: jest.fn(),
@@ -21,7 +21,7 @@ const makeMockContext = (): CanvasRenderingContext2D =>
     fillRect: jest.fn(),
     fillText: jest.fn(),
     lineTo: jest.fn(),
-    measureText: jest.fn(str => ({ width: str.length * 10 } as TextMetrics)),
+    measureText: jest.fn(str => ({ width: str.length * 10 }) as TextMetrics),
     moveTo: jest.fn(),
     rect: jest.fn(),
     restore: jest.fn(),
@@ -32,7 +32,7 @@ const makeMockContext = (): CanvasRenderingContext2D =>
     translate: jest.fn(),
     scale: jest.fn(),
     createPattern: jest.fn(),
-  } as unknown) as CanvasRenderingContext2D);
+  }) as unknown as CanvasRenderingContext2D;
 
 const makeMockGridMetrics = (): GridMetrics =>
   ({
@@ -66,7 +66,7 @@ const makeMockGridMetrics = (): GridMetrics =>
       [1, 10],
       [2, 10],
     ]),
-  } as GridMetrics);
+  }) as GridMetrics;
 
 const makeMockGridRenderState = ({
   metrics = makeMockGridMetrics(),
