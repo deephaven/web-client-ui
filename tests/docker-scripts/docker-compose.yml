@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   dhc-server:
-    image: ghcr.io/deephaven/server:${VERSION:-latest}
+    image: ghcr.io/deephaven/server:${DHC_VERSION:-edge}
     expose:
       - 10000
     environment:

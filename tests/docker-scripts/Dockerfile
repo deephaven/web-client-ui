@@ -34,11 +34,6 @@ FROM playwright as build
 WORKDIR /work/
 COPY --from=copy-packages /work/ .
 
-# Next copy just the package.json and package-lock.json files over so we can install dependencies and cache at this layer
-# Doesn't seem to be an easy way to copy it with a glob and retain the directory structure.
-# Will need to add new packages here when they are created.
-# https://stackoverflow.com/questions/49939960/docker-copy-files-using-glob-pattern#comment106088784_49940132
-
 # Disable the postinstall script, or npm ci will try and build and the files won't be there
 # We don't need the postinstall since we're going to rebuild right after
 RUN SKIP_POSTINSTALL=1 npm ci
