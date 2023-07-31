@@ -45,11 +45,8 @@ class IrisGridFilterMouseHandler extends GridMouseHandler {
 
   onMove(gridPoint: GridPoint): EventHandlerResult {
     const { y, column } = gridPoint;
-    const {
-      isFilterBarShown,
-      hoverAdvancedFilter,
-      metrics,
-    } = this.irisGrid.state;
+    const { isFilterBarShown, hoverAdvancedFilter, metrics } =
+      this.irisGrid.state;
     if (!metrics) throw new Error('Metrics not set');
     const { columnHeaderMaxDepth } = metrics;
     const theme = this.irisGrid.getTheme();

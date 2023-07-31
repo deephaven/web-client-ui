@@ -14,9 +14,9 @@ const numberColumnFormatters = [
   },
 ];
 
-const INVALID_FORMAT = ({
+const INVALID_FORMAT = {
   formatString: {},
-} as unknown) as TableColumnFormat;
+} as unknown as TableColumnFormat;
 
 numberColumnFormatters.forEach(({ name, formatter: NumberColumnFormatter }) => {
   describe(`${name}.isValid`, () => {

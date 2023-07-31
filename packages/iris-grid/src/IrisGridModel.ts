@@ -33,7 +33,8 @@ import {
 import ColumnHeaderGroup from './ColumnHeaderGroup';
 import { IrisGridThemeType } from './IrisGridTheme';
 
-type IrisGridModelEventNames = typeof IrisGridModel.EVENT[keyof typeof IrisGridModel.EVENT];
+type IrisGridModelEventNames =
+  (typeof IrisGridModel.EVENT)[keyof typeof IrisGridModel.EVENT];
 
 type IrisGridModelEventMap = {
   [E in IrisGridModelEventNames]: Event<E>;
@@ -53,10 +54,11 @@ abstract class IrisGridModel<
       string,
       Event<string>
     >,
-    TMode extends 'standard' | 'strict' = 'standard'
+    TMode extends 'standard' | 'strict' = 'standard',
   >
   extends GridModel<TEventMap & IrisGridModelEventMap, TMode>
-  implements DataBarGridModel {
+  implements DataBarGridModel
+{
   static EVENT = Object.freeze({
     UPDATED: 'UPDATED',
     FORMATTER_UPDATED: 'FORMATTER_UPDATED',

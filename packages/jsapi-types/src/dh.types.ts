@@ -57,7 +57,7 @@ const ValueType = {
   BOOLEAN: 'Boolean',
 } as const;
 
-export type ValueTypeUnion = typeof ValueType[keyof typeof ValueType];
+export type ValueTypeUnion = (typeof ValueType)[keyof typeof ValueType];
 
 export interface CalendarStatic {
   DayOfWeek: { values: () => string[] };

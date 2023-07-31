@@ -300,11 +300,8 @@ describe('arrow left and right jumps segments', () => {
       }
     }
 
-    const {
-      selectionStart,
-      selectionEnd,
-      selectionDirection,
-    } = expectedSelection;
+    const { selectionStart, selectionEnd, selectionDirection } =
+      expectedSelection;
 
     expect(input).toBeInstanceOf(HTMLInputElement);
     expect(input.selectionStart).toEqual(selectionStart);

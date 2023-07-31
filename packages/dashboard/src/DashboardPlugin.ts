@@ -44,12 +44,12 @@ export type PanelFunctionComponentType<P, R> = ForwardRefComponentType<P, R> &
 
 export type WrappedComponentType<
   P extends PanelProps,
-  C extends ComponentType<P>
+  C extends ComponentType<P>,
 > = ConnectedComponent<C, P>;
 
 export type PanelComponentType<
   P extends PanelProps = PanelProps,
-  C extends ComponentType<P> = ComponentType<P>
+  C extends ComponentType<P> = ComponentType<P>,
 > = (
   | ComponentType<P>
   | WrappedComponentType<P, C>
@@ -59,7 +59,7 @@ export type PanelComponentType<
 
 export function isWrappedComponent<
   P extends PanelProps,
-  C extends ComponentType<P>
+  C extends ComponentType<P>,
 >(type: PanelComponentType<P, C>): type is WrappedComponentType<P, C> {
   return (type as WrappedComponentType<P, C>)?.WrappedComponent !== undefined;
 }

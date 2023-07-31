@@ -22,13 +22,9 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
   }
 
   static renderButtons(type: string): ReactElement {
-    const brands = [
-      'primary',
-      'secondary',
-      'success',
-      'info',
-      'danger',
-    ].map((brand: string) => Buttons.renderButtonBrand(type, brand));
+    const brands = ['primary', 'secondary', 'success', 'info', 'danger'].map(
+      (brand: string) => Buttons.renderButtonBrand(type, brand)
+    );
 
     return (
       <div key={type}>

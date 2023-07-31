@@ -81,7 +81,7 @@ export function isIrisGridTableModelTemplate(
 
 class IrisGridTableModelTemplate<
   T extends TableTemplate<T> = Table,
-  R extends UIRow = UIRow
+  R extends UIRow = UIRow,
 > extends IrisGridModel {
   static ROW_BUFFER_PAGES = 1;
 
@@ -221,9 +221,8 @@ class IrisGridTableModelTemplate<
     this.handleTableUpdate = this.handleTableUpdate.bind(this);
     this.handleTotalsUpdate = this.handleTotalsUpdate.bind(this);
     this.handleRequestFailed = this.handleRequestFailed.bind(this);
-    this.handleCustomColumnsChanged = this.handleCustomColumnsChanged.bind(
-      this
-    );
+    this.handleCustomColumnsChanged =
+      this.handleCustomColumnsChanged.bind(this);
 
     this.dh = dh;
     this.irisFormatter = formatter;
@@ -651,21 +650,10 @@ class IrisGridTableModelTemplate<
   ): DataBarOptions {
     const format = this.formatForCell(column, row);
     assertNotNull(format);
-    const {
-      axis,
-      direction,
-      max,
-      min,
-      valuePlacement,
-      value,
-      marker,
-    } = format.formatDataBar;
-    let {
-      positiveColor,
-      negativeColor,
-      markerColor,
-      opacity,
-    } = format.formatDataBar;
+    const { axis, direction, max, min, valuePlacement, value, marker } =
+      format.formatDataBar;
+    let { positiveColor, negativeColor, markerColor, opacity } =
+      format.formatDataBar;
 
     positiveColor = positiveColor ?? theme.positiveBarColor;
     negativeColor = negativeColor ?? theme.negativeBarColor;
@@ -1144,10 +1132,8 @@ class IrisGridTableModelTemplate<
     const operationMap = this.totals?.operationMap;
     for (let c = 0; c < columns.length; c += 1) {
       const column = columns[c];
-      const [
-        name,
-        operation = operationMap?.[name]?.[0] ?? defaultOperation,
-      ] = column.name.split('__');
+      const [name, operation = operationMap?.[name]?.[0] ?? defaultOperation] =
+        column.name.split('__');
       if (!dataMap.has(operation)) {
         dataMap.set(operation, { data: new Map() });
       }
@@ -1588,19 +1574,18 @@ class IrisGridTableModelTemplate<
     { max: 10000 }
   );
 
-  getCachedViewportRowRange = memoize((top: number, bottom: number): [
-    number,
-    number
-  ] => {
-    const viewHeight = bottom - top;
-    const viewportTop = Math.max(
-      0,
-      top - viewHeight * IrisGridTableModelTemplate.ROW_BUFFER_PAGES
-    );
-    const viewportBottom =
-      bottom + viewHeight * IrisGridTableModelTemplate.ROW_BUFFER_PAGES;
-    return [viewportTop, viewportBottom];
-  });
+  getCachedViewportRowRange = memoize(
+    (top: number, bottom: number): [number, number] => {
+      const viewHeight = bottom - top;
+      const viewportTop = Math.max(
+        0,
+        top - viewHeight * IrisGridTableModelTemplate.ROW_BUFFER_PAGES
+      );
+      const viewportBottom =
+        bottom + viewHeight * IrisGridTableModelTemplate.ROW_BUFFER_PAGES;
+      return [viewportTop, viewportBottom];
+    }
+  );
 
   getCachedPendingErrors = memoize(
     (

@@ -16,13 +16,8 @@ class TextCellRenderer extends CellRenderer implements TokenBoxCellRenderer {
     row: VisibleIndex
   ): void {
     const { metrics, model, theme } = state;
-    const {
-      fontWidths,
-      modelColumns,
-      modelRows,
-      allRowHeights,
-      firstColumn,
-    } = metrics;
+    const { fontWidths, modelColumns, modelRows, allRowHeights, firstColumn } =
+      metrics;
     const isFirstColumn = column === firstColumn;
     const { textColor } = theme;
     const rowHeight = getOrThrow(allRowHeights, row);
@@ -126,7 +121,7 @@ class TextCellRenderer extends CellRenderer implements TokenBoxCellRenderer {
     const { metrics, context, model, theme } = state;
 
     if (context == null || metrics == null) {
-      return (EMPTY_ARRAY as unknown) as TokenBox[];
+      return EMPTY_ARRAY as unknown as TokenBox[];
     }
 
     const { modelRows, modelColumns } = metrics;
@@ -156,10 +151,8 @@ class TextCellRenderer extends CellRenderer implements TokenBoxCellRenderer {
       truncationChar
     );
 
-    const {
-      actualBoundingBoxAscent,
-      actualBoundingBoxDescent,
-    } = context.measureText(truncatedText);
+    const { actualBoundingBoxAscent, actualBoundingBoxDescent } =
+      context.measureText(truncatedText);
     const textHeight = actualBoundingBoxAscent + actualBoundingBoxDescent;
 
     const tokens = model.tokensForCell(
@@ -171,7 +164,7 @@ class TextCellRenderer extends CellRenderer implements TokenBoxCellRenderer {
     // Check if the truncated text contains a link
     if (tokens.length === 0) {
       context.restore();
-      return (EMPTY_ARRAY as unknown) as TokenBox[];
+      return EMPTY_ARRAY as unknown as TokenBox[];
     }
 
     const cachedTokenBoxes = this.getCachedTokenBoxesForVisibleCell(
