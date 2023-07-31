@@ -32,7 +32,8 @@ const config: PlaywrightTestConfig = {
   /* Only have one worker since we don't want tests running in parallel, trampling over each other on the backend */
   workers: 1,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
+  /* Use host 0.0.0.0 so it can be forwarded from within docker */
+  reporter: [['html', { host: '0.0.0.0', port: 9323 }]],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
