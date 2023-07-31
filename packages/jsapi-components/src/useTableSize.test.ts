@@ -30,10 +30,10 @@ it('should return the size of the given table', () => {
 
 it('should re-render if dh.Table.EVENT_SIZECHANGED event occurs', () => {
   const initialSize = 10;
-  const table = ({
+  const table = {
     addEventListener: jest.fn(),
     size: initialSize,
-  } as unknown) as Table;
+  } as unknown as Table;
 
   const { result } = renderHook(() => useTableSize(table), { wrapper });
 

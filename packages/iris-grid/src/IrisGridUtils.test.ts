@@ -398,13 +398,13 @@ describe('getPrevVisibleColumns', () => {
   });
 
   it('skips hidden columns', () => {
-    expect(
-      IrisGridUtils.getPrevVisibleColumns(columns, 2, 2, [], [1])
-    ).toEqual([makeColumn(0), makeColumn(2)]);
+    expect(IrisGridUtils.getPrevVisibleColumns(columns, 2, 2, [], [1])).toEqual(
+      [makeColumn(0), makeColumn(2)]
+    );
 
-    expect(
-      IrisGridUtils.getPrevVisibleColumns(columns, 3, 5, [], [1])
-    ).toEqual([makeColumn(0), makeColumn(2), makeColumn(3)]);
+    expect(IrisGridUtils.getPrevVisibleColumns(columns, 3, 5, [], [1])).toEqual(
+      [makeColumn(0), makeColumn(2), makeColumn(3)]
+    );
   });
 });
 
@@ -423,13 +423,13 @@ describe('getNextVisibleColumns', () => {
   });
 
   it('skips hidden columns 2', () => {
-    expect(
-      IrisGridUtils.getNextVisibleColumns(columns, 1, 2, [], [2])
-    ).toEqual([makeColumn(1), makeColumn(3)]);
+    expect(IrisGridUtils.getNextVisibleColumns(columns, 1, 2, [], [2])).toEqual(
+      [makeColumn(1), makeColumn(3)]
+    );
 
-    expect(
-      IrisGridUtils.getNextVisibleColumns(columns, 1, 5, [], [2])
-    ).toEqual([makeColumn(1), makeColumn(3), makeColumn(4)]);
+    expect(IrisGridUtils.getNextVisibleColumns(columns, 1, 5, [], [2])).toEqual(
+      [makeColumn(1), makeColumn(3), makeColumn(4)]
+    );
   });
 });
 

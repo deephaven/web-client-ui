@@ -66,7 +66,7 @@ function makeIrisGridPanelWrapper(
     <IrisGridPanel
       makeModel={makeModel}
       metadata={metadata}
-      glContainer={(glContainer as unknown) as Container}
+      glContainer={glContainer as unknown as Container}
       glEventHub={glEventHub}
       user={user}
       inputFilters={inputFilters}
@@ -133,11 +133,11 @@ it('shows the loading spinner until grid is ready', async () => {
   await expectLoading(container);
 
   await expectLoading(container);
-  const params = ((MockIrisGrid.mock.calls[
-    MockIrisGrid.mock.calls.length - 1
-  ] as unknown) as {
-    onStateChange(param1: unknown, param2: unknown);
-  }[])[0];
+  const params = (
+    MockIrisGrid.mock.calls[MockIrisGrid.mock.calls.length - 1] as unknown as {
+      onStateChange(param1: unknown, param2: unknown);
+    }[]
+  )[0];
   params.onStateChange({}, {});
 
   await expectNotLoading(container);

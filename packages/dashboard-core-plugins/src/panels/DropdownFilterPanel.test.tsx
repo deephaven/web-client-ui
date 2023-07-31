@@ -8,18 +8,18 @@ import {
 } from './DropdownFilterPanel';
 import DropdownFilter from '../controls/dropdown-filter/DropdownFilter';
 
-const eventHub = ({
+const eventHub = {
   emit: jest.fn(),
   on: jest.fn(),
   off: jest.fn(),
   trigger: jest.fn(),
   unbind: jest.fn(),
-} as unknown) as EventHub;
-const container = ({
+} as unknown as EventHub;
+const container = {
   emit: jest.fn(),
   on: jest.fn(),
   off: jest.fn(),
-} as unknown) as Container;
+} as unknown as Container;
 
 function makeContainer({
   columns = [],

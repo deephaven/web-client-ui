@@ -7,7 +7,7 @@ import ThemeExport from './ThemeExport';
 import './ToastNotification.scss';
 
 type ToastNotificationProps = {
-  buttons?: typeof Button[];
+  buttons?: (typeof Button)[];
   classNames?: string;
   isShown?: boolean;
   message?: string;

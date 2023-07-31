@@ -33,10 +33,8 @@ function makeIrisTimeZone(id = 'default'): TimeZone {
   };
 }
 
-const {
-  DEFAULT_DATETIME_FORMAT_STRING,
-  DEFAULT_TIME_ZONE_ID,
-} = DateTimeColumnFormatter;
+const { DEFAULT_DATETIME_FORMAT_STRING, DEFAULT_TIME_ZONE_ID } =
+  DateTimeColumnFormatter;
 
 const VALID_FORMATS = [
   DEFAULT_DATETIME_FORMAT_STRING,

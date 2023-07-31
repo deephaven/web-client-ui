@@ -20,7 +20,7 @@ abstract class GridModel<
     string,
     Event<string>
   >,
-  TMode extends 'standard' | 'strict' = 'standard'
+  TMode extends 'standard' | 'strict' = 'standard',
 > extends EventTarget<TEventMap, TMode> {
   /** Count of rows in the grid */
   abstract get rowCount(): number;

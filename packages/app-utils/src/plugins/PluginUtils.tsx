@@ -152,14 +152,15 @@ export function getAuthPluginComponent(
   const authHandlers = getAuthHandlers(authConfigValues);
   // Filter out all the plugins that are auth plugins, and then map them to [pluginName, AuthPlugin] pairs
   // Uses some pretty disgusting casting, because TypeScript wants to treat it as an (string | AuthPlugin)[] array instead
-  const authPlugins = ([
-    ...pluginMap.entries(),
-  ].filter(([, plugin]: [string, { AuthPlugin?: AuthPlugin }]) =>
-    isAuthPlugin(plugin.AuthPlugin)
-  ) as [string, { AuthPlugin: AuthPlugin }][]).map(([name, plugin]) => [
-    name,
-    plugin.AuthPlugin,
-  ]) as [string, AuthPlugin][];
+  const authPlugins = (
+    [...pluginMap.entries()].filter(
+      ([, plugin]: [string, { AuthPlugin?: AuthPlugin }]) =>
+        isAuthPlugin(plugin.AuthPlugin)
+    ) as [string, { AuthPlugin: AuthPlugin }][]
+  ).map(([name, plugin]) => [name, plugin.AuthPlugin]) as [
+    string,
+    AuthPlugin,
+  ][];
 
   // Add all the core plugins in priority
   authPlugins.push(...(corePlugins ?? []));

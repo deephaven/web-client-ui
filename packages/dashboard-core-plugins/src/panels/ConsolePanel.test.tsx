@@ -14,7 +14,7 @@ jest.mock('@deephaven/console', () => ({
 }));
 
 function makeSession(language = 'TEST_LANG'): IdeSession {
-  return (new dh.IdeSession(language) as unknown) as IdeSession;
+  return new dh.IdeSession(language) as unknown as IdeSession;
 }
 
 function makeConnection({
@@ -24,10 +24,10 @@ function makeConnection({
   addEventListener?: (eventName: string, callback: () => void) => void;
   removeEventListener?: (eventName: string, callback: () => void) => void;
 } = {}): IdeConnection {
-  return ({
+  return {
     addEventListener,
     removeEventListener,
-  } as unknown) as IdeConnection;
+  } as unknown as IdeConnection;
 }
 
 function makeSessionConfig(): SessionConfig {
@@ -53,11 +53,11 @@ function makeEventHub() {
 }
 
 function makeGlContainer(): Container {
-  return ({
+  return {
     emit: jest.fn(),
     on: jest.fn(),
     off: jest.fn(),
-  } as unknown) as Container;
+  } as unknown as Container;
 }
 
 function makeCommandHistoryStorage(): CommandHistoryStorage {

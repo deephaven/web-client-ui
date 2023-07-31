@@ -47,7 +47,7 @@ const MULTI_MOD_PARAMS: ConstructorParameters<typeof Shortcut>[0] = {
 
 describe('Register worker', () => {
   it('Registers the getWorker function', () => {
-    const getWorker = () => ({} as Worker);
+    const getWorker = () => ({}) as Worker;
     MonacoUtils.registerGetWorker(getWorker);
     expect(window.MonacoEnvironment?.getWorker).toBe(getWorker);
   });
@@ -154,14 +154,14 @@ describe('Mac shortcuts', () => {
 describe('provideLinks', () => {
   it('it should get a provideLinks function which should return an object with the links', () => {
     const { provideLinks } = MonacoUtils;
-    const mockModel: monaco.editor.ITextModel = ({
+    const mockModel: monaco.editor.ITextModel = {
       getLineCount: jest.fn(() => 2),
       getLineContent: jest.fn(lineNumber =>
         lineNumber === 1
           ? 'https://google.com http://www.example.com/'
           : 'mail@gmail.com'
       ),
-    } as unknown) as monaco.editor.ITextModel;
+    } as unknown as monaco.editor.ITextModel;
 
     const expectedValue = {
       links: [

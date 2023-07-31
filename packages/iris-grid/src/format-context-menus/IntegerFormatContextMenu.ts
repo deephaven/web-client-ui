@@ -53,9 +53,8 @@ class IntegerFormatContextMenu {
       )
     );
 
-    const isCustomSelected = FormatContextMenuUtils.isCustomSelected(
-      selectedFormat
-    );
+    const isCustomSelected =
+      FormatContextMenuUtils.isCustomSelected(selectedFormat);
 
     const customFormat = isCustomSelected
       ? selectedFormat
@@ -68,9 +67,8 @@ class IntegerFormatContextMenu {
       isCustomSelected,
       formatString => {
         if (formatString != null) {
-          const newCustomFormat = IntegerColumnFormatter.makeCustomFormat(
-            formatString
-          );
+          const newCustomFormat =
+            IntegerColumnFormatter.makeCustomFormat(formatString);
           if (IntegerColumnFormatter.isValid(dh, newCustomFormat)) {
             onCustomFormatChange(newCustomFormat);
           }

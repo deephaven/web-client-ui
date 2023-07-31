@@ -15,9 +15,7 @@ function makeGlComponent({
 
 function mountPanelContextMenu() {
   return render(
-    <PanelContextMenu
-      glContainer={(makeGlComponent() as unknown) as Container}
-    />
+    <PanelContextMenu glContainer={makeGlComponent() as unknown as Container} />
   );
 }
 

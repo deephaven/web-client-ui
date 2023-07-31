@@ -140,12 +140,8 @@ class SelectionKeyHandler extends KeyHandler {
       grid.clearSelectedRanges();
     }
 
-    const {
-      cursorRow,
-      cursorColumn,
-      selectionEndColumn,
-      selectionEndRow,
-    } = grid.state;
+    const { cursorRow, cursorColumn, selectionEndColumn, selectionEndRow } =
+      grid.state;
     const column = isShiftKey ? selectionEndColumn : cursorColumn;
     const row = isShiftKey ? selectionEndRow : cursorRow;
     if (isModifierKey) {
@@ -223,11 +219,8 @@ class SelectionKeyHandler extends KeyHandler {
     }
     const metricState = grid.getMetricState();
     const { metricCalculator } = grid;
-    const {
-      bottomVisible,
-      topVisible,
-      hasHorizontalBar,
-    } = metricCalculator.getMetrics(metricState);
+    const { bottomVisible, topVisible, hasHorizontalBar } =
+      metricCalculator.getMetrics(metricState);
 
     let selectRangeEndPosition = row - (bottomVisible - topVisible);
     selectRangeEndPosition -= hasHorizontalBar ? 0 : 1;
@@ -266,13 +259,8 @@ class SelectionKeyHandler extends KeyHandler {
     }
     const metricState = grid.getMetricState();
     const { metricCalculator } = grid;
-    const {
-      bottomVisible,
-      topVisible,
-      hasHorizontalBar,
-      rowCount,
-      lastTop,
-    } = metricCalculator.getMetrics(metricState);
+    const { bottomVisible, topVisible, hasHorizontalBar, rowCount, lastTop } =
+      metricCalculator.getMetrics(metricState);
     const lastRowIndex = rowCount - 1;
 
     let selectRangeEndPosition = bottomVisible - topVisible + row;

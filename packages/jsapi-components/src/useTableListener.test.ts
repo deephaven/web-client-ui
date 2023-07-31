@@ -8,9 +8,9 @@ const addEventListener = jest.fn();
 const handler = jest.fn();
 const unsubscribe = jest.fn();
 
-const evented = ({
+const evented = {
   addEventListener,
-} as unknown) as Evented;
+} as unknown as Evented;
 
 beforeEach(() => {
   jest.clearAllMocks();

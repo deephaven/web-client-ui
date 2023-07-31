@@ -58,9 +58,8 @@ export class MarkdownPanel extends Component<
   constructor(props: MarkdownPanelProps) {
     super(props);
 
-    this.handleContainerDoubleClick = this.handleContainerDoubleClick.bind(
-      this
-    );
+    this.handleContainerDoubleClick =
+      this.handleContainerDoubleClick.bind(this);
     this.handleCreateMarkdown = this.handleCreateMarkdown.bind(this);
     this.handleDeleteMarkdown = this.handleDeleteMarkdown.bind(this);
     this.handleOpenMarkdown = this.handleOpenMarkdown.bind(this);

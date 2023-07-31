@@ -6,7 +6,7 @@ export class Operator {
   static readonly or = 'or';
 }
 
-export type OperatorValue = typeof Operator[Exclude<
+export type OperatorValue = (typeof Operator)[Exclude<
   keyof typeof Operator,
   'prototype'
 >];
