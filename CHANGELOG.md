@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.45.0](https://github.com/deephaven/web-client-ui/compare/v0.44.1...v0.45.0) (2023-07-31)
+
+### Bug Fixes
+
+- Ran npm audit fix on packages ([#1421](https://github.com/deephaven/web-client-ui/issues/1421)) ([0d61220](https://github.com/deephaven/web-client-ui/commit/0d61220bb0b25e7e0a406df96a25f87b644f2716))
+
+### Features
+
+- Add support for Category plots with error bars ([#1412](https://github.com/deephaven/web-client-ui/issues/1412)) ([7480280](https://github.com/deephaven/web-client-ui/commit/7480280861d588ba7c1d011a748d65df587fcfa8))
+- Added containsIgnoreCase to FilterValue interface ([#1426](https://github.com/deephaven/web-client-ui/issues/1426)) ([d131b05](https://github.com/deephaven/web-client-ui/commit/d131b051c6dece462a6691ca0013bb4fb0ba9a71)), closes [#1425](https://github.com/deephaven/web-client-ui/issues/1425)
+- Upgrade Prettier to 3.0.0 ([#1420](https://github.com/deephaven/web-client-ui/issues/1420)) ([334e530](https://github.com/deephaven/web-client-ui/commit/334e530bf83cebf2cfe3593f2d6e9fd7304c562a)), closes [#1419](https://github.com/deephaven/web-client-ui/issues/1419)
+
 ## [0.44.1](https://github.com/deephaven/web-client-ui/compare/v0.44.0...v0.44.1) (2023-07-11)
 
 ### Bug Fixes

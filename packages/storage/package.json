@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/storage",
-  "version": "0.44.0",
+  "version": "0.45.0",
   "description": "Deephaven Storage abstract classes for storing app data",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",

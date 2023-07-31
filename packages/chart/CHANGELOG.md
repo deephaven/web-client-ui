@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.45.0](https://github.com/deephaven/web-client-ui/compare/v0.44.1...v0.45.0) (2023-07-31)
+
+### Features
+
+- Add support for Category plots with error bars ([#1412](https://github.com/deephaven/web-client-ui/issues/1412)) ([7480280](https://github.com/deephaven/web-client-ui/commit/7480280861d588ba7c1d011a748d65df587fcfa8))
+
 # [0.44.0](https://github.com/deephaven/web-client-ui/compare/v0.42.0...v0.44.0) (2023-07-07)
 
 **Note:** Version bump only for package @deephaven/chart
