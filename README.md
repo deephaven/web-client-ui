@@ -102,7 +102,7 @@ You should be able to pass arguments to these commands as if you were running Pl
 
 Snapshots are used by end-to-end tests to visually verify the output. Snapshots are both OS and broser specific. Sometimes changes are made requiring snapshots to be updated. Update snapshots locally by running `npm run e2e:update-snapshots`.
 
-Once you are satisfied with the snapshots and everything is passing locally, you need to use the docker image to update snapshots for CI (unless you are running the same platform as CI (Ubuntu)). Run `npm run e2e:update-ci-snapshots` to update the CI snapshots. The snapshots will be written to your local directories and should be committed to git.
+Once you are satisfied with the snapshots and everything is passing locally, you need to use the docker image to update snapshots for CI (unless you are running the same platform as CI (Ubuntu)). Run `npm run e2e:update-ci-snapshots` to update the CI snapshots. The snapshots will be written to your local directories. The Linux snapshots should be committed to git (non-Linux snapshots should be automatically ignored by git).
 
 ### Local
 
@@ -112,7 +112,7 @@ You must have a web UI running on port 4000 (dev mode and build preview are both
 
 - `npm run e2e`: Run end-to-end tests in headless mode.
 - `npm run e2e:headed`: Runs end-to-end tests in headed debug mode. Also ignores snapshots since a test suite will stop once 1 snapshot comparison fails. Useful if you need to debug why a particular test isn't working. For example, to debug the `table.spec.ts` test directly, you could run `npm run e2e:headed -- ./tests/table.spec.ts`.
-- `npm run e2e:codegen`: Runs plawright in codegen mode which can help with creating tests. See [Playwright Codegen](https://playwright.dev/docs/codegen/) for more details.
+- `npm run e2e:codegen`: Runs Playwright in codegen mode which can help with creating tests. See [Playwright Codegen](https://playwright.dev/docs/codegen/) for more details.
 - `npm run e2e:update-snapshots`: Updates the E2E snapshots for your local OS.
 
 ### Docker
