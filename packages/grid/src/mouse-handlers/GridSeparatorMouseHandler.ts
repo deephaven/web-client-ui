@@ -165,9 +165,8 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
     const newSizes: Map<ModelIndex, number> = new Map();
 
     // Use a loop as we may need to resize multiple items if they drag quickly
-    let resizeIndex: number | null = this.resizingItems[
-      this.resizingItems.length - 1
-    ];
+    let resizeIndex: number | null =
+      this.resizingItems[this.resizingItems.length - 1];
     while (resizeIndex != null) {
       const itemOffset = getOrThrow(visibleOffsets, resizeIndex);
       const itemSize = point - margin - itemOffset - this.dragOffset;
@@ -280,9 +279,8 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
         metrics[this.calculatedSizesProperty],
         modelIndex
       );
-      const defaultSize = metricCalculator[this.initialSizesProperty].get(
-        modelIndex
-      );
+      const defaultSize =
+        metricCalculator[this.initialSizesProperty].get(modelIndex);
 
       if (calculatedSize === defaultSize) {
         this.resetSize(metricCalculator, modelIndex);

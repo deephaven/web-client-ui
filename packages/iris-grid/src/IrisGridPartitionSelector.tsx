@@ -46,9 +46,8 @@ class IrisGridPartitionSelector<T> extends Component<
     this.handleIgnoreClick = this.handleIgnoreClick.bind(this);
     this.handlePartitionChange = this.handlePartitionChange.bind(this);
     this.handlePartitionSelect = this.handlePartitionSelect.bind(this);
-    this.handlePartitionListResized = this.handlePartitionListResized.bind(
-      this
-    );
+    this.handlePartitionListResized =
+      this.handlePartitionListResized.bind(this);
     this.handleSearchOpened = this.handleSearchOpened.bind(this);
     this.handleSearchClosed = this.handleSearchClosed.bind(this);
 
