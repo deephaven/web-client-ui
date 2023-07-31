@@ -108,7 +108,7 @@ Once you are satisfied with the snapshots and everything is passing locally, you
 
 These scripts are recommended while developing your tests as they will be quicker to iterate and offer headed mode for debugging. You will need to run `npx playwright install` before using these scripts. You may also need to update the browsers with the same command any time the Playwright version is updated. See [Playwright Browsers](https://playwright.dev/docs/browsers) for more details.
 
-You must have a web UI running on port 4000 (dev mode and build preview are both fine), and `deephaven-core` running on port 10000 with anonymous authentication for E2E tests. See [this guide](https://deephaven.io/core/docs/how-to-guides/authentication/auth-anon/) for more details on anonymous authentication.
+You must have a web UI running on `localhost:4000/ide/` (dev mode and build preview are both fine), and `deephaven-core` running on port 10000 with anonymous authentication for E2E tests. See [this guide](https://deephaven.io/core/docs/how-to-guides/authentication/auth-anon/) for more details on anonymous authentication.
 
 - `npm run e2e`: Run end-to-end tests in headless mode.
 - `npm run e2e:headed`: Runs end-to-end tests in headed debug mode. Also ignores snapshots since a test suite will stop once 1 snapshot comparison fails. Useful if you need to debug why a particular test isn't working. For example, to debug the `table.spec.ts` test directly, you could run `npm run e2e:headed -- ./tests/table.spec.ts`.
