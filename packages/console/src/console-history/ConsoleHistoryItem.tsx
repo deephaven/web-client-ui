@@ -58,7 +58,7 @@ class ConsoleHistoryItem extends PureComponent<
     const hasCommand = item.command != null && item.command !== '';
 
     let commandElement = null;
-    if (!hasCommand) {
+    if (hasCommand) {
       commandElement = (
         <div className="console-history-item-command">
           <div className="console-history-gutter">&gt;</div>
