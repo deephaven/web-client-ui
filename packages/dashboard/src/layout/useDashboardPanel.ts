@@ -19,7 +19,7 @@ import usePanelRegistration from './usePanelRegistration';
  */
 export function useDashboardPanel<
   P extends DashboardPanelProps,
-  C extends ComponentType<P>
+  C extends ComponentType<P>,
 >({
   dashboardProps,
   componentName,

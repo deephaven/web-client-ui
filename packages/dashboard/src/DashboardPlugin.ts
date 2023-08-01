@@ -99,7 +99,7 @@ export type DeregisterComponentFunction = () => void;
 
 export type PanelHydrateFunction<
   T extends DehydratedDashboardPanelProps = DehydratedDashboardPanelProps,
-  R extends T = T
+  R extends T = T,
 > = (props: T, dashboardId: string) => R;
 
 export type PanelDehydrateFunction = (
@@ -113,7 +113,7 @@ export type DashboardPluginComponentProps = {
   panelManager: PanelManager;
   registerComponent: <
     P extends DashboardPanelProps,
-    C extends ComponentType<P>
+    C extends ComponentType<P>,
   >(
     name: string,
     ComponentType: PanelComponentType<P, C>,

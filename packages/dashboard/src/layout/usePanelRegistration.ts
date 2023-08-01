@@ -17,7 +17,7 @@ import {
  */
 export default function usePanelRegistration<
   P extends DashboardPanelProps,
-  C extends React.ComponentType<P>
+  C extends React.ComponentType<P>,
 >(
   registerComponent: DashboardPluginComponentProps['registerComponent'],
   ComponentType: PanelComponentType<P, C>,
