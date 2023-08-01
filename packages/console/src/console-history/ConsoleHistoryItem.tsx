@@ -55,9 +55,10 @@ class ConsoleHistoryItem extends PureComponent<
   render(): ReactElement {
     const { disabled, item, language } = this.props;
     const { disabledObjects, result } = item;
+    const hasCommand = item.command != null && item.command !== '';
 
     let commandElement = null;
-    if (item.command != null && item.command !== '') {
+    if (!hasCommand) {
       commandElement = (
         <div className="console-history-item-command">
           <div className="console-history-gutter">&gt;</div>
@@ -101,7 +102,7 @@ class ConsoleHistoryItem extends PureComponent<
       }
 
       // If the error has an associated command, we'll actually get a separate ERROR item printed out, so only print an error if there isn't an associated command
-      if (error != null && item.command == null) {
+      if (error != null && !hasCommand) {
         let errorMessage = `${(error as { message: string }).message ?? error}`;
         if (!errorMessage) {
           errorMessage = error as string;

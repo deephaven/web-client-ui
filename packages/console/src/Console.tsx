@@ -765,7 +765,6 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
   addConsoleHistoryMessage(message?: string, error?: string): void {
     const { consoleHistory } = this.state;
     const historyItem = {
-      command: '',
       startTime: Date.now(),
       endTime: Date.now(),
       result: { message, error },
