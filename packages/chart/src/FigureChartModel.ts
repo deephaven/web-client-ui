@@ -678,7 +678,11 @@ class FigureChartModel extends ChartModel {
         }
         seriesData.width = width;
       }
-    } else if (plotStyle === dh.plot.SeriesPlotStyle.LINE) {
+    } else if (
+      plotStyle === dh.plot.SeriesPlotStyle.LINE ||
+      plotStyle === dh.plot.SeriesPlotStyle.ERROR_BAR ||
+      plotStyle === dh.plot.SeriesPlotStyle.BAR
+    ) {
       const { x, xLow, xHigh, y, yLow, yHigh } = seriesData;
       if (xLow && xHigh && xLow !== x) {
         seriesData.error_x = ChartUtils.getPlotlyErrorBars(

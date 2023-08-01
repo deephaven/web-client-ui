@@ -17,9 +17,10 @@ export function Stack({
   children,
   'data-testid': dataTestId,
 }: StackProps): JSX.Element {
-  const childrenArray = useMemo(() => React.Children.toArray(children), [
-    children,
-  ]);
+  const childrenArray = useMemo(
+    () => React.Children.toArray(children),
+    [children]
+  );
   const prevChildrenArray = usePrevious(childrenArray);
   const [mainView, setMainView] = useState<React.ReactNode>(
     childrenArray[childrenArray.length - 1]

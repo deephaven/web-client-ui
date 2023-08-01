@@ -191,9 +191,7 @@ export default class TableSaver extends PureComponent<
     { max: 10000 }
   );
 
-  createWriterStream(
-    port: MessagePort
-  ): WritableStream<{
+  createWriterStream(port: MessagePort): WritableStream<{
     rows?: string | undefined;
     header?: string | undefined;
   }> {

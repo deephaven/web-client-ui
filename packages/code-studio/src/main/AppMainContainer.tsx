@@ -570,11 +570,8 @@ export class AppMainContainer extends Component<
       const { updateDashboardData, updateWorkspaceData } = this.props;
       const fileText = await file.text();
       const exportedLayout = JSON.parse(fileText);
-      const {
-        filterSets,
-        layoutConfig,
-        links,
-      } = UserLayoutUtils.normalizeLayout(exportedLayout);
+      const { filterSets, layoutConfig, links } =
+        UserLayoutUtils.normalizeLayout(exportedLayout);
 
       updateWorkspaceData({ layoutConfig });
       updateDashboardData(DEFAULT_DASHBOARD_ID, {
@@ -591,14 +588,11 @@ export class AppMainContainer extends Component<
    */
   async resetLayout(): Promise<void> {
     const { layoutStorage, session } = this.props;
-    const {
-      filterSets,
-      layoutConfig,
-      links,
-    } = await UserLayoutUtils.getDefaultLayout(
-      layoutStorage,
-      session !== undefined
-    );
+    const { filterSets, layoutConfig, links } =
+      await UserLayoutUtils.getDefaultLayout(
+        layoutStorage,
+        session !== undefined
+      );
 
     const { updateDashboardData, updateWorkspaceData } = this.props;
     updateWorkspaceData({ layoutConfig });
@@ -647,9 +641,11 @@ export class AppMainContainer extends Component<
       pluginModule != null &&
       (pluginModule as { TablePlugin: ReactElement }).TablePlugin != null
     ) {
-      return (pluginModule as {
-        TablePlugin: TablePlugin;
-      }).TablePlugin;
+      return (
+        pluginModule as {
+          TablePlugin: TablePlugin;
+        }
+      ).TablePlugin;
     }
 
     const errorMessage = `Unable to find table plugin ${pluginName}.`;
@@ -790,23 +786,17 @@ export class AppMainContainer extends Component<
   }
 
   getDashboardPlugins = memoize((plugins: DeephavenPluginModuleMap) =>
-    ([...plugins.entries()].filter(
-      ([, plugin]: [string, { DashboardPlugin?: typeof React.Component }]) =>
-        plugin.DashboardPlugin != null
-    ) as [
-      string,
-      { DashboardPlugin: typeof React.Component }
-    ][]).map(([name, { DashboardPlugin }]) => <DashboardPlugin key={name} />)
+    (
+      [...plugins.entries()].filter(
+        ([, plugin]: [string, { DashboardPlugin?: typeof React.Component }]) =>
+          plugin.DashboardPlugin != null
+      ) as [string, { DashboardPlugin: typeof React.Component }][]
+    ).map(([name, { DashboardPlugin }]) => <DashboardPlugin key={name} />)
   );
 
   render(): ReactElement {
-    const {
-      activeTool,
-      plugins,
-      user,
-      workspace,
-      serverConfigValues,
-    } = this.props;
+    const { activeTool, plugins, user, workspace, serverConfigValues } =
+      this.props;
     const { data: workspaceData } = workspace;
     const { layoutConfig } = workspaceData;
     const { permissions } = user;

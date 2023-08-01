@@ -116,10 +116,8 @@ class GridHorizontalScrollBarMouseHandler extends GridMouseHandler {
     } else {
       this.dragOffset = 0;
 
-      const {
-        left: newLeft,
-        leftOffset: newLeftOffset,
-      } = this.getLeftWithOffset(gridPoint, grid);
+      const { left: newLeft, leftOffset: newLeftOffset } =
+        this.getLeftWithOffset(gridPoint, grid);
 
       grid.setViewState({
         left: newLeft,
@@ -134,10 +132,8 @@ class GridHorizontalScrollBarMouseHandler extends GridMouseHandler {
 
   onDrag(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     if (this.dragOffset != null) {
-      const {
-        left: newLeft,
-        leftOffset: newLeftOffset,
-      } = this.getLeftWithOffset(gridPoint, grid);
+      const { left: newLeft, leftOffset: newLeftOffset } =
+        this.getLeftWithOffset(gridPoint, grid);
 
       grid.setViewState({
         left: newLeft,

@@ -38,7 +38,8 @@ const conf: monaco.languages.LanguageConfiguration = {
    * unary_<op> is allowed as an identifier.
    * <name>_= is allowed as an identifier.
    */
-  wordPattern: /(unary_[@~!#%^&*()\-=+\\|:<>/?]+)|([a-zA-Z_$][\w$]*?_=)|(`[^`]+`)|([a-zA-Z_$][\w$]*)/g,
+  wordPattern:
+    /(unary_[@~!#%^&*()\-=+\\|:<>/?]+)|([a-zA-Z_$][\w$]*?_=)|(`[^`]+`)|([a-zA-Z_$][\w$]*)/g,
   comments: {
     lineComment: '//',
     blockComment: ['/*', '*/'],
@@ -141,9 +142,11 @@ const language: monaco.languages.IMonarchLanguage = {
   hexdigits: /[[0-9a-fA-F]+(_+[0-9a-fA-F]+)*/,
 
   // C# style strings
-  escapes: /\\(?:[btnfr\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+  escapes:
+    /\\(?:[btnfr\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
 
-  fstring_conv: /[bBhHsScCdoxXeEfgGaAt]|[Tn](?:[HIklMSLNpzZsQ]|[BbhAaCYyjmde]|[RTrDFC])/,
+  fstring_conv:
+    /[bBhHsScCdoxXeEfgGaAt]|[Tn](?:[HIklMSLNpzZsQ]|[BbhAaCYyjmde]|[RTrDFC])/,
 
   // The main tokenizer for our languages
   tokenizer: {

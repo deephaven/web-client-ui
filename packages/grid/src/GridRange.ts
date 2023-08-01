@@ -878,10 +878,8 @@ export class GridRange {
     direction = GridRange.SELECTION_DIRECTION.RIGHT
   ): void {
     let i = 0;
-    let {
-      column: c,
-      row: r,
-    }: { column?: number; row?: number } = this.startCell(direction);
+    let { column: c, row: r }: { column?: number; row?: number } =
+      this.startCell(direction);
     while (c != null && r != null) {
       callback(c, r, i);
       i += 1;

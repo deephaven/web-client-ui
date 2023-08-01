@@ -293,13 +293,8 @@ class CsvInputBar extends Component<CsvInputBarProps, CsvInputBarState> {
 
   render(): ReactElement {
     const { file, paste } = this.props;
-    const {
-      tableName,
-      isFirstRowHeaders,
-      showProgress,
-      progressValue,
-      type,
-    } = this.state;
+    const { tableName, isFirstRowHeaders, showProgress, progressValue, type } =
+      this.state;
     // A blank table name is invalid for pasted values
     const isNameInvalid = Boolean(paste) && !tableName;
     return (

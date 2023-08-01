@@ -1,0 +1,28 @@
+# Automatically run `npm audit fix` every Thursday morning and open a PR if there are changes
+name: Audit fix
+on:
+  schedule:
+    - cron: '0 6 * * 4'
+jobs:
+  audit_fix:
+    runs-on: ubuntu-22.04
+    name: Run npm audit fix
+    steps:
+      - name: Checkout latest
+        uses: actions/checkout@v3
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Run npm audit fix
+        # There may be some packages that can't be updated automatically. We don't want that to error out this step.
+        continue-on-error: true
+        run: npm audit fix
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          base: main
+          title: 'chore: npm audit fix'
+          branch: deephaven-bot/npm-audit-fix
+          delete-branch: true

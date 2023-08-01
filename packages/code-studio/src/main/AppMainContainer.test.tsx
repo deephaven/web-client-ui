@@ -87,7 +87,7 @@ function renderAppMainContainer({
         serverConfigValues={serverConfigValues}
         dashboardOpenedPanelMaps={dashboardOpenedPanelMaps}
         connection={connection}
-        session={(session as unknown) as IdeSession}
+        session={session as unknown as IdeSession}
         sessionConfig={sessionConfig}
         match={match}
         plugins={plugins}
@@ -133,7 +133,7 @@ it('listens for widgets properly', async () => {
   const user = userEvent.setup();
   const TABLE_A = { name: 'a', type: 'Table' };
   const TABLE_B = { name: 'b', type: 'Table' };
-  let callback: (obj: VariableChanges) => void = (null as unknown) as (
+  let callback: (obj: VariableChanges) => void = null as unknown as (
     obj: VariableChanges
   ) => void;
 

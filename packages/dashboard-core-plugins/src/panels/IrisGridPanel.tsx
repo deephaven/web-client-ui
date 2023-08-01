@@ -234,9 +234,8 @@ export class IrisGridPanel extends PureComponent<
   constructor(props: IrisGridPanelProps) {
     super(props);
 
-    this.handleAdvancedSettingsChange = this.handleAdvancedSettingsChange.bind(
-      this
-    );
+    this.handleAdvancedSettingsChange =
+      this.handleAdvancedSettingsChange.bind(this);
     this.handleColumnsChanged = this.handleColumnsChanged.bind(this);
     this.handleTableChanged = this.handleTableChanged.bind(this);
     this.handleColumnSelected = this.handleColumnSelected.bind(this);
@@ -946,10 +945,11 @@ export class IrisGridPanel extends PureComponent<
       model.columns,
       quickFilters
     ).filter(([columnIndex]) => model.isFilterable(columnIndex));
-    const indexedAdvancedFilters = IrisGridUtils.changeFilterColumnNamesToIndexes(
-      model.columns,
-      advancedFilters
-    ).filter(([columnIndex]) => model.isFilterable(columnIndex));
+    const indexedAdvancedFilters =
+      IrisGridUtils.changeFilterColumnNamesToIndexes(
+        model.columns,
+        advancedFilters
+      ).filter(([columnIndex]) => model.isFilterable(columnIndex));
     assertNotNull(this.irisGridUtils);
     irisGrid.clearAllFilters();
     irisGrid.setFilters({
@@ -1003,24 +1003,26 @@ export class IrisGridPanel extends PureComponent<
         advancedFilters: savedAdvancedFilters,
       } = irisGridStateOverrides;
       if (savedQuickFilters) {
-        irisGridStateOverrides.quickFilters = IrisGridUtils.changeFilterColumnNamesToIndexes(
-          model.columns,
-          (savedQuickFilters as unknown) as {
-            name: string;
-            filter: {
-              text: string;
-            };
-          }[]
-        );
+        irisGridStateOverrides.quickFilters =
+          IrisGridUtils.changeFilterColumnNamesToIndexes(
+            model.columns,
+            savedQuickFilters as unknown as {
+              name: string;
+              filter: {
+                text: string;
+              };
+            }[]
+          );
       }
       if (savedAdvancedFilters) {
-        irisGridStateOverrides.advancedFilters = IrisGridUtils.changeFilterColumnNamesToIndexes(
-          model.columns,
-          (savedAdvancedFilters as unknown) as {
-            name: string;
-            filter: { options: AdvancedFilterOptions };
-          }[]
-        );
+        irisGridStateOverrides.advancedFilters =
+          IrisGridUtils.changeFilterColumnNamesToIndexes(
+            model.columns,
+            savedAdvancedFilters as unknown as {
+              name: string;
+              filter: { options: AdvancedFilterOptions };
+            }[]
+          );
       }
       const {
         isSelectingPartition,
@@ -1054,16 +1056,12 @@ export class IrisGridPanel extends PureComponent<
         ...irisGridState,
         ...irisGridStateOverrides,
       });
-      const {
-        isStuckToBottom,
-        isStuckToRight,
-        movedColumns,
-        movedRows,
-      } = IrisGridUtils.hydrateGridState(
-        model,
-        { ...gridState, ...gridStateOverrides },
-        irisGridState.customColumns
-      );
+      const { isStuckToBottom, isStuckToRight, movedColumns, movedRows } =
+        IrisGridUtils.hydrateGridState(
+          model,
+          { ...gridState, ...gridStateOverrides },
+          irisGridState.customColumns
+        );
       this.setState({
         advancedFilters,
         advancedSettings,
@@ -1136,12 +1134,8 @@ export class IrisGridPanel extends PureComponent<
     assertNotNull(metrics);
     const { userColumnWidths, userRowHeights } = metrics;
     assertNotNull(gridState);
-    const {
-      isStuckToBottom,
-      isStuckToRight,
-      movedColumns,
-      movedRows,
-    } = gridState;
+    const { isStuckToBottom, isStuckToRight, movedColumns, movedRows } =
+      gridState;
 
     const panelState = this.getCachedPanelState(
       this.getDehydratedIrisGridPanelState(

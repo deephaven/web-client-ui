@@ -30,7 +30,8 @@ const conf: monaco.languages.LanguageConfiguration = {
   ],
   onEnterRules: [
     {
-      beforeText: /^\s*(?:def|class|for|if|elif|else|while|try|with|finally|except|async).*?:\s*$/,
+      beforeText:
+        /^\s*(?:def|class|for|if|elif|else|while|try|with|finally|except|async).*?:\s*$/,
       action: { indentAction: 1 }, // see monaco.languages.IndentAction.Indent
     },
   ],
@@ -162,7 +163,8 @@ const language: monaco.languages.IMonarchLanguage = {
   exponent: /[eE][\-+]?[0-9]+/,
 
   regexpctl: /[(){}\[\]\$\^|\-*+?\.]/,
-  regexpesc: /\\(?:[bBdDfnrstvwWn0\\\/]|@regexpctl|c[A-Z]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4})/,
+  regexpesc:
+    /\\(?:[bBdDfnrstvwWn0\\\/]|@regexpctl|c[A-Z]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4})/,
 
   tokenizer: {
     root: [

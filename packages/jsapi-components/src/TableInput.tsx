@@ -58,9 +58,8 @@ function TableInput(props: TableInputProps): JSX.Element {
   const dh = useApi();
   const formatter = useMemo(() => {
     const columnFormats = FormatterUtils.getColumnFormats(settings);
-    const dateTimeFormatterOptions = FormatterUtils.getDateTimeFormatterOptions(
-      settings
-    );
+    const dateTimeFormatterOptions =
+      FormatterUtils.getDateTimeFormatterOptions(settings);
     const {
       defaultDecimalFormatOptions = {},
       defaultIntegerFormatOptions = {},

@@ -601,11 +601,8 @@ export class GridUtils {
       return false;
     }
 
-    const {
-      floatingLeftColumnCount,
-      floatingRightColumnCount,
-      columnCount,
-    } = metrics;
+    const { floatingLeftColumnCount, floatingRightColumnCount, columnCount } =
+      metrics;
     return (
       column < floatingLeftColumnCount ||
       column >= columnCount - floatingRightColumnCount
@@ -928,22 +925,20 @@ export class GridUtils {
             ]
           )
           .filter(([s, e]) => s <= e) // Remove invalid ranges
-          .map(
-            (range): Range<number> => {
-              const [s, e] = range;
-              if (fromStart <= s && fromEnd >= e) {
-                // Current range in moved range
-                movedRange = [s + moveDistance, e + moveDistance];
-                return movedRange;
-              }
-
-              if (fromEnd < s) {
-                // Current range is after moved range
-                return [s - length, e - length];
-              }
-              return range;
+          .map((range): Range<number> => {
+            const [s, e] = range;
+            if (fromStart <= s && fromEnd >= e) {
+              // Current range in moved range
+              movedRange = [s + moveDistance, e + moveDistance];
+              return movedRange;
             }
-          )
+
+            if (fromEnd < s) {
+              // Current range is after moved range
+              return [s - length, e - length];
+            }
+            return range;
+          })
           .map((range): Range<number>[] => {
             const [s, e] = range;
             if (toStart > s && toStart <= e) {
@@ -1472,11 +1467,8 @@ export class GridUtils {
       modelRows,
       modelColumns,
     } = metrics;
-    const {
-      cellHorizontalPadding,
-      treeDepthIndent,
-      treeHorizontalPadding,
-    } = theme;
+    const { cellHorizontalPadding, treeDepthIndent, treeHorizontalPadding } =
+      theme;
 
     const modelRow = getOrThrow(modelRows, row);
     const modelColumn = getOrThrow(modelColumns, column);

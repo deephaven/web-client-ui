@@ -39,7 +39,7 @@ import {
 import { DragListenerEvent } from './utils/DragListener';
 
 export type ComponentConstructor<
-  C extends ComponentConfig | ReactComponentConfig = ComponentConfig
+  C extends ComponentConfig | ReactComponentConfig = ComponentConfig,
 > = {
   new (container: ItemContainer<C>, state: unknown): unknown;
 };
@@ -268,15 +268,15 @@ export class LayoutManager extends EventEmitter {
 
     if (root) {
       next(
-        (config as unknown) as ComponentConfig & Record<string, unknown>,
+        config as unknown as ComponentConfig & Record<string, unknown>,
         { contentItems: [root] } as AbstractContentItem & {
           config: Record<string, unknown>;
         }
       );
     } else {
       next(
-        (config as unknown) as ComponentConfig & Record<string, unknown>,
-        (this.root as unknown) as AbstractContentItem & {
+        config as unknown as ComponentConfig & Record<string, unknown>,
+        this.root as unknown as AbstractContentItem & {
           config: Record<string, unknown>;
         }
       );
@@ -1034,8 +1034,9 @@ export class LayoutManager extends EventEmitter {
      * to allow the opening window to interact with
      * it
      */
-    (window as Window &
-      typeof globalThis & { __glInstance: LayoutManager }).__glInstance = this;
+    (
+      window as Window & typeof globalThis & { __glInstance: LayoutManager }
+    ).__glInstance = this;
   }
 
   /**

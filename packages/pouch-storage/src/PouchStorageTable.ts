@@ -113,7 +113,8 @@ function sortWithConfigs(
 }
 
 export class PouchStorageTable<T extends StorageItem = StorageItem>
-  implements StorageTable<T> {
+  implements StorageTable<T>
+{
   protected db: PouchDB.Database<T & PouchStorageItem>;
 
   changes?: PouchDB.Core.Changes<T & PouchStorageItem>;

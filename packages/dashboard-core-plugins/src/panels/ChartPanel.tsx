@@ -264,14 +264,8 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     prevState: ChartPanelState
   ): void {
     const { inputFilters, source } = this.props;
-    const {
-      columnMap,
-      model,
-      filterMap,
-      filterValueMap,
-      isLinked,
-      settings,
-    } = this.state;
+    const { columnMap, model, filterMap, filterValueMap, isLinked, settings } =
+      this.state;
 
     if (!model) {
       return;
@@ -619,10 +613,10 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
       this.pending
         .add(
           dh.plot.Figure.create(
-            (new ChartUtils(dh).makeFigureSettings(
+            new ChartUtils(dh).makeFigureSettings(
               settings,
               source
-            ) as unknown) as FigureDescriptor
+            ) as unknown as FigureDescriptor
           )
         )
         .then(figure => {
@@ -762,9 +756,8 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
   }
 
   getCoordinateForColumn(columnName: ColumnName): [number, number] | null {
-    const className = ChartColumnSelectorOverlay.makeButtonClassName(
-      columnName
-    );
+    const className =
+      ChartColumnSelectorOverlay.makeButtonClassName(columnName);
 
     if (!this.panelContainer.current) {
       return null;

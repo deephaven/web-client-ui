@@ -53,11 +53,8 @@ describe('FilterSetManagerPanel', () => {
 
   it('Rejects empty filter set name', async () => {
     const user = userEvent.setup();
-    const {
-      getAllByRole,
-      getByPlaceholderText,
-      getByText,
-    } = renderFilterSetManagerPanel();
+    const { getAllByRole, getByPlaceholderText, getByText } =
+      renderFilterSetManagerPanel();
     await user.click(getByText('Capture filter set'));
     expect(getByText('Name captured set')).toBeVisible();
     await user.clear(getByPlaceholderText('Enter name...'));
@@ -69,11 +66,8 @@ describe('FilterSetManagerPanel', () => {
     const user = userEvent.setup();
     const title = 'TEST SET';
     const setFilterSets = jest.fn();
-    const {
-      getAllByRole,
-      getByPlaceholderText,
-      getByText,
-    } = renderFilterSetManagerPanel({ setFilterSets });
+    const { getAllByRole, getByPlaceholderText, getByText } =
+      renderFilterSetManagerPanel({ setFilterSets });
     await user.click(getByText('Capture filter set'));
     expect(getByText('Name captured set')).toBeVisible();
     await user.type(getByPlaceholderText('Enter name...'), title);
@@ -91,12 +85,8 @@ describe('FilterSetManagerPanel', () => {
     const user = userEvent.setup();
     const title = 'TEST SET';
     const setFilterSets = jest.fn();
-    const {
-      getByTestId,
-      getByLabelText,
-      getByPlaceholderText,
-      getByText,
-    } = renderFilterSetManagerPanel({ setFilterSets });
+    const { getByTestId, getByLabelText, getByPlaceholderText, getByText } =
+      renderFilterSetManagerPanel({ setFilterSets });
     await user.click(getByText('Capture filter set'));
     expect(getByText('Name captured set')).toBeVisible();
     await user.type(getByPlaceholderText('Enter name...'), title);

@@ -12,7 +12,7 @@ import GridModel from './GridModel';
 
 function makeMockContext(): CanvasRenderingContext2D {
   // Just return a partial mock
-  return ({
+  return {
     arc: jest.fn(),
     beginPath: jest.fn(),
     clip: jest.fn(),
@@ -24,7 +24,7 @@ function makeMockContext(): CanvasRenderingContext2D {
     fillRect: jest.fn(),
     fillText: jest.fn(),
     lineTo: jest.fn(),
-    measureText: jest.fn(str => ({ width: str.length * 10 } as TextMetrics)),
+    measureText: jest.fn(str => ({ width: str.length * 10 }) as TextMetrics),
     moveTo: jest.fn(),
     rect: jest.fn(),
     restore: jest.fn(),
@@ -35,7 +35,7 @@ function makeMockContext(): CanvasRenderingContext2D {
     translate: jest.fn(),
     scale: jest.fn(),
     createPattern: jest.fn(),
-  } as unknown) as CanvasRenderingContext2D;
+  } as unknown as CanvasRenderingContext2D;
 }
 
 // We only use the '2d' mode of getContext. Defining the type in TS is tricky,
@@ -87,7 +87,7 @@ function makeGridComponent(
       createNodeMock,
     }
   );
-  return (testRenderer.getInstance() as unknown) as Grid;
+  return testRenderer.getInstance() as unknown as Grid;
 }
 
 function getClientX(
@@ -116,7 +116,7 @@ function mouseEvent(
   clientY = getClientY(row)
 ) {
   const mouseArgs = { clientX, clientY, ...extraArgs };
-  fn((new MouseEvent(type, mouseArgs) as unknown) as React.MouseEvent);
+  fn(new MouseEvent(type, mouseArgs) as unknown as React.MouseEvent);
 }
 
 function mouseDown(
@@ -149,7 +149,7 @@ function mouseMove(
   mouseEvent(
     column,
     row,
-    (component.handleMouseDrag as unknown) as React.MouseEventHandler,
+    component.handleMouseDrag as unknown as React.MouseEventHandler,
     'mousemove',
     extraMouseArgs,
     clientX,
@@ -168,7 +168,7 @@ function mouseUp(
   mouseEvent(
     column,
     row,
-    (component.handleMouseUp as unknown) as React.MouseEventHandler,
+    component.handleMouseUp as unknown as React.MouseEventHandler,
     'mouseup',
     extraMouseArgs,
     clientX,
@@ -210,7 +210,7 @@ function mouseDoubleClick(
 function keyDown(key: string, component: Grid, extraArgs?: KeyboardEventInit) {
   const args = { key, ...extraArgs };
   component.handleKeyDown(
-    (new KeyboardEvent('keydown', args) as unknown) as React.KeyboardEvent
+    new KeyboardEvent('keydown', args) as unknown as React.KeyboardEvent
   );
 }
 

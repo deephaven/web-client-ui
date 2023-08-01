@@ -29,10 +29,12 @@ export default function useSelectDistinctTable(
     [table, ...columnNames]
   );
 
-  const { data: distinctTable, error, isError, isLoading } = usePromiseFactory(
-    selectDistinct,
-    []
-  );
+  const {
+    data: distinctTable,
+    error,
+    isError,
+    isLoading,
+  } = usePromiseFactory(selectDistinct, []);
 
   useEffect(
     () => () => {

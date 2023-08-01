@@ -12,7 +12,7 @@ import EventEmitter from '../utils/EventEmitter';
 export type CloseOptions = { force?: boolean };
 
 export default class ItemContainer<
-  C extends ComponentConfig | ReactComponentConfig = ComponentConfig
+  C extends ComponentConfig | ReactComponentConfig = ComponentConfig,
 > extends EventEmitter {
   width?: number;
   height?: number;

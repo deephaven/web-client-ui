@@ -23,7 +23,7 @@ export interface UseViewportDataProps<TItem, TTable extends Table | TreeTable> {
 
 export interface UseViewportDataResult<
   TItem,
-  TTable extends Table | TreeTable
+  TTable extends Table | TreeTable,
 > {
   /** Manages deserialized row items associated with a DH Table */
   viewportData: ListData<KeyedItem<TItem>>;
@@ -55,7 +55,7 @@ export interface UseViewportDataResult<
  */
 export default function useViewportData<
   TItem,
-  TTable extends Table | TreeTable
+  TTable extends Table | TreeTable,
 >({
   table,
   viewportSize = 10,

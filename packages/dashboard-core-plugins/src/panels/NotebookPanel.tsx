@@ -196,9 +196,8 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.handleTransformLinkUri = this.handleTransformLinkUri.bind(this);
     this.handleOverwrite = this.handleOverwrite.bind(this);
     this.handlePreviewPromotion = this.handlePreviewPromotion.bind(this);
-    this.getDropdownOverflowActions = this.getDropdownOverflowActions.bind(
-      this
-    );
+    this.getDropdownOverflowActions =
+      this.getDropdownOverflowActions.bind(this);
     this.pending = new Pending();
 
     this.debouncedSavePanelState = debounce(
@@ -1152,12 +1151,13 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       'Notebook extension',
       'Run'
     );
-    const disabledRunSelectedButtonTooltip = ScriptEditorUtils.getDisabledRunTooltip(
-      isSessionConnected,
-      isLanguageMatching,
-      'Notebook extension',
-      'Run Selected'
-    );
+    const disabledRunSelectedButtonTooltip =
+      ScriptEditorUtils.getDisabledRunTooltip(
+        isSessionConnected,
+        isLanguageMatching,
+        'Notebook extension',
+        'Run Selected'
+      );
 
     const additionalActions = [
       {

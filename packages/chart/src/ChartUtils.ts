@@ -196,7 +196,8 @@ class ChartUtils {
   static getPlotlyErrorBars(
     x: number[],
     xLow: number[],
-    xHigh: number[]
+    xHigh: number[],
+    theme = ChartTheme
   ): ErrorBar {
     const array = xHigh.map((value, i) => value - x[i]);
     const arrayminus = xLow.map((value, i) => x[i] - value);
@@ -205,6 +206,7 @@ class ChartUtils {
       symmetric: false,
       array,
       arrayminus,
+      color: theme.error_band_line_color,
     };
   }
 
@@ -595,9 +597,8 @@ class ChartUtils {
                     holidays,
                     timeZone: calendarTimeZone,
                   } = businessCalendar;
-                  const typeFormatter = formatter?.getColumnTypeFormatter(
-                    BUSINESS_COLUMN_TYPE
-                  );
+                  const typeFormatter =
+                    formatter?.getColumnTypeFormatter(BUSINESS_COLUMN_TYPE);
                   let formatterTimeZone;
                   if (isDateTimeColumnFormatter(typeFormatter)) {
                     formatterTimeZone = typeFormatter.dhTimeZone;
@@ -636,7 +637,8 @@ class ChartUtils {
                     );
                   }
 
-                  (axisFormat as RangebreakAxisFormat).rangebreaks = rangebreaks;
+                  (axisFormat as RangebreakAxisFormat).rangebreaks =
+                    rangebreaks;
                 }
 
                 if (axisFormats.size === chart.axes.length) {
