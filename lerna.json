@@ -1,6 +1,6 @@
 {
   "useNx": false,
-  "version": "0.45.0",
+  "version": "0.45.1",
   "command": {
     "publish": {
       "distTag": "latest"
