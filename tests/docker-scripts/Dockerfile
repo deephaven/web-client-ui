@@ -23,14 +23,14 @@ SHELL ["/bin/bash", "--login", "-c"]
 # This is a workaround for copying all package.json files w/ directory structure
 # without needing to list every file as a COPY command
 # The copy --from=copy-packages command will be a cache hit if the package.json files didn't change
-FROM alpine as copy-packages
+FROM alpine AS copy-packages
 WORKDIR /work/
 COPY . /tmp/web-client-ui
 COPY package.json package-lock.json skip.js .
 # cd first so the cp doesn't include /tmp/web-client-ui in the paths
 RUN cd /tmp/web-client-ui && cp --parents ./packages/*/package.json /work/
 
-FROM playwright as build
+FROM playwright AS build
 WORKDIR /work/
 COPY --from=copy-packages /work/ .
 
