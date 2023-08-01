@@ -108,9 +108,8 @@ class AdvancedFilterCreator extends PureComponent<
 
     this.handleAddAnd = this.handleAddAnd.bind(this);
     this.handleAddOr = this.handleAddOr.bind(this);
-    this.handleChangeFilterOperator = this.handleChangeFilterOperator.bind(
-      this
-    );
+    this.handleChangeFilterOperator =
+      this.handleChangeFilterOperator.bind(this);
     this.handleDone = this.handleDone.bind(this);
     this.handleFilterChange = this.handleFilterChange.bind(this);
     this.handleFilterDelete = this.handleFilterDelete.bind(this);
@@ -231,9 +230,11 @@ class AdvancedFilterCreator extends PureComponent<
   }
 
   handleFocusTrapEnd(): void {
-    (this.focusTrapContainer?.current?.querySelector(
-      'button,select,input,textarea'
-    ) as HTMLElement).focus();
+    (
+      this.focusTrapContainer?.current?.querySelector(
+        'button,select,input,textarea'
+      ) as HTMLElement
+    ).focus();
   }
 
   handleFocusTrapStart(): void {
@@ -420,12 +421,8 @@ class AdvancedFilterCreator extends PureComponent<
   }
 
   sendUpdate(): void {
-    const {
-      filterItems,
-      filterOperators,
-      invertSelection,
-      selectedValues,
-    } = this.state;
+    const { filterItems, filterOperators, invertSelection, selectedValues } =
+      this.state;
     const { column, onFilterChange, model, tableUtils } = this.props;
     const { formatter } = model;
 

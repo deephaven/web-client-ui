@@ -597,9 +597,8 @@ class ChartUtils {
                     holidays,
                     timeZone: calendarTimeZone,
                   } = businessCalendar;
-                  const typeFormatter = formatter?.getColumnTypeFormatter(
-                    BUSINESS_COLUMN_TYPE
-                  );
+                  const typeFormatter =
+                    formatter?.getColumnTypeFormatter(BUSINESS_COLUMN_TYPE);
                   let formatterTimeZone;
                   if (isDateTimeColumnFormatter(typeFormatter)) {
                     formatterTimeZone = typeFormatter.dhTimeZone;
@@ -638,7 +637,8 @@ class ChartUtils {
                     );
                   }
 
-                  (axisFormat as RangebreakAxisFormat).rangebreaks = rangebreaks;
+                  (axisFormat as RangebreakAxisFormat).rangebreaks =
+                    rangebreaks;
                 }
 
                 if (axisFormats.size === chart.axes.length) {

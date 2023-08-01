@@ -115,27 +115,22 @@ export class FormattingSectionContent extends PureComponent<
       FormattingSectionContent.inputDebounceTime
     );
 
-    this.handleDefaultDateTimeFormatChange = this.handleDefaultDateTimeFormatChange.bind(
-      this
-    );
-    this.handleDefaultDecimalFormatChange = this.handleDefaultDecimalFormatChange.bind(
-      this
-    );
-    this.handleDefaultIntegerFormatChange = this.handleDefaultIntegerFormatChange.bind(
-      this
-    );
+    this.handleDefaultDateTimeFormatChange =
+      this.handleDefaultDateTimeFormatChange.bind(this);
+    this.handleDefaultDecimalFormatChange =
+      this.handleDefaultDecimalFormatChange.bind(this);
+    this.handleDefaultIntegerFormatChange =
+      this.handleDefaultIntegerFormatChange.bind(this);
     this.handleShowTimeZoneChange = this.handleShowTimeZoneChange.bind(this);
-    this.handleShowTSeparatorChange = this.handleShowTSeparatorChange.bind(
-      this
-    );
+    this.handleShowTSeparatorChange =
+      this.handleShowTSeparatorChange.bind(this);
     this.handleTimeZoneChange = this.handleTimeZoneChange.bind(this);
     this.handleResetDateTimeFormat = this.handleResetDateTimeFormat.bind(this);
     this.handleResetDecimalFormat = this.handleResetDecimalFormat.bind(this);
     this.handleResetIntegerFormat = this.handleResetIntegerFormat.bind(this);
     this.handleResetTimeZone = this.handleResetTimeZone.bind(this);
-    this.handleTruncateNumbersWithPoundChange = this.handleTruncateNumbersWithPoundChange.bind(
-      this
-    );
+    this.handleTruncateNumbersWithPoundChange =
+      this.handleTruncateNumbersWithPoundChange.bind(this);
 
     const {
       formatter,
@@ -414,10 +409,12 @@ export class FormattingSectionContent extends PureComponent<
     } = this.state;
 
     const {
-      defaultFormatString: defaultDecimalFormatString = DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
+      defaultFormatString:
+        defaultDecimalFormatString = DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
     } = defaultDecimalFormatOptions ?? {};
     const {
-      defaultFormatString: defaultIntegerFormatString = IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
+      defaultFormatString:
+        defaultIntegerFormatString = IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
     } = defaultIntegerFormatOptions ?? {};
 
     const isTimeZoneDefault = timeZone === defaults.timeZone;

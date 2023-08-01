@@ -131,7 +131,7 @@ it('updates the model correctly when adding and removing a rollup config', async
   const rollupConfig = irisGridTestUtils.makeRollupTableConfig();
 
   const mock = jest.fn(() =>
-    Promise.resolve((rollupTable as unknown) as TreeTable)
+    Promise.resolve(rollupTable as unknown as TreeTable)
   );
 
   table.rollup = mock;

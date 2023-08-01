@@ -13,7 +13,9 @@ $header-height: 30px;
 
 :export {
   grid-bg: $gray-900;
-  font: $font-size Fira Sans, sans-serif; // must be preloaded
+  font:
+    $font-size Fira Sans,
+    sans-serif; // must be preloaded
   white: $white;
   black: $black;
   header-bg: $header-bg;
@@ -25,7 +27,9 @@ $header-height: 30px;
   header-sort-bar-color: $purple;
   header-reverse-bar-color: $green-dark;
   header-bar-casing-color: $gray-900;
-  header-font: 600 $font-size Fira Sans, sans-serif; // must be preloaded
+  header-font:
+    600 $font-size Fira Sans,
+    sans-serif; // must be preloaded
   row-height: $row-height;
   row-background-colors: $gray-800 $content-bg;
   selection-color: $selection-color;

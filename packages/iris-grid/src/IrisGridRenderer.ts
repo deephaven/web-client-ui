@@ -726,14 +726,8 @@ class IrisGridRenderer extends GridRenderer {
       return;
     }
 
-    const {
-      gridX,
-      gridY,
-      maxX,
-      visibleColumns,
-      allColumnWidths,
-      allColumnXs,
-    } = metrics;
+    const { gridX, gridY, maxX, visibleColumns, allColumnWidths, allColumnXs } =
+      metrics;
     const columnHeaderHeight = gridY - filterBarCollapsedHeight;
 
     context.save();

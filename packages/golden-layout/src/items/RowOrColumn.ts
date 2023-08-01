@@ -505,9 +505,10 @@ export default class RowOrColumn extends AbstractContentItem {
    */
   _onSplitterDragStart(splitter: Splitter) {
     const items = this._getItemsForSplitter(splitter);
-    const minSize = this.layoutManager.config.dimensions[
-      this._isColumn ? 'minItemHeight' : 'minItemWidth'
-    ];
+    const minSize =
+      this.layoutManager.config.dimensions[
+        this._isColumn ? 'minItemHeight' : 'minItemWidth'
+      ];
 
     var beforeMinDim = this._getMinimumDimensions(
       items.before.config.content ?? []

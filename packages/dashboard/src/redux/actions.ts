@@ -29,16 +29,15 @@ export const setDashboardData = (
  * @param updateData The data to combine with the existing dashboard data
  * @returns
  */
-export const updateDashboardData = (
-  id: string,
-  data: DashboardData
-): ThunkAction<unknown, RootState, undefined, Action<unknown>> => (
-  dispatch,
-  getState
-) =>
-  dispatch(
-    setDashboardData(id, {
-      ...getDashboardData(getState(), id),
-      ...data,
-    })
-  );
+export const updateDashboardData =
+  (
+    id: string,
+    data: DashboardData
+  ): ThunkAction<unknown, RootState, undefined, Action<unknown>> =>
+  (dispatch, getState) =>
+    dispatch(
+      setDashboardData(id, {
+        ...getDashboardData(getState(), id),
+        ...data,
+      })
+    );

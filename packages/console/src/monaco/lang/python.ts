@@ -29,7 +29,8 @@ const conf: monaco.languages.LanguageConfiguration = {
   ],
   onEnterRules: [
     {
-      beforeText: /^\s*(?:def|class|for|if|elif|else|while|try|with|finally|except|async).*?:\s*$/,
+      beforeText:
+        /^\s*(?:def|class|for|if|elif|else|while|try|with|finally|except|async).*?:\s*$/,
       action: { indentAction: 1 }, // see monaco.languages.IndentAction.Indent
     },
   ],
@@ -128,7 +129,8 @@ const language: monaco.languages.IMonarchLanguage = {
   delimiters: /[;=.@:,`]/,
 
   // strings
-  escapes: /\\(?:[abfnrtv\\"'\n\r]|x[0-9A-Fa-f]{2}|[0-7]{3}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8}|N\{\w+\})/,
+  escapes:
+    /\\(?:[abfnrtv\\"'\n\r]|x[0-9A-Fa-f]{2}|[0-7]{3}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8}|N\{\w+\})/,
   rawpre: /(?:[rR]|ur|Ur|uR|UR|br|Br|bR|BR)/,
   strpre: /(?:[buBU])/,
 

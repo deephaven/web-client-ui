@@ -32,7 +32,9 @@ $switch-background-active-color: $primary;
     border-radius: $switch-handle-size;
     background-color: $switch-handle-color;
     transform: translateX(0);
-    transition: transform $transition ease-in, background-color $transition;
+    transition:
+      transform $transition ease-in,
+      background-color $transition;
   }
 
   ::before,

@@ -33,12 +33,7 @@ class IrisGridRowTreeMouseHandler extends GridMouseHandler {
     return false;
   }
 
-  private getButtonPosition({
-    x,
-    y,
-    column,
-    row,
-  }: GridPoint): {
+  private getButtonPosition({ x, y, column, row }: GridPoint): {
     left: number;
     top: number;
     width: number;

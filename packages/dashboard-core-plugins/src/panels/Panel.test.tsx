@@ -41,7 +41,7 @@ function renderPanel({
   return render(
     <Panel
       componentPanel={componentPanel}
-      glContainer={(glContainer as unknown) as Container}
+      glContainer={glContainer as unknown as Container}
       glEventHub={glEventHub}
       onResize={onResize}
       onShow={onShow}

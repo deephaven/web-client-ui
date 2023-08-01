@@ -260,21 +260,25 @@ class CustomColumnBuilder extends Component<
     const { inputs } = this.state;
     // focus on drag handle
     if (shiftKey) {
-      (this.container?.querySelectorAll('.btn-drag-handle')[
-        focusEditorIndex
-      ] as HTMLButtonElement).focus();
+      (
+        this.container?.querySelectorAll('.btn-drag-handle')[
+          focusEditorIndex
+        ] as HTMLButtonElement
+      ).focus();
       return;
     }
     if (focusEditorIndex === inputs.length - 1) {
-      (this.container?.querySelector(
-        '.btn-add-column'
-      ) as HTMLButtonElement)?.focus();
+      (
+        this.container?.querySelector('.btn-add-column') as HTMLButtonElement
+      )?.focus();
     } else {
       // focus on next column name input
       const nextFocusIndex = focusEditorIndex + 1;
-      (this.container?.querySelectorAll(`.custom-column-input`)[
-        nextFocusIndex
-      ] as HTMLInputElement).focus();
+      (
+        this.container?.querySelectorAll(`.custom-column-input`)[
+          nextFocusIndex
+        ] as HTMLInputElement
+      ).focus();
     }
   }
 

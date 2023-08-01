@@ -136,22 +136,18 @@ class MonacoProviders extends PureComponent<
   componentDidMount(): void {
     const { language, session } = this.props;
 
-    this.registeredCompletionProvider = monaco.languages.registerCompletionItemProvider(
-      language,
-      {
+    this.registeredCompletionProvider =
+      monaco.languages.registerCompletionItemProvider(language, {
         provideCompletionItems: this.handleCompletionRequest,
         triggerCharacters: ['.', '"', "'"],
-      }
-    );
+      });
 
     if (session.getSignatureHelp) {
-      this.registeredSignatureProvider = monaco.languages.registerSignatureHelpProvider(
-        language,
-        {
+      this.registeredSignatureProvider =
+        monaco.languages.registerSignatureHelpProvider(language, {
           provideSignatureHelp: this.handleSignatureRequest,
           signatureHelpTriggerCharacters: ['(', ','],
-        }
-      );
+        });
     }
 
     if (session.getHover) {

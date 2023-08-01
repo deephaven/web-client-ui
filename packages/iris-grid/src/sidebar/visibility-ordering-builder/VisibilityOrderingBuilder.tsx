@@ -164,9 +164,8 @@ class VisibilityOrderingBuilder extends Component<
 
     this.addColumnToSelected(columnsMatch, false);
     if (columnsMatch.length > 0) {
-      const columnItemToFocus = this.list?.querySelectorAll('.item-wrapper')[
-        visibleIndexToFocus
-      ];
+      const columnItemToFocus =
+        this.list?.querySelectorAll('.item-wrapper')[visibleIndexToFocus];
       columnItemToFocus?.scrollIntoView({ block: 'center' });
     }
   }
@@ -377,11 +376,8 @@ class VisibilityOrderingBuilder extends Component<
   handleMoveColumns(
     option: keyof typeof VisibilityOrderingBuilder.MOVE_OPTIONS
   ): void {
-    const {
-      onMovedColumnsChanged,
-      movedColumns,
-      onColumnHeaderGroupChanged,
-    } = this.props;
+    const { onMovedColumnsChanged, movedColumns, onColumnHeaderGroupChanged } =
+      this.props;
 
     const { newMoves, groups } = this.moveSelectedColumns(option);
     let scrollListAfterMove: (() => void) | undefined;
@@ -723,11 +719,8 @@ class VisibilityOrderingBuilder extends Component<
   }
 
   handleGroupCreate(): void {
-    const {
-      movedColumns,
-      onMovedColumnsChanged,
-      onColumnHeaderGroupChanged,
-    } = this.props;
+    const { movedColumns, onMovedColumnsChanged, onColumnHeaderGroupChanged } =
+      this.props;
 
     const { newMoves, groups } = this.moveSelectedColumns(
       VisibilityOrderingBuilder.MOVE_OPTIONS.TOP
@@ -894,12 +887,8 @@ class VisibilityOrderingBuilder extends Component<
    * @returns The movable tree items in order
    */
   getTreeItems(): readonly IrisGridTreeItem[] {
-    const {
-      model,
-      movedColumns,
-      hiddenColumns,
-      columnHeaderGroups,
-    } = this.props;
+    const { model, movedColumns, hiddenColumns, columnHeaderGroups } =
+      this.props;
     const { selectedColumns } = this.state;
 
     return this.memoizedGetTreeItems(

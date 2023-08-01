@@ -331,12 +331,12 @@ describe('handles subplots and columns/rows correctly', () => {
       chartTestUtils.makeChart({ axes, row: 1 }),
     ];
     const figure = chartTestUtils.makeFigure({ charts, rows: 2 });
-    expect(
-      chartUtils.getChartBounds(figure, charts[0], width, height)
-    ).toEqual({ bottom: 0.5 + halfYMargin, top: 1, left: 0, right: 1 });
-    expect(
-      chartUtils.getChartBounds(figure, charts[1], width, height)
-    ).toEqual({ bottom: 0, top: 0.5 - halfYMargin, left: 0, right: 1 });
+    expect(chartUtils.getChartBounds(figure, charts[0], width, height)).toEqual(
+      { bottom: 0.5 + halfYMargin, top: 1, left: 0, right: 1 }
+    );
+    expect(chartUtils.getChartBounds(figure, charts[1], width, height)).toEqual(
+      { bottom: 0, top: 0.5 - halfYMargin, left: 0, right: 1 }
+    );
   });
 
   it('handles column location correctly', () => {
@@ -346,12 +346,12 @@ describe('handles subplots and columns/rows correctly', () => {
       chartTestUtils.makeChart({ axes, column: 1 }),
     ];
     const figure = chartTestUtils.makeFigure({ charts, cols: 2 });
-    expect(
-      chartUtils.getChartBounds(figure, charts[0], width, height)
-    ).toEqual({ bottom: 0, top: 1, left: 0, right: 0.5 - halfXMargin });
-    expect(
-      chartUtils.getChartBounds(figure, charts[1], width, height)
-    ).toEqual({ bottom: 0, top: 1, left: 0.5 + halfXMargin, right: 1 });
+    expect(chartUtils.getChartBounds(figure, charts[0], width, height)).toEqual(
+      { bottom: 0, top: 1, left: 0, right: 0.5 - halfXMargin }
+    );
+    expect(chartUtils.getChartBounds(figure, charts[1], width, height)).toEqual(
+      { bottom: 0, top: 1, left: 0.5 + halfXMargin, right: 1 }
+    );
   });
 
   it('handles colspan', () => {
@@ -378,9 +378,9 @@ describe('handles subplots and columns/rows correctly', () => {
         right: 1,
       }
     );
-    expect(
-      chartUtils.getChartBounds(figure, charts[2], width, height)
-    ).toEqual({ bottom: 0, top: 0.5 - halfYMargin, left: 0, right: 1 });
+    expect(chartUtils.getChartBounds(figure, charts[2], width, height)).toEqual(
+      { bottom: 0, top: 0.5 - halfYMargin, left: 0, right: 1 }
+    );
   });
 
   it('handles rowspan', () => {
@@ -407,9 +407,9 @@ describe('handles subplots and columns/rows correctly', () => {
         right: 0.5 - halfXMargin,
       }
     );
-    expect(
-      chartUtils.getChartBounds(figure, charts[2], width, height)
-    ).toEqual({ bottom: 0, top: 1, left: 0.5 + halfXMargin, right: 1 });
+    expect(chartUtils.getChartBounds(figure, charts[2], width, height)).toEqual(
+      { bottom: 0, top: 1, left: 0.5 + halfXMargin, right: 1 }
+    );
   });
 });
 

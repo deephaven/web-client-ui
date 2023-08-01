@@ -96,12 +96,10 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
     this.handleValidationError = this.handleValidationError.bind(this);
     this.handleOverwriteCancel = this.handleOverwriteCancel.bind(this);
     this.handleOverwriteConfirm = this.handleOverwriteConfirm.bind(this);
-    this.handleExtensionChangeCancel = this.handleExtensionChangeCancel.bind(
-      this
-    );
-    this.handleExtensionChangeConfirm = this.handleExtensionChangeConfirm.bind(
-      this
-    );
+    this.handleExtensionChangeCancel =
+      this.handleExtensionChangeCancel.bind(this);
+    this.handleExtensionChangeConfirm =
+      this.handleExtensionChangeConfirm.bind(this);
     this.handleBreadcrumbSelect = this.handleBreadcrumbSelect.bind(this);
 
     const { defaultValue } = props;

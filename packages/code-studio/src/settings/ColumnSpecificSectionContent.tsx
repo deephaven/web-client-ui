@@ -345,9 +345,11 @@ export class ColumnSpecificSectionContent extends PureComponent<
     );
   }
 
-  getRuleError(
-    rule: FormatterItem
-  ): { hasColumnNameError: boolean; hasFormatError: boolean; message: string } {
+  getRuleError(rule: FormatterItem): {
+    hasColumnNameError: boolean;
+    hasFormatError: boolean;
+    message: string;
+  } {
     const { dh } = this.props;
     const error = {
       hasColumnNameError: false,

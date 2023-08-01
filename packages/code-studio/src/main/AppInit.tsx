@@ -65,7 +65,7 @@ interface AppInitProps {
   workspace: Workspace;
   workspaceStorage: WorkspaceStorage;
 
-  setActiveTool: (type: typeof ToolType[keyof typeof ToolType]) => void;
+  setActiveTool: (type: (typeof ToolType)[keyof typeof ToolType]) => void;
   setApi: (api: DhType) => void;
   setCommandHistoryStorage: (storage: PouchCommandHistoryStorage) => void;
   setDashboardData: (

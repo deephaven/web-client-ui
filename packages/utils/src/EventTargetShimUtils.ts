@@ -6,7 +6,7 @@ import type { Event, EventTarget } from 'event-target-shim';
  */
 export class EventShimCustomEvent<
   T extends string,
-  D = unknown
+  D = unknown,
 > extends CustomEvent<D> {
   // The fields declared are so TS plays nicely w/ event-target-shim and the browser CustomEvent
   // They don't actually do anything other than tell TS to not complain that they aren't set in the constructor

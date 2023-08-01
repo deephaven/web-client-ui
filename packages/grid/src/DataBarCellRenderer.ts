@@ -104,10 +104,8 @@ class DataBarCellRenderer extends CellRenderer {
     } = this.getDataBarRenderMetrics(context, state, column, row);
 
     if (this.heightOfDigits === undefined) {
-      const {
-        actualBoundingBoxAscent,
-        actualBoundingBoxDescent,
-      } = context.measureText('1234567890');
+      const { actualBoundingBoxAscent, actualBoundingBoxDescent } =
+        context.measureText('1234567890');
       this.heightOfDigits = actualBoundingBoxAscent + actualBoundingBoxDescent;
     }
 
@@ -317,11 +315,8 @@ class DataBarCellRenderer extends CellRenderer {
       modelRows,
       visibleRows,
     } = metrics;
-    const {
-      cellHorizontalPadding,
-      treeDepthIndent,
-      treeHorizontalPadding,
-    } = theme;
+    const { cellHorizontalPadding, treeDepthIndent, treeHorizontalPadding } =
+      theme;
 
     const modelColumn = getOrThrow(modelColumns, column);
     const modelRow = getOrThrow(modelRows, row);

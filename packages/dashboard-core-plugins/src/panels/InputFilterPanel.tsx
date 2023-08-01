@@ -65,8 +65,13 @@ class InputFilterPanel extends Component<
 
     const { panelState } = props;
     // if panelstate is null, use destructured defaults
-    const { value, isValueShown = false, name, type, timestamp } =
-      panelState ?? {};
+    const {
+      value,
+      isValueShown = false,
+      name,
+      type,
+      timestamp,
+    } = panelState ?? {};
 
     this.state = {
       columns: [],

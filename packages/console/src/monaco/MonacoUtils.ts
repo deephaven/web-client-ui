@@ -456,9 +456,9 @@ class MonacoUtils {
     );
   }
 
-  static provideLinks(
-    model: monaco.editor.ITextModel
-  ): { links: monaco.languages.ILink[] } {
+  static provideLinks(model: monaco.editor.ITextModel): {
+    links: monaco.languages.ILink[];
+  } {
     const newTokens: monaco.languages.ILink[] = [];
 
     for (let i = 1; i <= model.getLineCount(); i += 1) {

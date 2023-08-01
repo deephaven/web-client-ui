@@ -26,7 +26,7 @@ const FIXED_WIDTH_SPACE = '\u2007';
 export type SelectionSegment = {
   selectionStart: number;
   selectionEnd: number;
-  selectionDirection?: typeof SELECTION_DIRECTION[keyof typeof SELECTION_DIRECTION];
+  selectionDirection?: (typeof SELECTION_DIRECTION)[keyof typeof SELECTION_DIRECTION];
 };
 
 type MaskedInputProps = {
@@ -107,11 +107,8 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
       function setSelectedSegment() {
         if (selection != null) {
           log.debug('setting selection...', selection);
-          const {
-            selectionStart,
-            selectionEnd,
-            selectionDirection,
-          } = selection;
+          const { selectionStart, selectionEnd, selectionDirection } =
+            selection;
           input.current?.setSelectionRange(
             selectionStart,
             selectionEnd,

@@ -133,10 +133,10 @@ export default class ReactComponentHandler {
       );
     }
 
-    const reactClass = ((this._container.layoutManager.getComponent(
+    const reactClass = (this._container.layoutManager.getComponent(
       componentName
     ) ||
-      this._container.layoutManager.getFallbackComponent()) as unknown) as React.ComponentClass;
+      this._container.layoutManager.getFallbackComponent()) as unknown as React.ComponentClass;
 
     if (!reactClass) {
       throw new Error(
