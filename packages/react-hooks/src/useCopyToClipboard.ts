@@ -7,7 +7,7 @@ const log = Log.module('useCopyToClipboard');
 
 export default function useCopyToClipboard(): [
   boolean,
-  (value: string) => void
+  (value: string) => void,
 ] {
   const [copied, setCopied] = useState(false);
   const copiedTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);

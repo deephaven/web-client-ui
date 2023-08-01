@@ -146,7 +146,7 @@ export class LinkerOverlayContent extends Component<
     if (glContainer == null) {
       throw new Error(`Unable to find panel container for id: ${panelId}`);
     }
-    return LayoutUtils.getTabPoint((glContainer as unknown) as Container);
+    return LayoutUtils.getTabPoint(glContainer as unknown as Container);
   }
 
   handleOperatorChanged(linkId: string, type: FilterTypeValue): void {

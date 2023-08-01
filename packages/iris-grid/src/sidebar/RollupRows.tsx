@@ -119,20 +119,16 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     this.handleDeleteClicked = this.handleDeleteClicked.bind(this);
     this.handleSearchChange = this.handleSearchChange.bind(this);
     this.handleUngroupedSelect = this.handleUngroupedSelect.bind(this);
-    this.handleUngroupedSelectionChange = this.handleUngroupedSelectionChange.bind(
-      this
-    );
+    this.handleUngroupedSelectionChange =
+      this.handleUngroupedSelectionChange.bind(this);
     this.handleDragStart = this.handleDragStart.bind(this);
     this.handleDragEnd = this.handleDragEnd.bind(this);
-    this.handleGroupedSelectionChange = this.handleGroupedSelectionChange.bind(
-      this
-    );
-    this.handleShowConstituentsChange = this.handleShowConstituentsChange.bind(
-      this
-    );
-    this.handleShowNonAggregatedColumnsChange = this.handleShowNonAggregatedColumnsChange.bind(
-      this
-    );
+    this.handleGroupedSelectionChange =
+      this.handleGroupedSelectionChange.bind(this);
+    this.handleShowConstituentsChange =
+      this.handleShowConstituentsChange.bind(this);
+    this.handleShowNonAggregatedColumnsChange =
+      this.handleShowNonAggregatedColumnsChange.bind(this);
     this.handleSortAscending = this.handleSortAscending.bind(this);
     this.handleSortDescending = this.handleSortDescending.bind(this);
     this.renderGroupedItem = this.renderGroupedItem.bind(this);

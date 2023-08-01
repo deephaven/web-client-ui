@@ -111,24 +111,18 @@ class TableCsvExporter extends Component<
     super(props);
 
     this.handleDownloadClick = this.handleDownloadClick.bind(this);
-    this.handleDownloadRowOptionChanged = this.handleDownloadRowOptionChanged.bind(
-      this
-    );
-    this.handleCustomizedDownloadRowOptionChanged = this.handleCustomizedDownloadRowOptionChanged.bind(
-      this
-    );
-    this.handleCustomizedDownloadRowsChanged = this.handleCustomizedDownloadRowsChanged.bind(
-      this
-    );
-    this.handleIncludeColumnHeadersChanged = this.handleIncludeColumnHeadersChanged.bind(
-      this
-    );
-    this.handleIncludeHiddenColumnsChanged = this.handleIncludeHiddenColumnsChanged.bind(
-      this
-    );
-    this.handleUseUnformattedValuesChanged = this.handleUseUnformattedValuesChanged.bind(
-      this
-    );
+    this.handleDownloadRowOptionChanged =
+      this.handleDownloadRowOptionChanged.bind(this);
+    this.handleCustomizedDownloadRowOptionChanged =
+      this.handleCustomizedDownloadRowOptionChanged.bind(this);
+    this.handleCustomizedDownloadRowsChanged =
+      this.handleCustomizedDownloadRowsChanged.bind(this);
+    this.handleIncludeColumnHeadersChanged =
+      this.handleIncludeColumnHeadersChanged.bind(this);
+    this.handleIncludeHiddenColumnsChanged =
+      this.handleIncludeHiddenColumnsChanged.bind(this);
+    this.handleUseUnformattedValuesChanged =
+      this.handleUseUnformattedValuesChanged.bind(this);
 
     const { model, name } = props;
     this.state = {
@@ -227,13 +221,8 @@ class TableCsvExporter extends Component<
   }
 
   async handleDownloadClick(): Promise<void> {
-    const {
-      model,
-      isDownloading,
-      onDownloadStart,
-      onDownload,
-      onCancel,
-    } = this.props;
+    const { model, isDownloading, onDownloadStart, onDownload, onCancel } =
+      this.props;
     const { fileName, includeColumnHeaders, useUnformattedValues } = this.state;
 
     if (isDownloading) {

@@ -82,7 +82,7 @@ function makeChartPanelWrapper({
       columnSelectionValidator={columnSelectionValidator}
       makeModel={makeModel}
       metadata={metadata as ChartPanelMetadata}
-      glContainer={(glContainer as unknown) as Container}
+      glContainer={glContainer as unknown as Container}
       glEventHub={glEventHub}
       inputFilters={inputFilters}
       links={links}
@@ -91,7 +91,7 @@ function makeChartPanelWrapper({
       setActiveTool={setActiveTool}
       setDashboardIsolatedLinkerPanelId={setDashboardIsolatedLinkerPanelId}
       source={source}
-      sourcePanel={(sourcePanel as unknown) as PanelComponent}
+      sourcePanel={sourcePanel as unknown as PanelComponent}
     />
   );
 }

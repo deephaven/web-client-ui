@@ -14,7 +14,7 @@ import DragProxy from './DragProxy';
  * @param event used to get the starting position
  */
 export default class DragSourceFromEvent {
-  private _element? = ($(window) as unknown) as JQuery<HTMLElement>; // we need something to listen for mousemoves against
+  private _element? = $(window) as unknown as JQuery<HTMLElement>; // we need something to listen for mousemoves against
   private _itemConfig?: ItemConfig | (() => ItemConfig);
   private _layoutManager?: LayoutManager;
   private _dragListener?: DragListener;

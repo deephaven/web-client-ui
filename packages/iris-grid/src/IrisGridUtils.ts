@@ -82,14 +82,14 @@ export type DehydratedAdvancedFilter = [
   number,
   {
     options: AdvancedFilterOptions;
-  }
+  },
 ];
 
 export type DehydratedQuickFilter = [
   number,
   {
     text: string;
-  }
+  },
 ];
 
 export type DehydratedCustomColumnFormat = [string, FormattingRule];
@@ -176,12 +176,8 @@ class IrisGridUtils {
     movedColumns: { from: string | [string, string]; to: string }[];
     movedRows: MoveOperation[];
   } {
-    const {
-      isStuckToBottom,
-      isStuckToRight,
-      movedColumns,
-      movedRows,
-    } = gridState;
+    const { isStuckToBottom, isStuckToRight, movedColumns, movedRows } =
+      gridState;
 
     const { columns } = model;
 
@@ -229,17 +225,12 @@ class IrisGridUtils {
     IrisGridProps,
     'isStuckToBottom' | 'isStuckToRight' | 'movedColumns' | 'movedRows'
   > {
-    const {
-      isStuckToBottom,
-      isStuckToRight,
-      movedColumns,
-      movedRows,
-    } = gridState;
+    const { isStuckToBottom, isStuckToRight, movedColumns, movedRows } =
+      gridState;
 
     const { columns } = model;
-    const customColumnNames = IrisGridUtils.parseCustomColumnNames(
-      customColumns
-    );
+    const customColumnNames =
+      IrisGridUtils.parseCustomColumnNames(customColumns);
     const columnNames = columns
       .map(({ name }) => name)
       .concat(customColumnNames);
@@ -473,12 +464,10 @@ class IrisGridUtils {
     oldCustomColumns: readonly ColumnName[],
     customColumns: readonly ColumnName[]
   ): ColumnName[] {
-    const oldCustomColumnsNames = IrisGridUtils.parseCustomColumnNames(
-      oldCustomColumns
-    );
-    const customColumnNames = IrisGridUtils.parseCustomColumnNames(
-      customColumns
-    );
+    const oldCustomColumnsNames =
+      IrisGridUtils.parseCustomColumnNames(oldCustomColumns);
+    const customColumnNames =
+      IrisGridUtils.parseCustomColumnNames(customColumns);
     return oldCustomColumnsNames.filter(
       oldCustomColumnName => !customColumnNames.includes(oldCustomColumnName)
     );
@@ -1270,18 +1259,20 @@ class IrisGridUtils {
       sorts: this.hydrateSort(columns, sorts),
       userColumnWidths: new Map(
         userColumnWidths
-          .map(([column, width]: [string | number, number]): [
-            number,
-            number
-          ] => {
-            if (
-              typeof column === 'string' ||
-              (column as unknown) instanceof String
-            ) {
-              return [columns.findIndex(({ name }) => name === column), width];
+          .map(
+            ([column, width]: [string | number, number]): [number, number] => {
+              if (
+                typeof column === 'string' ||
+                (column as unknown) instanceof String
+              ) {
+                return [
+                  columns.findIndex(({ name }) => name === column),
+                  width,
+                ];
+              }
+              return [column, width];
             }
-            return [column, width];
-          })
+          )
           .filter(
             ([column]) =>
               column != null && column >= 0 && column < columns.length
@@ -1324,7 +1315,7 @@ class IrisGridUtils {
     const importedFilters = savedQuickFilters.map(
       ([columnIndex, quickFilter]: DehydratedQuickFilter): [
         number,
-        { text: string; filter: FilterCondition | null }
+        { text: string; filter: FilterCondition | null },
       ] => {
         const { text } = quickFilter;
 
@@ -1381,7 +1372,7 @@ class IrisGridUtils {
     const importedFilters = savedAdvancedFilters.map(
       ([columnIndex, advancedFilter]: DehydratedAdvancedFilter): [
         number,
-        { options: AdvancedFilterOptions; filter: FilterCondition | null }
+        { options: AdvancedFilterOptions; filter: FilterCondition | null },
       ] => {
         const column = IrisGridUtils.getColumn(columns, columnIndex);
         assertNotNull(column);
@@ -1479,7 +1470,7 @@ class IrisGridUtils {
       pendingDataMap.map(
         ([rowIndex, { data }]: [
           number,
-          { data: [string, CellData | string | null][] }
+          { data: [string, CellData | string | null][] },
         ]) => [
           rowIndex,
           {
@@ -1507,7 +1498,7 @@ class IrisGridUtils {
   dehydrateValue<T>(value: T, columnType: string): string | T | null {
     if (TableUtils.isDateType(columnType)) {
       return this.dehydrateDateTime(
-        (value as unknown) as number | DateWrapper | Date
+        value as unknown as number | DateWrapper | Date
       );
     }
 
@@ -1528,11 +1519,11 @@ class IrisGridUtils {
     columnType: string
   ): DateWrapper | LongWrapper | T | null {
     if (TableUtils.isDateType(columnType)) {
-      return this.hydrateDateTime((value as unknown) as string);
+      return this.hydrateDateTime(value as unknown as string);
     }
 
     if (TableUtils.isLongType(columnType)) {
-      return this.hydrateLong((value as unknown) as string);
+      return this.hydrateLong(value as unknown as string);
     }
 
     return value;

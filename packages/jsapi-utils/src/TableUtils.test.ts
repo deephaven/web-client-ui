@@ -509,18 +509,13 @@ describe('quick filter tests', () => {
       const [year, month, day] = text
         .split('-')
         .map(value => parseInt(value, 10));
-      return (new Date(
-        year,
-        month - 1,
-        day
-      ).getTime() as unknown) as DateWrapper;
+      return new Date(year, month - 1, day).getTime() as unknown as DateWrapper;
     };
 
     // Just return the millis value as the date wrapper for unit tests
-    dh.DateWrapper.ofJsDate = date =>
-      (date.getTime() as unknown) as DateWrapper;
+    dh.DateWrapper.ofJsDate = date => date.getTime() as unknown as DateWrapper;
     dh.i18n.DateTimeFormat.parse = (_format, dateString) =>
-      (Date.parse(dateString) as unknown) as DateWrapper;
+      Date.parse(dateString) as unknown as DateWrapper;
   });
 
   describe('Escape/UnescapeQuickTextFilter', () => {
@@ -1349,7 +1344,7 @@ describe('quick filter tests', () => {
         tableUtils.makeQuickDateFilter(column, '302-111-303', '')
       ).toThrow();
       expect(() =>
-        tableUtils.makeQuickDateFilter(column, (4 as unknown) as string, '')
+        tableUtils.makeQuickDateFilter(column, 4 as unknown as string, '')
       ).toThrow();
 
       // Missing time zone
@@ -1568,7 +1563,7 @@ describe('quick filter tests', () => {
       // Since our mock can only handle to millis, check that the parse function is called with the right values
       const mock = jest.fn(
         (_format, dateString) =>
-          (Date.parse(dateString) as unknown) as DateWrapper
+          Date.parse(dateString) as unknown as DateWrapper
       );
 
       dh.i18n.DateTimeFormat.parse = mock;
@@ -1686,7 +1681,7 @@ describe('quick filter tests', () => {
     it('handles nanos year-month-day hh:mm:ss.SSSSSSSSS', () => {
       const mock = jest.fn(
         (_format, dateString) =>
-          (Date.parse(dateString) as unknown) as DateWrapper
+          Date.parse(dateString) as unknown as DateWrapper
       );
       // Since our mock can only handle to millis, check that the parse function is called with the right values
       dh.i18n.DateTimeFormat.parse = mock;
@@ -1769,7 +1764,7 @@ describe('quick filter tests', () => {
     it('handles overflows', () => {
       const mock = jest.fn(
         (_format, dateString) =>
-          (Date.parse(dateString) as unknown) as DateWrapper
+          Date.parse(dateString) as unknown as DateWrapper
       );
       // Since our mock can only handle to millis, check that the parse function is called with the right values
       dh.i18n.DateTimeFormat.parse = mock;
@@ -2339,9 +2334,9 @@ describe('range operations', () => {
 
 describe('Sorting', () => {
   function mockSort(index: number): Sort {
-    return ({
+    return {
       column: { index, name: `name_${index}` },
-    } as unknown) as Sort;
+    } as unknown as Sort;
   }
 
   const sortList = {
@@ -2384,10 +2379,10 @@ describe('Sorting', () => {
 
 describe('isTreeTable', () => {
   it('should return true if table is a TreeTable', () => {
-    const table: TreeTable = ({
+    const table: TreeTable = {
       expand: jest.fn(),
       collapse: jest.fn(),
-    } as unknown) as TreeTable;
+    } as unknown as TreeTable;
 
     expect(TableUtils.isTreeTable(table)).toBe(true);
   });

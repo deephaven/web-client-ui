@@ -177,14 +177,14 @@ class PanelManager {
 
   getLastUsedPanelOfType<
     P extends PanelProps = PanelProps,
-    C extends ComponentType<P> = ComponentType<P>
+    C extends ComponentType<P> = ComponentType<P>,
   >(type: PanelComponentType<P, C>): PanelComponent<P> | undefined {
     return this.getLastUsedPanelOfTypes([type]);
   }
 
   getLastUsedPanelOfTypes<
     P extends PanelProps = PanelProps,
-    C extends ComponentType<P> = ComponentType<P>
+    C extends ComponentType<P> = ComponentType<P>,
   >(types: PanelComponentType<P, C>[]): PanelComponent<P> | undefined {
     return this.getLastUsedPanel(panel =>
       types.some(

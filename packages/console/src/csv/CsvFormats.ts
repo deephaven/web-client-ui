@@ -1,4 +1,4 @@
-export type CsvTypes = typeof CsvFormats.TYPES[keyof typeof CsvFormats.TYPES];
+export type CsvTypes = (typeof CsvFormats.TYPES)[keyof typeof CsvFormats.TYPES];
 
 class CsvFormats {
   static DEFAULT_TYPE = 'DEFAULT_CSV' as const;

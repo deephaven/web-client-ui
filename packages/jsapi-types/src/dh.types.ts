@@ -592,10 +592,13 @@ export interface FilterValue {
   notIn(values: FilterValue[]): FilterCondition;
   notInIgnoreCase(values: FilterValue[]): FilterCondition;
   contains(value: FilterValue): FilterCondition;
+  containsIgnoreCase(value: FilterValue): FilterCondition;
   isFalse(): FilterCondition;
   isTrue(): FilterCondition;
   isNull(): FilterCondition;
   invoke(method: string, ...args: FilterValue[]): FilterCondition;
+  matches(value: FilterValue): FilterCondition;
+  matchesIgnoreCase(value: FilterValue): FilterCondition;
 }
 
 export interface FilterConditionStatic {

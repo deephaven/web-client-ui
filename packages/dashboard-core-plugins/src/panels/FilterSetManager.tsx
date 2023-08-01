@@ -103,9 +103,8 @@ class FilterSetManager extends Component<
     this.handleNameInputKeyPress = this.handleNameInputKeyPress.bind(this);
     this.handleRenameConfirm = this.handleRenameConfirm.bind(this);
     this.handleRenameCancel = this.handleRenameCancel.bind(this);
-    this.handleRestoreFullStateChange = this.handleRestoreFullStateChange.bind(
-      this
-    );
+    this.handleRestoreFullStateChange =
+      this.handleRestoreFullStateChange.bind(this);
 
     this.handleSetDelete = this.handleSetDelete.bind(this);
     this.handleSetEdit = this.handleSetEdit.bind(this);
@@ -279,12 +278,8 @@ class FilterSetManager extends Component<
   }
 
   handleRenameConfirm(): void {
-    const {
-      nameInputValue,
-      renameSet,
-      modifiedFilterSets,
-      restoreFullState,
-    } = this.state;
+    const { nameInputValue, renameSet, modifiedFilterSets, restoreFullState } =
+      this.state;
     if (renameSet === undefined) {
       log.error('Renamed set undefined.');
       return;

@@ -239,13 +239,8 @@ class Popper extends Component<PopperProps, PopperState> {
   }
 
   renderContent(): JSX.Element {
-    const {
-      className,
-      children,
-      timeout,
-      interactive,
-      closeOnBlur,
-    } = this.props;
+    const { className, children, timeout, interactive, closeOnBlur } =
+      this.props;
     const { show } = this.state;
 
     return (

@@ -2,7 +2,9 @@
 @import './IrisGridTheme.module.scss';
 
 $iris-grid-bg: $content-bg;
-$iris-grid-font: 12px fira sans, sans-serif;
+$iris-grid-font:
+  12px fira sans,
+  sans-serif;
 $table-sidebar-max-width: 320px;
 $table-sidebar-bg: $gray-700;
 $iris-grid-bar-bg: $primary-dark;
@@ -10,9 +12,12 @@ $iris-grid-bar-bg-highlight: $primary;
 $iris-grid-bar-max-height: 250px;
 $iris-grid-bar-max-width: $table-sidebar-max-width;
 $transition-iris-grid-bar-flash: 1s;
-$cell-box-shadow: 0 0 0 2px $selection-outline-color,
+$cell-box-shadow:
+  0 0 0 2px $selection-outline-color,
   0 0 0 5px rgba($selection-outline-color, 0.25);
-$cell-invalid-box-shadow: 0 0 0 2px $danger, 0 0 0 5px rgba($danger, 0.25);
+$cell-invalid-box-shadow:
+  0 0 0 2px $danger,
+  0 0 0 5px rgba($danger, 0.25);
 
 .iris-grid {
   width: 100%;
@@ -92,7 +97,8 @@ $cell-invalid-box-shadow: 0 0 0 2px $danger, 0 0 0 5px rgba($danger, 0.25);
       width: $header-height;
       background-color: $header-bg;
       border-bottom: 1px solid $header-separator-color;
-      transition: transform $transition-mid ease-out,
+      transition:
+        transform $transition-mid ease-out,
         opacity $transition-mid ease-out;
 
       .btn {
@@ -291,7 +297,8 @@ $cell-invalid-box-shadow: 0 0 0 2px $danger, 0 0 0 5px rgba($danger, 0.25);
     max-height: 0;
   }
   &.iris-grid-bar-horizontal-enter-active {
-    transition: background-color $transition-iris-grid-bar-flash ease-in,
+    transition:
+      background-color $transition-iris-grid-bar-flash ease-in,
       max-height $transition ease-in;
     max-height: $iris-grid-bar-max-height;
   }
@@ -311,7 +318,8 @@ $cell-invalid-box-shadow: 0 0 0 2px $danger, 0 0 0 5px rgba($danger, 0.25);
     max-width: 0;
   }
   &.iris-grid-bar-vertical-enter-active {
-    transition: background-color $transition-iris-grid-bar-flash ease-in,
+    transition:
+      background-color $transition-iris-grid-bar-flash ease-in,
       max-width $transition ease-in;
     max-width: $iris-grid-bar-max-width;
   }

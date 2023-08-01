@@ -47,7 +47,7 @@ function makeGridPanel() {
 
 test('Panels are not linkable if they do not have the required functions', () => {
   const gridPanel = makeGridPanel();
-  const panel = (gridPanel as unknown) as PanelComponent;
+  const panel = gridPanel as unknown as PanelComponent;
   // isLinkableFromPanel requires the getCoordinateForColumn method
   expect(isLinkableFromPanel(panel)).toBe(false);
   // isLinkablePanel requires getCoordinateForColumn, setFilterMap, and unsetFilterValue methods

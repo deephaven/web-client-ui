@@ -40,7 +40,8 @@ const EMPTY_ARRAY: never[] = [];
  */
 class MockIrisGridTreeModel
   extends IrisGridModel
-  implements ExpandableGridModel, EditableGridModel {
+  implements ExpandableGridModel, EditableGridModel
+{
   protected model: MockTreeGridModel;
 
   protected editedData: string[][];

@@ -21,12 +21,11 @@ const useTableColumn = (
   error: Error | null;
 } => {
   const columnNames = useMemo(() => [columnName], [columnName]);
-  const { columns = [], data = [], error } = useTable(
-    table,
-    firstRow,
-    lastRow,
-    columnNames
-  );
+  const {
+    columns = [],
+    data = [],
+    error,
+  } = useTable(table, firstRow, lastRow, columnNames);
   return {
     column: columns[0],
     data: data[0],

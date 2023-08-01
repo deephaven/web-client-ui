@@ -96,12 +96,10 @@ export class FileExplorerPanel extends React.Component<
     this.handleFileSelect = this.handleFileSelect.bind(this);
     this.handleCreateFile = this.handleCreateFile.bind(this);
     this.handleCreateDirectory = this.handleCreateDirectory.bind(this);
-    this.handleCreateDirectoryCancel = this.handleCreateDirectoryCancel.bind(
-      this
-    );
-    this.handleCreateDirectorySubmit = this.handleCreateDirectorySubmit.bind(
-      this
-    );
+    this.handleCreateDirectoryCancel =
+      this.handleCreateDirectoryCancel.bind(this);
+    this.handleCreateDirectorySubmit =
+      this.handleCreateDirectorySubmit.bind(this);
     this.handleDelete = this.handleDelete.bind(this);
     this.handleRename = this.handleRename.bind(this);
     this.handleSessionOpened = this.handleSessionOpened.bind(this);

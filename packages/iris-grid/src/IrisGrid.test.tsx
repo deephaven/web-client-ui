@@ -11,7 +11,7 @@ class MockPath2D {
   addPath = jest.fn();
 }
 
-window.Path2D = (MockPath2D as unknown) as new () => Path2D;
+window.Path2D = MockPath2D as unknown as new () => Path2D;
 
 const VIEW_SIZE = 5000;
 

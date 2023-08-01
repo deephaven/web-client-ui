@@ -369,14 +369,8 @@ export class DropdownFilter extends Component<
       values,
       settingsError,
     } = this.props;
-    const {
-      column,
-      disableCancel,
-      id,
-      isValueShown,
-      selectedColumn,
-      value,
-    } = this.state;
+    const { column, disableCancel, id, isValueShown, selectedColumn, value } =
+      this.state;
     const columnSelectionDisabled = source === null;
     const columns = this.getCompatibleColumns(source, allColumns);
     const isLinked = source != null;

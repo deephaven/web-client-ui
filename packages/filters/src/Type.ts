@@ -45,4 +45,4 @@ export class Type {
   static readonly containsAny = 'containsAny';
 }
 
-export type TypeValue = typeof Type[Exclude<keyof typeof Type, 'prototype'>];
+export type TypeValue = (typeof Type)[Exclude<keyof typeof Type, 'prototype'>];

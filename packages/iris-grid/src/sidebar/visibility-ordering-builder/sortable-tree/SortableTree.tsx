@@ -107,9 +107,10 @@ export default function SortableTree<T>({
     useSensor(KeyboardSensor, keyboardOptions)
   );
 
-  const sortedIds = useMemo(() => flattenedItems.map(({ id }) => id), [
-    flattenedItems,
-  ]);
+  const sortedIds = useMemo(
+    () => flattenedItems.map(({ id }) => id),
+    [flattenedItems]
+  );
 
   useEffect(() => {
     sensorContext.current = {

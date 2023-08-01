@@ -178,8 +178,13 @@ export class DropdownFilterPanel extends Component<
       showTSeparator: true,
       defaultDateTimeFormatString: `yyyy-MM-dd HH:mm:ss.SSSSSSSSS`,
     });
-    const { value = '', isValueShown = false, name, type, timestamp } =
-      panelState ?? {};
+    const {
+      value = '',
+      isValueShown = false,
+      name,
+      type,
+      timestamp,
+    } = panelState ?? {};
     const column = name != null && type != null ? { name, type } : undefined;
     this.state = {
       column,

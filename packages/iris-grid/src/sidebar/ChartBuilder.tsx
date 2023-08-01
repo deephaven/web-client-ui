@@ -264,7 +264,8 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
   }
 
   handleSeriesDeleteClick(event: React.MouseEvent<HTMLButtonElement>): void {
-    const changeEvent = (event as unknown) as React.ChangeEvent<HTMLButtonElement>;
+    const changeEvent =
+      event as unknown as React.ChangeEvent<HTMLButtonElement>;
     const index = changeEvent.target.getAttribute('data-index') as string;
     const intIndex = parseInt(index, 10);
 
@@ -293,7 +294,8 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
   }
 
   handleTypeClick(event: React.MouseEvent<HTMLButtonElement>): void {
-    const changeEvent = (event as unknown) as React.ChangeEvent<HTMLButtonElement>;
+    const changeEvent =
+      event as unknown as React.ChangeEvent<HTMLButtonElement>;
     const index = changeEvent.target.getAttribute('data-index') as string;
     const intIndex = parseInt(index, 10);
 
@@ -348,7 +350,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
             <label>Select Chart Type</label>
             <div className="form-row">
               {this.getTypes().map((chartType, index) => {
-                const key = (chartType as unknown) as React.Key;
+                const key = chartType as unknown as React.Key;
                 return (
                   <div key={key} className="col col-chart-type">
                     <button

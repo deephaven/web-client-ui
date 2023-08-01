@@ -994,11 +994,8 @@ export class GridMetricCalculator {
     treePaddingX: number = this.calculateTreePaddingX(state)
   ): SizeMap {
     const { model } = state;
-    const {
-      columnCount,
-      floatingLeftColumnCount,
-      floatingRightColumnCount,
-    } = model;
+    const { columnCount, floatingLeftColumnCount, floatingRightColumnCount } =
+      model;
 
     const columnWidths = new Map();
     for (let i = 0; i < floatingLeftColumnCount && i < columnCount; i += 1) {
@@ -1067,11 +1064,8 @@ export class GridMetricCalculator {
     maxX: Coordinate
   ): CoordinateMap {
     const { model } = state;
-    const {
-      columnCount,
-      floatingLeftColumnCount,
-      floatingRightColumnCount,
-    } = model;
+    const { columnCount, floatingLeftColumnCount, floatingRightColumnCount } =
+      model;
 
     return getFloatingCoordinates(
       floatingLeftColumnCount,

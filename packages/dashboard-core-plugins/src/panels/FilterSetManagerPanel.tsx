@@ -72,15 +72,15 @@ interface FilterSetManagerPanelState {
   panelState: PanelState; // Dehydrated panel state that can load this panel
 }
 
-function hasSetPanelState(
-  panel: PanelComponent
-): panel is PanelComponent & {
+function hasSetPanelState(panel: PanelComponent): panel is PanelComponent & {
   setPanelState: (state: InputFilterPanelState) => void;
 } {
   return (
-    (panel as PanelComponent & {
-      setPanelState: (state: InputFilterPanelState) => void;
-    }).setPanelState != null
+    (
+      panel as PanelComponent & {
+        setPanelState: (state: InputFilterPanelState) => void;
+      }
+    ).setPanelState != null
   );
 }
 export class FilterSetManagerPanel extends Component<
