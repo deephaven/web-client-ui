@@ -88,7 +88,7 @@ async function createDefinition(file) {
         dtsContent
       ),
       await fs.writeFile(
-        path.join(BUILD_DIR, `${file.prefixedName}.js`),
+        path.join(BUILD_DIR, `${file.prefixedName}.cjs`),
         jsContent
       ),
     ]);
@@ -207,13 +207,13 @@ async function build(buildSources) {
   const indexdtsContent = indexdts(files, buildSources);
   await fs.writeFile(`${BUILD_DIR}/index.d.ts`, indexdtsContent);
 
-  // write out index.js
+  // write out CJS
   const indexjsContent = indexjs(files);
-  await fs.writeFile(`${BUILD_DIR}/index.js`, indexjsContent);
+  await fs.writeFile(`${BUILD_DIR}/index.cjs`, indexjsContent);
 
-  // write out index.es.js
+  // write out ESM
   const indexesjsContent = indexesjs(files);
-  await fs.writeFile(`${BUILD_DIR}/index.es.js`, indexesjsContent);
+  await fs.writeFile(`${BUILD_DIR}/index.mjs`, indexesjsContent);
 
   console.log('deephaven-app-icons build complete!');
 }
