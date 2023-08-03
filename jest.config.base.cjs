@@ -24,7 +24,7 @@ module.exports = {
     ),
     // Handle monaco worker files
     '\\.worker.*$': 'identity-obj-proxy',
-    // All pacakges except icons use src code
+    // All packages except icons use src code
     '^@deephaven/(?!icons)(.*)$': path.join(__dirname, './packages/$1/src'),
   },
   testEnvironment: 'jsdom',
