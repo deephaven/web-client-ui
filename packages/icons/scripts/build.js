@@ -5,8 +5,7 @@ import path from 'path';
 import parser from 'svg-parser';
 import svgPathTools from 'svg-path-tools';
 // template shape based on fortawesome/fontawesome-free export file shape
-import { dtsFile, jsFile } from './template/file.js';
-import { indexdts, indexjs, indexesjs } from './template/indicies.js';
+import { dtsIndex, cjsIndex, mjsIndex } from './template/indicies.js';
 
 const { parse } = parser;
 const { parse: parsePath, scale, stringify } = svgPathTools;
@@ -73,27 +72,6 @@ function parseSvg(content) {
   } catch {
     console.error('unable to parse svg');
     return null;
-  }
-}
-
-async function createDefinition(file) {
-  // use imported template literals to build files
-  const dtsContent = dtsFile(file.prefixedName);
-  const jsContent = jsFile(file, file.width, file.height, file.path);
-
-  try {
-    await Promise.all([
-      await fs.writeFile(
-        path.join(BUILD_DIR, `${file.prefixedName}.d.ts`),
-        dtsContent
-      ),
-      await fs.writeFile(
-        path.join(BUILD_DIR, `${file.prefixedName}.cjs`),
-        jsContent
-      ),
-    ]);
-  } catch (e) {
-    console.error('Unable to create definition for', file, ':', e);
   }
 }
 
@@ -200,20 +178,17 @@ async function build(buildSources) {
   // flatten the array, as mulitple sources may have been passed in
   files = files.flat();
 
-  // write out the individual definition files
-  await Promise.all(files.map(file => createDefinition(file)));
-
   // write out an index.d.ts
-  const indexdtsContent = indexdts(files, buildSources);
+  const indexdtsContent = dtsIndex(files, buildSources);
   await fs.writeFile(`${BUILD_DIR}/index.d.ts`, indexdtsContent);
 
   // write out CJS
-  const indexjsContent = indexjs(files);
+  const indexjsContent = cjsIndex(files);
   await fs.writeFile(`${BUILD_DIR}/index.cjs`, indexjsContent);
 
   // write out ESM
-  const indexesjsContent = indexesjs(files);
-  await fs.writeFile(`${BUILD_DIR}/index.mjs`, indexesjsContent);
+  const indexesjsContent = mjsIndex(files);
+  await fs.writeFile(`${BUILD_DIR}/index.js`, indexesjsContent);
 
   console.log('deephaven-app-icons build complete!');
 }

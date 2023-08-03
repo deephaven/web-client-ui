@@ -14,10 +14,8 @@ module.exports = {
       './__mocks__/spectrumTheme$1Mock.js'
     ),
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
-    '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$': path.join(
-      __dirname,
-      './__mocks__/fileMock.js'
-    ),
+    '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
+      path.join(__dirname, './__mocks__/fileMock.js'),
     '^fira$': 'identity-obj-proxy',
     '^monaco-editor$': path.join(
       __dirname,
@@ -26,11 +24,8 @@ module.exports = {
     ),
     // Handle monaco worker files
     '\\.worker.*$': 'identity-obj-proxy',
-    '^@deephaven/icons$': path.join(
-      __dirname,
-      './packages/icons/dist/index.js'
-    ),
-    '^@deephaven/(.*)$': path.join(__dirname, './packages/$1/src'),
+    // All pacakges except icons use src code
+    '^@deephaven/(?!icons)(.*)$': path.join(__dirname, './packages/$1/src'),
   },
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: [path.join(__dirname, './jest.setup.ts')],

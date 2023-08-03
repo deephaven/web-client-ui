@@ -2,17 +2,19 @@
   "name": "@deephaven/icons",
   "version": "0.45.0",
   "description": "Icons used in Deephaven client apps. Extends vscode-codicons to be font-awesome svg-core compatible and adds additional icons in a similar style.",
-  "main": "dist/index.cjs",
-  "module": "dist/index.mjs",
+  "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "type": "module",
   "exports": {
     ".": {
       "require": "./dist/index.cjs",
-      "import": "./dist/index.mjs"
+      "import": "./dist/index.js"
     }
   },
   "files": [
-    "dist"
+    "dist/index.cjs",
+    "dist/index.js",
+    "dist/index.d.ts"
   ],
   "sideEffects": false,
   "scripts": {
