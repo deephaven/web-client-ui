@@ -1,5 +1,3 @@
-# Just copy the .gitignore file for files we don't want to copy to the docker image
-
 # dependencies
 **/node_modules/
 
@@ -31,7 +29,6 @@ npm-debug.log*
 test-results/
 playwright-report/
 playwright/.cache/
-jest*
 **/CHANGELOG.md
 
 # Ignore Dockerfile as well, since we don't need to copy that into the snapshot container
