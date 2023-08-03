@@ -1,22 +1,17 @@
 # Just copy the .gitignore file for files we don't want to copy to the docker image
 
 # dependencies
-node_modules
+node_modules*
 
 # testing
 /coverage
 
 # production
-build
-dist
+*/build*
+*/dist*
 
 # misc
 .vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-!.vscode/*.code-snippets
 .DS_Store
 .env.local
 .env.development.local

@@ -44,5 +44,5 @@ RUN SKIP_POSTINSTALL=1 npm ci
 # https://stackoverflow.com/a/34300129
 COPY . .
 
-# Now build the app. We only need the code-studio built for e2e tests.
-RUN npm run build:app
+# Now build the app
+RUN npm run build
