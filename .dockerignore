@@ -1,22 +1,23 @@
 # Just copy the .gitignore file for files we don't want to copy to the docker image
 
 # dependencies
-node_modules*
+**/node_modules/
 
 # testing
 /coverage
+jest*
+__mocks__/
+.github/
 
 # production
-*/build*
-*/dist*
+**/build/
+**/dist/
 
 # misc
-.vscode/*
+.git/
+.vscode/
 .DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+**/.env*.local
 .project
 .settings/
 .eslintcache
@@ -26,16 +27,17 @@ Lerna-Profile-*.json
 
 npm-debug.log*
 
-src/**/*.css
-
-tsconfig.tsbuildinfo
-packages/*/package-lock.json
+**/tsconfig.tsbuildinfo
 test-results/
 playwright-report/
 playwright/.cache/
+jest*
+**/CHANGELOG.md
 
 # Ignore Dockerfile as well, since we don't need to copy that into the snapshot container
-Dockerfile
+**/Dockerfile
+.dockerignore
+**/.gitignore
 
 # Tests are copied to the docker container, as it modifies them
 tests/
