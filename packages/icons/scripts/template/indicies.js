@@ -1,4 +1,4 @@
-export const indexdts = (files, sources) => {
+export const dtsIndex = (files, sources) => {
   const top = files
     .map(file => `export const ${file.prefixedName}: IconDefinition;`)
     .join('\n');
@@ -7,8 +7,7 @@ export const indexdts = (files, sources) => {
     .map(src => `export const ${src.prefix}: IconPack;`)
     .join('\n');
 
-  return ` 
-${top}
+  return `${top}
 import { IconDefinition, IconLookup, IconName, IconPrefix, IconPack } from '@fortawesome/fontawesome-common-types';
 export { IconDefinition, IconLookup, IconName, IconPrefix, IconPack } from '@fortawesome/fontawesome-common-types';
 export const prefix: IconPrefix;
@@ -16,16 +15,15 @@ ${bottom}
 `;
 };
 
-export const indexjs = files => {
+export const cjsIndex = files => {
   const iconVar = files
     .map(
-      file => `
-  var ${file.prefixedName} = {
+      file => `const ${file.prefixedName} = {
     prefix: "${file.prefix}",
     iconName: "${file.name}",
     icon: [${file.width}, ${file.height}, [], "f000", ${
-        file.path ? `"${file.path}"` : file.path
-      }]
+      file.path ? `"${file.path}"` : file.path
+    }]
   };`
     )
     .join('');
@@ -44,8 +42,8 @@ export const indexjs = files => {
     (factory((global['deephaven-app-icons'] = {})));
   }(this, (function (exports) { 'use strict';
 
-  var prefix = "dh";${iconVar}
-  var _iconsCache = {
+  const prefix = "dh";${iconVar}
+  const _iconsCache = {
 ${cache}
   };
 
@@ -59,16 +57,15 @@ ${exps}
 `;
 };
 
-export const indexesjs = files => {
+export const mjsIndex = files => {
   const iconVar = files
     .map(
-      file => `
-var ${file.prefixedName} = {
+      file => `const ${file.prefixedName} = {
   prefix: "${file.prefix}",
   iconName: "${file.name}",
   icon: [${file.width}, ${file.height}, [], "f000", ${
-        file.path ? `"${file.path}"` : file.path
-      }]
+    file.path ? `"${file.path}"` : file.path
+  }]
 };`
     )
     .join('');
@@ -79,9 +76,8 @@ var ${file.prefixedName} = {
 
   const exps = files.map(file => `${file.prefixedName}, `).join('');
 
-  return `
-var prefix = "dh";${iconVar}
-var _iconsCache = {
+  return `const prefix = "dh";${iconVar}
+const _iconsCache = {
 ${cache}
 };
 
