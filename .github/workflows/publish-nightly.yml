@@ -35,7 +35,7 @@ jobs:
           fetch-depth: '0' # Need the history to properly select the canary version number
       - uses: actions/setup-node@v3
         with:
-          node-version: '18.x'
+          node-version-file: '.nvmrc'
           registry-url: 'https://registry.npmjs.org'
       - run: npm ci
       - run: npm run build
