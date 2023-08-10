@@ -21,5 +21,6 @@ export type { IrisGridThemeType } from './IrisGridTheme';
 export { default as IrisGridTestUtils } from './IrisGridTestUtils';
 export { default as IrisGridUtils } from './IrisGridUtils';
 export * from './IrisGridUtils';
+export * from './IrisGridMetricCalculator';
 export { default as TableViewportUpdater } from './TableViewportUpdater';
 export { default as TreeTableViewportUpdater } from './TreeTableViewportUpdater';

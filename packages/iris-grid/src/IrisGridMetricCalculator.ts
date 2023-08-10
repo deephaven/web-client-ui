@@ -22,7 +22,7 @@ export interface IrisGridMetricState extends GridMetricState {
  * Class to calculate all the metrics for a grid.
  * Call getMetrics() with the state to get metrics
  */
-class IrisGridMetricCalculator extends GridMetricCalculator {
+export class IrisGridMetricCalculator extends GridMetricCalculator {
   getGridY(state: IrisGridMetricState): number {
     let gridY = super.getGridY(state);
     const {
