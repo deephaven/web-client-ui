@@ -53,7 +53,7 @@ export type IrisGridRenderState = GridRenderState & {
 /**
  * Handles rendering some of the Iris specific features, such as sorting icons, sort bar display
  * */
-class IrisGridRenderer extends GridRenderer {
+export class IrisGridRenderer extends GridRenderer {
   static isFilterValid(
     advancedFilter: AdvancedFilter | undefined | null,
     quickFilter: QuickFilter | undefined | null
