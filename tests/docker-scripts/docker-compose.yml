@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  dhc-server:
+    image: ghcr.io/deephaven/server:${DHC_VERSION:-edge}
+    expose:
+      - 10000
+    environment:
+      - START_OPTS=-Xmx4g -DAuthHandlers=io.deephaven.auth.AnonymousAuthenticationHandler -Ddeephaven.console.type=python
+
+  web-ui-tests:
+    build:
+      context: ../../
+      dockerfile: ./tests/docker-scripts/Dockerfile
+    ipc: host
+    environment:
+      - VITE_PROXY_URL=http://dhc-server:10000
+    ports:
+      - 9323:9323
+    volumes:
+      - ../../tests:/work/tests
+      - ../../test-results:/work/test-results
+      - ../../playwright-report:/work/playwright-report
+    entrypoint: 'npm run e2e -- --config=playwright-ci.config.ts'
+    depends_on:
+      dhc-server:
+        condition: service_healthy
+
+  web-ui-update-snapshots:
+    extends:
+      service: web-ui-tests
+    entrypoint: 'npm run e2e:update-snapshots -- --config=playwright-ci.config.ts'
+    depends_on: # depends_on is not shared with extends
+      dhc-server:
+        condition: service_healthy

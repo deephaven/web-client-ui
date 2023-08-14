@@ -41,18 +41,10 @@ We use Chrome for development with the React and Redux extensions.
 
 - `npm install` : Install all dependencies and automatically bootstrap packages. Should be run before any of the other steps.
 - `npm start`: Start building all packages and watching them (when possible). Use when you're developing, and your changes will be picked up automatically.
-- `npm test`: Start running tests in all packages and watching (when possible). Use when you're developing, and any breaking changes will be printed out automatically.
-
-  Log messages from our log package are disabled by default in tests in [jest.setup.ts](./jest.setup.ts). To change the log level, set the `DH_LOG_LEVEL` env variable. For example, to enable all log messages run `DH_LOG_LEVEL=4 npm test`.
-
-  Note that log messages from other sources such as react prop types will still be printed since they do not go through our logger.
-
-  If you want to collect coverage locally, run `npm test -- --coverage`
-
+- `npm test`: Start running tests in all packages and watching (when possible). Use when you're developing, and any breaking changes will be printed out automatically. See [Unit tests](#unit-tests) for more details.
 - `npm run build`: Create a production build of all packages. Mainly used by CI when packaging up a production version of the app.
 - `npm run preview`: Runs the Vite preview server for the built code-studio, embed-grid, and embed-chart. These will open on ports 4000, 4010, and 4020.
-- `npm run e2e`: Runs the Playwright end-to-end tests locally.
-- `npm run e2e:headed`: Runs end-to-end tests in headed mode debug mode. Useful if you need to debug why a particular test isn't work. For example, to debug the `table.spec.ts` test directly, you could run `npm run e2e:headed -- ./tests/table.spec.ts`.
+- `npm run e2e`: Runs the Playwright end-to-end tests locally. See [E2E Tests](#e2e-tests) for more details.
 
 If your DHC address is different from the default `http://localhost:10000`, edit `.env.local` in each package to point to your local DHC. This is needed for the session websocket and for things like notebooks to be proxied correctly by Vite.
 
@@ -88,13 +80,47 @@ A standalone application with it's own entry point. Recommend copying the [embed
 
 A component/library package that can be imported into other packages. Recommend copying the [components](./packages/components/) package, removing any dependencies and files not required.
 
-## Updating E2E Snapshots
+## Unit Tests
 
-**Note:** You must have [Docker installed](https://docs.docker.com/get-docker/), and `deephaven-core` must already be running on port 10000 with anonymous authentication on your local machine for all e2e tests. To enable anonymous authentication, pass the flag through `START_OPTS`, e.g.: `docker run --detach --publish 10000:10000 --name dh-core-server --env "START_OPTS=-Xmx4g -DAuthHandlers=io.deephaven.auth.AnonymousAuthenticationHandler" ghcr.io/deephaven/server:edge` or `START_OPTS="-DAuthHandlers=io.deephaven.auth.AnonymousAuthenticationHandler" ./gradlew server-jetty-app:run`.
+We use [Jest](https://jestjs.io/) for running unit tests. We use an eslint runner in Jest to lint files as tests. We also use [react-testing-library](https://testing-library.com/docs/react-testing-library/intro/) and [react-hooks-testing-library](https://react-hooks-testing-library.com/) for testing react components and hooks.
 
-Snapshots are used by end-to-end tests to visually verify the output. Sometimes changes are made requiring snapshots to be updated. Before running snapshots locally, you must be running the development server with `npm start` or have run `npm run build` recently. Run snapshots locally by running `npm run e2e:update-snapshots`.
+Run `npm test` to start Jest in watch mode. By default, this will only run tests that have changed relative to your git origin/main. Keeping your origin/main up to date will help keep the number of tests run to a minimum.
 
-Once you are satisfied with the snapshots and everything is passing locally, you need to use a docker image to [update snapshots for CI](https://playwright.dev/docs/test-snapshots) (unless you are running the same platform as CI (Ubuntu)). Run `npm run e2e:update-ci-snapshots` which will mount the current directory into a docker image and re-run the tests from there. Test results will be written to your local directories.
+While the tests are running, you can press `p` to filter by filename or test name. You can also press `Shift+P` to see a list of projects and disable certain projects like the eslint or stylelint.
+
+Log messages from our @deephaven/log package are disabled by default in tests in [jest.setup.ts](./jest.setup.ts). To change the log level, set the `DH_LOG_LEVEL` env variable. For example, to enable all log messages run `DH_LOG_LEVEL=4 npm test`.
+
+Note that log messages from other sources such as react prop types will still be printed since they do not go through our logger.
+
+If you want to collect coverage locally, run `npm test -- --coverage`
+
+## E2E Tests
+
+We use [Playwright](https://playwright.dev/) for end-to-end tests. We test against Chrome, Firefox, and Webkit (Safari). Snapshots from E2E tests are only run against Linux so they can be validated in CI.
+
+You should be able to pass arguments to these commands as if you were running Playwright via CLI directly. For example, to test only `table.spec.ts` you could run `npm run e2e -- ./tests/table.spec.ts`, or to test only `table.spec.ts` in Firefox, you could run `npm run e2e -- --project firefox ./tests/table.spec.ts`. See [Playwright CLI](https://playwright.dev/docs/test-cli) for more details.
+
+Snapshots are used by end-to-end tests to visually verify the output. Snapshots are both OS and broser specific. Sometimes changes are made requiring snapshots to be updated. Update snapshots locally by running `npm run e2e:update-snapshots`.
+
+Once you are satisfied with the snapshots and everything is passing locally, you need to use the docker image to update snapshots for CI (unless you are running the same platform as CI (Ubuntu)). Run `npm run e2e:update-ci-snapshots` to update the CI snapshots. The snapshots will be written to your local directories. The Linux snapshots should be committed to git (non-Linux snapshots should be automatically ignored by git).
+
+### Local
+
+These scripts are recommended while developing your tests as they will be quicker to iterate and offer headed mode for debugging. You will need to run `npx playwright install` before using these scripts. You may also need to update the browsers with the same command any time the Playwright version is updated. See [Playwright Browsers](https://playwright.dev/docs/browsers) for more details.
+
+You must have a web UI running on `localhost:4000/ide/` (dev mode and build preview are both fine), and `deephaven-core` running on port 10000 with anonymous authentication for E2E tests. See [this guide](https://deephaven.io/core/docs/how-to-guides/authentication/auth-anon/) for more details on anonymous authentication.
+
+- `npm run e2e`: Run end-to-end tests in headless mode.
+- `npm run e2e:headed`: Runs end-to-end tests in headed debug mode. Also ignores snapshots since a test suite will stop once 1 snapshot comparison fails. Useful if you need to debug why a particular test isn't working. For example, to debug the `table.spec.ts` test directly, you could run `npm run e2e:headed -- ./tests/table.spec.ts`.
+- `npm run e2e:codegen`: Runs Playwright in codegen mode which can help with creating tests. See [Playwright Codegen](https://playwright.dev/docs/codegen/) for more details.
+- `npm run e2e:update-snapshots`: Updates the E2E snapshots for your local OS.
+
+### Docker
+
+These scripts will create a production build from your current code and run the tests in a Docker image. There is no need to install any other dependencies or have any other services running as they are all contained within Docker. Since any source code changes will require a new build, these scripts are only recommended if having issues with CI or if you need to update the snapshots for CI.
+
+- `npm run e2e:docker`: Runs the E2E tests in a docker image. This is useful for testing how tests _should_ run in the CI environment locally.
+- `npm run e2e:update-ci-snapshots`: Updates the E2E snapshots for CI.
 
 # Releases
 
