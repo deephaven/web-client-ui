@@ -1,19 +1,19 @@
 import { ScriptEditor } from '@deephaven/console';
 import {
   assertIsDashboardPluginProps,
-  DashboardPanelProps,
   DashboardPluginComponentProps,
   DashboardUtils,
+  DehydratedDashboardPanelProps,
   LayoutUtils,
   PanelComponent,
   PanelHydrateFunction,
-  PanelProps,
   useListener,
+  usePanelRegistration,
 } from '@deephaven/dashboard';
 import { FileUtils } from '@deephaven/file-explorer';
 import { CloseOptions, isComponent } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import shortid from 'shortid';
 import { ConsoleEvent, NotebookEvent } from './events';
@@ -534,7 +534,10 @@ export function ConsolePlugin(
   );
 
   const hydrateNotebook = useCallback(
-    (panelProps: PanelProps, panelDashboardId: string): DashboardPanelProps =>
+    (
+      panelProps: DehydratedDashboardPanelProps,
+      panelDashboardId: string
+    ): DehydratedDashboardPanelProps =>
       DashboardUtils.hydrate(
         {
           ...panelProps,
@@ -545,26 +548,11 @@ export function ConsolePlugin(
     [notebooksUrl]
   );
 
-  useEffect(
-    function registerComponentsAndReturnCleanup() {
-      const cleanups = [
-        registerComponent(ConsolePanel.COMPONENT, ConsolePanel, hydrateConsole),
-        registerComponent(CommandHistoryPanel.COMPONENT, CommandHistoryPanel),
-        registerComponent(FileExplorerPanel.COMPONENT, FileExplorerPanel),
-        registerComponent(LogPanel.COMPONENT, LogPanel),
-        registerComponent(
-          NotebookPanel.COMPONENT,
-          NotebookPanel,
-          hydrateNotebook
-        ),
-      ];
-
-      return () => {
-        cleanups.forEach(cleanup => cleanup());
-      };
-    },
-    [registerComponent, hydrateConsole, hydrateNotebook]
-  );
+  usePanelRegistration(registerComponent, ConsolePanel, hydrateConsole);
+  usePanelRegistration(registerComponent, CommandHistoryPanel);
+  usePanelRegistration(registerComponent, FileExplorerPanel);
+  usePanelRegistration(registerComponent, LogPanel);
+  usePanelRegistration(registerComponent, NotebookPanel, hydrateNotebook);
 
   useListener(layout.eventHub, ConsoleEvent.SEND_COMMAND, handleSendCommand);
   useListener(

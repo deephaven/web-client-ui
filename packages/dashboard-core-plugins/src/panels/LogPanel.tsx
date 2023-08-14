@@ -4,8 +4,8 @@ import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import { LogView } from '@deephaven/console';
 import type { IdeSession } from '@deephaven/jsapi-types';
+import { DashboardPanelProps } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
-import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import { RootState } from '@deephaven/redux';
 import './LogPanel.scss';
 import Panel from './Panel';
@@ -13,9 +13,7 @@ import { getDashboardSessionWrapper } from '../redux';
 
 const log = Log.module('LogPanel');
 
-interface LogPanelProps {
-  glContainer: Container;
-  glEventHub: EventEmitter;
+interface LogPanelProps extends DashboardPanelProps {
   session: IdeSession;
 }
 

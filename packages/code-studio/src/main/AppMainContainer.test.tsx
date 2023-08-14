@@ -218,7 +218,7 @@ describe('hydrates widgets correctly', () => {
 
     expect(
       screen.getByText(
-        '{"localDashboardId":"default","metadata":{"type":"TestType","name":"TestName"}}'
+        '{"metadata":{"type":"TestType","name":"TestName"},"localDashboardId":"default"}'
       )
     ).toBeTruthy();
     expect(connection.getObject).toHaveBeenCalled();

@@ -11,6 +11,7 @@ export { default as FilterSetManagerPanel } from './FilterSetManagerPanel';
 export { default as InputFilterPanel } from './InputFilterPanel';
 export { default as IrisGridPanel } from './IrisGridPanel';
 export * from './IrisGridPanel';
+export * from './IrisGridPanelTypes';
 export { default as LogPanel } from './LogPanel';
 export { default as MarkdownPanel } from './MarkdownPanel';
 export { default as NotebookPanel } from './NotebookPanel';
