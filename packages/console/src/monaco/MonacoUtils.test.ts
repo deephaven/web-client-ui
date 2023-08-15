@@ -173,7 +173,7 @@ describe('disableKeyBindings', () => {
 
     keybindingsList.forEach(keybindings => {
       expect(editor.addAction).toHaveBeenCalledWith({
-        id: expect.stringMatching(/^disable-keybindings-[^-]+/),
+        id: expect.stringMatching(/^disable-keybindings-.+/),
         label: '',
         keybindings,
         run: expect.any(Function),

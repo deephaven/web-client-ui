@@ -100,7 +100,10 @@ test('Ignores deleted formulas on save', async () => {
   // There is an issue with populating the custom columns and then editing the existing column
   // RTL/monaco aren't playing nicely and it won't edit the existing text
   // This test instead creates the new text, saves, then removes it to test the same behavior
-  jest.useFakeTimers();
+  jest.useFakeTimers({
+    // Monaco makes a call to performance.mark(), so we need to leave it in-tact
+    doNotFake: ['performance'],
+  });
   const user = userEvent.setup({ delay: null });
   const model = irisGridTestUtils.makeModel();
   const mockSave = jest.fn(() =>
