@@ -341,7 +341,7 @@ class MonacoUtils {
   }
 
   // Tracks whether removeConflictingKeybindings() has been called
-  private static conflictingKeybindingsRemoved = false;
+  static conflictingKeybindingsRemoved = false;
 
   /**
    * Remove any keybindings which are used for our own shortcuts.
