@@ -340,13 +340,24 @@ class MonacoUtils {
     return platform.startsWith('Mac');
   }
 
+  // Tracks whether removeConflictingKeybindings() has been called
+  private static conflictingKeybindingsRemoved = false;
+
   /**
    * Remove any keybindings which are used for our own shortcuts.
    * This allows the key events to bubble up so a component higher up can capture
    * them. Note that this is a global configuration, so all editor instances will
-   * be impacted by this.
+   * be impacted.
    */
   static removeConflictingKeybindings(): void {
+    // This function adds the keybindings to the global registry, so we only
+    // want to do it once
+    if (MonacoUtils.conflictingKeybindingsRemoved) {
+      return;
+    }
+
+    MonacoUtils.conflictingKeybindingsRemoved = true;
+
     /* eslint-disable no-bitwise */
     monaco.editor.addKeybindingRules([
       // Restart console in Enterprise (see Shortcuts.ts)
