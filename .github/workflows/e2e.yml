@@ -63,10 +63,10 @@ jobs:
           path: playwright-report/
           retention-days: 90
       - name: Dump server logs
-        if: failure()
+        # if: failure()
         run: docker logs dh-core-server > /tmp/server-log.txt
       - name: Upload server logs
-        if: failure()
+        # if: failure()
         uses: actions/upload-artifact@v3
         with:
           name: server-logs
