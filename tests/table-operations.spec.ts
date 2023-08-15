@@ -538,8 +538,8 @@ test('advanced settings', async ({ page }) => {
     const dropIndicator = page.locator('.lm_dragProxy');
     await dragComponent(table, target, dropIndicator, 300);
 
-    await page.getByTestId('btn-page-close').first().click();
     await page.getByTestId('btn-page-close').nth(1).click();
+    await page.getByTestId('btn-page-close').first().click();
 
     await waitForLoadingDone(page);
   });
