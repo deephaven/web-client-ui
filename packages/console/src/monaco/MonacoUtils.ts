@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import shortid from 'shortid';
 /**
  * Exports a function for initializing monaco with the deephaven theme/config
  */
@@ -341,89 +342,47 @@ class MonacoUtils {
 
   /**
    * Remove any keybindings which are used for our own shortcuts.
-   * This allows the key events to bubble up so a component higher up can capture them
-   * @param editor The editor to remove the keybindings from
+   * This allows the key events to bubble up so a component higher up can capture
+   * them. Note that this is a global configuration, so all editor instances will
+   * be impacted by this.
    */
-  static removeConflictingKeybindings(
-    editor: monaco.editor.IStandaloneCodeEditor
-  ): void {
-    // Multi-mod key events have a specific order
-    // E.g. ctrl+alt+UpArrow is not found, but alt+ctrl+UpArrow is found
-    // meta is WindowsKey on Windows and cmd on Mac
-    // ctrl is ctrl Windows and ctrl on Mac
-    // alt is alt on Windows and option on Mac
-    const keybindings = [
+  static removeConflictingKeybindings(): void {
+    /* eslint-disable no-bitwise */
+    monaco.editor.addKeybindingRules([
+      // Restart console in Enterprise (see Shortcuts.ts)
       {
-        windows: 'ctrl+D',
-        mac: 'meta+D',
+        keybinding: monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyD,
+        command: null,
       },
+      // Console focus history in Community (see ConsoleShortcuts.ts)
       {
-        windows: 'ctrl+H',
+        keybinding: monaco.KeyMod.WinCtrl | monaco.KeyCode.KeyH,
+        command: null,
       },
-    ];
-
-    try {
-      keybindings.forEach(keybinding => {
-        if (
-          (MonacoUtils.isMacPlatform() && keybinding.mac === '') ||
-          (!MonacoUtils.isMacPlatform() && keybinding.windows === '')
-        ) {
-          return;
-        }
-        MonacoUtils.removeKeybinding(
-          editor,
-          MonacoUtils.isMacPlatform() ? keybinding.mac : keybinding.windows
-        );
-      });
-    } catch (err) {
-      // This is probably only caused by Monaco changing private methods used here
-      log.error(err);
-    }
+    ]);
+    /* eslint-enable no-bitwise */
   }
 
   /**
-   * Remove a keybinding and allow the events to bubble up
-   * If you want the keybinding removed for all editors, add it to removeConflictingKeybindings
-   * Monaco still captures the event if you choose to override the keybinding with a no-op function
-   *
-   * Based on the following comment to remove a keybinding and let the event bubble up
-   * https://github.com/microsoft/monaco-editor/issues/287#issuecomment-331447475
-   * The issue for an API for this has apparently been open since 2016. Link below
-   * https://github.com/microsoft/monaco-editor/issues/102
-   * @param editor The editor to remove the keybinding from
-   * @param keybinding The key string to remove. E.g. 'ctrl+C' for copy on Windows
+   * Creates actions with a `noop` run function to disable specified keybindings.
+   * Note that this will swallow the events. To disable default keybindings in a
+   * way that allows events to propagate upward, see `removeConflictingKeybindings`
+   * @param editor Editor to add the actions to
+   * @param keybindingsList List of keybinding tuples to disable
    */
-  static removeKeybinding(
+  static disableKeyBindings(
     editor: monaco.editor.IStandaloneCodeEditor,
-    keybinding: string | undefined
+    ...keybindingsList: number[][]
   ): void {
-    if (keybinding === undefined) {
-      return;
-    }
-
-    /* eslint-disable no-underscore-dangle */
-    // It's possible a single keybinding has multiple commands depending on context
-    // @ts-ignore
-    const keybindings = editor._standaloneKeybindingService
-      ._getResolver()
-      ._map.get(keybinding);
-
-    if (keybindings != null) {
-      keybindings.forEach((elem: { command: unknown }) => {
-        log.debug2(
-          `Removing Monaco keybinding ${keybinding} for ${elem.command}`
-        );
-        // @ts-ignore
-        editor._standaloneKeybindingService.addDynamicKeybinding(
-          `-${elem.command}`,
-          null,
-          () => undefined
-        );
+    keybindingsList.forEach(keybindings => {
+      editor.addAction({
+        // This shouldn't be referenced by anything so using an aritrary unique id
+        id: `disable-keybindings-${shortid()}`,
+        label: '', // This action won't be shown in the UI so no need for a label
+        keybindings,
+        run: () => undefined,
       });
-    } else {
-      log.warn(`Did not find any keybindings to remove for ${keybinding}`);
-    }
-    /* eslint-enable no-underscore-dangle */
+    });
   }
 
   static getMonacoKeyCodeFromShortcut(shortcut: Shortcut): number {

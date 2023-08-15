@@ -1,4 +1,6 @@
 import '@testing-library/jest-dom';
+import { TextDecoder, TextEncoder } from 'util';
+import { performance } from 'perf_hooks';
 import 'jest-canvas-mock';
 import './__mocks__/dh-core';
 import Log from '@deephaven/log';
@@ -28,6 +30,18 @@ Object.defineProperty(window, 'matchMedia', {
     removeEventListener: jest.fn(),
     dispatchEvent: jest.fn(),
   })),
+});
+
+Object.defineProperty(window, 'performance', {
+  value: performance,
+});
+
+Object.defineProperty(window, 'TextDecoder', {
+  value: TextDecoder,
+});
+
+Object.defineProperty(window, 'TextEncoder', {
+  value: TextEncoder,
 });
 
 Object.defineProperty(document, 'fonts', {

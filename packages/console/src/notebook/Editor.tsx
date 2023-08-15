@@ -94,7 +94,11 @@ class Editor extends Component<EditorProps, Record<string, never>> {
       ...settings,
     };
     assertNotNull(this.container);
+
+    MonacoUtils.removeConflictingKeybindings();
+
     this.editor = monaco.editor.create(this.container, settings);
+
     this.editor.addAction({
       id: 'find',
       label: 'Find',
@@ -112,7 +116,6 @@ class Editor extends Component<EditorProps, Record<string, never>> {
       },
     });
     this.editor.layout();
-    MonacoUtils.removeConflictingKeybindings(this.editor);
 
     monaco.languages.registerLinkProvider('plaintext', {
       provideLinks: MonacoUtils.provideLinks,
