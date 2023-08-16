@@ -380,14 +380,15 @@ class MonacoUtils {
    * Note that this will swallow the events. To disable default keybindings in a
    * way that allows events to propagate upward, see `removeConflictingKeybindings`
    * @param editor Editor to disable keybindings for
-   * @param keybindings List of keybindings to disable
+   * @param keybindings List of monaco keybindings to disable. Often a bitwise
+   * combination like `monaco.KeyMod.Alt | monaco.KeyMod.KeyJ`
    */
   static disableKeyBindings(
     editor: monaco.editor.IStandaloneCodeEditor,
     keybindings: number[]
   ): void {
     editor.addAction({
-      // This shouldn't be referenced by anything so using an aritrary unique id
+      // This shouldn't be referenced by anything so using an arbitrary unique id
       id: `disable-keybindings-${shortid()}`,
       label: '', // This action won't be shown in the UI so no need for a label
       keybindings,
