@@ -159,6 +159,8 @@ class MonacoUtils {
 
     registerLanguages([DbLang, PyLang, GroovyLang, LogLang, ScalaLang]);
 
+    MonacoUtils.removeConflictingKeybindings();
+
     log.debug('Monaco initialized.');
   }
 
@@ -340,9 +342,6 @@ class MonacoUtils {
     return platform.startsWith('Mac');
   }
 
-  // Tracks whether removeConflictingKeybindings() has been called
-  static conflictingKeybindingsRemoved = false;
-
   /**
    * Remove any keybindings which are used for our own shortcuts.
    * This allows the key events to bubble up so a component higher up can capture
@@ -350,35 +349,36 @@ class MonacoUtils {
    * be impacted.
    */
   static removeConflictingKeybindings(): void {
-    // This function adds the keybindings to the global registry, so we only
-    // want to do it once
-    if (MonacoUtils.conflictingKeybindingsRemoved) {
-      return;
-    }
-
-    MonacoUtils.conflictingKeybindingsRemoved = true;
-
-    /* eslint-disable no-bitwise */
-    monaco.editor.addKeybindingRules([
+    // All editor instances share a global keybinding registry which is where
+    // default keybindings are set. There doesn't appear to be a way to remove
+    // default bindings, but we can add new ones that will override the existing
+    // ones and set `command` to null. This will treat the key events as unhandled
+    // and allow them to bubble up.
+    monaco.editor.addKeybindingRule(
       // Restart console in Enterprise (see Shortcuts.ts)
       {
+        /* eslint-disable-next-line no-bitwise */
         keybinding: monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyD,
         command: null,
-      },
+      }
+    );
+
+    // Mac has a system shortcut tied to Cmd+H, so we can't override it
+    if (!MonacoUtils.isMacPlatform()) {
       // Console focus history in Community (see ConsoleShortcuts.ts)
-      {
-        keybinding: monaco.KeyMod.WinCtrl | monaco.KeyCode.KeyH,
+      monaco.editor.addKeybindingRule({
+        /* eslint-disable-next-line no-bitwise */
+        keybinding: monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyH,
         command: null,
-      },
-    ]);
-    /* eslint-enable no-bitwise */
+      });
+    }
   }
 
   /**
    * Creates actions with a `noop` run function to disable specified keybindings.
    * Note that this will swallow the events. To disable default keybindings in a
    * way that allows events to propagate upward, see `removeConflictingKeybindings`
-   * @param editor Editor to add the actions to
+   * @param editor Editor to disable keybindings for
    * @param keybindingsList List of keybinding tuples to disable
    */
   static disableKeyBindings(

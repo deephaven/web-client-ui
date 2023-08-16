@@ -187,7 +187,7 @@ export class ConsoleInput extends PureComponent<
 
     const element = this.commandContainer.current;
     assertNotNull(element);
-    MonacoUtils.removeConflictingKeybindings();
+
     this.commandEditor = monaco.editor.create(element, commandSettings);
 
     MonacoUtils.setEOL(this.commandEditor);

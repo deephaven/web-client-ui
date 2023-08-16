@@ -95,8 +95,6 @@ class Editor extends Component<EditorProps, Record<string, never>> {
     };
     assertNotNull(this.container);
 
-    MonacoUtils.removeConflictingKeybindings();
-
     this.editor = monaco.editor.create(this.container, settings);
 
     this.editor.addAction({

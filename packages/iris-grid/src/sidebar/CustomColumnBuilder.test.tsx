@@ -101,7 +101,7 @@ test('Ignores deleted formulas on save', async () => {
   // RTL/monaco aren't playing nicely and it won't edit the existing text
   // This test instead creates the new text, saves, then removes it to test the same behavior
   jest.useFakeTimers({
-    // Monaco makes a call to performance.mark(), so we need to leave it in-tact
+    // Monaco makes a call to performance.mark(), so we need to leave it intact
     doNotFake: ['performance'],
   });
   const user = userEvent.setup({ delay: null });

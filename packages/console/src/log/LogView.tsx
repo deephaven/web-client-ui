@@ -232,14 +232,14 @@ class LogView extends PureComponent<LogViewProps, LogViewState> {
       [monaco.KeyCode.Escape],
       [monaco.KeyMod.Shift | monaco.KeyCode.Escape], // eslint-disable-line no-bitwise
     ].forEach(keybindings => {
+      assertNotNull(this.editor);
+
       // Monaco default behavior is for escape key to close the find widget.
       // Instead, capture it and do nothing. Same for shift-escape.
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      MonacoUtils.disableKeyBindings(this.editor!, keybindings);
+      MonacoUtils.disableKeyBindings(this.editor, keybindings);
 
       // Restore regular escape to clear selection, when editorText has focus.
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      this.editor!.addAction({
+      this.editor.addAction({
         id: 'clear-selection-on-escape',
         label: '',
         keybindings: [monaco.KeyCode.Escape],

@@ -4,7 +4,7 @@ import { Shortcut, KEY, MODIFIER } from '@deephaven/components';
 import { TestUtils } from '@deephaven/utils';
 import MonacoUtils from './MonacoUtils';
 
-const { createMockProxy } = TestUtils;
+const { asMock, createMockProxy } = TestUtils;
 
 const SINGLE_KEY_PARAMS: ConstructorParameters<typeof Shortcut>[0] = {
   id: 'Single key',
@@ -211,32 +211,30 @@ describe('provideLinks', () => {
 
 describe('removeConflictingKeybindings', () => {
   beforeEach(() => {
-    jest.spyOn(monaco.editor, 'addKeybindingRules');
-    MonacoUtils.conflictingKeybindingsRemoved = false;
+    jest.spyOn(monaco.editor, 'addKeybindingRule');
+    jest.spyOn(MonacoUtils, 'isMacPlatform');
   });
 
-  it('should override keybinding rules', () => {
-    MonacoUtils.removeConflictingKeybindings();
+  it.each([true, false])(
+    'should override keybinding rules - isMac:%s',
+    isMac => {
+      asMock(MonacoUtils.isMacPlatform).mockReturnValue(isMac);
 
-    expect(monaco.editor.addKeybindingRules).toHaveBeenCalledWith([
-      {
+      MonacoUtils.removeConflictingKeybindings();
+
+      expect(monaco.editor.addKeybindingRule).toHaveBeenCalledWith({
         keybinding: monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyD,
         command: null,
-      },
-      {
-        keybinding: monaco.KeyMod.WinCtrl | monaco.KeyCode.KeyH,
-        command: null,
-      },
-    ]);
-  });
+      });
 
-  it('should only add keybinding rules once', () => {
-    expect(MonacoUtils.conflictingKeybindingsRemoved).toBe(false);
-
-    [1, 2].forEach(() => {
-      MonacoUtils.removeConflictingKeybindings();
-      expect(MonacoUtils.conflictingKeybindingsRemoved).toBe(true);
-      expect(monaco.editor.addKeybindingRules).toHaveBeenCalledTimes(1);
-    });
-  });
+      if (isMac) {
+        expect(monaco.editor.addKeybindingRule).toHaveBeenCalledTimes(1);
+      } else {
+        expect(monaco.editor.addKeybindingRule).toHaveBeenCalledWith({
+          keybinding: monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyH,
+          command: null,
+        });
+      }
+    }
+  );
 });
