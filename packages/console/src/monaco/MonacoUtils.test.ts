@@ -163,21 +163,15 @@ describe('disableKeyBindings', () => {
   const editor = createMockProxy<monaco.editor.IStandaloneCodeEditor>();
 
   it('should disable key bindings for the given editor', () => {
-    const keybindingsList = [
-      [1, 2, 3],
-      [4, 5, 6],
-      [7, 8, 9],
-    ];
+    const keybindings = [1, 2, 3];
 
-    MonacoUtils.disableKeyBindings(editor, ...keybindingsList);
+    MonacoUtils.disableKeyBindings(editor, keybindings);
 
-    keybindingsList.forEach(keybindings => {
-      expect(editor.addAction).toHaveBeenCalledWith({
-        id: expect.stringMatching(/^disable-keybindings-.+/),
-        label: '',
-        keybindings,
-        run: expect.any(Function),
-      });
+    expect(editor.addAction).toHaveBeenCalledWith({
+      id: expect.stringMatching(/^disable-keybindings-.+/),
+      label: '',
+      keybindings,
+      run: expect.any(Function),
     });
   });
 });

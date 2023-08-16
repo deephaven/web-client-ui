@@ -363,7 +363,7 @@ class MonacoUtils {
       }
     );
 
-    // Cmd+H is used to focus Community console history in Windows + Linux.
+    // Ctrl+H is used to focus Community console history in Windows + Linux.
     // An alternate shortcut is used for Mac, so no need to override it
     // (See ConsoleShortcuts.ts)
     if (!MonacoUtils.isMacPlatform()) {
@@ -380,20 +380,18 @@ class MonacoUtils {
    * Note that this will swallow the events. To disable default keybindings in a
    * way that allows events to propagate upward, see `removeConflictingKeybindings`
    * @param editor Editor to disable keybindings for
-   * @param keybindingsList List of keybinding tuples to disable
+   * @param keybindings List of keybindings to disable
    */
   static disableKeyBindings(
     editor: monaco.editor.IStandaloneCodeEditor,
-    ...keybindingsList: number[][]
+    keybindings: number[]
   ): void {
-    keybindingsList.forEach(keybindings => {
-      editor.addAction({
-        // This shouldn't be referenced by anything so using an aritrary unique id
-        id: `disable-keybindings-${shortid()}`,
-        label: '', // This action won't be shown in the UI so no need for a label
-        keybindings,
-        run: () => undefined,
-      });
+    editor.addAction({
+      // This shouldn't be referenced by anything so using an aritrary unique id
+      id: `disable-keybindings-${shortid()}`,
+      label: '', // This action won't be shown in the UI so no need for a label
+      keybindings,
+      run: () => undefined,
     });
   }
 
