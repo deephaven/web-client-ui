@@ -513,7 +513,7 @@ export class DropdownFilterPanel extends Component<
 
   handleDisconnect(): void {
     this.setState({
-      error: new Error('Table disconnected dropdownFilterPanel'),
+      error: new Error('Table disconnected'),
       isDisconnected: true,
       isLoading: false,
     });

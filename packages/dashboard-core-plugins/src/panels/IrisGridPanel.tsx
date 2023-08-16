@@ -776,7 +776,7 @@ export class IrisGridPanel extends PureComponent<
 
   handleDisconnect(): void {
     this.setState({
-      error: new Error('Table disconnected irisGridPanel'),
+      error: new Error('Table disconnected'),
       isDisconnected: true,
       isLoading: false,
     });

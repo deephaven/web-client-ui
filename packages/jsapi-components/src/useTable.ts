@@ -63,7 +63,7 @@ const useTable = (
   );
 
   const handleDisconnect = useCallback(() => {
-    setTableError(new TableDisconnectError('Table disconnected useTable'));
+    setTableError(new TableDisconnectError('Table disconnected'));
   }, []);
 
   const handleReconnect = useCallback(() => {
