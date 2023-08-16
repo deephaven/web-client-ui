@@ -363,9 +363,10 @@ class MonacoUtils {
       }
     );
 
-    // Mac has a system shortcut tied to Cmd+H, so we can't override it
+    // Cmd+H is used to focus Community console history in Windows + Linux.
+    // An alternate shortcut is used for Mac, so no need to override it
+    // (See ConsoleShortcuts.ts)
     if (!MonacoUtils.isMacPlatform()) {
-      // Console focus history in Community (see ConsoleShortcuts.ts)
       monaco.editor.addKeybindingRule({
         /* eslint-disable-next-line no-bitwise */
         keybinding: monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyH,
