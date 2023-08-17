@@ -1,7 +1,10 @@
 import '@testing-library/jest-dom';
+import { TextDecoder, TextEncoder } from 'util';
+import { performance } from 'perf_hooks';
 import 'jest-canvas-mock';
 import './__mocks__/dh-core';
 import Log from '@deephaven/log';
+import { TestUtils } from '@deephaven/utils';
 
 let logLevel = parseInt(process.env.DH_LOG_LEVEL ?? '', 10);
 if (!Number.isFinite(logLevel)) {
@@ -28,6 +31,25 @@ Object.defineProperty(window, 'matchMedia', {
     removeEventListener: jest.fn(),
     dispatchEvent: jest.fn(),
   })),
+});
+
+Object.defineProperty(window, 'performance', {
+  value: performance,
+  writable: true,
+});
+
+Object.defineProperty(window, 'ResizeObserver', {
+  value: function () {
+    return TestUtils.createMockProxy<ResizeObserver>();
+  },
+});
+
+Object.defineProperty(window, 'TextDecoder', {
+  value: TextDecoder,
+});
+
+Object.defineProperty(window, 'TextEncoder', {
+  value: TextEncoder,
 });
 
 Object.defineProperty(document, 'fonts', {

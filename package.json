@@ -69,6 +69,7 @@
     "@deephaven/redux": "file:../redux",
     "@deephaven/stylelint-config": "file:../stylelint-config",
     "@deephaven/tsconfig": "file:../tsconfig",
+    "@deephaven/utils": "file:../utils",
     "@fortawesome/fontawesome-common-types": "^6.1.1",
     "@playwright/test": "^1.30.0",
     "@testing-library/jest-dom": "^5.16.4",

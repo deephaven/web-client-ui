@@ -100,7 +100,7 @@ We use [Playwright](https://playwright.dev/) for end-to-end tests. We test again
 
 You should be able to pass arguments to these commands as if you were running Playwright via CLI directly. For example, to test only `table.spec.ts` you could run `npm run e2e -- ./tests/table.spec.ts`, or to test only `table.spec.ts` in Firefox, you could run `npm run e2e -- --project firefox ./tests/table.spec.ts`. See [Playwright CLI](https://playwright.dev/docs/test-cli) for more details.
 
-Snapshots are used by end-to-end tests to visually verify the output. Snapshots are both OS and broser specific. Sometimes changes are made requiring snapshots to be updated. Update snapshots locally by running `npm run e2e:update-snapshots`.
+Snapshots are used by end-to-end tests to visually verify the output. Snapshots are both OS and browser specific. Sometimes changes are made requiring snapshots to be updated. Update snapshots locally by running `npm run e2e:update-snapshots`.
 
 Once you are satisfied with the snapshots and everything is passing locally, you need to use the docker image to update snapshots for CI (unless you are running the same platform as CI (Ubuntu)). Run `npm run e2e:update-ci-snapshots` to update the CI snapshots. The snapshots will be written to your local directories. The Linux snapshots should be committed to git (non-Linux snapshots should be automatically ignored by git).
 
