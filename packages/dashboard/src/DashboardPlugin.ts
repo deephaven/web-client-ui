@@ -1,4 +1,10 @@
-import type { Component, ComponentType } from 'react';
+import type {
+  Component,
+  ComponentType,
+  ForwardRefExoticComponent,
+  PropsWithoutRef,
+  RefAttributes,
+} from 'react';
 import { ConnectedComponent } from 'react-redux';
 import GoldenLayout from '@deephaven/golden-layout';
 import type {
@@ -21,6 +27,20 @@ export interface PanelStaticMetaData {
   /** Title of the panel. */
   TITLE?: string;
 }
+
+/**
+ * Alias for the return type of React.forwardRef()
+ */
+type ForwardRefComponentType<P, R> = ForwardRefExoticComponent<
+  PropsWithoutRef<P> & RefAttributes<R>
+>;
+
+/**
+ * @deprecated Use `PanelComponentType` instead and add generic types to forwardRef call.
+ * Panels defined as functional components have to use React.forwardRef.
+ */
+export type PanelFunctionComponentType<P, R> = ForwardRefComponentType<P, R> &
+  PanelStaticMetaData;
 
 export type WrappedComponentType<
   P extends PanelProps,
