@@ -47,7 +47,8 @@ class TestUtils {
    * jest.useFakeTimers mocks `process.nextTick` by default. Hold on to a
    * reference to the real function so we can still use it.
    */
-  static realNextTick = process.nextTick;
+  static realNextTick =
+    typeof process !== 'undefined' ? process.nextTick : undefined;
 
   /**
    * Type assertion to "cast" a function to it's corresponding jest.Mock
@@ -178,7 +179,7 @@ class TestUtils {
    * });
    */
   static async flushPromises(): Promise<void> {
-    await new Promise(TestUtils.realNextTick);
+    await new Promise(TestUtils.realNextTick ?? (() => undefined));
   }
 
   static async rightClick(
