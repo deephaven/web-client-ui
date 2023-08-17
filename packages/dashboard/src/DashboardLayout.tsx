@@ -118,29 +118,23 @@ export function DashboardLayout({
         componentDehydrate
       );
 
-      function renderComponent(props: PanelProps, ref: unknown) {
-        // Cast it to an `any` type so we can pass the ref in correctly.
-        // ComponentType doesn't seem to work right, ReactNode is also incorrect
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const CType = componentType as any;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const PanelWrapperType = panelWrapper as any;
+      function wrappedComponent(props: PanelProps) {
+        const CType = componentType;
+        const PanelWrapperType = panelWrapper;
 
         // Props supplied by GoldenLayout
-        // eslint-disable-next-line react/prop-types
         const { glContainer, glEventHub } = props;
         return (
           <PanelErrorBoundary glContainer={glContainer} glEventHub={glEventHub}>
             {/* eslint-disable-next-line react/jsx-props-no-spreading */}
             <PanelWrapperType {...props}>
               {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-              <CType {...props} ref={ref} />
+              <CType {...props} />
             </PanelWrapperType>
           </PanelErrorBoundary>
         );
       }
 
-      const wrappedComponent = React.forwardRef(renderComponent);
       const cleanup = layout.registerComponent(name, wrappedComponent);
       hydrateMap.set(name, componentHydrate);
       dehydrateMap.set(name, componentDehydrate);

@@ -1,10 +1,4 @@
-import type {
-  Component,
-  ComponentType,
-  ForwardRefExoticComponent,
-  PropsWithoutRef,
-  RefAttributes,
-} from 'react';
+import type { Component, ComponentType } from 'react';
 import { ConnectedComponent } from 'react-redux';
 import GoldenLayout from '@deephaven/golden-layout';
 import type {
@@ -12,13 +6,6 @@ import type {
   ReactComponentConfig,
 } from '@deephaven/golden-layout';
 import PanelManager from './PanelManager';
-
-/**
- * Alias for the return type of React.forwardRef()
- */
-export type ForwardRefComponentType<P, R> = ForwardRefExoticComponent<
-  PropsWithoutRef<P> & RefAttributes<R>
->;
 
 /**
  * Panel components can provide static props that provide meta data about the
@@ -35,12 +22,6 @@ export interface PanelStaticMetaData {
   TITLE?: string;
 }
 
-/**
- * Panels defined as functional components have to use React.forwardRef.
- */
-export type PanelFunctionComponentType<P, R> = ForwardRefComponentType<P, R> &
-  PanelStaticMetaData;
-
 export type WrappedComponentType<
   P extends PanelProps,
   C extends ComponentType<P>,
@@ -49,12 +30,7 @@ export type WrappedComponentType<
 export type PanelComponentType<
   P extends PanelProps = PanelProps,
   C extends ComponentType<P> = ComponentType<P>,
-> = (
-  | ComponentType<P>
-  | WrappedComponentType<P, C>
-  | PanelFunctionComponentType<P, unknown>
-) &
-  PanelStaticMetaData;
+> = (ComponentType<P> | WrappedComponentType<P, C>) & PanelStaticMetaData;
 
 export function isWrappedComponent<
   P extends PanelProps,

@@ -88,7 +88,7 @@ export class LayoutManager extends EventEmitter {
       | ComponentConstructor
       | ComponentConstructor<ReactComponentConfig>
       | React.Component
-      | React.ForwardRefExoticComponent<any>;
+      | React.ComponentType;
   } = { 'lm-react-component': ReactComponentHandler };
 
   private _fallbackComponent?:
@@ -169,7 +169,7 @@ export class LayoutManager extends EventEmitter {
     constructor:
       | ComponentConstructor
       | React.Component
-      | React.ForwardRefExoticComponent<any>
+      | React.ComponentType<any>
   ) {
     if (
       typeof constructor !== 'function' &&

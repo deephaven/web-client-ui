@@ -164,7 +164,6 @@ export default class ReactComponentHandler {
     var defaultProps = {
       glEventHub: this._container.layoutManager.eventHub,
       glContainer: this._container,
-      ref: this._gotReactComponent.bind(this),
     };
     var props = $.extend(defaultProps, this._container._config.props);
     return React.createElement(this._reactClass, props);
