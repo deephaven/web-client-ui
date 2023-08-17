@@ -169,7 +169,7 @@ class TestUtils {
    * Jest doesn't have a built in way to ensure native Promises have resolved
    * when using fake timers. We can mimic this behavior by using `process.nextTick`.
    * Since `process.nextTick` is mocked by default when using jest.useFakeTimers(),
-   * we use our `TestUtils.realNextTick`.
+   * we use the "real" process.nextTick stored in `TestUtils.realNextTick`.
    *
    * NOTE: Jest can be configured to leave `process.nextTick` unmocked, but this
    * requires devs to configure it on every test.
