@@ -5,7 +5,7 @@ import Papa, { Parser, ParseResult, ParseLocalConfig } from 'papaparse';
 /* eslint-disable no-restricted-globals */
 import NewTableColumnTypes from './NewTableColumnTypes';
 
-// Initially column types start al unknown
+// Initially column types start as unknown
 const UNKNOWN = 'unknown';
 
 const MAX_INT = 2147483647;
@@ -288,7 +288,12 @@ class CsvTypeParser {
     if (results == null || !results.meta.aborted) {
       onFileCompleted(
         types.map(type =>
-          type === UNKNOWN ? NewTableColumnTypes.STRING : type
+          // If the type is still unknown or a local time, just map it to a string.
+          // Local times are not supported by the backend in DHC, and probably should have more context to parse safely anyway (such as a date or a time zone).
+          // In these cases, we just map it to a string, and the user can use an `.update_view` later if they want to parse it into a different type.
+          type === UNKNOWN || type === NewTableColumnTypes.LOCAL_TIME
+            ? NewTableColumnTypes.STRING
+            : type
         )
       );
     }

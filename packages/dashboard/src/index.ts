@@ -11,6 +11,7 @@ export { default as DashboardUtils } from './DashboardUtils';
 export * from './layout';
 export * from './redux';
 export * from './PanelManager';
+export * from './PanelEvent';
 export { default as PanelEvent } from './PanelEvent';
 export { default as PanelErrorBoundary } from './PanelErrorBoundary';
 export { default as PanelManager } from './PanelManager';

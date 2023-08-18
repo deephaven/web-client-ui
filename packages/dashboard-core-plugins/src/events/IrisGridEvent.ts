@@ -1,4 +1,12 @@
-class IrisGridEvent {
+import { RowDataMap } from '@deephaven/jsapi-utils';
+import { IrisGridPanel } from '../panels/IrisGridPanel';
+
+export type IrisGridDataSelectedEventCallback = (
+  panel: IrisGridPanel,
+  data: RowDataMap
+) => void;
+
+export class IrisGridEvent {
   /** @deprecated Use PanelEvent.OPEN instead */
   static OPEN_GRID = 'IrisGridEvent.OPEN_GRID';
 

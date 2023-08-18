@@ -9,6 +9,7 @@ import ConsoleUtils from '../common/ConsoleUtils';
 import LogLevel from './LogLevel';
 import './LogView.scss';
 import LogLevelMenuItem from './LogLevelMenuItem';
+import { MonacoUtils } from '../monaco';
 
 interface LogViewProps {
   session: IdeSession;
@@ -226,36 +227,30 @@ class LogView extends PureComponent<LogViewProps, LogViewState> {
       wordWrap: 'on',
     });
 
-    // When find widget is open, escape key closes it.
-    // Instead, capture it and do nothing. Same for shift-escape.
-    this.editor.addCommand(monaco.KeyCode.Escape, () => undefined);
-    this.editor.addCommand(
-      // eslint-disable-next-line no-bitwise
-      monaco.KeyMod.Shift | monaco.KeyCode.Escape,
-      () => undefined
-    );
+    // Override default Monaco keybindings for `escape` and `shift-escape`
+    [
+      [monaco.KeyCode.Escape],
+      [monaco.KeyMod.Shift | monaco.KeyCode.Escape], // eslint-disable-line no-bitwise
+    ].forEach(keybindings => {
+      assertNotNull(this.editor);
 
-    // Restore regular escape to clear selection, when editorText has focus.
-    this.editor.addCommand(
-      monaco.KeyCode.Escape,
-      () => {
-        const position = this.editor?.getPosition();
-        assertNotNull(position);
-        this.editor?.setPosition(position);
-      },
-      'findWidgetVisible && editorTextFocus'
-    );
+      // Monaco default behavior is for escape key to close the find widget.
+      // Instead, capture it and do nothing. Same for shift-escape.
+      MonacoUtils.disableKeyBindings(this.editor, keybindings);
 
-    this.editor.addCommand(
-      // eslint-disable-next-line no-bitwise
-      monaco.KeyMod.Shift | monaco.KeyCode.Escape,
-      () => {
-        const position = this.editor?.getPosition();
-        assertNotNull(position);
-        this.editor?.setPosition(position);
-      },
-      'findWidgetVisible && editorTextFocus'
-    );
+      // Restore regular escape to clear selection, when editorText has focus.
+      this.editor.addAction({
+        id: 'clear-selection-on-escape',
+        label: '',
+        keybindings: [monaco.KeyCode.Escape],
+        keybindingContext: 'findWidgetVisible && editorTextFocus',
+        run: () => {
+          const position = this.editor?.getPosition();
+          assertNotNull(position);
+          this.editor?.setPosition(position);
+        },
+      });
+    });
   }
 
   destroyMonaco(): void {

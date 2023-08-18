@@ -1,10 +1,10 @@
 import React from 'react';
 import {
+  DashboardPanelProps,
   DashboardPluginComponentProps,
   PanelComponentType,
   PanelDehydrateFunction,
   PanelHydrateFunction,
-  PanelProps,
 } from '../DashboardPlugin';
 
 /**
@@ -16,12 +16,12 @@ import {
  * @param dehydrate
  */
 export default function usePanelRegistration<
-  P extends PanelProps,
+  P extends DashboardPanelProps,
   C extends React.ComponentType<P>,
 >(
   registerComponent: DashboardPluginComponentProps['registerComponent'],
   ComponentType: PanelComponentType<P, C>,
-  hydrate?: PanelHydrateFunction<P>,
+  hydrate?: PanelHydrateFunction,
   dehydrate?: PanelDehydrateFunction
 ) {
   const name = ComponentType.COMPONENT ?? ComponentType.displayName;

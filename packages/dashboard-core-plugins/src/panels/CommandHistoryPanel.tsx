@@ -8,10 +8,10 @@ import {
   CommandHistorySettings,
   CommandHistoryTable,
 } from '@deephaven/console';
+import { DashboardPanelProps } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import { getCommandHistoryStorage, RootState } from '@deephaven/redux';
 import { assertNotNull, Pending } from '@deephaven/utils';
-import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import type { IdeSession } from '@deephaven/jsapi-types';
 import { ConsoleEvent, NotebookEvent } from '../events';
 import './CommandHistoryPanel.scss';
@@ -20,9 +20,7 @@ import { getDashboardSessionWrapper } from '../redux';
 
 const log = Log.module('CommandHistoryPanel');
 
-interface CommandHistoryPanelProps {
-  glContainer: Container;
-  glEventHub: EventEmitter;
+interface CommandHistoryPanelProps extends DashboardPanelProps {
   // eslint-disable-next-line react/no-unused-prop-types
   panelState?: Record<string, never>;
   session?: IdeSession;

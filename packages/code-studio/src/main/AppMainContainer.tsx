@@ -11,6 +11,7 @@ import { CSSTransition } from 'react-transition-group';
 import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { ChartModel } from '@deephaven/chart';
 import {
   ContextActions,
   ThemeExport,
@@ -31,12 +32,11 @@ import {
   ClosedPanels,
   Dashboard,
   DashboardLayoutConfig,
-  DashboardPanelProps,
   DashboardUtils,
   DEFAULT_DASHBOARD_ID,
+  DehydratedDashboardPanelProps,
   getDashboardData,
   PanelEvent,
-  PanelProps,
   updateDashboardData as updateDashboardDataAction,
 } from '@deephaven/dashboard';
 import {
@@ -56,12 +56,13 @@ import {
   ChartBuilderPlugin,
   FilterSet,
   Link,
-  ChartPanelProps,
-  PandasPanelProps,
-  IrisGridPanelProps,
   ColumnSelectionValidator,
   getDashboardConnection,
   TablePlugin,
+  IrisGridPanelMetadata,
+  isIrisGridPanelMetadata,
+  isLegacyIrisGridPanelMetadata,
+  isChartPanelDehydratedProps,
 } from '@deephaven/dashboard-core-plugins';
 import {
   vsGear,
@@ -102,11 +103,7 @@ import { getLayoutStorage, getServerConfigValues } from '../redux';
 import Logo from '../settings/community-wordmark-app.svg';
 import './AppMainContainer.scss';
 import WidgetList, { WindowMouseEvent } from './WidgetList';
-import {
-  createChartModel,
-  createGridModel,
-  GridPanelMetadata,
-} from './WidgetUtils';
+import { createChartModel, createGridModel } from './WidgetUtils';
 import EmptyDashboard from './EmptyDashboard';
 import UserLayoutUtils from './UserLayoutUtils';
 import DownloadServiceWorkerUtils from '../DownloadServiceWorkerUtils';
@@ -170,7 +167,10 @@ export class AppMainContainer extends Component<
     event.returnValue = '';
   }
 
-  static hydrateConsole(props: PanelProps, id: string): DashboardPanelProps {
+  static hydrateConsole(
+    props: DehydratedDashboardPanelProps,
+    id: string
+  ): DehydratedDashboardPanelProps {
     return DashboardUtils.hydrate(
       {
         ...props,
@@ -208,8 +208,7 @@ export class AppMainContainer extends Component<
     this.handleWidgetSelect = this.handleWidgetSelect.bind(this);
     this.handlePaste = this.handlePaste.bind(this);
     this.hydrateChart = this.hydrateChart.bind(this);
-    this.hydrateGrid = this.hydrateGrid.bind(this);
-    this.hydratePandas = this.hydratePandas.bind(this);
+    this.hydrateTable = this.hydrateTable.bind(this);
     this.hydrateDefault = this.hydrateDefault.bind(this);
     this.openNotebookFromURL = this.openNotebookFromURL.bind(this);
     this.handleDisconnect = this.handleDisconnect.bind(this);
@@ -687,11 +686,9 @@ export class AppMainContainer extends Component<
   }
 
   hydrateDefault(
-    props: {
-      metadata?: { type?: string; id?: string; name?: string };
-    } & PanelProps,
+    props: DehydratedDashboardPanelProps,
     id: string
-  ): DashboardPanelProps & { fetch?: () => Promise<unknown> } {
+  ): DehydratedDashboardPanelProps & { fetch?: () => Promise<unknown> } {
     const { connection } = this.props;
     const { metadata } = props;
     if (
@@ -705,55 +702,70 @@ export class AppMainContainer extends Component<
               type: metadata.type,
               id: metadata.id,
             }
-          : { type: metadata.type, name: metadata.name, title: metadata.name };
+          : {
+              type: metadata.type,
+              name: metadata.name,
+              title: metadata.name,
+            };
       return {
         fetch: () => connection.getObject(widget),
-        localDashboardId: id,
         ...props,
+        localDashboardId: id,
       };
     }
     return DashboardUtils.hydrate(props, id);
   }
 
-  hydrateGrid(props: IrisGridPanelProps, id: string): IrisGridPanelProps {
-    return this.hydrateTable(
-      props,
-      id,
-      props.metadata.type ?? dh.VariableType.TABLE
-    );
-  }
-
-  hydratePandas(props: PandasPanelProps, id: string): PandasPanelProps {
-    return this.hydrateTable(props, id, dh.VariableType.PANDAS);
-  }
-
-  hydrateTable<T extends { metadata: GridPanelMetadata }>(
-    props: T,
-    id: string,
-    type: string = dh.VariableType.TABLE
-  ): T & {
+  hydrateTable(
+    props: DehydratedDashboardPanelProps,
+    id: string
+  ): DehydratedDashboardPanelProps & {
     getDownloadWorker: () => Promise<ServiceWorker>;
     loadPlugin: (pluginName: string) => TablePlugin;
     localDashboardId: string;
     makeModel: () => Promise<IrisGridModel>;
   } {
     const { connection } = this.props;
+    let metadata: IrisGridPanelMetadata;
+    if (isIrisGridPanelMetadata(props.metadata)) {
+      metadata = props.metadata;
+    } else if (isLegacyIrisGridPanelMetadata(props.metadata)) {
+      metadata = {
+        name: props.metadata.table,
+        type: props.metadata.type ?? dh.VariableType.TABLE,
+      };
+    } else {
+      throw new Error('Metadata is required for table panel');
+    }
+
     return {
       ...props,
       getDownloadWorker: DownloadServiceWorkerUtils.getServiceWorker,
       loadPlugin: this.handleLoadTablePlugin,
       localDashboardId: id,
-      makeModel: () => createGridModel(dh, connection, props.metadata, type),
+      makeModel: () => createGridModel(dh, connection, metadata),
     };
   }
 
-  hydrateChart(props: ChartPanelProps, id: string): ChartPanelProps {
+  hydrateChart(
+    props: DehydratedDashboardPanelProps,
+    id: string
+  ): DehydratedDashboardPanelProps & {
+    makeModel: () => Promise<ChartModel>;
+  } {
     const { connection } = this.props;
     return {
       ...props,
       localDashboardId: id,
       makeModel: () => {
-        const { metadata, panelState } = props;
+        const { metadata } = props;
+        const panelState = isChartPanelDehydratedProps(props)
+          ? props.panelState
+          : undefined;
+        if (metadata == null) {
+          throw new Error('Metadata is required for chart panel');
+        }
+
         return createChartModel(dh, connection, metadata, panelState);
       },
     };
@@ -914,11 +926,7 @@ export class AppMainContainer extends Component<
           onLayoutInitialized={this.openNotebookFromURL}
           hydrate={this.hydrateDefault}
         >
-          <GridPlugin
-            hydrate={this.hydrateGrid}
-            getDownloadWorker={DownloadServiceWorkerUtils.getServiceWorker}
-            loadPlugin={this.handleLoadTablePlugin}
-          />
+          <GridPlugin hydrate={this.hydrateTable} />
           <ChartPlugin hydrate={this.hydrateChart} />
           <ChartBuilderPlugin />
           <ConsolePlugin
@@ -931,7 +939,7 @@ export class AppMainContainer extends Component<
             }
           />
           <FilterPlugin />
-          <PandasPlugin hydrate={this.hydratePandas} />
+          <PandasPlugin hydrate={this.hydrateTable} />
           <MarkdownPlugin />
           <LinkerPlugin />
           {dashboardPlugins}

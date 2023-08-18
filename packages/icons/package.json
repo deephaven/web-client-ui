@@ -1,13 +1,20 @@
 {
   "name": "@deephaven/icons",
-  "version": "0.45.0",
+  "version": "0.46.0",
   "description": "Icons used in Deephaven client apps. Extends vscode-codicons to be font-awesome svg-core compatible and adds additional icons in a similar style.",
   "main": "dist/index.js",
-  "module": "dist/index.es.js",
-  "type": "module",
   "types": "dist/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js"
+    }
+  },
   "files": [
-    "dist"
+    "dist/index.cjs",
+    "dist/index.js",
+    "dist/index.d.ts"
   ],
   "sideEffects": false,
   "scripts": {
@@ -16,9 +23,10 @@
     "watch": "chokidar \"src/**/*\" -c \"npm run build\"",
     "svgo-dh": "svgo -q -f ./src/icons/ -o ./dist/svg/dh",
     "svgo-vs": "svgo -q -f \"../../node_modules/@vscode/codicons/src/icons/\" -o ./dist/svg/vs",
-    "build": "run-s build:icons build:js",
+    "build": "run-s build:icons build:js clean:dist:icons",
     "build:icons": "run-p svgo-dh svgo-vs",
-    "build:js": "node ./scripts/build.js"
+    "build:js": "node ./scripts/build.js",
+    "clean:dist:icons": "rimraf ./dist/svg"
   },
   "repository": {
     "type": "git",

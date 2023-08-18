@@ -39,16 +39,15 @@ import {
 } from '@deephaven/redux';
 import classNames from 'classnames';
 import debounce from 'lodash.debounce';
+import {
+  DashboardPanelProps,
+  PanelEvent,
+  PanelMetadata,
+} from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import { assertNotNull, Pending, PromiseUtils } from '@deephaven/utils';
-import type {
-  Container,
-  EventEmitter,
-  Tab,
-  CloseOptions,
-} from '@deephaven/golden-layout';
+import type { Tab, CloseOptions } from '@deephaven/golden-layout';
 import type { IdeSession } from '@deephaven/jsapi-types';
-import { PanelEvent } from '@deephaven/dashboard';
 import { ConsoleEvent, NotebookEvent } from '../events';
 import { getDashboardSessionWrapper } from '../redux';
 import Panel from './Panel';
@@ -59,7 +58,7 @@ const log = Log.module('NotebookPanel');
 
 const DEBOUNCE_PANEL_STATE_UPDATE = 400;
 
-interface Metadata {
+interface Metadata extends PanelMetadata {
   id: string;
 }
 interface NotebookSetting {
@@ -77,10 +76,8 @@ interface PanelState {
   fileMetadata: FileMetadata | null;
 }
 
-interface NotebookPanelProps {
+interface NotebookPanelProps extends DashboardPanelProps {
   fileStorage: FileStorage;
-  glContainer: Container;
-  glEventHub: EventEmitter;
   isDashboardActive: boolean;
   isPreview: boolean;
   metadata: Metadata;
@@ -1181,7 +1178,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
 
     return (
       <>
-        {portal &&
+        {portal != null &&
           ReactDOM.createPortal(
             <span
               className={classNames('editor-unsaved-indicator', {
