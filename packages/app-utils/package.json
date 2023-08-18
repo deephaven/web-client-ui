@@ -29,7 +29,9 @@
   },
   "dependencies": {
     "@deephaven/auth-plugins": "file:../auth-plugins",
+    "@deephaven/chart": "file:../chart",
     "@deephaven/components": "file:../components",
+    "@deephaven/iris-grid": "file:../iris-grid",
     "@deephaven/jsapi-bootstrap": "file:../jsapi-bootstrap",
     "@deephaven/jsapi-components": "file:../jsapi-components",
     "@deephaven/jsapi-types": "file:../jsapi-types",
