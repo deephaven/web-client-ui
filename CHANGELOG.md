@@ -3,6 +3,54 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.46.0](https://github.com/deephaven/web-client-ui/compare/v0.45.1...v0.46.0) (2023-08-18)
+
+
+### Bug Fixes
+
+* Environment variable replacement in styleguide ([#1443](https://github.com/deephaven/web-client-ui/issues/1443)) ([9fd5c27](https://github.com/deephaven/web-client-ui/commit/9fd5c27df9af4c6e63117e07f90c2fdc3029dfe1))
+* failing table operations e2e test ([#1447](https://github.com/deephaven/web-client-ui/issues/1447)) ([6d2cb06](https://github.com/deephaven/web-client-ui/commit/6d2cb062665b0ba60b3397ed74f9b703d598f154))
+* login page looks bad when narrow ([#1428](https://github.com/deephaven/web-client-ui/issues/1428)) ([6e0b60e](https://github.com/deephaven/web-client-ui/commit/6e0b60e2087465eb99230411334fc2ee355c0778)), closes [#1399](https://github.com/deephaven/web-client-ui/issues/1399)
+* Upgrade Monaco to ^0.41.0 ([#1448](https://github.com/deephaven/web-client-ui/issues/1448)) ([1120c2b](https://github.com/deephaven/web-client-ui/commit/1120c2b235d2ca2c8b14c818ccfc2847294c3811)), closes [#1445](https://github.com/deephaven/web-client-ui/issues/1445) [#1191](https://github.com/deephaven/web-client-ui/issues/1191)
+
+
+### Build System
+
+* **@deephaven/icons:** Properly package icons and remove unnecessary files in dist ([#1437](https://github.com/deephaven/web-client-ui/issues/1437)) ([ec7ccef](https://github.com/deephaven/web-client-ui/commit/ec7ccefc8c65ce6ea01622d509d4c654324fa401))
+
+
+### BREAKING CHANGES
+
+* Monaco will need to be upgraded to ^0.41.0 in
+Enterprise to ensure compatibility
+
+**Tests Performed**
+
+- Console Input
+    - `Cmd+F` does nothing
+    - Intellisense can be closed via `Esc`
+- Log tab
+    - `Esc` does not close find input
+    - `Esc` does clear selection when focus is in the log content
+- Code Editor
+- Verified that newline with leading space no longer crashes the browser
+tab
+      ```
+      a
+       a
+      ```
+- Wrote some Python code. Intellisense, syntax highlighting, and general
+typing experience seemed as expected
+   - Execute full code + selected code successfully
+* **@deephaven/icons:** Any imports/aliasing to `@deephaven/icons/dist` should
+be removed and just read the package contents normally (e.g. DHE jest
+and vite configs for using community packages locally). See the changes
+to vite and jest configs in this change for how to update
+
+
+
+
+
 ## [0.45.1](https://github.com/deephaven/web-client-ui/compare/v0.45.0...v0.45.1) (2023-08-01)
 
 

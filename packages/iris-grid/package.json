@@ -1,10 +1,18 @@
 {
   "name": "@deephaven/iris-grid",
-  "version": "0.45.1",
+  "version": "0.46.0",
   "description": "Deephaven Iris Grid",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
   "type": "module",
+  "exports": {
+    ".": "./dist/index.js",
+    "./*.js": "./dist/*.js",
+    "./*": "./dist/*.js"
+  },
+  "exportsComments": {
+    "./*": "This is used because docusaurus/webpack doesn't like the ./*.js exports"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/deephaven/web-client-ui.git",
