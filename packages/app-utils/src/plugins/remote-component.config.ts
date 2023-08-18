@@ -9,7 +9,9 @@ import * as redux from 'redux';
 import * as reactRedux from 'react-redux';
 import ReactDOM from 'react-dom';
 import * as DeephavenAuthPlugins from '@deephaven/auth-plugins';
+import * as DeephavenChart from '@deephaven/chart';
 import * as DeephavenComponents from '@deephaven/components';
+import * as DeephavenIrisGrid from '@deephaven/iris-grid';
 import * as DeephavenJsapiBootstrap from '@deephaven/jsapi-bootstrap';
 import * as DeephavenJsapiComponents from '@deephaven/jsapi-components';
 import * as DeephavenJsapiUtils from '@deephaven/jsapi-utils';
@@ -23,7 +25,9 @@ export const resolve = {
   redux,
   'react-redux': reactRedux,
   '@deephaven/auth-plugins': DeephavenAuthPlugins,
+  '@deephaven/chart': DeephavenChart,
   '@deephaven/components': DeephavenComponents,
+  '@deephaven/iris-grid': DeephavenIrisGrid,
   '@deephaven/jsapi-bootstrap': DeephavenJsapiBootstrap,
   '@deephaven/jsapi-components': DeephavenJsapiComponents,
   '@deephaven/jsapi-utils': DeephavenJsapiUtils,
