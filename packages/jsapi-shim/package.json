@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/jsapi-shim",
-  "version": "0.45.0",
+  "version": "0.46.0",
   "description": "Deephaven JSAPI Shim",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
