@@ -108,6 +108,10 @@ async function artificialWait(page: Page, tableNumber = 0) {
 test.beforeEach(async ({ page }) => {
   await page.goto('');
 
+  page.on('console', msg => {
+    if (msg.type() === 'error') console.log(`Error text: "${msg.text()}"`);
+  });
+
   const consoleInput = page.locator('.console-input');
   await consoleInput.click();
 
