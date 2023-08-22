@@ -354,25 +354,25 @@ class MonacoUtils {
     // default bindings, but we can add new ones that will override the existing
     // ones and set `command` to null. This will treat the key events as unhandled
     // and allow them to bubble up.
-    monaco.editor.addKeybindingRule(
-      // Restart console in Enterprise (see Shortcuts.ts)
-      {
-        /* eslint-disable-next-line no-bitwise */
-        keybinding: monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyD,
-        command: null,
-      }
-    );
+    // monaco.editor.addKeybindingRule(
+    //   // Restart console in Enterprise (see Shortcuts.ts)
+    //   {
+    //     /* eslint-disable-next-line no-bitwise */
+    //     keybinding: monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyD,
+    //     command: null,
+    //   }
+    // );
 
-    // Ctrl+H is used to focus Community console history in Windows + Linux.
-    // An alternate shortcut is used for Mac, so no need to override it
-    // (See ConsoleShortcuts.ts)
-    if (!MonacoUtils.isMacPlatform()) {
-      monaco.editor.addKeybindingRule({
-        /* eslint-disable-next-line no-bitwise */
-        keybinding: monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyH,
-        command: null,
-      });
-    }
+    // // Ctrl+H is used to focus Community console history in Windows + Linux.
+    // // An alternate shortcut is used for Mac, so no need to override it
+    // // (See ConsoleShortcuts.ts)
+    // if (!MonacoUtils.isMacPlatform()) {
+    //   monaco.editor.addKeybindingRule({
+    //     /* eslint-disable-next-line no-bitwise */
+    //     keybinding: monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyH,
+    //     command: null,
+    //   });
+    // }
   }
 
   /**
