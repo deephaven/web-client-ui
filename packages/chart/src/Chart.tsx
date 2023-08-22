@@ -176,6 +176,8 @@ export class Chart extends Component<ChartProps, ChartState> {
     const { isActive, settings } = this.props;
     this.updateFormatterSettings(settings as FormatterSettings);
 
+    // TODO: Need to handle the model itself updating...
+
     if (isActive !== prevProps.isActive) {
       if (isActive) {
         this.subscribe();
