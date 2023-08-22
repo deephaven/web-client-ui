@@ -105,6 +105,7 @@ async function artificialWait(page: Page, tableNumber = 0) {
   await page.getByTestId('btn-page-close').first().click();
 }
 
+const tableName = generateVarName('t');
 test.beforeEach(async ({ page }) => {
   await page.goto('');
 
@@ -114,8 +115,9 @@ test.beforeEach(async ({ page }) => {
 
   const consoleInput = page.locator('.console-input');
   await consoleInput.click();
+  await page.locator('.console-input-inner-wrapper.focus').focus();
 
-  const command = makeTableCommand(undefined, TableTypes.AllTypes);
+  const command = makeTableCommand(tableName, TableTypes.AllTypes);
 
   await pasteInMonaco(consoleInput, command);
   await page.keyboard.press('Enter');
@@ -140,6 +142,15 @@ test.beforeEach(async ({ page }) => {
   await expect(page.locator('.table-sidebar')).toHaveCount(1);
 });
 
+test.afterEach(async ({ page }) => {
+  const consoleInput = page.locator('.console-input');
+  await consoleInput.click();
+
+  const command = `del ${tableName}`;
+  await pasteInMonaco(consoleInput, command);
+  await page.keyboard.press('Enter');
+});
+
 test('select distinct values', async ({ page }) => {
   await openTableOption(page, 'Select Distinct Values');
 
@@ -154,7 +165,8 @@ test('select distinct values', async ({ page }) => {
 test('search', async ({ page }) => {
   await page.locator('data-testid=menu-item-Search Bar').click();
 
-  const searchBar = page.getByPlaceholder('Search Data...');
+  // const searchBar = page.getByPlaceholder('Search Data...');
+  const searchBar = page.getByTestId('cross-column-search');
   await expect(searchBar).toHaveCount(1);
 
   await searchBar.click();

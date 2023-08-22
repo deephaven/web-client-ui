@@ -187,6 +187,7 @@ export async function openTableOption(
   page: Page,
   tableOption: string
 ): Promise<void> {
+  await expect(page.getByText('Table Options')).toHaveCount(1);
   await page.locator(`data-testid=menu-item-${tableOption}`).click();
 
   // Wait until the table option has fully appeared, by checking that the top level menu is no longer visible
