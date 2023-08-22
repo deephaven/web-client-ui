@@ -96,6 +96,12 @@ import {
 import { PromiseUtils } from '@deephaven/utils';
 import GoldenLayout from '@deephaven/golden-layout';
 import type { ItemConfigType } from '@deephaven/golden-layout';
+import {
+  type DashboardPlugin,
+  isDashboardPlugin,
+  isTablePlugin,
+  type LegacyDashboardPlugin,
+} from '@deephaven/plugin';
 import JSZip from 'jszip';
 import SettingsMenu from '../settings/SettingsMenu';
 import AppControlsMenu from './AppControlsMenu';
@@ -639,13 +645,11 @@ export class AppMainContainer extends Component<
     const pluginModule = plugins.get(pluginName);
     if (
       pluginModule != null &&
-      (pluginModule as { TablePlugin: ReactElement }).TablePlugin != null
+      (isTablePlugin(pluginModule) || 'TablePlugin' in pluginModule)
     ) {
-      return (
-        pluginModule as {
-          TablePlugin: TablePlugin;
-        }
-      ).TablePlugin;
+      return (isTablePlugin(pluginModule)
+        ? pluginModule.component
+        : pluginModule.TablePlugin) as unknown as TablePlugin;
     }
 
     const errorMessage = `Unable to find table plugin ${pluginName}.`;
@@ -785,14 +789,19 @@ export class AppMainContainer extends Component<
     });
   }
 
-  getDashboardPlugins = memoize((plugins: DeephavenPluginModuleMap) =>
-    (
+  getDashboardPlugins = memoize((plugins: DeephavenPluginModuleMap) => {
+    const legacyPlugins = (
       [...plugins.entries()].filter(
-        ([, plugin]: [string, { DashboardPlugin?: typeof React.Component }]) =>
-          plugin.DashboardPlugin != null
-      ) as [string, { DashboardPlugin: typeof React.Component }][]
-    ).map(([name, { DashboardPlugin }]) => <DashboardPlugin key={name} />)
-  );
+        ([, plugin]) => 'DashboardPlugin' in plugin
+      ) as [string, LegacyDashboardPlugin][]
+    ).map(([name, { DashboardPlugin: DPlugin }]) => <DPlugin key={name} />);
+
+    return legacyPlugins.concat(
+      [...plugins.values()]
+        .filter<DashboardPlugin>(isDashboardPlugin)
+        .map(({ component: DPlugin, name }) => <DPlugin key={name} />)
+    );
+  });
 
   render(): ReactElement {
     const { activeTool, plugins, user, workspace, serverConfigValues } =
