@@ -14,13 +14,6 @@ import type {
 import PanelManager from './PanelManager';
 
 /**
- * Alias for the return type of React.forwardRef()
- */
-export type ForwardRefComponentType<P, R> = ForwardRefExoticComponent<
-  PropsWithoutRef<P> & RefAttributes<R>
->;
-
-/**
  * Panel components can provide static props that provide meta data about the
  * panel.
  */
@@ -36,6 +29,14 @@ export interface PanelStaticMetaData {
 }
 
 /**
+ * Alias for the return type of React.forwardRef()
+ */
+type ForwardRefComponentType<P, R> = ForwardRefExoticComponent<
+  PropsWithoutRef<P> & RefAttributes<R>
+>;
+
+/**
+ * @deprecated Use `PanelComponentType` instead and add generic types to forwardRef call.
  * Panels defined as functional components have to use React.forwardRef.
  */
 export type PanelFunctionComponentType<P, R> = ForwardRefComponentType<P, R> &
@@ -49,12 +50,7 @@ export type WrappedComponentType<
 export type PanelComponentType<
   P extends PanelProps = PanelProps,
   C extends ComponentType<P> = ComponentType<P>,
-> = (
-  | ComponentType<P>
-  | WrappedComponentType<P, C>
-  | PanelFunctionComponentType<P, unknown>
-) &
-  PanelStaticMetaData;
+> = (ComponentType<P> | WrappedComponentType<P, C>) & PanelStaticMetaData;
 
 export function isWrappedComponent<
   P extends PanelProps,
