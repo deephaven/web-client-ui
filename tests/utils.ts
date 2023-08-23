@@ -120,6 +120,10 @@ export async function pasteInMonaco(
       element.dispatchEvent(clipboardEvent);
     }, text);
   }
+
+  if (text.length) {
+    expect(locator.locator('textarea')).not.toBeEmpty();
+  }
 }
 
 /**
