@@ -1,9 +1,10 @@
-import type { JSZipObject } from 'jszip';
+import type { JSZipObject, JSZipStreamHelper } from 'jszip';
 import { assertNotNull } from '@deephaven/utils';
 import Papa, { Parser, ParseResult, ParseLocalConfig } from 'papaparse';
 // Intentionally using isNaN rather than Number.isNaN
 /* eslint-disable no-restricted-globals */
 import NewTableColumnTypes from './NewTableColumnTypes';
+import makeZipStreamHelper from './ZipStreamHelper';
 
 // Initially column types start as unknown
 const UNKNOWN = 'unknown';
@@ -157,7 +158,7 @@ class CsvTypeParser {
 
   constructor(
     onFileCompleted: (types: string[]) => void,
-    file: Blob | JSZipObject,
+    file: File | Blob | JSZipObject,
     readHeaders: boolean,
     parentConfig: ParseLocalConfig<unknown, Blob | NodeJS.ReadableStream>,
     nullString: string | null,
@@ -194,7 +195,7 @@ class CsvTypeParser {
 
   onFileCompleted: (types: string[]) => void;
 
-  file: Blob | JSZipObject;
+  file: File | Blob | JSZipObject;
 
   readHeaders: boolean;
 
@@ -219,15 +220,16 @@ class CsvTypeParser {
   config: ParseLocalConfig<unknown, Blob | NodeJS.ReadableStream>;
 
   parse(): void {
-    const toParse = this.isZip
-      ? (this.file as JSZipObject).nodeStream(
-          // JsZip types are incorrect, thus the funny casting
-          // Actual parameter is 'nodebuffer'
-          'nodebuffer' as 'nodestream',
-          this.handleNodeUpdate
-        )
-      : (this.file as Blob);
-    Papa.parse(toParse, this.config);
+    if (this.file instanceof File || this.file instanceof Blob) {
+      Papa.parse(this.file, this.config);
+    } else {
+      const zipStream = makeZipStreamHelper(this.file, this.handleNodeUpdate);
+      // This is actually a stream, but papaparse TS doesn't like it
+      Papa.parse(zipStream as unknown as Blob, this.config);
+      // The stream needs to be manually resumed since jszip starts paused
+      // Papaparse does not call resume and assumes the stream is already reading
+      zipStream.resume();
+    }
   }
 
   handleChunk(result: ParseResult<string[]>, parser: Parser): void {

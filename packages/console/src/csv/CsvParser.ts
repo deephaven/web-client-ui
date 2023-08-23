@@ -5,6 +5,7 @@ import type { IdeSession, Table } from '@deephaven/jsapi-types';
 import type { JSZipObject } from 'jszip';
 import CsvTypeParser from './CsvTypeParser';
 import { CsvTypes } from './CsvFormats';
+import makeZipStreamHelper from './ZipStreamHelper';
 
 const log = Log.module('CsvParser');
 
@@ -15,7 +16,7 @@ const ZIP_CONSOLIDATE_CHUNKS = 650;
 interface CsvParserConstructor {
   onFileCompleted: (tables: Table[]) => void;
   session: IdeSession;
-  file: Blob | JSZipObject;
+  file: File | Blob | JSZipObject;
   type: CsvTypes;
   readHeaders: boolean;
   onProgress: (progressValue: number) => boolean;
@@ -102,7 +103,7 @@ class CsvParser {
 
   session: IdeSession;
 
-  file: Blob | JSZipObject;
+  file: File | Blob | JSZipObject;
 
   isZip: boolean;
 
@@ -168,16 +169,18 @@ class CsvParser {
 
   parse(): void {
     const handleParseDone = (types: string[]) => {
-      const toParse = this.isZip
-        ? (this.file as JSZipObject).nodeStream(
-            // JsZip types are incorrect, thus the funny casting
-            // Actual parameter is 'nodebuffer'
-            'nodebuffer' as 'nodestream',
-            this.handleNodeUpdate
-          )
-        : (this.file as Blob);
       this.types = types;
-      Papa.parse(toParse, this.config);
+
+      if (this.file instanceof File || this.file instanceof Blob) {
+        Papa.parse(this.file, this.config);
+      } else {
+        const zipStream = makeZipStreamHelper(this.file, this.handleNodeUpdate);
+        // This is actually a stream, but papaparse TS doesn't like it
+        Papa.parse(zipStream as unknown as Blob, this.config);
+        // The stream needs to be manually resumed since jszip starts paused
+        // Papaparse does not call resume and assumes the stream is already reading
+        zipStream.resume();
+      }
     };
     const typeParser = new CsvTypeParser(
       handleParseDone,
