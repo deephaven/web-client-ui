@@ -1,4 +1,4 @@
-import type { JSZipObject, JSZipStreamHelper } from 'jszip';
+import type { JSZipObject } from 'jszip';
 import { assertNotNull } from '@deephaven/utils';
 import Papa, { Parser, ParseResult, ParseLocalConfig } from 'papaparse';
 // Intentionally using isNaN rather than Number.isNaN
