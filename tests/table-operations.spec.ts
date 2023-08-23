@@ -569,6 +569,8 @@ test('advanced settings', async ({ page }) => {
     const target = page.getByText('Command History');
     const dropIndicator = page.locator('.lm_dragProxy');
     await dragComponent(inputFilter, target, dropIndicator);
+
+    await page.getByRole('button', { name: 'Panels' }).click();
   });
 
   await test.step('add linker filter to string column', async () => {
