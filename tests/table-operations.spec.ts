@@ -115,8 +115,9 @@ test.beforeEach(async ({ page }) => {
 
   const consoleInput = page.locator('.console-input');
   await consoleInput.click();
-  await page.locator('.console-input-inner-wrapper.focus').focus();
-  await expect(page.locator('.console-input-inner-wrapper.focus')).toHaveCount(1);
+  await expect(page.locator('.console-input-inner-wrapper.focus')).toHaveCount(
+    1
+  );
 
   const command = makeTableCommand(tableName, TableTypes.AllTypes);
 
