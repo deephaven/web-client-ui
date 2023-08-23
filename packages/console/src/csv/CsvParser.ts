@@ -71,6 +71,8 @@ class CsvParser {
     this.onProgress = onProgress;
     this.onError = onError;
     this.tables = [];
+    this.rowCount = 0;
+    this.rowsProcessed = 0;
     this.chunks = 0;
     this.totalChunks = isZip
       ? 0
@@ -123,6 +125,10 @@ class CsvParser {
 
   types?: string[];
 
+  rowCount: number;
+
+  rowsProcessed: number;
+
   chunks: number;
 
   totalChunks: number;
@@ -168,8 +174,9 @@ class CsvParser {
   }
 
   parse(): void {
-    const handleParseDone = (types: string[]) => {
+    const handleParseDone = (types: string[], rowCount: number) => {
       this.types = types;
+      this.rowCount = rowCount;
 
       if (this.file instanceof File || this.file instanceof Blob) {
         Papa.parse(this.file, this.config);
@@ -277,6 +284,9 @@ class CsvParser {
     }
     assertNotNull(this.headers);
     assertNotNull(types);
+
+    this.rowsProcessed += columns[0].length;
+
     session
       .newTable(this.headers, types, columns, this.timeZone)
       .then(table => {
@@ -297,7 +307,9 @@ class CsvParser {
         if (totalChunks > 0) {
           progress = Math.round((tables.length / totalChunks) * 50) + 50;
         } else {
-          progress = Math.round(50 + this.zipProgress / 2);
+          // The zip file can be read entirely while in the middle of parsing
+          // Since we know the number of rows from the type parsing, use that for progress
+          progress = Math.round((this.rowsProcessed / this.rowCount) * 50) + 50;
         }
         log.debug2(`CSV parser progress ${progress}`);
         onProgress(progress);

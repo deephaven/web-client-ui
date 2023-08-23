@@ -157,7 +157,7 @@ class CsvTypeParser {
   }
 
   constructor(
-    onFileCompleted: (types: string[]) => void,
+    onFileCompleted: (types: string[], rowCount: number) => void,
     file: File | Blob | JSZipObject,
     readHeaders: boolean,
     parentConfig: ParseLocalConfig<unknown, Blob | NodeJS.ReadableStream>,
@@ -176,6 +176,7 @@ class CsvTypeParser {
     this.onError = onError;
     this.chunks = 0;
     this.totalChunks = totalChunks;
+    this.rowCount = 0;
     this.isZip = isZip;
     this.shouldTrim = shouldTrim;
     this.zipProgress = 0;
@@ -193,7 +194,7 @@ class CsvTypeParser {
     };
   }
 
-  onFileCompleted: (types: string[]) => void;
+  onFileCompleted: (types: string[], rowCount: number) => void;
 
   file: File | Blob | JSZipObject;
 
@@ -210,6 +211,8 @@ class CsvTypeParser {
   chunks: number;
 
   totalChunks: number;
+
+  rowCount: number;
 
   isZip: boolean;
 
@@ -246,6 +249,8 @@ class CsvTypeParser {
         data = data.slice(1);
       }
     }
+
+    this.rowCount += data.length;
 
     assertNotNull(this.types);
 
@@ -296,7 +301,8 @@ class CsvTypeParser {
           type === UNKNOWN || type === NewTableColumnTypes.LOCAL_TIME
             ? NewTableColumnTypes.STRING
             : type
-        )
+        ),
+        this.rowCount
       );
     }
   }
