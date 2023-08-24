@@ -59,18 +59,13 @@ jobs:
       matrix:
         browser: [chromium, firefox, webkit]
     steps:
+      - uses: actions/checkout@v3
+
       - name: Download build
         uses: actions/download-artifact@v3
         with:
           name: build
           path: packages/code-studio/build/
-
-      - name: Run core server:${{ env.DOCKER_TAG }}
-        run: |
-          docker pull --quiet ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
-          docker run --detach --publish 10000:10000 --name dh-core-server --env "START_OPTS=-Xmx4g -DAuthHandlers=io.deephaven.auth.AnonymousAuthenticationHandler" ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
-
-      - uses: actions/checkout@v3
 
       - name: Use Node.js
         uses: actions/setup-node@v3
@@ -92,7 +87,12 @@ jobs:
         run: npm ci --no-audit
 
       - name: Install Playwright dependencies
-        run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright install --with-deps
+        run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright install ${{ matrix.browser }} --with-deps
+
+      - name: Run core server:${{ env.DOCKER_TAG }}
+        run: |
+          docker pull --quiet ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
+          docker run --detach --publish 10000:10000 --name dh-core-server --env "START_OPTS=-Xmx4g -DAuthHandlers=io.deephaven.auth.AnonymousAuthenticationHandler" ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
 
       - name: Run Playwright tests
         run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright test --config=playwright-ci.config.ts --project=${{ matrix.browser }}
