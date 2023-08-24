@@ -20,6 +20,51 @@ jobs:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
     steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Cache node modules
+        id: cache-node-modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+          key: e2e-node-modules-${{ hashFiles('package-lock.json')}}
+
+      - name: Install dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: npm ci --no-audit
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload build
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: packages/code-studio/build/
+          retention-days: 5
+
+  e2e-test:
+    runs-on: ubuntu-22.04
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - name: Download build
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+          path: packages/code-studio/build/
+
       - name: Run core server:${{ env.DOCKER_TAG }}
         run: |
           docker pull --quiet ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
@@ -46,14 +91,11 @@ jobs:
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci --no-audit
 
-      - name: Build
-        run: npm run build
-
       - name: Install Playwright dependencies
         run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright install --with-deps
 
       - name: Run Playwright tests
-        run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright test --config=playwright-ci.config.ts
+        run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright test --config=playwright-ci.config.ts --project=${{ matrix.browser }}
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v3
