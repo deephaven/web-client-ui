@@ -1,35 +1,34 @@
 // Styling overrides for bootstrap
 
-// Override / set color variables
-$red: #f95d84;
-$orange: #f37e3f;
-$yellow: #fcd65b;
-$green: #9edc6f;
-$blue: #76d9e4;
-$purple: #aa9af4;
+// TODO TACKLE REPLACING EVERY instance of rgba($ and rgba(var
+// as they will no longer work but won't error.
 
-//Define some UI colors
-$interfacegray: #2d2a2e;
-$interfaceblue: #4878ea;
-$interfacewhite: #f0f0ee; //same as gray-200
-$interfaceblack: #1a171a;
+// Override / set color variables
+$red: var(--spectrum-red-visual-color);
+$orange: var(--spectrum-orange-visual-color);
+$yellow: var(--spectrum-yellow-visual-color);
+$green: var(--spectrum-green-visual-color);
+$blue: var(--spectrum-blue-visual-color);
+$purple: var(--spectrum-purple-visual-color);
 
 //Define our Gray scale
-$white: $interfacewhite;
-$gray-100: #fcfcfa;
-$gray-200: $interfacewhite;
-$gray-300: #c0bfbf;
-$gray-400: #929192;
-$gray-500: #5b5a5c;
-$gray-600: #555356;
-$gray-700: #403e41;
-$gray-800: #373438;
-$gray-850: #322f33;
-$gray-900: #211f22;
-$black: $interfaceblack;
-$content-bg: $interfacegray;
-$background: $interfaceblack;
-$foreground: $interfacewhite;
+$gray-100: var(--spectrum-gray-900);
+$gray-200: var(--spectrum-gray-800);
+$gray-300: var(--spectrum-gray-700);
+$gray-400: var(--spectrum-gray-600);
+$gray-500: var(--spectrum-gray-500);
+// intentional duplicate, scale doesn't line up otherwise
+// as we have gray-850 and spectrum doesn't and it is needed
+$gray-600: var(--spectrum-gray-500);
+$gray-700: var(--spectrum-gray-400);
+$gray-800: var(--spectrum-gray-300);
+$gray-850: var(--spectrum-gray-200);
+$gray-900: var(--spectrum-gray-75);
+$black: var(--spectrum-gray-50);
+$white: var(--spectrum-gray-800);
+$content-bg: var(--spectrum-gray-100);
+$background: $black;
+$foreground: $white;
 
 //Load colors into map
 $colors: ();
@@ -49,54 +48,53 @@ $colors: map-merge(
 
 //Set default colors
 $body-bg: $black;
-$body-color: $interfacewhite;
+$body-color: $white;
 
 // Set brand colors
-$primary: $interfaceblue;
-$primary-hover: darken($primary, 8%);
-$primary-dark: mix($primary, $content-bg, 25%);
-$primary-light: scale-color($primary, $lightness: -25%);
-$secondary: $gray-500;
-$secondary-hover: darken($secondary, 8%);
+$primary: var(--spectrum-accent-color-600);
+$primary-hover: var(--spectrum-accent-background-color-hover);
+$primary-dark: var(--spectrum-accent-background-color-down);
+
+$primary-light: var(--spectrum-accent-color-1100);
+
+$secondary: var(--spectrum-gray-500);
+$secondary-hover: var(--spectrum-gray-400);
 $success: $green;
 $info: $yellow;
 $warning: $orange;
-$danger: $red;
-$danger-hover: darken($danger, 8%);
+$danger: var(--spectrum-negative-visual-color);
+$danger-hover: var(--spectrum-negative-background-color-default);
 $light: $gray-100;
 $mid: $gray-400; //Added a mid color, useful for input styling
 $dark: $gray-800;
-$green-dark: scale-color($green, $lightness: -45%, $saturation: -10%);
+$green-dark: var(--spectrum-green-900);
+
+$bootstrap-spectrum-semtantic-mapping: (
+  'primary': 'accent',
+  'secondary': 'neutral',
+  'success': 'positive',
+  // 'info': 'informative',
+  // 'warning': 'notice',
+  'danger': 'negative',
+);
 
 $theme-colors: () !default;
-$theme-colors: map-merge(
-  (
-    'primary': $primary,
-    'primary-hover': $primary-hover,
-    'primary-light': $primary-light,
-    'primary-dark': $primary-dark,
-    'secondary': $secondary,
-    'success': $success,
-    'info': $info,
-    'warning': $warning,
-    'danger': $danger,
-    'light': $light,
-    'dark': $dark,
-    'mid': $mid,
-    'content-bg': $interfacegray,
-    'background': $interfaceblack,
-    'foreground': $interfacewhite,
-  ),
-  $theme-colors
-);
+$theme-colors: map-merge($bootstrap-spectrum-semtantic-mapping, $theme-colors);
 
 $component-active-bg: $primary;
 $theme-color-interval: 9%;
 $yiq-contrasted-threshold: 180;
 
 // Override fonts
-$font-family-sans-serif: 'Fira Sans', -apple-system, blinkmacsystemfont,
-  'Segoe UI', 'Roboto', 'Helvetica Neue', arial, sans-serif; //fira sans then native system ui fallbacks
+$font-family-sans-serif:
+  'Fira Sans',
+  -apple-system,
+  blinkmacsystemfont,
+  'Segoe UI',
+  'Roboto',
+  'Helvetica Neue',
+  arial,
+  sans-serif; //fira sans then native system ui fallbacks
 $font-family-monospace: 'Fira Mono', menlo, monaco, consolas, 'Liberation Mono',
   'Courier New', monospace;
 $font-family-base: $font-family-sans-serif;
@@ -110,47 +108,52 @@ $text-muted: $gray-400;
 //so browsers add alpha to your color by default, ignoring opacity 1
 //by setting rgba with 0.99 it tricks browser into thinking there is alpha applied
 $text-select-color: $primary-hover;
-$text-select-color-editor: lighten(
-  $gray-700,
-  15%
-); //we lighten it abit to account for that 0.01 loss, and because it needs some anyways.
+$text-select-color-editor: $gray-600;
 
 //Grid variables, same value as default just making easily accessible
 $grid-gutter-width: 30px;
 
 //Visual Overrides
 $border-radius: 4px;
-$box-shadow: 0 0.1rem 1rem rgba($black, 45%); //because our UI is so dark, we need darker default shadows
-$box-shadow-900: 0 0.1rem 1rem rgba(0, 0, 0, 45%); //darkest shadow for $black popups over $black UI
+$box-shadow: 0 0.1rem 1rem var(--spectrum-alias-dropshadow-color); //because our UI is so dark, we need darker default shadows
+$box-shadow-900: 0 0.1rem 1rem var(--spectrum-alias-dropshadow-color); //darkest shadow for $black popups over $black UI
 
 //Override Btn
 $btn-border-radius: 4rem;
 $btn-padding-x: 1.5rem;
-$btn-transition: color 0.12s ease-in-out, background-color 0.12s ease-in-out,
-  border-color 0.12s ease-in-out, box-shadow 0.12s ease-in-out; //default 0.15 is too long
+$btn-transition:
+  color 0.12s ease-in-out,
+  background-color 0.12s ease-in-out,
+  border-color 0.12s ease-in-out,
+  box-shadow 0.12s ease-in-out; //default 0.15 is too long
 $btn-border-width: 2px;
 
 //Override Inputs
-$input-bg: $gray-600;
+$input-bg: $gray-900;
 $input-disabled-bg: $gray-800;
 $input-color: $foreground;
 $input-border-color: $gray-400;
 $input-placeholder-color: $gray-400;
-$input-focus-border-color: rgba($primary, 85%);
+$input-focus-border-color: color-mix(in srgb, $primary 85%, transparent);
 
 $input-btn-focus-width: 0.2rem;
-$input-btn-focus-color: rgba($component-active-bg, 35%);
+$input-btn-focus-color: color-mix(
+  in srgb,
+  $component-active-bg 35%,
+  transparent
+);
 $input-btn-focus-box-shadow: 0 0 0 $input-btn-focus-width $input-btn-focus-color;
 
 //checkbox
 $custom-control-indicator-bg: $gray-600;
+$custom-control-indicator-active-bg: var(--spectrum-accent-color-1100);
 $custom-control-indicator-bg-size: 75% 75%;
 $custom-control-indicator-disabled-bg: $gray-800;
 $custom-control-indicator-checked-disabled-bg: $gray-800;
 $custom-control-label-disabled-color: $gray-400;
 
 //Custom Select
-$custom-select-indicator-color: $gray-400;
+$custom-select-indicator-color: rgb(120, 120, 120);
 $custom-select-bg-size: 16px 16px;
 //dhSort icon encoded
 $custom-select-indicator: str-replace(
@@ -159,7 +162,7 @@ $custom-select-indicator: str-replace(
   '%23'
 );
 $custom-select-focus-box-shadow: $input-btn-focus-box-shadow;
-$custom-select-disabled-color: darken($gray-400, 5%);
+$custom-select-disabled-color: $gray-500;
 $custom-select-disabled-bg: $gray-800;
 
 //modal
@@ -168,25 +171,25 @@ $modal-content-border-width: 0;
 $modal-md: 550px;
 
 // Toast notification
-$toast-bg: $primary-dark;
-$toast-color: $foreground;
-$toast-error-bg: mix($danger, $content-bg, 15%);
-$toast-error-color: $foreground;
+$toast-bg: var(--spectrum-accent-color-100);
+$toast-color: var(--spectrum-alias-text-color);
+$toast-error-bg: var(--spectrum-negative-background-color-default);
+$toast-error-color: var(--spectrum-alias-text-color);
 
 //tooltips
-$tooltip-bg: $gray-700;
+$tooltip-bg: $gray-900;
 $tooltip-color: $foreground;
 $tooltip-box-shadow: 0 0.1rem 1.5rem 0.1rem rgba($black, 80%);
 
 //drowdowns
-$dropdown-bg: $gray-600;
+$dropdown-bg: $gray-900;
 $dropdown-link-color: $foreground;
 $dropdown-link-hover-color: $foreground;
-$dropdown-link-hover-bg: $primary;
+$dropdown-link-hover-bg: var(--spectrum-alias-highlight-hover);
 $dropdown-divider-bg: $gray-700;
 
 //context menus
-$contextmenu-bg: $gray-600;
+$contextmenu-bg: $gray-900;
 $contextmenu-color: $foreground;
 $contextmenu-disabled-color: $text-muted;
 $contextmenu-keyboard-selected-bg: rgba($primary, 50%);
@@ -194,7 +197,7 @@ $contextmenu-selected-bg: $primary;
 $contextmenu-selected-color: $foreground;
 
 //links
-$link-color: $gray-400;
+$link-color: $gray-300;
 $link-hover-color: $foreground;
 
 //progress-bar
@@ -219,3 +222,14 @@ $form-feedback-icon-invalid: str-replace(
   '#',
   '%23'
 );
+
+// Unused but needs to be defined for sass to compile _variables
+$table-dark-bg: $gray-800;
+$table-dark-accent-bg: var(--spectrum-alias-highlight-hover);
+$table-dark-hover-bg: var(--spectrum-alias-highlight-active);
+$table-dark-border-color: $gray-700;
+$popover-bg: $white;
+$popover-border-color: var(--spectrum-alias-background-color-modal-overlay);
+$popover-header-bg: #000;
+$popover-arrow-outer-color: var(--spectrum-alias-dropshadow-color);
+$custom-range-thumb-active-bg: var(--spectrum-accent-color-1100);

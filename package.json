@@ -153,6 +153,7 @@
     ]
   },
   "dependencies": {
+    "@adobe/react-spectrum": "^3.28.0",
     "@deephaven/app-utils": "file:packages/app-utils",
     "@deephaven/babel-preset": "file:packages/babel-preset",
     "@deephaven/chart": "file:packages/chart",

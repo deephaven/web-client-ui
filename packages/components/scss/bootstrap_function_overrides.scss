@@ -1,0 +1,33 @@
+// PATCH THE color-yiq to work spectrum variables
+@function color-yiq(
+  $color,
+  $dark: var(--spectrum-gray-50),
+  $light: var(--spectrum-gray-900)
+) {
+  // if $color is a hex color, use the default color-yiq function
+  @if (type-of($color) == 'color') {
+    $r: red($color);
+    $g: green($color);
+    $b: blue($color);
+
+    $yiq: (($r * 299) + ($g * 587) + ($b * 114)) * 0.001;
+
+    @if ($yiq >= $yiq-contrasted-threshold) {
+      @return $dark;
+    } @else {
+      @return $light;
+    }
+  }
+
+  // if the $color contains the string "yellow" or "orange" or "chatreuse" or "cyan" return $dark
+  // per the spectrum color guidelines. All other colors have white text.
+  // https://spectrum.adobe.com/page/using-color/#Solid-color-background-with-black-or-white
+  // Which for us means, informative and notice have dark text.
+  @if (str-index($color, 'informative') != null) {
+    @return $dark;
+  } @else if (str-index($color, 'notice') != null) {
+    @return $dark;
+  }
+
+  @return $light;
+}

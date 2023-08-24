@@ -65,15 +65,15 @@ function Colors(): React.ReactElement {
           <pre>
             {`
 // as semantic colours
-$primary: $interfaceblue;
-$secondary: $gray-600;
-$content-bg: $interfacegray;
-$foreground: $interfacewhite;
-$background: $interfaceblack;
-$success: $green;
-$info: $yellow;
-$warning: $orange;
-$danger: $red;
+$primary
+$secondary
+$content-bg
+$foreground
+$background
+$success
+$info
+$warning
+$danger
 `}
           </pre>
         </div>

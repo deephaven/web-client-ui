@@ -1,6 +1,7 @@
 /* stylelint-disable */
 @import '@deephaven/components/scss/custom.scss';
 
+// NEEDS TO BE REPLACED WITH JS FROM A HOOK
 :export {
   paper-bgcolor: $content-bg;
   plot-bgcolor: $gray-850;
@@ -10,12 +11,12 @@
   linecolor: $gray-500;
   zerolinecolor: $gray-300;
   activecolor: $primary;
-  rangebgcolor: rgba($gray-500, 0.7);
+  rangebgcolor: var(--spectrum-gray-500);
   area-color: $blue;
-  trend-color: lighten($green, 20%);
+  trend-color: var(--spectrum-green-1200);
   line-color: $green;
-  error-band-line-color: lighten($green, 40%);
-  error-band-fill-color: rgba(lighten($green, 20%), 0.1);
+  error-band-line-color: var(--spectrum-green-1400);
+  error-band-fill-color: var(--spectrum-green-1200);
   ohlc-increasing: $green;
   ohlc-decreasing: $red;
 }

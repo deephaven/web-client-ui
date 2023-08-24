@@ -1,102 +1,12 @@
 /* stylelint-disable */
 @import '@deephaven/components/scss/custom.scss';
 
-$selection-color: rgba($blue, 0.09);
+$selection-color: $blue;
 $selection-outline-color: $blue;
 $selection-outline-casing-color: $gray-900;
 $font-size: 12px;
 $row-height: 19px;
-$row-hover-bg: mix($gray-600, $gray-700, 50%);
+$row-hover-bg: $blue;
 $header-bg: $content-bg;
 $header-separator-color: $gray-900;
 $header-height: 30px;
-
-:export {
-  grid-bg: $gray-900;
-  font:
-    $font-size Fira Sans,
-    sans-serif; // must be preloaded
-  white: $white;
-  black: $black;
-  header-bg: $header-bg;
-  header-color: $foreground;
-  header-height: $header-height;
-  header-separator-color: $header-separator-color;
-  header-separator-hover-color: $gray-400;
-  header-hidden-separator-hover-color: $primary;
-  header-sort-bar-color: $purple;
-  header-reverse-bar-color: $green-dark;
-  header-bar-casing-color: $gray-900;
-  header-font:
-    600 $font-size Fira Sans,
-    sans-serif; // must be preloaded
-  row-height: $row-height;
-  row-background-colors: $gray-800 $content-bg;
-  selection-color: $selection-color;
-  selection-outline-color: $selection-outline-color;
-  selection-outline-casing-color: $selection-outline-casing-color;
-  row-hover-bg: $row-hover-bg;
-  selected-row-hover-bg: rgba($blue, 0.25);
-  scroll-bar-active-selection-tick-color: rgba($blue, 0.5);
-
-  scroll-bar-bg: $gray-850;
-  scroll-bar-hover-bg: $gray-800;
-  scroll-bar-casing-color: $gray-600;
-  scroll-bar-corner-color: $gray-850;
-  scroll-bar-color: $gray-500;
-  scroll-bar-hover-color: $gray-400;
-  scroll-bar-active-color: $gray-300;
-
-  text-color: $white;
-  hyperlink-color: $primary;
-  positive-number-color: $green;
-  negative-number-color: $red;
-  zero-number-color: $yellow;
-  date-color: $yellow;
-  pending-text-color: lighten($yellow, 10%);
-  error-text-color: $danger;
-  null-string-color: $gray-400;
-
-  $filter-color: $primary; // local to just the following
-  filter-bar-active-bg: scale-color(
-    $filter-color,
-    $saturation: -65%,
-    $lightness: -40%
-  );
-  filter-bar-active-color: $filter-color;
-  filter-bar-expanded-bg: $gray-800;
-  filter-bar-expanded-active-bg: scale-color(
-    $filter-color,
-    $saturation: -75%,
-    $lightness: -60%
-  );
-  filter-bar-expanded-active-cell-bg: scale-color(
-    $filter-color,
-    $saturation: -50%,
-    $lightness: -40%
-  );
-  filter-bar-separator-color: $gray-400;
-  filter-bar-error-color: $danger;
-  filter-icon-color: $filter-color;
-
-  scrim-color: $gray-900;
-  context-menu-sort-icon-color: $purple;
-  context-menu-reverse-icon-color: $green-dark;
-  linker-column-hover-bg: rgba($blue, 0.09);
-  tree-line-color: $gray-500;
-  tree-marker-color: $gray-300;
-  tree-marker-hover-color: $gray-100;
-  grouped-column-divider-color: $black;
-
-  floating-grid-row-color: $gray-600;
-  floating-row-background-colors: $gray-700;
-  floating-divider-inner-color: $gray-700;
-  floating-divider-outer-color: $gray-900;
-
-  overflow-button-color: $gray-300;
-  overflow-button-hover-color: $gray-100;
-
-  zero-line-color: $gray-500;
-  positive-bar-color: $green;
-  negative-bar-color: $red;
-}

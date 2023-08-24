@@ -2,6 +2,8 @@ import { theme } from '@react-spectrum/theme-default';
 import darkDH from './SpectrumThemeDark.module.scss';
 import lightDH from './SpectrumThemeLight.module.scss';
 
+import darkestDH from './spectrum-deephaven-darkest.module.scss';
+
 const { global, light, dark, medium, large } = theme;
 
 /**
@@ -42,11 +44,11 @@ export const themeDHDefault = {
   global,
   light: {
     ...light,
-    ...lightDH,
+    // ...lightDH,
   },
   dark: {
-    ...dark,
-    ...darkDH,
+    // ...dark,
+    ...darkestDH,
   },
   // scales
   medium,

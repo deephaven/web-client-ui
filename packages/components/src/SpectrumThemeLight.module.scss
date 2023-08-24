@@ -8,5 +8,5 @@
 // Doubling specificity to ensure this takes precedence over default Spectrum
 // styles.
 #{multiply-specificity-n('.dh-spectrum-theme--light', 2)} {
-  --spectrum-alias-background-color-default: #{bootstrap.$interfacewhite};
+  --spectrum-alias-background-color-default: #{bootstrap.$white};
 }

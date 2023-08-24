@@ -8,6 +8,7 @@ import {
   vsLayers,
   dhUserIncognito,
   dhUser,
+  vsPaintcan,
 } from '@deephaven/icons';
 import { Button, CopyButton, Tooltip } from '@deephaven/components';
 import { ServerConfigValues, User } from '@deephaven/redux';
@@ -24,6 +25,7 @@ import ShortcutSectionContent from './ShortcutsSectionContent';
 import { exportLogs } from '../log/LogExport';
 import './SettingsMenu.scss';
 import ColumnSpecificSectionContent from './ColumnSpecificSectionContent';
+import ThemeSectionContent from './ThemeSectionContent';
 
 interface SettingsMenuProps {
   serverConfigValues: ServerConfigValues;
@@ -42,6 +44,8 @@ export class SettingsMenu extends Component<
   static defaultProps = {
     onDone: (): void => undefined,
   };
+
+  static THEME_SECTION_KEY = 'SettingsMenu.theme';
 
   static FORMATTING_SECTION_KEY = 'SettingsMenu.formatting';
 
@@ -230,6 +234,24 @@ export class SettingsMenu extends Component<
             onToggle={this.handleSectionToggle}
           >
             <ColumnSpecificSectionContent scrollTo={this.handleScrollTo} />
+          </SettingsMenuSection>
+
+          <SettingsMenuSection
+            sectionKey={SettingsMenu.THEME_SECTION_KEY}
+            isExpanded={this.isSectionExpanded(SettingsMenu.THEME_SECTION_KEY)}
+            title={
+              <>
+                <FontAwesomeIcon
+                  icon={vsPaintcan}
+                  transform="grow-4"
+                  className="mr-2"
+                />
+                Theme
+              </>
+            }
+            onToggle={this.handleSectionToggle}
+          >
+            <ThemeSectionContent />
           </SettingsMenuSection>
 
           <SettingsMenuSection

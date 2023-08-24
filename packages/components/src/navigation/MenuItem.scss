@@ -44,7 +44,7 @@ $navigation-menu-item-color: $gray-300;
     text-decoration: none;
 
     .shortcut {
-      color: lighten($contextmenu-selected-bg, 25%);
+      color: $gray-300;
     }
 
     .btn-switch.active {

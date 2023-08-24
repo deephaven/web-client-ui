@@ -54,6 +54,13 @@ module.exports = {
     'react/require-default-props': 'off',
     'react/jsx-no-bind': 'off',
     'react-refresh/only-export-components': 'warn',
+    'react/style-prop-object': [
+      'warn',
+      {
+        // react-spectrum button uses a style prop for fill/outline setting
+        allow: ['Button'],
+      },
+    ],
   },
   parserOptions: {
     ecmaFeatures: {

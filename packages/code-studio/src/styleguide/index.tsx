@@ -1,7 +1,11 @@
 import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom';
 import '@deephaven/components/scss/BaseStyleSheet.scss';
-import { LoadingOverlay } from '@deephaven/components';
+import {
+  LoadingOverlay,
+  CreateThemeContext,
+  ThemeProvider,
+} from '@deephaven/components';
 import { ApiBootstrap } from '@deephaven/jsapi-bootstrap';
 import logInit from '../log/LogInit';
 
@@ -21,13 +25,20 @@ const apiURL = new URL(
   document.baseURI
 );
 
-ReactDOM.render(
-  <ApiBootstrap apiUrl={apiURL.href} setGlobally>
-    <Suspense fallback={<LoadingOverlay />}>
-      <FontBootstrap>
-        <StyleGuideRoot />
-      </FontBootstrap>
-    </Suspense>
-  </ApiBootstrap>,
-  document.getElementById('root')
-);
+const App = function App() {
+  return (
+    <ApiBootstrap apiUrl={apiURL.href} setGlobally>
+      <Suspense fallback={<LoadingOverlay />}>
+        <FontBootstrap>
+          <CreateThemeContext>
+            <ThemeProvider>
+              <StyleGuideRoot />
+            </ThemeProvider>
+          </CreateThemeContext>
+        </FontBootstrap>
+      </Suspense>
+    </ApiBootstrap>
+  );
+};
+
+ReactDOM.render(<App />, document.getElementById('root'));

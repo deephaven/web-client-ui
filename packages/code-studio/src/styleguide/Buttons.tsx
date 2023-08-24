@@ -1,14 +1,14 @@
 import React, { Component, ReactElement } from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { ButtonOld, SocketedButton } from '@deephaven/components';
+import { ButtonOld, Button, SocketedButton } from '@deephaven/components';
 import { dhTruck } from '@deephaven/icons';
 
 interface ButtonsState {
   toggle: boolean;
 }
 class Buttons extends Component<Record<string, never>, ButtonsState> {
-  static renderButtonBrand(type: string, brand: string): ReactElement {
+  static renderButtonOldBrand(type: string, brand: string): ReactElement {
     const className = type.length ? `btn-${type}-${brand}` : `btn-${brand}`;
     return (
       <ButtonOld
@@ -21,9 +21,9 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
     );
   }
 
-  static renderButtons(type: string): ReactElement {
-    const brands = ['primary', 'secondary', 'success', 'info', 'danger'].map(
-      (brand: string) => Buttons.renderButtonBrand(type, brand)
+  static renderButtonOlds(type: string): ReactElement {
+    const brands = ['primary', 'secondary', 'success', 'danger'].map(
+      (brand: string) => Buttons.renderButtonOldBrand(type, brand)
     );
 
     return (
@@ -66,6 +66,25 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
         >
           Disabled
         </SocketedButton>
+      </div>
+    );
+  }
+
+  static renderButtons(): ReactElement {
+    return (
+      <div style={{ padding: '1rem 0' }}>
+        <h5>Buttons</h5>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <Button kind="primary">primary</Button>
+          <Button kind="secondary">secondary</Button>
+          <Button kind="success">success</Button>
+          <Button kind="danger">danger</Button>
+          <Button kind="tertiary">tertiary</Button>
+          <Button kind="inline">inline</Button>
+          <Button tooltip={"I'm a tooltip!"} kind="inline" icon={dhTruck} />
+          <Button tooltip={"I'm a tooltip!"} kind="ghost" icon={dhTruck} />
+          <Button kind="ghost">ghost</Button>
+        </div>
       </div>
     );
   }
@@ -121,7 +140,10 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
   }
 
   render(): React.ReactElement {
-    const buttons = ['', 'outline'].map(type => Buttons.renderButtons(type));
+    const buttons = Buttons.renderButtons();
+    const oldButtons = ['', 'outline'].map(type =>
+      Buttons.renderButtonOlds(type)
+    );
     const inlineButtons = this.renderInlineButtons();
     const socketedButtons = Buttons.renderSocketedButtons();
 
@@ -130,6 +152,7 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
         <h2 className="ui-title">Buttons</h2>
         <div style={{ padding: '1rem 0' }}>
           {buttons}
+          {oldButtons}
           {inlineButtons}
           {socketedButtons}
         </div>

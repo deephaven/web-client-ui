@@ -45,117 +45,117 @@ class MonacoUtils {
 
     const { registerLanguages, removeHashtag } = MonacoUtils;
 
-    const dhDarkRules = [
-      { token: '', foreground: removeHashtag(MonacoTheme.foreground) },
-      { token: 'string', foreground: removeHashtag(MonacoTheme.string) },
-      {
-        token: 'string.delim',
-        foreground: removeHashtag(MonacoTheme['string-delim']),
-      },
-      { token: 'keyword', foreground: removeHashtag(MonacoTheme.keyword) },
-      {
-        token: 'identifier.js',
-        foreground: removeHashtag(MonacoTheme['identifier-js']),
-      },
-      {
-        token: 'delimiter',
-        foreground: removeHashtag(MonacoTheme.delimiter),
-      },
-      { token: 'comment', foreground: removeHashtag(MonacoTheme.comment) },
-      { token: 'number', foreground: removeHashtag(MonacoTheme.number) },
-      { token: 'storage', foreground: removeHashtag(MonacoTheme.storage) },
-      {
-        token: 'identifier',
-        foreground: removeHashtag(MonacoTheme.identifier),
-      },
-      {
-        token: 'namespace.identifier',
-        foreground: removeHashtag(MonacoTheme['namespace-identifier']),
-      },
-      { token: 'operator', foreground: removeHashtag(MonacoTheme.operator) },
-      {
-        token: 'predefined',
-        foreground: removeHashtag(MonacoTheme.predefined),
-      },
-      {
-        token: 'error.log',
-        foreground: MonacoTheme['log-error'].substring(1),
-      },
-      {
-        token: 'warn.log',
-        foreground: removeHashtag(MonacoTheme['log-warn']),
-      },
-      {
-        token: 'info.log',
-        foreground: removeHashtag(MonacoTheme['log-info']),
-      },
-      {
-        token: 'stdout.log',
-        foreground: removeHashtag(MonacoTheme['log-stdout']),
-      },
-      {
-        token: 'trace.log',
-        foreground: removeHashtag(MonacoTheme['log-trace']),
-      },
-      {
-        token: 'debug.log',
-        foreground: removeHashtag(MonacoTheme['log-debug']),
-      },
-      {
-        token: 'date.log',
-        foreground: removeHashtag(MonacoTheme['log-date']),
-      },
-    ];
+    // const dhDarkRules = [
+    //   { token: '', foreground: removeHashtag(MonacoTheme.foreground) },
+    //   { token: 'string', foreground: removeHashtag(MonacoTheme.string) },
+    //   {
+    //     token: 'string.delim',
+    //     foreground: removeHashtag(MonacoTheme['string-delim']),
+    //   },
+    //   { token: 'keyword', foreground: removeHashtag(MonacoTheme.keyword) },
+    //   {
+    //     token: 'identifier.js',
+    //     foreground: removeHashtag(MonacoTheme['identifier-js']),
+    //   },
+    //   {
+    //     token: 'delimiter',
+    //     foreground: removeHashtag(MonacoTheme.delimiter),
+    //   },
+    //   { token: 'comment', foreground: removeHashtag(MonacoTheme.comment) },
+    //   { token: 'number', foreground: removeHashtag(MonacoTheme.number) },
+    //   { token: 'storage', foreground: removeHashtag(MonacoTheme.storage) },
+    //   {
+    //     token: 'identifier',
+    //     foreground: removeHashtag(MonacoTheme.identifier),
+    //   },
+    //   {
+    //     token: 'namespace.identifier',
+    //     foreground: removeHashtag(MonacoTheme['namespace-identifier']),
+    //   },
+    //   { token: 'operator', foreground: removeHashtag(MonacoTheme.operator) },
+    //   {
+    //     token: 'predefined',
+    //     foreground: removeHashtag(MonacoTheme.predefined),
+    //   },
+    //   {
+    //     token: 'error.log',
+    //     foreground: MonacoTheme['log-error'].substring(1),
+    //   },
+    //   {
+    //     token: 'warn.log',
+    //     foreground: removeHashtag(MonacoTheme['log-warn']),
+    //   },
+    //   {
+    //     token: 'info.log',
+    //     foreground: removeHashtag(MonacoTheme['log-info']),
+    //   },
+    //   {
+    //     token: 'stdout.log',
+    //     foreground: removeHashtag(MonacoTheme['log-stdout']),
+    //   },
+    //   {
+    //     token: 'trace.log',
+    //     foreground: removeHashtag(MonacoTheme['log-trace']),
+    //   },
+    //   {
+    //     token: 'debug.log',
+    //     foreground: removeHashtag(MonacoTheme['log-debug']),
+    //   },
+    //   {
+    //     token: 'date.log',
+    //     foreground: removeHashtag(MonacoTheme['log-date']),
+    //   },
+    // ];
 
-    const dhDarkColors = {
-      errorForeground: MonacoTheme['error-foreground'],
-      'inputOption.activeBorder': MonacoTheme['input-option-active-border'],
-      'editor.background': MonacoTheme.background,
-      'editor.foreground': MonacoTheme.foreground,
-      'editor.lineHighlightBackground': MonacoTheme['editor-line-highlight-bg'],
-      'editorLineNumber.foreground':
-        MonacoTheme['editor-line-number-foreground'],
-      'editor.selectionBackground': MonacoTheme['editor-selection-background'],
-      'editor.findMatchBackground': MonacoTheme['editor-find-match-background'],
-      'editor.findMatchHighlightBackground':
-        MonacoTheme['editor-find-match-highlight-background'],
-      'editorSuggestWidget.background':
-        MonacoTheme['editor-suggest-widget-background'],
-      'editorSuggestWidget.border': MonacoTheme['editor-suggest-widget-border'],
-      'editorSuggestWidget.foreground':
-        MonacoTheme['editor-suggest-widget-foreground'],
-      'editorSuggestWidget.selectedBackground':
-        MonacoTheme['editor-suggest-widget-selected-background'],
-      'editorSuggestWidget.highlightForeground':
-        MonacoTheme['editor-suggest-widget-highlightForeground'],
-      'list.hoverBackground': MonacoTheme['list-hover-background'],
-      'dropdown.background': MonacoTheme['context-menu-background'],
-      'dropdown.foreground': MonacoTheme['context-menu-foreground'],
-      'menu.selectionBackground': MonacoTheme['menu-selection-background'],
-      'list.focusBackground': MonacoTheme['menu-selection-background'],
-      'editorWidget.background': MonacoTheme['editor-widget-background'],
-      'inputOption.activeBackground':
-        MonacoTheme['input-option-active-background'],
-      'inputOption.activeForeground':
-        MonacoTheme['input-option-active-foreground'],
-      focusBorder: MonacoTheme['focus-border'],
-      'input.background': MonacoTheme['input-background'],
-      'input.foreground': MonacoTheme['input-foreground'],
-      'input.border': MonacoTheme['input-border'],
-      'textLink.foreground': MonacoTheme['text-link-foreground'],
-      'textLink.activeForeground': MonacoTheme['text-link-active-foreground'],
-      'editorLink.activeForeground':
-        MonacoTheme['editor-link-active-foreground'],
-    };
+    // const dhDarkColors = {
+    //   errorForeground: MonacoTheme['error-foreground'],
+    //   'inputOption.activeBorder': MonacoTheme['input-option-active-border'],
+    //   'editor.background': MonacoTheme.background,
+    //   'editor.foreground': MonacoTheme.foreground,
+    //   'editor.lineHighlightBackground': MonacoTheme['editor-line-highlight-bg'],
+    //   'editorLineNumber.foreground':
+    //     MonacoTheme['editor-line-number-foreground'],
+    //   'editor.selectionBackground': MonacoTheme['editor-selection-background'],
+    //   'editor.findMatchBackground': MonacoTheme['editor-find-match-background'],
+    //   'editor.findMatchHighlightBackground':
+    //     MonacoTheme['editor-find-match-highlight-background'],
+    //   'editorSuggestWidget.background':
+    //     MonacoTheme['editor-suggest-widget-background'],
+    //   'editorSuggestWidget.border': MonacoTheme['editor-suggest-widget-border'],
+    //   'editorSuggestWidget.foreground':
+    //     MonacoTheme['editor-suggest-widget-foreground'],
+    //   'editorSuggestWidget.selectedBackground':
+    //     MonacoTheme['editor-suggest-widget-selected-background'],
+    //   'editorSuggestWidget.highlightForeground':
+    //     MonacoTheme['editor-suggest-widget-highlightForeground'],
+    //   'list.hoverBackground': MonacoTheme['list-hover-background'],
+    //   'dropdown.background': MonacoTheme['context-menu-background'],
+    //   'dropdown.foreground': MonacoTheme['context-menu-foreground'],
+    //   'menu.selectionBackground': MonacoTheme['menu-selection-background'],
+    //   'list.focusBackground': MonacoTheme['menu-selection-background'],
+    //   'editorWidget.background': MonacoTheme['editor-widget-background'],
+    //   'inputOption.activeBackground':
+    //     MonacoTheme['input-option-active-background'],
+    //   'inputOption.activeForeground':
+    //     MonacoTheme['input-option-active-foreground'],
+    //   focusBorder: MonacoTheme['focus-border'],
+    //   'input.background': MonacoTheme['input-background'],
+    //   'input.foreground': MonacoTheme['input-foreground'],
+    //   'input.border': MonacoTheme['input-border'],
+    //   'textLink.foreground': MonacoTheme['text-link-foreground'],
+    //   'textLink.activeForeground': MonacoTheme['text-link-active-foreground'],
+    //   'editorLink.activeForeground':
+    //     MonacoTheme['editor-link-active-foreground'],
+    // };
 
-    monaco.editor.defineTheme('dh-dark', {
-      base: 'vs-dark',
-      inherit: true,
-      rules: dhDarkRules,
-      colors: dhDarkColors,
-    });
-    log.debug2('monaco theme: ', MonacoTheme);
-    monaco.editor.setTheme('dh-dark');
+    // monaco.editor.defineTheme('dh-dark', {
+    //   base: 'vs-dark',
+    //   inherit: true,
+    //   rules: dhDarkRules,
+    //   colors: dhDarkColors,
+    // });
+    // log.debug2('monaco theme: ', MonacoTheme);
+    // monaco.editor.setTheme('dh-dark');
 
     registerLanguages([DbLang, PyLang, GroovyLang, LogLang, ScalaLang]);
 

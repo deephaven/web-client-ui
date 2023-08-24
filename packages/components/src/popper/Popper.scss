@@ -1,7 +1,7 @@
 @import '../../scss/custom.scss';
 
 $arrow-width: 5px;
-$popper-shadow: 0 0.1rem 1.5rem 0.25rem rgba($black, 0.45);
+$popper-shadow: $box-shadow;
 $animation-scale: 0.92;
 $animation-offset: 10px;
 
@@ -11,8 +11,6 @@ $animation-offset: 10px;
 }
 
 .popper {
-  background: $tooltip-bg;
-  color: $tooltip-color;
   border-radius: $border-radius;
   transition:
     visibility $transition,
@@ -23,6 +21,8 @@ $animation-offset: 10px;
   .popper-content {
     position: relative;
     box-shadow: $popper-shadow;
+    background: $tooltip-bg;
+    color: $tooltip-color;
 
     .tooltip-content {
       text-align: center;

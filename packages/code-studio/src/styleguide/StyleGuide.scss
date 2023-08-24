@@ -8,7 +8,7 @@
 }
 
 pre {
-  color: $gray-300;
+  color: inherit;
 }
 
 .swatch {
@@ -34,27 +34,27 @@ pre {
 
 @each $theme-color, $value in $theme-colors {
   .swatch-#{$theme-color} {
-    color: color-yiq($value);
+    color: #fff;
     background-color: #{$value};
   }
 }
 
 @each $color, $value in $colors {
   .swatch-#{$color} {
-    color: color-yiq($value);
+    color: #fff;
     background-color: #{$value};
   }
 }
 
 @each $color, $value in $grays {
   .gray-swatch-#{$color} {
-    color: color-yiq($value);
+    color: #fff;
     background-color: #{$value};
   }
 }
 
 .style-guide-container {
-  background-color: $content-bg;
+  background-color: var(--spectrum-alias-background-color-default);
   padding: 1rem;
 }
 

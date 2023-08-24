@@ -1,13 +1,21 @@
 // Import our custom variables and bootstrap
 // Can be imported directly by Vite since it resolves bootstrap to node_modules/bootstrap
 @import './custom.scss';
-@import 'bootstrap/scss/bootstrap';
+@import './bootstrap_imports.scss';
 
 //Various non-variable css overides
 //Overide default size from 16px to 14px. We need density.
 html {
   font-size: 14px;
   min-height: 100%;
+}
+
+// override
+.text-black-50 {
+  color: rgba(0, 0, 0, 0.5) !important;
+}
+.text-white-50 {
+  color: rgba(255, 255, 255, 0.5) !important;
 }
 
 // deephaven-icons are designed on a 16px grid
@@ -30,9 +38,8 @@ body {
 }
 
 #root {
-  background-color: $background;
-
   .app {
+    background-color: $background;
     height: 100vh;
     width: 100vw;
   }
@@ -85,7 +92,7 @@ a.custom-link,
       content: '';
       box-sizing: content-box;
       position: absolute;
-      background: rgba($primary, $focus-bg-transparency);
+      // background: rgba($primary, $focus-bg-transparency);
       top: 0;
       left: 0;
       width: 100%;
@@ -151,15 +158,13 @@ span.btn-disabled-wrapper {
   border-color: $danger;
 
   &:focus {
-    box-shadow: 0 0 0 $btn-focus-width
-      rgba(mix(color-yiq($background), $danger, 15%), 0.5);
+    box-shadow: 0 0 0 $btn-focus-width var(--spectrum-alias-focus-color);
   }
 
   &:not(:disabled):not(.disabled):active {
-    background: darken($danger, 10%);
-    border-color: darken($danger, 10%);
-    box-shadow: 0 0 0 $btn-focus-width
-      rgba(mix(color-yiq($background), $danger, 15%), 0.5);
+    background: var(--spectrum-negative-background-color-down);
+    border-color: var(--spectrum-negative-background-color-down);
+    box-shadow: 0 0 0 $btn-focus-width var(--spectrum-alias-focus-color);
   }
 }
 
@@ -255,7 +260,9 @@ span.btn-disabled-wrapper {
     border-radius: 2px;
     margin-bottom: 2px;
     filter: saturate(0%);
-    transition: filter 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    transition:
+      filter 0.15s ease-in-out,
+      box-shadow 0.15s ease-in-out;
     pointer-events: none;
   }
 
@@ -287,21 +294,23 @@ span.btn-disabled-wrapper {
   padding-left: $spacer-1;
   padding-right: $spacer-1;
   border-radius: $border-radius;
-  background: $gray-600;
+  background: $gray-900;
   border: 1px solid $input-border-color;
-  color: $gray-300;
+  color: $gray-200;
 
   &.active {
     border-color: $primary;
     background: $primary;
-    color: $gray-100;
+    color: var(--spectrum-global-color-static-white);
 
-    &:focus {
+    &:focus-visible {
       border: 1px solid $input-focus-border-color;
     }
 
     &:not(:disabled):not(.disabled):hover {
-      background: $primary;
+      color: var(--spectrum-global-color-static-white);
+      background: $primary-hover;
+      border-color: $primary-hover;
     }
   }
 
@@ -312,24 +321,19 @@ span.btn-disabled-wrapper {
     cursor: not-allowed;
   }
 
-  &:focus {
+  &:focus-visible {
     border: 1px solid $input-focus-border-color;
   }
 
   &:not(:disabled):not(.disabled):hover {
-    background-color: $gray-500;
+    background-color: $black;
+    border: 1px solid $gray-200;
     color: $gray-200;
   }
 
   &:not(:disabled):not(.disabled):active {
-    background: $gray-700;
+    background: $gray-800;
   }
-}
-
-.btn-secondary:hover {
-  // steal primary hover state to look more hovered, less disabled
-  background-color: $primary-hover;
-  border-color: $primary-hover;
 }
 
 .btn-secondary.disabled,
@@ -389,18 +393,18 @@ form label small {
 .form-control.focus {
   border: 1px solid $primary;
 }
-.form-control.btn:focus {
+.form-control.btn:focus-visible {
   box-shadow: $input-btn-focus-box-shadow;
 }
 
 .form-control:disabled {
   border-color: $black;
-  color: darken($gray-400, 5%);
+  color: $gray-500;
   cursor: not-allowed;
 }
 
 .form-control:disabled::placeholder {
-  color: darken($gray-400, 5%);
+  color: $gray-500;
 }
 
 .form-control[type='password'] {
@@ -712,7 +716,8 @@ input[type='number']::-webkit-inner-spin-button {
 
     .monaco-checkbox:focus {
       border: none !important;
-      box-shadow: $input-btn-focus-box-shadow,
+      box-shadow:
+        $input-btn-focus-box-shadow,
         0 0 0 1px $input-focus-border-color; //can't use regular border due to position of checkbox
     }
   }
@@ -746,7 +751,9 @@ input[type='number']::-webkit-inner-spin-button {
       linear-gradient(0deg, $input-bg, $input-bg);
     background-size: $custom-select-bg-size, cover;
     background-repeat: no-repeat;
-    background-position: bottom 50% right $custom-select-padding-x, center;
+    background-position:
+      bottom 50% right $custom-select-padding-x,
+      center;
     //make the dotted duplicate focus line on firefox go away
     &:-moz-focusring {
       color: rgba(0, 0, 0, 0%);
@@ -835,11 +842,18 @@ input[type='number']::-webkit-inner-spin-button {
 /// used by marching ants animation
 @keyframes march {
   from {
-    background-position: 0 top, 0 bottom, left 0, right 0;
+    background-position:
+      0 top,
+      0 bottom,
+      left 0,
+      right 0;
   }
 
   to {
-    background-position: $ant-size top, $ant-size bottom, left $ant-size,
+    background-position:
+      $ant-size top,
+      $ant-size bottom,
+      left $ant-size,
       right $ant-size;
   }
 }

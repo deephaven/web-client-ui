@@ -1,0 +1,366 @@
+// node_modules/bootstrap/scss/mixins/_buttons.scss
+// ex. $color = primary
+@mixin button-variant($semantic-value, $_) {
+  // get $color from map $bootstrap-spectrum-semtantic-mapping
+  // ex. $semantic-value = "accent"
+  // $semantic-value: map-get($bootstrap-spectrum-semtantic-mapping, $color);
+  $background: var(--spectrum-#{$semantic-value}-background-color-default);
+  $border: var(--spectrum-#{$semantic-value}-background-color-default);
+  $hover-background: var(--spectrum-#{$semantic-value}-background-color-hover);
+  $hover-border: var(--spectrum-#{$semantic-value}-background-color-hover);
+  $active-background: var(--spectrum-#{$semantic-value}-background-color-down);
+  $active-border: var(--spectrum-#{$semantic-value}-background-color-down);
+
+  color: var(--spectrum-global-color-static-white);
+  font-weight: var(--spectrum-global-font-weight-bold);
+  @include gradient-bg($background);
+  border-color: $border;
+  @include box-shadow($btn-box-shadow);
+
+  @include hover() {
+    color: var(--spectrum-global-color-static-white);
+    @include gradient-bg($hover-background);
+    border-color: $hover-border;
+  }
+
+  &:focus {
+    box-shadow: none;
+  }
+
+  &:focus-visible,
+  &.focus {
+    color: var(--spectrum-global-color-static-white);
+    @include gradient-bg($hover-background);
+    border-color: $hover-border;
+    box-shadow: 0 0 0 $btn-focus-width var(--spectrum-alias-focus-color);
+  }
+
+  // Disabled comes first so active can properly restyle
+  &.disabled,
+  &:disabled {
+    color: var(--spectrum-global-color-static-white);
+    background-color: $background;
+    border-color: $border;
+    // Remove CSS gradients if they're enabled
+    @if $enable-gradients {
+      background-image: none;
+    }
+  }
+
+  &:not(:disabled):not(.disabled):active,
+  &:not(:disabled):not(.disabled).active,
+  .show > &.dropdown-toggle {
+    color: var(--spectrum-global-color-static-white);
+    background-color: $active-background;
+    @if $enable-gradients {
+      background-image: none; // Remove the gradient for the pressed/active state
+    }
+    border-color: $active-border;
+
+    &:focus-visible {
+      box-shadow: 0 0 0 $btn-focus-width $active-border;
+    }
+  }
+}
+
+// copied from /node_modules/bootstrap/scss/mixins/_buttons.scss
+@mixin button-outline-variant($semantic-value) {
+  $color: var(--spectrum-#{$semantic-value}-background-color-default);
+  $border-hover: var(--spectrum-#{$semantic-value}-background-color-default);
+
+  // special case secondary color
+  @if (str-index($semantic-value, 'secondary') != null) {
+    $color: var(--spectrum-alias-text-color);
+    $border-hover: var(--spectrum-alias-text-color);
+  }
+
+  $hover-background: var(--spectrum-#{$semantic-value}-background-color-hover);
+  $active-background: var(--spectrum-#{$semantic-value}-background-color-down);
+  $active-border: var(--spectrum-#{$semantic-value}-background-color-down);
+
+  color: $color;
+  border-color: $color;
+  font-weight: var(--spectrum-global-font-weight-bold);
+
+  @include hover() {
+    color: var(--spectrum-global-color-static-white);
+    background-color: $hover-background;
+    border-color: $border-hover;
+  }
+
+  &:focus {
+    box-shadow: none;
+  }
+
+  &:focus-visible,
+  &.focus {
+    box-shadow: 0 0 0 $btn-focus-width var(--spectrum-alias-focus-color);
+  }
+
+  &.disabled,
+  &:disabled {
+    color: $color;
+    background-color: transparent;
+  }
+
+  &:not(:disabled):not(.disabled):active,
+  &:not(:disabled):not(.disabled).active,
+  .show > &.dropdown-toggle {
+    color: var(--spectrum-global-color-static-white);
+    background-color: $active-background;
+    border-color: $active-border;
+
+    &:focus-visible {
+      box-shadow: 0 0 0 $btn-focus-width var(--spectrum-alias-focus-color);
+    }
+  }
+}
+
+// node_modules/bootstrap/scss/mixins/_background-variant.scss
+@mixin bg-variant($parent, $semantic-value, $ignore-warning: false) {
+  #{$parent} {
+    background-color: var(
+      --spectrum-#{$semantic-value}-background-color-default
+    ) !important;
+  }
+  a#{$parent},
+  button#{$parent} {
+    @include hover-focus() {
+      background-color: var(
+        --spectrum-#{$semantic-value}-background-color-down
+      ) !important;
+    }
+  }
+}
+
+@mixin text-emphasis-variant($parent, $semantic-value, $ignore-warning: false) {
+  #{$parent} {
+    // if $semantic-value = primary then use accent-700
+    @if ($semantic-value == 'accent') {
+      color: var(--spectrum-#{$semantic-value}-color-700) !important;
+    } @else {
+      color: var(--spectrum-#{$semantic-value}-visual-color) !important;
+    }
+  }
+  @if $emphasized-link-hover-darken-percentage != 0 {
+    a#{$parent} {
+      @include hover-focus() {
+        color: var(
+          --spectrum-#{$semantic-value}-background-color-default
+        ) !important;
+      }
+    }
+  }
+}
+
+// Form control focus state
+//
+// Generate a customized focus state and for any input with the specified color,
+// which defaults to the `$input-focus-border-color` variable.
+//
+// We highly encourage you to not customize the default value, but instead use
+// this to tweak colors on an as-needed basis. This aesthetic change is based on
+// WebKit's default styles, but applicable to a wider range of browsers. Its
+// usability and accessibility should be taken into account with any change.
+//
+// Example usage: change the default blue border and shadow to white for better
+// contrast against a dark gray background.
+@mixin form-control-focus($ignore-warning: false) {
+  &:focus {
+    color: $input-focus-color;
+    background-color: $input-focus-bg;
+    border-color: $input-focus-border-color;
+    outline: 0;
+  }
+  &:focus-visible {
+    @if $enable-shadows {
+      @include box-shadow($input-box-shadow, $input-focus-box-shadow);
+    } @else {
+      // Avoid using mixin so we can pass custom focus shadow properly
+      box-shadow: $input-focus-box-shadow;
+    }
+  }
+  @include deprecate(
+    'The `form-control-focus()` mixin',
+    'v4.4.0',
+    'v5',
+    $ignore-warning
+  );
+}
+
+@mixin form-validation-state($state, $semantic-value, $icon) {
+  $color: var(--spectrum-#{$semantic-value}-visual-color);
+
+  .#{$state}-feedback {
+    display: none;
+    width: 100%;
+    margin-top: $form-feedback-margin-top;
+    @include font-size($form-feedback-font-size);
+    color: $color;
+  }
+
+  .#{$state}-tooltip {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 5;
+    display: none;
+    max-width: 100%; // Contain to parent when possible
+    padding: $form-feedback-tooltip-padding-y $form-feedback-tooltip-padding-x;
+    margin-top: 0.1rem;
+    @include font-size($form-feedback-tooltip-font-size);
+    line-height: $form-feedback-tooltip-line-height;
+    color: color-yiq($color);
+    background-color: $color;
+    @include border-radius($form-feedback-tooltip-border-radius);
+
+    // See https://github.com/twbs/bootstrap/pull/31557
+    // Align tooltip to form elements
+    .form-row > .col > &,
+    .form-row > [class*='col-'] > & {
+      left: $form-grid-gutter-width * 0.5;
+    }
+  }
+
+  @include form-validation-state-selector($state) {
+    ~ .#{$state}-feedback,
+    ~ .#{$state}-tooltip {
+      display: block;
+    }
+  }
+
+  .form-control {
+    @include form-validation-state-selector($state) {
+      border-color: $color;
+
+      @if $enable-validation-icons {
+        padding-right: $input-height-inner !important; // stylelint-disable-line declaration-no-important
+        background-image: escape-svg($icon);
+        background-repeat: no-repeat;
+        background-position: right $input-height-inner-quarter center;
+        background-size: $input-height-inner-half $input-height-inner-half;
+      }
+
+      &:focus {
+        border-color: $color;
+      }
+
+      &:focus-visible {
+        box-shadow: $input-focus-box-shadow;
+      }
+    }
+  }
+
+  // stylelint-disable-next-line selector-no-qualifying-type
+  select.form-control {
+    @include form-validation-state-selector($state) {
+      @if $enable-validation-icons {
+        padding-right: $input-padding-x *
+          4 !important; // stylelint-disable-line declaration-no-important
+        background-position: right $input-padding-x * 2 center;
+      }
+    }
+  }
+
+  // stylelint-disable-next-line selector-no-qualifying-type
+  textarea.form-control {
+    @include form-validation-state-selector($state) {
+      @if $enable-validation-icons {
+        padding-right: $input-height-inner;
+        background-position: top
+          $input-height-inner-quarter
+          right
+          $input-height-inner-quarter;
+      }
+    }
+  }
+
+  .custom-select {
+    @include form-validation-state-selector($state) {
+      border-color: $color;
+
+      @if $enable-validation-icons {
+        padding-right: $custom-select-feedback-icon-padding-right !important; // stylelint-disable-line declaration-no-important
+        background:
+          $custom-select-background,
+          $custom-select-bg
+            escape-svg($icon)
+            $custom-select-feedback-icon-position /
+            $custom-select-feedback-icon-size
+            no-repeat;
+      }
+
+      &:focus {
+        border-color: $color;
+      }
+      &:focus-visible {
+        box-shadow: $input-focus-box-shadow;
+      }
+    }
+  }
+
+  .form-check-input {
+    @include form-validation-state-selector($state) {
+      ~ .form-check-label {
+        color: $color;
+      }
+
+      ~ .#{$state}-feedback,
+      ~ .#{$state}-tooltip {
+        display: block;
+      }
+    }
+  }
+
+  .custom-control-input {
+    @include form-validation-state-selector($state) {
+      ~ .custom-control-label {
+        color: $color;
+
+        &::before {
+          border-color: $color;
+        }
+      }
+
+      &:checked {
+        ~ .custom-control-label::before {
+          border-color: $color;
+          @include gradient-bg($color);
+        }
+      }
+
+      &:focus {
+        &:not(:checked) ~ .custom-control-label::before {
+          border-color: $color;
+        }
+      }
+
+      &:focus-visible {
+        ~ .custom-control-label::before {
+          box-shadow: $input-focus-box-shadow;
+        }
+      }
+    }
+  }
+
+  // custom file
+  .custom-file-input {
+    @include form-validation-state-selector($state) {
+      ~ .custom-file-label {
+        border-color: $color;
+      }
+
+      &:focus {
+        ~ .custom-file-label {
+          border-color: $color;
+        }
+      }
+
+      &:focus-visible {
+        ~ .custom-file-label {
+          box-shadow: $input-focus-box-shadow;
+        }
+      }
+    }
+  }
+}

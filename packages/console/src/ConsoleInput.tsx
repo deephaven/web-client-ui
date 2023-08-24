@@ -14,12 +14,12 @@ import {
   CommandHistoryStorageItem,
   CommandHistoryTable,
 } from './command-history';
-import { MonacoProviders, MonacoTheme, MonacoUtils } from './monaco';
+import { MonacoProviders, MonacoUtils } from './monaco';
 import './ConsoleInput.scss';
 
 const log = Log.module('ConsoleInput');
 
-const LINE_HEIGHT = parseInt(MonacoTheme['line-height'], 10);
+const LINE_HEIGHT = 19; // TODO: Get this from Theme
 const TOP_PADDING = 6;
 const BOTTOM_PADDING = 6;
 const MIN_INPUT_HEIGHT = LINE_HEIGHT + TOP_PADDING + BOTTOM_PADDING;

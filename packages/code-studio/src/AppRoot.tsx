@@ -3,6 +3,7 @@ import { Provider } from 'react-redux';
 import { MonacoUtils } from '@deephaven/console';
 import { store } from '@deephaven/redux';
 import MonacoWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
+import { CreateThemeContext, ThemeProvider } from '@deephaven/components';
 import AppRouter from './main/AppRouter';
 import DownloadServiceWorkerUtils from './DownloadServiceWorkerUtils';
 
@@ -16,9 +17,13 @@ export function AppRoot() {
   window['__react-beautiful-dnd-disable-dev-warnings'] = true;
 
   return (
-    <Provider store={store}>
-      <AppRouter />
-    </Provider>
+    <CreateThemeContext>
+      <ThemeProvider>
+        <Provider store={store}>
+          <AppRouter />
+        </Provider>
+      </ThemeProvider>
+    </CreateThemeContext>
   );
 }
 

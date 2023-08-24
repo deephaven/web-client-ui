@@ -23,7 +23,7 @@ class Code extends Component<CodeProps, Record<string, never>> {
     const { children } = this.props;
     if (this.container && children != null) {
       monaco.editor.colorizeElement(this.container, {
-        theme: 'dh-dark',
+        theme: 'myTheme', // TODO EXTRACT CONSTANT
       });
     }
   }

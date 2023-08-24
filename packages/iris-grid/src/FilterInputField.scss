@@ -41,12 +41,12 @@
 
     &.iris-grid-has-filter {
       // same as filter-bar-expanded-active-bg
-      background: scale-color($primary, $saturation: -75%, $lightness: -60%);
+      background: var(--spectum-accent-color-100);
     }
 
     &.active {
       //same as filter-bar-expanded-active-cell-bg
-      background: scale-color($primary, $saturation: -50%, $lightness: -40%);
+      background: var(--spectum-accent-color-200);
     }
 
     &:focus {

@@ -21,6 +21,7 @@ import Typograpy from './Typography';
 import './StyleGuide.scss';
 import DraggableLists from './DraggableLists';
 import Navigations from './Navigations';
+import ReactSpectrum from './ReactSpectrum';
 
 function StyleGuide(): React.ReactElement {
   return (
@@ -29,6 +30,8 @@ function StyleGuide(): React.ReactElement {
         <h1 style={{ paddingTop: '2rem' }}>Deephaven UI Components</h1>
       </div>
 
+      <ReactSpectrum />
+
       <Typograpy />
 
       <Colors />
@@ -36,8 +39,6 @@ function StyleGuide(): React.ReactElement {
       <Buttons />
 
       <Progress />
-
-      <Alerts />
 
       <Inputs />
 

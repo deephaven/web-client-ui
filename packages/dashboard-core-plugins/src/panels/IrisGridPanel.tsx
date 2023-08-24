@@ -66,6 +66,7 @@ import {
 import {
   ContextMenuRoot,
   ResolvableContextAction,
+  ThemeContext,
 } from '@deephaven/components';
 import type { Column, FilterCondition, Sort } from '@deephaven/jsapi-types';
 import {
@@ -1288,64 +1289,71 @@ export class IrisGridPanel extends PureComponent<
         )}
       >
         {isModelReady && model && (
-          <IrisGrid
-            advancedFilters={advancedFilters}
-            aggregationSettings={aggregationSettings}
-            advancedSettings={advancedSettings}
-            alwaysFetchColumns={this.getAlwaysFetchColumns(
-              links,
-              pluginFetchColumns
+          <ThemeContext.Consumer>
+            {({ irisGridTheme }) => (
+              <IrisGrid
+                advancedFilters={advancedFilters}
+                aggregationSettings={aggregationSettings}
+                advancedSettings={advancedSettings}
+                alwaysFetchColumns={this.getAlwaysFetchColumns(
+                  links,
+                  pluginFetchColumns
+                )}
+                columnAllowedCursor="linker"
+                columnNotAllowedCursor="linker-not-allowed"
+                customColumns={customColumns}
+                customColumnFormatMap={customColumnFormatMap}
+                columnSelectionValidator={this.isColumnSelectionValid}
+                conditionalFormats={conditionalFormats}
+                inputFilters={this.getGridInputFilters(
+                  model.columns,
+                  inputFilters
+                )}
+                applyInputFiltersOnInit={panelState == null}
+                isFilterBarShown={isFilterBarShown}
+                isSelectingColumn={columnSelectionValidator != null}
+                isSelectingPartition={isSelectingPartition}
+                isStuckToBottom={isStuckToBottom}
+                isStuckToRight={isStuckToRight}
+                movedColumns={movedColumns}
+                movedRows={movedRows}
+                partition={partition}
+                partitionColumn={partitionColumn}
+                quickFilters={quickFilters}
+                reverseType={reverseType}
+                rollupConfig={rollupConfig}
+                settings={settings}
+                sorts={sorts}
+                userColumnWidths={userColumnWidths}
+                userRowHeights={userRowHeights}
+                model={model}
+                showSearchBar={showSearchBar}
+                searchValue={searchValue}
+                selectedSearchColumns={selectedSearchColumns}
+                selectDistinctColumns={selectDistinctColumns}
+                invertSearchColumns={invertSearchColumns}
+                onColumnSelected={this.handleColumnSelected}
+                onCreateChart={this.handleCreateChart}
+                onDataSelected={this.handleDataSelected}
+                onError={this.handleError}
+                onPartitionAppend={this.handlePartitionAppend}
+                onStateChange={this.handleGridStateChange}
+                onContextMenu={this.handleContextMenu}
+                onAdvancedSettingsChange={this.handleAdvancedSettingsChange}
+                customFilters={pluginFilters}
+                pendingDataMap={pendingDataMap}
+                canCopy={canCopy}
+                canDownloadCsv={canDownloadCsv}
+                ref={this.irisGrid}
+                getDownloadWorker={getDownloadWorker}
+                frozenColumns={frozenColumns}
+                theme={theme ?? irisGridTheme}
+                columnHeaderGroups={columnHeaderGroups}
+              >
+                {childrenContent}
+              </IrisGrid>
             )}
-            columnAllowedCursor="linker"
-            columnNotAllowedCursor="linker-not-allowed"
-            customColumns={customColumns}
-            customColumnFormatMap={customColumnFormatMap}
-            columnSelectionValidator={this.isColumnSelectionValid}
-            conditionalFormats={conditionalFormats}
-            inputFilters={this.getGridInputFilters(model.columns, inputFilters)}
-            applyInputFiltersOnInit={panelState == null}
-            isFilterBarShown={isFilterBarShown}
-            isSelectingColumn={columnSelectionValidator != null}
-            isSelectingPartition={isSelectingPartition}
-            isStuckToBottom={isStuckToBottom}
-            isStuckToRight={isStuckToRight}
-            movedColumns={movedColumns}
-            movedRows={movedRows}
-            partition={partition}
-            partitionColumn={partitionColumn}
-            quickFilters={quickFilters}
-            reverseType={reverseType}
-            rollupConfig={rollupConfig}
-            settings={settings}
-            sorts={sorts}
-            userColumnWidths={userColumnWidths}
-            userRowHeights={userRowHeights}
-            model={model}
-            showSearchBar={showSearchBar}
-            searchValue={searchValue}
-            selectedSearchColumns={selectedSearchColumns}
-            selectDistinctColumns={selectDistinctColumns}
-            invertSearchColumns={invertSearchColumns}
-            onColumnSelected={this.handleColumnSelected}
-            onCreateChart={this.handleCreateChart}
-            onDataSelected={this.handleDataSelected}
-            onError={this.handleError}
-            onPartitionAppend={this.handlePartitionAppend}
-            onStateChange={this.handleGridStateChange}
-            onContextMenu={this.handleContextMenu}
-            onAdvancedSettingsChange={this.handleAdvancedSettingsChange}
-            customFilters={pluginFilters}
-            pendingDataMap={pendingDataMap}
-            canCopy={canCopy}
-            canDownloadCsv={canDownloadCsv}
-            ref={this.irisGrid}
-            getDownloadWorker={getDownloadWorker}
-            frozenColumns={frozenColumns}
-            theme={theme}
-            columnHeaderGroups={columnHeaderGroups}
-          >
-            {childrenContent}
-          </IrisGrid>
+          </ThemeContext.Consumer>
         )}
       </WidgetPanel>
     );

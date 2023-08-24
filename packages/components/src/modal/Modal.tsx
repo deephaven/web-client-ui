@@ -9,6 +9,7 @@ import React, {
 import ReactDOM from 'react-dom';
 import { CSSTransition } from 'react-transition-group';
 import ThemeExport from '../ThemeExport';
+import { ThemeProvider } from '../theme';
 
 interface ModalProps {
   className?: string;
@@ -101,7 +102,7 @@ function Modal({
 
   return element.current
     ? ReactDOM.createPortal(
-        <>
+        <ThemeProvider isPortal>
           <CSSTransition
             appear
             mountOnEnter
@@ -171,7 +172,7 @@ function Modal({
               </div>
             </div>
           </CSSTransition>
-        </>,
+        </ThemeProvider>,
         element.current
       )
     : null;

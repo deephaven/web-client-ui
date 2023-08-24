@@ -8,6 +8,7 @@ import {
 } from '@deephaven/grid';
 import { IrisGrid } from '@deephaven/iris-grid';
 import { useApi } from '@deephaven/jsapi-bootstrap';
+import { useTheme } from '@deephaven/components';
 import MockIrisGridTreeModel from './MockIrisGridTreeModel';
 import StaticExample from './grid-examples/StaticExample';
 import QuadrillionExample from './grid-examples/QuadrillionExample';
@@ -23,6 +24,8 @@ function Grids(): ReactElement {
   const [model] = useState(new MockGridModel());
   const [theme] = useState<Partial<GridThemeType>>({ autoSelectRow: true });
   const [contextTheme] = useState<Partial<GridThemeType>>({ rowHeight: 40 });
+
+  const { irisGridTheme } = useTheme();
 
   return (
     <div>
@@ -51,9 +54,11 @@ function Grids(): ReactElement {
         <div style={{ height: 500 }}>
           <TreeExample />
         </div>
-        <h2 className="ui-title">Iris Grid</h2>
+        <h2 className="ui-title" id="iris-grid">
+          Iris Grid
+        </h2>
         <div style={{ height: 500 }}>
-          <IrisGrid model={irisGridModel} />
+          <IrisGrid model={irisGridModel} theme={irisGridTheme} />
         </div>
       </ThemeContext.Provider>
     </div>

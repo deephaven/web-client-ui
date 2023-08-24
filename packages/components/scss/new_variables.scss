@@ -20,9 +20,16 @@ $ant-thickness: 1px;
     linear-gradient(to right, $color-2 50%, $color-1 50%),
     linear-gradient(to bottom, $color-2 50%, $color-1 50%),
     linear-gradient(to bottom, $color-2 50%, $color-1 50%);
-  background-size: $ant-size $ant-thickness, $ant-size $ant-thickness,
-    $ant-thickness $ant-size, $ant-thickness $ant-size;
-  background-position: 0 top, 0 bottom, left 0, right 0;
+  background-size:
+    $ant-size $ant-thickness,
+    $ant-size $ant-thickness,
+    $ant-thickness $ant-size,
+    $ant-thickness $ant-size;
+  background-position:
+    0 top,
+    0 bottom,
+    left 0,
+    right 0;
   background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
   animation: march 0.5s;
   animation-timing-function: linear;
@@ -46,3 +53,10 @@ $focus-bg-transparency: 0.12;
 $hover-bg-transparency: 0.14;
 $active-bg-transparency: 0.28;
 $exception-transparency: 0.13;
+
+$list-hover: var(--spectrum-alias-highlight-hover);
+$list-active: var(--spectrum-alias-highlight-active);
+$list-selected: var(--spectrum-alias-highlight-selected);
+$list-selected-hover: var(--spectrum-alias-highlight-selected-hover);
+$list-invalid: var(--spectrum-alias-highlight-invalid);
+$list-selected-border: var(--spectrum-accent-color-600);

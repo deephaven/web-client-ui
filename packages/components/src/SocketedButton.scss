@@ -1,7 +1,8 @@
 @import '../scss/custom.scss';
 
-$socket-button-bg: $input-bg;
-$socket-button-hover-bg: $primary-hover;
+$socket-button-bg: $gray-900;
+$socket-button-hover-bg: $black;
+$socket-button-hover-border: $gray-200;
 $socket-size: 18px;
 $socket-linked-color: $primary;
 $socket-linked-source-color: $purple;
@@ -45,19 +46,20 @@ $socket-bg: $content-bg;
 
   &:hover {
     background-color: $socket-button-hover-bg;
-    border-color: $socket-button-hover-bg;
+    border-color: $socket-button-hover-border;
     &::after {
-      border-color: $socket-button-hover-bg;
+      border-color: $socket-button-hover-border;
     }
   }
 
   &:active {
-    border-color: $primary-light;
-    background-color: $primary-light;
+    border-color: $gray-200;
+    background-color: $gray-800;
   }
 
   .btn-socketed-icon {
     display: none;
+    color: var(--spectrum-global-color-static-white);
   }
 
   &:disabled,
@@ -67,6 +69,7 @@ $socket-bg: $content-bg;
     background-color: $input-disabled-bg;
     &::after {
       border-color: $black;
+      background-color: $input-disabled-bg;
     }
   }
 }
@@ -104,7 +107,7 @@ $socket-bg: $content-bg;
 
 .btn-socketed.is-invalid,
 .btn-socketed.btn-socketed-linked.is-invalid {
-  border-color: rgba($danger, 0.85);
+  border-color: $danger;
 
   &::after {
     border-color: $danger;
@@ -116,7 +119,6 @@ $socket-bg: $content-bg;
   }
 
   .btn-socketed-icon.is-invalid {
-    color: $socket-button-bg;
     display: block;
     position: absolute;
     bottom: 1px; // looked slightly low

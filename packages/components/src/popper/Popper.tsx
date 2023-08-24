@@ -23,6 +23,7 @@ import PopperJs, { PopperOptions, ReferenceObject } from 'popper.js';
 import PropTypes from 'prop-types';
 import ThemeExport from '../ThemeExport';
 import './Popper.scss';
+import { ThemeProvider } from '../theme';
 
 interface PopperProps {
   options: PopperOptions;
@@ -264,11 +265,13 @@ class Popper extends Component<PopperProps, PopperState> {
           tabIndex={closeOnBlur ? -1 : undefined}
           role="presentation"
         >
-          <div className="popper-content">
-            {children}
-            {/* eslint-disable-next-line react/no-unknown-property */}
-            <div className="popper-arrow" x-arrow="" />
-          </div>
+          <ThemeProvider isPortal>
+            <div className="popper-content">
+              {children}
+              {/* eslint-disable-next-line react/no-unknown-property */}
+              <div className="popper-arrow" x-arrow="" />
+            </div>
+          </ThemeProvider>
         </div>
       </CSSTransition>
     );

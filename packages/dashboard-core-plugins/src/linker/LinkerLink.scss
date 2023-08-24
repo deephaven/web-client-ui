@@ -2,14 +2,14 @@
 
 $link-width: 3;
 $selectable-width: 20;
-$dash-color-1: $blue;
-$dash-color-2: mix($blue, $content-bg, 25%);
-$filter-source-dash-color-1: $purple;
-$filter-source-dash-color-2: mix($purple, $content-bg, 25%);
+$dash-color-1: var(--spectrum-cyan-visual-color);
+$dash-color-2: var(--spectrum-cyan-700);
+$filter-source-dash-color-1: var(--spectrum-purple-visual-color);
+$filter-source-dash-color-2: var(--spectrum-purple-500);
 $invalid-dash-color-1: $gray-300;
 $invalid-dash-color-2: $gray-700;
-$dash-delete-color-1: $danger;
-$dash-delete-color-2: mix($danger, $content-bg, 25%);
+$dash-delete-color-1: var(--spectrum-negative-visual-color);
+$dash-delete-color-2: var(--spectrum-negative-background-color-down);
 $dash-size: 10;
 
 .linker-overlay {
