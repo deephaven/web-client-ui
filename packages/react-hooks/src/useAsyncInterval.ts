@@ -24,6 +24,7 @@ export function useAsyncInterval(
   callback: () => Promise<void>,
   targetIntervalMs: number
 ) {
+  const isCancelledRef = useRef(false);
   const trackingRef = useRef({ count: 0, started: Date.now() });
   const setTimeoutRef = useRef(0);
 
@@ -41,6 +42,10 @@ export function useAsyncInterval(
     );
 
     await callback();
+
+    if (isCancelledRef.current) {
+      return;
+    }
 
     elapsedSinceLastTick += Date.now() - trackingRef.current.started;
 
@@ -64,6 +69,7 @@ export function useAsyncInterval(
     setTimeoutRef.current = window.setTimeout(tick, targetIntervalMs);
 
     return () => {
+      isCancelledRef.current = true;
       window.clearTimeout(setTimeoutRef.current);
     };
   }, [targetIntervalMs, tick]);

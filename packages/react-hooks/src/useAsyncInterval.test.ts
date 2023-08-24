@@ -107,10 +107,29 @@ describe('useAsyncInterval', () => {
 
     unmount();
 
-    act(() => {
-      jest.advanceTimersByTime(targetIntervalMs);
-    });
+    act(() => jest.advanceTimersByTime(targetIntervalMs));
 
     expect(callback).not.toHaveBeenCalled();
+  });
+
+  it('should not re-schedule callback if callback resolves after unmounting', async () => {
+    const callbackDelayMs = 50;
+    const callback = createCallback(callbackDelayMs);
+
+    const { unmount } = renderHook(() =>
+      useAsyncInterval(callback, targetIntervalMs)
+    );
+
+    act(() => jest.advanceTimersByTime(targetIntervalMs));
+    expect(callback).toHaveBeenCalledTimes(1);
+    jest.clearAllMocks();
+
+    unmount();
+
+    // Mimick the callback Promise resolving
+    act(() => jest.advanceTimersByTime(callbackDelayMs));
+    await TestUtils.flushPromises();
+
+    expect(window.setTimeout).not.toHaveBeenCalled();
   });
 });
