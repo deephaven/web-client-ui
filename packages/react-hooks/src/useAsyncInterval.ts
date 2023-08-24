@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import Log from '@deephaven/log';
+import { useIsMountedRef } from './useIsMountedRef';
 
 const log = Log.module('useAsyncInterval');
 
@@ -24,7 +25,7 @@ export function useAsyncInterval(
   callback: () => Promise<void>,
   targetIntervalMs: number
 ) {
-  const isCancelledRef = useRef(false);
+  const isMountedRef = useIsMountedRef();
   const trackingRef = useRef({ count: 0, started: Date.now() });
   const setTimeoutRef = useRef(0);
 
@@ -43,7 +44,7 @@ export function useAsyncInterval(
 
     await callback();
 
-    if (isCancelledRef.current) {
+    if (!isMountedRef.current) {
       return;
     }
 
@@ -61,7 +62,7 @@ export function useAsyncInterval(
     log.debug('adjusted minIntervalMs:', nextTickInterval);
 
     setTimeoutRef.current = window.setTimeout(tick, nextTickInterval);
-  }, [callback, targetIntervalMs]);
+  }, [callback, isMountedRef, targetIntervalMs]);
 
   useEffect(() => {
     log.debug('Setting interval minIntervalMs:', targetIntervalMs);
@@ -69,7 +70,6 @@ export function useAsyncInterval(
     setTimeoutRef.current = window.setTimeout(tick, targetIntervalMs);
 
     return () => {
-      isCancelledRef.current = true;
       window.clearTimeout(setTimeoutRef.current);
     };
   }, [targetIntervalMs, tick]);
