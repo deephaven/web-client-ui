@@ -1,4 +1,5 @@
 import { Locator, expect, Page } from '@playwright/test';
+import os from 'node:os';
 import shortid from 'shortid';
 
 export enum TableTypes {
@@ -99,7 +100,7 @@ export async function typeInMonaco(
 }
 
 /**
- * Pastes text into a monaco input
+ * Pastes text into a monaco input. The input will have focus after pasting.
  * @param locator Locator to use for monaco editor
  * @param text Text to be pasted
  */
@@ -107,10 +108,36 @@ export async function pasteInMonaco(
   locator: Locator,
   text: string
 ): Promise<void> {
+  const page = locator.page();
+  const isMac = os.platform() === 'darwin';
+  const modifier = isMac ? 'Meta' : 'Control';
+
+  // Create a hidden textarea with the contents to paste
+  const inputId = await page.evaluate(async evalText => {
+    const tempInput = document.createElement('textarea');
+    tempInput.id = 'super-secret-temp-input-id';
+    tempInput.value = evalText;
+    tempInput.style.width = '0';
+    tempInput.style.height = '0';
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    return tempInput.id;
+  }, text);
+
+  // Copy the contents of the textarea which was selected above
+  await page.keyboard.press(`${modifier}+C`);
+
+  // Remove the textarea
+  await page.evaluate(id => {
+    document.getElementById(id)?.remove();
+  }, inputId);
+
+  // Focus monaco
+  await locator.click();
+
   const browserName = locator.page().context().browser()?.browserType().name();
-  if (browserName === 'firefox') {
-    await typeInMonaco(locator, text);
-  } else {
+  if (browserName === 'webkit') {
+    // Webkit doesn't seem to paste w/ the keyboard shortcut in headless mode
     await locator.locator('textarea').evaluate(async (element, evalText) => {
       const clipboardData = new DataTransfer();
       clipboardData.setData('text/plain', evalText);
@@ -119,6 +146,13 @@ export async function pasteInMonaco(
       });
       element.dispatchEvent(clipboardEvent);
     }, text);
+  } else {
+    await page.keyboard.press(`${modifier}+V`);
+  }
+
+  if (text.length > 0) {
+    // Sanity check the paste happened
+    await expect(locator.locator('textarea')).not.toBeEmpty();
   }
 }
 
