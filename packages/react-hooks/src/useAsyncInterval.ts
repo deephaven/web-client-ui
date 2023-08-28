@@ -57,10 +57,8 @@ export function useAsyncInterval(
 
     elapsedSinceLastTick += Date.now() - trackingStartedRef.current;
 
-    // Calculate any elapsed time beyond the target interval. Note that
-    // elapsedSinceLastTick should always be >= targetIntervalMs, so overage
-    // should always be >= 0.
-    const overage = elapsedSinceLastTick - targetIntervalMs;
+    // Calculate any elapsed time beyond the target interval.
+    const overage = Math.max(0, elapsedSinceLastTick - targetIntervalMs);
 
     const nextTickInterval = Math.max(0, targetIntervalMs - overage);
 
