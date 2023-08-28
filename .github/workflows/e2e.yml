@@ -101,7 +101,7 @@ jobs:
         uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.browser }}
           path: playwright-report/
           retention-days: 90
       - name: Dump server logs
@@ -111,5 +111,5 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v3
         with:
-          name: server-logs
+          name: server-logs-${{ matrix.browser }}
           path: /tmp/server-log.txt
