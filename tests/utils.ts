@@ -121,7 +121,7 @@ export async function pasteInMonaco(
     }, text);
   }
 
-  if (text.length) {
+  if (text.length > 0) {
     await expect(locator.locator('textarea')).not.toBeEmpty();
   }
 }
