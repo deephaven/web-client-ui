@@ -109,7 +109,6 @@ test.beforeEach(async ({ page }) => {
   await page.goto('');
 
   const consoleInput = page.locator('.console-input');
-  await consoleInput.click();
 
   const command = makeTableCommand(undefined, TableTypes.AllTypes);
 
@@ -516,7 +515,6 @@ test('advanced settings', async ({ page }) => {
 
   await test.step('create 2nd table', async () => {
     const consoleInput = page.locator('.console-input');
-    await consoleInput.click();
 
     const command = makeTableCommand(table2Name, TableTypes.AllTypes);
 

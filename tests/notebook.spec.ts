@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { pasteInMonaco } from './utils';
 import shortid from 'shortid';
+import { pasteInMonaco } from './utils';
 
 test('test creating a file, saving it, closing it, re-opening it, running it, then deleting it', async ({
   page,
