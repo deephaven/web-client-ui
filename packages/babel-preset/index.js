@@ -16,7 +16,7 @@ module.exports = api => ({
         include: ['@babel/plugin-proposal-class-properties'],
       },
     ],
-    '@babel/preset-react',
+    ['@babel/preset-react', { runtime: 'automatic' }],
     ['@babel/preset-typescript', { allowDeclareFields: true }],
   ],
   plugins: [
