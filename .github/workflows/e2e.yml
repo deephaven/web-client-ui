@@ -58,8 +58,6 @@ jobs:
       fail-fast: false
       matrix:
         browser: [chromium, firefox, webkit]
-    container:
-      image: mcr.microsoft.com/playwright:v1.30.0-jammy
     steps:
       - uses: actions/checkout@v3
 
@@ -87,6 +85,9 @@ jobs:
       - name: Install dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci --no-audit
+
+      - name: Install Playwright dependencies
+        run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright install ${{ matrix.browser }} --with-deps
 
       - name: Run core server:${{ env.DOCKER_TAG }}
         run: |
