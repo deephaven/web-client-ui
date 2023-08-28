@@ -26,21 +26,28 @@ export function useAsyncInterval(
   targetIntervalMs: number
 ) {
   const isMountedRef = useIsMountedRef();
-  const trackingRef = useRef({ count: 0, started: Date.now() });
   const setTimeoutRef = useRef(0);
+  const trackingCountRef = useRef(0);
+  const trackingStartedRef = useRef<number | null>(null);
 
   const tick = useCallback(async () => {
     const now = Date.now();
-    let elapsedSinceLastTick = now - trackingRef.current.started;
+    trackingCountRef.current += 1;
 
-    trackingRef.current.count += 1;
-    trackingRef.current.started = now;
+    // If this is our first tick, treat it as if we've already waited the full
+    // interval, otherwise calculate the elapsed time since the last tick
+    let elapsedSinceLastTick =
+      trackingStartedRef.current == null
+        ? targetIntervalMs
+        : now - trackingStartedRef.current;
 
     log.debug(
-      `tick #${trackingRef.current.count}.`,
+      `tick #${trackingCountRef.current}.`,
       elapsedSinceLastTick,
       'ms elapsed since last tick.'
     );
+
+    trackingStartedRef.current = now;
 
     await callback();
 
@@ -48,26 +55,32 @@ export function useAsyncInterval(
       return;
     }
 
-    elapsedSinceLastTick += Date.now() - trackingRef.current.started;
+    elapsedSinceLastTick += Date.now() - trackingStartedRef.current;
 
-    // If elapsed time is > than the target interval, adjust the next tick interval
-    const nextTickInterval = Math.max(
-      0,
-      Math.min(
-        targetIntervalMs,
-        targetIntervalMs - (elapsedSinceLastTick - targetIntervalMs)
-      )
+    // Calculate any elapsed time beyond the target interval. Note that
+    // elapsedSinceLastTick should always be >= targetIntervalMs, so overage
+    // should always be >= 0.
+    const overage = elapsedSinceLastTick - targetIntervalMs;
+
+    const nextTickInterval = Math.max(0, targetIntervalMs - overage);
+
+    log.debug(
+      'Next tick target:',
+      targetIntervalMs,
+      ', overage',
+      overage,
+      ', adjusted:',
+      nextTickInterval
     );
-
-    log.debug('adjusted minIntervalMs:', nextTickInterval);
 
     setTimeoutRef.current = window.setTimeout(tick, nextTickInterval);
   }, [callback, isMountedRef, targetIntervalMs]);
 
   useEffect(() => {
-    log.debug('Setting interval minIntervalMs:', targetIntervalMs);
+    log.debug('Setting target interval:', targetIntervalMs);
 
-    setTimeoutRef.current = window.setTimeout(tick, targetIntervalMs);
+    trackingStartedRef.current = null;
+    tick();
 
     return () => {
       window.clearTimeout(setTimeoutRef.current);

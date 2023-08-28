@@ -2,6 +2,8 @@ import { renderHook, act } from '@testing-library/react-hooks';
 import { TestUtils } from '@deephaven/utils';
 import useAsyncInterval from './useAsyncInterval';
 
+const { asMock } = TestUtils;
+
 beforeEach(() => {
   jest.clearAllMocks();
   expect.hasAssertions();
@@ -15,31 +17,50 @@ afterAll(() => {
 
 describe('useAsyncInterval', () => {
   function createCallback(ms: number) {
-    return jest.fn(
-      async (): Promise<void> =>
-        new Promise(resolve => {
-          setTimeout(resolve, ms);
-        })
-    );
+    return jest
+      .fn(
+        async (): Promise<void> =>
+          new Promise(resolve => {
+            setTimeout(resolve, ms);
+
+            // Don't track the above call to `setTimeout`
+            asMock(setTimeout).mock.calls.pop();
+          })
+      )
+      .mockName('callback');
   }
 
   const targetIntervalMs = 1000;
 
-  it('should call the callback function after the target interval', async () => {
-    const callback = createCallback(50);
+  it('should call the callback function immediately any time the callback or target interval changes', () => {
+    const callbackA = createCallback(50);
+    const callbackB = createCallback(50);
 
-    renderHook(() => useAsyncInterval(callback, targetIntervalMs));
-
-    // First tick should be scheduled for target interval
-    expect(callback).not.toHaveBeenCalled();
-    expect(window.setTimeout).toHaveBeenCalledWith(
-      expect.any(Function),
-      targetIntervalMs
+    const { rerender } = renderHook(
+      ([cb, target]: [() => Promise<void>, number]) =>
+        useAsyncInterval(cb, target),
+      {
+        initialProps: [callbackA, targetIntervalMs],
+      }
     );
 
-    // Callback should be called after target interval
-    act(() => jest.advanceTimersByTime(targetIntervalMs));
-    expect(callback).toHaveBeenCalledTimes(1);
+    expect(callbackA).toHaveBeenCalledTimes(1);
+    jest.clearAllMocks();
+
+    // Should not call callback if depedencies don't change
+    rerender([callbackA, targetIntervalMs]);
+    expect(callbackA).not.toHaveBeenCalled();
+    jest.clearAllMocks();
+
+    // Callback change
+    rerender([callbackB, targetIntervalMs]);
+    expect(callbackA).not.toHaveBeenCalled();
+    expect(callbackB).toHaveBeenCalledTimes(1);
+    jest.clearAllMocks();
+
+    // Interval change
+    rerender([callbackB, targetIntervalMs + 20]);
+    expect(callbackB).toHaveBeenCalledTimes(1);
   });
 
   it('should adjust the target interval based on how long async call takes', async () => {
@@ -48,11 +69,8 @@ describe('useAsyncInterval', () => {
 
     renderHook(() => useAsyncInterval(callback, targetIntervalMs));
 
-    // Callback should be called after target interval
-    expect(callback).not.toHaveBeenCalled();
-    act(() => jest.advanceTimersByTime(targetIntervalMs));
     expect(callback).toHaveBeenCalledTimes(1);
-
+    expect(window.setTimeout).not.toHaveBeenCalled();
     jest.clearAllMocks();
 
     // Mimick the callback Promise resolving
@@ -79,11 +97,7 @@ describe('useAsyncInterval', () => {
 
     renderHook(() => useAsyncInterval(callback, targetIntervalMs));
 
-    // Callback should be called after target interval
-    expect(callback).not.toHaveBeenCalled();
-    act(() => jest.advanceTimersByTime(targetIntervalMs));
     expect(callback).toHaveBeenCalledTimes(1);
-
     jest.clearAllMocks();
 
     // Mimick the callback Promise resolving
@@ -99,11 +113,21 @@ describe('useAsyncInterval', () => {
   });
 
   it('should stop calling the callback function after unmounting', async () => {
-    const callback = createCallback(50);
+    const callbackDelayMs = 50;
+    const callback = createCallback(callbackDelayMs);
 
     const { unmount } = renderHook(() =>
       useAsyncInterval(callback, targetIntervalMs)
     );
+
+    expect(callback).toHaveBeenCalledTimes(1);
+    jest.clearAllMocks();
+
+    // Mimick the callback Promise resolving
+    act(() => jest.advanceTimersByTime(callbackDelayMs));
+    await TestUtils.flushPromises();
+
+    expect(window.setTimeout).toHaveBeenCalledTimes(1);
 
     unmount();
 
@@ -120,7 +144,6 @@ describe('useAsyncInterval', () => {
       useAsyncInterval(callback, targetIntervalMs)
     );
 
-    act(() => jest.advanceTimersByTime(targetIntervalMs));
     expect(callback).toHaveBeenCalledTimes(1);
     jest.clearAllMocks();
 
