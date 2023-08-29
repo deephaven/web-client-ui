@@ -35,6 +35,7 @@ export interface dh {
     FileContents: FileContentsStatic;
   };
   ValueType: typeof ValueType;
+  Widget: Widget;
 }
 
 const VariableType = {
@@ -333,6 +334,17 @@ export interface Figure extends Evented {
   unsubscribe(): void;
 
   close(): void;
+}
+
+export interface Widget {
+  readonly EVENT_MESSAGE: string;
+
+  addEventListener: (
+    type: string,
+    listener: (event: unknown) => void
+  ) => () => void;
+  getDataAsBase64(): string;
+  sendMessage: (message: string, args: unknown[]) => void;
 }
 
 export interface FigureDataUpdatedEvent {

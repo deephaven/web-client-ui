@@ -166,29 +166,33 @@ export class Chart extends Component<ChartProps, ChartState> {
     this.initData();
     this.initFormatter();
 
-    const { isActive } = this.props;
+    const { isActive, model } = this.props;
     if (isActive) {
-      this.subscribe();
+      this.subscribe(model);
     }
   }
 
   componentDidUpdate(prevProps: ChartProps): void {
-    const { isActive, settings } = this.props;
+    const { isActive, model, settings } = this.props;
     this.updateFormatterSettings(settings as FormatterSettings);
 
-    // TODO: Need to handle the model itself updating...
+    if (model !== prevProps.model) {
+      this.unsubscribe(prevProps.model);
+      this.subscribe(model);
+    }
 
     if (isActive !== prevProps.isActive) {
       if (isActive) {
-        this.subscribe();
+        this.subscribe(model);
       } else {
-        this.unsubscribe();
+        this.unsubscribe(model);
       }
     }
   }
 
   componentWillUnmount(): void {
-    this.unsubscribe();
+    const { model } = this.props;
+    this.unsubscribe(model);
   }
 
   currentSeries: number;
@@ -317,12 +321,11 @@ export class Chart extends Component<ChartProps, ChartState> {
     });
   }
 
-  subscribe(): void {
+  subscribe(model: ChartModel): void {
     if (this.isSubscribed) {
       return;
     }
 
-    const { model } = this.props;
     if (!this.rect || this.rect.width === 0 || this.rect.height === 0) {
       log.debug2('Delaying subscription until model dimensions are set');
       return;
@@ -331,12 +334,11 @@ export class Chart extends Component<ChartProps, ChartState> {
     this.isSubscribed = true;
   }
 
-  unsubscribe(): void {
+  unsubscribe(model: ChartModel): void {
     if (!this.isSubscribed) {
       return;
     }
 
-    const { model } = this.props;
     model.unsubscribe(this.handleModelEvent);
     this.isSubscribed = false;
   }
@@ -512,7 +514,7 @@ export class Chart extends Component<ChartProps, ChartState> {
       model.setDimensions(rect);
       // We may need to resubscribe if dimensions were too small before
       if (isActive) {
-        this.subscribe();
+        this.subscribe(model);
       }
     }
   }
