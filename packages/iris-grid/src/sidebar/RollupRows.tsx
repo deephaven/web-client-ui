@@ -390,6 +390,8 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
   sendChange(): void {
     const { onChange } = this.props;
     const { columns, showConstituents, showNonAggregatedColumns } = this.state;
+    log.info('MJB RollupRows.sendChange columns now', JSON.stringify(columns));
+
     onChange({
       columns,
       showConstituents,

@@ -3194,6 +3194,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   handleRollupChange(rollupConfig: UIRollupConfig): void {
     log.info('Rollup change', rollupConfig);
+    log.info('Rollup change str', JSON.stringify(rollupConfig));
 
     this.resetGridViewState();
     this.showAllColumns();

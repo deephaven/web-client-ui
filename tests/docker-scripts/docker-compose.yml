@@ -2,11 +2,13 @@ version: '3.8'
 
 services:
   dhc-server:
-    image: ghcr.io/deephaven/server:${DHC_VERSION:-edge}
+    image: d9faeab23d0f
     expose:
       - 10000
+    ports:
+      - 5005:5005
     environment:
-      - START_OPTS=-Xmx4g -DAuthHandlers=io.deephaven.auth.AnonymousAuthenticationHandler -Ddeephaven.console.type=python
+      - START_OPTS=-Xmx4g -DAuthHandlers=io.deephaven.auth.AnonymousAuthenticationHandler -Ddeephaven.console.type=python -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005
 
   web-ui-tests:
     build:
