@@ -1,8 +1,8 @@
-import { ListData } from '@react-stately/data';
+import type { Key } from 'react';
 import clamp from 'lodash.clamp';
 import type { Column, Row, Table, TreeTable } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
-import { KeyedItem } from '@deephaven/utils';
+import { KeyedItem, WindowedListData } from '@deephaven/utils';
 
 export type OnTableUpdatedEvent = CustomEvent<{
   offset: number;
@@ -30,14 +30,14 @@ export function createKeyFromOffsetRow(row: ViewportRow, offset: number) {
 
 /**
  * Creates a handler function for a `dh.Table.EVENT_UPDATED` event. Rows that
- * get passed to the handler will be added to or updated in the given
- * `viewportData` object.
+ * get passed to the handler will be bulk updated in the given `viewportData`
+ * object based on their derived item keys.
  * @param viewportData State object for managing a list of KeyedItem data.
  * @param deserializeRow Converts a DH Row to an item object.
  * @returns Handler function for a `dh.Table.EVENT_UPDATED` event.
  */
 export function createOnTableUpdatedHandler<T>(
-  viewportData: ListData<KeyedItem<T>>,
+  viewportData: WindowedListData<KeyedItem<T>>,
   deserializeRow: RowDeserializer<T>
 ): (event: OnTableUpdatedEvent) => void {
   /**
@@ -48,20 +48,17 @@ export function createOnTableUpdatedHandler<T>(
 
     log.debug('table updated', event.detail);
 
+    const updateKeyMap = new Map<Key, KeyedItem<T>>();
+
     rows.forEach(row => {
       const item = deserializeRow(row, columns);
-
-      const keyedItem = {
-        key: createKeyFromOffsetRow(row, offset),
-        item,
-      };
-
-      if (viewportData.getItem(keyedItem.key) != null) {
-        viewportData.update(keyedItem.key, keyedItem);
-      } else {
-        viewportData.append(keyedItem);
-      }
+      const key = createKeyFromOffsetRow(row, offset);
+      updateKeyMap.set(key, { key, item });
     });
+
+    log.debug('update keys', updateKeyMap);
+
+    viewportData.bulkUpdate(updateKeyMap);
   };
 }
 
@@ -99,19 +96,6 @@ export function* generateEmptyKeyedItems<T>(
   for (let i = start; i <= end; ++i) {
     yield { key: String(i) };
   }
-}
-
-/**
- * Get items from a given ListData by a list of keys.
- * @param listData ListData to get items from
- * @param keys Keys to items to be retrieved
- * @returns An array of items matching the given keys
- */
-export function getItemsFromListData<T>(
-  listData: ListData<KeyedItem<T>>,
-  ...keys: string[]
-): KeyedItem<T>[] {
-  return keys.map(key => listData.getItem(key));
 }
 
 /**

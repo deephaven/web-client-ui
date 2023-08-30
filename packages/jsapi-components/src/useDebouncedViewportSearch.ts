@@ -18,10 +18,7 @@ export const DEBOUNCE_VIEWPORT_SEARCH_MS = 200;
  * @param debounceMs Millisecond value to debounce
  * @returns A debounced search function
  */
-export default function useDebouncedViewportSearch<
-  I,
-  T extends Table | TreeTable,
->(
+export function useDebouncedViewportSearch<I, T extends Table | TreeTable>(
   viewportData: UseViewportDataResult<I, T>,
   columnName: string,
   debounceMs = DEBOUNCE_VIEWPORT_SEARCH_MS
@@ -68,3 +65,5 @@ export default function useDebouncedViewportSearch<
 
   return debouncedSearch;
 }
+
+export default useDebouncedViewportSearch;

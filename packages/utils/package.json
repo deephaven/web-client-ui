@@ -29,6 +29,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@adobe/react-spectrum": "^3.27.0"
+    "@adobe/react-spectrum": "^3.29.0"
   }
 }

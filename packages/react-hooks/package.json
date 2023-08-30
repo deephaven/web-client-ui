@@ -21,6 +21,7 @@
     "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward"
   },
   "dependencies": {
+    "@adobe/react-spectrum": "^3.29.0",
     "@deephaven/log": "file:../log",
     "@deephaven/utils": "file:../utils",
     "shortid": "^2.2.16"

@@ -1,3 +1,4 @@
+import type { Key } from 'react';
 import {
   Type as FilterType,
   Operator as FilterOperator,
@@ -19,15 +20,22 @@ import type {
 } from '@deephaven/jsapi-types';
 import {
   CancelablePromise,
+  KeyedItem,
   PromiseUtils,
   removeNullAndUndefined,
   TextUtils,
   TimeoutError,
+  WindowedListData,
 } from '@deephaven/utils';
 import DateUtils from './DateUtils';
 import { ColumnName } from './Formatter';
 import { createValueFilter, FilterConditionFactory } from './FilterUtils';
-import { getSize } from './ViewportDataUtils';
+import {
+  createKeyFromOffsetRow,
+  getSize,
+  OnTableUpdatedEvent,
+  RowDeserializer,
+} from './ViewportDataUtils';
 
 const log = Log.module('TableUtils');
 
@@ -99,13 +107,10 @@ export class TableUtils {
    * @param filterFactories Filter condition factories to apply
    * @returns A derived, filtered table
    */
-  static copyTableAndApplyFilters = async <
+  static async copyTableAndApplyFilters<
     T extends Table | null | undefined,
     R extends T extends Table ? T : null,
-  >(
-    maybeTable: T,
-    ...filterFactories: FilterConditionFactory[]
-  ): Promise<R> => {
+  >(maybeTable: T, ...filterFactories: FilterConditionFactory[]): Promise<R> {
     if (maybeTable == null) {
       return null as R;
     }
@@ -117,7 +122,39 @@ export class TableUtils {
     );
 
     return derivedTable as R;
-  };
+  }
+
+  /**
+   * Creates a table update handler function that will bulk update a windowed
+   * viewport with data.
+   * @param viewportData Windowed viewport data to update
+   * @param deserializeRow Function that can deserialize row data to item data
+   */
+  static createOnTableUpdatedHandler<T>(
+    viewportData: WindowedListData<KeyedItem<T>>,
+    deserializeRow: RowDeserializer<T>
+  ): (event: OnTableUpdatedEvent) => void {
+    /**
+     * Handler for a `dh.Table.EVENT_UPDATED` event.
+     */
+    return function onTableUpdated(event: OnTableUpdatedEvent) {
+      const { columns, offset, rows } = event.detail;
+
+      log.debug('table updated', event.detail);
+
+      const updateKeyMap = new Map<Key, KeyedItem<T>>();
+
+      rows.forEach(row => {
+        const item = deserializeRow(row, columns);
+        const key = createKeyFromOffsetRow(row, offset);
+        updateKeyMap.set(key, { key, item });
+      });
+
+      log.debug('update keys', updateKeyMap);
+
+      viewportData.bulkUpdate(updateKeyMap);
+    };
+  }
 
   /**
    * Executes a callback on a given table and returns a Promise that will resolve
@@ -785,12 +822,12 @@ export class TableUtils {
    * will be applied before the `selectCall` in case we need to base the filtering
    * on columns other than the distinct value column
    */
-  createDistinctSortedColumnTable = async (
+  async createDistinctSortedColumnTable(
     table: Table | null | undefined,
     columnName: string,
     sortDirection: 'asc' | 'desc',
     ...filterConditionFactories: FilterConditionFactory[]
-  ): Promise<Table | null> => {
+  ): Promise<Table | null> {
     if (table == null) {
       return null;
     }
@@ -825,7 +862,7 @@ export class TableUtils {
       [sortDirection]();
 
     return this.applySort(distinctTable, [distinctAscColSort]);
-  };
+  }
 
   /**
    * Check if any columns contain a given value.
@@ -834,12 +871,12 @@ export class TableUtils {
    * @param value Value to search for
    * @param isCaseSensitive Whether the value check is case sensitive
    */
-  doesColumnValueExist = async (
+  async doesColumnValueExist(
     table: Table | null | undefined,
     columnNames: string | string[],
     value: string,
     isCaseSensitive: boolean
-  ): Promise<boolean | null> => {
+  ): Promise<boolean | null> {
     if (table == null) {
       return null;
     }
@@ -863,7 +900,7 @@ export class TableUtils {
     tableCopy.close();
 
     return size > 0;
-  };
+  }
 
   /**
    * Create filter with the provided column and text. Handles multiple filters joined with && or ||

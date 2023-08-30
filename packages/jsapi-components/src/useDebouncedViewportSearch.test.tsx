@@ -1,4 +1,5 @@
 import { renderHook } from '@testing-library/react-hooks';
+import { makeApiContextWrapper } from '@deephaven/jsapi-components';
 import type {
   Column,
   FilterCondition,
@@ -12,7 +13,6 @@ import useDebouncedViewportSearch, {
   DEBOUNCE_VIEWPORT_SEARCH_MS,
 } from './useDebouncedViewportSearch';
 import { UseViewportDataResult } from './useViewportData';
-import { makeApiContextWrapper } from './HookTestUtils';
 
 const tableUtils = new TableUtils(dh);
 
