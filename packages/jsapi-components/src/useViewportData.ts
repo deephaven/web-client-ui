@@ -2,12 +2,12 @@ import { useCallback, useEffect } from 'react';
 import { ListData } from '@react-stately/data';
 import type { FilterCondition, Table, TreeTable } from '@deephaven/jsapi-types';
 import {
-  KeyedItem,
   RowDeserializer,
   createOnTableUpdatedHandler,
   defaultRowDeserializer,
   isClosed,
 } from '@deephaven/jsapi-utils';
+import { KeyedItem } from '@deephaven/utils';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import useInitializeViewportData from './useInitializeViewportData';
 import useSetPaddedViewportCallback from './useSetPaddedViewportCallback';

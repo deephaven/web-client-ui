@@ -21,6 +21,11 @@ import DateUtils from './DateUtils';
 // eslint-disable-next-line import/no-relative-packages
 import IrisGridTestUtils from '../../iris-grid/src/IrisGridTestUtils';
 import { ColumnName } from './Formatter';
+import { createValueFilter, FilterConditionFactory } from './FilterUtils';
+import { getSize } from './ViewportDataUtils';
+
+jest.mock('./FilterUtils');
+jest.mock('./ViewportDataUtils');
 
 const DEFAULT_TIME_ZONE_ID = 'America/New_York';
 const EXPECT_TIME_ZONE_PARAM = expect.objectContaining({
@@ -29,12 +34,14 @@ const EXPECT_TIME_ZONE_PARAM = expect.objectContaining({
 const tableUtils = new TableUtils(dh);
 const irisGridTestUtils = new IrisGridTestUtils(dh);
 
+const { asMock, createMockProxy } = TestUtils;
+
 /**
  * Sends a mock event to the last registered event handler with the given event
  * type.
  */
 function sendEventToLastRegisteredHandler(table: Table, eventType: string) {
-  const event = TestUtils.createMockProxy<CustomEvent>({});
+  const event = createMockProxy<CustomEvent>({});
 
   const lastRegisteredEventListener = TestUtils.findLastCall(
     table.addEventListener,
@@ -66,9 +73,14 @@ function makeFilterCondition(type = ''): MockFilterCondition {
   };
 }
 
+beforeEach(() => {
+  jest.clearAllMocks();
+  expect.hasAssertions();
+});
+
 describe('applyCustomColumns', () => {
-  const table = TestUtils.createMockProxy<Table>({});
-  const columns = [TestUtils.createMockProxy<CustomColumn>({})];
+  const table = createMockProxy<Table>({});
+  const columns = [createMockProxy<CustomColumn>({})];
 
   it.each([undefined, 400])(
     'should call table.applyCustomColumns and wait for dh.Table.EVENT_CUSTOMCOLUMNSCHANGED event: %s',
@@ -95,8 +107,8 @@ describe('applyCustomColumns', () => {
 });
 
 describe('applyFilter', () => {
-  const table = TestUtils.createMockProxy<Table>({});
-  const filters = [TestUtils.createMockProxy<FilterCondition>({})];
+  const table = createMockProxy<Table>({});
+  const filters = [createMockProxy<FilterCondition>({})];
 
   it.each([undefined, 400])(
     'should call table.applyFilter and wait for dh.Table.EVENT_FILTERCHANGED event: %s',
@@ -123,11 +135,11 @@ describe('applyFilter', () => {
 });
 
 describe.each([undefined, 400])('applyNeverFilter - timeout: %s', timeout => {
-  const column = TestUtils.createMockProxy<Column>({});
-  const neverFilter = TestUtils.createMockProxy<FilterCondition>({});
+  const column = createMockProxy<Column>({});
+  const neverFilter = createMockProxy<FilterCondition>({});
   let makeNeverFilter: jest.SpyInstance<FilterCondition, [column: Column]>;
 
-  const table = TestUtils.createMockProxy<Table>({
+  const table = createMockProxy<Table>({
     findColumn: jest.fn().mockReturnValue(column),
   });
 
@@ -181,8 +193,8 @@ describe.each([undefined, 400])('applyNeverFilter - timeout: %s', timeout => {
 });
 
 describe('applySort', () => {
-  const table = TestUtils.createMockProxy<Table>({});
-  const sorts = [TestUtils.createMockProxy<Sort>({})];
+  const table = createMockProxy<Table>({});
+  const sorts = [createMockProxy<Sort>({})];
 
   it.each([undefined, 400])(
     'should call table.applySort and wait for dh.Table.EVENT_SORTCHANGED event: %s',
@@ -208,8 +220,280 @@ describe('applySort', () => {
   );
 });
 
+describe('copyTableAndApplyFilters', () => {
+  const usersAndGroupsTable = createMockProxy<Table>({});
+  const copyTable = createMockProxy<Table>({});
+  const mockFilterCondition = {
+    a: createMockProxy<FilterCondition>(),
+    b: createMockProxy<FilterCondition>(),
+  };
+  const mockFilterConditionFactory = {
+    a: jest.fn() as FilterConditionFactory,
+    b: jest.fn() as FilterConditionFactory,
+  };
+
+  beforeEach(() => {
+    asMock(usersAndGroupsTable.copy).mockResolvedValue(copyTable);
+    asMock(mockFilterConditionFactory.a).mockReturnValue(mockFilterCondition.a);
+    asMock(mockFilterConditionFactory.b).mockReturnValue(mockFilterCondition.b);
+  });
+
+  it.each([null, undefined])(
+    'should return null if not given table: %s',
+    async notTable => {
+      expect(await TableUtils.copyTableAndApplyFilters(notTable)).toBeNull();
+    }
+  );
+
+  it('should return copy of table', async () => {
+    const result = await TableUtils.copyTableAndApplyFilters(
+      usersAndGroupsTable
+    );
+
+    expect(usersAndGroupsTable.copy).toHaveBeenCalled();
+    expect(result).toBe(copyTable);
+  });
+
+  it('should apply filters to copy of table', async () => {
+    await TableUtils.copyTableAndApplyFilters(
+      usersAndGroupsTable,
+      mockFilterConditionFactory.a,
+      mockFilterConditionFactory.b
+    );
+
+    expect(copyTable.applyFilter).toHaveBeenCalledWith([
+      mockFilterCondition.a,
+      mockFilterCondition.b,
+    ]);
+  });
+});
+
+describe.each(['asc', 'desc'] as const)(
+  'createDistinctSortedColumnTable: %s',
+  sortDirection => {
+    const applySort = jest.spyOn(tableUtils, 'applySort');
+
+    const distinctUserNameColSort = createMockProxy<Sort>({});
+
+    const distinctUserNameColSortDirection = {
+      asc: createMockProxy<Sort>({}),
+      desc: createMockProxy<Sort>({}),
+    };
+
+    const userNameCol = createMockProxy<Column>({});
+    const distinctUserNameCol = createMockProxy<Column>({});
+
+    const copyTable = createMockProxy<Table>({});
+    const derivedTable = createMockProxy<Table>({});
+    const usersAndGroupsTable = createMockProxy<Table>({});
+
+    const mockFilterCondition = {
+      a: createMockProxy<FilterCondition>(),
+      b: createMockProxy<FilterCondition>(),
+    };
+    const mockFilterConditionFactory = {
+      a: jest.fn() as FilterConditionFactory,
+      b: jest.fn() as FilterConditionFactory,
+    };
+
+    const columnName = 'mock.columnName';
+
+    beforeEach(() => {
+      asMock(usersAndGroupsTable.copy).mockResolvedValue(copyTable);
+      asMock(copyTable.selectDistinct).mockResolvedValue(derivedTable);
+      asMock(usersAndGroupsTable.selectDistinct).mockResolvedValue(
+        derivedTable
+      );
+
+      asMock(usersAndGroupsTable.findColumn).mockReturnValue(userNameCol);
+      asMock(copyTable.findColumn).mockReturnValue(userNameCol);
+
+      asMock(derivedTable.findColumn).mockReturnValue(distinctUserNameCol);
+
+      asMock(distinctUserNameCol.sort).mockReturnValue(distinctUserNameColSort);
+
+      asMock(distinctUserNameColSort.asc).mockReturnValue(
+        distinctUserNameColSortDirection.asc
+      );
+      asMock(distinctUserNameColSort.desc).mockReturnValue(
+        distinctUserNameColSortDirection.desc
+      );
+
+      asMock(mockFilterConditionFactory.a).mockReturnValue(
+        mockFilterCondition.a
+      );
+      asMock(mockFilterConditionFactory.b).mockReturnValue(
+        mockFilterCondition.b
+      );
+
+      applySort.mockResolvedValue(derivedTable);
+    });
+
+    it('should resolve to null if given null', () => {
+      expect(
+        tableUtils.createDistinctSortedColumnTable(
+          null,
+          'mock.columnName',
+          sortDirection
+        )
+      ).resolves.toBeNull();
+    });
+
+    it('should resolve to a new table containing distinct values for column name', async () => {
+      const result = await tableUtils.createDistinctSortedColumnTable(
+        usersAndGroupsTable,
+        columnName,
+        sortDirection
+      );
+      expect(result).toBe(derivedTable);
+    });
+
+    it.each([
+      [[], usersAndGroupsTable],
+      [[mockFilterConditionFactory.a, mockFilterConditionFactory.b], copyTable],
+    ] as const)(
+      'should call selectDistinct on source table',
+      async (filterConditionFactories, expectedSourceTable) => {
+        await tableUtils.createDistinctSortedColumnTable(
+          usersAndGroupsTable,
+          columnName,
+          sortDirection,
+          ...filterConditionFactories
+        );
+        expect(expectedSourceTable.findColumn).toHaveBeenCalledWith(columnName);
+        expect(expectedSourceTable.selectDistinct).toHaveBeenCalledWith([
+          userNameCol,
+        ]);
+      }
+    );
+
+    it('should not apply filters if not given filter condition factories', async () => {
+      await tableUtils.createDistinctSortedColumnTable(
+        usersAndGroupsTable,
+        columnName,
+        sortDirection
+      );
+
+      expect(usersAndGroupsTable.copy).not.toHaveBeenCalled();
+
+      expect(copyTable.close).not.toHaveBeenCalled();
+    });
+
+    it('should filter by any given filter condition factories', async () => {
+      await tableUtils.createDistinctSortedColumnTable(
+        usersAndGroupsTable,
+        columnName,
+        sortDirection,
+        mockFilterConditionFactory.a,
+        mockFilterConditionFactory.b
+      );
+
+      expect(usersAndGroupsTable.copy).toHaveBeenCalled();
+
+      expect(copyTable.applyFilter).toHaveBeenCalledWith([
+        mockFilterCondition.a,
+        mockFilterCondition.b,
+      ]);
+
+      expect(copyTable.close).toHaveBeenCalled();
+    });
+
+    it(`should sort distinct table by column ${sortDirection}`, async () => {
+      await tableUtils.createDistinctSortedColumnTable(
+        usersAndGroupsTable,
+        columnName,
+        sortDirection
+      );
+
+      expect(derivedTable.findColumn).toHaveBeenCalledWith(columnName);
+
+      expect(applySort).toHaveBeenCalledWith(derivedTable, [
+        distinctUserNameColSortDirection[sortDirection],
+      ]);
+    });
+  }
+);
+
+describe('doesColumnValueExist', () => {
+  const mock = {
+    table: createMockProxy<Table>(),
+    tableCopy: createMockProxy<Table>(),
+    columnNames: ['mock.columnA', 'mock.columnB'],
+    value: 'mock.value',
+    filterConditionFactory: jest.fn(),
+    filterCondition: createMockProxy<FilterCondition>(),
+  };
+
+  beforeEach(() => {
+    mock.filterConditionFactory.mockReturnValue(mock.filterCondition);
+
+    asMock(createValueFilter)
+      .mockName('createValueFilter')
+      .mockReturnValue(mock.filterConditionFactory);
+
+    asMock(mock.table.copy)
+      .mockName('table.copy')
+      .mockResolvedValue(mock.tableCopy);
+
+    asMock(getSize).mockName('getSize');
+  });
+
+  it('should resolve to null if no table given', async () => {
+    const actual = await tableUtils.doesColumnValueExist(
+      null,
+      mock.columnNames,
+      mock.value,
+      true
+    );
+
+    expect(actual).toBeNull();
+  });
+
+  it.each([true, false])(
+    'should resolve to true if value exists in given columns: isCaseSensitive:%s',
+    async isCaseSensitive => {
+      asMock(getSize).mockReturnValue(1);
+
+      const actual = await tableUtils.doesColumnValueExist(
+        mock.table,
+        mock.columnNames,
+        mock.value,
+        isCaseSensitive
+      );
+
+      expect(createValueFilter).toHaveBeenCalledWith(
+        tableUtils,
+        mock.columnNames,
+        mock.value,
+        isCaseSensitive ? 'eq' : 'eqIgnoreCase'
+      );
+
+      expect(tableUtils.applyFilter).toHaveBeenCalledWith(mock.tableCopy, [
+        mock.filterCondition,
+      ]);
+
+      expect(actual).toBeTruthy();
+    }
+  );
+
+  it('should close internal table copy', async () => {
+    const result = tableUtils.doesColumnValueExist(
+      mock.table,
+      mock.columnNames,
+      mock.value,
+      true
+    );
+
+    expect(mock.tableCopy.close).not.toHaveBeenCalled();
+
+    await result;
+
+    expect(mock.tableCopy.close).toHaveBeenCalled();
+  });
+});
+
 describe('executeAndWaitForEvent', () => {
-  const table = TestUtils.createMockProxy<Table>({
+  const table = createMockProxy<Table>({
     addEventListener: jest.fn(() => jest.fn()),
   });
 
@@ -332,10 +616,7 @@ describe('toggleSortForColumn', () => {
 });
 
 describe('quick filter tests', () => {
-  type MockFilter = ReturnType<typeof makeFilter>;
-  type MockColumn = Omit<Column, 'filter'> & { filter(): MockFilter };
-
-  function makeFilter(type = '') {
+  function makeFilter(type = ''): FilterValue {
     return {
       contains: jest.fn(() =>
         makeFilterCondition(`${type}.${FilterType.contains}`)
@@ -381,14 +662,14 @@ describe('quick filter tests', () => {
         makeFilterCondition(`${type}.${FilterType.notInIgnoreCase}`)
       ),
       type,
-    };
+    } as unknown as FilterValue;
   }
 
-  function makeFilterColumn(type = 'string'): MockColumn {
+  function makeFilterColumn(type = 'string'): Column {
     const filter = makeFilter();
     const column = irisGridTestUtils.makeColumn('test placeholder', type, 13);
-    column.filter = jest.fn(() => filter);
-    return column as MockColumn;
+    jest.spyOn(column, 'filter').mockReturnValue(filter);
+    return column;
   }
 
   function mockFilterConditionReturnValue(filterToMock): MockFilterCondition {
@@ -704,18 +985,18 @@ describe('quick filter tests', () => {
 
     function testInvokeFilter(type, operation, value, timezone, ...args) {
       const column = makeFilterColumn(type);
-      const filter = column.filter() as MockFilter;
+      const filter = column.filter();
 
       const nullResult = makeFilterCondition();
       const notResult = makeFilterCondition();
       const invokeResult = makeFilterCondition();
       const expectedResult = makeFilterCondition();
 
-      filter.isNull.mockReturnValueOnce(nullResult);
+      asMock(filter.isNull).mockReturnValueOnce(nullResult);
 
       (nullResult.not as jest.Mock).mockReturnValueOnce(notResult);
 
-      filter.invoke.mockReturnValueOnce(invokeResult);
+      asMock(filter.invoke).mockReturnValueOnce(invokeResult);
 
       (notResult.and as jest.Mock).mockReturnValueOnce(expectedResult);
 
@@ -903,16 +1184,16 @@ describe('quick filter tests', () => {
 
       it('handles notContains', () => {
         const column = makeFilterColumn('java.lang.String');
-        const filter = column.filter() as MockFilter;
+        const filter = column.filter();
 
         const nullResult = makeFilterCondition();
         const notResult = makeFilterColumn();
         const invokeResult = makeFilterCondition();
         const expectedResult = makeFilterCondition();
 
-        filter.isNull.mockReturnValueOnce(nullResult);
+        asMock(filter.isNull).mockReturnValueOnce(nullResult);
 
-        filter.invoke.mockReturnValueOnce(invokeResult);
+        asMock(filter.invoke).mockReturnValueOnce(invokeResult);
 
         invokeResult.not.mockReturnValueOnce(notResult);
 
@@ -1865,18 +2146,18 @@ describe('quick filter tests', () => {
 
     function testInvokeFilter(text, ...args) {
       const column = makeFilterColumn();
-      const filter = column.filter() as MockFilter;
+      const filter = column.filter();
 
       const nullResult = makeFilterCondition();
       const notResult = makeFilterCondition();
       const invokeResult = makeFilterCondition();
       const expectedResult = makeFilterCondition();
 
-      filter.isNull.mockReturnValueOnce(nullResult);
+      asMock(filter.isNull).mockReturnValueOnce(nullResult);
 
       nullResult.not.mockReturnValueOnce(notResult);
 
-      filter.invoke.mockReturnValueOnce(invokeResult);
+      asMock(filter.invoke).mockReturnValueOnce(invokeResult);
 
       notResult.and.mockReturnValueOnce(expectedResult);
 
@@ -1913,10 +2194,10 @@ describe('quick filter tests', () => {
 
     it('handles not null cases', () => {
       const column = makeFilterColumn();
-      const filter = column.filter() as MockFilter;
+      const filter = column.filter();
 
       const expectedNullFilter = makeFilterCondition();
-      filter.isNull.mockReturnValueOnce(expectedNullFilter);
+      asMock(filter.isNull).mockReturnValueOnce(expectedNullFilter);
 
       const expectedNotFilter = makeFilterCondition();
       expectedNullFilter.not.mockReturnValueOnce(expectedNotFilter);
@@ -2077,8 +2358,8 @@ describe('quick filter tests', () => {
       const notEqResult = makeFilterCondition();
       const expectedResult = makeFilterCondition();
 
-      filter.eq.mockReturnValueOnce(eqResult);
-      filter.notEq.mockReturnValueOnce(notEqResult);
+      asMock(filter.eq).mockReturnValueOnce(eqResult);
+      asMock(filter.notEq).mockReturnValueOnce(notEqResult);
       eqResult.and.mockReturnValueOnce(expectedResult);
 
       expect(tableUtils.makeSelectValueFilter(column, [], false)).toBe(
@@ -2114,8 +2395,8 @@ describe('quick filter tests', () => {
       const notInResult = makeFilterCondition();
       const expectedResult = makeFilterCondition();
 
-      filter.notIn.mockReturnValueOnce(notInResult);
-      filter.isNull.mockReturnValueOnce(isNullResult);
+      asMock(filter.notIn).mockReturnValueOnce(notInResult);
+      asMock(filter.isNull).mockReturnValueOnce(isNullResult);
       isNullResult.not.mockReturnValueOnce(notResult);
       notResult.and.mockReturnValueOnce(expectedResult);
       expect(
@@ -2133,8 +2414,8 @@ describe('quick filter tests', () => {
       const inResult = makeFilterCondition();
       const expectedResult = makeFilterCondition();
 
-      filter.isNull.mockReturnValueOnce(isNullResult);
-      filter.in.mockReturnValueOnce(inResult);
+      asMock(filter.isNull).mockReturnValueOnce(isNullResult);
+      asMock(filter.in).mockReturnValueOnce(inResult);
       isNullResult.or.mockReturnValueOnce(expectedResult);
       expect(
         tableUtils.makeSelectValueFilter(column, [null, true, false], false)
@@ -2150,7 +2431,7 @@ describe('quick filter tests', () => {
       const isNullResult = makeFilterCondition();
       const expectedResult = makeFilterCondition();
 
-      filter.isNull.mockReturnValueOnce(isNullResult);
+      asMock(filter.isNull).mockReturnValueOnce(isNullResult);
       isNullResult.not.mockReturnValueOnce(expectedResult);
       expect(
         tableUtils.makeSelectValueFilter(column, [null, null, null], true)
@@ -2163,7 +2444,7 @@ describe('quick filter tests', () => {
 
       const isNullResult = makeFilterCondition();
 
-      filter.isNull.mockReturnValueOnce(isNullResult);
+      asMock(filter.isNull).mockReturnValueOnce(isNullResult);
       expect(
         tableUtils.makeSelectValueFilter(column, [null, null, null], false)
       ).toBe(isNullResult);
@@ -2175,7 +2456,7 @@ describe('quick filter tests', () => {
 
       const expectedResult = makeFilterCondition();
 
-      filter.notIn.mockReturnValueOnce(expectedResult);
+      asMock(filter.notIn).mockReturnValueOnce(expectedResult);
       expect(tableUtils.makeSelectValueFilter(column, [1, 2, 3], true)).toBe(
         expectedResult
       );
@@ -2188,7 +2469,7 @@ describe('quick filter tests', () => {
 
       const expectedResult = makeFilterCondition();
 
-      filter.in.mockReturnValueOnce(expectedResult);
+      asMock(filter.in).mockReturnValueOnce(expectedResult);
       expect(tableUtils.makeSelectValueFilter(column, [1, 2, 3], false)).toBe(
         expectedResult
       );

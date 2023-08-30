@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
 import { ListData, useListData } from '@react-stately/data';
 import type { Table, TreeTable } from '@deephaven/jsapi-types';
-import { KeyedItem, generateEmptyKeyedItems } from '@deephaven/jsapi-utils';
+import { generateEmptyKeyedItems } from '@deephaven/jsapi-utils';
+import { KeyedItem } from '@deephaven/utils';
 import { usePrevious } from '@deephaven/react-hooks';
 import useTableSize from './useTableSize';
 

@@ -2,11 +2,7 @@ import { ListData } from '@react-stately/data';
 import clamp from 'lodash.clamp';
 import type { Column, Row, Table, TreeTable } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
-
-export interface KeyedItem<T> {
-  key: string;
-  item?: T;
-}
+import { KeyedItem } from '@deephaven/utils';
 
 export type OnTableUpdatedEvent = CustomEvent<{
   offset: number;

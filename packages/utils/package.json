@@ -27,5 +27,8 @@
   "sideEffects": false,
   "publishConfig": {
     "access": "public"
+  },
+  "dependencies": {
+    "@adobe/react-spectrum": "^3.27.0"
   }
 }
