@@ -1,6 +1,8 @@
 import type { Key } from 'react';
+import type { Selection } from '@react-types/shared';
 import type { KeyedItem } from './SpectrumUtils';
 import {
+  getSelectedItemCountOrAll,
   isSelectionEqual,
   isSelectionMaybeInvertedEqual,
   mapSelection,
@@ -23,6 +25,32 @@ beforeEach(() => {
   mapItem.mockImplementation(
     (item: KeyedItem<{ name: string }>) => item.item?.name ?? ''
   );
+});
+
+describe('getSelectedItemCountOrAll', () => {
+  const selection = {
+    all: 'all' as Selection,
+    five: new Set('abcde') as Selection,
+    none: new Set() as Selection,
+  };
+
+  it.each([selection.all, selection.none, selection.five])(
+    'should return 0 if size is 0',
+    sel => {
+      expect(getSelectedItemCountOrAll(0, sel)).toEqual(0);
+    }
+  );
+
+  it.each([selection.all, selection.five])(
+    'should return "all" if all selected',
+    sel => {
+      expect(getSelectedItemCountOrAll(5, sel)).toEqual('all');
+    }
+  );
+
+  it('should return selection size if not all selected', () => {
+    expect(getSelectedItemCountOrAll(6, selection.five)).toEqual(5);
+  });
 });
 
 describe('isSelectionEqual', () => {

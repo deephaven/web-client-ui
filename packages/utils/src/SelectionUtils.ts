@@ -11,6 +11,26 @@ export interface SelectionMaybeInverted<TValue> {
 }
 
 /**
+ * Returns the number of selected items or 'all' if all items are selected.
+ * @param size Total size of collection that can have selections
+ * @param selection Set of selected keys or 'all'
+ */
+export function getSelectedItemCountOrAll(
+  size: number,
+  selection: Selection
+): number | 'all' {
+  if (size === 0) {
+    return 0;
+  }
+
+  if (selection === 'all' || size === selection.size) {
+    return 'all';
+  }
+
+  return selection.size;
+}
+
+/**
  * Check 2 SelectionT objects for value equality.
  * @param selectionA
  * @param selectionB

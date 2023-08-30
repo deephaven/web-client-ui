@@ -2,6 +2,7 @@ import {
   createValidationProps,
   extractSpectrumHTMLElement,
   extractSpectrumLastChildHTMLElement,
+  findSpectrumComboBoxScrollArea,
   identityExtractHTMLElement,
   ReactSpectrumComponent,
 } from './SpectrumUtils';
@@ -78,6 +79,65 @@ describe('extractSpectrumLastChildHTMLElement', () => {
       lastElementChild
     );
   });
+});
+
+describe('findSpectrumComboBoxScrollArea', () => {
+  let el: {
+    component: HTMLDivElement;
+    input: HTMLInputElement;
+    popup: HTMLDivElement;
+  };
+
+  beforeEach(() => {
+    el = {
+      component: document.createElement('div'),
+      input: document.createElement('input'),
+      popup: document.createElement('div'),
+    };
+
+    el.popup.id = 'popup.id';
+    el.input.setAttribute('aria-controls', el.popup.id);
+  });
+
+  afterEach(() => {
+    document.body.replaceChildren();
+  });
+
+  it.each([
+    [0, 0, 0, false],
+    [0, 0, 1, false],
+    [0, 1, 0, false],
+    [0, 1, 1, false],
+    [1, 0, 0, false],
+    [1, 0, 1, false],
+    [1, 1, 0, false],
+    [1, 1, 1, true],
+  ])(
+    'should find `aria-controls` element of input',
+    (hasRef, hasInput, hasPopup, shouldFind) => {
+      const ref = hasRef
+        ? createMockProxy<ReactSpectrumComponent>({
+            UNSAFE_getDOMNode: () => el.component,
+          })
+        : null;
+
+      if (hasInput) {
+        el.component.appendChild(el.input);
+      }
+
+      if (hasPopup) {
+        document.body.appendChild(el.popup);
+      }
+
+      const actual = findSpectrumComboBoxScrollArea(ref);
+
+      if (shouldFind) {
+        expect(actual).toBe(el.popup);
+      } else {
+        expect(actual).toBeNull();
+      }
+    }
+  );
 });
 
 describe('identityExtractHTMLElement', () => {
