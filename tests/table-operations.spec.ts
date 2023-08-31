@@ -105,12 +105,13 @@ async function artificialWait(page: Page, tableNumber = 0) {
   await page.getByTestId('btn-page-close').first().click();
 }
 
+const tableName = generateVarName('t');
 test.beforeEach(async ({ page }) => {
   await page.goto('');
 
   const consoleInput = page.locator('.console-input');
 
-  const command = makeTableCommand(undefined, TableTypes.AllTypes);
+  const command = makeTableCommand(tableName, TableTypes.AllTypes);
 
   await pasteInMonaco(consoleInput, command);
   await page.keyboard.press('Enter');
@@ -135,6 +136,15 @@ test.beforeEach(async ({ page }) => {
   await expect(page.locator('.table-sidebar')).toHaveCount(1);
 });
 
+test.afterEach(async ({ page }) => {
+  const consoleInput = page.locator('.console-input');
+  await consoleInput.click();
+
+  const command = `del ${tableName}`;
+  await pasteInMonaco(consoleInput, command);
+  await page.keyboard.press('Enter');
+});
+
 test('select distinct values', async ({ page }) => {
   await openTableOption(page, 'Select Distinct Values');
 
@@ -149,7 +159,7 @@ test('select distinct values', async ({ page }) => {
 test('search', async ({ page }) => {
   await page.locator('data-testid=menu-item-Search Bar').click();
 
-  const searchBar = page.getByPlaceholder('Search Data...');
+  const searchBar = page.getByTestId('cross-column-search');
   await expect(searchBar).toHaveCount(1);
 
   await searchBar.click();
@@ -451,7 +461,7 @@ test('rollup rows and aggregrate columns', async ({ page }) => {
   const stringColumn = page.getByRole('button', { name: 'String' });
   await test.step('Rollup column', async () => {
     expect(stringColumn).toBeTruthy();
-    await dragComponent(stringColumn, dropdown, dropIndicator);
+    await stringColumn.dblclick();
 
     await waitForLoadingDone(page);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
@@ -474,7 +484,7 @@ test('rollup rows and aggregrate columns', async ({ page }) => {
   await test.step('Rollup another column', async () => {
     const intColumn = page.getByRole('button', { name: 'Int', exact: true });
     expect(intColumn).toBeTruthy();
-    await dragComponent(intColumn, stringColumn, dropIndicator, 10);
+    await intColumn.dblclick();
 
     await waitForLoadingDone(page);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
@@ -549,6 +559,8 @@ test('advanced settings', async ({ page }) => {
     const target = page.getByText('Command History');
     const dropIndicator = page.locator('.lm_dragProxy');
     await dragComponent(inputFilter, target, dropIndicator);
+
+    await page.getByRole('button', { name: 'Panels' }).click();
   });
 
   await test.step('add linker filter to string column', async () => {
