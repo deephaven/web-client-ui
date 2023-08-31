@@ -109,10 +109,6 @@ const tableName = generateVarName('t');
 test.beforeEach(async ({ page }) => {
   await page.goto('');
 
-  page.on('console', msg => {
-    if (msg.type() === 'error') console.log(`Error text: "${msg.text()}"`);
-  });
-
   const consoleInput = page.locator('.console-input');
 
   const command = makeTableCommand(tableName, TableTypes.AllTypes);
