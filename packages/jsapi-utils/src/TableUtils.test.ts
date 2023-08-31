@@ -78,6 +78,28 @@ beforeEach(() => {
   expect.hasAssertions();
 });
 
+// Get all non-static method names in a given object. Note that it only looks
+// at the first prototype and does not traverse up the chain. Should be fine
+// for classes that don't extend other classes.
+function getMethodNames<T>(instance: T): (keyof T)[] {
+  return Object.getOwnPropertyNames(Object.getPrototypeOf(instance))
+    .filter(key => key !== 'constructor' && typeof instance[key] === 'function')
+    .sort() as (keyof T)[];
+}
+
+describe.only('constructor', () => {
+  const classMethodNames = getMethodNames(new TableUtils(dh));
+
+  it.each(classMethodNames)(
+    'should bind all non-static methods in constructor: %s',
+    methodName => {
+      const instance = new TableUtils(dh);
+      expect(instance[methodName]).toBeInstanceOf(Function);
+      expect(instance[methodName]).not.toBe(TableUtils.prototype[methodName]);
+    }
+  );
+});
+
 describe('applyCustomColumns', () => {
   const table = createMockProxy<Table>({});
   const columns = [createMockProxy<CustomColumn>({})];

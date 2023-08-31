@@ -810,6 +810,31 @@ export class TableUtils {
 
   constructor(dh: DhType) {
     this.dh = dh;
+
+    this.applyCustomColumns = this.applyCustomColumns.bind(this);
+    this.applyFilter = this.applyFilter.bind(this);
+    this.applyNeverFilter = this.applyNeverFilter.bind(this);
+    this.applySort = this.applySort.bind(this);
+    this.createDistinctSortedColumnTable =
+      this.createDistinctSortedColumnTable.bind(this);
+    this.doesColumnValueExist = this.doesColumnValueExist.bind(this);
+    this.makeAdvancedFilter = this.makeAdvancedFilter.bind(this);
+    this.makeAdvancedValueFilter = this.makeAdvancedValueFilter.bind(this);
+    this.makeFilterRawValue = this.makeFilterRawValue.bind(this);
+    this.makeFilterValue = this.makeFilterValue.bind(this);
+    this.makeNeverFilter = this.makeNeverFilter.bind(this);
+    this.makeQuickBooleanFilter = this.makeQuickBooleanFilter.bind(this);
+    this.makeQuickCharFilter = this.makeQuickCharFilter.bind(this);
+    this.makeQuickDateFilter = this.makeQuickDateFilter.bind(this);
+    this.makeQuickDateFilterWithOperation =
+      this.makeQuickDateFilterWithOperation.bind(this);
+    this.makeQuickFilter = this.makeQuickFilter.bind(this);
+    this.makeQuickFilterFromComponent =
+      this.makeQuickFilterFromComponent.bind(this);
+    this.makeQuickNumberFilter = this.makeQuickNumberFilter.bind(this);
+    this.makeQuickTextFilter = this.makeQuickTextFilter.bind(this);
+    this.makeSelectValueFilter = this.makeSelectValueFilter.bind(this);
+    this.makeValue = this.makeValue.bind(this);
   }
 
   /**
