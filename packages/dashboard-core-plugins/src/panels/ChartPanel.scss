@@ -2,7 +2,7 @@
 
 $chart-panel-disconnected-opacity: 0.18;
 $overlay-message-font-size: 1.2rem;
-$overlay-scrim-bg: rgba(black, 0.5);
+$overlay-scrim-bg: $background-opacity-50;
 $overlay-content-max-width: 450px;
 
 .iris-chart-panel {

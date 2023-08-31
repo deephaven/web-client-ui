@@ -24,7 +24,7 @@
       display: block;
       position: absolute;
       width: 100%;
-      background: linear-gradient(rgba($black, 0.6), rgba($black, 0));
+      background: linear-gradient($background-opacity-60, transparent);
       height: $size;
       opacity: 0;
       transition: opacity $transition-long;

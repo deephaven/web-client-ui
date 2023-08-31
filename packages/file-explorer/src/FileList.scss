@@ -4,11 +4,12 @@ $depth-line-color: $gray-600;
 $depth-margin: 5px;
 $depth-indentation: 8px;
 $item-list-color: $text-muted;
-$item-list-selected-nofocus-bg: $gray-600;
-$item-list-selected-bg: var(--spectrum-alias-highlight-selected);
-$item-list-selection-border-color: var(--spectrum-accent-color-500);
-$item-list-focused-bg: var(--spectrum-alias-highlight-selected-hover);
-$item-list-hover-bg: $primary;
+$item-list-selected-nofocus-bg: $list-selected-inactive;
+$item-list-selected-bg: $list-selected;
+$item-list-selected-hover-bg: $list-selected-hover;
+$item-list-selection-border-color: $list-selected-border-color;
+$item-list-focused-bg: $list-selected;
+$item-list-hover-bg: $list-hover;
 $item-list-selected-color: $white;
 $item-list-drop-target-color: $white;
 
@@ -35,7 +36,6 @@ $item-list-drop-target-color: $white;
   .item-list-item {
     padding: 0 $input-btn-padding-x;
     color: $item-list-color;
-    transition: $btn-transition;
     border: 1px solid transparent; // we need a spacer border so stuff doesn't move on us when we apply a border-color
     -webkit-user-drag: none; // we need to disable webkit-user-drag or else Chrome switches to a Copy icon when dragging on Mac
     cursor: pointer;
@@ -97,11 +97,13 @@ $item-list-drop-target-color: $white;
 
   /* stylelint-disable no-descending-specificity */
   &:not(.is-dragging) {
-    .item-list-item:hover,
-    &:focus-within .item-list-item.active:hover {
+    .item-list-item:hover {
       background-color: $item-list-hover-bg;
       color: $item-list-selected-color;
-      transition: none; //to make things feel more responsive don't transition the hover in
+    }
+    &:focus-within .item-list-item.active:hover {
+      background-color: $item-list-selected-hover-bg;
+      color: $item-list-selected-color;
     }
   }
 

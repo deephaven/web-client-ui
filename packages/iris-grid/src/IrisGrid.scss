@@ -14,10 +14,10 @@ $iris-grid-bar-max-width: $table-sidebar-max-width;
 $transition-iris-grid-bar-flash: 1s;
 $cell-box-shadow:
   0 0 0 2px $selection-outline-color,
-  0 0 0 5px rgba($selection-outline-color, 0.25);
+  0 0 0 5px $accent-opacity-25;
 $cell-invalid-box-shadow:
   0 0 0 2px $danger,
-  0 0 0 5px rgba($danger, 0.25);
+  0 0 0 5px $negative-opacity-25;
 
 .iris-grid {
   width: 100%;
@@ -42,7 +42,7 @@ $cell-invalid-box-shadow:
     width: $table-sidebar-max-width;
     max-width: $table-sidebar-max-width;
     background: $table-sidebar-bg;
-    box-shadow: -4px 0 8px rgba($black, 0.45);
+    box-shadow: -4px 0 8px $background-opacity-40;
     z-index: 1;
 
     // We have it positioned absolutely while animating, so it slides "overtop" of the grid until it's in place, then resizes the grid

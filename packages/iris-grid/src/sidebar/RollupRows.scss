@@ -1,10 +1,10 @@
 @import '@deephaven/components/scss/custom.scss';
 
-$draggable-item-hover-bg: $secondary;
-$draggable-item-selected-bg: rgba($primary, 0.4);
-$draggable-item-selected-hover-bg: $primary;
+$draggable-item-hover-bg: $list-hover;
+$draggable-item-selected-bg: $list-selected;
+$draggable-item-selected-hover-bg: $list-selected-hover;
 $draggable-item-border: $input-border-width solid transparent;
-$row-selected-bg-color: rgba($primary, 0.4);
+$row-selected-bg-color: $list-selected;
 
 .rollup-rows {
   display: flex;

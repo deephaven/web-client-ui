@@ -12,10 +12,10 @@ html {
 
 // override
 .text-black-50 {
-  color: rgba(0, 0, 0, 0.5) !important;
+  color: $background-opacity-50 !important;
 }
 .text-white-50 {
-  color: rgba(255, 255, 255, 0.5) !important;
+  color: $foreground-opacity-50 !important;
 }
 
 // deephaven-icons are designed on a 16px grid
@@ -34,7 +34,7 @@ body {
   padding: 0;
   overscroll-behavior: none;
   -ms-scroll-chaining: none;
-  scrollbar-color: rgba($white, 0.1) rgba($black, 0.1); //applies to firefox only
+  scrollbar-color: $foreground-opacity-10 $background-opacity-10; //applies to firefox only
 }
 
 #root {
@@ -92,7 +92,7 @@ a.custom-link,
       content: '';
       box-sizing: content-box;
       position: absolute;
-      // background: rgba($primary, $focus-bg-transparency);
+      background: $accent-opacity-10;
       top: 0;
       left: 0;
       width: 100%;
@@ -136,18 +136,18 @@ span.btn-disabled-wrapper {
     border-radius: $border-radius;
 
     &:focus {
-      background: rgba($primary, $focus-bg-transparency);
+      background: $accent-opacity-10;
       border: $input-border-width solid $primary;
       box-shadow: $input-btn-focus-box-shadow;
     }
 
     &:hover {
-      background: rgba($primary, $hover-bg-transparency);
+      background: $accent-opacity-15;
     }
 
     &:active {
       content: '';
-      background: rgba($primary, $active-bg-transparency);
+      background: $accent-opacity-30;
     }
   }
 }
@@ -224,7 +224,7 @@ span.btn-disabled-wrapper {
     text-decoration: none;
     box-shadow: none;
     &::after {
-      background: rgba($primary, $focus-bg-transparency);
+      background: $accent-opacity-10;
       border: $input-border-width solid $primary;
       box-shadow: $input-btn-focus-box-shadow;
     }
@@ -232,14 +232,14 @@ span.btn-disabled-wrapper {
 
   &:hover {
     &::after {
-      background: rgba($primary, $hover-bg-transparency);
+      background: $accent-opacity-15;
     }
   }
 
   &:active {
     &::after {
       content: '';
-      background: rgba($primary, $active-bg-transparency);
+      background: $accent-opacity-30;
     }
   }
 }
@@ -573,7 +573,7 @@ input[type='number']::-webkit-inner-spin-button {
     border-color: $gray-300;
     &:focus,
     &.focus {
-      box-shadow: 0 0 0 0.2rem rgba(91, 90, 92, 20%);
+      box-shadow: 0 0 0 0.2rem $background-opacity-20;
     }
   }
 }
@@ -597,26 +597,26 @@ input[type='number']::-webkit-inner-spin-button {
 ::selection {
   //blink/webkit
   color: $foreground;
-  background: rgba($text-select-color, 0.99);
+  background: var(--spectrum-alias-text-highlight-color);
   opacity: 1;
 }
 
 ::-moz-selection {
   //moz
   color: $foreground;
-  background: rgba($text-select-color, 0.99);
+  background: var(--spectrum-alias-text-highlight-color);
   opacity: 1;
 }
 
 .masked-input::selection {
   //blink/webkit
-  background: rgba($primary, 0.7);
+  background: var(--spectrum-alias-text-highlight-color);
   opacity: 1;
 }
 
 .masked-input::-moz-selection {
   //moz
-  background: rgba($primary, 0.7);
+  background: var(--spectrum-alias-text-highlight-color);
   opacity: 1;
 }
 
@@ -638,7 +638,7 @@ input[type='number']::-webkit-inner-spin-button {
 }
 
 ::-webkit-scrollbar-corner {
-  background: rgba(0, 0, 0, 10%);
+  background: rgba($background-rgb, 10%);
 }
 
 ::-webkit-scrollbar-track:horizontal {
@@ -658,16 +658,16 @@ input[type='number']::-webkit-inner-spin-button {
 }
 
 /* stylelint-disable no-descending-specificity */
-:root {
-  --scrollbar-color: 255, 255, 255;
+.app {
+  --scrollbar-color: #{$foreground-rgb};
 }
 /* stylelint-enable no-descending-specificity */
 
 // used in inverted color sections, like light modals
-.theme-bg-light {
-  --scrollbar-color: 0, 0, 0;
+.app .theme-bg-light {
+  --scrollbar-color: #{$background-rgb};
 
-  scrollbar-color: rgba($black, 0.5) rgba($black, 0.3); // firefox
+  scrollbar-color: rgba($background-rgb, 0.5) rgba($background-rgb, 0.3); // firefox
 }
 
 /********** Monaco Overides *********/
@@ -756,7 +756,7 @@ input[type='number']::-webkit-inner-spin-button {
       center;
     //make the dotted duplicate focus line on firefox go away
     &:-moz-focusring {
-      color: rgba(0, 0, 0, 0%);
+      color: transparent;
       text-shadow: 0 0 0 $foreground !important;
     }
   }
@@ -765,7 +765,7 @@ input[type='number']::-webkit-inner-spin-button {
     background-image: escape-svg($custom-select-indicator),
       linear-gradient(0deg, $gray-700, $gray-700);
     &:-moz-focusring {
-      color: rgba(0, 0, 0, 0%);
+      color: transparent;
       text-shadow: 0 0 0 $foreground !important;
     }
   }
@@ -774,7 +774,7 @@ input[type='number']::-webkit-inner-spin-button {
     background-image: escape-svg($custom-select-indicator),
       linear-gradient(0deg, $gray-200, $gray-200);
     &:-moz-focusring {
-      color: rgba(0, 0, 0, 0%);
+      color: transparent;
       text-shadow: 0 0 0 $background !important;
     }
   }

@@ -1,10 +1,10 @@
 @import '../scss/custom.scss';
 
-$draggable-item-hover-bg: $secondary;
-$draggable-item-selected-bg: rgba($primary, 0.4);
-$draggable-item-selected-hover-bg: $primary;
+$draggable-item-hover-bg: $list-hover;
+$draggable-item-selected-bg: $list-selected;
+$draggable-item-selected-hover-bg: $list-selected-hover;
 $draggable-item-dragging-bg: $primary;
-$draggable-item-selected-dragged-bg: rgba($primary, 0.35);
+$draggable-item-selected-dragged-bg: $list-selected;
 $draggable-item-border: $input-border-width solid transparent;
 $draggable-item-focus-border: $input-border-width solid
   $input-focus-border-color;
@@ -64,7 +64,7 @@ $draggable-item-grip-color: $mid;
   .number-badge {
     padding: 0 $spacer-2;
     border-radius: 1rem;
-    background-color: rgba($white, 0.25);
+    background-color: $foreground-opacity-25;
     margin-right: $spacer-1;
   }
 }

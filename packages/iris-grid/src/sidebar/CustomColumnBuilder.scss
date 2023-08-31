@@ -42,7 +42,7 @@ $background: $gray-700;
     .error-box {
       padding: $spacer-1;
       border-radius: $border-radius;
-      background: rgba($danger, $exception-transparency);
+      background: $negative-opacity-15;
     }
   }
 

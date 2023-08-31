@@ -1,7 +1,7 @@
 @import '../scss/custom.scss';
 
 $cb-option-btn-color: $dropdown-link-color;
-$cb-option-keyboard-selected-bg: rgba($primary, 0.5);
+$cb-option-keyboard-selected-bg: $list-selected;
 $cb-option-hover-bg: $dropdown-link-hover-bg;
 $cb-option-hover-color: $dropdown-link-hover-color;
 

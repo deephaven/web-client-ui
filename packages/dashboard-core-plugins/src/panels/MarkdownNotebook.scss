@@ -123,7 +123,7 @@ $btn-play-color: $success;
 
   50% {
     text-shadow:
-      0 0 2px rgba(255, 255, 255, 50%),
+      0 0 2px $foreground-opacity-50,
       0 0 10px $success;
   }
 

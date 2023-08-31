@@ -182,7 +182,7 @@ $nav-space: 4px; // give a gap around some buttons for focus area that are in na
     flex-shrink: 0;
     background-image: linear-gradient(
       270deg,
-      rgba($background, 0) 0%,
+      transparent 0%,
       $background $tab-control-gradient-width
     );
     background-clip: content-box;
@@ -199,7 +199,7 @@ $nav-space: 4px; // give a gap around some buttons for focus area that are in na
   .tab-controls-forward {
     background-image: linear-gradient(
       90deg,
-      rgba($background, 0) 0%,
+      transparent 0%,
       $background $tab-control-gradient-width
     );
     background-clip: content-box;

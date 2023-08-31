@@ -1,9 +1,9 @@
 @import '@deephaven/components/scss/custom.scss';
 
-$item-list-selected-bg: rgba($primary, 0.4);
 $item-list-selected-color: $white;
-$item-list-hover-bg: $gray-500;
-$item-list-selected-hover-bg: $primary;
+$item-list-hover-bg: $list-hover;
+$item-list-selected-bg: $list-selected;
+$item-list-selected-hover-bg: $list-selected-hover;
 
 .aggregation-edit {
   display: flex;

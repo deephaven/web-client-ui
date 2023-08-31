@@ -2,7 +2,7 @@
 
 $iris-panel-message-font-size: 1.2rem;
 $iris-panel-icon-font-size: 64px;
-$iris-panel-scrim-bg: rgba(black, 0.1);
+$iris-panel-scrim-bg: $background-opacity-10;
 
 .iris-panel-message-overlay {
   text-align: center;

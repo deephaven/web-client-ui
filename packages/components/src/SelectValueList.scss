@@ -8,7 +8,7 @@
   padding: $input-padding-y 0 $input-padding-y;
 
   &.is-invalid {
-    border-color: rgba($danger, 0.85);
+    border-color: $negative-opacity-80;
   }
 }
 

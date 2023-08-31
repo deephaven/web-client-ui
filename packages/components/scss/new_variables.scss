@@ -57,6 +57,225 @@ $exception-transparency: 0.13;
 $list-hover: var(--spectrum-alias-highlight-hover);
 $list-active: var(--spectrum-alias-highlight-active);
 $list-selected: var(--spectrum-alias-highlight-selected);
+$list-selected-border-color: var(--spectrum-accent-color-700);
 $list-selected-hover: var(--spectrum-alias-highlight-selected-hover);
+$list-selected-inactive: var(--spectrum-gray-200);
 $list-invalid: var(--spectrum-alias-highlight-invalid);
-$list-selected-border: var(--spectrum-accent-color-600);
+$list-selected-border: var(--spectrum-accent-colobackground-opacity-r-600);
+
+$foreground-rgb: var(--spectrum-gray-800-rgb);
+$background-rgb: var(--spectrum-gray-50-rgb);
+$negative-rgb: var(--spectrum-negative-visual-color-rgb);
+$accent-rgb: var(--spectrum-accent-color-rgb);
+
+$background-opacity-4: rgba(
+  $background-rgb,
+  var(--spectrum-global-color-opacity-4)
+);
+$background-opacity-5: rgba(
+  $background-rgb,
+  var(--spectrum-global-color-opacity-5)
+);
+$background-opacity-6: rgba(
+  $background-rgb,
+  var(--spectrum-global-color-opacity-6)
+);
+$background-opacity-7: rgba(
+  $background-rgb,
+  var(--spectrum-global-color-opacity-7)
+);
+$background-opacity-8: rgba(
+  $background-rgb,
+  var(--spectrum-global-color-opacity-8)
+);
+$background-opacity-10: rgba(
+  $background-rgb,
+  var(--spectrum-global-color-opacity-10)
+);
+$background-opacity-15: rgba(
+  $background-rgb,
+  var(--spectrum-global-color-opacity-15)
+);
+$background-opacity-20: rgba(
+  $background-rgb,
+  var(--spectrum-global-color-opacity-20)
+);
+$background-opacity-25: rgba(
+  $background-rgb,
+  var(--spectrum-global-color-opacity-25)
+);
+$background-opacity-30: rgba(
+  $background-rgb,
+  var(--spectrum-global-color-opacity-30)
+);
+$background-opacity-40: rgba(
+  $background-rgb,
+  var(--spectrum-global-color-opacity-40)
+);
+$background-opacity-42: rgba(
+  $background-rgb,
+  var(--spectrum-global-color-opacity-42)
+);
+$background-opacity-50: rgba(
+  $background-rgb,
+  var(--spectrum-global-color-opacity-50)
+);
+$background-opacity-60: rgba(
+  $background-rgb,
+  var(--spectrum-global-color-opacity-60)
+);
+$background-opacity-80: rgba(
+  $background-rgb,
+  var(--spectrum-global-color-opacity-80)
+);
+$background-opacity-90: rgba(
+  $background-rgb,
+  var(--spectrum-global-color-opacity-90)
+);
+
+$foreground-opacity-4: rgba(
+  $foreground-rgb,
+  var(--spectrum-global-color-opacity-4)
+);
+$foreground-opacity-5: rgba(
+  $foreground-rgb,
+  var(--spectrum-global-color-opacity-5)
+);
+$foreground-opacity-6: rgba(
+  $foreground-rgb,
+  var(--spectrum-global-color-opacity-6)
+);
+$foreground-opacity-7: rgba(
+  $foreground-rgb,
+  var(--spectrum-global-color-opacity-7)
+);
+$foreground-opacity-8: rgba(
+  $foreground-rgb,
+  var(--spectrum-global-color-opacity-8)
+);
+$foreground-opacity-10: rgba(
+  $foreground-rgb,
+  var(--spectrum-global-color-opacity-10)
+);
+$foreground-opacity-15: rgba(
+  $foreground-rgb,
+  var(--spectrum-global-color-opacity-15)
+);
+$foreground-opacity-20: rgba(
+  $foreground-rgb,
+  var(--spectrum-global-color-opacity-20)
+);
+$foreground-opacity-25: rgba(
+  $foreground-rgb,
+  var(--spectrum-global-color-opacity-25)
+);
+$foreground-opacity-30: rgba(
+  $foreground-rgb,
+  var(--spectrum-global-color-opacity-30)
+);
+$foreground-opacity-40: rgba(
+  $foreground-rgb,
+  var(--spectrum-global-color-opacity-40)
+);
+$foreground-opacity-42: rgba(
+  $foreground-rgb,
+  var(--spectrum-global-color-opacity-42)
+);
+$foreground-opacity-50: rgba(
+  $foreground-rgb,
+  var(--spectrum-global-color-opacity-50)
+);
+$foreground-opacity-60: rgba(
+  $foreground-rgb,
+  var(--spectrum-global-color-opacity-60)
+);
+$foreground-opacity-80: rgba(
+  $foreground-rgb,
+  var(--spectrum-global-color-opacity-80)
+);
+$foreground-opacity-90: rgba(
+  $foreground-rgb,
+  var(--spectrum-global-color-opacity-90)
+);
+
+$negative-opacity-4: rgba(
+  $negative-rgb,
+  var(--spectrum-global-color-opacity-4)
+);
+$negative-opacity-5: rgba(
+  $negative-rgb,
+  var(--spectrum-global-color-opacity-5)
+);
+$negative-opacity-6: rgba(
+  $negative-rgb,
+  var(--spectrum-global-color-opacity-6)
+);
+$negative-opacity-7: rgba(
+  $negative-rgb,
+  var(--spectrum-global-color-opacity-7)
+);
+$negative-opacity-8: rgba(
+  $negative-rgb,
+  var(--spectrum-global-color-opacity-8)
+);
+$negative-opacity-10: rgba(
+  $negative-rgb,
+  var(--spectrum-global-color-opacity-10)
+);
+$negative-opacity-15: rgba(
+  $negative-rgb,
+  var(--spectrum-global-color-opacity-15)
+);
+$negative-opacity-20: rgba(
+  $negative-rgb,
+  var(--spectrum-global-color-opacity-20)
+);
+$negative-opacity-25: rgba(
+  $negative-rgb,
+  var(--spectrum-global-color-opacity-25)
+);
+$negative-opacity-30: rgba(
+  $negative-rgb,
+  var(--spectrum-global-color-opacity-30)
+);
+$negative-opacity-40: rgba(
+  $negative-rgb,
+  var(--spectrum-global-color-opacity-40)
+);
+$negative-opacity-42: rgba(
+  $negative-rgb,
+  var(--spectrum-global-color-opacity-42)
+);
+$negative-opacity-50: rgba(
+  $negative-rgb,
+  var(--spectrum-global-color-opacity-50)
+);
+$negative-opacity-60: rgba(
+  $negative-rgb,
+  var(--spectrum-global-color-opacity-60)
+);
+$negative-opacity-80: rgba(
+  $negative-rgb,
+  var(--spectrum-global-color-opacity-80)
+);
+$negative-opacity-90: rgba(
+  $negative-rgb,
+  var(--spectrum-global-color-opacity-90)
+);
+
+$accent-opacity-4: rgba($accent-rgb, var(--spectrum-global-color-opacity-4));
+$accent-opacity-5: rgba($accent-rgb, var(--spectrum-global-color-opacity-5));
+$accent-opacity-6: rgba($accent-rgb, var(--spectrum-global-color-opacity-6));
+$accent-opacity-7: rgba($accent-rgb, var(--spectrum-global-color-opacity-7));
+$accent-opacity-8: rgba($accent-rgb, var(--spectrum-global-color-opacity-8));
+$accent-opacity-10: rgba($accent-rgb, var(--spectrum-global-color-opacity-10));
+$accent-opacity-15: rgba($accent-rgb, var(--spectrum-global-color-opacity-15));
+$accent-opacity-20: rgba($accent-rgb, var(--spectrum-global-color-opacity-20));
+$accent-opacity-25: rgba($accent-rgb, var(--spectrum-global-color-opacity-25));
+$accent-opacity-30: rgba($accent-rgb, var(--spectrum-global-color-opacity-30));
+$accent-opacity-40: rgba($accent-rgb, var(--spectrum-global-color-opacity-40));
+$accent-opacity-42: rgba($accent-rgb, var(--spectrum-global-color-opacity-42));
+$accent-opacity-50: rgba($accent-rgb, var(--spectrum-global-color-opacity-50));
+$accent-opacity-60: rgba($accent-rgb, var(--spectrum-global-color-opacity-60));
+$accent-opacity-80: rgba($accent-rgb, var(--spectrum-global-color-opacity-80));
+$accent-opacity-90: rgba($accent-rgb, var(--spectrum-global-color-opacity-90));

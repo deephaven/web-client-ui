@@ -15,8 +15,7 @@ $settings-menu-rule-border: $gray-400;
 $settings-menu-rule-focused-border: $primary;
 
 $focus-over-primary-color: $foreground;
-$input-btn-focus-box-shadow-over-primary: 0 0 0 0.2rem
-  rgba($focus-over-primary-color, 0.35);
+$input-btn-focus-box-shadow-over-primary: 0 0 0 0.2rem $foreground-opacity-30;
 
 $settings-menu-z-index: $zindex-modal;
 
@@ -74,7 +73,7 @@ $settings-menu-z-index: $zindex-modal;
 
     &:focus {
       &::after {
-        background: rgba($focus-over-primary-color, $focus-bg-transparency);
+        background: $foreground-opacity-15;
         border: 1px solid $focus-over-primary-color;
         box-shadow: $input-btn-focus-box-shadow-over-primary;
       }
@@ -82,14 +81,14 @@ $settings-menu-z-index: $zindex-modal;
 
     &:hover {
       &::after {
-        background: rgba($focus-over-primary-color, $hover-bg-transparency);
+        background: $foreground-opacity-10;
       }
     }
 
     &:active {
       &::after {
         content: '';
-        background: rgba($focus-over-primary-color, $active-bg-transparency);
+        background: $foreground-opacity-20;
       }
     }
   }
@@ -136,18 +135,18 @@ $settings-menu-z-index: $zindex-modal;
       padding: 0 $spacer-1;
 
       &:focus {
-        background: rgba($focus-over-primary-color, $focus-bg-transparency);
+        background: $foreground-opacity-15;
         border: 1px solid $focus-over-primary-color;
         box-shadow: $input-btn-focus-box-shadow-over-primary;
       }
 
       &:hover {
-        background: rgba($focus-over-primary-color, $hover-bg-transparency);
+        background: $foreground-opacity-10;
       }
 
       &:active {
         content: '';
-        background: rgba($focus-over-primary-color, $active-bg-transparency);
+        background: $foreground-opacity-20;
       }
     }
   }

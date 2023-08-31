@@ -32,14 +32,14 @@ $navigation-menu-item-color: $gray-300;
   }
 
   &:focus {
-    background: rgba($primary, $focus-bg-transparency);
+    background: $list-selected;
     border: $input-border-width solid $primary;
     box-shadow: $input-btn-focus-box-shadow;
     text-decoration: none;
   }
 
   &:hover {
-    background: $primary;
+    background: $list-hover;
     color: $foreground;
     text-decoration: none;
 

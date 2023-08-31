@@ -238,7 +238,8 @@
     24,
     0.15
   ); /* matches red-600 */
-  --spectrum-alias-text-highlight-color: rgba(64, 150, 243, 0.3);
+
+  --spectrum-alias-text-highlight-color: rgba(76, 125, 238, 0.3);
   --spectrum-alias-background-color-quickactions: rgba(29, 29, 29, 0.9);
   --spectrum-alias-radial-reaction-color-default: rgba(235, 235, 235, 0.6);
   --spectrum-alias-pasteboard-background-color: var(
@@ -394,6 +395,12 @@
   --spectrum-purple-visual-color: var(--spectrum-purple-900);
   --spectrum-fuchsia-visual-color: var(--spectrum-fuchsia-900);
   --spectrum-magenta-visual-color: var(--spectrum-magenta-900);
+
+  // NEW specrum variables to enable RGBA usage
+  --spectrum-gray-800-rgb: 240, 240, 238;
+  --spectrum-gray-50-rgb: 26, 23, 26;
+  --spectrum-negative-visual-color-rgb: 248, 94, 132;
+  --spectrum-accent-color-rgb: 76, 125, 238;
 }
 
 [class^='spectrum'] {

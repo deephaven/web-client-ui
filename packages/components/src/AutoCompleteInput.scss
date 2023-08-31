@@ -1,7 +1,7 @@
 @import '../scss/custom.scss';
 
 $aci-option-btn-color: $foreground;
-$aci-option-keyboard-selected-bg: rgba($primary, 0.5);
+$aci-option-keyboard-selected-bg: $list-selected;
 $aci-option-hover-bg: $dropdown-link-hover-bg;
 $aci-option-hover-color: $dropdown-link-hover-color;
 

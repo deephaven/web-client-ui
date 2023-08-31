@@ -1,8 +1,7 @@
 @import '../scss/custom.scss';
-$item-list-bg: $secondary;
-$item-list-keyboard-selected-bg: rgba($primary, 0.5);
-$item-list-selected-bg: $primary;
-$item-list-selected-color: $white;
+$item-list-keyboard-selected-bg: $list-selected;
+$item-list-selected-bg: $list-hover;
+$item-list-selected-color: $foreground;
 
 .item-list-item {
   border: none;

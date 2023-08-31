@@ -4,10 +4,10 @@ $shade: $primary;
 
 $command-history-bg: $gray-700;
 $selection-color: $foreground;
-$selection-bg: var(--spectrum-alias-highlight-selected);
-$selection-hover-bg: var(--spectrum-alias-highlight-selected-hover);
-$selection-nofocus-bg: $gray-600;
-$selection-border-color: --var(--spectrum-accent-color-500);
+$selection-bg: $list-selected;
+$selection-hover-bg: $list-selected-hover;
+$selection-nofocus-bg: $list-selected-inactive;
+$selection-border-color: $list-selected-border-color;
 $selection-hover-color: $foreground;
 
 .command-history {

@@ -31,10 +31,10 @@ $depth-margin: calc(
     }
 
     &.isSelected {
-      background-color: rgba($primary, 0.4);
+      background-color: $list-selected;
 
       &:hover {
-        background-color: $primary;
+        background-color: $list-hover;
 
         svg:not(.color-swatch) {
           color: $foreground;
@@ -58,7 +58,7 @@ $depth-margin: calc(
     .item-count {
       padding: 0 $spacer-2;
       border-radius: 1rem;
-      background-color: rgba($foreground, 0.25);
+      background-color: $foreground-opacity-25;
       margin-right: $spacer-1;
     }
   }

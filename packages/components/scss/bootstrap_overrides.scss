@@ -1,8 +1,5 @@
 // Styling overrides for bootstrap
 
-// TODO TACKLE REPLACING EVERY instance of rgba($ and rgba(var
-// as they will no longer work but won't error.
-
 // Override / set color variables
 $red: var(--spectrum-red-visual-color);
 $orange: var(--spectrum-orange-visual-color);
@@ -30,25 +27,9 @@ $content-bg: var(--spectrum-gray-100);
 $background: $black;
 $foreground: $white;
 
-//Load colors into map
-$colors: ();
-$colors: map-merge(
-  (
-    'red': $red,
-    'orange': $orange,
-    'yellow': $yellow,
-    'green': $green,
-    'blue': $blue,
-    'purple': $purple,
-    'white': $white,
-    'black': $black,
-  ),
-  $colors
-);
-
 //Set default colors
-$body-bg: $black;
-$body-color: $white;
+$body-bg: $background;
+$body-color: $foreground;
 
 // Set brand colors
 $primary: var(--spectrum-accent-color-600);
@@ -105,10 +86,7 @@ $headings-font-weight: 400;
 $text-muted: $gray-400;
 
 //Style Selection highlight color
-//so browsers add alpha to your color by default, ignoring opacity 1
-//by setting rgba with 0.99 it tricks browser into thinking there is alpha applied
-$text-select-color: $primary-hover;
-$text-select-color-editor: $gray-600;
+$text-select-color: var(--spectrum-alias-text-highlight-color);
 
 //Grid variables, same value as default just making easily accessible
 $grid-gutter-width: 30px;
@@ -179,7 +157,7 @@ $toast-error-color: var(--spectrum-alias-text-color);
 //tooltips
 $tooltip-bg: $gray-900;
 $tooltip-color: $foreground;
-$tooltip-box-shadow: 0 0.1rem 1.5rem 0.1rem rgba($black, 80%);
+$tooltip-box-shadow: $box-shadow;
 
 //drowdowns
 $dropdown-bg: $gray-900;
@@ -192,8 +170,8 @@ $dropdown-divider-bg: $gray-700;
 $contextmenu-bg: $gray-900;
 $contextmenu-color: $foreground;
 $contextmenu-disabled-color: $text-muted;
-$contextmenu-keyboard-selected-bg: rgba($primary, 50%);
-$contextmenu-selected-bg: $primary;
+$contextmenu-keyboard-selected-bg: var(--spectrum-alias-highlight-selected);
+$contextmenu-selected-bg: var(--spectrum-alias-highlight-hover);
 $contextmenu-selected-color: $foreground;
 
 //links
@@ -228,7 +206,7 @@ $table-dark-bg: $gray-800;
 $table-dark-accent-bg: var(--spectrum-alias-highlight-hover);
 $table-dark-hover-bg: var(--spectrum-alias-highlight-active);
 $table-dark-border-color: $gray-700;
-$popover-bg: $white;
+$popover-bg: $tooltip-bg;
 $popover-border-color: var(--spectrum-alias-background-color-modal-overlay);
 $popover-header-bg: #000;
 $popover-arrow-outer-color: var(--spectrum-alias-dropshadow-color);
