@@ -154,10 +154,6 @@ export async function pasteInMonaco(
     // Sanity check the paste happened
     await expect(locator.locator('textarea')).not.toBeEmpty();
   }
-
-  if (text.length > 0) {
-    await expect(locator.locator('textarea')).not.toBeEmpty();
-  }
 }
 
 /**
