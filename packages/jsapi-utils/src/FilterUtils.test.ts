@@ -1,6 +1,6 @@
 import { Key } from 'react';
+import dh from '@deephaven/jsapi-shim';
 import type {
-  dh as dhType,
   Column,
   FilterCondition,
   FilterValue,
@@ -21,7 +21,6 @@ import {
 const { asMock, createMockProxy } = TestUtils;
 
 const table = createMockProxy<Table>({});
-declare const dh: dhType;
 const tableUtils = new TableUtils(dh);
 const makeFilterValue = jest.spyOn(tableUtils, 'makeFilterValue');
 
