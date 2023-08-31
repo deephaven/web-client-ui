@@ -178,7 +178,7 @@ class CsvInputBar extends Component<CsvInputBarProps, CsvInputBarState> {
     }
   }
 
-  handleFile(file: Blob | JSZipObject, isZip = false): void {
+  handleFile(file: File | Blob | JSZipObject, isZip = false): void {
     log.info(
       `Starting CSV parser for ${
         file instanceof File ? file.name : 'pasted values'
