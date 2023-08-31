@@ -5,6 +5,7 @@ $iris-grid-bg: $content-bg;
 $iris-grid-font:
   12px fira sans,
   sans-serif;
+$iris-grid-font-feature-settings: 'tnum';
 $table-sidebar-max-width: 320px;
 $table-sidebar-bg: $gray-700;
 $iris-grid-bar-bg: $primary-dark;
@@ -86,7 +87,7 @@ $cell-invalid-box-shadow:
     min-height: 0;
     position: relative;
     font: $iris-grid-font;
-    font-feature-settings: 'tnum';
+    font-feature-settings: $iris-grid-font-feature-settings;
     transition: all $transition-mid;
 
     .grid-settings-button {
