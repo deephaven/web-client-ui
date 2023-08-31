@@ -6,6 +6,7 @@ export { default as useBroadcastChannel } from './useBroadcastChannel';
 export { default as useBroadcastLoginListener } from './useBroadcastLoginListener';
 export * from './useCheckIfExistsValue';
 export { default as useDebouncedViewportSearch } from './useDebouncedViewportSearch';
+export * from './useDebouncedViewportSelectionFilter';
 export * from './useFilterConditionFactories';
 export * from './useFilteredItemsWithDefaultValue';
 export * from './useGetItemPosition';

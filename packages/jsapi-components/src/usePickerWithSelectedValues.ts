@@ -42,13 +42,13 @@ export interface UsePickerWithSelectedValuesResult<TItem, TValue> {
  * items are removed from the list and managed in a selectedValueMap data
  * structure. Useful for components that contain a picker but show selected
  * values in a separate component.
- * @param usersAndGroupsTable
+ * @param maybeTable
  * @param columnName
  * @param mapItemToValue
  * @param filterConditionFactories
  */
 export function usePickerWithSelectedValues<TItem, TValue>(
-  usersAndGroupsTable: Table | null,
+  maybeTable: Table | null,
   columnName: string,
   mapItemToValue: (item: KeyedItem<TItem>) => TValue,
   ...filterConditionFactories: FilterConditionFactory[]
@@ -68,7 +68,7 @@ export function usePickerWithSelectedValues<TItem, TValue>(
 
   const { data: valueExists, isLoading: valueExistsIsLoading } =
     usePromiseFactory(tableUtils.doesColumnValueExist, [
-      usersAndGroupsTable,
+      maybeTable,
       columnName,
       debouncedSearchText,
       false /* isCaseSensitive */,
@@ -101,7 +101,7 @@ export function usePickerWithSelectedValues<TItem, TValue>(
 
   const { data: listTable } = usePromiseFactory(
     tableUtils.createDistinctSortedColumnTable,
-    [usersAndGroupsTable, columnName, 'asc', ...filterConditionFactories]
+    [maybeTable, columnName, 'asc', ...filterConditionFactories]
   );
 
   useTableClose(listTable);
