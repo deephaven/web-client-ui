@@ -1,4 +1,3 @@
-import { useTableUtils } from '@deephaven/jsapi-components';
 import {
   createSelectedValuesFilter,
   FilterConditionFactory,
@@ -14,6 +13,7 @@ import {
   WindowedListData,
 } from '@deephaven/utils';
 import { useMemo } from 'react';
+import useTableUtils from './useTableUtils';
 
 export const DEBOUNCE_MS = 300;
 
