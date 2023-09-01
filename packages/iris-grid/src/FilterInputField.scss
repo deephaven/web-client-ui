@@ -22,12 +22,18 @@
     width: auto;
     height: 100%;
     border: $input-border-width solid;
-    padding: 6px 2px 3px 3px;
+    padding: 3px 2px 3px 3px;
     margin-right: 24px; // leave space for filter-button
     overflow: hidden;
     visibility: hidden;
     white-space: nowrap;
     grid-area: 1 / 1;
+    font: IrisGrid.$iris-grid-font;
+    font-feature-settings: IrisGrid.$iris-grid-font-feature-settings;
+
+    @-moz-document url-prefix() {
+      font-feature-settings: normal;
+    }
   }
 
   .iris-grid-input-field {
@@ -41,6 +47,13 @@
     border-radius: 1px;
     font: IrisGrid.$iris-grid-font;
     font-feature-settings: IrisGrid.$iris-grid-font-feature-settings;
+
+    @-moz-document url-prefix() {
+      // Firefox doesn't support font-feature-settings on canvas
+      // so we shouldn't use it here either
+      // https://bugzilla.mozilla.org/show_bug.cgi?id=1580953
+      font-feature-settings: normal;
+    }
 
     &.iris-grid-has-filter {
       // same as filter-bar-expanded-active-bg
