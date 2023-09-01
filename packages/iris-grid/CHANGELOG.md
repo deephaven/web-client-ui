@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.46.1](https://github.com/deephaven/web-client-ui/compare/v0.46.0...v0.46.1) (2023-09-01)
+
+
+### Bug Fixes
+
+* flaky e2e tests ([#1453](https://github.com/deephaven/web-client-ui/issues/1453)) ([d59e9be](https://github.com/deephaven/web-client-ui/commit/d59e9bed95152170626265a00ea27d716e1b2bcb))
+
+
+
+
+
 # [0.46.0](https://github.com/deephaven/web-client-ui/compare/v0.45.1...v0.46.0) (2023-08-18)
 
 

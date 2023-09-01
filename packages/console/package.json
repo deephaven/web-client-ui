@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/console",
-  "version": "0.46.0",
+  "version": "0.46.1",
   "description": "Deephaven Console",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -29,9 +29,9 @@
     "@deephaven/jsapi-bootstrap": "file:../jsapi-bootstrap",
     "@deephaven/jsapi-types": "file:../jsapi-types",
     "@deephaven/log": "file:../log",
+    "@deephaven/react-hooks": "file:../react-hooks",
     "@deephaven/storage": "file:../storage",
     "@deephaven/utils": "file:../utils",
-    "@deephaven/react-hooks": "file:../react-hooks",
     "@fortawesome/react-fontawesome": "^0.2.0",
     "classnames": "^2.3.1",
     "linkifyjs": "^4.1.0",

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.46.1](https://github.com/deephaven/web-client-ui/compare/v0.46.0...v0.46.1) (2023-09-01)
+
+
+### Bug Fixes
+
+* Remove unused ref forwarded to all dashboard panels ([#1451](https://github.com/deephaven/web-client-ui/issues/1451)) ([938aa07](https://github.com/deephaven/web-client-ui/commit/938aa0724abb58b09d8ce1d339766b1072c95202))
+
+
+
+
+
 # [0.46.0](https://github.com/deephaven/web-client-ui/compare/v0.45.1...v0.46.0) (2023-08-18)
 
 **Note:** Version bump only for package @deephaven/golden-layout
