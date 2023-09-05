@@ -614,7 +614,10 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
   scrollConsoleHistoryToBottom(force = false): void {
     const pane = this.consoleHistoryScrollPane.current;
     assertNotNull(pane);
-    if (!force && pane.scrollTop < pane.scrollHeight - pane.offsetHeight) {
+    if (
+      !force &&
+      Math.round(pane.scrollTop) < pane.scrollHeight - pane.offsetHeight
+    ) {
       return;
     }
 
