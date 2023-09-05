@@ -40,7 +40,8 @@ export function ApiBootstrap({
   useEffect(() => {
     async function loadApi() {
       try {
-        const dh: DhType = (await import(/* @vite-ignore */ apiUrl)).default;
+        const dh: DhType = (await import(/* @vite-ignore */ `${apiUrl}`))
+          .default;
         log.info('API bootstrapped from', apiUrl);
         setApi(dh);
         if (setGlobally) {
