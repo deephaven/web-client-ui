@@ -28,6 +28,10 @@ export class MockFileStorage implements FileStorage {
     throw new Error('Method not implemented.');
   }
 
+  copyFile(name: string, newName: string): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+
   async deleteFile(name: string): Promise<void> {
     this.items = this.items.filter(value => value.filename !== name);
   }
