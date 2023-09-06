@@ -1,4 +1,3 @@
-import type { Key } from 'react';
 import {
   Type as FilterType,
   Operator as FilterOperator,
@@ -21,22 +20,15 @@ import type {
 import {
   bindAllMethods,
   CancelablePromise,
-  KeyedItem,
   PromiseUtils,
   removeNullAndUndefined,
   TextUtils,
   TimeoutError,
-  WindowedListData,
 } from '@deephaven/utils';
 import DateUtils from './DateUtils';
 import { ColumnName } from './Formatter';
 import { createValueFilter, FilterConditionFactory } from './FilterUtils';
-import {
-  createKeyFromOffsetRow,
-  getSize,
-  OnTableUpdatedEvent,
-  RowDeserializer,
-} from './ViewportDataUtils';
+import { getSize } from './ViewportDataUtils';
 
 const log = Log.module('TableUtils');
 
@@ -123,38 +115,6 @@ export class TableUtils {
     );
 
     return derivedTable as R;
-  }
-
-  /**
-   * Creates a table update handler function that will bulk update a windowed
-   * viewport with data.
-   * @param viewportData Windowed viewport data to update
-   * @param deserializeRow Function that can deserialize row data to item data
-   */
-  static createOnTableUpdatedHandler<T>(
-    viewportData: WindowedListData<KeyedItem<T>>,
-    deserializeRow: RowDeserializer<T>
-  ): (event: OnTableUpdatedEvent) => void {
-    /**
-     * Handler for a `dh.Table.EVENT_UPDATED` event.
-     */
-    return function onTableUpdated(event: OnTableUpdatedEvent) {
-      const { columns, offset, rows } = event.detail;
-
-      log.debug('table updated', event.detail);
-
-      const updateKeyMap = new Map<Key, KeyedItem<T>>();
-
-      rows.forEach(row => {
-        const item = deserializeRow(row, columns);
-        const key = createKeyFromOffsetRow(row, offset);
-        updateKeyMap.set(key, { key, item });
-      });
-
-      log.debug('update keys', updateKeyMap);
-
-      viewportData.bulkUpdate(updateKeyMap);
-    };
   }
 
   /**
