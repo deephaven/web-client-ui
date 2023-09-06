@@ -78,8 +78,8 @@ beforeEach(() => {
   expect.hasAssertions();
 });
 
-describe.only('constructor', () => {
-  const classMethodNames = getAllMethodNames(new TableUtils(dh));
+describe('constructor', () => {
+  const classMethodNames = getAllMethodNames(new TableUtils(dh), false);
 
   it.each(classMethodNames)(
     'should bind all non-static methods in constructor: %s',
@@ -157,7 +157,7 @@ describe.each([undefined, 400])('applyNeverFilter - timeout: %s', timeout => {
   });
 
   beforeAll(() => {
-    makeNeverFilter = jest.spyOn(TableUtils.prototype, 'makeNeverFilter');
+    makeNeverFilter = jest.spyOn(tableUtils, 'makeNeverFilter');
     makeNeverFilter.mockReturnValue(neverFilter);
   });
 
@@ -184,7 +184,7 @@ describe.each([undefined, 400])('applyNeverFilter - timeout: %s', timeout => {
 
   it('should call TableUtils.applyFilter with a "never filter": %s', async () => {
     const applyFilter = jest
-      .spyOn(TableUtils.prototype, 'applyFilter')
+      .spyOn(tableUtils, 'applyFilter')
       .mockResolvedValue(table);
 
     const columnName = 'mock.column';

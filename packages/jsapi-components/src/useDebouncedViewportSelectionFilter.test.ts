@@ -1,5 +1,4 @@
 import { renderHook } from '@testing-library/react-hooks';
-import { useTableUtils } from '@deephaven/jsapi-components';
 import {
   createSelectedValuesFilter,
   FilterConditionFactory,
@@ -19,13 +18,14 @@ import {
 import useDebouncedViewportSelectionFilter, {
   DEBOUNCE_MS,
 } from './useDebouncedViewportSelectionFilter';
+import useTableUtils from './useTableUtils';
 
-jest.mock('@deephaven/jsapi-components');
 jest.mock('@deephaven/react-hooks');
 jest.mock('@deephaven/jsapi-utils', () => ({
   ...jest.requireActual('@deephaven/jsapi-utils'),
   createSelectedValuesFilter: jest.fn(),
 }));
+jest.mock('./useTableUtils');
 
 const { asMock, createMockProxy } = TestUtils;
 

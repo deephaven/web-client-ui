@@ -6,7 +6,6 @@ import type {
   FilterValue,
   Table,
 } from '@deephaven/jsapi-types';
-import { TableUtils } from '@deephaven/jsapi-utils';
 import { KeyedItem, TestUtils } from '@deephaven/utils';
 import {
   createComboboxFilterArgs,
@@ -17,6 +16,7 @@ import {
   createShowOnlyEmptyFilterCondition,
   createValueFilter,
 } from './FilterUtils';
+import TableUtils from './TableUtils';
 
 const { asMock, createMockProxy } = TestUtils;
 
