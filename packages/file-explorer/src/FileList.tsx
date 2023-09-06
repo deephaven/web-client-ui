@@ -81,6 +81,8 @@ export function FileList(props: FileListProps): JSX.Element {
   const [dragPlaceholder, setDragPlaceholder] = useState<HTMLDivElement>();
   const [selectedRanges, setSelectedRanges] = useState([] as Range[]);
 
+  const focusedIndex = useRef<number | null>();
+
   const itemList = useRef<ItemList<FileStorageItem>>(null);
   const fileList = useRef<HTMLDivElement>(null);
 
@@ -299,6 +301,7 @@ export function FileList(props: FileListProps): JSX.Element {
       } else {
         onFocusChange();
       }
+      focusedIndex.current = focusIndex;
     },
     [getItems, onFocusChange]
   );
@@ -369,6 +372,21 @@ export function FileList(props: FileListProps): JSX.Element {
       };
     },
     [table]
+  );
+
+  // if the loadedViewport changes, re-fire the focused
+  // item and the selected range items as they could have
+  // been updated
+  useEffect(
+    function updateFocusAndSelection() {
+      if (focusedIndex.current != null) {
+        handleFocusChange(focusedIndex.current);
+      }
+      if (selectedRanges.length > 0) {
+        handleSelectionChange(selectedRanges);
+      }
+    },
+    [loadedViewport, handleFocusChange, handleSelectionChange, selectedRanges]
   );
 
   // Expand a folder if hovering over it
