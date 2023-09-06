@@ -58,7 +58,6 @@ import {
   Link,
   ColumnSelectionValidator,
   getDashboardConnection,
-  TablePlugin,
   IrisGridPanelMetadata,
   isIrisGridPanelMetadata,
   isLegacyIrisGridPanelMetadata,
@@ -99,6 +98,7 @@ import type { ItemConfigType } from '@deephaven/golden-layout';
 import {
   type DashboardPlugin,
   isDashboardPlugin,
+  type TablePluginComponent,
   isTablePlugin,
   type LegacyDashboardPlugin,
 } from '@deephaven/plugin';
@@ -638,18 +638,18 @@ export class AppMainContainer extends Component<
    * @param pluginName The name of the plugin to load
    * @returns An element from the plugin
    */
-  handleLoadTablePlugin(pluginName: string): TablePlugin {
+  handleLoadTablePlugin(pluginName: string): TablePluginComponent {
     const { plugins } = this.props;
 
     // First check if we have any plugin modules loaded that match the TablePlugin.
     const pluginModule = plugins.get(pluginName);
-    if (
-      pluginModule != null &&
-      (isTablePlugin(pluginModule) || 'TablePlugin' in pluginModule)
-    ) {
-      return (isTablePlugin(pluginModule)
-        ? pluginModule.component
-        : pluginModule.TablePlugin) as unknown as TablePlugin;
+    if (pluginModule != null) {
+      if (isTablePlugin(pluginModule)) {
+        return pluginModule.component;
+      }
+      if ('TablePlugin' in pluginModule) {
+        return pluginModule.TablePlugin;
+      }
     }
 
     const errorMessage = `Unable to find table plugin ${pluginName}.`;
@@ -725,7 +725,7 @@ export class AppMainContainer extends Component<
     id: string
   ): DehydratedDashboardPanelProps & {
     getDownloadWorker: () => Promise<ServiceWorker>;
-    loadPlugin: (pluginName: string) => TablePlugin;
+    loadPlugin: (pluginName: string) => TablePluginComponent;
     localDashboardId: string;
     makeModel: () => Promise<IrisGridModel>;
   } {

@@ -1,18 +1,29 @@
+import type { TablePluginComponent } from './TablePlugin';
+
 export const PluginType = Object.freeze({
   AUTH_PLUGIN: 'AuthPlugin',
   DASHBOARD_PLUGIN: 'DashboardPlugin',
   TABLE_PLUGIN: 'TablePlugin',
 });
 
+/**
+ * @deprecated Use DashboardPlugin instead
+ */
 export type LegacyDashboardPlugin = { DashboardPlugin: React.ComponentType };
 
+/**
+ * @deprecated Use AuthPlugin instead
+ */
 export type LegacyAuthPlugin = {
   Component: React.ComponentType<AuthPluginProps>;
   isAvailable: (authHandlers: string[], authConfig: AuthConfigMap) => boolean;
 };
 
+/**
+ * @deprecated Use TablePlugin instead
+ */
 export type LegacyTablePlugin = {
-  TablePlugin: React.ComponentType;
+  TablePlugin: TablePluginComponent;
 };
 
 export type LegacyPlugin =
@@ -43,7 +54,7 @@ export function isDashboardPlugin(
 
 export interface TablePlugin extends Plugin {
   type: typeof PluginType.TABLE_PLUGIN;
-  component: React.ComponentType;
+  component: TablePluginComponent;
 }
 
 export function isTablePlugin(plugin: PluginModule): plugin is TablePlugin {

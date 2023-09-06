@@ -6,5 +6,9 @@
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx"],
   "exclude": ["node_modules", "src/**/*.test.*", "src/**/__mocks__/*"],
-  "references": []
+  "references": [
+    { "path": "../components" },
+    { "path": "../iris-grid" },
+    { "path": "../jsapi-types" }
+  ]
 }
