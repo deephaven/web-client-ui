@@ -1,4 +1,5 @@
 export type { Range } from '@deephaven/utils';
+export * from './actions';
 export { default as AutoCompleteInput } from './AutoCompleteInput';
 export { default as AutoResizeTextarea } from './AutoResizeTextarea';
 export { default as BasicModal } from './BasicModal';
