@@ -86,7 +86,8 @@ class ColumnStatistics extends Component<
   maybeGenerateStatistics(): void {
     const { model } = this.props;
 
-    const numRows = model.rowCount - model.pendingRowCount;
+    const numRows =
+      model.rowCount - model.pendingRowCount - model.floatingBottomRowCount;
     this.setState({ numRows });
     if (!model.isColumnStatisticsAvailable) {
       this.setState({ loading: false });
@@ -133,7 +134,8 @@ class ColumnStatistics extends Component<
     this.setState({
       loading: false,
       statistics,
-      numRows: model.rowCount - model.pendingRowCount,
+      numRows:
+        model.rowCount - model.pendingRowCount - model.floatingBottomRowCount,
     });
 
     onStatistics();

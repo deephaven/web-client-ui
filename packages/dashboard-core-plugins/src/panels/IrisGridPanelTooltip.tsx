@@ -15,7 +15,10 @@ interface IrisGridPanelTooltipProps {
 function IrisGridPanelTooltip(props: IrisGridPanelTooltipProps): ReactElement {
   const { model, widgetName, glContainer, description } = props;
 
-  const rowCount = (model?.rowCount ?? 0) - (model?.pendingRowCount ?? 0);
+  const rowCount =
+    (model?.rowCount ?? 0) -
+    (model?.pendingRowCount ?? 0) -
+    (model?.floatingBottomRowCount ?? 0);
   const formattedRowCount = model?.displayString(rowCount, 'long');
 
   const columnCount = model?.columnCount ?? 0;
