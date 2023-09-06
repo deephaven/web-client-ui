@@ -11,7 +11,7 @@ import {
 } from '@adobe/react-spectrum';
 import type { SpectrumLabelableProps } from '@react-types/shared';
 import { useFormWithDetachedSubmitButton } from '@deephaven/react-hooks';
-import styles from './SpectrumDialog.module.scss';
+import styles from '../SpectrumComponent.module.scss';
 
 export interface ConfirmationDialogProps {
   heading: ReactNode;
