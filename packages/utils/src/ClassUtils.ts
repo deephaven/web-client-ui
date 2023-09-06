@@ -3,33 +3,50 @@ export type MethodName<T> = {
 }[keyof T];
 
 /**
- * Bind all methods in the prototype chain to the instance (excluding those
- * defined on Object.prototype)
+ * Bind all methods on the instance + its prototype to the instance. If
+ * `traversePrototypeChain` is true, the prototype chain will be traversed until
+ * Object.prototype is reached, and any additional methods found will be included.
  * @param instance The instance to bind methods to
+ * @param traversePrototypeChain Whether to traverse the prototype chain or not
  */
-export function bindAllMethods<T>(instance: T) {
-  const methodNames = getAllMethodNames(instance);
+export function bindAllMethods(
+  instance: object,
+  traversePrototypeChain = false
+): void {
+  const methodNames = getAllMethodNames(instance, traversePrototypeChain);
 
   methodNames.forEach(methodName => {
     // eslint-disable-next-line no-param-reassign
-    instance[methodName] = (
+    (instance as Record<string, unknown>)[methodName] = (
       instance[methodName] as (...args: unknown[]) => unknown
-    ).bind(instance) as T[typeof methodName];
+    ).bind(instance);
   });
 }
 
 /**
- * Get all class method names. This will return names of all methods defined in
- * an object's prototype chain exlcluding those defined on Object.prototype.
- * @param instance
+ * Get all class method names. This will return names of all methods defined on
+ * the instance + its prototype. If `traversePrototypeChain` is true, the prototype
+ * chain will be traversed until Object.prototype is reached, and any additional
+ * methods found will be included.
+ * @param instance Instance to get method names from
+ * @param traversePrototypeChain Whether to traverse the prototype chain or not
  */
-export function getAllMethodNames<T>(instance: T): MethodName<T>[] {
+export function getAllMethodNames<T>(
+  instance: T,
+  traversePrototypeChain: boolean
+): MethodName<T>[] {
   const methodNames = new Set<MethodName<T>>();
 
   let current = instance;
 
-  // Traverse the prototype chain until we get to Object.prototype
-  while (current != null && current !== Object.prototype) {
+  // Get method names for instance + prototype. Optionally traverse prototype
+  // chain until Object.prototype is reached.
+  let level = 0;
+  while (
+    current != null &&
+    current !== Object.prototype &&
+    (level <= 1 || traversePrototypeChain)
+  ) {
     // eslint-disable-next-line no-restricted-syntax
     for (const name of Object.getOwnPropertyNames(current)) {
       if (
@@ -41,7 +58,8 @@ export function getAllMethodNames<T>(instance: T): MethodName<T>[] {
     }
 
     current = Object.getPrototypeOf(current);
+    level += 1;
   }
 
-  return [...methodNames.keys()].sort();
+  return [...methodNames.keys()];
 }

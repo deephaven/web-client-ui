@@ -33,26 +33,49 @@ beforeEach(() => {
 });
 
 describe('getAllMethodNames', () => {
-  it('should return all method names in the prototype chain', () => {
-    const instance = new Ccc();
+  it.each([true, false])(
+    'should return all method names: %s',
+    traversePrototypeChain => {
+      const instance = new Ccc();
 
-    const methodNames = getAllMethodNames(instance);
+      const methodNames = getAllMethodNames(
+        instance,
+        traversePrototypeChain
+      ).sort();
 
-    expect(methodNames).toEqual(['getAaa', 'getBbb', 'getCcc', 'getCcc2']);
-  });
+      if (traversePrototypeChain) {
+        expect(methodNames).toEqual(['getAaa', 'getBbb', 'getCcc', 'getCcc2']);
+      } else {
+        expect(methodNames).toEqual(['getCcc', 'getCcc2']);
+      }
+    }
+  );
 });
 
 describe('bindAllMethods', () => {
-  it('should bind all methods in the prototype chain', () => {
-    const instance = new Ccc();
+  it.each([true, false, undefined])(
+    'should bind all methods: %s',
+    traversePrototypeChain => {
+      const instance = new Ccc();
 
-    bindAllMethods(instance);
+      bindAllMethods(instance, traversePrototypeChain);
 
-    const { getAaa, getBbb, getCcc, getCcc2 } = instance;
+      const { getAaa, getBbb, getCcc, getCcc2 } = instance;
 
-    expect(getAaa()).toEqual('Aaa');
-    expect(getBbb()).toEqual('Bbb');
-    expect(getCcc()).toEqual('Ccc');
-    expect(getCcc2()).toEqual('Ccc');
-  });
+      if (traversePrototypeChain === true) {
+        expect(getAaa()).toEqual('Aaa');
+        expect(getBbb()).toEqual('Bbb');
+      } else {
+        expect(() => getAaa()).toThrow(
+          "Cannot read properties of undefined (reading 'nameA')"
+        );
+        expect(() => getBbb()).toThrow(
+          "Cannot read properties of undefined (reading 'nameB')"
+        );
+      }
+
+      expect(getCcc()).toEqual('Ccc');
+      expect(getCcc2()).toEqual('Ccc');
+    }
+  );
 });
