@@ -28,7 +28,7 @@ export class MockFileStorage implements FileStorage {
     throw new Error('Method not implemented.');
   }
 
-  copyFile(name: string, newName: string): Promise<void> {
+  async copyFile(name: string, newName: string): Promise<void> {
     throw new Error('Method not implemented.');
   }
 

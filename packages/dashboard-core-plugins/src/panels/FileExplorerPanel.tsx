@@ -174,12 +174,10 @@ export class FileExplorerPanel extends React.Component<
         return false;
       }
     };
-    let newNameExists = await checkNewName();
-    while (newNameExists) {
+    // await in loop is fine here, this isn't a parallel task
+    // eslint-disable-next-line no-await-in-loop
+    while (await checkNewName()) {
       newName = FileUtils.getCopyFileName(newName);
-      // await in loop is fine here, this isn't a parallel task
-      // eslint-disable-next-line no-await-in-loop
-      newNameExists = await checkNewName();
     }
     await fileStorage.copyFile(file.filename, newName);
   }
