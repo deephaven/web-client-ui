@@ -281,9 +281,9 @@ export function FileList(props: FileListProps): JSX.Element {
   );
 
   const handleSelectionChange = useCallback(
-    newSelectedRanges => {
+    (newSelectedRanges, force = false) => {
       log.debug2('handleSelectionChange', newSelectedRanges);
-      if (newSelectedRanges !== selectedRanges) {
+      if (force === true || newSelectedRanges !== selectedRanges) {
         setSelectedRanges(newSelectedRanges);
         const selectedItems = getItems(newSelectedRanges);
         onSelectionChange(selectedItems);
@@ -383,7 +383,9 @@ export function FileList(props: FileListProps): JSX.Element {
         handleFocusChange(focusedIndex.current);
       }
       if (selectedRanges.length > 0) {
-        handleSelectionChange(selectedRanges);
+        // force the update, as the selected range may be the same
+        // but the selected items may now be different
+        handleSelectionChange(selectedRanges, true);
       }
     },
     [loadedViewport, handleFocusChange, handleSelectionChange, selectedRanges]
