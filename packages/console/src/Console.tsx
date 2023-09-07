@@ -616,7 +616,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     assertNotNull(pane);
     if (
       !force &&
-      Math.round(pane.scrollTop) < pane.scrollHeight - pane.offsetHeight
+      Math.abs(pane.scrollHeight - pane.clientHeight - pane.scrollTop) >= 1
     ) {
       return;
     }
