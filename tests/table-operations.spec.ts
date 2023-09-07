@@ -107,16 +107,6 @@ async function artificialWait(page: Page, tableNumber = 0) {
 
 const tableName = generateVarName('t');
 test.beforeEach(async ({ page }) => {
-  page.on('websocket', ws => {
-    console.log(`WebSocket opened: ${ws.url()}>`);
-    // ws.on('framesent', event => console.log('framesent', event.payload));
-    // ws.on('framereceived', event =>
-    //   console.log('framereceived', event.payload)
-    // );
-    ws.on('socketerror', event => console.log('WebSocket error', event));
-    ws.on('close', event => console.log('WebSocket closed: ', event.isClosed));
-  });
-
   await page.goto('');
 
   const consoleInput = page.locator('.console-input');
