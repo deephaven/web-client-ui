@@ -101,6 +101,8 @@ import {
   type TablePluginComponent,
   isTablePlugin,
   type LegacyDashboardPlugin,
+  isLegacyTablePlugin,
+  isLegacyDashboardPlugin,
 } from '@deephaven/plugin';
 import JSZip from 'jszip';
 import SettingsMenu from '../settings/SettingsMenu';
@@ -647,7 +649,7 @@ export class AppMainContainer extends Component<
       if (isTablePlugin(pluginModule)) {
         return pluginModule.component;
       }
-      if ('TablePlugin' in pluginModule) {
+      if (isLegacyTablePlugin(pluginModule)) {
         return pluginModule.TablePlugin;
       }
     }
@@ -791,8 +793,8 @@ export class AppMainContainer extends Component<
 
   getDashboardPlugins = memoize((plugins: DeephavenPluginModuleMap) => {
     const legacyPlugins = (
-      [...plugins.entries()].filter(
-        ([, plugin]) => 'DashboardPlugin' in plugin
+      [...plugins.entries()].filter(([, plugin]) =>
+        isLegacyDashboardPlugin(plugin)
       ) as [string, LegacyDashboardPlugin][]
     ).map(([name, { DashboardPlugin: DPlugin }]) => <DPlugin key={name} />);
 

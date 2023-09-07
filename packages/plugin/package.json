@@ -8,7 +8,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/deephaven/web-client-ui.git",
-    "directory": "packages/app-utils"
+    "directory": "packages/plugin"
   },
   "source": "src/index.js",
   "main": "dist/index.js",
@@ -23,7 +23,11 @@
   },
   "devDependencies": {},
   "dependencies": {},
-  "peerDependencies": {},
+  "peerDependencies": {
+    "@deephaven/components": "file:../components",
+    "@deephaven/iris-grid": "file:../iris-grid",
+    "@deephaven/jsapi-types": "file:../jsapi-types"
+  },
   "files": [
     "dist"
   ],

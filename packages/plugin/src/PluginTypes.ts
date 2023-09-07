@@ -11,13 +11,27 @@ export const PluginType = Object.freeze({
  */
 export type LegacyDashboardPlugin = { DashboardPlugin: React.ComponentType };
 
+export function isLegacyDashboardPlugin(
+  plugin: PluginModule
+): plugin is LegacyDashboardPlugin {
+  return 'DashboardPlugin' in plugin;
+}
+
 /**
  * @deprecated Use AuthPlugin instead
  */
 export type LegacyAuthPlugin = {
-  Component: React.ComponentType<AuthPluginProps>;
-  isAvailable: (authHandlers: string[], authConfig: AuthConfigMap) => boolean;
+  AuthPlugin: {
+    Component: React.ComponentType<AuthPluginProps>;
+    isAvailable: (authHandlers: string[], authConfig: AuthConfigMap) => boolean;
+  };
 };
+
+export function isLegacyAuthPlugin(
+  plugin: PluginModule
+): plugin is LegacyAuthPlugin {
+  return 'AuthPlugin' in plugin;
+}
 
 /**
  * @deprecated Use TablePlugin instead
@@ -26,10 +40,27 @@ export type LegacyTablePlugin = {
   TablePlugin: TablePluginComponent;
 };
 
+export function isLegacyTablePlugin(
+  plugin: PluginModule
+): plugin is LegacyTablePlugin {
+  return 'TablePlugin' in plugin;
+}
+
+/**
+ * @deprecated Use Plugin instead
+ */
 export type LegacyPlugin =
   | LegacyDashboardPlugin
   | LegacyAuthPlugin
   | LegacyTablePlugin;
+
+export function isLegacyPlugin(plugin: unknown): plugin is LegacyPlugin {
+  return (
+    isLegacyDashboardPlugin(plugin as PluginModule) ||
+    isLegacyAuthPlugin(plugin as PluginModule) ||
+    isLegacyTablePlugin(plugin as PluginModule)
+  );
+}
 
 export type PluginModule = Plugin | LegacyPlugin;
 

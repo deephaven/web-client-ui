@@ -8,6 +8,8 @@ import {
   LegacyPlugin,
   Plugin,
   PluginType,
+  isLegacyAuthPlugin,
+  isLegacyPlugin,
 } from '@deephaven/plugin';
 import loadRemoteModule from './loadRemoteModule';
 
@@ -84,7 +86,7 @@ export async function loadModulePlugins(
       if (module.status === 'fulfilled') {
         pluginMap.set(
           name,
-          'default' in module.value ? module.value.default : module.value
+          isLegacyPlugin(module.value) ? module.value : module.value.default
         );
       } else {
         log.error(`Unable to load plugin ${name}`, module.reason);
@@ -120,40 +122,25 @@ export function getAuthPluginComponent(
   corePlugins = new Map<string, AuthPlugin | LegacyAuthPlugin>()
 ): AuthPluginComponent {
   const authHandlers = getAuthHandlers(authConfigValues);
-  // Filter out all the plugins that are auth plugins, and then map them to [pluginName, AuthPlugin] pairs
-  // Uses some pretty disgusting casting, because TypeScript wants to treat it as an (string | AuthPlugin)[] array instead
-  const legacyAuthPlugins: AuthPlugin[] = (
-    [...pluginMap.entries()].filter(([, plugin]) => 'Component' in plugin) as [
-      string,
-      LegacyAuthPlugin,
-    ][]
-  ).map(([name, { Component, isAvailable }]) => ({
-    type: PluginType.AUTH_PLUGIN,
-    name,
-    isAvailable,
-    component: Component,
-  }));
+  // User plugins take priority over core plugins
+  const authPlugins = (
+    [...pluginMap.entries(), ...corePlugins.entries()].filter(
+      ([, plugin]) => isAuthPlugin(plugin) || isLegacyAuthPlugin(plugin)
+    ) as [string, AuthPlugin | LegacyAuthPlugin][]
+  ).map(([name, plugin]) => {
+    if (isLegacyAuthPlugin(plugin)) {
+      return {
+        type: PluginType.AUTH_PLUGIN,
+        name,
+        component: plugin.AuthPlugin.Component,
+        isAvailable: plugin.AuthPlugin.isAvailable,
+      };
+    }
 
-  const authPlugins = legacyAuthPlugins.concat(
-    [...pluginMap.values()].filter<AuthPlugin>(isAuthPlugin)
-  );
-
-  // Add all the core plugins in priority
-  authPlugins.push(
-    ...[...corePlugins.entries()].map(([name, plugin]) =>
-      'type' in plugin
-        ? plugin
-        : {
-            type: PluginType.AUTH_PLUGIN,
-            name,
-            component: plugin.Component,
-            isAvailable: plugin.isAvailable,
-          }
-    )
-  );
+    return plugin;
+  });
 
   // Filter the available auth plugins
-
   const availableAuthPlugins = authPlugins.filter(({ isAvailable }) =>
     isAvailable(authHandlers, authConfigValues)
   );
