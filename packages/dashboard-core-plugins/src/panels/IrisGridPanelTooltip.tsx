@@ -18,7 +18,8 @@ function IrisGridPanelTooltip(props: IrisGridPanelTooltipProps): ReactElement {
   const rowCount =
     (model?.rowCount ?? 0) -
     (model?.pendingRowCount ?? 0) -
-    (model?.floatingBottomRowCount ?? 0);
+    (model?.floatingBottomRowCount ?? 0) -
+    (model?.floatingTopRowCount ?? 0);
   const formattedRowCount = model?.displayString(rowCount, 'long');
 
   const columnCount = model?.columnCount ?? 0;
