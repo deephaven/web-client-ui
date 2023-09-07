@@ -3865,6 +3865,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       onAdvancedSettingsChange,
       canDownloadCsv,
       onCreateChart,
+      onPartitionAppend,
     } = this.props;
     const {
       metricCalculator,
@@ -4421,7 +4422,12 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                   partition={partition}
                   onChange={this.handlePartitionChange}
                   onFetchAll={this.handlePartitionFetchAll}
-                  onAppend={this.handlePartitionAppend}
+                  onAppend={
+                    onPartitionAppend !==
+                    IrisGrid.defaultProps.onPartitionAppend
+                      ? this.handlePartitionAppend
+                      : undefined
+                  }
                   onDone={this.handlePartitionDone}
                 />
               )}

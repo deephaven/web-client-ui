@@ -155,7 +155,8 @@ class IrisGridPartitionSelector<T> extends Component<
   }
 
   render(): JSX.Element {
-    const { columnName, dh, getFormattedString, onDone, table } = this.props;
+    const { columnName, dh, getFormattedString, onAppend, onDone, table } =
+      this.props;
     const { partition } = this.state;
     const partitionSelectorSearch = (
       <PartitionSelectorSearch
@@ -205,13 +206,16 @@ class IrisGridPartitionSelector<T> extends Component<
         >
           Ignore &amp; Fetch All
         </button>
-        <button
-          type="button"
-          className="btn btn-outline-primary btn-append"
-          onClick={this.handleAppendClick}
-        >
-          Append Command
-        </button>
+        {onAppend !== IrisGridPartitionSelector.defaultProps.onAppend && (
+          // (console.log(onAppend),
+          <button
+            type="button"
+            className="btn btn-outline-primary btn-append"
+            onClick={this.handleAppendClick}
+          >
+            Append Command
+          </button>
+        )}
         <button
           type="button"
           className="btn btn-link btn-link-icon btn-close"
