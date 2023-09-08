@@ -18,7 +18,7 @@ interface IrisGridPartitionSelectorProps<T> {
   table: Table;
   columnName: ColumnName;
   partition: string;
-  onAppend: (partition: string) => void;
+  onAppend?: (partition: string) => void;
   onFetchAll: () => void;
   onDone: (event?: React.MouseEvent<HTMLButtonElement>) => void;
   onChange: (partition: string) => void;
@@ -31,7 +31,6 @@ class IrisGridPartitionSelector<T> extends Component<
   IrisGridPartitionSelectorState
 > {
   static defaultProps = {
-    onAppend: (): void => undefined,
     onChange: (): void => undefined,
     onFetchAll: (): void => undefined,
     onDone: (): void => undefined,
@@ -73,7 +72,9 @@ class IrisGridPartitionSelector<T> extends Component<
 
     const { onAppend } = this.props;
     const { partition } = this.state;
-    onAppend(partition);
+    if (onAppend) {
+      onAppend(partition);
+    }
   }
 
   handleCloseClick(): void {
@@ -206,7 +207,7 @@ class IrisGridPartitionSelector<T> extends Component<
         >
           Ignore &amp; Fetch All
         </button>
-        {onAppend !== IrisGridPartitionSelector.defaultProps.onAppend && (
+        {onAppend === undefined || (
           <button
             type="button"
             className="btn btn-outline-primary btn-append"
