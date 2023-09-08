@@ -5,16 +5,13 @@ import {
   TableUtils,
 } from '@deephaven/jsapi-utils';
 import {
+  isSelectionMaybeInvertedEqual,
   useDebouncedValue,
   useIsEqualMemo,
   useMappedSelection,
-} from '@deephaven/react-hooks';
-import {
-  isSelectionMaybeInvertedEqual,
-  KeyedItem,
-  TestUtils,
   WindowedListData,
-} from '@deephaven/utils';
+} from '@deephaven/react-hooks';
+import { KeyedItem, TestUtils } from '@deephaven/utils';
 import useDebouncedViewportSelectionFilter, {
   DEBOUNCE_MS,
 } from './useDebouncedViewportSelectionFilter';

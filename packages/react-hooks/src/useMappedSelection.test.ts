@@ -1,18 +1,14 @@
 import { Key } from 'react';
 import { renderHook } from '@testing-library/react-hooks';
-import {
-  KeyedItem,
-  mapSelection,
-  optimizeSelection,
-  TestUtils,
-  WindowedListData,
-} from '@deephaven/utils';
+import { KeyedItem, TestUtils } from '@deephaven/utils';
 import { useMappedSelection } from './useMappedSelection';
+import { WindowedListData } from './useWindowedListData';
+import { mapSelection, optimizeSelection } from './SelectionUtils';
 
 const { asMock, createMockProxy } = TestUtils;
 
-jest.mock('@deephaven/utils', () => ({
-  ...jest.requireActual('@deephaven/utils'),
+jest.mock('./SelectionUtils', () => ({
+  ...jest.requireActual('./SelectionUtils'),
   mapSelection: jest.fn(),
   optimizeSelection: jest.fn(),
 }));
