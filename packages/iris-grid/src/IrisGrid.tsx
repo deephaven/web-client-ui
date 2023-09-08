@@ -2335,9 +2335,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     if (partitionColumn == null) {
       return;
     }
-    if (onPartitionAppend) {
-      onPartitionAppend(partitionColumn, value);
-    }
+    onPartitionAppend?.(partitionColumn, value);
   }
 
   handlePartitionChange(partition: string): void {

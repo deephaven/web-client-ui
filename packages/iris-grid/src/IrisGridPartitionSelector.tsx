@@ -72,9 +72,7 @@ class IrisGridPartitionSelector<T> extends Component<
 
     const { onAppend } = this.props;
     const { partition } = this.state;
-    if (onAppend) {
-      onAppend(partition);
-    }
+    onAppend?.(partition);
   }
 
   handleCloseClick(): void {
@@ -207,7 +205,7 @@ class IrisGridPartitionSelector<T> extends Component<
         >
           Ignore &amp; Fetch All
         </button>
-        {onAppend === undefined || (
+        {onAppend !== undefined && (
           <button
             type="button"
             className="btn btn-outline-primary btn-append"
