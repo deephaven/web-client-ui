@@ -6,7 +6,6 @@ import {
   FilterConditionFactory,
 } from '@deephaven/jsapi-utils';
 import {
-  SelectionT,
   useDebouncedCallback,
   usePromiseFactory,
 } from '@deephaven/react-hooks';
@@ -14,6 +13,7 @@ import {
   COMBO_BOX_ITEM_HEIGHT,
   KeyedItem,
   SEARCH_DEBOUNCE_MS,
+  SelectionT,
   VIEWPORT_PADDING,
   VIEWPORT_SIZE,
 } from '@deephaven/utils';

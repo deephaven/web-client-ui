@@ -1,13 +1,11 @@
 import type { Key } from 'react';
 import type { Selection } from '@react-types/shared';
-import { generateRange, KeyedItem } from '@deephaven/utils';
-
-export type SelectionT<T = string> = 'all' | Set<T>;
-
-export interface SelectionMaybeInverted<TValue> {
-  selection: SelectionT<TValue>;
-  isInverted: boolean;
-}
+import {
+  generateRange,
+  KeyedItem,
+  SelectionMaybeInverted,
+  SelectionT,
+} from '@deephaven/utils';
 
 /**
  * Returns the number of selected items or 'all' if all items are selected.

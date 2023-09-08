@@ -9,6 +9,13 @@ export interface KeyedItem<T> {
   item?: T;
 }
 
+export type SelectionT<T = string> = 'all' | Set<T>;
+
+export interface SelectionMaybeInverted<TValue> {
+  selection: SelectionT<TValue>;
+  isInverted: boolean;
+}
+
 /**
  * Filters out any null or undefined values from an array.
  * @param maybeDefined

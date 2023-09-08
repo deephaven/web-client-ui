@@ -1,7 +1,6 @@
-import { act, renderHook } from '@testing-library/react-hooks';
+import { act } from '@testing-library/react-hooks';
 import type { Column, Table, TreeTable } from '@deephaven/jsapi-types';
-import { useWindowedListData } from '@deephaven/react-hooks';
-import { KeyedItem, TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/utils';
 import {
   OnTableUpdatedEvent,
   RowDeserializer,
@@ -77,38 +76,13 @@ describe('createOnTableUpdatedHandler', () => {
   });
 
   it('should create a handler that bulk updates items', () => {
-    const { result: viewportDataRef } = renderHook(() =>
-      useWindowedListData<KeyedItem<unknown>>({})
-    );
+    const bulkUpdate = jest.fn();
 
     const offset = 2;
     const event = mock.updateEvent(offset, mock.rows, cols);
-    const initialItems = [
-      { key: '0', item: mock.rows[0] },
-      { key: '1', item: mock.rows[1] },
-      { key: '2', item: mock.rows[2] },
-      { key: '3', item: mock.rows[3] },
-      { key: '4', item: mock.rows[4] },
-    ];
-    const expected = [
-      // Existing
-      initialItems[0],
-      initialItems[1],
-      // Updated
-      { key: '2', item: { label: 'deserialized', row: event.detail.rows[0] } },
-      { key: '3', item: { label: 'deserialized', row: event.detail.rows[1] } },
-      { key: '4', item: { label: 'deserialized', row: event.detail.rows[2] } },
-    ];
-
-    act(() => {
-      viewportDataRef.current.append(initialItems);
-    });
-
-    expect(viewportDataRef.current.items).toEqual(initialItems);
-    jest.clearAllMocks();
 
     const handler = createOnTableUpdatedHandler(
-      viewportDataRef.current,
+      { bulkUpdate },
       mock.deserializeRow
     );
 
@@ -119,7 +93,6 @@ describe('createOnTableUpdatedHandler', () => {
     mock.rows.forEach(row => {
       expect(mock.deserializeRow).toHaveBeenCalledWith(row, cols);
     });
-    expect(viewportDataRef.current.items).toEqual(expected);
   });
 });
 

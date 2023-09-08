@@ -2,7 +2,6 @@ import type { Key } from 'react';
 import clamp from 'lodash.clamp';
 import type { Column, Row, Table, TreeTable } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
-import type { WindowedListData } from '@deephaven/react-hooks';
 import type { KeyedItem } from '@deephaven/utils';
 
 export type OnTableUpdatedEvent = CustomEvent<{
@@ -38,7 +37,7 @@ export function createKeyFromOffsetRow(row: ViewportRow, offset: number) {
  * @returns Handler function for a `dh.Table.EVENT_UPDATED` event.
  */
 export function createOnTableUpdatedHandler<T>(
-  viewportData: WindowedListData<KeyedItem<T>>,
+  { bulkUpdate }: { bulkUpdate: (itemMap: Map<Key, KeyedItem<T>>) => void },
   deserializeRow: RowDeserializer<T>
 ): (event: OnTableUpdatedEvent) => void {
   /**
@@ -59,7 +58,7 @@ export function createOnTableUpdatedHandler<T>(
 
     log.debug('update keys', updateKeyMap);
 
-    viewportData.bulkUpdate(updateKeyMap);
+    bulkUpdate(updateKeyMap);
   };
 }
 
