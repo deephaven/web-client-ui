@@ -1,6 +1,6 @@
 /**
  * Derive the `@deephaven` package name from the given path.
- * Note that this assumes that the package folder name uses the  naming
+ * Note that this assumes that the package folder name uses the same naming
  * convention as the package.json `name` field.
  */
 function deriveDeephavenPackageNameFromPath(path) {
