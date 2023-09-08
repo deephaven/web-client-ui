@@ -134,8 +134,8 @@ export function FileListContainer(props: FileListContainerProps): JSX.Element {
     }
     if (onCopy) {
       result.push({
-        title: 'Copy',
-        description: 'Copy',
+        title: 'Copy File',
+        description: 'Copy the selected file',
         action: handleCopyAction,
         group: ContextActions.groups.low,
         disabled: focusedItem == null || isDirectory(focusedItem),

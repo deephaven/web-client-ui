@@ -105,14 +105,12 @@ export function FileListItem(props: FileListRenderItemProps): JSX.Element {
       {depthLines}{' '}
       <FontAwesomeIcon icon={icon} className="item-icon" fixedWidth />{' '}
       <span className="truncation-wrapper">
-        {children ?? item.basename}
-        <Tooltip
-          options={{
-            placement: 'left',
-          }}
-        >
-          {children ?? item.basename}
-        </Tooltip>
+        {children ?? (
+          <>
+            {item.basename}
+            <Tooltip>{item.basename}</Tooltip>
+          </>
+        )}
       </span>
     </div>
   );
