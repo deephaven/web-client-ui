@@ -3,15 +3,13 @@ import {
   FilterConditionFactory,
 } from '@deephaven/jsapi-utils';
 import {
+  isSelectionMaybeInvertedEqual,
   useDebouncedValue,
   useIsEqualMemo,
   useMappedSelection,
-} from '@deephaven/react-hooks';
-import {
-  isSelectionMaybeInvertedEqual,
-  KeyedItem,
   WindowedListData,
-} from '@deephaven/utils';
+} from '@deephaven/react-hooks';
+import { KeyedItem } from '@deephaven/utils';
 import { useMemo } from 'react';
 import useTableUtils from './useTableUtils';
 

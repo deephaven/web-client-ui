@@ -1,8 +1,8 @@
+import { SPELLCHECK_FALSE_ATTRIBUTE } from '@deephaven/utils';
 import {
   extractSpectrumHTMLElement,
   ReactSpectrumComponent,
-  SPELLCHECK_FALSE_ATTRIBUTE,
-} from '@deephaven/utils';
+} from './SpectrumUtils';
 import useMappedRef from './useMappedRef';
 import useSetAttributesCallback from './useSetAttributesCallback';
 

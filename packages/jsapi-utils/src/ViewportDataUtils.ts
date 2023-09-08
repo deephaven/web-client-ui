@@ -2,7 +2,8 @@ import type { Key } from 'react';
 import clamp from 'lodash.clamp';
 import type { Column, Row, Table, TreeTable } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
-import { KeyedItem, WindowedListData } from '@deephaven/utils';
+import type { WindowedListData } from '@deephaven/react-hooks';
+import type { KeyedItem } from '@deephaven/utils';
 
 export type OnTableUpdatedEvent = CustomEvent<{
   offset: number;

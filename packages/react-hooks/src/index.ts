@@ -1,3 +1,5 @@
+export * from './SelectionUtils';
+export * from './SpectrumUtils';
 export * from './useAsyncInterval';
 export * from './useCallbackWithAction';
 export { default as useContextOrThrow } from './useContextOrThrow';

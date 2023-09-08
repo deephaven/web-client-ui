@@ -11,6 +11,7 @@
     { "path": "../jsapi-shim" },
     { "path": "../jsapi-types" },
     { "path": "../log" },
+    { "path": "../react-hooks" },
     { "path": "../utils" }
   ]
 }

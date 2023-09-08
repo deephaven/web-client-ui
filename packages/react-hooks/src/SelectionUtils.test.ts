@@ -1,6 +1,6 @@
 import type { Key } from 'react';
 import type { Selection } from '@react-types/shared';
-import type { KeyedItem } from './SpectrumUtils';
+import type { KeyedItem } from '@deephaven/utils';
 import {
   getSelectedItemCountOrAll,
   isSelectionEqual,

@@ -4,7 +4,7 @@ import type {
   Table,
   TreeTable,
 } from '@deephaven/jsapi-types';
-import { SelectionT } from '@deephaven/utils';
+import type { SelectionT } from '@deephaven/react-hooks';
 import TableUtils from './TableUtils';
 
 export interface FilterConditionFactory {

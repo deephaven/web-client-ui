@@ -1,7 +1,6 @@
 import type { Key } from 'react';
 import type { Selection } from '@react-types/shared';
-import { KeyedItem } from './SpectrumUtils';
-import { generateRange } from './RangeUtils';
+import { generateRange, KeyedItem } from '@deephaven/utils';
 
 export type SelectionT<T = string> = 'all' | Set<T>;
 

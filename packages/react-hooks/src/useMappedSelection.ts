@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
+import { KeyedItem } from '@deephaven/utils';
 import {
-  KeyedItem,
   mapSelection,
   optimizeSelection,
   SelectionMaybeInverted,
-  WindowedListData,
-} from '@deephaven/utils';
+} from './SelectionUtils';
+import type { WindowedListData } from './useWindowedListData';
 
 /**
  * Given viewport data, maps the current selectedKeys to an optimized selection.

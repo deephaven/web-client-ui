@@ -1,5 +1,20 @@
-import { WindowedListData } from '@deephaven/utils';
+import { ListData } from '@adobe/react-spectrum';
 import { Key, useCallback, useMemo, useState } from 'react';
+
+/**
+ * Subset of React Stately ListData + bulkUpdate.
+ */
+export type WindowedListData<T> = Pick<
+  ListData<T>,
+  'items' | 'getItem' | 'selectedKeys' | 'setSelectedKeys' | 'update'
+> & {
+  append: (values: Iterable<T>) => void;
+  bulkUpdate: (itemMap: Map<Key, T>) => void;
+  findItem: (key: Key) => T | null;
+  insert: (index: number, values: Iterable<T>) => void;
+  remove: (keys: Iterable<Key>) => void;
+  setItems: (items: T[]) => void;
+};
 
 export interface UseWindowedListDataOptions<T> {
   getKey?: (item: T) => Key;

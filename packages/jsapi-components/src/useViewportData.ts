@@ -8,12 +8,11 @@ import {
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { useApi } from '@deephaven/jsapi-bootstrap';
-import { useOnScrollOffsetChangeCallback } from '@deephaven/react-hooks';
 import {
-  KeyedItem,
-  SCROLL_DEBOUNCE_MS,
+  useOnScrollOffsetChangeCallback,
   WindowedListData,
-} from '@deephaven/utils';
+} from '@deephaven/react-hooks';
+import { KeyedItem, SCROLL_DEBOUNCE_MS } from '@deephaven/utils';
 import useInitializeViewportData from './useInitializeViewportData';
 import useSetPaddedViewportCallback from './useSetPaddedViewportCallback';
 import useTableSize from './useTableSize';

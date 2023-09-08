@@ -1,11 +1,6 @@
 import type { SpectrumTextFieldProps } from '@adobe/react-spectrum';
 import type { DOMRefValue } from '@react-types/shared';
 
-export interface KeyedItem<T> {
-  key: string;
-  item?: T;
-}
-
 export type ReactSpectrumComponent<T extends HTMLElement = HTMLElement> =
   DOMRefValue<T>;
 

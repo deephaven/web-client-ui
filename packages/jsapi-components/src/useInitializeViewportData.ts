@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import type { Table, TreeTable } from '@deephaven/jsapi-types';
 import { generateEmptyKeyedItems } from '@deephaven/jsapi-utils';
-import { useWindowedListData } from '@deephaven/react-hooks';
-import { KeyedItem, WindowedListData } from '@deephaven/utils';
+import { useWindowedListData, WindowedListData } from '@deephaven/react-hooks';
+import { KeyedItem } from '@deephaven/utils';
 import Log from '@deephaven/log';
 import useTableSize from './useTableSize';
 

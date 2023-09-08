@@ -1,3 +1,4 @@
+import { TestUtils } from '@deephaven/utils';
 import {
   createValidationProps,
   extractSpectrumHTMLElement,
@@ -6,7 +7,6 @@ import {
   identityExtractHTMLElement,
   ReactSpectrumComponent,
 } from './SpectrumUtils';
-import TestUtils from './TestUtils';
 
 const { asMock, createMockProxy } = TestUtils;
 

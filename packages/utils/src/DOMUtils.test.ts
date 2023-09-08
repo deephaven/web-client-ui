@@ -1,4 +1,7 @@
-import { getClosestByClassName } from './DOMUtils';
+import { getClosestByClassName, identityExtractHTMLElement } from './DOMUtils';
+import TestUtils from './TestUtils';
+
+const { createMockProxy } = TestUtils;
 
 describe('getClosestByClassName', () => {
   let originalBodyHTML = document.body.innerHTML;
@@ -46,5 +49,19 @@ describe('getClosestByClassName', () => {
     const element = document.body.querySelector('.level-2');
     const parent = document.body.querySelector('.level-0');
     expect(getClosestByClassName(element, 'level-0')).toEqual(parent);
+  });
+});
+
+describe('identityExtractHTMLElement', () => {
+  it.each([null, createMockProxy<Element>()])(
+    'should return null if given object is not an HTMLElement',
+    notHTMLElement => {
+      expect(identityExtractHTMLElement(notHTMLElement)).toBeNull();
+    }
+  );
+
+  it('should return given object if it is an HTMLElement', () => {
+    const element = document.createElement('div');
+    expect(identityExtractHTMLElement(element)).toBe(element);
   });
 });
