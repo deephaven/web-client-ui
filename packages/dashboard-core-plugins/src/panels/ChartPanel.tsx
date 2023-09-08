@@ -135,6 +135,8 @@ export interface ChartPanelProps extends DashboardPanelProps {
     secondParam: undefined
   ) => void;
   Plotly?: typeof PlotlyType;
+  /** The panel container div */
+  containerRef?: RefObject<HTMLDivElement>;
 
   panelState: GLChartPanelState;
   settings: Partial<WorkspaceSettings>;
@@ -184,6 +186,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     sourcePanel: null,
     panelState: null,
     settings: {},
+    containerRef: null,
   };
 
   static displayName = 'ChartPanel';
@@ -219,7 +222,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     );
     this.handleClearAllFilters = this.handleClearAllFilters.bind(this);
 
-    this.panelContainer = React.createRef();
+    this.panelContainer = props.containerRef ?? React.createRef();
     this.chart = React.createRef();
     this.pending = new Pending();
 
