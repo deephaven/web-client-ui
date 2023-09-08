@@ -40,6 +40,7 @@ export function ApiBootstrap({
   useEffect(() => {
     async function loadApi() {
       try {
+        // Using a string template around `apiUrl` to avoid a warning with webpack: https://stackoverflow.com/a/73359606
         const dh: DhType = (await import(/* @vite-ignore */ `${apiUrl}`))
           .default;
         log.info('API bootstrapped from', apiUrl);
