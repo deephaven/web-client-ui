@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.47.0](https://github.com/deephaven/web-client-ui/compare/v0.46.1...v0.47.0) (2023-09-08)
+
+
+### Bug Fixes
+
+* Change dynamic import to string ([#1484](https://github.com/deephaven/web-client-ui/issues/1484)) ([45e2ada](https://github.com/deephaven/web-client-ui/commit/45e2adae7df804b8982ca3cd9df89db3422ac9cf))
+* Console History Not Scrolling to Bottom (DH-14062) ([#1481](https://github.com/deephaven/web-client-ui/issues/1481)) ([93687a7](https://github.com/deephaven/web-client-ui/commit/93687a78fa2d0e2da567efd8da2c671252ba8fe5))
+* Forbid [@deephaven](https://github.com/deephaven) modules from self importing ([#1499](https://github.com/deephaven/web-client-ui/issues/1499)) ([81cdd65](https://github.com/deephaven/web-client-ui/commit/81cdd6512456bcc08fde776670659a6028841875)), closes [#1497](https://github.com/deephaven/web-client-ui/issues/1497)
+* quick filter focus text doesn't match canvas text ([#1475](https://github.com/deephaven/web-client-ui/issues/1475)) ([02841b5](https://github.com/deephaven/web-client-ui/commit/02841b5a9dedc25160f319a072636335aa77599f)), closes [#1472](https://github.com/deephaven/web-client-ui/issues/1472)
+* Remove totals table rows from displayed row count ([#1492](https://github.com/deephaven/web-client-ui/issues/1492)) ([f686891](https://github.com/deephaven/web-client-ui/commit/f68689121c7df098dbf86fa76bf2ccf8dbda6566)), closes [#1407](https://github.com/deephaven/web-client-ui/issues/1407)
+
+
+### Features
+
+* adds copy file support to file explorer and fixes rename bug ([#1491](https://github.com/deephaven/web-client-ui/issues/1491)) ([d35aa49](https://github.com/deephaven/web-client-ui/commit/d35aa495f2ee2f17a9053c46a13e5982614bed6c)), closes [#185](https://github.com/deephaven/web-client-ui/issues/185) [#1375](https://github.com/deephaven/web-client-ui/issues/1375) [#1488](https://github.com/deephaven/web-client-ui/issues/1488)
+* bindAllMethods util function ([#1476](https://github.com/deephaven/web-client-ui/issues/1476)) ([0dab8d7](https://github.com/deephaven/web-client-ui/commit/0dab8d70f299441271fe7047f9d4f2eb48a6d8be)), closes [#1474](https://github.com/deephaven/web-client-ui/issues/1474)
+* Consolidate and normalize plugin types ([#1456](https://github.com/deephaven/web-client-ui/issues/1456)) ([43a782d](https://github.com/deephaven/web-client-ui/commit/43a782dd3ebf582b18e155fdbc313176b0bf0f84)), closes [#1454](https://github.com/deephaven/web-client-ui/issues/1454) [#1451](https://github.com/deephaven/web-client-ui/issues/1451)
+
+
+
+
+
 ## [0.46.1](https://github.com/deephaven/web-client-ui/compare/v0.46.0...v0.46.1) (2023-09-01)
 
 
