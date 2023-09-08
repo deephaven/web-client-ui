@@ -207,7 +207,6 @@ class IrisGridPartitionSelector<T> extends Component<
           Ignore &amp; Fetch All
         </button>
         {onAppend !== IrisGridPartitionSelector.defaultProps.onAppend && (
-          // (console.log(onAppend),
           <button
             type="button"
             className="btn btn-outline-primary btn-append"
