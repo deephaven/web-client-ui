@@ -1,0 +1,37 @@
+{
+  "name": "@deephaven/plugin",
+  "version": "0.46.0",
+  "description": "Deephaven JS Plugin Core",
+  "author": "Deephaven Data Labs LLC",
+  "license": "Apache-2.0",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/deephaven/web-client-ui.git",
+    "directory": "packages/plugin"
+  },
+  "source": "src/index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "engines": {
+    "node": ">=16"
+  },
+  "scripts": {
+    "build": "cross-env NODE_ENV=production run-p build:*",
+    "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward"
+  },
+  "devDependencies": {},
+  "dependencies": {},
+  "peerDependencies": {
+    "@deephaven/components": "file:../components",
+    "@deephaven/iris-grid": "file:../iris-grid",
+    "@deephaven/jsapi-types": "file:../jsapi-types"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

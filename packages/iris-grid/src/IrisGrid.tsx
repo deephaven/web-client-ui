@@ -2839,7 +2839,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   handleUpdate(): void {
-    this.stopLoading();
     log.debug2('Received model update');
 
     const {
@@ -2873,6 +2872,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
 
     this.grid?.forceUpdate();
+    this.stopLoading();
   }
 
   handleViewChanged(metrics?: GridMetrics): void {

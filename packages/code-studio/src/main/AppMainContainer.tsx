@@ -58,7 +58,6 @@ import {
   Link,
   ColumnSelectionValidator,
   getDashboardConnection,
-  TablePlugin,
   IrisGridPanelMetadata,
   isIrisGridPanelMetadata,
   isLegacyIrisGridPanelMetadata,
@@ -96,6 +95,15 @@ import {
 import { PromiseUtils } from '@deephaven/utils';
 import GoldenLayout from '@deephaven/golden-layout';
 import type { ItemConfigType } from '@deephaven/golden-layout';
+import {
+  type DashboardPlugin,
+  isDashboardPlugin,
+  type TablePluginComponent,
+  isTablePlugin,
+  type LegacyDashboardPlugin,
+  isLegacyTablePlugin,
+  isLegacyDashboardPlugin,
+} from '@deephaven/plugin';
 import JSZip from 'jszip';
 import SettingsMenu from '../settings/SettingsMenu';
 import AppControlsMenu from './AppControlsMenu';
@@ -632,20 +640,18 @@ export class AppMainContainer extends Component<
    * @param pluginName The name of the plugin to load
    * @returns An element from the plugin
    */
-  handleLoadTablePlugin(pluginName: string): TablePlugin {
+  handleLoadTablePlugin(pluginName: string): TablePluginComponent {
     const { plugins } = this.props;
 
     // First check if we have any plugin modules loaded that match the TablePlugin.
     const pluginModule = plugins.get(pluginName);
-    if (
-      pluginModule != null &&
-      (pluginModule as { TablePlugin: ReactElement }).TablePlugin != null
-    ) {
-      return (
-        pluginModule as {
-          TablePlugin: TablePlugin;
-        }
-      ).TablePlugin;
+    if (pluginModule != null) {
+      if (isTablePlugin(pluginModule)) {
+        return pluginModule.component;
+      }
+      if (isLegacyTablePlugin(pluginModule)) {
+        return pluginModule.TablePlugin;
+      }
     }
 
     const errorMessage = `Unable to find table plugin ${pluginName}.`;
@@ -721,7 +727,7 @@ export class AppMainContainer extends Component<
     id: string
   ): DehydratedDashboardPanelProps & {
     getDownloadWorker: () => Promise<ServiceWorker>;
-    loadPlugin: (pluginName: string) => TablePlugin;
+    loadPlugin: (pluginName: string) => TablePluginComponent;
     localDashboardId: string;
     makeModel: () => Promise<IrisGridModel>;
   } {
@@ -785,14 +791,19 @@ export class AppMainContainer extends Component<
     });
   }
 
-  getDashboardPlugins = memoize((plugins: DeephavenPluginModuleMap) =>
-    (
-      [...plugins.entries()].filter(
-        ([, plugin]: [string, { DashboardPlugin?: typeof React.Component }]) =>
-          plugin.DashboardPlugin != null
-      ) as [string, { DashboardPlugin: typeof React.Component }][]
-    ).map(([name, { DashboardPlugin }]) => <DashboardPlugin key={name} />)
-  );
+  getDashboardPlugins = memoize((plugins: DeephavenPluginModuleMap) => {
+    const legacyPlugins = (
+      [...plugins.entries()].filter(([, plugin]) =>
+        isLegacyDashboardPlugin(plugin)
+      ) as [string, LegacyDashboardPlugin][]
+    ).map(([name, { DashboardPlugin: DPlugin }]) => <DPlugin key={name} />);
+
+    return legacyPlugins.concat(
+      [...plugins.values()]
+        .filter<DashboardPlugin>(isDashboardPlugin)
+        .map(({ component: DPlugin, name }) => <DPlugin key={name} />)
+    );
+  });
 
   render(): ReactElement {
     const { activeTool, plugins, user, workspace, serverConfigValues } =

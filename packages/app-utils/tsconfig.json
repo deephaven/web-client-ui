@@ -14,6 +14,7 @@
     { "path": "../jsapi-types" },
     { "path": "../jsapi-utils" },
     { "path": "../log" },
+    { "path": "../plugin" },
     { "path": "../react-hooks" },
     { "path": "../utils" }
   ]
