@@ -22,7 +22,7 @@ export type PluginsBootstrapProps = {
 export function PluginsBootstrap({
   pluginsUrl,
   children,
-}: PluginsBootstrapProps) {
+}: PluginsBootstrapProps): JSX.Element {
   const [plugins, setPlugins] = useState<PluginModuleMap | null>(null);
   useEffect(
     function initPlugins() {

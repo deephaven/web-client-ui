@@ -39,7 +39,7 @@ export function AppBootstrap({
   pluginsUrl,
   serverUrl,
   children,
-}: AppBootstrapProps) {
+}: AppBootstrapProps): JSX.Element {
   const clientOptions = useMemo(() => getConnectOptions(), []);
 
   // On logout, we reset the client and have user login again

@@ -19,7 +19,7 @@ export type ServerConfigBootstrapProps = {
  */
 export function ServerConfigBootstrap({
   children,
-}: ServerConfigBootstrapProps) {
+}: ServerConfigBootstrapProps): JSX.Element {
   const client = useClient();
   const [serverConfig, setServerConfig] = useState<Map<string, string>>();
   const [error, setError] = useState<unknown>();

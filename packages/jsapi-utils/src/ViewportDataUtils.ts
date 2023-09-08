@@ -22,9 +22,12 @@ const log = Log.module('ViewportDataUtils');
  * (row.offsetInSnapshot) + the offset of the snapshot.
  * @param row Row from a Table update event.
  * @param offset Offset of the current viewport.
- * @returns Unique string key for the oridinal position of the given row.
+ * @returns Unique string key for the ordinal position of the given row.
  */
-export function createKeyFromOffsetRow(row: ViewportRow, offset: number) {
+export function createKeyFromOffsetRow(
+  row: ViewportRow,
+  offset: number
+): string {
   return String(row.offsetInSnapshot + offset);
 }
 

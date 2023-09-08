@@ -27,7 +27,7 @@ export function useGetItemPosition({
   itemHeight,
   topOffset = 0,
   value,
-}: UseGetItemPositionOptions) {
+}: UseGetItemPositionOptions): () => Promise<number> {
   return useCallback(async () => {
     if (table == null || value === '' || value === defaultValue) {
       return topOffset;

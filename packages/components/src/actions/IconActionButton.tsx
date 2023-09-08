@@ -18,7 +18,7 @@ export function IconActionButton({
   icon,
   label,
   ...props
-}: IconActionButtonProps) {
+}: IconActionButtonProps): JSX.Element {
   return (
     <ActionButton
       {...props}

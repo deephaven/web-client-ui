@@ -33,7 +33,7 @@ export interface BasicModalProps {
  * @param confirmButtonText optional text for the confirm button, defaults to 'Okay'
  * @param discardButtonText optional text for the discard button, defaults to 'Discard'
  */
-function BasicModal(props: BasicModalProps) {
+function BasicModal(props: BasicModalProps): JSX.Element {
   const {
     isOpen,
     headerText,

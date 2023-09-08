@@ -223,7 +223,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     onMovedRowsChanged: (): void => undefined,
     onMoveRowComplete: (): void => undefined,
     onViewChanged: (metrics: GridMetrics): void => undefined,
-    onTokenClicked: (token: Token) => {
+    onTokenClicked: (token: Token): void => {
       if (isLinkToken(token)) {
         window.open(token.href, '_blank', 'noopener,noreferrer');
       }
@@ -836,7 +836,7 @@ class Grid extends PureComponent<GridProps, GridState> {
   /**
    * Compares the current metrics with the previous metrics to see if we need to scroll when it is stuck to the bottom or the right
    */
-  checkStickyScroll() {
+  checkStickyScroll(): void {
     if (!this.metrics) {
       return;
     }

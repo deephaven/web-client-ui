@@ -189,7 +189,7 @@ export class AppMainContainer extends Component<
     );
   }
 
-  static handleRefresh() {
+  static handleRefresh(): void {
     log.info('Refreshing application');
     window.location.reload();
   }
@@ -554,17 +554,17 @@ export class AppMainContainer extends Component<
     }
   }
 
-  handleDisconnect() {
+  handleDisconnect(): void {
     log.info('Disconnected from server');
     this.setState({ isDisconnected: true });
   }
 
-  handleReconnect() {
+  handleReconnect(): void {
     log.info('Reconnected to server');
     this.setState({ isDisconnected: false });
   }
 
-  handleReconnectAuthFailed() {
+  handleReconnectAuthFailed(): void {
     log.warn('Reconnect authentication failed');
     this.setState({ isAuthFailed: true });
   }
@@ -659,7 +659,7 @@ export class AppMainContainer extends Component<
     throw new Error(errorMessage);
   }
 
-  startListeningForDisconnect() {
+  startListeningForDisconnect(): void {
     const { connection } = this.props;
     connection.addEventListener(
       dh.IdeConnection.EVENT_DISCONNECT,
@@ -675,7 +675,7 @@ export class AppMainContainer extends Component<
     );
   }
 
-  stopListeningForDisconnect() {
+  stopListeningForDisconnect(): void {
     const { connection } = this.props;
     connection.removeEventListener(
       dh.IdeConnection.EVENT_DISCONNECT,

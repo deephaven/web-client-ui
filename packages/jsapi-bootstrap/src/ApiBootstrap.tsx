@@ -34,7 +34,7 @@ export function ApiBootstrap({
   children,
   failureElement,
   setGlobally = false,
-}: ApiBootstrapProps) {
+}: ApiBootstrapProps): JSX.Element {
   const [isLoading, setIsLoading] = useState(true);
   const [api, setApi] = useState<DhType>();
   useEffect(() => {

@@ -19,7 +19,9 @@ export type ConnectionBootstrapProps = {
 /**
  * ConnectionBootstrap component. Handles initializing the connection.
  */
-export function ConnectionBootstrap({ children }: ConnectionBootstrapProps) {
+export function ConnectionBootstrap({
+  children,
+}: ConnectionBootstrapProps): JSX.Element {
   const api = useApi();
   const client = useClient();
   const [error, setError] = useState<unknown>();

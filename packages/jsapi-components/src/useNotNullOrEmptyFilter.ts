@@ -2,13 +2,14 @@ import { useMemo } from 'react';
 import {
   createFilterConditionFactory,
   createNotNullOrEmptyFilterCondition,
+  FilterConditionFactory,
 } from '@deephaven/jsapi-utils';
 import useTableUtils from './useTableUtils';
 
 export function useNotNullOrEmptyFilter(
   columnNames: string | string[],
   conditionOperator: 'and' | 'or' = 'or'
-) {
+): FilterConditionFactory {
   const tableUtils = useTableUtils();
 
   const notNullOrEmptyFilterCondition = useMemo(

@@ -12,7 +12,7 @@ export function BulkActionBar({
   styleProps,
   selectedItemCount,
   onClearSelection,
-}: BulkActionBarProps) {
+}: BulkActionBarProps): JSX.Element {
   return (
     <ActionBar
       UNSAFE_className={commonStyles.spectrumActionBar}
