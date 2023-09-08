@@ -1,6 +1,13 @@
 const fs = require('fs');
 const path = require('path');
 
+/**
+ * Build a package manifest for the @deephaven packages.
+ * @returns {{
+ *  packageNames: string[],              // The package names.
+ *  packageManifest: Map<string, string> // Map of package names to directory names.
+ * }}
+ */
 function buildPackageManifest() {
   const packageDirNames = fs
     .readdirSync(path.join(__dirname, 'packages'), { withFileTypes: true })
