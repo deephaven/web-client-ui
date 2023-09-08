@@ -2,7 +2,7 @@
 import { Key, useCallback } from 'react';
 import { ComboBox, Item, SpectrumComboBoxProps } from '@adobe/react-spectrum';
 import type { FocusableRef } from '@react-types/shared';
-import type { ReactSpectrumComponent } from '@deephaven/utils';
+import type { ReactSpectrumComponent } from '@deephaven/react-hooks';
 import TextWithTooltip from './TextWithTooltip';
 
 export interface SearchableComboboxProps<TItem, TKey extends Key>
