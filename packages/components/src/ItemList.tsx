@@ -371,6 +371,8 @@ export class ItemList<T> extends PureComponent<
     itemIndex: number,
     e: React.MouseEvent<HTMLDivElement>
   ): void {
+    this.setState({ focusIndex: itemIndex });
+
     // Update the selection, but don't consume the mouse event - it will trigger the context menu
     const { selectedRanges } = this.state;
     const isSelected = RangeUtils.isSelected(selectedRanges, itemIndex);

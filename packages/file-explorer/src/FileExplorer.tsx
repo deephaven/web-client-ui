@@ -22,6 +22,9 @@ export interface FileExplorerProps {
   isMultiSelect?: boolean;
   focusedPath?: string;
 
+  onCopy?: (file: FileStorageItem) => void;
+  onCreateFile?: () => void;
+  onCreateFolder?: () => void;
   onDelete?: (files: FileStorageItem[]) => void;
   onRename?: (oldName: string, newName: string) => void;
   onSelect: (file: FileStorageItem, event: React.SyntheticEvent) => void;
@@ -39,8 +42,11 @@ export function FileExplorer(props: FileExplorerProps): JSX.Element {
     storage,
     isMultiSelect = false,
     focusedPath,
+    onCopy = () => undefined,
     onDelete = () => undefined,
     onRename = () => undefined,
+    onCreateFile = () => undefined,
+    onCreateFolder = () => undefined,
     onSelect,
     onSelectionChange,
     rowHeight = DEFAULT_ROW_HEIGHT,
@@ -79,6 +85,24 @@ export function FileExplorer(props: FileExplorerProps): JSX.Element {
       log.error(e);
     }
   }, []);
+
+  const handleCreateFile = useCallback(() => {
+    log.debug('handleCreateFile');
+    onCreateFile();
+  }, [onCreateFile]);
+
+  const handleCreateFolder = useCallback(() => {
+    log.debug('handleCreateFolder');
+    onCreateFolder();
+  }, [onCreateFolder]);
+
+  const handleCopyFile = useCallback(
+    (file: FileStorageItem) => {
+      log.debug('handleCopyFile', file.filename);
+      onCopy(file);
+    },
+    [onCopy]
+  );
 
   const handleDelete = useCallback((files: FileStorageItem[]) => {
     log.debug('handleDelete, pending confirmation', files);
@@ -183,6 +207,9 @@ export function FileExplorer(props: FileExplorerProps): JSX.Element {
           isMultiSelect={isMultiSelect}
           focusedPath={focusedPath}
           showContextMenu
+          onCopy={handleCopyFile}
+          onCreateFolder={handleCreateFolder}
+          onCreateFile={handleCreateFile}
           onMove={handleMove}
           onDelete={handleDelete}
           onRename={handleRename}
