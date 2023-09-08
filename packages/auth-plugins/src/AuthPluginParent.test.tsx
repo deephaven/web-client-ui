@@ -71,9 +71,11 @@ describe('availability tests', () => {
   });
 
   it('is available when window parent is set', () => {
-    const parentSpy = jest.spyOn(window, 'parent', 'get').mockReturnValue(
-      TestUtils.createMockProxy<Window>({ postMessage: jest.fn() })
-    );
+    const parentSpy = jest
+      .spyOn(window, 'parent', 'get')
+      .mockReturnValue(
+        TestUtils.createMockProxy<Window>({ postMessage: jest.fn() })
+      );
     window.history.pushState(
       {},
       'Test Title',

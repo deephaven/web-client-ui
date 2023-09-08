@@ -16,7 +16,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ### Application Mode
 
-See the guide for how to set up core in Application Mode: https://deephaven.io/core/docs/how-to-guides/app-mode/
+See the guide for how to set up core in Application Mode: https://deephaven.io/core/docs/how-to-guides/application-mode/
 
 Once Deephaven is running, you can open a chart with a specific name by adding the query param `name`, e.g. http://localhost:4020/?name=world
 

@@ -7,6 +7,7 @@ import FileExplorer, {
   FileStorageItem,
   FileUtils,
   NewItemModal,
+  isDirectory,
 } from '@deephaven/file-explorer';
 import React, { ReactNode } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
@@ -94,14 +95,13 @@ export class FileExplorerPanel extends React.Component<
     super(props);
 
     this.handleFileSelect = this.handleFileSelect.bind(this);
+    this.handleCopyFile = this.handleCopyFile.bind(this);
     this.handleCreateFile = this.handleCreateFile.bind(this);
     this.handleCreateDirectory = this.handleCreateDirectory.bind(this);
-    this.handleCreateDirectoryCancel = this.handleCreateDirectoryCancel.bind(
-      this
-    );
-    this.handleCreateDirectorySubmit = this.handleCreateDirectorySubmit.bind(
-      this
-    );
+    this.handleCreateDirectoryCancel =
+      this.handleCreateDirectoryCancel.bind(this);
+    this.handleCreateDirectorySubmit =
+      this.handleCreateDirectorySubmit.bind(this);
     this.handleDelete = this.handleDelete.bind(this);
     this.handleRename = this.handleRename.bind(this);
     this.handleSessionOpened = this.handleSessionOpened.bind(this);
@@ -141,7 +141,7 @@ export class FileExplorerPanel extends React.Component<
     );
   }
 
-  handleCreateDirectory(path?: string): void {
+  handleCreateDirectory(): void {
     this.setState({ showCreateFolder: true });
   }
 
@@ -157,6 +157,29 @@ export class FileExplorerPanel extends React.Component<
     this.setState({ showCreateFolder: false });
     const { fileStorage } = this.props;
     fileStorage.createDirectory(path).catch(FileExplorerPanel.handleError);
+  }
+
+  async handleCopyFile(file: FileStorageItem): Promise<void> {
+    const { fileStorage } = this.props;
+    if (isDirectory(file)) {
+      log.error('Invalid item in handleCopyItem', file);
+      return;
+    }
+    let newName = FileUtils.getCopyFileName(file.filename);
+    const checkNewName = async (): Promise<boolean> => {
+      try {
+        await fileStorage.info(newName);
+        return true;
+      } catch (error) {
+        return false;
+      }
+    };
+    // await in loop is fine here, this isn't a parallel task
+    // eslint-disable-next-line no-await-in-loop
+    while (await checkNewName()) {
+      newName = FileUtils.getCopyFileName(newName);
+    }
+    await fileStorage.copyFile(file.filename, newName);
   }
 
   handleDelete(files: FileStorageItem[]): void {
@@ -259,6 +282,9 @@ export class FileExplorerPanel extends React.Component<
           <FileExplorer
             isMultiSelect
             storage={fileStorage}
+            onCopy={this.handleCopyFile}
+            onCreateFile={this.handleCreateFile}
+            onCreateFolder={this.handleCreateDirectory}
             onDelete={this.handleDelete}
             onRename={this.handleRename}
             onSelect={this.handleFileSelect}

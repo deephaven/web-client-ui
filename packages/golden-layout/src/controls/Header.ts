@@ -107,18 +107,14 @@ export default class Header extends EventEmitter {
     this._handlePreviousMouseEnter = this._handlePreviousMouseEnter.bind(this);
     this._handlePreviousMouseLeave = this._handlePreviousMouseLeave.bind(this);
     this._handleScrollRepeat = this._handleScrollRepeat.bind(this);
-    this._handleNextButtonMouseDown = this._handleNextButtonMouseDown.bind(
-      this
-    );
-    this._handlePreviousButtonMouseDown = this._handlePreviousButtonMouseDown.bind(
-      this
-    );
-    this._handleScrollButtonMouseDown = this._handleScrollButtonMouseDown.bind(
-      this
-    );
-    this._handleScrollButtonMouseUp = this._handleScrollButtonMouseUp.bind(
-      this
-    );
+    this._handleNextButtonMouseDown =
+      this._handleNextButtonMouseDown.bind(this);
+    this._handlePreviousButtonMouseDown =
+      this._handlePreviousButtonMouseDown.bind(this);
+    this._handleScrollButtonMouseDown =
+      this._handleScrollButtonMouseDown.bind(this);
+    this._handleScrollButtonMouseUp =
+      this._handleScrollButtonMouseUp.bind(this);
     this._handleScrollEvent = this._handleScrollEvent.bind(this);
 
     this.tabNextButton.on('mousedown', this._handleNextButtonMouseDown);
@@ -134,14 +130,13 @@ export default class Header extends EventEmitter {
     this.tabPreviousButton = this.tabPreviousButton.find('>:first-child');
     this.tabPreviousButton.hide();
 
-    this._showAdditionalTabsDropdown = this._showAdditionalTabsDropdown.bind(
-      this
-    );
-    this._hideAdditionalTabsDropdown = this._hideAdditionalTabsDropdown.bind(
-      this
-    );
+    this._showAdditionalTabsDropdown =
+      this._showAdditionalTabsDropdown.bind(this);
+    this._hideAdditionalTabsDropdown =
+      this._hideAdditionalTabsDropdown.bind(this);
 
-    this._tabControlOffset = this.layoutManager.config.settings?.tabControlOffset;
+    this._tabControlOffset =
+      this.layoutManager.config.settings?.tabControlOffset;
     this._createControls();
   }
 
@@ -536,7 +531,7 @@ export default class Header extends EventEmitter {
    * @returns when exists
    */
   _getHeaderSetting<
-    N extends 'show' | 'popout' | 'maximise' | 'close' | 'minimise'
+    N extends 'show' | 'popout' | 'maximise' | 'close' | 'minimise',
   >(name: N): StackHeaderConfig[N] {
     if (name in this.parent._header) return this.parent._header[name];
   }
@@ -559,8 +554,8 @@ export default class Header extends EventEmitter {
 
     tabDropdownLabel = this.layoutManager.config.labels.tabDropdown;
     tabOverflowNextLabel = this.layoutManager.config.labels.tabNextLabel;
-    tabOverflowPreviousLabel = this.layoutManager.config.labels
-      .tabPreviousLabel;
+    tabOverflowPreviousLabel =
+      this.layoutManager.config.labels.tabPreviousLabel;
 
     this.tabDropdownButton = new HeaderButton(
       this,
@@ -807,7 +802,8 @@ export default class Header extends EventEmitter {
 
     // position relative to the dropdown button
     if (!this.tabDropdownButton) return;
-    const button_rect = this.tabDropdownButton.element[0].getBoundingClientRect();
+    const button_rect =
+      this.tabDropdownButton.element[0].getBoundingClientRect();
 
     // If it fits below button, put it there. If it doesn't and there is more
     // than 60% space above, then flip to displaying menu above button

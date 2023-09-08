@@ -20,7 +20,7 @@ export const DEBOUNCE_VIEWPORT_SEARCH_MS = 200;
  */
 export default function useDebouncedViewportSearch<
   I,
-  T extends Table | TreeTable
+  T extends Table | TreeTable,
 >(
   viewportData: UseViewportDataResult<I, T>,
   columnName: string,

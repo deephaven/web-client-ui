@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/code-studio",
-  "version": "0.42.0",
+  "version": "0.46.1",
   "description": "Deephaven Code Studio",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -39,12 +39,12 @@
     "@fortawesome/react-fontawesome": "^0.2.0",
     "classnames": "^2.3.1",
     "event-target-shim": "^6.0.2",
-    "jszip": "3.2.2",
+    "jszip": "3.10.1",
     "lodash.debounce": "^4.0.8",
     "lodash.throttle": "^4.1.1",
     "memoize-one": "^5.1.1",
     "memoizee": "^0.4.15",
-    "monaco-editor": "^0.31.1",
+    "monaco-editor": "^0.41.0",
     "pouchdb-browser": "^7.2.2",
     "pouchdb-find": "^7.2.2",
     "prop-types": "^15.7.2",
@@ -57,10 +57,6 @@
     "redux": "^4.2.0",
     "redux-thunk": "^2.4.1",
     "shortid": "^2.2.16"
-  },
-  "dependenciesComments": {
-    "@types/jszip": "3.1.7 is the closest to 3.2.2 available. JSZip adds official typings in 3.4.0, so remove if going past JSZip 3.4.0",
-    "jszip": "Pinned to 3.2.2 b/c 3.3.0+ breaks nodestream usage. Not fixed as of 3.5.0. https://github.com/Stuk/jszip/issues/663"
   },
   "homepage": ".",
   "main": "build/index.html",

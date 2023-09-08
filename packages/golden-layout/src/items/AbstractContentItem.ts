@@ -480,7 +480,7 @@ export default abstract class AbstractContentItem extends EventEmitter {
   }
 
   _callOnActiveComponents(methodName: 'hide' | 'show') {
-    const stacks = (this.getItemsByType('stack') as unknown) as Stack[];
+    const stacks = this.getItemsByType('stack') as unknown as Stack[];
     let activeContentItem: AbstractContentItem | null = null;
 
     for (let i = 0; i < stacks.length; i++) {

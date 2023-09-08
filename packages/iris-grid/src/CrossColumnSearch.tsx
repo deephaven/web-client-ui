@@ -203,6 +203,7 @@ class CrossColumnSearch extends PureComponent<
         <SearchInput
           className="cross-column-search"
           placeholder="Search Data..."
+          data-testid="cross-column-search"
           value={value}
           onChange={this.handleSearchValueChange}
           ref={this.searchField}

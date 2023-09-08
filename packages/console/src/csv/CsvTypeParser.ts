@@ -4,15 +4,18 @@ import Papa, { Parser, ParseResult, ParseLocalConfig } from 'papaparse';
 // Intentionally using isNaN rather than Number.isNaN
 /* eslint-disable no-restricted-globals */
 import NewTableColumnTypes from './NewTableColumnTypes';
+import makeZipStreamHelper from './ZipStreamHelper';
 
-// Initially column types start al unknown
+// Initially column types start as unknown
 const UNKNOWN = 'unknown';
 
 const MAX_INT = 2147483647;
 const MIN_INT = -2147483648;
 
-const DATE_TIME_REGEX = /^[0-9]{4}-[0-1][0-9]-[0-3][0-9][ T][0-2][0-9]:[0-5][0-9]:[0-6][0-9](?:\.[0-9]{1,9})?(?: [a-zA-Z]+)?$/;
-const LOCAL_TIME_REGEX = /^([0-9]+T)?([0-9]+):([0-9]+)(:[0-9]+)?(?:\.[0-9]{1,9})?$/;
+const DATE_TIME_REGEX =
+  /^[0-9]{4}-[0-1][0-9]-[0-3][0-9][ T][0-2][0-9]:[0-5][0-9]:[0-6][0-9](?:\.[0-9]{1,9})?(?: [a-zA-Z]+)?$/;
+const LOCAL_TIME_REGEX =
+  /^([0-9]+T)?([0-9]+):([0-9]+)(:[0-9]+)?(?:\.[0-9]{1,9})?$/;
 
 /**
  * Determines the type of each column in a CSV file by parsing it and looking at every value.
@@ -52,7 +55,7 @@ class CsvTypeParser {
   // Allows for cusomt rules in addition to isNaN
   static isNotParsableNumber(s: string): boolean {
     return (
-      isNaN((s as unknown) as number) || s === 'Infinity' || s === '-Infinity'
+      isNaN(s as unknown as number) || s === 'Infinity' || s === '-Infinity'
     );
   }
 
@@ -154,8 +157,8 @@ class CsvTypeParser {
   }
 
   constructor(
-    onFileCompleted: (types: string[]) => void,
-    file: Blob | JSZipObject,
+    onFileCompleted: (types: string[], rowCount: number) => void,
+    file: File | Blob | JSZipObject,
     readHeaders: boolean,
     parentConfig: ParseLocalConfig<unknown, Blob | NodeJS.ReadableStream>,
     nullString: string | null,
@@ -173,6 +176,7 @@ class CsvTypeParser {
     this.onError = onError;
     this.chunks = 0;
     this.totalChunks = totalChunks;
+    this.rowCount = 0;
     this.isZip = isZip;
     this.shouldTrim = shouldTrim;
     this.zipProgress = 0;
@@ -190,9 +194,9 @@ class CsvTypeParser {
     };
   }
 
-  onFileCompleted: (types: string[]) => void;
+  onFileCompleted: (types: string[], rowCount: number) => void;
 
-  file: Blob | JSZipObject;
+  file: File | Blob | JSZipObject;
 
   readHeaders: boolean;
 
@@ -208,6 +212,8 @@ class CsvTypeParser {
 
   totalChunks: number;
 
+  rowCount: number;
+
   isZip: boolean;
 
   shouldTrim: boolean;
@@ -217,15 +223,16 @@ class CsvTypeParser {
   config: ParseLocalConfig<unknown, Blob | NodeJS.ReadableStream>;
 
   parse(): void {
-    const toParse = this.isZip
-      ? (this.file as JSZipObject).nodeStream(
-          // JsZip types are incorrect, thus the funny casting
-          // Actual parameter is 'nodebuffer'
-          'nodebuffer' as 'nodestream',
-          this.handleNodeUpdate
-        )
-      : (this.file as Blob);
-    Papa.parse(toParse, this.config);
+    if (this.file instanceof File || this.file instanceof Blob) {
+      Papa.parse(this.file, this.config);
+    } else {
+      const zipStream = makeZipStreamHelper(this.file, this.handleNodeUpdate);
+      // This is actually a stream, but papaparse TS doesn't like it
+      Papa.parse(zipStream as unknown as Blob, this.config);
+      // The stream needs to be manually resumed since jszip starts paused
+      // Papaparse does not call resume and assumes the stream is already reading
+      zipStream.resume();
+    }
   }
 
   handleChunk(result: ParseResult<string[]>, parser: Parser): void {
@@ -242,6 +249,8 @@ class CsvTypeParser {
         data = data.slice(1);
       }
     }
+
+    this.rowCount += data.length;
 
     assertNotNull(this.types);
 
@@ -286,8 +295,14 @@ class CsvTypeParser {
     if (results == null || !results.meta.aborted) {
       onFileCompleted(
         types.map(type =>
-          type === UNKNOWN ? NewTableColumnTypes.STRING : type
-        )
+          // If the type is still unknown or a local time, just map it to a string.
+          // Local times are not supported by the backend in DHC, and probably should have more context to parse safely anyway (such as a date or a time zone).
+          // In these cases, we just map it to a string, and the user can use an `.update_view` later if they want to parse it into a different type.
+          type === UNKNOWN || type === NewTableColumnTypes.LOCAL_TIME
+            ? NewTableColumnTypes.STRING
+            : type
+        ),
+        this.rowCount
       );
     }
   }

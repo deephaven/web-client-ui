@@ -8,18 +8,10 @@ import type {
 import { ConnectedComponent } from 'react-redux';
 import GoldenLayout from '@deephaven/golden-layout';
 import type {
+  GLPanelProps,
   ReactComponentConfig,
-  EventEmitter,
-  Container,
 } from '@deephaven/golden-layout';
 import PanelManager from './PanelManager';
-
-/**
- * Alias for the return type of React.forwardRef()
- */
-export type ForwardRefComponentType<P, R> = ForwardRefExoticComponent<
-  PropsWithoutRef<P> & RefAttributes<R>
->;
 
 /**
  * Panel components can provide static props that provide meta data about the
@@ -37,6 +29,14 @@ export interface PanelStaticMetaData {
 }
 
 /**
+ * Alias for the return type of React.forwardRef()
+ */
+type ForwardRefComponentType<P, R> = ForwardRefExoticComponent<
+  PropsWithoutRef<P> & RefAttributes<R>
+>;
+
+/**
+ * @deprecated Use `PanelComponentType` instead and add generic types to forwardRef call.
  * Panels defined as functional components have to use React.forwardRef.
  */
 export type PanelFunctionComponentType<P, R> = ForwardRefComponentType<P, R> &
@@ -44,30 +44,35 @@ export type PanelFunctionComponentType<P, R> = ForwardRefComponentType<P, R> &
 
 export type WrappedComponentType<
   P extends PanelProps,
-  C extends ComponentType<P>
+  C extends ComponentType<P>,
 > = ConnectedComponent<C, P>;
 
 export type PanelComponentType<
   P extends PanelProps = PanelProps,
-  C extends ComponentType<P> = ComponentType<P>
-> = (
-  | ComponentType<P>
-  | WrappedComponentType<P, C>
-  | PanelFunctionComponentType<P, unknown>
-) &
-  PanelStaticMetaData;
+  C extends ComponentType<P> = ComponentType<P>,
+> = (ComponentType<P> | WrappedComponentType<P, C>) & PanelStaticMetaData;
 
 export function isWrappedComponent<
   P extends PanelProps,
-  C extends ComponentType<P>
+  C extends ComponentType<P>,
 >(type: PanelComponentType<P, C>): type is WrappedComponentType<P, C> {
   return (type as WrappedComponentType<P, C>)?.WrappedComponent !== undefined;
 }
 
-export type PanelProps = {
-  glContainer: Container;
-  glEventHub: EventEmitter;
+export type PanelMetadata = { id?: string; name?: string; type?: string };
+
+export type PanelProps = GLPanelProps & {
+  metadata?: PanelMetadata;
 };
+
+export type DehydratedPanelProps = Omit<PanelProps, keyof GLPanelProps>;
+
+export type DashboardPanelProps = PanelProps & { localDashboardId: string };
+
+export type DehydratedDashboardPanelProps = Omit<
+  DashboardPanelProps,
+  keyof GLPanelProps
+>;
 
 export type PanelComponent<T extends PanelProps = PanelProps> = Component<T>;
 
@@ -88,10 +93,10 @@ export interface DashboardPanelDefinition {
 
 export type DeregisterComponentFunction = () => void;
 
-export type PanelHydrateFunction<T = PanelProps> = (
-  props: T,
-  dashboardId: string
-) => PanelProps;
+export type PanelHydrateFunction<
+  T extends DehydratedDashboardPanelProps = DehydratedDashboardPanelProps,
+  R extends T = T,
+> = (props: T, dashboardId: string) => R;
 
 export type PanelDehydrateFunction = (
   config: PanelConfig,
@@ -102,10 +107,13 @@ export type DashboardPluginComponentProps = {
   id: string;
   layout: GoldenLayout;
   panelManager: PanelManager;
-  registerComponent: <P extends PanelProps, C extends ComponentType<P>>(
+  registerComponent: <
+    P extends DashboardPanelProps,
+    C extends ComponentType<P>,
+  >(
     name: string,
     ComponentType: PanelComponentType<P, C>,
-    hydrate?: PanelHydrateFunction<P>,
+    hydrate?: PanelHydrateFunction,
     dehydrate?: PanelDehydrateFunction
   ) => DeregisterComponentFunction;
 };

@@ -13,19 +13,16 @@ import { getTimeZone, store } from '@deephaven/redux';
 import {
   ChartPanelMetadata,
   GLChartPanelState,
+  IrisGridPanelMetadata,
   isChartPanelTableMetadata,
 } from '@deephaven/dashboard-core-plugins';
 
-export type GridPanelMetadata = {
-  table: string;
-};
-
-export const createChartModel = async (
+export async function createChartModel(
   dh: DhType,
   connection: IdeConnection,
   metadata: ChartPanelMetadata,
   panelState?: GLChartPanelState
-): Promise<ChartModel> => {
+): Promise<ChartModel> {
   let settings;
   let tableName;
   let figureName;
@@ -39,10 +36,10 @@ export const createChartModel = async (
   } else {
     settings = {};
     tableName = '';
-    figureName = metadata.figure;
+    figureName = metadata.name ?? metadata.figure;
     tableSettings = {};
   }
-  if (panelState !== undefined) {
+  if (panelState != null) {
     if (panelState.tableSettings != null) {
       tableSettings = panelState.tableSettings;
     }
@@ -60,7 +57,7 @@ export const createChartModel = async (
     }
   }
 
-  if (figureName !== undefined) {
+  if (figureName != null) {
     const definition = {
       title: figureName,
       name: figureName,
@@ -85,16 +82,19 @@ export const createChartModel = async (
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return ChartModelFactory.makeModelFromSettings(dh, settings as any, table);
-};
+}
 
 export const createGridModel = async (
   dh: DhType,
   connection: IdeConnection,
-  metadata: GridPanelMetadata,
-  type: string = dh.VariableType.TABLE
+  metadata: IrisGridPanelMetadata
 ): Promise<IrisGridModel> => {
-  const { table: tableName } = metadata;
-  const definition = { title: tableName, name: tableName, type };
+  const { name: tableName, type } = metadata;
+  const definition = {
+    title: tableName,
+    name: tableName,
+    type,
+  };
   const table = (await connection.getObject(definition)) as Table;
   return IrisGridModelFactory.makeModel(dh, table);
 };

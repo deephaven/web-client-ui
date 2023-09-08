@@ -217,7 +217,8 @@ export class DateUtils {
    * @returns Containing the date time components
    */
   static parseDateTimeString(dateTimeString: string): DateParts<string> {
-    const regex = /\s*(\d{4})([-./]([\da-z]+))?([-./](\d{1,2}))?([tT\s](\d{2})([:](\d{2}))?([:](\d{2}))?([.](\d{1,9}))?)?(.*)/;
+    const regex =
+      /\s*(\d{4})([-./]([\da-z]+))?([-./](\d{1,2}))?([tT\s](\d{2})([:](\d{2}))?([:](\d{2}))?([.](\d{1,9}))?)?(.*)/;
     const result = regex.exec(dateTimeString);
     if (result == null) {
       throw new Error(`Unexpected date string: ${dateTimeString}`);

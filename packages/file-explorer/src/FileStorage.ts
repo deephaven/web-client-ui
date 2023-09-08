@@ -85,6 +85,13 @@ export interface FileStorage {
   moveFile(name: string, newName: string): Promise<void>;
 
   /**
+   * Copy a file to a new location
+   * @param name The name of the file to copy
+   * @param newName The new file name, including path
+   */
+  copyFile(name: string, newName: string): Promise<void>;
+
+  /**
    * Get the info for the file at the specified path.
    * If the file does not exists, rejects with a FileNotFoundError
    * @param name The file name to check, including path

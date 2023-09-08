@@ -1,7 +1,10 @@
 /* eslint-disable no-bitwise */
 import * as monaco from 'monaco-editor';
 import { Shortcut, KEY, MODIFIER } from '@deephaven/components';
+import { TestUtils } from '@deephaven/utils';
 import MonacoUtils from './MonacoUtils';
+
+const { asMock, createMockProxy } = TestUtils;
 
 const SINGLE_KEY_PARAMS: ConstructorParameters<typeof Shortcut>[0] = {
   id: 'Single key',
@@ -45,9 +48,14 @@ const MULTI_MOD_PARAMS: ConstructorParameters<typeof Shortcut>[0] = {
   macShortcut: [MODIFIER.CMD, MODIFIER.SHIFT, KEY.B],
 };
 
+beforeEach(() => {
+  jest.clearAllMocks();
+  expect.hasAssertions();
+});
+
 describe('Register worker', () => {
   it('Registers the getWorker function', () => {
-    const getWorker = () => ({} as Worker);
+    const getWorker = () => ({}) as Worker;
     MonacoUtils.registerGetWorker(getWorker);
     expect(window.MonacoEnvironment?.getWorker).toBe(getWorker);
   });
@@ -151,17 +159,34 @@ describe('Mac shortcuts', () => {
   });
 });
 
+describe('disableKeyBindings', () => {
+  const editor = createMockProxy<monaco.editor.IStandaloneCodeEditor>();
+
+  it('should disable key bindings for the given editor', () => {
+    const keybindings = [1, 2, 3];
+
+    MonacoUtils.disableKeyBindings(editor, keybindings);
+
+    expect(editor.addAction).toHaveBeenCalledWith({
+      id: expect.stringMatching(/^disable-keybindings-.+/),
+      label: '',
+      keybindings,
+      run: expect.any(Function),
+    });
+  });
+});
+
 describe('provideLinks', () => {
   it('it should get a provideLinks function which should return an object with the links', () => {
     const { provideLinks } = MonacoUtils;
-    const mockModel: monaco.editor.ITextModel = ({
+    const mockModel: monaco.editor.ITextModel = {
       getLineCount: jest.fn(() => 2),
       getLineContent: jest.fn(lineNumber =>
         lineNumber === 1
           ? 'https://google.com http://www.example.com/'
           : 'mail@gmail.com'
       ),
-    } as unknown) as monaco.editor.ITextModel;
+    } as unknown as monaco.editor.ITextModel;
 
     const expectedValue = {
       links: [
@@ -176,4 +201,34 @@ describe('provideLinks', () => {
 
     expect(provideLinks(mockModel)).toEqual(expectedValue);
   });
+});
+
+describe('removeConflictingKeybindings', () => {
+  beforeEach(() => {
+    jest.spyOn(monaco.editor, 'addKeybindingRule');
+    jest.spyOn(MonacoUtils, 'isMacPlatform');
+  });
+
+  it.each([true, false])(
+    'should override keybinding rules - isMac:%s',
+    isMac => {
+      asMock(MonacoUtils.isMacPlatform).mockReturnValue(isMac);
+
+      MonacoUtils.removeConflictingKeybindings();
+
+      expect(monaco.editor.addKeybindingRule).toHaveBeenCalledWith({
+        keybinding: monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyD,
+        command: null,
+      });
+
+      if (isMac) {
+        expect(monaco.editor.addKeybindingRule).toHaveBeenCalledTimes(1);
+      } else {
+        expect(monaco.editor.addKeybindingRule).toHaveBeenCalledWith({
+          keybinding: monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyH,
+          command: null,
+        });
+      }
+    }
+  );
 });

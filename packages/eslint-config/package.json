@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/eslint-config",
-  "version": "0.42.0",
+  "version": "0.46.0",
   "description": "Deephaven ESLint configuration",
   "repository": {
     "type": "git",
@@ -20,7 +20,7 @@
     "eslint": "^8.29.0",
     "eslint-import-resolver-typescript": "^3.5.0",
     "eslint-plugin-es": "^4.1.0",
-    "eslint-plugin-prettier": "^3.3.1",
+    "eslint-plugin-prettier": "^5.0.0",
     "eslint-plugin-react-refresh": "0.3.4"
   },
   "publishConfig": {

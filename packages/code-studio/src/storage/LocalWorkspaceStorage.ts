@@ -25,14 +25,11 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
     layoutStorage: LayoutStorage,
     options?: WorkspaceStorageLoadOptions
   ): Promise<WorkspaceData> {
-    const {
-      filterSets,
-      links,
-      layoutConfig,
-    } = await UserLayoutUtils.getDefaultLayout(
-      layoutStorage,
-      options?.isConsoleAvailable
-    );
+    const { filterSets, links, layoutConfig } =
+      await UserLayoutUtils.getDefaultLayout(
+        layoutStorage,
+        options?.isConsoleAvailable
+      );
 
     return {
       settings: {

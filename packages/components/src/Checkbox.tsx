@@ -49,19 +49,20 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
       [ref, checked]
     );
 
-    const handleOnChange: React.ChangeEventHandler<HTMLInputElement> = useCallback(
-      event => {
-        if (ref.current) {
-          // ref.current can be null in tests, doesn't impact behaviour
-          ref.current.indeterminate = checked === null;
-        }
+    const handleOnChange: React.ChangeEventHandler<HTMLInputElement> =
+      useCallback(
+        event => {
+          if (ref.current) {
+            // ref.current can be null in tests, doesn't impact behaviour
+            ref.current.indeterminate = checked === null;
+          }
 
-        if (onChange) {
-          onChange(event);
-        }
-      },
-      [ref, checked, onChange]
-    );
+          if (onChange) {
+            onChange(event);
+          }
+        },
+        [ref, checked, onChange]
+      );
 
     return (
       <div className={classNames('custom-control custom-checkbox', className)}>

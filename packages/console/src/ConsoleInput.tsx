@@ -187,6 +187,7 @@ export class ConsoleInput extends PureComponent<
 
     const element = this.commandContainer.current;
     assertNotNull(element);
+
     this.commandEditor = monaco.editor.create(element, commandSettings);
 
     MonacoUtils.setEOL(this.commandEditor);
@@ -283,13 +284,10 @@ export class ConsoleInput extends PureComponent<
       }
     });
 
-    // Override the Ctrl+F functionality so that the find window doesn't appear
-    this.commandEditor.addCommand(
+    // Disable the Ctrl+F functionality so that the find window doesn't appear
+    MonacoUtils.disableKeyBindings(this.commandEditor, [
       monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyF, // eslint-disable-line no-bitwise
-      () => undefined
-    );
-
-    MonacoUtils.removeConflictingKeybindings(this.commandEditor);
+    ]);
 
     MonacoUtils.registerPasteHandler(this.commandEditor);
 

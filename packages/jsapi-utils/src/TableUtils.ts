@@ -827,7 +827,8 @@ export class TableUtils {
     const { dh } = this;
     let filter = null;
 
-    const regex = /\s*(>=|<=|=>|=<|>|<|!=|=|!)?(\s*-\s*)?(\s*\d*(?:,\d{3})*(?:\.\d*)?\s*)?(null|nan|infinity|inf|\u221E)?(.*)/i;
+    const regex =
+      /\s*(>=|<=|=>|=<|>|<|!=|=|!)?(\s*-\s*)?(\s*\d*(?:,\d{3})*(?:\.\d*)?\s*)?(null|nan|infinity|inf|\u221E)?(.*)/i;
     const result = regex.exec(text);
 
     let operation = null;
@@ -1344,12 +1345,8 @@ export class TableUtils {
     options: AdvancedFilterOptions,
     timeZone: string
   ): FilterCondition | null {
-    const {
-      filterItems,
-      filterOperators,
-      invertSelection,
-      selectedValues,
-    } = options;
+    const { filterItems, filterOperators, invertSelection, selectedValues } =
+      options;
     let filter = null;
     for (let i = 0; i < filterItems.length; i += 1) {
       const filterItem = filterItems[i];

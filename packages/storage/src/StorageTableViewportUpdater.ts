@@ -11,15 +11,15 @@ import {
   ViewportUpdateCallback,
 } from './Storage';
 
-export type StorageTableViewportUpdaterProps = {
-  table: StorageTable<StorageItem>;
+export type StorageTableViewportUpdaterProps<T extends StorageItem> = {
+  table: StorageTable<T>;
   columns?: string[];
   top?: number;
   bottom?: number;
   filters?: FilterConfig[];
   sorts?: SortConfig[];
   isReversed?: boolean;
-  onUpdate: ViewportUpdateCallback<StorageItem>;
+  onUpdate: ViewportUpdateCallback<T>;
 };
 
 const UPDATE_DELAY = 150;
@@ -28,7 +28,9 @@ const ROW_BUFFER_PAGES = 3;
 
 const log = Log.module('StorageTableViewportUpdater');
 
-export function StorageTableViewportUpdater({
+export function StorageTableViewportUpdater<
+  T extends StorageItem = StorageItem,
+>({
   table,
   columns,
   top = 0,
@@ -37,7 +39,7 @@ export function StorageTableViewportUpdater({
   sorts,
   isReversed = false,
   onUpdate,
-}: StorageTableViewportUpdaterProps): null {
+}: StorageTableViewportUpdaterProps<T>): null {
   const throttledUpdateViewport = useMemo(
     () =>
       throttle((viewport: StorageTableViewport) => {
@@ -59,14 +61,12 @@ export function StorageTableViewportUpdater({
 
   useEffect(
     function updateViewportAndReturnCleanup() {
-      const cleanup = table.onUpdate(
-        (viewportData: ViewportData<StorageItem>) => {
-          onUpdate({
-            items: viewportData.items ?? [],
-            offset: viewportData.offset ?? 0,
-          });
-        }
-      );
+      const cleanup = table.onUpdate((viewportData: ViewportData<T>) => {
+        onUpdate({
+          items: viewportData.items ?? [],
+          offset: viewportData.offset ?? 0,
+        });
+      });
 
       return () => {
         log.debug('onUpdate cleanup');

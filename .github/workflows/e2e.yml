@@ -30,7 +30,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18.x'
+          node-version-file: '.nvmrc'
           cache: 'npm'
 
       - name: Cache node modules
@@ -53,7 +53,7 @@ jobs:
         run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright install --with-deps
 
       - name: Run Playwright tests
-        run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright test
+        run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright test --config=playwright-ci.config.ts
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v3
@@ -62,3 +62,12 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 90
+      - name: Dump server logs
+        if: failure()
+        run: docker logs dh-core-server > /tmp/server-log.txt
+      - name: Upload server logs
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: server-logs
+          path: /tmp/server-log.txt

@@ -34,12 +34,7 @@ class IrisGridCellOverflowMouseHandler extends GridMouseHandler {
     return false;
   }
 
-  private getButtonPosition({
-    x,
-    y,
-    column,
-    row,
-  }: GridPoint): {
+  private getButtonPosition({ x, y, column, row }: GridPoint): {
     left: number;
     top: number;
     width: number;
@@ -66,9 +61,8 @@ class IrisGridCellOverflowMouseHandler extends GridMouseHandler {
       theme,
     };
 
-    const { left, top, width, height } = renderer.getCellOverflowButtonPosition(
-      rendererState
-    );
+    const { left, top, width, height } =
+      renderer.getCellOverflowButtonPosition(rendererState);
     if (left == null || width == null || top == null || height == null) {
       return null;
     }

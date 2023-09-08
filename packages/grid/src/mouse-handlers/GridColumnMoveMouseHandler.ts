@@ -85,9 +85,8 @@ function getColumnInfo(
   let range: BoundedAxisRange;
 
   if (group != null) {
-    const [startVisibleIndex, endVisibleIndex] = group.getVisibleRange(
-      movedColumns
-    );
+    const [startVisibleIndex, endVisibleIndex] =
+      group.getVisibleRange(movedColumns);
 
     left = allColumnXs.get(startVisibleIndex) ?? floatingLeftWidth;
     right =
@@ -414,12 +413,8 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
     const { metrics } = grid;
     if (!metrics) throw new Error('Metrics not set');
 
-    const {
-      floatingLeftWidth,
-      width,
-      columnHeaderMaxDepth,
-      allColumnXs,
-    } = metrics;
+    const { floatingLeftWidth, width, columnHeaderMaxDepth, allColumnXs } =
+      metrics;
 
     const isDraggingLeft = deltaX < 0;
 

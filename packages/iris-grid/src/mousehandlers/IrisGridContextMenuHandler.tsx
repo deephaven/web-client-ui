@@ -14,6 +14,7 @@ import {
   ContextActions,
   ContextActionUtils,
   GLOBAL_SHORTCUTS,
+  ResolvableContextAction,
 } from '@deephaven/components';
 import {
   EventHandlerResult,
@@ -203,6 +204,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       model.getColumnHeaderParentGroup(modelIndex, 0) === undefined &&
       !(isExpandableGridModel(model) && model.hasExpandableRows);
     const isColumnFrozen = model.isColumnFrozen(modelIndex);
+    const isColumnSortable = model.isColumnSortable(modelIndex);
     actions.push({
       title: 'Hide Column',
       group: IrisGridContextMenuHandler.GROUP_HIDE_COLUMNS,
@@ -274,6 +276,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       group: IrisGridContextMenuHandler.GROUP_SORT,
       order: 10,
       actions: this.sortByActions(column, modelIndex, columnSort),
+      disabled: !isColumnSortable,
     });
     actions.push({
       title: 'Add Additional Sort',
@@ -289,7 +292,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         (columnSort && modelSort.length === 1) ||
         (hasReverse && modelSort.length === 1) ||
         (columnSort && hasReverse && modelSort.length === 2) ||
-        modelSort.length === 0,
+        modelSort.length === 0 ||
+        !isColumnSortable,
       group: IrisGridContextMenuHandler.GROUP_SORT,
       order: 20,
       actions: this.additionalSortActions(column, modelIndex),
@@ -711,7 +715,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
     const { columnHeaderHeight, gridY, columnHeaderMaxDepth } = metrics;
 
-    const actions = [] as ContextAction[];
+    const actions: ResolvableContextAction[] = [];
 
     if (modelColumn != null && modelRow != null) {
       const value = model.valueForCell(modelColumn, modelRow);
@@ -723,7 +727,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
       if (column != null) {
         actions.push(
-          onContextMenu({
+          ...onContextMenu({
             model,
             value,
             valueText,
@@ -835,9 +839,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const actions = [];
 
     for (let i = 0; i < formatOptions.length; i += 1) {
-      const { description, format, group, isSelected, title } = formatOptions[
-        i
-      ];
+      const { description, format, group, isSelected, title } =
+        formatOptions[i];
       actions.push({
         title,
         description,
@@ -936,9 +939,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const { model } = this.irisGrid.props;
     const columnIndex = model.getColumnIndexByName(column.name);
 
-    const quickFilterValueText:
-      | string
-      | null = TableUtils.escapeQuickTextFilter(valueText);
+    const quickFilterValueText: string | null =
+      TableUtils.escapeQuickTextFilter(valueText);
 
     assertNotNull(columnIndex);
 

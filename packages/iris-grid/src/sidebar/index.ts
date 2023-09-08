@@ -31,4 +31,5 @@ export type { FormattingRule as SidebarFormattingRule };
 export * from './aggregations';
 export * from './RollupRows';
 export * from './ChartBuilder';
+export * from './InputEditor';
 export * from './icons';

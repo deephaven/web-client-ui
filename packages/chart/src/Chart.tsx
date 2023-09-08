@@ -466,7 +466,7 @@ export class Chart extends Component<ChartProps, ChartState> {
 
   handleRestyle([changes, seriesIndexes]: readonly [
     Record<string, unknown>,
-    number[]
+    number[],
   ]): void {
     log.debug('handleRestyle', changes, seriesIndexes);
     if (Object.keys(changes).includes('visible')) {
@@ -522,9 +522,8 @@ export class Chart extends Component<ChartProps, ChartState> {
 
   updateFormatterSettings(settings: FormatterSettings): void {
     const columnFormats = FormatterUtils.getColumnFormats(settings);
-    const dateTimeFormatterOptions = FormatterUtils.getDateTimeFormatterOptions(
-      settings
-    );
+    const dateTimeFormatterOptions =
+      FormatterUtils.getDateTimeFormatterOptions(settings);
     const { decimalFormatOptions = {}, integerFormatOptions = {} } = settings;
 
     if (
@@ -565,7 +564,7 @@ export class Chart extends Component<ChartProps, ChartState> {
       // Call relayout to resize avoiding the debouncing plotly does
       // https://github.com/plotly/plotly.js/issues/2769#issuecomment-402099552
       PlotlyProp.relayout(
-        ((this.plot.current as unknown) as { el: HTMLElement }).el,
+        (this.plot.current as unknown as { el: HTMLElement }).el,
         {
           autosize: true,
         }

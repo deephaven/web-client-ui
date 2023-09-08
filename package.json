@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.1",
   "workspaces": [
-    "./packages/*"
+    "packages/*"
   ],
   "engines": {
     "node": ">=16",
@@ -46,12 +46,13 @@
     "test:unit": "jest --config jest.config.unit.cjs",
     "test:lint": "jest --config jest.config.lint.cjs",
     "test:golden-layout": "lerna run test:ci --scope=@deephaven/golden-layout --stream",
+    "version-bump": "lerna version --conventional-commits --create-release github",
     "e2e": "playwright test",
     "e2e:codegen": "playwright codegen http://localhost:4000",
     "e2e:headed": "playwright test --project=chromium --debug --ignore-snapshots",
     "e2e:update-snapshots": "playwright test --update-snapshots",
-    "version-bump": "lerna version --conventional-commits --create-release github",
-    "e2e:update-ci-snapshots": "docker build --tag web-client-ui-ci-snapshots --file ./tests/update-ci-snapshots/Dockerfile . && docker run --rm --network host --volume $(pwd)/tests:/work/tests/ --volume $(pwd)/playwright-report:/work/playwright-report --volume $(pwd)/test-results:/work/test-results web-client-ui-ci-snapshots npm run e2e:update-snapshots -- --config=playwright-ci.config.ts"
+    "e2e:docker": "./tests/docker-scripts/run.sh web-ui-tests",
+    "e2e:update-ci-snapshots": "./tests/docker-scripts/run.sh web-ui-update-snapshots"
   },
   "repository": "https://github.com/deephaven/web-client-ui",
   "devDependencies": {
@@ -68,8 +69,9 @@
     "@deephaven/redux": "file:../redux",
     "@deephaven/stylelint-config": "file:../stylelint-config",
     "@deephaven/tsconfig": "file:../tsconfig",
+    "@deephaven/utils": "file:../utils",
     "@fortawesome/fontawesome-common-types": "^6.1.1",
-    "@playwright/test": "^1.30.0",
+    "@playwright/test": "^1.37.1",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^12.1.3",
     "@testing-library/react-hooks": "^8.0.1",
@@ -80,7 +82,6 @@
     "@types/eslint": "^8.4.10",
     "@types/jest": "^29.2.5",
     "@types/jquery": "^3.5.14",
-    "@types/jszip": "3.1.7",
     "@types/lodash": "^4.14.182",
     "@types/lodash.clamp": "^4.0.6",
     "@types/lodash.debounce": "^4.0.6",
@@ -122,10 +123,9 @@
     "karma-chrome-launcher": "^3.1.0",
     "karma-cli": "^2.0.0",
     "karma-jasmine": "~0.1.5",
-    "lerna": "^6.4.1",
+    "lerna": "^7.1.4",
     "npm-run-all": "^4.1.5",
-    "playwright": "^1.30.0",
-    "prettier": "2.2.1",
+    "prettier": "3.0.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-redux": "^7.2.4",

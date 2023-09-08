@@ -57,7 +57,7 @@ const ValueType = {
   BOOLEAN: 'Boolean',
 } as const;
 
-export type ValueTypeUnion = typeof ValueType[keyof typeof ValueType];
+export type ValueTypeUnion = (typeof ValueType)[keyof typeof ValueType];
 
 export interface CalendarStatic {
   DayOfWeek: { values: () => string[] };
@@ -558,6 +558,7 @@ export interface Column {
   readonly constituentType: string;
 
   readonly isPartitionColumn: boolean;
+  readonly isSortable?: boolean;
 
   filter(): FilterValue;
   sort(): Sort;
@@ -591,10 +592,13 @@ export interface FilterValue {
   notIn(values: FilterValue[]): FilterCondition;
   notInIgnoreCase(values: FilterValue[]): FilterCondition;
   contains(value: FilterValue): FilterCondition;
+  containsIgnoreCase(value: FilterValue): FilterCondition;
   isFalse(): FilterCondition;
   isTrue(): FilterCondition;
   isNull(): FilterCondition;
   invoke(method: string, ...args: FilterValue[]): FilterCondition;
+  matches(value: FilterValue): FilterCondition;
+  matchesIgnoreCase(value: FilterValue): FilterCondition;
 }
 
 export interface FilterConditionStatic {

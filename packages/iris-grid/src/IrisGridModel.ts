@@ -30,7 +30,8 @@ import {
 } from './CommonTypes';
 import ColumnHeaderGroup from './ColumnHeaderGroup';
 
-type IrisGridModelEventNames = typeof IrisGridModel.EVENT[keyof typeof IrisGridModel.EVENT];
+type IrisGridModelEventNames =
+  (typeof IrisGridModel.EVENT)[keyof typeof IrisGridModel.EVENT];
 
 type IrisGridModelEventMap = {
   [E in IrisGridModelEventNames]: Event<E>;
@@ -50,7 +51,7 @@ abstract class IrisGridModel<
     string,
     Event<string>
   >,
-  TMode extends 'standard' | 'strict' = 'standard'
+  TMode extends 'standard' | 'strict' = 'standard',
 > extends GridModel<TEventMap & IrisGridModelEventMap, TMode> {
   static EVENT = Object.freeze({
     UPDATED: 'UPDATED',
@@ -288,6 +289,14 @@ abstract class IrisGridModel<
    * @returns Whether the column is one of LayoutHints' frozen columns
    */
   isColumnFrozen(index: ModelIndex): boolean {
+    return false;
+  }
+
+  /**
+   * @param index The column index to check
+   * @returns Whether the column is sortable
+   */
+  isColumnSortable(index: ModelIndex): boolean {
     return false;
   }
 

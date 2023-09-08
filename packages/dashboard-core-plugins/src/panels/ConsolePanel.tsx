@@ -10,7 +10,7 @@ import {
   ConsoleConstants,
   HeapUsage,
 } from '@deephaven/console';
-import { PanelEvent } from '@deephaven/dashboard';
+import { DashboardPanelProps, PanelEvent } from '@deephaven/dashboard';
 import type { IdeSession, VariableDefinition } from '@deephaven/jsapi-types';
 import { SessionWrapper } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
@@ -19,7 +19,6 @@ import {
   getTimeZone,
   RootState,
 } from '@deephaven/redux';
-import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import { assertNotNull } from '@deephaven/utils';
 import type { JSZipObject } from 'jszip';
 import { ConsoleEvent } from '../events';
@@ -47,10 +46,8 @@ interface PanelState {
 
 type ItemIds = Map<string, string>;
 
-interface ConsolePanelProps {
+interface ConsolePanelProps extends DashboardPanelProps {
   commandHistoryStorage: CommandHistoryStorage;
-  glContainer: Container;
-  glEventHub: EventEmitter;
 
   panelState?: PanelState;
 

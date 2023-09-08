@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/prettier-config",
-  "version": "0.42.0",
+  "version": "0.46.0",
   "description": "Deephaven Prettier configuration",
   "repository": {
     "type": "git",
@@ -10,7 +10,7 @@
   "license": "Apache-2.0",
   "main": "index.js",
   "peerDependencies": {
-    "prettier": "^2.2.1"
+    "prettier": "^3.0.0"
   },
   "publishConfig": {
     "access": "public"

@@ -273,6 +273,10 @@ class IrisGridProxyModel extends IrisGridModel {
     return this.model.isColumnFrozen(x);
   }
 
+  isColumnSortable(index: number): boolean {
+    return this.model.isColumnSortable(index);
+  }
+
   get hasExpandableRows(): boolean {
     if (isExpandableGridModel(this.model)) {
       return this.model.hasExpandableRows;

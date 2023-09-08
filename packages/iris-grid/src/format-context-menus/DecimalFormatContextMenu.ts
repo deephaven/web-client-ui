@@ -75,9 +75,8 @@ class DecimalFormatContextMenu {
       )
     );
 
-    const isCustomSelected = FormatContextMenuUtils.isCustomSelected(
-      selectedFormat
-    );
+    const isCustomSelected =
+      FormatContextMenuUtils.isCustomSelected(selectedFormat);
 
     const customFormat = isCustomSelected
       ? selectedFormat
@@ -90,9 +89,8 @@ class DecimalFormatContextMenu {
       isCustomSelected,
       formatString => {
         if (formatString != null) {
-          const newCustomFormat = DecimalColumnFormatter.makeCustomFormat(
-            formatString
-          );
+          const newCustomFormat =
+            DecimalColumnFormatter.makeCustomFormat(formatString);
           if (DecimalColumnFormatter.isValid(dh, newCustomFormat)) {
             onCustomFormatChange(newCustomFormat);
           }
