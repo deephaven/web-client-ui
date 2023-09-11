@@ -52,8 +52,7 @@
     "e2e:headed": "playwright test --project=chromium --debug --ignore-snapshots",
     "e2e:update-snapshots": "playwright test --update-snapshots",
     "e2e:docker": "./tests/docker-scripts/run.sh web-ui-tests",
-    "e2e:update-ci-snapshots": "./tests/docker-scripts/run.sh web-ui-update-snapshots",
-    "lerna": "lerna"
+    "e2e:update-ci-snapshots": "./tests/docker-scripts/run.sh web-ui-update-snapshots"
   },
   "repository": "https://github.com/deephaven/web-client-ui",
   "devDependencies": {
