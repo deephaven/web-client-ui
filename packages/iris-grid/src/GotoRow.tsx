@@ -90,7 +90,9 @@ function GotoRow({
 
   const gotoRowInputId = useMemo(() => `goto-row-input-${shortid()}`, []);
 
-  const handleGotoValueNumberKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+  const handleGotoValueNumberKeyDown = (
+    e: KeyboardEvent<HTMLInputElement>
+  ): void => {
     if (e.key === 'Enter') {
       e.stopPropagation();
       e.preventDefault();
@@ -104,7 +106,9 @@ function GotoRow({
     }
   };
 
-  const handleGotoValueKeySubmit = (e: KeyboardEvent<HTMLInputElement>) => {
+  const handleGotoValueKeySubmit = (
+    e: KeyboardEvent<HTMLInputElement>
+  ): void => {
     if (e.key === 'Enter') {
       e.stopPropagation();
       e.preventDefault();
@@ -119,10 +123,10 @@ function GotoRow({
   const columnType = selectedColumn?.type;
 
   const normalizedType = TableUtils.getNormalizedType(columnType);
-  const onGotoValueInputChanged = (value?: string) => {
+  const onGotoValueInputChanged = (value?: string): void => {
     onGotoValueChanged(value ?? '');
   };
-  const selectInput = () => {
+  const selectInput = (): void => {
     // when row changes without focus (i.e. via context menu), re-select input
     if (isGotoRowActive && document.activeElement !== gotoRowInputRef.current) {
       gotoRowInputRef.current?.select();
@@ -135,7 +139,7 @@ function GotoRow({
   };
   useEffect(selectInput, [isGotoRowActive, gotoRow, gotoValue]);
 
-  const renderValueInput = () => {
+  const renderValueInput = (): JSX.Element => {
     switch (normalizedType) {
       case TableUtils.dataType.DECIMAL:
       case TableUtils.dataType.INT:

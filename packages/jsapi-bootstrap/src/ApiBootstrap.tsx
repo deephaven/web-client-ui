@@ -38,7 +38,7 @@ export function ApiBootstrap({
   const [isLoading, setIsLoading] = useState(true);
   const [api, setApi] = useState<DhType>();
   useEffect(() => {
-    async function loadApi() {
+    async function loadApi(): Promise<void> {
       try {
         // Using a string template around `apiUrl` to avoid a warning with webpack: https://stackoverflow.com/a/73359606
         const dh: DhType = (await import(/* @vite-ignore */ `${apiUrl}`))

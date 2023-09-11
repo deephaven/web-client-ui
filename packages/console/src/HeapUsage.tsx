@@ -74,7 +74,7 @@ function HeapUsage({
     isOpen ? hoverUpdateInterval : defaultUpdateInterval
   );
 
-  const toDecimalPlace = (num: number, dec: number) =>
+  const toDecimalPlace = (num: number, dec: number): number =>
     Math.round(num * 10 ** dec) / 10 ** dec;
 
   const decimalPlace = 2;
@@ -87,7 +87,11 @@ function HeapUsage({
   const maxHeapGB = toDecimalPlace(maximumHeapSize / GbToByte, decimalPlace);
   const inUseGB = totalHeapGB - freeMemoryGB;
 
-  const getRow = (text: string, size: string, bottomBorder = false) => (
+  const getRow = (
+    text: string,
+    size: string,
+    bottomBorder = false
+  ): JSX.Element => (
     <div
       className={classNames(`heap-usage-info-row`, {
         'heading-bottom-border': bottomBorder,
@@ -127,8 +131,8 @@ function HeapUsage({
       </div>
 
       <Tooltip
-        onEntered={() => setIsOpen(true)}
-        onExited={() => setIsOpen(false)}
+        onEntered={(): void => setIsOpen(true)}
+        onExited={(): void => setIsOpen(false)}
         interactive
       >
         <div className="heap-tooltip">

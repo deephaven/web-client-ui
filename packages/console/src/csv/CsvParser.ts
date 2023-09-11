@@ -174,7 +174,7 @@ class CsvParser {
   }
 
   parse(): void {
-    const handleParseDone = (types: string[], rowCount: number) => {
+    const handleParseDone = (types: string[], rowCount: number): void => {
       this.types = types;
       this.rowCount = rowCount;
 

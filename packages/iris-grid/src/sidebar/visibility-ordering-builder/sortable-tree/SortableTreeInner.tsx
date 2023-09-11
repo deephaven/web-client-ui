@@ -51,7 +51,12 @@ let offsetY: number | null = null;
  * @param args Modifier args from dnd-kit
  * @returns Transform so that the dragged item stays on the cursor
  */
-function adjustToCursor(args: Parameters<Modifier>[0]) {
+function adjustToCursor(args: Parameters<Modifier>[0]): {
+  y: number;
+  x: number;
+  scaleX: number;
+  scaleY: number;
+} {
   if (
     offsetY == null &&
     args.activeNodeRect &&

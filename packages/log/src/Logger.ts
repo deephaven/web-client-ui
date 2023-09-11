@@ -1,7 +1,7 @@
 /* eslint no-console: "off" */
 import { ERROR, WARN, INFO, DEBUG, DEBUG2 } from './LoggerLevel';
 
-const silent = () => undefined;
+const silent = (): void => undefined;
 
 class Logger {
   constructor(name: string | null, level: number) {

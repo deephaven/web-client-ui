@@ -27,7 +27,7 @@ export function ServerConfigBootstrap({
   useEffect(
     function initServerConfigValues() {
       let isCanceled = false;
-      async function loadServerConfigValues() {
+      async function loadServerConfigValues(): Promise<void> {
         try {
           const newServerConfigValues = await client.getServerConfigValues();
           if (!isCanceled) {

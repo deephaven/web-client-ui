@@ -29,7 +29,7 @@ export function ConnectionBootstrap({
   useEffect(
     function initConnection() {
       let isCanceled = false;
-      async function loadConnection() {
+      async function loadConnection(): Promise<void> {
         try {
           const newConnection = await client.getAsIdeConnection();
           if (isCanceled) {
@@ -55,7 +55,7 @@ export function ConnectionBootstrap({
     function listenForShutdown() {
       if (connection == null) return;
 
-      function handleShutdown(event: CustomEvent) {
+      function handleShutdown(event: CustomEvent): void {
         const { detail } = event;
         log.info('Shutdown', `${JSON.stringify(detail)}`);
         setError(`Server shutdown: ${detail ?? 'Unknown reason'}`);

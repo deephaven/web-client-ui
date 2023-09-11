@@ -1002,7 +1002,12 @@ export class AppMainContainer extends Component<
   }
 }
 
-const mapStateToProps = (state: RootState) => ({
+const mapStateToProps = (
+  state: RootState
+): Omit<
+  AppMainContainerProps,
+  'match' | 'setActiveTool' | 'updateDashboardData' | 'updateWorkspaceData'
+> => ({
   activeTool: getActiveTool(state),
   dashboardData: getDashboardData(
     state,

@@ -32,7 +32,7 @@ const INTERACTIVE_ELEMENTS = [
   'option',
 ];
 
-function isInteractiveElement(element: Element | null) {
+function isInteractiveElement(element: Element | null): boolean {
   if (
     element?.tagName != null &&
     INTERACTIVE_ELEMENTS.includes(element.tagName.toLowerCase())

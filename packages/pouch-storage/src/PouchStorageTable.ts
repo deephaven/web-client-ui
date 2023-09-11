@@ -18,7 +18,7 @@ import {
   ViewportData,
   ViewportUpdateCallback,
 } from '@deephaven/storage';
-import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
+import { CancelablePromise, OnlyOneProp, PromiseUtils } from '@deephaven/utils';
 
 const log = Log.module('PouchStorageTable');
 
@@ -34,7 +34,20 @@ export type PouchDBSort = Array<
   string | { [propName: string]: 'asc' | 'desc' }
 >;
 
-function makePouchFilter(type: string, value: FilterValue | FilterValue[]) {
+type PouchFilter = OnlyOneProp<{
+  $eq: FilterValue | FilterValue[];
+  $neq: FilterValue | FilterValue[];
+  $gt: FilterValue | FilterValue[];
+  $gte: FilterValue | FilterValue[];
+  $lt: FilterValue | FilterValue[];
+  $lte: FilterValue | FilterValue[];
+  $regex: RegExp;
+}>;
+
+function makePouchFilter(
+  type: string,
+  value: FilterValue | FilterValue[]
+): PouchFilter {
   switch (type) {
     case FilterType.in:
     case FilterType.contains:
@@ -275,7 +288,7 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
     return newItem;
   }
 
-  private sendUpdate() {
+  private sendUpdate(): void {
     // Retain a reference to it in case a listener gets removed while sending an update
     const { listeners } = this;
     const data = this.currentViewportData ?? { items: [], offset: 0 };
@@ -284,7 +297,7 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
     }
   }
 
-  private sendItemUpdate(item: T) {
+  private sendItemUpdate(item: T): void {
     const listeners = this.itemListeners.get(item.id);
     if (listeners !== undefined) {
       for (let i = 0; i < listeners.length; i += 1) {
@@ -318,7 +331,7 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
     });
   }
 
-  private async refreshInfo() {
+  private async refreshInfo(): Promise<void> {
     try {
       this.infoUpdatePromise?.cancel();
 

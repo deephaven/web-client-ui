@@ -43,10 +43,10 @@ const EMPTY_OBJECT = Object.freeze({});
 
 const DEFAULT_LAYOUT_CONFIG: DashboardLayoutConfig = [];
 
-const DEFAULT_CALLBACK = () => undefined;
+const DEFAULT_CALLBACK = (): void => undefined;
 
 // If a component isn't registered, just pass through the props so they are saved if a plugin is loaded later
-const FALLBACK_CALLBACK = (props: unknown) => props;
+const FALLBACK_CALLBACK = (props: unknown): unknown => props;
 
 type DashboardData = {
   closed?: ClosedPanels;
@@ -118,7 +118,7 @@ export function DashboardLayout({
         componentDehydrate
       );
 
-      function wrappedComponent(props: PanelProps) {
+      function wrappedComponent(props: PanelProps): JSX.Element {
         const CType = componentType;
         const PanelWrapperType = panelWrapper;
 

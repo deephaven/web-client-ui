@@ -22,7 +22,7 @@ export interface FileListItemEditorProps {
   validate?: (newName: string) => Promise<void>;
 }
 
-const DEFAULT_VALIDATE = () => Promise.resolve();
+const DEFAULT_VALIDATE = (): Promise<void> => Promise.resolve();
 
 export function FileListItemEditor({
   item,

@@ -46,7 +46,7 @@ export function AuthBootstrap({ children }: AuthBootstrapProps): JSX.Element {
   useEffect(
     function initAuthConfigValues() {
       let isCanceled = false;
-      async function loadAuthConfigValues() {
+      async function loadAuthConfigValues(): Promise<void> {
         try {
           const newAuthConfigValues = await client.getAuthConfigValues();
           if (!isCanceled) {

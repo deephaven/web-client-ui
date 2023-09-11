@@ -27,7 +27,7 @@ export function PluginsBootstrap({
   useEffect(
     function initPlugins() {
       let isCanceled = false;
-      async function loadPlugins() {
+      async function loadPlugins(): Promise<void> {
         const pluginModules = await loadModulePlugins(pluginsUrl);
         if (!isCanceled) {
           setPlugins(pluginModules);

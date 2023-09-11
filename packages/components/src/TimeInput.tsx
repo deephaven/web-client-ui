@@ -98,7 +98,7 @@ const TimeInput = React.forwardRef<TimeInputElement, TimeInputProps>(
       newChar: string,
       selectionStart: number,
       selectionEnd: number
-    ) {
+    ): string {
       if (
         selectionStart === 0 &&
         selectionEnd === 2 &&

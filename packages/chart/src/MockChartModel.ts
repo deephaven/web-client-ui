@@ -1,16 +1,24 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 
+import type { dh as DhType } from '@deephaven/jsapi-types';
+import type { Datum, Layout, PlotData } from 'plotly.js';
 import ChartModel from './ChartModel';
 import ChartTheme from './ChartTheme';
 import ChartUtils from './ChartUtils';
+
+interface Series {
+  x: PlotData['x'];
+  y: PlotData['y'];
+  s: number[];
+  l: number[];
+}
 
 /** Displays a basic random chart */
 class MockChartModel extends ChartModel {
   static smoothing = 1.5;
 
-  static makeRandomSeries(offset, scale = 1, steps = 100) {
+  static makeRandomSeries(offset: number, scale = 1, steps = 100): Series {
     const dates = [];
     const values = [];
     const smooth = [];
@@ -49,7 +57,7 @@ class MockChartModel extends ChartModel {
     return { x: dates, y: values, s: smooth, l: linear };
   }
 
-  static makeScatter(series) {
+  static makeScatter(series: Series): Partial<PlotData> {
     return {
       name: 'SCTR',
       x: series.x,
@@ -63,13 +71,13 @@ class MockChartModel extends ChartModel {
     };
   }
 
-  static makeArea(series) {
+  static makeArea(series: Series): Partial<PlotData> {
     return {
       name: 'AREA',
       x: series.x,
       y: series.s,
       type: 'scatter',
-      mode: 'line',
+      mode: 'line' as PlotData['mode'],
       fill: 'tozeroy',
       hoverinfo: 'all',
       line: {
@@ -80,14 +88,14 @@ class MockChartModel extends ChartModel {
     };
   }
 
-  static makeTrendline(series) {
+  static makeTrendline(series: Series): Partial<PlotData> {
     return {
       // we probably want to toss the line formula in legend I guess? either that or render it as text manually on plot
       name: 'Trendline <br>R<sup>2</sup> = 0.91',
       x: series.x,
       y: series.l,
       type: 'scattergl',
-      mode: 'line',
+      mode: 'line' as PlotData['mode'],
       hoverinfo: 'skip',
       line: {
         width: 3,
@@ -98,12 +106,12 @@ class MockChartModel extends ChartModel {
     };
   }
 
-  static makeErrorBand(series) {
+  static makeErrorBand(series: Series): Partial<PlotData> {
     // generate continouous error bands values and text
     const erroryforward = [];
     const errorybackward = [];
     for (let i = 0; i < series.y.length; i += 1) {
-      const value = series.y[i];
+      const value = series.y[i] as number;
       erroryforward[i] = Math.round((value + 18) * 100) / 100;
       errorybackward[i] = Math.round((value - 18) * 100) / 100;
     }
@@ -113,10 +121,10 @@ class MockChartModel extends ChartModel {
 
     return {
       name: 'error',
-      x: series.x.concat(series.x.slice().reverse()), // winding for x values, that slice just clones so reverse doesn't apply inplace
+      x: (series.x as Datum[]).concat((series.x as Datum[]).slice().reverse()), // winding for x values, that slice just clones so reverse doesn't apply inplace
       y: errory,
       type: 'scattergl',
-      mode: 'line',
+      mode: 'line' as PlotData['mode'],
       hoverinfo: 'skip',
       fill: 'toself', // there's some ordering bug with scattergl where if the areas traces are ordered after the lines they don't render
       fillcolor: ChartTheme.error_band_fill_color,
@@ -128,14 +136,14 @@ class MockChartModel extends ChartModel {
     };
   }
 
-  static makeLine(series) {
+  static makeLine(series: Series): Partial<PlotData> {
     return {
       name: 'LINE',
       x: series.x,
       y: series.y,
       type: 'scattergl',
-      mode: 'line',
-      hoverinfo: 'x+y+text+name',
+      mode: 'line' as PlotData['mode'],
+      hoverinfo: 'x+y+text+name' as PlotData['hoverinfo'],
       line: {
         color: ChartTheme.line_color,
         width: 3,
@@ -143,7 +151,7 @@ class MockChartModel extends ChartModel {
     };
   }
 
-  static makeRandomData() {
+  static makeRandomData(): Partial<PlotData>[] {
     const series1 = MockChartModel.makeRandomSeries(6);
     const areaPattern = MockChartModel.makeArea(series1);
     const trendLine = MockChartModel.makeTrendline(series1);
@@ -155,16 +163,23 @@ class MockChartModel extends ChartModel {
     return [areaPattern, trendLine, line, errorBand];
   }
 
-  static makeDefaultLayout(dh) {
+  static makeDefaultLayout(dh: DhType): Partial<Layout> {
     const layout = new ChartUtils(dh).makeDefaultLayout(ChartTheme);
     layout.title = 'Chart';
-    layout.xaxis.title = 'Datestamp';
-    layout.yaxis.title = 'Price';
+
+    if (layout.xaxis) {
+      layout.xaxis.title = 'Datestamp';
+    }
+
+    if (layout.yaxis) {
+      layout.yaxis.title = 'Price';
+    }
+
     return layout;
   }
 
   constructor(
-    dh,
+    dh: DhType,
     {
       data = MockChartModel.makeRandomData(),
       layout = MockChartModel.makeDefaultLayout(dh),
@@ -178,15 +193,21 @@ class MockChartModel extends ChartModel {
     this.filterFields = filterFields;
   }
 
-  getData() {
+  data: Partial<PlotData>[];
+
+  filterFields: string[];
+
+  layout: Partial<Layout>;
+
+  getData(): Partial<PlotData>[] {
     return this.data;
   }
 
-  getLayout() {
+  getLayout(): Partial<Layout> {
     return this.layout;
   }
 
-  getFilterColumnMap() {
+  getFilterColumnMap(): Map<string, { name: string; type: string }> {
     const map = new Map();
 
     for (let i = 0; i < this.filterFields.length; i += 1) {
@@ -198,11 +219,11 @@ class MockChartModel extends ChartModel {
     return map;
   }
 
-  isFilterRequired() {
+  isFilterRequired(): boolean {
     return this.filterFields.length > 0;
   }
 
-  setFilter() {
+  setFilter(): void {
     this.fireUpdate(this.data);
   }
 }

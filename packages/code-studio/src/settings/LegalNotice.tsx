@@ -4,7 +4,7 @@ import { vsLaw } from '@deephaven/icons';
 
 function LegalNotice(): ReactElement {
   const [modal, setModal] = useState(false);
-  const toggle = () => {
+  const toggle = (): void => {
     setModal(!modal);
   };
 
