@@ -22,7 +22,7 @@ export function ConfirmActionButton({
   isHidden,
   children,
   onConfirm,
-}: ConfirmActionButtonProps) {
+}: ConfirmActionButtonProps): JSX.Element {
   const renderDialog = useCallback(
     close => (
       <ConfirmationDialog

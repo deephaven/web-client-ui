@@ -16,6 +16,7 @@
     { "path": "../log" },
     { "path": "../plugin" },
     { "path": "../react-hooks" },
+    { "path": "../redux" },
     { "path": "../utils" }
   ]
 }

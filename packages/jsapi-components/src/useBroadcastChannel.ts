@@ -12,7 +12,7 @@ const log = Log.module('useBroadcastChannel');
 export function useBroadcastChannel(
   onEvent: (event: MessageEvent<Message<unknown>>) => void = EMPTY_FUNCTION,
   name = BROADCAST_CHANNEL_NAME
-) {
+): BroadcastChannel {
   const channel = useMemo(() => new BroadcastChannel(name), [name]);
   useEffect(
     () => () => {

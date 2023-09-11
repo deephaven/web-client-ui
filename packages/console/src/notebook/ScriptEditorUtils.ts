@@ -42,7 +42,7 @@ class ScriptEditorUtils {
    * @param code The code to outdent
    * @returns A code block where the minimum indent level of a line is 0
    */
-  static outdentCode(code: string) {
+  static outdentCode(code: string): string {
     const lines = code.split('\n');
     const minIndent = lines.reduce((min, line) => {
       const indentLength = line.length - line.trimStart().length;

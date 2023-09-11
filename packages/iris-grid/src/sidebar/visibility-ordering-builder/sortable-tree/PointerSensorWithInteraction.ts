@@ -9,7 +9,7 @@ export default class PointerSensorWithInteraction extends PointerSensor {
   static activators = [
     {
       eventName: 'onPointerDown' as const,
-      handler: ({ nativeEvent: event }: PointerEvent) => {
+      handler: ({ nativeEvent: event }: PointerEvent): boolean => {
         if (
           !event.isPrimary ||
           event.button !== 0 ||

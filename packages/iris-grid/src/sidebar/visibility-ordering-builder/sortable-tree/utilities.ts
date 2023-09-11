@@ -152,7 +152,12 @@ export function getProjection(
   overId: string,
   dragOffset: number,
   indentationWidth: number
-) {
+): {
+  depth: number;
+  maxDepth: number;
+  minDepth: number;
+  parentId: string | null;
+} {
   const overItemIndex = items.findIndex(({ id }) => id === overId);
   const activeItemIndex = items.findIndex(({ id }) => id === activeId);
   const activeItem = items[activeItemIndex];
