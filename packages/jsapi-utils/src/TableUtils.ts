@@ -18,13 +18,17 @@ import type {
   TreeTable,
 } from '@deephaven/jsapi-types';
 import {
+  bindAllMethods,
   CancelablePromise,
   PromiseUtils,
+  removeNullAndUndefined,
   TextUtils,
   TimeoutError,
 } from '@deephaven/utils';
 import DateUtils from './DateUtils';
 import { ColumnName } from './Formatter';
+import { createValueFilter, FilterConditionFactory } from './FilterUtils';
+import { getSize } from './ViewportDataUtils';
 
 const log = Log.module('TableUtils');
 
@@ -89,6 +93,29 @@ export class TableUtils {
 
   // Regex looking for a negative or positive integer or decimal number
   static NUMBER_REGEX = /^-?\d+(\.\d+)?$/;
+
+  /**
+   * Copy a given table and apply filters.
+   * @param maybeTable Table to copy and apply filters to
+   * @param filterFactories Filter condition factories to apply
+   * @returns A derived, filtered table
+   */
+  static async copyTableAndApplyFilters<
+    T extends Table | null | undefined,
+    R extends T extends Table ? T : null,
+  >(maybeTable: T, ...filterFactories: FilterConditionFactory[]): Promise<R> {
+    if (maybeTable == null) {
+      return null as R;
+    }
+
+    const derivedTable = await maybeTable.copy();
+
+    derivedTable.applyFilter(
+      removeNullAndUndefined(...filterFactories.map(f => f(derivedTable)))
+    );
+
+    return derivedTable as R;
+  }
 
   /**
    * Executes a callback on a given table and returns a Promise that will resolve
@@ -744,6 +771,97 @@ export class TableUtils {
 
   constructor(dh: DhType) {
     this.dh = dh;
+    bindAllMethods(this);
+  }
+
+  /**
+   * Create a table containing a distinct list of values for given column name and
+   * applies the given sort direction.
+   * @param table Source table to derive table from
+   * @param columnName Column to dermine distinct values
+   * @param sortDirection Direction to sort
+   * @param filterConditionFactories Optional filters to apply. Note that these
+   * will be applied before the `selectCall` in case we need to base the filtering
+   * on columns other than the distinct value column
+   */
+  async createDistinctSortedColumnTable(
+    table: Table | null | undefined,
+    columnName: string,
+    sortDirection: 'asc' | 'desc',
+    ...filterConditionFactories: FilterConditionFactory[]
+  ): Promise<Table | null> {
+    if (table == null) {
+      return null;
+    }
+
+    let sourceTable = table;
+
+    // Applying filters before `selectDistinct` so that we still have access to
+    // all columns. Also prevents a filter applied to the final table from
+    // clearing this filter.
+    if (filterConditionFactories.length > 0) {
+      sourceTable = await table.copy();
+
+      await sourceTable.applyFilter(
+        removeNullAndUndefined(
+          ...filterConditionFactories.map(f => f(sourceTable))
+        )
+      );
+    }
+
+    const column = sourceTable.findColumn(columnName);
+    const distinctTable = await sourceTable.selectDistinct([column]);
+
+    // If we copied the table, dispose the copy. Original is managed outside
+    // of this function
+    if (sourceTable !== table) {
+      sourceTable.close();
+    }
+
+    const distinctAscColSort = distinctTable
+      .findColumn(columnName)
+      .sort()
+      [sortDirection]();
+
+    return this.applySort(distinctTable, [distinctAscColSort]);
+  }
+
+  /**
+   * Check if any columns contain a given value.
+   * @param table Table to search for values
+   * @param columnNames Column names to search
+   * @param value Value to search for
+   * @param isCaseSensitive Whether the value check is case sensitive
+   */
+  async doesColumnValueExist(
+    table: Table | null | undefined,
+    columnNames: string | string[],
+    value: string,
+    isCaseSensitive: boolean
+  ): Promise<boolean | null> {
+    if (table == null) {
+      return null;
+    }
+
+    const filterConditionFactory = createValueFilter(
+      this,
+      columnNames,
+      value,
+      isCaseSensitive ? 'eq' : 'eqIgnoreCase'
+    );
+
+    const tableCopy = await table.copy();
+
+    await this.applyFilter(
+      tableCopy,
+      removeNullAndUndefined(filterConditionFactory(tableCopy))
+    );
+
+    const size = getSize(tableCopy);
+
+    tableCopy.close();
+
+    return size > 0;
   }
 
   /**

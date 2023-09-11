@@ -1,22 +1,23 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 import type { Table } from '@deephaven/jsapi-types';
-import { KeyedItem } from '@deephaven/jsapi-utils';
-import { TestUtils } from '@deephaven/utils';
+import { generateEmptyKeyedItems } from '@deephaven/jsapi-utils';
+import { KeyedItem, TestUtils } from '@deephaven/utils';
 import useInitializeViewportData from './useInitializeViewportData';
 import useTableSize from './useTableSize';
 
 jest.mock('./useTableSize');
 
+function expectedInitialItems(size: number) {
+  return [...generateEmptyKeyedItems(0, size - 1)];
+}
+
 const tableA = TestUtils.createMockProxy<Table>({ size: 4 });
-const expectedInitialA: KeyedItem<unknown>[] = [
-  { key: '0' },
-  { key: '1' },
-  { key: '2' },
-  { key: '3' },
-];
+const expectedInitialA: KeyedItem<unknown>[] = expectedInitialItems(
+  tableA.size
+);
 
 const tableB = TestUtils.createMockProxy<Table>({ size: 2 });
-const expectedInitialB = [{ key: '0' }, { key: '1' }];
+const expectedInitialB = expectedInitialItems(tableB.size);
 
 beforeEach(() => {
   TestUtils.asMock(useTableSize).mockImplementation(table => table?.size ?? 0);
@@ -53,14 +54,15 @@ it('should re-initialize a ListData object if Table reference changes', () => {
   // Re-render with a new table instance
   rerender({ table: tableB });
 
-  expect(result.current.items).toEqual(expectedInitialB);
+  const expectedAfterRerender = expectedInitialB;
+  expect(result.current.items).toEqual(expectedAfterRerender);
 });
 
 it.each([
-  [3, [...expectedInitialA.slice(0, -1)]],
-  [5, [...expectedInitialA, { key: '4' }]],
+  [3, expectedInitialItems(3)],
+  [5, expectedInitialItems(5)],
 ])(
-  'should re-initialize a ListData object if Table size changes',
+  'should re-initialize a ListData object if Table size changes: %s, %s',
   (newSize, expectedAfterSizeChange) => {
     const { result, rerender } = renderHook(
       ({ table }) => useInitializeViewportData(table),
@@ -70,6 +72,15 @@ it.each([
     );
 
     expect(result.current.items).toEqual(expectedInitialA);
+
+    // Update an item
+    const updatedItem = { key: '0', item: 'mock.item' };
+    act(() => {
+      result.current.update(updatedItem.key, updatedItem);
+    });
+
+    const expectedAfterUpdate = [updatedItem, ...expectedInitialA.slice(1)];
+    expect(result.current.items).toEqual(expectedAfterUpdate);
 
     // Re-render with new size
     TestUtils.asMock(useTableSize).mockImplementation(() => newSize);
