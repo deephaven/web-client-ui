@@ -282,7 +282,7 @@ export interface IrisGridProps {
   onError: (error: unknown) => void;
   onDataSelected: (index: ModelIndex, map: Record<ColumnName, unknown>) => void;
   onStateChange: (irisGridState: IrisGridState, gridState: GridState) => void;
-  onPartitionAppend: (partitionColumn: Column, value: string) => void;
+  onPartitionAppend?: (partitionColumn: Column, value: string) => void;
   onAdvancedSettingsChange: AdvancedSettingsMenuCallback;
   partition: string | null;
   partitionColumn: Column | null;
@@ -459,7 +459,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     onDataSelected: (): void => undefined,
     onError: (): void => undefined,
     onStateChange: (): void => undefined,
-    onPartitionAppend: (): void => undefined,
     onAdvancedSettingsChange: (): void => undefined,
     partition: null,
     partitionColumn: null,
@@ -2336,7 +2335,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     if (partitionColumn == null) {
       return;
     }
-    onPartitionAppend(partitionColumn, value);
+    onPartitionAppend?.(partitionColumn, value);
   }
 
   handlePartitionChange(partition: string): void {
@@ -3865,6 +3864,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       onAdvancedSettingsChange,
       canDownloadCsv,
       onCreateChart,
+      onPartitionAppend,
     } = this.props;
     const {
       metricCalculator,
@@ -4421,7 +4421,11 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                   partition={partition}
                   onChange={this.handlePartitionChange}
                   onFetchAll={this.handlePartitionFetchAll}
-                  onAppend={this.handlePartitionAppend}
+                  onAppend={
+                    onPartitionAppend !== undefined
+                      ? this.handlePartitionAppend
+                      : undefined
+                  }
                   onDone={this.handlePartitionDone}
                 />
               )}
