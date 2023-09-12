@@ -88,14 +88,6 @@ module.exports = {
         'default-param-last': 'off',
         '@typescript-eslint/default-param-last': ['error'],
         '@typescript-eslint/explicit-module-boundary-types': 'error',
-        '@typescript-eslint/explicit-function-return-type': [
-          'error',
-          {
-            // Ignore function expressions that are not part of a declaration.
-            // e.g. Inline event handlers assigned to component props.
-            allowExpressions: true,
-          },
-        ],
       },
     },
     {
@@ -104,7 +96,6 @@ module.exports = {
       rules: {
         'import/no-extraneous-dependencies': 'off',
         '@typescript-eslint/no-non-null-assertion': 'off',
-        '@typescript-eslint/explicit-function-return-type': 'off',
       },
     },
   ],

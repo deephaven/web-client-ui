@@ -34,6 +34,9 @@ export type PouchDBSort = Array<
   string | { [propName: string]: 'asc' | 'desc' }
 >;
 
+// We may want to use `PouchDB.Find.ConditionOperators` instead of this, but
+// there are some mismatches in how we use this with the types.
+// https://github.com/deephaven/web-client-ui/issues/1505 to address this
 type PouchFilter = OnlyOneProp<{
   $eq: FilterValue | FilterValue[];
   $neq: FilterValue | FilterValue[];
@@ -57,6 +60,7 @@ function makePouchFilter(
     case FilterType.eq:
       return { $eq: value };
     case FilterType.notEq:
+      // This should be `$ne` https://github.com/deephaven/web-client-ui/issues/1505
       return { $neq: value };
     case FilterType.greaterThan:
       return { $gt: value };
