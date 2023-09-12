@@ -2915,6 +2915,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     if (copyOperation != null) {
       this.setState({ copyOperation: null });
     }
+    if (this.grid?.state.cursorRow != null) {
+      this.setState({ gotoRow: `${this.grid.state.cursorRow + 1}` });
+    }
     onSelectionChanged(selectedRanges);
   }
 
