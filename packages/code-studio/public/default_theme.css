@@ -1,3 +1,7 @@
+/**
+ * Default dark and light themes.
+ */
+
 .dh-theme-default-dark {
   /* Grays */
   --dh-color-gray-900: #fcfcfa;

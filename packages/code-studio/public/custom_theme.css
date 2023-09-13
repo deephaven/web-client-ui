@@ -1,3 +1,9 @@
+/**
+ * Example of 3 custom themes. 
+ * Note the optional `--dh-base-theme` variable that specifies the base default 
+ * theme to inherit from. If not provided, defaults to `default-dark`.
+ */
+
 .dh-theme-custom-aaa {
   --dh-base-theme: default-dark;
 
