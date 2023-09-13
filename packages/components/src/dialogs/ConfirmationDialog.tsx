@@ -29,7 +29,7 @@ export function ConfirmationDialog({
   children,
   onCancel,
   onConfirm,
-}: ConfirmationDialogProps) {
+}: ConfirmationDialogProps): JSX.Element {
   const { formProps, submitButtonProps } = useFormWithDetachedSubmitButton();
 
   return (

@@ -23,7 +23,7 @@ import './Dashboard.scss';
 
 const RESIZE_THROTTLE = 100;
 
-const DEFAULT_CALLBACK = () => undefined;
+const DEFAULT_CALLBACK = (): void => undefined;
 
 const EMPTY_OBJECT = Object.freeze({});
 
@@ -83,7 +83,7 @@ export function Dashboard({
 
       const newLayout = new GoldenLayout(config, layoutElement.current);
 
-      const onInit = () => {
+      const onInit = (): void => {
         newLayout.off('initialised', onInit);
         setIsInitialized(true);
       };

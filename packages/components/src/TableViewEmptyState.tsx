@@ -20,7 +20,7 @@ export function TableViewEmptyState({
   heading,
   content,
   delayMs = DEFAULT_DELAY_MS,
-}: TableViewEmptyStateProps) {
+}: TableViewEmptyStateProps): JSX.Element | null {
   const [show, setShow] = useState(false);
 
   // Spectrum `TableView` will render the result of `renderEmptyState` prop

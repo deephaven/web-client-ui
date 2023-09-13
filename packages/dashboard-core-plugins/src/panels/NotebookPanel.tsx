@@ -276,7 +276,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     log.debug('constructor', props, this.state);
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     const { glContainer, glEventHub } = this.props;
     const { tab } = glContainer;
     if (tab != null) this.initTab(tab);
@@ -358,7 +358,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
    * Note that firing a close event manually may trigger before state update occurs
    * In those instances, use force
    */
-  initTabCloseOverride() {
+  initTabCloseOverride(): void {
     const { glContainer } = this.props;
     glContainer.beforeClose((options?: CloseOptions) => {
       if (options?.force === true) {
@@ -375,7 +375,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     });
   }
 
-  initTabClasses(tab: Tab) {
+  initTabClasses(tab: Tab): void {
     const tabElement = tab.element.get(0);
     assertNotNull(tabElement);
     const titleElement = tabElement.querySelector('.lm_title');
@@ -436,7 +436,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     glEventHub.emit(NotebookEvent.RENAME, id, title);
   }
 
-  load() {
+  load(): void {
     const { fileMetadata, settings } = this.state;
     assertNotNull(fileMetadata);
     const { id } = fileMetadata;
@@ -506,11 +506,11 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       .catch(this.handleSaveError);
   }
 
-  updateSavedChangeCount() {
+  updateSavedChangeCount(): void {
     this.setState(({ changeCount }) => ({ savedChangeCount: changeCount }));
   }
 
-  setPreviewStatus() {
+  setPreviewStatus(): void {
     if (!this.tabTitleElement) {
       return;
     }
@@ -523,7 +523,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     }
   }
 
-  handlePreviewPromotion() {
+  handlePreviewPromotion(): void {
     this.removePreviewStatus();
   }
 
@@ -566,7 +566,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     ]
   );
 
-  savePanelState() {
+  savePanelState(): void {
     this.setState(state => {
       const {
         changeCount,
@@ -683,13 +683,13 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.debouncedSavePanelState();
   }
 
-  handleFind() {
+  handleFind(): void {
     if (this.notebook) {
       this.notebook.toggleFind();
     }
   }
 
-  updateEditorMinimap() {
+  updateEditorMinimap(): void {
     if (this.editor) {
       const { defaultNotebookSettings } = this.props;
       this.editor.updateOptions({
@@ -698,7 +698,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     }
   }
 
-  handleMinimapChange() {
+  handleMinimapChange(): void {
     const { settings, defaultNotebookSettings, saveSettings } = this.props;
     const newSettings: WorkspaceSettings = {
       ...settings,
@@ -709,7 +709,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     saveSettings(newSettings);
   }
 
-  updateEditorWordWrap() {
+  updateEditorWordWrap(): void {
     if (this.editor) {
       const { settings } = this.state;
       const { wordWrap } = settings;
@@ -719,7 +719,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     }
   }
 
-  handleWordWrapChange() {
+  handleWordWrapChange(): void {
     if (this.editor) {
       this.setState(prevState => {
         const { settings } = prevState;
@@ -747,7 +747,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   /**
    * @param event The click event from clicking on the link
    */
-  handleLinkClick(event: React.MouseEvent<HTMLAnchorElement>) {
+  handleLinkClick(event: React.MouseEvent<HTMLAnchorElement>): void {
     const { notebooksUrl, session, sessionLanguage } = this.props;
     const { href } = event.currentTarget;
     if (!href || !href.startsWith(notebooksUrl)) {
@@ -783,7 +783,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     );
   }
 
-  handleLoadSuccess() {
+  handleLoadSuccess(): void {
     this.setState({
       error: undefined,
       isLoaded: true,
@@ -791,7 +791,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     });
   }
 
-  handleLoadError(errorParam: { message?: string | undefined }) {
+  handleLoadError(errorParam: { message?: string | undefined }): void {
     let error = errorParam;
     if (PromiseUtils.isCanceled(error)) {
       return;
@@ -803,12 +803,12 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.setState({ error, isLoading: false });
   }
 
-  handleSave() {
+  handleSave(): void {
     log.debug('handleSave');
     this.save();
   }
 
-  handleSaveSuccess(file: File) {
+  handleSaveSuccess(file: File): void {
     const { fileStorage } = this.props;
     const fileMetadata = { id: file.filename, itemName: file.filename };
     const language = NotebookPanel.languageFromFileName(file.filename) ?? '';
@@ -839,7 +839,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.registerFileMetadata(fileMetadata, false);
   }
 
-  handleSaveError(error: unknown) {
+  handleSaveError(error: unknown): void {
     if (PromiseUtils.isCanceled(error)) {
       return;
     }
@@ -850,7 +850,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     log.error(error);
   }
 
-  handleSaveAsCancel() {
+  handleSaveAsCancel(): void {
     this.setState({ showSaveAsModal: false });
   }
 
@@ -879,7 +879,11 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.saveContent(name, content);
   }
 
-  handleRenameFile(oldName: string, newName: string, panelState?: PanelState) {
+  handleRenameFile(
+    oldName: string,
+    newName: string,
+    panelState?: PanelState
+  ): void {
     const { fileMetadata, panelState: curPanelState } = this.state;
     const { glContainer } = this.props;
 
@@ -1324,7 +1328,14 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
 const mapStateToProps = (
   state: RootState,
   ownProps: { localDashboardId: string }
-) => {
+): Pick<
+  NotebookPanelProps,
+  | 'defaultNotebookSettings'
+  | 'fileStorage'
+  | 'session'
+  | 'sessionLanguage'
+  | 'settings'
+> => {
   const fileStorage = getFileStorage(state);
   const settings = getSettings(state);
   const defaultNotebookSettings = getDefaultNotebookSettings(state);

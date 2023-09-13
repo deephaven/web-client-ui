@@ -9,7 +9,7 @@ export default class PointerSensorWithInteraction extends PointerSensor {
   static activators = [
     {
       eventName: 'onPointerDown' as const,
-      handler: ({ nativeEvent: event }: PointerEvent) => {
+      handler: ({ nativeEvent: event }: PointerEvent): boolean => {
         if (
           !event.isPrimary ||
           event.button !== 0 ||
@@ -32,7 +32,7 @@ const INTERACTIVE_ELEMENTS = [
   'option',
 ];
 
-function isInteractiveElement(element: Element | null) {
+function isInteractiveElement(element: Element | null): boolean {
   if (
     element?.tagName != null &&
     INTERACTIVE_ELEMENTS.includes(element.tagName.toLowerCase())

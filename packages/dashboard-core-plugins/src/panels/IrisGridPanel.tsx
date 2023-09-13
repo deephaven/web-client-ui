@@ -1367,7 +1367,15 @@ export class IrisGridPanel extends PureComponent<
 const mapStateToProps = (
   state: RootState,
   { localDashboardId = DEFAULT_DASHBOARD_ID }: { localDashboardId?: string }
-) => ({
+): Pick<
+  IrisGridPanelProps,
+  | 'columnSelectionValidator'
+  | 'inputFilters'
+  | 'links'
+  | 'settings'
+  | 'user'
+  | 'workspace'
+> => ({
   inputFilters: getInputFiltersForDashboard(state, localDashboardId),
   links: getLinksForDashboard(state, localDashboardId),
   columnSelectionValidator: getColumnSelectionValidatorForDashboard(

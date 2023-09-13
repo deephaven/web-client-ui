@@ -242,7 +242,7 @@ export class MarkdownPanel extends Component<
 const mapStateToProps = (
   state: RootState,
   ownProps: { localDashboardId: string }
-) => {
+): Pick<MarkdownPanelProps, 'closedPanels'> => {
   const { localDashboardId } = ownProps;
   return {
     closedPanels: getClosedPanelsForDashboard(state, localDashboardId),

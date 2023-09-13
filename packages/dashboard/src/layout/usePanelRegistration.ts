@@ -23,7 +23,7 @@ export default function usePanelRegistration<
   ComponentType: PanelComponentType<P, C>,
   hydrate?: PanelHydrateFunction,
   dehydrate?: PanelDehydrateFunction
-) {
+): void {
   const name = ComponentType.COMPONENT ?? ComponentType.displayName;
 
   if (name == null) {

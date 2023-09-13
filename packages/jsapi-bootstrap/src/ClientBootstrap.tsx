@@ -25,7 +25,7 @@ export function ClientBootstrap({
   serverUrl,
   options,
   children,
-}: ClientBootstrapProps) {
+}: ClientBootstrapProps): JSX.Element {
   const client = useCreateClient(serverUrl, options);
   return (
     <ClientContext.Provider value={client}>{children}</ClientContext.Provider>

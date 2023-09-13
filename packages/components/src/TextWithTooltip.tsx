@@ -11,7 +11,7 @@ export interface TextWithTooltipProps {
 export function TextWithTooltip({
   text,
   placement = 'top-start',
-}: TextWithTooltipProps) {
+}: TextWithTooltipProps): JSX.Element {
   const options = useMemo(() => ({ placement }), [placement]);
 
   return (

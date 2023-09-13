@@ -14,7 +14,7 @@ interface ZipStreamHelper extends JSZipStreamHelper<string> {
 export default function makeZipStreamHelper(
   zipObj: JSZipObject,
   onUpdate: OnUpdateCallback
-) {
+): ZipStreamHelper {
   const helper: ZipStreamHelper = (
     zipObj as JSZipObject & {
       // The type could be anything except nodebuffer from https://stuk.github.io/jszip/documentation/api_zipobject/internal_stream.html

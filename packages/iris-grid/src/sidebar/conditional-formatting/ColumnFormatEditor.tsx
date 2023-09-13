@@ -23,7 +23,7 @@ export interface ColumnFormatEditorProps {
   onChange?: ChangeCallback;
 }
 
-const DEFAULT_CALLBACK = () => undefined;
+const DEFAULT_CALLBACK = (): void => undefined;
 
 function makeDefaultConfig(columns: ModelColumn[]): BaseFormatConfig {
   const { type, name } = columns[0];

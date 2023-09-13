@@ -105,7 +105,7 @@ class PasteKeyHandler extends KeyHandler {
             'clip-path: "inset(50%)"; height: 1px; width: 1px; margin: -1px; overflow: hidden; padding 0; position: absolute;'
           );
 
-          const listener = () => {
+          const listener = (): void => {
             dummyInput.removeEventListener('input', listener);
             dummyInput.remove();
 

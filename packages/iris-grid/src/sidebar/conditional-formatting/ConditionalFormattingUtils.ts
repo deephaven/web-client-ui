@@ -720,7 +720,7 @@ export function isDateConditionValid(
   dh: DhType,
   condition: DateCondition,
   value?: string
-) {
+): boolean {
   switch (condition) {
     case DateCondition.IS_NULL:
     case DateCondition.IS_NOT_NULL:

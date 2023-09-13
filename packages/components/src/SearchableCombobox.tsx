@@ -21,7 +21,7 @@ export function SearchableCombobox<TItem, TKey extends Key>({
   getItemDisplayText,
   getKey,
   ...props
-}: SearchableComboboxProps<TItem, TKey>) {
+}: SearchableComboboxProps<TItem, TKey>): JSX.Element {
   const renderItem = useCallback(
     item => {
       const key = getKey(item);

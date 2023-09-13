@@ -16,7 +16,7 @@ export function useSetPaddedViewportCallback(
   table: Table | TreeTable | null,
   viewportSize: number,
   viewportPadding: number
-) {
+): (firstRow: number) => void {
   return useCallback(
     function setPaddedViewport(firstRow: number) {
       const [first, last] = padFirstAndLastRow(

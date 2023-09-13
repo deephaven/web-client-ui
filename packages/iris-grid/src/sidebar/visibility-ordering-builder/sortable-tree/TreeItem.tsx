@@ -34,7 +34,7 @@ export type TreeItemRenderFn<T> = (props: {
   handleProps: Record<string, unknown>;
 }) => JSX.Element;
 
-export function TreeItem<T>(props: Props<T>) {
+export function TreeItem<T>(props: Props<T>): JSX.Element {
   const {
     clone = false,
     depth,

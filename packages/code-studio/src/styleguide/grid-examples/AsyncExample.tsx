@@ -4,7 +4,7 @@ import { Grid, GridMetrics, ViewportDataGridModel } from '@deephaven/grid';
 /**
  * An example showing data loading asnychronously for a grid.
  */
-function AsyncExample() {
+function AsyncExample(): JSX.Element {
   // Use a Viewport data model that we update asynchronously to display the data
   const [model] = useState(
     () => new ViewportDataGridModel(1_000_000_000, 1_000_000)

@@ -1,4 +1,7 @@
 __mocks__/dh-core.js
+coverage/
 node_modules/
 dist/
 build/
+playwright-report/
+test-results/

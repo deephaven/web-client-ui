@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { ReactNode, useCallback, useEffect, useRef } from 'react';
 import classNames from 'classnames';
 import './CardFlip.scss';
 
@@ -23,7 +23,7 @@ function CardFlip({
   children,
   'data-testid': dataTestId,
 }: CardFlipProps): JSX.Element {
-  const getComponent = (key: 0 | 1) => {
+  const getComponent = (key: 0 | 1): ReactNode => {
     if (children.length !== 2) {
       throw new Error('CardFlip requires 2 children to function');
     }

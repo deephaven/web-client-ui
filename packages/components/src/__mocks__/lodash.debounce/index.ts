@@ -23,7 +23,7 @@ const debounce = jest
       }
     });
 
-    const wrapped = (...args: Parameters<typeof debounceFn>) => {
+    const wrapped = (...args: Parameters<typeof debounceFn>): void => {
       cancel();
 
       pendingArgs = args;

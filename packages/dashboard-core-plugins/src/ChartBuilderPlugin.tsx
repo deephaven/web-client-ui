@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import {
+  ChartModel,
   ChartModelFactory,
   ChartModelSettings,
   ChartUtils,
@@ -43,7 +44,7 @@ export function ChartBuilderPlugin(
       table: Table;
     }) => {
       const { settings } = metadata;
-      const makeModel = () =>
+      const makeModel = (): Promise<ChartModel> =>
         ChartModelFactory.makeModelFromSettings(dh, settings, table);
       const title = ChartUtils.titleFromSettings(settings);
 

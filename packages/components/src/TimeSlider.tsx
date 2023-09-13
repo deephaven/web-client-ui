@@ -178,7 +178,7 @@ function PopOvers(props: PopOversProps): JSX.Element {
     [swapTimes]
   );
 
-  function onFirstTimeChange(value: number) {
+  function onFirstTimeChange(value: number): void {
     if (startTime <= endTime) {
       onStartTimeChange(value);
     } else {
@@ -186,7 +186,7 @@ function PopOvers(props: PopOversProps): JSX.Element {
     }
   }
 
-  function onSecondTimeChange(value: number) {
+  function onSecondTimeChange(value: number): void {
     if (startTime <= endTime) {
       onEndTimeChange(value);
     } else {

@@ -34,11 +34,11 @@ export function ApiBootstrap({
   children,
   failureElement,
   setGlobally = false,
-}: ApiBootstrapProps) {
+}: ApiBootstrapProps): JSX.Element {
   const [isLoading, setIsLoading] = useState(true);
   const [api, setApi] = useState<DhType>();
   useEffect(() => {
-    async function loadApi() {
+    async function loadApi(): Promise<void> {
       try {
         const dh: DhType =
           // Ignore the warning about dynamic import in both Vite and Webpack.

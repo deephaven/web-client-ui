@@ -17,13 +17,13 @@ const DH_FORMAT_PATTERN = 'yyyy-MM-dd HH:mm:ss.SSSSSSSSS';
 const DEFAULT_VALUE_STRING = '2019-01-01 00:00:00.000\u200B000\u200B000';
 const EXAMPLES = [DEFAULT_VALUE_STRING];
 
-const parseDateString = (dateString: string) =>
+const parseDateString = (dateString: string): DateWrapper =>
   dh.i18n.DateTimeFormat.parse(
     DH_FORMAT_PATTERN,
     dateString.replace(/\u200B/g, '')
   );
 
-const formatDateAsString = (date: number | DateWrapper | Date) => {
+const formatDateAsString = (date: number | DateWrapper | Date): string => {
   const formattedString = dh.i18n.DateTimeFormat.format(
     DH_FORMAT_PATTERN,
     date
@@ -72,7 +72,7 @@ function DateInput({
     range: SelectionSegment,
     delta: number,
     segmentValue: string
-  ) {
+  ): string {
     const { selectionStart } = range;
     if (selectionStart === 0) {
       return getNextNumberSegmentValue(delta, segmentValue, 1900, 2099, 4);
@@ -103,13 +103,13 @@ function DateInput({
     return segmentValue;
   }
 
-  function handleChange(newValue: string) {
+  function handleChange(newValue: string): void {
     log.debug('handleChange', newValue);
     setValue(newValue);
     onChange(newValue);
   }
 
-  function handleSelect(newSelection: SelectionSegment) {
+  function handleSelect(newSelection: SelectionSegment): void {
     setSelection(newSelection);
   }
 

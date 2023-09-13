@@ -502,7 +502,7 @@ class LayoutUtils {
       // We need to listen for when the stack is created
       const onComponentCreated = (event: {
         origin: { element: Element[] };
-      }) => {
+      }): void => {
         log.debug('Component created, focusing element', focusElement);
 
         stack.off('componentCreated', onComponentCreated);
@@ -846,7 +846,7 @@ class LayoutUtils {
         resolve();
         return;
       }
-      const onInit = () => {
+      const onInit = (): void => {
         layout.off('initialised', onInit);
         resolve();
       };
