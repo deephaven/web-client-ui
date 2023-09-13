@@ -15,7 +15,7 @@ export type UserBootstrapProps = {
 /**
  * UserBootstrap component. Derives the UserContext from the ServerConfigContext, UserOverrideContext, and UserPermissionsOverrideContext.
  */
-export function UserBootstrap({ children }: UserBootstrapProps) {
+export function UserBootstrap({ children }: UserBootstrapProps): JSX.Element {
   const serverConfig = useServerConfig();
   const overrides = useContext(UserOverrideContext);
   const permissionsOverrides = useContext(UserPermissionsOverrideContext);

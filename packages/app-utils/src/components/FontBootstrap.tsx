@@ -22,7 +22,7 @@ export type FontBootstrapProps = {
 export function FontBootstrap({
   fontClassNames = ['fira-sans-regular', 'fira-sans-semibold', 'fira-mono'],
   children,
-}: FontBootstrapProps) {
+}: FontBootstrapProps): JSX.Element {
   const [isLoaded, setIsLoaded] = useState(false);
   useEffect(function initFonts() {
     document.fonts.ready.then(() => {

@@ -1,4 +1,4 @@
-import { DirectoryStorageItem, FileStorageItem } from './FileStorage';
+import type { DirectoryStorageItem, FileStorageItem } from './FileStorage';
 
 /**
  * Make a file name with prefix 'testfile'
@@ -39,7 +39,7 @@ export function makeFile(basename: string, path = '/'): FileStorageItem {
  * @param count The number of files to create (0 to count - 1). Defaults to 5
  * @returns An array of FileStorageItems
  */
-export function makeFiles(count = 5) {
+export function makeFiles(count = 5): FileStorageItem[] {
   const result: FileStorageItem[] = [];
   for (let i = 0; i < count; i += 1) {
     result.push(makeFile(makeFileName(i)));
@@ -72,7 +72,7 @@ export function makeDirectory(
  * @param count The number of directories to create (0 to count - 1). Defaults to 5
  * @returns An array of DirectoryStorageItems
  */
-export function makeDirectories(count = 5) {
+export function makeDirectories(count = 5): DirectoryStorageItem[] {
   const result: DirectoryStorageItem[] = [];
   for (let i = 0; i < count; i += 1) {
     result.push(makeDirectory(`testdir${i}`));

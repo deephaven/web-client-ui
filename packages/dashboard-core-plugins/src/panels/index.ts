@@ -18,7 +18,6 @@ export { default as NotebookPanel } from './NotebookPanel';
 export { default as PandasPanel } from './PandasPanel';
 export * from './PandasPanel';
 export { default as Panel } from './Panel';
-export * from './TablePlugin';
 export { default as WidgetPanel } from './WidgetPanel';
 export { default as WidgetPanelTooltip } from './WidgetPanelTooltip';
 export { default as MockFileStorage } from './MockFileStorage';

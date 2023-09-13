@@ -69,11 +69,11 @@ export default function IrisGridCellOverflowModal({
     [showLineNumbers]
   );
 
-  function toggleLineNumbers() {
+  function toggleLineNumbers(): void {
     setShowLineNumbers(!showLineNumbers);
   }
 
-  function formatAsJSON() {
+  function formatAsJSON(): void {
     const model = editorRef.current?.getModel();
     if (!canFormat || !model) {
       return;
@@ -89,7 +89,7 @@ export default function IrisGridCellOverflowModal({
     autoSetLineNumbers();
   }
 
-  function autoSetLineNumbers() {
+  function autoSetLineNumbers(): void {
     const editor = editorRef.current;
     if (!editor) {
       return;
@@ -98,14 +98,16 @@ export default function IrisGridCellOverflowModal({
     setShowLineNumbers((editor.getModel()?.getLineCount() ?? 0) > 1);
   }
 
-  function handleToggle() {
+  function handleToggle(): void {
     if (isOpened) {
       editorRef.current = undefined;
       onClose();
     }
   }
 
-  function onEditorInitialized(editor: monaco.editor.IStandaloneCodeEditor) {
+  function onEditorInitialized(
+    editor: monaco.editor.IStandaloneCodeEditor
+  ): void {
     editorRef.current = editor;
     setHeight(editor.getContentHeight());
     editor.onDidContentSizeChange(({ contentHeight }) =>

@@ -21,6 +21,7 @@
     { "path": "../jsapi-types" },
     { "path": "../log" },
     { "path": "../react-hooks" },
-    { "path": "../redux" }
+    { "path": "../redux" },
+    { "path": "../plugin" }
   ]
 }

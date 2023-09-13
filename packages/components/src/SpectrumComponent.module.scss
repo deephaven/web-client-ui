@@ -1,0 +1,20 @@
+/**
+ * The Spectrum ActionBar hard codes a max-width: 960px for the content area.
+ * Overriding so the bar fills the same width as its associated list component.
+ */
+.spectrumActionBar {
+  [class^='react-spectrum-ActionBar-bar'] {
+    max-width: none;
+  }
+}
+
+.spectrumDialogComponentHeading {
+  font-weight: normal;
+  overflow-wrap: break-word;
+}
+
+.spectrumEllipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

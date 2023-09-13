@@ -74,6 +74,10 @@ import {
   ModelSizeMap,
   MoveOperation,
 } from '@deephaven/grid';
+import type {
+  TablePluginComponent,
+  TablePluginElement,
+} from '@deephaven/plugin';
 import { ConsoleEvent, InputFilterEvent, IrisGridEvent } from '../events';
 import {
   getInputFiltersForDashboard,
@@ -84,7 +88,6 @@ import WidgetPanel from './WidgetPanel';
 import './IrisGridPanel.scss';
 import { Link, LinkColumn } from '../linker/LinkerUtils';
 import IrisGridPanelTooltip from './IrisGridPanelTooltip';
-import TablePlugin, { TablePluginElement } from './TablePlugin';
 import {
   isIrisGridPanelMetadata,
   isLegacyIrisGridPanelMetadata,
@@ -150,7 +153,7 @@ export interface IrisGridPanelProps extends DashboardPanelProps {
   getDownloadWorker: () => Promise<ServiceWorker>;
 
   // Load a plugin defined by the table
-  loadPlugin: (pluginName: string) => TablePlugin;
+  loadPlugin: (pluginName: string) => TablePluginComponent;
 
   theme: IrisGridThemeType;
 }
@@ -190,7 +193,7 @@ interface IrisGridPanelState {
   searchValue: string;
   selectedSearchColumns?: readonly string[];
   invertSearchColumns: boolean;
-  Plugin?: TablePlugin;
+  Plugin?: TablePluginComponent;
   pluginFilters: readonly FilterCondition[];
   pluginFetchColumns: readonly string[];
   modelQueue: ModelQueue;
@@ -401,7 +404,7 @@ export class IrisGridPanel extends PureComponent<
 
   getPluginContent = memoize(
     (
-      Plugin: TablePlugin | undefined,
+      Plugin: TablePluginComponent | undefined,
       model: IrisGridModel | undefined,
       user: User,
       workspace: Workspace,
@@ -416,6 +419,19 @@ export class IrisGridPanel extends PureComponent<
         return null;
       }
 
+      // The panel in the deprecated props makes an ugly dependency of the plugin on the panel
+      // Since we didn't have TS when the old plugins would have been implemented,
+      // just pass the deprecated props without type checking
+      // so we can break the ugly dependency of plugin on panel
+      const deprecatedProps = {
+        panel: this,
+        onFilter: this.handlePluginFilter,
+        onFetchColumns: this.handlePluginFetchColumns,
+        user,
+        workspace,
+        components: PLUGIN_COMPONENTS,
+      };
+
       return (
         <div className="iris-grid-plugin">
           <Plugin
@@ -424,14 +440,10 @@ export class IrisGridPanel extends PureComponent<
             fetchColumns={this.handlePluginFetchColumns}
             model={model}
             table={model.table}
-            panel={this}
             onStateChange={this.handlePluginStateChange}
             pluginState={pluginState}
-            onFilter={this.handlePluginFilter}
-            onFetchColumns={this.handlePluginFetchColumns}
-            user={user}
-            workspace={workspace}
-            components={PLUGIN_COMPONENTS}
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            {...deprecatedProps}
           />
         </div>
       );
@@ -1355,7 +1367,15 @@ export class IrisGridPanel extends PureComponent<
 const mapStateToProps = (
   state: RootState,
   { localDashboardId = DEFAULT_DASHBOARD_ID }: { localDashboardId?: string }
-) => ({
+): Pick<
+  IrisGridPanelProps,
+  | 'columnSelectionValidator'
+  | 'inputFilters'
+  | 'links'
+  | 'settings'
+  | 'user'
+  | 'workspace'
+> => ({
   inputFilters: getInputFiltersForDashboard(state, localDashboardId),
   links: getLinksForDashboard(state, localDashboardId),
   columnSelectionValidator: getColumnSelectionValidatorForDashboard(

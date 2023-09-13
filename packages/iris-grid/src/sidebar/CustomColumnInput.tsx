@@ -28,7 +28,7 @@ const INPUT_TYPE = Object.freeze({
   FORMULA: 'formula',
 });
 
-const EMPTY_FN = () => {
+const EMPTY_FN = (): void => {
   // no-op
 };
 

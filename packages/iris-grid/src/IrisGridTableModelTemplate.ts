@@ -721,7 +721,7 @@ class IrisGridTableModelTemplate<
         layoutHints?.columnGroups ?? []
       );
 
-      const moveColumn = (name: string, toIndex: VisibleIndex) => {
+      const moveColumn = (name: string, toIndex: VisibleIndex): void => {
         const modelIndex = this.getColumnIndexByName(name);
         if (modelIndex == null) {
           throw new Error(`Unknown layout hint column: ${name}`);
@@ -733,7 +733,7 @@ class IrisGridTableModelTemplate<
         movedColumns = GridUtils.moveItem(visibleIndex, toIndex, movedColumns);
       };
 
-      const moveGroup = (name: string, toIndex: VisibleIndex) => {
+      const moveGroup = (name: string, toIndex: VisibleIndex): void => {
         const group = groupMap.get(name);
         if (group == null) {
           throw new Error(`Unknown layout hint group: ${name}`);

@@ -41,7 +41,7 @@ export type ConditionalFormattingMenuProps = {
   onSelect?: SelectCallback;
 };
 
-const DEFAULT_CALLBACK = () => undefined;
+const DEFAULT_CALLBACK = (): void => undefined;
 
 function getRuleValue(config: BaseFormatConfig): string {
   const {

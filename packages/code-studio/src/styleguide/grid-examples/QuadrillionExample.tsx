@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Grid, MockGridModel } from '@deephaven/grid';
 
-function QuadrillionExample() {
+function QuadrillionExample(): JSX.Element {
   const [model] = useState(
     () =>
       new MockGridModel({

@@ -1,10 +1,9 @@
 import debounce from 'lodash.debounce';
 import type { Table, TreeTable } from '@deephaven/jsapi-types';
-import { TableUtils } from '@deephaven/jsapi-utils';
-import { useApi } from '@deephaven/jsapi-bootstrap';
 import Log from '@deephaven/log';
 import { useEffect, useMemo } from 'react';
 import { UseViewportDataResult } from './useViewportData';
+import useTableUtils from './useTableUtils';
 
 const log = Log.module('useDebouncedViewportSearch');
 
@@ -18,16 +17,12 @@ export const DEBOUNCE_VIEWPORT_SEARCH_MS = 200;
  * @param debounceMs Millisecond value to debounce
  * @returns A debounced search function
  */
-export default function useDebouncedViewportSearch<
-  I,
-  T extends Table | TreeTable,
->(
+export function useDebouncedViewportSearch<I, T extends Table | TreeTable>(
   viewportData: UseViewportDataResult<I, T>,
   columnName: string,
   debounceMs = DEBOUNCE_VIEWPORT_SEARCH_MS
 ): (searchText: string) => void {
-  const dh = useApi();
-  const tableUtils = useMemo(() => new TableUtils(dh), [dh]);
+  const tableUtils = useTableUtils();
   const { table, applyFiltersAndRefresh } = viewportData;
 
   const debouncedSearch = useMemo(
@@ -68,3 +63,5 @@ export default function useDebouncedViewportSearch<
 
   return debouncedSearch;
 }
+
+export default useDebouncedViewportSearch;

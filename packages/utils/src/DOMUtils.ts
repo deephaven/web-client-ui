@@ -18,4 +18,14 @@ export function getClosestByClassName(
   return element.closest(`.${className}`);
 }
 
-export default { getClosestByClassName };
+/**
+ * Returns the given object if it is an HTMLElement. Otherwise returns null.
+ * @param maybeHTMLElement
+ */
+export function identityExtractHTMLElement<T>(
+  maybeHTMLElement: T
+): HTMLElement | null {
+  return maybeHTMLElement instanceof HTMLElement ? maybeHTMLElement : null;
+}
+
+export default { getClosestByClassName, identityExtractHTMLElement };

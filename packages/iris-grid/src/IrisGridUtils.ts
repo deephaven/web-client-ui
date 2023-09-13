@@ -240,7 +240,7 @@ class IrisGridUtils {
       isStuckToRight,
       movedColumns: [...movedColumns]
         .map(({ to, from }) => {
-          const getIndex = (x: string | number) =>
+          const getIndex = (x: string | number): number =>
             typeof x === 'string'
               ? columnNames.findIndex(name => name === x)
               : x;
@@ -1456,7 +1456,7 @@ class IrisGridUtils {
     { data: Map<ModelIndex | null, string | CellData | LongWrapper | null> }
   > {
     const columnMap = new Map<ColumnName, number>();
-    const getColumnIndex = (columnName: ColumnName) => {
+    const getColumnIndex = (columnName: ColumnName): number | undefined => {
       if (!columnMap.has(columnName)) {
         columnMap.set(
           columnName,

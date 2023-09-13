@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
  * @param debounceMs Amount of time to debounce
  * @returns The debounced value
  */
-export function useDebouncedValue<T>(value: T, debounceMs: number) {
+export function useDebouncedValue<T>(value: T, debounceMs: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
   useEffect(() => {
     const timeoutId = setTimeout(() => {

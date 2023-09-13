@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/react-hooks",
-  "version": "0.46.1",
+  "version": "0.48.0",
   "description": "Deephaven React hooks library",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -21,8 +21,10 @@
     "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward"
   },
   "dependencies": {
+    "@adobe/react-spectrum": "^3.29.0",
     "@deephaven/log": "file:../log",
     "@deephaven/utils": "file:../utils",
+    "lodash.debounce": "^4.0.8",
     "shortid": "^2.2.16"
   },
   "peerDependencies": {

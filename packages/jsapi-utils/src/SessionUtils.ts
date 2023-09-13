@@ -5,12 +5,9 @@ import type {
   IdeConnection,
   IdeSession,
 } from '@deephaven/jsapi-types';
-import {
-  requestParentResponse,
-  SESSION_DETAILS_REQUEST,
-} from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import shortid from 'shortid';
+import { requestParentResponse, SESSION_DETAILS_REQUEST } from './MessageUtils';
 import NoConsolesError, { isNoConsolesError } from './NoConsolesError';
 
 const log = Log.module('SessionUtils');

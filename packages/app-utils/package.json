@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/app-utils",
-  "version": "0.46.1",
+  "version": "0.48.0",
   "description": "Deephaven App Utils",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -35,7 +35,9 @@
     "@deephaven/jsapi-types": "file:../jsapi-types",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
+    "@deephaven/plugin": "file:../plugin",
     "@deephaven/react-hooks": "file:../react-hooks",
+    "@deephaven/redux": "file:../redux",
     "@deephaven/utils": "file:../utils",
     "@paciolan/remote-component": "2.13.0",
     "@paciolan/remote-module-loader": "^3.0.2",

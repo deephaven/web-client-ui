@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/components",
-  "version": "0.46.1",
+  "version": "0.48.0",
   "description": "Deephaven React component library",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -23,6 +23,7 @@
     "build:sass": "sass --embed-sources --load-path=../../node_modules ./src:./dist ./scss/BaseStyleSheet.scss:./css/BaseStyleSheet.css"
   },
   "dependencies": {
+    "@adobe/react-spectrum": "^3.29.0",
     "@deephaven/icons": "file:../icons",
     "@deephaven/log": "file:../log",
     "@deephaven/react-hooks": "file:../react-hooks",

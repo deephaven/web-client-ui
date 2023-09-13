@@ -10,7 +10,10 @@ interface LoginProps {
   logoPath?: string;
 }
 
-export function Login({ children, logoPath = './logo.png' }: LoginProps) {
+export function Login({
+  children,
+  logoPath = './logo.png',
+}: LoginProps): JSX.Element {
   return (
     <div className="login-container">
       <RandomAreaPlotAnimation />

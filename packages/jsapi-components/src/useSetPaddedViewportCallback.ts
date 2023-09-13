@@ -12,11 +12,11 @@ import { getSize, padFirstAndLastRow } from '@deephaven/jsapi-utils';
  * @param viewportPadding Padding to add before and after the viewport.
  * @returns A callback function for setting the viewport.
  */
-export default function useSetPaddedViewportCallback(
+export function useSetPaddedViewportCallback(
   table: Table | TreeTable | null,
   viewportSize: number,
   viewportPadding: number
-) {
+): (firstRow: number) => void {
   return useCallback(
     function setPaddedViewport(firstRow: number) {
       const [first, last] = padFirstAndLastRow(
@@ -31,3 +31,5 @@ export default function useSetPaddedViewportCallback(
     [table, viewportPadding, viewportSize]
   );
 }
+
+export default useSetPaddedViewportCallback;
