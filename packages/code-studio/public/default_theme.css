@@ -1,0 +1,75 @@
+.dh-theme-default-dark {
+  /* Grays */
+  --dh-color-gray-900: #fcfcfa;
+  --dh-color-gray-800: #f0f0ee;
+  --dh-color-gray-700: #c0bfbf;
+  --dh-color-gray-600: #929192;
+  --dh-color-gray-500: #5b5a5c;
+  --dh-color-gray-400: #403e41;
+  --dh-color-gray-300: #373438;
+  --dh-color-gray-200: #322f33;
+  --dh-color-gray-100: #2d2a2e;
+  --dh-color-gray-75: #211f22;
+  --dh-color-gray-50: #1a171a;
+  --dh-color-black: var(--dh-color-gray-50);
+  --dh-color-white: var(--dh-color-gray-800);
+
+  /* Seafoam */
+  --dh-colorseafoam-100: #1f2925;
+  --dh-colorseafoam-200: #263630;
+  --dh-colorseafoam-300: #2f463e;
+  --dh-colorseafoam-400: #37574b;
+  --dh-colorseafoam-500: #3e6959;
+  --dh-colorseafoam-600: #447b68;
+  --dh-colorseafoam-700: #488f78;
+  --dh-colorseafoam-800: #4ca387;
+  --dh-colorseafoam-900: #4fb797;
+  --dh-colorseafoam-1000: #54cba6;
+  --dh-colorseafoam-1100: #5edeb7;
+  --dh-colorseafoam-1200: #78edc7;
+  --dh-colorseafoam-1300: #9ef8d7;
+  --dh-colorseafoam-1400: #cbfce8;
+
+  /* Semantic */
+  --dh-semantic-background-color: var(--dh-color-black);
+  --dh-semantic-foreground-color: var(--dh-color-white);
+  --dh-semantic-grid-background-color: var(--dh-semantic-background-color);
+}
+
+.dh-theme-default-light {
+  /* Grays */
+  --dh-color-gray-900: #fcfcfa;
+  --dh-color-gray-800: #f0f0ee;
+  --dh-color-gray-700: #c0bfbf;
+  --dh-color-gray-600: #929192;
+  --dh-color-gray-500: #5b5a5c;
+  --dh-color-gray-400: #403e41;
+  --dh-color-gray-300: #373438;
+  --dh-color-gray-200: #322f33;
+  --dh-color-gray-100: #2d2a2e;
+  --dh-color-gray-75: #211f22;
+  --dh-color-gray-50: #1a171a;
+  --dh-color-black: var(--dh-color-gray-50);
+  --dh-color-white: var(--dh-color-gray-800);
+
+  /* Seafoam */
+  --dh-colorseafoam-100: #1f2925;
+  --dh-colorseafoam-200: #263630;
+  --dh-colorseafoam-300: #2f463e;
+  --dh-colorseafoam-400: #37574b;
+  --dh-colorseafoam-500: #3e6959;
+  --dh-colorseafoam-600: #447b68;
+  --dh-colorseafoam-700: #488f78;
+  --dh-colorseafoam-800: #4ca387;
+  --dh-colorseafoam-900: #4fb797;
+  --dh-colorseafoam-1000: #54cba6;
+  --dh-colorseafoam-1100: #5edeb7;
+  --dh-colorseafoam-1200: #78edc7;
+  --dh-colorseafoam-1300: #9ef8d7;
+  --dh-colorseafoam-1400: #cbfce8;
+
+  /* Semantic */
+  --dh-semantic-background-color: var(--dh-color-white);
+  --dh-semantic-foreground-color: var(--dh-color-black);
+  --dh-semantic-grid-background-color: var(--dh-semantic-background-color);
+}

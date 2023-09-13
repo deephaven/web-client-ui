@@ -1,0 +1,19 @@
+.dh-theme-custom-aaa {
+  --dh-base-theme: default-dark;
+
+  /* Semantic */
+  --dh-semantic-background-color: rgb(29, 11, 146);
+  --dh-semantic-foreground-color: rgb(126, 7, 7);
+}
+
+.dh-theme-custom-bbb {
+  --dh-base-theme: default-light;
+
+  /* Semantic */
+  --dh-semantic-foreground-color: #d5ea1e;
+}
+
+.dh-theme-custom-ccc {
+  --dh-color-gray-50: orange;
+  --dh-semantic-grid-background-color: var(--dh-colorseafoam-900);
+}

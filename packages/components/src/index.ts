@@ -50,6 +50,7 @@ export { default as SocketedButton } from './SocketedButton';
 export * from './SpectrumUtils';
 export * from './TableViewEmptyState';
 export * from './TextWithTooltip';
+export * from './theme';
 export { default as ThemeExport } from './ThemeExport';
 export { default as TimeInput } from './TimeInput';
 export { default as TimeSlider } from './TimeSlider';

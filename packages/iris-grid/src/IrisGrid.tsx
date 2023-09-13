@@ -25,6 +25,7 @@ import {
   ReferenceObject,
   Button,
   ContextActionUtils,
+  replaceCssVariables,
   ResolvableContextAction,
 } from '@deephaven/components';
 import {
@@ -1330,16 +1331,18 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   getCachedTheme = memoize(
     (
+      targetElement: HTMLElement | null,
       theme: GridThemeType,
       isEditable: boolean,
       floatingRowCount: number
-    ): Partial<IrisGridThemeType> => ({
-      ...IrisGridTheme,
-      ...theme,
-      autoSelectRow: !isEditable,
-      // We only show the row footers when we have floating rows for aggregations
-      rowFooterWidth: floatingRowCount > 0 ? theme.rowFooterWidth : 0,
-    }),
+    ): Partial<IrisGridThemeType> =>
+      replaceCssVariables(targetElement, {
+        ...IrisGridTheme,
+        ...theme,
+        autoSelectRow: !isEditable,
+        // We only show the row footers when we have floating rows for aggregations
+        rowFooterWidth: floatingRowCount > 0 ? theme.rowFooterWidth : 0,
+      }),
     { max: 1 }
   );
 
@@ -1399,6 +1402,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   getTheme(): Partial<IrisGridThemeType> {
     const { model, theme } = this.props;
     return this.getCachedTheme(
+      this.gridWrapper,
       theme,
       (isEditableGridModel(model) && model.isEditable) ?? false,
       model.floatingTopRowCount + model.floatingBottomRowCount

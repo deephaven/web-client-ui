@@ -69,7 +69,7 @@ body:not(.lm_dragging) .lm_header .lm_tab .lm_close_tab:hover {
 
 // Single Pane content (area in which final dragged content is contained)
 .lm_content {
-  background: $content-bg;
+  background: var(--dh-semantic-background-color);
   overflow: visible;
 }
 
@@ -156,14 +156,16 @@ body:not(.lm_dragging) .lm_header .lm_tab .lm_close_tab:hover {
     align-items: center;
     font-family: $font-family-sans-serif;
     background-color: $lm-tab-background;
-    color: $lm-tab-color;
+    color: var(--dh-semantic-foreground-color);
     height: $tab-height;
     font-size: $tab-font-size;
     min-width: 5rem;
     margin: 0;
     padding: 0 $spacer-1 0 $spacer-2;
     box-shadow: inset -1px -1px 0 0 $background; // acting as bottom and right border
-    transition: color $transition, background-color $transition;
+    transition:
+      color $transition,
+      background-color $transition;
     max-width: 12rem;
     white-space: nowrap;
     overflow: hidden;
@@ -224,7 +226,9 @@ body:not(.lm_dragging) .lm_header .lm_tab .lm_close_tab:hover {
   box-shadow: inset -1px 0 0 0 $background; // act as right border only when active
   // also kills the default shadow, doesn't work well with our design
   &.lm_focusin {
-    box-shadow: inset 0 1px $primary, inset -1px 0 0 0 $background; // top focus indicator, right border
+    box-shadow:
+      inset 0 1px $primary,
+      inset -1px 0 0 0 $background; // top focus indicator, right border
   }
 }
 
