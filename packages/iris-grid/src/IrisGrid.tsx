@@ -161,7 +161,7 @@ import ConditionalFormattingMenu from './sidebar/conditional-formatting/Conditio
 
 import ConditionalFormatEditor from './sidebar/conditional-formatting/ConditionalFormatEditor';
 import IrisGridCellOverflowModal from './IrisGridCellOverflowModal';
-import GotoRow from './GotoRow';
+import GotoRow, { GotoRowFocus } from './GotoRow';
 import {
   Aggregation,
   AggregationSettings,
@@ -611,6 +611,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.isAnimating = false;
     this.filterInputRef = React.createRef();
 
+    this.gotoRowRef = React.createRef();
+
     this.toggleFilterBarAction = {
       action: () => this.toggleFilterBar(),
       shortcut: SHORTCUTS.TABLE.TOGGLE_QUICK_FILTER,
@@ -990,6 +992,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   isAnimating: boolean;
 
   filterInputRef: React.RefObject<FilterInputField>;
+
+  gotoRowRef: React.RefObject<GotoRowFocus>;
 
   toggleFilterBarAction: Action;
 
@@ -2517,6 +2521,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         gotoValueError: '',
       });
       this.focusRowInGrid(row);
+      this.gotoRowRef.current?.focus();
       return;
     }
 
@@ -4562,6 +4567,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               this.getLinkHoverTooltip(linkHoverTooltipProps)}
           </div>
           <GotoRow
+            ref={this.gotoRowRef}
             model={model}
             isShown={isGotoShown}
             gotoRow={gotoRow}
