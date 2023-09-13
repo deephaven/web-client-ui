@@ -1,6 +1,7 @@
 export * from './ConnectionUtils';
 export * from './formatters';
 export * from './DateUtils';
+export * from './FilterUtils';
 export * from './Formatter';
 export { default as FormatterUtils } from './FormatterUtils';
 export * from './FormatterUtils';

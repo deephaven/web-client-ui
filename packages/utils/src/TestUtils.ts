@@ -99,7 +99,8 @@ class TestUtils {
   static findLastCall = <TResult, TArgs extends unknown[]>(
     fn: (...args: TArgs) => TResult,
     predicate: (args: TArgs) => boolean
-  ) => TestUtils.asMock(fn).mock.calls.reverse().find(predicate);
+  ): TArgs | undefined =>
+    TestUtils.asMock(fn).mock.calls.reverse().find(predicate);
 
   static makeMockContext(): MockContext {
     return {
@@ -185,7 +186,7 @@ class TestUtils {
   static async rightClick(
     user: ReturnType<typeof userEvent.setup>,
     element: Element
-  ) {
+  ): Promise<void> {
     await user.pointer([
       { target: element },
       { keys: '[MouseRight]', target: element },

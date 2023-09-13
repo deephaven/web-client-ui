@@ -18,7 +18,7 @@ import { ExportedLayout } from '../storage/LayoutStorage';
 function StyleGuideInit(props: {
   workspace: Workspace;
   setWorkspace: PayloadActionCreator<Workspace>;
-}) {
+}): JSX.Element | null {
   const { workspace, setWorkspace } = props;
 
   useEffect(() => {
@@ -40,7 +40,11 @@ StyleGuideInit.defaultProps = {
   workspace: null,
 };
 
-const mapStateToProps = (state: RootState) => ({
+const mapStateToProps = (
+  state: RootState
+): {
+  workspace: Workspace;
+} => ({
   workspace: getWorkspace(state),
 });
 

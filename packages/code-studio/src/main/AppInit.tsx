@@ -86,7 +86,7 @@ interface AppInitProps {
 /**
  * Component that sets some default values needed
  */
-function AppInit(props: AppInitProps) {
+function AppInit(props: AppInitProps): JSX.Element {
   const {
     workspace,
     setActiveTool,
@@ -123,7 +123,7 @@ function AppInit(props: AppInitProps) {
 
   useEffect(
     function initApp() {
-      async function loadApp() {
+      async function loadApp(): Promise<void> {
         try {
           const sessionDetails = await getSessionDetails();
           const sessionWrapper = await loadSessionWrapper(
@@ -266,7 +266,9 @@ AppInit.defaultProps = {
   workspaceStorage: null,
 };
 
-const mapStateToProps = (state: RootState) => ({
+const mapStateToProps = (
+  state: RootState
+): Pick<AppInitProps, 'workspace' | 'workspaceStorage'> => ({
   workspace: getWorkspace(state),
   workspaceStorage: getWorkspaceStorage(state),
 });

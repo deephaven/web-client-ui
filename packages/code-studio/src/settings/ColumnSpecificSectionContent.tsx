@@ -395,10 +395,11 @@ export class ColumnSpecificSectionContent extends PureComponent<
     const columnTypeId = `input-${i}-columnType`;
     const formatId = `input-${i}-format`;
     const columnTypeOptions = this.getCachedColumnTypeOptions();
-    const onNameChange = (e: ChangeEvent<HTMLInputElement>) =>
+    const onNameChange = (e: ChangeEvent<HTMLInputElement>): void =>
       this.handleFormatRuleChange(i, 'columnName', e.target.value);
-    const onNameBlur = () => this.handleFormatRuleChange(i, 'isNewRule', false);
-    const onTypeChange = (e: ChangeEvent<HTMLSelectElement>) =>
+    const onNameBlur = (): void =>
+      this.handleFormatRuleChange(i, 'isNewRule', false);
+    const onTypeChange = (e: ChangeEvent<HTMLSelectElement>): void =>
       this.handleFormatRuleChange(i, 'columnType', e.target.value);
     const ruleError = this.getRuleError(rule);
 
@@ -644,7 +645,9 @@ export class ColumnSpecificSectionContent extends PureComponent<
   }
 }
 
-const mapStateToProps = (state: RootState) => ({
+const mapStateToProps = (
+  state: RootState
+): Omit<ColumnSpecificSectionContentProps, 'saveSettings' | 'scrollTo'> => ({
   formatter: getFormatter(state),
   defaultDateTimeFormat: getDefaultDateTimeFormat(state),
   defaultDecimalFormatOptions: getDefaultDecimalFormatOptions(state),

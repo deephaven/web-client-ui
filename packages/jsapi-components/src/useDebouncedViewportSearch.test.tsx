@@ -13,8 +13,13 @@ import useDebouncedViewportSearch, {
 } from './useDebouncedViewportSearch';
 import { UseViewportDataResult } from './useViewportData';
 import { makeApiContextWrapper } from './HookTestUtils';
+import useTableUtils from './useTableUtils';
 
-const tableUtils = new TableUtils(dh);
+jest.mock('./useTableUtils');
+
+const { asMock, createMockProxy } = TestUtils;
+
+const tableUtils = createMockProxy<TableUtils>();
 
 const wrapper = makeApiContextWrapper(dh);
 
@@ -38,9 +43,8 @@ beforeEach(() => {
   TestUtils.asMock(columnFilterValue.contains).mockReturnValue(filterCondition);
   TestUtils.asMock(table.findColumn).mockReturnValue(column);
 
-  jest
-    .spyOn(TableUtils.prototype, 'makeFilterValue')
-    .mockReturnValue(matchFilterValue);
+  asMock(useTableUtils).mockName('useTableUtils').mockReturnValue(tableUtils);
+  asMock(tableUtils.makeFilterValue).mockReturnValue(matchFilterValue);
 });
 
 it.each([undefined, 400])(

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Grid, MockDataBarGridModel } from '@deephaven/grid';
 import { ColorMap } from 'packages/grid/src/DataBarGridModel';
 
-function DataBarExample() {
+function DataBarExample(): JSX.Element {
   const columnData = [100, 50, 20, 10, -10, -20, -50, -30, 100, 0, 1];
   const data: number[][] = [];
   const columnAxes = new Map([

@@ -527,7 +527,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
       const disableOldObject = (
         object: VariableDefinition,
         isRemoved = false
-      ) => {
+      ): void => {
         const { title } = object;
         assertNotNull(title);
         const oldIndex = objectHistoryMap.get(title);

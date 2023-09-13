@@ -92,14 +92,14 @@ export default function VisibilityOrderingGroup(
     [isColorInputOpen, colorInputBlurHandler]
   );
 
-  const handleConfirm = () => {
+  const handleConfirm = (): void => {
     if (isValid) {
       onNameChange(group, name);
       setIsEditing(false);
     }
   };
 
-  const handleCancel = () => {
+  const handleCancel = (): void => {
     if (isNew) {
       onDelete(group);
       return;

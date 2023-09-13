@@ -22,7 +22,7 @@ type VisibilityOrderingItemProps = {
   handleProps: Record<string, unknown>;
 };
 
-function emptyOnClick() {
+function emptyOnClick(): void {
   // no-op
 }
 

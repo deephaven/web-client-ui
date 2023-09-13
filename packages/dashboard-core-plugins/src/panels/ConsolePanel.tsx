@@ -388,7 +388,10 @@ export class ConsolePanel extends PureComponent<
 const mapStateToProps = (
   state: RootState,
   ownProps: { localDashboardId: string }
-) => ({
+): Pick<
+  ConsolePanelProps,
+  'commandHistoryStorage' | 'sessionWrapper' | 'timeZone'
+> => ({
   commandHistoryStorage: getCommandHistoryStorage(
     state
   ) as CommandHistoryStorage,

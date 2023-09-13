@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/jsapi-components",
-  "version": "0.47.0",
+  "version": "0.48.0",
   "description": "Deephaven JSAPI Components",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -29,7 +29,6 @@
     "@deephaven/log": "file:../log",
     "@deephaven/react-hooks": "file:../react-hooks",
     "@deephaven/utils": "file:../utils",
-    "@react-stately/data": "^3.9.1",
     "@types/js-cookie": "^3.0.3",
     "classnames": "^2.3.2",
     "js-cookie": "^3.0.5",

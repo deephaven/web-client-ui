@@ -94,11 +94,11 @@ class MockDataBarGridModel extends GridModel implements DataBarGridModel {
     }
   }
 
-  get rowCount() {
+  get rowCount(): number {
     return this.numberOfRows;
   }
 
-  get columnCount() {
+  get columnCount(): number {
     return this.numberOfColumns;
   }
 

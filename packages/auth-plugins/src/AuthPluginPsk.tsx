@@ -23,7 +23,7 @@ function getWindowToken(): string | null {
   return new URLSearchParams(window.location.search).get(PSK_QUERY_PARAM_KEY);
 }
 
-function clearWindowToken() {
+function clearWindowToken(): void {
   log.debug2('clearWindowToken');
   const url = new URL(window.location.href);
   url.searchParams.delete(PSK_QUERY_PARAM_KEY);
@@ -120,7 +120,7 @@ function Component({ children, logoPath }: AuthPluginPskProps): JSX.Element {
 
   useEffect(() => {
     let isCanceled = false;
-    async function initialLogin() {
+    async function initialLogin(): Promise<void> {
       const initialToken = getWindowToken() ?? readCookieToken();
       clearWindowToken();
 

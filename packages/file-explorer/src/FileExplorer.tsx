@@ -57,7 +57,7 @@ export function FileExplorer(props: FileExplorerProps): JSX.Element {
   useEffect(
     function initializeTable() {
       let tablePromise: CancelablePromise<FileStorageTable>;
-      async function initTable() {
+      async function initTable(): Promise<void> {
         log.debug('initTable');
 
         tablePromise = PromiseUtils.makeCancelable(storage.getTable(), t =>

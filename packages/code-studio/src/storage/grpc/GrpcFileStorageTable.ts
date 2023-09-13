@@ -283,7 +283,7 @@ export class GrpcFileStorageTable implements FileStorageTable {
     return { items, offset: viewport.top };
   }
 
-  private sendUpdate() {
+  private sendUpdate(): void {
     // Retain a reference to it in case a listener gets removed while sending an update
     const { listeners } = this;
     const data = this.currentViewportData ?? { items: [], offset: 0 };

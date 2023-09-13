@@ -186,7 +186,7 @@ class CsvInputBar extends Component<CsvInputBarProps, CsvInputBarState> {
     );
     const { session, timeZone, onInProgress } = this.props;
     const { tableName, isFirstRowHeaders, type } = this.state;
-    const handleParseDone = (tables: Table[]) => {
+    const handleParseDone = (tables: Table[]): void => {
       // Do not bother merging just one table
       if (tables.length === 1) {
         session

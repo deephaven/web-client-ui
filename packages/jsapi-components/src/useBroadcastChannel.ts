@@ -12,7 +12,7 @@ const log = Log.module('useBroadcastChannel');
 export function useBroadcastChannel(
   onEvent: (event: MessageEvent<Message<unknown>>) => void = EMPTY_FUNCTION,
   name = BROADCAST_CHANNEL_NAME
-) {
+): BroadcastChannel {
   const channel = useMemo(() => new BroadcastChannel(name), [name]);
   useEffect(
     () => () => {
@@ -22,7 +22,7 @@ export function useBroadcastChannel(
   );
 
   useEffect(() => {
-    function handleEvent(event: MessageEvent) {
+    function handleEvent(event: MessageEvent): void {
       const { data } = event;
       if (!isMessage(data)) {
         log.debug('Ignoring non-deephaven message', data);

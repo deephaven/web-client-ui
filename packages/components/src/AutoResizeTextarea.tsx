@@ -45,7 +45,7 @@ function AutoResizeTextarea({
     [propsValue]
   );
 
-  function explode(input: string) {
+  function explode(input: string): string {
     // split by delimiter, commonly " " or " -"
     // strip empty strings (if delimiter is space, and there are multiple spaces in a row)
     // and join with new line and a trimmed delimeter (get rid of leading spaces)
@@ -56,14 +56,14 @@ function AutoResizeTextarea({
       .join(`\n${delimiter.trim()}`);
   }
 
-  function implode(input: string) {
+  function implode(input: string): string {
     return input
       .split('\n')
       .map(string => string.trim())
       .join(' ');
   }
 
-  function reCalculateLayout() {
+  function reCalculateLayout(): void {
     if (!element.current) {
       return;
     }
@@ -75,7 +75,7 @@ function AutoResizeTextarea({
     if (resizedHeight > 0) element.current.style.height = `${resizedHeight}px`;
   }
 
-  function handleChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
+  function handleChange(event: React.ChangeEvent<HTMLTextAreaElement>): void {
     let newValue = event.target.value;
     if (isPastedChange) {
       if (delimiter) newValue = explode(newValue);
@@ -85,7 +85,7 @@ function AutoResizeTextarea({
     onChange(newValue);
   }
 
-  function handleFocus() {
+  function handleFocus(): void {
     if (!element.current) {
       return;
     }
@@ -100,20 +100,20 @@ function AutoResizeTextarea({
   // make it explode when dragging the resize handle
   // by making it trigger focus (which normally doesn't
   // trigger when just resizing).
-  function handleMouseDown() {
+  function handleMouseDown(): void {
     if (!element.current) return;
     if (document.activeElement === element.current) return;
     element.current.focus();
   }
 
-  function handleBlur() {
+  function handleBlur(): void {
     if (delimiter) {
       setValue(implode(value));
       onChange(implode(value));
     }
   }
 
-  function handlePaste() {
+  function handlePaste(): void {
     setIsPastedChange(true);
   }
 

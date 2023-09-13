@@ -127,7 +127,7 @@ export class SettingsMenu extends Component<
     const javaVersion = serverConfigValues.get('java.version');
     const deephavenVersion = serverConfigValues.get('deephaven.version');
 
-    const getRow = (text: string, ver?: string) => (
+    const getRow = (text: string, ver?: string): JSX.Element => (
       <>
         <div>{text}</div>
         <div>{ver}</div>

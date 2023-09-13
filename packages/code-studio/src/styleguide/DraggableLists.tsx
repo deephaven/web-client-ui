@@ -17,7 +17,7 @@ const DRAG_LIST_PROPS = [
   { isDragDisabled: true },
 ];
 
-const makeItems = (prefix = 'Item', count = 1000) => {
+const makeItems = (prefix = 'Item', count = 1000): string[] => {
   const items = [];
   for (let i = 0; i < count; i += 1) {
     items.push(`${prefix}-${i}`);

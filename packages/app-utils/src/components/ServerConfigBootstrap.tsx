@@ -19,7 +19,7 @@ export type ServerConfigBootstrapProps = {
  */
 export function ServerConfigBootstrap({
   children,
-}: ServerConfigBootstrapProps) {
+}: ServerConfigBootstrapProps): JSX.Element {
   const client = useClient();
   const [serverConfig, setServerConfig] = useState<Map<string, string>>();
   const [error, setError] = useState<unknown>();
@@ -27,7 +27,7 @@ export function ServerConfigBootstrap({
   useEffect(
     function initServerConfigValues() {
       let isCanceled = false;
-      async function loadServerConfigValues() {
+      async function loadServerConfigValues(): Promise<void> {
         try {
           const newServerConfigValues = await client.getServerConfigValues();
           if (!isCanceled) {
