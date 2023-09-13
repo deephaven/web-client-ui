@@ -3,7 +3,15 @@ import Log from '@deephaven/log';
 const log = Log.module('DownloadServiceWorkerUtils');
 
 class DownloadServiceWorkerUtils {
-  static DOWNLOAD_PATH = new URL('./download', document.baseURI);
+  // The trailing slash is needed to match the scope of the service worker
+  static DOWNLOAD_PATH = new URL('./download/', document.baseURI);
+
+  static SERVICE_WORKER_URL = new URL(
+    `./download/serviceWorker.js`,
+    document.baseURI
+  );
+
+  static serviceWorkerRegistration: ServiceWorkerRegistration | null = null;
 
   static registerOnLoaded(): void {
     const publicUrl = new URL(import.meta.env.BASE_URL, window.location.href);
@@ -15,13 +23,16 @@ class DownloadServiceWorkerUtils {
     }
 
     if ('serviceWorker' in navigator) {
-      const swUrl = new URL(`./download/serviceWorker.js`, document.baseURI);
-
       navigator.serviceWorker
-        .register(swUrl)
+        .register(DownloadServiceWorkerUtils.SERVICE_WORKER_URL)
         .then(reg => {
           reg.update();
-          log.info('Registering service worker on ', swUrl, reg);
+          DownloadServiceWorkerUtils.serviceWorkerRegistration = reg;
+          log.info(
+            'Registering service worker on ',
+            DownloadServiceWorkerUtils.SERVICE_WORKER_URL,
+            reg
+          );
         })
         .catch(err => {
           log.error('Failed to register service worker', err);
@@ -33,9 +44,7 @@ class DownloadServiceWorkerUtils {
 
   static async getServiceWorker(): Promise<ServiceWorker> {
     if ('serviceWorker' in navigator) {
-      const swReg = await navigator.serviceWorker.getRegistration(
-        this.DOWNLOAD_PATH
-      );
+      const swReg = DownloadServiceWorkerUtils.serviceWorkerRegistration;
       if (swReg && swReg.active) {
         log.info('Download service worker is active.');
         return swReg.active;
@@ -45,8 +54,8 @@ class DownloadServiceWorkerUtils {
     throw new Error('Download service worker is not available.');
   }
 
-  static unregisterSW(): undefined {
-    return undefined;
+  static unregisterSW(): void {
+    DownloadServiceWorkerUtils.serviceWorkerRegistration?.unregister();
   }
 }
 export default DownloadServiceWorkerUtils;
