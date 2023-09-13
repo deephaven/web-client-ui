@@ -24,7 +24,7 @@ const log = Log.module('useAsyncInterval');
 export function useAsyncInterval(
   callback: () => Promise<void>,
   targetIntervalMs: number
-) {
+): void {
   const isMountedRef = useIsMountedRef();
   const setTimeoutRef = useRef(0);
   const trackingCountRef = useRef(0);

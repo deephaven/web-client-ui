@@ -34,15 +34,17 @@ export function ApiBootstrap({
   children,
   failureElement,
   setGlobally = false,
-}: ApiBootstrapProps) {
+}: ApiBootstrapProps): JSX.Element {
   const [isLoading, setIsLoading] = useState(true);
   const [api, setApi] = useState<DhType>();
   useEffect(() => {
-    async function loadApi() {
+    async function loadApi(): Promise<void> {
       try {
-        // Using a string template around `apiUrl` to avoid a warning with webpack: https://stackoverflow.com/a/73359606
-        const dh: DhType = (await import(/* @vite-ignore */ `${apiUrl}`))
-          .default;
+        const dh: DhType =
+          // Ignore the warning about dynamic import in both Vite and Webpack.
+          // We use Vite, but some clients may use Webpack.
+          (await import(/* @vite-ignore */ /* webpackIgnore: true */ apiUrl))
+            .default;
         log.info('API bootstrapped from', apiUrl);
         setApi(dh);
         if (setGlobally) {

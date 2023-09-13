@@ -224,7 +224,7 @@ function isEmptyConfig({
   searchFilter?: FilterCondition;
   selectDistinctColumns: readonly ColumnName[];
   sorts: readonly Sort[];
-}) {
+}): boolean {
   return (
     advancedFilters.size === 0 &&
     aggregationSettings.aggregations.length === 0 &&

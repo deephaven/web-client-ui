@@ -14,6 +14,20 @@
 export type Extends<T, U extends T> = U extends T ? U : never;
 
 /**
+ * Derives a union type where all constituents define 1 property of the original
+ * type.
+ *
+ * e.g.
+ * OnlyOneProp<{
+ *   name: string;
+ *   age: number;
+ * }> // { name: string } | { age: number };
+ */
+export type OnlyOneProp<T> = {
+  [P in keyof T]: { [ONEPROP in P]: T[ONEPROP] };
+}[keyof T];
+
+/**
  * Util type to extract the value from an object.
  *
  * e.g. Given

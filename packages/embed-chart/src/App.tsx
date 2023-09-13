@@ -1,7 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Chart, ChartModel, ChartModelFactory } from '@deephaven/chart'; // chart is used to display Deephaven charts
 import { ContextMenuRoot, LoadingOverlay } from '@deephaven/components'; // Use the loading spinner from the Deephaven components package
-import type { dh as DhType, IdeConnection } from '@deephaven/jsapi-types';
+import type {
+  dh as DhType,
+  Figure,
+  IdeConnection,
+} from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import './App.scss'; // Styles for in this app
 import { useApi } from '@deephaven/jsapi-bootstrap';
@@ -16,7 +20,11 @@ const log = Log.module('EmbedChart.App');
  * @param name Name of the figure to load
  * @returns Deephaven figure
  */
-async function loadFigure(dh: DhType, connection: IdeConnection, name: string) {
+async function loadFigure(
+  dh: DhType,
+  connection: IdeConnection,
+  name: string
+): Promise<Figure> {
   log.info(`Fetching figure ${name}...`);
 
   const definition = { name, type: dh.VariableType.FIGURE };
@@ -44,7 +52,7 @@ function App(): JSX.Element {
 
   useEffect(
     function initializeApp() {
-      async function initApp() {
+      async function initApp(): Promise<void> {
         try {
           // Get the table name from the query param `name`.
           const name = searchParams.get('name');

@@ -30,7 +30,13 @@ type StackItem = {
   items?: MenuItem[];
 };
 
-function makeMenuItem(type: MENU_ITEM_TYPE, id = getNewId()) {
+function makeMenuItem(
+  type: MENU_ITEM_TYPE,
+  id = getNewId()
+): {
+  id: number;
+  type: MENU_ITEM_TYPE;
+} {
   return { id, type };
 }
 

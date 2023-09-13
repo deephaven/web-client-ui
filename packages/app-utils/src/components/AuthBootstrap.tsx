@@ -35,7 +35,7 @@ const CORE_AUTH_PLUGINS = new Map([
 /**
  * AuthBootstrap component. Handles displaying the auth plugin and authenticating.
  */
-export function AuthBootstrap({ children }: AuthBootstrapProps) {
+export function AuthBootstrap({ children }: AuthBootstrapProps): JSX.Element {
   const client = useClient();
   // `useContext` instead of `usePlugins` so that we don't have to wait for the plugins to load
   // We want to load the auth config values in parallel with the plugins
@@ -46,7 +46,7 @@ export function AuthBootstrap({ children }: AuthBootstrapProps) {
   useEffect(
     function initAuthConfigValues() {
       let isCanceled = false;
-      async function loadAuthConfigValues() {
+      async function loadAuthConfigValues(): Promise<void> {
         try {
           const newAuthConfigValues = await client.getAuthConfigValues();
           if (!isCanceled) {

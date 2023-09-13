@@ -1,4 +1,16 @@
-import { assertNotNull, getOrThrow } from './Asserts';
+import { assertNever, assertNotNull, getOrThrow } from './Asserts';
+
+describe('assertNever', () => {
+  it.each([undefined, 'mock.name'])('should throw if called', name => {
+    const value = 'mock.value';
+
+    expect(() => assertNever(value as never, name)).toThrow(
+      name == null
+        ? `Unexpected value: ${value}`
+        : `Unexpected '${name}': ${value}`
+    );
+  });
+});
 
 it('throws an error when a value is null', () => {
   expect(() => assertNotNull(null)).toThrowError('Value is null or undefined');

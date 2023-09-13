@@ -46,7 +46,7 @@ class CommandHistoryPanel extends Component<
 
   static TITLE = 'Command History';
 
-  static handleError(error: unknown) {
+  static handleError(error: unknown): void {
     log.error(error);
   }
 
@@ -126,7 +126,7 @@ class CommandHistoryPanel extends Component<
     );
   }
 
-  handleSessionClosed() {
+  handleSessionClosed(): void {
     this.pending.cancel();
     this.setState({
       session: undefined,
@@ -138,7 +138,7 @@ class CommandHistoryPanel extends Component<
   handleSendToNotebook(
     settings: CommandHistorySettings,
     forceNewNotebook = false
-  ) {
+  ): void {
     const { session, language } = this.state;
     log.debug('handleSendToNotebook', session, settings);
     if (!session) {
@@ -156,13 +156,13 @@ class CommandHistoryPanel extends Component<
     );
   }
 
-  handleSendToConsole(command: string, focus = true, execute = false) {
+  handleSendToConsole(command: string, focus = true, execute = false): void {
     log.debug('handleSendToConsole', command);
     const { glEventHub } = this.props;
     glEventHub.emit(ConsoleEvent.SEND_COMMAND, command, focus, execute);
   }
 
-  loadTable() {
+  loadTable(): void {
     const { commandHistoryStorage } = this.props;
     const { language, sessionId } = this.state;
     assertNotNull(language);
@@ -178,7 +178,7 @@ class CommandHistoryPanel extends Component<
       .catch(CommandHistoryPanel.handleError);
   }
 
-  render() {
+  render(): JSX.Element {
     const { glContainer, glEventHub, commandHistoryStorage } = this.props;
     const { language, contextActions, table } = this.state;
     return (
@@ -217,7 +217,10 @@ class CommandHistoryPanel extends Component<
 const mapStateToProps = (
   state: RootState,
   ownProps: { localDashboardId: string }
-) => {
+): Pick<
+  CommandHistoryPanelProps,
+  'commandHistoryStorage' | 'language' | 'session' | 'sessionId'
+> => {
   const commandHistoryStorage = getCommandHistoryStorage(
     state
   ) as CommandHistoryStorage;

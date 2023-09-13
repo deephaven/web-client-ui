@@ -1,7 +1,7 @@
 import GridRange from './GridRange';
 
 class GridTestUtils {
-  static makeRanges(count = 5, rangeSize = 10, rangeSpace = 10) {
+  static makeRanges(count = 5, rangeSize = 10, rangeSpace = 10): GridRange[] {
     const ranges: GridRange[] = [];
 
     for (let i = 0; i < count; i += 1) {

@@ -137,7 +137,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     };
   }
 
-  getTypes() {
+  getTypes(): SeriesPlotStyle[] {
     const { model } = this.props;
     const { dh } = model;
     return [

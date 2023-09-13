@@ -8,7 +8,7 @@ import MonacoWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 import DownloadServiceWorkerUtils from '../DownloadServiceWorkerUtils';
 import StyleGuideInit from './StyleGuideInit';
 
-export function StyleGuideRoot() {
+export function StyleGuideRoot(): JSX.Element {
   DownloadServiceWorkerUtils.registerOnLoaded();
   MonacoUtils.init({ getWorker: () => new MonacoWorker() });
 

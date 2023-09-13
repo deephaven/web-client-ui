@@ -27,7 +27,7 @@ function DebouncedModal({
   children,
   debounceMs,
   isOpen = false,
-}: DebouncedModalProps) {
+}: DebouncedModalProps): JSX.Element {
   const debouncedIsOpen = useDebouncedValue(isOpen, debounceMs);
 
   return (

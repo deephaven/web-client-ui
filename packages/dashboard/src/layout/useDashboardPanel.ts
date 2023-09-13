@@ -45,7 +45,7 @@ export function useDashboardPanel<
 
   /** Custom dehydration function to call when saving a panel's state to the layout */
   dehydrate?: PanelDehydrateFunction;
-}) {
+}): void {
   const { id, layout, registerComponent } = dashboardProps;
 
   const handlePanelOpen = useCallback(

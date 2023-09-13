@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 /**
  * Component that broadcasts a message when mounted. Should be mounted after the user has logged in.
  */
-export function LoginNotifier() {
+export function LoginNotifier(): JSX.Element | null {
   const channel = useBroadcastChannel();
   useEffect(
     function notifyLogin() {

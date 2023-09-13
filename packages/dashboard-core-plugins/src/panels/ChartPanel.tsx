@@ -1160,7 +1160,17 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
 const mapStateToProps = (
   state: RootState,
   ownProps: { localDashboardId: string; metadata: { sourcePanelId?: string } }
-) => {
+): Omit<
+  ChartPanelProps,
+  | 'glContainer'
+  | 'glEventHub'
+  | 'localDashboardId'
+  | 'makeModel'
+  | 'metadata'
+  | 'panelState'
+  | 'setActiveTool'
+  | 'setDashboardIsolatedLinkerPanelId'
+> => {
   const { localDashboardId, metadata } = ownProps;
 
   let sourcePanelId;

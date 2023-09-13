@@ -11,7 +11,7 @@ import useTableListener from './useTableListener';
  * size.
  * @param table The table to check the size on.
  */
-export default function useTableSize(
+export function useTableSize(
   table: Table | TreeTable | null | undefined
 ): number {
   const [, forceRerender] = useState(0);
@@ -24,3 +24,5 @@ export default function useTableSize(
 
   return getSize(table);
 }
+
+export default useTableSize;
