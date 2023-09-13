@@ -86,12 +86,12 @@ self.onmessage = event => {
       `service worker setting ${encodedFileName} download stream on service worker`
     );
     const rs = createReadableStream(ports[0]);
-    const downloadUrl = `${self.registration.scope}${encodedFileName}`;
+    const downloadUrl = new URL(encodedFileName, self.registration.scope);
     tableExportMap.set(downloadUrl, {
       readableStream: rs,
       port: ports[0],
       encodedFileName,
     });
-    ports[0].postMessage({ download: encodedFileName });
+    ports[0].postMessage({ download: downloadUrl });
   }
 };
