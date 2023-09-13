@@ -2511,7 +2511,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       // if invoked with a row, keep open instead of toggle
       this.setState({
         isGotoShown: true,
-        gotoRow: row,
         gotoValue: value,
         gotoValueSelectedColumnName: columnName,
         gotoRowError: '',
@@ -2543,7 +2542,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const text = IrisGridUtils.convertValueToText(cellValue, type);
     this.setState({
       isGotoShown: !isGotoShown,
-      gotoRow: `${cursorRow}`,
+      gotoRow: `${cursorRow + 1}`,
       gotoValue: text,
       gotoValueSelectedColumnName: name,
       gotoRowError: '',

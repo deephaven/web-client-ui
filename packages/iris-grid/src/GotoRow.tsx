@@ -133,7 +133,7 @@ function GotoRow({
       gotoValueInputRef.current?.select();
     }
   };
-  useEffect(selectInput, [isGotoRowActive, gotoRow, gotoValue]);
+  useEffect(selectInput, [isGotoRowActive]);
 
   const renderValueInput = () => {
     switch (normalizedType) {
