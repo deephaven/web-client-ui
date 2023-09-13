@@ -3,9 +3,6 @@ import Log from '@deephaven/log';
 const log = Log.module('DownloadServiceWorkerUtils');
 
 class DownloadServiceWorkerUtils {
-  // The trailing slash is needed to match the scope of the service worker
-  static DOWNLOAD_PATH = new URL('./download/', document.baseURI);
-
   static SERVICE_WORKER_URL = new URL(
     `./download/serviceWorker.js`,
     document.baseURI
