@@ -204,6 +204,13 @@ export async function dragComponent(
       steps,
     }
   );
+  await page.mouse.move(
+    destinationPos.x + destinationPos.width / 2,
+    destinationPos.y + destinationPos.height / 2 + offsetY,
+    {
+      steps,
+    }
+  );
 
   await expect(targetIndicator).not.toHaveCount(0);
   await page.mouse.up();

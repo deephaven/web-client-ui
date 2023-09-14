@@ -366,7 +366,6 @@ test('organize columns', async ({ page }) => {
   });
 });
 
-// TODO: Figure out why webkit drag doesn't work if steps aren't insanely high when generating linux snapshot (#1360)
 test('custom column', async ({ page }) => {
   await openTableOption(page, 'Custom Columns');
 
@@ -426,6 +425,9 @@ test('custom column', async ({ page }) => {
     await dragColumnFormula.click();
     await page.keyboard.type('String');
 
+    await saveButton.click();
+    await waitForLoadingDone(page);
+
     const dragButton = page
       .getByRole('button', { name: 'Drag column to re-order' })
       .nth(1);
@@ -436,23 +438,7 @@ test('custom column', async ({ page }) => {
       .locator('.custom-column-builder-container')
       .locator('.dragging');
 
-    // const browser = dragButton.page().context().browser()?.browserType().name();
-    await dragComponent(
-      dragButton,
-      panelAbove,
-      dropIndicator,
-      0
-      // browser === 'webkit' ? 1000 : undefined
-    );
-    // if (browser === 'webkit') {
-    //   await dragComponent(
-    //     dragButton,
-    //     panelAbove,
-    //     dropIndicator,
-    //     0
-    //     // browser === 'webkit' ? 1000 : undefined
-    //   );
-    // }
+    await dragComponent(dragButton, panelAbove, dropIndicator, 0);
 
     await saveButton.click();
 
@@ -463,9 +449,6 @@ test('custom column', async ({ page }) => {
 
 test('rollup rows and aggregrate columns', async ({ page }) => {
   await openTableOption(page, 'Rollup Rows');
-
-  const dropdown = page.locator('.rollup-rows-group-by');
-  const dropIndicator = dropdown.locator('.is-dropping');
 
   const stringColumn = page.getByRole('button', { name: 'String' });
   await test.step('Rollup column', async () => {
@@ -516,7 +499,6 @@ test('rollup rows and aggregrate columns', async ({ page }) => {
       .getByRole('button', { name: 'Edit Columns', exact: true })
       .click();
     await page.getByText('Double', { exact: true }).click();
-
     await waitForLoadingDone(page);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });
