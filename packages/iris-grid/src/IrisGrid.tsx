@@ -161,7 +161,7 @@ import ConditionalFormattingMenu from './sidebar/conditional-formatting/Conditio
 
 import ConditionalFormatEditor from './sidebar/conditional-formatting/ConditionalFormatEditor';
 import IrisGridCellOverflowModal from './IrisGridCellOverflowModal';
-import GotoRow from './GotoRow';
+import GotoRow, { GotoRowElement } from './GotoRow';
 import {
   Aggregation,
   AggregationSettings,
@@ -611,6 +611,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.isAnimating = false;
     this.filterInputRef = React.createRef();
 
+    this.gotoRowRef = React.createRef();
+
     this.toggleFilterBarAction = {
       action: () => this.toggleFilterBar(),
       shortcut: SHORTCUTS.TABLE.TOGGLE_QUICK_FILTER,
@@ -990,6 +992,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   isAnimating: boolean;
 
   filterInputRef: React.RefObject<FilterInputField>;
+
+  gotoRowRef: React.RefObject<GotoRowElement>;
 
   toggleFilterBarAction: Action;
 
@@ -2511,13 +2515,13 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       // if invoked with a row, keep open instead of toggle
       this.setState({
         isGotoShown: true,
-        gotoRow: row,
         gotoValue: value,
         gotoValueSelectedColumnName: columnName,
         gotoRowError: '',
         gotoValueError: '',
       });
       this.focusRowInGrid(row);
+      this.gotoRowRef.current?.focus();
       return;
     }
 
@@ -2543,7 +2547,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const text = IrisGridUtils.convertValueToText(cellValue, type);
     this.setState({
       isGotoShown: !isGotoShown,
-      gotoRow: `${cursorRow}`,
+      gotoRow: `${cursorRow + 1}`,
       gotoValue: text,
       gotoValueSelectedColumnName: name,
       gotoRowError: '',
@@ -2914,6 +2918,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.setState({ selectedRanges });
     if (copyOperation != null) {
       this.setState({ copyOperation: null });
+    }
+    if (this.grid?.state.cursorRow != null) {
+      this.setState({ gotoRow: `${this.grid.state.cursorRow + 1}` });
     }
     onSelectionChanged(selectedRanges);
   }
@@ -4560,6 +4567,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               this.getLinkHoverTooltip(linkHoverTooltipProps)}
           </div>
           <GotoRow
+            ref={this.gotoRowRef}
             model={model}
             isShown={isGotoShown}
             gotoRow={gotoRow}
