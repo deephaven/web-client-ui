@@ -136,8 +136,8 @@ export async function pasteInMonaco(
   await locator.click();
 
   const browserName = locator.page().context().browser()?.browserType().name();
-  if (browserName === 'webkit') {
-    // Webkit doesn't seem to paste w/ the keyboard shortcut in headless mode
+  if (browserName !== 'firefox') {
+    // Chromium on mac and webkit on any OS don't seem to paste w/ the keyboard shortcut
     await locator.locator('textarea').evaluate(async (element, evalText) => {
       const clipboardData = new DataTransfer();
       clipboardData.setData('text/plain', evalText);

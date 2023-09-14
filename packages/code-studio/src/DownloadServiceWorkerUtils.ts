@@ -3,7 +3,12 @@ import Log from '@deephaven/log';
 const log = Log.module('DownloadServiceWorkerUtils');
 
 class DownloadServiceWorkerUtils {
-  static DOWNLOAD_PATH = '/download/';
+  static SERVICE_WORKER_URL = new URL(
+    `./download/serviceWorker.js`,
+    document.baseURI
+  );
+
+  static serviceWorkerRegistration: ServiceWorkerRegistration | null = null;
 
   static registerOnLoaded(): void {
     const publicUrl = new URL(import.meta.env.BASE_URL, window.location.href);
@@ -15,22 +20,20 @@ class DownloadServiceWorkerUtils {
     }
 
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        const swUrl = new URL(
-          `${import.meta.env.BASE_URL ?? ''}download/serviceWorker.js`,
-          window.location.href
-        );
-
-        navigator.serviceWorker
-          .register(swUrl)
-          .then(reg => {
-            reg.update();
-            log.info('Registering service worker on ', swUrl, reg);
-          })
-          .catch(err => {
-            log.error('Failed to register service worker', err);
-          });
-      });
+      navigator.serviceWorker
+        .register(DownloadServiceWorkerUtils.SERVICE_WORKER_URL)
+        .then(reg => {
+          reg.update();
+          DownloadServiceWorkerUtils.serviceWorkerRegistration = reg;
+          log.info(
+            'Registering service worker on ',
+            DownloadServiceWorkerUtils.SERVICE_WORKER_URL,
+            reg
+          );
+        })
+        .catch(err => {
+          log.error('Failed to register service worker', err);
+        });
     } else {
       log.info('Service worker is not supported.');
     }
@@ -38,10 +41,7 @@ class DownloadServiceWorkerUtils {
 
   static async getServiceWorker(): Promise<ServiceWorker> {
     if ('serviceWorker' in navigator) {
-      const regs = await navigator.serviceWorker.getRegistrations();
-      const swReg = regs.find(reg =>
-        reg.scope.endsWith(DownloadServiceWorkerUtils.DOWNLOAD_PATH)
-      );
+      const swReg = DownloadServiceWorkerUtils.serviceWorkerRegistration;
       if (swReg && swReg.active) {
         log.info('Download service worker is active.');
         return swReg.active;
@@ -51,8 +51,8 @@ class DownloadServiceWorkerUtils {
     throw new Error('Download service worker is not available.');
   }
 
-  static unregisterSW(): undefined {
-    return undefined;
+  static unregisterSW(): void {
+    DownloadServiceWorkerUtils.serviceWorkerRegistration?.unregister();
   }
 }
 export default DownloadServiceWorkerUtils;
