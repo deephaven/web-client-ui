@@ -21,7 +21,7 @@
     "build": "cross-env NODE_ENV=production run-p build:*",
     "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward"
   },
-  "peerDependencies": {
+  "dependencies": {
     "@deephaven/components": "file:../components",
     "@deephaven/iris-grid": "file:../iris-grid",
     "@deephaven/jsapi-types": "file:../jsapi-types"
