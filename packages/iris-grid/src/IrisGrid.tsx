@@ -161,7 +161,7 @@ import ConditionalFormattingMenu from './sidebar/conditional-formatting/Conditio
 
 import ConditionalFormatEditor from './sidebar/conditional-formatting/ConditionalFormatEditor';
 import IrisGridCellOverflowModal from './IrisGridCellOverflowModal';
-import GotoRow, { GotoRowFocus } from './GotoRow';
+import GotoRow, { GotoRowElement } from './GotoRow';
 import {
   Aggregation,
   AggregationSettings,
@@ -993,7 +993,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   filterInputRef: React.RefObject<FilterInputField>;
 
-  gotoRowRef: React.RefObject<GotoRowFocus>;
+  gotoRowRef: React.RefObject<GotoRowElement>;
 
   toggleFilterBarAction: Action;
 

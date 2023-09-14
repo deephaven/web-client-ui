@@ -57,7 +57,9 @@ interface GotoRowProps {
   onGotoValueSubmit: (isBackward?: boolean) => void;
 }
 
-const GotoRow = forwardRef(
+export type GotoRowElement = { focus: () => void };
+
+const GotoRow = forwardRef<GotoRowElement, GotoRowProps>(
   (
     {
       gotoRow,
@@ -414,5 +416,4 @@ const GotoRow = forwardRef(
 );
 GotoRow.displayName = 'GotoRow';
 
-export type GotoRowFocus = { focus: () => void };
 export default GotoRow;
