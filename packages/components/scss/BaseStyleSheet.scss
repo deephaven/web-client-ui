@@ -20,7 +20,7 @@ html {
 
 body {
   min-height: 100%;
-  background-color: $background;
+  background-color: var(--dh-background-color);
   color: $foreground;
   margin: 0;
   padding: 0;
@@ -30,7 +30,7 @@ body {
 }
 
 #root {
-  background-color: $background;
+  background-color: var(--dh-background-color);
 
   .app {
     height: 100vh;
