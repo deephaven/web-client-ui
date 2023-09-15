@@ -2,20 +2,19 @@ import { useMemo } from 'react';
 import {
   assertIsDashboardPluginProps,
   DashboardPluginComponentProps,
-  PanelHydrateFunction,
   useDashboardPanel,
 } from '@deephaven/dashboard';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import { IrisGridPanel } from './panels';
+import useHydrateGrid from './useHydrateGrid';
 
-export type GridPluginProps = Partial<DashboardPluginComponentProps> & {
-  hydrate: PanelHydrateFunction;
-};
-
-export function GridPlugin(props: GridPluginProps): JSX.Element | null {
+export function GridPlugin(
+  props: DashboardPluginComponentProps
+): JSX.Element | null {
   assertIsDashboardPluginProps(props);
-  const { hydrate } = props;
   const dh = useApi();
+  const hydrate = useHydrateGrid();
+
   const supportedTypes = useMemo(
     () => [
       dh.VariableType.TABLE,

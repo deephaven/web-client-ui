@@ -1,11 +1,18 @@
 export { default as ChartPlugin } from './ChartPlugin';
+export { default as ChartPluginConfig } from './ChartPluginConfig';
 export { default as ChartBuilderPlugin } from './ChartBuilderPlugin';
+export { default as ChartBuilderPluginConfig } from './ChartBuilderPluginConfig';
 export { default as ConsolePlugin } from './ConsolePlugin';
 export { default as FilterPlugin } from './FilterPlugin';
+export { default as FilterPluginConfig } from './FilterPluginConfig';
 export { default as GridPlugin } from './GridPlugin';
+export { default as GridPluginConfig } from './GridPluginConfig';
 export { default as LinkerPlugin } from './LinkerPlugin';
+export { default as LinkerPluginConfig } from './LinkerPluginConfig';
 export { default as MarkdownPlugin } from './MarkdownPlugin';
+export { default as MarkdownPluginConfig } from './MarkdownPluginConfig';
 export { default as PandasPlugin } from './PandasPlugin';
+export { default as PandasPluginConfig } from './PandasPluginConfig';
 export { default as ControlType } from './controls/ControlType';
 export { default as LinkerUtils } from './linker/LinkerUtils';
 export type { Link } from './linker/LinkerUtils';

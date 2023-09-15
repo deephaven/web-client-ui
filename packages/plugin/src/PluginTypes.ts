@@ -74,7 +74,8 @@ export interface Plugin {
  */
 export interface DashboardPlugin extends Plugin {
   type: typeof PluginType.DASHBOARD_PLUGIN;
-  component: React.ComponentType;
+  component: React.ComponentType<any>;
+  supportedTypes?: string[];
 }
 
 export function isDashboardPlugin(
