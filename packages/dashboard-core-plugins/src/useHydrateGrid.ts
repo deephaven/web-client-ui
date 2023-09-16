@@ -12,7 +12,6 @@ import {
   isIrisGridPanelMetadata,
   isLegacyIrisGridPanelMetadata,
 } from './panels';
-import DownloadServiceWorkerUtils from './DownloadServiceWorkerUtils';
 
 export function useHydrateGrid(): PanelHydrateFunction {
   const dh = useApi();
@@ -35,7 +34,6 @@ export function useHydrateGrid(): PanelHydrateFunction {
 
       return {
         ...hydrateProps,
-        getDownloadWorker: DownloadServiceWorkerUtils.getServiceWorker,
         loadPlugin,
         localDashboardId: id,
         makeModel: async () => {

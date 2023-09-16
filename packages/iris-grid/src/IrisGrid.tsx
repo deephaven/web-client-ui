@@ -146,6 +146,7 @@ import {
   TableCsvExporter,
   TableSaver,
   VisibilityOrderingBuilder,
+  DownloadServiceWorkerUtils,
 } from './sidebar';
 import IrisGridUtils from './IrisGridUtils';
 import CrossColumnSearch from './CrossColumnSearch';
@@ -487,7 +488,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     invertSearchColumns: true,
     onContextMenu: (): void => undefined,
     pendingDataMap: EMPTY_MAP,
-    getDownloadWorker: undefined,
+    getDownloadWorker: DownloadServiceWorkerUtils.getServiceWorker,
     settings: {
       timeZone: 'America/New_York',
       defaultDateTimeFormat: DateUtils.FULL_DATE_FORMAT,

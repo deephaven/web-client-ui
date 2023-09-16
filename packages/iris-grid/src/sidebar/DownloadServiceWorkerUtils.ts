@@ -3,25 +3,25 @@ import Log from '@deephaven/log';
 const log = Log.module('DownloadServiceWorkerUtils');
 
 class DownloadServiceWorkerUtils {
-  static SERVICE_WORKER_URL = new URL(
-    `./download/serviceWorker.js`,
-    document.baseURI
-  );
-
   static serviceWorkerRegistration: ServiceWorkerRegistration | null = null;
 
-  static registerOnLoaded(): void {
+  /**
+   * Register the download service worker at the specified URL
+   * Will unregister any existing service worker if register is called multiple times
+   * @param url The URL of the service worker file
+   */
+  static register(url: URL): void {
+    if (DownloadServiceWorkerUtils.serviceWorkerRegistration) {
+      DownloadServiceWorkerUtils.unregisterSW();
+    }
+
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker
-        .register(DownloadServiceWorkerUtils.SERVICE_WORKER_URL)
+        .register(url)
         .then(reg => {
           reg.update();
           DownloadServiceWorkerUtils.serviceWorkerRegistration = reg;
-          log.info(
-            'Registering service worker on ',
-            DownloadServiceWorkerUtils.SERVICE_WORKER_URL,
-            reg
-          );
+          log.info('Registering service worker on ', url, reg);
         })
         .catch(err => {
           log.error('Failed to register service worker', err);
@@ -47,4 +47,5 @@ class DownloadServiceWorkerUtils {
     DownloadServiceWorkerUtils.serviceWorkerRegistration?.unregister();
   }
 }
+
 export default DownloadServiceWorkerUtils;
