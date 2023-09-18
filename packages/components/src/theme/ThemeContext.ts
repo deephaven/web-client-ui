@@ -5,9 +5,12 @@ import {
   useMemo,
   useState,
 } from 'react';
+import Log from '@deephaven/log';
 import { useContextOrThrow } from '@deephaven/react-hooks';
 import { ThemeCache, useThemeCache } from './ThemeCache';
 import { DEFAULT_DARK_THEME_KEY, ThemeData } from './ThemeModel';
+
+const log = Log.module('ThemeContext');
 
 export interface ThemeContextValue {
   activeThemes: ThemeData[] | null;
@@ -47,6 +50,7 @@ export function useInitializeThemeContextValue(): ThemeContextValue {
   useEffect(
     () =>
       cache.registerEventListener('change', () => {
+        log.debug('Theme cache changed');
         setCacheTick(i => i + 1);
       }),
     [cache]
@@ -57,6 +61,12 @@ export function useInitializeThemeContextValue(): ThemeContextValue {
     if (!isActive) {
       return;
     }
+
+    log.debug(
+      'Themes activated:',
+      activeThemes?.[0]?.themeKey,
+      activeThemes?.[1]?.themeKey
+    );
 
     cache.setSelectedTheme(
       activeThemes?.at(-1)?.themeKey ?? DEFAULT_DARK_THEME_KEY
