@@ -1,6 +1,6 @@
 import { useContextOrThrow } from '@deephaven/react-hooks';
 import Log from '@deephaven/log';
-import { bindAllMethods } from '@deephaven/utils';
+import { assertNotNull, bindAllMethods } from '@deephaven/utils';
 import { createContext } from 'react';
 import {
   DEFAULT_DARK_THEME_KEY,
@@ -15,6 +15,22 @@ export const THEME_CACHE_LOCAL_STORAGE_KEY = 'deephaven.themeCache';
 
 export type ThemeCacheEventType = 'change';
 
+/**
+ * Creates a string containing preload style content for the current theme.
+ * This resolves the current values of a few CSS variables that can be used
+ * to style the page before the theme is loaded on next page load.
+ */
+export function calculatePreloadStyleContent(): ThemePreloadStyleContent {
+  const pairs = ['--dh-accent-color', '--dh-background-color'].map(
+    key => `${key}:${getComputedStyle(document.body).getPropertyValue(key)}`
+  );
+
+  return `:root{${pairs.join(';')}}`;
+}
+
+/**
+ * Cache containing registered themes.
+ */
 export class ThemeCache {
   constructor(private readonly localStorageKey: string) {
     bindAllMethods(this);
@@ -27,23 +43,32 @@ export class ThemeCache {
   readonly eventListeners: Map<ThemeCacheEventType, Set<() => void>> =
     new Map();
 
-  appliedThemes: ThemeData[] | null = null;
+  appliedThemes: [ThemeData] | [ThemeData, ThemeData] | null = null;
 
+  /**
+   * Clear appliedThemes cache and emit a `change` event to any listeners.
+   */
   onChange(): void {
     log.debug(
       'onChange:',
       '\npreloadData:',
-      JSON.stringify(this.preloadData),
+      `themeKey: '${this.preloadData?.themeKey}', preloadStyleContent: '${this.preloadData?.preloadStyleContent}'`,
       '\nbaseThemes:',
-      JSON.stringify([...this.baseThemes.keys()]),
+      [...this.baseThemes.keys()].join(', '),
       '\ncustomThemes:',
-      JSON.stringify([...this.customThemes.keys()])
+      [...this.customThemes.keys()].join(', ')
     );
 
     this.appliedThemes = null;
     this.eventListeners.get('change')?.forEach(handler => handler());
   }
 
+  /**
+   * Register an event listener for the given event type.
+   * @param eventType The event type to listen for
+   * @param handler The handler to call when the event is emitted
+   * @returns A function to unregister the event listener
+   */
   registerEventListener(
     eventType: ThemeCacheEventType,
     handler: () => void
@@ -54,6 +79,7 @@ export class ThemeCache {
 
     this.eventListeners.get(eventType)?.add(handler);
 
+    /** Deregister the event handler. */
     return () => {
       this.eventListeners.get(eventType)?.delete(handler);
     };
@@ -61,6 +87,10 @@ export class ThemeCache {
 
   private preloadData: ThemePreloadData | null = null;
 
+  /**
+   * Get the preload data from local storage or null if it does not exist or is
+   * invalid
+   */
   getPreloadData(): Partial<ThemePreloadData> | null {
     if (this.preloadData == null) {
       const data = localStorage.getItem(this.localStorageKey);
@@ -79,20 +109,34 @@ export class ThemeCache {
     return this.preloadData;
   }
 
-  setPreloadData(data: ThemePreloadData): void {
-    const localStorageValue = JSON.stringify(data);
+  /**
+   * Checks if given data matches the current preload data. If it does, do nothing.
+   * If the data has changed, update the preload data and emit a `change` event.
+   * @param data
+   */
+  setPreloadData(themeKey: string): void {
+    const newData = {
+      themeKey,
+      preloadStyleContent: calculatePreloadStyleContent(),
+    };
 
-    if (localStorageValue === localStorage.getItem(this.localStorageKey)) {
+    const newLocalStorageValue = JSON.stringify(newData);
+
+    if (newLocalStorageValue === localStorage.getItem(this.localStorageKey)) {
       return;
     }
 
-    this.preloadData = data;
-    localStorage.setItem(this.localStorageKey, localStorageValue);
+    this.preloadData = newData;
+    localStorage.setItem(this.localStorageKey, newLocalStorageValue);
 
     this.onChange();
   }
 
-  getSelectedThemes(): ThemeData[] {
+  /**
+   * Returns an array of the selected themes. The first item will always be one
+   * of the base themes. Optionally, the second item will be a custom theme.
+   */
+  getSelectedThemes(): [ThemeData] | [ThemeData, ThemeData] {
     if (this.appliedThemes == null) {
       const { themeKey } = this.getPreloadData() ?? {};
 
@@ -102,16 +146,20 @@ export class ThemeCache {
         custom?.baseThemeKey ?? themeKey ?? DEFAULT_DARK_THEME_KEY
       );
 
-      this.appliedThemes = [base, custom].filter(
-        (t): t is ThemeData => t != null
-      );
+      assertNotNull(base);
 
-      log.debug('appliedThemes:', this.appliedThemes);
+      log.debug('Caching appliedThemes:', base.themeKey, custom?.themeKey);
+
+      this.appliedThemes = custom == null ? [base] : [base, custom];
     }
 
     return this.appliedThemes;
   }
 
+  /**
+   * Get the base theme with the given key or null if it does not exist.
+   * @param themeKey The theme key to get
+   */
   getBaseTheme(themeKey?: string | null): ThemeData | null {
     if (themeKey == null) {
       return null;
@@ -120,6 +168,10 @@ export class ThemeCache {
     return this.baseThemes.get(themeKey) ?? null;
   }
 
+  /**
+   * Get the custom theme with the given key or null if it does not exist.
+   * @param themeKey The theme key to get
+   */
   getCustomTheme(themeKey?: string | null): ThemeData | null {
     if (themeKey == null) {
       return null;
@@ -128,6 +180,10 @@ export class ThemeCache {
     return this.customThemes.get(themeKey) ?? null;
   }
 
+  /**
+   * Register the given base themes with the cache.
+   * @param themeDatas The base themes to register
+   */
   registerBaseThemes(themeDatas: ThemeData[]): void {
     log.debug('registerBaseThemes:', themeDatas);
 
@@ -138,6 +194,10 @@ export class ThemeCache {
     this.onChange();
   }
 
+  /**
+   * Register the given custom themes with the cache.
+   * @param themeDatas The custom themes to register
+   */
   registerCustomThemes(themeDatas: ThemeData[]): void {
     log.debug('registerCustomThemes:', themeDatas);
 
@@ -148,39 +208,22 @@ export class ThemeCache {
     this.onChange();
   }
 
-  setSelectedThemes(selectedThemeKey: string): void {
-    const theme =
-      this.getBaseTheme(selectedThemeKey) ??
-      this.getCustomTheme(selectedThemeKey);
-
-    if (theme == null) {
-      // TODO: maybe clear cache?
-      return;
-    }
-
-    const { themeKey } = theme;
-
-    const preloadStyleContent = calculatePreloadStyleContent();
-
-    this.setPreloadData({
-      themeKey,
-      preloadStyleContent,
-    });
+  /**
+   * Select the theme with the given key.
+   * @param themeKey The theme key to select
+   */
+  setSelectedTheme(themeKey: string): void {
+    this.setPreloadData(themeKey);
   }
 }
 
 export default ThemeCache;
 
-export function calculatePreloadStyleContent(): ThemePreloadStyleContent {
-  const pairs = ['--dh-accent-color', '--dh-background-color'].map(
-    key => `${key}:${getComputedStyle(document.body).getPropertyValue(key)}`
-  );
-
-  return `:root{${pairs.join(';')}}`;
-}
-
 export const ThemeCacheContext = createContext<ThemeCache | null>(null);
 
+/**
+ * Get the theme cache from the context.
+ */
 export function useThemeCache(): ThemeCache {
   return useContextOrThrow(
     ThemeCacheContext,

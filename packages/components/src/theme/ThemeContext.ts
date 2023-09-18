@@ -58,7 +58,7 @@ export function useInitializeThemeContextValue(): ThemeContextValue {
       return;
     }
 
-    cache.setSelectedThemes(
+    cache.setSelectedTheme(
       activeThemes?.at(-1)?.themeKey ?? DEFAULT_DARK_THEME_KEY
     );
   }, [activeThemes, cache, isActive]);
