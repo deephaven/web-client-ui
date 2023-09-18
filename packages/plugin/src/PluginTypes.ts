@@ -143,6 +143,7 @@ export interface ThemePlugin extends Plugin {
   config: ThemePluginConfig | ThemePluginConfig[];
 }
 
+/** Type guard to check if given plugin is a `ThemePlugin` */
 export function isThemePlugin(plugin: PluginModule): plugin is ThemePlugin {
   return 'type' in plugin && plugin.type === PluginType.THEME_PLUGIN;
 }

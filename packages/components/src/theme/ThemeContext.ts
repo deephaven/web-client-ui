@@ -21,6 +21,9 @@ export interface ThemeContextValue {
 
 export const ThemeContext = createContext<ThemeContextValue | null>(null);
 
+/**
+ * Hook to get the current `ThemeContextValue`.
+ */
 export function useTheme(): ThemeContextValue {
   return useContextOrThrow(
     ThemeContext,
@@ -28,12 +31,18 @@ export function useTheme(): ThemeContextValue {
   );
 }
 
+/**
+ * Creates a `ThemeContextValue` based on the current `ThemeCacheContext`.
+ */
 export function useInitializeThemeContextValue(): ThemeContextValue {
   const cache = useThemeCache();
   const [, setCacheTick] = useState(0);
 
   const [isActive, setIsActive] = useState(false);
 
+  /**
+   * Register the given custom themes with the cache and activate theming.
+   */
   const registerCustomThemesAndActivate = useCallback(
     (additionalThemeData: ThemeData[]) => {
       cache.registerCustomThemes(additionalThemeData);
