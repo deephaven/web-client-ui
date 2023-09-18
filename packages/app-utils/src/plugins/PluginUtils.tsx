@@ -1,4 +1,4 @@
-import { getThemeKey, ThemeData } from '@deephaven/components';
+import { BaseThemeType, getThemeKey, ThemeData } from '@deephaven/components';
 import Log from '@deephaven/log';
 import {
   type PluginModule,
@@ -184,12 +184,15 @@ export function getThemeDataFromPlugins(
         ? plugin.config
         : [plugin.config];
 
-      return configs.map(({ name, baseTheme, styleContent }) => ({
-        baseThemeKey: `default-${baseTheme}`,
-        themeKey: getThemeKey(pluginRootPath, name),
-        name,
-        styleContent,
-      }));
+      return configs.map(
+        ({ name, baseTheme, styleContent }) =>
+          ({
+            baseThemeKey: `default-${baseTheme as BaseThemeType}`,
+            themeKey: getThemeKey(pluginRootPath, name),
+            name,
+            styleContent,
+          }) as const
+      );
     })
     .flat();
 }

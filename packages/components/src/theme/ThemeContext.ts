@@ -6,7 +6,8 @@ import {
   useMemo,
   useState,
 } from 'react';
-import ThemeCache, { ThemeData, useThemeCache } from './ThemeCache';
+import { ThemeCache, useThemeCache } from './ThemeCache';
+import type { ThemeData } from './ThemeModel';
 
 export interface ThemeContextValue {
   activeThemes: ThemeData[] | null;
@@ -57,7 +58,7 @@ export function useInitializeThemeContextValue(): ThemeContextValue {
   }, [activeThemes, cache, isActive]);
 
   return useMemo(
-    () => ({ activeThemes, cache, isActive, activate }),
+    () => ({ activate, activeThemes, cache, isActive }),
     [activate, activeThemes, cache, isActive]
   );
 }

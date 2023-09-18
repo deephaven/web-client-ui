@@ -1,3 +1,4 @@
+import type { BaseThemeType } from '@deephaven/components';
 import type { TablePluginComponent } from './TablePlugin';
 
 export const PluginType = Object.freeze({
@@ -133,7 +134,7 @@ export function isAuthPlugin(plugin: PluginModule): plugin is AuthPlugin {
 
 export interface ThemePluginConfig {
   name: string;
-  baseTheme: 'dark' | 'light';
+  baseTheme: BaseThemeType;
   styleContent: string;
 }
 

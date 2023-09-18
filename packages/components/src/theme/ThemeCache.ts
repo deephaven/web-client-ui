@@ -2,25 +2,15 @@ import { useContextOrThrow } from '@deephaven/react-hooks';
 import Log from '@deephaven/log';
 import { bindAllMethods } from '@deephaven/utils';
 import { createContext } from 'react';
+import {
+  ThemeData,
+  ThemePreloadData,
+  ThemePreloadStyleContent,
+} from './ThemeModel';
 
 const log = Log.module('ThemeCache');
 
 export const THEME_CACHE_LOCAL_STORAGE_KEY = 'deephaven.themeCache';
-
-export type ThemePreloadStyleContent = `:root{${string}`;
-
-export interface ThemePreloadData {
-  baseThemeKey?: string;
-  themeKey: string;
-  preloadStyleContent?: ThemePreloadStyleContent;
-}
-
-export interface ThemeData {
-  baseThemeKey?: string;
-  themeKey: string;
-  name: string;
-  styleContent: string;
-}
 
 export type ThemeCacheEventType = 'change';
 
