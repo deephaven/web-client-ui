@@ -1,7 +1,24 @@
 import darkTheme from '../../scss/theme_default_dark.scss?inline';
 import lightTheme from '../../scss/theme_default_light.scss?inline';
 import { ThemeCache } from './ThemeCache';
-import { DEFAULT_DARK_THEME_KEY, DEFAULT_LIGHT_THEME_KEY } from './ThemeModel';
+import {
+  DEFAULT_DARK_THEME_KEY,
+  DEFAULT_LIGHT_THEME_KEY,
+  ThemePreloadStyleContent,
+} from './ThemeModel';
+
+/**
+ * Creates a string containing preload style content for the current theme.
+ * This resolves the current values of a few CSS variables that can be used
+ * to style the page before the theme is loaded on next page load.
+ */
+export function calculatePreloadStyleContent(): ThemePreloadStyleContent {
+  const pairs = ['--dh-accent-color', '--dh-background-color'].map(
+    key => `${key}:${getComputedStyle(document.body).getPropertyValue(key)}`
+  );
+
+  return `:root{${pairs.join(';')}}`;
+}
 
 /**
  * Derive unique theme key from plugin root path and theme name.
