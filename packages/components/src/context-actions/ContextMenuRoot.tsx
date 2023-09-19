@@ -67,6 +67,7 @@ class ContextMenuRoot extends Component<
     const left = e.clientX - parentRect.left;
     const { actions } = this.state;
 
+    // Context menu is open and user clicked on the context-root blocking layer
     // Mac and Linux appear to trigger contextmenu events on mousedown vs. mouseup on Windows
     // Mouseup on Windows triggers blur before contextmenu which effectively does what this path does
     if (actions != null && e.target === this.container.current) {
@@ -93,10 +94,7 @@ class ContextMenuRoot extends Component<
       return;
     }
 
-    if (
-      !ContextActionUtils.isContextActionEvent(e) ||
-      e.contextActions.length === 0
-    ) {
+    if (!ContextActionUtils.isContextActionEvent(e)) {
       // Open native menu if no custom context actions
       return;
     }
@@ -107,6 +105,11 @@ class ContextMenuRoot extends Component<
     }
 
     const contextActions = ContextActionUtils.getMenuItems(e.contextActions);
+
+    if (contextActions.length === 0) {
+      // No actions after filtering. Use native menu
+      return;
+    }
 
     // new clicks, set actions
     e.preventDefault();
