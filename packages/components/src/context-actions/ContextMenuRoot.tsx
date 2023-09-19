@@ -58,11 +58,46 @@ class ContextMenuRoot extends Component<
   openMenu: React.RefObject<ContextMenu>;
 
   handleContextMenu(e: MouseEvent): void {
-    if (!ContextActionUtils.isContextActionEvent(e)) {
+    if (!this.container.current) {
       return;
     }
 
-    if (!this.container.current) {
+    const parentRect = this.container.current.getBoundingClientRect();
+    const top = e.clientY - parentRect.top;
+    const left = e.clientX - parentRect.left;
+    const { actions } = this.state;
+
+    // Mac and Linux appear to trigger contextmenu events on mousedown vs. mouseup on Windows
+    // Mouseup on Windows triggers blur before contextmenu which effectively does what this path does
+    if (actions != null && e.target === this.container.current) {
+      // re-emit right clicks that hit the context-root blocking layer
+      // while we already have a custom context menu open
+      e.preventDefault();
+
+      // Set actions to null removes the menu
+      // That allows a new menu to be opened on a different element so initial position is set properly
+      // Otherwise the instance of this menu may be reused
+      // A new contextmenu event is triggered on the element at the location the user clicked on the blocking layer
+      this.setState({ actions: null }, () => {
+        const element = document.elementFromPoint(left, top); // x y
+
+        const mouseEvent = new MouseEvent('contextmenu', {
+          clientX: e.clientX,
+          clientY: e.clientY,
+          bubbles: true,
+          cancelable: true,
+        });
+
+        element?.dispatchEvent(mouseEvent);
+      });
+      return;
+    }
+
+    if (
+      !ContextActionUtils.isContextActionEvent(e) ||
+      e.contextActions.length === 0
+    ) {
+      // Open native menu if no custom context actions
       return;
     }
 
@@ -72,41 +107,6 @@ class ContextMenuRoot extends Component<
     }
 
     const contextActions = ContextActionUtils.getMenuItems(e.contextActions);
-
-    const parentRect = this.container.current.getBoundingClientRect();
-    const top = e.clientY - parentRect.top;
-    const left = e.clientX - parentRect.left;
-
-    if (contextActions.length === 0) {
-      // This code path seems to only exist for Chrome on Mac
-      // Mac appears to trigger contextmenu events on mousedown vs. mouseup on Windows
-      // Mouseup on Windows triggers blur before contextmenu which effectively does what this path does
-      if (e.target === this.container.current) {
-        // re-emit right clicks that hit the context-root blocking layer
-        e.preventDefault();
-
-        // Set actions to null removes the menu
-        // That allows a new menu to be opened on a different element so initial position is set properly
-        // Otherwise the instance of this menu may be reused
-        // A new contextmenu event is triggered on the element at the location the user clicked on the blocking layer
-        this.setState({ actions: null }, () => {
-          const element = document.elementFromPoint(left, top); // x y
-
-          const mouseEvent = new MouseEvent('contextmenu', {
-            clientX: e.clientX,
-            clientY: e.clientY,
-            bubbles: true,
-            cancelable: true,
-          });
-
-          element?.dispatchEvent(mouseEvent);
-        });
-        return;
-      }
-
-      // target was a menu item
-      return;
-    }
 
     // new clicks, set actions
     e.preventDefault();
