@@ -4,8 +4,8 @@ import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import { LogView } from '@deephaven/console';
 import type { IdeSession } from '@deephaven/jsapi-types';
+import { DashboardPanelProps } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
-import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import { RootState } from '@deephaven/redux';
 import './LogPanel.scss';
 import Panel from './Panel';
@@ -13,9 +13,7 @@ import { getDashboardSessionWrapper } from '../redux';
 
 const log = Log.module('LogPanel');
 
-interface LogPanelProps {
-  glContainer: Container;
-  glEventHub: EventEmitter;
+interface LogPanelProps extends DashboardPanelProps {
   session: IdeSession;
 }
 
@@ -53,11 +51,11 @@ class LogPanel extends PureComponent<LogPanelProps, LogPanelState> {
 
   logView: LogView | null;
 
-  handleResize() {
+  handleResize(): void {
     this.updateDimensions();
   }
 
-  handleShow() {
+  handleShow(): void {
     this.updateDimensions();
     if (this.logView) {
       this.logView.triggerFindWidget();
@@ -68,30 +66,30 @@ class LogPanel extends PureComponent<LogPanelProps, LogPanelState> {
     }
   }
 
-  handleHide() {
+  handleHide(): void {
     if (this.logView) {
       this.isBottomVisible = this.logView.isBottomVisible();
     }
   }
 
-  handleSessionOpened(session: IdeSession) {
+  handleSessionOpened(session: IdeSession): void {
     log.debug('Session opened', [session]);
     this.setState({ session });
   }
 
   // eslint-disable-next-line class-methods-use-this
-  handleSessionClosed(session: IdeSession) {
+  handleSessionClosed(session: IdeSession): void {
     log.debug('Session closed', session);
     // Keep the session reference in state unchanged until the session is re-connected
   }
 
-  updateDimensions() {
+  updateDimensions(): void {
     if (this.logView) {
       this.logView.updateDimensions();
     }
   }
 
-  render() {
+  render(): JSX.Element {
     const { glContainer, glEventHub } = this.props;
     const { session } = this.state;
     return (
@@ -126,7 +124,7 @@ class LogPanel extends PureComponent<LogPanelProps, LogPanelState> {
 const mapStateToProps = (
   state: RootState,
   ownProps: { localDashboardId: string }
-) => ({
+): Pick<LogPanelProps, 'session'> => ({
   session: getDashboardSessionWrapper(state, ownProps.localDashboardId)
     ?.session,
 });

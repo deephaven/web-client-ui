@@ -10,9 +10,11 @@ import memoize from 'memoize-one';
 import { connect } from 'react-redux';
 import debounce from 'lodash.debounce';
 import {
+  DashboardPanelProps,
   DEFAULT_DASHBOARD_ID,
   LayoutUtils,
   PanelComponent,
+  PanelMetadata,
 } from '@deephaven/dashboard';
 import {
   AdvancedSettings,
@@ -72,7 +74,10 @@ import {
   ModelSizeMap,
   MoveOperation,
 } from '@deephaven/grid';
-import type { Container, EventEmitter } from '@deephaven/golden-layout';
+import type {
+  TablePluginComponent,
+  TablePluginElement,
+} from '@deephaven/plugin';
 import { ConsoleEvent, InputFilterEvent, IrisGridEvent } from '../events';
 import {
   getInputFiltersForDashboard,
@@ -83,7 +88,10 @@ import WidgetPanel from './WidgetPanel';
 import './IrisGridPanel.scss';
 import { Link, LinkColumn } from '../linker/LinkerUtils';
 import IrisGridPanelTooltip from './IrisGridPanelTooltip';
-import TablePlugin, { TablePluginElement } from './TablePlugin';
+import {
+  isIrisGridPanelMetadata,
+  isLegacyIrisGridPanelMetadata,
+} from './IrisGridPanelTypes';
 
 const log = Log.module('IrisGridPanel');
 
@@ -94,13 +102,6 @@ const PLUGIN_COMPONENTS = { IrisGrid, IrisGridTableModel, ContextMenuRoot };
 type ModelQueueFunction = (model: IrisGridModel) => void;
 
 type ModelQueue = ModelQueueFunction[];
-
-interface Metadata {
-  table: string;
-  type?: string;
-  query?: string;
-  querySerial?: string;
-}
 
 export interface PanelState {
   gridState: {
@@ -132,11 +133,8 @@ type LoadedPanelState = PanelState & {
     >;
 };
 
-export interface IrisGridPanelProps {
+export interface IrisGridPanelProps extends DashboardPanelProps {
   children?: ReactNode;
-  glContainer: Container;
-  glEventHub: EventEmitter;
-  metadata: Metadata;
   panelState: LoadedPanelState | null;
   makeModel: () => IrisGridModel | Promise<IrisGridModel>;
   inputFilters: InputFilter[];
@@ -155,7 +153,7 @@ export interface IrisGridPanelProps {
   getDownloadWorker: () => Promise<ServiceWorker>;
 
   // Load a plugin defined by the table
-  loadPlugin: (pluginName: string) => TablePlugin;
+  loadPlugin: (pluginName: string) => TablePluginComponent;
 
   theme: IrisGridThemeType;
 }
@@ -195,7 +193,7 @@ interface IrisGridPanelState {
   searchValue: string;
   selectedSearchColumns?: readonly string[];
   invertSearchColumns: boolean;
-  Plugin?: TablePlugin;
+  Plugin?: TablePluginComponent;
   pluginFilters: readonly FilterCondition[];
   pluginFetchColumns: readonly string[];
   modelQueue: ModelQueue;
@@ -207,6 +205,20 @@ interface IrisGridPanelState {
   panelState: PanelState | null; // Dehydrated panel state that can load this panel
   irisGridStateOverrides: Partial<DehydratedIrisGridState>;
   gridStateOverrides: Partial<GridState>;
+}
+
+function getTableNameFromMetadata(metadata: PanelMetadata | undefined): string {
+  if (metadata == null) {
+    throw new Error('No metadata provided');
+  }
+  if (isIrisGridPanelMetadata(metadata)) {
+    return metadata.name;
+  }
+  if (isLegacyIrisGridPanelMetadata(metadata)) {
+    return metadata.table;
+  }
+
+  throw new Error(`Unable to determine table name from metadata: ${metadata}`);
 }
 
 export class IrisGridPanel extends PureComponent<
@@ -353,7 +365,7 @@ export class IrisGridPanel extends PureComponent<
 
   getTableName(): string {
     const { metadata } = this.props;
-    return metadata.table;
+    return getTableNameFromMetadata(metadata);
   }
 
   getGridInputFilters = memoize(
@@ -392,7 +404,7 @@ export class IrisGridPanel extends PureComponent<
 
   getPluginContent = memoize(
     (
-      Plugin: TablePlugin | undefined,
+      Plugin: TablePluginComponent | undefined,
       model: IrisGridModel | undefined,
       user: User,
       workspace: Workspace,
@@ -407,6 +419,19 @@ export class IrisGridPanel extends PureComponent<
         return null;
       }
 
+      // The panel in the deprecated props makes an ugly dependency of the plugin on the panel
+      // Since we didn't have TS when the old plugins would have been implemented,
+      // just pass the deprecated props without type checking
+      // so we can break the ugly dependency of plugin on panel
+      const deprecatedProps = {
+        panel: this,
+        onFilter: this.handlePluginFilter,
+        onFetchColumns: this.handlePluginFetchColumns,
+        user,
+        workspace,
+        components: PLUGIN_COMPONENTS,
+      };
+
       return (
         <div className="iris-grid-plugin">
           <Plugin
@@ -415,14 +440,10 @@ export class IrisGridPanel extends PureComponent<
             fetchColumns={this.handlePluginFetchColumns}
             model={model}
             table={model.table}
-            panel={this}
             onStateChange={this.handlePluginStateChange}
             pluginState={pluginState}
-            onFilter={this.handlePluginFilter}
-            onFetchColumns={this.handlePluginFetchColumns}
-            user={user}
-            workspace={workspace}
-            components={PLUGIN_COMPONENTS}
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            {...deprecatedProps}
           />
         </div>
       );
@@ -711,8 +732,8 @@ export class IrisGridPanel extends PureComponent<
     this.setState(
       () => null,
       () => {
-        const { glEventHub, inputFilters, metadata } = this.props;
-        const { table } = metadata;
+        const { glEventHub, inputFilters } = this.props;
+        const table = this.getTableName();
         const { panelState } = this.state;
         const sourcePanelId = LayoutUtils.getIdFromPanel(this);
         let tableSettings;
@@ -1242,7 +1263,7 @@ export class IrisGridPanel extends PureComponent<
     } = this.state;
     const errorMessage =
       error != null ? `Unable to open table. ${error}` : undefined;
-    const { table: name } = metadata;
+    const name = getTableNameFromMetadata(metadata);
     const description = model?.description ?? undefined;
     const pluginState = panelState?.pluginState ?? null;
     const childrenContent =
@@ -1346,7 +1367,15 @@ export class IrisGridPanel extends PureComponent<
 const mapStateToProps = (
   state: RootState,
   { localDashboardId = DEFAULT_DASHBOARD_ID }: { localDashboardId?: string }
-) => ({
+): Pick<
+  IrisGridPanelProps,
+  | 'columnSelectionValidator'
+  | 'inputFilters'
+  | 'links'
+  | 'settings'
+  | 'user'
+  | 'workspace'
+> => ({
   inputFilters: getInputFiltersForDashboard(state, localDashboardId),
   links: getLinksForDashboard(state, localDashboardId),
   columnSelectionValidator: getColumnSelectionValidatorForDashboard(

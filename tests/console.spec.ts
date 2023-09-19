@@ -17,15 +17,6 @@ test.afterAll(async () => {
 });
 
 test.describe('console input tests', () => {
-  test.beforeEach(async () => {
-    // Find the console input
-    const consoleInput = page.locator('.console-input');
-
-    // Monaco editor doesn't have a native input, so need to just click into it and type on the page
-    // https://github.com/microsoft/playwright/issues/14126
-    await consoleInput.click();
-  });
-
   test('print commands get logged', async () => {
     const message = `Hello ${shortid()}!`;
     const command = `print("${message}")`;

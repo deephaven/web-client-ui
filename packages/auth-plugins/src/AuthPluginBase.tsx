@@ -35,12 +35,12 @@ function AuthPluginBase({
 
   useEffect(() => {
     let isCanceled = false;
-    function verifyNotCanceled() {
+    function verifyNotCanceled(): void {
       if (isCanceled) {
         throw new CanceledPromiseError('Login canceled.');
       }
     }
-    async function login() {
+    async function login(): Promise<void> {
       try {
         const loginOptions = await getLoginOptions();
         verifyNotCanceled();

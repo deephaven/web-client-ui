@@ -6,7 +6,7 @@ import MonacoWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 import AppRouter from './main/AppRouter';
 import DownloadServiceWorkerUtils from './DownloadServiceWorkerUtils';
 
-export function AppRoot() {
+export function AppRoot(): JSX.Element {
   DownloadServiceWorkerUtils.registerOnLoaded();
   MonacoUtils.init({ getWorker: () => new MonacoWorker() });
 

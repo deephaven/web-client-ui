@@ -627,7 +627,9 @@ export class FormattingSectionContent extends PureComponent<
   }
 }
 
-const mapStateToProps = (state: RootState) => ({
+const mapStateToProps = (
+  state: RootState
+): Omit<FormattingSectionContentProps, 'defaults' | 'saveSettings'> => ({
   formatter: getFormatter(state),
   defaultDateTimeFormat: getDefaultDateTimeFormat(state),
   defaultDecimalFormatOptions: getDefaultDecimalFormatOptions(state),

@@ -4,13 +4,15 @@ import { vsLaw } from '@deephaven/icons';
 
 function LegalNotice(): ReactElement {
   const [modal, setModal] = useState(false);
-  const toggle = () => {
+  const toggle = (): void => {
     setModal(!modal);
   };
 
   return (
-    <Button kind="ghost" onClick={toggle} icon={vsLaw}>
-      Legal Notices
+    <>
+      <Button kind="ghost" onClick={toggle} icon={vsLaw}>
+        Legal Notices
+      </Button>
       <Modal isOpen={modal} toggle={toggle} className="theme-bg-light">
         <ModalHeader toggle={toggle}>Legal Notice</ModalHeader>
         <ModalBody>
@@ -35,7 +37,7 @@ function LegalNotice(): ReactElement {
           </p>
         </ModalBody>
       </Modal>
-    </Button>
+    </>
   );
 }
 

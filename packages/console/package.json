@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/console",
-  "version": "0.45.0",
+  "version": "0.48.0",
   "description": "Deephaven Console",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -29,6 +29,7 @@
     "@deephaven/jsapi-bootstrap": "file:../jsapi-bootstrap",
     "@deephaven/jsapi-types": "file:../jsapi-types",
     "@deephaven/log": "file:../log",
+    "@deephaven/react-hooks": "file:../react-hooks",
     "@deephaven/storage": "file:../storage",
     "@deephaven/utils": "file:../utils",
     "@fortawesome/react-fontawesome": "^0.2.0",
@@ -38,11 +39,12 @@
     "lodash.throttle": "^4.1.1",
     "memoize-one": "^5.1.1",
     "memoizee": "^0.4.15",
-    "monaco-editor": "^0.31.1",
+    "monaco-editor": "^0.41.0",
     "papaparse": "5.3.2",
     "popper.js": "^1.16.1",
     "prop-types": "^15.7.2",
-    "shell-quote": "^1.7.2"
+    "shell-quote": "^1.7.2",
+    "shortid": "^2.2.16"
   },
   "peerDependencies": {
     "react": "^17.x",

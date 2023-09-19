@@ -1,12 +1,11 @@
 import { test, expect, Page } from '@playwright/test';
-import { makeTableCommand, pasteInMonaco, TableTypes } from './utils';
+import { makeTableCommand, pasteInMonaco } from './utils';
 
 // Run tests serially since they all use the same table
 test.describe.configure({ mode: 'serial' });
 
 async function openSimpleTable(page: Page) {
   const consoleInput = page.locator('.console-input');
-  await consoleInput.click();
 
   const command = makeTableCommand();
 
@@ -42,7 +41,6 @@ test('can open a simple table', async ({ page }) => {
 test('can open a table with column header groups', async ({ page }) => {
   await page.goto('');
   const consoleInput = page.locator('.console-input');
-  await consoleInput.click();
 
   const command = `${makeTableCommand('column_header_group')}
 column_groups = [{ 'name': 'YandZ', 'children': ['y', 'z'] }, { 'name': 'All', 'children': ['x', 'YandZ'], 'color': 'white' }]
@@ -71,7 +69,6 @@ test('can open a table with column header groups and hidden columns', async ({
 }) => {
   await page.goto('');
   const consoleInput = page.locator('.console-input');
-  await consoleInput.click();
 
   const command = `${makeTableCommand('column_header_group')}
 column_groups = [{ 'name': 'YandZ', 'children': ['y', 'z'] }, { 'name': 'All', 'children': ['x', 'YandZ'], 'color': 'white' }]

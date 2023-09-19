@@ -34,6 +34,7 @@ import InputFilterPanel, {
   PanelState as InputFilterPanelState,
 } from './InputFilterPanel';
 import './FilterSetManagerPanel.scss';
+import { FilterChangeEvent } from '../FilterPlugin';
 
 const log = Log.module('FilterSetManagerPanel');
 interface IrisGridState {
@@ -410,7 +411,12 @@ export class FilterSetManagerPanel extends Component<
 const mapStateToProps = (
   state: RootState,
   ownProps: { localDashboardId: string }
-) => {
+): Pick<
+  FilterSetManagerPanelProps,
+  'dashboardOpenedPanelMap' | 'filterSets' | 'panelTableMap'
+> & {
+  dashboardInputFilters: FilterChangeEvent[];
+} => {
   const { localDashboardId } = ownProps;
   return {
     filterSets: getFilterSetsForDashboard(state, localDashboardId),

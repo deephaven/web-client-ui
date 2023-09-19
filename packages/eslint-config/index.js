@@ -20,6 +20,7 @@ module.exports = {
     'react/jsx-uses-react': 'error',
     'react/jsx-uses-vars': 'error',
     'react/jsx-filename-extension': [1, { extensions: ['.jsx', '.tsx'] }],
+    'react/react-in-jsx-scope': 'off',
     'react/sort-comp': [
       2,
       {
@@ -86,6 +87,7 @@ module.exports = {
         '@typescript-eslint/strict-boolean-expressions': ['error'],
         'default-param-last': 'off',
         '@typescript-eslint/default-param-last': ['error'],
+        '@typescript-eslint/explicit-module-boundary-types': 'error',
       },
     },
     {

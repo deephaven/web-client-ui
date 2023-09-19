@@ -122,3 +122,18 @@ class RangeUtils {
 }
 
 export default RangeUtils;
+
+/**
+ * Generator that yields a range of numbers.
+ * @param start Start index to generate
+ * @param end End index to generate
+ */
+export function* generateRange(
+  start: number,
+  end: number
+): Generator<number, void, unknown> {
+  // eslint-disable-next-line no-plusplus
+  for (let i = start; i <= end; ++i) {
+    yield i;
+  }
+}

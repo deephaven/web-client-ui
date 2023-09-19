@@ -30,7 +30,7 @@ export function readRefreshToken(): RefreshToken | null {
  * Store the provided refresh token as a cookie
  * @param token The refresh token to store
  */
-export function storeRefreshToken(token: RefreshToken | null) {
+export function storeRefreshToken(token: RefreshToken | null): void {
   if (token == null) {
     Cookies.remove(REFRESH_TOKEN_KEY);
     return;

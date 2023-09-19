@@ -11,7 +11,7 @@ import useBroadcastChannel from './useBroadcastChannel';
 export function useBroadcastLoginListener(
   onLogin?: (message: BroadcastLoginMessage) => void,
   onLogout?: (message: BroadcastLogoutMessage) => void
-) {
+): void {
   const onMessage = useCallback(
     (event: MessageEvent<Message<unknown>>) => {
       if (isBroadcastLoginMessage(event.data)) {

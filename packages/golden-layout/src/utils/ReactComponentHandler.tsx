@@ -3,6 +3,13 @@ import ReactDOM from 'react-dom';
 import $ from 'jquery';
 import type ItemContainer from '../container/ItemContainer';
 import type { ReactComponentConfig } from '../config/ItemConfig';
+import { Container } from '../container';
+import EventEmitter from './EventEmitter';
+
+export type GLPanelProps = {
+  glContainer: Container;
+  glEventHub: EventEmitter;
+};
 
 /**
  * A specialised GoldenLayout component that binds GoldenLayout container
@@ -157,7 +164,6 @@ export default class ReactComponentHandler {
     var defaultProps = {
       glEventHub: this._container.layoutManager.eventHub,
       glContainer: this._container,
-      ref: this._gotReactComponent.bind(this),
     };
     var props = $.extend(defaultProps, this._container._config.props);
     return React.createElement(this._reactClass, props);

@@ -343,7 +343,9 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
       [input, selection, value]
     );
 
-    function handleArrowKey(event: React.KeyboardEvent<HTMLInputElement>) {
+    function handleArrowKey(
+      event: React.KeyboardEvent<HTMLInputElement>
+    ): void {
       event.preventDefault();
       event.stopPropagation();
 
@@ -372,7 +374,7 @@ const MaskedInput = React.forwardRef<HTMLInputElement, MaskedInputProps>(
       }
     }
 
-    function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+    function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>): void {
       if (!input.current) {
         return;
       }

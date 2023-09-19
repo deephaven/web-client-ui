@@ -21,7 +21,7 @@ async function copyText(text: string): Promise<void | ErrorConstructor> {
 const DH_PREFIX = 'dh';
 const VS_PREFIX = 'vs';
 // prefix, icon-name to prefixIconName
-const getPrefixedName = (name: string, prefix: string) =>
+const getPrefixedName = (name: string, prefix: string): string =>
   prefix.toLowerCase() +
   name
     .split('-')
@@ -32,7 +32,7 @@ interface FlashProps {
   message: { text: React.ReactNode };
 }
 
-function Flash({ message, message: { text } }: FlashProps) {
+function Flash({ message, message: { text } }: FlashProps): JSX.Element {
   const [show, setShow] = useState(false);
 
   useEffect(

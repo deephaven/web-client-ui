@@ -4,11 +4,11 @@ import { BasicModal, Button, Checkbox } from '@deephaven/components';
 function Modals(): React.ReactElement {
   const [openModal, setOpenModal] = useState<number>(0);
   const [check1, setCheck1] = useState<boolean>(true);
-  const closeModals = () => {
+  const closeModals = (): void => {
     setOpenModal(0);
   };
 
-  function renderBasicModal(buttonCount: number) {
+  function renderBasicModal(buttonCount: number): JSX.Element {
     return (
       <React.Fragment key={buttonCount}>
         <Button

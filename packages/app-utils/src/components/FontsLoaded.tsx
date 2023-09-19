@@ -7,7 +7,7 @@ export type FontsLoadedProps = {
   children: React.ReactNode;
 };
 
-export function FontsLoaded({ children }: FontsLoadedProps) {
+export function FontsLoaded({ children }: FontsLoadedProps): JSX.Element {
   const isFontsLoaded = useContext(FontsLoadedContext);
 
   if (!isFontsLoaded) {

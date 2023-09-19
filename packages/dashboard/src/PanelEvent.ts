@@ -1,3 +1,25 @@
+import { DragEvent } from 'react';
+
+export type WidgetDefinition = {
+  type: string;
+
+  /**
+   * @deprecated Use `title` instead.
+   */
+  name?: string;
+
+  title?: string;
+
+  id?: string;
+};
+
+export type PanelOpenEventDetail = {
+  dragEvent?: DragEvent;
+  fetch?: () => Promise<unknown>;
+  panelId?: string;
+  widget: WidgetDefinition;
+};
+
 /**
  * Events emitted by panels and to control panels
  */

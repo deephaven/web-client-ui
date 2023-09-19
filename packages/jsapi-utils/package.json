@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/jsapi-utils",
-  "version": "0.45.0",
+  "version": "0.48.0",
   "description": "Deephaven JSAPI Utils",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -25,7 +25,6 @@
     "@deephaven/jsapi-types": "file:../jsapi-types",
     "@deephaven/log": "file:../log",
     "@deephaven/utils": "file:../utils",
-    "@react-stately/data": "^3.9.1",
     "lodash.clamp": "^4.0.3",
     "shortid": "^2.2.16"
   },

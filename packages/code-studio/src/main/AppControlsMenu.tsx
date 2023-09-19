@@ -49,7 +49,7 @@ interface DragSourceMenuItemProps {
  * for dragging panels directly from menu
  */
 
-function DragSourceMenuItem(props: DragSourceMenuItemProps) {
+function DragSourceMenuItem(props: DragSourceMenuItemProps): JSX.Element {
   const {
     forwardedProps: {
       menuItem: { action, title, disabled: menuItemDisabled },
@@ -87,14 +87,14 @@ function DragSourceMenuItem(props: DragSourceMenuItemProps) {
     [action, closeMenu]
   );
 
-  function handleMouseDown(event: React.MouseEvent<HTMLButtonElement>) {
+  function handleMouseDown(event: React.MouseEvent<HTMLButtonElement>): void {
     startX.current = event.clientX;
     startY.current = event.clientY;
     startObject.current = event.target;
     window.addEventListener('mousemove', handleMouseMove);
   }
 
-  function handleMouseUp(event: React.MouseEvent<HTMLButtonElement>) {
+  function handleMouseUp(event: React.MouseEvent<HTMLButtonElement>): void {
     // down and up need to occur on same object to constitute a click event
     if (startObject.current === event.target) {
       setDisableDoubleClick(true);

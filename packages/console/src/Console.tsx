@@ -527,7 +527,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
       const disableOldObject = (
         object: VariableDefinition,
         isRemoved = false
-      ) => {
+      ): void => {
         const { title } = object;
         assertNotNull(title);
         const oldIndex = objectHistoryMap.get(title);
@@ -614,7 +614,10 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
   scrollConsoleHistoryToBottom(force = false): void {
     const pane = this.consoleHistoryScrollPane.current;
     assertNotNull(pane);
-    if (!force && pane.scrollTop < pane.scrollHeight - pane.offsetHeight) {
+    if (
+      !force &&
+      Math.abs(pane.scrollHeight - pane.clientHeight - pane.scrollTop) >= 1
+    ) {
       return;
     }
 
@@ -765,7 +768,6 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
   addConsoleHistoryMessage(message?: string, error?: string): void {
     const { consoleHistory } = this.state;
     const historyItem = {
-      command: '',
       startTime: Date.now(),
       endTime: Date.now(),
       result: { message, error },

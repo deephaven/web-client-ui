@@ -35,7 +35,7 @@ export interface ConditionEditorProps {
   onChange?: (config: FormatStyleConfig) => void;
 }
 
-const DEFAULT_CALLBACK = () => undefined;
+const DEFAULT_CALLBACK = (): void => undefined;
 
 function StyleEditor(props: ConditionEditorProps): JSX.Element {
   const { config, onChange = DEFAULT_CALLBACK } = props;

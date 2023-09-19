@@ -1,9 +1,10 @@
-import React, { useEffect, useState, ReactElement, useRef } from 'react';
+import { useState, ReactElement, useRef, useCallback } from 'react';
 import classNames from 'classnames';
 import { Tooltip } from '@deephaven/components';
 import type { QueryConnectable } from '@deephaven/jsapi-types';
 import { Plot, ChartTheme } from '@deephaven/chart';
 import Log from '@deephaven/log';
+import { useAsyncInterval } from '@deephaven/react-hooks';
 import './HeapUsage.scss';
 
 const log = Log.module('HeapUsage');
@@ -38,58 +39,42 @@ function HeapUsage({
     usages: [],
   });
 
-  useEffect(
-    function setUsageUpdateInterval() {
-      const fetchAndUpdate = async () => {
-        try {
-          const newUsage = await connection.getWorkerHeapInfo();
-          setMemoryUsage(newUsage);
+  const setUsageUpdateInterval = useCallback(async () => {
+    try {
+      const newUsage = await connection.getWorkerHeapInfo();
+      setMemoryUsage(newUsage);
 
-          if (bgMonitoring || isOpen) {
-            const currentUsage =
-              (newUsage.totalHeapSize - newUsage.freeMemory) /
-              newUsage.maximumHeapSize;
-            const currentTime = Date.now();
+      if (bgMonitoring || isOpen) {
+        const currentUsage =
+          (newUsage.totalHeapSize - newUsage.freeMemory) /
+          newUsage.maximumHeapSize;
+        const currentTime = Date.now();
 
-            const { timestamps, usages } = historyUsage.current;
-            while (
-              timestamps.length !== 0 &&
-              currentTime - timestamps[0] > monitorDuration * 1.5
-            ) {
-              timestamps.shift();
-              usages.shift();
-            }
-
-            timestamps.push(currentTime);
-            usages.push(currentUsage);
-          } else {
-            historyUsage.current = { timestamps: [], usages: [] };
-          }
-        } catch (e) {
-          log.warn('Unable to get heap usage', e);
+        const { timestamps, usages } = historyUsage.current;
+        while (
+          timestamps.length !== 0 &&
+          currentTime - timestamps[0] > monitorDuration * 1.5
+        ) {
+          timestamps.shift();
+          usages.shift();
         }
-      };
-      fetchAndUpdate();
 
-      const updateUsage = setInterval(
-        fetchAndUpdate,
-        isOpen ? hoverUpdateInterval : defaultUpdateInterval
-      );
-      return () => {
-        clearInterval(updateUsage);
-      };
-    },
-    [
-      isOpen,
-      hoverUpdateInterval,
-      connection,
-      defaultUpdateInterval,
-      monitorDuration,
-      bgMonitoring,
-    ]
+        timestamps.push(currentTime);
+        usages.push(currentUsage);
+      } else {
+        historyUsage.current = { timestamps: [], usages: [] };
+      }
+    } catch (e) {
+      log.warn('Unable to get heap usage', e);
+    }
+  }, [isOpen, connection, monitorDuration, bgMonitoring]);
+
+  useAsyncInterval(
+    setUsageUpdateInterval,
+    isOpen ? hoverUpdateInterval : defaultUpdateInterval
   );
 
-  const toDecimalPlace = (num: number, dec: number) =>
+  const toDecimalPlace = (num: number, dec: number): number =>
     Math.round(num * 10 ** dec) / 10 ** dec;
 
   const decimalPlace = 2;
@@ -102,7 +87,11 @@ function HeapUsage({
   const maxHeapGB = toDecimalPlace(maximumHeapSize / GbToByte, decimalPlace);
   const inUseGB = totalHeapGB - freeMemoryGB;
 
-  const getRow = (text: string, size: string, bottomBorder = false) => (
+  const getRow = (
+    text: string,
+    size: string,
+    bottomBorder = false
+  ): JSX.Element => (
     <div
       className={classNames(`heap-usage-info-row`, {
         'heading-bottom-border': bottomBorder,
@@ -142,8 +131,8 @@ function HeapUsage({
       </div>
 
       <Tooltip
-        onEntered={() => setIsOpen(true)}
-        onExited={() => setIsOpen(false)}
+        onEntered={(): void => setIsOpen(true)}
+        onExited={(): void => setIsOpen(false)}
         interactive
       >
         <div className="heap-tooltip">

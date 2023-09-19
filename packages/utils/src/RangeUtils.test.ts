@@ -1,4 +1,4 @@
-import RangeUtils from './RangeUtils';
+import RangeUtils, { generateRange } from './RangeUtils';
 
 describe('getItemsInRanges', () => {
   it('handles edge cases', () => {
@@ -184,3 +184,17 @@ describe('count', () => {
     ).toEqual(33);
   });
 });
+
+it.each([
+  [2, 1, []],
+  [-1, 1, [-1, 0, 1]],
+  [0, 0, [0]],
+  [0, 1, [0, 1]],
+  [1, 2, [1, 2]],
+  [1, 5, [1, 2, 3, 4, 5]],
+] as const)(
+  'should generate a range based on given start and end indices: %s, %s, %s',
+  (start, end, expected) => {
+    expect([...generateRange(start, end)]).toEqual(expected);
+  }
+);

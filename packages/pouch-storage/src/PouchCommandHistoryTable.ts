@@ -220,7 +220,7 @@ export class PouchCommandHistoryTable
    * Mark given items as `_deleted` in the database.
    * @param items
    */
-  async pruneItems(items: CommandHistoryDoc[]) {
+  async pruneItems(items: CommandHistoryDoc[]): Promise<void> {
     if (this.cache.isPruning.get(this.cacheKey) === true) {
       log.debug('Pruning already in progress. Skipping.');
       return;

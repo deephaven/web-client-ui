@@ -92,7 +92,7 @@ function Modal({
     document.body.appendChild(element.current);
   }
 
-  const onExited = () => {
+  const onExited = (): void => {
     if (element.current) {
       document.body.removeChild(element.current);
       element.current = undefined;

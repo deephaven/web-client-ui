@@ -122,7 +122,7 @@ export async function requestParentResponse(
   return new Promise((resolve, reject) => {
     let timeoutId: number;
     const id = shortid();
-    const listener = (event: MessageEvent) => {
+    const listener = (event: MessageEvent): void => {
       const { data } = event;
       if (!isResponse(data)) {
         log.debug('Ignoring non-deephaven response', data);
