@@ -1,11 +1,15 @@
+import Log from '@deephaven/log';
 import darkTheme from '../../scss/theme_default_dark.scss?inline';
 import lightTheme from '../../scss/theme_default_light.scss?inline';
 import { ThemeCache } from './ThemeCache';
 import {
   DEFAULT_DARK_THEME_KEY,
   DEFAULT_LIGHT_THEME_KEY,
+  DEFAULT_PRELOAD_DATA_VARIABLES,
   ThemePreloadStyleContent,
 } from './ThemeModel';
+
+const log = Log.module('ThemeUtils');
 
 /**
  * Creates a string containing preload style content for the current theme.
@@ -13,8 +17,13 @@ import {
  * to style the page before the theme is loaded on next page load.
  */
 export function calculatePreloadStyleContent(): ThemePreloadStyleContent {
-  const pairs = ['--dh-accent-color', '--dh-background-color'].map(
-    key => `${key}:${getComputedStyle(document.body).getPropertyValue(key)}`
+  const bodyStyle = getComputedStyle(document.body);
+
+  // Calculate the current preload variables. If the variable is not set, use
+  // the default value.
+  const pairs = Object.entries(DEFAULT_PRELOAD_DATA_VARIABLES).map(
+    ([key, defaultValue]) =>
+      `${key}:${bodyStyle.getPropertyValue(key) || defaultValue}`
   );
 
   return `:root{${pairs.join(';')}}`;
@@ -26,7 +35,10 @@ export function calculatePreloadStyleContent(): ThemePreloadStyleContent {
  * @param themeName The name of the theme
  */
 export function getThemeKey(pluginRootPath: string, themeName: string): string {
-  return `${pluginRootPath}_${themeName.toLowerCase().replace(/\s/g, '-')}`;
+  return `${pluginRootPath}_${themeName}`
+    .toLowerCase()
+    .replace(/\W/g, '-')
+    .replace(/-+/g, '-');
 }
 
 /**
@@ -34,14 +46,14 @@ export function getThemeKey(pluginRootPath: string, themeName: string): string {
  * @param themeCache The theme cache to preload from
  */
 export function preloadTheme(themeCache: ThemeCache): void {
-  const preloadData = themeCache.getPreloadData();
+  const preloadStyleContent =
+    themeCache.getPreloadData()?.preloadStyleContent ??
+    calculatePreloadStyleContent();
 
-  if (preloadData?.preloadStyleContent == null) {
-    return;
-  }
+  log.debug('Preloading theme content:', `'${preloadStyleContent}'`);
 
   const style = document.createElement('style');
-  style.innerHTML = preloadData.preloadStyleContent;
+  style.innerHTML = preloadStyleContent;
   document.head.appendChild(style);
 }
 

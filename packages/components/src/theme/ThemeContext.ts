@@ -5,7 +5,6 @@ import { ThemeData } from './ThemeModel';
 export interface ThemeContextValue {
   activeThemes: ThemeData[] | null;
   cache: ThemeCache;
-  isActive: boolean;
   registerCustomThemesAndActivate: (additionalThemeData: ThemeData[]) => void;
 }
 

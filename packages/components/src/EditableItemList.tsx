@@ -9,7 +9,8 @@ import classNames from 'classnames';
 import clamp from 'lodash.clamp';
 import { vsAdd, vsTrash } from '@deephaven/icons';
 import { Range, RangeUtils } from '@deephaven/utils';
-import { Button, ItemList } from '.';
+import Button from './Button';
+import ItemList from './ItemList';
 
 export interface EditableItemListProps {
   isInvalid?: boolean;

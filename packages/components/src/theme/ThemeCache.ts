@@ -1,7 +1,6 @@
-import { useContextOrThrow } from '@deephaven/react-hooks';
+import { createContext } from 'react';
 import Log from '@deephaven/log';
 import { assertNotNull, bindAllMethods } from '@deephaven/utils';
-import { createContext } from 'react';
 import {
   DEFAULT_DARK_THEME_KEY,
   ThemeData,
@@ -197,13 +196,3 @@ export class ThemeCache {
 export default ThemeCache;
 
 export const ThemeCacheContext = createContext<ThemeCache | null>(null);
-
-/**
- * Get the theme cache from the context.
- */
-export function useThemeCache(): ThemeCache {
-  return useContextOrThrow(
-    ThemeCacheContext,
-    'No ThemeCacheContext value found. Component must be wrapped in a ThemeCacheContext.Provider'
-  );
-}

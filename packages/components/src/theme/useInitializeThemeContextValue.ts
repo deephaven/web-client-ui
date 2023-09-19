@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Log from '@deephaven/log';
-import { useThemeCache } from './ThemeCache';
 import { ThemeContextValue } from './ThemeContext';
 import { DEFAULT_DARK_THEME_KEY, ThemeData } from './ThemeModel';
 import { calculatePreloadStyleContent } from './ThemeUtils';
+import { useAppliedThemes } from './useAppliedThemes';
+import { useThemeCache } from './useThemeCache';
 
 const log = Log.module('useInitializeThemeContextValue');
 
@@ -12,9 +13,14 @@ const log = Log.module('useInitializeThemeContextValue');
  */
 export function useInitializeThemeContextValue(): ThemeContextValue {
   const cache = useThemeCache();
-  const [, setCacheTick] = useState(0);
+  const appliedThemes = useAppliedThemes(cache);
 
   const [isActive, setIsActive] = useState(false);
+
+  const activeThemes = useMemo(
+    () => (isActive ? appliedThemes : null),
+    [appliedThemes, isActive]
+  );
 
   /**
    * Register the given custom themes with the cache and activate theming.
@@ -27,38 +33,23 @@ export function useInitializeThemeContextValue(): ThemeContextValue {
     [cache]
   );
 
-  // Intentionally not using `useMemo` here since the `cache` manages
-  // memoization internally, and the return value of `getAppliedThemes` may
-  // change in a way that can't be directly detected in this hook.
-  const activeThemes = isActive ? cache.getAppliedThemes() : null;
-
-  // Register an event listener to update the cache tick when the cache changes
-  useEffect(
-    () =>
-      cache.registerEventListener('change', () => {
-        log.debug('Theme cache changed');
-        setCacheTick(i => i + 1);
-      }),
-    [cache]
-  );
-
   // Set selected themes when theming is activated
   useEffect(() => {
-    if (!isActive) {
+    if (activeThemes == null) {
       return;
     }
 
     log.debug(
       'Themes activated:',
-      activeThemes?.[0]?.themeKey,
-      activeThemes?.[1]?.themeKey
+      activeThemes[0]?.themeKey,
+      activeThemes[1]?.themeKey
     );
 
     cache.setPreloadData({
-      themeKey: activeThemes?.at(-1)?.themeKey ?? DEFAULT_DARK_THEME_KEY,
+      themeKey: activeThemes.at(-1)?.themeKey ?? DEFAULT_DARK_THEME_KEY,
       preloadStyleContent: calculatePreloadStyleContent(),
     });
-  }, [activeThemes, cache, isActive]);
+  }, [activeThemes, cache]);
 
   return useMemo(
     () => ({ activeThemes, cache, isActive, registerCustomThemesAndActivate }),
