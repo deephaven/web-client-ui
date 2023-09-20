@@ -13,8 +13,8 @@ $lm-tab-icon-color: $gray-200;
 
 //make some subtle tab background colors relative to our defined color
 $lm-tab-active-background: $content-bg;
-$lm-tab-background: var(--dh-color-gray-75);
-$lm-header-background: var(--dh-color-gray-75);
+$lm-tab-background: darken($lm-tab-active-background, 3.5);
+$lm-header-background: darken($lm-tab-active-background, 5);
 
 $lm-close-button-hover-color: $gray-100;
 $lm-close-button-active-color: $gray-400;
