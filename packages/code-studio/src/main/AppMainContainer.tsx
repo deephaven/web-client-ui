@@ -36,9 +36,7 @@ import {
   updateDashboardData as updateDashboardDataAction,
 } from '@deephaven/dashboard';
 import {
-  ChartPluginConfig,
   ConsolePlugin,
-  FilterPluginConfig,
   InputFilterEvent,
   MarkdownEvent,
   NotebookEvent,
@@ -49,11 +47,6 @@ import {
   Link,
   ColumnSelectionValidator,
   getDashboardConnection,
-  MarkdownPluginConfig,
-  LinkerPluginConfig,
-  ChartBuilderPluginConfig,
-  GridPluginConfig,
-  PandasPluginConfig,
 } from '@deephaven/dashboard-core-plugins';
 import {
   vsGear,
@@ -697,29 +690,20 @@ export class AppMainContainer extends Component<
   }
 
   getDashboardPlugins = memoize((plugins: DeephavenPluginModuleMap) => {
-    const corePlugins = [
-      GridPluginConfig,
-      PandasPluginConfig,
-      ChartPluginConfig,
-      ChartBuilderPluginConfig,
-      FilterPluginConfig,
-      MarkdownPluginConfig,
-      LinkerPluginConfig,
-    ].map(({ component: DPlugin, name }) => <DPlugin key={name} />);
+    const dashboardPlugins = [...plugins.entries()].filter(
+      ([, plugin]) =>
+        isDashboardPlugin(plugin) || isLegacyDashboardPlugin(plugin)
+    ) as [string, DashboardPlugin | LegacyDashboardPlugin][];
 
-    const legacyPlugins = (
-      [...plugins.entries()].filter(([, plugin]) =>
-        isLegacyDashboardPlugin(plugin)
-      ) as [string, LegacyDashboardPlugin][]
-    ).map(([name, { DashboardPlugin: DPlugin }]) => <DPlugin key={name} />);
+    return dashboardPlugins.map(([name, plugin]) => {
+      if (isLegacyDashboardPlugin(plugin)) {
+        const { DashboardPlugin: DPlugin } = plugin;
+        return <DPlugin key={name} />;
+      }
 
-    const userPlugins = legacyPlugins.concat(
-      [...plugins.values()]
-        .filter<DashboardPlugin>(isDashboardPlugin)
-        .map(({ component: DPlugin, name }) => <DPlugin key={name} />)
-    );
-
-    return corePlugins.concat(userPlugins);
+      const { component: DPlugin } = plugin;
+      return <DPlugin key={name} />;
+    });
   });
 
   render(): ReactElement {
