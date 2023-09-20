@@ -1,6 +1,42 @@
+.loading-spinner {
+  --primary-color: var(--dh-accent-color, #4c7dee);
+  /* stylelint-disable-next-line alpha-value-notation */
+  --secondary-color: rgba(240, 240, 240, 0.5);
+  --border-width: 1px;
+  --size: 14px;
+
+  box-sizing: border-box;
+  display: inline-block;
+  margin: 0 auto;
+  width: var(--size);
+  height: var(--size);
+}
+
 .loading-spinner-large {
-  font-size: 64px;
-  .svg-inline--fa {
-    font-size: inherit;
+  --border-width: 4px;
+  --size: 56px;
+}
+
+// Spinning circle with colored border and transparent center. Half of the
+// circle is the primary color. The other half is the secondary color.
+.loading-spinner::after {
+  animation: loading-spinner-rotate 2s linear infinite;
+  border: var(--border-width) solid;
+  border-color: var(--primary-color) var(--primary-color) var(--secondary-color)
+    var(--secondary-color);
+  border-radius: 50%;
+  box-sizing: border-box;
+  content: '';
+  display: inline-block;
+  width: var(--size);
+  height: var(--size);
+}
+
+@keyframes loading-spinner-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(359deg);
   }
 }

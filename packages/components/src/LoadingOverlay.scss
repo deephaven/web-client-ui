@@ -2,6 +2,7 @@
 
 $iris-panel-message-font-size: 1.2rem;
 $iris-panel-icon-font-size: 64px;
+$iris-panel-icon-height: 96px;
 $iris-panel-scrim-bg: rgba(black, 0.1);
 
 .iris-panel-message-overlay {
@@ -15,9 +16,12 @@ $iris-panel-scrim-bg: rgba(black, 0.1);
   .message-content {
     font-size: $iris-panel-message-font-size;
     .message-icon {
-      font-size: $iris-panel-icon-font-size;
+      display: flex;
+      height: $iris-panel-icon-height;
+      align-items: center;
+      justify-content: center;
       .svg-inline--fa {
-        font-size: inherit;
+        font-size: $iris-panel-icon-font-size;
       }
     }
   }

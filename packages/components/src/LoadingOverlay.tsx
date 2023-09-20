@@ -27,6 +27,7 @@ function LoadingOverlay({
     dataTestId != null ? `${dataTestId}-message` : undefined;
   const spinnerTestId =
     dataTestId != null ? `${dataTestId}-spinner` : undefined;
+
   return (
     <CSSTransition
       in={Boolean(errorMessage) || !isLoaded || isLoading}
@@ -45,7 +46,12 @@ function LoadingOverlay({
         >
           <div className="message-content">
             <div className="message-icon">
-              {isLoading && <LoadingSpinner data-testid={spinnerTestId} />}
+              {isLoading && (
+                <LoadingSpinner
+                  className="loading-spinner-large"
+                  data-testid={spinnerTestId}
+                />
+              )}
               {!isLoading && errorMessage != null && (
                 <FontAwesomeIcon icon={vsWarning} />
               )}

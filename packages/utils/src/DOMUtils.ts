@@ -28,4 +28,29 @@ export function identityExtractHTMLElement<T>(
   return maybeHTMLElement instanceof HTMLElement ? maybeHTMLElement : null;
 }
 
-export default { getClosestByClassName, identityExtractHTMLElement };
+/**
+ * Synchronize CSS animations with a given name to the same start time.
+ * @param animationName
+ * @param startTime
+ */
+export function syncAnimationStartTime(
+  animationName: string,
+  startTime: number
+): void {
+  const animations = document
+    .getAnimations()
+    .filter(
+      a => a instanceof CSSAnimation && a.animationName === animationName
+    );
+
+  animations.forEach(a => {
+    // eslint-disable-next-line no-param-reassign
+    a.startTime = startTime;
+  });
+}
+
+export default {
+  getClosestByClassName,
+  identityExtractHTMLElement,
+  syncAnimationStartTime,
+};
