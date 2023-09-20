@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Log from '@deephaven/log';
 import { ThemeContextValue } from './ThemeContext';
-import { DEFAULT_DARK_THEME_KEY, ThemeData } from './ThemeModel';
+import { ThemeData } from './ThemeModel';
 import { calculatePreloadStyleContent } from './ThemeUtils';
 import { useAppliedThemes } from './useAppliedThemes';
 import { useThemeCache } from './useThemeCache';
@@ -33,20 +33,20 @@ export function useInitializeThemeContextValue(): ThemeContextValue {
     [cache]
   );
 
-  // Set selected themes when theming is activated
+  // Once themes are activated, cache the preload data for next time page is
+  // refreshed.
   useEffect(() => {
-    if (activeThemes == null) {
+    const activeThemeKey = activeThemes?.at(-1)?.themeKey;
+
+    if (activeThemeKey == null) {
+      log.debug('No active themes');
       return;
     }
 
-    log.debug(
-      'Themes activated:',
-      activeThemes[0]?.themeKey,
-      activeThemes[1]?.themeKey
-    );
+    log.debug('Active themes:', activeThemes?.map(theme => theme.themeKey));
 
     cache.setPreloadData({
-      themeKey: activeThemes.at(-1)?.themeKey ?? DEFAULT_DARK_THEME_KEY,
+      themeKey: activeThemeKey,
       preloadStyleContent: calculatePreloadStyleContent(),
     });
   }, [activeThemes, cache]);

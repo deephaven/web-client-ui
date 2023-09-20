@@ -1,6 +1,6 @@
 import { createContext } from 'react';
 import Log from '@deephaven/log';
-import { assertNotNull, bindAllMethods } from '@deephaven/utils';
+import { bindAllMethods } from '@deephaven/utils';
 import {
   DEFAULT_DARK_THEME_KEY,
   ThemeData,
@@ -80,7 +80,7 @@ export class ThemeCache {
    * Returns an array of the applied themes. The first item will always be one
    * of the base themes. Optionally, the second item will be a custom theme.
    */
-  getAppliedThemes(): [ThemeData] | [ThemeData, ThemeData] {
+  getAppliedThemes(): [ThemeData] | [ThemeData, ThemeData] | null {
     if (this.appliedThemes == null) {
       const { themeKey } = this.getPreloadData() ?? {};
 
@@ -90,7 +90,9 @@ export class ThemeCache {
         custom?.baseThemeKey ?? themeKey ?? DEFAULT_DARK_THEME_KEY
       );
 
-      assertNotNull(base);
+      if (base == null) {
+        return null;
+      }
 
       log.debug('Caching appliedThemes:', base.themeKey, custom?.themeKey);
 

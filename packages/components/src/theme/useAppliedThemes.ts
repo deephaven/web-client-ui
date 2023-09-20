@@ -12,7 +12,7 @@ export function useAppliedThemes(
 ): [ThemeData] | [ThemeData, ThemeData] | null {
   const [appliedThemes, setAppliedThemes] = useState<
     [ThemeData] | [ThemeData, ThemeData] | null
-  >(null);
+  >(() => cache.getAppliedThemes());
 
   useEffect(
     () =>

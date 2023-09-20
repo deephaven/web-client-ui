@@ -12,6 +12,7 @@ const MOCK_CACHE_LOCAL_STORAGE_KEY = 'mock-theme-cache';
 let themeCache: ThemeCache;
 
 beforeEach(() => {
+  localStorage.clear();
   jest.clearAllMocks();
   jest.restoreAllMocks();
   expect.hasAssertions();
@@ -121,6 +122,12 @@ describe('setPreloadData', () => {
 });
 
 describe('getAppliedThemes', () => {
+  it('should return null if no base theme found', () => {
+    asMock(themeCache.getBaseTheme).mockReturnValue(null);
+
+    expect(themeCache.getAppliedThemes()).toBeNull();
+  });
+
   it.each([
     [mockTheme.noBase, null],
     [mockTheme.noBase, mockTheme.withBase],
@@ -138,6 +145,19 @@ describe('getAppliedThemes', () => {
     }
   );
 
+  it('should return from cache if found', () => {
+    asMock(themeCache.getBaseTheme).mockReturnValue(mockTheme.noBase);
+
+    const firstResult = themeCache.getAppliedThemes();
+
+    expect(firstResult).toEqual([mockTheme.noBase]);
+
+    jest.clearAllMocks();
+
+    expect(themeCache.getAppliedThemes()).toBe(firstResult);
+    expect(themeCache.getBaseTheme).not.toHaveBeenCalled();
+  });
+
   it.each([
     [mockTheme.noBase, JSON.parse(mockPreload.dataA) as ThemePreloadData],
     [mockTheme.noBase, null],
@@ -153,6 +173,10 @@ describe('getAppliedThemes', () => {
       asMock(themeCache.getCustomTheme).mockReturnValue(customTheme);
 
       themeCache.getAppliedThemes();
+
+      expect(themeCache.getCustomTheme).toHaveBeenCalledWith(
+        preloadData?.themeKey
+      );
       expect(themeCache.getBaseTheme).toHaveBeenCalledWith(
         customTheme.baseThemeKey ??
           preloadData?.themeKey ??

@@ -175,8 +175,13 @@ export function getAuthPluginComponent(
 export function getThemeDataFromPlugins(
   pluginMap: PluginModuleMap
 ): ThemeData[] {
-  return [...pluginMap.entries()]
-    .filter((entry): entry is [string, ThemePlugin] => isThemePlugin(entry[1]))
+  const themePluginEntries = [...pluginMap.entries()].filter(
+    (entry): entry is [string, ThemePlugin] => isThemePlugin(entry[1])
+  );
+
+  log.debug('Getting theme data from plugins', themePluginEntries);
+
+  return themePluginEntries
     .map(([pluginRootPath, plugin]) => {
       // Normalize to an array since config can be an array of configs or a
       // single config
