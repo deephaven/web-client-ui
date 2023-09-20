@@ -160,3 +160,35 @@ it('retry option available if fetching fails', async () => {
   expect(copyToClipboard).toHaveBeenCalled();
   expect(screen.getByText('Copied to Clipboard!')).toBeTruthy();
 });
+
+it('shows an error if the copy fails permissions', async () => {
+  const user = userEvent.setup({ delay: null });
+  const error = new Error('Test copy error');
+  mockedCopyToClipboard.mockReturnValueOnce(Promise.reject(error));
+
+  const ranges = GridTestUtils.makeRanges();
+  const copyOperation = makeCopyOperation(ranges);
+  mountCopySelection({ copyOperation });
+
+  await waitFor(() =>
+    expect(copyToClipboard).toHaveBeenCalledWith(DEFAULT_EXPECTED_TEXT)
+  );
+
+  expect(screen.getByText('Fetched 50 rows!')).toBeTruthy();
+
+  mockedCopyToClipboard.mockClear();
+  mockedCopyToClipboard.mockReturnValueOnce(Promise.reject(error));
+
+  const btn = screen.getByText('Click to Copy');
+  expect(btn).toBeTruthy();
+
+  await user.click(btn);
+
+  await waitFor(() =>
+    expect(copyToClipboard).toHaveBeenCalledWith(DEFAULT_EXPECTED_TEXT)
+  );
+
+  expect(
+    screen.getByText('Unable to copy. Verify your browser permissions.')
+  ).toBeTruthy();
+});
