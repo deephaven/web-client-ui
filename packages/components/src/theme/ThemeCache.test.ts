@@ -162,6 +162,18 @@ describe('getAppliedThemes', () => {
   );
 });
 
+describe('getBaseTheme', () => {
+  it('should return null if given null theme key', () => {
+    expect(themeCache.getBaseTheme(null)).toBeNull();
+  });
+});
+
+describe('getCustomTheme', () => {
+  it('should return null if given null theme key', () => {
+    expect(themeCache.getCustomTheme(null)).toBeNull();
+  });
+});
+
 describe('registerBaseThemes', () => {
   it('should register the base themes', () => {
     const given = [mockTheme.noBase, mockTheme.withBase];
