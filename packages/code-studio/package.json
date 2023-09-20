@@ -11,6 +11,7 @@
     "directory": "packages/code-studio"
   },
   "dependencies": {
+    "@adobe/react-spectrum": "^3.29.0",
     "@deephaven/app-utils": "file:../app-utils",
     "@deephaven/auth-plugins": "file:../auth-plugins",
     "@deephaven/chart": "file:../chart",
