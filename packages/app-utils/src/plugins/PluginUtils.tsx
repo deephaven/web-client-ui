@@ -88,14 +88,17 @@ export async function loadModulePlugins(
       const module = pluginModules[i];
       const { name } = manifest.plugins[i];
       if (module.status === 'fulfilled') {
-        pluginMap.set(
-          name,
-          isLegacyPlugin(module.value)
-            ? module.value
-            : module.value.default ?? module.value
-        );
+        const moduleValue = isLegacyPlugin(module.value)
+          ? module.value
+          : module.value.default ?? module.value;
+
+        if (moduleValue == null) {
+          log.error(`Plugin '${name}' is missing an exported value.`);
+        } else {
+          pluginMap.set(name, moduleValue);
+        }
       } else {
-        log.error(`Unable to load plugin ${name}`, module.reason);
+        log.error(`Unable to load plugin '${name}'`, module.reason);
       }
     }
     log.info('Plugins loaded:', pluginMap);
