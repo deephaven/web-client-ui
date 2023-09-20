@@ -140,7 +140,7 @@ export interface ThemePluginConfig {
 
 export interface ThemePlugin extends Plugin {
   type: typeof PluginType.THEME_PLUGIN;
-  config: ThemePluginConfig | ThemePluginConfig[];
+  themes: ThemePluginConfig | ThemePluginConfig[];
 }
 
 /** Type guard to check if given plugin is a `ThemePlugin` */

@@ -13,7 +13,7 @@ describe('getThemeDataFromPlugins', () => {
   const themePluginSingleDark: ThemePlugin = {
     name: 'mock.themePluginNameA',
     type: 'ThemePlugin',
-    config: {
+    themes: {
       name: 'mock.customDark',
       baseTheme: 'dark',
       styleContent: 'mock.styleContent',
@@ -23,7 +23,7 @@ describe('getThemeDataFromPlugins', () => {
   const themePluginSingleLight: ThemePlugin = {
     name: 'mock.themePluginNameB',
     type: 'ThemePlugin',
-    config: {
+    themes: {
       name: 'mock.customLight',
       baseTheme: 'light',
       styleContent: 'mock.styleContent',
@@ -33,7 +33,7 @@ describe('getThemeDataFromPlugins', () => {
   const themePluginMultiConfig: ThemePlugin = {
     name: 'mock.themePluginNameC',
     type: 'ThemePlugin',
-    config: [
+    themes: [
       {
         name: 'mock.customDark',
         baseTheme: 'dark',

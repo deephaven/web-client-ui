@@ -188,9 +188,9 @@ export function getThemeDataFromPlugins(
     .map(([pluginRootPath, plugin]) => {
       // Normalize to an array since config can be an array of configs or a
       // single config
-      const configs = Array.isArray(plugin.config)
-        ? plugin.config
-        : [plugin.config];
+      const configs = Array.isArray(plugin.themes)
+        ? plugin.themes
+        : [plugin.themes];
 
       return configs.map(
         ({ name, baseTheme, styleContent }) =>
