@@ -1,5 +1,7 @@
 import React from 'react';
 import { Provider } from 'react-redux';
+import { Provider as SpectrumProvider } from '@adobe/react-spectrum';
+import { themeDHDefault } from '@deephaven/components';
 import { MonacoUtils } from '@deephaven/console';
 import { store } from '@deephaven/redux';
 import { DownloadServiceWorkerUtils } from '@deephaven/iris-grid';
@@ -22,7 +24,14 @@ export function AppRoot(): JSX.Element {
 
   return (
     <Provider store={store}>
-      <AppRouter />
+      {/* TODO: Remove this SpectrumProvider. Brian will be implementing it with his changes. */}
+      <SpectrumProvider
+        UNSAFE_style={{ backgroundColor: 'transparent' }}
+        colorScheme="dark"
+        theme={themeDHDefault}
+      >
+        <AppRouter />
+      </SpectrumProvider>
     </Provider>
   );
 }
