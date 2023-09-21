@@ -3,15 +3,6 @@ import ReactDOM from 'react-dom';
 import '@deephaven/components/scss/BaseStyleSheet.scss';
 import { LoadingOverlay } from '@deephaven/components';
 import { ApiBootstrap } from '@deephaven/jsapi-bootstrap';
-// import {
-// GridPluginConfig,
-// PandasPluginConfig,
-// ChartPluginConfig,
-// ChartBuilderPluginConfig,
-// FilterPluginConfig,
-// MarkdownPluginConfig,
-// LinkerPluginConfig,
-// } from '@deephaven/dashboard-core-plugins';
 import logInit from './log/LogInit';
 
 logInit();
