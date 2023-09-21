@@ -1,7 +1,13 @@
 .loading-spinner {
-  --primary-color: var(--dh-accent-color, #4c7dee);
-  /* stylelint-disable-next-line alpha-value-notation */
-  --secondary-color: rgba(240, 240, 240, 0.5);
+  --primary-color: var(
+    --dh-loading-spinner-primary-color,
+    --dh-accent-color,
+    #4c7dee
+  );
+  --secondary-color: var(
+    --dh-loading-spinner-secondary-color,
+    rgba(240, 240, 240, 0.5)
+  );
   --border-width: 1px;
   --size: 14px;
 
