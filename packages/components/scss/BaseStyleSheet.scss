@@ -177,6 +177,8 @@ span.btn-disabled-wrapper {
   .fa-layers,
   .loading-spinner {
     margin-right: 0.5rem;
+    // .fa-layers already uses this `vertical-align` to align spinner with
+    // button text. Setting explicilty so that .loading-spinner aligns the same
     vertical-align: -0.125em;
   }
 }
