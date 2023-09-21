@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import debounce from 'lodash.debounce';
+import { TableUtils } from '@deephaven/jsapi-utils';
 import type { dh as DhType, Table } from '@deephaven/jsapi-types';
 import { ItemList, LoadingSpinner } from '@deephaven/components';
 import Log from '@deephaven/log';
@@ -86,6 +87,9 @@ class PartitionSelectorSearch<T> extends Component<
     this.searchInput = null;
     this.timer = null;
 
+    const { dh } = props;
+    this.tableUtils = new TableUtils(dh);
+
     this.state = {
       offset: 0,
       itemCount: 0,
@@ -124,6 +128,8 @@ class PartitionSelectorSearch<T> extends Component<
   searchInput: HTMLInputElement | null;
 
   timer: null;
+
+  tableUtils: TableUtils;
 
   handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>): boolean {
     if (this.itemList == null) {
@@ -275,19 +281,19 @@ class PartitionSelectorSearch<T> extends Component<
   }
 
   updateFilter(): void {
-    const { dh, initialPageSize, table } = this.props;
+    const { initialPageSize, table } = this.props;
     const { text } = this.state;
     const filterText = text.trim();
     const filters = [];
     if (filterText.length > 0) {
       const column = table.columns[0];
-      const filter = column
-        .filter()
-        .invoke(
-          'matches',
-          dh.FilterValue.ofString(`(?s)(?i).*\\Q${filterText}\\E.*`)
-        );
-      filters.push(filter);
+      const filter = this.tableUtils.makeQuickFilterFromComponent(
+        column,
+        column.type === 'java.lang.String' ? `~${filterText}` : filterText
+      );
+      if (filter !== null) {
+        filters.push(filter);
+      }
     }
 
     log.debug2('updateFilter', filters);

@@ -4,10 +4,9 @@ import { DropdownMenu, Tooltip } from '@deephaven/components';
 import { vsTriangleDown, vsClose } from '@deephaven/icons';
 import Log from '@deephaven/log';
 import debounce from 'lodash.debounce';
-import type { dh as DhType, Table } from '@deephaven/jsapi-types';
+import type { Column, dh as DhType, Table } from '@deephaven/jsapi-types';
 import PartitionSelectorSearch from './PartitionSelectorSearch';
 import './IrisGridPartitionSelector.scss';
-import { ColumnName } from './CommonTypes';
 
 const log = Log.module('IrisGridPartitionSelector');
 
@@ -16,7 +15,7 @@ interface IrisGridPartitionSelectorProps<T> {
   dh: DhType;
   getFormattedString: (value: T, type: string, name: string) => string;
   table: Table;
-  columnName: ColumnName;
+  column: Column;
   partition: string;
   onAppend?: (partition: string) => void;
   onFetchAll: () => void;
@@ -90,9 +89,22 @@ class IrisGridPartitionSelector<T> extends Component<
   handlePartitionChange(event: React.ChangeEvent<HTMLInputElement>): void {
     log.debug2('handlePartitionChange');
 
+    const { column } = this.props;
     const { value: partition } = event.target;
 
-    this.setState({ partition });
+    this.setState({
+      partition:
+        column.type === 'char' && partition.length > 0
+          ? partition.charCodeAt(0).toString()
+          : partition,
+
+      // partition:
+      //   column.type === 'char'
+      //     ? partition.length > 0
+      //       ? partition.charCodeAt(0).toString()
+      //       : prevState.partition
+      //     : partition,
+    });
 
     this.debounceUpdate();
   }
@@ -154,7 +166,7 @@ class IrisGridPartitionSelector<T> extends Component<
   }
 
   render(): JSX.Element {
-    const { columnName, dh, getFormattedString, onAppend, onDone, table } =
+    const { column, dh, getFormattedString, onAppend, onDone, table } =
       this.props;
     const { partition } = this.state;
     const partitionSelectorSearch = (
@@ -173,12 +185,16 @@ class IrisGridPartitionSelector<T> extends Component<
     return (
       <div className="iris-grid-partition-selector">
         <div className="status-message">
-          <span>Filtering &quot;{columnName}&quot; partition to</span>
+          <span>Filtering &quot;{column.name}&quot; partition to</span>
         </div>
         <div className="input-group">
           <input
             type="text"
-            value={partition}
+            value={
+              column.type === 'char' && partition.toString().length > 0
+                ? String.fromCharCode(parseInt(partition, 10))
+                : partition
+            }
             onChange={this.handlePartitionChange}
             className="form-control input-partition"
           />
