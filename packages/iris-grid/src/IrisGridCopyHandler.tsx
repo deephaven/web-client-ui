@@ -418,7 +418,9 @@ class IrisGridCopyHandler extends Component<
               onClick={this.handleCopyClick}
               disabled={isFetching}
             >
-              {isFetching && <LoadingSpinner />}
+              {isFetching && (
+                <LoadingSpinner className="mimic-fa-layers-vertical-align" />
+              )}
               {copyButtonText}
             </Button>
           </div>

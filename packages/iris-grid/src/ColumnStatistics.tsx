@@ -258,7 +258,7 @@ class ColumnStatistics extends Component<
         )}
         {loading && (
           <div className="column-statistics-loading">
-            <LoadingSpinner className="mr-2" />
+            <LoadingSpinner className="mimic-fa-layers-vertical-align" />
             Calculating Stats...
           </div>
         )}
