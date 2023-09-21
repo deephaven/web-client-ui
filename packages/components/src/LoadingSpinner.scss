@@ -16,11 +16,19 @@
   margin: 0 auto;
   width: var(--size);
   height: var(--size);
+
+  // The original LoadingSpinner used `.fa-layers` to create the spinner icon.
+  // This vertical-align value was copied from the `.fa-layers` class to avoid
+  // breaking alignment in existing usages such as `ContextActions` and
+  // `.btn-spinner`
+  vertical-align: -0.125em;
 }
 
 .loading-spinner-large {
   --border-width: 4px;
   --size: 56px;
+
+  vertical-align: 0;
 }
 
 // Spinning circle with colored border and transparent center. Half of the
