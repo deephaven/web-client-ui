@@ -65,5 +65,6 @@ Object.defineProperty(document, 'fonts', {
 });
 
 Object.defineProperty(document, 'getAnimations', {
-  value: jest.fn().mockName('getAnimations'),
+  value: () => [],
+  writable: true,
 });

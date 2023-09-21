@@ -5,10 +5,11 @@ import {
 } from './DOMUtils';
 import TestUtils from './TestUtils';
 
-const { asMock, createMockProxy } = TestUtils;
+const { createMockProxy } = TestUtils;
 
 beforeEach(() => {
   jest.clearAllMocks();
+  jest.restoreAllMocks();
   expect.hasAssertions();
 });
 
@@ -98,12 +99,14 @@ describe('syncAnimationStartTime', () => {
   it('should set startTime of all CSSAnimations with given name to given value', () => {
     expect(cssAnimationA1).toBeInstanceOf(CSSAnimation);
 
-    asMock(document.getAnimations).mockReturnValue([
-      cssAnimationA1,
-      cssAnimationA2,
-      cssAnimationB,
-      notCSSAnimation,
-    ]);
+    jest
+      .spyOn(document, 'getAnimations')
+      .mockReturnValue([
+        cssAnimationA1,
+        cssAnimationA2,
+        cssAnimationB,
+        notCSSAnimation,
+      ]);
 
     const startTime = 123;
 
