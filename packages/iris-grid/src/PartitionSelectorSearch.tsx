@@ -287,6 +287,13 @@ class PartitionSelectorSearch<T> extends Component<
     const filters = [];
     if (filterText.length > 0) {
       const column = table.columns[0];
+      if (
+        column.type !== 'java.lang.String' &&
+        column.type !== 'char' &&
+        Number.isNaN(Number(filterText))
+      ) {
+        return;
+      }
       const filter = this.tableUtils.makeQuickFilterFromComponent(
         column,
         column.type === 'java.lang.String' ? `~${filterText}` : filterText
