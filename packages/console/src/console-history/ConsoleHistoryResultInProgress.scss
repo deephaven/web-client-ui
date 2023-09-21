@@ -13,6 +13,7 @@ $button-height: ConsoleVariables.$button-height;
     color: $foreground;
     font-size: $font-size;
     font-weight: $font-weight-base;
+    gap: 4px;
     margin: $button-vert-margin $button-vert-margin $button-vert-margin 0;
     height: $button-height;
     border-radius: $button-height;
