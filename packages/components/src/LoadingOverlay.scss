@@ -2,7 +2,6 @@
 
 $iris-panel-message-font-size: 1.2rem;
 $iris-panel-icon-font-size: 64px;
-$iris-panel-icon-height: 96px;
 $iris-panel-scrim-bg: rgba(black, 0.1);
 
 .iris-panel-message-overlay {
@@ -14,14 +13,16 @@ $iris-panel-scrim-bg: rgba(black, 0.1);
   overflow: hidden;
 
   .message-content {
+    display: flex;
+    flex-direction: column;
     font-size: $iris-panel-message-font-size;
+    gap: 20px;
     .message-icon {
-      display: flex;
-      height: $iris-panel-icon-height;
-      align-items: center;
-      justify-content: center;
+      font-size: $iris-panel-icon-font-size;
+      height: $iris-panel-icon-font-size;
+      line-height: $iris-panel-icon-font-size;
       .svg-inline--fa {
-        font-size: $iris-panel-icon-font-size;
+        font-size: inherit;
       }
     }
   }
