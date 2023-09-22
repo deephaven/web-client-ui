@@ -33,6 +33,12 @@ test('test creating a file, saving it, reloading the page, closing it, re-openin
   // Click button:has-text("Save")
   await page.locator('button:has-text("Save")').click();
 
+  // Pause so the save can actually finish
+  // We eagerly show the save status, so can't use that to detect save finish
+  await new Promise(resolve => {
+    setTimeout(resolve, 2000);
+  });
+
   // Reload page to check state of panel is saved
   await page.reload();
 
