@@ -97,13 +97,6 @@ class IrisGridPartitionSelector<T> extends Component<
         column.type === 'char' && partition.length > 0
           ? partition.charCodeAt(0).toString()
           : partition,
-
-      // partition:
-      //   column.type === 'char'
-      //     ? partition.length > 0
-      //       ? partition.charCodeAt(0).toString()
-      //       : prevState.partition
-      //     : partition,
     });
 
     this.debounceUpdate();

@@ -1926,20 +1926,30 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
 
     const { model } = this.props;
-    const partitionFilter = partitionColumn
-      .filter()
-      .eq(
-        partitionColumn.type === 'java.lang.String' ||
-          partitionColumn.type === 'char'
-          ? model.dh.FilterValue.ofString(
-              model.displayString(
-                partition,
-                partitionColumn.type,
-                partitionColumn.name
-              )
-            )
-          : model.dh.FilterValue.ofNumber(partition)
+
+    let partitionFilterValue;
+    if (
+      partitionColumn.type === 'java.lang.String' ||
+      partitionColumn.type === 'char'
+    ) {
+      partitionFilterValue = model.dh.FilterValue.ofString(
+        model.displayString(
+          partition,
+          partitionColumn.type,
+          partitionColumn.name
+        )
       );
+    } else if (
+      partitionColumn.type === 'java.lang.Boolean' ||
+      partitionColumn.type === 'boolean'
+    ) {
+      partitionFilterValue = model.dh.FilterValue.ofBoolean(partition);
+    } else {
+      partitionFilterValue = model.dh.FilterValue.ofNumber(partition);
+    }
+
+    const partitionFilter = partitionColumn.filter().eq(partitionFilterValue);
+
     const partitionFilters = [partitionFilter];
     this.setState({
       partition,

@@ -288,18 +288,18 @@ class PartitionSelectorSearch<T> extends Component<
     if (filterText.length > 0) {
       const column = table.columns[0];
       if (
-        column.type !== 'java.lang.String' &&
-        column.type !== 'char' &&
-        Number.isNaN(Number(filterText))
+        column.type === 'java.lang.String' ||
+        column.type === 'char' ||
+        column.type === 'java.lang.Boolean' ||
+        !Number.isNaN(Number(filterText))
       ) {
-        return;
-      }
-      const filter = this.tableUtils.makeQuickFilterFromComponent(
-        column,
-        column.type === 'java.lang.String' ? `~${filterText}` : filterText
-      );
-      if (filter !== null) {
-        filters.push(filter);
+        const filter = this.tableUtils.makeQuickFilterFromComponent(
+          column,
+          column.type === 'java.lang.String' ? `~${filterText}` : filterText
+        );
+        if (filter) {
+          filters.push(filter);
+        }
       }
     }
 
