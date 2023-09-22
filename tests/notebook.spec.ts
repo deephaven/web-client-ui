@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import shortid from 'shortid';
 import { pasteInMonaco } from './utils';
 
-test('test creating a file, saving it, closing it, re-opening it, running it, then deleting it', async ({
+test('test creating a file, saving it, reloading the page, closing it, re-opening it, running it, then deleting it', async ({
   page,
 }) => {
   await page.goto('');
@@ -32,6 +32,13 @@ test('test creating a file, saving it, closing it, re-opening it, running it, th
 
   // Click button:has-text("Save")
   await page.locator('button:has-text("Save")').click();
+
+  // Reload page to check state of panel is saved
+  await page.reload();
+
+  await expect(
+    page.locator('.editor-container').locator('textarea')
+  ).not.toBeEmpty();
 
   // Click close on the notebook file .lm_close_tab
   await page.locator('.lm_close_tab').click();
