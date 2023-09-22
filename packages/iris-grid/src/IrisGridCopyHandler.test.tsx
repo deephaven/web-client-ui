@@ -190,5 +190,5 @@ it('shows an error if the copy fails permissions', async () => {
 
   expect(
     screen.getByText('Unable to copy. Verify your browser permissions.')
-  ).toBeTruthy();
+  ).toBeInTheDocument();
 });
