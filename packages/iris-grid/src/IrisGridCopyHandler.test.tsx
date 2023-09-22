@@ -180,7 +180,7 @@ it('shows an error if the copy fails permissions', async () => {
   mockedCopyToClipboard.mockReturnValueOnce(Promise.reject(error));
 
   const btn = screen.getByText('Click to Copy');
-  expect(btn).toBeTruthy();
+  expect(btn).toBeInTheDocument();
 
   await user.click(btn);
 
