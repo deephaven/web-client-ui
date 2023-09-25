@@ -319,7 +319,9 @@ export interface IrisGridProps {
   invertSearchColumns: boolean;
 
   // eslint-disable-next-line react/no-unused-prop-types
-  onContextMenu: (data: IrisGridContextMenuData) => ResolvableContextAction[];
+  onContextMenu: (
+    data: IrisGridContextMenuData
+  ) => readonly ResolvableContextAction[];
 
   pendingDataMap?: PendingDataMap;
   getDownloadWorker: () => Promise<ServiceWorker>;
@@ -486,7 +488,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     searchValue: '',
     selectedSearchColumns: null,
     invertSearchColumns: true,
-    onContextMenu: (): void => undefined,
+    onContextMenu: (): readonly ResolvableContextAction[] => EMPTY_ARRAY,
     pendingDataMap: EMPTY_MAP,
     getDownloadWorker: DownloadServiceWorkerUtils.getServiceWorker,
     settings: {
