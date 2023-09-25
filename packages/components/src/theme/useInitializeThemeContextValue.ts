@@ -40,7 +40,11 @@ export function useInitializeThemeContextValue(): ThemeContextValue {
    */
   const registerThemes = useCallback(
     (themeRegistrationData: ThemeRegistrationData) => {
-      setThemeRegistration(mapThemeRegistrationData(themeRegistrationData));
+      const themeRegistrationStorage = mapThemeRegistrationData(
+        themeRegistrationData
+      );
+      log.debug('Registering themes', themeRegistrationStorage);
+      setThemeRegistration(themeRegistrationStorage);
     },
     []
   );
