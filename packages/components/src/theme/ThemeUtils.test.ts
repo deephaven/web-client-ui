@@ -62,6 +62,11 @@ describe('getActiveThemes', () => {
     },
   } satisfies Record<string, ThemeData>;
 
+  const themeRegistration: ThemeRegistrationStorageData = {
+    base: new Map([[mockTheme.base.themeKey, mockTheme.base]]),
+    custom: new Map([[mockTheme.custom.themeKey, mockTheme.custom]]),
+  };
+
   it.each([null, mockTheme.customInvalid])(
     'should throw if base theme not found',
     customTheme => {
@@ -77,27 +82,18 @@ describe('getActiveThemes', () => {
     }
   );
 
-  it.each([
-    [mockTheme.base.themeKey, mockTheme.base, null],
-    [mockTheme.custom.themeKey, mockTheme.base, mockTheme.custom],
-  ])(
-    'should return base theme followed by optional custom theme: %s',
-    (themeKey, baseTheme, customTheme) => {
-      const themeRegistration: ThemeRegistrationStorageData = {
-        base: new Map([[baseTheme.themeKey, baseTheme]]),
-        custom:
-          customTheme == null
-            ? new Map()
-            : new Map([[customTheme.themeKey, customTheme]]),
-      };
+  it('should return a base theme if given base theme key', () => {
+    const actual = getActiveThemes(mockTheme.base.themeKey, themeRegistration);
+    expect(actual).toEqual([mockTheme.base]);
+  });
 
-      const actual = getActiveThemes(themeKey, themeRegistration);
-
-      expect(actual).toEqual(
-        customTheme == null ? [baseTheme] : [baseTheme, customTheme]
-      );
-    }
-  );
+  it('should return a base + custom theme if given a custom theme key', () => {
+    const actual = getActiveThemes(
+      mockTheme.custom.themeKey,
+      themeRegistration
+    );
+    expect(actual).toEqual([mockTheme.base, mockTheme.custom]);
+  });
 });
 
 describe('getDefaultBaseThemes', () => {
