@@ -24,7 +24,7 @@
     "clean": "run-s clean:*",
     "types": "tsc --build",
     "watch:types": "tsc --build --watch --preserveWatchOutput",
-    "build": "run-s build:necessary types build:packages build:app build:embed-grid build:embed-chart",
+    "build": "run-s build:necessary types build:packages build:apps",
     "build:apps": "lerna run --scope=@deephaven/{code-studio,embed-chart,embed-grid} build",
     "build:app": "lerna run --scope=@deephaven/code-studio build",
     "build:embed-chart": "lerna run --scope=@deephaven/embed-chart build",
