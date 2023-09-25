@@ -366,7 +366,6 @@ test('organize columns', async ({ page }) => {
   });
 });
 
-// TODO: Figure out why webkit drag doesn't work if steps aren't insanely high when generating linux snapshot (#1360)
 test('custom column', async ({ page }) => {
   await openTableOption(page, 'Custom Columns');
 
@@ -415,48 +414,41 @@ test('custom column', async ({ page }) => {
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });
 
-  // await test.step('Drag', async () => {
-  //   await addColumnButton.click();
+  await test.step('Drag', async () => {
+    await addColumnButton.click();
 
-  //   const dragColumn = page.getByPlaceholder('Column Name').nth(1);
-  //   await dragColumn.click();
-  //   await page.keyboard.type('Drag');
+    const dragColumn = page.getByPlaceholder('Column Name').nth(1);
+    await dragColumn.click();
+    await page.keyboard.type('Drag');
 
-  //   const dragColumnFormula = page.locator('.editor-container').nth(1);
-  //   await dragColumnFormula.click();
-  //   await page.keyboard.type('String');
+    const dragColumnFormula = page.locator('.editor-container').nth(1);
+    await dragColumnFormula.click();
+    await page.keyboard.type('String');
 
-  //   const dragButton = page
-  //     .getByRole('button', { name: 'Drag column to re-order' })
-  //     .nth(1);
-  //   const panelAbove = page
-  //     .getByRole('button', { name: 'Drag column to re-order' })
-  //     .first();
-  //   const dropIndicator = page
-  //     .locator('.custom-column-builder-container')
-  //     .locator('.dragging');
+    await saveButton.click();
+    await waitForLoadingDone(page);
 
-  //   const browser = dragButton.page().context().browser()?.browserType().name();
-  //   await dragComponent(
-  //     dragButton,
-  //     panelAbove,
-  //     dropIndicator,
-  //     0,
-  //     browser === 'webkit' ? 1000 : undefined
-  //   );
+    const dragButton = page
+      .getByRole('button', { name: 'Drag column to re-order' })
+      .nth(1);
+    const panelAbove = page
+      .getByRole('button', { name: 'Drag column to re-order' })
+      .first();
+    const dropIndicator = page
+      .locator('.custom-column-builder-container')
+      .locator('.dragging');
 
-  //   await saveButton.click();
+    await dragComponent(dragButton, panelAbove, dropIndicator, 0);
 
-  //   await waitForLoadingDone(page);
-  //   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-  // });
+    await saveButton.click();
+
+    await waitForLoadingDone(page);
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  });
 });
 
 test('rollup rows and aggregrate columns', async ({ page }) => {
   await openTableOption(page, 'Rollup Rows');
-
-  const dropdown = page.locator('.rollup-rows-group-by');
-  const dropIndicator = dropdown.locator('.is-dropping');
 
   const stringColumn = page.getByRole('button', { name: 'String' });
   await test.step('Rollup column', async () => {
@@ -507,7 +499,6 @@ test('rollup rows and aggregrate columns', async ({ page }) => {
       .getByRole('button', { name: 'Edit Columns', exact: true })
       .click();
     await page.getByText('Double', { exact: true }).click();
-
     await waitForLoadingDone(page);
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });
