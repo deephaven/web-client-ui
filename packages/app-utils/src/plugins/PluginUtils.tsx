@@ -1,3 +1,4 @@
+import { getThemeKey, ThemeData } from '@deephaven/components';
 import Log from '@deephaven/log';
 import {
   type PluginModule,
@@ -10,6 +11,8 @@ import {
   PluginType,
   isLegacyAuthPlugin,
   isLegacyPlugin,
+  isThemePlugin,
+  ThemePlugin,
 } from '@deephaven/plugin';
 import loadRemoteModule from './loadRemoteModule';
 
@@ -77,6 +80,7 @@ export async function loadModulePlugins(
       const pluginMainUrl = `${modulePluginsUrl}/${name}/${main}`;
       pluginPromises.push(loadModulePlugin(pluginMainUrl));
     }
+
     const pluginModules = await Promise.allSettled(pluginPromises);
 
     const pluginMap: PluginModuleMap = new Map();
@@ -86,7 +90,9 @@ export async function loadModulePlugins(
       if (module.status === 'fulfilled') {
         pluginMap.set(
           name,
-          isLegacyPlugin(module.value) ? module.value : module.value.default
+          isLegacyPlugin(module.value)
+            ? module.value
+            : module.value.default ?? module.value
         );
       } else {
         log.error(`Unable to load plugin ${name}`, module.reason);
@@ -160,4 +166,30 @@ export function getAuthPluginComponent(
   log.info('Using LoginPlugin', name);
 
   return component;
+}
+
+/**
+ * Extract theme data from theme plugins in the given plugin map.
+ * @param pluginMap
+ */
+export function getThemeDataFromPlugins(
+  pluginMap: PluginModuleMap
+): ThemeData[] {
+  return [...pluginMap.entries()]
+    .filter((entry): entry is [string, ThemePlugin] => isThemePlugin(entry[1]))
+    .map(([pluginRootPath, plugin]) => {
+      // Normalize to an array since config can be an array of configs or a
+      // single config
+      const configs = Array.isArray(plugin.config)
+        ? plugin.config
+        : [plugin.config];
+
+      return configs.map(({ name, baseTheme, styleContent }) => ({
+        baseThemeKey: `default-${baseTheme}`,
+        themeKey: getThemeKey(pluginRootPath, name),
+        name,
+        styleContent,
+      }));
+    })
+    .flat();
 }

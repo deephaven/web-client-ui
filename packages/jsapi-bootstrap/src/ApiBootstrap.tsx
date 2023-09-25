@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useState } from 'react';
+import { createContext, ReactNode, useEffect, useState } from 'react';
 import {
   LoadingOverlay,
   Modal,
@@ -17,7 +17,7 @@ export type ApiBootstrapProps = {
   apiUrl: string;
 
   /** Children to render when the API has loaded */
-  children: JSX.Element;
+  children: ReactNode;
 
   /** Element to display if there is a failure loading the API */
   failureElement?: JSX.Element;

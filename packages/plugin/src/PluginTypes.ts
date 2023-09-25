@@ -4,6 +4,7 @@ export const PluginType = Object.freeze({
   AUTH_PLUGIN: 'AuthPlugin',
   DASHBOARD_PLUGIN: 'DashboardPlugin',
   TABLE_PLUGIN: 'TablePlugin',
+  THEME_PLUGIN: 'ThemePlugin',
 });
 
 /**
@@ -128,4 +129,19 @@ export interface AuthPlugin extends Plugin {
 
 export function isAuthPlugin(plugin: PluginModule): plugin is AuthPlugin {
   return 'type' in plugin && plugin.type === PluginType.AUTH_PLUGIN;
+}
+
+export interface ThemePluginConfig {
+  name: string;
+  baseTheme: 'dark' | 'light';
+  styleContent: string;
+}
+
+export interface ThemePlugin extends Plugin {
+  type: typeof PluginType.THEME_PLUGIN;
+  config: ThemePluginConfig | ThemePluginConfig[];
+}
+
+export function isThemePlugin(plugin: PluginModule): plugin is ThemePlugin {
+  return 'type' in plugin && plugin.type === PluginType.THEME_PLUGIN;
 }
