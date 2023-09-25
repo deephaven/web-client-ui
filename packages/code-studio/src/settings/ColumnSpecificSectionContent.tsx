@@ -71,9 +71,6 @@ interface ColumnSpecificSectionContentState {
   showTimeZone: boolean;
   showTSeparator: boolean;
   timeZone: string;
-  defaultDateTimeFormat: string;
-  defaultDecimalFormatOptions: FormatOption;
-  defaultIntegerFormatOptions: FormatOption;
   truncateNumbersWithPound: boolean;
   timestampAtMenuOpen: Date;
 }
@@ -116,9 +113,6 @@ export class ColumnSpecificSectionContent extends PureComponent<
 
     const {
       formatter,
-      defaultDateTimeFormat,
-      defaultDecimalFormatOptions,
-      defaultIntegerFormatOptions,
       showTimeZone,
       showTSeparator,
       timeZone,
@@ -141,9 +135,6 @@ export class ColumnSpecificSectionContent extends PureComponent<
       showTimeZone,
       showTSeparator,
       timeZone,
-      defaultDateTimeFormat,
-      defaultDecimalFormatOptions,
-      defaultIntegerFormatOptions,
       truncateNumbersWithPound,
       timestampAtMenuOpen: new Date(),
     };
@@ -284,14 +275,18 @@ export class ColumnSpecificSectionContent extends PureComponent<
   commitChanges(): void {
     const {
       formatSettings,
-      defaultDateTimeFormat,
       showTimeZone,
       showTSeparator,
       timeZone,
-      defaultDecimalFormatOptions,
-      defaultIntegerFormatOptions,
       truncateNumbersWithPound,
     } = this.state;
+
+    const {
+      defaultDateTimeFormat,
+      defaultDecimalFormatOptions,
+      defaultIntegerFormatOptions,
+    } = this.props;
+
     const { dh } = this.props;
 
     const formatter =
@@ -511,6 +506,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
     isInvalid: boolean
   ): ReactElement {
     const { showTimeZone, showTSeparator, timeZone } = this.state;
+
     const value = format.formatString ?? '';
     return (
       <select
@@ -544,6 +540,8 @@ export class ColumnSpecificSectionContent extends PureComponent<
     format: Partial<TableColumnFormat>,
     isInvalid: boolean
   ): ReactElement {
+    const { defaultIntegerFormatOptions } = this.props;
+    const { defaultFormatString } = defaultIntegerFormatOptions;
     const value = format.formatString ?? '';
     return (
       <input
@@ -552,7 +550,22 @@ export class ColumnSpecificSectionContent extends PureComponent<
         })}
         data-lpignore
         id={formatId}
-        placeholder={IntegerColumnFormatter.DEFAULT_FORMAT_STRING}
+        placeholder={
+          defaultFormatString ?? IntegerColumnFormatter.DEFAULT_FORMAT_STRING
+        }
+        onKeyDown={e => {
+          if (e.key === 'Enter' && value === '') {
+            e.preventDefault();
+            const selectedFormat = IntegerColumnFormatter.makeFormat(
+              '',
+              defaultFormatString ??
+                IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
+              IntegerColumnFormatter.TYPE_GLOBAL,
+              undefined
+            );
+            this.handleFormatRuleChange(i, 'format', selectedFormat);
+          }
+        }}
         type="text"
         value={value}
         onChange={e => {
@@ -574,6 +587,9 @@ export class ColumnSpecificSectionContent extends PureComponent<
     format: Partial<TableColumnFormat>,
     isInvalid: boolean
   ): ReactElement {
+    const { defaultDecimalFormatOptions } = this.props;
+    const { defaultFormatString } = defaultDecimalFormatOptions;
+
     const value = format.formatString ?? '';
     return (
       <input
@@ -582,7 +598,22 @@ export class ColumnSpecificSectionContent extends PureComponent<
         })}
         data-lpignore
         id={formatId}
-        placeholder={DecimalColumnFormatter.DEFAULT_FORMAT_STRING}
+        placeholder={
+          defaultFormatString ?? DecimalColumnFormatter.DEFAULT_FORMAT_STRING
+        }
+        onKeyDown={e => {
+          if (e.key === 'Enter' && value === '') {
+            e.preventDefault();
+            const selectedFormat = DecimalColumnFormatter.makeFormat(
+              '',
+              defaultFormatString ??
+                DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
+              DecimalColumnFormatter.TYPE_GLOBAL,
+              undefined
+            );
+            this.handleFormatRuleChange(i, 'format', selectedFormat);
+          }
+        }}
         type="text"
         value={value}
         onChange={e => {
