@@ -7,6 +7,7 @@ import debounce from 'lodash.debounce';
 import type { Column, dh as DhType, Table } from '@deephaven/jsapi-types';
 import PartitionSelectorSearch from './PartitionSelectorSearch';
 import './IrisGridPartitionSelector.scss';
+import IrisGridUtils from './IrisGridUtils';
 
 const log = Log.module('IrisGridPartitionSelector');
 
@@ -184,9 +185,10 @@ class IrisGridPartitionSelector<T> extends Component<
           <input
             type="text"
             value={
+              // IrisGridUtils.convertValueToText(partition, column.type)
               column.type === 'char' && partition.toString().length > 0
                 ? String.fromCharCode(parseInt(partition, 10))
-                : partition
+                : IrisGridUtils.convertValueToText(partition, column.type)
             }
             onChange={this.handlePartitionChange}
             className="form-control input-partition"
