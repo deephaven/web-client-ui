@@ -17,7 +17,7 @@ import {
 const log = Log.module('useInitializeThemeContextValue');
 
 /**
- * Creates a `ThemeContextValue` based on the current `ThemeCacheContext`.
+ * Initialize a `ThemeContextValue`.
  */
 export function useInitializeThemeContextValue(): ThemeContextValue {
   const [selectedThemeKey, setSelectedThemeKey] = useState<string>(

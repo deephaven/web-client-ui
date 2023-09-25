@@ -139,7 +139,6 @@ export function getThemeKey(pluginRootPath: string, themeName: string): string {
 
 /**
  * Preload minimal theme variables from the cache.
- * @param themeCache The theme cache to preload from
  */
 export function preloadTheme(): void {
   const preloadStyleContent =
