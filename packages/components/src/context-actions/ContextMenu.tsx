@@ -594,7 +594,7 @@ class ContextMenu extends PureComponent<ContextMenuProps, ContextMenuState> {
     if (pendingItems.length > 0) {
       pendingElement = (
         <div className="loading">
-          <LoadingSpinner className="mimic-fa-layers-vertical-align" />
+          <LoadingSpinner className="loading-spinner-vertical-align" />
         </div>
       );
     }

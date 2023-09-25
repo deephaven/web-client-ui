@@ -419,7 +419,7 @@ class IrisGridCopyHandler extends Component<
               disabled={isFetching}
             >
               {isFetching && (
-                <LoadingSpinner className="mimic-fa-layers-vertical-align" />
+                <LoadingSpinner className="loading-spinner-vertical-align" />
               )}
               {copyButtonText}
             </Button>
