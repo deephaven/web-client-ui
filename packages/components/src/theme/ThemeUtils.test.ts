@@ -73,7 +73,7 @@ describe('getActiveThemes', () => {
               ? new Map()
               : new Map([[customTheme.themeKey, customTheme]]),
         })
-      ).toThrowError('Base theme not found');
+      ).toThrowError(`Default base theme 'default-dark' is not registered`);
     }
   );
 

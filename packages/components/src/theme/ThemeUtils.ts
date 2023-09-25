@@ -49,11 +49,16 @@ export function getActiveThemes(
   let base = themeRegistration.base.get(baseThemeKey);
 
   if (base == null) {
-    log.error('Base theme not found', baseThemeKey);
+    log.error(
+      `No registered base theme found for theme key: '${baseThemeKey}'`
+    );
     base = themeRegistration.base.get(DEFAULT_DARK_THEME_KEY);
-  }
 
-  assertNotNull(base, 'Base theme not found');
+    assertNotNull(
+      base,
+      `Default base theme '${DEFAULT_DARK_THEME_KEY}' is not registered`
+    );
+  }
 
   log.debug('Applied themes:', base.themeKey, custom?.themeKey);
 
