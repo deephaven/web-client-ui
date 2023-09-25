@@ -297,9 +297,12 @@ class PartitionSelectorSearch<T> extends Component<
           column,
           column.type === 'java.lang.String' ? `~${filterText}` : filterText
         );
-        if (filter) {
-          filters.push(filter);
+        if (!filter) {
+          throw new Error(
+            'Unable to create column filter for partition selector'
+          );
         }
+        filters.push(filter);
       }
     }
 
