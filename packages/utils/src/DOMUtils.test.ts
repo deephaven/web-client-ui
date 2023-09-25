@@ -96,25 +96,26 @@ describe('syncAnimationStartTime', () => {
     notCSSAnimation.startTime = null;
   });
 
-  it('should set startTime of all CSSAnimations with given name to given value', () => {
-    expect(cssAnimationA1).toBeInstanceOf(CSSAnimation);
+  it.each([undefined, 123])(
+    'should set startTime of all CSSAnimations with given name to given value: %s',
+    startTime => {
+      expect(cssAnimationA1).toBeInstanceOf(CSSAnimation);
 
-    jest
-      .spyOn(document, 'getAnimations')
-      .mockReturnValue([
-        cssAnimationA1,
-        cssAnimationA2,
-        cssAnimationB,
-        notCSSAnimation,
-      ]);
+      jest
+        .spyOn(document, 'getAnimations')
+        .mockReturnValue([
+          cssAnimationA1,
+          cssAnimationA2,
+          cssAnimationB,
+          notCSSAnimation,
+        ]);
 
-    const startTime = 123;
+      syncAnimationStartTime('animationA', startTime);
 
-    syncAnimationStartTime('animationA', startTime);
-
-    expect(cssAnimationA1.startTime).toBe(startTime);
-    expect(cssAnimationA2.startTime).toBe(startTime);
-    expect(cssAnimationB.startTime).toBeNull();
-    expect(notCSSAnimation.startTime).toBeNull();
-  });
+      expect(cssAnimationA1.startTime).toBe(startTime ?? 0);
+      expect(cssAnimationA2.startTime).toBe(startTime ?? 0);
+      expect(cssAnimationB.startTime).toBeNull();
+      expect(notCSSAnimation.startTime).toBeNull();
+    }
+  );
 });
