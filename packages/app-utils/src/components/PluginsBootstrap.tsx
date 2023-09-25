@@ -29,14 +29,12 @@ export function PluginsBootstrap({
   children,
 }: PluginsBootstrapProps): JSX.Element {
   const [plugins, setPlugins] = useState<PluginModuleMap | null>(null);
-
   useEffect(
     function initPlugins() {
       let isCanceled = false;
       async function loadPlugins(): Promise<void> {
         const corePlugins = (await getCorePlugins?.()) ?? [];
         const pluginModules = await loadModulePlugins(pluginsUrl);
-
         if (!isCanceled) {
           const corePluginPairs = corePlugins.map(
             plugin => [plugin.name, plugin] as const
