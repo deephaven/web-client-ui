@@ -1943,7 +1943,11 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       partitionColumn.type === 'java.lang.Boolean' ||
       partitionColumn.type === 'boolean'
     ) {
-      partitionFilterValue = model.dh.FilterValue.ofBoolean(partition);
+      partitionFilterValue = model.dh.FilterValue.ofBoolean(
+        typeof partition === 'string'
+          ? TableUtils.makeBooleanValue(partition)
+          : partition
+      );
     } else {
       partitionFilterValue = model.dh.FilterValue.ofNumber(partition);
     }
