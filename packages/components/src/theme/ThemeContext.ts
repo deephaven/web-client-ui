@@ -7,13 +7,13 @@ import {
   useState,
 } from 'react';
 import { ThemeCache, useThemeCache } from './ThemeCache';
-import type { ThemeData } from './ThemeModel';
+import { DEFAULT_THEME_KEY, ThemeData } from './ThemeModel';
 
 export interface ThemeContextValue {
   activeThemes: ThemeData[] | null;
   cache: ThemeCache;
   isActive: boolean;
-  activate: (additionalThemeData: ThemeData[]) => void;
+  registerCustomThemesAndActivate: (additionalThemeData: ThemeData[]) => void;
 }
 
 export const ThemeContext = createContext<ThemeContextValue | null>(null);
@@ -31,7 +31,7 @@ export function useInitializeThemeContextValue(): ThemeContextValue {
 
   const [isActive, setIsActive] = useState(false);
 
-  const activate = useCallback(
+  const registerCustomThemesAndActivate = useCallback(
     (additionalThemeData: ThemeData[]) => {
       cache.registerCustomThemes(additionalThemeData);
       setIsActive(true);
@@ -39,8 +39,11 @@ export function useInitializeThemeContextValue(): ThemeContextValue {
     [cache]
   );
 
+  // Intentionally not using `useMemo` here since the `cache` manages
+  // memoization internally.
   const activeThemes = isActive ? cache.getSelectedThemes() : null;
 
+  // Register an event listener to update the cache tick when the cache changes
   useEffect(
     () =>
       cache.registerEventListener('change', () => {
@@ -49,16 +52,19 @@ export function useInitializeThemeContextValue(): ThemeContextValue {
     [cache]
   );
 
+  // Set selected themes when theming is activated
   useEffect(() => {
     if (!isActive) {
       return;
     }
 
-    cache.setSelectedThemes(activeThemes?.at(-1)?.themeKey ?? 'default-dark');
+    cache.setSelectedThemes(
+      activeThemes?.at(-1)?.themeKey ?? DEFAULT_THEME_KEY
+    );
   }, [activeThemes, cache, isActive]);
 
   return useMemo(
-    () => ({ activate, activeThemes, cache, isActive }),
-    [activate, activeThemes, cache, isActive]
+    () => ({ activeThemes, cache, isActive, registerCustomThemesAndActivate }),
+    [activeThemes, cache, isActive, registerCustomThemesAndActivate]
   );
 }
