@@ -1,4 +1,3 @@
-import { useContextOrThrow } from '@deephaven/react-hooks';
 import {
   createContext,
   useCallback,
@@ -6,8 +5,9 @@ import {
   useMemo,
   useState,
 } from 'react';
+import { useContextOrThrow } from '@deephaven/react-hooks';
 import { ThemeCache, useThemeCache } from './ThemeCache';
-import { DEFAULT_THEME_KEY, ThemeData } from './ThemeModel';
+import { DEFAULT_DARK_THEME_KEY, ThemeData } from './ThemeModel';
 
 export interface ThemeContextValue {
   activeThemes: ThemeData[] | null;
@@ -59,7 +59,7 @@ export function useInitializeThemeContextValue(): ThemeContextValue {
     }
 
     cache.setSelectedThemes(
-      activeThemes?.at(-1)?.themeKey ?? DEFAULT_THEME_KEY
+      activeThemes?.at(-1)?.themeKey ?? DEFAULT_DARK_THEME_KEY
     );
   }, [activeThemes, cache, isActive]);
 

@@ -134,7 +134,7 @@ export function isAuthPlugin(plugin: PluginModule): plugin is AuthPlugin {
 
 export interface ThemePluginConfig {
   name: string;
-  baseTheme: BaseThemeType;
+  baseTheme?: BaseThemeType;
   styleContent: string;
 }
 

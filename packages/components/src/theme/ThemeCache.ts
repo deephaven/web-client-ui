@@ -3,6 +3,7 @@ import Log from '@deephaven/log';
 import { bindAllMethods } from '@deephaven/utils';
 import { createContext } from 'react';
 import {
+  DEFAULT_DARK_THEME_KEY,
   ThemeData,
   ThemePreloadData,
   ThemePreloadStyleContent,
@@ -93,17 +94,19 @@ export class ThemeCache {
 
   getSelectedThemes(): ThemeData[] {
     if (this.appliedThemes == null) {
-      const { baseThemeKey, themeKey } = this.getPreloadData() ?? {};
-
-      const base =
-        this.getBaseTheme(baseThemeKey ?? themeKey) ??
-        this.getBaseTheme('default-dark');
+      const { themeKey } = this.getPreloadData() ?? {};
 
       const custom = this.getCustomTheme(themeKey);
+
+      const base = this.getBaseTheme(
+        custom?.baseThemeKey ?? themeKey ?? DEFAULT_DARK_THEME_KEY
+      );
 
       this.appliedThemes = [base, custom].filter(
         (t): t is ThemeData => t != null
       );
+
+      log.debug('appliedThemes:', this.appliedThemes);
     }
 
     return this.appliedThemes;
@@ -126,6 +129,8 @@ export class ThemeCache {
   }
 
   registerBaseThemes(themeDatas: ThemeData[]): void {
+    log.debug('registerBaseThemes:', themeDatas);
+
     themeDatas.forEach(themeData => {
       this.baseThemes.set(themeData.themeKey, themeData);
     });
@@ -134,6 +139,8 @@ export class ThemeCache {
   }
 
   registerCustomThemes(themeDatas: ThemeData[]): void {
+    log.debug('registerCustomThemes:', themeDatas);
+
     themeDatas.forEach(themeData => {
       this.customThemes.set(themeData.themeKey, themeData);
     });
@@ -151,12 +158,11 @@ export class ThemeCache {
       return;
     }
 
-    const { baseThemeKey, themeKey } = theme;
+    const { themeKey } = theme;
 
     const preloadStyleContent = calculatePreloadStyleContent();
 
     this.setPreloadData({
-      baseThemeKey,
       themeKey,
       preloadStyleContent,
     });

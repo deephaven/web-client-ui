@@ -1,6 +1,7 @@
 import darkTheme from '../../scss/theme_default_dark.scss?inline';
 import lightTheme from '../../scss/theme_default_light.scss?inline';
 import { ThemeCache } from './ThemeCache';
+import { DEFAULT_DARK_THEME_KEY, DEFAULT_LIGHT_THEME_KEY } from './ThemeModel';
 
 /**
  * Derive unique theme key from plugin root path and theme name.
@@ -25,16 +26,22 @@ export function preloadTheme(themeCache: ThemeCache): void {
   const style = document.createElement('style');
   style.innerHTML = preloadData.preloadStyleContent;
   document.head.appendChild(style);
+}
 
+/**
+ * Register the default base themes with the theme cache.
+ * @param themeCache The theme cache to register the themes with
+ */
+export function registerBaseThemes(themeCache: ThemeCache): void {
   themeCache.registerBaseThemes([
     {
       name: 'Default Dark',
-      themeKey: 'default-dark',
+      themeKey: DEFAULT_DARK_THEME_KEY,
       styleContent: darkTheme,
     },
     {
       name: 'Default Light',
-      themeKey: 'default-light',
+      themeKey: DEFAULT_LIGHT_THEME_KEY,
       styleContent: lightTheme,
     },
   ]);
