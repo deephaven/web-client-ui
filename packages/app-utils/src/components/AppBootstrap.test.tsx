@@ -58,6 +58,8 @@ beforeEach(() => {
 });
 
 it('should throw if api has not been bootstrapped', () => {
+  TestUtils.disableConsoleOutput();
+
   expect(() =>
     render(
       <AppBootstrap serverUrl={API_URL} pluginsUrl={PLUGINS_URL}>

@@ -1,10 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Log from '@deephaven/log';
 import { ThemeContextValue } from './ThemeContext';
-import { ThemeData } from './ThemeModel';
-import { calculatePreloadStyleContent } from './ThemeUtils';
-import { useAppliedThemes } from './useAppliedThemes';
-import { useThemeCache } from './useThemeCache';
+import {
+  DEFAULT_DARK_THEME_KEY,
+  ThemeRegistrationData,
+  ThemeRegistrationStorageData,
+} from './ThemeModel';
+import {
+  calculatePreloadStyleContent,
+  getActiveThemes,
+  getThemePreloadData,
+  mapThemeRegistrationData,
+  setThemePreloadData,
+} from './ThemeUtils';
 
 const log = Log.module('useInitializeThemeContextValue');
 
@@ -12,48 +20,57 @@ const log = Log.module('useInitializeThemeContextValue');
  * Creates a `ThemeContextValue` based on the current `ThemeCacheContext`.
  */
 export function useInitializeThemeContextValue(): ThemeContextValue {
-  const cache = useThemeCache();
-  const appliedThemes = useAppliedThemes(cache);
+  const [selectedThemeKey, setSelectedThemeKey] = useState<string>(
+    () => getThemePreloadData()?.themeKey ?? DEFAULT_DARK_THEME_KEY
+  );
 
-  const [isActive, setIsActive] = useState(false);
+  const [themeRegistration, setThemeRegistration] =
+    useState<ThemeRegistrationStorageData | null>(null);
 
   const activeThemes = useMemo(
-    () => (isActive ? appliedThemes : null),
-    [appliedThemes, isActive]
+    () =>
+      themeRegistration == null
+        ? null
+        : getActiveThemes(selectedThemeKey, themeRegistration),
+    [selectedThemeKey, themeRegistration]
   );
 
   /**
    * Register the given custom themes with the cache and activate theming.
    */
-  const registerCustomThemesAndActivate = useCallback(
-    (additionalThemeData: ThemeData[]) => {
-      cache.registerCustomThemes(additionalThemeData);
-      setIsActive(true);
+  const registerThemes = useCallback(
+    (themeRegistrationData: ThemeRegistrationData) => {
+      setThemeRegistration(mapThemeRegistrationData(themeRegistrationData));
     },
-    [cache]
+    []
   );
 
   // Once themes are activated, cache the preload data for next time page is
   // refreshed.
   useEffect(() => {
-    const activeThemeKey = activeThemes?.at(-1)?.themeKey;
-
-    if (activeThemeKey == null) {
-      log.debug('No active themes');
+    if (activeThemes == null) {
       return;
     }
 
-    log.debug('Active themes:', activeThemes?.map(theme => theme.themeKey));
+    log.debug(
+      'Active themes:',
+      activeThemes.map(theme => theme.themeKey)
+    );
 
-    cache.setPreloadData({
-      themeKey: activeThemeKey,
+    setThemePreloadData({
+      themeKey: selectedThemeKey,
       preloadStyleContent: calculatePreloadStyleContent(),
     });
-  }, [activeThemes, cache]);
+  }, [activeThemes, selectedThemeKey, themeRegistration]);
 
   return useMemo(
-    () => ({ activeThemes, cache, isActive, registerCustomThemesAndActivate }),
-    [activeThemes, cache, isActive, registerCustomThemesAndActivate]
+    () => ({
+      activeThemes,
+      selectedThemeKey,
+      registerThemes,
+      setSelectedThemeKey,
+    }),
+    [activeThemes, registerThemes, selectedThemeKey]
   );
 }
 

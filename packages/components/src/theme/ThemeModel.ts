@@ -11,6 +11,8 @@ export const DEFAULT_PRELOAD_DATA_VARIABLES = {
   '--dh-background-color': '#1a171a', // dark theme --dh-color-gray-50
 } satisfies Record<`--dh-${string}`, string>;
 
+export const THEME_CACHE_LOCAL_STORAGE_KEY = 'deephaven.themeCache';
+
 export interface ThemePreloadData {
   themeKey: string;
   preloadStyleContent?: ThemePreloadStyleContent;
@@ -21,4 +23,14 @@ export interface ThemeData {
   themeKey: string;
   name: string;
   styleContent: string;
+}
+
+export interface ThemeRegistrationData {
+  base: ThemeData[];
+  custom: ThemeData[];
+}
+
+export interface ThemeRegistrationStorageData {
+  base: Map<string, ThemeData>;
+  custom: Map<string, ThemeData>;
 }

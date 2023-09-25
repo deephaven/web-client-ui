@@ -1,11 +1,11 @@
 import { createContext } from 'react';
-import { ThemeCache } from './ThemeCache';
-import { ThemeData } from './ThemeModel';
+import { ThemeData, ThemeRegistrationData } from './ThemeModel';
 
 export interface ThemeContextValue {
   activeThemes: ThemeData[] | null;
-  cache: ThemeCache;
-  registerCustomThemesAndActivate: (additionalThemeData: ThemeData[]) => void;
+  selectedThemeKey: string;
+  setSelectedThemeKey: (themeKey: string) => void;
+  registerThemes: (themeRegistrationData: ThemeRegistrationData) => void;
 }
 
 export const ThemeContext = createContext<ThemeContextValue | null>(null);

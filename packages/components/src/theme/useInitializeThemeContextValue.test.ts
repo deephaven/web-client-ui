@@ -1,24 +1,30 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 import { TestUtils } from '@deephaven/utils';
-import ThemeCache from './ThemeCache';
 import { useInitializeThemeContextValue } from './useInitializeThemeContextValue';
-import { useAppliedThemes } from './useAppliedThemes';
-import { useThemeCache } from './useThemeCache';
-import { ThemeData } from './ThemeModel';
-import { calculatePreloadStyleContent } from './ThemeUtils';
+import {
+  DEFAULT_DARK_THEME_KEY,
+  ThemeData,
+  ThemeRegistrationData,
+} from './ThemeModel';
+import {
+  calculatePreloadStyleContent,
+  getActiveThemes,
+  mapThemeRegistrationData,
+  setThemePreloadData,
+} from './ThemeUtils';
 
 const { asMock } = TestUtils;
 
-jest.mock('./useAppliedThemes');
-jest.mock('./useThemeCache');
 jest.mock('./ThemeUtils', () => ({
   ...jest.requireActual('./ThemeUtils'),
   calculatePreloadStyleContent: jest.fn(),
+  getActiveThemes: jest.fn(),
+  setThemePreloadData: jest.fn(),
 }));
 
 const themesA = [{ themeKey: 'themeA' }] as [ThemeData];
 const themesB = [{ themeKey: 'themeB' }] as [ThemeData];
-const themeCache = new ThemeCache('mock-theme-cache');
+const themesDefault = [{ themeKey: 'themeDefault' }] as [ThemeData];
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -29,55 +35,54 @@ beforeEach(() => {
     .mockName('calculatePreloadStyleContent')
     .mockReturnValue(':root{mock-preload-content}');
 
-  asMock(useAppliedThemes)
-    .mockName('useAppliedThemes')
-    .mockReturnValue(themesA);
-
-  asMock(useThemeCache).mockName('useThemeCache').mockReturnValue(themeCache);
-
-  jest
-    .spyOn(themeCache, 'registerCustomThemes')
-    .mockName('registerCustomThemes');
-
-  jest.spyOn(themeCache, 'setPreloadData').mockName('setPreloadData');
+  asMock(getActiveThemes).mockName('getActiveThemes');
+  asMock(setThemePreloadData).mockName('setThemePreloadData');
 });
 
 describe('useInitializeThemeContextValue', () => {
-  it('should return theme cache', () => {
-    const { result } = renderHook(() => useInitializeThemeContextValue());
-    expect(result.current.cache).toBe(themeCache);
-  });
+  it('should return null activeThemes and should not update preload data until themes are registered', () => {
+    asMock(getActiveThemes).mockReturnValue(themesA);
 
-  it('should return null activeThemes until activated', () => {
     const { result } = renderHook(() => useInitializeThemeContextValue());
     expect(result.current.activeThemes).toBeNull();
+    expect(setThemePreloadData).not.toHaveBeenCalled();
   });
 
-  it.each([null, themesA])(
-    'should return register custom themes, set preload data, and activate',
-    appliedThemes => {
-      asMock(useAppliedThemes).mockReturnValue(appliedThemes);
+  it.each([[themesDefault], [themesA]])(
+    'should update active themes and preload data based on selected theme + registered themes: %s',
+    activeThemes => {
+      asMock(getActiveThemes).mockReturnValue(activeThemes);
 
       const { result } = renderHook(() => useInitializeThemeContextValue());
 
-      expect(result.current.activeThemes).toBeNull();
-      expect(themeCache.setPreloadData).not.toHaveBeenCalled();
+      const themeRegistration: ThemeRegistrationData = {
+        base: themesA,
+        custom: themesB,
+      };
 
-      act(() => {
-        result.current.registerCustomThemesAndActivate(themesB);
-      });
+      act(() => result.current.registerThemes(themeRegistration));
 
-      expect(themeCache.registerCustomThemes).toHaveBeenCalledWith(themesB);
+      function commonAssertions(expectedThemeKey: string) {
+        expect(result.current.selectedThemeKey).toEqual(expectedThemeKey);
 
-      if (appliedThemes == null) {
-        expect(themeCache.setPreloadData).not.toHaveBeenCalled();
-      } else {
-        expect(themeCache.setPreloadData).toHaveBeenCalledWith({
-          themeKey: appliedThemes[0].themeKey,
+        expect(getActiveThemes).toHaveBeenCalledWith(
+          expectedThemeKey,
+          mapThemeRegistrationData(themeRegistration)
+        );
+
+        expect(setThemePreloadData).toHaveBeenCalledWith({
+          themeKey: expectedThemeKey,
           preloadStyleContent: calculatePreloadStyleContent(),
         });
+
+        expect(result.current.activeThemes).toEqual(activeThemes);
       }
-      expect(result.current.activeThemes).toEqual(appliedThemes);
+
+      commonAssertions(DEFAULT_DARK_THEME_KEY);
+
+      jest.clearAllMocks();
+      act(() => result.current.setSelectedThemeKey('themeB'));
+      commonAssertions('themeB');
     }
   );
 });

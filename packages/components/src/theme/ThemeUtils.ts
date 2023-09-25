@@ -1,12 +1,17 @@
 import Log from '@deephaven/log';
+import { assertNotNull } from '@deephaven/utils';
 import darkTheme from '../../scss/theme_default_dark.scss?inline';
 import lightTheme from '../../scss/theme_default_light.scss?inline';
-import { ThemeCache } from './ThemeCache';
 import {
   DEFAULT_DARK_THEME_KEY,
   DEFAULT_LIGHT_THEME_KEY,
   DEFAULT_PRELOAD_DATA_VARIABLES,
+  ThemeData,
+  ThemePreloadData,
   ThemePreloadStyleContent,
+  ThemeRegistrationData,
+  ThemeRegistrationStorageData,
+  THEME_CACHE_LOCAL_STORAGE_KEY,
 } from './ThemeModel';
 
 const log = Log.module('ThemeUtils');
@@ -30,6 +35,92 @@ export function calculatePreloadStyleContent(): ThemePreloadStyleContent {
 }
 
 /**
+ * Returns an array of the active themes. The first item will always be one
+ * of the base themes. Optionally, the second item will be a custom theme.
+ */
+export function getActiveThemes(
+  themeKey: string,
+  themeRegistration: ThemeRegistrationStorageData
+): [ThemeData] | [ThemeData, ThemeData] {
+  const custom = themeRegistration.custom.get(themeKey);
+
+  const baseThemeKey = custom?.baseThemeKey ?? themeKey;
+
+  let base = themeRegistration.base.get(baseThemeKey);
+
+  if (base == null) {
+    log.error('Base theme not found', baseThemeKey);
+    base = themeRegistration.base.get(DEFAULT_DARK_THEME_KEY);
+  }
+
+  assertNotNull(base, 'Base theme not found');
+
+  log.debug('Applied themes:', base.themeKey, custom?.themeKey);
+
+  return custom == null ? [base] : [base, custom];
+}
+
+/**
+ * Get default base theme data.
+ */
+export function getDefaultBaseThemes(): ThemeData[] {
+  return [
+    {
+      name: 'Default Dark',
+      themeKey: DEFAULT_DARK_THEME_KEY,
+      styleContent: darkTheme,
+    },
+    {
+      name: 'Default Light',
+      themeKey: DEFAULT_LIGHT_THEME_KEY,
+      styleContent: lightTheme,
+    },
+  ];
+}
+
+/**
+ * Get the preload data from local storage or null if it does not exist or is
+ * invalid
+ */
+export function getThemePreloadData(): ThemePreloadData | null {
+  const data = localStorage.getItem(THEME_CACHE_LOCAL_STORAGE_KEY);
+
+  try {
+    return data == null ? null : JSON.parse(data);
+  } catch {
+    // ignore
+  }
+
+  return null;
+}
+
+/**
+ * Map theme registration data to storage data.
+ * @param themeRegistrationData
+ */
+export function mapThemeRegistrationData(
+  themeRegistrationData: ThemeRegistrationData
+): ThemeRegistrationStorageData {
+  const { base, custom } = themeRegistrationData;
+
+  return {
+    base: new Map(base.map(theme => [theme.themeKey, theme])),
+    custom: new Map(custom.map(theme => [theme.themeKey, theme])),
+  };
+}
+
+/**
+ * Store theme preload data in local storage.
+ * @param preloadData The preload data to set
+ */
+export function setThemePreloadData(preloadData: ThemePreloadData): void {
+  localStorage.setItem(
+    THEME_CACHE_LOCAL_STORAGE_KEY,
+    JSON.stringify(preloadData)
+  );
+}
+
+/**
  * Derive unique theme key from plugin root path and theme name.
  * @param pluginRootPath The root path of the plugin
  * @param themeName The name of the theme
@@ -45,9 +136,9 @@ export function getThemeKey(pluginRootPath: string, themeName: string): string {
  * Preload minimal theme variables from the cache.
  * @param themeCache The theme cache to preload from
  */
-export function preloadTheme(themeCache: ThemeCache): void {
+export function preloadTheme(): void {
   const preloadStyleContent =
-    themeCache.getPreloadData()?.preloadStyleContent ??
+    getThemePreloadData()?.preloadStyleContent ??
     calculatePreloadStyleContent();
 
   log.debug('Preloading theme content:', `'${preloadStyleContent}'`);
@@ -55,23 +146,4 @@ export function preloadTheme(themeCache: ThemeCache): void {
   const style = document.createElement('style');
   style.innerHTML = preloadStyleContent;
   document.head.appendChild(style);
-}
-
-/**
- * Register the default base themes with the theme cache.
- * @param themeCache The theme cache to register the themes with
- */
-export function registerBaseThemes(themeCache: ThemeCache): void {
-  themeCache.registerBaseThemes([
-    {
-      name: 'Default Dark',
-      themeKey: DEFAULT_DARK_THEME_KEY,
-      styleContent: darkTheme,
-    },
-    {
-      name: 'Default Light',
-      themeKey: DEFAULT_LIGHT_THEME_KEY,
-      styleContent: lightTheme,
-    },
-  ]);
 }
