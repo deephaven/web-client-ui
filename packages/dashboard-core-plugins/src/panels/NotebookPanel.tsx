@@ -30,6 +30,7 @@ import {
   vsCheck,
   vsCopy,
   dhICursor,
+  vsTrash,
 } from '@deephaven/icons';
 import {
   getFileStorage,
@@ -114,6 +115,7 @@ interface NotebookPanelState {
   panelState: PanelState;
 
   showCloseModal: boolean;
+  showDeleteModal: boolean;
   showSaveAsModal: boolean;
 
   scriptCode: string;
@@ -166,6 +168,9 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.handleCloseDiscard = this.handleCloseDiscard.bind(this);
     this.handleCloseSave = this.handleCloseSave.bind(this);
     this.handleCopy = this.handleCopy.bind(this);
+    this.handleDelete = this.handleDelete.bind(this);
+    this.handleDeleteConfirm = this.handleDeleteConfirm.bind(this);
+    this.handleDeleteCancel = this.handleDeleteCancel.bind(this);
     this.handleEditorInitialized = this.handleEditorInitialized.bind(this);
     this.handleEditorWillDestroy = this.handleEditorWillDestroy.bind(this);
     this.handleEditorChange = this.handleEditorChange.bind(this);
@@ -270,6 +275,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       },
 
       showCloseModal: false,
+      showDeleteModal: false,
       showSaveAsModal: false,
 
       scriptCode: '',
@@ -563,7 +569,13 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
         group: ContextActions.groups.high,
         order: 30,
       },
-
+      {
+        title: 'Delete File',
+        icon: vsTrash,
+        action: this.handleDelete,
+        group: ContextActions.groups.high,
+        order: 40,
+      },
       {
         title: 'Show Minimap',
         icon: isMinimapEnabled ? vsCheck : undefined,
@@ -665,6 +677,29 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     const copyName = FileUtils.getCopyFileName(itemName);
     log.debug('handleCopy', fileMetadata, itemName, copyName);
     this.createNotebook(copyName, language, content);
+  }
+
+  handleDelete(): void {
+    log.debug('handleDelete, pending confirmation');
+    this.setState({ showDeleteModal: true });
+  }
+
+  handleDeleteConfirm(): void {
+    const { fileStorage, glEventHub } = this.props;
+    const { fileMetadata } = this.state;
+
+    log.debug('handleDeleteConfirm', fileMetadata?.itemName);
+
+    if (!fileMetadata) {
+      return;
+    }
+
+    glEventHub.emit(NotebookEvent.CLOSE_FILE, fileMetadata, { force: true });
+    fileStorage.deleteFile(fileMetadata.itemName);
+  }
+
+  handleDeleteCancel(): void {
+    this.setState({ showDeleteModal: false });
   }
 
   handleEditorInitialized(innerEditor: editor.IStandaloneCodeEditor): void {
@@ -1135,6 +1170,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       sessionLanguage,
       settings: initialSettings,
       showCloseModal,
+      showDeleteModal,
       showSaveAsModal,
     } = this.state;
     // We don't want to steal focus if this isn't shown or it's just a preview
@@ -1324,6 +1360,14 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
             onCancel={this.handleSaveAsCancel}
             notifyOnExtensionChange
             storage={fileStorage}
+          />
+          <BasicModal
+            isOpen={showDeleteModal}
+            headerText={`Are you sure you want to delete "${itemName}"?`}
+            bodyText="You cannot undo this action."
+            onCancel={this.handleDeleteCancel}
+            onConfirm={this.handleDeleteConfirm}
+            confirmButtonText="Delete"
           />
           <BasicModal
             isOpen={showCloseModal}
