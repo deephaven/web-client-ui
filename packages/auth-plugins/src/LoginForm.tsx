@@ -49,7 +49,7 @@ export function LoginForm({
           >
             {isLoggingIn && (
               <span>
-                <LoadingSpinner />
+                <LoadingSpinner className="loading-spinner-vertical-align" />
                 <span className="btn-normal-content">Logging in</span>
                 <span className="btn-hover-content">Cancel</span>
               </span>

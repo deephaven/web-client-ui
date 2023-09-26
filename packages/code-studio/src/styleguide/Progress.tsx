@@ -34,7 +34,7 @@ function Progress(): React.ReactElement {
             onClick={() => undefined}
           >
             <span>
-              <LoadingSpinner />
+              <LoadingSpinner className="loading-spinner-vertical-align" />
               <span className="btn-normal-content">Connecting</span>
               <span className="btn-hover-content">Cancel</span>
             </span>
