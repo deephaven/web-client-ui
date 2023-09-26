@@ -75,7 +75,6 @@ class PartitionSelectorSearch<T> extends Component<
     super(props);
 
     this.handleFilterChange = this.handleFilterChange.bind(this);
-    this.handleInputFocus = this.handleInputFocus.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleListKeydown = this.handleListKeydown.bind(this);
     this.handleSelect = this.handleSelect.bind(this);
@@ -185,12 +184,6 @@ class PartitionSelectorSearch<T> extends Component<
     const { table } = this.props;
     const itemCount = table.size;
     this.setState({ itemCount, isLoading: true });
-  }
-
-  handleInputFocus(): void {
-    if (this.itemList) {
-      this.itemList.focusItem(0);
-    }
   }
 
   handleSelect(itemIndex: ModelIndex): void {
@@ -333,7 +326,6 @@ class PartitionSelectorSearch<T> extends Component<
             value={text}
             placeholder="Available Partitions"
             onChange={this.handleTextChange}
-            onFocus={this.handleInputFocus}
             onKeyDown={this.handleKeyDown}
             className="form-control input-partition"
           />
