@@ -33,7 +33,7 @@ exports[`renders a menu from a promise returned from a function 1`] = `
         className="loading"
       >
         <div
-          className="loading-spinner"
+          className="loading-spinner loading-spinner-vertical-align"
         />
       </div>
     </div>
@@ -167,7 +167,7 @@ exports[`renders an empty menu for a rejected promise 1`] = `
         className="loading"
       >
         <div
-          className="loading-spinner"
+          className="loading-spinner loading-spinner-vertical-align"
         />
       </div>
     </div>
