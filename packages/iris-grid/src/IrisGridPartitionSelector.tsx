@@ -5,6 +5,7 @@ import { vsTriangleDown, vsClose } from '@deephaven/icons';
 import Log from '@deephaven/log';
 import debounce from 'lodash.debounce';
 import type { Column, dh as DhType, Table } from '@deephaven/jsapi-types';
+import { TableUtils } from '@deephaven/jsapi-utils';
 import PartitionSelectorSearch from './PartitionSelectorSearch';
 import './IrisGridPartitionSelector.scss';
 import IrisGridUtils from './IrisGridUtils';
@@ -95,7 +96,7 @@ class IrisGridPartitionSelector<T> extends Component<
 
     this.setState({
       partition:
-        column.type === 'char' && partition.length > 0
+        TableUtils.isCharType(column.type) && partition.length > 0
           ? partition.charCodeAt(0).toString()
           : partition,
     });
@@ -185,7 +186,8 @@ class IrisGridPartitionSelector<T> extends Component<
           <input
             type="text"
             value={
-              column.type === 'char' && partition.toString().length > 0
+              TableUtils.isCharType(column.type) &&
+              partition.toString().length > 0
                 ? String.fromCharCode(parseInt(partition, 10))
                 : IrisGridUtils.convertValueToText(partition, column.type)
             }

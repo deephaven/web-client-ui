@@ -1938,7 +1938,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       partitionColumn,
       partitionText
     );
-
     if (partitionFilter === null) {
       return;
     }

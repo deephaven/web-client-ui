@@ -233,9 +233,14 @@ class PartitionSelectorSearch<T> extends Component<
   handleTextChange(event: React.ChangeEvent<HTMLInputElement>): void {
     log.debug2('handleTextChange');
 
+    const { table } = this.props;
     const { value: text } = event.target;
 
-    this.setState({ text });
+    if (text !== '' && TableUtils.isIntegerType(table.columns[0].type)) {
+      this.setState({ text: parseInt(text, 10).toString() });
+    } else {
+      this.setState({ text });
+    }
 
     this.debounceUpdateFilter();
   }
@@ -287,23 +292,16 @@ class PartitionSelectorSearch<T> extends Component<
     const filters = [];
     if (filterText.length > 0) {
       const column = table.columns[0];
-      if (
-        column.type === 'java.lang.String' ||
-        column.type === 'char' ||
-        column.type === 'java.lang.Boolean' ||
-        !Number.isNaN(Number(filterText))
-      ) {
-        const filter = this.tableUtils.makeQuickFilterFromComponent(
-          column,
-          column.type === 'java.lang.String' ? `~${filterText}` : filterText
+      const filter = this.tableUtils.makeQuickFilterFromComponent(
+        column,
+        TableUtils.isStringType(column.type) ? `~${filterText}` : filterText
+      );
+      if (!filter) {
+        throw new Error(
+          'Unable to create column filter for partition selector'
         );
-        if (!filter) {
-          throw new Error(
-            'Unable to create column filter for partition selector'
-          );
-        }
-        filters.push(filter);
       }
+      filters.push(filter);
     }
 
     log.debug2('updateFilter', filters);
@@ -313,17 +311,22 @@ class PartitionSelectorSearch<T> extends Component<
   }
 
   render(): JSX.Element {
+    const { table } = this.props;
     const { isLoading, itemCount, items, offset, text } = this.state;
+
     const listHeight =
       Math.min(itemCount, PartitionSelectorSearch.MAX_VISIBLE_ITEMS) *
         ItemList.DEFAULT_ROW_HEIGHT +
       // Adjust for ListItem vertical padding - .375rem ~ 5.25px
       11;
+    const inputType = TableUtils.isNumberType(table.columns[0].type)
+      ? 'number'
+      : 'text';
     return (
       <div className="iris-grid-partition-selector-search">
         <div className="search-container">
           <input
-            type="text"
+            type={inputType}
             ref={searchInput => {
               this.searchInput = searchInput;
             }}
