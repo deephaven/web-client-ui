@@ -185,7 +185,6 @@ class IrisGridPartitionSelector<T> extends Component<
           <input
             type="text"
             value={
-              // IrisGridUtils.convertValueToText(partition, column.type)
               column.type === 'char' && partition.toString().length > 0
                 ? String.fromCharCode(parseInt(partition, 10))
                 : IrisGridUtils.convertValueToText(partition, column.type)
