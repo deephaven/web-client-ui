@@ -28,6 +28,8 @@ import {
   vsPlay,
   dhRunSelection,
   vsCheck,
+  vsCopy,
+  dhICursor,
 } from '@deephaven/icons';
 import {
   getFileStorage,
@@ -547,6 +549,21 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
         shortcut: SHORTCUTS.NOTEBOOK.FIND,
         order: 10,
       },
+      {
+        title: 'Copy File',
+        icon: vsCopy,
+        action: this.handleCopy,
+        group: ContextActions.groups.high,
+        order: 20,
+      },
+      {
+        title: 'Rename File',
+        icon: dhICursor,
+        action: this.handleShowRename,
+        group: ContextActions.groups.high,
+        order: 30,
+      },
+
       {
         title: 'Show Minimap',
         icon: isMinimapEnabled ? vsCheck : undefined,
