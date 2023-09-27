@@ -1924,10 +1924,27 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   updatePartition(partition: string, partitionColumn: Column): void {
+    if (TableUtils.isCharType(partitionColumn.type) && partition === '') {
+      return;
+    }
+
     const { model } = this.props;
-    const partitionFilter = partitionColumn
-      .filter()
-      .eq(model.dh.FilterValue.ofString(partition));
+
+    const partitionText = TableUtils.isCharType(partitionColumn.type)
+      ? model.displayString(
+          partition,
+          partitionColumn.type,
+          partitionColumn.name
+        )
+      : partition;
+    const partitionFilter = this.tableUtils.makeQuickFilterFromComponent(
+      partitionColumn,
+      partitionText
+    );
+    if (partitionFilter === null) {
+      return;
+    }
+
     const partitionFilters = [partitionFilter];
     this.setState({
       partition,
@@ -4427,7 +4444,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                     type: string,
                     stringName: string
                   ) => model.displayString(value, type, stringName)}
-                  columnName={partitionColumn.name}
+                  column={partitionColumn}
                   partition={partition}
                   onChange={this.handlePartitionChange}
                   onFetchAll={this.handlePartitionFetchAll}
