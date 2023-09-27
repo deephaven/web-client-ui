@@ -21,7 +21,11 @@ function LoadingSpinner({
   return (
     <div
       className={classNames('loading-spinner', className)}
+      aria-label="Loading..."
+      aria-valuemin={0}
+      aria-valuemax={100}
       data-testid={dataTestId}
+      role="progressbar"
     />
   );
 }

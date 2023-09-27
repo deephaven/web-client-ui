@@ -33,7 +33,11 @@ exports[`renders a menu from a promise returned from a function 1`] = `
         className="loading"
       >
         <div
+          aria-label="Loading..."
+          aria-valuemax={100}
+          aria-valuemin={0}
           className="loading-spinner loading-spinner-vertical-align"
+          role="progressbar"
         />
       </div>
     </div>
@@ -167,7 +171,11 @@ exports[`renders an empty menu for a rejected promise 1`] = `
         className="loading"
       >
         <div
+          aria-label="Loading..."
+          aria-valuemax={100}
+          aria-valuemin={0}
           className="loading-spinner loading-spinner-vertical-align"
+          role="progressbar"
         />
       </div>
     </div>

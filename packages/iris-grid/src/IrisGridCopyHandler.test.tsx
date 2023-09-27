@@ -71,9 +71,8 @@ it('copies immediately if less than 10,000 rows of data', async () => {
   const copyOperation = makeCopyOperation(ranges);
   const model = makeModel();
   mountCopySelection({ copyOperation, model });
-
-  expect(screen.getAllByRole('img', { hidden: true }).length).toBe(2);
-  expect(screen.getByText('Fetching 10,000 rows for clipboard...'));
+  screen.getByRole('progressbar', { hidden: true });
+  screen.getByText('Fetching 10,000 rows for clipboard...');
   expect(model.textSnapshot).toHaveBeenCalled();
 
   await waitFor(() =>
