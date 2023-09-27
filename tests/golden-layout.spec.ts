@@ -26,9 +26,37 @@ test.describe('tests golden-layout operations', () => {
   });
 
   test.afterAll(async () => {
-    //  reset layout
-    await page.getByTestId('app-main-panels-button').click();
-    await page.getByLabel('Reset Layout').click();
+    /**
+     * Open panels menu, reset layout, confirm or cancel "Reset Layout" prompt
+     */
+    async function resetLayout(confirm: boolean) {
+      await page.getByTestId('app-main-panels-button').click();
+      await page.getByLabel('Reset Layout').click();
+
+      if (confirm) {
+        await page
+          .locator('.modal .btn-danger')
+          .filter({ hasText: 'Reset' })
+          .click();
+      } else {
+        await page
+          .locator('[data-dismiss=modal]')
+          .filter({ hasText: 'Cancel' })
+          .click();
+      }
+
+      await expect(page.locator('.modal')).toHaveCount(0);
+    }
+
+    // Reset layout cancelled by user
+    await resetLayout(false);
+
+    await expect(
+      page.locator('.lm_tab').filter({ has: page.getByText('test-a') })
+    ).toHaveCount(1);
+
+    // Reset layout confirmed by user
+    await resetLayout(true);
 
     await expect(
       page.locator('.lm_tab').filter({ has: page.getByText('test-a') })
