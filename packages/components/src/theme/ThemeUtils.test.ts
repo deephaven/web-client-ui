@@ -1,7 +1,7 @@
 import {
   DEFAULT_PRELOAD_DATA_VARIABLES,
   ThemeData,
-  ThemeRegistrationStorageData,
+  ThemeRegistrationData,
   THEME_CACHE_LOCAL_STORAGE_KEY,
 } from './ThemeModel';
 import {
@@ -10,7 +10,6 @@ import {
   getDefaultBaseThemes,
   getThemeKey,
   getThemePreloadData,
-  mapThemeRegistrationData,
   preloadTheme,
   setThemePreloadData,
 } from './ThemeUtils';
@@ -62,9 +61,9 @@ describe('getActiveThemes', () => {
     },
   } satisfies Record<string, ThemeData>;
 
-  const themeRegistration: ThemeRegistrationStorageData = {
-    base: new Map([[mockTheme.base.themeKey, mockTheme.base]]),
-    custom: new Map([[mockTheme.custom.themeKey, mockTheme.custom]]),
+  const themeRegistration: ThemeRegistrationData = {
+    base: [mockTheme.base],
+    custom: [mockTheme.custom],
   };
 
   it.each([null, mockTheme.customInvalid])(
@@ -72,11 +71,8 @@ describe('getActiveThemes', () => {
     customTheme => {
       expect(() =>
         getActiveThemes(customTheme?.themeKey ?? 'mock.themeKey', {
-          base: new Map(),
-          custom:
-            customTheme == null
-              ? new Map()
-              : new Map([[customTheme.themeKey, customTheme]]),
+          base: [],
+          custom: customTheme == null ? [] : [customTheme],
         })
       ).toThrowError(`Default base theme 'default-dark' is not registered`);
     }
@@ -151,55 +147,6 @@ describe('getThemePreloadData', () => {
       expect(actual).toEqual(expected);
     }
   );
-});
-
-describe('mapThemeRegistrationData', () => {
-  const baseThemeA: ThemeData = {
-    name: 'Default Dark',
-    themeKey: 'default-dark',
-    styleContent: 'mock.base.styleContent',
-  };
-
-  const baseThemeB: ThemeData = {
-    name: 'Default Light',
-    themeKey: 'default-light',
-    styleContent: 'mock.base.styleContent',
-  };
-
-  const customThemeA: ThemeData = {
-    name: 'mock.custom.A',
-    baseThemeKey: 'default-dark',
-    themeKey: 'mock.custom.a',
-    styleContent: 'mock.custom.styleContent',
-  };
-
-  const customThemeB: ThemeData = {
-    name: 'mock.custom.B',
-    baseThemeKey: 'default-light',
-    themeKey: 'mock.custom.b',
-    styleContent: 'mock.custom.styleContent',
-  };
-
-  it('should map theme registration data to storage data', () => {
-    const base = [baseThemeA, baseThemeB];
-    const custom = [customThemeA, customThemeB];
-
-    const actual = mapThemeRegistrationData({
-      base,
-      custom,
-    });
-
-    expect(actual).toEqual({
-      base: new Map([
-        [baseThemeA.themeKey, baseThemeA],
-        [baseThemeB.themeKey, baseThemeB],
-      ]),
-      custom: new Map([
-        [customThemeA.themeKey, customThemeA],
-        [customThemeB.themeKey, customThemeB],
-      ]),
-    });
-  });
 });
 
 describe('preloadTheme', () => {

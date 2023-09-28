@@ -1,16 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Log from '@deephaven/log';
 import { ThemeContextValue } from './ThemeContext';
-import {
-  DEFAULT_DARK_THEME_KEY,
-  ThemeRegistrationData,
-  ThemeRegistrationStorageData,
-} from './ThemeModel';
+import { DEFAULT_DARK_THEME_KEY, ThemeRegistrationData } from './ThemeModel';
 import {
   calculatePreloadStyleContent,
   getActiveThemes,
   getThemePreloadData,
-  mapThemeRegistrationData,
   setThemePreloadData,
 } from './ThemeUtils';
 
@@ -25,7 +20,7 @@ export function useInitializeThemeContextValue(): ThemeContextValue {
   );
 
   const [themeRegistration, setThemeRegistration] =
-    useState<ThemeRegistrationStorageData | null>(null);
+    useState<ThemeRegistrationData | null>(null);
 
   const activeThemes = useMemo(
     () =>
@@ -40,11 +35,8 @@ export function useInitializeThemeContextValue(): ThemeContextValue {
    */
   const registerThemes = useCallback(
     (themeRegistrationData: ThemeRegistrationData) => {
-      const themeRegistrationStorage = mapThemeRegistrationData(
-        themeRegistrationData
-      );
-      log.debug('Registering themes', themeRegistrationStorage);
-      setThemeRegistration(themeRegistrationStorage);
+      log.debug('Registering themes', themeRegistrationData);
+      setThemeRegistration(themeRegistrationData);
     },
     []
   );

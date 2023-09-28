@@ -9,7 +9,6 @@ import {
 import {
   calculatePreloadStyleContent,
   getActiveThemes,
-  mapThemeRegistrationData,
   setThemePreloadData,
 } from './ThemeUtils';
 
@@ -67,7 +66,7 @@ describe('useInitializeThemeContextValue', () => {
 
         expect(getActiveThemes).toHaveBeenCalledWith(
           expectedThemeKey,
-          mapThemeRegistrationData(themeRegistration)
+          themeRegistration
         );
 
         expect(setThemePreloadData).toHaveBeenCalledWith({

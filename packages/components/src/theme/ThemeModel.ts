@@ -29,8 +29,3 @@ export interface ThemeRegistrationData {
   base: ThemeData[];
   custom: ThemeData[];
 }
-
-export interface ThemeRegistrationStorageData {
-  base: Map<string, ThemeData>;
-  custom: Map<string, ThemeData>;
-}

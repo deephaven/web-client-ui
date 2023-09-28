@@ -10,7 +10,6 @@ import {
   ThemePreloadData,
   ThemePreloadStyleContent,
   ThemeRegistrationData,
-  ThemeRegistrationStorageData,
   THEME_CACHE_LOCAL_STORAGE_KEY,
 } from './ThemeModel';
 
@@ -40,19 +39,25 @@ export function calculatePreloadStyleContent(): ThemePreloadStyleContent {
  */
 export function getActiveThemes(
   themeKey: string,
-  themeRegistration: ThemeRegistrationStorageData
+  themeRegistration: ThemeRegistrationData
 ): [ThemeData] | [ThemeData, ThemeData] {
-  const custom = themeRegistration.custom.get(themeKey);
+  const custom = themeRegistration.custom.find(
+    theme => theme.themeKey === themeKey
+  );
 
   const baseThemeKey = custom?.baseThemeKey ?? themeKey;
 
-  let base = themeRegistration.base.get(baseThemeKey);
+  let base = themeRegistration.base.find(
+    theme => theme.themeKey === baseThemeKey
+  );
 
   if (base == null) {
     log.error(
       `No registered base theme found for theme key: '${baseThemeKey}'`
     );
-    base = themeRegistration.base.get(DEFAULT_DARK_THEME_KEY);
+    base = themeRegistration.base.find(
+      theme => theme.themeKey === DEFAULT_DARK_THEME_KEY
+    );
 
     assertNotNull(
       base,
@@ -97,21 +102,6 @@ export function getThemePreloadData(): ThemePreloadData | null {
   }
 
   return null;
-}
-
-/**
- * Map theme registration data to storage data.
- * @param themeRegistrationData
- */
-export function mapThemeRegistrationData(
-  themeRegistrationData: ThemeRegistrationData
-): ThemeRegistrationStorageData {
-  const { base, custom } = themeRegistrationData;
-
-  return {
-    base: new Map(base.map(theme => [theme.themeKey, theme])),
-    custom: new Map(custom.map(theme => [theme.themeKey, theme])),
-  };
 }
 
 /**
