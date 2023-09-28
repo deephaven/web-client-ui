@@ -1,6 +1,56 @@
+/* stylelint-disable alpha-value-notation */
+.loading-spinner {
+  --primary-color: var(
+    --dh-loading-spinner-primary-color,
+    var(--dh-accent-color, #4c7dee)
+  );
+  --secondary-color: var(
+    --dh-loading-spinner-secondary-color,
+    rgba(240, 240, 240, 0.5)
+  );
+  --border-width: 1px;
+  --size: 14px;
+
+  box-sizing: border-box;
+  display: inline-block;
+  margin: 0 auto;
+  width: var(--size);
+  height: var(--size);
+}
+
 .loading-spinner-large {
-  font-size: 64px;
-  .svg-inline--fa {
-    font-size: inherit;
+  --border-width: 4px;
+  --size: 56px;
+}
+
+.loading-spinner-vertical-align {
+  // The original LoadingSpinner used `.fa-layers` to create the spinner icon.
+  // This includes a vertical aligment adjustment to center the spinner along
+  // side of other inline content. Copying this value from the `.fa-layers`
+  // class to avoid breaking alignment of the new spinner.
+  vertical-align: -0.125em;
+}
+
+// Spinning circle with colored border and transparent center. Half of the
+// circle is the primary color. The other half is the secondary color.
+.loading-spinner::after {
+  animation: loading-spinner-rotate 2s linear infinite;
+  border: var(--border-width) solid;
+  border-color: var(--primary-color) var(--primary-color) var(--secondary-color)
+    var(--secondary-color);
+  border-radius: 50%;
+  box-sizing: border-box;
+  content: '';
+  display: inline-block;
+  width: var(--size);
+  height: var(--size);
+}
+
+@keyframes loading-spinner-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(359deg);
   }
 }

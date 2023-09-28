@@ -1,7 +1,6 @@
-import React from 'react';
+import { useLayoutEffect } from 'react';
 import classNames from 'classnames';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { vsCircleLarge, vsLoading } from '@deephaven/icons';
+import { DOMUtils } from '@deephaven/utils';
 import './LoadingSpinner.scss';
 
 type LoadingSpinnerProps = {
@@ -13,14 +12,21 @@ function LoadingSpinner({
   className = '',
   'data-testid': dataTestId,
 }: LoadingSpinnerProps): JSX.Element {
+  useLayoutEffect(() => {
+    // Ensure all of our loading spinner animations are synchronized based
+    // on same start time.
+    DOMUtils.syncAnimationStartTime('loading-spinner-rotate', 0);
+  }, []);
+
   return (
     <div
-      className={classNames('loading-spinner fa-layers', className)}
+      className={classNames('loading-spinner', className)}
+      aria-label="Loading..."
+      aria-valuemin={0}
+      aria-valuemax={100}
       data-testid={dataTestId}
-    >
-      <FontAwesomeIcon icon={vsCircleLarge} className="text-white-50" />
-      <FontAwesomeIcon icon={vsLoading} className="text-primary" spin />
-    </div>
+      role="progressbar"
+    />
   );
 }
 

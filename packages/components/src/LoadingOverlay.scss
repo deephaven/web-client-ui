@@ -13,9 +13,14 @@ $iris-panel-scrim-bg: rgba(black, 0.1);
   overflow: hidden;
 
   .message-content {
+    display: flex;
+    flex-direction: column;
     font-size: $iris-panel-message-font-size;
+    gap: 20px;
     .message-icon {
       font-size: $iris-panel-icon-font-size;
+      height: $iris-panel-icon-font-size;
+      line-height: $iris-panel-icon-font-size;
       .svg-inline--fa {
         font-size: inherit;
       }

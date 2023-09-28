@@ -356,7 +356,7 @@ class PartitionSelectorSearch<T> extends Component<
         )}
         {isLoading && (
           <div className="iris-grid-partition-selector-loading">
-            <LoadingSpinner />
+            <LoadingSpinner className="loading-spinner-vertical-align" />
             &nbsp;Loading...
           </div>
         )}
