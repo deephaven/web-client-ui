@@ -1,5 +1,17 @@
 import Log from '@deephaven/log';
 import { assertNotNull } from '@deephaven/utils';
+// Note that ?inline imports are natively supported by Vite, but consumers of
+// @deephaven/components using Webpack will need to add a rule to their module
+// config.
+// e.g.
+// module: {
+//  rules: [
+//    {
+//      resourceQuery: /inline/,
+//      type: 'asset/source',
+//    },
+//  ],
+// },
 import darkTheme from './theme_default_dark.css?inline';
 import lightTheme from './theme_default_light.css?inline';
 import {
