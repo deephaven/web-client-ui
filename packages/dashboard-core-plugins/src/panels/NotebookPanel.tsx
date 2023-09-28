@@ -28,6 +28,9 @@ import {
   vsPlay,
   dhRunSelection,
   vsCheck,
+  vsCopy,
+  dhICursor,
+  vsTrash,
 } from '@deephaven/icons';
 import {
   getFileStorage,
@@ -112,6 +115,7 @@ interface NotebookPanelState {
   panelState: PanelState;
 
   showCloseModal: boolean;
+  showDeleteModal: boolean;
   showSaveAsModal: boolean;
 
   scriptCode: string;
@@ -164,6 +168,9 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.handleCloseDiscard = this.handleCloseDiscard.bind(this);
     this.handleCloseSave = this.handleCloseSave.bind(this);
     this.handleCopy = this.handleCopy.bind(this);
+    this.handleDelete = this.handleDelete.bind(this);
+    this.handleDeleteConfirm = this.handleDeleteConfirm.bind(this);
+    this.handleDeleteCancel = this.handleDeleteCancel.bind(this);
     this.handleEditorInitialized = this.handleEditorInitialized.bind(this);
     this.handleEditorWillDestroy = this.handleEditorWillDestroy.bind(this);
     this.handleEditorChange = this.handleEditorChange.bind(this);
@@ -268,6 +275,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       },
 
       showCloseModal: false,
+      showDeleteModal: false,
       showSaveAsModal: false,
 
       scriptCode: '',
@@ -548,10 +556,31 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
         order: 10,
       },
       {
+        title: 'Copy File',
+        icon: vsCopy,
+        action: this.handleCopy,
+        group: ContextActions.groups.medium,
+        order: 20,
+      },
+      {
+        title: 'Rename File',
+        icon: dhICursor,
+        action: this.handleShowRename,
+        group: ContextActions.groups.medium,
+        order: 30,
+      },
+      {
+        title: 'Delete File',
+        icon: vsTrash,
+        action: this.handleDelete,
+        group: ContextActions.groups.medium,
+        order: 40,
+      },
+      {
         title: 'Show Minimap',
         icon: isMinimapEnabled ? vsCheck : undefined,
         action: this.handleMinimapChange,
-        group: ContextActions.groups.medium,
+        group: ContextActions.groups.low,
         shortcut: SHORTCUTS.NOTEBOOK.MINIMAP,
         order: 20,
       },
@@ -559,7 +588,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
         title: 'Word Wrap',
         icon: isWordWrapEnabled ? vsCheck : undefined,
         action: this.handleWordWrapChange,
-        group: ContextActions.groups.medium,
+        group: ContextActions.groups.low,
         shortcut: SHORTCUTS.NOTEBOOK.WORDWRAP,
         order: 30,
       },
@@ -648,6 +677,34 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     const copyName = FileUtils.getCopyFileName(itemName);
     log.debug('handleCopy', fileMetadata, itemName, copyName);
     this.createNotebook(copyName, language, content);
+  }
+
+  handleDelete(): void {
+    log.debug('handleDelete, pending confirmation');
+    this.setState({ showDeleteModal: true });
+  }
+
+  handleDeleteConfirm(): void {
+    const { fileStorage, glContainer, glEventHub } = this.props;
+    const { fileMetadata } = this.state;
+
+    log.debug('handleDeleteConfirm', fileMetadata?.itemName);
+    this.setState({ showDeleteModal: false });
+
+    if (!fileMetadata) {
+      return;
+    }
+
+    if (FileUtils.hasPath(fileMetadata.itemName)) {
+      glEventHub.emit(NotebookEvent.CLOSE_FILE, fileMetadata, { force: true });
+      fileStorage.deleteFile(fileMetadata.itemName);
+    } else {
+      glContainer.close({ force: true });
+    }
+  }
+
+  handleDeleteCancel(): void {
+    this.setState({ showDeleteModal: false });
   }
 
   handleEditorInitialized(innerEditor: editor.IStandaloneCodeEditor): void {
@@ -1118,6 +1175,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       sessionLanguage,
       settings: initialSettings,
       showCloseModal,
+      showDeleteModal,
       showSaveAsModal,
     } = this.state;
     // We don't want to steal focus if this isn't shown or it's just a preview
@@ -1307,6 +1365,14 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
             onCancel={this.handleSaveAsCancel}
             notifyOnExtensionChange
             storage={fileStorage}
+          />
+          <BasicModal
+            isOpen={showDeleteModal}
+            headerText={`Are you sure you want to delete "${itemName}"?`}
+            bodyText="You cannot undo this action."
+            onCancel={this.handleDeleteCancel}
+            onConfirm={this.handleDeleteConfirm}
+            confirmButtonText="Delete"
           />
           <BasicModal
             isOpen={showCloseModal}
