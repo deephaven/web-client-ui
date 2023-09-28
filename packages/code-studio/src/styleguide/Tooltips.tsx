@@ -46,7 +46,7 @@ function Tooltips(): React.ReactElement {
           <hr />
           <div>And some icons down here</div>
           <div>
-            <LoadingSpinner />
+            <LoadingSpinner className="loading-spinner-vertical-align" />
             {iconElements}
           </div>
         </Tooltip>

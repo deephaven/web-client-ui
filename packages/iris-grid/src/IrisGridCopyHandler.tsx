@@ -234,11 +234,19 @@ class IrisGridCopyHandler extends Component<
     this.setState({ isShown: false });
   }
 
-  handleCopyClick(): void {
+  async handleCopyClick(): Promise<void> {
     log.debug2('handleCopyClick');
 
     if (this.textData != null) {
-      this.copyText(this.textData);
+      try {
+        await this.copyText(this.textData);
+        this.showCopyDone();
+      } catch (e) {
+        log.error('Error copying text', e);
+        this.setState({
+          error: 'Unable to copy. Verify your browser permissions.',
+        });
+      }
     } else {
       this.startFetch();
     }
@@ -252,27 +260,20 @@ class IrisGridCopyHandler extends Component<
     this.setState({ isShown: false });
   }
 
-  copyText(text: string): void {
+  async copyText(text: string): Promise<void> {
     log.debug2('copyText', text);
 
     this.textData = text;
 
-    copyToClipboard(text).then(
-      () => {
-        this.setState({ copyState: IrisGridCopyHandler.COPY_STATES.DONE });
-        this.startHideTimer();
-      },
-      error => {
-        log.error('copyText error', error);
-        this.setState({
-          buttonState: IrisGridCopyHandler.BUTTON_STATES.CLICK_TO_COPY,
-          copyState: IrisGridCopyHandler.COPY_STATES.CLICK_REQUIRED,
-        });
-      }
-    );
+    await copyToClipboard(text);
   }
 
-  startFetch(): void {
+  showCopyDone(): void {
+    this.setState({ copyState: IrisGridCopyHandler.COPY_STATES.DONE });
+    this.startHideTimer();
+  }
+
+  async startFetch(): Promise<void> {
     this.stopFetch();
 
     this.setState({
@@ -310,23 +311,31 @@ class IrisGridCopyHandler extends Component<
     this.fetchPromise = PromiseUtils.makeCancelable(
       model.textSnapshot(modelRanges, includeHeaders, formatValue)
     );
-    this.fetchPromise
-      .then((text: string) => {
+    try {
+      const text = await this.fetchPromise;
+      this.fetchPromise = undefined;
+      try {
+        await this.copyText(text);
+        this.showCopyDone();
+      } catch (e) {
+        log.error('Error copying text', e);
+        this.setState({
+          buttonState: IrisGridCopyHandler.BUTTON_STATES.CLICK_TO_COPY,
+          copyState: IrisGridCopyHandler.COPY_STATES.CLICK_REQUIRED,
+        });
+      }
+    } catch (e) {
+      if (e instanceof CanceledPromiseError) {
+        log.debug('User cancelled copy.');
+      } else {
+        log.error('Error fetching contents', e);
         this.fetchPromise = undefined;
-        this.copyText(text);
-      })
-      .catch((error: unknown) => {
-        if (error instanceof CanceledPromiseError) {
-          log.debug('User cancelled copy.');
-        } else {
-          log.error('Error fetching contents', error);
-          this.fetchPromise = undefined;
-          this.setState({
-            buttonState: IrisGridCopyHandler.BUTTON_STATES.RETRY,
-            copyState: IrisGridCopyHandler.COPY_STATES.FETCH_ERROR,
-          });
-        }
-      });
+        this.setState({
+          buttonState: IrisGridCopyHandler.BUTTON_STATES.RETRY,
+          copyState: IrisGridCopyHandler.COPY_STATES.FETCH_ERROR,
+        });
+      }
+    }
   }
 
   stopFetch(): void {
@@ -409,7 +418,9 @@ class IrisGridCopyHandler extends Component<
               onClick={this.handleCopyClick}
               disabled={isFetching}
             >
-              {isFetching && <LoadingSpinner />}
+              {isFetching && (
+                <LoadingSpinner className="loading-spinner-vertical-align" />
+              )}
               {copyButtonText}
             </Button>
           </div>

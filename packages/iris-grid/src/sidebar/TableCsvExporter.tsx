@@ -539,7 +539,7 @@ class TableCsvExporter extends Component<
           >
             {isDownloading && (
               <span>
-                <LoadingSpinner />
+                <LoadingSpinner className="loading-spinner-vertical-align" />
                 <span className="btn-normal-content">Downloading</span>
                 <span className="btn-hover-content">Cancel</span>
               </span>

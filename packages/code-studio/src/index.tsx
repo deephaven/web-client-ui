@@ -27,10 +27,39 @@ const pluginsURL = new URL(
   document.baseURI
 );
 
+// Lazy load the configs because it breaks initial page loads otherwise
+async function getCorePlugins() {
+  const dashboardCorePlugins = await import(
+    '@deephaven/dashboard-core-plugins'
+  );
+  const {
+    GridPluginConfig,
+    PandasPluginConfig,
+    ChartPluginConfig,
+    ChartBuilderPluginConfig,
+    FilterPluginConfig,
+    MarkdownPluginConfig,
+    LinkerPluginConfig,
+  } = dashboardCorePlugins;
+  return [
+    GridPluginConfig,
+    PandasPluginConfig,
+    ChartPluginConfig,
+    ChartBuilderPluginConfig,
+    FilterPluginConfig,
+    MarkdownPluginConfig,
+    LinkerPluginConfig,
+  ];
+}
+
 ReactDOM.render(
   <ApiBootstrap apiUrl={apiURL.href} setGlobally>
     <Suspense fallback={<LoadingOverlay />}>
-      <AppBootstrap serverUrl={apiURL.origin} pluginsUrl={pluginsURL.href}>
+      <AppBootstrap
+        getCorePlugins={getCorePlugins}
+        serverUrl={apiURL.origin}
+        pluginsUrl={pluginsURL.href}
+      >
         <AppRoot />
       </AppBootstrap>
     </Suspense>

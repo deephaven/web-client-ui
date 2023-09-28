@@ -11,7 +11,6 @@ import { CSSTransition } from 'react-transition-group';
 import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { ChartModel } from '@deephaven/chart';
 import {
   ContextActions,
   ThemeExport,
@@ -24,10 +23,7 @@ import {
   BasicModal,
   DebouncedModal,
 } from '@deephaven/components';
-import {
-  IrisGridModel,
-  SHORTCUTS as IRIS_GRID_SHORTCUTS,
-} from '@deephaven/iris-grid';
+import { SHORTCUTS as IRIS_GRID_SHORTCUTS } from '@deephaven/iris-grid';
 import {
   ClosedPanels,
   Dashboard,
@@ -40,28 +36,17 @@ import {
   updateDashboardData as updateDashboardDataAction,
 } from '@deephaven/dashboard';
 import {
-  ChartPlugin,
   ConsolePlugin,
-  FilterPlugin,
-  GridPlugin,
   InputFilterEvent,
-  LinkerPlugin,
   MarkdownEvent,
   NotebookEvent,
-  MarkdownPlugin,
-  PandasPlugin,
   getDashboardSessionWrapper,
   ControlType,
   ToolType,
-  ChartBuilderPlugin,
   FilterSet,
   Link,
   ColumnSelectionValidator,
   getDashboardConnection,
-  IrisGridPanelMetadata,
-  isIrisGridPanelMetadata,
-  isLegacyIrisGridPanelMetadata,
-  isChartPanelDehydratedProps,
 } from '@deephaven/dashboard-core-plugins';
 import {
   vsGear,
@@ -98,10 +83,7 @@ import type { ItemConfigType } from '@deephaven/golden-layout';
 import {
   type DashboardPlugin,
   isDashboardPlugin,
-  type TablePluginComponent,
-  isTablePlugin,
   type LegacyDashboardPlugin,
-  isLegacyTablePlugin,
   isLegacyDashboardPlugin,
 } from '@deephaven/plugin';
 import JSZip from 'jszip';
@@ -111,10 +93,8 @@ import { getLayoutStorage, getServerConfigValues } from '../redux';
 import Logo from '../settings/community-wordmark-app.svg';
 import './AppMainContainer.scss';
 import WidgetList, { WindowMouseEvent } from './WidgetList';
-import { createChartModel, createGridModel } from './WidgetUtils';
 import EmptyDashboard from './EmptyDashboard';
 import UserLayoutUtils from './UserLayoutUtils';
-import DownloadServiceWorkerUtils from '../DownloadServiceWorkerUtils';
 import LayoutStorage from '../storage/LayoutStorage';
 
 const log = Log.module('AppMainContainer');
@@ -209,14 +189,11 @@ export class AppMainContainer extends Component<
     this.handleExportLayoutClick = this.handleExportLayoutClick.bind(this);
     this.handleImportLayoutClick = this.handleImportLayoutClick.bind(this);
     this.handleImportLayoutFiles = this.handleImportLayoutFiles.bind(this);
-    this.handleLoadTablePlugin = this.handleLoadTablePlugin.bind(this);
     this.handleResetLayoutClick = this.handleResetLayoutClick.bind(this);
     this.handleWidgetMenuClick = this.handleWidgetMenuClick.bind(this);
     this.handleWidgetsMenuClose = this.handleWidgetsMenuClose.bind(this);
     this.handleWidgetSelect = this.handleWidgetSelect.bind(this);
     this.handlePaste = this.handlePaste.bind(this);
-    this.hydrateChart = this.hydrateChart.bind(this);
-    this.hydrateTable = this.hydrateTable.bind(this);
     this.hydrateDefault = this.hydrateDefault.bind(this);
     this.openNotebookFromURL = this.openNotebookFromURL.bind(this);
     this.handleDisconnect = this.handleDisconnect.bind(this);
@@ -635,30 +612,6 @@ export class AppMainContainer extends Component<
     }
   }
 
-  /**
-   * Load a Table plugin specified by a table
-   * @param pluginName The name of the plugin to load
-   * @returns An element from the plugin
-   */
-  handleLoadTablePlugin(pluginName: string): TablePluginComponent {
-    const { plugins } = this.props;
-
-    // First check if we have any plugin modules loaded that match the TablePlugin.
-    const pluginModule = plugins.get(pluginName);
-    if (pluginModule != null) {
-      if (isTablePlugin(pluginModule)) {
-        return pluginModule.component;
-      }
-      if (isLegacyTablePlugin(pluginModule)) {
-        return pluginModule.TablePlugin;
-      }
-    }
-
-    const errorMessage = `Unable to find table plugin ${pluginName}.`;
-    log.error(errorMessage);
-    throw new Error(errorMessage);
-  }
-
   startListeningForDisconnect(): void {
     const { connection } = this.props;
     connection.addEventListener(
@@ -722,61 +675,6 @@ export class AppMainContainer extends Component<
     return DashboardUtils.hydrate(props, id);
   }
 
-  hydrateTable(
-    props: DehydratedDashboardPanelProps,
-    id: string
-  ): DehydratedDashboardPanelProps & {
-    getDownloadWorker: () => Promise<ServiceWorker>;
-    loadPlugin: (pluginName: string) => TablePluginComponent;
-    localDashboardId: string;
-    makeModel: () => Promise<IrisGridModel>;
-  } {
-    const { connection } = this.props;
-    let metadata: IrisGridPanelMetadata;
-    if (isIrisGridPanelMetadata(props.metadata)) {
-      metadata = props.metadata;
-    } else if (isLegacyIrisGridPanelMetadata(props.metadata)) {
-      metadata = {
-        name: props.metadata.table,
-        type: props.metadata.type ?? dh.VariableType.TABLE,
-      };
-    } else {
-      throw new Error('Metadata is required for table panel');
-    }
-
-    return {
-      ...props,
-      getDownloadWorker: DownloadServiceWorkerUtils.getServiceWorker,
-      loadPlugin: this.handleLoadTablePlugin,
-      localDashboardId: id,
-      makeModel: () => createGridModel(dh, connection, metadata),
-    };
-  }
-
-  hydrateChart(
-    props: DehydratedDashboardPanelProps,
-    id: string
-  ): DehydratedDashboardPanelProps & {
-    makeModel: () => Promise<ChartModel>;
-  } {
-    const { connection } = this.props;
-    return {
-      ...props,
-      localDashboardId: id,
-      makeModel: () => {
-        const { metadata } = props;
-        const panelState = isChartPanelDehydratedProps(props)
-          ? props.panelState
-          : undefined;
-        if (metadata == null) {
-          throw new Error('Metadata is required for chart panel');
-        }
-
-        return createChartModel(dh, connection, metadata, panelState);
-      },
-    };
-  }
-
   /**
    * Open a widget up, using a drag event if specified.
    * @param widget The widget to open
@@ -792,17 +690,20 @@ export class AppMainContainer extends Component<
   }
 
   getDashboardPlugins = memoize((plugins: DeephavenPluginModuleMap) => {
-    const legacyPlugins = (
-      [...plugins.entries()].filter(([, plugin]) =>
-        isLegacyDashboardPlugin(plugin)
-      ) as [string, LegacyDashboardPlugin][]
-    ).map(([name, { DashboardPlugin: DPlugin }]) => <DPlugin key={name} />);
+    const dashboardPlugins = [...plugins.entries()].filter(
+      ([, plugin]) =>
+        isDashboardPlugin(plugin) || isLegacyDashboardPlugin(plugin)
+    ) as [string, DashboardPlugin | LegacyDashboardPlugin][];
 
-    return legacyPlugins.concat(
-      [...plugins.values()]
-        .filter<DashboardPlugin>(isDashboardPlugin)
-        .map(({ component: DPlugin, name }) => <DPlugin key={name} />)
-    );
+    return dashboardPlugins.map(([name, plugin]) => {
+      if (isLegacyDashboardPlugin(plugin)) {
+        const { DashboardPlugin: DPlugin } = plugin;
+        return <DPlugin key={name} />;
+      }
+
+      const { component: DPlugin } = plugin;
+      return <DPlugin key={name} />;
+    });
   });
 
   render(): ReactElement {
@@ -937,9 +838,6 @@ export class AppMainContainer extends Component<
           onLayoutInitialized={this.openNotebookFromURL}
           hydrate={this.hydrateDefault}
         >
-          <GridPlugin hydrate={this.hydrateTable} />
-          <ChartPlugin hydrate={this.hydrateChart} />
-          <ChartBuilderPlugin />
           <ConsolePlugin
             hydrateConsole={AppMainContainer.hydrateConsole}
             notebooksUrl={
@@ -949,10 +847,6 @@ export class AppMainContainer extends Component<
               ).href
             }
           />
-          <FilterPlugin />
-          <PandasPlugin hydrate={this.hydrateTable} />
-          <MarkdownPlugin />
-          <LinkerPlugin />
           {dashboardPlugins}
         </Dashboard>
         <CSSTransition
