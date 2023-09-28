@@ -1,7 +1,7 @@
 import Log from '@deephaven/log';
 import { assertNotNull } from '@deephaven/utils';
-import darkTheme from '../../scss/theme_default_dark.scss?inline';
-import lightTheme from '../../scss/theme_default_light.scss?inline';
+import darkTheme from './theme_default_dark.scss';
+import lightTheme from './theme_default_light.scss';
 import {
   DEFAULT_DARK_THEME_KEY,
   DEFAULT_LIGHT_THEME_KEY,
