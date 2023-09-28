@@ -685,17 +685,22 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   }
 
   handleDeleteConfirm(): void {
-    const { fileStorage, glEventHub } = this.props;
+    const { fileStorage, glContainer, glEventHub } = this.props;
     const { fileMetadata } = this.state;
 
     log.debug('handleDeleteConfirm', fileMetadata?.itemName);
+    this.setState({ showDeleteModal: false });
 
     if (!fileMetadata) {
       return;
     }
 
-    glEventHub.emit(NotebookEvent.CLOSE_FILE, fileMetadata, { force: true });
-    fileStorage.deleteFile(fileMetadata.itemName);
+    if (FileUtils.hasPath(fileMetadata.itemName)) {
+      glEventHub.emit(NotebookEvent.CLOSE_FILE, fileMetadata, { force: true });
+      fileStorage.deleteFile(fileMetadata.itemName);
+    } else {
+      glContainer.close({ force: true });
+    }
   }
 
   handleDeleteCancel(): void {
