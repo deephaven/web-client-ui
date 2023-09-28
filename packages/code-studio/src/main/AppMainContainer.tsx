@@ -47,6 +47,7 @@ import {
   Link,
   ColumnSelectionValidator,
   getDashboardConnection,
+  NotebookPanel,
 } from '@deephaven/dashboard-core-plugins';
 import {
   vsGear,
@@ -77,7 +78,7 @@ import {
   ServerConfigValues,
   DeephavenPluginModuleMap,
 } from '@deephaven/redux';
-import { PromiseUtils } from '@deephaven/utils';
+import { bindAllMethods, PromiseUtils } from '@deephaven/utils';
 import GoldenLayout from '@deephaven/golden-layout';
 import type { ItemConfigType } from '@deephaven/golden-layout';
 import {
@@ -139,7 +140,9 @@ interface AppMainContainerState {
   isAuthFailed: boolean;
   isDisconnected: boolean;
   isPanelsMenuShown: boolean;
+  isResetLayoutPromptShown: boolean;
   isSettingsMenuShown: boolean;
+  unsavedNotebookCount: number;
   widgets: VariableDefinition[];
 }
 
@@ -176,29 +179,8 @@ export class AppMainContainer extends Component<
 
   constructor(props: AppMainContainerProps & RouteComponentProps) {
     super(props);
-    this.handleSettingsMenuHide = this.handleSettingsMenuHide.bind(this);
-    this.handleSettingsMenuShow = this.handleSettingsMenuShow.bind(this);
-    this.handleError = this.handleError.bind(this);
-    this.handleControlSelect = this.handleControlSelect.bind(this);
-    this.handleToolSelect = this.handleToolSelect.bind(this);
-    this.handleClearFilter = this.handleClearFilter.bind(this);
-    this.handleDataChange = this.handleDataChange.bind(this);
-    this.handleAutoFillClick = this.handleAutoFillClick.bind(this);
-    this.handleGoldenLayoutChange = this.handleGoldenLayoutChange.bind(this);
-    this.handleLayoutConfigChange = this.handleLayoutConfigChange.bind(this);
-    this.handleExportLayoutClick = this.handleExportLayoutClick.bind(this);
-    this.handleImportLayoutClick = this.handleImportLayoutClick.bind(this);
-    this.handleImportLayoutFiles = this.handleImportLayoutFiles.bind(this);
-    this.handleResetLayoutClick = this.handleResetLayoutClick.bind(this);
-    this.handleWidgetMenuClick = this.handleWidgetMenuClick.bind(this);
-    this.handleWidgetsMenuClose = this.handleWidgetsMenuClose.bind(this);
-    this.handleWidgetSelect = this.handleWidgetSelect.bind(this);
-    this.handlePaste = this.handlePaste.bind(this);
-    this.hydrateDefault = this.hydrateDefault.bind(this);
-    this.openNotebookFromURL = this.openNotebookFromURL.bind(this);
-    this.handleDisconnect = this.handleDisconnect.bind(this);
-    this.handleReconnect = this.handleReconnect.bind(this);
-    this.handleReconnectAuthFailed = this.handleReconnectAuthFailed.bind(this);
+
+    bindAllMethods(this);
 
     this.importElement = React.createRef();
 
@@ -231,7 +213,9 @@ export class AppMainContainer extends Component<
       isAuthFailed: false,
       isDisconnected: false,
       isPanelsMenuShown: false,
+      isResetLayoutPromptShown: false,
       isSettingsMenuShown: false,
+      unsavedNotebookCount: 0,
       widgets: [],
     };
   }
@@ -345,6 +329,20 @@ export class AppMainContainer extends Component<
 
   emitLayoutEvent(event: string, ...args: unknown[]): void {
     this.goldenLayout?.eventHub.emit(event, ...args);
+  }
+
+  handleCancelResetLayoutPrompt(): void {
+    this.setState({
+      isResetLayoutPromptShown: false,
+    });
+  }
+
+  handleConfirmResetLayoutPrompt(): void {
+    this.setState({
+      isResetLayoutPromptShown: false,
+    });
+
+    this.resetLayout();
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -517,9 +515,11 @@ export class AppMainContainer extends Component<
   handleResetLayoutClick(): void {
     log.info('handleResetLayoutClick');
 
-    this.setState({ isPanelsMenuShown: false });
-
-    this.resetLayout();
+    this.setState({
+      isPanelsMenuShown: false,
+      isResetLayoutPromptShown: true,
+      unsavedNotebookCount: NotebookPanel.unsavedNotebookCount(),
+    });
   }
 
   handleImportLayoutFiles(event: ChangeEvent<HTMLInputElement>): void {
@@ -718,7 +718,9 @@ export class AppMainContainer extends Component<
       isAuthFailed,
       isDisconnected,
       isPanelsMenuShown,
+      isResetLayoutPromptShown,
       isSettingsMenuShown,
+      unsavedNotebookCount,
       widgets,
     } = this.state;
     const dashboardPlugins = this.getDashboardPlugins(plugins);
@@ -884,6 +886,23 @@ export class AppMainContainer extends Component<
             subtitle="Please check your network connection."
           />
         </DebouncedModal>
+        <BasicModal
+          confirmButtonText="Reset"
+          onConfirm={this.handleConfirmResetLayoutPrompt}
+          onCancel={this.handleCancelResetLayoutPrompt}
+          isConfirmDanger
+          isOpen={isResetLayoutPromptShown}
+          headerText={
+            unsavedNotebookCount === 0
+              ? 'Reset Layout'
+              : 'Reset layout and discard unsaved changes'
+          }
+          bodyText={
+            unsavedNotebookCount === 0
+              ? 'Do you want to reset your layout? Your existing layout will be lost.'
+              : 'Do you want to reset your layout? Any unsaved notebooks will be lost.'
+          }
+        />
         <BasicModal
           confirmButtonText="Refresh"
           onConfirm={AppMainContainer.handleRefresh}
