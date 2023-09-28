@@ -90,7 +90,11 @@ export async function loadModulePlugins(
       if (module.status === 'fulfilled') {
         const moduleValue = isLegacyPlugin(module.value)
           ? module.value
-          : module.value.default ?? module.value;
+          : // TypeScript builds CJS default exports differently depending on
+            // whether there are also named exports. If the default is the only
+            // export, it will be the value. If there are also named exports,
+            // it will be assigned to the `default` property on the value.
+            module.value.default ?? module.value;
 
         if (moduleValue == null) {
           log.error(`Plugin '${name}' is missing an exported value.`);
@@ -185,7 +189,7 @@ export function getThemeDataFromPlugins(
   log.debug('Getting theme data from plugins', themePluginEntries);
 
   return themePluginEntries
-    .map(([pluginRootPath, plugin]) => {
+    .map(([pluginName, plugin]) => {
       // Normalize to an array since config can be an array of configs or a
       // single config
       const configs = Array.isArray(plugin.themes)
@@ -196,7 +200,7 @@ export function getThemeDataFromPlugins(
         ({ name, baseTheme, styleContent }) =>
           ({
             baseThemeKey: `default-${baseTheme ?? 'dark'}`,
-            themeKey: getThemeKey(pluginRootPath, name),
+            themeKey: getThemeKey(pluginName, name),
             name,
             styleContent,
           }) as const

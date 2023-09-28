@@ -132,7 +132,7 @@ export function isAuthPlugin(plugin: PluginModule): plugin is AuthPlugin {
   return 'type' in plugin && plugin.type === PluginType.AUTH_PLUGIN;
 }
 
-export interface ThemePluginConfig {
+export interface ThemeConfig {
   name: string;
   baseTheme?: BaseThemeType;
   styleContent: string;
@@ -140,7 +140,7 @@ export interface ThemePluginConfig {
 
 export interface ThemePlugin extends Plugin {
   type: typeof PluginType.THEME_PLUGIN;
-  themes: ThemePluginConfig | ThemePluginConfig[];
+  themes: ThemeConfig | ThemeConfig[];
 }
 
 /** Type guard to check if given plugin is a `ThemePlugin` */

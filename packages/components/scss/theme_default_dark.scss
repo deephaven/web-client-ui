@@ -11,8 +11,6 @@
   --dh-color-gray-100: #2d2a2e;
   --dh-color-gray-75: #211f22;
   --dh-color-gray-50: #1a171a;
-  --dh-color-black: var(--dh-color-gray-50);
-  --dh-color-white: var(--dh-color-gray-800);
 
   /* Blues */
   --dh-color-blue-100: #112451;
@@ -47,6 +45,8 @@
   --dh-color-seafoam-1400: #cbfce8;
 
   /* Semantic */
+  --dh-color-black: var(--dh-color-gray-50);
+  --dh-color-white: var(--dh-color-gray-800);
   --dh-accent-color: var(--dh-color-blue-700);
   --dh-background-color: var(--dh-color-black);
   --dh-foreground-color: var(--dh-color-white);

@@ -115,16 +115,10 @@ describe('getDefaultBaseThemes', () => {
 });
 
 describe('getThemeKey', () => {
-  it.each([
-    ['PluginPath/Xxx/yyY', 'Plugin Aaa', 'pluginpath-xxx-yyy_plugin-aaa'],
-    ['PluginPath', 'Plugin *+-@$ 99.8', 'pluginpath_plugin-99-8'],
-  ])(
-    'should combine and format the plugin root path and theme name: %s, %s',
-    (pluginRootPath, themeName, expected) => {
-      const actual = getThemeKey(pluginRootPath, themeName);
-      expect(actual).toBe(expected);
-    }
-  );
+  it('should combine plugin name and theme name', () => {
+    const actual = getThemeKey('plugin', 'name');
+    expect(actual).toBe('plugin_name');
+  });
 });
 
 describe('getThemePreloadData', () => {

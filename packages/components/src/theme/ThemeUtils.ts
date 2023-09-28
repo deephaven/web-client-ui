@@ -127,14 +127,11 @@ export function setThemePreloadData(preloadData: ThemePreloadData): void {
 
 /**
  * Derive unique theme key from plugin root path and theme name.
- * @param pluginRootPath The root path of the plugin
+ * @param pluginName The root path of the plugin
  * @param themeName The name of the theme
  */
-export function getThemeKey(pluginRootPath: string, themeName: string): string {
-  return `${pluginRootPath}_${themeName}`
-    .toLowerCase()
-    .replace(/\W/g, '-')
-    .replace(/-+/g, '-');
+export function getThemeKey(pluginName: string, themeName: string): string {
+  return `${pluginName}_${themeName}`;
 }
 
 /**
