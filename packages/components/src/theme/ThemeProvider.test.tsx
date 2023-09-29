@@ -122,10 +122,10 @@ describe('ThemeProvider', () => {
         assertNotNull(themeContextValueRef.current);
 
         act(() => {
-          themeContextValueRef.current?.setSelectedThemeKey(themeKey);
+          themeContextValueRef.current!.setSelectedThemeKey(themeKey);
         });
 
-        expect(themeContextValueRef.current?.activeThemes).toEqual(
+        expect(themeContextValueRef.current.activeThemes).toEqual(
           getActiveThemes(themeKey, {
             base: getDefaultBaseThemes(),
             custom: themes ?? [],
