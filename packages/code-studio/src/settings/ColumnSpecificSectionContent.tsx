@@ -385,6 +385,41 @@ export class ColumnSpecificSectionContent extends PureComponent<
     return error;
   }
 
+  makeDefaultFormatterItemByType(
+    columnType: string
+  ): TableColumnFormat | string {
+    switch (columnType) {
+      case 'int': {
+        const { defaultIntegerFormatOptions } = this.props;
+        const { defaultFormatString: defaultIntegerFormatString } =
+          defaultIntegerFormatOptions;
+        return IntegerColumnFormatter.makeFormat(
+          '',
+          defaultIntegerFormatString ??
+            IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
+          IntegerColumnFormatter.TYPE_GLOBAL,
+          undefined
+        );
+      }
+
+      case 'decimal': {
+        const { defaultDecimalFormatOptions } = this.props;
+        const { defaultFormatString: defaultDecimalFormatString } =
+          defaultDecimalFormatOptions;
+        return DecimalColumnFormatter.makeFormat(
+          '',
+          defaultDecimalFormatString ??
+            DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
+          DecimalColumnFormatter.TYPE_GLOBAL,
+          undefined
+        );
+      }
+      default: {
+        return '';
+      }
+    }
+  }
+
   renderFormatRule(i: number, rule: FormatterItem): ReactElement {
     const columnNameId = `input-${i}-columnName`;
     const columnTypeId = `input-${i}-columnType`;
@@ -394,8 +429,14 @@ export class ColumnSpecificSectionContent extends PureComponent<
       this.handleFormatRuleChange(i, 'columnName', e.target.value);
     const onNameBlur = (): void =>
       this.handleFormatRuleChange(i, 'isNewRule', false);
-    const onTypeChange = (e: ChangeEvent<HTMLSelectElement>): void =>
+    const onTypeChange = (e: ChangeEvent<HTMLSelectElement>): void => {
       this.handleFormatRuleChange(i, 'columnType', e.target.value);
+      this.handleFormatRuleChange(
+        i,
+        'format',
+        this.makeDefaultFormatterItemByType(e.target.value)
+      );
+    };
     const ruleError = this.getRuleError(rule);
 
     return (
@@ -553,19 +594,6 @@ export class ColumnSpecificSectionContent extends PureComponent<
         placeholder={
           defaultFormatString ?? IntegerColumnFormatter.DEFAULT_FORMAT_STRING
         }
-        onKeyDown={e => {
-          if (e.key === 'Enter' && value === '') {
-            e.preventDefault();
-            const selectedFormat = IntegerColumnFormatter.makeFormat(
-              '',
-              defaultFormatString ??
-                IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
-              IntegerColumnFormatter.TYPE_GLOBAL,
-              undefined
-            );
-            this.handleFormatRuleChange(i, 'format', selectedFormat);
-          }
-        }}
         type="text"
         value={value}
         onChange={e => {
@@ -601,19 +629,6 @@ export class ColumnSpecificSectionContent extends PureComponent<
         placeholder={
           defaultFormatString ?? DecimalColumnFormatter.DEFAULT_FORMAT_STRING
         }
-        onKeyDown={e => {
-          if (e.key === 'Enter' && value === '') {
-            e.preventDefault();
-            const selectedFormat = DecimalColumnFormatter.makeFormat(
-              '',
-              defaultFormatString ??
-                DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
-              DecimalColumnFormatter.TYPE_GLOBAL,
-              undefined
-            );
-            this.handleFormatRuleChange(i, 'format', selectedFormat);
-          }
-        }}
         type="text"
         value={value}
         onChange={e => {
