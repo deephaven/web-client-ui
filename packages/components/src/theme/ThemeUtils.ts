@@ -65,7 +65,10 @@ export function getActiveThemes(
 
   if (base == null) {
     log.error(
-      `No registered base theme found for theme key: '${baseThemeKey}'`
+      `No registered base theme found for theme key: '${baseThemeKey}'`,
+      'Registered:',
+      themeRegistration.base.map(theme => theme.themeKey),
+      themeRegistration.custom.map(theme => theme.themeKey)
     );
     base = themeRegistration.base.find(
       theme => theme.themeKey === DEFAULT_DARK_THEME_KEY

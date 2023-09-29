@@ -36,20 +36,22 @@ export function ThemeProvider({
 
   const activeThemes = useMemo(
     () =>
-      getActiveThemes(selectedThemeKey, {
-        base: baseThemes,
-        custom: themes ?? [],
-      }),
+      // Themes remain inactive until a non-null themes value is provided. This
+      // avoids the default base theme overriding the preload if we are waiting
+      // on additional themes to be available.
+      themes == null
+        ? null
+        : getActiveThemes(selectedThemeKey, {
+            base: baseThemes,
+            custom: themes ?? [],
+          }),
     [baseThemes, selectedThemeKey, themes]
   );
 
   // Any time active themes change, update the preload data for next time the
   // page loads.
   useEffect(() => {
-    log.debug(
-      'Active themes:',
-      activeThemes.map(theme => theme.themeKey)
-    );
+    log.debug('Active themes:', activeThemes?.map(theme => theme.themeKey));
 
     setThemePreloadData({
       themeKey: selectedThemeKey,
@@ -68,7 +70,7 @@ export function ThemeProvider({
 
   return (
     <ThemeContext.Provider value={value}>
-      {activeThemes.map(theme => (
+      {activeThemes?.map(theme => (
         <style data-theme-key={theme.themeKey} key={theme.themeKey}>
           {theme.styleContent}
         </style>

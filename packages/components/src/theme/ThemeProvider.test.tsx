@@ -76,10 +76,12 @@ describe('ThemeProvider', () => {
       assertNotNull(themeContextValueRef.current);
 
       expect(themeContextValueRef.current.activeThemes).toEqual(
-        getActiveThemes(preloadData?.themeKey ?? DEFAULT_DARK_THEME_KEY, {
-          base: getDefaultBaseThemes(),
-          custom: themes ?? [],
-        })
+        themes == null
+          ? null
+          : getActiveThemes(preloadData?.themeKey ?? DEFAULT_DARK_THEME_KEY, {
+              base: getDefaultBaseThemes(),
+              custom: themes,
+            })
       );
 
       expect(themeContextValueRef.current.selectedThemeKey).toEqual(
@@ -130,10 +132,12 @@ describe('ThemeProvider', () => {
         });
 
         expect(themeContextValueRef.current.activeThemes).toEqual(
-          getActiveThemes(themeKey, {
-            base: getDefaultBaseThemes(),
-            custom: themes ?? [],
-          })
+          themes == null
+            ? null
+            : getActiveThemes(themeKey, {
+                base: getDefaultBaseThemes(),
+                custom: themes,
+              })
         );
 
         expect(themeContextValueRef.current.selectedThemeKey).toEqual(themeKey);

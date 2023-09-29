@@ -36,11 +36,6 @@ exports[`ThemeProvider setSelectedThemeKey: [ [Object] ] should change selected 
 exports[`ThemeProvider setSelectedThemeKey: null should change selected theme: default-light 1`] = `
 <body>
   <div>
-    <style
-      data-theme-key="default-light"
-    >
-      test-file-stub
-    </style>
     <div>
       Child
     </div>
@@ -51,11 +46,6 @@ exports[`ThemeProvider setSelectedThemeKey: null should change selected theme: d
 exports[`ThemeProvider setSelectedThemeKey: null should change selected theme: themeA 1`] = `
 <body>
   <div>
-    <style
-      data-theme-key="default-dark"
-    >
-      test-file-stub
-    </style>
     <div>
       Child
     </div>
@@ -99,11 +89,6 @@ exports[`ThemeProvider should load themes based on preload data or default: [ [O
 exports[`ThemeProvider should load themes based on preload data or default: null, { themeKey: 'themeA' } 1`] = `
 <body>
   <div>
-    <style
-      data-theme-key="default-dark"
-    >
-      test-file-stub
-    </style>
     <div>
       Child
     </div>
@@ -114,11 +99,6 @@ exports[`ThemeProvider should load themes based on preload data or default: null
 exports[`ThemeProvider should load themes based on preload data or default: null, null 1`] = `
 <body>
   <div>
-    <style
-      data-theme-key="default-dark"
-    >
-      test-file-stub
-    </style>
     <div>
       Child
     </div>
