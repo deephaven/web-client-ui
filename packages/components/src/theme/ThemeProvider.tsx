@@ -1,17 +1,23 @@
-import { createContext, ReactNode, useEffect } from 'react';
-import { ThemeData } from './ThemeModel';
-import useInitializeThemeContextValue from './useInitializeThemeContextValue';
+import { createContext, ReactNode, useEffect, useMemo, useState } from 'react';
+import Log from '@deephaven/log';
+import { DEFAULT_DARK_THEME_KEY, ThemeData } from './ThemeModel';
+import {
+  calculatePreloadStyleContent,
+  getActiveThemes,
+  getDefaultBaseThemes,
+  getThemePreloadData,
+  setThemePreloadData,
+} from './ThemeUtils';
 
 export interface ThemeContextValue {
   activeThemes: ThemeData[] | null;
   selectedThemeKey: string;
   setSelectedThemeKey: (themeKey: string) => void;
-  registerThemes: (themes: ThemeData[]) => void;
 }
 
-export const ThemeContext = createContext<ThemeContextValue | null>(null);
+const log = Log.module('ThemeProvider');
 
-export default ThemeContext;
+export const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export interface ThemeProviderProps {
   themes: ThemeData[] | null;
@@ -22,20 +28,47 @@ export function ThemeProvider({
   themes,
   children,
 }: ThemeProviderProps): JSX.Element {
-  const value = useInitializeThemeContextValue();
-  const { registerThemes } = value;
+  const baseThemes = useMemo(() => getDefaultBaseThemes(), []);
 
+  const [selectedThemeKey, setSelectedThemeKey] = useState<string>(
+    () => getThemePreloadData()?.themeKey ?? DEFAULT_DARK_THEME_KEY
+  );
+
+  const activeThemes = useMemo(
+    () =>
+      getActiveThemes(selectedThemeKey, {
+        base: baseThemes,
+        custom: themes ?? [],
+      }),
+    [baseThemes, selectedThemeKey, themes]
+  );
+
+  // Any time active themes change, update the preload data for next time the
+  // page loads.
   useEffect(() => {
-    if (themes == null) {
-      return;
-    }
+    log.debug(
+      'Active themes:',
+      activeThemes.map(theme => theme.themeKey)
+    );
 
-    registerThemes(themes);
-  }, [themes, registerThemes]);
+    setThemePreloadData({
+      themeKey: selectedThemeKey,
+      preloadStyleContent: calculatePreloadStyleContent(),
+    });
+  }, [activeThemes, selectedThemeKey]);
+
+  const value = useMemo(
+    () => ({
+      activeThemes,
+      selectedThemeKey,
+      setSelectedThemeKey,
+    }),
+    [activeThemes, selectedThemeKey]
+  );
 
   return (
     <ThemeContext.Provider value={value}>
-      {value.activeThemes?.map(theme => (
+      {activeThemes.map(theme => (
         <style data-theme-key={theme.themeKey} key={theme.themeKey}>
           {theme.styleContent}
         </style>
@@ -44,3 +77,5 @@ export function ThemeProvider({
     </ThemeContext.Provider>
   );
 }
+
+export default ThemeProvider;
