@@ -1,4 +1,5 @@
 import { Locator, expect, Page } from '@playwright/test';
+import os from 'node:os';
 import shortid from 'shortid';
 
 export enum TableTypes {
@@ -99,7 +100,7 @@ export async function typeInMonaco(
 }
 
 /**
- * Pastes text into a monaco input
+ * Pastes text into a monaco input. The input will have focus after pasting.
  * @param locator Locator to use for monaco editor
  * @param text Text to be pasted
  */
@@ -107,10 +108,36 @@ export async function pasteInMonaco(
   locator: Locator,
   text: string
 ): Promise<void> {
+  const page = locator.page();
+  const isMac = os.platform() === 'darwin';
+  const modifier = isMac ? 'Meta' : 'Control';
+
+  // Create a hidden textarea with the contents to paste
+  const inputId = await page.evaluate(async evalText => {
+    const tempInput = document.createElement('textarea');
+    tempInput.id = 'super-secret-temp-input-id';
+    tempInput.value = evalText;
+    tempInput.style.width = '0';
+    tempInput.style.height = '0';
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    return tempInput.id;
+  }, text);
+
+  // Copy the contents of the textarea which was selected above
+  await page.keyboard.press(`${modifier}+C`);
+
+  // Remove the textarea
+  await page.evaluate(id => {
+    document.getElementById(id)?.remove();
+  }, inputId);
+
+  // Focus monaco
+  await locator.click();
+
   const browserName = locator.page().context().browser()?.browserType().name();
-  if (browserName === 'firefox') {
-    await typeInMonaco(locator, text);
-  } else {
+  if (browserName !== 'firefox') {
+    // Chromium on mac and webkit on any OS don't seem to paste w/ the keyboard shortcut
     await locator.locator('textarea').evaluate(async (element, evalText) => {
       const clipboardData = new DataTransfer();
       clipboardData.setData('text/plain', evalText);
@@ -119,6 +146,13 @@ export async function pasteInMonaco(
       });
       element.dispatchEvent(clipboardEvent);
     }, text);
+  } else {
+    await page.keyboard.press(`${modifier}+V`);
+  }
+
+  if (text.length > 0) {
+    // Sanity check the paste happened
+    await expect(locator.locator('textarea')).not.toBeEmpty();
   }
 }
 
@@ -170,6 +204,15 @@ export async function dragComponent(
       steps,
     }
   );
+  // repeated this mouse.move because of a comment in Playwright docs about manual drag
+  // https://playwright.dev/docs/input#dragging-manually
+  await page.mouse.move(
+    destinationPos.x + destinationPos.width / 2,
+    destinationPos.y + destinationPos.height / 2 + offsetY,
+    {
+      steps,
+    }
+  );
 
   await expect(targetIndicator).not.toHaveCount(0);
   await page.mouse.up();
@@ -187,6 +230,7 @@ export async function openTableOption(
   page: Page,
   tableOption: string
 ): Promise<void> {
+  await expect(page.getByText('Table Options')).toHaveCount(1);
   await page.locator(`data-testid=menu-item-${tableOption}`).click();
 
   // Wait until the table option has fully appeared, by checking that the top level menu is no longer visible

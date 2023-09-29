@@ -12,6 +12,24 @@ This project uses [Vite](https://vitejs.dev/). It is to provide an example React
 
 - `name`: Required. The name of the table to load
 
+## Usage
+
+You simply need to provide the URL to embed the iframe. Also add the `clipboard-write` permission to allow copying when embedded, e.g.:
+
+```
+<html>
+  <body>
+    <h1>Dev</h1>
+    <iframe
+      src="http://localhost:4010/?name=t"
+      width="800"
+      height="500"
+      allow="clipboard-write"
+    ></iframe>
+  </body>
+</html>
+```
+
 ## API
 
 The iframe provides an API to perform some basic actions with the table loaded. Use by posting the command/value as a [postMessage](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage) to the `contentWindow` of the iframe element, e.g. `document.getElementById('my-iframe').contentWindow.postMessage({ command, value }, 'http://localhost:4010')`

@@ -12,7 +12,7 @@ import type { FlattenedItem, TreeItem } from './types';
  * @param indentationWidth Width of indentation for each depth
  * @returns The drag depth for the given offset
  */
-function getDragDepth(offset: number, indentationWidth: number) {
+function getDragDepth(offset: number, indentationWidth: number): number {
   return Math.round(offset / indentationWidth);
 }
 
@@ -152,7 +152,12 @@ export function getProjection(
   overId: string,
   dragOffset: number,
   indentationWidth: number
-) {
+): {
+  depth: number;
+  maxDepth: number;
+  minDepth: number;
+  parentId: string | null;
+} {
   const overItemIndex = items.findIndex(({ id }) => id === overId);
   const activeItemIndex = items.findIndex(({ id }) => id === activeId);
   const activeItem = items[activeItemIndex];
@@ -176,7 +181,7 @@ export function getProjection(
 
   return { depth, maxDepth, minDepth, parentId: getParentId() };
 
-  function getParentId() {
+  function getParentId(): string | null {
     if (depth === 0 || !previousItem) {
       return null;
     }
@@ -204,11 +209,15 @@ function getMaxDepth({
 }: {
   previousItem?: FlattenedItem;
   nextItem?: FlattenedItem;
-}) {
+}): number {
   return Math.max(previousItem?.depth ?? 0, nextItem?.depth ?? 0);
 }
 
-function getMinDepth({ nextItem }: { nextItem: FlattenedItem | undefined }) {
+function getMinDepth({
+  nextItem,
+}: {
+  nextItem: FlattenedItem | undefined;
+}): number {
   if (nextItem) {
     return nextItem.depth;
   }

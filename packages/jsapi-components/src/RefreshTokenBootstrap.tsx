@@ -19,7 +19,7 @@ export type RefreshTokenBootstrapProps = {
  */
 export function RefreshTokenBootstrap({
   children,
-}: RefreshTokenBootstrapProps) {
+}: RefreshTokenBootstrapProps): JSX.Element {
   const api = useApi();
   const client = useClient();
   const [token, setToken] = useState(readRefreshToken());

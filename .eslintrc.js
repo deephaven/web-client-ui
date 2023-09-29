@@ -1,3 +1,7 @@
+const buildPackageManifest = require('./packageManifest');
+
+const { packageNames, packageManifest } = buildPackageManifest();
+
 module.exports = {
   root: true,
   extends: ['@deephaven/eslint-config'],
@@ -10,5 +14,18 @@ module.exports = {
         tsconfigRootDir: __dirname,
       },
     },
+    // For each @deephaven package, forbid importing from itself
+    ...packageNames.map(packageName => ({
+      files: [`packages/${packageManifest.get(packageName)}/**/*.@(ts|tsx)`],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            name: packageName,
+            message: 'Forbid importing from owning @deephaven package.',
+          },
+        ],
+      },
+    })),
   ],
 };

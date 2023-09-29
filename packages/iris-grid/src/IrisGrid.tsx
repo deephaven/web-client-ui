@@ -146,6 +146,7 @@ import {
   TableCsvExporter,
   TableSaver,
   VisibilityOrderingBuilder,
+  DownloadServiceWorkerUtils,
 } from './sidebar';
 import IrisGridUtils from './IrisGridUtils';
 import CrossColumnSearch from './CrossColumnSearch';
@@ -161,7 +162,7 @@ import ConditionalFormattingMenu from './sidebar/conditional-formatting/Conditio
 
 import ConditionalFormatEditor from './sidebar/conditional-formatting/ConditionalFormatEditor';
 import IrisGridCellOverflowModal from './IrisGridCellOverflowModal';
-import GotoRow from './GotoRow';
+import GotoRow, { GotoRowElement } from './GotoRow';
 import {
   Aggregation,
   AggregationSettings,
@@ -224,7 +225,7 @@ function isEmptyConfig({
   searchFilter?: FilterCondition;
   selectDistinctColumns: readonly ColumnName[];
   sorts: readonly Sort[];
-}) {
+}): boolean {
   return (
     advancedFilters.size === 0 &&
     aggregationSettings.aggregations.length === 0 &&
@@ -282,7 +283,7 @@ export interface IrisGridProps {
   onError: (error: unknown) => void;
   onDataSelected: (index: ModelIndex, map: Record<ColumnName, unknown>) => void;
   onStateChange: (irisGridState: IrisGridState, gridState: GridState) => void;
-  onPartitionAppend: (partitionColumn: Column, value: string) => void;
+  onPartitionAppend?: (partitionColumn: Column, value: string) => void;
   onAdvancedSettingsChange: AdvancedSettingsMenuCallback;
   partition: string | null;
   partitionColumn: Column | null;
@@ -318,7 +319,9 @@ export interface IrisGridProps {
   invertSearchColumns: boolean;
 
   // eslint-disable-next-line react/no-unused-prop-types
-  onContextMenu: (data: IrisGridContextMenuData) => ResolvableContextAction[];
+  onContextMenu: (
+    data: IrisGridContextMenuData
+  ) => readonly ResolvableContextAction[];
 
   pendingDataMap?: PendingDataMap;
   getDownloadWorker: () => Promise<ServiceWorker>;
@@ -459,7 +462,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     onDataSelected: (): void => undefined,
     onError: (): void => undefined,
     onStateChange: (): void => undefined,
-    onPartitionAppend: (): void => undefined,
     onAdvancedSettingsChange: (): void => undefined,
     partition: null,
     partitionColumn: null,
@@ -486,9 +488,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     searchValue: '',
     selectedSearchColumns: null,
     invertSearchColumns: true,
-    onContextMenu: (): void => undefined,
+    onContextMenu: (): readonly ResolvableContextAction[] => EMPTY_ARRAY,
     pendingDataMap: EMPTY_MAP,
-    getDownloadWorker: undefined,
+    getDownloadWorker: DownloadServiceWorkerUtils.getServiceWorker,
     settings: {
       timeZone: 'America/New_York',
       defaultDateTimeFormat: DateUtils.FULL_DATE_FORMAT,
@@ -611,6 +613,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.crossColumnRef = React.createRef();
     this.isAnimating = false;
     this.filterInputRef = React.createRef();
+
+    this.gotoRowRef = React.createRef();
 
     this.toggleFilterBarAction = {
       action: () => this.toggleFilterBar(),
@@ -991,6 +995,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   isAnimating: boolean;
 
   filterInputRef: React.RefObject<FilterInputField>;
+
+  gotoRowRef: React.RefObject<GotoRowElement>;
 
   toggleFilterBarAction: Action;
 
@@ -1918,10 +1924,27 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   updatePartition(partition: string, partitionColumn: Column): void {
+    if (TableUtils.isCharType(partitionColumn.type) && partition === '') {
+      return;
+    }
+
     const { model } = this.props;
-    const partitionFilter = partitionColumn
-      .filter()
-      .eq(model.dh.FilterValue.ofString(partition));
+
+    const partitionText = TableUtils.isCharType(partitionColumn.type)
+      ? model.displayString(
+          partition,
+          partitionColumn.type,
+          partitionColumn.name
+        )
+      : partition;
+    const partitionFilter = this.tableUtils.makeQuickFilterFromComponent(
+      partitionColumn,
+      partitionText
+    );
+    if (partitionFilter === null) {
+      return;
+    }
+
     const partitionFilters = [partitionFilter];
     this.setState({
       partition,
@@ -2336,7 +2359,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     if (partitionColumn == null) {
       return;
     }
-    onPartitionAppend(partitionColumn, value);
+    onPartitionAppend?.(partitionColumn, value);
   }
 
   handlePartitionChange(partition: string): void {
@@ -2512,13 +2535,13 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       // if invoked with a row, keep open instead of toggle
       this.setState({
         isGotoShown: true,
-        gotoRow: row,
         gotoValue: value,
         gotoValueSelectedColumnName: columnName,
         gotoRowError: '',
         gotoValueError: '',
       });
       this.focusRowInGrid(row);
+      this.gotoRowRef.current?.focus();
       return;
     }
 
@@ -2544,7 +2567,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const text = IrisGridUtils.convertValueToText(cellValue, type);
     this.setState({
       isGotoShown: !isGotoShown,
-      gotoRow: `${cursorRow}`,
+      gotoRow: `${cursorRow + 1}`,
       gotoValue: text,
       gotoValueSelectedColumnName: name,
       gotoRowError: '',
@@ -2839,7 +2862,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   handleUpdate(): void {
-    this.stopLoading();
     log.debug2('Received model update');
 
     const {
@@ -2873,6 +2895,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
 
     this.grid?.forceUpdate();
+    this.stopLoading();
   }
 
   handleViewChanged(metrics?: GridMetrics): void {
@@ -2915,6 +2938,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.setState({ selectedRanges });
     if (copyOperation != null) {
       this.setState({ copyOperation: null });
+    }
+    if (this.grid?.state.cursorRow != null) {
+      this.setState({ gotoRow: `${this.grid.state.cursorRow + 1}` });
     }
     onSelectionChanged(selectedRanges);
   }
@@ -3865,6 +3891,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       onAdvancedSettingsChange,
       canDownloadCsv,
       onCreateChart,
+      onPartitionAppend,
     } = this.props;
     const {
       metricCalculator,
@@ -4417,11 +4444,15 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                     type: string,
                     stringName: string
                   ) => model.displayString(value, type, stringName)}
-                  columnName={partitionColumn.name}
+                  column={partitionColumn}
                   partition={partition}
                   onChange={this.handlePartitionChange}
                   onFetchAll={this.handlePartitionFetchAll}
-                  onAppend={this.handlePartitionAppend}
+                  onAppend={
+                    onPartitionAppend !== undefined
+                      ? this.handlePartitionAppend
+                      : undefined
+                  }
                   onDone={this.handlePartitionDone}
                 />
               )}
@@ -4556,6 +4587,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               this.getLinkHoverTooltip(linkHoverTooltipProps)}
           </div>
           <GotoRow
+            ref={this.gotoRowRef}
             model={model}
             isShown={isGotoShown}
             gotoRow={gotoRow}

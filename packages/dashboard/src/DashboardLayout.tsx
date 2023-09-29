@@ -28,6 +28,7 @@ import PanelEvent from './PanelEvent';
 import { GLPropTypes, useListener } from './layout';
 import { getDashboardData, updateDashboardData } from './redux';
 import {
+  isWrappedComponent,
   PanelComponentType,
   PanelDehydrateFunction,
   PanelHydrateFunction,
@@ -43,10 +44,10 @@ const EMPTY_OBJECT = Object.freeze({});
 
 const DEFAULT_LAYOUT_CONFIG: DashboardLayoutConfig = [];
 
-const DEFAULT_CALLBACK = () => undefined;
+const DEFAULT_CALLBACK = (): void => undefined;
 
 // If a component isn't registered, just pass through the props so they are saved if a plugin is loaded later
-const FALLBACK_CALLBACK = (props: unknown) => props;
+const FALLBACK_CALLBACK = (props: unknown): unknown => props;
 
 type DashboardData = {
   closed?: ClosedPanels;
@@ -118,30 +119,49 @@ export function DashboardLayout({
         componentDehydrate
       );
 
-      function renderComponent(props: PanelProps, ref: unknown) {
-        // Cast it to an `any` type so we can pass the ref in correctly.
-        // ComponentType doesn't seem to work right, ReactNode is also incorrect
+      function wrappedComponent(
+        props: PanelProps,
+        ref: React.Ref<unknown>
+      ): JSX.Element {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const CType = componentType as any;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const PanelWrapperType = panelWrapper as any;
+        const PanelWrapperType = panelWrapper;
+
+        /*
+          Checking for class components will let us silence the React warning
+          about assigning refs to function components not using forwardRef.
+          The ref is used to detect changes to class component state so we
+          can track changes to panelState. We should opt for more explicit
+          state changes in the future and in functional components.
+        */
+        const isClassComponent =
+          (isWrappedComponent(CType) &&
+            CType.WrappedComponent.prototype != null &&
+            CType.WrappedComponent.prototype.isReactComponent != null) ||
+          (CType.prototype != null && CType.prototype.isReactComponent != null);
 
         // Props supplied by GoldenLayout
-        // eslint-disable-next-line react/prop-types
         const { glContainer, glEventHub } = props;
         return (
           <PanelErrorBoundary glContainer={glContainer} glEventHub={glEventHub}>
             {/* eslint-disable-next-line react/jsx-props-no-spreading */}
             <PanelWrapperType {...props}>
-              {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-              <CType {...props} ref={ref} />
+              {isClassComponent ? (
+                // eslint-disable-next-line react/jsx-props-no-spreading
+                <CType {...props} ref={ref} />
+              ) : (
+                // eslint-disable-next-line react/jsx-props-no-spreading
+                <CType {...props} />
+              )}
             </PanelWrapperType>
           </PanelErrorBoundary>
         );
       }
 
-      const wrappedComponent = React.forwardRef(renderComponent);
-      const cleanup = layout.registerComponent(name, wrappedComponent);
+      const cleanup = layout.registerComponent(
+        name,
+        React.forwardRef(wrappedComponent)
+      );
       hydrateMap.set(name, componentHydrate);
       dehydrateMap.set(name, componentDehydrate);
       return cleanup;

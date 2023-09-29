@@ -85,7 +85,7 @@ export default function ShortcutItem({
   );
 
   // Updates pending key state and sets input display text
-  function handleInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+  function handleInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
     e.stopPropagation();
     e.preventDefault();
 
@@ -103,7 +103,7 @@ export default function ShortcutItem({
   }
 
   // Set this shortcut to changing state, check key state validity and set errors
-  function handleInputKeyUp(e: React.KeyboardEvent<HTMLInputElement>) {
+  function handleInputKeyUp(e: React.KeyboardEvent<HTMLInputElement>): void {
     e.stopPropagation();
     e.preventDefault();
 
@@ -112,27 +112,27 @@ export default function ShortcutItem({
     }
   }
 
-  function handleInputFocus() {
+  function handleInputFocus(): void {
     ContextActionUtils.disableAllActions();
   }
 
-  function handleInputBlur() {
+  function handleInputBlur(): void {
     ContextActionUtils.enableAllActions();
   }
 
-  function handleConfirm() {
+  function handleConfirm(): void {
     shortcut.setKeyState(keyState);
     setIsPending(false);
     onChange(shortcut);
   }
 
-  function handleUndo() {
+  function handleUndo(): void {
     const originalKeyState = shortcut.getKeyState();
     setKeyState(originalKeyState);
     setIsPending(false);
   }
 
-  function handleResetToDefaultClick() {
+  function handleResetToDefaultClick(): void {
     setIsPending(true);
     setKeyState(shortcut.getDefaultKeyState());
   }

@@ -22,7 +22,7 @@ export function LoginForm({
   errorMessage,
   isLoggingIn = false,
   onSubmit,
-}: LoginFormProps) {
+}: LoginFormProps): JSX.Element {
   return (
     <form
       className="login-form"

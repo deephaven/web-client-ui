@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
@@ -29,7 +29,7 @@ export interface ConditionEditorProps {
   onChange?: (config: ConditionConfig, isValid: boolean) => void;
 }
 
-const DEFAULT_CALLBACK = () => undefined;
+const DEFAULT_CALLBACK = (): void => undefined;
 
 const numberConditionOptions = [
   NumberCondition.IS_EQUAL,
@@ -104,7 +104,7 @@ function isNumberConditionValid(
   value?: string,
   startValue?: string,
   endValue?: string
-) {
+): boolean {
   if (
     condition === NumberCondition.IS_NULL ||
     condition === NumberCondition.IS_NOT_NULL
@@ -141,7 +141,7 @@ function getNumberInputs(
   conditionValue?: string,
   startValue?: string,
   endValue?: string
-) {
+): JSX.Element | null {
   switch (selectedCondition) {
     case NumberCondition.IS_EQUAL:
     case NumberCondition.IS_NOT_EQUAL:
@@ -187,7 +187,7 @@ function getStringInputs(
   selectedCondition: StringCondition,
   handleValueChange: (e: unknown) => void,
   conditionValue?: string
-) {
+): JSX.Element | null {
   switch (selectedCondition) {
     case StringCondition.IS_NULL:
     case StringCondition.IS_NOT_NULL:
@@ -209,7 +209,7 @@ function getDateInputs(
   selectedCondition: DateCondition,
   handleValueChange: (e: unknown) => void,
   conditionValue?: string
-) {
+): JSX.Element | null {
   switch (selectedCondition) {
     case DateCondition.IS_NULL:
     case DateCondition.IS_NOT_NULL:
@@ -227,7 +227,7 @@ function getDateInputs(
   }
 }
 
-function getBooleanInputs() {
+function getBooleanInputs(): null {
   return null;
 }
 
@@ -235,7 +235,7 @@ function getCharInputs(
   selectedCondition: CharCondition,
   handleValueChange: (e: unknown) => void,
   conditionValue?: string
-) {
+): JSX.Element | null {
   switch (selectedCondition) {
     case CharCondition.IS_NULL:
     case CharCondition.IS_NOT_NULL:

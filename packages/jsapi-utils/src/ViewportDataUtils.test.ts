@@ -1,9 +1,7 @@
+import { act } from '@testing-library/react-hooks';
 import type { Column, Table, TreeTable } from '@deephaven/jsapi-types';
 import { TestUtils } from '@deephaven/utils';
-import { ListData, useListData } from '@react-stately/data';
-import { act, renderHook } from '@testing-library/react-hooks';
 import {
-  KeyedItem,
   OnTableUpdatedEvent,
   RowDeserializer,
   ViewportRow,
@@ -14,8 +12,9 @@ import {
   getSize,
   isClosed,
   padFirstAndLastRow,
-  getItemsFromListData,
 } from './ViewportDataUtils';
+
+const { asMock, createMockProxy } = TestUtils;
 
 function mockViewportRow(offsetInSnapshot: number): ViewportRow {
   return { offsetInSnapshot } as ViewportRow;
@@ -25,20 +24,6 @@ function mockColumn(name: string) {
   return {
     name,
   } as Column;
-}
-
-function mockUpdateEvent(
-  offset: number,
-  rows: ViewportRow[],
-  columns: Column[]
-): OnTableUpdatedEvent {
-  return {
-    detail: {
-      offset,
-      rows,
-      columns,
-    },
-  } as OnTableUpdatedEvent;
 }
 
 const deserializeRow: RowDeserializer<unknown> = jest.fn();
@@ -64,69 +49,50 @@ describe('createKeyFromOffsetRow', () => {
 });
 
 describe('createOnTableUpdatedHandler', () => {
-  const rows: ViewportRow[] = [
-    mockViewportRow(0),
-    mockViewportRow(1),
-    mockViewportRow(2),
-  ];
+  const mock = {
+    deserializeRow: jest.fn() as RowDeserializer<unknown>,
+    rows: [
+      createMockProxy<ViewportRow>({ offsetInSnapshot: 0 }),
+      createMockProxy<ViewportRow>({ offsetInSnapshot: 1 }),
+      createMockProxy<ViewportRow>({ offsetInSnapshot: 2 }),
+    ],
+    updateEvent: (offset: number, rows: ViewportRow[], columns: Column[]) =>
+      createMockProxy<OnTableUpdatedEvent>({
+        detail: {
+          offset,
+          rows,
+          columns,
+        },
+      }),
+  };
 
   const cols: Column[] = [];
 
-  it('should create a handler that adds items to a ListData of KeyedItems', () => {
-    const { result: viewportDataRef } = renderHook(() =>
-      useListData<KeyedItem<unknown>>({})
-    );
-
-    const handler = createOnTableUpdatedHandler(
-      viewportDataRef.current,
-      deserializeRow
-    );
-
-    const offset = 5;
-    const event = mockUpdateEvent(offset, rows, cols);
-    const expectedItems = [
-      { key: '5', item: rows[0] },
-      { key: '6', item: rows[1] },
-      { key: '7', item: rows[2] },
-    ];
-
-    act(() => {
-      handler(event);
-    });
-
-    rows.forEach(row => {
-      expect(deserializeRow).toHaveBeenCalledWith(row, cols);
-    });
-    expect(viewportDataRef.current.items).toEqual(expectedItems);
+  beforeEach(() => {
+    asMock(mock.deserializeRow).mockImplementation(a => ({
+      label: 'deserialized',
+      row: a,
+    }));
   });
 
-  it('should create a handler that updates existing items in a ListData', () => {
-    const { result: viewportDataRef } = renderHook(() =>
-      useListData<KeyedItem<unknown>>({})
-    );
+  it('should create a handler that bulk updates items', () => {
+    const bulkUpdate = jest.fn();
 
-    act(() => {
-      viewportDataRef.current.append({ key: '0' });
-    });
-
-    expect(viewportDataRef.current.items).toEqual([{ key: '0' }]);
-    expect(viewportDataRef.current.getItem('0')).toEqual({ key: '0' });
-
-    const offset = 0;
-    const row = mockViewportRow(0);
-    const event = mockUpdateEvent(offset, [row], cols);
+    const offset = 2;
+    const event = mock.updateEvent(offset, mock.rows, cols);
 
     const handler = createOnTableUpdatedHandler(
-      viewportDataRef.current,
-      deserializeRow
+      { bulkUpdate },
+      mock.deserializeRow
     );
 
     act(() => {
       handler(event);
     });
 
-    expect(deserializeRow).toHaveBeenCalledWith(row, cols);
-    expect(viewportDataRef.current.items).toEqual([{ key: '0', item: row }]);
+    mock.rows.forEach(row => {
+      expect(mock.deserializeRow).toHaveBeenCalledWith(row, cols);
+    });
   });
 });
 
@@ -168,23 +134,6 @@ describe('generateEmptyKeyedItems', () => {
       expect(actual).toEqual(expected);
     }
   );
-});
-
-describe('getItemsFromListData', () => {
-  it('should return items matching given keys', () => {
-    const keys = ['2', '4', '9'];
-    const listData = TestUtils.createMockProxy<ListData<KeyedItem<unknown>>>({
-      getItem: jest.fn(key => ({ key: key as string, item: `item-${key}` })),
-    });
-
-    const result = getItemsFromListData(listData, ...keys);
-
-    expect(result).toEqual([
-      { key: '2', item: 'item-2' },
-      { key: '4', item: 'item-4' },
-      { key: '9', item: 'item-9' },
-    ]);
-  });
 });
 
 describe('getSize', () => {

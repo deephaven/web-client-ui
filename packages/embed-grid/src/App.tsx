@@ -85,7 +85,7 @@ function App(): JSX.Element {
 
   useEffect(
     function initializeApp() {
-      async function initApp() {
+      async function initApp(): Promise<void> {
         try {
           // Get the table name from the query param `name`.
           const name = searchParams.get('name');
@@ -113,7 +113,7 @@ function App(): JSX.Element {
 
   useEffect(
     function initCommandListener() {
-      function receiveMessage(e: MessageEvent) {
+      function receiveMessage(e: MessageEvent): void {
         const { command, value } = e.data as {
           command: Command;
           value: unknown;

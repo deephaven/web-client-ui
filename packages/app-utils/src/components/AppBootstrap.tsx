@@ -5,6 +5,7 @@ import {
   RefreshTokenBootstrap,
   useBroadcastLoginListener,
 } from '@deephaven/jsapi-components';
+import { type DashboardPlugin } from '@deephaven/plugin';
 import FontBootstrap from './FontBootstrap';
 import PluginsBootstrap from './PluginsBootstrap';
 import AuthBootstrap from './AuthBootstrap';
@@ -20,6 +21,9 @@ export type AppBootstrapProps = {
 
   /** URL of the plugins to load. */
   pluginsUrl: string;
+
+  /** The core plugins to load. */
+  getCorePlugins?: () => Promise<DashboardPlugin[]>;
 
   /** Font class names to load. */
   fontClassNames?: string[];
@@ -37,9 +41,10 @@ export type AppBootstrapProps = {
 export function AppBootstrap({
   fontClassNames,
   pluginsUrl,
+  getCorePlugins,
   serverUrl,
   children,
-}: AppBootstrapProps) {
+}: AppBootstrapProps): JSX.Element {
   const clientOptions = useMemo(() => getConnectOptions(), []);
 
   // On logout, we reset the client and have user login again
@@ -51,7 +56,7 @@ export function AppBootstrap({
   useBroadcastLoginListener(onLogin, onLogout);
   return (
     <FontBootstrap fontClassNames={fontClassNames}>
-      <PluginsBootstrap pluginsUrl={pluginsUrl}>
+      <PluginsBootstrap getCorePlugins={getCorePlugins} pluginsUrl={pluginsUrl}>
         <ClientBootstrap
           serverUrl={serverUrl}
           options={clientOptions}

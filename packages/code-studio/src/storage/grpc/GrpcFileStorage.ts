@@ -80,6 +80,16 @@ export class GrpcFileStorage implements FileStorage {
     };
   }
 
+  async copyFile(name: string, newName: string): Promise<void> {
+    const fileContents = await this.storageService.loadFile(this.addRoot(name));
+    await this.storageService.saveFile(
+      this.addRoot(newName),
+      fileContents,
+      false
+    );
+    this.refreshTables();
+  }
+
   async deleteFile(name: string): Promise<void> {
     await this.storageService.deleteItem(this.addRoot(name));
     this.refreshTables();

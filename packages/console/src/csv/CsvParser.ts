@@ -5,6 +5,7 @@ import type { IdeSession, Table } from '@deephaven/jsapi-types';
 import type { JSZipObject } from 'jszip';
 import CsvTypeParser from './CsvTypeParser';
 import { CsvTypes } from './CsvFormats';
+import makeZipStreamHelper from './ZipStreamHelper';
 
 const log = Log.module('CsvParser');
 
@@ -15,7 +16,7 @@ const ZIP_CONSOLIDATE_CHUNKS = 650;
 interface CsvParserConstructor {
   onFileCompleted: (tables: Table[]) => void;
   session: IdeSession;
-  file: Blob | JSZipObject;
+  file: File | Blob | JSZipObject;
   type: CsvTypes;
   readHeaders: boolean;
   onProgress: (progressValue: number) => boolean;
@@ -70,6 +71,8 @@ class CsvParser {
     this.onProgress = onProgress;
     this.onError = onError;
     this.tables = [];
+    this.rowCount = 0;
+    this.rowsProcessed = 0;
     this.chunks = 0;
     this.totalChunks = isZip
       ? 0
@@ -102,7 +105,7 @@ class CsvParser {
 
   session: IdeSession;
 
-  file: Blob | JSZipObject;
+  file: File | Blob | JSZipObject;
 
   isZip: boolean;
 
@@ -121,6 +124,10 @@ class CsvParser {
   headers?: string[];
 
   types?: string[];
+
+  rowCount: number;
+
+  rowsProcessed: number;
 
   chunks: number;
 
@@ -167,17 +174,20 @@ class CsvParser {
   }
 
   parse(): void {
-    const handleParseDone = (types: string[]) => {
-      const toParse = this.isZip
-        ? (this.file as JSZipObject).nodeStream(
-            // JsZip types are incorrect, thus the funny casting
-            // Actual parameter is 'nodebuffer'
-            'nodebuffer' as 'nodestream',
-            this.handleNodeUpdate
-          )
-        : (this.file as Blob);
+    const handleParseDone = (types: string[], rowCount: number): void => {
       this.types = types;
-      Papa.parse(toParse, this.config);
+      this.rowCount = rowCount;
+
+      if (this.file instanceof File || this.file instanceof Blob) {
+        Papa.parse(this.file, this.config);
+      } else {
+        const zipStream = makeZipStreamHelper(this.file, this.handleNodeUpdate);
+        // This is actually a stream, but papaparse TS doesn't like it
+        Papa.parse(zipStream as unknown as Blob, this.config);
+        // The stream needs to be manually resumed since jszip starts paused
+        // Papaparse does not call resume and assumes the stream is already reading
+        zipStream.resume();
+      }
     };
     const typeParser = new CsvTypeParser(
       handleParseDone,
@@ -274,6 +284,9 @@ class CsvParser {
     }
     assertNotNull(this.headers);
     assertNotNull(types);
+
+    this.rowsProcessed += columns[0].length;
+
     session
       .newTable(this.headers, types, columns, this.timeZone)
       .then(table => {
@@ -294,7 +307,9 @@ class CsvParser {
         if (totalChunks > 0) {
           progress = Math.round((tables.length / totalChunks) * 50) + 50;
         } else {
-          progress = Math.round(50 + this.zipProgress / 2);
+          // The zip file can be read entirely while in the middle of parsing
+          // Since we know the number of rows from the type parsing, use that for progress
+          progress = Math.round((this.rowsProcessed / this.rowCount) * 50) + 50;
         }
         log.debug2(`CSV parser progress ${progress}`);
         onProgress(progress);

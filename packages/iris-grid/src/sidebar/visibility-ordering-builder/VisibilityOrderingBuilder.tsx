@@ -833,7 +833,7 @@ class VisibilityOrderingBuilder extends Component<
   /**
    * Gets the first movable visible index
    */
-  getFirstMovableIndex() {
+  getFirstMovableIndex(): number | null {
     const { model, movedColumns } = this.props;
     return this.getMemoizedFirstMovableIndex(
       model,
@@ -863,7 +863,7 @@ class VisibilityOrderingBuilder extends Component<
   /**
    * Gets the last movable visible index
    */
-  getLastMovableIndex() {
+  getLastMovableIndex(): number | null {
     const { model, movedColumns } = this.props;
     return this.getMemoizedLastMovableIndex(model, model.columns, movedColumns);
   }

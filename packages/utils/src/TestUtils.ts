@@ -44,6 +44,13 @@ export type ConsoleMethodName = keyof PickMethods<Console>;
 
 class TestUtils {
   /**
+   * jest.useFakeTimers mocks `process.nextTick` by default. Hold on to a
+   * reference to the real function so we can still use it.
+   */
+  static realNextTick =
+    typeof process !== 'undefined' ? process.nextTick : undefined;
+
+  /**
    * Type assertion to "cast" a function to it's corresponding jest.Mock
    * function type. Note that this is a types only helper for type assertions.
    * It will not actually convert a non-mock function.
@@ -92,7 +99,8 @@ class TestUtils {
   static findLastCall = <TResult, TArgs extends unknown[]>(
     fn: (...args: TArgs) => TResult,
     predicate: (args: TArgs) => boolean
-  ) => TestUtils.asMock(fn).mock.calls.reverse().find(predicate);
+  ): TArgs | undefined =>
+    TestUtils.asMock(fn).mock.calls.reverse().find(predicate);
 
   static makeMockContext(): MockContext {
     return {
@@ -158,10 +166,27 @@ class TestUtils {
     }
   }
 
+  /**
+   * Jest doesn't have a built in way to ensure native Promises have resolved
+   * when using fake timers. We can mimic this behavior by using `process.nextTick`.
+   * Since `process.nextTick` is mocked by default when using jest.useFakeTimers(),
+   * we use the "real" process.nextTick stored in `TestUtils.realNextTick`.
+   *
+   * NOTE: Jest can be configured to leave `process.nextTick` unmocked, but this
+   * requires devs to configure it on every test.
+   * e.g.
+   * jest.useFakeTimers({
+   *   doNotFake: ['nextTick'],
+   * });
+   */
+  static async flushPromises(): Promise<void> {
+    await new Promise(TestUtils.realNextTick ?? (() => undefined));
+  }
+
   static async rightClick(
     user: ReturnType<typeof userEvent.setup>,
     element: Element
-  ) {
+  ): Promise<void> {
     await user.pointer([
       { target: element },
       { keys: '[MouseRight]', target: element },

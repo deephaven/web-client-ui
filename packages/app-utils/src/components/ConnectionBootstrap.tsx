@@ -19,7 +19,9 @@ export type ConnectionBootstrapProps = {
 /**
  * ConnectionBootstrap component. Handles initializing the connection.
  */
-export function ConnectionBootstrap({ children }: ConnectionBootstrapProps) {
+export function ConnectionBootstrap({
+  children,
+}: ConnectionBootstrapProps): JSX.Element {
   const api = useApi();
   const client = useClient();
   const [error, setError] = useState<unknown>();
@@ -27,7 +29,7 @@ export function ConnectionBootstrap({ children }: ConnectionBootstrapProps) {
   useEffect(
     function initConnection() {
       let isCanceled = false;
-      async function loadConnection() {
+      async function loadConnection(): Promise<void> {
         try {
           const newConnection = await client.getAsIdeConnection();
           if (isCanceled) {
@@ -53,7 +55,7 @@ export function ConnectionBootstrap({ children }: ConnectionBootstrapProps) {
     function listenForShutdown() {
       if (connection == null) return;
 
-      function handleShutdown(event: CustomEvent) {
+      function handleShutdown(event: CustomEvent): void {
         const { detail } = event;
         log.info('Shutdown', `${JSON.stringify(detail)}`);
         setError(`Server shutdown: ${detail ?? 'Unknown reason'}`);

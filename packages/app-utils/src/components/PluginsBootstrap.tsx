@@ -1,3 +1,4 @@
+import { type DashboardPlugin } from '@deephaven/plugin';
 import React, { createContext, useEffect, useState } from 'react';
 import { PluginModuleMap, loadModulePlugins } from '../plugins';
 
@@ -8,6 +9,9 @@ export type PluginsBootstrapProps = {
    * Base URL of the plugins to load.
    */
   pluginsUrl: string;
+
+  /** The core plugins to load. */
+  getCorePlugins?: () => Promise<DashboardPlugin[]>;
 
   /**
    * The children to render wrapped with the PluginsContext.
@@ -21,16 +25,21 @@ export type PluginsBootstrapProps = {
  */
 export function PluginsBootstrap({
   pluginsUrl,
+  getCorePlugins,
   children,
-}: PluginsBootstrapProps) {
+}: PluginsBootstrapProps): JSX.Element {
   const [plugins, setPlugins] = useState<PluginModuleMap | null>(null);
   useEffect(
     function initPlugins() {
       let isCanceled = false;
-      async function loadPlugins() {
+      async function loadPlugins(): Promise<void> {
+        const corePlugins = (await getCorePlugins?.()) ?? [];
         const pluginModules = await loadModulePlugins(pluginsUrl);
         if (!isCanceled) {
-          setPlugins(pluginModules);
+          const corePluginPairs = corePlugins.map(
+            plugin => [plugin.name, plugin] as const
+          );
+          setPlugins(new Map([...corePluginPairs, ...pluginModules]));
         }
       }
       loadPlugins();
@@ -38,7 +47,7 @@ export function PluginsBootstrap({
         isCanceled = true;
       };
     },
-    [pluginsUrl]
+    [pluginsUrl, getCorePlugins]
   );
 
   return (

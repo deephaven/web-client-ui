@@ -36,7 +36,7 @@ export class LogProxy {
 
   private eventTarget: EventTarget;
 
-  private handleUncaughtError = (event: ErrorEvent) => {
+  private handleUncaughtError = (event: ErrorEvent): void => {
     const messages: string[] = [];
     if (event.error != null) {
       messages.push(event.error as string);
@@ -49,7 +49,7 @@ export class LogProxy {
     );
   };
 
-  private handleUncaughtRejection = (event: PromiseRejectionEvent) => {
+  private handleUncaughtRejection = (event: PromiseRejectionEvent): void => {
     const messages: string[] = [];
     if (event.promise != null) {
       messages.push(event.promise.toString());

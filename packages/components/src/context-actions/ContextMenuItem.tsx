@@ -18,17 +18,17 @@ interface ContextMenuItemProps {
 
 const ContextMenuItem = React.forwardRef<HTMLDivElement, ContextMenuItemProps>(
   (props: ContextMenuItemProps, ref) => {
-    function handleMenuItemClick(e: React.MouseEvent) {
+    function handleMenuItemClick(e: React.MouseEvent): void {
       const { menuItem, onMenuItemClick } = props;
       onMenuItemClick(menuItem, e);
     }
 
-    function handleMenuItemMouseMove(e: React.MouseEvent) {
+    function handleMenuItemMouseMove(e: React.MouseEvent): void {
       const { menuItem, onMenuItemMouseMove } = props;
       onMenuItemMouseMove(menuItem, e);
     }
 
-    function handleMenuItemContextMenu(e: React.MouseEvent) {
+    function handleMenuItemContextMenu(e: React.MouseEvent): void {
       const { menuItem, onMenuItemContextMenu } = props;
       onMenuItemContextMenu(menuItem, e);
     }

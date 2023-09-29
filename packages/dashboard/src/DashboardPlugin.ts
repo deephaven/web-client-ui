@@ -14,13 +14,6 @@ import type {
 import PanelManager from './PanelManager';
 
 /**
- * Alias for the return type of React.forwardRef()
- */
-export type ForwardRefComponentType<P, R> = ForwardRefExoticComponent<
-  PropsWithoutRef<P> & RefAttributes<R>
->;
-
-/**
  * Panel components can provide static props that provide meta data about the
  * panel.
  */
@@ -36,7 +29,14 @@ export interface PanelStaticMetaData {
 }
 
 /**
- * Panels defined as functional components have to use React.forwardRef.
+ * Alias for the return type of React.forwardRef()
+ */
+type ForwardRefComponentType<P, R> = ForwardRefExoticComponent<
+  PropsWithoutRef<P> & RefAttributes<R>
+>;
+
+/**
+ * @deprecated Use `PanelComponentType` instead and add generic types to forwardRef call.
  */
 export type PanelFunctionComponentType<P, R> = ForwardRefComponentType<P, R> &
   PanelStaticMetaData;
@@ -49,12 +49,7 @@ export type WrappedComponentType<
 export type PanelComponentType<
   P extends PanelProps = PanelProps,
   C extends ComponentType<P> = ComponentType<P>,
-> = (
-  | ComponentType<P>
-  | WrappedComponentType<P, C>
-  | PanelFunctionComponentType<P, unknown>
-) &
-  PanelStaticMetaData;
+> = (ComponentType<P> | WrappedComponentType<P, C>) & PanelStaticMetaData;
 
 export function isWrappedComponent<
   P extends PanelProps,
@@ -121,25 +116,6 @@ export type DashboardPluginComponentProps = {
     dehydrate?: PanelDehydrateFunction
   ) => DeregisterComponentFunction;
 };
-
-export interface DashboardPlugin {
-  panels?: DashboardPanelDefinition[];
-
-  /** Hydrate the provided panel and props. Return the same object if no changes made. */
-  hydrateComponent?: (name: string, props: PanelProps) => PanelProps;
-
-  /** Dehydrate a component. Return the same object if no changes made, or `null` if the component should not be saved */
-  dehydrateComponent?: (
-    name: string,
-    config: PanelConfig
-  ) => PanelConfig | null;
-
-  /** Called when the dashboard is initialized and layout is ready. */
-  initialize?: (config: DashboardConfig) => void;
-
-  /** Called when the dashboard is unintialized and layout is about to be destroyed */
-  deinitialize?: (config: DashboardConfig) => void;
-}
 
 /**
  * Takes a partial DashboardPluginComponentProps and verifies all the dashboard component fields are filled in.

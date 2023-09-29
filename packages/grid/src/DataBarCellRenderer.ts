@@ -38,7 +38,7 @@ class DataBarCellRenderer extends CellRenderer {
     state: GridRenderState,
     column: VisibleIndex,
     row: VisibleIndex
-  ) {
+  ): void {
     const { metrics, model, theme } = state;
     if (!isDataBarGridModel(model)) {
       return;
@@ -541,7 +541,7 @@ class DataBarCellRenderer extends CellRenderer {
     y: number,
     width: number,
     height: number
-  ) {
+  ): void {
     let currentColor = leftColor;
     // Increase by 0.5 because half-pixel will render weird on different zooms
     for (let currentX = x; currentX <= x + width; currentX += 0.5) {
@@ -569,7 +569,7 @@ class DataBarCellRenderer extends CellRenderer {
     width: number,
     height: number,
     color: string
-  ) {
+  ): void {
     context.fillStyle = color;
     context.fillRect(x, y, width, height);
   }

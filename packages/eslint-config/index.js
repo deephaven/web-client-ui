@@ -87,6 +87,7 @@ module.exports = {
         '@typescript-eslint/strict-boolean-expressions': ['error'],
         'default-param-last': 'off',
         '@typescript-eslint/default-param-last': ['error'],
+        '@typescript-eslint/explicit-module-boundary-types': 'error',
       },
     },
     {

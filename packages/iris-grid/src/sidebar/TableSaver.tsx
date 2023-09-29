@@ -60,8 +60,6 @@ export default class TableSaver extends PureComponent<
   static SNAPSHOT_HANDLER_TIMEOUT = 5;
 
   static defaultProps = {
-    getDownloadWorker: (): Promise<never> =>
-      Promise.reject(new Error('Download worker not provided')),
     isDownloading: false,
     onDownloadCompleted: (): void => undefined,
     onDownloadCanceled: (): void => undefined,
@@ -102,8 +100,6 @@ export default class TableSaver extends PureComponent<
     // If the stream doesn't pull for long enough time, chances are the stream is already canceled, so we stop the stream.
     // Issue ticket on Chromium: https://bugs.chromium.org/p/chromium/issues/detail?id=638494
 
-    this.iframes = [];
-
     this.useBlobFallback = false;
   }
 
@@ -123,11 +119,7 @@ export default class TableSaver extends PureComponent<
   }
 
   componentWillUnmount(): void {
-    if (this.iframes.length > 0) {
-      this.iframes.forEach(iframe => {
-        iframe.remove();
-      });
-    }
+    this.removeIframe();
     if (this.streamTimeout) clearTimeout(this.streamTimeout);
     if (this.snapshotHandlerTimeout) clearTimeout(this.snapshotHandlerTimeout);
   }
@@ -182,7 +174,7 @@ export default class TableSaver extends PureComponent<
 
   downloadStartTime?: number;
 
-  iframes: HTMLIFrameElement[];
+  iframe?: HTMLIFrameElement;
 
   useBlobFallback: boolean;
 
@@ -325,15 +317,9 @@ export default class TableSaver extends PureComponent<
   }
 
   cancelDownload(): void {
-    if (this.table) {
-      this.table.close();
-    }
-    if (this.tableSubscription) {
-      this.tableSubscription.close();
-    }
-    if (this.fileWriter) {
-      this.fileWriter.abort();
-    }
+    this.table?.close();
+    this.tableSubscription?.close();
+    this.fileWriter?.abort();
 
     this.cancelableSnapshots.forEach(cancelable => {
       if (cancelable) {
@@ -351,6 +337,7 @@ export default class TableSaver extends PureComponent<
     this.tableSubscription = undefined;
     this.columns = undefined;
     this.chunkRows = undefined;
+    this.removeIframe();
 
     this.gridRanges = [];
     this.gridRangeCounter = 0;
@@ -687,10 +674,15 @@ export default class TableSaver extends PureComponent<
     // make a return value and make it static method
     const iframe = document.createElement('iframe');
     iframe.hidden = true;
-    iframe.src = `download/${src}`;
+    iframe.src = src;
     iframe.name = 'iframe';
     document.body.appendChild(iframe);
-    this.iframes.push(iframe);
+    this.iframe = iframe;
+  }
+
+  removeIframe(): void {
+    this.iframe?.remove();
+    this.iframe = undefined;
   }
 
   render(): null {

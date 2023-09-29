@@ -3,16 +3,13 @@ import type { FileStorage } from '@deephaven/file-explorer';
 import type { ValidKeyState } from '@deephaven/components';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import type { FormattingRule } from '@deephaven/jsapi-utils';
+import type { PluginModule } from '@deephaven/plugin';
 import type { PayloadAction } from './actions';
 import rootMiddleware from './middleware';
 import reducers from './reducers';
 import reducerRegistry from './reducerRegistry';
 
-// A DeephavenPluginModule. This interface should have new fields added to it from different levels of plugins.
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface DeephavenPluginModule {}
-
-export type DeephavenPluginModuleMap = Map<string, DeephavenPluginModule>;
+export type DeephavenPluginModuleMap = Map<string, PluginModule>;
 
 export interface UserPermissions {
   canUsePanels: boolean;

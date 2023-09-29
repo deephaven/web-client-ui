@@ -37,7 +37,7 @@ export interface ConditionalFormatEditorProps {
   onUpdate?: UpdateCallback;
 }
 
-const DEFAULT_CALLBACK = () => undefined;
+const DEFAULT_CALLBACK = (): void => undefined;
 
 function getFormatterTypeIcon(option: FormatterType): JSX.Element | undefined {
   switch (option) {

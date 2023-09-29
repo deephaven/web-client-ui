@@ -11,6 +11,7 @@ import TableSaver from './TableSaver';
 import VisibilityOrderingBuilder from './visibility-ordering-builder/VisibilityOrderingBuilder';
 import { FormattingRule } from './conditional-formatting/ConditionalFormattingUtils';
 import AdvancedSettingsType from './AdvancedSettingsType';
+import DownloadServiceWorkerUtils from './DownloadServiceWorkerUtils';
 
 export {
   AdvancedSettings,
@@ -25,6 +26,7 @@ export {
   TableSaver,
   VisibilityOrderingBuilder,
   AdvancedSettingsType,
+  DownloadServiceWorkerUtils,
 };
 
 export type { FormattingRule as SidebarFormattingRule };

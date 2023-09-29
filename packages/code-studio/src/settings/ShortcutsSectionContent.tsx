@@ -6,11 +6,15 @@ import {
   getShortcutOverrides,
   RootState,
   saveSettings as saveSettingsAction,
+  WorkspaceSettings,
 } from '@deephaven/redux';
 import ShortcutItem from './ShortcutItem';
 
-type ShortcutSectionContentProps = ReturnType<typeof mapStateToProps> &
-  typeof mapDispatchToProps;
+type ShortcutSectionContentProps = {
+  settings: WorkspaceSettings;
+  shortcutOverrides: WorkspaceSettings['shortcutOverrides'];
+  saveSettings: typeof saveSettingsAction;
+};
 
 function ShortcutSectionContent({
   shortcutOverrides = {},
@@ -99,7 +103,7 @@ function ShortcutCategory({
   // Since shortcuts are singletons, React doesn't detect changes for a re-render as easily
   const [shortcuts, setShortcuts] = useState(propsShortcuts);
 
-  function handleShortcutChange(shortcut: Shortcut) {
+  function handleShortcutChange(shortcut: Shortcut): void {
     const conflictingShortcuts = shortcuts.filter(
       s =>
         s !== shortcut &&
@@ -137,7 +141,9 @@ function ShortcutCategory({
   );
 }
 
-const mapStateToProps = (state: RootState) => ({
+const mapStateToProps = (
+  state: RootState
+): Pick<ShortcutSectionContentProps, 'settings' | 'shortcutOverrides'> => ({
   settings: getSettings(state),
   shortcutOverrides: getShortcutOverrides(state),
 });
