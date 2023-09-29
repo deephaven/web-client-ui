@@ -104,7 +104,7 @@ describe('ThemeProvider', () => {
   );
 
   describe.each([null, customThemes])('setSelectedThemeKey: %s', themes => {
-    it.only.each([DEFAULT_LIGHT_THEME_KEY, customThemes[0].themeKey])(
+    it.each([DEFAULT_LIGHT_THEME_KEY, customThemes[0].themeKey])(
       'should change selected theme: %s',
       themeKey => {
         const component = render(
@@ -112,8 +112,6 @@ describe('ThemeProvider', () => {
             <MockChild />
           </ThemeProvider>
         );
-
-        jest.clearAllMocks();
 
         act(() => {
           themeContextValueRef.current?.setSelectedThemeKey(themeKey);

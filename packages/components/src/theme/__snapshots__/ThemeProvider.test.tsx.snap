@@ -62,3 +62,36 @@ exports[`ThemeProvider setSelectedThemeKey: null should change selected theme: t
   </div>
 </body>
 `;
+
+exports[`ThemeProvider should load themes based on preload data or default: [ [Object] ], { themeKey: 'themeA' } 1`] = `
+<body>
+  <div>
+    <style
+      data-theme-key="default-dark"
+    >
+      test-file-stub
+    </style>
+    <style
+      data-theme-key="themeA"
+    />
+    <div>
+      Child
+    </div>
+  </div>
+</body>
+`;
+
+exports[`ThemeProvider should load themes based on preload data or default: null, null 1`] = `
+<body>
+  <div>
+    <style
+      data-theme-key="default-dark"
+    >
+      test-file-stub
+    </style>
+    <div>
+      Child
+    </div>
+  </div>
+</body>
+`;
