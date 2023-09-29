@@ -59,6 +59,8 @@ describe('ThemeProvider', () => {
 
   it.each([
     [null, null],
+    [null, preloadA],
+    [customThemes, null],
     [customThemes, preloadA],
   ] as const)(
     'should load themes based on preload data or default: %s, %s',
@@ -90,6 +92,8 @@ describe('ThemeProvider', () => {
 
   it.each([
     [null, null],
+    [null, preloadA],
+    [customThemes, null],
     [customThemes, preloadA],
   ] as const)(
     'should set preload data when active themes change: %s, %s',
