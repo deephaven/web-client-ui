@@ -388,8 +388,8 @@ export class ColumnSpecificSectionContent extends PureComponent<
   makeDefaultFormatterItemByType(
     columnType: string
   ): TableColumnFormat | string {
-    switch (columnType) {
-      case 'int': {
+    switch (TableUtils.getNormalizedType(columnType)) {
+      case TableUtils.dataType.INT: {
         const { defaultIntegerFormatOptions } = this.props;
         const { defaultFormatString: defaultIntegerFormatString } =
           defaultIntegerFormatOptions;
@@ -402,7 +402,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
         );
       }
 
-      case 'decimal': {
+      case TableUtils.dataType.DECIMAL: {
         const { defaultDecimalFormatOptions } = this.props;
         const { defaultFormatString: defaultDecimalFormatString } =
           defaultDecimalFormatOptions;
