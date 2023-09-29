@@ -1,10 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Log from '@deephaven/log';
-import { ThemeContextValue } from './ThemeContext';
-import { DEFAULT_DARK_THEME_KEY, ThemeRegistrationData } from './ThemeModel';
+import { ThemeContextValue } from './ThemeProvider';
+import {
+  DEFAULT_DARK_THEME_KEY,
+  ThemeData,
+  ThemeRegistrationData,
+} from './ThemeModel';
 import {
   calculatePreloadStyleContent,
   getActiveThemes,
+  getDefaultBaseThemes,
   getThemePreloadData,
   setThemePreloadData,
 } from './ThemeUtils';
@@ -15,30 +20,20 @@ const log = Log.module('useInitializeThemeContextValue');
  * Initialize a `ThemeContextValue`.
  */
 export function useInitializeThemeContextValue(): ThemeContextValue {
+  const baseThemes = useMemo(() => getDefaultBaseThemes(), []);
+  const [customThemes, setCustomThemes] = useState<ThemeData[] | null>(null);
+
   const [selectedThemeKey, setSelectedThemeKey] = useState<string>(
     () => getThemePreloadData()?.themeKey ?? DEFAULT_DARK_THEME_KEY
   );
 
-  const [themeRegistration, setThemeRegistration] =
-    useState<ThemeRegistrationData | null>(null);
-
   const activeThemes = useMemo(
     () =>
-      themeRegistration == null
-        ? null
-        : getActiveThemes(selectedThemeKey, themeRegistration),
-    [selectedThemeKey, themeRegistration]
-  );
-
-  /**
-   * Register the given custom themes with the cache and activate theming.
-   */
-  const registerThemes = useCallback(
-    (themeRegistrationData: ThemeRegistrationData) => {
-      log.debug('Registering themes', themeRegistrationData);
-      setThemeRegistration(themeRegistrationData);
-    },
-    []
+      getActiveThemes(selectedThemeKey, {
+        base: baseThemes,
+        custom: customThemes ?? [],
+      }),
+    [baseThemes, customThemes, selectedThemeKey]
   );
 
   // Once themes are activated, cache the preload data for next time page is
@@ -57,16 +52,16 @@ export function useInitializeThemeContextValue(): ThemeContextValue {
       themeKey: selectedThemeKey,
       preloadStyleContent: calculatePreloadStyleContent(),
     });
-  }, [activeThemes, selectedThemeKey, themeRegistration]);
+  }, [activeThemes, selectedThemeKey]);
 
   return useMemo(
     () => ({
       activeThemes,
       selectedThemeKey,
-      registerThemes,
+      registerThemes: setCustomThemes,
       setSelectedThemeKey,
     }),
-    [activeThemes, registerThemes, selectedThemeKey]
+    [activeThemes, selectedThemeKey]
   );
 }
 

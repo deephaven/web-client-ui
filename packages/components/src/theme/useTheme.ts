@@ -1,5 +1,5 @@
 import { useContextOrThrow } from '@deephaven/react-hooks';
-import { ThemeContext, ThemeContextValue } from './ThemeContext';
+import { ThemeContext, ThemeContextValue } from './ThemeProvider';
 
 /**
  * Hook to get the current `ThemeContextValue`.
