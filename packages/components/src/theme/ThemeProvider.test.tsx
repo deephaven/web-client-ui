@@ -1,6 +1,6 @@
 import React from 'react';
 import { act, render } from '@testing-library/react';
-import { TestUtils } from '@deephaven/utils';
+import { assertNotNull, TestUtils } from '@deephaven/utils';
 import { ThemeContextValue, ThemeProvider } from './ThemeProvider';
 import {
   DEFAULT_DARK_THEME_KEY,
@@ -71,11 +71,17 @@ describe('ThemeProvider', () => {
         </ThemeProvider>
       );
 
-      expect(themeContextValueRef.current?.activeThemes).toEqual(
+      assertNotNull(themeContextValueRef.current);
+
+      expect(themeContextValueRef.current.activeThemes).toEqual(
         getActiveThemes(preloadData?.themeKey ?? DEFAULT_DARK_THEME_KEY, {
           base: getDefaultBaseThemes(),
           custom: themes ?? [],
         })
+      );
+
+      expect(themeContextValueRef.current.selectedThemeKey).toEqual(
+        preloadData?.themeKey ?? DEFAULT_DARK_THEME_KEY
       );
 
       expect(component.baseElement).toMatchSnapshot();
@@ -113,6 +119,8 @@ describe('ThemeProvider', () => {
           </ThemeProvider>
         );
 
+        assertNotNull(themeContextValueRef.current);
+
         act(() => {
           themeContextValueRef.current?.setSelectedThemeKey(themeKey);
         });
@@ -123,6 +131,8 @@ describe('ThemeProvider', () => {
             custom: themes ?? [],
           })
         );
+
+        expect(themeContextValueRef.current.selectedThemeKey).toEqual(themeKey);
 
         expect(component.baseElement).toMatchSnapshot();
       }
