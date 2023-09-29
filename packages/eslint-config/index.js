@@ -14,12 +14,7 @@ module.exports = {
     'react-refresh',
   ],
   rules: {
-    'prettier/prettier': [
-      'error',
-      {
-        endOfLine: 'auto',
-      },
-    ],
+    'prettier/prettier': ['error'],
     'react/forbid-prop-types': 'off',
     'react/jsx-curly-newline': 'off',
     'react/jsx-uses-react': 'error',
