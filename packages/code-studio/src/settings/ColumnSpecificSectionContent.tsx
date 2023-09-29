@@ -212,7 +212,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
         let resetKeys = {};
         if (key === 'columnType') {
           resetKeys = {
-            format: '',
+            format: this.makeDefaultFormatterItemByType(value as string),
           };
         }
         const newEntry = {
@@ -431,11 +431,6 @@ export class ColumnSpecificSectionContent extends PureComponent<
       this.handleFormatRuleChange(i, 'isNewRule', false);
     const onTypeChange = (e: ChangeEvent<HTMLSelectElement>): void => {
       this.handleFormatRuleChange(i, 'columnType', e.target.value);
-      this.handleFormatRuleChange(
-        i,
-        'format',
-        this.makeDefaultFormatterItemByType(e.target.value)
-      );
     };
     const ruleError = this.getRuleError(rule);
 
