@@ -664,7 +664,7 @@ class IrisGridTableModelTemplate<
     }
     markerColor = markerColor ?? theme.markerBarColor;
 
-    opacity = valuePlacement === 'overlap' ? 0.5 : opacity;
+    opacity = valuePlacement.toLowerCase() === 'overlap' ? 0.5 : opacity;
 
     const databarOptions = {
       axis: axis.toLowerCase() as AxisOption,
