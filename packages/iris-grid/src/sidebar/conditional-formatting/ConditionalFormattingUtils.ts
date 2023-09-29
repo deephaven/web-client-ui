@@ -42,7 +42,7 @@ export interface ConditionConfig {
   end?: string;
 }
 
-export interface DataBarConfig {
+export interface DataBarFormatConfig {
   column: ModelColumn;
   min?: number;
   max?: number;
@@ -54,7 +54,7 @@ export interface DataBarConfig {
 }
 
 export type ChangeCallback = (
-  ruleConfig: BaseFormatConfig,
+  ruleConfig: BaseFormatConfig | DataBarFormatConfig,
   isValid: boolean
 ) => void;
 
@@ -66,7 +66,7 @@ export enum FormatterType {
 
 export interface FormattingRule {
   type: FormatterType;
-  config: BaseFormatConfig;
+  config: BaseFormatConfig | DataBarFormatConfig;
 }
 
 export enum NumberCondition {
@@ -709,12 +709,18 @@ export function getFormatColumns(
       );
       return;
     }
+    if (formatterType === FormatterType.DATA_BAR) {
+      const dataBarColumns = getDataBarFormatColumns(col, config);
+      result.push(...dataBarColumns);
+
+      return;
+    }
     // Stack ternary format conditions by column
     const [prevRule, prevFormatColumn] = (formatterType ===
     FormatterType.CONDITIONAL
       ? columnFormatConfigMap.get(col.name)
       : rowFormatConfig) ?? ['null', undefined];
-    const rule = makeTernaryFormatRule(config, prevRule);
+    const rule = makeTernaryFormatRule(config as BaseFormatConfig, prevRule);
     if (rule === undefined) {
       log.debug(`Ignoring format rule.`, config);
       return;
@@ -738,6 +744,19 @@ export function getFormatColumns(
   });
 
   return result;
+}
+
+export function getDataBarFormatColumns(
+  col: Column,
+  config: DataBarFormatConfig
+): CustomColumn[] {
+  const modifiedConfig = {
+    ...config,
+    column: config.column.name,
+  };
+  const output: CustomColumn[] = col.formatDataBar(modifiedConfig);
+
+  return output;
 }
 
 /**

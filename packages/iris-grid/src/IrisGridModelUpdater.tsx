@@ -137,7 +137,7 @@ const IrisGridModelUpdater = React.memo(
       [model, top, bottom, columns]
     );
     useEffect(
-      function updateRollupCOnfig() {
+      function updateRollupConfig() {
         if (model.isRollupAvailable) {
           model.rollupConfig = rollupConfig;
         }

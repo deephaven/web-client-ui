@@ -562,6 +562,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleUpdateCustomColumns = this.handleUpdateCustomColumns.bind(this);
     this.handleCustomColumnsChanged =
       this.handleCustomColumnsChanged.bind(this);
+    this.handleDataBarRangeChange = this.handleDataBarRangeChange.bind(this);
     this.handleSelectDistinctChanged =
       this.handleSelectDistinctChanged.bind(this);
     this.handlePendingDataUpdated = this.handlePendingDataUpdated.bind(this);
@@ -3218,6 +3219,31 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     });
   }
 
+  // Rename to handleDataBarColumnChange
+  handleDataBarRangeChange(column: string): void {
+    log.info('Data Bar range change', column);
+
+    const aggregations: Aggregation[] = [
+      {
+        invert: false,
+        operation: 'Max',
+        selected: [column],
+      } as Aggregation,
+      {
+        invert: false,
+        operation: 'Min',
+        selected: [column],
+      } as Aggregation,
+    ];
+
+    const aggregationSettings: AggregationSettings = {
+      aggregations,
+      showOnTop: false,
+    };
+
+    this.setState({ aggregationSettings });
+  }
+
   handleRollupChange(rollupConfig: UIRollupConfig): void {
     log.info('Rollup change', rollupConfig);
 
@@ -4338,6 +4364,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               onUpdate={this.handleConditionalFormatEditorUpdate}
               onSave={this.handleConditionalFormatEditorSave}
               onCancel={this.handleConditionalFormatEditorCancel}
+              onDataBarRangeChange={this.handleDataBarRangeChange}
             />
           );
         case OptionType.CUSTOM_COLUMN_BUILDER:

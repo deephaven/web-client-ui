@@ -12,6 +12,7 @@ import ColumnFormatEditor from './ColumnFormatEditor';
 import RowFormatEditor from './RowFormatEditor';
 import {
   BaseFormatConfig,
+  DataBarFormatConfig,
   FormatterType,
   FormattingRule,
   isSupportedColumn,
@@ -26,6 +27,8 @@ export type SaveCallback = (rule: FormattingRule) => void;
 
 export type UpdateCallback = (rule?: FormattingRule) => void;
 
+export type UpdateDataBarCallback = (column: string) => void;
+
 export type CancelCallback = () => void;
 
 export interface ConditionalFormatEditorProps {
@@ -35,6 +38,7 @@ export interface ConditionalFormatEditorProps {
   onCancel?: CancelCallback;
   onSave?: SaveCallback;
   onUpdate?: UpdateCallback;
+  onDataBarRangeChange?: UpdateDataBarCallback;
 }
 
 const DEFAULT_CALLBACK = (): void => undefined;
@@ -76,6 +80,7 @@ function ConditionalFormatEditor(
     onSave = DEFAULT_CALLBACK,
     onUpdate = DEFAULT_CALLBACK,
     onCancel = DEFAULT_CALLBACK,
+    onDataBarRangeChange = DEFAULT_CALLBACK,
     rule: defaultRule,
   } = props;
 
@@ -99,17 +104,31 @@ function ConditionalFormatEditor(
     onSave(rule);
   }, [onSave, rule]);
 
+  const handleDataBarRangeChange = useCallback(
+    column => {
+      if (column === undefined) {
+        log.error('Column is not defined.');
+        return;
+      }
+      onDataBarRangeChange(column);
+    },
+    [onDataBarRangeChange]
+  );
+
   const handleFormatterChange = useCallback(value => {
     log.debug('handleFormatterChange', value);
     setFormatter(value);
   }, []);
 
   const handleRuleChange = useCallback(
-    (ruleConfig, isRuleValid: boolean) => {
+    (
+      ruleConfig: BaseFormatConfig | DataBarFormatConfig,
+      isRuleValid: boolean
+    ) => {
       log.debug('handleRuleChange', ruleConfig, isRuleValid, selectedFormatter);
       const updatedRule = {
         type: selectedFormatter,
-        config: ruleConfig as BaseFormatConfig,
+        config: ruleConfig as BaseFormatConfig | DataBarFormatConfig,
       };
       setRule(updatedRule);
       setIsValid(isRuleValid);
@@ -147,14 +166,14 @@ function ConditionalFormatEditor(
         <ColumnFormatEditor
           columns={columns}
           dh={dh}
-          config={rule?.config}
+          config={rule?.config as BaseFormatConfig}
           onChange={handleRuleChange}
         />
       )}
       {selectedFormatter === FormatterType.ROWS && (
         <RowFormatEditor
           columns={columns}
-          config={rule?.config}
+          config={rule?.config as BaseFormatConfig}
           dh={dh}
           onChange={handleRuleChange}
         />
@@ -162,9 +181,10 @@ function ConditionalFormatEditor(
       {selectedFormatter === FormatterType.DATA_BAR && (
         <DataBarFormatEditor
           columns={columns}
-          config={rule?.config}
+          config={rule?.config as DataBarFormatConfig}
           dh={dh}
           onChange={handleRuleChange}
+          onDataBarRangeChange={handleDataBarRangeChange}
         />
       )}
       <hr />

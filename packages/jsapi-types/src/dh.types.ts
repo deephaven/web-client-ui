@@ -565,6 +565,7 @@ export interface Column {
 
   formatColor(expression: string): CustomColumn;
   formatRowColor(expression: string): CustomColumn;
+  formatDataBar(config: unknown): CustomColumn[]; // how can I access the DataBarFormatConfig type from here?
 }
 
 export interface CustomColumn {
@@ -853,10 +854,10 @@ export interface Format {
   readonly color: string;
   readonly backgroundColor: string;
   readonly formatString: string;
-  readonly formatDataBar: DatabarFormat;
+  readonly formatDataBar: DataBarFormat;
 }
 
-export interface DatabarFormat {
+export interface DataBarFormat {
   axis: string;
   direction: string;
   max: number;

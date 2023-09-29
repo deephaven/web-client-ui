@@ -185,6 +185,8 @@ class IrisGridTableModelTemplate<
 
   private totalsDataMap: Map<string, R> | null;
 
+  private dataBarRangeMap: Map<string, number> | null;
+
   // Map from new row index to their values. Only for input tables that can have new rows added.
   // The index of these rows start at 0, and they are appended at the end of the regular table data.
   // These rows can be sparse, so using a map instead of an array.
@@ -241,6 +243,7 @@ class IrisGridTableModelTemplate<
     this.totalsTablePromise = null;
     this.totals = null;
     this.totalsDataMap = null;
+    this.dataBarRangeMap = null;
 
     // Map from new row index to their values. Only for input tables that can have new rows added.
     // The index of these rows start at 0, and they are appended at the end of the regular table data.
@@ -669,8 +672,8 @@ class IrisGridTableModelTemplate<
     const databarOptions = {
       axis: axis.toLowerCase() as AxisOption,
       direction: direction.toUpperCase() as DirectionOption,
-      columnMax: max,
-      columnMin: min,
+      columnMax: max ?? this.dataBarRangeMap?.get('Max'),
+      columnMin: min ?? this.dataBarRangeMap?.get('Min'),
       opacity,
       color: databarColor,
       valuePlacement: valuePlacement.toLowerCase() as ValuePlacementOption,
@@ -1147,7 +1150,19 @@ class IrisGridTableModelTemplate<
 
     log.debug2('copyTotalsData', dataMap);
 
+    const dataBarColumnIndex = 2;
+    const rangeMap = new Map();
+    rangeMap.set(
+      'Min',
+      dataMap.get('Min').data.get(dataBarColumnIndex).value.asNumber()
+    );
+    rangeMap.set(
+      'Max',
+      dataMap.get('Max').data.get(dataBarColumnIndex).value.asNumber()
+    );
+
     this.totalsDataMap = dataMap;
+    this.dataBarRangeMap = rangeMap;
     this.formattedStringData = [];
   }
 
