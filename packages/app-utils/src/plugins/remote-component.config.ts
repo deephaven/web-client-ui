@@ -17,7 +17,7 @@ import * as DeephavenIrisGrid from '@deephaven/iris-grid';
 import * as DeephavenJsapiBootstrap from '@deephaven/jsapi-bootstrap';
 import * as DeephavenJsapiComponents from '@deephaven/jsapi-components';
 import * as DeephavenJsapiUtils from '@deephaven/jsapi-utils';
-import * as DeephavenLog from '@deephaven/log';
+import DeephavenLog from '@deephaven/log';
 import * as DeephavenReactHooks from '@deephaven/react-hooks';
 
 // eslint-disable-next-line import/prefer-default-export
