@@ -70,31 +70,31 @@ describe('getThemeDataFromPlugins', () => {
       {
         name: 'mock.customDark',
         baseThemeKey: 'default-dark',
-        themeKey: 'mock-themepluginnamea_mock-customdark',
+        themeKey: 'mock.themePluginNameA_mock.customDark',
         styleContent: 'mock.styleContent',
       },
       {
         name: 'mock.customLight',
         baseThemeKey: 'default-light',
-        themeKey: 'mock-themepluginnameb_mock-customlight',
+        themeKey: 'mock.themePluginNameB_mock.customLight',
         styleContent: 'mock.styleContent',
       },
       {
         name: 'mock.customDark',
         baseThemeKey: 'default-dark',
-        themeKey: 'mock-themepluginnamec_mock-customdark',
+        themeKey: 'mock.themePluginNameC_mock.customDark',
         styleContent: 'mock.styleContent',
       },
       {
         name: 'mock.customLight',
         baseThemeKey: 'default-light',
-        themeKey: 'mock-themepluginnamec_mock-customlight',
+        themeKey: 'mock.themePluginNameC_mock.customLight',
         styleContent: 'mock.styleContent',
       },
       {
         name: 'mock.customUndefined',
         baseThemeKey: 'default-dark',
-        themeKey: 'mock-themepluginnamec_mock-customundefined',
+        themeKey: 'mock.themePluginNameC_mock.customUndefined',
         styleContent: 'mock.styleContent',
       },
     ];
