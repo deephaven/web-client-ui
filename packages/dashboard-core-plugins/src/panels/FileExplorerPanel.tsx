@@ -166,17 +166,9 @@ export class FileExplorerPanel extends React.Component<
       return;
     }
     let newName = FileUtils.getCopyFileName(file.filename);
-    const checkNewName = async (): Promise<boolean> => {
-      try {
-        await fileStorage.info(newName);
-        return true;
-      } catch (error) {
-        return false;
-      }
-    };
     // await in loop is fine here, this isn't a parallel task
     // eslint-disable-next-line no-await-in-loop
-    while (await checkNewName()) {
+    while (await FileUtils.fileExists(fileStorage, newName)) {
       newName = FileUtils.getCopyFileName(newName);
     }
     await fileStorage.copyFile(file.filename, newName);

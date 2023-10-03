@@ -1,4 +1,6 @@
 import { ValidationError } from '@deephaven/utils';
+import FileNotFoundError from './FileNotFoundError';
+import { FileStorage } from './FileStorage';
 
 /**
  * A basic list of some common MIME types.
@@ -16,6 +18,22 @@ export enum MIME_TYPE {
  * Collection of utils for operating on file names
  */
 export class FileUtils {
+  static async fileExists(
+    fileStorage: FileStorage,
+    name: string
+  ): Promise<boolean> {
+    try {
+      await fileStorage.info(name);
+      return true;
+    } catch (e) {
+      // Should probably make sure it's a `FileNotFoundError`, and re-throw the error if it is not
+      if (!(e instanceof FileNotFoundError)) {
+        throw e;
+      }
+      return false;
+    }
+  }
+
   /**
    * Format file extension
    * @param extension File extension to format, defaults to empty string
