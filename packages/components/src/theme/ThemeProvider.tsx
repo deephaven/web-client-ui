@@ -48,16 +48,17 @@ export function ThemeProvider({
     [baseThemes, selectedThemeKey, themes]
   );
 
-  // Any time active themes change, update the preload data for next time the
-  // page loads.
-  useEffect(() => {
-    log.debug('Active themes:', activeThemes?.map(theme => theme.themeKey));
+  useEffect(
+    function updateThemePreloadData() {
+      log.debug('Active themes:', activeThemes?.map(theme => theme.themeKey));
 
-    setThemePreloadData({
-      themeKey: selectedThemeKey,
-      preloadStyleContent: calculatePreloadStyleContent(),
-    });
-  }, [activeThemes, selectedThemeKey]);
+      setThemePreloadData({
+        themeKey: selectedThemeKey,
+        preloadStyleContent: calculatePreloadStyleContent(),
+      });
+    },
+    [activeThemes, selectedThemeKey]
+  );
 
   const value = useMemo(
     () => ({
