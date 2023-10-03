@@ -130,11 +130,24 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
 
   static DEFAULT_NAME = 'Untitled';
 
+  static UNSAVED_INDICATOR_CLASS_NAME = 'editor-unsaved-indicator';
+
+  static UNSAVED_STATUS_CLASS_NAME = 'is-unsaved';
+
   static handleError(error: unknown): void {
     if (PromiseUtils.isCanceled(error)) {
       return;
     }
     log.error(error);
+  }
+
+  /**
+   * Returns number of unsaved notebooks.
+   */
+  static unsavedNotebookCount(): number {
+    return document.querySelectorAll(
+      `.${NotebookPanel.UNSAVED_INDICATOR_CLASS_NAME}.${NotebookPanel.UNSAVED_STATUS_CLASS_NAME}`
+    ).length;
   }
 
   static defaultProps = {
@@ -1246,9 +1259,13 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
         {portal != null &&
           ReactDOM.createPortal(
             <span
-              className={classNames('editor-unsaved-indicator', {
-                'is-unsaved': changeCount !== savedChangeCount,
-              })}
+              className={classNames(
+                NotebookPanel.UNSAVED_INDICATOR_CLASS_NAME,
+                {
+                  [NotebookPanel.UNSAVED_STATUS_CLASS_NAME]:
+                    changeCount !== savedChangeCount,
+                }
+              )}
             />,
             portal // tab.element is jquery element, we want a dom element
           )}
