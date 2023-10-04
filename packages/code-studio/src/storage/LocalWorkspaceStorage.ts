@@ -21,34 +21,66 @@ const log = Log.module('LocalWorkspaceStorage');
 export class LocalWorkspaceStorage implements WorkspaceStorage {
   static readonly STORAGE_KEY = 'deephaven.WorkspaceStorage';
 
+  static getServerConfigValueOrUseDefault<T>(
+    serverConfigValues: Map<string, string> | undefined,
+    key: string,
+    defaultValue: T
+  ): string | T {
+    if (serverConfigValues && serverConfigValues.has(key)) {
+      return serverConfigValues.get(key) ?? defaultValue;
+    }
+    return defaultValue;
+  }
+
   static async makeDefaultWorkspaceData(
     layoutStorage: LayoutStorage,
-    options?: WorkspaceStorageLoadOptions
+    options?: WorkspaceStorageLoadOptions,
+    serverConfigValues?: Map<string, string>
   ): Promise<WorkspaceData> {
     const { filterSets, links, layoutConfig } =
       await UserLayoutUtils.getDefaultLayout(
         layoutStorage,
         options?.isConsoleAvailable
       );
-
     return {
       settings: {
         defaultDateTimeFormat:
-          DateTimeColumnFormatter.DEFAULT_DATETIME_FORMAT_STRING,
+          LocalWorkspaceStorage.getServerConfigValueOrUseDefault(
+            serverConfigValues,
+            'dateTimeFormat',
+            DateTimeColumnFormatter.DEFAULT_DATETIME_FORMAT_STRING
+          ),
         formatter: [],
-        timeZone: DateTimeColumnFormatter.DEFAULT_TIME_ZONE_ID,
+        timeZone: LocalWorkspaceStorage.getServerConfigValueOrUseDefault(
+          serverConfigValues,
+          'timeZone',
+          DateTimeColumnFormatter.DEFAULT_TIME_ZONE_ID
+        ),
         showTimeZone: false,
         showTSeparator: true,
         disableMoveConfirmation: false,
         defaultDecimalFormatOptions: {
-          defaultFormatString: DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
+          defaultFormatString:
+            LocalWorkspaceStorage.getServerConfigValueOrUseDefault(
+              serverConfigValues,
+              'decimalFormat',
+              DecimalColumnFormatter.DEFAULT_FORMAT_STRING
+            ),
         },
         defaultIntegerFormatOptions: {
-          defaultFormatString: IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
+          defaultFormatString:
+            LocalWorkspaceStorage.getServerConfigValueOrUseDefault(
+              serverConfigValues,
+              'integerFormat',
+              IntegerColumnFormatter.DEFAULT_FORMAT_STRING
+            ),
         },
-        truncateNumbersWithPound: false,
+        truncateNumbersWithPound:
+          serverConfigValues?.get('truncateNumbersWithPound') === 'true' ??
+          false,
         defaultNotebookSettings: {
-          isMinimapEnabled: false,
+          isMinimapEnabled:
+            serverConfigValues?.get('isMinimapEnabled') === 'true' ?? false,
         },
       },
       layoutConfig,
@@ -60,12 +92,14 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
 
   static async makeDefaultWorkspace(
     layoutStorage: LayoutStorage,
-    options?: WorkspaceStorageLoadOptions
+    options?: WorkspaceStorageLoadOptions,
+    serverConfigValues?: Map<string, string>
   ): Promise<Workspace> {
     return {
       data: await LocalWorkspaceStorage.makeDefaultWorkspaceData(
         layoutStorage,
-        options
+        options,
+        serverConfigValues
       ),
     };
   }
@@ -77,7 +111,10 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  async load(options?: WorkspaceStorageLoadOptions): Promise<Workspace> {
+  async load(
+    options?: WorkspaceStorageLoadOptions,
+    serverConfigValues?: Map<string, string>
+  ): Promise<Workspace> {
     try {
       return JSON.parse(
         localStorage.getItem(LocalWorkspaceStorage.STORAGE_KEY) ?? ''
@@ -86,7 +123,8 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
       log.info('Unable to load workspace data, initializing to default data');
       return LocalWorkspaceStorage.makeDefaultWorkspace(
         this.layoutStorage,
-        options
+        options,
+        serverConfigValues
       );
     }
   }
