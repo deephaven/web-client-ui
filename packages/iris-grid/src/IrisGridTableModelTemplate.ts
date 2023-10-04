@@ -3,6 +3,7 @@
 import memoize from 'memoize-one';
 import throttle from 'lodash.throttle';
 import {
+  CellRenderType,
   EditOperation,
   GridRange,
   GridUtils,
@@ -38,6 +39,13 @@ import {
   assertNotNull,
 } from '@deephaven/utils';
 import { TableUtils, Formatter, FormatterUtils } from '@deephaven/jsapi-utils';
+import {
+  AxisOption,
+  DataBarOptions,
+  DirectionOption,
+  Marker,
+  ValuePlacementOption,
+} from 'packages/grid/src/DataBarGridModel';
 import IrisGridModel from './IrisGridModel';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import IrisGridUtils from './IrisGridUtils';
@@ -633,6 +641,54 @@ class IrisGridTableModelTemplate<
       return 'center';
     }
     return 'left';
+  }
+
+  dataBarOptionsForCell(
+    column: ModelIndex,
+    row: ModelIndex,
+    theme: IrisGridThemeType
+  ): DataBarOptions {
+    const format = this.formatForCell(column, row);
+    assertNotNull(format);
+    const { axis, direction, max, min, valuePlacement, value, marker } =
+      format.formatDataBar;
+    let { positiveColor, negativeColor, markerColor, opacity } =
+      format.formatDataBar;
+
+    positiveColor = positiveColor ?? theme.positiveBarColor;
+    negativeColor = negativeColor ?? theme.negativeBarColor;
+    let databarColor: string | string[] =
+      format.color ?? (value >= 0 ? positiveColor : negativeColor);
+    if (databarColor.includes(',')) {
+      databarColor = databarColor.split(',');
+    }
+    markerColor = markerColor ?? theme.markerBarColor;
+
+    opacity = valuePlacement.toLowerCase() === 'overlap' ? 0.5 : opacity;
+
+    const databarOptions = {
+      axis: axis.toLowerCase() as AxisOption,
+      direction: direction.toUpperCase() as DirectionOption,
+      columnMax: max,
+      columnMin: min,
+      opacity,
+      color: databarColor,
+      valuePlacement: valuePlacement.toLowerCase() as ValuePlacementOption,
+      value,
+      markers: [
+        {
+          value: marker,
+          color: markerColor,
+        },
+      ] as Marker[],
+    };
+
+    return databarOptions;
+  }
+
+  renderTypeForCell(column: ModelIndex, row: ModelIndex): CellRenderType {
+    const format = this.formatForCell(column, row);
+    return format?.formatDataBar != null ? 'dataBar' : 'text';
   }
 
   textForColumnHeader(x: ModelIndex, depth = 0): string | undefined {

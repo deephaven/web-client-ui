@@ -1,8 +1,9 @@
+import { GridThemeType } from '.';
 import { ModelIndex } from './GridMetrics';
 import GridModel from './GridModel';
 import { GridColor } from './GridTheme';
 
-export type Marker = { column: ModelIndex; color: string };
+export type Marker = { value: number; color: string };
 export type AxisOption = 'proportional' | 'middle' | 'directional';
 export type ValuePlacementOption = 'beside' | 'overlap' | 'hide';
 export type DirectionOption = 'LTR' | 'RTL';
@@ -49,5 +50,9 @@ export function isDataBarGridModel(
 }
 
 export interface DataBarGridModel extends GridModel {
-  dataBarOptionsForCell(column: ModelIndex, row: ModelIndex): DataBarOptions;
+  dataBarOptionsForCell(
+    column: ModelIndex,
+    row: ModelIndex,
+    theme: GridThemeType
+  ): DataBarOptions;
 }

@@ -85,7 +85,7 @@ class DataBarCellRenderer extends CellRenderer {
       markers,
       direction,
       value,
-    } = model.dataBarOptionsForCell(modelColumn, modelRow);
+    } = model.dataBarOptionsForCell(modelColumn, modelRow, theme);
 
     const hasGradient = Array.isArray(dataBarColor);
     if (columnMin == null || columnMax == null) {
@@ -343,7 +343,7 @@ class DataBarCellRenderer extends CellRenderer {
       markers,
       direction,
       value,
-    } = model.dataBarOptionsForCell(modelColumn, modelRow);
+    } = model.dataBarOptionsForCell(modelColumn, modelRow, theme);
     const longestValueWidth = this.getCachedWidestValueForColumn(
       context,
       visibleRows,
@@ -398,11 +398,9 @@ class DataBarCellRenderer extends CellRenderer {
         ? zeroPosition
         : zeroPosition - (Math.abs(value) / totalValueRange) * maxWidth;
     let markerXs = markers.map(marker => {
-      const { column: markerColumn } = marker;
-      const markerValue = Number(model.textForCell(markerColumn, modelRow));
-      return markerValue >= 0
-        ? zeroPosition + (Math.abs(markerValue) / totalValueRange) * maxWidth
-        : zeroPosition - (Math.abs(markerValue) / totalValueRange) * maxWidth;
+      const { value: markerValue } = marker;
+      const offset = (Math.abs(markerValue) / totalValueRange) * maxWidth;
+      return markerValue >= 0 ? zeroPosition + offset : zeroPosition - offset;
     });
     let leftmostPosition =
       valuePlacement === 'beside' && textAlign === 'left'
@@ -424,8 +422,7 @@ class DataBarCellRenderer extends CellRenderer {
           ? zeroPosition - (value / totalValueRange) * maxWidth
           : zeroPosition;
       markerXs = markers.map(marker => {
-        const { column: markerColumn } = marker;
-        const markerValue = Number(model.textForCell(markerColumn, modelRow));
+        const { value: markerValue } = marker;
         return markerValue >= 0
           ? zeroPosition - (Math.abs(markerValue) / totalValueRange) * maxWidth
           : zeroPosition + (Math.abs(markerValue) / totalValueRange) * maxWidth;
@@ -441,8 +438,8 @@ class DataBarCellRenderer extends CellRenderer {
             ? zeroPosition
             : zeroPosition - (Math.abs(value) / columnLongest) * (maxWidth / 2);
         markerXs = markers.map(marker => {
-          const { column: markerColumn } = marker;
-          const markerValue = Number(model.textForCell(markerColumn, modelRow));
+          const { value: markerValue } = marker;
+
           return markerValue >= 0
             ? zeroPosition +
                 (Math.abs(markerValue) / columnLongest) * (maxWidth / 2)
@@ -456,8 +453,8 @@ class DataBarCellRenderer extends CellRenderer {
             ? zeroPosition
             : zeroPosition - (Math.abs(value) / columnLongest) * (maxWidth / 2);
         markerXs = markers.map(marker => {
-          const { column: markerColumn } = marker;
-          const markerValue = Number(model.textForCell(markerColumn, modelRow));
+          const { value: markerValue } = marker;
+
           return markerValue <= 0
             ? zeroPosition +
                 (Math.abs(markerValue) / columnLongest) * (maxWidth / 2)
@@ -471,8 +468,8 @@ class DataBarCellRenderer extends CellRenderer {
         zeroPosition = 0;
         dataBarX = zeroPosition;
         markerXs = markers.map(marker => {
-          const { column: markerColumn } = marker;
-          const markerValue = Number(model.textForCell(markerColumn, modelRow));
+          const { value: markerValue } = marker;
+
           return (
             zeroPosition + (Math.abs(markerValue) / columnLongest) * maxWidth
           );
@@ -482,8 +479,8 @@ class DataBarCellRenderer extends CellRenderer {
         zeroPosition = columnWidth;
         dataBarX = zeroPosition - (Math.abs(value) / columnLongest) * maxWidth;
         markerXs = markers.map(marker => {
-          const { column: markerColumn } = marker;
-          const markerValue = Number(model.textForCell(markerColumn, modelRow));
+          const { value: markerValue } = marker;
+
           return (
             zeroPosition - (Math.abs(markerValue) / columnLongest) * maxWidth
           );
