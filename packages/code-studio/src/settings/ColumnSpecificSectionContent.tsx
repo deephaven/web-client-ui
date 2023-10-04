@@ -429,9 +429,9 @@ export class ColumnSpecificSectionContent extends PureComponent<
       this.handleFormatRuleChange(i, 'columnName', e.target.value);
     const onNameBlur = (): void =>
       this.handleFormatRuleChange(i, 'isNewRule', false);
-    const onTypeChange = (e: ChangeEvent<HTMLSelectElement>): void => {
+    const onTypeChange = (e: ChangeEvent<HTMLSelectElement>): void =>
       this.handleFormatRuleChange(i, 'columnType', e.target.value);
-    };
+
     const ruleError = this.getRuleError(rule);
 
     return (
