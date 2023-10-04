@@ -138,7 +138,10 @@ it('displays an error when the formatting rule is empty', async () => {
   expect(screen.getByDisplayValue('test')).toBeInTheDocument();
 
   await user.selectOptions(screen.getByLabelText('Column Type'), 'Decimal');
-  await user.type(screen.getByLabelText('Formatting Rule'), ' {backspace}');
+  await user.type(
+    screen.getByLabelText('Formatting Rule'),
+    ' {Control>}A{/Control}{backspace}'
+  );
   expect(screen.queryByText(/Empty formatting rule\./)).toBeInTheDocument();
 });
 
@@ -215,7 +218,7 @@ it('should change the input value when column type is Integer', async () => {
   await user.selectOptions(screen.getByLabelText('Column Type'), 'Integer');
   await user.type(
     screen.getByLabelText('Formatting Rule'),
-    `{selectall}${newFormat}`
+    `{Control>}A{/Control}${newFormat}`
   );
 
   expect(screen.getByDisplayValue(newFormat)).toBeInTheDocument();
