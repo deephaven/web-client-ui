@@ -1,6 +1,6 @@
 import Log from '@deephaven/log';
-import { assertNotNull } from '@deephaven/utils';
 import shortid from 'shortid';
+import { assertNotNull, ColorUtils } from '@deephaven/utils';
 // Note that ?inline imports are natively supported by Vite, but consumers of
 // @deephaven/components using Webpack will need to add a rule to their module
 // config.
@@ -28,22 +28,6 @@ import {
 } from './ThemeModel';
 
 const log = Log.module('ThemeUtils');
-
-/**
- * Attempt to get the rgb or rgba string for a color string. If the color string
- * can't be resolved to a valid color, null is returned.
- * @param colorString The color string to resolve
- */
-export function asRgbOrRgbaString(colorString: string): string | null {
-  const divEl = document.createElement('div');
-  divEl.style.backgroundColor = colorString;
-
-  if (divEl.style.backgroundColor === '') {
-    return null;
-  }
-
-  return divEl.style.backgroundColor;
-}
 
 /**
  * Creates a string containing preload style content for the current theme.
@@ -138,79 +122,21 @@ export function getThemePreloadData(): ThemePreloadData | null {
 }
 
 /**
- * Normalize a css color to 8 character hex value. If the color can't be resolved,
- * return the original color string.
- * @param colorString The color string to normalize
- */
-export function normalizeCssColor(colorString: string): string {
-  const maybeRgbOrRgba = asRgbOrRgbaString(colorString);
-  if (maybeRgbOrRgba == null) {
-    return colorString;
-  }
-
-  const rgba = parseRgba(maybeRgbOrRgba);
-  if (rgba === null) {
-    return colorString;
-  }
-
-  return rgbaToHex8(rgba);
-}
-
-/**
- * Parse a given `rgb` or `rgba` css expression into its constituent r, g, b, a
- * values. If the expression cannot be parsed, it will return null.
- * Note that this parser is more permissive than the CSS spec and shouldn't be
- * relied on as a full validation mechanism. For the most part, it assumes that
- * the input is already a valid rgb or rgba expression.
- *
- * e.g. `rgb(255, 255, 255)` -> `{ r: 255, g: 255, b: 255, a: 1 }`
- * e.g. `rgba(255, 255, 255, 0.5)` -> `{ r: 255, g: 255, b: 255, a: 0.5 }`
- * @param rgbOrRgbaString The rgb or rgba string to parse
- */
-export function parseRgba(
-  rgbOrRgbaString: string
-): { r: number; g: number; b: number; a: number } | null {
-  const [, name, args] = /^(rgba?)\((.*?)\)$/.exec(rgbOrRgbaString) ?? [];
-  if (name == null) {
-    return null;
-  }
-
-  // Split on spaces, commas, and slashes. Note that this more permissive than
-  // the CSS spec in that slashes should only be used to delimit the alpha value
-  // (e.g. r g b / a), but this would match r/g/b/a. It also would match a mixed
-  // delimiter case (e.g. r,g b,a). This seems like a reasonable tradeoff for the
-  // complexity that would be added to enforce the full spec.
-  const tokens = args.split(/[ ,/]/).filter(Boolean);
-
-  if (tokens.length < 3) {
-    return null;
-  }
-
-  const [r, g, b, a = 1] = tokens.map(Number);
-
-  return {
-    r,
-    g,
-    b,
-    a,
-  };
-}
-
-/**
  * Make a copy of the given object replacing any css variables contained in its
  * prop values with values resolved from the given HTML element.
- * @param obj An object whose values may contain css var expressions
- * @param el The element to resolve css variables against. Defaults to document.body
+ * @param record An object whose values may contain css var expressions
+ * @param targetElement The element to resolve css variables against. Defaults
+ * to document.body
  */
 export function replaceCssVariablesWithResolvedValues<
   T extends Record<string, string>,
->(obj: T, el: HTMLElement = document.body): T {
+>(record: T, targetElement: HTMLElement = document.body): T {
   const prefix = shortid();
-  const computedStyle = getComputedStyle(el);
+  const computedStyle = window.getComputedStyle(targetElement);
 
   const result = {} as T;
 
-  Object.entries(obj).forEach(([key, value]) => {
+  Object.entries(record).forEach(([key, value]) => {
     if (!value.includes('var(--')) {
       result[key as keyof T] = value as T[keyof T];
       return;
@@ -218,46 +144,17 @@ export function replaceCssVariablesWithResolvedValues<
 
     // Create a temporary css variable to resolve the value
     const tmpPropKey = `--${prefix}-${key}`;
-    el.style.setProperty(tmpPropKey, value);
+    targetElement.style.setProperty(tmpPropKey, value);
     const resolved = computedStyle.getPropertyValue(tmpPropKey);
-    el.style.removeProperty(tmpPropKey);
+    targetElement.style.removeProperty(tmpPropKey);
 
-    const normalized = normalizeCssColor(resolved);
+    const normalized = ColorUtils.normalizeCssColor(resolved);
     log.debug('Replaced css variables:', value, normalized);
 
     result[key as keyof T] = normalized as T[keyof T];
   });
 
   return result;
-}
-
-/**
- * Convert an rgba object to an 8 character hex color string.
- * @param r The red value
- * @param g The green value
- * @param b The blue value
- * @param a The alpha value (defaults to 1)
- * @returns The a character hex string with # prefix
- */
-export function rgbaToHex8({
-  r,
-  g,
-  b,
-  a = 1,
-}: {
-  r: number;
-  g: number;
-  b: number;
-  a?: number;
-}): string {
-  // eslint-disable-next-line no-param-reassign
-  a = Math.round(a * 255);
-
-  const [rh, gh, bh, ah] = [r, g, b, a].map(v =>
-    v.toString(16).padStart(2, '0')
-  );
-
-  return `#${rh}${gh}${bh}${ah}`;
 }
 
 /**

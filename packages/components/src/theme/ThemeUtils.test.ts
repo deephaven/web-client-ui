@@ -1,102 +1,26 @@
-import { TestUtils } from '@deephaven/utils';
+import { ColorUtils, TestUtils } from '@deephaven/utils';
+import shortid from 'shortid';
 import {
+  DEFAULT_DARK_THEME_KEY,
   DEFAULT_PRELOAD_DATA_VARIABLES,
   ThemeData,
   ThemeRegistrationData,
   THEME_CACHE_LOCAL_STORAGE_KEY,
 } from './ThemeModel';
 import {
-  asRgbOrRgbaString,
   calculatePreloadStyleContent,
   getActiveThemes,
   getDefaultBaseThemes,
   getThemeKey,
   getThemePreloadData,
-  normalizeCssColor,
-  parseRgba,
   preloadTheme,
-  rgbaToHex8,
+  replaceCssVariablesWithResolvedValues,
   setThemePreloadData,
 } from './ThemeUtils';
 
-const { createMockProxy } = TestUtils;
+jest.mock('shortid');
 
-const getBackgroundColor = jest.fn();
-const setBackgroundColor = jest.fn();
-
-const mockDivEl = createMockProxy<HTMLDivElement>({
-  style: {
-    get backgroundColor(): string {
-      return getBackgroundColor();
-    },
-    set backgroundColor(value: string) {
-      setBackgroundColor(value);
-    },
-  } as HTMLDivElement['style'],
-});
-
-const colorMap = [
-  {
-    hsl: { h: 0, s: 100, l: 50 },
-    rgb: { r: 255, g: 0, b: 0 },
-    hex: '#ff0000ff',
-  },
-  {
-    hsl: { h: 30, s: 100, l: 50 },
-    rgb: { r: 255, g: 128, b: 0 },
-    hex: '#ff8000ff',
-  },
-  {
-    hsl: { h: 60, s: 100, l: 50 },
-    rgb: { r: 255, g: 255, b: 0 },
-    hex: '#ffff00ff',
-  },
-  {
-    hsl: { h: 90, s: 100, l: 50 },
-    rgb: { r: 128, g: 255, b: 0 },
-    hex: '#80ff00ff',
-  },
-  {
-    hsl: { h: 120, s: 100, l: 50 },
-    rgb: { r: 0, g: 255, b: 0 },
-    hex: '#00ff00ff',
-  },
-  {
-    hsl: { h: 150, s: 100, l: 50 },
-    rgb: { r: 0, g: 255, b: 128 },
-    hex: '#00ff80ff',
-  },
-  {
-    hsl: { h: 180, s: 100, l: 50 },
-    rgb: { r: 0, g: 255, b: 255 },
-    hex: '#00ffffff',
-  },
-  {
-    hsl: { h: 210, s: 100, l: 50 },
-    rgb: { r: 0, g: 128, b: 255 },
-    hex: '#0080ffff',
-  },
-  {
-    hsl: { h: 240, s: 100, l: 50 },
-    rgb: { r: 0, g: 0, b: 255 },
-    hex: '#0000ffff',
-  },
-  {
-    hsl: { h: 270, s: 100, l: 50 },
-    rgb: { r: 128, g: 0, b: 255 },
-    hex: '#8000ffff',
-  },
-  {
-    hsl: { h: 300, s: 100, l: 50 },
-    rgb: { r: 255, g: 0, b: 255 },
-    hex: '#ff00ffff',
-  },
-  {
-    hsl: { h: 330, s: 100, l: 50 },
-    rgb: { r: 255, g: 0, b: 128 },
-    hex: '#ff0080ff',
-  },
-];
+const { asMock, createMockProxy } = TestUtils;
 
 beforeEach(() => {
   document.body.removeAttribute('style');
@@ -105,32 +29,6 @@ beforeEach(() => {
   jest.clearAllMocks();
   jest.restoreAllMocks();
   expect.hasAssertions();
-
-  getBackgroundColor.mockName('getBackgroundColor');
-  setBackgroundColor.mockName('setBackgroundColor');
-});
-
-describe('asRgbOrRgbaString', () => {
-  beforeEach(() => {
-    jest
-      .spyOn(document, 'createElement')
-      .mockName('createElement')
-      .mockReturnValue(mockDivEl);
-  });
-
-  it('should return resolved backgroundColor value', () => {
-    getBackgroundColor.mockReturnValue('get backgroundColor');
-
-    const actual = asRgbOrRgbaString('red');
-    expect(actual).toEqual('get backgroundColor');
-  });
-
-  it('should return null if backgroundColor resolves to empty string', () => {
-    getBackgroundColor.mockReturnValue('');
-
-    const actual = asRgbOrRgbaString('red');
-    expect(actual).toBeNull();
-  });
 });
 
 describe('calculatePreloadStyleContent', () => {
@@ -152,15 +50,21 @@ describe('calculatePreloadStyleContent', () => {
 
 describe('getActiveThemes', () => {
   const mockTheme = {
+    default: {
+      name: 'Default Theme',
+      baseThemeKey: undefined,
+      themeKey: DEFAULT_DARK_THEME_KEY,
+      styleContent: '',
+    },
     base: {
       name: 'Base Theme',
       baseThemeKey: undefined,
-      themeKey: 'default-dark',
+      themeKey: 'default-light',
       styleContent: '',
     },
     custom: {
       name: 'Custom Theme',
-      baseThemeKey: 'default-dark',
+      baseThemeKey: 'default-light',
       themeKey: 'customTheme',
       styleContent: '',
     },
@@ -172,9 +76,14 @@ describe('getActiveThemes', () => {
   } satisfies Record<string, ThemeData>;
 
   const themeRegistration: ThemeRegistrationData = {
-    base: [mockTheme.base],
+    base: [mockTheme.default, mockTheme.base],
     custom: [mockTheme.custom],
   };
+
+  it('should use default dark theme if no base theme is matched', () => {
+    const actual = getActiveThemes('somekey', themeRegistration);
+    expect(actual).toEqual([mockTheme.default]);
+  });
 
   it.each([null, mockTheme.customInvalid])(
     'should throw if base theme not found',
@@ -259,67 +168,6 @@ describe('getThemePreloadData', () => {
   );
 });
 
-describe('normalizeCssColor', () => {
-  beforeEach(() => {
-    jest
-      .spyOn(document, 'createElement')
-      .mockName('createElement')
-      .mockReturnValue(mockDivEl);
-  });
-
-  it.each([
-    'rgb(0, 128, 255)',
-    'rgba(0, 128, 255, 64)',
-    'rgb(0 128 255)',
-    'rgba(0 128 255 64)',
-  ])(
-    'should normalize a resolved rgb/a color to 8 character hex value',
-    rgbOrRgbaColor => {
-      getBackgroundColor.mockReturnValue(rgbOrRgbaColor);
-
-      const actual = normalizeCssColor('some.color');
-      expect(actual).toEqual(rgbaToHex8(parseRgba(rgbOrRgbaColor)!));
-    }
-  );
-
-  it('should return original color if backgroundColor resolves to empty string', () => {
-    getBackgroundColor.mockReturnValue('');
-
-    const actual = normalizeCssColor('red');
-    expect(actual).toEqual('red');
-  });
-
-  it('should return original color if backgroundColor resolves to non rgb/a', () => {
-    getBackgroundColor.mockReturnValue('xxx');
-
-    const actual = normalizeCssColor('red');
-    expect(actual).toEqual('red');
-  });
-});
-
-describe('parseRgba', () => {
-  it.only.each([
-    ['rgb(255, 255, 255)', { r: 255, g: 255, b: 255, a: 1 }],
-    ['rgb(0,0,0)', { r: 0, g: 0, b: 0, a: 1 }],
-    ['rgb(255 255 255)', { r: 255, g: 255, b: 255, a: 1 }],
-    ['rgb(0 0 0)', { r: 0, g: 0, b: 0, a: 1 }],
-    ['rgb(0 128 255)', { r: 0, g: 128, b: 255, a: 1 }],
-    ['rgb(0 128 255 / .5)', { r: 0, g: 128, b: 255, a: 0.5 }],
-  ])('should parse rgb: %s, %s', (rgb, hex) => {
-    expect(parseRgba(rgb)).toEqual(hex);
-  });
-
-  it.each([
-    ['rgba(255, 255, 255, 1)', { r: 255, g: 255, b: 255, a: 1 }],
-    ['rgba(0,0,0,0)', { r: 0, g: 0, b: 0, a: 0 }],
-    ['rgba(255 255 255 1)', { r: 255, g: 255, b: 255, a: 1 }],
-    ['rgba(0 0 0 0)', { r: 0, g: 0, b: 0, a: 0 }],
-    ['rgba(0 128 255 .5)', { r: 0, g: 128, b: 255, a: 0.5 }],
-  ])('should parse rgba: %s, %s', (rgba, hex) => {
-    expect(parseRgba(rgba)).toEqual(hex);
-  });
-});
-
 describe('preloadTheme', () => {
   it.each([
     null,
@@ -346,11 +194,83 @@ describe('preloadTheme', () => {
   });
 });
 
-describe('rgbaToHex8', () => {
-  it.each(colorMap)('should convert rgb to hex: %s, %s', ({ rgb, hex }) => {
-    expect(rgbaToHex8(rgb)).toEqual(hex);
-  });
-});
+describe.each([undefined, document.createElement('div')])(
+  'replaceCssVariablesWithResolvedValues',
+  targetElement => {
+    const mockShortId = 'mockShortId';
+    const computedStyle = createMockProxy<CSSStyleDeclaration>();
+    const expectedEl = targetElement ?? document.body;
+
+    beforeEach(() => {
+      asMock(shortid).mockName('shortid').mockReturnValue(mockShortId);
+      asMock(computedStyle.getPropertyValue)
+        .mockName('getPropertyValue')
+        .mockImplementation(key => `resolved-${key}`);
+
+      jest.spyOn(expectedEl.style, 'setProperty').mockName('setProperty');
+      jest.spyOn(expectedEl.style, 'removeProperty').mockName('removeProperty');
+
+      jest
+        .spyOn(ColorUtils, 'normalizeCssColor')
+        .mockName('normalizeCssColor')
+        .mockImplementation(key => `normalized-${key}`);
+      jest
+        .spyOn(window, 'getComputedStyle')
+        .mockName('getComputedStyle')
+        .mockReturnValue(computedStyle);
+    });
+
+    it('should map non-css variable values verbatim', () => {
+      const given = {
+        aaa: 'aaa',
+        bbb: 'bbb',
+      };
+
+      const actual = replaceCssVariablesWithResolvedValues(
+        given,
+        targetElement
+      );
+
+      expect(computedStyle.getPropertyValue).not.toHaveBeenCalled();
+      expect(ColorUtils.normalizeCssColor).not.toHaveBeenCalled();
+      expect(actual).toEqual(given);
+    });
+
+    it('should replace css variables with resolved values', () => {
+      const given = {
+        aaa: 'var(--aaa)',
+        bbb: 'var(--bbb1) var(--bbb2)',
+      };
+
+      const expected = {
+        aaa: 'normalized-resolved---mockShortId-aaa',
+        bbb: 'normalized-resolved---mockShortId-bbb',
+      };
+
+      const actual = replaceCssVariablesWithResolvedValues(
+        given,
+        targetElement
+      );
+
+      Object.keys(given).forEach(key => {
+        const tmpKey = `--${mockShortId}-${key}`;
+
+        expect(expectedEl.style.setProperty).toHaveBeenCalledWith(
+          tmpKey,
+          given[key]
+        );
+
+        expect(computedStyle.getPropertyValue).toHaveBeenCalledWith(tmpKey);
+        expect(expectedEl.style.removeProperty).toHaveBeenCalledWith(tmpKey);
+        expect(ColorUtils.normalizeCssColor).toHaveBeenCalledWith(
+          `resolved-${tmpKey}`
+        );
+      });
+
+      expect(actual).toEqual(expected);
+    });
+  }
+);
 
 describe('setThemePreloadData', () => {
   it('should set the theme preload data', () => {
