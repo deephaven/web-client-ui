@@ -216,14 +216,14 @@ export function replaceCssVariablesWithResolvedValues<
       return;
     }
 
+    // Create a temporary css variable to resolve the value
     const tmpPropKey = `--${prefix}-${key}`;
     el.style.setProperty(tmpPropKey, value);
-
     const resolved = computedStyle.getPropertyValue(tmpPropKey);
+    el.style.removeProperty(tmpPropKey);
+
     const normalized = normalizeCssColor(resolved);
     log.debug('Replaced css variables:', value, normalized);
-
-    el.style.removeProperty(tmpPropKey);
 
     result[key as keyof T] = normalized as T[keyof T];
   });
