@@ -63,7 +63,7 @@ body:not(.lm_dragging) .lm_header .lm_tab .lm_close_tab:hover {
 
 // Entire GoldenLayout Container, if a background is set, it is visible as color of "pane header" and "splitters" (if these latest has opacity very low)
 .lm_goldenlayout {
-  background: $background;
+  background: var(--dh-background-color, $background);
   position: absolute;
 }
 

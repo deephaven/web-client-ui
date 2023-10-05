@@ -1,0 +1,107 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ThemeProvider setSelectedThemeKey: [ [Object] ] should change selected theme: default-light 1`] = `
+<body>
+  <div>
+    <style
+      data-theme-key="default-light"
+    >
+      test-file-stub
+    </style>
+    <div>
+      Child
+    </div>
+  </div>
+</body>
+`;
+
+exports[`ThemeProvider setSelectedThemeKey: [ [Object] ] should change selected theme: themeA 1`] = `
+<body>
+  <div>
+    <style
+      data-theme-key="default-dark"
+    >
+      test-file-stub
+    </style>
+    <style
+      data-theme-key="themeA"
+    />
+    <div>
+      Child
+    </div>
+  </div>
+</body>
+`;
+
+exports[`ThemeProvider setSelectedThemeKey: null should change selected theme: default-light 1`] = `
+<body>
+  <div>
+    <div>
+      Child
+    </div>
+  </div>
+</body>
+`;
+
+exports[`ThemeProvider setSelectedThemeKey: null should change selected theme: themeA 1`] = `
+<body>
+  <div>
+    <div>
+      Child
+    </div>
+  </div>
+</body>
+`;
+
+exports[`ThemeProvider should load themes based on preload data or default: [ [Object] ], { themeKey: 'themeA' } 1`] = `
+<body>
+  <div>
+    <style
+      data-theme-key="default-dark"
+    >
+      test-file-stub
+    </style>
+    <style
+      data-theme-key="themeA"
+    />
+    <div>
+      Child
+    </div>
+  </div>
+</body>
+`;
+
+exports[`ThemeProvider should load themes based on preload data or default: [ [Object] ], null 1`] = `
+<body>
+  <div>
+    <style
+      data-theme-key="default-dark"
+    >
+      test-file-stub
+    </style>
+    <div>
+      Child
+    </div>
+  </div>
+</body>
+`;
+
+exports[`ThemeProvider should load themes based on preload data or default: null, { themeKey: 'themeA' } 1`] = `
+<body>
+  <div>
+    <div>
+      Child
+    </div>
+  </div>
+</body>
+`;
+
+exports[`ThemeProvider should load themes based on preload data or default: null, null 1`] = `
+<body>
+  <div>
+    <div>
+      Child
+    </div>
+  </div>
+</body>
+`;

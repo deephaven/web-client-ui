@@ -1,3 +1,4 @@
+import { getThemeKey, ThemeData } from '@deephaven/components';
 import Log from '@deephaven/log';
 import {
   type PluginModule,
@@ -10,6 +11,8 @@ import {
   PluginType,
   isLegacyAuthPlugin,
   isLegacyPlugin,
+  isThemePlugin,
+  ThemePlugin,
 } from '@deephaven/plugin';
 import loadRemoteModule from './loadRemoteModule';
 
@@ -77,6 +80,7 @@ export async function loadModulePlugins(
       const pluginMainUrl = `${modulePluginsUrl}/${name}/${main}`;
       pluginPromises.push(loadModulePlugin(pluginMainUrl));
     }
+
     const pluginModules = await Promise.allSettled(pluginPromises);
 
     const pluginMap: PluginModuleMap = new Map();
@@ -84,12 +88,21 @@ export async function loadModulePlugins(
       const module = pluginModules[i];
       const { name } = manifest.plugins[i];
       if (module.status === 'fulfilled') {
-        pluginMap.set(
-          name,
-          isLegacyPlugin(module.value) ? module.value : module.value.default
-        );
+        const moduleValue = isLegacyPlugin(module.value)
+          ? module.value
+          : // TypeScript builds CJS default exports differently depending on
+            // whether there are also named exports. If the default is the only
+            // export, it will be the value. If there are also named exports,
+            // it will be assigned to the `default` property on the value.
+            module.value.default ?? module.value;
+
+        if (moduleValue == null) {
+          log.error(`Plugin '${name}' is missing an exported value.`);
+        } else {
+          pluginMap.set(name, moduleValue);
+        }
       } else {
-        log.error(`Unable to load plugin ${name}`, module.reason);
+        log.error(`Unable to load plugin '${name}'`, module.reason);
       }
     }
     log.info('Plugins loaded:', pluginMap);
@@ -160,4 +173,38 @@ export function getAuthPluginComponent(
   log.info('Using LoginPlugin', name);
 
   return component;
+}
+
+/**
+ * Extract theme data from theme plugins in the given plugin map.
+ * @param pluginMap
+ */
+export function getThemeDataFromPlugins(
+  pluginMap: PluginModuleMap
+): ThemeData[] {
+  const themePluginEntries = [...pluginMap.entries()].filter(
+    (entry): entry is [string, ThemePlugin] => isThemePlugin(entry[1])
+  );
+
+  log.debug('Getting theme data from plugins', themePluginEntries);
+
+  return themePluginEntries
+    .map(([pluginName, plugin]) => {
+      // Normalize to an array since config can be an array of configs or a
+      // single config
+      const configs = Array.isArray(plugin.themes)
+        ? plugin.themes
+        : [plugin.themes];
+
+      return configs.map(
+        ({ name, baseTheme, styleContent }) =>
+          ({
+            baseThemeKey: `default-${baseTheme ?? 'dark'}`,
+            themeKey: getThemeKey(pluginName, name),
+            name,
+            styleContent,
+          }) as const
+      );
+    })
+    .flat();
 }

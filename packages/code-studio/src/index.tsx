@@ -1,11 +1,13 @@
 import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom';
 import '@deephaven/components/scss/BaseStyleSheet.scss';
-import { LoadingOverlay } from '@deephaven/components';
+import { LoadingOverlay, preloadTheme } from '@deephaven/components';
 import { ApiBootstrap } from '@deephaven/jsapi-bootstrap';
 import logInit from './log/LogInit';
 
 logInit();
+
+preloadTheme();
 
 // Lazy load components for code splitting and also to avoid importing the jsapi-shim before API is bootstrapped.
 // eslint-disable-next-line react-refresh/only-export-components

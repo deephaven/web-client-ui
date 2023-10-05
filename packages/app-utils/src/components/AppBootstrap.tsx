@@ -14,6 +14,7 @@ import { getConnectOptions } from '../utils';
 import FontsLoaded from './FontsLoaded';
 import UserBootstrap from './UserBootstrap';
 import ServerConfigBootstrap from './ServerConfigBootstrap';
+import ThemeBootstrap from './ThemeBootstrap';
 
 export type AppBootstrapProps = {
   /** URL of the server. */
@@ -57,23 +58,25 @@ export function AppBootstrap({
   return (
     <FontBootstrap fontClassNames={fontClassNames}>
       <PluginsBootstrap getCorePlugins={getCorePlugins} pluginsUrl={pluginsUrl}>
-        <ClientBootstrap
-          serverUrl={serverUrl}
-          options={clientOptions}
-          key={logoutCount}
-        >
-          <RefreshTokenBootstrap>
-            <AuthBootstrap>
-              <ServerConfigBootstrap>
-                <UserBootstrap>
-                  <ConnectionBootstrap>
-                    <FontsLoaded>{children}</FontsLoaded>
-                  </ConnectionBootstrap>
-                </UserBootstrap>
-              </ServerConfigBootstrap>
-            </AuthBootstrap>
-          </RefreshTokenBootstrap>
-        </ClientBootstrap>
+        <ThemeBootstrap>
+          <ClientBootstrap
+            serverUrl={serverUrl}
+            options={clientOptions}
+            key={logoutCount}
+          >
+            <RefreshTokenBootstrap>
+              <AuthBootstrap>
+                <ServerConfigBootstrap>
+                  <UserBootstrap>
+                    <ConnectionBootstrap>
+                      <FontsLoaded>{children}</FontsLoaded>
+                    </ConnectionBootstrap>
+                  </UserBootstrap>
+                </ServerConfigBootstrap>
+              </AuthBootstrap>
+            </RefreshTokenBootstrap>
+          </ClientBootstrap>
+        </ThemeBootstrap>
       </PluginsBootstrap>
     </FontBootstrap>
   );

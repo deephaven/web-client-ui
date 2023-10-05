@@ -1,9 +1,11 @@
+import type { BaseThemeType } from '@deephaven/components';
 import type { TablePluginComponent } from './TablePlugin';
 
 export const PluginType = Object.freeze({
   AUTH_PLUGIN: 'AuthPlugin',
   DASHBOARD_PLUGIN: 'DashboardPlugin',
   TABLE_PLUGIN: 'TablePlugin',
+  THEME_PLUGIN: 'ThemePlugin',
 });
 
 /**
@@ -128,4 +130,20 @@ export interface AuthPlugin extends Plugin {
 
 export function isAuthPlugin(plugin: PluginModule): plugin is AuthPlugin {
   return 'type' in plugin && plugin.type === PluginType.AUTH_PLUGIN;
+}
+
+export interface ThemeConfig {
+  name: string;
+  baseTheme?: BaseThemeType;
+  styleContent: string;
+}
+
+export interface ThemePlugin extends Plugin {
+  type: typeof PluginType.THEME_PLUGIN;
+  themes: ThemeConfig | ThemeConfig[];
+}
+
+/** Type guard to check if given plugin is a `ThemePlugin` */
+export function isThemePlugin(plugin: PluginModule): plugin is ThemePlugin {
+  return 'type' in plugin && plugin.type === PluginType.THEME_PLUGIN;
 }

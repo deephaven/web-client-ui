@@ -4,9 +4,11 @@ import ReactDOM from 'react-dom';
 // Need to import the base style sheet for proper styling
 // eslint-disable-next-line import/no-unresolved
 import '@deephaven/components/scss/BaseStyleSheet.scss';
-import { LoadingOverlay } from '@deephaven/components';
+import { LoadingOverlay, preloadTheme } from '@deephaven/components';
 import { ApiBootstrap } from '@deephaven/jsapi-bootstrap';
 import './index.scss';
+
+preloadTheme();
 
 // Lazy load components for code splitting and also to avoid importing the jsapi-shim before API is bootstrapped.
 // eslint-disable-next-line react-refresh/only-export-components
