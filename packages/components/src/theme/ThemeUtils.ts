@@ -226,16 +226,6 @@ export function replaceCssVariablesWithResolvedValues<
     el.style.removeProperty(tmpPropKey);
 
     result[key as keyof T] = normalized as T[keyof T];
-
-    // result[key as keyof T] = value.replaceAll(
-    //   /var\((--[^,)]+)\)/g,
-    //   (_, variable) => {
-    //     const resolved = computedStyle.getPropertyValue(variable);
-    //     const normalized = normalizeCssColor(resolved);
-    //     log.debug('Resolved css variable:', variable, resolved, normalized);
-    //     return normalized;
-    //   }
-    // ) as T[keyof T];
   });
 
   return result;
