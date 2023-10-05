@@ -1,3 +1,4 @@
+import { TestUtils } from '@deephaven/utils';
 import {
   DEFAULT_PRELOAD_DATA_VARIABLES,
   ThemeData,
@@ -5,14 +6,97 @@ import {
   THEME_CACHE_LOCAL_STORAGE_KEY,
 } from './ThemeModel';
 import {
+  asRgbOrRgbaString,
   calculatePreloadStyleContent,
   getActiveThemes,
   getDefaultBaseThemes,
   getThemeKey,
   getThemePreloadData,
+  normalizeCssColor,
+  parseRgba,
   preloadTheme,
+  rgbaToHex8,
   setThemePreloadData,
 } from './ThemeUtils';
+
+const { createMockProxy } = TestUtils;
+
+const getBackgroundColor = jest.fn();
+const setBackgroundColor = jest.fn();
+
+const mockDivEl = createMockProxy<HTMLDivElement>({
+  style: {
+    get backgroundColor(): string {
+      return getBackgroundColor();
+    },
+    set backgroundColor(value: string) {
+      setBackgroundColor(value);
+    },
+  } as HTMLDivElement['style'],
+});
+
+const colorMap = [
+  {
+    hsl: { h: 0, s: 100, l: 50 },
+    rgb: { r: 255, g: 0, b: 0 },
+    hex: '#ff0000ff',
+  },
+  {
+    hsl: { h: 30, s: 100, l: 50 },
+    rgb: { r: 255, g: 128, b: 0 },
+    hex: '#ff8000ff',
+  },
+  {
+    hsl: { h: 60, s: 100, l: 50 },
+    rgb: { r: 255, g: 255, b: 0 },
+    hex: '#ffff00ff',
+  },
+  {
+    hsl: { h: 90, s: 100, l: 50 },
+    rgb: { r: 128, g: 255, b: 0 },
+    hex: '#80ff00ff',
+  },
+  {
+    hsl: { h: 120, s: 100, l: 50 },
+    rgb: { r: 0, g: 255, b: 0 },
+    hex: '#00ff00ff',
+  },
+  {
+    hsl: { h: 150, s: 100, l: 50 },
+    rgb: { r: 0, g: 255, b: 128 },
+    hex: '#00ff80ff',
+  },
+  {
+    hsl: { h: 180, s: 100, l: 50 },
+    rgb: { r: 0, g: 255, b: 255 },
+    hex: '#00ffffff',
+  },
+  {
+    hsl: { h: 210, s: 100, l: 50 },
+    rgb: { r: 0, g: 128, b: 255 },
+    hex: '#0080ffff',
+  },
+  {
+    hsl: { h: 240, s: 100, l: 50 },
+    rgb: { r: 0, g: 0, b: 255 },
+    hex: '#0000ffff',
+  },
+  {
+    hsl: { h: 270, s: 100, l: 50 },
+    rgb: { r: 128, g: 0, b: 255 },
+    hex: '#8000ffff',
+  },
+  {
+    hsl: { h: 300, s: 100, l: 50 },
+    rgb: { r: 255, g: 0, b: 255 },
+    hex: '#ff00ffff',
+  },
+  {
+    hsl: { h: 330, s: 100, l: 50 },
+    rgb: { r: 255, g: 0, b: 128 },
+    hex: '#ff0080ff',
+  },
+];
 
 beforeEach(() => {
   document.body.removeAttribute('style');
@@ -21,21 +105,47 @@ beforeEach(() => {
   jest.clearAllMocks();
   jest.restoreAllMocks();
   expect.hasAssertions();
+
+  getBackgroundColor.mockName('getBackgroundColor');
+  setBackgroundColor.mockName('setBackgroundColor');
+});
+
+describe('asRgbOrRgbaString', () => {
+  beforeEach(() => {
+    jest
+      .spyOn(document, 'createElement')
+      .mockName('createElement')
+      .mockReturnValue(mockDivEl);
+  });
+
+  it('should return resolved backgroundColor value', () => {
+    getBackgroundColor.mockReturnValue('get backgroundColor');
+
+    const actual = asRgbOrRgbaString('red');
+    expect(actual).toEqual('get backgroundColor');
+  });
+
+  it('should return null if backgroundColor resolves to empty string', () => {
+    getBackgroundColor.mockReturnValue('');
+
+    const actual = asRgbOrRgbaString('red');
+    expect(actual).toBeNull();
+  });
 });
 
 describe('calculatePreloadStyleContent', () => {
   it('should set defaults if css variables are not defined', () => {
     expect(calculatePreloadStyleContent()).toEqual(
-      `:root{--dh-accent-color:${DEFAULT_PRELOAD_DATA_VARIABLES['--dh-accent-color']};--dh-background-color:${DEFAULT_PRELOAD_DATA_VARIABLES['--dh-background-color']}}`
+      `:root{--dh-color-accent:${DEFAULT_PRELOAD_DATA_VARIABLES['--dh-color-accent']};--dh-color-background:${DEFAULT_PRELOAD_DATA_VARIABLES['--dh-color-background']}}`
     );
   });
 
   it('should resolve css variables', () => {
-    document.body.style.setProperty('--dh-accent-color', 'pink');
-    document.body.style.setProperty('--dh-background-color', 'orange');
+    document.body.style.setProperty('--dh-color-accent', 'pink');
+    document.body.style.setProperty('--dh-color-background', 'orange');
 
     expect(calculatePreloadStyleContent()).toEqual(
-      ':root{--dh-accent-color:pink;--dh-background-color:orange}'
+      ':root{--dh-color-accent:pink;--dh-color-background:orange}'
     );
   });
 });
@@ -99,7 +209,7 @@ describe('getDefaultBaseThemes', () => {
       {
         name: 'Default Dark',
         themeKey: 'default-dark',
-        styleContent: 'test-file-stub',
+        styleContent: 'test-file-stub\ntest-file-stub',
       },
       {
         name: 'Default Light',
@@ -149,6 +259,67 @@ describe('getThemePreloadData', () => {
   );
 });
 
+describe('normalizeCssColor', () => {
+  beforeEach(() => {
+    jest
+      .spyOn(document, 'createElement')
+      .mockName('createElement')
+      .mockReturnValue(mockDivEl);
+  });
+
+  it.each([
+    'rgb(0, 128, 255)',
+    'rgba(0, 128, 255, 64)',
+    'rgb(0 128 255)',
+    'rgba(0 128 255 64)',
+  ])(
+    'should normalize a resolved rgb/a color to 8 character hex value',
+    rgbOrRgbaColor => {
+      getBackgroundColor.mockReturnValue(rgbOrRgbaColor);
+
+      const actual = normalizeCssColor('some.color');
+      expect(actual).toEqual(rgbaToHex8(parseRgba(rgbOrRgbaColor)!));
+    }
+  );
+
+  it('should return original color if backgroundColor resolves to empty string', () => {
+    getBackgroundColor.mockReturnValue('');
+
+    const actual = normalizeCssColor('red');
+    expect(actual).toEqual('red');
+  });
+
+  it('should return original color if backgroundColor resolves to non rgb/a', () => {
+    getBackgroundColor.mockReturnValue('xxx');
+
+    const actual = normalizeCssColor('red');
+    expect(actual).toEqual('red');
+  });
+});
+
+describe('parseRgba', () => {
+  it.only.each([
+    ['rgb(255, 255, 255)', { r: 255, g: 255, b: 255, a: 1 }],
+    ['rgb(0,0,0)', { r: 0, g: 0, b: 0, a: 1 }],
+    ['rgb(255 255 255)', { r: 255, g: 255, b: 255, a: 1 }],
+    ['rgb(0 0 0)', { r: 0, g: 0, b: 0, a: 1 }],
+    ['rgb(0 128 255)', { r: 0, g: 128, b: 255, a: 1 }],
+    ['rgb(0 128 255 / .5)', { r: 0, g: 128, b: 255, a: 0.5 }],
+  ])('should parse rgb: %s, %s', (rgb, hex) => {
+    expect(parseRgba(rgb)).toEqual(hex);
+  });
+
+  it.each([
+    ['rgba(255, 255, 255, 1)', { r: 255, g: 255, b: 255, a: 1 }],
+    ['rgba(0,0,0,0)', { r: 0, g: 0, b: 0, a: 0 }],
+    ['rgba(255 255 255 1)', { r: 255, g: 255, b: 255, a: 1 }],
+    ['rgba(0 0 0 0)', { r: 0, g: 0, b: 0, a: 0 }],
+    ['rgba(0 128 255 .5)', { r: 0, g: 128, b: 255, a: 0.5 }],
+  ])('should parse rgba: %s, %s', (rgba, hex) => {
+    expect(parseRgba(rgba)).toEqual(hex);
+  });
+});
+
 describe('preloadTheme', () => {
   it.each([
     null,
@@ -172,6 +343,12 @@ describe('preloadTheme', () => {
     expect(styleEl?.innerHTML).toEqual(
       preloadData?.preloadStyleContent ?? calculatePreloadStyleContent()
     );
+  });
+});
+
+describe('rgbaToHex8', () => {
+  it.each(colorMap)('should convert rgb to hex: %s, %s', ({ rgb, hex }) => {
+    expect(rgbaToHex8(rgb)).toEqual(hex);
   });
 });
 
