@@ -49,7 +49,8 @@ class MonacoUtils {
     const { registerLanguages, removeHashtag } = MonacoUtils;
 
     const MonacoTheme = replaceCssVariablesWithResolvedValues(MonacoThemeRaw);
-    log.debug('MonacoTheme: ', MonacoTheme);
+    log.debug2('Monaco theme:', MonacoThemeRaw);
+    log.debug2('Monaco theme derived:', MonacoTheme);
 
     const dhDarkRules = [
       { token: '', foreground: removeHashtag(MonacoTheme.foreground) },
@@ -160,7 +161,7 @@ class MonacoUtils {
       rules: dhDarkRules,
       colors: dhDarkColors,
     });
-    log.debug2('monaco theme: ', MonacoTheme);
+
     monaco.editor.setTheme('dh-dark');
 
     registerLanguages([DbLang, PyLang, GroovyLang, LogLang, ScalaLang]);
