@@ -668,12 +668,27 @@ class IrisGridTableModelTemplate<
     markerColor = markerColor ?? theme.markerBarColor;
 
     opacity = valuePlacement.toLowerCase() === 'overlap' ? 0.5 : opacity;
+    // let calculatedMax;
+    // let calculatedMin = 0;
+
+    // if (this.totalsDataMap !== undefined && this.totalsDataMap !== null) {
+    //   const range = this.totalsDataMap;
+    //   if (this.totalsDataMap.get("Max") !== undefined && this.totalsDataMap?.get("Min") !== undefined) {
+    //     calculatedMax = range?.get('Max');
+    //   }
+
+    const calculatedMax =
+      this.totalsDataMap?.get('Max')?.data?.get(column)?.value.asNumber() ?? 0;
+    const calculatedMin =
+      this.totalsDataMap?.get('Min')?.data?.get(column)?.value.asNumber() ?? 0;
 
     const databarOptions = {
       axis: axis.toLowerCase() as AxisOption,
       direction: direction.toUpperCase() as DirectionOption,
-      columnMax: max ?? this.dataBarRangeMap?.get('Max'),
-      columnMin: min ?? this.dataBarRangeMap?.get('Min'),
+      // columnMax: max ?? this.dataBarRangeMap?.get('Max'),
+      // columnMin: min ?? this.dataBarRangeMap?.get('Min'),
+      columnMax: max ?? calculatedMax,
+      columnMin: min ?? calculatedMin,
       opacity,
       color: databarColor,
       valuePlacement: valuePlacement.toLowerCase() as ValuePlacementOption,
