@@ -8,6 +8,7 @@ import {
 } from './ThemeModel';
 import {
   calculatePreloadStyleContent,
+  extractDistinctCssVariableExpressions,
   getActiveThemes,
   getCssVariableRanges,
   getDefaultBaseThemes,
@@ -46,6 +47,30 @@ describe('calculatePreloadStyleContent', () => {
 
     expect(calculatePreloadStyleContent()).toEqual(
       ':root{--dh-color-accent:pink;--dh-color-background:orange}'
+    );
+  });
+});
+
+describe('extractDistinctCssVariableExpressions', () => {
+  it('should extract distinct css variable expressions', () => {
+    const given = {
+      aaa: 'var(--aaa-aa)',
+      bbb: 'var(--bbb-bb)',
+      ccc: 'var(--ccc-cc)',
+      ddd: 'var(--aaa-aa)',
+      eee: 'var(--bbb-bb)',
+      fff: 'xxx',
+      ggg: 'xxx var(--gg-ggg) yyy',
+    };
+
+    const actual = extractDistinctCssVariableExpressions(given);
+    expect(actual).toEqual(
+      new Set([
+        'var(--aaa-aa)',
+        'var(--bbb-bb)',
+        'var(--ccc-cc)',
+        'var(--gg-ggg)',
+      ])
     );
   });
 });
