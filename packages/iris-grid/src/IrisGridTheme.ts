@@ -1,4 +1,4 @@
-import { replaceCssVariablesWithResolvedValues } from '@deephaven/components';
+import { resolveCssVariablesInRecord } from '@deephaven/components';
 import type { GridThemeType } from '@deephaven/grid';
 import Log from '@deephaven/log';
 import { GridColor, NullableGridColor } from '@deephaven/grid/src/GridTheme';
@@ -44,7 +44,7 @@ export type IrisGridThemeType = GridThemeType & {
 };
 
 export function createDefaultIrisGridTheme(): Partial<IrisGridThemeType> {
-  const IrisGridTheme = replaceCssVariablesWithResolvedValues(IrisGridThemeRaw);
+  const IrisGridTheme = resolveCssVariablesInRecord(IrisGridThemeRaw);
   log.debug2('Iris grid theme:', IrisGridThemeRaw);
   log.debug2('Iris grid theme derived:', IrisGridTheme);
 
