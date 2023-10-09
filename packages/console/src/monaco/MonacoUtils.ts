@@ -3,10 +3,7 @@ import shortid from 'shortid';
 /**
  * Exports a function for initializing monaco with the deephaven theme/config
  */
-import {
-  replaceCssVariablesWithResolvedValues,
-  Shortcut,
-} from '@deephaven/components';
+import { resolveCssVariablesInRecord, Shortcut } from '@deephaven/components';
 import type { IdeSession } from '@deephaven/jsapi-types';
 import { assertNotNull } from '@deephaven/utils';
 import { find as linkifyFind } from 'linkifyjs';
@@ -48,7 +45,7 @@ class MonacoUtils {
 
     const { registerLanguages, removeHashtag } = MonacoUtils;
 
-    const MonacoTheme = replaceCssVariablesWithResolvedValues(MonacoThemeRaw);
+    const MonacoTheme = resolveCssVariablesInRecord(MonacoThemeRaw);
     log.debug2('Monaco theme:', MonacoThemeRaw);
     log.debug2('Monaco theme derived:', MonacoTheme);
 

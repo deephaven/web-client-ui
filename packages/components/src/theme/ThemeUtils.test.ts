@@ -1,5 +1,4 @@
 import { ColorUtils, TestUtils } from '@deephaven/utils';
-import shortid from 'shortid';
 import {
   DEFAULT_DARK_THEME_KEY,
   DEFAULT_PRELOAD_DATA_VARIABLES,
@@ -10,12 +9,15 @@ import {
 import {
   calculatePreloadStyleContent,
   getActiveThemes,
+  getCssVariableRanges,
   getDefaultBaseThemes,
   getThemeKey,
   getThemePreloadData,
   preloadTheme,
-  replaceCssVariablesWithResolvedValues,
+  resolveCssVariablesInRecord,
+  resolveCssVariablesInString,
   setThemePreloadData,
+  TMP_CSS_PROP_PREFIX,
 } from './ThemeUtils';
 
 jest.mock('shortid');
@@ -111,6 +113,52 @@ describe('getActiveThemes', () => {
   });
 });
 
+describe('getCssVariableRanges', () => {
+  const t = [
+    ['Single var', 'var(--aaa-aa)', [[0, 12]]],
+    [
+      'Multiple vars',
+      'var(--aaa-aa) var(--bbb-bb)',
+      [
+        [0, 12],
+        [14, 26],
+      ],
+    ],
+    [
+      'Nested vars - level 2',
+      'var(--ccc-cc, var(--aaa-aa, green)) var(--bbb-bb)',
+      [
+        [0, 34],
+        [36, 48],
+      ],
+    ],
+    ['Nested vars - level 3', 'var(--a, var(--b, var(--c, red)))', [[0, 32]]],
+    [
+      'Nested vars - level 4',
+      'var(--a, var(--b, var(--c, var(--d, red)))) var(--e, var(--f, var(--g, var(--h, red))))',
+      [
+        [0, 42],
+        [44, 86],
+      ],
+    ],
+    ['Nested calc - level 3', 'var(--a, calc(calc(1px + 2px)))', [[0, 30]]],
+    [
+      'Nested calc - level 4',
+      'var(--a, calc(calc(calc(1px + 2px) + 3px)))',
+      [[0, 42]],
+    ],
+    ['Unbalanced', 'var(--a', []],
+  ] as const;
+
+  it.each(t)(
+    'should return the css variable ranges - %s: %s, %s',
+    (_label, given, expected) => {
+      const actual = getCssVariableRanges(given);
+      expect(actual).toEqual(expected);
+    }
+  );
+});
+
 describe('getDefaultBaseThemes', () => {
   it('should return default base themes', () => {
     const actual = getDefaultBaseThemes();
@@ -195,25 +243,32 @@ describe('preloadTheme', () => {
 });
 
 describe.each([undefined, document.createElement('div')])(
-  'replaceCssVariablesWithResolvedValues',
+  'resolveCssVariablesInRecord',
   targetElement => {
-    const mockShortId = 'mockShortId';
     const computedStyle = createMockProxy<CSSStyleDeclaration>();
-    const expectedEl = targetElement ?? document.body;
+    const expectedTargetEl = targetElement ?? document.body;
+    const tmpPropEl = document.createElement('div');
 
     beforeEach(() => {
-      asMock(shortid).mockName('shortid').mockReturnValue(mockShortId);
       asMock(computedStyle.getPropertyValue)
         .mockName('getPropertyValue')
-        .mockImplementation(key => `resolved-${key}`);
+        .mockImplementation(key => `resolved:${key}`);
 
-      jest.spyOn(expectedEl.style, 'setProperty').mockName('setProperty');
-      jest.spyOn(expectedEl.style, 'removeProperty').mockName('removeProperty');
+      jest.spyOn(expectedTargetEl, 'appendChild').mockName('appendChild');
+
+      jest
+        .spyOn(document, 'createElement')
+        .mockName('createElement')
+        .mockReturnValue(tmpPropEl);
+
+      jest.spyOn(tmpPropEl.style, 'setProperty').mockName('setProperty');
+      jest.spyOn(tmpPropEl.style, 'removeProperty').mockName('removeProperty');
+      jest.spyOn(tmpPropEl, 'remove').mockName('remove');
 
       jest
         .spyOn(ColorUtils, 'normalizeCssColor')
         .mockName('normalizeCssColor')
-        .mockImplementation(key => `normalized-${key}`);
+        .mockImplementation(key => `normalized:${key}`);
       jest
         .spyOn(window, 'getComputedStyle')
         .mockName('getComputedStyle')
@@ -226,10 +281,7 @@ describe.each([undefined, document.createElement('div')])(
         bbb: 'bbb',
       };
 
-      const actual = replaceCssVariablesWithResolvedValues(
-        given,
-        targetElement
-      );
+      const actual = resolveCssVariablesInRecord(given, targetElement);
 
       expect(computedStyle.getPropertyValue).not.toHaveBeenCalled();
       expect(ColorUtils.normalizeCssColor).not.toHaveBeenCalled();
@@ -243,34 +295,98 @@ describe.each([undefined, document.createElement('div')])(
       };
 
       const expected = {
-        aaa: 'normalized-resolved---mockShortId-aaa',
-        bbb: 'normalized-resolved---mockShortId-bbb',
+        aaa: 'normalized:resolved:--dh-tmp-0',
+        bbb: 'normalized:resolved:--dh-tmp-1 normalized:resolved:--dh-tmp-2',
       };
 
-      const actual = replaceCssVariablesWithResolvedValues(
-        given,
-        targetElement
-      );
+      const actual = resolveCssVariablesInRecord(given, targetElement);
+
+      expect(expectedTargetEl.appendChild).toHaveBeenCalledWith(tmpPropEl);
+      expect(tmpPropEl.remove).toHaveBeenCalled();
+      expect(actual).toEqual(expected);
+
+      let i = 0;
 
       Object.keys(given).forEach(key => {
-        const tmpKey = `--${mockShortId}-${key}`;
+        const varExpressions = given[key].split(' ');
+        varExpressions.forEach(value => {
+          const tmpPropKey = `--${TMP_CSS_PROP_PREFIX}-${i}`;
+          i += 1;
 
-        expect(expectedEl.style.setProperty).toHaveBeenCalledWith(
-          tmpKey,
-          given[key]
-        );
-
-        expect(computedStyle.getPropertyValue).toHaveBeenCalledWith(tmpKey);
-        expect(expectedEl.style.removeProperty).toHaveBeenCalledWith(tmpKey);
-        expect(ColorUtils.normalizeCssColor).toHaveBeenCalledWith(
-          `resolved-${tmpKey}`
-        );
+          expect(tmpPropEl.style.setProperty).toHaveBeenCalledWith(
+            tmpPropKey,
+            value
+          );
+          expect(computedStyle.getPropertyValue).toHaveBeenCalledWith(
+            tmpPropKey
+          );
+          expect(ColorUtils.normalizeCssColor).toHaveBeenCalledWith(
+            `resolved:${tmpPropKey}`
+          );
+        });
       });
-
-      expect(actual).toEqual(expected);
     });
   }
 );
+
+describe('resolveCssVariablesInString', () => {
+  const mockResolver = jest.fn();
+
+  beforeEach(() => {
+    mockResolver
+      .mockName('mockResolver')
+      .mockImplementation(varExpression => `R[${varExpression}]`);
+  });
+
+  it.each([
+    ['No vars', 'red', 'red'],
+    ['Single var', 'var(--aaa-aa)', 'R[var(--aaa-aa)]'],
+    [
+      'Multiple vars',
+      'var(--aaa-aa) var(--bbb-bb)',
+      'R[var(--aaa-aa)] R[var(--bbb-bb)]',
+    ],
+    [
+      'Nested vars - level 2',
+      'var(--ccc-cc, var(--aaa-aa, green)) var(--bbb-bb)',
+      'R[var(--ccc-cc, var(--aaa-aa, green))] R[var(--bbb-bb)]',
+    ],
+    [
+      'Nested vars - level 3',
+      'var(--a, var(--b, var(--c, red)))',
+      'R[var(--a, var(--b, var(--c, red)))]',
+    ],
+    [
+      'Nested vars - level 4',
+      'var(--a, var(--b, var(--c, var(--d, red))))',
+      'R[var(--a, var(--b, var(--c, var(--d, red))))]',
+    ],
+    [
+      'Nested calc - level 3',
+      'var(--a, calc(calc(1px + 2px)))',
+      'R[var(--a, calc(calc(1px + 2px)))]',
+    ],
+    [
+      'Nested calc - level 4',
+      'var(--a, calc(calc(calc(1px + 2px) + 3px)))',
+      'R[var(--a, calc(calc(calc(1px + 2px) + 3px)))]',
+    ],
+    [
+      'Nested calc - level 4',
+      'var(--a, calc(calc(calc(1px + 2px) + 3px)))',
+      'R[var(--a, calc(calc(calc(1px + 2px) + 3px)))]',
+    ],
+    [
+      'Non top-level var',
+      'calc(var(--a, calc(calc(calc(1px + 2px) + 3px)))) var(--b)',
+      'calc(R[var(--a, calc(calc(calc(1px + 2px) + 3px)))]) R[var(--b)]',
+    ],
+  ])('should replace css variables - %s: %s, %s', (_label, given, expected) => {
+    const actual = resolveCssVariablesInString(mockResolver, given);
+
+    expect(actual).toEqual(expected);
+  });
+});
 
 describe('setThemePreloadData', () => {
   it('should set the theme preload data', () => {
