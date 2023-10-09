@@ -146,6 +146,25 @@ export function getThemePreloadData(): ThemePreloadData | null {
 /**
  * Identifies start and end indices of any css variable expressions in the given
  * string.
+ *
+ * e.g.
+ * getCssVariableRanges('var(--aaa-aa) var(--bbb-bb)')
+ * yields:
+ * [
+ *   [0, 12],
+ *   [14, 26],
+ * ]
+ *
+ * In cases where there are nested expressions, only the indices of the outermost
+ * expression will be included.
+ *
+ * e.g.
+ * getCssVariableRanges('var(--ccc-cc, var(--aaa-aa, green)) var(--bbb-bb)')
+ * yields:
+ * [
+ *   [0, 34], // range for --ccc-cc expression
+ *   [36, 48], // range for --bbb-bb expression
+ * ]
  * @param value The string to search for css variable expressions
  * @returns An array of [start, end] index pairs for each css variable expression
  */
