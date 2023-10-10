@@ -8,67 +8,75 @@
   foreground: var(--dh-color-gray-900);
   line-height: 19px; // 19 is the line height in the default monaco theme
 
-  //code ruless
-  string: var(--dh-color-visual-yellow);
-  string-delim: var(--dh-color-gray-700);
-  delimiter: var(--dh-color-gray-700);
-  predefined: var(--dh-color-visual-green);
-  keyword: var(--dh-color-visual-cyan);
-  storage: var(--dh-color-visual-red);
-  number: var(--dh-color-visual-purple);
-  operator: var(--dh-color-visual-red);
-  identifier: var(--dh-color-gray-900);
-  namespace-identifier: var(--dh-color-visual-red);
-  identifier-js: var(--dh-color-visual-yellow);
-  comment: var(--dh-color-gray-700);
+  //code rules
+  string: var(--dh-color-editor-string);
+  string-delim: var(--dh-color-editor-string-delim);
+  delimiter: var(--dh-color-editor-delimiter);
+  predefined: var(--dh-color-editor-predefined);
+  keyword: var(--dh-color-editor-keyword);
+  storage: var(--dh-color-editor-storage);
+  number: var(--dh-color-editor-number);
+  operator: var(--dh-color-editor-operator);
+  identifier: var(--dh-color-editor-identifier);
+  namespace-identifier: var(--dh-color-editor-identifier-namespace);
+  identifier-js: var(--dh-color-editor-identifier-js);
+  comment: var(--dh-color-editor-comment);
 
   //input
-  input-option-active-border: var(--dh-color-focus-ring);
-  focus-border: var(--dh-color-focus-border);
-  input-background: var(--dh-color-background);
-  input-foreground: var(--dh-color-text);
-  input-border: var(--dh-color-border);
+  input-option-active-border: var(--dh-color-editor-input-option-active-border);
+  focus-border: var(--dh-color-editor-focus-border);
+  input-background: var(--dh-color-editor-input-background);
+  input-foreground: var(--dh-color-editor-input-foreground);
+  input-border: var(--dh-color-editor-input-border);
 
   //editor
-  editor-line-number-foreground: var(--dh-color-gray-700);
-  editor-selection-background: var(--dh-color-text-highlight);
-  editor-line-highlight-bg: var(--dh-color-gray-200);
+  editor-line-number-foreground: var(--dh-color-editor-line-number-foreground);
+  editor-selection-background: var(--dh-color-editor-selection-background);
+  editor-line-highlight-bg: var(--dh-color-editor-line-highlight-bg);
 
   //context menu
-  context-menu-background: var(--dh-color-gray-300);
-  context-menu-foreground: var(--dh-color-gray-900);
-  menu-selection-background: var(--dh-color-highlight-hover);
+  context-menu-background: var(--dh-color-editor-context-menu-background);
+  context-menu-foreground: var(--dh-color-editor-context-menu-foreground);
+  menu-selection-background: var(--dh-color-editor-menu-selection-background);
 
   //log items
-  log-date: var(--dh-color-gray-700);
-  log-error: var(--dh-color-visual-red);
-  log-info: var(--dh-color-visual-cyan);
-  log-stdout: var(--dh-color-gray-900);
-  log-warn: var(--dh-color-visual-yellow);
-  log-debug: var(--dh-color-visual-purple);
-  log-trace: var(--dh-color-visual-green);
+  log-date: var(--dh-color-editor-log-date);
+  log-error: var(--dh-color-editor-log-error);
+  log-info: var(--dh-color-editor-log-info);
+  log-stdout: var(--dh-color-editor-log-stdout);
+  log-warn: var(--dh-color-editor-log-warn);
+  log-debug: var(--dh-color-editor-log-debug);
+  log-trace: var(--dh-color-editor-log-trace);
 
   // find matches
-  editor-find-match-background: var(--dh-color-highlight-selected);
+  editor-find-match-background: var(--dh-color-editor-find-match-background);
   editor-find-match-highlight-background: var(
-    --dh-color-highlight-selected-hover
+    --dh-color-editor-find-match-highlight-background
   );
 
   // find widget
-  editor-widget-background: var(--dh-color-gray-200);
-  input-option-active-background: var(--dh-color-accent-700);
-  input-option-active-foreground: var(--dh-color-gray-900);
+  editor-widget-background: var(--dh-color-editor-find-background);
+  input-option-active-background: var(
+    --dh-color-editor-find-option-active-background
+  );
+  input-option-active-foreground: var(
+    --dh-color-editor-find-option-active-foreground
+  );
 
   // suggest widget
-  editor-suggest-widget-background: var(--dh-color-gray-200);
-  editor-suggest-widget-border: var(--dh-color-gray-400);
-  editor-suggest-widget-foreground: var(--dh-color-gray-100);
-  editor-suggest-widget-selected-background: var(--dh-color-highlight-selected);
-  editor-suggest-widget-highlightForeground: var(--dh-color-accent-700);
-  list-hover-background: var(--dh-color-highlight-hover);
+  editor-suggest-widget-background: var(--dh-color-editor-suggest-background);
+  editor-suggest-widget-border: var(--dh-color-editor-suggest-border);
+  editor-suggest-widget-foreground: var(--dh-color-editor-suggest-foreground);
+  editor-suggest-widget-selected-background: var(
+    --dh-color-editor-suggest-selected-background
+  );
+  editor-suggest-widget-highlightForeground: var(
+    --dh-color-editor-suggest-highlight-foreground
+  );
+  list-hover-background: var(--dh-color-editor-suggest-hover-background);
 
   // links
-  text-link-foreground: var(--dh-color-accent-1000);
-  text-link-active-foreground: var(--dh-color-accent-1100);
-  editor-link-active-foreground: var(--dh-color-accent-1100);
+  text-link-foreground: var(--dh-color-editor-link-foreground);
+  text-link-active-foreground: var(--dh-color-editor-link-active-foreground);
+  editor-link-active-foreground: var(--dh-color-editor-link-active-foreground);
 }
