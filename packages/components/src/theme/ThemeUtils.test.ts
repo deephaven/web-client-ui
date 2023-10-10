@@ -1,4 +1,6 @@
+import { ColorUtils, TestUtils } from '@deephaven/utils';
 import {
+  DEFAULT_DARK_THEME_KEY,
   DEFAULT_PRELOAD_DATA_VARIABLES,
   ThemeData,
   ThemeRegistrationData,
@@ -6,13 +8,22 @@ import {
 } from './ThemeModel';
 import {
   calculatePreloadStyleContent,
+  extractDistinctCssVariableExpressions,
   getActiveThemes,
+  getCssVariableRanges,
   getDefaultBaseThemes,
   getThemeKey,
   getThemePreloadData,
   preloadTheme,
+  resolveCssVariablesInRecord,
+  resolveCssVariablesInString,
   setThemePreloadData,
+  TMP_CSS_PROP_PREFIX,
 } from './ThemeUtils';
+
+jest.mock('shortid');
+
+const { asMock, createMockProxy } = TestUtils;
 
 beforeEach(() => {
   document.body.removeAttribute('style');
@@ -26,31 +37,61 @@ beforeEach(() => {
 describe('calculatePreloadStyleContent', () => {
   it('should set defaults if css variables are not defined', () => {
     expect(calculatePreloadStyleContent()).toEqual(
-      `:root{--dh-accent-color:${DEFAULT_PRELOAD_DATA_VARIABLES['--dh-accent-color']};--dh-background-color:${DEFAULT_PRELOAD_DATA_VARIABLES['--dh-background-color']}}`
+      `:root{--dh-color-accent:${DEFAULT_PRELOAD_DATA_VARIABLES['--dh-color-accent']};--dh-color-background:${DEFAULT_PRELOAD_DATA_VARIABLES['--dh-color-background']}}`
     );
   });
 
   it('should resolve css variables', () => {
-    document.body.style.setProperty('--dh-accent-color', 'pink');
-    document.body.style.setProperty('--dh-background-color', 'orange');
+    document.body.style.setProperty('--dh-color-accent', 'pink');
+    document.body.style.setProperty('--dh-color-background', 'orange');
 
     expect(calculatePreloadStyleContent()).toEqual(
-      ':root{--dh-accent-color:pink;--dh-background-color:orange}'
+      ':root{--dh-color-accent:pink;--dh-color-background:orange}'
+    );
+  });
+});
+
+describe('extractDistinctCssVariableExpressions', () => {
+  it('should extract distinct css variable expressions', () => {
+    const given = {
+      aaa: 'var(--aaa-aa)',
+      bbb: 'var(--bbb-bb)',
+      ccc: 'var(--ccc-cc)',
+      ddd: 'var(--aaa-aa)',
+      eee: 'var(--bbb-bb)',
+      fff: 'xxx',
+      ggg: 'xxx var(--gg-ggg) yyy',
+    };
+
+    const actual = extractDistinctCssVariableExpressions(given);
+    expect(actual).toEqual(
+      new Set([
+        'var(--aaa-aa)',
+        'var(--bbb-bb)',
+        'var(--ccc-cc)',
+        'var(--gg-ggg)',
+      ])
     );
   });
 });
 
 describe('getActiveThemes', () => {
   const mockTheme = {
+    default: {
+      name: 'Default Theme',
+      baseThemeKey: undefined,
+      themeKey: DEFAULT_DARK_THEME_KEY,
+      styleContent: '',
+    },
     base: {
       name: 'Base Theme',
       baseThemeKey: undefined,
-      themeKey: 'default-dark',
+      themeKey: 'default-light',
       styleContent: '',
     },
     custom: {
       name: 'Custom Theme',
-      baseThemeKey: 'default-dark',
+      baseThemeKey: 'default-light',
       themeKey: 'customTheme',
       styleContent: '',
     },
@@ -62,9 +103,14 @@ describe('getActiveThemes', () => {
   } satisfies Record<string, ThemeData>;
 
   const themeRegistration: ThemeRegistrationData = {
-    base: [mockTheme.base],
+    base: [mockTheme.default, mockTheme.base],
     custom: [mockTheme.custom],
   };
+
+  it('should use default dark theme if no base theme is matched', () => {
+    const actual = getActiveThemes('somekey', themeRegistration);
+    expect(actual).toEqual([mockTheme.default]);
+  });
 
   it.each([null, mockTheme.customInvalid])(
     'should throw if base theme not found',
@@ -92,6 +138,52 @@ describe('getActiveThemes', () => {
   });
 });
 
+describe('getCssVariableRanges', () => {
+  const t = [
+    ['Single var', 'var(--aaa-aa)', [[0, 12]]],
+    [
+      'Multiple vars',
+      'var(--aaa-aa) var(--bbb-bb)',
+      [
+        [0, 12],
+        [14, 26],
+      ],
+    ],
+    [
+      'Nested vars - level 2',
+      'var(--ccc-cc, var(--aaa-aa, green)) var(--bbb-bb)',
+      [
+        [0, 34],
+        [36, 48],
+      ],
+    ],
+    ['Nested vars - level 3', 'var(--a, var(--b, var(--c, red)))', [[0, 32]]],
+    [
+      'Nested vars - level 4',
+      'var(--a, var(--b, var(--c, var(--d, red)))) var(--e, var(--f, var(--g, var(--h, red))))',
+      [
+        [0, 42],
+        [44, 86],
+      ],
+    ],
+    ['Nested calc - level 3', 'var(--a, calc(calc(1px + 2px)))', [[0, 30]]],
+    [
+      'Nested calc - level 4',
+      'var(--a, calc(calc(calc(1px + 2px) + 3px)))',
+      [[0, 42]],
+    ],
+    ['Unbalanced', 'var(--a', []],
+  ] as const;
+
+  it.each(t)(
+    'should return the css variable ranges - %s: %s, %s',
+    (_label, given, expected) => {
+      const actual = getCssVariableRanges(given);
+      expect(actual).toEqual(expected);
+    }
+  );
+});
+
 describe('getDefaultBaseThemes', () => {
   it('should return default base themes', () => {
     const actual = getDefaultBaseThemes();
@@ -99,7 +191,8 @@ describe('getDefaultBaseThemes', () => {
       {
         name: 'Default Dark',
         themeKey: 'default-dark',
-        styleContent: 'test-file-stub',
+        styleContent:
+          'test-file-stub\ntest-file-stub\ntest-file-stub\ntest-file-stub',
       },
       {
         name: 'Default Light',
@@ -172,6 +265,152 @@ describe('preloadTheme', () => {
     expect(styleEl?.innerHTML).toEqual(
       preloadData?.preloadStyleContent ?? calculatePreloadStyleContent()
     );
+  });
+});
+
+describe.each([undefined, document.createElement('div')])(
+  'resolveCssVariablesInRecord',
+  targetElement => {
+    const computedStyle = createMockProxy<CSSStyleDeclaration>();
+    const expectedTargetEl = targetElement ?? document.body;
+    const tmpPropEl = document.createElement('div');
+
+    beforeEach(() => {
+      asMock(computedStyle.getPropertyValue)
+        .mockName('getPropertyValue')
+        .mockImplementation(key => `resolved:${key}`);
+
+      jest.spyOn(expectedTargetEl, 'appendChild').mockName('appendChild');
+
+      jest
+        .spyOn(document, 'createElement')
+        .mockName('createElement')
+        .mockReturnValue(tmpPropEl);
+
+      jest.spyOn(tmpPropEl.style, 'setProperty').mockName('setProperty');
+      jest.spyOn(tmpPropEl.style, 'removeProperty').mockName('removeProperty');
+      jest.spyOn(tmpPropEl, 'remove').mockName('remove');
+
+      jest
+        .spyOn(ColorUtils, 'normalizeCssColor')
+        .mockName('normalizeCssColor')
+        .mockImplementation(key => `normalized:${key}`);
+      jest
+        .spyOn(window, 'getComputedStyle')
+        .mockName('getComputedStyle')
+        .mockReturnValue(computedStyle);
+    });
+
+    it('should map non-css variable values verbatim', () => {
+      const given = {
+        aaa: 'aaa',
+        bbb: 'bbb',
+      };
+
+      const actual = resolveCssVariablesInRecord(given, targetElement);
+
+      expect(computedStyle.getPropertyValue).not.toHaveBeenCalled();
+      expect(ColorUtils.normalizeCssColor).not.toHaveBeenCalled();
+      expect(actual).toEqual(given);
+    });
+
+    it('should replace css variables with resolved values', () => {
+      const given = {
+        aaa: 'var(--aaa)',
+        bbb: 'var(--bbb1) var(--bbb2)',
+      };
+
+      const expected = {
+        aaa: 'normalized:resolved:--dh-tmp-0',
+        bbb: 'normalized:resolved:--dh-tmp-1 normalized:resolved:--dh-tmp-2',
+      };
+
+      const actual = resolveCssVariablesInRecord(given, targetElement);
+
+      expect(expectedTargetEl.appendChild).toHaveBeenCalledWith(tmpPropEl);
+      expect(tmpPropEl.remove).toHaveBeenCalled();
+      expect(actual).toEqual(expected);
+
+      let i = 0;
+
+      Object.keys(given).forEach(key => {
+        const varExpressions = given[key].split(' ');
+        varExpressions.forEach(value => {
+          const tmpPropKey = `--${TMP_CSS_PROP_PREFIX}-${i}`;
+          i += 1;
+
+          expect(tmpPropEl.style.setProperty).toHaveBeenCalledWith(
+            tmpPropKey,
+            value
+          );
+          expect(computedStyle.getPropertyValue).toHaveBeenCalledWith(
+            tmpPropKey
+          );
+          expect(ColorUtils.normalizeCssColor).toHaveBeenCalledWith(
+            `resolved:${tmpPropKey}`
+          );
+        });
+      });
+    });
+  }
+);
+
+describe('resolveCssVariablesInString', () => {
+  const mockResolver = jest.fn();
+
+  beforeEach(() => {
+    mockResolver
+      .mockName('mockResolver')
+      .mockImplementation(varExpression => `R[${varExpression}]`);
+  });
+
+  it.each([
+    ['No vars', 'red', 'red'],
+    ['Single var', 'var(--aaa-aa)', 'R[var(--aaa-aa)]'],
+    [
+      'Multiple vars',
+      'var(--aaa-aa) var(--bbb-bb)',
+      'R[var(--aaa-aa)] R[var(--bbb-bb)]',
+    ],
+    [
+      'Nested vars - level 2',
+      'var(--ccc-cc, var(--aaa-aa, green)) var(--bbb-bb)',
+      'R[var(--ccc-cc, var(--aaa-aa, green))] R[var(--bbb-bb)]',
+    ],
+    [
+      'Nested vars - level 3',
+      'var(--a, var(--b, var(--c, red)))',
+      'R[var(--a, var(--b, var(--c, red)))]',
+    ],
+    [
+      'Nested vars - level 4',
+      'var(--a, var(--b, var(--c, var(--d, red))))',
+      'R[var(--a, var(--b, var(--c, var(--d, red))))]',
+    ],
+    [
+      'Nested calc - level 3',
+      'var(--a, calc(calc(1px + 2px)))',
+      'R[var(--a, calc(calc(1px + 2px)))]',
+    ],
+    [
+      'Nested calc - level 4',
+      'var(--a, calc(calc(calc(1px + 2px) + 3px)))',
+      'R[var(--a, calc(calc(calc(1px + 2px) + 3px)))]',
+    ],
+    [
+      'Nested calc - level 4',
+      'var(--a, calc(calc(calc(1px + 2px) + 3px)))',
+      'R[var(--a, calc(calc(calc(1px + 2px) + 3px)))]',
+    ],
+    [
+      'Non top-level var',
+      'calc(var(--a, calc(calc(calc(1px + 2px) + 3px)))) var(--b)',
+      'calc(R[var(--a, calc(calc(calc(1px + 2px) + 3px)))]) R[var(--b)]',
+    ],
+  ])('should replace css variables - %s: %s, %s', (_label, given, expected) => {
+    const actual = resolveCssVariablesInString(mockResolver, given);
+
+    expect(actual).toEqual(expected);
   });
 });
 

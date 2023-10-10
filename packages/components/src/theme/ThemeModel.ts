@@ -7,8 +7,8 @@ export const DEFAULT_LIGHT_THEME_KEY = 'default-light' satisfies BaseThemeKey;
 
 // Css properties that are used in preload data with default values.
 export const DEFAULT_PRELOAD_DATA_VARIABLES = {
-  '--dh-accent-color': '#4c7dee', // dark theme --dh-color-blue-700
-  '--dh-background-color': '#1a171a', // dark theme --dh-color-gray-50
+  '--dh-color-accent': '#4c7dee', // dark theme --dh-color-blue-700
+  '--dh-color-background': '#1a171a', // dark theme --dh-color-gray-50
 } satisfies Record<`--dh-${string}`, string>;
 
 export const THEME_CACHE_LOCAL_STORAGE_KEY = 'deephaven.themeCache';

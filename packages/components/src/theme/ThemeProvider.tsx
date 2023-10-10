@@ -36,7 +36,7 @@ export function ThemeProvider({
 
   const activeThemes = useMemo(
     () =>
-      // Themes remain inactive until a non-null themes value is provided. This
+      // Themes remain inactive until a non-null themes array is provided. This
       // avoids the default base theme overriding the preload if we are waiting
       // on additional themes to be available.
       themes == null

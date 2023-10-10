@@ -1,5 +1,5 @@
 import Log from '@deephaven/log';
-import { assertNotNull } from '@deephaven/utils';
+import { assertNotNull, ColorUtils } from '@deephaven/utils';
 // Note that ?inline imports are natively supported by Vite, but consumers of
 // @deephaven/components using Webpack will need to add a rule to their module
 // config.
@@ -12,8 +12,8 @@ import { assertNotNull } from '@deephaven/utils';
 //    },
 //  ],
 // },
-import darkTheme from './theme_default_dark.css?inline';
-import lightTheme from './theme_default_light.css?inline';
+import { themeDark } from './theme-dark';
+import { themeLight } from './theme-light';
 import {
   DEFAULT_DARK_THEME_KEY,
   DEFAULT_LIGHT_THEME_KEY,
@@ -26,6 +26,10 @@ import {
 } from './ThemeModel';
 
 const log = Log.module('ThemeUtils');
+
+export const TMP_CSS_PROP_PREFIX = 'dh-tmp';
+
+export type VarExpressionResolver = (varExpression: string) => string;
 
 /**
  * Creates a string containing preload style content for the current theme.
@@ -43,6 +47,25 @@ export function calculatePreloadStyleContent(): ThemePreloadStyleContent {
   );
 
   return `:root{${pairs.join(';')}}`;
+}
+
+/**
+ * Extracts all css variable expressions from the given record and returns
+ * a set of unique expressions.
+ * @param record The record to extract css variable expressions from
+ */
+export function extractDistinctCssVariableExpressions(
+  record: Record<string, string>
+): Set<string> {
+  const set = new Set<string>();
+
+  Object.values(record).forEach(value => {
+    getCssVariableRanges(value).forEach(([start, end]) => {
+      set.add(value.substring(start, end + 1));
+    });
+  });
+
+  return set;
 }
 
 /**
@@ -93,12 +116,12 @@ export function getDefaultBaseThemes(): ThemeData[] {
     {
       name: 'Default Dark',
       themeKey: DEFAULT_DARK_THEME_KEY,
-      styleContent: darkTheme,
+      styleContent: themeDark,
     },
     {
       name: 'Default Light',
       themeKey: DEFAULT_LIGHT_THEME_KEY,
-      styleContent: lightTheme,
+      styleContent: themeLight,
     },
   ];
 }
@@ -117,6 +140,162 @@ export function getThemePreloadData(): ThemePreloadData | null {
   }
 
   return null;
+}
+
+/**
+ * Identifies start and end indices of any css variable expressions in the given
+ * string.
+ *
+ * e.g.
+ * getCssVariableRanges('var(--aaa-aa) var(--bbb-bb)')
+ * yields:
+ * [
+ *   [0, 12],
+ *   [14, 26],
+ * ]
+ *
+ * In cases where there are nested expressions, only the indices of the outermost
+ * expression will be included.
+ *
+ * e.g.
+ * getCssVariableRanges('var(--ccc-cc, var(--aaa-aa, green)) var(--bbb-bb)')
+ * yields:
+ * [
+ *   [0, 34], // range for --ccc-cc expression
+ *   [36, 48], // range for --bbb-bb expression
+ * ]
+ * @param value The string to search for css variable expressions
+ * @returns An array of [start, end] index pairs for each css variable expression
+ */
+export function getCssVariableRanges(value: string): [number, number][] {
+  const ranges: [number, number][] = [];
+
+  const cssVarPrefix = 'var(--';
+  let start = value.indexOf(cssVarPrefix);
+  let parenLevel = 0;
+
+  while (start > -1) {
+    parenLevel = 1;
+    let i = start + cssVarPrefix.length;
+    for (; i < value.length; i += 1) {
+      if (value[i] === '(') {
+        parenLevel += 1;
+      } else if (value[i] === ')') {
+        parenLevel -= 1;
+      }
+
+      if (parenLevel === 0) {
+        ranges.push([start, i]);
+        break;
+      }
+    }
+
+    if (parenLevel !== 0) {
+      log.error('Unbalanced parentheses in css var expression', value);
+      return [];
+    }
+
+    start = value.indexOf(cssVarPrefix, i + 1);
+  }
+
+  return ranges;
+}
+
+/**
+ * Make a copy of the given object replacing any css variable expressions
+ * contained in its prop values with values resolved from the given HTML element.
+ * Variables that resolve to color strings will also be normalized to rgb or
+ * rgba color strings.
+ *
+ * Note that the browser will force a reflow when calling `getComputedStyle` if
+ * css properties have changed. In order to avoid a reflow for every property
+ * check we use distinct setup, resolve / normalize, and cleanup passes:
+ * 1. Setup - Create a tmp element and set all css props we want to evaluate
+ * 2. Resolve / Normalize - Evaluate all css props via `getPropertyValue` calls
+ *    and replace the original expressions with resolved values. Also normalize
+ *    css colors to rgb/a.
+ * 3. Cleanup - Remove the tmp element
+ * @param record An object whose values may contain css var expressions
+ * @param targetElement The element to resolve css variables against. Defaults
+ * to document.body
+ */
+export function resolveCssVariablesInRecord<T extends Record<string, string>>(
+  record: T,
+  targetElement: HTMLElement = document.body
+): T {
+  const perfStart = performance.now();
+
+  // Add a temporary div to attach temp css variables to
+  const tmpPropEl = document.createElement('div');
+  targetElement.appendChild(tmpPropEl);
+
+  const varExpressions = [...extractDistinctCssVariableExpressions(record)];
+
+  // Set temporary css variables for resolving var expressions
+  varExpressions.forEach((varExpression, i) => {
+    const tmpPropKey = `--${TMP_CSS_PROP_PREFIX}-${i}`;
+    tmpPropEl.style.setProperty(tmpPropKey, varExpression);
+  });
+
+  const result = {} as T;
+
+  const computedStyle = window.getComputedStyle(tmpPropEl);
+
+  const resolver = (varExpression: string): string => {
+    const tmpPropKey = `--${TMP_CSS_PROP_PREFIX}-${varExpressions.indexOf(
+      varExpression
+    )}`;
+
+    const resolved = computedStyle.getPropertyValue(tmpPropKey);
+
+    return ColorUtils.normalizeCssColor(resolved);
+  };
+
+  // Resolve the temporary css variables
+  Object.entries(record).forEach(([key, value]) => {
+    result[key as keyof T] = resolveCssVariablesInString(
+      resolver,
+      value
+    ) as T[keyof T];
+  });
+
+  // Remove the temporary css variables
+  tmpPropEl.remove();
+
+  log.debug('Resolved css variables', performance.now() - perfStart, 'ms');
+
+  return result;
+}
+
+/**
+ * Resolve css variable expressions in the given string using the
+ * given resolver and replace the original expressions with the resolved values.
+ *
+ * @param resolver Function that can resolve a css variable expression
+ * @param value Value that may contain css variable expressions
+ */
+export function resolveCssVariablesInString(
+  resolver: VarExpressionResolver,
+  value: string
+): string {
+  const result: string[] = [];
+  let i = 0;
+  getCssVariableRanges(value).forEach(([start, end]) => {
+    if (i < start) {
+      result.push(value.substring(i, start));
+      i += start - i;
+    }
+
+    result.push(resolver(value.substring(start, end + 1)));
+
+    i += end - start + 1;
+  });
+
+  if (result.length === 0) {
+    return value;
+  }
+
+  return result.join('');
 }
 
 /**
