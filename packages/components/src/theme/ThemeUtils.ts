@@ -205,13 +205,17 @@ export function getCssVariableRanges(value: string): [number, number][] {
 /**
  * Make a copy of the given object replacing any css variable expressions
  * contained in its prop values with values resolved from the given HTML element.
+ * Variables that resolve to color strings will also be normalized to rgb or
+ * rgba color strings.
  *
  * Note that the browser will force a reflow when calling `getComputedStyle` if
  * css properties have changed. In order to avoid a reflow for every property
- * check we batch setting, getting, and deleting operations:
- * 1. Setting - Create a tmp element and set all css props we want to evaluate
- * 2. Getting - Evaluate all css props via `getPropertyValue` calls
- * 3. Deleting - Remove the tmp element
+ * check we use distinct setup, resolve / normalize, and cleanup passes:
+ * 1. Setup - Create a tmp element and set all css props we want to evaluate
+ * 2. Resolve / Normalize - Evaluate all css props via `getPropertyValue` calls
+ *    and replace the original expressions with resolved values. Also normalize
+ *    css colors to rgb/a.
+ * 3. Cleanup - Remove the tmp element
  * @param record An object whose values may contain css var expressions
  * @param targetElement The element to resolve css variables against. Defaults
  * to document.body
