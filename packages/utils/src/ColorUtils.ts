@@ -100,12 +100,7 @@ class ColorUtils {
 
     const [r, g, b, a = 1] = tokens.map(Number);
 
-    return {
-      r,
-      g,
-      b,
-      a,
-    };
+    return { r, g, b, a };
   }
 
   /**
