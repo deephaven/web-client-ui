@@ -41,6 +41,7 @@ Over time, forks will get out of sync with the upstream repository. To stay up t
    - Use `deephaven/web-client-ui` as the base repository.
    - Use your own fork, `<username>/web-client-ui` as the repository to push to.
 2. Fill in the information in the Pull Request:
+
    - If you know people who should be reviewers, add them as a reviewer
    - Add yourself as the Assignee
    - PR titles must follow the [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/).
@@ -57,12 +58,16 @@ Over time, forks will get out of sync with the upstream repository. To stay up t
        - **chore**: Other changes that don't modify src or test files
        - **revert**: Reverts a previous commit
      - The `scope` is not required.
-   - **BREAKING CHANGE:** if your change breaks an existing API in such a way that users of the package affected will need to make some changes to migrate to the newer version, add the `BREAKING CHANGE:` footer to the PR description, detailing the breakage and any migration instructions necessary, e.g.:
+   - **BREAKING CHANGE:** if your change breaks an existing API in such a way that users of the package affected will need to make some changes to migrate to the newer version, add an exclamation mark to the `type` (e.g. `feat!`), and add the `BREAKING CHANGE:` footer to the PR description, detailing the breakage and any migration instructions necessary, e.g.:
+
    ```
+   feat!: Add 'baz' option
+
    BREAKING CHANGE: The API now takes a new parameter that must be provided.
    ```
-   - **NOTE:** Do _not_ use the `!` notation for marking a breaking change - you must use the `BREAKING CHANGE:` footer and include details of the breakage/migration.
+
    - [Link the PR](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue) with any associated issues
+
 3. Submit the PR
 
 ## Deephaven Contributor License Agreement (CLA)
