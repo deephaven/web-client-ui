@@ -131,7 +131,7 @@ import ToastBottomBar from './ToastBottomBar';
 import IrisGridMetricCalculator from './IrisGridMetricCalculator';
 import IrisGridModelUpdater from './IrisGridModelUpdater';
 import IrisGridRenderer from './IrisGridRenderer';
-import IrisGridTheme, { IrisGridThemeType } from './IrisGridTheme';
+import { createDefaultIrisGridTheme, IrisGridThemeType } from './IrisGridTheme';
 import ColumnStatistics from './ColumnStatistics';
 import './IrisGrid.scss';
 import AdvancedFilterCreator from './AdvancedFilterCreator';
@@ -508,7 +508,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     canCopy: true,
     canDownloadCsv: true,
     frozenColumns: null,
-    theme: IrisGridTheme,
+    theme: null,
     canToggleSearch: true,
   };
 
@@ -1341,7 +1341,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       isEditable: boolean,
       floatingRowCount: number
     ): Partial<IrisGridThemeType> => ({
-      ...IrisGridTheme,
+      ...createDefaultIrisGridTheme(),
       ...theme,
       autoSelectRow: !isEditable,
       // We only show the row footers when we have floating rows for aggregations

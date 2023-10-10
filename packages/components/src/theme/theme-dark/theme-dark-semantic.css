@@ -1,3 +1,4 @@
+/* stylelint-disable custom-property-empty-line-before */
 /* stylelint-disable alpha-value-notation */
 :root {
   /* General */
@@ -8,6 +9,7 @@
   --dh-color-content-background: var(--dh-color-gray-100);
 
   /* Text */
+  --dh-color-heading-text: var(--dh-color-gray-900);
   --dh-color-text: var(--dh-color-gray-800);
   --dh-color-text-highlight: hsla(var(--dh-color-blue-hue), 83%, 62%, 0.3);
 
@@ -66,9 +68,41 @@
   --dh-color-accent-background-down: var(--dh-color-accent-400);
   --dh-color-accent-background-key-focus: var(--dh-color-accent-500);
 
+  /* Focus */
+  --dh-color-focus: var(--dh-color-blue-800);
+  --dh-color-focus-border: var(--dh-color-blue-800);
+  --dh-color-focus-ring: var(--dh-color-focus);
+
+  /* Highlight */
+  --dh-color-highlight-active: rgba(239 239 239 / 0.15);
+  --dh-color-highlight-hover: rgba(255 255 255 / 0.08);
+  --dh-color-highlight-invalid: rgba(221 33 24 / 0.15);
+  --dh-color-highlight-selected: rgba(76 125 238 / 0.13);
+  --dh-color-highlight-selected-hover: rgba(76 125 238 / 0.2);
+
   /* Negative Background */
   --dh-color-negative-background-default: var(--dh-color-red-600);
   --dh-color-negative-background-hover: var(--dh-color-red-500);
   --dh-color-negative-background-down: var(--dh-color-red-400);
   --dh-color-negative-background-key-focus: var(--dh-color-red-500);
+
+  /* Visual Colors */
+  --dh-color-visual-blue: var(--dh-color-blue-700);
+  --dh-color-visual-celery: var(--dh-color-celery-1000);
+  --dh-color-visual-chartreuse: var(--dh-color-chartreuse-1100);
+  --dh-color-visual-cyan: var(--dh-color-cyan-1100);
+  --dh-color-visual-fuchsia: var(--dh-color-fuchsia-900);
+  --dh-color-visual-gray: var(--dh-color-gray-600);
+  --dh-color-visual-green: var(--dh-color-green-1100);
+  --dh-color-visual-indigo: var(--dh-color-indigo-900);
+  --dh-color-visual-magenta: var(--dh-color-magenta-900);
+  --dh-color-visual-orange: var(--dh-color-orange-900);
+  --dh-color-visual-purple: var(--dh-color-purple-900);
+  --dh-color-visual-red: var(--dh-color-red-800);
+  --dh-color-visual-seafoam: var(--dh-color-seafoam-1100);
+  --dh-color-visual-yellow: var(--dh-color-yellow-1200);
+
+  --dh-color-visual-positive: var(--dh-color-green-1100);
+  --dh-color-visual-negative: var(--dh-color-red-800);
+  --dh-color-visual-notice: var(--dh-color-yellow-1200);
 }
