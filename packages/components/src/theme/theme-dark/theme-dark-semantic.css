@@ -11,6 +11,7 @@
   /* Text */
   --dh-color-heading-text: var(--dh-color-gray-900);
   --dh-color-text: var(--dh-color-gray-800);
+  --dh-color-text-disabled: var(--dh-color-gray-400);
   --dh-color-text-highlight: hsla(var(--dh-color-blue-hue), 83%, 62%, 0.3);
 
   /** Accent Colors */
