@@ -3,9 +3,9 @@
 
 :export {
   // iris dark theme
-  error-foreground: var(--dh-color-visual-red);
-  background: var(--dh-color-content-background);
-  foreground: var(--dh-color-gray-900);
+  error-foreground: var(--dh-color-editor-error-foreground);
+  background: var(--dh-color-editor-background);
+  foreground: var(--dh-color-editor-foreground);
   line-height: 19px; // 19 is the line height in the default monaco theme
 
   //code rules
