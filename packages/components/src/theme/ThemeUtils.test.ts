@@ -191,7 +191,7 @@ describe('getDefaultBaseThemes', () => {
       {
         name: 'Default Dark',
         themeKey: 'default-dark',
-        styleContent: 'test-file-stub\ntest-file-stub',
+        styleContent: 'test-file-stub\ntest-file-stub\ntest-file-stub',
       },
       {
         name: 'Default Light',

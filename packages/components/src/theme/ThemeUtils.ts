@@ -12,9 +12,8 @@ import { assertNotNull, ColorUtils } from '@deephaven/utils';
 //    },
 //  ],
 // },
-import darkThemePalette from './theme_default_dark_palette.css?inline';
-import darkThemeSemantic from './theme_default_dark_semantic.css?inline';
-import lightTheme from './theme_default_light.css?inline';
+import { themeDark } from './theme-dark';
+import { themeLight } from './theme-light';
 import {
   DEFAULT_DARK_THEME_KEY,
   DEFAULT_LIGHT_THEME_KEY,
@@ -117,12 +116,12 @@ export function getDefaultBaseThemes(): ThemeData[] {
     {
       name: 'Default Dark',
       themeKey: DEFAULT_DARK_THEME_KEY,
-      styleContent: [darkThemePalette, darkThemeSemantic].join('\n'),
+      styleContent: themeDark,
     },
     {
       name: 'Default Light',
       themeKey: DEFAULT_LIGHT_THEME_KEY,
-      styleContent: lightTheme,
+      styleContent: themeLight,
     },
   ];
 }
