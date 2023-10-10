@@ -11,16 +11,16 @@ import {
   useListener,
 } from '@deephaven/dashboard';
 import { usePlugins } from '@deephaven/app-utils';
-import { isElementPlugin } from '@deephaven/plugin';
+import { isWidgetPlugin } from '@deephaven/plugin';
 
-export function ElementPlugin(
+export function WidgetLoaderPlugin(
   props: DashboardPluginComponentProps
 ): JSX.Element | null {
   const plugins = usePlugins();
   const supportedTypes = useMemo(() => {
     const typeMap = new Map<string, ComponentType>();
     plugins.forEach(plugin => {
-      if (!isElementPlugin(plugin)) {
+      if (!isWidgetPlugin(plugin)) {
         return;
       }
 
@@ -75,7 +75,7 @@ export function ElementPlugin(
 
   useEffect(() => {
     const deregisterFns = [...plugins.values()]
-      .filter(isElementPlugin)
+      .filter(isWidgetPlugin)
       .map(plugin => registerComponent(plugin.name, plugin.component));
 
     return () => {
@@ -91,4 +91,4 @@ export function ElementPlugin(
   return null;
 }
 
-export default ElementPlugin;
+export default WidgetLoaderPlugin;

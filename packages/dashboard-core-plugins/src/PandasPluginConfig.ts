@@ -1,10 +1,10 @@
-import { PluginType, ElementPlugin } from '@deephaven/plugin';
+import { PluginType, WidgetPlugin } from '@deephaven/plugin';
 import { dhPandas } from '@deephaven/icons';
 import PandasPlugin from './PandasPlugin';
 
-const PandasPluginConfig: ElementPlugin = {
+const PandasPluginConfig: WidgetPlugin = {
   name: 'PandasPlugin',
-  type: PluginType.ELEMENT_PLUGIN,
+  type: PluginType.WIDGET_PLUGIN,
   component: PandasPlugin,
   supportedTypes: 'pandas.DataFrame',
   icon: dhPandas,

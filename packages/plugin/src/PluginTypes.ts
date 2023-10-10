@@ -5,7 +5,7 @@ import type { TablePluginComponent } from './TablePlugin';
 export const PluginType = Object.freeze({
   AUTH_PLUGIN: 'AuthPlugin',
   DASHBOARD_PLUGIN: 'DashboardPlugin',
-  ELEMENT_PLUGIN: 'ElementPlugin',
+  WIDGET_PLUGIN: 'WidgetPlugin',
   TABLE_PLUGIN: 'TablePlugin',
   THEME_PLUGIN: 'ThemePlugin',
 });
@@ -92,8 +92,8 @@ export function isDashboardPlugin(
   return 'type' in plugin && plugin.type === PluginType.DASHBOARD_PLUGIN;
 }
 
-export interface ElementPlugin extends Plugin {
-  type: typeof PluginType.ELEMENT_PLUGIN;
+export interface WidgetPlugin extends Plugin {
+  type: typeof PluginType.WIDGET_PLUGIN;
   /**
    * This component is used any time a widget type supported by this plugin is created.
    * The component will be wrapped in a default panel if necessary.
@@ -114,8 +114,8 @@ export interface ElementPlugin extends Plugin {
   icon?: IconDefinition | React.ReactElement;
 }
 
-export function isElementPlugin(plugin: PluginModule): plugin is ElementPlugin {
-  return 'type' in plugin && plugin.type === PluginType.ELEMENT_PLUGIN;
+export function isWidgetPlugin(plugin: PluginModule): plugin is WidgetPlugin {
+  return 'type' in plugin && plugin.type === PluginType.WIDGET_PLUGIN;
 }
 
 export interface TablePlugin extends Plugin {

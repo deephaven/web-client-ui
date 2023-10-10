@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
 import {
-  DashboardPanelProps,
   DehydratedDashboardPanelProps,
   PanelHydrateFunction,
 } from '@deephaven/dashboard';

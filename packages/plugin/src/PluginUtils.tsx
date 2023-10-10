@@ -1,13 +1,13 @@
 import { isValidElement } from 'react';
 import { vsPreview } from '@deephaven/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { type PluginModule, isElementPlugin } from './PluginTypes';
+import { type PluginModule, isWidgetPlugin } from './PluginTypes';
 
 export function pluginSupportsType(
   plugin: PluginModule | undefined,
   type: string
 ): boolean {
-  if (plugin == null || !isElementPlugin(plugin)) {
+  if (plugin == null || !isWidgetPlugin(plugin)) {
     return false;
   }
 
@@ -19,7 +19,7 @@ export function getIconForType(
   type: string
 ): React.ReactElement {
   const defaultIcon = <FontAwesomeIcon icon={vsPreview} />;
-  if (plugin == null || !isElementPlugin(plugin)) {
+  if (plugin == null || !isWidgetPlugin(plugin)) {
     return defaultIcon;
   }
 
