@@ -14,7 +14,6 @@ import {
   GridPlugin,
   LinkerPlugin,
   MarkdownPlugin,
-  PandasPlugin,
 } from '.';
 
 function makeConnection(): IdeConnection {
@@ -40,7 +39,6 @@ it('handles mounting and unmount core plugins properly', () => {
               <ConsolePlugin />
               <LinkerPlugin />
               <MarkdownPlugin />
-              <PandasPlugin hydrate={() => undefined} />
             </Dashboard>
           </Provider>
         </PluginsContext.Provider>
