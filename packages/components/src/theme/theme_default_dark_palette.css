@@ -13,6 +13,10 @@
   --dh-color-gray-800: hsl(var(--dh-color-gray-hue) 6% 94%);
   --dh-color-gray-900: hsl(var(--dh-color-gray-hue) 25% 98%);
 
+  /** Black & White */
+  --dh-color-black: var(--dh-color-gray-50);
+  --dh-color-white: var(--dh-color-gray-800);
+
   /* Blue */
   --dh-color-blue-hue: 222deg;
   --dh-color-blue-100: hsl(var(--dh-color-blue-hue) 65% 19%);
