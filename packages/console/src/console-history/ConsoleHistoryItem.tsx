@@ -6,7 +6,7 @@ import { Button } from '@deephaven/components';
 import Log from '@deephaven/log';
 import type { VariableDefinition } from '@deephaven/jsapi-types';
 import classNames from 'classnames';
-import { Code, ObjectIcon } from '../common';
+import { Code } from '../common';
 import ConsoleHistoryItemResult from './ConsoleHistoryItemResult';
 import ConsoleHistoryResultInProgress from './ConsoleHistoryResultInProgress';
 import ConsoleHistoryResultErrorMessage from './ConsoleHistoryResultErrorMessage';
@@ -18,8 +18,10 @@ const log = Log.module('ConsoleHistoryItem');
 interface ConsoleHistoryItemProps {
   item: ConsoleHistoryActionItem;
   language: string;
-  openObject: (object: VariableDefinition) => void;
+  openObject(object: VariableDefinition): void;
   disabled?: boolean;
+  supportsType(type: string): boolean;
+  iconForType(type: string): ReactElement;
 }
 
 class ConsoleHistoryItem extends PureComponent<
@@ -53,7 +55,7 @@ class ConsoleHistoryItem extends PureComponent<
   }
 
   render(): ReactElement {
-    const { disabled, item, language } = this.props;
+    const { disabled, item, language, supportsType, iconForType } = this.props;
     const { disabledObjects, result } = item;
     const hasCommand = item.command != null && item.command !== '';
 
@@ -77,28 +79,30 @@ class ConsoleHistoryItem extends PureComponent<
 
       if (changes) {
         const { created, updated } = changes;
-        [...created, ...updated].forEach(object => {
-          hasButtons = true;
-          const { title } = object;
-          const key = `${title}`;
-          const btnDisabled =
-            disabled === undefined ||
-            disabled ||
-            (disabledObjects ?? []).indexOf(key) >= 0;
-          const element = (
-            <Button
-              key={key}
-              kind="primary"
-              onClick={() => this.handleObjectClick(object)}
-              className="btn-console-object"
-              disabled={btnDisabled}
-              icon={<ObjectIcon type={object.type} />}
-            >
-              {title}
-            </Button>
-          );
-          resultElements.push(element);
-        });
+        [...created, ...updated]
+          // .filter(object => supportsType(object.type))
+          .forEach(object => {
+            hasButtons = true;
+            const { title } = object;
+            const key = `${title}`;
+            const btnDisabled =
+              disabled === undefined ||
+              disabled ||
+              (disabledObjects ?? []).indexOf(key) >= 0;
+            const element = (
+              <Button
+                key={key}
+                kind={supportsType(object.type) ? 'primary' : 'tertiary'}
+                onClick={() => this.handleObjectClick(object)}
+                className="btn-console-object"
+                disabled={btnDisabled}
+                icon={iconForType(object.type)}
+              >
+                {title}
+              </Button>
+            );
+            resultElements.push(element);
+          });
       }
 
       // If the error has an associated command, we'll actually get a separate ERROR item printed out, so only print an error if there isn't an associated command

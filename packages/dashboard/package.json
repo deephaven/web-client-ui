@@ -33,12 +33,12 @@
     "lodash.ismatch": "^4.1.1",
     "lodash.throttle": "^4.1.1",
     "prop-types": "^15.7.2",
-    "react-is": "^18.2.0",
     "shortid": "^2.2.16"
   },
   "peerDependencies": {
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
+    "react-is": "^17.0.0",
     "react-redux": "^7.2.4"
   },
   "devDependencies": {

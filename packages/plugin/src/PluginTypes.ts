@@ -1,9 +1,11 @@
 import type { BaseThemeType } from '@deephaven/components';
+import type { IconDefinition } from '@fortawesome/fontawesome-common-types';
 import type { TablePluginComponent } from './TablePlugin';
 
 export const PluginType = Object.freeze({
   AUTH_PLUGIN: 'AuthPlugin',
   DASHBOARD_PLUGIN: 'DashboardPlugin',
+  ELEMENT_PLUGIN: 'ElementPlugin',
   TABLE_PLUGIN: 'TablePlugin',
   THEME_PLUGIN: 'ThemePlugin',
 });
@@ -76,6 +78,10 @@ export interface Plugin {
  */
 export interface DashboardPlugin extends Plugin {
   type: typeof PluginType.DASHBOARD_PLUGIN;
+  /**
+   * The component to mount for the dashboard plugin.
+   * This component is used to initialize the plugin and will only be mounted to the dashboard once.
+   */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   component: React.ComponentType<any>;
 }
@@ -84,6 +90,32 @@ export function isDashboardPlugin(
   plugin: PluginModule
 ): plugin is DashboardPlugin {
   return 'type' in plugin && plugin.type === PluginType.DASHBOARD_PLUGIN;
+}
+
+export interface ElementPlugin extends Plugin {
+  type: typeof PluginType.ELEMENT_PLUGIN;
+  /**
+   * This component is used any time a widget type supported by this plugin is created.
+   * The component will be wrapped in a default panel if necessary.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  component: React.ComponentType<any>;
+
+  /**
+   * The variable types that this plugin will handle.
+   */
+  supportedTypes?: string | string[];
+
+  /**
+   * The icon to display next to the console button.
+   * If a react node is provided (including a string), it will be rendered directly.
+   * If no icon is specified, the default widget icon will be used.
+   */
+  icon?: IconDefinition | React.ReactElement;
+}
+
+export function isElementPlugin(plugin: PluginModule): plugin is ElementPlugin {
+  return 'type' in plugin && plugin.type === PluginType.ELEMENT_PLUGIN;
 }
 
 export interface TablePlugin extends Plugin {

@@ -137,25 +137,31 @@ export interface IrisGridPanelProps extends DashboardPanelProps {
   children?: ReactNode;
   panelState: LoadedPanelState | null;
   makeModel: () => IrisGridModel | Promise<IrisGridModel>;
+
+  onStateChange?: (irisGridState: IrisGridState, gridState: GridState) => void;
+  onPanelStateUpdate?: (panelState: PanelState) => void;
+
+  /**
+   * Override the default worker used by IrisGrid to download CSVs.
+   */
+  getDownloadWorker?: () => Promise<ServiceWorker>;
+
+  // Load a plugin defined by the table
+  loadPlugin: (pluginName: string) => TablePluginComponent;
+
+  theme?: IrisGridThemeType;
+}
+
+interface PropsFromRedux {
   inputFilters: InputFilter[];
   links: Link[];
   columnSelectionValidator?: (
     panel: PanelComponent,
     tableColumn?: LinkColumn
   ) => boolean;
-  onStateChange?: (irisGridState: IrisGridState, gridState: GridState) => void;
-  onPanelStateUpdate?: (panelState: PanelState) => void;
   user: User;
   workspace: Workspace;
   settings: { timeZone: string };
-
-  // Retrieve a download worker for optimizing exporting tables
-  getDownloadWorker: () => Promise<ServiceWorker>;
-
-  // Load a plugin defined by the table
-  loadPlugin: (pluginName: string) => TablePluginComponent;
-
-  theme: IrisGridThemeType;
 }
 
 interface IrisGridPanelState {
@@ -221,8 +227,10 @@ function getTableNameFromMetadata(metadata: PanelMetadata | undefined): string {
   throw new Error(`Unable to determine table name from metadata: ${metadata}`);
 }
 
+type IrisGridPanelPropsWithRedux = IrisGridPanelProps & PropsFromRedux;
+
 export class IrisGridPanel extends PureComponent<
-  IrisGridPanelProps,
+  IrisGridPanelPropsWithRedux,
   IrisGridPanelState
 > {
   static defaultProps = {
@@ -234,7 +242,7 @@ export class IrisGridPanel extends PureComponent<
 
   static COMPONENT = 'IrisGridPanel';
 
-  constructor(props: IrisGridPanelProps) {
+  constructor(props: IrisGridPanelPropsWithRedux) {
     super(props);
 
     this.handleAdvancedSettingsChange =
@@ -1367,15 +1375,7 @@ export class IrisGridPanel extends PureComponent<
 const mapStateToProps = (
   state: RootState,
   { localDashboardId = DEFAULT_DASHBOARD_ID }: { localDashboardId?: string }
-): Pick<
-  IrisGridPanelProps,
-  | 'columnSelectionValidator'
-  | 'inputFilters'
-  | 'links'
-  | 'settings'
-  | 'user'
-  | 'workspace'
-> => ({
+) => ({
   inputFilters: getInputFiltersForDashboard(state, localDashboardId),
   links: getLinksForDashboard(state, localDashboardId),
   columnSelectionValidator: getColumnSelectionValidatorForDashboard(

@@ -1,48 +1,17 @@
 import { isValidElement } from 'react';
 import { vsPreview } from '@deephaven/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  type PluginModule,
-  isDashboardPlugin,
-  SupportedType,
-} from './PluginTypes';
-
-function normalizeSupportedTypes(
-  supportedTypes:
-    | (SupportedType | string)
-    | (SupportedType | string)[]
-    | undefined
-): SupportedType[] {
-  if (supportedTypes == null) {
-    return [];
-  }
-
-  if (typeof supportedTypes === 'string') {
-    return [{ type: supportedTypes }];
-  }
-
-  if (!Array.isArray(supportedTypes)) {
-    return [supportedTypes];
-  }
-
-  return supportedTypes.map(supportedType => {
-    if (typeof supportedType === 'string') {
-      return { type: supportedType };
-    }
-    return supportedType;
-  });
-}
+import { type PluginModule, isElementPlugin } from './PluginTypes';
 
 export function pluginSupportsType(
   plugin: PluginModule | undefined,
   type: string
 ): boolean {
-  if (plugin == null || !isDashboardPlugin(plugin)) {
+  if (plugin == null || !isElementPlugin(plugin)) {
     return false;
   }
 
-  const supportedTypes = normalizeSupportedTypes(plugin.supportedTypes);
-  return supportedTypes.some(supportedType => supportedType.type === type);
+  return [plugin.supportedTypes].flat().some(t => t === type);
 }
 
 export function getIconForType(
@@ -50,20 +19,20 @@ export function getIconForType(
   type: string
 ): React.ReactElement {
   const defaultIcon = <FontAwesomeIcon icon={vsPreview} />;
-  if (plugin == null || !isDashboardPlugin(plugin)) {
+  if (plugin == null || !isElementPlugin(plugin)) {
     return defaultIcon;
   }
 
-  const supportedTypes = normalizeSupportedTypes(plugin.supportedTypes);
-  const supportedType = supportedTypes.find(p => p.type === type);
+  const supportsType = pluginSupportsType(plugin, type);
+  const { icon } = plugin;
 
-  if (supportedType == null || supportedType.icon == null) {
+  if (!supportsType || icon == null) {
     return defaultIcon;
   }
 
-  if (isValidElement(supportedType.icon)) {
-    return supportedType.icon;
+  if (isValidElement(icon)) {
+    return icon;
   }
 
-  return <FontAwesomeIcon icon={supportedType.icon} />;
+  return <FontAwesomeIcon icon={icon} />;
 }

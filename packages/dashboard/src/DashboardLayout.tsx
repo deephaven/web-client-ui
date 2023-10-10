@@ -141,12 +141,11 @@ export function DashboardLayout({
             CType.WrappedComponent.prototype.isReactComponent != null) ||
           (CType.prototype != null && CType.prototype.isReactComponent != null);
 
+        // For some unknown reason, ReactIs.isForwardRef returns false, but comparing $$typeof directly works
         const isForwardRef =
-          !isWrappedComponent(CType) && ReactIs.isForwardRef(CType);
+          !isWrappedComponent(CType) && CType.$$typeof === ReactIs.ForwardRef;
 
         const hasRef = isClassComponent || isForwardRef;
-
-        console.log(hasRef);
 
         // Props supplied by GoldenLayout
         const { glContainer, glEventHub } = props;

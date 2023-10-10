@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import {
+  DashboardPanelProps,
   DehydratedDashboardPanelProps,
   PanelHydrateFunction,
 } from '@deephaven/dashboard';
@@ -9,17 +10,23 @@ import { Table } from '@deephaven/jsapi-types';
 import { IrisGridModelFactory } from '@deephaven/iris-grid';
 import {
   IrisGridPanelMetadata,
+  IrisGridPanelProps,
   isIrisGridPanelMetadata,
   isLegacyIrisGridPanelMetadata,
 } from './panels';
 
-export function useHydrateGrid(): PanelHydrateFunction {
+export function useHydrateGrid<
+  P extends DehydratedDashboardPanelProps = DehydratedDashboardPanelProps,
+>(): PanelHydrateFunction<
+  P,
+  P & Pick<IrisGridPanelProps, 'loadPlugin' | 'makeModel'>
+> {
   const dh = useApi();
   const connection = useConnection();
   const loadPlugin = useLoadTablePlugin();
 
   const hydrate = useCallback(
-    (hydrateProps: DehydratedDashboardPanelProps, id: string) => {
+    (hydrateProps: P, id: string) => {
       let metadata: IrisGridPanelMetadata;
       if (isIrisGridPanelMetadata(hydrateProps.metadata)) {
         metadata = hydrateProps.metadata;

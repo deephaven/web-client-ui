@@ -36,6 +36,7 @@ import {
   CommandHistoryStorage,
   CommandHistoryStorageItem,
 } from './command-history';
+import { ObjectIcon } from './common';
 
 const log = Log.module('Console');
 
@@ -79,6 +80,8 @@ interface ConsoleProps {
    * (file:File) => Promise<File[]>
    */
   unzip: (file: File) => Promise<JSZipObject[]>;
+  supportsType(type: string): boolean;
+  iconForType(type: string): ReactElement;
 }
 
 interface ConsoleState {
@@ -105,6 +108,15 @@ interface ConsoleState {
   isPrintStdOutEnabled: boolean;
   isClosePanelsOnDisconnectEnabled: boolean;
 }
+
+function defaultSupportsType(): boolean {
+  return true;
+}
+
+function defaultIconForType(type: string): ReactElement {
+  return <ObjectIcon type={type} />;
+}
+
 export class Console extends PureComponent<ConsoleProps, ConsoleState> {
   static defaultProps = {
     statusBarChildren: null,
@@ -117,6 +129,8 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     objectMap: new Map(),
     disabled: false,
     unzip: null,
+    supportsType: defaultSupportsType,
+    iconForType: defaultIconForType,
   };
 
   static LOG_THROTTLE = 500;
@@ -951,6 +965,8 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
       timeZone,
       disabled,
       unzip,
+      supportsType,
+      iconForType,
     } = this.props;
     const {
       consoleHeight,
@@ -1013,6 +1029,8 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
                 openObject={openObject}
                 language={language}
                 disabled={disabled}
+                supportsType={supportsType}
+                iconForType={iconForType}
               />
               {historyChildren}
             </div>
