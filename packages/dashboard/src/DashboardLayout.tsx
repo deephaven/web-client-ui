@@ -6,6 +6,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
+import * as ReactIs from 'react-is';
 import PropTypes from 'prop-types';
 import GoldenLayout from '@deephaven/golden-layout';
 import type {
@@ -140,13 +141,20 @@ export function DashboardLayout({
             CType.WrappedComponent.prototype.isReactComponent != null) ||
           (CType.prototype != null && CType.prototype.isReactComponent != null);
 
+        const isForwardRef =
+          !isWrappedComponent(CType) && ReactIs.isForwardRef(CType);
+
+        const hasRef = isClassComponent || isForwardRef;
+
+        console.log(hasRef);
+
         // Props supplied by GoldenLayout
         const { glContainer, glEventHub } = props;
         return (
           <PanelErrorBoundary glContainer={glContainer} glEventHub={glEventHub}>
             {/* eslint-disable-next-line react/jsx-props-no-spreading */}
             <PanelWrapperType {...props}>
-              {isClassComponent ? (
+              {hasRef ? (
                 // eslint-disable-next-line react/jsx-props-no-spreading
                 <CType {...props} ref={ref} />
               ) : (
