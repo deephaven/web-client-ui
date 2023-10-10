@@ -33,6 +33,13 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
         const value = this.valueForCell(x, y);
         return this.displayString(value, column.constituentType, column.name);
       }
+      if (
+        row.hasChildren &&
+        row.depth <= x + 1 &&
+        this.table.groupedColumns.includes(column)
+      ) {
+        return '';
+      }
     }
 
     return super.textForCell(x, y);
