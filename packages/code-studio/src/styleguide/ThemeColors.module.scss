@@ -1,0 +1,35 @@
+/* stylelint-disable selector-pseudo-class-no-unknown */
+.themeColors {
+  display: grid;
+  column-gap: 14px;
+  // Add as many columns as will fit in the container each 210px wide.
+  // Row height is set to the swatch height (35px) by dynamic `grid-row` style
+  // attributes set in ThemeColors.tsx.
+  grid-template-columns: repeat(auto-fit, 210px);
+
+  .label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    height: 35px;
+    text-transform: capitalize;
+    white-space: nowrap;
+  }
+
+  :global(.swatch) {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 10px;
+
+    input {
+      width: 40px;
+    }
+
+    span {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+  }
+}

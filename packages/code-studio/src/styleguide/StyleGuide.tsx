@@ -21,6 +21,7 @@ import Typograpy from './Typography';
 import './StyleGuide.scss';
 import DraggableLists from './DraggableLists';
 import Navigations from './Navigations';
+import ThemeColors from './ThemeColors';
 
 function StyleGuide(): React.ReactElement {
   return (
@@ -32,6 +33,8 @@ function StyleGuide(): React.ReactElement {
       <Typograpy />
 
       <Colors />
+
+      <ThemeColors />
 
       <Buttons />
 
