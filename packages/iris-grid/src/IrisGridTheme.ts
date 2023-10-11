@@ -43,6 +43,12 @@ export type IrisGridThemeType = GridThemeType & {
   floatingGridRowColor: NullableGridColor;
 };
 
+/**
+ * Derive default Iris grid theme from IrisGridThemeRaw. Note that CSS variables
+ * contained in IrisGridThemeRaw are resolved to their actual values. This means
+ * that the returned theme is statically defined and does not change when CSS
+ * variables change.
+ */
 export function createDefaultIrisGridTheme(): Partial<IrisGridThemeType> {
   const IrisGridTheme = resolveCssVariablesInRecord(IrisGridThemeRaw);
   log.debug2('Iris grid theme:', IrisGridThemeRaw);
