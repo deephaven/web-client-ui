@@ -687,12 +687,10 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     assertNotNull(fileMetadata);
     const { language } = settings;
     const { itemName } = fileMetadata;
-    let copyName = FileUtils.getCopyFileName(itemName);
-    // await in loop is fine here, this isn't a parallel task
-    // eslint-disable-next-line no-await-in-loop, @typescript-eslint/strict-boolean-expressions
-    while (await FileUtils.fileExists(fileStorage, copyName)) {
-      copyName = FileUtils.getCopyFileName(copyName);
-    }
+    const copyName = await FileUtils.getUniqueCopyFileName(
+      fileStorage,
+      itemName
+    );
     log.debug('handleCopy', fileMetadata, itemName, copyName);
     await fileStorage.copyFile(itemName, copyName);
     const newFileMetadata = { id: copyName, itemName: copyName };
@@ -705,7 +703,8 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       session,
       language,
       notebookSettings,
-      newFileMetadata
+      newFileMetadata,
+      true
     );
   }
 

@@ -98,6 +98,19 @@ export class FileUtils {
     return extension !== null ? `${copyName}.${extension}` : copyName;
   }
 
+  static async getUniqueCopyFileName(
+    fileStorage: FileStorage,
+    originalName: string
+  ): Promise<string> {
+    let copyName = FileUtils.getCopyFileName(originalName);
+    // await in loop is fine here, this isn't a parallel task
+    // eslint-disable-next-line no-await-in-loop
+    while (await FileUtils.fileExists(fileStorage, copyName)) {
+      copyName = FileUtils.getCopyFileName(copyName);
+    }
+    return copyName;
+  }
+
   /**
    * Return a MIME type for the provided file
    * @param name The file name to get the type for
