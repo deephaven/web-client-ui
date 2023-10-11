@@ -68,7 +68,7 @@ export function ThemeColors(): JSX.Element {
                 {swatchData.map(({ name, value }) => (
                   <div
                     key={name}
-                    className="swatch"
+                    className={styles.swatch}
                     style={{
                       backgroundColor: value,
                       color: `var(--dh-color-${contrastColor(value)})`,

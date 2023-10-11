@@ -1,7 +1,9 @@
-/* stylelint-disable selector-pseudo-class-no-unknown */
 .themeColors {
+  --swatch-height: 35px;
+  --column-gap: 14px;
+
   display: grid;
-  column-gap: 14px;
+  column-gap: var(--column-gap);
   // Add as many columns as will fit in the container each 210px wide.
   // Row height is set to the swatch height (35px) by dynamic `grid-row` style
   // attributes set in ThemeColors.tsx.
@@ -12,13 +14,15 @@
     align-items: end;
     justify-content: space-between;
     gap: 4px;
-    height: 35px;
+    height: var(--swatch-height);
     text-transform: capitalize;
     white-space: nowrap;
   }
 
-  :global(.swatch) {
+  .swatch {
     display: flex;
+    align-items: center;
+    height: var(--swatch-height);
     justify-content: space-between;
     padding: 0 10px;
 
