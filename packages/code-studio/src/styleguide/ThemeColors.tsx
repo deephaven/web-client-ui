@@ -4,14 +4,47 @@ import { ColorUtils } from '@deephaven/utils';
 import palette from '@deephaven/components/src/theme/theme-dark/theme-dark-palette.css?inline';
 import semantic from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic.css?inline';
 import semanticEditor from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic-editor.css?inline';
+import semanticGrid from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic-grid.css?inline';
 import styles from './ThemeColors.module.scss';
+
+const specialGroups: Record<string, string> = {
+  '--dh-color-black': 'gray',
+  '--dh-color-white': 'gray',
+  // Editor
+  '--dh-color-editor-bg': 'editor',
+  '--dh-color-editor-fg': 'editor',
+  '--dh-color-editor-context-menu-bg': 'menus',
+  '--dh-color-editor-context-menu-fg': 'menus',
+  '--dh-color-editor-menu-selection-bg': 'menus',
+  // Grid
+  '--dh-color-grid-bg': 'grid',
+  '--dh-color-grid-number-positive': 'Data Types',
+  '--dh-color-grid-number-negative': 'Data Types',
+  '--dh-color-grid-number-zero': 'Data Types',
+  '--dh-color-grid-date': 'Data Types',
+  '--dh-color-grid-string-null': 'Data Types',
+};
 
 export function ThemeColors(): JSX.Element {
   const swatchDataGroups = useMemo(
     () => ({
       'Theme Color Palette': buildColorGroups(palette, 1),
       'Semantic Colors': buildColorGroups(semantic, 1),
-      'Semantic Editor Colors': buildColorGroups(semanticEditor, 2),
+      'Editor Colors': buildColorGroups(semanticEditor, 2, {
+        line: 'editor',
+        comment: 'code',
+        string: 'code',
+        number: 'code',
+        delimiter: 'code',
+        identifier: 'code',
+        keyword: 'code',
+        operator: 'code',
+        storage: 'code',
+        predefined: 'code',
+        selection: 'state',
+        focus: 'state',
+      }),
+      'Grid Colors': buildColorGroups(semanticGrid, 2, { data: 'Data Bars' }),
     }),
     []
   );
@@ -60,7 +93,7 @@ export default ThemeColors;
 /** Return black or white contrast color */
 function contrastColor(color: string): 'black' | 'white' {
   const rgba = ColorUtils.parseRgba(ColorUtils.asRgbOrRgbaString(color) ?? '');
-  if (rgba == null) {
+  if (rgba == null || rgba.a < 0.5) {
     return 'white';
   }
 
@@ -77,7 +110,7 @@ function extractColorVars(
 
   return styleText
     .split('\n')
-    .map(line => /^\s*(--dh-color-(?:[^:]+))/.exec(line)?.[1])
+    .map(line => /^\s{2}(--dh-color-(?:[^:]+))/.exec(line)?.[1])
     .filter(Boolean)
     .map(varName =>
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -88,18 +121,18 @@ function extractColorVars(
 /** Group color data based on capture group value */
 function buildColorGroups(
   styleText: string,
-  captureGroupI: number
+  captureGroupI: number,
+  groupRemap: Record<string, string> = {}
 ): Record<string, { name: string; value: string }[]> {
   const swatchData = extractColorVars(styleText);
 
   const groupData = swatchData.reduce(
     (acc, { name, value }) => {
       const match = /^--dh-color-([^-]+)(?:-([^-]+))?/.exec(name);
-      const group = (match?.[captureGroupI] ?? match?.[1] ?? '...').replace(
-        // special case black / white to include them with grays
-        /(black)|(white)/,
-        'gray'
-      );
+      let group =
+        specialGroups[name] ?? match?.[captureGroupI] ?? match?.[1] ?? '???';
+
+      group = groupRemap[group] ?? group;
 
       if (acc[group] == null) {
         acc[group] = [];
