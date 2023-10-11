@@ -68,9 +68,12 @@ export function ThemeColors(): JSX.Element {
               <div
                 key={group}
                 // This is the secret sauce for filling columns. The height of
-                // the swatch group spans the number of swatches + 1 for the label
-                // This causes the grid to create a rows with the swatch height
-                // (35px), and each swatch + label group neatly fits in a cell.
+                // each swatch group spans multiple rows (the number of swatches
+                // + 1 for the label). This causes the grid to create rows
+                // based on the swatch height (35px), and each swatch (also the
+                // group label) neatly fits in a grid cell. The grid will put a
+                // group in each column and then wrap back around to the first
+                // until all groups are placed.
                 style={{ gridRow: `span ${swatchData.length + 1}` }}
               >
                 <span className={styles.label}>{group}</span>
