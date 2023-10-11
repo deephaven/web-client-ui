@@ -146,6 +146,7 @@ import {
   TableCsvExporter,
   TableSaver,
   VisibilityOrderingBuilder,
+  DownloadServiceWorkerUtils,
 } from './sidebar';
 import IrisGridUtils from './IrisGridUtils';
 import CrossColumnSearch from './CrossColumnSearch';
@@ -318,7 +319,9 @@ export interface IrisGridProps {
   invertSearchColumns: boolean;
 
   // eslint-disable-next-line react/no-unused-prop-types
-  onContextMenu: (data: IrisGridContextMenuData) => ResolvableContextAction[];
+  onContextMenu: (
+    data: IrisGridContextMenuData
+  ) => readonly ResolvableContextAction[];
 
   pendingDataMap?: PendingDataMap;
   getDownloadWorker: () => Promise<ServiceWorker>;
@@ -485,9 +488,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     searchValue: '',
     selectedSearchColumns: null,
     invertSearchColumns: true,
-    onContextMenu: (): void => undefined,
+    onContextMenu: (): readonly ResolvableContextAction[] => EMPTY_ARRAY,
     pendingDataMap: EMPTY_MAP,
-    getDownloadWorker: undefined,
+    getDownloadWorker: DownloadServiceWorkerUtils.getServiceWorker,
     settings: {
       timeZone: 'America/New_York',
       defaultDateTimeFormat: DateUtils.FULL_DATE_FORMAT,
@@ -1921,10 +1924,27 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   updatePartition(partition: string, partitionColumn: Column): void {
+    if (TableUtils.isCharType(partitionColumn.type) && partition === '') {
+      return;
+    }
+
     const { model } = this.props;
-    const partitionFilter = partitionColumn
-      .filter()
-      .eq(model.dh.FilterValue.ofString(partition));
+
+    const partitionText = TableUtils.isCharType(partitionColumn.type)
+      ? model.displayString(
+          partition,
+          partitionColumn.type,
+          partitionColumn.name
+        )
+      : partition;
+    const partitionFilter = this.tableUtils.makeQuickFilterFromComponent(
+      partitionColumn,
+      partitionText
+    );
+    if (partitionFilter === null) {
+      return;
+    }
+
     const partitionFilters = [partitionFilter];
     this.setState({
       partition,
@@ -4424,7 +4444,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                     type: string,
                     stringName: string
                   ) => model.displayString(value, type, stringName)}
-                  columnName={partitionColumn.name}
+                  column={partitionColumn}
                   partition={partition}
                   onChange={this.handlePartitionChange}
                   onFetchAll={this.handlePartitionFetchAll}

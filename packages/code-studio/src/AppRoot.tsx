@@ -2,12 +2,17 @@ import React from 'react';
 import { Provider } from 'react-redux';
 import { MonacoUtils } from '@deephaven/console';
 import { store } from '@deephaven/redux';
+import { DownloadServiceWorkerUtils } from '@deephaven/iris-grid';
 import MonacoWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 import AppRouter from './main/AppRouter';
-import DownloadServiceWorkerUtils from './DownloadServiceWorkerUtils';
 
 export function AppRoot(): JSX.Element {
-  DownloadServiceWorkerUtils.registerOnLoaded();
+  DownloadServiceWorkerUtils.register(
+    new URL(
+      `${import.meta.env.BASE_URL ?? ''}download/serviceWorker.js`,
+      window.location.href
+    )
+  );
   MonacoUtils.init({ getWorker: () => new MonacoWorker() });
 
   // disable annoying dnd-react warnings

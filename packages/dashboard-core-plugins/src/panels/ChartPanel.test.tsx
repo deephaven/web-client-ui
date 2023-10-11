@@ -20,7 +20,7 @@ jest.mock('@deephaven/dashboard', () => ({
   },
 }));
 
-const MockChart = jest.fn(() => null);
+const MockChart: React.FC & jest.Mock = jest.fn(() => null);
 
 jest.mock('@deephaven/chart', () => {
   const { forwardRef } = jest.requireActual('react');
@@ -106,9 +106,8 @@ function callErrorFunction() {
 
 function expectLoading(container) {
   expect(
-    container.querySelector("[data-icon='circle-large']")
+    container.querySelector('[role=progressbar].loading-spinner-large')
   ).toBeInTheDocument();
-  expect(container.querySelector("[data-icon='loading']")).toBeInTheDocument();
 }
 
 function expectNotLoading(container) {
@@ -116,7 +115,7 @@ function expectNotLoading(container) {
     container.querySelector("[data-icon='outline']")
   ).not.toBeInTheDocument();
   expect(
-    container.querySelector("[data-icon='loading']")
+    container.querySelector('[role=progressbar].loading-spinner-large')
   ).not.toBeInTheDocument();
 }
 

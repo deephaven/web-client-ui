@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import debounce from 'lodash.debounce';
+import { TableUtils } from '@deephaven/jsapi-utils';
 import type { dh as DhType, Table } from '@deephaven/jsapi-types';
 import { ItemList, LoadingSpinner } from '@deephaven/components';
 import Log from '@deephaven/log';
@@ -74,7 +75,6 @@ class PartitionSelectorSearch<T> extends Component<
     super(props);
 
     this.handleFilterChange = this.handleFilterChange.bind(this);
-    this.handleInputFocus = this.handleInputFocus.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleListKeydown = this.handleListKeydown.bind(this);
     this.handleSelect = this.handleSelect.bind(this);
@@ -85,6 +85,9 @@ class PartitionSelectorSearch<T> extends Component<
     this.itemList = null;
     this.searchInput = null;
     this.timer = null;
+
+    const { dh } = props;
+    this.tableUtils = new TableUtils(dh);
 
     this.state = {
       offset: 0,
@@ -124,6 +127,8 @@ class PartitionSelectorSearch<T> extends Component<
   searchInput: HTMLInputElement | null;
 
   timer: null;
+
+  tableUtils: TableUtils;
 
   handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>): boolean {
     if (this.itemList == null) {
@@ -181,12 +186,6 @@ class PartitionSelectorSearch<T> extends Component<
     this.setState({ itemCount, isLoading: true });
   }
 
-  handleInputFocus(): void {
-    if (this.itemList) {
-      this.itemList.focusItem(0);
-    }
-  }
-
   handleSelect(itemIndex: ModelIndex): void {
     log.debug2('handleSelect', itemIndex);
 
@@ -227,9 +226,14 @@ class PartitionSelectorSearch<T> extends Component<
   handleTextChange(event: React.ChangeEvent<HTMLInputElement>): void {
     log.debug2('handleTextChange');
 
+    const { table } = this.props;
     const { value: text } = event.target;
 
-    this.setState({ text });
+    if (text !== '' && TableUtils.isIntegerType(table.columns[0].type)) {
+      this.setState({ text: parseInt(text, 10).toString() });
+    } else {
+      this.setState({ text });
+    }
 
     this.debounceUpdateFilter();
   }
@@ -275,18 +279,21 @@ class PartitionSelectorSearch<T> extends Component<
   }
 
   updateFilter(): void {
-    const { dh, initialPageSize, table } = this.props;
+    const { initialPageSize, table } = this.props;
     const { text } = this.state;
     const filterText = text.trim();
     const filters = [];
     if (filterText.length > 0) {
       const column = table.columns[0];
-      const filter = column
-        .filter()
-        .invoke(
-          'matches',
-          dh.FilterValue.ofString(`(?s)(?i).*\\Q${filterText}\\E.*`)
+      const filter = this.tableUtils.makeQuickFilterFromComponent(
+        column,
+        TableUtils.isStringType(column.type) ? `~${filterText}` : filterText
+      );
+      if (!filter) {
+        throw new Error(
+          'Unable to create column filter for partition selector'
         );
+      }
       filters.push(filter);
     }
 
@@ -297,24 +304,28 @@ class PartitionSelectorSearch<T> extends Component<
   }
 
   render(): JSX.Element {
+    const { table } = this.props;
     const { isLoading, itemCount, items, offset, text } = this.state;
+
     const listHeight =
       Math.min(itemCount, PartitionSelectorSearch.MAX_VISIBLE_ITEMS) *
         ItemList.DEFAULT_ROW_HEIGHT +
       // Adjust for ListItem vertical padding - .375rem ~ 5.25px
       11;
+    const inputType = TableUtils.isNumberType(table.columns[0].type)
+      ? 'number'
+      : 'text';
     return (
       <div className="iris-grid-partition-selector-search">
         <div className="search-container">
           <input
-            type="text"
+            type={inputType}
             ref={searchInput => {
               this.searchInput = searchInput;
             }}
             value={text}
             placeholder="Available Partitions"
             onChange={this.handleTextChange}
-            onFocus={this.handleInputFocus}
             onKeyDown={this.handleKeyDown}
             className="form-control input-partition"
           />
@@ -345,7 +356,7 @@ class PartitionSelectorSearch<T> extends Component<
         )}
         {isLoading && (
           <div className="iris-grid-partition-selector-loading">
-            <LoadingSpinner />
+            <LoadingSpinner className="loading-spinner-vertical-align" />
             &nbsp;Loading...
           </div>
         )}

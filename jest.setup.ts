@@ -33,6 +33,12 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
+Object.defineProperty(window, 'CSSAnimation', {
+  value: function () {
+    return class CSSAnimation {};
+  },
+});
+
 Object.defineProperty(window, 'performance', {
   value: performance,
   writable: true,
@@ -56,4 +62,9 @@ Object.defineProperty(document, 'fonts', {
   value: {
     ready: Promise.resolve(),
   },
+});
+
+Object.defineProperty(document, 'getAnimations', {
+  value: () => [],
+  writable: true,
 });

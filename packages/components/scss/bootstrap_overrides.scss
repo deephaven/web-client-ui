@@ -95,8 +95,15 @@ $theme-color-interval: 9%;
 $yiq-contrasted-threshold: 180;
 
 // Override fonts
-$font-family-sans-serif: 'Fira Sans', -apple-system, blinkmacsystemfont,
-  'Segoe UI', 'Roboto', 'Helvetica Neue', arial, sans-serif; //fira sans then native system ui fallbacks
+$font-family-sans-serif:
+  'Fira Sans',
+  -apple-system,
+  blinkmacsystemfont,
+  'Segoe UI',
+  'Roboto',
+  'Helvetica Neue',
+  arial,
+  sans-serif; //fira sans then native system ui fallbacks
 $font-family-monospace: 'Fira Mono', menlo, monaco, consolas, 'Liberation Mono',
   'Courier New', monospace;
 $font-family-base: $font-family-sans-serif;
@@ -126,8 +133,11 @@ $box-shadow-900: 0 0.1rem 1rem rgba(0, 0, 0, 45%); //darkest shadow for $black p
 //Override Btn
 $btn-border-radius: 4rem;
 $btn-padding-x: 1.5rem;
-$btn-transition: color 0.12s ease-in-out, background-color 0.12s ease-in-out,
-  border-color 0.12s ease-in-out, box-shadow 0.12s ease-in-out; //default 0.15 is too long
+$btn-transition:
+  color 0.12s ease-in-out,
+  background-color 0.12s ease-in-out,
+  border-color 0.12s ease-in-out,
+  box-shadow 0.12s ease-in-out; //default 0.15 is too long
 $btn-border-width: 2px;
 
 //Override Inputs

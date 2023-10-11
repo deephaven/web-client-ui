@@ -204,6 +204,15 @@ export async function dragComponent(
       steps,
     }
   );
+  // repeated this mouse.move because of a comment in Playwright docs about manual drag
+  // https://playwright.dev/docs/input#dragging-manually
+  await page.mouse.move(
+    destinationPos.x + destinationPos.width / 2,
+    destinationPos.y + destinationPos.height / 2 + offsetY,
+    {
+      steps,
+    }
+  );
 
   await expect(targetIndicator).not.toHaveCount(0);
   await page.mouse.up();

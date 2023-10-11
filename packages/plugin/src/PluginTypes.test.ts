@@ -3,31 +3,26 @@ import {
   isAuthPlugin,
   isDashboardPlugin,
   isTablePlugin,
+  isThemePlugin,
 } from './PluginTypes';
 
-test('isDashboardPlugin', () => {
-  expect(
-    isDashboardPlugin({ name: 'test', type: PluginType.DASHBOARD_PLUGIN })
-  ).toBe(true);
-  expect(
-    isDashboardPlugin({ name: 'test', type: PluginType.TABLE_PLUGIN })
-  ).toBe(false);
-});
+const pluginTypeToTypeGuardMap = [
+  [PluginType.DASHBOARD_PLUGIN, isDashboardPlugin],
+  [PluginType.AUTH_PLUGIN, isAuthPlugin],
+  [PluginType.TABLE_PLUGIN, isTablePlugin],
+  [PluginType.THEME_PLUGIN, isThemePlugin],
+] as const;
 
-test('isAuthPlugin', () => {
-  expect(isAuthPlugin({ name: 'test', type: PluginType.AUTH_PLUGIN })).toBe(
-    true
-  );
-  expect(isAuthPlugin({ name: 'test', type: PluginType.TABLE_PLUGIN })).toBe(
-    false
-  );
-});
-
-test('isTablePlugin', () => {
-  expect(isTablePlugin({ name: 'test', type: PluginType.TABLE_PLUGIN })).toBe(
-    true
-  );
-  expect(isTablePlugin({ name: 'test', type: PluginType.AUTH_PLUGIN })).toBe(
-    false
-  );
-});
+describe.each(pluginTypeToTypeGuardMap)(
+  'plugin type guard: %s',
+  (expectedPluginType, typeGuard) => {
+    it.each(pluginTypeToTypeGuardMap)(
+      'should return true for expected plugin type: %s',
+      givenPluginType => {
+        expect(typeGuard({ name: 'test', type: givenPluginType })).toBe(
+          givenPluginType === expectedPluginType
+        );
+      }
+    );
+  }
+);

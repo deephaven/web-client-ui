@@ -195,7 +195,7 @@ export class CommandHistoryItemTooltip extends Component<
               {hasTimeString ? (
                 <span className="time-string">{timeString}</span>
               ) : (
-                <LoadingSpinner />
+                <LoadingSpinner className="loading-spinner-vertical-align" />
               )}
             </div>
           </div>

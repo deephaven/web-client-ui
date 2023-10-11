@@ -92,7 +92,7 @@ describe('different command results', () => {
 
   it('shows loading spinner while waiting for updates', () => {
     expect(commandHistoryStorage.listenItem).toHaveBeenCalled();
-    expect(screen.getAllByRole('img', { hidden: true }).length).toBe(2);
+    screen.getByRole('progressbar', { hidden: true });
 
     unmount();
 

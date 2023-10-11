@@ -30,9 +30,10 @@ export function assertNever(shouldBeNever: never, name?: string): never {
 }
 
 export function assertNotNull<T>(
-  value: T | null | undefined
+  value: T | null | undefined,
+  message = 'Value is null or undefined'
 ): asserts value is T {
-  if (value == null) throw new Error('Value is null or undefined');
+  if (value == null) throw new Error(message);
 }
 
 /**

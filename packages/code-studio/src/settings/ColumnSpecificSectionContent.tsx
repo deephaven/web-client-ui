@@ -71,9 +71,6 @@ interface ColumnSpecificSectionContentState {
   showTimeZone: boolean;
   showTSeparator: boolean;
   timeZone: string;
-  defaultDateTimeFormat?: string;
-  defaultDecimalFormatOptions: FormatOption;
-  defaultIntegerFormatOptions: FormatOption;
   truncateNumbersWithPound?: boolean;
   timestampAtMenuOpen: Date;
 }
@@ -114,9 +111,6 @@ export class ColumnSpecificSectionContent extends PureComponent<
 
     const {
       formatter,
-      defaultDateTimeFormat,
-      defaultDecimalFormatOptions,
-      defaultIntegerFormatOptions,
       showTimeZone,
       showTSeparator,
       timeZone,
@@ -139,9 +133,6 @@ export class ColumnSpecificSectionContent extends PureComponent<
       showTimeZone,
       showTSeparator,
       timeZone,
-      defaultDateTimeFormat,
-      defaultDecimalFormatOptions,
-      defaultIntegerFormatOptions,
       truncateNumbersWithPound,
       timestampAtMenuOpen: new Date(),
     };
@@ -219,7 +210,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
         let resetKeys = {};
         if (key === 'columnType') {
           resetKeys = {
-            format: '',
+            format: this.makeDefaultFormatterItemByType(value as string),
           };
         }
         const newEntry = {
@@ -282,14 +273,18 @@ export class ColumnSpecificSectionContent extends PureComponent<
   commitChanges(): void {
     const {
       formatSettings,
-      defaultDateTimeFormat,
       showTimeZone,
       showTSeparator,
       timeZone,
-      defaultDecimalFormatOptions,
-      defaultIntegerFormatOptions,
       truncateNumbersWithPound,
     } = this.state;
+
+    const {
+      defaultDateTimeFormat,
+      defaultDecimalFormatOptions,
+      defaultIntegerFormatOptions,
+    } = this.props;
+
     const { dh } = this.props;
 
     const formatter =
@@ -388,6 +383,41 @@ export class ColumnSpecificSectionContent extends PureComponent<
     return error;
   }
 
+  makeDefaultFormatterItemByType(
+    columnType: string
+  ): TableColumnFormat | string {
+    switch (TableUtils.getNormalizedType(columnType)) {
+      case TableUtils.dataType.INT: {
+        const { defaultIntegerFormatOptions } = this.props;
+        const { defaultFormatString: defaultIntegerFormatString } =
+          defaultIntegerFormatOptions;
+        return IntegerColumnFormatter.makeFormat(
+          '',
+          defaultIntegerFormatString ??
+            IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
+          IntegerColumnFormatter.TYPE_GLOBAL,
+          undefined
+        );
+      }
+
+      case TableUtils.dataType.DECIMAL: {
+        const { defaultDecimalFormatOptions } = this.props;
+        const { defaultFormatString: defaultDecimalFormatString } =
+          defaultDecimalFormatOptions;
+        return DecimalColumnFormatter.makeFormat(
+          '',
+          defaultDecimalFormatString ??
+            DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
+          DecimalColumnFormatter.TYPE_GLOBAL,
+          undefined
+        );
+      }
+      default: {
+        return '';
+      }
+    }
+  }
+
   renderFormatRule(i: number, rule: FormatterItem): ReactElement {
     const columnNameId = `input-${i}-columnName`;
     const columnTypeId = `input-${i}-columnType`;
@@ -399,6 +429,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
       this.handleFormatRuleChange(i, 'isNewRule', false);
     const onTypeChange = (e: ChangeEvent<HTMLSelectElement>): void =>
       this.handleFormatRuleChange(i, 'columnType', e.target.value);
+
     const ruleError = this.getRuleError(rule);
 
     return (
@@ -509,6 +540,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
     isInvalid: boolean
   ): ReactElement {
     const { showTimeZone, showTSeparator, timeZone } = this.state;
+
     const value = format.formatString ?? '';
     return (
       <select
@@ -542,6 +574,8 @@ export class ColumnSpecificSectionContent extends PureComponent<
     format: Partial<TableColumnFormat>,
     isInvalid: boolean
   ): ReactElement {
+    const { defaultIntegerFormatOptions } = this.props;
+    const { defaultFormatString } = defaultIntegerFormatOptions;
     const value = format.formatString ?? '';
     return (
       <input
@@ -550,7 +584,9 @@ export class ColumnSpecificSectionContent extends PureComponent<
         })}
         data-lpignore
         id={formatId}
-        placeholder={IntegerColumnFormatter.DEFAULT_FORMAT_STRING}
+        placeholder={
+          defaultFormatString ?? IntegerColumnFormatter.DEFAULT_FORMAT_STRING
+        }
         type="text"
         value={value}
         onChange={e => {
@@ -572,6 +608,9 @@ export class ColumnSpecificSectionContent extends PureComponent<
     format: Partial<TableColumnFormat>,
     isInvalid: boolean
   ): ReactElement {
+    const { defaultDecimalFormatOptions } = this.props;
+    const { defaultFormatString } = defaultDecimalFormatOptions;
+
     const value = format.formatString ?? '';
     return (
       <input
@@ -580,7 +619,9 @@ export class ColumnSpecificSectionContent extends PureComponent<
         })}
         data-lpignore
         id={formatId}
-        placeholder={DecimalColumnFormatter.DEFAULT_FORMAT_STRING}
+        placeholder={
+          defaultFormatString ?? DecimalColumnFormatter.DEFAULT_FORMAT_STRING
+        }
         type="text"
         value={value}
         onChange={e => {

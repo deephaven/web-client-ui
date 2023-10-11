@@ -71,9 +71,8 @@ it('copies immediately if less than 10,000 rows of data', async () => {
   const copyOperation = makeCopyOperation(ranges);
   const model = makeModel();
   mountCopySelection({ copyOperation, model });
-
-  expect(screen.getAllByRole('img', { hidden: true }).length).toBe(2);
-  expect(screen.getByText('Fetching 10,000 rows for clipboard...'));
+  screen.getByRole('progressbar', { hidden: true });
+  screen.getByText('Fetching 10,000 rows for clipboard...');
   expect(model.textSnapshot).toHaveBeenCalled();
 
   await waitFor(() =>
@@ -159,4 +158,36 @@ it('retry option available if fetching fails', async () => {
   await waitFor(() => expect(model.textSnapshot).toHaveBeenCalled());
   expect(copyToClipboard).toHaveBeenCalled();
   expect(screen.getByText('Copied to Clipboard!')).toBeTruthy();
+});
+
+it('shows an error if the copy fails permissions', async () => {
+  const user = userEvent.setup({ delay: null });
+  const error = new Error('Test copy error');
+  mockedCopyToClipboard.mockReturnValueOnce(Promise.reject(error));
+
+  const ranges = GridTestUtils.makeRanges();
+  const copyOperation = makeCopyOperation(ranges);
+  mountCopySelection({ copyOperation });
+
+  await waitFor(() =>
+    expect(copyToClipboard).toHaveBeenCalledWith(DEFAULT_EXPECTED_TEXT)
+  );
+
+  expect(screen.getByText('Fetched 50 rows!')).toBeTruthy();
+
+  mockedCopyToClipboard.mockClear();
+  mockedCopyToClipboard.mockReturnValueOnce(Promise.reject(error));
+
+  const btn = screen.getByText('Click to Copy');
+  expect(btn).toBeInTheDocument();
+
+  await user.click(btn);
+
+  await waitFor(() =>
+    expect(copyToClipboard).toHaveBeenCalledWith(DEFAULT_EXPECTED_TEXT)
+  );
+
+  expect(
+    screen.getByText('Unable to copy. Verify your browser permissions.')
+  ).toBeInTheDocument();
 });

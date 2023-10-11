@@ -60,8 +60,6 @@ export default class TableSaver extends PureComponent<
   static SNAPSHOT_HANDLER_TIMEOUT = 5;
 
   static defaultProps = {
-    getDownloadWorker: (): Promise<never> =>
-      Promise.reject(new Error('Download worker not provided')),
     isDownloading: false,
     onDownloadCompleted: (): void => undefined,
     onDownloadCanceled: (): void => undefined,

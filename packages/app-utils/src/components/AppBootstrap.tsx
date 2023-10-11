@@ -5,6 +5,7 @@ import {
   RefreshTokenBootstrap,
   useBroadcastLoginListener,
 } from '@deephaven/jsapi-components';
+import { type DashboardPlugin } from '@deephaven/plugin';
 import FontBootstrap from './FontBootstrap';
 import PluginsBootstrap from './PluginsBootstrap';
 import AuthBootstrap from './AuthBootstrap';
@@ -13,6 +14,7 @@ import { getConnectOptions } from '../utils';
 import FontsLoaded from './FontsLoaded';
 import UserBootstrap from './UserBootstrap';
 import ServerConfigBootstrap from './ServerConfigBootstrap';
+import ThemeBootstrap from './ThemeBootstrap';
 
 export type AppBootstrapProps = {
   /** URL of the server. */
@@ -20,6 +22,9 @@ export type AppBootstrapProps = {
 
   /** URL of the plugins to load. */
   pluginsUrl: string;
+
+  /** The core plugins to load. */
+  getCorePlugins?: () => Promise<DashboardPlugin[]>;
 
   /** Font class names to load. */
   fontClassNames?: string[];
@@ -37,6 +42,7 @@ export type AppBootstrapProps = {
 export function AppBootstrap({
   fontClassNames,
   pluginsUrl,
+  getCorePlugins,
   serverUrl,
   children,
 }: AppBootstrapProps): JSX.Element {
@@ -51,24 +57,26 @@ export function AppBootstrap({
   useBroadcastLoginListener(onLogin, onLogout);
   return (
     <FontBootstrap fontClassNames={fontClassNames}>
-      <PluginsBootstrap pluginsUrl={pluginsUrl}>
-        <ClientBootstrap
-          serverUrl={serverUrl}
-          options={clientOptions}
-          key={logoutCount}
-        >
-          <RefreshTokenBootstrap>
-            <AuthBootstrap>
-              <ServerConfigBootstrap>
-                <UserBootstrap>
-                  <ConnectionBootstrap>
-                    <FontsLoaded>{children}</FontsLoaded>
-                  </ConnectionBootstrap>
-                </UserBootstrap>
-              </ServerConfigBootstrap>
-            </AuthBootstrap>
-          </RefreshTokenBootstrap>
-        </ClientBootstrap>
+      <PluginsBootstrap getCorePlugins={getCorePlugins} pluginsUrl={pluginsUrl}>
+        <ThemeBootstrap>
+          <ClientBootstrap
+            serverUrl={serverUrl}
+            options={clientOptions}
+            key={logoutCount}
+          >
+            <RefreshTokenBootstrap>
+              <AuthBootstrap>
+                <ServerConfigBootstrap>
+                  <UserBootstrap>
+                    <ConnectionBootstrap>
+                      <FontsLoaded>{children}</FontsLoaded>
+                    </ConnectionBootstrap>
+                  </UserBootstrap>
+                </ServerConfigBootstrap>
+              </AuthBootstrap>
+            </RefreshTokenBootstrap>
+          </ClientBootstrap>
+        </ThemeBootstrap>
       </PluginsBootstrap>
     </FontBootstrap>
   );

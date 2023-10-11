@@ -1,7 +1,17 @@
-import { getClosestByClassName, identityExtractHTMLElement } from './DOMUtils';
+import {
+  getClosestByClassName,
+  identityExtractHTMLElement,
+  syncAnimationStartTime,
+} from './DOMUtils';
 import TestUtils from './TestUtils';
 
 const { createMockProxy } = TestUtils;
+
+beforeEach(() => {
+  jest.clearAllMocks();
+  jest.restoreAllMocks();
+  expect.hasAssertions();
+});
 
 describe('getClosestByClassName', () => {
   let originalBodyHTML = document.body.innerHTML;
@@ -64,4 +74,48 @@ describe('identityExtractHTMLElement', () => {
     const element = document.createElement('div');
     expect(identityExtractHTMLElement(element)).toBe(element);
   });
+});
+
+describe('syncAnimationStartTime', () => {
+  // Mock a CSSAnimation that satisfies instanceof operator
+  const mockCSSAnimation = (name: string): CSSAnimation => {
+    const animation = Object.create(CSSAnimation.prototype);
+    animation.animationName = name;
+    return animation;
+  };
+
+  const cssAnimationA1 = mockCSSAnimation('animationA');
+  const cssAnimationA2 = mockCSSAnimation('animationA');
+  const cssAnimationB = mockCSSAnimation('animationB');
+  const notCSSAnimation = { animationName: '' } as unknown as Animation;
+
+  beforeEach(() => {
+    cssAnimationA1.startTime = null;
+    cssAnimationA2.startTime = null;
+    cssAnimationB.startTime = null;
+    notCSSAnimation.startTime = null;
+  });
+
+  it.each([undefined, 123])(
+    'should set startTime of all CSSAnimations with given name to given value: %s',
+    startTime => {
+      expect(cssAnimationA1).toBeInstanceOf(CSSAnimation);
+
+      jest
+        .spyOn(document, 'getAnimations')
+        .mockReturnValue([
+          cssAnimationA1,
+          cssAnimationA2,
+          cssAnimationB,
+          notCSSAnimation,
+        ]);
+
+      syncAnimationStartTime('animationA', startTime);
+
+      expect(cssAnimationA1.startTime).toBe(startTime ?? 0);
+      expect(cssAnimationA2.startTime).toBe(startTime ?? 0);
+      expect(cssAnimationB.startTime).toBeNull();
+      expect(notCSSAnimation.startTime).toBeNull();
+    }
+  );
 });

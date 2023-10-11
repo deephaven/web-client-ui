@@ -94,7 +94,7 @@ export function PendingDataBottomBar({
   const pendingRowCount = pendingDataMap.size;
   let commitIcon;
   if (isSaving) {
-    commitIcon = <LoadingSpinner />;
+    commitIcon = <LoadingSpinner className="loading-spinner-vertical-align" />;
   } else if (wasSuccessShown) {
     commitIcon = vsPass;
   }

@@ -14,7 +14,7 @@ function makeIrisGridPartitionSelector(
     <IrisGridPartitionSelector
       dh={dh}
       table={table}
-      columnName="0"
+      column={new IrisGridTestUtils(dh).makeColumn()}
       getFormattedString={getFormattedString}
       onChange={onChange}
       onDone={onDone}

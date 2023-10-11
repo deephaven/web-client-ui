@@ -63,7 +63,7 @@ body:not(.lm_dragging) .lm_header .lm_tab .lm_close_tab:hover {
 
 // Entire GoldenLayout Container, if a background is set, it is visible as color of "pane header" and "splitters" (if these latest has opacity very low)
 .lm_goldenlayout {
-  background: $background;
+  background: var(--dh-color-background, $background);
   position: absolute;
 }
 
@@ -163,7 +163,9 @@ body:not(.lm_dragging) .lm_header .lm_tab .lm_close_tab:hover {
     margin: 0;
     padding: 0 $spacer-1 0 $spacer-2;
     box-shadow: inset -1px -1px 0 0 $background; // acting as bottom and right border
-    transition: color $transition, background-color $transition;
+    transition:
+      color $transition,
+      background-color $transition;
     max-width: 12rem;
     white-space: nowrap;
     overflow: hidden;
@@ -224,7 +226,9 @@ body:not(.lm_dragging) .lm_header .lm_tab .lm_close_tab:hover {
   box-shadow: inset -1px 0 0 0 $background; // act as right border only when active
   // also kills the default shadow, doesn't work well with our design
   &.lm_focusin {
-    box-shadow: inset 0 1px $primary, inset -1px 0 0 0 $background; // top focus indicator, right border
+    box-shadow:
+      inset 0 1px $primary,
+      inset -1px 0 0 0 $background; // top focus indicator, right border
   }
 }
 

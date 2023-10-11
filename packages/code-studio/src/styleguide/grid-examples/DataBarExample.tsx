@@ -54,8 +54,8 @@ function DataBarExample(): JSX.Element {
     [
       12,
       [
-        { column: 13, color: 'white' },
-        { column: 14, color: 'gray' },
+        { value: 13, color: 'white' },
+        { value: 14, color: 'gray' },
       ],
     ],
   ]);

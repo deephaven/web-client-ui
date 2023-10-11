@@ -619,7 +619,7 @@ export class FormattingSectionContent extends PureComponent<
                 checked={truncateNumbersWithPound ?? null}
                 onChange={this.handleTruncateNumbersWithPoundChange}
               >
-                Truncate numbers with #
+                Show truncated numbers as ###
               </Checkbox>
             </div>
           </div>

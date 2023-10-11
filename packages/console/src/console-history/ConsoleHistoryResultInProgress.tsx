@@ -69,7 +69,7 @@ class ConsoleHistoryResultInProgress extends Component<
       >
         <span className="badge">
           <LoadingSpinner />
-          &nbsp;Running... {TimeUtils.formatElapsedTime(elapsed)}&nbsp;
+          Running... {TimeUtils.formatElapsedTime(elapsed)}&nbsp;
           <Button
             className="console-history-result-in-progress-cancel"
             kind="ghost"

@@ -20,7 +20,7 @@ html {
 
 body {
   min-height: 100%;
-  background-color: $background;
+  background-color: var(--dh-color-background, $background);
   color: $foreground;
   margin: 0;
   padding: 0;
@@ -30,7 +30,7 @@ body {
 }
 
 #root {
-  background-color: $background;
+  background-color: var(--dh-color-background, $background);
 
   .app {
     height: 100vh;
@@ -174,7 +174,8 @@ span.btn-disabled-wrapper {
 
 .btn-spinner {
   padding: $btn-padding-y 1rem;
-  .fa-layers {
+  .fa-layers,
+  .loading-spinner {
     margin-right: 0.5rem;
   }
 }
@@ -255,7 +256,9 @@ span.btn-disabled-wrapper {
     border-radius: 2px;
     margin-bottom: 2px;
     filter: saturate(0%);
-    transition: filter 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    transition:
+      filter 0.15s ease-in-out,
+      box-shadow 0.15s ease-in-out;
     pointer-events: none;
   }
 
@@ -712,7 +715,8 @@ input[type='number']::-webkit-inner-spin-button {
 
     .monaco-checkbox:focus {
       border: none !important;
-      box-shadow: $input-btn-focus-box-shadow,
+      box-shadow:
+        $input-btn-focus-box-shadow,
         0 0 0 1px $input-focus-border-color; //can't use regular border due to position of checkbox
     }
   }
@@ -746,7 +750,9 @@ input[type='number']::-webkit-inner-spin-button {
       linear-gradient(0deg, $input-bg, $input-bg);
     background-size: $custom-select-bg-size, cover;
     background-repeat: no-repeat;
-    background-position: bottom 50% right $custom-select-padding-x, center;
+    background-position:
+      bottom 50% right $custom-select-padding-x,
+      center;
     //make the dotted duplicate focus line on firefox go away
     &:-moz-focusring {
       color: rgba(0, 0, 0, 0%);
@@ -835,11 +841,18 @@ input[type='number']::-webkit-inner-spin-button {
 /// used by marching ants animation
 @keyframes march {
   from {
-    background-position: 0 top, 0 bottom, left 0, right 0;
+    background-position:
+      0 top,
+      0 bottom,
+      left 0,
+      right 0;
   }
 
   to {
-    background-position: $ant-size top, $ant-size bottom, left $ant-size,
+    background-position:
+      $ant-size top,
+      $ant-size bottom,
+      left $ant-size,
       right $ant-size;
   }
 }
