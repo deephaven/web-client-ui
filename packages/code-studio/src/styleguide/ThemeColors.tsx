@@ -7,7 +7,10 @@ import semanticEditor from '@deephaven/components/src/theme/theme-dark/theme-dar
 import semanticGrid from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic-grid.css?inline';
 import styles from './ThemeColors.module.scss';
 
-const specialGroups: Record<string, string> = {
+// Group names are extracted from var names via a regex capture group. Most of
+// them work pretty well, but some need to be remapped to a more appropriate
+// group.
+const reassignVarGroups: Record<string, string> = {
   '--dh-color-black': 'gray',
   '--dh-color-white': 'gray',
   // Editor
@@ -25,26 +28,32 @@ const specialGroups: Record<string, string> = {
   '--dh-color-grid-string-null': 'Data Types',
 };
 
+// Mappings of variable groups to rename
+const renameGroups = {
+  editor: {
+    line: 'editor',
+    comment: 'code',
+    string: 'code',
+    number: 'code',
+    delimiter: 'code',
+    identifier: 'code',
+    keyword: 'code',
+    operator: 'code',
+    storage: 'code',
+    predefined: 'code',
+    selection: 'state',
+    focus: 'state',
+  },
+  grid: { data: 'Data Bars' },
+};
+
 export function ThemeColors(): JSX.Element {
   const swatchDataGroups = useMemo(
     () => ({
       'Theme Color Palette': buildColorGroups(palette, 1),
       'Semantic Colors': buildColorGroups(semantic, 1),
-      'Editor Colors': buildColorGroups(semanticEditor, 2, {
-        line: 'editor',
-        comment: 'code',
-        string: 'code',
-        number: 'code',
-        delimiter: 'code',
-        identifier: 'code',
-        keyword: 'code',
-        operator: 'code',
-        storage: 'code',
-        predefined: 'code',
-        selection: 'state',
-        focus: 'state',
-      }),
-      'Grid Colors': buildColorGroups(semanticGrid, 2, { data: 'Data Bars' }),
+      'Editor Colors': buildColorGroups(semanticEditor, 2, renameGroups.editor),
+      'Grid Colors': buildColorGroups(semanticGrid, 2, renameGroups.grid),
     }),
     []
   );
@@ -130,7 +139,10 @@ function buildColorGroups(
     (acc, { name, value }) => {
       const match = /^--dh-color-([^-]+)(?:-([^-]+))?/.exec(name);
       let group =
-        specialGroups[name] ?? match?.[captureGroupI] ?? match?.[1] ?? '???';
+        reassignVarGroups[name] ??
+        match?.[captureGroupI] ??
+        match?.[1] ??
+        '???';
 
       group = groupRemap[group] ?? group;
 
