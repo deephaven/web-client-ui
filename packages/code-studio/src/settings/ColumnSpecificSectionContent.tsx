@@ -53,11 +53,11 @@ import DateTimeOptions from './DateTimeOptions';
 export interface ColumnSpecificSectionContentProps {
   dh: DhType;
   formatter: FormatterItem[];
-  defaultDateTimeFormat: string;
+  defaultDateTimeFormat?: string;
   showTimeZone: boolean;
   showTSeparator: boolean;
   timeZone: string;
-  truncateNumbersWithPound: boolean;
+  truncateNumbersWithPound?: boolean;
   settings: WorkspaceSettings;
   saveSettings: (settings: WorkspaceSettings) => void;
   scrollTo: (x: number, y: number) => void;
@@ -71,10 +71,10 @@ interface ColumnSpecificSectionContentState {
   showTimeZone: boolean;
   showTSeparator: boolean;
   timeZone: string;
-  defaultDateTimeFormat: string;
+  defaultDateTimeFormat?: string;
   defaultDecimalFormatOptions: FormatOption;
   defaultIntegerFormatOptions: FormatOption;
-  truncateNumbersWithPound: boolean;
+  truncateNumbersWithPound?: boolean;
   timestampAtMenuOpen: Date;
 }
 
@@ -84,19 +84,17 @@ export class ColumnSpecificSectionContent extends PureComponent<
 > {
   static defaultProps = {
     scrollTo: (): void => undefined,
-    defaults: {
-      defaultDateTimeFormat:
-        DateTimeColumnFormatter.DEFAULT_DATETIME_FORMAT_STRING,
-      defaultDecimalFormatOptions: {
-        defaultFormatString: DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
-      },
-      defaultIntegerFormatOptions: {
-        defaultFormatString: IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
-      },
-      showTimeZone: false,
-      showTSeparator: true,
-      timeZone: DateTimeColumnFormatter.DEFAULT_TIME_ZONE_ID,
+    defaultDateTimeFormat:
+      DateTimeColumnFormatter.DEFAULT_DATETIME_FORMAT_STRING,
+    defaultDecimalFormatOptions: {
+      defaultFormatString: DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
     },
+    defaultIntegerFormatOptions: {
+      defaultFormatString: IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
+    },
+    showTimeZone: false,
+    showTSeparator: true,
+    timeZone: DateTimeColumnFormatter.DEFAULT_TIME_ZONE_ID,
   };
 
   static inputDebounceTime = 250;
@@ -656,7 +654,7 @@ const mapStateToProps = (
   showTimeZone: getShowTimeZone(state),
   showTSeparator: getShowTSeparator(state),
   truncateNumbersWithPound: getTruncateNumbersWithPound(state),
-  timeZone: getTimeZone(state),
+  timeZone: getTimeZone(state) ?? DateTimeColumnFormatter.DEFAULT_TIME_ZONE_ID,
   settings: getSettings(state),
 });
 

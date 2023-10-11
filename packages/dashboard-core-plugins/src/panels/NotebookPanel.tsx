@@ -138,7 +138,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     isPreview: false,
     session: null,
     sessionLanguage: null,
-    defaultNotebookSettings: null,
+    defaultNotebookSettings: { isMinimapEnabled: true },
   };
 
   static languageFromFileName(fileName: string): string | null {
@@ -1339,6 +1339,9 @@ const mapStateToProps = (
   const fileStorage = getFileStorage(state);
   const settings = getSettings(state);
   const defaultNotebookSettings = getDefaultNotebookSettings(state);
+  if (defaultNotebookSettings.isMinimapEnabled === undefined) {
+    defaultNotebookSettings.isMinimapEnabled = true;
+  }
   const sessionWrapper = getDashboardSessionWrapper(
     state,
     ownProps.localDashboardId
@@ -1349,7 +1352,7 @@ const mapStateToProps = (
   return {
     fileStorage,
     settings,
-    defaultNotebookSettings,
+    defaultNotebookSettings: defaultNotebookSettings as NotebookSetting,
     session,
     sessionLanguage,
   };

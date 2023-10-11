@@ -12,7 +12,10 @@ import {
 } from '@deephaven/console';
 import { DashboardPanelProps, PanelEvent } from '@deephaven/dashboard';
 import type { IdeSession, VariableDefinition } from '@deephaven/jsapi-types';
-import { SessionWrapper } from '@deephaven/jsapi-utils';
+import {
+  DateTimeColumnFormatter,
+  SessionWrapper,
+} from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
   getCommandHistoryStorage,
@@ -396,7 +399,7 @@ const mapStateToProps = (
     state
   ) as CommandHistoryStorage,
   sessionWrapper: getDashboardSessionWrapper(state, ownProps.localDashboardId),
-  timeZone: getTimeZone(state),
+  timeZone: getTimeZone(state) ?? DateTimeColumnFormatter.DEFAULT_TIME_ZONE_ID,
 });
 
 const ConnectedConsolePanel = connect(mapStateToProps, null, null, {

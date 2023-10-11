@@ -147,7 +147,7 @@ export interface IrisGridPanelProps extends DashboardPanelProps {
   onPanelStateUpdate?: (panelState: PanelState) => void;
   user: User;
   workspace: Workspace;
-  settings: { timeZone: string };
+  settings: { timeZone?: string };
 
   // Retrieve a download worker for optimizing exporting tables
   getDownloadWorker: () => Promise<ServiceWorker>;

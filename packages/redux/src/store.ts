@@ -37,7 +37,7 @@ export interface Storage {
 }
 
 export interface WorkspaceSettings {
-  defaultDateTimeFormat: string;
+  defaultDateTimeFormat?: string;
   defaultDecimalFormatOptions: {
     defaultFormatString?: string;
   };
@@ -45,17 +45,17 @@ export interface WorkspaceSettings {
     defaultFormatString?: string;
   };
   formatter: FormattingRule[];
-  timeZone: string;
+  timeZone?: string;
   showTimeZone: boolean;
   showTSeparator: boolean;
-  truncateNumbersWithPound: boolean;
+  truncateNumbersWithPound?: boolean;
   disableMoveConfirmation: boolean;
   shortcutOverrides?: {
     windows?: { [id: string]: ValidKeyState };
     mac?: { [id: string]: ValidKeyState };
   };
   defaultNotebookSettings: {
-    isMinimapEnabled: boolean;
+    isMinimapEnabled?: boolean;
   };
 }
 

@@ -16,6 +16,7 @@ import {
   IrisGridPanelMetadata,
   isChartPanelTableMetadata,
 } from '@deephaven/dashboard-core-plugins';
+import { DateTimeColumnFormatter } from '@deephaven/jsapi-utils';
 
 export async function createChartModel(
   dh: DhType,
@@ -77,7 +78,8 @@ export async function createChartModel(
   new IrisGridUtils(dh).applyTableSettings(
     table,
     tableSettings,
-    getTimeZone(store.getState())
+    getTimeZone(store.getState()) ??
+      DateTimeColumnFormatter.DEFAULT_TIME_ZONE_ID
   );
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -1,10 +1,5 @@
 import Log from '@deephaven/log';
 import {
-  DateTimeColumnFormatter,
-  DecimalColumnFormatter,
-  IntegerColumnFormatter,
-} from '@deephaven/jsapi-utils';
-import {
   WorkspaceStorage,
   Workspace,
   WorkspaceData,
@@ -21,15 +16,17 @@ const log = Log.module('LocalWorkspaceStorage');
 export class LocalWorkspaceStorage implements WorkspaceStorage {
   static readonly STORAGE_KEY = 'deephaven.WorkspaceStorage';
 
-  static getServerConfigValueOrUseDefault<T>(
+  static getBooleanServerConfig(
     serverConfigValues: Map<string, string> | undefined,
-    key: string,
-    defaultValue: T
-  ): string | T {
-    if (serverConfigValues && serverConfigValues.has(key)) {
-      return serverConfigValues.get(key) ?? defaultValue;
+    key: string
+  ): boolean | undefined {
+    if (serverConfigValues?.get(key)?.toLowerCase() === 'true') {
+      return true;
     }
-    return defaultValue;
+    if (serverConfigValues?.get(key)?.toLowerCase() === 'false') {
+      return false;
+    }
+    return undefined;
   }
 
   static async makeDefaultWorkspaceData(
@@ -44,43 +41,27 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
       );
     return {
       settings: {
-        defaultDateTimeFormat:
-          LocalWorkspaceStorage.getServerConfigValueOrUseDefault(
-            serverConfigValues,
-            'dateTimeFormat',
-            DateTimeColumnFormatter.DEFAULT_DATETIME_FORMAT_STRING
-          ),
+        defaultDateTimeFormat: serverConfigValues?.get('dateTimeFormat'),
         formatter: [],
-        timeZone: LocalWorkspaceStorage.getServerConfigValueOrUseDefault(
-          serverConfigValues,
-          'timeZone',
-          DateTimeColumnFormatter.DEFAULT_TIME_ZONE_ID
-        ),
+        timeZone: serverConfigValues?.get('timeZone'),
         showTimeZone: false,
         showTSeparator: true,
         disableMoveConfirmation: false,
         defaultDecimalFormatOptions: {
-          defaultFormatString:
-            LocalWorkspaceStorage.getServerConfigValueOrUseDefault(
-              serverConfigValues,
-              'decimalFormat',
-              DecimalColumnFormatter.DEFAULT_FORMAT_STRING
-            ),
+          defaultFormatString: serverConfigValues?.get('decimalFormat'),
         },
         defaultIntegerFormatOptions: {
-          defaultFormatString:
-            LocalWorkspaceStorage.getServerConfigValueOrUseDefault(
-              serverConfigValues,
-              'integerFormat',
-              IntegerColumnFormatter.DEFAULT_FORMAT_STRING
-            ),
+          defaultFormatString: serverConfigValues?.get('integerFormat'),
         },
-        truncateNumbersWithPound:
-          serverConfigValues?.get('truncateNumbersWithPound') === 'true' ??
-          false,
+        truncateNumbersWithPound: LocalWorkspaceStorage.getBooleanServerConfig(
+          serverConfigValues,
+          'truncateNumbersWithPound'
+        ),
         defaultNotebookSettings: {
-          isMinimapEnabled:
-            serverConfigValues?.get('isMinimapEnabled') === 'true' ?? false,
+          isMinimapEnabled: LocalWorkspaceStorage.getBooleanServerConfig(
+            serverConfigValues,
+            'isMinimapEnabled'
+          ),
         },
       },
       layoutConfig,
@@ -116,9 +97,51 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
     serverConfigValues?: Map<string, string>
   ): Promise<Workspace> {
     try {
-      return JSON.parse(
+      const workspace = JSON.parse(
         localStorage.getItem(LocalWorkspaceStorage.STORAGE_KEY) ?? ''
       );
+      if (workspace.settings.timeZone === undefined) {
+        workspace.settings.timeZone = serverConfigValues?.get('timeZone');
+      }
+      if (workspace.settings.defaultDateTimeFormat === undefined) {
+        workspace.settings.defaultDateTimeFormat =
+          serverConfigValues?.get('dateTimeFormat');
+      }
+      if (
+        workspace.settings.defaultDecimalFormatOptions.defaultFormatString ===
+        undefined
+      ) {
+        workspace.settings.defaultDecimalFormatOptions = {
+          defaultFormatString: serverConfigValues?.get('decimalFormat'),
+        };
+      }
+      if (
+        workspace.settings.defaultIntegerFormatOptions.defaultFormatString ===
+        undefined
+      ) {
+        workspace.settings.defaultIntegerFormatOptions = {
+          defaultFormatString: serverConfigValues?.get('integerFormat'),
+        };
+      }
+      if (workspace.settings.truncateNumbersWithPound === undefined) {
+        workspace.settings.truncateNumbersWithPound =
+          LocalWorkspaceStorage.getBooleanServerConfig(
+            serverConfigValues,
+            'truncateNumbersWithPound'
+          );
+      }
+      if (
+        workspace.settings.defaultNotebookSettings.isMinimapEnabled ===
+        undefined
+      ) {
+        workspace.settings.defaultNotebookSettings = {
+          isMinimapEnabled: LocalWorkspaceStorage.getBooleanServerConfig(
+            serverConfigValues,
+            'isMinimapEnabled'
+          ),
+        };
+      }
+      return workspace;
     } catch (e) {
       log.info('Unable to load workspace data, initializing to default data');
       return LocalWorkspaceStorage.makeDefaultWorkspace(

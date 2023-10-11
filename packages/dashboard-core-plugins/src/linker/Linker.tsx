@@ -72,7 +72,7 @@ const mapState = (state: RootState, ownProps: OwnProps): StateProps => ({
     ownProps.localDashboardId
   ),
   links: getLinksForDashboard(state, ownProps.localDashboardId),
-  timeZone: getTimeZone(state),
+  timeZone: getTimeZone(state) ?? DateTimeColumnFormatter.DEFAULT_TIME_ZONE_ID,
 });
 
 const connector = connect(mapState, {

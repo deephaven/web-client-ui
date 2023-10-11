@@ -53,11 +53,11 @@ const log = Log.module('FormattingSectionContent');
 interface FormattingSectionContentProps {
   dh: DhType;
   formatter: FormatterItem[];
-  defaultDateTimeFormat: string;
+  defaultDateTimeFormat?: string;
   showTimeZone: boolean;
   showTSeparator: boolean;
   timeZone: string;
-  truncateNumbersWithPound: boolean;
+  truncateNumbersWithPound?: boolean;
   settings: WorkspaceSettings;
   saveSettings: (settings: WorkspaceSettings) => void;
   defaultDecimalFormatOptions: FormatOption;
@@ -77,10 +77,10 @@ interface FormattingSectionContentState {
   showTimeZone: boolean;
   showTSeparator: boolean;
   timeZone: string;
-  defaultDateTimeFormat: string;
+  defaultDateTimeFormat?: string;
   defaultDecimalFormatOptions: FormatOption;
   defaultIntegerFormatOptions: FormatOption;
-  truncateNumbersWithPound: boolean;
+  truncateNumbersWithPound?: boolean;
   timestampAtMenuOpen: Date;
 }
 
@@ -333,7 +333,9 @@ export class FormattingSectionContent extends PureComponent<
   handleTruncateNumbersWithPoundChange(): void {
     this.setState(
       state => ({
-        truncateNumbersWithPound: !state.truncateNumbersWithPound,
+        truncateNumbersWithPound:
+          state.truncateNumbersWithPound === undefined ||
+          state.truncateNumbersWithPound === false,
       }),
       () => {
         this.debouncedCommitChanges();
@@ -638,7 +640,7 @@ const mapStateToProps = (
   showTimeZone: getShowTimeZone(state),
   showTSeparator: getShowTSeparator(state),
   truncateNumbersWithPound: getTruncateNumbersWithPound(state),
-  timeZone: getTimeZone(state),
+  timeZone: getTimeZone(state) ?? DateTimeColumnFormatter.DEFAULT_TIME_ZONE_ID,
   settings: getSettings(state),
 });
 
