@@ -15,17 +15,15 @@
   /* Row */
   --dh-color-grid-row-0-bg: var(--dh-color-gray-200);
   --dh-color-grid-row-1-bg: var(--dh-color-gray-100);
+  --dh-color-grid-row-hover-bg: var(--dh-color-highlight-hover);
+  --dh-color-grid-row-hover-bg-selected: var(
+    --dh-color-highlight-selected-hover
+  );
 
   /* Selection */
   --dh-color-grid-selection: var(--dh-color-highlight-selected);
   --dh-color-grid-selection-outline: var(--dh-color-accent-900);
   --dh-color-grid-selection-outline-casing: var(--dh-gray-50);
-
-  /* Row */
-  --dh-color-grid-row-hover-bg: var(--dh-color-highlight-hover);
-  --dh-color-grid-row-hover-bg-selected: var(
-    --dh-color-highlight-selected-hover
-  );
 
   /** Sroll Bar */
   --dh-color-grid-scroll-bar-active-selection-tick: var(--dh-color-accent-400);
@@ -62,18 +60,20 @@
   --dh-color-grid-filter-bar-error: var(--dh-color-visual-negative);
   --dh-color-grid-filter-icon: var(--dh-color-accent-600);
 
-  --dh-color-grid-scrim: var(--dh-color-gray-50);
+  /* Context Menu */
   --dh-color-grid-context-menu-sort-icon: var(--dh-color-visual-purple);
   --dh-color-grid-context-menu-reverse-icon: var(--dh-color-visual-green);
-  --dh-color-grid-linker-column-hover-bg: var(
+
+  /* Column */
+  --dh-color-grid-column-linker-hover-bg: var(
     --dh-color-highlight-selected-hover
   );
+  --dh-color-grid-column-grouped-divider: var(--dh-color-gray-50);
 
   /* Tree */
   --dh-color-grid-tree-line: var(--dh-color-gray-700);
   --dh-color-grid-tree-marker: var(--dh-color-gray-800);
   --dh-color-grid-tree-marker-hover: var(--dh-color-gray-900);
-  --dh-color-grid-grouped-column-divider: var(--dh-color-gray-50);
 
   /* Floating */
   --dh-color-grid-floating-row: var(--dh-color-gray-300);
@@ -81,6 +81,7 @@
   --dh-color-grid-floating-divider-inner: var(--dh-color-gray-200);
   --dh-color-grid-floating-divider-outer: var(--dh-color-gray-50);
 
+  /* Overflow Button */
   --dh-color-grid-overflow-button: var(--dh-color-gray-700);
   --dh-color-grid-overflow-button-hover: var(--dh-color-gray-900);
 
@@ -89,4 +90,7 @@
   --dh-color-grid-data-bar-negative: var(--dh-color-visual-negative);
   --dh-color-grid-data-bar-marker: var(--dh-color-white);
   --dh-color-grid-data-bar-zero-line: var(--dh-color-gray-300);
+
+  /* Scrim */
+  --dh-color-grid-scrim: var(--dh-color-gray-50);
 }

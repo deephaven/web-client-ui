@@ -80,11 +80,11 @@ $header-height: 30px;
   context-menu-reverse-icon-color: var(
     --dh-color-grid-context-menu-reverse-icon
   );
-  linker-column-hover-bg: var(--dh-color-grid-linker-column-hover-bg);
+  linker-column-hover-bg: var(--dh-color-grid-column-linker-hover-bg);
   tree-line-color: var(--dh-color-grid-tree-line);
   tree-marker-color: var(--dh-color-grid-tree-marker);
   tree-marker-hover-color: var(--dh-color-grid-tree-marker-hover);
-  grouped-column-divider-color: var(--dh-color-grid-grouped-column-divider);
+  grouped-column-divider-color: var(--dh-color-grid-column-grouped-divider);
 
   floating-grid-row-color: var(--dh-color-grid-floating-row);
   floating-row-background-colors: var(--dh-color-grid-floating-row-bg);

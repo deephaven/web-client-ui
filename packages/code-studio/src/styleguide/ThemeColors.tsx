@@ -44,7 +44,7 @@ const renameGroups = {
     selection: 'state',
     focus: 'state',
   },
-  grid: { data: 'Data Bars' },
+  grid: { data: 'Data Bars', context: 'Context Menu' },
 };
 
 export function ThemeColors(): JSX.Element {
