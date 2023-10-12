@@ -156,7 +156,7 @@ test('sort by', async ({ page }) => {
   await page.getByRole('button', { name: 'String Ascending' }).click();
 
   await waitForLoadingDone(page);
-  // await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
   await page
     .locator('.iris-grid .grid-wrapper')
@@ -166,7 +166,7 @@ test('sort by', async ({ page }) => {
   await page.getByRole('button', { name: 'String Descending' }).click();
 
   await waitForLoadingDone(page);
-  // await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
   await page
     .locator('.iris-grid .grid-wrapper')
@@ -176,7 +176,7 @@ test('sort by', async ({ page }) => {
   await page.getByRole('button', { name: 'Remove Sort' }).click();
 
   await waitForLoadingDone(page);
-  // await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 });
 
 test('freeze column', async ({ page }) => {
@@ -187,7 +187,7 @@ test('freeze column', async ({ page }) => {
   await page.getByRole('button', { name: 'Freeze Column' }).click();
 
   await waitForLoadingDone(page);
-  // await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
   await page
     .locator('.iris-grid .grid-wrapper')
@@ -196,7 +196,7 @@ test('freeze column', async ({ page }) => {
   await page.getByRole('button', { name: 'Unfreeze Column' }).click();
 
   await waitForLoadingDone(page);
-  // await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 });
 
 test('reverse table', async ({ page }) => {
@@ -207,7 +207,7 @@ test('reverse table', async ({ page }) => {
   await page.getByRole('button', { name: 'Reverse Table' }).click();
 
   await waitForLoadingDone(page);
-  // await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 });
 
 test('filter by value', async ({ page }) => {
@@ -219,7 +219,7 @@ test('filter by value', async ({ page }) => {
   await page.getByRole('button', { name: 'text is exactly' }).click();
 
   await waitForLoadingDone(page);
-  // await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
   await page
     .locator('.iris-grid .grid-wrapper')
@@ -235,19 +235,18 @@ test('go to', async ({ page }) => {
   await page.getByRole('button', { name: 'Go to' }).click();
 
   await waitForLoadingDone(page);
-  // await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
-  // TO DO: find a nicer way to locate the arrow button
-  await page.locator('div:nth-child(5) > button:nth-child(2)').click();
-  await page.locator('div:nth-child(5) > button:nth-child(2)').click();
-
-  await waitForLoadingDone(page);
-  // await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-
-  await page.locator('div:nth-child(5) > button').first().click();
+  await page.getByTestId('decrement-go-to').click();
+  await page.getByTestId('decrement-go-to').click();
 
   await waitForLoadingDone(page);
-  // await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+  await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+
+  await page.getByTestId('increment-go-to').click();
+
+  await waitForLoadingDone(page);
+  await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 });
 
 test('open custom context menu with another custom context menu open', async ({

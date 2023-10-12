@@ -385,6 +385,7 @@ const GotoRow = forwardRef<GotoRowElement, GotoRowProps>(
 
                 <div>
                   <Button
+                    data-testid="increment-go-to"
                     kind="ghost"
                     disabled={gotoValue === ''}
                     onClick={() => {
@@ -394,6 +395,7 @@ const GotoRow = forwardRef<GotoRowElement, GotoRowProps>(
                     <FontAwesomeIcon icon={vsArrowUp} />
                   </Button>
                   <Button
+                    data-testid="decrement-go-to"
                     kind="ghost"
                     disabled={gotoValue === ''}
                     onClick={() => {
