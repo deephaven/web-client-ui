@@ -46,7 +46,7 @@
   --dh-color-grid-number-positive: var(--dh-color-visual-positive);
   --dh-color-grid-number-negative: var(--dh-color-visual-negative);
   --dh-color-grid-number-zero: var(--dh-color-visual-notice);
-  --dh-color-grid-string-null: var(--dh-color-text-disabled);
+  --dh-color-grid-string-null: var(--dh-color-gray-600);
 
   /* Filter Bar */
   --dh-color-grid-filter-bar-active-bg: var(--dh-color-accent-300);

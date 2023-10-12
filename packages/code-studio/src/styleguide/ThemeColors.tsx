@@ -86,7 +86,16 @@ export function ThemeColors(): JSX.Element {
                       color: `var(--dh-color-${contrastColor(value)})`,
                     }}
                   >
-                    <Tooltip>{`${name}: ${value}`}</Tooltip>
+                    <Tooltip>
+                      <div>{name}</div>
+                      <div>{value}</div>
+                      <div>
+                        {ColorUtils.normalizeCssColor(value).replace(
+                          /^(#[a-f0-9]{6})ff$/,
+                          '$1'
+                        )}
+                      </div>
+                    </Tooltip>
                     <span>{name.replace('--dh-color-', '')}</span>
                     {name.endsWith('-hue') ? <span>{value}</span> : null}
                   </div>
