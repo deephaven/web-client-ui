@@ -80,6 +80,16 @@ function wrapWidgetPlugin(plugin: WidgetPlugin) {
   return forwardRef(Wrapper);
 }
 
+/**
+ * Widget to automatically open any supported WidgetPlugin types as panels
+ * if the widget is emitted from the server as the result of executed code.
+ *
+ * Does not open panels for widgets that are not supported by any plugins.
+ * Does not open panels for widgets that are a component of a larger widget or UI element.
+ *
+ * @param props Dashboard plugin props
+ * @returns React element
+ */
 export function WidgetLoaderPlugin(
   props: DashboardPluginComponentProps
 ): JSX.Element | null {
