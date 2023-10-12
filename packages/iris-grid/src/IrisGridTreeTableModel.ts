@@ -192,7 +192,7 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   );
 
   getCachedGroupedColumnSet = memoize(
-    (groupedColumns: Column[]) =>
+    (groupedColumns: readonly Column[]) =>
       new Set(
         groupedColumns.map(c1 =>
           this.columns.findIndex(c2 => c1.name === c2.name)
