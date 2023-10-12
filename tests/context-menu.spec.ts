@@ -18,6 +18,13 @@ async function openAdvancedFilters(page: Page) {
   await page.getByRole('button', { name: 'Advanced Filters' }).click();
 }
 
+async function scrollUpIrisGrid(page: Page) {
+  await page
+    .locator('.iris-grid .grid-wrapper')
+    .hover({ position: { x: 20, y: 20 } });
+  await page.mouse.wheel(0, -100);
+}
+
 const tableName = generateVarName('t');
 test.beforeEach(async ({ page }) => {
   await page.goto('');
@@ -89,13 +96,12 @@ test('quick filter and clear', async ({ page }) => {
     .locator('.iris-grid .grid-wrapper')
     .click({ button: 'right', position: { x: 20, y: 20 } });
 
-  await page.getByRole('button', { name: 'Quick Filters' }).click();
+  await page.getByRole('button', { name: 'Clear Column Filter' }).click();
 
   await page
     .locator('.iris-grid .grid-wrapper')
-    .click({ button: 'right', position: { x: 20, y: 20 } });
-
-  await page.getByRole('button', { name: 'Clear Column Filter' }).click();
+    .hover({ position: { x: 20, y: 20 } });
+  await page.mouse.wheel(0, -100);
 
   await waitForLoadingDone(page);
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
@@ -107,6 +113,7 @@ test('advanced filters', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Done' }).click();
   await waitForLoadingDone(page);
+  await scrollUpIrisGrid(page);
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
   await openAdvancedFilters(page);
@@ -114,6 +121,7 @@ test('advanced filters', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Done' }).click();
   await waitForLoadingDone(page);
+  await scrollUpIrisGrid(page);
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
   await openAdvancedFilters(page);
@@ -122,6 +130,7 @@ test('advanced filters', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Done' }).click();
   await waitForLoadingDone(page);
+  await scrollUpIrisGrid(page);
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
   await openAdvancedFilters(page);
@@ -129,6 +138,8 @@ test('advanced filters', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Done' }).click();
   await waitForLoadingDone(page);
+  await scrollUpIrisGrid(page);
+
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
   await openAdvancedFilters(page);
@@ -136,13 +147,17 @@ test('advanced filters', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Done' }).click();
   await waitForLoadingDone(page);
+  await scrollUpIrisGrid(page);
+
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
   await openAdvancedFilters(page);
   await page.getByRole('button', { name: 'Select All' }).click();
 
   await page.getByRole('button', { name: 'Done' }).click();
+
   await waitForLoadingDone(page);
+  await scrollUpIrisGrid(page);
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 });
 
