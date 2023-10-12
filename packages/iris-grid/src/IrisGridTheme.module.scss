@@ -1,12 +1,9 @@
 /* stylelint-disable */
 @import '@deephaven/components/scss/custom.scss';
 
-$selection-color: rgba($blue, 0.09);
 $selection-outline-color: $blue;
-$selection-outline-casing-color: $gray-900;
 $font-size: 12px;
 $row-height: 19px;
-$row-hover-bg: mix($gray-600, $gray-700, 50%);
 $header-bg: $content-bg;
 $header-separator-color: $gray-900;
 $header-height: 30px;
