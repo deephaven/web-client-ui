@@ -1,4 +1,9 @@
 import type { BaseThemeType } from '@deephaven/components';
+import { type JsWidget } from '@deephaven/jsapi-types';
+import {
+  type EventEmitter,
+  type ItemContainer,
+} from '@deephaven/golden-layout';
 import type { IconDefinition } from '@fortawesome/fontawesome-common-types';
 import type { TablePluginComponent } from './TablePlugin';
 
@@ -69,7 +74,14 @@ export function isLegacyPlugin(plugin: unknown): plugin is LegacyPlugin {
 export type PluginModule = Plugin | LegacyPlugin;
 
 export interface Plugin {
+  /**
+   * The name of the plugin. This will be used as an identifier for the plugin and should be unique.
+   */
   name: string;
+
+  /**
+   * The type of plugin.
+   */
   type: (typeof PluginType)[keyof typeof PluginType];
 }
 
@@ -92,17 +104,46 @@ export function isDashboardPlugin(
   return 'type' in plugin && plugin.type === PluginType.DASHBOARD_PLUGIN;
 }
 
+export interface WidgetComponentProps {
+  fetch: () => Promise<JsWidget>;
+  metadata?: {
+    id?: string;
+    name?: string;
+    type?: string;
+  };
+  localDashboardId: string;
+  glContainer: ItemContainer;
+  glEventHub: EventEmitter;
+}
+
 export interface WidgetPlugin extends Plugin {
   type: typeof PluginType.WIDGET_PLUGIN;
   /**
    * This component is used any time a widget type supported by this plugin is created.
    * The component will be wrapped in a default panel if necessary.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  component: React.ComponentType<any>;
+  component: React.ComponentType<WidgetComponentProps>;
 
   /**
-   * The variable types that this plugin will handle.
+   * The title to display for widgets handled by the plugin.
+   * If not specified, the plugin name will be used as the title.
+   *
+   * A plugin may have a name of `@deehaven/pandas` and a title of `Pandas`.
+   * This way, the user will just see `Pandas panel` instead of `@deephaven/pandas panel`.
+   */
+  title?: string;
+
+  /**
+   * Whether to wrap the widget in a default panel.
+   * Only applied if the widget is emitted directly from the server.
+   * Will not be applied if the widget is part of another widget such as a @deephaven/ui panel.
+   *
+   * @default true
+   */
+  wrapWidget?: boolean;
+
+  /**
+   * The server widget types that this plugin will handle.
    */
   supportedTypes?: string | string[];
 

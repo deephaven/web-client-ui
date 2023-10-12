@@ -82,6 +82,20 @@ export interface VariableDefinition<T extends string = string> {
   id?: string;
 }
 
+export interface JsWidget extends Evented {
+  getDataAsBase64: () => string;
+  getDataAsU8: () => string;
+  getDataAsString: () => string;
+  exportedObjects: {
+    fetch: () => Promise<Table | Figure | TreeTable | JsWidget>;
+  }[];
+  sendMessage: (
+    message: string | ArrayBuffer | ArrayBufferView,
+    references?: unknown[]
+  ) => void;
+  close: () => void;
+}
+
 export interface LogItem {
   micros: number;
   logLevel: string;

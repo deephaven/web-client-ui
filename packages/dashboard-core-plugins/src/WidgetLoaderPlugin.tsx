@@ -1,4 +1,11 @@
-import { useMemo, useCallback, type ComponentType, useEffect } from 'react';
+import {
+  useMemo,
+  useCallback,
+  type ComponentType,
+  useEffect,
+  forwardRef,
+  useState,
+} from 'react';
 import type { ReactComponentConfig } from '@deephaven/golden-layout';
 import shortid from 'shortid';
 import {
@@ -9,16 +16,76 @@ import {
   PanelOpenEventDetail,
   LayoutUtils,
   useListener,
+  PanelProps,
+  canHaveRef,
 } from '@deephaven/dashboard';
 import { usePlugins } from '@deephaven/app-utils';
-import { isWidgetPlugin } from '@deephaven/plugin';
+import {
+  isWidgetPlugin,
+  type WidgetPlugin,
+  WidgetComponentProps,
+} from '@deephaven/plugin';
+import { WidgetPanel } from './panels';
+
+function wrapWidgetPlugin(plugin: WidgetPlugin) {
+  function Wrapper(props: PanelProps, ref: React.ForwardedRef<unknown>) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const C = plugin.component as any;
+    const { metadata } = props;
+    const [componentPanel, setComponentPanel] = useState<ComponentType>();
+    const refCallback = useCallback(
+      (e: ComponentType) => {
+        setComponentPanel(e);
+        if (typeof ref === 'function') {
+          ref(e);
+        } else if (ref != null) {
+          // eslint-disable-next-line no-param-reassign
+          ref.current = e;
+        }
+      },
+      [ref]
+    );
+
+    const hasRef = canHaveRef(C);
+
+    return (
+      <WidgetPanel
+        widgetName={metadata?.name}
+        widgetType={plugin.name}
+        componentPanel={componentPanel}
+        // eslint-disable-next-line react/jsx-props-no-spreading
+        {...props}
+      >
+        {hasRef ? (
+          <C
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            {...props}
+            ref={refCallback}
+          />
+        ) : (
+          <C
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            {...props}
+          />
+        )}
+        )
+      </WidgetPanel>
+    );
+  }
+
+  Wrapper.displayName = `WidgetLoaderPlugin(${
+    plugin.component.displayName ?? plugin.name
+  })`;
+
+  return forwardRef(Wrapper);
+}
 
 export function WidgetLoaderPlugin(
   props: DashboardPluginComponentProps
 ): JSX.Element | null {
   const plugins = usePlugins();
   const supportedTypes = useMemo(() => {
-    const typeMap = new Map<string, ComponentType>();
+    const typeMap = new Map<string, ComponentType<WidgetComponentProps>>();
     plugins.forEach(plugin => {
       if (!isWidgetPlugin(plugin)) {
         return;
@@ -76,7 +143,17 @@ export function WidgetLoaderPlugin(
   useEffect(() => {
     const deregisterFns = [...plugins.values()]
       .filter(isWidgetPlugin)
-      .map(plugin => registerComponent(plugin.name, plugin.component));
+      .map(plugin => {
+        const { wrapWidget = true } = plugin;
+        if (wrapWidget) {
+          return registerComponent(plugin.name, wrapWidgetPlugin(plugin));
+        }
+        return registerComponent(
+          plugin.name,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          plugin.component as ComponentType<any>
+        );
+      });
 
     return () => {
       deregisterFns.forEach(deregister => deregister());

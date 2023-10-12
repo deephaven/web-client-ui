@@ -1,10 +1,11 @@
 import { DashboardPanelProps } from '@deephaven/dashboard';
+import { WidgetComponentProps } from '@deephaven/plugin';
 import { forwardRef, useMemo } from 'react';
 import { PandasPanel } from './panels';
 import useHydrateGrid from './useHydrateGrid';
 
 export const PandasPlugin = forwardRef(
-  (props: DashboardPanelProps, ref: React.Ref<PandasPanel>) => {
+  (props: WidgetComponentProps, ref: React.Ref<PandasPanel>) => {
     const hydrate = useHydrateGrid<DashboardPanelProps>();
     const { localDashboardId } = props;
     const hydratedProps = useMemo(

@@ -36,7 +36,6 @@ import {
   CommandHistoryStorage,
   CommandHistoryStorageItem,
 } from './command-history';
-import { ObjectIcon } from './common';
 
 const log = Log.module('Console');
 
@@ -114,7 +113,8 @@ function defaultSupportsType(): boolean {
 }
 
 function defaultIconForType(type: string): ReactElement {
-  return <ObjectIcon type={type} />;
+  // eslint-disable-next-line react/jsx-no-useless-fragment
+  return <></>;
 }
 
 export class Console extends PureComponent<ConsoleProps, ConsoleState> {

@@ -4,6 +4,7 @@ import PandasPlugin from './PandasPlugin';
 
 const PandasPluginConfig: WidgetPlugin = {
   name: 'PandasPlugin',
+  wrapWidget: false,
   type: PluginType.WIDGET_PLUGIN,
   component: PandasPlugin,
   supportedTypes: 'pandas.DataFrame',

@@ -1,5 +1,6 @@
 import React, {
   Component,
+  ComponentType,
   PureComponent,
   ReactElement,
   ReactNode,
@@ -15,7 +16,7 @@ import './WidgetPanel.scss';
 
 interface WidgetPanelProps {
   children: ReactNode;
-  componentPanel: Component;
+  componentPanel?: ComponentType | Component;
 
   glContainer: Container;
   glEventHub: EventEmitter;

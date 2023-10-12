@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@deephaven/components": "file:../components",
+    "@deephaven/golden-layout": "file:../golden-layout",
     "@deephaven/icons": "file:../icons",
     "@deephaven/iris-grid": "file:../iris-grid",
     "@deephaven/jsapi-types": "file:../jsapi-types",

@@ -9,6 +9,7 @@ import {
   Console,
   ConsoleConstants,
   HeapUsage,
+  ObjectIcon,
 } from '@deephaven/console';
 import { DashboardPanelProps, PanelEvent } from '@deephaven/dashboard';
 import type { IdeSession, VariableDefinition } from '@deephaven/jsapi-types';
@@ -324,7 +325,11 @@ export class ConsolePanel extends PureComponent<
   iconForType(type: string): JSX.Element {
     const { plugins } = this.props;
     const plugin = [...plugins.values()].find(p => pluginSupportsType(p, type));
-    return getIconForType(plugin, type);
+    if (plugin != null) {
+      return getIconForType(plugin, type);
+    }
+    // TODO: #1573 Remove this default and always return getIconForType
+    return <ObjectIcon type={type} />;
   }
 
   render(): ReactElement {
