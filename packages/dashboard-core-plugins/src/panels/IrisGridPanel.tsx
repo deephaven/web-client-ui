@@ -141,12 +141,10 @@ export interface IrisGridPanelProps extends DashboardPanelProps {
   onStateChange?: (irisGridState: IrisGridState, gridState: GridState) => void;
   onPanelStateUpdate?: (panelState: PanelState) => void;
 
-  /**
-   * Override the default worker used by IrisGrid to download CSVs.
-   */
+  /** Override the default worker used by IrisGrid to download CSVs. */
   getDownloadWorker?: () => Promise<ServiceWorker>;
 
-  // Load a plugin defined by the table
+  /** Load a plugin defined by the table */
   loadPlugin: (pluginName: string) => TablePluginComponent;
 
   theme?: IrisGridThemeType;

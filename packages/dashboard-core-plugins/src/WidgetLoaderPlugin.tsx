@@ -20,12 +20,11 @@ import {
   canHaveRef,
 } from '@deephaven/dashboard';
 import { usePlugins } from '@deephaven/app-utils';
-import {
-  isWidgetPlugin,
-  type WidgetPlugin,
-  WidgetComponentProps,
-} from '@deephaven/plugin';
+import { isWidgetPlugin, type WidgetPlugin } from '@deephaven/plugin';
+import Log from '@deephaven/log';
 import { WidgetPanel } from './panels';
+
+const log = Log.module('WidgetLoaderPlugin');
 
 function wrapWidgetPlugin(plugin: WidgetPlugin) {
   function Wrapper(props: PanelProps, ref: React.ForwardedRef<unknown>) {
@@ -95,7 +94,7 @@ export function WidgetLoaderPlugin(
 ): JSX.Element | null {
   const plugins = usePlugins();
   const supportedTypes = useMemo(() => {
-    const typeMap = new Map<string, ComponentType<WidgetComponentProps>>();
+    const typeMap = new Map<string, WidgetPlugin>();
     plugins.forEach(plugin => {
       if (!isWidgetPlugin(plugin)) {
         return;
@@ -103,7 +102,14 @@ export function WidgetLoaderPlugin(
 
       [plugin.supportedTypes].flat().forEach(supportedType => {
         if (supportedType != null && supportedType !== '') {
-          typeMap.set(supportedType, plugin.component);
+          if (typeMap.has(supportedType)) {
+            log.warn(
+              `Multiple WidgetPlugins handling type ${supportedType}. Replacing ${typeMap.get(
+                supportedType
+              )?.name} with ${plugin.name} to handle ${supportedType}`
+            );
+          }
+          typeMap.set(supportedType, plugin);
         }
       });
     });
@@ -123,7 +129,7 @@ export function WidgetLoaderPlugin(
     }: PanelOpenEventDetail) => {
       const { id: widgetId, type } = widget;
       const name = widget.title ?? widget.name;
-      const component = supportedTypes.get(type);
+      const { component } = supportedTypes.get(type) ?? {};
       if (component == null) {
         return;
       }
