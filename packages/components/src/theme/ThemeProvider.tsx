@@ -8,6 +8,7 @@ import {
   getThemePreloadData,
   setThemePreloadData,
 } from './ThemeUtils';
+import { SpectrumThemeProvider } from './SpectrumThemeProvider';
 
 export interface ThemeContextValue {
   activeThemes: ThemeData[] | null;
@@ -71,12 +72,16 @@ export function ThemeProvider({
 
   return (
     <ThemeContext.Provider value={value}>
-      {activeThemes?.map(theme => (
-        <style data-theme-key={theme.themeKey} key={theme.themeKey}>
-          {theme.styleContent}
-        </style>
-      ))}
-      {children}
+      {activeThemes == null ? null : (
+        <SpectrumThemeProvider>
+          {activeThemes.map(theme => (
+            <style data-theme-key={theme.themeKey} key={theme.themeKey}>
+              {theme.styleContent}
+            </style>
+          ))}
+          {children}
+        </SpectrumThemeProvider>
+      )}
     </ThemeContext.Provider>
   );
 }

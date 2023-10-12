@@ -53,6 +53,11 @@
     0.2
   );
 
+  /* Shadows / Overlays */
+  --dh-color-dropshadow: hsla(var(--dh-color-gray-hue), 0, 0, 0.8);
+  --dh-color-overlay-modal-bg: hsla(var(--dh-color-gray-hue), 0%, 0%, 0.6);
+  --dh-color-overlay-hover-bg: hsla(var(--dh-color-gray-hue), 0%, 100%, 0.08);
+
   /* Negative Background */
   --dh-color-negative-background-default: var(--dh-color-red-600);
   --dh-color-negative-background-hover: var(--dh-color-red-500);

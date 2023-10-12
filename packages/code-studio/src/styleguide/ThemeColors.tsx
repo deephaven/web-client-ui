@@ -5,6 +5,7 @@ import palette from '@deephaven/components/src/theme/theme-dark/theme-dark-palet
 import semantic from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic.css?inline';
 import semanticEditor from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic-editor.css?inline';
 import semanticGrid from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic-grid.css?inline';
+import components from '@deephaven/components/src/theme/theme-dark/theme-dark-components.css?inline';
 import styles from './ThemeColors.module.scss';
 
 // Group names are extracted from var names via a regex capture group. Most of
@@ -54,6 +55,7 @@ export function ThemeColors(): JSX.Element {
       'Semantic Colors': buildColorGroups(semantic, 1),
       'Editor Colors': buildColorGroups(semanticEditor, 2, renameGroups.editor),
       'Grid Colors': buildColorGroups(semanticGrid, 2, renameGroups.grid),
+      Components: buildColorGroups(components, 1),
     }),
     []
   );
