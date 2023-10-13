@@ -3,7 +3,7 @@ import shortid from 'shortid';
 /**
  * Exports a function for initializing monaco with the deephaven theme/config
  */
-import { Shortcut } from '@deephaven/components';
+import { resolveCssVariablesInRecord, Shortcut } from '@deephaven/components';
 import type { IdeSession } from '@deephaven/jsapi-types';
 import { assertNotNull } from '@deephaven/utils';
 import { find as linkifyFind } from 'linkifyjs';
@@ -12,7 +12,7 @@ import type { Environment } from 'monaco-editor';
 // @ts-ignore
 import { KeyCodeUtils } from 'monaco-editor/esm/vs/base/common/keyCodes.js';
 import Log from '@deephaven/log';
-import MonacoTheme from './MonacoTheme.module.scss';
+import MonacoThemeRaw from './MonacoTheme.module.scss';
 import PyLang from './lang/python';
 import GroovyLang from './lang/groovy';
 import ScalaLang from './lang/scala';
@@ -44,6 +44,10 @@ class MonacoUtils {
     }
 
     const { registerLanguages, removeHashtag } = MonacoUtils;
+
+    const MonacoTheme = resolveCssVariablesInRecord(MonacoThemeRaw);
+    log.debug2('Monaco theme:', MonacoThemeRaw);
+    log.debug2('Monaco theme derived:', MonacoTheme);
 
     const dhDarkRules = [
       { token: '', foreground: removeHashtag(MonacoTheme.foreground) },
@@ -154,7 +158,7 @@ class MonacoUtils {
       rules: dhDarkRules,
       colors: dhDarkColors,
     });
-    log.debug2('monaco theme: ', MonacoTheme);
+
     monaco.editor.setTheme('dh-dark');
 
     registerLanguages([DbLang, PyLang, GroovyLang, LogLang, ScalaLang]);

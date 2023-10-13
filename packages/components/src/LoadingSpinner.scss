@@ -2,7 +2,7 @@
 .loading-spinner {
   --primary-color: var(
     --dh-loading-spinner-primary-color,
-    var(--dh-accent-color, #4c7dee)
+    var(--dh-color-accent, #4c7dee)
   );
   --secondary-color: var(
     --dh-loading-spinner-secondary-color,

@@ -47,8 +47,8 @@
   /* Semantic */
   --dh-color-black: var(--dh-color-gray-50);
   --dh-color-white: var(--dh-color-gray-75);
-  --dh-accent-color: var(--dh-color-blue-700);
-  --dh-background-color: var(--dh-color-white);
-  --dh-foreground-color: var(--dh-color-black);
-  --dh-grid-background-color: var(--dh-background-color);
+  --dh-color-accent: var(--dh-color-blue-700);
+  --dh-color-background: var(--dh-color-white);
+  --dh-color-foreground: var(--dh-color-black);
+  --dh-color-grid-background: var(--dh-color-background);
 }
