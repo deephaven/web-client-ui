@@ -251,13 +251,13 @@ test('go to', async ({ page }) => {
   await waitForLoadingDone(page);
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
-  await page.getByTestId('decrement-go-to').click();
-  await page.getByTestId('decrement-go-to').click();
+  await page.locator('[aria-label="Previous match"]').first().click();
+  await page.locator('[aria-label="Previous match"]').first().click();
 
   await waitForLoadingDone(page);
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
-  await page.getByTestId('increment-go-to').click();
+  await page.locator('[aria-label="Next match"]').first().click();
 
   await waitForLoadingDone(page);
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
