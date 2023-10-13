@@ -3,9 +3,7 @@ import {
   makeTableCommand,
   pasteInMonaco,
   TableTypes,
-  dragComponent,
   waitForLoadingDone,
-  openTableOption,
   generateVarName,
 } from './utils';
 
@@ -248,6 +246,7 @@ test('go to', async ({ page }) => {
     .click({ button: 'right', position: { x: 20, y: 60 } });
 
   await page.getByRole('button', { name: 'Go to' }).click();
+  await page.getByLabel('filter-type-select').selectOption('Equals');
 
   await waitForLoadingDone(page);
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
@@ -276,4 +275,6 @@ test('open custom context menu with another custom context menu open', async ({
     .getByText('Command History')
     .click({ button: 'right', force: true });
   await expect(page.getByText('Close', { exact: true })).toHaveCount(1);
+
+  await page.getByText('Console').click({ force: true });
 });
