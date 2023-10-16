@@ -70,6 +70,7 @@ body:not(.lm_dragging) .lm_header .lm_tab .lm_close_tab:hover {
 // Single Pane content (area in which final dragged content is contained)
 .lm_content {
   background: $content-bg;
+  overflow: visible;
 }
 
 // Single Pane content during Drag (style of moving window following mouse)
