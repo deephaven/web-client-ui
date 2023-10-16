@@ -84,7 +84,7 @@ export interface VariableDefinition<T extends string = string> {
 
 export interface JsWidget extends Evented {
   getDataAsBase64: () => string;
-  getDataAsU8: () => string;
+  getDataAsU8: () => Uint8Array;
   getDataAsString: () => string;
   exportedObjects: {
     fetch: () => Promise<Table | Figure | TreeTable | JsWidget>;
