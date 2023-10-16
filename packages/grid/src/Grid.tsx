@@ -1323,6 +1323,12 @@ class Grid extends PureComponent<GridProps, GridState> {
    * @param viewState New state properties to set.
    * @param forceUpdate Whether to force an update.
    */
+  // add in new param to take in event type
+  // user scroll in drag bar
+  // mouse wheel event down
+  // keyboard arrow event down
+  // keyboard shortcut like end, page down
+  // otherwise don't change
   setViewState(viewState: Partial<GridState>, forceUpdate = false): void {
     if (!this.metrics) throw new Error('metrics not set');
 
