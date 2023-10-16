@@ -344,7 +344,7 @@ export interface Widget {
     listener: (event: unknown) => void
   ) => () => void;
   getDataAsBase64(): string;
-  sendMessage: (message: string, args: unknown[]) => void;
+  sendMessage: (message: string, references?: never[]) => void;
 }
 
 export interface FigureDataUpdatedEvent {
