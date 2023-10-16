@@ -50,7 +50,7 @@ function wrapWidgetPlugin(plugin: WidgetPlugin) {
     return (
       <WidgetPanel
         widgetName={metadata?.name}
-        widgetType={plugin.name}
+        widgetType={plugin.title}
         componentPanel={componentPanel}
         // eslint-disable-next-line react/jsx-props-no-spreading
         {...props}
@@ -160,15 +160,11 @@ export function WidgetLoaderPlugin(
     const deregisterFns = [...plugins.values()]
       .filter(isWidgetPlugin)
       .map(plugin => {
-        const { wrapWidget = true } = plugin;
-        if (wrapWidget) {
+        const { panelComponent } = plugin;
+        if (panelComponent == null) {
           return registerComponent(plugin.name, wrapWidgetPlugin(plugin));
         }
-        return registerComponent(
-          plugin.name,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          plugin.component as ComponentType<any>
-        );
+        return registerComponent(plugin.name, panelComponent);
       });
 
     return () => {

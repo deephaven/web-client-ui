@@ -119,13 +119,18 @@ export interface WidgetComponentProps {
 export interface WidgetPlugin extends Plugin {
   type: typeof PluginType.WIDGET_PLUGIN;
   /**
-   * This component is used any time a widget type supported by this plugin is created.
-   * The component will be wrapped in a default panel if necessary.
+   * The component that can render the widget types the plugin supports.
+   *
+   * If the widget should be opened as a panel by itself (determined by the UI),
+   * then `panelComponent` will be used instead.
+   * The component will be wrapped in a default panel if `panelComponent` is not provided.
    */
   component: React.ComponentType<WidgetComponentProps>;
 
   /**
    * The title to display for widgets handled by the plugin.
+   * This is a user friendly name to denote the type of widget.
+   * Does not have to be unique across plugins.
    * If not specified, the plugin name will be used as the title.
    *
    * A plugin may have a name of `@deehaven/pandas` and a title of `Pandas`.
@@ -134,13 +139,14 @@ export interface WidgetPlugin extends Plugin {
   title?: string;
 
   /**
-   * Whether to wrap the widget in a default panel.
-   * Only applied if the widget is emitted directly from the server.
-   * Will not be applied if the widget is part of another widget such as a @deephaven/ui panel.
+   * The component to use if the widget should be mounted as a panel.
+   * If omitted, the default panel will be used.
+   * This provides access to panel events such as onHide and onTabFocus.
    *
-   * @default true
+   * See @deephaven/dashboard-core-plugins WidgetPanel for the component that should be used here.
    */
-  wrapWidget?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  panelComponent?: React.ComponentType<WidgetComponentProps>;
 
   /**
    * The server widget types that this plugin will handle.
