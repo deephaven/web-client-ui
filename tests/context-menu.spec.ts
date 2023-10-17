@@ -16,13 +16,6 @@ async function openAdvancedFilters(page: Page) {
   await page.getByRole('button', { name: 'Advanced Filters' }).click();
 }
 
-async function scrollUpIrisGrid(page: Page) {
-  await page
-    .locator('.iris-grid .grid-wrapper')
-    .hover({ position: { x: 20, y: 20 } });
-  await page.mouse.wheel(0, -100);
-}
-
 const tableName = generateVarName('t');
 test.beforeEach(async ({ page }) => {
   await page.goto('');
@@ -111,7 +104,6 @@ test('advanced filters', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Done' }).click();
   await waitForLoadingDone(page);
-  await scrollUpIrisGrid(page);
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
   await openAdvancedFilters(page);
@@ -119,7 +111,6 @@ test('advanced filters', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Done' }).click();
   await waitForLoadingDone(page);
-  await scrollUpIrisGrid(page);
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
   await openAdvancedFilters(page);
@@ -128,7 +119,6 @@ test('advanced filters', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Done' }).click();
   await waitForLoadingDone(page);
-  await scrollUpIrisGrid(page);
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
   await openAdvancedFilters(page);
@@ -136,7 +126,6 @@ test('advanced filters', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Done' }).click();
   await waitForLoadingDone(page);
-  await scrollUpIrisGrid(page);
 
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
@@ -145,7 +134,6 @@ test('advanced filters', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Done' }).click();
   await waitForLoadingDone(page);
-  await scrollUpIrisGrid(page);
 
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
@@ -155,7 +143,6 @@ test('advanced filters', async ({ page }) => {
   await page.getByRole('button', { name: 'Done' }).click();
 
   await waitForLoadingDone(page);
-  await scrollUpIrisGrid(page);
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 });
 
