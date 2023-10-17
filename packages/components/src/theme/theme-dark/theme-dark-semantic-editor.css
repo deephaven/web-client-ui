@@ -1,37 +1,37 @@
 :root {
   /* Editor */
-  --dh-color-editor-background: var(--dh-color-content-background);
-  --dh-color-editor-foreground: var(--dh-color-gray-900);
-  --dh-color-editor-error-foreground: var(--dh-color-visual-red);
-  --dh-color-editor-line-number-foreground: var(--dh-color-gray-700);
+  --dh-color-editor-bg: var(--dh-color-content-background);
+  --dh-color-editor-fg: var(--dh-color-gray-900);
+  --dh-color-editor-error-fg: var(--dh-color-visual-red);
+  --dh-color-editor-line-number-fg: var(--dh-color-gray-700);
   --dh-color-editor-line-highlight-bg: var(--dh-color-gray-200);
-  --dh-color-editor-selection-background: var(--dh-color-text-highlight);
+  --dh-color-editor-selection-bg: var(--dh-color-text-highlight);
 
   /* Code rules */
-  --dh-color-editor-string: var(--dh-color-visual-yellow);
-  --dh-color-editor-string-delim: var(--dh-color-gray-700);
+  --dh-color-editor-comment: var(--dh-color-gray-700);
   --dh-color-editor-delimiter: var(--dh-color-gray-700);
-  --dh-color-editor-predefined: var(--dh-color-visual-green);
+  --dh-color-editor-identifier-js: var(--dh-color-visual-yellow);
+  --dh-color-editor-identifier-namespace: var(--dh-color-visual-red);
+  --dh-color-editor-identifier: var(--dh-color-gray-900);
   --dh-color-editor-keyword: var(--dh-color-visual-cyan);
-  --dh-color-editor-storage: var(--dh-color-visual-red);
   --dh-color-editor-number: var(--dh-color-visual-purple);
   --dh-color-editor-operator: var(--dh-color-visual-red);
-  --dh-color-editor-identifier: var(--dh-color-gray-900);
-  --dh-color-editor-identifier-namespace: var(--dh-color-visual-red);
-  --dh-color-editor-identifier-js: var(--dh-color-visual-yellow);
-  --dh-color-editor-comment: var(--dh-color-gray-700);
+  --dh-color-editor-predefined: var(--dh-color-visual-green);
+  --dh-color-editor-storage: var(--dh-color-visual-red);
+  --dh-color-editor-string-delim: var(--dh-color-gray-700);
+  --dh-color-editor-string: var(--dh-color-visual-yellow);
 
   /* Input */
   --dh-color-editor-focus-border: var(--dh-color-focus-border);
   --dh-color-editor-input-option-active-border: var(--dh-color-focus-ring);
-  --dh-color-editor-input-background: var(--dh-color-background);
-  --dh-color-editor-input-foreground: var(--dh-color-text);
+  --dh-color-editor-input-bg: var(--dh-color-background);
+  --dh-color-editor-input-fg: var(--dh-color-text);
   --dh-color-editor-input-border: var(--dh-color-border);
 
   /* Menus */
-  --dh-color-editor-context-menu-background: var(--dh-color-gray-300);
-  --dh-color-editor-context-menu-foreground: var(--dh-color-gray-900);
-  --dh-color-editor-menu-selection-background: var(--dh-color-highlight-hover);
+  --dh-color-editor-context-menu-bg: var(--dh-color-gray-300);
+  --dh-color-editor-context-menu-fg: var(--dh-color-gray-900);
+  --dh-color-editor-menu-selection-bg: var(--dh-color-highlight-hover);
 
   /* Logging */
   --dh-color-editor-log-date: var(--dh-color-gray-700);
@@ -43,25 +43,23 @@
   --dh-color-editor-log-trace: var(--dh-color-visual-green);
 
   /* Find */
-  --dh-color-editor-find-background: var(--dh-color-gray-200);
-  --dh-color-editor-find-match-background: var(--dh-color-highlight-selected);
-  --dh-color-editor-find-match-highlight-background: var(
+  --dh-color-editor-find-bg: var(--dh-color-gray-200);
+  --dh-color-editor-find-match-bg: var(--dh-color-highlight-selected);
+  --dh-color-editor-find-match-highlight-bg: var(
     --dh-color-highlight-selected-hover
   );
-  --dh-color-editor-find-option-active-background: var(--dh-color-accent-700);
-  --dh-color-editor-find-option-active-foreground: var(--dh-color-gray-900);
+  --dh-color-editor-find-option-active-bg: var(--dh-color-accent-700);
+  --dh-color-editor-find-option-active-fg: var(--dh-color-gray-900);
 
   /* Suggest */
-  --dh-color-editor-suggest-background: var(--dh-color-gray-200);
+  --dh-color-editor-suggest-bg: var(--dh-color-gray-200);
   --dh-color-editor-suggest-border: var(--dh-color-gray-400);
-  --dh-color-editor-suggest-foreground: var(--dh-color-gray-100);
-  --dh-color-editor-suggest-selected-background: var(
-    --dh-color-highlight-selected
-  );
-  --dh-color-editor-suggest-highlight-foreground: var(--dh-color-accent-700);
-  --dh-color-editor-suggest-hover-background: var(--dh-color-highlight-hover);
+  --dh-color-editor-suggest-fg: var(--dh-color-gray-100);
+  --dh-color-editor-suggest-selected-bg: var(--dh-color-highlight-selected);
+  --dh-color-editor-suggest-highlight-fg: var(--dh-color-accent-700);
+  --dh-color-editor-suggest-hover-bg: var(--dh-color-highlight-hover);
 
   /* Links */
   --dh-color-editor-link-foreground: var(--dh-color-accent-1000);
-  --dh-color-editor-link-active-foreground: var(--dh-color-accent-1100);
+  --dh-color-editor-link-active-fg: var(--dh-color-accent-1100);
 }
