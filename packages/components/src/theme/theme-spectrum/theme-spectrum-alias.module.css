@@ -69,14 +69,6 @@
     --spectrum-global-color-gray-50
   );
 
-  /* Miller Columns */
-  --spectrum-miller-column-item-background-color-selected: var(
-    --dh-color-column-miller-item-selected-bg
-  );
-  --spectrum-miller-column-item-background-color-selected-hover: var(
-    --dh-color-column-miller-item-selected-hover-bg
-  );
-
   /* Tabs */
   --spectrum-tabs-compact-selection-indicator-color: var(
     --spectrum-global-color-blue-500

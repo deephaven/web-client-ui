@@ -3,18 +3,4 @@
   --dh-color-quickactions-bg: hsla(var(--dh-color-gray-hue), 0%, 11%, 0.9);
   --dh-color-radial-reaction: hsla(var(--dh-color-gray-hue), 0%, 92%, 0.6);
   --dh-color-colorpicker-border: hsla(var(--dh-color-gray-hue), 0%, 94%, 0.1);
-
-  /* Miller Columns */
-  --dh-color-column-miller-item-selected-bg: hsla(
-    calc(var(--dh-color-blue-hue) - 9deg),
-    83%,
-    54%,
-    0.1
-  );
-  --dh-color-column-miller-item-selected-hover-bg: hsla(
-    calc(var(--dh-color-blue-hue) - 9deg),
-    83%,
-    54%,
-    0.2
-  );
 }
