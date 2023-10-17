@@ -185,7 +185,7 @@ class SelectionKeyHandler extends KeyHandler {
 
         grid.moveCursorToPosition(left, cursorRow, isShiftKey, false);
 
-        grid.setViewState({ left });
+        grid.setViewState({ left }, false, event);
       } else if (autoSelectColumn && deltaRow !== 0) {
         const { lastTop } = grid.metrics;
         let { top } = grid.state;
@@ -194,9 +194,12 @@ class SelectionKeyHandler extends KeyHandler {
 
         grid.moveCursorToPosition(top, cursorColumn, isShiftKey, false);
 
-        grid.setViewState({ top });
+        grid.setViewState({ top }, false, event);
       } else {
+        const { lastLeft, lastTop } = grid.metrics;
+
         grid.moveCursor(deltaColumn, deltaRow, isShiftKey);
+        grid.setViewState({ left: lastLeft, top: lastTop }, false, event); // need to call setViewState again since moveCursor calls a series of functions that sets view state
       }
     }
     return true;
@@ -279,7 +282,7 @@ class SelectionKeyHandler extends KeyHandler {
       isShiftKey,
       false
     );
-    grid.setViewState({ top: viewportPosition });
+    grid.setViewState({ top: viewportPosition }, false, e);
 
     return true;
   }

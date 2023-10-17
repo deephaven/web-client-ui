@@ -1323,20 +1323,34 @@ class Grid extends PureComponent<GridProps, GridState> {
    * @param viewState New state properties to set.
    * @param forceUpdate Whether to force an update.
    */
-  // add in new param to take in event type
-  // user scroll in drag bar
-  // mouse wheel event down
-  // keyboard arrow event down
-  // keyboard shortcut like end, page down
-  // otherwise don't change
-  setViewState(viewState: Partial<GridState>, forceUpdate = false): void {
+
+  setViewState(
+    viewState: Partial<GridState>,
+    forceUpdate = false,
+    eventType: WheelEvent | GridKeyboardEvent | null = null
+  ): void {
     if (!this.metrics) throw new Error('metrics not set');
 
     const { isStickyBottom, isStickyRight } = this.props;
     const { top, left } = viewState;
     const { lastTop, lastLeft } = this.metrics;
+    let isUserInputDown = false;
+
+    if (eventType instanceof WheelEvent) {
+      isUserInputDown = eventType.deltaY > 0;
+    } else if (
+      eventType instanceof KeyboardEvent ||
+      (eventType && 'nativeEvent' in eventType) // used to catch the case that a synthetic react keyboard event is passed
+    ) {
+      isUserInputDown =
+        eventType.key === 'ArrowDown' ||
+        eventType.key === 'End' ||
+        eventType.key === 'PageDown';
+    }
     if (top != null) {
-      this.setState({ isStuckToBottom: isStickyBottom && top >= lastTop });
+      this.setState({
+        isStuckToBottom: isStickyBottom && top >= lastTop && isUserInputDown,
+      });
     }
     if (left != null) {
       this.setState({ isStuckToRight: isStickyRight && left >= lastLeft });
@@ -1984,7 +1998,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       }
     }
 
-    this.setViewState({ top, left, leftOffset, topOffset });
+    this.setViewState({ top, left, leftOffset, topOffset }, false, event);
 
     event.stopPropagation();
     event.preventDefault();
