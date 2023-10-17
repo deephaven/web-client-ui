@@ -4,35 +4,58 @@ import {
   ActionButton,
   Button,
   Cell,
+  Checkbox,
+  Content,
+  ContextualHelp,
   Column,
   ComboBox,
+  Form,
+  Heading,
   Grid,
+  Icon,
+  IllustratedMessage,
   Item,
+  minmax,
   repeat,
   Row,
+  Slider,
+  Switch,
   TableBody,
   TableHeader,
   TableView,
+  Text,
+  TextField,
+  ToggleButton,
   View,
   Well,
 } from '@adobe/react-spectrum';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { vsEmptyWindow, vsStarFull } from '@deephaven/icons';
 
 export function SpectrumComponents(): JSX.Element {
   return (
     <>
       <h2 className="ui-title">Spectrum Components</h2>
-      <Grid gap={20}>
+      <Grid gap={20} columns={minmax('0px', '1fr')}>
         <View>
           <h3>Buttons</h3>
           <ButtonsSample />
         </View>
         <View>
-          <h3>Combobox</h3>
-          <ComboBox menuTrigger="focus" defaultSelectedKey="two">
-            <Item key="one">One</Item>
-            <Item key="two">Two</Item>
-            <Item key="three">Three</Item>
-          </ComboBox>
+          <h3>Forms</h3>
+          <FormsSample />
+        </View>
+        <View>
+          <h3>Icons</h3>
+          <IconSample />
+        </View>
+        <View>
+          <h3>Illustrated Message</h3>
+          <IllustratedMessageSample />
+        </View>
+        <View>
+          <h3>Contextual Help</h3>
+          <ContextualHelpSample />
         </View>
         <View>
           <h3>Table View</h3>
@@ -96,6 +119,55 @@ function ButtonsSample(): JSX.Element {
       <ActionButton isQuiet>Quiet</ActionButton>
       <ActionButton isDisabled>Disabled</ActionButton>
     </Grid>
+  );
+}
+
+function ContextualHelpSample(): JSX.Element {
+  return (
+    <ContextualHelp variant="info">
+      <Heading>Need help?</Heading>
+      <Content>
+        <Text>
+          This is a helpful description of the thing you need help with.
+        </Text>
+      </Content>
+    </ContextualHelp>
+  );
+}
+
+function FormsSample(): JSX.Element {
+  return (
+    <Form>
+      <Grid gap={20} columns={repeat('auto-fit', '210px')}>
+        <TextField label="Text Field" />
+        <ComboBox label="Combobox" menuTrigger="focus" defaultSelectedKey="two">
+          <Item key="one">One</Item>
+          <Item key="two">Two</Item>
+          <Item key="three">Three</Item>
+        </ComboBox>
+        <Checkbox>Checkbox</Checkbox>
+      </Grid>
+    </Form>
+  );
+}
+
+function IconSample(): JSX.Element {
+  return (
+    <Icon>
+      <FontAwesomeIcon icon={vsStarFull} />
+    </Icon>
+  );
+}
+
+function IllustratedMessageSample(): JSX.Element {
+  return (
+    <IllustratedMessage>
+      <Icon size="XL">
+        <FontAwesomeIcon icon={vsEmptyWindow} />
+      </Icon>
+      <Heading>No results</Heading>
+      <Content>Try another search</Content>
+    </IllustratedMessage>
   );
 }
 
