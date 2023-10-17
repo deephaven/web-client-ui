@@ -77,7 +77,7 @@
     --dh-color-column-miller-item-selected-hover-bg
   );
 
-  /* Compact Tabs */
+  /* Tabs */
   --spectrum-tabs-compact-selection-indicator-color: var(
     --spectrum-global-color-blue-500
   );
@@ -104,5 +104,111 @@
   );
   --spectrum-tabs-quiet-vertical-emphasized-selection-indicator-color: var(
     --spectrum-global-color-blue-500
+  );
+
+  /* Wells */
+  --spectrum-well-background-color: var(--dh-color-well-bg);
+  --spectrum-well-border-color: var(--dh-color-well-border);
+
+  /* PATCH: This is missing in Spectrum css */
+  --spectrum-tray-background-color: var(--spectrum-global-color-gray-100);
+
+  --react-spectrum-datepicker-placeholder-color: var(
+    --spectrum-global-color-gray-600
+  ); /* 4.8:1 contrast ratio */
+
+  /* Accent */
+  --spectrum-accent-background-color-default: var(
+    --dh-color-accent-background-default
+  );
+  --spectrum-accent-background-color-hover: var(
+    --dh-color-accent-background-hover
+  );
+  --spectrum-accent-background-color-down: var(
+    --dh-color-accent-background-down
+  );
+  --spectrum-accent-background-color-key-focus: var(
+    --dh-color-accent-background-key-focus
+  );
+
+  /* Neutral */
+  --spectrum-neutral-background-color-default: var(--dh-neutral-default-bg);
+  --spectrum-neutral-background-color-hover: var(--dh-neutral-hover-bg);
+  --spectrum-neutral-background-color-down: var(--dh-neutral-down-bg);
+  --spectrum-neutral-background-color-key-focus: var(--dh-neutral-key-focus-bg);
+
+  --spectrum-neutral-subdued-background-color-default: var(
+    --dh-neutral-subdued-default-bg
+  );
+  --spectrum-neutral-subdued-background-color-hover: var(
+    --dh-neutral-subdued-hover-bg
+  );
+  --spectrum-neutral-subdued-background-color-down: var(
+    --dh-neutral-subdued-down-bg
+  );
+  --spectrum-neutral-subdued-background-color-key-focus: var(
+    --dh-neutral-subdued-key-focus-bg
+  );
+
+  /* Negative */
+  --spectrum-negative-background-color-default: var(
+    --dh-color-negative-default-bg
+  );
+  --spectrum-negative-background-color-hover: var(--dh-color-negative-hover-bg);
+  --spectrum-negative-background-color-down: var(--dh-color-negative-down-bg);
+  --spectrum-negative-background-color-key-focus: var(
+    --dh-color-negative-key-focus-bg
+  );
+
+  /* Positive */
+  --spectrum-positive-background-color-default: var(
+    --dh-color-positive-default-bg
+  );
+  --spectrum-positive-background-color-hover: var(--dh-color-positive-hover-bg);
+  --spectrum-positive-background-color-down: var(--dh-color-positive-down-bg);
+  --spectrum-positive-background-color-key-focus: var(
+    --dh-color-positive-key-focus-bg
+  );
+
+  /* Informative */
+  --spectrum-informative-background-color-default: var(
+    --dh-color-info-default-bg
+  );
+  --spectrum-informative-background-color-hover: var(--dh-color-info-hover-bg);
+  --spectrum-informative-background-color-down: var(--dh-color-info-down-bg);
+  --spectrum-informative-background-color-key-focus: var(
+    --dh-color-info-key-focus-bg
+  );
+
+  /* Notice */
+  --spectrum-notice-background-color-default: var(--dh-color-notice-default-bg);
+  --spectrum-notice-background-color-hover: var(--dh-color-notice-hover-bg);
+  --spectrum-notice-background-color-down: var(--dh-color-notice-down-bg);
+  --spectrum-notice-background-color-key-focus: var(
+    --dh-color-notice-key-focus-bg
+  );
+
+  /* Default Background */
+  --spectrum-gray-background-color-default: var(--dh-color-default-gray-bg);
+  --spectrum-red-background-color-default: var(--dh-color-default-red-bg);
+  --spectrum-orange-background-color-default: var(--dh-color-default-orange-bg);
+  --spectrum-yellow-background-color-default: var(--dh-color-default-yellow-bg);
+  --spectrum-chartreuse-background-color-default: var(
+    --dh-color-default-chartreuse-bg
+  );
+  --spectrum-celery-background-color-default: var(--dh-color-default-celery-bg);
+  --spectrum-green-background-color-default: var(--dh-color-default-green-bg);
+  --spectrum-seafoam-background-color-default: var(
+    --dh-color-default-seafoam-bg
+  );
+  --spectrum-cyan-background-color-default: var(--dh-color-default-cyan-bg);
+  --spectrum-blue-background-color-default: var(--dh-color-default-blue-bg);
+  --spectrum-indigo-background-color-default: var(--dh-color-default-indigo-bg);
+  --spectrum-purple-background-color-default: var(--dh-color-default-purple-bg);
+  --spectrum-fuchsia-background-color-default: var(
+    --dh-color-default-fuchsia-bg
+  );
+  --spectrum-magenta-background-color-default: var(
+    --dh-color-default-magenta-bg
   );
 }

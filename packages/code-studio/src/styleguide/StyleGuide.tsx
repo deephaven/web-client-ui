@@ -22,6 +22,7 @@ import './StyleGuide.scss';
 import DraggableLists from './DraggableLists';
 import Navigations from './Navigations';
 import ThemeColors from './ThemeColors';
+import SpectrumComponents from './SpectrumComponents';
 
 function StyleGuide(): React.ReactElement {
   return (
@@ -71,6 +72,8 @@ function StyleGuide(): React.ReactElement {
       <Charts />
 
       <ContextMenuRoot />
+
+      <SpectrumComponents />
     </div>
   );
 }

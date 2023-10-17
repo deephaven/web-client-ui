@@ -46,16 +46,23 @@ const renameGroups = {
     focus: 'state',
   },
   grid: { data: 'Data Bars', context: 'Context Menu' },
+  semantic: {
+    positive: 'status',
+    negative: 'status',
+    notice: 'status',
+    info: 'status',
+    well: 'wells',
+  },
 };
 
 export function ThemeColors(): JSX.Element {
   const swatchDataGroups = useMemo(
     () => ({
       'Theme Color Palette': buildColorGroups(palette, 1),
-      'Semantic Colors': buildColorGroups(semantic, 1),
+      'Semantic Colors': buildColorGroups(semantic, 1, renameGroups.semantic),
       'Editor Colors': buildColorGroups(semanticEditor, 2, renameGroups.editor),
       'Grid Colors': buildColorGroups(semanticGrid, 2, renameGroups.grid),
-      Components: buildColorGroups(components, 1),
+      'Component Colors': buildColorGroups(components, 1),
     }),
     []
   );
