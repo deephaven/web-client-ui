@@ -1043,7 +1043,6 @@ export class GridMetricCalculator {
         firstColumn,
         treePaddingX
       );
-      columnWidths.set(column, Math.min(600, columnWidth));
       x += columnWidth;
       column += 1;
     }
@@ -1656,7 +1655,7 @@ export class GridMetricCalculator {
     treePaddingX: number = this.calculateTreePaddingX(state)
   ): number {
     const { theme } = state;
-    const { autoSizeColumns, minColumnWidth } = theme;
+    const { autoSizeColumns, minColumnWidth, maxColumnWidth } = theme;
     if (!autoSizeColumns) {
       const { columnWidth } = theme;
       return columnWidth;
@@ -1667,6 +1666,7 @@ export class GridMetricCalculator {
     const cachedValue = this.calculatedColumnWidths.get(modelColumn);
     let columnWidth = Math.ceil(Math.max(headerWidth, dataWidth));
     columnWidth = Math.max(minColumnWidth, columnWidth);
+    columnWidth = Math.min(maxColumnWidth, columnWidth);
     if (cachedValue != null && cachedValue > columnWidth) {
       columnWidth = cachedValue;
     } else {
