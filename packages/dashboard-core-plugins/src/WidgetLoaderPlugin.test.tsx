@@ -200,7 +200,13 @@ describe('WidgetLoaderPlugin', () => {
 
   it('Overrides plugins that handle the same widget type', async () => {
     const layoutManager = createAndMountDashboard([
-      ['test-widget-plugin', testWidgetPlugin],
+      [
+        'test-widget-plugin',
+        {
+          ...testWidgetPlugin,
+          supportedTypes: ['test-widget', 'test-widget-a'],
+        },
+      ],
       [
         'test-widget-plugin-two',
         {
@@ -224,9 +230,10 @@ describe('WidgetLoaderPlugin', () => {
     act(
       () =>
         layoutManager?.eventHub.emit(PanelEvent.OPEN, {
-          widget: { type: 'test-widget-two' },
+          widget: { type: 'test-widget-a' },
         })
     );
+    expect(screen.queryAllByText('TestWidget').length).toBe(1);
     expect(screen.queryAllByText('TestWidgetTwo').length).toBe(1);
   });
 });
