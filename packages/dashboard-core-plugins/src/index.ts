@@ -13,6 +13,7 @@ export { default as MarkdownPlugin } from './MarkdownPlugin';
 export { default as MarkdownPluginConfig } from './MarkdownPluginConfig';
 export { default as PandasPlugin } from './PandasPlugin';
 export { default as PandasPluginConfig } from './PandasPluginConfig';
+export { default as WidgetLoaderPlugin } from './WidgetLoaderPlugin';
 export { default as WidgetLoaderPluginConfig } from './WidgetLoaderPluginConfig';
 export { default as ControlType } from './controls/ControlType';
 export { default as LinkerUtils } from './linker/LinkerUtils';

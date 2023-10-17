@@ -26,7 +26,9 @@ import { WidgetPanel } from './panels';
 
 const log = Log.module('WidgetLoaderPlugin');
 
-function wrapWidgetPlugin(plugin: WidgetPlugin) {
+export function WrapWidgetPlugin(
+  plugin: WidgetPlugin
+): React.ForwardRefExoticComponent<PanelProps & React.RefAttributes<unknown>> {
   function Wrapper(props: PanelProps, ref: React.ForwardedRef<unknown>) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const C = plugin.component as any;
@@ -90,7 +92,7 @@ function wrapWidgetPlugin(plugin: WidgetPlugin) {
  * @returns React element
  */
 export function WidgetLoaderPlugin(
-  props: DashboardPluginComponentProps
+  props: Partial<DashboardPluginComponentProps>
 ): JSX.Element | null {
   const plugins = usePlugins();
   const supportedTypes = useMemo(() => {
@@ -129,8 +131,8 @@ export function WidgetLoaderPlugin(
     }: PanelOpenEventDetail) => {
       const { id: widgetId, type } = widget;
       const name = widget.title ?? widget.name;
-      const { component } = supportedTypes.get(type) ?? {};
-      if (component == null) {
+      const plugin = supportedTypes.get(type);
+      if (plugin == null) {
         return;
       }
       const metadata = { id: widgetId, name, type };
@@ -144,7 +146,7 @@ export function WidgetLoaderPlugin(
 
       const config: ReactComponentConfig = {
         type: 'react-component',
-        component: component.displayName ?? '',
+        component: plugin.name,
         props: panelProps,
         title: name,
         id: panelId,
@@ -157,15 +159,13 @@ export function WidgetLoaderPlugin(
   );
 
   useEffect(() => {
-    const deregisterFns = [...plugins.values()]
-      .filter(isWidgetPlugin)
-      .map(plugin => {
-        const { panelComponent } = plugin;
-        if (panelComponent == null) {
-          return registerComponent(plugin.name, wrapWidgetPlugin(plugin));
-        }
-        return registerComponent(plugin.name, panelComponent);
-      });
+    const deregisterFns = [...new Set(supportedTypes.values())].map(plugin => {
+      const { panelComponent } = plugin;
+      if (panelComponent == null) {
+        return registerComponent(plugin.name, WrapWidgetPlugin(plugin));
+      }
+      return registerComponent(plugin.name, panelComponent);
+    });
 
     return () => {
       deregisterFns.forEach(deregister => deregister());

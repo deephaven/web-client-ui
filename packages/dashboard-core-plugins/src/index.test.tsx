@@ -14,6 +14,7 @@ import {
   GridPlugin,
   LinkerPlugin,
   MarkdownPlugin,
+  WidgetLoaderPlugin,
 } from '.';
 
 function makeConnection(): IdeConnection {
@@ -39,6 +40,7 @@ it('handles mounting and unmount core plugins properly', () => {
               <ConsolePlugin />
               <LinkerPlugin />
               <MarkdownPlugin />
+              <WidgetLoaderPlugin />
             </Dashboard>
           </Provider>
         </PluginsContext.Provider>

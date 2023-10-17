@@ -128,6 +128,11 @@ export interface WidgetPlugin extends Plugin {
   component: React.ComponentType<WidgetComponentProps>;
 
   /**
+   * The server widget types that this plugin will handle.
+   */
+  supportedTypes: string | string[];
+
+  /**
    * The title to display for widgets handled by the plugin.
    * This is a user friendly name to denote the type of widget.
    * Does not have to be unique across plugins.
@@ -147,11 +152,6 @@ export interface WidgetPlugin extends Plugin {
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   panelComponent?: React.ComponentType<WidgetComponentProps>;
-
-  /**
-   * The server widget types that this plugin will handle.
-   */
-  supportedTypes?: string | string[];
 
   /**
    * The icon to display next to the console button.
