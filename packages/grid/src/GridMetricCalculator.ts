@@ -1043,6 +1043,7 @@ export class GridMetricCalculator {
         firstColumn,
         treePaddingX
       );
+      columnWidths.set(column, columnWidth);
       x += columnWidth;
       column += 1;
     }
