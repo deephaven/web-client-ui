@@ -15,14 +15,14 @@ export interface Props<T> {
   item: FlattenedItem<T>;
   dragRef?: React.Ref<HTMLDivElement> | null;
   wrapperRef?: React.Ref<HTMLLIElement> | null;
-  renderItem(props: {
+  renderItem: (props: {
     ref: React.Ref<HTMLDivElement> | null;
     clone: boolean;
     childCount?: number;
     value: string;
     item: FlattenedItem<T>;
     handleProps: unknown;
-  }): JSX.Element;
+  }) => JSX.Element;
 }
 
 export type TreeItemRenderFn<T> = (props: {

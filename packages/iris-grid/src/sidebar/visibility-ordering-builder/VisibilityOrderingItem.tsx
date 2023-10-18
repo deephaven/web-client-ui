@@ -13,12 +13,15 @@ type VisibilityOrderingItemProps = {
   clone: boolean;
   childCount: number;
   item: FlattenedIrisGridTreeItem;
-  onVisibilityChange(modelIndexes: number[], isVisible: boolean): void;
-  onClick(name: string, event: React.MouseEvent): void;
-  onGroupDelete(group: ColumnHeaderGroup): void;
-  onGroupColorChange(group: ColumnHeaderGroup, color: string | undefined): void;
-  onGroupNameChange(group: ColumnHeaderGroup, name: string): void;
-  validateGroupName(name: string): string;
+  onVisibilityChange: (modelIndexes: number[], isVisible: boolean) => void;
+  onClick: (name: string, event: React.MouseEvent) => void;
+  onGroupDelete: (group: ColumnHeaderGroup) => void;
+  onGroupColorChange: (
+    group: ColumnHeaderGroup,
+    color: string | undefined
+  ) => void;
+  onGroupNameChange: (group: ColumnHeaderGroup, name: string) => void;
+  validateGroupName: (name: string) => string;
   handleProps: Record<string, unknown>;
 };
 

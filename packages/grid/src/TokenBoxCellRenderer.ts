@@ -13,11 +13,11 @@ export function isTokenBoxCellRenderer(
 }
 
 interface TokenBoxCellRenderer extends CellRenderer {
-  getTokenBoxesForVisibleCell(
+  getTokenBoxesForVisibleCell: (
     column: VisibleIndex,
     row: VisibleIndex,
     state: GridRenderState
-  ): TokenBox[];
+  ) => TokenBox[];
 }
 
 export default TokenBoxCellRenderer;

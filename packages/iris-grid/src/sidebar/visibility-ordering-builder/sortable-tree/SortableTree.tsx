@@ -43,14 +43,14 @@ interface Props<T> {
   items: TreeItem<T>[];
   indentationWidth?: number;
   indicator?: boolean;
-  onDragStart?(id: string): void;
-  onDragEnd?(from: FlattenedItem<T>, to: FlattenedItem<T>): void;
-  renderItem(props: {
+  onDragStart?: (id: string) => void;
+  onDragEnd?: (from: FlattenedItem<T>, to: FlattenedItem<T>) => void;
+  renderItem: (props: {
     clone: boolean;
     childCount?: number;
     value: string;
     item: FlattenedItem<T>;
-  }): JSX.Element;
+  }) => JSX.Element;
 }
 
 export default function SortableTree<T>({

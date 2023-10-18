@@ -125,7 +125,7 @@ export interface AuthPlugin extends Plugin {
   /**
    * Whether the auth plugin is available given the current configuration
    */
-  isAvailable(authHandlers: string[], authConfig: AuthConfigMap): boolean;
+  isAvailable: (authHandlers: string[], authConfig: AuthConfigMap) => boolean;
 }
 
 export function isAuthPlugin(plugin: PluginModule): plugin is AuthPlugin {

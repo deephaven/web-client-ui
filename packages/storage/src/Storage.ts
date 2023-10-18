@@ -24,19 +24,19 @@ export type SortConfig = {
 export type IndexRange = number[];
 
 export interface Storage<T extends StorageItem> {
-  getTable(): Promise<StorageTable<T>>;
-  close(): void;
+  getTable: () => Promise<StorageTable<T>>;
+  close: () => void;
 }
 
 export interface StorageTable<T extends StorageItem> {
-  getViewportData(): Promise<ViewportData<T>>;
-  getSnapshot(sortedRanges: IndexRange[]): Promise<StorageSnapshot<T>>;
-  setViewport(viewport: StorageTableViewport): void;
-  setFilters(config: FilterConfig[] | null): void;
-  setSorts(config: SortConfig[] | null): void;
-  setReversed(isReversed: boolean): void;
-  close(): void;
-  onUpdate(callback: ViewportUpdateCallback<T>): StorageListenerRemover;
+  getViewportData: () => Promise<ViewportData<T>>;
+  getSnapshot: (sortedRanges: IndexRange[]) => Promise<StorageSnapshot<T>>;
+  setViewport: (viewport: StorageTableViewport) => void;
+  setFilters: (config: FilterConfig[] | null) => void;
+  setSorts: (config: SortConfig[] | null) => void;
+  setReversed: (isReversed: boolean) => void;
+  close: () => void;
+  onUpdate: (callback: ViewportUpdateCallback<T>) => StorageListenerRemover;
   size: number;
 }
 

@@ -49,7 +49,7 @@ export interface EditableGridModel extends GridModel {
    * @param range The range to check if it is editable
    * @returns True if the range is editable
    */
-  isEditableRange(range: GridRange): boolean;
+  isEditableRange: (range: GridRange) => boolean;
 
   /**
    * Get the edit text for a cell as a string
@@ -57,7 +57,7 @@ export interface EditableGridModel extends GridModel {
    * @param row Row to get
    * @returns The value to use for editing
    */
-  editValueForCell(column: ModelIndex, row: ModelIndex): string;
+  editValueForCell: (column: ModelIndex, row: ModelIndex) => string;
 
   /**
    * Set value in an editable table
@@ -66,11 +66,11 @@ export interface EditableGridModel extends GridModel {
    * @param value The value to set
    * @returns A promise that resolves successfully when the operation is complete, or rejects if there's an error
    */
-  setValueForCell(
+  setValueForCell: (
     column: ModelIndex,
     row: ModelIndex,
     value: string
-  ): Promise<void>;
+  ) => Promise<void>;
 
   /**
    * Set value in an editable table
@@ -78,14 +78,17 @@ export interface EditableGridModel extends GridModel {
    * @param value The value to set
    * @returns A promise that resolves successfully when the operation is complete, or rejects if there's an error
    */
-  setValueForRanges(ranges: readonly GridRange[], value: string): Promise<void>;
+  setValueForRanges: (
+    ranges: readonly GridRange[],
+    value: string
+  ) => Promise<void>;
 
   /**
    * Apply edits to the model
    * @param edits Edits to apply to the model
    * @returns A promise that resolves successfully when the operation is complete or rejects if there's an error
    */
-  setValues(edits: readonly EditOperation[]): Promise<void>;
+  setValues: (edits: readonly EditOperation[]) => Promise<void>;
 
   /**
    * Check if a text value is a valid edit for a cell
@@ -94,7 +97,11 @@ export interface EditableGridModel extends GridModel {
    * @param value Value to check if it's a valid value or not
    * @returns True if it's a valid value, false otherwise
    */
-  isValidForCell(column: ModelIndex, row: ModelIndex, value: string): boolean;
+  isValidForCell: (
+    column: ModelIndex,
+    row: ModelIndex,
+    value: string
+  ) => boolean;
 }
 
 export default EditableGridModel;
