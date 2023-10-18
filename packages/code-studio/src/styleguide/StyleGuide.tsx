@@ -37,21 +37,19 @@ const stickyProps = {
 function StyleGuide(): React.ReactElement {
   return (
     <div className="container style-guide-container">
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginTop: '2rem',
-          paddingBottom: '1rem',
-        }}
+      <Flex
+        justifyContent="space-between"
+        alignItems="center"
+        marginTop="2rem"
+        marginBottom="1rem"
       >
         <h1 style={{ paddingTop: '2rem' }}>Deephaven UI Components</h1>
-      </div>
+      </Flex>
+
       <Flex {...stickyProps} marginTop={-56} top={20}>
         <SamplesMenu />
       </Flex>
-      <Flex {...stickyProps} top="calc(100vh - 40px)">
+      <Flex {...stickyProps} top="calc(100vh - 40px)" marginTop={-32}>
         <GotoTopButton />
       </Flex>
 

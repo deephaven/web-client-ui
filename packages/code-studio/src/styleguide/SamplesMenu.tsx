@@ -43,11 +43,11 @@ export function SamplesMenu(): JSX.Element {
   const [links, setLinks] = useState<LinkCategory[]>([]);
 
   useEffect(() => {
-    let currentSection: LinkCategory = {
+    let currentCategory: LinkCategory = {
       category: '',
       items: [],
     };
-    const categories: LinkCategory[] = [currentSection];
+    const categories: LinkCategory[] = [currentCategory];
 
     const spectrumComponentsSamples = document.querySelector(
       `#${SPECTRUM_COMPONENT_SAMPLES_ID}`
@@ -60,12 +60,13 @@ export function SamplesMenu(): JSX.Element {
           return;
         }
 
+        // Create a new category section
         if (el.hasAttribute(MENU_CATEGORY_DATA_ATTRIBUTE)) {
-          currentSection = {
+          currentCategory = {
             category: el.getAttribute(MENU_CATEGORY_DATA_ATTRIBUTE) ?? '',
             items: [],
           };
-          categories.push(currentSection);
+          categories.push(currentCategory);
 
           return;
         }
@@ -79,7 +80,7 @@ export function SamplesMenu(): JSX.Element {
         // eslint-disable-next-line no-param-reassign
         el.id = id;
 
-        currentSection.items.push({ id, label: el.textContent });
+        currentCategory.items.push({ id, label: el.textContent });
 
         if (`#${id}` === window.location.hash) {
           el.scrollIntoView();

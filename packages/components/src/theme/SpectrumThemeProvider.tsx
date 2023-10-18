@@ -11,6 +11,13 @@ export interface SpectrumThemeProviderProps {
   colorScheme?: 'light' | 'dark';
 }
 
+/**
+ * Wrapper around React Spectrum's theme Provider that provides DH mappings of
+ * Spectrum's theme variables to DH's theme variables. Also exposes an optional
+ * `isPortal` prop that if provided, adds a unique `data-unique-id` attribute to
+ * the Provider. This is needed to force the Provider to render the theme wrapper
+ * inside of portals.
+ */
 export function SpectrumThemeProvider({
   children,
   isPortal = false,
