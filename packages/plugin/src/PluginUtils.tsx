@@ -14,19 +14,15 @@ export function pluginSupportsType(
   return [plugin.supportedTypes].flat().some(t => t === type);
 }
 
-export function getIconForType(
-  plugin: PluginModule | undefined,
-  type: string
-): React.ReactElement {
+export function getIconForPlugin(plugin: PluginModule): React.ReactElement {
   const defaultIcon = <FontAwesomeIcon icon={vsPreview} />;
-  if (plugin == null || !isWidgetPlugin(plugin)) {
+  if (!isWidgetPlugin(plugin)) {
     return defaultIcon;
   }
 
-  const supportsType = pluginSupportsType(plugin, type);
   const { icon } = plugin;
 
-  if (!supportsType || icon == null) {
+  if (icon == null) {
     return defaultIcon;
   }
 

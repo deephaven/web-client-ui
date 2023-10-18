@@ -23,7 +23,7 @@ import {
   RootState,
 } from '@deephaven/redux';
 import { assertNotNull } from '@deephaven/utils';
-import { getIconForType, pluginSupportsType } from '@deephaven/plugin';
+import { getIconForPlugin, pluginSupportsType } from '@deephaven/plugin';
 import type { JSZipObject } from 'jszip';
 import { ConsoleEvent } from '../events';
 import Panel from './Panel';
@@ -326,9 +326,9 @@ export class ConsolePanel extends PureComponent<
     const { plugins } = this.props;
     const plugin = [...plugins.values()].find(p => pluginSupportsType(p, type));
     if (plugin != null) {
-      return getIconForType(plugin, type);
+      return getIconForPlugin(plugin);
     }
-    // TODO: #1573 Remove this default and always return getIconForType
+    // TODO: #1573 Remove this default and always return getIconForPlugin
     return <ObjectIcon type={type} />;
   }
 
