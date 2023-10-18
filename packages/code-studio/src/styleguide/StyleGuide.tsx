@@ -1,4 +1,6 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
+import { Flex } from '@adobe/react-spectrum';
 import { ContextMenuRoot } from '@deephaven/components';
 
 import Alerts from './Alerts';
@@ -23,56 +25,63 @@ import DraggableLists from './DraggableLists';
 import Navigations from './Navigations';
 import ThemeColors from './ThemeColors';
 import SpectrumComponents from './SpectrumComponents';
+import SamplesMenu, { SampleMenuCategory } from './SamplesMenu';
+import GotoTopButton from './GotoTopButton';
+
+const stickyProps = {
+  position: 'sticky',
+  justifyContent: 'end',
+  zIndex: 1,
+} as const;
 
 function StyleGuide(): React.ReactElement {
   return (
     <div className="container style-guide-container">
-      <div style={{ marginTop: '2rem', paddingBottom: '1rem' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginTop: '2rem',
+          paddingBottom: '1rem',
+        }}
+      >
         <h1 style={{ paddingTop: '2rem' }}>Deephaven UI Components</h1>
       </div>
+      <Flex {...stickyProps} marginTop={-56} top={20}>
+        <SamplesMenu />
+      </Flex>
+      <Flex {...stickyProps} top="calc(100vh - 40px)">
+        <GotoTopButton />
+      </Flex>
 
       <Typograpy />
 
+      <SampleMenuCategory data-menu-category="Colors" />
       <Colors />
-
       <ThemeColors />
 
+      <SampleMenuCategory data-menu-category="Components" />
       <Buttons />
-
       <Progress />
-
       <Alerts />
-
       <Inputs />
-
       <ItemListInputs />
-
       <DraggableLists />
-
       <TimeSliderInputs />
-
       <Dialog />
-
       <Modals />
-
       <ContextMenus />
-
       <DropdownMenus />
-
       <Navigations />
-
       <Tooltips />
-
       <Icons />
-
       <Editors />
-
       <Grids />
-
       <Charts />
-
       <ContextMenuRoot />
 
+      <SampleMenuCategory data-menu-category="Spectrum Components" />
       <SpectrumComponents />
     </div>
   );

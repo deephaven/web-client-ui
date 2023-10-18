@@ -6,6 +6,7 @@ import {
   dhSquareFilled,
   dhAddSmall,
 } from '@deephaven/icons';
+import { Icon } from '@adobe/react-spectrum';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button } from '@deephaven/components';
 import PropTypes from 'prop-types';
@@ -106,7 +107,9 @@ function Icons(): React.ReactElement {
               });
           }}
         >
-          <FontAwesomeIcon icon={icon} className="icon" />
+          <Icon size="L">
+            <FontAwesomeIcon icon={icon} />
+          </Icon>
 
           <label title={prefixedName}>{prefixedName}</label>
         </Button>

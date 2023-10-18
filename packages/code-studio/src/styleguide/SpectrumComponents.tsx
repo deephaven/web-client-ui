@@ -30,43 +30,42 @@ import {
   Well,
 } from '@adobe/react-spectrum';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { vsEmptyWindow, vsStarFull } from '@deephaven/icons';
+import { dh } from '@deephaven/icons';
+import { SPECTRUM_COMPONENT_SAMPLES_ID } from './constants';
 
 export function SpectrumComponents(): JSX.Element {
   return (
-    <>
-      <h2 className="ui-title">Spectrum Components</h2>
+    <div id={SPECTRUM_COMPONENT_SAMPLES_ID}>
+      <h2 className="ui-title" data-no-menu>
+        Spectrum Components
+      </h2>
       <Grid gap={20} columns={minmax('0px', '1fr')}>
         <View>
           <h3>Buttons</h3>
           <ButtonsSample />
         </View>
         <View>
+          <h3>Collections</h3>
+          <TableViewSample />
+        </View>
+        <View>
+          <h3>Content</h3>
+          <IllustratedMessageSample />
+        </View>
+        <View>
           <h3>Forms</h3>
           <FormsSample />
         </View>
         <View>
-          <h3>Icons</h3>
-          <IconSample />
-        </View>
-        <View>
-          <h3>Illustrated Message</h3>
-          <IllustratedMessageSample />
-        </View>
-        <View>
-          <h3>Contextual Help</h3>
+          <h3>Overlays</h3>
           <ContextualHelpSample />
-        </View>
-        <View>
-          <h3>Table View</h3>
-          <TableViewSample />
         </View>
         <View>
           <h3>Wells</h3>
           <Well>This is a well.</Well>
         </View>
       </Grid>
-    </>
+    </div>
   );
 }
 
@@ -76,11 +75,12 @@ function ButtonsSample(): JSX.Element {
   return (
     <Grid
       autoFlow="column"
-      columnGap={14}
-      columns={repeat(3, 'size-1600')}
-      rows={repeat(6, 'size-500')}
+      columnGap="size-250"
+      rowGap="size-150"
+      columns={repeat(4, 'size-2000')}
+      rows={repeat(8, 'size-400')}
     >
-      <label>style=&quot;outline&quot;</label>
+      <label>Button style=&quot;outline&quot;</label>
       <Button variant="primary" style="outline">
         Primary
       </Button>
@@ -93,11 +93,17 @@ function ButtonsSample(): JSX.Element {
       <Button variant="negative" style="outline">
         Negative
       </Button>
+      <Button variant="primary" staticColor="black" style="outline">
+        Static Black
+      </Button>
+      <Button variant="primary" staticColor="white" style="outline">
+        Static White
+      </Button>
       <Button variant="primary" isDisabled style="outline">
         Disabled
       </Button>
 
-      <label>style=&quot;fill&quot;</label>
+      <label>Button style=&quot;fill&quot;</label>
       <Button variant="primary" style="fill">
         Primary
       </Button>
@@ -110,28 +116,51 @@ function ButtonsSample(): JSX.Element {
       <Button variant="negative" style="fill">
         Negative
       </Button>
+      <Button variant="primary" staticColor="black" style="fill">
+        Static Black
+      </Button>
+      <Button variant="primary" staticColor="white" style="fill">
+        Static White
+      </Button>
       <Button variant="primary" isDisabled style="fill">
         Disabled
       </Button>
 
       <label>Action Button</label>
       <ActionButton>Normal</ActionButton>
-      <ActionButton isQuiet>Quiet</ActionButton>
+      <ActionButton gridRow="span 3" isQuiet>
+        Quiet
+      </ActionButton>
+      <ActionButton staticColor="black">Static Black</ActionButton>
+      <ActionButton staticColor="white">Static White</ActionButton>
       <ActionButton isDisabled>Disabled</ActionButton>
+
+      <label>Toggle Button</label>
+      <ToggleButton>Normal</ToggleButton>
+      <ToggleButton isQuiet>Quiet</ToggleButton>
+      <ToggleButton gridRow="span 2" isEmphasized>
+        Emphasized
+      </ToggleButton>
+      <ToggleButton staticColor="black">Static Black</ToggleButton>
+      <ToggleButton staticColor="white">Static White</ToggleButton>
+      <ToggleButton isDisabled>Disabled</ToggleButton>
     </Grid>
   );
 }
 
 function ContextualHelpSample(): JSX.Element {
   return (
-    <ContextualHelp variant="info">
-      <Heading>Need help?</Heading>
-      <Content>
-        <Text>
-          This is a helpful description of the thing you need help with.
-        </Text>
-      </Content>
-    </ContextualHelp>
+    <>
+      <Text>Contextual Help</Text>
+      <ContextualHelp variant="info">
+        <Heading>Need help?</Heading>
+        <Content>
+          <Text>
+            This is a helpful description of the thing you need help with.
+          </Text>
+        </Content>
+      </ContextualHelp>
+    </>
   );
 }
 
@@ -146,16 +175,10 @@ function FormsSample(): JSX.Element {
           <Item key="three">Three</Item>
         </ComboBox>
         <Checkbox>Checkbox</Checkbox>
+        <Slider label="Slider" defaultValue={24} />
+        <Switch>Switch</Switch>
       </Grid>
     </Form>
-  );
-}
-
-function IconSample(): JSX.Element {
-  return (
-    <Icon>
-      <FontAwesomeIcon icon={vsStarFull} />
-    </Icon>
   );
 }
 
@@ -163,47 +186,50 @@ function IllustratedMessageSample(): JSX.Element {
   return (
     <IllustratedMessage>
       <Icon size="XL">
-        <FontAwesomeIcon icon={vsEmptyWindow} />
+        <FontAwesomeIcon icon={dh.vsEmptyWindow} />
       </Icon>
-      <Heading>No results</Heading>
-      <Content>Try another search</Content>
+      <Heading>Illustrated Message</Heading>
+      <Content>This is the content of the message.</Content>
     </IllustratedMessage>
   );
 }
 
 function TableViewSample(): JSX.Element {
   return (
-    <TableView selectionMode="multiple">
-      <TableHeader>
-        <Column title="Person">
-          <Column allowsResizing>Name</Column>
-          <Column>Age</Column>
-        </Column>
-        <Column title="Address">
-          <Column allowsResizing>City</Column>
-          <Column>State</Column>
-        </Column>
-      </TableHeader>
-      <TableBody>
-        <Row>
-          <Cell>John</Cell>
-          <Cell>42</Cell>
-          <Cell>San Francisco</Cell>
-          <Cell>CA</Cell>
-        </Row>
-        <Row>
-          <Cell>Jane</Cell>
-          <Cell>38</Cell>
-          <Cell>San Francisco</Cell>
-          <Cell>CA</Cell>
-        </Row>
-        <Row>
-          <Cell>Becky</Cell>
-          <Cell>12</Cell>
-          <Cell>San Francisco</Cell>
-          <Cell>CA</Cell>
-        </Row>
-      </TableBody>
-    </TableView>
+    <>
+      <label id="table-view-sample">Table View</label>
+      <TableView aria-labelledby="table-view-sample" selectionMode="multiple">
+        <TableHeader>
+          <Column title="Person">
+            <Column allowsResizing>Name</Column>
+            <Column>Age</Column>
+          </Column>
+          <Column title="Address">
+            <Column allowsResizing>City</Column>
+            <Column>State</Column>
+          </Column>
+        </TableHeader>
+        <TableBody>
+          <Row>
+            <Cell>John</Cell>
+            <Cell>42</Cell>
+            <Cell>San Francisco</Cell>
+            <Cell>CA</Cell>
+          </Row>
+          <Row>
+            <Cell>Jane</Cell>
+            <Cell>38</Cell>
+            <Cell>San Francisco</Cell>
+            <Cell>CA</Cell>
+          </Row>
+          <Row>
+            <Cell>Becky</Cell>
+            <Cell>12</Cell>
+            <Cell>San Francisco</Cell>
+            <Cell>CA</Cell>
+          </Row>
+        </TableBody>
+      </TableView>
+    </>
   );
 }
