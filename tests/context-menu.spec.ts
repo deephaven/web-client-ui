@@ -16,6 +16,10 @@ async function openAdvancedFilters(page: Page) {
   await page.getByRole('button', { name: 'Advanced Filters' }).click();
 }
 
+async function moveMouseAwayFromTable(page: Page) {
+  await page.mouse.move(0, 0);
+}
+
 const tableName = generateVarName('t');
 test.beforeEach(async ({ page }) => {
   await page.goto('');
@@ -104,6 +108,7 @@ test('advanced filters', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Done' }).click();
   await waitForLoadingDone(page);
+  await moveMouseAwayFromTable(page);
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
   await openAdvancedFilters(page);
@@ -111,6 +116,7 @@ test('advanced filters', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Done' }).click();
   await waitForLoadingDone(page);
+  await moveMouseAwayFromTable(page);
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
   await openAdvancedFilters(page);
@@ -119,6 +125,7 @@ test('advanced filters', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Done' }).click();
   await waitForLoadingDone(page);
+  await moveMouseAwayFromTable(page);
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
   await openAdvancedFilters(page);
@@ -126,7 +133,7 @@ test('advanced filters', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Done' }).click();
   await waitForLoadingDone(page);
-
+  await moveMouseAwayFromTable(page);
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
   await openAdvancedFilters(page);
@@ -134,15 +141,15 @@ test('advanced filters', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Done' }).click();
   await waitForLoadingDone(page);
-
+  await moveMouseAwayFromTable(page);
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 
   await openAdvancedFilters(page);
   await page.getByRole('button', { name: 'Select All' }).click();
 
   await page.getByRole('button', { name: 'Done' }).click();
-
   await waitForLoadingDone(page);
+  await moveMouseAwayFromTable(page);
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
 });
 
