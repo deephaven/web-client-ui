@@ -196,10 +196,7 @@ class SelectionKeyHandler extends KeyHandler {
 
         grid.setViewState({ top }, false, event);
       } else {
-        const { lastLeft, lastTop } = grid.metrics;
-
-        grid.moveCursor(deltaColumn, deltaRow, isShiftKey);
-        grid.setViewState({ left: lastLeft, top: lastTop }, false, event); // need to call setViewState again since moveCursor calls a series of functions that sets view state
+        grid.moveCursor(deltaColumn, deltaRow, isShiftKey, event);
       }
     }
     return true;
