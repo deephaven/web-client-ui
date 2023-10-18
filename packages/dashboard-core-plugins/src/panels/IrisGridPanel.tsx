@@ -115,8 +115,8 @@ export interface PanelState {
   };
   irisGridState: DehydratedIrisGridState;
   irisGridPanelState: {
-    partitionColumn: ColumnName | null;
-    partition: string | null;
+    partitionColumns: ColumnName[];
+    partitions: (string | null)[];
     isSelectingPartition: boolean;
     advancedSettings: [AdvancedSettingsType, boolean][];
   };
@@ -129,7 +129,7 @@ export interface PanelState {
 type LoadedPanelState = PanelState & {
   irisGridPanelState: PanelState['irisGridPanelState'] &
     Partial<
-      Pick<PanelState['irisGridPanelState'], 'partition' | 'partitionColumn'>
+      Pick<PanelState['irisGridPanelState'], 'partitions' | 'partitionColumns'>
     >;
 };
 
@@ -186,8 +186,8 @@ interface IrisGridPanelState {
   movedColumns: readonly MoveOperation[];
   movedRows: readonly MoveOperation[];
   isSelectingPartition: boolean;
-  partition: string | null;
-  partitionColumn: Column | null;
+  partitions: (string | null)[];
+  partitionColumns: Column[];
   rollupConfig?: UIRollupConfig;
   showSearchBar: boolean;
   searchValue: string;
@@ -292,8 +292,8 @@ export class IrisGridPanel extends PureComponent<
       movedColumns: [],
       movedRows: [],
       isSelectingPartition: false,
-      partition: null,
-      partitionColumn: null,
+      partitions: [],
+      partitionColumns: [],
       rollupConfig: undefined,
       showSearchBar: false,
       searchValue: '',
@@ -454,14 +454,14 @@ export class IrisGridPanel extends PureComponent<
     (
       model: IrisGridModel,
       isSelectingPartition: boolean,
-      partition: string | null,
-      partitionColumn: Column | null,
+      partitions: (string | null)[],
+      partitionColumns: Column[],
       advancedSettings: Map<AdvancedSettingsType, boolean>
     ) =>
       IrisGridUtils.dehydrateIrisGridPanelState(model, {
         isSelectingPartition,
-        partition,
-        partitionColumn,
+        partitions,
+        partitionColumns,
         advancedSettings,
       })
   );
@@ -707,11 +707,23 @@ export class IrisGridPanel extends PureComponent<
     glEventHub.emit(InputFilterEvent.TABLE_CHANGED, this, table);
   }
 
-  handlePartitionAppend(column: Column, value: unknown): void {
+  handlePartitionAppend(columns: Column[], values: unknown[]): void {
     const { glEventHub } = this.props;
-    const { name } = column;
     const tableName = this.getTableName();
-    const command = `${tableName} = ${tableName}.where("${name}=\`${value}\`")`;
+    const filters = values
+      .reduce<string[]>((filterArray, value, index) => {
+        const column = columns[index];
+        if (value !== null) {
+          filterArray.push(
+            `"${column.name}=${
+              TableUtils.isTextType(column.type) ? `\`${value}\`` : value
+            }"`
+          );
+        }
+        return filterArray;
+      }, [])
+      .join(', ');
+    const command = `${tableName} = ${tableName}.where(filters=[${filters}])`;
     glEventHub.emit(ConsoleEvent.SEND_COMMAND, command, false, true);
   }
 
@@ -1038,8 +1050,8 @@ export class IrisGridPanel extends PureComponent<
       }
       const {
         isSelectingPartition,
-        partition,
-        partitionColumn,
+        partitions,
+        partitionColumns,
         advancedSettings,
       } = IrisGridUtils.hydrateIrisGridPanelState(model, irisGridPanelState);
       assertNotNull(this.irisGridUtils);
@@ -1084,8 +1096,8 @@ export class IrisGridPanel extends PureComponent<
         isSelectingPartition,
         movedColumns,
         movedRows,
-        partition,
-        partitionColumn,
+        partitions,
+        partitionColumns,
         quickFilters,
         reverseType,
         rollupConfig,
@@ -1117,8 +1129,8 @@ export class IrisGridPanel extends PureComponent<
       model,
       panelState: oldPanelState,
       isSelectingPartition,
-      partition,
-      partitionColumn,
+      partitions,
+      partitionColumns,
       advancedSettings,
     } = this.state;
     const {
@@ -1153,8 +1165,8 @@ export class IrisGridPanel extends PureComponent<
       this.getDehydratedIrisGridPanelState(
         model,
         isSelectingPartition,
-        partition,
-        partitionColumn,
+        partitions,
+        partitionColumns,
         advancedSettings
       ),
       this.getDehydratedIrisGridState(
@@ -1241,8 +1253,8 @@ export class IrisGridPanel extends PureComponent<
       model,
       movedColumns,
       movedRows,
-      partition,
-      partitionColumn,
+      partitions,
+      partitionColumns,
       quickFilters,
       reverseType,
       rollupConfig,
@@ -1323,8 +1335,8 @@ export class IrisGridPanel extends PureComponent<
             isStuckToRight={isStuckToRight}
             movedColumns={movedColumns}
             movedRows={movedRows}
-            partition={partition}
-            partitionColumn={partitionColumn}
+            partitions={partitions}
+            partitionColumns={partitionColumns}
             quickFilters={quickFilters}
             reverseType={reverseType}
             rollupConfig={rollupConfig}

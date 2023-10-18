@@ -321,7 +321,7 @@ class MockIrisGridTreeModel
     throw new Error('Not defined in mock');
   }
 
-  valuesTable(column: Column): Promise<never> {
+  valuesTable(columns: Column[]): Promise<never> {
     throw new Error('Not defined in mock');
   }
 

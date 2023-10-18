@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import debounce from 'lodash.debounce';
 import { TableUtils } from '@deephaven/jsapi-utils';
-import type { dh as DhType, Table } from '@deephaven/jsapi-types';
+import type { Column, dh as DhType, Table } from '@deephaven/jsapi-types';
 import { ItemList, LoadingSpinner } from '@deephaven/components';
 import Log from '@deephaven/log';
 import { CanceledPromiseError } from '@deephaven/utils';
@@ -18,6 +18,7 @@ interface Item {
 }
 
 interface PartitionSelectorSearchProps<T> {
+  column: Column;
   dh: DhType;
   getFormattedString: (value: T, type: string, name: string) => string;
   table: Table;
@@ -202,14 +203,14 @@ class PartitionSelectorSearch<T> extends Component<
   }
 
   handleTableUpdate(event: CustomEvent): void {
+    const { column } = this.props;
     const data = event.detail;
-    const { offset } = data;
+    const { offset, rows } = data;
 
     const items = [] as Item[];
     const { getFormattedString, table } = this.props;
-    const column = table.columns[0];
-    for (let r = 0; r < data.rows.length; r += 1) {
-      const row = data.rows[r];
+    for (let r = 0; r < rows.length; r += 1) {
+      const row = rows[r];
       const value = row.get(column);
       const displayValue = getFormattedString(value, column.type, column.name);
       items.push({
@@ -226,10 +227,10 @@ class PartitionSelectorSearch<T> extends Component<
   handleTextChange(event: React.ChangeEvent<HTMLInputElement>): void {
     log.debug2('handleTextChange');
 
-    const { table } = this.props;
+    const { column } = this.props;
     const { value: text } = event.target;
 
-    if (text !== '' && TableUtils.isIntegerType(table.columns[0].type)) {
+    if (text !== '' && TableUtils.isIntegerType(column.type)) {
       this.setState({ text: parseInt(text, 10).toString() });
     } else {
       this.setState({ text });
@@ -279,12 +280,11 @@ class PartitionSelectorSearch<T> extends Component<
   }
 
   updateFilter(): void {
-    const { initialPageSize, table } = this.props;
+    const { column, initialPageSize, table } = this.props;
     const { text } = this.state;
     const filterText = text.trim();
     const filters = [];
     if (filterText.length > 0) {
-      const column = table.columns[0];
       const filter = this.tableUtils.makeQuickFilterFromComponent(
         column,
         TableUtils.isStringType(column.type) ? `~${filterText}` : filterText
@@ -304,7 +304,7 @@ class PartitionSelectorSearch<T> extends Component<
   }
 
   render(): JSX.Element {
-    const { table } = this.props;
+    const { column } = this.props;
     const { isLoading, itemCount, items, offset, text } = this.state;
 
     const listHeight =
@@ -312,9 +312,7 @@ class PartitionSelectorSearch<T> extends Component<
         ItemList.DEFAULT_ROW_HEIGHT +
       // Adjust for ListItem vertical padding - .375rem ~ 5.25px
       11;
-    const inputType = TableUtils.isNumberType(table.columns[0].type)
-      ? 'number'
-      : 'text';
+    const inputType = TableUtils.isNumberType(column.type) ? 'number' : 'text';
     return (
       <div className="iris-grid-partition-selector-search">
         <div className="search-container">

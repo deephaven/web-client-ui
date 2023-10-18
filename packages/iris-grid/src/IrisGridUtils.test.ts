@@ -658,8 +658,8 @@ describe('dehydration methods', () => {
       'dehydrateIrisGridPanelState',
       IrisGridUtils.dehydrateIrisGridPanelState(irisGridTestUtils.makeModel(), {
         isSelectingPartition: false,
-        partition: null,
-        partitionColumn: null,
+        partitions: [],
+        partitionColumns: [],
         advancedSettings: new Map(),
       }),
     ],
