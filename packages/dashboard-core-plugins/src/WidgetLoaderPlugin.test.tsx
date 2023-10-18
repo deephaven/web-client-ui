@@ -104,12 +104,6 @@ function createAndMountDashboard(
   return layoutManager;
 }
 
-beforeEach(() => {
-  // GoldenLayout may trigger some console warns/errors since
-  // we're not running in a real DOM
-  // TestUtils.disableConsoleOutput();
-});
-
 describe('WidgetLoaderPlugin', () => {
   it('Mounts components that should be wrapped', async () => {
     const layoutManager = createAndMountDashboard();
