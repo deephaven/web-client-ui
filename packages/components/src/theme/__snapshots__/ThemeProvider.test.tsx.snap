@@ -22,6 +22,9 @@ exports[`ThemeProvider setSelectedThemeKey: [ [Object] ] should change selected 
       data-theme-key="default-dark"
     >
       test-file-stub
+test-file-stub
+test-file-stub
+test-file-stub
     </style>
     <style
       data-theme-key="themeA"
@@ -60,6 +63,9 @@ exports[`ThemeProvider should load themes based on preload data or default: [ [O
       data-theme-key="default-dark"
     >
       test-file-stub
+test-file-stub
+test-file-stub
+test-file-stub
     </style>
     <style
       data-theme-key="themeA"
@@ -78,6 +84,9 @@ exports[`ThemeProvider should load themes based on preload data or default: [ [O
       data-theme-key="default-dark"
     >
       test-file-stub
+test-file-stub
+test-file-stub
+test-file-stub
     </style>
     <div>
       Child

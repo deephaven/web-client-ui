@@ -16,7 +16,7 @@ export { default as IrisGridTableModelTemplate } from './IrisGridTableModelTempl
 export * from './IrisGridTableModelTemplate';
 export * from './IrisGridTreeTableModel';
 export { default as IrisGridModelFactory } from './IrisGridModelFactory';
-export { default as IrisGridTheme } from './IrisGridTheme';
+export { createDefaultIrisGridTheme } from './IrisGridTheme';
 export type { IrisGridThemeType } from './IrisGridTheme';
 export { default as IrisGridTestUtils } from './IrisGridTestUtils';
 export { default as IrisGridUtils } from './IrisGridUtils';

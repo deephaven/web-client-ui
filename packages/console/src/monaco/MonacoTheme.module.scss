@@ -3,71 +3,76 @@
 
 :export {
   // iris dark theme
-  error-foreground: $red;
-  background: $content-bg;
-  foreground: $gray-100;
+  error-foreground: var(--dh-color-editor-error-fg);
+  background: var(--dh-color-editor-bg);
+  foreground: var(--dh-color-editor-fg);
   line-height: 19px; // 19 is the line height in the default monaco theme
 
   //code rules
-  //more nuanced grays required in a few spots
-  string: $yellow;
-  string-delim: $gray-400;
-  delimiter: mix($gray-400, $gray-300, 30%);
-  predefined: $green;
-  keyword: $blue;
-  storage: $red;
-  number: $purple;
-  operator: $red;
-  identifier: $gray-100;
-  namespace-identifier: $red;
-  identifier-js: $yellow;
-  comment: mix($gray-500, $gray-400, 40%);
+  string: var(--dh-color-editor-string);
+  string-delim: var(--dh-color-editor-string-delim);
+  delimiter: var(--dh-color-editor-delimiter);
+  predefined: var(--dh-color-editor-predefined);
+  keyword: var(--dh-color-editor-keyword);
+  storage: var(--dh-color-editor-storage);
+  number: var(--dh-color-editor-number);
+  operator: var(--dh-color-editor-operator);
+  identifier: var(--dh-color-editor-identifier);
+  namespace-identifier: var(--dh-color-editor-identifier-namespace);
+  identifier-js: var(--dh-color-editor-identifier-js);
+  comment: var(--dh-color-editor-comment);
 
   //input
-  input-option-active-border: $input-border-color;
-  focus-border: $input-focus-border-color;
-  input-background: $input-bg;
-  input-foreground: $input-color;
-  input-border: $input-border-color;
+  input-option-active-border: var(--dh-color-editor-input-option-active-border);
+  focus-border: var(--dh-color-editor-focus-border);
+  input-background: var(--dh-color-editor-input-bg);
+  input-foreground: var(--dh-color-editor-input-fg);
+  input-border: var(--dh-color-editor-input-border);
 
   //editor
-  editor-line-number-foreground: $gray-400;
-  editor-selection-background: $text-select-color-editor;
-  editor-line-highlight-bg: $gray-800;
+  editor-line-number-foreground: var(--dh-color-editor-line-number-fg);
+  editor-selection-background: var(--dh-color-editor-selection-bg);
+  editor-line-highlight-bg: var(--dh-color-editor-line-highlight-bg);
 
   //context menu
-  context-menu-background: $contextmenu-bg;
-  context-menu-foreground: $contextmenu-color;
-  menu-selection-background: $contextmenu-selected-bg;
+  context-menu-background: var(--dh-color-editor-context-menu-bg);
+  context-menu-foreground: var(--dh-color-editor-context-menu-fg);
+  menu-selection-background: var(--dh-color-editor-menu-selection-bg);
 
   //log items
-  log-date: $gray-400;
-  log-error: $danger;
-  log-info: $blue;
-  log-stdout: $foreground;
-  log-warn: $yellow;
-  log-debug: $purple;
-  log-trace: $green;
+  log-date: var(--dh-color-editor-log-date);
+  log-error: var(--dh-color-editor-log-error);
+  log-info: var(--dh-color-editor-log-info);
+  log-stdout: var(--dh-color-editor-log-stdout);
+  log-warn: var(--dh-color-editor-log-warn);
+  log-debug: var(--dh-color-editor-log-debug);
+  log-trace: var(--dh-color-editor-log-trace);
 
   // find matches
-  editor-find-match-background: mix($primary, $content-bg, 55%);
-  editor-find-match-highlight-background: mix($primary, $content-bg, 25%);
+  editor-find-match-background: var(--dh-color-editor-find-match-bg);
+  editor-find-match-highlight-background: var(
+    --dh-color-editor-find-match-highlight-bg
+  );
 
   // find widget
-  editor-widget-background: $gray-700;
-  input-option-active-background: $primary;
-  input-option-active-foreground: $foreground;
+  editor-widget-background: var(--dh-color-editor-find-bg);
+  input-option-active-background: var(--dh-color-editor-find-option-active-bg);
+  input-option-active-foreground: var(--dh-color-editor-find-option-active-fg);
 
   // suggest widget
-  editor-suggest-widget-background: $gray-700;
-  editor-suggest-widget-border: $gray-500;
-  editor-suggest-widget-foreground: $white;
-  editor-suggest-widget-selected-background: mix($primary, $gray-700, 15%);
-  editor-suggest-widget-highlightForeground: $primary;
-  list-hover-background: $gray-600;
+  editor-suggest-widget-background: var(--dh-color-editor-suggest-bg);
+  editor-suggest-widget-border: var(--dh-color-editor-suggest-border);
+  editor-suggest-widget-foreground: var(--dh-color-editor-suggest-fg);
+  editor-suggest-widget-selected-background: var(
+    --dh-color-editor-suggest-selected-bg
+  );
+  editor-suggest-widget-highlightForeground: var(
+    --dh-color-editor-suggest-highlight-fg
+  );
+  list-hover-background: var(--dh-color-editor-suggest-hover-bg);
 
   // links
-  text-link-foreground: $link-color;
-  text-link-active-foreground: $link-hover-color;
-  editor-link-active-foreground: $link-hover-color;
+  text-link-foreground: var(--dh-color-editor-link-foreground);
+  text-link-active-foreground: var(--dh-color-editor-link-active-fg);
+  editor-link-active-foreground: var(--dh-color-editor-link-active-fg);
 }

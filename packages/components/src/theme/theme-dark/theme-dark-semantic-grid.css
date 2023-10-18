@@ -1,0 +1,96 @@
+:root {
+  /* Grid */
+  --dh-color-grid-bg: var(--dh-color-background);
+
+  /* Header */
+  --dh-color-grid-header-bg: var(--dh-color-gray-100);
+  --dh-color-grid-header-text: var(--dh-color-heading-text);
+  --dh-color-grid-header-separator: var(--dh-color-gray-50);
+  --dh-color-grid-header-separator-hover: var(--dh-color-gray-600);
+  --dh-color-grid-header-separator-hidden-hover: var(--dh-color-accent-700);
+  --dh-color-grid-header-sort-bar: var(--dh-color-visual-purple);
+  --dh-color-grid-header-reverse-bar: var(--dh-color-visual-green);
+  --dh-color-grid-header-bar-casing: var(--dh-color-gray-50);
+
+  /* Row */
+  --dh-color-grid-row-0-bg: var(--dh-color-gray-200);
+  --dh-color-grid-row-1-bg: var(--dh-color-gray-100);
+  --dh-color-grid-row-hover-bg: var(--dh-color-highlight-hover);
+  --dh-color-grid-row-hover-bg-selected: var(
+    --dh-color-highlight-selected-hover
+  );
+
+  /* Selection */
+  --dh-color-grid-selection: var(--dh-color-highlight-selected);
+  --dh-color-grid-selection-outline: var(--dh-color-accent-900);
+  --dh-color-grid-selection-outline-casing: var(--dh-gray-50);
+
+  /** Sroll Bar */
+  --dh-color-grid-scroll-bar-active-selection-tick: var(--dh-color-accent-400);
+  --dh-color-grid-scroll-bar-bg: var(--dh-color-gray-100);
+  --dh-color-grid-scroll-bar-hover-bg: var(--dh-color-gray-200);
+  --dh-color-grid-scroll-bar-casing: var(--dh-color-gray-400);
+  --dh-color-grid-scroll-bar-corner: var(--dh-color-gray-100);
+  --dh-color-grid-scroll-bar: var(--dh-color-gray-500);
+  --dh-color-grid-scroll-bar-hover: var(--dh-color-gray-600);
+  --dh-color-grid-scroll-bar-active: var(--dh-color-gray-700);
+
+  /* Text */
+  --dh-color-grid-text: var(--dh-color-text);
+  --dh-color-grid-text-hyperlink: var(--dh-color-accent-1000);
+  --dh-color-grid-text-pending: var(--dh-color-yellow-1300);
+  --dh-color-grid-text-error: var(--dh-color-visual-negative);
+
+  /* Data Types */
+  --dh-color-grid-date: var(--dh-color-visual-notice);
+  --dh-color-grid-number-positive: var(--dh-color-visual-positive);
+  --dh-color-grid-number-negative: var(--dh-color-visual-negative);
+  --dh-color-grid-number-zero: var(--dh-color-visual-notice);
+  --dh-color-grid-string-null: var(--dh-color-gray-600);
+
+  /* Filter Bar */
+  --dh-color-grid-filter-bar-active-bg: var(--dh-color-accent-300);
+  --dh-color-grid-filter-bar-active: var(--dh-color-accent-600);
+  --dh-color-grid-filter-bar-expanded-bg: var(--dh-color-gray-200);
+  --dh-color-grid-filter-bar-expanded-active-bg: var(--dh-color-accent-100);
+  --dh-color-grid-filter-bar-expanded-active-cell-bg: var(
+    --dh-color-accent-200
+  );
+  --dh-color-grid-filter-bar-separator: var(--dh-color-gray-600);
+  --dh-color-grid-filter-bar-error: var(--dh-color-visual-negative);
+  --dh-color-grid-filter-icon: var(--dh-color-accent-600);
+
+  /* Context Menu */
+  --dh-color-grid-context-menu-sort-icon: var(--dh-color-visual-purple);
+  --dh-color-grid-context-menu-reverse-icon: var(--dh-color-visual-green);
+
+  /* Column */
+  --dh-color-grid-column-linker-hover-bg: var(
+    --dh-color-highlight-selected-hover
+  );
+  --dh-color-grid-column-grouped-divider: var(--dh-color-gray-50);
+
+  /* Tree */
+  --dh-color-grid-tree-line: var(--dh-color-gray-500);
+  --dh-color-grid-tree-marker: var(--dh-color-gray-700);
+  --dh-color-grid-tree-marker-hover: var(--dh-color-gray-900);
+
+  /* Floating */
+  --dh-color-grid-floating-row: var(--dh-color-gray-300);
+  --dh-color-grid-floating-row-bg: var(--dh-color-gray-200);
+  --dh-color-grid-floating-divider-inner: var(--dh-color-gray-200);
+  --dh-color-grid-floating-divider-outer: var(--dh-color-gray-50);
+
+  /* Overflow Button */
+  --dh-color-grid-overflow-button: var(--dh-color-gray-700);
+  --dh-color-grid-overflow-button-hover: var(--dh-color-gray-900);
+
+  /* Data Bars */
+  --dh-color-grid-data-bar-positive: var(--dh-color-visual-positive);
+  --dh-color-grid-data-bar-negative: var(--dh-color-visual-negative);
+  --dh-color-grid-data-bar-marker: var(--dh-color-white);
+  --dh-color-grid-data-bar-zero-line: var(--dh-color-gray-300);
+
+  /* Scrim */
+  --dh-color-grid-scrim: var(--dh-color-gray-50);
+}
