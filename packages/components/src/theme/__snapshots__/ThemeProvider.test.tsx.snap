@@ -3,13 +3,20 @@
 exports[`ThemeProvider setSelectedThemeKey: [ [Object] ] should change selected theme: default-light 1`] = `
 <body>
   <div>
-    <style
-      data-theme-key="default-light"
+    <div
+      class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
+      dir="ltr"
+      lang="en-US"
+      style="isolation: isolate; color-scheme: light;"
     >
-      test-file-stub
-    </style>
-    <div>
-      Child
+      <style
+        data-theme-key="default-light"
+      >
+        test-file-stub
+      </style>
+      <div>
+        Child
+      </div>
     </div>
   </div>
 </body>
@@ -18,19 +25,27 @@ exports[`ThemeProvider setSelectedThemeKey: [ [Object] ] should change selected 
 exports[`ThemeProvider setSelectedThemeKey: [ [Object] ] should change selected theme: themeA 1`] = `
 <body>
   <div>
-    <style
-      data-theme-key="default-dark"
+    <div
+      class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
+      dir="ltr"
+      lang="en-US"
+      style="isolation: isolate; color-scheme: light;"
     >
-      test-file-stub
+      <style
+        data-theme-key="default-dark"
+      >
+        test-file-stub
 test-file-stub
 test-file-stub
 test-file-stub
-    </style>
-    <style
-      data-theme-key="themeA"
-    />
-    <div>
-      Child
+test-file-stub
+      </style>
+      <style
+        data-theme-key="themeA"
+      />
+      <div>
+        Child
+      </div>
     </div>
   </div>
 </body>
@@ -59,19 +74,27 @@ exports[`ThemeProvider setSelectedThemeKey: null should change selected theme: t
 exports[`ThemeProvider should load themes based on preload data or default: [ [Object] ], { themeKey: 'themeA' } 1`] = `
 <body>
   <div>
-    <style
-      data-theme-key="default-dark"
+    <div
+      class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
+      dir="ltr"
+      lang="en-US"
+      style="isolation: isolate; color-scheme: light;"
     >
-      test-file-stub
+      <style
+        data-theme-key="default-dark"
+      >
+        test-file-stub
 test-file-stub
 test-file-stub
 test-file-stub
-    </style>
-    <style
-      data-theme-key="themeA"
-    />
-    <div>
-      Child
+test-file-stub
+      </style>
+      <style
+        data-theme-key="themeA"
+      />
+      <div>
+        Child
+      </div>
     </div>
   </div>
 </body>
@@ -80,16 +103,24 @@ test-file-stub
 exports[`ThemeProvider should load themes based on preload data or default: [ [Object] ], null 1`] = `
 <body>
   <div>
-    <style
-      data-theme-key="default-dark"
+    <div
+      class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
+      dir="ltr"
+      lang="en-US"
+      style="isolation: isolate; color-scheme: light;"
     >
-      test-file-stub
+      <style
+        data-theme-key="default-dark"
+      >
+        test-file-stub
 test-file-stub
 test-file-stub
 test-file-stub
-    </style>
-    <div>
-      Child
+test-file-stub
+      </style>
+      <div>
+        Child
+      </div>
     </div>
   </div>
 </body>
