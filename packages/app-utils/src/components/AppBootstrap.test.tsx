@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { AUTH_HANDLER_TYPE_ANONYMOUS } from '@deephaven/auth-plugins';
 import { ApiContext } from '@deephaven/jsapi-bootstrap';
 import { BROADCAST_LOGIN_MESSAGE } from '@deephaven/jsapi-utils';
@@ -10,6 +10,18 @@ import type {
 import { TestUtils } from '@deephaven/utils';
 import { act, render, screen } from '@testing-library/react';
 import AppBootstrap from './AppBootstrap';
+import { PluginsContext } from './PluginsBootstrap';
+import { PluginModuleMap } from '../plugins';
+
+const { asMock } = TestUtils;
+
+jest.mock('react', () => {
+  const actual = jest.requireActual('react');
+  return {
+    ...actual,
+    useContext: jest.fn(actual.useContext),
+  };
+});
 
 const API_URL = 'http://mockserver.net:8111';
 const PLUGINS_URL = 'http://mockserver.net:8111/plugins';
@@ -33,6 +45,7 @@ jest.mock('@deephaven/jsapi-components', () => ({
 
 const mockChildText = 'Mock Child';
 const mockChild = <div>{mockChildText}</div>;
+const mockPluginModuleMapEmpty: PluginModuleMap = new Map();
 
 function expectMockChild() {
   return expect(screen.queryByText(mockChildText));
@@ -59,6 +72,17 @@ beforeEach(() => {
 
 it('should throw if api has not been bootstrapped', () => {
   TestUtils.disableConsoleOutput();
+
+  asMock(useContext).mockImplementation(context => {
+    // ThemeBootstrap doesn't render children until plugins are loaded. We need
+    // a non-null PluginsContext value to render the children and get the expected
+    // missing api error.
+    if (context === PluginsContext) {
+      return mockPluginModuleMapEmpty;
+    }
+
+    return jest.requireActual('react').useContext(context);
+  });
 
   expect(() =>
     render(
