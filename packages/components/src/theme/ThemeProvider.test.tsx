@@ -73,20 +73,22 @@ describe('ThemeProvider', () => {
         </ThemeProvider>
       );
 
-      assertNotNull(themeContextValueRef.current);
+      if (themes == null) {
+        expect(themeContextValueRef.current).toBeNull();
+      } else {
+        assertNotNull(themeContextValueRef.current);
 
-      expect(themeContextValueRef.current.activeThemes).toEqual(
-        themes == null
-          ? null
-          : getActiveThemes(preloadData?.themeKey ?? DEFAULT_DARK_THEME_KEY, {
-              base: getDefaultBaseThemes(),
-              custom: themes,
-            })
-      );
+        expect(themeContextValueRef.current.activeThemes).toEqual(
+          getActiveThemes(preloadData?.themeKey ?? DEFAULT_DARK_THEME_KEY, {
+            base: getDefaultBaseThemes(),
+            custom: themes,
+          })
+        );
 
-      expect(themeContextValueRef.current.selectedThemeKey).toEqual(
-        preloadData?.themeKey ?? DEFAULT_DARK_THEME_KEY
-      );
+        expect(themeContextValueRef.current.selectedThemeKey).toEqual(
+          preloadData?.themeKey ?? DEFAULT_DARK_THEME_KEY
+        );
+      }
 
       expect(component.baseElement).toMatchSnapshot();
     }
@@ -125,22 +127,26 @@ describe('ThemeProvider', () => {
           </ThemeProvider>
         );
 
-        assertNotNull(themeContextValueRef.current);
+        if (themes == null) {
+          expect(themeContextValueRef.current).toBeNull();
+        } else {
+          assertNotNull(themeContextValueRef.current);
 
-        act(() => {
-          themeContextValueRef.current!.setSelectedThemeKey(themeKey);
-        });
+          act(() => {
+            themeContextValueRef.current!.setSelectedThemeKey(themeKey);
+          });
 
-        expect(themeContextValueRef.current.activeThemes).toEqual(
-          themes == null
-            ? null
-            : getActiveThemes(themeKey, {
-                base: getDefaultBaseThemes(),
-                custom: themes,
-              })
-        );
+          expect(themeContextValueRef.current.activeThemes).toEqual(
+            getActiveThemes(themeKey, {
+              base: getDefaultBaseThemes(),
+              custom: themes,
+            })
+          );
 
-        expect(themeContextValueRef.current.selectedThemeKey).toEqual(themeKey);
+          expect(themeContextValueRef.current.selectedThemeKey).toEqual(
+            themeKey
+          );
+        }
 
         expect(component.baseElement).toMatchSnapshot();
       }

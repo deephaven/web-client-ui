@@ -9,9 +9,9 @@ module.exports = {
     'node_modules/(?!(monaco-editor|d3-interpolate|d3-color)/)',
   ],
   moduleNameMapper: {
-    'SpectrumTheme([^.]+)\\.module\\.scss$': path.join(
+    'theme-(.*?)\\.css$': path.join(
       __dirname,
-      './__mocks__/spectrumTheme$1Mock.js'
+      './__mocks__/css/mock-theme-$1.js'
     ),
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     '\\.(css|less|scss|sass)\\?inline$': path.join(
