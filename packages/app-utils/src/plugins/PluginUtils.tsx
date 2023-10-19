@@ -64,7 +64,7 @@ export async function loadJson(jsonUrl: string): Promise<PluginManifest> {
  */
 export async function loadModulePlugins(
   modulePluginsUrl: string
-): Promise<PluginModuleMap> {
+): Promise<[string, PluginModule][]> {
   log.debug('Loading plugins...');
   try {
     const manifest = await loadJson(`${modulePluginsUrl}/manifest.json`);
@@ -74,7 +74,9 @@ export async function loadModulePlugins(
     }
 
     log.debug('Plugin manifest loaded:', manifest);
-    const pluginPromises: Promise<LegacyPlugin | { default: Plugin }>[] = [];
+    const pluginPromises: Promise<
+      LegacyPlugin | { default: Plugin | Plugin[] }
+    >[] = [];
     for (let i = 0; i < manifest.plugins.length; i += 1) {
       const { name, main } = manifest.plugins[i];
       const pluginMainUrl = `${modulePluginsUrl}/${name}/${main}`;
@@ -83,7 +85,7 @@ export async function loadModulePlugins(
 
     const pluginModules = await Promise.allSettled(pluginPromises);
 
-    const pluginMap: PluginModuleMap = new Map();
+    const plugins: [string, PluginModule][] = [];
     for (let i = 0; i < pluginModules.length; i += 1) {
       const module = pluginModules[i];
       const { name } = manifest.plugins[i];
@@ -98,19 +100,25 @@ export async function loadModulePlugins(
 
         if (moduleValue == null) {
           log.error(`Plugin '${name}' is missing an exported value.`);
+        } else if (Array.isArray(moduleValue)) {
+          moduleValue.forEach(plugin => {
+            plugins.push([plugin.name, plugin]);
+          });
+        } else if (isLegacyPlugin(moduleValue)) {
+          plugins.push([name, moduleValue]);
         } else {
-          pluginMap.set(name, moduleValue);
+          plugins.push([moduleValue.name, moduleValue]);
         }
       } else {
         log.error(`Unable to load plugin '${name}'`, module.reason);
       }
     }
-    log.info('Plugins loaded:', pluginMap);
+    log.info('Plugins loaded:', plugins);
 
-    return pluginMap;
+    return plugins;
   } catch (e) {
     log.error('Unable to load plugins:', e);
-    return new Map();
+    return [];
   }
 }
 

@@ -1,6 +1,9 @@
 import { type Plugin } from '@deephaven/plugin';
 import React, { createContext, useEffect, useState } from 'react';
+import Log from '@deephaven/log';
 import { PluginModuleMap, loadModulePlugins } from '../plugins';
+
+const log = Log.module('PluginsBootstrap');
 
 export const PluginsContext = createContext<PluginModuleMap | null>(null);
 
@@ -39,7 +42,16 @@ export function PluginsBootstrap({
           const corePluginPairs = corePlugins.map(
             plugin => [plugin.name, plugin] as const
           );
-          setPlugins(new Map([...corePluginPairs, ...pluginModules]));
+          const newPlugins: PluginModuleMap = new Map();
+          [...corePluginPairs, ...pluginModules].forEach(([name, plugin]) => {
+            if (newPlugins.has(name)) {
+              log.warn(
+                `Plugin with name '${name}' already exists. Overriding existing with ${plugin}`
+              );
+            }
+            newPlugins.set(name, plugin);
+          });
+          setPlugins(newPlugins);
         }
       }
       loadPlugins();
