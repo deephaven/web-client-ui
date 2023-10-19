@@ -1,4 +1,10 @@
-import { DehydratedDashboardPanelProps, PanelConfig } from './DashboardPlugin';
+import { ForwardRef } from 'react-is';
+import {
+  DehydratedDashboardPanelProps,
+  isWrappedComponent,
+  PanelComponentType,
+  PanelConfig,
+} from './DashboardPlugin';
 
 /**
  * Dehydrate an existing panel to allow it to be serialized/saved.
@@ -46,6 +52,29 @@ export function hydrate<T extends DehydratedDashboardPanelProps>(
     ...props,
     localDashboardId,
   };
+}
+
+/**
+ * Checks if a panel component can take a ref. Helps silence react dev errors
+ * if a ref is passed to a functional component without forwardRef.
+ * @param component The panel component to check if it can take a ref
+ * @returns Wheter the component can take a ref or not
+ */
+export function canHaveRef(component: PanelComponentType): boolean {
+  // Might be a redux connect wrapped component
+  const isClassComponent =
+    (isWrappedComponent(component) &&
+      component.WrappedComponent.prototype != null &&
+      component.WrappedComponent.prototype.isReactComponent != null) ||
+    (component.prototype != null &&
+      component.prototype.isReactComponent != null);
+
+  const isForwardRef =
+    !isWrappedComponent(component) &&
+    '$$typeof' in component &&
+    component.$$typeof === ForwardRef;
+
+  return isClassComponent || isForwardRef;
 }
 
 export default {

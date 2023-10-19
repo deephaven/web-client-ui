@@ -214,7 +214,8 @@ export default class Header extends EventEmitter {
     // makes sure dropped tabs are scrollintoview, removed any re-ordering
     this.tabs[this.parent.config.activeItemIndex ?? 0].element
       .get(0)
-      ?.scrollIntoView({
+      ?.scrollIntoView?.({
+        // Optional chain scrollIntoView call so tests do not error
         inline: 'nearest',
       });
 

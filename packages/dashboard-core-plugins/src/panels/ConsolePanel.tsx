@@ -9,17 +9,21 @@ import {
   Console,
   ConsoleConstants,
   HeapUsage,
+  ObjectIcon,
 } from '@deephaven/console';
 import { DashboardPanelProps, PanelEvent } from '@deephaven/dashboard';
 import type { IdeSession, VariableDefinition } from '@deephaven/jsapi-types';
 import { SessionWrapper } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
+  DeephavenPluginModuleMap,
   getCommandHistoryStorage,
+  getPlugins,
   getTimeZone,
   RootState,
 } from '@deephaven/redux';
 import { assertNotNull } from '@deephaven/utils';
+import { getIconForPlugin, pluginSupportsType } from '@deephaven/plugin';
 import type { JSZipObject } from 'jszip';
 import { ConsoleEvent } from '../events';
 import Panel from './Panel';
@@ -55,6 +59,7 @@ interface ConsolePanelProps extends DashboardPanelProps {
 
   timeZone: string;
   unzip?: (file: File) => Promise<JSZipObject[]>;
+  plugins: DeephavenPluginModuleMap;
 }
 
 interface ConsolePanelState {
@@ -86,6 +91,8 @@ export class ConsolePanel extends PureComponent<
     this.handleSettingsChange = this.handleSettingsChange.bind(this);
     this.handleShow = this.handleShow.bind(this);
     this.handlePanelMount = this.handlePanelMount.bind(this);
+    this.supportsType = this.supportsType.bind(this);
+    this.iconForType = this.iconForType.bind(this);
 
     this.consoleRef = React.createRef();
 
@@ -308,6 +315,23 @@ export class ConsolePanel extends PureComponent<
     this.consoleRef.current?.updateDimensions();
   }
 
+  supportsType(type: string): boolean {
+    const { plugins } = this.props;
+    return [...plugins.values()].some(plugin =>
+      pluginSupportsType(plugin, type)
+    );
+  }
+
+  iconForType(type: string): JSX.Element {
+    const { plugins } = this.props;
+    const plugin = [...plugins.values()].find(p => pluginSupportsType(p, type));
+    if (plugin != null) {
+      return getIconForPlugin(plugin);
+    }
+    // TODO: #1573 Remove this default and always return getIconForPlugin
+    return <ObjectIcon type={type} />;
+  }
+
   render(): ReactElement {
     const {
       commandHistoryStorage,
@@ -378,6 +402,8 @@ export class ConsolePanel extends PureComponent<
             timeZone={timeZone}
             objectMap={objectMap}
             unzip={unzip}
+            supportsType={this.supportsType}
+            iconForType={this.iconForType}
           />
         )}
       </Panel>
@@ -390,13 +416,14 @@ const mapStateToProps = (
   ownProps: { localDashboardId: string }
 ): Pick<
   ConsolePanelProps,
-  'commandHistoryStorage' | 'sessionWrapper' | 'timeZone'
+  'commandHistoryStorage' | 'sessionWrapper' | 'timeZone' | 'plugins'
 > => ({
   commandHistoryStorage: getCommandHistoryStorage(
     state
   ) as CommandHistoryStorage,
   sessionWrapper: getDashboardSessionWrapper(state, ownProps.localDashboardId),
   timeZone: getTimeZone(state),
+  plugins: getPlugins(state),
 });
 
 const ConnectedConsolePanel = connect(mapStateToProps, null, null, {

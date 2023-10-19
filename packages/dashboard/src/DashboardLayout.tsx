@@ -21,6 +21,7 @@ import PanelManager, { ClosedPanels } from './PanelManager';
 import PanelErrorBoundary from './PanelErrorBoundary';
 import LayoutUtils from './layout/LayoutUtils';
 import {
+  canHaveRef,
   dehydrate as dehydrateDefault,
   hydrate as hydrateDefault,
 } from './DashboardUtils';
@@ -28,7 +29,6 @@ import PanelEvent from './PanelEvent';
 import { GLPropTypes, useListener } from './layout';
 import { getDashboardData, updateDashboardData } from './redux';
 import {
-  isWrappedComponent,
   PanelComponentType,
   PanelDehydrateFunction,
   PanelHydrateFunction,
@@ -127,18 +127,12 @@ export function DashboardLayout({
         const CType = componentType as any;
         const PanelWrapperType = panelWrapper;
 
-        /*
-          Checking for class components will let us silence the React warning
-          about assigning refs to function components not using forwardRef.
-          The ref is used to detect changes to class component state so we
-          can track changes to panelState. We should opt for more explicit
-          state changes in the future and in functional components.
-        */
-        const isClassComponent =
-          (isWrappedComponent(CType) &&
-            CType.WrappedComponent.prototype != null &&
-            CType.WrappedComponent.prototype.isReactComponent != null) ||
-          (CType.prototype != null && CType.prototype.isReactComponent != null);
+        /**
+         * The ref is used to detect changes to class component state so we
+         * can track changes to panelState. We should opt for more explicit
+         * state changes in the future and in functional components.
+         */
+        const hasRef = canHaveRef(CType);
 
         // Props supplied by GoldenLayout
         const { glContainer, glEventHub } = props;
@@ -146,7 +140,7 @@ export function DashboardLayout({
           <PanelErrorBoundary glContainer={glContainer} glEventHub={glEventHub}>
             {/* eslint-disable-next-line react/jsx-props-no-spreading */}
             <PanelWrapperType {...props}>
-              {isClassComponent ? (
+              {hasRef ? (
                 // eslint-disable-next-line react/jsx-props-no-spreading
                 <CType {...props} ref={ref} />
               ) : (
@@ -157,6 +151,10 @@ export function DashboardLayout({
           </PanelErrorBoundary>
         );
       }
+
+      wrappedComponent.displayName = `DashboardWrapper(${
+        componentType.displayName ?? name
+      })`;
 
       const cleanup = layout.registerComponent(
         name,
