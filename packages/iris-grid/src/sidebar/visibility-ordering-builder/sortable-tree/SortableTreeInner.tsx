@@ -85,6 +85,8 @@ interface Props<T> {
     childCount?: number;
     value: string;
     item: FlattenedItem<T>;
+    ref: React.Ref<HTMLDivElement> | null;
+    handleProps?: Record<string, unknown>;
   }) => JSX.Element;
   activeId: string | null;
   overId: string | null;

@@ -10,7 +10,7 @@ export interface Props<T> {
   depth: number;
   disableInteraction?: boolean;
   ghost?: boolean;
-  handleProps?: unknown;
+  handleProps?: Record<string, unknown>;
   value: string;
   item: FlattenedItem<T>;
   dragRef?: React.Ref<HTMLDivElement> | null;
@@ -21,7 +21,7 @@ export interface Props<T> {
     childCount?: number;
     value: string;
     item: FlattenedItem<T>;
-    handleProps: unknown;
+    handleProps?: Record<string, unknown>;
   }) => JSX.Element;
 }
 
@@ -31,7 +31,7 @@ export type TreeItemRenderFn<T> = (props: {
   childCount?: number;
   value: string;
   item: T extends TreeItemType<infer D> ? FlattenedItem<D> : FlattenedItem<T>;
-  handleProps: Record<string, unknown>;
+  handleProps?: Record<string, unknown>;
 }) => JSX.Element;
 
 export function TreeItem<T>(props: Props<T>): JSX.Element {
