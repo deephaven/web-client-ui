@@ -9,7 +9,7 @@ module.exports = {
     'node_modules/(?!(monaco-editor|d3-interpolate|d3-color)/)',
   ],
   moduleNameMapper: {
-    'theme-(.*?)\\.css$': path.join(
+    'theme-([^/]+?)\\.css(\\?inline)?$': path.join(
       __dirname,
       './__mocks__/css/mock-theme-$1.js'
     ),

@@ -12,7 +12,7 @@ exports[`ThemeProvider setSelectedThemeKey: [ [Object] ] should change selected 
       <style
         data-theme-key="default-light"
       >
-        test-file-stub
+        mock-theme-light-palette
       </style>
       <div>
         Child
@@ -34,11 +34,11 @@ exports[`ThemeProvider setSelectedThemeKey: [ [Object] ] should change selected 
       <style
         data-theme-key="default-dark"
       >
-        test-file-stub
-test-file-stub
-test-file-stub
-test-file-stub
-test-file-stub
+        mock-theme-dark-palette
+mock-theme-dark-semantic
+mock-theme-dark-semantic-editor
+mock-theme-dark-semantic-grid
+mock-theme-dark-components
       </style>
       <style
         data-theme-key="themeA"
@@ -75,11 +75,11 @@ exports[`ThemeProvider should load themes based on preload data or default: [ [O
       <style
         data-theme-key="default-dark"
       >
-        test-file-stub
-test-file-stub
-test-file-stub
-test-file-stub
-test-file-stub
+        mock-theme-dark-palette
+mock-theme-dark-semantic
+mock-theme-dark-semantic-editor
+mock-theme-dark-semantic-grid
+mock-theme-dark-components
       </style>
       <style
         data-theme-key="themeA"
@@ -104,11 +104,11 @@ exports[`ThemeProvider should load themes based on preload data or default: [ [O
       <style
         data-theme-key="default-dark"
       >
-        test-file-stub
-test-file-stub
-test-file-stub
-test-file-stub
-test-file-stub
+        mock-theme-dark-palette
+mock-theme-dark-semantic
+mock-theme-dark-semantic-editor
+mock-theme-dark-semantic-grid
+mock-theme-dark-components
       </style>
       <div>
         Child
