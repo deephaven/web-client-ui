@@ -1186,7 +1186,7 @@ class Grid extends PureComponent<GridProps, GridState> {
    * @param deltaColumn Number of columns to move the cursor
    * @param deltaRow Number of rows to move the cursor
    * @param extendSelection True if the current selection should be extended, false to start a new selection
-   * @param event The event that triggered the update.
+   * @param stickyOptions Options for sticky behavior
    */
   moveCursor(
     deltaColumn: number,
@@ -1281,7 +1281,7 @@ class Grid extends PureComponent<GridProps, GridState> {
    * @param extendSelection Whether to extend the current selection (eg. holding Shift)
    * @param keepCursorInView Whether to move the viewport so that the cursor is in view
    * @param maximizePreviousRange With this and `extendSelection` true, it will maximize/add to the previous range only, ignoring where the selection was started
-   * @param event The event that triggered the update.
+   * @param stickyOptions Options for sticky behavior
    */
   moveCursorToPosition(
     column: GridRangeIndex,
@@ -1307,7 +1307,7 @@ class Grid extends PureComponent<GridProps, GridState> {
    *
    * @param column The column index to bring into view
    * @param row The row index to bring into view
-   * @param event The event that triggered the update.
+   * @param stickyOptions Options for sticky behavior
    */
   moveViewToCell(
     column: GridRangeIndex,
@@ -1342,14 +1342,6 @@ class Grid extends PureComponent<GridProps, GridState> {
       }
     }
 
-    // const stickyOptions: StickyOptions = {
-    //   shouldStickBottom:
-    //     event &&
-    //     (event.key === 'ArrowDown' ||
-    //       event.key === 'End' ||
-    //       event.key === 'PageDown'),
-    //   shouldStickRight: event && event.key === 'ArrowRight',
-    // };
     this.setViewState(
       { top, left, topOffset, leftOffset },
       false,
@@ -1362,7 +1354,7 @@ class Grid extends PureComponent<GridProps, GridState> {
    * Should be called when user interaction occurs
    * @param viewState New state properties to set.
    * @param forceUpdate Whether to force an update.
-   * @param event The event that triggered the update.
+   * @param stickyOptions Options for sticky behavior
    */
 
   setViewState(
