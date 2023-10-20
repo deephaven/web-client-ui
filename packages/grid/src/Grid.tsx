@@ -68,6 +68,11 @@ type LegacyCanvasRenderingContext2D = CanvasRenderingContext2D & {
   backingStorePixelRatio?: number;
 };
 
+export type StickyOptions = {
+  shouldStickBottom?: boolean;
+  shouldStickRight?: boolean;
+};
+
 export type GridProps = typeof Grid.defaultProps & {
   // Options to set on the canvas
   canvasOptions?: CanvasRenderingContext2DSettings;
@@ -1187,7 +1192,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     deltaColumn: number,
     deltaRow: number,
     extendSelection: boolean,
-    event?: GridKeyboardEvent
+    stickyOptions?: StickyOptions
   ): void {
     const { cursorRow, cursorColumn, selectionEndColumn, selectionEndRow } =
       this.state;
@@ -1195,14 +1200,28 @@ class Grid extends PureComponent<GridProps, GridState> {
     const row = extendSelection ? selectionEndRow : cursorRow;
     if (row === null || column === null) {
       const { left, top } = this.state;
-      this.moveCursorToPosition(left, top, extendSelection, true, false, event);
+      this.moveCursorToPosition(
+        left,
+        top,
+        extendSelection,
+        true,
+        false,
+        stickyOptions
+      );
     } else {
       const { model } = this.props;
       const { columnCount, rowCount } = model;
 
       const left = clamp(column + deltaColumn, 0, columnCount - 1);
       const top = clamp(row + deltaRow, 0, rowCount - 1);
-      this.moveCursorToPosition(left, top, extendSelection, true, false, event);
+      this.moveCursorToPosition(
+        left,
+        top,
+        extendSelection,
+        true,
+        false,
+        stickyOptions
+      );
     }
   }
 
@@ -1270,7 +1289,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     extendSelection = false,
     keepCursorInView = true,
     maximizePreviousRange = false,
-    event?: GridKeyboardEvent
+    stickyOptions?: StickyOptions
   ): void {
     if (!extendSelection) {
       this.beginSelection(column, row);
@@ -1279,7 +1298,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.moveSelection(column, row, extendSelection, maximizePreviousRange);
 
     if (keepCursorInView) {
-      this.moveViewToCell(column, row, event);
+      this.moveViewToCell(column, row, stickyOptions);
     }
   }
 
@@ -1293,7 +1312,7 @@ class Grid extends PureComponent<GridProps, GridState> {
   moveViewToCell(
     column: GridRangeIndex,
     row: GridRangeIndex,
-    event?: GridKeyboardEvent
+    stickyOptions?: StickyOptions
   ): void {
     if (!this.metrics) throw new Error('metrics not set');
 
@@ -1323,7 +1342,19 @@ class Grid extends PureComponent<GridProps, GridState> {
       }
     }
 
-    this.setViewState({ top, left, topOffset, leftOffset }, false, event);
+    // const stickyOptions: StickyOptions = {
+    //   shouldStickBottom:
+    //     event &&
+    //     (event.key === 'ArrowDown' ||
+    //       event.key === 'End' ||
+    //       event.key === 'PageDown'),
+    //   shouldStickRight: event && event.key === 'ArrowRight',
+    // };
+    this.setViewState(
+      { top, left, topOffset, leftOffset },
+      false,
+      stickyOptions
+    );
   }
 
   /**
@@ -1337,37 +1368,28 @@ class Grid extends PureComponent<GridProps, GridState> {
   setViewState(
     viewState: Partial<GridState>,
     forceUpdate = false,
-    event?: WheelEvent | GridKeyboardEvent
+    stickyOptions?: StickyOptions
   ): void {
     if (!this.metrics) throw new Error('metrics not set');
 
     const { isStickyBottom, isStickyRight } = this.props;
     const { top, left } = viewState;
     const { lastTop, lastLeft } = this.metrics;
-    let isUserInputDown = false;
-    let isUserInputRight = false;
 
-    if (event instanceof WheelEvent) {
-      isUserInputDown = event.deltaY > 0;
-      isUserInputRight = event.deltaX > 0;
-    } else if (
-      event instanceof KeyboardEvent ||
-      (event && 'nativeEvent' in event) // used to catch the case that a synthetic react keyboard event is passed
-    ) {
-      isUserInputDown =
-        event.key === 'ArrowDown' ||
-        event.key === 'End' ||
-        event.key === 'PageDown';
-      isUserInputRight = event.key === 'ArrowRight';
-    }
     if (top != null) {
       this.setState({
-        isStuckToBottom: isStickyBottom && top >= lastTop && isUserInputDown,
+        isStuckToBottom:
+          isStickyBottom &&
+          top >= lastTop &&
+          (stickyOptions?.shouldStickBottom ?? false),
       });
     }
     if (left != null) {
       this.setState({
-        isStuckToRight: isStickyRight && left >= lastLeft && isUserInputRight,
+        isStuckToRight:
+          isStickyRight &&
+          left >= lastLeft &&
+          (stickyOptions?.shouldStickRight ?? false),
       });
     }
 
@@ -2013,7 +2035,15 @@ class Grid extends PureComponent<GridProps, GridState> {
       }
     }
 
-    this.setViewState({ top, left, leftOffset, topOffset }, false, event);
+    const stickyOptions: StickyOptions = {
+      shouldStickBottom: event.deltaY > 0,
+      shouldStickRight: event.deltaX > 0,
+    };
+    this.setViewState(
+      { top, left, leftOffset, topOffset },
+      false,
+      stickyOptions
+    );
 
     event.stopPropagation();
     event.preventDefault();

@@ -1,7 +1,7 @@
 /* eslint class-methods-use-this: "off" */
 import clamp from 'lodash.clamp';
 import { EventHandlerResult } from '../EventHandlerResult';
-import Grid from '../Grid';
+import Grid, { StickyOptions } from '../Grid';
 import GridRange from '../GridRange';
 import GridUtils from '../GridUtils';
 import KeyHandler, { GridKeyboardEvent } from '../KeyHandler';
@@ -177,6 +177,13 @@ class SelectionKeyHandler extends KeyHandler {
 
       const { theme } = grid.props;
       const { autoSelectRow = false, autoSelectColumn = false } = theme;
+      const stickyOptions: StickyOptions = {
+        shouldStickBottom:
+          event.key === 'ArrowDown' ||
+          event.key === 'End' ||
+          event.key === 'PageDown',
+        shouldStickRight: event.key === 'ArrowRight',
+      };
       if (autoSelectRow && deltaColumn !== 0) {
         const { lastLeft } = grid.metrics;
         let { left } = grid.state;
@@ -185,7 +192,7 @@ class SelectionKeyHandler extends KeyHandler {
 
         grid.moveCursorToPosition(left, cursorRow, isShiftKey, false);
 
-        grid.setViewState({ left }, false, event);
+        grid.setViewState({ left }, false, stickyOptions);
       } else if (autoSelectColumn && deltaRow !== 0) {
         const { lastTop } = grid.metrics;
         let { top } = grid.state;
@@ -194,9 +201,9 @@ class SelectionKeyHandler extends KeyHandler {
 
         grid.moveCursorToPosition(top, cursorColumn, isShiftKey, false);
 
-        grid.setViewState({ top }, false, event);
+        grid.setViewState({ top }, false, stickyOptions);
       } else {
-        grid.moveCursor(deltaColumn, deltaRow, isShiftKey, event);
+        grid.moveCursor(deltaColumn, deltaRow, isShiftKey, stickyOptions);
       }
     }
     return true;
@@ -242,8 +249,8 @@ class SelectionKeyHandler extends KeyHandler {
     return true;
   }
 
-  handlePageDown(e: GridKeyboardEvent, grid: Grid): boolean {
-    const isShiftKey = e.shiftKey;
+  handlePageDown(event: GridKeyboardEvent, grid: Grid): boolean {
+    const isShiftKey = event.shiftKey;
 
     if (isShiftKey) {
       grid.trimSelectedRanges();
@@ -279,7 +286,15 @@ class SelectionKeyHandler extends KeyHandler {
       isShiftKey,
       false
     );
-    grid.setViewState({ top: viewportPosition }, false, e);
+
+    const stickyOptions: StickyOptions = {
+      shouldStickBottom:
+        event.key === 'ArrowDown' ||
+        event.key === 'End' ||
+        event.key === 'PageDown',
+      shouldStickRight: event.key === 'ArrowRight',
+    };
+    grid.setViewState({ top: viewportPosition }, false, stickyOptions);
 
     return true;
   }
