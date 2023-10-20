@@ -130,6 +130,8 @@ class MonacoUtils {
         MonacoTheme['editor-suggest-widget-foreground'],
       'editorSuggestWidget.selectedBackground':
         MonacoTheme['editor-suggest-widget-selected-background'],
+      'editorSuggestWidget.selectedForeground':
+        MonacoTheme['editor-suggest-widget-selected-foreground'],
       'editorSuggestWidget.highlightForeground':
         MonacoTheme['editor-suggest-widget-highlightForeground'],
       'list.hoverBackground': MonacoTheme['list-hover-background'],
