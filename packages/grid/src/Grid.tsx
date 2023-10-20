@@ -68,6 +68,11 @@ type LegacyCanvasRenderingContext2D = CanvasRenderingContext2D & {
   backingStorePixelRatio?: number;
 };
 
+export type StickyOptions = {
+  shouldStickBottom?: boolean;
+  shouldStickRight?: boolean;
+};
+
 export type GridProps = typeof Grid.defaultProps & {
   // Options to set on the canvas
   canvasOptions?: CanvasRenderingContext2DSettings;
@@ -1181,11 +1186,13 @@ class Grid extends PureComponent<GridProps, GridState> {
    * @param deltaColumn Number of columns to move the cursor
    * @param deltaRow Number of rows to move the cursor
    * @param extendSelection True if the current selection should be extended, false to start a new selection
+   * @param stickyOptions Options for sticky behavior
    */
   moveCursor(
     deltaColumn: number,
     deltaRow: number,
-    extendSelection: boolean
+    extendSelection: boolean,
+    stickyOptions?: StickyOptions
   ): void {
     const { cursorRow, cursorColumn, selectionEndColumn, selectionEndRow } =
       this.state;
@@ -1193,14 +1200,28 @@ class Grid extends PureComponent<GridProps, GridState> {
     const row = extendSelection ? selectionEndRow : cursorRow;
     if (row === null || column === null) {
       const { left, top } = this.state;
-      this.moveCursorToPosition(left, top, extendSelection);
+      this.moveCursorToPosition(
+        left,
+        top,
+        extendSelection,
+        true,
+        false,
+        stickyOptions
+      );
     } else {
       const { model } = this.props;
       const { columnCount, rowCount } = model;
 
       const left = clamp(column + deltaColumn, 0, columnCount - 1);
       const top = clamp(row + deltaRow, 0, rowCount - 1);
-      this.moveCursorToPosition(left, top, extendSelection);
+      this.moveCursorToPosition(
+        left,
+        top,
+        extendSelection,
+        true,
+        false,
+        stickyOptions
+      );
     }
   }
 
@@ -1260,13 +1281,15 @@ class Grid extends PureComponent<GridProps, GridState> {
    * @param extendSelection Whether to extend the current selection (eg. holding Shift)
    * @param keepCursorInView Whether to move the viewport so that the cursor is in view
    * @param maximizePreviousRange With this and `extendSelection` true, it will maximize/add to the previous range only, ignoring where the selection was started
+   * @param stickyOptions Options for sticky behavior
    */
   moveCursorToPosition(
     column: GridRangeIndex,
     row: GridRangeIndex,
     extendSelection = false,
     keepCursorInView = true,
-    maximizePreviousRange = false
+    maximizePreviousRange = false,
+    stickyOptions?: StickyOptions
   ): void {
     if (!extendSelection) {
       this.beginSelection(column, row);
@@ -1275,7 +1298,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.moveSelection(column, row, extendSelection, maximizePreviousRange);
 
     if (keepCursorInView) {
-      this.moveViewToCell(column, row);
+      this.moveViewToCell(column, row, stickyOptions);
     }
   }
 
@@ -1284,8 +1307,13 @@ class Grid extends PureComponent<GridProps, GridState> {
    *
    * @param column The column index to bring into view
    * @param row The row index to bring into view
+   * @param stickyOptions Options for sticky behavior
    */
-  moveViewToCell(column: GridRangeIndex, row: GridRangeIndex): void {
+  moveViewToCell(
+    column: GridRangeIndex,
+    row: GridRangeIndex,
+    stickyOptions?: StickyOptions
+  ): void {
     if (!this.metrics) throw new Error('metrics not set');
 
     const { metricCalculator } = this;
@@ -1314,7 +1342,11 @@ class Grid extends PureComponent<GridProps, GridState> {
       }
     }
 
-    this.setViewState({ top, left, topOffset, leftOffset });
+    this.setViewState(
+      { top, left, topOffset, leftOffset },
+      false,
+      stickyOptions
+    );
   }
 
   /**
@@ -1322,38 +1354,35 @@ class Grid extends PureComponent<GridProps, GridState> {
    * Should be called when user interaction occurs
    * @param viewState New state properties to set.
    * @param forceUpdate Whether to force an update.
+   * @param stickyOptions Options for sticky behavior
    */
 
   setViewState(
     viewState: Partial<GridState>,
     forceUpdate = false,
-    eventType: WheelEvent | GridKeyboardEvent | null = null
+    stickyOptions?: StickyOptions
   ): void {
     if (!this.metrics) throw new Error('metrics not set');
 
     const { isStickyBottom, isStickyRight } = this.props;
     const { top, left } = viewState;
     const { lastTop, lastLeft } = this.metrics;
-    let isUserInputDown = false;
 
-    if (eventType instanceof WheelEvent) {
-      isUserInputDown = eventType.deltaY > 0;
-    } else if (
-      eventType instanceof KeyboardEvent ||
-      (eventType && 'nativeEvent' in eventType) // used to catch the case that a synthetic react keyboard event is passed
-    ) {
-      isUserInputDown =
-        eventType.key === 'ArrowDown' ||
-        eventType.key === 'End' ||
-        eventType.key === 'PageDown';
-    }
     if (top != null) {
       this.setState({
-        isStuckToBottom: isStickyBottom && top >= lastTop && isUserInputDown,
+        isStuckToBottom:
+          isStickyBottom &&
+          top >= lastTop &&
+          (stickyOptions?.shouldStickBottom ?? false),
       });
     }
     if (left != null) {
-      this.setState({ isStuckToRight: isStickyRight && left >= lastLeft });
+      this.setState({
+        isStuckToRight:
+          isStickyRight &&
+          left >= lastLeft &&
+          (stickyOptions?.shouldStickRight ?? false),
+      });
     }
 
     this.setState(viewState as GridState);
@@ -1998,7 +2027,15 @@ class Grid extends PureComponent<GridProps, GridState> {
       }
     }
 
-    this.setViewState({ top, left, leftOffset, topOffset }, false, event);
+    const stickyOptions: StickyOptions = {
+      shouldStickBottom: event.deltaY > 0,
+      shouldStickRight: event.deltaX > 0,
+    };
+    this.setViewState(
+      { top, left, leftOffset, topOffset },
+      false,
+      stickyOptions
+    );
 
     event.stopPropagation();
     event.preventDefault();
