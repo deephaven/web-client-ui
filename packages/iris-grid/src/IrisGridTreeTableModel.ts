@@ -33,6 +33,15 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
         const value = this.valueForCell(x, y);
         return this.displayString(value, column.constituentType, column.name);
       }
+      // Show empty string instead of null in rollup grouping columns (issue #1483)
+      if (
+        row.hasChildren &&
+        row.depth <= x + 1 &&
+        this.valueForCell(x, y) === null &&
+        this.getCachedGroupedColumnSet(this.groupedColumns).has(x)
+      ) {
+        return '';
+      }
     }
 
     return super.textForCell(x, y);
@@ -178,6 +187,15 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
       new Set(
         (groupedColumns?.length > 0 ? groupedColumns : columns).map(c1 =>
           columns.findIndex(c2 => c1.name === c2.name)
+        )
+      )
+  );
+
+  getCachedGroupedColumnSet = memoize(
+    (groupedColumns: readonly Column[]) =>
+      new Set(
+        groupedColumns.map(c1 =>
+          this.columns.findIndex(c2 => c1.name === c2.name)
         )
       )
   );

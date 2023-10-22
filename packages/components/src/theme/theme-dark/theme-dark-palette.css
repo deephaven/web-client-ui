@@ -3,7 +3,7 @@
   --dh-color-gray-hue: 0deg;
   --dh-color-gray-50: hsl(var(--dh-color-gray-hue) 6% 10%);
   --dh-color-gray-75: hsl(var(--dh-color-gray-hue) 5% 13%);
-  --dh-color-gray-100: hsl(var(--dh-color-gray-hue), 5%, 17%);
+  --dh-color-gray-100: hsl(var(--dh-color-gray-hue) 5% 17%);
   --dh-color-gray-200: hsl(var(--dh-color-gray-hue) 4% 19%);
   --dh-color-gray-300: hsl(var(--dh-color-gray-hue) 4% 21%);
   --dh-color-gray-400: hsl(var(--dh-color-gray-hue) 2% 25%);

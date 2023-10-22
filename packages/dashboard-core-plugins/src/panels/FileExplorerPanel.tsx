@@ -165,20 +165,10 @@ export class FileExplorerPanel extends React.Component<
       log.error('Invalid item in handleCopyItem', file);
       return;
     }
-    let newName = FileUtils.getCopyFileName(file.filename);
-    const checkNewName = async (): Promise<boolean> => {
-      try {
-        await fileStorage.info(newName);
-        return true;
-      } catch (error) {
-        return false;
-      }
-    };
-    // await in loop is fine here, this isn't a parallel task
-    // eslint-disable-next-line no-await-in-loop
-    while (await checkNewName()) {
-      newName = FileUtils.getCopyFileName(newName);
-    }
+    const newName = await FileUtils.getUniqueCopyFileName(
+      fileStorage,
+      file.filename
+    );
     await fileStorage.copyFile(file.filename, newName);
   }
 

@@ -65,6 +65,30 @@ const config: PlaywrightTestConfig = {
       name: 'firefox',
       use: {
         ...devices['Desktop Firefox'],
+        // https://playwright.dev/docs/test-use-options#more-browser-and-context-options
+        launchOptions: {
+          // https://playwright.dev/docs/api/class-browsertype#browser-type-launch-option-firefox-user-prefs
+          firefoxUserPrefs: {
+            // By default, headless Firefox runs as though no pointers capabilities
+            // are available.
+            // https://github.com/microsoft/playwright/issues/7769#issuecomment-966098074
+            //
+            // This impacts React Spectrum which uses an '(any-pointer: fine)'
+            // media query to determine font size. It also causes certain chart
+            // elements to always be visible that should only be visible on
+            // hover.
+            //
+            // Available values for pointer capabilities:
+            // NO_POINTER            = 0x00;
+            // COARSE_POINTER        = 0x01;
+            // FINE_POINTER          = 0x02;
+            // HOVER_CAPABLE_POINTER = 0x04;
+            //
+            // Setting to 0x02 | 0x04 says the system supports a mouse
+            'ui.primaryPointerCapabilities': 0x02 | 0x04,
+            'ui.allPointerCapabilities': 0x02 | 0x04,
+          },
+        },
       },
     },
 

@@ -8,6 +8,7 @@
   "exclude": ["node_modules", "src/**/*.test.*", "src/**/__mocks__/*"],
   "references": [
     { "path": "../components" },
+    { "path": "../golden-layout" },
     { "path": "../iris-grid" },
     { "path": "../jsapi-types" }
   ]

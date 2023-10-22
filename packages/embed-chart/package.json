@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/embed-chart",
-  "version": "0.49.1",
+  "version": "0.50.0",
   "description": "Deephaven Embedded Chart",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -30,7 +30,7 @@
   "scripts": {
     "analyze": "source-map-explorer build/assets/*.js --no-border-checks",
     "start": "vite",
-    "build": "vite build",
+    "build": "NODE_OPTIONS='--max-old-space-size=4096' vite build",
     "preview": "vite preview"
   },
   "devDependencies": {
