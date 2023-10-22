@@ -17,6 +17,7 @@ async function openAdvancedFilters(page: Page) {
 }
 
 async function moveMouseAwayFromTable(page: Page) {
+  await page.mouse.move(0, 0);
   await page.mouse.click(0, 0);
 }
 
