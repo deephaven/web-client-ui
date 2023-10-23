@@ -24,7 +24,7 @@ export interface ThemeProviderProps {
   /*
    * Additional themes to load in addition to the base themes. If no additional
    * themes are to be loaded, this must be set to an empty array in order to
-   * tell the provider to activate themes and render children.
+   * tell the provider to activate the base themes.
    */
   themes: ThemeData[] | null;
   children: ReactNode;
