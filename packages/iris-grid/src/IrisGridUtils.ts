@@ -652,9 +652,9 @@ class IrisGridUtils {
     hiddenColumns: readonly VisibleIndex[] = [],
     alwaysFetchColumnNames: readonly ColumnName[] = [],
     bufferPages = 0
-  ): Column[] | null {
+  ): Column[] | undefined {
     if (left == null || right == null) {
-      return null;
+      return undefined;
     }
 
     const columnsCenter = IrisGridUtils.getVisibleColumnsInRange(

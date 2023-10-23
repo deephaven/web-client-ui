@@ -845,7 +845,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const column =
       partitionColumn ?? model.columns.find(c => c.isPartitionColumn);
     if (
-      model.isFilterRequired &&
+      model.isPartitionRequired &&
       model.isValuesTableAvailable &&
       column != null
     ) {

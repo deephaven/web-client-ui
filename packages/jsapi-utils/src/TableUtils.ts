@@ -13,6 +13,7 @@ import type {
   FilterValue,
   LongWrapper,
   RemoverFn,
+  PartitionedTable,
   Sort,
   Table,
   TreeTable,
@@ -744,6 +745,12 @@ export class TableUtils {
       default:
         throw new Error(`Unexpected filter type ${operation}`);
     }
+  }
+
+  static isPartitionedTable(table: unknown): table is PartitionedTable {
+    return (
+      table != null && (table as PartitionedTable).getMergedTable !== undefined
+    );
   }
 
   static isTreeTable(table: unknown): table is TreeTable {

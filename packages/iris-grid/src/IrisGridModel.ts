@@ -30,8 +30,8 @@ import {
   PendingDataMap,
   PendingDataErrorMap,
 } from './CommonTypes';
-import ColumnHeaderGroup from './ColumnHeaderGroup';
 import { IrisGridThemeType } from './IrisGridTheme';
+import ColumnHeaderGroup from './ColumnHeaderGroup';
 
 type IrisGridModelEventNames =
   (typeof IrisGridModel.EVENT)[keyof typeof IrisGridModel.EVENT];
@@ -192,6 +192,16 @@ abstract class IrisGridModel<
   abstract set filter(filter: readonly FilterCondition[]);
 
   /**
+   * @returns The partitions set on this model
+   */
+  abstract get partition(): readonly unknown[];
+
+  /**
+   * @param partition The partitions to set
+   */
+  abstract set partition(partition: readonly unknown[]);
+
+  /**
    * @returns The formatter used when formatting data
    */
   abstract get formatter(): Formatter;
@@ -307,9 +317,18 @@ abstract class IrisGridModel<
   }
 
   /**
+   * @deprecated Replaced with isPartitionRequired()
    * @returns True if this model requires a filter to be set
    */
   get isFilterRequired(): boolean {
+    return false;
+  }
+
+  /**
+   * Replaces isPartitionRequired()
+   * @returns True if this model requires a partition to be set
+   */
+  get isPartitionRequired(): boolean {
     return false;
   }
 
@@ -458,12 +477,12 @@ abstract class IrisGridModel<
    * Set the indices of the viewport
    * @param top Top of viewport
    * @param bottom Bottom of viewport
-   * @param columns The columns in the viewport. `null` for all columns
+   * @param columns The columns in the viewport. `undefined` for all columns
    */
   abstract setViewport(
     top: VisibleIndex,
     bottom: VisibleIndex,
-    columns: Column[] | null
+    columns?: Column[]
   ): void;
 
   /**
@@ -530,9 +549,9 @@ abstract class IrisGridModel<
 
   abstract get columnHeaderGroups(): readonly ColumnHeaderGroup[];
 
-  abstract get columnHeaderGroupMap(): ReadonlyMap<string, ColumnHeaderGroup>;
-
   abstract set columnHeaderGroups(groups: readonly ColumnHeaderGroup[]);
+
+  abstract get columnHeaderGroupMap(): ReadonlyMap<string, ColumnHeaderGroup>;
 
   abstract getColumnHeaderParentGroup(
     modelIndex: ModelIndex,

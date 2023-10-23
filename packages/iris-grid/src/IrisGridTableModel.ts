@@ -236,6 +236,10 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
     return this.table.isUncoalesced;
   }
 
+  get isPartitionRequired(): boolean {
+    return this.table.isUncoalesced;
+  }
+
   isFilterable(columnIndex: ModelIndex): boolean {
     return this.getCachedFilterableColumnSet(this.columns).has(columnIndex);
   }
@@ -269,7 +273,7 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
     return this.frozenColumns.includes(this.columns[modelIndex].name);
   }
 
-  async delete(ranges: GridRange[]): Promise<void> {
+  async delete(ranges: readonly GridRange[]): Promise<void> {
     if (!this.isDeletableRanges(ranges)) {
       throw new Error(`Undeletable ranges ${ranges}`);
     }

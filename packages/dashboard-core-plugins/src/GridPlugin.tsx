@@ -20,6 +20,7 @@ export function GridPlugin(
       dh.VariableType.TABLE,
       dh.VariableType.TREETABLE,
       dh.VariableType.HIERARCHICALTABLE,
+      dh.VariableType.PARTITIONEDTABLE,
     ],
     [dh]
   );

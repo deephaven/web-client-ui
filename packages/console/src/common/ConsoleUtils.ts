@@ -56,7 +56,8 @@ class ConsoleUtils {
     return (
       type === dh.VariableType.TABLE ||
       type === dh.VariableType.TREETABLE ||
-      type === dh.VariableType.HIERARCHICALTABLE
+      type === dh.VariableType.HIERARCHICALTABLE ||
+      type === dh.VariableType.PARTITIONEDTABLE
     );
   }
 

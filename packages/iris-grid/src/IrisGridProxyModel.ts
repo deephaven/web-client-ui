@@ -19,6 +19,7 @@ import type {
   Sort,
   Table,
   TreeTable,
+  PartitionedTable,
   ValueTypeUnion,
 } from '@deephaven/jsapi-types';
 import {
@@ -29,6 +30,7 @@ import {
   MoveOperation,
 } from '@deephaven/grid';
 import IrisGridTableModel from './IrisGridTableModel';
+import IrisGridPartitionedTableModel from './IrisGridPartitionedTableModel';
 import IrisGridTreeTableModel from './IrisGridTreeTableModel';
 import IrisGridModel from './IrisGridModel';
 import {
@@ -45,12 +47,15 @@ const log = Log.module('IrisGridProxyModel');
 
 function makeModel(
   dh: DhType,
-  table: Table | TreeTable,
+  table: Table | TreeTable | PartitionedTable,
   formatter?: Formatter,
   inputTable?: InputTable | null
 ): IrisGridModel {
   if (TableUtils.isTreeTable(table)) {
     return new IrisGridTreeTableModel(dh, table, formatter);
+  }
+  if (TableUtils.isPartitionedTable(table)) {
+    return new IrisGridPartitionedTableModel(dh, table, formatter);
   }
   return new IrisGridTableModel(dh, table, formatter, inputTable);
 }
@@ -81,7 +86,7 @@ class IrisGridProxyModel extends IrisGridModel {
 
   constructor(
     dh: DhType,
-    table: Table | TreeTable,
+    table: Table | TreeTable | PartitionedTable,
     formatter = new Formatter(dh),
     inputTable: InputTable | null = null
   ) {
@@ -96,6 +101,8 @@ class IrisGridProxyModel extends IrisGridModel {
     this.modelPromise = null;
     this.rollup = null;
     this.selectDistinct = [];
+
+    this.initializePartitionModel();
   }
 
   close(): void {
@@ -476,6 +483,14 @@ class IrisGridProxyModel extends IrisGridModel {
     this.model.filter = filter;
   }
 
+  get partition(): readonly unknown[] {
+    return this.model.partition;
+  }
+
+  set partition(partition: readonly unknown[]) {
+    this.model.partition = partition;
+  }
+
   get formatter(): Formatter {
     return this.model.formatter;
   }
@@ -601,6 +616,10 @@ class IrisGridProxyModel extends IrisGridModel {
     return this.model.isFilterRequired;
   }
 
+  get isPartitionRequired(): boolean {
+    return this.model.isPartitionRequired;
+  }
+
   get isEditable(): boolean {
     return isEditableGridModel(this.model) && this.model.isEditable;
   }
@@ -617,7 +636,7 @@ class IrisGridProxyModel extends IrisGridModel {
   isFilterable: IrisGridTableModel['isFilterable'] = (...args) =>
     this.model.isFilterable(...args);
 
-  setViewport = (top: number, bottom: number, columns: Column[]): void =>
+  setViewport = (top: number, bottom: number, columns?: Column[]): void =>
     this.model.setViewport(top, bottom, columns);
 
   snapshot: IrisGridModel['snapshot'] = (...args) =>
@@ -730,6 +749,13 @@ class IrisGridProxyModel extends IrisGridModel {
 
   get isSeekRowAvailable(): boolean {
     return this.model.isSeekRowAvailable;
+  }
+
+  initializePartitionModel(): void {
+    const { model } = this;
+    if (model instanceof IrisGridPartitionedTableModel) {
+      this.setNextModel(model.initializeModel());
+    }
   }
 }
 

@@ -64,7 +64,10 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   ): Promise<unknown[][]> {
     assertNotNull(this.viewport);
     assertNotNull(this.viewportData);
-    const { columns } = this.viewport;
+    const { columns } =
+      this.viewport.columns === undefined
+        ? this
+        : (this.viewport as { columns: Column[] });
     const result = [];
 
     if (includeHeaders != null && includeHeaders) {
