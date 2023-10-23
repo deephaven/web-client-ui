@@ -94,9 +94,9 @@ export function ThemeProvider({
               {theme.styleContent}
             </style>
           ))}
-          <SpectrumThemeProvider>{children}</SpectrumThemeProvider>
         </>
       )}
+      <SpectrumThemeProvider>{children}</SpectrumThemeProvider>
     </ThemeContext.Provider>
   );
 }

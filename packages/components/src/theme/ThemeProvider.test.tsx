@@ -73,11 +73,11 @@ describe('ThemeProvider', () => {
         </ThemeProvider>
       );
 
-      if (themes == null) {
-        expect(themeContextValueRef.current).toBeNull();
-      } else {
-        assertNotNull(themeContextValueRef.current);
+      assertNotNull(themeContextValueRef.current);
 
+      if (themes == null) {
+        expect(themeContextValueRef.current.activeThemes).toBeNull();
+      } else {
         expect(themeContextValueRef.current.activeThemes).toEqual(
           getActiveThemes(preloadData?.themeKey ?? DEFAULT_DARK_THEME_KEY, {
             base: getDefaultBaseThemes(),
@@ -131,11 +131,11 @@ describe('ThemeProvider', () => {
           </ThemeProvider>
         );
 
-        if (themes == null) {
-          expect(themeContextValueRef.current).toBeNull();
-        } else {
-          assertNotNull(themeContextValueRef.current);
+        assertNotNull(themeContextValueRef.current);
 
+        if (themes == null) {
+          expect(themeContextValueRef.current.activeThemes).toBeNull();
+        } else {
           act(() => {
             themeContextValueRef.current!.setSelectedThemeKey(themeKey);
           });
