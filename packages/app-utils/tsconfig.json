@@ -8,7 +8,9 @@
   "exclude": ["node_modules", "src/**/*.test.*", "src/**/__mocks__/*"],
   "references": [
     { "path": "../auth-plugins" },
+    { "path": "../chart" },
     { "path": "../components" },
+    { "path": "../iris-grid" },
     { "path": "../jsapi-bootstrap" },
     { "path": "../jsapi-components" },
     { "path": "../jsapi-types" },

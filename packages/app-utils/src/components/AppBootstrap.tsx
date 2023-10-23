@@ -5,7 +5,7 @@ import {
   RefreshTokenBootstrap,
   useBroadcastLoginListener,
 } from '@deephaven/jsapi-components';
-import { type DashboardPlugin } from '@deephaven/plugin';
+import { type Plugin } from '@deephaven/plugin';
 import FontBootstrap from './FontBootstrap';
 import PluginsBootstrap from './PluginsBootstrap';
 import AuthBootstrap from './AuthBootstrap';
@@ -24,7 +24,7 @@ export type AppBootstrapProps = {
   pluginsUrl: string;
 
   /** The core plugins to load. */
-  getCorePlugins?: () => Promise<DashboardPlugin[]>;
+  getCorePlugins?: () => Promise<Plugin[]>;
 
   /** Font class names to load. */
   fontClassNames?: string[];

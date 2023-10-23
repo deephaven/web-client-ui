@@ -1,5 +1,6 @@
 import React, {
   Component,
+  ComponentType,
   FocusEvent,
   FocusEventHandler,
   PureComponent,
@@ -32,7 +33,7 @@ import RenameDialog from './RenameDialog';
 const log = Log.module('Panel');
 
 interface PanelProps {
-  componentPanel: Component;
+  componentPanel?: ComponentType | Component;
   children: ReactNode;
   glContainer: Container;
   glEventHub: EventEmitter;
@@ -125,7 +126,7 @@ class Panel extends PureComponent<PanelProps, PanelState> {
   }
 
   componentDidMount(): void {
-    const { componentPanel, glContainer, glEventHub } = this.props;
+    const { glContainer, glEventHub } = this.props;
 
     glContainer.on('resize', this.handleResize);
     glContainer.on('show', this.handleBeforeShow);
@@ -141,8 +142,15 @@ class Panel extends PureComponent<PanelProps, PanelState> {
       InputFilterEvent.CLEAR_ALL_FILTERS,
       this.handleClearAllFilters
     );
+  }
 
-    glEventHub.emit(PanelEvent.MOUNT, componentPanel);
+  componentDidUpdate(prevProps: PanelProps): void {
+    const { componentPanel, glEventHub } = this.props;
+
+    // componentPanel ref could start undefined w/ WidgetLoaderPlugin wrapping panels
+    if (prevProps.componentPanel == null && componentPanel != null) {
+      glEventHub.emit(PanelEvent.MOUNT, componentPanel);
+    }
   }
 
   componentWillUnmount(): void {
@@ -163,7 +171,9 @@ class Panel extends PureComponent<PanelProps, PanelState> {
       this.handleClearAllFilters
     );
 
-    glEventHub.emit(PanelEvent.UNMOUNT, componentPanel);
+    if (componentPanel != null) {
+      glEventHub.emit(PanelEvent.UNMOUNT, componentPanel);
+    }
   }
 
   handleTab(tab: Tab): void {

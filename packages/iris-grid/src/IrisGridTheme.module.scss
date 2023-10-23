@@ -1,103 +1,98 @@
 /* stylelint-disable */
 @import '@deephaven/components/scss/custom.scss';
 
-$selection-color: rgba($blue, 0.09);
 $selection-outline-color: $blue;
-$selection-outline-casing-color: $gray-900;
 $font-size: 12px;
 $row-height: 19px;
-$row-hover-bg: mix($gray-600, $gray-700, 50%);
 $header-bg: $content-bg;
 $header-separator-color: $gray-900;
 $header-height: 30px;
 
 :export {
-  grid-bg: $gray-900;
+  grid-bg: var(--dh-color-grid-bg);
   font:
     $font-size Fira Sans,
     sans-serif; // must be preloaded
-  white: $white;
-  black: $black;
-  header-bg: $header-bg;
-  header-color: $foreground;
+  white: var(--dh-color-white);
+  black: var(--dh-color-black);
+  header-bg: var(--dh-color-grid-header-bg);
+  header-color: var(--dh-color-grid-header-text);
   header-height: $header-height;
-  header-separator-color: $header-separator-color;
-  header-separator-hover-color: $gray-400;
-  header-hidden-separator-hover-color: $primary;
-  header-sort-bar-color: $purple;
-  header-reverse-bar-color: $green-dark;
-  header-bar-casing-color: $gray-900;
+  header-separator-color: var(--dh-color-grid-header-separator);
+  header-separator-hover-color: var(--dh-color-grid-header-separator-hover);
+  header-hidden-separator-hover-color: var(
+    --dh-color-grid-header-separator-hidden-hover
+  );
+  header-sort-bar-color: var(--dh-color-grid-header-sort-bar);
+  header-reverse-bar-color: var(--dh-color-grid-header-reverse-bar);
+  header-bar-casing-color: var(--dh-color-grid-header-bar-casing);
   header-font:
     600 $font-size Fira Sans,
     sans-serif; // must be preloaded
   row-height: $row-height;
-  row-background-colors: $gray-800 $content-bg;
-  selection-color: $selection-color;
-  selection-outline-color: $selection-outline-color;
-  selection-outline-casing-color: $selection-outline-casing-color;
-  row-hover-bg: $row-hover-bg;
-  selected-row-hover-bg: rgba($blue, 0.25);
-  scroll-bar-active-selection-tick-color: rgba($blue, 0.5);
-
-  scroll-bar-bg: $gray-850;
-  scroll-bar-hover-bg: $gray-800;
-  scroll-bar-casing-color: $gray-600;
-  scroll-bar-corner-color: $gray-850;
-  scroll-bar-color: $gray-500;
-  scroll-bar-hover-color: $gray-400;
-  scroll-bar-active-color: $gray-300;
-
-  text-color: $white;
-  hyperlink-color: $primary;
-  positive-number-color: $green;
-  negative-number-color: $red;
-  zero-number-color: $yellow;
-  date-color: $yellow;
-  pending-text-color: lighten($yellow, 10%);
-  error-text-color: $danger;
-  null-string-color: $gray-400;
-
-  $filter-color: $primary; // local to just the following
-  filter-bar-active-bg: scale-color(
-    $filter-color,
-    $saturation: -65%,
-    $lightness: -40%
+  row-background-colors: var(--dh-color-grid-row-0-bg)
+    var(--dh-color-grid-row-1-bg);
+  selection-color: var(--dh-color-grid-selection);
+  selection-outline-color: var(--dh-color-grid-selection-outline);
+  selection-outline-casing-color: var(--dh-color-grid-selection-outline-casing);
+  row-hover-bg: var(--dh-color-grid-row-hover-bg);
+  selected-row-hover-bg: var(--dh-color-grid-row-hover-bg-selected);
+  scroll-bar-active-selection-tick-color: var(
+    --dh-color-grid-scroll-bar-active-selection-tick
   );
-  filter-bar-active-color: $filter-color;
-  filter-bar-expanded-bg: $gray-800;
-  filter-bar-expanded-active-bg: scale-color(
-    $filter-color,
-    $saturation: -75%,
-    $lightness: -60%
+
+  scroll-bar-bg: var(--dh-color-grid-scroll-bar-bg);
+  scroll-bar-hover-bg: var(--dh-color-grid-scroll-bar-hover-bg);
+  scroll-bar-casing-color: var(--dh-color-grid-scroll-bar-casing);
+  scroll-bar-corner-color: var(--dh-color-grid-scroll-bar-corner);
+  scroll-bar-color: var(--dh-color-grid-scroll-bar);
+  scroll-bar-hover-color: var(--dh-color-grid-scroll-bar-hover);
+  scroll-bar-active-color: var(--dh-color-grid-scroll-bar-active);
+
+  text-color: var(--dh-color-grid-text);
+  hyperlink-color: var(--dh-color-grid-text-hyperlink);
+  positive-number-color: var(--dh-color-grid-number-positive);
+  negative-number-color: var(--dh-color-grid-number-negative);
+  zero-number-color: var(--dh-color-grid-number-zero);
+  date-color: var(--dh-color-grid-date);
+  pending-text-color: var(--dh-color-grid-text-pending);
+  error-text-color: var(--dh-color-grid-text-error);
+  null-string-color: var(--dh-color-grid-string-null);
+
+  filter-bar-active-bg: var(--dh-color-grid-filter-bar-active-bg);
+  filter-bar-active-color: var(--dh-color-grid-filter-bar-active);
+  filter-bar-expanded-bg: var(--dh-color-grid-filter-bar-expanded-bg);
+  filter-bar-expanded-active-bg: var(
+    --dh-color-grid-filter-bar-expanded-active-bg
   );
-  filter-bar-expanded-active-cell-bg: scale-color(
-    $filter-color,
-    $saturation: -50%,
-    $lightness: -40%
+  filter-bar-expanded-active-cell-bg: var(
+    --dh-color-grid-filter-bar-expanded-active-cell-bg
   );
-  filter-bar-separator-color: $gray-400;
-  filter-bar-error-color: $danger;
-  filter-icon-color: $filter-color;
+  filter-bar-separator-color: var(--dh-color-grid-filter-bar-separator);
+  filter-bar-error-color: var(--dh-color-grid-filter-bar-error);
+  filter-icon-color: var(--dh-color-grid-filter-icon);
 
-  scrim-color: $gray-900;
-  context-menu-sort-icon-color: $purple;
-  context-menu-reverse-icon-color: $green-dark;
-  linker-column-hover-bg: rgba($blue, 0.09);
-  tree-line-color: $gray-500;
-  tree-marker-color: $gray-300;
-  tree-marker-hover-color: $gray-100;
-  grouped-column-divider-color: $black;
+  scrim-color: var(--dh-color-grid-scrim);
+  context-menu-sort-icon-color: var(--dh-color-grid-context-menu-sort-icon);
+  context-menu-reverse-icon-color: var(
+    --dh-color-grid-context-menu-reverse-icon
+  );
+  linker-column-hover-bg: var(--dh-color-grid-column-linker-hover-bg);
+  tree-line-color: var(--dh-color-grid-tree-line);
+  tree-marker-color: var(--dh-color-grid-tree-marker);
+  tree-marker-hover-color: var(--dh-color-grid-tree-marker-hover);
+  grouped-column-divider-color: var(--dh-color-grid-column-grouped-divider);
 
-  floating-grid-row-color: $gray-600;
-  floating-row-background-colors: $gray-700;
-  floating-divider-inner-color: $gray-700;
-  floating-divider-outer-color: $gray-900;
+  floating-grid-row-color: var(--dh-color-grid-floating-row);
+  floating-row-background-colors: var(--dh-color-grid-floating-row-bg);
+  floating-divider-inner-color: var(--dh-color-grid-floating-divider-inner);
+  floating-divider-outer-color: var(--dh-color-grid-floating-divider-outer);
 
-  overflow-button-color: $gray-300;
-  overflow-button-hover-color: $gray-100;
+  overflow-button-color: var(--dh-color-grid-overflow-button);
+  overflow-button-hover-color: var(--dh-color-grid-overflow-button-hover);
 
-  zero-line-color: $gray-500;
-  positive-bar-color: $green;
-  negative-bar-color: $red;
-  marker-bar-color: $white;
+  zero-line-color: var(--dh-color-grid-data-bar-zero-line);
+  positive-bar-color: var(--dh-color-grid-data-bar-positive);
+  negative-bar-color: var(--dh-color-grid-data-bar-negative);
+  marker-bar-color: var(--dh-color-grid-data-bar-marker);
 }

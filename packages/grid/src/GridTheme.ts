@@ -105,6 +105,7 @@ export type GridTheme = {
   columnWidth: number;
   minRowHeight: number;
   minColumnWidth: number;
+  maxColumnWidth: number;
 
   // Default row/column header/footers width/height
   columnHeaderHeight: number;
@@ -206,6 +207,7 @@ const defaultTheme: GridTheme = Object.freeze({
   columnWidth: 100,
   minRowHeight: 20,
   minColumnWidth: 55,
+  maxColumnWidth: 600,
   columnHeaderHeight: 20,
   rowHeaderWidth: 30,
   rowFooterWidth: 0,
