@@ -9,7 +9,7 @@ import type {
 import Log from '@deephaven/log';
 import './App.scss'; // Styles for in this app
 import { useApi } from '@deephaven/jsapi-bootstrap';
-import { useConnection } from '@deephaven/app-utils';
+import { useConnection } from '@deephaven/jsapi-components';
 
 const log = Log.module('EmbedChart.App');
 

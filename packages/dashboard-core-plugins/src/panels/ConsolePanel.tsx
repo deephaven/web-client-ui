@@ -16,14 +16,17 @@ import type { IdeSession, VariableDefinition } from '@deephaven/jsapi-types';
 import { SessionWrapper } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
-  DeephavenPluginModuleMap,
   getCommandHistoryStorage,
   getPlugins,
   getTimeZone,
   RootState,
 } from '@deephaven/redux';
 import { assertNotNull } from '@deephaven/utils';
-import { getIconForPlugin, pluginSupportsType } from '@deephaven/plugin';
+import {
+  getIconForPlugin,
+  pluginSupportsType,
+  type PluginModuleMap,
+} from '@deephaven/plugin';
 import type { JSZipObject } from 'jszip';
 import { ConsoleEvent } from '../events';
 import Panel from './Panel';
@@ -59,7 +62,7 @@ interface ConsolePanelProps extends DashboardPanelProps {
 
   timeZone: string;
   unzip?: (file: File) => Promise<JSZipObject[]>;
-  plugins: DeephavenPluginModuleMap;
+  plugins: PluginModuleMap;
 }
 
 interface ConsolePanelState {

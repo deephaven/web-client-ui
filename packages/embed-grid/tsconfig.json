@@ -12,6 +12,7 @@
     { "path": "../components" },
     { "path": "../iris-grid" },
     { "path": "../jsapi-bootstrap" },
+    { "path": "../jsapi-components" },
     { "path": "../jsapi-shim" },
     { "path": "../jsapi-utils" },
     { "path": "../log" }

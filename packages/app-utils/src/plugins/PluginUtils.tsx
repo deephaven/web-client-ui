@@ -1,7 +1,7 @@
 import { getThemeKey, ThemeData } from '@deephaven/components';
 import Log from '@deephaven/log';
 import {
-  type PluginModule,
+  type PluginModuleMap,
   type AuthPlugin,
   type AuthPluginComponent,
   isAuthPlugin,
@@ -17,8 +17,6 @@ import {
 import loadRemoteModule from './loadRemoteModule';
 
 const log = Log.module('@deephaven/app-utils.PluginUtils');
-
-export type PluginModuleMap = Map<string, PluginModule>;
 
 export type PluginManifestPluginInfo = {
   name: string;

@@ -19,6 +19,7 @@ export { default as ControlType } from './controls/ControlType';
 export { default as LinkerUtils } from './linker/LinkerUtils';
 export type { Link } from './linker/LinkerUtils';
 export { default as ToolType } from './linker/ToolType';
+export * from './useLoadTablePlugin';
 
 export * from './events';
 export * from './panels';

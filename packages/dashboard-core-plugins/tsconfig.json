@@ -7,7 +7,6 @@
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx"],
   "exclude": ["node_modules", "src/**/*.test.*", "src/**/__mocks__/*"],
   "references": [
-    { "path": "../app-utils" },
     { "path": "../chart" },
     { "path": "../components" },
     { "path": "../console" },
@@ -18,6 +17,7 @@
     { "path": "../grid" },
     { "path": "../iris-grid" },
     { "path": "../jsapi-bootstrap" },
+    { "path": "../jsapi-components" },
     { "path": "../jsapi-shim" },
     { "path": "../jsapi-types" },
     { "path": "../log" },

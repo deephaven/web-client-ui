@@ -19,8 +19,11 @@ import {
   PanelProps,
   canHaveRef,
 } from '@deephaven/dashboard';
-import { usePlugins } from '@deephaven/app-utils';
-import { isWidgetPlugin, type WidgetPlugin } from '@deephaven/plugin';
+import {
+  isWidgetPlugin,
+  usePlugins,
+  type WidgetPlugin,
+} from '@deephaven/plugin';
 import Log from '@deephaven/log';
 import { WidgetPanel } from './panels';
 
