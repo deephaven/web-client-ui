@@ -41,13 +41,13 @@ interface AutoCompleteOption {
 interface AutoCompleteInputProps {
   options: AutoCompleteOption[];
   popperOptions: PopperOptions;
-  onChange(value: string, isValid: boolean): void;
+  onChange: (value: string, isValid: boolean) => void;
   inputPlaceholder: string;
   disabled: boolean;
   className: string;
   defaultTitle: string;
   spellCheck: boolean;
-  onEnter(): void;
+  onEnter: () => void;
   noMatchText: string;
   'data-testid'?: string;
 }

@@ -12,9 +12,9 @@ export type MenuOptions = {
 
 type MenuProps = {
   actions: (() => ContextAction[]) | ContextAction | ContextAction[];
-  closeMenu(closeAll: boolean): void;
-  onMenuClosed(menu: Menu): void;
-  onMenuOpened(menu: Menu): void;
+  closeMenu: (closeAll: boolean) => void;
+  onMenuClosed: (menu: Menu) => void;
+  onMenuOpened: (menu: Menu) => void;
   options: MenuOptions;
   menuStyle: React.CSSProperties;
   'data-testid'?: string;

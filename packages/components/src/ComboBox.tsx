@@ -32,14 +32,14 @@ interface ComboBoxOption {
 interface ComboBoxProps {
   options: ComboBoxOption[];
   popperOptions: PopperOptions;
-  onChange(value: string): void;
+  onChange: (value: string) => void;
   inputPlaceholder: string;
   searchPlaceholder: string;
   disabled: boolean;
   className: string;
   defaultValue: string;
   spellCheck: boolean;
-  onEnter(): void;
+  onEnter: () => void;
   'data-testid'?: string;
 }
 

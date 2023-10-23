@@ -43,25 +43,25 @@ type MaskedInputProps = {
   /** The current selection to use for the input */
   selection?: SelectionSegment;
   /** Called when the value changes. Note the value may still be incomplete. */
-  onChange?(value: string): void;
+  onChange?: (value: string) => void;
   /** Called when selection changes */
-  onSelect?(segment: SelectionSegment): void;
+  onSelect?: (segment: SelectionSegment) => void;
   /** Called when enter is pressed */
-  onSubmit?(event?: KeyboardEvent<HTMLInputElement>): void;
+  onSubmit?: (event?: KeyboardEvent<HTMLInputElement>) => void;
   /** Retrieve the next value for a provided segment */
-  getNextSegmentValue?(
+  getNextSegmentValue?: (
     segment: SelectionSegment,
     delta: number,
     segmentValue: string,
     value: string
-  ): string;
-  getPreferredReplacementString?(
+  ) => string;
+  getPreferredReplacementString?: (
     value: string,
     replaceIndex: number,
     replaceChar: string,
     selectionStart: number,
     selectionEnd: number
-  ): string;
+  ) => string;
   onFocus?: React.FocusEventHandler;
   onBlur?: React.FocusEventHandler;
 

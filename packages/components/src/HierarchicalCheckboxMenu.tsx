@@ -16,7 +16,7 @@ type HierarchicalCheckboxMenuProps = {
   className: string;
   menuText: string;
   valueMap: HierarchicalCheckboxValueMap;
-  onUpdateValueMap(map: HierarchicalCheckboxValueMap): void;
+  onUpdateValueMap: (map: HierarchicalCheckboxValueMap) => void;
   icon: IconDefinition | null;
   id: string;
   'data-testid'?: string;
