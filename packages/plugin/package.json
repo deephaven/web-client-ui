@@ -23,8 +23,15 @@
   },
   "dependencies": {
     "@deephaven/components": "file:../components",
+    "@deephaven/golden-layout": "file:../golden-layout",
+    "@deephaven/icons": "file:../icons",
     "@deephaven/iris-grid": "file:../iris-grid",
-    "@deephaven/jsapi-types": "file:../jsapi-types"
+    "@deephaven/jsapi-types": "file:../jsapi-types",
+    "@fortawesome/fontawesome-common-types": "^6.1.1",
+    "@fortawesome/react-fontawesome": "^0.2.0"
+  },
+  "peerDependencies": {
+    "react": "^17.x"
   },
   "files": [
     "dist"
