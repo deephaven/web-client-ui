@@ -3,17 +3,17 @@
 exports[`ThemeProvider setSelectedThemeKey: [ [Object] ] should change selected theme: default-light 1`] = `
 <body>
   <div>
+    <style
+      data-theme-key="default-light"
+    >
+      mock-theme-light-palette
+    </style>
     <div
       class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 mock-dh-spectrum-palette mock-dh-spectrum-alias mock-dh-spectrum-overrides spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
       dir="ltr"
       lang="en-US"
       style="isolation: isolate; color-scheme: light;"
     >
-      <style
-        data-theme-key="default-light"
-      >
-        mock-theme-light-palette
-      </style>
       <div>
         Child
       </div>
@@ -25,24 +25,24 @@ exports[`ThemeProvider setSelectedThemeKey: [ [Object] ] should change selected 
 exports[`ThemeProvider setSelectedThemeKey: [ [Object] ] should change selected theme: themeA 1`] = `
 <body>
   <div>
+    <style
+      data-theme-key="default-dark"
+    >
+      mock-theme-dark-palette
+mock-theme-dark-semantic
+mock-theme-dark-semantic-editor
+mock-theme-dark-semantic-grid
+mock-theme-dark-components
+    </style>
+    <style
+      data-theme-key="themeA"
+    />
     <div
       class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 mock-dh-spectrum-palette mock-dh-spectrum-alias mock-dh-spectrum-overrides spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
       dir="ltr"
       lang="en-US"
       style="isolation: isolate; color-scheme: light;"
     >
-      <style
-        data-theme-key="default-dark"
-      >
-        mock-theme-dark-palette
-mock-theme-dark-semantic
-mock-theme-dark-semantic-editor
-mock-theme-dark-semantic-grid
-mock-theme-dark-components
-      </style>
-      <style
-        data-theme-key="themeA"
-      />
       <div>
         Child
       </div>
@@ -66,24 +66,24 @@ exports[`ThemeProvider setSelectedThemeKey: null should change selected theme: t
 exports[`ThemeProvider should load themes based on preload data or default: [ [Object] ], { themeKey: 'themeA' } 1`] = `
 <body>
   <div>
+    <style
+      data-theme-key="default-dark"
+    >
+      mock-theme-dark-palette
+mock-theme-dark-semantic
+mock-theme-dark-semantic-editor
+mock-theme-dark-semantic-grid
+mock-theme-dark-components
+    </style>
+    <style
+      data-theme-key="themeA"
+    />
     <div
       class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 mock-dh-spectrum-palette mock-dh-spectrum-alias mock-dh-spectrum-overrides spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
       dir="ltr"
       lang="en-US"
       style="isolation: isolate; color-scheme: light;"
     >
-      <style
-        data-theme-key="default-dark"
-      >
-        mock-theme-dark-palette
-mock-theme-dark-semantic
-mock-theme-dark-semantic-editor
-mock-theme-dark-semantic-grid
-mock-theme-dark-components
-      </style>
-      <style
-        data-theme-key="themeA"
-      />
       <div>
         Child
       </div>
@@ -95,21 +95,21 @@ mock-theme-dark-components
 exports[`ThemeProvider should load themes based on preload data or default: [ [Object] ], null 1`] = `
 <body>
   <div>
+    <style
+      data-theme-key="default-dark"
+    >
+      mock-theme-dark-palette
+mock-theme-dark-semantic
+mock-theme-dark-semantic-editor
+mock-theme-dark-semantic-grid
+mock-theme-dark-components
+    </style>
     <div
       class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 mock-dh-spectrum-palette mock-dh-spectrum-alias mock-dh-spectrum-overrides spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
       dir="ltr"
       lang="en-US"
       style="isolation: isolate; color-scheme: light;"
     >
-      <style
-        data-theme-key="default-dark"
-      >
-        mock-theme-dark-palette
-mock-theme-dark-semantic
-mock-theme-dark-semantic-editor
-mock-theme-dark-semantic-grid
-mock-theme-dark-components
-      </style>
       <div>
         Child
       </div>

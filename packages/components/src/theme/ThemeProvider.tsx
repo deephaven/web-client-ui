@@ -73,14 +73,14 @@ export function ThemeProvider({
   return (
     <ThemeContext.Provider value={value}>
       {activeThemes == null ? null : (
-        <SpectrumThemeProvider>
+        <>
           {activeThemes.map(theme => (
             <style data-theme-key={theme.themeKey} key={theme.themeKey}>
               {theme.styleContent}
             </style>
           ))}
-          {children}
-        </SpectrumThemeProvider>
+          <SpectrumThemeProvider>{children}</SpectrumThemeProvider>
+        </>
       )}
     </ThemeContext.Provider>
   );
