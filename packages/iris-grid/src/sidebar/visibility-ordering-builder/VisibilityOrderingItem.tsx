@@ -14,10 +14,7 @@ type VisibilityOrderingItemProps = {
   childCount: number;
   item: FlattenedIrisGridTreeItem;
   onVisibilityChange: (modelIndexes: number[], isVisible: boolean) => void;
-  onClick: (
-    name: string,
-    event: React.MouseEvent<HTMLElement, MouseEvent>
-  ) => void;
+  onClick: (name: string, event: React.MouseEvent<HTMLElement>) => void;
   onGroupDelete: (group: ColumnHeaderGroup) => void;
   onGroupColorChange: (
     group: ColumnHeaderGroup,
@@ -63,7 +60,7 @@ const VisibilityOrderingItem = forwardRef<
   );
 
   const handleClick = useCallback(
-    (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
+    (event: React.MouseEvent<HTMLElement>) => {
       onClick(value, event);
     },
     [onClick, value]

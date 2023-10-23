@@ -50,7 +50,7 @@ interface Props<T> {
     childCount?: number;
     value: string;
     item: FlattenedItem<T>;
-    ref: React.Ref<HTMLDivElement> | null;
+    ref: React.Ref<HTMLDivElement>;
     handleProps?: Record<string, unknown>;
   }) => JSX.Element;
 }
