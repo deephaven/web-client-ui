@@ -110,10 +110,14 @@ describe('ThemeProvider', () => {
         </ThemeProvider>
       );
 
-      expect(setThemePreloadData).toHaveBeenCalledWith({
-        themeKey: preloadData?.themeKey ?? DEFAULT_DARK_THEME_KEY,
-        preloadStyleContent: calculatePreloadStyleContent(),
-      });
+      if (themes == null) {
+        expect(setThemePreloadData).not.toHaveBeenCalled();
+      } else {
+        expect(setThemePreloadData).toHaveBeenCalledWith({
+          themeKey: preloadData?.themeKey ?? DEFAULT_DARK_THEME_KEY,
+          preloadStyleContent: calculatePreloadStyleContent(),
+        });
+      }
     }
   );
 
