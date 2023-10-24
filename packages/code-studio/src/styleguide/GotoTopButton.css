@@ -1,0 +1,19 @@
+/* 
+ * GotoTopButton is only visible if user has scrolled down. Visibility attribute
+ * can't really make use of CSS transitions, so we use opacity instead. Including
+ * visibility for accessibility reasons.
+ */
+.goto-top-button {
+  visibility: visible;
+  opacity: 1;
+  transition:
+    opacity 300ms,
+    visibility 0s linear 0s;
+}
+html:not([data-scroll='true']) .goto-top-button {
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    opacity 300ms,
+    visibility 0s linear 300ms;
+}

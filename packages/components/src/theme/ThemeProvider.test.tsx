@@ -75,18 +75,20 @@ describe('ThemeProvider', () => {
 
       assertNotNull(themeContextValueRef.current);
 
-      expect(themeContextValueRef.current.activeThemes).toEqual(
-        themes == null
-          ? null
-          : getActiveThemes(preloadData?.themeKey ?? DEFAULT_DARK_THEME_KEY, {
-              base: getDefaultBaseThemes(),
-              custom: themes,
-            })
-      );
+      if (themes == null) {
+        expect(themeContextValueRef.current.activeThemes).toBeNull();
+      } else {
+        expect(themeContextValueRef.current.activeThemes).toEqual(
+          getActiveThemes(preloadData?.themeKey ?? DEFAULT_DARK_THEME_KEY, {
+            base: getDefaultBaseThemes(),
+            custom: themes,
+          })
+        );
 
-      expect(themeContextValueRef.current.selectedThemeKey).toEqual(
-        preloadData?.themeKey ?? DEFAULT_DARK_THEME_KEY
-      );
+        expect(themeContextValueRef.current.selectedThemeKey).toEqual(
+          preloadData?.themeKey ?? DEFAULT_DARK_THEME_KEY
+        );
+      }
 
       expect(component.baseElement).toMatchSnapshot();
     }
@@ -108,10 +110,14 @@ describe('ThemeProvider', () => {
         </ThemeProvider>
       );
 
-      expect(setThemePreloadData).toHaveBeenCalledWith({
-        themeKey: preloadData?.themeKey ?? DEFAULT_DARK_THEME_KEY,
-        preloadStyleContent: calculatePreloadStyleContent(),
-      });
+      if (themes == null) {
+        expect(setThemePreloadData).not.toHaveBeenCalled();
+      } else {
+        expect(setThemePreloadData).toHaveBeenCalledWith({
+          themeKey: preloadData?.themeKey ?? DEFAULT_DARK_THEME_KEY,
+          preloadStyleContent: calculatePreloadStyleContent(),
+        });
+      }
     }
   );
 
@@ -127,20 +133,24 @@ describe('ThemeProvider', () => {
 
         assertNotNull(themeContextValueRef.current);
 
-        act(() => {
-          themeContextValueRef.current!.setSelectedThemeKey(themeKey);
-        });
+        if (themes == null) {
+          expect(themeContextValueRef.current.activeThemes).toBeNull();
+        } else {
+          act(() => {
+            themeContextValueRef.current!.setSelectedThemeKey(themeKey);
+          });
 
-        expect(themeContextValueRef.current.activeThemes).toEqual(
-          themes == null
-            ? null
-            : getActiveThemes(themeKey, {
-                base: getDefaultBaseThemes(),
-                custom: themes,
-              })
-        );
+          expect(themeContextValueRef.current.activeThemes).toEqual(
+            getActiveThemes(themeKey, {
+              base: getDefaultBaseThemes(),
+              custom: themes,
+            })
+          );
 
-        expect(themeContextValueRef.current.selectedThemeKey).toEqual(themeKey);
+          expect(themeContextValueRef.current.selectedThemeKey).toEqual(
+            themeKey
+          );
+        }
 
         expect(component.baseElement).toMatchSnapshot();
       }
