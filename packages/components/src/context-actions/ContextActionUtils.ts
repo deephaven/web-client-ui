@@ -12,7 +12,7 @@ export type MenuItem = ContextAction | Promise<ContextAction[]>;
 export interface ContextAction {
   title?: string;
   description?: string;
-  action?: (event?: Event) => void;
+  action?: (event: Event) => void;
   actions?: ResolvableContextAction[];
   icon?: IconDefinition | React.ReactElement;
   iconColor?: string;

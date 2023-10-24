@@ -146,10 +146,13 @@ class DraggableLists extends Component<
     );
   }
 
-  handleSelectionChange(listIndex: number, listSelectedRanges: Range[]): void {
+  handleSelectionChange(
+    listIndex: number,
+    listSelectedRanges: readonly Range[]
+  ): void {
     this.setState(({ selectedRanges }) => {
       const newSelectedRanges = [...selectedRanges];
-      newSelectedRanges[listIndex] = listSelectedRanges;
+      newSelectedRanges[listIndex] = [...listSelectedRanges];
       return { selectedRanges: newSelectedRanges };
     });
   }

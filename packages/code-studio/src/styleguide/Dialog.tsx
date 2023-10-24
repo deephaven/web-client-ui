@@ -54,7 +54,7 @@ class Dialog extends Component<unknown, DialogState> {
   }
 
   handleUpdateCheckboxMap(
-    checkBoxMap: Map<string, Map<string, boolean>>
+    checkBoxMap: Map<string, boolean | Map<string, boolean>>
   ): void {
     this.setState({
       checkBoxMap,

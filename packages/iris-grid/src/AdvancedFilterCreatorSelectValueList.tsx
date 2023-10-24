@@ -130,7 +130,7 @@ class AdvancedFilterCreatorSelectValueList<T = unknown> extends PureComponent<
 
   list: SelectValueList<T> | null;
 
-  handleSelect(itemIndex: number, value: T): void {
+  handleSelect(itemIndex: number, value: T | null): void {
     const { invertSelection } = this.props;
     let { selectedValues } = this.state;
     selectedValues = [...selectedValues];
@@ -140,7 +140,7 @@ class AdvancedFilterCreatorSelectValueList<T = unknown> extends PureComponent<
     );
     if (selectedIndex >= 0) {
       selectedValues.splice(selectedIndex, 1);
-    } else {
+    } else if (value != null) {
       selectedValues.push(value);
     }
 

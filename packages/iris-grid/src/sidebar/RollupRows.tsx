@@ -49,9 +49,9 @@ interface RollupRowsProps {
 }
 
 interface RollupRowsState {
-  ungroupedSelectedRanges: Range[];
+  ungroupedSelectedRanges: readonly Range[];
   columns: ColumnName[];
-  groupedSelectedRanges: Range[];
+  groupedSelectedRanges: readonly Range[];
   searchFilter: string;
   showConstituents: boolean;
   showNonAggregatedColumns: boolean;
@@ -333,7 +333,9 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     }));
   }
 
-  handleUngroupedSelectionChange(ungroupedSelectedRanges: Range[]): void {
+  handleUngroupedSelectionChange(
+    ungroupedSelectedRanges: readonly Range[]
+  ): void {
     log.debug2('handleUngroupedSelectionChange', ungroupedSelectedRanges);
     this.setState(
       ({ ungroupedSelectedRanges: stateUngroupedSelectedRanges }) => {
@@ -346,7 +348,7 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     );
   }
 
-  handleGroupedSelectionChange(groupedSelectedRanges: Range[]): void {
+  handleGroupedSelectionChange(groupedSelectedRanges: readonly Range[]): void {
     log.debug2('handleGroupedSelectedRanges', groupedSelectedRanges);
     this.setState(({ groupedSelectedRanges: stateGroupedSelectedRanges }) => {
       if (groupedSelectedRanges === stateGroupedSelectedRanges) {

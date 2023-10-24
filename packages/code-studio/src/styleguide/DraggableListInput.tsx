@@ -12,7 +12,7 @@ interface DraggableListInputProps {
   isDropDisabled: boolean;
   isMultiSelect: boolean;
   items: Array<unknown>;
-  onSelectionChange: (listSelectedRanges: Range[]) => void;
+  onSelectionChange: (listSelectedRanges: readonly Range[]) => void;
   selectedRanges: Range[];
 }
 interface DraggableListInputState {
@@ -73,7 +73,7 @@ class DraggableListInput extends PureComponent<
     }
   }
 
-  handleSelectionChange(selectedRanges: Array<Range>): void {
+  handleSelectionChange(selectedRanges: readonly Range[]): void {
     console.log('Selection changed', selectedRanges);
 
     const { onSelectionChange } = this.props;

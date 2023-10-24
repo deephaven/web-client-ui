@@ -30,10 +30,10 @@ function EditableItemList(props: EditableItemListProps): React.ReactElement {
     validate = () => null,
   } = props;
   const [inputError, setInputError] = useState<Error | null>(null);
-  const [selectedRanges, setSelectedRanges] = useState<Range[]>([]);
+  const [selectedRanges, setSelectedRanges] = useState<readonly Range[]>([]);
   const [value, setValue] = useState('');
 
-  const handleSelectionChange = useCallback((ranges: Range[]) => {
+  const handleSelectionChange = useCallback((ranges: readonly Range[]) => {
     setSelectedRanges(ranges);
   }, []);
 

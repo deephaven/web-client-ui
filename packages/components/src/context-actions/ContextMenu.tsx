@@ -516,7 +516,7 @@ class ContextMenu extends PureComponent<ContextMenuProps, ContextMenuState> {
       if (menuItem.actions != null) {
         this.openSubMenu(menuItems.indexOf(menuItem));
       } else if (menuItem.action != null) {
-        menuItem.action();
+        menuItem.action(e.nativeEvent);
         this.closeMenu(true);
       }
     }

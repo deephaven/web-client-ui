@@ -227,7 +227,7 @@ class Menu extends PureComponent<MenuProps, MenuState> {
       (menuItem.disabled === undefined || !menuItem.disabled) &&
       menuItem.action != null
     ) {
-      menuItem.action();
+      menuItem.action(e.nativeEvent);
       this.closeMenu(true);
     }
   }
