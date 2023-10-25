@@ -144,6 +144,11 @@ class SelectionKeyHandler extends KeyHandler {
       grid.state;
     const column = isShiftKey ? selectionEndColumn : cursorColumn;
     const row = isShiftKey ? selectionEndRow : cursorRow;
+    const stickyOptions: StickyOptions = {
+      shouldStickBottom: deltaRow > 0,
+      shouldStickRight: deltaColumn > 0,
+    };
+
     if (isModifierKey) {
       const { model } = grid.props;
       const { columnCount, rowCount } = model;
@@ -169,7 +174,8 @@ class SelectionKeyHandler extends KeyHandler {
           moveToRow,
           isShiftKey,
           true,
-          maximizePreviousRange
+          maximizePreviousRange,
+          stickyOptions
         );
       }
     } else {
@@ -177,13 +183,13 @@ class SelectionKeyHandler extends KeyHandler {
 
       const { theme } = grid.props;
       const { autoSelectRow = false, autoSelectColumn = false } = theme;
-      const stickyOptions: StickyOptions = {
-        shouldStickBottom:
-          event.key === 'ArrowDown' ||
-          event.key === 'End' ||
-          event.key === 'PageDown',
-        shouldStickRight: event.key === 'ArrowRight',
-      };
+      // const stickyOptions: StickyOptions = {
+      //   shouldStickBottom:
+      //     event.key === 'ArrowDown' ||
+      //     event.key === 'End' ||
+      //     event.key === 'PageDown',
+      //   shouldStickRight: event.key === 'ArrowRight',
+      // };
       if (autoSelectRow && deltaColumn !== 0) {
         const { lastLeft } = grid.metrics;
         let { left } = grid.state;
@@ -288,11 +294,8 @@ class SelectionKeyHandler extends KeyHandler {
     );
 
     const stickyOptions: StickyOptions = {
-      shouldStickBottom:
-        event.key === 'ArrowDown' ||
-        event.key === 'End' ||
-        event.key === 'PageDown',
-      shouldStickRight: event.key === 'ArrowRight',
+      shouldStickBottom: true,
+      shouldStickRight: false,
     };
     grid.setViewState({ top: viewportPosition }, false, stickyOptions);
 
