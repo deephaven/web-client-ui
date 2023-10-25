@@ -1,23 +1,21 @@
-import { useCallback } from 'react';
-import {
-  assertIsDashboardPluginProps,
-  DashboardPluginComponentProps,
-  DehydratedDashboardPanelProps,
-  useDashboardPanel,
-} from '@deephaven/dashboard';
+import { forwardRef, useMemo } from 'react';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import { useConnection } from '@deephaven/jsapi-components';
 import { ChartModel, ChartModelFactory } from '@deephaven/chart';
 import type { dh as DhType, IdeConnection } from '@deephaven/jsapi-types';
 import { IrisGridUtils } from '@deephaven/iris-grid';
 import { getTimeZone, store } from '@deephaven/redux';
+import { type WidgetComponentProps } from '@deephaven/plugin';
 import {
-  ChartPanel,
   ChartPanelMetadata,
   GLChartPanelState,
   isChartPanelDehydratedProps,
   isChartPanelTableMetadata,
 } from './panels';
+import ConnectedChartPanel, {
+  type ChartPanel,
+  type ChartPanelProps,
+} from './panels/ChartPanel';
 
 async function createChartModel(
   dh: DhType,
@@ -86,41 +84,36 @@ async function createChartModel(
   return ChartModelFactory.makeModelFromSettings(dh, settings as any, table);
 }
 
-export function ChartPlugin(
-  props: DashboardPluginComponentProps
-): JSX.Element | null {
-  assertIsDashboardPluginProps(props);
-  const dh = useApi();
-  const connection = useConnection();
+export const ChartPlugin = forwardRef(
+  (props: WidgetComponentProps, ref: React.Ref<ChartPanel>) => {
+    const dh = useApi();
+    const connection = useConnection();
 
-  const hydrate = useCallback(
-    (hydrateProps: DehydratedDashboardPanelProps, id: string) => ({
-      ...hydrateProps,
-      localDashboardId: id,
-      makeModel: () => {
-        const { metadata } = hydrateProps;
-        const panelState = isChartPanelDehydratedProps(hydrateProps)
-          ? hydrateProps.panelState
-          : undefined;
-        if (metadata == null) {
-          throw new Error('Metadata is required for chart panel');
-        }
+    const hydratedProps = useMemo(
+      () => ({
+        ...props,
+        metadata: props.metadata as ChartPanelMetadata,
+        localDashboardId: props.localDashboardId,
+        makeModel: () => {
+          const { metadata } = props;
+          const panelState = isChartPanelDehydratedProps(props)
+            ? (props as unknown as ChartPanelProps).panelState
+            : undefined;
+          if (metadata == null) {
+            throw new Error('Metadata is required for chart panel');
+          }
 
-        return createChartModel(dh, connection, metadata, panelState);
-      },
-    }),
-    [dh, connection]
-  );
+          return createChartModel(dh, connection, metadata, panelState);
+        },
+      }),
+      [dh, connection, props]
+    );
 
-  useDashboardPanel({
-    dashboardProps: props,
-    componentName: ChartPanel.COMPONENT,
-    component: ChartPanel,
-    supportedTypes: dh.VariableType.FIGURE,
-    hydrate,
-  });
+    // eslint-disable-next-line react/jsx-props-no-spreading
+    return <ConnectedChartPanel ref={ref} {...hydratedProps} />;
+  }
+);
 
-  return null;
-}
+ChartPlugin.displayName = 'ChartPlugin';
 
 export default ChartPlugin;
