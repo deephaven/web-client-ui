@@ -32,6 +32,7 @@ yarn-debug.log*
 yarn-error.log*
 
 css
+!__mocks__/css
 
 tsconfig.tsbuildinfo
 packages/*/package-lock.json

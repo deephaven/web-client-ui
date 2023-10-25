@@ -1,0 +1,222 @@
+.dh-spectrum-palette {
+  /* Gray */
+  --spectrum-gray-50: var(--dh-color-gray-50);
+  --spectrum-gray-75: var(--dh-color-gray-75);
+  --spectrum-gray-100: var(--dh-color-gray-100);
+  --spectrum-gray-200: var(--dh-color-gray-200);
+  --spectrum-gray-300: var(--dh-color-gray-300);
+  --spectrum-gray-400: var(--dh-color-gray-400);
+  --spectrum-gray-500: var(--dh-color-gray-500);
+  --spectrum-gray-600: var(--dh-color-gray-600);
+  --spectrum-gray-700: var(--dh-color-gray-700);
+  --spectrum-gray-800: var(--dh-color-gray-800);
+  --spectrum-gray-900: var(--dh-color-gray-900);
+
+  /* Blue */
+  --spectrum-blue-100: var(--dh-color-blue-100);
+  --spectrum-blue-200: var(--dh-color-blue-200);
+  --spectrum-blue-300: var(--dh-color-blue-300);
+  --spectrum-blue-400: var(--dh-color-blue-400);
+  --spectrum-blue-500: var(--dh-color-blue-500);
+  --spectrum-blue-600: var(--dh-color-blue-600);
+  --spectrum-blue-700: var(--dh-color-blue-700);
+  --spectrum-blue-800: var(--dh-color-blue-800);
+  --spectrum-blue-900: var(--dh-color-blue-900);
+  --spectrum-blue-1000: var(--dh-color-blue-1000);
+  --spectrum-blue-1100: var(--dh-color-blue-1100);
+  --spectrum-blue-1200: var(--dh-color-blue-1200);
+  --spectrum-blue-1300: var(--dh-color-blue-1300);
+  --spectrum-blue-1400: var(--dh-color-blue-1400);
+
+  /* Red */
+  --spectrum-red-100: var(--dh-color-red-100);
+  --spectrum-red-200: var(--dh-color-red-200);
+  --spectrum-red-300: var(--dh-color-red-300);
+  --spectrum-red-400: var(--dh-color-red-400);
+  --spectrum-red-500: var(--dh-color-red-500);
+  --spectrum-red-600: var(--dh-color-red-600);
+  --spectrum-red-700: var(--dh-color-red-700);
+  --spectrum-red-800: var(--dh-color-red-800);
+  --spectrum-red-900: var(--dh-color-red-900);
+  --spectrum-red-1000: var(--dh-color-red-1000);
+  --spectrum-red-1100: var(--dh-color-red-1100);
+  --spectrum-red-1200: var(--dh-color-red-1200);
+  --spectrum-red-1300: var(--dh-color-red-1300);
+  --spectrum-red-1400: var(--dh-color-red-1400);
+
+  /* Orange */
+  --spectrum-orange-100: var(--dh-color-orange-100);
+  --spectrum-orange-200: var(--dh-color-orange-200);
+  --spectrum-orange-300: var(--dh-color-orange-300);
+  --spectrum-orange-400: var(--dh-color-orange-400);
+  --spectrum-orange-500: var(--dh-color-orange-500);
+  --spectrum-orange-600: var(--dh-color-orange-600);
+  --spectrum-orange-700: var(--dh-color-orange-700);
+  --spectrum-orange-800: var(--dh-color-orange-800);
+  --spectrum-orange-900: var(--dh-color-orange-900);
+  --spectrum-orange-1000: var(--dh-color-orange-1000);
+  --spectrum-orange-1100: var(--dh-color-orange-1100);
+  --spectrum-orange-1200: var(--dh-color-orange-1200);
+  --spectrum-orange-1300: var(--dh-color-orange-1300);
+  --spectrum-orange-1400: var(--dh-color-orange-1400);
+
+  /* Yellow */
+  --spectrum-yellow-100: var(--dh-color-yellow-100);
+  --spectrum-yellow-200: var(--dh-color-yellow-200);
+  --spectrum-yellow-300: var(--dh-color-yellow-300);
+  --spectrum-yellow-400: var(--dh-color-yellow-400);
+  --spectrum-yellow-500: var(--dh-color-yellow-500);
+  --spectrum-yellow-600: var(--dh-color-yellow-600);
+  --spectrum-yellow-700: var(--dh-color-yellow-700);
+  --spectrum-yellow-800: var(--dh-color-yellow-800);
+  --spectrum-yellow-900: var(--dh-color-yellow-900);
+  --spectrum-yellow-1000: var(--dh-color-yellow-1000);
+  --spectrum-yellow-1100: var(--dh-color-yellow-1100);
+  --spectrum-yellow-1200: var(--dh-color-yellow-1200);
+  --spectrum-yellow-1300: var(--dh-color-yellow-1300);
+  --spectrum-yellow-1400: var(--dh-color-yellow-1400);
+
+  /* Chartreuse */
+  --spectrum-chartreuse-100: var(--dh-color-chartreuse-100);
+  --spectrum-chartreuse-200: var(--dh-color-chartreuse-200);
+  --spectrum-chartreuse-300: var(--dh-color-chartreuse-300);
+  --spectrum-chartreuse-400: var(--dh-color-chartreuse-400);
+  --spectrum-chartreuse-500: var(--dh-color-chartreuse-500);
+  --spectrum-chartreuse-600: var(--dh-color-chartreuse-600);
+  --spectrum-chartreuse-700: var(--dh-color-chartreuse-700);
+  --spectrum-chartreuse-800: var(--dh-color-chartreuse-800);
+  --spectrum-chartreuse-900: var(--dh-color-chartreuse-900);
+  --spectrum-chartreuse-1000: var(--dh-color-chartreuse-1000);
+  --spectrum-chartreuse-1100: var(--dh-color-chartreuse-1100);
+  --spectrum-chartreuse-1200: var(--dh-color-chartreuse-1200);
+  --spectrum-chartreuse-1300: var(--dh-color-chartreuse-1300);
+  --spectrum-chartreuse-1400: var(--dh-color-chartreuse-1400);
+
+  /* Celery */
+  --spectrum-celery-100: var(--dh-color-celery-100);
+  --spectrum-celery-200: var(--dh-color-celery-200);
+  --spectrum-celery-300: var(--dh-color-celery-300);
+  --spectrum-celery-400: var(--dh-color-celery-400);
+  --spectrum-celery-500: var(--dh-color-celery-500);
+  --spectrum-celery-600: var(--dh-color-celery-600);
+  --spectrum-celery-700: var(--dh-color-celery-700);
+  --spectrum-celery-800: var(--dh-color-celery-800);
+  --spectrum-celery-900: var(--dh-color-celery-900);
+  --spectrum-celery-1000: var(--dh-color-celery-1000);
+  --spectrum-celery-1100: var(--dh-color-celery-1100);
+  --spectrum-celery-1200: var(--dh-color-celery-1200);
+  --spectrum-celery-1300: var(--dh-color-celery-1300);
+  --spectrum-celery-1400: var(--dh-color-celery-1400);
+
+  /* Green */
+  --spectrum-green-100: var(--dh-color-green-100);
+  --spectrum-green-200: var(--dh-color-green-200);
+  --spectrum-green-300: var(--dh-color-green-300);
+  --spectrum-green-400: var(--dh-color-green-400);
+  --spectrum-green-500: var(--dh-color-green-500);
+  --spectrum-green-600: var(--dh-color-green-600);
+  --spectrum-green-700: var(--dh-color-green-700);
+  --spectrum-green-800: var(--dh-color-green-800);
+  --spectrum-green-900: var(--dh-color-green-900);
+  --spectrum-green-1000: var(--dh-color-green-1000);
+  --spectrum-green-1100: var(--dh-color-green-1100);
+  --spectrum-green-1200: var(--dh-color-green-1200);
+  --spectrum-green-1300: var(--dh-color-green-1300);
+  --spectrum-green-1400: var(--dh-color-green-1400);
+
+  /* Seafoam */
+  --spectrum-seafoam-100: var(--dh-color-seafoam-100);
+  --spectrum-seafoam-200: var(--dh-color-seafoam-200);
+  --spectrum-seafoam-300: var(--dh-color-seafoam-300);
+  --spectrum-seafoam-400: var(--dh-color-seafoam-400);
+  --spectrum-seafoam-500: var(--dh-color-seafoam-500);
+  --spectrum-seafoam-600: var(--dh-color-seafoam-600);
+  --spectrum-seafoam-700: var(--dh-color-seafoam-700);
+  --spectrum-seafoam-800: var(--dh-color-seafoam-800);
+  --spectrum-seafoam-900: var(--dh-color-seafoam-900);
+  --spectrum-seafoam-1000: var(--dh-color-seafoam-1000);
+  --spectrum-seafoam-1100: var(--dh-color-seafoam-1100);
+  --spectrum-seafoam-1200: var(--dh-color-seafoam-1200);
+  --spectrum-seafoam-1300: var(--dh-color-seafoam-1300);
+  --spectrum-seafoam-1400: var(--dh-color-seafoam-1400);
+
+  /* Cyan */
+  --spectrum-cyan-100: var(--dh-color-cyan-100);
+  --spectrum-cyan-200: var(--dh-color-cyan-200);
+  --spectrum-cyan-300: var(--dh-color-cyan-300);
+  --spectrum-cyan-400: var(--dh-color-cyan-400);
+  --spectrum-cyan-500: var(--dh-color-cyan-500);
+  --spectrum-cyan-600: var(--dh-color-cyan-600);
+  --spectrum-cyan-700: var(--dh-color-cyan-700);
+  --spectrum-cyan-800: var(--dh-color-cyan-800);
+  --spectrum-cyan-900: var(--dh-color-cyan-900);
+  --spectrum-cyan-1000: var(--dh-color-cyan-1000);
+  --spectrum-cyan-1100: var(--dh-color-cyan-1100);
+  --spectrum-cyan-1200: var(--dh-color-cyan-1200);
+  --spectrum-cyan-1300: var(--dh-color-cyan-1300);
+  --spectrum-cyan-1400: var(--dh-color-cyan-1400);
+
+  /* Indigo */
+  --spectrum-indigo-100: var(--dh-color-indigo-100);
+  --spectrum-indigo-200: var(--dh-color-indigo-200);
+  --spectrum-indigo-300: var(--dh-color-indigo-300);
+  --spectrum-indigo-400: var(--dh-color-indigo-400);
+  --spectrum-indigo-500: var(--dh-color-indigo-500);
+  --spectrum-indigo-600: var(--dh-color-indigo-600);
+  --spectrum-indigo-700: var(--dh-color-indigo-700);
+  --spectrum-indigo-800: var(--dh-color-indigo-800);
+  --spectrum-indigo-900: var(--dh-color-indigo-900);
+  --spectrum-indigo-1000: var(--dh-color-indigo-1000);
+  --spectrum-indigo-1100: var(--dh-color-indigo-1100);
+  --spectrum-indigo-1200: var(--dh-color-indigo-1200);
+  --spectrum-indigo-1300: var(--dh-color-indigo-1300);
+  --spectrum-indigo-1400: var(--dh-color-indigo-1400);
+
+  /* Purple */
+  --spectrum-purple-100: var(--dh-color-purple-100);
+  --spectrum-purple-200: var(--dh-color-purple-200);
+  --spectrum-purple-300: var(--dh-color-purple-300);
+  --spectrum-purple-400: var(--dh-color-purple-400);
+  --spectrum-purple-500: var(--dh-color-purple-500);
+  --spectrum-purple-600: var(--dh-color-purple-600);
+  --spectrum-purple-700: var(--dh-color-purple-700);
+  --spectrum-purple-800: var(--dh-color-purple-800);
+  --spectrum-purple-900: var(--dh-color-purple-900);
+  --spectrum-purple-1000: var(--dh-color-purple-1000);
+  --spectrum-purple-1100: var(--dh-color-purple-1100);
+  --spectrum-purple-1200: var(--dh-color-purple-1200);
+  --spectrum-purple-1300: var(--dh-color-purple-1300);
+  --spectrum-purple-1400: var(--dh-color-purple-1400);
+
+  /* Fuchsia */
+  --spectrum-fuchsia-100: var(--dh-color-fuchsia-100);
+  --spectrum-fuchsia-200: var(--dh-color-fuchsia-200);
+  --spectrum-fuchsia-300: var(--dh-color-fuchsia-300);
+  --spectrum-fuchsia-400: var(--dh-color-fuchsia-400);
+  --spectrum-fuchsia-500: var(--dh-color-fuchsia-500);
+  --spectrum-fuchsia-600: var(--dh-color-fuchsia-600);
+  --spectrum-fuchsia-700: var(--dh-color-fuchsia-700);
+  --spectrum-fuchsia-800: var(--dh-color-fuchsia-800);
+  --spectrum-fuchsia-900: var(--dh-color-fuchsia-900);
+  --spectrum-fuchsia-1000: var(--dh-color-fuchsia-1000);
+  --spectrum-fuchsia-1100: var(--dh-color-fuchsia-1100);
+  --spectrum-fuchsia-1200: var(--dh-color-fuchsia-1200);
+  --spectrum-fuchsia-1300: var(--dh-color-fuchsia-1300);
+  --spectrum-fuchsia-1400: var(--dh-color-fuchsia-1400);
+
+  /* Magenta */
+  --spectrum-magenta-100: var(--dh-color-magenta-100);
+  --spectrum-magenta-200: var(--dh-color-magenta-200);
+  --spectrum-magenta-300: var(--dh-color-magenta-300);
+  --spectrum-magenta-400: var(--dh-color-magenta-400);
+  --spectrum-magenta-500: var(--dh-color-magenta-500);
+  --spectrum-magenta-600: var(--dh-color-magenta-600);
+  --spectrum-magenta-700: var(--dh-color-magenta-700);
+  --spectrum-magenta-800: var(--dh-color-magenta-800);
+  --spectrum-magenta-900: var(--dh-color-magenta-900);
+  --spectrum-magenta-1000: var(--dh-color-magenta-1000);
+  --spectrum-magenta-1100: var(--dh-color-magenta-1100);
+  --spectrum-magenta-1200: var(--dh-color-magenta-1200);
+  --spectrum-magenta-1300: var(--dh-color-magenta-1300);
+  --spectrum-magenta-1400: var(--dh-color-magenta-1400);
+}

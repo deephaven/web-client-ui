@@ -12,6 +12,7 @@
     { "path": "../chart" },
     { "path": "../components" },
     { "path": "../jsapi-bootstrap" },
+    { "path": "../jsapi-components" },
     { "path": "../jsapi-types" },
     { "path": "../jsapi-utils" },
     { "path": "../log" }

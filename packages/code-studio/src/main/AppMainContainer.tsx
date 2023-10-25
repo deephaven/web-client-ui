@@ -76,7 +76,6 @@ import {
   RootState,
   User,
   ServerConfigValues,
-  DeephavenPluginModuleMap,
 } from '@deephaven/redux';
 import { bindAllMethods, PromiseUtils } from '@deephaven/utils';
 import GoldenLayout from '@deephaven/golden-layout';
@@ -86,6 +85,7 @@ import {
   isDashboardPlugin,
   type LegacyDashboardPlugin,
   isLegacyDashboardPlugin,
+  type PluginModuleMap,
 } from '@deephaven/plugin';
 import JSZip from 'jszip';
 import SettingsMenu from '../settings/SettingsMenu';
@@ -131,7 +131,7 @@ interface AppMainContainerProps {
   updateWorkspaceData: (workspaceData: Partial<WorkspaceData>) => void;
   user: User;
   workspace: Workspace;
-  plugins: DeephavenPluginModuleMap;
+  plugins: PluginModuleMap;
   serverConfigValues: ServerConfigValues;
 }
 
@@ -689,7 +689,7 @@ export class AppMainContainer extends Component<
     });
   }
 
-  getDashboardPlugins = memoize((plugins: DeephavenPluginModuleMap) => {
+  getDashboardPlugins = memoize((plugins: PluginModuleMap) => {
     const dashboardPlugins = [...plugins.entries()].filter(
       ([, plugin]) =>
         isDashboardPlugin(plugin) || isLegacyDashboardPlugin(plugin)

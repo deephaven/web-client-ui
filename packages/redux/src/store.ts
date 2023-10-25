@@ -3,13 +3,11 @@ import type { FileStorage } from '@deephaven/file-explorer';
 import type { ValidKeyState } from '@deephaven/components';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import type { FormattingRule } from '@deephaven/jsapi-utils';
-import type { PluginModule } from '@deephaven/plugin';
+import type { PluginModuleMap } from '@deephaven/plugin';
 import type { PayloadAction } from './actions';
 import rootMiddleware from './middleware';
 import reducers from './reducers';
 import reducerRegistry from './reducerRegistry';
-
-export type DeephavenPluginModuleMap = Map<string, PluginModule>;
 
 export interface UserPermissions {
   canUsePanels: boolean;
@@ -84,7 +82,7 @@ export interface WorkspaceStorage {
 export type RootState = {
   api: DhType;
   activeTool: string;
-  plugins: DeephavenPluginModuleMap;
+  plugins: PluginModuleMap;
   storage: Storage;
   user: User;
   workspace: Workspace;

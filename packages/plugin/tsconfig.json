@@ -10,6 +10,7 @@
     { "path": "../components" },
     { "path": "../golden-layout" },
     { "path": "../iris-grid" },
-    { "path": "../jsapi-types" }
+    { "path": "../jsapi-types" },
+    { "path": "../react-hooks" }
   ]
 }
