@@ -39,6 +39,7 @@ import {
   IrisGridState,
   ChartBuilderSettings,
   DehydratedIrisGridState,
+  DehydratedIrisGridPanelState,
   ColumnHeaderGroup,
   IrisGridContextMenuData,
   IrisGridTableModel,
@@ -114,12 +115,7 @@ export interface PanelState {
     movedRows: MoveOperation[];
   };
   irisGridState: DehydratedIrisGridState;
-  irisGridPanelState: {
-    partitionColumns: ColumnName[];
-    partitions: (string | null)[];
-    isSelectingPartition: boolean;
-    advancedSettings: [AdvancedSettingsType, boolean][];
-  };
+  irisGridPanelState: DehydratedIrisGridPanelState;
   pluginState: unknown;
 }
 
@@ -127,10 +123,12 @@ export interface PanelState {
 // even though they can't be undefined in the dehydrated state.
 // This can happen when loading the state saved before the properties were added.
 type LoadedPanelState = PanelState & {
-  irisGridPanelState: PanelState['irisGridPanelState'] &
-    Partial<
-      Pick<PanelState['irisGridPanelState'], 'partitions' | 'partitionColumns'>
-    >;
+  irisGridPanelState: PanelState['irisGridPanelState'] & {
+    partitions?: (string | null)[];
+    partitionColumns?: ColumnName[];
+    partition?: string | null;
+    partitionColumn?: ColumnName;
+  };
 };
 
 export interface IrisGridPanelProps extends DashboardPanelProps {

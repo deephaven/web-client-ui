@@ -143,6 +143,38 @@ export interface DehydratedIrisGridState {
   columnHeaderGroups?: readonly ColumnGroup[];
 }
 
+export interface DehydratedIrisGridPanelStateV1 {
+  isSelectingPartition: boolean;
+  partition: string | null;
+  partitionColumn: ColumnName;
+  advancedSettings: [AdvancedSettingsType, boolean][];
+}
+
+export interface DehydratedIrisGridPanelStateV2 {
+  isSelectingPartition: boolean;
+  partitions: (string | null)[];
+  partitionColumns: ColumnName[];
+  advancedSettings: [AdvancedSettingsType, boolean][];
+}
+
+export type DehydratedIrisGridPanelState =
+  | DehydratedIrisGridPanelStateV1
+  | DehydratedIrisGridPanelStateV2;
+
+export function isPanelStateV1(
+  state: DehydratedIrisGridPanelState
+): state is DehydratedIrisGridPanelStateV1 {
+  return (state as DehydratedIrisGridPanelStateV1).partitionColumn != null;
+}
+
+export function isPanelStateV2(
+  state: DehydratedIrisGridPanelState
+): state is DehydratedIrisGridPanelStateV2 {
+  return Array.isArray(
+    (state as DehydratedIrisGridPanelStateV2).partitionColumns
+  );
+}
+
 /**
  * Checks if an index is valid for the given array
  * @param x The index to check
@@ -279,12 +311,7 @@ class IrisGridUtils {
       partitionColumns: Column[];
       advancedSettings: Map<AdvancedSettingsType, boolean>;
     }
-  ): {
-    isSelectingPartition: boolean;
-    partitions: (string | null)[];
-    partitionColumns: ColumnName[];
-    advancedSettings: [AdvancedSettingsType, boolean][];
-  } {
+  ): DehydratedIrisGridPanelState {
     const {
       isSelectingPartition,
       partitions,
@@ -311,25 +338,21 @@ class IrisGridUtils {
    */
   static hydrateIrisGridPanelState(
     model: IrisGridModel,
-    irisGridPanelState: {
-      // This needs to be changed after IrisGridPanel is done
-      isSelectingPartition: boolean;
-      partitions: (string | null)[];
-      partitionColumns: ColumnName[];
-      advancedSettings: [AdvancedSettingsType, boolean][];
-    }
+    irisGridPanelState: DehydratedIrisGridPanelState
   ): {
     isSelectingPartition: boolean;
     partitions: (string | null)[];
     partitionColumns: Column[];
     advancedSettings: Map<AdvancedSettingsType, boolean>;
   } {
-    const {
-      isSelectingPartition,
-      partitions,
-      partitionColumns,
-      advancedSettings,
-    } = irisGridPanelState;
+    const { isSelectingPartition, advancedSettings } = irisGridPanelState;
+
+    const { partitionColumns, partitions } = isPanelStateV2(irisGridPanelState)
+      ? irisGridPanelState
+      : {
+          partitionColumns: [irisGridPanelState.partitionColumn],
+          partitions: [irisGridPanelState.partition],
+        };
 
     const { columns } = model;
     return {
@@ -391,10 +414,7 @@ class IrisGridUtils {
   static extractTableSettings<AF, QF, S>(
     panelState: {
       irisGridState: { advancedFilters: AF; quickFilters: QF; sorts: S };
-      irisGridPanelState: {
-        partitionColumns: ColumnName[];
-        partitions: unknown[];
-      };
+      irisGridPanelState: DehydratedIrisGridPanelState;
     },
     inputFilters: InputFilter[] = []
   ): {
@@ -406,7 +426,12 @@ class IrisGridUtils {
     sorts: S;
   } {
     const { irisGridPanelState, irisGridState } = panelState;
-    const { partitionColumns, partitions } = irisGridPanelState;
+    const { partitionColumns, partitions } = isPanelStateV2(irisGridPanelState)
+      ? irisGridPanelState
+      : {
+          partitionColumns: [irisGridPanelState.partitionColumn],
+          partitions: [irisGridPanelState.partition],
+        };
     const { advancedFilters, quickFilters, sorts } = irisGridState;
 
     return {

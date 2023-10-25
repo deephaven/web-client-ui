@@ -132,7 +132,6 @@ class IrisGridPartitionSelector<T> extends Component<
   }
 
   handlePartitionSelect(index: number, partition: string): void {
-    const { columns } = this.props;
     const { partitions, partitionTables } = this.state;
     const selectedMenu = this.searchMenu[index];
     if (selectedMenu) {
@@ -140,10 +139,7 @@ class IrisGridPartitionSelector<T> extends Component<
     }
 
     const newPartitions = [...partitions];
-    newPartitions[index] =
-      TableUtils.isCharType(columns[index].type) && partition.length > 0
-        ? partition.charCodeAt(0).toString()
-        : partition;
+    newPartitions[index] = partition;
     if (partitionTables) {
       this.updatePartitionFilters(newPartitions, partitionTables);
     }
