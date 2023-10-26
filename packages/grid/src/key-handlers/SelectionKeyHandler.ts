@@ -183,13 +183,7 @@ class SelectionKeyHandler extends KeyHandler {
 
       const { theme } = grid.props;
       const { autoSelectRow = false, autoSelectColumn = false } = theme;
-      // const stickyOptions: StickyOptions = {
-      //   shouldStickBottom:
-      //     event.key === 'ArrowDown' ||
-      //     event.key === 'End' ||
-      //     event.key === 'PageDown',
-      //   shouldStickRight: event.key === 'ArrowRight',
-      // };
+
       if (autoSelectRow && deltaColumn !== 0) {
         const { lastLeft } = grid.metrics;
         let { left } = grid.state;
