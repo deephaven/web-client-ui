@@ -79,7 +79,7 @@ import type {
   TablePluginComponent,
   TablePluginElement,
 } from '@deephaven/plugin';
-import { ConsoleEvent, InputFilterEvent, IrisGridEvent } from '../events';
+import { InputFilterEvent, IrisGridEvent } from '../events';
 import {
   getInputFiltersForDashboard,
   getLinksForDashboard,
@@ -250,7 +250,6 @@ export class IrisGridPanel extends PureComponent<
     this.handleError = this.handleError.bind(this);
     this.handleGridStateChange = this.handleGridStateChange.bind(this);
     this.handlePluginStateChange = this.handlePluginStateChange.bind(this);
-    this.handlePartitionAppend = this.handlePartitionAppend.bind(this);
     this.handleCreateChart = this.handleCreateChart.bind(this);
     this.handleResize = this.handleResize.bind(this);
     this.handleShow = this.handleShow.bind(this);
@@ -709,26 +708,6 @@ export class IrisGridPanel extends PureComponent<
     const { glEventHub } = this.props;
     const { detail: table } = event as CustomEvent;
     glEventHub.emit(InputFilterEvent.TABLE_CHANGED, this, table);
-  }
-
-  handlePartitionAppend(columns: Column[], values: unknown[]): void {
-    const { glEventHub } = this.props;
-    const tableName = this.getTableName();
-    const filters = values
-      .reduce<string[]>((filterArray, value, index) => {
-        const column = columns[index];
-        if (value !== null) {
-          filterArray.push(
-            `"${column.name}=${
-              TableUtils.isTextType(column.type) ? `\`${value}\`` : value
-            }"`
-          );
-        }
-        return filterArray;
-      }, [])
-      .join(', ');
-    const command = `${tableName} = ${tableName}.where(filters=[${filters}])`;
-    glEventHub.emit(ConsoleEvent.SEND_COMMAND, command, false, true);
   }
 
   /**
@@ -1358,7 +1337,6 @@ export class IrisGridPanel extends PureComponent<
             onCreateChart={this.handleCreateChart}
             onDataSelected={this.handleDataSelected}
             onError={this.handleError}
-            onPartitionAppend={this.handlePartitionAppend}
             onStateChange={this.handleGridStateChange}
             onContextMenu={this.handleContextMenu}
             onAdvancedSettingsChange={this.handleAdvancedSettingsChange}

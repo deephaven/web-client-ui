@@ -283,10 +283,6 @@ export interface IrisGridProps {
   onError: (error: unknown) => void;
   onDataSelected: (index: ModelIndex, map: Record<ColumnName, unknown>) => void;
   onStateChange: (irisGridState: IrisGridState, gridState: GridState) => void;
-  onPartitionAppend?: (
-    partitionColumns: Column[],
-    values: (string | null)[]
-  ) => void;
   onAdvancedSettingsChange: AdvancedSettingsMenuCallback;
   partitions: (string | null)[];
   partitionColumns: Column[];
@@ -580,7 +576,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleCancelDownloadTable = this.handleCancelDownloadTable.bind(this);
     this.handleDownloadCanceled = this.handleDownloadCanceled.bind(this);
     this.handleDownloadCompleted = this.handleDownloadCompleted.bind(this);
-    this.handlePartitionAppend = this.handlePartitionAppend.bind(this);
     this.handlePartitionChange = this.handlePartitionChange.bind(this);
     this.handlePartitionFetchAll = this.handlePartitionFetchAll.bind(this);
     this.handlePartitionDone = this.handlePartitionDone.bind(this);
@@ -2376,15 +2371,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.isAnimating = false;
   }
 
-  handlePartitionAppend(values: (string | null)[]): void {
-    const { onPartitionAppend } = this.props;
-    const { partitionColumns } = this.state;
-    if (partitionColumns.length === 0) {
-      return;
-    }
-    onPartitionAppend?.(partitionColumns, values);
-  }
-
   handlePartitionChange(partitions: (string | null)[]): void {
     const { partitionColumns } = this.state;
     if (partitionColumns.length === 0) {
@@ -3914,7 +3900,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       onAdvancedSettingsChange,
       canDownloadCsv,
       onCreateChart,
-      onPartitionAppend,
     } = this.props;
     const {
       metricCalculator,
@@ -4473,11 +4458,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                     partitions={partitions}
                     onChange={this.handlePartitionChange}
                     onFetchAll={this.handlePartitionFetchAll}
-                    onAppend={
-                      onPartitionAppend !== undefined
-                        ? this.handlePartitionAppend
-                        : undefined
-                    }
                     onDone={this.handlePartitionDone}
                   />
                 )}
