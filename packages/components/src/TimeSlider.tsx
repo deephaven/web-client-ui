@@ -21,7 +21,7 @@ const SNAP_NEAREST_MINUTES = 5 * 60; // rounds in 5 minute intervals
 type TimeSliderProps = {
   startTime: number;
   endTime: number;
-  onChange(value: { startTime: number; endTime: number }): void;
+  onChange: (value: { startTime: number; endTime: number }) => void;
   isStartModified?: boolean;
   isEndModified?: boolean;
   'data-testid'?: string;
@@ -130,8 +130,8 @@ function TimeSlider({
 type PopOversProps = {
   startTime: number;
   endTime: number;
-  onStartTimeChange(time: number): void;
-  onEndTimeChange(time: number): void;
+  onStartTimeChange: (time: number) => void;
+  onEndTimeChange: (time: number) => void;
   isStartModified: boolean;
   isEndModified: boolean;
   'data-testid'?: string;
@@ -311,7 +311,7 @@ function TrackFills(props: TrackFillsProps): JSX.Element {
 type HandleProps = {
   track: React.RefObject<HTMLDivElement>;
   time: number;
-  setTime(time: number): void;
+  setTime: (time: number) => void;
   'data-testid'?: string;
 };
 

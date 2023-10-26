@@ -47,8 +47,8 @@ type DropdownMenuProps = {
   // Override to prevent nested lists
   actions: DropdownActions;
   isShown: boolean | null;
-  onMenuClosed(): void;
-  onMenuOpened(): void;
+  onMenuClosed: () => void;
+  onMenuOpened: () => void;
   options: MenuOptions;
   popperOptions: PopperOptions;
   popperClassName: string;

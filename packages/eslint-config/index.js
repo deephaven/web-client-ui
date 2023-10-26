@@ -88,6 +88,7 @@ module.exports = {
         'default-param-last': 'off',
         '@typescript-eslint/default-param-last': ['error'],
         '@typescript-eslint/explicit-module-boundary-types': 'error',
+        '@typescript-eslint/method-signature-style': 'error',
       },
     },
     {

@@ -4,9 +4,9 @@ import { vsNewFile, vsNewFolder } from '@deephaven/icons';
 import './FileExplorerToolbar.scss';
 
 type FileExplorerToolbarProps = {
-  createFile(): void;
-  createFolder(): void;
-  onSearchChange?(text: string): void;
+  createFile: () => void;
+  createFolder: () => void;
+  onSearchChange?: (text: string) => void;
   defaultSearchText?: string;
 };
 

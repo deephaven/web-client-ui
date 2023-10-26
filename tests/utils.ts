@@ -161,7 +161,10 @@ export async function pasteInMonaco(
  * @param page
  */
 
-export async function waitForLoadingDone(page: Page, tableNumber = 0) {
+export async function waitForLoadingDone(
+  page: Page,
+  tableNumber = 0
+): Promise<void> {
   await expect(
     page
       .locator('.iris-grid')
@@ -188,7 +191,7 @@ export async function dragComponent(
   targetIndicator: Locator,
   offsetY = 0,
   steps = 100
-) {
+): Promise<void> {
   const page = element.page();
   const destinationPos = await target.boundingBox();
   if (destinationPos === null) throw new Error('element not found');

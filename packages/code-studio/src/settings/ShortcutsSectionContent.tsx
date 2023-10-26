@@ -84,7 +84,7 @@ function ShortcutSectionContent({
 type ShortcutCategoryProps = {
   name: string;
   shortcuts: Shortcut[];
-  saveShortcutOverrides(shortcuts: Shortcut[]): void;
+  saveShortcutOverrides: (shortcuts: Shortcut[]) => void;
 };
 
 function ShortcutCategory({

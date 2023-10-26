@@ -25,8 +25,8 @@ const log = Log.module('AdvancedFilterCreatorFilterItem');
 export interface AdvancedFilterCreatorFilterItemProps {
   column: Column;
   filterTypes: FilterTypeValue[];
-  onChange(type: FilterTypeValue, value: string): void;
-  onDelete(): void;
+  onChange: (type: FilterTypeValue, value: string) => void;
+  onDelete: () => void;
   selectedType?: FilterTypeValue;
   value?: string;
   formatter: Formatter;
