@@ -115,9 +115,9 @@ const GotoRow = forwardRef<GotoRowElement, GotoRowProps>(
     };
 
     const handleGotoValueKeySubmit = (
-      e?: KeyboardEvent<HTMLInputElement>
+      e: KeyboardEvent<HTMLInputElement>
     ): void => {
-      if (e?.key === 'Enter') {
+      if (e.key === 'Enter') {
         e.stopPropagation();
         e.preventDefault();
         onGotoValueSubmit(e.shiftKey);

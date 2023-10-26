@@ -18,11 +18,11 @@ const log = Log.module('AdvancedFilterCreatorSelectValueList');
 
 interface AdvancedFilterCreatorSelectValueListProps<T> {
   dh: DhType;
-  selectedValues: T[];
+  selectedValues: (T | null)[];
   table?: Table;
   filters: FilterCondition[];
   invertSelection: boolean;
-  onChange: (selectedValues: T[], invertSelection: boolean) => void;
+  onChange: (selectedValues: (T | null)[], invertSelection: boolean) => void;
   formatter: Formatter;
 }
 
@@ -30,7 +30,7 @@ interface AdvancedFilterCreatorSelectValueListState<T> {
   itemCount: number;
   items: SelectItem<T>[];
   offset: number;
-  selectedValues: T[];
+  selectedValues: (T | null)[];
   isLoading: boolean;
 }
 /**
@@ -140,7 +140,7 @@ class AdvancedFilterCreatorSelectValueList<T = unknown> extends PureComponent<
     );
     if (selectedIndex >= 0) {
       selectedValues.splice(selectedIndex, 1);
-    } else if (value != null) {
+    } else {
       selectedValues.push(value);
     }
 

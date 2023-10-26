@@ -24,7 +24,7 @@ type DateTimeInputProps = {
   defaultValue?: string;
   onFocus?: () => void;
   onBlur?: () => void;
-  onSubmit?: (event?: KeyboardEvent<HTMLInputElement>) => void;
+  onSubmit?: (event: KeyboardEvent<HTMLInputElement>) => void;
   'data-testid'?: string;
 };
 

@@ -47,7 +47,7 @@ type MaskedInputProps = {
   /** Called when selection changes */
   onSelect?: (segment: SelectionSegment) => void;
   /** Called when enter is pressed */
-  onSubmit?: (event?: KeyboardEvent<HTMLInputElement>) => void;
+  onSubmit?: (event: KeyboardEvent<HTMLInputElement>) => void;
   /** Retrieve the next value for a provided segment */
   getNextSegmentValue?: (
     segment: SelectionSegment,
