@@ -146,6 +146,11 @@ class Panel extends PureComponent<PanelProps, PanelState> {
       InputFilterEvent.CLEAR_ALL_FILTERS,
       this.handleClearAllFilters
     );
+
+    this.setState({
+      isWithinPanel:
+        this.ref.current?.parentElement?.closest('.dh-panel') != null,
+    });
   }
 
   componentDidUpdate(prevProps: PanelProps): void {
@@ -155,11 +160,6 @@ class Panel extends PureComponent<PanelProps, PanelState> {
     if (prevProps.componentPanel == null && componentPanel != null) {
       glEventHub.emit(PanelEvent.MOUNT, componentPanel);
     }
-
-    this.setState({
-      isWithinPanel:
-        this.ref.current?.parentElement?.closest('.iris-panel') != null,
-    });
   }
 
   componentWillUnmount(): void {
@@ -350,7 +350,7 @@ class Panel extends PureComponent<PanelProps, PanelState> {
 
     return (
       <div
-        className={classNames('h-100 w-100 iris-panel', className)}
+        className={classNames('h-100 w-100 dh-panel', className)}
         onFocusCapture={this.handleFocus}
         onBlurCapture={this.handleBlur}
         ref={this.ref}

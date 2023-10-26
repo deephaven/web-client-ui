@@ -81,6 +81,7 @@ export interface ChartPanelFigureMetadata extends PanelMetadata {
    * @deprecated use `name` instead
    */
   figure?: string;
+  sourcePanelId: never;
 }
 
 export interface ChartPanelTableMetadata extends PanelMetadata {
@@ -118,7 +119,7 @@ export interface GLChartPanelState {
   table?: string;
   figure?: string;
 }
-export interface ChartPanelProps extends DashboardPanelProps {
+interface OwnProps extends DashboardPanelProps {
   metadata: ChartPanelMetadata;
   /** Function to build the ChartModel used by this ChartPanel. Can return a promise. */
   makeModel: () => Promise<ChartModel>;
@@ -128,16 +129,19 @@ export interface ChartPanelProps extends DashboardPanelProps {
   containerRef?: RefObject<HTMLDivElement>;
 
   panelState: GLChartPanelState;
-  settings: Partial<WorkspaceSettings>;
 }
 
-interface PropsFromRedux {
+interface StateProps {
   inputFilters: InputFilter[];
   links: Link[];
   isLinkerActive: boolean;
   source?: TableTemplate;
   sourcePanel?: PanelComponent;
   columnSelectionValidator?: ColumnSelectionValidator;
+  settings: Partial<WorkspaceSettings>;
+}
+
+interface DispatchProps {
   setActiveTool: (tool: string) => void;
   setDashboardIsolatedLinkerPanelId: (
     id: string,
@@ -181,14 +185,12 @@ function hasPanelState(
   return (panel as { panelState: IrisGridPanelState }).panelState != null;
 }
 
-type ChartPanelPropsWithRedux = ChartPanelProps &
-  PropsFromRedux &
+export type ChartPanelProps = OwnProps &
+  StateProps &
+  DispatchProps &
   React.RefAttributes<ChartPanel>;
 
-export class ChartPanel extends Component<
-  ChartPanelPropsWithRedux,
-  ChartPanelState
-> {
+export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
   static defaultProps = {
     columnSelectionValidator: null,
     isLinkerActive: false,
@@ -203,7 +205,7 @@ export class ChartPanel extends Component<
 
   static COMPONENT = 'ChartPanel';
 
-  constructor(props: ChartPanelPropsWithRedux) {
+  constructor(props: ChartPanelProps) {
     super(props);
 
     this.handleColumnSelected = this.handleColumnSelected.bind(this);
@@ -273,7 +275,7 @@ export class ChartPanel extends Component<
   }
 
   componentDidUpdate(
-    prevProps: ChartPanelPropsWithRedux,
+    prevProps: ChartPanelProps,
     prevState: ChartPanelState
   ): void {
     const { inputFilters, source } = this.props;
@@ -1167,13 +1169,10 @@ export class ChartPanel extends Component<
   }
 }
 
-const mapStateToProps = (
-  state: RootState,
-  ownProps: { localDashboardId: string; metadata: { sourcePanelId?: string } }
-) => {
+const mapStateToProps = (state: RootState, ownProps: OwnProps): StateProps => {
   const { localDashboardId, metadata } = ownProps;
 
-  let sourcePanelId;
+  let sourcePanelId: string | undefined;
   if (metadata != null) {
     sourcePanelId = metadata.sourcePanelId;
   }
@@ -1207,7 +1206,7 @@ const ConnectedChartPanel = connect(
   {
     setActiveTool: setActiveToolAction,
     setDashboardIsolatedLinkerPanelId: setDashboardIsolatedLinkerPanelIdAction,
-  },
+  } satisfies DispatchProps,
   null,
   { forwardRef: true }
 )(ChartPanel);

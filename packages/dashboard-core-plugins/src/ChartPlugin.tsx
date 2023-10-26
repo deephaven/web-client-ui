@@ -91,7 +91,7 @@ export const ChartPlugin = forwardRef(
 
     const hydratedProps = useMemo(
       () => ({
-        ...props,
+        ...(props as unknown as ChartPanelProps),
         metadata: props.metadata as ChartPanelMetadata,
         localDashboardId: props.localDashboardId,
         makeModel: () => {
@@ -103,7 +103,12 @@ export const ChartPlugin = forwardRef(
             throw new Error('Metadata is required for chart panel');
           }
 
-          return createChartModel(dh, connection, metadata, panelState);
+          return createChartModel(
+            dh,
+            connection,
+            metadata as ChartPanelMetadata,
+            panelState
+          );
         },
       }),
       [dh, connection, props]
