@@ -125,7 +125,7 @@ class Panel extends PureComponent<PanelProps, PanelState> {
     this.state = {
       title: LayoutUtils.getTitleFromContainer(glContainer),
       showRenameDialog: false,
-      isWithinPanel: false,
+      isWithinPanel: true,
     };
   }
 

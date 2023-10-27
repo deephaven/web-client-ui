@@ -6,7 +6,7 @@ import { dhRefresh } from '@deephaven/icons';
 import { Button } from '@deephaven/components';
 import ConnectedIrisGridPanel, {
   type IrisGridPanel,
-  type IrisGridPanelOwnProps,
+  type OwnProps as IrisGridPanelOwnProps,
   type PanelState,
 } from './IrisGridPanel';
 import './PandasPanel.scss';
