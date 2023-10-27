@@ -1,13 +1,26 @@
-import themeDarkPalette from './theme-dark-palette.css?inline';
-import themeDarkSemantic from './theme-dark-semantic.css?inline';
-import themeDarkSemanticEditor from './theme-dark-semantic-editor.css?inline';
-import themeDarkSemanticGrid from './theme-dark-semantic-grid.css?inline';
-import themeDarkComponents from './theme-dark-components.css?inline';
+import themeDarkPalette from './theme-dark-palette.css?raw';
+import themeDarkSemantic from './theme-dark-semantic.css?raw';
+import themeDarkSemanticEditor from './theme-dark-semantic-editor.css?raw';
+import themeDarkSemanticGrid from './theme-dark-semantic-grid.css?raw';
+import themeDarkComponents from './theme-dark-components.css?raw';
 
 /**
- * DH theme variables are imported via Vite `?inline` query which provides the
+ * DH theme variables are imported via Vite `?raw` query which provides the
  * text content of the variable files as a string. The exported theme is just a
  * concatenation of the contents of all of these imports.
+ *
+ * Note that ?raw / ?inline imports are natively supported by Vite, but consumers
+ * of @deephaven/components using Webpack will need to add a rule to their module
+ * config.
+ * e.g.
+ * module: {
+ *  rules: [
+ *    {
+ *      resourceQuery: /inline/,
+ *      type: 'asset/source',
+ *    },
+ *  ],
+ * },
  *
  * e.g.
  *

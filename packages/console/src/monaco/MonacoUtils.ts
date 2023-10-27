@@ -163,7 +163,14 @@ class MonacoUtils {
       colors: dhDarkColors,
     });
 
-    monaco.editor.setTheme('dh-dark');
+    try {
+      monaco.editor.setTheme('dh-dark');
+    } catch {
+      log.error(
+        `Failed to set 'dh-dark' Monaco theme, falling back to vs-dark`
+      );
+      monaco.editor.setTheme('vs-dark');
+    }
 
     registerLanguages([DbLang, PyLang, GroovyLang, LogLang, ScalaLang]);
 
