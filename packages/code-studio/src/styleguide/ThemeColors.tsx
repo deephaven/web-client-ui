@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react';
 import { Tooltip } from '@deephaven/components';
 import { ColorUtils } from '@deephaven/utils';
-import palette from '@deephaven/components/src/theme/theme-dark/theme-dark-palette.css?inline';
-import semantic from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic.css?inline';
-import semanticEditor from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic-editor.css?inline';
-import semanticGrid from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic-grid.css?inline';
-import components from '@deephaven/components/src/theme/theme-dark/theme-dark-components.css?inline';
+import palette from '@deephaven/components/src/theme/theme-dark/theme-dark-palette.css?raw';
+import semantic from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic.css?raw';
+import semanticEditor from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic-editor.css?raw';
+import semanticGrid from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic-grid.css?raw';
+import components from '@deephaven/components/src/theme/theme-dark/theme-dark-components.css?raw';
 import styles from './ThemeColors.module.scss';
 
 // Group names are extracted from var names via a regex capture group. Most of
