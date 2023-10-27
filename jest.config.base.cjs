@@ -9,12 +9,12 @@ module.exports = {
     'node_modules/(?!(monaco-editor|d3-interpolate|d3-color)/)',
   ],
   moduleNameMapper: {
-    'theme-([^/]+?)\\.css(\\?raw)?$': path.join(
+    'theme-([^/]+?)\\.css(\\?(?:inline|raw))?$': path.join(
       __dirname,
       './__mocks__/css/mock-theme-$1.js'
     ),
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
-    '\\.(css|less|scss|sass)\\?raw$': path.join(
+    '\\.(css|less|scss|sass)\\?(?:inline|raw)$': path.join(
       __dirname,
       './__mocks__/fileMock.js'
     ),
