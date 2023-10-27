@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { vsArrowLeft, vsArrowSmallRight, vsSearch } from '@deephaven/icons';
+import { vsArrowLeft, vsArrowRight, vsSearch } from '@deephaven/icons';
 import classNames from 'classnames';
 import './SearchInput.scss';
 
@@ -104,7 +104,7 @@ class SearchInput extends PureComponent<SearchInputProps> {
                 selectedParams.increaseSelected();
               }}
             >
-              <FontAwesomeIcon icon={vsArrowSmallRight} />
+              <FontAwesomeIcon icon={vsArrowRight} />
             </button>
           </div>
         ) : (
