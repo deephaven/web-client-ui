@@ -21,6 +21,8 @@ import {
   vsRefresh,
   vsCircleLargeFilled,
   vsAdd,
+  vsArrowLeft,
+  vsArrowSmallRight,
 } from '@deephaven/icons';
 import type { Column } from '@deephaven/jsapi-types';
 import memoize from 'memoizee';
@@ -168,6 +170,49 @@ class VisibilityOrderingBuilder extends Component<
         this.list?.querySelectorAll('.item-wrapper')[visibleIndexToFocus];
       columnItemToFocus?.scrollIntoView({ block: 'center' });
     }
+  }
+
+  /**
+   * Change the selected column to either the next or previous column
+   *
+   * @param direction The direction to move the selection
+   */
+
+  changeSelectedColumn(direction: 'next' | 'previous'): void {
+    const { selectedColumns } = this.state;
+
+    const flattenedItems = flattenTree(this.getTreeItems());
+
+    let selectedColumnIndex = flattenedItems.findIndex(({ id }) =>
+      selectedColumns.has(id)
+    );
+
+    if (direction === 'next') {
+      if (selectedColumns.size > 1) {
+        const reversedItems = [...flattenedItems].reverse(); // reversed because I need to find last index
+        selectedColumnIndex =
+          flattenedItems.length -
+          reversedItems.findIndex(({ id }) => selectedColumns.has(id)) -
+          1; // subtract by 1 because index starts at 0
+      }
+
+      selectedColumnIndex += 1;
+      if (selectedColumnIndex >= flattenedItems.length) {
+        selectedColumnIndex = 0;
+      }
+    } else {
+      selectedColumnIndex -= 1;
+      if (selectedColumnIndex < 0) {
+        selectedColumnIndex = flattenedItems.length - 1;
+      }
+    }
+
+    const newSelectedColumnId = flattenedItems[selectedColumnIndex].id;
+    this.addColumnToSelected([newSelectedColumnId], false);
+
+    this.setState({
+      searchFilter: newSelectedColumnId,
+    });
   }
 
   /**
@@ -1049,6 +1094,15 @@ class VisibilityOrderingBuilder extends Component<
       treeItems
     );
 
+    const flattenedItems = flattenTree(treeItems);
+    const searchInputParams = {
+      numberSelected: selectedColumns.size,
+      selectedIndex: flattenedItems.findIndex(({ selected }) => selected) + 1, // number is not being updated
+      length: flattenedItems.length,
+      increaseSelected: () => this.changeSelectedColumn('next'),
+      decreaseSelected: () => this.changeSelectedColumn('previous'),
+    };
+
     return (
       <div role="menu" className="visibility-ordering-builder" tabIndex={0}>
         <div className="top-menu">
@@ -1069,6 +1123,7 @@ class VisibilityOrderingBuilder extends Component<
             value={searchFilter}
             matchCount={searchFilter ? selectedColumns.size : undefined}
             onChange={this.handleSearchInputChange}
+            selectedParams={searchInputParams}
           />
         </div>
         <div className="top-menu">

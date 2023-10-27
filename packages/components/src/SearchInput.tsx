@@ -1,9 +1,16 @@
 import React, { PureComponent } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { vsSearch } from '@deephaven/icons';
+import { vsArrowLeft, vsArrowSmallRight, vsSearch } from '@deephaven/icons';
 import classNames from 'classnames';
 import './SearchInput.scss';
 
+interface SelectedParams {
+  numberSelected: number;
+  selectedIndex: number;
+  length: number;
+  increaseSelected: () => void;
+  decreaseSelected: () => void;
+}
 interface SearchInputProps {
   value: string;
   placeholder: string;
@@ -15,6 +22,7 @@ interface SearchInputProps {
   matchCount: number;
   id: string;
   'data-testid'?: string;
+  selectedParams?: SelectedParams;
 }
 
 class SearchInput extends PureComponent<SearchInputProps> {
@@ -27,6 +35,7 @@ class SearchInput extends PureComponent<SearchInputProps> {
     },
     id: '',
     'data-testid': undefined,
+    selectedParams: undefined,
   };
 
   constructor(props: SearchInputProps) {
@@ -52,7 +61,9 @@ class SearchInput extends PureComponent<SearchInputProps> {
       id,
       onKeyDown,
       'data-testid': dataTestId,
+      selectedParams,
     } = this.props;
+
     return (
       <div className={classNames('search-group', className)}>
         <input
@@ -68,12 +79,39 @@ class SearchInput extends PureComponent<SearchInputProps> {
           id={id}
           data-testid={dataTestId}
         />
-        {matchCount != null && (
+
+        {/* need to move this section into case where number selected is greater than 1 */}
+        {/* {matchCount != null && (
           <span className="search-match">{matchCount}</span>
+        )} */}
+
+        {selectedParams != null && selectedParams.numberSelected === 1 ? (
+          <div>
+            <button
+              type="button"
+              onClick={() => {
+                selectedParams.decreaseSelected();
+              }}
+            >
+              <FontAwesomeIcon icon={vsArrowLeft} />
+            </button>
+            <span>
+              {selectedParams.numberSelected} of {selectedParams.length}
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                selectedParams.increaseSelected();
+              }}
+            >
+              <FontAwesomeIcon icon={vsArrowSmallRight} />
+            </button>
+          </div>
+        ) : (
+          <span className="search-icon">
+            <FontAwesomeIcon icon={vsSearch} />
+          </span>
         )}
-        <span className="search-icon">
-          <FontAwesomeIcon icon={vsSearch} />
-        </span>
       </div>
     );
   }
