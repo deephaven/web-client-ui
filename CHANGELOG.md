@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.52.0](https://github.com/deephaven/web-client-ui/compare/v0.51.0...v0.52.0) (2023-10-27)
+
+
+### Bug Fixes
+
+* stuck to bottom on filter clear ([#1579](https://github.com/deephaven/web-client-ui/issues/1579)) ([ef52749](https://github.com/deephaven/web-client-ui/commit/ef527498970fd0d994d90d9824bc3a55582f5b4c)), closes [#1477](https://github.com/deephaven/web-client-ui/issues/1477) [#1571](https://github.com/deephaven/web-client-ui/issues/1571) [#1571](https://github.com/deephaven/web-client-ui/issues/1571)
+* Theming - switched from ?inline to ?raw css imports ([#1600](https://github.com/deephaven/web-client-ui/issues/1600)) ([f6d0874](https://github.com/deephaven/web-client-ui/commit/f6d0874a98cc7377c3857a44930b5c636b72ca1f)), closes [#1599](https://github.com/deephaven/web-client-ui/issues/1599)
+
+
+### BREAKING CHANGES
+
+* Theme css imports were switched from `?inline` to
+`?raw`. Not likely that we have any consumers yet, but this would impact
+webpack config.
+
+
+
+
+
 # [0.51.0](https://github.com/deephaven/web-client-ui/compare/v0.50.0...v0.51.0) (2023-10-24)
 
 
