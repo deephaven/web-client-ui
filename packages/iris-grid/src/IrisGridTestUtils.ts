@@ -92,7 +92,7 @@ class IrisGridTestUtils {
   makeTable({
     columns = this.makeColumns(),
     size = 1000000000,
-    sort = [],
+    sort = [] as Sort[],
     layoutHints = {} as LayoutHints,
   } = {}): Table {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
