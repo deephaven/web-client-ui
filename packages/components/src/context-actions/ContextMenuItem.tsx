@@ -6,13 +6,13 @@ import type { ContextAction } from './ContextActionUtils';
 
 interface ContextMenuItemProps {
   children?: React.ReactNode;
-  closeMenu(closeAll: boolean): void;
+  closeMenu: (closeAll: boolean) => void;
   isKeyboardSelected?: boolean;
   isMouseSelected?: boolean;
   menuItem: ContextAction;
-  onMenuItemClick(item: ContextAction, e: React.MouseEvent): void;
-  onMenuItemMouseMove(item: ContextAction, e: React.MouseEvent): void;
-  onMenuItemContextMenu(item: ContextAction, e: React.MouseEvent): void;
+  onMenuItemClick: (item: ContextAction, e: React.MouseEvent) => void;
+  onMenuItemMouseMove: (item: ContextAction, e: React.MouseEvent) => void;
+  onMenuItemContextMenu: (item: ContextAction, e: React.MouseEvent) => void;
   'data-testid'?: string;
 }
 

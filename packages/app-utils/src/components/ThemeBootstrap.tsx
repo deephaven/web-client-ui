@@ -1,7 +1,7 @@
-import { ThemeProvider } from '@deephaven/components';
 import { useContext, useMemo } from 'react';
+import { ThemeProvider } from '@deephaven/components';
+import { PluginsContext } from '@deephaven/plugin';
 import { getThemeDataFromPlugins } from '../plugins';
-import { PluginsContext } from './PluginsBootstrap';
 
 export interface ThemeBootstrapProps {
   children: React.ReactNode;

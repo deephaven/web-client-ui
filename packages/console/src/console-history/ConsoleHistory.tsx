@@ -13,8 +13,8 @@ interface ConsoleHistoryProps {
   language: string;
   openObject: (object: VariableDefinition) => void;
   disabled?: boolean;
-  supportsType(type: string): boolean;
-  iconForType(type: string): ReactElement;
+  supportsType: (type: string) => boolean;
+  iconForType: (type: string) => ReactElement;
 }
 
 function itemKey(i: number, item: ConsoleHistoryActionItem): string {

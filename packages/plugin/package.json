@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/plugin",
-  "version": "0.50.0",
+  "version": "0.51.0",
   "description": "Deephaven JS Plugin Core",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -27,6 +27,7 @@
     "@deephaven/icons": "file:../icons",
     "@deephaven/iris-grid": "file:../iris-grid",
     "@deephaven/jsapi-types": "file:../jsapi-types",
+    "@deephaven/react-hooks": "file:../react-hooks",
     "@fortawesome/fontawesome-common-types": "^6.1.1",
     "@fortawesome/react-fontawesome": "^0.2.0"
   },

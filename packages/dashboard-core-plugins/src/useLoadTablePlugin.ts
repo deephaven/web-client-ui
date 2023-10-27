@@ -3,9 +3,9 @@ import {
   type TablePluginComponent,
   isTablePlugin,
   isLegacyTablePlugin,
+  usePlugins,
 } from '@deephaven/plugin';
 import Log from '@deephaven/log';
-import usePlugins from './usePlugins';
 
 const log = Log.module('@deephaven/app-utils/useTablePlugin');
 

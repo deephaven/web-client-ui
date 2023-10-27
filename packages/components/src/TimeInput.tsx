@@ -20,11 +20,11 @@ const EXAMPLES = ['00:00:00', '12:34:56', '23:59:59'];
 type TimeInputProps = {
   allowValueWrapping?: boolean;
   className?: string;
-  onChange?(timeInSec: number): void;
-  onSelect?(selection: SelectionSegment): void;
+  onChange?: (timeInSec: number) => void;
+  onSelect?: (selection: SelectionSegment) => void;
   value?: number;
-  onFocus?(): void;
-  onBlur?(): void;
+  onFocus?: () => void;
+  onBlur?: () => void;
   'data-testid'?: string;
 };
 

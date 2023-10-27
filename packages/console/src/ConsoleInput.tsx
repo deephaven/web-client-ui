@@ -180,7 +180,6 @@ export class ConsoleInput extends PureComponent<
         top: TOP_PADDING,
         bottom: BOTTOM_PADDING,
       },
-      tabCompletion: 'on',
       value: '',
       wordWrap: 'on',
     } as const;
@@ -255,30 +254,17 @@ export class ConsoleInput extends PureComponent<
       }
 
       if (!keyEvent.altKey && !keyEvent.shiftKey && !keyEvent.metaKey) {
-        if (keyEvent.keyCode === monaco.KeyCode.Enter) {
-          if (!this.isSuggestionMenuPopulated()) {
-            keyEvent.stopPropagation();
-            keyEvent.preventDefault();
+        if (
+          keyEvent.keyCode === monaco.KeyCode.Enter &&
+          !this.isSuggestionMenuPopulated()
+        ) {
+          keyEvent.stopPropagation();
+          keyEvent.preventDefault();
 
-            const command = this.commandEditor?.getValue().trim();
-            if (command !== undefined) {
-              this.processCommand(command);
-              this.commandEditor?.setValue('');
-            }
-          }
-        } else if (keyEvent.keyCode === monaco.KeyCode.Tab) {
-          if (!this.isSuggestionMenuActive()) {
-            keyEvent.stopPropagation();
-            keyEvent.preventDefault();
-
-            this.commandEditor?.trigger(
-              'Tab key trigger suggestions',
-              'editor.action.triggerSuggest',
-              {}
-            );
-          } else if (!this.isSuggestionMenuPopulated()) {
-            keyEvent.stopPropagation();
-            keyEvent.preventDefault();
+          const command = this.commandEditor?.getValue().trim();
+          if (command !== undefined) {
+            this.processCommand(command);
+            this.commandEditor?.setValue('');
           }
         }
       }

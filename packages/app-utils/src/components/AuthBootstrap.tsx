@@ -8,7 +8,7 @@ import {
 import { LoadingOverlay } from '@deephaven/components';
 import { useClient } from '@deephaven/jsapi-bootstrap';
 import { getErrorMessage } from '@deephaven/utils';
-import { PluginsContext } from './PluginsBootstrap';
+import { PluginsContext } from '@deephaven/plugin';
 import { getAuthPluginComponent } from '../plugins';
 import LoginNotifier from './LoginNotifier';
 

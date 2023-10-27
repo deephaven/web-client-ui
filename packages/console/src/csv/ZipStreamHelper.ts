@@ -7,8 +7,8 @@ import type { JSZipObject, OnUpdateCallback, JSZipStreamHelper } from 'jszip';
  */
 interface ZipStreamHelper extends JSZipStreamHelper<string> {
   readable: boolean;
-  read(): void;
-  removeListener(): void;
+  read: () => void;
+  removeListener: () => void;
 }
 
 export default function makeZipStreamHelper(
@@ -20,7 +20,7 @@ export default function makeZipStreamHelper(
       // The type could be anything except nodebuffer from https://stuk.github.io/jszip/documentation/api_zipobject/internal_stream.html
       // We only need it as a string though
       // JSZip types don't include this method for some reason
-      internalStream(type: 'string'): JSZipStreamHelper<string>;
+      internalStream: (type: 'string') => JSZipStreamHelper<string>;
     }
   ).internalStream('string') as ZipStreamHelper;
 

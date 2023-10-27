@@ -17,6 +17,7 @@ import {
   StorageSnapshot,
   ViewportData,
   ViewportUpdateCallback,
+  IndexRange,
 } from '@deephaven/storage';
 import { CancelablePromise, OnlyOneProp, PromiseUtils } from '@deephaven/utils';
 
@@ -426,9 +427,7 @@ export class PouchStorageTable<T extends StorageItem = StorageItem>
     return item;
   }
 
-  async getSnapshot(
-    sortedRanges: [number, number][]
-  ): Promise<StorageSnapshot<T>> {
+  async getSnapshot(sortedRanges: IndexRange[]): Promise<StorageSnapshot<T>> {
     const itemMap = new Map();
 
     const sort: PouchDBSort = [{ id: this.currentReverse ? 'desc' : 'asc' }];

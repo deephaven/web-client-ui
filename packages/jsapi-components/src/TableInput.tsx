@@ -37,7 +37,7 @@ interface TableInputProps {
   defaultValue: Value[];
   isInvalid?: boolean;
   table: Promise<Table>;
-  onChange(items: Value[]): void;
+  onChange: (items: Value[]) => void;
   onBlur?: () => void;
 }
 

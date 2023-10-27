@@ -54,10 +54,10 @@ interface FilterSetManagerProps {
   isValueShown: boolean;
   selectedId?: string;
   filterSets: FilterSet[];
-  getFilterState(): FilterSetPanel[];
-  onChange(args: ChangeHandlerArgs): void;
-  onApply(filterSet: FilterSet): void;
-  onUpdateSets(filterSets: FilterSet[], editId?: string): void;
+  getFilterState: () => FilterSetPanel[];
+  onChange: (args: ChangeHandlerArgs) => void;
+  onApply: (filterSet: FilterSet) => void;
+  onUpdateSets: (filterSets: FilterSet[], editId?: string) => void;
 }
 
 interface FilterSetManagerState {

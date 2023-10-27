@@ -5,6 +5,7 @@ import {
   DataBarOptions,
   GridModel,
   GridRange,
+  GridThemeType,
   ModelIndex,
   MoveOperation,
   VisibleIndex,
@@ -31,7 +32,6 @@ import {
   PendingDataErrorMap,
 } from './CommonTypes';
 import ColumnHeaderGroup from './ColumnHeaderGroup';
-import { IrisGridThemeType } from './IrisGridTheme';
 
 type IrisGridModelEventNames =
   (typeof IrisGridModel.EVENT)[keyof typeof IrisGridModel.EVENT];
@@ -542,7 +542,7 @@ abstract class IrisGridModel<
   dataBarOptionsForCell(
     column: number,
     row: number,
-    theme: IrisGridThemeType
+    theme: GridThemeType
   ): DataBarOptions {
     throw new Error('Method not implemented.');
   }

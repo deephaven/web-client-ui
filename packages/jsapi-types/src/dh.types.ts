@@ -167,56 +167,59 @@ export interface IdeSessionStatic {
 }
 
 export interface WorkerConnection {
-  subscribeToFieldUpdates(
+  subscribeToFieldUpdates: (
     param: (changes: VariableChanges) => void
-  ): () => void;
+  ) => () => void;
 }
 
 export interface IdeSession extends Evented {
-  subscribeToFieldUpdates(
+  subscribeToFieldUpdates: (
     param: (changes: VariableChanges) => void
-  ): () => void;
-  getTable(name: string): Promise<Table>;
-  getFigure(name: string): Promise<Figure>;
-  getTreeTable(name: string): Promise<TreeTable>;
-  getObject(
+  ) => () => void;
+  getTable: (name: string) => Promise<Table>;
+  getFigure: (name: string) => Promise<Figure>;
+  getTreeTable: (name: string) => Promise<TreeTable>;
+  getObject: ((
     definition: VariableDefinition<typeof VariableType.TABLE>
-  ): Promise<Table>;
-  getObject(
-    definition: VariableDefinition<typeof VariableType.FIGURE>
-  ): Promise<Figure>;
-  getObject(
-    definition: VariableDefinition<typeof VariableType.TREETABLE>
-  ): Promise<TreeTable>;
-  getObject(
-    definition: VariableDefinition<typeof VariableType.HIERARCHICALTABLE>
-  ): Promise<TreeTable>;
-  getObject(definition: VariableDefinition): Promise<unknown>;
-  onLogMessage(logHandler: (logItem: LogItem) => void): () => void;
-  runCode(code: string): Promise<CommandResult>;
-  bindTableToVariable(table: Table, variableName: string): Promise<void>;
-  mergeTables(tables: Table[]): Promise<Table>;
-  newTable(
+  ) => Promise<Table>) &
+    ((
+      definition: VariableDefinition<typeof VariableType.FIGURE>
+    ) => Promise<Figure>) &
+    ((
+      definition: VariableDefinition<typeof VariableType.TREETABLE>
+    ) => Promise<TreeTable>) &
+    ((
+      definition: VariableDefinition<typeof VariableType.HIERARCHICALTABLE>
+    ) => Promise<TreeTable>) &
+    ((definition: VariableDefinition) => Promise<unknown>);
+  onLogMessage: (logHandler: (logItem: LogItem) => void) => () => void;
+  runCode: (code: string) => Promise<CommandResult>;
+  bindTableToVariable: (table: Table, variableName: string) => Promise<void>;
+  mergeTables: (tables: Table[]) => Promise<Table>;
+  newTable: (
     columnNames: string[],
     columnTypes: string[],
     data: string[][],
     userTimeZone: string
-  ): Promise<Table>;
-  getCompletionItems(params: unknown): Promise<CompletionItem[]>;
-  getSignatureHelp?(params: unknown): Promise<SignatureInfo[]>;
-  getHover?(params: unknown): Promise<Hover>;
-  closeDocument(params: unknown): void;
-  openDocument(params: unknown): void;
-  changeDocument(params: unknown): void;
-  close(): void;
+  ) => Promise<Table>;
+  getCompletionItems: (params: unknown) => Promise<CompletionItem[]>;
+  getSignatureHelp?: (params: unknown) => Promise<SignatureInfo[]>;
+  getHover?: (params: unknown) => Promise<Hover>;
+  closeDocument: (params: unknown) => void;
+  openDocument: (params: unknown) => void;
+  changeDocument: (params: unknown) => void;
+  close: () => void;
 }
 
 export interface Evented {
-  addEventListener(eventType: string, listener: EventListener): RemoverFn;
-  nextEvent(eventType: string, timeoutInMillis?: number): Promise<CustomEvent>;
+  addEventListener: (eventType: string, listener: EventListener) => RemoverFn;
+  nextEvent: (
+    eventType: string,
+    timeoutInMillis?: number
+  ) => Promise<CustomEvent>;
 
-  hasListeners(eventType: string): boolean;
-  removeEventListener(eventType: string, listener: EventListener): boolean;
+  hasListeners: (eventType: string) => boolean;
+  removeEventListener: (eventType: string, listener: EventListener) => boolean;
 }
 
 export interface Plot {
@@ -324,7 +327,7 @@ export interface Figure extends Evented {
   readonly EVENT_SERIES_ADDED: string;
 
   /** Given a client-created figure descriptor, generate a figure that can be subscribed to */
-  create(figure: Partial<FigureDescriptor>): Promise<Figure>;
+  create: (figure: Partial<FigureDescriptor>) => Promise<Figure>;
 
   readonly title: string;
   readonly titleFont: string;
@@ -340,14 +343,14 @@ export interface Figure extends Evented {
    * Subscribes to all series in this figure.
    * @param forceDisableDownsample optional, can be specified to force downsampling to be disabled
    */
-  subscribe(forceDisableDownsample?: DownsampleOptions): void;
+  subscribe: (forceDisableDownsample?: DownsampleOptions) => void;
 
   /**
    * Unsubscribes to all series in this figure.
    */
-  unsubscribe(): void;
+  unsubscribe: () => void;
 
-  close(): void;
+  close: () => void;
 }
 
 export type WidgetExportedObject = {
@@ -363,9 +366,9 @@ export interface Widget {
     type: string,
     listener: (event: unknown) => void
   ) => () => void;
-  getDataAsBase64(): string;
-  getDataAsString(): string;
-  getDataAsU8(): Uint8Array;
+  getDataAsBase64: () => string;
+  getDataAsString: () => string;
+  getDataAsU8: () => Uint8Array;
   sendMessage: (message: string, references?: never[]) => void;
   exportedObjects: WidgetExportedObject[];
 }
@@ -389,11 +392,11 @@ export interface FigureDataUpdatedEvent {
    * @param sourceType
    * @param mapFn
    */
-  getArray<I, O>(
+  getArray: <I, O>(
     series: Series,
     sourceType: SourceType,
     mapFn?: MapFn<I, O>
-  ): O[];
+  ) => O[];
 }
 
 export interface MapFn<I, O> {
@@ -507,8 +510,8 @@ export interface Series {
   readonly multiSeries: MultiSeries;
   readonly oneClick: OneClick;
 
-  subscribe(downsampleOptions?: DownsampleOptions): void;
-  unsubscribe(): void;
+  subscribe: (downsampleOptions?: DownsampleOptions) => void;
+  unsubscribe: () => void;
 }
 
 export interface MultiSeries {
@@ -569,7 +572,7 @@ export interface Axis {
    * be returned, to ensure that lines drawn off the screen.
    * @param max the optional max value visible on this axis. If min is specified, max is also expected.
    */
-  range(pixelCount?: number, min?: any, max?: any): void;
+  range: (pixelCount?: number, min?: any, max?: any) => void;
 }
 
 export interface SeriesDataSource {
@@ -582,8 +585,8 @@ export interface OneClick {
   readonly columns: { name: string; type: string }[];
   readonly requireAllFiltersToDisplay: boolean;
 
-  setValueForColumn(columnName: string, value: any): void;
-  getValueForColumn(columnName: string): any;
+  setValueForColumn: (columnName: string, value: any) => void;
+  getValueForColumn: (columnName: string) => any;
 }
 
 export interface Column {
@@ -595,11 +598,11 @@ export interface Column {
   readonly isPartitionColumn: boolean;
   readonly isSortable?: boolean;
 
-  filter(): FilterValue;
-  sort(): Sort;
+  filter: () => FilterValue;
+  sort: () => Sort;
 
-  formatColor(expression: string): CustomColumn;
-  formatRowColor(expression: string): CustomColumn;
+  formatColor: (expression: string) => CustomColumn;
+  formatRowColor: (expression: string) => CustomColumn;
 }
 
 export interface CustomColumn {
@@ -609,55 +612,55 @@ export interface CustomColumn {
 }
 
 export interface FilterValueStatic {
-  ofString(input: unknown): FilterValue;
-  ofNumber(input: unknown): FilterValue;
-  ofBoolean(input: unknown): FilterValue;
+  ofString: (input: unknown) => FilterValue;
+  ofNumber: (input: unknown) => FilterValue;
+  ofBoolean: (input: unknown) => FilterValue;
 }
 export interface FilterValue {
-  eq(value: FilterValue): FilterCondition;
-  eqIgnoreCase(value: FilterValue): FilterCondition;
-  notEq(value: FilterValue): FilterCondition;
-  notEqIgnoreCase(value: FilterValue): FilterCondition;
-  greaterThan(value: FilterValue): FilterCondition;
-  lessThan(value: FilterValue): FilterCondition;
-  greaterThanOrEqualTo(value: FilterValue): FilterCondition;
-  lessThanOrEqualTo(value: FilterValue): FilterCondition;
-  in(values: FilterValue[]): FilterCondition;
-  inIgnoreCase(values: FilterValue[]): FilterCondition;
-  notIn(values: FilterValue[]): FilterCondition;
-  notInIgnoreCase(values: FilterValue[]): FilterCondition;
-  contains(value: FilterValue): FilterCondition;
-  containsIgnoreCase(value: FilterValue): FilterCondition;
-  isFalse(): FilterCondition;
-  isTrue(): FilterCondition;
-  isNull(): FilterCondition;
-  invoke(method: string, ...args: FilterValue[]): FilterCondition;
-  matches(value: FilterValue): FilterCondition;
-  matchesIgnoreCase(value: FilterValue): FilterCondition;
+  eq: (value: FilterValue) => FilterCondition;
+  eqIgnoreCase: (value: FilterValue) => FilterCondition;
+  notEq: (value: FilterValue) => FilterCondition;
+  notEqIgnoreCase: (value: FilterValue) => FilterCondition;
+  greaterThan: (value: FilterValue) => FilterCondition;
+  lessThan: (value: FilterValue) => FilterCondition;
+  greaterThanOrEqualTo: (value: FilterValue) => FilterCondition;
+  lessThanOrEqualTo: (value: FilterValue) => FilterCondition;
+  in: (values: FilterValue[]) => FilterCondition;
+  inIgnoreCase: (values: FilterValue[]) => FilterCondition;
+  notIn: (values: FilterValue[]) => FilterCondition;
+  notInIgnoreCase: (values: FilterValue[]) => FilterCondition;
+  contains: (value: FilterValue) => FilterCondition;
+  containsIgnoreCase: (value: FilterValue) => FilterCondition;
+  isFalse: () => FilterCondition;
+  isTrue: () => FilterCondition;
+  isNull: () => FilterCondition;
+  invoke: (method: string, ...args: FilterValue[]) => FilterCondition;
+  matches: (value: FilterValue) => FilterCondition;
+  matchesIgnoreCase: (value: FilterValue) => FilterCondition;
 }
 
 export interface FilterConditionStatic {
-  invoke(method: string, ...args: FilterValue[]): FilterCondition;
-  search(value: FilterValue, columns?: FilterValue[]): FilterCondition;
+  invoke: (method: string, ...args: FilterValue[]) => FilterCondition;
+  search: (value: FilterValue, columns?: FilterValue[]) => FilterCondition;
 }
 export interface FilterCondition {
-  not(): FilterCondition;
-  and(first: FilterCondition, ...rest: FilterCondition[]): FilterCondition;
-  or(first: FilterCondition, ...rest: FilterCondition[]): FilterCondition;
+  not: () => FilterCondition;
+  and: (first: FilterCondition, ...rest: FilterCondition[]) => FilterCondition;
+  or: (first: FilterCondition, ...rest: FilterCondition[]) => FilterCondition;
 
-  toString(): string;
+  toString: () => string;
 }
 export interface Sort {
-  reverse(): Sort;
+  reverse: () => Sort;
 
   readonly column: Column;
   readonly direction: 'ASC' | 'DESC' | 'REVERSE' | null;
 
   readonly isAbs: boolean;
 
-  asc(): Sort;
-  desc(): Sort;
-  abs(): Sort;
+  asc: () => Sort;
+  desc: () => Sort;
+  abs: () => Sort;
 }
 
 export interface InputTable {
@@ -665,18 +668,18 @@ export interface InputTable {
   keyColumns: Column[];
   values: string[];
   valueColumns: Column[];
-  addRow(
+  addRow: (
     row: Record<string, unknown>,
     userTimeZone?: string
-  ): Promise<InputTable>;
-  addRows(
+  ) => Promise<InputTable>;
+  addRows: (
     rows: Record<string, unknown>[],
     userTimeZone?: string
-  ): Promise<InputTable>;
-  addTable(table: Table): Promise<InputTable>;
-  addTables(tables: Table[]): Promise<InputTable>;
-  deleteTable(table: Table): Promise<InputTable>;
-  deleteTables(tables: Table[]): Promise<InputTable>;
+  ) => Promise<InputTable>;
+  addTable: (table: Table) => Promise<InputTable>;
+  addTables: (tables: Table[]) => Promise<InputTable>;
+  deleteTable: (table: Table) => Promise<InputTable>;
+  deleteTables: (tables: Table[]) => Promise<InputTable>;
   table: Table;
 }
 export interface ColumnGroup {
@@ -714,7 +717,7 @@ export interface TableStatic {
   readonly EVENT_RECONNECT: string;
   readonly EVENT_RECONNECTFAILED: string;
   readonly SIZE_UNCOALESCED: number;
-  reverse(): Sort;
+  reverse: () => Sort;
 }
 
 export interface ClientStatic {
@@ -737,41 +740,41 @@ export interface Table extends TableTemplate<Table>, TableStatic {
   readonly isClosed: boolean;
   readonly pluginName: string;
 
-  applyCustomColumns(columns: (CustomColumn | string)[]): string[];
+  applyCustomColumns: (columns: (CustomColumn | string)[]) => string[];
 
-  getViewportData(): Promise<TableData>;
+  getViewportData: () => Promise<TableData>;
 
-  subscribe(columns: Column[]): TableSubscription;
+  subscribe: (columns: Column[]) => TableSubscription;
 
-  selectDistinct(columns: Column[]): Promise<Table>;
-  copy(): Promise<Table>;
+  selectDistinct: (columns: Column[]) => Promise<Table>;
+  copy: () => Promise<Table>;
 
-  rollup(config: RollupConfig): Promise<TreeTable>;
-  treeTable(config: TreeTableConfig): Promise<TreeTable>;
+  rollup: (config: RollupConfig) => Promise<TreeTable>;
+  treeTable: (config: TreeTableConfig) => Promise<TreeTable>;
 
-  inputTable(): Promise<InputTable>;
+  inputTable: () => Promise<InputTable>;
 
-  freeze(): Promise<Table>;
+  freeze: () => Promise<Table>;
 
-  snapshot(
+  snapshot: (
     rightHandSide: Table,
     doInitialSnapshot?: boolean,
     stampColumns?: string[]
-  ): Promise<Table>;
+  ) => Promise<Table>;
 
-  getColumnStatistics(column: Column): Promise<ColumnStatistics>;
+  getColumnStatistics: (column: Column) => Promise<ColumnStatistics>;
 
-  join(
+  join: (
     joinType: string,
     rightTable: Table,
     columnsToMatch: string[],
     columnsToAdd?: string[]
-  ): Promise<Table>;
-  byExternal(keys: string[], dropKeys?: boolean): Promise<TableMap>;
+  ) => Promise<Table>;
+  byExternal: (keys: string[], dropKeys?: boolean) => Promise<TableMap>;
 
-  fireViewportUpdate(): void;
+  fireViewportUpdate: () => void;
 
-  seekRow(
+  seekRow: (
     startRow: number,
     column: Column,
     valueType: ValueTypeUnion,
@@ -779,14 +782,14 @@ export interface Table extends TableTemplate<Table>, TableStatic {
     insensitive?: boolean,
     contains?: boolean,
     isBackwards?: boolean
-  ): Promise<number>;
+  ) => Promise<number>;
 }
 
 export interface TableViewportSubscription extends Evented {
-  setViewport(firstRow: number, lastRow: number, columns?: Column[]): void;
-  getViewportData(): Promise<TableData>;
-  snapshot(rows: RangeSet, columns: readonly Column[]): Promise<TableData>;
-  close(): void;
+  setViewport: (firstRow: number, lastRow: number, columns?: Column[]) => void;
+  getViewportData: () => Promise<TableData>;
+  snapshot: (rows: RangeSet, columns: readonly Column[]) => Promise<TableData>;
+  close: () => void;
 }
 
 export interface ViewportData {
@@ -799,32 +802,32 @@ export interface TableSubscription extends Evented {
   readonly EVENT_UPDATED: string;
 
   readonly columns: Column[];
-  close(): void;
+  close: () => void;
 }
 
 export interface RangeSet {
-  ofRange(first: number, last: number): RangeSet;
-  ofItems(rows: number[]): RangeSet;
-  ofRanges(ranges: RangeSet[]): RangeSet;
+  ofRange: (first: number, last: number) => RangeSet;
+  ofItems: (rows: number[]) => RangeSet;
+  ofRanges: (ranges: RangeSet[]) => RangeSet;
 
   readonly size: number;
-  iterator(): JsIterator<LongWrapper>;
+  iterator: () => JsIterator<LongWrapper>;
 }
 
 export interface JsIterator<T> {
-  hasNext(): boolean;
-  next(): IteratorResult<T>;
+  hasNext: () => boolean;
+  next: () => IteratorResult<T>;
 }
 
 export interface LongWrapper {
-  asNumber(): number;
-  valueOf(): string;
-  toString(): string;
-  ofString(str: string): LongWrapper;
+  asNumber: () => number;
+  valueOf: () => string;
+  toString: () => string;
+  ofString: (str: string) => LongWrapper;
 }
 export interface DateWrapper extends LongWrapper {
-  ofJsDate(date: Date): DateWrapper;
-  asDate(): Date;
+  ofJsDate: (date: Date) => DateWrapper;
+  asDate: () => Date;
 }
 
 export interface TimeZone {
@@ -837,36 +840,35 @@ export interface TimeZone {
 }
 
 export interface i18nTimeZone {
-  getTimeZone(tzCode: string): TimeZone;
+  getTimeZone: (tzCode: string) => TimeZone;
 }
 
 export interface DateTimeFormat {
-  format(
+  format: (
     pattern: string,
     date: DateWrapper | Date | number,
     timeZone?: TimeZone
-  ): string;
-  parse(pattern: string, text: string, timeZone?: TimeZone): DateWrapper;
-  parseAsDate(pattern: string, text: string): Date;
+  ) => string;
+  parse: (pattern: string, text: string, timeZone?: TimeZone) => DateWrapper;
+  parseAsDate: (pattern: string, text: string) => Date;
 }
 
 export interface NumberFormat {
-  format(pattern: string, number: number): string;
-  parse(pattern: string, text: string): number;
+  format: (pattern: string, number: number) => string;
+  parse: (pattern: string, text: string) => number;
 }
 
 export interface TableData {
   readonly columns: Column[];
   readonly rows: Row[];
 
-  get(index: number): Row;
-  get(index: LongWrapper): Row;
+  get: ((index: number) => Row) & ((index: LongWrapper) => Row);
 
-  getData(index: number, column: Column): any;
-  getData(index: LongWrapper, column: Column): any;
+  getData: ((index: number, column: Column) => any) &
+    ((index: LongWrapper, column: Column) => any);
 
-  getFormat(index: number, column: Column): Format;
-  getFormat(index: LongWrapper, column: Column): Format;
+  getFormat: ((index: number, column: Column) => Format) &
+    ((index: LongWrapper, column: Column) => Format);
 }
 
 export interface UpdateEventData extends TableData {
@@ -879,9 +881,9 @@ export interface UpdateEventData extends TableData {
 export interface Row {
   readonly index: LongWrapper;
 
-  get(column: Column): any;
+  get: (column: Column) => any;
 
-  getFormat(column: Column): Format;
+  getFormat: (column: Column) => Format;
 }
 
 export interface Format {
@@ -909,7 +911,7 @@ export interface ColumnStatistics {
   readonly statisticsMap: Map<string, number>;
   readonly uniqueValues: Map<string, number>;
 
-  getType(name: string): string;
+  getType: (name: string) => string;
 }
 
 export interface TreeTableStatic {
@@ -926,54 +928,47 @@ export interface TableTemplate<T = Table> extends Evented {
   readonly filter: FilterCondition[];
   readonly totalsTableConfig: TotalsTableConfig;
 
-  findColumn(name: string): Column;
-  findColumns(names: string[]): Column[];
+  findColumn: (name: string) => Column;
+  findColumns: (names: string[]) => Column[];
 
-  applySort(sorts: Sort[]): Sort[];
-  applyFilter(filters: FilterCondition[]): FilterCondition[];
-  selectDistinct(columns: Column[]): Promise<Table>;
+  applySort: (sorts: Sort[]) => Sort[];
+  applyFilter: (filters: FilterCondition[]) => FilterCondition[];
+  selectDistinct: (columns: Column[]) => Promise<Table>;
 
-  getTotalsTable(config?: TotalsTableConfig): Promise<TotalsTable>;
-  getGrandTotalsTable(config?: TotalsTableConfig): Promise<TotalsTable>;
+  getTotalsTable: (config?: TotalsTableConfig) => Promise<TotalsTable>;
+  getGrandTotalsTable: (config?: TotalsTableConfig) => Promise<TotalsTable>;
 
-  setViewport(
+  setViewport: (
     firstRow: number,
     lastRow: number,
     columns?: Column[],
     updateIntervalMs?: number
-  ): TableViewportSubscription;
+  ) => TableViewportSubscription;
 
-  copy(): Promise<T>;
-  close(): void;
+  copy: () => Promise<T>;
+  close: () => void;
 }
 
 export interface TreeTable extends TableTemplate<TreeTable>, TreeTableStatic {
   readonly isIncludeConstituents: boolean;
   readonly groupedColumns: Column[];
 
-  expand(row: number): void;
-  expand(row: TreeRow): void;
-  collapse(row: number): void;
-  collapse(row: TreeRow): void;
-  setExpanded(
+  expand: ((row: number) => void) & ((row: TreeRow) => void);
+  collapse: ((row: number) => void) & ((row: TreeRow) => void);
+  setExpanded: ((
     row: number,
     isExpanded: boolean,
     expandDescendants?: boolean
-  ): void;
-  setExpanded(
-    row: TreeRow,
-    isExpanded: boolean,
-    expandDescendants?: boolean
-  ): void;
-  expandAll?(): void;
-  collapseAll?(): void;
-  isExpanded(row: number): boolean;
-  isExpanded(row: TreeRow): boolean;
+  ) => void) &
+    ((row: TreeRow, isExpanded: boolean, expandDescendants?: boolean) => void);
+  expandAll?: () => void;
+  collapseAll?: () => void;
+  isExpanded: ((row: number) => boolean) & ((row: TreeRow) => boolean);
 
-  getViewportData(): Promise<TreeTableData>;
+  getViewportData: () => Promise<TreeTableData>;
 
-  saveExpandedState(): string;
-  restoreExpandedState(nodesToRestore: string): void;
+  saveExpandedState: () => string;
+  restoreExpandedState: (nodesToRestore: string) => void;
 }
 export interface TreeTableData extends TableData {
   readonly rows: TreeRow[];
@@ -1012,26 +1007,26 @@ export interface TotalsTable extends Evented {
 
   readonly totalsTableConfig: TotalsTableConfig;
 
-  applySort(sorts: Sort[]): Sort[];
-  applyFilter(filters: FilterCondition[]): FilterCondition[];
-  applyCustomColumns(columns: string[]): string[];
+  applySort: (sorts: Sort[]) => Sort[];
+  applyFilter: (filters: FilterCondition[]) => FilterCondition[];
+  applyCustomColumns: (columns: string[]) => string[];
 
-  setViewport(
+  setViewport: (
     firstRow: number,
     lastRow: number,
     columns?: Column[],
     updateIntervalMs?: number
-  ): void;
-  getViewportData(): Promise<TableData>;
+  ) => void;
+  getViewportData: () => Promise<TableData>;
 
-  close(): void;
+  close: () => void;
 }
 
 export interface TableMap extends Evented {
   readonly size: number;
-  close(): void;
-  getKeys(): Promise<Set<object>>;
-  getTable(key: object): Promise<Table>;
+  close: () => void;
+  getKeys: () => Promise<Set<object>>;
+  getTable: (key: object) => Promise<Table>;
 }
 
 export interface WorkerHeapInfo {
@@ -1041,9 +1036,9 @@ export interface WorkerHeapInfo {
 }
 
 export interface QueryConnectable extends Evented {
-  getWorkerHeapInfo(): Promise<WorkerHeapInfo>;
-  getConsoleTypes(): Promise<string[]>;
-  startSession(type: string): Promise<IdeSession>;
+  getWorkerHeapInfo: () => Promise<WorkerHeapInfo>;
+  getConsoleTypes: () => Promise<string[]>;
+  startSession: (type: string) => Promise<IdeSession>;
 }
 
 export interface IdeConnectionOptions {
@@ -1064,25 +1059,25 @@ export interface IdeConnectionConstructor {
 export interface IdeConnection
   extends QueryConnectable,
     IdeConnectionConstructor {
-  close(): void;
-  running(): Promise<IdeConnection>;
-  disconnected(): void;
-  getObject(
+  close: () => void;
+  running: () => Promise<IdeConnection>;
+  disconnected: () => void;
+  getObject: ((
     definition: VariableDefinition<typeof VariableType.TABLE>
-  ): Promise<Table>;
-  getObject(
-    definition: VariableDefinition<typeof VariableType.FIGURE>
-  ): Promise<Figure>;
-  getObject(
-    definition: VariableDefinition<typeof VariableType.TREETABLE>
-  ): Promise<TreeTable>;
-  getObject(
-    definition: VariableDefinition<typeof VariableType.HIERARCHICALTABLE>
-  ): Promise<TreeTable>;
-  getObject(definition: VariableDefinition): Promise<unknown>;
-  subscribeToFieldUpdates(
+  ) => Promise<Table>) &
+    ((
+      definition: VariableDefinition<typeof VariableType.FIGURE>
+    ) => Promise<Figure>) &
+    ((
+      definition: VariableDefinition<typeof VariableType.TREETABLE>
+    ) => Promise<TreeTable>) &
+    ((
+      definition: VariableDefinition<typeof VariableType.HIERARCHICALTABLE>
+    ) => Promise<TreeTable>) &
+    ((definition: VariableDefinition) => Promise<unknown>);
+  subscribeToFieldUpdates: (
     param: (changes: VariableChanges) => void
-  ): () => void;
+  ) => () => void;
 }
 
 export interface ItemDetails {
@@ -1095,14 +1090,14 @@ export interface ItemDetails {
 }
 
 export interface FileContentsStatic {
-  blob(blob: Blob): FileContents;
-  text(...text: string[]): FileContents;
-  arrayBuffers(...buffers: ArrayBuffer[]): FileContents;
+  blob: (blob: Blob) => FileContents;
+  text: (...text: string[]) => FileContents;
+  arrayBuffers: (...buffers: ArrayBuffer[]) => FileContents;
 }
 
 export interface FileContents {
-  text(): Promise<string>;
-  arrayBuffer(): Promise<ArrayBuffer>;
+  text: () => Promise<string>;
+  arrayBuffer: () => Promise<ArrayBuffer>;
   etag?: string;
 }
 
@@ -1112,16 +1107,16 @@ export interface LoginOptions {
 }
 
 export interface StorageService {
-  listItems(path: string, glob?: string): Promise<ItemDetails[]>;
-  loadFile(path: string, etag?: string): Promise<FileContents>;
-  deleteItem(path: string): Promise<void>;
-  saveFile(
+  listItems: (path: string, glob?: string) => Promise<ItemDetails[]>;
+  loadFile: (path: string, etag?: string) => Promise<FileContents>;
+  deleteItem: (path: string) => Promise<void>;
+  saveFile: (
     path: string,
     contents: FileContents,
     allowOverwrite?: boolean
-  ): Promise<void>;
-  moveItem(path: string, newPath: string, newFile?: boolean): Promise<void>;
-  createDirectory(path: string): Promise<void>;
+  ) => Promise<void>;
+  moveItem: (path: string, newPath: string, newFile?: boolean) => Promise<void>;
+  createDirectory: (path: string) => Promise<void>;
 }
 
 export interface ConnectOptions {
@@ -1139,12 +1134,12 @@ export interface CoreClientContructor extends Evented {
 }
 
 export interface CoreClient extends CoreClientContructor {
-  login(options: LoginOptions): Promise<void>;
-  getAsIdeConnection(): Promise<IdeConnection>;
-  getStorageService(): StorageService;
-  getServerConfigValues(): Promise<[string, string][]>;
-  getAuthConfigValues(): Promise<[string, string][]>;
-  disconnect(): void;
+  login: (options: LoginOptions) => Promise<void>;
+  getAsIdeConnection: () => Promise<IdeConnection>;
+  getStorageService: () => StorageService;
+  getServerConfigValues: () => Promise<[string, string][]>;
+  getAuthConfigValues: () => Promise<[string, string][]>;
+  disconnect: () => void;
 }
 
 /**

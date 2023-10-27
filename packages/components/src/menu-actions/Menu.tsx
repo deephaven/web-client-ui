@@ -12,9 +12,9 @@ export type MenuOptions = {
 
 type MenuProps = {
   actions: (() => ContextAction[]) | ContextAction | ContextAction[];
-  closeMenu(closeAll: boolean): void;
-  onMenuClosed(menu: Menu): void;
-  onMenuOpened(menu: Menu): void;
+  closeMenu: (closeAll: boolean) => void;
+  onMenuClosed: (menu: Menu) => void;
+  onMenuOpened: (menu: Menu) => void;
   options: MenuOptions;
   menuStyle: React.CSSProperties;
   'data-testid'?: string;
@@ -227,7 +227,7 @@ class Menu extends PureComponent<MenuProps, MenuState> {
       (menuItem.disabled === undefined || !menuItem.disabled) &&
       menuItem.action != null
     ) {
-      menuItem.action();
+      menuItem.action(e.nativeEvent);
       this.closeMenu(true);
     }
   }

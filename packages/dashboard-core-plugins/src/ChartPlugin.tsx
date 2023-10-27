@@ -6,7 +6,7 @@ import {
   useDashboardPanel,
 } from '@deephaven/dashboard';
 import { useApi } from '@deephaven/jsapi-bootstrap';
-import { useConnection } from '@deephaven/app-utils';
+import { useConnection } from '@deephaven/jsapi-components';
 import { ChartModel, ChartModelFactory } from '@deephaven/chart';
 import type { dh as DhType, IdeConnection } from '@deephaven/jsapi-types';
 import { IrisGridUtils } from '@deephaven/iris-grid';
