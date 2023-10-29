@@ -3,6 +3,50 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.52.0](https://github.com/deephaven/web-client-ui/compare/v0.51.0...v0.52.0) (2023-10-27)
+
+**Note:** Version bump only for package @deephaven/redux
+
+
+
+
+
+# [0.51.0](https://github.com/deephaven/web-client-ui/compare/v0.50.0...v0.51.0) (2023-10-24)
+
+
+### Bug Fixes
+
+* Remove @deephaven/app-utils from @deephaven/dashboard-core-plugins dependency list ([#1596](https://github.com/deephaven/web-client-ui/issues/1596)) ([7b59763](https://github.com/deephaven/web-client-ui/commit/7b59763d528a95eaca32e4c9607c50d447215798)), closes [#1593](https://github.com/deephaven/web-client-ui/issues/1593)
+
+
+### Features
+
+* Widget plugins ([#1564](https://github.com/deephaven/web-client-ui/issues/1564)) ([94cc82c](https://github.com/deephaven/web-client-ui/commit/94cc82c379103326669d477ae96ec253041f2967)), closes [#1455](https://github.com/deephaven/web-client-ui/issues/1455) [#1167](https://github.com/deephaven/web-client-ui/issues/1167)
+
+
+### BREAKING CHANGES
+
+* - `usePlugins` and `PluginsContext` were moved from
+`@deephaven/app-utils` to `@deephaven/plugin`.
+- `useLoadTablePlugin` was moved from `@deephaven/app-utils` to
+`@deephaven/dashboard-core-plugins`.
+- `useConnection` and `ConnectionContext` were moved from
+`@deephaven/app-utils` to `@deephaven/jsapi-components`.
+- `DeephavenPluginModuleMap` was removed from `@deephaven/redux`. Use
+`PluginModuleMap` from `@deephaven/plugin` instead.
+
+
+
+
+
+# [0.50.0](https://github.com/deephaven/web-client-ui/compare/v0.49.1...v0.50.0) (2023-10-13)
+
+**Note:** Version bump only for package @deephaven/redux
+
+
+
+
+
 ## [0.49.1](https://github.com/deephaven/web-client-ui/compare/v0.49.0...v0.49.1) (2023-09-27)
 
 **Note:** Version bump only for package @deephaven/redux

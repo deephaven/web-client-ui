@@ -54,7 +54,7 @@ interface CommandHistoryState {
   itemCount: number;
   items: CommandHistoryStorageItem[];
   offset: number;
-  selectedRanges: Range[];
+  selectedRanges: readonly Range[];
   searchText: string;
   debouncedSearchText: string;
 }
@@ -320,7 +320,7 @@ class CommandHistory extends Component<
     sendToConsole(name);
   }
 
-  handleSelectionChange(selectedRanges: Range[]): void {
+  handleSelectionChange(selectedRanges: readonly Range[]): void {
     this.setState({ selectedRanges });
     this.updateActions();
   }

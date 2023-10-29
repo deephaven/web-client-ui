@@ -3,6 +3,38 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.52.0](https://github.com/deephaven/web-client-ui/compare/v0.51.0...v0.52.0) (2023-10-27)
+
+**Note:** Version bump only for package @deephaven/auth-plugins
+
+
+
+
+
+# [0.51.0](https://github.com/deephaven/web-client-ui/compare/v0.50.0...v0.51.0) (2023-10-24)
+
+**Note:** Version bump only for package @deephaven/auth-plugins
+
+
+
+
+
+# [0.50.0](https://github.com/deephaven/web-client-ui/compare/v0.49.1...v0.50.0) (2023-10-13)
+
+
+* fix!: CSS based loading spinner (#1532) ([f06fbb0](https://github.com/deephaven/web-client-ui/commit/f06fbb01e27eaaeccab6031d8ff010ffee303d99)), closes [#1532](https://github.com/deephaven/web-client-ui/issues/1532) [#1531](https://github.com/deephaven/web-client-ui/issues/1531)
+
+
+### BREAKING CHANGES
+
+* Inline LoadingSpinner instances will need to be
+decorated with `className="loading-spinner-vertical-align"` for vertical
+alignment to work as before
+
+
+
+
+
 ## [0.49.1](https://github.com/deephaven/web-client-ui/compare/v0.49.0...v0.49.1) (2023-09-27)
 
 **Note:** Version bump only for package @deephaven/auth-plugins

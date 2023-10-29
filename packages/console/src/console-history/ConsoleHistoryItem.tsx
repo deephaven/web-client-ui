@@ -6,7 +6,7 @@ import { Button } from '@deephaven/components';
 import Log from '@deephaven/log';
 import type { VariableDefinition } from '@deephaven/jsapi-types';
 import classNames from 'classnames';
-import { Code, ObjectIcon } from '../common';
+import { Code } from '../common';
 import ConsoleHistoryItemResult from './ConsoleHistoryItemResult';
 import ConsoleHistoryResultInProgress from './ConsoleHistoryResultInProgress';
 import ConsoleHistoryResultErrorMessage from './ConsoleHistoryResultErrorMessage';
@@ -20,6 +20,10 @@ interface ConsoleHistoryItemProps {
   language: string;
   openObject: (object: VariableDefinition) => void;
   disabled?: boolean;
+  // TODO: #1573 Remove this eslint disable
+  // eslint-disable-next-line react/no-unused-prop-types
+  supportsType: (type: string) => boolean;
+  iconForType: (type: string) => ReactElement;
 }
 
 class ConsoleHistoryItem extends PureComponent<
@@ -53,7 +57,7 @@ class ConsoleHistoryItem extends PureComponent<
   }
 
   render(): ReactElement {
-    const { disabled, item, language } = this.props;
+    const { disabled, item, language, iconForType } = this.props;
     const { disabledObjects, result } = item;
     const hasCommand = item.command != null && item.command !== '';
 
@@ -77,6 +81,9 @@ class ConsoleHistoryItem extends PureComponent<
 
       if (changes) {
         const { created, updated } = changes;
+        // TODO: #1573 filter for supported types or change button kind
+        // based on if type is supported. Possibly a warn state for widgets
+        // that the UI doesn't have anything registered to support.
         [...created, ...updated].forEach(object => {
           hasButtons = true;
           const { title } = object;
@@ -92,7 +99,7 @@ class ConsoleHistoryItem extends PureComponent<
               onClick={() => this.handleObjectClick(object)}
               className="btn-console-object"
               disabled={btnDisabled}
-              icon={<ObjectIcon type={object.type} />}
+              icon={iconForType(object.type)}
             >
               {title}
             </Button>

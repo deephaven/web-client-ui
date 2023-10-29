@@ -18,6 +18,7 @@ import {
 import { FileStorage } from '@deephaven/file-explorer';
 import { useApi, useClient } from '@deephaven/jsapi-bootstrap';
 import type { dh as DhType, IdeConnection } from '@deephaven/jsapi-types';
+import { useConnection } from '@deephaven/jsapi-components';
 import {
   DecimalColumnFormatter,
   getSessionDetails,
@@ -45,16 +46,11 @@ import {
   Workspace,
   WorkspaceStorage,
   ServerConfigValues,
-  DeephavenPluginModuleMap,
   WorkspaceSettings,
   CustomizableWorkspace,
 } from '@deephaven/redux';
-import {
-  useConnection,
-  usePlugins,
-  useServerConfig,
-  useUser,
-} from '@deephaven/app-utils';
+import { useServerConfig, useUser } from '@deephaven/app-utils';
+import { type PluginModuleMap, usePlugins } from '@deephaven/plugin';
 import { setLayoutStorage as setLayoutStorageAction } from '../redux/actions';
 import App from './App';
 import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
@@ -79,7 +75,7 @@ interface AppInitProps {
   setLayoutStorage: (layoutStorage: LayoutStorage) => void;
   setDashboardConnection: (id: string, connection: IdeConnection) => void;
   setDashboardSessionWrapper: (id: string, wrapper: SessionWrapper) => void;
-  setPlugins: (map: DeephavenPluginModuleMap) => void;
+  setPlugins: (map: PluginModuleMap) => void;
   setUser: (user: User) => void;
   setWorkspace: (workspace: CustomizableWorkspace) => void;
   setDefaultWorkspaceSettings: (settings: WorkspaceSettings) => void;

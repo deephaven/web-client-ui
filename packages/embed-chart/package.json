@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/embed-chart",
-  "version": "0.49.1",
+  "version": "0.52.0",
   "description": "Deephaven Embedded Chart",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -20,6 +20,7 @@
     "@deephaven/chart": "file:../chart",
     "@deephaven/components": "file:../components",
     "@deephaven/jsapi-bootstrap": "file:../jsapi-bootstrap",
+    "@deephaven/jsapi-components": "file:../jsapi-components",
     "@deephaven/jsapi-types": "file:../jsapi-types",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
@@ -30,7 +31,7 @@
   "scripts": {
     "analyze": "source-map-explorer build/assets/*.js --no-border-checks",
     "start": "vite",
-    "build": "vite build",
+    "build": "NODE_OPTIONS='--max-old-space-size=4096' vite build",
     "preview": "vite preview"
   },
   "devDependencies": {

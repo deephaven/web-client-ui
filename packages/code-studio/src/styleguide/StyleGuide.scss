@@ -18,6 +18,13 @@ pre {
   line-height: 2.5rem;
 }
 
+.gray-swatch {
+  display: flex;
+  span {
+    flex: 1 0 50%;
+  }
+}
+
 .swatch-content-bg {
   border: 1px solid $gray-600;
   margin-top: 2.5rem;
@@ -116,11 +123,6 @@ h5.sub-title {
     &:focus {
       border-color: $primary;
     }
-  }
-
-  .icon,
-  .icon .svg-inline--fa {
-    font-size: 36px;
   }
 
   .card label {

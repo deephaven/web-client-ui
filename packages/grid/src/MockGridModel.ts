@@ -120,13 +120,16 @@ class MockGridModel extends GridModel implements EditableGridModel {
     this.editedData[column][row] = `${value}`;
   }
 
-  async setValueForRanges(ranges: GridRange[], text: string): Promise<void> {
+  async setValueForRanges(
+    ranges: readonly GridRange[],
+    text: string
+  ): Promise<void> {
     GridRange.forEachCell(ranges, (x, y) => {
       this.setValueForCell(x, y, text);
     });
   }
 
-  async setValues(edits: EditOperation[]): Promise<void> {
+  async setValues(edits: readonly EditOperation[]): Promise<void> {
     for (let i = 0; i < edits.length; i += 1) {
       const edit = edits[i];
       this.setValueForCell(

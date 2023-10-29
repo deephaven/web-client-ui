@@ -3,6 +3,39 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.52.0](https://github.com/deephaven/web-client-ui/compare/v0.51.0...v0.52.0) (2023-10-27)
+
+
+### Bug Fixes
+
+* stuck to bottom on filter clear ([#1579](https://github.com/deephaven/web-client-ui/issues/1579)) ([ef52749](https://github.com/deephaven/web-client-ui/commit/ef527498970fd0d994d90d9824bc3a55582f5b4c)), closes [#1477](https://github.com/deephaven/web-client-ui/issues/1477) [#1571](https://github.com/deephaven/web-client-ui/issues/1571) [#1571](https://github.com/deephaven/web-client-ui/issues/1571)
+
+
+
+
+
+# [0.51.0](https://github.com/deephaven/web-client-ui/compare/v0.50.0...v0.51.0) (2023-10-24)
+
+
+### Bug Fixes
+
+* cap width of columns with long names ([#1574](https://github.com/deephaven/web-client-ui/issues/1574)) ([876a6ac](https://github.com/deephaven/web-client-ui/commit/876a6acd00d239f3ac7df21e27db74a16e4fd1b7)), closes [#1276](https://github.com/deephaven/web-client-ui/issues/1276)
+
+
+
+
+
+# [0.50.0](https://github.com/deephaven/web-client-ui/compare/v0.49.1...v0.50.0) (2023-10-13)
+
+
+### Features
+
+* data bar render from API ([#1415](https://github.com/deephaven/web-client-ui/issues/1415)) ([ee7d1c1](https://github.com/deephaven/web-client-ui/commit/ee7d1c108e86973b4c6855e482dce21d665dfe28)), closes [#0000](https://github.com/deephaven/web-client-ui/issues/0000) [#FF0000](https://github.com/deephaven/web-client-ui/issues/FF0000) [#FFFF00](https://github.com/deephaven/web-client-ui/issues/FFFF00) [#FFFF00](https://github.com/deephaven/web-client-ui/issues/FFFF00) [#00FF00](https://github.com/deephaven/web-client-ui/issues/00FF00)
+
+
+
+
+
 # [0.49.0](https://github.com/deephaven/web-client-ui/compare/v0.48.0...v0.49.0) (2023-09-15)
 
 

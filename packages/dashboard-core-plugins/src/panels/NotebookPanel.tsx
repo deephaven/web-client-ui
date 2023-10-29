@@ -679,15 +679,31 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.focus();
   }
 
-  handleCopy(): void {
+  async handleCopy(): Promise<void> {
+    const { fileStorage, glEventHub, session } = this.props;
     const { fileMetadata, settings } = this.state;
     assertNotNull(fileMetadata);
-    const content = this.getNotebookValue();
     const { language } = settings;
     const { itemName } = fileMetadata;
-    const copyName = FileUtils.getCopyFileName(itemName);
+    const copyName = await FileUtils.getUniqueCopyFileName(
+      fileStorage,
+      itemName
+    );
     log.debug('handleCopy', fileMetadata, itemName, copyName);
-    this.createNotebook(copyName, language, content);
+    await fileStorage.copyFile(itemName, copyName);
+    const newFileMetadata = { id: copyName, itemName: copyName };
+    const notebookSettings = {
+      value: null,
+      language,
+    };
+    glEventHub.emit(
+      NotebookEvent.SELECT_NOTEBOOK,
+      session,
+      language,
+      notebookSettings,
+      newFileMetadata,
+      true
+    );
   }
 
   handleDelete(): void {
@@ -695,7 +711,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.setState({ showDeleteModal: true });
   }
 
-  handleDeleteConfirm(): void {
+  async handleDeleteConfirm(): Promise<void> {
     const { fileStorage, glContainer, glEventHub } = this.props;
     const { fileMetadata } = this.state;
 
@@ -706,7 +722,11 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       return;
     }
 
-    if (FileUtils.hasPath(fileMetadata.itemName)) {
+    if (
+      FileUtils.hasPath(fileMetadata.itemName) &&
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+      (await FileUtils.fileExists(fileStorage, fileMetadata.itemName))
+    ) {
       glEventHub.emit(NotebookEvent.CLOSE_FILE, fileMetadata, { force: true });
       fileStorage.deleteFile(fileMetadata.itemName);
     } else {

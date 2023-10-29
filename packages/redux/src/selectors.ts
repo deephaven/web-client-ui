@@ -136,6 +136,11 @@ export const getActiveTool = <State extends RootState>(
   store: State
 ): State['activeTool'] => store.activeTool;
 
+/**
+ * @deprecated Use `usePlugins` hook instead or `PluginsContext` directly
+ * @param store Redux store
+ * @returns Plugins map
+ */
 export const getPlugins = <State extends RootState>(
   store: State
 ): State['plugins'] => store.plugins ?? EMPTY_MAP;

@@ -15,10 +15,10 @@ import './VisibilityOrderingGroup.scss';
 
 interface VisibilityOrderingGroupProps {
   group: ColumnHeaderGroup;
-  onDelete(group: ColumnHeaderGroup): void;
-  onColorChange(group: ColumnHeaderGroup, color: string | undefined): void;
-  onNameChange(group: ColumnHeaderGroup, name: string): void;
-  validateName(name: string): string;
+  onDelete: (group: ColumnHeaderGroup) => void;
+  onColorChange: (group: ColumnHeaderGroup, color: string | undefined) => void;
+  onNameChange: (group: ColumnHeaderGroup, name: string) => void;
+  validateName: (name: string) => string;
 }
 
 export default function VisibilityOrderingGroup(

@@ -36,18 +36,18 @@ export interface File extends FileMetadata {
 }
 
 export interface FileStorageTable extends StorageTable<FileStorageItem> {
-  setSearch(search: string): void;
+  setSearch: (search: string) => void;
 
   /**
    * @param path The path to expand
    * @param expanded What expanded state to set
    */
-  setExpanded(path: string, expanded: boolean): void;
+  setExpanded: (path: string, expanded: boolean) => void;
 
   /**
    * Collapses all directories
    */
-  collapseAll(): void;
+  collapseAll: () => void;
 }
 
 /**
@@ -57,39 +57,39 @@ export interface FileStorage {
   /**
    * Retrieve a table to view the file list
    */
-  getTable(): Promise<FileStorageTable>;
+  getTable: () => Promise<FileStorageTable>;
 
   /**
    * Save a file
    * @param file The file to save
    */
-  saveFile(file: File): Promise<File>;
+  saveFile: (file: File) => Promise<File>;
 
   /**
    * Load the contents of a file
    * @param name The file to load, including the full path
    */
-  loadFile(name: string): Promise<File>;
+  loadFile: (name: string) => Promise<File>;
 
   /**
    * Delete a file
    * @param name The full name of the file to delete
    */
-  deleteFile(name: string): Promise<void>;
+  deleteFile: (name: string) => Promise<void>;
 
   /**
    * Move a file to a new location
    * @param name Source file name
    * @param newName The new file name, including path
    */
-  moveFile(name: string, newName: string): Promise<void>;
+  moveFile: (name: string, newName: string) => Promise<void>;
 
   /**
    * Copy a file to a new location
    * @param name The name of the file to copy
    * @param newName The new file name, including path
    */
-  copyFile(name: string, newName: string): Promise<void>;
+  copyFile: (name: string, newName: string) => Promise<void>;
 
   /**
    * Get the info for the file at the specified path.
@@ -97,13 +97,13 @@ export interface FileStorage {
    * @param name The file name to check, including path
    * @returns The FileStorageItem for the path specified, or reject with a FileNotFoundError if it does not exist.
    */
-  info(name: string): Promise<FileStorageItem>;
+  info: (name: string) => Promise<FileStorageItem>;
 
   /**
    * Create the directory at the given path
    * @param name The full directory path
    */
-  createDirectory(name: string): Promise<FileStorageItem>;
+  createDirectory: (name: string) => Promise<FileStorageItem>;
 }
 
 export default FileStorage;

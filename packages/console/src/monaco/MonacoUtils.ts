@@ -130,8 +130,12 @@ class MonacoUtils {
         MonacoTheme['editor-suggest-widget-foreground'],
       'editorSuggestWidget.selectedBackground':
         MonacoTheme['editor-suggest-widget-selected-background'],
+      'editorSuggestWidget.selectedForeground':
+        MonacoTheme['editor-suggest-widget-selected-foreground'],
       'editorSuggestWidget.highlightForeground':
         MonacoTheme['editor-suggest-widget-highlightForeground'],
+      'editorSuggestWidget.focusHighlightForeground':
+        MonacoTheme['editor-suggest-widget-focus-highlight-foreground'],
       'list.hoverBackground': MonacoTheme['list-hover-background'],
       'dropdown.background': MonacoTheme['context-menu-background'],
       'dropdown.foreground': MonacoTheme['context-menu-foreground'],
@@ -159,7 +163,14 @@ class MonacoUtils {
       colors: dhDarkColors,
     });
 
-    monaco.editor.setTheme('dh-dark');
+    try {
+      monaco.editor.setTheme('dh-dark');
+    } catch {
+      log.error(
+        `Failed to set 'dh-dark' Monaco theme, falling back to vs-dark`
+      );
+      monaco.editor.setTheme('vs-dark');
+    }
 
     registerLanguages([DbLang, PyLang, GroovyLang, LogLang, ScalaLang]);
 

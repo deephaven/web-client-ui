@@ -227,7 +227,7 @@ class DraggableItemList<T> extends PureComponent<
     { max: ItemList.CACHE_SIZE }
   );
 
-  handleSelectionChange(selectedRanges: Range[]): void {
+  handleSelectionChange(selectedRanges: readonly Range[]): void {
     this.setState({ selectedCount: RangeUtils.count(selectedRanges) });
 
     const { onSelectionChange } = this.props;

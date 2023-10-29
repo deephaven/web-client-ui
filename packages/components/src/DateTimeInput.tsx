@@ -20,11 +20,11 @@ const FULL_DATE_FORMAT = 'YYYY-MM-DD HH:MM:SS.SSSSSSSSS';
 
 type DateTimeInputProps = {
   className?: string;
-  onChange?(value?: string): void;
+  onChange?: (value?: string) => void;
   defaultValue?: string;
-  onFocus?(): void;
-  onBlur?(): void;
-  onSubmit?(event?: KeyboardEvent<HTMLInputElement>): void;
+  onFocus?: () => void;
+  onBlur?: () => void;
+  onSubmit?: (event: KeyboardEvent<HTMLInputElement>) => void;
   'data-testid'?: string;
 };
 

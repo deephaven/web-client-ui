@@ -6,10 +6,10 @@ declare namespace memoizee {
     max?: number | undefined;
     preFetch?: number | true | undefined;
     promise?: boolean | 'then' | 'done' | 'done:finally' | undefined;
-    dispose?(value: unknown): void;
+    dispose?: (value: unknown) => void;
     async?: boolean | undefined;
     primitive?: boolean | undefined;
-    normalizer?(args: Parameters<F>): string;
+    normalizer?: (args: Parameters<F>) => string;
     resolvers?: Array<(arg: unknown) => unknown> | undefined;
   }
 

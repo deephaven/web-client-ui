@@ -191,13 +191,18 @@ describe('getDefaultBaseThemes', () => {
       {
         name: 'Default Dark',
         themeKey: 'default-dark',
-        styleContent:
-          'test-file-stub\ntest-file-stub\ntest-file-stub\ntest-file-stub',
+        styleContent: [
+          'mock-theme-dark-palette',
+          'mock-theme-dark-semantic',
+          'mock-theme-dark-semantic-editor',
+          'mock-theme-dark-semantic-grid',
+          'mock-theme-dark-components',
+        ].join('\n'),
       },
       {
         name: 'Default Light',
         themeKey: 'default-light',
-        styleContent: 'test-file-stub',
+        styleContent: 'mock-theme-light-palette',
       },
     ]);
   });

@@ -16,10 +16,10 @@ import { ColumnName } from './CommonTypes';
 interface AdvancedFilterCreatorSelectValueProps<T> {
   dh: DhType;
   invertSelection: boolean;
-  selectedValues: T[];
+  selectedValues: (T | null)[];
   table?: Table;
   formatter: Formatter;
-  onChange: (selectedValues: T[], invertSelection: boolean) => void;
+  onChange: (selectedValues: (T | null)[], invertSelection: boolean) => void;
   showSearch: boolean;
   timeZone: string;
 }
@@ -28,7 +28,7 @@ interface AdvancedFilterCreatorSelectValueState<T> {
   error?: string;
   filters: FilterCondition[];
   invertSelection: boolean;
-  selectedValues: T[];
+  selectedValues: (T | null)[];
   searchText: string;
   table?: Table;
 }
@@ -179,7 +179,10 @@ class AdvancedFilterCreatorSelectValue<T = unknown> extends PureComponent<
     });
   }
 
-  handleListChange(selectedValues: T[], invertSelection: boolean): void {
+  handleListChange(
+    selectedValues: (T | null)[],
+    invertSelection: boolean
+  ): void {
     this.setState({ selectedValues, invertSelection });
 
     const { onChange } = this.props;

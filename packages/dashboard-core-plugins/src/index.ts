@@ -13,10 +13,13 @@ export { default as MarkdownPlugin } from './MarkdownPlugin';
 export { default as MarkdownPluginConfig } from './MarkdownPluginConfig';
 export { default as PandasPlugin } from './PandasPlugin';
 export { default as PandasPluginConfig } from './PandasPluginConfig';
+export { default as WidgetLoaderPlugin } from './WidgetLoaderPlugin';
+export { default as WidgetLoaderPluginConfig } from './WidgetLoaderPluginConfig';
 export { default as ControlType } from './controls/ControlType';
 export { default as LinkerUtils } from './linker/LinkerUtils';
 export type { Link } from './linker/LinkerUtils';
 export { default as ToolType } from './linker/ToolType';
+export * from './useLoadTablePlugin';
 
 export * from './events';
 export * from './panels';

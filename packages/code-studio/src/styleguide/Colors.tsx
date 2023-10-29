@@ -3,22 +3,28 @@ import classNames from 'classnames';
 
 function Colors(): React.ReactElement {
   const graySwatches = [
-    '100',
-    '200',
-    '300',
-    '400',
-    '500',
-    '600',
-    '700',
-    '800',
-    '900',
-  ].map(swatch => (
+    ['100', '900'],
+    ['200', '800'],
+    ['300', '700'],
+    ['400', '600'],
+    ['500', '500'],
+    ['600', '500'],
+    ['700', '400'],
+    ['800', '300'],
+    ['850', '200'],
+    ['900', '75'],
+  ].map(([swatch, dh]) => (
     <div
       key={swatch}
       className={classNames('swatch', 'gray-swatch', `gray-swatch-${swatch}`)}
     >
-      Gray-
-      {swatch}
+      <span>
+        Gray-
+        {swatch}
+      </span>
+      <span style={{ backgroundColor: `var(--dh-color-gray-${dh})` }}>
+        --dh-gray-{dh}
+      </span>
     </div>
   ));
 

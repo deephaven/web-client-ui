@@ -1,8 +1,10 @@
-import { type DashboardPlugin } from '@deephaven/plugin';
-import React, { createContext, useEffect, useState } from 'react';
-import { PluginModuleMap, loadModulePlugins } from '../plugins';
-
-export const PluginsContext = createContext<PluginModuleMap | null>(null);
+import React, { useEffect, useState } from 'react';
+import {
+  type Plugin,
+  type PluginModuleMap,
+  PluginsContext,
+} from '@deephaven/plugin';
+import { loadModulePlugins } from '../plugins';
 
 export type PluginsBootstrapProps = {
   /**
@@ -11,7 +13,7 @@ export type PluginsBootstrapProps = {
   pluginsUrl: string;
 
   /** The core plugins to load. */
-  getCorePlugins?: () => Promise<DashboardPlugin[]>;
+  getCorePlugins?: () => Promise<Plugin[]>;
 
   /**
    * The children to render wrapped with the PluginsContext.

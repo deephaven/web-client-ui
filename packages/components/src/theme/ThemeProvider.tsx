@@ -8,6 +8,7 @@ import {
   getThemePreloadData,
   setThemePreloadData,
 } from './ThemeUtils';
+import { SpectrumThemeProvider } from './SpectrumThemeProvider';
 
 export interface ThemeContextValue {
   activeThemes: ThemeData[] | null;
@@ -20,6 +21,11 @@ const log = Log.module('ThemeProvider');
 export const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export interface ThemeProviderProps {
+  /*
+   * Additional themes to load in addition to the base themes. If no additional
+   * themes are to be loaded, this must be set to an empty array in order to
+   * tell the provider to activate the base themes.
+   */
   themes: ThemeData[] | null;
   children: ReactNode;
 }
@@ -34,11 +40,9 @@ export function ThemeProvider({
     () => getThemePreloadData()?.themeKey ?? DEFAULT_DARK_THEME_KEY
   );
 
+  // Calculate active themes once a non-null themes array is provided.
   const activeThemes = useMemo(
     () =>
-      // Themes remain inactive until a non-null themes array is provided. This
-      // avoids the default base theme overriding the preload if we are waiting
-      // on additional themes to be available.
       themes == null
         ? null
         : getActiveThemes(selectedThemeKey, {
@@ -50,14 +54,26 @@ export function ThemeProvider({
 
   useEffect(
     function updateThemePreloadData() {
-      log.debug('Active themes:', activeThemes?.map(theme => theme.themeKey));
+      // Don't update preload data until themes have been loaded and activated
+      if (activeThemes == null || themes == null) {
+        return;
+      }
+
+      const preloadStyleContent = calculatePreloadStyleContent();
+
+      log.debug2('updateThemePreloadData:', {
+        active: activeThemes.map(theme => theme.themeKey),
+        all: themes.map(theme => theme.themeKey),
+        preloadStyleContent,
+        selectedThemeKey,
+      });
 
       setThemePreloadData({
         themeKey: selectedThemeKey,
-        preloadStyleContent: calculatePreloadStyleContent(),
+        preloadStyleContent,
       });
     },
-    [activeThemes, selectedThemeKey]
+    [activeThemes, selectedThemeKey, themes]
   );
 
   const value = useMemo(
@@ -71,12 +87,16 @@ export function ThemeProvider({
 
   return (
     <ThemeContext.Provider value={value}>
-      {activeThemes?.map(theme => (
-        <style data-theme-key={theme.themeKey} key={theme.themeKey}>
-          {theme.styleContent}
-        </style>
-      ))}
-      {children}
+      {activeThemes == null ? null : (
+        <>
+          {activeThemes.map(theme => (
+            <style data-theme-key={theme.themeKey} key={theme.themeKey}>
+              {theme.styleContent}
+            </style>
+          ))}
+        </>
+      )}
+      <SpectrumThemeProvider>{children}</SpectrumThemeProvider>
     </ThemeContext.Provider>
   );
 }

@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.52.0](https://github.com/deephaven/web-client-ui/compare/v0.51.0...v0.52.0) (2023-10-27)
+
+**Note:** Version bump only for package @deephaven/file-explorer
+
+
+
+
+
+# [0.51.0](https://github.com/deephaven/web-client-ui/compare/v0.50.0...v0.51.0) (2023-10-24)
+
+**Note:** Version bump only for package @deephaven/file-explorer
+
+
+
+
+
+# [0.50.0](https://github.com/deephaven/web-client-ui/compare/v0.49.1...v0.50.0) (2023-10-13)
+
+
+### Bug Fixes
+
+* Handle deletion of unsaved copied file in NotebookPanel ([#1557](https://github.com/deephaven/web-client-ui/issues/1557)) ([4021aac](https://github.com/deephaven/web-client-ui/commit/4021aac3bc130f8eec84385c9aadcb4ecf0b995c)), closes [#1359](https://github.com/deephaven/web-client-ui/issues/1359)
+
+
+
+
+
 ## [0.49.1](https://github.com/deephaven/web-client-ui/compare/v0.49.0...v0.49.1) (2023-09-27)
 
 **Note:** Version bump only for package @deephaven/file-explorer

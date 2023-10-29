@@ -6,7 +6,8 @@ import { createMockStore } from '@deephaven/redux';
 import { dh } from '@deephaven/jsapi-shim';
 import { ApiContext } from '@deephaven/jsapi-bootstrap';
 import { type IdeConnection } from '@deephaven/jsapi-types';
-import { ConnectionContext, PluginsContext } from '@deephaven/app-utils';
+import { ConnectionContext } from '@deephaven/jsapi-components';
+import { PluginsContext } from '@deephaven/plugin';
 import {
   ChartPlugin,
   ConsolePlugin,
@@ -14,7 +15,7 @@ import {
   GridPlugin,
   LinkerPlugin,
   MarkdownPlugin,
-  PandasPlugin,
+  WidgetLoaderPlugin,
 } from '.';
 
 function makeConnection(): IdeConnection {
@@ -40,7 +41,7 @@ it('handles mounting and unmount core plugins properly', () => {
               <ConsolePlugin />
               <LinkerPlugin />
               <MarkdownPlugin />
-              <PandasPlugin hydrate={() => undefined} />
+              <WidgetLoaderPlugin />
             </Dashboard>
           </Provider>
         </PluginsContext.Provider>
