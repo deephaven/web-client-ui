@@ -36,7 +36,6 @@ import {
   getFileStorage,
   saveSettings as saveSettingsAction,
   RootState,
-  getSettings,
   WorkspaceSettings,
   getDefaultNotebookSettings,
 } from '@deephaven/redux';
@@ -89,8 +88,7 @@ interface NotebookPanelProps extends DashboardPanelProps {
   panelState: PanelState;
   notebooksUrl: string;
   defaultNotebookSettings: NotebookSetting;
-  settings: WorkspaceSettings;
-  saveSettings: (settings: WorkspaceSettings) => void;
+  saveSettings: (settings: Partial<WorkspaceSettings>) => void;
 }
 
 interface NotebookPanelState {
@@ -769,9 +767,8 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   }
 
   handleMinimapChange(): void {
-    const { settings, defaultNotebookSettings, saveSettings } = this.props;
-    const newSettings: WorkspaceSettings = {
-      ...settings,
+    const { defaultNotebookSettings, saveSettings } = this.props;
+    const newSettings = {
       defaultNotebookSettings: {
         isMinimapEnabled: !defaultNotebookSettings.isMinimapEnabled,
       },
@@ -1413,14 +1410,9 @@ const mapStateToProps = (
   ownProps: { localDashboardId: string }
 ): Pick<
   NotebookPanelProps,
-  | 'defaultNotebookSettings'
-  | 'fileStorage'
-  | 'session'
-  | 'sessionLanguage'
-  | 'settings'
+  'defaultNotebookSettings' | 'fileStorage' | 'session' | 'sessionLanguage'
 > => {
   const fileStorage = getFileStorage(state);
-  const settings = getSettings(state);
   const defaultNotebookSettings = getDefaultNotebookSettings(state);
   if (defaultNotebookSettings.isMinimapEnabled === undefined) {
     defaultNotebookSettings.isMinimapEnabled = true;
@@ -1434,7 +1426,6 @@ const mapStateToProps = (
   const { type: sessionLanguage } = sessionConfig ?? {};
   return {
     fileStorage,
-    settings,
     defaultNotebookSettings: defaultNotebookSettings as NotebookSetting,
     session,
     sessionLanguage,

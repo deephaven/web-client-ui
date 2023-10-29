@@ -38,6 +38,7 @@ import {
   setPlugins as setPluginsAction,
   setUser as setUserAction,
   setWorkspace as setWorkspaceAction,
+  setDefaultWorkspaceSettings as setDefaultWorkspaceSettingsAction,
   setWorkspaceStorage as setWorkspaceStorageAction,
   setServerConfigValues as setServerConfigValuesAction,
   User,
@@ -45,6 +46,8 @@ import {
   WorkspaceStorage,
   ServerConfigValues,
   DeephavenPluginModuleMap,
+  WorkspaceSettings,
+  CustomizableWorkspace,
 } from '@deephaven/redux';
 import {
   useConnection,
@@ -78,7 +81,8 @@ interface AppInitProps {
   setDashboardSessionWrapper: (id: string, wrapper: SessionWrapper) => void;
   setPlugins: (map: DeephavenPluginModuleMap) => void;
   setUser: (user: User) => void;
-  setWorkspace: (workspace: Workspace) => void;
+  setWorkspace: (workspace: CustomizableWorkspace) => void;
+  setDefaultWorkspaceSettings: (settings: WorkspaceSettings) => void;
   setWorkspaceStorage: (workspaceStorage: WorkspaceStorage) => void;
   setServerConfigValues: (config: ServerConfigValues) => void;
 }
@@ -101,6 +105,7 @@ function AppInit(props: AppInitProps): JSX.Element {
     setUser,
     setWorkspace,
     setWorkspaceStorage,
+    setDefaultWorkspaceSettings,
     setServerConfigValues,
   } = props;
 
@@ -152,25 +157,26 @@ function AppInit(props: AppInitProps): JSX.Element {
             serverConfig
           );
 
+          console.log(loadedWorkspace);
           const { data } = loadedWorkspace;
 
           // Fill in settings that have not yet been set
           const { settings } = data;
-          if (settings.defaultDecimalFormatOptions === undefined) {
-            settings.defaultDecimalFormatOptions = {
-              defaultFormatString: DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
-            };
-          }
+          // if (settings.defaultDecimalFormatOptions === undefined) {
+          //   settings.defaultDecimalFormatOptions = {
+          //     defaultFormatString: DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
+          //   };
+          // }
 
-          if (settings.defaultIntegerFormatOptions === undefined) {
-            settings.defaultIntegerFormatOptions = {
-              defaultFormatString: IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
-            };
-          }
+          // if (settings.defaultIntegerFormatOptions === undefined) {
+          //   settings.defaultIntegerFormatOptions = {
+          //     defaultFormatString: IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
+          //   };
+          // }
 
-          if (settings.truncateNumbersWithPound === undefined) {
-            settings.truncateNumbersWithPound = false;
-          }
+          // if (settings.truncateNumbersWithPound === undefined) {
+          //   settings.truncateNumbersWithPound = false;
+          // }
 
           // Set any shortcuts that user has overridden on this platform
           const { shortcutOverrides = {} } = settings;
@@ -187,6 +193,7 @@ function AppInit(props: AppInitProps): JSX.Element {
             filterSets: data.filterSets,
             links: data.links,
           };
+          console.log(loadedWorkspace);
 
           setApi(api);
           setActiveTool(ToolType.DEFAULT);
@@ -201,6 +208,9 @@ function AppInit(props: AppInitProps): JSX.Element {
           }
           setUser(user);
           setWorkspaceStorage(workspaceStorage);
+          setDefaultWorkspaceSettings(
+            LocalWorkspaceStorage.makeDefaultWorkspaceSettings()
+          );
           setWorkspace(loadedWorkspace);
         } catch (e) {
           log.error(e);
@@ -224,6 +234,7 @@ function AppInit(props: AppInitProps): JSX.Element {
       setDashboardSessionWrapper,
       setUser,
       setWorkspace,
+      setDefaultWorkspaceSettings,
       setWorkspaceStorage,
       setServerConfigValues,
       user,
@@ -288,6 +299,7 @@ const ConnectedAppInit = connect(mapStateToProps, {
   setPlugins: setPluginsAction,
   setUser: setUserAction,
   setWorkspace: setWorkspaceAction,
+  setDefaultWorkspaceSettings: setDefaultWorkspaceSettingsAction,
   setWorkspaceStorage: setWorkspaceStorageAction,
   setServerConfigValues: setServerConfigValuesAction,
 })(AppInit);

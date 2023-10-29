@@ -67,6 +67,15 @@ export interface WorkspaceData {
   settings: WorkspaceSettings;
 }
 
+export interface CustomzableWorkspaceData
+  extends Omit<WorkspaceData, 'settings'> {
+  settings: Partial<WorkspaceData['settings']>;
+}
+
+export interface CustomizableWorkspace {
+  data: CustomzableWorkspaceData;
+}
+
 export interface Workspace {
   data: WorkspaceData;
 }
@@ -77,8 +86,8 @@ export type WorkspaceStorageLoadOptions = {
 };
 
 export interface WorkspaceStorage {
-  load(options?: WorkspaceStorageLoadOptions): Promise<Workspace>;
-  save(workspace: Workspace): Promise<Workspace>;
+  load(options?: WorkspaceStorageLoadOptions): Promise<CustomizableWorkspace>;
+  save(workspace: CustomizableWorkspace): Promise<CustomizableWorkspace>;
 }
 
 export type RootState = {
@@ -88,6 +97,7 @@ export type RootState = {
   storage: Storage;
   user: User;
   workspace: Workspace;
+  defaultWorkspaceSettings: WorkspaceSettings;
   dashboardData: Record<string, DashboardData>;
   layoutStorage: unknown;
   serverConfigValues: ServerConfigValues;

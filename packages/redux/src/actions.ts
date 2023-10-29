@@ -13,8 +13,10 @@ import {
   SET_FILE_STORAGE,
   SET_SERVER_CONFIG_VALUES,
   SET_API,
+  SET_DEFAULT_WORKSPACE_SETTINGS,
 } from './actionTypes';
 import type {
+  CustomizableWorkspace,
   DeephavenPluginModuleMap,
   RootState,
   ServerConfigValues,
@@ -41,9 +43,20 @@ export const setApi: PayloadActionCreator<DhType> = api => ({
   payload: api,
 });
 
-export const setWorkspace: PayloadActionCreator<Workspace> = workspace => ({
+export const setWorkspace: PayloadActionCreator<
+  CustomizableWorkspace
+> = workspace => ({
   type: SET_WORKSPACE,
   payload: workspace,
+});
+
+export const setDefaultWorkspaceSettings: PayloadActionCreator<
+  WorkspaceSettings
+> = settings => ({
+  type: SET_DEFAULT_WORKSPACE_SETTINGS,
+  payload: {
+    ...settings,
+  },
 });
 
 export const setWorkspaceStorage: PayloadActionCreator<
@@ -75,14 +88,13 @@ export const saveWorkspace =
   (
     workspace: Workspace
   ): ThunkAction<
-    Promise<Workspace>,
+    Promise<CustomizableWorkspace>,
     RootState,
     never,
     PayloadAction<unknown>
   > =>
   (dispatch, getState) => {
     dispatch(setWorkspace(workspace));
-
     const { storage } = getState();
     const { workspaceStorage } = storage;
     return workspaceStorage.save(workspace);
@@ -96,7 +108,7 @@ export const updateWorkspaceData =
   (
     workspaceData: Partial<WorkspaceData>
   ): ThunkAction<
-    Promise<Workspace>,
+    Promise<CustomizableWorkspace>,
     RootState,
     never,
     PayloadAction<unknown>
@@ -120,9 +132,9 @@ export const updateWorkspaceData =
  */
 export const saveSettings =
   (
-    settings: WorkspaceSettings
+    settings: Partial<WorkspaceSettings>
   ): ThunkAction<
-    Promise<Workspace>,
+    Promise<CustomizableWorkspace>,
     RootState,
     never,
     PayloadAction<unknown>

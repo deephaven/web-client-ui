@@ -59,7 +59,7 @@ export interface ColumnSpecificSectionContentProps {
   timeZone: string;
   truncateNumbersWithPound?: boolean;
   settings: WorkspaceSettings;
-  saveSettings: (settings: WorkspaceSettings) => void;
+  saveSettings: (settings: Partial<WorkspaceSettings>) => void;
   scrollTo: (x: number, y: number) => void;
   defaultDecimalFormatOptions: FormatOption;
   defaultIntegerFormatOptions: FormatOption;
@@ -271,19 +271,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
   }
 
   commitChanges(): void {
-    const {
-      formatSettings,
-      showTimeZone,
-      showTSeparator,
-      timeZone,
-      truncateNumbersWithPound,
-    } = this.state;
-
-    const {
-      defaultDateTimeFormat,
-      defaultDecimalFormatOptions,
-      defaultIntegerFormatOptions,
-    } = this.props;
+    const { formatSettings } = this.state;
 
     const { dh } = this.props;
 
@@ -294,38 +282,10 @@ export class ColumnSpecificSectionContent extends PureComponent<
         )
         .map(removeFormatRuleExtraProps) ?? [];
 
-    const { settings, saveSettings } = this.props;
-    const newSettings: WorkspaceSettings = {
-      ...settings,
+    const { saveSettings } = this.props;
+    const newSettings = {
       formatter: formatter as FormattingRule[],
-      defaultDateTimeFormat,
-      showTimeZone,
-      showTSeparator,
-      timeZone,
-      truncateNumbersWithPound,
     };
-    if (
-      isValidFormat(
-        dh,
-        TableUtils.dataType.DECIMAL,
-        DecimalColumnFormatter.makeCustomFormat(
-          defaultDecimalFormatOptions.defaultFormatString
-        )
-      )
-    ) {
-      newSettings.defaultDecimalFormatOptions = defaultDecimalFormatOptions;
-    }
-    if (
-      isValidFormat(
-        dh,
-        TableUtils.dataType.INT,
-        IntegerColumnFormatter.makeCustomFormat(
-          defaultIntegerFormatOptions.defaultFormatString
-        )
-      )
-    ) {
-      newSettings.defaultIntegerFormatOptions = defaultIntegerFormatOptions;
-    }
     saveSettings(newSettings);
   }
 

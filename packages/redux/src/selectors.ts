@@ -1,4 +1,4 @@
-import type { RootState } from './store';
+import type { RootState, WorkspaceSettings } from './store';
 
 const EMPTY_OBJECT = Object.freeze({});
 
@@ -41,10 +41,35 @@ export const getWorkspaceStorage = <State extends RootState>(
   store: State
 ): State['storage']['workspaceStorage'] => getStorage(store).workspaceStorage;
 
+export const getDefaultWorkspaceSettings = <State extends RootState>(
+  store: State
+): State['defaultWorkspaceSettings'] => store.defaultWorkspaceSettings;
+
 // Workspace
 export const getWorkspace = <State extends RootState>(
   store: State
-): State['workspace'] => store.workspace;
+): State['workspace'] => {
+  const { workspace } = store;
+  if (workspace == null) {
+    return null as never;
+  }
+  const customizedWorkspaceSettings = { ...workspace.data.settings };
+  workspace.data.settings = getDefaultWorkspaceSettings(store) ?? {};
+
+  const keys = Object.keys(
+    customizedWorkspaceSettings
+  ) as (keyof WorkspaceSettings)[];
+
+  for (let i = 0; i < keys.length; i += 1) {
+    const key = keys[i];
+    const value = customizedWorkspaceSettings[key];
+    if (value !== undefined) {
+      workspace.data.settings[key] = value as never;
+    }
+  }
+
+  return workspace;
+};
 
 // Settings
 export const getSettings = <State extends RootState>(

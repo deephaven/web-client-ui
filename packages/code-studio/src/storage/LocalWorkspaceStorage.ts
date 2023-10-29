@@ -2,9 +2,16 @@ import Log from '@deephaven/log';
 import {
   WorkspaceStorage,
   Workspace,
-  WorkspaceData,
   WorkspaceStorageLoadOptions,
+  CustomzableWorkspaceData,
+  CustomizableWorkspace,
+  WorkspaceSettings,
 } from '@deephaven/redux';
+import {
+  DateTimeColumnFormatter,
+  DecimalColumnFormatter,
+  IntegerColumnFormatter,
+} from '@deephaven/jsapi-utils';
 import UserLayoutUtils from '../main/UserLayoutUtils';
 import LayoutStorage from './LayoutStorage';
 
@@ -29,30 +36,68 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
     return undefined;
   }
 
-  static async makeDefaultWorkspaceData(
+  static makeDefaultWorkspaceSettings(): WorkspaceSettings {
+    return {
+      defaultDateTimeFormat:
+        DateTimeColumnFormatter.DEFAULT_DATETIME_FORMAT_STRING,
+      formatter: [],
+      timeZone: DateTimeColumnFormatter.DEFAULT_TIME_ZONE_ID,
+      showTimeZone: false,
+      showTSeparator: true,
+      disableMoveConfirmation: false,
+      defaultDecimalFormatOptions: {
+        defaultFormatString: DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
+      },
+      defaultIntegerFormatOptions: {
+        defaultFormatString: IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
+      },
+      truncateNumbersWithPound: false,
+      defaultNotebookSettings: {
+        isMinimapEnabled: false,
+      },
+    };
+  }
+
+  static async makeWorkspaceData(
     layoutStorage: LayoutStorage,
     options?: WorkspaceStorageLoadOptions,
     serverConfigValues?: Map<string, string>
-  ): Promise<WorkspaceData> {
+  ): Promise<CustomzableWorkspaceData> {
     const { filterSets, links, layoutConfig } =
       await UserLayoutUtils.getDefaultLayout(
         layoutStorage,
         options?.isConsoleAvailable
       );
-    return {
+    console.log(serverConfigValues);
+    const test = {
       settings: {
         defaultDateTimeFormat: serverConfigValues?.get('dateTimeFormat'),
         formatter: [],
         timeZone: serverConfigValues?.get('timeZone'),
-        showTimeZone: false,
-        showTSeparator: true,
-        disableMoveConfirmation: false,
-        defaultDecimalFormatOptions: {
-          defaultFormatString: serverConfigValues?.get('decimalFormat'),
-        },
-        defaultIntegerFormatOptions: {
-          defaultFormatString: serverConfigValues?.get('integerFormat'),
-        },
+        showTimeZone: LocalWorkspaceStorage.getBooleanServerConfig(
+          serverConfigValues,
+          'showTimeZone'
+        ),
+        showTSeparator: LocalWorkspaceStorage.getBooleanServerConfig(
+          serverConfigValues,
+          'showTSeparator'
+        ),
+        disableMoveConfirmation: LocalWorkspaceStorage.getBooleanServerConfig(
+          serverConfigValues,
+          'disableMoveConfirmation'
+        ),
+        defaultDecimalFormatOptions:
+          serverConfigValues?.get('decimalFormat') !== undefined
+            ? {
+                defaultFormatString: serverConfigValues?.get('decimalFormat'),
+              }
+            : undefined,
+        defaultIntegerFormatOptions:
+          serverConfigValues?.get('integerFormat') !== undefined
+            ? {
+                defaultFormatString: serverConfigValues?.get('integerFormat'),
+              }
+            : undefined,
         truncateNumbersWithPound: LocalWorkspaceStorage.getBooleanServerConfig(
           serverConfigValues,
           'truncateNumbersWithPound'
@@ -69,20 +114,24 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
       links,
       filterSets,
     };
+    console.log(test);
+    return test;
   }
 
   static async makeDefaultWorkspace(
     layoutStorage: LayoutStorage,
     options?: WorkspaceStorageLoadOptions,
     serverConfigValues?: Map<string, string>
-  ): Promise<Workspace> {
-    return {
-      data: await LocalWorkspaceStorage.makeDefaultWorkspaceData(
+  ): Promise<CustomizableWorkspace> {
+    const test = {
+      data: await LocalWorkspaceStorage.makeWorkspaceData(
         layoutStorage,
         options,
         serverConfigValues
       ),
     };
+    console.log(test);
+    return test;
   }
 
   private layoutStorage: LayoutStorage;
@@ -95,7 +144,7 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
   async load(
     options?: WorkspaceStorageLoadOptions,
     serverConfigValues?: Map<string, string>
-  ): Promise<Workspace> {
+  ): Promise<CustomizableWorkspace> {
     try {
       const workspace = JSON.parse(
         localStorage.getItem(LocalWorkspaceStorage.STORAGE_KEY) ?? ''
@@ -144,11 +193,14 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
       return workspace;
     } catch (e) {
       log.info('Unable to load workspace data, initializing to default data');
-      return LocalWorkspaceStorage.makeDefaultWorkspace(
+
+      const workspace = LocalWorkspaceStorage.makeDefaultWorkspace(
         this.layoutStorage,
         options,
         serverConfigValues
       );
+      console.log(await workspace);
+      return workspace;
     }
   }
 

@@ -2,7 +2,6 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { connect } from 'react-redux';
 import { Shortcut, ShortcutRegistry } from '@deephaven/components';
 import {
-  getSettings,
   getShortcutOverrides,
   RootState,
   saveSettings as saveSettingsAction,
@@ -11,14 +10,12 @@ import {
 import ShortcutItem from './ShortcutItem';
 
 type ShortcutSectionContentProps = {
-  settings: WorkspaceSettings;
   shortcutOverrides: WorkspaceSettings['shortcutOverrides'];
   saveSettings: typeof saveSettingsAction;
 };
 
 function ShortcutSectionContent({
   shortcutOverrides = {},
-  settings,
   saveSettings,
 }: ShortcutSectionContentProps): JSX.Element {
   const saveShortcutOverrides = useCallback(
@@ -42,11 +39,10 @@ function ShortcutSectionContent({
       });
 
       saveSettings({
-        ...settings,
         shortcutOverrides: newOverrides,
       });
     },
-    [settings, saveSettings, shortcutOverrides]
+    [saveSettings, shortcutOverrides]
   );
 
   let categories = Array.from(
@@ -143,8 +139,7 @@ function ShortcutCategory({
 
 const mapStateToProps = (
   state: RootState
-): Pick<ShortcutSectionContentProps, 'settings' | 'shortcutOverrides'> => ({
-  settings: getSettings(state),
+): Pick<ShortcutSectionContentProps, 'shortcutOverrides'> => ({
   shortcutOverrides: getShortcutOverrides(state),
 });
 
