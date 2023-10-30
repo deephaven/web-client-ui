@@ -13,10 +13,7 @@ import {
 } from '@deephaven/console';
 import { DashboardPanelProps, PanelEvent } from '@deephaven/dashboard';
 import type { IdeSession, VariableDefinition } from '@deephaven/jsapi-types';
-import {
-  DateTimeColumnFormatter,
-  SessionWrapper,
-} from '@deephaven/jsapi-utils';
+import { SessionWrapper } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
   getCommandHistoryStorage,
@@ -63,7 +60,7 @@ interface ConsolePanelProps extends DashboardPanelProps {
 
   sessionWrapper: SessionWrapper;
 
-  timeZone: string;
+  timeZone?: string;
   unzip?: (file: File) => Promise<JSZipObject[]>;
   plugins: PluginModuleMap;
 }

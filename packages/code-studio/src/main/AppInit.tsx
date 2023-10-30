@@ -20,9 +20,7 @@ import { useApi, useClient } from '@deephaven/jsapi-bootstrap';
 import type { dh as DhType, IdeConnection } from '@deephaven/jsapi-types';
 import { useConnection } from '@deephaven/jsapi-components';
 import {
-  DecimalColumnFormatter,
   getSessionDetails,
-  IntegerColumnFormatter,
   loadSessionWrapper,
   SessionWrapper,
 } from '@deephaven/jsapi-utils';
@@ -157,21 +155,6 @@ function AppInit(props: AppInitProps): JSX.Element {
 
           // Fill in settings that have not yet been set
           const { settings } = data;
-          // if (settings.defaultDecimalFormatOptions === undefined) {
-          //   settings.defaultDecimalFormatOptions = {
-          //     defaultFormatString: DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
-          //   };
-          // }
-
-          // if (settings.defaultIntegerFormatOptions === undefined) {
-          //   settings.defaultIntegerFormatOptions = {
-          //     defaultFormatString: IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
-          //   };
-          // }
-
-          // if (settings.truncateNumbersWithPound === undefined) {
-          //   settings.truncateNumbersWithPound = false;
-          // }
 
           // Set any shortcuts that user has overridden on this platform
           const { shortcutOverrides = {} } = settings;

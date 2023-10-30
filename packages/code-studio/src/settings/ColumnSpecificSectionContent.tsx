@@ -22,15 +22,12 @@ import {
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
   getApi,
-  getDefaultDateTimeFormat,
   getDefaultDecimalFormatOptions,
   getDefaultIntegerFormatOptions,
   getFormatter,
   getTimeZone,
   getShowTimeZone,
   getShowTSeparator,
-  getTruncateNumbersWithPound,
-  getSettings,
   saveSettings as saveSettingsAction,
   RootState,
   WorkspaceSettings,
@@ -52,17 +49,14 @@ import DateTimeOptions from './DateTimeOptions';
 
 export interface ColumnSpecificSectionContentProps {
   dh: DhType;
-  formatter: FormatterItem[];
-  defaultDateTimeFormat?: string;
-  showTimeZone: boolean;
-  showTSeparator: boolean;
-  timeZone: string;
-  truncateNumbersWithPound?: boolean;
-  settings: WorkspaceSettings;
+  formatter?: FormatterItem[];
+  showTimeZone?: boolean;
+  showTSeparator?: boolean;
+  timeZone?: string;
   saveSettings: (settings: Partial<WorkspaceSettings>) => void;
   scrollTo: (x: number, y: number) => void;
-  defaultDecimalFormatOptions: FormatOption;
-  defaultIntegerFormatOptions: FormatOption;
+  defaultDecimalFormatOptions?: FormatOption;
+  defaultIntegerFormatOptions?: FormatOption;
 }
 
 interface ColumnSpecificSectionContentState {
@@ -71,7 +65,6 @@ interface ColumnSpecificSectionContentState {
   showTimeZone: boolean;
   showTSeparator: boolean;
   timeZone: string;
-  truncateNumbersWithPound?: boolean;
   timestampAtMenuOpen: Date;
 }
 
@@ -81,17 +74,19 @@ export class ColumnSpecificSectionContent extends PureComponent<
 > {
   static defaultProps = {
     scrollTo: (): void => undefined,
-    defaultDateTimeFormat:
-      DateTimeColumnFormatter.DEFAULT_DATETIME_FORMAT_STRING,
-    defaultDecimalFormatOptions: {
-      defaultFormatString: DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
+    defaults: {
+      defaultDateTimeFormat:
+        DateTimeColumnFormatter.DEFAULT_DATETIME_FORMAT_STRING,
+      defaultDecimalFormatOptions: {
+        defaultFormatString: DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
+      },
+      defaultIntegerFormatOptions: {
+        defaultFormatString: IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
+      },
+      showTimeZone: false,
+      showTSeparator: true,
+      timeZone: DateTimeColumnFormatter.DEFAULT_TIME_ZONE_ID,
     },
-    defaultIntegerFormatOptions: {
-      defaultFormatString: IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
-    },
-    showTimeZone: false,
-    showTSeparator: true,
-    timeZone: DateTimeColumnFormatter.DEFAULT_TIME_ZONE_ID,
   };
 
   static inputDebounceTime = 250;
@@ -109,13 +104,12 @@ export class ColumnSpecificSectionContent extends PureComponent<
     this.handleFormatRuleCreate = this.handleFormatRuleCreate.bind(this);
     this.handleFormatRuleDelete = this.handleFormatRuleDelete.bind(this);
 
-    const {
-      formatter,
-      showTimeZone,
-      showTSeparator,
-      timeZone,
-      truncateNumbersWithPound,
-    } = props;
+    const { formatter, showTimeZone, showTSeparator, timeZone } = props;
+
+    assertNotNull(formatter);
+    assertNotNull(showTimeZone);
+    assertNotNull(showTSeparator);
+    assertNotNull(timeZone);
 
     const formatSettings = formatter.map((item, i) => ({
       ...item,
@@ -133,7 +127,6 @@ export class ColumnSpecificSectionContent extends PureComponent<
       showTimeZone,
       showTSeparator,
       timeZone,
-      truncateNumbersWithPound,
       timestampAtMenuOpen: new Date(),
     };
   }
@@ -349,6 +342,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
     switch (TableUtils.getNormalizedType(columnType)) {
       case TableUtils.dataType.INT: {
         const { defaultIntegerFormatOptions } = this.props;
+        assertNotNull(defaultIntegerFormatOptions);
         const { defaultFormatString: defaultIntegerFormatString } =
           defaultIntegerFormatOptions;
         return IntegerColumnFormatter.makeFormat(
@@ -362,6 +356,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
 
       case TableUtils.dataType.DECIMAL: {
         const { defaultDecimalFormatOptions } = this.props;
+        assertNotNull(defaultDecimalFormatOptions);
         const { defaultFormatString: defaultDecimalFormatString } =
           defaultDecimalFormatOptions;
         return DecimalColumnFormatter.makeFormat(
@@ -535,6 +530,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
     isInvalid: boolean
   ): ReactElement {
     const { defaultIntegerFormatOptions } = this.props;
+    assertNotNull(defaultIntegerFormatOptions);
     const { defaultFormatString } = defaultIntegerFormatOptions;
     const value = format.formatString ?? '';
     return (
@@ -569,6 +565,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
     isInvalid: boolean
   ): ReactElement {
     const { defaultDecimalFormatOptions } = this.props;
+    assertNotNull(defaultDecimalFormatOptions);
     const { defaultFormatString } = defaultDecimalFormatOptions;
 
     const value = format.formatString ?? '';
@@ -648,15 +645,12 @@ const mapStateToProps = (
   state: RootState
 ): Omit<ColumnSpecificSectionContentProps, 'saveSettings' | 'scrollTo'> => ({
   formatter: getFormatter(state),
-  defaultDateTimeFormat: getDefaultDateTimeFormat(state),
   defaultDecimalFormatOptions: getDefaultDecimalFormatOptions(state),
   defaultIntegerFormatOptions: getDefaultIntegerFormatOptions(state),
   dh: getApi(state),
   showTimeZone: getShowTimeZone(state),
   showTSeparator: getShowTSeparator(state),
-  truncateNumbersWithPound: getTruncateNumbersWithPound(state),
-  timeZone: getTimeZone(state) ?? DateTimeColumnFormatter.DEFAULT_TIME_ZONE_ID,
-  settings: getSettings(state),
+  timeZone: getTimeZone(state),
 });
 
 const ConnectedColumnSpecificSectionContent = connect(mapStateToProps, {

@@ -31,6 +31,7 @@ import {
   RootState,
   WorkspaceSettings,
 } from '@deephaven/redux';
+import { assertNotNull } from '@deephaven/utils';
 import './FormattingSectionContent.scss';
 import type { DebouncedFunc } from 'lodash';
 import {
@@ -48,13 +49,13 @@ const log = Log.module('FormattingSectionContent');
 interface FormattingSectionContentProps {
   dh: DhType;
   defaultDateTimeFormat?: string;
-  showTimeZone: boolean;
-  showTSeparator: boolean;
-  timeZone: string;
+  showTimeZone?: boolean;
+  showTSeparator?: boolean;
+  timeZone?: string;
   truncateNumbersWithPound?: boolean;
   saveSettings: (settings: Partial<WorkspaceSettings>) => void;
-  defaultDecimalFormatOptions: FormatOption;
-  defaultIntegerFormatOptions: FormatOption;
+  defaultDecimalFormatOptions?: FormatOption;
+  defaultIntegerFormatOptions?: FormatOption;
   defaults: {
     defaultDateTimeFormat: string;
     defaultDecimalFormatOptions: FormatOption;
@@ -72,7 +73,7 @@ interface FormattingSectionContentState {
   defaultDateTimeFormat?: string;
   defaultDecimalFormatOptions: FormatOption;
   defaultIntegerFormatOptions: FormatOption;
-  truncateNumbersWithPound?: boolean;
+  truncateNumbersWithPound: boolean;
   timestampAtMenuOpen: Date;
 }
 
@@ -135,6 +136,14 @@ export class FormattingSectionContent extends PureComponent<
     } = props;
 
     this.containerRef = React.createRef();
+
+    assertNotNull(showTimeZone);
+    assertNotNull(showTSeparator);
+    assertNotNull(timeZone);
+    assertNotNull(truncateNumbersWithPound);
+    assertNotNull(defaultDateTimeFormat);
+    assertNotNull(defaultDecimalFormatOptions);
+    assertNotNull(defaultIntegerFormatOptions);
 
     this.state = {
       showTimeZone,
@@ -560,7 +569,7 @@ const mapStateToProps = (
   showTimeZone: getShowTimeZone(state),
   showTSeparator: getShowTSeparator(state),
   truncateNumbersWithPound: getTruncateNumbersWithPound(state),
-  timeZone: getTimeZone(state) ?? DateTimeColumnFormatter.DEFAULT_TIME_ZONE_ID,
+  timeZone: getTimeZone(state),
 });
 
 const ConnectedFormattingSectionContent = connect(mapStateToProps, {

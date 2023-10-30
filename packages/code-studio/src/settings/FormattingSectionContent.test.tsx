@@ -133,7 +133,7 @@ describe('default decimal formatting', () => {
 
     expect(saveSettings).toHaveBeenCalledWith(
       expect.objectContaining({
-        defaultDecimalFormatOptions: defaultFormatOptions,
+        defaultDecimalFormatOptions: undefined,
       })
     );
   });
@@ -194,7 +194,7 @@ describe('default integer formatting', () => {
 
     expect(saveSettings).toHaveBeenCalledWith(
       expect.objectContaining({
-        defaultIntegerFormatOptions: defaultFormatOptions,
+        defaultIntegerFormatOptions: undefined,
       })
     );
   });

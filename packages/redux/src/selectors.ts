@@ -1,4 +1,4 @@
-import type { RootState, WorkspaceSettings } from './store';
+import type { RootState, Workspace, WorkspaceSettings } from './store';
 
 const EMPTY_OBJECT = Object.freeze({});
 
@@ -48,10 +48,10 @@ export const getDefaultWorkspaceSettings = <State extends RootState>(
 // Workspace
 export const getWorkspace = <State extends RootState>(
   store: State
-): State['workspace'] => {
+): Workspace | null => {
   const { workspace } = store;
   if (workspace == null) {
-    return null as never;
+    return null;
   }
 
   const defaultInjectedWorkspace = {
@@ -73,37 +73,36 @@ export const getWorkspace = <State extends RootState>(
       defaultInjectedWorkspace.data.settings[key] = value as never;
     }
   }
-  console.log(defaultInjectedWorkspace);
   return defaultInjectedWorkspace;
 };
 
 // Settings
 export const getSettings = <State extends RootState>(
   store: State
-): Settings<State> => getWorkspace(store).data.settings;
+): Settings<State> => getWorkspace(store)?.data.settings ?? {};
 
 export const getDefaultDateTimeFormat = <State extends RootState>(
   store: State
 ): Settings<State>['defaultDateTimeFormat'] =>
-  getSettings(store).defaultDateTimeFormat;
+  getSettings(store)?.defaultDateTimeFormat;
 
 export const getDefaultDecimalFormatOptions = <
   State extends RootState = RootState,
 >(
   store: State
 ): Settings<State>['defaultDecimalFormatOptions'] =>
-  getSettings(store).defaultDecimalFormatOptions ?? EMPTY_OBJECT;
+  getSettings(store)?.defaultDecimalFormatOptions ?? EMPTY_OBJECT;
 
 export const getDefaultIntegerFormatOptions = <
   State extends RootState = RootState,
 >(
   store: State
 ): Settings<State>['defaultIntegerFormatOptions'] =>
-  getSettings(store).defaultIntegerFormatOptions ?? EMPTY_OBJECT;
+  getSettings(store)?.defaultIntegerFormatOptions ?? EMPTY_OBJECT;
 
 export const getFormatter = <State extends RootState>(
   store: State
-): Settings<State>['formatter'] => getSettings(store).formatter;
+): Settings<State>['formatter'] => getSettings(store)?.formatter ?? [];
 
 export const getTimeZone = <State extends RootState>(
   store: State
@@ -127,7 +126,7 @@ export const getTruncateNumbersWithPound = <
 export const getDisableMoveConfirmation = <State extends RootState>(
   store: State
 ): Settings<State>['disableMoveConfirmation'] =>
-  getSettings(store).disableMoveConfirmation || false;
+  getSettings(store).disableMoveConfirmation === true;
 
 export const getShortcutOverrides = <State extends RootState>(
   store: State

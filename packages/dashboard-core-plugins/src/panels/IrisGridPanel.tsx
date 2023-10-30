@@ -159,13 +159,6 @@ interface PropsFromRedux {
   ) => boolean;
   user: User;
   workspace: Workspace;
-  // Retrieve a download worker for optimizing exporting tables
-  getDownloadWorker: () => Promise<ServiceWorker>;
-
-  // Load a plugin defined by the table
-  loadPlugin: (pluginName: string) => TablePluginComponent;
-
-  theme: IrisGridThemeType;
   settings: { timeZone: string };
 }
 

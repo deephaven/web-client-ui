@@ -21,7 +21,6 @@ import type {
   RootState,
   ServerConfigValues,
   User,
-  Workspace,
   WorkspaceSettings,
   WorkspaceStorage,
 } from './store';
@@ -85,7 +84,7 @@ export const setFileStorage: PayloadActionCreator<
  */
 export const saveWorkspace =
   (
-    workspace: Workspace
+    workspace: CustomizableWorkspace
   ): ThunkAction<
     Promise<CustomizableWorkspace>,
     RootState,

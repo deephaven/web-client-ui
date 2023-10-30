@@ -1,7 +1,6 @@
 import Log from '@deephaven/log';
 import {
   WorkspaceStorage,
-  Workspace,
   WorkspaceStorageLoadOptions,
   CustomzableWorkspaceData,
   CustomizableWorkspace,
@@ -201,8 +200,11 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  async save(workspace: Workspace): Promise<CustomizableWorkspace> {
-    localStorage.setItem('123123', JSON.stringify(workspace));
+  async save(workspace: CustomizableWorkspace): Promise<CustomizableWorkspace> {
+    localStorage.setItem(
+      LocalWorkspaceStorage.STORAGE_KEY,
+      JSON.stringify(workspace)
+    );
     return workspace;
   }
 }

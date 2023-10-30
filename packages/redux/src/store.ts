@@ -96,7 +96,7 @@ export type RootState = {
   plugins: PluginModuleMap;
   storage: Storage;
   user: User;
-  workspace: Workspace;
+  workspace: CustomizableWorkspace;
   defaultWorkspaceSettings: WorkspaceSettings;
   dashboardData: Record<string, DashboardData>;
   layoutStorage: unknown;
