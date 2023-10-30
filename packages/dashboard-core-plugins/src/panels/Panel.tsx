@@ -66,6 +66,7 @@ interface PanelProps {
 interface PanelState {
   title?: string | null;
   showRenameDialog: boolean;
+  isWithinPanel: boolean;
 }
 /**
  * Generic panel component that emits mount/unmount/focus events.
@@ -118,10 +119,13 @@ class Panel extends PureComponent<PanelProps, PanelState> {
     this.handleTabClicked = this.handleTabClicked.bind(this);
     this.handleTab = this.handleTab.bind(this);
 
+    this.ref = React.createRef<HTMLDivElement>();
+
     const { glContainer } = this.props;
     this.state = {
       title: LayoutUtils.getTitleFromContainer(glContainer),
       showRenameDialog: false,
+      isWithinPanel: true,
     };
   }
 
@@ -142,6 +146,11 @@ class Panel extends PureComponent<PanelProps, PanelState> {
       InputFilterEvent.CLEAR_ALL_FILTERS,
       this.handleClearAllFilters
     );
+
+    this.setState({
+      isWithinPanel:
+        this.ref.current?.parentElement?.closest('.dh-panel') != null,
+    });
   }
 
   componentDidUpdate(prevProps: PanelProps): void {
@@ -175,6 +184,8 @@ class Panel extends PureComponent<PanelProps, PanelState> {
       glEventHub.emit(PanelEvent.UNMOUNT, componentPanel);
     }
   }
+
+  ref: React.RefObject<HTMLDivElement>;
 
   handleTab(tab: Tab): void {
     if (tab != null) {
@@ -335,13 +346,14 @@ class Panel extends PureComponent<PanelProps, PanelState> {
       isRenamable,
     } = this.props;
     const { tab: glTab } = glContainer;
-    const { showRenameDialog, title } = this.state;
+    const { showRenameDialog, title, isWithinPanel } = this.state;
 
     return (
       <div
-        className={classNames('h-100 w-100 iris-panel', className)}
+        className={classNames('h-100 w-100 dh-panel', className)}
         onFocusCapture={this.handleFocus}
         onBlurCapture={this.handleBlur}
+        ref={this.ref}
       >
         {children}
         <LoadingOverlay
@@ -349,7 +361,8 @@ class Panel extends PureComponent<PanelProps, PanelState> {
           isLoaded={isLoaded}
           isLoading={isLoading}
         />
-        {glTab != null &&
+        {!isWithinPanel &&
+          glTab != null &&
           ReactDOM.createPortal(
             <>
               <PanelContextMenu

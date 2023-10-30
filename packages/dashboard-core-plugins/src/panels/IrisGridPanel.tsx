@@ -133,7 +133,7 @@ type LoadedPanelState = PanelState & {
     >;
 };
 
-export interface IrisGridPanelProps extends DashboardPanelProps {
+export interface OwnProps extends DashboardPanelProps {
   children?: ReactNode;
   panelState: LoadedPanelState | null;
   makeModel: () => IrisGridModel | Promise<IrisGridModel>;
@@ -150,7 +150,7 @@ export interface IrisGridPanelProps extends DashboardPanelProps {
   theme?: IrisGridThemeType;
 }
 
-interface PropsFromRedux {
+interface StateProps {
   inputFilters: InputFilter[];
   links: Link[];
   columnSelectionValidator?: (
@@ -225,10 +225,10 @@ function getTableNameFromMetadata(metadata: PanelMetadata | undefined): string {
   throw new Error(`Unable to determine table name from metadata: ${metadata}`);
 }
 
-type IrisGridPanelPropsWithRedux = IrisGridPanelProps & PropsFromRedux;
+export type IrisGridPanelProps = OwnProps & StateProps;
 
 export class IrisGridPanel extends PureComponent<
-  IrisGridPanelPropsWithRedux,
+  IrisGridPanelProps,
   IrisGridPanelState
 > {
   static defaultProps = {
@@ -240,7 +240,7 @@ export class IrisGridPanel extends PureComponent<
 
   static COMPONENT = 'IrisGridPanel';
 
-  constructor(props: IrisGridPanelPropsWithRedux) {
+  constructor(props: IrisGridPanelProps) {
     super(props);
 
     this.handleAdvancedSettingsChange =
@@ -1372,8 +1372,8 @@ export class IrisGridPanel extends PureComponent<
 
 const mapStateToProps = (
   state: RootState,
-  { localDashboardId = DEFAULT_DASHBOARD_ID }: { localDashboardId?: string }
-) => ({
+  { localDashboardId = DEFAULT_DASHBOARD_ID }: OwnProps
+): StateProps => ({
   inputFilters: getInputFiltersForDashboard(state, localDashboardId),
   links: getLinksForDashboard(state, localDashboardId),
   columnSelectionValidator: getColumnSelectionValidatorForDashboard(

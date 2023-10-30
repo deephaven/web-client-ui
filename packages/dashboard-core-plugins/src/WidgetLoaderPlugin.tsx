@@ -72,7 +72,6 @@ export function WrapWidgetPlugin(
             {...props}
           />
         )}
-        )
       </WidgetPanel>
     );
   }
