@@ -51,7 +51,11 @@ export const getWorkspace = <State extends RootState>(
 ): Workspace => {
   const { workspace } = store;
 
-  const defaultInjectedWorkspace = {
+  if (workspace == null) {
+    // this will only be null on initial render
+    return null as never;
+  }
+  const defaultInjectedWorkspace: Workspace = {
     data: {
       ...workspace.data,
       settings: getDefaultWorkspaceSettings(store) ?? {},
@@ -66,8 +70,10 @@ export const getWorkspace = <State extends RootState>(
   for (let i = 0; i < keys.length; i += 1) {
     const key = keys[i];
     const value = customizedWorkspaceSettings[key];
+    // only set pass in customized defaults if defined
     if (value !== undefined) {
-      defaultInjectedWorkspace.data.settings[key] = value as never;
+      defaultInjectedWorkspace.data.settings[key] =
+        value as WorkspaceSettings[typeof key] as never;
     }
   }
   return defaultInjectedWorkspace;

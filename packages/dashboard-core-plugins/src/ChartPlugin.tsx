@@ -7,6 +7,7 @@ import {
 } from '@deephaven/dashboard';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import { useConnection } from '@deephaven/jsapi-components';
+import { assertNotNull } from '@deephaven/utils';
 import { ChartModel, ChartModelFactory } from '@deephaven/chart';
 import type { dh as DhType, IdeConnection } from '@deephaven/jsapi-types';
 import { IrisGridUtils } from '@deephaven/iris-grid';
@@ -18,7 +19,6 @@ import {
   isChartPanelDehydratedProps,
   isChartPanelTableMetadata,
 } from './panels';
-import { assertNotNull } from '@deephaven/utils';
 
 async function createChartModel(
   dh: DhType,

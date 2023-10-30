@@ -155,7 +155,8 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
       }
       if (
         workspace.settings.defaultDecimalFormatOptions.defaultFormatString ===
-        undefined
+          undefined &&
+        serverConfigValues?.get('decimalFormat') !== undefined
       ) {
         workspace.settings.defaultDecimalFormatOptions = {
           defaultFormatString: serverConfigValues?.get('decimalFormat'),
@@ -163,7 +164,8 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
       }
       if (
         workspace.settings.defaultIntegerFormatOptions.defaultFormatString ===
-        undefined
+          undefined &&
+        serverConfigValues?.get('integerFormat') !== undefined
       ) {
         workspace.settings.defaultIntegerFormatOptions = {
           defaultFormatString: serverConfigValues?.get('integerFormat'),
@@ -178,7 +180,8 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
       }
       if (
         workspace.settings.defaultNotebookSettings.isMinimapEnabled ===
-        undefined
+          undefined &&
+        serverConfigValues?.get('isMinimapEnabled') !== undefined
       ) {
         workspace.settings.defaultNotebookSettings = {
           isMinimapEnabled: LocalWorkspaceStorage.getBooleanServerConfig(
