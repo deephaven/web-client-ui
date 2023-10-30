@@ -185,10 +185,10 @@ function AppInit(props: AppInitProps): JSX.Element {
           }
           setUser(user);
           setWorkspaceStorage(workspaceStorage);
+          setWorkspace(loadedWorkspace);
           setDefaultWorkspaceSettings(
             LocalWorkspaceStorage.makeDefaultWorkspaceSettings()
           );
-          setWorkspace(loadedWorkspace);
         } catch (e) {
           log.error(e);
           setError(e);

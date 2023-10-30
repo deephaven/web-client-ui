@@ -18,6 +18,7 @@ import {
   isChartPanelDehydratedProps,
   isChartPanelTableMetadata,
 } from './panels';
+import { assertNotNull } from '@deephaven/utils';
 
 async function createChartModel(
   dh: DhType,
@@ -76,11 +77,9 @@ async function createChartModel(
     type: dh.VariableType.TABLE,
   };
   const table = await connection.getObject(definition);
-  new IrisGridUtils(dh).applyTableSettings(
-    table,
-    tableSettings,
-    getTimeZone(store.getState())
-  );
+  const timeZone = getTimeZone(store.getState());
+  assertNotNull(timeZone);
+  new IrisGridUtils(dh).applyTableSettings(table, tableSettings, timeZone);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return ChartModelFactory.makeModelFromSettings(dh, settings as any, table);

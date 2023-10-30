@@ -57,6 +57,7 @@ import {
   RootState,
   User,
   Workspace,
+  WorkspaceSettings,
 } from '@deephaven/redux';
 import {
   assertNotNull,
@@ -159,7 +160,7 @@ interface PropsFromRedux {
   ) => boolean;
   user: User;
   workspace: Workspace;
-  settings: { timeZone: string };
+  settings: WorkspaceSettings;
 }
 
 interface IrisGridPanelState {

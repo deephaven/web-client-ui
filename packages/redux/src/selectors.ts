@@ -48,11 +48,8 @@ export const getDefaultWorkspaceSettings = <State extends RootState>(
 // Workspace
 export const getWorkspace = <State extends RootState>(
   store: State
-): Workspace | null => {
+): Workspace => {
   const { workspace } = store;
-  if (workspace == null) {
-    return null;
-  }
 
   const defaultInjectedWorkspace = {
     data: {
@@ -79,7 +76,7 @@ export const getWorkspace = <State extends RootState>(
 // Settings
 export const getSettings = <State extends RootState>(
   store: State
-): Settings<State> => getWorkspace(store)?.data.settings ?? {};
+): WorkspaceSettings => getWorkspace(store).data.settings;
 
 export const getDefaultDateTimeFormat = <State extends RootState>(
   store: State

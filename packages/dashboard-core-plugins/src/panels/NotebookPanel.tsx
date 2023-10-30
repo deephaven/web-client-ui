@@ -1434,6 +1434,7 @@ const mapStateToProps = (
 > => {
   const fileStorage = getFileStorage(state);
   const defaultNotebookSettings = getDefaultNotebookSettings(state);
+  assertNotNull(defaultNotebookSettings);
   if (defaultNotebookSettings.isMinimapEnabled === undefined) {
     defaultNotebookSettings.isMinimapEnabled = true;
   }

@@ -55,7 +55,7 @@ interface StateProps {
   dh: DhType;
   isolatedLinkerPanelId?: string;
   links: Link[];
-  timeZone: string;
+  timeZone?: string;
 }
 
 interface OwnProps {
