@@ -68,8 +68,7 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
         layoutStorage,
         options?.isConsoleAvailable
       );
-    console.log(serverConfigValues);
-    const test = {
+    return {
       settings: {
         defaultDateTimeFormat: serverConfigValues?.get('dateTimeFormat'),
         formatter: [],
@@ -114,8 +113,6 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
       links,
       filterSets,
     };
-    console.log(test);
-    return test;
   }
 
   static async makeDefaultWorkspace(
@@ -123,15 +120,13 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
     options?: WorkspaceStorageLoadOptions,
     serverConfigValues?: Map<string, string>
   ): Promise<CustomizableWorkspace> {
-    const test = {
+    return {
       data: await LocalWorkspaceStorage.makeWorkspaceData(
         layoutStorage,
         options,
         serverConfigValues
       ),
     };
-    console.log(test);
-    return test;
   }
 
   private layoutStorage: LayoutStorage;
@@ -194,22 +189,17 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
     } catch (e) {
       log.info('Unable to load workspace data, initializing to default data');
 
-      const workspace = LocalWorkspaceStorage.makeDefaultWorkspace(
+      return LocalWorkspaceStorage.makeDefaultWorkspace(
         this.layoutStorage,
         options,
         serverConfigValues
       );
-      console.log(await workspace);
-      return workspace;
     }
   }
 
   // eslint-disable-next-line class-methods-use-this
-  async save(workspace: Workspace): Promise<Workspace> {
-    localStorage.setItem(
-      LocalWorkspaceStorage.STORAGE_KEY,
-      JSON.stringify(workspace)
-    );
+  async save(workspace: Workspace): Promise<CustomizableWorkspace> {
+    localStorage.setItem('123123', JSON.stringify(workspace));
     return workspace;
   }
 }

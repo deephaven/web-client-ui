@@ -84,8 +84,10 @@ export type WorkspaceStorageLoadOptions = {
 };
 
 export interface WorkspaceStorage {
-  load(options?: WorkspaceStorageLoadOptions): Promise<CustomizableWorkspace>;
-  save(workspace: CustomizableWorkspace): Promise<CustomizableWorkspace>;
+  load: (
+    options?: WorkspaceStorageLoadOptions
+  ) => Promise<CustomizableWorkspace>;
+  save: (workspace: CustomizableWorkspace) => Promise<CustomizableWorkspace>;
 }
 
 export type RootState = {

@@ -153,7 +153,6 @@ function AppInit(props: AppInitProps): JSX.Element {
             serverConfig
           );
 
-          console.log(loadedWorkspace);
           const { data } = loadedWorkspace;
 
           // Fill in settings that have not yet been set
@@ -189,7 +188,6 @@ function AppInit(props: AppInitProps): JSX.Element {
             filterSets: data.filterSets,
             links: data.links,
           };
-          console.log(loadedWorkspace);
 
           setApi(api);
           setActiveTool(ToolType.DEFAULT);

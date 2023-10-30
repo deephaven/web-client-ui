@@ -395,7 +395,7 @@ export class FormattingSectionContent extends PureComponent<
     ) {
       newSettings.defaultIntegerFormatOptions = defaultIntegerFormatOptions;
     }
-    saveSettings(newSettings);
+    // saveSettings(newSettings);
   }
 
   render(): ReactElement {
