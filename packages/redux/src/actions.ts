@@ -22,7 +22,6 @@ import type {
   ServerConfigValues,
   User,
   Workspace,
-  WorkspaceData,
   WorkspaceSettings,
   WorkspaceStorage,
 } from './store';
@@ -106,7 +105,7 @@ export const saveWorkspace =
  */
 export const updateWorkspaceData =
   (
-    workspaceData: Partial<WorkspaceData>
+    workspaceData: Partial<CustomizableWorkspace['data']>
   ): ThunkAction<
     Promise<CustomizableWorkspace>,
     RootState,
@@ -121,6 +120,10 @@ export const updateWorkspaceData =
       data: {
         ...data,
         ...workspaceData,
+        settings: {
+          ...data.settings,
+          ...workspaceData.settings,
+        },
       },
     };
     return dispatch(saveWorkspace(newWorkspace));
@@ -141,7 +144,6 @@ export const saveSettings =
   > =>
   dispatch =>
     dispatch(updateWorkspaceData({ settings }));
-
 export const setActiveTool: PayloadActionCreator<string> = payload => ({
   type: SET_ACTIVE_TOOL,
   payload,

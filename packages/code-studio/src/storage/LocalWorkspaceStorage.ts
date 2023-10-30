@@ -101,12 +101,15 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
           serverConfigValues,
           'truncateNumbersWithPound'
         ),
-        defaultNotebookSettings: {
-          isMinimapEnabled: LocalWorkspaceStorage.getBooleanServerConfig(
-            serverConfigValues,
-            'isMinimapEnabled'
-          ),
-        },
+        defaultNotebookSettings:
+          serverConfigValues?.get('isMinimapEnabled') !== undefined
+            ? {
+                isMinimapEnabled: LocalWorkspaceStorage.getBooleanServerConfig(
+                  serverConfigValues,
+                  'isMinimapEnabled'
+                ),
+              }
+            : undefined,
       },
       layoutConfig,
       closed: [{}],

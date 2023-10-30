@@ -53,8 +53,14 @@ export const getWorkspace = <State extends RootState>(
   if (workspace == null) {
     return null as never;
   }
+
+  const defaultInjectedWorkspace = {
+    data: {
+      ...workspace.data,
+      settings: getDefaultWorkspaceSettings(store) ?? {},
+    },
+  };
   const customizedWorkspaceSettings = { ...workspace.data.settings };
-  workspace.data.settings = getDefaultWorkspaceSettings(store) ?? {};
 
   const keys = Object.keys(
     customizedWorkspaceSettings
@@ -64,11 +70,11 @@ export const getWorkspace = <State extends RootState>(
     const key = keys[i];
     const value = customizedWorkspaceSettings[key];
     if (value !== undefined) {
-      workspace.data.settings[key] = value as never;
+      defaultInjectedWorkspace.data.settings[key] = value as never;
     }
   }
-
-  return workspace;
+  console.log(defaultInjectedWorkspace);
+  return defaultInjectedWorkspace;
 };
 
 // Settings

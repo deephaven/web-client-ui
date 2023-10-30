@@ -23,12 +23,10 @@ import {
   getDefaultDateTimeFormat,
   getDefaultDecimalFormatOptions,
   getDefaultIntegerFormatOptions,
-  getFormatter,
   getTimeZone,
   getShowTimeZone,
   getShowTSeparator,
   getTruncateNumbersWithPound,
-  getSettings,
   saveSettings as saveSettingsAction,
   RootState,
   WorkspaceSettings,
@@ -40,11 +38,8 @@ import {
   isSameDecimalOptions,
   isSameIntegerOptions,
   isValidFormat,
-  removeFormatRuleExtraProps,
-  isFormatRuleValidForSave,
-  ValidFormatterItem,
 } from './SettingsUtils';
-import type { FormatterItem, FormatOption } from './SettingsUtils';
+import type { FormatOption } from './SettingsUtils';
 import DateTimeOptions from './DateTimeOptions';
 import TimeZoneOptions from './TimeZoneOptions';
 
@@ -52,14 +47,12 @@ const log = Log.module('FormattingSectionContent');
 
 interface FormattingSectionContentProps {
   dh: DhType;
-  formatter: FormatterItem[];
   defaultDateTimeFormat?: string;
   showTimeZone: boolean;
   showTSeparator: boolean;
   timeZone: string;
   truncateNumbersWithPound?: boolean;
-  settings: WorkspaceSettings;
-  saveSettings: (settings: WorkspaceSettings) => void;
+  saveSettings: (settings: Partial<WorkspaceSettings>) => void;
   defaultDecimalFormatOptions: FormatOption;
   defaultIntegerFormatOptions: FormatOption;
   defaults: {
@@ -73,7 +66,6 @@ interface FormattingSectionContentProps {
 }
 
 interface FormattingSectionContentState {
-  formatSettings: FormatterItem[];
   showTimeZone: boolean;
   showTSeparator: boolean;
   timeZone: string;
@@ -133,7 +125,6 @@ export class FormattingSectionContent extends PureComponent<
       this.handleTruncateNumbersWithPoundChange.bind(this);
 
     const {
-      formatter,
       defaultDateTimeFormat,
       defaultDecimalFormatOptions,
       defaultIntegerFormatOptions,
@@ -143,15 +134,9 @@ export class FormattingSectionContent extends PureComponent<
       truncateNumbersWithPound,
     } = props;
 
-    const formatSettings = formatter.map((item, i) => ({
-      ...item,
-      id: i,
-    }));
-
     this.containerRef = React.createRef();
 
     this.state = {
-      formatSettings,
       showTimeZone,
       showTSeparator,
       timeZone,
@@ -171,7 +156,9 @@ export class FormattingSectionContent extends PureComponent<
     this.debouncedCommitChanges.flush();
   }
 
-  debouncedCommitChanges: DebouncedFunc<() => void>;
+  debouncedCommitChanges: DebouncedFunc<
+    (updates: Partial<WorkspaceSettings>) => void
+  >;
 
   containerRef: RefObject<HTMLDivElement>;
 
@@ -201,201 +188,135 @@ export class FormattingSectionContent extends PureComponent<
     event: ChangeEvent<HTMLSelectElement>
   ): void {
     log.debug('handleDefaultDateTimeFormatChange', event.target.value);
-    this.setState(
-      {
-        defaultDateTimeFormat: event.target.value,
-      },
-      () => {
-        this.debouncedCommitChanges();
-      }
-    );
+    const update = {
+      defaultDateTimeFormat: event.target.value,
+    };
+    this.setState(update);
+    this.commitChanges(update);
   }
 
   handleDefaultDecimalFormatChange(event: ChangeEvent<HTMLInputElement>): void {
     log.debug('handleDefaultDecimalFormatChange', event.target.value);
-    this.setState(
-      {
-        defaultDecimalFormatOptions: {
-          defaultFormatString: event.target.value,
-        },
+    const update = {
+      defaultDecimalFormatOptions: {
+        defaultFormatString: event.target.value,
       },
-      () => {
-        this.debouncedCommitChanges();
-      }
-    );
+    };
+    this.setState(update);
+    if (
+      isValidFormat(
+        dh,
+        TableUtils.dataType.DECIMAL,
+        DecimalColumnFormatter.makeCustomFormat(event.target.value)
+      )
+    ) {
+      this.commitChanges(update);
+    }
   }
 
   handleDefaultIntegerFormatChange(event: ChangeEvent<HTMLInputElement>): void {
     log.debug('handleDefaultIntegerFormatChange', event.target.value);
-    this.setState(
-      {
-        defaultIntegerFormatOptions: {
-          defaultFormatString: event.target.value,
-        },
+    const update = {
+      defaultIntegerFormatOptions: {
+        defaultFormatString: event.target.value,
       },
-      () => {
-        this.debouncedCommitChanges();
-      }
-    );
+    };
+    this.setState(update);
+    if (
+      isValidFormat(
+        dh,
+        TableUtils.dataType.INT,
+        IntegerColumnFormatter.makeCustomFormat(event.target.value)
+      )
+    ) {
+      this.commitChanges(update);
+    }
   }
 
   handleShowTimeZoneChange(): void {
-    this.setState(
-      state => ({
-        showTimeZone: !state.showTimeZone,
-      }),
-      () => {
-        this.debouncedCommitChanges();
-      }
-    );
+    const { showTimeZone } = this.state;
+    this.setState({ showTimeZone: !showTimeZone });
+    this.commitChanges({ showTimeZone: !showTimeZone });
   }
 
   handleShowTSeparatorChange(): void {
-    this.setState(
-      state => ({
-        showTSeparator: !state.showTSeparator,
-      }),
-      () => {
-        this.debouncedCommitChanges();
-      }
-    );
+    const { showTSeparator } = this.state;
+    this.setState({ showTSeparator: !showTSeparator });
+    this.commitChanges({ showTSeparator: !showTSeparator });
   }
 
   handleTimeZoneChange(event: ChangeEvent<HTMLSelectElement>): void {
-    this.setState(
-      {
-        timeZone: event.target.value,
-      },
-      () => {
-        this.debouncedCommitChanges();
-      }
-    );
+    this.setState({
+      timeZone: event.target.value,
+    });
+    this.commitChanges({ timeZone: event.target.value });
   }
 
   handleResetDateTimeFormat(): void {
     const { defaults } = this.props;
     const { defaultDateTimeFormat, showTimeZone, showTSeparator } = defaults;
     log.debug('handleResetDateTimeFormat');
-    this.setState(
-      {
-        defaultDateTimeFormat,
-        showTimeZone,
-        showTSeparator,
-      },
-      () => {
-        this.debouncedCommitChanges();
-      }
-    );
+    this.setState({
+      defaultDateTimeFormat,
+      showTimeZone,
+      showTSeparator,
+    });
+    this.debouncedCommitChanges({
+      defaultDateTimeFormat: undefined,
+      showTimeZone: undefined,
+      showTSeparator: undefined,
+    });
   }
 
   handleResetTimeZone(): void {
     const { defaults } = this.props;
     const { timeZone } = defaults;
     log.debug('handleResetTimeZone');
-    this.setState(
-      {
-        timeZone,
-      },
-      () => {
-        this.debouncedCommitChanges();
-      }
-    );
+    this.setState({
+      timeZone,
+    });
+    this.debouncedCommitChanges({
+      timeZone: undefined,
+    });
   }
 
   handleResetDecimalFormat(): void {
     const { defaults } = this.props;
     const { defaultDecimalFormatOptions } = defaults;
     log.debug('handleResetDecimalFormat');
-    this.setState(
-      {
-        defaultDecimalFormatOptions,
-      },
-      () => {
-        this.debouncedCommitChanges();
-      }
-    );
+    this.setState({
+      defaultDecimalFormatOptions,
+    });
+    this.debouncedCommitChanges({
+      defaultDecimalFormatOptions: undefined,
+    });
   }
 
   handleResetIntegerFormat(): void {
     const { defaults } = this.props;
     const { defaultIntegerFormatOptions } = defaults;
     log.debug('handleResetIntegerFormat');
-    this.setState(
-      {
-        defaultIntegerFormatOptions,
-      },
-      () => {
-        this.debouncedCommitChanges();
-      }
-    );
+    this.setState({
+      defaultIntegerFormatOptions,
+    });
+    this.debouncedCommitChanges({
+      defaultIntegerFormatOptions: undefined,
+    });
   }
 
   handleTruncateNumbersWithPoundChange(): void {
-    this.setState(
-      state => ({
-        truncateNumbersWithPound:
-          state.truncateNumbersWithPound === undefined ||
-          state.truncateNumbersWithPound === false,
-      }),
-      () => {
-        this.debouncedCommitChanges();
-      }
-    );
+    const { truncateNumbersWithPound } = this.state;
+    this.setState({
+      truncateNumbersWithPound: truncateNumbersWithPound !== true,
+    });
+    this.debouncedCommitChanges({
+      truncateNumbersWithPound: truncateNumbersWithPound !== true,
+    });
   }
 
-  commitChanges(): void {
-    const {
-      formatSettings,
-      defaultDateTimeFormat,
-      showTimeZone,
-      showTSeparator,
-      timeZone,
-      defaultDecimalFormatOptions,
-      defaultIntegerFormatOptions,
-      truncateNumbersWithPound,
-    } = this.state;
-    const { dh } = this.props;
-
-    const formatter =
-      formatSettings
-        .filter((format): format is ValidFormatterItem =>
-          isFormatRuleValidForSave(dh, format)
-        )
-        .map(removeFormatRuleExtraProps) ?? [];
-
-    const { settings, saveSettings } = this.props;
-    const newSettings: WorkspaceSettings = {
-      ...settings,
-      formatter,
-      defaultDateTimeFormat,
-      showTimeZone,
-      showTSeparator,
-      timeZone,
-      truncateNumbersWithPound,
-    };
-    if (
-      isValidFormat(
-        dh,
-        TableUtils.dataType.DECIMAL,
-        DecimalColumnFormatter.makeCustomFormat(
-          defaultDecimalFormatOptions.defaultFormatString
-        )
-      )
-    ) {
-      newSettings.defaultDecimalFormatOptions = defaultDecimalFormatOptions;
-    }
-    if (
-      isValidFormat(
-        dh,
-        TableUtils.dataType.INT,
-        IntegerColumnFormatter.makeCustomFormat(
-          defaultIntegerFormatOptions.defaultFormatString
-        )
-      )
-    ) {
-      newSettings.defaultIntegerFormatOptions = defaultIntegerFormatOptions;
-    }
-    // saveSettings(newSettings);
+  commitChanges(updates: Partial<WorkspaceSettings>): void {
+    const { saveSettings } = this.props;
+    saveSettings(updates);
   }
 
   render(): ReactElement {
@@ -632,7 +553,6 @@ export class FormattingSectionContent extends PureComponent<
 const mapStateToProps = (
   state: RootState
 ): Omit<FormattingSectionContentProps, 'defaults' | 'saveSettings'> => ({
-  formatter: getFormatter(state),
   defaultDateTimeFormat: getDefaultDateTimeFormat(state),
   defaultDecimalFormatOptions: getDefaultDecimalFormatOptions(state),
   defaultIntegerFormatOptions: getDefaultIntegerFormatOptions(state),
@@ -641,7 +561,6 @@ const mapStateToProps = (
   showTSeparator: getShowTSeparator(state),
   truncateNumbersWithPound: getTruncateNumbersWithPound(state),
   timeZone: getTimeZone(state) ?? DateTimeColumnFormatter.DEFAULT_TIME_ZONE_ID,
-  settings: getSettings(state),
 });
 
 const ConnectedFormattingSectionContent = connect(mapStateToProps, {
