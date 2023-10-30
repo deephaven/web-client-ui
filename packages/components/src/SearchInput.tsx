@@ -80,14 +80,10 @@ class SearchInput extends PureComponent<SearchInputProps> {
           data-testid={dataTestId}
         />
 
-        {/* need to move this section into case where number selected is greater than 1 */}
-        {/* {matchCount != null && (
-          <span className="search-match">{matchCount}</span>
-        )} */}
-
         {selectedParams != null && selectedParams.numberSelected === 1 ? (
-          <div>
+          <div className="search-change-selection">
             <button
+              className="search-change-button"
               type="button"
               onClick={() => {
                 selectedParams.decreaseSelected();
@@ -95,10 +91,11 @@ class SearchInput extends PureComponent<SearchInputProps> {
             >
               <FontAwesomeIcon icon={vsArrowLeft} />
             </button>
-            <span>
-              {selectedParams.numberSelected} of {selectedParams.length}
+            <span className="search-change-text">
+              {selectedParams.selectedIndex} of {selectedParams.length}
             </span>
             <button
+              className="search-change-button"
               type="button"
               onClick={() => {
                 selectedParams.increaseSelected();
@@ -108,9 +105,14 @@ class SearchInput extends PureComponent<SearchInputProps> {
             </button>
           </div>
         ) : (
-          <span className="search-icon">
-            <FontAwesomeIcon icon={vsSearch} />
-          </span>
+          <>
+            {matchCount != null && (
+              <span className="search-match">{matchCount}</span>
+            )}
+            <span className="search-icon">
+              <FontAwesomeIcon icon={vsSearch} />
+            </span>
+          </>
         )}
       </div>
     );
