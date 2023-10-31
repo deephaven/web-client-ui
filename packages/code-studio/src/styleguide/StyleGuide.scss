@@ -91,13 +91,16 @@ pre {
 }
 .swatch-content-bg {
   border: 1px solid $gray-600;
-  @include swatch-with-label('Semantic Colours');
+  @include swatch-with-label('Semantic Colors');
 }
 .swatch-primary {
   @include swatch-with-label('Brand Colors');
 }
 .swatch-success {
   @include swatch-with-label('Levels');
+}
+.swatch-light {
+  @include swatch-with-label('Brightness');
 }
 
 @each $color, $value in $colors {
