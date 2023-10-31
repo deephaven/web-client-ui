@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
 import type { EventEmitter } from '@deephaven/golden-layout';
+import useOptionalListener from './useOptionalListener';
 
 /**
  * Listen for a specific event on an EventEmitter
@@ -7,22 +7,15 @@ import type { EventEmitter } from '@deephaven/golden-layout';
  * @param eventName Name of the event to listen to
  * @param callback Callback to call when the event is triggered
  */
-export function useListener(
+export function useListener<T extends unknown[]>(
   eventEmitter: EventEmitter,
   eventName: string,
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  callback: Function
+  callback: (...args: T) => void
 ): void {
-  useEffect(
-    function initEventEmitter() {
-      eventEmitter.on(eventName, callback);
-
-      return () => {
-        eventEmitter.off(eventName, callback);
-      };
-    },
-    [eventEmitter, eventName, callback]
-  );
+  if (callback == null) {
+    throw new Error('Callback must be specified');
+  }
+  useOptionalListener(eventEmitter, eventName, callback);
 }
 
 export default useListener;

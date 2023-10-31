@@ -143,4 +143,41 @@ describe('the EventEmitter works', function () {
       myObject.on('someEvent', {});
     }).toThrow();
   });
+
+  it('convenience functions work', () => {
+    var myObject = EmitterImplementor();
+    var myListener = { callback: function () {} };
+    spyOn(myListener, 'callback');
+    var unlisten = lm.utils.listenEvent(
+      myObject,
+      'someEvent',
+      myListener.callback
+    );
+    expect(myListener.callback.calls.length).toEqual(0);
+    lm.utils.emitEvent('someEvent');
+    expect(myListener.callback.calls.length).toEqual(1);
+    unlisten();
+    myObject.emit('someEvent');
+    expect(myListener.callback.calls.length).toEqual(1);
+  });
+
+  it('convenience functions work with args', () => {
+    var myObject = EmitterImplementor();
+    var myListener = { callback: function () {} };
+    var arg = { name: 'a' };
+    spyOn(myListener, 'callback');
+    var unlisten = lm.utils.listenEvent(
+      myObject,
+      'someEvent',
+      myListener.callback,
+      arg
+    );
+    expect(myListener.callback.calls.length).toEqual(0);
+    lm.utils.emitEvent('someEvent');
+    expect(myListener.callback.calls.length).toEqual(1);
+    expect(myListener.callback.calls[0].object).toBe(arg);
+    unlisten();
+    myObject.emit('someEvent');
+    expect(myListener.callback.calls.length).toEqual(1);
+  });
 });

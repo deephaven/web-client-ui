@@ -7,14 +7,14 @@ import type {
   ReactComponentConfig,
 } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
-import PanelEvent from './PanelEvent';
-import LayoutUtils, { isReactComponentConfig } from './layout/LayoutUtils';
+import PanelEvent, { ComponentPanel, onFocus } from './PanelEvent';
+import LayoutUtils, { isReactComponentConfig } from '../layout/LayoutUtils';
 import {
   isWrappedComponent,
   PanelComponent,
   PanelComponentType,
   PanelProps,
-} from './DashboardPlugin';
+} from './PanelTypes';
 
 const log = Log.module('PanelManager');
 
@@ -32,7 +32,7 @@ export type ClosedPanel = ReactComponentConfig;
 
 export type ClosedPanels = ClosedPanel[];
 
-export type OpenedPanelMap = Map<string | string[], PanelComponent>;
+export type OpenedPanelMap = Map<string | string[], ComponentPanel>;
 
 export type PanelsUpdateData = {
   closed: ClosedPanels;
@@ -58,6 +58,8 @@ class PanelManager {
   closed: ClosedPanels;
 
   openedMap: OpenedPanelMap;
+
+  listenerCleanup: (() => void)[];
 
   /**
    * @param layout The GoldenLayout object to attach to
@@ -96,13 +98,13 @@ class PanelManager {
 
     // Closed panels are stored in their dehydrated state
     this.closed = [...closed];
+    this.listenerCleanup = [];
 
     this.startListening();
   }
 
   startListening(): void {
     const { eventHub } = this.layout;
-    eventHub.on(PanelEvent.FOCUS, this.handleFocus);
     eventHub.on(PanelEvent.MOUNT, this.handleMount);
     eventHub.on(PanelEvent.UNMOUNT, this.handleUnmount);
     eventHub.on(PanelEvent.REOPEN, this.handleReopen);
@@ -110,24 +112,29 @@ class PanelManager {
     eventHub.on(PanelEvent.CLOSED, this.handleClosed);
     eventHub.on(PanelEvent.CLOSE, this.handleControlClose);
     // PanelEvent.OPEN should be listened to by plugins to open a panel
+
+    this.listenerCleanup = [];
+    this.listenerCleanup.push(onFocus(eventHub, this.handleFocus));
   }
 
   stopListening(): void {
     const { eventHub } = this.layout;
-    eventHub.off(PanelEvent.FOCUS, this.handleFocus);
     eventHub.off(PanelEvent.MOUNT, this.handleMount);
     eventHub.off(PanelEvent.UNMOUNT, this.handleUnmount);
     eventHub.off(PanelEvent.REOPEN, this.handleReopen);
     eventHub.off(PanelEvent.DELETE, this.handleDeleted);
     eventHub.off(PanelEvent.CLOSED, this.handleClosed);
     eventHub.off(PanelEvent.CLOSE, this.handleControlClose);
+
+    this.listenerCleanup.forEach(cleanup => cleanup());
+    this.listenerCleanup = [];
   }
 
   getClosedPanelConfigsOfType(typeString: string): ClosedPanels {
     return this.closed.filter(panel => panel.component === typeString);
   }
 
-  getOpenedPanels(): PanelComponent[] {
+  getOpenedPanels(): ComponentPanel[] {
     return Array.from(this.openedMap.values());
   }
 
@@ -147,7 +154,7 @@ class PanelManager {
     ) as ReactComponentConfig[];
   }
 
-  getOpenedPanelById(panelId: string | string[]): PanelComponent | undefined {
+  getOpenedPanelById(panelId: string | string[]): ComponentPanel | undefined {
     return this.openedMap.get(panelId);
   }
 
@@ -161,8 +168,8 @@ class PanelManager {
     );
   }
 
-  getLastUsedPanel<T extends PanelComponent = PanelComponent>(
-    matcher: (panel: PanelComponent) => boolean
+  getLastUsedPanel<T extends ComponentPanel = ComponentPanel>(
+    matcher: (panel: ComponentPanel) => boolean
   ): T | undefined {
     const opened = this.getOpenedPanels();
     for (let i = opened.length - 1; i >= 0; i -= 1) {
@@ -196,7 +203,7 @@ class PanelManager {
     );
   }
 
-  updatePanel(panel: PanelComponent): void {
+  updatePanel(panel: ComponentPanel): void {
     const panelId = LayoutUtils.getIdFromPanel(panel);
     if (panelId == null) {
       log.error('updatePanel Panel did not have an ID', panel);
@@ -210,7 +217,7 @@ class PanelManager {
     this.openedMap.set(panelId, panel);
   }
 
-  removePanel(panel: PanelComponent): void {
+  removePanel(panel: ComponentPanel): void {
     const panelId = LayoutUtils.getIdFromPanel(panel);
     if (panelId == null) {
       log.error('removePanel Panel did not have an ID', panel);
@@ -246,18 +253,18 @@ class PanelManager {
     }
   }
 
-  handleFocus(panel: PanelComponent): void {
+  handleFocus(panel: ComponentPanel): void {
     log.debug2('Focus: ', panel);
     this.updatePanel(panel);
   }
 
-  handleMount(panel: PanelComponent): void {
+  handleMount(panel: ComponentPanel): void {
     log.debug2('Mount: ', panel);
     this.updatePanel(panel);
     this.sendUpdate();
   }
 
-  handleUnmount(panel: PanelComponent): void {
+  handleUnmount(panel: ComponentPanel): void {
     log.debug2('Unmount: ', panel);
     this.removePanel(panel);
     this.sendUpdate();

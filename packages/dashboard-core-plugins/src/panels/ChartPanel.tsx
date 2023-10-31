@@ -15,8 +15,10 @@ import {
 import type PlotlyType from 'plotly.js';
 import {
   DashboardPanelProps,
+  emitFocusEvent,
   getOpenedPanelMapForDashboard,
   LayoutUtils,
+  listenFocusEvent,
   PanelComponent,
   PanelMetadata,
   PanelProps,

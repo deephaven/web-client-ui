@@ -1,4 +1,5 @@
 import $ from 'jquery';
+import EventEmitter from './EventEmitter';
 
 export function getHashValue(key: string) {
   var matches = location.hash.match(new RegExp(key + '=([^&]*)'));
@@ -77,4 +78,81 @@ export function filterXss(input: string, keepTags: boolean) {
  */
 export function stripTags(input: string) {
   return $.trim(input.replace(/(<([^>]+)>)/gi, ''));
+}
+
+/**
+ * Emit an event
+ * @param emitter Emitter to emit the event on
+ * @param name Name of the event
+ * @param args Arguments to pass to the callback
+ */
+export function emitEvent<T extends readonly unknown[]>(
+  emitter: EventEmitter,
+  name: string,
+  ...args: T
+): void {
+  emitter.emit(name, ...args);
+}
+
+export type OffFunction = () => void;
+
+/**
+ * Listen for an event
+ *
+ * @param emitter Event emitter to listen on
+ * @param name Name of the event to listen to
+ * @param callback Callback to call when the event is triggered
+ * @returns A cleanup function to remove the listener
+ */
+export function onEvent<T extends readonly unknown[]>(
+  emitter: EventEmitter,
+  name: string,
+  callback: (...args: T) => void
+): OffFunction {
+  emitter.on(name, callback);
+  return () => {
+    emitter.off(name, callback);
+  };
+}
+
+/**
+ * Stop listening for an event
+ *
+ * @param emitter Event emitter to listen on
+ * @param name Name of the event to listen to
+ * @param callback Callback to call when the event is triggered
+ * @returns A cleanup function to remove the listener
+ */
+export function offEvent<T extends readonly unknown[]>(
+  emitter: EventEmitter,
+  name: string,
+  callback: (...args: T) => void
+): void {
+  emitter.off(name, callback);
+}
+
+export type EmitListenerPair<T extends readonly unknown[]> = {
+  emit: (emitter: EventEmitter, ...args: T) => void;
+  on: (emitter: EventEmitter, callback: (...args: T) => void) => OffFunction;
+};
+
+/**
+ * Get an emit and listen function pair for a given event name.
+ * Note that this does not provide good docs for the functions.
+ * For proper docs, create your own functions with docs that call #emitEvent and #onEvent.
+ *
+ * @param name Name of the event to emit and listen for
+ * @returns An object with emit and listen functions, that just take the name of the event and args/callback respectively
+ */
+export function getEmitListenerPair<T extends readonly unknown[] = []>(
+  name: string
+): EmitListenerPair<T> {
+  return {
+    emit: function (emitter: EventEmitter, ...args: T) {
+      emitEvent(emitter, name, ...args);
+    },
+    on: function (emitter: EventEmitter, callback: (...args: T) => void) {
+      return onEvent(emitter, name, callback);
+    },
+  };
 }

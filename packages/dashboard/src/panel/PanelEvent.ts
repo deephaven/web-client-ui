@@ -1,4 +1,6 @@
+import { Container, getEmitListenerPair } from '@deephaven/golden-layout';
 import { DragEvent } from 'react';
+import { PanelComponent } from './PanelTypes';
 
 export type WidgetDefinition = {
   type: string;
@@ -13,6 +15,25 @@ export type WidgetDefinition = {
   id?: string;
 };
 
+/** A reference to some props from a panel. */
+export interface PanelHandle {
+  glContainer: Container;
+}
+
+/**
+ * Reference to the legacy component panel types.
+ * @deprecated Use PanelHandle instead.
+ */
+export type LegacyComponentPanel = PanelComponent;
+
+/**
+ * Reference to a component panel.
+ */
+export type ComponentPanel = LegacyComponentPanel | PanelHandle;
+
+/**
+ * Event detail fired when a panel is opened.
+ */
 export type PanelOpenEventDetail = {
   dragEvent?: DragEvent;
   fetch?: () => Promise<unknown>;
@@ -20,10 +41,13 @@ export type PanelOpenEventDetail = {
   widget: WidgetDefinition;
 };
 
-/**
- * Events emitted by panels and to control panels
- */
-export default Object.freeze({
+/** ID associated with a panel */
+export type PanelId = string;
+
+/** The componentPanel associated with the Panel */
+export type PanelFocusEventArgs = [ComponentPanel];
+
+const PanelEvent = Object.freeze({
   // Panel has received focus
   FOCUS: 'PanelEvent.FOCUS',
 
@@ -62,3 +86,11 @@ export default Object.freeze({
   // Panel is dropped
   DROPPED: 'PanelEvent.DROPPED',
 });
+
+export const { emit: emitFocus, on: onFocus } =
+  getEmitListenerPair<PanelFocusEventArgs>(PanelEvent.FOCUS);
+
+/**
+ * Events emitted by panels and to control panels
+ */
+export default PanelEvent;

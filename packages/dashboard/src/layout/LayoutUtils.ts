@@ -23,7 +23,6 @@ import type {
 } from '@deephaven/golden-layout';
 import { assertNotNull } from '@deephaven/utils';
 import { DashboardLayoutConfig } from '../DashboardLayout';
-import { PanelConfig } from '../DashboardPlugin';
 
 const log = Log.module('LayoutUtils');
 
@@ -32,24 +31,6 @@ type LayoutConfig = { id?: string; component?: string };
 export type StackItemConfig = ItemConfig & {
   activeItemIndex?: number;
 };
-
-function isComponentConfig(config: ItemConfigType): config is ComponentConfig {
-  return (config as ComponentConfig).componentName !== undefined;
-}
-
-export function isReactComponentConfig(
-  config: ItemConfigType
-): config is ReactComponentConfig {
-  const reactConfig = config as ReactComponentConfig;
-  // Golden layout sets the type to 'component' and componentName to 'lm-react-component' in `createContentItem`, then changes it back in `toConfig`
-  // For our purposes, we need to check both.
-  return (
-    ((isComponentConfig(config) &&
-      config.componentName === 'lm-react-component') ||
-      config.type === 'react-component') &&
-    reactConfig.component !== undefined
-  );
-}
 
 function isHTMLElement(element: Element): element is HTMLElement {
   return (element as HTMLElement).focus !== undefined;
@@ -769,9 +750,9 @@ class LayoutUtils {
    * @param panel The panel to get the ID for
    * @returns Panel ID
    */
-  static getIdFromPanel(panel: {
-    props: { glContainer: Container };
-  }): string | string[] | null | undefined {
+  static getIdFromPanel(
+    panel: ComponentPanel
+  ): string | string[] | null | undefined {
     const { glContainer } = panel.props;
     return LayoutUtils.getIdFromContainer(glContainer);
   }

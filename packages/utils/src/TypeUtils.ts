@@ -40,3 +40,20 @@ export type OnlyOneProp<T> = {
  * type A = typeof x[keyof typeof x]; // 1 | 2 | 3
  */
 export type ValueOf<T> = T[keyof T];
+
+/**
+ * Return a callback omitting the first parameter of an existing callback.
+ * Useful for stripping an event name paired with a callback
+ *
+ * e.g. Given
+ * function emit(x: eventName, y: string): void { ... }
+ *
+ * You can then declare a listen function:
+ * function listen(x: eventName, callback: OmitFirstArg<typeof emit>): void { ... }
+ *
+ * And use it like this:
+ * listen('someEvent', (y: string) => { ... });
+ */
+export type OmitFirstArg<F> = F extends (x: never, ...args: infer P) => infer R
+  ? (...args: P) => R
+  : never;

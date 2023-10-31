@@ -1,13 +1,12 @@
-class ConsoleEvent {
-  static SESSION_OPENED = 'ConsoleEvent.SESSION_OPENED';
+export const ConsoleEvent = Object.freeze({
+  /** Focus the command history panel */
+  FOCUS_HISTORY: 'ConsoleEvent.FOCUS_HISTORY',
 
-  static SESSION_CLOSED = 'ConsoleEvent.SESSION_CLOSED';
+  /** Send a command to the console */
+  SEND_COMMAND: 'ConsoleEvent.SEND_COMMAND',
 
-  static FOCUS_HISTORY = 'ConsoleEvent.FOCUS_HISTORY';
-
-  static SEND_COMMAND = 'ConsoleEvent.SEND_COMMAND';
-
-  static SETTINGS_CHANGED = 'ConsoleEvent.SETTINGS_CHANGED';
-}
+  /** Console settings have changed */
+  SETTINGS_CHANGED: 'ConsoleEvent.SETTINGS_CHANGED',
+});
 
 export default ConsoleEvent;
