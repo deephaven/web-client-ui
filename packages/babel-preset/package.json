@@ -10,6 +10,10 @@
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
   "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./mockCssImportPlugin.js": "./mockCssImportPlugin.js"
+  },
   "dependencies": {
     "@babel/core": "^7.20.0",
     "@babel/plugin-proposal-class-properties": "^7.18.0",
