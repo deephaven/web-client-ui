@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import {
+  CustomizableWorkspace,
   getWorkspace,
   PayloadActionCreator,
   RootState,
@@ -16,8 +17,8 @@ import { ExportedLayout } from '../storage/LayoutStorage';
  * Initialize data needed for the styleguide
  */
 function StyleGuideInit(props: {
-  workspace: Workspace;
-  setWorkspace: PayloadActionCreator<Workspace>;
+  workspace: CustomizableWorkspace;
+  setWorkspace: PayloadActionCreator<CustomizableWorkspace>;
 }): JSX.Element | null {
   const { workspace, setWorkspace } = props;
 
