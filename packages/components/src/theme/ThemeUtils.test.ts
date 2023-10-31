@@ -192,17 +192,17 @@ describe('getDefaultBaseThemes', () => {
         name: 'Default Dark',
         themeKey: 'default-dark',
         styleContent: [
-          'mock-theme-dark-palette',
-          'mock-theme-dark-semantic',
-          'mock-theme-dark-semantic-editor',
-          'mock-theme-dark-semantic-grid',
-          'mock-theme-dark-components',
+          './theme-dark-palette.css?raw',
+          './theme-dark-semantic.css?raw',
+          './theme-dark-semantic-editor.css?raw',
+          './theme-dark-semantic-grid.css?raw',
+          './theme-dark-components.css?raw',
         ].join('\n'),
       },
       {
         name: 'Default Light',
         themeKey: 'default-light',
-        styleContent: 'mock-theme-light-palette',
+        styleContent: './theme-light-palette.css?raw',
       },
     ]);
   });
