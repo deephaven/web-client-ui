@@ -1,16 +1,21 @@
 import dh from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
+import { TestUtils } from '@deephaven/utils';
 import { Layout } from 'plotly.js';
 import ChartUtils from './ChartUtils';
 import ChartTestUtils from './ChartTestUtils';
-import ChartTheme from './ChartTheme';
+import type { ChartTheme } from './ChartTheme';
 
 const chartUtils = new ChartUtils(dh);
 const chartTestUtils = new ChartTestUtils(dh);
 
+const { createMockProxy } = TestUtils;
+
 function makeFormatter() {
   return new Formatter(dh);
 }
+
+const chartTheme = createMockProxy<ChartTheme>();
 
 it('groups the axes by type properly', () => {
   const testAxes = (axes, expectedResult) => {
@@ -37,8 +42,8 @@ it('groups the axes by type properly', () => {
 });
 
 it('returns a newly composed layout object each time', () => {
-  const layout1 = chartUtils.makeDefaultLayout(ChartTheme);
-  const layout2 = chartUtils.makeDefaultLayout(ChartTheme);
+  const layout1 = chartUtils.makeDefaultLayout(chartTheme);
+  const layout2 = chartUtils.makeDefaultLayout(chartTheme);
 
   expect(layout1).not.toBe(layout2);
   expect(layout1.xaxis).not.toBe(layout2.xaxis);
@@ -194,7 +199,7 @@ describe('updating layout axes', () => {
   it('adds new axes', () => {
     const layout = {};
     const axes = makeTwinAxes();
-    chartUtils.updateLayoutAxes(layout, axes, axes);
+    chartUtils.updateLayoutAxes(layout, axes, axes, chartTheme);
     expect(layout).toEqual(
       expect.objectContaining({
         xaxis: expect.objectContaining({
@@ -216,11 +221,11 @@ describe('updating layout axes', () => {
   it('keeps the same axis objects, updates domain', () => {
     const layout: Partial<Layout> = {};
     const axes = makeTwinAxes();
-    chartUtils.updateLayoutAxes(layout, axes, axes, 10);
+    chartUtils.updateLayoutAxes(layout, axes, axes, chartTheme, 10);
 
     const { xaxis } = layout;
     const xDomain = [...(xaxis?.domain ?? [])];
-    chartUtils.updateLayoutAxes(layout, axes, axes, 1000);
+    chartUtils.updateLayoutAxes(layout, axes, axes, chartTheme, 1000);
 
     expect(layout.xaxis).toBe(xaxis);
     expect(xDomain).not.toBe(xaxis?.domain);
@@ -231,7 +236,7 @@ describe('updating layout axes', () => {
     const axes = makeTwinAxes();
     const chart = chartTestUtils.makeChart({ axes });
     const figure = chartTestUtils.makeFigure({ charts: [chart] });
-    chartUtils.updateFigureAxes(layout, figure);
+    chartUtils.updateFigureAxes(layout, figure, chartTheme);
     expect(layout).toEqual(
       expect.objectContaining({
         xaxis: expect.objectContaining({}),
@@ -241,7 +246,7 @@ describe('updating layout axes', () => {
     );
 
     axes.pop();
-    chartUtils.updateFigureAxes(layout, figure);
+    chartUtils.updateFigureAxes(layout, figure, chartTheme);
     expect(layout).toEqual(
       expect.objectContaining({
         xaxis: expect.objectContaining({}),
@@ -300,6 +305,7 @@ describe('updating layout axes', () => {
         layout,
         axes,
         figureAxes,
+        chartTheme,
         width,
         height,
         bounds
@@ -416,7 +422,7 @@ describe('handles subplots and columns/rows correctly', () => {
 describe('returns the axis layout ranges properly', () => {
   function makeLayout(layout) {
     return {
-      ...chartUtils.makeDefaultLayout(ChartTheme),
+      ...chartUtils.makeDefaultLayout(chartTheme),
       ...layout,
     };
   }
@@ -424,13 +430,13 @@ describe('returns the axis layout ranges properly', () => {
     expect(ChartUtils.getLayoutRanges(makeLayout(layout))).toEqual(ranges);
   }
 
-  const xaxis = chartUtils.makeLayoutAxis(dh.plot.AxisType.X);
+  const xaxis = chartUtils.makeLayoutAxis(dh.plot.AxisType.X, chartTheme);
   xaxis.range = [0, 1];
-  const xaxis2 = chartUtils.makeLayoutAxis(dh.plot.AxisType.X);
+  const xaxis2 = chartUtils.makeLayoutAxis(dh.plot.AxisType.X, chartTheme);
   xaxis2.range = [2, 3];
-  const yaxis = chartUtils.makeLayoutAxis(dh.plot.AxisType.Y);
+  const yaxis = chartUtils.makeLayoutAxis(dh.plot.AxisType.Y, chartTheme);
   yaxis.range = [4, 5];
-  const yaxis2 = chartUtils.makeLayoutAxis(dh.plot.AxisType.Y);
+  const yaxis2 = chartUtils.makeLayoutAxis(dh.plot.AxisType.Y, chartTheme);
   yaxis2.range = [6, 7];
 
   it('handles empty', () => {
