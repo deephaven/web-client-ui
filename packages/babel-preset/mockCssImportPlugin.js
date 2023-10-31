@@ -11,7 +11,6 @@ const CSS_MODULE_IMPORT_REGEX = /([^/]+)\.module\.s?css/;
  *   '.(ts|tsx|js|jsx)': [
  *     'babel-jest',
  *     {
- *       rootMode: 'upward',
  *       plugins: [
  *         '@deephaven/babel-preset/mockCssImportPlugin',
  *       ],
@@ -19,7 +18,7 @@ const CSS_MODULE_IMPORT_REGEX = /([^/]+)\.module\.s?css/;
  *   ],
  * },
  */
-module.exports = function cssTransformerPlugin({ types: t }) {
+module.exports = function mockCssImportPlugin({ types: t }) {
   return {
     name: 'transform-mock-css-import',
     visitor: {
