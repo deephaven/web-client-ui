@@ -53,7 +53,6 @@ function Colors(): React.ReactElement {
     'light',
     'mid',
     'dark',
-    'green-dark',
     'success',
     'info',
     'warning',

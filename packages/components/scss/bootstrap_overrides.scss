@@ -99,7 +99,6 @@ $danger-hover: var(--dh-color-negative-hover-bg);
 $light: var(--dh-color-gray-light);
 $mid: var(--dh-color-gray-mid);
 $dark: var(--dh-color-gray-dark);
-$green-dark: var(--dh-color-green-900);
 
 $semantic-colors: (
   'primary-hover': $primary-hover,
@@ -111,7 +110,6 @@ $semantic-colors: (
   'foreground': $interfacewhite,
   'secondary-hover': $secondary-hover,
   'danger-hover': $danger-hover,
-  'green-dark': $green-dark,
 );
 
 $component-active-bg: $primary;
