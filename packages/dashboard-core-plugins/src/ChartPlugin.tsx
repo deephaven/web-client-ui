@@ -1,7 +1,12 @@
 import { forwardRef, useMemo } from 'react';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import { useConnection } from '@deephaven/jsapi-components';
-import { ChartModel, ChartModelFactory } from '@deephaven/chart';
+import {
+  ChartModel,
+  ChartModelFactory,
+  ChartTheme,
+  useChartTheme,
+} from '@deephaven/chart';
 import type { dh as DhType, IdeConnection } from '@deephaven/jsapi-types';
 import { IrisGridUtils } from '@deephaven/iris-grid';
 import { getTimeZone, store } from '@deephaven/redux';
@@ -19,6 +24,7 @@ import ConnectedChartPanel, {
 
 async function createChartModel(
   dh: DhType,
+  chartTheme: ChartTheme,
   connection: IdeConnection,
   metadata: ChartPanelMetadata,
   panelState?: GLChartPanelState
@@ -65,7 +71,7 @@ async function createChartModel(
     };
     const figure = await connection.getObject(definition);
 
-    return ChartModelFactory.makeModel(dh, settings, figure);
+    return ChartModelFactory.makeModel(dh, settings, figure, chartTheme);
   }
 
   const definition = {
@@ -80,13 +86,19 @@ async function createChartModel(
     getTimeZone(store.getState())
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return ChartModelFactory.makeModelFromSettings(dh, settings as any, table);
+  return ChartModelFactory.makeModelFromSettings(
+    dh,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    settings as any,
+    table,
+    chartTheme
+  );
 }
 
 export const ChartPlugin = forwardRef(
   (props: WidgetComponentProps, ref: React.Ref<ChartPanel>) => {
     const dh = useApi();
+    const chartTheme = useChartTheme();
     const connection = useConnection();
 
     const hydratedProps = useMemo(
@@ -95,23 +107,30 @@ export const ChartPlugin = forwardRef(
         metadata: props.metadata as ChartPanelMetadata,
         localDashboardId: props.localDashboardId,
         makeModel: () => {
+          if (chartTheme == null) {
+            throw new Error('Chart theme is required for chart panel');
+          }
+
           const { metadata } = props;
+
           const panelState = isChartPanelDehydratedProps(props)
             ? (props as unknown as ChartPanelProps).panelState
             : undefined;
+
           if (metadata == null) {
             throw new Error('Metadata is required for chart panel');
           }
 
           return createChartModel(
             dh,
+            chartTheme,
             connection,
             metadata as ChartPanelMetadata,
             panelState
           );
         },
       }),
-      [dh, connection, props]
+      [props, dh, chartTheme, connection]
     );
 
     // eslint-disable-next-line react/jsx-props-no-spreading

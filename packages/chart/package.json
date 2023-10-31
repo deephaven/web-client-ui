@@ -27,6 +27,7 @@
     "build:sass": "sass --embed-sources --load-path=../../node_modules ./src:./dist"
   },
   "dependencies": {
+    "@deephaven/components": "file:../components",
     "@deephaven/icons": "file:../icons",
     "@deephaven/jsapi-types": "file:../jsapi-types",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",

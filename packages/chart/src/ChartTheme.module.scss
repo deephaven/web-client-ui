@@ -2,20 +2,23 @@
 @import '@deephaven/components/scss/custom.scss';
 
 :export {
-  paper-bgcolor: $content-bg;
-  plot-bgcolor: $gray-850;
-  title-color: $white;
-  colorway: $blue $green $yellow $purple $orange $red $white;
-  gridcolor: $gray-700;
-  linecolor: $gray-500;
-  zerolinecolor: $gray-300;
+  paper-bgcolor: var(--dh-color-content-background);
+  plot-bgcolor: var(--dh-color-gray-200);
+  title-color: var(--dh-color-white);
+  colorway: var(--dh-color-visual-blue) var(--dh-color-visual-green)
+    var(--dh-color-visual-yellow) var(--dh-color-visual-purple)
+    var(--dh-color-visual-orange) var(--dh-color-visual-red)
+    var(--dh-color-white);
+  gridcolor: var(--dh-color-gray-400);
+  linecolor: var(--dh-color-gray-500);
+  zerolinecolor: var(--dh-color-gray-700);
   activecolor: $primary;
-  rangebgcolor: rgba($gray-500, 0.7);
-  area-color: $blue;
-  trend-color: lighten($green, 20%);
-  line-color: $green;
-  error-band-line-color: lighten($green, 40%);
-  error-band-fill-color: rgba(lighten($green, 20%), 0.1);
-  ohlc-increasing: $green;
-  ohlc-decreasing: $red;
+  rangebgcolor: var(--dh-color-gray-500);
+  area-color: var(--dh-color-visual-blue);
+  trend-color: var(--dh-color-green-1200);
+  line-color: var(--dh-color-visual-green);
+  error-band-line-color: var(--dh-color-green-1400);
+  error-band-fill-color: var(--dh-color-green-1200);
+  ohlc-increasing: var(--dh-color-visual-green);
+  ohlc-decreasing: var(--dh-color-visual-red);
 }

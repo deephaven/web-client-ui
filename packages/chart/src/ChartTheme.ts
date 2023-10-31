@@ -1,20 +1,52 @@
-import ChartTheme from './ChartTheme.module.scss';
+import { resolveCssVariablesInRecord } from '@deephaven/components';
+import Log from '@deephaven/log';
+import chartThemeRaw from './ChartTheme.module.scss';
 
-export default Object.freeze({
-  paper_bgcolor: ChartTheme['paper-bgcolor'],
-  plot_bgcolor: ChartTheme['plot-bgcolor'],
-  title_color: ChartTheme['title-color'],
-  colorway: ChartTheme.colorway,
-  gridcolor: ChartTheme.gridcolor,
-  linecolor: ChartTheme.linecolor,
-  zerolinecolor: ChartTheme.zerolinecolor,
-  activecolor: ChartTheme.activecolor,
-  rangebgcolor: ChartTheme.rangebgcolor,
-  area_color: ChartTheme['area-color'],
-  trend_color: ChartTheme['trend-color'],
-  line_color: ChartTheme['line-color'],
-  error_band_line_color: ChartTheme['error-band-line-color'],
-  error_band_fill_color: ChartTheme['error-band-fill-color'],
-  ohlc_increasing: ChartTheme['ohlc-increasing'],
-  ohlc_decreasing: ChartTheme['ohlc-decreasing'],
-});
+const log = Log.module('ChartTheme');
+
+export interface ChartTheme {
+  paper_bgcolor: string;
+  plot_bgcolor: string;
+  title_color: string;
+  colorway: string;
+  gridcolor: string;
+  linecolor: string;
+  zerolinecolor: string;
+  activecolor: string;
+  rangebgcolor: string;
+  area_color: string;
+  trend_color: string;
+  line_color: string;
+  error_band_line_color: string;
+  error_band_fill_color: string;
+  ohlc_increasing: string;
+  ohlc_decreasing: string;
+}
+
+export function initChartTheme(): Readonly<ChartTheme> {
+  const chartTheme = resolveCssVariablesInRecord(chartThemeRaw);
+
+  log.debug2('Chart theme:', chartThemeRaw);
+  log.debug2('Chart theme derived:', chartTheme);
+
+  return Object.freeze({
+    paper_bgcolor: chartTheme['paper-bgcolor'],
+    plot_bgcolor: chartTheme['plot-bgcolor'],
+    title_color: chartTheme['title-color'],
+    colorway: chartTheme.colorway,
+    gridcolor: chartTheme.gridcolor,
+    linecolor: chartTheme.linecolor,
+    zerolinecolor: chartTheme.zerolinecolor,
+    activecolor: chartTheme.activecolor,
+    rangebgcolor: chartTheme.rangebgcolor,
+    area_color: chartTheme['area-color'],
+    trend_color: chartTheme['trend-color'],
+    line_color: chartTheme['line-color'],
+    error_band_line_color: chartTheme['error-band-line-color'],
+    error_band_fill_color: chartTheme['error-band-fill-color'],
+    ohlc_increasing: chartTheme['ohlc-increasing'],
+    ohlc_decreasing: chartTheme['ohlc-decreasing'],
+  });
+}
+
+export default initChartTheme;
