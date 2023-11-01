@@ -61,7 +61,7 @@ const renameGroups = {
     trend: 'Data',
     area: 'Data',
     range: 'Data',
-    line: 'Unused',
+    line: 'Deprecated',
   },
   grid: { data: 'Data Bars', context: 'Context Menu' },
   semantic: {

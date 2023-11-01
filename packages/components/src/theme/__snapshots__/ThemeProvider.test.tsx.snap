@@ -30,6 +30,7 @@ exports[`ThemeProvider setSelectedThemeKey: [ [Object] ] should change selected 
     >
       ./theme-dark-palette.css?raw
 ./theme-dark-semantic.css?raw
+./theme-dark-semantic-chart.css?raw
 ./theme-dark-semantic-editor.css?raw
 ./theme-dark-semantic-grid.css?raw
 ./theme-dark-components.css?raw
@@ -93,6 +94,7 @@ exports[`ThemeProvider should load themes based on preload data or default: [ [O
     >
       ./theme-dark-palette.css?raw
 ./theme-dark-semantic.css?raw
+./theme-dark-semantic-chart.css?raw
 ./theme-dark-semantic-editor.css?raw
 ./theme-dark-semantic-grid.css?raw
 ./theme-dark-components.css?raw
@@ -122,6 +124,7 @@ exports[`ThemeProvider should load themes based on preload data or default: [ [O
     >
       ./theme-dark-palette.css?raw
 ./theme-dark-semantic.css?raw
+./theme-dark-semantic-chart.css?raw
 ./theme-dark-semantic-editor.css?raw
 ./theme-dark-semantic-grid.css?raw
 ./theme-dark-components.css?raw

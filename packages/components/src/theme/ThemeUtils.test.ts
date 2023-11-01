@@ -194,6 +194,7 @@ describe('getDefaultBaseThemes', () => {
         styleContent: [
           './theme-dark-palette.css?raw',
           './theme-dark-semantic.css?raw',
+          './theme-dark-semantic-chart.css?raw',
           './theme-dark-semantic-editor.css?raw',
           './theme-dark-semantic-grid.css?raw',
           './theme-dark-components.css?raw',
