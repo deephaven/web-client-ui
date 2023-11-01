@@ -21,11 +21,30 @@ export function useChartTheme(): ChartThemeContextValue | null {
   return useContext(ChartThemeContext);
 }
 
+export type PropsWithChartTheme<P extends object> = P & {
+  chartTheme: ChartTheme;
+};
+
+export type ComponentWithChartTheme<
+  P extends object,
+  T,
+> = React.ForwardRefExoticComponent<PropsWithoutRef<P> & RefAttributes<T>> & {
+  WrappedComponent?: ComponentType<PropsWithChartTheme<P>>;
+};
+
+/**
+ * HOC for wrapping a given component in a `ChartThemeContext` provider.
+ * @param Component
+ */
 export function withChartTheme<P extends object, T>(
-  Component: ComponentType<P & { chartTheme: ChartTheme }>
-): React.ForwardRefExoticComponent<PropsWithoutRef<P> & RefAttributes<T>> & {
-  WrappedComponent?: ComponentType<P & { chartTheme: ChartTheme }>;
-} {
+  Component: ComponentType<PropsWithChartTheme<P>>
+): ComponentWithChartTheme<P, T> {
+  /**
+   * Wrapper component that passes the current `ChartTheme` context value to the
+   * wrapped component.
+   * @param props Props to pass to the wrapped component
+   * @param ref Ref to pass to the wrapped component
+   */
   function WithChartTheme(props: P, ref: ForwardedRef<T>): JSX.Element {
     const chartTheme = useChartTheme();
 
@@ -38,12 +57,11 @@ export function withChartTheme<P extends object, T>(
     return <Component ref={ref} {...props} chartTheme={chartTheme} />;
   }
 
-  const WithChartThemeForwardRef: React.ForwardRefExoticComponent<
-    PropsWithoutRef<P> & RefAttributes<T>
-  > & {
-    WrappedComponent?: ComponentType<P & { chartTheme: ChartTheme }>;
-  } = forwardRef(WithChartTheme);
+  const WithChartThemeForwardRef: ComponentWithChartTheme<P, T> =
+    forwardRef(WithChartTheme);
 
+  // Mimicking Redux connect HOC api since some utils check for the existence
+  // of this property to identify a wrapped component
   WithChartThemeForwardRef.WrappedComponent = Component;
 
   return WithChartThemeForwardRef;
