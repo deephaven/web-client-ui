@@ -1,11 +1,4 @@
-import {
-  useMemo,
-  useCallback,
-  type ComponentType,
-  useEffect,
-  forwardRef,
-  useState,
-} from 'react';
+import { useMemo, useCallback, useEffect, forwardRef } from 'react';
 import type { ReactComponentConfig } from '@deephaven/golden-layout';
 import shortid from 'shortid';
 import {
