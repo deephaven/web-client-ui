@@ -146,7 +146,7 @@ export interface DehydratedIrisGridState {
 export interface DehydratedIrisGridPanelStateV1 {
   isSelectingPartition: boolean;
   partition: string | null;
-  partitionColumn: ColumnName;
+  partitionColumn: ColumnName | null;
   advancedSettings: [AdvancedSettingsType, boolean][];
 }
 
@@ -164,7 +164,9 @@ export type DehydratedIrisGridPanelState =
 export function isPanelStateV1(
   state: DehydratedIrisGridPanelState
 ): state is DehydratedIrisGridPanelStateV1 {
-  return (state as DehydratedIrisGridPanelStateV1).partitionColumn != null;
+  return (
+    (state as DehydratedIrisGridPanelStateV1).partitionColumn !== undefined
+  );
 }
 
 export function isPanelStateV2(
@@ -350,7 +352,10 @@ class IrisGridUtils {
     const { partitionColumns, partitions } = isPanelStateV2(irisGridPanelState)
       ? irisGridPanelState
       : {
-          partitionColumns: [irisGridPanelState.partitionColumn],
+          partitionColumns:
+            irisGridPanelState.partitionColumn !== null
+              ? [irisGridPanelState.partitionColumn]
+              : [],
           partitions: [irisGridPanelState.partition],
         };
 
@@ -429,7 +434,10 @@ class IrisGridUtils {
     const { partitionColumns, partitions } = isPanelStateV2(irisGridPanelState)
       ? irisGridPanelState
       : {
-          partitionColumns: [irisGridPanelState.partitionColumn],
+          partitionColumns:
+            irisGridPanelState.partitionColumn !== null
+              ? [irisGridPanelState.partitionColumn]
+              : [],
           partitions: [irisGridPanelState.partition],
         };
     const { advancedFilters, quickFilters, sorts } = irisGridState;

@@ -127,7 +127,7 @@ type LoadedPanelState = PanelState & {
     partitions?: (string | null)[];
     partitionColumns?: ColumnName[];
     partition?: string | null;
-    partitionColumn?: ColumnName;
+    partitionColumn?: ColumnName | null;
   };
 };
 

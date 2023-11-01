@@ -92,8 +92,13 @@ class IrisGridTestUtils {
   makeTable({
     columns = this.makeColumns(),
     size = 1000000000,
-    sort = [] as Sort[],
-    layoutHints = {} as LayoutHints,
+    sort = [],
+    layoutHints = {},
+  }: {
+    columns?: Column[];
+    size?: number;
+    sort?: readonly Sort[];
+    layoutHints?: LayoutHints;
   } = {}): Table {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const table = new (this.dh as any).Table({ columns, size, sort });

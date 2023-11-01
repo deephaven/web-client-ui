@@ -669,6 +669,12 @@ describe('dehydration methods', () => {
 });
 
 describe('hydration methods', () => {
+  const model = irisGridTestUtils.makeModel(
+    irisGridTestUtils.makeTable({
+      columns: irisGridTestUtils.makeColumns(5, 'name_'),
+    })
+  );
+
   it.each([
     [
       'hydrateIrisGridPanelStateV1',
@@ -690,18 +696,20 @@ describe('hydration methods', () => {
     ],
   ])('%s invalid column error', (_label, panelState) => {
     expect(() =>
-      IrisGridUtils.hydrateIrisGridPanelState(
-        irisGridTestUtils.makeModel(
-          irisGridTestUtils.makeTable({
-            columns: irisGridTestUtils.makeColumns(5, 'name_'),
-          })
-        ),
-        panelState
-      )
+      IrisGridUtils.hydrateIrisGridPanelState(model, panelState)
     ).toThrow('Invalid partition column INVALID');
   });
 
   it.each([
+    [
+      'hydrateIrisGridPanelStateV1 null partition column',
+      {
+        isSelectingPartition: false,
+        partition: null,
+        partitionColumn: null,
+        advancedSettings: [],
+      },
+    ],
     [
       'hydrateIrisGridPanelStateV1 null partition',
       {
@@ -715,7 +723,7 @@ describe('hydration methods', () => {
       'hydrateIrisGridPanelStateV1 unselected partition',
       {
         isSelectingPartition: false,
-        partition: '',
+        partition: 'a',
         partitionColumn: 'name_0',
         advancedSettings: [],
       },
@@ -724,7 +732,7 @@ describe('hydration methods', () => {
       'hydrateIrisGridPanelStateV1 one selected partition',
       {
         isSelectingPartition: true,
-        partition: '',
+        partition: 'a',
         partitionColumn: 'name_0',
         advancedSettings: [],
       },
@@ -775,18 +783,17 @@ describe('hydration methods', () => {
       },
     ],
   ])('%s partitions and columns match', (_label, panelState) => {
-    const result = IrisGridUtils.hydrateIrisGridPanelState(
-      irisGridTestUtils.makeModel(
-        irisGridTestUtils.makeTable({
-          columns: irisGridTestUtils.makeColumns(5, 'name_'),
-        })
-      ),
-      panelState
-    );
+    const result = IrisGridUtils.hydrateIrisGridPanelState(model, panelState);
     expect(result.isSelectingPartition).toBe(panelState.isSelectingPartition);
     if (isPanelStateV1(panelState)) {
       expect(result.partitions).toEqual([panelState.partition]);
-      expect(result.partitionColumns[0].name).toBe(panelState.partitionColumn);
+      if (panelState.partitionColumn !== null) {
+        expect(result.partitionColumns[0].name).toBe(
+          panelState.partitionColumn
+        );
+      } else {
+        expect(result.partitionColumns).toEqual([]);
+      }
     } else {
       expect(result.partitions).toEqual(panelState.partitions);
       panelState.partitionColumns.forEach((partition, index) => {
