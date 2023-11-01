@@ -1,6 +1,4 @@
 import React, {
-  Component,
-  ComponentType,
   FocusEvent,
   FocusEventHandler,
   PureComponent,
@@ -16,7 +14,7 @@ import {
   LoadingOverlay,
   Tooltip,
 } from '@deephaven/components';
-import { LayoutUtils, PanelEvent } from '@deephaven/dashboard';
+import { LayoutUtils, PanelComponent, PanelEvent } from '@deephaven/dashboard';
 import type {
   Container,
   EventEmitter,
@@ -33,7 +31,12 @@ import RenameDialog from './RenameDialog';
 const log = Log.module('Panel');
 
 interface PanelProps {
-  componentPanel?: ComponentType | Component;
+  /**
+   * Reference to the component panel.
+   * Will wait until it is set before emitting mount/unmount events.
+   *
+   */
+  componentPanel?: PanelComponent;
   children: ReactNode;
   glContainer: Container;
   glEventHub: EventEmitter;
@@ -130,7 +133,7 @@ class Panel extends PureComponent<PanelProps, PanelState> {
   }
 
   componentDidMount(): void {
-    const { glContainer, glEventHub } = this.props;
+    const { componentPanel, glContainer, glEventHub } = this.props;
 
     glContainer.on('resize', this.handleResize);
     glContainer.on('show', this.handleBeforeShow);
@@ -147,19 +150,12 @@ class Panel extends PureComponent<PanelProps, PanelState> {
       this.handleClearAllFilters
     );
 
+    glEventHub.emit(PanelEvent.MOUNT, componentPanel ?? this);
+
     this.setState({
       isWithinPanel:
         this.ref.current?.parentElement?.closest('.dh-panel') != null,
     });
-  }
-
-  componentDidUpdate(prevProps: PanelProps): void {
-    const { componentPanel, glEventHub } = this.props;
-
-    // componentPanel ref could start undefined w/ WidgetLoaderPlugin wrapping panels
-    if (prevProps.componentPanel == null && componentPanel != null) {
-      glEventHub.emit(PanelEvent.MOUNT, componentPanel);
-    }
   }
 
   componentWillUnmount(): void {
@@ -180,9 +176,7 @@ class Panel extends PureComponent<PanelProps, PanelState> {
       this.handleClearAllFilters
     );
 
-    if (componentPanel != null) {
-      glEventHub.emit(PanelEvent.UNMOUNT, componentPanel);
-    }
+    glEventHub.emit(PanelEvent.UNMOUNT, componentPanel ?? this);
   }
 
   ref: React.RefObject<HTMLDivElement>;
@@ -213,7 +207,7 @@ class Panel extends PureComponent<PanelProps, PanelState> {
 
   handleFocus(event: FocusEvent<HTMLDivElement>): void {
     const { componentPanel, glEventHub } = this.props;
-    glEventHub.emit(PanelEvent.FOCUS, componentPanel);
+    glEventHub.emit(PanelEvent.FOCUS, componentPanel ?? this);
 
     const { onFocus } = this.props;
     onFocus(event);
