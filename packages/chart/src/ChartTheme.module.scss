@@ -2,23 +2,25 @@
 @import '@deephaven/components/scss/custom.scss';
 
 :export {
-  paper-bgcolor: var(--dh-color-content-background);
-  plot-bgcolor: var(--dh-color-gray-200);
-  title-color: var(--dh-color-white);
-  colorway: var(--dh-color-visual-blue) var(--dh-color-visual-green)
-    var(--dh-color-visual-yellow) var(--dh-color-visual-purple)
-    var(--dh-color-visual-orange) var(--dh-color-visual-red)
-    var(--dh-color-white);
-  gridcolor: var(--dh-color-gray-400);
-  linecolor: var(--dh-color-gray-500);
-  zerolinecolor: var(--dh-color-gray-700);
-  activecolor: $primary;
-  rangebgcolor: var(--dh-color-gray-500);
-  area-color: var(--dh-color-visual-blue);
-  trend-color: var(--dh-color-green-1200);
-  line-color: var(--dh-color-visual-green);
-  error-band-line-color: var(--dh-color-green-1400);
-  error-band-fill-color: var(--dh-color-green-1200);
-  ohlc-increasing: var(--dh-color-visual-green);
-  ohlc-decreasing: var(--dh-color-visual-red);
+  paper-bgcolor: var(--dh-color-chart-bg);
+  plot-bgcolor: var(--dh-color-chart-plot-bg);
+  title-color: var(--dh-color-chart-title);
+  colorway: var(--dh-color-chart-colorway-1) var(--dh-color-chart-colorway-2)
+    var(--dh-color-chart-colorway-3) var(--dh-color-chart-colorway-4)
+    var(--dh-color-chart-colorway-5) var(--dh-color-chart-colorway-6)
+    var(--dh-color-chart-colorway-7) var(--dh-color-chart-colorway-8)
+    var(--dh-color-chart-colorway-9) var(--dh-color-chart-colorway-10)
+    var(--dh-color-chart-colorway-11);
+  gridcolor: var(--dh-color-chart-grid);
+  linecolor: var(--dh-color-chart-axis-line);
+  zerolinecolor: var(--dh-color-chart-axis-line-zero);
+  activecolor: var(--dh-color-chart-active);
+  rangebgcolor: var(--dh-color-chart-range-bg);
+  area-color: var(--dh-color-chart-area);
+  trend-color: var(--dh-color-chart-trend);
+  line-color: var(--dh-color-chart-line-deprecated);
+  error-band-line-color: var(--dh-color-chart-error-band-line);
+  error-band-fill-color: var(--dh-color-chart-error-band-fill);
+  ohlc-increasing: var(--dh-color-chart-ohlc-increase);
+  ohlc-decreasing: var(--dh-color-chart-ohlc-decrease);
 }

@@ -1,5 +1,6 @@
 import themeDarkPalette from './theme-dark-palette.css?raw';
 import themeDarkSemantic from './theme-dark-semantic.css?raw';
+import themeDarkSemanticChart from './theme-dark-semantic-chart.css?raw';
 import themeDarkSemanticEditor from './theme-dark-semantic-editor.css?raw';
 import themeDarkSemanticGrid from './theme-dark-semantic-grid.css?raw';
 import themeDarkComponents from './theme-dark-components.css?raw';
@@ -44,6 +45,7 @@ import themeDarkComponents from './theme-dark-components.css?raw';
 export const themeDark = [
   themeDarkPalette,
   themeDarkSemantic,
+  themeDarkSemanticChart,
   themeDarkSemanticEditor,
   themeDarkSemanticGrid,
   themeDarkComponents,

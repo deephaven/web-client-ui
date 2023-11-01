@@ -3,6 +3,7 @@ import { Tooltip } from '@deephaven/components';
 import { ColorUtils } from '@deephaven/utils';
 import palette from '@deephaven/components/src/theme/theme-dark/theme-dark-palette.css?inline';
 import semantic from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic.css?inline';
+import chart from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic-chart.css?inline';
 import semanticEditor from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic-editor.css?inline';
 import semanticGrid from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic-grid.css?inline';
 import components from '@deephaven/components/src/theme/theme-dark/theme-dark-components.css?inline';
@@ -14,6 +15,11 @@ import styles from './ThemeColors.module.scss';
 const reassignVarGroups: Record<string, string> = {
   '--dh-color-black': 'gray',
   '--dh-color-white': 'gray',
+  // Semantic
+  '--dh-color-visual-positive': 'Visual Status',
+  '--dh-color-visual-negative': 'Visual Status',
+  '--dh-color-visual-notice': 'Visual Status',
+  '--dh-color-visual-info': 'Visual Status',
   // Editor
   '--dh-color-editor-bg': 'editor',
   '--dh-color-editor-fg': 'editor',
@@ -45,6 +51,18 @@ const renameGroups = {
     selection: 'state',
     focus: 'state',
   },
+  chart: {
+    axis: 'Chart',
+    bg: 'Chart',
+    grid: 'Chart',
+    plot: 'Chart',
+    title: 'Chart',
+    active: 'Data',
+    trend: 'Data',
+    area: 'Data',
+    range: 'Data',
+    line: 'Unused',
+  },
   grid: { data: 'Data Bars', context: 'Context Menu' },
   semantic: {
     positive: 'status',
@@ -60,6 +78,7 @@ export function ThemeColors(): JSX.Element {
     () => ({
       'Theme Color Palette': buildColorGroups(palette, 1),
       'Semantic Colors': buildColorGroups(semantic, 1, renameGroups.semantic),
+      'Chart Colors': buildColorGroups(chart, 2, renameGroups.chart),
       'Editor Colors': buildColorGroups(semanticEditor, 2, renameGroups.editor),
       'Grid Colors': buildColorGroups(semanticGrid, 2, renameGroups.grid),
       'Component Colors': buildColorGroups(components, 1),
