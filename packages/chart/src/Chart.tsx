@@ -28,7 +28,7 @@ import {
   ModeBarButtonAny,
 } from 'plotly.js';
 import type { PlotParams } from 'react-plotly.js';
-import createPlotlyComponent from 'react-plotly.js/factory.js';
+import createPlotlyComponent from './plotly/createPlotlyComponent';
 import Plotly from './plotly/Plotly';
 import ChartModel from './ChartModel';
 import ChartUtils, { ChartModelSettings } from './ChartUtils';
