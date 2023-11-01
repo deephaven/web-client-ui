@@ -8,5 +8,5 @@ export { default as MockChartModel } from './MockChartModel';
 export { default as Plot } from './plotly/Plot';
 export * from './ChartTheme';
 export * from './ChartThemeProvider';
-export * from './ChartThemeProviderUtils';
 export { default as isFigureChartModel } from './isFigureChartModel';
+export * from './useChartTheme';
