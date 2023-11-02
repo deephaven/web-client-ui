@@ -1,3 +1,4 @@
+/* stylelint-disable alpha-value-notation */
 /* stylelint-disable custom-property-empty-line-before */
 :root {
   --dh-color-chart-bg: var(--dh-color-content-background);
@@ -21,13 +22,22 @@
   --dh-color-chart-axis-line: var(--dh-color-gray-500);
   --dh-color-chart-axis-line-zero: var(--dh-color-gray-700);
   --dh-color-chart-active: var(--dh-color-accent-600);
-  --dh-color-chart-range-bg: var(--dh-color-gray-500);
+
+  /* Update hsl components to --dh-color-gray-500-hsl as part of PR #1603 */
+  --dh-color-chart-range-bg: hsla(var(--dh-color-gray-hue), 1%, 36%, 0.7);
   --dh-color-chart-area: var(--dh-color-visual-blue);
   --dh-color-chart-trend: var(--dh-color-green-1200);
 
   /* Error band */
   --dh-color-chart-error-band-line: var(--dh-color-green-1400);
-  --dh-color-chart-error-band-fill: var(--dh-color-green-1200);
+
+  /* Update hsl components to --dh-color-green-1200-hsl base color defined by PR #1603 */
+  --dh-color-chart-error-band-fill: hsla(
+    var(--dh-color-green-hue),
+    71%,
+    70%,
+    0.1
+  );
 
   /* OHLC */
   --dh-color-chart-ohlc-increase: var(--dh-color-visual-green);
