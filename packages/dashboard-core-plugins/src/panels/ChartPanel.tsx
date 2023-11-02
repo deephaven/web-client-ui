@@ -113,8 +113,8 @@ export interface GLChartPanelState {
     sorts: unknown;
   };
   irisGridPanelState?: {
-    partitionColumn: string;
-    partition: unknown;
+    partitionColumns: string[];
+    partitions: unknown[];
   };
   table?: string;
   figure?: string;
