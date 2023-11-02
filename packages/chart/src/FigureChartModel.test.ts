@@ -464,6 +464,23 @@ it('adds new series', () => {
   ]);
 });
 
+it('emits finished loading if no series are added', () => {
+  const figure = chartTestUtils.makeFigure({
+    charts: [],
+  });
+  const model = new FigureChartModel(dh, figure);
+  const callback = jest.fn();
+  model.subscribe(callback);
+
+  jest.runOnlyPendingTimers();
+
+  expect(callback).toHaveBeenCalledWith(
+    expect.objectContaining({
+      type: FigureChartModel.EVENT_LOADFINISHED,
+    })
+  );
+});
+
 describe('legend visibility', () => {
   function testLegend(showLegend: boolean | null): Partial<PlotData>[] {
     const series1 = chartTestUtils.makeSeries({ name: 'S1' });

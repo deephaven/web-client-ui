@@ -266,6 +266,15 @@ class FigureChartModel extends ChartModel {
         ? this.dh.plot.DownsampleOptions.DISABLE
         : this.dh.plot.DownsampleOptions.DEFAULT
     );
+
+    if (this.figure.errors.length > 0) {
+      // We don't have a toast or anything we show for errors; just log the error for now
+      log.error('Errors in figure', this.figure.errors);
+    }
+
+    if (this.seriesToProcess.size === 0 && this.seriesDataMap.size === 0) {
+      this.fireLoadFinished();
+    }
   }
 
   unsubscribeFigure(): void {
@@ -459,11 +468,11 @@ class FigureChartModel extends ChartModel {
       }
 
       this.seriesToProcess.delete(series.name);
-      if (this.seriesToProcess.size === 0) {
-        this.fireLoadFinished();
-      }
 
       this.cleanSeries(series);
+    }
+    if (this.seriesToProcess.size === 0) {
+      this.fireLoadFinished();
     }
 
     const { data } = this;
