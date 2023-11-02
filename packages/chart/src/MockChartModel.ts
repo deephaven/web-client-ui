@@ -74,7 +74,7 @@ class MockChartModel extends ChartModel {
       name: 'SCTR',
       x: series.x,
       y: series.y,
-      type: 'scattergl',
+      type: 'scatter',
       mode: 'markers',
       hoverinfo: 'skip',
       marker: {
@@ -106,7 +106,7 @@ class MockChartModel extends ChartModel {
       name: 'Trendline <br>R<sup>2</sup> = 0.91',
       x: series.x,
       y: series.l,
-      type: 'scattergl',
+      type: 'scatter',
       mode: 'line' as PlotData['mode'],
       hoverinfo: 'skip',
       line: {
@@ -135,7 +135,7 @@ class MockChartModel extends ChartModel {
       name: 'error',
       x: (series.x as Datum[]).concat((series.x as Datum[]).slice().reverse()), // winding for x values, that slice just clones so reverse doesn't apply inplace
       y: errory,
-      type: 'scattergl',
+      type: 'scatter',
       mode: 'line' as PlotData['mode'],
       hoverinfo: 'skip',
       fill: 'toself', // there's some ordering bug with scattergl where if the areas traces are ordered after the lines they don't render
@@ -153,7 +153,7 @@ class MockChartModel extends ChartModel {
       name: 'LINE',
       x: series.x,
       y: series.y,
-      type: 'scattergl',
+      type: 'scatter',
       mode: 'line' as PlotData['mode'],
       hoverinfo: 'x+y+text+name' as PlotData['hoverinfo'],
       line: {
