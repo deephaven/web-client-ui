@@ -360,6 +360,8 @@ class LayoutUtils {
           delete itemConfig.id;
           itemConfig.props.panelState.irisGridState.sorts = [];
           itemConfig.props.panelState.irisGridState.quickFilters = [];
+          itemConfig.props.panelState.gridState.isStuckToBottom = false;
+          itemConfig.props.panelState.gridState.isStuckToRight = false;
         }
       }
     }
