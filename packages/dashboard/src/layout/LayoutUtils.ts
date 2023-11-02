@@ -340,6 +340,7 @@ class LayoutUtils {
    * 1. sorts in grid
    * 2. quick filters in grid
    * 3. active item
+   * 4. isStuckToBottom/isStuckToRight
    *
    * item id is also removed
    */
@@ -360,6 +361,8 @@ class LayoutUtils {
           delete itemConfig.id;
           itemConfig.props.panelState.irisGridState.sorts = [];
           itemConfig.props.panelState.irisGridState.quickFilters = [];
+          itemConfig.props.panelState.gridState.isStuckToBottom = false;
+          itemConfig.props.panelState.gridState.isStuckToRight = false;
         }
       }
     }
