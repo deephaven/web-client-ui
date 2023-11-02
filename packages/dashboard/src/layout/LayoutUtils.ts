@@ -340,6 +340,7 @@ class LayoutUtils {
    * 1. sorts in grid
    * 2. quick filters in grid
    * 3. active item
+   * 4. isStuckToBottom/isStuckToRight
    *
    * item id is also removed
    */
