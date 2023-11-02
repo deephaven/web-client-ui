@@ -172,7 +172,7 @@ export function WidgetLoaderPlugin(
     return () => {
       deregisterFns.forEach(deregister => deregister());
     };
-  });
+  }, [registerComponent, supportedTypes]);
 
   /**
    * Listen for panel open events so we know when to open a panel
