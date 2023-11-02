@@ -1,6 +1,5 @@
 import { theme } from '@react-spectrum/theme-default';
-import darkDH from './SpectrumThemeDark.module.scss';
-import lightDH from './SpectrumThemeLight.module.scss';
+import { themeSpectrumClassesCommon } from './theme/theme-spectrum';
 
 const { global, light, dark, medium, large } = theme;
 
@@ -42,11 +41,11 @@ export const themeDHDefault = {
   global,
   light: {
     ...light,
-    ...lightDH,
+    ...themeSpectrumClassesCommon,
   },
   dark: {
     ...dark,
-    ...darkDH,
+    ...themeSpectrumClassesCommon,
   },
   // scales
   medium,

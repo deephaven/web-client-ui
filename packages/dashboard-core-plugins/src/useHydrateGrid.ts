@@ -4,15 +4,16 @@ import {
   PanelHydrateFunction,
 } from '@deephaven/dashboard';
 import { useApi } from '@deephaven/jsapi-bootstrap';
-import { useConnection, useLoadTablePlugin } from '@deephaven/app-utils';
+import { useConnection } from '@deephaven/jsapi-components';
 import { Table } from '@deephaven/jsapi-types';
 import { IrisGridModelFactory } from '@deephaven/iris-grid';
 import {
-  IrisGridPanelMetadata,
-  IrisGridPanelProps,
+  type IrisGridPanelMetadata,
+  type IrisGridPanelProps,
   isIrisGridPanelMetadata,
   isLegacyIrisGridPanelMetadata,
 } from './panels';
+import { useLoadTablePlugin } from './useLoadTablePlugin';
 
 export function useHydrateGrid<
   P extends DehydratedDashboardPanelProps = DehydratedDashboardPanelProps,

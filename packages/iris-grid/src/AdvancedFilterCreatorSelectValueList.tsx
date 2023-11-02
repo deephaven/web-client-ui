@@ -18,11 +18,11 @@ const log = Log.module('AdvancedFilterCreatorSelectValueList');
 
 interface AdvancedFilterCreatorSelectValueListProps<T> {
   dh: DhType;
-  selectedValues: T[];
+  selectedValues: (T | null)[];
   table?: Table;
   filters: FilterCondition[];
   invertSelection: boolean;
-  onChange: (selectedValues: T[], invertSelection: boolean) => void;
+  onChange: (selectedValues: (T | null)[], invertSelection: boolean) => void;
   formatter: Formatter;
 }
 
@@ -30,7 +30,7 @@ interface AdvancedFilterCreatorSelectValueListState<T> {
   itemCount: number;
   items: SelectItem<T>[];
   offset: number;
-  selectedValues: T[];
+  selectedValues: (T | null)[];
   isLoading: boolean;
 }
 /**
@@ -130,7 +130,7 @@ class AdvancedFilterCreatorSelectValueList<T = unknown> extends PureComponent<
 
   list: SelectValueList<T> | null;
 
-  handleSelect(itemIndex: number, value: T): void {
+  handleSelect(itemIndex: number, value: T | null): void {
     const { invertSelection } = this.props;
     let { selectedValues } = this.state;
     selectedValues = [...selectedValues];

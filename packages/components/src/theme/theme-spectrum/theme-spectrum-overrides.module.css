@@ -1,0 +1,5 @@
+[class^='spectrum'] {
+  /* --font-family-sans-serif is defined in Bootstrap's _root.scss. We want
+  Spectrum to use the same default font-family */
+  font-family: var(--font-family-sans-serif) !important;
+}

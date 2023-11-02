@@ -23,8 +23,8 @@ type SelectValueListProps<T> = {
   items: SelectItem<T>[];
 
   onBlur?: React.FocusEventHandler<Element>;
-  onSelect(itemIndex: number, value: T | null): void;
-  onViewportChange(topRow: number, bottomRow: number): void;
+  onSelect: (itemIndex: number, value: T | null) => void;
+  onViewportChange: (topRow: number, bottomRow: number) => void;
 
   'data-testid'?: string;
 };

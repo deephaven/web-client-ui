@@ -5,13 +5,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhRefresh } from '@deephaven/icons';
 import { Button } from '@deephaven/components';
 import ConnectedIrisGridPanel, {
-  IrisGridPanel,
-  IrisGridPanelProps,
-  PanelState,
+  type IrisGridPanel,
+  type OwnProps as IrisGridPanelOwnProps,
+  type PanelState,
 } from './IrisGridPanel';
 import './PandasPanel.scss';
 
-export interface PandasPanelProps extends IrisGridPanelProps {
+export interface PandasPanelProps extends IrisGridPanelOwnProps {
   panelState: PanelState | null;
 }
 

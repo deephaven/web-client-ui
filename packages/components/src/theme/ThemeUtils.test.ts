@@ -191,13 +191,18 @@ describe('getDefaultBaseThemes', () => {
       {
         name: 'Default Dark',
         themeKey: 'default-dark',
-        styleContent:
-          'test-file-stub\ntest-file-stub\ntest-file-stub\ntest-file-stub',
+        styleContent: [
+          './theme-dark-palette.css?raw',
+          './theme-dark-semantic.css?raw',
+          './theme-dark-semantic-editor.css?raw',
+          './theme-dark-semantic-grid.css?raw',
+          './theme-dark-components.css?raw',
+        ].join('\n'),
       },
       {
         name: 'Default Light',
         themeKey: 'default-light',
-        styleContent: 'test-file-stub',
+        styleContent: './theme-light-palette.css?raw',
       },
     ]);
   });

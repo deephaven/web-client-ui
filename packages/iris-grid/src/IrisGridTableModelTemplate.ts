@@ -1546,13 +1546,13 @@ class IrisGridTableModelTemplate<
     return data.map(row => row.join('\t')).join('\n');
   }
 
-  async valuesTable(column: Column): Promise<Table> {
+  async valuesTable(columns: Column | Column[]): Promise<Table> {
     let table = null;
     try {
       table = await this.table.copy();
       table.applyFilter([]);
       table.applySort([]);
-      return table.selectDistinct([column]);
+      return table.selectDistinct(Array.isArray(columns) ? columns : [columns]);
     } finally {
       if (table != null) {
         table.close();

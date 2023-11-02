@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen, act } from '@testing-library/react';
 import {
   PluginType,
+  PluginsContext,
   type WidgetPlugin,
   type WidgetComponentProps,
 } from '@deephaven/plugin';
@@ -11,7 +12,7 @@ import { createMockStore } from '@deephaven/redux';
 import { dh } from '@deephaven/jsapi-shim';
 import { ApiContext } from '@deephaven/jsapi-bootstrap';
 import { type IdeConnection } from '@deephaven/jsapi-types';
-import { ConnectionContext, PluginsContext } from '@deephaven/app-utils';
+import { ConnectionContext } from '@deephaven/jsapi-components';
 import {
   type LayoutManager,
   EventEmitter,

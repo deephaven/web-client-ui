@@ -6,12 +6,11 @@ import { createMockStore } from '@deephaven/redux';
 import { dh } from '@deephaven/jsapi-shim';
 import { ApiContext } from '@deephaven/jsapi-bootstrap';
 import { type IdeConnection } from '@deephaven/jsapi-types';
-import { ConnectionContext, PluginsContext } from '@deephaven/app-utils';
+import { ConnectionContext } from '@deephaven/jsapi-components';
+import { PluginsContext } from '@deephaven/plugin';
 import {
-  ChartPlugin,
   ConsolePlugin,
   FilterPlugin,
-  GridPlugin,
   LinkerPlugin,
   MarkdownPlugin,
   WidgetLoaderPlugin,
@@ -35,8 +34,6 @@ it('handles mounting and unmount core plugins properly', () => {
           <Provider store={store}>
             <Dashboard>
               <FilterPlugin />
-              <GridPlugin hydrate={() => undefined} />
-              <ChartPlugin hydrate={() => undefined} />
               <ConsolePlugin />
               <LinkerPlugin />
               <MarkdownPlugin />

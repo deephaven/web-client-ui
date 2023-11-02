@@ -134,7 +134,7 @@ it('shows the loading spinner until grid is ready', async () => {
   await expectLoading(container);
   const params = (
     MockIrisGrid.mock.calls[MockIrisGrid.mock.calls.length - 1] as unknown as {
-      onStateChange(param1: unknown, param2: unknown);
+      onStateChange: (param1: unknown, param2: unknown) => any;
     }[]
   )[0];
   params.onStateChange({}, {});

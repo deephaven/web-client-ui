@@ -13,7 +13,7 @@ class DragUtils {
    */
   static reorder<T>(
     sourceList: T[],
-    selectedRanges: Range[],
+    selectedRanges: readonly Range[],
     destinationList: T[],
     destinationIndex: number
   ): T[] {
@@ -32,7 +32,7 @@ class DragUtils {
    * @param ranges Array of the ranges to remove.
    * @returns The removed items, in the order of the ranges removed.
    */
-  static removeItems<T>(list: T[], ranges: Range[]): T[] {
+  static removeItems<T>(list: T[], ranges: readonly Range[]): T[] {
     const items = [];
 
     // Sort them in reverse, so we don't screw up the range indexes
@@ -56,7 +56,7 @@ class DragUtils {
    */
   static adjustDestinationIndex(
     destinationIndex: number,
-    ranges: Range[]
+    ranges: readonly Range[]
   ): number {
     let adjustedIndex = destinationIndex;
     for (let i = 0; i < ranges.length; i += 1) {

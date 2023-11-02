@@ -17,7 +17,7 @@ type ShortcutItemProps = {
   shortcut: Shortcut;
   displayText: string;
   categoryName: string;
-  onChange(shortcut: Shortcut): void;
+  onChange: (shortcut: Shortcut) => void;
 };
 
 export default function ShortcutItem({

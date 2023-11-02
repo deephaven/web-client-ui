@@ -79,7 +79,7 @@ class MockIrisGridTreeModel
     return this.isEditable;
   }
 
-  setValues(edits: EditOperation[]): never {
+  setValues(edits: readonly EditOperation[]): never {
     throw new Error('Method not implemented.');
   }
 
@@ -222,6 +222,14 @@ class MockIrisGridTreeModel
     // Ignore for mock
   }
 
+  get partition(): never[] {
+    return [];
+  }
+
+  set partition(partition: never[]) {
+    // Ignore for mock
+  }
+
   set formatter(formatter: Formatter) {
     // Ignore for mock
   }
@@ -259,7 +267,10 @@ class MockIrisGridTreeModel
     );
   }
 
-  async setValueForRanges(ranges: GridRange[], text: string): Promise<void> {
+  async setValueForRanges(
+    ranges: readonly GridRange[],
+    text: string
+  ): Promise<void> {
     GridRange.forEachCell(ranges, (x, y) => {
       this.setValueForCell(x, y, text);
     });
@@ -321,7 +332,7 @@ class MockIrisGridTreeModel
     throw new Error('Not defined in mock');
   }
 
-  valuesTable(column: Column): Promise<never> {
+  valuesTable(columns: Column | Column[]): Promise<never> {
     throw new Error('Not defined in mock');
   }
 

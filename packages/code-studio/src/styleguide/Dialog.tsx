@@ -53,9 +53,7 @@ class Dialog extends Component<unknown, DialogState> {
     };
   }
 
-  handleUpdateCheckboxMap(
-    checkBoxMap: Map<string, Map<string, boolean>>
-  ): void {
+  handleUpdateCheckboxMap(checkBoxMap: HierarchicalCheckboxValueMap): void {
     this.setState({
       checkBoxMap,
     });

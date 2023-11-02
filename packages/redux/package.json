@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/redux",
-  "version": "0.50.0",
+  "version": "0.52.0",
   "description": "Deephaven Redux",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -25,6 +25,7 @@
     "@deephaven/jsapi-types": "file:../jsapi-types",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
+    "@deephaven/plugin": "file:../plugin",
     "deep-equal": "^2.0.5",
     "redux-thunk": "2.4.1"
   },

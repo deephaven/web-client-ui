@@ -39,6 +39,7 @@ import {
   IrisGridState,
   ChartBuilderSettings,
   DehydratedIrisGridState,
+  DehydratedIrisGridPanelState,
   ColumnHeaderGroup,
   IrisGridContextMenuData,
   IrisGridTableModel,
@@ -78,7 +79,7 @@ import type {
   TablePluginComponent,
   TablePluginElement,
 } from '@deephaven/plugin';
-import { ConsoleEvent, InputFilterEvent, IrisGridEvent } from '../events';
+import { InputFilterEvent, IrisGridEvent } from '../events';
 import {
   getInputFiltersForDashboard,
   getLinksForDashboard,
@@ -114,12 +115,7 @@ export interface PanelState {
     movedRows: MoveOperation[];
   };
   irisGridState: DehydratedIrisGridState;
-  irisGridPanelState: {
-    partitionColumn: ColumnName | null;
-    partition: string | null;
-    isSelectingPartition: boolean;
-    advancedSettings: [AdvancedSettingsType, boolean][];
-  };
+  irisGridPanelState: DehydratedIrisGridPanelState;
   pluginState: unknown;
 }
 
@@ -127,13 +123,15 @@ export interface PanelState {
 // even though they can't be undefined in the dehydrated state.
 // This can happen when loading the state saved before the properties were added.
 type LoadedPanelState = PanelState & {
-  irisGridPanelState: PanelState['irisGridPanelState'] &
-    Partial<
-      Pick<PanelState['irisGridPanelState'], 'partition' | 'partitionColumn'>
-    >;
+  irisGridPanelState: PanelState['irisGridPanelState'] & {
+    partitions?: (string | null)[];
+    partitionColumns?: ColumnName[];
+    partition?: string | null;
+    partitionColumn?: ColumnName | null;
+  };
 };
 
-export interface IrisGridPanelProps extends DashboardPanelProps {
+export interface OwnProps extends DashboardPanelProps {
   children?: ReactNode;
   panelState: LoadedPanelState | null;
   makeModel: () => IrisGridModel | Promise<IrisGridModel>;
@@ -150,7 +148,7 @@ export interface IrisGridPanelProps extends DashboardPanelProps {
   theme?: IrisGridThemeType;
 }
 
-interface PropsFromRedux {
+interface StateProps {
   inputFilters: InputFilter[];
   links: Link[];
   columnSelectionValidator?: (
@@ -190,8 +188,8 @@ interface IrisGridPanelState {
   movedColumns: readonly MoveOperation[];
   movedRows: readonly MoveOperation[];
   isSelectingPartition: boolean;
-  partition: string | null;
-  partitionColumn: Column | null;
+  partitions: (string | null)[];
+  partitionColumns: Column[];
   rollupConfig?: UIRollupConfig;
   showSearchBar: boolean;
   searchValue: string;
@@ -225,10 +223,10 @@ function getTableNameFromMetadata(metadata: PanelMetadata | undefined): string {
   throw new Error(`Unable to determine table name from metadata: ${metadata}`);
 }
 
-type IrisGridPanelPropsWithRedux = IrisGridPanelProps & PropsFromRedux;
+export type IrisGridPanelProps = OwnProps & StateProps;
 
 export class IrisGridPanel extends PureComponent<
-  IrisGridPanelPropsWithRedux,
+  IrisGridPanelProps,
   IrisGridPanelState
 > {
   static defaultProps = {
@@ -240,7 +238,7 @@ export class IrisGridPanel extends PureComponent<
 
   static COMPONENT = 'IrisGridPanel';
 
-  constructor(props: IrisGridPanelPropsWithRedux) {
+  constructor(props: IrisGridPanelProps) {
     super(props);
 
     this.handleAdvancedSettingsChange =
@@ -252,7 +250,6 @@ export class IrisGridPanel extends PureComponent<
     this.handleError = this.handleError.bind(this);
     this.handleGridStateChange = this.handleGridStateChange.bind(this);
     this.handlePluginStateChange = this.handlePluginStateChange.bind(this);
-    this.handlePartitionAppend = this.handlePartitionAppend.bind(this);
     this.handleCreateChart = this.handleCreateChart.bind(this);
     this.handleResize = this.handleResize.bind(this);
     this.handleShow = this.handleShow.bind(this);
@@ -298,8 +295,8 @@ export class IrisGridPanel extends PureComponent<
       movedColumns: [],
       movedRows: [],
       isSelectingPartition: false,
-      partition: null,
-      partitionColumn: null,
+      partitions: [],
+      partitionColumns: [],
       rollupConfig: undefined,
       showSearchBar: false,
       searchValue: '',
@@ -460,14 +457,14 @@ export class IrisGridPanel extends PureComponent<
     (
       model: IrisGridModel,
       isSelectingPartition: boolean,
-      partition: string | null,
-      partitionColumn: Column | null,
+      partitions: (string | null)[],
+      partitionColumns: Column[],
       advancedSettings: Map<AdvancedSettingsType, boolean>
     ) =>
       IrisGridUtils.dehydrateIrisGridPanelState(model, {
         isSelectingPartition,
-        partition,
-        partitionColumn,
+        partitions,
+        partitionColumns,
         advancedSettings,
       })
   );
@@ -711,14 +708,6 @@ export class IrisGridPanel extends PureComponent<
     const { glEventHub } = this.props;
     const { detail: table } = event as CustomEvent;
     glEventHub.emit(InputFilterEvent.TABLE_CHANGED, this, table);
-  }
-
-  handlePartitionAppend(column: Column, value: unknown): void {
-    const { glEventHub } = this.props;
-    const { name } = column;
-    const tableName = this.getTableName();
-    const command = `${tableName} = ${tableName}.where("${name}=\`${value}\`")`;
-    glEventHub.emit(ConsoleEvent.SEND_COMMAND, command, false, true);
   }
 
   /**
@@ -1044,8 +1033,8 @@ export class IrisGridPanel extends PureComponent<
       }
       const {
         isSelectingPartition,
-        partition,
-        partitionColumn,
+        partitions,
+        partitionColumns,
         advancedSettings,
       } = IrisGridUtils.hydrateIrisGridPanelState(model, irisGridPanelState);
       assertNotNull(this.irisGridUtils);
@@ -1090,8 +1079,8 @@ export class IrisGridPanel extends PureComponent<
         isSelectingPartition,
         movedColumns,
         movedRows,
-        partition,
-        partitionColumn,
+        partitions,
+        partitionColumns,
         quickFilters,
         reverseType,
         rollupConfig,
@@ -1123,8 +1112,8 @@ export class IrisGridPanel extends PureComponent<
       model,
       panelState: oldPanelState,
       isSelectingPartition,
-      partition,
-      partitionColumn,
+      partitions,
+      partitionColumns,
       advancedSettings,
     } = this.state;
     const {
@@ -1159,8 +1148,8 @@ export class IrisGridPanel extends PureComponent<
       this.getDehydratedIrisGridPanelState(
         model,
         isSelectingPartition,
-        partition,
-        partitionColumn,
+        partitions,
+        partitionColumns,
         advancedSettings
       ),
       this.getDehydratedIrisGridState(
@@ -1247,8 +1236,8 @@ export class IrisGridPanel extends PureComponent<
       model,
       movedColumns,
       movedRows,
-      partition,
-      partitionColumn,
+      partitions,
+      partitionColumns,
       quickFilters,
       reverseType,
       rollupConfig,
@@ -1329,8 +1318,8 @@ export class IrisGridPanel extends PureComponent<
             isStuckToRight={isStuckToRight}
             movedColumns={movedColumns}
             movedRows={movedRows}
-            partition={partition}
-            partitionColumn={partitionColumn}
+            partitions={partitions}
+            partitionColumns={partitionColumns}
             quickFilters={quickFilters}
             reverseType={reverseType}
             rollupConfig={rollupConfig}
@@ -1348,7 +1337,6 @@ export class IrisGridPanel extends PureComponent<
             onCreateChart={this.handleCreateChart}
             onDataSelected={this.handleDataSelected}
             onError={this.handleError}
-            onPartitionAppend={this.handlePartitionAppend}
             onStateChange={this.handleGridStateChange}
             onContextMenu={this.handleContextMenu}
             onAdvancedSettingsChange={this.handleAdvancedSettingsChange}
@@ -1372,8 +1360,8 @@ export class IrisGridPanel extends PureComponent<
 
 const mapStateToProps = (
   state: RootState,
-  { localDashboardId = DEFAULT_DASHBOARD_ID }: { localDashboardId?: string }
-) => ({
+  { localDashboardId = DEFAULT_DASHBOARD_ID }: OwnProps
+): StateProps => ({
   inputFilters: getInputFiltersForDashboard(state, localDashboardId),
   links: getLinksForDashboard(state, localDashboardId),
   columnSelectionValidator: getColumnSelectionValidatorForDashboard(

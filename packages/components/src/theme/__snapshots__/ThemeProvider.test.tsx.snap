@@ -6,10 +6,17 @@ exports[`ThemeProvider setSelectedThemeKey: [ [Object] ] should change selected 
     <style
       data-theme-key="default-light"
     >
-      test-file-stub
+      ./theme-light-palette.css?raw
     </style>
-    <div>
-      Child
+    <div
+      class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 theme-spectrum-palette theme-spectrum-alias theme-spectrum-overrides spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
+      dir="ltr"
+      lang="en-US"
+      style="isolation: isolate; color-scheme: light;"
+    >
+      <div>
+        Child
+      </div>
     </div>
   </div>
 </body>
@@ -21,16 +28,24 @@ exports[`ThemeProvider setSelectedThemeKey: [ [Object] ] should change selected 
     <style
       data-theme-key="default-dark"
     >
-      test-file-stub
-test-file-stub
-test-file-stub
-test-file-stub
+      ./theme-dark-palette.css?raw
+./theme-dark-semantic.css?raw
+./theme-dark-semantic-editor.css?raw
+./theme-dark-semantic-grid.css?raw
+./theme-dark-components.css?raw
     </style>
     <style
       data-theme-key="themeA"
     />
-    <div>
-      Child
+    <div
+      class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 theme-spectrum-palette theme-spectrum-alias theme-spectrum-overrides spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
+      dir="ltr"
+      lang="en-US"
+      style="isolation: isolate; color-scheme: light;"
+    >
+      <div>
+        Child
+      </div>
     </div>
   </div>
 </body>
@@ -39,8 +54,15 @@ test-file-stub
 exports[`ThemeProvider setSelectedThemeKey: null should change selected theme: default-light 1`] = `
 <body>
   <div>
-    <div>
-      Child
+    <div
+      class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 theme-spectrum-palette theme-spectrum-alias theme-spectrum-overrides spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
+      dir="ltr"
+      lang="en-US"
+      style="isolation: isolate; color-scheme: light;"
+    >
+      <div>
+        Child
+      </div>
     </div>
   </div>
 </body>
@@ -49,8 +71,15 @@ exports[`ThemeProvider setSelectedThemeKey: null should change selected theme: d
 exports[`ThemeProvider setSelectedThemeKey: null should change selected theme: themeA 1`] = `
 <body>
   <div>
-    <div>
-      Child
+    <div
+      class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 theme-spectrum-palette theme-spectrum-alias theme-spectrum-overrides spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
+      dir="ltr"
+      lang="en-US"
+      style="isolation: isolate; color-scheme: light;"
+    >
+      <div>
+        Child
+      </div>
     </div>
   </div>
 </body>
@@ -62,16 +91,24 @@ exports[`ThemeProvider should load themes based on preload data or default: [ [O
     <style
       data-theme-key="default-dark"
     >
-      test-file-stub
-test-file-stub
-test-file-stub
-test-file-stub
+      ./theme-dark-palette.css?raw
+./theme-dark-semantic.css?raw
+./theme-dark-semantic-editor.css?raw
+./theme-dark-semantic-grid.css?raw
+./theme-dark-components.css?raw
     </style>
     <style
       data-theme-key="themeA"
     />
-    <div>
-      Child
+    <div
+      class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 theme-spectrum-palette theme-spectrum-alias theme-spectrum-overrides spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
+      dir="ltr"
+      lang="en-US"
+      style="isolation: isolate; color-scheme: light;"
+    >
+      <div>
+        Child
+      </div>
     </div>
   </div>
 </body>
@@ -83,13 +120,21 @@ exports[`ThemeProvider should load themes based on preload data or default: [ [O
     <style
       data-theme-key="default-dark"
     >
-      test-file-stub
-test-file-stub
-test-file-stub
-test-file-stub
+      ./theme-dark-palette.css?raw
+./theme-dark-semantic.css?raw
+./theme-dark-semantic-editor.css?raw
+./theme-dark-semantic-grid.css?raw
+./theme-dark-components.css?raw
     </style>
-    <div>
-      Child
+    <div
+      class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 theme-spectrum-palette theme-spectrum-alias theme-spectrum-overrides spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
+      dir="ltr"
+      lang="en-US"
+      style="isolation: isolate; color-scheme: light;"
+    >
+      <div>
+        Child
+      </div>
     </div>
   </div>
 </body>
@@ -98,8 +143,15 @@ test-file-stub
 exports[`ThemeProvider should load themes based on preload data or default: null, { themeKey: 'themeA' } 1`] = `
 <body>
   <div>
-    <div>
-      Child
+    <div
+      class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 theme-spectrum-palette theme-spectrum-alias theme-spectrum-overrides spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
+      dir="ltr"
+      lang="en-US"
+      style="isolation: isolate; color-scheme: light;"
+    >
+      <div>
+        Child
+      </div>
     </div>
   </div>
 </body>
@@ -108,8 +160,15 @@ exports[`ThemeProvider should load themes based on preload data or default: null
 exports[`ThemeProvider should load themes based on preload data or default: null, null 1`] = `
 <body>
   <div>
-    <div>
-      Child
+    <div
+      class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 theme-spectrum-palette theme-spectrum-alias theme-spectrum-overrides spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
+      dir="ltr"
+      lang="en-US"
+      style="isolation: isolate; color-scheme: light;"
+    >
+      <div>
+        Child
+      </div>
     </div>
   </div>
 </body>

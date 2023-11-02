@@ -342,7 +342,6 @@ function Inputs(): React.ReactElement {
               onChange={setCustomTimeValue}
               customText="Custom Timeout"
               placeholder="Select a timeout"
-              valueToTime={(value: number) => Math.round(value / 1000)}
               timeToValue={time => time * 1000}
             />
           </div>

@@ -5,6 +5,7 @@ import {
   DataBarOptions,
   GridModel,
   GridRange,
+  GridThemeType,
   ModelIndex,
   MoveOperation,
   VisibleIndex,
@@ -30,7 +31,6 @@ import {
   PendingDataMap,
   PendingDataErrorMap,
 } from './CommonTypes';
-import { IrisGridThemeType } from './IrisGridTheme';
 import ColumnHeaderGroup from './ColumnHeaderGroup';
 
 type IrisGridModelEventNames =
@@ -507,10 +507,10 @@ abstract class IrisGridModel<
   ): Promise<string>;
 
   /**
-   * @param column The column to get the distinct values for
-   * @returns A table partitioned on the column specified
+   * @param column The columns to get the distinct values for
+   * @returns A table partitioned on the specified columns in the order given in
    */
-  abstract valuesTable(column: Column): Promise<Table>;
+  abstract valuesTable(columns: Column | Column[]): Promise<Table>;
 
   /**
    * Close this model. It can no longer be used after being closed
@@ -561,7 +561,7 @@ abstract class IrisGridModel<
   dataBarOptionsForCell(
     column: number,
     row: number,
-    theme: IrisGridThemeType
+    theme: GridThemeType
   ): DataBarOptions {
     throw new Error('Method not implemented.');
   }

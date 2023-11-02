@@ -54,9 +54,11 @@
   /* Suggest */
   --dh-color-editor-suggest-bg: var(--dh-color-gray-200);
   --dh-color-editor-suggest-border: var(--dh-color-gray-400);
-  --dh-color-editor-suggest-fg: var(--dh-color-gray-100);
+  --dh-color-editor-suggest-fg: var(--dh-color-white);
   --dh-color-editor-suggest-selected-bg: var(--dh-color-highlight-selected);
+  --dh-color-editor-suggest-selected-fg: var(--dh-color-white);
   --dh-color-editor-suggest-highlight-fg: var(--dh-color-accent-700);
+  --dh-color-editor-suggest-focus-highlight-fg: var(--dh-color-accent-700);
   --dh-color-editor-suggest-hover-bg: var(--dh-color-highlight-hover);
 
   /* Links */

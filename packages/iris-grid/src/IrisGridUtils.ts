@@ -116,8 +116,8 @@ export interface TableSettings {
   advancedFilters?: readonly DehydratedAdvancedFilter[];
   inputFilters?: readonly InputFilter[];
   sorts?: readonly (DehydratedSort | LegacyDehydratedSort)[];
-  partition?: unknown;
-  partitionColumn?: ColumnName | null;
+  partitions?: unknown[];
+  partitionColumns?: ColumnName[];
 }
 
 export interface DehydratedIrisGridState {
@@ -141,6 +141,40 @@ export interface DehydratedIrisGridState {
   pendingDataMap: DehydratedPendingDataMap<string | CellData | null>;
   frozenColumns: readonly ColumnName[];
   columnHeaderGroups?: readonly ColumnGroup[];
+}
+
+export interface DehydratedIrisGridPanelStateV1 {
+  isSelectingPartition: boolean;
+  partition: string | null;
+  partitionColumn: ColumnName | null;
+  advancedSettings: [AdvancedSettingsType, boolean][];
+}
+
+export interface DehydratedIrisGridPanelStateV2 {
+  isSelectingPartition: boolean;
+  partitions: (string | null)[];
+  partitionColumns: ColumnName[];
+  advancedSettings: [AdvancedSettingsType, boolean][];
+}
+
+export type DehydratedIrisGridPanelState =
+  | DehydratedIrisGridPanelStateV1
+  | DehydratedIrisGridPanelStateV2;
+
+export function isPanelStateV1(
+  state: DehydratedIrisGridPanelState
+): state is DehydratedIrisGridPanelStateV1 {
+  return (
+    (state as DehydratedIrisGridPanelStateV1).partitionColumn !== undefined
+  );
+}
+
+export function isPanelStateV2(
+  state: DehydratedIrisGridPanelState
+): state is DehydratedIrisGridPanelStateV2 {
+  return Array.isArray(
+    (state as DehydratedIrisGridPanelStateV2).partitionColumns
+  );
 }
 
 /**
@@ -275,28 +309,25 @@ class IrisGridUtils {
     irisGridPanelState: {
       // This needs to be changed after IrisGridPanel is done
       isSelectingPartition: boolean;
-      partition: string | null;
-      partitionColumn: Column | null;
+      partitions: (string | null)[];
+      partitionColumns: Column[];
       advancedSettings: Map<AdvancedSettingsType, boolean>;
     }
-  ): {
-    isSelectingPartition: boolean;
-    partition: string | null;
-    partitionColumn: ColumnName | null;
-    advancedSettings: [AdvancedSettingsType, boolean][];
-  } {
+  ): DehydratedIrisGridPanelState {
     const {
       isSelectingPartition,
-      partition,
-      partitionColumn,
+      partitions,
+      partitionColumns,
       advancedSettings,
     } = irisGridPanelState;
 
     // Return value will be serialized, should not contain undefined
     return {
       isSelectingPartition,
-      partition,
-      partitionColumn: partitionColumn != null ? partitionColumn.name : null,
+      partitions,
+      partitionColumns: partitionColumns.map(
+        partitionColumn => partitionColumn.name
+      ),
       advancedSettings: [...advancedSettings],
     };
   }
@@ -309,34 +340,36 @@ class IrisGridUtils {
    */
   static hydrateIrisGridPanelState(
     model: IrisGridModel,
-    irisGridPanelState: {
-      // This needs to be changed after IrisGridPanel is done
-      isSelectingPartition: boolean;
-      partition: string | null | undefined;
-      partitionColumn: ColumnName | null | undefined;
-      advancedSettings: [AdvancedSettingsType, boolean][];
-    }
+    irisGridPanelState: DehydratedIrisGridPanelState
   ): {
     isSelectingPartition: boolean;
-    partition: string | null;
-    partitionColumn: Column | null;
+    partitions: (string | null)[];
+    partitionColumns: Column[];
     advancedSettings: Map<AdvancedSettingsType, boolean>;
   } {
-    const {
-      isSelectingPartition,
-      partition,
-      partitionColumn,
-      advancedSettings,
-    } = irisGridPanelState;
+    const { isSelectingPartition, advancedSettings } = irisGridPanelState;
+
+    const { partitionColumns, partitions } = isPanelStateV2(irisGridPanelState)
+      ? irisGridPanelState
+      : {
+          partitionColumns:
+            irisGridPanelState.partitionColumn !== null
+              ? [irisGridPanelState.partitionColumn]
+              : [],
+          partitions: [irisGridPanelState.partition],
+        };
 
     const { columns } = model;
     return {
       isSelectingPartition,
-      partition: partition ?? null,
-      partitionColumn:
-        partitionColumn != null
-          ? IrisGridUtils.getColumnByName(columns, partitionColumn) ?? null
-          : null,
+      partitions,
+      partitionColumns: partitionColumns.map(partitionColumn => {
+        const column = IrisGridUtils.getColumnByName(columns, partitionColumn);
+        if (column === undefined) {
+          throw new Error(`Invalid partition column ${partitionColumn}`);
+        }
+        return column;
+      }),
       advancedSettings: new Map([
         ...AdvancedSettings.DEFAULTS,
         ...advancedSettings,
@@ -386,29 +419,34 @@ class IrisGridUtils {
   static extractTableSettings<AF, QF, S>(
     panelState: {
       irisGridState: { advancedFilters: AF; quickFilters: QF; sorts: S };
-      irisGridPanelState: {
-        partitionColumn: ColumnName | null;
-        partition: unknown;
-      };
+      irisGridPanelState: DehydratedIrisGridPanelState;
     },
     inputFilters: InputFilter[] = []
   ): {
-    partitionColumn: ColumnName | null;
-    partition: unknown;
+    partitionColumns: ColumnName[];
+    partitions: unknown[];
     advancedFilters: AF;
     inputFilters: InputFilter[];
     quickFilters: QF;
     sorts: S;
   } {
     const { irisGridPanelState, irisGridState } = panelState;
-    const { partitionColumn, partition } = irisGridPanelState;
+    const { partitionColumns, partitions } = isPanelStateV2(irisGridPanelState)
+      ? irisGridPanelState
+      : {
+          partitionColumns:
+            irisGridPanelState.partitionColumn !== null
+              ? [irisGridPanelState.partitionColumn]
+              : [],
+          partitions: [irisGridPanelState.partition],
+        };
     const { advancedFilters, quickFilters, sorts } = irisGridState;
 
     return {
       advancedFilters,
       inputFilters,
-      partition,
-      partitionColumn,
+      partitions,
+      partitionColumns,
       quickFilters,
       sorts,
     };
@@ -1636,17 +1674,25 @@ class IrisGridUtils {
     }
 
     let filters = [...quickFilters, ...advancedFilters];
-    const { partition, partitionColumn: partitionColumnName } = tableSettings;
-    if (partition != null && partitionColumnName != null) {
-      const partitionColumn = IrisGridUtils.getColumnByName(
-        columns,
-        partitionColumnName
+    const { partitions, partitionColumns: partitionColumnNames } =
+      tableSettings;
+    if (
+      partitions &&
+      partitions.length &&
+      partitionColumnNames &&
+      partitionColumnNames?.length
+    ) {
+      const partitionColumns = partitionColumnNames.map(partitionColumnName =>
+        IrisGridUtils.getColumnByName(columns, partitionColumnName)
       );
-      if (partitionColumn) {
-        const partitionFilter = partitionColumn
-          .filter()
-          .eq(this.dh.FilterValue.ofString(partition));
-        filters = [partitionFilter, ...filters];
+      for (let i = 0; i < partitionColumns.length; i += 1) {
+        if (partitionColumns[i] !== undefined && partitions[i] != null) {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          const partitionFilter = partitionColumns[i]!.filter().eq(
+            this.dh.FilterValue.ofString(partitions[i])
+          );
+          filters = [partitionFilter, ...filters];
+        }
       }
     }
     filters = [...inputFilters, ...filters];

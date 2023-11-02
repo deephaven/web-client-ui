@@ -1,11 +1,4 @@
-import {
-  useMemo,
-  useCallback,
-  type ComponentType,
-  useEffect,
-  forwardRef,
-  useState,
-} from 'react';
+import { useMemo, useCallback, useEffect, forwardRef } from 'react';
 import type { ReactComponentConfig } from '@deephaven/golden-layout';
 import shortid from 'shortid';
 import {
@@ -19,8 +12,11 @@ import {
   PanelProps,
   canHaveRef,
 } from '@deephaven/dashboard';
-import { usePlugins } from '@deephaven/app-utils';
-import { isWidgetPlugin, type WidgetPlugin } from '@deephaven/plugin';
+import {
+  isWidgetPlugin,
+  usePlugins,
+  type WidgetPlugin,
+} from '@deephaven/plugin';
 import Log from '@deephaven/log';
 import { WidgetPanel } from './panels';
 
@@ -33,19 +29,6 @@ export function WrapWidgetPlugin(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const C = plugin.component as any;
     const { metadata } = props;
-    const [componentPanel, setComponentPanel] = useState<ComponentType>();
-    const refCallback = useCallback(
-      (e: ComponentType) => {
-        setComponentPanel(e);
-        if (typeof ref === 'function') {
-          ref(e);
-        } else if (ref != null) {
-          // eslint-disable-next-line no-param-reassign
-          ref.current = e;
-        }
-      },
-      [ref]
-    );
 
     const hasRef = canHaveRef(C);
 
@@ -53,7 +36,6 @@ export function WrapWidgetPlugin(
       <WidgetPanel
         widgetName={metadata?.name}
         widgetType={plugin.title}
-        componentPanel={componentPanel}
         // eslint-disable-next-line react/jsx-props-no-spreading
         {...props}
       >
@@ -61,7 +43,7 @@ export function WrapWidgetPlugin(
           <C
             // eslint-disable-next-line react/jsx-props-no-spreading
             {...props}
-            ref={refCallback}
+            ref={ref}
           />
         ) : (
           <C
@@ -69,7 +51,6 @@ export function WrapWidgetPlugin(
             {...props}
           />
         )}
-        )
       </WidgetPanel>
     );
   }
@@ -170,7 +151,7 @@ export function WidgetLoaderPlugin(
     return () => {
       deregisterFns.forEach(deregister => deregister());
     };
-  });
+  }, [registerComponent, supportedTypes]);
 
   /**
    * Listen for panel open events so we know when to open a panel

@@ -5,7 +5,7 @@ import SearchInput from './SearchInput';
 interface DebouncedSearchInputProps {
   value: string;
   placeholder: string;
-  onChange(value: string): void;
+  onChange: (value: string) => void;
   className: string;
   matchCount: number;
   debounceMs: number;

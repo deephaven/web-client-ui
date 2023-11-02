@@ -5,6 +5,7 @@ import palette from '@deephaven/components/src/theme/theme-dark/theme-dark-palet
 import semantic from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic.css?inline';
 import semanticEditor from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic-editor.css?inline';
 import semanticGrid from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic-grid.css?inline';
+import components from '@deephaven/components/src/theme/theme-dark/theme-dark-components.css?inline';
 import styles from './ThemeColors.module.scss';
 
 // Group names are extracted from var names via a regex capture group. Most of
@@ -45,15 +46,23 @@ const renameGroups = {
     focus: 'state',
   },
   grid: { data: 'Data Bars', context: 'Context Menu' },
+  semantic: {
+    positive: 'status',
+    negative: 'status',
+    notice: 'status',
+    info: 'status',
+    well: 'wells',
+  },
 };
 
 export function ThemeColors(): JSX.Element {
   const swatchDataGroups = useMemo(
     () => ({
       'Theme Color Palette': buildColorGroups(palette, 1),
-      'Semantic Colors': buildColorGroups(semantic, 1),
+      'Semantic Colors': buildColorGroups(semantic, 1, renameGroups.semantic),
       'Editor Colors': buildColorGroups(semanticEditor, 2, renameGroups.editor),
       'Grid Colors': buildColorGroups(semanticGrid, 2, renameGroups.grid),
+      'Component Colors': buildColorGroups(components, 1),
     }),
     []
   );

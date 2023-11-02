@@ -21,13 +21,13 @@ export interface ExpandableGridModel extends GridModel {
    * @param row Row to check
    * @returns True if the row is expandable
    */
-  isRowExpandable(row: ModelIndex): boolean;
+  isRowExpandable: (row: ModelIndex) => boolean;
 
   /**
    * @param row Row to check
    * @returns True if the row is currently expanded
    */
-  isRowExpanded(row: ModelIndex): boolean;
+  isRowExpanded: (row: ModelIndex) => boolean;
 
   /**
    * Change the expanded status of an expandable row
@@ -35,28 +35,28 @@ export interface ExpandableGridModel extends GridModel {
    * @param isExpanded True to expand the row, false to collapse
    * @param expandDescendants True to expand nested rows, false otherwise
    */
-  setRowExpanded(
+  setRowExpanded: (
     row: ModelIndex,
     isExpanded: boolean,
     expandDescendants?: boolean
-  ): void;
+  ) => void;
 
   /**
    * Expand all rows
    */
-  expandAll(): void;
+  expandAll: () => void;
 
   /**
    * Collapse all rows
    */
-  collapseAll(): void;
+  collapseAll: () => void;
 
   /**
    * Get the depth of a row (ie. How indented the row should be)
    * @param row Row to check
    * @returns Depth of the row
    */
-  depthForRow(row: ModelIndex): number;
+  depthForRow: (row: ModelIndex) => number;
 }
 
 export default ExpandableGridModel;

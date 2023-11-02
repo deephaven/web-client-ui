@@ -14,15 +14,15 @@ const log = Log.module('ContextMenu');
 interface ContextMenuProps {
   top: number;
   left: number;
-  updatePosition(top: number, left: number): void;
+  updatePosition: (top: number, left: number) => void;
   // only submenus will have these, defaults to 0 otherwise
   // represents the width height of the parent menu item
   subMenuParentWidth: number;
   subMenuParentHeight: number;
   actions: ResolvableContextAction[];
-  closeMenu(closeAll: boolean): void;
-  onMenuClosed(menu: ContextMenu): void;
-  onMenuOpened(menu: ContextMenu): void;
+  closeMenu: (closeAll: boolean) => void;
+  onMenuClosed: (menu: ContextMenu) => void;
+  onMenuOpened: (menu: ContextMenu) => void;
   options: {
     doNotVerifyPosition?: boolean;
     separateKeyboardMouse?: boolean;
@@ -516,7 +516,7 @@ class ContextMenu extends PureComponent<ContextMenuProps, ContextMenuState> {
       if (menuItem.actions != null) {
         this.openSubMenu(menuItems.indexOf(menuItem));
       } else if (menuItem.action != null) {
-        menuItem.action();
+        menuItem.action(e.nativeEvent);
         this.closeMenu(true);
       }
     }

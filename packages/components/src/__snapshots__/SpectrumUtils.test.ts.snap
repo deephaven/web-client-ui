@@ -1,0 +1,33 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`themeDHDefault should merge Spectrum default with DH custom styles 1`] = `
+{
+  "dark": {
+    "spectrum--darkest": "spectrum--darkest_256eeb",
+    "theme-spectrum-alias": "theme-spectrum-alias",
+    "theme-spectrum-overrides": "theme-spectrum-overrides",
+    "theme-spectrum-palette": "theme-spectrum-palette",
+  },
+  "global": {
+    "spectrum": "spectrum_9e130c",
+    "spectrum--dark": "spectrum--dark_9e130c",
+    "spectrum--darkest": "spectrum--darkest_9e130c",
+    "spectrum--large": "spectrum--large_9e130c",
+    "spectrum--light": "spectrum--light_9e130c",
+    "spectrum--lightest": "spectrum--lightest_9e130c",
+    "spectrum--medium": "spectrum--medium_9e130c",
+  },
+  "large": {
+    "spectrum--large": "spectrum--large_c40598",
+  },
+  "light": {
+    "spectrum--light": "spectrum--light_a40724",
+    "theme-spectrum-alias": "theme-spectrum-alias",
+    "theme-spectrum-overrides": "theme-spectrum-overrides",
+    "theme-spectrum-palette": "theme-spectrum-palette",
+  },
+  "medium": {
+    "spectrum--medium": "spectrum--medium_4b172c",
+  },
+}
+`;
