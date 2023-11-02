@@ -35,8 +35,8 @@
 
   /* 
    * This color shows up in the styleguide, but it doesn't seem to be consumed
-   * in producitno code. There has been discussion about it not being needed 
+   * in production code. There has been discussion about it not being needed 
    * anymore. 
    */
-  --dh-color-chart-line-deprecated: var(--dh-color-visual-purple);
+  --dh-color-chart-line-deprecated: var(--dh-color-visual-green);
 }
