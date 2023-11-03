@@ -2,22 +2,20 @@ const path = require('path');
 
 module.exports = {
   transform: {
-    '.(ts|tsx|js|jsx)': ['babel-jest', { rootMode: 'upward' }],
+    '.(ts|tsx|js|jsx)': [
+      'babel-jest',
+      {
+        rootMode: 'upward',
+        plugins: ['@deephaven/babel-preset/mockCssImportPlugin'],
+      },
+    ],
   },
   // Makes jest transform monaco, but continue ignoring other node_modules. Used for MonacoUtils test
   transformIgnorePatterns: [
     'node_modules/(?!(monaco-editor|d3-interpolate|d3-color)/)',
   ],
   moduleNameMapper: {
-    'theme-([^/]+?)\\.css(\\?inline)?$': path.join(
-      __dirname,
-      './__mocks__/css/mock-theme-$1.js'
-    ),
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
-    '\\.(css|less|scss|sass)\\?inline$': path.join(
-      __dirname,
-      './__mocks__/fileMock.js'
-    ),
     '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
       path.join(__dirname, './__mocks__/fileMock.js'),
     '^fira$': 'identity-obj-proxy',

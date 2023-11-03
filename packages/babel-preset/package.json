@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/babel-preset",
-  "version": "0.51.0",
+  "version": "0.52.0",
   "description": "Deephaven Babel preset",
   "repository": {
     "type": "git",
@@ -10,6 +10,10 @@
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
   "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./mockCssImportPlugin": "./mockCssImportPlugin.js"
+  },
   "dependencies": {
     "@babel/core": "^7.20.0",
     "@babel/plugin-proposal-class-properties": "^7.18.0",

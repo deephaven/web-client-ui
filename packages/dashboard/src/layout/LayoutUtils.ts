@@ -8,6 +8,7 @@ import GoldenLayout, {
   isRoot,
   isStack,
   GoldenLayoutThemeExport,
+  GLPanelProps,
 } from '@deephaven/golden-layout';
 import type {
   ComponentConfig,
@@ -28,6 +29,10 @@ import { PanelConfig } from '../DashboardPlugin';
 const log = Log.module('LayoutUtils');
 
 type LayoutConfig = { id?: string; component?: string };
+
+export type LayoutPanel = {
+  props: GLPanelProps;
+};
 
 export type StackItemConfig = ItemConfig & {
   activeItemIndex?: number;
@@ -335,6 +340,7 @@ class LayoutUtils {
    * 1. sorts in grid
    * 2. quick filters in grid
    * 3. active item
+   * 4. isStuckToBottom/isStuckToRight
    *
    * item id is also removed
    */
@@ -355,6 +361,8 @@ class LayoutUtils {
           delete itemConfig.id;
           itemConfig.props.panelState.irisGridState.sorts = [];
           itemConfig.props.panelState.irisGridState.quickFilters = [];
+          itemConfig.props.panelState.gridState.isStuckToBottom = false;
+          itemConfig.props.panelState.gridState.isStuckToRight = false;
         }
       }
     }
@@ -769,9 +777,9 @@ class LayoutUtils {
    * @param panel The panel to get the ID for
    * @returns Panel ID
    */
-  static getIdFromPanel(panel: {
-    props: { glContainer: Container };
-  }): string | string[] | null | undefined {
+  static getIdFromPanel(
+    panel: LayoutPanel
+  ): string | string[] | null | undefined {
     const { glContainer } = panel.props;
     return LayoutUtils.getIdFromContainer(glContainer);
   }
@@ -781,9 +789,7 @@ class LayoutUtils {
    * @param panel Panel to get component name for
    * @returns Component name or null if unable to retrieve name
    */
-  static getComponentNameFromPanel(panel: {
-    props: { glContainer: Container };
-  }): string | null {
+  static getComponentNameFromPanel(panel: LayoutPanel): string | null {
     const { glContainer } = panel.props;
     const config = LayoutUtils.getComponentConfigFromContainer(glContainer);
     if (config && isReactComponentConfig(config)) {

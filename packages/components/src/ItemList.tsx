@@ -58,12 +58,12 @@ export type ItemListProps<T> = {
   // Set to true if you want the list to scroll when new items are added and it's already at the bottom
   isStickyBottom: boolean;
   // Fired when an item gets focused
-  onFocusChange(index: number | null): void;
+  onFocusChange: (index: number | null) => void;
 
   // Fired when an item is clicked. With multiple selection, fired on double click.
-  onSelect(index: number, event: React.SyntheticEvent): void;
-  onSelectionChange(ranges: readonly Range[]): void;
-  onViewportChange(topRow: number, bottomRow: number): void;
+  onSelect: (index: number, event: React.SyntheticEvent) => void;
+  onSelectionChange: (ranges: readonly Range[]) => void;
+  onViewportChange: (topRow: number, bottomRow: number) => void;
   overscanCount: number;
   selectedRanges: readonly Range[];
   disableSelect: boolean;

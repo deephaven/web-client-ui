@@ -73,7 +73,9 @@ export type DehydratedDashboardPanelProps = Omit<
   keyof GLPanelProps
 >;
 
-export type PanelComponent<T extends PanelProps = PanelProps> = Component<T>;
+export type PanelComponent<T extends PanelProps = PanelProps> =
+  | Component<T>
+  | { props: T; state: unknown };
 
 export type PanelConfig = ReactComponentConfig & {
   componentState?: Record<string, unknown> | null;

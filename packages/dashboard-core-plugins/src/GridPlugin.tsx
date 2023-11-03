@@ -1,38 +1,33 @@
-import { useMemo } from 'react';
-import {
-  assertIsDashboardPluginProps,
-  DashboardPluginComponentProps,
-  useDashboardPanel,
-} from '@deephaven/dashboard';
-import { useApi } from '@deephaven/jsapi-bootstrap';
-import { IrisGridPanel } from './panels';
+import { forwardRef, useMemo } from 'react';
+import { type WidgetComponentProps } from '@deephaven/plugin';
+import { type DashboardPanelProps } from '@deephaven/dashboard';
 import useHydrateGrid from './useHydrateGrid';
+import ConnectedIrisGridPanel, {
+  IrisGridPanelProps,
+  type IrisGridPanel,
+} from './panels/IrisGridPanel';
 
-export function GridPlugin(
-  props: DashboardPluginComponentProps
-): JSX.Element | null {
-  assertIsDashboardPluginProps(props);
-  const dh = useApi();
-  const hydrate = useHydrateGrid();
+export const GridPlugin = forwardRef(
+  (props: WidgetComponentProps, ref: React.Ref<IrisGridPanel>) => {
+    const hydrate = useHydrateGrid<
+      DashboardPanelProps & Pick<IrisGridPanelProps, 'panelState'>
+    >();
+    const { localDashboardId } = props;
+    const hydratedProps = useMemo(
+      () =>
+        hydrate(
+          props as WidgetComponentProps &
+            Pick<IrisGridPanelProps, 'panelState'>,
+          localDashboardId
+        ),
+      [hydrate, props, localDashboardId]
+    );
 
-  const supportedTypes = useMemo(
-    () => [
-      dh.VariableType.TABLE,
-      dh.VariableType.TREETABLE,
-      dh.VariableType.HIERARCHICALTABLE,
-    ],
-    [dh]
-  );
+    // eslint-disable-next-line react/jsx-props-no-spreading
+    return <ConnectedIrisGridPanel ref={ref} {...hydratedProps} />;
+  }
+);
 
-  useDashboardPanel({
-    dashboardProps: props,
-    componentName: IrisGridPanel.COMPONENT,
-    component: IrisGridPanel,
-    supportedTypes,
-    hydrate,
-  });
-
-  return null;
-}
+GridPlugin.displayName = 'GridPlugin';
 
 export default GridPlugin;

@@ -8,7 +8,11 @@ import React, {
   ReactNode,
   RefObject,
 } from 'react';
-import { ContextActions, DropdownAction } from '@deephaven/components';
+import {
+  ContextActions,
+  DropdownAction,
+  ResolvableContextAction,
+} from '@deephaven/components';
 import { vsCheck } from '@deephaven/icons';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
@@ -79,8 +83,8 @@ interface ConsoleProps {
    * (file:File) => Promise<File[]>
    */
   unzip: (file: File) => Promise<JSZipObject[]>;
-  supportsType(type: string): boolean;
-  iconForType(type: string): ReactElement;
+  supportsType: (type: string) => boolean;
+  iconForType: (type: string) => ReactElement;
 }
 
 interface ConsoleState {
@@ -283,7 +287,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     }
   }
 
-  handleClearShortcut(event: CustomEvent): void {
+  handleClearShortcut(event: Event): void {
     event.preventDefault();
     event.stopPropagation();
 
@@ -408,7 +412,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     });
   }
 
-  handleFocusHistory(event: CustomEvent): void {
+  handleFocusHistory(event: Event): void {
     event.preventDefault();
     event.stopPropagation();
 
@@ -889,17 +893,19 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     ...objectMap.values(),
   ]);
 
-  getContextActions = memoize((actions: DropdownAction[]) => [
-    ...actions,
-    {
-      action: this.handleClearShortcut,
-      shortcut: SHORTCUTS.CONSOLE.CLEAR,
-    },
-    {
-      action: this.handleFocusHistory,
-      shortcut: SHORTCUTS.CONSOLE.FOCUS_HISTORY,
-    },
-  ]);
+  getContextActions = memoize(
+    (actions: DropdownAction[]): ResolvableContextAction[] => [
+      ...actions,
+      {
+        action: this.handleClearShortcut,
+        shortcut: SHORTCUTS.CONSOLE.CLEAR,
+      },
+      {
+        action: this.handleFocusHistory,
+        shortcut: SHORTCUTS.CONSOLE.FOCUS_HISTORY,
+      },
+    ]
+  );
 
   addCommand(command: string, focus = true, execute = false): void {
     if (!this.consoleInput.current) {

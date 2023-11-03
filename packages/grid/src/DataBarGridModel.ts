@@ -50,9 +50,9 @@ export function isDataBarGridModel(
 }
 
 export interface DataBarGridModel extends GridModel {
-  dataBarOptionsForCell(
+  dataBarOptionsForCell: (
     column: ModelIndex,
     row: ModelIndex,
     theme: GridThemeType
-  ): DataBarOptions;
+  ) => DataBarOptions;
 }

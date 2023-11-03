@@ -80,12 +80,14 @@ interface Props<T> {
   items: FlattenedItem<T>[];
   indentationWidth?: number;
   indicator?: boolean;
-  renderItem(props: {
+  renderItem: (props: {
     clone: boolean;
     childCount?: number;
     value: string;
     item: FlattenedItem<T>;
-  }): JSX.Element;
+    ref: React.Ref<HTMLDivElement>;
+    handleProps?: Record<string, unknown>;
+  }) => JSX.Element;
   activeId: string | null;
   overId: string | null;
   offsetLeft: number;

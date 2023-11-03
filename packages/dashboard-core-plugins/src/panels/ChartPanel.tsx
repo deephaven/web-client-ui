@@ -81,6 +81,7 @@ export interface ChartPanelFigureMetadata extends PanelMetadata {
    * @deprecated use `name` instead
    */
   figure?: string;
+  sourcePanelId: never;
 }
 
 export interface ChartPanelTableMetadata extends PanelMetadata {
@@ -112,34 +113,40 @@ export interface GLChartPanelState {
     sorts: unknown;
   };
   irisGridPanelState?: {
-    partitionColumn: string;
-    partition: unknown;
+    partitionColumns: string[];
+    partitions: unknown[];
   };
   table?: string;
   figure?: string;
 }
-export interface ChartPanelProps extends DashboardPanelProps {
+interface OwnProps extends DashboardPanelProps {
   metadata: ChartPanelMetadata;
   /** Function to build the ChartModel used by this ChartPanel. Can return a promise. */
   makeModel: () => Promise<ChartModel>;
-  inputFilters: InputFilter[];
-  links: Link[];
   localDashboardId: string;
-  isLinkerActive: boolean;
-  source?: TableTemplate;
-  sourcePanel?: PanelComponent;
-  columnSelectionValidator?: ColumnSelectionValidator;
-  setActiveTool: (tool: string) => void;
-  setDashboardIsolatedLinkerPanelId: (
-    id: string,
-    secondParam: undefined
-  ) => void;
   Plotly?: typeof PlotlyType;
   /** The panel container div */
   containerRef?: RefObject<HTMLDivElement>;
 
   panelState: GLChartPanelState;
+}
+
+interface StateProps {
+  inputFilters: InputFilter[];
+  links: Link[];
+  isLinkerActive: boolean;
+  source?: TableTemplate;
+  sourcePanel?: PanelComponent;
+  columnSelectionValidator?: ColumnSelectionValidator;
   settings: Partial<WorkspaceSettings>;
+}
+
+interface DispatchProps {
+  setActiveTool: (tool: string) => void;
+  setDashboardIsolatedLinkerPanelId: (
+    id: string,
+    secondParam: undefined
+  ) => void;
 }
 
 interface ChartPanelState {
@@ -177,6 +184,11 @@ function hasPanelState(
 ): panel is { panelState: IrisGridPanelState } {
   return (panel as { panelState: IrisGridPanelState }).panelState != null;
 }
+
+export type ChartPanelProps = OwnProps &
+  StateProps &
+  DispatchProps &
+  React.RefAttributes<ChartPanel>;
 
 export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
   static defaultProps = {
@@ -1046,7 +1058,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     if (isChartPanelTableMetadata(metadata)) {
       name = metadata.table;
     } else {
-      name = metadata.figure;
+      name = metadata.name ?? metadata.figure;
     }
     const inputFilterMap = this.getInputFilterColumnMap(
       columnMap,
@@ -1157,23 +1169,10 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
   }
 }
 
-const mapStateToProps = (
-  state: RootState,
-  ownProps: { localDashboardId: string; metadata: { sourcePanelId?: string } }
-): Omit<
-  ChartPanelProps,
-  | 'glContainer'
-  | 'glEventHub'
-  | 'localDashboardId'
-  | 'makeModel'
-  | 'metadata'
-  | 'panelState'
-  | 'setActiveTool'
-  | 'setDashboardIsolatedLinkerPanelId'
-> => {
+const mapStateToProps = (state: RootState, ownProps: OwnProps): StateProps => {
   const { localDashboardId, metadata } = ownProps;
 
-  let sourcePanelId;
+  let sourcePanelId: string | undefined;
   if (metadata != null) {
     sourcePanelId = metadata.sourcePanelId;
   }
@@ -1207,7 +1206,7 @@ const ConnectedChartPanel = connect(
   {
     setActiveTool: setActiveToolAction,
     setDashboardIsolatedLinkerPanelId: setDashboardIsolatedLinkerPanelIdAction,
-  },
+  } satisfies DispatchProps,
   null,
   { forwardRef: true }
 )(ChartPanel);

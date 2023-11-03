@@ -1328,11 +1328,12 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     const { isStickyBottom, isStickyRight } = this.props;
     const { top, left } = viewState;
-    const { lastTop, lastLeft } = this.metrics;
-    if (top != null) {
+    const { lastTop, lastLeft, hasVerticalBar, hasHorizontalBar } =
+      this.metrics;
+    if (top != null && hasVerticalBar) {
       this.setState({ isStuckToBottom: isStickyBottom && top >= lastTop });
     }
-    if (left != null) {
+    if (left != null && hasHorizontalBar) {
       this.setState({ isStuckToRight: isStickyRight && left >= lastLeft });
     }
 

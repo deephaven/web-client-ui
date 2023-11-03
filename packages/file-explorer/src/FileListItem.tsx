@@ -34,10 +34,10 @@ export type FileListRenderItemProps = RenderItemProps<FileStorageItem> & {
   isDragInProgress: boolean;
   isDropTargetValid: boolean;
 
-  onDragStart(index: number, e: React.DragEvent<HTMLDivElement>): void;
-  onDragOver(index: number, e: React.DragEvent<HTMLDivElement>): void;
-  onDragEnd(index: number, e: React.DragEvent<HTMLDivElement>): void;
-  onDrop(index: number, e: React.DragEvent<HTMLDivElement>): void;
+  onDragStart: (index: number, e: React.DragEvent<HTMLDivElement>) => void;
+  onDragOver: (index: number, e: React.DragEvent<HTMLDivElement>) => void;
+  onDragEnd: (index: number, e: React.DragEvent<HTMLDivElement>) => void;
+  onDrop: (index: number, e: React.DragEvent<HTMLDivElement>) => void;
 };
 
 export function FileListItem(props: FileListRenderItemProps): JSX.Element {

@@ -19,15 +19,15 @@ type CustomTimeSelectProps = {
   options: { title: string; value: number }[];
   popperOptions: PopperOptions;
   value: number | null;
-  onChange(value: number): void;
+  onChange: (value: number) => void;
   disabled: boolean;
   icon: IconDefinition;
   placeholder: string;
   customText: string;
   // Defaults to converting the value in milliseconds to time in seconds
-  valueToTime(val: number | null): number;
+  valueToTime: (val: number | null) => number;
   // Defaults to converting the time in seconds to value in milliseconds
-  timeToValue(time: number): number;
+  timeToValue: (time: number) => number;
   invalid: boolean;
   'data-testid'?: string;
 };

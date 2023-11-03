@@ -1,6 +1,4 @@
 import React, {
-  Component,
-  ComponentType,
   FocusEvent,
   FocusEventHandler,
   PureComponent,
@@ -16,7 +14,7 @@ import {
   LoadingOverlay,
   Tooltip,
 } from '@deephaven/components';
-import { LayoutUtils, PanelEvent } from '@deephaven/dashboard';
+import { LayoutUtils, PanelComponent, PanelEvent } from '@deephaven/dashboard';
 import type {
   Container,
   EventEmitter,
@@ -33,7 +31,12 @@ import RenameDialog from './RenameDialog';
 const log = Log.module('Panel');
 
 interface PanelProps {
-  componentPanel?: ComponentType | Component;
+  /**
+   * Reference to the component panel.
+   * Will wait until it is set before emitting mount/unmount events.
+   *
+   */
+  componentPanel?: PanelComponent;
   children: ReactNode;
   glContainer: Container;
   glEventHub: EventEmitter;
@@ -66,6 +69,7 @@ interface PanelProps {
 interface PanelState {
   title?: string | null;
   showRenameDialog: boolean;
+  isWithinPanel: boolean;
 }
 /**
  * Generic panel component that emits mount/unmount/focus events.
@@ -118,15 +122,18 @@ class Panel extends PureComponent<PanelProps, PanelState> {
     this.handleTabClicked = this.handleTabClicked.bind(this);
     this.handleTab = this.handleTab.bind(this);
 
+    this.ref = React.createRef<HTMLDivElement>();
+
     const { glContainer } = this.props;
     this.state = {
       title: LayoutUtils.getTitleFromContainer(glContainer),
       showRenameDialog: false,
+      isWithinPanel: true,
     };
   }
 
   componentDidMount(): void {
-    const { glContainer, glEventHub } = this.props;
+    const { componentPanel, glContainer, glEventHub } = this.props;
 
     glContainer.on('resize', this.handleResize);
     glContainer.on('show', this.handleBeforeShow);
@@ -142,15 +149,13 @@ class Panel extends PureComponent<PanelProps, PanelState> {
       InputFilterEvent.CLEAR_ALL_FILTERS,
       this.handleClearAllFilters
     );
-  }
 
-  componentDidUpdate(prevProps: PanelProps): void {
-    const { componentPanel, glEventHub } = this.props;
+    glEventHub.emit(PanelEvent.MOUNT, componentPanel ?? this);
 
-    // componentPanel ref could start undefined w/ WidgetLoaderPlugin wrapping panels
-    if (prevProps.componentPanel == null && componentPanel != null) {
-      glEventHub.emit(PanelEvent.MOUNT, componentPanel);
-    }
+    this.setState({
+      isWithinPanel:
+        this.ref.current?.parentElement?.closest('.dh-panel') != null,
+    });
   }
 
   componentWillUnmount(): void {
@@ -171,10 +176,10 @@ class Panel extends PureComponent<PanelProps, PanelState> {
       this.handleClearAllFilters
     );
 
-    if (componentPanel != null) {
-      glEventHub.emit(PanelEvent.UNMOUNT, componentPanel);
-    }
+    glEventHub.emit(PanelEvent.UNMOUNT, componentPanel ?? this);
   }
+
+  ref: React.RefObject<HTMLDivElement>;
 
   handleTab(tab: Tab): void {
     if (tab != null) {
@@ -202,7 +207,7 @@ class Panel extends PureComponent<PanelProps, PanelState> {
 
   handleFocus(event: FocusEvent<HTMLDivElement>): void {
     const { componentPanel, glEventHub } = this.props;
-    glEventHub.emit(PanelEvent.FOCUS, componentPanel);
+    glEventHub.emit(PanelEvent.FOCUS, componentPanel ?? this);
 
     const { onFocus } = this.props;
     onFocus(event);
@@ -335,13 +340,14 @@ class Panel extends PureComponent<PanelProps, PanelState> {
       isRenamable,
     } = this.props;
     const { tab: glTab } = glContainer;
-    const { showRenameDialog, title } = this.state;
+    const { showRenameDialog, title, isWithinPanel } = this.state;
 
     return (
       <div
-        className={classNames('h-100 w-100 iris-panel', className)}
+        className={classNames('h-100 w-100 dh-panel', className)}
         onFocusCapture={this.handleFocus}
         onBlurCapture={this.handleBlur}
+        ref={this.ref}
       >
         {children}
         <LoadingOverlay
@@ -349,7 +355,8 @@ class Panel extends PureComponent<PanelProps, PanelState> {
           isLoaded={isLoaded}
           isLoading={isLoading}
         />
-        {glTab != null &&
+        {!isWithinPanel &&
+          glTab != null &&
           ReactDOM.createPortal(
             <>
               <PanelContextMenu

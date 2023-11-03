@@ -20,7 +20,7 @@ export interface CommandHistoryStorageItem extends StorageItem {
 
 export interface CommandHistoryTable
   extends StorageTable<CommandHistoryStorageItem> {
-  setSearch(search: string): void;
+  setSearch: (search: string) => void;
 }
 
 export interface CommandHistoryStorage {
@@ -32,11 +32,11 @@ export interface CommandHistoryStorage {
    * @param scope The scope of this command history, to keep different command histories separate
    * @param timestamp The time this command history scope was started
    */
-  getTable(
+  getTable: (
     language: string,
     scope: string,
     timestamp: number
-  ): Promise<CommandHistoryTable>;
+  ) => Promise<CommandHistoryTable>;
 
   /**
    * Add a command to the command history
@@ -45,22 +45,22 @@ export interface CommandHistoryStorage {
    * @param command The command to add to the history
    * @param data The data to save with the command
    */
-  addItem(
+  addItem: (
     language: string,
     scope: string,
     command: string,
     data: CommandHistoryStorageData
-  ): Promise<CommandHistoryStorageItem>;
+  ) => Promise<CommandHistoryStorageItem>;
 
   /**
    * Save a modified CommandHistoryStorageItem
    * @param language The language of the item to save
    * @param item The modified item to save
    */
-  updateItem(
+  updateItem: (
     language: string,
     item: CommandHistoryStorageItem
-  ): Promise<CommandHistoryStorageItem>;
+  ) => Promise<CommandHistoryStorageItem>;
 
   /**
    * Listen to an item with a specific id
@@ -69,12 +69,12 @@ export interface CommandHistoryStorage {
    * @param id The id of the item to listen to
    * @param listener Called whenever there is an update on the item
    */
-  listenItem(
+  listenItem: (
     language: string,
     id: string,
     listener: StorageItemListener<CommandHistoryStorageItem>,
     onError?: StorageErrorListener
-  ): StorageListenerRemover;
+  ) => StorageListenerRemover;
 }
 
 export default CommandHistoryStorage;

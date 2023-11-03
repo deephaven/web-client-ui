@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/components",
-  "version": "0.51.0",
+  "version": "0.52.0",
   "description": "Deephaven React component library",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -18,9 +18,10 @@
     "node": ">=10"
   },
   "scripts": {
-    "build": "cross-env NODE_ENV=production run-p build:*",
+    "build": "cross-env NODE_ENV=production run-s build:babel build:sass build:theme",
     "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward",
-    "build:sass": "sass --embed-sources --load-path=../../node_modules ./src:./dist ./scss/BaseStyleSheet.scss:./css/BaseStyleSheet.css"
+    "build:sass": "sass --embed-sources --load-path=../../node_modules ./src:./dist ./scss/BaseStyleSheet.scss:./css/BaseStyleSheet.css",
+    "build:theme": "sass --embed-sources --style=compressed --load-path=../../node_modules ./src/theme:./dist/theme"
   },
   "dependencies": {
     "@adobe/react-spectrum": "^3.29.0",
