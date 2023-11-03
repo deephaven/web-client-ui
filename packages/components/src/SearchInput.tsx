@@ -4,12 +4,9 @@ import { vsArrowLeft, vsArrowRight, vsSearch } from '@deephaven/icons';
 import classNames from 'classnames';
 import './SearchInput.scss';
 
-interface SelectedParams {
-  numberSelected: number;
-  selectedIndex: number;
-  length: number;
-  increaseSelected: () => void;
-  decreaseSelected: () => void;
+interface QueryParams {
+  queriedColumnIndex: number | undefined;
+  changeQueriedColumnIndex: (direction: 'forward' | 'back') => void;
 }
 interface SearchInputProps {
   value: string;
@@ -22,7 +19,7 @@ interface SearchInputProps {
   matchCount: number;
   id: string;
   'data-testid'?: string;
-  selectedParams?: SelectedParams;
+  queryParams?: QueryParams;
 }
 
 class SearchInput extends PureComponent<SearchInputProps> {
@@ -35,7 +32,7 @@ class SearchInput extends PureComponent<SearchInputProps> {
     },
     id: '',
     'data-testid': undefined,
-    selectedParams: undefined,
+    queryParams: undefined,
   };
 
   constructor(props: SearchInputProps) {
@@ -61,7 +58,7 @@ class SearchInput extends PureComponent<SearchInputProps> {
       id,
       onKeyDown,
       'data-testid': dataTestId,
-      selectedParams,
+      queryParams,
     } = this.props;
 
     return (
@@ -78,41 +75,49 @@ class SearchInput extends PureComponent<SearchInputProps> {
           ref={this.inputField}
           id={id}
           data-testid={dataTestId}
+          style={
+            queryParams && {
+              paddingRight:
+                queryParams?.queriedColumnIndex !== undefined
+                  ? '6rem'
+                  : '4.5rem',
+            }
+          }
         />
 
-        {selectedParams != null && selectedParams.numberSelected === 1 ? (
+        {matchCount != null && queryParams !== undefined ? (
           <div className="search-change-selection">
             <button
               className="search-change-button"
               type="button"
               onClick={() => {
-                selectedParams.decreaseSelected();
+                queryParams.changeQueriedColumnIndex('back');
               }}
+              disabled={matchCount <= 1}
             >
               <FontAwesomeIcon icon={vsArrowLeft} />
             </button>
             <span className="search-change-text">
-              {selectedParams.selectedIndex} of {selectedParams.length}
+              {queryParams.queriedColumnIndex !== undefined &&
+                matchCount > 1 &&
+                `${queryParams.queriedColumnIndex + 1} of `}
+              {matchCount}
             </span>
             <button
               className="search-change-button"
               type="button"
               onClick={() => {
-                selectedParams.increaseSelected();
+                queryParams.changeQueriedColumnIndex('forward');
               }}
+              disabled={matchCount <= 1}
             >
               <FontAwesomeIcon icon={vsArrowRight} />
             </button>
           </div>
         ) : (
-          <>
-            {matchCount != null && (
-              <span className="search-match">{matchCount}</span>
-            )}
-            <span className="search-icon">
-              <FontAwesomeIcon icon={vsSearch} />
-            </span>
-          </>
+          <span className="search-icon">
+            <FontAwesomeIcon icon={vsSearch} />
+          </span>
         )}
       </div>
     );

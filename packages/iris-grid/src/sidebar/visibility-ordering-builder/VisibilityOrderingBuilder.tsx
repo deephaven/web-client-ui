@@ -21,8 +21,6 @@ import {
   vsRefresh,
   vsCircleLargeFilled,
   vsAdd,
-  vsArrowLeft,
-  vsArrowSmallRight,
 } from '@deephaven/icons';
 import type { Column } from '@deephaven/jsapi-types';
 import memoize from 'memoizee';
@@ -69,6 +67,8 @@ interface VisibilityOrderingBuilderProps {
 
 interface VisibilityOrderingBuilderState {
   selectedColumns: Set<string>;
+  queriedColumnIndex: number | undefined;
+  prevQueriedColumns: string[] | undefined;
   lastSelectedColumn: string;
   searchFilter: string;
 }
@@ -102,6 +102,8 @@ class VisibilityOrderingBuilder extends Component<
 
     this.state = {
       selectedColumns: new Set(),
+      queriedColumnIndex: undefined,
+      prevQueriedColumns: undefined,
       lastSelectedColumn: '',
       searchFilter: '',
     };
@@ -127,6 +129,8 @@ class VisibilityOrderingBuilder extends Component<
 
     this.setState({
       selectedColumns: new Set(),
+      queriedColumnIndex: undefined,
+      prevQueriedColumns: undefined,
       lastSelectedColumn: '',
       searchFilter: '',
     });
@@ -137,7 +141,12 @@ class VisibilityOrderingBuilder extends Component<
   }
 
   resetSelection(): void {
-    this.setState({ selectedColumns: new Set(), lastSelectedColumn: '' });
+    this.setState({
+      selectedColumns: new Set(),
+      queriedColumnIndex: undefined,
+      prevQueriedColumns: undefined,
+      lastSelectedColumn: '',
+    });
   }
 
   handleSearchInputChange(event: ChangeEvent<HTMLInputElement>): void {
@@ -170,6 +179,11 @@ class VisibilityOrderingBuilder extends Component<
         this.list?.querySelectorAll('.item-wrapper')[visibleIndexToFocus];
       columnItemToFocus?.scrollIntoView({ block: 'center' });
     }
+
+    this.setState({
+      prevQueriedColumns: columnsMatch,
+      queriedColumnIndex: undefined,
+    });
   }
 
   /**
@@ -178,40 +192,36 @@ class VisibilityOrderingBuilder extends Component<
    * @param direction The direction to move the selection
    */
 
-  changeSelectedColumn(direction: 'next' | 'previous'): void {
-    const { selectedColumns } = this.state;
+  changeSelectedColumn(direction: 'forward' | 'back'): void {
+    const { queriedColumnIndex, prevQueriedColumns } = this.state;
+    let newQueriedColumnIndex = queriedColumnIndex;
 
-    const flattenedItems = flattenTree(this.getTreeItems());
+    if (prevQueriedColumns === undefined) return;
 
-    let selectedColumnIndex = flattenedItems.findIndex(({ id }) =>
-      selectedColumns.has(id)
-    );
-
-    if (direction === 'next') {
-      if (selectedColumns.size > 1) {
-        const reversedItems = [...flattenedItems].reverse(); // reversed because I need to find last index
-        selectedColumnIndex =
-          flattenedItems.length -
-          reversedItems.findIndex(({ id }) => selectedColumns.has(id)) -
-          1; // subtract by 1 because index starts at 0
+    if (direction === 'forward') {
+      if (
+        newQueriedColumnIndex === undefined ||
+        newQueriedColumnIndex >= prevQueriedColumns.length - 1
+      ) {
+        newQueriedColumnIndex = 0;
+      } else {
+        newQueriedColumnIndex += 1;
       }
-
-      selectedColumnIndex += 1;
-      if (selectedColumnIndex >= flattenedItems.length) {
-        selectedColumnIndex = 0;
-      }
-    } else {
-      selectedColumnIndex -= 1;
-      if (selectedColumnIndex < 0) {
-        selectedColumnIndex = flattenedItems.length - 1;
+    } else if (direction === 'back') {
+      if (newQueriedColumnIndex === undefined || newQueriedColumnIndex <= 0) {
+        newQueriedColumnIndex = prevQueriedColumns.length - 1;
+      } else {
+        newQueriedColumnIndex -= 1;
       }
     }
 
-    const newSelectedColumnId = flattenedItems[selectedColumnIndex].id;
-    this.addColumnToSelected([newSelectedColumnId], false);
+    this.addColumnToSelected(
+      [prevQueriedColumns[newQueriedColumnIndex as number]],
+      false
+    );
 
     this.setState({
-      searchFilter: newSelectedColumnId,
+      queriedColumnIndex: newQueriedColumnIndex,
     });
   }
 
@@ -1060,7 +1070,12 @@ class VisibilityOrderingBuilder extends Component<
 
   render(): ReactElement {
     const { model, hiddenColumns, onColumnVisibilityChanged } = this.props;
-    const { selectedColumns, searchFilter } = this.state;
+    const {
+      selectedColumns,
+      searchFilter,
+      prevQueriedColumns,
+      queriedColumnIndex,
+    } = this.state;
     const hasSelection = selectedColumns.size > 0;
     const treeItems = this.getTreeItems();
     const nameToIndexes = new Map(
@@ -1094,14 +1109,13 @@ class VisibilityOrderingBuilder extends Component<
       treeItems
     );
 
-    const flattenedItems = flattenTree(treeItems);
-    const searchInputParams = {
-      numberSelected: selectedColumns.size,
-      selectedIndex: flattenedItems.findIndex(({ selected }) => selected) + 1, // number is not being updated
-      length: flattenedItems.length,
-      increaseSelected: () => this.changeSelectedColumn('next'),
-      decreaseSelected: () => this.changeSelectedColumn('previous'),
+    const queryParams = {
+      queriedColumnIndex,
+      changeQueriedColumnIndex: (direction: 'forward' | 'back') =>
+        this.changeSelectedColumn(direction),
     };
+
+    const matchCount = prevQueriedColumns?.length;
 
     return (
       <div role="menu" className="visibility-ordering-builder" tabIndex={0}>
@@ -1121,9 +1135,9 @@ class VisibilityOrderingBuilder extends Component<
           <SearchInput
             className="visibility-search"
             value={searchFilter}
-            matchCount={searchFilter ? selectedColumns.size : undefined}
+            matchCount={searchFilter ? matchCount : undefined}
             onChange={this.handleSearchInputChange}
-            selectedParams={searchInputParams}
+            queryParams={queryParams}
           />
         </div>
         <div className="top-menu">
