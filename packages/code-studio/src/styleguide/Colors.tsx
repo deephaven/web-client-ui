@@ -12,6 +12,7 @@ function Colors(): React.ReactElement {
     ['700', '400'],
     ['800', '300'],
     ['850', '200'],
+    ['8XX', '100'],
     ['900', '75'],
   ].map(([swatch, dh]) => (
     <div
