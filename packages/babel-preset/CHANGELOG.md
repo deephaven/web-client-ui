@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.53.0](https://github.com/deephaven/web-client-ui/compare/v0.52.0...v0.53.0) (2023-11-03)
+
+
+### Features
+
+* Babel Plugin - Mock css imports ([#1607](https://github.com/deephaven/web-client-ui/issues/1607)) ([787c542](https://github.com/deephaven/web-client-ui/commit/787c5420ecb90661ae5032e174f292707e908820)), closes [#1606](https://github.com/deephaven/web-client-ui/issues/1606)
+
+
+
+
+
 # [0.52.0](https://github.com/deephaven/web-client-ui/compare/v0.51.0...v0.52.0) (2023-10-27)
 
 

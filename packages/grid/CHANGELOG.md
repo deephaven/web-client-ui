@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.53.0](https://github.com/deephaven/web-client-ui/compare/v0.52.0...v0.53.0) (2023-11-03)
+
+
+### Reverts
+
+* "fix: stuck to bottom on filter clear" ([#1616](https://github.com/deephaven/web-client-ui/issues/1616)) ([806a6b6](https://github.com/deephaven/web-client-ui/commit/806a6b61543cfb13cd7905a9d42edb32aeb3c577)), closes [deephaven/web-client-ui#1579](https://github.com/deephaven/web-client-ui/issues/1579) [#1615](https://github.com/deephaven/web-client-ui/issues/1615)
+
+
+
+
+
 # [0.52.0](https://github.com/deephaven/web-client-ui/compare/v0.51.0...v0.52.0) (2023-10-27)
 
 
