@@ -85,6 +85,10 @@ function Inputs(): React.ReactElement {
     []
   );
 
+  const handleChange = (date: string) => {
+    console.log('Date changed:', date);
+  };
+
   return (
     <div className="style-guide-inputs">
       <h2 className="ui-title">Inputs</h2>
@@ -330,7 +334,7 @@ function Inputs(): React.ReactElement {
             <TimeInput />
             <br />
             <h5>Date Input</h5>
-            <DateInput />
+            <DateInput onChange={handleChange} />
             <br />
             <h5>DateTime Input</h5>
             <DateTimeInput />
@@ -363,5 +367,4 @@ function Inputs(): React.ReactElement {
     </div>
   );
 }
-
 export default Inputs;

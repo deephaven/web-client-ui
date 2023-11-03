@@ -12,7 +12,7 @@ const DATE_FORMAT = 'YYYY-MM-DD';
 
 type DateInputProps = {
   className?: string;
-  onChange?: (date?: string) => void;
+  onChange: (date: string) => void; // Remove the question mark to make date non-optional
   defaultValue?: string;
   onFocus?: () => void;
   onBlur?: () => void;
@@ -23,7 +23,7 @@ const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
   (props: DateInputProps, ref) => {
     const {
       className = '',
-      onChange = () => undefined,
+      onChange = () => undefined, // Provide a default value for onChange
       defaultValue = '',
       onFocus = () => undefined,
       onBlur = () => undefined,
@@ -62,16 +62,6 @@ const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
     );
   }
 );
-
 DateInput.displayName = 'DateInput';
-
-DateInput.defaultProps = {
-  className: '',
-  onChange: () => false,
-  defaultValue: '',
-  onFocus: () => false,
-  onBlur: () => false,
-  'data-testid': undefined,
-};
 
 export default DateInput;
