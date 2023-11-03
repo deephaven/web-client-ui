@@ -40,7 +40,7 @@ pre {
   }
 }
 
-@mixin swatch-color($color, $value) {
+@mixin swatch-color($color, $value, $class-prefix: 'swatch') {
   // Expose value in :after content to make use of it in style guide
   $exposed-value: #{$value};
 
@@ -49,7 +49,7 @@ pre {
     $exposed-value: string.slice($exposed-value, 5, -2);
   }
 
-  .swatch-#{$color} {
+  .#{$class-prefix}-#{$color} {
     display: grid;
     grid-template-columns: 120px 1fr;
     text-align: left;
@@ -63,16 +63,8 @@ pre {
   }
 }
 
-$theme-colors: map.merge(
-  (
-    'secondary-hover': $secondary-hover,
-    'danger-hover': $danger-hover,
-    'green-dark': $green-dark,
-  ),
-  $theme-colors
-);
-@each $theme-color, $value in $theme-colors {
-  @include swatch-color($theme-color, $value);
+@each $color, $value in map.merge($semantic-colors, $theme-colors) {
+  @include swatch-color($color, $value);
 }
 
 // Special case swatches with labels
@@ -98,13 +90,7 @@ $theme-colors: map.merge(
 }
 
 @each $color, $value in $grays {
-  .gray-swatch-#{$color} {
-    background-color: #{$value};
-  }
-}
-// This gray isn't in Bootstrap's default $grays map
-.gray-swatch-850 {
-  background-color: $gray-850;
+  @include swatch-color($color, $value, 'gray-swatch');
 }
 
 .gray-swatch-850 {

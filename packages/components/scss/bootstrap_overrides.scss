@@ -33,17 +33,19 @@ $content-bg: var(--dh-color-content-background);
 $background: var(--dh-color-background);
 $foreground: var(--dh-color-foreground);
 
-//Load colors into map
+// Extend default Bootstrap $grays map
+$grays: ();
+$grays: map-merge(
+  (
+    '850': $gray-850,
+  ),
+  $grays
+);
+
+// Extend default Bootstrap $colors map
 $colors: ();
 $colors: map-merge(
   (
-    'red': $red,
-    'orange': $orange,
-    'yellow': $yellow,
-    'green': $green,
-    'blue': $blue,
-    'purple': $purple,
-    'white': $white,
     'black': $black,
   ),
   $colors
@@ -70,26 +72,30 @@ $mid: $gray-400; //Added a mid color, useful for input styling
 $dark: $gray-800;
 $green-dark: var(--dh-color-green-900);
 
-$theme-colors: () !default;
-$theme-colors: map-merge(
-  (
-    'primary': $primary,
-    'primary-hover': $primary-hover,
-    'primary-light': $primary-light,
-    'primary-dark': $primary-dark,
-    'secondary': $secondary,
-    'success': $success,
-    'info': $info,
-    'warning': $warning,
-    'danger': $danger,
-    'light': $light,
-    'dark': $dark,
-    'mid': $mid,
-    'content-bg': $interfacegray,
-    'background': $interfaceblack,
-    'foreground': $interfacewhite,
-  ),
-  $theme-colors
+// $theme-colors: () !default;
+// $theme-colors: map-merge(
+//   (
+//     'primary': 'accent',
+//     'secondary': 'neutral',
+//     'success': 'positive',
+//     // 'info': 'informative',
+//     // 'warning': 'notice',
+//     'danger': 'negative',
+//   ),
+//   $theme-colors
+// );
+
+$semantic-colors: (
+  'primary-hover': $primary-hover,
+  'primary-light': $primary-light,
+  'primary-dark': $primary-dark,
+  'mid': $mid,
+  'content-bg': $interfacegray,
+  'background': $interfaceblack,
+  'foreground': $interfacewhite,
+  'secondary-hover': $secondary-hover,
+  'danger-hover': $danger-hover,
+  'green-dark': $green-dark,
 );
 
 $component-active-bg: $primary;
@@ -222,7 +228,7 @@ $transition-long: 0.3s;
 $transition-slow: 0.6s;
 
 //form-validation icon, uses vsWarning icon encoded here as svg
-$form-feedback-icon-invalid-color: theme-color('danger');
+$form-feedback-icon-invalid-color: $danger;
 $form-feedback-icon-invalid: str-replace(
   url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cg fill='none'%3E%3Cg fill='#{$form-feedback-icon-invalid-color}'%3E%3Cpath d='M7.56 1h.88l6.54 12.26-.44.74H1.44L1 13.26 7.56 1zM8 2.28 2.28 13H13.7L8 2.28zM8.625 12v-1h-1.25v1h1.25zm-1.25-2V6h1.25v4h-1.25z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E "),
   '#',

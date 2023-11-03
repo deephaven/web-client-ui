@@ -20,11 +20,15 @@ export function GotoTopButton(): JSX.Element {
     }, 500);
   }, []);
 
-  // Set data-scroll="true" on the html element when the user scrolls down below
-  // 120px. CSS uses this to only show the button when the user has scrolled.
+  // Set data-scroll="true" on the html element when the user scrolls down to the
+  // first h2. CSS uses this to only show the button when the user has scrolled.
   useEffect(() => {
+    const firstH2Top = document.querySelector('h2')?.offsetTop ?? 0;
+
     function onScroll() {
-      document.documentElement.dataset.scroll = String(window.scrollY > 120);
+      document.documentElement.dataset.scroll = String(
+        window.scrollY >= firstH2Top
+      );
     }
     document.addEventListener('scroll', onScroll, { passive: true });
     return () => {
