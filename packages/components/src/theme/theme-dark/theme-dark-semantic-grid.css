@@ -13,7 +13,7 @@
   --dh-color-grid-header-bar-casing: var(--dh-color-gray-50);
 
   /* Row */
-  --dh-color-grid-row-0-bg: var(--dh-color-gray-200);
+  --dh-color-grid-row-0-bg: var(--dh-color-gray-300);
   --dh-color-grid-row-1-bg: var(--dh-color-gray-100);
   --dh-color-grid-row-hover-bg: var(--dh-color-highlight-hover);
   --dh-color-grid-row-hover-bg-selected: var(
