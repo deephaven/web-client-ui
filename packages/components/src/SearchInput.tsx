@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsArrowLeft, vsArrowRight, vsSearch } from '@deephaven/icons';
 import classNames from 'classnames';
+import Button from './Button';
 import './SearchInput.scss';
 
 interface QueryParams {
@@ -79,40 +80,43 @@ class SearchInput extends PureComponent<SearchInputProps> {
             queryParams && {
               paddingRight:
                 queryParams?.queriedColumnIndex !== undefined
-                  ? '6rem'
-                  : '4.5rem',
+                  ? '6.25rem'
+                  : '4.75rem',
             }
           }
         />
 
         {matchCount != null && queryParams !== undefined ? (
           <div className="search-change-selection">
-            <button
+            <Button
+              kind="ghost"
               className="search-change-button"
               type="button"
               onClick={() => {
                 queryParams.changeQueriedColumnIndex('back');
               }}
+              icon={vsArrowLeft}
+              tooltip="Next match"
               disabled={matchCount <= 1}
-            >
-              <FontAwesomeIcon icon={vsArrowLeft} />
-            </button>
+            />
             <span className="search-change-text">
               {queryParams.queriedColumnIndex !== undefined &&
                 matchCount > 1 &&
                 `${queryParams.queriedColumnIndex + 1} of `}
               {matchCount}
             </span>
-            <button
+
+            <Button
+              kind="ghost"
               className="search-change-button"
               type="button"
               onClick={() => {
                 queryParams.changeQueriedColumnIndex('forward');
               }}
+              icon={vsArrowRight}
+              tooltip="Next match"
               disabled={matchCount <= 1}
-            >
-              <FontAwesomeIcon icon={vsArrowRight} />
-            </button>
+            />
           </div>
         ) : (
           <span className="search-icon">
