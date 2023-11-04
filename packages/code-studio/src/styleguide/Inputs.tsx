@@ -86,7 +86,7 @@ function Inputs(): React.ReactElement {
   );
 
   const handleChange = (date: string) => {
-    console.log('Date changed:', date);
+    
   };
 
   return (
