@@ -160,7 +160,7 @@ abstract class IrisGridModel<
 
   /**
    * Retrieve the grouped columns for this model
-   * @returns The columns that are groupe
+   * @returns The columns that are grouped
    */
   abstract get groupedColumns(): readonly Column[];
 
@@ -200,6 +200,18 @@ abstract class IrisGridModel<
    * @param partition The partitions to set
    */
   abstract set partition(partition: readonly unknown[]);
+
+  /**
+   * Retrieve the columns this model is partitioned on
+   * @returns All columns to partition on
+   */
+  abstract get partitionColumns(): readonly Column[];
+
+  /**
+   * Retrieve the columns this model is partitioned on
+   * @returns All columns to partition on
+   */
+  abstract set partitionColumns(columns: readonly Column[]);
 
   /**
    * @returns The formatter used when formatting data
@@ -510,7 +522,7 @@ abstract class IrisGridModel<
    * @param column The columns to get the distinct values for
    * @returns A table partitioned on the specified columns in the order given in
    */
-  abstract valuesTable(columns: Column | Column[]): Promise<Table>;
+  abstract valuesTable(columns: Column | readonly Column[]): Promise<Table>;
 
   /**
    * Close this model. It can no longer be used after being closed

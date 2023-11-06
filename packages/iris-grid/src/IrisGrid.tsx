@@ -346,8 +346,6 @@ export interface IrisGridState {
   keyHandlers: readonly KeyHandler[];
   mouseHandlers: readonly GridMouseHandler[];
 
-  partitions: (string | null)[];
-  partitionColumns: Column[];
   partitionTable: Table | null;
   partitionFilters: readonly FilterCondition[];
   // setAdvancedFilter and setQuickFilter mutate the arguments
@@ -463,7 +461,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     onStateChange: (): void => undefined,
     onAdvancedSettingsChange: (): void => undefined,
     partitions: [],
-    partitionColumns: [],
     quickFilters: EMPTY_MAP,
     selectDistinctColumns: EMPTY_ARRAY,
     sorts: EMPTY_ARRAY,
@@ -673,8 +670,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       model,
       movedColumns: movedColumnsProp,
       movedRows: movedRowsProp,
-      partitions,
-      partitionColumns,
       rollupConfig,
       userColumnWidths,
       userRowHeights,
@@ -750,8 +745,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       keyHandlers,
       mouseHandlers,
 
-      partitions,
-      partitionColumns,
       partitionTable: null,
       partitionFilters: [],
       // setAdvancedFilter and setQuickFilter mutate the arguments
@@ -839,16 +832,19 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   componentDidMount(): void {
-    const { partitionColumns, model } = this.props;
-    const columns = partitionColumns.length
+    const { partitions, partitionColumns, model } = this.props;
+    model.partitionColumns = partitionColumns.length
       ? partitionColumns
       : model.columns.filter(c => c.isPartitionColumn);
+    model.partition = partitionColumns.length
+      ? partitions
+      : Array(model.partitionColumns.length).fill(null);
     if (
       model.isPartitionRequired &&
       model.isValuesTableAvailable &&
-      columns.length
+      model.partitionColumns.length
     ) {
-      this.loadPartitionsTable(columns);
+      this.loadPartitionsTable();
     } else {
       this.initState();
     }
@@ -1895,8 +1891,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.initFormatter();
   }
 
-  async loadPartitionsTable(partitionColumns: Column[]): Promise<void> {
+  async loadPartitionsTable(): Promise<void> {
     const { model } = this.props;
+    const { partitionColumns } = model;
+
     this.setState({ isSelectingPartition: true });
 
     try {
@@ -1915,7 +1913,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         const row = data.rows[0];
         const values = columns.map(column => row.get(column));
 
-        this.updatePartition(values, partitionColumns);
+        this.updatePartition(values);
 
         this.setState({ isSelectingPartition: true });
       } else {
@@ -1923,7 +1921,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         this.setState({ isSelectingPartition: false });
         this.handlePartitionFetchAll();
       }
-      this.setState({ partitionTable, partitionColumns }, () => {
+      this.setState({ partitionTable }, () => {
         this.initState();
       });
     } catch (error) {
@@ -1931,10 +1929,11 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
   }
 
-  updatePartition(
-    partitions: (string | null)[],
-    partitionColumns: Column[]
-  ): void {
+  updatePartition(partitions: (string | null)[]): void {
+    const { model } = this.props;
+    const { partitionColumns } = model;
+
+    model.partition = partitions;
     const partitionFilters = [];
 
     for (let i = 0; i < partitionColumns.length; i += 1) {
@@ -1945,8 +1944,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         partition !== null &&
         !(TableUtils.isCharType(partitionColumn.type) && partition === '')
       ) {
-        const { model } = this.props;
-
         const partitionText = TableUtils.isCharType(partitionColumn.type)
           ? model.displayString(
               partition,
@@ -1965,7 +1962,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
 
     this.setState({
-      partitions,
       partitionFilters,
     });
   }
@@ -2372,11 +2368,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   handlePartitionChange(partitions: (string | null)[]): void {
-    const { partitionColumns } = this.state;
-    if (partitionColumns.length === 0) {
-      return;
-    }
-    this.updatePartition(partitions, partitionColumns);
+    this.updatePartition(partitions);
   }
 
   handlePartitionFetchAll(): void {
@@ -3921,10 +3913,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       hoverSelectColumn,
       quickFilters,
       advancedFilters,
-      partitions,
       partitionFilters,
       partitionTable,
-      partitionColumns,
       searchFilter,
       selectDistinctColumns,
 
@@ -4443,24 +4433,22 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             unmountOnExit
           >
             <div className="iris-grid-partition-selector-wrapper iris-grid-bar iris-grid-bar-primary">
-              {partitionTable &&
-                partitionColumns.length &&
-                partitions.length && (
-                  <IrisGridPartitionSelector
-                    dh={model.dh}
-                    table={partitionTable}
-                    getFormattedString={(
-                      value: unknown,
-                      type: string,
-                      stringName: string
-                    ) => model.displayString(value, type, stringName)}
-                    columns={partitionColumns}
-                    partitions={partitions}
-                    onChange={this.handlePartitionChange}
-                    onFetchAll={this.handlePartitionFetchAll}
-                    onDone={this.handlePartitionDone}
-                  />
-                )}
+              {partitionTable && (
+                <IrisGridPartitionSelector
+                  dh={model.dh}
+                  table={partitionTable}
+                  getFormattedString={(
+                    value: unknown,
+                    type: string,
+                    stringName: string
+                  ) => model.displayString(value, type, stringName)}
+                  columns={model.partitionColumns}
+                  partitions={model.partition as readonly (string | null)[]}
+                  onChange={this.handlePartitionChange}
+                  onFetchAll={this.handlePartitionFetchAll}
+                  onDone={this.handlePartitionDone}
+                />
+              )}
             </div>
           </CSSTransition>
           <CSSTransition

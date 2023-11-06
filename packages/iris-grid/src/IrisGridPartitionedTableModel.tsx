@@ -1,3 +1,4 @@
+/* eslint class-methods-use-this: "off" */
 import {
   DataBarOptions,
   GridRange,
@@ -123,16 +124,6 @@ class IrisGridPartitionedTableModel extends IrisGridModel {
 
   set filter(value: FilterCondition[]) {
     this.model.filter = value;
-  }
-
-  get partition(): unknown[] {
-    return this.partitionKeys;
-  }
-
-  set partition(value: unknown[]) {
-    log.debug2('set partition', value);
-    this.partitionKeys = value;
-    this.updateTable();
   }
 
   get formatter(): Formatter {
@@ -405,9 +396,29 @@ class IrisGridPartitionedTableModel extends IrisGridModel {
     return this.model.dataBarOptionsForCell(column, row, theme);
   }
 
-  async initializeModel(): Promise<IrisGridModel> {
+  get partitionColumns(): readonly Column[] {
+    // TODO
+    throw new Error('Method not implemented.');
+  }
+
+  set partitionColumns(columns: readonly Column[]) {
+    // Do nothing, partition columns of PartitionedTable can't be modified
+  }
+
+  get partition(): unknown[] {
+    return this.partitionKeys;
+  }
+
+  set partition(value: unknown[]) {
+    log.debug2('set partition', value);
+    this.partitionKeys = value;
+    this.updatePartitions();
+  }
+
+  async initializePartitionModel(): Promise<IrisGridModel> {
     const initTable = await this.partitionedTable.getTable(this.partitionKeys);
     this.model = new IrisGridTableModel(this.dh, initTable, this.irisFormatter);
+    log.log('initializeModel', this.columns);
     this.dispatchEvent(
       new EventShimCustomEvent(IrisGridModel.EVENT.COLUMNS_CHANGED, {
         detail: this.model.columns,
@@ -421,7 +432,7 @@ class IrisGridPartitionedTableModel extends IrisGridModel {
     return Promise.resolve(this.model);
   }
 
-  async updateTable(): Promise<void> {
+  private async updatePartitions(): Promise<void> {
     this.model.table =
       this.partitionKeys.length > 0
         ? await this.partitionedTable.getTable(this.partitionKeys)

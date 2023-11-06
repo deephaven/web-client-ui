@@ -141,6 +141,22 @@ class IrisGridTableModelTemplate<
     throw new Error('Method not implemented.');
   }
 
+  get partitionColumns(): readonly Column[] {
+    throw new Error('Method not implemented.');
+  }
+
+  set partitionColumns(columns: readonly Column[]) {
+    throw new Error('Method not implemented.');
+  }
+
+  get partition(): readonly unknown[] {
+    throw new Error('Method not implemented.');
+  }
+
+  set partition(partition: readonly unknown[]) {
+    throw new Error('Method not implemented.');
+  }
+
   /**
    * Returns an array of the columns in the model
    * The order of model columns should never change once established
@@ -1224,14 +1240,6 @@ class IrisGridTableModelTemplate<
     this.applyViewport();
   }
 
-  get partition(): unknown[] {
-    return [];
-  }
-
-  set partition(partition: unknown[]) {
-    // Do nothing
-  }
-
   get formatter(): Formatter {
     return this.irisFormatter;
   }
@@ -1546,7 +1554,7 @@ class IrisGridTableModelTemplate<
     return data.map(row => row.join('\t')).join('\n');
   }
 
-  async valuesTable(columns: Column | Column[]): Promise<Table> {
+  async valuesTable(columns: Column | readonly Column[]): Promise<Table> {
     let table = null;
     try {
       table = await this.table.copy();

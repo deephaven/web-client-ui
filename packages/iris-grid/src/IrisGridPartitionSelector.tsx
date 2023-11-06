@@ -17,14 +17,14 @@ interface IrisGridPartitionSelectorProps<T> {
   dh: DhType;
   getFormattedString: (value: T, type: string, name: string) => string;
   table: Table;
-  columns: Column[];
-  partitions: (string | null)[];
+  columns: readonly Column[];
+  partitions: readonly (string | null)[];
   onFetchAll: () => void;
   onDone: (event?: React.MouseEvent<HTMLButtonElement>) => void;
   onChange: (partitions: (string | null)[]) => void;
 }
 interface IrisGridPartitionSelectorState {
-  partitions: (string | null)[];
+  partitions: readonly (string | null)[];
   partitionTables: Table[] | null;
 }
 class IrisGridPartitionSelector<T> extends Component<
@@ -175,7 +175,7 @@ class IrisGridPartitionSelector<T> extends Component<
 
     const { onChange } = this.props;
     const { partitions } = this.state;
-    onChange(partitions);
+    onChange([...partitions]);
   }
 
   sendFetchAll(): void {
@@ -200,7 +200,7 @@ class IrisGridPartitionSelector<T> extends Component<
   }
 
   async updatePartitionFilters(
-    partitions: (string | null)[],
+    partitions: readonly (string | null)[],
     partitionTables: Table[]
   ): Promise<void> {
     const { columns, getFormattedString } = this.props;

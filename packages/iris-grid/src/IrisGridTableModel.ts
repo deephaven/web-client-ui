@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 /* eslint class-methods-use-this: "off" */
 import memoize from 'memoize-one';
 import { GridRange, ModelIndex } from '@deephaven/grid';
@@ -34,6 +35,10 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
   customColumnList: string[];
 
   formatColumnList: CustomColumn[];
+
+  private _partition: unknown[] = [];
+
+  private _partitionColumns: Column[] = [];
 
   /**
    * @param dh JSAPI instance
@@ -183,6 +188,22 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
         detail: this.table,
       })
     );
+  }
+
+  get partitionColumns(): Column[] {
+    return this._partitionColumns;
+  }
+
+  set partitionColumns(partitionColumns: Column[]) {
+    this._partitionColumns = partitionColumns;
+  }
+
+  get partition(): unknown[] {
+    return this._partition;
+  }
+
+  set partition(partition: unknown[]) {
+    this._partition = partition;
   }
 
   set totalsConfig(totalsConfig: UITotalsTableConfig | null) {

@@ -44,6 +44,8 @@ class EmptyIrisGridModel extends IrisGridModel {
 
   partition: unknown[] = [];
 
+  partitionColumns: Column[] = [];
+
   formatter: Formatter;
 
   sort: Sort[] = [];

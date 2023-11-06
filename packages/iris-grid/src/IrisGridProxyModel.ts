@@ -459,6 +459,14 @@ class IrisGridProxyModel extends IrisGridModel {
     return this.model.groupedColumns;
   }
 
+  get partitionColumns(): readonly Column[] {
+    return this.model.partitionColumns;
+  }
+
+  set partitionColumns(columns: readonly Column[]) {
+    this.model.partitionColumns = [...columns];
+  }
+
   get description(): string {
     return this.model.description;
   }
@@ -754,7 +762,7 @@ class IrisGridProxyModel extends IrisGridModel {
   initializePartitionModel(): void {
     const { model } = this;
     if (model instanceof IrisGridPartitionedTableModel) {
-      this.setNextModel(model.initializeModel());
+      this.setNextModel(model.initializePartitionModel());
     }
   }
 }
