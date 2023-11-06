@@ -32,6 +32,7 @@
     "@deephaven/jsapi-types": "file:../jsapi-types",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
+    "@deephaven/react-hooks": "file:../react-hooks",
     "@deephaven/utils": "file:../utils",
     "deep-equal": "^2.0.5",
     "lodash.debounce": "^4.0.8",

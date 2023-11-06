@@ -107,10 +107,6 @@ export const ChartPlugin = forwardRef(
         metadata: props.metadata as ChartPanelMetadata,
         localDashboardId: props.localDashboardId,
         makeModel: () => {
-          if (chartTheme == null) {
-            throw new Error('Chart theme is required for chart panel');
-          }
-
           const { metadata } = props;
 
           const panelState = isChartPanelDehydratedProps(props)

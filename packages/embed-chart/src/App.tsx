@@ -60,10 +60,6 @@ function App(): JSX.Element {
     function initializeApp() {
       async function initApp(): Promise<void> {
         try {
-          if (chartTheme == null) {
-            throw new Error('Chart theme not available');
-          }
-
           // Get the table name from the query param `name`.
           const name = searchParams.get('name');
 

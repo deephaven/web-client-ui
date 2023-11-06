@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContextOrThrow } from '@deephaven/react-hooks';
 
 import {
   ChartThemeContext,
@@ -8,8 +8,11 @@ import {
 /**
  * Hook to get the current `ChartThemeContextValue`.
  */
-export function useChartTheme(): ChartThemeContextValue | null {
-  return useContext(ChartThemeContext);
+export function useChartTheme(): ChartThemeContextValue {
+  return useContextOrThrow(
+    ChartThemeContext,
+    'No ChartThemeContext value found.'
+  );
 }
 
 export default useChartTheme;

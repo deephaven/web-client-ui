@@ -47,18 +47,13 @@ export function ChartBuilderPlugin(
       table: Table;
     }) => {
       const { settings } = metadata;
-      const makeModel = (): Promise<ChartModel> => {
-        if (chartTheme == null) {
-          throw new Error('Chart theme not available');
-        }
-
-        return ChartModelFactory.makeModelFromSettings(
+      const makeModel = (): Promise<ChartModel> =>
+        ChartModelFactory.makeModelFromSettings(
           dh,
           settings,
           table,
           chartTheme
         );
-      };
       const title = ChartUtils.titleFromSettings(settings);
 
       const config = {

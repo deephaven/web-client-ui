@@ -22,8 +22,13 @@ export function ChartThemeProvider({
 
   const [chartTheme, setChartTheme] = useState<ChartTheme | null>(null);
 
-  // Running in an effect to ensure parent ThemeProvider has had a chance to add
-  // the <style> tags to the DOM that provide theme variables
+  // The `ThemeProvider` that supplies `activeThemes` also provides the corresponding
+  // CSS theme variables to the DOM by dynamically rendering <style> tags whenever
+  // the `activeThemes` change. Painting the latest CSS variables to the DOM may
+  // not happen until after `ChartThemeProvider` is rendered, but they should be
+  // available by the time the effect runs. Therefore, it is important to derive
+  // the chart theme in an effect instead of deriving in a `useMemo` to ensure
+  // we have the latest CSS variables.
   useEffect(() => {
     if (activeThemes != null) {
       setChartTheme(defaultChartTheme());
