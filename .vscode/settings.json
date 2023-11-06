@@ -8,12 +8,7 @@
     }
   ],
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "stylelint.validate": [
-    "css",
-    "html",
-    "sass",
-    "scss"
-  ],
+  "stylelint.validate": ["css", "html", "sass", "scss"],
   "launch": {
     "version": "0.2.0",
     "configurations": [
@@ -24,8 +19,35 @@
         "url": "http://localhost:4000",
         "webRoot": "${workspaceFolder}",
         "userDataDir": "${workspaceFolder}/.vscode/chrome-debug-profile"
+      },
+      {
+        "type": "node",
+        "request": "attach",
+        "name": "Attach to Node Process",
+        "port": 9229
+      },
+      {
+        "name": "Debug Jest Tests",
+        "type": "node",
+        "request": "launch",
+        "runtimeArgs": [
+          "--inspect-brk",
+          "${workspaceRoot}/node_modules/.bin/jest",
+          "--runInBand",
+          "--watch",
+          "${input:pickFile}"
+        ],
+        "console": "integratedTerminal",
+        "internalConsoleOptions": "neverOpen"
       }
     ],
-    "compounds": []
+    "compounds": [],
+    "inputs": [
+      {
+        "id": "pickFile",
+        "type": "promptString",
+        "description": "Test pattern or filename"
+      }
+    ]
   }
 }
