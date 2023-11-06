@@ -10,8 +10,8 @@ import {
   calculatePreloadStyleContent,
   extractDistinctCssVariableExpressions,
   getActiveThemes,
-  getCssVariableRanges,
   getDefaultBaseThemes,
+  getExpressionRanges,
   getThemeKey,
   getThemePreloadData,
   preloadTheme,
@@ -138,11 +138,20 @@ describe('getActiveThemes', () => {
   });
 });
 
-describe('getCssVariableRanges', () => {
-  const t = [
-    ['Single var', 'var(--aaa-aa)', [[0, 12]]],
+describe('getExpressionRanges', () => {
+  const testCases = [
+    ['Single expression', '#ffffff', [[0, 6]]],
+    ['Single var expression', 'var(--aaa-aa)', [[0, 12]]],
     [
-      'Multiple vars',
+      'Multiple expressions',
+      '#ffffff #ffffff',
+      [
+        [0, 6],
+        [8, 14],
+      ],
+    ],
+    [
+      'Multiple var expressions',
       'var(--aaa-aa) var(--bbb-bb)',
       [
         [0, 12],
@@ -150,20 +159,33 @@ describe('getCssVariableRanges', () => {
       ],
     ],
     [
-      'Nested vars - level 2',
+      'Mixed expressions',
+      ' var(--aaa-aa)\n   #fff \n\n var(--bbb-bb)  \n  ',
+      [
+        [1, 13],
+        [18, 21],
+        [26, 38],
+      ],
+    ],
+    [
+      'Nested expressions - level 2',
       'var(--ccc-cc, var(--aaa-aa, green)) var(--bbb-bb)',
       [
         [0, 34],
         [36, 48],
       ],
     ],
-    ['Nested vars - level 3', 'var(--a, var(--b, var(--c, red)))', [[0, 32]]],
     [
-      'Nested vars - level 4',
-      'var(--a, var(--b, var(--c, var(--d, red)))) var(--e, var(--f, var(--g, var(--h, red))))',
+      'Nested expressions - level 3',
+      'var(--a, var(--b, var(--c, red)))',
+      [[0, 32]],
+    ],
+    [
+      'Nested expressions - level 4',
+      'var(--a, var(--b, \n var(--c, var(--d, red)))) \n\t\n var(--e, var(--f, var(--g, var(--h, red))))   \n  \t',
       [
-        [0, 42],
-        [44, 86],
+        [0, 44],
+        [50, 92],
       ],
     ],
     ['Nested calc - level 3', 'var(--a, calc(calc(1px + 2px)))', [[0, 30]]],
@@ -175,11 +197,10 @@ describe('getCssVariableRanges', () => {
     ['Unbalanced', 'var(--a', []],
   ] as const;
 
-  it.each(t)(
-    'should return the css variable ranges - %s: %s, %s',
-    (_label, given, expected) => {
-      const actual = getCssVariableRanges(given);
-      expect(actual).toEqual(expected);
+  it.each(testCases)(
+    'should return top-level expression ranges: %s, %s',
+    (_, given, expected) => {
+      expect(getExpressionRanges(given)).toEqual(expected);
     }
   );
 });
@@ -411,7 +432,7 @@ describe('resolveCssVariablesInString', () => {
     [
       'Non top-level var',
       'calc(var(--a, calc(calc(calc(1px + 2px) + 3px)))) var(--b)',
-      'calc(R[var(--a, calc(calc(calc(1px + 2px) + 3px)))]) R[var(--b)]',
+      'R[calc(var(--a, calc(calc(calc(1px + 2px) + 3px))))] R[var(--b)]',
     ],
   ])('should replace css variables - %s: %s, %s', (_label, given, expected) => {
     const actual = resolveCssVariablesInString(mockResolver, given);

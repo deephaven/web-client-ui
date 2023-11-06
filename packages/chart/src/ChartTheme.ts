@@ -1,5 +1,9 @@
-import { resolveCssVariablesInRecord } from '@deephaven/components';
+import {
+  getExpressionRanges,
+  resolveCssVariablesInRecord,
+} from '@deephaven/components';
 import Log from '@deephaven/log';
+import { ColorUtils } from '@deephaven/utils';
 import chartThemeRaw from './ChartTheme.module.scss';
 
 const log = Log.module('ChartTheme');
@@ -25,6 +29,17 @@ export interface ChartTheme {
 
 export function defaultChartTheme(): Readonly<ChartTheme> {
   const chartTheme = resolveCssVariablesInRecord(chartThemeRaw);
+
+  // The color normalization in `resolveCssVariablesInRecord` won't work for
+  // colorway since it is an array of colors. We need to explicitly normalize
+  // each color expression
+  chartTheme.colorway = getExpressionRanges(chartTheme.colorway ?? '')
+    .map(([start, end]) =>
+      ColorUtils.normalizeCssColor(
+        chartTheme.colorway.substring(start, end + 1)
+      )
+    )
+    .join(' ');
 
   log.debug2('Chart theme:', chartThemeRaw);
   log.debug2('Chart theme derived:', chartTheme);
