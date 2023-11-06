@@ -218,7 +218,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     this.handleError = this.handleError.bind(this);
     this.handleLoadError = this.handleLoadError.bind(this);
     this.handleLoadSuccess = this.handleLoadSuccess.bind(this);
-    this.handleResize = this.handleResize.bind(this);
     this.handleSettingsChanged = this.handleSettingsChanged.bind(this);
     this.handleOpenLinker = this.handleOpenLinker.bind(this);
     this.handleShow = this.handleShow.bind(this);
@@ -683,10 +682,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     this.setState({ isLoading: false });
   }
 
-  handleResize(): void {
-    this.updateChart();
-  }
-
   handleSettingsChanged(update: Partial<Settings>): void {
     this.setState(({ settings: prevSettings }) => {
       const settings = {
@@ -1097,7 +1092,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
         glEventHub={glEventHub}
         onHide={this.handleHide}
         onClearAllFilters={this.handleClearAllFilters}
-        onResize={this.handleResize}
         onShow={this.handleShow}
         onTabBlur={this.handleTabBlur}
         onTabFocus={this.handleTabFocus}

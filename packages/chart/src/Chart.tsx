@@ -132,6 +132,7 @@ export class Chart extends Component<ChartProps, ChartState> {
     this.handleModelEvent = this.handleModelEvent.bind(this);
     this.handlePlotUpdate = this.handlePlotUpdate.bind(this);
     this.handleRelayout = this.handleRelayout.bind(this);
+    this.handleResize = this.handleResize.bind(this);
     this.handleRestyle = this.handleRestyle.bind(this);
 
     this.PlotComponent = createPlotlyComponent(props.Plotly);
@@ -144,6 +145,7 @@ export class Chart extends Component<ChartProps, ChartState> {
     this.isSubscribed = false;
     this.isLoadedFired = false;
     this.currentSeries = 0;
+    this.resizeObserver = new window.ResizeObserver(this.handleResize);
 
     this.state = {
       data: null,
@@ -170,6 +172,9 @@ export class Chart extends Component<ChartProps, ChartState> {
     if (isActive) {
       this.subscribe(model);
     }
+    if (this.plotWrapper.current != null) {
+      this.resizeObserver.observe(this.plotWrapper.current);
+    }
   }
 
   componentDidUpdate(prevProps: ChartProps): void {
@@ -193,6 +198,8 @@ export class Chart extends Component<ChartProps, ChartState> {
   componentWillUnmount(): void {
     const { model } = this.props;
     this.unsubscribe(model);
+
+    this.resizeObserver.disconnect();
   }
 
   currentSeries: number;
@@ -218,6 +225,9 @@ export class Chart extends Component<ChartProps, ChartState> {
   isSubscribed: boolean;
 
   isLoadedFired: boolean;
+
+  // Listen for resizing of the element and update the canvas appropriately
+  resizeObserver: ResizeObserver;
 
   getCachedConfig = memoize(
     (
@@ -466,6 +476,10 @@ export class Chart extends Component<ChartProps, ChartState> {
     }
 
     this.updateModelDimensions();
+  }
+
+  handleResize(): void {
+    this.updateDimensions();
   }
 
   handleRestyle([changes, seriesIndexes]: readonly [
