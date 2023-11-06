@@ -23,7 +23,7 @@ export interface ChartTheme {
   ohlc_decreasing: string;
 }
 
-export function initChartTheme(): Readonly<ChartTheme> {
+export function defaultChartTheme(): Readonly<ChartTheme> {
   const chartTheme = resolveCssVariablesInRecord(chartThemeRaw);
 
   log.debug2('Chart theme:', chartThemeRaw);
@@ -49,4 +49,4 @@ export function initChartTheme(): Readonly<ChartTheme> {
   });
 }
 
-export default initChartTheme;
+export default defaultChartTheme;

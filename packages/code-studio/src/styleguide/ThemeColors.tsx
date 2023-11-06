@@ -160,11 +160,32 @@ function extractColorVars(
   return styleText
     .split('\n')
     .map(line => /^\s{2}(--dh-color-(?:[^:]+))/.exec(line)?.[1])
-    .filter(Boolean)
-    .map(varName =>
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      ({ name: varName!, value: computedStyle.getPropertyValue(varName!)! })
-    );
+    .filter((match): match is string => Boolean(match))
+    .map(varName => {
+      const value = computedStyle.getPropertyValue(varName);
+
+      // Chart colorway consists of multiple colors, so split into separate
+      // swatches for illustration. Note that this assumes the colors are hsl
+      // values. We'll need to make this more robust if we ever change the
+      // default themes to use non-hsl.
+      if (varName === '--dh-color-chart-colorway') {
+        const colorwayColors = value
+          .split('hsl')
+          .filter(Boolean)
+          .map(v => `hsl${v.trim()}`);
+
+        return colorwayColors.map((varExp, i) => ({
+          name: `${varName}-${i}`,
+          value: varExp,
+        }));
+      }
+
+      return {
+        name: varName,
+        value,
+      };
+    })
+    .flat();
 }
 
 /** Group color data based on capture group value */

@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useEffect, useState } from 'react';
 import { useTheme } from '@deephaven/components';
-import initChartTheme, { ChartTheme } from './ChartTheme';
+import defaultChartTheme, { ChartTheme } from './ChartTheme';
 
 export type ChartThemeContextValue = ChartTheme;
 
@@ -26,7 +26,7 @@ export function ChartThemeProvider({
   // the <style> tags to the DOM that provide theme variables
   useEffect(() => {
     if (activeThemes != null) {
-      setChartTheme(initChartTheme());
+      setChartTheme(defaultChartTheme());
     }
   }, [activeThemes]);
 

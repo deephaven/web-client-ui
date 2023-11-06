@@ -4,7 +4,7 @@
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import type { Datum, Layout, PlotData } from 'plotly.js';
 import ChartModel from './ChartModel';
-import { ChartTheme, initChartTheme } from './ChartTheme';
+import { ChartTheme, defaultChartTheme } from './ChartTheme';
 import ChartUtils from './ChartUtils';
 
 interface Series {
@@ -23,7 +23,7 @@ class MockChartModel extends ChartModel {
   static get theme(): ChartTheme {
     /* eslint-disable no-underscore-dangle */
     if (MockChartModel._theme == null) {
-      MockChartModel._theme = initChartTheme();
+      MockChartModel._theme = defaultChartTheme();
     }
 
     return MockChartModel._theme;

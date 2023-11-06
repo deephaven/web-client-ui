@@ -6,18 +6,12 @@
   --dh-color-chart-title: var(--dh-color-white);
 
   /* Colorway */
-  --dh-color-chart-colorway-1: var(--dh-color-visual-cyan);
-  --dh-color-chart-colorway-2: var(--dh-color-visual-green);
-  --dh-color-chart-colorway-3: var(--dh-color-visual-yellow);
-  --dh-color-chart-colorway-4: var(--dh-color-visual-purple);
-  --dh-color-chart-colorway-5: var(--dh-color-visual-orange);
-  --dh-color-chart-colorway-6: var(--dh-color-visual-red);
-  --dh-color-chart-colorway-7: var(--dh-color-visual-chartreuse);
-  --dh-color-chart-colorway-8: var(--dh-color-visual-fuchsia);
-  --dh-color-chart-colorway-9: var(--dh-color-visual-seafoam);
-  --dh-color-chart-colorway-10: var(--dh-color-visual-magenta);
-  --dh-color-chart-colorway-11: var(--dh-color-white);
-
+  --dh-color-chart-colorway: var(--dh-color-visual-cyan)
+    var(--dh-color-visual-green) var(--dh-color-visual-yellow)
+    var(--dh-color-visual-purple) var(--dh-color-visual-orange)
+    var(--dh-color-visual-red) var(--dh-color-visual-chartreuse)
+    var(--dh-color-visual-fuchsia) var(--dh-color-visual-seafoam)
+    var(--dh-color-visual-magenta) var(--dh-color-white);
   --dh-color-chart-grid: var(--dh-color-gray-400);
   --dh-color-chart-axis-line: var(--dh-color-gray-500);
   --dh-color-chart-axis-line-zero: var(--dh-color-gray-700);

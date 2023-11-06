@@ -1,0 +1,22 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`defaultChartTheme should create the default chart theme 1`] = `
+{
+  "activecolor": "chartTheme['activecolor']",
+  "area_color": "chartTheme['area-color']",
+  "colorway": "chartTheme['colorway']",
+  "error_band_fill_color": "chartTheme['error-band-fill-color']",
+  "error_band_line_color": "chartTheme['error-band-line-color']",
+  "gridcolor": "chartTheme['gridcolor']",
+  "line_color": "chartTheme['line-color']",
+  "linecolor": "chartTheme['linecolor']",
+  "ohlc_decreasing": "chartTheme['ohlc-decreasing']",
+  "ohlc_increasing": "chartTheme['ohlc-increasing']",
+  "paper_bgcolor": "chartTheme['paper-bgcolor']",
+  "plot_bgcolor": "chartTheme['plot-bgcolor']",
+  "rangebgcolor": "chartTheme['rangebgcolor']",
+  "title_color": "chartTheme['title-color']",
+  "trend_color": "chartTheme['trend-color']",
+  "zerolinecolor": "chartTheme['zerolinecolor']",
+}
+`;
