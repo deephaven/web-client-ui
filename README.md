@@ -94,6 +94,26 @@ Note that log messages from other sources such as react prop types will still be
 
 If you want to collect coverage locally, run `npm test -- --coverage`
 
+### Debugging Unit Tests
+Unit tests can be debugged by running jest with the `--inspect-brk` flag and attaching to the node process in vscode's debugger.
+
+- Create or modify the `.vscode/launch.json` config file by adding the following launch config:
+
+   ```jsonc
+   {
+      "type": "node",
+      "request": "attach",
+      "name": "Attach",
+      "port": 9229
+   }
+   ```
+
+- Run `npm run test:debug`. By default, this will run with the same configuration as `npm test`, but you can supply additional parameters to narrow the scope of tests being run. 
+
+  e.g. `npm run test:debug ThemeUtils` would only run modules with "ThemeUtils" in the name.
+- Launch the `Attach to Node Process` debug configuration. Vscode should attach to the running process and will stop on any breakpoints that have been set.
+- Modify tests, and save. Tests should re-run, breakpoints get hit, etc.
+
 ## E2E Tests
 
 We use [Playwright](https://playwright.dev/) for end-to-end tests. We test against Chrome, Firefox, and Webkit (Safari). Snapshots from E2E tests are only run against Linux so they can be validated in CI.
