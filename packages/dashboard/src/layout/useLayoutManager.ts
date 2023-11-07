@@ -5,7 +5,7 @@ import LayoutContext from './LayoutContext';
 /**
  * Retrieve the current layout from the context
  */
-function useLayout(): GoldenLayout {
+function useLayoutManager(): GoldenLayout {
   const layout = useContext(LayoutContext);
   if (layout == null) {
     throw new Error(
@@ -15,4 +15,4 @@ function useLayout(): GoldenLayout {
   return layout;
 }
 
-export default useLayout;
+export default useLayoutManager;
