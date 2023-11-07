@@ -1,5 +1,10 @@
 /* eslint react/no-did-update-set-state: "off" */
-import React, { CSSProperties, PureComponent, ReactNode } from 'react';
+import React, {
+  CSSProperties,
+  PureComponent,
+  ReactNode,
+  RefObject,
+} from 'react';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
 import clamp from 'lodash.clamp';
@@ -69,6 +74,9 @@ type LegacyCanvasRenderingContext2D = CanvasRenderingContext2D & {
 };
 
 export type GridProps = typeof Grid.defaultProps & {
+  // Children to render in the grid
+  children?: ReactNode;
+
   // Options to set on the canvas
   canvasOptions?: CanvasRenderingContext2DSettings;
 
@@ -295,6 +303,12 @@ class Grid extends PureComponent<GridProps, GridState> {
 
   canvasContext: CanvasRenderingContext2D | null;
 
+  // The wrapper element for the canvas, used for sizing
+  canvasWrapper: RefObject<HTMLDivElement>;
+
+  // Listen for resizing of the element and update the canvas appropriately
+  resizeObserver: ResizeObserver;
+
   // We draw the canvas on the next animation frame, keep track of the next one
   animationFrame: number | null;
 
@@ -351,6 +365,8 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     this.canvas = null;
     this.canvasContext = null;
+    this.canvasWrapper = React.createRef();
+    this.resizeObserver = new window.ResizeObserver(this.handleResize);
     this.animationFrame = null;
 
     this.prevMetrics = null;
@@ -457,7 +473,9 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.canvas?.addEventListener('wheel', this.handleWheel, {
       passive: false,
     });
-    window.addEventListener('resize', this.handleResize);
+    if (this.canvasWrapper.current != null) {
+      this.resizeObserver.observe(this.canvasWrapper.current);
+    }
 
     this.updateCanvas();
 
@@ -561,7 +579,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       this.handleMouseUp as unknown as EventListenerOrEventListenerObject,
       true
     );
-    window.removeEventListener('resize', this.handleResize);
+    this.resizeObserver.disconnect();
 
     this.stopDragTimer();
   }
@@ -801,17 +819,17 @@ class Grid extends PureComponent<GridProps, GridState> {
   }
 
   private updateCanvasScale(): void {
-    const { canvas, canvasContext } = this;
+    const { canvas, canvasContext, canvasWrapper } = this;
     if (!canvas) throw new Error('canvas not set');
     if (!canvasContext) throw new Error('canvasContext not set');
-    if (!canvas.parentElement) throw new Error('Canvas has no parent element');
+    if (!canvasWrapper.current) throw new Error('canvasWrapper not set');
 
     const scale = Grid.getScale(canvasContext);
     // the parent wrapper has 100% width/height, and is used for determining size
     // we don't want to stretch the canvas to 100%, to avoid fractional pixels.
     // A wrapper element must be used for sizing, and canvas size must be
     // set manually to a floored value in css and a scaled value in width/height
-    const rect = canvas.parentElement.getBoundingClientRect();
+    const rect = canvasWrapper.current.getBoundingClientRect();
     const width = Math.floor(rect.width);
     const height = Math.floor(rect.height);
     canvas.style.width = `${width}px`;
@@ -2177,10 +2195,11 @@ class Grid extends PureComponent<GridProps, GridState> {
   }
 
   render(): ReactNode {
+    const { children } = this.props;
     const { cursor } = this.state;
 
     return (
-      <>
+      <div className="grid-wrapper" ref={this.canvasWrapper}>
         <canvas
           className={classNames('grid-canvas', Grid.getCursorClassName(cursor))}
           ref={canvas => {
@@ -2198,7 +2217,8 @@ class Grid extends PureComponent<GridProps, GridState> {
           Your browser does not support HTML canvas. Update your browser?
         </canvas>
         {this.renderInputField()}
-      </>
+        {children}
+      </div>
     );
   }
 }

@@ -251,7 +251,6 @@ export class IrisGridPanel extends PureComponent<
     this.handleGridStateChange = this.handleGridStateChange.bind(this);
     this.handlePluginStateChange = this.handlePluginStateChange.bind(this);
     this.handleCreateChart = this.handleCreateChart.bind(this);
-    this.handleResize = this.handleResize.bind(this);
     this.handleShow = this.handleShow.bind(this);
     this.handleTabClicked = this.handleTabClicked.bind(this);
     this.handleDisconnect = this.handleDisconnect.bind(this);
@@ -760,10 +759,6 @@ export class IrisGridPanel extends PureComponent<
   handleDataSelected(row: ModelIndex, dataMap: Record<string, unknown>): void {
     const { glEventHub } = this.props;
     glEventHub.emit(IrisGridEvent.DATA_SELECTED, this, dataMap);
-  }
-
-  handleResize(): void {
-    this.updateGrid();
   }
 
   handleShow(): void {
@@ -1277,7 +1272,6 @@ export class IrisGridPanel extends PureComponent<
         glContainer={glContainer}
         glEventHub={glEventHub}
         onClearAllFilters={this.handleClearAllFilters}
-        onResize={this.handleResize}
         onShow={this.handleShow}
         onTabFocus={this.handleShow}
         onTabClicked={this.handleTabClicked}

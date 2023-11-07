@@ -218,7 +218,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     this.handleError = this.handleError.bind(this);
     this.handleLoadError = this.handleLoadError.bind(this);
     this.handleLoadSuccess = this.handleLoadSuccess.bind(this);
-    this.handleResize = this.handleResize.bind(this);
     this.handleSettingsChanged = this.handleSettingsChanged.bind(this);
     this.handleOpenLinker = this.handleOpenLinker.bind(this);
     this.handleShow = this.handleShow.bind(this);
@@ -235,7 +234,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     this.handleClearAllFilters = this.handleClearAllFilters.bind(this);
 
     this.panelContainer = props.containerRef ?? React.createRef();
-    this.chart = React.createRef();
     this.pending = new Pending();
 
     const { metadata, panelState } = props;
@@ -336,8 +334,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
   }
 
   panelContainer: RefObject<HTMLDivElement>;
-
-  chart: RefObject<Chart>;
 
   pending: Pending;
 
@@ -683,10 +679,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     this.setState({ isLoading: false });
   }
 
-  handleResize(): void {
-    this.updateChart();
-  }
-
   handleSettingsChanged(update: Partial<Settings>): void {
     this.setState(({ settings: prevSettings }) => {
       const settings = {
@@ -752,7 +744,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     this.setState({ isActive }, () => {
       if (isActive) {
         this.loadModelIfNecessary();
-        this.updateChart();
       }
     });
   }
@@ -1026,12 +1017,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     });
   }
 
-  updateChart(): void {
-    if (this.chart.current) {
-      this.chart.current.updateDimensions();
-    }
-  }
-
   render(): ReactElement {
     const {
       columnSelectionValidator,
@@ -1097,7 +1082,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
         glEventHub={glEventHub}
         onHide={this.handleHide}
         onClearAllFilters={this.handleClearAllFilters}
-        onResize={this.handleResize}
         onShow={this.handleShow}
         onTabBlur={this.handleTabBlur}
         onTabFocus={this.handleTabFocus}
@@ -1118,7 +1102,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
                 isActive={isActive}
                 model={model}
                 settings={settings}
-                ref={this.chart}
                 onDisconnect={this.handleDisconnect}
                 onReconnect={this.handleReconnect}
                 onUpdate={this.handleUpdate}
