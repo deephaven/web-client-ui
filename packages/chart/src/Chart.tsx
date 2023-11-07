@@ -33,6 +33,7 @@ import Plotly from './plotly/Plotly';
 import ChartModel from './ChartModel';
 import ChartUtils, { ChartModelSettings } from './ChartUtils';
 import './Chart.scss';
+import DownsamplingError from './DownsamplingError';
 
 const log = Log.module('Chart');
 
@@ -442,7 +443,13 @@ export class Chart extends Component<ChartProps, ChartState> {
         });
 
         const { onError } = this.props;
-        onError(new Error(downsamplingError));
+        onError(new DownsamplingError(downsamplingError));
+        break;
+      }
+      case ChartModel.EVENT_ERROR: {
+        const error = `${detail}`;
+        const { onError } = this.props;
+        onError(new Error(error));
         break;
       }
       default:

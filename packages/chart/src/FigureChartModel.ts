@@ -270,10 +270,7 @@ class FigureChartModel extends ChartModel {
     if (this.figure.errors.length > 0) {
       // We don't have a toast or anything we show for errors; just log the error for now
       log.error('Errors in figure', this.figure.errors);
-    }
-
-    if (this.seriesToProcess.size === 0 && this.seriesDataMap.size === 0) {
-      this.fireLoadFinished();
+      this.fireError(this.figure.errors);
     }
   }
 
@@ -481,6 +478,7 @@ class FigureChartModel extends ChartModel {
 
   handleRequestFailed(event: ChartEvent): void {
     log.error('Request failed', event);
+    this.fireError([`${event.detail}`]);
   }
 
   /**
