@@ -1009,7 +1009,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   tableUtils: TableUtils;
 
   get gridWrapper(): HTMLDivElement | null {
-    return this.grid?.canvasWrapper ?? null;
+    return this.grid?.canvasWrapper.current ?? null;
   }
 
   getAdvancedMenuOpenedHandler = memoize(

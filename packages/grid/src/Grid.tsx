@@ -1,5 +1,10 @@
 /* eslint react/no-did-update-set-state: "off" */
-import React, { CSSProperties, PureComponent, ReactNode } from 'react';
+import React, {
+  CSSProperties,
+  PureComponent,
+  ReactNode,
+  RefObject,
+} from 'react';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
 import clamp from 'lodash.clamp';
@@ -299,7 +304,7 @@ class Grid extends PureComponent<GridProps, GridState> {
   canvasContext: CanvasRenderingContext2D | null;
 
   // The wrapper element for the canvas, used for sizing
-  canvasWrapper: HTMLDivElement | null;
+  canvasWrapper: RefObject<HTMLDivElement>;
 
   // Listen for resizing of the element and update the canvas appropriately
   resizeObserver: ResizeObserver;
@@ -360,7 +365,7 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     this.canvas = null;
     this.canvasContext = null;
-    this.canvasWrapper = null;
+    this.canvasWrapper = React.createRef();
     this.resizeObserver = new window.ResizeObserver(this.handleResize);
     this.animationFrame = null;
 
@@ -468,8 +473,8 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.canvas?.addEventListener('wheel', this.handleWheel, {
       passive: false,
     });
-    if (this.canvasWrapper != null) {
-      this.resizeObserver.observe(this.canvasWrapper);
+    if (this.canvasWrapper.current != null) {
+      this.resizeObserver.observe(this.canvasWrapper.current);
     }
 
     this.updateCanvas();
@@ -817,14 +822,14 @@ class Grid extends PureComponent<GridProps, GridState> {
     const { canvas, canvasContext, canvasWrapper } = this;
     if (!canvas) throw new Error('canvas not set');
     if (!canvasContext) throw new Error('canvasContext not set');
-    if (!canvasWrapper) throw new Error('canvasWrapper not set');
+    if (!canvasWrapper.current) throw new Error('canvasWrapper not set');
 
     const scale = Grid.getScale(canvasContext);
     // the parent wrapper has 100% width/height, and is used for determining size
     // we don't want to stretch the canvas to 100%, to avoid fractional pixels.
     // A wrapper element must be used for sizing, and canvas size must be
     // set manually to a floored value in css and a scaled value in width/height
-    const rect = canvasWrapper.getBoundingClientRect();
+    const rect = canvasWrapper.current.getBoundingClientRect();
     const width = Math.floor(rect.width);
     const height = Math.floor(rect.height);
     canvas.style.width = `${width}px`;
@@ -2194,12 +2199,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     const { cursor } = this.state;
 
     return (
-      <div
-        className="grid-wrapper"
-        ref={canvasWrapper => {
-          this.canvasWrapper = canvasWrapper;
-        }}
-      >
+      <div className="grid-wrapper" ref={this.canvasWrapper}>
         <canvas
           className={classNames('grid-canvas', Grid.getCursorClassName(cursor))}
           ref={canvas => {

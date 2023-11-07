@@ -188,6 +188,7 @@ export class Chart extends Component<ChartProps, ChartState> {
 
     if (isActive !== prevProps.isActive) {
       if (isActive) {
+        this.updateDimensions();
         this.subscribe(model);
       } else {
         this.unsubscribe(model);

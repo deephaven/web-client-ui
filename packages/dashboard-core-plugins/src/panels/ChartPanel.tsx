@@ -234,7 +234,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     this.handleClearAllFilters = this.handleClearAllFilters.bind(this);
 
     this.panelContainer = props.containerRef ?? React.createRef();
-    this.chart = React.createRef();
     this.pending = new Pending();
 
     const { metadata, panelState } = props;
@@ -335,8 +334,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
   }
 
   panelContainer: RefObject<HTMLDivElement>;
-
-  chart: RefObject<Chart>;
 
   pending: Pending;
 
@@ -747,7 +744,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     this.setState({ isActive }, () => {
       if (isActive) {
         this.loadModelIfNecessary();
-        this.updateChart();
       }
     });
   }
@@ -1021,12 +1017,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     });
   }
 
-  updateChart(): void {
-    if (this.chart.current) {
-      this.chart.current.updateDimensions();
-    }
-  }
-
   render(): ReactElement {
     const {
       columnSelectionValidator,
@@ -1112,7 +1102,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
                 isActive={isActive}
                 model={model}
                 settings={settings}
-                ref={this.chart}
                 onDisconnect={this.handleDisconnect}
                 onReconnect={this.handleReconnect}
                 onUpdate={this.handleUpdate}
