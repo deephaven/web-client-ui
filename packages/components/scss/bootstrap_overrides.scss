@@ -10,7 +10,7 @@ $blue: var(--dh-color-visual-blue);
 $purple: var(--dh-color-visual-purple);
 
 //Define our Gray scale
-$gray-100: var(--dh-color-gray-900);
+$gray-100: var(--dh-color-gray-900, #fcfcfa);
 $gray-200: var(--dh-color-gray-800);
 $gray-300: var(--dh-color-gray-700);
 $gray-400: var(--dh-color-gray-600);
@@ -22,15 +22,15 @@ $gray-700: var(--dh-color-gray-400);
 $gray-800: var(--dh-color-gray-300);
 $gray-850: var(--dh-color-gray-200);
 $gray-900: var(--dh-color-gray-75);
-$black: var(--dh-color-black);
-$white: var(--dh-color-white);
+$black: var(--dh-color-black, #1a171a);
+$white: var(--dh-color-white, #f0f0ee);
 
 //Define some UI colors
-$interfacegray: var(--dh-color-content-background);
+$interfacegray: var(--dh-color-content-background, #2d2a2e);
 $interfaceblue: var(--dh-color-accent-default-bg);
 $interfacewhite: $white;
 $interfaceblack: $black;
-$content-bg: var(--dh-color-content-background);
+$content-bg: var(--dh-color-content-background, #2d2a2e);
 $background: var(--dh-color-background);
 $foreground: var(--dh-color-foreground);
 
