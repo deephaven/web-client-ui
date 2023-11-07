@@ -20,7 +20,7 @@ import {
   PanelProps,
 } from './DashboardPlugin';
 import './Dashboard.scss';
-import { LayoutContext } from './layout';
+import { LayoutManagerContext } from './layout';
 
 const RESIZE_THROTTLE = 100;
 
@@ -137,7 +137,7 @@ export function Dashboard({
     <div className="dashboard-container w-100 h-100">
       <div className="w-100 h-100" ref={layoutElement} />
       {isInitialized && layout && (
-        <LayoutContext.Provider value={layout}>
+        <LayoutManagerContext.Provider value={layout}>
           <DashboardLayout
             emptyDashboard={emptyDashboard}
             id={id}
@@ -151,7 +151,7 @@ export function Dashboard({
           >
             {children}
           </DashboardLayout>
-        </LayoutContext.Provider>
+        </LayoutManagerContext.Provider>
       )}
     </div>
   );
