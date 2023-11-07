@@ -33,6 +33,8 @@
         "runtimeArgs": [
           "--inspect-brk",
           "${workspaceRoot}/node_modules/.bin/jest",
+          "--config",
+          "jest.config.unit.cjs",
           "--runInBand",
           "--watch",
           "${input:pickFile}"
