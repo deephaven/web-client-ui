@@ -35,7 +35,7 @@ import type {
   MarkerSymbol,
 } from 'plotly.js';
 import { assertNotNull, Range } from '@deephaven/utils';
-import ChartTheme from './ChartTheme';
+import { ChartTheme } from './ChartTheme';
 
 export type FilterColumnMap = Map<
   string,
@@ -190,6 +190,7 @@ class ChartUtils {
    * @param x The main data array
    * @param xLow The absolute low values
    * @param xHigh
+   * @param theme Theme properties for the chart
    *
    * @returns The error_x object required by plotly, or null if none is required
    */
@@ -197,7 +198,7 @@ class ChartUtils {
     x: number[],
     xLow: number[],
     xHigh: number[],
-    theme = ChartTheme
+    theme: ChartTheme
   ): ErrorBar {
     const array = xHigh.map((value, i) => value - x[i]);
     const arrayminus = xLow.map((value, i) => x[i] - value);
@@ -505,7 +506,7 @@ class ChartUtils {
    * @param theme The theme to get colorway from
    * @returns Colorway array for the theme
    */
-  static getColorwayFromTheme(theme = ChartTheme): string[] {
+  static getColorwayFromTheme(theme: ChartTheme): string[] {
     let colorway: string[] = [];
     if (theme.colorway) {
       if (Array.isArray(theme.colorway)) {
@@ -851,8 +852,8 @@ class ChartUtils {
     series: Series,
     axisTypeMap: AxisTypeMap,
     seriesVisibility: boolean | 'legendonly',
-    showLegend: boolean | null = null,
-    theme = ChartTheme
+    theme: ChartTheme,
+    showLegend: boolean | null = null
   ): Partial<PlotData> {
     const {
       name,
@@ -932,7 +933,7 @@ class ChartUtils {
   addStylingToSeriesData(
     seriesDataParam: Partial<PlotData>,
     plotStyle: SeriesPlotStyle,
-    theme: typeof ChartTheme = ChartTheme,
+    theme: ChartTheme,
     lineColor: string | null = null,
     shapeColor: string | null = null,
     shape: string | null = null,
@@ -1078,18 +1079,18 @@ class ChartUtils {
    * Update the layout with all the axes information for the provided figure
    * @param figure Figure to update the axes for
    * @param layoutParam Layout object to update in place
+   * @param theme Theme used for displaying the plot
    * @param chartAxisRangeParser Function to retrieve the axis range parser
    * @param plotWidth Width of the plot in pixels
    * @param plotHeight Height of the plot in pixels
-   * @param theme Theme used for displaying the plot
    */
   updateFigureAxes(
     layoutParam: Partial<Layout>,
     figure: Figure,
+    theme: ChartTheme,
     chartAxisRangeParser?: ChartAxisRangeParser,
     plotWidth = 0,
-    plotHeight = 0,
-    theme = ChartTheme
+    plotHeight = 0
   ): void {
     const layout = layoutParam;
     const figureAxes = ChartUtils.getAllAxes(figure);
@@ -1101,11 +1102,11 @@ class ChartUtils {
         layout,
         chart.axes,
         figureAxes,
+        theme,
         plotWidth,
         plotHeight,
         bounds,
-        axisRangeParser,
-        theme
+        axisRangeParser
       );
     }
 
@@ -1275,6 +1276,7 @@ class ChartUtils {
    * @param layoutParam The layout object to update
    * @param chartAxes The chart axes to update the layout with
    * @param figureAxes All figure axes to update the layout with
+   * @param theme Theme used for displaying the plot
    * @param plotWidth The width of the plot to calculate the axis sizes for
    * @param plotHeight The height of the plot to calculate the axis sizes for
    * @param bounds The bounds for this set of axes
@@ -1284,11 +1286,11 @@ class ChartUtils {
     layoutParam: Partial<Layout>,
     chartAxes: Axis[],
     figureAxes: Axis[],
+    theme: ChartTheme,
     plotWidth = 0,
     plotHeight = 0,
     bounds: ChartBounds = { left: 0, top: 0, right: 1, bottom: 1 },
-    axisRangeParser?: AxisRangeParser,
-    theme = ChartTheme
+    axisRangeParser?: AxisRangeParser
   ): void {
     const { dh } = this;
     const xAxisSize =
@@ -1826,7 +1828,7 @@ class ChartUtils {
     return value;
   }
 
-  makeLayoutAxis(type: AxisType, theme = ChartTheme): Partial<LayoutAxis> {
+  makeLayoutAxis(type: AxisType, theme: ChartTheme): Partial<LayoutAxis> {
     const { dh } = this;
     const axis = {
       automargin: true,
@@ -1860,7 +1862,7 @@ class ChartUtils {
     return axis;
   }
 
-  makeDefaultLayout(theme = ChartTheme): Partial<Layout> {
+  makeDefaultLayout(theme: ChartTheme): Partial<Layout> {
     const { dh } = this;
     const layout: Partial<Layout> = {
       ...theme,
