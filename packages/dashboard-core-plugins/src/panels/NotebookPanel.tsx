@@ -1443,7 +1443,7 @@ const mapStateToProps = (
   const { type: sessionLanguage } = sessionConfig ?? {};
   return {
     fileStorage,
-    defaultNotebookSettings,
+    defaultNotebookSettings: defaultNotebookSettings as NotebookSetting,
     session,
     sessionLanguage,
   };
