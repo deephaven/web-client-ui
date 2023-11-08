@@ -41,7 +41,6 @@ import {
   setWorkspaceStorage as setWorkspaceStorageAction,
   setServerConfigValues as setServerConfigValuesAction,
   User,
-  Workspace,
   WorkspaceStorage,
   ServerConfigValues,
   WorkspaceSettings,
@@ -59,7 +58,7 @@ import GrpcFileStorage from '../storage/grpc/GrpcFileStorage';
 const log = Log.module('AppInit');
 
 interface AppInitProps {
-  workspace: Workspace;
+  workspace: CustomizableWorkspace;
   workspaceStorage: WorkspaceStorage;
 
   setActiveTool: (type: (typeof ToolType)[keyof typeof ToolType]) => void;

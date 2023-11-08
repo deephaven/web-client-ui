@@ -7,7 +7,6 @@ import {
   PayloadActionCreator,
   RootState,
   setWorkspace as setWorkspaceAction,
-  Workspace,
 } from '@deephaven/redux';
 import StyleGuide from './StyleGuide';
 import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
@@ -44,7 +43,7 @@ StyleGuideInit.defaultProps = {
 const mapStateToProps = (
   state: RootState
 ): {
-  workspace: Workspace;
+  workspace: CustomizableWorkspace;
 } => ({
   workspace: getWorkspace(state),
 });

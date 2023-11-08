@@ -10,7 +10,7 @@ const EMPTY_MAP: ReadonlyMap<unknown, unknown> = new Map();
 
 export type Selector<State extends RootState, R> = (store: State) => R;
 
-type Settings<State extends RootState> = State['workspace']['data']['settings'];
+type Settings<State extends RootState> = State['defaultWorkspaceSettings'];
 
 export const getApi = <State extends RootState>(store: State): State['api'] =>
   store.api;

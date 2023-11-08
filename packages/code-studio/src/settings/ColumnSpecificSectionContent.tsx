@@ -49,14 +49,14 @@ import DateTimeOptions from './DateTimeOptions';
 
 export interface ColumnSpecificSectionContentProps {
   dh: DhType;
-  formatter?: FormatterItem[];
-  showTimeZone?: boolean;
-  showTSeparator?: boolean;
-  timeZone?: string;
+  formatter: FormatterItem[];
+  showTimeZone: boolean;
+  showTSeparator: boolean;
+  timeZone: string;
   updateSettings: (settings: Partial<WorkspaceSettings>) => void;
   scrollTo: (x: number, y: number) => void;
-  defaultDecimalFormatOptions?: FormatOption;
-  defaultIntegerFormatOptions?: FormatOption;
+  defaultDecimalFormatOptions: FormatOption;
+  defaultIntegerFormatOptions: FormatOption;
 }
 
 interface ColumnSpecificSectionContentState {
@@ -105,11 +105,6 @@ export class ColumnSpecificSectionContent extends PureComponent<
     this.handleFormatRuleDelete = this.handleFormatRuleDelete.bind(this);
 
     const { formatter, showTimeZone, showTSeparator, timeZone } = props;
-
-    assertNotNull(formatter);
-    assertNotNull(showTimeZone);
-    assertNotNull(showTSeparator);
-    assertNotNull(timeZone);
 
     const formatSettings = formatter.map((item, i) => ({
       ...item,
@@ -342,7 +337,6 @@ export class ColumnSpecificSectionContent extends PureComponent<
     switch (TableUtils.getNormalizedType(columnType)) {
       case TableUtils.dataType.INT: {
         const { defaultIntegerFormatOptions } = this.props;
-        assertNotNull(defaultIntegerFormatOptions);
         const { defaultFormatString: defaultIntegerFormatString } =
           defaultIntegerFormatOptions;
         return IntegerColumnFormatter.makeFormat(

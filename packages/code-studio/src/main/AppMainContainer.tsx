@@ -71,11 +71,11 @@ import {
   setActiveTool as setActiveToolAction,
   updateWorkspaceData as updateWorkspaceDataAction,
   getPlugins,
-  Workspace,
   WorkspaceData,
   RootState,
   User,
   ServerConfigValues,
+  CustomizableWorkspace,
 } from '@deephaven/redux';
 import { bindAllMethods, PromiseUtils } from '@deephaven/utils';
 import GoldenLayout from '@deephaven/golden-layout';
@@ -130,7 +130,7 @@ interface AppMainContainerProps {
   updateDashboardData: (id: string, data: Partial<AppDashboardData>) => void;
   updateWorkspaceData: (workspaceData: Partial<WorkspaceData>) => void;
   user: User;
-  workspace: Workspace;
+  workspace: CustomizableWorkspace;
   plugins: PluginModuleMap;
   serverConfigValues: ServerConfigValues;
 }
