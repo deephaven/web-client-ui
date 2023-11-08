@@ -268,7 +268,6 @@ class FigureChartModel extends ChartModel {
     );
 
     if (this.figure.errors.length > 0) {
-      // We don't have a toast or anything we show for errors; just log the error for now
       log.error('Errors in figure', this.figure.errors);
       this.fireError(this.figure.errors);
     }
