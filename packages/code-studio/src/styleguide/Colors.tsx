@@ -22,7 +22,7 @@ function Colors(): React.ReactElement {
       key={swatch}
       className={classNames('swatch', 'gray-swatch', `gray-swatch-${swatch}`)}
     >
-      Gray-{swatch}
+      {swatch === '8XX' ? 'N/A' : `Gray-${swatch}`}
     </Swatch>
   ));
 
