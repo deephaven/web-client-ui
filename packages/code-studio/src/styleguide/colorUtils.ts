@@ -73,6 +73,9 @@ const RENAME_VARIABLE_GROUPS = {
   component: {},
 } satisfies Record<string, Record<string, string>>;
 
+export const INVALID_COLOR_BORDER_STYLE =
+  '2px solid var(--dh-color-notice-default-bg)';
+
 /** Return black or white contrast color */
 export function contrastColor(color: string): 'black' | 'white' {
   const rgba = ColorUtils.parseRgba(ColorUtils.asRgbOrRgbaString(color) ?? '');

@@ -1,6 +1,10 @@
 import { Tooltip } from '@deephaven/components';
 import React, { ReactNode, useEffect, useState } from 'react';
-import { normalizedOptionalAlpha, useContrastFgColorRef } from './colorUtils';
+import {
+  INVALID_COLOR_BORDER_STYLE,
+  normalizedOptionalAlpha,
+  useContrastFgColorRef,
+} from './colorUtils';
 
 export interface SwatchProps {
   className: string;
@@ -20,12 +24,17 @@ export function Swatch({ className, children }: SwatchProps): JSX.Element {
       return;
     }
 
-    // Css var
+    // Css var expression content is parsed and exposed via `swatch-color` mixin
+    // in :after { content } . The value will be surrounded in double quotes
+    // e.g.
+    // var(--dh-color-red-500) is exposed as "--dh-color-red-500"
+    // var(--dh-color-gray-900, #fcfcfa) is exposed as "--dh-color-gray-900, #fcfcfa"
     const afterContent = getComputedStyle(
       ref.current,
       ':after'
     ).getPropertyValue('content');
 
+    // Extract the var name from the content (e.g. '--dh-color-gray-900')
     const dhColorVarName = /"(--dh-color-.*?)[,"]/.exec(afterContent)?.[1];
     if (dhColorVarName == null) {
       setTooltip(null);
@@ -49,9 +58,7 @@ export function Swatch({ className, children }: SwatchProps): JSX.Element {
       ref={ref}
       className={className}
       style={{
-        border: hasValue
-          ? undefined
-          : '2px solid var(--dh-color-notice-default-bg)',
+        border: hasValue ? undefined : INVALID_COLOR_BORDER_STYLE,
       }}
     >
       {hasValue && (
