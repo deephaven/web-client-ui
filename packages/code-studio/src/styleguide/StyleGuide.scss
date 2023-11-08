@@ -111,6 +111,9 @@ pre {
   @include swatch-color($color, $value, 'gray-swatch');
 }
 
+// The swatch that gets this style gets rendered as N/A in the Bootstrap grays
+// section of Styleguide. There is no Bootstrap Gray-XXX corresponding to
+// --dh-color-gray-100, but if there were it would be a value in the 800s.
 @include swatch-color('8XX', 'var(--dh-color-gray-100)', 'gray-swatch');
 
 .style-guide-container {
