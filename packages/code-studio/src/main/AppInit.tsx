@@ -143,12 +143,9 @@ function AppInit(props: AppInitProps): JSX.Element {
           const workspaceStorage = new LocalWorkspaceStorage(layoutStorage);
           const commandHistoryStorage = new PouchCommandHistoryStorage();
 
-          const loadedWorkspace = await workspaceStorage.load(
-            {
-              isConsoleAvailable: sessionWrapper !== undefined,
-            },
-            serverConfig
-          );
+          const loadedWorkspace = await workspaceStorage.load({
+            isConsoleAvailable: sessionWrapper !== undefined,
+          });
 
           const { data } = loadedWorkspace;
 
@@ -186,7 +183,7 @@ function AppInit(props: AppInitProps): JSX.Element {
           setWorkspaceStorage(workspaceStorage);
           setWorkspace(loadedWorkspace);
           setDefaultWorkspaceSettings(
-            LocalWorkspaceStorage.makeDefaultWorkspaceSettings()
+            LocalWorkspaceStorage.makeDefaultWorkspaceSettings(serverConfig)
           );
         } catch (e) {
           log.error(e);

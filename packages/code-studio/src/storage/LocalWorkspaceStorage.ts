@@ -5,6 +5,7 @@ import {
   CustomizableWorkspaceData,
   CustomizableWorkspace,
   WorkspaceSettings,
+  ServerConfigValues,
 } from '@deephaven/redux';
 import {
   DateTimeColumnFormatter,
@@ -35,8 +36,10 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
     return undefined;
   }
 
-  static makeDefaultWorkspaceSettings(): WorkspaceSettings {
-    return {
+  static makeDefaultWorkspaceSettings(
+    serverConfigValues: ServerConfigValues
+  ): WorkspaceSettings {
+    const settings = {
       defaultDateTimeFormat:
         DateTimeColumnFormatter.DEFAULT_DATETIME_FORMAT_STRING,
       formatter: [],
@@ -55,12 +58,63 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
         isMinimapEnabled: false,
       },
     };
+    const serverSettings = {
+      defaultDateTimeFormat: serverConfigValues?.get('dateTimeFormat'),
+      formatter: [],
+      timeZone: serverConfigValues?.get('timeZone'),
+      showTimeZone: LocalWorkspaceStorage.getBooleanServerConfig(
+        serverConfigValues,
+        'showTimeZone'
+      ),
+      showTSeparator: LocalWorkspaceStorage.getBooleanServerConfig(
+        serverConfigValues,
+        'showTSeparator'
+      ),
+      disableMoveConfirmation: LocalWorkspaceStorage.getBooleanServerConfig(
+        serverConfigValues,
+        'disableMoveConfirmation'
+      ),
+      defaultDecimalFormatOptions:
+        serverConfigValues?.get('decimalFormat') !== undefined
+          ? {
+              defaultFormatString: serverConfigValues?.get('decimalFormat'),
+            }
+          : undefined,
+      defaultIntegerFormatOptions:
+        serverConfigValues?.get('integerFormat') !== undefined
+          ? {
+              defaultFormatString: serverConfigValues?.get('integerFormat'),
+            }
+          : undefined,
+      truncateNumbersWithPound: LocalWorkspaceStorage.getBooleanServerConfig(
+        serverConfigValues,
+        'truncateNumbersWithPound'
+      ),
+      defaultNotebookSettings:
+        serverConfigValues?.get('isMinimapEnabled') !== undefined
+          ? {
+              isMinimapEnabled: LocalWorkspaceStorage.getBooleanServerConfig(
+                serverConfigValues,
+                'isMinimapEnabled'
+              ) as boolean,
+            }
+          : undefined,
+    };
+
+    const keys = Object.keys(serverSettings) as Array<keyof typeof settings>;
+    for (let i = 0; i < keys.length; i += 1) {
+      const key = keys[i];
+      if (serverSettings[key] !== undefined) {
+        // @ts-expect-error override default for defined server settings
+        settings[key] = serverSettings[key];
+      }
+    }
+    return settings;
   }
 
   static async makeWorkspaceData(
     layoutStorage: LayoutStorage,
-    options?: WorkspaceStorageLoadOptions,
-    serverConfigValues?: Map<string, string>
+    options?: WorkspaceStorageLoadOptions
   ): Promise<CustomizableWorkspaceData> {
     const { filterSets, links, layoutConfig } =
       await UserLayoutUtils.getDefaultLayout(
@@ -68,48 +122,7 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
         options?.isConsoleAvailable
       );
     return {
-      settings: {
-        defaultDateTimeFormat: serverConfigValues?.get('dateTimeFormat'),
-        formatter: [],
-        timeZone: serverConfigValues?.get('timeZone'),
-        showTimeZone: LocalWorkspaceStorage.getBooleanServerConfig(
-          serverConfigValues,
-          'showTimeZone'
-        ),
-        showTSeparator: LocalWorkspaceStorage.getBooleanServerConfig(
-          serverConfigValues,
-          'showTSeparator'
-        ),
-        disableMoveConfirmation: LocalWorkspaceStorage.getBooleanServerConfig(
-          serverConfigValues,
-          'disableMoveConfirmation'
-        ),
-        defaultDecimalFormatOptions:
-          serverConfigValues?.get('decimalFormat') !== undefined
-            ? {
-                defaultFormatString: serverConfigValues?.get('decimalFormat'),
-              }
-            : undefined,
-        defaultIntegerFormatOptions:
-          serverConfigValues?.get('integerFormat') !== undefined
-            ? {
-                defaultFormatString: serverConfigValues?.get('integerFormat'),
-              }
-            : undefined,
-        truncateNumbersWithPound: LocalWorkspaceStorage.getBooleanServerConfig(
-          serverConfigValues,
-          'truncateNumbersWithPound'
-        ),
-        defaultNotebookSettings:
-          serverConfigValues?.get('isMinimapEnabled') !== undefined
-            ? {
-                isMinimapEnabled: LocalWorkspaceStorage.getBooleanServerConfig(
-                  serverConfigValues,
-                  'isMinimapEnabled'
-                ) as boolean,
-              }
-            : undefined,
-      },
+      settings: {},
       layoutConfig,
       closed: [{}],
       links,
@@ -119,14 +132,12 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
 
   static async makeDefaultWorkspace(
     layoutStorage: LayoutStorage,
-    options?: WorkspaceStorageLoadOptions,
-    serverConfigValues?: Map<string, string>
+    options?: WorkspaceStorageLoadOptions
   ): Promise<CustomizableWorkspace> {
     return {
       data: await LocalWorkspaceStorage.makeWorkspaceData(
         layoutStorage,
-        options,
-        serverConfigValues
+        options
       ),
     };
   }
@@ -139,62 +150,19 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
 
   // eslint-disable-next-line class-methods-use-this
   async load(
-    options?: WorkspaceStorageLoadOptions,
-    serverConfigValues?: Map<string, string>
+    options?: WorkspaceStorageLoadOptions
   ): Promise<CustomizableWorkspace> {
     try {
       const workspace = JSON.parse(
         localStorage.getItem(LocalWorkspaceStorage.STORAGE_KEY) ?? ''
       );
-      if (workspace.data.settings.timeZone === undefined) {
-        workspace.data.settings.timeZone = serverConfigValues?.get('timeZone');
-      }
-      if (workspace.data.settings.defaultDateTimeFormat === undefined) {
-        workspace.data.settings.defaultDateTimeFormat =
-          serverConfigValues?.get('dateTimeFormat');
-      }
-      if (
-        workspace.data.settings.defaultDecimalFormatOptions === undefined &&
-        serverConfigValues?.get('decimalFormat') !== undefined
-      ) {
-        workspace.data.settings.defaultDecimalFormatOptions = {
-          defaultFormatString: serverConfigValues?.get('decimalFormat'),
-        };
-      }
-      if (
-        workspace.data.settings.defaultIntegerFormatOptions === undefined &&
-        serverConfigValues?.get('integerFormat') !== undefined
-      ) {
-        workspace.data.settings.defaultIntegerFormatOptions = {
-          defaultFormatString: serverConfigValues?.get('integerFormat'),
-        };
-      }
-      if (workspace.data.settings.truncateNumbersWithPound === undefined) {
-        workspace.data.settings.truncateNumbersWithPound =
-          LocalWorkspaceStorage.getBooleanServerConfig(
-            serverConfigValues,
-            'truncateNumbersWithPound'
-          );
-      }
-      if (
-        workspace.data.settings.defaultNotebookSettings === undefined &&
-        serverConfigValues?.get('isMinimapEnabled') !== undefined
-      ) {
-        workspace.data.settings.defaultNotebookSettings = {
-          isMinimapEnabled: LocalWorkspaceStorage.getBooleanServerConfig(
-            serverConfigValues,
-            'isMinimapEnabled'
-          ),
-        };
-      }
       return workspace;
     } catch (e) {
       log.info('Unable to load workspace data, initializing to default data');
 
       return LocalWorkspaceStorage.makeDefaultWorkspace(
         this.layoutStorage,
-        options,
-        serverConfigValues
+        options
       );
     }
   }

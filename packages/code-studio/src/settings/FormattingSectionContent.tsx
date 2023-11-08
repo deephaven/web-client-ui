@@ -100,7 +100,7 @@ export class FormattingSectionContent extends PureComponent<
       this.commitChanges.bind(this),
       FormattingSectionContent.inputDebounceTime
     );
-
+    this.queueUpdate = this.queueUpdate.bind(this);
     this.handleDefaultDateTimeFormatChange =
       this.handleDefaultDateTimeFormatChange.bind(this);
     this.handleDefaultDecimalFormatChange =
@@ -179,6 +179,11 @@ export class FormattingSectionContent extends PureComponent<
     }
   );
 
+  queueUpdate(updates: Partial<WorkspaceSettings>): void {
+    this.pendingUpdates.push(updates);
+    this.debouncedCommitChanges();
+  }
+
   handleDefaultDateTimeFormatChange(
     event: ChangeEvent<HTMLSelectElement>
   ): void {
@@ -187,8 +192,7 @@ export class FormattingSectionContent extends PureComponent<
       defaultDateTimeFormat: event.target.value,
     };
     this.setState(update);
-    this.pendingUpdates.push(update);
-    this.debouncedCommitChanges();
+    this.queueUpdate(update);
   }
 
   handleDefaultDecimalFormatChange(event: ChangeEvent<HTMLInputElement>): void {
@@ -206,8 +210,7 @@ export class FormattingSectionContent extends PureComponent<
         DecimalColumnFormatter.makeCustomFormat(event.target.value)
       )
     ) {
-      this.pendingUpdates.push(update);
-      this.debouncedCommitChanges();
+      this.queueUpdate(update);
     }
   }
 
@@ -226,34 +229,28 @@ export class FormattingSectionContent extends PureComponent<
         IntegerColumnFormatter.makeCustomFormat(event.target.value)
       )
     ) {
-      this.pendingUpdates.push(update);
-      this.debouncedCommitChanges();
+      this.queueUpdate(update);
     }
   }
 
   handleShowTimeZoneChange(): void {
     const { showTimeZone } = this.state;
-    this.setState({ showTimeZone: !showTimeZone });
-    this.pendingUpdates.push({ showTimeZone: !showTimeZone });
-    this.debouncedCommitChanges();
+    const update = { showTimeZone: !showTimeZone };
+    this.setState(update);
+    this.queueUpdate(update);
   }
 
   handleShowTSeparatorChange(): void {
     const { showTSeparator } = this.state;
-    this.setState({ showTSeparator: !showTSeparator });
-    this.pendingUpdates.push({ showTSeparator: !showTSeparator });
-    this.debouncedCommitChanges();
+    const update = { showTSeparator: !showTSeparator };
+    this.setState(update);
+    this.queueUpdate(update);
   }
 
   handleTimeZoneChange(event: ChangeEvent<HTMLSelectElement>): void {
-    this.setState({
-      timeZone: event.target.value,
-    });
-    this.pendingUpdates.push({
-      timeZone: event.target.value,
-    });
-
-    this.debouncedCommitChanges();
+    const update = { timeZone: event.target.value };
+    this.setState(update);
+    this.queueUpdate(update);
   }
 
   handleResetDateTimeFormat(): void {
@@ -265,12 +262,11 @@ export class FormattingSectionContent extends PureComponent<
       showTimeZone,
       showTSeparator,
     });
-    this.pendingUpdates.push({
+    this.queueUpdate({
       defaultDateTimeFormat: undefined,
       showTimeZone: undefined,
       showTSeparator: undefined,
     });
-    this.debouncedCommitChanges();
   }
 
   handleResetTimeZone(): void {
@@ -280,11 +276,9 @@ export class FormattingSectionContent extends PureComponent<
     this.setState({
       timeZone,
     });
-    this.pendingUpdates.push({
+    this.queueUpdate({
       timeZone: undefined,
     });
-
-    this.debouncedCommitChanges();
   }
 
   handleResetDecimalFormat(): void {
@@ -294,10 +288,9 @@ export class FormattingSectionContent extends PureComponent<
     this.setState({
       defaultDecimalFormatOptions,
     });
-    this.pendingUpdates.push({
+    this.queueUpdate({
       defaultDecimalFormatOptions: undefined,
     });
-    this.debouncedCommitChanges();
   }
 
   handleResetIntegerFormat(): void {
@@ -307,22 +300,18 @@ export class FormattingSectionContent extends PureComponent<
     this.setState({
       defaultIntegerFormatOptions,
     });
-    this.pendingUpdates.push({
+    this.queueUpdate({
       defaultIntegerFormatOptions: undefined,
     });
-    this.debouncedCommitChanges();
   }
 
   handleTruncateNumbersWithPoundChange(): void {
     const { truncateNumbersWithPound } = this.state;
-    this.setState({
+    const update = {
       truncateNumbersWithPound: truncateNumbersWithPound !== true,
-    });
-    this.pendingUpdates.push({
-      truncateNumbersWithPound: truncateNumbersWithPound !== true,
-    });
-
-    this.debouncedCommitChanges();
+    };
+    this.setState(update);
+    this.queueUpdate(update);
   }
 
   commitChanges(): void {
