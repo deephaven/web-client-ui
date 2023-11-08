@@ -2,7 +2,7 @@ import Log from '@deephaven/log';
 import {
   WorkspaceStorage,
   WorkspaceStorageLoadOptions,
-  CustomzableWorkspaceData,
+  CustomizableWorkspaceData,
   CustomizableWorkspace,
   WorkspaceSettings,
 } from '@deephaven/redux';
@@ -61,7 +61,7 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
     layoutStorage: LayoutStorage,
     options?: WorkspaceStorageLoadOptions,
     serverConfigValues?: Map<string, string>
-  ): Promise<CustomzableWorkspaceData> {
+  ): Promise<CustomizableWorkspaceData> {
     const { filterSets, links, layoutConfig } =
       await UserLayoutUtils.getDefaultLayout(
         layoutStorage,

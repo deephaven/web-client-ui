@@ -74,19 +74,6 @@ export class ColumnSpecificSectionContent extends PureComponent<
 > {
   static defaultProps = {
     scrollTo: (): void => undefined,
-    defaults: {
-      defaultDateTimeFormat:
-        DateTimeColumnFormatter.DEFAULT_DATETIME_FORMAT_STRING,
-      defaultDecimalFormatOptions: {
-        defaultFormatString: DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
-      },
-      defaultIntegerFormatOptions: {
-        defaultFormatString: IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
-      },
-      showTimeZone: false,
-      showTSeparator: true,
-      timeZone: DateTimeColumnFormatter.DEFAULT_TIME_ZONE_ID,
-    },
   };
 
   static inputDebounceTime = 250;
@@ -350,7 +337,6 @@ export class ColumnSpecificSectionContent extends PureComponent<
 
       case TableUtils.dataType.DECIMAL: {
         const { defaultDecimalFormatOptions } = this.props;
-        assertNotNull(defaultDecimalFormatOptions);
         const { defaultFormatString: defaultDecimalFormatString } =
           defaultDecimalFormatOptions;
         return DecimalColumnFormatter.makeFormat(
@@ -559,7 +545,6 @@ export class ColumnSpecificSectionContent extends PureComponent<
     isInvalid: boolean
   ): ReactElement {
     const { defaultDecimalFormatOptions } = this.props;
-    assertNotNull(defaultDecimalFormatOptions);
     const { defaultFormatString } = defaultDecimalFormatOptions;
 
     const value = format.formatString ?? '';

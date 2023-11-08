@@ -75,6 +75,10 @@ export const getSettings = <State extends RootState>(
   return settings;
 };
 
+export const getDefaultSettings = <State extends RootState>(
+  store: State
+): Settings<State> => store.defaultWorkspaceSettings;
+
 export const getDefaultDateTimeFormat = <State extends RootState>(
   store: State
 ): Settings<State>['defaultDateTimeFormat'] =>

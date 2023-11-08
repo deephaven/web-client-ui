@@ -65,13 +65,13 @@ export interface WorkspaceData {
   settings: WorkspaceSettings;
 }
 
-export interface CustomzableWorkspaceData
+export interface CustomizableWorkspaceData
   extends Omit<WorkspaceData, 'settings'> {
   settings: Partial<WorkspaceData['settings']>;
 }
 
 export interface CustomizableWorkspace {
-  data: CustomzableWorkspaceData;
+  data: CustomizableWorkspaceData;
 }
 
 export interface Workspace {

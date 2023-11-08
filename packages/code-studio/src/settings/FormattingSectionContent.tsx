@@ -30,8 +30,8 @@ import {
   updateSettings as updateSettingsAction,
   RootState,
   WorkspaceSettings,
+  getDefaultSettings,
 } from '@deephaven/redux';
-import { assertNotNull } from '@deephaven/utils';
 import './FormattingSectionContent.scss';
 import type { DebouncedFunc } from 'lodash';
 import {
@@ -48,22 +48,15 @@ const log = Log.module('FormattingSectionContent');
 
 interface FormattingSectionContentProps {
   dh: DhType;
-  defaultDateTimeFormat?: string;
-  showTimeZone?: boolean;
-  showTSeparator?: boolean;
-  timeZone?: string;
-  truncateNumbersWithPound?: boolean;
+  defaultDateTimeFormat: string;
+  showTimeZone: boolean;
+  showTSeparator: boolean;
+  timeZone: string;
+  truncateNumbersWithPound: boolean;
   updateSettings: (settings: Partial<WorkspaceSettings>) => void;
-  defaultDecimalFormatOptions?: FormatOption;
-  defaultIntegerFormatOptions?: FormatOption;
-  defaults: {
-    defaultDateTimeFormat: string;
-    defaultDecimalFormatOptions: FormatOption;
-    defaultIntegerFormatOptions: FormatOption;
-    showTimeZone: boolean;
-    showTSeparator: boolean;
-    timeZone: string;
-  };
+  defaultDecimalFormatOptions: FormatOption;
+  defaultIntegerFormatOptions: FormatOption;
+  defaults: WorkspaceSettings;
 }
 
 interface FormattingSectionContentState {
@@ -136,14 +129,7 @@ export class FormattingSectionContent extends PureComponent<
     } = props;
 
     this.containerRef = React.createRef();
-
-    assertNotNull(showTimeZone);
-    assertNotNull(showTSeparator);
-    assertNotNull(timeZone);
-    assertNotNull(truncateNumbersWithPound);
-    assertNotNull(defaultDateTimeFormat);
-    assertNotNull(defaultDecimalFormatOptions);
-    assertNotNull(defaultIntegerFormatOptions);
+    this.pendingUpdates = [];
 
     this.state = {
       showTimeZone,
@@ -165,9 +151,9 @@ export class FormattingSectionContent extends PureComponent<
     this.debouncedCommitChanges.flush();
   }
 
-  debouncedCommitChanges: DebouncedFunc<
-    (updates: Partial<WorkspaceSettings>) => void
-  >;
+  debouncedCommitChanges: DebouncedFunc<() => void>;
+
+  pendingUpdates: Partial<WorkspaceSettings>[];
 
   containerRef: RefObject<HTMLDivElement>;
 
@@ -201,7 +187,8 @@ export class FormattingSectionContent extends PureComponent<
       defaultDateTimeFormat: event.target.value,
     };
     this.setState(update);
-    this.commitChanges(update);
+    this.pendingUpdates.push(update);
+    this.debouncedCommitChanges();
   }
 
   handleDefaultDecimalFormatChange(event: ChangeEvent<HTMLInputElement>): void {
@@ -219,7 +206,8 @@ export class FormattingSectionContent extends PureComponent<
         DecimalColumnFormatter.makeCustomFormat(event.target.value)
       )
     ) {
-      this.commitChanges(update);
+      this.pendingUpdates.push(update);
+      this.debouncedCommitChanges();
     }
   }
 
@@ -238,27 +226,34 @@ export class FormattingSectionContent extends PureComponent<
         IntegerColumnFormatter.makeCustomFormat(event.target.value)
       )
     ) {
-      this.commitChanges(update);
+      this.pendingUpdates.push(update);
+      this.debouncedCommitChanges();
     }
   }
 
   handleShowTimeZoneChange(): void {
     const { showTimeZone } = this.state;
     this.setState({ showTimeZone: !showTimeZone });
-    this.commitChanges({ showTimeZone: !showTimeZone });
+    this.pendingUpdates.push({ showTimeZone: !showTimeZone });
+    this.debouncedCommitChanges();
   }
 
   handleShowTSeparatorChange(): void {
     const { showTSeparator } = this.state;
     this.setState({ showTSeparator: !showTSeparator });
-    this.commitChanges({ showTSeparator: !showTSeparator });
+    this.pendingUpdates.push({ showTSeparator: !showTSeparator });
+    this.commitChanges();
   }
 
   handleTimeZoneChange(event: ChangeEvent<HTMLSelectElement>): void {
     this.setState({
       timeZone: event.target.value,
     });
-    this.commitChanges({ timeZone: event.target.value });
+    this.pendingUpdates.push({
+      timeZone: event.target.value,
+    });
+
+    this.debouncedCommitChanges();
   }
 
   handleResetDateTimeFormat(): void {
@@ -270,11 +265,12 @@ export class FormattingSectionContent extends PureComponent<
       showTimeZone,
       showTSeparator,
     });
-    this.debouncedCommitChanges({
+    this.pendingUpdates.push({
       defaultDateTimeFormat: undefined,
       showTimeZone: undefined,
       showTSeparator: undefined,
     });
+    this.debouncedCommitChanges();
   }
 
   handleResetTimeZone(): void {
@@ -284,9 +280,11 @@ export class FormattingSectionContent extends PureComponent<
     this.setState({
       timeZone,
     });
-    this.debouncedCommitChanges({
+    this.pendingUpdates.push({
       timeZone: undefined,
     });
+
+    this.debouncedCommitChanges();
   }
 
   handleResetDecimalFormat(): void {
@@ -296,9 +294,10 @@ export class FormattingSectionContent extends PureComponent<
     this.setState({
       defaultDecimalFormatOptions,
     });
-    this.debouncedCommitChanges({
+    this.pendingUpdates.push({
       defaultDecimalFormatOptions: undefined,
     });
+    this.debouncedCommitChanges();
   }
 
   handleResetIntegerFormat(): void {
@@ -308,9 +307,10 @@ export class FormattingSectionContent extends PureComponent<
     this.setState({
       defaultIntegerFormatOptions,
     });
-    this.debouncedCommitChanges({
+    this.pendingUpdates.push({
       defaultIntegerFormatOptions: undefined,
     });
+    this.debouncedCommitChanges();
   }
 
   handleTruncateNumbersWithPoundChange(): void {
@@ -318,13 +318,24 @@ export class FormattingSectionContent extends PureComponent<
     this.setState({
       truncateNumbersWithPound: truncateNumbersWithPound !== true,
     });
-    this.debouncedCommitChanges({
+    this.pendingUpdates.push({
       truncateNumbersWithPound: truncateNumbersWithPound !== true,
     });
+
+    this.debouncedCommitChanges();
   }
 
-  commitChanges(updates: Partial<WorkspaceSettings>): void {
+  commitChanges(): void {
     const { updateSettings } = this.props;
+    const updates = this.pendingUpdates.reduce(
+      (acc, update) => ({
+        ...acc,
+        ...update,
+      }),
+      {}
+    );
+    this.pendingUpdates = [];
+
     updateSettings(updates);
   }
 
@@ -561,7 +572,7 @@ export class FormattingSectionContent extends PureComponent<
 
 const mapStateToProps = (
   state: RootState
-): Omit<FormattingSectionContentProps, 'defaults' | 'updateSettings'> => ({
+): Omit<FormattingSectionContentProps, 'updateSettings'> => ({
   defaultDateTimeFormat: getDefaultDateTimeFormat(state),
   defaultDecimalFormatOptions: getDefaultDecimalFormatOptions(state),
   defaultIntegerFormatOptions: getDefaultIntegerFormatOptions(state),
@@ -570,6 +581,7 @@ const mapStateToProps = (
   showTSeparator: getShowTSeparator(state),
   truncateNumbersWithPound: getTruncateNumbersWithPound(state),
   timeZone: getTimeZone(state),
+  defaults: getDefaultSettings(state),
 });
 
 const ConnectedFormattingSectionContent = connect(mapStateToProps, {
