@@ -189,7 +189,6 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
       }
       return workspace;
     } catch (e) {
-      console.log(e);
       log.info('Unable to load workspace data, initializing to default data');
 
       return LocalWorkspaceStorage.makeDefaultWorkspace(
