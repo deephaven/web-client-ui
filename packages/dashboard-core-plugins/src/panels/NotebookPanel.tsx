@@ -1434,9 +1434,6 @@ const mapStateToProps = (
 > => {
   const fileStorage = getFileStorage(state);
   const defaultNotebookSettings = getDefaultNotebookSettings(state);
-  if (defaultNotebookSettings.isMinimapEnabled === undefined) {
-    defaultNotebookSettings.isMinimapEnabled = true;
-  }
   const sessionWrapper = getDashboardSessionWrapper(
     state,
     ownProps.localDashboardId

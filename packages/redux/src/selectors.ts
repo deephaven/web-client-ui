@@ -63,7 +63,7 @@ export const getSettings = <State extends RootState>(
 ): WorkspaceSettings => {
   const customizedSettings = getWorkspace(store).data.settings;
 
-  const settings = structuredClone(getDefaultWorkspaceSettings(store));
+  const settings = { ...getDefaultWorkspaceSettings(store) };
   const keys = Object.keys(customizedSettings) as (keyof WorkspaceSettings)[];
   for (let i = 0; i < keys.length; i += 1) {
     const key = keys[i];
