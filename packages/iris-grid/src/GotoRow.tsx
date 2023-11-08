@@ -385,23 +385,23 @@ const GotoRow = forwardRef<GotoRowElement, GotoRowProps>(
 
                 <div>
                   <Button
+                    tooltip="Next match"
+                    icon={vsArrowUp}
                     kind="ghost"
                     disabled={gotoValue === ''}
                     onClick={() => {
                       onGotoValueSubmit(true);
                     }}
-                  >
-                    <FontAwesomeIcon icon={vsArrowUp} />
-                  </Button>
+                  />
                   <Button
+                    tooltip="Previous match"
+                    icon={vsArrowDown}
                     kind="ghost"
                     disabled={gotoValue === ''}
                     onClick={() => {
                       onGotoValueSubmit(false);
                     }}
-                  >
-                    <FontAwesomeIcon icon={vsArrowDown} />
-                  </Button>
+                  />
                 </div>
                 {gotoValueError && (
                   <div className="text-danger">{gotoValueError}</div>

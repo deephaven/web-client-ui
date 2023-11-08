@@ -15,6 +15,7 @@ function makePartitionSelectorSearch({
 } = {}) {
   return render(
     <PartitionSelectorSearch
+      column={new IrisGridTestUtils(dh).makeColumn()}
       dh={dh}
       table={table}
       onSelect={onSelect}

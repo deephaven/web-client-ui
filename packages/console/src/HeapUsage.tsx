@@ -2,7 +2,7 @@ import { useState, ReactElement, useRef, useCallback } from 'react';
 import classNames from 'classnames';
 import { Tooltip } from '@deephaven/components';
 import type { QueryConnectable } from '@deephaven/jsapi-types';
-import { Plot, ChartTheme } from '@deephaven/chart';
+import { Plot, useChartTheme } from '@deephaven/chart';
 import Log from '@deephaven/log';
 import { useAsyncInterval } from '@deephaven/react-hooks';
 import './HeapUsage.scss';
@@ -26,6 +26,8 @@ function HeapUsage({
   bgMonitoring = true,
   monitorDuration,
 }: HeapUsageProps): ReactElement {
+  const chartTheme = useChartTheme();
+
   const [memoryUsage, setMemoryUsage] = useState({
     freeMemory: 0,
     maximumHeapSize: 999,
@@ -168,17 +170,17 @@ function HeapUsage({
                 colorway: ['#4878ea'],
                 xaxis: {
                   dtick: Math.round(monitorDuration / 6),
-                  gridcolor: ChartTheme.linecolor,
+                  gridcolor: chartTheme.linecolor,
                   range: [lastTimestamp - monitorDuration, lastTimestamp],
-                  linecolor: ChartTheme.linecolor,
+                  linecolor: chartTheme.linecolor,
                   linewidth: 2,
                   mirror: true,
                 },
                 yaxis: {
                   dtick: 0.2,
-                  gridcolor: ChartTheme.linecolor,
+                  gridcolor: chartTheme.linecolor,
                   range: [0, 1],
-                  linecolor: ChartTheme.linecolor,
+                  linecolor: chartTheme.linecolor,
                   linewidth: 2,
                   mirror: true,
                 },

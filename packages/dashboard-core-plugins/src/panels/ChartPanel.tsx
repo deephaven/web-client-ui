@@ -81,6 +81,7 @@ export interface ChartPanelFigureMetadata extends PanelMetadata {
    * @deprecated use `name` instead
    */
   figure?: string;
+  sourcePanelId: never;
 }
 
 export interface ChartPanelTableMetadata extends PanelMetadata {
@@ -112,34 +113,40 @@ export interface GLChartPanelState {
     sorts: unknown;
   };
   irisGridPanelState?: {
-    partitionColumn: string;
-    partition: unknown;
+    partitionColumns: string[];
+    partitions: unknown[];
   };
   table?: string;
   figure?: string;
 }
-export interface ChartPanelProps extends DashboardPanelProps {
+interface OwnProps extends DashboardPanelProps {
   metadata: ChartPanelMetadata;
   /** Function to build the ChartModel used by this ChartPanel. Can return a promise. */
   makeModel: () => Promise<ChartModel>;
-  inputFilters: InputFilter[];
-  links: Link[];
   localDashboardId: string;
-  isLinkerActive: boolean;
-  source?: TableTemplate;
-  sourcePanel?: PanelComponent;
-  columnSelectionValidator?: ColumnSelectionValidator;
-  setActiveTool: (tool: string) => void;
-  setDashboardIsolatedLinkerPanelId: (
-    id: string,
-    secondParam: undefined
-  ) => void;
   Plotly?: typeof PlotlyType;
   /** The panel container div */
   containerRef?: RefObject<HTMLDivElement>;
 
   panelState: GLChartPanelState;
+}
+
+interface StateProps {
+  inputFilters: InputFilter[];
+  links: Link[];
+  isLinkerActive: boolean;
+  source?: TableTemplate;
+  sourcePanel?: PanelComponent;
+  columnSelectionValidator?: ColumnSelectionValidator;
   settings: Partial<WorkspaceSettings>;
+}
+
+interface DispatchProps {
+  setActiveTool: (tool: string) => void;
+  setDashboardIsolatedLinkerPanelId: (
+    id: string,
+    secondParam: undefined
+  ) => void;
 }
 
 interface ChartPanelState {
@@ -178,6 +185,11 @@ function hasPanelState(
   return (panel as { panelState: IrisGridPanelState }).panelState != null;
 }
 
+export type ChartPanelProps = OwnProps &
+  StateProps &
+  DispatchProps &
+  React.RefAttributes<ChartPanel>;
+
 export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
   static defaultProps = {
     columnSelectionValidator: null,
@@ -206,7 +218,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     this.handleError = this.handleError.bind(this);
     this.handleLoadError = this.handleLoadError.bind(this);
     this.handleLoadSuccess = this.handleLoadSuccess.bind(this);
-    this.handleResize = this.handleResize.bind(this);
     this.handleSettingsChanged = this.handleSettingsChanged.bind(this);
     this.handleOpenLinker = this.handleOpenLinker.bind(this);
     this.handleShow = this.handleShow.bind(this);
@@ -223,7 +234,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     this.handleClearAllFilters = this.handleClearAllFilters.bind(this);
 
     this.panelContainer = props.containerRef ?? React.createRef();
-    this.chart = React.createRef();
     this.pending = new Pending();
 
     const { metadata, panelState } = props;
@@ -324,8 +334,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
   }
 
   panelContainer: RefObject<HTMLDivElement>;
-
-  chart: RefObject<Chart>;
 
   pending: Pending;
 
@@ -671,10 +679,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     this.setState({ isLoading: false });
   }
 
-  handleResize(): void {
-    this.updateChart();
-  }
-
   handleSettingsChanged(update: Partial<Settings>): void {
     this.setState(({ settings: prevSettings }) => {
       const settings = {
@@ -740,7 +744,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     this.setState({ isActive }, () => {
       if (isActive) {
         this.loadModelIfNecessary();
-        this.updateChart();
       }
     });
   }
@@ -1014,12 +1017,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     });
   }
 
-  updateChart(): void {
-    if (this.chart.current) {
-      this.chart.current.updateDimensions();
-    }
-  }
-
   render(): ReactElement {
     const {
       columnSelectionValidator,
@@ -1046,7 +1043,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     if (isChartPanelTableMetadata(metadata)) {
       name = metadata.table;
     } else {
-      name = metadata.figure;
+      name = metadata.name ?? metadata.figure;
     }
     const inputFilterMap = this.getInputFilterColumnMap(
       columnMap,
@@ -1085,7 +1082,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
         glEventHub={glEventHub}
         onHide={this.handleHide}
         onClearAllFilters={this.handleClearAllFilters}
-        onResize={this.handleResize}
         onShow={this.handleShow}
         onTabBlur={this.handleTabBlur}
         onTabFocus={this.handleTabFocus}
@@ -1106,7 +1102,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
                 isActive={isActive}
                 model={model}
                 settings={settings}
-                ref={this.chart}
                 onDisconnect={this.handleDisconnect}
                 onReconnect={this.handleReconnect}
                 onUpdate={this.handleUpdate}
@@ -1157,23 +1152,10 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
   }
 }
 
-const mapStateToProps = (
-  state: RootState,
-  ownProps: { localDashboardId: string; metadata: { sourcePanelId?: string } }
-): Omit<
-  ChartPanelProps,
-  | 'glContainer'
-  | 'glEventHub'
-  | 'localDashboardId'
-  | 'makeModel'
-  | 'metadata'
-  | 'panelState'
-  | 'setActiveTool'
-  | 'setDashboardIsolatedLinkerPanelId'
-> => {
+const mapStateToProps = (state: RootState, ownProps: OwnProps): StateProps => {
   const { localDashboardId, metadata } = ownProps;
 
-  let sourcePanelId;
+  let sourcePanelId: string | undefined;
   if (metadata != null) {
     sourcePanelId = metadata.sourcePanelId;
   }
@@ -1207,7 +1189,7 @@ const ConnectedChartPanel = connect(
   {
     setActiveTool: setActiveToolAction,
     setDashboardIsolatedLinkerPanelId: setDashboardIsolatedLinkerPanelIdAction,
-  },
+  } satisfies DispatchProps,
   null,
   { forwardRef: true }
 )(ChartPanel);

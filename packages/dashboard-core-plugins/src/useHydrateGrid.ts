@@ -8,8 +8,8 @@ import { useConnection } from '@deephaven/jsapi-components';
 import { Table } from '@deephaven/jsapi-types';
 import { IrisGridModelFactory } from '@deephaven/iris-grid';
 import {
-  IrisGridPanelMetadata,
-  IrisGridPanelProps,
+  type IrisGridPanelMetadata,
+  type IrisGridPanelProps,
   isIrisGridPanelMetadata,
   isLegacyIrisGridPanelMetadata,
 } from './panels';

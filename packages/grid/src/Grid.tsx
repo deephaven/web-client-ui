@@ -1,5 +1,10 @@
 /* eslint react/no-did-update-set-state: "off" */
-import React, { CSSProperties, PureComponent, ReactNode } from 'react';
+import React, {
+  CSSProperties,
+  PureComponent,
+  ReactNode,
+  RefObject,
+} from 'react';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
 import clamp from 'lodash.clamp';
@@ -68,12 +73,10 @@ type LegacyCanvasRenderingContext2D = CanvasRenderingContext2D & {
   backingStorePixelRatio?: number;
 };
 
-export type StickyOptions = {
-  shouldStickBottom?: boolean;
-  shouldStickRight?: boolean;
-};
-
 export type GridProps = typeof Grid.defaultProps & {
+  // Children to render in the grid
+  children?: ReactNode;
+
   // Options to set on the canvas
   canvasOptions?: CanvasRenderingContext2DSettings;
 
@@ -300,6 +303,12 @@ class Grid extends PureComponent<GridProps, GridState> {
 
   canvasContext: CanvasRenderingContext2D | null;
 
+  // The wrapper element for the canvas, used for sizing
+  canvasWrapper: RefObject<HTMLDivElement>;
+
+  // Listen for resizing of the element and update the canvas appropriately
+  resizeObserver: ResizeObserver;
+
   // We draw the canvas on the next animation frame, keep track of the next one
   animationFrame: number | null;
 
@@ -356,6 +365,8 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     this.canvas = null;
     this.canvasContext = null;
+    this.canvasWrapper = React.createRef();
+    this.resizeObserver = new window.ResizeObserver(this.handleResize);
     this.animationFrame = null;
 
     this.prevMetrics = null;
@@ -462,7 +473,9 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.canvas?.addEventListener('wheel', this.handleWheel, {
       passive: false,
     });
-    window.addEventListener('resize', this.handleResize);
+    if (this.canvasWrapper.current != null) {
+      this.resizeObserver.observe(this.canvasWrapper.current);
+    }
 
     this.updateCanvas();
 
@@ -566,7 +579,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       this.handleMouseUp as unknown as EventListenerOrEventListenerObject,
       true
     );
-    window.removeEventListener('resize', this.handleResize);
+    this.resizeObserver.disconnect();
 
     this.stopDragTimer();
   }
@@ -806,17 +819,17 @@ class Grid extends PureComponent<GridProps, GridState> {
   }
 
   private updateCanvasScale(): void {
-    const { canvas, canvasContext } = this;
+    const { canvas, canvasContext, canvasWrapper } = this;
     if (!canvas) throw new Error('canvas not set');
     if (!canvasContext) throw new Error('canvasContext not set');
-    if (!canvas.parentElement) throw new Error('Canvas has no parent element');
+    if (!canvasWrapper.current) throw new Error('canvasWrapper not set');
 
     const scale = Grid.getScale(canvasContext);
     // the parent wrapper has 100% width/height, and is used for determining size
     // we don't want to stretch the canvas to 100%, to avoid fractional pixels.
     // A wrapper element must be used for sizing, and canvas size must be
     // set manually to a floored value in css and a scaled value in width/height
-    const rect = canvas.parentElement.getBoundingClientRect();
+    const rect = canvasWrapper.current.getBoundingClientRect();
     const width = Math.floor(rect.width);
     const height = Math.floor(rect.height);
     canvas.style.width = `${width}px`;
@@ -1186,13 +1199,11 @@ class Grid extends PureComponent<GridProps, GridState> {
    * @param deltaColumn Number of columns to move the cursor
    * @param deltaRow Number of rows to move the cursor
    * @param extendSelection True if the current selection should be extended, false to start a new selection
-   * @param stickyOptions Options for sticky behavior
    */
   moveCursor(
     deltaColumn: number,
     deltaRow: number,
-    extendSelection: boolean,
-    stickyOptions?: StickyOptions
+    extendSelection: boolean
   ): void {
     const { cursorRow, cursorColumn, selectionEndColumn, selectionEndRow } =
       this.state;
@@ -1200,28 +1211,14 @@ class Grid extends PureComponent<GridProps, GridState> {
     const row = extendSelection ? selectionEndRow : cursorRow;
     if (row === null || column === null) {
       const { left, top } = this.state;
-      this.moveCursorToPosition(
-        left,
-        top,
-        extendSelection,
-        true,
-        false,
-        stickyOptions
-      );
+      this.moveCursorToPosition(left, top, extendSelection);
     } else {
       const { model } = this.props;
       const { columnCount, rowCount } = model;
 
       const left = clamp(column + deltaColumn, 0, columnCount - 1);
       const top = clamp(row + deltaRow, 0, rowCount - 1);
-      this.moveCursorToPosition(
-        left,
-        top,
-        extendSelection,
-        true,
-        false,
-        stickyOptions
-      );
+      this.moveCursorToPosition(left, top, extendSelection);
     }
   }
 
@@ -1281,15 +1278,13 @@ class Grid extends PureComponent<GridProps, GridState> {
    * @param extendSelection Whether to extend the current selection (eg. holding Shift)
    * @param keepCursorInView Whether to move the viewport so that the cursor is in view
    * @param maximizePreviousRange With this and `extendSelection` true, it will maximize/add to the previous range only, ignoring where the selection was started
-   * @param stickyOptions Options for sticky behavior
    */
   moveCursorToPosition(
     column: GridRangeIndex,
     row: GridRangeIndex,
     extendSelection = false,
     keepCursorInView = true,
-    maximizePreviousRange = false,
-    stickyOptions?: StickyOptions
+    maximizePreviousRange = false
   ): void {
     if (!extendSelection) {
       this.beginSelection(column, row);
@@ -1298,7 +1293,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.moveSelection(column, row, extendSelection, maximizePreviousRange);
 
     if (keepCursorInView) {
-      this.moveViewToCell(column, row, stickyOptions);
+      this.moveViewToCell(column, row);
     }
   }
 
@@ -1307,13 +1302,8 @@ class Grid extends PureComponent<GridProps, GridState> {
    *
    * @param column The column index to bring into view
    * @param row The row index to bring into view
-   * @param stickyOptions Options for sticky behavior
    */
-  moveViewToCell(
-    column: GridRangeIndex,
-    row: GridRangeIndex,
-    stickyOptions?: StickyOptions
-  ): void {
+  moveViewToCell(column: GridRangeIndex, row: GridRangeIndex): void {
     if (!this.metrics) throw new Error('metrics not set');
 
     const { metricCalculator } = this;
@@ -1342,11 +1332,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       }
     }
 
-    this.setViewState(
-      { top, left, topOffset, leftOffset },
-      false,
-      stickyOptions
-    );
+    this.setViewState({ top, left, topOffset, leftOffset });
   }
 
   /**
@@ -1354,29 +1340,19 @@ class Grid extends PureComponent<GridProps, GridState> {
    * Should be called when user interaction occurs
    * @param viewState New state properties to set.
    * @param forceUpdate Whether to force an update.
-   * @param stickyOptions Options for sticky behavior
    */
-
-  setViewState(
-    viewState: Partial<GridState>,
-    forceUpdate = false,
-    stickyOptions?: StickyOptions
-  ): void {
+  setViewState(viewState: Partial<GridState>, forceUpdate = false): void {
     if (!this.metrics) throw new Error('metrics not set');
 
     const { isStickyBottom, isStickyRight } = this.props;
     const { top, left } = viewState;
-    const { lastTop, lastLeft } = this.metrics;
-
-    if (top != null && (stickyOptions?.shouldStickBottom ?? false)) {
-      this.setState({
-        isStuckToBottom: isStickyBottom && top >= lastTop,
-      });
+    const { lastTop, lastLeft, hasVerticalBar, hasHorizontalBar } =
+      this.metrics;
+    if (top != null && hasVerticalBar) {
+      this.setState({ isStuckToBottom: isStickyBottom && top >= lastTop });
     }
-    if (left != null && (stickyOptions?.shouldStickRight ?? false)) {
-      this.setState({
-        isStuckToRight: isStickyRight && left >= lastLeft,
-      });
+    if (left != null && hasHorizontalBar) {
+      this.setState({ isStuckToRight: isStickyRight && left >= lastLeft });
     }
 
     this.setState(viewState as GridState);
@@ -2021,15 +1997,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       }
     }
 
-    const stickyOptions: StickyOptions = {
-      shouldStickBottom: event.deltaY > 0,
-      shouldStickRight: event.deltaX > 0,
-    };
-    this.setViewState(
-      { top, left, leftOffset, topOffset },
-      false,
-      stickyOptions
-    );
+    this.setViewState({ top, left, leftOffset, topOffset });
 
     event.stopPropagation();
     event.preventDefault();
@@ -2227,10 +2195,11 @@ class Grid extends PureComponent<GridProps, GridState> {
   }
 
   render(): ReactNode {
+    const { children } = this.props;
     const { cursor } = this.state;
 
     return (
-      <>
+      <div className="grid-wrapper" ref={this.canvasWrapper}>
         <canvas
           className={classNames('grid-canvas', Grid.getCursorClassName(cursor))}
           ref={canvas => {
@@ -2248,7 +2217,8 @@ class Grid extends PureComponent<GridProps, GridState> {
           Your browser does not support HTML canvas. Update your browser?
         </canvas>
         {this.renderInputField()}
-      </>
+        {children}
+      </div>
     );
   }
 }

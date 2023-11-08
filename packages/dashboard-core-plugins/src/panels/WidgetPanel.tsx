@@ -1,12 +1,7 @@
-import React, {
-  Component,
-  ComponentType,
-  PureComponent,
-  ReactElement,
-  ReactNode,
-} from 'react';
+import React, { PureComponent, ReactElement, ReactNode } from 'react';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
+import { PanelComponent } from '@deephaven/dashboard';
 import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import { ContextActions } from '@deephaven/components';
 import { copyToClipboard } from '@deephaven/utils';
@@ -16,7 +11,7 @@ import './WidgetPanel.scss';
 
 interface WidgetPanelProps {
   children: ReactNode;
-  componentPanel?: ComponentType | Component;
+  componentPanel?: PanelComponent;
 
   glContainer: Container;
   glEventHub: EventEmitter;

@@ -10,41 +10,28 @@ import IrisGridTestUtils from './IrisGridTestUtils';
 import IrisGridUtils, {
   DehydratedSort,
   LegacyDehydratedSort,
+  isPanelStateV1,
 } from './IrisGridUtils';
 
 const irisGridUtils = new IrisGridUtils(dh);
 const irisGridTestUtils = new IrisGridTestUtils(dh);
 
-function makeFilter() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return new (dh as any).FilterCondition();
-}
-
-function makeColumns(count = 30) {
-  const columns: Column[] = [];
-
-  for (let i = 0; i < count; i += 1) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const column = new (dh as any).Column({ index: i, name: `name_${i}` });
-    columns.push(column);
-  }
-
-  return columns;
-}
-
-function makeTable({
-  columns = makeColumns(),
-  sort = [] as Sort[],
-} = {}): Table {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return new (dh as any).Table({ columns, sort });
-}
 function makeColumn(index: number): Column {
   return irisGridTestUtils.makeColumn(
     `${index}`,
     IrisGridTestUtils.DEFAULT_TYPE,
     index
   );
+}
+
+function makeTable({
+  columns = irisGridTestUtils.makeColumns(10, 'name_'),
+  sort = [] as Sort[],
+} = {}): Table {
+  return irisGridTestUtils.makeTable({
+    columns,
+    sort,
+  });
 }
 
 describe('quickfilters tests', () => {
@@ -62,10 +49,10 @@ describe('quickfilters tests', () => {
   });
 
   it('exports/imports quickFilters', () => {
-    const table = makeTable();
+    const table = irisGridTestUtils.makeTable();
     const column = 9;
     const text = '>1000';
-    const filter = makeFilter();
+    const filter = irisGridTestUtils.makeFilter();
     const quickFilters = new Map([[column, { text, filter }]]);
 
     const exportedFilters = IrisGridUtils.dehydrateQuickFilters(quickFilters);
@@ -93,7 +80,7 @@ describe('quickfilters tests', () => {
 
 describe('advanced filter tests', () => {
   it('exports/imports empty list', () => {
-    const table = makeTable();
+    const table = irisGridTestUtils.makeTable();
     const filters = new Map();
     const exportedFilters = irisGridUtils.dehydrateAdvancedFilters(
       table.columns,
@@ -112,7 +99,7 @@ describe('advanced filter tests', () => {
   it('exports advanced filters', () => {
     const table = makeTable();
     const column = 7;
-    const filter = makeFilter();
+    const filter = irisGridTestUtils.makeFilter();
     const options = {
       filterItems: [{ selectedType: '', value: '', key: 0 }],
       filterOperators: [],
@@ -151,7 +138,7 @@ describe('advanced filter tests', () => {
 describe('sort exporting/importing', () => {
   it('exports/imports empty sort', () => {
     const sort = [];
-    const table = makeTable({ sort });
+    const table = irisGridTestUtils.makeTable({ sort });
     const exportedSort = IrisGridUtils.dehydrateSort(sort);
     expect(exportedSort).toEqual([]);
 
@@ -160,7 +147,7 @@ describe('sort exporting/importing', () => {
   });
 
   it('should export (dehydrate) sorts', () => {
-    const columns = makeColumns();
+    const columns = irisGridTestUtils.makeColumns(10, 'name_');
     const sort = [columns[3].sort(), columns[7].sort().abs().desc()];
     const dehydratedSorts = IrisGridUtils.dehydrateSort(sort);
 
@@ -171,9 +158,9 @@ describe('sort exporting/importing', () => {
   });
 
   describe('should import (hydrate) sorts', () => {
-    const columns = makeColumns();
+    const columns = irisGridTestUtils.makeColumns(10, 'name_');
     const sort = [columns[3].sort(), columns[7].sort().abs().desc()];
-    const table = makeTable({ columns, sort });
+    const table = irisGridTestUtils.makeTable({ columns, sort });
 
     const dehydratedSorts = IrisGridUtils.dehydrateSort(sort);
 
@@ -210,7 +197,7 @@ describe('sort exporting/importing', () => {
 describe('pendingDataMap hydration/dehydration', () => {
   it('dehydrates/hydrates empty map', () => {
     const pendingDataMap = new Map();
-    const columns = makeColumns();
+    const columns = irisGridTestUtils.makeColumns(10, 'name_');
     const dehydratedMap = irisGridUtils.dehydratePendingDataMap(
       columns,
       pendingDataMap
@@ -242,7 +229,7 @@ describe('pendingDataMap hydration/dehydration', () => {
         },
       ],
     ]);
-    const columns = makeColumns();
+    const columns = irisGridTestUtils.makeColumns(10, 'name_');
     const dehydratedMap = irisGridUtils.dehydratePendingDataMap(
       columns,
       pendingDataMap
@@ -488,7 +475,7 @@ describe('validate copy ranges', () => {
 
 describe('changeFilterColumnNamesToIndexes', () => {
   const DEFAULT_FILTER = {};
-  const columns = makeColumns(10);
+  const columns = irisGridTestUtils.makeColumns(10, 'name_');
   it('Replaces column names with indexes', () => {
     const filters = [
       { name: 'name_1', filter: DEFAULT_FILTER },
@@ -658,8 +645,8 @@ describe('dehydration methods', () => {
       'dehydrateIrisGridPanelState',
       IrisGridUtils.dehydrateIrisGridPanelState(irisGridTestUtils.makeModel(), {
         isSelectingPartition: false,
-        partition: null,
-        partitionColumn: null,
+        partitions: [],
+        partitionColumns: [],
         advancedSettings: new Map(),
       }),
     ],
@@ -678,5 +665,140 @@ describe('dehydration methods', () => {
       // so it can be serialized and de-serialized without changes
       deepEqual(result, JSON.parse(JSON.stringify(result)), { strict: true })
     ).toBe(true);
+  });
+});
+
+describe('hydration methods', () => {
+  const model = irisGridTestUtils.makeModel(
+    irisGridTestUtils.makeTable({
+      columns: irisGridTestUtils.makeColumns(5, 'name_'),
+    })
+  );
+
+  it.each([
+    [
+      'hydrateIrisGridPanelStateV1',
+      {
+        isSelectingPartition: false,
+        partition: null,
+        partitionColumn: 'INVALID',
+        advancedSettings: [],
+      },
+    ],
+    [
+      'hydrateIrisGridPanelStateV2',
+      {
+        isSelectingPartition: false,
+        partitions: [null],
+        partitionColumns: ['INVALID'],
+        advancedSettings: [],
+      },
+    ],
+  ])('%s invalid column error', (_label, panelState) => {
+    expect(() =>
+      IrisGridUtils.hydrateIrisGridPanelState(model, panelState)
+    ).toThrow('Invalid partition column INVALID');
+  });
+
+  it.each([
+    [
+      'hydrateIrisGridPanelStateV1 null partition column',
+      {
+        isSelectingPartition: false,
+        partition: null,
+        partitionColumn: null,
+        advancedSettings: [],
+      },
+    ],
+    [
+      'hydrateIrisGridPanelStateV1 null partition',
+      {
+        isSelectingPartition: false,
+        partition: null,
+        partitionColumn: 'name_0',
+        advancedSettings: [],
+      },
+    ],
+    [
+      'hydrateIrisGridPanelStateV1 unselected partition',
+      {
+        isSelectingPartition: false,
+        partition: 'a',
+        partitionColumn: 'name_0',
+        advancedSettings: [],
+      },
+    ],
+    [
+      'hydrateIrisGridPanelStateV1 one selected partition',
+      {
+        isSelectingPartition: true,
+        partition: 'a',
+        partitionColumn: 'name_0',
+        advancedSettings: [],
+      },
+    ],
+    [
+      'hydrateIrisGridPanelStateV2 no partition columns',
+      {
+        isSelectingPartition: false,
+        partitions: [],
+        partitionColumns: [],
+        advancedSettings: [],
+      },
+    ],
+    [
+      'hydrateIrisGridPanelStateV2 two unselected columns',
+      {
+        isSelectingPartition: true,
+        partitions: [null, null],
+        partitionColumns: ['name_0', 'name_1'],
+        advancedSettings: [],
+      },
+    ],
+    [
+      'hydrateIrisGridPanelStateV2 two selected columns',
+      {
+        isSelectingPartition: true,
+        partitions: ['a', 'b'],
+        partitionColumns: ['name_0', 'name_1'],
+        advancedSettings: [],
+      },
+    ],
+    [
+      'hydrateIrisGridPanelStateV2 mixed selection columns',
+      {
+        isSelectingPartition: true,
+        partitions: [null, 'b', null],
+        partitionColumns: ['name_0', 'name_1', 'name_2'],
+        advancedSettings: [],
+      },
+    ],
+    [
+      'hydrateIrisGridPanelStateV2 mixed selection columns',
+      {
+        isSelectingPartition: true,
+        partitions: ['a', null, 'b'],
+        partitionColumns: ['name_0', 'name_1', 'name_2'],
+        advancedSettings: [],
+      },
+    ],
+  ])('%s partitions and columns match', (_label, panelState) => {
+    const result = IrisGridUtils.hydrateIrisGridPanelState(model, panelState);
+    expect(result.isSelectingPartition).toBe(panelState.isSelectingPartition);
+    if (isPanelStateV1(panelState)) {
+      expect(result.partitions).toEqual([panelState.partition]);
+      if (panelState.partitionColumn !== null) {
+        expect(result.partitionColumns[0].name).toBe(
+          panelState.partitionColumn
+        );
+      } else {
+        expect(result.partitionColumns).toEqual([]);
+      }
+    } else {
+      expect(result.partitions).toEqual(panelState.partitions);
+      panelState.partitionColumns.forEach((partition, index) => {
+        expect(result.partitionColumns[index].name === partition).toBeTruthy();
+      });
+    }
   });
 });
