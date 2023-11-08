@@ -1433,7 +1433,8 @@ const mapStateToProps = (
   'defaultNotebookSettings' | 'fileStorage' | 'session' | 'sessionLanguage'
 > => {
   const fileStorage = getFileStorage(state);
-  const defaultNotebookSettings = getDefaultNotebookSettings(state);
+  let defaultNotebookSettings = getDefaultNotebookSettings(state);
+  defaultNotebookSettings = { ...defaultNotebookSettings };
   if (defaultNotebookSettings.isMinimapEnabled === undefined) {
     defaultNotebookSettings.isMinimapEnabled = true;
   }
@@ -1446,7 +1447,7 @@ const mapStateToProps = (
   const { type: sessionLanguage } = sessionConfig ?? {};
   return {
     fileStorage,
-    defaultNotebookSettings: { ...defaultNotebookSettings } as NotebookSetting,
+    defaultNotebookSettings: defaultNotebookSettings as NotebookSetting,
     session,
     sessionLanguage,
   };
