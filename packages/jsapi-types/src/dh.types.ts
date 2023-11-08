@@ -83,20 +83,6 @@ export interface VariableDefinition<T extends string = string> {
   id?: string;
 }
 
-export interface JsWidget extends Evented {
-  getDataAsBase64: () => string;
-  getDataAsU8: () => Uint8Array;
-  getDataAsString: () => string;
-  exportedObjects: {
-    fetch: () => Promise<Table | Figure | TreeTable | JsWidget>;
-  }[];
-  sendMessage: (
-    message: string | ArrayBuffer | ArrayBufferView,
-    references?: unknown[]
-  ) => void;
-  close: () => void;
-}
-
 export interface LogItem {
   micros: number;
   logLevel: string;
@@ -212,14 +198,20 @@ export interface IdeSession extends Evented {
 }
 
 export interface Evented {
-  addEventListener: (eventType: string, listener: EventListener) => RemoverFn;
+  addEventListener: <T>(
+    eventType: string,
+    listener: EventListener<T>
+  ) => RemoverFn;
   nextEvent: (
     eventType: string,
     timeoutInMillis?: number
   ) => Promise<CustomEvent>;
 
   hasListeners: (eventType: string) => boolean;
-  removeEventListener: (eventType: string, listener: EventListener) => boolean;
+  removeEventListener: <T>(
+    eventType: string,
+    listener: EventListener<T>
+  ) => boolean;
 }
 
 export interface Plot {
@@ -245,8 +237,8 @@ export interface RemoverFn {
   (): void;
 }
 
-export interface EventListener {
-  (event: CustomEvent): void;
+export interface EventListener<T> {
+  (event: CustomEvent<T>): void;
 }
 
 export interface FigureDescriptor {
