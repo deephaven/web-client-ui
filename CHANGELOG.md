@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.41.4](https://github.com/deephaven/web-client-ui/compare/v0.41.3...v0.41.4) (2023-11-08)
+
+### Bug Fixes
+
+- Change display of rollup key columns from null to empty string ([#1563](https://github.com/deephaven/web-client-ui/issues/1563)) ([#1630](https://github.com/deephaven/web-client-ui/issues/1630)) ([d0e50ca](https://github.com/deephaven/web-client-ui/commit/d0e50caac93eb9f060226e520cb0d1173e87bc16)), closes [#1365](https://github.com/deephaven/web-client-ui/issues/1365) [#1483](https://github.com/deephaven/web-client-ui/issues/1483)
+
 ## [0.41.3](https://github.com/deephaven/web-client-ui/compare/v0.41.2...v0.41.3) (2023-06-21)
 
 ### Bug Fixes
