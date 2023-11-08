@@ -242,7 +242,7 @@ export class FormattingSectionContent extends PureComponent<
     const { showTSeparator } = this.state;
     this.setState({ showTSeparator: !showTSeparator });
     this.pendingUpdates.push({ showTSeparator: !showTSeparator });
-    this.commitChanges();
+    this.debouncedCommitChanges();
   }
 
   handleTimeZoneChange(event: ChangeEvent<HTMLSelectElement>): void {
