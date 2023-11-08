@@ -359,18 +359,18 @@ export type WidgetExportedObject = {
   close: () => void;
 };
 
-export interface Widget {
+export interface Widget extends Evented {
   readonly EVENT_MESSAGE: string;
 
-  addEventListener: (
-    type: string,
-    listener: (event: unknown) => void
-  ) => () => void;
   getDataAsBase64: () => string;
   getDataAsString: () => string;
   getDataAsU8: () => Uint8Array;
-  sendMessage: (message: string, references?: never[]) => void;
+  sendMessage: (
+    message: string | ArrayBuffer | ArrayBufferView,
+    references?: never[]
+  ) => void;
   exportedObjects: WidgetExportedObject[];
+  close: () => void;
 }
 
 export interface FigureDataUpdatedEvent {
