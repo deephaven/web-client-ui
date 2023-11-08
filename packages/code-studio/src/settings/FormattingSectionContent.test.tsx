@@ -35,7 +35,7 @@ function renderSectionContent({
   showTSeparator = false,
   timeZone = '',
   defaultDateTimeFormat = '',
-  saveSettings = jest.fn(),
+  updateSettings = jest.fn(),
   scrollTo = jest.fn(),
   defaultDecimalFormatOptions = {
     defaultFormatString: DEFAULT_DECIMAL_STRING,
@@ -57,7 +57,7 @@ function renderSectionContent({
         timeZone={timeZone}
         defaultDateTimeFormat={defaultDateTimeFormat}
         truncateNumbersWithPound={truncateNumbersWithPound}
-        saveSettings={saveSettings}
+        updateSettings={updateSettings}
         scrollTo={scrollTo}
         defaultDecimalFormatOptions={defaultDecimalFormatOptions}
         defaultIntegerFormatOptions={defaultIntegerFormatOptions}
@@ -90,8 +90,10 @@ describe('default decimal formatting', () => {
 
   it('updates settings when value is changed', async () => {
     const user = userEvent.setup({ delay: null });
-    const saveSettings = jest.fn();
-    const { getByLabelText, unmount } = renderSectionContent({ saveSettings });
+    const updateSettings = jest.fn();
+    const { getByLabelText, unmount } = renderSectionContent({
+      updateSettings,
+    });
     const newFormat = '00.0';
     const input = getByLabelText('Decimal');
     await user.clear(input);
@@ -99,7 +101,7 @@ describe('default decimal formatting', () => {
 
     jest.runOnlyPendingTimers();
 
-    expect(saveSettings).toHaveBeenCalledWith(
+    expect(updateSettings).toHaveBeenCalledWith(
       expect.objectContaining({
         defaultDecimalFormatOptions: { defaultFormatString: newFormat },
       })
@@ -110,12 +112,12 @@ describe('default decimal formatting', () => {
 
   it('resets to default', async () => {
     const user = userEvent.setup({ delay: null });
-    const saveSettings = jest.fn();
+    const updateSettings = jest.fn();
     const defaultFormatOptions = {
       defaultFormatString: DEFAULT_DECIMAL_STRING,
     };
     renderSectionContent({
-      saveSettings,
+      updateSettings,
       defaultDecimalFormatOptions: {
         defaultFormatString: '000',
       },
@@ -131,7 +133,7 @@ describe('default decimal formatting', () => {
 
     jest.runOnlyPendingTimers();
 
-    expect(saveSettings).toHaveBeenCalledWith(
+    expect(updateSettings).toHaveBeenCalledWith(
       expect.objectContaining({
         defaultDecimalFormatOptions: undefined,
       })
@@ -150,8 +152,10 @@ describe('default integer formatting', () => {
 
   it('updates settings when value is changed', async () => {
     const user = userEvent.setup({ delay: null });
-    const saveSettings = jest.fn();
-    const { getByLabelText, unmount } = renderSectionContent({ saveSettings });
+    const updateSettings = jest.fn();
+    const { getByLabelText, unmount } = renderSectionContent({
+      updateSettings,
+    });
     const newFormat = '000,000';
 
     const input = getByLabelText('Integer');
@@ -160,7 +164,7 @@ describe('default integer formatting', () => {
 
     jest.runOnlyPendingTimers();
 
-    expect(saveSettings).toHaveBeenCalledWith(
+    expect(updateSettings).toHaveBeenCalledWith(
       expect.objectContaining({
         defaultIntegerFormatOptions: { defaultFormatString: newFormat },
       })
@@ -171,12 +175,12 @@ describe('default integer formatting', () => {
 
   it('resets to default', async () => {
     const user = userEvent.setup({ delay: null });
-    const saveSettings = jest.fn();
+    const updateSettings = jest.fn();
     const defaultFormatOptions = {
       defaultFormatString: DEFAULT_INTEGER_STRING,
     };
     renderSectionContent({
-      saveSettings,
+      updateSettings,
       defaultIntegerFormatOptions: {
         defaultFormatString: '000',
       },
@@ -192,7 +196,7 @@ describe('default integer formatting', () => {
 
     jest.runOnlyPendingTimers();
 
-    expect(saveSettings).toHaveBeenCalledWith(
+    expect(updateSettings).toHaveBeenCalledWith(
       expect.objectContaining({
         defaultIntegerFormatOptions: undefined,
       })

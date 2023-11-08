@@ -132,7 +132,7 @@ export const updateWorkspaceData =
  * Sets the specified settings locally and saves them remotely
  * @param settings The settings to save
  */
-export const saveSettings =
+export const updateSettings =
   (
     settings: Partial<WorkspaceSettings>
   ): ThunkAction<

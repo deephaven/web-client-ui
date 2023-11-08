@@ -146,44 +146,41 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
       const workspace = JSON.parse(
         localStorage.getItem(LocalWorkspaceStorage.STORAGE_KEY) ?? ''
       );
-      if (workspace.settings.timeZone === undefined) {
-        workspace.settings.timeZone = serverConfigValues?.get('timeZone');
+      if (workspace.data.settings.timeZone === undefined) {
+        workspace.data.settings.timeZone = serverConfigValues?.get('timeZone');
       }
-      if (workspace.settings.defaultDateTimeFormat === undefined) {
-        workspace.settings.defaultDateTimeFormat =
+      if (workspace.data.settings.defaultDateTimeFormat === undefined) {
+        workspace.data.settings.defaultDateTimeFormat =
           serverConfigValues?.get('dateTimeFormat');
       }
       if (
-        workspace.settings.defaultDecimalFormatOptions.defaultFormatString ===
-          undefined &&
+        workspace.data.settings.defaultDecimalFormatOptions === undefined &&
         serverConfigValues?.get('decimalFormat') !== undefined
       ) {
-        workspace.settings.defaultDecimalFormatOptions = {
+        workspace.data.settings.defaultDecimalFormatOptions = {
           defaultFormatString: serverConfigValues?.get('decimalFormat'),
         };
       }
       if (
-        workspace.settings.defaultIntegerFormatOptions.defaultFormatString ===
-          undefined &&
+        workspace.data.settings.defaultIntegerFormatOptions === undefined &&
         serverConfigValues?.get('integerFormat') !== undefined
       ) {
-        workspace.settings.defaultIntegerFormatOptions = {
+        workspace.data.settings.defaultIntegerFormatOptions = {
           defaultFormatString: serverConfigValues?.get('integerFormat'),
         };
       }
-      if (workspace.settings.truncateNumbersWithPound === undefined) {
-        workspace.settings.truncateNumbersWithPound =
+      if (workspace.data.settings.truncateNumbersWithPound === undefined) {
+        workspace.data.settings.truncateNumbersWithPound =
           LocalWorkspaceStorage.getBooleanServerConfig(
             serverConfigValues,
             'truncateNumbersWithPound'
           );
       }
       if (
-        workspace.settings.defaultNotebookSettings.isMinimapEnabled ===
-          undefined &&
+        workspace.data.settings.defaultNotebookSettings === undefined &&
         serverConfigValues?.get('isMinimapEnabled') !== undefined
       ) {
-        workspace.settings.defaultNotebookSettings = {
+        workspace.data.settings.defaultNotebookSettings = {
           isMinimapEnabled: LocalWorkspaceStorage.getBooleanServerConfig(
             serverConfigValues,
             'isMinimapEnabled'
@@ -192,6 +189,7 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
       }
       return workspace;
     } catch (e) {
+      console.log(e);
       log.info('Unable to load workspace data, initializing to default data');
 
       return LocalWorkspaceStorage.makeDefaultWorkspace(

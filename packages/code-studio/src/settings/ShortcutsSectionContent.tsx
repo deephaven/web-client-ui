@@ -4,19 +4,19 @@ import { Shortcut, ShortcutRegistry } from '@deephaven/components';
 import {
   getShortcutOverrides,
   RootState,
-  saveSettings as saveSettingsAction,
+  updateSettings as updateSettingsAction,
   WorkspaceSettings,
 } from '@deephaven/redux';
 import ShortcutItem from './ShortcutItem';
 
 type ShortcutSectionContentProps = {
   shortcutOverrides: WorkspaceSettings['shortcutOverrides'];
-  saveSettings: typeof saveSettingsAction;
+  updateSettings: typeof updateSettingsAction;
 };
 
 function ShortcutSectionContent({
   shortcutOverrides = {},
-  saveSettings,
+  updateSettings,
 }: ShortcutSectionContentProps): JSX.Element {
   const saveShortcutOverrides = useCallback(
     (modifiedShortcuts: Shortcut[]) => {
@@ -38,11 +38,11 @@ function ShortcutSectionContent({
         }
       });
 
-      saveSettings({
+      updateSettings({
         shortcutOverrides: newOverrides,
       });
     },
-    [saveSettings, shortcutOverrides]
+    [updateSettings, shortcutOverrides]
   );
 
   let categories = Array.from(
@@ -143,7 +143,7 @@ const mapStateToProps = (
   shortcutOverrides: getShortcutOverrides(state),
 });
 
-const mapDispatchToProps = { saveSettings: saveSettingsAction };
+const mapDispatchToProps = { updateSettings: updateSettingsAction };
 
 const ConnectedShortcutSectionContent = connect(
   mapStateToProps,

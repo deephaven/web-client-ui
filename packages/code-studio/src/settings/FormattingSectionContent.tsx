@@ -27,7 +27,7 @@ import {
   getShowTimeZone,
   getShowTSeparator,
   getTruncateNumbersWithPound,
-  saveSettings as saveSettingsAction,
+  updateSettings as updateSettingsAction,
   RootState,
   WorkspaceSettings,
 } from '@deephaven/redux';
@@ -53,7 +53,7 @@ interface FormattingSectionContentProps {
   showTSeparator?: boolean;
   timeZone?: string;
   truncateNumbersWithPound?: boolean;
-  saveSettings: (settings: Partial<WorkspaceSettings>) => void;
+  updateSettings: (settings: Partial<WorkspaceSettings>) => void;
   defaultDecimalFormatOptions?: FormatOption;
   defaultIntegerFormatOptions?: FormatOption;
   defaults: {
@@ -324,8 +324,8 @@ export class FormattingSectionContent extends PureComponent<
   }
 
   commitChanges(updates: Partial<WorkspaceSettings>): void {
-    const { saveSettings } = this.props;
-    saveSettings(updates);
+    const { updateSettings } = this.props;
+    updateSettings(updates);
   }
 
   render(): ReactElement {
@@ -561,7 +561,7 @@ export class FormattingSectionContent extends PureComponent<
 
 const mapStateToProps = (
   state: RootState
-): Omit<FormattingSectionContentProps, 'defaults' | 'saveSettings'> => ({
+): Omit<FormattingSectionContentProps, 'defaults' | 'updateSettings'> => ({
   defaultDateTimeFormat: getDefaultDateTimeFormat(state),
   defaultDecimalFormatOptions: getDefaultDecimalFormatOptions(state),
   defaultIntegerFormatOptions: getDefaultIntegerFormatOptions(state),
@@ -573,7 +573,7 @@ const mapStateToProps = (
 });
 
 const ConnectedFormattingSectionContent = connect(mapStateToProps, {
-  saveSettings: saveSettingsAction,
+  updateSettings: updateSettingsAction,
 })(FormattingSectionContent);
 
 export default ConnectedFormattingSectionContent;

@@ -34,7 +34,7 @@ import {
 } from '@deephaven/icons';
 import {
   getFileStorage,
-  saveSettings as saveSettingsAction,
+  updateSettings as updateSettingsAction,
   RootState,
   WorkspaceSettings,
   getDefaultNotebookSettings,
@@ -88,7 +88,7 @@ interface NotebookPanelProps extends DashboardPanelProps {
   panelState: PanelState;
   notebooksUrl: string;
   defaultNotebookSettings: NotebookSetting;
-  saveSettings: (settings: Partial<WorkspaceSettings>) => void;
+  updateSettings: (settings: Partial<WorkspaceSettings>) => void;
 }
 
 interface NotebookPanelState {
@@ -787,13 +787,13 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   }
 
   handleMinimapChange(): void {
-    const { defaultNotebookSettings, saveSettings } = this.props;
+    const { defaultNotebookSettings, updateSettings } = this.props;
     const newSettings = {
       defaultNotebookSettings: {
         isMinimapEnabled: !defaultNotebookSettings.isMinimapEnabled,
       },
     };
-    saveSettings(newSettings);
+    updateSettings(newSettings);
   }
 
   updateEditorWordWrap(): void {
@@ -1435,6 +1435,7 @@ const mapStateToProps = (
   const fileStorage = getFileStorage(state);
   const defaultNotebookSettings = getDefaultNotebookSettings(state);
   assertNotNull(defaultNotebookSettings);
+  console.log(defaultNotebookSettings);
   if (defaultNotebookSettings.isMinimapEnabled === undefined) {
     defaultNotebookSettings.isMinimapEnabled = true;
   }
@@ -1455,7 +1456,7 @@ const mapStateToProps = (
 
 const ConnectedNotebookPanel = connect(
   mapStateToProps,
-  { saveSettings: saveSettingsAction },
+  { updateSettings: updateSettingsAction },
   null,
   { forwardRef: true }
 )(NotebookPanel);

@@ -1,4 +1,8 @@
-import type { RootState, Workspace, WorkspaceSettings } from './store';
+import type {
+  CustomizableWorkspace,
+  RootState,
+  WorkspaceSettings,
+} from './store';
 
 const EMPTY_OBJECT = Object.freeze({});
 
@@ -48,41 +52,28 @@ export const getDefaultWorkspaceSettings = <State extends RootState>(
 // Workspace
 export const getWorkspace = <State extends RootState>(
   store: State
-): Workspace => {
+): CustomizableWorkspace => {
   const { workspace } = store;
-
-  if (workspace == null) {
-    // this will only be null on initial render
-    return null as never;
-  }
-  const defaultInjectedWorkspace: Workspace = {
-    data: {
-      ...workspace.data,
-      settings: getDefaultWorkspaceSettings(store) ?? {},
-    },
-  };
-  const customizedWorkspaceSettings = { ...workspace.data.settings };
-
-  const keys = Object.keys(
-    customizedWorkspaceSettings
-  ) as (keyof WorkspaceSettings)[];
-
-  for (let i = 0; i < keys.length; i += 1) {
-    const key = keys[i];
-    const value = customizedWorkspaceSettings[key];
-    // only set pass in customized defaults if defined
-    if (value !== undefined) {
-      defaultInjectedWorkspace.data.settings[key] =
-        value as WorkspaceSettings[typeof key] as never;
-    }
-  }
-  return defaultInjectedWorkspace;
+  return workspace;
 };
 
 // Settings
 export const getSettings = <State extends RootState>(
   store: State
-): WorkspaceSettings => getWorkspace(store).data.settings;
+): WorkspaceSettings => {
+  const customizedSettings = getWorkspace(store).data.settings;
+
+  const settings = { ...getDefaultWorkspaceSettings(store) };
+  const keys = Object.keys(customizedSettings) as (keyof WorkspaceSettings)[];
+  for (let i = 0; i < keys.length; i += 1) {
+    const key = keys[i];
+    if (customizedSettings[key] !== undefined) {
+      // @ts-expect-error assign non-undefined customized settings to settings
+      settings[key] = customizedSettings[key];
+    }
+  }
+  return settings;
+};
 
 export const getDefaultDateTimeFormat = <State extends RootState>(
   store: State

@@ -28,7 +28,7 @@ import {
   getTimeZone,
   getShowTimeZone,
   getShowTSeparator,
-  saveSettings as saveSettingsAction,
+  updateSettings as updateSettingsAction,
   RootState,
   WorkspaceSettings,
 } from '@deephaven/redux';
@@ -53,7 +53,7 @@ export interface ColumnSpecificSectionContentProps {
   showTimeZone?: boolean;
   showTSeparator?: boolean;
   timeZone?: string;
-  saveSettings: (settings: Partial<WorkspaceSettings>) => void;
+  updateSettings: (settings: Partial<WorkspaceSettings>) => void;
   scrollTo: (x: number, y: number) => void;
   defaultDecimalFormatOptions?: FormatOption;
   defaultIntegerFormatOptions?: FormatOption;
@@ -275,11 +275,11 @@ export class ColumnSpecificSectionContent extends PureComponent<
         )
         .map(removeFormatRuleExtraProps) ?? [];
 
-    const { saveSettings } = this.props;
+    const { updateSettings } = this.props;
     const newSettings = {
       formatter: formatter as FormattingRule[],
     };
-    saveSettings(newSettings);
+    updateSettings(newSettings);
   }
 
   scrollToFormatBlockBottom(): void {
@@ -643,7 +643,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
 
 const mapStateToProps = (
   state: RootState
-): Omit<ColumnSpecificSectionContentProps, 'saveSettings' | 'scrollTo'> => ({
+): Omit<ColumnSpecificSectionContentProps, 'updateSettings' | 'scrollTo'> => ({
   formatter: getFormatter(state),
   defaultDecimalFormatOptions: getDefaultDecimalFormatOptions(state),
   defaultIntegerFormatOptions: getDefaultIntegerFormatOptions(state),
@@ -654,7 +654,7 @@ const mapStateToProps = (
 });
 
 const ConnectedColumnSpecificSectionContent = connect(mapStateToProps, {
-  saveSettings: saveSettingsAction,
+  updateSettings: updateSettingsAction,
 })(ColumnSpecificSectionContent);
 
 export default ConnectedColumnSpecificSectionContent;
