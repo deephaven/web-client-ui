@@ -106,7 +106,7 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
                 isMinimapEnabled: LocalWorkspaceStorage.getBooleanServerConfig(
                   serverConfigValues,
                   'isMinimapEnabled'
-                ),
+                ) as boolean,
               }
             : undefined,
       },

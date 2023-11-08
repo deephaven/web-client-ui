@@ -53,7 +53,7 @@ export interface WorkspaceSettings {
     mac?: { [id: string]: ValidKeyState };
   };
   defaultNotebookSettings: {
-    isMinimapEnabled: boolean;
+    isMinimapEnabled?: boolean;
   };
 }
 

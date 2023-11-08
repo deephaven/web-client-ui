@@ -82,25 +82,25 @@ export const getDefaultSettings = <State extends RootState>(
 export const getDefaultDateTimeFormat = <State extends RootState>(
   store: State
 ): Settings<State>['defaultDateTimeFormat'] =>
-  getSettings(store)?.defaultDateTimeFormat;
+  getSettings(store).defaultDateTimeFormat;
 
 export const getDefaultDecimalFormatOptions = <
   State extends RootState = RootState,
 >(
   store: State
 ): Settings<State>['defaultDecimalFormatOptions'] =>
-  getSettings(store)?.defaultDecimalFormatOptions ?? EMPTY_OBJECT;
+  getSettings(store).defaultDecimalFormatOptions ?? EMPTY_OBJECT;
 
 export const getDefaultIntegerFormatOptions = <
   State extends RootState = RootState,
 >(
   store: State
 ): Settings<State>['defaultIntegerFormatOptions'] =>
-  getSettings(store)?.defaultIntegerFormatOptions ?? EMPTY_OBJECT;
+  getSettings(store).defaultIntegerFormatOptions ?? EMPTY_OBJECT;
 
 export const getFormatter = <State extends RootState>(
   store: State
-): Settings<State>['formatter'] => getSettings(store)?.formatter ?? [];
+): Settings<State>['formatter'] => getSettings(store).formatter ?? [];
 
 export const getTimeZone = <State extends RootState>(
   store: State
