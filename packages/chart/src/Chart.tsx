@@ -692,7 +692,7 @@ export class Chart extends Component<ChartProps, ChartState> {
             <>
               <div className="chart-error">{shownError}</div>
               <CopyButton tooltip="Copy error" copy={shownError}>
-                Copy Versions
+                Copy Error
               </CopyButton>
             </>
           )}
