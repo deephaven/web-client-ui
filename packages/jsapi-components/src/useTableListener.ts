@@ -4,10 +4,10 @@ import Log from '@deephaven/log';
 
 const log = Log.module('useTableListener');
 
-export const useTableListener = (
+export const useTableListener = <T = unknown>(
   eventEmitter: Evented | undefined | null,
   eventName: string,
-  callback: EventListener
+  callback: EventListener<T>
 ): void =>
   useEffect(
     function initEventEmitter() {
