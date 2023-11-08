@@ -12,7 +12,7 @@ on:
       - main
       - 'release/**'
 env:
-  DOCKER_TAG: edge
+  DOCKER_TAG: 0.26.1
 jobs:
   build:
     runs-on: ubuntu-22.04
@@ -23,7 +23,7 @@ jobs:
       - name: Run core server:${{ env.DOCKER_TAG }}
         run: |
           docker pull --quiet ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
-          docker run --detach --publish 10000:10000 --name dh-core-server ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
+          docker run --detach --publish 10000:10000 --name dh-core-server --env "START_OPTS=-Xmx4g -DAuthHandlers=io.deephaven.auth.AnonymousAuthenticationHandler" ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
 
       - uses: actions/checkout@v3
 
