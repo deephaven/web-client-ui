@@ -6,13 +6,13 @@ import LayoutManagerContext from './LayoutManagerContext';
  * Retrieve the current LayoutManager from the context
  */
 function useLayoutManager(): LayoutManager {
-  const layout = useContext(LayoutManagerContext);
-  if (layout == null) {
+  const layoutManager = useContext(LayoutManagerContext);
+  if (layoutManager == null) {
     throw new Error(
-      'Layout not available, did you add a LayoutManagerContext.Provider to the tree?'
+      'LayoutManager not available, did you add a LayoutManagerContext.Provider to the tree?'
     );
   }
-  return layout;
+  return layoutManager;
 }
 
 export default useLayoutManager;
