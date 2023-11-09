@@ -206,7 +206,8 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   isFilterable(columnIndex: ModelIndex): boolean {
     return this.getCachedFilterableColumnSet(
       this.columns,
-      this.groupedColumns
+      this.groupedColumns,
+      this.virtualColumns
     ).has(columnIndex);
   }
 
@@ -268,11 +269,11 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   );
 
   getCachedFilterableColumnSet = memoize(
-    (columns: Column[], groupedColumns: Column[]) =>
+    (columns: Column[], groupedColumns: Column[], virtualColumns: Column[]) =>
       new Set(
-        (groupedColumns?.length > 0 ? groupedColumns : columns).map(c1 =>
-          columns.findIndex(c2 => c1.name === c2.name)
-        )
+        (groupedColumns?.length > 0 ? groupedColumns : columns)
+          .filter(c => !virtualColumns.includes(c))
+          .map(c1 => columns.findIndex(c2 => c1.name === c2.name))
       )
   );
 
