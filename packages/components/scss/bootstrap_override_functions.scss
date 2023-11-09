@@ -22,7 +22,10 @@
     }
   }
 
-  $contrast-color: var(--dh-color-#{$color}-contrast);
+  $contrast-color: var(
+    --dh-color-#{$color}-contrast,
+    var(--dh-color-contrast-light)
+  );
 
   @return $contrast-color;
 }

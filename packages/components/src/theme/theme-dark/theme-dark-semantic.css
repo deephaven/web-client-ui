@@ -68,6 +68,10 @@
   --dh-color-contrast-dark: hsl(var(--dh-color-contrast-dark-hsl));
   --dh-color-contrast-light: hsl(var(--dh-color-contrast-light-hsl));
 
+  /* Contrast Base */
+  --dh-color-contrast-dark: hsl(var(--dh-color-contrast-dark-hsl));
+  --dh-color-contrast-light: hsl(var(--dh-color-contrast-light-hsl));
+
   /** Accent Colors */
   --dh-color-accent-100: var(--dh-color-blue-100);
   --dh-color-accent-200: var(--dh-color-blue-200);
