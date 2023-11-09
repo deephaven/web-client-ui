@@ -187,7 +187,10 @@ $custom-control-indicator-checked-disabled-bg: $gray-800;
 $custom-control-label-disabled-color: $gray-400;
 
 //Custom Select
-$custom-select-indicator-color: $gray-400;
+// This needs to dynamically pull from --dh-color-gray-600, but this doesn't
+// work with an inline SVG. We'll need to wrap our <select> instances with a
+// wrapper and implement the arrow icons in a different way.
+$custom-select-indicator-color: #929192;
 $custom-select-bg-size: 16px 16px;
 //dhSort icon encoded
 $custom-select-indicator: str-replace(
