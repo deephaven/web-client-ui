@@ -1,21 +1,26 @@
 import { forwardRef, useMemo } from 'react';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import { useConnection } from '@deephaven/jsapi-components';
-import { assertNotNull } from '@deephaven/utils';
 import {
   ChartModel,
   ChartModelFactory,
   ChartTheme,
   useChartTheme,
 } from '@deephaven/chart';
-import type { dh as DhType, IdeConnection } from '@deephaven/jsapi-types';
+import type {
+  dh as DhType,
+  Figure,
+  IdeConnection,
+} from '@deephaven/jsapi-types';
 import { IrisGridUtils } from '@deephaven/iris-grid';
 import { getTimeZone, store } from '@deephaven/redux';
 import { type WidgetComponentProps } from '@deephaven/plugin';
+import { assertNotNull } from '@deephaven/utils';
 import {
   ChartPanelMetadata,
   GLChartPanelState,
   isChartPanelDehydratedProps,
+  isChartPanelFigureMetadata,
   isChartPanelTableMetadata,
 } from './panels';
 import ConnectedChartPanel, {
@@ -28,6 +33,7 @@ async function createChartModel(
   chartTheme: ChartTheme,
   connection: IdeConnection,
   metadata: ChartPanelMetadata,
+  fetch: () => Promise<Figure>,
   panelState?: GLChartPanelState
 ): Promise<ChartModel> {
   let settings;
@@ -43,7 +49,9 @@ async function createChartModel(
   } else {
     settings = {};
     tableName = '';
-    figureName = metadata.name ?? metadata.figure;
+    figureName = isChartPanelFigureMetadata(metadata)
+      ? metadata.figure
+      : metadata.name;
     tableSettings = {};
   }
   if (panelState != null) {
@@ -64,19 +72,29 @@ async function createChartModel(
     }
   }
 
+  if (figureName == null && tableName == null) {
+    const figure = await fetch();
+
+    return ChartModelFactory.makeModel(dh, settings, figure, chartTheme);
+  }
+
   if (figureName != null) {
-    const definition = {
-      title: figureName,
-      name: figureName,
-      type: dh.VariableType.FIGURE,
-    };
-    const figure = await connection.getObject(definition);
+    let figure: Figure;
+
+    if (metadata.type === dh.VariableType.FIGURE) {
+      const definition = {
+        name: figureName,
+        type: dh.VariableType.FIGURE,
+      };
+      figure = await connection.getObject(definition);
+    } else {
+      figure = await fetch();
+    }
 
     return ChartModelFactory.makeModel(dh, settings, figure, chartTheme);
   }
 
   const definition = {
-    title: figureName,
     name: tableName,
     type: dh.VariableType.TABLE,
   };
@@ -100,18 +118,17 @@ export const ChartPlugin = forwardRef(
     const chartTheme = useChartTheme();
     const connection = useConnection();
 
+    const panelState = isChartPanelDehydratedProps(props)
+      ? (props as unknown as ChartPanelProps).panelState
+      : undefined;
+
+    const { fetch, metadata, localDashboardId } = props;
+
     const hydratedProps = useMemo(
       () => ({
-        ...(props as unknown as ChartPanelProps),
-        metadata: props.metadata as ChartPanelMetadata,
-        localDashboardId: props.localDashboardId,
+        metadata: metadata as ChartPanelMetadata,
+        localDashboardId,
         makeModel: () => {
-          const { metadata } = props;
-
-          const panelState = isChartPanelDehydratedProps(props)
-            ? (props as unknown as ChartPanelProps).panelState
-            : undefined;
-
           if (metadata == null) {
             throw new Error('Metadata is required for chart panel');
           }
@@ -121,15 +138,24 @@ export const ChartPlugin = forwardRef(
             chartTheme,
             connection,
             metadata as ChartPanelMetadata,
+            fetch as unknown as () => Promise<Figure>,
             panelState
           );
         },
       }),
-      [props, dh, chartTheme, connection]
+      [
+        dh,
+        connection,
+        fetch,
+        panelState,
+        metadata,
+        localDashboardId,
+        chartTheme,
+      ]
     );
 
     // eslint-disable-next-line react/jsx-props-no-spreading
-    return <ConnectedChartPanel ref={ref} {...hydratedProps} />;
+    return <ConnectedChartPanel ref={ref} {...props} {...hydratedProps} />;
   }
 );
 

@@ -1,4 +1,3 @@
-/* eslint-disable global-require */
 /**
  * remote-component.config.js
  *
@@ -20,6 +19,7 @@ import * as DeephavenJsapiComponents from '@deephaven/jsapi-components';
 import * as DeephavenJsapiUtils from '@deephaven/jsapi-utils';
 import DeephavenLog from '@deephaven/log';
 import * as DeephavenReactHooks from '@deephaven/react-hooks';
+import * as DeephavenPlugin from '@deephaven/plugin';
 
 // eslint-disable-next-line import/prefer-default-export
 export const resolve = {
@@ -38,5 +38,6 @@ export const resolve = {
   '@deephaven/jsapi-components': DeephavenJsapiComponents,
   '@deephaven/jsapi-utils': DeephavenJsapiUtils,
   '@deephaven/log': DeephavenLog,
+  '@deephaven/plugin': DeephavenPlugin,
   '@deephaven/react-hooks': DeephavenReactHooks,
 };
