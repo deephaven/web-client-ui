@@ -806,7 +806,6 @@ class Grid extends PureComponent<GridProps, GridState> {
     if (!canvasContext) throw new Error('canvasContext not set');
     if (!canvas.parentElement) throw new Error('Canvas has no parent element');
 
-    const scale = Grid.getScale(canvasContext);
     // the parent wrapper has 100% width/height, and is used for determining size
     // we don't want to stretch the canvas to 100%, to avoid fractional pixels.
     // A wrapper element must be used for sizing, and canvas size must be
@@ -814,6 +813,16 @@ class Grid extends PureComponent<GridProps, GridState> {
     const rect = canvas.parentElement.getBoundingClientRect();
     const width = Math.floor(rect.width);
     const height = Math.floor(rect.height);
+
+    // avoid triggering a dom re-calc if size hasn't changed
+    if (
+      parseFloat(canvas.style.width) === width &&
+      parseFloat(canvas.style.height) === height
+    ) {
+      return;
+    }
+
+    const scale = Grid.getScale(canvasContext);
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
     canvas.width = width * scale;
