@@ -60,7 +60,7 @@ interface ConsolePanelProps extends DashboardPanelProps {
 
   sessionWrapper: SessionWrapper;
 
-  timeZone?: string;
+  timeZone: string;
   unzip?: (file: File) => Promise<JSZipObject[]>;
   plugins: PluginModuleMap;
 }

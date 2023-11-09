@@ -11,7 +11,6 @@ import debounce from 'lodash.debounce';
 import classNames from 'classnames';
 import { Button, Checkbox } from '@deephaven/components';
 import {
-  DateTimeColumnFormatter,
   IntegerColumnFormatter,
   DecimalColumnFormatter,
   TableUtils,
@@ -63,7 +62,7 @@ interface FormattingSectionContentState {
   showTimeZone: boolean;
   showTSeparator: boolean;
   timeZone: string;
-  defaultDateTimeFormat?: string;
+  defaultDateTimeFormat: string;
   defaultDecimalFormatOptions: FormatOption;
   defaultIntegerFormatOptions: FormatOption;
   truncateNumbersWithPound: boolean;
@@ -76,19 +75,6 @@ export class FormattingSectionContent extends PureComponent<
 > {
   static defaultProps = {
     scrollTo: (): void => undefined,
-    defaults: {
-      defaultDateTimeFormat:
-        DateTimeColumnFormatter.DEFAULT_DATETIME_FORMAT_STRING,
-      defaultDecimalFormatOptions: {
-        defaultFormatString: DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
-      },
-      defaultIntegerFormatOptions: {
-        defaultFormatString: IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
-      },
-      showTimeZone: false,
-      showTSeparator: true,
-      timeZone: DateTimeColumnFormatter.DEFAULT_TIME_ZONE_ID,
-    },
   };
 
   static inputDebounceTime = 250;

@@ -52,9 +52,7 @@ export const setDefaultWorkspaceSettings: PayloadActionCreator<
   WorkspaceSettings
 > = settings => ({
   type: SET_DEFAULT_WORKSPACE_SETTINGS,
-  payload: {
-    ...settings,
-  },
+  payload: settings,
 });
 
 export const setWorkspaceStorage: PayloadActionCreator<
