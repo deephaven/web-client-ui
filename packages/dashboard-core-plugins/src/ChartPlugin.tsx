@@ -15,7 +15,6 @@ import type {
 import { IrisGridUtils } from '@deephaven/iris-grid';
 import { getTimeZone, store } from '@deephaven/redux';
 import { type WidgetComponentProps } from '@deephaven/plugin';
-import { assertNotNull } from '@deephaven/utils';
 import {
   ChartPanelMetadata,
   GLChartPanelState,
@@ -99,9 +98,11 @@ async function createChartModel(
     type: dh.VariableType.TABLE,
   };
   const table = await connection.getObject(definition);
-  const timeZone = getTimeZone(store.getState());
-  assertNotNull(timeZone);
-  new IrisGridUtils(dh).applyTableSettings(table, tableSettings, timeZone);
+  new IrisGridUtils(dh).applyTableSettings(
+    table,
+    tableSettings,
+    getTimeZone(store.getState())
+  );
 
   return ChartModelFactory.makeModelFromSettings(
     dh,
