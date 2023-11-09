@@ -172,10 +172,10 @@ $input-disabled-bg: $gray-800;
 $input-color: $foreground;
 $input-border-color: $gray-400;
 $input-placeholder-color: $gray-400;
-$input-focus-border-color: var(--dh-color-focus-border);
+$input-focus-border-color: hsla(var(--dh-color-accent-hsl), 0.85);
 
 $input-btn-focus-width: 0.2rem;
-$input-btn-focus-color: var(--dh-color-focus);
+$input-btn-focus-color: hsla(var(--dh-color-accent-hsl), 0.35);
 $input-btn-focus-box-shadow: 0 0 0 $input-btn-focus-width $input-btn-focus-color;
 
 //checkbox

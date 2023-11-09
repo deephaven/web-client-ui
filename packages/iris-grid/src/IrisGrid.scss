@@ -14,11 +14,11 @@ $iris-grid-bar-max-height: 250px;
 $iris-grid-bar-max-width: $table-sidebar-max-width;
 $transition-iris-grid-bar-flash: 1s;
 $cell-box-shadow:
-  0 0 0 2px $selection-outline-color,
-  0 0 0 5px rgba($selection-outline-color, 0.25);
+  0 0 0 2px var(--dh-color-visual-blue),
+  0 0 0 5px hsla(var(--dh-color-visual-blue-hsl), 0.25);
 $cell-invalid-box-shadow:
-  0 0 0 2px $danger,
-  0 0 0 5px rgba($danger, 0.25);
+  0 0 0 2px var(--dh-color-negative),
+  0 0 0 5px hsla(var(--dh-color-negative-hsl), 0.25);
 
 .iris-grid {
   width: 100%;
