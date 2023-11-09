@@ -22,6 +22,7 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   TreeTable,
   UITreeRow
 > {
+  /** We keep a virtual column at the front that tracks the "group" that is expanded */
   private virtualColumns: Column[];
 
   constructor(
@@ -33,7 +34,7 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     super(dh, table, formatter, inputTable);
     this.virtualColumns = [
       {
-        name: 'Test',
+        name: 'Group',
         type: TableUtils.dataType.STRING,
         constituentType: TableUtils.dataType.STRING,
         isPartitionColumn: false,
@@ -172,11 +173,14 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   }
 
   get columns(): Column[] {
-    return [...this.virtualColumns, ...super.columns];
+    return this.getCachedColumns(this.virtualColumns, super.columns);
   }
 
   get groupedColumns(): Column[] {
-    return [...this.virtualColumns, ...this.table.groupedColumns];
+    return this.getCachedGroupColumns(
+      this.virtualColumns,
+      this.table.groupedColumns
+    );
   }
 
   get hasExpandableRows(): boolean {
@@ -248,6 +252,20 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     const row = this.row(y);
     return (row?.depth ?? 1) - 1;
   }
+
+  getCachedColumns = memoize(
+    (virtualColumns: Column[], tableColumns: Column[]) => [
+      ...virtualColumns,
+      ...tableColumns,
+    ]
+  );
+
+  getCachedGroupColumns = memoize(
+    (virtualColumns: Column[], tableGroupedColumns: Column[]) => [
+      ...virtualColumns,
+      ...tableGroupedColumns,
+    ]
+  );
 
   getCachedFilterableColumnSet = memoize(
     (columns: Column[], groupedColumns: Column[]) =>
