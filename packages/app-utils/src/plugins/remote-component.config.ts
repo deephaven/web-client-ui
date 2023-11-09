@@ -12,6 +12,7 @@ import * as AdobeReactSpectrum from '@adobe/react-spectrum';
 import * as DeephavenAuthPlugins from '@deephaven/auth-plugins';
 import * as DeephavenChart from '@deephaven/chart';
 import * as DeephavenComponents from '@deephaven/components';
+import * as DeephavenDashboard from '@deephaven/dashboard';
 import * as DeephavenIcons from '@deephaven/icons';
 import * as DeephavenIrisGrid from '@deephaven/iris-grid';
 import * as DeephavenJsapiBootstrap from '@deephaven/jsapi-bootstrap';
@@ -30,6 +31,7 @@ export const resolve = {
   '@deephaven/auth-plugins': DeephavenAuthPlugins,
   '@deephaven/chart': DeephavenChart,
   '@deephaven/components': DeephavenComponents,
+  '@deephaven/dashboard': DeephavenDashboard,
   '@deephaven/icons': DeephavenIcons,
   '@deephaven/iris-grid': DeephavenIrisGrid,
   '@deephaven/jsapi-bootstrap': DeephavenJsapiBootstrap,

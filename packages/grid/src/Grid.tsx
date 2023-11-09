@@ -8,7 +8,7 @@ import React, {
 import classNames from 'classnames';
 import memoize from 'memoize-one';
 import clamp from 'lodash.clamp';
-import { assertNotNull, EMPTY_ARRAY } from '@deephaven/utils';
+import { assertNotNull, EMPTY_ARRAY, getChangedKeys } from '@deephaven/utils';
 import GridMetricCalculator, { GridMetricState } from './GridMetricCalculator';
 import GridModel from './GridModel';
 import GridMouseHandler, {
@@ -491,6 +491,17 @@ class Grid extends PureComponent<GridProps, GridState> {
   }
 
   componentDidUpdate(prevProps: GridProps, prevState: GridState): void {
+    const changedProps = getChangedKeys(prevProps, this.props);
+    const changedState = getChangedKeys(prevState, this.state);
+    // We don't need to bother re-checking any of the metrics if only the children have changed
+    if (
+      changedProps.length === 1 &&
+      changedProps[0] === 'children' &&
+      changedState.length === 0
+    ) {
+      return;
+    }
+
     const {
       isStickyBottom,
       isStickyRight,
@@ -824,7 +835,6 @@ class Grid extends PureComponent<GridProps, GridState> {
     if (!canvasContext) throw new Error('canvasContext not set');
     if (!canvasWrapper.current) throw new Error('canvasWrapper not set');
 
-    const scale = Grid.getScale(canvasContext);
     // the parent wrapper has 100% width/height, and is used for determining size
     // we don't want to stretch the canvas to 100%, to avoid fractional pixels.
     // A wrapper element must be used for sizing, and canvas size must be
@@ -832,6 +842,16 @@ class Grid extends PureComponent<GridProps, GridState> {
     const rect = canvasWrapper.current.getBoundingClientRect();
     const width = Math.floor(rect.width);
     const height = Math.floor(rect.height);
+
+    // avoid triggering a dom re-calc if size hasn't changed
+    if (
+      parseFloat(canvas.style.width) === width &&
+      parseFloat(canvas.style.height) === height
+    ) {
+      return;
+    }
+
+    const scale = Grid.getScale(canvasContext);
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
     canvas.width = width * scale;
