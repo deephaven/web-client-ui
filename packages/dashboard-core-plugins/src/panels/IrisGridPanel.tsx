@@ -52,12 +52,13 @@ import {
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
+  CustomizableWorkspace,
   getSettings,
   getUser,
   getWorkspace,
   RootState,
   User,
-  Workspace,
+  WorkspaceSettings,
 } from '@deephaven/redux';
 import {
   assertNotNull,
@@ -156,8 +157,8 @@ interface StateProps {
     tableColumn?: LinkColumn
   ) => boolean;
   user: User;
-  workspace: Workspace;
-  settings: { timeZone: string };
+  workspace: CustomizableWorkspace;
+  settings: WorkspaceSettings;
 }
 
 interface IrisGridPanelState {
@@ -409,7 +410,7 @@ export class IrisGridPanel extends PureComponent<
       Plugin: TablePluginComponent | undefined,
       model: IrisGridModel | undefined,
       user: User,
-      workspace: Workspace,
+      workspace: CustomizableWorkspace,
       pluginState: unknown
     ) => {
       if (

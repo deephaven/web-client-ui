@@ -1,6 +1,7 @@
 import { forwardRef, useMemo } from 'react';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import { useConnection } from '@deephaven/jsapi-components';
+import { assertNotNull } from '@deephaven/utils';
 import {
   ChartModel,
   ChartModelFactory,
@@ -80,11 +81,9 @@ async function createChartModel(
     type: dh.VariableType.TABLE,
   };
   const table = await connection.getObject(definition);
-  new IrisGridUtils(dh).applyTableSettings(
-    table,
-    tableSettings,
-    getTimeZone(store.getState())
-  );
+  const timeZone = getTimeZone(store.getState());
+  assertNotNull(timeZone);
+  new IrisGridUtils(dh).applyTableSettings(table, tableSettings, timeZone);
 
   return ChartModelFactory.makeModelFromSettings(
     dh,

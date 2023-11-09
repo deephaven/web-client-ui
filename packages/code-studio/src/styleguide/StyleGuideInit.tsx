@@ -2,11 +2,11 @@ import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import {
+  CustomizableWorkspace,
   getWorkspace,
   PayloadActionCreator,
   RootState,
   setWorkspace as setWorkspaceAction,
-  Workspace,
 } from '@deephaven/redux';
 import StyleGuide from './StyleGuide';
 import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
@@ -16,8 +16,8 @@ import { ExportedLayout } from '../storage/LayoutStorage';
  * Initialize data needed for the styleguide
  */
 function StyleGuideInit(props: {
-  workspace: Workspace;
-  setWorkspace: PayloadActionCreator<Workspace>;
+  workspace: CustomizableWorkspace;
+  setWorkspace: PayloadActionCreator<CustomizableWorkspace>;
 }): JSX.Element | null {
   const { workspace, setWorkspace } = props;
 
@@ -43,7 +43,7 @@ StyleGuideInit.defaultProps = {
 const mapStateToProps = (
   state: RootState
 ): {
-  workspace: Workspace;
+  workspace: CustomizableWorkspace;
 } => ({
   workspace: getWorkspace(state),
 });
