@@ -8,7 +8,7 @@ import React, {
 import classNames from 'classnames';
 import memoize from 'memoize-one';
 import clamp from 'lodash.clamp';
-import { assertNotNull, EMPTY_ARRAY } from '@deephaven/utils';
+import { assertNotNull, EMPTY_ARRAY, getChangedKeys } from '@deephaven/utils';
 import GridMetricCalculator, { GridMetricState } from './GridMetricCalculator';
 import GridModel from './GridModel';
 import GridMouseHandler, {
@@ -491,6 +491,17 @@ class Grid extends PureComponent<GridProps, GridState> {
   }
 
   componentDidUpdate(prevProps: GridProps, prevState: GridState): void {
+    const changedProps = getChangedKeys(prevProps, this.props);
+    const changedState = getChangedKeys(prevState, this.state);
+    // We don't need to bother re-checking any of the metrics if only the children have changed
+    if (
+      changedProps.length === 1 &&
+      changedProps[0] === 'children' &&
+      changedState.length === 0
+    ) {
+      return;
+    }
+
     const {
       isStickyBottom,
       isStickyRight,
