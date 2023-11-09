@@ -40,12 +40,12 @@ describe('getChangedKeys', () => {
       'quux',
     ]);
   });
-  it('should get changed keys when both objects are empty', () => {
+  it('should get no changed keys when both objects are empty', () => {
     const oldObject = {};
     const newObject = {};
     expect(getChangedKeys(oldObject, newObject)).toEqual([]);
   });
-  it('should get changed keys when both objects are the same', () => {
+  it('should get no changed keys when both objects are the same', () => {
     const oldObject = {
       foo: 'bar',
       baz: 'qux',
@@ -56,11 +56,6 @@ describe('getChangedKeys', () => {
       baz: 'qux',
       quux: 'corge',
     };
-    expect(getChangedKeys(oldObject, newObject)).toEqual([]);
-  });
-  it('should get changed keys when both objects are the same and empty', () => {
-    const oldObject = {};
-    const newObject = {};
     expect(getChangedKeys(oldObject, newObject)).toEqual([]);
   });
 });
