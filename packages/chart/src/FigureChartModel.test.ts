@@ -1,6 +1,6 @@
 import dh from '@deephaven/jsapi-shim';
 import { TestUtils } from '@deephaven/utils';
-import { PlotData } from 'plotly.js';
+import { Data } from 'plotly.js';
 import ChartTestUtils from './ChartTestUtils';
 import type { ChartTheme } from './ChartTheme';
 import FigureChartModel from './FigureChartModel';
@@ -468,7 +468,7 @@ it('emits finished loading if no series are added', () => {
   const figure = chartTestUtils.makeFigure({
     charts: [],
   });
-  const model = new FigureChartModel(dh, figure);
+  const model = new FigureChartModel(dh, figure, chartTheme);
   const callback = jest.fn();
   model.subscribe(callback);
 
@@ -482,7 +482,7 @@ it('emits finished loading if no series are added', () => {
 });
 
 describe('legend visibility', () => {
-  function testLegend(showLegend: boolean | null): Partial<PlotData>[] {
+  function testLegend(showLegend: boolean | null): Partial<Data>[] {
     const series1 = chartTestUtils.makeSeries({ name: 'S1' });
     const chart = chartTestUtils.makeChart({ series: [series1], showLegend });
     const figure = chartTestUtils.makeFigure({
