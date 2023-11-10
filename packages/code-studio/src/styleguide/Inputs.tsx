@@ -363,5 +363,4 @@ function Inputs(): React.ReactElement {
     </div>
   );
 }
-
 export default Inputs;

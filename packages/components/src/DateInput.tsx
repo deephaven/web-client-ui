@@ -12,7 +12,7 @@ const DATE_FORMAT = 'YYYY-MM-DD';
 
 type DateInputProps = {
   className?: string;
-  onChange?: (date?: string) => void;
+  onChange?: (date: string) => void;
   defaultValue?: string;
   onFocus?: () => void;
   onBlur?: () => void;
@@ -62,16 +62,6 @@ const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
     );
   }
 );
-
 DateInput.displayName = 'DateInput';
-
-DateInput.defaultProps = {
-  className: '',
-  onChange: () => false,
-  defaultValue: '',
-  onFocus: () => false,
-  onBlur: () => false,
-  'data-testid': undefined,
-};
 
 export default DateInput;
