@@ -10,7 +10,7 @@ import memoize from 'memoizee';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import debounce from 'lodash.debounce';
 import classNames from 'classnames';
-import { Button, ThemeExport } from '@deephaven/components';
+import { Button, Select, ThemeExport } from '@deephaven/components';
 import {
   DateTimeColumnFormatter,
   IntegerColumnFormatter,
@@ -362,8 +362,8 @@ export class ColumnSpecificSectionContent extends PureComponent<
       this.handleFormatRuleChange(i, 'columnName', e.target.value);
     const onNameBlur = (): void =>
       this.handleFormatRuleChange(i, 'isNewRule', false);
-    const onTypeChange = (e: ChangeEvent<HTMLSelectElement>): void =>
-      this.handleFormatRuleChange(i, 'columnType', e.target.value);
+    const onTypeChange = (eventTargetValue: string): void =>
+      this.handleFormatRuleChange(i, 'columnType', eventTargetValue);
 
     const ruleError = this.getRuleError(rule);
 
@@ -396,14 +396,14 @@ export class ColumnSpecificSectionContent extends PureComponent<
             />
 
             <label htmlFor={columnTypeId}>Column Type</label>
-            <select
+            <Select
               id={columnTypeId}
               className="custom-select"
               value={rule.columnType}
               onChange={onTypeChange}
             >
               {columnTypeOptions}
-            </select>
+            </Select>
           </div>
         </div>
         <div className="form-row">
@@ -478,14 +478,14 @@ export class ColumnSpecificSectionContent extends PureComponent<
 
     const value = format.formatString ?? '';
     return (
-      <select
+      <Select
         className={classNames('custom-select', { 'is-invalid': isInvalid })}
         value={value}
         id={formatId}
-        onChange={e => {
+        onChange={eventTargetValue => {
           const selectedFormat = DateTimeColumnFormatter.makeFormat(
             '',
-            e.target.value,
+            eventTargetValue,
             DateTimeColumnFormatter.TYPE_GLOBAL
           );
           this.handleFormatRuleChange(i, 'format', selectedFormat);
@@ -499,7 +499,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
           showTimeZone,
           showTSeparator
         )}
-      </select>
+      </Select>
     );
   }
 

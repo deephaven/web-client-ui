@@ -9,7 +9,7 @@ import { vsRefresh } from '@deephaven/icons';
 import memoize from 'memoizee';
 import debounce from 'lodash.debounce';
 import classNames from 'classnames';
-import { Button, Checkbox } from '@deephaven/components';
+import { Button, Checkbox, Select } from '@deephaven/components';
 import {
   IntegerColumnFormatter,
   DecimalColumnFormatter,
@@ -170,12 +170,10 @@ export class FormattingSectionContent extends PureComponent<
     this.debouncedCommitChanges();
   }
 
-  handleDefaultDateTimeFormatChange(
-    event: ChangeEvent<HTMLSelectElement>
-  ): void {
-    log.debug('handleDefaultDateTimeFormatChange', event.target.value);
+  handleDefaultDateTimeFormatChange(value: string): void {
+    log.debug('handleDefaultDateTimeFormatChange', value);
     const update = {
-      defaultDateTimeFormat: event.target.value,
+      defaultDateTimeFormat: value,
     };
     this.setState(update);
     this.queueUpdate(update);
@@ -233,8 +231,8 @@ export class FormattingSectionContent extends PureComponent<
     this.queueUpdate(update);
   }
 
-  handleTimeZoneChange(event: ChangeEvent<HTMLSelectElement>): void {
-    const update = { timeZone: event.target.value };
+  handleTimeZoneChange(value: string): void {
+    const update = { timeZone: value };
     this.setState(update);
     this.queueUpdate(update);
   }
@@ -364,14 +362,14 @@ export class FormattingSectionContent extends PureComponent<
               Time zone
             </label>
             <div className="col pr-0">
-              <select
+              <Select
                 className="custom-select"
                 value={timeZone}
                 onChange={this.handleTimeZoneChange}
                 id="select-reset-timezone"
               >
                 <TimeZoneOptions />
-              </select>
+              </Select>
             </div>
             <div className="col-1 btn-col">
               <Button
@@ -393,7 +391,7 @@ export class FormattingSectionContent extends PureComponent<
               DateTime
             </label>
             <div className="col pr-0">
-              <select
+              <Select
                 className="custom-select"
                 value={defaultDateTimeFormat}
                 onChange={this.handleDefaultDateTimeFormatChange}
@@ -406,7 +404,7 @@ export class FormattingSectionContent extends PureComponent<
                   true,
                   defaultDateTimeFormat
                 )}
-              </select>
+              </Select>
             </div>
             <div className="col-1 btn-col">
               <Button
