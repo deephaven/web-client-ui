@@ -1,6 +1,7 @@
 import React, { Component, ReactElement, RefObject } from 'react';
 import deepEqual from 'deep-equal';
 import memoize from 'memoize-one';
+import { CopyButton, Popper } from '@deephaven/components';
 import {
   vsLoading,
   dhGraphLineDown,
@@ -33,6 +34,7 @@ import Plotly from './plotly/Plotly';
 import ChartModel from './ChartModel';
 import ChartUtils, { ChartModelSettings } from './ChartUtils';
 import './Chart.scss';
+import DownsamplingError from './DownsamplingError';
 
 const log = Log.module('Chart');
 
@@ -56,10 +58,15 @@ interface ChartProps {
 
 interface ChartState {
   data: Partial<Data>[] | null;
+  /** An error specific to downsampling */
   downsamplingError: unknown;
   isDownsampleFinished: boolean;
   isDownsampleInProgress: boolean;
   isDownsamplingDisabled: boolean;
+
+  /** Any other kind of error */
+  error: unknown;
+  shownError: string | null;
   layout: Partial<Layout>;
   revision: number;
 }
@@ -129,6 +136,7 @@ export class Chart extends Component<ChartProps, ChartState> {
 
     this.handleAfterPlot = this.handleAfterPlot.bind(this);
     this.handleDownsampleClick = this.handleDownsampleClick.bind(this);
+    this.handleErrorClose = this.handleErrorClose.bind(this);
     this.handleModelEvent = this.handleModelEvent.bind(this);
     this.handlePlotUpdate = this.handlePlotUpdate.bind(this);
     this.handleRelayout = this.handleRelayout.bind(this);
@@ -153,6 +161,8 @@ export class Chart extends Component<ChartProps, ChartState> {
       isDownsampleFinished: false,
       isDownsampleInProgress: false,
       isDownsamplingDisabled: false,
+      error: null,
+      shownError: null,
       layout: {
         datarevision: 0,
       },
@@ -236,7 +246,8 @@ export class Chart extends Component<ChartProps, ChartState> {
       isDownsampleFinished: boolean,
       isDownsampleInProgress: boolean,
       isDownsamplingDisabled: boolean,
-      data: Partial<Data>[]
+      data: Partial<Data>[],
+      error: unknown
     ): Partial<PlotlyConfig> => {
       const customButtons: ModeBarButtonAny[] = [];
       const hasDownsampleError = Boolean(downsamplingError);
@@ -244,7 +255,21 @@ export class Chart extends Component<ChartProps, ChartState> {
         customButtons.push({
           name: `Downsampling failed: ${downsamplingError}`,
           title: 'Downsampling failed',
-          click: () => undefined,
+          click: () => {
+            this.toggleErrorMessage(`${downsamplingError}`);
+          },
+          icon: Chart.convertIcon(dhWarningFilled),
+          attr: 'fill-warning',
+        });
+      }
+      const hasError = Boolean(error);
+      if (hasError) {
+        customButtons.push({
+          name: `Error: ${error}`,
+          title: `Error`,
+          click: () => {
+            this.toggleErrorMessage(`${error}`);
+          },
           icon: Chart.convertIcon(dhWarningFilled),
           attr: 'fill-warning',
         });
@@ -301,7 +326,7 @@ export class Chart extends Component<ChartProps, ChartState> {
         // Yes, the value is a boolean or the string 'hover': https://github.com/plotly/plotly.js/blob/master/src/plot_api/plot_config.js#L249
         displayModeBar:
           // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-          isDownsampleInProgress || hasDownsampleError
+          isDownsampleInProgress || hasDownsampleError || hasError
             ? true
             : ('hover' as const),
 
@@ -376,6 +401,10 @@ export class Chart extends Component<ChartProps, ChartState> {
     );
   }
 
+  handleErrorClose(): void {
+    this.setState({ shownError: null });
+  }
+
   handleModelEvent(event: CustomEvent): void {
     const { type, detail } = event;
     log.debug2('Received data update', type, detail);
@@ -442,7 +471,14 @@ export class Chart extends Component<ChartProps, ChartState> {
         });
 
         const { onError } = this.props;
-        onError(new Error(downsamplingError));
+        onError(new DownsamplingError(downsamplingError));
+        break;
+      }
+      case ChartModel.EVENT_ERROR: {
+        const error = `${detail}`;
+        this.setState({ error });
+        const { onError } = this.props;
+        onError(new Error(error));
         break;
       }
       default:
@@ -500,6 +536,15 @@ export class Chart extends Component<ChartProps, ChartState> {
         onSettingsChanged({ hiddenSeries });
       }
     }
+  }
+
+  /**
+   * Toggle the error message. If it is already being displayed, then hide it.
+   */
+  toggleErrorMessage(error: string): void {
+    this.setState(({ shownError }) => ({
+      shownError: shownError === error ? null : error,
+    }));
   }
 
   /**
@@ -601,6 +646,8 @@ export class Chart extends Component<ChartProps, ChartState> {
       isDownsampleFinished,
       isDownsampleInProgress,
       isDownsamplingDisabled,
+      error,
+      shownError,
       layout,
       revision,
     } = this.state;
@@ -609,7 +656,8 @@ export class Chart extends Component<ChartProps, ChartState> {
       isDownsampleFinished,
       isDownsampleInProgress,
       isDownsamplingDisabled,
-      data ?? []
+      data ?? [],
+      error
     );
     const isPlotShown = data != null;
     return (
@@ -632,6 +680,23 @@ export class Chart extends Component<ChartProps, ChartState> {
             style={{ height: '100%', width: '100%' }}
           />
         )}
+        <Popper
+          className="chart-error-popper"
+          options={{ placement: 'top' }}
+          isShown={shownError != null}
+          onExited={this.handleErrorClose}
+          closeOnBlur
+          interactive
+        >
+          {shownError != null && (
+            <>
+              <div className="chart-error">{shownError}</div>
+              <CopyButton tooltip="Copy Error" copy={shownError}>
+                Copy Error
+              </CopyButton>
+            </>
+          )}
+        </Popper>
       </div>
     );
   }

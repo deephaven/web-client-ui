@@ -7,23 +7,12 @@
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx"],
   "exclude": ["node_modules", "src/**/*.test.*", "src/**/__mocks__/*"],
   "references": [
-    {
-      "path": "../components"
-    },
-    {
-      "path": "../jsapi-shim"
-    },
-    {
-      "path": "../jsapi-utils"
-    },
-    {
-      "path": "../log"
-    },
-    {
-      "path": "../react-hooks"
-    },
-    {
-      "path": "../utils"
-    }
+    { "path": "../components" },
+    { "path": "../jsapi-shim" },
+    { "path": "../jsapi-types" },
+    { "path": "../jsapi-utils" },
+    { "path": "../log" },
+    { "path": "../react-hooks" },
+    { "path": "../utils" }
   ]
 }

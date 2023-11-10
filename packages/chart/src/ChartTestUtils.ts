@@ -131,9 +131,16 @@ class ChartTestUtils {
     charts = [this.makeChart()],
     rows = 1,
     cols = 1,
+    errors = [],
   } = {}): Figure {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return new (this.dh as any).plot.Figure({ title, charts, rows, cols });
+    return new (this.dh as any).plot.Figure({
+      title,
+      charts,
+      rows,
+      cols,
+      errors,
+    });
   }
 }
 

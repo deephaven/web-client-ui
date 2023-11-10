@@ -108,3 +108,7 @@ $plotly-color-btn-active: rgba(255, 255, 255, 70%);
     }
   }
 }
+
+.chart-error-popper .popper-content {
+  padding: $spacer-1;
+}
