@@ -12,7 +12,7 @@ const DATE_FORMAT = 'YYYY-MM-DD';
 
 type DateInputProps = {
   className?: string;
-  onChange: (date: string) => void;
+  onChange?: (date: string) => void;
   defaultValue?: string;
   onFocus?: () => void;
   onBlur?: () => void;
