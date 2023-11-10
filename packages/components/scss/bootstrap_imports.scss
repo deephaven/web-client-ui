@@ -21,6 +21,10 @@
 @import './bootstrap_override_mixins_forms.scss';
 @import './bootstrap_override_mixins_text_emphasis.scss';
 
+// $theme-colors is used by button mixins. We don't want to use the `dark` or `light`
+// variants since they don't align with the semantics we use for theming.
+$theme-colors: map-remove($theme-colors, 'dark', 'light');
+
 @import 'bootstrap/scss/root';
 @import 'bootstrap/scss/reboot';
 @import 'bootstrap/scss/type';

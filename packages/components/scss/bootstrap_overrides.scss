@@ -107,7 +107,7 @@ $danger-hover: var(--dh-color-negative-hover-bg);
 $light: var(--dh-color-gray-light);
 $dark: var(--dh-color-gray-dark);
 // Bootstrap doesn't define $mid, and we want to move away from this particular
-// semantic. We should delete it
+// semantic. Should be deleted by #1635
 $mid: var(--dh-color-gray-mid);
 
 $semantic-colors: (
@@ -189,7 +189,8 @@ $custom-control-label-disabled-color: $gray-400;
 //Custom Select
 // This needs to dynamically pull from --dh-color-gray-600, but this doesn't
 // work with an inline SVG. We'll need to wrap our <select> instances with a
-// wrapper and implement the arrow icons in a different way.
+// wrapper and implement the arrow icons in a different way. To be addressed
+// by #1634
 $custom-select-indicator-color: #929192;
 $custom-select-bg-size: 16px 16px;
 //dhSort icon encoded
