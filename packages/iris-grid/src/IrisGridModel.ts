@@ -3,6 +3,7 @@ import type { Event, EventTarget } from 'event-target-shim';
 import {
   DataBarGridModel,
   DataBarOptions,
+  GridCell,
   GridModel,
   GridRange,
   GridThemeType,
@@ -136,11 +137,12 @@ abstract class IrisGridModel<
   abstract get columns(): readonly Column[];
 
   /**
-   * Gets the column index for this model
-   * @param name The model column name.
-   * @returns The numeric index of the requested column.
+   * Retrieve the grouped columns for this model
+   * @returns The columns that are grouped
    */
-  abstract getColumnIndexByName(name: string): ModelIndex | undefined;
+  get groupedColumns(): readonly Column[] {
+    return EMPTY_ARRAY;
+  }
 
   /**
    * Gets the columns for the model before any transformations (such as rollups) are applied.
@@ -150,19 +152,37 @@ abstract class IrisGridModel<
     return this.columns;
   }
 
-  abstract get initialMovedColumns(): readonly MoveOperation[];
-
-  /** List of row movements defined by the model. Used as initial movements for IrisGrid */
-  abstract get initialMovedRows(): readonly MoveOperation[];
-
-  /** List of column header groups defined by the model */
-  abstract get initialColumnHeaderGroups(): readonly ColumnHeaderGroup[];
+  /**
+   * Gets the column index for this model
+   * @param name The model column name.
+   * @returns The numeric index of the requested column.
+   */
+  abstract getColumnIndexByName(name: string): ModelIndex | undefined;
 
   /**
-   * Retrieve the grouped columns for this model
-   * @returns The columns that are groupe
+   * Retrieve the source cell for a given cell. Returns something different if the cell is a proxied cell that retrieves data from another cell.
+   * @param column Column to get the source for
+   * @param row Row to get the source for
+   * @returns Source cell where the data is coming from
    */
-  abstract get groupedColumns(): readonly Column[];
+  sourceForCell(column: ModelIndex, row: ModelIndex): GridCell {
+    return { column, row };
+  }
+
+  /** List of column movements defined by the model. Used as initial movements for IrisGrid */
+  get initialMovedColumns(): readonly MoveOperation[] {
+    return EMPTY_ARRAY;
+  }
+
+  /** List of row movements defined by the model. Used as initial movements for IrisGrid */
+  get initialMovedRows(): readonly MoveOperation[] {
+    return EMPTY_ARRAY;
+  }
+
+  /** List of column header groups defined by the model */
+  get initialColumnHeaderGroups(): readonly ColumnHeaderGroup[] {
+    return EMPTY_ARRAY;
+  }
 
   /**
    * @param column The model column index

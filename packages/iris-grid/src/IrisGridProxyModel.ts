@@ -452,6 +452,9 @@ class IrisGridProxyModel extends IrisGridModel {
     return this.model.groupedColumns;
   }
 
+  sourceForCell: IrisGridModel['sourceForCell'] = (...args) =>
+    this.model.sourceForCell(...args);
+
   get description(): string {
     return this.model.description;
   }

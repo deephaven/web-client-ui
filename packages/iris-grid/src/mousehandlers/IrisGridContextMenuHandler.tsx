@@ -361,21 +361,22 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   }
 
   getCellActions(
-    modelColumn: number | undefined | null,
+    modelColumn: ModelIndex,
     grid: Grid,
     gridPoint: GridPoint
   ): ContextAction[] {
-    assertNotNull(modelColumn);
     const { dh, irisGrid } = this;
     const { column: columnIndex, row: rowIndex } = gridPoint;
     const { model, canCopy } = irisGrid.props;
     const { columns } = model;
     const modelRow = irisGrid.getModelRow(rowIndex);
     assertNotNull(modelRow);
-    const value = model.valueForCell(modelColumn, modelRow);
+    const sourceCell = model.sourceForCell(modelColumn, modelRow);
+    const { column: sourceColumn, row: sourceRow } = sourceCell;
+    const value = model.valueForCell(sourceColumn, sourceRow);
 
-    const valueText = model.textForCell(modelColumn, modelRow);
-    const column = columns[modelColumn];
+    const valueText = model.textForCell(sourceColumn, sourceRow);
+    const column = columns[sourceColumn];
 
     const actions = [] as ContextAction[];
 
@@ -400,7 +401,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     if (column == null || rowIndex == null) return actions;
 
     // grid data area context menu options
-    if (model.isFilterable(modelColumn)) {
+    if (model.isFilterable(sourceColumn)) {
       // cell data area contextmenu options
       const filterMenu = {
         title: 'Filter by Value',
@@ -420,12 +421,12 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
       if (value == null) {
         // null gets a special menu
-        if (quickFilters.get(modelColumn)) {
+        if (quickFilters.get(sourceColumn)) {
           filterMenu.actions.push({
             title: 'And',
             actions: this.nullFilterActions(
               column,
-              quickFilters.get(modelColumn),
+              quickFilters.get(sourceColumn),
               '&&'
             ),
             order: 2,
@@ -435,13 +436,13 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         filterMenu.actions.push(...this.nullFilterActions(column));
       } else if (value === '') {
         // empty string gets a special menu
-        if (quickFilters.get(modelColumn)) {
+        if (quickFilters.get(sourceColumn)) {
           filterMenu.actions.push({
             title: 'And',
 
             actions: this.emptyStringFilterActions(
               column,
-              quickFilters.get(modelColumn),
+              quickFilters.get(sourceColumn),
               '&&'
             ),
             order: 2,
@@ -451,13 +452,13 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         filterMenu.actions.push(...this.emptyStringFilterActions(column));
       } else if (TableUtils.isBooleanType(column.type)) {
         // boolean should have OR condition, and handles it's own null menu options
-        if (quickFilters.get(modelColumn)) {
+        if (quickFilters.get(sourceColumn)) {
           filterMenu.actions.push({
             title: 'Or',
             actions: this.booleanFilterActions(
               column,
               valueText,
-              quickFilters.get(modelColumn),
+              quickFilters.get(sourceColumn),
               '||'
             ),
             order: 2,
@@ -472,21 +473,21 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         TableUtils.isCharType(column.type)
       ) {
         // Chars get treated like numbers in terms of which filters are available
-        assertNotNull(modelColumn);
+        assertNotNull(sourceColumn);
         // We want to show the full unformatted value if it's a number, so user knows which value they are matching
         // If it's a Char we just show the char
         const numberValueText = TableUtils.isCharType(column.type)
           ? String.fromCharCode(value as number)
           : `${value}`;
 
-        if (quickFilters.get(modelColumn)) {
+        if (quickFilters.get(sourceColumn)) {
           filterMenu.actions.push({
             title: 'And',
             actions: this.numberFilterActions(
               column,
               numberValueText,
               value,
-              quickFilters.get(modelColumn),
+              quickFilters.get(sourceColumn),
               '&&'
             ),
             order: 2,
@@ -498,13 +499,13 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
             column,
             numberValueText,
             value,
-            quickFilters.get(modelColumn)
+            quickFilters.get(sourceColumn)
           )
         );
       } else if (TableUtils.isDateType(column.type)) {
         const dateValueText = dateFilterFormatter.format(value as Date);
         const previewValue = previewFilterFormatter.format(value as Date);
-        if (quickFilters.get(modelColumn)) {
+        if (quickFilters.get(sourceColumn)) {
           filterMenu.actions.push({
             title: 'And',
             actions: this.dateFilterActions(
@@ -512,7 +513,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
               dateValueText,
               previewValue,
               value,
-              quickFilters.get(modelColumn),
+              quickFilters.get(sourceColumn),
               '&&'
             ),
             order: 2,
@@ -525,11 +526,11 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
             dateValueText,
             previewValue,
             value,
-            quickFilters.get(modelColumn)
+            quickFilters.get(sourceColumn)
           )
         );
       } else {
-        if (quickFilters.get(modelColumn)) {
+        if (quickFilters.get(sourceColumn)) {
           filterMenu.actions.push({
             title: 'And',
 
@@ -537,7 +538,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
               column,
               valueText,
               value,
-              quickFilters.get(modelColumn),
+              quickFilters.get(sourceColumn),
               '&&'
             ),
             order: 2,
@@ -555,26 +556,25 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     }
 
     // Expand/Collapse options
-    if (isExpandableGridModel(model) && model.isRowExpandable(modelRow)) {
+    if (isExpandableGridModel(model) && model.isRowExpandable(sourceRow)) {
       // If there are grouped columns, then it is a rollup
-      // For rollups, the column number will be the depth minus one
-      const expandingColumn =
-        model.groupedColumns.length > 0 ? model.depthForRow(modelRow) - 1 : 0;
-      const cellValue = model.valueForCell(expandingColumn, modelRow);
+      // The first column will be the "group" column with the value that should be expanded
+      const expandingColumn = 0;
+      const cellValue = model.valueForCell(expandingColumn, sourceRow);
       const cellText =
         cellValue == null
           ? 'null'
-          : model.textForCell(expandingColumn, modelRow);
+          : model.textForCell(expandingColumn, sourceRow);
 
       actions.push({
         title: IrisGridContextMenuHandler.getRowOptionFormatted(
-          model.isRowExpanded(modelRow) ? 'Collapse' : 'Expand',
+          model.isRowExpanded(sourceRow) ? 'Collapse' : 'Expand',
           cellText
         ),
         group: IrisGridContextMenuHandler.GROUP_EXPAND_COLLAPSE,
         order: 10,
         action: () => {
-          model.setRowExpanded(modelRow, !model.isRowExpanded(modelRow));
+          model.setRowExpanded(sourceRow, !model.isRowExpanded(sourceRow));
         },
       });
 
@@ -587,7 +587,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           group: IrisGridContextMenuHandler.GROUP_EXPAND_COLLAPSE,
           order: 20,
           action: () => {
-            model.setRowExpanded(modelRow, true, true);
+            model.setRowExpanded(sourceRow, true, true);
           },
         });
       }

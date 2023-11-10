@@ -1,6 +1,6 @@
 /* eslint class-methods-use-this: "off" */
 import memoize from 'memoize-one';
-import { GridRange, ModelIndex } from '@deephaven/grid';
+import { GridCell, GridRange, ModelIndex } from '@deephaven/grid';
 import type {
   dh as DhType,
   Column,
@@ -73,7 +73,7 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   }
 
   textForCell(x: ModelIndex, y: ModelIndex): string {
-    const column = this.columns[x];
+    const column = this.sourceColumn(x, y);
     const row = this.row(y);
     if (row != null && column != null) {
       if (!row.hasChildren && column.constituentType != null) {
@@ -102,11 +102,9 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
       const cellData = extractedRow.data.get(
         i + (depth - 1) + (this.virtualColumns.length - 1)
       );
-      modifiedData.set(i, {
-        ...cellData,
-        // TODO: this should format correctly...
-        value: `${cellData?.value ?? ''}`,
-      });
+      if (cellData != null) {
+        modifiedData.set(i, cellData);
+      }
     }
     extractedRow.data.forEach((value, key) => {
       modifiedData.set(key, value);
@@ -176,11 +174,19 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     return this.getCachedColumns(this.virtualColumns, super.columns);
   }
 
-  get groupedColumns(): Column[] {
+  get groupedColumns(): readonly Column[] {
     return this.getCachedGroupColumns(
       this.virtualColumns,
       this.table.groupedColumns
     );
+  }
+
+  sourceForCell(column: ModelIndex, row: ModelIndex): GridCell {
+    if (column >= this.virtualColumns.length) {
+      return { column, row };
+    }
+    const depth = this.depthForRow(row);
+    return { column: column + depth, row };
   }
 
   get hasExpandableRows(): boolean {
@@ -255,21 +261,25 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   }
 
   getCachedColumns = memoize(
-    (virtualColumns: Column[], tableColumns: Column[]) => [
+    (virtualColumns: readonly Column[], tableColumns: readonly Column[]) => [
       ...virtualColumns,
       ...tableColumns,
     ]
   );
 
   getCachedGroupColumns = memoize(
-    (virtualColumns: Column[], tableGroupedColumns: Column[]) => [
-      ...virtualColumns,
-      ...tableGroupedColumns,
-    ]
+    (
+      virtualColumns: readonly Column[],
+      tableGroupedColumns: readonly Column[]
+    ) => [...virtualColumns, ...tableGroupedColumns]
   );
 
   getCachedFilterableColumnSet = memoize(
-    (columns: Column[], groupedColumns: Column[], virtualColumns: Column[]) =>
+    (
+      columns: readonly Column[],
+      groupedColumns: readonly Column[],
+      virtualColumns: readonly Column[]
+    ) =>
       new Set(
         (groupedColumns?.length > 0 ? groupedColumns : columns)
           .filter(c => !virtualColumns.includes(c))

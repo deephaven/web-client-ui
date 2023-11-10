@@ -67,8 +67,6 @@ const log = Log.module('IrisGridTableModel');
 const SET_VIEWPORT_THROTTLE = 150;
 const APPLY_VIEWPORT_THROTTLE = 0;
 
-const EMPTY_ARRAY: unknown[] = [];
-
 export function isIrisGridTableModelTemplate(
   model: IrisGridModel
 ): model is IrisGridTableModelTemplate {
@@ -519,7 +517,7 @@ class IrisGridTableModelTemplate<
         return undefined;
       }
 
-      const column = this.totalsColumn(x, y) ?? this.columns[x];
+      const column = this.sourceColumn(x, y);
       const hasCustomColumnFormat = this.getCachedCustomColumnFormatFlag(
         this.formatter,
         column.name,
@@ -600,7 +598,7 @@ class IrisGridTableModelTemplate<
 
       // Fallback to formatting based on the value/type of the cell
       if (value != null) {
-        const column = this.totalsColumn(x, y) ?? this.columns[x];
+        const column = this.sourceColumn(x, y);
         if (TableUtils.isDateType(column.type) || column.name === 'Date') {
           assertNotNull(theme.dateColor);
           return theme.dateColor;
@@ -913,13 +911,6 @@ class IrisGridTableModelTemplate<
     return this.getMemoizedInitialMovedColumns(this.layoutHints ?? undefined);
   }
 
-  /**
-   * Not currently used by anything.
-   */
-  get initialMovedRows(): MoveOperation[] {
-    return EMPTY_ARRAY as MoveOperation[];
-  }
-
   getMemoizedInitialColumnHeaderGroups = memoize(
     (layoutHints?: LayoutHints) =>
       IrisGridUtils.parseColumnHeaderGroups(
@@ -983,10 +974,6 @@ class IrisGridTableModelTemplate<
     this._columnHeaderGroupMap = groupMap;
   }
 
-  get groupedColumns(): Column[] {
-    return [];
-  }
-
   row(y: ModelIndex): R | null {
     const totalsRowCount = this.totals?.operationOrder?.length ?? 0;
     const showOnTop = this.totals?.showOnTop ?? false;
@@ -1006,29 +993,44 @@ class IrisGridTableModelTemplate<
   }
 
   /**
-   * Retrieve the totals column if this is a totals row, or null otherwise
-   * @param x Column index to get the totals column from
-   * @param y Row index to get the totals column from
+   * Retrieve the source column for given coordinates.
+   * - Retrieve the totals column if this is a totals row
+   * - Retrieve the source column if it's a proxied row
+   * - Otherwise return the column at the given index
+   * @param column Column index to get the totals column from
+   * @param row Row index to get the totals column from
    */
-  totalsColumn(x: ModelIndex, y: ModelIndex): Column | undefined | null {
-    const totalsRow = this.totalsRow(y);
-    if (totalsRow == null) return null;
+  sourceColumn(column: ModelIndex, row: ModelIndex): Column {
+    const proxyCell = this.sourceForCell(column, row);
+    if (proxyCell.column !== column) {
+      return this.columns[proxyCell.column];
+    }
 
-    const operation = this.totals?.operationOrder[totalsRow];
-    const defaultOperation =
-      this.totals?.defaultOperation ?? AggregationOperation.SUM;
-    const tableColumn = this.columns[x];
+    const totalsRow = this.totalsRow(row);
+    if (totalsRow != null) {
+      const operation = this.totals?.operationOrder[totalsRow];
+      const defaultOperation =
+        this.totals?.defaultOperation ?? AggregationOperation.SUM;
+      const tableColumn = this.columns[column];
 
-    // Find the matching totals table column for the operation
-    // When there are multiple aggregations, the column name will be the original name of the column with the operation appended afterward
-    // When the the operation is the default operation OR there is only one operation, then the totals column name is just the original column name
-    return this.totalsTable?.columns.find(
-      column =>
-        column.name === `${tableColumn.name}__${operation}` ||
-        ((operation === defaultOperation ||
-          this.totals?.operationOrder.length === 1) &&
-          column.name === tableColumn.name)
-    );
+      // Find the matching totals table column for the operation
+      // When there are multiple aggregations, the column name will be the original name of the column with the operation appended afterward
+      // When the the operation is the default operation OR there is only one operation, then the totals column name is just the original column name
+      const totalsColumn = this.totalsTable?.columns.find(
+        col =>
+          col.name === `${tableColumn.name}__${operation}` ||
+          ((operation === defaultOperation ||
+            this.totals?.operationOrder.length === 1) &&
+            col.name === tableColumn.name)
+      );
+      if (totalsColumn == null) {
+        throw new Error(
+          `Unable to find totals column for ${tableColumn.name} with operation ${operation}`
+        );
+      }
+      return totalsColumn;
+    }
+    return this.columns[column];
   }
 
   /**
