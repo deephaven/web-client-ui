@@ -2109,30 +2109,36 @@ export class GridRenderer {
 
         context.rect(x, y, endX - x, endY - y);
       }
-
-      // draw the inner transparent fill
-      context.fillStyle = theme.selectionColor;
-      context.fill();
-
-      /**
-       * draw an "inner stroke" that's clipped to just inside of the rects
-       * to act as a casing to the outer stroke. 3px width because 1px is outside
-       * the rect (but clipped), 1px is "on" the rect (technically this pixel is
-       * a half pixel clip as well due to rects offset, but we are immediately painting
-       * over it), and then the 1px inside (which is the desired pixel).
-       */
-      context.save();
-      context.clip();
-      context.strokeStyle = theme.selectionOutlineCasingColor;
-      context.lineWidth = 3;
-      context.stroke();
-      context.restore();
-
-      // draw the outerstroke border on top of the inner stroke
-      context.strokeStyle = theme.selectionOutlineColor;
-      context.lineWidth = 1;
-      context.stroke();
     }
+
+    /**
+     * Create the path, then draw it once. Fill and
+     * stroke must be outside the beginPath loop otherwise
+     * the fill/stroke will be drawn multiple times.
+     */
+
+    // draw the inner transparent fill
+    context.fillStyle = theme.selectionColor;
+    context.fill();
+
+    /**
+     * draw an "inner stroke" that's clipped to just inside of the rects
+     * to act as a casing to the outer stroke. 3px width because 1px is outside
+     * the rect (but clipped), 1px is "on" the rect (technically this pixel is
+     * a half pixel clip as well due to rects offset, but we are immediately painting
+     * over it), and then the 1px inside (which is the desired pixel).
+     */
+    context.save();
+    context.clip();
+    context.strokeStyle = theme.selectionOutlineCasingColor;
+    context.lineWidth = 3;
+    context.stroke();
+    context.restore();
+
+    // draw the outerstroke border on top of the inner stroke
+    context.strokeStyle = theme.selectionOutlineColor;
+    context.lineWidth = 1;
+    context.stroke();
 
     if (isCursorVisible && column != null && row != null) {
       context.restore();

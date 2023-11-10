@@ -1,4 +1,5 @@
 import { useContext, useMemo } from 'react';
+import { ChartThemeProvider } from '@deephaven/chart';
 import { ThemeProvider } from '@deephaven/components';
 import { PluginsContext } from '@deephaven/plugin';
 import { getThemeDataFromPlugins } from '../plugins';
@@ -19,7 +20,11 @@ export function ThemeBootstrap({ children }: ThemeBootstrapProps): JSX.Element {
     [pluginModules]
   );
 
-  return <ThemeProvider themes={themes}>{children}</ThemeProvider>;
+  return (
+    <ThemeProvider themes={themes}>
+      <ChartThemeProvider>{children}</ChartThemeProvider>
+    </ThemeProvider>
+  );
 }
 
 export default ThemeBootstrap;

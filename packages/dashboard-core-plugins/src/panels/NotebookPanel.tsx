@@ -34,9 +34,8 @@ import {
 } from '@deephaven/icons';
 import {
   getFileStorage,
-  saveSettings as saveSettingsAction,
+  updateSettings as updateSettingsAction,
   RootState,
-  getSettings,
   WorkspaceSettings,
   getDefaultNotebookSettings,
 } from '@deephaven/redux';
@@ -89,8 +88,7 @@ interface NotebookPanelProps extends DashboardPanelProps {
   panelState: PanelState;
   notebooksUrl: string;
   defaultNotebookSettings: NotebookSetting;
-  settings: WorkspaceSettings;
-  saveSettings: (settings: WorkspaceSettings) => void;
+  updateSettings: (settings: Partial<WorkspaceSettings>) => void;
 }
 
 interface NotebookPanelState {
@@ -155,7 +153,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     isPreview: false,
     session: null,
     sessionLanguage: null,
-    defaultNotebookSettings: null,
+    defaultNotebookSettings: { isMinimapEnabled: true },
   };
 
   static languageFromFileName(fileName: string): string | null {
@@ -789,14 +787,13 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   }
 
   handleMinimapChange(): void {
-    const { settings, defaultNotebookSettings, saveSettings } = this.props;
-    const newSettings: WorkspaceSettings = {
-      ...settings,
+    const { defaultNotebookSettings, updateSettings } = this.props;
+    const newSettings = {
       defaultNotebookSettings: {
         isMinimapEnabled: !defaultNotebookSettings.isMinimapEnabled,
       },
     };
-    saveSettings(newSettings);
+    updateSettings(newSettings);
   }
 
   updateEditorWordWrap(): void {
@@ -1433,14 +1430,9 @@ const mapStateToProps = (
   ownProps: { localDashboardId: string }
 ): Pick<
   NotebookPanelProps,
-  | 'defaultNotebookSettings'
-  | 'fileStorage'
-  | 'session'
-  | 'sessionLanguage'
-  | 'settings'
+  'defaultNotebookSettings' | 'fileStorage' | 'session' | 'sessionLanguage'
 > => {
   const fileStorage = getFileStorage(state);
-  const settings = getSettings(state);
   const defaultNotebookSettings = getDefaultNotebookSettings(state);
   const sessionWrapper = getDashboardSessionWrapper(
     state,
@@ -1451,8 +1443,7 @@ const mapStateToProps = (
   const { type: sessionLanguage } = sessionConfig ?? {};
   return {
     fileStorage,
-    settings,
-    defaultNotebookSettings,
+    defaultNotebookSettings: defaultNotebookSettings as NotebookSetting,
     session,
     sessionLanguage,
   };
@@ -1460,7 +1451,7 @@ const mapStateToProps = (
 
 const ConnectedNotebookPanel = connect(
   mapStateToProps,
-  { saveSettings: saveSettingsAction },
+  { updateSettings: updateSettingsAction },
   null,
   { forwardRef: true }
 )(NotebookPanel);

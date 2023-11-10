@@ -4,15 +4,12 @@
     "rootDir": "src/",
     "outDir": "dist/"
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "src/**/*.js",
-    "src/**/*.jsx",
-    "declaration.d.ts"
-  ],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx"],
   "exclude": ["node_modules", "src/**/*.test.*", "src/**/__mocks__/*"],
   "references": [
+    {
+      "path": "../components"
+    },
     {
       "path": "../jsapi-shim"
     },
@@ -21,6 +18,9 @@
     },
     {
       "path": "../log"
+    },
+    {
+      "path": "../react-hooks"
     },
     {
       "path": "../utils"

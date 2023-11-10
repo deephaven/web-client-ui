@@ -52,12 +52,13 @@ import {
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
+  CustomizableWorkspace,
   getSettings,
   getUser,
   getWorkspace,
   RootState,
   User,
-  Workspace,
+  WorkspaceSettings,
 } from '@deephaven/redux';
 import {
   assertNotNull,
@@ -156,8 +157,8 @@ interface StateProps {
     tableColumn?: LinkColumn
   ) => boolean;
   user: User;
-  workspace: Workspace;
-  settings: { timeZone: string };
+  workspace: CustomizableWorkspace;
+  settings: WorkspaceSettings;
 }
 
 interface IrisGridPanelState {
@@ -251,7 +252,6 @@ export class IrisGridPanel extends PureComponent<
     this.handleGridStateChange = this.handleGridStateChange.bind(this);
     this.handlePluginStateChange = this.handlePluginStateChange.bind(this);
     this.handleCreateChart = this.handleCreateChart.bind(this);
-    this.handleResize = this.handleResize.bind(this);
     this.handleShow = this.handleShow.bind(this);
     this.handleTabClicked = this.handleTabClicked.bind(this);
     this.handleDisconnect = this.handleDisconnect.bind(this);
@@ -410,7 +410,7 @@ export class IrisGridPanel extends PureComponent<
       Plugin: TablePluginComponent | undefined,
       model: IrisGridModel | undefined,
       user: User,
-      workspace: Workspace,
+      workspace: CustomizableWorkspace,
       pluginState: unknown
     ) => {
       if (
@@ -760,10 +760,6 @@ export class IrisGridPanel extends PureComponent<
   handleDataSelected(row: ModelIndex, dataMap: Record<string, unknown>): void {
     const { glEventHub } = this.props;
     glEventHub.emit(IrisGridEvent.DATA_SELECTED, this, dataMap);
-  }
-
-  handleResize(): void {
-    this.updateGrid();
   }
 
   handleShow(): void {
@@ -1277,7 +1273,6 @@ export class IrisGridPanel extends PureComponent<
         glContainer={glContainer}
         glEventHub={glEventHub}
         onClearAllFilters={this.handleClearAllFilters}
-        onResize={this.handleResize}
         onShow={this.handleShow}
         onTabFocus={this.handleShow}
         onTabClicked={this.handleTabClicked}

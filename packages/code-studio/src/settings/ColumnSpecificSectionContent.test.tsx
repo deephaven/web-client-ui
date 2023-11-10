@@ -25,7 +25,7 @@ function renderContent({
   timeZone = '',
   truncateNumbersWithPound = false,
   settings = {} as WorkspaceSettings,
-  saveSettings = jest.fn(),
+  updateSettings = jest.fn(),
   scrollTo = undefined,
   defaultDecimalFormatOptions = {
     defaultFormatString: DEFAULT_DECIMAL_STRING,
@@ -45,7 +45,7 @@ function renderContent({
         timeZone={timeZone}
         truncateNumbersWithPound={truncateNumbersWithPound}
         settings={settings}
-        saveSettings={saveSettings}
+        updateSettings={updateSettings}
         scrollTo={scrollTo}
         defaultDecimalFormatOptions={defaultDecimalFormatOptions}
         defaultIntegerFormatOptions={defaultIntegerFormatOptions}

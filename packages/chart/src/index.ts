@@ -6,5 +6,7 @@ export * from './ChartUtils';
 export { default as FigureChartModel } from './FigureChartModel';
 export { default as MockChartModel } from './MockChartModel';
 export { default as Plot } from './plotly/Plot';
-export { default as ChartTheme } from './ChartTheme';
+export * from './ChartTheme';
+export * from './ChartThemeProvider';
 export { default as isFigureChartModel } from './isFigureChartModel';
+export * from './useChartTheme';

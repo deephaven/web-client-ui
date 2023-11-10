@@ -27,7 +27,10 @@ import {
 
 const log = Log.module('ThemeUtils');
 
+export const CSS_VAR_EXPRESSION_PREFIX = 'var(--';
 export const TMP_CSS_PROP_PREFIX = 'dh-tmp';
+export const NON_WHITESPACE_REGEX = /\S/;
+export const WHITESPACE_REGEX = /\s/;
 
 export type VarExpressionResolver = (varExpression: string) => string;
 
@@ -60,8 +63,12 @@ export function extractDistinctCssVariableExpressions(
   const set = new Set<string>();
 
   Object.values(record).forEach(value => {
-    getCssVariableRanges(value).forEach(([start, end]) => {
-      set.add(value.substring(start, end + 1));
+    getExpressionRanges(value).forEach(([start, end]) => {
+      const expression = value.substring(start, end + 1);
+
+      if (expression.includes(CSS_VAR_EXPRESSION_PREFIX)) {
+        set.add(expression);
+      }
     });
   });
 
@@ -143,59 +150,61 @@ export function getThemePreloadData(): ThemePreloadData | null {
 }
 
 /**
- * Identifies start and end indices of any css variable expressions in the given
+ * Identifies start and end indices of any top-level expressions in the given
  * string.
  *
  * e.g.
- * getCssVariableRanges('var(--aaa-aa) var(--bbb-bb)')
+ * getExpressionRanges('var(--aaa-aa) #fff var(--bbb-bb)')
  * yields:
  * [
- *   [0, 12],
- *   [14, 26],
+ *   [0, 12],  // 'var(--aaa-aa)'
+ *   [14, 17]  // '#fff'
+ *   [19, 31], // 'var(--bbb-bb)'
  * ]
  *
  * In cases where there are nested expressions, only the indices of the outermost
  * expression will be included.
  *
  * e.g.
- * getCssVariableRanges('var(--ccc-cc, var(--aaa-aa, green)) var(--bbb-bb)')
+ * getExpressionRanges('var(--ccc-cc, var(--aaa-aa, green)) var(--bbb-bb)')
  * yields:
  * [
- *   [0, 34], // range for --ccc-cc expression
- *   [36, 48], // range for --bbb-bb expression
+ *   [0, 34],  // 'var(--ccc-cc, var(--aaa-aa, green))'
+ *   [36, 48], // 'var(--bbb-bb)'
  * ]
- * @param value The string to search for css variable expressions
- * @returns An array of [start, end] index pairs for each css variable expression
+ * @param value The string to search for expressions
+ * @returns An array of [start, end] index pairs for each expression
  */
-export function getCssVariableRanges(value: string): [number, number][] {
+export function getExpressionRanges(value: string): [number, number][] {
   const ranges: [number, number][] = [];
 
-  const cssVarPrefix = 'var(--';
-  let start = value.indexOf(cssVarPrefix);
+  let start = NON_WHITESPACE_REGEX.exec(value)?.index ?? 0;
   let parenLevel = 0;
 
-  while (start > -1) {
-    parenLevel = 1;
-    let i = start + cssVarPrefix.length;
-    for (; i < value.length; i += 1) {
-      if (value[i] === '(') {
-        parenLevel += 1;
-      } else if (value[i] === ')') {
-        parenLevel -= 1;
-      }
-
-      if (parenLevel === 0) {
-        ranges.push([start, i]);
-        break;
-      }
+  for (let i = 0; i < value.length; i += 1) {
+    if (value[i] === '(') {
+      parenLevel += 1;
+    } else if (value[i] === ')') {
+      parenLevel -= 1;
     }
 
-    if (parenLevel !== 0) {
-      log.error('Unbalanced parentheses in css var expression', value);
-      return [];
-    }
+    if (
+      i === value.length - 1 ||
+      (WHITESPACE_REGEX.test(value[i + 1]) && parenLevel === 0)
+    ) {
+      ranges.push([start, i]);
 
-    start = value.indexOf(cssVarPrefix, i + 1);
+      while (i < value.length - 1 && WHITESPACE_REGEX.test(value[i + 1])) {
+        i += 1;
+      }
+
+      start = i + 1;
+    }
+  }
+
+  if (parenLevel !== 0) {
+    log.error('Unbalanced parentheses in css var expression', value);
+    return [];
   }
 
   return ranges;
@@ -280,13 +289,19 @@ export function resolveCssVariablesInString(
 ): string {
   const result: string[] = [];
   let i = 0;
-  getCssVariableRanges(value).forEach(([start, end]) => {
+  getExpressionRanges(value).forEach(([start, end]) => {
     if (i < start) {
       result.push(value.substring(i, start));
       i += start - i;
     }
 
-    result.push(resolver(value.substring(start, end + 1)));
+    const expression = value.substring(start, end + 1);
+
+    result.push(
+      expression.includes(CSS_VAR_EXPRESSION_PREFIX)
+        ? resolver(expression)
+        : expression
+    );
 
     i += end - start + 1;
   });

@@ -53,7 +53,7 @@ export interface WorkspaceSettings {
     mac?: { [id: string]: ValidKeyState };
   };
   defaultNotebookSettings: {
-    isMinimapEnabled: boolean;
+    isMinimapEnabled?: boolean;
   };
 }
 
@@ -63,6 +63,15 @@ export interface WorkspaceData {
   layoutConfig: unknown[];
   links: unknown;
   settings: WorkspaceSettings;
+}
+
+export interface CustomizableWorkspaceData
+  extends Omit<WorkspaceData, 'settings'> {
+  settings: Partial<WorkspaceData['settings']>;
+}
+
+export interface CustomizableWorkspace {
+  data: CustomizableWorkspaceData;
 }
 
 export interface Workspace {
@@ -75,8 +84,10 @@ export type WorkspaceStorageLoadOptions = {
 };
 
 export interface WorkspaceStorage {
-  load: (options?: WorkspaceStorageLoadOptions) => Promise<Workspace>;
-  save: (workspace: Workspace) => Promise<Workspace>;
+  load: (
+    options?: WorkspaceStorageLoadOptions
+  ) => Promise<CustomizableWorkspace>;
+  save: (workspace: CustomizableWorkspace) => Promise<CustomizableWorkspace>;
 }
 
 export type RootState = {
@@ -85,7 +96,8 @@ export type RootState = {
   plugins: PluginModuleMap;
   storage: Storage;
   user: User;
-  workspace: Workspace;
+  workspace: CustomizableWorkspace;
+  defaultWorkspaceSettings: WorkspaceSettings;
   dashboardData: Record<string, DashboardData>;
   layoutStorage: unknown;
   serverConfigValues: ServerConfigValues;
