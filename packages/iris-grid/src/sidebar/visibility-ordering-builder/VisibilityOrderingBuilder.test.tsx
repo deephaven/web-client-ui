@@ -1184,3 +1184,31 @@ test('On drag start/end', () => {
   expect(mockGroupHandler).toBeCalledWith([]);
   expect(mockMoveHandler).toBeCalledWith([{ from: 0, to: 1 }]);
 });
+
+test('changeSelectedColumn moves queried column index and loops', () => {
+  const builder = React.createRef<VisibilityOrderingBuilder>();
+  render(<Builder builderRef={builder} />);
+
+  builder.current?.searchColumns('TestColumn');
+  expect(builder.current?.state.selectedColumns.size).toEqual(10);
+
+  builder.current?.changeSelectedColumn('forward');
+  expect(builder.current?.state.queriedColumnIndex).toEqual(9);
+
+  builder.current?.changeSelectedColumn('forward');
+  expect(builder.current?.state.queriedColumnIndex).toEqual(0);
+});
+
+test('adjustQueriedIndex sets queriedColumnRange to prevIndex = 9 and nextIndex = 0', () => {
+  const builder = React.createRef<VisibilityOrderingBuilder>();
+  render(<Builder builderRef={builder} />);
+
+  builder.current?.searchColumns('TestColumn');
+
+  builder.current?.adjustQueriedIndex('Test');
+
+  expect(builder.current?.state.queriedColumnRange).toEqual({
+    prevIndex: 9,
+    nextIndex: 0,
+  });
+});
