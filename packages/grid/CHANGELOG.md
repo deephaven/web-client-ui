@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.54.0](https://github.com/deephaven/web-client-ui/compare/v0.53.0...v0.54.0) (2023-11-10)
+
+
+### Bug Fixes
+
+* Infinite loop with grid rendering ([#1631](https://github.com/deephaven/web-client-ui/issues/1631)) ([4875d2e](https://github.com/deephaven/web-client-ui/commit/4875d2e1e895478720950ad73f28d1b895114a58)), closes [#1626](https://github.com/deephaven/web-client-ui/issues/1626)
+* non-contiguous table row selection background colour ([#1623](https://github.com/deephaven/web-client-ui/issues/1623)) ([61d1a53](https://github.com/deephaven/web-client-ui/commit/61d1a537ac9df31e3fe3dad95107b065a12ebd3b)), closes [#1619](https://github.com/deephaven/web-client-ui/issues/1619)
+* remove unecessary dom re-calc in grid render ([#1632](https://github.com/deephaven/web-client-ui/issues/1632)) ([ce7cc3e](https://github.com/deephaven/web-client-ui/commit/ce7cc3e6104eb208b3b36e51f62d284dfd7f57bc))
+
+
+### Features
+
+* Add ResizeObserver to Grid and Chart ([#1626](https://github.com/deephaven/web-client-ui/issues/1626)) ([35311c8](https://github.com/deephaven/web-client-ui/commit/35311c832040b29e362c28f80983b4664c9aa1d5))
+
+
+
+
+
 # [0.53.0](https://github.com/deephaven/web-client-ui/compare/v0.52.0...v0.53.0) (2023-11-03)
 
 
