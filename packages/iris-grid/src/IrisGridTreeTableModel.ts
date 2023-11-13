@@ -98,12 +98,14 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     const { isExpanded, hasChildren, depth } = row;
     const extractedRow = super.extractViewportRow(row, columns);
     const modifiedData = new Map<ModelIndex, CellData>();
-    for (let i = 0; i < this.virtualColumns.length; i += 1) {
-      const cellData = extractedRow.data.get(
-        i + (depth - 1) + (this.virtualColumns.length - 1)
-      );
-      if (cellData != null) {
-        modifiedData.set(i, cellData);
+    if (hasChildren) {
+      for (let i = 0; i < this.virtualColumns.length; i += 1) {
+        const cellData = extractedRow.data.get(
+          i + (depth - 1) + (this.virtualColumns.length - 1)
+        );
+        if (cellData != null) {
+          modifiedData.set(i, cellData);
+        }
       }
     }
     extractedRow.data.forEach((value, key) => {
