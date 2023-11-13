@@ -734,44 +734,47 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
     const actions: ResolvableContextAction[] = [];
 
-    if (modelColumn != null && modelRow != null) {
-      const value = model.valueForCell(modelColumn, modelRow);
+    if (modelColumn != null) {
+      const sourceCell = model.sourceForCell(modelColumn, modelRow ?? 0);
+      const { column: sourceColumn, row: sourceRow } = sourceCell;
+      if (modelRow != null) {
+        const value = model.valueForCell(sourceColumn, sourceRow);
+        const valueText = model.textForCell(sourceColumn, sourceRow);
+        const column = columns[sourceColumn];
 
-      const valueText = model.textForCell(modelColumn, modelRow);
-      const column = columns[modelColumn];
+        const { onContextMenu } = irisGrid.props;
 
-      const { onContextMenu } = irisGrid.props;
-
-      if (column != null) {
-        actions.push(
-          ...onContextMenu({
-            model,
-            value,
-            valueText,
-            column,
-            rowIndex,
-            columnIndex,
-            modelRow,
-            modelColumn,
-          })
-        );
+        if (column != null) {
+          actions.push(
+            ...onContextMenu({
+              model,
+              value,
+              valueText,
+              column,
+              rowIndex,
+              columnIndex,
+              modelRow,
+              modelColumn,
+            })
+          );
+        }
       }
-    }
 
-    if (modelColumn != null && model.isFilterable(modelColumn)) {
-      // Clear column filter should still be available after last row
-      // And should be available in both header and body context menus
-      actions.push({
-        title: 'Clear Column Filter',
-        group: IrisGridContextMenuHandler.GROUP_FILTER,
-        order: 30,
-        action: () => {
-          this.irisGrid.removeColumnFilter(modelColumn);
-        },
-        disabled: !(
-          quickFilters.has(modelColumn) || advancedFilters.has(modelColumn)
-        ),
-      });
+      if (model.isFilterable(sourceColumn)) {
+        // Clear column filter should still be available after last row
+        // And should be available in both header and body context menus
+        actions.push({
+          title: 'Clear Column Filter',
+          group: IrisGridContextMenuHandler.GROUP_FILTER,
+          order: 30,
+          action: () => {
+            this.irisGrid.removeColumnFilter(sourceColumn);
+          },
+          disabled: !(
+            quickFilters.has(sourceColumn) || advancedFilters.has(sourceColumn)
+          ),
+        });
+      }
     }
 
     if (
