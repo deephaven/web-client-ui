@@ -1,6 +1,11 @@
 /* eslint class-methods-use-this: "off" */
 import memoize from 'memoize-one';
-import { GridCell, GridRange, ModelIndex } from '@deephaven/grid';
+import {
+  BoundedAxisRange,
+  GridCell,
+  GridRange,
+  ModelIndex,
+} from '@deephaven/grid';
 import type {
   dh as DhType,
   Column,
@@ -189,6 +194,15 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     }
     const depth = this.depthForRow(row);
     return { column: column + depth, row };
+  }
+
+  getClearFilterRange(column: ModelIndex): BoundedAxisRange | null {
+    if (column >= this.virtualColumns.length) {
+      return super.getClearFilterRange(column);
+    }
+    // Source for the proxied column could be any of the grouped columns.
+    // Return the range of columns matching the grouped columns.
+    return [this.virtualColumns.length, this.groupedColumns.length];
   }
 
   get hasExpandableRows(): boolean {

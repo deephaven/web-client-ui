@@ -1,6 +1,7 @@
 /* eslint-disable class-methods-use-this */
 import type { Event, EventTarget } from 'event-target-shim';
 import {
+  BoundedAxisRange,
   DataBarGridModel,
   DataBarOptions,
   GridCell,
@@ -160,13 +161,26 @@ abstract class IrisGridModel<
   abstract getColumnIndexByName(name: string): ModelIndex | undefined;
 
   /**
-   * Retrieve the source cell for a given cell. Returns something different if the cell is a proxied cell that retrieves data from another cell.
+   * Retrieve the source cell for a given cell. Returns something different if the cell is a proxied cell
+   * that retrieves data from another cell.
    * @param column Column to get the source for
    * @param row Row to get the source for
    * @returns Source cell where the data is coming from
    */
   sourceForCell(column: ModelIndex, row: ModelIndex): GridCell {
     return { column, row };
+  }
+
+  /**
+   * Retrieve the range of columns to clear filters on for a given column.
+   * @param column Column to get the range of filters to clear.
+   * @returns Axis range of the column filters to clear, or `null` if this should not have a clear filter option.
+   */
+  getClearFilterRange(column: ModelIndex): BoundedAxisRange | null {
+    if (this.isFilterable(column)) {
+      return [column, column];
+    }
+    return null;
   }
 
   /** List of column movements defined by the model. Used as initial movements for IrisGrid */

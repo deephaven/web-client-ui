@@ -1,16 +1,20 @@
 export type GridRangeIndex = number | null;
+export type RequiredGridRangeIndex = number;
 type LeftIndex = GridRangeIndex;
 type RightIndex = GridRangeIndex;
 type TopIndex = GridRangeIndex;
 type BottomIndex = GridRangeIndex;
 
-export type GridCell = { column: number; row: number };
+export type GridCell = {
+  column: RequiredGridRangeIndex;
+  row: RequiredGridRangeIndex;
+};
 
 export interface BoundedGridRange extends GridRange {
-  startColumn: number;
-  startRow: number;
-  endColumn: number;
-  endRow: number;
+  startColumn: RequiredGridRangeIndex;
+  startRow: RequiredGridRangeIndex;
+  endColumn: RequiredGridRangeIndex;
+  endRow: RequiredGridRangeIndex;
 }
 
 // Also exported via GridRange.SELECTION_DIRECTION

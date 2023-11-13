@@ -760,18 +760,27 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         }
       }
 
-      if (model.isFilterable(sourceColumn)) {
+      const clearFilterRange = model.getClearFilterRange(modelColumn);
+      if (clearFilterRange != null && clearFilterRange.length > 0) {
         // Clear column filter should still be available after last row
         // And should be available in both header and body context menus
         actions.push({
-          title: 'Clear Column Filter',
+          title:
+            clearFilterRange[1] - clearFilterRange[0] > 0
+              ? 'Clear Group Filter'
+              : 'Clear Column Filter',
           group: IrisGridContextMenuHandler.GROUP_FILTER,
           order: 30,
           action: () => {
-            this.irisGrid.removeColumnFilter(sourceColumn);
+            this.irisGrid.removeColumnFilter(clearFilterRange);
           },
           disabled: !(
-            quickFilters.has(sourceColumn) || advancedFilters.has(sourceColumn)
+            Array.from(quickFilters.keys()).some(
+              col => col >= clearFilterRange[0] && col <= clearFilterRange[1]
+            ) ||
+            Array.from(advancedFilters.keys()).some(
+              col => col >= clearFilterRange[0] && col <= clearFilterRange[1]
+            )
           ),
         });
       }
