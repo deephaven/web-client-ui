@@ -1,7 +1,9 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { vsFile, dhTruck, vsListUnordered } from '@deephaven/icons';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { Menu, Page, Stack } from '@deephaven/components';
+import { sampleSectionIdAndClasses } from './utils';
 
 enum MENU_ITEM_TYPE {
   SUBMENU = 'SUBMENU',
@@ -200,7 +202,7 @@ function Navigations(): JSX.Element {
   );
 
   return (
-    <div>
+    <div {...sampleSectionIdAndClasses('navigations')}>
       <h2 className="ui-title">Navigations</h2>
       <div className="navigations">
         <Stack>{stack}</Stack>

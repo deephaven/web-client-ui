@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React, { useCallback, useState } from 'react';
 import {
   AutoCompleteInput,
@@ -16,6 +17,7 @@ import {
   Select,
   Option,
 } from '@deephaven/components';
+import { sampleSectionIdAndClasses } from './utils';
 
 const EXAMPLES = [
   { title: 'Title 1', value: 'Value 1' },
@@ -86,7 +88,7 @@ function Inputs(): React.ReactElement {
   );
 
   return (
-    <div className="style-guide-inputs">
+    <div {...sampleSectionIdAndClasses('inputs', ['style-guide-inputs'])}>
       <h2 className="ui-title">Inputs</h2>
       <div className="row">
         <div className="col">

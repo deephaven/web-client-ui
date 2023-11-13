@@ -1,8 +1,10 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React, { Component, ReactElement } from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ButtonOld, SocketedButton } from '@deephaven/components';
 import { dhTruck } from '@deephaven/icons';
+import { sampleSectionIdAndClasses } from './utils';
 
 interface ButtonsState {
   toggle: boolean;
@@ -27,7 +29,12 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
     );
 
     return (
-      <div key={type}>
+      <div
+        key={type}
+        {...sampleSectionIdAndClasses(
+          `buttons-${type.length ? 'outline' : 'regular'}`
+        )}
+      >
         <h5>{type.length ? 'Outline' : 'Regular'}</h5>
         {brands}
       </div>
@@ -36,7 +43,7 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
 
   static renderSocketedButtons(): ReactElement {
     return (
-      <div>
+      <div {...sampleSectionIdAndClasses('buttons-socketed')}>
         <h5>Socketed Buttons (for linker)</h5>
         <SocketedButton style={{ marginBottom: '1rem', marginRight: '1rem' }}>
           Unlinked
@@ -82,7 +89,10 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
     const { toggle } = this.state;
 
     return (
-      <div style={{ padding: '1rem 0' }}>
+      <div
+        {...sampleSectionIdAndClasses('buttons-inline')}
+        style={{ padding: '1rem 0' }}
+      >
         <h5>Inline Buttons</h5>
         Regular btn-inline:
         <ButtonOld className="btn-inline mx-2">

@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable react/style-prop-object */
 import React from 'react';
 import {
@@ -32,6 +33,7 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dh } from '@deephaven/icons';
 import { SPECTRUM_COMPONENT_SAMPLES_ID } from './constants';
+import { sampleSectionIdAndClasses } from './utils';
 
 export function SpectrumComponents(): JSX.Element {
   return (
@@ -40,27 +42,27 @@ export function SpectrumComponents(): JSX.Element {
         Spectrum Components
       </h2>
       <Grid gap={20} columns={minmax('0px', '1fr')}>
-        <View>
+        <View {...sampleSectionIdAndClasses('spectrum-buttons')}>
           <h3>Buttons</h3>
           <ButtonsSample />
         </View>
-        <View>
+        <View {...sampleSectionIdAndClasses('spectrum-collections')}>
           <h3>Collections</h3>
           <TableViewSample />
         </View>
-        <View>
+        <View {...sampleSectionIdAndClasses('spectrum-content')}>
           <h3>Content</h3>
           <IllustratedMessageSample />
         </View>
-        <View>
+        <View {...sampleSectionIdAndClasses('spectrum-forms')}>
           <h3>Forms</h3>
           <FormsSample />
         </View>
-        <View>
+        <View {...sampleSectionIdAndClasses('spectrum-overlays')}>
           <h3>Overlays</h3>
           <ContextualHelpSample />
         </View>
-        <View>
+        <View {...sampleSectionIdAndClasses('spectrum-well')}>
           <h3>Wells</h3>
           <Well>This is a well.</Well>
         </View>

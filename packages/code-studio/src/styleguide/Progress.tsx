@@ -1,9 +1,11 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
 import { Button, LoadingSpinner } from '@deephaven/components';
+import { sampleSectionIdAndClasses } from './utils';
 
 function Progress(): React.ReactElement {
   return (
-    <div>
+    <div {...sampleSectionIdAndClasses('progress')}>
       <h2 className="ui-title">Progress</h2>
       <div className="row">
         <div className="col">

@@ -1,6 +1,8 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React, { PureComponent } from 'react';
 import { TimeUtils } from '@deephaven/utils';
 import { TimeSlider } from '@deephaven/components';
+import { sampleSectionIdAndClasses } from './utils';
 
 interface TimeSliderInputsState {
   startTime: number;
@@ -30,7 +32,11 @@ class TimeSliderInputs extends PureComponent<
   render(): React.ReactElement {
     const { startTime, endTime } = this.state;
     return (
-      <div className="style-guide-inputs">
+      <div
+        {...sampleSectionIdAndClasses('time-slider-inputs', [
+          'style-guide-inputs',
+        ])}
+      >
         <h2 className="ui-title">Time Slider</h2>
         <TimeSlider
           startTime={startTime}

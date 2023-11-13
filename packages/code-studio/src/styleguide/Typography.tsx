@@ -1,8 +1,10 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
+import { sampleSectionIdAndClasses } from './utils';
 
 function Typography(): React.ReactElement {
   return (
-    <div>
+    <div {...sampleSectionIdAndClasses('typography')}>
       <h2 className="ui-title">Typography</h2>
       <div className="row">
         <div className="col">

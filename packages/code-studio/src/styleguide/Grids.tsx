@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React, { ReactElement, useState } from 'react';
 import {
   Grid,
@@ -14,6 +15,7 @@ import QuadrillionExample from './grid-examples/QuadrillionExample';
 import TreeExample from './grid-examples/TreeExample';
 import AsyncExample from './grid-examples/AsyncExample';
 import DataBarExample from './grid-examples/DataBarExample';
+import { sampleSectionIdAndClasses } from './utils';
 
 function Grids(): ReactElement {
   const dh = useApi();
@@ -25,7 +27,7 @@ function Grids(): ReactElement {
   const [contextTheme] = useState<Partial<GridThemeType>>({ rowHeight: 40 });
 
   return (
-    <div>
+    <div {...sampleSectionIdAndClasses('grids')}>
       <ThemeContext.Provider value={contextTheme}>
         <h2 className="ui-title">Grid</h2>
         <div>
