@@ -248,10 +248,11 @@ class VisibilityOrderingBuilder extends Component<
       false
     );
 
-    const flattenedItems = flattenTree(this.getTreeItems());
-    const actualColumnIndex = flattenedItems.findIndex(
-      item => item.id === prevQueriedColumns[newQueriedColumnIndex as number]
+    const actualColumnIndex: number = parseInt(
+      Object.keys(prevQueriedColumns)[newQueriedColumnIndex as number],
+      10
     );
+
     const columnItemToFocus =
       this.list?.querySelectorAll('.item-wrapper')[actualColumnIndex];
     columnItemToFocus?.scrollIntoView({ block: 'center' });
