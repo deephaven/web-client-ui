@@ -25,7 +25,13 @@ import {
   vsArrowSmallUp,
 } from '@deephaven/icons';
 import Log from '@deephaven/log';
-import { Button, CardFlip, RadioGroup, RadioItem } from '@deephaven/components';
+import {
+  Button,
+  CardFlip,
+  RadioGroup,
+  RadioItem,
+  Select,
+} from '@deephaven/components';
 
 import './FilterSetManager.scss';
 
@@ -193,13 +199,12 @@ class FilterSetManager extends Component<
     }
   }
 
-  handleEditDropdownChange(event: ChangeEvent<HTMLSelectElement>): void {
-    const { value: editId } = event.target;
-    this.setState({ editId });
+  handleEditDropdownChange(eventTargetValue: string): void {
+    this.setState({ editId: eventTargetValue });
   }
 
-  handleFilterChange(event: ChangeEvent<HTMLSelectElement>): void {
-    const { value: selectedId } = event.target;
+  handleFilterChange(eventTargetValue: string): void {
+    const selectedId = eventTargetValue;
     const { isValueShown, onChange } = this.props;
     this.applyFilterSet(selectedId);
     onChange({ isValueShown, selectedId });
@@ -595,7 +600,7 @@ class FilterSetManager extends Component<
                   <div className="form-group">
                     <label>Edit filter sets</label>
                     <div className="filter-select-container">
-                      <select
+                      <Select
                         data-testid="settings-card-filter-select"
                         ref={this.editDropdownRef}
                         value={editId ?? '-1'}
@@ -613,7 +618,7 @@ class FilterSetManager extends Component<
                             {title}
                           </option>
                         ))}
-                      </select>
+                      </Select>
 
                       <Button
                         kind="ghost"
@@ -679,10 +684,10 @@ class FilterSetManager extends Component<
             <div className="filter-set-manager-card-content">
               <div className="filter-set-manager-value-input">
                 <div className="filter-select-container">
-                  <select
+                  <Select
                     data-testid="value-card-filter-select"
                     ref={this.dropdownRef}
-                    value={selectedId}
+                    value={selectedId ?? '-1'}
                     className="custom-select filter-value-select"
                     onChange={this.handleFilterChange}
                   >
@@ -696,7 +701,7 @@ class FilterSetManager extends Component<
                         {title}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                   <Button
                     data-testid="filter-apply-button"
                     kind="ghost"

@@ -331,7 +331,7 @@ describe('options when source is selected', () => {
       onChange.mockClear();
 
       // Enter key should send event immediately
-      fireEvent.keyPress(getValueSelect(), {
+      fireEvent.keyDown(getValueSelect(), {
         key: 'Enter',
         code: 'Enter',
         charCode: 13,
@@ -356,7 +356,7 @@ describe('options when source is selected', () => {
     });
 
     it('doesnt fire an event when a key other than `Enter` is pressed', () => {
-      fireEvent.keyPress(getValueSelect(), {
+      fireEvent.keyDown(getValueSelect(), {
         key: 'a',
         code: 'KeyA',
         charCode: 97,
