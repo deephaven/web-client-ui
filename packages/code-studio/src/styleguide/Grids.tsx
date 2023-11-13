@@ -27,34 +27,52 @@ function Grids(): ReactElement {
   const [contextTheme] = useState<Partial<GridThemeType>>({ rowHeight: 40 });
 
   return (
-    <div {...sampleSectionIdAndClasses('grids')}>
+    <div>
       <ThemeContext.Provider value={contextTheme}>
         <h2 className="ui-title">Grid</h2>
-        <div>
+        <div {...sampleSectionIdAndClasses('grids-grid')}>
           <Grid model={model} theme={theme} />
         </div>
         <h2 className="ui-title">Static Data</h2>
-        <div style={{ height: 200 }}>
+        <div
+          {...sampleSectionIdAndClasses('grids-static')}
+          style={{ height: 200 }}
+        >
           <StaticExample />
         </div>
         <h2 className="ui-title">Data Bar</h2>
-        <div style={{ height: 500 }}>
+        <div
+          {...sampleSectionIdAndClasses('grids-data-bar')}
+          style={{ height: 500 }}
+        >
           <DataBarExample />
         </div>
         <h2 className="ui-title">Quadrillion rows and columns</h2>
-        <div style={{ height: 500, position: 'relative' }}>
+        <div
+          {...sampleSectionIdAndClasses('grids-quadrillion')}
+          style={{ height: 500, position: 'relative' }}
+        >
           <QuadrillionExample />
         </div>
         <h2 className="ui-title">Async example</h2>
-        <div style={{ height: 500, position: 'relative' }}>
+        <div
+          {...sampleSectionIdAndClasses('grids-async')}
+          style={{ height: 500, position: 'relative' }}
+        >
           <AsyncExample />
         </div>
         <h2 className="ui-title">Tree Grid</h2>
-        <div style={{ height: 500 }}>
+        <div
+          {...sampleSectionIdAndClasses('grids-tree')}
+          style={{ height: 500 }}
+        >
           <TreeExample />
         </div>
         <h2 className="ui-title">Iris Grid</h2>
-        <div style={{ height: 500 }}>
+        <div
+          {...sampleSectionIdAndClasses('grids-iris')}
+          style={{ height: 500 }}
+        >
           <IrisGrid model={irisGridModel} />
         </div>
       </ThemeContext.Provider>

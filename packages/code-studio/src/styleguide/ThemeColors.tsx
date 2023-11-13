@@ -158,8 +158,8 @@ function extractColorVars(
   const varNames = styleText
     .split(/[\n;]/g)
     // Non-minified css will have leading 2 spaces in front of each css variable
-    // declaration. Minified has no space except for first line which will have
-    // :root{ prefix.
+    // declaration. Minified has no prefix except for the first line which will
+    // have ':root{' prefix.
     .map(line => /^(?:\s{2}|:root\{)?(--dh-color-(?:[^:]+))/.exec(line)?.[1])
     .filter((match): match is string => Boolean(match));
 

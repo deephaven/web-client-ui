@@ -17,6 +17,11 @@ export function* pseudoRandomWithSeed(
   }
 }
 
+/**
+ * Returns a callback that will generate pseudo random numbers based on the
+ * given seed.
+ * @param seed
+ */
 export function useSeededRandomNumberCallback(seed = 1): () => number {
   const [randomGenerator] = useState(() => pseudoRandomWithSeed(seed));
 
