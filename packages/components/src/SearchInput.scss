@@ -70,9 +70,20 @@
     padding: 1px 2px; 
   }
 
+  .search-change-button__hidden {
+    display: none;
+  }
+
   .search-change-text {
     background-color: rgba($white, 0.2);
     border-radius: 10px;
     padding: 1px 5px;
+  }
+
+  .match_count {
+    background-color: rgba($white, 0.2);
+    border-radius: 10px;
+    padding: 1px 5px;
+    margin: 0 5px;
   }
 }

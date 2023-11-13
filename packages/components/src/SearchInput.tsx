@@ -39,12 +39,32 @@ class SearchInput extends PureComponent<SearchInputProps> {
   constructor(props: SearchInputProps) {
     super(props);
     this.inputField = React.createRef();
+    this.searchChangeSelection = React.createRef();
+  }
+
+  componentDidMount(): void {
+    this.setInputPaddingRight();
+  }
+
+  componentDidUpdate(): void {
+    this.setInputPaddingRight();
+  }
+
+  focus(): void {
+    this.inputField.current?.focus();
   }
 
   inputField: React.RefObject<HTMLInputElement>;
 
-  focus(): void {
-    this.inputField.current?.focus();
+  searchChangeSelection: React.RefObject<HTMLDivElement>;
+
+  setInputPaddingRight(): void {
+    const inputField = this.inputField.current;
+    const searchChangeSelection = this.searchChangeSelection.current;
+    if (inputField && searchChangeSelection) {
+      const paddingRight = searchChangeSelection.getBoundingClientRect().width;
+      inputField.style.paddingRight = `${paddingRight}px`;
+    }
   }
 
   render(): JSX.Element {
@@ -76,46 +96,54 @@ class SearchInput extends PureComponent<SearchInputProps> {
           ref={this.inputField}
           id={id}
           data-testid={dataTestId}
-          style={
-            queryParams && {
-              paddingRight:
-                queryParams?.queriedColumnIndex !== undefined
-                  ? '6.25rem'
-                  : '4.75rem',
-            }
-          }
         />
 
-        {matchCount != null && queryParams !== undefined ? (
-          <div className="search-change-selection">
+        {matchCount != null ? (
+          <div
+            className="search-change-selection"
+            ref={this.searchChangeSelection}
+          >
             <Button
               kind="ghost"
-              className="search-change-button"
+              className={
+                matchCount <= 1 && queryParams
+                  ? 'search-change-button__hidden' // using the disabled prop messes up the paddingRight calculation
+                  : 'search-change-button'
+              }
               type="button"
               onClick={() => {
-                queryParams.changeQueriedColumnIndex('back');
+                if (queryParams) {
+                  queryParams.changeQueriedColumnIndex('back');
+                }
               }}
               icon={vsArrowLeft}
               tooltip="Next match"
-              disabled={matchCount <= 1}
             />
-            <span className="search-change-text">
-              {queryParams.queriedColumnIndex !== undefined &&
-                matchCount > 1 &&
-                `${queryParams.queriedColumnIndex + 1} of `}
-              {matchCount}
-            </span>
+            {queryParams && matchCount > 1 ? (
+              <span className="search-change-text">
+                {queryParams.queriedColumnIndex !== undefined &&
+                  `${queryParams.queriedColumnIndex + 1} of `}
+                {matchCount}
+              </span>
+            ) : (
+              <span className="match_count">{matchCount}</span>
+            )}
 
             <Button
               kind="ghost"
-              className="search-change-button"
+              className={
+                matchCount <= 1 && queryParams
+                  ? 'search-change-button__hidden' // using the disabled prop messes up the paddingRight calculation
+                  : 'search-change-button'
+              }
               type="button"
               onClick={() => {
-                queryParams.changeQueriedColumnIndex('forward');
+                if (queryParams) {
+                  queryParams.changeQueriedColumnIndex('forward');
+                }
               }}
               icon={vsArrowRight}
               tooltip="Next match"
-              disabled={matchCount <= 1}
             />
           </div>
         ) : (
