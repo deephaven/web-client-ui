@@ -9,6 +9,12 @@ export type SelectProps = baseSelectProps & {
   'data-testid'?: string;
 };
 
+/**
+ * A custom select component with styling, which is a wrapper around the
+ * native select element.
+ * @param props.onChange returns a string value and not the event
+ */
+
 const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
   (props, forwardedRef) => {
     const {
