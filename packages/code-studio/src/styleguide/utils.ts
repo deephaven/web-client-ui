@@ -1,6 +1,30 @@
 import cl from 'classnames';
+import { useCallback, useState } from 'react';
 
 export const SAMPLE_SECTION_CLASS = 'sample-section';
+
+/**
+ * Pseudo random number generator with seed so we get reproducible output.
+ * This is necessary in order for e2e tests to work.
+ */
+export function* pseudoRandomWithSeed(
+  seed = 1
+): Generator<number, void, unknown> {
+  while (true) {
+    // eslint-disable-next-line no-param-reassign
+    seed = (seed * 16807) % 2147483647;
+    yield seed / 2147483647;
+  }
+}
+
+export function useSeededRandomNumberCallback(seed = 1): () => number {
+  const [randomGenerator] = useState(() => pseudoRandomWithSeed(seed));
+
+  return useCallback(
+    () => Number(randomGenerator.next().value),
+    [randomGenerator]
+  );
+}
 
 /**
  * Return id, className, and UNSAFE_className props for a sample section. Class

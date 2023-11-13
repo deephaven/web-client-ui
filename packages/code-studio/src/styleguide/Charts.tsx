@@ -2,10 +2,16 @@
 import React, { ReactElement, useState } from 'react';
 import { Chart, ChartModel, MockChartModel } from '@deephaven/chart';
 import { useApi } from '@deephaven/jsapi-bootstrap';
-import { sampleSectionIdAndClasses } from './utils';
+import {
+  sampleSectionIdAndClasses,
+  useSeededRandomNumberCallback,
+} from './utils';
 
 function Charts(): ReactElement {
   const dh = useApi();
+
+  MockChartModel.random = useSeededRandomNumberCallback();
+
   const [model] = useState(() => new MockChartModel(dh));
 
   return (
