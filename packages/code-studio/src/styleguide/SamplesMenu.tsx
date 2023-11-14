@@ -93,6 +93,7 @@ export function SamplesMenu(): JSX.Element {
   const onAction = useCallback((key: Key) => {
     const id = String(key);
     const el = document.getElementById(id);
+
     el?.scrollIntoView({
       behavior: 'smooth',
     });
@@ -101,7 +102,7 @@ export function SamplesMenu(): JSX.Element {
     // scrolling above
     setTimeout(() => {
       window.location.hash = id;
-    }, 500);
+    }, 1000);
   }, []);
 
   return (

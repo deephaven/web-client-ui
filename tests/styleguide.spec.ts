@@ -40,6 +40,7 @@ test('Buttons regression test', async () => {
 
   await expect(buttonSections).toHaveCount(4);
 
+  // Test focus and hover states for each enabled button
   for (let i = 0; i < (await buttonSections.count()); i += 1) {
     const section = buttonSections.nth(i);
     const buttons = section.locator('button');
@@ -47,12 +48,23 @@ test('Buttons regression test', async () => {
     for (let j = 0; j < (await buttons.count()); j += 1) {
       const button = buttons.nth(j);
 
+      const isDisabled = await button.evaluate(el =>
+        el.hasAttribute('disabled')
+      );
+
+      if (isDisabled) {
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+
+      // Focus
       await button.focus({ timeout: 500 });
       await expect(section).toHaveScreenshot(
         `buttons-focus-section-${i}-${j}.png`
       );
       await button.blur({ timeout: 500 });
 
+      // Hover
       await button.hover({ timeout: 500 });
       await expect(section).toHaveScreenshot(
         `buttons-hover-section-${i}-${j}.png`
@@ -69,6 +81,7 @@ test('Inputs regression test', async () => {
 
   await expect(columns).toHaveCount(7);
 
+  // Test focus state for each enabled input
   for (let i = 0; i < (await columns.count()); i += 1) {
     const column = columns.nth(i);
     const inputs = column.locator('input,select,button');
@@ -76,16 +89,23 @@ test('Inputs regression test', async () => {
     for (let j = 0; j < (await inputs.count()); j += 1) {
       const input = inputs.nth(j);
 
-      const tagName = await input.evaluate(el => el.tagName);
-      const type =
-        tagName === 'INPUT'
-          ? await input.getAttribute('type')
-          : tagName.toLowerCase();
+      const [tagName, type, isDisabled] = await input.evaluate(el => [
+        el.tagName.toLowerCase(),
+        el.getAttribute('type'),
+        el.hasAttribute('disabled'),
+      ]);
+
+      if (isDisabled) {
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+
+      const label = tagName === 'input' ? type ?? 'text' : tagName;
 
       await input.focus({ timeout: 500 });
 
       await expect(column).toHaveScreenshot(
-        `inputs-col${i}-row${j}-${type ?? 'text'}-focus.png`
+        `inputs-col${i}-row${j}-${label}-focus.png`
       );
 
       await input.blur({ timeout: 500 });

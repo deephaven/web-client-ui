@@ -23,9 +23,13 @@ function Grids(): ReactElement {
     new MockIrisGridTreeModel(dh, new MockTreeGridModel())
   );
   const [model] = useState(new MockGridModel());
-  const [theme] = useState<Partial<GridThemeType>>({ autoSelectRow: true });
-  const [contextTheme] = useState<Partial<GridThemeType>>({ rowHeight: 40 });
-
+  const [theme] = useState<Partial<GridThemeType>>({
+    autoSelectRow: true,
+  });
+  const [contextTheme] = useState<Partial<GridThemeType>>({
+    font: '12px Fira Sans, sans-serif',
+    rowHeight: 40,
+  });
   return (
     <div>
       <ThemeContext.Provider value={contextTheme}>
