@@ -27,6 +27,7 @@ function Grids(): ReactElement {
     autoSelectRow: true,
   });
   const [contextTheme] = useState<Partial<GridThemeType>>({
+    font: '12px sans-serif',
     rowHeight: 40,
   });
   return (
