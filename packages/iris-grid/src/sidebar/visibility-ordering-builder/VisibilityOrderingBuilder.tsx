@@ -48,6 +48,11 @@ import {
 
 const DEBOUNCE_SEARCH_COLUMN = 150;
 
+interface IndexRange {
+  prevIndex: number;
+  nextIndex: number;
+}
+
 interface VisibilityOrderingBuilderProps {
   model: IrisGridModel;
   movedColumns: readonly MoveOperation[];
@@ -67,6 +72,9 @@ interface VisibilityOrderingBuilderProps {
 
 interface VisibilityOrderingBuilderState {
   selectedColumns: Set<string>;
+  queriedColumnIndex: number | undefined;
+  queriedColumnRange: IndexRange | undefined;
+  prevQueriedColumns: Record<number, string> | undefined;
   lastSelectedColumn: string;
   searchFilter: string;
 }
@@ -100,6 +108,9 @@ class VisibilityOrderingBuilder extends Component<
 
     this.state = {
       selectedColumns: new Set(),
+      queriedColumnIndex: undefined,
+      queriedColumnRange: undefined,
+      prevQueriedColumns: undefined,
       lastSelectedColumn: '',
       searchFilter: '',
     };
@@ -125,6 +136,9 @@ class VisibilityOrderingBuilder extends Component<
 
     this.setState({
       selectedColumns: new Set(),
+      queriedColumnIndex: undefined,
+      queriedColumnRange: undefined,
+      prevQueriedColumns: undefined,
       lastSelectedColumn: '',
       searchFilter: '',
     });
@@ -135,7 +149,12 @@ class VisibilityOrderingBuilder extends Component<
   }
 
   resetSelection(): void {
-    this.setState({ selectedColumns: new Set(), lastSelectedColumn: '' });
+    this.setState({
+      selectedColumns: new Set(),
+      queriedColumnIndex: undefined,
+      prevQueriedColumns: undefined,
+      lastSelectedColumn: '',
+    });
   }
 
   handleSearchInputChange(event: ChangeEvent<HTMLInputElement>): void {
@@ -157,17 +176,143 @@ class VisibilityOrderingBuilder extends Component<
         id.toLowerCase().includes(searchFilter.toLowerCase())
     );
 
-    const columnsMatch = itemsMatch.map(({ id }) => id);
+    const columnsMatchMap: Record<number, string> = itemsMatch.reduce(
+      (acc, { id, index }) => ({ ...acc, [index]: id }),
+      {}
+    );
+
+    const columnIds: string[] = itemsMatch.map(({ id }) => id);
+
+    this.addColumnToSelected(columnIds, false);
+
     const visibleIndexToFocus = flattenedItems.findIndex(({ id }) =>
       id.toLowerCase().includes(searchFilter.toLowerCase())
     );
 
-    this.addColumnToSelected(columnsMatch, false);
-    if (columnsMatch.length > 0) {
+    if (columnIds.length > 0) {
       const columnItemToFocus =
         this.list?.querySelectorAll('.item-wrapper')[visibleIndexToFocus];
       columnItemToFocus?.scrollIntoView({ block: 'center' });
     }
+
+    this.setState({
+      prevQueriedColumns: columnsMatchMap,
+      queriedColumnIndex: undefined,
+    });
+  }
+
+  /**
+   * Change the selected column to the next or previous column that matches the search criteria.
+   *
+   * queriedColumnRange stores the closes options in the case that the user clicks on an option that didn't fulfill the search criteria.
+   * On click of the forward/back button, queriedColumnIndex is updated to either the upper or lower index in queriedColumnRange
+   *
+   * queriedColumnIndex is the current index within prevQueriedColumns. Not their actual index in the tree.
+   *
+   * @param direction The direction to move the selection
+   */
+
+  changeSelectedColumn(direction: 'forward' | 'back'): void {
+    const { queriedColumnIndex, queriedColumnRange, prevQueriedColumns } =
+      this.state;
+    let newQueriedColumnIndex = queriedColumnIndex;
+
+    if (prevQueriedColumns === undefined) return;
+
+    const queriedColumnsLength = Object.keys(prevQueriedColumns).length;
+
+    if (direction === 'forward') {
+      if (queriedColumnRange !== undefined) {
+        newQueriedColumnIndex = queriedColumnRange.nextIndex;
+      } else if (newQueriedColumnIndex === undefined) {
+        newQueriedColumnIndex = queriedColumnsLength - 1;
+      } else if (newQueriedColumnIndex >= queriedColumnsLength - 1) {
+        newQueriedColumnIndex = 0;
+      } else {
+        newQueriedColumnIndex += 1;
+      }
+    } else if (direction === 'back') {
+      if (queriedColumnRange !== undefined) {
+        newQueriedColumnIndex = queriedColumnRange.prevIndex;
+      } else if (newQueriedColumnIndex === undefined) {
+        newQueriedColumnIndex = 0;
+      } else if (newQueriedColumnIndex <= 0) {
+        newQueriedColumnIndex = queriedColumnsLength - 1;
+      } else {
+        newQueriedColumnIndex -= 1;
+      }
+    }
+
+    this.addColumnToSelected(
+      [Object.values(prevQueriedColumns)[newQueriedColumnIndex as number]],
+      false
+    );
+
+    const actualColumnIndex: number = parseInt(
+      Object.keys(prevQueriedColumns)[newQueriedColumnIndex as number],
+      10
+    );
+
+    const columnItemToFocus =
+      this.list?.querySelectorAll('.item-wrapper')[actualColumnIndex];
+    columnItemToFocus?.scrollIntoView({ block: 'center' });
+
+    this.setState({
+      queriedColumnIndex: newQueriedColumnIndex,
+      queriedColumnRange: undefined,
+    });
+  }
+
+  /**
+   * Handles changing the queriedColumnIndex on user click.
+   *
+   * If the option clicked matches the search criteria the index is updated immediately.
+   *
+   * If the option clicked doesn't meet the search criteria, the two closest options that fulfill the criteria are stored.
+   * On click of the forward/back button the selection will change to one of those options. (Think of VS Code search functionality)
+   *
+   * @param name the name of the clicked column
+   */
+  adjustQueriedIndex(name: string): void {
+    const { prevQueriedColumns } = this.state;
+
+    if (prevQueriedColumns === undefined) return;
+
+    if (name in Object.values(prevQueriedColumns)) {
+      const newQueriedColumnIndex =
+        Object.values(prevQueriedColumns).indexOf(name);
+
+      this.setState({
+        queriedColumnIndex: newQueriedColumnIndex,
+        queriedColumnRange: undefined,
+      });
+      return;
+    }
+
+    const flattenedItems = flattenTree(this.getTreeItems());
+    const clickedIndex = flattenedItems.findIndex(item => item.id === name);
+
+    const queriedColumnsIndexes = Object.keys(prevQueriedColumns).map(idx =>
+      parseInt(idx, 10)
+    );
+
+    let prevIndex = queriedColumnsIndexes.length - 1;
+    let nextIndex = 0;
+
+    for (let i = 0; i < queriedColumnsIndexes.length; i += 1) {
+      const index = queriedColumnsIndexes[i];
+
+      if (index < clickedIndex) {
+        prevIndex = i;
+      } else if (index > clickedIndex) {
+        nextIndex = i;
+        break;
+      }
+    }
+
+    this.setState({
+      queriedColumnRange: { prevIndex, nextIndex },
+    });
   }
 
   /**
@@ -539,6 +684,8 @@ class VisibilityOrderingBuilder extends Component<
       columnsToBeAdded,
       isModifierKeyDown || isShiftKeyDown
     );
+
+    this.adjustQueriedIndex(name);
 
     this.setState({
       lastSelectedColumn: name,
@@ -1015,7 +1162,12 @@ class VisibilityOrderingBuilder extends Component<
 
   render(): ReactElement {
     const { model, hiddenColumns, onColumnVisibilityChanged } = this.props;
-    const { selectedColumns, searchFilter } = this.state;
+    const {
+      selectedColumns,
+      searchFilter,
+      prevQueriedColumns,
+      queriedColumnIndex,
+    } = this.state;
     const hasSelection = selectedColumns.size > 0;
     const treeItems = this.getTreeItems();
     const nameToIndexes = new Map(
@@ -1049,6 +1201,14 @@ class VisibilityOrderingBuilder extends Component<
       treeItems
     );
 
+    const queryParams = {
+      queriedColumnIndex,
+      changeQueriedColumnIndex: (direction: 'forward' | 'back') =>
+        this.changeSelectedColumn(direction),
+    };
+
+    const matchCount = Object.keys(prevQueriedColumns ?? {}).length;
+
     return (
       <div role="menu" className="visibility-ordering-builder" tabIndex={0}>
         <div className="top-menu">
@@ -1067,8 +1227,9 @@ class VisibilityOrderingBuilder extends Component<
           <SearchInput
             className="visibility-search"
             value={searchFilter}
-            matchCount={searchFilter ? selectedColumns.size : undefined}
+            matchCount={searchFilter ? matchCount : undefined}
             onChange={this.handleSearchInputChange}
+            queryParams={queryParams}
           />
         </div>
         <div className="top-menu">

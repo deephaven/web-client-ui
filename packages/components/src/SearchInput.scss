@@ -55,4 +55,31 @@
     border-radius: 1rem;
     background-color: rgba($white, 0.25);
   }
+
+  .search-change-selection {
+    position: absolute;
+    right: $spacer-1;
+    top: 15%;
+    bottom: 15%;
+    height: 70%;
+  }
+
+  .search-change-button {
+    background: none;
+    border: none;
+    padding: 1px 2px; 
+  }
+
+  .search-change-text {
+    background-color: rgba($white, 0.2);
+    border-radius: 10px;
+    padding: 1px 5px;
+  }
+
+  .match_count {
+    background-color: rgba($white, 0.2);
+    border-radius: 10px;
+    padding: 1px 5px;
+    margin: 0 5px;
+  }
 }
