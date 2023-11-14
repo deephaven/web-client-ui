@@ -26,7 +26,7 @@ SHELL ["/bin/bash", "--login", "-c"]
 FROM alpine AS copy-packages
 WORKDIR /work/
 COPY . /tmp/web-client-ui
-COPY package.json package-lock.json skip.js .
+COPY package.json package-lock.json skip.js ./
 # cd first so the cp doesn't include /tmp/web-client-ui in the paths
 RUN cd /tmp/web-client-ui && cp --parents ./packages/*/package.json /work/
 
