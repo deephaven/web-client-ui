@@ -82,6 +82,44 @@ class SearchInput extends PureComponent<SearchInputProps> {
       queryParams,
     } = this.props;
 
+    let matchCountSection;
+
+    if (queryParams && matchCount > 1) {
+      matchCountSection = (
+        <>
+          <Button
+            kind="ghost"
+            className="search-change-button"
+            type="button"
+            onClick={() => {
+              queryParams.changeQueriedColumnIndex('back');
+            }}
+            icon={vsArrowLeft}
+            tooltip="Next match"
+          />
+          <span className="search-change-text">
+            {queryParams.queriedColumnIndex !== undefined &&
+              `${queryParams.queriedColumnIndex + 1} of `}
+            {matchCount}
+          </span>
+          <Button
+            kind="ghost"
+            className="search-change-button"
+            type="button"
+            onClick={() => {
+              queryParams.changeQueriedColumnIndex('forward');
+            }}
+            icon={vsArrowRight}
+            tooltip="Next match"
+          />
+        </>
+      );
+    } else {
+      matchCountSection = matchCount > 0 && (
+        <span className="match_count">{matchCount}</span>
+      );
+    }
+
     return (
       <div className={classNames('search-group', className)}>
         <input
@@ -103,48 +141,7 @@ class SearchInput extends PureComponent<SearchInputProps> {
             className="search-change-selection"
             ref={this.searchChangeSelection}
           >
-            <Button
-              kind="ghost"
-              className={
-                matchCount <= 1 && queryParams
-                  ? 'search-change-button__hidden' // using the disabled prop messes up the paddingRight calculation
-                  : 'search-change-button'
-              }
-              type="button"
-              onClick={() => {
-                if (queryParams) {
-                  queryParams.changeQueriedColumnIndex('back');
-                }
-              }}
-              icon={vsArrowLeft}
-              tooltip="Next match"
-            />
-            {queryParams && matchCount > 1 ? (
-              <span className="search-change-text">
-                {queryParams.queriedColumnIndex !== undefined &&
-                  `${queryParams.queriedColumnIndex + 1} of `}
-                {matchCount}
-              </span>
-            ) : (
-              <span className="match_count">{matchCount}</span>
-            )}
-
-            <Button
-              kind="ghost"
-              className={
-                matchCount <= 1 && queryParams
-                  ? 'search-change-button__hidden' // using the disabled prop messes up the paddingRight calculation
-                  : 'search-change-button'
-              }
-              type="button"
-              onClick={() => {
-                if (queryParams) {
-                  queryParams.changeQueriedColumnIndex('forward');
-                }
-              }}
-              icon={vsArrowRight}
-              tooltip="Next match"
-            />
+            {matchCountSection}
           </div>
         ) : (
           <span className="search-icon">
