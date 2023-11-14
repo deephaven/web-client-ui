@@ -7,7 +7,11 @@ WORKDIR /work/
 # Update packages list and install some build tools
 RUN set -eux; \
     apt-get update; \
-    apt-get install build-essential --yes;
+    apt-get install build-essential --yes; \
+    apt-get install -y locales locales-all;
+ENV LC_ALL en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US.UTF-8
 
 # Copy just the .nvmrc first and install nvm/node/npm first as these will change the least often
 # https://docs.docker.com/build/cache/
