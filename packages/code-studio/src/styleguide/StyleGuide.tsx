@@ -32,6 +32,9 @@ const stickyProps = {
   position: 'sticky',
   justifyContent: 'end',
   zIndex: 1,
+  UNSAFE_style: {
+    float: 'right',
+  },
 } as const;
 
 function StyleGuide(): React.ReactElement {
