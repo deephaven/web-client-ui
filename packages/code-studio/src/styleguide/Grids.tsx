@@ -9,13 +9,14 @@ import {
 } from '@deephaven/grid';
 import { IrisGrid } from '@deephaven/iris-grid';
 import { useApi } from '@deephaven/jsapi-bootstrap';
+import { Flex } from '@adobe/react-spectrum';
 import MockIrisGridTreeModel from './MockIrisGridTreeModel';
 import StaticExample from './grid-examples/StaticExample';
 import QuadrillionExample from './grid-examples/QuadrillionExample';
 import TreeExample from './grid-examples/TreeExample';
 import AsyncExample from './grid-examples/AsyncExample';
 import DataBarExample from './grid-examples/DataBarExample';
-import { sampleSectionIdAndClasses } from './utils';
+import { sampleSectionIdAndClassesSpectrum } from './utils';
 
 function Grids(): ReactElement {
   const dh = useApi();
@@ -33,51 +34,47 @@ function Grids(): ReactElement {
     <div>
       <ThemeContext.Provider value={contextTheme}>
         <h2 className="ui-title">Grid</h2>
-        <div {...sampleSectionIdAndClasses('grids-grid')}>
+        <Flex {...sampleSectionIdAndClassesSpectrum('grids-grid')}>
           <Grid model={model} theme={theme} />
-        </div>
+        </Flex>
         <h2 className="ui-title">Static Data</h2>
-        <div
-          {...sampleSectionIdAndClasses('grids-static')}
-          style={{ height: 200 }}
+        <Flex
+          {...sampleSectionIdAndClassesSpectrum('grids-static')}
+          height={200}
         >
           <StaticExample />
-        </div>
+        </Flex>
         <h2 className="ui-title">Data Bar</h2>
-        <div
-          {...sampleSectionIdAndClasses('grids-data-bar')}
-          style={{ height: 500 }}
+        <Flex
+          {...sampleSectionIdAndClassesSpectrum('grids-data-bar')}
+          height={500}
         >
           <DataBarExample />
-        </div>
+        </Flex>
         <h2 className="ui-title">Quadrillion rows and columns</h2>
-        <div
-          {...sampleSectionIdAndClasses('grids-quadrillion')}
-          style={{ height: 500, position: 'relative' }}
+        <Flex
+          {...sampleSectionIdAndClassesSpectrum('grids-quadrillion')}
+          position="relative"
+          height={500}
         >
           <QuadrillionExample />
-        </div>
+        </Flex>
         <h2 className="ui-title">Async example</h2>
-        <div
-          {...sampleSectionIdAndClasses('grids-async')}
-          style={{ height: 500, position: 'relative' }}
+        <Flex
+          {...sampleSectionIdAndClassesSpectrum('grids-async')}
+          position="relative"
+          height={500}
         >
           <AsyncExample />
-        </div>
+        </Flex>
         <h2 className="ui-title">Tree Grid</h2>
-        <div
-          {...sampleSectionIdAndClasses('grids-tree')}
-          style={{ height: 500 }}
-        >
+        <Flex {...sampleSectionIdAndClassesSpectrum('grids-tree')} height={500}>
           <TreeExample />
-        </div>
+        </Flex>
         <h2 className="ui-title">Iris Grid</h2>
-        <div
-          {...sampleSectionIdAndClasses('grids-iris')}
-          style={{ height: 500 }}
-        >
+        <Flex {...sampleSectionIdAndClassesSpectrum('grids-iris')} height={500}>
           <IrisGrid model={irisGridModel} />
-        </div>
+        </Flex>
       </ThemeContext.Provider>
     </div>
   );
