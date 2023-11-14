@@ -52,6 +52,9 @@ jobs:
       - name: Install Playwright dependencies
         run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright install --with-deps
 
+      - name: Playwright version
+        run: npx playwright --version
+
       - name: Run Playwright tests
         run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright test --config=playwright-ci.config.ts
 
