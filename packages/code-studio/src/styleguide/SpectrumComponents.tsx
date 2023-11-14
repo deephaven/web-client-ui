@@ -33,7 +33,7 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dh } from '@deephaven/icons';
 import { SPECTRUM_COMPONENT_SAMPLES_ID } from './constants';
-import { sampleSectionIdAndClasses } from './utils';
+import { sampleSectionIdAndClassesSpectrum } from './utils';
 
 export function SpectrumComponents(): JSX.Element {
   return (
@@ -42,27 +42,27 @@ export function SpectrumComponents(): JSX.Element {
         Spectrum Components
       </h2>
       <Grid gap={20} columns={minmax('0px', '1fr')}>
-        <View {...sampleSectionIdAndClasses('spectrum-buttons')}>
+        <View {...sampleSectionIdAndClassesSpectrum('spectrum-buttons')}>
           <h3>Buttons</h3>
           <ButtonsSample />
         </View>
-        <View {...sampleSectionIdAndClasses('spectrum-collections')}>
+        <View {...sampleSectionIdAndClassesSpectrum('spectrum-collections')}>
           <h3>Collections</h3>
           <TableViewSample />
         </View>
-        <View {...sampleSectionIdAndClasses('spectrum-content')}>
+        <View {...sampleSectionIdAndClassesSpectrum('spectrum-content')}>
           <h3>Content</h3>
           <IllustratedMessageSample />
         </View>
-        <View {...sampleSectionIdAndClasses('spectrum-forms')}>
+        <View {...sampleSectionIdAndClassesSpectrum('spectrum-forms')}>
           <h3>Forms</h3>
           <FormsSample />
         </View>
-        <View {...sampleSectionIdAndClasses('spectrum-overlays')}>
+        <View {...sampleSectionIdAndClassesSpectrum('spectrum-overlays')}>
           <h3>Overlays</h3>
           <ContextualHelpSample />
         </View>
-        <View {...sampleSectionIdAndClasses('spectrum-well')}>
+        <View {...sampleSectionIdAndClassesSpectrum('spectrum-well')}>
           <h3>Wells</h3>
           <Well>This is a well.</Well>
         </View>
