@@ -1,10 +1,13 @@
 /* eslint-disable no-await-in-loop */
 import { expect, Locator, Page, test } from '@playwright/test';
+import { logBrowserInfo } from './utils';
 
 let page: Page;
 let sampleSections: Locator;
 
 test.beforeEach(async ({ browser }) => {
+  logBrowserInfo(browser);
+
   page = await browser.newPage();
   await page.goto('/ide/styleguide');
 

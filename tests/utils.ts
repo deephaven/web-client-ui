@@ -1,4 +1,4 @@
-import { Locator, expect, Page } from '@playwright/test';
+import { Locator, expect, Page, Browser } from '@playwright/test';
 import os from 'node:os';
 import shortid from 'shortid';
 
@@ -20,6 +20,15 @@ export function generateVarName(prefix = 'v'): string {
     id = shortid();
   } while (id.includes('-'));
   return `${prefix}_${id}`;
+}
+
+/**
+ * Log browser type and version.
+ * @param browser
+ */
+export function logBrowserInfo(browser: Browser): void {
+  // eslint-disable-next-line no-console
+  console.log('Browser:', browser.browserType().name(), browser.version());
 }
 
 /**
