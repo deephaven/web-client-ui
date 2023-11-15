@@ -5,7 +5,7 @@ import { HIDE_FROM_E2E_TESTS_CLASS } from './utils';
 let page: Page;
 let sampleSections: Locator;
 
-test.beforeEach(async ({ browser }) => {
+test.beforeEach(async ({ browser }, testInfo) => {
   page = await browser.newPage();
   await page.goto('/ide/styleguide');
 
@@ -27,7 +27,7 @@ test.afterEach(async () => {
 });
 
 // Iterate over all sample sections and take a screenshot of each one.
-test('UI regression test', async () => {
+test('UI regression test - Styleguide sections', async () => {
   const sampleSectionCount = await sampleSections.count();
 
   for (let i = 0; i < sampleSectionCount; i += 1) {
@@ -53,7 +53,8 @@ test('Buttons regression test', async () => {
   await expect(buttonSections).toHaveCount(4);
 
   // Test focus and hover states for each enabled button
-  for (let i = 0; i < (await buttonSections.count()); i += 1) {
+  const buttonSectionCount = await buttonSections.count();
+  for (let i = 0; i < buttonSectionCount; i += 1) {
     const section = buttonSections.nth(i);
     const buttons = section.locator('button');
 
@@ -66,24 +67,26 @@ test('Buttons regression test', async () => {
         el.hasAttribute('disabled')
       );
 
-      if (isDisabled) {
-        // eslint-disable-next-line no-continue
-        continue;
+      // Focus
+      await button.focus();
+      await expect(section).toHaveScreenshot(
+        `buttons-focus-section-${i}-${j}${isDisabled ? '-disabled' : ''}.png`
+      );
+
+      if (!isDisabled) {
+        await button.blur();
       }
 
-      // Focus
-      await button.focus({ timeout: 500 });
-      await expect(section).toHaveScreenshot(
-        `buttons-focus-section-${i}-${j}.png`
-      );
-      await button.blur({ timeout: 500 });
-
       // Hover
-      await button.hover({ timeout: 500 });
+      await button.hover();
       await expect(section).toHaveScreenshot(
-        `buttons-hover-section-${i}-${j}.png`
+        `buttons-hover-section-${i}-${j}${isDisabled ? '-disabled' : ''}.png`
       );
-      await button.blur({ timeout: 500 });
+      await page.mouse.move(0, 0);
+
+      if (!isDisabled) {
+        await button.blur();
+      }
     }
   }
 });
@@ -111,20 +114,19 @@ test('Inputs regression test', async () => {
         el.hasAttribute('disabled'),
       ]);
 
-      if (isDisabled) {
-        // eslint-disable-next-line no-continue
-        continue;
-      }
-
       const label = tagName === 'input' ? type ?? 'text' : tagName;
 
-      await input.focus({ timeout: 500 });
+      await input.focus();
 
       await expect(column).toHaveScreenshot(
-        `inputs-col${i}-row${j}-${label}-focus.png`
+        `inputs-focus-col${i}-row${j}-${label}${
+          isDisabled ? '-disabled' : ''
+        }.png`
       );
 
-      await input.blur({ timeout: 500 });
+      if (!isDisabled) {
+        await input.blur();
+      }
     }
   }
 });
