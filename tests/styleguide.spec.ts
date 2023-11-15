@@ -48,7 +48,9 @@ test('Buttons regression test', async () => {
     const section = buttonSections.nth(i);
     const buttons = section.locator('button');
 
-    for (let j = 0; j < (await buttons.count()); j += 1) {
+    const buttonCount = await buttons.count();
+
+    for (let j = 0; j < buttonCount; j += 1) {
       const button = buttons.nth(j);
 
       const isDisabled = await button.evaluate(el =>
@@ -85,11 +87,13 @@ test('Inputs regression test', async () => {
   await expect(columns).toHaveCount(7);
 
   // Test focus state for each enabled input
-  for (let i = 0; i < (await columns.count()); i += 1) {
+  const columnsCount = await columns.count();
+  for (let i = 0; i < columnsCount; i += 1) {
     const column = columns.nth(i);
     const inputs = column.locator('input,select,button');
 
-    for (let j = 0; j < (await inputs.count()); j += 1) {
+    const inputsCount = await inputs.count();
+    for (let j = 0; j < inputsCount; j += 1) {
       const input = inputs.nth(j);
 
       const [tagName, type, isDisabled] = await input.evaluate(el => [
