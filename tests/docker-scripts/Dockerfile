@@ -4,10 +4,15 @@
 FROM mcr.microsoft.com/playwright:v1.37.1-jammy AS playwright
 WORKDIR /work/
 
-# Update packages list and install some build tools
+# Update packages list and install some build tools.
+# Installing fonts-dejavu-core so we have some common fonts with the GH actions
+# runner that can be used to render unicode fonts. See README for more info.
 RUN set -eux; \
     apt-get update; \
-    apt-get install build-essential --yes;
+    apt-get install build-essential --yes; \
+    apt-get install fonts-dejavu-core --yes;
+
+RUN fc-list : family;
 
 # Copy just the .nvmrc first and install nvm/node/npm first as these will change the least often
 # https://docs.docker.com/build/cache/

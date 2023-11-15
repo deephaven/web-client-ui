@@ -28,6 +28,12 @@ function Grids(): ReactElement {
     autoSelectRow: true,
   });
   const [contextTheme] = useState<Partial<GridThemeType>>({
+    // Unicode characters '⊟' and '⊞' used by the Grid tree don't exist in Arial
+    // font, so we fallback to DejaVu Sans which should exist on both the CI and
+    // the local Docker environments. Otherwise the sans-serif fallback is at the
+    // mercy of the OS and whatever installed fonts are available which is not
+    // the same in the 2 environments.
+    font: '12px Arial, "DejaVu Sans", sans-serif',
     rowHeight: 40,
   });
   return (

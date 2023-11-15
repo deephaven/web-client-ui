@@ -112,6 +112,12 @@ Snapshots are used by end-to-end tests to visually verify the output. Snapshots 
 
 Once you are satisfied with the snapshots and everything is passing locally, you need to use the docker image to update snapshots for CI (unless you are running the same platform as CI (Ubuntu)). Run `npm run e2e:update-ci-snapshots` to update the CI snapshots. The snapshots will be written to your local directories. The Linux snapshots should be committed to git (non-Linux snapshots should be automatically ignored by git).
 
+### Differences in CI vs Local Docker Environments
+Note that while both the GH actions and docker configuration use Ubuntu 22.04 images, their configurations are not identical. One known difference is the available system fonts. In some cases this can cause snapshots to differ when running locally vs in CI such as when rendering unicode characters. To mitigate this, some of our e2e tests have been configured to ensure a consistent unicode font fallback.
+
+- The `DejaVu Sans` font gets installed via the [Dockerfile](tests/docker-scripts/Dockerfile). It already exists in the CI environment.
+- Font family stacks that involve unicode characters can explicitly fallback to `DejaVu Sans` if they impact snapshots. e.g We do so in [Grids.tsx](packages/code-studio/src/styleguide/Grids.tsx) by setting the canvas font to `12px Arial, "DejaVu Sans", sans-serif`
+
 ### Local
 
 These scripts are recommended while developing your tests as they will be quicker to iterate and offer headed mode for debugging. You will need to run `npx playwright install` before using these scripts. You may also need to update the browsers with the same command any time the Playwright version is updated. See [Playwright Browsers](https://playwright.dev/docs/browsers) for more details.
