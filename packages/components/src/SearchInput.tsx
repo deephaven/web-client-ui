@@ -5,10 +5,6 @@ import classNames from 'classnames';
 import Button from './Button';
 import './SearchInput.scss';
 
-interface QueryParams {
-  queriedColumnIndex: number | undefined;
-  changeQueriedColumnIndex: (direction: 'forward' | 'back') => void;
-}
 interface SearchInputProps {
   value: string;
   placeholder: string;
@@ -20,7 +16,10 @@ interface SearchInputProps {
   matchCount: number;
   id: string;
   'data-testid'?: string;
-  queryParams?: QueryParams;
+  cursor?: {
+    index: number;
+    next: (direction: 'forward' | 'back') => void;
+  };
 }
 
 class SearchInput extends PureComponent<SearchInputProps> {
@@ -33,7 +32,7 @@ class SearchInput extends PureComponent<SearchInputProps> {
     },
     id: '',
     'data-testid': undefined,
-    queryParams: undefined,
+    cursor: undefined,
   };
 
   constructor(props: SearchInputProps) {
@@ -79,12 +78,12 @@ class SearchInput extends PureComponent<SearchInputProps> {
       id,
       onKeyDown,
       'data-testid': dataTestId,
-      queryParams,
+      cursor,
     } = this.props;
 
     let matchCountSection;
 
-    if (queryParams && matchCount > 1) {
+    if (cursor && matchCount > 1) {
       matchCountSection = (
         <>
           <Button
@@ -92,14 +91,13 @@ class SearchInput extends PureComponent<SearchInputProps> {
             className="search-change-button"
             type="button"
             onClick={() => {
-              queryParams.changeQueriedColumnIndex('back');
+              cursor.next('back');
             }}
             icon={vsArrowLeft}
             tooltip="Next match"
           />
           <span className="search-change-text">
-            {queryParams.queriedColumnIndex !== undefined &&
-              `${queryParams.queriedColumnIndex + 1} of `}
+            {cursor.index !== undefined && `${cursor.index + 1} of `}
             {matchCount}
           </span>
           <Button
@@ -107,7 +105,7 @@ class SearchInput extends PureComponent<SearchInputProps> {
             className="search-change-button"
             type="button"
             onClick={() => {
-              queryParams.changeQueriedColumnIndex('forward');
+              cursor.next('forward');
             }}
             icon={vsArrowRight}
             tooltip="Next match"
@@ -116,7 +114,7 @@ class SearchInput extends PureComponent<SearchInputProps> {
       );
     } else {
       matchCountSection = matchCount > 0 && (
-        <span className="match_count">{matchCount}</span>
+        <span className="search-match">{matchCount}</span>
       );
     }
 

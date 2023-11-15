@@ -42,20 +42,6 @@
     }
   }
 
-  .search-match {
-    pointer-events: none;
-    position: absolute;
-    right: $spacer-5;
-    top: 15%;
-    bottom: 15%;
-    height: 70%;
-    display: flex;
-    align-items: center;
-    padding: 0 $spacer-2;
-    border-radius: 1rem;
-    background-color: rgba($white, 0.25);
-  }
-
   .search-change-selection {
     position: absolute;
     right: $spacer-1;
@@ -76,7 +62,7 @@
     padding: 1px 5px;
   }
 
-  .match_count {
+  .search-match {
     background-color: rgba($white, 0.2);
     border-radius: 10px;
     padding: 1px 5px;

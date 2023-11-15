@@ -1201,9 +1201,9 @@ class VisibilityOrderingBuilder extends Component<
       treeItems
     );
 
-    const queryParams = {
-      queriedColumnIndex,
-      changeQueriedColumnIndex: (direction: 'forward' | 'back') =>
+    const cursor = {
+      index: queriedColumnIndex as number,
+      next: (direction: 'forward' | 'back') =>
         this.changeSelectedColumn(direction),
     };
 
@@ -1229,7 +1229,7 @@ class VisibilityOrderingBuilder extends Component<
             value={searchFilter}
             matchCount={searchFilter ? matchCount : undefined}
             onChange={this.handleSearchInputChange}
-            queryParams={queryParams}
+            cursor={cursor}
           />
         </div>
         <div className="top-menu">
