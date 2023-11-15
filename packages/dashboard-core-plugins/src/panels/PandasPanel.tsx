@@ -1,6 +1,12 @@
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable react/no-unused-state */
-import React, { Component, ReactElement, RefObject } from 'react';
+import React, {
+  Component,
+  ReactElement,
+  RefObject,
+  useCallback,
+  useRef,
+} from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhRefresh } from '@deephaven/icons';
 import { Button } from '@deephaven/components';
@@ -10,6 +16,42 @@ import ConnectedIrisGridPanel, {
   type PanelState,
 } from './IrisGridPanel';
 import './PandasPanel.scss';
+
+export function PandasReloadButton({
+  onClick,
+}: {
+  onClick: React.MouseEventHandler<HTMLButtonElement>;
+}): JSX.Element {
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  const handleClick = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      buttonRef.current?.blur();
+      onClick(e);
+    },
+    [onClick]
+  );
+
+  return (
+    <Button
+      ref={buttonRef}
+      kind="primary"
+      className="btn-pandas"
+      onClick={handleClick}
+      tooltip="Click to refresh pandas dataframe, updates do not occur automatically."
+    >
+      pandas dataframe
+      <span>
+        <FontAwesomeIcon
+          icon={dhRefresh}
+          transform="shrink-1"
+          className="mr-1"
+        />
+        Reload
+      </span>
+    </Button>
+  );
+}
 
 export interface PandasPanelProps extends IrisGridPanelOwnProps {
   panelState: PanelState | null;
@@ -34,7 +76,6 @@ class PandasPanel extends Component<PandasPanelProps, PandasPanelState> {
     super(props);
 
     this.irisGridRef = React.createRef();
-    this.buttonRef = React.createRef();
 
     this.handleReload = this.handleReload.bind(this);
     this.handleGridStateChange = this.handleGridStateChange.bind(this);
@@ -47,13 +88,10 @@ class PandasPanel extends Component<PandasPanelProps, PandasPanelState> {
     };
   }
 
-  buttonRef: RefObject<HTMLButtonElement>;
-
   irisGridRef: RefObject<IrisGridPanel>;
 
   handleReload(): void {
     this.irisGridRef.current?.initModel();
-    this.buttonRef.current?.blur();
     this.setState({
       shouldFocusGrid: true,
     });
@@ -76,32 +114,14 @@ class PandasPanel extends Component<PandasPanelProps, PandasPanelState> {
   }
 
   render(): ReactElement {
-    const { ...props } = this.props;
-
     return (
       <ConnectedIrisGridPanel
         ref={this.irisGridRef}
         onStateChange={this.handleGridStateChange}
         onPanelStateUpdate={this.handlePanelStateUpdate}
-        {...props}
+        {...this.props}
       >
-        <Button
-          ref={this.buttonRef}
-          kind="primary"
-          className="btn-pandas"
-          onClick={this.handleReload}
-          tooltip="Click to refresh pandas dataframe, updates do not occur automatically."
-        >
-          pandas dataframe
-          <span>
-            <FontAwesomeIcon
-              icon={dhRefresh}
-              transform="shrink-1"
-              className="mr-1"
-            />
-            Reload
-          </span>
-        </Button>
+        <PandasReloadButton onClick={this.handleReload} />
       </ConnectedIrisGridPanel>
     );
   }
