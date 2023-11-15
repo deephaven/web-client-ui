@@ -9,7 +9,7 @@ import AppInit from './AppInit';
 
 const StyleGuideRoot = React.lazy(() => import('../styleguide/StyleGuideRoot'));
 
-const baseURI = new URL(document.baseURI).pathname;
+const baseURI = new URL(document.baseURI).pathname.replace(/\/$/, '');
 
 function AppRouter(): ReactElement {
   return (

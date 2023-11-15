@@ -27,6 +27,7 @@ import ThemeColors from './ThemeColors';
 import SpectrumComponents from './SpectrumComponents';
 import SamplesMenu, { SampleMenuCategory } from './SamplesMenu';
 import GotoTopButton from './GotoTopButton';
+import { HIDE_FROM_E2E_TESTS_CLASS } from './utils';
 
 const stickyProps = {
   position: 'sticky',
@@ -49,10 +50,20 @@ function StyleGuide(): React.ReactElement {
         <h1 style={{ paddingTop: '2rem' }}>Deephaven UI Components</h1>
       </Flex>
 
-      <Flex {...stickyProps} marginTop={-56} top={20}>
+      <Flex
+        {...stickyProps}
+        UNSAFE_className={HIDE_FROM_E2E_TESTS_CLASS}
+        marginTop={-56}
+        top={20}
+      >
         <SamplesMenu />
       </Flex>
-      <Flex {...stickyProps} top="calc(100vh - 40px)" marginTop={-32}>
+      <Flex
+        {...stickyProps}
+        UNSAFE_className={HIDE_FROM_E2E_TESTS_CLASS}
+        top="calc(100vh - 40px)"
+        marginTop={-32}
+      >
         <GotoTopButton />
       </Flex>
 

@@ -1,6 +1,7 @@
 import cl from 'classnames';
 import { useCallback, useState } from 'react';
 
+export const HIDE_FROM_E2E_TESTS_CLASS = 'hide-from-e2e-tests';
 export const SAMPLE_SECTION_CLASS = 'sample-section';
 
 /**
@@ -9,7 +10,7 @@ export const SAMPLE_SECTION_CLASS = 'sample-section';
  */
 export function* pseudoRandomWithSeed(
   seed = 1
-): Generator<number, void, unknown> {
+): Generator<number, void, never> {
   while (true) {
     // eslint-disable-next-line no-param-reassign
     seed = (seed * 16807) % 2147483647;
@@ -25,10 +26,15 @@ export function* pseudoRandomWithSeed(
 export function useSeededRandomNumberCallback(seed = 1): () => number {
   const [randomGenerator] = useState(() => pseudoRandomWithSeed(seed));
 
-  return useCallback(
-    () => Number(randomGenerator.next().value),
-    [randomGenerator]
-  );
+  return useCallback(() => {
+    const result = randomGenerator.next();
+
+    if (result.done === true) {
+      throw new Error('Random number generator unexpectedly finished');
+    }
+
+    return result.value;
+  }, [randomGenerator]);
 }
 
 /**

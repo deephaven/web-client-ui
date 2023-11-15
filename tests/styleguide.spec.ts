@@ -1,18 +1,25 @@
 /* eslint-disable no-await-in-loop */
 import { expect, Locator, Page, test } from '@playwright/test';
-import { logBrowserInfo } from './utils';
+import { HIDE_FROM_E2E_TESTS_CLASS } from './utils';
 
 let page: Page;
 let sampleSections: Locator;
 
 test.beforeEach(async ({ browser }) => {
-  logBrowserInfo(browser);
-
   page = await browser.newPage();
   await page.goto('/ide/styleguide');
 
   sampleSections = page.locator('.sample-section');
   await expect(sampleSections).toHaveCount(39);
+
+  const hide = await page.locator(`.${HIDE_FROM_E2E_TESTS_CLASS}`).all();
+
+  hide.forEach(locator =>
+    locator.evaluate(el => {
+      // eslint-disable-next-line no-param-reassign
+      el.style.opacity = '0';
+    })
+  );
 });
 
 test.afterEach(async () => {
@@ -21,7 +28,9 @@ test.afterEach(async () => {
 
 // Iterate over all sample sections and take a screenshot of each one.
 test('UI regression test', async () => {
-  for (let i = 0; i < (await sampleSections.count()); i += 1) {
+  const sampleSectionCount = await sampleSections.count();
+
+  for (let i = 0; i < sampleSectionCount; i += 1) {
     const sampleSection = sampleSections.nth(i);
     const id = String(await sampleSection.getAttribute('id'));
 
