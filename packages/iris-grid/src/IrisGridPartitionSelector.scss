@@ -4,9 +4,9 @@ $partition-selector-input-height: 2.25em;
 .iris-grid-partition-selector {
   display: flex;
   flex-wrap: wrap;
-  background: transparent;
+  background: $gray-850;
   vertical-align: middle;
-  .status-message {
+  .column-name {
     text-overflow: ellipsis;
     display: flex;
     flex-direction: row;
@@ -39,10 +39,5 @@ $partition-selector-input-height: 2.25em;
     border-color: $white;
     margin: 0.35em 0.3em;
     padding: 0.25em 0.5em;
-  }
-  .btn-close {
-    padding: 0 0.5em;
-    margin: 0.25em 0.25em 0.25em 0;
-    min-width: 0;
   }
 }

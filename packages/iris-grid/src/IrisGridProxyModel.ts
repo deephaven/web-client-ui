@@ -30,7 +30,9 @@ import {
   MoveOperation,
 } from '@deephaven/grid';
 import IrisGridTableModel from './IrisGridTableModel';
-import IrisGridPartitionedTableModel from './IrisGridPartitionedTableModel';
+import IrisGridPartitionedTableModel, {
+  isIrisGridPartitionedTableModel,
+} from './IrisGridPartitionedTableModel';
 import IrisGridTreeTableModel from './IrisGridTreeTableModel';
 import IrisGridModel from './IrisGridModel';
 import {
@@ -127,13 +129,13 @@ class IrisGridProxyModel extends IrisGridModel {
 
     const oldModel = this.model;
 
-    if (oldModel !== this.originalModel) {
+    if (oldModel !== this.originalModel && oldModel !== this.model) {
       oldModel.close();
     }
 
     this.model = model;
 
-    if (this.listenerCount > 0) {
+    if (this.listenerCount > 0 && oldModel !== this.model) {
       this.addListeners(model);
     }
 
@@ -460,11 +462,11 @@ class IrisGridProxyModel extends IrisGridModel {
   }
 
   get partitionColumns(): readonly Column[] {
-    return this.model.partitionColumns;
+    return this.originalModel.partitionColumns;
   }
 
   set partitionColumns(columns: readonly Column[]) {
-    this.model.partitionColumns = [...columns];
+    this.originalModel.partitionColumns = columns;
   }
 
   get description(): string {
@@ -492,11 +494,33 @@ class IrisGridProxyModel extends IrisGridModel {
   }
 
   get partition(): readonly unknown[] {
-    return this.model.partition;
+    return this.originalModel.partition;
   }
 
   set partition(partition: readonly unknown[]) {
-    this.model.partition = partition;
+    log.debug('set partition', partition);
+    this.originalModel.partition = partition;
+    if (isIrisGridPartitionedTableModel(this.originalModel)) {
+      if (partition.length === 0) {
+        this.setNextModel(
+          this.originalModel.partitionedTable
+            .getMergedTable()
+            .then(table => makeModel(this.dh, table, this.formatter))
+        );
+        return;
+      }
+      // Singular keys are not in arrays
+      const tablePromise = this.originalModel.partitionedTable.getTable(
+        partition.length > 1 ? partition : partition[0]
+      );
+      this.setNextModel(
+        tablePromise.then(table => makeModel(this.dh, table, this.formatter))
+      );
+    }
+  }
+
+  get partitionKeysTable(): Table | null {
+    return this.originalModel.partitionKeysTable;
   }
 
   get formatter(): Formatter {
@@ -621,11 +645,11 @@ class IrisGridProxyModel extends IrisGridModel {
   }
 
   get isFilterRequired(): boolean {
-    return this.model.isFilterRequired;
+    return this.originalModel.isFilterRequired;
   }
 
   get isPartitionRequired(): boolean {
-    return this.model.isPartitionRequired;
+    return this.originalModel.isPartitionRequired;
   }
 
   get isEditable(): boolean {

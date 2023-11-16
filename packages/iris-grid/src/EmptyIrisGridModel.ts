@@ -158,7 +158,7 @@ class EmptyIrisGridModel extends IrisGridModel {
     return Promise.resolve('');
   }
 
-  valuesTable(column: Column): Promise<Table> {
+  valuesTable(columns: Column | readonly Column[]): Promise<Table> {
     throw new Error('Method not implemented.');
   }
 

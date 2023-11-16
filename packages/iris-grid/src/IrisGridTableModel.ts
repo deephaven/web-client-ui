@@ -7,13 +7,14 @@ import type {
   ColumnStatistics,
   CustomColumn,
   dh as DhType,
+  FilterCondition,
   InputTable,
   LayoutHints,
   Table,
   ValueTypeUnion,
 } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
-import { Formatter } from '@deephaven/jsapi-utils';
+import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import {
   EventShimCustomEvent,
   PromiseUtils,
@@ -39,6 +40,10 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
   private _partition: unknown[] = [];
 
   private _partitionColumns: Column[] = [];
+
+  private partitionFilters: FilterCondition[] = [];
+
+  private _partitionTable: Table | null = null;
 
   /**
    * @param dh JSAPI instance
@@ -196,14 +201,61 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
 
   set partitionColumns(partitionColumns: Column[]) {
     this._partitionColumns = partitionColumns;
+    if (this._partitionColumns.length !== this._partition.length) {
+      this.initializePartition();
+    }
   }
 
   get partition(): unknown[] {
     return this._partition;
   }
 
-  set partition(partition: unknown[]) {
-    this._partition = partition;
+  set partition(partitions: unknown[]) {
+    log.log(partitions);
+    const partitionFilters = [];
+
+    for (let i = 0; i < this.partitionColumns.length; i += 1) {
+      const partition = partitions[i];
+      const partitionColumn = this.partitionColumns[i];
+
+      if (
+        partition != null &&
+        !(TableUtils.isCharType(partitionColumn.type) && partition === '')
+      ) {
+        const partitionText = TableUtils.isCharType(partitionColumn.type)
+          ? this.displayString(
+              partition,
+              partitionColumn.type,
+              partitionColumn.name
+            )
+          : partition.toString();
+        const partitionFilter = this.tableUtils.makeQuickFilterFromComponent(
+          partitionColumn,
+          partitionText
+        );
+        if (partitionFilter !== null) {
+          partitionFilters.push(partitionFilter);
+        }
+      }
+    }
+
+    const prevFilters = super.filter.slice(
+      0,
+      super.filter.length - this.partitionFilters.length
+    );
+    this._partition = partitions;
+    this.partitionFilters = partitionFilters;
+    this.filter = prevFilters;
+  }
+
+  get partitionKeysTable(): Table | null {
+    return this._partitionTable;
+  }
+
+  set filter(filter: FilterCondition[]) {
+    this.closeSubscription();
+    this.table.applyFilter([...filter, ...this.partitionFilters]);
+    this.applyViewport();
   }
 
   set totalsConfig(totalsConfig: UITotalsTableConfig | null) {
@@ -258,7 +310,7 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
   }
 
   get isPartitionRequired(): boolean {
-    return this.table.isUncoalesced;
+    return this.table.isUncoalesced && this.isValuesTableAvailable;
   }
 
   isFilterable(columnIndex: ModelIndex): boolean {
@@ -409,6 +461,27 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
 
   get isSeekRowAvailable(): boolean {
     return this.table.seekRow != null;
+  }
+
+  private async initializePartition(): Promise<void> {
+    const table = await this.valuesTable(this.partitionColumns);
+
+    const columns = this.table.columns.slice(0, this.partitionColumns.length);
+    const sorts = columns.map(column => column.sort().desc());
+    this.table.applySort(sorts);
+    this.table.setViewport(0, 0, columns);
+
+    const data = await this.table.getViewportData();
+    if (data.rows.length > 0) {
+      const row = data.rows[0];
+      const values = columns.map(column => row.get(column));
+
+      this.partition = values;
+    } else {
+      log.info('Table does not have any data');
+      this.partition = [];
+    }
+    this._partitionTable = table;
   }
 }
 

@@ -214,6 +214,13 @@ abstract class IrisGridModel<
   abstract set partitionColumns(columns: readonly Column[]);
 
   /**
+   * @returns A Table containing the keys of the columns that are partitioned on
+   */
+  get partitionKeysTable(): Table | null {
+    return null;
+  }
+
+  /**
    * @returns The formatter used when formatting data
    */
   abstract get formatter(): Formatter;

@@ -38,16 +38,26 @@ import { IrisGridThemeType } from './IrisGridTheme';
 
 const log = Log.module('IrisGridPartitionedTableModel');
 
+export function isIrisGridPartitionedTableModel(
+  model: IrisGridModel
+): model is IrisGridPartitionedTableModel {
+  return (
+    (model as IrisGridPartitionedTableModel).partitionedTable !== undefined
+  );
+}
+
 class IrisGridPartitionedTableModel extends IrisGridModel {
   private irisFormatter: Formatter;
 
-  private partitionedTable: PartitionedTable;
+  readonly partitionedTable: PartitionedTable;
   // Track every getTable and close them all at the end (test opening a closed getTable)
   // Test getTable(key) and hold a reference to it, call close on PartitionedTable, check if table is still open
 
-  private model: IrisGridTableModel | EmptyIrisGridModel;
+  model: IrisGridTableModel | EmptyIrisGridModel;
 
   private partitionKeys: unknown[];
+
+  private keyTable: Table | null = null;
 
   /**
    * @param dh JSAPI instance
@@ -62,7 +72,8 @@ class IrisGridPartitionedTableModel extends IrisGridModel {
     super(dh);
     this.partitionedTable = partitionedTable;
     this.irisFormatter = formatter;
-    this.partitionKeys = this.partitionedTable.getKeys().values().next().value;
+    const initialKey = this.partitionedTable.getKeys().values().next().value;
+    this.partitionKeys = Array.isArray(initialKey) ? initialKey : [initialKey];
     this.model = new EmptyIrisGridModel(dh);
   }
 
@@ -214,7 +225,7 @@ class IrisGridPartitionedTableModel extends IrisGridModel {
     return this.model.isFilterRequired;
   }
 
-  static get isPartitionRequired(): boolean {
+  get isPartitionRequired(): boolean {
     return true;
   }
 
@@ -326,8 +337,8 @@ class IrisGridPartitionedTableModel extends IrisGridModel {
     return this.model.textSnapshot(ranges, includeHeaders, formatValue);
   }
 
-  valuesTable(column: Column): Promise<Table> {
-    return this.model.valuesTable(column);
+  valuesTable(columns: Column | readonly Column[]): Promise<Table> {
+    return this.model.valuesTable(columns);
   }
 
   close(): void {
@@ -396,12 +407,12 @@ class IrisGridPartitionedTableModel extends IrisGridModel {
     return this.model.dataBarOptionsForCell(column, row, theme);
   }
 
-  get partitionColumns(): readonly Column[] {
+  get partitionColumns(): Column[] {
     // TODO
-    throw new Error('Method not implemented.');
+    return this.partitionedTable.keyColumns;
   }
 
-  set partitionColumns(columns: readonly Column[]) {
+  set partitionColumns(columns: Column[]) {
     // Do nothing, partition columns of PartitionedTable can't be modified
   }
 
@@ -409,39 +420,24 @@ class IrisGridPartitionedTableModel extends IrisGridModel {
     return this.partitionKeys;
   }
 
-  set partition(value: unknown[]) {
-    log.debug2('set partition', value);
-    this.partitionKeys = value;
-    this.updatePartitions();
+  set partition(partition: unknown[]) {
+    log.debug2('set partition', partition);
+    this.partitionKeys = partition;
+  }
+
+  get partitionKeysTable(): Table | null {
+    return this.keyTable;
   }
 
   async initializePartitionModel(): Promise<IrisGridModel> {
+    this.keyTable = this.partitionedTable.keyTable;
+    const sorts = this.partitionColumns.map(column => column.sort().desc());
+    this.keyTable.applySort(sorts);
+    this.keyTable.setViewport(0, 0, this.partitionColumns);
+
     const initTable = await this.partitionedTable.getTable(this.partitionKeys);
     this.model = new IrisGridTableModel(this.dh, initTable, this.irisFormatter);
-    log.log('initializeModel', this.columns);
-    this.dispatchEvent(
-      new EventShimCustomEvent(IrisGridModel.EVENT.COLUMNS_CHANGED, {
-        detail: this.model.columns,
-      })
-    );
-    this.dispatchEvent(
-      new EventShimCustomEvent(IrisGridModel.EVENT.TABLE_CHANGED, {
-        detail: this.model.table,
-      })
-    );
     return Promise.resolve(this.model);
-  }
-
-  private async updatePartitions(): Promise<void> {
-    this.model.table =
-      this.partitionKeys.length > 0
-        ? await this.partitionedTable.getTable(this.partitionKeys)
-        : await this.partitionedTable.getMergedTable();
-    this.dispatchEvent(
-      new EventShimCustomEvent(IrisGridModel.EVENT.TABLE_CHANGED, {
-        detail: this.model.table,
-      })
-    );
   }
 }
 

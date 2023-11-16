@@ -346,8 +346,6 @@ export interface IrisGridState {
   keyHandlers: readonly KeyHandler[];
   mouseHandlers: readonly GridMouseHandler[];
 
-  partitionTable: Table | null;
-  partitionFilters: readonly FilterCondition[];
   // setAdvancedFilter and setQuickFilter mutate the arguments
   // so we want to always use map copies from the state instead of props
   quickFilters: ReadonlyQuickFilterMap;
@@ -574,8 +572,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleDownloadCanceled = this.handleDownloadCanceled.bind(this);
     this.handleDownloadCompleted = this.handleDownloadCompleted.bind(this);
     this.handlePartitionChange = this.handlePartitionChange.bind(this);
-    this.handlePartitionFetchAll = this.handlePartitionFetchAll.bind(this);
-    this.handlePartitionDone = this.handlePartitionDone.bind(this);
+    this.handlePartitionMerge = this.handlePartitionMerge.bind(this);
     this.handleColumnVisibilityChanged =
       this.handleColumnVisibilityChanged.bind(this);
     this.handleColumnVisibilityReset =
@@ -745,8 +742,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       keyHandlers,
       mouseHandlers,
 
-      partitionTable: null,
-      partitionFilters: [],
       // setAdvancedFilter and setQuickFilter mutate the arguments
       // so we want to always use map copies from the state instead of props
       quickFilters: quickFilters ? new Map(quickFilters) : new Map(),
@@ -832,21 +827,20 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   componentDidMount(): void {
-    const { partitions, partitionColumns, model } = this.props;
-    model.partitionColumns = partitionColumns.length
-      ? partitionColumns
-      : model.columns.filter(c => c.isPartitionColumn);
-    model.partition = partitionColumns.length
-      ? partitions
-      : Array(model.partitionColumns.length).fill(null);
-    if (
-      model.isPartitionRequired &&
-      model.isValuesTableAvailable &&
-      model.partitionColumns.length
-    ) {
-      this.loadPartitionsTable();
-    } else {
-      this.initState();
+    const { partitionColumns, model } = this.props;
+    try {
+      model.partitionColumns = partitionColumns.length
+        ? partitionColumns
+        : model.columns.filter(c => c.isPartitionColumn);
+      if (model.isPartitionRequired && model.partitionColumns.length) {
+        this.setState({ isSelectingPartition: true }, () => {
+          this.initState();
+        });
+      } else {
+        this.initState();
+      }
+    } catch (error) {
+      this.handleTableLoadError(error);
     }
     this.startListening(model);
   }
@@ -1318,11 +1312,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       customFilters: readonly FilterCondition[],
       quickFilters: ReadonlyQuickFilterMap,
       advancedFilters: ReadonlyAdvancedFilterMap,
-      partitionFilters: readonly FilterCondition[],
       searchFilter: FilterCondition | undefined
     ) => [
       ...(customFilters ?? []),
-      ...(partitionFilters ?? []),
       ...IrisGridUtils.getFiltersFromFilterMap(quickFilters),
       ...IrisGridUtils.getFiltersFromFilterMap(advancedFilters),
       ...(searchFilter !== undefined ? [searchFilter] : []),
@@ -1893,77 +1885,15 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   async loadPartitionsTable(): Promise<void> {
     const { model } = this.props;
-    const { partitionColumns } = model;
-
-    this.setState({ isSelectingPartition: true });
+    log.log('loadPartitionsTable');
 
     try {
-      const partitionTable = await this.pending.add(
-        model.valuesTable(partitionColumns),
-        resolved => resolved.close()
-      );
-
-      const columns = partitionTable.columns.slice(0, partitionColumns.length);
-      const sorts = columns.map(column => column.sort().desc());
-      partitionTable.applySort(sorts);
-      partitionTable.setViewport(0, 0, columns);
-
-      const data = await this.pending.add(partitionTable.getViewportData());
-      if (data.rows.length > 0) {
-        const row = data.rows[0];
-        const values = columns.map(column => row.get(column));
-
-        this.updatePartition(values);
-
-        this.setState({ isSelectingPartition: true });
-      } else {
-        log.info('Table does not have any data, just fetching all');
-        this.setState({ isSelectingPartition: false });
-        this.handlePartitionFetchAll();
-      }
-      this.setState({ partitionTable }, () => {
+      this.setState({ isSelectingPartition: true }, () => {
         this.initState();
       });
     } catch (error) {
       this.handleTableLoadError(error);
     }
-  }
-
-  updatePartition(partitions: (string | null)[]): void {
-    const { model } = this.props;
-    const { partitionColumns } = model;
-
-    model.partition = partitions;
-    const partitionFilters = [];
-
-    for (let i = 0; i < partitionColumns.length; i += 1) {
-      const partition = partitions[i];
-      const partitionColumn = partitionColumns[i];
-
-      if (
-        partition !== null &&
-        !(TableUtils.isCharType(partitionColumn.type) && partition === '')
-      ) {
-        const partitionText = TableUtils.isCharType(partitionColumn.type)
-          ? model.displayString(
-              partition,
-              partitionColumn.type,
-              partitionColumn.name
-            )
-          : partition;
-        const partitionFilter = this.tableUtils.makeQuickFilterFromComponent(
-          partitionColumn,
-          partitionText
-        );
-        if (partitionFilter !== null) {
-          partitionFilters.push(partitionFilter);
-        }
-      }
-    }
-
-    this.setState({
-      partitionFilters,
-    });
   }
 
   copyCell(
@@ -2367,19 +2297,14 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.isAnimating = false;
   }
 
-  handlePartitionChange(partitions: (string | null)[]): void {
-    this.updatePartition(partitions);
+  handlePartitionChange(partitions: readonly unknown[]): void {
+    const { model } = this.props;
+    model.partition = partitions;
   }
 
-  handlePartitionFetchAll(): void {
-    this.setState({
-      partitionFilters: [],
-      isSelectingPartition: false,
-    });
-  }
-
-  handlePartitionDone(): void {
-    this.setState({ isSelectingPartition: false });
+  handlePartitionMerge(): void {
+    const { model } = this.props;
+    model.partition = [];
   }
 
   handleTableLoadError(error: unknown): void {
@@ -3913,8 +3838,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       hoverSelectColumn,
       quickFilters,
       advancedFilters,
-      partitionFilters,
-      partitionTable,
       searchFilter,
       selectDistinctColumns,
 
@@ -3976,7 +3899,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       customFilters,
       quickFilters,
       advancedFilters,
-      partitionFilters,
       searchFilter
     );
 
@@ -4433,20 +4355,19 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             unmountOnExit
           >
             <div className="iris-grid-partition-selector-wrapper iris-grid-bar iris-grid-bar-primary">
-              {partitionTable && (
+              {model.partitionKeysTable && (
                 <IrisGridPartitionSelector
                   dh={model.dh}
-                  table={partitionTable}
+                  table={model.partitionKeysTable}
                   getFormattedString={(
                     value: unknown,
                     type: string,
                     stringName: string
                   ) => model.displayString(value, type, stringName)}
                   columns={model.partitionColumns}
-                  partitions={model.partition as readonly (string | null)[]}
+                  partitions={model.partition}
                   onChange={this.handlePartitionChange}
-                  onFetchAll={this.handlePartitionFetchAll}
-                  onDone={this.handlePartitionDone}
+                  onMerge={this.handlePartitionMerge}
                 />
               )}
             </div>

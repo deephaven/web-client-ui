@@ -962,8 +962,11 @@ export interface TableTemplate<T = Table> extends Evented {
 
 export interface PartitionedTable extends Evented, PartitionedTableStatic {
   readonly size: number;
+  readonly columns: Column[];
+  readonly keyColumns: Column[];
+  readonly keyTable: Table;
 
-  getTable: (key: object) => Promise<Table>;
+  getTable: (key: unknown) => Promise<Table>;
   getMergedTable: () => Promise<Table>;
   getKeys: () => Set<object>;
 

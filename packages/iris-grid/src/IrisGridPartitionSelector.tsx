@@ -1,11 +1,22 @@
 import React, { Component } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { DropdownMenu, Tooltip } from '@deephaven/components';
-import { vsTriangleDown, vsClose } from '@deephaven/icons';
+import { Button, DropdownMenu, Tooltip } from '@deephaven/components';
+import {
+  vsTriangleDown,
+  vsChevronRight,
+  vsMerge,
+  vsKey,
+} from '@deephaven/icons';
 import Log from '@deephaven/log';
 import debounce from 'lodash.debounce';
-import type { Column, dh as DhType, Table } from '@deephaven/jsapi-types';
+import type {
+  Column,
+  dh as DhType,
+  Table,
+  TableData,
+} from '@deephaven/jsapi-types';
 import { TableUtils } from '@deephaven/jsapi-utils';
+import deepEqual from 'deep-equal';
 import PartitionSelectorSearch from './PartitionSelectorSearch';
 import './IrisGridPartitionSelector.scss';
 import IrisGridUtils from './IrisGridUtils';
@@ -18,13 +29,13 @@ interface IrisGridPartitionSelectorProps<T> {
   getFormattedString: (value: T, type: string, name: string) => string;
   table: Table;
   columns: readonly Column[];
-  partitions: readonly (string | null)[];
-  onFetchAll: () => void;
-  onDone: (event?: React.MouseEvent<HTMLButtonElement>) => void;
-  onChange: (partitions: (string | null)[]) => void;
+  partitions: readonly unknown[];
+  onMerge: () => void;
+  onChange: (partitions: readonly unknown[]) => void;
 }
 interface IrisGridPartitionSelectorState {
-  partitions: readonly (string | null)[];
+  isShowingKeys: boolean;
+  partitions: readonly unknown[];
   partitionTables: Table[] | null;
 }
 class IrisGridPartitionSelector<T> extends Component<
@@ -33,7 +44,7 @@ class IrisGridPartitionSelector<T> extends Component<
 > {
   static defaultProps = {
     onChange: (): void => undefined,
-    onFetchAll: (): void => undefined,
+    onMerge: (): void => undefined,
     onDone: (): void => undefined,
     partitions: [],
   };
@@ -41,8 +52,7 @@ class IrisGridPartitionSelector<T> extends Component<
   constructor(props: IrisGridPartitionSelectorProps<T>) {
     super(props);
 
-    this.handleCloseClick = this.handleCloseClick.bind(this);
-    this.handleIgnoreClick = this.handleIgnoreClick.bind(this);
+    this.handleMergeClick = this.handleMergeClick.bind(this);
     this.handlePartitionChange = this.handlePartitionChange.bind(this);
     this.handlePartitionSelect = this.handlePartitionSelect.bind(this);
     this.handlePartitionListResized =
@@ -56,6 +66,7 @@ class IrisGridPartitionSelector<T> extends Component<
     this.selectorSearch = columns.map(() => null);
 
     this.state = {
+      isShowingKeys: false,
       partitions,
       partitionTables: null,
     };
@@ -68,7 +79,32 @@ class IrisGridPartitionSelector<T> extends Component<
     const partitionTables = await Promise.all(
       columns.map(async (_, i) => table.selectDistinct(columns.slice(0, i + 1)))
     );
-    this.updatePartitionFilters(partitions, partitionTables);
+    this.updatePartitions(0, partitions, partitionTables).then(
+      ([newPartitions, newPartitionTables]) => {
+        this.setState({
+          partitions: newPartitions,
+          partitionTables: newPartitionTables,
+        });
+      }
+    );
+  }
+
+  componentDidUpdate(prevProps: IrisGridPartitionSelectorProps<T>): void {
+    const { partitions: prevPartitions } = prevProps;
+    const { partitions: newPartitions } = this.props;
+    const { partitionTables: prevTables } = this.state;
+
+    if (!deepEqual(prevPartitions, newPartitions)) {
+      log.log(prevPartitions, newPartitions);
+      this.updatePartitions(0, newPartitions, prevTables).then(
+        ([partitions, partitionTables]) => {
+          this.setState({
+            partitions,
+            partitionTables,
+          });
+        }
+      );
+    }
   }
 
   componentWillUnmount(): void {
@@ -83,16 +119,10 @@ class IrisGridPartitionSelector<T> extends Component<
 
   selectorSearch: (PartitionSelectorSearch<T> | null)[];
 
-  handleCloseClick(): void {
-    log.debug2('handleCloseClick');
+  handleMergeClick(): void {
+    log.debug2('handleMergeClick');
 
-    this.sendDone();
-  }
-
-  handleIgnoreClick(): void {
-    log.debug2('handleIgnoreClick');
-
-    this.sendFetchAll();
+    this.sendMerge();
   }
 
   handlePartitionChange(
@@ -102,41 +132,46 @@ class IrisGridPartitionSelector<T> extends Component<
     log.debug2('handlePartitionChange');
 
     const { columns } = this.props;
-    const { partitions, partitionTables } = this.state;
+    const { partitions: prevPartitions, partitionTables: prevTables } =
+      this.state;
     const { value: partition } = event.target;
 
-    const newPartitions = [...partitions];
+    const newPartitions = [...prevPartitions];
     newPartitions[index] =
       TableUtils.isCharType(columns[index].type) && partition.length > 0
         ? partition.charCodeAt(0).toString()
         : partition;
-    if (partitionTables) {
-      this.updatePartitionFilters(newPartitions, partitionTables);
-    }
 
-    this.setState({
-      partitions: newPartitions,
-    });
+    this.updatePartitions(index, newPartitions, prevTables).then(
+      ([partitions, partitionTables]) => {
+        this.setState({
+          partitions,
+          partitionTables,
+        });
 
-    this.debounceUpdate();
+        this.debounceUpdate();
+      }
+    );
   }
 
   handlePartitionSelect(index: number, partition: string): void {
-    const { partitions, partitionTables } = this.state;
+    const { partitions: prevPartitions, partitionTables: prevTables } =
+      this.state;
     const selectedMenu = this.searchMenu[index];
     if (selectedMenu) {
       selectedMenu.closeMenu();
     }
 
-    const newPartitions = [...partitions];
+    const newPartitions = [...prevPartitions];
     newPartitions[index] = partition;
-    if (partitionTables) {
-      this.updatePartitionFilters(newPartitions, partitionTables);
-    }
 
-    this.setState({ partitions: newPartitions }, () => {
-      this.sendUpdate();
-    });
+    this.updatePartitions(index, newPartitions, prevTables).then(
+      ([partitions, partitionTables]) => {
+        this.setState({ partitions, partitionTables }, () => {
+          this.sendUpdate();
+        });
+      }
+    );
   }
 
   handlePartitionListResized(index: number): void {
@@ -163,28 +198,21 @@ class IrisGridPartitionSelector<T> extends Component<
     this.sendUpdate();
   }, PARTITION_CHANGE_DEBOUNCE_MS);
 
-  sendDone(): void {
-    this.debounceUpdate.flush();
-
-    const { onDone } = this.props;
-    onDone();
-  }
-
   sendUpdate(): void {
     log.debug2('sendUpdate');
 
     const { onChange } = this.props;
     const { partitions } = this.state;
-    onChange([...partitions]);
+    onChange(partitions);
   }
 
-  sendFetchAll(): void {
-    log.debug2('sendFetchAll');
+  sendMerge(): void {
+    log.debug2('sendMerge');
 
     this.debounceUpdate.cancel();
 
-    const { onFetchAll } = this.props;
-    onFetchAll();
+    const { onMerge } = this.props;
+    onMerge();
   }
 
   getDisplayValue(column: Column, index: number): string {
@@ -194,25 +222,32 @@ class IrisGridPartitionSelector<T> extends Component<
       return '';
     }
     if (TableUtils.isCharType(column.type) && partition.toString().length > 0) {
-      return String.fromCharCode(parseInt(partition, 10));
+      return String.fromCharCode(parseInt(partition.toString(), 10));
     }
     return IrisGridUtils.convertValueToText(partition, column.type);
   }
 
-  async updatePartitionFilters(
-    partitions: readonly (string | null)[],
-    partitionTables: Table[]
-  ): Promise<void> {
-    const { columns, getFormattedString } = this.props;
+  async updatePartitions(
+    index: number,
+    partitions: readonly unknown[],
+    partitionTables: Table[] | null
+  ): Promise<[unknown[], Table[] | null]> {
+    if (!Array.isArray(partitionTables)) {
+      return [[...partitions], partitionTables];
+    }
+    const { columns, getFormattedString, table } = this.props;
 
-    const partitionFilters = [];
-    for (let i = 0; i < columns.length - 1; i += 1) {
+    const dataPromises = Array<Promise<TableData>>();
+    const partitionFilters = [...partitionTables[index].filter];
+
+    // Create partition filters
+    for (let i = index; i < columns.length; i += 1) {
       const partition = partitions[i];
       const partitionColumn = columns[i];
 
-      partitionTables[i]?.applyFilter(partitionFilters);
+      partitionTables[i].applyFilter([...partitionFilters]);
       if (
-        partition !== null &&
+        partition != null &&
         !(TableUtils.isCharType(partitionColumn.type) && partition === '')
       ) {
         const partitionText = TableUtils.isCharType(partitionColumn.type)
@@ -221,23 +256,54 @@ class IrisGridPartitionSelector<T> extends Component<
               partitionColumn.type,
               partitionColumn.name
             )
-          : partition;
+          : partition?.toString() ?? '';
         const partitionFilter = this.tableUtils.makeQuickFilterFromComponent(
           partitionColumn,
           partitionText
         );
         if (partitionFilter !== null) {
+          // Should never be null
           partitionFilters.push(partitionFilter);
         }
       }
+      const partitionFilterCopy = [...partitionFilters];
+      dataPromises.push(
+        table.copy().then(async t => {
+          t.applyFilter(partitionFilterCopy);
+          t.setViewport(0, 0, columns as Column[]);
+          const data = await t.getViewportData();
+          t.close();
+          return data;
+        })
+      );
     }
-    partitionTables[partitionTables.length - 1]?.applyFilter(partitionFilters);
-    this.setState({ partitionTables });
+
+    return Promise.all(dataPromises).then(tableData => {
+      // Check if a partition is selected (no partitions for key table or merge table)
+      if (partitions[0] === undefined) {
+        return [[...partitions], partitionTables];
+      }
+      // Check if partitions are valid
+      const validPartitions = partitions.slice(0, index + 1);
+      for (let i = 1; i < tableData.length; i += 1) {
+        const data = tableData[i];
+        if (data.rows.length > 0 && partitions[index + i] !== undefined) {
+          validPartitions.push(partitions[index + i]);
+        } else {
+          return this.updatePartitions(
+            index + i,
+            columns.map(c => tableData[i - 1].rows[0].get(c)),
+            partitionTables
+          );
+        }
+      }
+      return [validPartitions, partitionTables];
+    });
   }
 
   render(): JSX.Element {
-    const { columns, dh, getFormattedString, onDone } = this.props;
-    const { partitionTables } = this.state;
+    const { columns, dh, getFormattedString } = this.props;
+    const { isShowingKeys, partitionTables } = this.state;
 
     const partitionSelectorSearch = columns.map(
       (column, index) =>
@@ -259,8 +325,8 @@ class IrisGridPartitionSelector<T> extends Component<
         )
     );
     const partitionSelectors = columns.map((column, index) => (
-      <>
-        <div className="status-message">
+      <React.Fragment key={`selector-${column.name}`}>
+        <div className="column-name">
           <span>{column.name}: </span>
         </div>
         <div className="input-group">
@@ -291,26 +357,32 @@ class IrisGridPartitionSelector<T> extends Component<
             </button>
           </div>
         </div>
+        {/* <FontAwesomeIcon icon={vsChevronRight} /> */}
         <div className="iris-grid-partition-selector-spacer" />
-      </>
+      </React.Fragment>
     ));
     return (
       <div className="iris-grid-partition-selector">
+        <Button
+          type="button"
+          className="btn btn-outline-primary btn-merge"
+          onClick={this.handleMergeClick}
+          kind="inline"
+          icon={<FontAwesomeIcon icon={vsKey} />}
+          disabled
+        >
+          keys
+        </Button>
+        <Button
+          type="button"
+          className="btn btn-outline-primary btn-merge"
+          onClick={this.handleMergeClick}
+          kind="inline"
+          icon={<FontAwesomeIcon icon={vsMerge} rotation={90} />}
+        >
+          merge
+        </Button>
         {partitionSelectors}
-        <button
-          type="button"
-          className="btn btn-outline-primary btn-ignore"
-          onClick={this.handleIgnoreClick}
-        >
-          Ignore &amp; Fetch All
-        </button>
-        <button
-          type="button"
-          className="btn btn-link btn-link-icon btn-close"
-          onClick={onDone}
-        >
-          <FontAwesomeIcon icon={vsClose} />
-        </button>
       </div>
     );
   }
