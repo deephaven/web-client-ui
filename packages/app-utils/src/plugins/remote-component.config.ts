@@ -20,7 +20,6 @@ import * as DeephavenJsapiUtils from '@deephaven/jsapi-utils';
 import DeephavenLog from '@deephaven/log';
 import * as DeephavenReactHooks from '@deephaven/react-hooks';
 import * as DeephavenPlugin from '@deephaven/plugin';
-import * as DeephavenCorePlugins from '@deephaven/dashboard-core-plugins';
 
 // eslint-disable-next-line import/prefer-default-export
 export const resolve = {
@@ -41,5 +40,4 @@ export const resolve = {
   '@deephaven/log': DeephavenLog,
   '@deephaven/plugin': DeephavenPlugin,
   '@deephaven/react-hooks': DeephavenReactHooks,
-  '@deephaven/dashboard-core-plugins': DeephavenCorePlugins,
 };
