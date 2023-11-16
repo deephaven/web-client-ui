@@ -1287,7 +1287,12 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       const operationMap = this.getOperationMap(columns, aggregations);
       const operationOrder = this.getOperationOrder(aggregations);
 
-      return { operationMap, operationOrder, showOnTop };
+      return {
+        operationMap,
+        operationOrder,
+        showOnTop,
+        defaultOperation: AggregationOperation.SKIP,
+      };
     }
   );
 
