@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
 import TestRenderer from 'react-test-renderer';
 import dh from '@deephaven/jsapi-shim';
 import { DateUtils, Settings } from '@deephaven/jsapi-utils';
@@ -48,9 +48,18 @@ function makeMockCanvas() {
   };
 }
 
-function createNodeMock(element) {
+function makeMockWrapper() {
+  return {
+    getBoundingClientRect: () => ({ width: VIEW_SIZE, height: VIEW_SIZE }),
+  };
+}
+
+function createNodeMock(element: ReactElement) {
   if (element.type === 'canvas') {
     return makeMockCanvas();
+  }
+  if (element?.props?.className?.includes('grid-wrapper') === true) {
+    return makeMockWrapper();
   }
   return element;
 }

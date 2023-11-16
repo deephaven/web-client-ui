@@ -79,13 +79,6 @@ $cell-invalid-box-shadow:
   }
 
   .grid-wrapper {
-    flex: 1 1 0;
-    max-width: 100%;
-    max-height: 100%;
-    // min-width/height used to make sure grid shrinks properly when notification bars are added/resized
-    min-width: 0;
-    min-height: 0;
-    position: relative;
     font: $iris-grid-font;
     font-feature-settings: $iris-grid-font-feature-settings;
     transition: all $transition-mid;

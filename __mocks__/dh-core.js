@@ -1589,6 +1589,7 @@ class Figure extends DeephavenObject {
     updateSize = 10,
     rows = 1,
     cols = 1,
+    errors = [],
   } = {}) {
     super();
 
@@ -1603,6 +1604,7 @@ class Figure extends DeephavenObject {
     this.rowIndex = 0;
     this.rows = rows;
     this.cols = cols;
+    this.errors = errors;
   }
 
   addEventListener(...args) {

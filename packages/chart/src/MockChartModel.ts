@@ -4,7 +4,7 @@
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import type { Datum, Layout, PlotData } from 'plotly.js';
 import ChartModel from './ChartModel';
-import ChartTheme from './ChartTheme';
+import { ChartTheme, defaultChartTheme } from './ChartTheme';
 import ChartUtils from './ChartUtils';
 
 interface Series {
@@ -16,7 +16,21 @@ interface Series {
 
 /** Displays a basic random chart */
 class MockChartModel extends ChartModel {
+  static random: () => number = Math.random.bind(Math);
+
   static smoothing = 1.5;
+
+  static _theme: ChartTheme;
+
+  static get theme(): ChartTheme {
+    /* eslint-disable no-underscore-dangle */
+    if (MockChartModel._theme == null) {
+      MockChartModel._theme = defaultChartTheme();
+    }
+
+    return MockChartModel._theme;
+    /* eslint-enable no-underscore-dangle */
+  }
 
   static makeRandomSeries(offset: number, scale = 1, steps = 100): Series {
     const dates = [];
@@ -38,7 +52,7 @@ class MockChartModel extends ChartModel {
         ((Math.sin((i / steps) * offset) * steps) / 3 +
           (Math.cos(i * 0.2) * steps) / 6 +
           (Math.sin(i * 0.5) * steps) / 10 +
-          (Math.random() * steps) / 5 +
+          (MockChartModel.random() * steps) / 5 +
           i * MockChartModel.smoothing) *
         scale;
       v = Math.round(v * 100) / 100; // 2 decimals only
@@ -49,7 +63,7 @@ class MockChartModel extends ChartModel {
       linear.push(40 + i * MockChartModel.smoothing);
       smooth.push(
         (Math.sin((i / steps) * offset) * steps) / 3 +
-          (Math.random() * steps) / 10 +
+          (MockChartModel.random() * steps) / 10 +
           i * MockChartModel.smoothing
       ); // push a smoother version of the same thing
     }
@@ -62,7 +76,7 @@ class MockChartModel extends ChartModel {
       name: 'SCTR',
       x: series.x,
       y: series.y,
-      type: 'scattergl',
+      type: 'scatter',
       mode: 'markers',
       hoverinfo: 'skip',
       marker: {
@@ -81,7 +95,7 @@ class MockChartModel extends ChartModel {
       fill: 'tozeroy',
       hoverinfo: 'all',
       line: {
-        color: ChartTheme.area_color,
+        color: MockChartModel.theme.area_color,
         width: 3,
         // area patten gets applied as hack in post render plot.ly callback + css
       },
@@ -94,13 +108,13 @@ class MockChartModel extends ChartModel {
       name: 'Trendline <br>R<sup>2</sup> = 0.91',
       x: series.x,
       y: series.l,
-      type: 'scattergl',
+      type: 'scatter',
       mode: 'line' as PlotData['mode'],
       hoverinfo: 'skip',
       line: {
         width: 3,
         dash: 'dot', // trendlines should follow some sort of color convention + dots/dashed. Remember there can multiple
-        color: ChartTheme.trend_color,
+        color: MockChartModel.theme.trend_color,
         // chroma(c.$green).brighten(1.2).hex()
       },
     };
@@ -123,14 +137,14 @@ class MockChartModel extends ChartModel {
       name: 'error',
       x: (series.x as Datum[]).concat((series.x as Datum[]).slice().reverse()), // winding for x values, that slice just clones so reverse doesn't apply inplace
       y: errory,
-      type: 'scattergl',
+      type: 'scatter',
       mode: 'line' as PlotData['mode'],
       hoverinfo: 'skip',
       fill: 'toself', // there's some ordering bug with scattergl where if the areas traces are ordered after the lines they don't render
-      fillcolor: ChartTheme.error_band_fill_color,
+      fillcolor: MockChartModel.theme.error_band_fill_color,
       line: {
         width: 0,
-        color: ChartTheme.error_band_line_color,
+        color: MockChartModel.theme.error_band_line_color,
         shape: 'spline',
       },
     };
@@ -141,11 +155,11 @@ class MockChartModel extends ChartModel {
       name: 'LINE',
       x: series.x,
       y: series.y,
-      type: 'scattergl',
+      type: 'scatter',
       mode: 'line' as PlotData['mode'],
       hoverinfo: 'x+y+text+name' as PlotData['hoverinfo'],
       line: {
-        color: ChartTheme.line_color,
+        color: MockChartModel.theme.line_color,
         width: 3,
       },
     };
@@ -164,7 +178,7 @@ class MockChartModel extends ChartModel {
   }
 
   static makeDefaultLayout(dh: DhType): Partial<Layout> {
-    const layout = new ChartUtils(dh).makeDefaultLayout(ChartTheme);
+    const layout = new ChartUtils(dh).makeDefaultLayout(MockChartModel.theme);
     layout.title = 'Chart';
 
     if (layout.xaxis) {

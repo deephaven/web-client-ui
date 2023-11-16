@@ -10,7 +10,7 @@ import memoize from 'memoizee';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import debounce from 'lodash.debounce';
 import classNames from 'classnames';
-import { Button, ThemeExport } from '@deephaven/components';
+import { Button, Select, ThemeExport } from '@deephaven/components';
 import {
   DateTimeColumnFormatter,
   IntegerColumnFormatter,
@@ -22,16 +22,13 @@ import {
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
   getApi,
-  getDefaultDateTimeFormat,
   getDefaultDecimalFormatOptions,
   getDefaultIntegerFormatOptions,
   getFormatter,
   getTimeZone,
   getShowTimeZone,
   getShowTSeparator,
-  getTruncateNumbersWithPound,
-  getSettings,
-  saveSettings as saveSettingsAction,
+  updateSettings as updateSettingsAction,
   RootState,
   WorkspaceSettings,
 } from '@deephaven/redux';
@@ -53,13 +50,10 @@ import DateTimeOptions from './DateTimeOptions';
 export interface ColumnSpecificSectionContentProps {
   dh: DhType;
   formatter: FormatterItem[];
-  defaultDateTimeFormat: string;
   showTimeZone: boolean;
   showTSeparator: boolean;
   timeZone: string;
-  truncateNumbersWithPound: boolean;
-  settings: WorkspaceSettings;
-  saveSettings: (settings: WorkspaceSettings) => void;
+  updateSettings: (settings: Partial<WorkspaceSettings>) => void;
   scrollTo: (x: number, y: number) => void;
   defaultDecimalFormatOptions: FormatOption;
   defaultIntegerFormatOptions: FormatOption;
@@ -71,7 +65,6 @@ interface ColumnSpecificSectionContentState {
   showTimeZone: boolean;
   showTSeparator: boolean;
   timeZone: string;
-  truncateNumbersWithPound: boolean;
   timestampAtMenuOpen: Date;
 }
 
@@ -81,19 +74,6 @@ export class ColumnSpecificSectionContent extends PureComponent<
 > {
   static defaultProps = {
     scrollTo: (): void => undefined,
-    defaults: {
-      defaultDateTimeFormat:
-        DateTimeColumnFormatter.DEFAULT_DATETIME_FORMAT_STRING,
-      defaultDecimalFormatOptions: {
-        defaultFormatString: DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
-      },
-      defaultIntegerFormatOptions: {
-        defaultFormatString: IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
-      },
-      showTimeZone: false,
-      showTSeparator: true,
-      timeZone: DateTimeColumnFormatter.DEFAULT_TIME_ZONE_ID,
-    },
   };
 
   static inputDebounceTime = 250;
@@ -111,13 +91,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
     this.handleFormatRuleCreate = this.handleFormatRuleCreate.bind(this);
     this.handleFormatRuleDelete = this.handleFormatRuleDelete.bind(this);
 
-    const {
-      formatter,
-      showTimeZone,
-      showTSeparator,
-      timeZone,
-      truncateNumbersWithPound,
-    } = props;
+    const { formatter, showTimeZone, showTSeparator, timeZone } = props;
 
     const formatSettings = formatter.map((item, i) => ({
       ...item,
@@ -135,7 +109,6 @@ export class ColumnSpecificSectionContent extends PureComponent<
       showTimeZone,
       showTSeparator,
       timeZone,
-      truncateNumbersWithPound,
       timestampAtMenuOpen: new Date(),
     };
   }
@@ -273,19 +246,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
   }
 
   commitChanges(): void {
-    const {
-      formatSettings,
-      showTimeZone,
-      showTSeparator,
-      timeZone,
-      truncateNumbersWithPound,
-    } = this.state;
-
-    const {
-      defaultDateTimeFormat,
-      defaultDecimalFormatOptions,
-      defaultIntegerFormatOptions,
-    } = this.props;
+    const { formatSettings } = this.state;
 
     const { dh } = this.props;
 
@@ -296,39 +257,11 @@ export class ColumnSpecificSectionContent extends PureComponent<
         )
         .map(removeFormatRuleExtraProps) ?? [];
 
-    const { settings, saveSettings } = this.props;
-    const newSettings: WorkspaceSettings = {
-      ...settings,
+    const { updateSettings } = this.props;
+    const newSettings = {
       formatter: formatter as FormattingRule[],
-      defaultDateTimeFormat,
-      showTimeZone,
-      showTSeparator,
-      timeZone,
-      truncateNumbersWithPound,
     };
-    if (
-      isValidFormat(
-        dh,
-        TableUtils.dataType.DECIMAL,
-        DecimalColumnFormatter.makeCustomFormat(
-          defaultDecimalFormatOptions.defaultFormatString
-        )
-      )
-    ) {
-      newSettings.defaultDecimalFormatOptions = defaultDecimalFormatOptions;
-    }
-    if (
-      isValidFormat(
-        dh,
-        TableUtils.dataType.INT,
-        IntegerColumnFormatter.makeCustomFormat(
-          defaultIntegerFormatOptions.defaultFormatString
-        )
-      )
-    ) {
-      newSettings.defaultIntegerFormatOptions = defaultIntegerFormatOptions;
-    }
-    saveSettings(newSettings);
+    updateSettings(newSettings);
   }
 
   scrollToFormatBlockBottom(): void {
@@ -429,8 +362,8 @@ export class ColumnSpecificSectionContent extends PureComponent<
       this.handleFormatRuleChange(i, 'columnName', e.target.value);
     const onNameBlur = (): void =>
       this.handleFormatRuleChange(i, 'isNewRule', false);
-    const onTypeChange = (e: ChangeEvent<HTMLSelectElement>): void =>
-      this.handleFormatRuleChange(i, 'columnType', e.target.value);
+    const onTypeChange = (eventTargetValue: string): void =>
+      this.handleFormatRuleChange(i, 'columnType', eventTargetValue);
 
     const ruleError = this.getRuleError(rule);
 
@@ -463,14 +396,14 @@ export class ColumnSpecificSectionContent extends PureComponent<
             />
 
             <label htmlFor={columnTypeId}>Column Type</label>
-            <select
+            <Select
               id={columnTypeId}
               className="custom-select"
               value={rule.columnType}
               onChange={onTypeChange}
             >
               {columnTypeOptions}
-            </select>
+            </Select>
           </div>
         </div>
         <div className="form-row">
@@ -545,14 +478,14 @@ export class ColumnSpecificSectionContent extends PureComponent<
 
     const value = format.formatString ?? '';
     return (
-      <select
+      <Select
         className={classNames('custom-select', { 'is-invalid': isInvalid })}
         value={value}
         id={formatId}
-        onChange={e => {
+        onChange={eventTargetValue => {
           const selectedFormat = DateTimeColumnFormatter.makeFormat(
             '',
-            e.target.value,
+            eventTargetValue,
             DateTimeColumnFormatter.TYPE_GLOBAL
           );
           this.handleFormatRuleChange(i, 'format', selectedFormat);
@@ -566,7 +499,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
           showTimeZone,
           showTSeparator
         )}
-      </select>
+      </Select>
     );
   }
 
@@ -577,6 +510,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
     isInvalid: boolean
   ): ReactElement {
     const { defaultIntegerFormatOptions } = this.props;
+    assertNotNull(defaultIntegerFormatOptions);
     const { defaultFormatString } = defaultIntegerFormatOptions;
     const value = format.formatString ?? '';
     return (
@@ -688,21 +622,18 @@ export class ColumnSpecificSectionContent extends PureComponent<
 
 const mapStateToProps = (
   state: RootState
-): Omit<ColumnSpecificSectionContentProps, 'saveSettings' | 'scrollTo'> => ({
+): Omit<ColumnSpecificSectionContentProps, 'updateSettings' | 'scrollTo'> => ({
   formatter: getFormatter(state),
-  defaultDateTimeFormat: getDefaultDateTimeFormat(state),
   defaultDecimalFormatOptions: getDefaultDecimalFormatOptions(state),
   defaultIntegerFormatOptions: getDefaultIntegerFormatOptions(state),
   dh: getApi(state),
   showTimeZone: getShowTimeZone(state),
   showTSeparator: getShowTSeparator(state),
-  truncateNumbersWithPound: getTruncateNumbersWithPound(state),
   timeZone: getTimeZone(state),
-  settings: getSettings(state),
 });
 
 const ConnectedColumnSpecificSectionContent = connect(mapStateToProps, {
-  saveSettings: saveSettingsAction,
+  updateSettings: updateSettingsAction,
 })(ColumnSpecificSectionContent);
 
 export default ConnectedColumnSpecificSectionContent;

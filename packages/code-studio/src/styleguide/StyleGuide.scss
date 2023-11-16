@@ -60,6 +60,11 @@ pre {
   }
 }
 
+.gray-swatch-850 {
+  color: color-yiq($gray-850);
+  background-color: $gray-850;
+}
+
 .style-guide-container {
   background-color: $content-bg;
   padding: 1rem;

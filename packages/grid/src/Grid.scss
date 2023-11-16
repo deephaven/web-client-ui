@@ -1,3 +1,15 @@
+.grid-wrapper {
+  flex: 1 1 0;
+  max-width: 100%;
+  max-height: 100%;
+  // min-width/height used to make sure grid shrinks properly when notification bars are added/resized
+  min-width: 0;
+  min-height: 0;
+  position: relative;
+  font-family: sans-serif;
+  font-feature-settings: 'tnum';
+}
+
 .grid-canvas {
   display: block;
 }

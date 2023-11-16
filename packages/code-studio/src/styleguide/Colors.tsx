@@ -1,5 +1,7 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
 import classNames from 'classnames';
+import { sampleSectionIdAndClasses } from './utils';
 
 function Colors(): React.ReactElement {
   const graySwatches = [
@@ -12,11 +14,12 @@ function Colors(): React.ReactElement {
     ['700', '400'],
     ['800', '300'],
     ['850', '200'],
+    ['8XX', '100'],
     ['900', '75'],
   ].map(([swatch, dh]) => (
     <div
-      key={swatch}
       className={classNames('swatch', 'gray-swatch', `gray-swatch-${swatch}`)}
+      key={swatch}
     >
       <span>
         Gray-
@@ -49,7 +52,7 @@ function Colors(): React.ReactElement {
   ));
 
   return (
-    <div>
+    <div {...sampleSectionIdAndClasses('colors')}>
       <h2 className="ui-title">Colors</h2>
       <div className="row">
         <div className="col">{graySwatches}</div>

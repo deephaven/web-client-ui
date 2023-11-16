@@ -16,7 +16,7 @@ import {
   Type as FilterType,
   TypeValue as FilterTypeValue,
 } from '@deephaven/filters';
-import { Button, DateTimeInput } from '@deephaven/components';
+import { Button, DateTimeInput, Select } from '@deephaven/components';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import classNames from 'classnames';
 import './GotoRow.scss';
@@ -208,11 +208,11 @@ const GotoRow = forwardRef<GotoRowElement, GotoRowProps>(
           return (
             <>
               <div className="goto-row-input">
-                <select
+                <Select
                   className="custom-select"
-                  onChange={event => {
+                  onChange={eventTargetValue => {
                     onGotoValueSelectedFilterChanged(
-                      event.target.value as FilterTypeValue
+                      eventTargetValue as FilterTypeValue
                     );
                   }}
                   value={gotoValueFilter}
@@ -236,7 +236,7 @@ const GotoRow = forwardRef<GotoRowElement, GotoRowProps>(
                   <option key={FilterType.contains} value={FilterType.contains}>
                     Contains
                   </option>
-                </select>
+                </Select>
               </div>
               <div className="goto-row-input">
                 <input
@@ -256,10 +256,10 @@ const GotoRow = forwardRef<GotoRowElement, GotoRowProps>(
         case TableUtils.dataType.BOOLEAN:
           return (
             <div className="goto-row-input">
-              <select
+              <Select
                 className="custom-select"
-                onChange={event => {
-                  onGotoValueInputChanged(event.target.value);
+                onChange={eventTargetValue => {
+                  onGotoValueInputChanged(eventTargetValue);
                 }}
                 value={gotoValue}
                 aria-label="Value Input"
@@ -271,7 +271,7 @@ const GotoRow = forwardRef<GotoRowElement, GotoRowProps>(
                 <option key="false" value="false">
                   false
                 </option>
-              </select>
+              </Select>
             </div>
           );
         default:
@@ -364,10 +364,10 @@ const GotoRow = forwardRef<GotoRowElement, GotoRowProps>(
               >
                 <div className="goto-row-text">Go to value</div>
                 <div className="goto-row-input">
-                  <select
+                  <Select
                     className="custom-select"
-                    onChange={event => {
-                      const columnName = event.target.value;
+                    onChange={eventTargetValue => {
+                      const columnName = eventTargetValue;
                       onGotoValueSelectedColumnNameChanged(columnName);
                     }}
                     value={gotoValueSelectedColumnName}
@@ -378,7 +378,7 @@ const GotoRow = forwardRef<GotoRowElement, GotoRowProps>(
                         {column.name}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
 
                 {renderValueInput()}

@@ -1,4 +1,8 @@
-import type { RootState } from './store';
+import type {
+  CustomizableWorkspace,
+  RootState,
+  WorkspaceSettings,
+} from './store';
 
 const EMPTY_OBJECT = Object.freeze({});
 
@@ -6,7 +10,7 @@ const EMPTY_MAP: ReadonlyMap<unknown, unknown> = new Map();
 
 export type Selector<State extends RootState, R> = (store: State) => R;
 
-type Settings<State extends RootState> = State['workspace']['data']['settings'];
+type Settings<State extends RootState> = State['defaultWorkspaceSettings'];
 
 export const getApi = <State extends RootState>(store: State): State['api'] =>
   store.api;
@@ -41,15 +45,39 @@ export const getWorkspaceStorage = <State extends RootState>(
   store: State
 ): State['storage']['workspaceStorage'] => getStorage(store).workspaceStorage;
 
+export const getDefaultWorkspaceSettings = <State extends RootState>(
+  store: State
+): State['defaultWorkspaceSettings'] => store.defaultWorkspaceSettings;
+
 // Workspace
 export const getWorkspace = <State extends RootState>(
   store: State
-): State['workspace'] => store.workspace;
+): CustomizableWorkspace => {
+  const { workspace } = store;
+  return workspace;
+};
 
 // Settings
 export const getSettings = <State extends RootState>(
   store: State
-): Settings<State> => getWorkspace(store).data.settings;
+): WorkspaceSettings => {
+  const customizedSettings = getWorkspace(store).data.settings;
+
+  const settings = { ...getDefaultWorkspaceSettings(store) };
+  const keys = Object.keys(customizedSettings) as (keyof WorkspaceSettings)[];
+  for (let i = 0; i < keys.length; i += 1) {
+    const key = keys[i];
+    if (customizedSettings[key] !== undefined) {
+      // @ts-expect-error assign non-undefined customized settings to settings
+      settings[key] = customizedSettings[key];
+    }
+  }
+  return settings;
+};
+
+export const getDefaultSettings = <State extends RootState>(
+  store: State
+): Settings<State> => store.defaultWorkspaceSettings;
 
 export const getDefaultDateTimeFormat = <State extends RootState>(
   store: State
@@ -72,7 +100,7 @@ export const getDefaultIntegerFormatOptions = <
 
 export const getFormatter = <State extends RootState>(
   store: State
-): Settings<State>['formatter'] => getSettings(store).formatter;
+): Settings<State>['formatter'] => getSettings(store).formatter ?? [];
 
 export const getTimeZone = <State extends RootState>(
   store: State
@@ -96,7 +124,7 @@ export const getTruncateNumbersWithPound = <
 export const getDisableMoveConfirmation = <State extends RootState>(
   store: State
 ): Settings<State>['disableMoveConfirmation'] =>
-  getSettings(store).disableMoveConfirmation || false;
+  getSettings(store).disableMoveConfirmation === true;
 
 export const getShortcutOverrides = <State extends RootState>(
   store: State

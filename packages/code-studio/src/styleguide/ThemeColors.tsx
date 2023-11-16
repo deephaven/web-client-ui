@@ -1,12 +1,15 @@
-import React, { useMemo } from 'react';
+/* eslint-disable react/jsx-props-no-spreading */
+import React from 'react';
 import { Tooltip } from '@deephaven/components';
 import { ColorUtils } from '@deephaven/utils';
 import palette from '@deephaven/components/src/theme/theme-dark/theme-dark-palette.css?inline';
 import semantic from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic.css?inline';
+import chart from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic-chart.css?inline';
 import semanticEditor from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic-editor.css?inline';
 import semanticGrid from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic-grid.css?inline';
 import components from '@deephaven/components/src/theme/theme-dark/theme-dark-components.css?inline';
 import styles from './ThemeColors.module.scss';
+import { sampleSectionIdAndClasses } from './utils';
 
 // Group names are extracted from var names via a regex capture group. Most of
 // them work pretty well, but some need to be remapped to a more appropriate
@@ -14,6 +17,11 @@ import styles from './ThemeColors.module.scss';
 const reassignVarGroups: Record<string, string> = {
   '--dh-color-black': 'gray',
   '--dh-color-white': 'gray',
+  // Semantic
+  '--dh-color-visual-positive': 'Visual Status',
+  '--dh-color-visual-negative': 'Visual Status',
+  '--dh-color-visual-notice': 'Visual Status',
+  '--dh-color-visual-info': 'Visual Status',
   // Editor
   '--dh-color-editor-bg': 'editor',
   '--dh-color-editor-fg': 'editor',
@@ -45,6 +53,18 @@ const renameGroups = {
     selection: 'state',
     focus: 'state',
   },
+  chart: {
+    axis: 'Chart',
+    bg: 'Chart',
+    grid: 'Chart',
+    plot: 'Chart',
+    title: 'Chart',
+    active: 'Data',
+    trend: 'Data',
+    area: 'Data',
+    range: 'Data',
+    line: 'Deprecated',
+  },
   grid: { data: 'Data Bars', context: 'Context Menu' },
   semantic: {
     positive: 'status',
@@ -55,22 +75,20 @@ const renameGroups = {
   },
 };
 
-export function ThemeColors(): JSX.Element {
-  const swatchDataGroups = useMemo(
-    () => ({
-      'Theme Color Palette': buildColorGroups(palette, 1),
-      'Semantic Colors': buildColorGroups(semantic, 1, renameGroups.semantic),
-      'Editor Colors': buildColorGroups(semanticEditor, 2, renameGroups.editor),
-      'Grid Colors': buildColorGroups(semanticGrid, 2, renameGroups.grid),
-      'Component Colors': buildColorGroups(components, 1),
-    }),
-    []
-  );
+const swatchDataGroups = {
+  'Theme Color Palette': buildColorGroups(palette, 1),
+  'Semantic Colors': buildColorGroups(semantic, 1, renameGroups.semantic),
+  'Chart Colors': buildColorGroups(chart, 2, renameGroups.chart),
+  'Editor Colors': buildColorGroups(semanticEditor, 2, renameGroups.editor),
+  'Grid Colors': buildColorGroups(semanticGrid, 2, renameGroups.grid),
+  'Component Colors': buildColorGroups(components, 1),
+};
 
+export function ThemeColors(): JSX.Element {
   return (
     <>
       {Object.entries(swatchDataGroups).map(([label, data]) => (
-        <div key={label}>
+        <div key={label} {...sampleSectionIdAndClasses(label)}>
           <h2 className="ui-title">{label}</h2>
           <div className={styles.themeColors}>
             {Object.entries(data).map(([group, swatchData]) => (
@@ -137,15 +155,40 @@ function extractColorVars(
   styleText: string
 ): { name: string; value: string }[] {
   const computedStyle = getComputedStyle(document.documentElement);
+  const varNames = styleText
+    .split(/[\n;]/g)
+    // Non-minified css will have leading 2 spaces in front of each css variable
+    // declaration. Minified has no prefix except for the first line which will
+    // have ':root{' prefix.
+    .map(line => /^(?:\s{2}|:root\{)?(--dh-color-(?:[^:]+))/.exec(line)?.[1])
+    .filter((match): match is string => Boolean(match));
 
-  return styleText
-    .split('\n')
-    .map(line => /^\s{2}(--dh-color-(?:[^:]+))/.exec(line)?.[1])
-    .filter(Boolean)
-    .map(varName =>
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      ({ name: varName!, value: computedStyle.getPropertyValue(varName!)! })
-    );
+  return varNames
+    .map(varName => {
+      const value = computedStyle.getPropertyValue(varName);
+
+      // Chart colorway consists of multiple colors, so split into separate
+      // swatches for illustration. Note that this assumes the colors are hsl
+      // values. We'll need to make this more robust if we ever change the
+      // default themes to use non-hsl.
+      if (varName === '--dh-color-chart-colorway') {
+        const colorwayColors = value
+          .split('hsl')
+          .filter(Boolean)
+          .map(v => `hsl${v.trim()}`);
+
+        return colorwayColors.map((varExp, i) => ({
+          name: `${varName}-${i}`,
+          value: varExp,
+        }));
+      }
+
+      return {
+        name: varName,
+        value,
+      };
+    })
+    .flat();
 }
 
 /** Group color data based on capture group value */

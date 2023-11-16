@@ -457,6 +457,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     onError: (): void => undefined,
     onStateChange: (): void => undefined,
     onAdvancedSettingsChange: (): void => undefined,
+    partitionColumns: EMPTY_ARRAY,
     quickFilters: EMPTY_MAP,
     selectDistinctColumns: EMPTY_ARRAY,
     sorts: EMPTY_ARRAY,
@@ -590,7 +591,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleGotoValueSubmitted = this.handleGotoValueSubmitted.bind(this);
 
     this.grid = null;
-    this.gridWrapper = null;
     this.lastLoadedConfig = null;
     this.pending = new Pending();
     this.globalColumnFormats = EMPTY_ARRAY;
@@ -934,8 +934,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   grid: Grid | null;
 
-  gridWrapper: HTMLDivElement | null;
-
   lastFocusedFilterBarColumn?: number;
 
   lastLoadedConfig: Pick<
@@ -999,6 +997,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   contextActions: ContextAction[];
 
   tableUtils: TableUtils;
+
+  get gridWrapper(): HTMLDivElement | null {
+    return this.grid?.canvasWrapper.current ?? null;
+  }
 
   getAdvancedMenuOpenedHandler = memoize(
     (column: ModelIndex) => this.handleAdvancedMenuOpened.bind(this, column),
@@ -4386,33 +4388,27 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               />
             </div>
           </CSSTransition>
-          <div
-            className="grid-wrapper"
-            ref={gridWrapper => {
-              this.gridWrapper = gridWrapper;
+          <Grid
+            ref={grid => {
+              this.grid = grid;
             }}
+            isStickyBottom={!isEditableGridModel(model) || !model.isEditable}
+            isStuckToBottom={isStuckToBottom}
+            isStuckToRight={isStuckToRight}
+            metricCalculator={metricCalculator}
+            model={model}
+            keyHandlers={keyHandlers}
+            mouseHandlers={mouseHandlers}
+            movedColumns={movedColumns}
+            movedRows={movedRows}
+            onError={this.handleGridError}
+            onViewChanged={this.handleViewChanged}
+            onSelectionChanged={this.handleSelectionChanged}
+            onMovedColumnsChanged={this.handleMovedColumnsChanged}
+            renderer={this.renderer}
+            stateOverride={stateOverride}
+            theme={theme}
           >
-            <Grid
-              ref={grid => {
-                this.grid = grid;
-              }}
-              isStickyBottom={!isEditableGridModel(model) || !model.isEditable}
-              isStuckToBottom={isStuckToBottom}
-              isStuckToRight={isStuckToRight}
-              metricCalculator={metricCalculator}
-              model={model}
-              keyHandlers={keyHandlers}
-              mouseHandlers={mouseHandlers}
-              movedColumns={movedColumns}
-              movedRows={movedRows}
-              onError={this.handleGridError}
-              onViewChanged={this.handleViewChanged}
-              onSelectionChanged={this.handleSelectionChanged}
-              onMovedColumnsChanged={this.handleMovedColumnsChanged}
-              renderer={this.renderer}
-              stateOverride={stateOverride}
-              theme={theme}
-            />
             <IrisGridCellOverflowModal
               isOpen={showOverflowModal}
               text={overflowText}
@@ -4491,7 +4487,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               this.getExpandCellTooltip(expandCellTooltipProps)}
             {linkHoverTooltipProps &&
               this.getLinkHoverTooltip(linkHoverTooltipProps)}
-          </div>
+          </Grid>
           <GotoRow
             ref={this.gotoRowRef}
             model={model}

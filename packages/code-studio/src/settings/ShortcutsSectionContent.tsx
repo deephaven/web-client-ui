@@ -2,24 +2,21 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { connect } from 'react-redux';
 import { Shortcut, ShortcutRegistry } from '@deephaven/components';
 import {
-  getSettings,
   getShortcutOverrides,
   RootState,
-  saveSettings as saveSettingsAction,
+  updateSettings as updateSettingsAction,
   WorkspaceSettings,
 } from '@deephaven/redux';
 import ShortcutItem from './ShortcutItem';
 
 type ShortcutSectionContentProps = {
-  settings: WorkspaceSettings;
   shortcutOverrides: WorkspaceSettings['shortcutOverrides'];
-  saveSettings: typeof saveSettingsAction;
+  updateSettings: typeof updateSettingsAction;
 };
 
 function ShortcutSectionContent({
   shortcutOverrides = {},
-  settings,
-  saveSettings,
+  updateSettings,
 }: ShortcutSectionContentProps): JSX.Element {
   const saveShortcutOverrides = useCallback(
     (modifiedShortcuts: Shortcut[]) => {
@@ -41,12 +38,11 @@ function ShortcutSectionContent({
         }
       });
 
-      saveSettings({
-        ...settings,
+      updateSettings({
         shortcutOverrides: newOverrides,
       });
     },
-    [settings, saveSettings, shortcutOverrides]
+    [updateSettings, shortcutOverrides]
   );
 
   let categories = Array.from(
@@ -143,12 +139,11 @@ function ShortcutCategory({
 
 const mapStateToProps = (
   state: RootState
-): Pick<ShortcutSectionContentProps, 'settings' | 'shortcutOverrides'> => ({
-  settings: getSettings(state),
+): Pick<ShortcutSectionContentProps, 'shortcutOverrides'> => ({
   shortcutOverrides: getShortcutOverrides(state),
 });
 
-const mapDispatchToProps = { saveSettings: saveSettingsAction };
+const mapDispatchToProps = { updateSettings: updateSettingsAction };
 
 const ConnectedShortcutSectionContent = connect(
   mapStateToProps,

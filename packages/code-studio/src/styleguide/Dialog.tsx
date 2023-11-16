@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 /* eslint no-alert: "off" */
 /* eslint no-console: "off" */
 import React, { Component } from 'react';
@@ -7,6 +8,7 @@ import {
   HierarchicalCheckboxValueMap,
   Button,
 } from '@deephaven/components';
+import { sampleSectionIdAndClasses } from './utils';
 
 interface DialogState {
   isShown: boolean;
@@ -61,7 +63,7 @@ class Dialog extends Component<unknown, DialogState> {
 
   renderChild(): React.ReactElement {
     return (
-      <div className="p-3">
+      <div {...sampleSectionIdAndClasses('dialog', ['p-3'])}>
         <h4>Sample Child</h4>
         <div className="form-group">
           <label htmlFor="exampleInput1">

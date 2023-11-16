@@ -94,6 +94,14 @@ Note that log messages from other sources such as react prop types will still be
 
 If you want to collect coverage locally, run `npm test -- --coverage`
 
+### Debugging Unit Tests
+Unit tests can be debugged by running jest with the `--inspect-brk` flag and attaching to the node process in vscode's debugger. There are 2 launch configs that make this easier:
+
+- Debug Jest Tests - This will prompt you for a test name or pattern and will then run tests in watch mode with an attached debugger.
+- Attach to Node Process - This will attempt to attach to an existing node process running with `--inspect-brk`. There is an npm script `test:debug` that can start the process for you. By default, it will run with the same configuration as `npm test`, but you can supply additional parameters to narrow the scope of tests being run.
+
+  e.g. `npm run test:debug ThemeUtils` would only run modules with "ThemeUtils" in the name.
+
 ## E2E Tests
 
 We use [Playwright](https://playwright.dev/) for end-to-end tests. We test against Chrome, Firefox, and Webkit (Safari). Snapshots from E2E tests are only run against Linux so they can be validated in CI.
@@ -103,6 +111,12 @@ You should be able to pass arguments to these commands as if you were running Pl
 Snapshots are used by end-to-end tests to visually verify the output. Snapshots are both OS and browser specific. Sometimes changes are made requiring snapshots to be updated. Update snapshots locally by running `npm run e2e:update-snapshots`.
 
 Once you are satisfied with the snapshots and everything is passing locally, you need to use the docker image to update snapshots for CI (unless you are running the same platform as CI (Ubuntu)). Run `npm run e2e:update-ci-snapshots` to update the CI snapshots. The snapshots will be written to your local directories. The Linux snapshots should be committed to git (non-Linux snapshots should be automatically ignored by git).
+
+### Differences in CI vs Local Docker Environments
+Note that while both the GH actions and docker configuration use Ubuntu 22.04 images, their configurations are not identical. One known difference is the available system fonts. In some cases this can cause snapshots to differ when running locally vs in CI such as when rendering unicode characters. To mitigate this, some of our e2e tests have been configured to ensure a consistent unicode font fallback.
+
+- The `DejaVu Sans` font gets installed via the [Dockerfile](tests/docker-scripts/Dockerfile). It already exists in the CI environment.
+- Font family stacks that involve unicode characters can explicitly fallback to `DejaVu Sans` if they impact snapshots. e.g We do so in [Grids.tsx](packages/code-studio/src/styleguide/Grids.tsx) by setting the canvas font to `12px Arial, "DejaVu Sans", sans-serif`
 
 ### Local
 

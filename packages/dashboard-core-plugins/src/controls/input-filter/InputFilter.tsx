@@ -10,7 +10,7 @@ import React, {
   KeyboardEvent,
   ReactElement,
 } from 'react';
-import { Button, CardFlip } from '@deephaven/components';
+import { Button, CardFlip, Select } from '@deephaven/components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsGear } from '@deephaven/icons';
 import type { Column } from '@deephaven/jsapi-types';
@@ -123,10 +123,9 @@ class InputFilter extends Component<InputFilterProps, InputFilterState> {
     return name;
   });
 
-  handleColumnChange(event: ChangeEvent<HTMLSelectElement>): void {
+  handleColumnChange(eventTargetValue: string): void {
     const { columns } = this.props;
-    const { value } = event.target;
-    const selectedColumn = columns[parseInt(value, 10)];
+    const selectedColumn = columns[parseInt(eventTargetValue, 10)];
 
     log.debug2('handleColumnChange', selectedColumn);
 
@@ -241,11 +240,13 @@ class InputFilter extends Component<InputFilterProps, InputFilterState> {
           <div className="input-filter-settings-content">
             <div className="input-filter-settings-grid">
               <label>Filter Column</label>
-              <select
-                value={columns.findIndex(
-                  item =>
-                    item.name === selectedColumn?.name &&
-                    item.type === selectedColumn?.type
+              <Select
+                value={String(
+                  columns.findIndex(
+                    item =>
+                      item.name === selectedColumn?.name &&
+                      item.type === selectedColumn?.type
+                  )
                 )}
                 className="custom-select"
                 onChange={this.handleColumnChange}
@@ -263,7 +264,7 @@ class InputFilter extends Component<InputFilterProps, InputFilterState> {
                     No Available Columns
                   </option>
                 )}
-              </select>
+              </Select>
               <div className="text-muted small">
                 Input filter control will apply its filter to all columns
                 matching this name in this dashboard.

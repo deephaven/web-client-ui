@@ -230,6 +230,14 @@ class MockIrisGridTreeModel
     // Ignore for mock
   }
 
+  get partitionColumns(): never[] {
+    return [];
+  }
+
+  set partitionColumns(partitionColumns: never[]) {
+    // Ignore for mock
+  }
+
   set formatter(formatter: Formatter) {
     // Ignore for mock
   }

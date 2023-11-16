@@ -25,7 +25,7 @@ import ChartUtils, {
   FilterColumnMap,
   FilterMap,
 } from './ChartUtils';
-import ChartTheme from './ChartTheme';
+import { ChartTheme } from './ChartTheme';
 
 const log = Log.module('FigureChartModel');
 
@@ -38,13 +38,14 @@ class FigureChartModel extends ChartModel {
   /**
    * @param dh JSAPI instance
    * @param figure The figure object created by the API
+   * @param theme The theme for the figure
    * @param settings Chart settings
    */
   constructor(
     dh: DhType,
     figure: Figure,
-    settings: Partial<ChartModelSettings> = {},
-    theme: typeof ChartTheme = ChartTheme
+    theme: ChartTheme,
+    settings: Partial<ChartModelSettings> = {}
   ) {
     super(dh);
 
@@ -98,7 +99,7 @@ class FigureChartModel extends ChartModel {
 
   settings: Partial<ChartModelSettings>;
 
-  theme: typeof ChartTheme;
+  theme: ChartTheme;
 
   data: Partial<Data>[];
 
@@ -184,8 +185,8 @@ class FigureChartModel extends ChartModel {
       series,
       axisTypeMap,
       ChartUtils.getSeriesVisibility(series.name, this.settings),
-      showLegend,
-      this.theme
+      this.theme,
+      showLegend
     );
 
     this.seriesDataMap.set(series.name, seriesData);
@@ -265,6 +266,11 @@ class FigureChartModel extends ChartModel {
         ? this.dh.plot.DownsampleOptions.DISABLE
         : this.dh.plot.DownsampleOptions.DEFAULT
     );
+
+    if (this.figure.errors.length > 0) {
+      log.error('Errors in figure', this.figure.errors);
+      this.fireError(this.figure.errors);
+    }
   }
 
   unsubscribeFigure(): void {
@@ -458,11 +464,11 @@ class FigureChartModel extends ChartModel {
       }
 
       this.seriesToProcess.delete(series.name);
-      if (this.seriesToProcess.size === 0) {
-        this.fireLoadFinished();
-      }
 
       this.cleanSeries(series);
+    }
+    if (this.seriesToProcess.size === 0) {
+      this.fireLoadFinished();
     }
 
     const { data } = this;
@@ -471,6 +477,7 @@ class FigureChartModel extends ChartModel {
 
   handleRequestFailed(event: ChartEvent): void {
     log.error('Request failed', event);
+    this.fireError([`${event.detail}`]);
   }
 
   /**
@@ -600,10 +607,10 @@ class FigureChartModel extends ChartModel {
     this.chartUtils.updateFigureAxes(
       this.layout,
       this.figure,
+      this.theme,
       chart => this.getAxisRangeParser(chart, this.formatter),
       plotWidth,
-      plotHeight,
-      this.theme
+      plotHeight
     );
   }
 
@@ -688,14 +695,16 @@ class FigureChartModel extends ChartModel {
         seriesData.error_x = ChartUtils.getPlotlyErrorBars(
           x as number[],
           xLow,
-          xHigh
+          xHigh,
+          this.theme
         );
       }
       if (yLow && yHigh && yLow !== y) {
         seriesData.error_y = ChartUtils.getPlotlyErrorBars(
           y as number[],
           yLow,
-          yHigh
+          yHigh,
+          this.theme
         );
       }
     } else if (plotStyle === dh.plot.SeriesPlotStyle.TREEMAP) {

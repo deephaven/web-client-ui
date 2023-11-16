@@ -41,6 +41,7 @@
     "start:embed-grid": "lerna run start --scope=@deephaven/embed-grid --stream",
     "pretest": "npm run build:necessary",
     "test": "jest --watch --changedSince origin/main",
+    "test:debug": "node --inspect-brk node_modules/.bin/jest --config jest.config.unit.cjs --runInBand --watch",
     "pretest:unit": "npm run pretest",
     "test:unit": "jest --config jest.config.unit.cjs",
     "test:lint": "jest --config jest.config.lint.cjs",

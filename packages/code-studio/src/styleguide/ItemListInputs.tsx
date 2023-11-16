@@ -1,11 +1,15 @@
+/* eslint-disable react/jsx-props-no-spreading */
 /* eslint no-console: "off" */
 import React from 'react';
 import SelectValueListInput from './SelectValueListInput';
 import ItemListInput from './ItemListInput';
+import { sampleSectionIdAndClasses } from './utils';
 
 function ItemListInputs(): React.ReactElement {
   return (
-    <div className="style-guide-inputs">
+    <div
+      {...sampleSectionIdAndClasses('item-list-inputs', ['style-guide-inputs'])}
+    >
       <h2 className="ui-title">Item Lists</h2>
 
       <div className="row">

@@ -1,17 +1,17 @@
 :root {
   /* Gray */
-  --dh-color-gray-hue: 0deg;
-  --dh-color-gray-50: hsl(var(--dh-color-gray-hue) 6% 10%);
-  --dh-color-gray-75: hsl(var(--dh-color-gray-hue) 5% 13%);
-  --dh-color-gray-100: hsl(var(--dh-color-gray-hue) 5% 17%);
-  --dh-color-gray-200: hsl(var(--dh-color-gray-hue) 4% 19%);
-  --dh-color-gray-300: hsl(var(--dh-color-gray-hue) 4% 21%);
-  --dh-color-gray-400: hsl(var(--dh-color-gray-hue) 2% 25%);
-  --dh-color-gray-500: hsl(var(--dh-color-gray-hue) 1% 36%);
-  --dh-color-gray-600: hsl(var(--dh-color-gray-hue) 0% 57%);
-  --dh-color-gray-700: hsl(var(--dh-color-gray-hue) 1% 75%);
-  --dh-color-gray-800: hsl(var(--dh-color-gray-hue) 6% 94%);
-  --dh-color-gray-900: hsl(var(--dh-color-gray-hue) 25% 98%);
+  --dh-color-gray-hue: 219deg;
+  --dh-color-gray-50: hsl(calc(var(--dh-color-gray-hue) + 81deg), 6%, 10%);
+  --dh-color-gray-75: hsl(calc(var(--dh-color-gray-hue) + 61deg), 5%, 13%);
+  --dh-color-gray-100: hsl(calc(var(--dh-color-gray-hue) + 66deg), 5%, 17%);
+  --dh-color-gray-200: hsl(calc(var(--dh-color-gray-hue) + 66deg), 4%, 19%);
+  --dh-color-gray-300: hsl(calc(var(--dh-color-gray-hue) + 66deg), 4%, 21%);
+  --dh-color-gray-400: hsl(calc(var(--dh-color-gray-hue) + 61deg), 2%, 25%);
+  --dh-color-gray-500: hsl(calc(var(--dh-color-gray-hue) + 51deg), 1%, 36%);
+  --dh-color-gray-600: hsl(calc(var(--dh-color-gray-hue) + 81deg), 0%, 57%);
+  --dh-color-gray-700: hsl(calc(var(--dh-color-gray-hue) - 219deg), 1%, 75%);
+  --dh-color-gray-800: hsl(calc(var(--dh-color-gray-hue) - 159deg), 6%, 94%);
+  --dh-color-gray-900: hsl(calc(var(--dh-color-gray-hue) - 159deg), 25%, 98%);
 
   /** Black & White */
   --dh-color-black: var(--dh-color-gray-50);

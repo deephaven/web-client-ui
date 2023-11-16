@@ -38,6 +38,36 @@ test('can open a simple table', async ({ page }) => {
   await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
 });
 
+test('can make a non-contiguous table row selection', async ({ page }) => {
+  await page.goto('');
+  await openSimpleTable(page);
+
+  const grid = await page.locator('.iris-grid-panel .iris-grid');
+  const gridLocation = await grid.boundingBox();
+  expect(gridLocation).not.toBeNull();
+  if (gridLocation === null) return;
+
+  // Based on default row and header height in IrisGridTheme
+  // Ideally this would be calculated from the current theme
+  const rowHeight = 19;
+  const columnHeaderHeight = 30;
+
+  // ctrl+click on every other row for 9 rows, starting at row 0 after the header
+  /* eslint-disable no-await-in-loop */
+  for (let i = 0; i < 9; i += 1) {
+    await page.keyboard.down('Control');
+    await page.mouse.click(
+      gridLocation.x + 1, // plus one so we click on the first pixel not 0
+      gridLocation.y + 1 + columnHeaderHeight + rowHeight * i * 2
+      // times 2 because we're skipping every other row
+    );
+    await page.keyboard.up('Control');
+  }
+  /* eslint-enable no-await-in-loop */
+
+  await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
+});
+
 test('can open a table with column header groups', async ({ page }) => {
   await page.goto('');
   const consoleInput = page.locator('.console-input');

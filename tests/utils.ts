@@ -1,6 +1,15 @@
-import { Locator, expect, Page } from '@playwright/test';
+import {
+  Locator,
+  expect,
+  Page,
+  chromium,
+  firefox,
+  webkit,
+} from '@playwright/test';
 import os from 'node:os';
 import shortid from 'shortid';
+
+export const HIDE_FROM_E2E_TESTS_CLASS = 'hide-from-e2e-tests';
 
 export enum TableTypes {
   Number,
@@ -20,6 +29,25 @@ export function generateVarName(prefix = 'v'): string {
     id = shortid();
   } while (id.includes('-'));
   return `${prefix}_${id}`;
+}
+
+/**
+ * Log browser type and version.
+ * @param browser
+ */
+export async function logBrowserInfo(): Promise<void> {
+  const launchers = [chromium, firefox, webkit];
+
+  // eslint-disable-next-line no-restricted-syntax
+  for (const launcher of launchers) {
+    // eslint-disable-next-line no-await-in-loop
+    const browser = await launcher.launch();
+
+    // eslint-disable-next-line no-console
+    console.log('Browser:', browser.browserType().name(), browser.version());
+
+    browser.close();
+  }
 }
 
 /**

@@ -1,6 +1,6 @@
 /* eslint react/no-did-update-set-state: "off" */
 import React, { PureComponent } from 'react';
-import { Button } from '@deephaven/components';
+import { Button, Select } from '@deephaven/components';
 import {
   getLabelForBooleanFilter,
   getLabelForDateFilter,
@@ -98,8 +98,8 @@ export class AdvancedFilterCreatorFilterItem extends PureComponent<
 
   typeDropdown: HTMLSelectElement | null;
 
-  handleTypeChange(event: React.ChangeEvent<HTMLSelectElement>): void {
-    const selectedType = event.target.value as FilterTypeValue;
+  handleTypeChange(eventTargetValue: string): void {
+    const selectedType = eventTargetValue as FilterTypeValue;
     log.debug2('typeChange', selectedType);
     this.setState({ selectedType });
 
@@ -186,8 +186,8 @@ export class AdvancedFilterCreatorFilterItem extends PureComponent<
       <div className="advanced-filter-creator-filter-item">
         <div className="form-row">
           <div className="form-group col">
-            <select
-              className="form-control custom-select"
+            <Select
+              className="form-control"
               value={selectedType}
               onChange={this.handleTypeChange}
               ref={typeDropdown => {
@@ -195,7 +195,7 @@ export class AdvancedFilterCreatorFilterItem extends PureComponent<
               }}
             >
               {typeOptionElements}
-            </select>
+            </Select>
           </div>
           {showValueInput && (
             <div className="form-group col">

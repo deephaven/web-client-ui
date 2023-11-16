@@ -27,6 +27,7 @@ import type { IdeSession } from '@deephaven/jsapi-types';
 import { ConsoleEvent, InputFilterEvent, TabEvent } from '../events';
 import PanelContextMenu from './PanelContextMenu';
 import RenameDialog from './RenameDialog';
+import './Panel.scss';
 
 const log = Log.module('Panel');
 

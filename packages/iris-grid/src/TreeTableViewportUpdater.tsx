@@ -7,6 +7,7 @@ import type {
   RemoverFn,
   Sort,
   Table,
+  ViewportData,
 } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 
@@ -22,7 +23,7 @@ interface TreeTableViewportUpdaterProps {
   filters: FilterCondition[];
   sorts: Sort[];
   updateInterval: number;
-  onViewportUpdate: EventListener;
+  onViewportUpdate: EventListener<ViewportData>;
 }
 
 /**

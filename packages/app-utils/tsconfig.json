@@ -10,6 +10,7 @@
     { "path": "../auth-plugins" },
     { "path": "../chart" },
     { "path": "../components" },
+    { "path": "../dashboard" },
     { "path": "../iris-grid" },
     { "path": "../jsapi-bootstrap" },
     { "path": "../jsapi-components" },

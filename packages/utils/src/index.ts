@@ -15,6 +15,7 @@ export { default as Pending } from './Pending';
 export * from './PromiseUtils';
 export * from './Asserts';
 export * from './ErrorUtils';
+export * from './ObjectUtils';
 export { default as RangeUtils, generateRange } from './RangeUtils';
 export type { Range } from './RangeUtils';
 export { default as TextUtils } from './TextUtils';

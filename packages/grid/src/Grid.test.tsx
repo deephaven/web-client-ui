@@ -70,10 +70,21 @@ function makeMockCanvas() {
   };
 }
 
+function makeMockWrapper() {
+  return {
+    focus: jest.fn(),
+    getBoundingClientRect: () => ({ width: VIEW_SIZE, height: VIEW_SIZE }),
+  };
+}
+
 function createNodeMock(element: ReactElement) {
   if (element.type === 'canvas') {
     return makeMockCanvas();
   }
+  if (element?.props?.className?.includes('grid-wrapper') === true) {
+    return makeMockWrapper();
+  }
+
   return null;
 }
 

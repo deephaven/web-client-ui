@@ -14,13 +14,13 @@ import {
   SET_FILE_STORAGE,
   SET_SERVER_CONFIG_VALUES,
   SET_API,
+  SET_DEFAULT_WORKSPACE_SETTINGS,
 } from './actionTypes';
 import type {
+  CustomizableWorkspace,
   RootState,
   ServerConfigValues,
   User,
-  Workspace,
-  WorkspaceData,
   WorkspaceSettings,
   WorkspaceStorage,
 } from './store';
@@ -41,9 +41,18 @@ export const setApi: PayloadActionCreator<DhType> = api => ({
   payload: api,
 });
 
-export const setWorkspace: PayloadActionCreator<Workspace> = workspace => ({
+export const setWorkspace: PayloadActionCreator<
+  CustomizableWorkspace
+> = workspace => ({
   type: SET_WORKSPACE,
   payload: workspace,
+});
+
+export const setDefaultWorkspaceSettings: PayloadActionCreator<
+  WorkspaceSettings
+> = settings => ({
+  type: SET_DEFAULT_WORKSPACE_SETTINGS,
+  payload: settings,
 });
 
 export const setWorkspaceStorage: PayloadActionCreator<
@@ -73,16 +82,15 @@ export const setFileStorage: PayloadActionCreator<
  */
 export const saveWorkspace =
   (
-    workspace: Workspace
+    workspace: CustomizableWorkspace
   ): ThunkAction<
-    Promise<Workspace>,
+    Promise<CustomizableWorkspace>,
     RootState,
     never,
     PayloadAction<unknown>
   > =>
   (dispatch, getState) => {
     dispatch(setWorkspace(workspace));
-
     const { storage } = getState();
     const { workspaceStorage } = storage;
     return workspaceStorage.save(workspace);
@@ -94,9 +102,9 @@ export const saveWorkspace =
  */
 export const updateWorkspaceData =
   (
-    workspaceData: Partial<WorkspaceData>
+    workspaceData: Partial<CustomizableWorkspace['data']>
   ): ThunkAction<
-    Promise<Workspace>,
+    Promise<CustomizableWorkspace>,
     RootState,
     never,
     PayloadAction<unknown>
@@ -109,6 +117,10 @@ export const updateWorkspaceData =
       data: {
         ...data,
         ...workspaceData,
+        settings: {
+          ...data.settings,
+          ...workspaceData.settings,
+        },
       },
     };
     return dispatch(saveWorkspace(newWorkspace));
@@ -118,18 +130,17 @@ export const updateWorkspaceData =
  * Sets the specified settings locally and saves them remotely
  * @param settings The settings to save
  */
-export const saveSettings =
+export const updateSettings =
   (
-    settings: WorkspaceSettings
+    settings: Partial<WorkspaceSettings>
   ): ThunkAction<
-    Promise<Workspace>,
+    Promise<CustomizableWorkspace>,
     RootState,
     never,
     PayloadAction<unknown>
   > =>
   dispatch =>
     dispatch(updateWorkspaceData({ settings }));
-
 export const setActiveTool: PayloadActionCreator<string> = payload => ({
   type: SET_ACTIVE_TOOL,
   payload,

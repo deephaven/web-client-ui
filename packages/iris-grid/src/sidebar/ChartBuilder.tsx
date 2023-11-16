@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button, RadioGroup, RadioItem } from '@deephaven/components';
+import { Button, RadioGroup, RadioItem, Select } from '@deephaven/components';
 import {
   vsLink,
   dhUnlink,
@@ -248,32 +248,24 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     this.setState({ type, seriesItems, xAxis, isLinked }, this.sendChange);
   }
 
-  handleSeriesChange(event: React.ChangeEvent<HTMLSelectElement>): void {
-    const { value } = event.target;
-    const index = event.target.getAttribute('data-index') as string;
-    const intIndex = parseInt(index, 10);
+  handleSeriesChange(eventTargetValue: string, index: number): void {
+    const value = eventTargetValue;
 
     this.setState(state => {
       let { seriesItems } = state;
-
       seriesItems = [...seriesItems];
-      seriesItems[intIndex].value = value;
+      seriesItems[index].value = value;
 
       return { seriesItems };
     }, this.sendChange);
   }
 
-  handleSeriesDeleteClick(event: React.MouseEvent<HTMLButtonElement>): void {
-    const changeEvent =
-      event as unknown as React.ChangeEvent<HTMLButtonElement>;
-    const index = changeEvent.target.getAttribute('data-index') as string;
-    const intIndex = parseInt(index, 10);
-
+  handleSeriesDeleteClick(index: number): void {
     this.setState(state => {
       const { seriesItems } = state;
       const newSeriesItems = [...seriesItems];
 
-      newSeriesItems.splice(intIndex, 1);
+      newSeriesItems.splice(index, 1);
 
       return { seriesItems: newSeriesItems };
     }, this.sendChange);
@@ -293,13 +285,8 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     });
   }
 
-  handleTypeClick(event: React.MouseEvent<HTMLButtonElement>): void {
-    const changeEvent =
-      event as unknown as React.ChangeEvent<HTMLButtonElement>;
-    const index = changeEvent.target.getAttribute('data-index') as string;
-    const intIndex = parseInt(index, 10);
-
-    const type = this.getTypes()[intIndex];
+  handleTypeClick(index: number): void {
+    const type = this.getTypes()[index];
 
     log.debug2('handleTypeSelect', type);
 
@@ -318,8 +305,8 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     }, this.sendChange);
   }
 
-  handleXAxisChange(event: React.ChangeEvent<HTMLSelectElement>): void {
-    const xAxis = event.target.value;
+  handleXAxisChange(eventTargetValue: string): void {
+    const xAxis = eventTargetValue;
     log.debug2('x-axis change', xAxis);
 
     this.setState({ xAxis }, this.sendChange);
@@ -363,8 +350,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
                           active: chartType === type,
                         }
                       )}
-                      data-index={index}
-                      onClick={this.handleTypeClick}
+                      onClick={() => this.handleTypeClick(index)}
                     >
                       {this.getTypeIcon(chartType)}
                       {this.getTypeName(chartType)}
@@ -377,8 +363,8 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
           <hr />
           <div className="form-row form-inline">
             <label className="col-2 label-left">{xAxisLabel}</label>
-            <select
-              className="form-control custom-select select-x-axis col"
+            <Select
+              className="form-control select-x-axis col"
               value={xAxis}
               onChange={this.handleXAxisChange}
             >
@@ -387,7 +373,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
                   {column.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
           {isSeriesVisible && <hr />}
           {seriesItems.map((seriesItem, i) => (
@@ -399,26 +385,26 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
               <label className="col-2 label-left">
                 {i === 0 ? seriesLabel : ''}
               </label>
-              <select
-                className="form-control custom-select select-series col"
+              <Select
+                className="form-control select-series col"
                 value={seriesItem.value}
-                onChange={this.handleSeriesChange}
+                onChange={v => this.handleSeriesChange(v, i)}
                 data-testid={`select-series-item-${i}`}
-                data-index={i}
               >
                 {columns.map(column => (
-                  <option key={column.name} value={column.name} data-index={i}>
+                  <option key={column.name} value={column.name}>
                     {column.name}
                   </option>
                 ))}
-              </select>
+              </Select>
               {seriesItems.length > 1 && (
                 <Button
                   kind="ghost"
                   className="btn-delete-series ml-2 px-2"
-                  data-index={i}
                   data-testid={`delete-series-${i}`}
-                  onClick={this.handleSeriesDeleteClick}
+                  onClick={() => {
+                    this.handleSeriesDeleteClick(i);
+                  }}
                   icon={vsTrash}
                   tooltip="Delete"
                 />
