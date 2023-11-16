@@ -1,25 +1,44 @@
 /* eslint-disable no-await-in-loop */
-import { expect, Locator, Page, test } from '@playwright/test';
-import { HIDE_FROM_E2E_TESTS_CLASS } from './utils';
+import { expect, Page, test } from '@playwright/test';
 
 let page: Page;
-let sampleSections: Locator;
+const sampleSectionIds: string[] = [];
+const buttonSectionIds: string[] = [];
 
-test.beforeEach(async ({ browser }, testInfo) => {
+test.beforeAll(async ({ browser }) => {
   page = await browser.newPage();
+
   await page.goto('/ide/styleguide');
 
-  sampleSections = page.locator('.sample-section');
-  await expect(sampleSections).toHaveCount(39);
+  // Get the ids of the sample sections
+  const sampleSections = page.locator('.sample-section');
+  const expectedSampleSectionsCount = 40;
+  await expect(sampleSections).toHaveCount(expectedSampleSectionsCount);
 
-  const hide = await page.locator(`.${HIDE_FROM_E2E_TESTS_CLASS}`).all();
+  sampleSectionIds.length = 0;
+  for (let i = 0; i < expectedSampleSectionsCount; i += 1) {
+    const sampleSection = sampleSections.nth(i);
+    const id = String(await sampleSection.getAttribute('id'));
+    sampleSectionIds.push(id);
+  }
 
-  hide.forEach(locator =>
-    locator.evaluate(el => {
-      // eslint-disable-next-line no-param-reassign
-      el.style.opacity = '0';
-    })
-  );
+  // Get the ids of the button sections
+  const buttonSections = page.locator('[id^="sample-section-buttons-"]');
+  const expectedButtonSectionsCount = 4;
+  await expect(buttonSections).toHaveCount(expectedButtonSectionsCount);
+
+  buttonSectionIds.length = 0;
+  for (let i = 0; i < expectedButtonSectionsCount; i += 1) {
+    const buttonSection = buttonSections.nth(i);
+    const id = String(await buttonSection.getAttribute('id'));
+    buttonSectionIds.push(id);
+  }
+
+  await page.close();
+});
+
+test.beforeEach(async ({ browser }) => {
+  page = await browser.newPage();
 });
 
 test.afterEach(async () => {
@@ -28,16 +47,16 @@ test.afterEach(async () => {
 
 // Iterate over all sample sections and take a screenshot of each one.
 test('UI regression test - Styleguide sections', async () => {
-  const sampleSectionCount = await sampleSections.count();
+  for (let i = 0; i < sampleSectionIds.length; i += 1) {
+    const id = sampleSectionIds[i];
 
-  for (let i = 0; i < sampleSectionCount; i += 1) {
-    const sampleSection = sampleSections.nth(i);
-    const id = String(await sampleSection.getAttribute('id'));
+    // Isolate the section
+    await page.goto(`/ide/styleguide?filterSections=true#${id}`);
 
-    // Scroll to the section. This is technically not necessary, but it mimics
-    // the user experience a little better and mimics the behavior of the fixed
-    // menu + scroll-to-top button that change based on scroll position.
-    await page.goto(`/ide/styleguide#${id}`);
+    // Have to reload since we are calling in a loop and only the hash is changing
+    await page.reload();
+
+    const sampleSection = page.locator(`#${id}`);
 
     await expect(sampleSection).toHaveScreenshot(
       `${id.replace(/^sample-section-/, '')}.png`
@@ -46,16 +65,17 @@ test('UI regression test - Styleguide sections', async () => {
 });
 
 test('Buttons regression test', async () => {
-  await page.goto('/ide/styleguide#sample-section-buttons-regular');
-
-  const buttonSections = page.locator('[id^="sample-section-buttons-"]');
-
-  await expect(buttonSections).toHaveCount(4);
-
   // Test focus and hover states for each enabled button
-  const buttonSectionCount = await buttonSections.count();
-  for (let i = 0; i < buttonSectionCount; i += 1) {
-    const section = buttonSections.nth(i);
+  for (let i = 0; i < buttonSectionIds.length; i += 1) {
+    const id = buttonSectionIds[i];
+
+    // Isolate the section
+    await page.goto(`/ide/styleguide?filterSections=true#${id}`);
+
+    // Need to reload since we are calling in a loop and only the hash is changing
+    await page.reload();
+
+    const section = page.locator(`#${id}`);
     const buttons = section.locator('button');
 
     const buttonCount = await buttons.count();
@@ -92,7 +112,7 @@ test('Buttons regression test', async () => {
 });
 
 test('Inputs regression test', async () => {
-  await page.goto('/ide/styleguide#sample-section-inputs');
+  await page.goto('/ide/styleguide?filterSections=true#sample-section-inputs');
 
   const columns = page.locator('#sample-section-inputs .col');
 
