@@ -13,13 +13,9 @@ import type {
 } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { Formatter } from '@deephaven/jsapi-utils';
-import {
-  EventShimCustomEvent,
-  PromiseUtils,
-  assertNotNull,
-} from '@deephaven/utils';
+import { EventShimCustomEvent, assertNotNull } from '@deephaven/utils';
 import IrisGridModel from './IrisGridModel';
-import { ColumnName, UITotalsTableConfig, UIRow } from './CommonTypes';
+import { ColumnName, UIRow } from './CommonTypes';
 import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
 
 const log = Log.module('IrisGridTableModel');
