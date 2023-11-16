@@ -1,7 +1,9 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { vsFile, dhTruck, vsListUnordered } from '@deephaven/icons';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { Menu, Page, Stack } from '@deephaven/components';
+import { pseudoRandomWithSeed, sampleSectionIdAndClasses } from './utils';
 
 enum MENU_ITEM_TYPE {
   SUBMENU = 'SUBMENU',
@@ -16,8 +18,12 @@ function getNewId(): number {
   return newId;
 }
 
+// Create a seeded random number generator
+const random = pseudoRandomWithSeed(25);
+
 function getRandomCount(min = 1, max = 5): number {
-  return Math.floor(Math.random() * max) + min;
+  const r = Number(random.next().value);
+  return Math.floor(r * max) + min;
 }
 
 type MenuItem = {
@@ -200,7 +206,7 @@ function Navigations(): JSX.Element {
   );
 
   return (
-    <div>
+    <div {...sampleSectionIdAndClasses('navigations')}>
       <h2 className="ui-title">Navigations</h2>
       <div className="navigations">
         <Stack>{stack}</Stack>

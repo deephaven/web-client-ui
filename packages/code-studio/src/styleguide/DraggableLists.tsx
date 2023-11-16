@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 /* eslint no-console: "off" */
 import React, { Component } from 'react';
 import {
@@ -9,6 +10,7 @@ import {
 import memoize from 'memoizee';
 import { DragUtils, DraggableItemList, Range } from '@deephaven/components';
 import DraggableListInput from './DraggableListInput';
+import { sampleSectionIdAndClasses } from './utils';
 
 const DRAG_LIST_TITLES = ['Draggable Only', 'Drag and Drop', 'Droppable Only'];
 const DRAG_LIST_PROPS = [
@@ -188,7 +190,11 @@ class DraggableLists extends Component<
   render(): React.ReactElement {
     const { items, lists, selectedRanges } = this.state;
     return (
-      <div className="style-guide-inputs">
+      <div
+        {...sampleSectionIdAndClasses('draggable-lists', [
+          'style-guide-inputs',
+        ])}
+      >
         <h2 className="ui-title">Drag and Drop Lists</h2>
         <div className="row">
           <DragDropContext

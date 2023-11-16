@@ -63,7 +63,7 @@ When new functions are added to the API, ideally stubs returning a generic succe
 
 ## Styleguide/Component Development
 
-When running in development mode (`npm run start`), a style guide is served up at http://localhost:4000/styleguide. Styleguide can be used to develop components. The styleguide displays many common components and how to use them. When creating a new component, it should be added to the [styleguide](./src/styleguide/).
+When running in development mode (`npm run start`), a style guide is served up at http://localhost:4000/ide/styleguide. Styleguide can be used to develop components. The styleguide displays many common components and how to use them. When creating a new component, it should be added to the [styleguide](./src/styleguide/). Note that the styleguide is lazy loaded in [AppRouter](packages/code-studio/src/main/AppRouter.tsx), so it should not increase the main app bundle size.
 
 ## Architecture
 
