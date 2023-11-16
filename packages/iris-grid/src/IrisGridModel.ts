@@ -220,6 +220,10 @@ abstract class IrisGridModel<
     return null;
   }
 
+  openPartitionKeysTable(): void {
+    throw new Error('Method not implemented.');
+  }
+
   /**
    * @returns The formatter used when formatting data
    */

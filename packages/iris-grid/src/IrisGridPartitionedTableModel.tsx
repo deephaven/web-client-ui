@@ -22,7 +22,6 @@ import type {
   ValueTypeUnion,
 } from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
-import { EventShimCustomEvent } from '@deephaven/utils';
 import Log from '@deephaven/log';
 import {
   ColumnName,

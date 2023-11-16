@@ -284,7 +284,6 @@ export interface IrisGridProps {
   onDataSelected: (index: ModelIndex, map: Record<ColumnName, unknown>) => void;
   onStateChange: (irisGridState: IrisGridState, gridState: GridState) => void;
   onAdvancedSettingsChange: AdvancedSettingsMenuCallback;
-  partitions: (string | null)[];
   partitionColumns: Column[];
   sorts: readonly Sort[];
   reverseType: ReverseType;
@@ -458,7 +457,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     onError: (): void => undefined,
     onStateChange: (): void => undefined,
     onAdvancedSettingsChange: (): void => undefined,
-    partitions: [],
     quickFilters: EMPTY_MAP,
     selectDistinctColumns: EMPTY_ARRAY,
     sorts: EMPTY_ARRAY,
@@ -573,6 +571,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleDownloadCompleted = this.handleDownloadCompleted.bind(this);
     this.handlePartitionChange = this.handlePartitionChange.bind(this);
     this.handlePartitionMerge = this.handlePartitionMerge.bind(this);
+    this.handlePartitionKeyTable = this.handlePartitionKeyTable.bind(this);
     this.handleColumnVisibilityChanged =
       this.handleColumnVisibilityChanged.bind(this);
     this.handleColumnVisibilityReset =
@@ -1883,19 +1882,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.initFormatter();
   }
 
-  async loadPartitionsTable(): Promise<void> {
-    const { model } = this.props;
-    log.log('loadPartitionsTable');
-
-    try {
-      this.setState({ isSelectingPartition: true }, () => {
-        this.initState();
-      });
-    } catch (error) {
-      this.handleTableLoadError(error);
-    }
-  }
-
   copyCell(
     columnIndex: GridRangeIndex,
     rowIndex: GridRangeIndex,
@@ -2305,6 +2291,11 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   handlePartitionMerge(): void {
     const { model } = this.props;
     model.partition = [];
+  }
+
+  handlePartitionKeyTable(): void {
+    const { model } = this.props;
+    model.openPartitionKeysTable();
   }
 
   handleTableLoadError(error: unknown): void {
@@ -4368,6 +4359,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                   partitions={model.partition}
                   onChange={this.handlePartitionChange}
                   onMerge={this.handlePartitionMerge}
+                  onKeyTable={this.handlePartitionKeyTable}
                 />
               )}
             </div>

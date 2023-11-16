@@ -32,6 +32,7 @@ interface IrisGridPartitionSelectorProps<T> {
   partitions: readonly unknown[];
   onMerge: () => void;
   onChange: (partitions: readonly unknown[]) => void;
+  onKeyTable: () => void;
 }
 interface IrisGridPartitionSelectorState {
   isShowingKeys: boolean;
@@ -45,13 +46,14 @@ class IrisGridPartitionSelector<T> extends Component<
   static defaultProps = {
     onChange: (): void => undefined,
     onMerge: (): void => undefined,
-    onDone: (): void => undefined,
+    onKeyTable: (): void => undefined,
     partitions: [],
   };
 
   constructor(props: IrisGridPartitionSelectorProps<T>) {
     super(props);
 
+    this.handleKeyTableClick = this.handleKeyTableClick.bind(this);
     this.handleMergeClick = this.handleMergeClick.bind(this);
     this.handlePartitionChange = this.handlePartitionChange.bind(this);
     this.handlePartitionSelect = this.handlePartitionSelect.bind(this);
@@ -119,9 +121,17 @@ class IrisGridPartitionSelector<T> extends Component<
 
   selectorSearch: (PartitionSelectorSearch<T> | null)[];
 
+  handleKeyTableClick(): void {
+    log.debug2('handleKeyTableClick');
+
+    this.setState({ isShowingKeys: true });
+    this.sendKeyTable();
+  }
+
   handleMergeClick(): void {
     log.debug2('handleMergeClick');
 
+    this.setState({ isShowingKeys: false });
     this.sendMerge();
   }
 
@@ -167,9 +177,12 @@ class IrisGridPartitionSelector<T> extends Component<
 
     this.updatePartitions(index, newPartitions, prevTables).then(
       ([partitions, partitionTables]) => {
-        this.setState({ partitions, partitionTables }, () => {
-          this.sendUpdate();
-        });
+        this.setState(
+          { isShowingKeys: false, partitions, partitionTables },
+          () => {
+            this.sendUpdate();
+          }
+        );
       }
     );
   }
@@ -213,6 +226,15 @@ class IrisGridPartitionSelector<T> extends Component<
 
     const { onMerge } = this.props;
     onMerge();
+  }
+
+  sendKeyTable(): void {
+    log.debug2('sendOpenKeys');
+
+    this.debounceUpdate.cancel();
+
+    const { onKeyTable } = this.props;
+    onKeyTable();
   }
 
   getDisplayValue(column: Column, index: number): string {
@@ -280,11 +302,27 @@ class IrisGridPartitionSelector<T> extends Component<
 
     return Promise.all(dataPromises).then(tableData => {
       // Check if a partition is selected (no partitions for key table or merge table)
-      if (partitions[0] === undefined) {
+      if (partitions[index] === undefined) {
         return [[...partitions], partitionTables];
       }
-      // Check if partitions are valid
+      // Check if columns before index are defined
       const validPartitions = partitions.slice(0, index + 1);
+      if (validPartitions.includes(undefined)) {
+        for (
+          let emptyIndex = 0;
+          emptyIndex < validPartitions.length;
+          emptyIndex += 1
+        ) {
+          if (validPartitions[emptyIndex] === undefined) {
+            return this.updatePartitions(
+              emptyIndex,
+              columns.map(c => tableData[0].rows[0].get(c)),
+              partitionTables
+            );
+          }
+        }
+      }
+      // Check if columns after index are defined
       for (let i = 1; i < tableData.length; i += 1) {
         const data = tableData[i];
         if (data.rows.length > 0 && partitions[index + i] !== undefined) {
@@ -303,7 +341,7 @@ class IrisGridPartitionSelector<T> extends Component<
 
   render(): JSX.Element {
     const { columns, dh, getFormattedString } = this.props;
-    const { isShowingKeys, partitionTables } = this.state;
+    const { isShowingKeys, partitions, partitionTables } = this.state;
 
     const partitionSelectorSearch = columns.map(
       (column, index) =>
@@ -366,10 +404,10 @@ class IrisGridPartitionSelector<T> extends Component<
         <Button
           type="button"
           className="btn btn-outline-primary btn-merge"
-          onClick={this.handleMergeClick}
+          onClick={this.handleKeyTableClick}
           kind="inline"
           icon={<FontAwesomeIcon icon={vsKey} />}
-          disabled
+          disabled={isShowingKeys}
         >
           keys
         </Button>
@@ -379,6 +417,7 @@ class IrisGridPartitionSelector<T> extends Component<
           onClick={this.handleMergeClick}
           kind="inline"
           icon={<FontAwesomeIcon icon={vsMerge} rotation={90} />}
+          disabled={!isShowingKeys && partitions.length === 0}
         >
           merge
         </Button>

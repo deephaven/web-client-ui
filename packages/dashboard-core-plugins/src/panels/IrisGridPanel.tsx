@@ -1236,7 +1236,6 @@ export class IrisGridPanel extends PureComponent<
       model,
       movedColumns,
       movedRows,
-      partitions,
       partitionColumns,
       quickFilters,
       reverseType,
@@ -1318,7 +1317,6 @@ export class IrisGridPanel extends PureComponent<
             isStuckToRight={isStuckToRight}
             movedColumns={movedColumns}
             movedRows={movedRows}
-            partitions={partitions}
             partitionColumns={partitionColumns}
             quickFilters={quickFilters}
             reverseType={reverseType}

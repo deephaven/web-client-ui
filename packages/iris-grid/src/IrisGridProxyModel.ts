@@ -516,11 +516,40 @@ class IrisGridProxyModel extends IrisGridModel {
       this.setNextModel(
         tablePromise.then(table => makeModel(this.dh, table, this.formatter))
       );
+    } else if (
+      isIrisGridTableModelTemplate(this.originalModel) &&
+      this.model !== this.originalModel
+    ) {
+      this.setNextModel(Promise.resolve(this.originalModel));
     }
   }
 
   get partitionKeysTable(): Table | null {
     return this.originalModel.partitionKeysTable;
+  }
+
+  openPartitionKeysTable(): void {
+    log.debug('opening keysTable');
+    if (!this.originalModel.partitionKeysTable) {
+      return;
+    }
+    if (isIrisGridPartitionedTableModel(this.originalModel)) {
+      this.setNextModel(
+        this.originalModel.partitionKeysTable
+          .selectDistinct(this.originalModel.partitionColumns)
+          .then(table => makeModel(this.dh, table, this.formatter))
+      );
+    } else {
+      this.setNextModel(
+        Promise.resolve(
+          makeModel(
+            this.dh,
+            this.originalModel.partitionKeysTable,
+            this.formatter
+          )
+        )
+      );
+    }
   }
 
   get formatter(): Formatter {
