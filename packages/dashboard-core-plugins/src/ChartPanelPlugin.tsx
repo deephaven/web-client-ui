@@ -1,8 +1,7 @@
-import { forwardRef, useEffect, useMemo, useState } from 'react';
+import { forwardRef, useMemo } from 'react';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import { useConnection } from '@deephaven/jsapi-components';
 import {
-  Chart,
   ChartModel,
   ChartModelFactory,
   ChartTheme,
@@ -15,7 +14,7 @@ import type {
 } from '@deephaven/jsapi-types';
 import { IrisGridUtils } from '@deephaven/iris-grid';
 import { getTimeZone, store } from '@deephaven/redux';
-import { WidgetPanelProps, type WidgetComponentProps } from '@deephaven/plugin';
+import { WidgetPanelProps } from '@deephaven/plugin';
 import {
   ChartPanelMetadata,
   GLChartPanelState,
@@ -114,39 +113,6 @@ async function createChartModel(
   );
 }
 
-export function ChartPlugin(props: WidgetComponentProps): JSX.Element | null {
-  const dh = useApi();
-  const chartTheme = useChartTheme();
-  const [model, setModel] = useState<ChartModel>();
-
-  const { fetch } = props;
-
-  useEffect(() => {
-    let cancelled = false;
-    async function init() {
-      const figure = (await fetch()) as unknown as Figure;
-      const newModel = await ChartModelFactory.makeModel(
-        dh,
-        undefined,
-        figure,
-        chartTheme
-      );
-
-      if (!cancelled) {
-        setModel(newModel);
-      }
-    }
-
-    init();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [dh, fetch, chartTheme]);
-
-  return model ? <Chart model={model} /> : null;
-}
-
 export const ChartPanelPlugin = forwardRef(
   (props: WidgetPanelProps, ref: React.Ref<ChartPanel>) => {
     const dh = useApi();
@@ -195,3 +161,5 @@ export const ChartPanelPlugin = forwardRef(
 );
 
 ChartPanelPlugin.displayName = 'ChartPanelPlugin';
+
+export default ChartPanelPlugin;

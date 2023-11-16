@@ -1,12 +1,13 @@
 import { PluginType, WidgetPlugin } from '@deephaven/plugin';
 import { dhPandas } from '@deephaven/icons';
-import { PandasPlugin, PandasPanelPlugin } from './PandasPlugin';
+import { PandasWidgetPlugin } from './PandasWidgetPlugin';
+import { PandasPanelPlugin } from './PandasPanelPlugin';
 
 const PandasPluginConfig: WidgetPlugin = {
   name: 'PandasPanel',
   title: 'Pandas',
   type: PluginType.WIDGET_PLUGIN,
-  component: PandasPlugin,
+  component: PandasWidgetPlugin,
   panelComponent: PandasPanelPlugin,
   supportedTypes: 'pandas.DataFrame',
   icon: dhPandas,
