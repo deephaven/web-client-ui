@@ -1,13 +1,7 @@
 /* stylelint-disable alpha-value-notation */
 .loading-spinner {
-  --primary-color: var(
-    --dh-loading-spinner-primary-color,
-    var(--dh-color-accent, #4c7dee)
-  );
-  --secondary-color: var(
-    --dh-loading-spinner-secondary-color,
-    rgba(240, 240, 240, 0.5)
-  );
+  --primary-color: var(--dh-color-loading-spinner-primary);
+  --secondary-color: var(--dh-color-loading-spinner-secondary);
   --border-width: 1px;
   --size: 14px;
 

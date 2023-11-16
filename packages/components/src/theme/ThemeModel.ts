@@ -7,7 +7,8 @@ export const DEFAULT_LIGHT_THEME_KEY = 'default-light' satisfies BaseThemeKey;
 
 // Css properties that are used in preload data with default values.
 export const DEFAULT_PRELOAD_DATA_VARIABLES = {
-  '--dh-color-accent': '#4c7dee', // dark theme --dh-color-blue-700
+  '--dh-color-loading-spinner-primary': '#3b6bda', // dark theme --dh-color-blue-600
+  '--dh-color-loading-spinner-secondary': '#f0f0ee80', // dark theme --dh-color-gray-800 + 50% opacity
   '--dh-color-background': '#1a171a', // dark theme --dh-color-gray-50
 } satisfies Record<`--dh-${string}`, string>;
 
