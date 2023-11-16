@@ -185,53 +185,6 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
     );
   }
 
-  set totalsConfig(totalsConfig: UITotalsTableConfig | null) {
-    log.debug('set totalsConfig', totalsConfig);
-
-    if (totalsConfig === this.totals) {
-      // Totals already set, or it will be set when the next model actually gets set
-      return;
-    }
-
-    this.totals = totalsConfig;
-    this.formattedStringData = [];
-
-    if (this.totalsTablePromise != null) {
-      this.totalsTablePromise.cancel();
-    }
-
-    this.setTotalsTable(null);
-
-    if (totalsConfig == null) {
-      this.dispatchEvent(new EventShimCustomEvent(IrisGridModel.EVENT.UPDATED));
-      return;
-    }
-
-    this.totalsTablePromise = PromiseUtils.makeCancelable(
-      this.table.getTotalsTable(totalsConfig),
-      table => table.close()
-    );
-    this.totalsTablePromise
-      .then(totalsTable => {
-        this.totalsTablePromise = null;
-        this.setTotalsTable(totalsTable);
-      })
-      .catch(err => {
-        if (PromiseUtils.isCanceled(err)) {
-          return;
-        }
-
-        log.error('Unable to set next totalsTable', err);
-        this.totalsTablePromise = null;
-
-        this.dispatchEvent(
-          new EventShimCustomEvent(IrisGridModel.EVENT.REQUEST_FAILED, {
-            detail: err,
-          })
-        );
-      });
-  }
-
   get isFilterRequired(): boolean {
     return this.table.isUncoalesced;
   }
