@@ -51,7 +51,7 @@ test('UI regression test - Styleguide sections', async () => {
     const id = sampleSectionIds[i];
 
     // Isolate the section
-    await page.goto(`/ide/styleguide?filterSections=true#${id}`);
+    await page.goto(`/ide/styleguide?isolateSection=true#${id}`);
 
     // Have to reload since we are calling in a loop and only the hash is changing
     await page.reload();
@@ -70,7 +70,7 @@ test('Buttons regression test', async () => {
     const id = buttonSectionIds[i];
 
     // Isolate the section
-    await page.goto(`/ide/styleguide?filterSections=true#${id}`);
+    await page.goto(`/ide/styleguide?isolateSection=true#${id}`);
 
     // Need to reload since we are calling in a loop and only the hash is changing
     await page.reload();
@@ -112,7 +112,7 @@ test('Buttons regression test', async () => {
 });
 
 test('Inputs regression test', async () => {
-  await page.goto('/ide/styleguide?filterSections=true#sample-section-inputs');
+  await page.goto('/ide/styleguide?isolateSection=true#sample-section-inputs');
 
   const columns = page.locator('#sample-section-inputs .col');
 

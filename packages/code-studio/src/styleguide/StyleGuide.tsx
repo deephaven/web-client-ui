@@ -39,14 +39,14 @@ const stickyProps = {
 } as const;
 
 function StyleGuide(): React.ReactElement {
-  const filterSections = window.location.search.includes('filterSections=true');
+  const isolateSection = window.location.search.includes('isolateSection=true');
 
   return (
     <div className="container style-guide-container">
       {/* For e2e tests this allows us to isolate sections for snapshots. This 
       mitigates an issue where a change to a section in the styleguide can cause
       subtle pixel shifts in other sections */}
-      {filterSections && (
+      {isolateSection && (
         <style>
           {`.${HIDE_FROM_E2E_TESTS_CLASS}, .sample-section:not(${window.location.hash}), :not(.sample-section) > h2 {
           display: none;
