@@ -1,5 +1,7 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React, { useState } from 'react';
 import { BasicModal, Button, Checkbox } from '@deephaven/components';
+import { sampleSectionIdAndClasses } from './utils';
 
 function Modals(): React.ReactElement {
   const [openModal, setOpenModal] = useState<number>(0);
@@ -33,7 +35,7 @@ function Modals(): React.ReactElement {
   }
 
   return (
-    <div>
+    <div {...sampleSectionIdAndClasses('modals')}>
       <h2 className="ui-title">Basic Modals</h2>
       <div style={{ padding: '1rem' }}>
         {[1, 2, 3].map(buttonCount => renderBasicModal(buttonCount))}

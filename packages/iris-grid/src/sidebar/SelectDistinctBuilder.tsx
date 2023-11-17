@@ -2,7 +2,7 @@ import React, { Component, ReactElement } from 'react';
 import deepEqual from 'deep-equal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhNewCircleLargeFilled, vsTrash } from '@deephaven/icons';
-import { Button } from '@deephaven/components';
+import { Button, Select } from '@deephaven/components';
 import Log from '@deephaven/log';
 import type { Column } from '@deephaven/jsapi-types';
 import { ModelIndex } from '@deephaven/grid';
@@ -81,12 +81,8 @@ class SelectDistinctBuilder extends Component<
     }));
   }
 
-  handleDropdownChanged(
-    index: number,
-    event: React.ChangeEvent<HTMLSelectElement>
-  ): void {
-    log.debug('handleDropdownChanged', index, event);
-    const { value } = event.target;
+  handleDropdownChanged(index: number, value: string): void {
+    log.debug('handleDropdownChanged', index, value);
     this.setState(({ inputs: prevInputs }) => {
       const inputs = [...prevInputs];
       inputs[index] = value;
@@ -108,14 +104,16 @@ class SelectDistinctBuilder extends Component<
       return (
         // eslint-disable-next-line react/no-array-index-key
         <div className="form-inline px-3 pb-3" key={index}>
-          <select
+          <Select
             className="form-control custom-select col"
             value={value}
-            onChange={event => this.handleDropdownChanged(index, event)}
+            onChange={(eventTargetValue: string) =>
+              this.handleDropdownChanged(index, eventTargetValue)
+            }
           >
             <option value="">Select a column</option>
             {options}
-          </select>
+          </Select>
 
           {(inputs.length > 1 || value !== '') && (
             <Button

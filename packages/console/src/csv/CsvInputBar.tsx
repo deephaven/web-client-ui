@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import classNames from 'classnames';
 import type { JSZipObject } from 'jszip';
-import { Button, Checkbox } from '@deephaven/components';
+import { Button, Checkbox, Select } from '@deephaven/components';
 import type { IdeSession, Table } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { DbNameValidator } from '@deephaven/utils';
@@ -285,9 +285,9 @@ class CsvInputBar extends Component<CsvInputBarProps, CsvInputBarState> {
     onClose();
   }
 
-  handleQueryTypeChange(event: ChangeEvent<HTMLSelectElement>): void {
+  handleQueryTypeChange(eventTargetValue: string): void {
     this.setState({
-      type: event.target.value as keyof typeof CsvFormats.TYPES,
+      type: eventTargetValue as keyof typeof CsvFormats.TYPES,
     });
   }
 
@@ -319,14 +319,14 @@ class CsvInputBar extends Component<CsvInputBarProps, CsvInputBarState> {
             </div>
             <div className="form-group">
               <label htmlFor="formatSelect">File format</label>
-              <select
+              <Select
                 id="formatSelect"
                 className="custom-select"
                 value={type}
                 onChange={this.handleQueryTypeChange}
               >
                 {TYPE_OPTIONS}
-              </select>
+              </Select>
             </div>
             <Checkbox
               className="firstRowHeaders"

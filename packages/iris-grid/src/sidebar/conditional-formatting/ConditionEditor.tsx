@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
+import { Select } from '@deephaven/components';
 import {
   StringCondition,
   DateCondition,
@@ -15,6 +16,7 @@ import {
   getLabelForBooleanCondition,
   BooleanCondition,
   CharCondition,
+  Condition,
   getLabelForCharCondition,
   isDateConditionValid,
   getDefaultValueForType,
@@ -293,10 +295,9 @@ function ConditionEditor(props: ConditionEditorProps): JSX.Element {
     }
   }, [selectedColumnType]);
 
-  const handleConditionChange = useCallback(e => {
-    const { value } = e.target;
+  const handleConditionChange = useCallback((value: string) => {
     log.debug('handleConditionChange', value);
-    setCondition(value);
+    setCondition(value as Condition);
   }, []);
 
   const handleValueChange = useCallback(e => {
@@ -429,14 +430,14 @@ function ConditionEditor(props: ConditionEditorProps): JSX.Element {
 
   return (
     <div className="condition-editor mb-2">
-      <select
+      <Select
         value={selectedCondition}
         data-testid="condition-select"
         className="custom-select mb-2"
         onChange={handleConditionChange}
       >
         {conditions}
-      </select>
+      </Select>
       {conditionInputs}
     </div>
   );

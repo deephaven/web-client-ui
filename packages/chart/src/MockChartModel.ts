@@ -16,6 +16,8 @@ interface Series {
 
 /** Displays a basic random chart */
 class MockChartModel extends ChartModel {
+  static random: () => number = Math.random.bind(Math);
+
   static smoothing = 1.5;
 
   static _theme: ChartTheme;
@@ -50,7 +52,7 @@ class MockChartModel extends ChartModel {
         ((Math.sin((i / steps) * offset) * steps) / 3 +
           (Math.cos(i * 0.2) * steps) / 6 +
           (Math.sin(i * 0.5) * steps) / 10 +
-          (Math.random() * steps) / 5 +
+          (MockChartModel.random() * steps) / 5 +
           i * MockChartModel.smoothing) *
         scale;
       v = Math.round(v * 100) / 100; // 2 decimals only
@@ -61,7 +63,7 @@ class MockChartModel extends ChartModel {
       linear.push(40 + i * MockChartModel.smoothing);
       smooth.push(
         (Math.sin((i / steps) * offset) * steps) / 3 +
-          (Math.random() * steps) / 10 +
+          (MockChartModel.random() * steps) / 10 +
           i * MockChartModel.smoothing
       ); // push a smoother version of the same thing
     }

@@ -1,9 +1,11 @@
+/* eslint-disable react/jsx-props-no-spreading */
 /* eslint no-alert: "off" */
 import React from 'react';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, LoadingSpinner, Tooltip } from '@deephaven/components';
 import { vsBell, dhFilePrint } from '@deephaven/icons';
+import { sampleSectionIdAndClasses } from './utils';
 
 function Tooltips(): React.ReactElement {
   const icons = [dhFilePrint, vsBell];
@@ -12,7 +14,7 @@ function Tooltips(): React.ReactElement {
   ));
 
   return (
-    <div>
+    <div {...sampleSectionIdAndClasses('tooltips')}>
       <h2
         className="ui-title"
         title="Make better looking tooltips than this one!"

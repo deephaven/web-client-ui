@@ -1,50 +1,54 @@
 import React, { useCallback } from 'react';
 import classNames from 'classnames';
+import { useForwardedRef } from '@deephaven/react-hooks';
 
-export type SelectProps = {
-  children: React.ReactNode;
-  onBlur?: React.FocusEventHandler<HTMLSelectElement>;
+type baseSelectProps = Omit<React.HTMLProps<HTMLSelectElement>, 'onChange'>;
+
+export type SelectProps = baseSelectProps & {
   onChange: (value: string) => void;
-  className?: string;
-  defaultValue?: string;
-  name?: string;
-  value?: string;
-  disabled?: boolean;
   'data-testid'?: string;
 };
 
-function Select({
-  children,
-  onBlur,
-  onChange,
-  className,
-  defaultValue,
-  name,
-  value,
-  disabled,
-  'data-testid': dataTestId,
-}: SelectProps): JSX.Element {
-  const handleChange = useCallback(
-    event => {
-      onChange(event.target.value);
-    },
-    [onChange]
-  );
+/**
+ * A custom select component with styling, which is a wrapper around the
+ * native select element.
+ * @param props.onChange returns a string value and not the event
+ */
 
-  return (
-    <select
-      className={classNames('custom-select', className)}
-      onBlur={onBlur}
-      onChange={handleChange}
-      defaultValue={defaultValue}
-      value={value}
-      name={name}
-      disabled={disabled}
-      data-testid={dataTestId}
-    >
-      {children}
-    </select>
-  );
-}
+const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
+  (props, forwardedRef) => {
+    const {
+      children,
+      className,
+      onChange,
+      'data-testid': dataTestId,
+      ...rest
+    } = props;
+
+    const ref = useForwardedRef<HTMLSelectElement>(forwardedRef);
+
+    const handleChange = useCallback(
+      (event: React.ChangeEvent<HTMLSelectElement>): void => {
+        onChange(event.target.value);
+      },
+      [onChange]
+    );
+
+    return (
+      <select
+        ref={ref}
+        className={classNames('custom-select', className)}
+        onChange={handleChange}
+        data-testid={dataTestId}
+        // eslint-disable-next-line react/jsx-props-no-spreading
+        {...rest}
+      >
+        {children}
+      </select>
+    );
+  }
+);
+
+Select.displayName = 'Select';
 
 export default Select;

@@ -3,7 +3,6 @@
 // background click is just a convenience method, not an actual a11y issue
 
 import React, {
-  ChangeEvent,
   Component,
   KeyboardEvent,
   MouseEvent,
@@ -11,7 +10,12 @@ import React, {
   RefObject,
 } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button, CardFlip, SocketedButton } from '@deephaven/components';
+import {
+  Button,
+  CardFlip,
+  Select,
+  SocketedButton,
+} from '@deephaven/components';
 import { vsGear } from '@deephaven/icons';
 import type { Column } from '@deephaven/jsapi-types';
 import { TableUtils } from '@deephaven/jsapi-utils';
@@ -228,8 +232,8 @@ export class DropdownFilter extends Component<
     return name;
   });
 
-  handleColumnChange(event: ChangeEvent<HTMLSelectElement>): void {
-    const { value } = event.target;
+  handleColumnChange(eventTargetValue: string): void {
+    const value = eventTargetValue;
     log.debug2('handleColumnChange', value);
     if (value != null && parseInt(value, 10) < 0) {
       this.setState({
@@ -256,8 +260,8 @@ export class DropdownFilter extends Component<
     }
   }
 
-  handleValueChange(event: ChangeEvent<HTMLSelectElement>): void {
-    const { value: valueIndex } = event.target;
+  handleValueChange(eventTargetValue: string): void {
+    const valueIndex = eventTargetValue;
     const index = parseInt(valueIndex, 10);
     // Default empty string value for 'clear filter'
     let value: string | null = '';
@@ -416,15 +420,15 @@ export class DropdownFilter extends Component<
               </div>
 
               <label htmlFor={filterColumnId}>Filter Column</label>
-              <select
+              <Select
                 id={filterColumnId}
-                value={selectedIndex}
+                value={String(selectedIndex)}
                 className="custom-select"
                 onChange={this.handleColumnChange}
                 disabled={columnSelectionDisabled}
               >
                 {columnOptions}
-              </select>
+              </Select>
               <div className="text-muted small">
                 Dropdown filter control will apply its filter to all columns
                 matching this name in this dashboard.
@@ -481,16 +485,16 @@ export class DropdownFilter extends Component<
               </div>
               <div className="dropdown-filter-card-content">
                 <div className="dropdown-filter-value-input d-flex flex-column justify-content-center">
-                  <select
+                  <Select
                     className="custom-select"
-                    value={selectedOption}
+                    value={String(selectedOption)}
                     ref={this.dropdownRef}
                     onChange={this.handleValueChange}
-                    onKeyPress={this.handleDropdownKeyPress}
+                    onKeyDown={this.handleDropdownKeyPress}
                     title="Select Value"
                   >
                     {valueOptions}
-                  </select>
+                  </Select>
                 </div>
                 {settingsError && (
                   <div className="error-message mt-3 text-center">
