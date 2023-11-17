@@ -224,9 +224,10 @@ class VisibilityOrderingBuilder extends Component<
     if (direction === 'forward') {
       if (queriedColumnRange !== undefined) {
         newQueriedColumnIndex = queriedColumnRange.nextIndex;
-      } else if (newQueriedColumnIndex === undefined) {
-        newQueriedColumnIndex = queriedColumnsLength - 1;
-      } else if (newQueriedColumnIndex >= queriedColumnsLength - 1) {
+      } else if (
+        newQueriedColumnIndex === undefined ||
+        newQueriedColumnIndex >= queriedColumnsLength - 1
+      ) {
         newQueriedColumnIndex = 0;
       } else {
         newQueriedColumnIndex += 1;
@@ -234,9 +235,10 @@ class VisibilityOrderingBuilder extends Component<
     } else if (direction === 'back') {
       if (queriedColumnRange !== undefined) {
         newQueriedColumnIndex = queriedColumnRange.prevIndex;
-      } else if (newQueriedColumnIndex === undefined) {
-        newQueriedColumnIndex = 0;
-      } else if (newQueriedColumnIndex <= 0) {
+      } else if (
+        newQueriedColumnIndex === undefined ||
+        newQueriedColumnIndex <= 0
+      ) {
         newQueriedColumnIndex = queriedColumnsLength - 1;
       } else {
         newQueriedColumnIndex -= 1;
@@ -1202,7 +1204,7 @@ class VisibilityOrderingBuilder extends Component<
     );
 
     const cursor = {
-      index: queriedColumnIndex as number,
+      index: queriedColumnIndex,
       next: (direction: 'forward' | 'back') =>
         this.changeSelectedColumn(direction),
     };

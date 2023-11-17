@@ -19,7 +19,7 @@ interface SearchInputProps {
   id: string;
   'data-testid'?: string;
   cursor?: {
-    index: number;
+    index: number | undefined;
     next: (direction: 'forward' | 'back') => void;
   };
 }
