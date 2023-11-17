@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 /* eslint no-alert: "off" */
 /* eslint no-console: "off" */
 import React, { Component } from 'react';
@@ -7,6 +8,7 @@ import {
   HierarchicalCheckboxValueMap,
   Button,
 } from '@deephaven/components';
+import { sampleSectionIdAndClasses } from './utils';
 
 interface DialogState {
   isShown: boolean;
@@ -87,7 +89,7 @@ class Dialog extends Component<unknown, DialogState> {
     const { isShown, checkBoxMap } = this.state;
 
     return (
-      <div>
+      <div {...sampleSectionIdAndClasses('dialog')}>
         <h2 className="ui-title">Popover Dialog</h2>
         <p>
           Popover dialog that can contain interactive elements, can be set to

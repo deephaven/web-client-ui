@@ -2,6 +2,7 @@ import { DehydratedDashboardPanelProps } from '@deephaven/dashboard';
 import type {
   ChartPanelMetadata,
   ChartPanelTableMetadata,
+  ChartPanelFigureMetadata,
   GLChartPanelState,
 } from './ChartPanel';
 
@@ -9,6 +10,12 @@ export function isChartPanelTableMetadata(
   metadata: ChartPanelMetadata
 ): metadata is ChartPanelTableMetadata {
   return (metadata as ChartPanelTableMetadata).settings !== undefined;
+}
+
+export function isChartPanelFigureMetadata(
+  metadata: ChartPanelMetadata
+): metadata is ChartPanelFigureMetadata {
+  return (metadata as ChartPanelFigureMetadata).figure !== undefined;
 }
 
 export type DehydratedChartPanelProps = DehydratedDashboardPanelProps & {

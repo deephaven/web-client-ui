@@ -29,6 +29,8 @@ class ChartModel {
 
   static EVENT_LOADFINISHED = 'ChartModel.EVENT_LOADFINISHED';
 
+  static EVENT_ERROR = 'ChartModel.EVENT_ERROR';
+
   constructor(dh: DhType) {
     this.dh = dh;
     this.listeners = [];
@@ -160,6 +162,10 @@ class ChartModel {
 
   fireLoadFinished(): void {
     this.fireEvent(new CustomEvent(ChartModel.EVENT_LOADFINISHED));
+  }
+
+  fireError(detail: string[]): void {
+    this.fireEvent(new CustomEvent(ChartModel.EVENT_ERROR, { detail }));
   }
 }
 

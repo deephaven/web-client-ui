@@ -330,6 +330,7 @@ export interface Figure extends Evented {
   readonly cols: number;
   readonly rows: number;
   readonly charts: Chart[];
+  readonly errors: string[];
 
   /**
    * Subscribes to all series in this figure.

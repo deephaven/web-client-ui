@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React, { useCallback, useState } from 'react';
 import {
   AutoCompleteInput,
@@ -16,6 +17,7 @@ import {
   Select,
   Option,
 } from '@deephaven/components';
+import { sampleSectionIdAndClasses } from './utils';
 
 const EXAMPLES = [
   { title: 'Title 1', value: 'Value 1' },
@@ -86,7 +88,7 @@ function Inputs(): React.ReactElement {
   );
 
   return (
-    <div className="style-guide-inputs">
+    <div {...sampleSectionIdAndClasses('inputs', ['style-guide-inputs'])}>
       <h2 className="ui-title">Inputs</h2>
       <div className="row">
         <div className="col">
@@ -235,25 +237,38 @@ function Inputs(): React.ReactElement {
         <div className="col">
           <div className="form-group">
             <h5>Selection Menu</h5>
-            <select defaultValue="0" className="custom-select">
+            <Select
+              onChange={v => {
+                // no-op
+              }}
+              defaultValue="0"
+              className="custom-select"
+            >
               <option disabled value="0">
                 Custom Selection
               </option>
               <option value="1">One</option>
               <option value="2">Two</option>
               <option value="3">Three</option>
-            </select>
+            </Select>
           </div>
 
           <div className="form-group">
-            <select defaultValue="0" className="custom-select" disabled>
+            <Select
+              onChange={v => {
+                // no-op
+              }}
+              defaultValue="0"
+              className="custom-select"
+              disabled
+            >
               <option disabled value="0">
                 Custom Selection
               </option>
               <option value="1">One</option>
               <option value="2">Two</option>
               <option value="3">Three</option>
-            </select>
+            </Select>
           </div>
 
           <div className="form-group">
@@ -308,7 +323,9 @@ function Inputs(): React.ReactElement {
               labelText="Dropdown"
             >
               <Select
-                onChange={newValue => setValidateOption(newValue)}
+                onChange={eventTargetValue =>
+                  setValidateOption(eventTargetValue)
+                }
                 value={validateOption}
               >
                 {VALIDATE_OPTIONS.map(option => (
@@ -363,5 +380,4 @@ function Inputs(): React.ReactElement {
     </div>
   );
 }
-
 export default Inputs;

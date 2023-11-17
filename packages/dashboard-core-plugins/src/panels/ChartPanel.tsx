@@ -65,7 +65,10 @@ import ChartColumnSelectorOverlay, {
 import './ChartPanel.scss';
 import { Link, LinkFilterMap } from '../linker/LinkerUtils';
 import { PanelState as IrisGridPanelState } from './IrisGridPanel';
-import { isChartPanelTableMetadata } from './ChartPanelUtils';
+import {
+  isChartPanelFigureMetadata,
+  isChartPanelTableMetadata,
+} from './ChartPanelUtils';
 import { ColumnSelectionValidator } from '../linker/ColumnSelectionValidator';
 
 const log = Log.module('ChartPanel');
@@ -81,7 +84,6 @@ export interface ChartPanelFigureMetadata extends PanelMetadata {
    * @deprecated use `name` instead
    */
   figure?: string;
-  sourcePanelId: never;
 }
 
 export interface ChartPanelTableMetadata extends PanelMetadata {
@@ -98,6 +100,7 @@ export interface ChartPanelTableMetadata extends PanelMetadata {
 }
 
 export type ChartPanelMetadata =
+  | PanelMetadata
   | ChartPanelFigureMetadata
   | ChartPanelTableMetadata;
 
@@ -106,7 +109,7 @@ type Settings = Record<string, unknown>;
 export interface GLChartPanelState {
   filterValueMap?: [string, unknown][];
   settings: Partial<ChartModelSettings>;
-  tableSettings: TableSettings;
+  tableSettings?: TableSettings;
   irisGridState?: {
     advancedFilters: unknown;
     quickFilters: unknown;
@@ -128,7 +131,7 @@ interface OwnProps extends DashboardPanelProps {
   /** The panel container div */
   containerRef?: RefObject<HTMLDivElement>;
 
-  panelState: GLChartPanelState;
+  panelState?: GLChartPanelState;
 }
 
 interface StateProps {
@@ -168,7 +171,7 @@ interface ChartPanelState {
   columnMap: ColumnMap;
 
   // eslint-disable-next-line react/no-unused-state
-  panelState: GLChartPanelState;
+  panelState?: GLChartPanelState;
 }
 
 function hasInputFilter(
@@ -276,12 +279,16 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     prevProps: ChartPanelProps,
     prevState: ChartPanelState
   ): void {
-    const { inputFilters, source } = this.props;
+    const { inputFilters, source, makeModel } = this.props;
     const { columnMap, model, filterMap, filterValueMap, isLinked, settings } =
       this.state;
 
     if (!model) {
       return;
+    }
+
+    if (makeModel !== prevProps.makeModel) {
+      this.initModel();
     }
 
     if (columnMap !== prevState.columnMap) {
@@ -1042,8 +1049,10 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     let name;
     if (isChartPanelTableMetadata(metadata)) {
       name = metadata.table;
+    } else if (isChartPanelFigureMetadata(metadata)) {
+      name = metadata.figure;
     } else {
-      name = metadata.name ?? metadata.figure;
+      name = metadata.name;
     }
     const inputFilterMap = this.getInputFilterColumnMap(
       columnMap,
@@ -1156,7 +1165,7 @@ const mapStateToProps = (state: RootState, ownProps: OwnProps): StateProps => {
   const { localDashboardId, metadata } = ownProps;
 
   let sourcePanelId: string | undefined;
-  if (metadata != null) {
+  if (metadata != null && isChartPanelTableMetadata(metadata)) {
     sourcePanelId = metadata.sourcePanelId;
   }
   const panelTableMap = getTableMapForDashboard(state, localDashboardId);

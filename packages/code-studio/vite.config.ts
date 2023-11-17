@@ -19,13 +19,6 @@ export default defineConfig(({ mode }) => {
   // These are paths which should be proxied to the core server
   // https://vitejs.dev/config/server-options.html#server-proxy
   const proxy = {
-    // Proxy styleguide here instead of as a route in our app router
-    // That way, it is not included in the production build
-    '/styleguide': {
-      target: new URL(`src/styleguide/index.html`, baseURL).toString(),
-      rewrite: () => '',
-    },
-
     // proxy the websocket requests, allows tunneling to work with a single port
     '^/arrow\\.*': {
       target: env.VITE_PROXY_URL,

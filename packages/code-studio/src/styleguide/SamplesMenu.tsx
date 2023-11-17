@@ -81,18 +81,29 @@ export function SamplesMenu(): JSX.Element {
         el.id = id;
 
         currentCategory.items.push({ id, label: el.textContent });
-
-        if (`#${id}` === window.location.hash) {
-          el.scrollIntoView();
-        }
       });
 
     setLinks(categories);
   }, []);
 
+  useEffect(() => {
+    const el =
+      window.location.hash === ''
+        ? null
+        : document.querySelector(window.location.hash);
+
+    if (el) {
+      // Give everything a chance to render before scrolling
+      setTimeout(() => {
+        el.scrollIntoView();
+      }, 0);
+    }
+  }, []);
+
   const onAction = useCallback((key: Key) => {
     const id = String(key);
     const el = document.getElementById(id);
+
     el?.scrollIntoView({
       behavior: 'smooth',
     });
@@ -101,7 +112,7 @@ export function SamplesMenu(): JSX.Element {
     // scrolling above
     setTimeout(() => {
       window.location.hash = id;
-    }, 500);
+    }, 1000);
   }, []);
 
   return (

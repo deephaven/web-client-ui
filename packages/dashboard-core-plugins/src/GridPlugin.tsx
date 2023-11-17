@@ -1,30 +1,21 @@
-import { forwardRef, useMemo } from 'react';
+import { forwardRef } from 'react';
 import { type WidgetComponentProps } from '@deephaven/plugin';
-import { type DashboardPanelProps } from '@deephaven/dashboard';
+import { type Table } from '@deephaven/jsapi-types';
 import useHydrateGrid from './useHydrateGrid';
 import ConnectedIrisGridPanel, {
-  IrisGridPanelProps,
   type IrisGridPanel,
 } from './panels/IrisGridPanel';
 
 export const GridPlugin = forwardRef(
   (props: WidgetComponentProps, ref: React.Ref<IrisGridPanel>) => {
-    const hydrate = useHydrateGrid<
-      DashboardPanelProps & Pick<IrisGridPanelProps, 'panelState'>
-    >();
-    const { localDashboardId } = props;
-    const hydratedProps = useMemo(
-      () =>
-        hydrate(
-          props as WidgetComponentProps &
-            Pick<IrisGridPanelProps, 'panelState'>,
-          localDashboardId
-        ),
-      [hydrate, props, localDashboardId]
+    const { localDashboardId, fetch } = props;
+    const hydratedProps = useHydrateGrid(
+      fetch as unknown as () => Promise<Table>,
+      localDashboardId
     );
 
     // eslint-disable-next-line react/jsx-props-no-spreading
-    return <ConnectedIrisGridPanel ref={ref} {...hydratedProps} />;
+    return <ConnectedIrisGridPanel ref={ref} {...props} {...hydratedProps} />;
   }
 );
 

@@ -134,7 +134,7 @@ type LoadedPanelState = PanelState & {
 
 export interface OwnProps extends DashboardPanelProps {
   children?: ReactNode;
-  panelState: LoadedPanelState | null;
+  panelState?: LoadedPanelState | null;
   makeModel: () => IrisGridModel | Promise<IrisGridModel>;
 
   onStateChange?: (irisGridState: IrisGridState, gridState: GridState) => void;
@@ -205,7 +205,7 @@ interface IrisGridPanelState {
   columnHeaderGroups?: readonly ColumnHeaderGroup[];
 
   // eslint-disable-next-line react/no-unused-state
-  panelState: PanelState | null; // Dehydrated panel state that can load this panel
+  panelState?: PanelState | null; // Dehydrated panel state that can load this panel
   irisGridStateOverrides: Partial<DehydratedIrisGridState>;
   gridStateOverrides: Partial<GridState>;
 }
@@ -324,8 +324,12 @@ export class IrisGridPanel extends PureComponent<
     this.initModel();
   }
 
-  componentDidUpdate(_: never, prevState: IrisGridPanelState): void {
+  componentDidUpdate(
+    prevProps: IrisGridPanelProps,
+    prevState: IrisGridPanelState
+  ): void {
     const { model } = this.state;
+    const { makeModel } = this.props;
     if (model !== prevState.model) {
       if (prevState.model != null) {
         this.stopModelListening(prevState.model);
@@ -334,6 +338,10 @@ export class IrisGridPanel extends PureComponent<
       if (model != null) {
         this.startModelListening(model);
       }
+    }
+
+    if (makeModel !== prevProps.makeModel) {
+      this.initModel();
     }
   }
 

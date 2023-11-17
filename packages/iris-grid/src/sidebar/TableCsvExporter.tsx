@@ -7,6 +7,7 @@ import {
   LoadingSpinner,
   RadioGroup,
   RadioItem,
+  Select,
 } from '@deephaven/components';
 import {
   GridRange,
@@ -270,10 +271,8 @@ class TableCsvExporter extends Component<
     this.setState({ downloadRowOption: event.target.value });
   }
 
-  handleCustomizedDownloadRowOptionChanged(
-    event: React.ChangeEvent<HTMLSelectElement>
-  ): void {
-    this.setState({ customizedDownloadRowOption: event.target.value });
+  handleCustomizedDownloadRowOptionChanged(eventTargetValue: string): void {
+    this.setState({ customizedDownloadRowOption: eventTargetValue });
   }
 
   handleCustomizedDownloadRowsChanged(
@@ -406,7 +405,7 @@ class TableCsvExporter extends Component<
                   });
                 }}
               >
-                <select
+                <Select
                   value={customizedDownloadRowOption}
                   data-testid="select-csv-exporter-customized-rows"
                   className="custom-select"
@@ -415,7 +414,7 @@ class TableCsvExporter extends Component<
                 >
                   <option value="FIRST">First</option>
                   <option value="LAST">Last</option>
-                </select>
+                </Select>
                 <input
                   type="number"
                   className="form-control"

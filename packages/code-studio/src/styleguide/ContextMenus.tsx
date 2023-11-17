@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 /* eslint no-alert: "off" */
 /* eslint no-console: "off" */
 import React, { Component } from 'react';
@@ -15,6 +16,7 @@ import {
   vsQuestion,
   IconDefinition,
 } from '@deephaven/icons';
+import { sampleSectionIdAndClasses } from './utils';
 
 interface ContextMenuItem {
   title: string;
@@ -106,7 +108,7 @@ class ContextMenus extends Component {
       });
 
     return (
-      <div>
+      <div {...sampleSectionIdAndClasses('context-menus')}>
         <h2 className="ui-title">Context Menu</h2>
         <Button
           kind="primary"
