@@ -47,6 +47,7 @@ export function ThemeProvider({
   const [selectedThemeKey, setSelectedThemeKey] = useState<string>(
     () => getThemePreloadData()?.themeKey ?? DEFAULT_DARK_THEME_KEY
   );
+  (window as any).setSelectedThemeKey = setSelectedThemeKey;
 
   // Calculate active themes once a non-null themes array is provided.
   const activeThemes = useMemo(

@@ -252,7 +252,12 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
 
   // Icon to PopOut Pane, so move it to a different Browser Window
   .lm_popout {
-    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAAPklEQVR4nI2Q0QoAIAwCNfr/X7aXCpGN8snBdgejJOzckpkxs9jR6K6T5JpU0nWl5pSXTk7qwh8SnNT+CAAWCgkKFpuSWsUAAAAASUVORK5CYII=);
+    // Leaving this inline since it is a PNG. We should convert it to a 16px
+    // SVG like other icons and move to a css variable so it can be overridden.
+    @include icon-image-mask(
+      url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAAPklEQVR4nI2Q0QoAIAwCNfr/X7aXCpGN8snBdgejJOzckpkxs9jR6K6T5JpU0nWl5pSXTk7qwh8SnNT+CAAWCgkKFpuSWsUAAAAASUVORK5CYII='),
+      auto
+    );
   }
 
   // Icon to Maximize Pane, so it will fill the entire GoldenLayout Container
