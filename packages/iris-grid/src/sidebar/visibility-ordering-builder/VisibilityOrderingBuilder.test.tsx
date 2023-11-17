@@ -1192,7 +1192,7 @@ test('changeSelectedColumn moves queried column index and loops', () => {
   builder.current?.searchColumns('TestColumn');
   expect(builder.current?.state.selectedColumns.size).toEqual(10);
 
-  builder.current?.changeSelectedColumn('forward');
+  builder.current?.changeSelectedColumn('back');
   expect(builder.current?.state.queriedColumnIndex).toEqual(9);
 
   builder.current?.changeSelectedColumn('forward');
