@@ -7,7 +7,7 @@ import IrisGrid, {
 } from '@deephaven/iris-grid';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import { LoadingOverlay } from '@deephaven/components';
-import { PandasReloadButton } from './panels';
+import { PandasReloadButton } from './panels/PandasReloadButton';
 
 export function PandasWidgetPlugin(
   props: WidgetComponentProps

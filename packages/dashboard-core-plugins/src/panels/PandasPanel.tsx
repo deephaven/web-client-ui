@@ -1,57 +1,13 @@
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable react/no-unused-state */
-import React, {
-  Component,
-  ReactElement,
-  RefObject,
-  useCallback,
-  useRef,
-} from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { dhRefresh } from '@deephaven/icons';
-import { Button } from '@deephaven/components';
+import React, { Component, ReactElement, RefObject } from 'react';
 import ConnectedIrisGridPanel, {
   type IrisGridPanel,
   type OwnProps as IrisGridPanelOwnProps,
   type PanelState,
 } from './IrisGridPanel';
+import { PandasReloadButton } from './PandasReloadButton';
 import './PandasPanel.scss';
-
-export function PandasReloadButton({
-  onClick,
-}: {
-  onClick: React.MouseEventHandler<HTMLButtonElement>;
-}): JSX.Element {
-  const buttonRef = useRef<HTMLButtonElement>(null);
-
-  const handleClick = useCallback(
-    (e: React.MouseEvent<HTMLButtonElement>) => {
-      buttonRef.current?.blur();
-      onClick(e);
-    },
-    [onClick]
-  );
-
-  return (
-    <Button
-      ref={buttonRef}
-      kind="primary"
-      className="btn-pandas"
-      onClick={handleClick}
-      tooltip="Click to refresh pandas dataframe, updates do not occur automatically."
-    >
-      pandas dataframe
-      <span>
-        <FontAwesomeIcon
-          icon={dhRefresh}
-          transform="shrink-1"
-          className="mr-1"
-        />
-        Reload
-      </span>
-    </Button>
-  );
-}
 
 export interface PandasPanelProps extends IrisGridPanelOwnProps {
   panelState: PanelState | null;

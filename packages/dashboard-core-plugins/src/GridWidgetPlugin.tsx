@@ -33,7 +33,6 @@ export function GridWidgetPlugin(
     };
   }, [dh, fetch]);
 
-  // eslint-disable-next-line react/jsx-props-no-spreading
   return model ? <IrisGrid model={model} /> : null;
 }
 
