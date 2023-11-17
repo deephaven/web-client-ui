@@ -19,6 +19,16 @@ $lm-header-background: darken($lm-tab-active-background, 5);
 $lm-splitter-hover-color: $gray-400;
 $lm-splitter-active-color: $gray-300;
 
+// Setup a mask-image for a golden layout svg
+@mixin icon-image-mask($mask-image, $size: 16px) {
+  background-size: $size;
+  background-color: var(--dh-color-foreground);
+  mask-image: $mask-image;
+  mask-position: center center;
+  mask-repeat: no-repeat;
+  mask-size: $size;
+}
+
 // ".lm_dragging" is applied to BODY tag during Drag and is also directly applied to the root of the object being dragged
 //is added to the body class, prevents overflow in our app context
 .lm_dragging {
@@ -180,21 +190,19 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
     .lm_close_tab {
       $lm-close-button-padding: 4px;
 
+      @include icon-image-mask(
+        var(--dh-svg-icon-close-tab),
+        $close-button-height
+      );
+
       cursor: pointer;
       position: relative;
       width: $close-button-height;
       height: $close-button-height;
       padding: $lm-close-button-padding;
       margin-left: -$spacer-1; // undo padding on title
-      background-color: var(--dh-color-foreground);
-      //fa-times-light url svg encoded as a background mask
-      mask-image: var(--dh-svg-icon-close-tab);
-      mask-position: center center;
-      mask-repeat: no-repeat;
-      mask-size: $close-button-height;
       opacity: 0;
       transition: opacity 300ms ease;
-      transition: background-color $transition;
     }
   }
 }
@@ -249,19 +257,11 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
 
   // Icon to Maximize Pane, so it will fill the entire GoldenLayout Container
   .lm_maximise {
-    background-size: 16px;
-    background-color: var(--dh-color-foreground);
-    // vsChromeMaximize
-    mask-image: var(--dh-svg-icon-maximise);
-    mask-position: center center;
-    mask-repeat: no-repeat;
-    mask-size: 16px;
+    @include icon-image-mask(var(--dh-svg-icon-maximise));
   }
 
   .lm_tabdropdown {
-    background-size: 16px;
-    // vsChevronDown
-    background-image: var(--dh-svg-icon-tab-dropdown);
+    @include icon-image-mask(var(--dh-svg-icon-tab-dropdown));
   }
 
   // Icon to Close Pane and so remove it from GoldenLayout Container

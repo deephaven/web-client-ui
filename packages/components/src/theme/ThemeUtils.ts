@@ -16,8 +16,8 @@ import { themeDark } from './theme-dark';
 import { themeLight } from './theme-light';
 import {
   INLINE_SVG_LM_CLOSE_TAB,
+  INLINE_SVG_LM_DROPDOWN,
   INLINE_SVG_LM_MAXIMISE,
-  lmTabDropdownSVG,
   searchInputCancelSVG,
   selectIndicatorSVG,
 } from './ThemeInlineSVGs';
@@ -51,7 +51,7 @@ export function calculateInlineSVGStyleContent(): CssVariableStyleContent {
   const varMap: Record<ThemeIconVariable, string> = {
     '--dh-svg-icon-close-tab': INLINE_SVG_LM_CLOSE_TAB,
     '--dh-svg-icon-maximise': INLINE_SVG_LM_MAXIMISE,
-    '--dh-svg-icon-tab-dropdown': lmTabDropdownSVG(lmIconColor),
+    '--dh-svg-icon-tab-dropdown': INLINE_SVG_LM_DROPDOWN,
     '--dh-svg-icon-search-cancel': searchInputCancelSVG(lmIconColor), // TODO: create a semantic variable source
     '--dh-svg-icon-select-indicator': selectIndicatorSVG(lmIconColor), // TODO: change to --dh-color-gray-600
   };
