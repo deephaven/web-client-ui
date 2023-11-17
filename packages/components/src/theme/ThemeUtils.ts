@@ -15,12 +15,21 @@ import { assertNotNull, ColorUtils } from '@deephaven/utils';
 import { themeDark } from './theme-dark';
 import { themeLight } from './theme-light';
 import {
+  INLINE_SVG_LM_CLOSE_TAB,
+  INLINE_SVG_LM_MAXIMISE,
+  lmTabDropdownSVG,
+  searchInputCancelSVG,
+  selectIndicatorSVG,
+} from './ThemeInlineSVGs';
+import {
   DEFAULT_DARK_THEME_KEY,
   DEFAULT_LIGHT_THEME_KEY,
-  DEFAULT_PRELOAD_DATA_VARIABLES,
+  DEFAULT_PRELOAD_COLOR_VARIABLES,
   ThemeData,
+  ThemeIconVariable,
   ThemePreloadData,
-  ThemePreloadStyleContent,
+  CssVariableStyleContent,
+  ThemePreloadColorVariable,
   ThemeRegistrationData,
   THEME_CACHE_LOCAL_STORAGE_KEY,
 } from './ThemeModel';
@@ -34,22 +43,62 @@ export const WHITESPACE_REGEX = /\s/;
 
 export type VarExpressionResolver = (varExpression: string) => string;
 
-/**
- * Creates a string containing preload style content for the current theme.
- * This resolves the current values of a few CSS variables that can be used
- * to style the page before the theme is loaded on next page load.
- */
-export function calculatePreloadStyleContent(): ThemePreloadStyleContent {
-  const bodyStyle = getComputedStyle(document.body);
+export function calculateInlineSVGStyleContent(): CssVariableStyleContent {
+  const resolveVar = createCssVariableResolver(document.body);
+
+  const lmIconColor = resolveVar('--dh-color-foreground');
+
+  const varMap: Record<ThemeIconVariable, string> = {
+    '--dh-svg-icon-close-tab': INLINE_SVG_LM_CLOSE_TAB,
+    '--dh-svg-icon-maximise': INLINE_SVG_LM_MAXIMISE,
+    '--dh-svg-icon-tab-dropdown': lmTabDropdownSVG(lmIconColor),
+    '--dh-svg-icon-search-cancel': searchInputCancelSVG(lmIconColor), // TODO: create a semantic variable source
+    '--dh-svg-icon-select-indicator': selectIndicatorSVG(lmIconColor), // TODO: change to --dh-color-gray-600
+  };
 
   // Calculate the current preload variables. If the variable is not set, use
   // the default value.
-  const pairs = Object.entries(DEFAULT_PRELOAD_DATA_VARIABLES).map(
-    ([key, defaultValue]) =>
-      `${key}:${bodyStyle.getPropertyValue(key) || defaultValue}`
+  const pairs = Object.entries(varMap).map(([key, value]) => `${key}:${value}`);
+
+  return `:root{${pairs.join(';')}}`;
+}
+
+/**
+ * Creates a :root selector string containing preload color variables for the
+ * current theme. This resolves the current values of a few CSS variables that
+ * can be used to style the page before the theme is loaded on next page load.
+ */
+export function calculatePreloadColorStyleContent(): CssVariableStyleContent {
+  const resolveVar = createCssVariableResolver(document.body);
+
+  // Calculate the current preload variables. If the variable is not set, use
+  // the default value.
+  const pairs = Object.keys(DEFAULT_PRELOAD_COLOR_VARIABLES).map(
+    key => `${key}:${resolveVar(key as ThemePreloadColorVariable)}`
   );
 
   return `:root{${pairs.join(';')}}`;
+}
+
+export function createCssVariableResolver(
+  el: Element
+): (varName: ThemePreloadColorVariable) => string {
+  const computedStyle = getComputedStyle(el);
+
+  return function cssVariableResolver(
+    varName: ThemePreloadColorVariable
+  ): string {
+    const value = computedStyle.getPropertyValue(varName);
+
+    if (value !== '') {
+      return value;
+    }
+
+    return (
+      DEFAULT_PRELOAD_COLOR_VARIABLES[varName as ThemePreloadColorVariable] ??
+      ''
+    );
+  };
 }
 
 /**
@@ -339,7 +388,10 @@ export function getThemeKey(pluginName: string, themeName: string): string {
 export function preloadTheme(): void {
   const preloadStyleContent =
     getThemePreloadData()?.preloadStyleContent ??
-    calculatePreloadStyleContent();
+    [
+      calculatePreloadColorStyleContent(),
+      calculateInlineSVGStyleContent(),
+    ].join(' ');
 
   log.debug('Preloading theme content:', `'${preloadStyleContent}'`);
 

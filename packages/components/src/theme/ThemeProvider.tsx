@@ -1,8 +1,13 @@
 import { createContext, ReactNode, useEffect, useMemo, useState } from 'react';
 import Log from '@deephaven/log';
-import { DEFAULT_DARK_THEME_KEY, ThemeData } from './ThemeModel';
 import {
-  calculatePreloadStyleContent,
+  CssVariableStyleContent,
+  DEFAULT_DARK_THEME_KEY,
+  ThemeData,
+} from './ThemeModel';
+import {
+  calculateInlineSVGStyleContent,
+  calculatePreloadColorStyleContent,
   getActiveThemes,
   getDefaultBaseThemes,
   getThemePreloadData,
@@ -36,6 +41,9 @@ export function ThemeProvider({
 }: ThemeProviderProps): JSX.Element {
   const baseThemes = useMemo(() => getDefaultBaseThemes(), []);
 
+  const [inlineSVGStyleContent, setInlineSVGStyleContent] =
+    useState<CssVariableStyleContent | null>(null);
+
   const [selectedThemeKey, setSelectedThemeKey] = useState<string>(
     () => getThemePreloadData()?.themeKey ?? DEFAULT_DARK_THEME_KEY
   );
@@ -59,7 +67,13 @@ export function ThemeProvider({
         return;
       }
 
-      const preloadStyleContent = calculatePreloadStyleContent();
+      const newInlineSVGStyleContent = calculateInlineSVGStyleContent();
+      const preloadColorStyleContent = calculatePreloadColorStyleContent();
+
+      const preloadStyleContent = [
+        preloadColorStyleContent,
+        newInlineSVGStyleContent,
+      ].join(' ') as CssVariableStyleContent;
 
       log.debug2('updateThemePreloadData:', {
         active: activeThemes.map(theme => theme.themeKey),
@@ -67,6 +81,8 @@ export function ThemeProvider({
         preloadStyleContent,
         selectedThemeKey,
       });
+
+      setInlineSVGStyleContent(newInlineSVGStyleContent);
 
       setThemePreloadData({
         themeKey: selectedThemeKey,
@@ -89,6 +105,9 @@ export function ThemeProvider({
     <ThemeContext.Provider value={value}>
       {activeThemes == null ? null : (
         <>
+          {inlineSVGStyleContent == null ? null : (
+            <style>{inlineSVGStyleContent}</style>
+          )}
           {activeThemes.map(theme => (
             <style data-theme-key={theme.themeKey} key={theme.themeKey}>
               {theme.styleContent}

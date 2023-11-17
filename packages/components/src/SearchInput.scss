@@ -25,20 +25,15 @@
     -webkit-appearance: none;
     height: 16px;
     width: 16px;
-    background-repeat: no-repeat;
-    // vsClose icon
-    background-image: str-replace(
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='#{$gray-300}' d='#{$close-path}'/%3E%3C/svg%3E"),
-      '#',
-      '%23'
-    );
-    transition: background-image $transition;
+    background-color: var(--dh-color-foreground);
+    mask-image: var(--dh-svg-icon-search-cancel);
+    mask-position: center center;
+    mask-repeat: no-repeat;
+    mask-size: 16px;
+    opacity: 0.4;
+    transition: opacity 300ms ease;
     &:hover {
-      background-image: str-replace(
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='#{$gray-100}' d='#{$close-path}' /%3E%3C/svg%3E"),
-        '#',
-        '%23'
-      );
+      opacity: 1;
     }
   }
 

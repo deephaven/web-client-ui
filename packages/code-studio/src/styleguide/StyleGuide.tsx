@@ -28,6 +28,7 @@ import SpectrumComponents from './SpectrumComponents';
 import SamplesMenu, { SampleMenuCategory } from './SamplesMenu';
 import GotoTopButton from './GotoTopButton';
 import { HIDE_FROM_E2E_TESTS_CLASS } from './utils';
+import { GoldenLayout } from './GoldenLayout';
 
 const stickyProps = {
   position: 'sticky',
@@ -84,6 +85,9 @@ function StyleGuide(): React.ReactElement {
       <SampleMenuCategory data-menu-category="Colors" />
       <Colors />
       <ThemeColors />
+
+      <SampleMenuCategory data-menu-category="Layout" />
+      <GoldenLayout />
 
       <SampleMenuCategory data-menu-category="Components" />
       <Buttons />
