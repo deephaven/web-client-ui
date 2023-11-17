@@ -4,6 +4,8 @@ import { vsArrowLeft, vsArrowRight, vsSearch } from '@deephaven/icons';
 import classNames from 'classnames';
 import Button from './Button';
 import './SearchInput.scss';
+import { GLOBAL_SHORTCUTS } from './shortcuts';
+import { ContextActions } from './context-actions';
 
 interface SearchInputProps {
   value: string;
@@ -82,6 +84,16 @@ class SearchInput extends PureComponent<SearchInputProps> {
     } = this.props;
 
     let matchCountSection;
+    const contextActions = [
+      {
+        action: () => cursor?.next('forward'),
+        shortcut: GLOBAL_SHORTCUTS.NEXT,
+      },
+      {
+        action: () => cursor?.next('back'),
+        shortcut: GLOBAL_SHORTCUTS.PREVIOUS,
+      },
+    ];
 
     if (cursor && matchCount > 1) {
       matchCountSection = (
@@ -94,7 +106,7 @@ class SearchInput extends PureComponent<SearchInputProps> {
               cursor.next('back');
             }}
             icon={vsArrowLeft}
-            tooltip="Next match"
+            tooltip={`Previous match (${GLOBAL_SHORTCUTS.PREVIOUS.getDisplayText()})`}
           />
           <span className="search-change-text">
             {cursor.index !== undefined && `${cursor.index + 1} of `}
@@ -108,7 +120,7 @@ class SearchInput extends PureComponent<SearchInputProps> {
               cursor.next('forward');
             }}
             icon={vsArrowRight}
-            tooltip="Next match"
+            tooltip={`Next match (${GLOBAL_SHORTCUTS.NEXT.getDisplayText()})`}
           />
         </>
       );
@@ -135,12 +147,15 @@ class SearchInput extends PureComponent<SearchInputProps> {
         />
 
         {matchCount != null ? (
-          <div
-            className="search-change-selection"
-            ref={this.searchChangeSelection}
-          >
-            {matchCountSection}
-          </div>
+          <>
+            <div
+              className="search-change-selection"
+              ref={this.searchChangeSelection}
+            >
+              {matchCountSection}
+            </div>
+            <ContextActions actions={contextActions} />
+          </>
         ) : (
           <span className="search-icon">
             <FontAwesomeIcon icon={vsSearch} />
