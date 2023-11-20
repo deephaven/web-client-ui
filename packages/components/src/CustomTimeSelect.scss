@@ -17,7 +17,10 @@ $cs-option-hover-color: $dropdown-link-hover-color;
     min-width: 14rem;
 
     .cs-caret {
-      color: $input-border-color;
+      color: var(--dh-color-select-indicator);
+      &:hover {
+        color: var(--dh-color-select-indicator-hover);
+      }
     }
   }
 
