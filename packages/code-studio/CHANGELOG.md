@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.55.0](https://github.com/deephaven/web-client-ui/compare/v0.54.0...v0.55.0) (2023-11-20)
+
+
+### Bug Fixes
+
+* Isolate Styleguide snapshots ([#1649](https://github.com/deephaven/web-client-ui/issues/1649)) ([a2ef056](https://github.com/deephaven/web-client-ui/commit/a2ef05681f348f02f46859909875e61c959a66dc))
+
+
+### Features
+
+* Styleguide regression tests ([#1639](https://github.com/deephaven/web-client-ui/issues/1639)) ([561ff22](https://github.com/deephaven/web-client-ui/commit/561ff22714a8b39cc55b41549712b5ef23bd39cf)), closes [#1634](https://github.com/deephaven/web-client-ui/issues/1634)
+
+
+
+
+
 # [0.54.0](https://github.com/deephaven/web-client-ui/compare/v0.53.0...v0.54.0) (2023-11-10)
 
 
