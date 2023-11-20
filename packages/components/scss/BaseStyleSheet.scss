@@ -392,6 +392,16 @@ form label small {
 .form-control.focus {
   border: 1px solid $primary;
 }
+
+.form-control.is-invalid,
+.form-control.is-invalid:focus {
+  border-color: var(--dh-color-form-control-error);
+  background-image: var(--dh-svg-icon-error);
+}
+.form-control.is-invalid:focus {
+  box-shadow: 0 0 0 0.2rem var(--dh-color-form-control-error-shadow);
+}
+
 .form-control.btn:focus {
   box-shadow: $input-btn-focus-box-shadow;
 }

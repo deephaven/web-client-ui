@@ -8,6 +8,7 @@
   }
 
   .search-icon {
+    color: var(--dh-color-search-icon);
     pointer-events: none;
     position: absolute;
     right: $spacer-2;

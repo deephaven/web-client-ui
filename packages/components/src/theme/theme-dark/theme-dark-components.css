@@ -7,6 +7,7 @@
   --dh-color-colorpicker-border: hsla(var(--dh-color-visual-gray-hsl), 0.1);
 
   /* Form Controls */
+  --dh-color-search-icon: var(--dh-color-foreground);
   --dh-color-form-control-error: hsl(var(--dh-color-visual-negative-hsl));
   --dh-color-form-control-error-shadow: hsla(
     var(--dh-color-visual-negative-hsl),
