@@ -450,9 +450,28 @@ form label small {
   cursor: not-allowed;
 }
 
+.custom-select {
+  background-image: var(--dh-svg-icon-select-indicator);
+
+  &.is-invalid,
+  &.is-invalid:focus {
+    border-color: var(--dh-color-form-control-error);
+    background-image: var(--dh-svg-icon-select-indicator),
+      var(--dh-svg-icon-error);
+  }
+  &.is-invalid:focus {
+    box-shadow: 0 0 0 0.2rem var(--dh-color-form-control-error-shadow);
+  }
+}
+
 .custom-select:disabled {
   border-color: $black;
   cursor: not-allowed;
+  background-image: var(--dh-svg-icon-select-indicator-disabled);
+  &.is-invalid {
+    background-image: var(--dh-svg-icon-select-indicator-disabled),
+      var(--dh-svg-icon-error);
+  }
 }
 
 input[type='number'] {
@@ -754,7 +773,7 @@ input[type='number']::-webkit-inner-spin-button {
   .custom-select {
     background-color: inherit !important;
     color: $foreground;
-    background-image: escape-svg($custom-select-indicator),
+    background-image: var(--dh-svg-icon-select-indicator),
       linear-gradient(0deg, $input-bg, $input-bg);
     background-size: $custom-select-bg-size, cover;
     background-repeat: no-repeat;
@@ -769,7 +788,7 @@ input[type='number']::-webkit-inner-spin-button {
   }
 
   .console-creator .custom-select {
-    background-image: escape-svg($custom-select-indicator),
+    background-image: var(--dh-svg-icon-select-indicator),
       linear-gradient(0deg, $gray-700, $gray-700);
     &:-moz-focusring {
       color: rgba(0, 0, 0, 0%);
@@ -778,7 +797,7 @@ input[type='number']::-webkit-inner-spin-button {
   }
 
   .modal-dialog.theme-bg-light .custom-select {
-    background-image: escape-svg($custom-select-indicator),
+    background-image: var(--dh-svg-icon-select-indicator),
       linear-gradient(0deg, $gray-200, $gray-200);
     &:-moz-focusring {
       color: rgba(0, 0, 0, 0%);

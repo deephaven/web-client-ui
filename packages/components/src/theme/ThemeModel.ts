@@ -37,9 +37,10 @@ export const SVG_ICON_MANUAL_COLOR_MAP: Record<
   ThemeIconsRequiringManualColorChanges,
   string
 > = {
-  '--dh-svg-icon-select-indicator': '--dh-color-foreground',
-  '--dh-svg-icon-select-indicator-disabled': '--dh-color-foreground',
-  '--dh-svg-icon-error': '--dh-color-visual-negative',
+  '--dh-svg-icon-select-indicator': '--dh-color-select-indicator',
+  '--dh-svg-icon-select-indicator-disabled':
+    '--dh-color-select-indicator-disabled',
+  '--dh-svg-icon-error': '--dh-color-form-control-error',
 };
 
 export const THEME_CACHE_LOCAL_STORAGE_KEY = 'deephaven.themeCache';

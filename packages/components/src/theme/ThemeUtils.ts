@@ -415,7 +415,8 @@ export function overrideSVGFillColors(): void {
 
   Object.entries(SVG_ICON_MANUAL_COLOR_MAP).forEach(([key, value]) => {
     // Clear any previous override so that our variables get resolved against the
-    // actual svg content provided by active themes
+    // actual svg content provided by the active themes and not from a previous
+    // override
     document.body.style.setProperty(key, null);
 
     const svgContent = resolveVar(key as ThemeIconsRequiringManualColorChanges);
@@ -423,6 +424,8 @@ export function overrideSVGFillColors(): void {
 
     const newSVGContent = replaceSVGFillColor(svgContent, fillColor);
 
+    // This will take precedence over any values for the variable provided by
+    // the active themes
     document.body.style.setProperty(key, newSVGContent);
   });
 }

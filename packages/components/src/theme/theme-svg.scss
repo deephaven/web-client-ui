@@ -21,6 +21,8 @@ $svg-path-select-indicator: '0 0 16 16',
   'M4 7l-.4-.8 4-3.7h.8l4 3.7-.4.8H4zm0 2l-.4.8 4 3.7h.8l4-3.7L12 9H4z';
 $svg-path-close: '0 0 512 512',
   'm256 278.624 116.672 116.704 22.656 -22.624L278.624 256l116.704 -116.672 -22.624 -22.656L256 233.376 139.328 116.672l-22.624 22.656L233.376 256l-116.672 116.672 22.624 22.656L256 278.624z';
+$svg-path-error: '0 0 16 16',
+  'M7.56 1h.88l6.54 12.26-.44.74H1.44L1 13.26 7.56 1zM8 2.28 2.28 13H13.7L8 2.28zM8.625 12v-1h-1.25v1h1.25zm-1.25-2V6h1.25v4h-1.25z';
 
 /**
  * CSS variables containing inline SVGs. These all should have an explicit 
@@ -37,5 +39,9 @@ $svg-path-close: '0 0 512 512',
   --dh-svg-icon-select-indicator: #{inline-svg-url(
       $svg-path-select-indicator...
     )};
+  --dh-svg-icon-select-indicator-disabled: #{inline-svg-url(
+      $svg-path-select-indicator...
+    )};
   --dh-svg-icon-close: #{inline-svg-url($svg-path-close...)};
+  --dh-svg-icon-error: #{inline-svg-url($svg-path-error...)};
 }
