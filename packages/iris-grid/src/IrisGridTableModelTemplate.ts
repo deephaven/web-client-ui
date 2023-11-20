@@ -995,10 +995,10 @@ class IrisGridTableModelTemplate<
   /**
    * Retrieve the source column for given coordinates.
    * - Retrieve the totals column if this is a totals row
-   * - Retrieve the source column if it's a proxied row
+   * - Retrieve the source column if it's a proxied column
    * - Otherwise return the column at the given index
-   * @param column Column index to get the totals column from
-   * @param row Row index to get the totals column from
+   * @param column Column index to get the source column from
+   * @param row Row index to get the source column from
    */
   sourceColumn(column: ModelIndex, row: ModelIndex): Column {
     const proxyCell = this.sourceForCell(column, row);
