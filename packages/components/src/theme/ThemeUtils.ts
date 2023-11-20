@@ -19,12 +19,14 @@ import {
   DEFAULT_LIGHT_THEME_KEY,
   DEFAULT_PRELOAD_COLOR_VARIABLES,
   ThemeData,
-  ThemeIconVariable,
   ThemePreloadData,
   CssVariableStyleContent,
   ThemePreloadColorVariable,
   ThemeRegistrationData,
   THEME_CACHE_LOCAL_STORAGE_KEY,
+  SVG_ICON_MANUAL_COLOR_MAP,
+  ThemeCssVariableName,
+  ThemeIconsRequiringManualColorChanges,
 } from './ThemeModel';
 
 const log = Log.module('ThemeUtils');
@@ -35,32 +37,6 @@ export const NON_WHITESPACE_REGEX = /\S/;
 export const WHITESPACE_REGEX = /\s/;
 
 export type VarExpressionResolver = (varExpression: string) => string;
-
-/**
- * Inline SVGs cannot depend on dynamic CSS variables, so we have to explicitly
- * change them. This function
- * 1. Resolves CSS variables containing inline SVG urls
- * 2. Replaces the `fill='...'` attribute with the current foreground color
- * 3. Returns a :root selector string containing the overrides
- *
- * Note that it is preferable to use inline SVGs as background-mask values and
- * just change the background color instead of relying on this util, but this
- * is not always possible.
- */
-export function calculateInlineSVGOverrides(): CssVariableStyleContent {
-  const resolveVar = createCssVariableResolver(document.body);
-
-  const lmIconColor = resolveVar('--dh-color-foreground');
-
-  const iconVars: ThemeIconVariable[] = ['--dh-svg-icon-select-indicator'];
-
-  // Replace fill color in inline SVGs
-  const pairs = iconVars.map(
-    key => `${key}:${replaceSVGFillColor(resolveVar(key), lmIconColor)}`
-  );
-
-  return `:root{${pairs.join(';')}}`;
-}
 
 /**
  * Creates a :root selector string containing preload color variables for the
@@ -86,16 +62,14 @@ export function calculatePreloadColorStyleContent(): CssVariableStyleContent {
  */
 export function createCssVariableResolver(
   el: Element
-): (varName: ThemePreloadColorVariable | ThemeIconVariable) => string {
+): (varName: ThemeCssVariableName) => string {
   const computedStyle = getComputedStyle(el);
 
   /**
    * Resolve the given css variable name to a value. If the variable is not set,
    * return the default preload value or '' if one does not exist.
    */
-  return function cssVariableResolver(
-    varName: ThemePreloadColorVariable | ThemeIconVariable
-  ): string {
+  return function cssVariableResolver(varName: ThemeCssVariableName): string {
     const value = computedStyle.getPropertyValue(varName);
 
     if (value !== '') {
@@ -419,4 +393,29 @@ export function preloadTheme(): void {
   const style = document.createElement('style');
   style.innerHTML = preloadStyleContent;
   document.head.appendChild(style);
+}
+
+/**
+ * Inline SVGs cannot depend on dynamic CSS variables, so we have to explicitly
+ * change them. This function
+ * 1. Resolves CSS variables containing inline SVG urls
+ * 2. Resolves mapped color variables and replaces the `fill='...'` attribute with the result
+ * 3. Sets the original CSS variable to the new replaced value
+ *
+ * Note that it is preferable to use inline SVGs as background-mask values and
+ * just change the background color instead of relying on this util, but this
+ * is not always possible. e.g. <select> elements don't support pseudo elements,
+ * so there's not a good way to set icons via masks.
+ */
+export function updateSVGFillColors(): void {
+  const resolveVar = createCssVariableResolver(document.body);
+
+  Object.entries(SVG_ICON_MANUAL_COLOR_MAP).forEach(([key, value]) => {
+    const svgContent = resolveVar(key as ThemeIconsRequiringManualColorChanges);
+    const fillColor = resolveVar(value as ThemePreloadColorVariable);
+
+    const newSVGContent = replaceSVGFillColor(svgContent, fillColor);
+
+    document.body.style.setProperty(key, newSVGContent);
+  });
 }

@@ -1,17 +1,13 @@
 import { createContext, ReactNode, useEffect, useMemo, useState } from 'react';
 import Log from '@deephaven/log';
+import { DEFAULT_DARK_THEME_KEY, ThemeData } from './ThemeModel';
 import {
-  CssVariableStyleContent,
-  DEFAULT_DARK_THEME_KEY,
-  ThemeData,
-} from './ThemeModel';
-import {
-  calculateInlineSVGOverrides,
   calculatePreloadColorStyleContent,
   getActiveThemes,
   getDefaultBaseThemes,
   getThemePreloadData,
   setThemePreloadData,
+  updateSVGFillColors,
 } from './ThemeUtils';
 import { SpectrumThemeProvider } from './SpectrumThemeProvider';
 import './theme-svg.scss';
@@ -42,9 +38,6 @@ export function ThemeProvider({
 }: ThemeProviderProps): JSX.Element {
   const baseThemes = useMemo(() => getDefaultBaseThemes(), []);
 
-  const [inlineSVGOverrides, setInlineSVGOverrides] =
-    useState<CssVariableStyleContent | null>(null);
-
   const [selectedThemeKey, setSelectedThemeKey] = useState<string>(
     () => getThemePreloadData()?.themeKey ?? DEFAULT_DARK_THEME_KEY
   );
@@ -68,13 +61,9 @@ export function ThemeProvider({
         return;
       }
 
-      const newInlineSVGStyleContent = calculateInlineSVGOverrides();
-      const preloadColorStyleContent = calculatePreloadColorStyleContent();
+      updateSVGFillColors();
 
-      const preloadStyleContent = [
-        preloadColorStyleContent,
-        newInlineSVGStyleContent,
-      ].join(' ') as CssVariableStyleContent;
+      const preloadStyleContent = calculatePreloadColorStyleContent();
 
       log.debug2('updateThemePreloadData:', {
         active: activeThemes.map(theme => theme.themeKey),
@@ -82,8 +71,6 @@ export function ThemeProvider({
         preloadStyleContent,
         selectedThemeKey,
       });
-
-      setInlineSVGOverrides(newInlineSVGStyleContent);
 
       setThemePreloadData({
         themeKey: selectedThemeKey,
@@ -106,10 +93,6 @@ export function ThemeProvider({
     <ThemeContext.Provider value={value}>
       {activeThemes == null ? null : (
         <>
-          {inlineSVGOverrides == null ? null : (
-            // Override SVGs provided by theme-svg.scss
-            <style id="dh-inline-svg-overrides">{inlineSVGOverrides}</style>
-          )}
           {activeThemes.map(theme => (
             <style data-theme-key={theme.themeKey} key={theme.themeKey}>
               {theme.styleContent}
