@@ -15,13 +15,6 @@ import { assertNotNull, ColorUtils } from '@deephaven/utils';
 import { themeDark } from './theme-dark';
 import { themeLight } from './theme-light';
 import {
-  INLINE_SVG_LM_CLOSE_TAB,
-  INLINE_SVG_LM_DROPDOWN,
-  INLINE_SVG_LM_MAXIMISE,
-  searchInputCancelSVG,
-  selectIndicatorSVG,
-} from './ThemeInlineSVGs';
-import {
   DEFAULT_DARK_THEME_KEY,
   DEFAULT_LIGHT_THEME_KEY,
   DEFAULT_PRELOAD_COLOR_VARIABLES,
@@ -43,22 +36,31 @@ export const WHITESPACE_REGEX = /\s/;
 
 export type VarExpressionResolver = (varExpression: string) => string;
 
-export function calculateInlineSVGStyleContent(): CssVariableStyleContent {
+/**
+ * Inline SVGs cannot depend on dynamic CSS variables, so we have to explicitly
+ * change them. This function
+ * 1. Resolves CSS variables containing inline SVG urls
+ * 2. Replaces the `fill='...'` attribute with the current foreground color
+ * 3. Returns a :root selector string containing the overrides
+ *
+ * Note that it is preferable to use inline SVGs as background-mask values and
+ * just change the background color instead of relying on this util, but this
+ * is not always possible.
+ */
+export function calculateInlineSVGOverrides(): CssVariableStyleContent {
   const resolveVar = createCssVariableResolver(document.body);
 
   const lmIconColor = resolveVar('--dh-color-foreground');
 
-  const varMap: Record<ThemeIconVariable, string> = {
-    '--dh-svg-icon-close-tab': INLINE_SVG_LM_CLOSE_TAB,
-    '--dh-svg-icon-maximise': INLINE_SVG_LM_MAXIMISE,
-    '--dh-svg-icon-tab-dropdown': INLINE_SVG_LM_DROPDOWN,
-    '--dh-svg-icon-search-cancel': searchInputCancelSVG(lmIconColor), // TODO: create a semantic variable source
-    '--dh-svg-icon-select-indicator': selectIndicatorSVG(lmIconColor), // TODO: change to --dh-color-gray-600
-  };
+  const iconVars: ThemeIconVariable[] = [
+    '--dh-svg-icon-search-cancel',
+    '--dh-svg-icon-select-indicator',
+  ];
 
-  // Calculate the current preload variables. If the variable is not set, use
-  // the default value.
-  const pairs = Object.entries(varMap).map(([key, value]) => `${key}:${value}`);
+  // Replace fill color in inline SVGs
+  const pairs = iconVars.map(
+    key => `${key}:${replaceSVGFillColor(resolveVar(key), lmIconColor)}`
+  );
 
   return `:root{${pairs.join(';')}}`;
 }
@@ -82,11 +84,11 @@ export function calculatePreloadColorStyleContent(): CssVariableStyleContent {
 
 export function createCssVariableResolver(
   el: Element
-): (varName: ThemePreloadColorVariable) => string {
+): (varName: ThemePreloadColorVariable | ThemeIconVariable) => string {
   const computedStyle = getComputedStyle(el);
 
   return function cssVariableResolver(
-    varName: ThemePreloadColorVariable
+    varName: ThemePreloadColorVariable | ThemeIconVariable
   ): string {
     const value = computedStyle.getPropertyValue(varName);
 
@@ -260,6 +262,22 @@ export function getExpressionRanges(value: string): [number, number][] {
 }
 
 /**
+ * Replace the `fill='...'` attribute in the given SVG content with the given
+ * color string.
+ * @param svgContent Inline SVG content to replace the fill color in
+ * @param fillColor The color to replace the fill color with
+ */
+export function replaceSVGFillColor(
+  svgContent: string,
+  fillColor: string
+): string {
+  return svgContent.replace(
+    /fill='.*?'/,
+    `fill='${encodeURIComponent(fillColor)}'`
+  );
+}
+
+/**
  * Make a copy of the given object replacing any css variable expressions
  * contained in its prop values with values resolved from the given HTML element.
  * Variables that resolve to color strings will also be normalized to rgb or
@@ -388,10 +406,9 @@ export function getThemeKey(pluginName: string, themeName: string): string {
 export function preloadTheme(): void {
   const preloadStyleContent =
     getThemePreloadData()?.preloadStyleContent ??
-    [
-      calculatePreloadColorStyleContent(),
-      calculateInlineSVGStyleContent(),
-    ].join(' ');
+    [calculatePreloadColorStyleContent(), calculateInlineSVGOverrides()].join(
+      ' '
+    );
 
   log.debug('Preloading theme content:', `'${preloadStyleContent}'`);
 
