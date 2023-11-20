@@ -1,4 +1,4 @@
-import React, { ChangeEvent, Component, ReactElement } from 'react';
+import React, { ChangeEvent, PureComponent, ReactElement } from 'react';
 import classNames from 'classnames';
 import {
   GridUtils,
@@ -71,7 +71,7 @@ interface VisibilityOrderingBuilderState {
   searchFilter: string;
 }
 
-class VisibilityOrderingBuilder extends Component<
+class VisibilityOrderingBuilder extends PureComponent<
   VisibilityOrderingBuilderProps,
   VisibilityOrderingBuilderState
 > {
