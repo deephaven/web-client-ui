@@ -271,27 +271,15 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
 
   // Icon to Close Pane and so remove it from GoldenLayout Container
   .lm_close {
-    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAAQUlEQVR4nHXOQQ4AMAgCQeT/f6aXpsGK3jSTuCVJAAr7iBdoAwCKd0nwfaAdHbYERw5b44+E8JoBjEYGMBq5gAYP3usUDu2IvoUAAAAASUVORK5CYII=);
+    @include icon-image-mask(var(--dh-svg-icon-close));
   }
 
   .lm_tabnextbutton {
-    background-size: 16px;
-    // vsChevronRight
-    background-image: str-replace(
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='#{$lm-tab-icon-color}' d='M10.072 8.024L5.715 3.667l.618-.62L11 7.716v.618L6.333 13l-.618-.619 4.357-4.357z'/%3E%3C/svg%3E"),
-      '#',
-      '%23'
-    );
+    @include icon-image-mask(var(--dh-svg-icon-next));
   }
 
   .lm_tabpreviousbutton {
-    background-size: 16px;
-    // vsChevronLeft
-    background-image: str-replace(
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='#{$lm-tab-icon-color}' d='M5.928 7.976l4.357 4.357-.618.62L5 8.284v-.618L9.667 3l.618.619-4.357 4.357z'/%3E%3C/svg%3E"),
-      '#',
-      '%23'
-    );
+    @include icon-image-mask(var(--dh-svg-icon-prev));
   }
 }
 

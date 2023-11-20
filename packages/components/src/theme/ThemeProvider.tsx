@@ -14,7 +14,7 @@ import {
   setThemePreloadData,
 } from './ThemeUtils';
 import { SpectrumThemeProvider } from './SpectrumThemeProvider';
-import inlineSVGs from './theme-svg.css?raw';
+import './theme-svg.scss';
 
 export interface ThemeContextValue {
   activeThemes: ThemeData[] | null;
@@ -106,8 +106,8 @@ export function ThemeProvider({
     <ThemeContext.Provider value={value}>
       {activeThemes == null ? null : (
         <>
-          <style id="dh-inline-svg">{inlineSVGs}</style>
           {inlineSVGOverrides == null ? null : (
+            // Override SVGs provided by theme-svg.scss
             <style id="dh-inline-svg-overrides">{inlineSVGOverrides}</style>
           )}
           {activeThemes.map(theme => (

@@ -52,10 +52,7 @@ export function calculateInlineSVGOverrides(): CssVariableStyleContent {
 
   const lmIconColor = resolveVar('--dh-color-foreground');
 
-  const iconVars: ThemeIconVariable[] = [
-    '--dh-svg-icon-search-cancel',
-    '--dh-svg-icon-select-indicator',
-  ];
+  const iconVars: ThemeIconVariable[] = ['--dh-svg-icon-select-indicator'];
 
   // Replace fill color in inline SVGs
   const pairs = iconVars.map(
@@ -82,11 +79,20 @@ export function calculatePreloadColorStyleContent(): CssVariableStyleContent {
   return `:root{${pairs.join(';')}}`;
 }
 
+/**
+ * Create a resolver function for calculating the value of a css variable based
+ * on a given element's computed style.
+ * @param el Element to resolve css variables against
+ */
 export function createCssVariableResolver(
   el: Element
 ): (varName: ThemePreloadColorVariable | ThemeIconVariable) => string {
   const computedStyle = getComputedStyle(el);
 
+  /**
+   * Resolve the given css variable name to a value. If the variable is not set,
+   * return the default preload value or '' if one does not exist.
+   */
   return function cssVariableResolver(
     varName: ThemePreloadColorVariable | ThemeIconVariable
   ): string {
