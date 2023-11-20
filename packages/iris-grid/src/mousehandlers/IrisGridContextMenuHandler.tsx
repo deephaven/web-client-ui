@@ -734,32 +734,32 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
     const actions: ResolvableContextAction[] = [];
 
-    if (modelColumn != null) {
+    if (modelColumn != null && modelRow != null) {
       const sourceCell = model.sourceForCell(modelColumn, modelRow ?? 0);
       const { column: sourceColumn, row: sourceRow } = sourceCell;
-      if (modelRow != null) {
-        const value = model.valueForCell(sourceColumn, sourceRow);
-        const valueText = model.textForCell(sourceColumn, sourceRow);
-        const column = columns[sourceColumn];
+      const value = model.valueForCell(sourceColumn, sourceRow);
+      const valueText = model.textForCell(sourceColumn, sourceRow);
+      const column = columns[sourceColumn];
 
-        const { onContextMenu } = irisGrid.props;
+      const { onContextMenu } = irisGrid.props;
 
-        if (column != null) {
-          actions.push(
-            ...onContextMenu({
-              model,
-              value,
-              valueText,
-              column,
-              rowIndex,
-              columnIndex,
-              modelRow,
-              modelColumn,
-            })
-          );
-        }
+      if (column != null) {
+        actions.push(
+          ...onContextMenu({
+            model,
+            value,
+            valueText,
+            column,
+            rowIndex,
+            columnIndex,
+            modelRow,
+            modelColumn,
+          })
+        );
       }
+    }
 
+    if (modelColumn != null) {
       const clearFilterRange = model.getClearFilterRange(modelColumn);
       if (clearFilterRange != null && clearFilterRange.length > 0) {
         // Clear column filter should still be available after last row
