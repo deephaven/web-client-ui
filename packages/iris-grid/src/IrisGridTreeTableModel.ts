@@ -44,7 +44,7 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
         constituentType: TableUtils.dataType.STRING,
         isPartitionColumn: false,
         isSortable: false,
-        description: 'Virtual column',
+        description: 'Key column',
         filter: () => {
           throw new Error('Filter not implemented for virtual column');
         },
