@@ -37,7 +37,9 @@ class MockChartModel extends ChartModel {
     const values = [];
     const smooth = [];
     const linear = [];
-    const startDate = new Date();
+
+    // Setting to a fixed seed date so that e2e tests can be deterministic.
+    const startDate = new Date('2018-06-01');
 
     for (let i = 0; i < steps; i += 1) {
       const date = new Date(
