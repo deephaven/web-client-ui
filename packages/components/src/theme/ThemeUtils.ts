@@ -406,9 +406,7 @@ export function getThemeKey(pluginName: string, themeName: string): string {
 export function preloadTheme(): void {
   const preloadStyleContent =
     getThemePreloadData()?.preloadStyleContent ??
-    [calculatePreloadColorStyleContent(), calculateInlineSVGOverrides()].join(
-      ' '
-    );
+    calculatePreloadColorStyleContent();
 
   log.debug('Preloading theme content:', `'${preloadStyleContent}'`);
 
