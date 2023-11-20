@@ -7,7 +7,7 @@ import {
   getDefaultBaseThemes,
   getThemePreloadData,
   setThemePreloadData,
-  updateSVGFillColors,
+  overrideSVGFillColors,
 } from './ThemeUtils';
 import { SpectrumThemeProvider } from './SpectrumThemeProvider';
 import './theme-svg.scss';
@@ -61,7 +61,7 @@ export function ThemeProvider({
         return;
       }
 
-      updateSVGFillColors();
+      overrideSVGFillColors();
 
       const preloadStyleContent = calculatePreloadColorStyleContent();
 
