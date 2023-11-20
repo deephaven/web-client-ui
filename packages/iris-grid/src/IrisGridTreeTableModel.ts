@@ -13,10 +13,14 @@ import type {
   TreeRow,
   TreeTable,
 } from '@deephaven/jsapi-types';
+import Log from '@deephaven/log';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import { assertNotNull } from '@deephaven/utils';
 import { UIRow, ColumnName, CellData } from './CommonTypes';
 import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
+import { DisplayColumn } from './IrisGridModel';
+
+const log = Log.module('IrisGridTreeTableModel');
 
 export interface UITreeRow extends UIRow {
   isExpanded: boolean;
@@ -28,7 +32,7 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   UITreeRow
 > {
   /** We keep a virtual column at the front that tracks the "group" that is expanded */
-  private virtualColumns: Column[];
+  private virtualColumns: DisplayColumn[];
 
   constructor(
     dh: DhType,
@@ -39,7 +43,8 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     super(dh, table, formatter, inputTable);
     this.virtualColumns = [
       {
-        name: 'Group',
+        name: '__DH_UI_GROUP__',
+        displayName: 'Group',
         type: TableUtils.dataType.STRING,
         constituentType: TableUtils.dataType.STRING,
         isPartitionColumn: false,
@@ -67,7 +72,8 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     columns: Column[]
   ): void {
     const viewportColumns = [
-      // Need to always fetch the grouped columns
+      // Need to always fetch the grouped columns so we always have key data for the rows
+      // Used to display our virtual key column
       ...this.table.groupedColumns,
       ...columns.filter(
         c =>
@@ -102,20 +108,20 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   extractViewportRow(row: TreeRow, columns: Column[]): UITreeRow {
     const { isExpanded, hasChildren, depth } = row;
     const extractedRow = super.extractViewportRow(row, columns);
-    const modifiedData = new Map<ModelIndex, CellData>();
+    const modifiedData = new Map<ModelIndex, CellData>(extractedRow.data);
     if (hasChildren) {
       for (let i = 0; i < this.virtualColumns.length; i += 1) {
-        const cellData = extractedRow.data.get(
-          i + (depth - 1) + (this.virtualColumns.length - 1)
-        );
-        if (cellData != null) {
-          modifiedData.set(i, cellData);
+        const key = i + (depth - 1) + (this.virtualColumns.length - 1);
+        if (!modifiedData.has(key)) {
+          log.warn('Missing key data for virtual column', i, depth, key, row);
+        } else {
+          const cellData = modifiedData.get(key);
+          if (cellData != null) {
+            modifiedData.set(i, cellData);
+          }
         }
       }
     }
-    extractedRow.data.forEach((value, key) => {
-      modifiedData.set(key, value);
-    });
 
     return {
       ...extractedRow,

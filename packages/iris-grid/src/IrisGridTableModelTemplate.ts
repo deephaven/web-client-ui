@@ -45,8 +45,8 @@ import type {
   DirectionOption,
   Marker,
   ValuePlacementOption,
-} from '@deephaven/grid';
-import IrisGridModel from './IrisGridModel';
+} from 'packages/grid/src/DataBarGridModel';
+import IrisGridModel, { DisplayColumn } from './IrisGridModel';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import IrisGridUtils from './IrisGridUtils';
 import MissingKeyError from './MissingKeyError';
@@ -694,7 +694,7 @@ class IrisGridTableModelTemplate<
     if (isColumnHeaderGroup(header)) {
       return header.isNew ? '' : header.name;
     }
-    return header?.name;
+    return header?.displayName ?? header?.name;
   }
 
   colorForColumnHeader(x: ModelIndex, depth = 0): string | null {
@@ -728,7 +728,7 @@ class IrisGridTableModelTemplate<
   columnAtDepth(
     x: ModelIndex,
     depth = 0
-  ): ColumnHeaderGroup | Column | undefined {
+  ): ColumnHeaderGroup | DisplayColumn | undefined {
     if (depth === 0) {
       return this.columns[x];
     }

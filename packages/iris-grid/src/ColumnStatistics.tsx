@@ -11,7 +11,7 @@ import Log from '@deephaven/log';
 import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
 import { isExpandableGridModel } from '@deephaven/grid';
 import './ColumnStatistics.scss';
-import IrisGridModel from './IrisGridModel';
+import IrisGridModel, { DisplayColumn } from './IrisGridModel';
 
 const log = Log.module('ColumnStatistics');
 const STATS_LABEL_OVERRIDES: Record<string, string> = {
@@ -26,7 +26,7 @@ interface Statistic {
 }
 
 interface ColumnStatisticsProps {
-  column: Column;
+  column: DisplayColumn;
   model: IrisGridModel;
   onStatistics: () => void;
 }
@@ -200,7 +200,7 @@ class ColumnStatistics extends Component<
     return (
       <div className="column-statistics">
         <div className="column-statistics-title">
-          {column.name}
+          {column.displayName ?? column.name}
           <span className="column-statistics-type">&nbsp;({columnType})</span>
           <CopyButton
             className="column-statistics-copy"

@@ -774,14 +774,13 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           action: () => {
             this.irisGrid.removeColumnFilter(clearFilterRange);
           },
-          disabled: !(
-            Array.from(quickFilters.keys()).some(
+          disabled:
+            !Array.from(quickFilters.keys()).some(
               col => col >= clearFilterRange[0] && col <= clearFilterRange[1]
-            ) ||
-            Array.from(advancedFilters.keys()).some(
+            ) &&
+            !Array.from(advancedFilters.keys()).some(
               col => col >= clearFilterRange[0] && col <= clearFilterRange[1]
-            )
-          ),
+            ),
         });
       }
     }

@@ -35,6 +35,15 @@ import {
 } from './CommonTypes';
 import ColumnHeaderGroup from './ColumnHeaderGroup';
 
+export type DisplayColumn = Column & {
+  /**
+   * Name to display with the column.
+   * The `name` property on `Column` is a unique identifier and must be a valid Java identifier,
+   * whereas `displayName` can be any string and does not need to be unique.
+   */
+  displayName?: string;
+};
+
 type IrisGridModelEventNames =
   (typeof IrisGridModel.EVENT)[keyof typeof IrisGridModel.EVENT];
 
@@ -135,13 +144,13 @@ abstract class IrisGridModel<
    * Gets the columns for this model
    * @returns All columns in the model
    */
-  abstract get columns(): readonly Column[];
+  abstract get columns(): readonly DisplayColumn[];
 
   /**
    * Retrieve the grouped columns for this model
    * @returns The columns that are grouped
    */
-  get groupedColumns(): readonly Column[] {
+  get groupedColumns(): readonly DisplayColumn[] {
     return EMPTY_ARRAY;
   }
 
@@ -149,7 +158,7 @@ abstract class IrisGridModel<
    * Gets the columns for the model before any transformations (such as rollups) are applied.
    * @returns All original columns in the model.
    */
-  get originalColumns(): readonly Column[] {
+  get originalColumns(): readonly DisplayColumn[] {
     return this.columns;
   }
 
