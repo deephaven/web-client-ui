@@ -128,7 +128,7 @@ interface OwnProps extends DashboardPanelProps {
   makeModel: () => Promise<ChartModel>;
   localDashboardId: string;
   Plotly?: typeof PlotlyType;
-  /** The panel container div */
+  /** The plot container div */
   containerRef?: RefObject<HTMLDivElement>;
 
   panelState?: GLChartPanelState;
@@ -236,7 +236,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     );
     this.handleClearAllFilters = this.handleClearAllFilters.bind(this);
 
-    this.panelContainer = props.containerRef ?? React.createRef();
+    this.panelContainer = React.createRef();
     this.pending = new Pending();
 
     const { metadata, panelState } = props;
@@ -1035,6 +1035,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
       metadata,
       settings,
       Plotly,
+      containerRef,
     } = this.props;
     const {
       columnMap,
@@ -1117,6 +1118,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
                 onError={this.handleError}
                 onSettingsChanged={this.handleSettingsChanged}
                 Plotly={Plotly}
+                containerRef={containerRef}
               />
             )}
           </div>

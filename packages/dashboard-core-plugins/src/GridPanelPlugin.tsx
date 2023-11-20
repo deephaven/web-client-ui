@@ -1,13 +1,13 @@
 import { forwardRef } from 'react';
-import { type WidgetComponentProps } from '@deephaven/plugin';
+import { WidgetPanelProps } from '@deephaven/plugin';
 import { type Table } from '@deephaven/jsapi-types';
 import useHydrateGrid from './useHydrateGrid';
 import ConnectedIrisGridPanel, {
   type IrisGridPanel,
 } from './panels/IrisGridPanel';
 
-export const GridPlugin = forwardRef(
-  (props: WidgetComponentProps, ref: React.Ref<IrisGridPanel>) => {
+export const GridPanelPlugin = forwardRef(
+  (props: WidgetPanelProps, ref: React.Ref<IrisGridPanel>) => {
     const { localDashboardId, fetch } = props;
     const hydratedProps = useHydrateGrid(
       fetch as unknown as () => Promise<Table>,
@@ -19,6 +19,6 @@ export const GridPlugin = forwardRef(
   }
 );
 
-GridPlugin.displayName = 'GridPlugin';
+GridPanelPlugin.displayName = 'GridPanelPlugin';
 
-export default GridPlugin;
+export default GridPanelPlugin;

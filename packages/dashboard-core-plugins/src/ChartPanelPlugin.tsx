@@ -14,7 +14,7 @@ import type {
 } from '@deephaven/jsapi-types';
 import { IrisGridUtils } from '@deephaven/iris-grid';
 import { getTimeZone, store } from '@deephaven/redux';
-import { type WidgetComponentProps } from '@deephaven/plugin';
+import { WidgetPanelProps } from '@deephaven/plugin';
 import {
   ChartPanelMetadata,
   GLChartPanelState,
@@ -113,8 +113,8 @@ async function createChartModel(
   );
 }
 
-export const ChartPlugin = forwardRef(
-  (props: WidgetComponentProps, ref: React.Ref<ChartPanel>) => {
+export const ChartPanelPlugin = forwardRef(
+  (props: WidgetPanelProps, ref: React.Ref<ChartPanel>) => {
     const dh = useApi();
     const chartTheme = useChartTheme();
     const connection = useConnection();
@@ -160,6 +160,6 @@ export const ChartPlugin = forwardRef(
   }
 );
 
-ChartPlugin.displayName = 'ChartPlugin';
+ChartPanelPlugin.displayName = 'ChartPanelPlugin';
 
-export default ChartPlugin;
+export default ChartPanelPlugin;
