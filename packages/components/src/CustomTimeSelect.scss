@@ -19,11 +19,8 @@ $cs-option-hover-color: $dropdown-link-hover-color;
     min-width: 14rem;
 
     .cs-caret {
-      @include icon-image-mask(var(--dh-svg-icon-selector-caret), 10px 6px);
+      @include caret-icon;
 
-      background-color: var(--dh-color-selector-fg);
-      width: 10px;
-      height: 10px;
       margin-right: 4px;
     }
   }
