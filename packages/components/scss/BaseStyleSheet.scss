@@ -523,19 +523,8 @@ input[type='number']::-webkit-inner-spin-button {
 }
 
 .input-group > .input-group-append.cb-dropdown > .btn {
-  color: var(--dh-color-foreground);
   border: 1px solid $gray-400;
 
-  svg {
-    opacity: 0.4;
-    transition: opacity 300ms ease;
-  }
-
-  &:not(:disabled):hover {
-    svg {
-      opacity: 1;
-    }
-  }
   &:focus {
     border-color: $input-focus-border-color;
   }
