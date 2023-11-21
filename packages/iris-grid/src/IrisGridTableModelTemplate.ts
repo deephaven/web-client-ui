@@ -1001,11 +1001,6 @@ class IrisGridTableModelTemplate<
    * @param row Row index to get the source column from
    */
   sourceColumn(column: ModelIndex, row: ModelIndex): Column {
-    const proxyCell = this.sourceForCell(column, row);
-    if (proxyCell.column !== column) {
-      return this.columns[proxyCell.column];
-    }
-
     const totalsRow = this.totalsRow(row);
     if (totalsRow != null) {
       const operation = this.totals?.operationOrder[totalsRow];
@@ -1023,12 +1018,10 @@ class IrisGridTableModelTemplate<
             this.totals?.operationOrder.length === 1) &&
             col.name === tableColumn.name)
       );
-      if (totalsColumn == null) {
-        throw new Error(
-          `Unable to find totals column for ${tableColumn.name} with operation ${operation}`
-        );
+      if (totalsColumn != null) {
+        return totalsColumn;
       }
-      return totalsColumn;
+      // There may be cases were the totals table doesn't have a column, such as when there's a virtual column
     }
     return this.columns[column];
   }

@@ -202,6 +202,15 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     return { column: column + depth, row };
   }
 
+  sourceColumn(column: ModelIndex, row: ModelIndex): Column {
+    if (column >= this.virtualColumns.length) {
+      return super.sourceColumn(column, row);
+    }
+
+    const depth = this.depthForRow(row);
+    return this.columns[column + depth];
+  }
+
   getClearFilterRange(column: ModelIndex): BoundedAxisRange | null {
     if (column >= this.virtualColumns.length) {
       return super.getClearFilterRange(column);
