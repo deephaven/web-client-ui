@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { PopperOptions } from 'popper.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { vsCheck, dhSort, IconDefinition } from '@deephaven/icons';
+import { vsCheck, IconDefinition } from '@deephaven/icons';
 import { TimeUtils } from '@deephaven/utils';
 import classNames from 'classnames';
 import TimeInput, { TimeInputElement } from './TimeInput';
@@ -515,9 +515,7 @@ class CustomTimeSelect extends Component<
             >
               {this.getSelectedText()}
             </span>
-            <span>
-              <FontAwesomeIcon icon={dhSort} className="cs-caret" />
-            </span>
+            <span className="cs-caret" />
             <DropdownMenu
               isShown={menuIsOpen}
               actions={{ menuElement: this.renderMenuElement() }}

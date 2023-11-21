@@ -461,8 +461,11 @@ form label small {
 }
 
 .custom-select {
+  $caret-size: 10px 6px;
+  $error-size: 16px;
+
   background-image: var(--dh-svg-icon-select-indicator);
-  background-size: 10px 6px;
+  background-size: $caret-size;
 
   &:hover {
     background-image: var(--dh-svg-icon-select-indicator-hover);
@@ -471,7 +474,12 @@ form label small {
   &.is-invalid,
   &.is-invalid:focus {
     border-color: var(--dh-color-form-control-error);
+    background-size: $caret-size, $error-size;
     background-image: var(--dh-svg-icon-select-indicator),
+      var(--dh-svg-icon-error);
+  }
+  &.is-invalid:hover {
+    background-image: var(--dh-svg-icon-select-indicator-hover),
       var(--dh-svg-icon-error);
   }
   &.is-invalid:focus {

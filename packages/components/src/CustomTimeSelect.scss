@@ -1,4 +1,5 @@
 @import '../scss/custom.scss';
+@import '../scss/util.scss';
 
 $cs-option-btn-color: $dropdown-link-color;
 $cs-option-keyboard-selected-bg: rgba($primary, 0.5);
@@ -10,18 +11,25 @@ $cs-option-hover-color: $dropdown-link-hover-color;
 
   .cs-dropdown .cs-btn {
     display: flex;
-    direction: row;
+    flex-direction: row;
+    align-items: center;
     justify-content: space-between;
     border-radius: $border-radius;
     border: $input-border-width solid $input-border-color;
     min-width: 14rem;
 
     .cs-caret {
-      color: var(--dh-color-selector-fg);
-      &:hover {
-        color: var(--dh-color-selector-hover-fg);
-      }
+      @include icon-image-mask(var(--dh-svg-icon-selector-caret), 10px 6px);
+
+      background-color: var(--dh-color-selector-fg);
+      width: 10px;
+      height: 10px;
+      margin-right: 4px;
     }
+  }
+
+  .cs-dropdown:hover .cs-btn:not(:disabled) .cs-caret {
+    background-color: var(--dh-color-selector-hover-fg);
   }
 
   .cs-dropdown-invalid .cs-btn-invalid {
