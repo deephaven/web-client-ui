@@ -304,10 +304,11 @@ function Inputs(): React.ReactElement {
               validationError={!validateValue ? 'Value not set' : undefined}
               isModified={!!validateValue}
               id="validateInput1"
-              labelText="Input Field"
+              labelText={`Input Field${on ? ' (disabled)' : ''}`}
               hintText="Hint text"
             >
               <input
+                disabled={on}
                 type="text"
                 className="form-control"
                 aria-describedby="emailHelp"
@@ -320,9 +321,10 @@ function Inputs(): React.ReactElement {
                 validateOption === 'Invalid' ? 'Invalid value' : undefined
               }
               id="validateLabelInput2"
-              labelText="Dropdown"
+              labelText={`Dropdown${on ? ' (disabled)' : ''}`}
             >
               <Select
+                disabled={on}
                 onChange={eventTargetValue =>
                   setValidateOption(eventTargetValue)
                 }

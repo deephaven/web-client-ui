@@ -825,15 +825,19 @@ input[type='number']::-webkit-inner-spin-button {
         16px,
         cover;
       background-position-x: $caret-position, $error-position, center;
+    }
 
-      &:hover {
-        background-image: $svg-caret-hover, $svg-error,
-          solid-gradient($input-bg);
-      }
+    &.is-invalid:hover {
+      background-image: $svg-caret-hover, $svg-error, solid-gradient($input-bg);
     }
 
     &:disabled {
       background-image: $svg-caret, solid-gradient($input-disabled-bg);
+
+      &.is-invalid {
+        background-image: $svg-caret, $svg-error,
+          solid-gradient($input-disabled-bg);
+      }
     }
   }
 
