@@ -19,7 +19,7 @@ export const DEFAULT_DARK_THEME_KEY = 'default-dark' satisfies BaseThemeKey;
 export const DEFAULT_LIGHT_THEME_KEY = 'default-light' satisfies BaseThemeKey;
 
 // Css properties that are used in preload data with default values.
-export const DEFAULT_PRELOAD_COLOR_VARIABLES: Record<
+export const DEFAULT_PRELOAD_DATA_VARIABLES: Record<
   ThemePreloadColorVariable,
   string
 > = {

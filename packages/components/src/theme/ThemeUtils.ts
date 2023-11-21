@@ -17,7 +17,7 @@ import { themeLight } from './theme-light';
 import {
   DEFAULT_DARK_THEME_KEY,
   DEFAULT_LIGHT_THEME_KEY,
-  DEFAULT_PRELOAD_COLOR_VARIABLES,
+  DEFAULT_PRELOAD_DATA_VARIABLES,
   ThemeData,
   ThemePreloadData,
   CssVariableStyleContent,
@@ -39,16 +39,17 @@ export const WHITESPACE_REGEX = /\s/;
 export type VarExpressionResolver = (varExpression: string) => string;
 
 /**
- * Creates a :root selector string containing preload color variables for the
- * current theme. This resolves the current values of a few CSS variables that
- * can be used to style the page before the theme is loaded on next page load.
+ * Resolves the current values of CSS variables we want to preload. Preloading
+ * happens before themes are fully loaded so that we can style things like the
+ * loading spinner and background color which are shown to the user early on in
+ * the app lifecycle.
  */
-export function calculatePreloadColorStyleContent(): CssVariableStyleContent {
+export function calculatePreloadStyleContent(): CssVariableStyleContent {
   const resolveVar = createCssVariableResolver(document.body);
 
   // Calculate the current preload variables. If the variable is not set, use
   // the default value.
-  const pairs = Object.keys(DEFAULT_PRELOAD_COLOR_VARIABLES).map(
+  const pairs = Object.keys(DEFAULT_PRELOAD_DATA_VARIABLES).map(
     key => `${key}:${resolveVar(key as ThemePreloadColorVariable)}`
   );
 
@@ -77,8 +78,7 @@ export function createCssVariableResolver(
     }
 
     return (
-      DEFAULT_PRELOAD_COLOR_VARIABLES[varName as ThemePreloadColorVariable] ??
-      ''
+      DEFAULT_PRELOAD_DATA_VARIABLES[varName as ThemePreloadColorVariable] ?? ''
     );
   };
 }
@@ -386,7 +386,7 @@ export function getThemeKey(pluginName: string, themeName: string): string {
 export function preloadTheme(): void {
   const preloadStyleContent =
     getThemePreloadData()?.preloadStyleContent ??
-    calculatePreloadColorStyleContent();
+    calculatePreloadStyleContent();
 
   log.debug('Preloading theme content:', `'${preloadStyleContent}'`);
 

@@ -2,12 +2,15 @@ import { ColorUtils, TestUtils } from '@deephaven/utils';
 import {
   DEFAULT_DARK_THEME_KEY,
   DEFAULT_PRELOAD_DATA_VARIABLES,
+  SVG_ICON_MANUAL_COLOR_MAP,
   ThemeData,
+  ThemePreloadColorVariable,
   ThemeRegistrationData,
   THEME_CACHE_LOCAL_STORAGE_KEY,
 } from './ThemeModel';
 import {
   calculatePreloadStyleContent,
+  createCssVariableResolver,
   extractDistinctCssVariableExpressions,
   getActiveThemes,
   getDefaultBaseThemes,
@@ -34,22 +37,104 @@ beforeEach(() => {
   expect.hasAssertions();
 });
 
+describe('DEFAULT_PRELOAD_DATA_VARIABLES', () => {
+  it('should match snapshot', () => {
+    expect(DEFAULT_PRELOAD_DATA_VARIABLES).toMatchSnapshot();
+  });
+});
+
+describe('SVG_ICON_MANUAL_COLOR_MAP', () => {
+  it('should match snapshot', () => {
+    expect(SVG_ICON_MANUAL_COLOR_MAP).toMatchSnapshot();
+  });
+});
+
 describe('calculatePreloadStyleContent', () => {
+  function expectedContent(map: Record<string, string>) {
+    return `:root{${Object.entries(map)
+      .map(([key, value]) => `${key}:${value}`)
+      .join(';')}}`;
+  }
+
   it('should set defaults if css variables are not defined', () => {
     expect(calculatePreloadStyleContent()).toEqual(
-      `:root{--dh-color-accent:${DEFAULT_PRELOAD_DATA_VARIABLES['--dh-color-accent']};--dh-color-background:${DEFAULT_PRELOAD_DATA_VARIABLES['--dh-color-background']}}`
+      expectedContent(DEFAULT_PRELOAD_DATA_VARIABLES)
     );
   });
 
   it('should resolve css variables', () => {
-    document.body.style.setProperty('--dh-color-accent', 'pink');
+    document.body.style.setProperty(
+      '--dh-color-loading-spinner-primary',
+      'pink'
+    );
     document.body.style.setProperty('--dh-color-background', 'orange');
 
     expect(calculatePreloadStyleContent()).toEqual(
-      ':root{--dh-color-accent:pink;--dh-color-background:orange}'
+      expectedContent({
+        ...DEFAULT_PRELOAD_DATA_VARIABLES,
+        '--dh-color-loading-spinner-primary': 'pink',
+        '--dh-color-background': 'orange',
+      })
     );
   });
 });
+
+describe.each([document.body, document.createElement('div')])(
+  'resolveCssVariablesInRecord: %s',
+  targetElement => {
+    const computedStyle = createMockProxy<CSSStyleDeclaration>();
+
+    beforeEach(() => {
+      jest
+        .spyOn(window, 'getComputedStyle')
+        .mockName('getComputedStyle')
+        .mockReturnValue(computedStyle);
+    });
+
+    it('should return empty string if property does not exist and no default value exists', () => {
+      asMock(computedStyle.getPropertyValue).mockReturnValue('');
+
+      const resolver = createCssVariableResolver(targetElement);
+
+      expect(getComputedStyle).toHaveBeenCalledWith(targetElement);
+
+      expect(resolver('--dh-aaa')).toEqual('');
+    });
+
+    it.each(
+      Object.entries(DEFAULT_PRELOAD_DATA_VARIABLES) as [
+        ThemePreloadColorVariable,
+        string,
+      ][]
+    )(
+      'should return default value if property does not exist and default value exists: %s, %s',
+      (key, value) => {
+        asMock(computedStyle.getPropertyValue).mockReturnValue('');
+
+        const resolver = createCssVariableResolver(targetElement);
+
+        expect(getComputedStyle).toHaveBeenCalledWith(targetElement);
+
+        expect(resolver(key)).toEqual(value);
+      }
+    );
+
+    it('should return a resolver function that resolves css variables', () => {
+      asMock(computedStyle.getPropertyValue).mockImplementation(
+        name => `resolved:${name}`
+      );
+
+      const resolver = createCssVariableResolver(targetElement);
+
+      expect(getComputedStyle).toHaveBeenCalledWith(targetElement);
+
+      const actual = resolver('--dh-aaa');
+
+      expect(computedStyle.getPropertyValue).toHaveBeenCalledWith('--dh-aaa');
+      expect(actual).toEqual('resolved:--dh-aaa');
+    });
+  }
+);
 
 describe('extractDistinctCssVariableExpressions', () => {
   it('should extract distinct css variable expressions', () => {

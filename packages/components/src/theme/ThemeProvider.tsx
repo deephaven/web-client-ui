@@ -2,7 +2,7 @@ import { createContext, ReactNode, useEffect, useMemo, useState } from 'react';
 import Log from '@deephaven/log';
 import { DEFAULT_DARK_THEME_KEY, ThemeData } from './ThemeModel';
 import {
-  calculatePreloadColorStyleContent,
+  calculatePreloadStyleContent,
   getActiveThemes,
   getDefaultBaseThemes,
   getThemePreloadData,
@@ -63,7 +63,7 @@ export function ThemeProvider({
 
       overrideSVGFillColors();
 
-      const preloadStyleContent = calculatePreloadColorStyleContent();
+      const preloadStyleContent = calculatePreloadStyleContent();
 
       log.debug2('updateThemePreloadData:', {
         active: activeThemes.map(theme => theme.themeKey),
