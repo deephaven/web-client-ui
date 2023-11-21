@@ -1275,12 +1275,17 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       config: UIRollupConfig | undefined,
       aggregationSettings: AggregationSettings
     ): UITotalsTableConfig | null => {
-      const { aggregations, showOnTop } = aggregationSettings;
-      // If we've got rollups, then aggregations are applied as part of that...
-      if (
-        (config?.columns?.length ?? 0) > 0 ||
-        (aggregations?.length ?? 0) === 0
-      ) {
+      if ((config?.columns?.length ?? 0) > 0) {
+        // If we've got rollups, then aggregations are applied as part of that...
+        return null;
+      }
+
+      // Filter out aggregations without any columns actually selected
+      const aggregations = aggregationSettings.aggregations.filter(
+        agg => agg.selected.length > 0 || agg.invert
+      );
+      if (aggregations.length === 0) {
+        // We don't actually have any aggregations set, don't bother
         return null;
       }
 
@@ -1290,7 +1295,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       return {
         operationMap,
         operationOrder,
-        showOnTop,
+        showOnTop: aggregationSettings.showOnTop,
         defaultOperation: AggregationOperation.SKIP,
       };
     }
@@ -3201,15 +3206,26 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     log.debug('handleAggregationChange', aggregation);
 
     this.startLoading(`Aggregating ${aggregation.operation}...`);
-    this.setState(({ aggregationSettings }) => ({
-      selectedAggregation: aggregation,
-      aggregationSettings: {
-        ...aggregationSettings,
-        aggregations: aggregationSettings.aggregations.map(a =>
-          a.operation === aggregation.operation ? aggregation : a
-        ),
-      },
-    }));
+    this.setState(({ aggregationSettings }) => {
+      let newAggregations = [...aggregationSettings.aggregations];
+      let aggregationIndex = newAggregations.findIndex(
+        a => a.operation === aggregation.operation
+      );
+      if (aggregationIndex === -1) {
+        aggregationIndex = newAggregations.length;
+      }
+      newAggregations[aggregationIndex] = aggregation;
+      newAggregations = newAggregations.filter(
+        a => a.selected.length > 0 || a.invert
+      );
+      return {
+        selectedAggregation: aggregation,
+        aggregationSettings: {
+          ...aggregationSettings,
+          aggregations: newAggregations,
+        },
+      };
+    });
   }
 
   /**
