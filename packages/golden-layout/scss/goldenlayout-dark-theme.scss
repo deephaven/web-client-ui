@@ -1,4 +1,5 @@
 @import '@deephaven/components/scss/custom.scss';
+@import '@deephaven/components/scss/util.scss';
 
 $tab-height: 28px;
 $drag-border-width: 5px;
@@ -18,16 +19,6 @@ $lm-header-background: darken($lm-tab-active-background, 5);
 
 $lm-splitter-hover-color: $gray-400;
 $lm-splitter-active-color: $gray-300;
-
-// Setup a mask-image for a golden layout svg
-@mixin icon-image-mask($mask-image, $size: 16px) {
-  background-size: $size;
-  background-color: var(--dh-color-foreground);
-  mask-image: $mask-image;
-  mask-position: center center;
-  mask-repeat: no-repeat;
-  mask-size: $size;
-}
 
 // ".lm_dragging" is applied to BODY tag during Drag and is also directly applied to the root of the object being dragged
 //is added to the body class, prevents overflow in our app context

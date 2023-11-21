@@ -1,3 +1,13 @@
+// Setup a mask-image for an inline svg
+@mixin icon-image-mask($mask-image, $size: 16px) {
+  background-size: $size;
+  background-color: var(--dh-color-foreground);
+  mask-image: $mask-image;
+  mask-position: center center;
+  mask-repeat: no-repeat;
+  mask-size: $size;
+}
+
 /// Utilty for increasing specificity by repeating a given selector n number of
 /// times.
 ///

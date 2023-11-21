@@ -1,4 +1,5 @@
 @import '../scss/custom.scss';
+@import '../scss/util.scss';
 
 .search-group {
   position: relative;
@@ -20,17 +21,13 @@
   }
 
   ::-webkit-search-cancel-button {
-    $close-path: 'M8 8.707l3.646 3.647.708-.707L8.707 8l3.647-3.646-.707-.708L8 7.293 4.354 3.646l-.707.708L7.293 8l-3.646 3.646.707.708L8 8.707z';
+    $icon-size: 16px;
+    @include icon-image-mask(var(--dh-svg-icon-search-cancel), $icon-size);
 
     // Need to specify -webkit-appearance: none for Chrome
     -webkit-appearance: none;
-    height: 16px;
-    width: 16px;
-    background-color: var(--dh-color-foreground);
-    mask-image: var(--dh-svg-icon-search-cancel);
-    mask-position: center center;
-    mask-repeat: no-repeat;
-    mask-size: 16px;
+    height: $icon-size;
+    width: $icon-size;
     opacity: 0.4;
     transition: opacity 300ms ease;
     &:hover {
