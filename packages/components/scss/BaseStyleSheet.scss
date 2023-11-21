@@ -785,6 +785,9 @@ input[type='number']::-webkit-inner-spin-button {
 
   $caret-position: right $custom-select-padding-x;
   $error-position: right (1 + $custom-select-padding-x);
+  $svg-caret: var(--dh-svg-icon-select-indicator);
+  $svg-caret-hover: var(--dh-svg-icon-select-indicator-hover);
+  $svg-error: var(--dh-svg-icon-error);
 
   //Selection box in mozilla loses default styling on options list if you apply a background color other then #FFF or inherit...
   //Hack: turn the background to inherit, then apply a background gradient that is inputbg color to inputbg color
@@ -793,19 +796,44 @@ input[type='number']::-webkit-inner-spin-button {
     background-color: inherit !important;
     color: $foreground;
     // bg image, size and position for 2 layers
-    background-image: var(--dh-svg-icon-select-indicator),
-      solid-gradient($input-bg);
+    background-image: $svg-caret, solid-gradient($input-bg);
     background-size:
       10px 6px,
       cover;
-    background-position:
-      bottom 50% $caret-position,
+    background-position-x: $caret-position, center;
+    background-position-y:
+      bottom 50%,
       center;
     background-repeat: no-repeat;
+
     //make the dotted duplicate focus line on firefox go away
     &:-moz-focusring {
       color: rgba(0, 0, 0, 0%);
       text-shadow: 0 0 0 $foreground !important;
+    }
+
+    &:hover {
+      background-image: $svg-caret-hover, solid-gradient($input-bg);
+    }
+
+    &.is-invalid,
+    &.is-invalid:focus {
+      // bg image, size and position for 3 layers
+      background-image: $svg-caret, $svg-error, solid-gradient($input-bg);
+      background-size:
+        10px 6px,
+        16px,
+        cover;
+      background-position-x: $caret-position, $error-position, center;
+
+      &:hover {
+        background-image: $svg-caret-hover, $svg-error,
+          solid-gradient($input-bg);
+      }
+    }
+
+    &:disabled {
+      background-image: $svg-caret, solid-gradient($input-disabled-bg);
     }
   }
 
@@ -816,27 +844,6 @@ input[type='number']::-webkit-inner-spin-button {
     &:-moz-focusring {
       color: rgba(0, 0, 0, 0%);
       text-shadow: 0 0 0 $foreground !important;
-    }
-  }
-
-  .custom-select:not(:disabled):hover {
-    background-image: var(--dh-svg-icon-select-indicator-hover),
-      solid-gradient($input-bg);
-  }
-  .custom-select.is-invalid,
-  .custom-select.is-invalid:focus {
-    // bg image, size and position for 3 layers
-    background-image: var(--dh-svg-icon-select-indicator),
-      var(--dh-svg-icon-error), solid-gradient($input-bg);
-    background-size:
-      10px 6px,
-      16px,
-      cover;
-    background-position-x: $caret-position, $error-position, center;
-
-    &:not(:disabled):hover {
-      background-image: var(--dh-svg-icon-select-indicator-hover),
-        var(--dh-svg-icon-error), solid-gradient($input-bg);
     }
   }
 
