@@ -462,6 +462,11 @@ form label small {
 
 .custom-select {
   background-image: var(--dh-svg-icon-select-indicator);
+  background-size: 10px 6px;
+
+  &:hover {
+    background-image: var(--dh-svg-icon-select-indicator-hover);
+  }
 
   &.is-invalid,
   &.is-invalid:focus {

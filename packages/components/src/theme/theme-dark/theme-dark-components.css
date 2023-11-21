@@ -13,9 +13,11 @@
     var(--dh-color-visual-negative-hsl),
     0.25
   );
-  --dh-color-select-indicator: hsla(var(--dh-color-gray-800-hsl), 0.4);
-  --dh-color-select-indicator-hover: hsl(var(--dh-color-gray-800-hsl));
-  --dh-color-select-indicator-disabled: hsla(
+
+  /* Selectors (pickers, dropdowns, select, etc.) */
+  --dh-color-selector-fg: hsla(var(--dh-color-gray-800-hsl), 0.4);
+  --dh-color-selector-hover-fg: hsl(var(--dh-color-gray-800-hsl));
+  --dh-color-selector-disabled-fg: hsla(
     var(--dh-color-gray-800-hsl),
     /* 
      * Other dropdowns have opacity .4 when not hovered and then an additional 

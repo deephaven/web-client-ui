@@ -11,6 +11,7 @@ export type ThemePreloadColorVariable =
 
 export type ThemeIconsRequiringManualColorChanges =
   | '--dh-svg-icon-select-indicator'
+  | '--dh-svg-icon-select-indicator-hover'
   | '--dh-svg-icon-select-indicator-disabled'
   | '--dh-svg-icon-error';
 
@@ -37,9 +38,9 @@ export const SVG_ICON_MANUAL_COLOR_MAP: Record<
   ThemeIconsRequiringManualColorChanges,
   string
 > = {
-  '--dh-svg-icon-select-indicator': '--dh-color-select-indicator',
-  '--dh-svg-icon-select-indicator-disabled':
-    '--dh-color-select-indicator-disabled',
+  '--dh-svg-icon-select-indicator': '--dh-color-selector-fg',
+  '--dh-svg-icon-select-indicator-hover': '--dh-color-selector-hover-fg',
+  '--dh-svg-icon-select-indicator-disabled': '--dh-color-selector-disabled-fg',
   '--dh-svg-icon-error': '--dh-color-form-control-error',
 };
 
