@@ -779,19 +779,29 @@ input[type='number']::-webkit-inner-spin-button {
 //Moz specific hacks
 /* stylelint-disable-next-line function-url-quotes */
 @-moz-document url-prefix() {
-  //Selection box in mozilla loses default styling on options list if you apply a background color other then #FFF or inheirt...
-  //Hack: turn the background to inheirt, then apply a background gradient that is inputbg color to inputbg color
+  @function solid-gradient($color) {
+    @return linear-gradient(0deg, $color, $color);
+  }
+
+  $caret-position: right $custom-select-padding-x;
+  $error-position: right (1 + $custom-select-padding-x);
+
+  //Selection box in mozilla loses default styling on options list if you apply a background color other then #FFF or inherit...
+  //Hack: turn the background to inherit, then apply a background gradient that is inputbg color to inputbg color
   //for crossbrowser consistency this gradient is stacked bellow the svg used to get a caret (indicator) looking the same
   .custom-select {
     background-color: inherit !important;
     color: $foreground;
+    // bg image, size and position for 2 layers
     background-image: var(--dh-svg-icon-select-indicator),
-      linear-gradient(0deg, $input-bg, $input-bg);
-    background-size: $custom-select-bg-size, cover;
-    background-repeat: no-repeat;
+      solid-gradient($input-bg);
+    background-size:
+      10px 6px,
+      cover;
     background-position:
-      bottom 50% right $custom-select-padding-x,
+      bottom 50% $caret-position,
       center;
+    background-repeat: no-repeat;
     //make the dotted duplicate focus line on firefox go away
     &:-moz-focusring {
       color: rgba(0, 0, 0, 0%);
@@ -801,16 +811,39 @@ input[type='number']::-webkit-inner-spin-button {
 
   .console-creator .custom-select {
     background-image: var(--dh-svg-icon-select-indicator),
-      linear-gradient(0deg, $gray-700, $gray-700);
+      solid-gradient($gray-700);
+
     &:-moz-focusring {
       color: rgba(0, 0, 0, 0%);
       text-shadow: 0 0 0 $foreground !important;
     }
   }
 
+  .custom-select:not(:disabled):hover {
+    background-image: var(--dh-svg-icon-select-indicator-hover),
+      solid-gradient($input-bg);
+  }
+  .custom-select.is-invalid,
+  .custom-select.is-invalid:focus {
+    // bg image, size and position for 3 layers
+    background-image: var(--dh-svg-icon-select-indicator),
+      var(--dh-svg-icon-error), solid-gradient($input-bg);
+    background-size:
+      10px 6px,
+      16px,
+      cover;
+    background-position-x: $caret-position, $error-position, center;
+
+    &:not(:disabled):hover {
+      background-image: var(--dh-svg-icon-select-indicator-hover),
+        var(--dh-svg-icon-error), solid-gradient($input-bg);
+    }
+  }
+
   .modal-dialog.theme-bg-light .custom-select {
     background-image: var(--dh-svg-icon-select-indicator),
-      linear-gradient(0deg, $gray-200, $gray-200);
+      solid-gradient($gray-200);
+
     &:-moz-focusring {
       color: rgba(0, 0, 0, 0%);
       text-shadow: 0 0 0 $background !important;
