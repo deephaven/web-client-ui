@@ -18,6 +18,7 @@ import {
   getThemeKey,
   getThemePreloadData,
   preloadTheme,
+  replaceSVGFillColor,
   resolveCssVariablesInRecord,
   resolveCssVariablesInString,
   setThemePreloadData,
@@ -378,6 +379,26 @@ describe('preloadTheme', () => {
       preloadData?.preloadStyleContent ?? calculatePreloadStyleContent()
     );
   });
+});
+
+describe('replaceSVGFillColor', () => {
+  function svgContent(color: string) {
+    return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='${color}' d='M193.94 256L296.5 256z'/%3E%3C/svg%3E`;
+  }
+
+  it.each([
+    ['#ababab', '%23ababab'],
+    ['hsl(222deg, 50%, 42%)', 'hsl(222deg%2C%2050%25%2C%2042%25)'],
+  ] as const)(
+    'should replace fill color: %s, %s',
+    (givenColor, expectedColor) => {
+      const givenSvg = svgContent(givenColor);
+      const expectedSvg = svgContent(expectedColor);
+
+      const actual = replaceSVGFillColor(givenSvg, givenColor);
+      expect(actual).toEqual(expectedSvg);
+    }
+  );
 });
 
 describe.each([undefined, document.createElement('div')])(
