@@ -1,15 +1,15 @@
 /* eslint-disable no-await-in-loop */
-import { expect, Page, test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 const EXPECTED_SAMPLE_SECTION_COUNT = 40;
 const EXPECTED_BUTTON_SECTION_COUNT = 4;
 
-let page: Page;
+// let page: Page;
 const sampleSectionIds: string[] = [];
 const buttonSectionIds: string[] = [];
 
 test.beforeAll(async ({ browser }) => {
-  page = await browser.newPage();
+  const page = await browser.newPage();
 
   await page.goto('/ide/styleguide');
 
@@ -38,20 +38,10 @@ test.beforeAll(async ({ browser }) => {
   await page.close();
 });
 
-test.beforeEach(async ({ browser }) => {
-  page = await browser.newPage();
-});
-
-test.afterEach(async () => {
-  await page.close();
-});
-
 // Iterate over all sample sections and take a screenshot of each one.
 test('UI regression test - Styleguide sections', async ({ browser }) => {
   for (let i = 0; i < sampleSectionIds.length; i += 1) {
-    // Can't rely on beforeEach here since we are running tests in a loop inside
-    // single test
-    page = await browser.newPage();
+    const page = await browser.newPage();
 
     const id = sampleSectionIds[i];
 
@@ -74,9 +64,7 @@ test('Buttons regression test', async ({ browser }) => {
 
   // Test focus and hover states for each enabled button
   for (let i = 0; i < buttonSectionIds.length; i += 1) {
-    // Can't rely on beforeEach here since we are running tests in a loop inside
-    // single test
-    page = await browser.newPage();
+    const page = await browser.newPage();
 
     const id = buttonSectionIds[i];
 
@@ -126,7 +114,7 @@ test('Buttons regression test', async ({ browser }) => {
   }
 });
 
-test('Inputs regression test', async ({ browser }) => {
+test('Inputs regression test', async ({ browser, page }) => {
   await page.goto('/ide/styleguide?isolateSection=true#sample-section-inputs');
 
   const columns = page.locator('#sample-section-inputs .col');
