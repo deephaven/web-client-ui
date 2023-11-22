@@ -39,14 +39,13 @@ test.beforeAll(async ({ browser }) => {
 });
 
 // Iterate over all sample sections and take a screenshot of each one.
-test('UI regression test - Styleguide sections', async ({ context }) => {
+test('UI regression test - Styleguide sections', async ({ page }) => {
   for (let i = 0; i < sampleSectionIds.length; i += 1) {
-    const page = await context.newPage();
-
     const id = sampleSectionIds[i];
 
     // Isolate the section
     await page.goto(`/ide/styleguide?isolateSection=true#${id}`);
+    await page.reload();
 
     const sampleSection = page.locator(`#${id}`);
 
@@ -55,8 +54,6 @@ test('UI regression test - Styleguide sections', async ({ context }) => {
     await expect(sampleSection).toHaveScreenshot(
       `${id.replace(/^sample-section-/, '')}.png`
     );
-
-    await page.close();
   }
 });
 
