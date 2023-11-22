@@ -3,7 +3,11 @@ import PropTypes from 'prop-types';
 import debounce from 'lodash.debounce';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import type { Column, dh as DhType, Table } from '@deephaven/jsapi-types';
-import { ItemList, LoadingSpinner } from '@deephaven/components';
+import {
+  ItemList,
+  LoadingSpinner,
+  SearchableCombobox,
+} from '@deephaven/components';
 import Log from '@deephaven/log';
 import { CanceledPromiseError } from '@deephaven/utils';
 import './PartitionSelectorSearch.scss';

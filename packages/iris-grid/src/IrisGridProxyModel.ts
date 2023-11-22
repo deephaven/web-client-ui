@@ -129,13 +129,13 @@ class IrisGridProxyModel extends IrisGridModel {
 
     const oldModel = this.model;
 
-    if (oldModel !== this.originalModel && oldModel !== this.model) {
+    if (oldModel !== this.originalModel) {
       oldModel.close();
     }
 
     this.model = model;
 
-    if (this.listenerCount > 0 && oldModel !== this.model) {
+    if (this.listenerCount > 0) {
       this.addListeners(model);
     }
 
@@ -503,9 +503,12 @@ class IrisGridProxyModel extends IrisGridModel {
     if (isIrisGridPartitionedTableModel(this.originalModel)) {
       if (partition.length === 0) {
         this.setNextModel(
-          this.originalModel.partitionedTable
-            .getMergedTable()
-            .then(table => makeModel(this.dh, table, this.formatter))
+          this.originalModel.partitionedTable.getMergedTable().then(table => {
+            const newModel = makeModel(this.dh, table, this.formatter);
+            (this.originalModel as IrisGridPartitionedTableModel).model =
+              newModel;
+            return newModel;
+          })
         );
         return;
       }
@@ -514,7 +517,12 @@ class IrisGridProxyModel extends IrisGridModel {
         partition.length > 1 ? partition : partition[0]
       );
       this.setNextModel(
-        tablePromise.then(table => makeModel(this.dh, table, this.formatter))
+        tablePromise.then(table => {
+          const newModel = makeModel(this.dh, table, this.formatter);
+          (this.originalModel as IrisGridPartitionedTableModel).model =
+            newModel;
+          return newModel;
+        })
       );
     } else if (
       isIrisGridTableModelTemplate(this.originalModel) &&
@@ -530,6 +538,7 @@ class IrisGridProxyModel extends IrisGridModel {
 
   openPartitionKeysTable(): void {
     log.debug('opening keysTable');
+    this.originalModel.partition = [];
     if (!this.originalModel.partitionKeysTable) {
       return;
     }
@@ -537,17 +546,18 @@ class IrisGridProxyModel extends IrisGridModel {
       this.setNextModel(
         this.originalModel.partitionKeysTable
           .selectDistinct(this.originalModel.partitionColumns)
-          .then(table => makeModel(this.dh, table, this.formatter))
+          .then(table => {
+            const newModel = makeModel(this.dh, table, this.formatter);
+            (this.originalModel as IrisGridPartitionedTableModel).model =
+              newModel;
+            return newModel;
+          })
       );
     } else {
       this.setNextModel(
-        Promise.resolve(
-          makeModel(
-            this.dh,
-            this.originalModel.partitionKeysTable,
-            this.formatter
-          )
-        )
+        this.originalModel.partitionKeysTable
+          .copy()
+          .then(table => makeModel(this.dh, table, this.formatter))
       );
     }
   }

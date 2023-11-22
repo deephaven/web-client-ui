@@ -211,7 +211,7 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
   }
 
   set partition(partitions: unknown[]) {
-    log.log(partitions);
+    log.log('setting partition', partitions);
     const partitionFilters = [];
 
     for (let i = 0; i < this.partitionColumns.length; i += 1) {
@@ -464,14 +464,18 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
   }
 
   private async initializePartition(): Promise<void> {
-    const table = await this.valuesTable(this.partitionColumns);
+    log.debug('Initializing partition');
+    const partitionTable = await this.valuesTable(this.partitionColumns);
 
-    const columns = this.table.columns.slice(0, this.partitionColumns.length);
+    const columns = partitionTable.columns.slice(
+      0,
+      this.partitionColumns.length
+    );
     const sorts = columns.map(column => column.sort().desc());
-    this.table.applySort(sorts);
-    this.table.setViewport(0, 0, columns);
+    partitionTable.applySort(sorts);
+    partitionTable.setViewport(0, 0, columns);
 
-    const data = await this.table.getViewportData();
+    const data = await partitionTable.getViewportData();
     if (data.rows.length > 0) {
       const row = data.rows[0];
       const values = columns.map(column => row.get(column));
@@ -481,7 +485,7 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
       log.info('Table does not have any data');
       this.partition = [];
     }
-    this._partitionTable = table;
+    this._partitionTable = partitionTable;
   }
 }
 

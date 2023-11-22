@@ -401,26 +401,33 @@ class IrisGridPartitionSelector<T> extends Component<
     ));
     return (
       <div className="iris-grid-partition-selector">
-        <Button
-          type="button"
-          className="btn btn-outline-primary btn-merge"
-          onClick={this.handleKeyTableClick}
-          kind="inline"
-          icon={<FontAwesomeIcon icon={vsKey} />}
-          disabled={isShowingKeys}
-        >
-          keys
-        </Button>
-        <Button
-          type="button"
-          className="btn btn-outline-primary btn-merge"
-          onClick={this.handleMergeClick}
-          kind="inline"
-          icon={<FontAwesomeIcon icon={vsMerge} rotation={90} />}
-          disabled={!isShowingKeys && partitions.length === 0}
-        >
-          merge
-        </Button>
+        <div className="table-name">
+          <span>Partitioned Table </span>
+        </div>
+        <div className="partition-button-group">
+          <Button
+            type="button"
+            className="btn btn-keys"
+            onClick={this.handleKeyTableClick}
+            kind="inline"
+            tooltip="View keys as table"
+            icon={<FontAwesomeIcon icon={vsKey} />}
+            active={isShowingKeys}
+          >
+            Keys
+          </Button>
+          <Button
+            type="button"
+            className="btn btn-merge"
+            onClick={this.handleMergeClick}
+            kind="inline"
+            tooltip="View all partitions as one merged table"
+            icon={<FontAwesomeIcon icon={vsMerge} rotation={90} />}
+            active={!isShowingKeys && partitions.length === 0}
+          >
+            Merge
+          </Button>
+        </div>
         {partitionSelectors}
       </div>
     );

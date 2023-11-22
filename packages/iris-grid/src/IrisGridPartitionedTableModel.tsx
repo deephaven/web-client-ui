@@ -52,7 +52,7 @@ class IrisGridPartitionedTableModel extends IrisGridModel {
   // Track every getTable and close them all at the end (test opening a closed getTable)
   // Test getTable(key) and hold a reference to it, call close on PartitionedTable, check if table is still open
 
-  model: IrisGridTableModel | EmptyIrisGridModel;
+  model: IrisGridModel;
 
   private partitionKeys: unknown[];
 
@@ -71,9 +71,17 @@ class IrisGridPartitionedTableModel extends IrisGridModel {
     super(dh);
     this.partitionedTable = partitionedTable;
     this.irisFormatter = formatter;
-    const initialKey = this.partitionedTable.getKeys().values().next().value;
-    this.partitionKeys = Array.isArray(initialKey) ? initialKey : [initialKey];
+    // Get the most recently added key
+    let lastKey;
+    this.partitionedTable.getKeys().forEach(key => {
+      lastKey = key;
+    });
+    this.partitionKeys = Array.isArray(lastKey) ? lastKey : [lastKey];
     this.model = new EmptyIrisGridModel(dh);
+
+    this.keyTable = this.partitionedTable.keyTable;
+    const sorts = this.partitionColumns.map(column => column.sort().desc());
+    this.keyTable.applySort(sorts);
   }
 
   get rowCount(): number {
@@ -128,11 +136,11 @@ class IrisGridPartitionedTableModel extends IrisGridModel {
     return this.model.valueForCell(column, row);
   }
 
-  get filter(): FilterCondition[] {
+  get filter(): readonly FilterCondition[] {
     return this.model.filter;
   }
 
-  set filter(value: FilterCondition[]) {
+  set filter(value: readonly FilterCondition[]) {
     this.model.filter = value;
   }
 
@@ -152,27 +160,27 @@ class IrisGridPartitionedTableModel extends IrisGridModel {
     return this.model.displayString(value, columnType, columnName);
   }
 
-  get sort(): Sort[] {
+  get sort(): readonly Sort[] {
     return this.model.sort;
   }
 
-  set sort(value: Sort[]) {
+  set sort(value: readonly Sort[]) {
     this.model.sort = value;
   }
 
-  get customColumns(): ColumnName[] {
+  get customColumns(): readonly ColumnName[] {
     return this.model.customColumns;
   }
 
-  set customColumns(customColumns: ColumnName[]) {
+  set customColumns(customColumns: readonly ColumnName[]) {
     this.model.customColumns = customColumns;
   }
 
-  get formatColumns(): CustomColumn[] {
+  get formatColumns(): readonly CustomColumn[] {
     return this.model.formatColumns;
   }
 
-  set formatColumns(formatColumns: CustomColumn[]) {
+  set formatColumns(formatColumns: readonly CustomColumn[]) {
     this.model.formatColumns = formatColumns;
   }
 
@@ -280,11 +288,11 @@ class IrisGridPartitionedTableModel extends IrisGridModel {
     return this.model.isTotalsAvailable;
   }
 
-  get selectDistinctColumns(): ColumnName[] {
+  get selectDistinctColumns(): readonly ColumnName[] {
     return this.model.selectDistinctColumns;
   }
 
-  set selectDistinctColumns(names: ColumnName[]) {
+  set selectDistinctColumns(names: readonly ColumnName[]) {
     this.model.selectDistinctColumns = names;
   }
 
@@ -379,11 +387,11 @@ class IrisGridPartitionedTableModel extends IrisGridModel {
     return this.model.isSeekRowAvailable;
   }
 
-  get columnHeaderGroups(): ColumnHeaderGroup[] {
+  get columnHeaderGroups(): readonly ColumnHeaderGroup[] {
     return this.model.columnHeaderGroups;
   }
 
-  set columnHeaderGroups(groups: ColumnHeaderGroup[]) {
+  set columnHeaderGroups(groups: readonly ColumnHeaderGroup[]) {
     this.model.columnHeaderGroups = groups;
   }
 
@@ -429,11 +437,6 @@ class IrisGridPartitionedTableModel extends IrisGridModel {
   }
 
   async initializePartitionModel(): Promise<IrisGridModel> {
-    this.keyTable = this.partitionedTable.keyTable;
-    const sorts = this.partitionColumns.map(column => column.sort().desc());
-    this.keyTable.applySort(sorts);
-    this.keyTable.setViewport(0, 0, this.partitionColumns);
-
     const initTable = await this.partitionedTable.getTable(this.partitionKeys);
     this.model = new IrisGridTableModel(this.dh, initTable, this.irisFormatter);
     return Promise.resolve(this.model);
