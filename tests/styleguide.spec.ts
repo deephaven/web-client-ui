@@ -1,6 +1,9 @@
 /* eslint-disable no-await-in-loop */
 import { expect, Page, test } from '@playwright/test';
 
+const EXPECTED_SAMPLE_SECTION_COUNT = 40;
+const EXPECTED_BUTTON_SECTION_COUNT = 4;
+
 let page: Page;
 const sampleSectionIds: string[] = [];
 const buttonSectionIds: string[] = [];
@@ -12,11 +15,10 @@ test.beforeAll(async ({ browser }) => {
 
   // Get the ids of the sample sections
   const sampleSections = page.locator('.sample-section');
-  const expectedSampleSectionsCount = 40;
-  await expect(sampleSections).toHaveCount(expectedSampleSectionsCount);
+  await expect(sampleSections).toHaveCount(EXPECTED_SAMPLE_SECTION_COUNT);
 
   sampleSectionIds.length = 0;
-  for (let i = 0; i < expectedSampleSectionsCount; i += 1) {
+  for (let i = 0; i < EXPECTED_SAMPLE_SECTION_COUNT; i += 1) {
     const sampleSection = sampleSections.nth(i);
     const id = String(await sampleSection.getAttribute('id'));
     sampleSectionIds.push(id);
@@ -24,11 +26,10 @@ test.beforeAll(async ({ browser }) => {
 
   // Get the ids of the button sections
   const buttonSections = page.locator('[id^="sample-section-buttons-"]');
-  const expectedButtonSectionsCount = 4;
-  await expect(buttonSections).toHaveCount(expectedButtonSectionsCount);
+  await expect(buttonSections).toHaveCount(EXPECTED_BUTTON_SECTION_COUNT);
 
   buttonSectionIds.length = 0;
-  for (let i = 0; i < expectedButtonSectionsCount; i += 1) {
+  for (let i = 0; i < EXPECTED_BUTTON_SECTION_COUNT; i += 1) {
     const buttonSection = buttonSections.nth(i);
     const id = String(await buttonSection.getAttribute('id'));
     buttonSectionIds.push(id);
