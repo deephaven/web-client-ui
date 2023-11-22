@@ -58,7 +58,9 @@ export function calculatePreloadStyleContent(): CssVariableStyleContent {
 
 /**
  * Create a resolver function for calculating the value of a css variable based
- * on a given element's computed style.
+ * on a given element's computed style. If the variable resolves to '', we check
+ * DEFAULT_PRELOAD_DATA_VARIABLES for a default value, and if one does not exist,
+ * return ''.
  * @param el Element to resolve css variables against
  */
 export function createCssVariableResolver(
@@ -396,8 +398,8 @@ export function preloadTheme(): void {
 }
 
 /**
- * Inline SVGs cannot depend on dynamic CSS variables, so we have to explicitly
- * change them.
+ * Inline SVGs cannot depend on dynamic CSS variables, so we have to statically
+ * update them if we want to change their color.
  *
  * This function:
  * 1. Clears any previous overrides
