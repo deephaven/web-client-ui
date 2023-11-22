@@ -8,8 +8,8 @@ const EXPECTED_BUTTON_SECTION_COUNT = 4;
 const sampleSectionIds: string[] = [];
 const buttonSectionIds: string[] = [];
 
-test.beforeAll(async ({ browser }) => {
-  const page = await browser.newPage();
+test.beforeAll(async ({ context }) => {
+  const page = await context.newPage();
 
   await page.goto('/ide/styleguide');
 
@@ -39,9 +39,9 @@ test.beforeAll(async ({ browser }) => {
 });
 
 // Iterate over all sample sections and take a screenshot of each one.
-test('UI regression test - Styleguide sections', async ({ browser }) => {
+test('UI regression test - Styleguide sections', async ({ context }) => {
   for (let i = 0; i < sampleSectionIds.length; i += 1) {
-    const page = await browser.newPage();
+    const page = await context.newPage();
 
     const id = sampleSectionIds[i];
 
@@ -59,12 +59,12 @@ test('UI regression test - Styleguide sections', async ({ browser }) => {
   }
 });
 
-test('Buttons regression test', async ({ browser }) => {
+test('Buttons regression test', async ({ context }) => {
   expect(buttonSectionIds.length).toEqual(EXPECTED_BUTTON_SECTION_COUNT);
 
   // Test focus and hover states for each enabled button
   for (let i = 0; i < buttonSectionIds.length; i += 1) {
-    const page = await browser.newPage();
+    const page = await context.newPage();
 
     const id = buttonSectionIds[i];
 
@@ -114,7 +114,7 @@ test('Buttons regression test', async ({ browser }) => {
   }
 });
 
-test('Inputs regression test', async ({ browser, page }) => {
+test('Inputs regression test', async ({ page }) => {
   await page.goto('/ide/styleguide?isolateSection=true#sample-section-inputs');
 
   const columns = page.locator('#sample-section-inputs .col');
