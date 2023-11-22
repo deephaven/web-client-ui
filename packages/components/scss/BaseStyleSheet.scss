@@ -1,6 +1,7 @@
 // Import our custom variables and bootstrap
 // Can be imported directly by Vite since it resolves bootstrap to node_modules/bootstrap
 @import './custom.scss';
+@import './util.scss';
 @import 'bootstrap/scss/bootstrap';
 
 //Various non-variable css overides
@@ -779,10 +780,6 @@ input[type='number']::-webkit-inner-spin-button {
 //Moz specific hacks
 /* stylelint-disable-next-line function-url-quotes */
 @-moz-document url-prefix() {
-  @function solid-gradient($color) {
-    @return linear-gradient(0deg, $color, $color);
-  }
-
   $caret-position: right $custom-select-padding-x;
   $error-position: right (1 + $custom-select-padding-x);
   $svg-caret: var(--dh-svg-icon-select-indicator);

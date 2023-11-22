@@ -47,3 +47,9 @@
 
   @return $result;
 }
+
+// Linear gradient with same start and end color. Useful for certain scenarios
+// where we need a solid background image layer.
+@function solid-gradient($color) {
+  @return linear-gradient(0deg, $color, $color);
+}
