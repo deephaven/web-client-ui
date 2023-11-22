@@ -1,7 +1,7 @@
 /* eslint-disable no-await-in-loop */
 import { expect, Page, test } from '@playwright/test';
 
-const EXPECTED_SAMPLE_SECTION_COUNT = 40;
+const EXPECTED_SAMPLE_SECTION_COUNT = 41;
 const EXPECTED_BUTTON_SECTION_COUNT = 4;
 
 let page: Page;
