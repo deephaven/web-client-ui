@@ -8,8 +8,8 @@ const EXPECTED_BUTTON_SECTION_COUNT = 4;
 const sampleSectionIds: string[] = [];
 const buttonSectionIds: string[] = [];
 
-test.beforeAll(async ({ context }) => {
-  const page = await context.newPage();
+test.beforeAll(async ({ browser }) => {
+  const page = await browser.newPage();
 
   await page.goto('/ide/styleguide');
 
