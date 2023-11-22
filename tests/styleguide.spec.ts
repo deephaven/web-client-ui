@@ -47,39 +47,50 @@ test.afterEach(async () => {
 });
 
 // Iterate over all sample sections and take a screenshot of each one.
-test('UI regression test - Styleguide sections', async () => {
+test('UI regression test - Styleguide sections', async ({ browser }) => {
   for (let i = 0; i < sampleSectionIds.length; i += 1) {
+    // Can't rely on beforeEach here since we are running tests in a loop inside
+    // single test
+    page = await browser.newPage();
+
     const id = sampleSectionIds[i];
 
     // Isolate the section
     await page.goto(`/ide/styleguide?isolateSection=true#${id}`);
-
-    // Have to reload since we are calling in a loop and only the hash is changing
-    await page.reload();
 
     const sampleSection = page.locator(`#${id}`);
 
     await expect(sampleSection).toHaveScreenshot(
       `${id.replace(/^sample-section-/, '')}.png`
     );
+
+    page.close();
   }
 });
 
-test('Buttons regression test', async () => {
+test('Buttons regression test', async ({ browser }) => {
+  expect(buttonSectionIds.length).toEqual(EXPECTED_BUTTON_SECTION_COUNT);
+
   // Test focus and hover states for each enabled button
   for (let i = 0; i < buttonSectionIds.length; i += 1) {
+    // Can't rely on beforeEach here since we are running tests in a loop inside
+    // single test
+    page = await browser.newPage();
+
     const id = buttonSectionIds[i];
 
     // Isolate the section
-    await page.goto(`/ide/styleguide?isolateSection=true#${id}`);
-
-    // Need to reload since we are calling in a loop and only the hash is changing
-    await page.reload();
+    const sectionUrl = `/ide/styleguide?isolateSection=true#${id}`;
+    await page.goto(sectionUrl);
 
     const section = page.locator(`#${id}`);
+    await section.waitFor();
+
     const buttons = section.locator('button');
 
     const buttonCount = await buttons.count();
+
+    expect(buttonCount, `Button section: '${sectionUrl}'`).toBeGreaterThan(0);
 
     for (let j = 0; j < buttonCount; j += 1) {
       const button = buttons.nth(j);
@@ -109,10 +120,12 @@ test('Buttons regression test', async () => {
         await button.blur();
       }
     }
+
+    page.close();
   }
 });
 
-test('Inputs regression test', async () => {
+test('Inputs regression test', async ({ browser }) => {
   await page.goto('/ide/styleguide?isolateSection=true#sample-section-inputs');
 
   const columns = page.locator('#sample-section-inputs .col');
