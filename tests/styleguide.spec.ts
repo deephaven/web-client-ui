@@ -44,12 +44,13 @@ test('UI regression test - Styleguide sections', async ({ context }) => {
     const page = await context.newPage();
 
     const id = sampleSectionIds[i];
+    const idSelector = `#${id}`;
 
     // Isolate the section
-    await page.goto(`/ide/styleguide?isolateSection=true#${id}`);
+    await page.goto(`/ide/styleguide?isolateSection=true${idSelector}`);
+    await page.waitForSelector(idSelector);
 
-    const sampleSection = page.locator(`#${id}`);
-    await sampleSection.waitFor();
+    const sampleSection = page.locator(idSelector);
 
     await expect(sampleSection).toHaveScreenshot(
       `${id.replace(/^sample-section-/, '')}.png`
@@ -67,13 +68,14 @@ test('Buttons regression test', async ({ context }) => {
     const page = await context.newPage();
 
     const id = buttonSectionIds[i];
+    const idSelector = `#${id}`;
 
     // Isolate the section
-    const sectionUrl = `/ide/styleguide?isolateSection=true#${id}`;
+    const sectionUrl = `/ide/styleguide?isolateSection=true${idSelector}`;
     await page.goto(sectionUrl);
+    await page.waitForSelector(idSelector);
 
-    const section = page.locator(`#${id}`);
-    await section.waitFor();
+    const section = page.locator(idSelector);
 
     const buttons = section.locator('button');
 
