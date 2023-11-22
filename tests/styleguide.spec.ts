@@ -44,13 +44,13 @@ test('UI regression test - Styleguide sections', async ({ context }) => {
     const page = await context.newPage();
 
     const id = sampleSectionIds[i];
-    const idSelector = `#${id}`;
 
     // Isolate the section
-    await page.goto(`/ide/styleguide?isolateSection=true${idSelector}`);
-    await page.waitForSelector(idSelector);
+    await page.goto(`/ide/styleguide?isolateSection=true#${id}`);
 
-    const sampleSection = page.locator(idSelector);
+    const sampleSection = page.locator(`#${id}`);
+
+    await expect(sampleSection).not.toHaveCount(0);
 
     await expect(sampleSection).toHaveScreenshot(
       `${id.replace(/^sample-section-/, '')}.png`
@@ -68,20 +68,17 @@ test('Buttons regression test', async ({ context }) => {
     const page = await context.newPage();
 
     const id = buttonSectionIds[i];
-    const idSelector = `#${id}`;
 
     // Isolate the section
-    const sectionUrl = `/ide/styleguide?isolateSection=true${idSelector}`;
+    const sectionUrl = `/ide/styleguide?isolateSection=true#${id}`;
     await page.goto(sectionUrl);
-    await page.waitForSelector(idSelector);
 
-    const section = page.locator(idSelector);
-
+    const section = page.locator(`#${id}`);
     const buttons = section.locator('button');
 
-    const buttonCount = await buttons.count();
+    await expect(buttons, `Button section: '${sectionUrl}'`).not.toHaveCount(0);
 
-    expect(buttonCount, `Button section: '${sectionUrl}'`).toBeGreaterThan(0);
+    const buttonCount = await buttons.count();
 
     for (let j = 0; j < buttonCount; j += 1) {
       const button = buttons.nth(j);
