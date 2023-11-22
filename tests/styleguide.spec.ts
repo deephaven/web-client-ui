@@ -59,12 +59,13 @@ test('UI regression test - Styleguide sections', async ({ browser }) => {
     await page.goto(`/ide/styleguide?isolateSection=true#${id}`);
 
     const sampleSection = page.locator(`#${id}`);
+    await sampleSection.waitFor();
 
     await expect(sampleSection).toHaveScreenshot(
       `${id.replace(/^sample-section-/, '')}.png`
     );
 
-    page.close();
+    await page.close();
   }
 });
 
@@ -121,7 +122,7 @@ test('Buttons regression test', async ({ browser }) => {
       }
     }
 
-    page.close();
+    await page.close();
   }
 });
 
