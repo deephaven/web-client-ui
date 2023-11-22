@@ -61,6 +61,8 @@ export function ThemeProvider({
         return;
       }
 
+      // Override fill color for certain inline SVGs (the originals are provided
+      // by theme-svg.scss)
       overrideSVGFillColors();
 
       const preloadStyleContent = calculatePreloadStyleContent();
