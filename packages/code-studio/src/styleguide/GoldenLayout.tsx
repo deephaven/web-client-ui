@@ -25,21 +25,31 @@ export function GoldenLayout(): JSX.Element {
   return (
     <div {...sampleSectionIdAndClasses('golden-layout')}>
       <h2 className="ui-title">Golden Layout</h2>
-      <div className="lm_header">
-        <ul className="lm_tabs">
-          {tabs.map((tab, i) => (
-            <Tab key={tab} isActive={i === 0} title={tab} />
-          ))}
-        </ul>
-        <ul className="lm_controls">
-          <li className="lm_tabpreviousbutton" />
-          <li className="lm_tabnextbutton" />
-          <li className="lm_maximise" />
-          <li className="lm_popout" />
-          <li className="lm_tabdropdown" />
-          <li className="lm_close" />
-        </ul>
-      </div>
+      {[false, true].map(isMaximised => (
+        <React.Fragment key={String(isMaximised)}>
+          <h5>{isMaximised ? 'Minimized' : 'Maximised'}</h5>
+          <div
+            style={{ position: 'relative', border: 'none' }}
+            className={isMaximised ? 'lm_maximised' : undefined}
+          >
+            <div className="lm_header">
+              <ul className="lm_tabs">
+                {tabs.map((tab, i) => (
+                  <Tab key={tab} isActive={i === 0} title={tab} />
+                ))}
+              </ul>
+              <ul className="lm_controls">
+                <li className="lm_tabpreviousbutton" />
+                <li className="lm_tabnextbutton" />
+                <li className="lm_maximise" />
+                <li className="lm_popout" />
+                <li className="lm_tabdropdown" />
+                <li className="lm_close" />
+              </ul>
+            </div>
+          </div>
+        </React.Fragment>
+      ))}
     </div>
   );
 }

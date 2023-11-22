@@ -20,6 +20,15 @@ $lm-header-background: darken($lm-tab-active-background, 5);
 $lm-splitter-hover-color: $gray-400;
 $lm-splitter-active-color: $gray-300;
 
+@mixin hover-opacity {
+  opacity: 0.4;
+  transition: opacity 300ms ease;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
 // ".lm_dragging" is applied to BODY tag during Drag and is also directly applied to the root of the object being dragged
 //is added to the body class, prevents overflow in our app context
 .lm_dragging {
@@ -48,10 +57,7 @@ body:not(.lm_dragging) .lm_header .lm_tab:not(.lm_active):hover {
 }
 
 body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
-  opacity: 0.4;
-  &:hover {
-    opacity: 1;
-  }
+  @include hover-opacity;
 }
 
 // Entire GoldenLayout Container, if a background is set, it is visible as color of "pane header" and "splitters" (if these latest has opacity very low)
@@ -230,15 +236,11 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
 .lm_controls {
   // All Pane controls shares these
   > li {
+    @include hover-opacity;
+
     position: relative;
     background-position: center center;
     background-repeat: no-repeat;
-    opacity: 0.4;
-    transition: opacity 300ms ease;
-
-    &:hover {
-      opacity: 1;
-    }
   }
 
   // Icon to PopOut Pane, so move it to a different Browser Window
@@ -341,17 +343,7 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
   // Pane controls are different in Maximized Mode, especially the old Icon "Maximise" that now has a different meaning, so "Minimize" (even if CSS Class did not change)
   .lm_controls {
     .lm_maximise {
-      opacity: 0.7;
-      // vsChromeMinimize
-      background-image: str-replace(
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='#{$gray-100}' d='M14 8v1H3V8h11z'/%3E%3C/svg%3E"),
-        '#',
-        '%23'
-      );
-
-      &:hover {
-        opacity: 1;
-      }
+      @include icon-image-mask(var(--dh-svg-icon-minimise));
     }
   }
 }

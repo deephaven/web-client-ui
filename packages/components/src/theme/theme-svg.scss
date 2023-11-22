@@ -12,6 +12,7 @@
 $svg-path-close-tab: '0 0 320 512',
   'M193.94 256L296.5 153.44l21.15-21.15c3.12-3.12 3.12-8.19 0-11.31l-22.63-22.63c-3.12-3.12-8.19-3.12-11.31 0L160 222.06 36.29 98.34c-3.12-3.12-8.19-3.12-11.31 0L2.34 120.97c-3.12 3.12-3.12 8.19 0 11.31L126.06 256 2.34 379.71c-3.12 3.12-3.12 8.19 0 11.31l22.63 22.63c3.12 3.12 8.19 3.12 11.31 0L160 289.94 262.56 392.5l21.15 21.15c3.12 3.12 8.19 3.12 11.31 0l22.63-22.63c3.12-3.12 3.12-8.19 0-11.31L193.94 256z';
 $svg-path-maximise: '0 0 16 16', 'M3 3v10h10V3H3zm9 9H4V4h8v8z';
+$svg-path-minimise: '0 0 16 16', 'M14 8v1H3V8h11z';
 $svg-path-next: '0 0 16 16',
   'M10.072 8.024L5.715 3.667l.618-.62L11 7.716v.618L6.333 13l-.618-.619 4.357-4.357z';
 $svg-path-prev: '0 0 16 16',
@@ -38,6 +39,7 @@ $svg-path-error: '0 0 16 16',
   /* Golden layout */
   --dh-svg-icon-close-tab: #{inline-svg-url($svg-path-close-tab...)};
   --dh-svg-icon-maximise: #{inline-svg-url($svg-path-maximise...)};
+  --dh-svg-icon-minimise: #{inline-svg-url($svg-path-minimise...)};
   --dh-svg-icon-next: #{inline-svg-url($svg-path-next...)};
   --dh-svg-icon-prev: #{inline-svg-url($svg-path-prev...)};
   --dh-svg-icon-tab-dropdown: #{inline-svg-url($svg-path-tab-dropdown...)};
