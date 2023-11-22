@@ -417,7 +417,7 @@ export function overrideSVGFillColors(): void {
     // Clear any previous override so that our variables get resolved against the
     // actual svg content provided by the active themes and not from a previous
     // override
-    document.body.style.setProperty(key, null);
+    document.body.style.removeProperty(key);
 
     const svgContent = resolveVar(key as ThemeIconsRequiringManualColorChanges);
     const fillColor = resolveVar(value as ThemePreloadColorVariable);

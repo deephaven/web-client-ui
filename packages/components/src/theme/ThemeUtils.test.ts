@@ -17,6 +17,7 @@ import {
   getExpressionRanges,
   getThemeKey,
   getThemePreloadData,
+  overrideSVGFillColors,
   preloadTheme,
   replaceSVGFillColor,
   resolveCssVariablesInRecord,
@@ -355,6 +356,44 @@ describe('getThemePreloadData', () => {
   );
 });
 
+describe('overrideSVGFillColors', () => {
+  const computedStyle = createMockProxy<CSSStyleDeclaration>();
+
+  beforeEach(() => {
+    jest
+      .spyOn(window, 'getComputedStyle')
+      .mockName('getComputedStyle')
+      .mockReturnValue(computedStyle);
+
+    jest.spyOn(document.body.style, 'setProperty').mockName('setProperty');
+    jest
+      .spyOn(document.body.style, 'removeProperty')
+      .mockName('removeProperty');
+  });
+
+  it.each(Object.entries(SVG_ICON_MANUAL_COLOR_MAP))(
+    'should replace fill colors in svgs: %s, %s',
+    (key, value) => {
+      asMock(computedStyle.getPropertyValue).mockImplementation(propertyKey =>
+        propertyKey.startsWith('--dh-svg-icon-')
+          ? `blah fill='currentColor' bleh`
+          : 'red'
+      );
+
+      overrideSVGFillColors();
+
+      expect(getComputedStyle).toHaveBeenCalledWith(document.body);
+      expect(document.body.style.removeProperty).toHaveBeenCalledWith(key);
+      expect(computedStyle.getPropertyValue).toHaveBeenCalledWith(key);
+      expect(computedStyle.getPropertyValue).toHaveBeenCalledWith(value);
+      expect(document.body.style.setProperty).toHaveBeenCalledWith(
+        key,
+        `blah fill='red' bleh`
+      );
+    }
+  );
+});
+
 describe('preloadTheme', () => {
   it.each([
     null,
@@ -498,6 +537,7 @@ describe('resolveCssVariablesInString', () => {
   });
 
   it.each([
+    ['Empty string', '', ''],
     ['No vars', 'red', 'red'],
     ['Single var', 'var(--aaa-aa)', 'R[var(--aaa-aa)]'],
     [
