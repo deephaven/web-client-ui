@@ -166,7 +166,7 @@ class VisibilityOrderingBuilder extends Component<
     this.debouncedSearchColumns(searchFilter);
   }
 
-  searchColumns(searchFilter: string): void {
+  searchColumns(searchFilter: string, updateQuery = true): void {
     const flattenedItems = flattenTree(this.getTreeItems());
     const itemsMatch = flattenedItems.filter(
       ({ id, data }) =>
@@ -182,15 +182,20 @@ class VisibilityOrderingBuilder extends Component<
       {}
     );
 
-    const columnIds: string[] = itemsMatch.map(({ id }) => id);
+    if (!updateQuery) {
+      this.setState({
+        prevQueriedColumns: columnsMatchMap,
+      });
+      return;
+    }
 
+    const columnIds: string[] = itemsMatch.map(({ id }) => id);
     this.addColumnToSelected(columnIds, false);
 
-    const visibleIndexToFocus = flattenedItems.findIndex(({ id }) =>
-      id.toLowerCase().includes(searchFilter.toLowerCase())
-    );
-
     if (columnIds.length > 0) {
+      const visibleIndexToFocus = flattenedItems.findIndex(({ id }) =>
+        id.toLowerCase().includes(searchFilter.toLowerCase())
+      );
       const columnItemToFocus =
         this.list?.querySelectorAll('.item-wrapper')[visibleIndexToFocus];
       columnItemToFocus?.scrollIntoView({ block: 'center' });
@@ -202,30 +207,30 @@ class VisibilityOrderingBuilder extends Component<
     });
   }
 
-  updateColumnMap(): void {
-    const { searchFilter } = this.state;
+  // updateColumnMap(): void {
+  //   const { searchFilter } = this.state;
 
-    if (!searchFilter) return;
+  //   if (!searchFilter) return;
 
-    const flattenedItems = flattenTree(this.getTreeItems());
-    const itemsMatch = flattenedItems.filter(
-      ({ id, data }) =>
-        !(data.group?.isNew ?? false) &&
-        id.toLowerCase().includes(searchFilter.toLowerCase())
-    );
+  //   const flattenedItems = flattenTree(this.getTreeItems());
+  //   const itemsMatch = flattenedItems.filter(
+  //     ({ id, data }) =>
+  //       !(data.group?.isNew ?? false) &&
+  //       id.toLowerCase().includes(searchFilter.toLowerCase())
+  //   );
 
-    const columnsMatchMap: Record<number, string> = itemsMatch.reduce(
-      (acc, { id }, index) => {
-        const originalIndex = flattenedItems.findIndex(item => item.id === id);
-        return { ...acc, [originalIndex]: id };
-      },
-      {}
-    );
+  //   const columnsMatchMap: Record<number, string> = itemsMatch.reduce(
+  //     (acc, { id }) => {
+  //       const originalIndex = flattenedItems.findIndex(item => item.id === id);
+  //       return { ...acc, [originalIndex]: id };
+  //     },
+  //     {}
+  //   );
 
-    this.setState({
-      prevQueriedColumns: columnsMatchMap,
-    });
-  }
+  //   this.setState({
+  //     prevQueriedColumns: columnsMatchMap,
+  //   });
+  // }
 
   /**
    * Change the selected column to the next or previous column that matches the search criteria.
@@ -834,7 +839,9 @@ class VisibilityOrderingBuilder extends Component<
 
     onColumnHeaderGroupChanged(newGroups);
     onMovedColumnsChanged(newMoves);
-    this.updateColumnMap();
+
+    const { searchFilter } = this.state;
+    this.searchColumns(searchFilter, false);
   }
 
   handleGroupNameChange(group: ColumnHeaderGroup, newName: string): void {
@@ -929,7 +936,9 @@ class VisibilityOrderingBuilder extends Component<
     onColumnHeaderGroupChanged(newGroups.concat([newGroup]));
 
     this.resetSelection();
-    this.updateColumnMap();
+
+    const { searchFilter } = this.state;
+    this.searchColumns(searchFilter, false);
   }
 
   /**
