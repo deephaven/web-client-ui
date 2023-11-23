@@ -151,8 +151,6 @@ class VisibilityOrderingBuilder extends Component<
   resetSelection(): void {
     this.setState({
       selectedColumns: new Set(),
-      queriedColumnIndex: undefined,
-      prevQueriedColumns: undefined,
       lastSelectedColumn: '',
     });
   }
@@ -177,7 +175,10 @@ class VisibilityOrderingBuilder extends Component<
     );
 
     const columnsMatchMap: Record<number, string> = itemsMatch.reduce(
-      (acc, { id, index }) => ({ ...acc, [index]: id }),
+      (acc, { id }) => {
+        const originalIndex = flattenedItems.findIndex(item => item.id === id);
+        return { ...acc, [originalIndex]: id };
+      },
       {}
     );
 
@@ -198,6 +199,31 @@ class VisibilityOrderingBuilder extends Component<
     this.setState({
       prevQueriedColumns: columnsMatchMap,
       queriedColumnIndex: undefined,
+    });
+  }
+
+  updateColumnMap(): void {
+    const { searchFilter } = this.state;
+
+    if (!searchFilter) return;
+
+    const flattenedItems = flattenTree(this.getTreeItems());
+    const itemsMatch = flattenedItems.filter(
+      ({ id, data }) =>
+        !(data.group?.isNew ?? false) &&
+        id.toLowerCase().includes(searchFilter.toLowerCase())
+    );
+
+    const columnsMatchMap: Record<number, string> = itemsMatch.reduce(
+      (acc, { id }, index) => {
+        const originalIndex = flattenedItems.findIndex(item => item.id === id);
+        return { ...acc, [originalIndex]: id };
+      },
+      {}
+    );
+
+    this.setState({
+      prevQueriedColumns: columnsMatchMap,
     });
   }
 
@@ -808,6 +834,7 @@ class VisibilityOrderingBuilder extends Component<
 
     onColumnHeaderGroupChanged(newGroups);
     onMovedColumnsChanged(newMoves);
+    this.updateColumnMap();
   }
 
   handleGroupNameChange(group: ColumnHeaderGroup, newName: string): void {
@@ -902,6 +929,7 @@ class VisibilityOrderingBuilder extends Component<
     onColumnHeaderGroupChanged(newGroups.concat([newGroup]));
 
     this.resetSelection();
+    this.updateColumnMap();
   }
 
   /**
