@@ -60,7 +60,7 @@ interface ConsoleProps {
   statusBarChildren: ReactNode;
   settings: Partial<Settings>;
   focusCommandHistory: () => void;
-  openObject: (object: VariableDefinition) => void;
+  openObject: (object: VariableDefinition, autoLaunch?: boolean) => void;
   closeObject: (object: VariableDefinition) => void;
   session: IdeSession;
   language: string;
@@ -471,14 +471,19 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
   }, Console.LOG_THROTTLE);
 
   openUpdatedItems(changes: VariableChanges): void {
+    log.log('openUpdatedItems', changes);
     const { isAutoLaunchPanelsEnabled } = this.state;
-    if (changes == null || !isAutoLaunchPanelsEnabled) {
+    if (changes == null) {
       return;
     }
 
     const { openObject } = this.props;
     [...changes.created, ...changes.updated].forEach(object =>
-      openObject(object)
+      openObject(
+        object,
+        isAutoLaunchPanelsEnabled &&
+          (object.title === undefined || !object.title.startsWith('_'))
+      )
     );
   }
 
