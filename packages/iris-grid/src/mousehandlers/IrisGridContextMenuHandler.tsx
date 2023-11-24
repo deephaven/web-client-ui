@@ -655,7 +655,10 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       action: () => {
         irisGrid.setState({
           showOverflowModal: true,
-          overflowText: irisGrid.getValueForCell(columnIndex, rowIndex) as string,
+          overflowText: irisGrid.getValueForCell(
+            columnIndex,
+            rowIndex
+          ) as string,
         });
       },
     });
