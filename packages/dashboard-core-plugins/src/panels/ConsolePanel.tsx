@@ -11,7 +11,12 @@ import {
   HeapUsage,
   ObjectIcon,
 } from '@deephaven/console';
-import { DashboardPanelProps, PanelEvent } from '@deephaven/dashboard';
+import {
+  DashboardPanelProps,
+  LayoutManagerContext,
+  LayoutUtils,
+  PanelEvent,
+} from '@deephaven/dashboard';
 import type { IdeSession, VariableDefinition } from '@deephaven/jsapi-types';
 import { SessionWrapper } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
@@ -84,6 +89,8 @@ export class ConsolePanel extends PureComponent<
 
   static TITLE = 'Console';
 
+  static contextType = LayoutManagerContext;
+
   constructor(props: ConsolePanelProps) {
     super(props);
 
@@ -94,7 +101,6 @@ export class ConsolePanel extends PureComponent<
     this.handleSettingsChange = this.handleSettingsChange.bind(this);
     this.handleShow = this.handleShow.bind(this);
     this.handlePanelMount = this.handlePanelMount.bind(this);
-    this.handleItemClosed = this.handleItemClosed.bind(this);
     this.supportsType = this.supportsType.bind(this);
     this.iconForType = this.iconForType.bind(this);
 
@@ -124,7 +130,6 @@ export class ConsolePanel extends PureComponent<
     // as they may have been saved with the dashboard
     this.closeDisconnectedPanels();
     glEventHub.on(PanelEvent.MOUNT, this.handlePanelMount);
-    glEventHub.on(PanelEvent.CLOSED, this.handleItemClosed);
     this.subscribeToFieldUpdates();
   }
 
@@ -145,7 +150,6 @@ export class ConsolePanel extends PureComponent<
     const { glEventHub } = this.props;
     this.savePanelState.flush();
     glEventHub.off(PanelEvent.MOUNT, this.handlePanelMount);
-    glEventHub.off(PanelEvent.CLOSED, this.handleItemClosed);
     this.objectSubscriptionCleanup?.();
   }
 
@@ -225,22 +229,6 @@ export class ConsolePanel extends PureComponent<
     }
   }
 
-  handleItemClosed(panelId: string | string[] | null | undefined): void {
-    if (panelId == null) {
-      return;
-    }
-    const removeId = Array.isArray(panelId) ? panelId[0] : panelId;
-    this.setState(({ itemIds }) => {
-      const newItemIds = new Map(itemIds);
-      newItemIds.forEach((value, key) => {
-        if (value === removeId) {
-          newItemIds.delete(key);
-        }
-      });
-      return { itemIds: newItemIds };
-    });
-  }
-
   handleFocusCommandHistory(): void {
     const { glEventHub } = this.props;
     glEventHub.emit(ConsoleEvent.FOCUS_HISTORY);
@@ -258,10 +246,19 @@ export class ConsolePanel extends PureComponent<
     const { sessionWrapper } = this.props;
     const { itemIds } = this.state;
     const { session } = sessionWrapper;
-    // Title should always be non-null
+    const { root } = this.context;
+    const oldPanelId =
+      object.title != null ? this.getItemId(object.title, false) : null;
     if (
       autoLaunch ||
-      (object.title !== undefined && itemIds.has(object.title))
+      (oldPanelId != null &&
+        LayoutUtils.getStackForRoot(
+          root,
+          { id: oldPanelId },
+          false,
+          false,
+          false
+        ) != null)
     ) {
       log.log('handleOpenObject', autoLaunch, object, itemIds);
       this.openWidget(object, session);
