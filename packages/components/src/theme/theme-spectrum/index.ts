@@ -1,6 +1,8 @@
 import palette from './theme-spectrum-palette.module.css';
 import alias from './theme-spectrum-alias.module.css';
-import overrides from './theme-spectrum-overrides.module.css';
+
+// don't import as module, so that classes can be used directly
+import './theme-spectrum-overrides.css';
 
 /**
  * Spectrum theme variables are exported as a map of css class names. The keys
@@ -16,7 +18,6 @@ import overrides from './theme-spectrum-overrides.module.css';
 export const themeSpectrumClassesCommon = {
   ...palette,
   ...alias,
-  ...overrides,
 };
 
 export default themeSpectrumClassesCommon;

@@ -3,6 +3,11 @@
 @import './custom.scss';
 @import 'bootstrap/scss/bootstrap';
 
+:root {
+  // TODO: where's a better place to put this?
+  --dh-svg-inline-icon-size: 16px;
+}
+
 //Various non-variable css overides
 //Overide default size from 16px to 14px. We need density.
 html {
@@ -14,7 +19,7 @@ html {
 // and look best at that size. Default icon size back to 16px
 // vertical alignment changed to best match icon set against 14px text
 .svg-inline--fa {
-  font-size: 16px;
+  font-size: var(--dh-svg-inline-icon-size);
   vertical-align: -3px;
 }
 
