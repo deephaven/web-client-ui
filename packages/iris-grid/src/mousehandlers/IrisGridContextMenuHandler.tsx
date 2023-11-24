@@ -79,6 +79,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
   static GROUP_FORMAT = ContextActions.groups.high + 150;
 
+  static GROUP_VIEW_CONTENTS = ContextActions.groups.high + 175;
+
   static COLUMN_SORT_DIRECTION = {
     ascending: 'ASC',
     descending: 'DESC',
@@ -645,6 +647,18 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         },
       });
     }
+
+    actions.push({
+      title: 'View Cell Contents',
+      group: IrisGridContextMenuHandler.GROUP_VIEW_CONTENTS,
+      order: 10,
+      action: () => {
+        irisGrid.setState({
+          showOverflowModal: true,
+          overflowText: irisGrid.getValueForCell(columnIndex, rowIndex) as string,
+        });
+      },
+    });
 
     return actions;
   }
