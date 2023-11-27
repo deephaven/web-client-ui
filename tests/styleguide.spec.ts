@@ -10,6 +10,7 @@ const sampleSectionIds: string[] = [
   'sample-section-editor-colors',
   'sample-section-grid-colors',
   'sample-section-component-colors',
+  'sample-section-golden-layout',
   'sample-section-buttons-regular',
   'sample-section-buttons-outline',
   'sample-section-buttons-inline',
@@ -75,7 +76,6 @@ sampleSectionIds.forEach(id => {
     await page.goto(`/ide/styleguide?isolateSection=true#${id}`);
 
     const sampleSection = page.locator(`#${id}`);
-    await sampleSection.waitFor();
 
     await expect(sampleSection).toHaveScreenshot(
       `${id.replace(/^sample-section-/, '')}.png`
