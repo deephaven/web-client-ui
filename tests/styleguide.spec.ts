@@ -1,79 +1,96 @@
 /* eslint-disable no-await-in-loop */
 import { expect, test } from '@playwright/test';
 
-const EXPECTED_SAMPLE_SECTION_COUNT = 40;
-const EXPECTED_BUTTON_SECTION_COUNT = 4;
+const sampleSectionIds: string[] = [
+  'sample-section-typography',
+  'sample-section-colors',
+  'sample-section-theme-color-palette',
+  'sample-section-semantic-colors',
+  'sample-section-chart-colors',
+  'sample-section-editor-colors',
+  'sample-section-grid-colors',
+  'sample-section-component-colors',
+  'sample-section-buttons-regular',
+  'sample-section-buttons-outline',
+  'sample-section-buttons-inline',
+  'sample-section-buttons-socketed',
+  'sample-section-progress',
+  'sample-section-alerts',
+  'sample-section-inputs',
+  'sample-section-item-list-inputs',
+  'sample-section-draggable-lists',
+  'sample-section-time-slider-inputs',
+  'sample-section-dialog',
+  'sample-section-modals',
+  'sample-section-context-menus',
+  'sample-section-dropdown-menus',
+  'sample-section-navigations',
+  'sample-section-tooltips',
+  'sample-section-icons',
+  'sample-section-editors',
+  'sample-section-grids-grid',
+  'sample-section-grids-static',
+  'sample-section-grids-data-bar',
+  'sample-section-grids-quadrillion',
+  'sample-section-grids-async',
+  'sample-section-grids-tree',
+  'sample-section-grids-iris',
+  'sample-section-charts',
+  'sample-section-spectrum-buttons',
+  'sample-section-spectrum-collections',
+  'sample-section-spectrum-content',
+  'sample-section-spectrum-forms',
+  'sample-section-spectrum-overlays',
+  'sample-section-spectrum-well',
+];
+const buttonSectionIds: string[] = [
+  'sample-section-buttons-regular',
+  'sample-section-buttons-outline',
+  'sample-section-buttons-inline',
+  'sample-section-buttons-socketed',
+];
 
-// let page: Page;
-const sampleSectionIds: string[] = [];
-const buttonSectionIds: string[] = [];
-
-test.beforeAll(async ({ browser }) => {
-  const page = await browser.newPage();
-
+test('UI regression test - Styleguide section count', async ({ page }) => {
   await page.goto('/ide/styleguide');
 
-  // Get the ids of the sample sections
-  const sampleSections = page.locator('.sample-section');
-  await expect(sampleSections).toHaveCount(EXPECTED_SAMPLE_SECTION_COUNT);
+  const sampleSections = await page.locator('.sample-section');
 
-  sampleSectionIds.length = 0;
-  for (let i = 0; i < EXPECTED_SAMPLE_SECTION_COUNT; i += 1) {
-    const sampleSection = sampleSections.nth(i);
-    const id = String(await sampleSection.getAttribute('id'));
-    sampleSectionIds.push(id);
-  }
+  await expect(sampleSections).toHaveCount(sampleSectionIds.length);
+});
 
-  // Get the ids of the button sections
-  const buttonSections = page.locator('[id^="sample-section-buttons-"]');
-  await expect(buttonSections).toHaveCount(EXPECTED_BUTTON_SECTION_COUNT);
+test('UI regression test - Styleguide button section count', async ({
+  page,
+}) => {
+  await page.goto('/ide/styleguide');
 
-  buttonSectionIds.length = 0;
-  for (let i = 0; i < EXPECTED_BUTTON_SECTION_COUNT; i += 1) {
-    const buttonSection = buttonSections.nth(i);
-    const id = String(await buttonSection.getAttribute('id'));
-    buttonSectionIds.push(id);
-  }
+  const buttonSections = await page.locator('[id^="sample-section-buttons-"]');
 
-  await page.close();
+  await expect(buttonSections).toHaveCount(buttonSectionIds.length);
 });
 
 // Iterate over all sample sections and take a screenshot of each one.
-test('UI regression test - Styleguide sections', async ({ page }) => {
-  for (let i = 0; i < sampleSectionIds.length; i += 1) {
-    const id = sampleSectionIds[i];
-
+sampleSectionIds.forEach(id => {
+  test(`UI regression test - Styleguide section - ${id}`, async ({ page }) => {
     // Isolate the section
     await page.goto(`/ide/styleguide?isolateSection=true#${id}`);
-    await page.reload();
 
     const sampleSection = page.locator(`#${id}`);
-
-    await expect(sampleSection).not.toHaveCount(0);
 
     await expect(sampleSection).toHaveScreenshot(
       `${id.replace(/^sample-section-/, '')}.png`
     );
-  }
+  });
 });
 
-test('Buttons regression test', async ({ context }) => {
-  expect(buttonSectionIds.length).toEqual(EXPECTED_BUTTON_SECTION_COUNT);
-
-  // Test focus and hover states for each enabled button
-  for (let i = 0; i < buttonSectionIds.length; i += 1) {
-    const page = await context.newPage();
-
-    const id = buttonSectionIds[i];
-
+buttonSectionIds.forEach((id, i) => {
+  test(`Buttons regression test - ${id}`, async ({ page }) => {
     // Isolate the section
-    const sectionUrl = `/ide/styleguide?isolateSection=true#${id}`;
-    await page.goto(sectionUrl);
+    await page.goto(`/ide/styleguide?isolateSection=true#${id}`);
 
-    const section = page.locator(`#${id}`);
-    const buttons = section.locator('button');
+    const sampleSection = page.locator(`#${id}`);
 
-    await expect(buttons, `Button section: '${sectionUrl}'`).not.toHaveCount(0);
+    const buttons = sampleSection.locator('button');
+    await expect(buttons, `Button section: '${id}'`).not.toHaveCount(0);
 
     const buttonCount = await buttons.count();
 
@@ -86,7 +103,7 @@ test('Buttons regression test', async ({ context }) => {
 
       // Focus
       await button.focus();
-      await expect(section).toHaveScreenshot(
+      await expect(sampleSection).toHaveScreenshot(
         `buttons-focus-section-${i}-${j}${isDisabled ? '-disabled' : ''}.png`
       );
 
@@ -96,7 +113,7 @@ test('Buttons regression test', async ({ context }) => {
 
       // Hover
       await button.hover();
-      await expect(section).toHaveScreenshot(
+      await expect(sampleSection).toHaveScreenshot(
         `buttons-hover-section-${i}-${j}${isDisabled ? '-disabled' : ''}.png`
       );
       await page.mouse.move(0, 0);
@@ -105,9 +122,7 @@ test('Buttons regression test', async ({ context }) => {
         await button.blur();
       }
     }
-
-    await page.close();
-  }
+  });
 });
 
 test('Inputs regression test', async ({ page }) => {
