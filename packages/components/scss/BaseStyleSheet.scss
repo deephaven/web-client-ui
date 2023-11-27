@@ -4,8 +4,8 @@
 @import 'bootstrap/scss/bootstrap';
 
 :root {
-  // TODO: where's a better place to put this?
   --dh-svg-inline-icon-size: 16px;
+  --scrollbar-color: 255, 255, 255;
 }
 
 //Various non-variable css overides
@@ -660,12 +660,6 @@ input[type='number']::-webkit-inner-spin-button {
 ::-webkit-scrollbar-thumb:active {
   background: rgba(var(--scrollbar-color), 0.35);
 }
-
-/* stylelint-disable no-descending-specificity */
-:root {
-  --scrollbar-color: 255, 255, 255;
-}
-/* stylelint-enable no-descending-specificity */
 
 // used in inverted color sections, like light modals
 .theme-bg-light {
