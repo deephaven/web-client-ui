@@ -1,0 +1,13 @@
+[class^='spectrum'] {
+  /* --font-family-sans-serif is defined in Bootstrap's _root.scss. We want
+  Spectrum to use the same default font-family */
+  font-family: var(--font-family-sans-serif) !important;
+}
+
+.svg-inline--fa[class*='spectrum-Icon--sizeS'] {
+  /* 
+  Resize fontawesome icons used inside a spectrum icon wrapper to match
+  our icon size. Spectrum icons are 18px by default, but our icons are built on a 16px grid.
+  */
+  --spectrum-alias-workflow-icon-size: var(--dh-svg-inline-icon-size);
+}

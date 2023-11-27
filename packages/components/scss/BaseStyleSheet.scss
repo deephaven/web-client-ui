@@ -4,6 +4,11 @@
 @import './util.scss';
 @import 'bootstrap/scss/bootstrap';
 
+:root {
+  --dh-svg-inline-icon-size: 16px;
+  --scrollbar-color: 255, 255, 255;
+}
+
 //Various non-variable css overides
 //Overide default size from 16px to 14px. We need density.
 html {
@@ -15,7 +20,7 @@ html {
 // and look best at that size. Default icon size back to 16px
 // vertical alignment changed to best match icon set against 14px text
 .svg-inline--fa {
-  font-size: 16px;
+  font-size: var(--dh-svg-inline-icon-size);
   vertical-align: -3px;
 }
 
@@ -695,12 +700,6 @@ input[type='number']::-webkit-inner-spin-button {
 ::-webkit-scrollbar-thumb:active {
   background: rgba(var(--scrollbar-color), 0.35);
 }
-
-/* stylelint-disable no-descending-specificity */
-:root {
-  --scrollbar-color: 255, 255, 255;
-}
-/* stylelint-enable no-descending-specificity */
 
 // used in inverted color sections, like light modals
 .theme-bg-light {

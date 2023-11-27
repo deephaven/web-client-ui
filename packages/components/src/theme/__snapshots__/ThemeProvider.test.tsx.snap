@@ -9,7 +9,7 @@ exports[`ThemeProvider setSelectedThemeKey: [ [Object] ] should change selected 
       ./theme-light-palette.css?raw
     </style>
     <div
-      class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 theme-spectrum-palette theme-spectrum-alias theme-spectrum-overrides spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
+      class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 theme-spectrum-palette theme-spectrum-alias spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
       dir="ltr"
       lang="en-US"
       style="isolation: isolate; color-scheme: light;"
@@ -39,7 +39,7 @@ exports[`ThemeProvider setSelectedThemeKey: [ [Object] ] should change selected 
       data-theme-key="themeA"
     />
     <div
-      class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 theme-spectrum-palette theme-spectrum-alias theme-spectrum-overrides spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
+      class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 theme-spectrum-palette theme-spectrum-alias spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
       dir="ltr"
       lang="en-US"
       style="isolation: isolate; color-scheme: light;"
@@ -56,7 +56,7 @@ exports[`ThemeProvider setSelectedThemeKey: null should change selected theme: d
 <body>
   <div>
     <div
-      class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 theme-spectrum-palette theme-spectrum-alias theme-spectrum-overrides spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
+      class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 theme-spectrum-palette theme-spectrum-alias spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
       dir="ltr"
       lang="en-US"
       style="isolation: isolate; color-scheme: light;"
@@ -73,7 +73,7 @@ exports[`ThemeProvider setSelectedThemeKey: null should change selected theme: t
 <body>
   <div>
     <div
-      class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 theme-spectrum-palette theme-spectrum-alias theme-spectrum-overrides spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
+      class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 theme-spectrum-palette theme-spectrum-alias spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
       dir="ltr"
       lang="en-US"
       style="isolation: isolate; color-scheme: light;"
@@ -103,7 +103,7 @@ exports[`ThemeProvider should load themes based on preload data or default: [ [O
       data-theme-key="themeA"
     />
     <div
-      class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 theme-spectrum-palette theme-spectrum-alias theme-spectrum-overrides spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
+      class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 theme-spectrum-palette theme-spectrum-alias spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
       dir="ltr"
       lang="en-US"
       style="isolation: isolate; color-scheme: light;"
@@ -130,7 +130,7 @@ exports[`ThemeProvider should load themes based on preload data or default: [ [O
 ./theme-dark-components.css?raw
     </style>
     <div
-      class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 theme-spectrum-palette theme-spectrum-alias theme-spectrum-overrides spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
+      class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 theme-spectrum-palette theme-spectrum-alias spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
       dir="ltr"
       lang="en-US"
       style="isolation: isolate; color-scheme: light;"
@@ -147,7 +147,7 @@ exports[`ThemeProvider should load themes based on preload data or default: null
 <body>
   <div>
     <div
-      class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 theme-spectrum-palette theme-spectrum-alias theme-spectrum-overrides spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
+      class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 theme-spectrum-palette theme-spectrum-alias spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
       dir="ltr"
       lang="en-US"
       style="isolation: isolate; color-scheme: light;"
@@ -164,7 +164,7 @@ exports[`ThemeProvider should load themes based on preload data or default: null
 <body>
   <div>
     <div
-      class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 theme-spectrum-palette theme-spectrum-alias theme-spectrum-overrides spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
+      class="spectrum_b37d53 spectrum_2a241c spectrum--light_a40724 theme-spectrum-palette theme-spectrum-alias spectrum--large_c40598 spectrum_9e130c spectrum--medium_9e130c spectrum--large_9e130c spectrum--darkest_9e130c spectrum--dark_9e130c spectrum--light_9e130c spectrum--lightest_9e130c"
       dir="ltr"
       lang="en-US"
       style="isolation: isolate; color-scheme: light;"

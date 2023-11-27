@@ -31,7 +31,7 @@ import {
   Well,
 } from '@adobe/react-spectrum';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { dh } from '@deephaven/icons';
+import { dhTruck, vsEmptyWindow } from '@deephaven/icons';
 import { SPECTRUM_COMPONENT_SAMPLES_ID } from './constants';
 import { sampleSectionIdAndClassesSpectrum } from './utils';
 
@@ -75,78 +75,86 @@ export default SpectrumComponents;
 
 function ButtonsSample(): JSX.Element {
   return (
-    <Grid
-      autoFlow="column"
-      columnGap="size-250"
-      rowGap="size-150"
-      columns={repeat(4, 'size-2000')}
-      rows={repeat(8, 'size-400')}
-    >
-      <label>Button style=&quot;outline&quot;</label>
-      <Button variant="primary" style="outline">
-        Primary
-      </Button>
-      <Button variant="secondary" style="outline">
-        Secondary
-      </Button>
-      <Button variant="accent" style="outline">
-        Accent
-      </Button>
-      <Button variant="negative" style="outline">
-        Negative
-      </Button>
-      <Button variant="primary" staticColor="black" style="outline">
-        Static Black
-      </Button>
-      <Button variant="primary" staticColor="white" style="outline">
-        Static White
-      </Button>
-      <Button variant="primary" isDisabled style="outline">
-        Disabled
-      </Button>
-
-      <label>Button style=&quot;fill&quot;</label>
-      <Button variant="primary" style="fill">
-        Primary
-      </Button>
-      <Button variant="secondary" style="fill">
-        Secondary
-      </Button>
-      <Button variant="accent" style="fill">
-        Accent
-      </Button>
-      <Button variant="negative" style="fill">
-        Negative
-      </Button>
-      <Button variant="primary" staticColor="black" style="fill">
-        Static Black
-      </Button>
-      <Button variant="primary" staticColor="white" style="fill">
-        Static White
-      </Button>
-      <Button variant="primary" isDisabled style="fill">
-        Disabled
-      </Button>
-
-      <label>Action Button</label>
-      <ActionButton>Normal</ActionButton>
-      <ActionButton gridRow="span 3" isQuiet>
-        Quiet
+    <>
+      <ActionButton marginBottom="size-200">
+        <Icon>
+          <FontAwesomeIcon icon={dhTruck} />
+        </Icon>
+        <Text>Icon Button</Text>
       </ActionButton>
-      <ActionButton staticColor="black">Static Black</ActionButton>
-      <ActionButton staticColor="white">Static White</ActionButton>
-      <ActionButton isDisabled>Disabled</ActionButton>
+      <Grid
+        autoFlow="column"
+        columnGap="size-250"
+        rowGap="size-150"
+        columns={repeat(4, 'size-2000')}
+        rows={repeat(8, 'size-400')}
+      >
+        <label>Button style=&quot;outline&quot;</label>
+        <Button variant="primary" style="outline">
+          Primary
+        </Button>
+        <Button variant="secondary" style="outline">
+          Secondary
+        </Button>
+        <Button variant="accent" style="outline">
+          Accent
+        </Button>
+        <Button variant="negative" style="outline">
+          Negative
+        </Button>
+        <Button variant="primary" staticColor="black" style="outline">
+          Static Black
+        </Button>
+        <Button variant="primary" staticColor="white" style="outline">
+          Static White
+        </Button>
+        <Button variant="primary" isDisabled style="outline">
+          Disabled
+        </Button>
 
-      <label>Toggle Button</label>
-      <ToggleButton>Normal</ToggleButton>
-      <ToggleButton isQuiet>Quiet</ToggleButton>
-      <ToggleButton gridRow="span 2" isEmphasized>
-        Emphasized
-      </ToggleButton>
-      <ToggleButton staticColor="black">Static Black</ToggleButton>
-      <ToggleButton staticColor="white">Static White</ToggleButton>
-      <ToggleButton isDisabled>Disabled</ToggleButton>
-    </Grid>
+        <label>Button style=&quot;fill&quot;</label>
+        <Button variant="primary" style="fill">
+          Primary
+        </Button>
+        <Button variant="secondary" style="fill">
+          Secondary
+        </Button>
+        <Button variant="accent" style="fill">
+          Accent
+        </Button>
+        <Button variant="negative" style="fill">
+          Negative
+        </Button>
+        <Button variant="primary" staticColor="black" style="fill">
+          Static Black
+        </Button>
+        <Button variant="primary" staticColor="white" style="fill">
+          Static White
+        </Button>
+        <Button variant="primary" isDisabled style="fill">
+          Disabled
+        </Button>
+
+        <label>Action Button</label>
+        <ActionButton>Normal</ActionButton>
+        <ActionButton gridRow="span 3" isQuiet>
+          Quiet
+        </ActionButton>
+        <ActionButton staticColor="black">Static Black</ActionButton>
+        <ActionButton staticColor="white">Static White</ActionButton>
+        <ActionButton isDisabled>Disabled</ActionButton>
+
+        <label>Toggle Button</label>
+        <ToggleButton>Normal</ToggleButton>
+        <ToggleButton isQuiet>Quiet</ToggleButton>
+        <ToggleButton gridRow="span 2" isEmphasized>
+          Emphasized
+        </ToggleButton>
+        <ToggleButton staticColor="black">Static Black</ToggleButton>
+        <ToggleButton staticColor="white">Static White</ToggleButton>
+        <ToggleButton isDisabled>Disabled</ToggleButton>
+      </Grid>
+    </>
   );
 }
 
@@ -188,7 +196,7 @@ function IllustratedMessageSample(): JSX.Element {
   return (
     <IllustratedMessage>
       <Icon size="XL">
-        <FontAwesomeIcon icon={dh.vsEmptyWindow} />
+        <FontAwesomeIcon icon={vsEmptyWindow} />
       </Icon>
       <Heading>Illustrated Message</Heading>
       <Content>This is the content of the message.</Content>
