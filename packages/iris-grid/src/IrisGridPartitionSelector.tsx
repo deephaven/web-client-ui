@@ -232,17 +232,11 @@ class IrisGridPartitionSelector extends Component<
       );
     }
 
-    // Check if a partition is selected (no partitions for key table or merge table)
-    if (partitions[index] === undefined) {
-      this.setState({ selectorValue: columns.map(() => '') });
-      return;
-    }
-
     // Update Partition Values
     const tableData = await Promise.all(dataPromises);
     const validPartitions = partitions.slice(0, index + 1);
-    // Check if columns before index are defined
-    if (validPartitions.includes(undefined)) {
+    if (partitions[index] !== undefined) {
+      // Check if columns before index are defined
       for (
         let emptyIndex = 0;
         emptyIndex < validPartitions.length;
@@ -255,17 +249,17 @@ class IrisGridPartitionSelector extends Component<
           );
         }
       }
-    }
-    // Check if columns after index are defined
-    for (let i = 1; i < tableData.length; i += 1) {
-      const data = tableData[i];
-      if (data.rows.length > 0 && partitions[index + i] !== undefined) {
-        validPartitions.push(partitions[index + i]);
-      } else {
-        return this.updatePartitions(
-          index + i,
-          columns.map(c => tableData[i - 1].rows[0].get(c))
-        );
+      // Check if columns after index are defined
+      for (let i = 1; i < tableData.length; i += 1) {
+        const data = tableData[i];
+        if (data.rows.length > 0 && partitions[index + i] !== undefined) {
+          validPartitions.push(partitions[index + i]);
+        } else {
+          return this.updatePartitions(
+            index + i,
+            columns.map(c => tableData[i - 1].rows[0].get(c))
+          );
+        }
       }
     }
     // Valid partitions found, update dropdown values
@@ -288,7 +282,9 @@ class IrisGridPartitionSelector extends Component<
     this.setState({
       partitions: validPartitions,
       partitionColumnValues: newColumnValues,
-      selectorValue: validPartitions.map((_, i) => this.getDisplayValue(i)),
+      selectorValue: columns.map((_, i) =>
+        this.getDisplayValue(i, validPartitions[i] ?? '')
+      ),
     });
   }
 
