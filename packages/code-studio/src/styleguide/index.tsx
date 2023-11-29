@@ -1,22 +1,11 @@
 import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom';
 import '@deephaven/components/scss/BaseStyleSheet.scss';
-import {
-  LoadingOverlay,
-  preloadTheme,
-  ThemeData,
-  ThemeProvider,
-} from '@deephaven/components';
-import { IrisGridThemeProvider } from '@deephaven/iris-grid';
+import { LoadingOverlay } from '@deephaven/components';
 import { ApiBootstrap } from '@deephaven/jsapi-bootstrap';
 import logInit from '../log/LogInit';
 
 logInit();
-
-preloadTheme();
-
-// Provide a non-null array to ThemeProvider to tell it to initialize
-const customThemes: ThemeData[] = [];
 
 // eslint-disable-next-line react-refresh/only-export-components
 const StyleGuideRoot = React.lazy(() => import('./StyleGuideRoot'));
@@ -35,13 +24,9 @@ const apiURL = new URL(
 ReactDOM.render(
   <ApiBootstrap apiUrl={apiURL.href} setGlobally>
     <Suspense fallback={<LoadingOverlay />}>
-      <ThemeProvider themes={customThemes}>
-        <IrisGridThemeProvider>
-          <FontBootstrap>
-            <StyleGuideRoot />
-          </FontBootstrap>
-        </IrisGridThemeProvider>
-      </ThemeProvider>
+      <FontBootstrap>
+        <StyleGuideRoot />
+      </FontBootstrap>
     </Suspense>
   </ApiBootstrap>,
   document.getElementById('root')
