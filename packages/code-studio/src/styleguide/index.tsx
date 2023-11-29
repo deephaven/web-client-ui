@@ -7,6 +7,7 @@ import {
   ThemeData,
   ThemeProvider,
 } from '@deephaven/components';
+import { IrisGridThemeProvider } from '@deephaven/iris-grid';
 import { ApiBootstrap } from '@deephaven/jsapi-bootstrap';
 import logInit from '../log/LogInit';
 
@@ -35,9 +36,11 @@ ReactDOM.render(
   <ApiBootstrap apiUrl={apiURL.href} setGlobally>
     <Suspense fallback={<LoadingOverlay />}>
       <ThemeProvider themes={customThemes}>
-        <FontBootstrap>
-          <StyleGuideRoot />
-        </FontBootstrap>
+        <IrisGridThemeProvider>
+          <FontBootstrap>
+            <StyleGuideRoot />
+          </FontBootstrap>
+        </IrisGridThemeProvider>
       </ThemeProvider>
     </Suspense>
   </ApiBootstrap>,

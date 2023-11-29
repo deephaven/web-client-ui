@@ -5,7 +5,7 @@ import {
   GridThemeType,
   MockGridModel,
   MockTreeGridModel,
-  ThemeContext,
+  GridThemeContext,
 } from '@deephaven/grid';
 import { IrisGrid } from '@deephaven/iris-grid';
 import { useApi } from '@deephaven/jsapi-bootstrap';
@@ -38,7 +38,7 @@ function Grids(): ReactElement {
   });
   return (
     <div>
-      <ThemeContext.Provider value={contextTheme}>
+      <GridThemeContext.Provider value={contextTheme}>
         <h2 className="ui-title">Grid</h2>
         <Flex {...sampleSectionIdAndClassesSpectrum('grids-grid')}>
           <Grid model={model} theme={theme} />
@@ -81,7 +81,7 @@ function Grids(): ReactElement {
         <Flex {...sampleSectionIdAndClassesSpectrum('grids-iris')} height={500}>
           <IrisGrid model={irisGridModel} />
         </Flex>
-      </ThemeContext.Provider>
+      </GridThemeContext.Provider>
     </div>
   );
 }

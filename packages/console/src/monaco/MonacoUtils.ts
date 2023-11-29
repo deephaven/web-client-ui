@@ -43,7 +43,20 @@ class MonacoUtils {
       MonacoUtils.registerGetWorker(getWorker);
     }
 
-    const { registerLanguages, removeHashtag } = MonacoUtils;
+    const { registerLanguages } = MonacoUtils;
+
+    registerLanguages([DbLang, PyLang, GroovyLang, LogLang, ScalaLang]);
+
+    MonacoUtils.removeConflictingKeybindings();
+
+    log.debug('Monaco initialized.');
+  }
+
+  /**
+   * Initialize current Monaco theme based on the current DH theme.
+   */
+  static initTheme(): void {
+    const { removeHashtag } = MonacoUtils;
 
     const MonacoTheme = resolveCssVariablesInRecord(MonacoThemeRaw);
     log.debug2('Monaco theme:', MonacoThemeRaw);
@@ -171,12 +184,6 @@ class MonacoUtils {
       );
       monaco.editor.setTheme('vs-dark');
     }
-
-    registerLanguages([DbLang, PyLang, GroovyLang, LogLang, ScalaLang]);
-
-    MonacoUtils.removeConflictingKeybindings();
-
-    log.debug('Monaco initialized.');
   }
 
   /**

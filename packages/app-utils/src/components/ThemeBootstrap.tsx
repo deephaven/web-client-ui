@@ -1,6 +1,8 @@
 import { useContext, useMemo } from 'react';
 import { ChartThemeProvider } from '@deephaven/chart';
+import { MonacoThemeProvider } from '@deephaven/console';
 import { ThemeProvider } from '@deephaven/components';
+import { IrisGridThemeProvider } from '@deephaven/iris-grid';
 import { getThemeDataFromPlugins, PluginsContext } from '@deephaven/plugin';
 
 export interface ThemeBootstrapProps {
@@ -21,7 +23,11 @@ export function ThemeBootstrap({ children }: ThemeBootstrapProps): JSX.Element {
 
   return (
     <ThemeProvider themes={themes}>
-      <ChartThemeProvider>{children}</ChartThemeProvider>
+      <ChartThemeProvider>
+        <MonacoThemeProvider>
+          <IrisGridThemeProvider>{children}</IrisGridThemeProvider>
+        </MonacoThemeProvider>
+      </ChartThemeProvider>
     </ThemeProvider>
   );
 }
