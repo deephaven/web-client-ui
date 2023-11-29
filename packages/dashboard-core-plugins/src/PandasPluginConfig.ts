@@ -1,14 +1,14 @@
 import { PluginType, WidgetPlugin } from '@deephaven/plugin';
 import { dhPandas } from '@deephaven/icons';
-import PandasPlugin from './PandasPlugin';
+import { PandasWidgetPlugin } from './PandasWidgetPlugin';
+import { PandasPanelPlugin } from './PandasPanelPlugin';
 
 const PandasPluginConfig: WidgetPlugin = {
   name: 'PandasPanel',
   title: 'Pandas',
   type: PluginType.WIDGET_PLUGIN,
-  // TODO: #1573 Replace with actual base component and not just the panel plugin
-  component: PandasPlugin,
-  panelComponent: PandasPlugin,
+  component: PandasWidgetPlugin,
+  panelComponent: PandasPanelPlugin,
   supportedTypes: 'pandas.DataFrame',
   icon: dhPandas,
 };

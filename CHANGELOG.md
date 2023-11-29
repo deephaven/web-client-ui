@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.55.0](https://github.com/deephaven/web-client-ui/compare/v0.54.0...v0.55.0) (2023-11-20)
+
+
+### Bug Fixes
+
+* Changes for Deephaven UI embedding widget plugins ([#1644](https://github.com/deephaven/web-client-ui/issues/1644)) ([b6eeb30](https://github.com/deephaven/web-client-ui/commit/b6eeb309e8e55522d99c1528958bd0c7674e2d0f))
+* Fixed chart e2e test changing daily ([#1652](https://github.com/deephaven/web-client-ui/issues/1652)) ([f9f62db](https://github.com/deephaven/web-client-ui/commit/f9f62db37fbb0fbb97a012b33d27d383ccd1ca40)), closes [#1634](https://github.com/deephaven/web-client-ui/issues/1634)
+* Isolate Styleguide snapshots ([#1649](https://github.com/deephaven/web-client-ui/issues/1649)) ([a2ef056](https://github.com/deephaven/web-client-ui/commit/a2ef05681f348f02f46859909875e61c959a66dc))
+
+
+### Features
+
+* forward and back buttons for organize column search ([#1620](https://github.com/deephaven/web-client-ui/issues/1620)) ([75cf184](https://github.com/deephaven/web-client-ui/commit/75cf184f4b4b9d9a771544ea6335e5d2733368d9)), closes [#1529](https://github.com/deephaven/web-client-ui/issues/1529)
+* Styleguide regression tests ([#1639](https://github.com/deephaven/web-client-ui/issues/1639)) ([561ff22](https://github.com/deephaven/web-client-ui/commit/561ff22714a8b39cc55b41549712b5ef23bd39cf)), closes [#1634](https://github.com/deephaven/web-client-ui/issues/1634)
+
+
+### Reverts
+
+* feat: forward and back buttons for organize column search ([#1640](https://github.com/deephaven/web-client-ui/issues/1640)) ([737d1aa](https://github.com/deephaven/web-client-ui/commit/737d1aa98d04800377035d7d189219fefacfa23f))
+
+
+
+
+
 # [0.54.0](https://github.com/deephaven/web-client-ui/compare/v0.53.0...v0.54.0) (2023-11-10)
 
 

@@ -1,14 +1,12 @@
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable react/no-unused-state */
 import React, { Component, ReactElement, RefObject } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { dhRefresh } from '@deephaven/icons';
-import { Button } from '@deephaven/components';
 import ConnectedIrisGridPanel, {
   type IrisGridPanel,
   type OwnProps as IrisGridPanelOwnProps,
   type PanelState,
 } from './IrisGridPanel';
+import { PandasReloadButton } from './PandasReloadButton';
 import './PandasPanel.scss';
 
 export interface PandasPanelProps extends IrisGridPanelOwnProps {
@@ -34,7 +32,6 @@ class PandasPanel extends Component<PandasPanelProps, PandasPanelState> {
     super(props);
 
     this.irisGridRef = React.createRef();
-    this.buttonRef = React.createRef();
 
     this.handleReload = this.handleReload.bind(this);
     this.handleGridStateChange = this.handleGridStateChange.bind(this);
@@ -47,13 +44,10 @@ class PandasPanel extends Component<PandasPanelProps, PandasPanelState> {
     };
   }
 
-  buttonRef: RefObject<HTMLButtonElement>;
-
   irisGridRef: RefObject<IrisGridPanel>;
 
   handleReload(): void {
     this.irisGridRef.current?.initModel();
-    this.buttonRef.current?.blur();
     this.setState({
       shouldFocusGrid: true,
     });
@@ -76,32 +70,14 @@ class PandasPanel extends Component<PandasPanelProps, PandasPanelState> {
   }
 
   render(): ReactElement {
-    const { ...props } = this.props;
-
     return (
       <ConnectedIrisGridPanel
         ref={this.irisGridRef}
         onStateChange={this.handleGridStateChange}
         onPanelStateUpdate={this.handlePanelStateUpdate}
-        {...props}
+        {...this.props}
       >
-        <Button
-          ref={this.buttonRef}
-          kind="primary"
-          className="btn-pandas"
-          onClick={this.handleReload}
-          tooltip="Click to refresh pandas dataframe, updates do not occur automatically."
-        >
-          pandas dataframe
-          <span>
-            <FontAwesomeIcon
-              icon={dhRefresh}
-              transform="shrink-1"
-              className="mr-1"
-            />
-            Reload
-          </span>
-        </Button>
+        <PandasReloadButton onClick={this.handleReload} />
       </ConnectedIrisGridPanel>
     );
   }

@@ -63,7 +63,7 @@ class Dialog extends Component<unknown, DialogState> {
 
   renderChild(): React.ReactElement {
     return (
-      <div {...sampleSectionIdAndClasses('dialog', ['p-3'])}>
+      <div className="p-3">
         <h4>Sample Child</h4>
         <div className="form-group">
           <label htmlFor="exampleInput1">
@@ -89,7 +89,7 @@ class Dialog extends Component<unknown, DialogState> {
     const { isShown, checkBoxMap } = this.state;
 
     return (
-      <div>
+      <div {...sampleSectionIdAndClasses('dialog')}>
         <h2 className="ui-title">Popover Dialog</h2>
         <p>
           Popover dialog that can contain interactive elements, can be set to

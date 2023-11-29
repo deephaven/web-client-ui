@@ -43,6 +43,20 @@ const GLOBAL_SHORTCUTS = {
     macShortcut: [KEY.ESCAPE],
     isEditable: false,
   }),
+  NEXT: ShortcutRegistry.createAndAdd({
+    id: 'GLOBAL.NEXT',
+    name: 'Next',
+    shortcut: [KEY.ENTER],
+    macShortcut: [KEY.ENTER],
+    isEditable: false,
+  }),
+  PREVIOUS: ShortcutRegistry.createAndAdd({
+    id: 'GLOBAL.PREVIOUS',
+    name: 'Previous',
+    shortcut: [MODIFIER.SHIFT, KEY.ENTER],
+    macShortcut: [MODIFIER.SHIFT, KEY.ENTER],
+    isEditable: false,
+  }),
 };
 
 export default GLOBAL_SHORTCUTS;

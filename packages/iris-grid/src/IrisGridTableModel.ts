@@ -21,7 +21,7 @@ import {
   assertNotNull,
 } from '@deephaven/utils';
 import IrisGridModel from './IrisGridModel';
-import { ColumnName, UITotalsTableConfig, UIRow } from './CommonTypes';
+import { ColumnName, UIRow, UITotalsTableConfig } from './CommonTypes';
 import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
 
 const log = Log.module('IrisGridTableModel');

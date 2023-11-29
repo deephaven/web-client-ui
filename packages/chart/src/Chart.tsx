@@ -49,6 +49,7 @@ interface ChartProps {
   settings: FormatterSettings;
   isActive: boolean;
   Plotly: typeof Plotly;
+  containerRef?: React.RefObject<HTMLDivElement>;
   onDisconnect: () => void;
   onReconnect: () => void;
   onUpdate: (obj: { isLoading: boolean }) => void;
@@ -145,7 +146,7 @@ export class Chart extends Component<ChartProps, ChartState> {
 
     this.PlotComponent = createPlotlyComponent(props.Plotly);
     this.plot = React.createRef();
-    this.plotWrapper = React.createRef();
+    this.plotWrapper = props.containerRef ?? React.createRef();
     this.columnFormats = [];
     this.dateTimeFormatterOptions = {};
     this.decimalFormatOptions = {};

@@ -1,13 +1,14 @@
 import { PluginType, type WidgetPlugin } from '@deephaven/plugin';
 import { dhTable } from '@deephaven/icons';
-import GridPlugin from './GridPlugin';
+import { GridWidgetPlugin } from './GridWidgetPlugin';
+import { GridPanelPlugin } from './GridPanelPlugin';
 
 const GridPluginConfig: WidgetPlugin = {
   name: 'IrisGridPanel',
   title: 'Table',
   type: PluginType.WIDGET_PLUGIN,
-  component: GridPlugin,
-  panelComponent: GridPlugin,
+  component: GridWidgetPlugin,
+  panelComponent: GridPanelPlugin,
   supportedTypes: [
     'Table',
     'TreeTable',

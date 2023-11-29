@@ -5,7 +5,6 @@ exports[`themeDHDefault should merge Spectrum default with DH custom styles 1`] 
   "dark": {
     "spectrum--darkest": "spectrum--darkest_256eeb",
     "theme-spectrum-alias": "theme-spectrum-alias",
-    "theme-spectrum-overrides": "theme-spectrum-overrides",
     "theme-spectrum-palette": "theme-spectrum-palette",
   },
   "global": {
@@ -23,7 +22,6 @@ exports[`themeDHDefault should merge Spectrum default with DH custom styles 1`] 
   "light": {
     "spectrum--light": "spectrum--light_a40724",
     "theme-spectrum-alias": "theme-spectrum-alias",
-    "theme-spectrum-overrides": "theme-spectrum-overrides",
     "theme-spectrum-palette": "theme-spectrum-palette",
   },
   "medium": {

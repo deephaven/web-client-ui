@@ -106,6 +106,9 @@ export function isDashboardPlugin(
 
 export interface WidgetComponentProps {
   fetch: () => Promise<Widget>;
+}
+
+export interface WidgetPanelProps extends WidgetComponentProps {
   metadata?: {
     id?: string;
     name?: string;
@@ -150,8 +153,7 @@ export interface WidgetPlugin extends Plugin {
    *
    * See @deephaven/dashboard-core-plugins WidgetPanel for the component that should be used here.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  panelComponent?: React.ComponentType<WidgetComponentProps>;
+  panelComponent?: React.ComponentType<WidgetPanelProps>;
 
   /**
    * The icon to display next to the console button.

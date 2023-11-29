@@ -844,7 +844,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.startListening(model);
   }
 
-  componentDidUpdate(prevProps: IrisGridProps): void {
+  componentDidUpdate(prevProps: IrisGridProps, prevState: IrisGridState): void {
     const {
       inputFilters,
       isSelectingColumn,
@@ -912,6 +912,18 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           return { loadingScrimProgress };
         });
       });
+    }
+
+    const { openOptions } = this.state;
+    if (openOptions !== prevState.openOptions) {
+      const isAggEditType = (option: OptionItem): boolean =>
+        option.type === OptionType.AGGREGATION_EDIT;
+      if (
+        !openOptions.some(isAggEditType) &&
+        prevState.openOptions.some(isAggEditType)
+      ) {
+        this.removeEmptyAggregations();
+      }
     }
 
     this.sendStateChange();
@@ -1265,19 +1277,29 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       config: UIRollupConfig | undefined,
       aggregationSettings: AggregationSettings
     ): UITotalsTableConfig | null => {
-      const { aggregations, showOnTop } = aggregationSettings;
-      // If we've got rollups, then aggregations are applied as part of that...
-      if (
-        (config?.columns?.length ?? 0) > 0 ||
-        (aggregations?.length ?? 0) === 0
-      ) {
+      if ((config?.columns?.length ?? 0) > 0) {
+        // If we've got rollups, then aggregations are applied as part of that...
+        return null;
+      }
+
+      // Filter out aggregations without any columns actually selected
+      const aggregations = aggregationSettings.aggregations.filter(
+        agg => agg.selected.length > 0 || agg.invert
+      );
+      if (aggregations.length === 0) {
+        // We don't actually have any aggregations set, don't bother
         return null;
       }
 
       const operationMap = this.getOperationMap(columns, aggregations);
       const operationOrder = this.getOperationOrder(aggregations);
 
-      return { operationMap, operationOrder, showOnTop };
+      return {
+        operationMap,
+        operationOrder,
+        showOnTop: aggregationSettings.showOnTop,
+        defaultOperation: AggregationOperation.SKIP,
+      };
     }
   );
 
@@ -3105,6 +3127,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     log.debug('handleAggregationChange', aggregation);
 
     this.startLoading(`Aggregating ${aggregation.operation}...`);
+
     this.setState(({ aggregationSettings }) => ({
       selectedAggregation: aggregation,
       aggregationSettings: {
@@ -3241,6 +3264,30 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         'Attempted to handleDownloadTable for user without download CSV permission.'
       );
     }
+  }
+
+  /**
+   * Aggregation editing has completed. Need to filter out any aggregations that have no columns selected
+   */
+  removeEmptyAggregations(): void {
+    log.debug('removeEmptyAggregations');
+
+    this.setState(({ aggregationSettings }) => {
+      const { aggregations } = aggregationSettings;
+      const newAggregations = aggregations.filter(
+        a => a.selected.length > 0 || a.invert
+      );
+      if (newAggregations.length !== aggregations.length) {
+        return {
+          selectedAggregation: null,
+          aggregationSettings: {
+            ...aggregationSettings,
+            aggregations: newAggregations,
+          },
+        };
+      }
+      return { selectedAggregation: null, aggregationSettings };
+    });
   }
 
   async seekRow(inputString: string, isBackwards = false): Promise<void> {

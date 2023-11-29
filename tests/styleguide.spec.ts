@@ -1,62 +1,96 @@
 /* eslint-disable no-await-in-loop */
-import { expect, Locator, Page, test } from '@playwright/test';
-import { HIDE_FROM_E2E_TESTS_CLASS } from './utils';
+import { expect, test } from '@playwright/test';
 
-let page: Page;
-let sampleSections: Locator;
+const sampleSectionIds: string[] = [
+  'sample-section-typography',
+  'sample-section-colors',
+  'sample-section-theme-color-palette',
+  'sample-section-semantic-colors',
+  'sample-section-chart-colors',
+  'sample-section-editor-colors',
+  'sample-section-grid-colors',
+  'sample-section-component-colors',
+  'sample-section-buttons-regular',
+  'sample-section-buttons-outline',
+  'sample-section-buttons-inline',
+  'sample-section-buttons-socketed',
+  'sample-section-progress',
+  'sample-section-alerts',
+  'sample-section-inputs',
+  'sample-section-item-list-inputs',
+  'sample-section-draggable-lists',
+  'sample-section-time-slider-inputs',
+  'sample-section-dialog',
+  'sample-section-modals',
+  'sample-section-context-menus',
+  'sample-section-dropdown-menus',
+  'sample-section-navigations',
+  'sample-section-tooltips',
+  'sample-section-icons',
+  'sample-section-editors',
+  'sample-section-grids-grid',
+  'sample-section-grids-static',
+  'sample-section-grids-data-bar',
+  'sample-section-grids-quadrillion',
+  'sample-section-grids-async',
+  'sample-section-grids-tree',
+  'sample-section-grids-iris',
+  'sample-section-charts',
+  'sample-section-spectrum-buttons',
+  'sample-section-spectrum-collections',
+  'sample-section-spectrum-content',
+  'sample-section-spectrum-forms',
+  'sample-section-spectrum-overlays',
+  'sample-section-spectrum-well',
+];
+const buttonSectionIds: string[] = [
+  'sample-section-buttons-regular',
+  'sample-section-buttons-outline',
+  'sample-section-buttons-inline',
+  'sample-section-buttons-socketed',
+];
 
-test.beforeEach(async ({ browser }, testInfo) => {
-  page = await browser.newPage();
+test('UI regression test - Styleguide section count', async ({ page }) => {
   await page.goto('/ide/styleguide');
 
-  sampleSections = page.locator('.sample-section');
-  await expect(sampleSections).toHaveCount(39);
+  const sampleSections = await page.locator('.sample-section');
 
-  const hide = await page.locator(`.${HIDE_FROM_E2E_TESTS_CLASS}`).all();
-
-  hide.forEach(locator =>
-    locator.evaluate(el => {
-      // eslint-disable-next-line no-param-reassign
-      el.style.opacity = '0';
-    })
-  );
+  await expect(sampleSections).toHaveCount(sampleSectionIds.length);
 });
 
-test.afterEach(async () => {
-  await page.close();
+test('UI regression test - Styleguide button section count', async ({
+  page,
+}) => {
+  await page.goto('/ide/styleguide');
+
+  const buttonSections = await page.locator('[id^="sample-section-buttons-"]');
+
+  await expect(buttonSections).toHaveCount(buttonSectionIds.length);
 });
 
 // Iterate over all sample sections and take a screenshot of each one.
-test('UI regression test - Styleguide sections', async () => {
-  const sampleSectionCount = await sampleSections.count();
+sampleSectionIds.forEach(id => {
+  test(`UI regression test - Styleguide section - ${id}`, async ({ page }) => {
+    // Isolate the section
+    await page.goto(`/ide/styleguide?isolateSection=true#${id}`);
 
-  for (let i = 0; i < sampleSectionCount; i += 1) {
-    const sampleSection = sampleSections.nth(i);
-    const id = String(await sampleSection.getAttribute('id'));
-
-    // Scroll to the section. This is technically not necessary, but it mimics
-    // the user experience a little better and mimics the behavior of the fixed
-    // menu + scroll-to-top button that change based on scroll position.
-    await page.goto(`/ide/styleguide#${id}`);
+    const sampleSection = page.locator(`#${id}`);
 
     await expect(sampleSection).toHaveScreenshot(
       `${id.replace(/^sample-section-/, '')}.png`
     );
-  }
+  });
 });
 
-test('Buttons regression test', async () => {
-  await page.goto('/ide/styleguide#sample-section-buttons-regular');
+buttonSectionIds.forEach((id, i) => {
+  test(`Buttons regression test - ${id}`, async ({ page }) => {
+    // Isolate the section
+    await page.goto(`/ide/styleguide?isolateSection=true#${id}`);
 
-  const buttonSections = page.locator('[id^="sample-section-buttons-"]');
+    const sampleSection = page.locator(`#${id}`);
 
-  await expect(buttonSections).toHaveCount(4);
-
-  // Test focus and hover states for each enabled button
-  const buttonSectionCount = await buttonSections.count();
-  for (let i = 0; i < buttonSectionCount; i += 1) {
-    const section = buttonSections.nth(i);
-    const buttons = section.locator('button');
+    const buttons = sampleSection.locator('button');
+    await expect(buttons, `Button section: '${id}'`).not.toHaveCount(0);
 
     const buttonCount = await buttons.count();
 
@@ -69,7 +103,7 @@ test('Buttons regression test', async () => {
 
       // Focus
       await button.focus();
-      await expect(section).toHaveScreenshot(
+      await expect(sampleSection).toHaveScreenshot(
         `buttons-focus-section-${i}-${j}${isDisabled ? '-disabled' : ''}.png`
       );
 
@@ -79,7 +113,7 @@ test('Buttons regression test', async () => {
 
       // Hover
       await button.hover();
-      await expect(section).toHaveScreenshot(
+      await expect(sampleSection).toHaveScreenshot(
         `buttons-hover-section-${i}-${j}${isDisabled ? '-disabled' : ''}.png`
       );
       await page.mouse.move(0, 0);
@@ -88,11 +122,11 @@ test('Buttons regression test', async () => {
         await button.blur();
       }
     }
-  }
+  });
 });
 
-test('Inputs regression test', async () => {
-  await page.goto('/ide/styleguide#sample-section-inputs');
+test('Inputs regression test', async ({ page }) => {
+  await page.goto('/ide/styleguide?isolateSection=true#sample-section-inputs');
 
   const columns = page.locator('#sample-section-inputs .col');
 

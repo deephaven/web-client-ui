@@ -1,8 +1,11 @@
 import React, { PureComponent } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { vsSearch } from '@deephaven/icons';
+import { vsArrowLeft, vsArrowRight, vsSearch } from '@deephaven/icons';
 import classNames from 'classnames';
+import Button from './Button';
 import './SearchInput.scss';
+import { GLOBAL_SHORTCUTS } from './shortcuts';
+import { ContextActions } from './context-actions';
 
 interface SearchInputProps {
   value: string;
@@ -15,6 +18,10 @@ interface SearchInputProps {
   matchCount: number;
   id: string;
   'data-testid'?: string;
+  cursor?: {
+    index: number | undefined;
+    next: (direction: 'forward' | 'back') => void;
+  };
 }
 
 class SearchInput extends PureComponent<SearchInputProps> {
@@ -27,17 +34,38 @@ class SearchInput extends PureComponent<SearchInputProps> {
     },
     id: '',
     'data-testid': undefined,
+    cursor: undefined,
   };
 
   constructor(props: SearchInputProps) {
     super(props);
     this.inputField = React.createRef();
+    this.searchChangeSelection = React.createRef();
+  }
+
+  componentDidMount(): void {
+    this.setInputPaddingRight();
+  }
+
+  componentDidUpdate(): void {
+    this.setInputPaddingRight();
+  }
+
+  focus(): void {
+    this.inputField.current?.focus();
   }
 
   inputField: React.RefObject<HTMLInputElement>;
 
-  focus(): void {
-    this.inputField.current?.focus();
+  searchChangeSelection: React.RefObject<HTMLDivElement>;
+
+  setInputPaddingRight(): void {
+    const inputField = this.inputField.current;
+    const searchChangeSelection = this.searchChangeSelection.current;
+    if (inputField && searchChangeSelection) {
+      const paddingRight = searchChangeSelection.getBoundingClientRect().width;
+      inputField.style.paddingRight = `${paddingRight}px`;
+    }
   }
 
   render(): JSX.Element {
@@ -52,7 +80,56 @@ class SearchInput extends PureComponent<SearchInputProps> {
       id,
       onKeyDown,
       'data-testid': dataTestId,
+      cursor,
     } = this.props;
+
+    let matchCountSection;
+    const contextActions = [
+      {
+        action: () => cursor?.next('forward'),
+        shortcut: GLOBAL_SHORTCUTS.NEXT,
+      },
+      {
+        action: () => cursor?.next('back'),
+        shortcut: GLOBAL_SHORTCUTS.PREVIOUS,
+      },
+    ];
+
+    if (cursor && matchCount > 1) {
+      matchCountSection = (
+        <>
+          <Button
+            kind="ghost"
+            className="search-change-button"
+            type="button"
+            onClick={() => {
+              cursor.next('back');
+            }}
+            icon={vsArrowLeft}
+            tooltip={`Previous match (${GLOBAL_SHORTCUTS.PREVIOUS.getDisplayText()})`}
+          />
+          <span className="search-change-text">
+            {cursor.index !== undefined && `${cursor.index + 1} of `}
+            {matchCount}
+          </span>
+          <Button
+            kind="ghost"
+            className="search-change-button"
+            type="button"
+            onClick={() => {
+              cursor.next('forward');
+            }}
+            icon={vsArrowRight}
+            tooltip={`Next match (${GLOBAL_SHORTCUTS.NEXT.getDisplayText()})`}
+          />
+        </>
+      );
+    } else {
+      matchCountSection = matchCount > 0 && (
+        <span className="search-match">{matchCount}</span>
+      );
+    }
+
     return (
       <div className={classNames('search-group', className)}>
         <input
@@ -68,12 +145,22 @@ class SearchInput extends PureComponent<SearchInputProps> {
           id={id}
           data-testid={dataTestId}
         />
-        {matchCount != null && (
-          <span className="search-match">{matchCount}</span>
+
+        {matchCount != null ? (
+          <>
+            <div
+              className="search-change-selection"
+              ref={this.searchChangeSelection}
+            >
+              {matchCountSection}
+            </div>
+            <ContextActions actions={contextActions} />
+          </>
+        ) : (
+          <span className="search-icon">
+            <FontAwesomeIcon icon={vsSearch} />
+          </span>
         )}
-        <span className="search-icon">
-          <FontAwesomeIcon icon={vsSearch} />
-        </span>
       </div>
     );
   }
