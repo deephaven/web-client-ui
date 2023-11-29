@@ -41,3 +41,4 @@ packages/*/package-lock.json
 /playwright/.cache/
 /tests/*-snapshots/*
 !/tests/*-snapshots/*-linux*
+vite.config.local.ts
