@@ -1,22 +1,8 @@
 import Log from '@deephaven/log';
 import { assertNotNull, ColorUtils } from '@deephaven/utils';
-// Note that ?inline imports are natively supported by Vite, but consumers of
-// @deephaven/components using Webpack will need to add a rule to their module
-// config.
-// e.g.
-// module: {
-//  rules: [
-//    {
-//      resourceQuery: /inline/,
-//      type: 'asset/source',
-//    },
-//  ],
-// },
 import { themeDark } from './theme-dark';
-import { themeLight } from './theme-light';
 import {
   DEFAULT_DARK_THEME_KEY,
-  DEFAULT_LIGHT_THEME_KEY,
   DEFAULT_PRELOAD_DATA_VARIABLES,
   ThemeData,
   ThemePreloadData,
@@ -125,11 +111,14 @@ export function getDefaultBaseThemes(): ThemeData[] {
       themeKey: DEFAULT_DARK_THEME_KEY,
       styleContent: themeDark,
     },
-    {
-      name: 'Default Light',
-      themeKey: DEFAULT_LIGHT_THEME_KEY,
-      styleContent: themeLight,
-    },
+    // The ThemePicker shows whenever more than 1 theme is available. Disable
+    // light theme for now to keep the picker hidden until it is fully
+    // implemented by #1539.
+    // {
+    //   name: 'Default Light',
+    //   themeKey: DEFAULT_LIGHT_THEME_KEY,
+    //   styleContent: themeLight,
+    // },
   ];
 }
 
