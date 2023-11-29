@@ -1,5 +1,6 @@
 import { useContextOrThrow } from '@deephaven/react-hooks';
-import { type PluginModuleMap, PluginsContext } from './PluginsContext';
+import { PluginsContext } from './PluginsContext';
+import { type PluginModuleMap } from './PluginTypes';
 
 export function usePlugins(): PluginModuleMap {
   return useContextOrThrow(

@@ -344,6 +344,7 @@ export function preloadTheme(): void {
   log.debug('Preloading theme content:', `'${preloadStyleContent}'`);
 
   const style = document.createElement('style');
+  style.id = 'theme-preload';
   style.innerHTML = preloadStyleContent;
   document.head.appendChild(style);
 }

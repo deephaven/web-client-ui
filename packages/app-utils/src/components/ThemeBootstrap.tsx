@@ -1,8 +1,7 @@
 import { useContext, useMemo } from 'react';
 import { ChartThemeProvider } from '@deephaven/chart';
 import { ThemeProvider } from '@deephaven/components';
-import { PluginsContext } from '@deephaven/plugin';
-import { getThemeDataFromPlugins } from '../plugins';
+import { getThemeDataFromPlugins, PluginsContext } from '@deephaven/plugin';
 
 export interface ThemeBootstrapProps {
   children: React.ReactNode;
