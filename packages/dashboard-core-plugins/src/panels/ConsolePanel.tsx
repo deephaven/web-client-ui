@@ -242,15 +242,14 @@ export class ConsolePanel extends PureComponent<
     this.updateDimensions();
   }
 
-  handleOpenObject(object: VariableDefinition, autoLaunch = true): void {
+  handleOpenObject(object: VariableDefinition, forceOpen = true): void {
     const { sessionWrapper } = this.props;
-    const { itemIds } = this.state;
     const { session } = sessionWrapper;
     const { root } = this.context;
     const oldPanelId =
       object.title != null ? this.getItemId(object.title, false) : null;
     if (
-      autoLaunch ||
+      forceOpen ||
       (oldPanelId != null &&
         LayoutUtils.getStackForRoot(
           root,
@@ -260,7 +259,6 @@ export class ConsolePanel extends PureComponent<
           false
         ) != null)
     ) {
-      log.log('handleOpenObject', autoLaunch, object, itemIds);
       this.openWidget(object, session);
     }
   }
