@@ -19,9 +19,8 @@ const log = Log.module('IrisGridPartitionSelector');
 
 const PARTITION_CHANGE_DEBOUNCE_MS = 250;
 
-interface Item {
-  key: React.Key;
-  value: string;
+interface Items {
+  [key: string]: unknown;
 }
 
 interface IrisGridPartitionSelectorProps {
@@ -36,9 +35,9 @@ interface IrisGridPartitionSelectorProps {
 }
 interface IrisGridPartitionSelectorState {
   isShowingKeys: boolean;
-  selectorValue: readonly string[];
   partitions: readonly unknown[];
-  partitionColumnValues: readonly Item[][];
+  partitionColumnValues: readonly Items[];
+  selectorValue: readonly string[];
 }
 class IrisGridPartitionSelector extends Component<
   IrisGridPartitionSelectorProps,
@@ -66,7 +65,7 @@ class IrisGridPartitionSelector extends Component<
       isShowingKeys: false,
       selectorValue: columns.map(() => ''),
       partitions,
-      partitionColumnValues: columns.map(() => [] as Item[]),
+      partitionColumnValues: columns.map(() => ({})),
     };
   }
 
@@ -116,9 +115,8 @@ class IrisGridPartitionSelector extends Component<
     this.sendMerge();
   }
 
-  handlePartitionSelect(index: number, partition: unknown): void {
-    const { columns } = this.props;
-    const { partitions: prevPartitions } = this.state;
+  handlePartitionSelect(index: number, partition: string): void {
+    const { partitions: prevPartitions, partitionColumnValues } = this.state;
 
     if (prevPartitions[index] === partition) {
       return;
@@ -126,9 +124,7 @@ class IrisGridPartitionSelector extends Component<
     log.debug('handlePartitionSelect', index, partition);
 
     const newPartitions = [...prevPartitions];
-    newPartitions[index] = TableUtils.isNumberType(columns[index].type)
-      ? Number(partition)
-      : partition;
+    newPartitions[index] = partitionColumnValues[index][partition];
 
     this.updatePartitions(index, newPartitions).then(() =>
       this.setState({ isShowingKeys: false }, () => {
@@ -168,10 +164,11 @@ class IrisGridPartitionSelector extends Component<
   }
 
   getDisplayValue(index: number, partition?: unknown): string {
-    const { columns } = this.props;
+    const { columns, getFormattedString } = this.props;
     const { partitions } = this.state;
 
     const value = partition === undefined ? partitions[index] : partition;
+    log.log('displayvalue', value);
     if (value == null) {
       return '';
     }
@@ -179,13 +176,19 @@ class IrisGridPartitionSelector extends Component<
     if (TableUtils.isCharType(column.type) && value.toString().length > 0) {
       return String.fromCharCode(parseInt(value.toString(), 10));
     }
-    return IrisGridUtils.convertValueToText(value, column.type);
+    log.log(
+      'displayvalue',
+      value,
+      getFormattedString(value, column.type, column.name)
+    );
+    return getFormattedString(value, column.type, column.name);
   }
 
   async updatePartitions(
     index: number,
     partitions: readonly unknown[]
   ): Promise<void> {
+    log.debug('partitionSelector update', index, partitions);
     if (!Array.isArray(this.partitionTables)) {
       return;
     }
@@ -193,6 +196,7 @@ class IrisGridPartitionSelector extends Component<
 
     const dataPromises = Array<Promise<TableData>>();
     const partitionFilters = [...this.partitionTables[index].filter];
+    log.log('partitionFilter orig', this.partitionTables[index].filter);
 
     // Update partition filters
     for (let i = index; i < columns.length; i += 1) {
@@ -223,15 +227,15 @@ class IrisGridPartitionSelector extends Component<
       const partitionFilterCopy = [...partitionFilters];
       dataPromises.push(
         table.copy().then(async t => {
+          log.log('promisefilter', partitionFilterCopy);
           t.applyFilter(partitionFilterCopy);
           t.setViewport(0, 0, columns as Column[]);
           const data = await t.getViewportData();
           t.close();
-          return data;
+          return data as TableData;
         })
       );
     }
-
     // Update Partition Values
     const tableData = await Promise.all(dataPromises);
     const validPartitions = partitions.slice(0, index + 1);
@@ -269,16 +273,24 @@ class IrisGridPartitionSelector extends Component<
         const data = await partitionTable.getViewportData();
         return data.rows.reduce((columnValues, row) => {
           const column = columns[colIndex];
-          const key = row.get(column);
-          columnValues.push({
-            key,
-            value: getFormattedString(key, column.type, column.name),
-          });
-          return columnValues;
-        }, [] as Item[]);
+          const value = row.get(column);
+          const displayValue = getFormattedString(
+            value,
+            column.type,
+            column.name
+          );
+          const nextValues = { ...columnValues };
+          nextValues[displayValue] = value;
+          return nextValues;
+        }, {} as Items);
       }
     );
     const newColumnValues = await Promise.all(newColumnValuesPromise);
+    log.log(
+      validPartitions,
+      newColumnValues,
+      columns.map((_, i) => this.getDisplayValue(i, validPartitions[i] ?? ''))
+    );
     this.setState({
       partitions: validPartitions,
       partitionColumnValues: newColumnValues,
@@ -301,14 +313,14 @@ class IrisGridPartitionSelector extends Component<
         <Select
           className="custom-select-sm"
           value={selectorValue[index]}
-          onChange={key => this.handlePartitionSelect(index, key)}
+          onChange={value => this.handlePartitionSelect(index, value)}
         >
           <Option disabled value="">
             {' '}
           </Option>
-          {partitionColumnValues[index].map(item => (
-            <Option key={item.key} value={item.value}>
-              {item.value}
+          {Object.keys(partitionColumnValues[index]).map(value => (
+            <Option key={value} value={value}>
+              {value}
             </Option>
           ))}
         </Select>
