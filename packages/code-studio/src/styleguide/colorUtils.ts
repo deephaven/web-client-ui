@@ -171,8 +171,6 @@ export function buildColorGroups(
         return acc;
       }
 
-      acc[group].push({ name, value });
-
       // It might be nice to make these dynamic, but for now just hardcode
       const note = {
         '--dh-color-gray-900': 'light',
