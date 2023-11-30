@@ -1,3 +1,5 @@
+@use 'sass:map';
+@use 'sass:string';
 @import '@deephaven/components/scss/custom.scss';
 
 .ui-title {
@@ -25,13 +27,12 @@ pre {
   }
 }
 
-.swatch-content-bg {
-  border: 1px solid $gray-600;
+@mixin swatch-with-label($label) {
   margin-top: 2.5rem;
   position: relative;
-
   &::before {
-    content: 'Semantic Colours';
+    content: '#{$label}';
+    color: var(--dh-color-white);
     display: block;
     position: absolute;
     font-size: 10px;
@@ -39,25 +40,71 @@ pre {
   }
 }
 
-@each $theme-color, $value in $theme-colors {
-  .swatch-#{$theme-color} {
-    color: color-yiq($value);
+@mixin swatch-color($color, $value) {
+  // Expose value in :after content to make use of it in style guide
+  $exposed-value: #{$value};
+
+  // Strip surrounding 'var(' ... ')' if present
+  @if string.index($exposed-value, 'var(') == 1 {
+    $exposed-value: string.slice($exposed-value, 5, -2);
+  }
+
+  .swatch-#{$color} {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    text-align: left;
+    white-space: nowrap;
     background-color: #{$value};
+    padding: 0 20px 0 36px;
+    &::after {
+      content: '#{$exposed-value}';
+      grid-column: 2;
+    }
   }
 }
 
+$theme-colors: map.merge(
+  (
+    'secondary-hover': $secondary-hover,
+    'danger-hover': $danger-hover,
+    'green-dark': $green-dark,
+  ),
+  $theme-colors
+);
+@each $theme-color, $value in $theme-colors {
+  @include swatch-color($theme-color, $value);
+}
+
+// Special case swatches with labels
+.gray-swatch-100 {
+  @include swatch-with-label('Grays');
+}
+.swatch-red {
+  @include swatch-with-label('Base Colors');
+}
+.swatch-content-bg {
+  border: 1px solid $gray-600;
+  @include swatch-with-label('Semantic Colours');
+}
+.swatch-primary {
+  @include swatch-with-label('Brand Colors');
+}
+.swatch-success {
+  @include swatch-with-label('Levels');
+}
+
 @each $color, $value in $colors {
-  .swatch-#{$color} {
-    color: color-yiq($value);
-    background-color: #{$value};
-  }
+  @include swatch-color($color, $value);
 }
 
 @each $color, $value in $grays {
   .gray-swatch-#{$color} {
-    color: color-yiq($value);
     background-color: #{$value};
   }
+}
+// This gray isn't in Bootstrap's default $grays map
+.gray-swatch-850 {
+  background-color: $gray-850;
 }
 
 .gray-swatch-850 {
@@ -123,7 +170,7 @@ h5.sub-title {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-color: $content-bg;
+    background-color: var(--dh-color-background);
     border-color: transparent;
     &:focus {
       border-color: $primary;

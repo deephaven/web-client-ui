@@ -1,7 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { useEffect, useState } from 'react';
 import { Tooltip, useTheme } from '@deephaven/components';
-import { ColorUtils } from '@deephaven/utils';
 import palette from '@deephaven/components/src/theme/theme-dark/theme-dark-palette.css?inline';
 import semantic from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic.css?inline';
 import chart from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic-chart.css?inline';
@@ -14,6 +13,7 @@ import {
   buildColorGroups,
   contrastColor,
   INVALID_COLOR_BORDER_STYLE,
+  normalizedOptionalAlpha,
 } from './colorUtils';
 
 function buildSwatchDataGroups() {
@@ -74,12 +74,7 @@ export function ThemeColors(): JSX.Element {
                     <Tooltip>
                       <div>{name}</div>
                       <div>{value}</div>
-                      <div>
-                        {ColorUtils.normalizeCssColor(value).replace(
-                          /^(#[a-f0-9]{6})ff$/,
-                          '$1'
-                        )}
-                      </div>
+                      <div>{normalizedOptionalAlpha(value)}</div>
                     </Tooltip>
                     <span>{name.replace('--dh-color-', '')}</span>
                     {name.endsWith('-hue') ? <span>{value}</span> : null}

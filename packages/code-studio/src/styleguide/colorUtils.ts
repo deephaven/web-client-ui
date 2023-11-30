@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from 'react';
 import { ColorUtils } from '@deephaven/utils';
 
 export const INVALID_COLOR_BORDER_STYLE =
@@ -172,4 +173,35 @@ export function buildColorGroups(
   );
 
   return groupData;
+}
+
+/**
+ * Normalize color to a hex string and drop alpha if it is 'ff'
+ * @param color
+ */
+export function normalizedOptionalAlpha(color: string): string {
+  return ColorUtils.normalizeCssColor(color).replace(
+    /^(#[a-f0-9]{6})ff$/,
+    '$1'
+  );
+}
+
+export function useContrastFgColorRef<
+  T extends HTMLElement,
+>(): React.RefObject<T> {
+  const ref = useRef<T>(null);
+
+  useLayoutEffect(() => {
+    if (ref.current == null) {
+      return;
+    }
+
+    const computedStyle = getComputedStyle(ref.current);
+
+    const { backgroundColor } = computedStyle;
+
+    ref.current.style.color = contrastColor(backgroundColor);
+  }, []);
+
+  return ref;
 }

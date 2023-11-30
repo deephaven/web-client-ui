@@ -2,6 +2,7 @@
 import React from 'react';
 import classNames from 'classnames';
 import { sampleSectionIdAndClasses } from './utils';
+import { Swatch } from './Swatch';
 
 function Colors(): React.ReactElement {
   const graySwatches = [
@@ -17,21 +18,21 @@ function Colors(): React.ReactElement {
     ['8XX', '100'],
     ['900', '75'],
   ].map(([swatch, dh]) => (
-    <div
-      className={classNames('swatch', 'gray-swatch', `gray-swatch-${swatch}`)}
+    <Swatch
       key={swatch}
+      className={classNames('swatch', 'gray-swatch', `gray-swatch-${swatch}`)}
     >
       <span>
         Gray-
         {swatch}
       </span>
       <span style={{ backgroundColor: `var(--dh-color-gray-${dh})` }}>
-        --dh-gray-{dh}
+        --dh-color-gray-{dh}
       </span>
-    </div>
+    </Swatch>
   ));
 
-  const colorSwatches = [
+  const baseColorPaletteSwatches = [
     'red',
     'orange',
     'yellow',
@@ -40,22 +41,44 @@ function Colors(): React.ReactElement {
     'purple',
     'white',
     'black',
+  ].map(swatch => (
+    <Swatch key={swatch} className={classNames('swatch', `swatch-${swatch}`)}>
+      {swatch}
+    </Swatch>
+  ));
+
+  const colorSwatches = [
     'content-bg',
-    'primary',
-    'primary-dark',
     'background',
     'foreground',
+    'primary',
+    'primary-dark',
+    'primary-light',
+    'secondary',
+    'secondary-hover',
+    'light',
+    'mid',
+    'dark',
+    'green-dark',
+    'success',
+    'info',
+    'warning',
+    'danger',
+    'danger-hover',
   ].map(swatch => (
-    <div key={swatch} className={classNames('swatch', `swatch-${swatch}`)}>
+    <Swatch key={swatch} className={classNames('swatch', `swatch-${swatch}`)}>
       {swatch}
-    </div>
+    </Swatch>
   ));
 
   return (
     <div {...sampleSectionIdAndClasses('colors')}>
       <h2 className="ui-title">Colors</h2>
       <div className="row">
-        <div className="col">{graySwatches}</div>
+        <div className="col">
+          {graySwatches}
+          {baseColorPaletteSwatches}
+        </div>
 
         <div className="col">{colorSwatches}</div>
 
@@ -66,25 +89,11 @@ function Colors(): React.ReactElement {
             in your .scss files when applicable for UI elements.
           </p>
           <p>
-            For refrence key colors are $primary for interactable elements,
+            For reference key colors are $primary for interactable elements,
             content-bg as background. White is same as gray-200. Gray-100 is
             used when white needs an active color. content-bg is between 800 and
             900.
           </p>
-          <pre>
-            {`
-// as semantic colours
-$primary: $interfaceblue;
-$secondary: $gray-600;
-$content-bg: $interfacegray;
-$foreground: $interfacewhite;
-$background: $interfaceblack;
-$success: $green;
-$info: $yellow;
-$warning: $orange;
-$danger: $red;
-`}
-          </pre>
         </div>
       </div>
     </div>
