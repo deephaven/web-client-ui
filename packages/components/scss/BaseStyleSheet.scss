@@ -6,7 +6,7 @@
 
 :root {
   --dh-svg-inline-icon-size: 16px;
-  --scrollbar-color: 255, 255, 255;
+  --scrollbar-color: #{var(--dh-color-foreground-hsl)};
 }
 
 //Various non-variable css overides
@@ -702,14 +702,8 @@ input[type='number']::-webkit-inner-spin-button {
   background: hsla(var(--scrollbar-color), 0.35);
 }
 
-/* stylelint-disable no-descending-specificity */
-.app {
-  --scrollbar-color: #{var(--dh-color-foreground-hsl)};
-}
-/* stylelint-enable no-descending-specificity */
-
 // used in inverted color sections, like light modals
-.app .theme-bg-light {
+.theme-bg-light {
   --scrollbar-color: #{var(--dh-color-background-hsl)};
 
   scrollbar-color: hsla(var(--dh-color-background-hsl), 0.5)
