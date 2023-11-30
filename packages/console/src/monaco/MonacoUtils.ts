@@ -43,7 +43,9 @@ class MonacoUtils {
       MonacoUtils.registerGetWorker(getWorker);
     }
 
-    const { registerLanguages } = MonacoUtils;
+    const { initTheme, registerLanguages } = MonacoUtils;
+
+    initTheme();
 
     registerLanguages([DbLang, PyLang, GroovyLang, LogLang, ScalaLang]);
 
