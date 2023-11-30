@@ -126,6 +126,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       );
     }
 
+    if (children != null && iconElem != null) {
+      // add margin to icon if children are present
+      iconElem = React.cloneElement(iconElem, {
+        className: classNames('mr-1', iconElem.props.className),
+      });
+    }
+
     let tooltipElem: JSX.Element | undefined;
     if (tooltip !== undefined) {
       tooltipElem =
