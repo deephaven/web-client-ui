@@ -3,7 +3,6 @@ import React from 'react';
 import { Flex } from '@adobe/react-spectrum';
 import { ContextMenuRoot, ThemePicker, useTheme } from '@deephaven/components';
 
-import Alerts from './Alerts';
 import Buttons from './Buttons';
 import Charts from './Charts';
 import Colors from './Colors';
@@ -98,7 +97,6 @@ function StyleGuide(): React.ReactElement {
       <SampleMenuCategory data-menu-category="Components" />
       <Buttons />
       <Progress />
-      <Alerts />
       <Inputs />
       <ItemListInputs />
       <DraggableLists />
