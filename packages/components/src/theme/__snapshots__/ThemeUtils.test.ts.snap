@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DEFAULT_PRELOAD_DATA_VARIABLES should match snapshot 1`] = `
+{
+  "--dh-color-background": "#1a171a",
+  "--dh-color-foreground": "#f0f0ee",
+  "--dh-color-loading-spinner-primary": "#3b6bda",
+  "--dh-color-loading-spinner-secondary": "#f0f0ee80",
+}
+`;
+
+exports[`SVG_ICON_MANUAL_COLOR_MAP should match snapshot 1`] = `
+{
+  "--dh-svg-icon-error": "--dh-color-form-control-error",
+  "--dh-svg-icon-select-indicator": "--dh-color-selector-fg",
+  "--dh-svg-icon-select-indicator-disabled": "--dh-color-selector-disabled-fg",
+  "--dh-svg-icon-select-indicator-hover": "--dh-color-selector-hover-fg",
+}
+`;

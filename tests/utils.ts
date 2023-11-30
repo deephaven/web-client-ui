@@ -38,16 +38,14 @@ export function generateVarName(prefix = 'v'): string {
 export async function logBrowserInfo(): Promise<void> {
   const launchers = [chromium, firefox, webkit];
 
-  // eslint-disable-next-line no-restricted-syntax
-  for (const launcher of launchers) {
-    // eslint-disable-next-line no-await-in-loop
-    const browser = await launcher.launch();
-
-    // eslint-disable-next-line no-console
-    console.log('Browser:', browser.browserType().name(), browser.version());
-
-    browser.close();
-  }
+  await Promise.all(
+    launchers.map(async launcher => {
+      const browser = await launcher.launch();
+      // eslint-disable-next-line no-console
+      console.log('Browser:', browser.browserType().name(), browser.version());
+      return browser.close();
+    })
+  );
 }
 
 /**

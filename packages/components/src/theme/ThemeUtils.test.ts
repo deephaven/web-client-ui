@@ -2,19 +2,24 @@ import { ColorUtils, TestUtils } from '@deephaven/utils';
 import {
   DEFAULT_DARK_THEME_KEY,
   DEFAULT_PRELOAD_DATA_VARIABLES,
+  SVG_ICON_MANUAL_COLOR_MAP,
   ThemeData,
+  ThemePreloadColorVariable,
   ThemeRegistrationData,
   THEME_CACHE_LOCAL_STORAGE_KEY,
 } from './ThemeModel';
 import {
   calculatePreloadStyleContent,
+  createCssVariableResolver,
   extractDistinctCssVariableExpressions,
   getActiveThemes,
   getDefaultBaseThemes,
   getExpressionRanges,
   getThemeKey,
   getThemePreloadData,
+  overrideSVGFillColors,
   preloadTheme,
+  replaceSVGFillColor,
   resolveCssVariablesInRecord,
   resolveCssVariablesInString,
   setThemePreloadData,
@@ -34,22 +39,104 @@ beforeEach(() => {
   expect.hasAssertions();
 });
 
+describe('DEFAULT_PRELOAD_DATA_VARIABLES', () => {
+  it('should match snapshot', () => {
+    expect(DEFAULT_PRELOAD_DATA_VARIABLES).toMatchSnapshot();
+  });
+});
+
+describe('SVG_ICON_MANUAL_COLOR_MAP', () => {
+  it('should match snapshot', () => {
+    expect(SVG_ICON_MANUAL_COLOR_MAP).toMatchSnapshot();
+  });
+});
+
 describe('calculatePreloadStyleContent', () => {
+  function expectedContent(map: Record<string, string>) {
+    return `:root{${Object.entries(map)
+      .map(([key, value]) => `${key}:${value}`)
+      .join(';')}}`;
+  }
+
   it('should set defaults if css variables are not defined', () => {
     expect(calculatePreloadStyleContent()).toEqual(
-      `:root{--dh-color-accent:${DEFAULT_PRELOAD_DATA_VARIABLES['--dh-color-accent']};--dh-color-background:${DEFAULT_PRELOAD_DATA_VARIABLES['--dh-color-background']}}`
+      expectedContent(DEFAULT_PRELOAD_DATA_VARIABLES)
     );
   });
 
   it('should resolve css variables', () => {
-    document.body.style.setProperty('--dh-color-accent', 'pink');
+    document.body.style.setProperty(
+      '--dh-color-loading-spinner-primary',
+      'pink'
+    );
     document.body.style.setProperty('--dh-color-background', 'orange');
 
     expect(calculatePreloadStyleContent()).toEqual(
-      ':root{--dh-color-accent:pink;--dh-color-background:orange}'
+      expectedContent({
+        ...DEFAULT_PRELOAD_DATA_VARIABLES,
+        '--dh-color-loading-spinner-primary': 'pink',
+        '--dh-color-background': 'orange',
+      })
     );
   });
 });
+
+describe.each([document.body, document.createElement('div')])(
+  'resolveCssVariablesInRecord: %s',
+  targetElement => {
+    const computedStyle = createMockProxy<CSSStyleDeclaration>();
+
+    beforeEach(() => {
+      jest
+        .spyOn(window, 'getComputedStyle')
+        .mockName('getComputedStyle')
+        .mockReturnValue(computedStyle);
+    });
+
+    it('should return empty string if property does not exist and no default value exists', () => {
+      asMock(computedStyle.getPropertyValue).mockReturnValue('');
+
+      const resolver = createCssVariableResolver(targetElement);
+
+      expect(getComputedStyle).toHaveBeenCalledWith(targetElement);
+
+      expect(resolver('--dh-aaa')).toEqual('');
+    });
+
+    it.each(
+      Object.entries(DEFAULT_PRELOAD_DATA_VARIABLES) as [
+        ThemePreloadColorVariable,
+        string,
+      ][]
+    )(
+      'should return default value if property does not exist and default value exists: %s, %s',
+      (key, value) => {
+        asMock(computedStyle.getPropertyValue).mockReturnValue('');
+
+        const resolver = createCssVariableResolver(targetElement);
+
+        expect(getComputedStyle).toHaveBeenCalledWith(targetElement);
+
+        expect(resolver(key)).toEqual(value);
+      }
+    );
+
+    it('should return a resolver function that resolves css variables', () => {
+      asMock(computedStyle.getPropertyValue).mockImplementation(
+        name => `resolved:${name}`
+      );
+
+      const resolver = createCssVariableResolver(targetElement);
+
+      expect(getComputedStyle).toHaveBeenCalledWith(targetElement);
+
+      const actual = resolver('--dh-aaa');
+
+      expect(computedStyle.getPropertyValue).toHaveBeenCalledWith('--dh-aaa');
+      expect(actual).toEqual('resolved:--dh-aaa');
+    });
+  }
+);
 
 describe('extractDistinctCssVariableExpressions', () => {
   it('should extract distinct css variable expressions', () => {
@@ -269,6 +356,44 @@ describe('getThemePreloadData', () => {
   );
 });
 
+describe('overrideSVGFillColors', () => {
+  const computedStyle = createMockProxy<CSSStyleDeclaration>();
+
+  beforeEach(() => {
+    jest
+      .spyOn(window, 'getComputedStyle')
+      .mockName('getComputedStyle')
+      .mockReturnValue(computedStyle);
+
+    jest.spyOn(document.body.style, 'setProperty').mockName('setProperty');
+    jest
+      .spyOn(document.body.style, 'removeProperty')
+      .mockName('removeProperty');
+  });
+
+  it.each(Object.entries(SVG_ICON_MANUAL_COLOR_MAP))(
+    'should replace fill colors in svgs: %s, %s',
+    (key, value) => {
+      asMock(computedStyle.getPropertyValue).mockImplementation(propertyKey =>
+        propertyKey.startsWith('--dh-svg-icon-')
+          ? `blah fill='currentColor' bleh`
+          : 'red'
+      );
+
+      overrideSVGFillColors();
+
+      expect(getComputedStyle).toHaveBeenCalledWith(document.body);
+      expect(document.body.style.removeProperty).toHaveBeenCalledWith(key);
+      expect(computedStyle.getPropertyValue).toHaveBeenCalledWith(key);
+      expect(computedStyle.getPropertyValue).toHaveBeenCalledWith(value);
+      expect(document.body.style.setProperty).toHaveBeenCalledWith(
+        key,
+        `blah fill='red' bleh`
+      );
+    }
+  );
+});
+
 describe('preloadTheme', () => {
   it.each([
     null,
@@ -293,6 +418,26 @@ describe('preloadTheme', () => {
       preloadData?.preloadStyleContent ?? calculatePreloadStyleContent()
     );
   });
+});
+
+describe('replaceSVGFillColor', () => {
+  function svgContent(color: string) {
+    return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='${color}' d='M193.94 256L296.5 256z'/%3E%3C/svg%3E`;
+  }
+
+  it.each([
+    ['#ababab', '%23ababab'],
+    ['hsl(222deg, 50%, 42%)', 'hsl(222deg%2C%2050%25%2C%2042%25)'],
+  ] as const)(
+    'should replace fill color: %s, %s',
+    (givenColor, expectedColor) => {
+      const givenSvg = svgContent(givenColor);
+      const expectedSvg = svgContent(expectedColor);
+
+      const actual = replaceSVGFillColor(givenSvg, givenColor);
+      expect(actual).toEqual(expectedSvg);
+    }
+  );
 });
 
 describe.each([undefined, document.createElement('div')])(
@@ -392,6 +537,7 @@ describe('resolveCssVariablesInString', () => {
   });
 
   it.each([
+    ['Empty string', '', ''],
     ['No vars', 'red', 'red'],
     ['Single var', 'var(--aaa-aa)', 'R[var(--aaa-aa)]'],
     [

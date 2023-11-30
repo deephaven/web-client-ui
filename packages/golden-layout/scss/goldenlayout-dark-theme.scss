@@ -1,4 +1,5 @@
 @import '@deephaven/components/scss/custom.scss';
+@import '@deephaven/components/scss/util.scss';
 
 $tab-height: 28px;
 $drag-border-width: 5px;
@@ -16,11 +17,17 @@ $lm-tab-active-background: $content-bg;
 $lm-tab-background: darken($lm-tab-active-background, 3.5);
 $lm-header-background: darken($lm-tab-active-background, 5);
 
-$lm-close-button-hover-color: $gray-100;
-$lm-close-button-active-color: $gray-400;
-
 $lm-splitter-hover-color: $gray-400;
 $lm-splitter-active-color: $gray-300;
+
+@mixin hover-opacity {
+  opacity: 0.4;
+  transition: opacity 300ms ease;
+
+  &:hover {
+    opacity: 1;
+  }
+}
 
 // ".lm_dragging" is applied to BODY tag during Drag and is also directly applied to the root of the object being dragged
 //is added to the body class, prevents overflow in our app context
@@ -49,16 +56,8 @@ body:not(.lm_dragging) .lm_header .lm_tab:not(.lm_active):hover {
   color: $lm-tab-hover-color;
 }
 
-.lm_header .lm_tab.lm_active .lm_close_tab {
-  background-color: $lm-tab-active-background;
-}
-
 body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
-  background-color: $lm-close-button-active-color;
-}
-
-body:not(.lm_dragging) .lm_header .lm_tab .lm_close_tab:hover {
-  background-color: $lm-close-button-hover-color;
+  @include hover-opacity;
 }
 
 // Entire GoldenLayout Container, if a background is set, it is visible as color of "pane header" and "splitters" (if these latest has opacity very low)
@@ -188,24 +187,19 @@ body:not(.lm_dragging) .lm_header .lm_tab .lm_close_tab:hover {
     .lm_close_tab {
       $lm-close-button-padding: 4px;
 
+      @include icon-image-mask(
+        var(--dh-svg-icon-close-tab),
+        $close-button-height
+      );
+
       cursor: pointer;
       position: relative;
       width: $close-button-height;
       height: $close-button-height;
       padding: $lm-close-button-padding;
       margin-left: -$spacer-1; // undo padding on title
-      //fa-times-light url svg encoded as a background mask
-      background-color: $lm-tab-background; //set the backgroun color to nothing
-      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 512'%3E%3Cpath d='M193.94 256L296.5 153.44l21.15-21.15c3.12-3.12 3.12-8.19 0-11.31l-22.63-22.63c-3.12-3.12-8.19-3.12-11.31 0L160 222.06 36.29 98.34c-3.12-3.12-8.19-3.12-11.31 0L2.34 120.97c-3.12 3.12-3.12 8.19 0 11.31L126.06 256 2.34 379.71c-3.12 3.12-3.12 8.19 0 11.31l22.63 22.63c3.12 3.12 8.19 3.12 11.31 0L160 289.94 262.56 392.5l21.15 21.15c3.12 3.12 8.19 3.12 11.31 0l22.63-22.63c3.12-3.12 3.12-8.19 0-11.31L193.94 256z'/%3E%3C/svg%3E");
-      mask-position: center center;
-      mask-repeat: no-repeat;
-      mask-size: $close-button-height;
-      opacity: 1;
-      transition: background-color $transition;
-
-      &:hover {
-        opacity: 1;
-      }
+      opacity: 0;
+      transition: opacity 300ms ease;
     }
   }
 }
@@ -242,66 +236,43 @@ body:not(.lm_dragging) .lm_header .lm_tab .lm_close_tab:hover {
 .lm_controls {
   // All Pane controls shares these
   > li {
+    @include hover-opacity;
+
     position: relative;
     background-position: center center;
     background-repeat: no-repeat;
-    opacity: 0.4;
-    transition: opacity 300ms ease;
-
-    &:hover {
-      opacity: 1;
-    }
   }
 
   // Icon to PopOut Pane, so move it to a different Browser Window
   .lm_popout {
-    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAAPklEQVR4nI2Q0QoAIAwCNfr/X7aXCpGN8snBdgejJOzckpkxs9jR6K6T5JpU0nWl5pSXTk7qwh8SnNT+CAAWCgkKFpuSWsUAAAAASUVORK5CYII=);
+    // Leaving this inline since it is a PNG. We should convert it to a 16px
+    // SVG like other icons and move to a css variable so it can be overridden.
+    @include icon-image-mask(
+      url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAAPklEQVR4nI2Q0QoAIAwCNfr/X7aXCpGN8snBdgejJOzckpkxs9jR6K6T5JpU0nWl5pSXTk7qwh8SnNT+CAAWCgkKFpuSWsUAAAAASUVORK5CYII='),
+      auto
+    );
   }
 
   // Icon to Maximize Pane, so it will fill the entire GoldenLayout Container
   .lm_maximise {
-    background-size: 16px;
-    // vsChromeMaximize
-    background-image: str-replace(
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='#{$lm-tab-icon-color}' d='M3 3v10h10V3H3zm9 9H4V4h8v8z'/%3E%3C/svg%3E"),
-      '#',
-      '%23'
-    );
+    @include icon-image-mask(var(--dh-svg-icon-maximise));
   }
 
   .lm_tabdropdown {
-    background-size: 16px;
-    // vsChevronDown
-    background-image: str-replace(
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='#{$lm-tab-icon-color}' d='M7.976 10.072l4.357-4.357.62.618L8.284 11h-.618L3 6.333l.619-.618 4.357 4.357z'/%3E%3C/svg%3E"),
-      '#',
-      '%23'
-    );
+    @include icon-image-mask(var(--dh-svg-icon-tab-dropdown));
   }
 
   // Icon to Close Pane and so remove it from GoldenLayout Container
   .lm_close {
-    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAAQUlEQVR4nHXOQQ4AMAgCQeT/f6aXpsGK3jSTuCVJAAr7iBdoAwCKd0nwfaAdHbYERw5b44+E8JoBjEYGMBq5gAYP3usUDu2IvoUAAAAASUVORK5CYII=);
+    @include icon-image-mask(var(--dh-svg-icon-close));
   }
 
   .lm_tabnextbutton {
-    background-size: 16px;
-    // vsChevronRight
-    background-image: str-replace(
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='#{$lm-tab-icon-color}' d='M10.072 8.024L5.715 3.667l.618-.62L11 7.716v.618L6.333 13l-.618-.619 4.357-4.357z'/%3E%3C/svg%3E"),
-      '#',
-      '%23'
-    );
+    @include icon-image-mask(var(--dh-svg-icon-next));
   }
 
   .lm_tabpreviousbutton {
-    background-size: 16px;
-    // vsChevronLeft
-    background-image: str-replace(
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='#{$lm-tab-icon-color}' d='M5.928 7.976l4.357 4.357-.618.62L5 8.284v-.618L9.667 3l.618.619-4.357 4.357z'/%3E%3C/svg%3E"),
-      '#',
-      '%23'
-    );
+    @include icon-image-mask(var(--dh-svg-icon-prev));
   }
 }
 
@@ -372,17 +343,7 @@ body:not(.lm_dragging) .lm_header .lm_tab .lm_close_tab:hover {
   // Pane controls are different in Maximized Mode, especially the old Icon "Maximise" that now has a different meaning, so "Minimize" (even if CSS Class did not change)
   .lm_controls {
     .lm_maximise {
-      opacity: 0.7;
-      // vsChromeMinimize
-      background-image: str-replace(
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='#{$gray-100}' d='M14 8v1H3V8h11z'/%3E%3C/svg%3E"),
-        '#',
-        '%23'
-      );
-
-      &:hover {
-        opacity: 1;
-      }
+      @include icon-image-mask(var(--dh-svg-icon-minimise));
     }
   }
 }

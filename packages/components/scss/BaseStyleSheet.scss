@@ -1,6 +1,7 @@
 // Import our custom variables and bootstrap
 // Can be imported directly by Vite since it resolves bootstrap to node_modules/bootstrap
 @import './custom.scss';
+@import './util.scss';
 @import 'bootstrap/scss/bootstrap';
 
 :root {
@@ -397,6 +398,16 @@ form label small {
 .form-control.focus {
   border: 1px solid $primary;
 }
+
+.form-control.is-invalid,
+.form-control.is-invalid:focus {
+  border-color: var(--dh-color-form-control-error);
+  background-image: var(--dh-svg-icon-error);
+}
+.form-control.is-invalid:focus {
+  box-shadow: 0 0 0 0.2rem var(--dh-color-form-control-error-shadow);
+}
+
 .form-control.btn:focus {
   box-shadow: $input-btn-focus-box-shadow;
 }
@@ -455,9 +466,41 @@ form label small {
   cursor: not-allowed;
 }
 
+.custom-select {
+  $caret-size: 10px 6px;
+  $error-size: 16px;
+
+  background-image: var(--dh-svg-icon-select-indicator);
+  background-size: $caret-size;
+
+  &:hover {
+    background-image: var(--dh-svg-icon-select-indicator-hover);
+  }
+
+  &.is-invalid,
+  &.is-invalid:focus {
+    border-color: var(--dh-color-form-control-error);
+    background-size: $caret-size, $error-size;
+    background-image: var(--dh-svg-icon-select-indicator),
+      var(--dh-svg-icon-error);
+  }
+  &.is-invalid:hover {
+    background-image: var(--dh-svg-icon-select-indicator-hover),
+      var(--dh-svg-icon-error);
+  }
+  &.is-invalid:focus {
+    box-shadow: 0 0 0 0.2rem var(--dh-color-form-control-error-shadow);
+  }
+}
+
 .custom-select:disabled {
   border-color: $black;
   cursor: not-allowed;
+  background-image: var(--dh-svg-icon-select-indicator-disabled);
+  &.is-invalid {
+    background-image: var(--dh-svg-icon-select-indicator-disabled),
+      var(--dh-svg-icon-error);
+  }
 }
 
 input[type='number'] {
@@ -486,11 +529,8 @@ input[type='number']::-webkit-inner-spin-button {
 }
 
 .input-group > .input-group-append.cb-dropdown > .btn {
-  color: $gray-400;
   border: 1px solid $gray-400;
-  &:hover {
-    color: $foreground;
-  }
+
   &:focus {
     border-color: $input-focus-border-color;
   }
@@ -739,29 +779,68 @@ input[type='number']::-webkit-inner-spin-button {
 //Moz specific hacks
 /* stylelint-disable-next-line function-url-quotes */
 @-moz-document url-prefix() {
-  //Selection box in mozilla loses default styling on options list if you apply a background color other then #FFF or inheirt...
-  //Hack: turn the background to inheirt, then apply a background gradient that is inputbg color to inputbg color
+  $caret-position: right $custom-select-padding-x;
+  $error-position: right (1 + $custom-select-padding-x);
+  $svg-caret: var(--dh-svg-icon-select-indicator);
+  $svg-caret-hover: var(--dh-svg-icon-select-indicator-hover);
+  $svg-error: var(--dh-svg-icon-error);
+
+  //Selection box in mozilla loses default styling on options list if you apply a background color other then #FFF or inherit...
+  //Hack: turn the background to inherit, then apply a background gradient that is inputbg color to inputbg color
   //for crossbrowser consistency this gradient is stacked bellow the svg used to get a caret (indicator) looking the same
   .custom-select {
     background-color: inherit !important;
     color: $foreground;
-    background-image: escape-svg($custom-select-indicator),
-      linear-gradient(0deg, $input-bg, $input-bg);
-    background-size: $custom-select-bg-size, cover;
-    background-repeat: no-repeat;
-    background-position:
-      bottom 50% right $custom-select-padding-x,
+    // bg image, size and position for 2 layers
+    background-image: $svg-caret, solid-gradient($input-bg);
+    background-size:
+      10px 6px,
+      cover;
+    background-position-x: $caret-position, center;
+    background-position-y:
+      bottom 50%,
       center;
+    background-repeat: no-repeat;
+
     //make the dotted duplicate focus line on firefox go away
     &:-moz-focusring {
       color: rgba(0, 0, 0, 0%);
       text-shadow: 0 0 0 $foreground !important;
     }
+
+    &:hover {
+      background-image: $svg-caret-hover, solid-gradient($input-bg);
+    }
+
+    &.is-invalid,
+    &.is-invalid:focus {
+      // bg image, size and position for 3 layers
+      background-image: $svg-caret, $svg-error, solid-gradient($input-bg);
+      background-size:
+        10px 6px,
+        16px,
+        cover;
+      background-position-x: $caret-position, $error-position, center;
+    }
+
+    &.is-invalid:hover {
+      background-image: $svg-caret-hover, $svg-error, solid-gradient($input-bg);
+    }
+
+    &:disabled {
+      background-image: $svg-caret, solid-gradient($input-disabled-bg);
+
+      &.is-invalid {
+        background-image: $svg-caret, $svg-error,
+          solid-gradient($input-disabled-bg);
+      }
+    }
   }
 
   .console-creator .custom-select {
-    background-image: escape-svg($custom-select-indicator),
-      linear-gradient(0deg, $gray-700, $gray-700);
+    background-image: var(--dh-svg-icon-select-indicator),
+      solid-gradient($gray-700);
+
     &:-moz-focusring {
       color: rgba(0, 0, 0, 0%);
       text-shadow: 0 0 0 $foreground !important;
@@ -769,8 +848,9 @@ input[type='number']::-webkit-inner-spin-button {
   }
 
   .modal-dialog.theme-bg-light .custom-select {
-    background-image: escape-svg($custom-select-indicator),
-      linear-gradient(0deg, $gray-200, $gray-200);
+    background-image: var(--dh-svg-icon-select-indicator),
+      solid-gradient($gray-200);
+
     &:-moz-focusring {
       color: rgba(0, 0, 0, 0%);
       text-shadow: 0 0 0 $background !important;

@@ -1,3 +1,24 @@
+// Setup a mask-image for an inline svg
+@mixin icon-image-mask($mask-image, $size: 16px) {
+  background-size: $size;
+  background-color: var(--dh-color-foreground);
+  mask-image: $mask-image;
+  mask-position: center center;
+  mask-repeat: no-repeat;
+  mask-size: $size;
+}
+
+// Caret icon for pickers, dropdowns, select, etc.
+@mixin caret-icon() {
+  $width: 10px;
+  $height: 6px;
+  @include icon-image-mask(var(--dh-svg-icon-selector-caret), $width $height);
+
+  background-color: var(--dh-color-selector-fg);
+  width: $width;
+  height: $height;
+}
+
 /// Utilty for increasing specificity by repeating a given selector n number of
 /// times.
 ///
@@ -25,4 +46,10 @@
   }
 
   @return $result;
+}
+
+// Linear gradient with same start and end color. Useful for certain scenarios
+// where we need a solid background image layer.
+@function solid-gradient($color) {
+  @return linear-gradient(0deg, $color, $color);
 }
