@@ -3,6 +3,75 @@ import { ColorUtils } from '@deephaven/utils';
 export const INVALID_COLOR_BORDER_STYLE =
   '2px solid var(--dh-color-notice-default-bg)';
 
+// Group names are extracted from var names via a regex capture group. Most of
+// them work pretty well, but some need to be remapped to a more appropriate
+// group.
+const REASSIGN_VARIABLE_GROUPS: Record<string, string> = {
+  '--dh-color-black': 'gray',
+  '--dh-color-white': 'gray',
+  // Semantic
+  '--dh-color-visual-positive': 'Visual Status',
+  '--dh-color-visual-negative': 'Visual Status',
+  '--dh-color-visual-notice': 'Visual Status',
+  '--dh-color-visual-info': 'Visual Status',
+  // Editor
+  '--dh-color-editor-bg': 'editor',
+  '--dh-color-editor-fg': 'editor',
+  '--dh-color-editor-context-menu-bg': 'menus',
+  '--dh-color-editor-context-menu-fg': 'menus',
+  '--dh-color-editor-menu-selection-bg': 'menus',
+  // Grid
+  '--dh-color-grid-bg': 'grid',
+  '--dh-color-grid-number-positive': 'Data Types',
+  '--dh-color-grid-number-negative': 'Data Types',
+  '--dh-color-grid-number-zero': 'Data Types',
+  '--dh-color-grid-date': 'Data Types',
+  '--dh-color-grid-string-null': 'Data Types',
+} as const;
+
+// Mappings of variable groups to rename
+const RENAME_VARIABLE_GROUPS = {
+  palette: {
+    black: 'gray',
+    white: 'gray',
+  },
+  editor: {
+    line: 'editor',
+    comment: 'code',
+    string: 'code',
+    number: 'code',
+    delimiter: 'code',
+    identifier: 'code',
+    keyword: 'code',
+    operator: 'code',
+    storage: 'code',
+    predefined: 'code',
+    selection: 'state',
+    focus: 'state',
+  },
+  chart: {
+    axis: 'Chart',
+    bg: 'Chart',
+    grid: 'Chart',
+    plot: 'Chart',
+    title: 'Chart',
+    active: 'Data',
+    trend: 'Data',
+    area: 'Data',
+    range: 'Data',
+    line: 'Deprecated',
+  },
+  grid: { data: 'Data Bars', context: 'Context Menu' },
+  semantic: {
+    positive: 'status',
+    negative: 'status',
+    notice: 'status',
+    info: 'status',
+    well: 'wells',
+  },
+  component: {},
+} satisfies Record<string, Record<string, string>>;
+
 /** Return black or white contrast color */
 export function contrastColor(color: string): 'black' | 'white' {
   const rgba = ColorUtils.parseRgba(ColorUtils.asRgbOrRgbaString(color) ?? '');
@@ -57,11 +126,12 @@ export function extractColorVars(
 
 /** Group color data based on capture group value */
 export function buildColorGroups(
+  groupKey: keyof typeof RENAME_VARIABLE_GROUPS,
   styleText: string,
   captureGroupI: number,
-  reassignVarGroups: Record<string, string> = {},
-  groupRemap: Record<string, string> = {}
+  reassignVarGroups: Record<string, string> = REASSIGN_VARIABLE_GROUPS
 ): Record<string, { name: string; value: string }[]> {
+  const groupRemap: Record<string, string> = RENAME_VARIABLE_GROUPS[groupKey];
   const swatchData = extractColorVars(styleText);
 
   const groupData = swatchData.reduce(
