@@ -28,9 +28,12 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
       'primary',
       'secondary',
       'success',
-      'info',
       'warning',
       'danger',
+      // Temporarily putting this at end of list for easier regression comparison.
+      // Once the colors are finalized, this should semantically go between
+      // success and warning
+      'info',
     ].map((brand: string) => Buttons.renderButtonBrand(type, brand));
 
     return (

@@ -14,7 +14,7 @@
   $hover-border: var(--dh-color-#{$semantic-value}-hover-bg);
   $active-background: var(--dh-color-#{$semantic-value}-down-bg);
   $active-border: var(--dh-color-#{$semantic-value}-down-bg);
-  $color: var(--dh-color-white);
+  $color: var(--dh-color-#{$semantic-value}-contrast);
 
   color: $color;
   font-weight: var(--spectrum-global-font-weight-bold);
