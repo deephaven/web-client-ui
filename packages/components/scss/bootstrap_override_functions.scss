@@ -4,8 +4,8 @@
 // DH Customization: Add support for dh-color variables
 @function color-yiq(
   $color,
-  $dark: var(--dh-color-gray-50),
-  $light: var(--dh-color-gray-900)
+  $dark: var(--dh-color-contrast-dark),
+  $light: var(--dh-color-contrast-light)
 ) {
   // if $color is a hex color, use the default color-yiq function
   @if type-of($color) == 'color' {
@@ -22,15 +22,7 @@
     }
   }
 
-  // if the $color contains the string "yellow" or "orange" or "chatreuse" or "cyan" return $dark
-  // per the spectrum color guidelines. All other colors have white text.
-  // https://spectrum.adobe.com/page/using-color/#Solid-color-background-with-black-or-white
-  // Which for us means, informative and notice have dark text.
-  @if str-index($color, 'informative') {
-    @return $dark;
-  } @else if str-index($color, 'notice') {
-    @return $dark;
-  }
+  $contrast-color: var(--dh-color-#{$color}-contrast);
 
-  @return $light;
+  @return $contrast-color;
 }

@@ -78,6 +78,11 @@ $bootstrap-dh-semantic-map: (
   'info': 'info',
   'warning': 'notice',
   'danger': 'negative',
+  // We shouldn't be using these, but mapping so they work with our custom
+  // `color-yiq` mixin. If we find a way to remove $light + $dark that are
+  // defined in Bootstrap _variables.scss, we should remove these
+  'light': 'neutral',
+  'dark': 'neutral',
 );
 
 //Set default colors
@@ -96,9 +101,14 @@ $info: $yellow;
 $warning: $orange;
 $danger: var(--dh-color-negative-default-bg);
 $danger-hover: var(--dh-color-negative-hover-bg);
+// We really don't want to use $light or $dark variables, but Bootstrap defines
+// them in _variables.scss. Explicitly setting them to ensure we are in control
+// of their values. If we can find a way to remove them, we should
 $light: var(--dh-color-gray-light);
-$mid: var(--dh-color-gray-mid);
 $dark: var(--dh-color-gray-dark);
+// Bootstrap doesn't define $mid, and we want to move away from this particular
+// semantic. We should delete it
+$mid: var(--dh-color-gray-mid);
 
 $semantic-colors: (
   'primary-hover': $primary-hover,

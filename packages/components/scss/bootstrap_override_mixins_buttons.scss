@@ -104,7 +104,7 @@
   &:not(:disabled):not(.disabled):active,
   &:not(:disabled):not(.disabled).active,
   .show > &.dropdown-toggle {
-    color: color-yiq($active-background);
+    color: color-yiq($semantic-value);
     background-color: $active-background;
     border-color: $active-background;
 
