@@ -10,79 +10,20 @@ import semanticGrid from '@deephaven/components/src/theme/theme-dark/theme-dark-
 import components from '@deephaven/components/src/theme/theme-dark/theme-dark-components.css?inline';
 import styles from './ThemeColors.module.scss';
 import { sampleSectionIdAndClasses } from './utils';
-
-// Group names are extracted from var names via a regex capture group. Most of
-// them work pretty well, but some need to be remapped to a more appropriate
-// group.
-const reassignVarGroups: Record<string, string> = {
-  '--dh-color-black': 'gray',
-  '--dh-color-white': 'gray',
-  // Semantic
-  '--dh-color-visual-positive': 'Visual Status',
-  '--dh-color-visual-negative': 'Visual Status',
-  '--dh-color-visual-notice': 'Visual Status',
-  '--dh-color-visual-info': 'Visual Status',
-  // Editor
-  '--dh-color-editor-bg': 'editor',
-  '--dh-color-editor-fg': 'editor',
-  '--dh-color-editor-context-menu-bg': 'menus',
-  '--dh-color-editor-context-menu-fg': 'menus',
-  '--dh-color-editor-menu-selection-bg': 'menus',
-  // Grid
-  '--dh-color-grid-bg': 'grid',
-  '--dh-color-grid-number-positive': 'Data Types',
-  '--dh-color-grid-number-negative': 'Data Types',
-  '--dh-color-grid-number-zero': 'Data Types',
-  '--dh-color-grid-date': 'Data Types',
-  '--dh-color-grid-string-null': 'Data Types',
-};
-
-// Mappings of variable groups to rename
-const renameGroups = {
-  editor: {
-    line: 'editor',
-    comment: 'code',
-    string: 'code',
-    number: 'code',
-    delimiter: 'code',
-    identifier: 'code',
-    keyword: 'code',
-    operator: 'code',
-    storage: 'code',
-    predefined: 'code',
-    selection: 'state',
-    focus: 'state',
-  },
-  chart: {
-    axis: 'Chart',
-    bg: 'Chart',
-    grid: 'Chart',
-    plot: 'Chart',
-    title: 'Chart',
-    active: 'Data',
-    trend: 'Data',
-    area: 'Data',
-    range: 'Data',
-    line: 'Deprecated',
-  },
-  grid: { data: 'Data Bars', context: 'Context Menu' },
-  semantic: {
-    positive: 'status',
-    negative: 'status',
-    notice: 'status',
-    info: 'status',
-    well: 'wells',
-  },
-};
+import {
+  buildColorGroups,
+  contrastColor,
+  INVALID_COLOR_BORDER_STYLE,
+} from './colorUtils';
 
 function buildSwatchDataGroups() {
   return {
-    'Theme Color Palette': buildColorGroups(palette, 1),
-    'Semantic Colors': buildColorGroups(semantic, 1, renameGroups.semantic),
-    'Chart Colors': buildColorGroups(chart, 2, renameGroups.chart),
-    'Editor Colors': buildColorGroups(semanticEditor, 2, renameGroups.editor),
-    'Grid Colors': buildColorGroups(semanticGrid, 2, renameGroups.grid),
-    'Component Colors': buildColorGroups(components, 1),
+    'Theme Color Palette': buildColorGroups('palette', palette, 1),
+    'Semantic Colors': buildColorGroups('semantic', semantic, 1),
+    'Chart Colors': buildColorGroups('chart', chart, 2),
+    'Editor Colors': buildColorGroups('editor', semanticEditor, 2),
+    'Grid Colors': buildColorGroups('grid', semanticGrid, 2),
+    'Component Colors': buildColorGroups('component', components, 1),
   };
 }
 
@@ -123,6 +64,10 @@ export function ThemeColors(): JSX.Element {
                     className={styles.swatch}
                     style={{
                       backgroundColor: value,
+                      border:
+                        value === '' && name.length > 0
+                          ? INVALID_COLOR_BORDER_STYLE
+                          : undefined,
                       color: `var(--dh-color-${contrastColor(value)})`,
                     }}
                   >
@@ -150,94 +95,3 @@ export function ThemeColors(): JSX.Element {
 }
 
 export default ThemeColors;
-
-/** Return black or white contrast color */
-function contrastColor(color: string): 'black' | 'white' {
-  const rgba = ColorUtils.parseRgba(ColorUtils.asRgbOrRgbaString(color) ?? '');
-  if (rgba == null || rgba.a < 0.5) {
-    return 'white';
-  }
-
-  const { r, g, b } = rgba;
-  const y = (299 * r + 587 * g + 114 * b) / 1000;
-  return y >= 128 ? 'black' : 'white';
-}
-
-/** Extract an array of { name, value } pairs for css variables in a given string  */
-function extractColorVars(
-  styleText: string
-): { name: string; value: string }[] {
-  const computedStyle = getComputedStyle(document.documentElement);
-  const varNames = styleText
-    .split(/[\n;]/g)
-    // Non-minified css will have leading 2 spaces in front of each css variable
-    // declaration. Minified has no prefix except for the first line which will
-    // have ':root{' prefix.
-    .map(line => /^(?:\s{2}|:root\{)?(--dh-color-(?:[^:]+))/.exec(line)?.[1])
-    .filter((match): match is string => Boolean(match));
-
-  return varNames
-    .map(varName => {
-      const value = computedStyle.getPropertyValue(varName);
-
-      // Chart colorway consists of multiple colors, so split into separate
-      // swatches for illustration. Note that this assumes the colors are hsl
-      // values. We'll need to make this more robust if we ever change the
-      // default themes to use non-hsl.
-      if (varName === '--dh-color-chart-colorway') {
-        const colorwayColors = value
-          .split('hsl')
-          .filter(Boolean)
-          .map(v => `hsl${v.trim()}`);
-
-        return colorwayColors.map((varExp, i) => ({
-          name: `${varName}-${i}`,
-          value: varExp,
-        }));
-      }
-
-      return {
-        name: varName,
-        value,
-      };
-    })
-    .flat();
-}
-
-/** Group color data based on capture group value */
-function buildColorGroups(
-  styleText: string,
-  captureGroupI: number,
-  groupRemap: Record<string, string> = {}
-): Record<string, { name: string; value: string }[]> {
-  const swatchData = extractColorVars(styleText);
-
-  const groupData = swatchData.reduce(
-    (acc, { name, value }) => {
-      const match = /^--dh-color-([^-]+)(?:-([^-]+))?/.exec(name);
-      let group =
-        reassignVarGroups[name] ??
-        match?.[captureGroupI] ??
-        match?.[1] ??
-        '???';
-
-      group = groupRemap[group] ?? group;
-
-      if (acc[group] == null) {
-        acc[group] = [];
-      }
-
-      // Add a spacer for black / white
-      if (name === '--dh-color-black') {
-        acc[group].push({ name: '', value: '' });
-      }
-
-      acc[group].push({ name, value });
-
-      return acc;
-    },
-    {} as Record<string, { name: string; value: string }[]>
-  );
-
-  return groupData;
-}

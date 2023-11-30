@@ -1,4 +1,5 @@
 @import '../scss/custom.scss';
+@import '../scss/util.scss';
 
 $cb-option-btn-color: $dropdown-link-color;
 $cb-option-keyboard-selected-bg: rgba($primary, 0.5);
@@ -7,6 +8,20 @@ $cb-option-hover-color: $dropdown-link-hover-color;
 
 .cb-container {
   flex-wrap: nowrap;
+
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+  }
+
+  .cb-caret {
+    @include caret-icon;
+  }
+  .btn:not(:disabled):hover .cb-caret {
+    background-color: var(--dh-color-selector-hover-fg);
+  }
 
   .cb-input.is-invalid + .cb-dropdown .btn {
     border-color: $form-feedback-invalid-color;

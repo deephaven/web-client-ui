@@ -110,36 +110,34 @@
   ); /* 4.8:1 contrast ratio */
 
   /* Accent */
-  --spectrum-accent-background-color-default: var(
-    --dh-color-accent-background-default
-  );
-  --spectrum-accent-background-color-hover: var(
-    --dh-color-accent-background-hover
-  );
-  --spectrum-accent-background-color-down: var(
-    --dh-color-accent-background-down
-  );
+  --spectrum-accent-background-color-default: var(--dh-color-accent-default-bg);
+  --spectrum-accent-background-color-hover: var(--dh-color-accent-hover-bg);
+  --spectrum-accent-background-color-down: var(--dh-color-accent-down-bg);
   --spectrum-accent-background-color-key-focus: var(
-    --dh-color-accent-background-key-focus
+    --dh-color-accent-key-focus-bg
   );
 
   /* Neutral */
-  --spectrum-neutral-background-color-default: var(--dh-neutral-default-bg);
-  --spectrum-neutral-background-color-hover: var(--dh-neutral-hover-bg);
-  --spectrum-neutral-background-color-down: var(--dh-neutral-down-bg);
-  --spectrum-neutral-background-color-key-focus: var(--dh-neutral-key-focus-bg);
+  --spectrum-neutral-background-color-default: var(
+    --dh-color-neutral-default-bg
+  );
+  --spectrum-neutral-background-color-hover: var(--dh-color-neutral-hover-bg);
+  --spectrum-neutral-background-color-down: var(--dh-color-neutral-down-bg);
+  --spectrum-neutral-background-color-key-focus: var(
+    --dh-color-neutral-key-focus-bg
+  );
 
   --spectrum-neutral-subdued-background-color-default: var(
-    --dh-neutral-subdued-default-bg
+    --dh-color-neutral-subdued-default-bg
   );
   --spectrum-neutral-subdued-background-color-hover: var(
-    --dh-neutral-subdued-hover-bg
+    --dh-color-neutral-subdued-hover-bg
   );
   --spectrum-neutral-subdued-background-color-down: var(
-    --dh-neutral-subdued-down-bg
+    --dh-color-neutral-subdued-down-bg
   );
   --spectrum-neutral-subdued-background-color-key-focus: var(
-    --dh-neutral-subdued-key-focus-bg
+    --dh-color-neutral-subdued-key-focus-bg
   );
 
   /* Negative */

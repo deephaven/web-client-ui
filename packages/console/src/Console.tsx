@@ -60,7 +60,14 @@ interface ConsoleProps {
   statusBarChildren: ReactNode;
   settings: Partial<Settings>;
   focusCommandHistory: () => void;
-  openObject: (object: VariableDefinition) => void;
+
+  /**
+   * @param object The object to open
+   * @param forceOpen If true, always open the object. If false, only update existing panels
+   */
+  openObject: (object: VariableDefinition, forceOpen?: boolean) => void;
+
+  /** Closes all panels containing the object */
   closeObject: (object: VariableDefinition) => void;
   session: IdeSession;
   language: string;
@@ -471,14 +478,19 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
   }, Console.LOG_THROTTLE);
 
   openUpdatedItems(changes: VariableChanges): void {
+    log.debug('openUpdatedItems', changes);
     const { isAutoLaunchPanelsEnabled } = this.state;
-    if (changes == null || !isAutoLaunchPanelsEnabled) {
+    if (changes == null) {
       return;
     }
 
     const { openObject } = this.props;
     [...changes.created, ...changes.updated].forEach(object =>
-      openObject(object)
+      openObject(
+        object,
+        isAutoLaunchPanelsEnabled &&
+          (object.title === undefined || !object.title.startsWith('_'))
+      )
     );
   }
 
