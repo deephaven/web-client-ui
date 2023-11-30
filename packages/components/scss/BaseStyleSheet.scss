@@ -16,6 +16,14 @@ html {
   min-height: 100%;
 }
 
+// override
+.text-black-50 {
+  color: background-opacity(50) !important;
+}
+.text-white-50 {
+  color: foreground-opacity(50) !important;
+}
+
 // deephaven-icons are designed on a 16px grid
 // and look best at that size. Default icon size back to 16px
 // vertical alignment changed to best match icon set against 14px text
@@ -26,19 +34,18 @@ html {
 
 body {
   min-height: 100%;
-  background-color: var(--dh-color-background, $background);
+  background-color: $background;
   color: $foreground;
   margin: 0;
   padding: 0;
   overscroll-behavior: none;
   -ms-scroll-chaining: none;
-  scrollbar-color: rgba($white, 0.1) rgba($black, 0.1); //applies to firefox only
+  scrollbar-color: foreground-opacity(10) background-opacity(10); //applies to firefox only
 }
 
 #root {
-  background-color: var(--dh-color-background, $background);
-
   .app {
+    background-color: $background;
     height: 100vh;
     width: 100vw;
   }
@@ -91,7 +98,7 @@ a.custom-link,
       content: '';
       box-sizing: content-box;
       position: absolute;
-      background: rgba($primary, $focus-bg-transparency);
+      background: accent-opacity(10);
       top: 0;
       left: 0;
       width: 100%;
@@ -135,18 +142,18 @@ span.btn-disabled-wrapper {
     border-radius: $border-radius;
 
     &:focus {
-      background: rgba($primary, $focus-bg-transparency);
+      background: accent-opacity(10);
       border: $input-border-width solid $primary;
       box-shadow: $input-btn-focus-box-shadow;
     }
 
     &:hover {
-      background: rgba($primary, $hover-bg-transparency);
+      background: accent-opacity(15);
     }
 
     &:active {
       content: '';
-      background: rgba($primary, $active-bg-transparency);
+      background: accent-opacity(30);
     }
   }
 }
@@ -157,15 +164,13 @@ span.btn-disabled-wrapper {
   border-color: $danger;
 
   &:focus {
-    box-shadow: 0 0 0 $btn-focus-width
-      rgba(mix(color-yiq($background), $danger, 15%), 0.5);
+    box-shadow: 0 0 0 $btn-focus-width var(--dh-color-focus);
   }
 
   &:not(:disabled):not(.disabled):active {
-    background: darken($danger, 10%);
-    border-color: darken($danger, 10%);
-    box-shadow: 0 0 0 $btn-focus-width
-      rgba(mix(color-yiq($background), $danger, 15%), 0.5);
+    background: var(--dh-color-negative-down-bg);
+    border-color: var(--dh-color-negative-down-bg);
+    box-shadow: 0 0 0 $btn-focus-width var(--dh-color-focus);
   }
 }
 
@@ -180,8 +185,7 @@ span.btn-disabled-wrapper {
 
 .btn-spinner {
   padding: $btn-padding-y 1rem;
-  .fa-layers,
-  .loading-spinner {
+  .fa-layers {
     margin-right: 0.5rem;
   }
 }
@@ -226,7 +230,7 @@ span.btn-disabled-wrapper {
     text-decoration: none;
     box-shadow: none;
     &::after {
-      background: rgba($primary, $focus-bg-transparency);
+      background: accent-opacity(10);
       border: $input-border-width solid $primary;
       box-shadow: $input-btn-focus-box-shadow;
     }
@@ -234,14 +238,14 @@ span.btn-disabled-wrapper {
 
   &:hover {
     &::after {
-      background: rgba($primary, $hover-bg-transparency);
+      background: accent-opacity(15);
     }
   }
 
   &:active {
     &::after {
       content: '';
-      background: rgba($primary, $active-bg-transparency);
+      background: accent-opacity(30);
     }
   }
 }
@@ -296,21 +300,23 @@ span.btn-disabled-wrapper {
   padding-left: $spacer-1;
   padding-right: $spacer-1;
   border-radius: $border-radius;
-  background: $gray-600;
+  background: $gray-900;
   border: 1px solid $input-border-color;
-  color: $gray-300;
+  color: $gray-200;
 
   &.active {
     border-color: $primary;
     background: $primary;
-    color: $gray-100;
+    color: var(--dh-color-white);
 
-    &:focus {
+    &:focus-visible {
       border: 1px solid $input-focus-border-color;
     }
 
     &:not(:disabled):not(.disabled):hover {
-      background: $primary;
+      color: var(--dh-color-white);
+      background: $primary-hover;
+      border-color: $primary-hover;
     }
   }
 
@@ -321,24 +327,19 @@ span.btn-disabled-wrapper {
     cursor: not-allowed;
   }
 
-  &:focus {
+  &:focus-visible {
     border: 1px solid $input-focus-border-color;
   }
 
   &:not(:disabled):not(.disabled):hover {
-    background-color: $gray-500;
+    background-color: $black;
+    border: 1px solid $gray-200;
     color: $gray-200;
   }
 
   &:not(:disabled):not(.disabled):active {
-    background: $gray-700;
+    background: $gray-800;
   }
-}
-
-.btn-secondary:hover {
-  // steal primary hover state to look more hovered, less disabled
-  background-color: $primary-hover;
-  border-color: $primary-hover;
 }
 
 .btn-secondary.disabled,
@@ -408,18 +409,18 @@ form label small {
   box-shadow: 0 0 0 0.2rem var(--dh-color-form-control-error-shadow);
 }
 
-.form-control.btn:focus {
+.form-control.btn:focus-visible {
   box-shadow: $input-btn-focus-box-shadow;
 }
 
 .form-control:disabled {
   border-color: $black;
-  color: darken($gray-400, 5%);
+  color: $gray-500;
   cursor: not-allowed;
 }
 
 .form-control:disabled::placeholder {
-  color: darken($gray-400, 5%);
+  color: $gray-500;
 }
 
 .form-control[type='password'] {
@@ -617,7 +618,7 @@ input[type='number']::-webkit-inner-spin-button {
     border-color: $gray-300;
     &:focus,
     &.focus {
-      box-shadow: 0 0 0 0.2rem rgba(91, 90, 92, 20%);
+      box-shadow: 0 0 0 0.2rem background-opacity(20);
     }
   }
 }
@@ -641,26 +642,26 @@ input[type='number']::-webkit-inner-spin-button {
 ::selection {
   //blink/webkit
   color: $foreground;
-  background: rgba($text-select-color, 0.99);
+  background: var(--dh-color-text-highlight);
   opacity: 1;
 }
 
 ::-moz-selection {
   //moz
   color: $foreground;
-  background: rgba($text-select-color, 0.99);
+  background: var(--dh-color-text-highlight);
   opacity: 1;
 }
 
 .masked-input::selection {
   //blink/webkit
-  background: rgba($primary, 0.7);
+  background: var(--dh-color-text-highlight);
   opacity: 1;
 }
 
 .masked-input::-moz-selection {
   //moz
-  background: rgba($primary, 0.7);
+  background: var(--dh-color-text-highlight);
   opacity: 1;
 }
 
@@ -682,30 +683,37 @@ input[type='number']::-webkit-inner-spin-button {
 }
 
 ::-webkit-scrollbar-corner {
-  background: rgba(0, 0, 0, 10%);
+  background: background-opacity(10);
 }
 
 ::-webkit-scrollbar-track:horizontal {
-  border-top: 1px solid rgba(var(--scrollbar-color), 0.15);
+  border-top: 1px solid hsla(var(--scrollbar-color), 0.15);
 }
 
 ::-webkit-scrollbar-track:vertical {
-  border-left: 1px solid rgba(var(--scrollbar-color), 0.15);
+  border-left: 1px solid hsla(var(--scrollbar-color), 0.15);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(var(--scrollbar-color), 0.25);
+  background: hsla(var(--scrollbar-color), 0.25);
 }
 
 ::-webkit-scrollbar-thumb:active {
-  background: rgba(var(--scrollbar-color), 0.35);
+  background: hsla(var(--scrollbar-color), 0.35);
 }
 
-// used in inverted color sections, like light modals
-.theme-bg-light {
-  --scrollbar-color: 0, 0, 0;
+/* stylelint-disable no-descending-specificity */
+.app {
+  --scrollbar-color: #{var(--dh-color-foreground-hsl)};
+}
+/* stylelint-enable no-descending-specificity */
 
-  scrollbar-color: rgba($black, 0.5) rgba($black, 0.3); // firefox
+// used in inverted color sections, like light modals
+.app .theme-bg-light {
+  --scrollbar-color: #{var(--dh-color-background-hsl)};
+
+  scrollbar-color: hsla(var(--dh-color-background-hsl), 0.5)
+    hsla(var(--dh-color-background-hsl), 0.3); // firefox
 }
 
 /********** Monaco Overides *********/
@@ -804,7 +812,7 @@ input[type='number']::-webkit-inner-spin-button {
 
     //make the dotted duplicate focus line on firefox go away
     &:-moz-focusring {
-      color: rgba(0, 0, 0, 0%);
+      color: transparent;
       text-shadow: 0 0 0 $foreground !important;
     }
 
@@ -842,7 +850,7 @@ input[type='number']::-webkit-inner-spin-button {
       solid-gradient($gray-700);
 
     &:-moz-focusring {
-      color: rgba(0, 0, 0, 0%);
+      color: transparent;
       text-shadow: 0 0 0 $foreground !important;
     }
   }
@@ -852,7 +860,7 @@ input[type='number']::-webkit-inner-spin-button {
       solid-gradient($gray-200);
 
     &:-moz-focusring {
-      color: rgba(0, 0, 0, 0%);
+      color: transparent;
       text-shadow: 0 0 0 $background !important;
     }
   }

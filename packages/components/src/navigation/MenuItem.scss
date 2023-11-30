@@ -32,7 +32,7 @@ $navigation-menu-item-color: $gray-300;
   }
 
   &:focus {
-    background: rgba($primary, $focus-bg-transparency);
+    background: $list-selected;
     border: $input-border-width solid $primary;
     box-shadow: $input-btn-focus-box-shadow;
     text-decoration: none;
@@ -44,7 +44,7 @@ $navigation-menu-item-color: $gray-300;
     text-decoration: none;
 
     .shortcut {
-      color: lighten($contextmenu-selected-bg, 25%);
+      color: $gray-300;
     }
 
     .btn-switch.active {

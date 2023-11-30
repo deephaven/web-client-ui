@@ -1,23 +1,21 @@
 // Bootstrap mixin overrides for `bootstrap/scss/mixins/_text-emphasis.scss`
 
-@mixin text-emphasis-variant($parent, $color, $ignore-warning: false) {
+@mixin text-emphasis-variant($parent, $semantic-value, $ignore-warning: false) {
   #{$parent} {
-    color: $color !important;
+    // if $semantic-value = primary then use accent-700
+    @if $semantic-value == 'accent' {
+      color: var(--spectrum-#{$semantic-value}-color-700) !important;
+    } @else {
+      color: var(--spectrum-#{$semantic-value}-visual-color) !important;
+    }
   }
   @if $emphasized-link-hover-darken-percentage != 0 {
     a#{$parent} {
       @include hover-focus {
-        color: darken(
-          $color,
-          $emphasized-link-hover-darken-percentage
+        color: var(
+          --spectrum-#{$semantic-value}-background-color-default
         ) !important;
       }
     }
   }
-  @include deprecate(
-    '`text-emphasis-variant()`',
-    'v4.4.0',
-    'v5',
-    $ignore-warning
-  );
 }

@@ -4,10 +4,10 @@ $shade: $primary;
 
 $command-history-bg: $gray-700;
 $selection-color: $foreground;
-$selection-bg: mix($shade, $command-history-bg, 35%);
-$selection-hover-bg: $shade;
-$selection-nofocus-bg: mix($shade, $command-history-bg, 12%);
-$selection-border-color: mix($shade, $command-history-bg, 55%);
+$selection-bg: $list-selected;
+$selection-hover-bg: $list-selected-hover;
+$selection-nofocus-bg: $list-selected-inactive;
+$selection-border-color: $list-selected-border-color;
 $selection-hover-color: $foreground;
 
 .command-history {

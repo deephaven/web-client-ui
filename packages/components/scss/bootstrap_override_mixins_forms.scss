@@ -34,7 +34,14 @@
   );
 }
 
-@mixin form-validation-state($state, $color, $icon) {
+// This mixin overrides the one in `bootstrap/scss/mixins/_forms.scss`
+// It's primary purpose is to convert the input color value into a dh css
+// variable expression. There are a few additional tweaks annotated with
+// `DH Customization:`
+@mixin form-validation-state($state, $semantic-value, $icon) {
+  // DH Customization: Convert semantic value to css variable
+  $color: var(--dh-color-visual-#{$semantic-value});
+
   .#{$state}-feedback {
     display: none;
     width: 100%;
@@ -57,7 +64,7 @@
 
     line-height: $form-feedback-tooltip-line-height;
     color: color-yiq($color);
-    background-color: rgba($color, $form-feedback-tooltip-opacity);
+    background-color: $color;
     @include border-radius($form-feedback-tooltip-border-radius);
 
     // See https://github.com/twbs/bootstrap/pull/31557
@@ -89,7 +96,12 @@
 
       &:focus {
         border-color: $color;
-        box-shadow: 0 0 0 $input-focus-width rgba($color, 0.25);
+      }
+
+      // DH Customization: Moved box-shadow from :focus to :focus-visible and
+      // changed to $input-focus-box-shadow
+      &:focus-visible {
+        box-shadow: $input-focus-box-shadow;
       }
     }
   }
@@ -136,7 +148,12 @@
 
       &:focus {
         border-color: $color;
-        box-shadow: 0 0 0 $input-focus-width rgba($color, 0.25);
+      }
+
+      // DH Customization: Moved box-shadow from :focus to :focus-visible and
+      // changed to $input-focus-box-shadow
+      &:focus-visible {
+        box-shadow: $input-focus-box-shadow;
       }
     }
   }
@@ -165,17 +182,22 @@
       }
 
       &:checked {
+        // DH Customization: Changed from lighten($color, 10%) to $color
         ~ .custom-control-label::before {
-          border-color: lighten($color, 10%);
-          @include gradient-bg(lighten($color, 10%));
+          border-color: $color;
+          @include gradient-bg($color);
+        }
+      }
+
+      // DH Customization: Moved box-shadow from :focus to :focus-visible and
+      // changed to $input-focus-box-shadow.
+      &:focus-visible {
+        ~ .custom-control-label::before {
+          box-shadow: $input-focus-box-shadow;
         }
       }
 
       &:focus {
-        ~ .custom-control-label::before {
-          box-shadow: 0 0 0 $input-focus-width rgba($color, 0.25);
-        }
-
         &:not(:checked) ~ .custom-control-label::before {
           border-color: $color;
         }
@@ -193,7 +215,15 @@
       &:focus {
         ~ .custom-file-label {
           border-color: $color;
-          box-shadow: 0 0 0 $input-focus-width rgba($color, 0.25);
+          // DH Customization: Removed box-shadow
+          // box-shadow: 0 0 0 $input-focus-width rgba($color, .25);
+        }
+      }
+
+      // DH Customization: Added rule
+      &:focus-visible {
+        ~ .custom-file-label {
+          box-shadow: $input-focus-box-shadow;
         }
       }
     }
