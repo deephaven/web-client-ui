@@ -2,7 +2,7 @@
 // Can be imported directly by Vite since it resolves bootstrap to node_modules/bootstrap
 @import './custom.scss';
 @import './util.scss';
-@import 'bootstrap/scss/bootstrap';
+@import './bootstrap_imports.scss';
 
 :root {
   --dh-svg-inline-icon-size: 16px;
