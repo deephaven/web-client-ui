@@ -73,9 +73,6 @@ const RENAME_VARIABLE_GROUPS = {
   component: {},
 } satisfies Record<string, Record<string, string>>;
 
-export const INVALID_COLOR_BORDER_STYLE =
-  '2px solid var(--dh-color-notice-default-bg)';
-
 /** Return black or white contrast color */
 export function contrastColor(color: string): 'black' | 'white' {
   const rgba = ColorUtils.parseRgba(ColorUtils.asRgbOrRgbaString(color) ?? '');
@@ -134,7 +131,7 @@ export function buildColorGroups(
   styleText: string,
   captureGroupI: number,
   reassignVarGroups: Record<string, string> = REASSIGN_VARIABLE_GROUPS
-): Record<string, { name: string; value: string }[]> {
+): Record<string, { name: string; value: string; note?: string }[]> {
   const groupRemap: Record<string, string> = RENAME_VARIABLE_GROUPS[groupKey];
   const swatchData = extractColorVars(styleText);
 
