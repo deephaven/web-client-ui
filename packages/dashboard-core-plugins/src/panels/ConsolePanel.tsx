@@ -11,7 +11,12 @@ import {
   HeapUsage,
   ObjectIcon,
 } from '@deephaven/console';
-import { DashboardPanelProps, PanelEvent } from '@deephaven/dashboard';
+import {
+  DashboardPanelProps,
+  LayoutManagerContext,
+  LayoutUtils,
+  PanelEvent,
+} from '@deephaven/dashboard';
 import type { IdeSession, VariableDefinition } from '@deephaven/jsapi-types';
 import { SessionWrapper } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
@@ -83,6 +88,8 @@ export class ConsolePanel extends PureComponent<
   static COMPONENT = 'ConsolePanel';
 
   static TITLE = 'Console';
+
+  static contextType = LayoutManagerContext;
 
   constructor(props: ConsolePanelProps) {
     super(props);
@@ -235,18 +242,35 @@ export class ConsolePanel extends PureComponent<
     this.updateDimensions();
   }
 
-  handleOpenObject(object: VariableDefinition): void {
+  handleOpenObject(object: VariableDefinition, forceOpen = true): void {
     const { sessionWrapper } = this.props;
     const { session } = sessionWrapper;
-    this.openWidget(object, session);
+    const { root } = this.context;
+    const oldPanelId =
+      object.title != null ? this.getItemId(object.title, false) : null;
+    if (
+      forceOpen ||
+      (oldPanelId != null &&
+        LayoutUtils.getStackForRoot(
+          root,
+          { id: oldPanelId },
+          false,
+          false,
+          false
+        ) != null)
+    ) {
+      this.openWidget(object, session);
+    }
   }
 
   handleCloseObject(object: VariableDefinition): void {
     const { title } = object;
     if (title !== undefined) {
       const id = this.getItemId(title, false);
-      const { glEventHub } = this.props;
-      glEventHub.emit(PanelEvent.CLOSE, id);
+      if (id != null) {
+        const { glEventHub } = this.props;
+        glEventHub.emit(PanelEvent.CLOSE, id);
+      }
     }
   }
 
