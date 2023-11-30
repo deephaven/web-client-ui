@@ -26,7 +26,7 @@ export function Swatch({ className, children }: SwatchProps): JSX.Element {
       ':after'
     ).getPropertyValue('content');
 
-    const dhColorVarName = /"(--dh-color-.*?)"/.exec(afterContent)?.[1];
+    const dhColorVarName = /"(--dh-color-.*?)[,"]/.exec(afterContent)?.[1];
     if (dhColorVarName == null) {
       setTooltip(null);
       return;
