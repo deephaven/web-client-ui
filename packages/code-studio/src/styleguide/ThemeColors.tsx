@@ -58,7 +58,7 @@ export function ThemeColors(): JSX.Element {
                 style={{ gridRow: `span ${swatchData.length + 1}` }}
               >
                 <span className={styles.label}>{group}</span>
-                {swatchData.map(({ name, value }) => (
+                {swatchData.map(({ name, value, note }) => (
                   <div
                     key={name}
                     className={styles.swatch}
@@ -77,7 +77,9 @@ export function ThemeColors(): JSX.Element {
                       <div>{normalizedOptionalAlpha(value)}</div>
                     </Tooltip>
                     <span>{name.replace('--dh-color-', '')}</span>
-                    {name.endsWith('-hue') ? <span>{value}</span> : null}
+                    {name.endsWith('-hue') || note != null ? (
+                      <span>{note ?? value}</span>
+                    ) : null}
                   </div>
                 ))}
               </div>

@@ -1,10 +1,15 @@
 // Bootstrap mixin overrides for `bootstrap/scss/mixins/_buttons.scss`
+@use 'sass:map';
 
 // This mixin overrides the one in `bootstrap/scss/mixins/_buttons.scss`
-@mixin button-variant($semantic-value, $_) {
+// $bootstrap-value comes from $theme-colors map (see `bootstrap/scss/_buttons.scss`)
+@mixin button-variant($bootstrap-value, $_) {
+  $semantic-value: map.get($bootstrap-dh-semantic-map, $bootstrap-value) or '';
+
   // DH Customization: Convert semantic value to css variables
   $background: var(--dh-color-#{$semantic-value}-default-bg);
   $border: var(--dh-color-#{$semantic-value}-default-bg);
+  $boxshadow-color: hsla(var(--dh-color-#{$semantic-value}-hsl), 0.5);
   $hover-background: var(--dh-color-#{$semantic-value}-hover-bg);
   $hover-border: var(--dh-color-#{$semantic-value}-hover-bg);
   $active-background: var(--dh-color-#{$semantic-value}-down-bg);
@@ -35,7 +40,7 @@
     @include gradient-bg($hover-background);
 
     border-color: $hover-border;
-    box-shadow: 0 0 0 $btn-focus-width var(--spectrum-alias-focus-color);
+    box-shadow: 0 0 0 $btn-focus-width $boxshadow-color;
   }
 
   // Disabled comes first so active can properly restyle
@@ -62,29 +67,32 @@
     border-color: $active-border;
 
     &:focus-visible {
-      box-shadow: 0 0 0 $btn-focus-width $active-border;
+      box-shadow: 0 0 0 $btn-focus-width $boxshadow-color;
     }
   }
 }
 
-@mixin button-outline-variant(
-  $color,
-  $color-hover: color-yiq($color),
-  $active-background: $color,
-  $active-border: $color
-) {
+@mixin button-outline-variant($bootstrap-value) {
+  $semantic-value: map.get($bootstrap-dh-semantic-map, $bootstrap-value) or '';
+
+  $color: var(--dh-color-#{$semantic-value}-default-bg);
+  $boxshadow-color: hsla(var(--dh-color-#{$semantic-value}-hsl), 0.5);
+  $hover-color: color-yiq($semantic-value);
+  $hover-background: var(--dh-color-#{$semantic-value}-hover-bg);
+  $active-background: var(--dh-color-#{$semantic-value}-down-bg);
+
   color: $color;
   border-color: $color;
 
   @include hover {
-    color: $color-hover;
-    background-color: $active-background;
-    border-color: $active-border;
+    color: $hover-color;
+    background-color: $hover-background;
+    border-color: $hover-background;
   }
 
   &:focus,
   &.focus {
-    box-shadow: 0 0 0 $btn-focus-width rgba($color, 0.5);
+    box-shadow: 0 0 0 $btn-focus-width $boxshadow-color;
   }
 
   &.disabled,
@@ -98,17 +106,17 @@
   .show > &.dropdown-toggle {
     color: color-yiq($active-background);
     background-color: $active-background;
-    border-color: $active-border;
+    border-color: $active-background;
 
     &:focus {
       @if $enable-shadows and $btn-active-box-shadow != none {
         @include box-shadow(
           $btn-active-box-shadow,
-          0 0 0 $btn-focus-width rgba($color, 0.5)
+          0 0 0 $btn-focus-width $boxshadow-color
         );
       } @else {
         // Avoid using mixin so we can pass custom focus shadow properly
-        box-shadow: 0 0 0 $btn-focus-width rgba($color, 0.5);
+        box-shadow: 0 0 0 $btn-focus-width $boxshadow-color;
       }
     }
   }

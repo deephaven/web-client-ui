@@ -63,8 +63,23 @@ pre {
   }
 }
 
-@each $color, $value in map.merge($semantic-colors, $theme-colors) {
+@each $color, $value in $semantic-colors {
   @include swatch-color($color, $value);
+}
+
+@each $color, $value in $theme-colors {
+  $var: '';
+
+  $semantic-value: map.get($bootstrap-dh-semantic-map, $value) or '';
+  @if $semantic-value != '' {
+    $var: var(--dh-color-#{$semantic-value}-default-bg);
+  } @else if $value == 'light' {
+    $var: var(--dh-color-gray-light);
+  } @else if $value == 'dark' {
+    $var: var(--dh-color-gray-dark);
+  }
+
+  @include swatch-color($color, $var);
 }
 
 // Special case swatches with labels

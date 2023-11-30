@@ -155,6 +155,12 @@ export function buildColorGroups(
         return acc;
       }
 
+      // Skip gray light/mid/dark as they will be marked via notes on the gray
+      // numbered palette
+      if (/^--dh-color-gray-(light|mid|dark)$/.test(name)) {
+        return acc;
+      }
+
       // Add a spacer for black / white
       if (name === '--dh-color-black') {
         acc[group].push({ name: '', value: '' });
@@ -167,9 +173,18 @@ export function buildColorGroups(
 
       acc[group].push({ name, value });
 
+      // It might be nice to make these dynamic, but for now just hardcode
+      const note = {
+        '--dh-color-gray-900': 'light',
+        '--dh-color-gray-600': 'mid',
+        '--dh-color-gray-300': 'dark',
+      }[name];
+
+      acc[group].push({ name, value, note });
+
       return acc;
     },
-    {} as Record<string, { name: string; value: string }[]>
+    {} as Record<string, { name: string; value: string; note?: string }[]>
   );
 
   return groupData;

@@ -1,4 +1,5 @@
 // Styling overrides for bootstrap
+@use 'sass:map';
 
 // Override / set color variables
 $red: var(--dh-color-visual-red);
@@ -26,7 +27,7 @@ $white: var(--dh-color-white);
 
 //Define some UI colors
 $interfacegray: var(--dh-color-content-background);
-$interfaceblue: var(--dh-color-accent-600);
+$interfaceblue: var(--dh-color-accent-default-bg);
 $interfacewhite: $white;
 $interfaceblack: $black;
 $content-bg: var(--dh-color-content-background);
@@ -34,21 +35,49 @@ $background: var(--dh-color-background);
 $foreground: var(--dh-color-foreground);
 
 // Extend default Bootstrap $grays map
-$grays: ();
-$grays: map-merge(
-  (
-    '850': $gray-850,
-  ),
-  $grays
+$grays-custom: (
+  '850': $gray-850,
 );
+$grays: () !default;
+$grays: map-merge($grays, $grays-custom);
 
 // Extend default Bootstrap $colors map
-$colors: ();
-$colors: map-merge(
-  (
-    'black': $black,
-  ),
-  $colors
+$colors-custom: (
+  'black': $black,
+);
+$colors: () !default;
+$colors: map-merge($colors, $colors-custom);
+
+// Override default Bootstrap $theme-colors map by mapping each key to itself.
+// These will then be re-mapped inside of `button-outline-variant` and
+// `button-outline-variant` mixins in `bootstrap_override_mixins_buttons.scss`
+$theme-colors-self-map: ();
+@each $key
+  in (
+    'primary',
+    'secondary',
+    'success',
+    'info',
+    'warning',
+    'danger',
+    'light',
+    'dark'
+  )
+{
+  $theme-colors-self-map: map.set($theme-colors-self-map, $key, $key);
+}
+$theme-colors: () !default;
+$theme-colors: map-merge($theme-colors, $theme-colors-self-map);
+
+// Used by bootstrap_override_mixins_buttons.scss to map Bootstrap colors to
+// DH semantic colors
+$bootstrap-dh-semantic-map: (
+  'primary': 'accent',
+  'secondary': 'neutral',
+  'success': 'positive',
+  'info': 'info',
+  'warning': 'notice',
+  'danger': 'negative',
 );
 
 //Set default colors
@@ -60,30 +89,17 @@ $primary: $interfaceblue;
 $primary-hover: var(--dh-color-accent-hover-bg);
 $primary-dark: var(--dh-color-accent-down-bg);
 $primary-light: var(--dh-color-accent-1100);
-$secondary: $gray-500;
-$secondary-hover: var(--dh-color-gray-400);
+$secondary: var(--dh-color-neutral-default-bg);
+$secondary-hover: var(--dh-color-neutral-hover-bg);
 $success: $green;
 $info: $yellow;
 $warning: $orange;
-$danger: var(--dh-color-visual-negative);
-$danger-hover: var(--dh-color-negative-default-bg);
-$light: $gray-100;
-$mid: $gray-400; //Added a mid color, useful for input styling
-$dark: $gray-800;
+$danger: var(--dh-color-negative-default-bg);
+$danger-hover: var(--dh-color-negative-hover-bg);
+$light: var(--dh-color-gray-light);
+$mid: var(--dh-color-gray-mid);
+$dark: var(--dh-color-gray-dark);
 $green-dark: var(--dh-color-green-900);
-
-// $theme-colors: () !default;
-// $theme-colors: map-merge(
-//   (
-//     'primary': 'accent',
-//     'secondary': 'neutral',
-//     'success': 'positive',
-//     // 'info': 'informative',
-//     // 'warning': 'notice',
-//     'danger': 'negative',
-//   ),
-//   $theme-colors
-// );
 
 $semantic-colors: (
   'primary-hover': $primary-hover,
