@@ -90,7 +90,7 @@ $body-bg: $black;
 $body-color: $interfacewhite;
 
 // Set brand colors
-$primary: $interfaceblue;
+$primary: var(--dh-color-accent-default-bg);
 $primary-hover: var(--dh-color-accent-hover-bg);
 $primary-dark: var(--dh-color-accent-down-bg);
 $primary-light: var(--dh-color-accent-1100);
@@ -146,8 +146,6 @@ $headings-font-weight: 400;
 $text-muted: $gray-400;
 
 //Style Selection highlight color
-//so browsers add alpha to your color by default, ignoring opacity 1
-//by setting rgba with 0.99 it tricks browser into thinking there is alpha applied
 $text-select-color: var(--dh-color-text-highlight);
 
 //Grid variables, same value as default just making easily accessible
@@ -155,7 +153,7 @@ $grid-gutter-width: 30px;
 
 //Visual Overrides
 $border-radius: 4px;
-$box-shadow: 0 0.1rem 1rem rgba($black, 45%); //because our UI is so dark, we need darker default shadows
+$box-shadow: 0 0.1rem 1rem hsla(var(--dh-color-black-hsl), 0.45); //because our UI is so dark, we need darker default shadows
 $box-shadow-900: 0 0.1rem 1rem rgba(0, 0, 0, 45%); //darkest shadow for $black popups over $black UI
 
 //Override Btn
@@ -174,10 +172,10 @@ $input-disabled-bg: $gray-800;
 $input-color: $foreground;
 $input-border-color: $gray-400;
 $input-placeholder-color: $gray-400;
-$input-focus-border-color: rgba($primary, 85%);
+$input-focus-border-color: var(--dh-color-focus-border);
 
 $input-btn-focus-width: 0.2rem;
-$input-btn-focus-color: rgba($component-active-bg, 35%);
+$input-btn-focus-color: var(--dh-color-focus);
 $input-btn-focus-box-shadow: 0 0 0 $input-btn-focus-width $input-btn-focus-color;
 
 //checkbox
@@ -215,7 +213,7 @@ $toast-error-color: var(--dh-color-text);
 //tooltips
 $tooltip-bg: $gray-700;
 $tooltip-color: $foreground;
-$tooltip-box-shadow: 0 0.1rem 1.5rem 0.1rem rgba($black, 80%);
+$tooltip-box-shadow: 0 0.1rem 1.5rem 0.1rem hsla(var(--dh-color-black-hsl), 0.8);
 
 //drowdowns
 $dropdown-bg: $gray-600;
@@ -228,7 +226,7 @@ $dropdown-divider-bg: $gray-700;
 $contextmenu-bg: $gray-600;
 $contextmenu-color: $foreground;
 $contextmenu-disabled-color: $text-muted;
-$contextmenu-keyboard-selected-bg: rgba($primary, 50%);
+$contextmenu-keyboard-selected-bg: hsla(var(--dh-color-accent-hsl), 0.5);
 $contextmenu-selected-bg: $primary;
 $contextmenu-selected-color: $foreground;
 
