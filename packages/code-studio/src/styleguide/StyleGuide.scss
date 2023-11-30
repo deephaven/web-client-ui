@@ -111,10 +111,7 @@ pre {
   @include swatch-color($color, $value, 'gray-swatch');
 }
 
-.gray-swatch-850 {
-  color: color-yiq($gray-850);
-  background-color: $gray-850;
-}
+@include swatch-color('8XX', 'var(--dh-color-gray-100)', 'gray-swatch');
 
 .style-guide-container {
   background-color: $content-bg;
