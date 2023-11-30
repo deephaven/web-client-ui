@@ -52,6 +52,15 @@ If your DHC address is different from the default `http://localhost:10000`, edit
 VITE_PROXY_URL=http://<dhc-host>:<port>
 ```
 
+## Local Plugin Development
+The plugins repo supports [serving plugins locally](https://github.com/deephaven/deephaven-plugins/blob/main/README.md#serve-plugins). DHC can be configured to proxy `js-plugins`requests to the local dev server by setting `VITE_JS_PLUGINS_DEV_PORT` in `packages/code-studio/.env.development.local`.
+
+e.g. To point to the default dev port:
+
+```
+VITE_JS_PLUGINS_DEV_PORT=4100
+```
+
 ## Local Vite Config
 If you'd like to override the vite config for local dev, you can define a `packages/code-studio/vite.config.local.ts` file that extends from `vite.config.local`. This file is excluded via `.gitignore` which makes it easy to keep local overrides in tact.
 
