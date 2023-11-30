@@ -174,7 +174,7 @@ h5.sub-title {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-color: var(--dh-color-background);
+    background-color: var(--dh-color-content-background);
     border-color: transparent;
     &:focus {
       border-color: $primary;

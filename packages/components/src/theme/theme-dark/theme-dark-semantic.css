@@ -89,7 +89,7 @@
   --dh-color-accent-hover-bg: var(--dh-color-accent-500);
   --dh-color-accent-down-bg: var(--dh-color-accent-400);
   --dh-color-accent-key-focus-bg: var(--dh-color-accent-500);
-  --dh-color-accent-contrast: var(--dh-color-accent-contrast-hsl);
+  --dh-color-accent-contrast: hsl(var(--dh-color-accent-contrast-hsl));
 
   /* Background Defaults */
   --dh-color-default-gray-bg: var(--dh-color-gray-700);
