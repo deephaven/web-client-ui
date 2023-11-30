@@ -8,9 +8,8 @@ function makeIrisGridPartitionSelector(
   table = new IrisGridTestUtils(dh).makeTable(),
   columns = [new IrisGridTestUtils(dh).makeColumn()],
   onChange = jest.fn(),
-  onDone = jest.fn(),
-  getFormattedString = jest.fn(value => `${value}`),
-  onAppend = undefined
+  onMerge = jest.fn(),
+  getFormattedString = jest.fn(value => `${value}`)
 ) {
   return render(
     <IrisGridPartitionSelector
@@ -19,8 +18,7 @@ function makeIrisGridPartitionSelector(
       columns={columns}
       getFormattedString={getFormattedString}
       onChange={onChange}
-      onDone={onDone}
-      onAppend={onAppend}
+      onMerge={onMerge}
     />
   );
 }
@@ -29,44 +27,27 @@ it('unmounts successfully without crashing', () => {
   makeIrisGridPartitionSelector();
 });
 
-it('calls onDone when close button is clicked', () => {
-  const onDone = jest.fn();
+it('calls onMerge when close button is clicked', () => {
+  const onMerge = jest.fn();
   const component = makeIrisGridPartitionSelector(
     undefined,
     undefined,
     undefined,
-    onDone
+    onMerge
   );
 
-  const closeButton = component.getAllByRole('button')[2];
-  fireEvent.click(closeButton);
-  expect(onDone).toHaveBeenCalled();
+  const mergeButton = component.getAllByRole('button')[1];
+  fireEvent.click(mergeButton);
+  expect(onMerge).toHaveBeenCalled();
 });
 
 it('should display multiple selectors to match columns', () => {
   const columns = [
-    new IrisGridTestUtils(dh).makeColumn(),
-    new IrisGridTestUtils(dh).makeColumn(),
+    new IrisGridTestUtils(dh).makeColumn('a'),
+    new IrisGridTestUtils(dh).makeColumn('b'),
   ];
   const component = makeIrisGridPartitionSelector(undefined, columns);
 
-  const selectors = component.getAllByRole('textbox');
+  const selectors = component.getAllByRole('combobox');
   expect(selectors).toHaveLength(2);
-});
-
-it('calls handlePartitionChange when PartitionSelectorSearch value changes', () => {
-  const handlePartitionChange = jest.spyOn(
-    IrisGridPartitionSelector.prototype,
-    'handlePartitionChange'
-  );
-  const component = makeIrisGridPartitionSelector();
-
-  const partitionSelectorSearch = component.getByRole('textbox');
-  fireEvent.change(partitionSelectorSearch, { target: { value: 'test' } });
-  expect(handlePartitionChange).toHaveBeenCalledWith(
-    0,
-    expect.objectContaining({
-      target: expect.objectContaining({ value: 'test' }),
-    })
-  );
 });

@@ -13,7 +13,6 @@ import type {
 import { TableUtils } from '@deephaven/jsapi-utils';
 import deepEqual from 'deep-equal';
 import './IrisGridPartitionSelector.scss';
-import IrisGridUtils from './IrisGridUtils';
 
 const log = Log.module('IrisGridPartitionSelector');
 

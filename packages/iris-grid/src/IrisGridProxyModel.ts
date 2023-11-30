@@ -539,7 +539,7 @@ class IrisGridProxyModel extends IrisGridModel {
   openPartitionKeysTable(): void {
     log.debug('opening keysTable');
     this.originalModel.partition = [];
-    if (!this.originalModel.partitionKeysTable) {
+    if (this.originalModel.partitionKeysTable === null) {
       return;
     }
     if (isIrisGridPartitionedTableModel(this.originalModel)) {
