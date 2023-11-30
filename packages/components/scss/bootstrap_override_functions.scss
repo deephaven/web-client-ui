@@ -1,0 +1,16 @@
+// Bootstrap overrides for `bootstrap/scss/_functions.scss`
+
+// Color contrast
+@function color-yiq($color, $dark: $yiq-text-dark, $light: $yiq-text-light) {
+  $r: red($color);
+  $g: green($color);
+  $b: blue($color);
+
+  $yiq: (($r * 299) + ($g * 587) + ($b * 114)) * 0.001;
+
+  @if $yiq >= $yiq-contrasted-threshold {
+    @return $dark;
+  } @else {
+    @return $light;
+  }
+}
