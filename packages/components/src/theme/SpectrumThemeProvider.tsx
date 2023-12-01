@@ -30,7 +30,12 @@ export function SpectrumThemeProvider({
   const [id] = useState(isPortal ? shortid() : null);
 
   return (
-    <Provider theme={theme} colorScheme={colorScheme} data-unique-id={id}>
+    <Provider
+      UNSAFE_className="spectrum-theme-provider"
+      theme={theme}
+      colorScheme={colorScheme}
+      data-unique-id={id}
+    >
       {children}
     </Provider>
   );

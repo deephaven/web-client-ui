@@ -7,6 +7,12 @@
 :root {
   --dh-svg-inline-icon-size: 16px;
   --scrollbar-color: #{var(--dh-color-foreground-hsl)};
+
+  color: var(--dh-color-text);
+
+  .spectrum-theme-provider {
+    color: var(--dh-color-text);
+  }
 }
 
 //Various non-variable css overides

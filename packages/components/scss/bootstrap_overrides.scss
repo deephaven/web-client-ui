@@ -26,11 +26,11 @@ $black: var(--dh-color-black, #1a171a);
 $white: var(--dh-color-white, #f0f0ee);
 
 //Define some UI colors
-$interfacegray: var(--dh-color-content-background, #2d2a2e);
+$interfacegray: var(--dh-color-content-bg, #2d2a2e);
 $interfaceblue: var(--dh-color-accent-default-bg);
 $interfacewhite: $white;
 $interfaceblack: $black;
-$content-bg: var(--dh-color-content-background, #2d2a2e);
+$content-bg: var(--dh-color-content-bg, #2d2a2e);
 $background: var(--dh-color-background);
 $foreground: var(--dh-color-foreground);
 

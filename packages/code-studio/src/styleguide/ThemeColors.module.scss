@@ -15,8 +15,10 @@
     justify-content: space-between;
     gap: 4px;
     height: var(--swatch-height);
-    text-transform: capitalize;
     white-space: nowrap;
+    &.capitalize {
+      text-transform: capitalize;
+    }
   }
 
   .swatch {

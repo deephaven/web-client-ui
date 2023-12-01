@@ -30,6 +30,15 @@ const REASSIGN_VARIABLE_GROUPS: Record<string, string> = {
   '--dh-color-grid-string-null': 'Data Types',
 } as const;
 
+const SWATCH_LABEL = {
+  '--dh-color-black': '',
+  '--dh-color-action-active-bg': 'Action.active',
+  '--dh-color-action-down-bg': 'Action:active',
+  '--dh-color-action-hover-bg': 'Action:hover',
+  '--dh-color-action-active-hover-bg': 'Action.active:hover',
+  '--dh-color-action-disabled-bg': 'Action:disabled',
+};
+
 // Mappings of variable groups to rename
 const RENAME_VARIABLE_GROUPS = {
   palette: {
@@ -131,7 +140,10 @@ export function buildColorGroups(
   styleText: string,
   captureGroupI: number,
   reassignVarGroups: Record<string, string> = REASSIGN_VARIABLE_GROUPS
-): Record<string, { name: string; value: string; note?: string }[]> {
+): Record<
+  string,
+  { isLabel?: boolean; name: string; value: string; note?: string }[]
+> {
   const groupRemap: Record<string, string> = RENAME_VARIABLE_GROUPS[groupKey];
   const swatchData = extractColorVars(styleText);
 
@@ -162,8 +174,12 @@ export function buildColorGroups(
       }
 
       // Add a spacer for black / white
-      if (name === '--dh-color-black') {
-        acc[group].push({ name: '', value: '' });
+      if (name in SWATCH_LABEL) {
+        acc[group].push({
+          isLabel: true,
+          name: SWATCH_LABEL[name as keyof typeof SWATCH_LABEL],
+          value: '',
+        });
       }
 
       // Skip gray light/mid/dark as we are planning to remove them
@@ -182,7 +198,10 @@ export function buildColorGroups(
 
       return acc;
     },
-    {} as Record<string, { name: string; value: string; note?: string }[]>
+    {} as Record<
+      string,
+      { isLabel?: boolean; name: string; value: string; note?: string }[]
+    >
   );
 
   return groupData;

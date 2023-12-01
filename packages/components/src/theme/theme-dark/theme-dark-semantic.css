@@ -5,6 +5,7 @@
   --dh-color-background-hsl: var(--dh-color-black-hsl);
   --dh-color-foreground-hsl: var(--dh-color-white-hsl);
 
+  --dh-color-action-hsl: var(--dh-color-gray-75-hsl);
   --dh-color-accent-hsl: var(--dh-color-blue-600-hsl);
   --dh-color-info-hsl: var(--dh-color-cyan-1000-hsl);
   --dh-color-neutral-hsl: var(--dh-color-gray-500-hsl);
@@ -24,6 +25,7 @@
   --dh-color-contrast-dark-hsl: var(--dh-color-gray-50-hsl);
   --dh-color-contrast-light-hsl: var(--dh-color-gray-900-hsl);
 
+  --dh-color-action-contrast-hsl: var(--dh-color-contrast-light-hsl);
   --dh-color-accent-contrast-hsl: var(--dh-color-contrast-light-hsl);
   --dh-color-info-contrast-hsl: var(--dh-color-contrast-dark-hsl);
   --dh-color-negative-contrast-hsl: var(--dh-color-contrast-light-hsl);
@@ -56,7 +58,10 @@
   --dh-color-border: var(--dh-color-gray-500);
   --dh-color-background: hsl(var(--dh-color-background-hsl));
   --dh-color-foreground: hsl(var(--dh-color-foreground-hsl));
-  --dh-color-content-background: var(--dh-color-gray-100);
+  --dh-color-content-bg: var(--dh-color-gray-100);
+
+  /* Hover */
+  --dh-color-hover-border: var(--dh-color-gray-600);
 
   /* Text */
   --dh-color-heading-text: var(--dh-color-gray-900);

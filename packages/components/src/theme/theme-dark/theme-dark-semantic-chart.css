@@ -1,7 +1,7 @@
 /* stylelint-disable alpha-value-notation */
 /* stylelint-disable custom-property-empty-line-before */
 :root {
-  --dh-color-chart-bg: var(--dh-color-content-background);
+  --dh-color-chart-bg: var(--dh-color-content-bg);
   --dh-color-chart-plot-bg: var(--dh-color-gray-200);
   --dh-color-chart-title: var(--dh-color-white);
 

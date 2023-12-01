@@ -1,6 +1,6 @@
 :root {
   /* Editor */
-  --dh-color-editor-bg: var(--dh-color-content-background);
+  --dh-color-editor-bg: var(--dh-color-content-bg);
   --dh-color-editor-fg: var(--dh-color-gray-900);
   --dh-color-editor-error-fg: var(--dh-color-visual-red);
   --dh-color-editor-line-number-fg: var(--dh-color-gray-700);
