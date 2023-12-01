@@ -1,6 +1,8 @@
 @import '../scss/custom.scss';
 
-$socket-button-bg: $input-bg;
+$socket-button-bg: var(--dh-color-neutral-default-bg);
+$socket-button-disabled-bg: $input-disabled-bg;
+$socket-button-disabled-border-color: var(--dh-color-black);
 $socket-button-hover-bg: $primary-hover;
 $socket-size: 18px;
 $socket-linked-color: $primary;
@@ -12,7 +14,7 @@ $socket-bg: $content-bg;
   display: inline-block;
   border: $input-border-width solid $input-border-color;
   padding: $btn-padding-y $btn-padding-x;
-  color: $foreground;
+  color: var(--dh-color-neutral-contrast);
   background: $socket-button-bg;
   line-height: $btn-line-height;
   font-family: $btn-font-family;
@@ -63,10 +65,10 @@ $socket-bg: $content-bg;
   &:disabled,
   &:disabled:hover {
     cursor: not-allowed;
-    border-color: $black;
-    background-color: $input-disabled-bg;
+    border-color: $socket-button-disabled-border-color;
+    background-color: $socket-button-disabled-bg;
     &::after {
-      border-color: $black;
+      border-color: $socket-button-disabled-border-color;
     }
   }
 }
@@ -93,22 +95,22 @@ $socket-bg: $content-bg;
 
   &:disabled,
   &:disabled:hover {
-    border-color: $black;
-    background-color: $input-disabled-bg;
+    border-color: $socket-button-disabled-border-color;
+    background-color: $socket-button-disabled-bg;
     &::after {
       background-color: $primary-dark;
-      border-color: $black;
+      border-color: $socket-button-disabled-border-color;
     }
   }
 }
 
 .btn-socketed.is-invalid,
 .btn-socketed.btn-socketed-linked.is-invalid {
-  border-color: rgba($danger, 0.85);
+  border-color: hsla(var(--dh-color-negative-hsl), 0.85);
 
   &::after {
-    border-color: $danger;
-    background-color: $danger;
+    border-color: var(--dh-color-negative-default-bg);
+    background-color: var(--dh-color-negative-default-bg);
   }
 
   .btn-socketed-icon.linked {
@@ -126,16 +128,17 @@ $socket-bg: $content-bg;
   }
 
   &:focus {
-    box-shadow: 0 0 0 $input-btn-focus-width rgba($danger, 0.35);
+    box-shadow: 0 0 0 $input-btn-focus-width
+      hsla(var(--dh-color-negative-hsl), 0.35);
   }
 
   &:disabled,
   &:disabled:hover {
-    border-color: $black;
-    background-color: $input-disabled-bg;
+    border-color: $socket-button-disabled-border-color;
+    background-color: $socket-button-disabled-bg;
     &::after {
-      background-color: $input-disabled-bg;
-      border-color: $black;
+      background-color: $socket-button-disabled-bg;
+      border-color: $socket-button-disabled-border-color;
     }
   }
 }

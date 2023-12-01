@@ -1,6 +1,7 @@
 /* stylelint-disable custom-property-empty-line-before */
 /* stylelint-disable alpha-value-notation */
 .dh-spectrum-alias {
+  --spectrum-body-text-color: var(--dh-color-text);
   --spectrum-alias-background-color-default: var(--dh-color-background);
 
   /* Shadows / Overlays */
