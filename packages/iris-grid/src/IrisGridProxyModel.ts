@@ -513,9 +513,9 @@ class IrisGridProxyModel extends IrisGridModel {
         return;
       }
       // Singular keys are not in arrays
-      const tablePromise = this.originalModel.partitionedTable.getTable(
-        partition.length > 1 ? partition : partition[0]
-      );
+      const tablePromise = this.originalModel.partitionedTable
+        .getTable(partition.length > 1 ? partition : partition[0])
+        .then(table => table.copy());
       this.setNextModel(
         tablePromise.then(table => {
           const newModel = makeModel(this.dh, table, this.formatter);
@@ -532,7 +532,7 @@ class IrisGridProxyModel extends IrisGridModel {
     }
   }
 
-  get partitionKeysTable(): Table | null {
+  get partitionKeysTable(): Promise<Table> | null {
     return this.originalModel.partitionKeysTable;
   }
 
@@ -544,20 +544,19 @@ class IrisGridProxyModel extends IrisGridModel {
     }
     if (isIrisGridPartitionedTableModel(this.originalModel)) {
       this.setNextModel(
-        this.originalModel.partitionKeysTable
-          .selectDistinct(this.originalModel.partitionColumns)
-          .then(table => {
-            const newModel = makeModel(this.dh, table, this.formatter);
-            (this.originalModel as IrisGridPartitionedTableModel).model =
-              newModel;
-            return newModel;
-          })
+        this.originalModel.partitionKeysTable.then(table => {
+          const newModel = makeModel(this.dh, table, this.formatter);
+          (this.originalModel as IrisGridPartitionedTableModel).model =
+            newModel;
+          return newModel;
+        })
       );
-    } else {
+    } else if (this.model === this.originalModel) {
       this.setNextModel(
-        this.originalModel.partitionKeysTable
-          .copy()
-          .then(table => makeModel(this.dh, table, this.formatter))
+        this.originalModel.partitionKeysTable.then(table => {
+          log.log('openPartitionKeysTable', table);
+          return makeModel(this.dh, table, this.formatter);
+        })
       );
     }
   }

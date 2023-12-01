@@ -56,8 +56,6 @@ class IrisGridPartitionedTableModel extends IrisGridModel {
 
   private partitionKeys: unknown[];
 
-  private keyTable: Table | null = null;
-
   /**
    * @param dh JSAPI instance
    * @param table Partitioned table to be used in the model
@@ -78,10 +76,6 @@ class IrisGridPartitionedTableModel extends IrisGridModel {
     });
     this.partitionKeys = Array.isArray(lastKey) ? lastKey : [lastKey];
     this.model = new EmptyIrisGridModel(dh);
-
-    this.keyTable = this.partitionedTable.keyTable;
-    const sorts = this.partitionColumns.map(column => column.sort().desc());
-    this.keyTable.applySort(sorts);
   }
 
   get rowCount(): number {
@@ -349,10 +343,7 @@ class IrisGridPartitionedTableModel extends IrisGridModel {
   }
 
   close(): void {
-    // TODO
     this.partitionedTable.close();
-    // close model table
-    // close keytables, subscription table
   }
 
   isRowMovable(): boolean {
@@ -432,13 +423,18 @@ class IrisGridPartitionedTableModel extends IrisGridModel {
     this.partitionKeys = partition;
   }
 
-  get partitionKeysTable(): Table | null {
-    return this.keyTable;
+  get partitionKeysTable(): Promise<Table> {
+    const sorts = this.partitionColumns.map(column => column.sort().desc());
+    return this.partitionedTable.getKeyTable().then(table => {
+      table.applySort(sorts);
+      return table;
+    });
   }
 
   async initializePartitionModel(): Promise<IrisGridModel> {
     const initTable = await this.partitionedTable.getTable(this.partitionKeys);
-    this.model = new IrisGridTableModel(this.dh, initTable, this.irisFormatter);
+    const tableCopy = await initTable.copy();
+    this.model = new IrisGridTableModel(this.dh, tableCopy, this.irisFormatter);
     return Promise.resolve(this.model);
   }
 }

@@ -957,11 +957,11 @@ export interface PartitionedTable extends Evented, PartitionedTableStatic {
   readonly size: number;
   readonly columns: Column[];
   readonly keyColumns: Column[];
-  readonly keyTable: Table;
 
   getTable: (key: unknown) => Promise<Table>;
   getMergedTable: () => Promise<Table>;
   getKeys: () => Set<object>;
+  getKeyTable: () => Promise<Table>;
 
   close: () => void;
 }

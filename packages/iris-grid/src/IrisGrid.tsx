@@ -4398,7 +4398,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               {model.partitionKeysTable && (
                 <IrisGridPartitionSelector
                   dh={model.dh}
-                  table={model.partitionKeysTable}
+                  tablePromise={model.partitionKeysTable}
                   getFormattedString={(
                     value: unknown,
                     type: string,

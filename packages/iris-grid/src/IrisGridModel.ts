@@ -216,7 +216,7 @@ abstract class IrisGridModel<
   /**
    * @returns A Table containing the keys of the columns that are partitioned on
    */
-  get partitionKeysTable(): Table | null {
+  get partitionKeysTable(): Promise<Table> | null {
     return null;
   }
 

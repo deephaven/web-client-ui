@@ -9,16 +9,19 @@ function makeIrisGridPartitionSelector(
   columns = [new IrisGridTestUtils(dh).makeColumn()],
   onChange = jest.fn(),
   onMerge = jest.fn(),
+  onKeyTable = jest.fn(),
   getFormattedString = jest.fn(value => `${value}`)
 ) {
+  const tablePromise = Promise.resolve(table);
   return render(
     <IrisGridPartitionSelector
       dh={dh}
-      table={table}
+      tablePromise={tablePromise}
       columns={columns}
       getFormattedString={getFormattedString}
       onChange={onChange}
       onMerge={onMerge}
+      onKeyTable={onKeyTable}
     />
   );
 }
@@ -27,7 +30,22 @@ it('unmounts successfully without crashing', () => {
   makeIrisGridPartitionSelector();
 });
 
-it('calls onMerge when close button is clicked', () => {
+it('calls onKeyTable when key button is clicked', () => {
+  const onKeyTable = jest.fn();
+  const component = makeIrisGridPartitionSelector(
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    onKeyTable
+  );
+
+  const keyButton = component.getAllByRole('button')[0];
+  fireEvent.click(keyButton);
+  expect(onKeyTable).toHaveBeenCalled();
+});
+
+it('calls onMerge when merge button is clicked', () => {
   const onMerge = jest.fn();
   const component = makeIrisGridPartitionSelector(
     undefined,

@@ -62,6 +62,11 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
     this.formatColumnList = [];
   }
 
+  close(): void {
+    super.close();
+    this._partitionTable?.close();
+  }
+
   get isExportAvailable(): boolean {
     return this.table.freeze != null;
   }
@@ -248,8 +253,8 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
     this.filter = prevFilters;
   }
 
-  get partitionKeysTable(): Table | null {
-    return this._partitionTable;
+  get partitionKeysTable(): Promise<Table> | null {
+    return this._partitionTable?.copy() ?? null;
   }
 
   set filter(filter: FilterCondition[]) {
