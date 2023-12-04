@@ -24,7 +24,7 @@
   /* Input */
   --dh-color-editor-focus-border: var(--dh-color-focus-border);
   --dh-color-editor-input-option-active-border: var(--dh-color-focus-ring);
-  --dh-color-editor-input-bg: var(--dh-color-background);
+  --dh-color-editor-input-bg: var(--dh-color-bg);
   --dh-color-editor-input-fg: var(--dh-color-text);
   --dh-color-editor-input-border: var(--dh-color-border);
 

@@ -31,8 +31,8 @@ $interfaceblue: var(--dh-color-accent-default-bg);
 $interfacewhite: $white;
 $interfaceblack: $black;
 $content-bg: var(--dh-color-content-bg, #2d2a2e);
-$background: var(--dh-color-background);
-$foreground: var(--dh-color-foreground);
+$background: var(--dh-color-bg);
+$foreground: var(--dh-color-fg);
 
 // Extend default Bootstrap $grays map
 $grays-custom: (

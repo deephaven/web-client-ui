@@ -69,13 +69,13 @@ describe('calculatePreloadStyleContent', () => {
       '--dh-color-loading-spinner-primary',
       'pink'
     );
-    document.body.style.setProperty('--dh-color-background', 'orange');
+    document.body.style.setProperty('--dh-color-bg', 'orange');
 
     expect(calculatePreloadStyleContent()).toEqual(
       expectedContent({
         ...DEFAULT_PRELOAD_DATA_VARIABLES,
         '--dh-color-loading-spinner-primary': 'pink',
-        '--dh-color-background': 'orange',
+        '--dh-color-bg': 'orange',
       })
     );
   });

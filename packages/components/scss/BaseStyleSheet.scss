@@ -6,7 +6,7 @@
 
 :root {
   --dh-svg-inline-icon-size: 16px;
-  --scrollbar-color: #{var(--dh-color-foreground-hsl)};
+  --scrollbar-color: #{var(--dh-color-fg-hsl)};
 
   color: var(--dh-color-text);
 
@@ -710,10 +710,10 @@ input[type='number']::-webkit-inner-spin-button {
 
 // used in inverted color sections, like light modals
 .theme-bg-light {
-  --scrollbar-color: #{var(--dh-color-background-hsl)};
+  --scrollbar-color: #{var(--dh-color-bg-hsl)};
 
-  scrollbar-color: hsla(var(--dh-color-background-hsl), 0.5)
-    hsla(var(--dh-color-background-hsl), 0.3); // firefox
+  scrollbar-color: hsla(var(--dh-color-bg-hsl), 0.5)
+    hsla(var(--dh-color-bg-hsl), 0.3); // firefox
 }
 
 /********** Monaco Overides *********/

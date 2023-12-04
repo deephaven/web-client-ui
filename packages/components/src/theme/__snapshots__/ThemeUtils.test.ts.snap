@@ -2,8 +2,8 @@
 
 exports[`DEFAULT_PRELOAD_DATA_VARIABLES should match snapshot 1`] = `
 {
-  "--dh-color-background": "#1a171a",
-  "--dh-color-foreground": "#f0f0ee",
+  "--dh-color-bg": "#1a171a",
+  "--dh-color-fg": "#f0f0ee",
   "--dh-color-loading-spinner-primary": "#3b6bda",
   "--dh-color-loading-spinner-secondary": "#f0f0ee80",
 }

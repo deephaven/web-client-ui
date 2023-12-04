@@ -2,8 +2,10 @@
 /* stylelint-disable alpha-value-notation */
 :root {
   /* HSL base colors */
-  --dh-color-background-hsl: var(--dh-color-black-hsl);
-  --dh-color-foreground-hsl: var(--dh-color-white-hsl);
+  --dh-color-bg-hsl: var(--dh-color-black-hsl);
+  --dh-color-fg-hsl: var(--dh-color-white-hsl);
+  --dh-color-border-hsl: var(--dh-color-gray-500-hsl);
+  --dh-color-content-bg-hsl: var(--dh-color-gray-100-hsl);
 
   --dh-color-action-hsl: var(--dh-color-gray-75-hsl);
   --dh-color-accent-hsl: var(--dh-color-blue-600-hsl);
@@ -55,10 +57,10 @@
   --dh-color-visual-info-hsl: var(--dh-color-cyan-1100-hsl);
 
   /* General */
-  --dh-color-border: var(--dh-color-gray-500);
-  --dh-color-background: hsl(var(--dh-color-background-hsl));
-  --dh-color-foreground: hsl(var(--dh-color-foreground-hsl));
-  --dh-color-content-bg: var(--dh-color-gray-100);
+  --dh-color-border: hsl(var(--dh-color-border-hsl));
+  --dh-color-bg: hsl(var(--dh-color-bg-hsl));
+  --dh-color-fg: hsl(var(--dh-color-fg-hsl));
+  --dh-color-content-bg: hsl(var(--dh-color-content-bg-hsl));
 
   /* Hover */
   --dh-color-hover-border: var(--dh-color-gray-600);

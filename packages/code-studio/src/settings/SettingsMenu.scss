@@ -5,18 +5,18 @@ $settings-menu-width: 400px;
 $settings-menu-header-min-height: 60px;
 $settings-menu-padding: $spacer-3;
 $settings-menu-header-user-image-size: 40px;
-$settings-menu-header-color: var(--dh-color-foreground);
+$settings-menu-header-color: var(--dh-color-fg);
 
-$settings-menu-collapse-trigger-color: var(--dh-color-foreground);
+$settings-menu-collapse-trigger-color: var(--dh-color-fg);
 
 $settings-menu-rule-bg: $gray-600;
 $settings-menu-rule-button-color: $gray-300;
 $settings-menu-rule-border: $gray-400;
 $settings-menu-rule-focused-border: $primary;
 
-$focus-over-primary-color: var(--dh-color-foreground);
+$focus-over-primary-color: var(--dh-color-fg);
 $input-btn-focus-box-shadow-over-primary: 0 0 0 0.2rem
-  hsla(var(--dh-color-foreground-hsl), 0.35);
+  hsla(var(--dh-color-fg-hsl), 0.35);
 
 $settings-menu-z-index: $zindex-modal;
 
@@ -64,7 +64,7 @@ $settings-menu-z-index: $zindex-modal;
   color: $settings-menu-header-color;
 
   .btn-close-settings-menu {
-    color: var(--dh-color-foreground);
+    color: var(--dh-color-fg);
     font-size: 18px;
     // we want the close button to occupy at least
     // as much space as the triggering button below
@@ -74,31 +74,22 @@ $settings-menu-z-index: $zindex-modal;
 
     &:focus {
       &::after {
-        background: hsla(
-          var(--dh-color-foreground-hsl),
-          $focus-bg-transparency
-        );
-        border: 1px solid var(--dh-color-foreground);
+        background: hsla(var(--dh-color-fg-hsl), $focus-bg-transparency);
+        border: 1px solid var(--dh-color-fg);
         box-shadow: $input-btn-focus-box-shadow-over-primary;
       }
     }
 
     &:hover {
       &::after {
-        background: hsla(
-          var(--dh-color-foreground-hsl),
-          $hover-bg-transparency
-        );
+        background: hsla(var(--dh-color-fg-hsl), $hover-bg-transparency);
       }
     }
 
     &:active {
       &::after {
         content: '';
-        background: hsla(
-          var(--dh-color-foreground-hsl),
-          $active-bg-transparency
-        );
+        background: hsla(var(--dh-color-fg-hsl), $active-bg-transparency);
       }
     }
   }
@@ -145,27 +136,18 @@ $settings-menu-z-index: $zindex-modal;
       padding: 0 $spacer-1;
 
       &:focus {
-        background: hsla(
-          var(--dh-color-foreground-hsl),
-          $focus-bg-transparency
-        );
-        border: 1px solid var(--dh-color-foreground);
+        background: hsla(var(--dh-color-fg-hsl), $focus-bg-transparency);
+        border: 1px solid var(--dh-color-fg);
         box-shadow: $input-btn-focus-box-shadow-over-primary;
       }
 
       &:hover {
-        background: hsla(
-          var(--dh-color-foreground-hsl),
-          $hover-bg-transparency
-        );
+        background: hsla(var(--dh-color-fg-hsl), $hover-bg-transparency);
       }
 
       &:active {
         content: '';
-        background: hsla(
-          var(--dh-color-foreground-hsl),
-          $active-bg-transparency
-        );
+        background: hsla(var(--dh-color-fg-hsl), $active-bg-transparency);
       }
     }
   }

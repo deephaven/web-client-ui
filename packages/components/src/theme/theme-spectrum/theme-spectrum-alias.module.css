@@ -2,7 +2,7 @@
 /* stylelint-disable alpha-value-notation */
 .dh-spectrum-alias {
   --spectrum-body-text-color: var(--dh-color-text);
-  --spectrum-alias-background-color-default: var(--dh-color-background);
+  --spectrum-alias-background-color-default: var(--dh-color-bg);
 
   /* Shadows / Overlays */
   --spectrum-alias-dropshadow-color: var(--dh-color-dropshadow);
