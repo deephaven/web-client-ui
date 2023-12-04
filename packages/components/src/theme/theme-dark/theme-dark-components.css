@@ -1,3 +1,4 @@
+/* stylelint-disable custom-property-empty-line-before */
 /* stylelint-disable alpha-value-notation */
 :root {
   --dh-color-loading-spinner-primary: var(--dh-color-accent-default-bg);
@@ -5,6 +6,29 @@
   --dh-color-quickactions-bg: hsla(var(--dh-color-visual-gray-hsl), 0.9);
   --dh-color-radial-reaction: hsla(var(--dh-color-visual-gray-hsl), 0.6);
   --dh-color-colorpicker-border: hsla(var(--dh-color-visual-gray-hsl), 0.1);
+
+  /* Actions */
+  --dh-color-action-bg: hsl(var(--dh-color-action-hsl));
+  --dh-color-action-fg: hsl(var(--dh-color-action-contrast-hsl));
+  --dh-color-action-border: var(--dh-color-border);
+
+  --dh-color-action-down-bg: var(--dh-color-gray-300);
+
+  --dh-color-action-hover-bg: var(--dh-color-black);
+  --dh-color-action-hover-fg: var(--dh-color-action-fg);
+  --dh-color-action-hover-border: var(--dh-color-hover-border);
+
+  --dh-color-action-active-bg: var(--dh-color-accent-default-bg);
+  --dh-color-action-active-fg: var(--dh-color-accent-contrast);
+  --dh-color-action-active-border: var(--dh-color-accent-default-bg);
+
+  --dh-color-action-active-hover-bg: var(--dh-color-accent-hover-bg);
+  --dh-color-action-active-hover-fg: var(--dh-color-accent-contrast);
+  --dh-color-action-active-hover-border: var(--dh-color-accent-hover-bg);
+
+  --dh-color-action-disabled-bg: transparent;
+  --dh-color-action-disabled-fg: var(--dh-color-gray-700);
+  --dh-color-action-disabled-border: var(--dh-color-black);
 
   /* Form Controls */
   --dh-color-search-icon: var(--dh-color-fg);

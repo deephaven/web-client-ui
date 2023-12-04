@@ -306,30 +306,31 @@ span.btn-disabled-wrapper {
   padding-left: $spacer-1;
   padding-right: $spacer-1;
   border-radius: $border-radius;
-  background: $gray-900;
-  border: 1px solid $input-border-color;
-  color: $gray-200;
+  background: var(--dh-color-action-bg);
+  border: 1px solid var(--dh-color-action-border);
+  color: var(--dh-color-action-fg);
 
   &.active {
-    border-color: $primary;
-    background: $primary;
-    color: var(--dh-color-white);
+    border-color: var(--dh-color-action-active-border);
+    background: var(--dh-color-action-active-bg);
+    color: var(--dh-color-action-active-fg);
 
     &:focus-visible {
       border: 1px solid $input-focus-border-color;
     }
 
     &:not(:disabled):not(.disabled):hover {
-      color: var(--dh-color-white);
-      background: $primary-hover;
-      border-color: $primary-hover;
+      color: var(--dh-color-action-active-hover-fg);
+      background: var(--dh-color-action-active-hover-bg);
+      border-color: var(--dh-color-action-active-hover-border);
     }
   }
 
   &.disabled,
   &:disabled {
-    border: 1px solid $black;
-    color: $gray-300;
+    background-color: var(--dh-color-action-disabled-bg);
+    border: 1px solid var(--dh-color-action-disabled-border);
+    color: var(--dh-color-action-disabled-fg);
     cursor: not-allowed;
   }
 
@@ -338,13 +339,13 @@ span.btn-disabled-wrapper {
   }
 
   &:not(:disabled):not(.disabled):hover {
-    background-color: $black;
-    border: 1px solid $gray-200;
-    color: $gray-200;
+    background-color: var(--dh-color-action-hover-bg);
+    border: 1px solid var(--dh-color-action-hover-border);
+    color: var(--dh-color-action-hover-fg);
   }
 
   &:not(:disabled):not(.disabled):active {
-    background: $gray-800;
+    background: var(--dh-color-action-down-bg);
   }
 }
 
