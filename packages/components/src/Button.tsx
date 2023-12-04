@@ -126,7 +126,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       );
     }
 
-    // best effort attempt to auto add margin to icon if text is also present
+    // Best effort backwards-compatible attempt to auto add margin to icon if text is also present
+    // We would need to audit our usage of Buttons to remove margins by classname to just add the margin to every icon button with children
     if (iconElem != null && children != null) {
       // check if react children contains a text node to a depth of 2
       // to exlude poppers/menus, but not button text nested in spans
