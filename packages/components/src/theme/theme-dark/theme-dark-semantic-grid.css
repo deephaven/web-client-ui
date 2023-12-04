@@ -15,7 +15,7 @@
   /* Row */
   --dh-color-grid-row-0-bg: var(--dh-color-gray-300);
   --dh-color-grid-row-1-bg: var(--dh-color-gray-100);
-  --dh-color-grid-row-hover-bg: var(--dh-color-highlight-hover);
+  --dh-color-grid-row-hover-bg: var(--dh-color-gray-400);
   --dh-color-grid-row-hover-bg-selected: var(
     --dh-color-highlight-selected-hover
   );
@@ -49,12 +49,19 @@
   --dh-color-grid-string-null: var(--dh-color-gray-600);
 
   /* Filter Bar */
-  --dh-color-grid-filter-bar-active-bg: var(--dh-color-accent-300);
+  --dh-color-grid-filter-bar-active-bg: hsla(
+    var(--dh-color-accent-700-hsl),
+    0.5
+  );
   --dh-color-grid-filter-bar-active: var(--dh-color-accent-600);
   --dh-color-grid-filter-bar-expanded-bg: var(--dh-color-gray-200);
-  --dh-color-grid-filter-bar-expanded-active-bg: var(--dh-color-accent-100);
-  --dh-color-grid-filter-bar-expanded-active-cell-bg: var(
-    --dh-color-accent-200
+  --dh-color-grid-filter-bar-expanded-active-bg: hsla(
+    var(--dh-color-accent-1000-hsl),
+    0.19
+  );
+  --dh-color-grid-filter-bar-expanded-active-cell-bg: hsla(
+    var(--dh-color-accent-700-hsl),
+    0.32
   );
   --dh-color-grid-filter-bar-separator: var(--dh-color-gray-600);
   --dh-color-grid-filter-bar-error: var(--dh-color-visual-negative);
