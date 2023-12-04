@@ -1,8 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { Component, ReactElement } from 'react';
-import classNames from 'classnames';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { ButtonOld, SocketedButton } from '@deephaven/components';
+import { Button, ButtonOld, SocketedButton } from '@deephaven/components';
 import { dhTruck } from '@deephaven/icons';
 import { sampleSectionIdAndClasses } from './utils';
 
@@ -95,37 +93,36 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
       >
         <h5>Inline Buttons</h5>
         Regular btn-inline:
-        <ButtonOld className="btn-inline mx-2">
-          <FontAwesomeIcon icon={dhTruck} />
-        </ButtonOld>
+        <Button className="mx-2" kind="inline" icon={dhTruck} tooltip="test" />
         Toggle button (class active):
-        <ButtonOld
-          className={classNames('btn-inline mx-2', { active: toggle })}
+        <Button
+          className="mx-2"
           onClick={() => {
             this.setState({ toggle: !toggle });
           }}
-        >
-          <FontAwesomeIcon icon={dhTruck} />
-        </ButtonOld>
+          active={toggle}
+          kind="inline"
+          icon={dhTruck}
+          tooltip="test"
+        />
         Disabled:
-        <ButtonOld className="btn-inline mx-2" disabled>
-          <FontAwesomeIcon icon={dhTruck} />
-        </ButtonOld>
+        <Button className="mx-2" kind="inline" disabled>
+          Disabled
+        </Button>
+        With Text:
+        <Button className="mx-2" kind="inline" icon={dhTruck}>
+          <span>Text Button</span>
+        </Button>
         <br />
         <br />
         <span>btn-link-icon (no text):</span>
-        <ButtonOld className="btn-link btn-link-icon px-2">
-          {/* pad and margin horizontally as appropriate for icon shape and spacing, 
-          needs btn-link and btn-link-icon classes. */}
-          <FontAwesomeIcon icon={dhTruck} />
-        </ButtonOld>
+        <Button kind="ghost" icon={dhTruck} tooltip="test" />
         <span className="mx-2">btn-link:</span>
-        <ButtonOld className="btn-link">Text Button</ButtonOld>
+        <Button kind="ghost">Text Button </Button>
         <span className="mx-2">btn-link (text w/ optional with icon):</span>
-        <ButtonOld className="btn-link">
-          <FontAwesomeIcon icon={dhTruck} />
-          Add Item
-        </ButtonOld>
+        <Button kind="ghost" icon={dhTruck}>
+          Text Button
+        </Button>
       </div>
     );
   }
