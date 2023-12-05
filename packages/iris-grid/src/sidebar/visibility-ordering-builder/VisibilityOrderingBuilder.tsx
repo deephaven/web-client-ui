@@ -29,7 +29,7 @@ import { Button, SearchInput } from '@deephaven/components';
 import clamp from 'lodash.clamp';
 import throttle from 'lodash.throttle';
 import './VisibilityOrderingBuilder.scss';
-import IrisGridModel from '../../IrisGridModel';
+import IrisGridModel, { DisplayColumn } from '../../IrisGridModel';
 import { ColumnName } from '../../CommonTypes';
 import ColumnHeaderGroup from '../../ColumnHeaderGroup';
 import VisibilityOrderingItem from './VisibilityOrderingItem';
@@ -91,6 +91,11 @@ class VisibilityOrderingBuilder extends PureComponent<
     UP: 'UP',
     DOWN: 'DOWN',
   } as const;
+
+  static shouldRenderColumn(column: DisplayColumn): boolean {
+    // We don't want to render the proxy column in the visibility ordering list
+    return column.isProxy !== true;
+  }
 
   constructor(props: VisibilityOrderingBuilderProps) {
     super(props);
@@ -1081,7 +1086,10 @@ class VisibilityOrderingBuilder extends PureComponent<
   }
 
   makeVisibilityOrderingList = memoize(
-    (columns: readonly Column[], treeItems: readonly IrisGridTreeItem[]) => {
+    (
+      columns: readonly DisplayColumn[],
+      treeItems: readonly IrisGridTreeItem[]
+    ) => {
       const { movedColumns } = this.props;
 
       const elements = [];
@@ -1117,7 +1125,9 @@ class VisibilityOrderingBuilder extends PureComponent<
             movedColumns
           );
           const column = columns[modelIndex];
-          elements.push(this.renderImmovableItem(column.name));
+          if (VisibilityOrderingBuilder.shouldRenderColumn(column)) {
+            elements.push(this.renderImmovableItem(column.name));
+          }
         }
 
         return elements;
@@ -1131,7 +1141,9 @@ class VisibilityOrderingBuilder extends PureComponent<
       ) {
         const modelIndex = GridUtils.getModelIndex(visibleIndex, movedColumns);
         const column = columns[modelIndex];
-        elements.push(this.renderImmovableItem(column.name));
+        if (VisibilityOrderingBuilder.shouldRenderColumn(column)) {
+          elements.push(this.renderImmovableItem(column.name));
+        }
       }
 
       if (firstMovableIndex !== null && firstMovableIndex > 0) {
@@ -1159,7 +1171,9 @@ class VisibilityOrderingBuilder extends PureComponent<
       ) {
         const modelIndex = GridUtils.getModelIndex(visibleIndex, movedColumns);
         const column = columns[modelIndex];
-        elements.push(this.renderImmovableItem(column.name));
+        if (VisibilityOrderingBuilder.shouldRenderColumn(column)) {
+          elements.push(this.renderImmovableItem(column.name));
+        }
       }
 
       return elements;

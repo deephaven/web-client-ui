@@ -42,6 +42,12 @@ export type DisplayColumn = Column & {
    * whereas `displayName` can be any string and does not need to be unique.
    */
   displayName?: string;
+
+  /**
+   * Whether this column is a proxy column for other columns or not.
+   * If it's a proxy column, it may not appear in some lists.
+   */
+  isProxy?: boolean;
 };
 
 type IrisGridModelEventNames =

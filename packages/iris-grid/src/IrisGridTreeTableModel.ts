@@ -49,6 +49,7 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
         constituentType: TableUtils.dataType.STRING,
         isPartitionColumn: false,
         isSortable: false,
+        isProxy: true,
         description: 'Key column',
         filter: () => {
           throw new Error('Filter not implemented for virtual column');
@@ -112,13 +113,11 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     if (hasChildren) {
       for (let i = 0; i < this.virtualColumns.length; i += 1) {
         const key = i + (depth - 1) + (this.virtualColumns.length - 1);
-        if (!modifiedData.has(key)) {
+        const cellData = modifiedData.get(key);
+        if (cellData == null) {
           log.warn('Missing key data for virtual column', i, depth, key, row);
         } else {
-          const cellData = modifiedData.get(key);
-          if (cellData != null) {
-            modifiedData.set(i, cellData);
-          }
+          modifiedData.set(i, cellData);
         }
       }
     }

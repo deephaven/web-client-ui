@@ -30,7 +30,7 @@ interface ColumnStatisticsProps {
 interface ColumnStatisticsState {
   error: unknown;
   loading: boolean;
-  statistics: Statistic[] | null;
+  statistics: readonly Statistic[] | null;
   numRows: number;
 }
 
@@ -81,7 +81,7 @@ class ColumnStatistics extends Component<
   cancelablePromise: CancelablePromise<APIColumnStatistics> | null;
 
   maybeGenerateStatistics(): void {
-    const { model } = this.props;
+    const { column, model } = this.props;
 
     const numRows =
       model.rowCount -
@@ -89,7 +89,7 @@ class ColumnStatistics extends Component<
       model.floatingBottomRowCount -
       model.floatingTopRowCount;
     this.setState({ numRows });
-    if (!model.isColumnStatisticsAvailable) {
+    if (!model.isColumnStatisticsAvailable || column.isProxy === true) {
       this.setState({ loading: false });
     } else if (numRows < ColumnStatistics.AUTO_GENERATE_LIMIT) {
       this.handleGenerateStatistics();

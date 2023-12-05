@@ -382,7 +382,8 @@ class IrisGridTableModelTemplate<
 
   get rowCount(): number {
     return (
-      this.table.size +
+      // Table size can be negative if the table isn't ready yet
+      Math.max(this.table.size, 0) +
       this.pendingNewRowCount +
       (this.totals?.operationOrder?.length ?? 0)
     );

@@ -1,5 +1,5 @@
-import type { Column } from '@deephaven/jsapi-types';
 import { TableUtils } from '@deephaven/jsapi-utils';
+import { DisplayColumn } from '../../IrisGridModel';
 import AggregationOperation from './AggregationOperation';
 
 export const SELECTABLE_OPTIONS = [
@@ -68,12 +68,15 @@ export const isValidOperation = (
 };
 
 export const filterValidColumns = (
-  columns: readonly Column[],
+  columns: readonly DisplayColumn[],
   operationType: AggregationOperation
-): Column[] => columns.filter(c => isValidOperation(operationType, c.type));
+): DisplayColumn[] =>
+  columns.filter(
+    c => c.isProxy !== true && isValidOperation(operationType, c.type)
+  );
 
 export const getOperationColumnNames = (
-  columns: readonly Column[],
+  columns: readonly DisplayColumn[],
   operationType: AggregationOperation,
   selected: readonly string[],
   invert: boolean
