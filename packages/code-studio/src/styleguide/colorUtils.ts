@@ -149,6 +149,17 @@ export function buildColorGroups(
 
   const groupData = swatchData.reduce(
     (acc, { name, value }) => {
+      // Skip -hsl variables since they aren't actually colors yet
+      if (/^--dh-color-(.*?)-hsl$/.test(name)) {
+        return acc;
+      }
+
+      // Skip gray light/mid/dark as they will be marked via notes on the gray
+      // numbered palette
+      if (/^--dh-color-gray-(light|mid|dark)$/.test(name)) {
+        return acc;
+      }
+
       const match = /^--dh-color-([^-]+)(?:-([^-]+))?/.exec(name);
       let group =
         reassignVarGroups[name] ??
@@ -160,17 +171,6 @@ export function buildColorGroups(
 
       if (acc[group] == null) {
         acc[group] = [];
-      }
-
-      // Skip -hsl variables since they aren't actually colors yet
-      if (/^--dh-color-(.*?)-hsl$/.test(name)) {
-        return acc;
-      }
-
-      // Skip gray light/mid/dark as they will be marked via notes on the gray
-      // numbered palette
-      if (/^--dh-color-gray-(light|mid|dark)$/.test(name)) {
-        return acc;
       }
 
       // Add a spacer for black / white
