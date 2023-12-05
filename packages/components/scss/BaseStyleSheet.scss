@@ -6,7 +6,6 @@
 
 :root {
   --dh-svg-inline-icon-size: 16px;
-  --scrollbar-color: #{var(--dh-color-fg-hsl)};
 
   color: var(--dh-color-text);
 
@@ -680,7 +679,7 @@ input[type='number']::-webkit-inner-spin-button {
 
 // style the same as monaco scrollbar
 ::-webkit-scrollbar-thumb {
-  background: rgba(var(--scrollbar-color), 0.18);
+  background: hsla(var(--dh-color-scrollbar-hsl), 0.18);
   border-radius: 0;
 }
 
@@ -694,27 +693,27 @@ input[type='number']::-webkit-inner-spin-button {
 }
 
 ::-webkit-scrollbar-track:horizontal {
-  border-top: 1px solid hsla(var(--scrollbar-color), 0.15);
+  border-top: 1px solid hsla(var(--dh-color-scrollbar-hsl), 0.15);
 }
 
 ::-webkit-scrollbar-track:vertical {
-  border-left: 1px solid hsla(var(--scrollbar-color), 0.15);
+  border-left: 1px solid hsla(var(--dh-color-scrollbar-hsl), 0.15);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsla(var(--scrollbar-color), 0.25);
+  background: hsla(var(--dh-color-scrollbar-hsl), 0.25);
 }
 
 ::-webkit-scrollbar-thumb:active {
-  background: hsla(var(--scrollbar-color), 0.35);
+  background: hsla(var(--dh-color-scrollbar-hsl), 0.35);
 }
 
 // used in inverted color sections, like light modals
 .theme-bg-light {
-  --scrollbar-color: #{var(--dh-color-bg-hsl)};
+  --dh-color-scrollbar-hsl: #{var(--dh-color-bg-hsl)};
 
-  scrollbar-color: hsla(var(--dh-color-bg-hsl), 0.5)
-    hsla(var(--dh-color-bg-hsl), 0.3); // firefox
+  scrollbar-color: hsla(var(--dh-color-scrollbar-hsl), 0.5)
+    hsla(var(--dh-color-scrollbar-hsl), 0.3); // firefox
 }
 
 /********** Monaco Overides *********/

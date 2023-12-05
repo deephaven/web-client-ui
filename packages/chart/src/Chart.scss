@@ -1,10 +1,7 @@
 @import '@deephaven/components/scss/custom.scss';
 
-$chart-bg: $content-bg;
 $plotly-notifier-margin-right: 15px;
-$plotly-notifier-note-bg: $gray-600;
 $plotly-notifier-note-border-radius: 2px;
-$plotly-color-btn-active: rgba(255, 255, 255, 70%);
 
 .plotly-notifier {
   margin-right: $plotly-notifier-margin-right;
@@ -17,7 +14,7 @@ $plotly-color-btn-active: rgba(255, 255, 255, 70%);
   color: $foreground !important;
   border: 0 !important;
   border-radius: $plotly-notifier-note-border-radius !important;
-  background: $plotly-notifier-note-bg !important;
+  background: var(--dh-color-plotly-notifier-note-bg) !important;
   overflow-wrap: normal !important;
   hyphens: unset !important;
   margin-bottom: $spacer-2 !important;
@@ -33,7 +30,7 @@ $plotly-color-btn-active: rgba(255, 255, 255, 70%);
 }
 
 .chart-wrapper {
-  background: $chart-bg;
+  background: var(--dh-color-chart-bg);
 
   .plot-container {
     .cartesianlayer text {
@@ -46,23 +43,23 @@ $plotly-color-btn-active: rgba(255, 255, 255, 70%);
     }
 
     .axistext path {
-      fill: $gray-600 !important;
-      box-shadow: 4px 4px $black;
+      fill: var(--dh-color-plotly-axis-text) !important;
+      box-shadow: 4px 4px var(--dh-color-black);
     }
 
     .zoomlayer .zoombox {
-      fill: rgba(0, 0, 0, 50%) !important;
+      fill: var(--dh-color-plotly-zoombox) !important;
     }
 
     .zoomlayer .zoombox-corners {
-      fill: $white;
-      stroke: $gray-900;
+      fill: var(--dh-color-plotly-zoombox-corners-fill);
+      stroke: var(--dh-color-plotly-zoombox-corners-stroke);
     }
   }
 
   // Tooltip arrow
   .js-plotly-plot .plotly [data-title]::before {
-    border-color: transparent transparent $tooltip-bg;
+    border-color: transparent transparent var(--dh-color-tooltip-bg);
 
     // Make the arrow appear above the box shadow of the body
     z-index: 1002;
@@ -70,10 +67,10 @@ $plotly-color-btn-active: rgba(255, 255, 255, 70%);
   // Tooltip body
   .js-plotly-plot .plotly [data-title]::after {
     border-radius: $border-radius;
-    background: $tooltip-bg;
-    color: $tooltip-color;
+    background: var(--dh-color-tooltip-bg);
+    color: var(--dh-color-tooltip-fg);
     padding: $tooltip-padding-y $tooltip-padding-x;
-    box-shadow: $tooltip-box-shadow;
+    box-shadow: var(--dh-color-tooltip-box-shadow);
 
     // Already set by plotly, just setting again in case it changes in the future so body shadow appears under arrow tip
     z-index: 1001;
@@ -93,7 +90,7 @@ $plotly-color-btn-active: rgba(255, 255, 255, 70%);
       &[data-attr='fill-active'] {
         svg {
           path {
-            fill: $plotly-color-btn-active !important;
+            fill: var(--dh-color-plotly-modebar-btn-active) !important;
           }
         }
       }
@@ -101,7 +98,7 @@ $plotly-color-btn-active: rgba(255, 255, 255, 70%);
       &[data-attr='fill-warning'] {
         svg {
           path {
-            fill: $warning !important;
+            fill: var(--dh-color-plotly-modebar-btn-warning) !important;
           }
         }
       }

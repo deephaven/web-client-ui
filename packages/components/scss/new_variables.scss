@@ -60,11 +60,11 @@ $ant-thickness: 1px;
 }
 
 @function background-opacity($i: 100) {
-  @return hsla-opacity('background', $i);
+  @return hsla-opacity('bg', $i);
 }
 
 @function foreground-opacity($i: 100) {
-  @return hsla-opacity('foreground', $i);
+  @return hsla-opacity('fg', $i);
 }
 
 $focus-bg-transparency: 0.12;

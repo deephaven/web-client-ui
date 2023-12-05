@@ -6,6 +6,7 @@
   --dh-color-fg-hsl: var(--dh-color-white-hsl);
   --dh-color-border-hsl: var(--dh-color-gray-500-hsl);
   --dh-color-content-bg-hsl: var(--dh-color-gray-100-hsl);
+  --dh-color-scrollbar-hsl: var(--dh-color-fg-hsl);
 
   --dh-color-action-hsl: var(--dh-color-gray-75-hsl);
   --dh-color-accent-hsl: var(--dh-color-blue-600-hsl);
@@ -128,6 +129,9 @@
     var(--dh-color-visual-blue-hsl),
     0.2
   );
+
+  /* Keyboard selected */
+  --dh-color-keyboard-selected-bg: hsla(var(--dh-color-accent-hsl), 0.5);
 
   /* Shadows / Overlays */
   --dh-color-dropshadow: hsla(var(--dh-color-visual-gray-hsl), 0.8);

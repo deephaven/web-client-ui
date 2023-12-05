@@ -81,4 +81,9 @@
 
   /* Navigation Menu */
   --dh-color-menu-item-fg: var(--dh-color-gray-700);
+
+  /* Tooltips */
+  --dh-color-tooltip-bg: var(--dh-color-gray-400);
+  --dh-color-tooltip-fg: var(--dh-color-fg);
+  --dh-color-tooltip-box-shadow: hsla(var(--dh-color-black-hsl), 0.8);
 }

@@ -2,7 +2,7 @@
 
 .csv-overlay {
   margin: $spacer-2;
-  background: rgba($content-bg, 0.7);
+  background: hsla(var(--dh-color-content-bg-hsl), 0.7);
   text-align: center;
   display: flex;
   flex-direction: column;

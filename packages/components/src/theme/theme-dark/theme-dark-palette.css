@@ -20,6 +20,8 @@
   /** Black & White */
   --dh-color-black-hsl: var(--dh-color-gray-50-hsl);
   --dh-color-white-hsl: var(--dh-color-gray-800-hsl);
+  --dh-color-true-black-hsl: 0deg, 0%, 0%;
+  --dh-color-true-white-hsl: 0deg, 0%, 100%;
 
   /* Blue HSL components */
   --dh-color-blue-100-hsl: 222deg, 65.3%, 19.2%;

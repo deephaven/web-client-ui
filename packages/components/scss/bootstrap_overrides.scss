@@ -154,7 +154,7 @@ $grid-gutter-width: 30px;
 //Visual Overrides
 $border-radius: 4px;
 $box-shadow: 0 0.1rem 1rem hsla(var(--dh-color-black-hsl), 0.45); //because our UI is so dark, we need darker default shadows
-$box-shadow-900: 0 0.1rem 1rem rgba(0, 0, 0, 45%); //darkest shadow for $black popups over $black UI
+$box-shadow-900: 0 0.1rem 1rem hsla(var(--dh-color-true-black-hsl), 0.45); //darkest shadow for $black popups over $black UI
 
 //Override Btn
 $btn-border-radius: 4rem;
@@ -215,9 +215,9 @@ $toast-error-bg: var(--dh-color-negative-default-bg);
 $toast-error-color: var(--dh-color-text);
 
 //tooltips
-$tooltip-bg: $gray-700;
-$tooltip-color: $foreground;
-$tooltip-box-shadow: 0 0.1rem 1.5rem 0.1rem hsla(var(--dh-color-black-hsl), 0.8);
+$tooltip-bg: var(--dh-color-tooltip-bg);
+$tooltip-color: var(--dh-color-tooltip-fg);
+$tooltip-box-shadow: 0 0.1rem 1.5rem 0.1rem var(--dh-color-tooltip-box-shadow);
 
 //drowdowns
 $dropdown-bg: $gray-600;
@@ -266,7 +266,7 @@ $table-dark-bg: $gray-800;
 $table-dark-accent-bg: var(--dh-color-highlight-hover);
 $table-dark-hover-bg: var(--dh-color-highlight-active);
 $table-dark-border-color: $gray-700;
-$popover-bg: $tooltip-bg;
+$popover-bg: var(--dh-color-tooltip-bg);
 $popover-border-color: var(--dh-color-overlay-modal-bg);
 $popover-header-bg: #000;
 $popover-arrow-outer-color: var(--dh-color-dropshadow);
