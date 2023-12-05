@@ -195,6 +195,9 @@
   --dh-color-visual-notice: hsl(var(--dh-color-visual-notice-hsl));
   --dh-color-visual-info: hsl(var(--dh-color-visual-info-hsl));
 
+  /* Editing */
+  --dh-color-modified: var(--dh-color-yellow-1300);
+
   /* Wells */
   --dh-color-well-bg: hsla(var(--dh-color-visual-gray-hsl), 0.02);
   --dh-color-well-border: hsla(var(--dh-color-visual-gray-hsl), 0.05);

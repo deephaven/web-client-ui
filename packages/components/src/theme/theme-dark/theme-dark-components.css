@@ -49,4 +49,36 @@
      */
       0.26
   );
+
+  /* Item List */
+  --dh-color-item-list-bg: transparent;
+  --dh-color-item-list-active-bg: var(--dh-color-highlight-active);
+  --dh-color-item-list-hover-bg: var(--dh-color-highlight-hover);
+  --dh-color-item-list-selected-fg: var(--dh-color-white);
+  --dh-color-item-list-selected-bg: var(--dh-color-highlight-selected);
+  --dh-color-item-list-selected-hover-bg: var(
+    --dh-color-highlight-selected-hover
+  );
+  --dh-color-item-list-selected-inactive-bg: var(--dh-color-gray-200);
+  --dh-color-item-list-selected-border: hsla(var(--dh-color-accent-hsl), 0.6);
+  --dh-color-item-list-drop-target-fg: var(--dh-color-white);
+
+  --dh-color-item-list-keyboard-selected-bg: hsla(
+    var(--dh-color-accent-hsl),
+    0.5
+  );
+
+  /* 
+   * There are a couple of related variables used in Enterprise SingleClickItemList.
+   * that aren't consumed in DHC. We should see if there is a way to include these
+   * in the theming variables.
+   * --dh-color-item-list-keyboard-selected-border
+   * --dh-color-item-list-keyboard-selected-hover-bg
+   */
+
+  /* Delete after confirming we don't need it 
+  --dh-color-item-list-invalid-bg: var(--dh-color-highlight-invalid); */
+
+  /* Navigation Menu */
+  --dh-color-menu-item-fg: var(--dh-color-gray-700);
 }

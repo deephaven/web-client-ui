@@ -1,11 +1,9 @@
 @import '../../scss/custom.scss';
 
-$navigation-menu-item-color: $gray-300;
-
 .btn-navigation-menu-item {
   display: flex;
   list-style: none;
-  color: $navigation-menu-item-color;
+  color: var(--dh-color-menu-item-fg);
   border-radius: 0;
   text-align: left;
   margin: 0;
@@ -32,7 +30,7 @@ $navigation-menu-item-color: $gray-300;
   }
 
   &:focus {
-    background: $list-selected;
+    background: var(--dh-color-item-list-selected-bg);
     border: $input-border-width solid $primary;
     box-shadow: $input-btn-focus-box-shadow;
     text-decoration: none;

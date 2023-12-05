@@ -4,14 +4,14 @@ $depth-line-color: $gray-600;
 $depth-margin: 5px;
 $depth-indentation: 8px;
 $item-list-color: $text-muted;
-$item-list-selected-nofocus-bg: $list-selected-inactive;
-$item-list-selected-bg: $list-selected;
-$item-list-selected-hover-bg: $list-selected-hover;
-$item-list-selection-border-color: $list-selected-border-color;
-$item-list-focused-bg: $list-selected;
-$item-list-hover-bg: $list-hover;
-$item-list-selected-color: $white;
-$item-list-drop-target-color: $white;
+$item-list-selected-nofocus-bg: var(--dh-color-item-list-selected-inactive-bg);
+$item-list-selected-bg: var(--dh-color-item-list-selected-bg);
+$item-list-selected-hover-bg: var(--dh-color-item-list-selected-hover-bg);
+$item-list-selection-border-color: var(--dh-color-item-list-selected-border);
+$item-list-focused-bg: var(--dh-color-item-list-selected-bg);
+$item-list-hover-bg: var(--dh-color-item-list-hover-bg);
+$item-list-selected-color: var(--dh-color-item-list-selected-fg);
+$item-list-drop-target-color: var(--dh-color-item-list-drop-target-fg);
 
 .file-list {
   position: absolute;
