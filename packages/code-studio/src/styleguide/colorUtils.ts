@@ -11,6 +11,10 @@ const REASSIGN_VARIABLE_GROUPS: Record<string, string> = {
   '--dh-color-black': 'gray',
   '--dh-color-white': 'gray',
   // Semantic
+  '--dh-color-border': 'General',
+  '--dh-color-bg': 'General',
+  '--dh-color-fg': 'General',
+  '--dh-color-content-bg': 'General',
   '--dh-color-visual-positive': 'Visual Status',
   '--dh-color-visual-negative': 'Visual Status',
   '--dh-color-visual-notice': 'Visual Status',
