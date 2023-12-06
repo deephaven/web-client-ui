@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import { Tooltip, useTheme } from '@deephaven/components';
 import { ColorUtils } from '@deephaven/utils';
 import palette from '@deephaven/components/src/theme/theme-dark/theme-dark-palette.css?inline';
@@ -28,16 +28,8 @@ function buildSwatchDataGroups() {
 }
 
 export function ThemeColors(): JSX.Element {
-  const [swatchDataGroups, setSwatchDataGroups] = useState(
-    buildSwatchDataGroups
-  );
-
   const { selectedThemeKey } = useTheme();
-
-  useEffect(() => {
-    // Rebuild swatches when themes change
-    setSwatchDataGroups(buildSwatchDataGroups());
-  }, [selectedThemeKey]);
+  const swatchDataGroups = useMemo(buildSwatchDataGroups, [selectedThemeKey]);
 
   return (
     <>

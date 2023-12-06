@@ -57,7 +57,7 @@ import {
 } from './EditableGridModel';
 import { EventHandlerResultOptions } from './EventHandlerResult';
 import { assertIsDefined } from './errors';
-import GridThemeContext from './GridThemeContext';
+import ThemeContext from './ThemeContext';
 import { DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
 import {
   EditingCell,
@@ -211,7 +211,7 @@ export type GridState = {
  * Can also add onClick and onContextMenu handlers to add custom functionality and menus.
  */
 class Grid extends PureComponent<GridProps, GridState> {
-  static contextType = GridThemeContext;
+  static contextType = ThemeContext;
 
   static defaultProps = {
     canvasOptions: { alpha: false } as CanvasRenderingContext2DSettings,
