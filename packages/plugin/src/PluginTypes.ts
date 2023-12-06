@@ -42,6 +42,8 @@ export function isLegacyAuthPlugin(
   return 'AuthPlugin' in plugin;
 }
 
+export type PluginModuleMap = Map<string, PluginModule>;
+
 /**
  * @deprecated Use TablePlugin instead
  */

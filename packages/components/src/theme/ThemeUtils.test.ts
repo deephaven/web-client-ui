@@ -308,11 +308,6 @@ describe('getDefaultBaseThemes', () => {
           './theme-dark-components.css?raw',
         ].join('\n'),
       },
-      {
-        name: 'Default Light',
-        themeKey: 'default-light',
-        styleContent: './theme-light-palette.css?raw',
-      },
     ]);
   });
 });
