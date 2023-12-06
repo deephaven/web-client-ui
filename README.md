@@ -62,7 +62,7 @@ VITE_JS_PLUGINS_DEV_PORT=4100
 ```
 
 ## Local Vite Config
-If you'd like to override the vite config for local dev, you can define a `packages/code-studio/vite.config.local.ts` file that extends from `vite.config.local`. This file is excluded via `.gitignore` which makes it easy to keep local overrides in tact.
+If you'd like to override the vite config for local dev, you can define a `packages/code-studio/vite.config.local.ts` file that extends from `vite.config.ts`. This file is excluded via `.gitignore` which makes it easy to keep local overrides in tact.
 
 The config can be used by running:
 
