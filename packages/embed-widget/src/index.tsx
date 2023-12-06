@@ -32,26 +32,9 @@ async function getCorePlugins() {
   const dashboardCorePlugins = await import(
     '@deephaven/dashboard-core-plugins'
   );
-  const {
-    GridPluginConfig,
-    PandasPluginConfig,
-    ChartPluginConfig,
-    ChartBuilderPluginConfig,
-    FilterPluginConfig,
-    MarkdownPluginConfig,
-    LinkerPluginConfig,
-    WidgetLoaderPluginConfig,
-  } = dashboardCorePlugins;
-  return [
-    GridPluginConfig,
-    PandasPluginConfig,
-    ChartPluginConfig,
-    ChartBuilderPluginConfig,
-    FilterPluginConfig,
-    MarkdownPluginConfig,
-    LinkerPluginConfig,
-    WidgetLoaderPluginConfig,
-  ];
+  const { GridPluginConfig, PandasPluginConfig, ChartPluginConfig } =
+    dashboardCorePlugins;
+  return [GridPluginConfig, PandasPluginConfig, ChartPluginConfig];
 }
 
 ReactDOM.render(

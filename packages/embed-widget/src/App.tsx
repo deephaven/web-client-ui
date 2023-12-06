@@ -4,12 +4,12 @@ import {
   ErrorBoundary,
   LoadingOverlay,
 } from '@deephaven/components'; // Use the loading spinner from the Deephaven components package
-import type { VariableDefinition } from '@deephaven/jsapi-types';
-import Log from '@deephaven/log';
-import './App.scss'; // Styles for in this app
 import { useConnection } from '@deephaven/jsapi-components';
+import type { VariableDefinition } from '@deephaven/jsapi-types';
 import { fetchVariableDefinition } from '@deephaven/jsapi-utils';
+import Log from '@deephaven/log';
 import { WidgetView } from '@deephaven/plugin';
+import './App.scss'; // Styles for in this app
 
 const log = Log.module('EmbedWidget.App');
 
@@ -19,25 +19,23 @@ const log = Log.module('EmbedWidget.App');
  * E.g. http://localhost:4030/?name=myWidget will attempt to open a widget `myWidget`
  * If no query param is provided, it will display an error.
  * By default, tries to connect to the server defined in the VITE_CORE_API_URL variable, which is set to http://localhost:10000/jsapi
- * See create-react-app docs for how to update these env vars: https://create-react-app.dev/docs/adding-custom-environment-variables/
+ * See Vite docs for how to update these env vars: https://vitejs.dev/guide/env-and-mode.html
  */
 function App(): JSX.Element {
   const [error, setError] = useState<string>();
   const [definition, setDefinition] = useState<VariableDefinition>();
-  const [isLoading, setIsLoading] = useState(true);
   const searchParams = useMemo(
     () => new URLSearchParams(window.location.search),
     []
   );
+  // Get the widget name from the query param `name`.
+  const name = searchParams.get('name');
   const connection = useConnection();
 
   useEffect(
     function initializeApp() {
       async function initApp(): Promise<void> {
         try {
-          // Get the widget name from the query param `name`.
-          const name = searchParams.get('name');
-
           if (name == null) {
             throw new Error('Missing URL parameter "name"');
           }
@@ -53,14 +51,14 @@ function App(): JSX.Element {
           log.error(`Unable to load widget definition for ${name}`, e);
           setError(`${e}`);
         }
-        setIsLoading(false);
       }
       initApp();
     },
-    [connection, searchParams]
+    [connection, name]
   );
 
-  const isLoaded = definition != null;
+  const isLoaded = definition != null && error == null;
+  const isLoading = definition == null && error == null;
 
   const fetch = useMemo(() => {
     if (definition == null) {
