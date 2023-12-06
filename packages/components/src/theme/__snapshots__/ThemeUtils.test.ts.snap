@@ -2,10 +2,27 @@
 
 exports[`DEFAULT_PRELOAD_DATA_VARIABLES should match snapshot 1`] = `
 {
+  "--dh-color-accent-bg": "#3b6bda",
+  "--dh-color-accent-contrast": "#fcfcfa",
+  "--dh-color-accent-down-bg": "#254ba4",
+  "--dh-color-accent-hover-bg": "#2f5bc0",
+  "--dh-color-accent-key-focus-bg": "#2f5bc0",
   "--dh-color-bg": "#1a171a",
   "--dh-color-fg": "#f0f0ee",
+  "--dh-color-input-bg": "#5b5a5c",
+  "--dh-color-input-border": "#929192",
+  "--dh-color-input-disabled-bg": "#373438",
+  "--dh-color-input-fg": "#f0f0ee",
+  "--dh-color-input-focus-border": "#3b6bdad9",
+  "--dh-color-input-placeholder": "#929192",
   "--dh-color-loading-spinner-primary": "#3b6bda",
   "--dh-color-loading-spinner-secondary": "#f0f0ee80",
+  "--dh-color-login-animation-bg": "#211f22",
+  "--dh-color-login-animation-fg": "#343e5d",
+  "--dh-color-login-animation-grid": "#373438",
+  "--dh-color-login-form-bg": "#403e41",
+  "--dh-color-login-status-message": "#929192",
+  "--dh-color-negative-bg": "#c73f61",
 }
 `;
 
