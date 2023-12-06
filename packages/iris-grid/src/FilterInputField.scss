@@ -56,13 +56,29 @@
     }
 
     &.iris-grid-has-filter {
-      // same as filter-bar-expanded-active-bg
-      background: var(--dh-color-accent-100);
+      // This is a hack to get the filter bar inputs to match the canvas rendered equivalent
+      // --dh-color-filter-bar-expanded-active-bg relies on transparency of being drawn overtop of
+      // the grid background. Since we can't do that here, we need to mimic the effect by stacking
+      // backgrounds using a single color linear gradients as a hack. Performance is not an issue
+      // since it only applies to the selected filter bar cell.
+      background: linear-gradient(
+          var(--dh-color-grid-filter-bar-expanded-active-bg) 100%,
+          var(--dh-color-grid-filter-bar-expanded-active-bg)
+        ),
+        linear-gradient(var(--dh-color-grid-bg) 100%, var(--dh-color-grid-bg));
     }
 
     &.active {
-      //same as filter-bar-expanded-active-cell-bg
-      background: var(--dh-color-accent-200);
+      // the canvas color to mimic here is based on the above, with yet another color stacked on top in
+      background: linear-gradient(
+          var(--dh-color-grid-filter-bar-expanded-active-cell-bg) 100%,
+          var(--dh-color-grid-filter-bar-expanded-active-cell-bg)
+        ),
+        linear-gradient(
+          var(--dh-color-grid-filter-bar-expanded-active-bg) 100%,
+          var(--dh-color-grid-filter-bar-expanded-active-bg)
+        ),
+        linear-gradient(var(--dh-color-grid-bg) 100%, var(--dh-color-grid-bg));
     }
 
     &:focus {

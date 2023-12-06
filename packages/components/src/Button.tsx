@@ -126,6 +126,30 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       );
     }
 
+    // Best effort backwards-compatible attempt to auto add margin to icon if text is also present
+    // We would need to audit our usage of Buttons to remove margins by classname to just add the margin to every icon button with children
+    if (iconElem != null && children != null) {
+      // check if react children contains a text node to a depth of 2
+      // to exlude poppers/menus, but not button text nested in spans
+      let containsTextNode = false;
+      React.Children.forEach(children, child => {
+        if (typeof child === 'string') {
+          containsTextNode = true;
+        } else if (React.isValidElement(child)) {
+          React.Children.forEach(child.props.children, grandchild => {
+            if (typeof grandchild === 'string') {
+              containsTextNode = true;
+            }
+          });
+        }
+      });
+      if (containsTextNode) {
+        iconElem = React.cloneElement(iconElem, {
+          className: classNames('mr-1', iconElem.props.className),
+        });
+      }
+    }
+
     let tooltipElem: JSX.Element | undefined;
     if (tooltip !== undefined) {
       tooltipElem =
@@ -180,10 +204,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     // disabled buttons tooltips need a wrapped element to receive pointer events
     // https://jakearchibald.com/2017/events-and-disabled-form-fields/
 
-    return disabled ? (
+    return disabled && tooltip != null ? (
       <span className="btn-disabled-wrapper">
         {button}
-        {tooltip !== undefined && tooltipElem}
+        {tooltipElem}
       </span>
     ) : (
       button

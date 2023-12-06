@@ -10,6 +10,21 @@
 
   --dh-color-action-hsl: var(--dh-color-gray-75-hsl);
   --dh-color-accent-hsl: var(--dh-color-blue-600-hsl);
+  --dh-color-accent-100-hsl: var(--dh-color-blue-100-hsl);
+  --dh-color-accent-200-hsl: var(--dh-color-blue-200-hsl);
+  --dh-color-accent-300-hsl: var(--dh-color-blue-300-hsl);
+  --dh-color-accent-400-hsl: var(--dh-color-blue-400-hsl);
+  --dh-color-accent-500-hsl: var(--dh-color-blue-500-hsl);
+  --dh-color-accent-600-hsl: var(--dh-color-blue-600-hsl);
+  --dh-color-accent-700-hsl: var(--dh-color-blue-700-hsl);
+  --dh-color-accent-800-hsl: var(--dh-color-blue-800-hsl);
+  --dh-color-accent-900-hsl: var(--dh-color-blue-900-hsl);
+  --dh-color-accent-1000-hsl: var(--dh-color-blue-1000-hsl);
+  --dh-color-accent-1100-hsl: var(--dh-color-blue-1100-hsl);
+  --dh-color-accent-1200-hsl: var(--dh-color-blue-1200-hsl);
+  --dh-color-accent-1300-hsl: var(--dh-color-blue-1300-hsl);
+  --dh-color-accent-1400-hsl: var(--dh-color-blue-1400-hsl);
+
   --dh-color-info-hsl: var(--dh-color-cyan-1000-hsl);
   --dh-color-neutral-hsl: var(--dh-color-gray-500-hsl);
   --dh-color-notice-hsl: var(--dh-color-yellow-1000-hsl);
@@ -77,20 +92,20 @@
   --dh-color-contrast-light: hsl(var(--dh-color-contrast-light-hsl));
 
   /** Accent Colors */
-  --dh-color-accent-100: var(--dh-color-blue-100);
-  --dh-color-accent-200: var(--dh-color-blue-200);
-  --dh-color-accent-300: var(--dh-color-blue-300);
-  --dh-color-accent-400: var(--dh-color-blue-400);
-  --dh-color-accent-500: var(--dh-color-blue-500);
-  --dh-color-accent-600: var(--dh-color-blue-600);
-  --dh-color-accent-700: var(--dh-color-blue-700);
-  --dh-color-accent-800: var(--dh-color-blue-800);
-  --dh-color-accent-900: var(--dh-color-blue-900);
-  --dh-color-accent-1000: var(--dh-color-blue-1000);
-  --dh-color-accent-1100: var(--dh-color-blue-1100);
-  --dh-color-accent-1200: var(--dh-color-blue-1200);
-  --dh-color-accent-1300: var(--dh-color-blue-1300);
-  --dh-color-accent-1400: var(--dh-color-blue-1400);
+  --dh-color-accent-100: hsl(var(--dh-color-accent-100-hsl));
+  --dh-color-accent-200: hsl(var(--dh-color-accent-200-hsl));
+  --dh-color-accent-300: hsl(var(--dh-color-accent-300-hsl));
+  --dh-color-accent-400: hsl(var(--dh-color-accent-400-hsl));
+  --dh-color-accent-500: hsl(var(--dh-color-accent-500-hsl));
+  --dh-color-accent-600: hsl(var(--dh-color-accent-600-hsl));
+  --dh-color-accent-700: hsl(var(--dh-color-accent-700-hsl));
+  --dh-color-accent-800: hsl(var(--dh-color-accent-800-hsl));
+  --dh-color-accent-900: hsl(var(--dh-color-accent-900-hsl));
+  --dh-color-accent-1000: hsl(var(--dh-color-accent-1000-hsl));
+  --dh-color-accent-1100: hsl(var(--dh-color-accent-1100-hsl));
+  --dh-color-accent-1200: hsl(var(--dh-color-accent-1200-hsl));
+  --dh-color-accent-1300: hsl(var(--dh-color-accent-1300-hsl));
+  --dh-color-accent-1400: hsl(var(--dh-color-accent-1400-hsl));
 
   /* Accent Background */
   --dh-color-accent-default-bg: hsl(var(--dh-color-accent-hsl));
