@@ -1,16 +1,16 @@
-# Embedded Deephaven Chart
+# Embedded Deephaven Widget
 
-This project uses [Vite](https://vitejs.dev/guide/). It is to provide an example React application connecting to Deephaven and displaying a chart or plot.
+This project uses [Vite](https://vitejs.dev/guide/). It is to provide an example React application connecting to Deephaven and displaying a widget.
 
 ## Getting Started
 
 1. **Start the server**: Following instructions on GitHub to run deephaven-core with python: https://github.com/deephaven/deephaven-core/#run-deephaven.
 2. **Install dependencies**: Run `npm install` to install all dependencies required.
-3. **Start the UI**: Run `npm start` to start up the UI. It should automatically open up at http://localhost:4020.
+3. **Start the UI**: Run `npm start` to start up the UI. It should automatically open up at http://localhost:4030.
 
 ## Query Parameters
 
-- `name`: Required. The name of the chart to load
+- `name`: Required. The name of the widget to load
 
 ## Advanced
 
@@ -18,7 +18,7 @@ This project uses [Vite](https://vitejs.dev/guide/). It is to provide an example
 
 See the guide for how to set up core in Application Mode: https://deephaven.io/core/docs/how-to-guides/application-mode/
 
-Once Deephaven is running, you can open a chart with a specific name by adding the query param `name`, e.g. http://localhost:4020/?name=world
+Once Deephaven is running, you can open a widget with a specific name by adding the query param `name`, e.g. http://localhost:4030/?name=world
 
 ### Configuring Server Address
 
@@ -31,7 +31,7 @@ In the project directory, you can run:
 ### `npm start`
 
 Runs the app in the development mode.\
-Open [http://localhost:4020](http://localhost:4020) to view it in the browser.
+Open [http://localhost:4030](http://localhost:4030) to view it in the browser.
 
 The page will reload if you make edits.\
 You will also see any lint errors in the console.
