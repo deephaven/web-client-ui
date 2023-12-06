@@ -35,22 +35,22 @@ function App(): JSX.Element {
     function initializeApp() {
       async function initApp(): Promise<void> {
         try {
-          // Get the table name from the query param `name`.
+          // Get the widget name from the query param `name`.
           const name = searchParams.get('name');
 
           if (name == null) {
-            throw new Error('No name param provided');
+            throw new Error('Missing URL parameter "name"');
           }
 
-          log.debug('Loading widget', name, '...');
+          log.debug(`Loading widget definition for ${name}...`);
 
           const newDefinition = await fetchVariableDefinition(connection, name);
 
           setDefinition(newDefinition);
 
-          log.debug('Widget successfully loaded!');
+          log.debug(`Widget definition successfully loaded for ${name}`);
         } catch (e: unknown) {
-          log.error('Unable to load figure', e);
+          log.error(`Unable to load widget definition for ${name}`, e);
           setError(`${e}`);
         }
         setIsLoading(false);
