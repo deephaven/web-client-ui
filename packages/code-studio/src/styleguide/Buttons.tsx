@@ -123,6 +123,7 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
         <Button kind="ghost" icon={dhTruck}>
           Text Button
         </Button>
+        <Button kind="danger">Fail Button</Button>
       </div>
     );
   }
