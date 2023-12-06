@@ -1,6 +1,8 @@
 import React, { useContext } from 'react';
+import { act, render, screen } from '@testing-library/react';
 import { AUTH_HANDLER_TYPE_ANONYMOUS } from '@deephaven/auth-plugins';
 import { ApiContext } from '@deephaven/jsapi-bootstrap';
+import { PluginModuleMap, PluginsContext } from '@deephaven/plugin';
 import { BROADCAST_LOGIN_MESSAGE } from '@deephaven/jsapi-utils';
 import type {
   CoreClient,
@@ -8,10 +10,7 @@ import type {
   dh as DhType,
 } from '@deephaven/jsapi-types';
 import { TestUtils } from '@deephaven/utils';
-import { act, render, screen } from '@testing-library/react';
 import AppBootstrap from './AppBootstrap';
-import { PluginsContext } from './PluginsBootstrap';
-import { PluginModuleMap } from '../plugins';
 
 const { asMock } = TestUtils;
 

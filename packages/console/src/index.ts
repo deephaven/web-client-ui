@@ -6,6 +6,7 @@ export { default as ConsoleInput } from './ConsoleInput';
 export { default as ConsoleMenu } from './ConsoleMenu';
 export { default as SHORTCUTS } from './ConsoleShortcuts';
 export { default as ConsoleStatusBar } from './ConsoleStatusBar';
+export * from './monaco/MonacoThemeProvider';
 export { default as MonacoUtils } from './monaco/MonacoUtils';
 export { default as Editor } from './notebook/Editor';
 export { default as ScriptEditor } from './notebook/ScriptEditor';

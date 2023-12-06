@@ -1,4 +1,3 @@
-import { getThemeKey, ThemeData } from '@deephaven/components';
 import Log from '@deephaven/log';
 import {
   type PluginModuleMap,
@@ -11,8 +10,6 @@ import {
   PluginType,
   isLegacyAuthPlugin,
   isLegacyPlugin,
-  isThemePlugin,
-  ThemePlugin,
 } from '@deephaven/plugin';
 import loadRemoteModule from './loadRemoteModule';
 
@@ -171,38 +168,4 @@ export function getAuthPluginComponent(
   log.info('Using LoginPlugin', name);
 
   return component;
-}
-
-/**
- * Extract theme data from theme plugins in the given plugin map.
- * @param pluginMap
- */
-export function getThemeDataFromPlugins(
-  pluginMap: PluginModuleMap
-): ThemeData[] {
-  const themePluginEntries = [...pluginMap.entries()].filter(
-    (entry): entry is [string, ThemePlugin] => isThemePlugin(entry[1])
-  );
-
-  log.debug('Getting theme data from plugins', themePluginEntries);
-
-  return themePluginEntries
-    .map(([pluginName, plugin]) => {
-      // Normalize to an array since config can be an array of configs or a
-      // single config
-      const configs = Array.isArray(plugin.themes)
-        ? plugin.themes
-        : [plugin.themes];
-
-      return configs.map(
-        ({ name, baseTheme, styleContent }) =>
-          ({
-            baseThemeKey: `default-${baseTheme ?? 'dark'}`,
-            themeKey: getThemeKey(pluginName, name),
-            name,
-            styleContent,
-          }) as const
-      );
-    })
-    .flat();
 }

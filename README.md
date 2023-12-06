@@ -52,6 +52,45 @@ If your DHC address is different from the default `http://localhost:10000`, edit
 VITE_PROXY_URL=http://<dhc-host>:<port>
 ```
 
+## Local Plugin Development
+The plugins repo supports [serving plugins locally](https://github.com/deephaven/deephaven-plugins/blob/main/README.md#serve-plugins). DHC can be configured to proxy `js-plugins`requests to the local dev server by setting `VITE_JS_PLUGINS_DEV_PORT` in `packages/code-studio/.env.development.local`.
+
+e.g. To point to the default dev port:
+
+```
+VITE_JS_PLUGINS_DEV_PORT=4100
+```
+
+## Local Vite Config
+If you'd like to override the vite config for local dev, you can define a `packages/code-studio/vite.config.local.ts` file that extends from `vite.config.ts`. This file is excluded via `.gitignore` which makes it easy to keep local overrides in tact.
+
+The config can be used by running:
+
+`npm run start:app -- -- -- --config=vite.config.local.ts`
+
+For example, to proxy `js-plugins` requests to a local server, you could use this `vite.config.local.ts`:
+
+```typescript
+export default defineConfig((config: ConfigEnv) => {
+  const baseConfig = (createBaseConfig as UserConfigFn)(config) as UserConfig;
+
+  return {
+    ...baseConfig,
+    server: {
+      ...baseConfig.server,
+      proxy: {
+        ...baseConfig.server?.proxy,
+        '/js-plugins': {
+          target: 'http://localhost:5173',
+          changeOrigin: true,
+          rewrite: path => path.replace(/^\/js-plugins/, ''),
+        },
+      },
+    },
+  };
+});
+```
+
 ## Debugging from VSCode
 
 We have a pre-defined launch config that lets you set breakpoints directly in VSCode for debugging browser code. The `Launch Deephaven` config will launch a new Chrome window that stores its data in your repo workspace. With this setup, you only need to install the React and Redux devtool extensions once. They will persist to future launches using the launch config.

@@ -1,7 +1,5 @@
 import { createContext } from 'react';
-import { type PluginModule } from './PluginTypes';
-
-export type PluginModuleMap = Map<string, PluginModule>;
+import { type PluginModuleMap } from './PluginTypes';
 
 export const PluginsContext = createContext<PluginModuleMap | null>(null);
 

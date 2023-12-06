@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React from 'react';
-import { Tooltip } from '@deephaven/components';
+import React, { useMemo } from 'react';
+import { Tooltip, useTheme } from '@deephaven/components';
 import { ColorUtils } from '@deephaven/utils';
 import palette from '@deephaven/components/src/theme/theme-dark/theme-dark-palette.css?inline';
 import semantic from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic.css?inline';
@@ -16,16 +16,21 @@ import {
   INVALID_COLOR_BORDER_STYLE,
 } from './colorUtils';
 
-const swatchDataGroups = {
-  'Theme Color Palette': buildColorGroups('palette', palette, 1),
-  'Semantic Colors': buildColorGroups('semantic', semantic, 1),
-  'Chart Colors': buildColorGroups('chart', chart, 2),
-  'Editor Colors': buildColorGroups('editor', semanticEditor, 2),
-  'Grid Colors': buildColorGroups('grid', semanticGrid, 2),
-  'Component Colors': buildColorGroups('component', components, 1),
-};
+function buildSwatchDataGroups() {
+  return {
+    'Theme Color Palette': buildColorGroups('palette', palette, 1),
+    'Semantic Colors': buildColorGroups('semantic', semantic, 1),
+    'Chart Colors': buildColorGroups('chart', chart, 2),
+    'Editor Colors': buildColorGroups('editor', semanticEditor, 2),
+    'Grid Colors': buildColorGroups('grid', semanticGrid, 2),
+    'Component Colors': buildColorGroups('component', components, 1),
+  };
+}
 
 export function ThemeColors(): JSX.Element {
+  const { selectedThemeKey } = useTheme();
+  const swatchDataGroups = useMemo(buildSwatchDataGroups, [selectedThemeKey]);
+
   return (
     <>
       {Object.entries(swatchDataGroups).map(([label, data]) => (
