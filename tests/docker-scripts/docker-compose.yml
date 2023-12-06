@@ -4,6 +4,8 @@ services:
   dhc-server:
     image: ghcr.io/deephaven/server:${DHC_VERSION:-edge}
     pull_policy: always
+    volume:
+      - ./data:/data
     expose:
       - 10000
     environment:

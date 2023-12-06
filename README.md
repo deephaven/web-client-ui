@@ -95,6 +95,7 @@ Note that log messages from other sources such as react prop types will still be
 If you want to collect coverage locally, run `npm test -- --coverage`
 
 ### Debugging Unit Tests
+
 Unit tests can be debugged by running jest with the `--inspect-brk` flag and attaching to the node process in vscode's debugger. There are 2 launch configs that make this easier:
 
 - Debug Jest Tests - This will prompt you for a test name or pattern and will then run tests in watch mode with an attached debugger.
@@ -113,6 +114,7 @@ Snapshots are used by end-to-end tests to visually verify the output. Snapshots 
 Once you are satisfied with the snapshots and everything is passing locally, you need to use the docker image to update snapshots for CI (unless you are running the same platform as CI (Ubuntu)). Run `npm run e2e:update-ci-snapshots` to update the CI snapshots. The snapshots will be written to your local directories. The Linux snapshots should be committed to git (non-Linux snapshots should be automatically ignored by git).
 
 ### Differences in CI vs Local Docker Environments
+
 Note that while both the GH actions and docker configuration use Ubuntu 22.04 images, their configurations are not identical. One known difference is the available system fonts. In some cases this can cause snapshots to differ when running locally vs in CI such as when rendering unicode characters. To mitigate this, some of our e2e tests have been configured to ensure a consistent unicode font fallback.
 
 - The `DejaVu Sans` font gets installed via the [Dockerfile](tests/docker-scripts/Dockerfile). It already exists in the CI environment.
@@ -122,7 +124,13 @@ Note that while both the GH actions and docker configuration use Ubuntu 22.04 im
 
 These scripts are recommended while developing your tests as they will be quicker to iterate and offer headed mode for debugging. You will need to run `npx playwright install` before using these scripts. You may also need to update the browsers with the same command any time the Playwright version is updated. See [Playwright Browsers](https://playwright.dev/docs/browsers) for more details.
 
-You must have a web UI running on `localhost:4000/ide/` (dev mode and build preview are both fine), and `deephaven-core` running on port 10000 with anonymous authentication for E2E tests. See [this guide](https://deephaven.io/core/docs/how-to-guides/authentication/auth-anon/) for more details on anonymous authentication.
+You must have a web UI running on `localhost:4000/ide/` (dev mode and build preview are both fine), and `deephaven-core` running on port 10000 with anonymous authentication for E2E tests and application mode using the [./tests/docker-scripts/data/app.d](./tests/docker-scripts/data/app.d/) folder. For example, the command you would run from the deephaven-core repo would be (replacing the path to point to the app.d directory on your machine):
+
+```
+START_OPTS="-DAuthHandlers=io.deephaven.auth.AnonymousAuthenticationHandler -Ddeephaven.application.dir=/path/to/web-client-ui/tests/docker-scripts/data/app.d" ./gradlew server-jetty-app:run
+```
+
+See [this guide](https://deephaven.io/core/docs/how-to-guides/authentication/auth-anon/) for more details on anonymous authentication.
 
 - `npm run e2e`: Run end-to-end tests in headless mode.
 - `npm run e2e:headed`: Runs end-to-end tests in headed debug mode. Also ignores snapshots since a test suite will stop once 1 snapshot comparison fails. Useful if you need to debug why a particular test isn't working. For example, to debug the `table.spec.ts` test directly, you could run `npm run e2e:headed -- ./tests/table.spec.ts`.
