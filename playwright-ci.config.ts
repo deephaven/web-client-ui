@@ -11,7 +11,7 @@ const config: PlaywrightTestConfig = {
     timeout: 60 * 1000,
     reuseExistingServer: false,
   },
-  reporter: 'github',
+  reporter: [['github'], ['html']],
 };
 
 export default config;
