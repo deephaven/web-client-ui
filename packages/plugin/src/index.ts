@@ -1,3 +1,4 @@
+export * from './ObjectView';
 export * from './PluginsContext';
 export * from './PluginTypes';
 export * from './PluginUtils';

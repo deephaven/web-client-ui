@@ -1,32 +1,17 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ContextMenuRoot, LoadingOverlay } from '@deephaven/components'; // Use the loading spinner from the Deephaven components package
-import type { dh as DhType, IdeConnection } from '@deephaven/jsapi-types';
+import {
+  ContextMenuRoot,
+  ErrorBoundary,
+  LoadingOverlay,
+} from '@deephaven/components'; // Use the loading spinner from the Deephaven components package
+import type { VariableDefinition } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import './App.scss'; // Styles for in this app
-import { useApi } from '@deephaven/jsapi-bootstrap';
 import { useConnection } from '@deephaven/jsapi-components';
-import EmbeddedWidget, { EmbeddedWidgetType } from './EmbeddedWidget';
+import { fetchVariableDefinition } from '@deephaven/jsapi-utils';
+import { WidgetView } from '@deephaven/plugin';
 
 const log = Log.module('EmbedWidget.App');
-
-/**
- * Load an existing Deephaven widget with the connection provided
- * @param dh JSAPI instance
- * @param connection The Deephaven Connection object
- * @param name Name of the widget to load
- * @returns Deephaven widget
- */
-async function loadWidget(
-  dh: DhType,
-  connection: IdeConnection,
-  name: string
-): Promise<EmbeddedWidgetType> {
-  log.info(`Fetching widget ${name}...`);
-
-  const definition = await connection.getVariableDefinition(name);
-  const fetch = () => connection.getObject(definition);
-  return { definition, fetch };
-}
 
 /**
  * A functional React component that displays a Deephaven figure using the @deephaven/chart package.
@@ -38,14 +23,13 @@ async function loadWidget(
  */
 function App(): JSX.Element {
   const [error, setError] = useState<string>();
-  const [embeddedWidget, setEmbeddedWidget] = useState<EmbeddedWidgetType>();
+  const [definition, setDefinition] = useState<VariableDefinition>();
   const [isLoading, setIsLoading] = useState(true);
   const searchParams = useMemo(
     () => new URLSearchParams(window.location.search),
     []
   );
   const connection = useConnection();
-  const dh = useApi();
 
   useEffect(
     function initializeApp() {
@@ -60,10 +44,9 @@ function App(): JSX.Element {
 
           log.debug('Loading widget', name, '...');
 
-          // Load the widget.
-          const newWidget = await loadWidget(dh, connection, name);
+          const newDefinition = await fetchVariableDefinition(connection, name);
 
-          setEmbeddedWidget(newWidget);
+          setDefinition(newDefinition);
 
           log.debug('Widget successfully loaded!');
         } catch (e: unknown) {
@@ -74,14 +57,27 @@ function App(): JSX.Element {
       }
       initApp();
     },
-    [dh, connection, searchParams]
+    [connection, searchParams]
   );
 
-  const isLoaded = embeddedWidget != null;
+  const isLoaded = definition != null;
+
+  const fetch = useMemo(() => {
+    if (definition == null) {
+      return async () => {
+        throw new Error('Definition is null');
+      };
+    }
+    return () => connection.getObject(definition);
+  }, [connection, definition]);
 
   return (
     <div className="App">
-      {isLoaded && <EmbeddedWidget widget={embeddedWidget} />}
+      {isLoaded && (
+        <ErrorBoundary>
+          <WidgetView type={definition.type} fetch={fetch} />
+        </ErrorBoundary>
+      )}
       {!isLoaded && (
         <LoadingOverlay
           isLoaded={isLoaded}

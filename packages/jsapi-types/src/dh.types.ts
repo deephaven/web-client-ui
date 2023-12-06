@@ -1071,7 +1071,6 @@ export interface IdeConnection
   subscribeToFieldUpdates: (
     param: (changes: VariableChanges) => void
   ) => () => void;
-  getVariableDefinition: (name: string) => Promise<VariableDefinition>;
 }
 
 export interface ItemDetails {

@@ -1,5 +1,4 @@
 import type { BaseThemeType } from '@deephaven/components';
-import { type Widget } from '@deephaven/jsapi-types';
 import {
   type EventEmitter,
   type ItemContainer,
@@ -105,7 +104,7 @@ export function isDashboardPlugin(
 }
 
 export interface WidgetComponentProps {
-  fetch: () => Promise<Widget>;
+  fetch: () => Promise<unknown>;
 }
 
 export interface WidgetPanelProps extends WidgetComponentProps {
