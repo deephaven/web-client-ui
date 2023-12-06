@@ -27,7 +27,7 @@ $white: var(--dh-color-white, #f0f0ee);
 
 //Define some UI colors
 $interfacegray: var(--dh-color-content-bg, #2d2a2e);
-$interfaceblue: var(--dh-color-accent-default-bg);
+$interfaceblue: var(--dh-color-accent-bg);
 $interfacewhite: $white;
 $interfaceblack: $black;
 $content-bg: var(--dh-color-content-bg, #2d2a2e);
@@ -90,16 +90,16 @@ $body-bg: $black;
 $body-color: $interfacewhite;
 
 // Set brand colors
-$primary: var(--dh-color-accent-default-bg);
+$primary: var(--dh-color-accent-bg);
 $primary-hover: var(--dh-color-accent-hover-bg);
 $primary-dark: var(--dh-color-accent-down-bg);
 $primary-light: var(--dh-color-accent-1100);
-$secondary: var(--dh-color-neutral-default-bg);
+$secondary: var(--dh-color-neutral-bg);
 $secondary-hover: var(--dh-color-neutral-hover-bg);
 $success: $green;
 $info: $yellow;
 $warning: $orange;
-$danger: var(--dh-color-negative-default-bg);
+$danger: var(--dh-color-negative-bg);
 $danger-hover: var(--dh-color-negative-hover-bg);
 // We really don't want to use $light or $dark variables, but Bootstrap defines
 // them in _variables.scss. Explicitly setting them to ensure we are in control
@@ -211,7 +211,7 @@ $modal-md: 550px;
 // Toast notification
 $toast-bg: var(--dh-color-accent-100);
 $toast-color: var(--dh-color-text);
-$toast-error-bg: var(--dh-color-negative-default-bg);
+$toast-error-bg: var(--dh-color-negative-bg);
 $toast-error-color: var(--dh-color-text);
 
 //tooltips

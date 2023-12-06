@@ -1,8 +1,7 @@
 import { useLayoutEffect, useRef } from 'react';
 import { ColorUtils } from '@deephaven/utils';
 
-export const INVALID_COLOR_BORDER_STYLE =
-  '2px solid var(--dh-color-notice-default-bg)';
+export const INVALID_COLOR_BORDER_STYLE = '2px solid var(--dh-color-notice-bg)';
 
 // Group names are extracted from var names via a regex capture group. Most of
 // them work pretty well, but some need to be remapped to a more appropriate

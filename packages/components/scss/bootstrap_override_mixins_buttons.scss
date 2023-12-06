@@ -7,8 +7,8 @@
   $semantic-value: map.get($bootstrap-dh-semantic-map, $bootstrap-value) or '';
 
   // DH Customization: Convert semantic value to css variables
-  $background: var(--dh-color-#{$semantic-value}-default-bg);
-  $border: var(--dh-color-#{$semantic-value}-default-bg);
+  $background: var(--dh-color-#{$semantic-value}-bg);
+  $border: var(--dh-color-#{$semantic-value}-bg);
   $boxshadow-color: hsla(var(--dh-color-#{$semantic-value}-hsl), 0.5);
   $hover-background: var(--dh-color-#{$semantic-value}-hover-bg);
   $hover-border: var(--dh-color-#{$semantic-value}-hover-bg);
@@ -75,7 +75,7 @@
 @mixin button-outline-variant($bootstrap-value) {
   $semantic-value: map.get($bootstrap-dh-semantic-map, $bootstrap-value) or '';
 
-  $color: var(--dh-color-#{$semantic-value}-default-bg);
+  $color: var(--dh-color-#{$semantic-value}-bg);
   $boxshadow-color: hsla(var(--dh-color-#{$semantic-value}-hsl), 0.5);
   $hover-color: color-yiq($semantic-value);
   $hover-background: var(--dh-color-#{$semantic-value}-hover-bg);

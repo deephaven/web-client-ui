@@ -72,7 +72,7 @@ pre {
 
   $semantic-value: map.get($bootstrap-dh-semantic-map, $value) or '';
   @if $semantic-value != '' {
-    $var: var(--dh-color-#{$semantic-value}-default-bg);
+    $var: var(--dh-color-#{$semantic-value}-bg);
   } @else if $value == 'light' {
     $var: var(--dh-color-gray-light);
   } @else if $value == 'dark' {

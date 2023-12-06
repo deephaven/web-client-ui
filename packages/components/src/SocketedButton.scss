@@ -1,6 +1,6 @@
 @import '../scss/custom.scss';
 
-$socket-button-bg: var(--dh-color-neutral-default-bg);
+$socket-button-bg: var(--dh-color-neutral-bg);
 $socket-button-disabled-bg: $input-disabled-bg;
 $socket-button-disabled-border-color: var(--dh-color-black);
 $socket-button-hover-bg: $primary-hover;
@@ -109,8 +109,8 @@ $socket-bg: $content-bg;
   border-color: hsla(var(--dh-color-negative-hsl), 0.85);
 
   &::after {
-    border-color: var(--dh-color-negative-default-bg);
-    background-color: var(--dh-color-negative-default-bg);
+    border-color: var(--dh-color-negative-bg);
+    background-color: var(--dh-color-negative-bg);
   }
 
   .btn-socketed-icon.linked {

@@ -108,27 +108,27 @@
   --dh-color-accent-1400: hsl(var(--dh-color-accent-1400-hsl));
 
   /* Accent Background */
-  --dh-color-accent-default-bg: hsl(var(--dh-color-accent-hsl));
+  --dh-color-accent-bg: hsl(var(--dh-color-accent-hsl));
   --dh-color-accent-hover-bg: var(--dh-color-accent-500);
   --dh-color-accent-down-bg: var(--dh-color-accent-400);
   --dh-color-accent-key-focus-bg: var(--dh-color-accent-500);
   --dh-color-accent-contrast: hsl(var(--dh-color-accent-contrast-hsl));
 
   /* Background Defaults */
-  --dh-color-default-gray-bg: var(--dh-color-gray-700);
-  --dh-color-default-blue-bg: var(--dh-color-blue-700);
-  --dh-color-default-red-bg: var(--dh-color-red-700);
-  --dh-color-default-orange-bg: var(--dh-color-orange-800);
-  --dh-color-default-yellow-bg: var(--dh-color-yellow-1000);
-  --dh-color-default-chartreuse-bg: var(--dh-color-chartreuse-900);
-  --dh-color-default-celery-bg: var(--dh-color-celery-800);
-  --dh-color-default-green-bg: var(--dh-color-green-700);
-  --dh-color-default-seafoam-bg: var(--dh-color-seafoam-700);
-  --dh-color-default-cyan-bg: var(--dh-color-cyan-700);
-  --dh-color-default-indigo-bg: var(--dh-color-indigo-700);
-  --dh-color-default-purple-bg: var(--dh-color-purple-700);
-  --dh-color-default-fuchsia-bg: var(--dh-color-fuchsia-700);
-  --dh-color-default-magenta-bg: var(--dh-color-magenta-700);
+  --dh-color-gray-bg: var(--dh-color-gray-700);
+  --dh-color-blue-bg: var(--dh-color-blue-700);
+  --dh-color-red-bg: var(--dh-color-red-700);
+  --dh-color-orange-bg: var(--dh-color-orange-800);
+  --dh-color-yellow-bg: var(--dh-color-yellow-1000);
+  --dh-color-chartreuse-bg: var(--dh-color-chartreuse-900);
+  --dh-color-celery-bg: var(--dh-color-celery-800);
+  --dh-color-green-bg: var(--dh-color-green-700);
+  --dh-color-seafoam-bg: var(--dh-color-seafoam-700);
+  --dh-color-cyan-bg: var(--dh-color-cyan-700);
+  --dh-color-indigo-bg: var(--dh-color-indigo-700);
+  --dh-color-purple-bg: var(--dh-color-purple-700);
+  --dh-color-fuchsia-bg: var(--dh-color-fuchsia-700);
+  --dh-color-magenta-bg: var(--dh-color-magenta-700);
 
   /* Focus */
   --dh-color-focus: var(--dh-color-blue-800);
@@ -154,40 +154,40 @@
   --dh-color-overlay-hover-bg: hsla(var(--dh-color-visual-gray-hsl), 0.08);
 
   /* Negative Background */
-  --dh-color-negative-default-bg: hsl(var(--dh-color-negative-hsl));
+  --dh-color-negative-bg: hsl(var(--dh-color-negative-hsl));
   --dh-color-negative-hover-bg: var(--dh-color-red-500);
   --dh-color-negative-down-bg: var(--dh-color-red-400);
   --dh-color-negative-key-focus-bg: var(--dh-color-red-500);
   --dh-color-negative-contrast: hsl(var(--dh-color-negative-contrast-hsl));
 
   /* Neutral */
-  --dh-color-neutral-default-bg: hsl(var(--dh-color-neutral-hsl));
+  --dh-color-neutral-bg: hsl(var(--dh-color-neutral-hsl));
   --dh-color-neutral-hover-bg: var(--dh-color-gray-400);
   --dh-color-neutral-down-bg: var(--dh-color-gray-300);
   --dh-color-neutral-key-focus-bg: var(--dh-color-gray-400);
   --dh-color-neutral-contrast: hsl(var(--dh-color-neutral-contrast-hsl));
 
-  --dh-color-neutral-subdued-default-bg: var(--dh-color-gray-400);
+  --dh-color-neutral-subdued-bg: var(--dh-color-gray-400);
   --dh-color-neutral-subdued-hover-bg: var(--dh-color-gray-300);
   --dh-color-neutral-subdued-down-bg: var(--dh-color-gray-200);
   --dh-color-neutral-subdued-key-focus-bg: var(--dh-color-gray-300);
 
   /* Positive */
-  --dh-color-positive-default-bg: hsl(var(--dh-color-positive-hsl));
+  --dh-color-positive-bg: hsl(var(--dh-color-positive-hsl));
   --dh-color-positive-hover-bg: var(--dh-color-green-800);
   --dh-color-positive-down-bg: var(--dh-color-green-700);
   --dh-color-positive-key-focus-bg: var(--dh-color-green-800);
   --dh-color-positive-contrast: hsl(var(--dh-color-positive-contrast-hsl));
 
   /* Informative */
-  --dh-color-info-default-bg: hsl(var(--dh-color-info-hsl));
+  --dh-color-info-bg: hsl(var(--dh-color-info-hsl));
   --dh-color-info-hover-bg: var(--dh-color-cyan-900);
   --dh-color-info-down-bg: var(--dh-color-cyan-800);
   --dh-color-info-key-focus-bg: var(--dh-color-cyan-900);
   --dh-color-info-contrast: hsl(var(--dh-color-info-contrast-hsl));
 
   /* Notice */
-  --dh-color-notice-default-bg: hsl(var(--dh-color-notice-hsl));
+  --dh-color-notice-bg: hsl(var(--dh-color-notice-hsl));
   --dh-color-notice-hover-bg: var(--dh-color-yellow-900);
   --dh-color-notice-down-bg: var(--dh-color-yellow-800);
   --dh-color-notice-key-focus-bg: var(--dh-color-yellow-1000);
