@@ -13,6 +13,8 @@ import {
   SVG_ICON_MANUAL_COLOR_MAP,
   ThemeCssVariableName,
   ThemeIconsRequiringManualColorChanges,
+  LOGIN_THEME_COLOR_VARIABLES,
+  LoginThemeColors,
 } from './ThemeModel';
 
 const log = Log.module('ThemeUtils');
@@ -233,6 +235,28 @@ export function getExpressionRanges(value: string): [number, number][] {
 }
 
 /**
+ * Resolve theme colors needed for our login animation to 6 digit hex colors.
+ */
+export function getLoginAnimationThemeColors(): LoginThemeColors {
+  const newThemeColors = resolveCssVariablesInRecord(
+    LOGIN_THEME_COLOR_VARIABLES
+  );
+
+  // Trim the alpha channel from the 8 digit hex colors
+
+  newThemeColors.animationBackground =
+    newThemeColors.animationBackground.substring(0, 7);
+
+  newThemeColors.animationForeground =
+    newThemeColors.animationForeground.substring(0, 7);
+
+  newThemeColors.animationGridColor =
+    newThemeColors.animationGridColor.substring(0, 7);
+
+  return newThemeColors;
+}
+
+/**
  * Replace the `fill='...'` attribute in the given SVG content with the given
  * color string.
  * @param svgContent Inline SVG content to replace the fill color in
@@ -251,8 +275,8 @@ export function replaceSVGFillColor(
 /**
  * Make a copy of the given object replacing any css variable expressions
  * contained in its prop values with values resolved from the given HTML element.
- * Variables that resolve to color strings will also be normalized to rgb or
- * rgba color strings.
+ * Variables that resolve to color strings will also be normalized to 8 digit
+ * hex values.
  *
  * Note that the browser will force a reflow when calling `getComputedStyle` if
  * css properties have changed. In order to avoid a reflow for every property

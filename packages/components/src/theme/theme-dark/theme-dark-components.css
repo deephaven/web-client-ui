@@ -7,6 +7,16 @@
   --dh-color-radial-reaction: hsla(var(--dh-color-visual-gray-hsl), 0.6);
   --dh-color-colorpicker-border: hsla(var(--dh-color-visual-gray-hsl), 0.1);
 
+  /* Login */
+  --dh-color-login-form-bg: var(--dh-color-gray-400);
+  --dh-color-login-status-message: var(--dh-color-gray-600);
+
+  /* We should base this color on something from the palette, but for now just
+   * hard coding the original value */
+  --dh-color-login-animation-fg: #343e5d;
+  --dh-color-login-animation-bg: var(--dh-color-gray-75);
+  --dh-color-login-animation-grid: var(--dh-color-gray-300);
+
   /* Actions */
   --dh-color-action-bg: hsl(var(--dh-color-action-hsl));
   --dh-color-action-fg: hsl(var(--dh-color-action-contrast-hsl));
@@ -29,6 +39,14 @@
   --dh-color-action-disabled-bg: transparent;
   --dh-color-action-disabled-fg: var(--dh-color-gray-700);
   --dh-color-action-disabled-border: var(--dh-color-black);
+
+  /* Inputs */
+  --dh-color-input-bg: var(--dh-color-gray-500);
+  --dh-color-input-fg: var(--dh-color-fg);
+  --dh-color-input-disabled-bg: var(--dh-color-gray-300);
+  --dh-color-input-border: var(--dh-color-gray-600);
+  --dh-color-input-placeholder: var(--dh-color-gray-600);
+  --dh-color-input-focus-border: hsla(var(--dh-color-accent-hsl), 0.85);
 
   /* Form Controls */
   --dh-color-search-icon: var(--dh-color-fg);
@@ -75,9 +93,6 @@
    * --dh-color-item-list-keyboard-selected-border
    * --dh-color-item-list-keyboard-selected-hover-bg
    */
-
-  /* Delete after confirming we don't need it 
-  --dh-color-item-list-invalid-bg: var(--dh-color-highlight-invalid); */
 
   /* Navigation Menu */
   --dh-color-menu-item-fg: var(--dh-color-gray-700);

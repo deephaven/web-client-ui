@@ -4,10 +4,27 @@ export type CssVariableStyleContent = `:root{${string}`;
 export type ThemeCssVariableName = `--dh-${string}`;
 
 export type ThemePreloadColorVariable =
+  | '--dh-color-accent-contrast'
+  | '--dh-color-accent-bg'
+  | '--dh-color-accent-hover-bg'
+  | '--dh-color-accent-down-bg'
+  | '--dh-color-accent-key-focus-bg'
+  | '--dh-color-login-form-bg'
+  | '--dh-color-login-status-message'
+  | '--dh-color-login-animation-fg'
+  | '--dh-color-login-animation-bg'
+  | '--dh-color-login-animation-grid'
+  | '--dh-color-negative-bg'
   | '--dh-color-loading-spinner-primary'
   | '--dh-color-loading-spinner-secondary'
   | '--dh-color-bg'
-  | '--dh-color-fg';
+  | '--dh-color-fg'
+  | '--dh-color-input-bg'
+  | '--dh-color-input-fg'
+  | '--dh-color-input-disabled-bg'
+  | '--dh-color-input-border'
+  | '--dh-color-input-placeholder'
+  | '--dh-color-input-focus-border';
 
 export type ThemeIconsRequiringManualColorChanges =
   | '--dh-svg-icon-select-indicator'
@@ -15,19 +32,71 @@ export type ThemeIconsRequiringManualColorChanges =
   | '--dh-svg-icon-select-indicator-disabled'
   | '--dh-svg-icon-error';
 
+export interface LoginThemeColors {
+  animationBackground: string;
+  animationForeground: string;
+  animationGridColor: string;
+}
+
 export const DEFAULT_DARK_THEME_KEY = 'default-dark' satisfies BaseThemeKey;
 export const DEFAULT_LIGHT_THEME_KEY = 'default-light' satisfies BaseThemeKey;
+
+// Hex versions of some of the default dark theme color palette needed for
+// preload defaults.
+const DEFAULT_DARK_THEME_PALETTE = {
+  blue: {
+    500: '#2f5bc0',
+    400: '#254ba4',
+    600: '#3b6bda',
+  },
+  red: {
+    600: '#c73f61',
+  },
+  gray: {
+    50: '#1a171a',
+    75: '#211f22',
+    300: '#373438',
+    400: '#403e41',
+    500: '#5b5a5c',
+    600: '#929192',
+    800: '#f0f0ee',
+    900: '#fcfcfa',
+  },
+} as const;
 
 // Css properties that are used in preload data with default values.
 export const DEFAULT_PRELOAD_DATA_VARIABLES: Record<
   ThemePreloadColorVariable,
   string
 > = {
-  '--dh-color-loading-spinner-primary': '#3b6bda', // dark theme --dh-color-blue-600
-  '--dh-color-loading-spinner-secondary': '#f0f0ee80', // dark theme --dh-color-gray-800 + 50% opacity
-  '--dh-color-bg': '#1a171a', // dark theme --dh-color-gray-50
-  '--dh-color-fg': '#f0f0ee', // dark theme --dh-color-gray-800
+  '--dh-color-accent-contrast': DEFAULT_DARK_THEME_PALETTE.gray[900],
+  '--dh-color-accent-bg': DEFAULT_DARK_THEME_PALETTE.blue[600],
+  '--dh-color-accent-hover-bg': DEFAULT_DARK_THEME_PALETTE.blue[500],
+  '--dh-color-accent-down-bg': DEFAULT_DARK_THEME_PALETTE.blue[400],
+  '--dh-color-accent-key-focus-bg': DEFAULT_DARK_THEME_PALETTE.blue[500],
+  '--dh-color-negative-bg': DEFAULT_DARK_THEME_PALETTE.red[600],
+  '--dh-color-login-form-bg': DEFAULT_DARK_THEME_PALETTE.gray[400],
+  '--dh-color-login-status-message': DEFAULT_DARK_THEME_PALETTE.gray[600],
+  '--dh-color-login-animation-fg': '#343e5d',
+  '--dh-color-login-animation-bg': DEFAULT_DARK_THEME_PALETTE.gray[75],
+  '--dh-color-login-animation-grid': DEFAULT_DARK_THEME_PALETTE.gray[300],
+  '--dh-color-loading-spinner-primary': DEFAULT_DARK_THEME_PALETTE.blue[600],
+  '--dh-color-loading-spinner-secondary': `${DEFAULT_DARK_THEME_PALETTE.gray[800]}80`, // 50% opacity
+  '--dh-color-bg': DEFAULT_DARK_THEME_PALETTE.gray[50],
+  '--dh-color-fg': DEFAULT_DARK_THEME_PALETTE.gray[800],
+  '--dh-color-input-bg': DEFAULT_DARK_THEME_PALETTE.gray[500],
+  '--dh-color-input-fg': DEFAULT_DARK_THEME_PALETTE.gray[800],
+  '--dh-color-input-disabled-bg': DEFAULT_DARK_THEME_PALETTE.gray[300],
+  '--dh-color-input-border': DEFAULT_DARK_THEME_PALETTE.gray[600],
+  '--dh-color-input-placeholder': DEFAULT_DARK_THEME_PALETTE.gray[600],
+  '--dh-color-input-focus-border': `${DEFAULT_DARK_THEME_PALETTE.blue[600]}d9`, // 85% opacity
 };
+
+export const LOGIN_THEME_COLOR_VARIABLES = {
+  animationBackground: 'var(--dh-color-login-animation-bg)',
+  animationForeground: 'var(--dh-color-login-animation-fg)',
+  animationGridColor: 'var(--dh-color-login-animation-grid)',
+} satisfies LoginThemeColors;
 
 /**
  * Some inline SVGs require manually updating their fill color via

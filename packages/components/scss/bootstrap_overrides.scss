@@ -167,12 +167,12 @@ $btn-transition:
 $btn-border-width: 2px;
 
 //Override Inputs
-$input-bg: $gray-600;
-$input-disabled-bg: $gray-800;
-$input-color: $foreground;
-$input-border-color: $gray-400;
-$input-placeholder-color: $gray-400;
-$input-focus-border-color: hsla(var(--dh-color-accent-hsl), 0.85);
+$input-bg: var(--dh-color-input-bg);
+$input-disabled-bg: var(--dh-color-input-disabled-bg);
+$input-color: var(--dh-color-input-fg);
+$input-border-color: var(--dh-color-input-border);
+$input-placeholder-color: var(--dh-color-input-placeholder);
+$input-focus-border-color: var(--dh-color-input-focus-border);
 
 $input-btn-focus-width: 0.2rem;
 $input-btn-focus-color: hsla(var(--dh-color-accent-hsl), 0.35);
