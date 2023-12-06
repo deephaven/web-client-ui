@@ -1,8 +1,5 @@
 import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom';
-
-// Need to import the base style sheet for proper styling
-// eslint-disable-next-line import/no-unresolved
 import '@deephaven/components/scss/BaseStyleSheet.scss';
 import { LoadingOverlay, preloadTheme } from '@deephaven/components';
 import { ApiBootstrap } from '@deephaven/jsapi-bootstrap';
