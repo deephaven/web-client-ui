@@ -37,6 +37,8 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
 
   formatColumnList: CustomColumn[];
 
+  private initialUncoalesced: boolean;
+
   private _partition: unknown[] = [];
 
   private _partitionColumns: Column[] = [];
@@ -60,6 +62,8 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
     super(dh, table, formatter, inputTable);
     this.customColumnList = [];
     this.formatColumnList = [];
+    this.initialUncoalesced = this.table.isUncoalesced;
+    this.initializePartitionModel();
   }
 
   close(): void {
@@ -200,15 +204,8 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
     );
   }
 
-  get partitionColumns(): Column[] {
+  get partitionColumns(): readonly Column[] {
     return this._partitionColumns;
-  }
-
-  set partitionColumns(partitionColumns: Column[]) {
-    this._partitionColumns = partitionColumns;
-    if (this._partitionColumns.length !== this._partition.length) {
-      this.initializePartition();
-    }
   }
 
   get partition(): unknown[] {
@@ -311,11 +308,11 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
   }
 
   get isFilterRequired(): boolean {
-    return this.table.isUncoalesced;
+    return this.initialUncoalesced;
   }
 
   get isPartitionRequired(): boolean {
-    return this.table.isUncoalesced && this.isValuesTableAvailable;
+    return this.initialUncoalesced && this.isValuesTableAvailable;
   }
 
   isFilterable(columnIndex: ModelIndex): boolean {
@@ -468,13 +465,13 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
     return this.table.seekRow != null;
   }
 
-  private async initializePartition(): Promise<void> {
-    log.debug('Initializing partition');
-    const partitionTable = await this.valuesTable(this.partitionColumns);
+  async initializePartitionModel(): Promise<void> {
+    this._partitionColumns = this.columns.filter(c => c.isPartitionColumn);
+    const partitionTable = await this.valuesTable(this._partitionColumns);
 
     const columns = partitionTable.columns.slice(
       0,
-      this.partitionColumns.length
+      this._partitionColumns.length
     );
     const sorts = columns.map(column => column.sort().desc());
     partitionTable.applySort(sorts);

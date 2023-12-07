@@ -208,12 +208,6 @@ abstract class IrisGridModel<
   abstract get partitionColumns(): readonly Column[];
 
   /**
-   * Retrieve the columns this model is partitioned on
-   * @returns All columns to partition on
-   */
-  abstract set partitionColumns(columns: readonly Column[]);
-
-  /**
    * @returns A Table containing the keys of the columns that are partitioned on
    */
   get partitionKeysTable(): Promise<Table> | null {

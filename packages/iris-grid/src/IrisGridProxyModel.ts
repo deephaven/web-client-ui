@@ -465,10 +465,6 @@ class IrisGridProxyModel extends IrisGridModel {
     return this.originalModel.partitionColumns;
   }
 
-  set partitionColumns(columns: readonly Column[]) {
-    this.originalModel.partitionColumns = columns;
-  }
-
   get description(): string {
     return this.model.description;
   }
@@ -498,31 +494,25 @@ class IrisGridProxyModel extends IrisGridModel {
   }
 
   set partition(partition: readonly unknown[]) {
+    if (!this.originalModel.isPartitionRequired) {
+      throw new Error('Partitions are not available');
+    }
     log.debug('set partition', partition);
     this.originalModel.partition = partition;
     if (isIrisGridPartitionedTableModel(this.originalModel)) {
       if (partition.length === 0) {
         this.setNextModel(
-          this.originalModel.partitionedTable.getMergedTable().then(table => {
-            const newModel = makeModel(this.dh, table, this.formatter);
-            (this.originalModel as IrisGridPartitionedTableModel).model =
-              newModel;
-            return newModel;
-          })
+          this.originalModel.partitionedTable
+            .getMergedTable()
+            .then(table => makeModel(this.dh, table, this.formatter))
         );
         return;
       }
-      // Singular keys are not in arrays
       const tablePromise = this.originalModel.partitionedTable
-        .getTable(partition.length > 1 ? partition : partition[0])
+        .getTable(partition)
         .then(table => table.copy());
       this.setNextModel(
-        tablePromise.then(table => {
-          const newModel = makeModel(this.dh, table, this.formatter);
-          (this.originalModel as IrisGridPartitionedTableModel).model =
-            newModel;
-          return newModel;
-        })
+        tablePromise.then(table => makeModel(this.dh, table, this.formatter))
       );
     } else if (
       isIrisGridTableModelTemplate(this.originalModel) &&
@@ -542,21 +532,14 @@ class IrisGridProxyModel extends IrisGridModel {
     if (this.originalModel.partitionKeysTable === null) {
       return;
     }
-    if (isIrisGridPartitionedTableModel(this.originalModel)) {
+    if (
+      isIrisGridPartitionedTableModel(this.originalModel) ||
+      this.model === this.originalModel
+    ) {
       this.setNextModel(
-        this.originalModel.partitionKeysTable.then(table => {
-          const newModel = makeModel(this.dh, table, this.formatter);
-          (this.originalModel as IrisGridPartitionedTableModel).model =
-            newModel;
-          return newModel;
-        })
-      );
-    } else if (this.model === this.originalModel) {
-      this.setNextModel(
-        this.originalModel.partitionKeysTable.then(table => {
-          log.log('openPartitionKeysTable', table);
-          return makeModel(this.dh, table, this.formatter);
-        })
+        this.originalModel.partitionKeysTable.then(table =>
+          makeModel(this.dh, table, this.formatter)
+        )
       );
     }
   }

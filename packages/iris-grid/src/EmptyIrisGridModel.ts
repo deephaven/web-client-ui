@@ -27,44 +27,13 @@ import {
 } from './CommonTypes';
 
 class EmptyIrisGridModel extends IrisGridModel {
-  constructor(dh: DhType) {
+  constructor(dh: DhType, formatter = new Formatter(dh)) {
     super(dh);
 
-    this.dh = dh;
-    this.formatter = new Formatter(dh);
+    this.modelFormatter = formatter;
   }
 
-  dh: DhType;
-
-  table: Table | null = null;
-
-  columns: Column[] = [];
-
-  filter: FilterCondition[] = [];
-
-  partition: unknown[] = [];
-
-  partitionColumns: Column[] = [];
-
-  formatter: Formatter;
-
-  sort: Sort[] = [];
-
-  customColumns: ColumnName[] = [];
-
-  formatColumns: CustomColumn[] = [];
-
-  rollupConfig: RollupConfig | null = null;
-
-  totalsConfig: UITotalsTableConfig | null = null;
-
-  selectDistinctColumns: ColumnName[] = [];
-
-  pendingDataMap: PendingDataMap = new Map();
-
-  pendingRowCount = 0;
-
-  columnHeaderGroups: ColumnHeaderGroup[] = [];
+  modelFormatter: Formatter;
 
   get rowCount(): number {
     return 0;
@@ -82,7 +51,11 @@ class EmptyIrisGridModel extends IrisGridModel {
     return undefined;
   }
 
-  getColumnIndexByName(name: string): number | undefined {
+  get columns(): readonly Column[] {
+    return [];
+  }
+
+  getColumnIndexByName(name: string): ModelIndex | undefined {
     return undefined;
   }
 
@@ -110,6 +83,34 @@ class EmptyIrisGridModel extends IrisGridModel {
     return undefined;
   }
 
+  get filter(): readonly FilterCondition[] {
+    return [];
+  }
+
+  set filter(filter: FilterCondition[]) {
+    // No-op
+  }
+
+  get partition(): readonly unknown[] {
+    return [];
+  }
+
+  set partition(partition: unknown[]) {
+    // No-op
+  }
+
+  get partitionColumns(): readonly Column[] {
+    return [];
+  }
+
+  get formatter(): Formatter {
+    return this.modelFormatter;
+  }
+
+  set formatter(formatter: Formatter) {
+    this.modelFormatter = formatter;
+  }
+
   displayString(
     value: unknown,
     columnType: string,
@@ -118,8 +119,44 @@ class EmptyIrisGridModel extends IrisGridModel {
     return '';
   }
 
+  get sort(): Sort[] {
+    return [];
+  }
+
+  set sort(sort: Sort[]) {
+    // No-op
+  }
+
+  get customColumns(): readonly ColumnName[] {
+    return [];
+  }
+
+  set customColumns(customColumns: readonly ColumnName[]) {
+    // No-op
+  }
+
+  get formatColumns(): readonly CustomColumn[] {
+    return [];
+  }
+
   updateFrozenColumns(columns: readonly ColumnName[]): void {
     // Do nothing
+  }
+
+  get rollupConfig(): RollupConfig | null {
+    return null;
+  }
+
+  set rollupConfig(rollupConfig: RollupConfig | null) {
+    // No-op
+  }
+
+  get totalsConfig(): UITotalsTableConfig | null {
+    return null;
+  }
+
+  set totalsConfig(totalsConfig: UITotalsTableConfig | null) {
+    // No-op
   }
 
   export(): Promise<Table> {
@@ -128,6 +165,30 @@ class EmptyIrisGridModel extends IrisGridModel {
 
   columnStatistics(column: Column): Promise<ColumnStatistics> {
     throw new Error('Method not implemented.');
+  }
+
+  get selectDistinctColumns(): readonly ColumnName[] {
+    return [];
+  }
+
+  set selectDistinctColumns(selectDistinctColumns: readonly ColumnName[]) {
+    // No-op
+  }
+
+  get pendingDataMap(): PendingDataMap {
+    return new Map();
+  }
+
+  set pendingDataMap(map: PendingDataMap) {
+    // No-op
+  }
+
+  get pendingRowCount(): number {
+    return 0;
+  }
+
+  set pendingRowCount(count: number) {
+    // No-op
   }
 
   get pendingDataErrors(): PendingDataErrorMap {
@@ -143,7 +204,7 @@ class EmptyIrisGridModel extends IrisGridModel {
     bottom: VisibleIndex,
     columns?: Column[]
   ): void {
-    // Do nothing
+    // No-op
   }
 
   snapshot(ranges: readonly GridRange[]): Promise<readonly unknown[][]> {
@@ -176,6 +237,14 @@ class EmptyIrisGridModel extends IrisGridModel {
     isBackwards?: boolean
   ): Promise<number> {
     return Promise.resolve(0);
+  }
+
+  get columnHeaderGroups(): readonly ColumnHeaderGroup[] {
+    return [];
+  }
+
+  set columnHeaderGroups(groups: readonly ColumnHeaderGroup[]) {
+    // No-op
   }
 
   get columnHeaderGroupMap(): ReadonlyMap<string, ColumnHeaderGroup> {

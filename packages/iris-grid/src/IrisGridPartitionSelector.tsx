@@ -338,19 +338,17 @@ class IrisGridPartitionSelector extends Component<
         </div>
         <div className="partition-button-group">
           <Button
-            type="button"
-            className="btn btn-sm"
+            className="btn-sm"
             onClick={this.handleKeyTableClick}
             kind="inline"
             tooltip="View keys as table"
-            icon={<FontAwesomeIcon icon={vsKey} />}
+            icon={vsKey}
             active={isShowingKeys}
           >
             Keys
           </Button>
           <Button
-            type="button"
-            className="btn btn-sm"
+            className="btn-sm"
             onClick={this.handleMergeClick}
             kind="inline"
             tooltip="View all partitions as one merged table"
