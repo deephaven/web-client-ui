@@ -14,8 +14,6 @@
  */
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { vsTriangleDown } from '@deephaven/icons';
 import memoize from 'memoizee';
 import classNames from 'classnames';
 import { PopperOptions } from 'popper.js';
@@ -495,7 +493,7 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
               dataTestId !== undefined ? `${dataTestId}-btn` : undefined
             }
           >
-            <FontAwesomeIcon icon={vsTriangleDown} />
+            <span className="cb-caret" />
             <Popper
               ref={this.popper}
               options={popperOptions}

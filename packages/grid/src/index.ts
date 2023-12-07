@@ -25,7 +25,7 @@ export * from './key-handlers';
 export * from './mouse-handlers';
 export * from './errors';
 export * from './EventHandlerResult';
-export { default as ThemeContext } from './ThemeContext';
+export * from './ThemeContext';
 export type { default as CellRenderer, CellRenderType } from './CellRenderer';
 export { default as TextCellRenderer } from './TextCellRenderer';
 export { default as DataBarCellRenderer } from './DataBarCellRenderer';

@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
 import { Flex } from '@adobe/react-spectrum';
-import { ContextMenuRoot } from '@deephaven/components';
+import { ContextMenuRoot, ThemePicker, useTheme } from '@deephaven/components';
 
 import Alerts from './Alerts';
 import Buttons from './Buttons';
@@ -28,6 +28,7 @@ import SpectrumComponents from './SpectrumComponents';
 import SamplesMenu, { SampleMenuCategory } from './SamplesMenu';
 import GotoTopButton from './GotoTopButton';
 import { HIDE_FROM_E2E_TESTS_CLASS } from './utils';
+import { GoldenLayout } from './GoldenLayout';
 
 const stickyProps = {
   position: 'sticky',
@@ -40,6 +41,8 @@ const stickyProps = {
 
 function StyleGuide(): React.ReactElement {
   const isolateSection = window.location.search.includes('isolateSection=true');
+  const { themes } = useTheme();
+  const hasMultipleThemes = themes.length > 1;
 
   return (
     <div className="container style-guide-container">
@@ -67,7 +70,10 @@ function StyleGuide(): React.ReactElement {
         UNSAFE_className={HIDE_FROM_E2E_TESTS_CLASS}
         marginTop={-56}
         top={20}
+        gap={10}
+        alignItems="end"
       >
+        {hasMultipleThemes ? <ThemePicker /> : null}
         <SamplesMenu />
       </Flex>
       <Flex
@@ -75,6 +81,7 @@ function StyleGuide(): React.ReactElement {
         UNSAFE_className={HIDE_FROM_E2E_TESTS_CLASS}
         top="calc(100vh - 40px)"
         marginTop={-32}
+        marginEnd={hasMultipleThemes ? -234 : 0}
       >
         <GotoTopButton />
       </Flex>
@@ -84,6 +91,9 @@ function StyleGuide(): React.ReactElement {
       <SampleMenuCategory data-menu-category="Colors" />
       <Colors />
       <ThemeColors />
+
+      <SampleMenuCategory data-menu-category="Layout" />
+      <GoldenLayout />
 
       <SampleMenuCategory data-menu-category="Components" />
       <Buttons />

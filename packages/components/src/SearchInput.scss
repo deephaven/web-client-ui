@@ -1,4 +1,5 @@
 @import '../scss/custom.scss';
+@import '../scss/util.scss';
 
 .search-group {
   position: relative;
@@ -8,6 +9,7 @@
   }
 
   .search-icon {
+    color: var(--dh-color-search-icon);
     pointer-events: none;
     position: absolute;
     right: $spacer-2;
@@ -19,26 +21,17 @@
   }
 
   ::-webkit-search-cancel-button {
-    $close-path: 'M8 8.707l3.646 3.647.708-.707L8.707 8l3.647-3.646-.707-.708L8 7.293 4.354 3.646l-.707.708L7.293 8l-3.646 3.646.707.708L8 8.707z';
+    $icon-size: 16px;
+    @include icon-image-mask(var(--dh-svg-icon-search-cancel), $icon-size);
 
     // Need to specify -webkit-appearance: none for Chrome
     -webkit-appearance: none;
-    height: 16px;
-    width: 16px;
-    background-repeat: no-repeat;
-    // vsClose icon
-    background-image: str-replace(
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='#{$gray-300}' d='#{$close-path}'/%3E%3C/svg%3E"),
-      '#',
-      '%23'
-    );
-    transition: background-image $transition;
+    height: $icon-size;
+    width: $icon-size;
+    opacity: 0.4;
+    transition: opacity 300ms ease;
     &:hover {
-      background-image: str-replace(
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='#{$gray-100}' d='#{$close-path}' /%3E%3C/svg%3E"),
-        '#',
-        '%23'
-      );
+      opacity: 1;
     }
   }
 

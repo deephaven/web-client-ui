@@ -10,6 +10,7 @@ const sampleSectionIds: string[] = [
   'sample-section-editor-colors',
   'sample-section-grid-colors',
   'sample-section-component-colors',
+  'sample-section-golden-layout',
   'sample-section-buttons-regular',
   'sample-section-buttons-outline',
   'sample-section-buttons-inline',
@@ -93,6 +94,8 @@ buttonSectionIds.forEach((id, i) => {
     await expect(buttons, `Button section: '${id}'`).not.toHaveCount(0);
 
     const buttonCount = await buttons.count();
+
+    expect(buttonCount, `Button section: '${id}'`).toBeGreaterThan(0);
 
     for (let j = 0; j < buttonCount; j += 1) {
       const button = buttons.nth(j);

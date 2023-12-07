@@ -68,7 +68,7 @@ async function loadTable(
  * E.g. http://localhost:3000/?name=myTable will attempt to open a table `myTable`
  * If no query param is provided, it will attempt to open a new session and create a basic time table and display that.
  * By default, tries to connect to the server defined in the VITE_CORE_API_URL variable, which is set to http://localhost:1000/jsapi
- * See create-react-app docs for how to update these env vars: https://create-react-app.dev/docs/adding-custom-environment-variables/
+ * See Vite docs for how to update these env vars: https://vitejs.dev/guide/env-and-mode.html
  */
 function App(): JSX.Element {
   const connection = useConnection();

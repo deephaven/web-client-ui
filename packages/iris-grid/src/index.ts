@@ -19,6 +19,7 @@ export * from './IrisGridTableModelTemplate';
 export { default as IrisGridModelFactory } from './IrisGridModelFactory';
 export { createDefaultIrisGridTheme } from './IrisGridTheme';
 export type { IrisGridThemeType } from './IrisGridTheme';
+export * from './IrisGridThemeProvider';
 export { default as IrisGridTestUtils } from './IrisGridTestUtils';
 export { default as IrisGridUtils } from './IrisGridUtils';
 export * from './IrisGridUtils';

@@ -43,7 +43,22 @@ class MonacoUtils {
       MonacoUtils.registerGetWorker(getWorker);
     }
 
-    const { registerLanguages, removeHashtag } = MonacoUtils;
+    const { initTheme, registerLanguages } = MonacoUtils;
+
+    initTheme();
+
+    registerLanguages([DbLang, PyLang, GroovyLang, LogLang, ScalaLang]);
+
+    MonacoUtils.removeConflictingKeybindings();
+
+    log.debug('Monaco initialized.');
+  }
+
+  /**
+   * Initialize current Monaco theme based on the current DH theme.
+   */
+  static initTheme(): void {
+    const { removeHashtag } = MonacoUtils;
 
     const MonacoTheme = resolveCssVariablesInRecord(MonacoThemeRaw);
     log.debug2('Monaco theme:', MonacoThemeRaw);
@@ -83,7 +98,7 @@ class MonacoUtils {
       },
       {
         token: 'error.log',
-        foreground: MonacoTheme['log-error'].substring(1),
+        foreground: MonacoTheme['log-error']?.substring(1) ?? '',
       },
       {
         token: 'warn.log',
@@ -165,18 +180,13 @@ class MonacoUtils {
 
     try {
       monaco.editor.setTheme('dh-dark');
-    } catch {
+    } catch (err) {
       log.error(
-        `Failed to set 'dh-dark' Monaco theme, falling back to vs-dark`
+        `Failed to set 'dh-dark' Monaco theme, falling back to vs-dark`,
+        err
       );
       monaco.editor.setTheme('vs-dark');
     }
-
-    registerLanguages([DbLang, PyLang, GroovyLang, LogLang, ScalaLang]);
-
-    MonacoUtils.removeConflictingKeybindings();
-
-    log.debug('Monaco initialized.');
   }
 
   /**
@@ -195,8 +205,8 @@ class MonacoUtils {
    * Monaco expects colors to be the value only, no hashtag.
    * @param color The hex color string to remove the hashtag from, eg. '#ffffff'
    */
-  static removeHashtag(color: string): string {
-    return color.substring(1);
+  static removeHashtag(color?: string): string {
+    return color?.substring(1) ?? '';
   }
 
   static registerLanguages(languages: Language[]): void {

@@ -6,16 +6,24 @@ import {
   vsRecordKeys,
   vsInfo,
   vsLayers,
+  vsPaintcan,
   dhUserIncognito,
   dhUser,
 } from '@deephaven/icons';
-import { Button, CopyButton, Tooltip } from '@deephaven/components';
+import {
+  Button,
+  CopyButton,
+  ThemeContext,
+  ThemePicker,
+  Tooltip,
+} from '@deephaven/components';
 import { ServerConfigValues, User } from '@deephaven/redux';
 import {
   BROADCAST_CHANNEL_NAME,
   BROADCAST_LOGOUT_MESSAGE,
   makeMessage,
 } from '@deephaven/jsapi-utils';
+import { assertNotNull } from '@deephaven/utils';
 import Logo from './community-wordmark-app.svg';
 import FormattingSectionContent from './FormattingSectionContent';
 import LegalNotice from './LegalNotice';
@@ -50,6 +58,8 @@ export class SettingsMenu extends Component<
   static APPLICATION_SECTION_KEY = 'ApplicationMenu.settings';
 
   static SHORTCUT_SECTION_KEY = 'SettingsMenu.shortcuts';
+
+  static THEME_SECTION_KEY = 'SettingsMenu.theme';
 
   static focusFirstInputInContainer(container: HTMLDivElement | null): void {
     const input = container?.querySelector('input, select, textarea');
@@ -231,6 +241,34 @@ export class SettingsMenu extends Component<
           >
             <ColumnSpecificSectionContent scrollTo={this.handleScrollTo} />
           </SettingsMenuSection>
+
+          <ThemeContext.Consumer>
+            {contextValue => {
+              assertNotNull(contextValue, 'ThemeContext value is null');
+
+              return contextValue.themes.length > 1 ? (
+                <SettingsMenuSection
+                  sectionKey={SettingsMenu.THEME_SECTION_KEY}
+                  isExpanded={this.isSectionExpanded(
+                    SettingsMenu.THEME_SECTION_KEY
+                  )}
+                  onToggle={this.handleSectionToggle}
+                  title={
+                    <>
+                      <FontAwesomeIcon
+                        icon={vsPaintcan}
+                        transform="grow-4"
+                        className="mr-2"
+                      />
+                      Theme
+                    </>
+                  }
+                >
+                  <ThemePicker />
+                </SettingsMenuSection>
+              ) : null;
+            }}
+          </ThemeContext.Consumer>
 
           <SettingsMenuSection
             sectionKey={SettingsMenu.SHORTCUT_SECTION_KEY}
