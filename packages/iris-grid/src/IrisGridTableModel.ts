@@ -63,7 +63,9 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
     this.customColumnList = [];
     this.formatColumnList = [];
     this.initialUncoalesced = this.table.isUncoalesced;
-    this.initializePartitionModel();
+    if (this.table.isUncoalesced && this.isValuesTableAvailable) {
+      this.initializePartitionModel();
+    }
   }
 
   close(): void {
@@ -466,7 +468,9 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
   }
 
   async initializePartitionModel(): Promise<void> {
-    this._partitionColumns = this.columns.filter(c => c.isPartitionColumn);
+    this._partitionColumns = this.table.columns.filter(
+      c => c.isPartitionColumn
+    );
     const partitionTable = await this.valuesTable(this._partitionColumns);
 
     const columns = partitionTable.columns.slice(

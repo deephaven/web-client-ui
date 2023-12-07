@@ -87,7 +87,7 @@ class EmptyIrisGridModel extends IrisGridModel {
     return [];
   }
 
-  set filter(filter: FilterCondition[]) {
+  set filter(filter: readonly FilterCondition[]) {
     // No-op
   }
 
@@ -95,7 +95,7 @@ class EmptyIrisGridModel extends IrisGridModel {
     return [];
   }
 
-  set partition(partition: unknown[]) {
+  set partition(partition: readonly unknown[]) {
     // No-op
   }
 
