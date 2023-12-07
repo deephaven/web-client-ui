@@ -101,9 +101,17 @@ buttonSectionIds.forEach((id, i) => {
     for (let j = 0; j < buttonCount; j += 1) {
       const button = buttons.nth(j);
 
-      const isDisabled = await button.evaluate(el =>
-        el.hasAttribute('disabled')
+      const { hasTextContent, isDisabled } = await button.evaluate(
+        (el: HTMLButtonElement) => ({
+          hasTextContent: el.textContent !== '',
+          isDisabled: el.hasAttribute('disabled'),
+        })
       );
+
+      const isIconOnlyButton =
+        id === 'sample-section-buttons-inline' &&
+        !isDisabled &&
+        !hasTextContent;
 
       // Focus
       await button.focus();
@@ -117,6 +125,11 @@ buttonSectionIds.forEach((id, i) => {
 
       // Hover
       await button.hover();
+
+      if (isIconOnlyButton) {
+        await expect(page.locator('.tooltip-content')).toHaveCount(1);
+      }
+
       await expect(sampleSection).toHaveScreenshot(
         `buttons-hover-section-${i}-${j}${isDisabled ? '-disabled' : ''}.png`
       );
