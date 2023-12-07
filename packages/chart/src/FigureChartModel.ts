@@ -179,7 +179,7 @@ class FigureChartModel extends ChartModel {
           const annotation: Partial<Annotations> = {
             align: 'center',
             x: 0.5,
-            y: 1.1, // Needs to be shown above the chart
+            y: 1.12, // Needs to be shown above the chart
             text: title,
             showarrow: false,
 
