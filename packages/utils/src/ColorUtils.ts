@@ -50,11 +50,16 @@ class ColorUtils {
   }
 
   /**
-   * Normalize a css color to 8 character hex value. If the color can't be resolved,
+   * Normalize a css color to 8 character hex value (or 6 character hex if
+   * isAlphaOptional is true and alpha is 'ff'). If the color can't be resolved,
    * return the original color string.
    * @param colorString The color string to normalize
+   * @param isAlphaOptional If true, the alpha value will be dropped if it is 'ff'
    */
-  static normalizeCssColor(colorString: string): string {
+  static normalizeCssColor(
+    colorString: string,
+    isAlphaOptional?: boolean
+  ): string {
     const maybeRgbOrRgba = ColorUtils.asRgbOrRgbaString(colorString);
     if (maybeRgbOrRgba == null) {
       return colorString;
@@ -65,7 +70,13 @@ class ColorUtils {
       return colorString;
     }
 
-    return ColorUtils.rgbaToHex8(rgba);
+    const hex8 = ColorUtils.rgbaToHex8(rgba);
+
+    if (isAlphaOptional === true) {
+      return hex8.replace(/^(#[a-f0-9]{6})ff$/, '$1');
+    }
+
+    return hex8;
   }
 
   /**

@@ -1,10 +1,8 @@
-import { Tooltip } from '@deephaven/components';
 import React, { ReactNode, useEffect, useState } from 'react';
-import {
-  INVALID_COLOR_BORDER_STYLE,
-  normalizedOptionalAlpha,
-  useContrastFgColorRef,
-} from './colorUtils';
+import { Tooltip } from '@deephaven/components';
+import { ColorUtils } from '@deephaven/utils';
+import { INVALID_COLOR_BORDER_STYLE } from './colorUtils';
+import { useContrastFgColorRef } from './useContrastFgColorRef';
 
 export interface SwatchProps {
   className: string;
@@ -47,7 +45,7 @@ export function Swatch({ className, children }: SwatchProps): JSX.Element {
 
     setTooltip({
       value: dhColorValue,
-      normalized: normalizedOptionalAlpha(dhColorValue),
+      normalized: ColorUtils.normalizeCssColor(dhColorValue, true),
     });
   }, [ref]);
 

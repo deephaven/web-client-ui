@@ -13,9 +13,16 @@
 
   /* We should base this color on something from the palette, but for now just
    * hard coding the original value */
-  --dh-color-login-animation-fg: #343e5d;
-  --dh-color-login-animation-bg: var(--dh-color-gray-75);
-  --dh-color-login-animation-grid: var(--dh-color-gray-300);
+  --dh-color-random-area-plot-animation-fg-fill: hsla(
+    var(--dh-color-accent-hsl),
+    0.08
+  );
+  --dh-color-random-area-plot-animation-fg-stroke: hsla(
+    var(--dh-color-accent-hsl),
+    0.2
+  );
+  --dh-color-random-area-plot-animation-bg: var(--dh-color-gray-75);
+  --dh-color-random-area-plot-animation-grid: var(--dh-color-gray-300);
 
   /* Actions */
   --dh-color-action-bg: hsl(var(--dh-color-action-hsl));

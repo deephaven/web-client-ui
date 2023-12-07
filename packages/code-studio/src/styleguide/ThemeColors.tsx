@@ -2,6 +2,7 @@
 import React, { useMemo } from 'react';
 import cl from 'classnames';
 import { Tooltip, useTheme } from '@deephaven/components';
+import { ColorUtils } from '@deephaven/utils';
 import palette from '@deephaven/components/src/theme/theme-dark/theme-dark-palette.css?inline';
 import semantic from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic.css?inline';
 import chart from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic-chart.css?inline';
@@ -14,7 +15,6 @@ import {
   buildColorGroups,
   contrastColor,
   INVALID_COLOR_BORDER_STYLE,
-  normalizedOptionalAlpha,
 } from './colorUtils';
 
 function buildSwatchDataGroups() {
@@ -74,7 +74,7 @@ export function ThemeColors(): JSX.Element {
                       <Tooltip>
                         <div>{name}</div>
                         <div>{value}</div>
-                        <div>{normalizedOptionalAlpha(value)}</div>
+                        <div>{ColorUtils.normalizeCssColor(value, true)}</div>
                       </Tooltip>
                       <span>{name.replace('--dh-color-', '')}</span>
                       {name.endsWith('-hue') || note != null ? (

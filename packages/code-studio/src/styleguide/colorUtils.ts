@@ -1,4 +1,3 @@
-import { useLayoutEffect, useRef } from 'react';
 import { ColorUtils } from '@deephaven/utils';
 
 export const INVALID_COLOR_BORDER_STYLE = '2px solid var(--dh-color-notice-bg)';
@@ -85,7 +84,13 @@ const RENAME_VARIABLE_GROUPS = {
   component: {},
 } satisfies Record<string, Record<string, string>>;
 
-/** Return black or white contrast color */
+/**
+ * Return black or white contrast color.
+ *
+ * Note that this should be sufficient for styleguide swatch examples, but it
+ * may not completely align with how Spectrum determines contrast colors, hence
+ * leaving this here instead of promoting to `ColorUtils`.
+ */
 export function contrastColor(color: string): 'black' | 'white' {
   const rgba = ColorUtils.parseRgba(ColorUtils.asRgbOrRgbaString(color) ?? '');
   if (rgba == null || rgba.a < 0.5) {
@@ -208,35 +213,4 @@ export function buildColorGroups(
   );
 
   return groupData;
-}
-
-/**
- * Normalize color to a hex string and drop alpha if it is 'ff'
- * @param color
- */
-export function normalizedOptionalAlpha(color: string): string {
-  return ColorUtils.normalizeCssColor(color).replace(
-    /^(#[a-f0-9]{6})ff$/,
-    '$1'
-  );
-}
-
-export function useContrastFgColorRef<
-  T extends HTMLElement,
->(): React.RefObject<T> {
-  const ref = useRef<T>(null);
-
-  useLayoutEffect(() => {
-    if (ref.current == null) {
-      return;
-    }
-
-    const computedStyle = getComputedStyle(ref.current);
-
-    const { backgroundColor } = computedStyle;
-
-    ref.current.style.color = contrastColor(backgroundColor);
-  }, []);
-
-  return ref;
 }

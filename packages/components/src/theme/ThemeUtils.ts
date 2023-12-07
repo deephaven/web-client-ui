@@ -13,8 +13,8 @@ import {
   SVG_ICON_MANUAL_COLOR_MAP,
   ThemeCssVariableName,
   ThemeIconsRequiringManualColorChanges,
-  LOGIN_THEME_COLOR_VARIABLES,
-  LoginThemeColors,
+  RANDOM_AREA_PLOT_ANIMATION_THEME_COLOR_VARIABLES,
+  RandomAreaPlotAnimationThemeColors,
 } from './ThemeModel';
 
 const log = Log.module('ThemeUtils');
@@ -237,23 +237,12 @@ export function getExpressionRanges(value: string): [number, number][] {
 /**
  * Resolve theme colors needed for our login animation to 6 digit hex colors.
  */
-export function getLoginAnimationThemeColors(): LoginThemeColors {
-  const newThemeColors = resolveCssVariablesInRecord(
-    LOGIN_THEME_COLOR_VARIABLES
+export function getRandomAreaPlotAnimationThemeColors(): RandomAreaPlotAnimationThemeColors {
+  return resolveCssVariablesInRecord(
+    RANDOM_AREA_PLOT_ANIMATION_THEME_COLOR_VARIABLES,
+    document.body,
+    true
   );
-
-  // Trim the alpha channel from the 8 digit hex colors
-
-  newThemeColors.animationBackground =
-    newThemeColors.animationBackground.substring(0, 7);
-
-  newThemeColors.animationForeground =
-    newThemeColors.animationForeground.substring(0, 7);
-
-  newThemeColors.animationGridColor =
-    newThemeColors.animationGridColor.substring(0, 7);
-
-  return newThemeColors;
 }
 
 /**
@@ -276,7 +265,7 @@ export function replaceSVGFillColor(
  * Make a copy of the given object replacing any css variable expressions
  * contained in its prop values with values resolved from the given HTML element.
  * Variables that resolve to color strings will also be normalized to 8 digit
- * hex values.
+ * hex values (or optionally 6 digit hex if `isAlphaOptional` is true).
  *
  * Note that the browser will force a reflow when calling `getComputedStyle` if
  * css properties have changed. In order to avoid a reflow for every property
@@ -289,10 +278,13 @@ export function replaceSVGFillColor(
  * @param record An object whose values may contain css var expressions
  * @param targetElement The element to resolve css variables against. Defaults
  * to document.body
+ * @param isAlphaOptional If true, the alpha value will be dropped from resolved
+ * 8 character hex colors if it is 'ff'
  */
 export function resolveCssVariablesInRecord<T extends Record<string, string>>(
   record: T,
-  targetElement: HTMLElement = document.body
+  targetElement: HTMLElement = document.body,
+  isAlphaOptional?: boolean
 ): T {
   const perfStart = performance.now();
 
@@ -319,7 +311,7 @@ export function resolveCssVariablesInRecord<T extends Record<string, string>>(
 
     const resolved = computedStyle.getPropertyValue(tmpPropKey);
 
-    return ColorUtils.normalizeCssColor(resolved);
+    return ColorUtils.normalizeCssColor(resolved, isAlphaOptional);
   };
 
   // Resolve the temporary css variables

@@ -11,9 +11,10 @@ export type ThemePreloadColorVariable =
   | '--dh-color-accent-key-focus-bg'
   | '--dh-color-login-form-bg'
   | '--dh-color-login-status-message'
-  | '--dh-color-login-animation-fg'
-  | '--dh-color-login-animation-bg'
-  | '--dh-color-login-animation-grid'
+  | '--dh-color-random-area-plot-animation-fg-fill'
+  | '--dh-color-random-area-plot-animation-fg-stroke'
+  | '--dh-color-random-area-plot-animation-bg'
+  | '--dh-color-random-area-plot-animation-grid'
   | '--dh-color-negative-bg'
   | '--dh-color-loading-spinner-primary'
   | '--dh-color-loading-spinner-secondary'
@@ -32,10 +33,11 @@ export type ThemeIconsRequiringManualColorChanges =
   | '--dh-svg-icon-select-indicator-disabled'
   | '--dh-svg-icon-error';
 
-export interface LoginThemeColors {
-  animationBackground: string;
-  animationForeground: string;
-  animationGridColor: string;
+export interface RandomAreaPlotAnimationThemeColors {
+  background: string;
+  foregroundFill: string;
+  foregroundStroke: string;
+  gridColor: string;
 }
 
 export const DEFAULT_DARK_THEME_KEY = 'default-dark' satisfies BaseThemeKey;
@@ -47,7 +49,7 @@ const DEFAULT_DARK_THEME_PALETTE = {
   blue: {
     500: '#2f5bc0',
     400: '#254ba4',
-    600: '#3b6bda',
+    600: '#3b6bda', // accent color
   },
   red: {
     600: '#c73f61',
@@ -77,9 +79,12 @@ export const DEFAULT_PRELOAD_DATA_VARIABLES: Record<
   '--dh-color-negative-bg': DEFAULT_DARK_THEME_PALETTE.red[600],
   '--dh-color-login-form-bg': DEFAULT_DARK_THEME_PALETTE.gray[400],
   '--dh-color-login-status-message': DEFAULT_DARK_THEME_PALETTE.gray[600],
-  '--dh-color-login-animation-fg': '#343e5d',
-  '--dh-color-login-animation-bg': DEFAULT_DARK_THEME_PALETTE.gray[75],
-  '--dh-color-login-animation-grid': DEFAULT_DARK_THEME_PALETTE.gray[300],
+  '--dh-color-random-area-plot-animation-fg-fill': '#343e5d',
+  '--dh-color-random-area-plot-animation-fg-stroke': '',
+  '--dh-color-random-area-plot-animation-bg':
+    DEFAULT_DARK_THEME_PALETTE.gray[75],
+  '--dh-color-random-area-plot-animation-grid':
+    DEFAULT_DARK_THEME_PALETTE.gray[300],
   '--dh-color-loading-spinner-primary': DEFAULT_DARK_THEME_PALETTE.blue[600],
   '--dh-color-loading-spinner-secondary': `${DEFAULT_DARK_THEME_PALETTE.gray[800]}80`, // 50% opacity
   '--dh-color-bg': DEFAULT_DARK_THEME_PALETTE.gray[50],
@@ -92,11 +97,12 @@ export const DEFAULT_PRELOAD_DATA_VARIABLES: Record<
   '--dh-color-input-focus-border': `${DEFAULT_DARK_THEME_PALETTE.blue[600]}d9`, // 85% opacity
 };
 
-export const LOGIN_THEME_COLOR_VARIABLES = {
-  animationBackground: 'var(--dh-color-login-animation-bg)',
-  animationForeground: 'var(--dh-color-login-animation-fg)',
-  animationGridColor: 'var(--dh-color-login-animation-grid)',
-} satisfies LoginThemeColors;
+export const RANDOM_AREA_PLOT_ANIMATION_THEME_COLOR_VARIABLES = {
+  background: 'var(--dh-color-random-area-plot-animation-bg)',
+  foregroundFill: 'var(--dh-color-random-area-plot-animation-fg-fill)',
+  foregroundStroke: 'var(--dh-color-random-area-plot-animation-fg-stroke)',
+  gridColor: 'var(--dh-color-random-area-plot-animation-grid)',
+} satisfies RandomAreaPlotAnimationThemeColors;
 
 /**
  * Some inline SVGs require manually updating their fill color via
