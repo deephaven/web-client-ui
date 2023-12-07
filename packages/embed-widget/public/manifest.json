@@ -1,0 +1,15 @@
+{
+  "short_name": "Deephaven",
+  "name": "Deephaven Community App",
+  "icons": [
+    {
+      "src": "favicon-cc-app.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "start_url": "./index.html",
+  "display": "standalone",
+  "theme_color": "#2d2a2e",
+  "background_color": "#2d2a2e"
+}

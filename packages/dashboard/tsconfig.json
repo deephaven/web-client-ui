@@ -9,7 +9,6 @@
   "references": [
     { "path": "../components" },
     { "path": "../golden-layout" },
-    { "path": "../jsapi-bootstrap" },
     { "path": "../log" },
     { "path": "../react-hooks" },
     { "path": "../redux" },

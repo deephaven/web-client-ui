@@ -10,7 +10,7 @@ export const GridPanelPlugin = forwardRef(
   (props: WidgetPanelProps, ref: React.Ref<IrisGridPanel>) => {
     const { localDashboardId, fetch } = props;
     const hydratedProps = useHydrateGrid(
-      fetch as unknown as () => Promise<Table>,
+      fetch as () => Promise<Table>,
       localDashboardId
     );
 

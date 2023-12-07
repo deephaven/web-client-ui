@@ -1,14 +1,14 @@
-# Embedded Deephaven Chart
+# Embedded Deephaven Widget
 
-This project uses [Vite](https://vitejs.dev/guide/). It is to provide an example React application connecting to Deephaven and displaying a chart or plot.
+This project uses [Vite](https://vitejs.dev/guide/). It is to provide an example React application connecting to Deephaven and displaying a widget.
 
 ## Running
 
-To start the Embed Chart server, run `npm install` and `npm start` in the root directory of this repository. See the [Getting Started](../../README.md#getting-started) section for more details.
+To start the Embed Widget server, run `npm install` and `npm start` in the root directory of this repository. See the [Getting Started](../../README.md#getting-started) section for more details.
 
 ## Query Parameters
 
-- `name`: Required. The name of the chart to load
+- `name`: Required. The name of the widget to load
 
 ## Advanced
 
@@ -16,7 +16,7 @@ To start the Embed Chart server, run `npm install` and `npm start` in the root d
 
 See the guide for how to set up core in Application Mode: https://deephaven.io/core/docs/how-to-guides/application-mode/
 
-Once Deephaven is running, you can open a chart with a specific name by adding the query param `name`, e.g. http://localhost:4020/?name=world
+Once Deephaven is running, you can open a widget with a specific name by adding the query param `name`, e.g. http://localhost:4030/?name=world
 
 ### Configuring Server Address
 

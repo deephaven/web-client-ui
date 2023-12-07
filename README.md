@@ -40,10 +40,10 @@ We use Chrome for development with the React and Redux extensions.
 ## Scripts
 
 - `npm install` : Install all dependencies and automatically bootstrap packages. Should be run before any of the other steps.
-- `npm start`: Start building all packages and watching them (when possible). Use when you're developing, and your changes will be picked up automatically.
+- `npm start`: Start building all packages and watching them (when possible). Use when you're developing, and your changes will be picked up automatically. Servers will open up for code-studio, embed-grid, embed-chart, and embed-widget. These will open on localhost on ports 4000, 4010, 4020, and 4030 respectively.
 - `npm test`: Start running tests in all packages and watching (when possible). Use when you're developing, and any breaking changes will be printed out automatically. See [Unit tests](#unit-tests) for more details.
 - `npm run build`: Create a production build of all packages. Mainly used by CI when packaging up a production version of the app.
-- `npm run preview`: Runs the Vite preview server for the built code-studio, embed-grid, and embed-chart. These will open on ports 4000, 4010, and 4020.
+- `npm run preview`: Runs the Vite preview server for the built code-studio, embed-grid, embed-chart, and embed-widget. These will open on ports 4000, 4010, 4020, and 4030 respectively.
 - `npm run e2e`: Runs the Playwright end-to-end tests locally. See [E2E Tests](#e2e-tests) for more details.
 
 If your DHC address is different from the default `http://localhost:10000`, edit `.env.local` in each package to point to your local DHC. This is needed for the session websocket and for things like notebooks to be proxied correctly by Vite.
@@ -134,6 +134,7 @@ Note that log messages from other sources such as react prop types will still be
 If you want to collect coverage locally, run `npm test -- --coverage`
 
 ### Debugging Unit Tests
+
 Unit tests can be debugged by running jest with the `--inspect-brk` flag and attaching to the node process in vscode's debugger. There are 2 launch configs that make this easier:
 
 - Debug Jest Tests - This will prompt you for a test name or pattern and will then run tests in watch mode with an attached debugger.
@@ -152,6 +153,7 @@ Snapshots are used by end-to-end tests to visually verify the output. Snapshots 
 Once you are satisfied with the snapshots and everything is passing locally, you need to use the docker image to update snapshots for CI (unless you are running the same platform as CI (Ubuntu)). Run `npm run e2e:update-ci-snapshots` to update the CI snapshots. The snapshots will be written to your local directories. The Linux snapshots should be committed to git (non-Linux snapshots should be automatically ignored by git).
 
 ### Differences in CI vs Local Docker Environments
+
 Note that while both the GH actions and docker configuration use Ubuntu 22.04 images, their configurations are not identical. One known difference is the available system fonts. In some cases this can cause snapshots to differ when running locally vs in CI such as when rendering unicode characters. To mitigate this, some of our e2e tests have been configured to ensure a consistent unicode font fallback.
 
 - The `DejaVu Sans` font gets installed via the [Dockerfile](tests/docker-scripts/Dockerfile). It already exists in the CI environment.

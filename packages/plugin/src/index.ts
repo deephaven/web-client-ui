@@ -3,3 +3,4 @@ export * from './PluginTypes';
 export * from './PluginUtils';
 export * from './TablePlugin';
 export * from './usePlugins';
+export * from './WidgetView';
