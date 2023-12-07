@@ -134,12 +134,7 @@ class FigureChartModel extends ChartModel {
   }
 
   getDefaultTitle(): string {
-    if (this.figure.charts.length > 0) {
-      const chart = this.figure.charts[0];
-      return chart.title;
-    }
-
-    return '';
+    return this.figure.title ?? '';
   }
 
   initAllSeries(): void {
