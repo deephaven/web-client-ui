@@ -74,15 +74,9 @@ function Colors(): React.ReactElement {
 
         <div className="col">
           <p>
-            Gray Range is available for background/tab colors, and should cover
-            the full range used in mockups. Always use the semantic color names
-            in your .scss files when applicable for UI elements.
-          </p>
-          <p>
-            For reference key colors are $primary for interactable elements,
-            content-bg as background. White is same as gray-200. Gray-100 is
-            used when white needs an active color. content-bg is between 800 and
-            900.
+            This section is for legacy reference only. Use the css variable
+            based semantic colors in the following sections. You should not be
+            using colors defined in the theme color palette directly.
           </p>
         </div>
       </div>
