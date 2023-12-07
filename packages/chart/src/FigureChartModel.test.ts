@@ -38,6 +38,13 @@ it('populates the layout properly', () => {
           text: ChartTestUtils.DEFAULT_Y_TITLE,
         }),
       }),
+      annotations: expect.arrayContaining([
+        expect.objectContaining({
+          text: ChartTestUtils.DEFAULT_CHART_TITLE,
+          xref: 'x1 domain',
+          yref: 'y1 domain',
+        }),
+      ]),
     })
   );
 });
