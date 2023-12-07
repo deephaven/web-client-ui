@@ -53,7 +53,9 @@ const buttonSectionIds: string[] = [
 test('UI regression test - Styleguide section count', async ({ page }) => {
   await page.goto('/ide/styleguide');
 
-  const sampleSections = await page.locator('.sample-section');
+  const sampleSections = await page.locator(
+    '.sample-section:not(.sample-section-e2e-ignore)'
+  );
 
   await expect(sampleSections).toHaveCount(sampleSectionIds.length);
 });

@@ -1,11 +1,15 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/display-name */
 
-import React, { useEffect, useState, useRef, useMemo } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import debounce from 'lodash.debounce';
 import { assertNotNull } from '@deephaven/utils';
 import './RandomAreaPlotAnimation.scss';
-import { getRandomAreaPlotAnimationThemeColors } from './theme';
+import {
+  getRandomAreaPlotAnimationThemeColors,
+  RandomAreaPlotAnimationThemeColors,
+  useTheme,
+} from './theme';
 
 const VOLATILITY = 0.025; // how spikey the data gets
 const LOW = 0.9;
@@ -19,7 +23,14 @@ const INTERACTION_TIMEOUT = 60 * 1000;
 
 // Draw a background canvas, paint it with a fun chart looking animation
 const RandomAreaPlotAnimation = React.memo(() => {
-  const themeColors = useMemo(getRandomAreaPlotAnimationThemeColors, []);
+  const { activeThemes } = useTheme();
+
+  const [themeColors, setThemeColors] =
+    useState<RandomAreaPlotAnimationThemeColors | null>(null);
+
+  useEffect(() => {
+    setThemeColors(getRandomAreaPlotAnimationThemeColors());
+  }, [activeThemes]);
 
   const canvas = useRef<HTMLCanvasElement>(null);
   const container = useRef<HTMLDivElement>(null);
@@ -55,6 +66,10 @@ const RandomAreaPlotAnimation = React.memo(() => {
 
   // Returns the background fill create offscreen as pattern
   function createPatternFill(): CanvasPattern | null | undefined {
+    if (themeColors == null) {
+      return null;
+    }
+
     const { foregroundFill, foregroundStroke } = themeColors;
 
     // create the off-screen canvas
@@ -155,6 +170,10 @@ const RandomAreaPlotAnimation = React.memo(() => {
    * @param timestamp passed in callback from requestAnimationFrame
    */
   function drawCanvas(timestamp?: DOMHighResTimeStamp): void {
+    if (themeColors == null) {
+      return;
+    }
+
     lastTimestamp = lastTimestamp ?? timestamp;
 
     const { background, foregroundStroke, gridColor } = themeColors;
@@ -305,9 +324,11 @@ const RandomAreaPlotAnimation = React.memo(() => {
   }, [themeColors]);
 
   return (
-    <div className="random-area-plot-animation-container" ref={container}>
-      <canvas ref={canvas} className={shade ? 'shade' : ''} />
-    </div>
+    themeColors && (
+      <div className="random-area-plot-animation-container" ref={container}>
+        <canvas ref={canvas} className={shade ? 'shade' : ''} />
+      </div>
+    )
   );
 });
 
