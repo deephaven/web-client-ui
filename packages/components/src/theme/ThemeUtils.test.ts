@@ -481,44 +481,52 @@ describe.each([undefined, document.createElement('div')])(
       expect(actual).toEqual(given);
     });
 
-    it('should replace css variables with resolved values', () => {
-      const given = {
-        aaa: 'var(--aaa)',
-        bbb: 'var(--bbb1) var(--bbb2)',
-      };
+    it.each([undefined, true, false])(
+      'should replace css variables with resolved values: isAlphaOptional',
+      isAlphaOptional => {
+        const given = {
+          aaa: 'var(--aaa)',
+          bbb: 'var(--bbb1) var(--bbb2)',
+        };
 
-      const expected = {
-        aaa: 'normalized:resolved:--dh-tmp-0',
-        bbb: 'normalized:resolved:--dh-tmp-1 normalized:resolved:--dh-tmp-2',
-      };
+        const expected = {
+          aaa: 'normalized:resolved:--dh-tmp-0',
+          bbb: 'normalized:resolved:--dh-tmp-1 normalized:resolved:--dh-tmp-2',
+        };
 
-      const actual = resolveCssVariablesInRecord(given, targetElement);
+        const actual = resolveCssVariablesInRecord(
+          given,
+          targetElement,
+          isAlphaOptional
+        );
 
-      expect(expectedTargetEl.appendChild).toHaveBeenCalledWith(tmpPropEl);
-      expect(tmpPropEl.remove).toHaveBeenCalled();
-      expect(actual).toEqual(expected);
+        expect(expectedTargetEl.appendChild).toHaveBeenCalledWith(tmpPropEl);
+        expect(tmpPropEl.remove).toHaveBeenCalled();
+        expect(actual).toEqual(expected);
 
-      let i = 0;
+        let i = 0;
 
-      Object.keys(given).forEach(key => {
-        const varExpressions = given[key].split(' ');
-        varExpressions.forEach(value => {
-          const tmpPropKey = `--${TMP_CSS_PROP_PREFIX}-${i}`;
-          i += 1;
+        Object.keys(given).forEach(key => {
+          const varExpressions = given[key].split(' ');
+          varExpressions.forEach(value => {
+            const tmpPropKey = `--${TMP_CSS_PROP_PREFIX}-${i}`;
+            i += 1;
 
-          expect(tmpPropEl.style.setProperty).toHaveBeenCalledWith(
-            tmpPropKey,
-            value
-          );
-          expect(computedStyle.getPropertyValue).toHaveBeenCalledWith(
-            tmpPropKey
-          );
-          expect(ColorUtils.normalizeCssColor).toHaveBeenCalledWith(
-            `resolved:${tmpPropKey}`
-          );
+            expect(tmpPropEl.style.setProperty).toHaveBeenCalledWith(
+              tmpPropKey,
+              value
+            );
+            expect(computedStyle.getPropertyValue).toHaveBeenCalledWith(
+              tmpPropKey
+            );
+            expect(ColorUtils.normalizeCssColor).toHaveBeenCalledWith(
+              `resolved:${tmpPropKey}`,
+              isAlphaOptional
+            );
+          });
         });
-      });
-    });
+      }
+    );
   }
 );
 

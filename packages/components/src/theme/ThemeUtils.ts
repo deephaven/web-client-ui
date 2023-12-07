@@ -235,13 +235,11 @@ export function getExpressionRanges(value: string): [number, number][] {
 }
 
 /**
- * Resolve theme colors needed for our login animation to 6 digit hex colors.
+ * Resolve theme colors needed for our login animation.
  */
 export function getRandomAreaPlotAnimationThemeColors(): RandomAreaPlotAnimationThemeColors {
   return resolveCssVariablesInRecord(
-    RANDOM_AREA_PLOT_ANIMATION_THEME_COLOR_VARIABLES,
-    document.body,
-    true
+    RANDOM_AREA_PLOT_ANIMATION_THEME_COLOR_VARIABLES
   );
 }
 

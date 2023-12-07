@@ -79,8 +79,8 @@ export const DEFAULT_PRELOAD_DATA_VARIABLES: Record<
   '--dh-color-negative-bg': DEFAULT_DARK_THEME_PALETTE.red[600],
   '--dh-color-login-form-bg': DEFAULT_DARK_THEME_PALETTE.gray[400],
   '--dh-color-login-status-message': DEFAULT_DARK_THEME_PALETTE.gray[600],
-  '--dh-color-random-area-plot-animation-fg-fill': '#343e5d',
-  '--dh-color-random-area-plot-animation-fg-stroke': '',
+  '--dh-color-random-area-plot-animation-fg-fill': `${DEFAULT_DARK_THEME_PALETTE.blue[600]}14`, // .08 opacity
+  '--dh-color-random-area-plot-animation-fg-stroke': `${DEFAULT_DARK_THEME_PALETTE.blue[600]}33`, // .2 opacity
   '--dh-color-random-area-plot-animation-bg':
     DEFAULT_DARK_THEME_PALETTE.gray[75],
   '--dh-color-random-area-plot-animation-grid':

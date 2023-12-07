@@ -17,12 +17,13 @@ exports[`DEFAULT_PRELOAD_DATA_VARIABLES should match snapshot 1`] = `
   "--dh-color-input-placeholder": "#929192",
   "--dh-color-loading-spinner-primary": "#3b6bda",
   "--dh-color-loading-spinner-secondary": "#f0f0ee80",
-  "--dh-color-login-animation-bg": "#211f22",
-  "--dh-color-login-animation-fg": "#343e5d",
-  "--dh-color-login-animation-grid": "#373438",
   "--dh-color-login-form-bg": "#403e41",
   "--dh-color-login-status-message": "#929192",
   "--dh-color-negative-bg": "#c73f61",
+  "--dh-color-random-area-plot-animation-bg": "#211f22",
+  "--dh-color-random-area-plot-animation-fg-fill": "#3b6bda14",
+  "--dh-color-random-area-plot-animation-fg-stroke": "#3b6bda33",
+  "--dh-color-random-area-plot-animation-grid": "#373438",
 }
 `;
 
