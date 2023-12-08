@@ -1,6 +1,6 @@
 :root {
   /* Editor */
-  --dh-color-editor-bg: var(--dh-color-content-background);
+  --dh-color-editor-bg: var(--dh-color-content-bg);
   --dh-color-editor-fg: var(--dh-color-gray-900);
   --dh-color-editor-error-fg: var(--dh-color-visual-red);
   --dh-color-editor-line-number-fg: var(--dh-color-gray-700);
@@ -24,7 +24,7 @@
   /* Input */
   --dh-color-editor-focus-border: var(--dh-color-focus-border);
   --dh-color-editor-input-option-active-border: var(--dh-color-focus-ring);
-  --dh-color-editor-input-bg: var(--dh-color-background);
+  --dh-color-editor-input-bg: var(--dh-color-bg);
   --dh-color-editor-input-fg: var(--dh-color-text);
   --dh-color-editor-input-border: var(--dh-color-border);
 

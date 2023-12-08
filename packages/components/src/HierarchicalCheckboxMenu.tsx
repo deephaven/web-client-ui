@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { dhSort, IconDefinition } from '@deephaven/icons';
+import { IconDefinition } from '@deephaven/icons';
 import classNames from 'classnames';
 import Checkbox from './Checkbox';
 import Popper from './popper/Popper';
@@ -253,7 +253,7 @@ class HierarchicalCheckboxMenu extends Component<
           {icon && <FontAwesomeIcon icon={icon} className="hcm-icon mr-1" />}
           {menuText}
         </span>
-        <FontAwesomeIcon icon={dhSort} className="hcm-icon ml-1" />
+        <span className="cs-caret" />
         <Popper
           options={{ placement: 'bottom' }}
           isShown={menuIsOpen}

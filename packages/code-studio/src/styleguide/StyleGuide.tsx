@@ -3,7 +3,6 @@ import React from 'react';
 import { Flex } from '@adobe/react-spectrum';
 import { ContextMenuRoot, ThemePicker, useTheme } from '@deephaven/components';
 
-import Alerts from './Alerts';
 import Buttons from './Buttons';
 import Charts from './Charts';
 import Colors from './Colors';
@@ -29,6 +28,7 @@ import SamplesMenu, { SampleMenuCategory } from './SamplesMenu';
 import GotoTopButton from './GotoTopButton';
 import { HIDE_FROM_E2E_TESTS_CLASS } from './utils';
 import { GoldenLayout } from './GoldenLayout';
+import { RandomAreaPlotAnimation } from './RandomAreaPlotAnimation';
 
 const stickyProps = {
   position: 'sticky',
@@ -98,7 +98,6 @@ function StyleGuide(): React.ReactElement {
       <SampleMenuCategory data-menu-category="Components" />
       <Buttons />
       <Progress />
-      <Alerts />
       <Inputs />
       <ItemListInputs />
       <DraggableLists />
@@ -114,6 +113,7 @@ function StyleGuide(): React.ReactElement {
       <Grids />
       <Charts />
       <ContextMenuRoot />
+      <RandomAreaPlotAnimation />
 
       <SampleMenuCategory data-menu-category="Spectrum Components" />
       <SpectrumComponents />

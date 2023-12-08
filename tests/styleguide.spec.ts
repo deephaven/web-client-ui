@@ -16,7 +16,6 @@ const sampleSectionIds: string[] = [
   'sample-section-buttons-inline',
   'sample-section-buttons-socketed',
   'sample-section-progress',
-  'sample-section-alerts',
   'sample-section-inputs',
   'sample-section-item-list-inputs',
   'sample-section-draggable-lists',
@@ -54,7 +53,9 @@ const buttonSectionIds: string[] = [
 test('UI regression test - Styleguide section count', async ({ page }) => {
   await page.goto('/ide/styleguide');
 
-  const sampleSections = await page.locator('.sample-section');
+  const sampleSections = await page.locator(
+    '.sample-section:not(.sample-section-e2e-ignore)'
+  );
 
   await expect(sampleSections).toHaveCount(sampleSectionIds.length);
 });
@@ -100,9 +101,17 @@ buttonSectionIds.forEach((id, i) => {
     for (let j = 0; j < buttonCount; j += 1) {
       const button = buttons.nth(j);
 
-      const isDisabled = await button.evaluate(el =>
-        el.hasAttribute('disabled')
+      const { hasTextContent, isDisabled } = await button.evaluate(
+        (el: HTMLButtonElement) => ({
+          hasTextContent: el.textContent !== '',
+          isDisabled: el.hasAttribute('disabled'),
+        })
       );
+
+      const isIconOnlyButton =
+        id === 'sample-section-buttons-inline' &&
+        !isDisabled &&
+        !hasTextContent;
 
       // Focus
       await button.focus();
@@ -116,6 +125,11 @@ buttonSectionIds.forEach((id, i) => {
 
       // Hover
       await button.hover();
+
+      if (isIconOnlyButton) {
+        await expect(page.locator('.tooltip-content')).toHaveCount(1);
+      }
+
       await expect(sampleSection).toHaveScreenshot(
         `buttons-hover-section-${i}-${j}${isDisabled ? '-disabled' : ''}.png`
       );

@@ -1,3 +1,5 @@
+@use 'sass:math';
+
 //Set of spacer variables from the spacer map
 $spacer-0: map-get($spacers, 0); //0
 $spacer-1: map-get($spacers, 1);
@@ -47,6 +49,22 @@ $ant-thickness: 1px;
     width: 100%;
     @content;
   }
+}
+
+@function hsla-opacity($semantic-name, $i: 100) {
+  @return hsla(var(--dh-color-#{$semantic-name}-hsl), math.div($i, 100));
+}
+
+@function accent-opacity($i: 100) {
+  @return hsla-opacity('accent', $i);
+}
+
+@function background-opacity($i: 100) {
+  @return hsla-opacity('bg', $i);
+}
+
+@function foreground-opacity($i: 100) {
+  @return hsla-opacity('fg', $i);
 }
 
 $focus-bg-transparency: 0.12;

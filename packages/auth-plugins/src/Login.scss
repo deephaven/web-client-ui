@@ -2,8 +2,6 @@
 
 $login-box-width: 605px;
 $login-box-min-height: 310px;
-$logo-background-color: $gray-100;
-$footer-color: $gray-300;
 $login-box-animation-scale: 0.8;
 
 .login-container {
@@ -25,7 +23,7 @@ $login-box-animation-scale: 0.8;
     animation: $transition-long ease-out 0s 1 forwards animateLoginBox;
 
     .logo {
-      background-color: $logo-background-color;
+      background-color: var(--dh-color-login-logo-bg);
       border-radius: $border-radius 0 0 $border-radius;
       display: flex;
       justify-content: center;
@@ -48,7 +46,7 @@ $login-box-animation-scale: 0.8;
       margin: 0;
       transform: translateY(100%);
       text-align: center;
-      color: $footer-color;
+      color: var(--dh-color-login-footer-fg);
       font-size: 12px;
     }
   }

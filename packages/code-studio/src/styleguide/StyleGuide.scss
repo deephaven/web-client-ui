@@ -1,7 +1,9 @@
+@use 'sass:map';
+@use 'sass:string';
 @import '@deephaven/components/scss/custom.scss';
 
 .ui-title {
-  color: $gray-200;
+  color: var(--dh-color-text);
   border-bottom: 1px solid $gray-200;
   padding-bottom: 10px;
   margin: 1.5rem 0;
@@ -25,13 +27,12 @@ pre {
   }
 }
 
-.swatch-content-bg {
-  border: 1px solid $gray-600;
+@mixin swatch-with-label($label) {
   margin-top: 2.5rem;
   position: relative;
-
   &::before {
-    content: 'Semantic Colours';
+    content: '#{$label}';
+    color: var(--dh-color-text);
     display: block;
     position: absolute;
     font-size: 10px;
@@ -39,31 +40,81 @@ pre {
   }
 }
 
-@each $theme-color, $value in $theme-colors {
-  .swatch-#{$theme-color} {
-    color: color-yiq($value);
-    background-color: #{$value};
+@mixin swatch-color($color, $value, $class-prefix: 'swatch') {
+  // Expose value in :after content to make use of it in style guide
+  $exposed-value: #{$value};
+
+  // Strip surrounding 'var(' ... ')' if present
+  @if string.index($exposed-value, 'var(') == 1 {
+    $exposed-value: string.slice($exposed-value, 5, -2);
   }
+
+  .#{$class-prefix}-#{$color} {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    text-align: left;
+    white-space: nowrap;
+    background-color: #{$value};
+    padding: 0 20px 0 36px;
+    &::after {
+      content: '#{$exposed-value}';
+      grid-column: 2;
+    }
+  }
+}
+
+@each $color, $value in $semantic-colors {
+  @include swatch-color($color, $value);
+}
+
+@each $color, $value in $theme-colors {
+  $var: '';
+
+  $semantic-value: map.get($bootstrap-dh-semantic-map, $value) or '';
+  @if $semantic-value != '' {
+    $var: var(--dh-color-#{$semantic-value}-bg);
+  } @else if $value == 'light' {
+    $var: var(--dh-color-gray-light);
+  } @else if $value == 'dark' {
+    $var: var(--dh-color-gray-dark);
+  }
+
+  @include swatch-color($color, $var);
+}
+
+// Special case swatches with labels
+.gray-swatch-100 {
+  @include swatch-with-label('Grays');
+}
+.swatch-red {
+  @include swatch-with-label('Base Colors');
+}
+.swatch-content-bg {
+  border: 1px solid $gray-600;
+  @include swatch-with-label('Semantic Colors');
+}
+.swatch-primary {
+  @include swatch-with-label('Brand Colors');
+}
+.swatch-success {
+  @include swatch-with-label('Levels');
+}
+.swatch-light {
+  @include swatch-with-label('Brightness');
 }
 
 @each $color, $value in $colors {
-  .swatch-#{$color} {
-    color: color-yiq($value);
-    background-color: #{$value};
-  }
+  @include swatch-color($color, $value);
 }
 
 @each $color, $value in $grays {
-  .gray-swatch-#{$color} {
-    color: color-yiq($value);
-    background-color: #{$value};
-  }
+  @include swatch-color($color, $value, 'gray-swatch');
 }
 
-.gray-swatch-850 {
-  color: color-yiq($gray-850);
-  background-color: $gray-850;
-}
+// The swatch that gets this style gets rendered as N/A in the Bootstrap grays
+// section of Styleguide. There is no Bootstrap Gray-XXX corresponding to
+// --dh-color-gray-100, but if there were it would be a value in the 800s.
+@include swatch-color('8XX', 'var(--dh-color-gray-100)', 'gray-swatch');
 
 .style-guide-container {
   background-color: $content-bg;
@@ -123,7 +174,7 @@ h5.sub-title {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-color: $content-bg;
+    background-color: var(--dh-color-content-bg);
     border-color: transparent;
     &:focus {
       border-color: $primary;
