@@ -44,6 +44,9 @@ const RandomAreaPlotAnimation = React.memo(() => {
 
   const [themeColors, setThemeColors] = useState<ThemeColors | null>(null);
 
+  // Resolving css variables has to run in `useEffect` or `useLayoutEffect` so
+  // that we know React has updated the DOM with any styles set by the
+  // ThemeProvider.
   useEffect(() => {
     setThemeColors(getRandomAreaPlotAnimationThemeColors());
   }, [activeThemes]);
