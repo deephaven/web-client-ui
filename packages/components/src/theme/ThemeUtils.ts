@@ -13,8 +13,6 @@ import {
   SVG_ICON_MANUAL_COLOR_MAP,
   ThemeCssVariableName,
   ThemeIconsRequiringManualColorChanges,
-  RANDOM_AREA_PLOT_ANIMATION_THEME_COLOR_VARIABLES,
-  RandomAreaPlotAnimationThemeColors,
 } from './ThemeModel';
 
 const log = Log.module('ThemeUtils');
@@ -235,15 +233,6 @@ export function getExpressionRanges(value: string): [number, number][] {
 }
 
 /**
- * Resolve theme colors needed for our login animation.
- */
-export function getRandomAreaPlotAnimationThemeColors(): RandomAreaPlotAnimationThemeColors {
-  return resolveCssVariablesInRecord(
-    RANDOM_AREA_PLOT_ANIMATION_THEME_COLOR_VARIABLES
-  );
-}
-
-/**
  * Replace the `fill='...'` attribute in the given SVG content with the given
  * color string.
  * @param svgContent Inline SVG content to replace the fill color in
@@ -277,12 +266,12 @@ export function replaceSVGFillColor(
  * @param targetElement The element to resolve css variables against. Defaults
  * to document.body
  * @param isAlphaOptional If true, the alpha value will be dropped from resolved
- * 8 character hex colors if it is 'ff'
+ * 8 character hex colors if it is 'ff'. Defaults to false.
  */
 export function resolveCssVariablesInRecord<T extends Record<string, string>>(
   record: T,
   targetElement: HTMLElement = document.body,
-  isAlphaOptional?: boolean
+  isAlphaOptional = false
 ): T {
   const perfStart = performance.now();
 

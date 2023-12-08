@@ -521,7 +521,7 @@ describe.each([undefined, document.createElement('div')])(
             );
             expect(ColorUtils.normalizeCssColor).toHaveBeenCalledWith(
               `resolved:${tmpPropKey}`,
-              isAlphaOptional
+              isAlphaOptional ?? false
             );
           });
         });

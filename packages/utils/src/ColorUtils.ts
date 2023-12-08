@@ -54,11 +54,12 @@ class ColorUtils {
    * isAlphaOptional is true and alpha is 'ff'). If the color can't be resolved,
    * return the original color string.
    * @param colorString The color string to normalize
-   * @param isAlphaOptional If true, the alpha value will be dropped if it is 'ff'
+   * @param isAlphaOptional If true, the alpha value will be dropped if it is 'ff'.
+   * Defaults to false.
    */
   static normalizeCssColor(
     colorString: string,
-    isAlphaOptional?: boolean
+    isAlphaOptional = false
   ): string {
     const maybeRgbOrRgba = ColorUtils.asRgbOrRgbaString(colorString);
     if (maybeRgbOrRgba == null) {

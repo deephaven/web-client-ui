@@ -1,8 +1,8 @@
-import React, { ReactNode, useEffect, useState } from 'react';
+import React, { ReactNode, useMemo } from 'react';
 import { Tooltip } from '@deephaven/components';
 import { ColorUtils } from '@deephaven/utils';
 import { INVALID_COLOR_BORDER_STYLE } from './colorUtils';
-import { useContrastFgColorRef } from './useContrastFgColorRef';
+import { useContrastFgColorRef, useDhColorFromPseudoContent } from './hooks';
 
 export interface SwatchProps {
   className: string;
@@ -12,42 +12,23 @@ export interface SwatchProps {
 export function Swatch({ className, children }: SwatchProps): JSX.Element {
   const ref = useContrastFgColorRef<HTMLDivElement>();
 
-  const [tooltip, setTooltip] = useState<{
-    value: string;
-    normalized: string;
-  } | null>(null);
+  // The `swatch-color` mixin parses and exposes the value of css var expressions
+  // via a :after { content } selector. The value will be surrounded in double
+  // quotes e.g.
+  // var(--dh-color-red-500) is exposed as "--dh-color-red-500"
+  // var(--dh-color-gray-900, #fcfcfa) is exposed as "--dh-color-gray-900, #fcfcfa"
+  const dhColor = useDhColorFromPseudoContent(ref, ':after');
 
-  useEffect(() => {
-    if (ref.current == null) {
-      return;
-    }
-
-    // Css var expression content is parsed and exposed via `swatch-color` mixin
-    // in :after { content } . The value will be surrounded in double quotes
-    // e.g.
-    // var(--dh-color-red-500) is exposed as "--dh-color-red-500"
-    // var(--dh-color-gray-900, #fcfcfa) is exposed as "--dh-color-gray-900, #fcfcfa"
-    const afterContent = getComputedStyle(
-      ref.current,
-      ':after'
-    ).getPropertyValue('content');
-
-    // Extract the var name from the content (e.g. '--dh-color-gray-900')
-    const dhColorVarName = /"(--dh-color-.*?)[,"]/.exec(afterContent)?.[1];
-    if (dhColorVarName == null) {
-      setTooltip(null);
-      return;
-    }
-
-    const dhColorValue = getComputedStyle(ref.current).getPropertyValue(
-      dhColorVarName
-    );
-
-    setTooltip({
-      value: dhColorValue,
-      normalized: ColorUtils.normalizeCssColor(dhColorValue, true),
-    });
-  }, [ref]);
+  const tooltip = useMemo(
+    () =>
+      dhColor != null
+        ? {
+            value: dhColor,
+            normalized: ColorUtils.normalizeCssColor(dhColor, true),
+          }
+        : null,
+    [dhColor]
+  );
 
   const hasValue = tooltip != null && tooltip.value !== '';
 

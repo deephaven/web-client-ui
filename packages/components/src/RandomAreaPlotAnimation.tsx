@@ -5,11 +5,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import debounce from 'lodash.debounce';
 import { assertNotNull } from '@deephaven/utils';
 import './RandomAreaPlotAnimation.scss';
-import {
-  getRandomAreaPlotAnimationThemeColors,
-  RandomAreaPlotAnimationThemeColors,
-  useTheme,
-} from './theme';
+import { resolveCssVariablesInRecord, useTheme } from './theme';
 
 const VOLATILITY = 0.025; // how spikey the data gets
 const LOW = 0.9;
@@ -21,12 +17,32 @@ const PX_PER_SECOND = 18;
 const RESIZE_DEBOUNCE = 250;
 const INTERACTION_TIMEOUT = 60 * 1000;
 
+interface ThemeColors {
+  background: string;
+  foregroundFill: string;
+  foregroundStroke: string;
+  gridColor: string;
+}
+
+const THEME_COLOR_VARIABLES = {
+  background: 'var(--dh-color-random-area-plot-animation-bg)',
+  foregroundFill: 'var(--dh-color-random-area-plot-animation-fg-fill)',
+  foregroundStroke: 'var(--dh-color-random-area-plot-animation-fg-stroke)',
+  gridColor: 'var(--dh-color-random-area-plot-animation-grid)',
+} satisfies ThemeColors;
+
+/**
+ * Resolve theme colors needed for our animation.
+ */
+function getRandomAreaPlotAnimationThemeColors(): ThemeColors {
+  return resolveCssVariablesInRecord(THEME_COLOR_VARIABLES);
+}
+
 // Draw a background canvas, paint it with a fun chart looking animation
 const RandomAreaPlotAnimation = React.memo(() => {
   const { activeThemes } = useTheme();
 
-  const [themeColors, setThemeColors] =
-    useState<RandomAreaPlotAnimationThemeColors | null>(null);
+  const [themeColors, setThemeColors] = useState<ThemeColors | null>(null);
 
   useEffect(() => {
     setThemeColors(getRandomAreaPlotAnimationThemeColors());

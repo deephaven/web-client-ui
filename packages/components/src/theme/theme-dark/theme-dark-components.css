@@ -10,6 +10,8 @@
   /* Login */
   --dh-color-login-form-bg: var(--dh-color-gray-400);
   --dh-color-login-status-message: var(--dh-color-gray-600);
+  --dh-color-login-logo-bg: var(--dh-color-gray-900);
+  --dh-color-login-footer-fg: var(--dh-color-gray-700);
 
   /* We should base this color on something from the palette, but for now just
    * hard coding the original value */

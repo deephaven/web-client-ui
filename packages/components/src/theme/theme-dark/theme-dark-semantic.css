@@ -107,7 +107,7 @@
   --dh-color-accent-1300: hsl(var(--dh-color-accent-1300-hsl));
   --dh-color-accent-1400: hsl(var(--dh-color-accent-1400-hsl));
 
-  /* Accent Background */
+  /* Accent */
   --dh-color-accent-bg: hsl(var(--dh-color-accent-hsl));
   --dh-color-accent-hover-bg: var(--dh-color-accent-500);
   --dh-color-accent-down-bg: var(--dh-color-accent-400);
@@ -153,7 +153,7 @@
   --dh-color-overlay-modal-bg: hsla(var(--dh-color-visual-gray-hsl), 0.6);
   --dh-color-overlay-hover-bg: hsla(var(--dh-color-visual-gray-hsl), 0.08);
 
-  /* Negative Background */
+  /* Negative */
   --dh-color-negative-bg: hsl(var(--dh-color-negative-hsl));
   --dh-color-negative-hover-bg: var(--dh-color-red-500);
   --dh-color-negative-down-bg: var(--dh-color-red-400);
