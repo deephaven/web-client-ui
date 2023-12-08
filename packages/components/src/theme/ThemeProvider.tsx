@@ -36,8 +36,10 @@ export interface ThemeProviderProps {
 export function ThemeProvider({
   themes: customThemes,
   children,
-}: ThemeProviderProps): JSX.Element {
+}: ThemeProviderProps): JSX.Element | null {
   const baseThemes = useMemo(() => getDefaultBaseThemes(), []);
+
+  const [value, setValue] = useState<ThemeContextValue | null>(null);
 
   const [selectedThemeKey, setSelectedThemeKey] = useState<string>(
     () => getThemePreloadData()?.themeKey ?? DEFAULT_DARK_THEME_KEY
@@ -88,17 +90,16 @@ export function ThemeProvider({
     [activeThemes, selectedThemeKey, customThemes]
   );
 
-  const value = useMemo(
-    () => ({
+  useEffect(() => {
+    setValue({
       activeThemes,
       selectedThemeKey,
       themes,
       setSelectedThemeKey,
-    }),
-    [activeThemes, selectedThemeKey, themes]
-  );
+    });
+  }, [activeThemes, selectedThemeKey, themes]);
 
-  return (
+  return value == null ? null : (
     <ThemeContext.Provider value={value}>
       {activeThemes == null ? null : (
         <>

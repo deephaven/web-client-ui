@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/display-name */
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import debounce from 'lodash.debounce';
 import { assertNotNull } from '@deephaven/utils';
 import './RandomAreaPlotAnimation.scss';
@@ -42,14 +42,11 @@ function getRandomAreaPlotAnimationThemeColors(): ThemeColors {
 const RandomAreaPlotAnimation = React.memo(() => {
   const { activeThemes } = useTheme();
 
-  const [themeColors, setThemeColors] = useState<ThemeColors | null>(null);
-
-  // Resolving css variables has to run in `useEffect` or `useLayoutEffect` so
-  // that we know React has updated the DOM with any styles set by the
-  // ThemeProvider.
-  useEffect(() => {
-    setThemeColors(getRandomAreaPlotAnimationThemeColors());
-  }, [activeThemes]);
+  const themeColors = useMemo(
+    () =>
+      activeThemes == null ? null : getRandomAreaPlotAnimationThemeColors(),
+    [activeThemes]
+  );
 
   const canvas = useRef<HTMLCanvasElement>(null);
   const container = useRef<HTMLDivElement>(null);
