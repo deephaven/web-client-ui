@@ -6,7 +6,7 @@ $login-box-min-height: 310px;
 .login-form {
   max-width: $login-box-width * 0.5;
   min-height: $login-box-min-height;
-  background: $gray-700;
+  background: var(--dh-color-login-form-bg);
   border-radius: 0 $border-radius $border-radius 0;
   display: flex;
   flex-grow: 1;
@@ -37,7 +37,7 @@ $login-box-min-height: 310px;
   }
 
   .status-message {
-    color: $gray-400;
+    color: var(--dh-color-login-status-message);
   }
 
   .error-message {

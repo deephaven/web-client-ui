@@ -65,7 +65,7 @@ $button-vert-margin: ConsoleVariables.$button-vert-margin;
         text-align: left;
         padding-left: 0;
         padding-right: 0;
-        color: rgba($danger, $hover-item-fade);
+        color: hsla(var(--dh-color-negative-hsl), $hover-item-fade);
         transition: $btn-transition;
       }
 
@@ -97,7 +97,7 @@ $button-vert-margin: ConsoleVariables.$button-vert-margin;
         outline: 0;
       }
       &:focus-visible {
-        border: 1px solid rgba($danger, $hover-item-fade);
+        border: 1px solid hsla(var(--dh-color-negative-hsl), $hover-item-fade);
       }
     }
   }

@@ -61,7 +61,7 @@ export default defineConfig(({ mode }) => {
     proxy[route] = {
       target: `http://localhost:${env.VITE_JS_PLUGINS_DEV_PORT}`,
       changeOrigin: true,
-      rewrite: path => path.replace(/^\/js-plugins/, ''),
+      rewrite: (pathOrig: string) => pathOrig.replace(/^\/js-plugins/, ''),
     };
   }
 

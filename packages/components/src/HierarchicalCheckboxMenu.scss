@@ -1,18 +1,25 @@
 @import '../scss/custom.scss';
+@import '../scss/util.scss';
 
 .hcm-btn {
   display: flex;
   flex-direction: row;
+  align-items: center;
+  gap: $custom-select-padding-x;
   justify-content: space-between;
   border-radius: $border-radius;
   border: $input-border-width solid $input-border-color;
   background-color: $input-bg;
   padding: $custom-select-padding-y $custom-select-padding-x;
 
-  .hcm-icon {
-    margin-top: $spacer-1;
-    color: $input-border-color;
+  .cs-caret {
+    @include caret-icon;
+
+    margin-right: 4px;
   }
+}
+.hcm-btn:hover:not(:disabled) .cs-caret {
+  background-color: var(--dh-color-selector-hover-fg);
 }
 
 .hcm-btn:focus {

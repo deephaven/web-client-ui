@@ -8,7 +8,7 @@ export const PandasPanelPlugin = forwardRef(
   (props: WidgetPanelProps, ref: React.Ref<PandasPanel>) => {
     const { localDashboardId, fetch } = props;
     const hydratedProps = useHydrateGrid(
-      fetch as unknown as () => Promise<Table>,
+      fetch as () => Promise<Table>,
       localDashboardId
     );
 

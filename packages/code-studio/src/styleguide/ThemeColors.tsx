@@ -1,5 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { useMemo } from 'react';
+import cl from 'classnames';
 import { Tooltip, useTheme } from '@deephaven/components';
 import { ColorUtils } from '@deephaven/utils';
 import palette from '@deephaven/components/src/theme/theme-dark/theme-dark-palette.css?inline';
@@ -33,7 +34,7 @@ export function ThemeColors(): JSX.Element {
 
   return (
     <>
-      {Object.entries(swatchDataGroups).map(([label, data]) => (
+      {Object.entries(swatchDataGroups).map(([label, data], i) => (
         <div key={label} {...sampleSectionIdAndClasses(label)}>
           <h2 className="ui-title">{label}</h2>
           <div className={styles.themeColors}>
@@ -49,34 +50,39 @@ export function ThemeColors(): JSX.Element {
                 // until all groups are placed.
                 style={{ gridRow: `span ${swatchData.length + 1}` }}
               >
-                <span className={styles.label}>{group}</span>
-                {swatchData.map(({ name, value }) => (
-                  <div
-                    key={name}
-                    className={styles.swatch}
-                    style={{
-                      backgroundColor: value,
-                      border:
-                        value === '' && name.length > 0
-                          ? INVALID_COLOR_BORDER_STYLE
-                          : undefined,
-                      color: `var(--dh-color-${contrastColor(value)})`,
-                    }}
-                  >
-                    <Tooltip>
-                      <div>{name}</div>
-                      <div>{value}</div>
-                      <div>
-                        {ColorUtils.normalizeCssColor(value).replace(
-                          /^(#[a-f0-9]{6})ff$/,
-                          '$1'
-                        )}
-                      </div>
-                    </Tooltip>
-                    <span>{name.replace('--dh-color-', '')}</span>
-                    {name.endsWith('-hue') ? <span>{value}</span> : null}
-                  </div>
-                ))}
+                <span className={cl(styles.label, styles.capitalize)}>
+                  {group}
+                </span>
+                {swatchData.map(({ isLabel, name, value, note }) =>
+                  isLabel === true ? (
+                    <span key={name} className={styles.label}>
+                      {name}
+                    </span>
+                  ) : (
+                    <div
+                      key={name}
+                      className={styles.swatch}
+                      style={{
+                        backgroundColor: value,
+                        border:
+                          value === '' && name.length > 0
+                            ? INVALID_COLOR_BORDER_STYLE
+                            : undefined,
+                        color: `var(--dh-color-${contrastColor(value)})`,
+                      }}
+                    >
+                      <Tooltip>
+                        <div>{name}</div>
+                        <div>{value}</div>
+                        <div>{ColorUtils.normalizeCssColor(value, true)}</div>
+                      </Tooltip>
+                      <span>{name.replace('--dh-color-', '')}</span>
+                      {name.endsWith('-hue') || note != null ? (
+                        <span>{note ?? value}</span>
+                      ) : null}
+                    </div>
+                  )
+                )}
               </div>
             ))}
           </div>

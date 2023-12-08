@@ -11,7 +11,7 @@ To start the Code Studio, run `npm install` and `npm start` in the root director
 Project specific settings are stored in the `.env` file. There is also an `.env.development` file which is only
 loaded in development builds, and `.env.development.local` which is only for local builds. For local development,
 you should be modifying `.env.development.local`.
-For more information on `.env`, see https://create-react-app.dev/docs/adding-custom-environment-variables#adding-development-environment-variables-in-env
+For more information on `.env`, see [Vite docs](https://vitejs.dev/guide/env-and-mode.html).
 Below are some of the common properties which are configurable in the `.env` file.
 
 ### VITE_CORE_API_URL
@@ -87,30 +87,6 @@ This project uses [Vite](https://vitejs.dev/).
 You can learn more in the [Vite documentation](https://vitejs.dev/guide/).
 
 To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
-
-### Analyzing the Bundle Size
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
-
-### Making a Progressive Web App
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `yarn build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
 
 # Legal Notices
 

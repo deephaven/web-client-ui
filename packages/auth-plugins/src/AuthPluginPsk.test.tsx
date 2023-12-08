@@ -2,6 +2,7 @@ import React from 'react';
 import Cookies from 'js-cookie';
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { ThemeProvider } from '@deephaven/components';
 import { ApiContext, ClientContext } from '@deephaven/jsapi-bootstrap';
 import { dh } from '@deephaven/jsapi-shim';
 import type { CoreClient } from '@deephaven/jsapi-types';
@@ -47,11 +48,13 @@ function renderComponent(
 ) {
   return render(
     <ApiContext.Provider value={dh}>
-      <ClientContext.Provider value={client}>
-        <AuthPluginPsk.Component authConfigValues={authConfigValues}>
-          {mockChild}
-        </AuthPluginPsk.Component>
-      </ClientContext.Provider>
+      <ThemeProvider themes={[]}>
+        <ClientContext.Provider value={client}>
+          <AuthPluginPsk.Component authConfigValues={authConfigValues}>
+            {mockChild}
+          </AuthPluginPsk.Component>
+        </ClientContext.Provider>
+      </ThemeProvider>
     </ApiContext.Provider>
   );
 }

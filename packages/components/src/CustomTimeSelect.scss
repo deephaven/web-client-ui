@@ -2,7 +2,7 @@
 @import '../scss/util.scss';
 
 $cs-option-btn-color: $dropdown-link-color;
-$cs-option-keyboard-selected-bg: rgba($primary, 0.5);
+$cs-option-keyboard-selected-bg: var(--dh-color-keyboard-selected-bg);
 $cs-option-hover-bg: $dropdown-link-hover-bg;
 $cs-option-hover-color: $dropdown-link-hover-color;
 

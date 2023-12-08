@@ -1,7 +1,7 @@
 // Setup a mask-image for an inline svg
 @mixin icon-image-mask($mask-image, $size: 16px) {
   background-size: $size;
-  background-color: var(--dh-color-foreground);
+  background-color: var(--dh-color-fg);
   mask-image: $mask-image;
   mask-position: center center;
   mask-repeat: no-repeat;

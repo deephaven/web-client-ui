@@ -1,7 +1,6 @@
 import { ColorUtils } from '@deephaven/utils';
 
-export const INVALID_COLOR_BORDER_STYLE =
-  '2px solid var(--dh-color-notice-default-bg)';
+export const INVALID_COLOR_BORDER_STYLE = '2px solid var(--dh-color-notice-bg)';
 
 // Group names are extracted from var names via a regex capture group. Most of
 // them work pretty well, but some need to be remapped to a more appropriate
@@ -10,10 +9,31 @@ const REASSIGN_VARIABLE_GROUPS: Record<string, string> = {
   '--dh-color-black': 'gray',
   '--dh-color-white': 'gray',
   // Semantic
+  '--dh-color-border': 'General',
+  '--dh-color-bg': 'General',
+  '--dh-color-fg': 'General',
+  '--dh-color-content-bg': 'General',
+  '--dh-color-dropshadow': 'General',
+  '--dh-color-keyboard-selected-bg': 'Misc',
+  '--dh-color-hover-border': 'Misc',
   '--dh-color-visual-positive': 'Visual Status',
   '--dh-color-visual-negative': 'Visual Status',
   '--dh-color-visual-notice': 'Visual Status',
   '--dh-color-visual-info': 'Visual Status',
+  '--dh-color-gray-bg': 'Default Background',
+  '--dh-color-blue-bg': 'Default Background',
+  '--dh-color-red-bg': 'Default Background',
+  '--dh-color-orange-bg': 'Default Background',
+  '--dh-color-yellow-bg': 'Default Background',
+  '--dh-color-chartreuse-bg': 'Default Background',
+  '--dh-color-celery-bg': 'Default Background',
+  '--dh-color-green-bg': 'Default Background',
+  '--dh-color-seafoam-bg': 'Default Background',
+  '--dh-color-cyan-bg': 'Default Background',
+  '--dh-color-indigo-bg': 'Default Background',
+  '--dh-color-purple-bg': 'Default Background',
+  '--dh-color-fuchsia-bg': 'Default Background',
+  '--dh-color-magenta-bg': 'Default Background',
   // Editor
   '--dh-color-editor-bg': 'editor',
   '--dh-color-editor-fg': 'editor',
@@ -28,6 +48,15 @@ const REASSIGN_VARIABLE_GROUPS: Record<string, string> = {
   '--dh-color-grid-date': 'Data Types',
   '--dh-color-grid-string-null': 'Data Types',
 } as const;
+
+const SWATCH_LABEL = {
+  '--dh-color-black': '',
+  '--dh-color-action-active-bg': 'Action.active',
+  '--dh-color-action-down-bg': 'Action:active',
+  '--dh-color-action-hover-bg': 'Action:hover',
+  '--dh-color-action-active-hover-bg': 'Action.active:hover',
+  '--dh-color-action-disabled-bg': 'Action:disabled',
+};
 
 // Mappings of variable groups to rename
 const RENAME_VARIABLE_GROUPS = {
@@ -62,17 +91,17 @@ const RENAME_VARIABLE_GROUPS = {
     line: 'Deprecated',
   },
   grid: { data: 'Data Bars', context: 'Context Menu' },
-  semantic: {
-    positive: 'status',
-    negative: 'status',
-    notice: 'status',
-    info: 'status',
-    well: 'wells',
-  },
+  semantic: {},
   component: {},
 } satisfies Record<string, Record<string, string>>;
 
-/** Return black or white contrast color */
+/**
+ * Return black or white contrast color.
+ *
+ * Note that this should be sufficient for styleguide swatch examples, but it
+ * may not completely align with how Spectrum determines contrast colors, hence
+ * leaving this here instead of promoting to `ColorUtils`.
+ */
 export function contrastColor(color: string): 'black' | 'white' {
   const rgba = ColorUtils.parseRgba(ColorUtils.asRgbOrRgbaString(color) ?? '');
   if (rgba == null || rgba.a < 0.5) {
@@ -130,12 +159,26 @@ export function buildColorGroups(
   styleText: string,
   captureGroupI: number,
   reassignVarGroups: Record<string, string> = REASSIGN_VARIABLE_GROUPS
-): Record<string, { name: string; value: string }[]> {
+): Record<
+  string,
+  { isLabel?: boolean; name: string; value: string; note?: string }[]
+> {
   const groupRemap: Record<string, string> = RENAME_VARIABLE_GROUPS[groupKey];
   const swatchData = extractColorVars(styleText);
 
   const groupData = swatchData.reduce(
     (acc, { name, value }) => {
+      // Skip -hsl variables since they aren't actually colors yet
+      if (/^--dh-color-(.*?)-hsl$/.test(name)) {
+        return acc;
+      }
+
+      // Skip gray light/mid/dark as they will be marked via notes on the gray
+      // numbered palette
+      if (/^--dh-color-gray-(light|mid|dark)$/.test(name)) {
+        return acc;
+      }
+
       const match = /^--dh-color-([^-]+)(?:-([^-]+))?/.exec(name);
       let group =
         reassignVarGroups[name] ??
@@ -149,14 +192,13 @@ export function buildColorGroups(
         acc[group] = [];
       }
 
-      // Skip -hsl variables since they aren't actually colors yet
-      if (/^--dh-color-(.*?)-hsl$/.test(name)) {
-        return acc;
-      }
-
       // Add a spacer for black / white
-      if (name === '--dh-color-black') {
-        acc[group].push({ name: '', value: '' });
+      if (name in SWATCH_LABEL) {
+        acc[group].push({
+          isLabel: true,
+          name: SWATCH_LABEL[name as keyof typeof SWATCH_LABEL],
+          value: '',
+        });
       }
 
       // Skip gray light/mid/dark as we are planning to remove them
@@ -164,11 +206,21 @@ export function buildColorGroups(
         return acc;
       }
 
-      acc[group].push({ name, value });
+      // It might be nice to make these dynamic, but for now just hardcode
+      const note = {
+        '--dh-color-gray-900': 'light',
+        '--dh-color-gray-600': 'mid',
+        '--dh-color-gray-300': 'dark',
+      }[name];
+
+      acc[group].push({ name, value, note });
 
       return acc;
     },
-    {} as Record<string, { name: string; value: string }[]>
+    {} as Record<
+      string,
+      { isLabel?: boolean; name: string; value: string; note?: string }[]
+    >
   );
 
   return groupData;
