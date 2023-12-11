@@ -99,8 +99,8 @@ export function ThemeProvider({
     });
   }, [activeThemes, selectedThemeKey, themes]);
 
-  return value == null ? null : (
-    <ThemeContext.Provider value={value}>
+  return (
+    <>
       {activeThemes == null ? null : (
         <>
           {activeThemes.map(theme => (
@@ -110,8 +110,12 @@ export function ThemeProvider({
           ))}
         </>
       )}
-      <SpectrumThemeProvider>{children}</SpectrumThemeProvider>
-    </ThemeContext.Provider>
+      {value == null ? null : (
+        <ThemeContext.Provider value={value}>
+          <SpectrumThemeProvider>{children}</SpectrumThemeProvider>
+        </ThemeContext.Provider>
+      )}
+    </>
   );
 }
 
