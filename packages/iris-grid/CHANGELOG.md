@@ -3,6 +3,35 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.56.0](https://github.com/deephaven/web-client-ui/compare/v0.55.0...v0.56.0) (2023-12-11)
+
+
+### Bug Fixes
+
+* adjust filter bar colour ([#1666](https://github.com/deephaven/web-client-ui/issues/1666)) ([4c0200e](https://github.com/deephaven/web-client-ui/commit/4c0200e71e350fcf5261b0cc28440cb798bec207))
+* convert organize columns component to purecomponent ([#1653](https://github.com/deephaven/web-client-ui/issues/1653)) ([8ddc114](https://github.com/deephaven/web-client-ui/commit/8ddc11458b0f52d7a96f673f061d60c63cb7b24a)), closes [#1650](https://github.com/deephaven/web-client-ui/issues/1650)
+* Default to `Skip` operation instead of `Sum` operation ([#1648](https://github.com/deephaven/web-client-ui/issues/1648)) ([6083173](https://github.com/deephaven/web-client-ui/commit/608317358fe8eef0de365429265cfbd113340c33)), closes [#1355](https://github.com/deephaven/web-client-ui/issues/1355) [#1355](https://github.com/deephaven/web-client-ui/issues/1355)
+* Unable to delete selected rows in some input tables ([#1678](https://github.com/deephaven/web-client-ui/issues/1678)) ([1e71550](https://github.com/deephaven/web-client-ui/commit/1e71550ac024e4b66c601fe2b85684b2463b905b)), closes [#1677](https://github.com/deephaven/web-client-ui/issues/1677)
+
+
+### Features
+
+* forward and back button for organize column search ([#1641](https://github.com/deephaven/web-client-ui/issues/1641)) ([89f2be5](https://github.com/deephaven/web-client-ui/commit/89f2be56647c977e4150f050ceec9e33f4c07680)), closes [#1529](https://github.com/deephaven/web-client-ui/issues/1529)
+* Theme Selector ([#1661](https://github.com/deephaven/web-client-ui/issues/1661)) ([5e2be64](https://github.com/deephaven/web-client-ui/commit/5e2be64bfa93c5aff8aa936d3de476eccde0a6e7)), closes [#1660](https://github.com/deephaven/web-client-ui/issues/1660)
+* Theming - Bootstrap ([#1603](https://github.com/deephaven/web-client-ui/issues/1603)) ([88bcae0](https://github.com/deephaven/web-client-ui/commit/88bcae02791776464c2f774653764fb479d28700))
+* View cell contents in context menu ([#1657](https://github.com/deephaven/web-client-ui/issues/1657)) ([90b7517](https://github.com/deephaven/web-client-ui/commit/90b7517c42024cbefce3481e13a126c619def1fa)), closes [#1605](https://github.com/deephaven/web-client-ui/issues/1605)
+
+
+### BREAKING CHANGES
+
+* Bootstrap color variables are now predominantly hsl
+based. SCSS will need to be updated accordingly. Theme providers are
+needed to load themes.
+
+
+
+
+
 # [0.55.0](https://github.com/deephaven/web-client-ui/compare/v0.54.0...v0.55.0) (2023-11-20)
 
 
