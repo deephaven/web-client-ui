@@ -190,16 +190,20 @@ class IrisGridPartitionSelector extends Component<
     if (!Array.isArray(this.partitionTables)) {
       return;
     }
-    const { columns, getFormattedString, tablePromise } = this.props;
-    const table = await tablePromise;
+    const { columns, getFormattedString } = this.props;
 
     const dataPromises = Array<Promise<TableData>>();
     const partitionFilters = [...this.partitionTables[index].filter];
+
+    log.log(columns.map(column => column.name));
+    log.log(this.table);
 
     // Update partition filters
     for (let i = index; i < columns.length; i += 1) {
       const partition = partitions[i];
       const partitionColumn = columns[i];
+
+      log.log('loop', partition, partitionColumn.name, partitionFilters);
 
       this.partitionTables[i].applyFilter([...partitionFilters]);
       if (
@@ -223,15 +227,19 @@ class IrisGridPartitionSelector extends Component<
         }
       }
       const partitionFilterCopy = [...partitionFilters];
-      dataPromises.push(
-        table.copy().then(async t => {
-          t.applyFilter(partitionFilterCopy);
-          t.setViewport(0, 0, columns as Column[]);
-          const data = await t.getViewportData();
-          t.close();
-          return data as TableData;
-        })
-      );
+      if (this.table) {
+        dataPromises.push(
+          this.table.copy().then(async t => {
+            t.applyFilter(partitionFilterCopy);
+            t.setViewport(0, 0, columns as Column[]);
+            log.log('viewport set');
+            const data = await t.getViewportData();
+            log.log('promise completed', data.rows.length);
+            t.close();
+            return data as TableData;
+          })
+        );
+      }
     }
     // Update Partition Values
     const tableData = await Promise.all(dataPromises);
@@ -304,9 +312,7 @@ class IrisGridPartitionSelector extends Component<
 
     const partitionSelectors = columns.map((column, index) => (
       <div key={`selector-${column.name}`} className="column-selector">
-        <div className="column-name">
-          <span>{column.name} </span>
-        </div>
+        <div className="column-name">{column.name}</div>
         <Select
           className="custom-select-sm"
           value={selectorValue[index]}
@@ -324,18 +330,13 @@ class IrisGridPartitionSelector extends Component<
           ))}
         </Select>
         {columns.length - 1 === index || (
-          <>
-            &nbsp;
-            <FontAwesomeIcon icon={vsChevronRight} />
-          </>
+          <FontAwesomeIcon icon={vsChevronRight} />
         )}
       </div>
     ));
     return (
       <div className="iris-grid-partition-selector">
-        <div className="table-name">
-          <span>Partitioned Table </span>
-        </div>
+        <div className="table-name">Partitioned Table</div>
         <div className="partition-button-group">
           <Button
             className="btn-sm"

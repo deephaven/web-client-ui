@@ -1,43 +1,26 @@
 @import '@deephaven/components/scss/custom.scss';
-$partition-selector-color: $gray-400;
 .iris-grid-partition-selector {
   display: flex;
   flex-wrap: wrap;
   background: $gray-850;
-  vertical-align: middle;
-  padding: 0.2em 0 0.2em 0;
-  .table-name {
-    text-overflow: ellipsis;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    padding: 0.5em;
-    white-space: nowrap;
-  }
-  .column-name {
-    text-overflow: ellipsis;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    padding: 0.5em;
-    white-space: nowrap;
-  }
+  align-items: center;
+  padding: $spacer-2;
+  gap: $spacer-2;
+
   .column-selector {
     display: flex;
-    width: auto;
     align-items: center;
-  }
-  .iris-grid-partition-selector-spacer {
-    flex-grow: 1;
+    gap: $spacer-2;
+
+    .custom-select {
+      min-width: 4rem;
+    }
   }
   .partition-button-group {
+    display: flex;
     border: 1px $gray-900;
-    border-style: none solid none solid;
-    padding: 0 0.3em 0 0.3em;
-    .btn {
-      color: $white;
-      margin: 0.3em 0.3em;
-      padding: 0.25em 0.5em;
-    }
+    border-style: none solid;
+    padding: 0 $spacer-2;
+    gap: $spacer-2;
   }
 }
