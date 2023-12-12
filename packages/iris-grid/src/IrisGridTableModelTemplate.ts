@@ -39,13 +39,13 @@ import {
   assertNotNull,
 } from '@deephaven/utils';
 import { TableUtils, Formatter, FormatterUtils } from '@deephaven/jsapi-utils';
-import {
+import type {
   AxisOption,
   DataBarOptions,
   DirectionOption,
   Marker,
   ValuePlacementOption,
-} from 'packages/grid/src/DataBarGridModel';
+} from '@deephaven/grid';
 import IrisGridModel from './IrisGridModel';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import IrisGridUtils from './IrisGridUtils';
