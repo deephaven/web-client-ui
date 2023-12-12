@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React, { Key, useCallback, useEffect, useState } from 'react';
 import {
   ActionButton,
@@ -12,6 +13,7 @@ import { vsMenu } from '@deephaven/icons';
 import {
   MENU_CATEGORY_DATA_ATTRIBUTE,
   NO_MENU_DATA_ATTRIBUTE,
+  SPECTRUM_COMPARISON_SAMPLES_ID,
   SPECTRUM_COMPONENT_SAMPLES_ID,
 } from './constants';
 
@@ -26,18 +28,18 @@ type LinkCategory = { category: string; items: Link[] };
  * menu category. These will be queried by the SamplesMenu component to build
  * up the menu sections.
  */
-export function SampleMenuCategory({
-  'data-menu-category': dataMenuCategory,
-}: Record<typeof MENU_CATEGORY_DATA_ATTRIBUTE, string>): JSX.Element {
-  return <div data-menu-category={dataMenuCategory} />;
+export function SampleMenuCategory(
+  props: Record<typeof MENU_CATEGORY_DATA_ATTRIBUTE, string>
+): JSX.Element {
+  return <div {...props} />;
 }
 
 /**
  * Creates a menu from h2, h3 elements on the page and assigns them each an id
  * for hash navigation purposes. If the current hash matches one of the ids, it
  * will scroll to that element. This handles the initial page load scenario.
- * Menu sections are identified by divs with MENU_CATEGORY_DATA_ATTRIBUTE
- * attributes.
+ * Menu categories are identified by divs with MENU_CATEGORY_DATA_ATTRIBUTE
+ * attributes originating from the <SampleMenuCategory> component.
  */
 export function SamplesMenu(): JSX.Element {
   const [links, setLinks] = useState<LinkCategory[]>([]);
@@ -53,17 +55,25 @@ export function SamplesMenu(): JSX.Element {
       `#${SPECTRUM_COMPONENT_SAMPLES_ID}`
     );
 
+    const spectrumComparisonSamples = document.querySelector(
+      `#${SPECTRUM_COMPARISON_SAMPLES_ID}`
+    );
+
     document
       .querySelectorAll(`h2,h3,[${MENU_CATEGORY_DATA_ATTRIBUTE}]`)
-      .forEach(el => {
-        if (el.textContent == null || el.hasAttribute(NO_MENU_DATA_ATTRIBUTE)) {
+      .forEach(headingEl => {
+        if (
+          headingEl.textContent == null ||
+          headingEl.hasAttribute(NO_MENU_DATA_ATTRIBUTE)
+        ) {
           return;
         }
 
         // Create a new category section
-        if (el.hasAttribute(MENU_CATEGORY_DATA_ATTRIBUTE)) {
+        if (headingEl.hasAttribute(MENU_CATEGORY_DATA_ATTRIBUTE)) {
           currentCategory = {
-            category: el.getAttribute(MENU_CATEGORY_DATA_ATTRIBUTE) ?? '',
+            category:
+              headingEl.getAttribute(MENU_CATEGORY_DATA_ATTRIBUTE) ?? '',
             items: [],
           };
           categories.push(currentCategory);
@@ -71,16 +81,22 @@ export function SamplesMenu(): JSX.Element {
           return;
         }
 
-        const id = `${
-          spectrumComponentsSamples?.contains(el) === true ? 'spectrum-' : ''
-        }${el.textContent}`
+        const idPrefix =
+          // eslint-disable-next-line no-nested-ternary
+          spectrumComponentsSamples?.contains(headingEl) === true
+            ? 'spectrum-'
+            : spectrumComparisonSamples?.contains(headingEl) === true
+            ? 'spectrum-compare-'
+            : '';
+
+        const id = `${idPrefix}${headingEl.textContent}`
           .toLowerCase()
           .replace(/\s/g, '-');
 
         // eslint-disable-next-line no-param-reassign
-        el.id = id;
+        headingEl.id = id;
 
-        currentCategory.items.push({ id, label: el.textContent });
+        currentCategory.items.push({ id, label: headingEl.textContent });
       });
 
     setLinks(categories);
