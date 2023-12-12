@@ -1,20 +1,20 @@
 // Bootstrap mixin overrides for `bootstrap/scss/mixins/_text-emphasis.scss`
+@use 'sass:map';
 
-@mixin text-emphasis-variant($parent, $semantic-value, $ignore-warning: false) {
+@mixin text-emphasis-variant(
+  $parent,
+  $bootstrap-value,
+  $ignore-warning: false
+) {
+  $semantic-value: map.get($bootstrap-dh-semantic-map, $bootstrap-value) or '';
+
   #{$parent} {
-    // if $semantic-value = primary then use accent-700
-    @if $semantic-value == 'accent' {
-      color: var(--spectrum-#{$semantic-value}-color-700) !important;
-    } @else {
-      color: var(--spectrum-#{$semantic-value}-visual-color) !important;
-    }
+    color: var(--dh-color-#{$semantic-value}-bg) !important;
   }
   @if $emphasized-link-hover-darken-percentage != 0 {
     a#{$parent} {
       @include hover-focus {
-        color: var(
-          --spectrum-#{$semantic-value}-background-color-default
-        ) !important;
+        color: var(--dh-color-#{$semantic-value}-hover-bg) !important;
       }
     }
   }
