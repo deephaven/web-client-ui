@@ -4,6 +4,11 @@
   font-family: var(--font-family-sans-serif) !important;
 }
 
+/* Override _reboot.scss */
+label[class^='spectrum-'] {
+  margin-bottom: 0;
+}
+
 .svg-inline--fa[class*='spectrum-Icon--sizeS'] {
   /* 
   Resize fontawesome icons used inside a spectrum icon wrapper to match

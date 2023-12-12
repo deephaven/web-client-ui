@@ -191,4 +191,26 @@
   --spectrum-purple-background-color-default: var(--dh-color-purple-bg);
   --spectrum-fuchsia-background-color-default: var(--dh-color-fuchsia-bg);
   --spectrum-magenta-background-color-default: var(--dh-color-magenta-bg);
+
+  /* Visual levels */
+  --spectrum-negative-visual-color: var(--dh-color-visual-negative);
+  --spectrum-positive-visual-color: var(--dh-color-visual-positive);
+  --spectrum-notice-visual-color: var(--dh-color-visual-notice);
+  --spectrum-informative-visual-color: var(--dh-color-visual-info);
+
+  /* Visual */
+  --spectrum-gray-visual-color: var(--dh-color-visual-gray);
+  --spectrum-red-visual-color: var(--dh-color-visual-red);
+  --spectrum-orange-visual-color: var(--dh-color-visual-orange);
+  --spectrum-yellow-visual-color: var(--dh-color-visual-yellow);
+  --spectrum-chartreuse-visual-color: var(--dh-color-visual-chartreuse);
+  --spectrum-celery-visual-color: var(--dh-color-visual-celery);
+  --spectrum-green-visual-color: var(--dh-color-visual-green);
+  --spectrum-seafoam-visual-color: var(--dh-color-visual-seafoam);
+  --spectrum-cyan-visual-color: var(--dh-color-visual-cyan);
+  --spectrum-blue-visual-color: var(--dh-color-visual-blue);
+  --spectrum-indigo-visual-color: var(--dh-color-visual-indigo);
+  --spectrum-purple-visual-color: var(--dh-color-visual-purple);
+  --spectrum-fuchsia-visual-color: var(--dh-color-visual-fuchsia);
+  --spectrum-magenta-visual-color: var(--dh-color-visual-magenta);
 }
