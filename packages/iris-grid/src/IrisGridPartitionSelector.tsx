@@ -4,12 +4,7 @@ import { Button, Option, Select } from '@deephaven/components';
 import { vsChevronRight, vsMerge, vsKey } from '@deephaven/icons';
 import Log from '@deephaven/log';
 import debounce from 'lodash.debounce';
-import type {
-  Column,
-  dh as DhType,
-  Table,
-  TableData,
-} from '@deephaven/jsapi-types';
+import type { Column, dh as DhType, Table } from '@deephaven/jsapi-types';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import deepEqual from 'deep-equal';
 import './IrisGridPartitionSelector.scss';
@@ -81,7 +76,7 @@ class IrisGridPartitionSelector extends Component<
     this.partitionTables = await Promise.all(
       columns.map(async (_, i) => table.selectDistinct(columns.slice(0, i + 1)))
     );
-    this.updatePartitions(0, partitions);
+    this.updatePartitions(partitions);
   }
 
   componentDidUpdate(prevProps: IrisGridPartitionSelectorProps): void {
@@ -89,7 +84,7 @@ class IrisGridPartitionSelector extends Component<
     const { partitions: newPartitions } = this.props;
 
     if (!deepEqual(prevPartitions, newPartitions)) {
-      this.updatePartitions(0, newPartitions);
+      this.updatePartitions(newPartitions);
     }
   }
 
@@ -120,17 +115,22 @@ class IrisGridPartitionSelector extends Component<
   }
 
   handlePartitionSelect(index: number, partition: string): void {
+    const { columns } = this.props;
     const { partitions: prevPartitions, partitionColumnValues } = this.state;
 
     if (prevPartitions[index] === partition) {
       return;
     }
-    log.debug('handlePartitionSelect', index, partition);
+    log.debug('handlePartitionSelect', index, partition, prevPartitions);
 
-    const newPartitions = [...prevPartitions];
+    const newPartitions = prevPartitions.length
+      ? [...prevPartitions]
+      : Array(columns.length).fill(null);
     newPartitions[index] = partitionColumnValues[index].data[partition];
 
-    this.updatePartitions(index, newPartitions).then(() =>
+    log.log(newPartitions);
+
+    this.updatePartitions(newPartitions, index).then(() =>
       this.setState({ isShowingKeys: false }, () => {
         this.sendUpdate();
       })
@@ -182,93 +182,71 @@ class IrisGridPartitionSelector extends Component<
     return getFormattedString(value, column.type, column.name);
   }
 
+  /**
+   * Resolve invalid partitions and get new values for partition dropdowns
+   * @param index The index of the partition that was changed
+   * @param partitions Array of partitions containing updated values
+   */
   async updatePartitions(
-    index: number,
-    partitions: readonly unknown[]
+    partitions: readonly unknown[],
+    index = 0
   ): Promise<void> {
     log.debug('partitionSelector update', index, partitions);
     if (!Array.isArray(this.partitionTables)) {
       return;
     }
-    const { columns, getFormattedString } = this.props;
+    const { getFormattedString } = this.props;
+    const { columns } = this.partitionTables[this.partitionTables.length - 1];
+    if (!this.table) {
+      // this.table should be assigned in componentDidMount before updatePartitions is called
+      throw new Error('Table not initialized');
+    }
 
-    const dataPromises = Array<Promise<TableData>>();
     const partitionFilters = [...this.partitionTables[index].filter];
-
-    log.log(columns.map(column => column.name));
-    log.log(this.table);
+    const validPartitions = [...partitions];
+    let lastValidPartition = null;
 
     // Update partition filters
-    for (let i = index; i < columns.length; i += 1) {
-      const partition = partitions[i];
+    for (let i = index; i < partitions.length; i += 1) {
+      /* eslint-disable  no-await-in-loop */
+      const partition = validPartitions[i];
       const partitionColumn = columns[i];
 
-      log.log('loop', partition, partitionColumn.name, partitionFilters);
-
       this.partitionTables[i].applyFilter([...partitionFilters]);
-      if (
-        partition != null &&
-        !(TableUtils.isCharType(partitionColumn.type) && partition === '')
-      ) {
-        const partitionText = TableUtils.isCharType(partitionColumn.type)
-          ? getFormattedString(
-              partition,
-              partitionColumn.type,
-              partitionColumn.name
-            )
-          : partition?.toString() ?? '';
-        const partitionFilter = this.tableUtils.makeQuickFilterFromComponent(
-          partitionColumn,
-          partitionText
-        );
-        if (partitionFilter !== null) {
-          // Should never be null
-          partitionFilters.push(partitionFilter);
-        }
-      }
-      const partitionFilterCopy = [...partitionFilters];
-      if (this.table) {
-        dataPromises.push(
-          this.table.copy().then(async t => {
-            t.applyFilter(partitionFilterCopy);
-            t.setViewport(0, 0, columns as Column[]);
-            log.log('viewport set');
-            const data = await t.getViewportData();
-            log.log('promise completed', data.rows.length);
-            t.close();
-            return data as TableData;
-          })
+      const partitionText = TableUtils.isCharType(partitionColumn.type)
+        ? getFormattedString(
+            partition,
+            partitionColumn.type,
+            partitionColumn.name
+          )
+        : partition?.toString() ?? '';
+      const partitionFilter =
+        partition === null
+          ? partitionColumn.filter().isNull()
+          : this.tableUtils.makeQuickFilterFromComponent(
+              partitionColumn,
+              partitionText
+            );
+      if (partitionFilter !== null) {
+        partitionFilters.push(partitionFilter);
+      } else {
+        throw new Error(
+          `Failed to build partition ${partition} for column ${partitionColumn.name}`
         );
       }
-    }
-    // Update Partition Values
-    const tableData = await Promise.all(dataPromises);
-    const validPartitions = partitions.slice(0, index + 1);
-    if (partitions[index] !== undefined) {
-      // Check if columns before index are defined
-      for (
-        let emptyIndex = 0;
-        emptyIndex < validPartitions.length;
-        emptyIndex += 1
-      ) {
-        if (validPartitions[emptyIndex] === undefined) {
-          return this.updatePartitions(
-            emptyIndex,
-            columns.map(c => tableData[0].rows[0].get(c))
-          );
-        }
-      }
+
+      const t = await this.table.copy();
+      t.applyFilter(partitionFilters);
+      t.setViewport(0, 0, t.columns);
+      const data = await t.getViewportData();
+      t.close();
       // Check if columns after index are defined
-      for (let i = 1; i < tableData.length; i += 1) {
-        const data = tableData[i];
-        if (data.rows.length > 0 && partitions[index + i] !== undefined) {
-          validPartitions.push(partitions[index + i]);
-        } else {
-          return this.updatePartitions(
-            index + i,
-            columns.map(c => tableData[i - 1].rows[0].get(c))
-          );
-        }
+      if (data.rows.length > 0) {
+        [lastValidPartition] = data.rows;
+      } else {
+        validPartitions[i] = lastValidPartition?.get(partitionColumn);
+        partitionFilters.pop();
+        i -= 1;
       }
     }
     // Valid partitions found, update dropdown values
@@ -296,6 +274,12 @@ class IrisGridPartitionSelector extends Component<
       }
     );
     const newColumnValues = await Promise.all(newColumnValuesPromise);
+    log.log(
+      'validPartitions',
+      validPartitions,
+      'partitionColumnValues',
+      newColumnValues
+    );
     this.setState({
       partitions: validPartitions,
       partitionColumnValues: newColumnValues,
@@ -317,14 +301,18 @@ class IrisGridPartitionSelector extends Component<
           className="custom-select-sm"
           value={selectorValue[index]}
           onChange={value => this.handlePartitionSelect(index, value)}
+          disabled={index > 0 && partitions.length === 0}
         >
           {partitions.length > 0 || (
-            <Option disabled value="">
+            <Option disabled key={column.name} value="">
               {' '}
             </Option>
           )}
-          {partitionColumnValues[index].order.map(value => (
-            <Option key={value} value={value}>
+          {partitionColumnValues[index].order.map((value, i) => (
+            <Option
+              key={`${column.name}-${i.toString()} ${value}`}
+              value={value}
+            >
               {value}
             </Option>
           ))}

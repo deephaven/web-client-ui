@@ -4408,8 +4408,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                   getFormattedString={(
                     value: unknown,
                     type: string,
-                    stringName: string
-                  ) => model.displayString(value, type, stringName)}
+                    columnName: string
+                  ) => model.displayString(value, type, columnName)}
                   columns={model.partitionColumns}
                   partitions={model.partition}
                   onChange={this.handlePartitionChange}

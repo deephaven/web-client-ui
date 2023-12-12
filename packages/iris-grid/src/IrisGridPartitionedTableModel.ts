@@ -6,13 +6,10 @@ import type {
   Table,
 } from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
-import Log from '@deephaven/log';
 import { ColumnName } from './CommonTypes';
 import IrisGridModel from './IrisGridModel';
 import IrisGridTableModel from './IrisGridTableModel';
 import EmptyIrisGridModel from './EmptyIrisGridModel';
-
-const log = Log.module('IrisGridPartitionedTableModel');
 
 export function isIrisGridPartitionedTableModel(
   model: IrisGridModel
@@ -76,7 +73,6 @@ class IrisGridPartitionedTableModel extends EmptyIrisGridModel {
   }
 
   set partition(partition: unknown[]) {
-    log.debug2('set partition', partition);
     this.partitionKeys = partition;
   }
 

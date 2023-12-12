@@ -353,7 +353,7 @@ class IrisGridUtils {
       ? irisGridPanelState
       : {
           partitionColumns:
-            irisGridPanelState.partitionColumn !== null
+            irisGridPanelState.partitionColumn != null
               ? [irisGridPanelState.partitionColumn]
               : [],
           partitions: [irisGridPanelState.partition],
