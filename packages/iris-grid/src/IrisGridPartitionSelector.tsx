@@ -128,8 +128,6 @@ class IrisGridPartitionSelector extends Component<
       : Array(columns.length).fill(null);
     newPartitions[index] = partitionColumnValues[index].data[partition];
 
-    log.log(newPartitions);
-
     this.updatePartitions(newPartitions, index).then(() =>
       this.setState({ isShowingKeys: false }, () => {
         this.sendUpdate();
@@ -274,12 +272,6 @@ class IrisGridPartitionSelector extends Component<
       }
     );
     const newColumnValues = await Promise.all(newColumnValuesPromise);
-    log.log(
-      'validPartitions',
-      validPartitions,
-      'partitionColumnValues',
-      newColumnValues
-    );
     this.setState({
       partitions: validPartitions,
       partitionColumnValues: newColumnValues,
