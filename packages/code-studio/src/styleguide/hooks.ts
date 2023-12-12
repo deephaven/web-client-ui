@@ -41,18 +41,22 @@ export function useDhColorFromPseudoContent(
       return;
     }
 
-    const computedStyle = getComputedStyle(
+    const pseudoContent = getComputedStyle(
       elementRef.current,
       pseudoElement
     ).getPropertyValue('content');
 
     // Extract the var name from the content (e.g. '--dh-color-gray-900')
-    const dhColorVarName = /"(--dh-color-.*?)[,"]/.exec(computedStyle)?.[1];
+    const dhColorVarName = /"(--dh-color-.*?)[,"]/.exec(pseudoContent)?.[1];
     if (dhColorVarName == null) {
       return;
     }
 
-    setColor(dhColorVarName);
+    const dhColorValue = getComputedStyle(elementRef.current).getPropertyValue(
+      dhColorVarName
+    );
+
+    setColor(dhColorValue);
   }, [elementRef, pseudoElement]);
 
   return color;
