@@ -28,6 +28,13 @@ export type OnlyOneProp<T> = {
 }[keyof T];
 
 /**
+ * Remove `Partial` wrapper from a type. Note that this is slightly different
+ * than `Required` because it will preserve optional properties on the original
+ * target type.
+ */
+export type UndoPartial<T> = T extends Partial<infer U> ? U : never;
+
+/**
  * Util type to extract the value from an object.
  *
  * e.g. Given
