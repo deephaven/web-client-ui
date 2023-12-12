@@ -4,6 +4,10 @@ import { Button, ButtonOld, SocketedButton } from '@deephaven/components';
 import { dhTruck } from '@deephaven/icons';
 import { sampleSectionIdAndClasses } from './utils';
 
+function noOp(): void {
+  return undefined;
+}
+
 interface ButtonsState {
   toggle: boolean;
 }
@@ -51,18 +55,23 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
     return (
       <div {...sampleSectionIdAndClasses('buttons-socketed')}>
         <h5>Socketed Buttons (for linker)</h5>
-        <SocketedButton style={{ marginBottom: '1rem', marginRight: '1rem' }}>
+        <SocketedButton
+          style={{ marginBottom: '1rem', marginRight: '1rem' }}
+          onClick={noOp}
+        >
           Unlinked
         </SocketedButton>
         <SocketedButton
           style={{ marginBottom: '1rem', marginRight: '1rem' }}
           isLinked
+          onClick={noOp}
         >
           Linked
         </SocketedButton>
         <SocketedButton
           style={{ marginBottom: '1rem', marginRight: '1rem' }}
           isLinkedSource
+          onClick={noOp}
         >
           Linked Source
         </SocketedButton>
@@ -70,12 +79,14 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
           style={{ marginBottom: '1rem', marginRight: '1rem' }}
           isLinked
           isInvalid
+          onClick={noOp}
         >
           Error
         </SocketedButton>
         <SocketedButton
           style={{ marginBottom: '1rem', marginRight: '1rem' }}
           disabled
+          onClick={noOp}
         >
           Disabled
         </SocketedButton>
@@ -101,7 +112,13 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
       >
         <h5>Inline Buttons</h5>
         Regular btn-inline:
-        <Button className="mx-2" kind="inline" icon={dhTruck} tooltip="test" />
+        <Button
+          className="mx-2"
+          kind="inline"
+          icon={dhTruck}
+          tooltip="test"
+          onClick={noOp}
+        />
         Toggle button (class active):
         <Button
           className="mx-2"
@@ -114,21 +131,23 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
           tooltip="test"
         />
         Disabled:
-        <Button className="mx-2" kind="inline" disabled>
+        <Button className="mx-2" kind="inline" disabled onClick={noOp}>
           Disabled
         </Button>
         With Text:
-        <Button className="mx-2" kind="inline" icon={dhTruck}>
+        <Button className="mx-2" kind="inline" icon={dhTruck} onClick={noOp}>
           <span>Text Button</span>
         </Button>
         <br />
         <br />
         <span>btn-link-icon (no text):</span>
-        <Button kind="ghost" icon={dhTruck} tooltip="test" />
+        <Button kind="ghost" icon={dhTruck} tooltip="test" onClick={noOp} />
         <span className="mx-2">btn-link:</span>
-        <Button kind="ghost">Text Button </Button>
+        <Button kind="ghost" onClick={noOp}>
+          Text Button
+        </Button>
         <span className="mx-2">btn-link (text w/ optional with icon):</span>
-        <Button kind="ghost" icon={dhTruck}>
+        <Button kind="ghost" icon={dhTruck} onClick={noOp}>
           Text Button
         </Button>
       </div>
