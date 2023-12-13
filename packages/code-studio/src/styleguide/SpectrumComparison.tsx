@@ -150,6 +150,17 @@ export function SpectrumComparison(): JSX.Element {
             </ComboBox>
 
             <label>
+              ComboBox
+              <ComboBoxOld disabled options={options} />
+            </label>
+
+            <ComboBox isDisabled label="ComboBox">
+              <Item key="1">One</Item>
+              <Item key="2">Two</Item>
+              <Item key="3">Three</Item>
+            </ComboBox>
+
+            <label>
               Select
               <Select
                 placeholder="Select"
@@ -196,10 +207,15 @@ export function SpectrumComparison(): JSX.Element {
                 type="text"
                 className="form-control"
                 disabled
-                placeholder="Disabled"
+                value="Disabled"
               />
             </label>
-            <TextField type="text" label="Disabled" isDisabled />
+            <TextField
+              type="text"
+              label="Disabled"
+              isDisabled
+              value="Disabled"
+            />
           </Grid>
         </View>
 
