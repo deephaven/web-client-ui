@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/display-name */
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import debounce from 'lodash.debounce';
 import { assertNotNull } from '@deephaven/utils';
 import './RandomAreaPlotAnimation.scss';
@@ -42,14 +42,9 @@ function getRandomAreaPlotAnimationThemeColors(): ThemeColors {
 const RandomAreaPlotAnimation = React.memo(() => {
   const { activeThemes } = useTheme();
 
-  const [themeColors, setThemeColors] = useState<ThemeColors | null>(null);
-
-  // Resolving css variables has to run in `useEffect` or `useLayoutEffect` so
-  // that we know React has updated the DOM with any styles set by the
-  // ThemeProvider.
-  useEffect(() => {
-    setThemeColors(getRandomAreaPlotAnimationThemeColors());
-  }, [activeThemes]);
+  const themeColors = useMemo(getRandomAreaPlotAnimationThemeColors, [
+    activeThemes,
+  ]);
 
   const canvas = useRef<HTMLCanvasElement>(null);
   const container = useRef<HTMLDivElement>(null);
@@ -85,10 +80,6 @@ const RandomAreaPlotAnimation = React.memo(() => {
 
   // Returns the background fill create offscreen as pattern
   function createPatternFill(): CanvasPattern | null | undefined {
-    if (themeColors == null) {
-      return null;
-    }
-
     const { foregroundFill, foregroundStroke } = themeColors;
 
     // create the off-screen canvas
@@ -189,10 +180,6 @@ const RandomAreaPlotAnimation = React.memo(() => {
    * @param timestamp passed in callback from requestAnimationFrame
    */
   function drawCanvas(timestamp?: DOMHighResTimeStamp): void {
-    if (themeColors == null) {
-      return;
-    }
-
     lastTimestamp = lastTimestamp ?? timestamp;
 
     const { background, foregroundStroke, gridColor } = themeColors;
@@ -343,11 +330,9 @@ const RandomAreaPlotAnimation = React.memo(() => {
   }, [themeColors]);
 
   return (
-    themeColors && (
-      <div className="random-area-plot-animation-container" ref={container}>
-        <canvas ref={canvas} className={shade ? 'shade' : ''} />
-      </div>
-    )
+    <div className="random-area-plot-animation-container" ref={container}>
+      <canvas ref={canvas} className={shade ? 'shade' : ''} />
+    </div>
   );
 });
 

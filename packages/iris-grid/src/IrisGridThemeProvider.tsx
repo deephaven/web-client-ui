@@ -1,5 +1,5 @@
 import { useTheme } from '@deephaven/components';
-import { createContext, ReactNode, useEffect, useState } from 'react';
+import { createContext, ReactNode, useMemo } from 'react';
 import { createDefaultIrisGridTheme, IrisGridThemeType } from './IrisGridTheme';
 
 export type IrisGridThemeContextValue = Partial<IrisGridThemeType>;
@@ -16,16 +16,7 @@ export function IrisGridThemeProvider({
 }: IrisGridThemeProviderProps): JSX.Element {
   const { activeThemes } = useTheme();
 
-  const [gridTheme, setGridTheme] = useState<IrisGridThemeContextValue>({});
-
-  useEffect(
-    function refreshIrisGridTheme() {
-      if (activeThemes != null) {
-        setGridTheme(createDefaultIrisGridTheme());
-      }
-    },
-    [activeThemes]
-  );
+  const gridTheme = useMemo(createDefaultIrisGridTheme, [activeThemes]);
 
   return (
     <IrisGridThemeContext.Provider value={gridTheme}>

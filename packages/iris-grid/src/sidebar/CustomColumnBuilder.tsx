@@ -368,7 +368,7 @@ class CustomColumnBuilder extends Component<
       >
         {isCustomColumnApplying && (
           <span>
-            <LoadingSpinner className="loading-spinner-vertical-align" />
+            <LoadingSpinner className="mr-2 loading-spinner-vertical-align" />
             <span className="btn-normal-content">Applying</span>
           </span>
         )}
