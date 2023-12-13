@@ -36,8 +36,10 @@ export interface ThemeProviderProps {
 export function ThemeProvider({
   themes: customThemes,
   children,
-}: ThemeProviderProps): JSX.Element {
+}: ThemeProviderProps): JSX.Element | null {
   const baseThemes = useMemo(() => getDefaultBaseThemes(), []);
+
+  const [value, setValue] = useState<ThemeContextValue | null>(null);
 
   const [selectedThemeKey, setSelectedThemeKey] = useState<string>(
     () => getThemePreloadData()?.themeKey ?? DEFAULT_DARK_THEME_KEY
@@ -88,18 +90,17 @@ export function ThemeProvider({
     [activeThemes, selectedThemeKey, customThemes]
   );
 
-  const value = useMemo(
-    () => ({
+  useEffect(() => {
+    setValue({
       activeThemes,
       selectedThemeKey,
       themes,
       setSelectedThemeKey,
-    }),
-    [activeThemes, selectedThemeKey, themes]
-  );
+    });
+  }, [activeThemes, selectedThemeKey, themes]);
 
   return (
-    <ThemeContext.Provider value={value}>
+    <>
       {activeThemes == null ? null : (
         <>
           {activeThemes.map(theme => (
@@ -109,8 +110,12 @@ export function ThemeProvider({
           ))}
         </>
       )}
-      <SpectrumThemeProvider>{children}</SpectrumThemeProvider>
-    </ThemeContext.Provider>
+      {value == null ? null : (
+        <ThemeContext.Provider value={value}>
+          <SpectrumThemeProvider>{children}</SpectrumThemeProvider>
+        </ThemeContext.Provider>
+      )}
+    </>
   );
 }
 
