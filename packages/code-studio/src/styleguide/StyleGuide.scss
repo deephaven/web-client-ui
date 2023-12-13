@@ -196,3 +196,13 @@ h5.sub-title {
     animation: none;
   }
 }
+
+#sample-section-spectrum-comparison-samples {
+  // Approximating Spectrum input label styles for easy comparison
+  .input-label {
+    margin: 0;
+    padding: 4px 0 5px;
+    font-size: 12px;
+    line-height: 1.3;
+  }
+}

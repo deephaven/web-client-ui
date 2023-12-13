@@ -140,14 +140,21 @@ export function SpectrumComparison(): JSX.Element {
 
             {[false, true].map(isDisabled => (
               <Fragment key={String(isDisabled)}>
-                <label>
-                  {isDisabled ? 'Disabled ' : ''}Combobox
-                  <ComboBoxOld disabled={isDisabled} options={options} />
-                </label>
+                <div>
+                  <label className="input-label">
+                    {isDisabled ? 'Disabled ' : ''}Combobox
+                  </label>
+                  <ComboBoxOld
+                    disabled={isDisabled}
+                    options={options}
+                    defaultValue="One"
+                  />
+                </div>
 
                 <ComboBox
                   isDisabled={isDisabled}
                   label={isDisabled ? 'Disabled Combobox' : 'Combobox'}
+                  inputValue="One"
                 >
                   <Item key="1">One</Item>
                   <Item key="2">Two</Item>
@@ -158,8 +165,8 @@ export function SpectrumComparison(): JSX.Element {
 
             {[false, true].map(isDisabled => (
               <Fragment key={String(isDisabled)}>
-                <label>
-                  Select
+                <div>
+                  <label className="input-label">Select</label>
                   <Select
                     disabled={isDisabled}
                     placeholder="Select"
@@ -175,8 +182,7 @@ export function SpectrumComparison(): JSX.Element {
                     <option value="2">Two</option>
                     <option value="3">Three</option>
                   </Select>
-                </label>
-
+                </div>
                 <Picker
                   isDisabled={isDisabled}
                   label={isDisabled ? 'Disabled Picker' : 'Picker'}
@@ -196,25 +202,25 @@ export function SpectrumComparison(): JSX.Element {
           <Grid gap={20} columns="repeat(2, 192px)">
             <label>Bootstrap</label>
             <label>Spectrum</label>
-            <label>
-              type=text
+            <div>
+              <label className="input-label">type=text</label>
               <input
                 type="text"
                 className="form-control"
                 placeholder="Text Input"
               />
-            </label>
+            </div>
             <TextField type="text" label="TextField" />
 
-            <label>
-              Disabled
+            <div>
+              <label className="input-label">Disabled</label>
               <input
                 type="text"
                 className="form-control"
                 disabled
                 value="Disabled"
               />
-            </label>
+            </div>
             <TextField
               type="text"
               label="Disabled"
