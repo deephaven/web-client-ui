@@ -16,10 +16,7 @@ export function IrisGridThemeProvider({
 }: IrisGridThemeProviderProps): JSX.Element {
   const { activeThemes } = useTheme();
 
-  const gridTheme = useMemo(
-    () => (activeThemes == null ? null : createDefaultIrisGridTheme()),
-    [activeThemes]
-  );
+  const gridTheme = useMemo(createDefaultIrisGridTheme, [activeThemes]);
 
   return (
     <IrisGridThemeContext.Provider value={gridTheme}>
