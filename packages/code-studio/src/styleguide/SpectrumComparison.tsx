@@ -138,51 +138,56 @@ export function SpectrumComparison(): JSX.Element {
             <label>Bootstrap</label>
             <label>Spectrum</label>
 
-            <label>
-              ComboBox
-              <ComboBoxOld options={options} />
-            </label>
+            {[false, true].map(isDisabled => (
+              <Fragment key={String(isDisabled)}>
+                <label>
+                  {isDisabled ? 'Disabled ' : ''}Combobox
+                  <ComboBoxOld disabled={isDisabled} options={options} />
+                </label>
 
-            <ComboBox label="ComboBox">
-              <Item key="1">One</Item>
-              <Item key="2">Two</Item>
-              <Item key="3">Three</Item>
-            </ComboBox>
+                <ComboBox
+                  isDisabled={isDisabled}
+                  label={isDisabled ? 'Disabled Combobox' : 'Combobox'}
+                >
+                  <Item key="1">One</Item>
+                  <Item key="2">Two</Item>
+                  <Item key="3">Three</Item>
+                </ComboBox>
+              </Fragment>
+            ))}
 
-            <label>
-              ComboBox
-              <ComboBoxOld disabled options={options} />
-            </label>
-
-            <ComboBox isDisabled label="ComboBox">
-              <Item key="1">One</Item>
-              <Item key="2">Two</Item>
-              <Item key="3">Three</Item>
-            </ComboBox>
-
-            <label>
-              Select
-              <Select
-                placeholder="Select"
-                onChange={_v => {
-                  // no-op
-                }}
-                className="custom-select"
-              >
-                <option disabled value="0">
+            {[false, true].map(isDisabled => (
+              <Fragment key={String(isDisabled)}>
+                <label>
                   Select
-                </option>
-                <option value="1">One</option>
-                <option value="2">Two</option>
-                <option value="3">Three</option>
-              </Select>
-            </label>
+                  <Select
+                    disabled={isDisabled}
+                    placeholder="Select"
+                    onChange={_v => {
+                      // no-op
+                    }}
+                    className="custom-select"
+                  >
+                    <option disabled value="0">
+                      {isDisabled ? '' : 'Disabled '}Select
+                    </option>
+                    <option value="1">One</option>
+                    <option value="2">Two</option>
+                    <option value="3">Three</option>
+                  </Select>
+                </label>
 
-            <Picker label="Picker" placeholder="Picker">
-              <Item key="1">One</Item>
-              <Item key="2">Two</Item>
-              <Item key="3">Three</Item>
-            </Picker>
+                <Picker
+                  isDisabled={isDisabled}
+                  label={isDisabled ? 'Disabled Picker' : 'Picker'}
+                  placeholder="Picker"
+                >
+                  <Item key="1">One</Item>
+                  <Item key="2">Two</Item>
+                  <Item key="3">Three</Item>
+                </Picker>
+              </Fragment>
+            ))}
           </Grid>
         </View>
 
