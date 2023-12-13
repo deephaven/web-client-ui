@@ -28,13 +28,13 @@
 
   /* Actions */
   --dh-color-action-bg: hsl(var(--dh-color-action-hsl));
-  --dh-color-action-fg: hsl(var(--dh-color-action-contrast-hsl));
+  --dh-color-action-fg: var(--dh-color-text);
   --dh-color-action-border: var(--dh-color-border);
 
   --dh-color-action-down-bg: var(--dh-color-gray-300);
 
   --dh-color-action-hover-bg: var(--dh-color-black);
-  --dh-color-action-hover-fg: var(--dh-color-action-fg);
+  --dh-color-action-hover-fg: var(--dh-color-text-hover);
   --dh-color-action-hover-border: var(--dh-color-hover-border);
 
   --dh-color-action-active-bg: var(--dh-color-accent-bg);
@@ -46,16 +46,24 @@
   --dh-color-action-active-hover-border: var(--dh-color-accent-hover-bg);
 
   --dh-color-action-disabled-bg: transparent;
-  --dh-color-action-disabled-fg: var(--dh-color-gray-700);
-  --dh-color-action-disabled-border: var(--dh-color-black);
+  --dh-color-action-disabled-fg: var(--dh-color-text-disabled);
+  --dh-color-action-disabled-border: var(--dh-color-gray-300);
+
+  /* Icons */
+  --dh-color-icon-fg: var(--dh-color-gray-700);
+  --dh-color-icon-disabled-fg: var(--dh-color-gray-400);
 
   /* Inputs */
-  --dh-color-input-bg: var(--dh-color-gray-500);
-  --dh-color-input-fg: var(--dh-color-fg);
-  --dh-color-input-disabled-bg: var(--dh-color-gray-300);
-  --dh-color-input-border: var(--dh-color-gray-600);
+  --dh-color-input-bg: var(--dh-color-gray-50);
+  --dh-color-input-fg: var(--dh-color-text);
+  --dh-color-input-border: var(--dh-color-border);
   --dh-color-input-placeholder: var(--dh-color-gray-600);
-  --dh-color-input-focus-border: hsla(var(--dh-color-accent-hsl), 0.85);
+  --dh-color-input-active-bg: var(--dh-color-input-bg);
+  --dh-color-input-disabled-bg: var(--dh-color-gray-200);
+  --dh-color-input-disabled-border: transparent;
+  --dh-color-input-disabled-fg: var(--dh-color-text-disabled);
+  --dh-color-input-hover-border: var(--dh-color-gray-600);
+  --dh-color-input-focus-border: var(--dh-color-border-focus);
 
   /* Form Controls */
   --dh-color-search-icon: var(--dh-color-fg);
@@ -65,17 +73,15 @@
     0.25
   );
 
+  /* Labels */
+  --dh-color-label-text: var(--dh-color-gray-700);
+
   /* Selectors (pickers, dropdowns, select, etc.) */
-  --dh-color-selector-fg: hsla(var(--dh-color-gray-800-hsl), 0.4);
-  --dh-color-selector-hover-fg: hsl(var(--dh-color-gray-800-hsl));
-  --dh-color-selector-disabled-fg: hsla(
-    var(--dh-color-gray-800-hsl),
-    /* 
-     * Other dropdowns have opacity .4 when not hovered and then an additional 
-     * .65 opacity applied to disabled, hence .4 * .65 == .26
-     */
-      0.26
-  );
+  --dh-color-selector-fg: var(--dh-color-icon-fg);
+  --dh-color-selector-bg: var(--dh-color-gray-75);
+  --dh-color-selector-hover-bg: var(--dh-color-gray-50);
+  --dh-color-selector-hover-fg: var(--dh-color-gray-900);
+  --dh-color-selector-disabled-fg: var(--dh-color-icon-disabled-fg);
 
   /* Item List */
   --dh-color-item-list-bg: transparent;

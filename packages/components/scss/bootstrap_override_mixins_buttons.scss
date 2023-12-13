@@ -17,7 +17,6 @@
   $color: var(--dh-color-#{$semantic-value}-contrast);
 
   color: $color;
-  font-weight: var(--spectrum-global-font-weight-bold);
   @include gradient-bg($background);
 
   border-color: $border;
@@ -46,9 +45,10 @@
   // Disabled comes first so active can properly restyle
   &.disabled,
   &:disabled {
-    color: $color;
-    background-color: $background;
-    border-color: $border;
+    color: var(--dh-color-text-disabled);
+    background-color: var(--dh-color-disabled-bg);
+    border-color: transparent;
+    opacity: 1;
     // Remove CSS gradients if they're enabled
     @if $enable-gradients {
       background-image: none;
@@ -97,8 +97,10 @@
 
   &.disabled,
   &:disabled {
-    color: $color;
+    color: var(--dh-color-text-disabled);
     background-color: transparent;
+    border-color: var(--dh-color-disabled-bg);
+    opacity: 1;
   }
 
   &:not(:disabled):not(.disabled):active,

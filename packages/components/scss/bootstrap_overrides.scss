@@ -165,6 +165,10 @@ $btn-transition:
   border-color 0.12s ease-in-out,
   box-shadow 0.12s ease-in-out; //default 0.15 is too long
 $btn-border-width: 2px;
+$btn-font-weight: var(--spectrum-global-font-weight-bold);
+$btn-line-height: 1.3;
+$btn-padding-x: 1.5rem;
+$btn-padding-y: 0.35rem;
 
 //Override Inputs
 $input-bg: var(--dh-color-input-bg);
@@ -177,6 +181,11 @@ $input-focus-border-color: var(--dh-color-input-focus-border);
 $input-btn-focus-width: 0.2rem;
 $input-btn-focus-color: hsla(var(--dh-color-accent-hsl), 0.35);
 $input-btn-focus-box-shadow: 0 0 0 $input-btn-focus-width $input-btn-focus-color;
+$input-btn-line-height: 1.3;
+// Bootstrap uses a calc expression to determine the input height (calc(line-height + 2*padding-y + border)).
+// The padding-y value has to be in rem to match units. Using 0.4214rem with 1.3
+// line height gets us to 31.99px vs Spectrum's 32px.
+$input-btn-padding-y: 0.4214rem;
 
 //checkbox
 $custom-control-indicator-bg: $gray-600;
@@ -192,6 +201,7 @@ $custom-control-label-disabled-color: $gray-400;
 // overrides this icon altogether for known dropdowns, so technically we may not
 // need this, but it's here in case there are any remaining instances.
 $custom-select-indicator-color: #929192;
+$custom-select-bg: var(--dh-color-selector-bg);
 $custom-select-bg-size: 16px 16px;
 //dhSort icon encoded
 $custom-select-indicator: str-replace(
