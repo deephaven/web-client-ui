@@ -677,7 +677,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const {
       aggregationSettings,
       conditionalFormats,
-      copyCursor,
       customColumnFormatMap,
       isFilterBarShown,
       isSelectingPartition,

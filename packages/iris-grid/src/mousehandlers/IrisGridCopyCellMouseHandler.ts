@@ -2,7 +2,6 @@ import {
   Grid,
   GridMouseHandler,
   GridPoint,
-  GridUtils,
   EventHandlerResult,
   GridMouseEvent,
 } from '@deephaven/grid';
