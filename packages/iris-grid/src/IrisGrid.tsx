@@ -113,6 +113,7 @@ import FilterInputField from './FilterInputField';
 import {
   ClearFilterKeyHandler,
   CopyKeyHandler,
+  CopyCursorKeyHandler,
   ReverseKeyHandler,
 } from './key-handlers';
 import {
@@ -120,6 +121,7 @@ import {
   IrisGridColumnSelectMouseHandler,
   IrisGridColumnTooltipMouseHandler,
   IrisGridContextMenuHandler,
+  IrisGridCopyCellMouseHandler,
   IrisGridDataSelectMouseHandler,
   IrisGridFilterMouseHandler,
   IrisGridRowTreeMouseHandler,
@@ -309,6 +311,7 @@ export interface IrisGridProps {
 
   // eslint-disable-next-line react/no-unused-prop-types
   columnNotAllowedCursor: string;
+  copyCursor: string;
   name: string;
   onlyFetchVisibleColumns: boolean;
 
@@ -481,6 +484,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     columnSelectionValidator: null,
     columnAllowedCursor: null,
     columnNotAllowedCursor: null,
+    copyCursor: null,
     name: 'table',
     onlyFetchVisibleColumns: true,
     showSearchBar: false,
@@ -522,6 +526,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleAdvancedMenuOpened = this.handleAdvancedMenuOpened.bind(this);
     this.handleGotoRowOpened = this.handleGotoRowOpened.bind(this);
     this.handleGotoRowClosed = this.handleGotoRowClosed.bind(this);
+    this.handleShowCopyCursor = this.handleShowCopyCursor.bind(this);
+    this.handleHideCopyCursor = this.handleHideCopyCursor.bind(this);
     this.handleAdvancedMenuClosed = this.handleAdvancedMenuClosed.bind(this);
     this.handleAggregationChange = this.handleAggregationChange.bind(this);
     this.handleAggregationsChange = this.handleAggregationsChange.bind(this);
@@ -613,6 +619,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     this.gotoRowRef = React.createRef();
 
+    this.isCopying = false;
+
     this.toggleFilterBarAction = {
       action: () => this.toggleFilterBar(),
       shortcut: SHORTCUTS.TABLE.TOGGLE_QUICK_FILTER,
@@ -666,6 +674,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const {
       aggregationSettings,
       conditionalFormats,
+      copyCursor,
       customColumnFormatMap,
       isFilterBarShown,
       isSelectingPartition,
@@ -696,9 +705,11 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     ];
     if (canCopy) {
       keyHandlers.push(new CopyKeyHandler(this));
+      keyHandlers.push(new CopyCursorKeyHandler(this));
     }
     const { dh } = model;
     const mouseHandlers = [
+      new IrisGridCopyCellMouseHandler(this),
       new IrisGridCellOverflowMouseHandler(this),
       new IrisGridRowTreeMouseHandler(this),
       new IrisGridTokenMouseHandler(this),
@@ -1005,6 +1016,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   filterInputRef: React.RefObject<FilterInputField>;
 
   gotoRowRef: React.RefObject<GotoRowElement>;
+
+  isCopying: boolean;
 
   toggleFilterBarAction: Action;
 
@@ -2009,6 +2022,17 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
   }
 
+  copyColumnHeader(columnIndex: GridRangeIndex): void {
+    if (columnIndex === null) {
+      return;
+    }
+    const { model } = this.props;
+
+    copyToClipboard(model.textForColumnHeader(columnIndex) ?? '').catch(e =>
+      log.error('Unable to copy header', e)
+    );
+  }
+
   /**
    * Copy the provided ranges to the clipboard
    * @paramranges The ranges to copy
@@ -2757,6 +2781,26 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   handleGotoRowClosed(): void {
     this.setState({ isGotoShown: false });
+  }
+
+  handleShowCopyCursor(): void {
+    if (!this.grid) {
+      return;
+    }
+    const { copyCursor } = this.props;
+    const { cursor } = this.grid.state;
+    if (cursor !== copyCursor) {
+      this.isCopying = true;
+      this.grid.setState({ cursor: copyCursor });
+    }
+  }
+
+  handleHideCopyCursor(): void {
+    if (!this.grid) {
+      return;
+    }
+    this.isCopying = false;
+    this.grid.setState({ cursor: null });
   }
 
   handleAdvancedMenuClosed(columnIndex: number): void {

@@ -337,6 +337,9 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     actions.push({
       title: 'Copy Column Name',
       group: IrisGridContextMenuHandler.GROUP_COPY,
+      shortcutText: ContextActionUtils.isMacPlatform()
+        ? 'Opt+Click'
+        : 'Alt+Click',
       action: () => {
         copyToClipboard(model.textForColumnHeader(modelIndex) ?? '').catch(e =>
           log.error('Unable to copy header', e)
@@ -632,6 +635,9 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       actions.push({
         title: 'Copy Cell',
         group: IrisGridContextMenuHandler.GROUP_COPY,
+        shortcutText: ContextActionUtils.isMacPlatform()
+          ? 'Opt+Click'
+          : 'Alt+Click',
         order: 10,
         action: () => {
           irisGrid.copyCell(columnIndex, rowIndex);

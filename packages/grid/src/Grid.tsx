@@ -343,6 +343,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.handleEditCellCommit = this.handleEditCellCommit.bind(this);
     this.handleDoubleClick = this.handleDoubleClick.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
+    this.handleKeyUp = this.handleKeyUp.bind(this);
     this.handleMouseDown = this.handleMouseDown.bind(this);
     this.handleMouseDrag = this.handleMouseDrag.bind(this);
     this.handleMouseMove = this.handleMouseMove.bind(this);
@@ -1733,6 +1734,24 @@ class Grid extends PureComponent<GridProps, GridState> {
   }
 
   /**
+   * Handle a key up event from the keyboard. Pass the event to the registered keyboard handlers until one handles it.
+   * @param event Keyboard event
+   */
+  handleKeyUp(event: GridKeyboardEvent): void {
+    const keyHandlers = this.getKeyHandlers();
+    for (let i = 0; i < keyHandlers.length; i += 1) {
+      const keyHandler = keyHandlers[i];
+      const result = keyHandler.onUp(event, this);
+      if (result !== false) {
+        const options = result as EventHandlerResultOptions;
+        if (options?.stopPropagation ?? true) event.stopPropagation();
+        if (options?.preventDefault ?? true) event.preventDefault();
+        break;
+      }
+    }
+  }
+
+  /**
    * Notify all of the mouse handlers for this grid of a mouse event.
    * @param functionName The name of the function in the mouse handler to call
    * @param event The mouse event to notify
@@ -2229,6 +2248,7 @@ class Grid extends PureComponent<GridProps, GridState> {
           onContextMenu={this.handleContextMenu}
           onDoubleClick={this.handleDoubleClick}
           onKeyDown={this.handleKeyDown}
+          onKeyUp={this.handleKeyUp}
           onMouseDown={this.handleMouseDown}
           onMouseMove={this.handleMouseMove}
           onMouseLeave={this.handleMouseLeave}

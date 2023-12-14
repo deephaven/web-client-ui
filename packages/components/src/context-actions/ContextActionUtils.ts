@@ -17,6 +17,7 @@ export interface ContextAction {
   icon?: IconDefinition | React.ReactElement;
   iconColor?: string;
   shortcut?: Shortcut;
+  shortcutText?: string;
   isGlobal?: boolean;
   group?: number;
   order?: number;

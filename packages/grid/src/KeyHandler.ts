@@ -33,6 +33,16 @@ export class KeyHandler {
   onDown(event: GridKeyboardEvent, grid: Grid): EventHandlerResult {
     return false;
   }
+
+  /**
+   * Handle a keyup event on the grid.
+   * @param event The keyboard event
+   * @param grid The grid component the key press is on
+   * @returns Response indicating if the key was consumed
+   */
+  onUp(event: GridKeyboardEvent, grid: Grid): EventHandlerResult {
+    return false;
+  }
 }
 
 export default KeyHandler;
