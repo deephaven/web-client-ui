@@ -15,6 +15,7 @@ const sampleSectionIds: string[] = [
   'sample-section-buttons-outline',
   'sample-section-buttons-inline',
   'sample-section-buttons-socketed',
+  'sample-section-links',
   'sample-section-progress',
   'sample-section-inputs',
   'sample-section-item-list-inputs',
