@@ -112,6 +112,10 @@
   /* Navigation Menu */
   --dh-color-menu-item-fg: var(--dh-color-gray-700);
 
+  /* Dialogs */
+  --dh-color-dialog-title-fg: var(--dh-color-heading-text);
+  --dh-color-dialog-fg: var(--dh-color-text);
+
   /* Popovers */
   --dh-color-popover-bg: var(--dh-color-bg);
 
