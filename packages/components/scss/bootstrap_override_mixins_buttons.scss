@@ -17,7 +17,6 @@
   $color: var(--dh-color-#{$semantic-value}-contrast);
 
   color: $color;
-  font-weight: var(--spectrum-global-font-weight-bold);
   @include gradient-bg($background);
 
   border-color: $border;

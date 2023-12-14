@@ -1,5 +1,6 @@
 /* stylelint-disable scss/comment-no-empty */
 // Bootstrap mixin overrides for `bootstrap/scss/mixins/_forms.scss`
+@use 'sass:map';
 
 // Form control focus state
 //
@@ -38,9 +39,11 @@
 // It's primary purpose is to convert the input color value into a dh css
 // variable expression. There are a few additional tweaks annotated with
 // `DH Customization:`
-@mixin form-validation-state($state, $semantic-value, $icon) {
+@mixin form-validation-state($state, $bootstrap-value, $icon) {
+  $semantic-value: map.get($bootstrap-dh-semantic-map, $bootstrap-value) or '';
+
   // DH Customization: Convert semantic value to css variable
-  $color: var(--dh-color-visual-#{$semantic-value});
+  $color: var(--dh-color-#{$semantic-value}-bg);
 
   .#{$state}-feedback {
     display: none;

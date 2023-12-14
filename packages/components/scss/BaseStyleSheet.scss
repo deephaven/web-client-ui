@@ -124,6 +124,8 @@ button:focus {
 //Make btns a minumum size
 .btn {
   min-width: 7rem;
+  // Matching Spectrum styles
+  -webkit-font-smoothing: antialiased;
 }
 
 span.btn-disabled-wrapper {
@@ -308,6 +310,7 @@ span.btn-disabled-wrapper {
   background: var(--dh-color-action-bg);
   border: 1px solid var(--dh-color-action-border);
   color: var(--dh-color-action-fg);
+  font-weight: $font-weight-normal;
 
   &.active {
     border-color: var(--dh-color-action-active-border);

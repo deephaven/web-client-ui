@@ -17,6 +17,7 @@ $cs-option-hover-color: $dropdown-link-hover-color;
     border-radius: $border-radius;
     border: $input-border-width solid $input-border-color;
     min-width: 14rem;
+    font-weight: $font-weight-normal;
 
     .cs-caret {
       @include caret-icon;

@@ -165,6 +165,7 @@ $btn-transition:
   border-color 0.12s ease-in-out,
   box-shadow 0.12s ease-in-out; //default 0.15 is too long
 $btn-border-width: 2px;
+$btn-font-weight: var(--spectrum-global-font-weight-bold);
 
 //Override Inputs
 $input-bg: var(--dh-color-input-bg);
