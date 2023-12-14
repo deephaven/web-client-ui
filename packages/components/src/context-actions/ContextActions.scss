@@ -143,7 +143,7 @@ $hr-bg-color: $gray-700;
     color: $contextmenu-selected-color;
 
     .shortcut {
-      color: lighten($contextmenu-selected-bg, 20%);
+      color: $gray-300;
     }
   }
 

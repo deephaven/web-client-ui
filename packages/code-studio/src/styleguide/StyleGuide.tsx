@@ -1,9 +1,8 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
 import { Flex } from '@adobe/react-spectrum';
-import { ContextMenuRoot } from '@deephaven/components';
+import { ContextMenuRoot, ThemePicker, useTheme } from '@deephaven/components';
 
-import Alerts from './Alerts';
 import Buttons from './Buttons';
 import Charts from './Charts';
 import Colors from './Colors';
@@ -29,6 +28,7 @@ import SamplesMenu, { SampleMenuCategory } from './SamplesMenu';
 import GotoTopButton from './GotoTopButton';
 import { HIDE_FROM_E2E_TESTS_CLASS } from './utils';
 import { GoldenLayout } from './GoldenLayout';
+import { RandomAreaPlotAnimation } from './RandomAreaPlotAnimation';
 
 const stickyProps = {
   position: 'sticky',
@@ -41,76 +41,86 @@ const stickyProps = {
 
 function StyleGuide(): React.ReactElement {
   const isolateSection = window.location.search.includes('isolateSection=true');
+  const { themes } = useTheme();
+  const hasMultipleThemes = themes.length > 1;
 
   return (
-    <div className="container style-guide-container">
-      {/* For e2e tests this allows us to isolate sections for snapshots. This 
+    // Needs a tabindex to capture focus on popper blur
+    // AppMainContainer has a tabindex of -1 in the app itself
+    <div tabIndex={-1} role="main">
+      <div className="container style-guide-container">
+        {/* For e2e tests this allows us to isolate sections for snapshots. This 
       mitigates an issue where a change to a section in the styleguide can cause
       subtle pixel shifts in other sections */}
-      {isolateSection && (
-        <style>
-          {`.${HIDE_FROM_E2E_TESTS_CLASS}, .sample-section:not(${window.location.hash}), :not(.sample-section) > h2 {
+        {isolateSection && (
+          <style>
+            {`.${HIDE_FROM_E2E_TESTS_CLASS}, .sample-section:not(${window.location.hash}), :not(.sample-section) > h2 {
           display: none;
         }`}
-        </style>
-      )}
-      <Flex
-        justifyContent="space-between"
-        alignItems="center"
-        marginTop="2rem"
-        marginBottom="1rem"
-      >
-        <h1 style={{ paddingTop: '2rem' }}>Deephaven UI Components</h1>
-      </Flex>
+          </style>
+        )}
+        <Flex
+          justifyContent="space-between"
+          alignItems="center"
+          marginTop="2rem"
+          marginBottom="1rem"
+        >
+          <h1 style={{ paddingTop: '2rem' }}>Deephaven UI Components</h1>
+        </Flex>
 
-      <Flex
-        {...stickyProps}
-        UNSAFE_className={HIDE_FROM_E2E_TESTS_CLASS}
-        marginTop={-56}
-        top={20}
-      >
-        <SamplesMenu />
-      </Flex>
-      <Flex
-        {...stickyProps}
-        UNSAFE_className={HIDE_FROM_E2E_TESTS_CLASS}
-        top="calc(100vh - 40px)"
-        marginTop={-32}
-      >
-        <GotoTopButton />
-      </Flex>
+        <Flex
+          {...stickyProps}
+          UNSAFE_className={HIDE_FROM_E2E_TESTS_CLASS}
+          marginTop={-56}
+          top={20}
+          gap={10}
+          alignItems="end"
+        >
+          {hasMultipleThemes ? <ThemePicker /> : null}
+          <SamplesMenu />
+        </Flex>
+        <Flex
+          {...stickyProps}
+          UNSAFE_className={HIDE_FROM_E2E_TESTS_CLASS}
+          top="calc(100vh - 40px)"
+          marginTop={-32}
+          marginEnd={hasMultipleThemes ? -234 : 0}
+        >
+          <GotoTopButton />
+        </Flex>
 
-      <Typograpy />
+        <Typograpy />
 
-      <SampleMenuCategory data-menu-category="Colors" />
-      <Colors />
-      <ThemeColors />
+        <SampleMenuCategory data-menu-category="Colors" />
+        <Colors />
+        <ThemeColors />
 
-      <SampleMenuCategory data-menu-category="Layout" />
-      <GoldenLayout />
+        <SampleMenuCategory data-menu-category="Layout" />
+        <GoldenLayout />
 
-      <SampleMenuCategory data-menu-category="Components" />
-      <Buttons />
-      <Progress />
-      <Alerts />
-      <Inputs />
-      <ItemListInputs />
-      <DraggableLists />
-      <TimeSliderInputs />
-      <Dialog />
-      <Modals />
-      <ContextMenus />
-      <DropdownMenus />
-      <Navigations />
-      <Tooltips />
-      <Icons />
-      <Editors />
-      <Grids />
-      <Charts />
-      <ContextMenuRoot />
+        <SampleMenuCategory data-menu-category="Components" />
+        <Buttons />
+        <Progress />
+        <Inputs />
+        <ItemListInputs />
+        <DraggableLists />
+        <TimeSliderInputs />
+        <Dialog />
+        <Modals />
+        <ContextMenus />
+        <DropdownMenus />
+        <Navigations />
+        <Tooltips />
+        <Icons />
+        <Editors />
+        <Grids />
+        <Charts />
+        <ContextMenuRoot />
+        <RandomAreaPlotAnimation />
 
-      <SampleMenuCategory data-menu-category="Spectrum Components" />
-      <SpectrumComponents />
+        <SampleMenuCategory data-menu-category="Spectrum Components" />
+        <SpectrumComponents />
+      </div>
     </div>
   );
 }

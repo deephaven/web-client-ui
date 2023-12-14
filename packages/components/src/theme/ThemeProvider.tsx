@@ -15,6 +15,7 @@ import './theme-svg.scss';
 export interface ThemeContextValue {
   activeThemes: ThemeData[] | null;
   selectedThemeKey: string;
+  themes: ThemeData[];
   setSelectedThemeKey: (themeKey: string) => void;
 }
 
@@ -33,10 +34,12 @@ export interface ThemeProviderProps {
 }
 
 export function ThemeProvider({
-  themes,
+  themes: customThemes,
   children,
-}: ThemeProviderProps): JSX.Element {
+}: ThemeProviderProps): JSX.Element | null {
   const baseThemes = useMemo(() => getDefaultBaseThemes(), []);
+
+  const [value, setValue] = useState<ThemeContextValue | null>(null);
 
   const [selectedThemeKey, setSelectedThemeKey] = useState<string>(
     () => getThemePreloadData()?.themeKey ?? DEFAULT_DARK_THEME_KEY
@@ -45,19 +48,24 @@ export function ThemeProvider({
   // Calculate active themes once a non-null themes array is provided.
   const activeThemes = useMemo(
     () =>
-      themes == null
+      customThemes == null
         ? null
         : getActiveThemes(selectedThemeKey, {
             base: baseThemes,
-            custom: themes ?? [],
+            custom: customThemes ?? [],
           }),
-    [baseThemes, selectedThemeKey, themes]
+    [baseThemes, selectedThemeKey, customThemes]
+  );
+
+  const themes = useMemo(
+    () => [...baseThemes, ...(customThemes ?? [])],
+    [baseThemes, customThemes]
   );
 
   useEffect(
     function updateThemePreloadData() {
       // Don't update preload data until themes have been loaded and activated
-      if (activeThemes == null || themes == null) {
+      if (activeThemes == null || customThemes == null) {
         return;
       }
 
@@ -69,7 +77,7 @@ export function ThemeProvider({
 
       log.debug2('updateThemePreloadData:', {
         active: activeThemes.map(theme => theme.themeKey),
-        all: themes.map(theme => theme.themeKey),
+        custom: customThemes.map(theme => theme.themeKey),
         preloadStyleContent,
         selectedThemeKey,
       });
@@ -79,20 +87,20 @@ export function ThemeProvider({
         preloadStyleContent,
       });
     },
-    [activeThemes, selectedThemeKey, themes]
+    [activeThemes, selectedThemeKey, customThemes]
   );
 
-  const value = useMemo(
-    () => ({
+  useEffect(() => {
+    setValue({
       activeThemes,
       selectedThemeKey,
+      themes,
       setSelectedThemeKey,
-    }),
-    [activeThemes, selectedThemeKey]
-  );
+    });
+  }, [activeThemes, selectedThemeKey, themes]);
 
   return (
-    <ThemeContext.Provider value={value}>
+    <>
       {activeThemes == null ? null : (
         <>
           {activeThemes.map(theme => (
@@ -102,8 +110,12 @@ export function ThemeProvider({
           ))}
         </>
       )}
-      <SpectrumThemeProvider>{children}</SpectrumThemeProvider>
-    </ThemeContext.Provider>
+      {value == null ? null : (
+        <ThemeContext.Provider value={value}>
+          <SpectrumThemeProvider>{children}</SpectrumThemeProvider>
+        </ThemeContext.Provider>
+      )}
+    </>
   );
 }
 

@@ -3,6 +3,41 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.57.1](https://github.com/deephaven/web-client-ui/compare/v0.57.0...v0.57.1) (2023-12-14)
+
+**Note:** Version bump only for package @deephaven/golden-layout
+
+
+
+
+
+# [0.57.0](https://github.com/deephaven/web-client-ui/compare/v0.56.0...v0.57.0) (2023-12-13)
+
+**Note:** Version bump only for package @deephaven/golden-layout
+
+
+
+
+
+# [0.56.0](https://github.com/deephaven/web-client-ui/compare/v0.55.0...v0.56.0) (2023-12-11)
+
+
+### Features
+
+* Theming - Bootstrap ([#1603](https://github.com/deephaven/web-client-ui/issues/1603)) ([88bcae0](https://github.com/deephaven/web-client-ui/commit/88bcae02791776464c2f774653764fb479d28700))
+* Theming - Inline svgs ([#1651](https://github.com/deephaven/web-client-ui/issues/1651)) ([1e40d3e](https://github.com/deephaven/web-client-ui/commit/1e40d3e5a1078c555d55aa0a00c66a8b95dadfee))
+
+
+### BREAKING CHANGES
+
+* Bootstrap color variables are now predominantly hsl
+based. SCSS will need to be updated accordingly. Theme providers are
+needed to load themes.
+
+
+
+
+
 # [0.55.0](https://github.com/deephaven/web-client-ui/compare/v0.54.0...v0.55.0) (2023-11-20)
 
 **Note:** Version bump only for package @deephaven/golden-layout

@@ -1,13 +1,64 @@
+/* stylelint-disable custom-property-empty-line-before */
 /* stylelint-disable alpha-value-notation */
 :root {
-  --dh-color-loading-spinner-primary: var(--dh-color-accent-default-bg);
+  --dh-color-loading-spinner-primary: var(--dh-color-accent-bg);
   --dh-color-loading-spinner-secondary: hsla(var(--dh-color-gray-800-hsl), 0.5);
   --dh-color-quickactions-bg: hsla(var(--dh-color-visual-gray-hsl), 0.9);
   --dh-color-radial-reaction: hsla(var(--dh-color-visual-gray-hsl), 0.6);
   --dh-color-colorpicker-border: hsla(var(--dh-color-visual-gray-hsl), 0.1);
 
+  /* Login */
+  --dh-color-login-form-bg: var(--dh-color-gray-400);
+  --dh-color-login-status-message: var(--dh-color-gray-600);
+  --dh-color-login-logo-bg: var(--dh-color-gray-900);
+  --dh-color-login-footer-fg: var(--dh-color-gray-700);
+
+  /* We should base this color on something from the palette, but for now just
+   * hard coding the original value */
+  --dh-color-random-area-plot-animation-fg-fill: hsla(
+    var(--dh-color-accent-hsl),
+    0.08
+  );
+  --dh-color-random-area-plot-animation-fg-stroke: hsla(
+    var(--dh-color-accent-hsl),
+    0.2
+  );
+  --dh-color-random-area-plot-animation-bg: var(--dh-color-gray-75);
+  --dh-color-random-area-plot-animation-grid: var(--dh-color-gray-300);
+
+  /* Actions */
+  --dh-color-action-bg: hsl(var(--dh-color-action-hsl));
+  --dh-color-action-fg: hsl(var(--dh-color-action-contrast-hsl));
+  --dh-color-action-border: var(--dh-color-border);
+
+  --dh-color-action-down-bg: var(--dh-color-gray-300);
+
+  --dh-color-action-hover-bg: var(--dh-color-black);
+  --dh-color-action-hover-fg: var(--dh-color-action-fg);
+  --dh-color-action-hover-border: var(--dh-color-hover-border);
+
+  --dh-color-action-active-bg: var(--dh-color-accent-bg);
+  --dh-color-action-active-fg: var(--dh-color-accent-contrast);
+  --dh-color-action-active-border: var(--dh-color-accent-bg);
+
+  --dh-color-action-active-hover-bg: var(--dh-color-accent-hover-bg);
+  --dh-color-action-active-hover-fg: var(--dh-color-accent-contrast);
+  --dh-color-action-active-hover-border: var(--dh-color-accent-hover-bg);
+
+  --dh-color-action-disabled-bg: transparent;
+  --dh-color-action-disabled-fg: var(--dh-color-gray-700);
+  --dh-color-action-disabled-border: var(--dh-color-black);
+
+  /* Inputs */
+  --dh-color-input-bg: var(--dh-color-gray-500);
+  --dh-color-input-fg: var(--dh-color-fg);
+  --dh-color-input-disabled-bg: var(--dh-color-gray-300);
+  --dh-color-input-border: var(--dh-color-gray-600);
+  --dh-color-input-placeholder: var(--dh-color-gray-600);
+  --dh-color-input-focus-border: hsla(var(--dh-color-accent-hsl), 0.85);
+
   /* Form Controls */
-  --dh-color-search-icon: var(--dh-color-foreground);
+  --dh-color-search-icon: var(--dh-color-fg);
   --dh-color-form-control-error: hsl(var(--dh-color-visual-negative-hsl));
   --dh-color-form-control-error-shadow: hsla(
     var(--dh-color-visual-negative-hsl),
@@ -25,4 +76,42 @@
      */
       0.26
   );
+
+  /* Item List */
+  --dh-color-item-list-bg: transparent;
+  --dh-color-item-list-active-bg: var(--dh-color-highlight-active);
+  --dh-color-item-list-hover-bg: var(--dh-color-highlight-hover);
+  --dh-color-item-list-selected-fg: var(--dh-color-white);
+  --dh-color-item-list-selected-bg: var(--dh-color-highlight-selected);
+  --dh-color-item-list-selected-hover-bg: var(
+    --dh-color-highlight-selected-hover
+  );
+  --dh-color-item-list-selected-inactive-bg: var(--dh-color-gray-200);
+  --dh-color-item-list-selected-border: hsla(var(--dh-color-accent-hsl), 0.6);
+  --dh-color-item-list-drop-target-fg: var(--dh-color-white);
+
+  --dh-color-item-list-keyboard-selected-bg: hsla(
+    var(--dh-color-accent-hsl),
+    0.5
+  );
+
+  /* 
+   * There are a couple of related variables used in Enterprise SingleClickItemList.
+   * that aren't consumed in DHC. We should see if there is a way to include these
+   * in the theming variables.
+   * --dh-color-item-list-keyboard-selected-border
+   * --dh-color-item-list-keyboard-selected-hover-bg
+   */
+
+  /* Navigation Menu */
+  --dh-color-menu-item-fg: var(--dh-color-gray-700);
+
+  /* Tooltips */
+  --dh-color-tooltip-bg: var(--dh-color-gray-400);
+  --dh-color-tooltip-fg: var(--dh-color-fg);
+  --dh-color-tooltip-box-shadow: hsla(var(--dh-color-black-hsl), 0.8);
+
+  /* Wells */
+  --dh-color-well-bg: hsla(var(--dh-color-visual-gray-hsl), 0.02);
+  --dh-color-well-border: hsla(var(--dh-color-visual-gray-hsl), 0.05);
 }

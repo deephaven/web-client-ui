@@ -1,5 +1,4 @@
 import type { BaseThemeType } from '@deephaven/components';
-import { type Widget } from '@deephaven/jsapi-types';
 import {
   type EventEmitter,
   type ItemContainer,
@@ -41,6 +40,8 @@ export function isLegacyAuthPlugin(
 ): plugin is LegacyAuthPlugin {
   return 'AuthPlugin' in plugin;
 }
+
+export type PluginModuleMap = Map<string, PluginModule>;
 
 /**
  * @deprecated Use TablePlugin instead
@@ -105,7 +106,7 @@ export function isDashboardPlugin(
 }
 
 export interface WidgetComponentProps {
-  fetch: () => Promise<Widget>;
+  fetch: () => Promise<unknown>;
 }
 
 export interface WidgetPanelProps extends WidgetComponentProps {

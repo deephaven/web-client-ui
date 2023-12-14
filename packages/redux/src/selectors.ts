@@ -1,8 +1,5 @@
-import type {
-  CustomizableWorkspace,
-  RootState,
-  WorkspaceSettings,
-} from './store';
+import type { UndoPartial } from '@deephaven/utils';
+import type { RootState, WorkspaceSettings } from './store';
 
 const EMPTY_OBJECT = Object.freeze({});
 
@@ -52,7 +49,7 @@ export const getDefaultWorkspaceSettings = <State extends RootState>(
 // Workspace
 export const getWorkspace = <State extends RootState>(
   store: State
-): CustomizableWorkspace => {
+): State['workspace'] => {
   const { workspace } = store;
   return workspace;
 };
@@ -60,7 +57,7 @@ export const getWorkspace = <State extends RootState>(
 // Settings
 export const getSettings = <State extends RootState>(
   store: State
-): WorkspaceSettings => {
+): UndoPartial<State['workspace']['data']['settings']> => {
   const customizedSettings = getWorkspace(store).data.settings;
 
   const settings = { ...getDefaultWorkspaceSettings(store) };
@@ -72,7 +69,7 @@ export const getSettings = <State extends RootState>(
       settings[key] = customizedSettings[key];
     }
   }
-  return settings;
+  return settings as UndoPartial<State['workspace']['data']['settings']>;
 };
 
 export const getDefaultSettings = <State extends RootState>(

@@ -1,27 +1,51 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/display-name */
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import debounce from 'lodash.debounce';
 import { assertNotNull } from '@deephaven/utils';
 import './RandomAreaPlotAnimation.scss';
-import ThemeExport from './ThemeExport';
+import { resolveCssVariablesInRecord, useTheme } from './theme';
 
 const VOLATILITY = 0.025; // how spikey the data gets
 const LOW = 0.9;
 const HIGH = 0.1;
 const START_Y = 0.618;
-const FOREGROUND = ThemeExport['primary-dark'];
 const GRID_SIZE = 80;
-const GRID_COLOR = ThemeExport['gray-800'];
-const BACKGROUND = ThemeExport['gray-900'];
-const PATTERN = { SIZE: 8, DOT_SIZE: 2, FILL_OPACITY: 0.25 };
+const PATTERN = { SIZE: 8, DOT_SIZE: 2 };
 const PX_PER_SECOND = 18;
 const RESIZE_DEBOUNCE = 250;
 const INTERACTION_TIMEOUT = 60 * 1000;
 
+interface ThemeColors {
+  background: string;
+  foregroundFill: string;
+  foregroundStroke: string;
+  gridColor: string;
+}
+
+const THEME_COLOR_VARIABLES = {
+  background: 'var(--dh-color-random-area-plot-animation-bg)',
+  foregroundFill: 'var(--dh-color-random-area-plot-animation-fg-fill)',
+  foregroundStroke: 'var(--dh-color-random-area-plot-animation-fg-stroke)',
+  gridColor: 'var(--dh-color-random-area-plot-animation-grid)',
+} satisfies ThemeColors;
+
+/**
+ * Resolve theme colors needed for our animation.
+ */
+function getRandomAreaPlotAnimationThemeColors(): ThemeColors {
+  return resolveCssVariablesInRecord(THEME_COLOR_VARIABLES);
+}
+
 // Draw a background canvas, paint it with a fun chart looking animation
 const RandomAreaPlotAnimation = React.memo(() => {
+  const { activeThemes } = useTheme();
+
+  const themeColors = useMemo(getRandomAreaPlotAnimationThemeColors, [
+    activeThemes,
+  ]);
+
   const canvas = useRef<HTMLCanvasElement>(null);
   const container = useRef<HTMLDivElement>(null);
   const [shade, setShade] = useState(false);
@@ -56,6 +80,8 @@ const RandomAreaPlotAnimation = React.memo(() => {
 
   // Returns the background fill create offscreen as pattern
   function createPatternFill(): CanvasPattern | null | undefined {
+    const { foregroundFill, foregroundStroke } = themeColors;
+
     // create the off-screen canvas
     const canvasPattern = document.createElement('canvas');
     canvasPattern.width = PATTERN.SIZE;
@@ -64,15 +90,11 @@ const RandomAreaPlotAnimation = React.memo(() => {
 
     // draw pattern to off-screen context
     if (contextPattern != null) {
-      contextPattern.fillStyle = FOREGROUND;
+      contextPattern.fillStyle = foregroundStroke;
       contextPattern.fillRect(0, 0, PATTERN.DOT_SIZE, PATTERN.DOT_SIZE);
 
       // add an overlay fill
-      contextPattern.fillStyle =
-        FOREGROUND +
-        Math.round(255 * PATTERN.FILL_OPACITY)
-          .toString(16)
-          .padStart(2, '0'); // adds opacity in hex to color
+      contextPattern.fillStyle = foregroundFill;
       contextPattern.fillRect(0, 0, PATTERN.SIZE, PATTERN.SIZE);
     }
     return contextPattern?.createPattern(canvasPattern, 'repeat');
@@ -160,14 +182,16 @@ const RandomAreaPlotAnimation = React.memo(() => {
   function drawCanvas(timestamp?: DOMHighResTimeStamp): void {
     lastTimestamp = lastTimestamp ?? timestamp;
 
+    const { background, foregroundStroke, gridColor } = themeColors;
+
     assertNotNull(ctx);
     // clear the canvas
-    ctx.fillStyle = BACKGROUND;
+    ctx.fillStyle = background;
     ctx.fillRect(0, 0, width, height);
 
     drawGridLines(ctx);
     ctx.lineWidth = 1;
-    ctx.strokeStyle = GRID_COLOR;
+    ctx.strokeStyle = gridColor;
     ctx.stroke();
 
     // for speeds less then 60 px per second, subpixel motion is required to look smooth
@@ -177,7 +201,7 @@ const RandomAreaPlotAnimation = React.memo(() => {
 
     drawAreaLine(data, ctx);
     ctx.lineWidth = 2;
-    ctx.strokeStyle = FOREGROUND;
+    ctx.strokeStyle = foregroundStroke;
     ctx.stroke();
 
     ctx.translate(-subPixelMotion, 0); // we don't pattern to shift however
@@ -303,7 +327,7 @@ const RandomAreaPlotAnimation = React.memo(() => {
       resetIdleTimeout.cancel();
       debouncedHandleResize.cancel();
     };
-  }, []);
+  }, [themeColors]);
 
   return (
     <div className="random-area-plot-animation-container" ref={container}>

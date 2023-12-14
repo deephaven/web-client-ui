@@ -1,10 +1,5 @@
 @import '@deephaven/components/scss/custom.scss';
 
-$item-list-selected-bg: rgba($primary, 0.4);
-$item-list-selected-color: $white;
-$item-list-hover-bg: $gray-500;
-$item-list-selected-hover-bg: $primary;
-
 .aggregation-edit {
   display: flex;
   flex-direction: column;
@@ -48,8 +43,8 @@ $item-list-selected-hover-bg: $primary;
 
         &:hover {
           label {
-            background-color: $item-list-hover-bg;
-            color: $item-list-selected-color;
+            background-color: var(--dh-color-item-list-hover-bg);
+            color: var(--dh-color-item-list-selected-fg);
           }
         }
 
@@ -69,8 +64,8 @@ $item-list-selected-hover-bg: $primary;
 
           &:focus-within label,
           input[type='checkbox']:active + label {
-            background-color: $item-list-selected-bg;
-            color: $item-list-selected-color;
+            background-color: var(--dh-color-item-list-selected-bg);
+            color: var(--dh-color-item-list-selected-fg);
           }
         }
       }

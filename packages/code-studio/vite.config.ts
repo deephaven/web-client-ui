@@ -55,6 +55,16 @@ export default defineConfig(({ mode }) => {
     });
   }
 
+  // Proxy to local dev server for js-plugins
+  if (env.VITE_JS_PLUGINS_DEV_PORT && env.VITE_MODULE_PLUGINS_URL) {
+    const route = new URL(env.VITE_MODULE_PLUGINS_URL, baseURL).pathname;
+    proxy[route] = {
+      target: `http://localhost:${env.VITE_JS_PLUGINS_DEV_PORT}`,
+      changeOrigin: true,
+      rewrite: (pathOrig: string) => pathOrig.replace(/^\/js-plugins/, ''),
+    };
+  }
+
   return {
     // Vite does not read this env variable, it sets it based on the config
     // For easy changes using our .env files, read it here and vite will just set it to the existing value

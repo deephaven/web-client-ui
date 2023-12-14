@@ -189,6 +189,7 @@ import {
   OperationMap,
 } from './CommonTypes';
 import ColumnHeaderGroup from './ColumnHeaderGroup';
+import { IrisGridThemeContext } from './IrisGridThemeProvider';
 
 const log = Log.module('IrisGrid');
 
@@ -440,6 +441,8 @@ export interface IrisGridState {
 }
 
 export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
+  static contextType = IrisGridThemeContext;
+
   static minDebounce = 150;
 
   static maxDebounce = 500;
@@ -1372,6 +1375,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   getCachedTheme = memoize(
     (
+      contextTheme: GridThemeType | null,
       theme: GridThemeType | null,
       isEditable: boolean,
       floatingRowCount: number
@@ -1381,11 +1385,14 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       // We only show the row footers when we have floating rows for aggregations
       const rowFooterWidth =
         floatingRowCount > 0
-          ? theme?.rowFooterWidth ?? defaultTheme.rowFooterWidth
+          ? theme?.rowFooterWidth ??
+            contextTheme?.rowFooterWidth ??
+            defaultTheme.rowFooterWidth
           : 0;
 
       return {
         ...defaultTheme,
+        ...contextTheme,
         ...theme,
         autoSelectRow: !isEditable,
         rowFooterWidth,
@@ -1449,7 +1456,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   getTheme(): Partial<IrisGridThemeType> {
     const { model, theme } = this.props;
+
     return this.getCachedTheme(
+      this.context,
       theme,
       (isEditableGridModel(model) && model.isEditable) ?? false,
       model.floatingTopRowCount + model.floatingBottomRowCount

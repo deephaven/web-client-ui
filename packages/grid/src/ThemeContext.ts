@@ -1,7 +1,9 @@
 import React from 'react';
 import { GridTheme as GridThemeType } from './GridTheme';
 
-export const ThemeContext: React.Context<Partial<GridThemeType>> =
+export type ThemeContextValue = Partial<GridThemeType>;
+
+export const ThemeContext: React.Context<ThemeContextValue> =
   React.createContext({});
 
 export default ThemeContext;

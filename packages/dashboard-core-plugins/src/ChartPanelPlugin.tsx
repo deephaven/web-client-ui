@@ -139,7 +139,7 @@ export const ChartPanelPlugin = forwardRef(
             chartTheme,
             connection,
             metadata as ChartPanelMetadata,
-            fetch as unknown as () => Promise<Figure>,
+            fetch as () => Promise<Figure>,
             panelState
           );
         },

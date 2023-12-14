@@ -1,22 +1,8 @@
 import Log from '@deephaven/log';
 import { assertNotNull, ColorUtils } from '@deephaven/utils';
-// Note that ?inline imports are natively supported by Vite, but consumers of
-// @deephaven/components using Webpack will need to add a rule to their module
-// config.
-// e.g.
-// module: {
-//  rules: [
-//    {
-//      resourceQuery: /inline/,
-//      type: 'asset/source',
-//    },
-//  ],
-// },
 import { themeDark } from './theme-dark';
-import { themeLight } from './theme-light';
 import {
   DEFAULT_DARK_THEME_KEY,
-  DEFAULT_LIGHT_THEME_KEY,
   DEFAULT_PRELOAD_DATA_VARIABLES,
   ThemeData,
   ThemePreloadData,
@@ -158,11 +144,14 @@ export function getDefaultBaseThemes(): ThemeData[] {
       themeKey: DEFAULT_DARK_THEME_KEY,
       styleContent: themeDark,
     },
-    {
-      name: 'Default Light',
-      themeKey: DEFAULT_LIGHT_THEME_KEY,
-      styleContent: themeLight,
-    },
+    // The ThemePicker shows whenever more than 1 theme is available. Disable
+    // light theme for now to keep the picker hidden until it is fully
+    // implemented by #1539.
+    // {
+    //   name: 'Default Light',
+    //   themeKey: DEFAULT_LIGHT_THEME_KEY,
+    //   styleContent: themeLight,
+    // },
   ];
 }
 
@@ -262,8 +251,8 @@ export function replaceSVGFillColor(
 /**
  * Make a copy of the given object replacing any css variable expressions
  * contained in its prop values with values resolved from the given HTML element.
- * Variables that resolve to color strings will also be normalized to rgb or
- * rgba color strings.
+ * Variables that resolve to color strings will also be normalized to 8 digit
+ * hex values (or optionally 6 digit hex if `isAlphaOptional` is true).
  *
  * Note that the browser will force a reflow when calling `getComputedStyle` if
  * css properties have changed. In order to avoid a reflow for every property
@@ -276,10 +265,13 @@ export function replaceSVGFillColor(
  * @param record An object whose values may contain css var expressions
  * @param targetElement The element to resolve css variables against. Defaults
  * to document.body
+ * @param isAlphaOptional If true, the alpha value will be dropped from resolved
+ * 8 character hex colors if it is 'ff'. Defaults to false.
  */
 export function resolveCssVariablesInRecord<T extends Record<string, string>>(
   record: T,
-  targetElement: HTMLElement = document.body
+  targetElement: HTMLElement = document.body,
+  isAlphaOptional = false
 ): T {
   const perfStart = performance.now();
 
@@ -306,7 +298,7 @@ export function resolveCssVariablesInRecord<T extends Record<string, string>>(
 
     const resolved = computedStyle.getPropertyValue(tmpPropKey);
 
-    return ColorUtils.normalizeCssColor(resolved);
+    return ColorUtils.normalizeCssColor(resolved, isAlphaOptional);
   };
 
   // Resolve the temporary css variables
@@ -393,6 +385,7 @@ export function preloadTheme(): void {
   log.debug('Preloading theme content:', `'${preloadStyleContent}'`);
 
   const style = document.createElement('style');
+  style.id = 'theme-preload';
   style.innerHTML = preloadStyleContent;
   document.head.appendChild(style);
 }

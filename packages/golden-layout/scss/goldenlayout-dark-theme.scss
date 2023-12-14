@@ -14,8 +14,8 @@ $lm-tab-icon-color: $gray-200;
 
 //make some subtle tab background colors relative to our defined color
 $lm-tab-active-background: $content-bg;
-$lm-tab-background: darken($lm-tab-active-background, 3.5);
-$lm-header-background: darken($lm-tab-active-background, 5);
+$lm-tab-background: var(--dh-color-gray-75);
+$lm-header-background: var(--dh-color-gray-75);
 
 $lm-splitter-hover-color: $gray-400;
 $lm-splitter-active-color: $gray-300;
@@ -62,7 +62,7 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
 
 // Entire GoldenLayout Container, if a background is set, it is visible as color of "pane header" and "splitters" (if these latest has opacity very low)
 .lm_goldenlayout {
-  background: var(--dh-color-background, $background);
+  background: $background;
   position: absolute;
 }
 
@@ -94,6 +94,7 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
 // Placeholder Container of target position
 .lm_dropTargetIndicator {
   @include ants-base($white, $black); //replace with ants
+
   box-sizing: border-box;
   transition: all $transition-mid ease;
 
@@ -101,12 +102,11 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
   .lm_inner {
     box-sizing: border-box;
     border: $ant-thickness solid transparent; //offset shadow using a transparent border
-    box-shadow: inset 0 0 1rem 1px rgba(black, 0.45); //true black for this shadow
+    box-shadow: inset 0 0 1rem 1px hsla(var(--dh-color-true-black-hsl), 0.45); //true black for this shadow
     opacity: 1; //set opacity back to 1, default 0.2 and backroudn was solid.
-    background: rgba(
-      $primary,
-      0.1
-    ); //apply scrim as rgba background now instead
+    background: accent-opacity(
+      10
+    ); //apply scrim as hsla background now instead;
   }
 }
 
@@ -333,7 +333,7 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
 
 // If a specific Pane is maximized
 .lm_maximised {
-  border: 15px solid rgba($black, 0.85);
+  border: 15px solid background-opacity(80);
   height: 100% !important;
   width: 100% !important;
   .lm_items {
