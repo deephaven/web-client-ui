@@ -1,5 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { Component, ReactElement } from 'react';
+import { Flex } from '@adobe/react-spectrum';
 import { Button, ButtonOld, SocketedButton } from '@deephaven/components';
 import { dhTruck } from '@deephaven/icons';
 import { sampleSectionIdAndClasses } from './utils';
@@ -43,6 +44,34 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
       >
         <h5>{type.length ? 'Outline' : 'Regular'}</h5>
         {brands}
+      </div>
+    );
+  }
+
+  static renderLinks(): ReactElement {
+    const levelMap = {
+      primary: 'accent',
+      secondary: 'neutral',
+      success: 'positive',
+      info: 'info',
+      warning: 'notice',
+      danger: 'negative',
+    };
+
+    return (
+      <div
+        {...sampleSectionIdAndClasses('links')}
+        style={{ paddingTop: '1rem' }}
+      >
+        <h5>Links</h5>
+        <Flex gap="1rem">
+          {Object.entries(levelMap).map(([level, semantic]) => (
+            // eslint-disable-next-line jsx-a11y/anchor-is-valid
+            <a key={level} className={`text-${level}`}>
+              {level} ({semantic})
+            </a>
+          ))}
+        </Flex>
       </div>
     );
   }
@@ -139,6 +168,7 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
     const buttons = ['', 'outline'].map(type => Buttons.renderButtons(type));
     const inlineButtons = this.renderInlineButtons();
     const socketedButtons = Buttons.renderSocketedButtons();
+    const links = Buttons.renderLinks();
 
     return (
       <div>
@@ -147,6 +177,7 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
           {buttons}
           {inlineButtons}
           {socketedButtons}
+          {links}
         </div>
       </div>
     );

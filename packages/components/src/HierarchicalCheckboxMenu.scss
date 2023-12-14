@@ -11,6 +11,7 @@
   border: $input-border-width solid $input-border-color;
   background-color: $input-bg;
   padding: $custom-select-padding-y $custom-select-padding-x;
+  font-weight: $font-weight-normal;
 
   .cs-caret {
     @include caret-icon;

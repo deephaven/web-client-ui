@@ -149,7 +149,7 @@
   --dh-color-keyboard-selected-bg: hsla(var(--dh-color-accent-hsl), 0.5);
 
   /* Shadows / Overlays */
-  --dh-color-dropshadow: hsla(var(--dh-color-visual-gray-hsl), 0.8);
+  --dh-color-dropshadow: hsla(var(--dh-color-true-black-hsl), 0.8);
   --dh-color-overlay-modal-bg: hsla(var(--dh-color-visual-gray-hsl), 0.6);
   --dh-color-overlay-hover-bg: hsla(var(--dh-color-visual-gray-hsl), 0.08);
 
