@@ -262,4 +262,7 @@
   --spectrum-fieldbutton-border-color-hover: var(--dh-color-input-hover-border);
   --spectrum-fieldbutton-icon-color: var(--dh-color-selector-fg);
   --spectrum-fieldbutton-icon-color-hover: var(--dh-color-selector-hover-fg);
+
+  /* Popovers */
+  --spectrum-popover-background-color: var(--dh-color-popover-bg);
 }

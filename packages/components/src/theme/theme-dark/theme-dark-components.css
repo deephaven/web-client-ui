@@ -112,6 +112,9 @@
   /* Navigation Menu */
   --dh-color-menu-item-fg: var(--dh-color-gray-700);
 
+  /* Popovers */
+  --dh-color-popover-bg: var(--dh-color-bg);
+
   /* Tooltips */
   --dh-color-tooltip-bg: var(--dh-color-gray-400);
   --dh-color-tooltip-fg: var(--dh-color-fg);
