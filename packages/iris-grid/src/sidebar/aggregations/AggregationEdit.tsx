@@ -3,11 +3,11 @@ import classNames from 'classnames';
 import { CSSTransition } from 'react-transition-group';
 import { Button, Checkbox, ItemList, ThemeExport } from '@deephaven/components';
 import { dhSortAlphaDown, dhSortAlphaUp } from '@deephaven/icons';
-import type { Column } from '@deephaven/jsapi-types';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import { Aggregation } from './Aggregations';
 import { filterValidColumns } from './AggregationUtils';
 import './AggregationEdit.scss';
+import { DisplayColumn } from '../../IrisGridModel';
 
 interface AggregationEditItem {
   value: string;
@@ -16,7 +16,7 @@ interface AggregationEditItem {
 
 export type AggregationEditProps = {
   aggregation: Aggregation;
-  columns: readonly Column[];
+  columns: readonly DisplayColumn[];
   onChange: (aggregation: Aggregation) => void;
 };
 
