@@ -113,7 +113,6 @@ import FilterInputField from './FilterInputField';
 import {
   ClearFilterKeyHandler,
   CopyKeyHandler,
-  CopyCursorKeyHandler,
   ReverseKeyHandler,
 } from './key-handlers';
 import {
@@ -312,6 +311,8 @@ export interface IrisGridProps {
 
   // eslint-disable-next-line react/no-unused-prop-types
   columnNotAllowedCursor: string;
+
+  // eslint-disable-next-line react/no-unused-prop-types
   copyCursor: string;
   name: string;
   onlyFetchVisibleColumns: boolean;
@@ -529,8 +530,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleAdvancedMenuOpened = this.handleAdvancedMenuOpened.bind(this);
     this.handleGotoRowOpened = this.handleGotoRowOpened.bind(this);
     this.handleGotoRowClosed = this.handleGotoRowClosed.bind(this);
-    this.handleShowCopyCursor = this.handleShowCopyCursor.bind(this);
-    this.handleHideCopyCursor = this.handleHideCopyCursor.bind(this);
     this.handleAdvancedMenuClosed = this.handleAdvancedMenuClosed.bind(this);
     this.handleAggregationChange = this.handleAggregationChange.bind(this);
     this.handleAggregationsChange = this.handleAggregationsChange.bind(this);
@@ -707,7 +706,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     ];
     if (canCopy) {
       keyHandlers.push(new CopyKeyHandler(this));
-      keyHandlers.push(new CopyCursorKeyHandler(this));
     }
     const { dh } = model;
     const mouseHandlers = [
@@ -2789,26 +2787,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   handleGotoRowClosed(): void {
     this.setState({ isGotoShown: false });
-  }
-
-  handleShowCopyCursor(): void {
-    if (!this.grid) {
-      return;
-    }
-    const { copyCursor } = this.props;
-    const { cursor } = this.grid.state;
-    if (cursor !== copyCursor) {
-      this.isCopying = true;
-      this.grid.setState({ cursor: copyCursor });
-    }
-  }
-
-  handleHideCopyCursor(): void {
-    if (!this.grid) {
-      return;
-    }
-    this.isCopying = false;
-    this.grid.setState({ cursor: null });
   }
 
   handleAdvancedMenuClosed(columnIndex: number): void {

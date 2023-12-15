@@ -39,8 +39,18 @@ class IrisGridCopyCellMouseHandler extends GridMouseHandler {
     return false;
   }
 
-  onMove(): EventHandlerResult {
-    if (this.irisGrid.isCopying) {
+  onMove(
+    gridPoint: GridPoint,
+    _grid: Grid,
+    event: GridMouseEvent
+  ): EventHandlerResult {
+    if (
+      event.altKey &&
+      !ContextActionUtils.isModifierKeyDown(event) &&
+      !event.shiftKey &&
+      gridPoint.column != null &&
+      (gridPoint.row != null || gridPoint.columnHeaderDepth != null)
+    ) {
       this.cursor = this.irisGrid.props.copyCursor;
       return true;
     }
