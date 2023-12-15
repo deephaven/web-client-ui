@@ -10,6 +10,7 @@ import { ColumnName } from './CommonTypes';
 import IrisGridModel from './IrisGridModel';
 import IrisGridTableModel from './IrisGridTableModel';
 import EmptyIrisGridModel from './EmptyIrisGridModel';
+import { PartitionConfig, PartitionedGridModel } from './PartitionedGridModel';
 
 export function isIrisGridPartitionedTableModel(
   model: IrisGridModel
@@ -19,10 +20,13 @@ export function isIrisGridPartitionedTableModel(
   );
 }
 
-class IrisGridPartitionedTableModel extends EmptyIrisGridModel {
+class IrisGridPartitionedTableModel
+  extends EmptyIrisGridModel
+  implements PartitionedGridModel
+{
   readonly partitionedTable: PartitionedTable;
 
-  private partitionKeys: unknown[];
+  private config: PartitionConfig;
 
   /**
    * @param dh JSAPI instance
@@ -41,7 +45,10 @@ class IrisGridPartitionedTableModel extends EmptyIrisGridModel {
     this.partitionedTable.getKeys().forEach(key => {
       lastKey = key;
     });
-    this.partitionKeys = Array.isArray(lastKey) ? lastKey : [lastKey];
+    this.config = {
+      partitions: Array.isArray(lastKey) ? lastKey : [lastKey],
+      mode: 'partition',
+    };
   }
 
   get isPartitionRequired(): boolean {
@@ -68,15 +75,15 @@ class IrisGridPartitionedTableModel extends EmptyIrisGridModel {
     return this.partitionedTable.keyColumns;
   }
 
-  get partition(): unknown[] {
-    return this.partitionKeys;
+  get partitionConfig(): PartitionConfig {
+    return this.config;
   }
 
-  set partition(partition: unknown[]) {
-    this.partitionKeys = partition;
+  set partitionConfig(rollupConfig: PartitionConfig) {
+    this.config = rollupConfig;
   }
 
-  get partitionKeysTable(): Promise<Table> {
+  partitionKeysTable(): Promise<Table> {
     const sorts = this.partitionColumns.map(column => column.sort().desc());
     return this.partitionedTable.getKeyTable().then(table => {
       table.applySort(sorts);
@@ -85,7 +92,9 @@ class IrisGridPartitionedTableModel extends EmptyIrisGridModel {
   }
 
   async initializePartitionModel(): Promise<IrisGridModel> {
-    const initTable = await this.partitionedTable.getTable(this.partitionKeys);
+    const initTable = await this.partitionedTable.getTable(
+      this.config.partitions
+    );
     const tableCopy = await initTable.copy();
     return Promise.resolve(
       new IrisGridTableModel(this.dh, tableCopy, this.formatter)

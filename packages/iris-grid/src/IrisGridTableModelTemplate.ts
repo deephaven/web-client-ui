@@ -141,22 +141,6 @@ class IrisGridTableModelTemplate<
     throw new Error('Method not implemented.');
   }
 
-  get partitionColumns(): readonly Column[] {
-    throw new Error('Method not implemented.');
-  }
-
-  set partitionColumns(columns: readonly Column[]) {
-    throw new Error('Method not implemented.');
-  }
-
-  get partition(): readonly unknown[] {
-    throw new Error('Method not implemented.');
-  }
-
-  set partition(partition: readonly unknown[]) {
-    throw new Error('Method not implemented.');
-  }
-
   /**
    * Returns an array of the columns in the model
    * The order of model columns should never change once established

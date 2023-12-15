@@ -44,6 +44,7 @@ import {
 } from './CommonTypes';
 import { isIrisGridTableModelTemplate } from './IrisGridTableModelTemplate';
 import type ColumnHeaderGroup from './ColumnHeaderGroup';
+import { PartitionConfig, PartitionedGridModel } from './PartitionedGridModel';
 
 const log = Log.module('IrisGridProxyModel');
 
@@ -66,7 +67,7 @@ function makeModel(
  * Model which proxies calls to other IrisGridModels.
  * This allows for operations that generate new tables, like rollups.
  */
-class IrisGridProxyModel extends IrisGridModel {
+class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
   /**
    * @param dh JSAPI instance
    * @param table Iris data table to be used in the model

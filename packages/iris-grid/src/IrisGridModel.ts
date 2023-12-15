@@ -192,33 +192,6 @@ abstract class IrisGridModel<
   abstract set filter(filter: readonly FilterCondition[]);
 
   /**
-   * @returns The partitions set on this model
-   */
-  abstract get partition(): readonly unknown[];
-
-  /**
-   * @param partition The partitions to set
-   */
-  abstract set partition(partition: readonly unknown[]);
-
-  /**
-   * Retrieve the columns this model is partitioned on
-   * @returns All columns to partition on
-   */
-  abstract get partitionColumns(): readonly Column[];
-
-  /**
-   * @returns A Table containing the keys of the columns that are partitioned on
-   */
-  get partitionKeysTable(): Promise<Table> | null {
-    return null;
-  }
-
-  openPartitionKeysTable(): void {
-    throw new Error('Method not implemented.');
-  }
-
-  /**
    * @returns The formatter used when formatting data
    */
   abstract get formatter(): Formatter;
@@ -338,14 +311,6 @@ abstract class IrisGridModel<
    * @returns True if this model requires a filter to be set
    */
   get isFilterRequired(): boolean {
-    return false;
-  }
-
-  /**
-   * Replaces isPartitionRequired()
-   * @returns True if this model requires a partition to be set
-   */
-  get isPartitionRequired(): boolean {
     return false;
   }
 
