@@ -141,7 +141,13 @@ class FigureChartModel extends ChartModel {
   }
 
   getDefaultTitle(): string {
-    return this.figure.title ?? '';
+    if (this.figure.title != null && this.figure.title.length > 0) {
+      return this.figure.title;
+    }
+    if (this.figure.charts.length === 1) {
+      return this.figure.charts[0].title ?? '';
+    }
+    return '';
   }
 
   initAllSeries(): void {
@@ -162,7 +168,11 @@ class FigureChartModel extends ChartModel {
 
       // Need to add the chart titles as annotations if they are set
       const { axes, title } = chart;
-      if (title != null && title.length > 0) {
+      if (
+        title != null &&
+        title.length > 0 &&
+        (charts.length > 1 || this.figure.title != null)
+      ) {
         const xAxis = axes.find(axis => axis.type === this.dh.plot.AxisType.X);
         const yAxis = axes.find(axis => axis.type === this.dh.plot.AxisType.Y);
         if (xAxis == null || yAxis == null) {
@@ -179,7 +189,8 @@ class FigureChartModel extends ChartModel {
           const annotation: Partial<Annotations> = {
             align: 'center',
             x: 0.5,
-            y: 1.12, // Needs to be shown above the chart
+            y: 1,
+            yshift: 17,
             text: title,
             showarrow: false,
 
