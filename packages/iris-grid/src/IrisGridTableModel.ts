@@ -43,13 +43,15 @@ class IrisGridTableModel
 
   private initialUncoalesced: boolean;
 
-  private _partitionConfig: unknown[] = [];
+  private _partitionConfig: PartitionConfig;
 
   private _partitionColumns: Column[];
 
   private partitionFilters: FilterCondition[] = [];
 
-  private _partitionTable: Table | null = null;
+  private partitionTablePromise?: Promise<Table>;
+
+  private _partitionTable?: Table;
 
   /**
    * @param dh JSAPI instance
@@ -70,8 +72,12 @@ class IrisGridTableModel
     this._partitionColumns = this.table.columns.filter(
       c => c.isPartitionColumn
     );
+    this._partitionConfig = {
+      partitions: [],
+      mode: 'partition',
+    };
     if (this.table.isUncoalesced && this.isValuesTableAvailable) {
-      this.initializePartitionModel();
+      this.partitionTablePromise = this.initializePartitionModel();
     }
   }
 
@@ -223,29 +229,32 @@ class IrisGridTableModel
 
   set partitionConfig(partitionConfig: PartitionConfig) {
     log.log('setting partition', partitionConfig);
+    const { partitions, mode } = partitionConfig;
     const partitionFilters = [];
 
-    for (let i = 0; i < this.partitionColumns.length; i += 1) {
-      const partition = partitions[i];
-      const partitionColumn = this.partitionColumns[i];
+    if (mode === 'partition') {
+      for (let i = 0; i < this.partitionColumns.length; i += 1) {
+        const partition = partitions[i];
+        const partitionColumn = this.partitionColumns[i];
 
-      if (
-        partition != null &&
-        !(TableUtils.isCharType(partitionColumn.type) && partition === '')
-      ) {
-        const partitionText = TableUtils.isCharType(partitionColumn.type)
-          ? this.displayString(
-              partition,
-              partitionColumn.type,
-              partitionColumn.name
-            )
-          : partition.toString();
-        const partitionFilter = this.tableUtils.makeQuickFilterFromComponent(
-          partitionColumn,
-          partitionText
-        );
-        if (partitionFilter !== null) {
-          partitionFilters.push(partitionFilter);
+        if (
+          partition != null &&
+          !(TableUtils.isCharType(partitionColumn.type) && partition === '')
+        ) {
+          const partitionText = TableUtils.isCharType(partitionColumn.type)
+            ? this.displayString(
+                partition,
+                partitionColumn.type,
+                partitionColumn.name
+              )
+            : partition.toString();
+          const partitionFilter = this.tableUtils.makeQuickFilterFromComponent(
+            partitionColumn,
+            partitionText
+          );
+          if (partitionFilter !== null) {
+            partitionFilters.push(partitionFilter);
+          }
         }
       }
     }
@@ -254,16 +263,19 @@ class IrisGridTableModel
       0,
       super.filter.length - this.partitionFilters.length
     );
-    this._partition = partitions;
+    this._partitionConfig = partitionConfig;
     this.partitionFilters = partitionFilters;
     this.filter = prevFilters;
   }
 
   partitionKeysTable(): Promise<Table> {
-    if (this._partitionTable === null) {
-      throw new Error('Partition table not initialized');
+    if (this._partitionTable !== undefined) {
+      return this._partitionTable.copy();
     }
-    return this._partitionTable?.copy();
+    if (this.partitionTablePromise !== undefined) {
+      return this.partitionTablePromise.then(table => table.copy());
+    }
+    throw new Error('Partition table not initialized');
   }
 
   set filter(filter: FilterCondition[]) {
@@ -477,7 +489,7 @@ class IrisGridTableModel
     return this.table.seekRow != null;
   }
 
-  async initializePartitionModel(): Promise<void> {
+  private async initializePartitionModel(): Promise<Table> {
     const partitionTable = await this.valuesTable(this._partitionColumns);
 
     const columns = partitionTable.columns.slice(
@@ -489,16 +501,21 @@ class IrisGridTableModel
     partitionTable.setViewport(0, 0, columns);
 
     const data = await partitionTable.getViewportData();
-    if (data.rows.length > 0) {
+    if (
+      data.rows.length > 0 &&
+      this._partitionConfig.partitions.length === 0 &&
+      this._partitionConfig.mode === 'partition'
+    ) {
       const row = data.rows[0];
       const values = columns.map(column => row.get(column));
 
-      this.partition = values;
-    } else {
-      log.info('Table does not have any data');
-      this.partition = [];
+      this.partitionConfig = {
+        partitions: values,
+        mode: 'partition',
+      };
     }
     this._partitionTable = partitionTable;
+    return partitionTable;
   }
 }
 

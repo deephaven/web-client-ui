@@ -4,7 +4,7 @@ import IrisGridModel from './IrisGridModel';
 export function isPartitionedGridModel(
   model: IrisGridModel
 ): model is PartitionedGridModel {
-  return (model as PartitionedGridModel)?.partitionConfig !== undefined;
+  return (model as PartitionedGridModel)?.isPartitionRequired !== undefined;
 }
 
 export interface PartitionConfig {

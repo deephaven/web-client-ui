@@ -44,7 +44,11 @@ import {
 } from './CommonTypes';
 import { isIrisGridTableModelTemplate } from './IrisGridTableModelTemplate';
 import type ColumnHeaderGroup from './ColumnHeaderGroup';
-import { PartitionConfig, PartitionedGridModel } from './PartitionedGridModel';
+import {
+  PartitionConfig,
+  PartitionedGridModel,
+  isPartitionedGridModel,
+} from './PartitionedGridModel';
 
 const log = Log.module('IrisGridProxyModel');
 
@@ -463,6 +467,9 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
   }
 
   get partitionColumns(): readonly Column[] {
+    if (!isPartitionedGridModel(this.originalModel)) {
+      throw new Error('Partitions are not available');
+    }
     return this.originalModel.partitionColumns;
   }
 
@@ -490,18 +497,33 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     this.model.filter = filter;
   }
 
-  get partition(): readonly unknown[] {
-    return this.originalModel.partition;
-  }
-
-  set partition(partition: readonly unknown[]) {
-    if (!this.originalModel.isPartitionRequired) {
+  get partitionConfig(): PartitionConfig {
+    if (
+      !isPartitionedGridModel(this.originalModel) ||
+      !this.originalModel.isPartitionRequired
+    ) {
       throw new Error('Partitions are not available');
     }
-    log.debug('set partition', partition);
-    this.originalModel.partition = partition;
-    if (isIrisGridPartitionedTableModel(this.originalModel)) {
-      if (partition.length === 0) {
+    return this.originalModel.partitionConfig;
+  }
+
+  set partitionConfig(partitionConfig: PartitionConfig) {
+    if (
+      !isPartitionedGridModel(this.originalModel) ||
+      !this.originalModel.isPartitionRequired
+    ) {
+      throw new Error('Partitions are not available');
+    }
+    log.debug('set partitionConfig', partitionConfig);
+    this.originalModel.partitionConfig = partitionConfig;
+    if (partitionConfig.mode === 'keys') {
+      this.setNextModel(
+        this.originalModel
+          .partitionKeysTable()
+          .then(table => makeModel(this.dh, table, this.formatter))
+      );
+    } else if (isIrisGridPartitionedTableModel(this.originalModel)) {
+      if (partitionConfig.mode === 'merged') {
         this.setNextModel(
           this.originalModel.partitionedTable
             .getMergedTable()
@@ -510,7 +532,7 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
         return;
       }
       const tablePromise = this.originalModel.partitionedTable
-        .getTable(partition)
+        .getTable(partitionConfig.partitions)
         .then(table => table.copy());
       this.setNextModel(
         tablePromise.then(table => makeModel(this.dh, table, this.formatter))
@@ -523,26 +545,11 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     }
   }
 
-  get partitionKeysTable(): Promise<Table> | null {
-    return this.originalModel.partitionKeysTable;
-  }
-
-  openPartitionKeysTable(): void {
-    log.debug('opening keysTable');
-    this.originalModel.partition = [];
-    if (this.originalModel.partitionKeysTable === null) {
-      return;
+  partitionKeysTable(): Promise<Table> {
+    if (!isPartitionedGridModel(this.originalModel)) {
+      throw new Error('Partitions are not available');
     }
-    if (
-      isIrisGridPartitionedTableModel(this.originalModel) ||
-      this.model === this.originalModel
-    ) {
-      this.setNextModel(
-        this.originalModel.partitionKeysTable.then(table =>
-          makeModel(this.dh, table, this.formatter)
-        )
-      );
-    }
+    return this.originalModel.partitionKeysTable();
   }
 
   get formatter(): Formatter {
@@ -671,7 +678,9 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
   }
 
   get isPartitionRequired(): boolean {
-    return this.originalModel.isPartitionRequired;
+    return isPartitionedGridModel(this.originalModel)
+      ? this.originalModel.isPartitionRequired
+      : false;
   }
 
   get isEditable(): boolean {
@@ -807,7 +816,7 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
 
   initializePartitionModel(): void {
     const { model } = this;
-    if (model instanceof IrisGridPartitionedTableModel) {
+    if (isIrisGridPartitionedTableModel(model)) {
       this.setNextModel(model.initializePartitionModel());
     }
   }
