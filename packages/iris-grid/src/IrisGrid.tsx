@@ -841,13 +841,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   componentDidMount(): void {
-    const { model, partitions, partitionConfig } = this.props;
+    const { model, partitions } = this.props;
     try {
       if (isPartitionedGridModel(model) && model.isPartitionRequired) {
-        log.log('Partition mounting', partitions, partitionConfig);
-        if (partitionConfig) {
-          model.partitionConfig = partitionConfig;
-        } else if (partitions.length) {
+        if (partitions.length) {
           model.partitionConfig = { partitions, mode: 'partition' };
         }
         this.setState({ isSelectingPartition: true }, () => {

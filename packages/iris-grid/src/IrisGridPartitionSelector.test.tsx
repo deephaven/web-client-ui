@@ -3,6 +3,7 @@ import { render, fireEvent } from '@testing-library/react';
 import dh from '@deephaven/jsapi-shim';
 import IrisGridPartitionSelector from './IrisGridPartitionSelector';
 import IrisGridTestUtils from './IrisGridTestUtils';
+import { PartitionConfig } from './PartitionedGridModel';
 
 function makeIrisGridPartitionSelector(
   table = new IrisGridTestUtils(dh).makeTable(),
@@ -10,7 +11,8 @@ function makeIrisGridPartitionSelector(
   onChange = jest.fn(),
   onMerge = jest.fn(),
   onKeyTable = jest.fn(),
-  getFormattedString = jest.fn(value => `${value}`)
+  getFormattedString = jest.fn(value => `${value}`),
+  partitionConfig = { partitions: [], mode: 'merged' }
 ) {
   const tablePromise = Promise.resolve(table);
   return render(
@@ -22,6 +24,7 @@ function makeIrisGridPartitionSelector(
       onChange={onChange}
       onMerge={onMerge}
       onKeyTable={onKeyTable}
+      partitionConfig={partitionConfig as PartitionConfig}
     />
   );
 }

@@ -543,10 +543,7 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
       this.setNextModel(
         tablePromise.then(table => makeModel(this.dh, table, this.formatter))
       );
-    } else if (
-      isIrisGridTableModelTemplate(this.originalModel) &&
-      this.model !== this.originalModel
-    ) {
+    } else if (isIrisGridTableModelTemplate(this.originalModel)) {
       this.setNextModel(Promise.resolve(this.originalModel));
     }
   }

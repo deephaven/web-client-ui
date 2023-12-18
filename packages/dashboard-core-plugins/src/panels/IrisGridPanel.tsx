@@ -44,8 +44,6 @@ import {
   IrisGridContextMenuData,
   IrisGridTableModel,
   PartitionConfig,
-  isPartitionedGridModel,
-  PartitionedGridModel,
 } from '@deephaven/iris-grid';
 import {
   AdvancedFilterOptions,
@@ -583,7 +581,6 @@ export class IrisGridPanel extends PureComponent<
         customColumns,
         selectDistinctColumns = [],
         rollupConfig,
-        partitionConfig,
       } = { ...irisGridState, ...irisGridStateOverrides };
 
       if (customColumns.length > 0) {
@@ -611,13 +608,6 @@ export class IrisGridPanel extends PureComponent<
         modelQueue.push(m => {
           // eslint-disable-next-line no-param-reassign
           m.selectDistinctColumns = selectDistinctColumns;
-        });
-      }
-
-      if (partitionConfig != null && isPartitionedGridModel(model)) {
-        modelQueue.push(m => {
-          // eslint-disable-next-line no-param-reassign
-          (m as PartitionedGridModel).partitionConfig = partitionConfig;
         });
       }
     }

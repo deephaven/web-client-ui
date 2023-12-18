@@ -228,7 +228,7 @@ class IrisGridTableModel
   }
 
   set partitionConfig(partitionConfig: PartitionConfig) {
-    log.log('setting partition', partitionConfig);
+    log.debug('setting partition', partitionConfig);
     const { partitions, mode } = partitionConfig;
     const partitionFilters = [];
 
