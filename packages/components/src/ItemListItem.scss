@@ -1,8 +1,4 @@
 @import '../scss/custom.scss';
-$item-list-bg: $secondary;
-$item-list-keyboard-selected-bg: rgba($primary, 0.5);
-$item-list-selected-bg: $primary;
-$item-list-selected-color: $white;
 
 .item-list-item {
   border: none;
@@ -13,7 +9,7 @@ $item-list-selected-color: $white;
   padding: 0;
   white-space: nowrap;
   text-decoration: none;
-  background-color: transparent;
+  background-color: var(--dh-color-item-list-bg);
   text-align: left;
   user-select: none;
 }
@@ -32,21 +28,21 @@ $item-list-selected-color: $white;
 }
 
 .item-list-item-content:hover {
-  background-color: $item-list-selected-bg;
-  color: $item-list-selected-color;
+  background-color: var(--dh-color-item-list-selected-bg);
+  color: var(--dh-color-item-list-selected-fg);
 }
 
 .item-list-item.is-focused {
   .item-list-item-content {
-    background-color: $item-list-keyboard-selected-bg;
-    color: $item-list-selected-color;
+    background-color: var(--dh-color-item-list-keyboard-selected-bg);
+    color: var(--dh-color-item-list-selected-fg);
   }
 }
 
 .item-list-item.active {
   .item-list-item-content {
-    background-color: $item-list-selected-bg;
-    color: $item-list-selected-color;
+    background-color: var(--dh-color-item-list-selected-bg);
+    color: var(--dh-color-item-list-selected-fg);
   }
 }
 

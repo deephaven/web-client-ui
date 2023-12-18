@@ -4,13 +4,14 @@ $depth-line-color: $gray-600;
 $depth-margin: 5px;
 $depth-indentation: 8px;
 $item-list-color: $text-muted;
-$item-list-selected-nofocus-bg: mix($primary, $gray-700, 12%);
-$item-list-selected-bg: mix($primary, $gray-700, 35%);
-$item-list-selection-border-color: mix($primary, $gray-700, 55%);
-$item-list-focused-bg: rgba($primary, 0.75);
-$item-list-hover-bg: $primary;
-$item-list-selected-color: $white;
-$item-list-drop-target-color: $white;
+$item-list-selected-nofocus-bg: var(--dh-color-item-list-selected-inactive-bg);
+$item-list-selected-bg: var(--dh-color-item-list-selected-bg);
+$item-list-selected-hover-bg: var(--dh-color-item-list-selected-hover-bg);
+$item-list-selection-border-color: var(--dh-color-item-list-selected-border);
+$item-list-focused-bg: var(--dh-color-item-list-selected-bg);
+$item-list-hover-bg: var(--dh-color-item-list-hover-bg);
+$item-list-selected-color: var(--dh-color-item-list-selected-fg);
+$item-list-drop-target-color: var(--dh-color-item-list-drop-target-fg);
 
 .file-list {
   position: absolute;
@@ -35,7 +36,6 @@ $item-list-drop-target-color: $white;
   .item-list-item {
     padding: 0 $input-btn-padding-x;
     color: $item-list-color;
-    transition: $btn-transition;
     border: 1px solid transparent; // we need a spacer border so stuff doesn't move on us when we apply a border-color
     -webkit-user-drag: none; // we need to disable webkit-user-drag or else Chrome switches to a Copy icon when dragging on Mac
     cursor: pointer;
@@ -97,11 +97,13 @@ $item-list-drop-target-color: $white;
 
   /* stylelint-disable no-descending-specificity */
   &:not(.is-dragging) {
-    .item-list-item:hover,
-    &:focus-within .item-list-item.active:hover {
+    .item-list-item:hover {
       background-color: $item-list-hover-bg;
       color: $item-list-selected-color;
-      transition: none; //to make things feel more responsive don't transition the hover in
+    }
+    &:focus-within .item-list-item.active:hover {
+      background-color: $item-list-selected-hover-bg;
+      color: $item-list-selected-color;
     }
   }
 

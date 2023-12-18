@@ -1,7 +1,7 @@
 /* stylelint-disable alpha-value-notation */
 /* stylelint-disable custom-property-empty-line-before */
 :root {
-  --dh-color-chart-bg: var(--dh-color-content-background);
+  --dh-color-chart-bg: var(--dh-color-content-bg);
   --dh-color-chart-plot-bg: var(--dh-color-gray-200);
   --dh-color-chart-title: var(--dh-color-white);
 
@@ -35,4 +35,13 @@
    * anymore. 
    */
   --dh-color-chart-line-deprecated: var(--dh-color-visual-green);
+
+  --dh-color-plotly-axis-text: var(--dh-color-gray-500);
+  --dh-color-plotly-zoombox: hsla(var(--dh-color-true-black-hsl), 0.5);
+  --dh-color-plotly-zoombox-corners-fill: var(--dh-color-white);
+  --dh-color-plotly-zoombox-corners-stroke: var(--dh-color-gray-75);
+
+  --dh-color-plotly-modebar-btn-active: var(--dh-color-true-white-hsl, 0.7);
+  --dh-color-plotly-modebar-btn-warning: var(--dh-color-visual-orange);
+  --dh-color-plotly-notifier-note-bg: var(--dh-color-gray-500);
 }

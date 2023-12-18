@@ -39,14 +39,14 @@ import {
   assertNotNull,
 } from '@deephaven/utils';
 import { TableUtils, Formatter, FormatterUtils } from '@deephaven/jsapi-utils';
-import {
+import type {
   AxisOption,
   DataBarOptions,
   DirectionOption,
   Marker,
   ValuePlacementOption,
 } from 'packages/grid/src/DataBarGridModel';
-import IrisGridModel from './IrisGridModel';
+import IrisGridModel, { DisplayColumn } from './IrisGridModel';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import IrisGridUtils from './IrisGridUtils';
 import MissingKeyError from './MissingKeyError';
@@ -66,8 +66,6 @@ const log = Log.module('IrisGridTableModelTemplate');
 
 const SET_VIEWPORT_THROTTLE = 150;
 const APPLY_VIEWPORT_THROTTLE = 0;
-
-const EMPTY_ARRAY: unknown[] = [];
 
 export function isIrisGridTableModelTemplate(
   model: IrisGridModel
@@ -384,7 +382,8 @@ class IrisGridTableModelTemplate<
 
   get rowCount(): number {
     return (
-      this.table.size +
+      // Table size can be negative if the table isn't ready yet
+      Math.max(this.table.size, 0) +
       this.pendingNewRowCount +
       (this.totals?.operationOrder?.length ?? 0)
     );
@@ -519,7 +518,7 @@ class IrisGridTableModelTemplate<
         return undefined;
       }
 
-      const column = this.totalsColumn(x, y) ?? this.columns[x];
+      const column = this.sourceColumn(x, y);
       const hasCustomColumnFormat = this.getCachedCustomColumnFormatFlag(
         this.formatter,
         column.name,
@@ -600,7 +599,7 @@ class IrisGridTableModelTemplate<
 
       // Fallback to formatting based on the value/type of the cell
       if (value != null) {
-        const column = this.totalsColumn(x, y) ?? this.columns[x];
+        const column = this.sourceColumn(x, y);
         if (TableUtils.isDateType(column.type) || column.name === 'Date') {
           assertNotNull(theme.dateColor);
           return theme.dateColor;
@@ -696,7 +695,7 @@ class IrisGridTableModelTemplate<
     if (isColumnHeaderGroup(header)) {
       return header.isNew ? '' : header.name;
     }
-    return header?.name;
+    return header?.displayName ?? header?.name;
   }
 
   colorForColumnHeader(x: ModelIndex, depth = 0): string | null {
@@ -730,7 +729,7 @@ class IrisGridTableModelTemplate<
   columnAtDepth(
     x: ModelIndex,
     depth = 0
-  ): ColumnHeaderGroup | Column | undefined {
+  ): ColumnHeaderGroup | DisplayColumn | undefined {
     if (depth === 0) {
       return this.columns[x];
     }
@@ -913,13 +912,6 @@ class IrisGridTableModelTemplate<
     return this.getMemoizedInitialMovedColumns(this.layoutHints ?? undefined);
   }
 
-  /**
-   * Not currently used by anything.
-   */
-  get initialMovedRows(): MoveOperation[] {
-    return EMPTY_ARRAY as MoveOperation[];
-  }
-
   getMemoizedInitialColumnHeaderGroups = memoize(
     (layoutHints?: LayoutHints) =>
       IrisGridUtils.parseColumnHeaderGroups(
@@ -983,10 +975,6 @@ class IrisGridTableModelTemplate<
     this._columnHeaderGroupMap = groupMap;
   }
 
-  get groupedColumns(): Column[] {
-    return [];
-  }
-
   row(y: ModelIndex): R | null {
     const totalsRowCount = this.totals?.operationOrder?.length ?? 0;
     const showOnTop = this.totals?.showOnTop ?? false;
@@ -1006,29 +994,37 @@ class IrisGridTableModelTemplate<
   }
 
   /**
-   * Retrieve the totals column if this is a totals row, or null otherwise
-   * @param x Column index to get the totals column from
-   * @param y Row index to get the totals column from
+   * Retrieve the source column for given coordinates.
+   * - Retrieve the totals column if this is a totals row
+   * - Retrieve the source column if it's a proxied column
+   * - Otherwise return the column at the given index
+   * @param column Column index to get the source column from
+   * @param row Row index to get the source column from
    */
-  totalsColumn(x: ModelIndex, y: ModelIndex): Column | undefined | null {
-    const totalsRow = this.totalsRow(y);
-    if (totalsRow == null) return null;
+  sourceColumn(column: ModelIndex, row: ModelIndex): Column {
+    const totalsRow = this.totalsRow(row);
+    if (totalsRow != null) {
+      const operation = this.totals?.operationOrder[totalsRow];
+      const defaultOperation =
+        this.totals?.defaultOperation ?? AggregationOperation.SUM;
+      const tableColumn = this.columns[column];
 
-    const operation = this.totals?.operationOrder[totalsRow];
-    const defaultOperation =
-      this.totals?.defaultOperation ?? AggregationOperation.SUM;
-    const tableColumn = this.columns[x];
-
-    // Find the matching totals table column for the operation
-    // When there are multiple aggregations, the column name will be the original name of the column with the operation appended afterward
-    // When the the operation is the default operation OR there is only one operation, then the totals column name is just the original column name
-    return this.totalsTable?.columns.find(
-      column =>
-        column.name === `${tableColumn.name}__${operation}` ||
-        ((operation === defaultOperation ||
-          this.totals?.operationOrder.length === 1) &&
-          column.name === tableColumn.name)
-    );
+      // Find the matching totals table column for the operation
+      // When there are multiple aggregations, the column name will be the original name of the column with the operation appended afterward
+      // When the the operation is the default operation OR there is only one operation, then the totals column name is just the original column name
+      const totalsColumn = this.totalsTable?.columns.find(
+        col =>
+          col.name === `${tableColumn.name}__${operation}` ||
+          ((operation === defaultOperation ||
+            this.totals?.operationOrder.length === 1) &&
+            col.name === tableColumn.name)
+      );
+      if (totalsColumn != null) {
+        return totalsColumn;
+      }
+      // There may be cases were the totals table doesn't have a column, such as when there's a virtual column
+    }
+    return this.columns[column];
   }
 
   /**
@@ -2086,95 +2082,7 @@ class IrisGridTableModelTemplate<
   }
 
   async delete(ranges: GridRange[]): Promise<void> {
-    if (!this.isDeletableRanges(ranges)) {
-      throw new Error(`Undeletable ranges ${ranges}`);
-    }
-
-    assertNotNull(this.inputTable);
-    const { keyColumns } = this.inputTable;
-    if (keyColumns.length === 0) {
-      throw new Error('No key columns to allow deletion');
-    }
-
-    const pendingAreaRange = this.getPendingAreaRange();
-    const pendingRanges = ranges
-      .map(range => GridRange.intersection(pendingAreaRange, range))
-      .filter(range => range != null)
-      .map(range => {
-        assertNotNull(range);
-
-        return GridRange.offset(
-          range,
-          0,
-          -(this.floatingTopRowCount + this.table.size)
-        );
-      });
-
-    if (pendingRanges.length > 0) {
-      const newDataMap = new Map(this.pendingNewDataMap);
-      for (let i = 0; i < pendingRanges.length; i += 1) {
-        const pendingRange = pendingRanges[i];
-        assertNotNull(pendingRange.startRow);
-        assertNotNull(pendingRange.endRow);
-        for (let r = pendingRange.startRow; r <= pendingRange.endRow; r += 1) {
-          newDataMap.delete(r);
-        }
-      }
-      this.pendingNewDataMap = newDataMap;
-
-      this.formattedStringData = [];
-
-      this.dispatchEvent(
-        new EventShimCustomEvent(IrisGridModel.EVENT.PENDING_DATA_UPDATED)
-      );
-
-      this.dispatchEvent(new EventShimCustomEvent(IrisGridModel.EVENT.UPDATED));
-    }
-
-    const tableAreaRange = this.getTableAreaRange();
-    const tableRanges = ranges
-      .map(range => GridRange.intersection(tableAreaRange, range))
-      .filter(range => range != null);
-    if (tableRanges.length <= 0) {
-      return;
-    }
-    const [data, deleteTable] = await Promise.all([
-      // Need to get the key values of each row
-      this.snapshot(
-        tableRanges.map(range => {
-          assertNotNull(range);
-          return new GridRange(
-            0,
-            range.startRow,
-            keyColumns.length - 1,
-            range.endRow
-          );
-        })
-      ),
-      this.table.copy(),
-    ]);
-
-    // Now copy the existing table and filter it on the values in the snapshot for the key columns in the input table
-    const filters = data.map(row => {
-      const columnFilters = [];
-      for (let c = 0; c < keyColumns.length; c += 1) {
-        const column = keyColumns[c];
-        const value = row[c];
-        const filterValue = this.tableUtils.makeFilterRawValue(
-          column.type,
-          value
-        );
-        const filter = column.filter().eq(filterValue);
-        columnFilters.push(filter);
-      }
-      return columnFilters.reduce((agg, curr) => agg?.and(curr) ?? curr);
-    });
-
-    const filter = filters.reduce((agg, curr) => agg?.or(curr) ?? curr);
-    deleteTable.applyFilter([filter]);
-
-    // await this.inputTable?.deleteTable(deleteTable);
-    deleteTable.close();
+    throw new Error('Delete not implemented');
   }
 
   isValidForCell(x: ModelIndex, y: ModelIndex, value: string): boolean {

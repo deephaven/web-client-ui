@@ -3,12 +3,12 @@
 $shade: $primary;
 
 $command-history-bg: $gray-700;
-$selection-color: $foreground;
-$selection-bg: mix($shade, $command-history-bg, 35%);
-$selection-hover-bg: $shade;
-$selection-nofocus-bg: mix($shade, $command-history-bg, 12%);
-$selection-border-color: mix($shade, $command-history-bg, 55%);
-$selection-hover-color: $foreground;
+$selection-color: var(--dh-color-item-list-selected-fg);
+$selection-bg: var(--dh-color-item-list-selected-bg);
+$selection-hover-bg: var(--dh-color-item-list-selected-hover-bg);
+$selection-nofocus-bg: var(--dh-color-item-list-selected-inactive-bg);
+$selection-border-color: var(--dh-color-item-list-selected-border);
+$selection-hover-color: var(--dh-color-item-list-selected-fg);
 
 .command-history {
   .command-history-item {

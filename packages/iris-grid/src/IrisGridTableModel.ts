@@ -425,18 +425,29 @@ class IrisGridTableModel
     if (tableRanges.length <= 0) {
       return;
     }
+
     const [data, deleteTable] = await Promise.all([
       // Need to get the key values of each row
       this.snapshot(
-        tableRanges.map(range => {
-          assertNotNull(range);
-          return new GridRange(
-            0,
-            range.startRow,
-            keyColumns.length - 1,
-            range.endRow
-          );
-        })
+        tableRanges
+          .map(range => {
+            assertNotNull(range);
+            // Need to map each key column to it's range so we can pass that into the snapshot function
+            return keyColumns.map(keyColumn => {
+              const keyIndex = this.getColumnIndexByName(keyColumn.name);
+              if (keyIndex == null) {
+                throw new Error(`Key column ${keyColumn.name} not found`);
+              }
+
+              return new GridRange(
+                keyIndex,
+                range.startRow,
+                keyIndex,
+                range.endRow
+              );
+            });
+          })
+          .flat()
       ),
       this.table.copy(),
     ]);

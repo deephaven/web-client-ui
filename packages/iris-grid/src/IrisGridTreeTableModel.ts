@@ -1,10 +1,26 @@
 /* eslint class-methods-use-this: "off" */
 import memoize from 'memoize-one';
-import { GridRange, ModelIndex } from '@deephaven/grid';
-import type { Column, TreeRow, TreeTable } from '@deephaven/jsapi-types';
+import {
+  BoundedAxisRange,
+  GridCell,
+  GridRange,
+  ModelIndex,
+} from '@deephaven/grid';
+import type {
+  dh as DhType,
+  Column,
+  InputTable,
+  TreeRow,
+  TreeTable,
+} from '@deephaven/jsapi-types';
+import Log from '@deephaven/log';
+import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import { assertNotNull } from '@deephaven/utils';
-import { UIRow, ColumnName } from './CommonTypes';
+import { UIRow, ColumnName, CellData } from './CommonTypes';
 import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
+import { DisplayColumn } from './IrisGridModel';
+
+const log = Log.module('IrisGridTreeTableModel');
 
 export interface UITreeRow extends UIRow {
   isExpanded: boolean;
@@ -15,18 +31,61 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   TreeTable,
   UITreeRow
 > {
-  // table: TreeTable
+  /** We keep a virtual column at the front that tracks the "group" that is expanded */
+  private virtualColumns: DisplayColumn[];
+
+  constructor(
+    dh: DhType,
+    table: TreeTable,
+    formatter = new Formatter(dh),
+    inputTable: InputTable | null = null
+  ) {
+    super(dh, table, formatter, inputTable);
+    this.virtualColumns = [
+      {
+        name: '__DH_UI_GROUP__',
+        displayName: 'Group',
+        type: TableUtils.dataType.STRING,
+        constituentType: TableUtils.dataType.STRING,
+        isPartitionColumn: false,
+        isSortable: false,
+        isProxy: true,
+        description: 'Key column',
+        filter: () => {
+          throw new Error('Filter not implemented for virtual column');
+        },
+        sort: () => {
+          throw new Error('Sort not implemented virtual column');
+        },
+        formatColor: () => {
+          throw new Error('Color not implemented for virtual column');
+        },
+        formatRowColor: () => {
+          throw new Error('Color not implemented for virtual column');
+        },
+      },
+    ];
+  }
 
   applyBufferedViewport(
     viewportTop: number,
     viewportBottom: number,
     columns: Column[]
   ): void {
-    this.table.setViewport(viewportTop, viewportBottom, columns);
+    const viewportColumns = [
+      // Need to always fetch the grouped columns so we always have key data for the rows
+      // Used to display our virtual key column
+      ...this.table.groupedColumns,
+      ...columns.filter(
+        c =>
+          !this.virtualColumns.includes(c) && !this.groupedColumns.includes(c)
+      ),
+    ];
+    this.table.setViewport(viewportTop, viewportBottom, viewportColumns);
   }
 
   textForCell(x: ModelIndex, y: ModelIndex): string {
-    const column = this.columns[x];
+    const column = this.sourceColumn(x, y);
     const row = this.row(y);
     if (row != null && column != null) {
       if (!row.hasChildren && column.constituentType != null) {
@@ -49,8 +108,23 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
 
   extractViewportRow(row: TreeRow, columns: Column[]): UITreeRow {
     const { isExpanded, hasChildren, depth } = row;
+    const extractedRow = super.extractViewportRow(row, columns);
+    const modifiedData = new Map<ModelIndex, CellData>(extractedRow.data);
+    if (hasChildren) {
+      for (let i = 0; i < this.virtualColumns.length; i += 1) {
+        const key = i + (depth - 1) + (this.virtualColumns.length - 1);
+        const cellData = modifiedData.get(key);
+        if (cellData == null) {
+          log.warn('Missing key data for virtual column', i, depth, key, row);
+        } else {
+          modifiedData.set(i, cellData);
+        }
+      }
+    }
+
     return {
-      ...super.extractViewportRow(row, columns),
+      ...extractedRow,
+      data: modifiedData,
       isExpanded,
       hasChildren,
       depth,
@@ -111,8 +185,41 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     return result;
   }
 
-  get groupedColumns(): Column[] {
-    return this.table.groupedColumns;
+  get columns(): Column[] {
+    return this.getCachedColumns(this.virtualColumns, super.columns);
+  }
+
+  get groupedColumns(): readonly Column[] {
+    return this.getCachedGroupColumns(
+      this.virtualColumns,
+      this.table.groupedColumns
+    );
+  }
+
+  sourceForCell(column: ModelIndex, row: ModelIndex): GridCell {
+    if (column >= this.virtualColumns.length) {
+      return { column, row };
+    }
+    const depth = this.depthForRow(row);
+    return { column: column + depth, row };
+  }
+
+  sourceColumn(column: ModelIndex, row: ModelIndex): Column {
+    if (column >= this.virtualColumns.length) {
+      return super.sourceColumn(column, row);
+    }
+
+    const depth = this.depthForRow(row);
+    return this.columns[column + depth];
+  }
+
+  getClearFilterRange(column: ModelIndex): BoundedAxisRange | null {
+    if (column >= this.virtualColumns.length) {
+      return super.getClearFilterRange(column);
+    }
+    // Source for the proxied column could be any of the grouped columns.
+    // Return the range of columns matching the grouped columns.
+    return [this.virtualColumns.length, this.groupedColumns.length];
   }
 
   get hasExpandableRows(): boolean {
@@ -138,7 +245,8 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   isFilterable(columnIndex: ModelIndex): boolean {
     return this.getCachedFilterableColumnSet(
       this.columns,
-      this.groupedColumns
+      this.groupedColumns,
+      this.virtualColumns
     ).has(columnIndex);
   }
 
@@ -185,12 +293,30 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     return (row?.depth ?? 1) - 1;
   }
 
+  getCachedColumns = memoize(
+    (virtualColumns: readonly Column[], tableColumns: readonly Column[]) => [
+      ...virtualColumns,
+      ...tableColumns,
+    ]
+  );
+
+  getCachedGroupColumns = memoize(
+    (
+      virtualColumns: readonly Column[],
+      tableGroupedColumns: readonly Column[]
+    ) => [...virtualColumns, ...tableGroupedColumns]
+  );
+
   getCachedFilterableColumnSet = memoize(
-    (columns: Column[], groupedColumns: Column[]) =>
+    (
+      columns: readonly Column[],
+      groupedColumns: readonly Column[],
+      virtualColumns: readonly Column[]
+    ) =>
       new Set(
-        (groupedColumns?.length > 0 ? groupedColumns : columns).map(c1 =>
-          columns.findIndex(c2 => c1.name === c2.name)
-        )
+        (groupedColumns?.length > 0 ? groupedColumns : columns)
+          .filter(c => !virtualColumns.includes(c))
+          .map(c1 => columns.findIndex(c2 => c1.name === c2.name))
       )
   );
 

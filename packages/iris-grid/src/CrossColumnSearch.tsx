@@ -17,6 +17,7 @@ import type {
 import { TableUtils } from '@deephaven/jsapi-utils';
 import './CrossColumnSearch.scss';
 import { ColumnName } from './CommonTypes';
+import { DisplayColumn } from './IrisGridModel';
 
 interface CrossColumnSearchProps {
   value: string;
@@ -27,7 +28,7 @@ interface CrossColumnSearchProps {
     selectedColumns: readonly ColumnName[],
     invertSelection: boolean
   ) => void;
-  columns: readonly Column[];
+  columns: readonly DisplayColumn[];
 }
 
 interface CrossColumnSearchState {
@@ -233,23 +234,27 @@ class CrossColumnSearch extends PureComponent<
             <div className="cross-column-popup">
               Searched Columns
               <div className="cross-column-scroll">
-                {columns.map(column => (
-                  <React.Fragment key={column.name}>
-                    <Checkbox
-                      className="cross-column-checkbox"
-                      checked={
-                        invertSelection
-                          ? !selectedColumns.includes(column.name)
-                          : selectedColumns.includes(column.name)
-                      }
-                      onChange={() => this.toggleColumn(column.name)}
-                    >
-                      {column.name}
-                    </Checkbox>
+                {columns.map(column => {
+                  if (column.isProxy === true) return null;
 
-                    {column.type.substring(column.type.lastIndexOf('.') + 1)}
-                  </React.Fragment>
-                ))}
+                  return (
+                    <React.Fragment key={column.name}>
+                      <Checkbox
+                        className="cross-column-checkbox"
+                        checked={
+                          invertSelection
+                            ? !selectedColumns.includes(column.name)
+                            : selectedColumns.includes(column.name)
+                        }
+                        onChange={() => this.toggleColumn(column.name)}
+                      >
+                        {column.name}
+                      </Checkbox>
+
+                      {column.type.substring(column.type.lastIndexOf('.') + 1)}
+                    </React.Fragment>
+                  );
+                })}
               </div>
               <div className="cross-column-button-bar">
                 <button

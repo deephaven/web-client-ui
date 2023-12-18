@@ -1,50 +1,88 @@
 // Styling overrides for bootstrap
+@use 'sass:map';
 
 // Override / set color variables
-$red: #f95d84;
-$orange: #f37e3f;
-$yellow: #fcd65b;
-$green: #9edc6f;
-$blue: #76d9e4;
-$purple: #aa9af4;
-
-//Define some UI colors
-$interfacegray: #2d2a2e;
-$interfaceblue: #4878ea;
-$interfacewhite: #f0f0ee; //same as gray-200
-$interfaceblack: #1a171a;
+$red: var(--dh-color-visual-red);
+$orange: var(--dh-color-visual-orange);
+$yellow: var(--dh-color-visual-yellow);
+$green: var(--dh-color-visual-green);
+$blue: var(--dh-color-visual-blue);
+$purple: var(--dh-color-visual-purple);
 
 //Define our Gray scale
-$white: $interfacewhite;
-$gray-100: #fcfcfa;
-$gray-200: $interfacewhite;
-$gray-300: #c0bfbf;
-$gray-400: #929192;
-$gray-500: #5b5a5c;
-$gray-600: #555356;
-$gray-700: #403e41;
-$gray-800: #373438;
-$gray-850: #322f33;
-$gray-900: #211f22;
-$black: $interfaceblack;
-$content-bg: $interfacegray;
-$background: $interfaceblack;
-$foreground: $interfacewhite;
+$gray-100: var(--dh-color-gray-900, #fcfcfa);
+$gray-200: var(--dh-color-gray-800);
+$gray-300: var(--dh-color-gray-700);
+$gray-400: var(--dh-color-gray-600);
+$gray-500: var(--dh-color-gray-500);
+// intentional duplicate, scale doesn't line up otherwise
+// as we have gray-850 and spectrum doesn't and it is needed
+$gray-600: var(--dh-color-gray-500);
+$gray-700: var(--dh-color-gray-400);
+$gray-800: var(--dh-color-gray-300);
+$gray-850: var(--dh-color-gray-200);
+$gray-900: var(--dh-color-gray-75);
+$black: var(--dh-color-black, #1a171a);
+$white: var(--dh-color-white, #f0f0ee);
 
-//Load colors into map
-$colors: ();
-$colors: map-merge(
-  (
-    'red': $red,
-    'orange': $orange,
-    'yellow': $yellow,
-    'green': $green,
-    'blue': $blue,
-    'purple': $purple,
-    'white': $white,
-    'black': $black,
-  ),
-  $colors
+//Define some UI colors
+$interfacegray: var(--dh-color-content-bg, #2d2a2e);
+$interfaceblue: var(--dh-color-accent-bg);
+$interfacewhite: $white;
+$interfaceblack: $black;
+$content-bg: var(--dh-color-content-bg, #2d2a2e);
+$background: var(--dh-color-bg);
+$foreground: var(--dh-color-fg);
+
+// Extend default Bootstrap $grays map
+$grays-custom: (
+  '850': $gray-850,
+);
+$grays: () !default;
+$grays: map-merge($grays, $grays-custom);
+
+// Extend default Bootstrap $colors map
+$colors-custom: (
+  'black': $black,
+);
+$colors: () !default;
+$colors: map-merge($colors, $colors-custom);
+
+// Override default Bootstrap $theme-colors map by mapping each key to itself.
+// These will then be re-mapped inside of `button-outline-variant` and
+// `button-outline-variant` mixins in `bootstrap_override_mixins_buttons.scss`
+$theme-colors-self-map: ();
+@each $key
+  in (
+    'primary',
+    'secondary',
+    'success',
+    'info',
+    'warning',
+    'danger',
+    'light',
+    'dark'
+  )
+{
+  $theme-colors-self-map: map.set($theme-colors-self-map, $key, $key);
+}
+$theme-colors: () !default;
+$theme-colors: map-merge($theme-colors, $theme-colors-self-map);
+
+// Used by bootstrap_override_mixins_buttons.scss to map Bootstrap colors to
+// DH semantic colors
+$bootstrap-dh-semantic-map: (
+  'primary': 'accent',
+  'secondary': 'neutral',
+  'success': 'positive',
+  'info': 'info',
+  'warning': 'notice',
+  'danger': 'negative',
+  // We shouldn't be using these, but mapping so they work with our custom
+  // `color-yiq` mixin. If we find a way to remove $light + $dark that are
+  // defined in Bootstrap _variables.scss, we should remove these
+  'light': 'neutral',
+  'dark': 'neutral',
 );
 
 //Set default colors
@@ -52,42 +90,36 @@ $body-bg: $black;
 $body-color: $interfacewhite;
 
 // Set brand colors
-$primary: $interfaceblue;
-$primary-hover: darken($primary, 8%);
-$primary-dark: mix($primary, $content-bg, 25%);
-$primary-light: scale-color($primary, $lightness: -25%);
-$secondary: $gray-500;
-$secondary-hover: darken($secondary, 8%);
+$primary: var(--dh-color-accent-bg);
+$primary-hover: var(--dh-color-accent-hover-bg);
+$primary-dark: var(--dh-color-accent-down-bg);
+$primary-light: var(--dh-color-accent-1100);
+$secondary: var(--dh-color-neutral-bg);
+$secondary-hover: var(--dh-color-neutral-hover-bg);
 $success: $green;
 $info: $yellow;
 $warning: $orange;
-$danger: $red;
-$danger-hover: darken($danger, 8%);
-$light: $gray-100;
-$mid: $gray-400; //Added a mid color, useful for input styling
-$dark: $gray-800;
-$green-dark: scale-color($green, $lightness: -45%, $saturation: -10%);
+$danger: var(--dh-color-negative-bg);
+$danger-hover: var(--dh-color-negative-hover-bg);
+// We really don't want to use $light or $dark variables, but Bootstrap defines
+// them in _variables.scss. Explicitly setting them to ensure we are in control
+// of their values. If we can find a way to remove them, we should
+$light: var(--dh-color-gray-light);
+$dark: var(--dh-color-gray-dark);
+// Bootstrap doesn't define $mid, and we want to move away from this particular
+// semantic. Should be deleted by #1635
+$mid: var(--dh-color-gray-mid);
 
-$theme-colors: () !default;
-$theme-colors: map-merge(
-  (
-    'primary': $primary,
-    'primary-hover': $primary-hover,
-    'primary-light': $primary-light,
-    'primary-dark': $primary-dark,
-    'secondary': $secondary,
-    'success': $success,
-    'info': $info,
-    'warning': $warning,
-    'danger': $danger,
-    'light': $light,
-    'dark': $dark,
-    'mid': $mid,
-    'content-bg': $interfacegray,
-    'background': $interfaceblack,
-    'foreground': $interfacewhite,
-  ),
-  $theme-colors
+$semantic-colors: (
+  'primary-hover': $primary-hover,
+  'primary-light': $primary-light,
+  'primary-dark': $primary-dark,
+  'mid': $mid,
+  'content-bg': $interfacegray,
+  'background': $interfaceblack,
+  'foreground': $interfacewhite,
+  'secondary-hover': $secondary-hover,
+  'danger-hover': $danger-hover,
 );
 
 $component-active-bg: $primary;
@@ -114,21 +146,15 @@ $headings-font-weight: 400;
 $text-muted: $gray-400;
 
 //Style Selection highlight color
-//so browsers add alpha to your color by default, ignoring opacity 1
-//by setting rgba with 0.99 it tricks browser into thinking there is alpha applied
-$text-select-color: $primary-hover;
-$text-select-color-editor: lighten(
-  $gray-700,
-  15%
-); //we lighten it abit to account for that 0.01 loss, and because it needs some anyways.
+$text-select-color: var(--dh-color-text-highlight);
 
 //Grid variables, same value as default just making easily accessible
 $grid-gutter-width: 30px;
 
 //Visual Overrides
 $border-radius: 4px;
-$box-shadow: 0 0.1rem 1rem rgba($black, 45%); //because our UI is so dark, we need darker default shadows
-$box-shadow-900: 0 0.1rem 1rem rgba(0, 0, 0, 45%); //darkest shadow for $black popups over $black UI
+$box-shadow: 0 0.1rem 1rem hsla(var(--dh-color-black-hsl), 0.45); //because our UI is so dark, we need darker default shadows
+$box-shadow-900: 0 0.1rem 1rem hsla(var(--dh-color-true-black-hsl), 0.45); //darkest shadow for $black popups over $black UI
 
 //Override Btn
 $btn-border-radius: 4rem;
@@ -139,28 +165,34 @@ $btn-transition:
   border-color 0.12s ease-in-out,
   box-shadow 0.12s ease-in-out; //default 0.15 is too long
 $btn-border-width: 2px;
+$btn-font-weight: var(--spectrum-global-font-weight-bold);
 
 //Override Inputs
-$input-bg: $gray-600;
-$input-disabled-bg: $gray-800;
-$input-color: $foreground;
-$input-border-color: $gray-400;
-$input-placeholder-color: $gray-400;
-$input-focus-border-color: rgba($primary, 85%);
+$input-bg: var(--dh-color-input-bg);
+$input-disabled-bg: var(--dh-color-input-disabled-bg);
+$input-color: var(--dh-color-input-fg);
+$input-border-color: var(--dh-color-input-border);
+$input-placeholder-color: var(--dh-color-input-placeholder);
+$input-focus-border-color: var(--dh-color-input-focus-border);
 
 $input-btn-focus-width: 0.2rem;
-$input-btn-focus-color: rgba($component-active-bg, 35%);
+$input-btn-focus-color: hsla(var(--dh-color-accent-hsl), 0.35);
 $input-btn-focus-box-shadow: 0 0 0 $input-btn-focus-width $input-btn-focus-color;
 
 //checkbox
 $custom-control-indicator-bg: $gray-600;
+$custom-control-indicator-active-bg: var(--dh-color-accent-1100);
 $custom-control-indicator-bg-size: 75% 75%;
 $custom-control-indicator-disabled-bg: $gray-800;
 $custom-control-indicator-checked-disabled-bg: $gray-800;
 $custom-control-label-disabled-color: $gray-400;
 
-//Custom Select
-$custom-select-indicator-color: $gray-400;
+// The $custom-select-indicator variable is used by Bootstrap to provide the
+// icon for the select dropdown. Inline svgs can't use CSS variables, so we hard
+// code the color to #929192 (the default value of --dh-color-gray-600). PR #1651
+// overrides this icon altogether for known dropdowns, so technically we may not
+// need this, but it's here in case there are any remaining instances.
+$custom-select-indicator-color: #929192;
 $custom-select-bg-size: 16px 16px;
 //dhSort icon encoded
 $custom-select-indicator: str-replace(
@@ -169,7 +201,7 @@ $custom-select-indicator: str-replace(
   '%23'
 );
 $custom-select-focus-box-shadow: $input-btn-focus-box-shadow;
-$custom-select-disabled-color: darken($gray-400, 5%);
+$custom-select-disabled-color: $gray-500;
 $custom-select-disabled-bg: $gray-800;
 
 //modal
@@ -178,15 +210,15 @@ $modal-content-border-width: 0;
 $modal-md: 550px;
 
 // Toast notification
-$toast-bg: $primary-dark;
-$toast-color: $foreground;
-$toast-error-bg: mix($danger, $content-bg, 15%);
-$toast-error-color: $foreground;
+$toast-bg: var(--dh-color-accent-100);
+$toast-color: var(--dh-color-text);
+$toast-error-bg: var(--dh-color-negative-bg);
+$toast-error-color: var(--dh-color-text);
 
 //tooltips
-$tooltip-bg: $gray-700;
-$tooltip-color: $foreground;
-$tooltip-box-shadow: 0 0.1rem 1.5rem 0.1rem rgba($black, 80%);
+$tooltip-bg: var(--dh-color-tooltip-bg);
+$tooltip-color: var(--dh-color-tooltip-fg);
+$tooltip-box-shadow: 0 0.1rem 1.5rem 0.1rem var(--dh-color-tooltip-box-shadow);
 
 //drowdowns
 $dropdown-bg: $gray-600;
@@ -199,7 +231,7 @@ $dropdown-divider-bg: $gray-700;
 $contextmenu-bg: $gray-600;
 $contextmenu-color: $foreground;
 $contextmenu-disabled-color: $text-muted;
-$contextmenu-keyboard-selected-bg: rgba($primary, 50%);
+$contextmenu-keyboard-selected-bg: hsla(var(--dh-color-accent-hsl), 0.5);
 $contextmenu-selected-bg: $primary;
 $contextmenu-selected-color: $foreground;
 
@@ -223,9 +255,21 @@ $transition-long: 0.3s;
 $transition-slow: 0.6s;
 
 //form-validation icon, uses vsWarning icon encoded here as svg
-$form-feedback-icon-invalid-color: theme-color('danger');
+$form-feedback-icon-invalid-color: $danger;
 $form-feedback-icon-invalid: str-replace(
   url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cg fill='none'%3E%3Cg fill='#{$form-feedback-icon-invalid-color}'%3E%3Cpath d='M7.56 1h.88l6.54 12.26-.44.74H1.44L1 13.26 7.56 1zM8 2.28 2.28 13H13.7L8 2.28zM8.625 12v-1h-1.25v1h1.25zm-1.25-2V6h1.25v4h-1.25z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E "),
   '#',
   '%23'
 );
+
+// This section of variables is not consumed directly by DH, but they need to be
+// defined for sass to compile _variables
+$table-dark-bg: $gray-800;
+$table-dark-accent-bg: var(--dh-color-highlight-hover);
+$table-dark-hover-bg: var(--dh-color-highlight-active);
+$table-dark-border-color: $gray-700;
+$popover-bg: var(--dh-color-tooltip-bg);
+$popover-border-color: var(--dh-color-overlay-modal-bg);
+$popover-header-bg: #000;
+$popover-arrow-outer-color: var(--dh-color-dropshadow);
+$custom-range-thumb-active-bg: var(--dh-color-accent-1100);

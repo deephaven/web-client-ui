@@ -251,8 +251,8 @@ export function replaceSVGFillColor(
 /**
  * Make a copy of the given object replacing any css variable expressions
  * contained in its prop values with values resolved from the given HTML element.
- * Variables that resolve to color strings will also be normalized to rgb or
- * rgba color strings.
+ * Variables that resolve to color strings will also be normalized to 8 digit
+ * hex values (or optionally 6 digit hex if `isAlphaOptional` is true).
  *
  * Note that the browser will force a reflow when calling `getComputedStyle` if
  * css properties have changed. In order to avoid a reflow for every property
@@ -265,10 +265,13 @@ export function replaceSVGFillColor(
  * @param record An object whose values may contain css var expressions
  * @param targetElement The element to resolve css variables against. Defaults
  * to document.body
+ * @param isAlphaOptional If true, the alpha value will be dropped from resolved
+ * 8 character hex colors if it is 'ff'. Defaults to false.
  */
 export function resolveCssVariablesInRecord<T extends Record<string, string>>(
   record: T,
-  targetElement: HTMLElement = document.body
+  targetElement: HTMLElement = document.body,
+  isAlphaOptional = false
 ): T {
   const perfStart = performance.now();
 
@@ -295,7 +298,7 @@ export function resolveCssVariablesInRecord<T extends Record<string, string>>(
 
     const resolved = computedStyle.getPropertyValue(tmpPropKey);
 
-    return ColorUtils.normalizeCssColor(resolved);
+    return ColorUtils.normalizeCssColor(resolved, isAlphaOptional);
   };
 
   // Resolve the temporary css variables

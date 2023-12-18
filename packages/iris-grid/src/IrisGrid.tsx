@@ -175,20 +175,21 @@ import { ChartBuilderSettings } from './sidebar/ChartBuilder';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import { UIRollupConfig } from './sidebar/RollupRows';
 import {
-  ReadonlyAdvancedFilterMap,
+  Action,
+  AdvancedFilterMap,
+  AdvancedFilterOptions,
   ColumnName,
-  ReadonlyQuickFilterMap,
+  InputFilter,
+  OperationMap,
+  OptionItem,
+  PendingDataErrorMap,
+  PendingDataMap,
+  QuickFilterMap,
+  ReadonlyAdvancedFilterMap,
   ReadonlyAggregationMap,
   ReadonlyOperationMap,
-  Action,
-  OptionItem,
+  ReadonlyQuickFilterMap,
   UITotalsTableConfig,
-  InputFilter,
-  PendingDataMap,
-  AdvancedFilterOptions,
-  PendingDataErrorMap,
-  QuickFilterMap,
-  OperationMap,
 } from './CommonTypes';
 import ColumnHeaderGroup from './ColumnHeaderGroup';
 import { IrisGridThemeContext } from './IrisGridThemeProvider';
@@ -1638,19 +1639,31 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     });
   }
 
-  removeColumnFilter(modelColumn: ModelIndex): void {
+  removeColumnFilter(modelRange: ModelIndex | BoundedAxisRange): void {
     this.startLoading('Filtering...', true);
+
+    const clearRange: BoundedAxisRange = Array.isArray(modelRange)
+      ? modelRange
+      : [modelRange, modelRange];
 
     this.setState(
       ({ advancedFilters, quickFilters }: Partial<IrisGridState>) => {
-        const newAdvancedFilters = advancedFilters
+        const newAdvancedFilters: AdvancedFilterMap = advancedFilters
           ? new Map(advancedFilters)
           : new Map();
-        const newQuickFilters = quickFilters
+        const newQuickFilters: QuickFilterMap = quickFilters
           ? new Map(quickFilters)
           : new Map();
-        newQuickFilters.delete(modelColumn);
-        newAdvancedFilters.delete(modelColumn);
+        newAdvancedFilters.forEach((_, column) => {
+          if (column >= clearRange[0] && column <= clearRange[1]) {
+            newAdvancedFilters.delete(column);
+          }
+        });
+        newQuickFilters.forEach((_, column) => {
+          if (column >= clearRange[0] && column <= clearRange[1]) {
+            newQuickFilters.delete(column);
+          }
+        });
 
         return {
           quickFilters: newQuickFilters,

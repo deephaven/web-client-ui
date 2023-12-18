@@ -1,8 +1,10 @@
 /* eslint-disable class-methods-use-this */
 import type { Event, EventTarget } from 'event-target-shim';
 import {
+  BoundedAxisRange,
   DataBarGridModel,
   DataBarOptions,
+  GridCell,
   GridModel,
   GridRange,
   GridThemeType,
@@ -32,6 +34,21 @@ import {
   PendingDataErrorMap,
 } from './CommonTypes';
 import ColumnHeaderGroup from './ColumnHeaderGroup';
+
+export type DisplayColumn = Column & {
+  /**
+   * Name to display with the column.
+   * The `name` property on `Column` is a unique identifier and must be a valid Java identifier,
+   * whereas `displayName` can be any string and does not need to be unique.
+   */
+  displayName?: string;
+
+  /**
+   * Whether this column is a proxy column for other columns or not.
+   * If it's a proxy column, it may not appear in some lists.
+   */
+  isProxy?: boolean;
+};
 
 type IrisGridModelEventNames =
   (typeof IrisGridModel.EVENT)[keyof typeof IrisGridModel.EVENT];
@@ -133,7 +150,23 @@ abstract class IrisGridModel<
    * Gets the columns for this model
    * @returns All columns in the model
    */
-  abstract get columns(): readonly Column[];
+  abstract get columns(): readonly DisplayColumn[];
+
+  /**
+   * Retrieve the grouped columns for this model
+   * @returns The columns that are grouped
+   */
+  get groupedColumns(): readonly DisplayColumn[] {
+    return EMPTY_ARRAY;
+  }
+
+  /**
+   * Gets the columns for the model before any transformations (such as rollups) are applied.
+   * @returns All original columns in the model.
+   */
+  get originalColumns(): readonly DisplayColumn[] {
+    return this.columns;
+  }
 
   /**
    * Gets the column index for this model
@@ -143,26 +176,42 @@ abstract class IrisGridModel<
   abstract getColumnIndexByName(name: string): ModelIndex | undefined;
 
   /**
-   * Gets the columns for the model before any transformations (such as rollups) are applied.
-   * @returns All original columns in the model.
+   * Retrieve the source cell for a given cell. Returns something different if the cell is a proxied cell
+   * that retrieves data from another cell.
+   * @param column Column to get the source for
+   * @param row Row to get the source for
+   * @returns Source cell where the data is coming from
    */
-  get originalColumns(): readonly Column[] {
-    return this.columns;
+  sourceForCell(column: ModelIndex, row: ModelIndex): GridCell {
+    return { column, row };
   }
 
-  abstract get initialMovedColumns(): readonly MoveOperation[];
+  /**
+   * Retrieve the range of columns to clear filters on for a given column.
+   * @param column Column to get the range of filters to clear.
+   * @returns Axis range of the column filters to clear, or `null` if this should not have a clear filter option.
+   */
+  getClearFilterRange(column: ModelIndex): BoundedAxisRange | null {
+    if (this.isFilterable(column)) {
+      return [column, column];
+    }
+    return null;
+  }
+
+  /** List of column movements defined by the model. Used as initial movements for IrisGrid */
+  get initialMovedColumns(): readonly MoveOperation[] {
+    return EMPTY_ARRAY;
+  }
 
   /** List of row movements defined by the model. Used as initial movements for IrisGrid */
-  abstract get initialMovedRows(): readonly MoveOperation[];
+  get initialMovedRows(): readonly MoveOperation[] {
+    return EMPTY_ARRAY;
+  }
 
   /** List of column header groups defined by the model */
-  abstract get initialColumnHeaderGroups(): readonly ColumnHeaderGroup[];
-
-  /**
-   * Retrieve the grouped columns for this model
-   * @returns The columns that are grouped
-   */
-  abstract get groupedColumns(): readonly Column[];
+  get initialColumnHeaderGroups(): readonly ColumnHeaderGroup[] {
+    return EMPTY_ARRAY;
+  }
 
   /**
    * @param column The model column index

@@ -20,7 +20,7 @@ class MockChartModel extends ChartModel {
 
   static smoothing = 1.5;
 
-  static _theme: ChartTheme;
+  static _theme: ChartTheme | null;
 
   static get theme(): ChartTheme {
     /* eslint-disable no-underscore-dangle */

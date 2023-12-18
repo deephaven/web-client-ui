@@ -473,6 +473,12 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     return this.originalModel.partitionColumns;
   }
 
+  sourceForCell: IrisGridModel['sourceForCell'] = (...args) =>
+    this.model.sourceForCell(...args);
+
+  getClearFilterRange: IrisGridModel['getClearFilterRange'] = (...args) =>
+    this.model.getClearFilterRange(...args);
+
   get description(): string {
     return this.model.description;
   }

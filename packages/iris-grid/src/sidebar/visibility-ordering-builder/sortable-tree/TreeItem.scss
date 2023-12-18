@@ -31,7 +31,7 @@ $depth-margin: calc(
     }
 
     &.isSelected {
-      background-color: rgba($primary, 0.4);
+      background-color: hsla(var(--dh-color-accent-hsl), 0.4);
 
       &:hover {
         background-color: $primary;
@@ -58,7 +58,7 @@ $depth-margin: calc(
     .item-count {
       padding: 0 $spacer-2;
       border-radius: 1rem;
-      background-color: rgba($foreground, 0.25);
+      background-color: hsla(var(--dh-color-fg-hsl), 0.25);
       margin-right: $spacer-1;
     }
   }

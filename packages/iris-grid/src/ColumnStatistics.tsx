@@ -3,15 +3,12 @@ import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, CopyButton, LoadingSpinner } from '@deephaven/components';
 import { dhFreeze, dhRefresh, dhSortSlash, vsLock } from '@deephaven/icons';
-import type {
-  Column,
-  ColumnStatistics as APIColumnStatistics,
-} from '@deephaven/jsapi-types';
+import type { ColumnStatistics as APIColumnStatistics } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
 import { isExpandableGridModel } from '@deephaven/grid';
 import './ColumnStatistics.scss';
-import IrisGridModel from './IrisGridModel';
+import IrisGridModel, { DisplayColumn } from './IrisGridModel';
 
 const log = Log.module('ColumnStatistics');
 const STATS_LABEL_OVERRIDES: Record<string, string> = {
@@ -26,14 +23,14 @@ interface Statistic {
 }
 
 interface ColumnStatisticsProps {
-  column: Column;
+  column: DisplayColumn;
   model: IrisGridModel;
   onStatistics: () => void;
 }
 interface ColumnStatisticsState {
   error: unknown;
   loading: boolean;
-  statistics: Statistic[] | null;
+  statistics: readonly Statistic[] | null;
   numRows: number;
 }
 
@@ -84,7 +81,7 @@ class ColumnStatistics extends Component<
   cancelablePromise: CancelablePromise<APIColumnStatistics> | null;
 
   maybeGenerateStatistics(): void {
-    const { model } = this.props;
+    const { column, model } = this.props;
 
     const numRows =
       model.rowCount -
@@ -92,7 +89,7 @@ class ColumnStatistics extends Component<
       model.floatingBottomRowCount -
       model.floatingTopRowCount;
     this.setState({ numRows });
-    if (!model.isColumnStatisticsAvailable) {
+    if (!model.isColumnStatisticsAvailable || column.isProxy === true) {
       this.setState({ loading: false });
     } else if (numRows < ColumnStatistics.AUTO_GENERATE_LIMIT) {
       this.handleGenerateStatistics();
@@ -200,7 +197,7 @@ class ColumnStatistics extends Component<
     return (
       <div className="column-statistics">
         <div className="column-statistics-title">
-          {column.name}
+          {column.displayName ?? column.name}
           <span className="column-statistics-type">&nbsp;({columnType})</span>
           <CopyButton
             className="column-statistics-copy"

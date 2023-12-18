@@ -2,7 +2,7 @@
 @import '../scss/util.scss';
 
 $cs-option-btn-color: $dropdown-link-color;
-$cs-option-keyboard-selected-bg: rgba($primary, 0.5);
+$cs-option-keyboard-selected-bg: var(--dh-color-keyboard-selected-bg);
 $cs-option-hover-bg: $dropdown-link-hover-bg;
 $cs-option-hover-color: $dropdown-link-hover-color;
 
@@ -17,6 +17,7 @@ $cs-option-hover-color: $dropdown-link-hover-color;
     border-radius: $border-radius;
     border: $input-border-width solid $input-border-color;
     min-width: 14rem;
+    font-weight: $font-weight-normal;
 
     .cs-caret {
       @include caret-icon;

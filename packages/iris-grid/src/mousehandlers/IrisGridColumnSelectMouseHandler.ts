@@ -6,6 +6,7 @@ import {
 } from '@deephaven/grid';
 import type { Column } from '@deephaven/jsapi-types';
 import { IrisGrid } from '../IrisGrid';
+import { DisplayColumn } from '../IrisGridModel';
 
 /**
  * Handles interaction with tables when the Linker tool is active
@@ -25,8 +26,8 @@ class IrisGridColumnSelectMouseHandler extends GridMouseHandler {
     return isSelectingColumn;
   }
 
-  private isValidColumn(tableColumn: Column | null): boolean {
-    if (tableColumn == null) {
+  private isValidColumn(tableColumn: DisplayColumn | null): boolean {
+    if (tableColumn == null || tableColumn.isProxy === true) {
       return false;
     }
 
