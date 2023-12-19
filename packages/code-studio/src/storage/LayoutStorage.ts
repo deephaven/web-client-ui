@@ -1,5 +1,6 @@
 import type { ItemConfigType } from '@deephaven/golden-layout';
 import { FilterSet, Link } from '@deephaven/dashboard-core-plugins';
+import { VariableDefinition } from '@deephaven/jsapi-types';
 
 /**
  * Have a different version to support legacy layout exports
@@ -10,6 +11,7 @@ export type ExportedLayoutV2 = {
   filterSets: FilterSet[];
   links: Link[];
   layoutConfig: ItemConfigType[];
+  openWidgets: VariableDefinition[];
   version: 2;
 };
 

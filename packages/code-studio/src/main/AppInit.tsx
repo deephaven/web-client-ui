@@ -166,6 +166,7 @@ function AppInit(props: AppInitProps): JSX.Element {
           const dashboardData = {
             filterSets: data.filterSets,
             links: data.links,
+            openWidgets: data.openWidgets,
           };
 
           setApi(api);

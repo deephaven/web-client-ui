@@ -114,6 +114,8 @@ export type AppDashboardData = {
   filterSets: FilterSet[];
   links: Link[];
   openedMap: Map<string | string[], Component>;
+  // Optional since openWidgets don't exist in old layouts
+  openWidgets?: VariableDefinition[];
 };
 
 interface AppMainContainerProps {
@@ -240,6 +242,7 @@ export class AppMainContainer extends Component<
   componentWillUnmount(): void {
     this.deinitWidgets();
     this.stopListeningForDisconnect();
+    this.stopListeningForWidgetEvents();
 
     window.removeEventListener(
       'beforeunload',
@@ -266,7 +269,7 @@ export class AppMainContainer extends Component<
       log.debug('Got updates', updates);
       this.setState(({ widgets }) => {
         const { updated, created, removed } = updates;
-
+        const { dashboardData } = this.props;
         // Remove from the array if it's been removed OR modified. We'll add it back after if it was modified.
         const widgetsToRemove = [...updated, ...removed];
         const newWidgets = widgets.filter(
@@ -279,6 +282,17 @@ export class AppMainContainer extends Component<
         widgetsToAdd.forEach(toAdd => {
           if (toAdd.name != null && toAdd.name !== '') {
             newWidgets.push(toAdd);
+          }
+        });
+
+        // Open widgets from the openWidgets list
+        created.forEach(widget => {
+          if (
+            dashboardData.openWidgets?.find(
+              ({ title }) => widget.title === title
+            ) != null
+          ) {
+            this.openWidget(widget);
           }
         });
 
@@ -320,6 +334,17 @@ export class AppMainContainer extends Component<
         fileMetadata,
         true
       );
+    }
+  }
+
+  handleWidgetOpen({ widget }: { widget: VariableDefinition }): void {
+    const { updateDashboardData, dashboardData } = this.props;
+    const { openWidgets = [] } = dashboardData;
+    log.debug('handleWidgetOpen', widget, openWidgets);
+    if (openWidgets.find(({ title }) => widget.title === title) == null) {
+      updateDashboardData(DEFAULT_DASHBOARD_ID, {
+        openWidgets: [...openWidgets, widget],
+      });
     }
   }
 
@@ -419,12 +444,14 @@ export class AppMainContainer extends Component<
     const { updateWorkspaceData } = this.props;
 
     // Only save the data that is serializable/we want to persist to the workspace
-    const { closed, filterSets, links } = data;
-    updateWorkspaceData({ closed, filterSets, links });
+    const { closed, filterSets, links, openWidgets } = data;
+    updateWorkspaceData({ closed, filterSets, links, openWidgets });
   }
 
   handleGoldenLayoutChange(goldenLayout: GoldenLayout): void {
+    this.stopListeningForWidgetEvents();
     this.goldenLayout = goldenLayout;
+    this.startListeningForWidgetEvents();
   }
 
   handleLayoutConfigChange(layoutConfig?: DashboardLayoutConfig): void {
@@ -479,6 +506,7 @@ export class AppMainContainer extends Component<
           filterSets: FilterSet[];
           links: Link[];
           layoutConfig: ItemConfigType[];
+          openWidgets: VariableDefinition[];
         }
       );
 
@@ -573,7 +601,7 @@ export class AppMainContainer extends Component<
    */
   async resetLayout(): Promise<void> {
     const { layoutStorage, session } = this.props;
-    const { filterSets, layoutConfig, links } =
+    const { filterSets, layoutConfig, links, openWidgets } =
       await UserLayoutUtils.getDefaultLayout(
         layoutStorage,
         session !== undefined
@@ -584,6 +612,7 @@ export class AppMainContainer extends Component<
     updateDashboardData(DEFAULT_DASHBOARD_ID, {
       filterSets,
       links,
+      openWidgets,
     });
   }
 
@@ -642,6 +671,14 @@ export class AppMainContainer extends Component<
       dh.CoreClient.EVENT_RECONNECT_AUTH_FAILED,
       this.handleReconnectAuthFailed
     );
+  }
+
+  startListeningForWidgetEvents(): void {
+    this.goldenLayout?.eventHub.on(PanelEvent.OPEN, this.handleWidgetOpen);
+  }
+
+  stopListeningForWidgetEvents(): void {
+    this.goldenLayout?.eventHub.off(PanelEvent.OPEN, this.handleWidgetOpen);
   }
 
   hydrateDefault(

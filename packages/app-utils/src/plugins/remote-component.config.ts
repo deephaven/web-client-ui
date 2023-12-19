@@ -16,6 +16,7 @@ import * as DeephavenIcons from '@deephaven/icons';
 import * as DeephavenIrisGrid from '@deephaven/iris-grid';
 import * as DeephavenJsapiBootstrap from '@deephaven/jsapi-bootstrap';
 import * as DeephavenJsapiComponents from '@deephaven/jsapi-components';
+import * as DashboardCorePlugins from '@deephaven/dashboard-core-plugins';
 import * as DeephavenJsapiUtils from '@deephaven/jsapi-utils';
 import DeephavenLog from '@deephaven/log';
 import * as DeephavenReactHooks from '@deephaven/react-hooks';
@@ -32,6 +33,7 @@ export const resolve = {
   '@deephaven/chart': DeephavenChart,
   '@deephaven/components': DeephavenComponents,
   '@deephaven/dashboard': DeephavenDashboard,
+  '@deephaven/dashboard-core-plugins': DashboardCorePlugins,
   '@deephaven/icons': DeephavenIcons,
   '@deephaven/iris-grid': DeephavenIrisGrid,
   '@deephaven/jsapi-bootstrap': DeephavenJsapiBootstrap,

@@ -7,6 +7,7 @@ import {
   LogPanel,
 } from '@deephaven/dashboard-core-plugins';
 import type { ItemConfigType } from '@deephaven/golden-layout';
+import { VariableDefinition } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import LayoutStorage, {
   ExportedLayout,
@@ -78,6 +79,7 @@ export const DEFAULT_LAYOUT_CONFIG: ExportedLayoutV2 = {
   ],
   links: [],
   filterSets: [],
+  openWidgets: [],
   version: 2,
 };
 
@@ -85,6 +87,7 @@ export const DEFAULT_LAYOUT_CONFIG_NO_CONSOLE: ExportedLayoutV2 = {
   layoutConfig: [],
   links: [],
   filterSets: [],
+  openWidgets: [],
   version: 2,
 };
 
@@ -98,6 +101,7 @@ export function normalizeLayout(layout: ExportedLayout): ExportedLayoutV2 {
       layoutConfig,
       links: [],
       filterSets: [],
+      openWidgets: [],
       version: 2,
     };
   }
@@ -141,12 +145,14 @@ export function exportLayout(data: {
   filterSets: FilterSet[];
   links: Link[];
   layoutConfig: ItemConfigType[];
+  openWidgets: VariableDefinition[];
 }): ExportedLayoutV2 {
-  const { filterSets, layoutConfig, links } = data;
+  const { filterSets, layoutConfig, links, openWidgets } = data;
   const exportedLayout: ExportedLayoutV2 = {
     filterSets,
     layoutConfig,
     links,
+    openWidgets,
     version: 2,
   };
   return exportedLayout;

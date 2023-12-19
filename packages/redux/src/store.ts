@@ -63,6 +63,7 @@ export interface WorkspaceData {
   layoutConfig: unknown[];
   links: unknown;
   settings: WorkspaceSettings;
+  openWidgets?: unknown[];
 }
 
 export interface CustomizableWorkspaceData
