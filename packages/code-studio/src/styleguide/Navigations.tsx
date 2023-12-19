@@ -2,8 +2,59 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { vsFile, dhTruck, vsListUnordered } from '@deephaven/icons';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { Menu, Page, Stack } from '@deephaven/components';
+import {
+  Menu,
+  NavTabList,
+  Page,
+  Stack,
+  type NavTabItem,
+} from '@deephaven/components';
 import { pseudoRandomWithSeed, sampleSectionIdAndClasses } from './utils';
+
+function NavTabListExample({
+  count = 5,
+  activeKey: activeKeyProp = '',
+}: {
+  count?: number;
+  activeKey?: string;
+}) {
+  const [activeKey, setActiveKey] = useState(activeKeyProp);
+  const [tabs, setTabs] = useState(() => {
+    const tabItems: NavTabItem[] = [];
+    for (let i = 0; i < count; i += 1) {
+      tabItems.push({ key: `${i}`, title: `Tab ${i}`, isClosable: true });
+    }
+    return tabItems;
+  });
+
+  const handleReorder = useCallback((from: number, to: number) => {
+    setTabs(t => {
+      const newTabs = [...t];
+      const [removed] = newTabs.splice(from, 1);
+      newTabs.splice(to, 0, removed);
+      return newTabs;
+    });
+  }, []);
+
+  const handleSelect = useCallback((key: string) => {
+    setActiveKey(key);
+  }, []);
+
+  const handleClose = useCallback((key: string) => {
+    setTabs(t => t.filter(tab => tab.key !== key));
+  }, []);
+
+  return (
+    <NavTabList
+      tabs={tabs}
+      activeKey={activeKey}
+      onSelect={handleSelect}
+      onReorder={handleReorder}
+      onClose={handleClose}
+      isReorderAllowed
+    />
+  );
+}
 
 enum MENU_ITEM_TYPE {
   SUBMENU = 'SUBMENU',
@@ -208,6 +259,12 @@ function Navigations(): JSX.Element {
   return (
     <div {...sampleSectionIdAndClasses('navigations')}>
       <h2 className="ui-title">Navigations</h2>
+      <div style={{ marginBottom: '1rem' }}>
+        <NavTabListExample count={100} activeKey="15" />
+      </div>
+      <div style={{ marginBottom: '1rem' }}>
+        <NavTabListExample />
+      </div>
       <div className="navigations">
         <Stack>{stack}</Stack>
       </div>
