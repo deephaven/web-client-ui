@@ -422,6 +422,16 @@ class ChartUtils {
   }
 
   /**
+   * Get the axis type map for the figure provided
+   * @param figure Figure to get the type map for
+   * @returns Axis type map for the figure provided
+   */
+  static getAxisTypeMap(figure: Figure): AxisTypeMap {
+    const axes = ChartUtils.getAllAxes(figure);
+    return ChartUtils.groupArray(axes, 'type');
+  }
+
+  /**
    * Retrieve the chart that contains the passed in series from the figure
    * @param figure The figure to retrieve the chart from
    * @param series The series to get the chart for
