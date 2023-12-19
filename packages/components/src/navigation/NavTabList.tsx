@@ -12,6 +12,7 @@ import { useResizeObserver } from '@deephaven/react-hooks';
 import DragUtils from '../DragUtils';
 import Button from '../Button';
 import NavTab from './NavTab';
+import './NavTabList.scss';
 
 // mouse hold timeout to act as hold instead of click
 const CLICK_TIMEOUT = 500;
@@ -295,7 +296,10 @@ function NavTabList({
     // Needs to be in a useEffect so the ref is updated
     function scrollActiveTabIntoView() {
       if (activeTabRef.current != null) {
-        activeTabRef.current.scrollIntoView({ inline: 'nearest' });
+        activeTabRef.current.scrollIntoView({
+          block: 'nearest',
+          inline: 'nearest',
+        });
       }
     },
     [activeKey]

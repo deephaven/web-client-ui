@@ -1,0 +1,166 @@
+@import '../../scss/custom.scss';
+
+$tab-height: 32px;
+$tab-drag-border-width: 1px;
+$tab-font-size: 1rem;
+
+$tab-link-side-padding: 24px;
+$tab-link-underline-spacing: 6px;
+
+$tab-link-hover-underline-color: $gray-400;
+
+$tab-link-active-color: $gray-200;
+$tab-link-active-underline-color: var(--dh-color-accent-bg);
+
+$tab-link-active-hover-underline-color: var(--dh-color-accent-bg);
+
+$tab-button-hover-color: $gray-200;
+$tab-button-separator-color: $gray-600;
+
+$tab-control-btn-offset: -8px;
+
+.nav-container {
+  display: flex;
+  flex-shrink: 0;
+
+  .nav-tabs {
+    --dragging-ant-color: $gray-300;
+
+    border: none;
+    height: $tab-height;
+    font-size: $tab-font-size;
+    flex-wrap: nowrap;
+    overflow-x: hidden;
+    position: relative;
+
+    &.dragging {
+      @include ants-base($gray-300, $background);
+    }
+
+    .btn-nav-tab {
+      // border: $tab-drag-border-width solid transparent;
+      line-height: $tab-height - $tab-drag-border-width * 2; // subtract top and bottom borders, and focus border
+      width: auto;
+      max-width: 200px;
+      overflow: hidden;
+      padding: 0 $tab-link-side-padding;
+      position: relative;
+      text-overflow: ellipsis;
+      user-select: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+      background: none;
+      background-clip: padding-box;
+
+      .btn-nav-tab-close {
+        position: absolute;
+        line-height: $tab-font-size;
+        right: 0.25rem;
+        bottom: 6px;
+        padding: 2px 1px;
+        opacity: 0;
+        transition: opacity $transition ease-out;
+
+        &:hover {
+          color: $tab-button-hover-color;
+        }
+
+        &:focus {
+          opacity: 1;
+          color: $tab-button-hover-color;
+        }
+      }
+
+      &::before,
+      &::after {
+        content: '';
+        position: absolute;
+        height: 1px;
+        left: $tab-link-side-padding;
+        right: $tab-link-side-padding;
+        bottom: $tab-link-underline-spacing;
+        transition: all $transition-mid ease-out;
+      }
+
+      //hover line is drawn as a before element
+      &::before {
+        background: transparent;
+        transform: translateY($tab-link-underline-spacing);
+      }
+
+      //active is drawn animated overtop as after element
+      &::after {
+        background: $tab-link-active-underline-color;
+        transform: scaleX(0);
+      }
+
+      &:focus {
+        // these seem like something that shouldn't have a regular focus state
+        box-shadow: none;
+        border-color: transparent;
+        &::before {
+          box-shadow: 0 1px 0 1px $input-btn-focus-color;
+        }
+      }
+
+      &:hover,
+      &:focus {
+        text-decoration: none;
+
+        .btn-nav-tab-close {
+          opacity: 1;
+        }
+
+        &::before {
+          background: $tab-link-hover-underline-color;
+          transform: translateY(0);
+        }
+      }
+
+      &.active {
+        color: $tab-link-active-color;
+
+        .btn-nav-tab-close {
+          opacity: 1;
+        }
+
+        &::after {
+          transform: scaleX(1);
+        }
+        &::before {
+          transform: translateY(0);
+        }
+      }
+
+      &.dragging {
+        color: $tab-link-active-color;
+        background-color: var(--dh-color-accent-down-bg);
+
+        .btn-nav-tab-close {
+          opacity: 0;
+        }
+
+        &::before,
+        &::after {
+          display: none;
+        }
+      }
+    }
+  }
+
+  .tab-controls-btn {
+    border-radius: $border-radius;
+    width: 25px;
+    padding: 0;
+    flex-shrink: 0;
+    z-index: 2;
+  }
+
+  .tab-controls-btn-left {
+    margin-right: $tab-control-btn-offset;
+  }
+
+  .tab-controls-btn-right {
+    margin-left: $tab-control-btn-offset;
+  }
+}
