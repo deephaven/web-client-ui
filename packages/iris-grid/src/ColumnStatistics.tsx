@@ -170,11 +170,14 @@ class ColumnStatistics extends Component<
       statistics == null &&
       model.isColumnStatisticsAvailable;
     const statisticElements = [];
-    const columnType = column.type.substring(column.type.lastIndexOf('.') + 1);
-    const description =
-      column.description === null
-        ? null
-        : column.description.substring(column.description.lastIndexOf(' ') + 1);
+    let columnType = column.type.substring(column.type.lastIndexOf('.') + 1);
+    let description;
+    if (column.description != null && column.description !== undefined) {
+      description = column.type.substring(column.type.lastIndexOf('.') + 1);
+      columnType = column.description.substring(
+        column.description.lastIndexOf('.') + 1
+      );
+    }
     if (statistics != null) {
       for (let i = 0; i < statistics.length; i += 1) {
         const { operation, className, value, type } = statistics[i];
@@ -204,7 +207,7 @@ class ColumnStatistics extends Component<
       <div className="column-statistics">
         <div className="column-statistics-title">
           {column.name}
-          <span className="column-statistics-type">&nbsp;({description})</span>
+          <span className="column-statistics-type">&nbsp;({columnType})</span>
           <CopyButton
             className="column-statistics-copy"
             tooltip="Copy column name"
@@ -213,7 +216,7 @@ class ColumnStatistics extends Component<
         </div>
         {description != null && (
           <div className="column-statistics-description">
-            Previewing as {columnType}
+            Previewing as {description}
           </div>
         )}
         {columnIndex != null && !model.isColumnSortable(columnIndex) && (
