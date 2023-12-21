@@ -15,6 +15,8 @@ import type Grid from './Grid';
  */
 export type GridKeyboardEvent = KeyboardEvent | React.KeyboardEvent;
 
+export type GridKeyHandlerFunctionName = 'onDown' | 'onUp';
+
 export class KeyHandler {
   order: number;
 

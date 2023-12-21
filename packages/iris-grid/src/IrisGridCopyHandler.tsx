@@ -27,14 +27,36 @@ type Values<T> = T[keyof T];
 
 type ButtonStateType = Values<typeof IrisGridCopyHandler.BUTTON_STATES>;
 
-export type CopyOperation = {
+type CommonCopyOperation = {
+  movedColumns: readonly MoveOperation[];
+  error?: string;
+};
+
+export type CopyRangesOperation = CommonCopyOperation & {
   ranges: readonly GridRange[];
   includeHeaders: boolean;
   formatValues?: boolean;
-  movedColumns: readonly MoveOperation[];
   userColumnWidths: ModelSizeMap;
-  error?: string;
 };
+
+export type CopyHeaderOperation = CommonCopyOperation & {
+  columnIndex: number;
+  columnDepth: number;
+};
+
+export type CopyOperation = CopyRangesOperation | CopyHeaderOperation;
+
+function isCopyRangesOperation(
+  copyOperation: CopyOperation
+): copyOperation is CopyRangesOperation {
+  return (copyOperation as CopyRangesOperation).ranges != null;
+}
+
+function isCopyHeaderOperation(
+  copyOperation: CopyOperation
+): copyOperation is CopyHeaderOperation {
+  return (copyOperation as CopyHeaderOperation).columnIndex != null;
+}
 
 interface IrisGridCopyHandlerProps {
   model: IrisGridModel;
@@ -75,8 +97,11 @@ class IrisGridCopyHandler extends Component<
     // Large copy operation, confirmation required
     CONFIRMATION_REQUIRED: 'CONFIRMATION_REQUIRED',
 
-    // Fetch is currently in progress
-    FETCH_IN_PROGRESS: 'FETCH_IN_PROGRESS',
+    // Fetch is currently in progress for copy ranges operation
+    FETCH_RANGES_IN_PROGRESS: 'FETCH_RANGES_IN_PROGRESS',
+
+    // Fetch is currently in progress for copy header operation
+    FETCH_HEADER_IN_PROGRESS: 'FETCH_HEADER_IN_PROGRESS',
 
     // There was an error fetching the data
     FETCH_ERROR: 'FETCH_ERROR',
@@ -111,8 +136,10 @@ class IrisGridCopyHandler extends Component<
         return `Fetched ${rowCount.toLocaleString()} rows!`;
       case IrisGridCopyHandler.COPY_STATES.FETCH_ERROR:
         return 'Unable to copy data.';
-      case IrisGridCopyHandler.COPY_STATES.FETCH_IN_PROGRESS:
+      case IrisGridCopyHandler.COPY_STATES.FETCH_RANGES_IN_PROGRESS:
         return `Fetching ${rowCount.toLocaleString()} rows for clipboard...`;
+      case IrisGridCopyHandler.COPY_STATES.FETCH_HEADER_IN_PROGRESS:
+        return 'Fetching header for clipboard...';
       case IrisGridCopyHandler.COPY_STATES.DONE:
         return 'Copied to Clipboard!';
       default:
@@ -186,7 +213,7 @@ class IrisGridCopyHandler extends Component<
       return;
     }
 
-    const { ranges, error } = copyOperation;
+    const { error } = copyOperation;
     if (error != null) {
       log.debug('Showing copy error', error);
       this.setState({
@@ -198,18 +225,23 @@ class IrisGridCopyHandler extends Component<
       return;
     }
 
-    const rowCount = GridRange.rowCount(ranges);
+    this.setState({ isShown: true, error: undefined });
 
-    this.setState({ rowCount, isShown: true, error: undefined });
+    if (isCopyRangesOperation(copyOperation)) {
+      const { ranges } = copyOperation;
+      const rowCount = GridRange.rowCount(ranges);
+      this.setState({ rowCount });
 
-    if (rowCount > IrisGridCopyHandler.NO_PROMPT_THRESHOLD) {
-      this.setState({
-        buttonState: IrisGridCopyHandler.BUTTON_STATES.COPY,
-        copyState: IrisGridCopyHandler.COPY_STATES.CONFIRMATION_REQUIRED,
-      });
-    } else {
-      this.startFetch();
+      if (rowCount > IrisGridCopyHandler.NO_PROMPT_THRESHOLD) {
+        this.setState({
+          buttonState: IrisGridCopyHandler.BUTTON_STATES.COPY,
+          copyState: IrisGridCopyHandler.COPY_STATES.CONFIRMATION_REQUIRED,
+        });
+        return;
+      }
     }
+
+    this.startFetch();
   }
 
   stopCopy(): void {
@@ -278,39 +310,58 @@ class IrisGridCopyHandler extends Component<
 
     this.setState({
       buttonState: IrisGridCopyHandler.BUTTON_STATES.FETCH_IN_PROGRESS,
-      copyState: IrisGridCopyHandler.COPY_STATES.FETCH_IN_PROGRESS,
+      copyState: IrisGridCopyHandler.COPY_STATES.FETCH_RANGES_IN_PROGRESS,
     });
 
     const { model, copyOperation } = this.props;
-    const {
-      ranges,
-      includeHeaders,
-      userColumnWidths,
-      movedColumns,
-      formatValues,
-    } = copyOperation;
-    log.debug('startFetch', ranges);
 
-    const hiddenColumns = IrisGridUtils.getHiddenColumns(userColumnWidths);
-    let modelRanges = GridUtils.getModelRanges(ranges, movedColumns);
-    if (hiddenColumns.length > 0) {
-      const subtractRanges = hiddenColumns.map(GridRange.makeColumn);
-      modelRanges = GridRange.subtractRangesFromRanges(
-        modelRanges,
-        subtractRanges
+    if (isCopyHeaderOperation(copyOperation)) {
+      const { columnIndex, columnDepth, movedColumns } = copyOperation;
+      log.debug('startFetch copyHeader', columnIndex, columnDepth);
+
+      const modelIndex = GridUtils.getModelIndex(columnIndex, movedColumns);
+      const copyText = model.textForColumnHeader(modelIndex, columnDepth);
+      if (copyText === undefined) {
+        this.fetchPromise = undefined;
+        this.setState({
+          error: 'Invalid column header selected.',
+          copyState: IrisGridCopyHandler.COPY_STATES.DONE,
+        });
+        return;
+      }
+      this.fetchPromise = PromiseUtils.makeCancelable(copyText);
+    } else {
+      const {
+        ranges,
+        includeHeaders,
+        userColumnWidths,
+        movedColumns,
+        formatValues,
+      } = copyOperation;
+      log.debug('startFetch copyRanges', ranges);
+
+      const hiddenColumns = IrisGridUtils.getHiddenColumns(userColumnWidths);
+      let modelRanges = GridUtils.getModelRanges(ranges, movedColumns);
+      if (hiddenColumns.length > 0) {
+        const subtractRanges = hiddenColumns.map(GridRange.makeColumn);
+        modelRanges = GridRange.subtractRangesFromRanges(
+          modelRanges,
+          subtractRanges
+        );
+      }
+
+      // Remove the hidden columns from the snapshot
+      const formatValue =
+        formatValues != null && formatValues
+          ? (value: unknown, column: Column) =>
+              model.displayString(value, column.type, column.name)
+          : (value: unknown) => `${value}`;
+
+      this.fetchPromise = PromiseUtils.makeCancelable(
+        model.textSnapshot(modelRanges, includeHeaders, formatValue)
       );
     }
 
-    // Remove the hidden columns from the snapshot
-    const formatValue =
-      formatValues != null && formatValues
-        ? (value: unknown, column: Column) =>
-            model.displayString(value, column.type, column.name)
-        : (value: unknown) => `${value}`;
-
-    this.fetchPromise = PromiseUtils.makeCancelable(
-      model.textSnapshot(modelRanges, includeHeaders, formatValue)
-    );
     try {
       const text = await this.fetchPromise;
       this.fetchPromise = undefined;

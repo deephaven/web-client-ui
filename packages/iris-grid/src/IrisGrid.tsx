@@ -700,16 +700,12 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       columnHeaderGroups,
     } = props;
 
+    const { dh } = model;
     const keyHandlers: KeyHandler[] = [
       new ReverseKeyHandler(this),
       new ClearFilterKeyHandler(this),
     ];
-    if (canCopy) {
-      keyHandlers.push(new CopyKeyHandler(this));
-    }
-    const { dh } = model;
-    const mouseHandlers = [
-      new IrisGridCopyCellMouseHandler(this),
+    const mouseHandlers: GridMouseHandler[] = [
       new IrisGridCellOverflowMouseHandler(this),
       new IrisGridRowTreeMouseHandler(this),
       new IrisGridTokenMouseHandler(this),
@@ -721,7 +717,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       new IrisGridDataSelectMouseHandler(this),
       new PendingMouseHandler(this),
     ];
-
+    if (canCopy) {
+      keyHandlers.push(new CopyKeyHandler(this));
+      mouseHandlers.push(new IrisGridCopyCellMouseHandler(this));
+    }
     const movedColumns =
       movedColumnsProp.length > 0
         ? movedColumnsProp
@@ -2028,15 +2027,23 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
   }
 
-  copyColumnHeader(columnIndex: GridRangeIndex): void {
+  copyColumnHeader(columnIndex: GridRangeIndex, columnDepth = 0): void {
     if (columnIndex === null) {
       return;
     }
-    const { model } = this.props;
+    const { canCopy } = this.props;
+    const { movedColumns } = this.state;
 
-    copyToClipboard(model.textForColumnHeader(columnIndex) ?? '').catch(e =>
-      log.error('Unable to copy header', e)
-    );
+    if (canCopy) {
+      const copyOperation = {
+        columnIndex,
+        columnDepth,
+        movedColumns,
+      };
+      this.setState({ copyOperation });
+    } else {
+      log.error('Attempted copyColumnHeader for user without copy permission.');
+    }
   }
 
   /**

@@ -4,6 +4,7 @@ import {
   GridPoint,
   EventHandlerResult,
   GridMouseEvent,
+  GridRange,
 } from '@deephaven/grid';
 import { ContextActionUtils } from '@deephaven/components';
 import IrisGrid from '../IrisGrid';
@@ -12,7 +13,7 @@ class IrisGridCopyCellMouseHandler extends GridMouseHandler {
   private irisGrid: IrisGrid;
 
   constructor(irisGrid: IrisGrid) {
-    super();
+    super(250);
 
     this.irisGrid = irisGrid;
     this.cursor = null;
@@ -30,9 +31,14 @@ class IrisGridCopyCellMouseHandler extends GridMouseHandler {
     ) {
       this.cursor = null;
       if (gridPoint.columnHeaderDepth !== undefined) {
-        this.irisGrid.copyColumnHeader(gridPoint.column);
+        this.irisGrid.copyColumnHeader(
+          gridPoint.column,
+          gridPoint.columnHeaderDepth
+        );
       } else {
-        this.irisGrid.copyCell(gridPoint.column, gridPoint.row);
+        this.irisGrid.copyRanges([
+          GridRange.makeCell(gridPoint.column, gridPoint.row),
+        ]);
       }
       return true;
     }
