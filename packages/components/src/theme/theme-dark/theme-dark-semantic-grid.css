@@ -1,6 +1,6 @@
 :root {
   /* Grid */
-  --dh-color-grid-bg: var(--dh-color-bg);
+  --dh-color-grid-bg: var(--dh-color-gray-75);
 
   /* Header */
   --dh-color-grid-header-bg: var(--dh-color-gray-100);
