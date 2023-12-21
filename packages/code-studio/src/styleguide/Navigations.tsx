@@ -22,7 +22,7 @@ function NavTabListExample({
   const [tabs, setTabs] = useState(() => {
     const tabItems: NavTabItem[] = [];
     for (let i = 0; i < count; i += 1) {
-      tabItems.push({ key: `${i}`, title: `Tab ${i}`, isClosable: true });
+      tabItems.push({ key: `${i}`, title: `Tab ${i}`, isClosable: i > 0 });
     }
     return tabItems;
   });

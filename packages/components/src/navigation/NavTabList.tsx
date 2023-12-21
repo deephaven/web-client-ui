@@ -69,9 +69,9 @@ function makeBaseContextItems(
   tabs: NavTabItem[],
   onClose: ((key: string) => void) | undefined
 ): ResolvableContextAction[] {
-  const { isClosable, key } = tab;
+  const { isClosable = false, key } = tab;
   const contextActions: ResolvableContextAction[] = [];
-  if (isClosable != null && onClose != null) {
+  if (isClosable && onClose != null) {
     contextActions.push({
       title: 'Close',
       order: 10,
