@@ -13,7 +13,14 @@ import type {
 } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { Range } from '@deephaven/utils';
-import type { Layout, Data, PlotData } from 'plotly.js';
+import type {
+  Annotations,
+  Layout,
+  Data,
+  PlotData,
+  XAxisName,
+  YAxisName,
+} from 'plotly.js';
 import type {
   DateTimeColumnFormatter,
   Formatter,
@@ -134,11 +141,12 @@ class FigureChartModel extends ChartModel {
   }
 
   getDefaultTitle(): string {
-    if (this.figure.charts.length > 0) {
-      const chart = this.figure.charts[0];
-      return chart.title;
+    if (this.figure.title != null && this.figure.title.length > 0) {
+      return this.figure.title;
     }
-
+    if (this.figure.charts.length === 1) {
+      return this.figure.charts[0].title ?? '';
+    }
     return '';
   }
 
@@ -147,7 +155,7 @@ class FigureChartModel extends ChartModel {
     this.filterColumnMap.clear();
 
     const { charts } = this.figure;
-    const axes = ChartUtils.getAllAxes(this.figure);
+    const axisTypeMap = ChartUtils.getAxisTypeMap(this.figure);
     const activeSeriesNames: string[] = [];
     for (let i = 0; i < charts.length; i += 1) {
       const chart = charts[i];
@@ -155,7 +163,47 @@ class FigureChartModel extends ChartModel {
       for (let j = 0; j < chart.series.length; j += 1) {
         const series = chart.series[j];
         activeSeriesNames.push(series.name);
-        this.addSeries(series, axes, chart.showLegend);
+        this.addSeries(series, axisTypeMap, chart.showLegend);
+      }
+
+      // Need to add the chart titles as annotations if they are set
+      const { axes, title } = chart;
+      if (
+        title != null &&
+        title.length > 0 &&
+        (charts.length > 1 || this.figure.title != null)
+      ) {
+        const xAxis = axes.find(axis => axis.type === this.dh.plot.AxisType.X);
+        const yAxis = axes.find(axis => axis.type === this.dh.plot.AxisType.Y);
+        if (xAxis == null || yAxis == null) {
+          log.warn(
+            'Chart title provided, but unknown how to map to the correct axes for this chart type',
+            chart
+          );
+        } else {
+          const xAxisIndex =
+            (axisTypeMap.get(xAxis.type)?.findIndex(a => a === xAxis) ?? 0) + 1;
+          const yAxisIndex =
+            (axisTypeMap.get(yAxis.type)?.findIndex(a => a === yAxis) ?? 0) + 1;
+
+          const annotation: Partial<Annotations> = {
+            align: 'center',
+            x: 0.5,
+            y: 1,
+            yshift: 17,
+            text: title,
+            showarrow: false,
+
+            // Typing is incorrect in Plotly for this, as it doesn't seem to be typed for the "domain" part: https://plotly.com/javascript/reference/layout/annotations/#layout-annotations-items-annotation-xref
+            xref: `x${xAxisIndex} domain` as XAxisName,
+            yref: `y${yAxisIndex} domain` as YAxisName,
+          };
+          if (this.layout.annotations == null) {
+            this.layout.annotations = [annotation];
+          } else {
+            this.layout.annotations.push(annotation);
+          }
+        }
       }
     }
 
@@ -174,12 +222,15 @@ class FigureChartModel extends ChartModel {
   /**
    * Add a series to the model
    * @param series Series object to add
-   * @param axes All the axis in this figure
+   * @param axisTypeMap Map of axis type to the axes in this Figure
    * @param showLegend Whether this series should show the legend or not
    */
-  addSeries(series: Series, axes: Axis[], showLegend: boolean | null): void {
+  addSeries(
+    series: Series,
+    axisTypeMap: AxisTypeMap,
+    showLegend: boolean | null
+  ): void {
     const { dh } = this;
-    const axisTypeMap: AxisTypeMap = ChartUtils.groupArray(axes, 'type');
 
     const seriesData = this.chartUtils.makeSeriesDataFromSeries(
       series,
@@ -223,12 +274,12 @@ class FigureChartModel extends ChartModel {
   // We need to debounce adding series so we subscribe to them all in the same tick
   // This should no longer be necessary after IDS-5049 lands
   addPendingSeries = debounce(() => {
-    const axes = ChartUtils.getAllAxes(this.figure);
+    const axisTypeMap = ChartUtils.getAxisTypeMap(this.figure);
     const { pendingSeries } = this;
     for (let i = 0; i < pendingSeries.length; i += 1) {
       const series = pendingSeries[i];
       const chart = this.figure.charts.find(c => c.series.includes(series));
-      this.addSeries(series, axes, chart?.showLegend ?? null);
+      this.addSeries(series, axisTypeMap, chart?.showLegend ?? null);
 
       series.subscribe();
       // We'll get an update with the data after subscribing

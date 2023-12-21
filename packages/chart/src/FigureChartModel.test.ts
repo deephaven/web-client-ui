@@ -26,7 +26,7 @@ it('populates the layout properly', () => {
   expect(model.getLayout()).toEqual(
     expect.objectContaining({
       title: expect.objectContaining({
-        text: ChartTestUtils.DEFAULT_CHART_TITLE,
+        text: ChartTestUtils.DEFAULT_FIGURE_TITLE,
       }),
       xaxis: expect.objectContaining({
         title: expect.objectContaining({
@@ -38,6 +38,13 @@ it('populates the layout properly', () => {
           text: ChartTestUtils.DEFAULT_Y_TITLE,
         }),
       }),
+      annotations: expect.arrayContaining([
+        expect.objectContaining({
+          text: ChartTestUtils.DEFAULT_CHART_TITLE,
+          xref: 'x1 domain',
+          yref: 'y1 domain',
+        }),
+      ]),
     })
   );
 });
