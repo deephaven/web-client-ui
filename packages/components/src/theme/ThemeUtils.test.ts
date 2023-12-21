@@ -308,6 +308,18 @@ describe('getDefaultBaseThemes', () => {
           './theme-dark-components.css?raw',
         ].join('\n'),
       },
+      {
+        name: 'Default Light',
+        themeKey: 'default-light',
+        styleContent: [
+          './theme-light-palette.css?raw',
+          './theme-light-semantic.css?raw',
+          './theme-light-semantic-chart.css?raw',
+          './theme-light-semantic-editor.css?raw',
+          './theme-light-semantic-grid.css?raw',
+          './theme-light-components.css?raw',
+        ].join('\n'),
+      },
     ]);
   });
 });

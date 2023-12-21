@@ -153,6 +153,7 @@ span.btn-disabled-wrapper {
   &:disabled {
     --dh-color-text-disabled: var(--dh-color-positive-contrast);
     --dh-color-disabled-bg: var(--dh-color-positive-bg);
+
     opacity: 0.5;
   }
 }
@@ -469,6 +470,20 @@ form label small {
 }
 
 //Select, Checkboxes and Radios
+.custom-control-label {
+  user-select: none; //checkboxs are label pseudo elements, clicking can toggle text selection otherwise
+}
+
+.custom-control-input:disabled ~ .custom-control-label::before {
+  cursor: not-allowed;
+}
+
+.custom-checkbox
+  .custom-control-input:disabled
+  ~ .custom-control-label::before {
+  cursor: not-allowed;
+}
+
 .custom-radio {
   .custom-control-input:checked ~ .custom-control-label {
     &::after {
@@ -504,20 +519,6 @@ form label small {
       border: var(--dh-color-input-disabled-fg);
     }
   }
-}
-
-.custom-control-label {
-  user-select: none; //checkboxs are label pseudo elements, clicking can toggle text selection otherwise
-}
-
-.custom-control-input:disabled ~ .custom-control-label::before {
-  cursor: not-allowed;
-}
-
-.custom-checkbox
-  .custom-control-input:disabled
-  ~ .custom-control-label::before {
-  cursor: not-allowed;
 }
 
 .custom-select {

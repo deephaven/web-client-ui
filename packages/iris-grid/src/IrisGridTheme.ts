@@ -131,7 +131,7 @@ export function createDefaultIrisGridTheme(): Partial<IrisGridThemeType> {
     reverseHeaderBarHeight: 4,
     filterBarHorizontalPadding: 4,
 
-    shadowAlpha: parseFloat(IrisGridTheme['row-shadow-alpha']),
+    shadowAlpha: parseFloat(IrisGridTheme['row-shadow-alpha']) || 0.15,
 
     // Amount of blur to apply to the bottom of the scrim while animating in
     scrimBlurSize: 25,

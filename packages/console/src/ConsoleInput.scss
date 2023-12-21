@@ -17,6 +17,7 @@ $console-input-margin-color: $foreground;
 
 .console-input-wrapper {
   --console-input-bg: var(--dh-color-surface-bg);
+
   background-color: var(--console-input-bg);
   padding: $console-input-padding;
   min-height: $console-input-min-height;

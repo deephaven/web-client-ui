@@ -15,6 +15,7 @@ $animation-offset: 10px;
 
 .popper {
   --background-color: var(--dh-color-popover-bg);
+
   background: var(--background-color);
   color: var(--dh-color-tooltip-fg);
   border-radius: $border-radius;
