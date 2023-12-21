@@ -190,8 +190,10 @@ $custom-control-indicator-border-color: var(--dh-color-input-border);
 $custom-checkbox-indicator-border-radius: 2px;
 $custom-control-indicator-border-width: 2px;
 $custom-control-indicator-active-bg: var(--dh-color-input-bg);
+$custom-control-indicator-active-border-color: var(--dh-color-input-fg);
 $custom-control-indicator-checked-bg: var(--dh-color-input-fg);
-$custom-control-indicator-checked-color: var(--dh-color-input-fg);
+$custom-control-indicator-checked-color: black; // used as mask fill color
+$custom-checkbox-indicator-indeterminate-bg: var(--dh-color-input-fg);
 $custom-control-indicator-bg-size: 75% 75%;
 $custom-control-indicator-disabled-bg: var(--dh-color-input-disabled-bg);
 $custom-control-indicator-checked-disabled-bg: var(

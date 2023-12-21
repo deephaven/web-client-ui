@@ -472,7 +472,7 @@ form label small {
 .custom-radio {
   .custom-control-input:checked ~ .custom-control-label {
     &::after {
-      mask: escape-svg($custom-radio-indicator-icon-checked) 50%/40% 40%
+      mask: escape-svg($custom-radio-indicator-icon-checked) 4px / 6px 6px
         no-repeat;
       background: var(--dh-color-input-bg);
     }
@@ -484,6 +484,14 @@ form label small {
     &::after {
       mask: escape-svg($custom-checkbox-indicator-icon-checked) 50%/75% 75%
         no-repeat;
+      background: var(--dh-color-input-bg);
+    }
+  }
+
+  .custom-control-input:indeterminate ~ .custom-control-label {
+    &::after {
+      mask: escape-svg($custom-checkbox-indicator-icon-indeterminate) 50%/65%
+        65% no-repeat;
       background: var(--dh-color-input-bg);
     }
   }
