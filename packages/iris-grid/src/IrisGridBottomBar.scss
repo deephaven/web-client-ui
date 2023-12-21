@@ -9,8 +9,7 @@ $ease-out-bounce-back: cubic-bezier(0.175, 0.885, 0.32, 1.275);
   left: 0;
   right: 0;
   height: calc(#{$bottom-bar-height} * 2);
-  background-color: $toast-bg;
-  color: $toast-color;
+  background-color: var(--dh-color-surface-bg);
   display: flex;
   flex-direction: row;
   align-content: center;
@@ -54,7 +53,7 @@ $ease-out-bounce-back: cubic-bezier(0.175, 0.885, 0.32, 1.275);
       min-width: 10rem;
       .svg-inline--fa,
       .loading-spinner {
-        margin-right: 0.5rem;
+        margin: 0 $spacer-1 0 0;
       }
     }
 

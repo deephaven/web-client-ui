@@ -1,6 +1,6 @@
 :root {
   /* Grid */
-  --dh-color-grid-bg: var(--dh-color-bg);
+  --dh-color-grid-bg: var(--dh-color-content-bg);
 
   /* Header */
   --dh-color-grid-header-bg: var(--dh-color-gray-100);
@@ -13,13 +13,13 @@
   --dh-color-grid-header-bar-casing: var(--dh-color-gray-50);
 
   /* Row */
-  --dh-color-grid-row-0-bg: var(--dh-color-gray-300);
+  --dh-color-grid-row-0-bg: var(--dh-color-gray-50);
   --dh-color-grid-row-1-bg: var(--dh-color-gray-100);
   --dh-color-grid-row-hover-bg: var(--dh-color-highlight-hover);
   --dh-color-grid-row-hover-bg-selected: var(
     --dh-color-highlight-selected-hover
   );
-  --dh-color-grid-row-shadow-alpha: 0.15;
+  --dh-color-grid-row-shadow-alpha: 0.07;
 
   /* Selection */
   --dh-color-grid-selection: var(--dh-color-highlight-selected);
@@ -39,14 +39,14 @@
   /* Text */
   --dh-color-grid-text: var(--dh-color-text);
   --dh-color-grid-text-hyperlink: var(--dh-color-accent-1000);
-  --dh-color-grid-text-pending: var(--dh-color-yellow-1300);
+  --dh-color-grid-text-pending: var(--dh-color-modified);
   --dh-color-grid-text-error: var(--dh-color-visual-negative);
 
   /* Data Types */
-  --dh-color-grid-date: var(--dh-color-visual-notice);
+  --dh-color-grid-date: var(--dh-color-visual-purple);
   --dh-color-grid-number-positive: var(--dh-color-visual-positive);
   --dh-color-grid-number-negative: var(--dh-color-visual-negative);
-  --dh-color-grid-number-zero: var(--dh-color-visual-notice);
+  --dh-color-grid-number-zero: var(--dh-color-visual-purple);
   --dh-color-grid-string-null: var(--dh-color-gray-600);
 
   /* Filter Bar */
@@ -54,8 +54,8 @@
     var(--dh-color-accent-700-hsl),
     0.5
   );
-  --dh-color-grid-filter-bar-active: var(--dh-color-accent-600);
-  --dh-color-grid-filter-bar-expanded-bg: var(--dh-color-gray-200);
+  --dh-color-grid-filter-bar-active: var(--dh-color-accent-100);
+  --dh-color-grid-filter-bar-expanded-bg: var(--dh-color-gray-50);
   --dh-color-grid-filter-bar-expanded-active-bg: hsla(
     var(--dh-color-accent-1000-hsl),
     0.19
@@ -100,5 +100,5 @@
   --dh-color-grid-data-bar-zero-line: var(--dh-color-gray-300);
 
   /* Scrim */
-  --dh-color-grid-scrim: var(--dh-color-gray-50);
+  --dh-color-grid-scrim: var(--dh-color-gray-200);
 }

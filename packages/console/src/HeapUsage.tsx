@@ -112,25 +112,23 @@ function HeapUsage({
   const usedPercentage = (totalHeapSize - freeMemory) / maximumHeapSize;
 
   return (
-    <>
-      <div className="max-memory">
-        <div
-          className="total-memory"
-          style={{
-            width: `calc(${totalPercentage * 100}% - ${totalPercentage * 2}px`,
-          }}
-        />
-        <div
-          className={classNames('used-memory', {
-            'heap-overflow':
-              (totalHeapSize - freeMemory) / maximumHeapSize > 0.95,
-          })}
-          style={{
-            width: `calc(${usedPercentage * 100}% - ${usedPercentage * 2}px`,
-          }}
-        />
-        <div className="memory-text">{maxHeapGB.toFixed(1)} GB</div>
-      </div>
+    <div className="max-memory">
+      <div
+        className="total-memory"
+        style={{
+          width: `calc(${totalPercentage * 100}% - ${totalPercentage * 2}px`,
+        }}
+      />
+      <div
+        className={classNames('used-memory', {
+          'heap-overflow':
+            (totalHeapSize - freeMemory) / maximumHeapSize > 0.95,
+        })}
+        style={{
+          width: `calc(${usedPercentage * 100}% - ${usedPercentage * 2}px`,
+        }}
+      />
+      <div className="memory-text">{maxHeapGB.toFixed(1)} GB</div>
 
       <Tooltip
         onEntered={(): void => setIsOpen(true)}
@@ -192,7 +190,7 @@ function HeapUsage({
           </div>
         </div>
       </Tooltip>
-    </>
+    </div>
   );
 }
 

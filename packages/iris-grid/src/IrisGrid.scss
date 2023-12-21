@@ -7,7 +7,7 @@ $iris-grid-font:
   sans-serif;
 $iris-grid-font-feature-settings: 'tnum';
 $table-sidebar-max-width: 320px;
-$table-sidebar-bg: $gray-700;
+
 $iris-grid-bar-bg: $primary-dark;
 $iris-grid-bar-bg-highlight: $primary;
 $iris-grid-bar-max-height: 250px;
@@ -17,10 +17,13 @@ $cell-box-shadow:
   0 0 0 2px var(--dh-color-visual-blue),
   0 0 0 5px hsla(var(--dh-color-visual-blue-hsl), 0.25);
 $cell-invalid-box-shadow:
-  0 0 0 2px var(--dh-color-negative),
+  0 0 0 2px var(--dh-color-visual-negative),
   0 0 0 5px hsla(var(--dh-color-negative-hsl), 0.25);
 
 .iris-grid {
+  --table-sidebar-bg: var(--dh-color-surface-bg);
+  --dh-color-hr: var(--dh-color-gray-500);
+
   width: 100%;
   height: 100%;
   position: relative;
@@ -42,8 +45,8 @@ $cell-invalid-box-shadow:
     flex: 0 0 $table-sidebar-max-width;
     width: $table-sidebar-max-width;
     max-width: $table-sidebar-max-width;
-    background: $table-sidebar-bg;
-    box-shadow: -4px 0 8px hsla(var(--dh-color-black-hsl), 0.45);
+    background: var(--table-sidebar-bg);
+    box-shadow: 0 0 6px var(--dh-color-dropshadow);
     z-index: 1;
 
     // We have it positioned absolutely while animating, so it slides "overtop" of the grid until it's in place, then resizes the grid
@@ -53,7 +56,7 @@ $cell-invalid-box-shadow:
     .pushing-view,
     .popping-view,
     .main-view {
-      background: $table-sidebar-bg;
+      background: var(--table-sidebar-bg);
     }
 
     &.slide-left-enter-done {
@@ -89,8 +92,8 @@ $cell-invalid-box-shadow:
       right: 0;
       height: $header-height;
       width: $header-height;
-      background-color: $header-bg;
-      border-bottom: 1px solid $header-separator-color;
+      background-color: var(--dh-color-grid-header-bg);
+      border-bottom: 1px solid var(--dh-color-grid-header-separator);
       transition:
         transform $transition-mid ease-out,
         opacity $transition-mid ease-out;

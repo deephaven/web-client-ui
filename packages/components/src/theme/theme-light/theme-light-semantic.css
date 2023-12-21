@@ -2,15 +2,15 @@
 /* stylelint-disable alpha-value-notation */
 :root {
   /* HSL base colors */
-  --dh-color-bg-hsl: var(--dh-color-black-hsl);
-  --dh-color-content-bg-hsl: var(--dh-color-gray-100-hsl);
-  --dh-color-surface-bg-hsl: var(--dh-color-gray-400-hsl);
-  --dh-color-fg-hsl: var(--dh-color-white-hsl);
+  --dh-color-bg-hsl: var(--dh-color-gray-300-hsl);
+  --dh-color-content-bg-hsl: var(--dh-color-gray-50-hsl);
+  --dh-color-surface-bg-hsl: var(--dh-color-gray-200-hsl);
+  --dh-color-fg-hsl: var(--dh-color-black-hsl);
 
   --dh-color-disabled-bg-hsl: var(--dh-color-gray-200-hsl);
   --dh-color-scrollbar-hsl: var(--dh-color-fg-hsl);
 
-  --dh-color-accent-hsl: var(--dh-color-blue-600-hsl);
+  --dh-color-accent-hsl: var(--dh-color-blue-900-hsl);
   --dh-color-accent-100-hsl: var(--dh-color-blue-100-hsl);
   --dh-color-accent-200-hsl: var(--dh-color-blue-200-hsl);
   --dh-color-accent-300-hsl: var(--dh-color-blue-300-hsl);
@@ -26,14 +26,14 @@
   --dh-color-accent-1300-hsl: var(--dh-color-blue-1300-hsl);
   --dh-color-accent-1400-hsl: var(--dh-color-blue-1400-hsl);
 
-  --dh-color-border-hsl: var(--dh-color-gray-500-hsl);
+  --dh-color-border-hsl: var(--dh-color-gray-700-hsl);
   --dh-color-border-focus-hsl: var(--dh-color-accent-800-hsl);
 
   --dh-color-info-hsl: var(--dh-color-cyan-1000-hsl);
   --dh-color-neutral-hsl: var(--dh-color-gray-500-hsl);
   --dh-color-notice-hsl: var(--dh-color-yellow-1000-hsl);
   --dh-color-positive-hsl: var(--dh-color-green-900-hsl);
-  --dh-color-negative-hsl: var(--dh-color-red-600-hsl);
+  --dh-color-negative-hsl: var(--dh-color-red-800-hsl);
 
   /*
    * Contrast Colors
@@ -47,32 +47,32 @@
   --dh-color-contrast-dark-hsl: var(--dh-color-gray-50-hsl);
   --dh-color-contrast-light-hsl: var(--dh-color-gray-900-hsl);
 
-  --dh-color-accent-contrast-hsl: var(--dh-color-contrast-light-hsl);
+  --dh-color-accent-contrast-hsl: var(--dh-color-contrast-dark-hsl);
   --dh-color-info-contrast-hsl: var(--dh-color-contrast-dark-hsl);
-  --dh-color-negative-contrast-hsl: var(--dh-color-contrast-light-hsl);
+  --dh-color-negative-contrast-hsl: var(--dh-color-contrast-dark-hsl);
   --dh-color-neutral-contrast-hsl: var(--dh-color-contrast-light-hsl);
   --dh-color-notice-contrast-hsl: var(--dh-color-contrast-dark-hsl);
-  --dh-color-positive-contrast-hsl: var(--dh-color-contrast-light-hsl);
+  --dh-color-positive-contrast-hsl: var(--dh-color-contrast-dark-hsl);
 
   /* Visual HSL */
-  --dh-color-visual-blue-hsl: var(--dh-color-blue-600-hsl);
+  --dh-color-visual-blue-hsl: var(--dh-color-blue-900-hsl);
   --dh-color-visual-celery-hsl: var(--dh-color-celery-1000-hsl);
   --dh-color-visual-chartreuse-hsl: var(--dh-color-chartreuse-1100-hsl);
   --dh-color-visual-cyan-hsl: var(--dh-color-cyan-1100-hsl);
   --dh-color-visual-fuchsia-hsl: var(--dh-color-fuchsia-900-hsl);
   --dh-color-visual-gray-hsl: var(--dh-color-gray-600-hsl);
-  --dh-color-visual-green-hsl: var(--dh-color-green-1100-hsl);
+  --dh-color-visual-green-hsl: var(--dh-color-green-900-hsl);
   --dh-color-visual-indigo-hsl: var(--dh-color-indigo-900-hsl);
   --dh-color-visual-magenta-hsl: var(--dh-color-magenta-900-hsl);
-  --dh-color-visual-orange-hsl: var(--dh-color-orange-900-hsl);
-  --dh-color-visual-purple-hsl: var(--dh-color-purple-900-hsl);
+  --dh-color-visual-orange-hsl: var(--dh-color-orange-800-hsl);
+  --dh-color-visual-purple-hsl: var(--dh-color-purple-800-hsl);
   --dh-color-visual-red-hsl: var(--dh-color-red-800-hsl);
   --dh-color-visual-seafoam-hsl: var(--dh-color-seafoam-1100-hsl);
-  --dh-color-visual-yellow-hsl: var(--dh-color-yellow-1200-hsl);
+  --dh-color-visual-yellow-hsl: var(--dh-color-yellow-700-hsl);
 
-  --dh-color-visual-positive-hsl: var(--dh-color-green-1200-hsl);
+  --dh-color-visual-positive-hsl: var(--dh-color-green-800-hsl);
   --dh-color-visual-negative-hsl: var(--dh-color-red-800-hsl);
-  --dh-color-visual-notice-hsl: var(--dh-color-yellow-1200-hsl);
+  --dh-color-visual-notice-hsl: var(--dh-color-yellow-700-hsl);
   --dh-color-visual-info-hsl: var(--dh-color-cyan-1100-hsl);
 
   /* General */
@@ -81,7 +81,7 @@
   --dh-color-surface-bg: hsl(var(--dh-color-surface-bg-hsl));
   --dh-color-fg: hsl(var(--dh-color-fg-hsl));
   --dh-color-border: hsl(var(--dh-color-border-hsl));
-  --dh-color-hover-border: var(--dh-color-gray-600);
+  --dh-color-hover-border: var(--dh-color-gray-900);
   --dh-color-border-focus: hsl(var(--dh-color-border-focus-hsl));
   --dh-color-disabled-bg: hsl(var(--dh-color-disabled-bg-hsl));
 
@@ -89,7 +89,7 @@
   --dh-color-heading-text: var(--dh-color-gray-900);
   --dh-color-text: var(--dh-color-gray-800);
   --dh-color-text-disabled: var(--dh-color-gray-400);
-  --dh-color-text-highlight: hsla(var(--dh-color-blue-700-hsl), 0.3);
+  --dh-color-text-highlight: hsla(var(--dh-color-blue-700-hsl), 0.15);
   --dh-color-text-hover: var(--dh-color-gray-900);
 
   /* Contrast Base */
@@ -114,9 +114,9 @@
 
   /* Accent */
   --dh-color-accent-bg: hsl(var(--dh-color-accent-hsl));
-  --dh-color-accent-hover-bg: var(--dh-color-accent-500);
-  --dh-color-accent-down-bg: var(--dh-color-accent-400);
-  --dh-color-accent-key-focus-bg: var(--dh-color-accent-500);
+  --dh-color-accent-hover-bg: var(--dh-color-accent-1000);
+  --dh-color-accent-down-bg: var(--dh-color-accent-1100);
+  --dh-color-accent-key-focus-bg: var(--dh-color-accent-1000);
   --dh-color-accent-contrast: hsl(var(--dh-color-accent-contrast-hsl));
 
   /* Background Defaults */
@@ -142,27 +142,27 @@
 
   /* Highlight */
   --dh-color-highlight-active: hsla(var(--dh-color-visual-gray-hsl), 0.15);
-  --dh-color-highlight-hover: hsla(var(--dh-color-visual-gray-hsl), 0.15);
+  --dh-color-highlight-hover: hsla(var(--dh-color-visual-gray-hsl), 0.08);
   --dh-color-highlight-invalid: hsla(var(--dh-color-visual-red-hsl), 0.15);
-  --dh-color-highlight-selected: hsla(var(--dh-color-visual-blue-hsl), 0.13);
+  --dh-color-highlight-selected: hsla(var(--dh-color-visual-blue-hsl), 0.07);
   --dh-color-highlight-selected-hover: hsla(
     var(--dh-color-visual-blue-hsl),
-    0.2
+    0.13
   );
 
   /* Keyboard selected */
   --dh-color-keyboard-selected-bg: hsla(var(--dh-color-accent-hsl), 0.5);
 
   /* Shadows / Overlays */
-  --dh-color-dropshadow: hsla(var(--dh-color-true-black-hsl), 0.8);
+  --dh-color-dropshadow: hsla(var(--dh-color-true-black-hsl), 0.25);
   --dh-color-overlay-modal-bg: hsla(var(--dh-color-visual-gray-hsl), 0.6);
   --dh-color-overlay-hover-bg: hsla(var(--dh-color-visual-gray-hsl), 0.08);
 
   /* Negative */
   --dh-color-negative-bg: hsl(var(--dh-color-negative-hsl));
-  --dh-color-negative-hover-bg: var(--dh-color-red-500);
-  --dh-color-negative-down-bg: var(--dh-color-red-400);
-  --dh-color-negative-key-focus-bg: var(--dh-color-red-500);
+  --dh-color-negative-hover-bg: var(--dh-color-red-900);
+  --dh-color-negative-down-bg: var(--dh-color-red-1000);
+  --dh-color-negative-key-focus-bg: var(--dh-color-red-900);
   --dh-color-negative-contrast: hsl(var(--dh-color-negative-contrast-hsl));
 
   /* Neutral */
@@ -220,5 +220,5 @@
   --dh-color-visual-info: hsl(var(--dh-color-visual-info-hsl));
 
   /* Editing */
-  --dh-color-modified: var(--dh-color-yellow-1300);
+  --dh-color-modified: var(--dh-color-orange-800);
 }

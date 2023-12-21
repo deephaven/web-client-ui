@@ -41,7 +41,7 @@ export function Swatch({ className, children }: SwatchProps): JSX.Element {
       }}
     >
       {hasValue && (
-        <Tooltip>
+        <Tooltip interactive>
           <div>{tooltip.value}</div>
           <div>{tooltip.normalized}</div>
         </Tooltip>

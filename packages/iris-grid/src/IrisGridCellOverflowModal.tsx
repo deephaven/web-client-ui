@@ -131,7 +131,7 @@ export default function IrisGridCellOverflowModal({
         setIsOpened(false);
         setHeight(0);
       }}
-      className="theme-bg-dark cell-overflow-modal"
+      className="cell-overflow-modal"
       size="xl"
     >
       <ModalHeader toggle={onClose}>

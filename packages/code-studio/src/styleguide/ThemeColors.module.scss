@@ -26,12 +26,23 @@
     align-items: center;
     height: var(--swatch-height);
     justify-content: space-between;
-    padding: 0 10px;
+    padding-left: 10px;
 
     span {
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
+    }
+
+    // hide copy swatch button until hover
+    button {
+      opacity: 0;
+    }
+
+    &:hover {
+      button {
+        opacity: 1;
+      }
     }
   }
 }

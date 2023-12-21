@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { useMemo } from 'react';
 import cl from 'classnames';
-import { Tooltip, useTheme } from '@deephaven/components';
+import { CopyButton, Tooltip, useTheme } from '@deephaven/components';
 import { ColorUtils } from '@deephaven/utils';
 import palette from '@deephaven/components/src/theme/theme-dark/theme-dark-palette.css?inline';
 import semantic from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic.css?inline';
@@ -71,7 +71,7 @@ export function ThemeColors(): JSX.Element {
                         color: `var(--dh-color-${contrastColor(value)})`,
                       }}
                     >
-                      <Tooltip>
+                      <Tooltip interactive>
                         <div>{name}</div>
                         <div>{value}</div>
                         <div>{ColorUtils.normalizeCssColor(value, true)}</div>
@@ -80,6 +80,12 @@ export function ThemeColors(): JSX.Element {
                       {name.endsWith('-hue') || note != null ? (
                         <span>{note ?? value}</span>
                       ) : null}
+                      <CopyButton
+                        copy={name}
+                        style={{
+                          color: `var(--dh-color-${contrastColor(value)})`,
+                        }}
+                      />
                     </div>
                   )
                 )}

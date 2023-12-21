@@ -8,12 +8,12 @@
   --dh-color-colorpicker-border: hsla(var(--dh-color-visual-gray-hsl), 0.1);
 
   /* Logo */
-  --dh-logo-img: var(--dh-logo-dark-img);
+  --dh-logo-img: var(--dh-logo-light-img);
 
   /* Login */
-  --dh-color-login-form-bg: var(--dh-color-gray-400);
+  --dh-color-login-form-bg: var(--dh-color-gray-200);
   --dh-color-login-status-message: var(--dh-color-gray-600);
-  --dh-color-login-logo-bg: var(--dh-color-gray-900);
+  --dh-color-login-logo-bg: var(--dh-color-gray-50);
   --dh-color-login-footer-fg: var(--dh-color-gray-700);
 
   /* We should base this color on something from the palette, but for now just
@@ -113,25 +113,25 @@
    */
 
   /* Golden Layout */
-  --dh-color-golden-layout-tab-header-bg: var(--dh-color-gray-75);
-  --dh-color-golden-layout-tab-bg: var(--dh-color-gray-75);
+  --dh-color-golden-layout-tab-header-bg: var(--dh-color-gray-200);
+  --dh-color-golden-layout-tab-bg: var(--dh-color-gray-100);
   --dh-color-golden-layout-tab-selected-bg: var(--dh-color-content-bg);
 
   /* Navigation Menu */
   --dh-color-menu-item-fg: var(--dh-color-gray-700);
 
   /* Hr */
-  --dh-color-hr: var(--dh-color-gray-200);
+  --dh-color-hr: var(--dh-color-gray-300);
 
   /* Dialogs */
   --dh-color-dialog-title-fg: var(--dh-color-heading-text);
   --dh-color-dialog-fg: var(--dh-color-text);
 
   /* Popovers */
-  --dh-color-popover-bg: var(--dh-color-bg);
+  --dh-color-popover-bg: var(--dh-color-gray-50);
 
   /* Tooltips */
-  --dh-color-tooltip-bg: var(--dh-color-gray-400);
+  --dh-color-tooltip-bg: var(--dh-color-gray-50);
   --dh-color-tooltip-fg: var(--dh-color-fg);
   --dh-color-tooltip-box-shadow: var(--dh-color-dropshadow);
 

@@ -1,8 +1,5 @@
 @import '@deephaven/components/scss/custom.scss';
 
-$toolbar-font-size: 18px;
-$toolbar-width: 36px;
-$toolbar-height: 36px;
 $toolbar-bg: $content-bg;
 
 .notebook-title {
@@ -22,31 +19,16 @@ $toolbar-bg: $content-bg;
 
   .notebook-toolbar {
     display: flex;
-    flex-basis: $toolbar-height;
+    justify-content: center;
     flex-direction: row;
-    flex-grow: 0;
     background: $toolbar-bg;
     border-bottom: 2px solid $background;
-    padding: $spacer-1;
-
-    .btn {
-      min-width: $toolbar-width;
-      padding-left: 0;
-      padding-right: 0;
-      font-size: $toolbar-font-size;
-
-      &:hover {
-        transition: none;
-      }
-    }
+    padding: $spacer-1 $spacer-2;
+    gap: $spacer-1;
 
     .btn-play:hover,
     .btn-play-selected:hover {
       color: $green;
-    }
-
-    .btn-overflow {
-      font-size: inherit;
     }
 
     .icon-create-pq {

@@ -4,44 +4,44 @@
   --dh-color-editor-fg: var(--dh-color-gray-900);
   --dh-color-editor-error-fg: var(--dh-color-visual-red);
   --dh-color-editor-line-number-fg: var(--dh-color-gray-700);
-  --dh-color-editor-line-highlight-bg: var(--dh-color-gray-200);
+  --dh-color-editor-line-highlight-bg: var(--dh-color-gray-100);
   --dh-color-editor-selection-bg: var(--dh-color-text-highlight);
-  --dh-color-editor-inactive-selection-bg: var(--dh-color-gray-300);
-  --dh-color-editor-selection-highlight-bg: var(--dh-color-gray-500);
-  --dh-color-editor-word-highlight-bg: var(--dh-color-gray-500);
+  --dh-color-editor-inactive-selection-bg: var(--dh-color-gray-200);
+  --dh-color-editor-selection-highlight-bg: var(--dh-color-gray-200);
+  --dh-color-editor-word-highlight-bg: var(--dh-color-gray-200);
 
   /* Code rules */
-  --dh-color-editor-comment: var(--dh-color-gray-700);
+  --dh-color-editor-comment: var(--dh-color-green-800);
   --dh-color-editor-delimiter: var(--dh-color-gray-700);
   --dh-color-editor-identifier-js: var(--dh-color-visual-yellow);
   --dh-color-editor-identifier-namespace: var(--dh-color-visual-red);
   --dh-color-editor-identifier: var(--dh-color-gray-900);
-  --dh-color-editor-keyword: var(--dh-color-visual-cyan);
+  --dh-color-editor-keyword: var(--dh-color-visual-blue);
   --dh-color-editor-number: var(--dh-color-visual-purple);
   --dh-color-editor-operator: var(--dh-color-visual-red);
   --dh-color-editor-predefined: var(--dh-color-visual-green);
   --dh-color-editor-storage: var(--dh-color-visual-red);
   --dh-color-editor-string-delim: var(--dh-color-gray-700);
-  --dh-color-editor-string: var(--dh-color-visual-yellow);
+  --dh-color-editor-string: var(--dh-color-red-1200);
 
   /* Brackets */
-  --dh-color-editor-bracket-fg1: var(--dh-color-visual-yellow);
-  --dh-color-editor-bracket-fg2: var(--dh-color-visual-purple);
-  --dh-color-editor-bracket-fg3: var(--dh-color-visual-blue);
-  --dh-color-editor-bracket-fg4: var(--dh-color-visual-yellow);
-  --dh-color-editor-bracket-fg5: var(--dh-color-visual-purple);
-  --dh-color-editor-bracket-fg6: var(--dh-color-visual-blue);
+  --dh-color-editor-bracket-fg1: var(--dh-color-visual-blue);
+  --dh-color-editor-bracket-fg2: var(--dh-color-visual-green);
+  --dh-color-editor-bracket-fg3: var(--dh-color-visual-purple);
+  --dh-color-editor-bracket-fg4: var(--dh-color-visual-blue);
+  --dh-color-editor-bracket-fg5: var(--dh-color-visual-green);
+  --dh-color-editor-bracket-fg6: var(--dh-color-visual-purple);
   --dh-color-editor-unexpected-bracket-fg: var(--dh-color-visual-negative);
 
   /* Input */
   --dh-color-editor-focus-border: var(--dh-color-focus-border);
   --dh-color-editor-input-option-active-border: var(--dh-color-focus-ring);
-  --dh-color-editor-input-bg: var(--dh-color-bg);
+  --dh-color-editor-input-bg: var(--dh-color-input-bg);
   --dh-color-editor-input-fg: var(--dh-color-text);
   --dh-color-editor-input-border: var(--dh-color-border);
 
   /* Menus */
-  --dh-color-editor-context-menu-bg: var(--dh-color-gray-300);
+  --dh-color-editor-context-menu-bg: var(--dh-color-gray-50);
   --dh-color-editor-context-menu-fg: var(--dh-color-text);
   --dh-color-editor-menu-selection-bg: var(--dh-color-highlight-hover);
   --dh-color-editor-menu-selection-fg: var(--dh-color-text);
@@ -56,7 +56,7 @@
   --dh-color-editor-log-trace: var(--dh-color-visual-green);
 
   /* Find */
-  --dh-color-editor-find-bg: var(--dh-color-gray-200);
+  --dh-color-editor-find-bg: var(--dh-color-gray-50);
   --dh-color-editor-find-match-bg: var(--dh-color-highlight-selected);
   --dh-color-editor-find-match-highlight-bg: var(
     --dh-color-highlight-selected-hover
@@ -65,7 +65,7 @@
   --dh-color-editor-find-option-active-fg: var(--dh-color-gray-900);
 
   /* Suggest */
-  --dh-color-editor-suggest-bg: var(--dh-color-gray-200);
+  --dh-color-editor-suggest-bg: var(--dh-color-gray-100);
   --dh-color-editor-suggest-border: var(--dh-color-gray-400);
   --dh-color-editor-suggest-fg: var(--dh-color-text);
   --dh-color-editor-suggest-selected-bg: var(--dh-color-highlight-selected);

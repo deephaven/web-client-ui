@@ -398,31 +398,26 @@ export class ConsolePanel extends PureComponent<
             language={language}
             statusBarChildren={
               <>
-                <div>&nbsp;</div>
                 <div>{ConsoleConstants.LANGUAGE_MAP.get(language)}</div>
                 {workerName != null && (
                   <>
-                    <div>&nbsp;•&nbsp;</div>
+                    <div>•</div>
                     {workerName}
                   </>
                 )}
                 {processInfoId != null && (
                   <>
-                    <div>&nbsp;•&nbsp;</div>
+                    <div>•</div>
                     {processInfoId}
-                    <div>&nbsp;•</div>
+                    <div>•</div>
                   </>
                 )}
-                <div>&nbsp;</div>
-                <div>
-                  <HeapUsage
-                    connection={connection}
-                    defaultUpdateInterval={10 * 1000}
-                    hoverUpdateInterval={3 * 1000}
-                    monitorDuration={10 * 60 * 1000}
-                  />
-                </div>
-                <div>&nbsp;</div>
+                <HeapUsage
+                  connection={connection}
+                  defaultUpdateInterval={10 * 1000}
+                  hoverUpdateInterval={3 * 1000}
+                  monitorDuration={10 * 60 * 1000}
+                />
               </>
             }
             scope={sessionId}

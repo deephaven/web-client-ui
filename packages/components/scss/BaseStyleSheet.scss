@@ -67,10 +67,6 @@ body {
   bottom: 0;
 }
 
-hr {
-  background-color: $gray-400;
-}
-
 .scroll-pane,
 .scroll-pane-x,
 .scroll-pane-y {
@@ -127,6 +123,19 @@ button:focus {
   min-width: 7rem;
   // Matching Spectrum styles
   -webkit-font-smoothing: antialiased;
+  // the following is to match spectrum buttons
+  height: 32px;
+  // vertical-align: top;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 3px;
+  padding-bottom: 5px;
+}
+
+.btn-sm {
+  height: 28px;
+  line-height: 28px;
 }
 
 span.btn-disabled-wrapper {
@@ -134,6 +143,17 @@ span.btn-disabled-wrapper {
   .btn.disabled,
   .btn:disabled {
     pointer-events: none;
+  }
+}
+
+// We use disabled success buttons as success messages in a few places.
+// We should stop doing that, and phase them out when we have toasts.
+.btn-success {
+  &.disabled,
+  &:disabled {
+    --dh-color-text-disabled: var(--dh-color-positive-contrast);
+    --dh-color-disabled-bg: var(--dh-color-positive-bg);
+    opacity: 0.5;
   }
 }
 
@@ -259,17 +279,22 @@ span.btn-disabled-wrapper {
 }
 
 .btn-icon {
+  // used in chart builder and conditional formatting
   text-align: center;
   padding: 0;
   min-width: 0;
   font-size: small;
   text-overflow: ellipsis;
   border-radius: 0;
+  height: auto;
+  flex-direction: column;
+  gap: 3px;
+  color: var(--dh-color-text);
 
   svg,
   img {
     display: block;
-    background: $gray-500;
+    background: var(--dh-color-action-bg);
     margin: auto;
     border-radius: 2px;
     margin-bottom: 2px;
@@ -283,9 +308,10 @@ span.btn-disabled-wrapper {
   &:hover,
   &:focus,
   &.active {
+    color: var(--dh-color-text);
     svg,
     img {
-      box-shadow: 0 0 0 2px $input-border-color;
+      box-shadow: 0 0 0 2px var(--dh-color-action-hover-border);
       filter: saturate(100%);
     }
   }
@@ -298,15 +324,14 @@ span.btn-disabled-wrapper {
 
     svg,
     img {
-      box-shadow: 0 0 0 2px $input-focus-border-color;
+      box-shadow: 0 0 0 2px var(--dh-color-action-active-border);
     }
   }
 }
 
 .btn-inline {
   min-width: 2.75rem;
-  padding-left: $spacer-1;
-  padding-right: $spacer-1;
+  padding: 0 $spacer-1;
   border-radius: $border-radius;
   background: var(--dh-color-action-bg);
   border: 1px solid var(--dh-color-action-border);
@@ -444,42 +469,46 @@ form label small {
 }
 
 //Select, Checkboxes and Radios
+.custom-radio {
+  .custom-control-input:checked ~ .custom-control-label {
+    &::after {
+      mask: escape-svg($custom-radio-indicator-icon-checked) 50%/40% 40%
+        no-repeat;
+      background: var(--dh-color-input-bg);
+    }
+  }
+}
+
+.custom-checkbox {
+  .custom-control-input:checked ~ .custom-control-label {
+    &::after {
+      mask: escape-svg($custom-checkbox-indicator-icon-checked) 50%/75% 75%
+        no-repeat;
+      background: var(--dh-color-input-bg);
+    }
+  }
+
+  .custom-control-input:disabled {
+    &:checked ~ .custom-control-label::before {
+      border: var(--dh-color-input-disabled-fg);
+    }
+    &:indeterminate ~ .custom-control-label::before {
+      border: var(--dh-color-input-disabled-fg);
+    }
+  }
+}
+
 .custom-control-label {
   user-select: none; //checkboxs are label pseudo elements, clicking can toggle text selection otherwise
 }
 
-.custom-control-label::before {
-  border: 1px solid $gray-400;
-  top: 0.24rem;
-}
-
-.custom-control-label::after {
-  top: 0.24rem;
-}
-
-.custom-control-input:active ~ .custom-control-label::before {
-  background-color: $primary-dark;
-}
-
-.custom-control-input:focus ~ .custom-control-label::before {
-  box-shadow: $input-btn-focus-box-shadow;
-  border-color: $input-focus-border-color;
-}
-
 .custom-control-input:disabled ~ .custom-control-label::before {
-  background-color: $gray-500;
-  border: 1px solid $black;
   cursor: not-allowed;
-}
-
-.custom-checkbox .custom-control-input:checked ~ .custom-control-label::before {
-  border: 1px solid $primary;
 }
 
 .custom-checkbox
   .custom-control-input:disabled
   ~ .custom-control-label::before {
-  border-color: $black;
   cursor: not-allowed;
 }
 
@@ -584,86 +613,8 @@ input[type='number']::-webkit-inner-spin-button {
 }
 
 /********** Modal Styling *********/
-.modal-dialog.theme-bg-light {
-  .modal-content {
-    color: $black;
-    background: $gray-100;
-  }
 
-  .form-control {
-    background: $gray-200;
-    color: $black;
-  }
-
-  .custom-checkbox {
-    .custom-control-label::before {
-      background-color: $gray-100;
-    }
-
-    .custom-control-input:checked ~ .custom-control-label::before {
-      background-color: $primary;
-    }
-
-    .custom-control-input:active ~ .custom-control-label::before {
-      background-color: $primary-light;
-      border-color: $primary;
-    }
-    .custom-control-input:disabled ~ .custom-control-label::before {
-      border-color: $black;
-      background-color: $gray-300;
-      cursor: not-allowed;
-    }
-  }
-
-  .custom-select {
-    background-color: $gray-200;
-    color: $black;
-  }
-
-  .modal-header {
-    border-bottom-color: transparent;
-    .close {
-      outline: 0;
-    }
-  }
-
-  .modal-footer {
-    border-top-color: transparent;
-  }
-
-  .btn-link {
-    color: $gray-700;
-    &:hover {
-      color: $black;
-    }
-  }
-
-  .btn-outline-secondary {
-    color: $gray-300;
-    background-color: transparent;
-    background-image: none;
-    border-color: $gray-300;
-    &:focus,
-    &.focus {
-      box-shadow: 0 0 0 0.2rem background-opacity(20);
-    }
-  }
-}
-
-.modal-dialog.theme-bg-dark {
-  .modal-title {
-    color: $foreground;
-  }
-  .modal-header {
-    .close {
-      color: $foreground;
-      text-shadow: 0 1px 0 $background;
-    }
-  }
-  .modal-content {
-    background: $content-bg;
-  }
-}
+// No using default modal styling
 
 /********** Browser Default Overides *********/
 ::selection {
@@ -727,14 +678,6 @@ input[type='number']::-webkit-inner-spin-button {
 
 ::-webkit-scrollbar-thumb:active {
   background: hsla(var(--dh-color-scrollbar-hsl), 0.35);
-}
-
-// used in inverted color sections, like light modals
-.theme-bg-light {
-  --dh-color-scrollbar-hsl: #{var(--dh-color-bg-hsl)};
-
-  scrollbar-color: hsla(var(--dh-color-scrollbar-hsl), 0.5)
-    hsla(var(--dh-color-scrollbar-hsl), 0.3); // firefox
 }
 
 /********** Monaco Overides *********/
@@ -873,16 +816,6 @@ input[type='number']::-webkit-inner-spin-button {
     &:-moz-focusring {
       color: transparent;
       text-shadow: 0 0 0 $foreground !important;
-    }
-  }
-
-  .modal-dialog.theme-bg-light .custom-select {
-    background-image: var(--dh-svg-icon-select-indicator),
-      solid-gradient($gray-200);
-
-    &:-moz-focusring {
-      color: transparent;
-      text-shadow: 0 0 0 $background !important;
     }
   }
 

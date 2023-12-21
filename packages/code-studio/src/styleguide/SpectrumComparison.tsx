@@ -17,7 +17,7 @@ import {
   View,
 } from '@adobe/react-spectrum';
 import {
-  ButtonOld,
+  Button as BootstrapButtonOld,
   Checkbox as CheckboxOld,
   ComboBox as ComboBoxOld,
   RadioGroup as RadioGroupOld,
@@ -67,22 +67,23 @@ export function SpectrumComparison(): JSX.Element {
       <Flex gap={20} wrap>
         <View>
           <h3>Buttons - Filled</h3>
-          <Grid gap={20} columns="repeat(2, 120px)">
+          <Grid gap={20} columns="repeat(2, 120px)" autoRows="40x">
             <label>Bootstrap</label>
             <label>Spectrum</label>
 
             {buttons.map(([level, variant]) => (
               <Fragment key={level}>
-                <ButtonOld className={`btn-${level}`}>{level}</ButtonOld>
+                <BootstrapButtonOld kind={level}>Button</BootstrapButtonOld>
+
                 <Button variant={variant} style="fill">
-                  {variant}
+                  Button
                 </Button>
               </Fragment>
             ))}
 
-            <ButtonOld className="btn-primary" disabled>
+            <BootstrapButtonOld kind="primary" disabled>
               Disabled
-            </ButtonOld>
+            </BootstrapButtonOld>
             <Button variant="accent" style="fill" isDisabled>
               Disabled
             </Button>
@@ -97,18 +98,16 @@ export function SpectrumComparison(): JSX.Element {
 
             {buttons.map(([level, variant]) => (
               <Fragment key={level}>
-                <ButtonOld className={`btn-outline-${level}`}>
-                  {level}
-                </ButtonOld>
+                <BootstrapButtonOld kind={level}>{level}</BootstrapButtonOld>
                 <Button variant={variant} style="outline">
                   {variant}
                 </Button>
               </Fragment>
             ))}
 
-            <ButtonOld className="btn-outline-primary" disabled>
+            <BootstrapButtonOld kind="secondary" disabled>
               Disabled
-            </ButtonOld>
+            </BootstrapButtonOld>
             <Button variant="primary" style="outline" isDisabled>
               Disabled
             </Button>
@@ -118,23 +117,23 @@ export function SpectrumComparison(): JSX.Element {
         <View>
           <h3>Action Buttons</h3>
 
-          <Grid gap={20} columns="repeat(2, 120px)">
+          <Grid gap={20} columns="repeat(2, 120px)" autoRows="40x">
             <label>Bootstrap</label>
             <label>Spectrum</label>
 
-            <ButtonOld className="btn-inline mx-2">Inline</ButtonOld>
+            <BootstrapButtonOld kind="inline">Inline</BootstrapButtonOld>
             <ActionButton>Action</ActionButton>
 
-            <ButtonOld className="btn-inline mx-2" disabled>
+            <BootstrapButtonOld kind="inline" disabled>
               Disabled
-            </ButtonOld>
+            </BootstrapButtonOld>
             <ActionButton isDisabled>Disabled</ActionButton>
           </Grid>
         </View>
 
         <View>
           <h3>Pickers</h3>
-          <Grid gap={20} columns="repeat(2, 192px)">
+          <Grid gap={20} columns="repeat(2, 192px)" autoRows="40x">
             <label>Bootstrap</label>
             <label>Spectrum</label>
 
@@ -199,7 +198,7 @@ export function SpectrumComparison(): JSX.Element {
 
         <View>
           <h3>Text Field</h3>
-          <Grid gap={20} columns="repeat(2, 192px)">
+          <Grid gap={20} columns="repeat(2, 192px)" autoRows="40x">
             <label>Bootstrap</label>
             <label>Spectrum</label>
             <div>

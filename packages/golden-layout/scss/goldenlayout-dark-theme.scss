@@ -9,13 +9,13 @@ $tab-font-size: 12px;
 
 $lm-tab-color: $gray-400;
 $lm-tab-hover-color: $gray-300;
-$lm-tab-active-color: $white;
+$lm-tab-active-color: var(--dh-color-text);
 $lm-tab-icon-color: $gray-200;
 
 //make some subtle tab background colors relative to our defined color
-$lm-tab-active-background: $content-bg;
-$lm-tab-background: var(--dh-color-gray-75);
-$lm-header-background: var(--dh-color-gray-75);
+$lm-tab-active-background: var(--dh-color-golden-layout-tab-selected-bg);
+$lm-tab-background: var(--dh-color-golden-layout-tab-bg);
+$lm-header-background: var(--dh-color-golden-layout-tab-header-bg);
 
 $lm-splitter-hover-color: $gray-400;
 $lm-splitter-active-color: $gray-300;
@@ -102,7 +102,7 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
   .lm_inner {
     box-sizing: border-box;
     border: $ant-thickness solid transparent; //offset shadow using a transparent border
-    box-shadow: inset 0 0 1rem 1px hsla(var(--dh-color-true-black-hsl), 0.45); //true black for this shadow
+    box-shadow: inset 0 0 1rem 1px var(--dh-color-dropshadow);
     opacity: 1; //set opacity back to 1, default 0.2 and backroudn was solid.
     background: accent-opacity(
       10
@@ -228,7 +228,7 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
 
 .lm_window_blur {
   .lm_header .lm_tab.lm_active.lm_focusin {
-    box-shadow: none;
+    box-shadow: inset -1px 0 0 0 $background;
   }
 }
 
@@ -278,8 +278,8 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
 
 .lm_tabdropdown_list {
   z-index: $zindex-dropdown;
-  background: $lm-tab-background;
-  box-shadow: $box-shadow-900;
+  background: var(--dh-color-popover-bg);
+  box-shadow: $box-shadow;
   border-radius: $border-radius;
   max-width: 12rem;
   margin: 0;
@@ -315,18 +315,22 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
   }
 
   .lm_tab {
-    background: $lm-tab-background;
+    background: transparent;
     color: $lm-tab-hover-color;
     box-shadow: none;
 
     &.lm_keyboard_active {
       color: $lm-tab-hover-color;
-      background-color: $primary-dark;
+      background-color: var(--dh-color-highlight-selected);
+
+      &:hover {
+        background-color: var(--dh-color-highlight-selected-hover);
+      }
     }
 
     &:hover {
       color: $lm-tab-active-color;
-      background-color: $primary;
+      background-color: var(--dh-color-highlight-hover);
     }
   }
 }
@@ -337,7 +341,7 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
   height: 100% !important;
   width: 100% !important;
   .lm_items {
-    box-shadow: $box-shadow-900;
+    box-shadow: $box-shadow;
   }
 
   // Pane controls are different in Maximized Mode, especially the old Icon "Maximise" that now has a different meaning, so "Minimize" (even if CSS Class did not change)

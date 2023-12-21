@@ -42,7 +42,7 @@ function Modals(): React.ReactElement {
       </div>
       <h2 className="ui-title">Custom Modal</h2>
       <div style={{ padding: '1rem' }}>
-        <div className="modal-dialog theme-bg-light" role="dialog">
+        <div className="modal-dialog" role="dialog">
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">Modal title</h5>

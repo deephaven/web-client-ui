@@ -21,27 +21,26 @@ $toast-outer-padding: $spacer-3;
     bottom: $toast-outer-padding;
     background: $modal-content-bg;
     width: $dialog-width;
-    color: $background;
     pointer-events: auto;
-    box-shadow: $tooltip-box-shadow;
+    box-shadow: $box-shadow;
     z-index: $zindex-popover;
 
     .btn-drag-handle {
       grid-area: drag-handle;
       cursor: grab;
-      display: flex;
-      justify-content: center;
-      align-items: center;
       border: none;
       border-radius: 0;
       height: 100%;
-      background: $gray-300;
       color: $gray-600;
       min-width: unset;
+      user-select: none;
+
+      svg {
+        margin: 0 !important;
+      }
 
       &:hover {
-        background-color: $gray-400;
-        color: $gray-700;
+        border: none;
       }
     }
 
@@ -49,8 +48,7 @@ $toast-outer-padding: $spacer-3;
       cursor: grabbing;
       .btn-drag-handle {
         cursor: grabbing;
-        background-color: $gray-400;
-        color: $gray-700;
+        border: none;
       }
     }
 
