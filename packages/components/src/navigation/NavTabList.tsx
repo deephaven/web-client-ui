@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import classNames from 'classnames';
 import clamp from 'lodash.clamp';
 import {
@@ -13,6 +19,7 @@ import DragUtils from '../DragUtils';
 import Button from '../Button';
 import NavTab from './NavTab';
 import './NavTabList.scss';
+import { ResolvableContextAction } from '../context-actions';
 
 // mouse hold timeout to act as hold instead of click
 const CLICK_TIMEOUT = 500;
@@ -27,13 +34,23 @@ export interface NavTabItem {
   isClosable?: boolean;
 }
 
-type NavTabListProps = {
+type NavTabListProps<T extends NavTabItem = NavTabItem> = {
   activeKey: string;
-  tabs: NavTabItem[];
+  tabs: T[];
   onSelect: (key: string) => void;
-  onClose: (key: string) => void;
+  onClose?: (key: string) => void;
   onReorder: (sourceIndex: number, destinationIndex: number) => void;
   isReorderAllowed: boolean;
+
+  /**
+   * Context items to add to the tab in addition to the default items.
+   * The default items are Close, Close to the Right, and Close All.
+   * The default items have a group value of 20.
+   *
+   * @param tab The tab to make context items for
+   * @returns Additional context items for the tab
+   */
+  makeContextItems?: (tab: T) => ResolvableContextAction[];
 };
 
 function isScrolledLeft(element: HTMLElement): boolean {
@@ -47,6 +64,62 @@ function isScrolledRight(element: HTMLElement): boolean {
   );
 }
 
+function makeBaseContextItems(
+  tab: NavTabItem,
+  tabs: NavTabItem[],
+  onClose: ((key: string) => void) | undefined
+): ResolvableContextAction[] {
+  const { isClosable, key } = tab;
+  const contextActions: ResolvableContextAction[] = [];
+  if (isClosable != null && onClose != null) {
+    contextActions.push({
+      title: 'Close',
+      order: 10,
+      group: 20,
+      action: () => {
+        onClose(key);
+      },
+    });
+
+    contextActions.push(() => ({
+      title: 'Close to the Right',
+      order: 20,
+      group: 20,
+      action: () => {
+        for (let i = tabs.length - 1; i > 0; i -= 1) {
+          if (tabs[i].key === key) break;
+          if (tabs[i].isClosable === true) onClose(tabs[i].key);
+        }
+      },
+      // IIFE to run when called
+      disabled: (() => {
+        let disable = true;
+        for (let i = tabs.length - 1; i > 0; i -= 1) {
+          if (tabs[i].key === tab.key) break;
+          if (tabs[i].isClosable === true) {
+            disable = false;
+            break;
+          }
+        }
+        return disable;
+      })(),
+    }));
+
+    contextActions.push({
+      title: 'Close All',
+      order: 30,
+      group: 20,
+      action: () => {
+        tabs.forEach(t => {
+          if (t.isClosable === true) onClose(t.key);
+        });
+      },
+    });
+  }
+
+  return contextActions;
+}
+
 function NavTabList({
   activeKey,
   tabs,
@@ -54,6 +127,7 @@ function NavTabList({
   onReorder,
   onClose,
   isReorderAllowed,
+  makeContextItems,
 }: NavTabListProps): React.ReactElement {
   const containerRef = useRef<HTMLDivElement>();
   const [isOverflowing, setIsOverflowing] = useState(true);
@@ -272,6 +346,19 @@ function NavTabList({
     };
   }, []);
 
+  const tabContextActionMap = useMemo(() => {
+    const tabContextActions = new Map<string, ResolvableContextAction[]>();
+    tabs.forEach(tab => {
+      const { key } = tab;
+      const contextActions = [
+        ...makeBaseContextItems(tab, tabs, onClose),
+        ...(makeContextItems?.(tab) ?? []),
+      ];
+      tabContextActions.set(key, contextActions);
+    });
+    return tabContextActions;
+  }, [makeContextItems, tabs, onClose]);
+
   const activeTabRef = useRef<HTMLDivElement>(null);
   const activeTab = tabs.find(tab => tab.key === activeKey) ?? tabs[0];
   const navTabs = tabs.map((tab, index) => {
@@ -288,6 +375,7 @@ function NavTabList({
         onSelect={onSelect}
         onClose={onClose}
         isDraggable={isReorderAllowed}
+        contextActions={tabContextActionMap.get(key)}
       />
     );
   });

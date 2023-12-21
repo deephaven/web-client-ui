@@ -4,15 +4,18 @@ import { Draggable } from 'react-beautiful-dnd';
 import { vsClose } from '@deephaven/icons';
 import type { NavTabItem } from './NavTabList';
 import Button from '../Button';
+import ContextActions from '../context-actions/ContextActions';
+import { ResolvableContextAction } from '../context-actions';
 
 interface NavTabProps {
   tab: NavTabItem;
   onSelect: (key: string) => void;
-  onClose: (key: string) => void;
+  onClose?: (key: string) => void;
   isActive: boolean;
   activeRef: React.RefObject<HTMLDivElement>;
   index: number;
   isDraggable: boolean;
+  contextActions?: ResolvableContextAction[];
 }
 
 const NavTab = memo(
@@ -24,6 +27,7 @@ const NavTab = memo(
     activeRef,
     index,
     isDraggable,
+    contextActions,
   }: NavTabProps) => {
     const { key, isClosable = false, title } = tab;
 
@@ -70,7 +74,7 @@ const NavTab = memo(
                   kind="ghost"
                   className="btn-nav-tab-close"
                   onClick={event => {
-                    onClose(key);
+                    onClose?.(key);
                     event.stopPropagation();
                     event.preventDefault();
                   }}
@@ -79,6 +83,7 @@ const NavTab = memo(
                 />
               )}
             </div>
+            <ContextActions actions={contextActions} />
           </div>
         )}
       </Draggable>

@@ -44,6 +44,36 @@ function NavTabListExample({
     setTabs(t => t.filter(tab => tab.key !== key));
   }, []);
 
+  const makeContextItems = useCallback(
+    (tab: NavTabItem) => [
+      {
+        title: 'Select Tab to the Left',
+        group: 10,
+        order: 10,
+        disabled: tabs[0].key === tab.key,
+        action: () => {
+          const index = tabs.findIndex(t => t.key === tab.key);
+          if (index > 0) {
+            setActiveKey(tabs[index - 1].key);
+          }
+        },
+      },
+      {
+        title: 'Select Tab to the Right',
+        group: 30,
+        order: 10,
+        disabled: tabs[tabs.length - 1].key === tab.key,
+        action: () => {
+          const index = tabs.findIndex(t => t.key === tab.key);
+          if (index < tabs.length - 1) {
+            setActiveKey(tabs[index + 1].key);
+          }
+        },
+      },
+    ],
+    [tabs]
+  );
+
   return (
     <NavTabList
       tabs={tabs}
@@ -52,6 +82,7 @@ function NavTabListExample({
       onReorder={handleReorder}
       onClose={handleClose}
       isReorderAllowed
+      makeContextItems={makeContextItems}
     />
   );
 }
