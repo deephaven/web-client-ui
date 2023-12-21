@@ -171,7 +171,10 @@ class ColumnStatistics extends Component<
       model.isColumnStatisticsAvailable;
     const statisticElements = [];
     const columnType = column.type.substring(column.type.lastIndexOf('.') + 1);
-    const description = column.description === null ? null : column.description;
+    const description =
+      column.description === null
+        ? null
+        : column.description.substring(column.description.lastIndexOf(' ') + 1);
     if (statistics != null) {
       for (let i = 0; i < statistics.length; i += 1) {
         const { operation, className, value, type } = statistics[i];
@@ -201,7 +204,7 @@ class ColumnStatistics extends Component<
       <div className="column-statistics">
         <div className="column-statistics-title">
           {column.name}
-          <span className="column-statistics-type">&nbsp;({columnType})</span>
+          <span className="column-statistics-type">&nbsp;({description})</span>
           <CopyButton
             className="column-statistics-copy"
             tooltip="Copy column name"
@@ -209,7 +212,9 @@ class ColumnStatistics extends Component<
           />
         </div>
         {description != null && (
-          <div className="column-statistics-description">{description}</div>
+          <div className="column-statistics-description">
+            Previewing as {columnType}
+          </div>
         )}
         {columnIndex != null && !model.isColumnSortable(columnIndex) && (
           <div className="column-statistics-status">
