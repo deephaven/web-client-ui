@@ -40,13 +40,8 @@ class IrisGridPartitionedTableModel
   ) {
     super(dh, formatter);
     this.partitionedTable = partitionedTable;
-    // Get the most recently added key
-    let lastKey;
-    this.partitionedTable.getKeys().forEach(key => {
-      lastKey = key;
-    });
     this.config = {
-      partitions: Array.isArray(lastKey) ? lastKey : [lastKey],
+      partitions: [],
       mode: 'partition',
     };
   }
@@ -88,13 +83,23 @@ class IrisGridPartitionedTableModel
   }
 
   async initializePartitionModel(): Promise<IrisGridModel> {
+    const keyTable = await this.partitionedTable.getKeyTable();
+    const sorts = keyTable.columns.map(column => column.sort().desc());
+    keyTable.applySort(sorts);
+    keyTable.setViewport(0, 0);
+    const data = await keyTable.getViewportData();
+    const row = data.rows[0];
+    const values = keyTable.columns.map(column => row.get(column));
+    this.config = {
+      partitions: values,
+      mode: 'partition',
+    };
+
     const initTable = await this.partitionedTable.getTable(
       this.config.partitions
     );
     const tableCopy = await initTable.copy();
-    return Promise.resolve(
-      new IrisGridTableModel(this.dh, tableCopy, this.formatter)
-    );
+    return new IrisGridTableModel(this.dh, tableCopy, this.formatter);
   }
 }
 
