@@ -220,7 +220,8 @@ function mouseDoubleClick(
 
 function keyDown(key: string, component: Grid, extraArgs?: KeyboardEventInit) {
   const args = { key, ...extraArgs };
-  component.handleKeyDown(
+  component.notifyKeyboardHandlers(
+    'onDown',
     new KeyboardEvent('keydown', args) as unknown as React.KeyboardEvent
   );
 }

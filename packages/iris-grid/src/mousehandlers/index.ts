@@ -2,6 +2,7 @@ export { default as IrisGridCellOverflowMouseHandler } from './IrisGridCellOverf
 export { default as IrisGridColumnSelectMouseHandler } from './IrisGridColumnSelectMouseHandler';
 export { default as IrisGridColumnTooltipMouseHandler } from './IrisGridColumnTooltipMouseHandler';
 export { default as IrisGridContextMenuHandler } from './IrisGridContextMenuHandler';
+export { default as IrisGridCopyCellMouseHandler } from './IrisGridCopyCellMouseHandler';
 export { default as IrisGridDataSelectMouseHandler } from './IrisGridDataSelectMouseHandler';
 export { default as IrisGridFilterMouseHandler } from './IrisGridFilterMouseHandler';
 export { default as IrisGridRowTreeMouseHandler } from './IrisGridRowTreeMouseHandler';

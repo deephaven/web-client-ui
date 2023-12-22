@@ -120,6 +120,7 @@ import {
   IrisGridColumnSelectMouseHandler,
   IrisGridColumnTooltipMouseHandler,
   IrisGridContextMenuHandler,
+  IrisGridCopyCellMouseHandler,
   IrisGridDataSelectMouseHandler,
   IrisGridFilterMouseHandler,
   IrisGridRowTreeMouseHandler,
@@ -311,6 +312,9 @@ export interface IrisGridProps {
 
   // eslint-disable-next-line react/no-unused-prop-types
   columnNotAllowedCursor: string;
+
+  // eslint-disable-next-line react/no-unused-prop-types
+  copyCursor: string;
   name: string;
   onlyFetchVisibleColumns: boolean;
 
@@ -485,6 +489,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     columnSelectionValidator: null,
     columnAllowedCursor: null,
     columnNotAllowedCursor: null,
+    copyCursor: null,
     name: 'table',
     onlyFetchVisibleColumns: true,
     showSearchBar: false,
@@ -617,6 +622,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     this.gotoRowRef = React.createRef();
 
+    this.isCopying = false;
+
     this.toggleFilterBarAction = {
       action: () => this.toggleFilterBar(),
       shortcut: SHORTCUTS.TABLE.TOGGLE_QUICK_FILTER,
@@ -694,15 +701,12 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       columnHeaderGroups,
     } = props;
 
+    const { dh } = model;
     const keyHandlers: KeyHandler[] = [
       new ReverseKeyHandler(this),
       new ClearFilterKeyHandler(this),
     ];
-    if (canCopy) {
-      keyHandlers.push(new CopyKeyHandler(this));
-    }
-    const { dh } = model;
-    const mouseHandlers = [
+    const mouseHandlers: GridMouseHandler[] = [
       new IrisGridCellOverflowMouseHandler(this),
       new IrisGridRowTreeMouseHandler(this),
       new IrisGridTokenMouseHandler(this),
@@ -714,7 +718,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       new IrisGridDataSelectMouseHandler(this),
       new PendingMouseHandler(this),
     ];
-
+    if (canCopy) {
+      keyHandlers.push(new CopyKeyHandler(this));
+      mouseHandlers.push(new IrisGridCopyCellMouseHandler(this));
+    }
     const movedColumns =
       movedColumnsProp.length > 0
         ? movedColumnsProp
@@ -1009,6 +1016,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   filterInputRef: React.RefObject<FilterInputField>;
 
   gotoRowRef: React.RefObject<GotoRowElement>;
+
+  isCopying: boolean;
 
   toggleFilterBarAction: Action;
 
@@ -2028,6 +2037,25 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       copyToClipboard(value).catch(e => log.error('Unable to copy cell', e));
     } else {
       log.error('Attempted to copyCell for user without copy permission.');
+    }
+  }
+
+  copyColumnHeader(columnIndex: GridRangeIndex, columnDepth = 0): void {
+    if (columnIndex === null) {
+      return;
+    }
+    const { canCopy } = this.props;
+    const { movedColumns } = this.state;
+
+    if (canCopy) {
+      const copyOperation = {
+        columnIndex,
+        columnDepth,
+        movedColumns,
+      };
+      this.setState({ copyOperation });
+    } else {
+      log.error('Attempted copyColumnHeader for user without copy permission.');
     }
   }
 
