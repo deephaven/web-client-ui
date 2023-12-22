@@ -308,16 +308,16 @@ class IrisGridCopyHandler extends Component<
   async startFetch(): Promise<void> {
     this.stopFetch();
 
-    this.setState({
-      buttonState: IrisGridCopyHandler.BUTTON_STATES.FETCH_IN_PROGRESS,
-      copyState: IrisGridCopyHandler.COPY_STATES.FETCH_RANGES_IN_PROGRESS,
-    });
-
     const { model, copyOperation } = this.props;
 
     if (isCopyHeaderOperation(copyOperation)) {
       const { columnIndex, columnDepth, movedColumns } = copyOperation;
       log.debug('startFetch copyHeader', columnIndex, columnDepth);
+
+      this.setState({
+        buttonState: IrisGridCopyHandler.BUTTON_STATES.FETCH_IN_PROGRESS,
+        copyState: IrisGridCopyHandler.COPY_STATES.FETCH_HEADER_IN_PROGRESS,
+      });
 
       const modelIndex = GridUtils.getModelIndex(columnIndex, movedColumns);
       const copyText = model.textForColumnHeader(modelIndex, columnDepth);
@@ -339,6 +339,11 @@ class IrisGridCopyHandler extends Component<
         formatValues,
       } = copyOperation;
       log.debug('startFetch copyRanges', ranges);
+
+      this.setState({
+        buttonState: IrisGridCopyHandler.BUTTON_STATES.FETCH_IN_PROGRESS,
+        copyState: IrisGridCopyHandler.COPY_STATES.FETCH_RANGES_IN_PROGRESS,
+      });
 
       const hiddenColumns = IrisGridUtils.getHiddenColumns(userColumnWidths);
       let modelRanges = GridUtils.getModelRanges(ranges, movedColumns);
