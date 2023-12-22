@@ -15,7 +15,7 @@ interface NavTabProps {
   activeRef: React.RefObject<HTMLDivElement>;
   index: number;
   isDraggable: boolean;
-  contextActions?: ResolvableContextAction[];
+  contextActions?: ResolvableContextAction | ResolvableContextAction[];
 }
 
 const NavTab = memo(
@@ -29,7 +29,7 @@ const NavTab = memo(
     isDraggable,
     contextActions,
   }: NavTabProps) => {
-    const { key, isClosable = false, title } = tab;
+    const { key, isClosable = onClose != null, title } = tab;
 
     return (
       <Draggable

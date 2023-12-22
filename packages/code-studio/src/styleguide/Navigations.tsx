@@ -44,7 +44,7 @@ function NavTabListExample({
     setTabs(t => t.filter(tab => tab.key !== key));
   }, []);
 
-  const makeContextItems = useCallback(
+  const makeContextActions = useCallback(
     (tab: NavTabItem) => [
       {
         title: 'Select Tab to the Left',
@@ -81,8 +81,7 @@ function NavTabListExample({
       onSelect={handleSelect}
       onReorder={handleReorder}
       onClose={handleClose}
-      isReorderAllowed
-      makeContextItems={makeContextItems}
+      makeContextActions={makeContextActions}
     />
   );
 }

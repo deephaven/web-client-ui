@@ -19,7 +19,7 @@ import DragUtils from '../DragUtils';
 import Button from '../Button';
 import NavTab from './NavTab';
 import './NavTabList.scss';
-import { ResolvableContextAction } from '../context-actions';
+import { ContextAction, ResolvableContextAction } from '../context-actions';
 
 // mouse hold timeout to act as hold instead of click
 const CLICK_TIMEOUT = 500;
@@ -29,28 +29,70 @@ const START_SPEED = 0.01;
 const ACCELERATION = 0.0005;
 
 export interface NavTabItem {
+  /**
+   * Unique key for the tab.
+   */
   key: string;
+
+  /**
+   * Title to display on the tab.
+   */
   title: string;
+
+  /**
+   * Whether the tab is closable.
+   * If omitted, the tab will be closeable if onClose exists.
+   */
   isClosable?: boolean;
 }
 
 type NavTabListProps<T extends NavTabItem = NavTabItem> = {
+  /**
+   * The key of the active tab.
+   * If this does not match a tab key, no tab will be active.
+   */
   activeKey: string;
-  tabs: T[];
-  onSelect: (key: string) => void;
-  onClose?: (key: string) => void;
-  onReorder: (sourceIndex: number, destinationIndex: number) => void;
-  isReorderAllowed: boolean;
 
   /**
-   * Context items to add to the tab in addition to the default items.
-   * The default items are Close, Close to the Right, and Close All.
-   * The default items have a group value of 20.
+   * Array of tabs to display.
+   * @see {@link NavTabItem} for the minimum required properties.
+   */
+  tabs: T[];
+
+  /**
+   * Function called when a tab is selected.
+   *
+   * @param key The key of the tab to select
+   */
+  onSelect: (key: string) => void;
+
+  /**
+   * Function called when a tab is closed.
+   * If the function is provided, all tabs will be closeable by default.
+   * Tabs may set their own closeable property to override this behavior.
+   *
+   * @param key The key of the tab to close
+   */
+  onClose?: (key: string) => void;
+
+  /**
+   * Function called when a tab is reordered.
+   * If the function is omitted, the tab list will not be reorderable.
+   *
+   * @param sourceIndex Index in the tab list the drag started from
+   * @param destinationIndex Index in the tab list the drag ended at
+   */
+  onReorder?: (sourceIndex: number, destinationIndex: number) => void;
+
+  /**
+   * Context actions to add to the tab in addition to the default actions.
+   * The default actions are Close, Close to the Right, and Close All.
+   * The default actions have a group value of 20.
    *
    * @param tab The tab to make context items for
    * @returns Additional context items for the tab
    */
-  makeContextItems?: (tab: T) => ResolvableContextAction[];
+  makeContextActions?: (tab: T) => ContextAction | ContextAction[];
 };
 
 function isScrolledLeft(element: HTMLElement): boolean {
@@ -64,13 +106,13 @@ function isScrolledRight(element: HTMLElement): boolean {
   );
 }
 
-function makeBaseContextItems(
+function makeBaseContextActions(
   tab: NavTabItem,
   tabs: NavTabItem[],
   onClose: ((key: string) => void) | undefined
-): ResolvableContextAction[] {
+): ContextAction[] {
   const { isClosable = false, key } = tab;
-  const contextActions: ResolvableContextAction[] = [];
+  const contextActions: ContextAction[] = [];
   if (isClosable && onClose != null) {
     contextActions.push({
       title: 'Close',
@@ -81,7 +123,16 @@ function makeBaseContextItems(
       },
     });
 
-    contextActions.push(() => ({
+    let disabled = true;
+    for (let i = tabs.length - 1; i > 0; i -= 1) {
+      if (tabs[i].key === tab.key) break;
+      if (tabs[i].isClosable === true) {
+        disabled = false;
+        break;
+      }
+    }
+
+    contextActions.push({
       title: 'Close to the Right',
       order: 20,
       group: 20,
@@ -91,19 +142,8 @@ function makeBaseContextItems(
           if (tabs[i].isClosable === true) onClose(tabs[i].key);
         }
       },
-      // IIFE to run when called
-      disabled: (() => {
-        let disable = true;
-        for (let i = tabs.length - 1; i > 0; i -= 1) {
-          if (tabs[i].key === tab.key) break;
-          if (tabs[i].isClosable === true) {
-            disable = false;
-            break;
-          }
-        }
-        return disable;
-      })(),
-    }));
+      disabled,
+    });
 
     contextActions.push({
       title: 'Close All',
@@ -126,8 +166,7 @@ function NavTabList({
   onSelect,
   onReorder,
   onClose,
-  isReorderAllowed,
-  makeContextItems,
+  makeContextActions,
 }: NavTabListProps): React.ReactElement {
   const containerRef = useRef<HTMLDivElement>();
   const [isOverflowing, setIsOverflowing] = useState(true);
@@ -161,7 +200,7 @@ function NavTabList({
         return;
       }
 
-      onReorder(result.source.index, result.destination.index);
+      onReorder?.(result.source.index, result.destination.index);
     },
     [onReorder]
   );
@@ -351,16 +390,16 @@ function NavTabList({
     tabs.forEach(tab => {
       const { key } = tab;
       const contextActions = [
-        ...makeBaseContextItems(tab, tabs, onClose),
-        ...(makeContextItems?.(tab) ?? []),
+        () => makeBaseContextActions(tab, tabs, onClose),
+        () => makeContextActions?.(tab) ?? [],
       ];
       tabContextActions.set(key, contextActions);
     });
     return tabContextActions;
-  }, [makeContextItems, tabs, onClose]);
+  }, [makeContextActions, tabs, onClose]);
 
   const activeTabRef = useRef<HTMLDivElement>(null);
-  const activeTab = tabs.find(tab => tab.key === activeKey) ?? tabs[0];
+  const activeTab = tabs.find(tab => tab.key === activeKey);
   const navTabs = tabs.map((tab, index) => {
     const { key } = tab;
     const isActive = tab === activeTab;
@@ -374,7 +413,7 @@ function NavTabList({
         activeRef={activeTabRef}
         onSelect={onSelect}
         onClose={onClose}
-        isDraggable={isReorderAllowed}
+        isDraggable={onReorder != null}
         contextActions={tabContextActionMap.get(key)}
       />
     );
