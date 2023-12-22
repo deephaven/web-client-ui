@@ -127,14 +127,22 @@ class MonacoUtils {
     ];
 
     const dhDarkColors = {
+      foreground: MonacoTheme.foreground,
       errorForeground: MonacoTheme['error-foreground'],
       'inputOption.activeBorder': MonacoTheme['input-option-active-border'],
       'editor.background': MonacoTheme.background,
       'editor.foreground': MonacoTheme.foreground,
-      'editor.lineHighlightBackground': MonacoTheme['editor-line-highlight-bg'],
+      'editor.lineHighlightBackground':
+        MonacoTheme['editor-line-highlight-background'],
       'editorLineNumber.foreground':
         MonacoTheme['editor-line-number-foreground'],
       'editor.selectionBackground': MonacoTheme['editor-selection-background'],
+      'editor.inactiveSelectionBackground':
+        MonacoTheme['editor-inactive-selection-background'],
+      'editor.selectionHighlightBackground':
+        MonacoTheme['editor-selection-highlight-background'],
+      'editor.wordHighlightBackground':
+        MonacoTheme['editor-word-highlight-background'],
       'editor.findMatchBackground': MonacoTheme['editor-find-match-background'],
       'editor.findMatchHighlightBackground':
         MonacoTheme['editor-find-match-highlight-background'],
@@ -145,7 +153,11 @@ class MonacoUtils {
         MonacoTheme['editor-suggest-widget-foreground'],
       'editorSuggestWidget.selectedBackground':
         MonacoTheme['editor-suggest-widget-selected-background'],
+      'list.activeSelectionBackground':
+        MonacoTheme['editor-suggest-widget-selected-background'],
       'editorSuggestWidget.selectedForeground':
+        MonacoTheme['editor-suggest-widget-selected-foreground'],
+      'list.activeSelectionForeground':
         MonacoTheme['editor-suggest-widget-selected-foreground'],
       'editorSuggestWidget.highlightForeground':
         MonacoTheme['editor-suggest-widget-highlightForeground'],
@@ -155,6 +167,8 @@ class MonacoUtils {
       'dropdown.background': MonacoTheme['context-menu-background'],
       'dropdown.foreground': MonacoTheme['context-menu-foreground'],
       'menu.selectionBackground': MonacoTheme['menu-selection-background'],
+      'menu.selectionForeground': MonacoTheme['menu-selection-foreground'],
+      'keybindingLabel.foreground': MonacoTheme['menu-selection-foreground'],
       'list.focusBackground': MonacoTheme['menu-selection-background'],
       'editorWidget.background': MonacoTheme['editor-widget-background'],
       'inputOption.activeBackground':
@@ -169,6 +183,20 @@ class MonacoUtils {
       'textLink.activeForeground': MonacoTheme['text-link-active-foreground'],
       'editorLink.activeForeground':
         MonacoTheme['editor-link-active-foreground'],
+      'editorBracketHighlight.foreground1':
+        MonacoTheme['editor-bracket-foreground1'],
+      'editorBracketHighlight.foreground2':
+        MonacoTheme['editor-bracket-foreground2'],
+      'editorBracketHighlight.foreground3':
+        MonacoTheme['editor-bracket-foreground3'],
+      'editorBracketHighlight.foreground4':
+        MonacoTheme['editor-bracket-foreground4'],
+      'editorBracketHighlight.foreground5':
+        MonacoTheme['editor-bracket-foreground5'],
+      'editorBracketHighlight.foreground6':
+        MonacoTheme['editor-bracket-foreground6'],
+      'editorBracketHighlight.unexpectedBracket.foreground':
+        MonacoTheme['editor-unexpected-bracket-foreground'],
     };
 
     monaco.editor.defineTheme('dh-dark', {

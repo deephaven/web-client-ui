@@ -1,7 +1,6 @@
 @import '../../scss/custom.scss';
 
 $arrow-width: 5px;
-$popper-shadow: 0 0.1rem 1.5rem 0.25rem hsla(var(--dh-color-black-hsl), 0.45);
 $animation-scale: 0.92;
 $animation-offset: 10px;
 
@@ -10,10 +9,17 @@ $animation-offset: 10px;
   z-index: 5000;
 }
 
+.popper.popper-tooltip {
+  --background-color: var(--dh-color-tooltip-bg);
+}
+
 .popper {
-  background: var(--dh-color-tooltip-bg);
+  --background-color: var(--dh-color-popover-bg);
+
+  background: var(--background-color);
   color: var(--dh-color-tooltip-fg);
   border-radius: $border-radius;
+  box-shadow: $box-shadow;
   transition:
     visibility $transition,
     opacity $transition;
@@ -22,7 +28,6 @@ $animation-offset: 10px;
 
   .popper-content {
     position: relative;
-    box-shadow: $popper-shadow;
 
     .tooltip-content {
       text-align: center;
@@ -36,7 +41,7 @@ $animation-offset: 10px;
     border-style: solid;
     position: absolute;
     margin: $arrow-width;
-    border-color: var(--dh-color-tooltip-bg);
+    border-color: var(--background-color);
   }
 }
 

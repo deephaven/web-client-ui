@@ -13,6 +13,7 @@ import {
 import {
   Button,
   CopyButton,
+  Logo,
   ThemeContext,
   ThemePicker,
   Tooltip,
@@ -24,7 +25,6 @@ import {
   makeMessage,
 } from '@deephaven/jsapi-utils';
 import { assertNotNull } from '@deephaven/utils';
-import Logo from './community-wordmark-app.svg';
 import FormattingSectionContent from './FormattingSectionContent';
 import LegalNotice from './LegalNotice';
 import SettingsMenuSection from './SettingsMenuSection';
@@ -147,6 +147,7 @@ export class SettingsMenu extends Component<
     const userDisplayName = user.displayName ?? user.name;
     const hasUserImage = user.image != null && user.image !== '';
     const showUserName = userDisplayName !== '';
+
     return (
       <div className="app-settings-menu">
         <header className="app-settings-menu-header">
@@ -345,16 +346,17 @@ export class SettingsMenu extends Component<
               </div>
             </div>
             <div className="app-settings-footer-section">
-              <div className="logo">
-                <a
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  href="https://deephaven.io"
-                  className="d-inline-block custom-link p-1"
-                >
-                  <img src={Logo} alt="Deephaven Data Labs" width="230px" />
-                </a>
-              </div>
+              <a
+                target="_blank"
+                rel="noreferrer noopener"
+                href="https://deephaven.io"
+                style={{
+                  display: 'block',
+                  width: '61.8%',
+                }}
+              >
+                <Logo />
+              </a>
             </div>
           </div>
         </div>

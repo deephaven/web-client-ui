@@ -24,10 +24,7 @@
       display: block;
       position: absolute;
       width: 100%;
-      background: linear-gradient(
-        hsla(var(--dh-color-black-hsl), 0.6),
-        hsla(var(--dh-color-black-hsl), 0)
-      );
+      box-shadow: var(--dh-color-dropshadow) 0 6px 6px -6px inset;
       height: $size;
       opacity: 0;
       transition: opacity $transition-long;

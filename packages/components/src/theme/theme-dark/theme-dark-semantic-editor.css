@@ -6,6 +6,9 @@
   --dh-color-editor-line-number-fg: var(--dh-color-gray-700);
   --dh-color-editor-line-highlight-bg: var(--dh-color-gray-200);
   --dh-color-editor-selection-bg: var(--dh-color-text-highlight);
+  --dh-color-editor-inactive-selection-bg: var(--dh-color-gray-300);
+  --dh-color-editor-selection-highlight-bg: var(--dh-color-gray-500);
+  --dh-color-editor-word-highlight-bg: var(--dh-color-gray-500);
 
   /* Code rules */
   --dh-color-editor-comment: var(--dh-color-gray-700);
@@ -21,6 +24,15 @@
   --dh-color-editor-string-delim: var(--dh-color-gray-700);
   --dh-color-editor-string: var(--dh-color-visual-yellow);
 
+  /* Brackets */
+  --dh-color-editor-bracket-fg1: var(--dh-color-visual-yellow);
+  --dh-color-editor-bracket-fg2: var(--dh-color-visual-purple);
+  --dh-color-editor-bracket-fg3: var(--dh-color-visual-blue);
+  --dh-color-editor-bracket-fg4: var(--dh-color-visual-yellow);
+  --dh-color-editor-bracket-fg5: var(--dh-color-visual-purple);
+  --dh-color-editor-bracket-fg6: var(--dh-color-visual-blue);
+  --dh-color-editor-unexpected-bracket-fg: var(--dh-color-visual-negative);
+
   /* Input */
   --dh-color-editor-focus-border: var(--dh-color-focus-border);
   --dh-color-editor-input-option-active-border: var(--dh-color-focus-ring);
@@ -30,8 +42,9 @@
 
   /* Menus */
   --dh-color-editor-context-menu-bg: var(--dh-color-gray-300);
-  --dh-color-editor-context-menu-fg: var(--dh-color-gray-900);
+  --dh-color-editor-context-menu-fg: var(--dh-color-text);
   --dh-color-editor-menu-selection-bg: var(--dh-color-highlight-hover);
+  --dh-color-editor-menu-selection-fg: var(--dh-color-text);
 
   /* Logging */
   --dh-color-editor-log-date: var(--dh-color-gray-700);
@@ -54,9 +67,9 @@
   /* Suggest */
   --dh-color-editor-suggest-bg: var(--dh-color-gray-200);
   --dh-color-editor-suggest-border: var(--dh-color-gray-400);
-  --dh-color-editor-suggest-fg: var(--dh-color-white);
+  --dh-color-editor-suggest-fg: var(--dh-color-text);
   --dh-color-editor-suggest-selected-bg: var(--dh-color-highlight-selected);
-  --dh-color-editor-suggest-selected-fg: var(--dh-color-white);
+  --dh-color-editor-suggest-selected-fg: var(--dh-color-text);
   --dh-color-editor-suggest-highlight-fg: var(--dh-color-accent-700);
   --dh-color-editor-suggest-focus-highlight-fg: var(--dh-color-accent-700);
   --dh-color-editor-suggest-hover-bg: var(--dh-color-highlight-hover);

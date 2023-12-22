@@ -20,6 +20,7 @@ import {
   Button,
   InfoModal,
   LoadingSpinner,
+  Logo,
   BasicModal,
   DebouncedModal,
 } from '@deephaven/components';
@@ -91,7 +92,6 @@ import JSZip from 'jszip';
 import SettingsMenu from '../settings/SettingsMenu';
 import AppControlsMenu from './AppControlsMenu';
 import { getLayoutStorage, getServerConfigValues } from '../redux';
-import Logo from '../settings/community-wordmark-app.svg';
 import './AppMainContainer.scss';
 import WidgetList, { WindowMouseEvent } from './WidgetList';
 import EmptyDashboard from './EmptyDashboard';
@@ -740,12 +740,7 @@ export class AppMainContainer extends Component<
       >
         <nav className="nav-container">
           <div className="app-main-top-nav-menus">
-            <img
-              src={Logo}
-              alt="Deephaven Data Labs"
-              width="115px"
-              className="ml-1"
-            />
+            <Logo className="ml-1" style={{ maxHeight: '20px' }} />
             <div>
               <Button
                 kind="ghost"
@@ -800,10 +795,7 @@ export class AppMainContainer extends Component<
                 onClick={this.handleSettingsMenuShow}
                 icon={
                   <span className="fa-layers">
-                    <FontAwesomeIcon
-                      icon={vsGear}
-                      transform="grow-3 right-1 down-1"
-                    />
+                    <FontAwesomeIcon icon={vsGear} transform="grow-3" />
                     {isDisconnected && !isAuthFailed && (
                       <>
                         <FontAwesomeIcon

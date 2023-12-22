@@ -1,9 +1,11 @@
 @import '../scss/custom.scss';
 
-$socket-button-bg: var(--dh-color-neutral-bg);
-$socket-button-disabled-bg: $input-disabled-bg;
-$socket-button-disabled-border-color: var(--dh-color-black);
-$socket-button-hover-bg: $primary-hover;
+$socket-button-bg: var(--dh-color-action-bg);
+$socket-button-disabled-bg: var(--dh-color-action-disabled-bg);
+$socket-button-disabled-border-color: var(--dh-color-action-disabled-border);
+$socket-button-hover-bg: var(--dh-color-action-hover-bg);
+$socket-button-hover-border: var(--dh-color-hover-border);
+$socket-button-down-bg: var(--dh-color-action-down-bg);
 $socket-size: 18px;
 $socket-linked-color: $primary;
 $socket-linked-source-color: $purple;
@@ -47,15 +49,15 @@ $socket-bg: $content-bg;
 
   &:hover {
     background-color: $socket-button-hover-bg;
-    border-color: $socket-button-hover-bg;
+    border-color: $socket-button-hover-border;
     &::after {
-      border-color: $socket-button-hover-bg;
+      border-color: $socket-button-hover-border;
     }
   }
 
   &:active {
-    border-color: $primary-light;
-    background-color: $primary-light;
+    border-color: $socket-button-hover-border;
+    background-color: $socket-button-down-bg;
   }
 
   .btn-socketed-icon {

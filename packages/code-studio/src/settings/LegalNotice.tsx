@@ -13,7 +13,7 @@ function LegalNotice(): ReactElement {
       <Button kind="ghost" onClick={toggle} icon={vsLaw}>
         Legal Notices
       </Button>
-      <Modal isOpen={modal} toggle={toggle} className="theme-bg-light">
+      <Modal isOpen={modal} toggle={toggle}>
         <ModalHeader toggle={toggle}>Legal Notice</ModalHeader>
         <ModalBody>
           <p>

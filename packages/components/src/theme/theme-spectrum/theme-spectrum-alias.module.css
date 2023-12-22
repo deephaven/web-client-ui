@@ -1,8 +1,36 @@
 /* stylelint-disable custom-property-empty-line-before */
 /* stylelint-disable alpha-value-notation */
 .dh-spectrum-alias {
-  --spectrum-body-text-color: var(--dh-color-text);
+  /*********** Override variables in spectrum-global.css **********************/
   --spectrum-alias-background-color-default: var(--dh-color-bg);
+  --spectrum-alias-background-color-disabled: var(--dh-color-disabled-bg);
+
+  --spectrum-alias-label-text-color: var(--dh-color-label-text);
+  --spectrum-alias-text-color: var(--dh-color-text);
+  --spectrum-alias-text-color-hover: var(--dh-color-text-hover);
+  --spectrum-alias-text-color-disabled: var(--dh-color-text-disabled);
+  --spectrum-alias-border-color: var(--dh-color-border);
+  --spectrum-alias-border-color-focus: var(--dh-color-border-focus);
+  --spectrum-alias-input-border-color-key-focus: var(
+    --spectrum-alias-border-color-focus
+  );
+  --spectrum-alias-focus-color: var(--dh-color-focus);
+  --spectrum-alias-focus-ring-color: var(--dh-color-focus-ring);
+  --spectrum-alias-icon-color: var(--dh-color-icon-fg);
+  --spectrum-alias-icon-color-disabled: var(--dh-color-icon-disabled-fg);
+
+  --spectrum-actionbutton-background-color-disabled: var(
+    --dh-color-action-disabled-bg
+  );
+  --spectrum-actionbutton-border-color-disabled: var(
+    --dh-color-action-disabled-border
+  );
+  --spectrum-actionbutton-text-color-disabled: var(
+    --dh-color-action-disabled-fg
+  );
+
+  /*********** Override variables in spectrum-darkest.css *********************/
+  --spectrum-body-text-color: var(--dh-color-text);
 
   /* Shadows / Overlays */
   --spectrum-alias-dropshadow-color: var(--dh-color-dropshadow);
@@ -68,11 +96,6 @@
   );
   --spectrum-alias-pasteboard-background-color: var(
     --spectrum-global-color-gray-50
-  );
-
-  /* Actions */
-  --spectrum-actionbutton-background-color-disabled: var(
-    --dh-color-action-disabled-bg
   );
 
   /* Tabs */
@@ -191,4 +214,59 @@
   --spectrum-purple-background-color-default: var(--dh-color-purple-bg);
   --spectrum-fuchsia-background-color-default: var(--dh-color-fuchsia-bg);
   --spectrum-magenta-background-color-default: var(--dh-color-magenta-bg);
+
+  /* Visual levels */
+  --spectrum-negative-visual-color: var(--dh-color-visual-negative);
+  --spectrum-positive-visual-color: var(--dh-color-visual-positive);
+  --spectrum-notice-visual-color: var(--dh-color-visual-notice);
+  --spectrum-informative-visual-color: var(--dh-color-visual-info);
+
+  /* Visual */
+  --spectrum-gray-visual-color: var(--dh-color-visual-gray);
+  --spectrum-red-visual-color: var(--dh-color-visual-red);
+  --spectrum-orange-visual-color: var(--dh-color-visual-orange);
+  --spectrum-yellow-visual-color: var(--dh-color-visual-yellow);
+  --spectrum-chartreuse-visual-color: var(--dh-color-visual-chartreuse);
+  --spectrum-celery-visual-color: var(--dh-color-visual-celery);
+  --spectrum-green-visual-color: var(--dh-color-visual-green);
+  --spectrum-seafoam-visual-color: var(--dh-color-visual-seafoam);
+  --spectrum-cyan-visual-color: var(--dh-color-visual-cyan);
+  --spectrum-blue-visual-color: var(--dh-color-visual-blue);
+  --spectrum-indigo-visual-color: var(--dh-color-visual-indigo);
+  --spectrum-purple-visual-color: var(--dh-color-visual-purple);
+  --spectrum-fuchsia-visual-color: var(--dh-color-visual-fuchsia);
+  --spectrum-magenta-visual-color: var(--dh-color-visual-magenta);
+
+  /*********** Override component specific variables **************************/
+
+  /* Textfield */
+  --spectrum-textfield-background-color: var(--dh-color-input-bg);
+  --spectrum-textfield-background-color-down: var(--dh-color-input-active-bg);
+  --spectrum-textfield-background-color-disabled: var(
+    --dh-color-input-disabled-bg
+  );
+  --spectrum-textfield-border-color: var(--dh-color-input-border);
+  --spectrum-textfield-border-color-disabled: var(
+    --dh-color-input-disabled-border
+  );
+
+  /* Fieldbutton */
+  --spectrum-fieldbutton-background-color: var(--dh-color-selector-bg);
+  --spectrum-fieldbutton-background-color-hover: var(
+    --dh-color-selector-hover-bg
+  );
+  --spectrum-fieldbutton-background-color-disabled: var(
+    --dh-color-input-disabled-bg
+  );
+  --spectrum-fieldbutton-border-color: var(--dh-color-input-border);
+  --spectrum-fieldbutton-border-color-hover: var(--dh-color-input-hover-border);
+  --spectrum-fieldbutton-icon-color: var(--dh-color-selector-fg);
+  --spectrum-fieldbutton-icon-color-hover: var(--dh-color-selector-hover-fg);
+
+  /* Dialogs */
+  --spectrum-dialog-title-text-color: var(--dh-color-dialog-title-fg);
+  --spectrum-dialog-content-text-color: var(--dh-color-dialog-fg);
+
+  /* Popovers */
+  --spectrum-popover-background-color: var(--dh-color-popover-bg);
 }

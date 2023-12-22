@@ -3,14 +3,19 @@
 .btn-navigation-menu-item {
   display: flex;
   list-style: none;
+  font-weight: normal;
   color: var(--dh-color-menu-item-fg);
   border-radius: 0;
   text-align: left;
   margin: 0;
-  padding: $spacer-2 $spacer-1 $spacer-2 $spacer;
+  padding: $spacer-1 $spacer-1 $spacer-1 $spacer-3;
+  padding-right: 0;
   width: 100%;
+  height: auto;
+  min-height: 32px;
   text-decoration: none;
   border: $input-border-width solid transparent;
+  transition: none;
 
   .icon {
     width: 25px;
@@ -37,7 +42,7 @@
   }
 
   &:hover {
-    background: $primary;
+    background: var(--dh-color-item-list-hover-bg);
     color: $foreground;
     text-decoration: none;
 

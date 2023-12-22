@@ -29,6 +29,7 @@ import GotoTopButton from './GotoTopButton';
 import { HIDE_FROM_E2E_TESTS_CLASS } from './utils';
 import { GoldenLayout } from './GoldenLayout';
 import { RandomAreaPlotAnimation } from './RandomAreaPlotAnimation';
+import SpectrumComparison from './SpectrumComparison';
 
 const stickyProps = {
   position: 'sticky',
@@ -120,6 +121,9 @@ function StyleGuide(): React.ReactElement {
 
         <SampleMenuCategory data-menu-category="Spectrum Components" />
         <SpectrumComponents />
+
+        <SampleMenuCategory data-menu-category="Spectrum Comparison" />
+        <SpectrumComparison />
       </div>
     </div>
   );

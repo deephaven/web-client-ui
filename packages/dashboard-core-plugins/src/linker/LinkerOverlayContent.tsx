@@ -200,6 +200,7 @@ export class LinkerOverlayContent extends Component<
   }
 
   handleMouseDown(event: React.MouseEvent): void {
+    event.preventDefault();
     const offset: Point = { x: 0, y: 0 };
     if (this.dialogRef.current) {
       const rect = this.dialogRef.current.getBoundingClientRect();

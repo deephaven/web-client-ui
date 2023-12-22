@@ -597,7 +597,7 @@ export class GridRenderer {
     maxX = state.metrics.maxX
   ): void {
     const { theme, metrics, model } = state;
-    const { maxDepth, shadowBlur, shadowColor } = theme;
+    const { maxDepth, shadowBlur, shadowColor, shadowAlpha } = theme;
 
     const colorSets = this.getCachedBackgroundColors(
       rowBackgroundColors,
@@ -657,7 +657,7 @@ export class GridRenderer {
     if (topShadowRows.length > 0) {
       context.save();
 
-      const startColor = this.getCachedColorWithAlpha(shadowColor, 0.15);
+      const startColor = this.getCachedColorWithAlpha(shadowColor, shadowAlpha);
       const endColor = this.getCachedColorWithAlpha(shadowColor, 0);
       const gradient = context.createLinearGradient(0, 0, 0, shadowBlur);
       gradient.addColorStop(0, startColor);
@@ -680,7 +680,7 @@ export class GridRenderer {
       context.save();
 
       const startColor = this.getCachedColorWithAlpha(shadowColor, 0);
-      const endColor = this.getCachedColorWithAlpha(shadowColor, 0.15);
+      const endColor = this.getCachedColorWithAlpha(shadowColor, shadowAlpha);
       const gradient = context.createLinearGradient(0, 0, 0, shadowBlur);
       gradient.addColorStop(0, startColor);
       gradient.addColorStop(1, endColor);

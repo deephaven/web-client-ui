@@ -9,7 +9,8 @@
 
   color: var(--dh-color-text);
 
-  .spectrum-theme-provider {
+  .spectrum-theme-provider,
+  [class^='spectrum_'] {
     color: var(--dh-color-text);
   }
 }
@@ -64,10 +65,6 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-}
-
-hr {
-  background-color: $gray-400;
 }
 
 .scroll-pane,
@@ -126,6 +123,19 @@ button:focus {
   min-width: 7rem;
   // Matching Spectrum styles
   -webkit-font-smoothing: antialiased;
+  // the following is to match spectrum buttons
+  height: 32px;
+  // vertical-align: top;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 3px;
+  padding-bottom: 5px;
+}
+
+.btn-sm {
+  height: 28px;
+  line-height: 28px;
 }
 
 span.btn-disabled-wrapper {
@@ -133,6 +143,18 @@ span.btn-disabled-wrapper {
   .btn.disabled,
   .btn:disabled {
     pointer-events: none;
+  }
+}
+
+// We use disabled success buttons as success messages in a few places.
+// We should stop doing that, and phase them out when we have toasts.
+.btn-success {
+  &.disabled,
+  &:disabled {
+    --dh-color-text-disabled: var(--dh-color-positive-contrast);
+    --dh-color-disabled-bg: var(--dh-color-positive-bg);
+
+    opacity: 0.5;
   }
 }
 
@@ -258,17 +280,22 @@ span.btn-disabled-wrapper {
 }
 
 .btn-icon {
+  // used in chart builder and conditional formatting
   text-align: center;
   padding: 0;
   min-width: 0;
   font-size: small;
   text-overflow: ellipsis;
   border-radius: 0;
+  height: auto;
+  flex-direction: column;
+  gap: 3px;
+  color: var(--dh-color-text);
 
   svg,
   img {
     display: block;
-    background: $gray-500;
+    background: var(--dh-color-action-bg);
     margin: auto;
     border-radius: 2px;
     margin-bottom: 2px;
@@ -282,9 +309,10 @@ span.btn-disabled-wrapper {
   &:hover,
   &:focus,
   &.active {
+    color: var(--dh-color-text);
     svg,
     img {
-      box-shadow: 0 0 0 2px $input-border-color;
+      box-shadow: 0 0 0 2px var(--dh-color-action-hover-border);
       filter: saturate(100%);
     }
   }
@@ -297,15 +325,14 @@ span.btn-disabled-wrapper {
 
     svg,
     img {
-      box-shadow: 0 0 0 2px $input-focus-border-color;
+      box-shadow: 0 0 0 2px var(--dh-color-action-active-border);
     }
   }
 }
 
 .btn-inline {
   min-width: 2.75rem;
-  padding-left: $spacer-1;
-  padding-right: $spacer-1;
+  padding: 0 $spacer-1;
   border-radius: $border-radius;
   background: var(--dh-color-action-bg);
   border: 1px solid var(--dh-color-action-border);
@@ -333,6 +360,7 @@ span.btn-disabled-wrapper {
     background-color: var(--dh-color-action-disabled-bg);
     border: 1px solid var(--dh-color-action-disabled-border);
     color: var(--dh-color-action-disabled-fg);
+    opacity: 1;
     cursor: not-allowed;
   }
 
@@ -405,8 +433,10 @@ form label small {
   color: $gray-400;
 }
 
-.form-control.focus {
-  border: 1px solid $primary;
+.form-control.focus,
+.form-control:focus {
+  border: 1px solid var(--dh-color-input-focus-border);
+  box-shadow: none;
 }
 
 .form-control.is-invalid,
@@ -423,9 +453,12 @@ form label small {
 }
 
 .form-control:disabled {
-  border-color: $black;
-  color: $gray-500;
-  cursor: not-allowed;
+  border-color: var(--dh-color-input-disabled-border);
+  color: var(--dh-color-input-disabled-fg);
+}
+
+.form-control:hover:not(:focus):not(:disabled) {
+  border-color: var(--dh-color-input-hover-border);
 }
 
 .form-control:disabled::placeholder {
@@ -441,39 +474,51 @@ form label small {
   user-select: none; //checkboxs are label pseudo elements, clicking can toggle text selection otherwise
 }
 
-.custom-control-label::before {
-  border: 1px solid $gray-400;
-  top: 0.24rem;
-}
-
-.custom-control-label::after {
-  top: 0.24rem;
-}
-
-.custom-control-input:active ~ .custom-control-label::before {
-  background-color: $primary-dark;
-}
-
-.custom-control-input:focus ~ .custom-control-label::before {
-  box-shadow: $input-btn-focus-box-shadow;
-  border-color: $input-focus-border-color;
-}
-
 .custom-control-input:disabled ~ .custom-control-label::before {
-  background-color: $gray-500;
-  border: 1px solid $black;
   cursor: not-allowed;
-}
-
-.custom-checkbox .custom-control-input:checked ~ .custom-control-label::before {
-  border: 1px solid $primary;
 }
 
 .custom-checkbox
   .custom-control-input:disabled
   ~ .custom-control-label::before {
-  border-color: $black;
   cursor: not-allowed;
+}
+
+.custom-radio {
+  .custom-control-input:checked ~ .custom-control-label {
+    &::after {
+      mask: escape-svg($custom-radio-indicator-icon-checked) 4px / 6px 6px
+        no-repeat;
+      background: var(--dh-color-input-bg);
+    }
+  }
+}
+
+.custom-checkbox {
+  .custom-control-input:checked ~ .custom-control-label {
+    &::after {
+      mask: escape-svg($custom-checkbox-indicator-icon-checked) 50%/75% 75%
+        no-repeat;
+      background: var(--dh-color-input-bg);
+    }
+  }
+
+  .custom-control-input:indeterminate ~ .custom-control-label {
+    &::after {
+      mask: escape-svg($custom-checkbox-indicator-icon-indeterminate) 50%/65%
+        65% no-repeat;
+      background: var(--dh-color-input-bg);
+    }
+  }
+
+  .custom-control-input:disabled {
+    &:checked ~ .custom-control-label::before {
+      border: var(--dh-color-input-disabled-fg);
+    }
+    &:indeterminate ~ .custom-control-label::before {
+      border: var(--dh-color-input-disabled-fg);
+    }
+  }
 }
 
 .custom-select {
@@ -483,8 +528,8 @@ form label small {
   background-image: var(--dh-svg-icon-select-indicator);
   background-size: $caret-size;
 
-  &:hover {
-    background-image: var(--dh-svg-icon-select-indicator-hover);
+  &:focus {
+    box-shadow: none;
   }
 
   &.is-invalid,
@@ -504,13 +549,21 @@ form label small {
 }
 
 .custom-select:disabled {
-  border-color: $black;
-  cursor: not-allowed;
+  color: var(--dh-color-text-disabled);
+  background-color: var(--dh-color-input-disabled-bg);
+  border-color: var(--dh-color-input-disabled-border);
   background-image: var(--dh-svg-icon-select-indicator-disabled);
+  opacity: 1;
   &.is-invalid {
     background-image: var(--dh-svg-icon-select-indicator-disabled),
       var(--dh-svg-icon-error);
   }
+}
+
+.custom-select:hover:not(:disabled) {
+  background-color: var(--dh-color-selector-hover-bg);
+  background-image: var(--dh-svg-icon-select-indicator-hover);
+  border-color: var(--dh-color-input-hover-border);
 }
 
 input[type='number'] {
@@ -539,14 +592,17 @@ input[type='number']::-webkit-inner-spin-button {
 }
 
 .input-group > .input-group-append.cb-dropdown > .btn {
-  border: 1px solid $gray-400;
+  border: 1px solid $input-border-color;
 
   &:focus {
     border-color: $input-focus-border-color;
   }
   &:disabled {
-    border-color: $background;
-    cursor: not-allowed;
+    background-color: $input-disabled-bg;
+    border-color: var(--dh-color-input-disabled-border);
+    .cb-caret {
+      background-color: var(--dh-color-icon-disabled-fg);
+    }
   }
 }
 /* stylelint-enable no-descending-specificity */
@@ -566,86 +622,8 @@ input[type='number']::-webkit-inner-spin-button {
 }
 
 /********** Modal Styling *********/
-.modal-dialog.theme-bg-light {
-  .modal-content {
-    color: $black;
-    background: $gray-100;
-  }
 
-  .form-control {
-    background: $gray-200;
-    color: $black;
-  }
-
-  .custom-checkbox {
-    .custom-control-label::before {
-      background-color: $gray-100;
-    }
-
-    .custom-control-input:checked ~ .custom-control-label::before {
-      background-color: $primary;
-    }
-
-    .custom-control-input:active ~ .custom-control-label::before {
-      background-color: $primary-light;
-      border-color: $primary;
-    }
-    .custom-control-input:disabled ~ .custom-control-label::before {
-      border-color: $black;
-      background-color: $gray-300;
-      cursor: not-allowed;
-    }
-  }
-
-  .custom-select {
-    background-color: $gray-200;
-    color: $black;
-  }
-
-  .modal-header {
-    border-bottom-color: transparent;
-    .close {
-      outline: 0;
-    }
-  }
-
-  .modal-footer {
-    border-top-color: transparent;
-  }
-
-  .btn-link {
-    color: $gray-700;
-    &:hover {
-      color: $black;
-    }
-  }
-
-  .btn-outline-secondary {
-    color: $gray-300;
-    background-color: transparent;
-    background-image: none;
-    border-color: $gray-300;
-    &:focus,
-    &.focus {
-      box-shadow: 0 0 0 0.2rem background-opacity(20);
-    }
-  }
-}
-
-.modal-dialog.theme-bg-dark {
-  .modal-title {
-    color: $foreground;
-  }
-  .modal-header {
-    .close {
-      color: $foreground;
-      text-shadow: 0 1px 0 $background;
-    }
-  }
-  .modal-content {
-    background: $content-bg;
-  }
-}
+// No using default modal styling
 
 /********** Browser Default Overides *********/
 ::selection {
@@ -709,14 +687,6 @@ input[type='number']::-webkit-inner-spin-button {
 
 ::-webkit-scrollbar-thumb:active {
   background: hsla(var(--dh-color-scrollbar-hsl), 0.35);
-}
-
-// used in inverted color sections, like light modals
-.theme-bg-light {
-  --dh-color-scrollbar-hsl: #{var(--dh-color-bg-hsl)};
-
-  scrollbar-color: hsla(var(--dh-color-scrollbar-hsl), 0.5)
-    hsla(var(--dh-color-scrollbar-hsl), 0.3); // firefox
 }
 
 /********** Monaco Overides *********/
@@ -855,16 +825,6 @@ input[type='number']::-webkit-inner-spin-button {
     &:-moz-focusring {
       color: transparent;
       text-shadow: 0 0 0 $foreground !important;
-    }
-  }
-
-  .modal-dialog.theme-bg-light .custom-select {
-    background-image: var(--dh-svg-icon-select-indicator),
-      solid-gradient($gray-200);
-
-    &:-moz-focusring {
-      color: transparent;
-      text-shadow: 0 0 0 $background !important;
     }
   }
 

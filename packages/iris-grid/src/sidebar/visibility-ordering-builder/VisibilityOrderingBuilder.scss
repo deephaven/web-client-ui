@@ -12,7 +12,7 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    background-color: $content-bg;
+    background-color: var(--dh-color-gray-300);
     padding: $spacer-1 $spacer-2;
     z-index: 2;
 
@@ -36,9 +36,12 @@
     overflow-y: auto;
     flex-grow: 1;
 
+    .btn {
+      height: 28px;
+    }
+
     hr {
       margin: $spacer-2 0;
-      background-color: $content-bg;
     }
   }
 

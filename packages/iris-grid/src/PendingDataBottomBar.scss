@@ -1,14 +1,5 @@
 @import '@deephaven/components/scss/custom.scss';
 
 .pending-data-bottom-bar {
-  background-color: $content-bg;
-  .buttons-container {
-    .btn-outline-primary {
-      color: $gray-100;
-      border-color: $gray-100;
-      &:hover {
-        background-color: $danger-hover;
-      }
-    }
-  }
+  background-color: var(--dh-color-surface-bg);
 }

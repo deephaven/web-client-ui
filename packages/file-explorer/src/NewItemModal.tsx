@@ -448,7 +448,7 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
           isOpen={isOpen}
           toggle={onCancel}
           onOpened={this.handleModalOpened}
-          className="modal-dialog-centered new-file-modal theme-bg-dark"
+          className="modal-dialog-centered new-file-modal"
         >
           <ModalHeader toggle={onCancel}>{title}</ModalHeader>
           <ModalBody>

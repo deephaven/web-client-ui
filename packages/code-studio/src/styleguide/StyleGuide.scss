@@ -174,8 +174,10 @@ h5.sub-title {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-color: var(--dh-color-content-bg);
     border-color: transparent;
+    background-color: transparent;
+    height: auto;
+    padding: $spacer-2 2px;
     &:focus {
       border-color: $primary;
     }
@@ -194,5 +196,15 @@ h5.sub-title {
   /* lol vsPulse gets class fa-pulse, that makes it spins */
   .fa-pulse {
     animation: none;
+  }
+}
+
+#sample-section-spectrum-comparison-samples {
+  // Approximating Spectrum input label styles for easy comparison
+  .input-label {
+    margin: 0;
+    padding: 4px 0 5px;
+    font-size: 12px;
+    line-height: 1.3;
   }
 }

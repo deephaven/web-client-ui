@@ -3,8 +3,6 @@
 
 $font-size: 12px;
 $row-height: 19px;
-$header-bg: $content-bg;
-$header-separator-color: $gray-900;
 $header-height: 30px;
 
 :export {
@@ -35,6 +33,7 @@ $header-height: 30px;
   selection-outline-color: var(--dh-color-grid-selection-outline);
   selection-outline-casing-color: var(--dh-color-grid-selection-outline-casing);
   row-hover-bg: var(--dh-color-grid-row-hover-bg);
+  row-shadow-alpha: var(--dh-color-grid-row-shadow-alpha);
   selected-row-hover-bg: var(--dh-color-grid-row-hover-bg-selected);
   scroll-bar-active-selection-tick-color: var(
     --dh-color-grid-scroll-bar-active-selection-tick

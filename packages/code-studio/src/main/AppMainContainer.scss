@@ -280,6 +280,7 @@ $nav-space: 4px; // give a gap around some buttons for focus area that are in na
   display: flex;
   width: 100%;
   justify-content: space-between;
+  align-items: center;
 
   .btn-link {
     font-size: $tab-font-size;

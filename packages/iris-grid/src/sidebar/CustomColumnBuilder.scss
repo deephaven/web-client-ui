@@ -1,6 +1,6 @@
 @import '@deephaven/components/scss/custom.scss';
 
-$background: $gray-700;
+$background: var(--dh-surface-bg);
 
 .custom-column-builder-container {
   .section-title {

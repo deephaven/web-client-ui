@@ -2,7 +2,6 @@
 
 $command-history-bg: $gray-900;
 $command-history-color: $text-muted;
-$command-history-search-bg: $gray-800;
 $command-history-search-toolbar-bg: $content-bg;
 
 .command-history {
@@ -40,8 +39,5 @@ $command-history-search-toolbar-bg: $content-bg;
     flex-grow: 1;
     margin-right: $spacer-1;
     margin-bottom: $spacer-1;
-    input {
-      background-color: $command-history-search-bg;
-    }
   }
 }

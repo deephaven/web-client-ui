@@ -365,6 +365,7 @@ class CustomColumnBuilder extends Component<
           !areNamesUnique
         }
         onClick={this.handleSaveClick}
+        icon={isSuccessShowing ? vsPass : undefined}
       >
         {isCustomColumnApplying && (
           <span>
@@ -373,11 +374,7 @@ class CustomColumnBuilder extends Component<
           </span>
         )}
         {!isSuccessShowing && !isCustomColumnApplying && saveText}
-        {isSuccessShowing && (
-          <>
-            <FontAwesomeIcon icon={vsPass} /> Success
-          </>
-        )}
+        {isSuccessShowing && 'Success'}
       </Button>
     );
   }

@@ -25,7 +25,7 @@ interface ModalProps {
 }
 
 function Modal({
-  className = 'theme-bg-light',
+  className = '',
   children,
   role = 'role',
   keyboard = true,
