@@ -7,18 +7,8 @@ import type {
 } from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
 import { ColumnName } from './CommonTypes';
-import IrisGridModel from './IrisGridModel';
-import IrisGridTableModel from './IrisGridTableModel';
 import EmptyIrisGridModel from './EmptyIrisGridModel';
 import { PartitionConfig, PartitionedGridModel } from './PartitionedGridModel';
-
-export function isIrisGridPartitionedTableModel(
-  model: IrisGridModel
-): model is IrisGridPartitionedTableModel {
-  return (
-    (model as IrisGridPartitionedTableModel).partitionedTable !== undefined
-  );
-}
 
 class IrisGridPartitionedTableModel
   extends EmptyIrisGridModel
@@ -82,24 +72,18 @@ class IrisGridPartitionedTableModel
     return this.partitionedTable.getKeyTable();
   }
 
-  async initializePartitionModel(): Promise<IrisGridModel> {
-    const keyTable = await this.partitionedTable.getKeyTable();
-    const sorts = keyTable.columns.map(column => column.sort().desc());
-    keyTable.applySort(sorts);
-    keyTable.setViewport(0, 0);
-    const data = await keyTable.getViewportData();
-    const row = data.rows[0];
-    const values = keyTable.columns.map(column => row.get(column));
-    this.config = {
-      partitions: values,
-      mode: 'partition',
-    };
+  partitionMergedTable(): Promise<Table> {
+    return this.partitionedTable.getMergedTable();
+  }
 
-    const initTable = await this.partitionedTable.getTable(
-      this.config.partitions
-    );
-    const tableCopy = await initTable.copy();
-    return new IrisGridTableModel(this.dh, tableCopy, this.formatter);
+  partitionTable(partitionConfig: PartitionConfig): Promise<Table> | null {
+    if (partitionConfig.mode !== 'partition') {
+      return null;
+    }
+    // TODO: Copy is necessary for now since getTable returns memoized tables https://github.com/deephaven/web-client-ui/pull/1663#discussion_r1434984641
+    return this.partitionedTable
+      .getTable(partitionConfig.partitions)
+      .then(table => table.copy());
   }
 }
 

@@ -30,9 +30,7 @@ import {
   MoveOperation,
 } from '@deephaven/grid';
 import IrisGridTableModel from './IrisGridTableModel';
-import IrisGridPartitionedTableModel, {
-  isIrisGridPartitionedTableModel,
-} from './IrisGridPartitionedTableModel';
+import IrisGridPartitionedTableModel from './IrisGridPartitionedTableModel';
 import IrisGridTreeTableModel from './IrisGridTreeTableModel';
 import IrisGridModel from './IrisGridModel';
 import {
@@ -108,8 +106,6 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     this.modelPromise = null;
     this.rollup = null;
     this.selectDistinct = [];
-
-    this.initializePartitionModel();
   }
 
   close(): void {
@@ -528,23 +524,21 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
           .partitionKeysTable()
           .then(table => makeModel(this.dh, table, this.formatter))
       );
-    } else if (isIrisGridPartitionedTableModel(this.originalModel)) {
-      if (partitionConfig.mode === 'merged') {
-        this.setNextModel(
-          this.originalModel.partitionedTable
-            .getMergedTable()
-            .then(table => makeModel(this.dh, table, this.formatter))
-        );
-        return;
-      }
-      const tablePromise = this.originalModel.partitionedTable
-        .getTable(partitionConfig.partitions)
-        .then(table => table.copy());
+    } else if (partitionConfig.mode === 'merged') {
       this.setNextModel(
-        tablePromise.then(table => makeModel(this.dh, table, this.formatter))
+        this.originalModel
+          .partitionMergedTable()
+          .then(table => makeModel(this.dh, table, this.formatter))
       );
-    } else if (isIrisGridTableModelTemplate(this.originalModel)) {
-      this.setNextModel(Promise.resolve(this.originalModel));
+    } else {
+      const partitionTable = this.originalModel.partitionTable(partitionConfig);
+      this.setNextModel(
+        partitionTable === null
+          ? Promise.resolve(this.originalModel)
+          : partitionTable.then(table =>
+              makeModel(this.dh, table, this.formatter)
+            )
+      );
     }
   }
 
@@ -553,6 +547,20 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
       throw new Error('Partitions are not available');
     }
     return this.originalModel.partitionKeysTable();
+  }
+
+  partitionMergedTable(): Promise<Table> {
+    if (!isPartitionedGridModel(this.originalModel)) {
+      throw new Error('Partitions are not available');
+    }
+    return this.originalModel.partitionMergedTable();
+  }
+
+  partitionTable(partitionConfig: PartitionConfig): Promise<Table> | null {
+    if (!isPartitionedGridModel(this.originalModel)) {
+      throw new Error('Partitions are not available');
+    }
+    return this.originalModel.partitionTable(partitionConfig);
   }
 
   get formatter(): Formatter {
@@ -815,13 +823,6 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
 
   get isSeekRowAvailable(): boolean {
     return this.model.isSeekRowAvailable;
-  }
-
-  initializePartitionModel(): void {
-    const { model } = this;
-    if (isIrisGridPartitionedTableModel(model)) {
-      this.setNextModel(model.initializePartitionModel());
-    }
   }
 }
 

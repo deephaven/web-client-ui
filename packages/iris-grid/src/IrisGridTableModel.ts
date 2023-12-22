@@ -77,7 +77,7 @@ class IrisGridTableModel
       mode: 'partition',
     };
     if (this.table.isUncoalesced && this.isValuesTableAvailable) {
-      this.partitionTablePromise = this.initializePartitionModel();
+      this.partitionTablePromise = this.initializePartitionTable();
     }
   }
 
@@ -276,6 +276,15 @@ class IrisGridTableModel
       return this.partitionTablePromise.then(table => table.copy());
     }
     throw new Error('Partition table not initialized');
+  }
+
+  partitionMergedTable(): Promise<Table> {
+    return this.table.copy();
+  }
+
+  partitionTable(partitionConfig: PartitionConfig): Promise<Table> | null {
+    this.partitionConfig = partitionConfig;
+    return null;
   }
 
   set filter(filter: FilterCondition[]) {
@@ -500,31 +509,8 @@ class IrisGridTableModel
     return this.table.seekRow != null;
   }
 
-  private async initializePartitionModel(): Promise<Table> {
+  private async initializePartitionTable(): Promise<Table> {
     const partitionTable = await this.valuesTable(this._partitionColumns);
-
-    const columns = partitionTable.columns.slice(
-      0,
-      this._partitionColumns.length
-    );
-    const sorts = columns.map(column => column.sort().desc());
-    partitionTable.applySort(sorts);
-    partitionTable.setViewport(0, 0, columns);
-
-    const data = await partitionTable.getViewportData();
-    if (
-      data.rows.length > 0 &&
-      this._partitionConfig.partitions.length === 0 &&
-      this._partitionConfig.mode === 'partition'
-    ) {
-      const row = data.rows[0];
-      const values = columns.map(column => row.get(column));
-
-      this.partitionConfig = {
-        partitions: values,
-        mode: 'partition',
-      };
-    }
     this._partitionTable = partitionTable;
     return partitionTable;
   }

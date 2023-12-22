@@ -154,6 +154,7 @@ import IrisGridModel from './IrisGridModel';
 import {
   isPartitionedGridModel,
   PartitionConfig,
+  PartitionedGridModel,
 } from './PartitionedGridModel';
 import IrisGridPartitionSelector from './IrisGridPartitionSelector';
 import SelectDistinctBuilder from './sidebar/SelectDistinctBuilder';
@@ -849,9 +850,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const { model } = this.props;
     try {
       if (isPartitionedGridModel(model) && model.isPartitionRequired) {
-        this.setState({ isSelectingPartition: true }, () => {
-          this.initState();
-        });
+        this.loadPartitionsTable(model);
       } else {
         this.initState();
       }
@@ -1939,6 +1938,46 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       searchFilter,
     });
     this.initFormatter();
+  }
+
+  async loadPartitionsTable(model: PartitionedGridModel): Promise<void> {
+    const { partitionConfig } = this.state;
+    if (partitionConfig !== undefined) {
+      this.setState({ isSelectingPartition: true }, this.initState);
+      return;
+    }
+
+    try {
+      const keyTable = await this.pending.add(
+        model.partitionKeysTable(),
+        resolved => resolved.close()
+      );
+
+      const sorts = keyTable.columns.map(column => column.sort().desc());
+      keyTable.applySort(sorts);
+      keyTable.setViewport(0, 0);
+
+      const data = await this.pending.add(keyTable.getViewportData());
+      if (data.rows.length > 0) {
+        const row = data.rows[0];
+        const values = keyTable.columns.map(column => row.get(column));
+        const newPartition: PartitionConfig = {
+          partitions: values,
+          mode: 'partition',
+        };
+
+        this.setState(
+          { isSelectingPartition: true, partitionConfig: newPartition },
+          this.initState
+        );
+      } else {
+        log.info('Table does not have any data');
+        this.setState({ isSelectingPartition: false }, this.initState);
+      }
+      keyTable.close();
+    } catch (error) {
+      this.handleTableLoadError(error);
+    }
   }
 
   copyCell(
@@ -4421,13 +4460,15 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             unmountOnExit
           >
             <div className="iris-grid-partition-selector-wrapper iris-grid-bar iris-grid-bar-primary">
-              {isPartitionedGridModel(model) && model.isPartitionRequired && (
-                <IrisGridPartitionSelector
-                  model={model}
-                  partitionConfig={partitionConfig ?? model.partitionConfig}
-                  onChange={this.handlePartitionChange}
-                />
-              )}
+              {isPartitionedGridModel(model) &&
+                model.isPartitionRequired &&
+                partitionConfig && (
+                  <IrisGridPartitionSelector
+                    model={model}
+                    partitionConfig={partitionConfig}
+                    onChange={this.handlePartitionChange}
+                  />
+                )}
             </div>
           </CSSTransition>
           <CSSTransition

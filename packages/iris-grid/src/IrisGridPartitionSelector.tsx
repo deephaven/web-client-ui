@@ -27,6 +27,7 @@ interface IrisGridPartitionSelectorState {
   partitionConfig: PartitionConfig;
   partitionColumnValues: readonly Items[];
   selectorValue: readonly string[];
+  isLoading: boolean;
 }
 class IrisGridPartitionSelector extends Component<
   IrisGridPartitionSelectorProps,
@@ -57,6 +58,7 @@ class IrisGridPartitionSelector extends Component<
         order: [],
         data: {},
       })),
+      isLoading: true,
     };
   }
 
@@ -153,6 +155,7 @@ class IrisGridPartitionSelector extends Component<
       mode: 'partition',
     };
 
+    this.setState({ isLoading: true });
     this.updateConfig(newConfig, index, true);
   }
 
@@ -220,11 +223,7 @@ class IrisGridPartitionSelector extends Component<
 
       this.partitionTables[i].applyFilter([...partitionFilters]);
       const partitionText = TableUtils.isCharType(partitionColumn.type)
-        ? model.displayString(
-            partition,
-            partitionColumn.type,
-            partitionColumn.name
-          )
+        ? this.getDisplayValue(i, partition)
         : partition?.toString() ?? '';
       const partitionFilter =
         partition === null
@@ -289,6 +288,7 @@ class IrisGridPartitionSelector extends Component<
         selectorValue: columns.map((_, i) =>
           this.getDisplayValue(i, validPartitions[i] ?? '')
         ),
+        isLoading: false,
       },
       updateIrisGrid ? this.sendUpdate : undefined
     );
@@ -333,7 +333,7 @@ class IrisGridPartitionSelector extends Component<
 
   render(): JSX.Element {
     const { model } = this.props;
-    const { selectorValue, partitionConfig, partitionColumnValues } =
+    const { selectorValue, partitionConfig, partitionColumnValues, isLoading } =
       this.state;
 
     const partitionSelectors = model.partitionColumns.map((column, index) => (
@@ -343,7 +343,9 @@ class IrisGridPartitionSelector extends Component<
           className="custom-select-sm"
           value={selectorValue[index]}
           onChange={value => this.handlePartitionSelect(index, value)}
-          disabled={index > 0 && partitionConfig.mode !== 'partition'}
+          disabled={
+            (index > 0 && partitionConfig.mode !== 'partition') || isLoading
+          }
         >
           {partitionConfig.mode === 'partition' || (
             <Option disabled key={column.name} value="">
@@ -375,6 +377,7 @@ class IrisGridPartitionSelector extends Component<
             tooltip="View keys as table"
             icon={vsKey}
             active={partitionConfig.mode === 'keys'}
+            disabled={isLoading}
           >
             Keys
           </Button>
@@ -385,6 +388,7 @@ class IrisGridPartitionSelector extends Component<
             tooltip="View all partitions as one merged table"
             icon={<FontAwesomeIcon icon={vsMerge} rotation={90} />}
             active={partitionConfig.mode === 'merged'}
+            disabled={isLoading}
           >
             Merge
           </Button>

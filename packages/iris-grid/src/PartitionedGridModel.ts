@@ -31,4 +31,10 @@ export interface PartitionedGridModel extends IrisGridModel {
 
   /** Get a keys table for the partitions */
   partitionKeysTable: () => Promise<Table>;
+
+  /** Get a merged table containing all partitions */
+  partitionMergedTable: () => Promise<Table>;
+
+  /** Get a table containing the selected partition */
+  partitionTable: (partitionConfig: PartitionConfig) => Promise<Table> | null;
 }
