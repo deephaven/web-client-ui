@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.58.0](https://github.com/deephaven/web-client-ui/compare/v0.57.1...v0.58.0) (2023-12-22)
+
+
+### Bug Fixes
+
+* `figure_title` and `chart_title` were not mapped up correctly ([#1676](https://github.com/deephaven/web-client-ui/issues/1676)) ([73e0b65](https://github.com/deephaven/web-client-ui/commit/73e0b658edffc7ef89b3b786f3fe30c0e64c96f9)), closes [#1674](https://github.com/deephaven/web-client-ui/issues/1674) [#1675](https://github.com/deephaven/web-client-ui/issues/1675)
+
+
+
+
+
 ## [0.57.1](https://github.com/deephaven/web-client-ui/compare/v0.57.0...v0.57.1) (2023-12-14)
 
 **Note:** Version bump only for package @deephaven/chart
