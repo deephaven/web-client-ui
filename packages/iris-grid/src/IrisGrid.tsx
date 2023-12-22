@@ -290,7 +290,9 @@ export interface IrisGridProps {
   onDataSelected: (index: ModelIndex, map: Record<ColumnName, unknown>) => void;
   onStateChange: (irisGridState: IrisGridState, gridState: GridState) => void;
   onAdvancedSettingsChange: AdvancedSettingsMenuCallback;
-  partitions: (string | null)[];
+
+  /** @deprecated use `partitionConfig` instead */
+  partitions?: (string | null)[];
   partitionConfig?: PartitionConfig;
   sorts: readonly Sort[];
   reverseType: ReverseType;
@@ -583,8 +585,6 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleDownloadCanceled = this.handleDownloadCanceled.bind(this);
     this.handleDownloadCompleted = this.handleDownloadCompleted.bind(this);
     this.handlePartitionChange = this.handlePartitionChange.bind(this);
-    this.handlePartitionMerge = this.handlePartitionMerge.bind(this);
-    this.handlePartitionKeyTable = this.handlePartitionKeyTable.bind(this);
     this.handleColumnVisibilityChanged =
       this.handleColumnVisibilityChanged.bind(this);
     this.handleColumnVisibilityReset =
@@ -675,6 +675,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       customColumnFormatMap,
       isFilterBarShown,
       isSelectingPartition,
+      partitions,
       partitionConfig,
       model,
       movedColumns: movedColumnsProp,
@@ -754,7 +755,11 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       keyHandlers,
       mouseHandlers,
 
-      partitionConfig,
+      partitionConfig:
+        partitionConfig ??
+        (partitions && partitions.length
+          ? { partitions, mode: 'partition' }
+          : undefined),
 
       // setAdvancedFilter and setQuickFilter mutate the arguments
       // so we want to always use map copies from the state instead of props
@@ -841,12 +846,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   componentDidMount(): void {
-    const { model, partitions } = this.props;
+    const { model } = this.props;
     try {
       if (isPartitionedGridModel(model) && model.isPartitionRequired) {
-        if (partitions.length) {
-          model.partitionConfig = { partitions, mode: 'partition' };
-        }
         this.setState({ isSelectingPartition: true }, () => {
           this.initState();
         });
@@ -2341,25 +2343,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   handlePartitionChange(partitionConfig: PartitionConfig): void {
+    this.startLoading('Partitioning...');
     this.setState({ partitionConfig });
-  }
-
-  handlePartitionMerge(): void {
-    this.setState(prevState => ({
-      partitionConfig: {
-        partitions: prevState.partitionConfig?.partitions ?? [],
-        mode: 'merged',
-      },
-    }));
-  }
-
-  handlePartitionKeyTable(): void {
-    this.setState(prevState => ({
-      partitionConfig: {
-        partitions: prevState.partitionConfig?.partitions ?? [],
-        mode: 'keys',
-      },
-    }));
   }
 
   handleTableLoadError(error: unknown): void {
@@ -4438,18 +4423,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             <div className="iris-grid-partition-selector-wrapper iris-grid-bar iris-grid-bar-primary">
               {isPartitionedGridModel(model) && model.isPartitionRequired && (
                 <IrisGridPartitionSelector
-                  dh={model.dh}
-                  tablePromise={model.partitionKeysTable()}
-                  getFormattedString={(
-                    value: unknown,
-                    type: string,
-                    columnName: string
-                  ) => model.displayString(value, type, columnName)}
-                  columns={model.partitionColumns}
+                  model={model}
                   partitionConfig={partitionConfig ?? model.partitionConfig}
                   onChange={this.handlePartitionChange}
-                  onMerge={this.handlePartitionMerge}
-                  onKeyTable={this.handlePartitionKeyTable}
                 />
               )}
             </div>

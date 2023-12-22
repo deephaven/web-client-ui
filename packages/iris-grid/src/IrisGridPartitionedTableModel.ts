@@ -84,11 +84,7 @@ class IrisGridPartitionedTableModel
   }
 
   partitionKeysTable(): Promise<Table> {
-    const sorts = this.partitionColumns.map(column => column.sort().desc());
-    return this.partitionedTable.getKeyTable().then(table => {
-      table.applySort(sorts);
-      return table;
-    });
+    return this.partitionedTable.getKeyTable();
   }
 
   async initializePartitionModel(): Promise<IrisGridModel> {

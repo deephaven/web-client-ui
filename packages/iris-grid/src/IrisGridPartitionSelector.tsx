@@ -3,16 +3,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, Option, Select } from '@deephaven/components';
 import { vsChevronRight, vsMerge, vsKey } from '@deephaven/icons';
 import Log from '@deephaven/log';
-import debounce from 'lodash.debounce';
-import type { Column, dh as DhType, Table } from '@deephaven/jsapi-types';
+import type { Table } from '@deephaven/jsapi-types';
 import { TableUtils } from '@deephaven/jsapi-utils';
-import deepEqual from 'deep-equal';
+import { Pending, PromiseUtils } from '@deephaven/utils';
 import './IrisGridPartitionSelector.scss';
-import { PartitionConfig } from './PartitionedGridModel';
+import { PartitionConfig, PartitionedGridModel } from './PartitionedGridModel';
 
 const log = Log.module('IrisGridPartitionSelector');
-
-const PARTITION_CHANGE_DEBOUNCE_MS = 250;
 
 interface Items {
   order: string[];
@@ -22,14 +19,9 @@ interface Items {
 }
 
 interface IrisGridPartitionSelectorProps {
-  dh: DhType;
-  getFormattedString: (value: unknown, type: string, name: string) => string;
-  tablePromise: Promise<Table>;
-  columns: readonly Column[];
+  model: PartitionedGridModel;
   partitionConfig: PartitionConfig;
-  onMerge: () => void;
   onChange: (partitionConfig: PartitionConfig) => void;
-  onKeyTable: () => void;
 }
 interface IrisGridPartitionSelectorState {
   partitionConfig: PartitionConfig;
@@ -42,8 +34,6 @@ class IrisGridPartitionSelector extends Component<
 > {
   static defaultProps = {
     onChange: (): void => undefined,
-    onMerge: (): void => undefined,
-    onKeyTable: (): void => undefined,
     partitions: [],
   };
 
@@ -54,26 +44,50 @@ class IrisGridPartitionSelector extends Component<
     this.handleMergeClick = this.handleMergeClick.bind(this);
     this.handlePartitionSelect = this.handlePartitionSelect.bind(this);
 
-    const { dh, columns, partitionConfig } = props;
-    this.tableUtils = new TableUtils(dh);
+    const { model, partitionConfig } = props;
+    this.tableUtils = new TableUtils(model.dh);
     this.table = null;
     this.partitionTables = null;
+    this.pending = new Pending();
 
     this.state = {
-      selectorValue: columns.map(() => ''),
+      selectorValue: model.partitionColumns.map(() => ''),
       partitionConfig,
-      partitionColumnValues: columns.map(() => ({ order: [], data: {} })),
+      partitionColumnValues: model.partitionColumns.map(() => ({
+        order: [],
+        data: {},
+      })),
     };
   }
 
   async componentDidMount(): Promise<void> {
-    const { columns, partitionConfig, tablePromise } = this.props;
+    const { model, partitionConfig } = this.props;
 
-    const table = await tablePromise;
-    this.table = table;
-    this.partitionTables = await Promise.all(
-      columns.map(async (_, i) => table.selectDistinct(columns.slice(0, i + 1)))
+    const table = await this.pending.add(
+      model.partitionKeysTable().then(keyTable => {
+        const sorts = model.partitionColumns.map(column =>
+          column.sort().desc()
+        );
+        keyTable.applySort(sorts);
+        return keyTable;
+      }),
+      t => t.close()
     );
+    try {
+      this.partitionTables = await Promise.all(
+        model.partitionColumns.map(async (_, i) =>
+          this.pending.add(
+            table.selectDistinct(model.partitionColumns.slice(0, i + 1)),
+            t => t.close()
+          )
+        )
+      );
+    } catch (e) {
+      if (!PromiseUtils.isCanceled(e)) {
+        log.error('Unable to get partition tables', e);
+      }
+    }
+    this.table = table;
     this.updateConfig(partitionConfig);
   }
 
@@ -82,16 +96,18 @@ class IrisGridPartitionSelector extends Component<
 
     const { partitionConfig } = this.props;
 
-    if (!deepEqual(prevConfig, partitionConfig)) {
+    if (prevConfig !== partitionConfig) {
       this.updateConfig(partitionConfig);
     }
   }
 
   componentWillUnmount(): void {
+    this.pending.cancel();
     this.table?.close();
     this.partitionTables?.forEach(table => table.close());
-    this.debounceUpdate.cancel();
   }
+
+  pending: Pending;
 
   tableUtils: TableUtils;
 
@@ -102,31 +118,35 @@ class IrisGridPartitionSelector extends Component<
   handleKeyTableClick(): void {
     log.debug2('handleKeyTableClick');
 
-    this.setState(prevState => ({
-      partitionConfig: { ...prevState.partitionConfig, mode: 'keys' },
-    }));
-    this.sendKeyTable();
+    this.setState(
+      prevState => ({
+        partitionConfig: { ...prevState.partitionConfig, mode: 'keys' },
+      }),
+      this.sendUpdate
+    );
   }
 
   handleMergeClick(): void {
     log.debug2('handleMergeClick');
 
-    this.setState(prevState => ({
-      partitionConfig: { ...prevState.partitionConfig, mode: 'merged' },
-    }));
-    this.sendMerge();
+    this.setState(
+      prevState => ({
+        partitionConfig: { ...prevState.partitionConfig, mode: 'merged' },
+      }),
+      this.sendUpdate
+    );
   }
 
   handlePartitionSelect(index: number, partition: string): void {
-    const { columns } = this.props;
+    const { model } = this.props;
     const { partitionConfig: prevConfig, partitionColumnValues } = this.state;
 
     log.debug('handlePartitionSelect', index, partition, prevConfig);
 
     const newPartitions =
-      prevConfig.partitions.length === columns.length
+      prevConfig.partitions.length === model.partitionColumns.length
         ? [...prevConfig.partitions]
-        : Array(columns.length).fill(null);
+        : Array(model.partitionColumns.length).fill(null);
     newPartitions[index] = partitionColumnValues[index].data[partition];
     const newConfig: PartitionConfig = {
       partitions: newPartitions,
@@ -136,10 +156,6 @@ class IrisGridPartitionSelector extends Component<
     this.updateConfig(newConfig, index, true);
   }
 
-  debounceUpdate = debounce((): void => {
-    this.sendUpdate();
-  }, PARTITION_CHANGE_DEBOUNCE_MS);
-
   sendUpdate(): void {
     log.debug2('sendUpdate');
 
@@ -148,27 +164,9 @@ class IrisGridPartitionSelector extends Component<
     onChange(partitionConfig);
   }
 
-  sendMerge(): void {
-    log.debug2('sendMerge');
-
-    this.debounceUpdate.cancel();
-
-    const { onMerge } = this.props;
-    onMerge();
-  }
-
-  sendKeyTable(): void {
-    log.debug2('sendOpenKeys');
-
-    this.debounceUpdate.cancel();
-
-    const { onKeyTable } = this.props;
-    onKeyTable();
-  }
-
-  /** Calls getFormattedString with a special character case */
+  /** Calls model.displayString with a special character case */
   getDisplayValue(index: number, partition?: unknown): string {
-    const { columns, getFormattedString } = this.props;
+    const { model } = this.props;
     const { partitionConfig } = this.state;
 
     const value =
@@ -176,11 +174,11 @@ class IrisGridPartitionSelector extends Component<
     if (value == null || value === '') {
       return '';
     }
-    const column = columns[index];
+    const column = model.partitionColumns[index];
     if (TableUtils.isCharType(column.type) && value.toString().length > 0) {
       return String.fromCharCode(parseInt(value.toString(), 10));
     }
-    return getFormattedString(value, column.type, column.name);
+    return model.displayString(value, column.type, column.name);
   }
 
   /**
@@ -201,7 +199,7 @@ class IrisGridPartitionSelector extends Component<
       return;
     }
     log.debug('partitionSelector update', index, partitionConfig);
-    const { getFormattedString } = this.props;
+    const { model } = this.props;
     // Cannot use columns from props since different index number will cause filters to fail
     const { columns } = this.partitionTables[this.partitionTables.length - 1];
     if (!this.table) {
@@ -215,13 +213,14 @@ class IrisGridPartitionSelector extends Component<
 
     // Update partition filters
     for (let i = index; i < partitionConfig.partitions.length; i += 1) {
+      // Await in loop necessary since each partition values list cascades from the previous iteration
       /* eslint-disable  no-await-in-loop */
       const partition = validPartitions[i];
       const partitionColumn = columns[i];
 
       this.partitionTables[i].applyFilter([...partitionFilters]);
       const partitionText = TableUtils.isCharType(partitionColumn.type)
-        ? getFormattedString(
+        ? model.displayString(
             partition,
             partitionColumn.type,
             partitionColumn.name
@@ -242,7 +241,9 @@ class IrisGridPartitionSelector extends Component<
         );
       }
 
-      const t = await this.table.copy();
+      const t = await this.pending.add(this.table.copy(), tCopy =>
+        tCopy.close()
+      );
       t.applyFilter(partitionFilters);
       t.setViewport(0, 0, t.columns);
       const data = await t.getViewportData();
@@ -265,7 +266,7 @@ class IrisGridPartitionSelector extends Component<
           (columnValues, row) => {
             const column = columns[colIndex];
             const value = row.get(column);
-            const displayValue = getFormattedString(
+            const displayValue = model.displayString(
               value,
               column.type,
               column.name
@@ -298,9 +299,9 @@ class IrisGridPartitionSelector extends Component<
       return;
     }
     log.debug('partitionSelector clearDropdowns', partitionConfig);
-    const { columns, getFormattedString } = this.props;
+    const { model } = this.props;
     this.partitionTables.forEach(table => table.applyFilter([]));
-    const newColumnValues = Array(columns.length).fill({
+    const newColumnValues = Array(model.partitionColumns.length).fill({
       order: [],
       data: {},
     } as Items);
@@ -310,7 +311,7 @@ class IrisGridPartitionSelector extends Component<
     newColumnValues[0] = data.rows.reduce(
       (columnValues, row) => {
         const value = row.get(column);
-        const displayValue = getFormattedString(
+        const displayValue = model.displayString(
           value,
           column.type,
           column.name
@@ -326,16 +327,16 @@ class IrisGridPartitionSelector extends Component<
     this.setState({
       partitionConfig,
       partitionColumnValues: newColumnValues,
-      selectorValue: Array(columns.length).fill(''),
+      selectorValue: Array(model.partitionColumns.length).fill(''),
     });
   }
 
   render(): JSX.Element {
-    const { columns } = this.props;
+    const { model } = this.props;
     const { selectorValue, partitionConfig, partitionColumnValues } =
       this.state;
 
-    const partitionSelectors = columns.map((column, index) => (
+    const partitionSelectors = model.partitionColumns.map((column, index) => (
       <div key={`selector-${column.name}`} className="column-selector">
         <div className="column-name">{column.name}</div>
         <Select
@@ -358,7 +359,7 @@ class IrisGridPartitionSelector extends Component<
             </Option>
           ))}
         </Select>
-        {columns.length - 1 === index || (
+        {model.partitionColumns.length - 1 === index || (
           <FontAwesomeIcon icon={vsChevronRight} />
         )}
       </div>
