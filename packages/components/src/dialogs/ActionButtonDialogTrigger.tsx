@@ -1,15 +1,18 @@
+/* eslint-disable camelcase */
 import { ReactElement } from 'react';
 import { ActionButton, DialogTrigger, Icon, Text } from '@adobe/react-spectrum';
 import type { SpectrumDialogClose } from '@react-types/dialog';
 import type { StyleProps } from '@react-types/shared';
 import type { IconDefinition } from '@fortawesome/fontawesome-common-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Tooltip } from '../popper';
 
 export interface ActionButtonDialogTriggerProps extends StyleProps {
   icon: IconDefinition;
   isQuiet?: boolean;
   labelText?: string;
   ariaLabel?: string;
+  tooltip?: string;
   children: SpectrumDialogClose | ReactElement;
   onOpenChange?: (isOpen: boolean) => void;
 }
@@ -24,8 +27,14 @@ export function ActionButtonDialogTrigger({
   labelText,
   children,
   onOpenChange,
+  tooltip,
   ...styleProps
 }: ActionButtonDialogTriggerProps): JSX.Element {
+  const iconClassName =
+    labelText == null && tooltip != null
+      ? 'action-button-icon-with-tooltip'
+      : undefined;
+
   return (
     <DialogTrigger type="popover" onOpenChange={onOpenChange}>
       <ActionButton
@@ -34,10 +43,11 @@ export function ActionButtonDialogTrigger({
         aria-label={ariaLabel ?? labelText}
         isQuiet={isQuiet}
       >
-        <Icon>
+        <Icon UNSAFE_className={iconClassName}>
           <FontAwesomeIcon icon={icon} />
         </Icon>
         {labelText == null ? null : <Text>{labelText}</Text>}
+        {tooltip == null ? null : <Tooltip>{tooltip}</Tooltip>}
       </ActionButton>
       {children}
     </DialogTrigger>
