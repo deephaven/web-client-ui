@@ -24,8 +24,6 @@ $tab-control-btn-offset: -8px;
   flex-shrink: 0;
 
   .nav-tabs {
-    --dragging-ant-color: $gray-300;
-
     border: none;
     height: $tab-height;
     font-size: $tab-font-size;
@@ -38,7 +36,6 @@ $tab-control-btn-offset: -8px;
     }
 
     .btn-nav-tab {
-      // border: $tab-drag-border-width solid transparent;
       line-height: $tab-height - $tab-drag-border-width * 2; // subtract top and bottom borders, and focus border
       width: auto;
       max-width: 200px;
@@ -54,6 +51,7 @@ $tab-control-btn-offset: -8px;
 
       .btn-nav-tab-close {
         position: absolute;
+        height: 20px;
         line-height: $tab-font-size;
         right: 0.25rem;
         bottom: 6px;
