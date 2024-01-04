@@ -1,10 +1,25 @@
 import type { Column, Table } from '@deephaven/jsapi-types';
 import IrisGridModel from './IrisGridModel';
 
+export function isPartitionedGridModelProvider(
+  model: IrisGridModel
+): model is PartitionedGridModelProvider {
+  return (
+    (model as PartitionedGridModel)?.isPartitionRequired !== undefined &&
+    (model as PartitionedGridModel)?.partitionColumns !== undefined &&
+    (model as PartitionedGridModel)?.partitionKeysTable !== undefined &&
+    (model as PartitionedGridModel)?.partitionMergedTable !== undefined &&
+    (model as PartitionedGridModel)?.partitionTable !== undefined
+  );
+}
+
 export function isPartitionedGridModel(
   model: IrisGridModel
 ): model is PartitionedGridModel {
-  return (model as PartitionedGridModel)?.isPartitionRequired !== undefined;
+  return (
+    isPartitionedGridModelProvider(model) &&
+    (model as PartitionedGridModel).partitionConfig !== undefined
+  );
 }
 
 export interface PartitionConfig {
@@ -15,11 +30,10 @@ export interface PartitionConfig {
   mode: 'keys' | 'merged' | 'partition';
 }
 
-export interface PartitionedGridModel extends IrisGridModel {
-  get partitionConfig(): PartitionConfig;
-
-  set partitionConfig(partitionConfig: PartitionConfig);
-
+/**
+ * A grid model that provides key tables and partitions, cannot accept a `PartitionConfig` being set
+ */
+export interface PartitionedGridModelProvider extends IrisGridModel {
   /**
    * Retrieve the columns this model is partitioned on
    * @returns All columns to partition on
@@ -36,5 +50,16 @@ export interface PartitionedGridModel extends IrisGridModel {
   partitionMergedTable: () => Promise<Table>;
 
   /** Get a table containing the selected partition */
-  partitionTable: (partitionConfig: PartitionConfig) => Promise<Table> | null;
+  partitionTable: (partitions: unknown[]) => Promise<Table>;
+}
+
+/**
+ * A grid model that can be partitioned on a column
+ */
+export interface PartitionedGridModel extends PartitionedGridModelProvider {
+  /** Retrieve the currently set partition config */
+  get partitionConfig(): PartitionConfig | null;
+
+  /** Set the partition config */
+  set partitionConfig(partitionConfig: PartitionConfig | null);
 }

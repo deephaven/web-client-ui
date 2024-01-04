@@ -24,7 +24,6 @@ interface IrisGridPartitionSelectorProps {
   onChange: (partitionConfig: PartitionConfig) => void;
 }
 interface IrisGridPartitionSelectorState {
-  partitionConfig: PartitionConfig;
   partitionColumnValues: readonly Items[];
   selectorValue: readonly string[];
   isLoading: boolean;
@@ -45,7 +44,7 @@ class IrisGridPartitionSelector extends Component<
     this.handleMergeClick = this.handleMergeClick.bind(this);
     this.handlePartitionSelect = this.handlePartitionSelect.bind(this);
 
-    const { model, partitionConfig } = props;
+    const { model } = props;
     this.tableUtils = new TableUtils(model.dh);
     this.table = null;
     this.partitionTables = null;
@@ -53,7 +52,6 @@ class IrisGridPartitionSelector extends Component<
 
     this.state = {
       selectorValue: model.partitionColumns.map(() => ''),
-      partitionConfig,
       partitionColumnValues: model.partitionColumns.map(() => ({
         order: [],
         data: {},
@@ -120,28 +118,28 @@ class IrisGridPartitionSelector extends Component<
   handleKeyTableClick(): void {
     log.debug2('handleKeyTableClick');
 
-    this.setState(
-      prevState => ({
-        partitionConfig: { ...prevState.partitionConfig, mode: 'keys' },
-      }),
-      this.sendUpdate
-    );
+    const { partitionConfig } = this.props;
+    const newPartitionConfig = { ...partitionConfig };
+    // Toggle between Keys and Partition mode
+    newPartitionConfig.mode =
+      partitionConfig.mode === 'keys' ? 'partition' : 'keys';
+    this.sendUpdate(newPartitionConfig);
   }
 
   handleMergeClick(): void {
     log.debug2('handleMergeClick');
 
-    this.setState(
-      prevState => ({
-        partitionConfig: { ...prevState.partitionConfig, mode: 'merged' },
-      }),
-      this.sendUpdate
-    );
+    const { partitionConfig } = this.props;
+    const newPartitionConfig = { ...partitionConfig };
+    // Toggle between Merged and Partition mode
+    newPartitionConfig.mode =
+      partitionConfig.mode === 'merged' ? 'partition' : 'merged';
+    this.sendUpdate(newPartitionConfig);
   }
 
   handlePartitionSelect(index: number, partition: string): void {
-    const { model } = this.props;
-    const { partitionConfig: prevConfig, partitionColumnValues } = this.state;
+    const { model, partitionConfig } = this.props;
+    const { partitionColumnValues } = this.state;
 
     log.debug('handlePartitionSelect', index, partition, prevConfig);
 
@@ -159,18 +157,16 @@ class IrisGridPartitionSelector extends Component<
     this.updateConfig(newConfig, index, true);
   }
 
-  sendUpdate(): void {
-    log.debug2('sendUpdate');
+  sendUpdate(partitionConfig: PartitionConfig): void {
+    log.debug2('sendUpdate', partitionConfig);
 
     const { onChange } = this.props;
-    const { partitionConfig } = this.state;
     onChange(partitionConfig);
   }
 
   /** Calls model.displayString with a special character case */
   getDisplayValue(index: number, partition?: unknown): string {
-    const { model } = this.props;
-    const { partitionConfig } = this.state;
+    const { model, partitionConfig } = this.props;
 
     const value =
       partition === undefined ? partitionConfig.partitions[index] : partition;
@@ -191,8 +187,7 @@ class IrisGridPartitionSelector extends Component<
    */
   async updateConfig(
     partitionConfig: PartitionConfig,
-    index = 0,
-    updateIrisGrid = false
+    index = 0
   ): Promise<void> {
     if (partitionConfig.mode !== 'partition') {
       this.clearDropdowns(partitionConfig);

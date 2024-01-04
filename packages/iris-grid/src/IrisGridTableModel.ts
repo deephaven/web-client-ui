@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 /* eslint class-methods-use-this: "off" */
 import memoize from 'memoize-one';
 import { GridRange, ModelIndex } from '@deephaven/grid';
@@ -23,7 +22,7 @@ import {
 import IrisGridModel from './IrisGridModel';
 import { ColumnName, UIRow, UITotalsTableConfig } from './CommonTypes';
 import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
-import { PartitionConfig, PartitionedGridModel } from './PartitionedGridModel';
+import { PartitionedGridModelProvider } from './PartitionedGridModel';
 
 const log = Log.module('IrisGridTableModel');
 
@@ -33,7 +32,7 @@ const log = Log.module('IrisGridTableModel');
 
 class IrisGridTableModel
   extends IrisGridTableModelTemplate<Table, UIRow>
-  implements PartitionedGridModel
+  implements PartitionedGridModelProvider
 {
   userFrozenColumns?: ColumnName[];
 
@@ -41,17 +40,7 @@ class IrisGridTableModel
 
   formatColumnList: CustomColumn[];
 
-  private initialUncoalesced: boolean;
-
-  private _partitionConfig: PartitionConfig;
-
-  private _partitionColumns: Column[];
-
-  private partitionFilters: FilterCondition[] = [];
-
-  private partitionTablePromise?: Promise<Table>;
-
-  private _partitionTable?: Table;
+  initialFilters: FilterCondition[] = [];
 
   /**
    * @param dh JSAPI instance
@@ -68,22 +57,7 @@ class IrisGridTableModel
     super(dh, table, formatter, inputTable);
     this.customColumnList = [];
     this.formatColumnList = [];
-    this.initialUncoalesced = this.table.isUncoalesced;
-    this._partitionColumns = this.table.columns.filter(
-      c => c.isPartitionColumn
-    );
-    this._partitionConfig = {
-      partitions: [],
-      mode: 'partition',
-    };
-    if (this.table.isUncoalesced && this.isValuesTableAvailable) {
-      this.partitionTablePromise = this.initializePartitionTable();
-    }
-  }
-
-  close(): void {
-    super.close();
-    this._partitionTable?.close();
+    this.initialFilters = table.filter;
   }
 
   get isExportAvailable(): boolean {
@@ -220,76 +194,56 @@ class IrisGridTableModel
   }
 
   get partitionColumns(): readonly Column[] {
-    return this._partitionColumns;
+    return this.getCachedPartitionColumns(this.columns);
   }
 
-  get partitionConfig(): PartitionConfig {
-    return this._partitionConfig;
+  partitionKeysTable(): Promise<Table> {
+    return this.valuesTable(this.partitionColumns);
   }
 
-  set partitionConfig(partitionConfig: PartitionConfig) {
-    log.debug('setting partition', partitionConfig);
-    const { partitions, mode } = partitionConfig;
+  async partitionMergedTable(): Promise<Table> {
+    const t = await this.table.copy();
+    t.applyFilter([]);
+    return t;
+  }
+
+  async partitionTable(partitions: unknown[]): Promise<Table> {
+    log.debug('getting partition table for partitions', partitions);
+
     const partitionFilters = [];
+    for (let i = 0; i < this.partitionColumns.length; i += 1) {
+      const partition = partitions[i];
+      const partitionColumn = this.partitionColumns[i];
 
-    if (mode === 'partition') {
-      for (let i = 0; i < this.partitionColumns.length; i += 1) {
-        const partition = partitions[i];
-        const partitionColumn = this.partitionColumns[i];
-
-        if (
-          partition != null &&
-          !(TableUtils.isCharType(partitionColumn.type) && partition === '')
-        ) {
-          const partitionText = TableUtils.isCharType(partitionColumn.type)
-            ? this.displayString(
-                partition,
-                partitionColumn.type,
-                partitionColumn.name
-              )
-            : partition.toString();
-          const partitionFilter = this.tableUtils.makeQuickFilterFromComponent(
-            partitionColumn,
-            partitionText
-          );
-          if (partitionFilter !== null) {
-            partitionFilters.push(partitionFilter);
-          }
+      if (
+        partition != null &&
+        !(TableUtils.isCharType(partitionColumn.type) && partition === '')
+      ) {
+        const partitionText = TableUtils.isCharType(partitionColumn.type)
+          ? this.displayString(
+              partition,
+              partitionColumn.type,
+              partitionColumn.name
+            )
+          : partition.toString();
+        const partitionFilter = this.tableUtils.makeQuickFilterFromComponent(
+          partitionColumn,
+          partitionText
+        );
+        if (partitionFilter !== null) {
+          partitionFilters.push(partitionFilter);
         }
       }
     }
 
-    const prevFilters = super.filter.slice(
-      0,
-      super.filter.length - this.partitionFilters.length
-    );
-    this._partitionConfig = partitionConfig;
-    this.partitionFilters = partitionFilters;
-    this.filter = prevFilters;
-  }
-
-  partitionKeysTable(): Promise<Table> {
-    if (this._partitionTable !== undefined) {
-      return this._partitionTable.copy();
-    }
-    if (this.partitionTablePromise !== undefined) {
-      return this.partitionTablePromise.then(table => table.copy());
-    }
-    throw new Error('Partition table not initialized');
-  }
-
-  partitionMergedTable(): Promise<Table> {
-    return this.table.copy();
-  }
-
-  partitionTable(partitionConfig: PartitionConfig): Promise<Table> | null {
-    this.partitionConfig = partitionConfig;
-    return null;
+    const t = await this.table.copy();
+    t.applyFilter([...this.initialFilters, ...partitionFilters]);
+    return t;
   }
 
   set filter(filter: FilterCondition[]) {
     this.closeSubscription();
-    this.table.applyFilter([...filter, ...this.partitionFilters]);
+    this.table.applyFilter([...this.initialFilters, ...filter]);
     this.applyViewport();
   }
 
@@ -341,11 +295,11 @@ class IrisGridTableModel
   }
 
   get isFilterRequired(): boolean {
-    return this.initialUncoalesced;
+    return this.table.isUncoalesced;
   }
 
   get isPartitionRequired(): boolean {
-    return this.initialUncoalesced && this.isValuesTableAvailable;
+    return this.table.isUncoalesced && this.isValuesTableAvailable;
   }
 
   isFilterable(columnIndex: ModelIndex): boolean {
@@ -363,6 +317,10 @@ class IrisGridTableModel
   getCachedFilterableColumnSet = memoize(
     (columns: Column[]) =>
       new Set(columns.map((_: Column, index: ModelIndex) => index))
+  );
+
+  getCachedPartitionColumns = memoize((columns: readonly Column[]) =>
+    columns.filter(column => column.isPartitionColumn)
   );
 
   isColumnMovable(modelIndex: ModelIndex): boolean {
@@ -507,12 +465,6 @@ class IrisGridTableModel
 
   get isSeekRowAvailable(): boolean {
     return this.table.seekRow != null;
-  }
-
-  private async initializePartitionTable(): Promise<Table> {
-    const partitionTable = await this.valuesTable(this._partitionColumns);
-    this._partitionTable = partitionTable;
-    return partitionTable;
   }
 }
 

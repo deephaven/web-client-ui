@@ -8,15 +8,16 @@ import type {
 import { Formatter } from '@deephaven/jsapi-utils';
 import { ColumnName } from './CommonTypes';
 import EmptyIrisGridModel from './EmptyIrisGridModel';
-import { PartitionConfig, PartitionedGridModel } from './PartitionedGridModel';
+import {
+  PartitionConfig,
+  PartitionedGridModelProvider,
+} from './PartitionedGridModel';
 
 class IrisGridPartitionedTableModel
   extends EmptyIrisGridModel
-  implements PartitionedGridModel
+  implements PartitionedGridModelProvider
 {
   readonly partitionedTable: PartitionedTable;
-
-  private config: PartitionConfig;
 
   /**
    * @param dh JSAPI instance
@@ -30,10 +31,6 @@ class IrisGridPartitionedTableModel
   ) {
     super(dh, formatter);
     this.partitionedTable = partitionedTable;
-    this.config = {
-      partitions: [],
-      mode: 'partition',
-    };
   }
 
   get isPartitionRequired(): boolean {
@@ -60,14 +57,6 @@ class IrisGridPartitionedTableModel
     return this.partitionedTable.keyColumns;
   }
 
-  get partitionConfig(): PartitionConfig {
-    return this.config;
-  }
-
-  set partitionConfig(rollupConfig: PartitionConfig) {
-    this.config = rollupConfig;
-  }
-
   partitionKeysTable(): Promise<Table> {
     return this.partitionedTable.getKeyTable();
   }
@@ -76,13 +65,10 @@ class IrisGridPartitionedTableModel
     return this.partitionedTable.getMergedTable();
   }
 
-  partitionTable(partitionConfig: PartitionConfig): Promise<Table> | null {
-    if (partitionConfig.mode !== 'partition') {
-      return null;
-    }
+  async partitionTable(partitions: unknown[]): Promise<Table> {
     // TODO: Copy is necessary for now since getTable returns memoized tables https://github.com/deephaven/web-client-ui/pull/1663#discussion_r1434984641
     return this.partitionedTable
-      .getTable(partitionConfig.partitions)
+      .getTable(partitions)
       .then(table => table.copy());
   }
 }

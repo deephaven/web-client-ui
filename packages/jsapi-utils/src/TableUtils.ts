@@ -749,7 +749,10 @@ export class TableUtils {
 
   static isPartitionedTable(table: unknown): table is PartitionedTable {
     return (
-      table != null && (table as PartitionedTable).getMergedTable !== undefined
+      table != null &&
+      (table as PartitionedTable).getMergedTable !== undefined &&
+      (table as PartitionedTable).getKeyTable !== undefined &&
+      (table as PartitionedTable).getKeys !== undefined
     );
   }
 

@@ -45,7 +45,7 @@ import type ColumnHeaderGroup from './ColumnHeaderGroup';
 import {
   PartitionConfig,
   PartitionedGridModel,
-  isPartitionedGridModel,
+  isPartitionedGridModelProvider,
 } from './PartitionedGridModel';
 
 const log = Log.module('IrisGridProxyModel');
@@ -87,6 +87,8 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
 
   rollup: RollupConfig | null;
 
+  partition: PartitionConfig | null;
+
   selectDistinct: ColumnName[];
 
   constructor(
@@ -105,6 +107,7 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     this.model = model;
     this.modelPromise = null;
     this.rollup = null;
+    this.partition = null;
     this.selectDistinct = [];
   }
 
@@ -463,7 +466,7 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
   }
 
   get partitionColumns(): readonly Column[] {
-    if (!isPartitionedGridModel(this.originalModel)) {
+    if (!isPartitionedGridModelProvider(this.originalModel)) {
       throw new Error('Partitions are not available');
     }
     return this.originalModel.partitionColumns;
@@ -499,68 +502,65 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     this.model.filter = filter;
   }
 
-  get partitionConfig(): PartitionConfig {
+  get partitionConfig(): PartitionConfig | null {
     if (
-      !isPartitionedGridModel(this.originalModel) ||
+      !isPartitionedGridModelProvider(this.originalModel) ||
       !this.originalModel.isPartitionRequired
     ) {
       throw new Error('Partitions are not available');
     }
-    return this.originalModel.partitionConfig;
+    return this.partition;
   }
 
-  set partitionConfig(partitionConfig: PartitionConfig) {
-    if (
-      !isPartitionedGridModel(this.originalModel) ||
-      !this.originalModel.isPartitionRequired
-    ) {
+  set partitionConfig(partitionConfig: PartitionConfig | null) {
+    if (!this.isPartitionRequired) {
       throw new Error('Partitions are not available');
     }
     log.debug('set partitionConfig', partitionConfig);
-    this.originalModel.partitionConfig = partitionConfig;
-    if (partitionConfig.mode === 'keys') {
-      this.setNextModel(
-        this.originalModel
+    this.partition = partitionConfig;
+
+    let modelPromise = Promise.resolve(this.originalModel);
+    if (
+      partitionConfig != null &&
+      isPartitionedGridModelProvider(this.originalModel)
+    ) {
+      if (partitionConfig.mode === 'keys') {
+        modelPromise = this.originalModel
           .partitionKeysTable()
-          .then(table => makeModel(this.dh, table, this.formatter))
-      );
-    } else if (partitionConfig.mode === 'merged') {
-      this.setNextModel(
-        this.originalModel
+          .then(table => makeModel(this.dh, table, this.formatter));
+      } else if (partitionConfig.mode === 'merged') {
+        modelPromise = this.originalModel
           .partitionMergedTable()
-          .then(table => makeModel(this.dh, table, this.formatter))
-      );
-    } else {
-      const partitionTable = this.originalModel.partitionTable(partitionConfig);
-      this.setNextModel(
-        partitionTable === null
-          ? Promise.resolve(this.originalModel)
-          : partitionTable.then(table =>
-              makeModel(this.dh, table, this.formatter)
-            )
-      );
+          .then(table => makeModel(this.dh, table, this.formatter));
+      } else {
+        modelPromise = this.originalModel
+          .partitionTable(partitionConfig.partitions)
+          .then(table => makeModel(this.dh, table, this.formatter));
+      }
     }
+
+    this.setNextModel(modelPromise);
   }
 
   partitionKeysTable(): Promise<Table> {
-    if (!isPartitionedGridModel(this.originalModel)) {
+    if (!isPartitionedGridModelProvider(this.originalModel)) {
       throw new Error('Partitions are not available');
     }
     return this.originalModel.partitionKeysTable();
   }
 
   partitionMergedTable(): Promise<Table> {
-    if (!isPartitionedGridModel(this.originalModel)) {
+    if (!isPartitionedGridModelProvider(this.originalModel)) {
       throw new Error('Partitions are not available');
     }
     return this.originalModel.partitionMergedTable();
   }
 
-  partitionTable(partitionConfig: PartitionConfig): Promise<Table> | null {
-    if (!isPartitionedGridModel(this.originalModel)) {
+  partitionTable(partitions: unknown[]): Promise<Table> {
+    if (!isPartitionedGridModelProvider(this.originalModel)) {
       throw new Error('Partitions are not available');
     }
-    return this.originalModel.partitionTable(partitionConfig);
+    return this.originalModel.partitionTable(partitions);
   }
 
   get formatter(): Formatter {
@@ -689,7 +689,7 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
   }
 
   get isPartitionRequired(): boolean {
-    return isPartitionedGridModel(this.originalModel)
+    return isPartitionedGridModelProvider(this.originalModel)
       ? this.originalModel.isPartitionRequired
       : false;
   }
