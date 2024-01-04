@@ -1372,8 +1372,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   getCachedTheme = memoize(
     (
-      contextTheme: GridThemeType | null,
-      theme: GridThemeType | null,
+      contextTheme: Partial<GridThemeType> | null,
+      theme: Partial<GridThemeType> | null,
       isEditable: boolean,
       floatingRowCount: number
     ): Partial<IrisGridThemeType> => {
