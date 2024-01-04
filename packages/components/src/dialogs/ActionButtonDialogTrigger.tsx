@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { ReactElement } from 'react';
 import { ActionButton, DialogTrigger, Icon, Text } from '@adobe/react-spectrum';
 import type { SpectrumDialogClose } from '@react-types/dialog';
