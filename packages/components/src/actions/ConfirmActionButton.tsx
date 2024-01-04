@@ -12,6 +12,7 @@ export interface ConfirmActionButtonProps {
     | ReactElement<SpectrumLabelableProps>
     | ReactElement<SpectrumLabelableProps>[];
   isHidden?: boolean;
+  tooltip?: string;
   onConfirm: () => void;
 }
 
@@ -21,6 +22,7 @@ export function ConfirmActionButton({
   confirmationButtonLabel,
   isHidden,
   children,
+  tooltip,
   onConfirm,
 }: ConfirmActionButtonProps): JSX.Element {
   const renderDialog = useCallback(
@@ -47,6 +49,7 @@ export function ConfirmActionButton({
       isHidden={isHidden}
       isQuiet
       height={ACTION_ICON_HEIGHT}
+      tooltip={tooltip}
     >
       {renderDialog}
     </ActionButtonDialogTrigger>
