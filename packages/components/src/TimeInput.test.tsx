@@ -114,7 +114,7 @@ describe('selection', () => {
 
     input.focus();
     input.setSelectionRange(selectionStart, selectionEnd, selectionDirection);
-    user.type(input, '{Shift}', {
+    await user.type(input, '{Shift}', {
       skipClick: true,
       initialSelectionStart: selectionStart,
       initialSelectionEnd: selectionEnd,
