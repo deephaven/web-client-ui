@@ -1,4 +1,5 @@
 import { DashboardData, RootState } from '@deephaven/redux';
+import { useSelector } from 'react-redux';
 import { ClosedPanels, OpenedPanelMap } from '../PanelManager';
 
 const EMPTY_MAP = new Map();
@@ -18,6 +19,10 @@ export const getAllDashboardsData: Selector<
   Record<string, DashboardData>
 > = store => store.dashboardData;
 
+export function useAllDashboardsData(): Record<string, DashboardData> {
+  return useSelector(getAllDashboardsData);
+}
+
 /**
  * @param store The redux store
  * @param dashboardId The dashboard ID to get data for
@@ -27,6 +32,12 @@ export const getDashboardData = (
   store: RootState,
   dashboardId: string
 ): DashboardData => getAllDashboardsData(store)[dashboardId] ?? EMPTY_OBJECT;
+
+export function useDashboardData(dashboardId: string): DashboardData {
+  return useSelector((store: RootState) =>
+    getDashboardData(store, dashboardId)
+  );
+}
 
 /**
  * @param store The redux store

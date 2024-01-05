@@ -8,6 +8,7 @@ export * from './DashboardPlugin';
 export * from './DashboardLayout';
 export * from './DashboardUtils';
 export { default as DashboardUtils } from './DashboardUtils';
+export * from './LazyDashboard';
 export * from './layout';
 export * from './redux';
 export * from './PanelManager';
