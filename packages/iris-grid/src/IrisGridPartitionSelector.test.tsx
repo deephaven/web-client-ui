@@ -1,5 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react';
+import { ApiContext } from '@deephaven/jsapi-bootstrap';
 import dh from '@deephaven/jsapi-shim';
 import IrisGridPartitionSelector from './IrisGridPartitionSelector';
 import IrisGridTestUtils from './IrisGridTestUtils';
@@ -26,11 +27,13 @@ function makeIrisGridPartitionSelector(
   partitionConfig = { partitions: [], mode: 'merged' }
 ) {
   return render(
-    <IrisGridPartitionSelector
-      model={model}
-      onChange={onChange}
-      partitionConfig={partitionConfig as PartitionConfig}
-    />
+    <ApiContext.Provider value={dh}>
+      <IrisGridPartitionSelector
+        model={model}
+        onChange={onChange}
+        partitionConfig={partitionConfig as PartitionConfig}
+      />
+    </ApiContext.Provider>
   );
 }
 

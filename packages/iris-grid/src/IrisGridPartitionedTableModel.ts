@@ -8,10 +8,7 @@ import type {
 import { Formatter } from '@deephaven/jsapi-utils';
 import { ColumnName } from './CommonTypes';
 import EmptyIrisGridModel from './EmptyIrisGridModel';
-import {
-  PartitionConfig,
-  PartitionedGridModelProvider,
-} from './PartitionedGridModel';
+import { PartitionedGridModelProvider } from './PartitionedGridModel';
 
 class IrisGridPartitionedTableModel
   extends EmptyIrisGridModel
@@ -66,10 +63,7 @@ class IrisGridPartitionedTableModel
   }
 
   async partitionTable(partitions: unknown[]): Promise<Table> {
-    // TODO: Copy is necessary for now since getTable returns memoized tables https://github.com/deephaven/web-client-ui/pull/1663#discussion_r1434984641
-    return this.partitionedTable
-      .getTable(partitions)
-      .then(table => table.copy());
+    return this.partitionedTable.getTable(partitions);
   }
 }
 
