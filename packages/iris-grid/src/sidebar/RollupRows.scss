@@ -1,6 +1,5 @@
 @import '@deephaven/components/scss/custom.scss';
 
-$draggable-item-hover-bg: $secondary;
 $draggable-item-selected-bg: hsla(var(--dh-color-accent-hsl), 0.4);
 $draggable-item-selected-hover-bg: $primary;
 $draggable-item-border: $input-border-width solid transparent;
@@ -53,7 +52,7 @@ $row-selected-bg-color: hsla(var(--dh-color-accent-hsl), 0.4);
   .bottom-menu {
     margin-left: 0;
     padding-left: $spacer-2;
-    border-top: 1px solid $background;
+    border-top: 1px solid var(--dh-color-hr);
     padding-top: $spacer-2;
     .custom-checkbox {
       font-size: smaller;
@@ -81,6 +80,7 @@ $row-selected-bg-color: hsla(var(--dh-color-accent-hsl), 0.4);
     }
 
     .btn-delete-grouping {
+      height: 26px;
       margin-right: $spacer-2;
       padding: 0 $spacer-2;
     }
@@ -96,7 +96,7 @@ $row-selected-bg-color: hsla(var(--dh-color-accent-hsl), 0.4);
   .rollup-rows-available-columns {
     display: flex;
     flex-direction: column;
-    background-color: $gray-700;
+    background-color: var(--dh-color-surface);
     flex-grow: 1;
     .draggable-item-list {
       flex-grow: 1;

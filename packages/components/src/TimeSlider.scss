@@ -57,7 +57,7 @@ $tick-label-color: $gray-300;
 
       .track-fill {
         border-radius: $track-height * 0.5;
-        background: $primary-dark;
+        background: var(--dh-color-accent-bg);
         height: 100%;
         width: 100%;
         position: absolute;

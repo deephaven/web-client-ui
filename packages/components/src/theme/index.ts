@@ -5,3 +5,4 @@ export * from './ThemePicker';
 export * from './ThemeProvider';
 export * from './ThemeUtils';
 export * from './useTheme';
+export * from './Logo';

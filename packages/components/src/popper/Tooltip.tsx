@@ -311,7 +311,7 @@ class Tooltip extends Component<TooltipProps, TooltipState> {
         data-testid={dataTestId}
       >
         <Popper
-          className={classNames(popperClassName)}
+          className={classNames(popperClassName, 'popper-tooltip')}
           options={options}
           ref={this.popper}
           onEntered={onEntered}

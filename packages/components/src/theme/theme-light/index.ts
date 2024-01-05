@@ -1,4 +1,11 @@
 import themeLightPalette from './theme-light-palette.css?raw';
+import themeLightSemantic from './theme-light-semantic.css?raw';
+import themeLightSemanticChart from './theme-light-semantic-chart.css?raw';
+import themeLightSemanticEditor from './theme-light-semantic-editor.css?raw';
+import themeLightSemanticGrid from './theme-light-semantic-grid.css?raw';
+import themeLightComponents from './theme-light-components.css?raw';
+
+/**
 
 /**
  * DH theme variables are imported via Vite `?raw` query which provides the
@@ -37,6 +44,13 @@ import themeLightPalette from './theme-light-palette.css?raw';
  *   --dh-color-from-light-components: #000;
  * }
  */
-export const themeLight = themeLightPalette;
+export const themeLight = [
+  themeLightPalette,
+  themeLightSemantic,
+  themeLightSemanticChart,
+  themeLightSemanticEditor,
+  themeLightSemanticGrid,
+  themeLightComponents,
+].join('\n');
 
 export default themeLight;

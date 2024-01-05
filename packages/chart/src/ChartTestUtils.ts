@@ -11,6 +11,8 @@ import type {
 } from '@deephaven/jsapi-types';
 
 class ChartTestUtils {
+  static DEFAULT_FIGURE_TITLE = 'Figure Title';
+
   static DEFAULT_CHART_TITLE = 'Chart Title';
 
   static DEFAULT_X_TITLE = 'X Axis';
@@ -127,7 +129,7 @@ class ChartTestUtils {
   }
 
   makeFigure({
-    title = 'Figure',
+    title = ChartTestUtils.DEFAULT_FIGURE_TITLE,
     charts = [this.makeChart()],
     rows = 1,
     cols = 1,

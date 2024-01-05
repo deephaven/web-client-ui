@@ -21,7 +21,6 @@ import {
 import Log from '@deephaven/log';
 import type { dh as DhType, VariableDefinition } from '@deephaven/jsapi-types';
 import memoize from 'memoize-one';
-import './ConsoleMenu.scss';
 import ConsoleUtils from './common/ConsoleUtils';
 
 const log = Log.module('ConsoleMenu');
@@ -187,24 +186,28 @@ class ConsoleMenu extends PureComponent<ConsoleMenuProps, ConsoleMenuState> {
     const disableWidgetActions = widgetActions.length === 0;
 
     return (
-      <div className="console-pane-menu">
+      <>
         <Button
           kind="ghost"
-          className="btn-link-icon"
           disabled={disableTableActions}
           onClick={() => {
             // no-op: click is handled in `DropdownMenu`
           }}
+          icon={
+            <div className="fa-md fa-layers">
+              <FontAwesomeIcon
+                mask={dhTable}
+                icon={vsTriangleDown}
+                transform="right-5 down-5"
+              />
+              <FontAwesomeIcon
+                icon={vsTriangleDown}
+                transform="right-8 down-6"
+              />
+            </div>
+          }
           tooltip={disableTableActions ? 'No tables available' : 'Tables'}
         >
-          <div className="fa-md fa-layers">
-            <FontAwesomeIcon
-              mask={dhTable}
-              icon={vsTriangleDown}
-              transform="right-5 down-5"
-            />
-            <FontAwesomeIcon icon={vsTriangleDown} transform="right-8 down-6" />
-          </div>
           <DropdownMenu
             key="table-actions "
             actions={tableActions}
@@ -216,21 +219,25 @@ class ConsoleMenu extends PureComponent<ConsoleMenuProps, ConsoleMenuState> {
         </Button>
         <Button
           kind="ghost"
-          className="btn-link-icon"
           disabled={widgetActions.length === 0}
           onClick={() => {
             // no-op: click is handled in `DropdownMenu'
           }}
+          icon={
+            <div className="fa-md fa-layers">
+              <FontAwesomeIcon
+                mask={vsGraph}
+                icon={vsTriangleDown}
+                transform="right-5 down-5"
+              />
+              <FontAwesomeIcon
+                icon={vsTriangleDown}
+                transform="right-8 down-6"
+              />
+            </div>
+          }
           tooltip={disableWidgetActions ? 'No widgets available' : 'Widgets'}
         >
-          <div className="fa-md fa-layers">
-            <FontAwesomeIcon
-              mask={vsGraph}
-              icon={vsTriangleDown}
-              transform="right-5 down-5"
-            />
-            <FontAwesomeIcon icon={vsTriangleDown} transform="right-8 down-6" />
-          </div>
           <DropdownMenu
             key="table-actions"
             actions={widgetActions}
@@ -242,7 +249,6 @@ class ConsoleMenu extends PureComponent<ConsoleMenuProps, ConsoleMenuState> {
         </Button>
         <Button
           kind="ghost"
-          className="btn-overflow btn-link-icon"
           icon={vsKebabVertical}
           tooltip="More Actions..."
           onClick={() => {
@@ -254,7 +260,7 @@ class ConsoleMenu extends PureComponent<ConsoleMenuProps, ConsoleMenuState> {
             popperOptions={popperOptions}
           />
         </Button>
-      </div>
+      </>
     );
   }
 }

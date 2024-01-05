@@ -91,6 +91,7 @@ export type GridTheme = {
   // Shadows to draw when representing a hierarchy, eg. when one row is a higher "depth" than the row above it
   shadowBlur: number;
   shadowColor: GridColor;
+  shadowAlpha: number;
   maxDepth: number; // max depth of the shadowing
 
   // Other tree table metrics
@@ -193,6 +194,7 @@ const defaultTheme: GridTheme = Object.freeze({
   scrollBarSelectionTickColor: '#4286f433',
   scrollBarActiveSelectionTickColor: '#4286f480',
   shadowBlur: 8,
+  shadowAlpha: 0.15,
   shadowColor: '#000000',
   textColor: '#ffffff',
   hyperlinkColor: '#4878ea',

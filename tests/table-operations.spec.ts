@@ -252,6 +252,9 @@ test('organize columns', async ({ page }) => {
     await page.getByPlaceholder('Search').click();
     await page.keyboard.type('dou');
 
+    // https://github.com/microsoft/playwright/issues/20203
+    await page.evaluate(() => document.fonts.ready);
+
     await expect(
       page.locator('.visibility-ordering-builder')
     ).toHaveScreenshot();

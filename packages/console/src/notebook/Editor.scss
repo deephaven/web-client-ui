@@ -1,5 +1,17 @@
 @import '@deephaven/components/scss/custom.scss';
 
-.monaco-editor .detected-link {
-  color: $link-color;
+.editor-container {
+  .monaco-editor {
+    // override default scroll container shadow to match our global shadows
+    --vscode-scrollbar-shadow: var(--dh-color-dropshadow);
+
+    // set font for menus
+    font-family: var(--font-family-sans-serif);
+    .shadow-root-host {
+      font-family: var(--font-family-sans-serif);
+    }
+  }
+  .monaco-editor .detected-link {
+    color: $link-color;
+  }
 }

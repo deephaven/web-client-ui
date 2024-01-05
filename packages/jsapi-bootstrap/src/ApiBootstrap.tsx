@@ -66,7 +66,7 @@ export function ApiBootstrap({
   if (api == null) {
     return (
       failureElement ?? (
-        <Modal isOpen className="modal-dialog-centered theme-bg-light">
+        <Modal isOpen className="modal-dialog-centered">
           <ModalHeader closeButton={false}>
             Error: Unable to load API
           </ModalHeader>

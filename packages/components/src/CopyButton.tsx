@@ -12,6 +12,8 @@ type CopyButtonProps = {
   tooltip?: string;
   /** Optional extra classname */
   className?: string;
+  /** Optional extra styles */
+  style?: React.CSSProperties;
   /** Optional extra testid */
   'data-testid'?: string;
   /** Optional button children */
@@ -26,6 +28,7 @@ function CopyButton({
   kind = 'ghost',
   tooltip = 'Copy',
   className,
+  style,
   'data-testid': dataTestId,
   children,
 }: CopyButtonProps): JSX.Element {
@@ -34,6 +37,7 @@ function CopyButton({
     <Button
       kind={kind}
       className={className}
+      style={style}
       data-testid={dataTestId}
       icon={copied ? vsPassFilled : vsCopy}
       tooltip={copied ? 'Copied' : tooltip}

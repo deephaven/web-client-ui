@@ -483,6 +483,8 @@ class ComboBox extends Component<ComboBoxProps, ComboBoxState> {
         />
         <div className="input-group-append cb-dropdown">
           <button
+            // Mimic React Spectrum where dropdown button is not a tab stop
+            tabIndex={-1}
             type="button"
             className="btn cb-btn form-control"
             ref={this.toggleButton}

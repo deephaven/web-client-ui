@@ -3,16 +3,13 @@
 $toolbar-padding: $spacer-1;
 $toolbar-font-size: 17px;
 $toolbar-btn-width: $input-height;
-$toolbar-height: 42px;
 $toolbar-bg: $content-bg;
 $file-list-search-bg: $gray-800;
-$item-list-color: $foreground;
 
 .file-explorer-toolbar {
   background: $toolbar-bg;
   border-bottom: 2px solid $background;
   display: flex;
-  flex-basis: $toolbar-height;
   flex-direction: row;
   flex-grow: 0;
   flex-shrink: 1;
@@ -20,7 +17,7 @@ $item-list-color: $foreground;
   position: relative;
   align-items: center;
   padding: $toolbar-padding;
-  min-height: $toolbar-height;
+
   .file-explorer-toolbar-buttons {
     display: flex;
     padding-right: $toolbar-padding;

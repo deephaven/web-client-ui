@@ -34,7 +34,10 @@ import {
   GridTokenMouseHandler,
 } from './mouse-handlers';
 import './Grid.scss';
-import KeyHandler, { GridKeyboardEvent } from './KeyHandler';
+import KeyHandler, {
+  GridKeyHandlerFunctionName,
+  GridKeyboardEvent,
+} from './KeyHandler';
 import {
   EditKeyHandler,
   PasteKeyHandler,
@@ -342,7 +345,9 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.handleEditCellChange = this.handleEditCellChange.bind(this);
     this.handleEditCellCommit = this.handleEditCellCommit.bind(this);
     this.handleDoubleClick = this.handleDoubleClick.bind(this);
+    this.notifyKeyboardHandlers = this.notifyKeyboardHandlers.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
+    this.handleKeyUp = this.handleKeyUp.bind(this);
     this.handleMouseDown = this.handleMouseDown.bind(this);
     this.handleMouseDrag = this.handleMouseDrag.bind(this);
     this.handleMouseMove = this.handleMouseMove.bind(this);
@@ -1715,14 +1720,20 @@ class Grid extends PureComponent<GridProps, GridState> {
   }
 
   /**
-   * Handle a key down event from the keyboard. Pass the event to the registered keyboard handlers until one handles it.
-   * @param event Keyboard event
+   * Notify all of the keyboard handlers for this grid of a keyboard event.
+   * @param functionName The name of the function in the keyboard handler to call
+   * @param event The keyboard event to notify
    */
-  handleKeyDown(event: GridKeyboardEvent): void {
+  notifyKeyboardHandlers(
+    functionName: GridKeyHandlerFunctionName,
+    event: GridKeyboardEvent
+  ): void {
     const keyHandlers = this.getKeyHandlers();
     for (let i = 0; i < keyHandlers.length; i += 1) {
       const keyHandler = keyHandlers[i];
-      const result = keyHandler.onDown(event, this);
+      const result =
+        keyHandler[functionName] != null &&
+        keyHandler[functionName](event, this);
       if (result !== false) {
         const options = result as EventHandlerResultOptions;
         if (options?.stopPropagation ?? true) event.stopPropagation();
@@ -1730,6 +1741,14 @@ class Grid extends PureComponent<GridProps, GridState> {
         break;
       }
     }
+  }
+
+  handleKeyDown(event: GridKeyboardEvent): void {
+    this.notifyKeyboardHandlers('onDown', event);
+  }
+
+  handleKeyUp(event: GridKeyboardEvent): void {
+    this.notifyKeyboardHandlers('onUp', event);
   }
 
   /**
@@ -2229,6 +2248,7 @@ class Grid extends PureComponent<GridProps, GridState> {
           onContextMenu={this.handleContextMenu}
           onDoubleClick={this.handleDoubleClick}
           onKeyDown={this.handleKeyDown}
+          onKeyUp={this.handleKeyUp}
           onMouseDown={this.handleMouseDown}
           onMouseMove={this.handleMouseMove}
           onMouseLeave={this.handleMouseLeave}

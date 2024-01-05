@@ -31,7 +31,7 @@ $hr-bg-color: $gray-700;
   text-align: left;
   border-radius: $border-radius;
   background-clip: border-box;
-  box-shadow: $box-shadow-900;
+  box-shadow: $box-shadow;
   max-height: 100vh;
   overflow-y: auto;
 
@@ -172,7 +172,7 @@ $hr-bg-color: $gray-700;
     cursor: default;
     user-select: none;
     font-weight: 500;
-    border-bottom: 1px solid $gray-500;
+    border-bottom: 1px solid var(--dh-color-hr);
   }
 
   .loading {

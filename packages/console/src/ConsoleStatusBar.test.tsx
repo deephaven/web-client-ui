@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import dh from '@deephaven/jsapi-shim';
 import { ContextActions, DropdownAction } from '@deephaven/components';
 import { vsCheck } from '@deephaven/icons';
-import userEvent, { TargetElement } from '@testing-library/user-event';
+import userEvent from '@testing-library/user-event';
 import ConsoleStatusBar from './ConsoleStatusBar';
 
 jest.useFakeTimers();
@@ -51,9 +51,7 @@ it('dropdown menu disappears on toggle', async () => {
       order: 10,
     },
   ]);
-  const button = document.querySelector(
-    '.btn-overflow.btn-link-icon'
-  ) as TargetElement;
+  const button = screen.getByLabelText('More Actions...');
   await user.click(button);
   let dropdown: HTMLElement | null = screen.getByText(title);
   expect(dropdown).toBeTruthy();

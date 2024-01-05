@@ -29,6 +29,12 @@ import {
   ToggleButton,
   View,
   Well,
+  DialogTrigger,
+  Dialog,
+  Header,
+  Divider,
+  ButtonGroup,
+  Flex,
 } from '@adobe/react-spectrum';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhTruck, vsEmptyWindow } from '@deephaven/icons';
@@ -60,7 +66,30 @@ export function SpectrumComponents(): JSX.Element {
         </View>
         <View {...sampleSectionIdAndClassesSpectrum('spectrum-overlays')}>
           <h3>Overlays</h3>
-          <ContextualHelpSample />
+          <Flex gap="size-160">
+            <ContextualHelpSample />
+            <DialogTrigger>
+              <ActionButton>Dialog Trigger</ActionButton>
+              {close => (
+                <Dialog>
+                  <Heading>Some Heading</Heading>
+                  <Header>Some Header</Header>
+                  <Divider />
+                  <Content>
+                    <Text>Are you sure?</Text>
+                  </Content>
+                  <ButtonGroup>
+                    <Button variant="secondary" onPress={close}>
+                      Cancel
+                    </Button>
+                    <Button variant="accent" onPress={close}>
+                      Confirm
+                    </Button>
+                  </ButtonGroup>
+                </Dialog>
+              )}
+            </DialogTrigger>
+          </Flex>
         </View>
         <View {...sampleSectionIdAndClassesSpectrum('spectrum-well')}>
           <h3>Wells</h3>

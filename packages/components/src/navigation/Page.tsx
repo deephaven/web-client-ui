@@ -29,7 +29,7 @@ export function Page({
           {onBack !== undefined && (
             <Button
               kind="ghost"
-              className="btn-back"
+              className="btn-back m-1 btn-sm"
               data-testid="btn-page-back"
               onClick={onBack}
               icon={vsChevronLeft}
@@ -43,7 +43,7 @@ export function Page({
           {onClose !== undefined && (
             <Button
               kind="ghost"
-              className="btn-close px-2 m-1"
+              className="btn-close btn-sm px-2 m-1"
               data-testid="btn-page-close"
               onClick={onClose}
               icon={vsClose}

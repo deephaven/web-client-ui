@@ -81,6 +81,7 @@ exports[`createDefaultIrisGridTheme should derive the default Iris grid theme 1`
   "selectionColor": "IrisGridTheme['selection-color']",
   "selectionOutlineCasingColor": "IrisGridTheme['selection-outline-casing-color']",
   "selectionOutlineColor": "IrisGridTheme['selection-outline-color']",
+  "shadowAlpha": 0.15,
   "sortHeaderBarHeight": 2,
   "textColor": "IrisGridTheme['text-color']",
   "treeLineColor": "IrisGridTheme['tree-line-color']",

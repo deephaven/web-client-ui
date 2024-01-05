@@ -11,6 +11,7 @@ const REASSIGN_VARIABLE_GROUPS: Record<string, string> = {
   // Semantic
   '--dh-color-border': 'General',
   '--dh-color-bg': 'General',
+  '--dh-color-surface-bg': 'General',
   '--dh-color-fg': 'General',
   '--dh-color-content-bg': 'General',
   '--dh-color-dropshadow': 'General',

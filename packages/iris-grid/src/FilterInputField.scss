@@ -38,8 +38,8 @@
 
   .iris-grid-input-field {
     position: absolute;
-    color: $gray-200;
-    background: $gray-800; // same as filter-bar-expanded-bg
+    color: var(--dh-color-text);
+    background: var(--dh-color-grid-filter-bar-expanded-bg);
     border: 1px solid $input-border-color;
     width: 100%;
     height: 100%;

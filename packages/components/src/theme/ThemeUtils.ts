@@ -1,8 +1,10 @@
 import Log from '@deephaven/log';
 import { assertNotNull, ColorUtils } from '@deephaven/utils';
 import { themeDark } from './theme-dark';
+import { themeLight } from './theme-light';
 import {
   DEFAULT_DARK_THEME_KEY,
+  DEFAULT_LIGHT_THEME_KEY,
   DEFAULT_PRELOAD_DATA_VARIABLES,
   ThemeData,
   ThemePreloadData,
@@ -147,11 +149,11 @@ export function getDefaultBaseThemes(): ThemeData[] {
     // The ThemePicker shows whenever more than 1 theme is available. Disable
     // light theme for now to keep the picker hidden until it is fully
     // implemented by #1539.
-    // {
-    //   name: 'Default Light',
-    //   themeKey: DEFAULT_LIGHT_THEME_KEY,
-    //   styleContent: themeLight,
-    // },
+    {
+      name: 'Default Light',
+      themeKey: DEFAULT_LIGHT_THEME_KEY,
+      styleContent: themeLight,
+    },
   ];
 }
 

@@ -1,6 +1,6 @@
 :root {
   /* Grid */
-  --dh-color-grid-bg: var(--dh-color-bg);
+  --dh-color-grid-bg: var(--dh-color-gray-75);
 
   /* Header */
   --dh-color-grid-header-bg: var(--dh-color-gray-100);
@@ -15,10 +15,11 @@
   /* Row */
   --dh-color-grid-row-0-bg: var(--dh-color-gray-300);
   --dh-color-grid-row-1-bg: var(--dh-color-gray-100);
-  --dh-color-grid-row-hover-bg: var(--dh-color-gray-400);
+  --dh-color-grid-row-hover-bg: var(--dh-color-highlight-hover);
   --dh-color-grid-row-hover-bg-selected: var(
     --dh-color-highlight-selected-hover
   );
+  --dh-color-grid-row-shadow-alpha: 0.15;
 
   /* Selection */
   --dh-color-grid-selection: var(--dh-color-highlight-selected);

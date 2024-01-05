@@ -299,8 +299,9 @@ export default class RowOrColumn extends AbstractContentItem {
     const dimension = this._isColumn ? 'height' : 'width';
 
     for (let i = 0; i < this.contentItems.length; i++) {
-      if (this.contentItems[i].config[dimension] !== undefined) {
-        total += this.contentItems[i].config[dimension] ?? 0;
+      const size = this.contentItems[i].config[dimension];
+      if (size != null) {
+        total += size;
       } else {
         itemsWithoutSetDimension.push(this.contentItems[i]);
       }

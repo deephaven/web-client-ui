@@ -17,6 +17,9 @@ export interface ContextAction {
   icon?: IconDefinition | React.ReactElement;
   iconColor?: string;
   shortcut?: Shortcut;
+
+  /* Display text for the shortcut if the shortcut is not wired up through the Shortcut class */
+  shortcutText?: string;
   isGlobal?: boolean;
   group?: number;
   order?: number;

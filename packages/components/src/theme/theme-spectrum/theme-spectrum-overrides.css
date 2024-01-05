@@ -4,10 +4,27 @@
   font-family: var(--font-family-sans-serif) !important;
 }
 
+/* Override _reboot.scss */
+label[class^='spectrum-'] {
+  margin-bottom: 0;
+}
+
 .svg-inline--fa[class*='spectrum-Icon--sizeS'] {
   /* 
   Resize fontawesome icons used inside a spectrum icon wrapper to match
   our icon size. Spectrum icons are 18px by default, but our icons are built on a 16px grid.
   */
   --spectrum-alias-workflow-icon-size: var(--dh-svg-inline-icon-size);
+}
+
+/** 
+ * Spectrum action button icons only include right padding if the the icon is 
+ * the only child. In cases where we add a <Tooltip>, we have to manually add 
+ * the right padding ourselves to keep the icon centered.
+ */
+.action-button-icon-with-tooltip {
+  padding-right: var(
+    --spectrum-actionbutton-icon-padding-x,
+    var(--spectrum-global-dimension-size-85)
+  );
 }

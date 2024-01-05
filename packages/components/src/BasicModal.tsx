@@ -75,7 +75,7 @@ function BasicModal(props: BasicModalProps): JSX.Element {
   }
 
   return (
-    <Modal isOpen={isOpen} className="theme-bg-light" onOpened={onOpened}>
+    <Modal isOpen={isOpen} onOpened={onOpened}>
       <ModalHeader closeButton={false}>{headerText}</ModalHeader>
       <ModalBody>{modalBody}</ModalBody>
       <ModalFooter>

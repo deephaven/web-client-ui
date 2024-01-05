@@ -80,7 +80,10 @@ function makeComponent(
 
 function keyDown(key, component, extraArgs?) {
   const args = { key, ...extraArgs };
-  component.grid.handleKeyDown(new KeyboardEvent('keydown', args));
+  component.grid.notifyKeyboardHandlers(
+    'onDown',
+    new KeyboardEvent('keydown', args)
+  );
 }
 
 it('renders without crashing', () => {

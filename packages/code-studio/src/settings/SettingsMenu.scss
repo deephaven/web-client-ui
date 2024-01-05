@@ -1,6 +1,5 @@
 @import '@deephaven/components/scss/custom.scss';
 
-$settings-menu-bg: $gray-700;
 $settings-menu-width: 400px;
 $settings-menu-header-min-height: 60px;
 $settings-menu-padding: $spacer-3;
@@ -9,7 +8,7 @@ $settings-menu-header-color: var(--dh-color-fg);
 
 $settings-menu-collapse-trigger-color: var(--dh-color-fg);
 
-$settings-menu-rule-bg: $gray-600;
+$settings-menu-rule-bg: $gray-800;
 $settings-menu-rule-button-color: $gray-300;
 $settings-menu-rule-border: $gray-400;
 $settings-menu-rule-focused-border: $primary;
@@ -21,9 +20,12 @@ $input-btn-focus-box-shadow-over-primary: 0 0 0 0.2rem
 $settings-menu-z-index: $zindex-modal;
 
 .app-settings-menu {
+  --settings-menu-bg: var(--dh-color-surface-bg);
+  --dh-color-hr: var(--dh-color-gray-500);
+
   display: flex;
   flex-direction: column;
-  background: $settings-menu-bg;
+  background: var(--settings-menu-bg);
   box-shadow: $box-shadow;
   position: fixed;
   top: 0;
@@ -181,7 +183,7 @@ $settings-menu-z-index: $zindex-modal;
 .app-settings-footer {
   .app-settings-footer-section {
     padding: $settings-menu-padding 0;
-    border-top: 1px solid $gray-800;
+    border-top: 1px solid var(--dh-color-hr);
     .app-settings-footer-item:not(:last-child) {
       padding-bottom: $settings-menu-padding;
     }

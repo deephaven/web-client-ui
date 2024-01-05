@@ -1349,7 +1349,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
                 />
                 <Button
                   kind="ghost"
-                  className="btn-overflow btn-link-icon"
+                  className="btn-overflow"
                   disabled={toolbarDisabled}
                   icon={vsKebabVertical}
                   tooltip="More Actions..."

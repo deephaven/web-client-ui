@@ -1303,6 +1303,7 @@ export class IrisGridPanel extends PureComponent<
             )}
             columnAllowedCursor="linker"
             columnNotAllowedCursor="linker-not-allowed"
+            copyCursor="copy"
             customColumns={customColumns}
             customColumnFormatMap={customColumnFormatMap}
             columnSelectionValidator={this.isColumnSelectionValid}

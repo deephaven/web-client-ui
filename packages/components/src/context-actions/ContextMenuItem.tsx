@@ -71,7 +71,8 @@ const ContextMenuItem = React.forwardRef<HTMLDivElement, ContextMenuItemProps>(
       'data-testid': dataTestId,
     } = props;
 
-    const displayShortcut = menuItem.shortcut?.getDisplayText();
+    const displayShortcut =
+      menuItem.shortcutText ?? menuItem.shortcut?.getDisplayText();
     let icon: IconDefinition | React.ReactElement | null = null;
     if (menuItem.icon) {
       const menuItemIcon = menuItem.icon;

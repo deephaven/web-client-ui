@@ -22,6 +22,17 @@
   identifier-js: var(--dh-color-editor-identifier-js);
   comment: var(--dh-color-editor-comment);
 
+  // brackets
+  editor-bracket-foreground1: var(--dh-color-editor-bracket-fg1);
+  editor-bracket-foreground2: var(--dh-color-editor-bracket-fg2);
+  editor-bracket-foreground3: var(--dh-color-editor-bracket-fg3);
+  editor-bracket-foreground4: var(--dh-color-editor-bracket-fg4);
+  editor-bracket-foreground5: var(--dh-color-editor-bracket-fg5);
+  editor-bracket-foreground6: var(--dh-color-editor-bracket-fg6);
+  editor-unexpected-bracket-foreground: var(
+    --dh-color-editor-unexpected-bracket-fg
+  );
+
   //input
   input-option-active-border: var(--dh-color-editor-input-option-active-border);
   focus-border: var(--dh-color-editor-focus-border);
@@ -32,12 +43,20 @@
   //editor
   editor-line-number-foreground: var(--dh-color-editor-line-number-fg);
   editor-selection-background: var(--dh-color-editor-selection-bg);
-  editor-line-highlight-bg: var(--dh-color-editor-line-highlight-bg);
+  editor-inactive-selection-background: var(
+    --dh-color-editor-inactive-selection-bg
+  );
+  editor-selection-highlight-background: var(
+    --dh-color-editor-selection-highlight-bg
+  );
+  editor-line-highlight-background: var(--dh-color-editor-line-highlight-bg);
+  editor-word-highlight-background: var(--dh-color-editor-word-highlight-bg);
 
   //context menu
   context-menu-background: var(--dh-color-editor-context-menu-bg);
   context-menu-foreground: var(--dh-color-editor-context-menu-fg);
   menu-selection-background: var(--dh-color-editor-menu-selection-bg);
+  menu-selection-foreground: var(--dh-color-editor-menu-selection-fg);
 
   //log items
   log-date: var(--dh-color-editor-log-date);

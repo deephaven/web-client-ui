@@ -15,6 +15,8 @@ import type Grid from './Grid';
  */
 export type GridKeyboardEvent = KeyboardEvent | React.KeyboardEvent;
 
+export type GridKeyHandlerFunctionName = 'onDown' | 'onUp';
+
 export class KeyHandler {
   order: number;
 
@@ -31,6 +33,16 @@ export class KeyHandler {
    * @returns Response indicating if the key was consumed
    */
   onDown(event: GridKeyboardEvent, grid: Grid): EventHandlerResult {
+    return false;
+  }
+
+  /**
+   * Handle a keyup event on the grid.
+   * @param event The keyboard event
+   * @param grid The grid component the key press is on
+   * @returns Response indicating if the key was consumed
+   */
+  onUp(event: GridKeyboardEvent, grid: Grid): EventHandlerResult {
     return false;
   }
 }

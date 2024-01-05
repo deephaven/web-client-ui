@@ -110,7 +110,7 @@ class MarkdownStartPage extends PureComponent<
             <Modal
               isOpen={isDeleteModalShown}
               toggle={this.handleDeleteModalClose}
-              className="modal-dialog-centered markdown-delete-modal theme-bg-light"
+              className="modal-dialog-centered markdown-delete-modal"
             >
               <ModalHeader>
                 Are you sure you want to permanently delete this note?

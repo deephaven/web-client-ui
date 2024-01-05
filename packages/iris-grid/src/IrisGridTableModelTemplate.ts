@@ -625,7 +625,11 @@ class IrisGridTableModelTemplate<
     return theme.textColor;
   }
 
-  backgroundColorForCell(x: ModelIndex, y: ModelIndex): string | null {
+  backgroundColorForCell(
+    x: ModelIndex,
+    y: ModelIndex,
+    theme: IrisGridThemeType
+  ): string | null {
     return this.formatForCell(x, y)?.backgroundColor ?? null;
   }
 

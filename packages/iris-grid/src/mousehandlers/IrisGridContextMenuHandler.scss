@@ -4,7 +4,7 @@ $padding-x: 2rem;
 
 .iris-grid-filter-menu-item-value {
   user-select: none;
-  background: $content-bg;
+  background: var(--dh-color-surface-bg);
   border-radius: $border-radius $border-radius 0 0;
   padding: $input-btn-padding-y $padding-x;
   text-overflow: ellipsis;
