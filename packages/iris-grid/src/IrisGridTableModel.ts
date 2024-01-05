@@ -13,7 +13,7 @@ import type {
   ValueTypeUnion,
 } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
-import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
+import { Formatter } from '@deephaven/jsapi-utils';
 import {
   EventShimCustomEvent,
   PromiseUtils,
