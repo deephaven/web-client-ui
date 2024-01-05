@@ -100,6 +100,8 @@ export type DehydratedUserColumnWidth = [ColumnName, number];
 
 export type DehydratedUserRowHeight = [number, number];
 
+export type DehydratedPartitionConfig = PartitionConfig;
+
 /** @deprecated Use `DehydratedSort` instead */
 export interface LegacyDehydratedSort {
   column: ModelIndex;
@@ -143,7 +145,7 @@ export interface DehydratedIrisGridState {
   pendingDataMap: DehydratedPendingDataMap<string | CellData | null>;
   frozenColumns: readonly ColumnName[];
   columnHeaderGroups?: readonly ColumnGroup[];
-  partitionConfig?: PartitionConfig;
+  partitionConfig?: DehydratedPartitionConfig;
 }
 
 export interface DehydratedIrisGridPanelStateV1 {
@@ -1208,7 +1210,7 @@ class IrisGridUtils {
         children: item.children,
         color: item.color,
       })),
-      partitionConfig,
+      partitionConfig: this.dehydratePartitionConfig(columns, partitionConfig),
     };
   }
 
@@ -1304,7 +1306,7 @@ class IrisGridUtils {
         model,
         columnHeaderGroups ?? model.layoutHints?.columnGroups ?? []
       ).groups,
-      partitionConfig,
+      partitionConfig: this.hydratePartitionConfig(columns, partitionConfig),
     };
   }
 
@@ -1496,6 +1498,38 @@ class IrisGridUtils {
         ]
       )
     );
+  }
+
+  dehydratePartitionConfig(
+    columns: readonly Column[],
+    partitionConfig: PartitionConfig | undefined
+  ): PartitionConfig | undefined {
+    if (partitionConfig == null) {
+      return partitionConfig;
+    }
+
+    return {
+      ...partitionConfig,
+      partitions: partitionConfig.partitions.map((partition, index) =>
+        this.dehydrateValue(partition, columns[index].type)
+      ),
+    };
+  }
+
+  hydratePartitionConfig(
+    columns: readonly Column[],
+    partitionConfig: PartitionConfig | undefined
+  ): PartitionConfig | undefined {
+    if (partitionConfig == null) {
+      return partitionConfig;
+    }
+
+    return {
+      ...partitionConfig,
+      partitions: partitionConfig.partitions.map((partition, index) =>
+        this.hydrateValue(partition, columns[index].type)
+      ),
+    };
   }
 
   /**

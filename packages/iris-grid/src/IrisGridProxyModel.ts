@@ -91,6 +91,12 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
 
   selectDistinct: ColumnName[];
 
+  currentViewport?: {
+    top: number;
+    bottom: number;
+    columns?: Column[];
+  };
+
   constructor(
     dh: DhType,
     table: Table | TreeTable | PartitionedTable,
@@ -132,6 +138,7 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     log.debug('setModel', model);
 
     const oldModel = this.model;
+    const { columns: oldColumns } = oldModel;
 
     if (oldModel !== this.originalModel) {
       oldModel.close();
@@ -143,11 +150,17 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
       this.addListeners(model);
     }
 
-    this.dispatchEvent(
-      new EventShimCustomEvent(IrisGridModel.EVENT.COLUMNS_CHANGED, {
-        detail: model.columns,
-      })
-    );
+    if (oldColumns !== model.columns) {
+      this.dispatchEvent(
+        new EventShimCustomEvent(IrisGridModel.EVENT.COLUMNS_CHANGED, {
+          detail: model.columns,
+        })
+      );
+    } else if (this.currentViewport != null) {
+      // If the columns haven't changed, the current viewport should still valid, and needs to be set on the new model
+      const { top, bottom, columns } = this.currentViewport;
+      model.setViewport(top, bottom, columns);
+    }
 
     if (isIrisGridTableModelTemplate(model)) {
       this.dispatchEvent(
@@ -710,8 +723,10 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
   isFilterable: IrisGridTableModel['isFilterable'] = (...args) =>
     this.model.isFilterable(...args);
 
-  setViewport = (top: number, bottom: number, columns?: Column[]): void =>
+  setViewport = (top: number, bottom: number, columns?: Column[]): void => {
+    this.currentViewport = { top, bottom, columns };
     this.model.setViewport(top, bottom, columns);
+  };
 
   snapshot: IrisGridModel['snapshot'] = (...args) =>
     this.model.snapshot(...args);

@@ -210,30 +210,16 @@ class IrisGridTableModel
   async partitionTable(partitions: unknown[]): Promise<Table> {
     log.debug('getting partition table for partitions', partitions);
 
-    const partitionFilters = [];
+    const partitionFilters: FilterCondition[] = [];
     for (let i = 0; i < this.partitionColumns.length; i += 1) {
       const partition = partitions[i];
       const partitionColumn = this.partitionColumns[i];
 
-      if (
-        partition != null &&
-        !(TableUtils.isCharType(partitionColumn.type) && partition === '')
-      ) {
-        const partitionText = TableUtils.isCharType(partitionColumn.type)
-          ? this.displayString(
-              partition,
-              partitionColumn.type,
-              partitionColumn.name
-            )
-          : partition.toString();
-        const partitionFilter = this.tableUtils.makeQuickFilterFromComponent(
-          partitionColumn,
-          partitionText
-        );
-        if (partitionFilter !== null) {
-          partitionFilters.push(partitionFilter);
-        }
-      }
+      const partitionFilter = this.tableUtils.makeFilterRawValue(
+        partitionColumn.type,
+        partition
+      );
+      partitionFilters.push(partitionColumn.filter().eq(partitionFilter));
     }
 
     const t = await this.table.copy();

@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import memoizee from 'memoizee';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button } from '@deephaven/components';
 import { vsChevronRight, vsMerge, vsKey } from '@deephaven/icons';
@@ -271,6 +272,15 @@ class IrisGridPartitionSelector extends Component<
     this.setState({ partitionFilters });
   }
 
+  getCachedChangeCallback = memoizee(
+    (index: number) => (value: unknown) =>
+      this.handlePartitionSelect(index, value)
+  );
+
+  getCachedFormatValueCallback = memoizee(
+    (index: number) => (value: unknown) => this.getDisplayValue(index, value)
+  );
+
   render(): JSX.Element {
     const { model, partitionConfig } = this.props;
     const { isLoading, partitionFilters, partitionTables } = this.state;
@@ -285,12 +295,12 @@ class IrisGridPartitionSelector extends Component<
           table={partitionTables?.[index]}
           column={column}
           filter={partitionFilters?.[index]}
-          onChange={value => this.handlePartitionSelect(index, value)}
+          onChange={this.getCachedChangeCallback(index)}
           selectedValue={mode === 'partition' ? partitions[index] : undefined}
           disabled={
             (index > 0 && partitionConfig.mode !== 'partition') || isLoading
           }
-          formatValue={value => this.getDisplayValue(index, value)}
+          formatValue={this.getCachedFormatValueCallback(index)}
         />
         {model.partitionColumns.length - 1 === index || (
           <FontAwesomeIcon icon={vsChevronRight} />

@@ -7,6 +7,20 @@ import {
   Table,
   ViewportData,
 } from '@deephaven/jsapi-types';
+import { EMPTY_ARRAY } from '@deephaven/utils';
+
+type JavaObject = {
+  equals: (other: unknown) => boolean;
+};
+
+function isJavaObject(value: unknown): value is JavaObject {
+  return (
+    typeof value === 'object' &&
+    value != null &&
+    'equals' in value &&
+    typeof value.equals === 'function'
+  );
+}
 
 function defaultFormatValue(value: unknown): string {
   return `${value}`;
@@ -23,7 +37,7 @@ export type TableDropdownProps = {
   onChange: (value: unknown) => void;
 
   /** Filter to apply on the table */
-  filter?: FilterCondition[];
+  filter?: readonly FilterCondition[];
 
   /** The currently selected value */
   selectedValue?: unknown;
@@ -36,6 +50,9 @@ export type TableDropdownProps = {
 
   /** Optional function to format the value for display */
   formatValue?: (value: unknown) => string;
+
+  /** Maximum number of elements to load */
+  maxSize?: number;
 };
 
 /**
@@ -44,12 +61,13 @@ export type TableDropdownProps = {
 export function TableDropdown({
   column,
   table,
-  filter = [],
+  filter = EMPTY_ARRAY,
   onChange,
   selectedValue,
   disabled,
   className,
   formatValue = defaultFormatValue,
+  maxSize = 1000,
 }: TableDropdownProps): JSX.Element {
   const dh = useApi();
   const [values, setValues] = useState<unknown[]>([]);
@@ -61,10 +79,8 @@ export function TableDropdown({
     }
 
     // Need to set a viewport on the table and start listening to get the values to populate the dropdown
-    table.applyFilter(filter);
-    const subscription = table.setViewport(0, Number.MAX_SAFE_INTEGER - 5, [
-      column,
-    ]);
+    table.applyFilter(filter as FilterCondition[]);
+    const subscription = table.setViewport(0, maxSize, [column]);
 
     subscription.addEventListener(
       dh.Table.EVENT_UPDATED,
@@ -78,7 +94,7 @@ export function TableDropdown({
     return () => {
       subscription.close();
     };
-  }, [column, dh, filter, table]);
+  }, [column, dh, filter, maxSize, table]);
 
   // If the selected value is undefined, add a placeholder item
   const allValues = useMemo(() => {
@@ -90,7 +106,13 @@ export function TableDropdown({
 
   // Since values could be anything, not just strings, track the selected index based on the current data
   const selectedIndex = useMemo(
-    () => allValues.findIndex(value => value === selectedValue),
+    // eslint-disable-next-line eqeqeq
+    () =>
+      allValues.findIndex(
+        value =>
+          value === selectedValue ||
+          (isJavaObject(value) && value.equals(selectedValue))
+      ),
     [selectedValue, allValues]
   );
 

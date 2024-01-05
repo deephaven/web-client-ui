@@ -18,6 +18,7 @@ import {
   Table,
 } from '@deephaven/jsapi-types';
 import { ColumnName, Formatter } from '@deephaven/jsapi-utils';
+import { EMPTY_ARRAY, EMPTY_MAP } from '@deephaven/utils';
 import IrisGridModel from './IrisGridModel';
 import ColumnHeaderGroup from './ColumnHeaderGroup';
 import {
@@ -52,7 +53,7 @@ class EmptyIrisGridModel extends IrisGridModel {
   }
 
   get columns(): readonly Column[] {
-    return [];
+    return EMPTY_ARRAY;
   }
 
   getColumnIndexByName(name: string): ModelIndex | undefined {
@@ -60,19 +61,19 @@ class EmptyIrisGridModel extends IrisGridModel {
   }
 
   get initialMovedColumns(): readonly MoveOperation[] {
-    return [];
+    return EMPTY_ARRAY;
   }
 
   get initialMovedRows(): readonly MoveOperation[] {
-    return [];
+    return EMPTY_ARRAY;
   }
 
   get initialColumnHeaderGroups(): readonly ColumnHeaderGroup[] {
-    return [];
+    return EMPTY_ARRAY;
   }
 
   get groupedColumns(): readonly Column[] {
-    return [];
+    return EMPTY_ARRAY;
   }
 
   formatForCell(column: ModelIndex, row: ModelIndex): Format | undefined {
@@ -84,7 +85,7 @@ class EmptyIrisGridModel extends IrisGridModel {
   }
 
   get filter(): readonly FilterCondition[] {
-    return [];
+    return EMPTY_ARRAY;
   }
 
   set filter(filter: readonly FilterCondition[]) {
@@ -92,7 +93,7 @@ class EmptyIrisGridModel extends IrisGridModel {
   }
 
   get partition(): readonly unknown[] {
-    return [];
+    return EMPTY_ARRAY;
   }
 
   set partition(partition: readonly unknown[]) {
@@ -100,7 +101,7 @@ class EmptyIrisGridModel extends IrisGridModel {
   }
 
   get partitionColumns(): readonly Column[] {
-    return [];
+    return EMPTY_ARRAY;
   }
 
   get formatter(): Formatter {
@@ -119,16 +120,16 @@ class EmptyIrisGridModel extends IrisGridModel {
     return '';
   }
 
-  get sort(): Sort[] {
-    return [];
+  get sort(): readonly Sort[] {
+    return EMPTY_ARRAY;
   }
 
-  set sort(sort: Sort[]) {
+  set sort(sort: readonly Sort[]) {
     // No-op
   }
 
   get customColumns(): readonly ColumnName[] {
-    return [];
+    return EMPTY_ARRAY;
   }
 
   set customColumns(customColumns: readonly ColumnName[]) {
@@ -136,7 +137,7 @@ class EmptyIrisGridModel extends IrisGridModel {
   }
 
   get formatColumns(): readonly CustomColumn[] {
-    return [];
+    return EMPTY_ARRAY;
   }
 
   updateFrozenColumns(columns: readonly ColumnName[]): void {
@@ -168,7 +169,7 @@ class EmptyIrisGridModel extends IrisGridModel {
   }
 
   get selectDistinctColumns(): readonly ColumnName[] {
-    return [];
+    return EMPTY_ARRAY;
   }
 
   set selectDistinctColumns(selectDistinctColumns: readonly ColumnName[]) {
@@ -176,7 +177,7 @@ class EmptyIrisGridModel extends IrisGridModel {
   }
 
   get pendingDataMap(): PendingDataMap {
-    return new Map();
+    return EMPTY_MAP;
   }
 
   set pendingDataMap(map: PendingDataMap) {
@@ -192,7 +193,7 @@ class EmptyIrisGridModel extends IrisGridModel {
   }
 
   get pendingDataErrors(): PendingDataErrorMap {
-    return new Map();
+    return EMPTY_MAP;
   }
 
   commitPending(): Promise<void> {
@@ -240,7 +241,7 @@ class EmptyIrisGridModel extends IrisGridModel {
   }
 
   get columnHeaderGroups(): readonly ColumnHeaderGroup[] {
-    return [];
+    return EMPTY_ARRAY;
   }
 
   set columnHeaderGroups(groups: readonly ColumnHeaderGroup[]) {
@@ -248,7 +249,7 @@ class EmptyIrisGridModel extends IrisGridModel {
   }
 
   get columnHeaderGroupMap(): ReadonlyMap<string, ColumnHeaderGroup> {
-    return new Map();
+    return EMPTY_MAP;
   }
 
   getColumnHeaderParentGroup(
