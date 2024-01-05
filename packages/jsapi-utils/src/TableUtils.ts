@@ -1788,6 +1788,11 @@ export class TableUtils {
    */
   makeFilterRawValue(columnType: string, rawValue: unknown): FilterValue {
     const { dh } = this;
+    if (TableUtils.isCharType(columnType)) {
+      return dh.FilterValue.ofString(
+        typeof rawValue === 'number' ? String.fromCharCode(rawValue) : rawValue
+      );
+    }
     if (TableUtils.isTextType(columnType)) {
       return dh.FilterValue.ofString(rawValue);
     }

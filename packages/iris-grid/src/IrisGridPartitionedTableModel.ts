@@ -50,6 +50,10 @@ class IrisGridPartitionedTableModel
     this.partitionedTable.close();
   }
 
+  get columns(): readonly Column[] {
+    return this.partitionedTable.columns;
+  }
+
   get partitionColumns(): readonly Column[] {
     return this.partitionedTable.keyColumns;
   }
