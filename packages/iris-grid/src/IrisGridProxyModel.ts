@@ -467,7 +467,7 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
 
   get partitionColumns(): readonly Column[] {
     if (!isPartitionedGridModelProvider(this.originalModel)) {
-      throw new Error('Partitions are not available');
+      return [];
     }
     return this.originalModel.partitionColumns;
   }
@@ -507,7 +507,7 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
       !isPartitionedGridModelProvider(this.originalModel) ||
       !this.originalModel.isPartitionRequired
     ) {
-      throw new Error('Partitions are not available');
+      return null;
     }
     return this.partition;
   }
