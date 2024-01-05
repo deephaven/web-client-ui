@@ -35,10 +35,10 @@ export type TimeInputElement = {
 
 function fixIncompleteValue(value: string): string {
   // If value is not a complete HH:mm:ss time, fill missing parts with 0
-  if (value != null && value.length < 8) {
+  if (value != null) {
     return `${value
       .substring(0, 8)
-      .replace('\u2007', '0')}${`00:00:00`.substring(value.length)}`;
+      .replace(/\u2007/g, '0')}${`00:00:00`.substring(value.length)}`;
   }
   return value;
 }
@@ -59,6 +59,7 @@ const TimeInput = React.forwardRef<TimeInputElement, TimeInputProps>(
       'data-testid': dataTestId,
     } = props;
     const [value, setValue] = useState(TimeUtils.formatTime(propsValue));
+    const parsedValueRef = useRef<number>(propsValue);
     const [selection, setSelection] = useState<SelectionSegment>();
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -78,9 +79,14 @@ const TimeInput = React.forwardRef<TimeInputElement, TimeInputProps>(
 
     useEffect(
       function setFormattedTime() {
-        setValue(TimeUtils.formatTime(propsValue));
+        // Ignore value prop update if it matches the displayed value
+        // to preserve the displayed value while typing
+        if (parsedValueRef.current !== propsValue) {
+          setValue(TimeUtils.formatTime(propsValue));
+          parsedValueRef.current = propsValue;
+        }
       },
-      [propsValue]
+      [parsedValueRef, propsValue]
     );
 
     function getNextSegmentValue(
@@ -129,7 +135,10 @@ const TimeInput = React.forwardRef<TimeInputElement, TimeInputProps>(
       (newValue: string): void => {
         log.debug('handleChange', newValue);
         setValue(newValue);
-        onChange(TimeUtils.parseTime(fixIncompleteValue(newValue)));
+        parsedValueRef.current = TimeUtils.parseTime(
+          fixIncompleteValue(newValue)
+        );
+        onChange(parsedValueRef.current);
       },
       [onChange]
     );

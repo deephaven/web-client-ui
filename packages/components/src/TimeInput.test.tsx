@@ -309,6 +309,19 @@ describe('select and type', () => {
 
     expect(input.value).toEqual('12:30:00');
 
+    // Fill in missing chars in the middle
+    input.focus();
+    await user.type(input, '{shift}{backspace}', {
+      skipClick: true,
+      initialSelectionStart: 3,
+      initialSelectionEnd: 3,
+    });
+    expect(input.value).toEqual(
+      `12:${FIXED_WIDTH_SPACE}${FIXED_WIDTH_SPACE}:00`
+    );
+    input.blur();
+    expect(input.value).toEqual('12:00:00');
+
     unmount();
   });
 
@@ -504,4 +517,38 @@ it('updates properly when the value prop is updated', () => {
   rerender(<TimeInput value={0} onChange={jest.fn()} />);
 
   expect(textbox.value).toEqual('00:00:00');
+});
+
+it('ignores value prop changes matching displayed value', async () => {
+  const user = userEvent.setup();
+  const onChange = jest.fn();
+  const { rerender } = makeTimeInput({ value: 1, onChange });
+
+  const textbox: HTMLInputElement = screen.getByRole('textbox');
+  expect(textbox.value).toEqual('00:00:01');
+
+  textbox.focus();
+  await user.type(textbox, '{backspace}', {
+    skipClick: true,
+    initialSelectionStart: 8,
+    initialSelectionEnd: 8,
+  });
+
+  expect(textbox.value).toEqual('00:00:0');
+  expect(onChange).toBeCalledWith(0);
+
+  // Ignore prop update matching internal state
+  rerender(<TimeInput value={0} onChange={onChange} />);
+  expect(textbox.value).toEqual('00:00:0');
+  expect(onChange).toBeCalledTimes(1);
+
+  // Update internal value
+  rerender(<TimeInput value={1} onChange={onChange} />);
+  expect(textbox.value).toEqual('00:00:01');
+  expect(onChange).toBeCalledTimes(1);
+
+  // Update internal value
+  rerender(<TimeInput value={0} onChange={onChange} />);
+  expect(textbox.value).toEqual('00:00:00');
+  expect(onChange).toBeCalledTimes(1);
 });
