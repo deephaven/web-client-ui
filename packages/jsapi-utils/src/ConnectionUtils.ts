@@ -34,10 +34,12 @@ export function fetchVariableDefinition(
      */
     function handleFieldUpdates(changes: VariableChanges): void {
       const definition = changes.created.find(def => def.title === name);
+      clearTimeout(timeoutId);
+      removeListener?.();
       if (definition != null) {
-        clearTimeout(timeoutId);
-        removeListener?.();
         resolve(definition);
+      } else {
+        reject(new TimeoutError(`Variable ${name} not found`));
       }
     }
 
