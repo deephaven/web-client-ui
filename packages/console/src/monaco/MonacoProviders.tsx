@@ -5,6 +5,7 @@ import { PureComponent } from 'react';
 import * as monaco from 'monaco-editor';
 import Log from '@deephaven/log';
 import type { dh } from '@deephaven/jsapi-types';
+import init, { Workspace } from './ruff/ruff_wasm';
 
 const log = Log.module('MonacoCompletionProvider');
 
@@ -129,10 +130,13 @@ class MonacoProviders extends PureComponent<
     this.handleCompletionRequest = this.handleCompletionRequest.bind(this);
     this.handleSignatureRequest = this.handleSignatureRequest.bind(this);
     this.handleHoverRequest = this.handleHoverRequest.bind(this);
+    this.handleFormatRequest = this.handleFormatRequest.bind(this);
+    this.handleLinting = this.handleLinting.bind(this);
+    this.handleCodeActionRequest = this.handleCodeActionRequest.bind(this);
   }
 
   componentDidMount(): void {
-    const { language, session } = this.props;
+    const { language, session, model } = this.props;
 
     this.registeredCompletionProvider =
       monaco.languages.registerCompletionItemProvider(language, {
@@ -156,6 +160,44 @@ class MonacoProviders extends PureComponent<
         }
       );
     }
+
+    init().then(() => {
+      this.workspace = new Workspace({
+        preview: false,
+        builtins: [],
+        'target-version': 'py38',
+        'line-length': 88,
+        'indent-width': 4,
+        lint: {
+          'allowed-confusables': [],
+          'dummy-variable-rgx': '^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$',
+          'extend-select': [],
+          'extend-fixable': [],
+          external: [],
+          ignore: [],
+          select: ['F', 'E4', 'E7', 'E9'],
+        },
+        format: {
+          'indent-style': 'space',
+          'quote-style': 'double',
+        },
+      });
+
+      monaco.languages.registerDocumentFormattingEditProvider(language, {
+        provideDocumentFormattingEdits: this.handleFormatRequest,
+      });
+
+      console.log(monaco);
+      monaco.languages.registerCodeActionProvider(language, {
+        provideCodeActions: this.handleCodeActionRequest,
+      });
+
+      this.handleLinting(model);
+
+      model.onDidChangeContent(() => {
+        this.handleLinting(model);
+      });
+    });
   }
 
   componentWillUnmount(): void {
@@ -169,6 +211,8 @@ class MonacoProviders extends PureComponent<
   registeredSignatureProvider?: monaco.IDisposable;
 
   registeredHoverProvider?: monaco.IDisposable;
+
+  workspace?: Workspace;
 
   handleCompletionRequest(
     model: monaco.editor.ITextModel,
@@ -352,6 +396,100 @@ class MonacoProviders extends PureComponent<
       });
 
     return monacoHover;
+  }
+
+  handleFormatRequest(
+    model: monaco.editor.ITextModel,
+    options: monaco.languages.FormattingOptions,
+    token: monaco.CancellationToken
+  ): monaco.languages.ProviderResult<monaco.languages.TextEdit[]> {
+    if (!this.workspace) {
+      return;
+    }
+
+    return [
+      {
+        range: model.getFullModelRange(),
+        text: this.workspace.format(model.getValue()),
+      },
+    ];
+  }
+
+  handleLinting(model: monaco.editor.ITextModel): void {
+    if (!this.workspace) {
+      return;
+    }
+
+    monaco.editor.setModelMarkers(
+      model,
+      'ruff',
+      this.workspace.check(model.getValue()).map((d: any) => ({
+        startLineNumber: d.location.row,
+        startColumn: d.location.column,
+        endLineNumber: d.end_location.row,
+        endColumn: d.end_location.column,
+        message: `${d.code}: ${d.message}`,
+        severity: monaco.MarkerSeverity.Error,
+        tags:
+          d.code === 'F401' || d.code === 'F841'
+            ? [monaco.MarkerTag.Unnecessary]
+            : [],
+      }))
+    );
+  }
+
+  handleCodeActionRequest(
+    model: monaco.editor.ITextModel,
+    range: monaco.Range
+  ): monaco.languages.ProviderResult<monaco.languages.CodeActionList> {
+    if (!this.workspace) {
+      return {
+        actions: [],
+        dispose: () => {
+          /* no-op */
+        },
+      };
+    }
+
+    console.log(this.workspace.check(model.getValue()));
+
+    const actions = this.workspace
+      .check(model.getValue())
+      .filter((d: any) => range.startLineNumber === d.location.row)
+      .filter(({ fix }: { fix: any }) => fix != null)
+      .map((d: any) => ({
+        title: d.fix
+          ? d.fix.message
+            ? `${d.code}: ${d.fix.message}`
+            : `Fix ${d.code}`
+          : 'Fix',
+        id: `fix-${d.code}`,
+        kind: 'quickfix',
+        edit: d.fix
+          ? {
+              edits: d.fix.edits.map((edit: any) => ({
+                resource: model.uri,
+                versionId: model.getVersionId(),
+                textEdit: {
+                  range: {
+                    startLineNumber: edit.location.row,
+                    startColumn: edit.location.column,
+                    endLineNumber: edit.end_location.row,
+                    endColumn: edit.end_location.column,
+                  },
+                  text: edit.content || '',
+                },
+              })),
+            }
+          : undefined,
+      }));
+
+    return {
+      actions,
+      dispose: () => {
+        /* no-op */
+      },
+    };
   }
 
   render(): null {

@@ -205,6 +205,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.handleSave = this.handleSave.bind(this);
     this.handleSaveAsCancel = this.handleSaveAsCancel.bind(this);
     this.handleSaveAsSubmit = this.handleSaveAsSubmit.bind(this);
+    this.handleSaveFromShortcut = this.handleSaveFromShortcut.bind(this);
     this.handleSaveError = this.handleSaveError.bind(this);
     this.handleSaveSuccess = this.handleSaveSuccess.bind(this);
     this.handleSessionOpened = this.handleSessionOpened.bind(this);
@@ -959,6 +960,13 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.saveContent(name, content);
   }
 
+  async handleSaveFromShortcut(): Promise<void> {
+    await this.notebook?.editor
+      ?.getAction('editor.action.formatDocument')
+      ?.run();
+    this.save();
+  }
+
   handleRenameFile(
     oldName: string,
     newName: string,
@@ -1218,7 +1226,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     const toolbarDisabled = !isLoaded;
     const contextActions = [
       {
-        action: this.handleSave,
+        action: this.handleSaveFromShortcut,
         shortcut: GLOBAL_SHORTCUTS.SAVE,
       },
       {
