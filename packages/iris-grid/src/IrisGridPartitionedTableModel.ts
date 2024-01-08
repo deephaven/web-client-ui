@@ -58,11 +58,11 @@ class IrisGridPartitionedTableModel
     return this.partitionedTable.keyColumns;
   }
 
-  partitionKeysTable(): Promise<Table> {
+  async partitionKeysTable(): Promise<Table> {
     return this.partitionedTable.getKeyTable();
   }
 
-  partitionMergedTable(): Promise<Table> {
+  async partitionMergedTable(): Promise<Table> {
     return this.partitionedTable.getMergedTable();
   }
 

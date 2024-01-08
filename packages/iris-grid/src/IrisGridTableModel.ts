@@ -197,7 +197,7 @@ class IrisGridTableModel
     return this.getCachedPartitionColumns(this.columns);
   }
 
-  partitionKeysTable(): Promise<Table> {
+  async partitionKeysTable(): Promise<Table> {
     return this.valuesTable(this.partitionColumns);
   }
 
