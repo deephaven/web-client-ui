@@ -188,7 +188,7 @@ function isValidIndex(x: number, array: readonly unknown[]): boolean {
 }
 
 function isDateWrapper(value: unknown): value is DateWrapper {
-  return (value as DateWrapper).asDate != null;
+  return (value as DateWrapper)?.asDate != null;
 }
 
 class IrisGridUtils {
