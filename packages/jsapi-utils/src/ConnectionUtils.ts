@@ -25,7 +25,7 @@ export function fetchVariableDefinition(
 
     const timeoutId = setTimeout(() => {
       removeListener?.();
-      reject(new TimeoutError(`Variable ${name} not found`));
+      reject(new TimeoutError(`Timeout looking for Variable ${name}`));
     }, timeout);
 
     /**
@@ -39,7 +39,7 @@ export function fetchVariableDefinition(
       if (definition != null) {
         resolve(definition);
       } else {
-        reject(new TimeoutError(`Variable ${name} not found`));
+        reject(new Error(`Variable ${name} not found`));
       }
     }
 
