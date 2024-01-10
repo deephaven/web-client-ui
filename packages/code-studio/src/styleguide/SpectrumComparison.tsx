@@ -44,6 +44,10 @@ const options = [
   { title: 'Three', value: '3' },
 ];
 
+function noop(): void {
+  // no-op
+}
+
 export function SpectrumComparison(): JSX.Element {
   const [isChecked, setIsChecked] = useState(false);
   const [radioValue, setRadioValue] = useState('1');
@@ -73,7 +77,9 @@ export function SpectrumComparison(): JSX.Element {
 
             {buttons.map(([level, variant]) => (
               <Fragment key={level}>
-                <BootstrapButtonOld kind={level}>Button</BootstrapButtonOld>
+                <BootstrapButtonOld onClick={noop} kind={level}>
+                  Button
+                </BootstrapButtonOld>
 
                 <Button variant={variant} style="fill">
                   Button
@@ -81,7 +87,7 @@ export function SpectrumComparison(): JSX.Element {
               </Fragment>
             ))}
 
-            <BootstrapButtonOld kind="primary" disabled>
+            <BootstrapButtonOld onClick={noop} kind="primary" disabled>
               Disabled
             </BootstrapButtonOld>
             <Button variant="accent" style="fill" isDisabled>
@@ -98,14 +104,16 @@ export function SpectrumComparison(): JSX.Element {
 
             {buttons.map(([level, variant]) => (
               <Fragment key={level}>
-                <BootstrapButtonOld kind={level}>{level}</BootstrapButtonOld>
+                <BootstrapButtonOld onClick={noop} kind={level}>
+                  {level}
+                </BootstrapButtonOld>
                 <Button variant={variant} style="outline">
                   {variant}
                 </Button>
               </Fragment>
             ))}
 
-            <BootstrapButtonOld kind="secondary" disabled>
+            <BootstrapButtonOld onClick={noop} kind="secondary" disabled>
               Disabled
             </BootstrapButtonOld>
             <Button variant="primary" style="outline" isDisabled>
@@ -121,10 +129,12 @@ export function SpectrumComparison(): JSX.Element {
             <label>Bootstrap</label>
             <label>Spectrum</label>
 
-            <BootstrapButtonOld kind="inline">Inline</BootstrapButtonOld>
+            <BootstrapButtonOld onClick={noop} kind="inline">
+              Inline
+            </BootstrapButtonOld>
             <ActionButton>Action</ActionButton>
 
-            <BootstrapButtonOld kind="inline" disabled>
+            <BootstrapButtonOld onClick={noop} kind="inline" disabled>
               Disabled
             </BootstrapButtonOld>
             <ActionButton isDisabled>Disabled</ActionButton>
