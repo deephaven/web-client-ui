@@ -9,19 +9,25 @@
   gridcolor: var(--dh-color-chart-grid);
   linecolor: var(--dh-color-chart-axis-line);
   zerolinecolor: var(--dh-color-chart-axis-line-zero);
-  activecolor: var(--dh-color-chart-active);
-  rangebgcolor: var(--dh-color-chart-range-bg);
-  area-color: var(--dh-color-chart-area);
-  trend-color: var(--dh-color-chart-trend);
-  line-color: var(--dh-color-chart-line-deprecated);
+
   error-band-line-color: var(--dh-color-chart-error-band-line);
-  error-band-fill-color: var(--dh-color-chart-error-band-fill);
   ohlc-increasing: var(--dh-color-chart-ohlc-increase);
   ohlc-decreasing: var(--dh-color-chart-ohlc-decrease);
+
   /* Geo */
   coastline-color: var(-dh-color-plotly-geo-coastline);
   land-color: var(--dh-color-plotly-geo-land);
   ocean-color: var(--dh-color-plotly-geo-ocean);
   lake-color: var(--dh-color-plotly-geo-lake);
   river-color: var(--dh-color-plotly-geo-river);
+
+  /* These seem to be unused */
+  activecolor: var(--dh-color-chart-active);
+  rangebgcolor: var(--dh-color-chart-range-bg);
+
+  /* Only used in Styleguide via MockChartModel */
+  area-color: var(--dh-color-chart-area);
+  trend-color: var(--dh-color-chart-trend);
+  line-color: var(--dh-color-chart-line-deprecated);
+  error-band-fill-color: var(--dh-color-chart-error-band-fill);
 }
