@@ -27,16 +27,6 @@ export interface ChartTheme {
   ocean_color: string;
   lake_color: string;
   river_color: string;
-
-  // Only used in Styleguide via MockChartModel
-  area_color: string;
-  trend_color: string;
-  line_color: string;
-  error_band_fill_color: string;
-
-  // These seem to be unused
-  activecolor: string;
-  rangebgcolor: string;
 }
 
 export function defaultChartTheme(): Readonly<ChartTheme> {
@@ -64,13 +54,7 @@ export function defaultChartTheme(): Readonly<ChartTheme> {
     gridcolor: chartTheme.gridcolor,
     linecolor: chartTheme.linecolor,
     zerolinecolor: chartTheme.zerolinecolor,
-    activecolor: chartTheme.activecolor,
-    rangebgcolor: chartTheme.rangebgcolor,
-    area_color: chartTheme['area-color'],
-    trend_color: chartTheme['trend-color'],
-    line_color: chartTheme['line-color'],
     error_band_line_color: chartTheme['error-band-line-color'],
-    error_band_fill_color: chartTheme['error-band-fill-color'],
     ohlc_increasing: chartTheme['ohlc-increasing'],
     ohlc_decreasing: chartTheme['ohlc-decreasing'],
     // Geo

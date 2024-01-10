@@ -1896,16 +1896,6 @@ class ChartUtils {
       // linecolor,
       // zerolinecolor,
 
-      /* Unused */
-      // activecolor,
-      // rangebgcolor,
-
-      /* Only used in MockChartModel */
-      // area_color,
-      // trend_color,
-      // line_color,
-      // error_band_fill_color,
-
       // Used by `getPlotlyErrorBars()`
       // error_band_line_color,
 

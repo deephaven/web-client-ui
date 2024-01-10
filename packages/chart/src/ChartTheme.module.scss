@@ -20,14 +20,4 @@
   ocean-color: var(--dh-color-plotly-geo-ocean);
   lake-color: var(--dh-color-plotly-geo-lake);
   river-color: var(--dh-color-plotly-geo-river);
-
-  /* These seem to be unused */
-  activecolor: var(--dh-color-chart-active);
-  rangebgcolor: var(--dh-color-chart-range-bg);
-
-  /* Only used in Styleguide via MockChartModel */
-  area-color: var(--dh-color-chart-area);
-  trend-color: var(--dh-color-chart-trend);
-  line-color: var(--dh-color-chart-line-deprecated);
-  error-band-fill-color: var(--dh-color-chart-error-band-fill);
 }
