@@ -77,7 +77,14 @@ export interface CustomizableWorkspace {
 export interface Workspace {
   data: WorkspaceData;
 }
-export type DashboardData = Record<string, unknown>;
+
+export type PluginData = unknown;
+
+export type PluginDataMap = Map<string, PluginData>;
+
+export type DashboardData = Record<string, unknown> & {
+  pluginDataMap?: PluginDataMap;
+};
 
 export type WorkspaceStorageLoadOptions = {
   isConsoleAvailable: boolean;
