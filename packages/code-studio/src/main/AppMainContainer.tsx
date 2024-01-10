@@ -10,6 +10,7 @@ import memoize from 'memoize-one';
 import { CSSTransition } from 'react-transition-group';
 import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
+import shortid from 'shortid';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   ContextActions,
@@ -28,14 +29,14 @@ import {
 } from '@deephaven/components';
 import { SHORTCUTS as IRIS_GRID_SHORTCUTS } from '@deephaven/iris-grid';
 import {
-  ClosedPanels,
-  Dashboard,
-  DashboardLayoutConfig,
   DashboardUtils,
   DEFAULT_DASHBOARD_ID,
   DehydratedDashboardPanelProps,
+  getAllDashboardsData,
   getDashboardData,
   PanelEvent,
+  setDashboardData as setDashboardDataAction,
+  setDashboardPluginData as setDashboardPluginDataAction,
   updateDashboardData as updateDashboardDataAction,
 } from '@deephaven/dashboard';
 import {
@@ -65,7 +66,6 @@ import type {
   IdeConnection,
   IdeSession,
   VariableDefinition,
-  Widget,
 } from '@deephaven/jsapi-types';
 import { SessionConfig } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
@@ -81,6 +81,7 @@ import {
   User,
   ServerConfigValues,
   CustomizableWorkspace,
+  DashboardData,
 } from '@deephaven/redux';
 import { bindAllMethods, PromiseUtils } from '@deephaven/utils';
 import GoldenLayout from '@deephaven/golden-layout';
@@ -98,7 +99,6 @@ import AppControlsMenu from './AppControlsMenu';
 import { getLayoutStorage, getServerConfigValues } from '../redux';
 import './AppMainContainer.scss';
 import WidgetList, { WindowMouseEvent } from './WidgetList';
-import EmptyDashboard from './EmptyDashboard';
 import UserLayoutUtils from './UserLayoutUtils';
 import LayoutStorage from '../storage/LayoutStorage';
 import AppDashboards from './AppDashboards';
@@ -113,17 +113,10 @@ type InputFileFormat =
   | Blob
   | NodeJS.ReadableStream;
 
-export type AppDashboardData = {
-  closed: ClosedPanels;
-  columnSelectionValidator?: ColumnSelectionValidator;
-  filterSets: FilterSet[];
-  links: Link[];
-  openedMap: Map<string | string[], Component>;
-};
-
 interface AppMainContainerProps {
   activeTool: string;
-  dashboardData: AppDashboardData;
+  allDashboardData: Record<string, DashboardData>;
+  dashboardData: DashboardData;
   layoutStorage: LayoutStorage;
   match: {
     params: { notebookPath: string };
@@ -132,7 +125,13 @@ interface AppMainContainerProps {
   session?: IdeSession;
   sessionConfig?: SessionConfig;
   setActiveTool: (tool: string) => void;
-  updateDashboardData: (id: string, data: Partial<AppDashboardData>) => void;
+  setDashboardData: (id: string, data: DashboardData) => void;
+  setDashboardPluginData: (
+    dashboardId: string,
+    pluginId: string,
+    data: any
+  ) => void;
+  updateDashboardData: (id: string, data: Partial<DashboardData>) => void;
   updateWorkspaceData: (workspaceData: Partial<WorkspaceData>) => void;
   user: User;
   workspace: CustomizableWorkspace;
@@ -149,9 +148,8 @@ interface AppMainContainerState {
   isSettingsMenuShown: boolean;
   unsavedNotebookCount: number;
   widgets: VariableDefinition[];
-  tabs: (NavTabItem & { definition?: VariableDefinition })[];
+  tabs: NavTabItem[];
   activeTabKey: string;
-  pendingTabChange: boolean;
 }
 
 export class AppMainContainer extends Component<
@@ -192,6 +190,8 @@ export class AppMainContainer extends Component<
 
     this.importElement = React.createRef();
 
+    const { allDashboardData } = this.props;
+
     this.state = {
       contextActions: [
         {
@@ -225,8 +225,12 @@ export class AppMainContainer extends Component<
       isSettingsMenuShown: false,
       unsavedNotebookCount: 0,
       widgets: [],
-      tabs: [],
-      pendingTabChange: true,
+      tabs: Object.entries(allDashboardData)
+        .filter(([key]) => key !== DEFAULT_DASHBOARD_ID)
+        .map(([key, value]) => ({
+          key,
+          title: value.title ?? 'Untitled',
+        })),
       activeTabKey: DEFAULT_DASHBOARD_ID,
     };
   }
@@ -249,17 +253,6 @@ export class AppMainContainer extends Component<
     if (prevProps.dashboardData !== dashboardData) {
       this.handleDataChange(dashboardData);
     }
-
-    if (prevState.pendingTabChange && !this.state.pendingTabChange) {
-      console.log(this.pendingEvents);
-      setTimeout(() => {
-        this.pendingEvents.forEach(([e, args]) => {
-          console.log('emit pending event');
-          this.emitLayoutEvent(e, ...args);
-        });
-        this.pendingEvents = [];
-      }, 1000);
-    }
   }
 
   componentWillUnmount(): void {
@@ -273,8 +266,6 @@ export class AppMainContainer extends Component<
   }
 
   goldenLayout?: GoldenLayout;
-
-  pendingEvents: [string, unknown[]][] = [];
 
   importElement: RefObject<HTMLInputElement>;
 
@@ -355,11 +346,6 @@ export class AppMainContainer extends Component<
   }
 
   emitLayoutEvent(event: string, ...args: unknown[]): void {
-    if (this.state.pendingTabChange) {
-      console.log('add pending event');
-      this.pendingEvents.push([event, args]);
-      return;
-    }
     this.goldenLayout?.eventHub.emit(event, ...args);
   }
 
@@ -447,34 +433,42 @@ export class AppMainContainer extends Component<
     this.sendClearFilter();
   }
 
-  handleDataChange(data: AppDashboardData): void {
+  handleDataChange(data: DashboardData): void {
     const { updateWorkspaceData } = this.props;
 
     // Only save the data that is serializable/we want to persist to the workspace
-    const { closed, filterSets, links } = data;
-    updateWorkspaceData({ closed, filterSets, links });
+    const { closed } = data;
+    updateWorkspaceData({ closed });
   }
 
   handleGoldenLayoutChange(goldenLayout: GoldenLayout): void {
-    console.log('golden layout change');
     this.goldenLayout = goldenLayout;
-    this.setState({ pendingTabChange: false });
-    this.goldenLayout.eventHub.on('ui.dashboard', (def: VariableDefinition) => {
-      this.setState(({ tabs }) => {
-        if (
-          def.id == null ||
-          def.title == null ||
-          tabs.some(t => t.key === def.id)
-        ) {
-          return { tabs };
-        }
-        return {
-          tabs: [...tabs, { key: def.id, title: def.title, definition: def }],
-          activeTabKey: def.id,
-          pendingTabChange: true,
-        };
-      });
-    });
+    this.goldenLayout.eventHub.on(
+      'ui.dashboard',
+      ({
+        pluginId,
+        title,
+        data,
+      }: {
+        pluginId: string;
+        title: string;
+        data: unknown;
+      }) => {
+        const newId = shortid();
+        const { setDashboardPluginData } = this.props;
+        setDashboardPluginData(newId, pluginId, data);
+        this.setState(({ tabs }) => ({
+          tabs: [
+            ...tabs,
+            {
+              key: newId,
+              title,
+            },
+          ],
+          activeTabKey: newId,
+        }));
+      }
+    );
   }
 
   handleWidgetMenuClick(): void {
@@ -721,8 +715,7 @@ export class AppMainContainer extends Component<
   }
 
   handleTabSelect(tabId: string): void {
-    console.log('tab select');
-    this.setState({ activeTabKey: tabId, pendingTabChange: true });
+    this.setState({ activeTabKey: tabId });
   }
 
   handleTabReorder(from: number, to: number): void {
@@ -735,6 +728,10 @@ export class AppMainContainer extends Component<
   }
 
   handleTabClose(tabId: string): void {
+    const { setDashboardData } = this.props;
+    // TODO: Figure out how to remove the dashboard data
+    // without updates after this recreating some dashboard data
+    setDashboardData(tabId, undefined);
     this.setState(({ tabs: oldTabs, activeTabKey }) => {
       const newTabs = oldTabs.filter(tab => tab.key !== tabId);
       let newActiveTabKey = activeTabKey;
@@ -759,25 +756,29 @@ export class AppMainContainer extends Component<
     const { data: workspaceData } = workspace;
     const { layoutConfig } = workspaceData;
     return layoutConfig as ItemConfigType[];
+    // TODO: Move this to read dashboard data
+    // const { dashboardData } = this.props;
+    // return (dashboardData.layoutConfig ?? []) as ItemConfigType[];
   }
 
   getDashboards(): {
     id: string;
     getLayoutConfig: () => Promise<ItemConfigType[]>;
   }[] {
+    const { tabs } = this.state;
+    const { allDashboardData } = this.props;
     return [
       {
         id: DEFAULT_DASHBOARD_ID,
         getLayoutConfig: () =>
           Promise.resolve(this.getCodeStudioLayoutConfig()),
       },
-      ...this.state.tabs.map(tab => ({
+      ...tabs.map(tab => ({
         id: tab.key,
-        getLayoutConfig: () => {
-          this.openDashboard(tab.definition);
-
-          return Promise.resolve([]);
-        },
+        getLayoutConfig: () =>
+          Promise.resolve(
+            (allDashboardData[tab.key]?.layoutConfig ?? []) as ItemConfigType[]
+          ),
       })),
     ];
   }
@@ -920,6 +921,7 @@ export class AppMainContainer extends Component<
           onGoldenLayoutChange={this.handleGoldenLayoutChange}
           plugins={[
             <ConsolePlugin
+              key="ConsolePlugin"
               hydrateConsole={AppMainContainer.hydrateConsole}
               notebooksUrl={
                 new URL(
@@ -999,13 +1001,16 @@ const mapStateToProps = (
   state: RootState
 ): Omit<
   AppMainContainerProps,
-  'match' | 'setActiveTool' | 'updateDashboardData' | 'updateWorkspaceData'
+  | 'match'
+  | 'setActiveTool'
+  | 'updateDashboardData'
+  | 'updateWorkspaceData'
+  | 'setDashboardData'
+  | 'setDashboardPluginData'
 > => ({
   activeTool: getActiveTool(state),
-  dashboardData: getDashboardData(
-    state,
-    DEFAULT_DASHBOARD_ID
-  ) as AppDashboardData,
+  allDashboardData: getAllDashboardsData(state),
+  dashboardData: getDashboardData(state, DEFAULT_DASHBOARD_ID),
   layoutStorage: getLayoutStorage(state),
   plugins: getPlugins(state),
   connection: getDashboardConnection(state, DEFAULT_DASHBOARD_ID),
@@ -1019,6 +1024,8 @@ const mapStateToProps = (
 
 const ConnectedAppMainContainer = connect(mapStateToProps, {
   setActiveTool: setActiveToolAction,
+  setDashboardData: setDashboardDataAction,
+  setDashboardPluginData: setDashboardPluginDataAction,
   updateDashboardData: updateDashboardDataAction,
   updateWorkspaceData: updateWorkspaceDataAction,
 })(withRouter(AppMainContainer));

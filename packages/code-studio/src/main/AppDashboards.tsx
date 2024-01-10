@@ -53,9 +53,6 @@ export function AppDashboards({
   onGoldenLayoutChange,
   plugins,
 }: AppDashboardsProps): JSX.Element {
-  const workspace = useWorkspace();
-  const { data: workspaceData } = workspace;
-  const dashboardsData = useAllDashboardsData();
   const connection = useConnection();
   const dispatch = useDispatch();
 
@@ -117,25 +114,6 @@ export function AppDashboards({
         </div>
       ))}
     </div>
-  );
-
-  return (
-    <Dashboard
-      emptyDashboard={<EmptyDashboard />}
-      id={DEFAULT_DASHBOARD_ID}
-      layoutConfig={[]}
-      onGoldenLayoutChange={onGoldenLayoutChange}
-      onLayoutConfigChange={handleLayoutConfigChange}
-      hydrate={hydratePanel}
-    >
-      <ConsolePlugin
-        hydrateConsole={hydrateConsole}
-        notebooksUrl={
-          new URL(`${import.meta.env.VITE_ROUTE_NOTEBOOKS}`, document.baseURI)
-            .href
-        }
-      />
-    </Dashboard>
   );
 }
 

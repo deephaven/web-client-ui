@@ -77,7 +77,30 @@ export interface CustomizableWorkspace {
 export interface Workspace {
   data: WorkspaceData;
 }
-export type DashboardData = Record<string, unknown>;
+
+/**
+ * Most of these aren't actually unknown, but their types are in dashboard or dashboard-core-plugins
+ * Eventually we can start typing these by changing them to never and using the errors to find the types
+ */
+export type DashboardData = {
+  title?: string;
+  links?: unknown[];
+  filterSets?: unknown[];
+  consoleSettings?: unknown;
+  columnSelectionValidator?: unknown;
+  isolatedLinkerPanelId?: string | string[];
+  columns?: unknown[];
+  filters?: unknown[];
+  tableMap?: unknown;
+  sessionWrapper?: unknown;
+  connection?: unknown;
+  closed?: unknown[];
+  openedMap?: Map<string | string[], unknown>;
+  pluginData?: {
+    [id: string]: unknown;
+  };
+  layoutConfig?: unknown[];
+};
 
 export type WorkspaceStorageLoadOptions = {
   isConsoleAvailable: boolean;
@@ -98,7 +121,7 @@ export type RootState = {
   user: User;
   workspace: CustomizableWorkspace;
   defaultWorkspaceSettings: WorkspaceSettings;
-  dashboardData: Record<string, DashboardData>;
+  dashboardData: { [id: string]: DashboardData };
   layoutStorage: unknown;
   serverConfigValues: ServerConfigValues;
 };

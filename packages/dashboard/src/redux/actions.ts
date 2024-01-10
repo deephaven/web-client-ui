@@ -41,3 +41,29 @@ export const updateDashboardData =
         ...data,
       })
     );
+
+/**
+ * Action to set the plugin data for a dashboard
+ * @param dashboardId The ID of the dashboard to set the data on
+ * @param pluginId The ID of the plugin to set the data on
+ * @param data Data for the dashboard
+ * @returns The thunk to get dispatched
+ */
+export const setDashboardPluginData =
+  (
+    dashboardId: string,
+    pluginId: string,
+    data: DashboardData
+  ): ThunkAction<unknown, RootState, undefined, Action<unknown>> =>
+  (dispatch, getState) => {
+    const dashboardData = getDashboardData(getState(), dashboardId);
+    dispatch(
+      setDashboardData(dashboardId, {
+        ...dashboardData,
+        pluginData: {
+          ...dashboardData.pluginData,
+          [pluginId]: data,
+        },
+      })
+    );
+  };
