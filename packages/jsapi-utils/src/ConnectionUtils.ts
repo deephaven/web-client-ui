@@ -25,7 +25,7 @@ export function fetchVariableDefinition(
 
     const timeoutId = setTimeout(() => {
       removeListener?.();
-      reject(new TimeoutError(`Timeout looking for Variable ${name}`));
+      reject(new TimeoutError(`Timeout looking for variable ${name}`));
     }, timeout);
 
     /**
