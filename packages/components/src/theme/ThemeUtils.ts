@@ -31,13 +31,19 @@ export type VarExpressionResolver = (varExpression: string) => string;
  * happens before themes are fully loaded so that we can style things like the
  * loading spinner and background color which are shown to the user early on in
  * the app lifecycle.
+ * @defaultPreloadValues Default values to use if a preload variable is not set.
  */
-export function calculatePreloadStyleContent(): CssVariableStyleContent {
-  const resolveVar = createCssVariableResolver(document.body);
+export function calculatePreloadStyleContent(
+  defaultPreloadValues: Record<string, string>
+): CssVariableStyleContent {
+  const resolveVar = createCssVariableResolver(
+    document.body,
+    defaultPreloadValues
+  );
 
   // Calculate the current preload variables. If the variable is not set, use
   // the default value.
-  const pairs = Object.keys(DEFAULT_PRELOAD_DATA_VARIABLES).map(
+  const pairs = Object.keys(defaultPreloadValues).map(
     key => `${key}:${resolveVar(key as ThemePreloadColorVariable)}`
   );
 
@@ -47,12 +53,14 @@ export function calculatePreloadStyleContent(): CssVariableStyleContent {
 /**
  * Create a resolver function for calculating the value of a css variable based
  * on a given element's computed style. If the variable resolves to '', we check
- * DEFAULT_PRELOAD_DATA_VARIABLES for a default value, and if one does not exist,
+ * `defaultValues` for a default value, and if one does not exist,
  * return ''.
  * @param el Element to resolve css variables against
+ * @param defaultValues Default values to use if a variable is not set.
  */
 export function createCssVariableResolver(
-  el: Element
+  el: Element,
+  defaultValues: Record<string, string>
 ): (varName: ThemeCssVariableName) => string {
   const computedStyle = getComputedStyle(el);
 
@@ -67,10 +75,23 @@ export function createCssVariableResolver(
       return value;
     }
 
-    return (
-      DEFAULT_PRELOAD_DATA_VARIABLES[varName as ThemePreloadColorVariable] ?? ''
-    );
+    return defaultValues[varName as ThemePreloadColorVariable] ?? '';
   };
+}
+
+/**
+ * Create a style tag containing preload css variables and add to the head.
+ * @param id The id of the style tag
+ * @param preloadStyleContent The css variable content to add to the style tag
+ */
+export function createPreloadStyleElement(
+  id: `theme-preload-${string}`,
+  preloadStyleContent: CssVariableStyleContent
+): void {
+  const style = document.createElement('style');
+  style.id = id;
+  style.innerHTML = preloadStyleContent;
+  document.head.appendChild(style);
 }
 
 /**
@@ -378,18 +399,35 @@ export function getThemeKey(pluginName: string, themeName: string): string {
 
 /**
  * Preload minimal theme variables from the cache.
+ * @defaultPreloadValues Optional default values to use if a preload variable is not set.
  */
-export function preloadTheme(): void {
-  const preloadStyleContent =
-    getThemePreloadData()?.preloadStyleContent ??
-    calculatePreloadStyleContent();
+export function preloadTheme(
+  defaultPreloadValues: Record<string, string> = DEFAULT_PRELOAD_DATA_VARIABLES
+): void {
+  const previousPreloadStyleContent =
+    getThemePreloadData()?.preloadStyleContent;
 
-  log.debug('Preloading theme content:', `'${preloadStyleContent}'`);
+  const defaultPreloadStyleContent =
+    calculatePreloadStyleContent(defaultPreloadValues);
 
-  const style = document.createElement('style');
-  style.id = 'theme-preload';
-  style.innerHTML = preloadStyleContent;
-  document.head.appendChild(style);
+  log.debug('Preloading theme content:', {
+    defaultPreloadStyleContent,
+    previousPreloadStyleContent,
+  });
+
+  createPreloadStyleElement(
+    'theme-preload-defaults',
+    defaultPreloadStyleContent
+  );
+
+  // Any preload variables that were saved by last theme load should override
+  // the defaults
+  if (previousPreloadStyleContent != null) {
+    createPreloadStyleElement(
+      'theme-preload-previous',
+      previousPreloadStyleContent
+    );
+  }
 }
 
 /**
@@ -406,9 +444,12 @@ export function preloadTheme(): void {
  * just change the background color instead of relying on this util, but this
  * is not always possible. e.g. <select> elements don't support pseudo elements,
  * so there's not a good way to set icons via masks.
+ * @param defaultValues Default values to use if a variable is not set.
  */
-export function overrideSVGFillColors(): void {
-  const resolveVar = createCssVariableResolver(document.body);
+export function overrideSVGFillColors(
+  defaultValues: Record<string, string>
+): void {
+  const resolveVar = createCssVariableResolver(document.body, defaultValues);
 
   Object.entries(SVG_ICON_MANUAL_COLOR_MAP).forEach(([key, value]) => {
     // Clear any previous override so that our variables get resolved against the
