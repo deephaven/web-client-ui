@@ -1874,17 +1874,58 @@ class ChartUtils {
 
   makeDefaultLayout(theme: ChartTheme): Partial<Layout> {
     const { dh } = this;
+
+    const {
+      /* Used as top level properties of `Layout` */
+      /* eslint-disable camelcase */
+      paper_bgcolor,
+      plot_bgcolor,
+      title_color,
+      coastline_color,
+      land_color,
+      ocean_color,
+      lake_color,
+      river_color,
+      /* eslint-disable camelcase */
+
+      /* Used by `getColorwayFromTheme()` */
+      // colorway,
+
+      /* Used by `makeLayoutAxis()` */
+      // gridcolor,
+      // linecolor,
+      // zerolinecolor,
+
+      /* Unused */
+      // activecolor,
+      // rangebgcolor,
+
+      /* Only used in MockChartModel */
+      // area_color,
+      // trend_color,
+      // line_color,
+      // error_band_fill_color,
+
+      // Used by `getPlotlyErrorBars()`
+      // error_band_line_color,
+
+      /* Used by `addStylingToSeriesData()` */
+      // ohlc_increasing,
+      // ohlc_decreasing,
+    } = theme;
+
     const layout: Partial<Layout> = {
-      ...theme,
+      paper_bgcolor,
+      plot_bgcolor,
       autosize: true,
       colorway: ChartUtils.getColorwayFromTheme(theme),
       font: {
         family: "'Fira Sans', sans-serif",
-        color: theme.title_color,
+        color: title_color,
       },
       title: {
         font: {
-          color: theme.title_color,
+          color: title_color,
         },
         yanchor: 'top',
         pad: { ...ChartUtils.DEFAULT_TITLE_PADDING },
@@ -1892,7 +1933,7 @@ class ChartUtils {
       },
       legend: {
         font: {
-          color: theme.title_color,
+          color: title_color,
         },
       },
       margin: { ...ChartUtils.DEFAULT_MARGIN },
@@ -1908,8 +1949,21 @@ class ChartUtils {
         yaxis: this.makeLayoutAxis(dh.plot.AxisType.Y, theme),
         zaxis: this.makeLayoutAxis(dh.plot.AxisType.Z, theme),
       },
+      geo: {
+        showcoastlines: true,
+        showland: true,
+        showocean: true,
+        showlakes: true,
+        showrivers: true,
+        coastlinecolor: coastline_color,
+        landcolor: land_color,
+        oceancolor: ocean_color,
+        lakecolor: lake_color,
+        rivercolor: river_color,
+      },
     };
     layout.datarevision = 0;
+
     return layout;
   }
 

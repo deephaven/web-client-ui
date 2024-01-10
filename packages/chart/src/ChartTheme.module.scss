@@ -18,4 +18,10 @@
   error-band-fill-color: var(--dh-color-chart-error-band-fill);
   ohlc-increasing: var(--dh-color-chart-ohlc-increase);
   ohlc-decreasing: var(--dh-color-chart-ohlc-decrease);
+  /* Geo */
+  coastline-color: var(-dh-color-plotly-geo-coastline);
+  land-color: var(--dh-color-plotly-geo-land);
+  ocean-color: var(--dh-color-plotly-geo-ocean);
+  lake-color: var(--dh-color-plotly-geo-lake);
+  river-color: var(--dh-color-plotly-geo-river);
 }

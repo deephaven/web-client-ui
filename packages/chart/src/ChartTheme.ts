@@ -16,15 +16,27 @@ export interface ChartTheme {
   gridcolor: string;
   linecolor: string;
   zerolinecolor: string;
-  activecolor: string;
-  rangebgcolor: string;
+
+  error_band_line_color: string;
+  ohlc_increasing: string;
+  ohlc_decreasing: string;
+
+  // Geo
+  coastline_color: string;
+  land_color: string;
+  ocean_color: string;
+  lake_color: string;
+  river_color: string;
+
+  // Only used in Styleguide via MockChartModel
   area_color: string;
   trend_color: string;
   line_color: string;
-  error_band_line_color: string;
   error_band_fill_color: string;
-  ohlc_increasing: string;
-  ohlc_decreasing: string;
+
+  // These seem to be unused
+  activecolor: string;
+  rangebgcolor: string;
 }
 
 export function defaultChartTheme(): Readonly<ChartTheme> {
@@ -61,6 +73,12 @@ export function defaultChartTheme(): Readonly<ChartTheme> {
     error_band_fill_color: chartTheme['error-band-fill-color'],
     ohlc_increasing: chartTheme['ohlc-increasing'],
     ohlc_decreasing: chartTheme['ohlc-decreasing'],
+    // Geo
+    coastline_color: chartTheme['coastline-color'],
+    land_color: chartTheme['land-color'],
+    ocean_color: chartTheme['ocean-color'],
+    lake_color: chartTheme['lake-color'],
+    river_color: chartTheme['river-color'],
   });
 }
 
