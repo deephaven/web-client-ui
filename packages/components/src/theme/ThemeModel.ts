@@ -43,7 +43,7 @@ export const DEFAULT_LIGHT_THEME_KEY = 'default-light' satisfies BaseThemeKey;
 
 // Hex versions of some of the default dark theme color palette needed for
 // preload defaults.
-const DEFAULT_DARK_THEME_PALETTE = {
+export const DEFAULT_DARK_THEME_PALETTE = {
   blue: {
     500: '#2f5bc0',
     400: '#254ba4',
