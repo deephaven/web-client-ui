@@ -9,6 +9,9 @@ $green: var(--dh-color-visual-green);
 $blue: var(--dh-color-visual-blue);
 $purple: var(--dh-color-visual-purple);
 
+// Fallback colors are used if theme isn't loaded
+// this is required for error messages if the API doesn't load
+
 //Define our Gray scale
 $gray-100: var(--dh-color-gray-900, #fcfcfa);
 $gray-200: var(--dh-color-gray-800);
@@ -31,8 +34,8 @@ $interfaceblue: var(--dh-color-accent-bg);
 $interfacewhite: $white;
 $interfaceblack: $black;
 $content-bg: var(--dh-color-content-bg, #2d2a2e);
-$background: var(--dh-color-bg);
-$foreground: var(--dh-color-fg);
+$background: var(--dh-color-bg, #1a171a);
+$foreground: var(--dh-color-fg, #f0f0ee);
 
 // Extend default Bootstrap $grays map
 $grays-custom: (
@@ -93,7 +96,6 @@ $body-color: $interfacewhite;
 $primary: var(--dh-color-accent-bg);
 $primary-hover: var(--dh-color-accent-hover-bg);
 $primary-dark: var(--dh-color-accent-down-bg);
-$primary-light: var(--dh-color-accent-1100);
 $secondary: var(--dh-color-neutral-bg);
 $secondary-hover: var(--dh-color-neutral-hover-bg);
 $success: $green;
@@ -112,7 +114,6 @@ $mid: var(--dh-color-gray-mid);
 
 $semantic-colors: (
   'primary-hover': $primary-hover,
-  'primary-light': $primary-light,
   'primary-dark': $primary-dark,
   'mid': $mid,
   'content-bg': $interfacegray,
