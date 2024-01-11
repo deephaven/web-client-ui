@@ -437,6 +437,7 @@ export interface IrisGridState {
 
   gotoValueSelectedColumnName: ColumnName;
   gotoValueSelectedFilter: FilterTypeValue;
+  goToValueManuallyChanged: boolean;
   gotoValue: string;
 
   columnHeaderGroups: readonly ColumnHeaderGroup[];
@@ -844,6 +845,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       gotoValueSelectedColumnName: model.columns[0]?.name ?? '',
       gotoValueSelectedFilter: FilterType.eqIgnoreCase,
       gotoValue: '',
+      goToValueManuallyChanged: false,
       columnHeaderGroups: columnHeaderGroups ?? model.initialColumnHeaderGroups,
     };
   }
@@ -3943,20 +3945,39 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   handleGotoValueSelectedColumnNameChanged(columnName: ColumnName): void {
     const { model } = this.props;
     const cursorRow = this.grid?.state.cursorRow;
+    const {
+      gotoValueSelectedColumnName: prevColumnName,
+      goToValueManuallyChanged,
+    } = this.state;
 
     if (cursorRow != null) {
       const index = model.getColumnIndexByName(columnName);
       const column = IrisGridUtils.getColumnByName(model.columns, columnName);
+      const prevColumn = IrisGridUtils.getColumnByName(
+        model.columns,
+        prevColumnName
+      );
       if (index == null || column == null) {
         return;
       }
       const value = model.valueForCell(index, cursorRow);
       const text = IrisGridUtils.convertValueToText(value, column.type);
-      this.setState({
-        gotoValueSelectedColumnName: columnName,
-        gotoValue: text,
-        gotoValueError: '',
-      });
+
+      // do NOT update value if user manually changed value AND column type remains the same
+      if (goToValueManuallyChanged && column.type === prevColumn?.type) {
+        this.setState({
+          gotoValueSelectedColumnName: columnName,
+          gotoValueError: '',
+        });
+      } else {
+        // do update, and set goToValueManuallyChanged to false because value was automatically changed
+        this.setState({
+          gotoValueSelectedColumnName: columnName,
+          gotoValue: text,
+          gotoValueError: '',
+          goToValueManuallyChanged: false,
+        });
+      }
     }
     this.setState({
       gotoValueSelectedColumnName: columnName,
@@ -3969,7 +3990,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   handleGotoValueChanged = (input: string): void => {
-    this.setState({ gotoValue: input });
+    this.setState({ gotoValue: input, goToValueManuallyChanged: true });
     this.debouncedSeekRow(input);
   };
 
