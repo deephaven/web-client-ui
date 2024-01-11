@@ -35,6 +35,7 @@ import {
   Divider,
   ButtonGroup,
   Flex,
+  ListView,
 } from '@adobe/react-spectrum';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhTruck, vsEmptyWindow } from '@deephaven/icons';
@@ -236,6 +237,18 @@ function IllustratedMessageSample(): JSX.Element {
 function TableViewSample(): JSX.Element {
   return (
     <>
+      <label id="table-view-sample">List View</label>
+      <ListView
+        selectionMode="multiple"
+        maxWidth="size-6000"
+        marginBottom="size-200"
+      >
+        <Item>One</Item>
+        <Item>Two</Item>
+        <Item>Three</Item>
+        <Item>Four</Item>
+      </ListView>
+
       <label id="table-view-sample">Table View</label>
       <TableView aria-labelledby="table-view-sample" selectionMode="multiple">
         <TableHeader>
