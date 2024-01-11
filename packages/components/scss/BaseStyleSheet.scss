@@ -131,6 +131,11 @@ button:focus {
   justify-content: center;
   padding-top: 3px;
   padding-bottom: 5px;
+  gap: 4px;
+
+  .svg-inline--fa {
+    align-self: start;
+  }
 }
 
 .btn-sm {
@@ -162,8 +167,8 @@ span.btn-disabled-wrapper {
   min-width: unset;
   padding: $spacer-1;
 
-  svg {
-    margin-right: $spacer-1;
+  .svg-inline--fa {
+    align-self: center;
   }
 
   &:not(.btn-link-icon) {
@@ -214,9 +219,6 @@ span.btn-disabled-wrapper {
 
 .btn-spinner {
   padding: $btn-padding-y 1rem;
-  .fa-layers {
-    margin-right: 0.5rem;
-  }
 }
 
 .btn-link.no-underline,
@@ -234,10 +236,6 @@ span.btn-disabled-wrapper {
   border: 0;
   padding-left: $spacer-1;
   padding-right: $spacer-1;
-
-  svg {
-    margin-right: 0;
-  }
 
   &::after {
     content: '';
@@ -338,6 +336,10 @@ span.btn-disabled-wrapper {
   border: 1px solid var(--dh-color-action-border);
   color: var(--dh-color-action-fg);
   font-weight: $font-weight-normal;
+
+  .svg-inline--fa {
+    align-self: center;
+  }
 
   &.active {
     border-color: var(--dh-color-action-active-border);
