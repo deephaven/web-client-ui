@@ -107,8 +107,13 @@ $settings-menu-z-index: $zindex-modal;
       height: $settings-menu-header-user-image-size;
       width: $settings-menu-header-user-image-size;
       margin: $spacer $spacer-2 $spacer $spacer;
-      background: $gray-400;
+      background: var(--dh-color-accent-1100);
       border-radius: $border-radius;
+
+      svg {
+        color: var(--dh-color-accent-contrast);
+      }
+
       img {
         height: $settings-menu-header-user-image-size;
         width: $settings-menu-header-user-image-size;
@@ -136,6 +141,7 @@ $settings-menu-z-index: $zindex-modal;
       text-decoration: underline;
       font-size: smaller;
       padding: 0 $spacer-1;
+      height: 28px;
 
       &:focus {
         background: hsla(var(--dh-color-fg-hsl), $focus-bg-transparency);
