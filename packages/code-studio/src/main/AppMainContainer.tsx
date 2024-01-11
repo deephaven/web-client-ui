@@ -49,7 +49,6 @@ import {
   ToolType,
   FilterSet,
   Link,
-  ColumnSelectionValidator,
   getDashboardConnection,
   NotebookPanel,
 } from '@deephaven/dashboard-core-plugins';
@@ -129,7 +128,7 @@ interface AppMainContainerProps {
   setDashboardPluginData: (
     dashboardId: string,
     pluginId: string,
-    data: any
+    data: unknown
   ) => void;
   updateDashboardData: (id: string, data: Partial<DashboardData>) => void;
   updateWorkspaceData: (workspaceData: Partial<WorkspaceData>) => void;
@@ -731,7 +730,7 @@ export class AppMainContainer extends Component<
     const { setDashboardData } = this.props;
     // TODO: Figure out how to remove the dashboard data
     // without updates after this recreating some dashboard data
-    setDashboardData(tabId, undefined);
+    setDashboardData(tabId, undefined as unknown as DashboardData);
     this.setState(({ tabs: oldTabs, activeTabKey }) => {
       const newTabs = oldTabs.filter(tab => tab.key !== tabId);
       let newActiveTabKey = activeTabKey;
@@ -784,10 +783,7 @@ export class AppMainContainer extends Component<
   }
 
   render(): ReactElement {
-    const { activeTool, plugins, user, workspace, serverConfigValues } =
-      this.props;
-    const { data: workspaceData } = workspace;
-    const { layoutConfig } = workspaceData;
+    const { activeTool, plugins, user, serverConfigValues } = this.props;
     const { permissions } = user;
     const { canUsePanels } = permissions;
     const {

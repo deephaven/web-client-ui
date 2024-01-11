@@ -1,41 +1,14 @@
 import React, { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import classNames from 'classnames';
-import JSZip from 'jszip';
-import Dashboard, {
-  DashboardLayoutConfig,
-  DashboardUtils,
-  DEFAULT_DASHBOARD_ID,
-  DehydratedDashboardPanelProps,
-  getAllDashboardsData,
-  LazyDashboard,
-  useAllDashboardsData,
-} from '@deephaven/dashboard';
-import { ConsolePlugin } from '@deephaven/dashboard-core-plugins';
 import {
-  getWorkspace,
-  RootState,
-  updateWorkspaceData,
-  useWorkspace,
-} from '@deephaven/redux';
+  DashboardUtils,
+  DehydratedDashboardPanelProps,
+  LazyDashboard,
+} from '@deephaven/dashboard';
 import { useConnection } from '@deephaven/jsapi-components';
 import { VariableDefinition } from '@deephaven/jsapi-types';
 import LayoutManager, { ItemConfigType } from '@deephaven/golden-layout';
-import EmptyDashboard from './EmptyDashboard';
-
-function hydrateConsole(
-  props: DehydratedDashboardPanelProps,
-  id: string
-): DehydratedDashboardPanelProps {
-  return DashboardUtils.hydrate(
-    {
-      ...props,
-      unzip: (zipFile: Blob) =>
-        JSZip.loadAsync(zipFile).then(zip => Object.values(zip.files)),
-    },
-    id
-  );
-}
+import { LoadingOverlay } from '@deephaven/components';
 
 interface AppDashboardsProps {
   dashboards: {
@@ -54,7 +27,6 @@ export function AppDashboards({
   plugins,
 }: AppDashboardsProps): JSX.Element {
   const connection = useConnection();
-  const dispatch = useDispatch();
 
   const hydratePanel = useCallback(
     (hydrateProps: DehydratedDashboardPanelProps, id: string) => {
@@ -86,13 +58,6 @@ export function AppDashboards({
     [connection]
   );
 
-  const handleLayoutConfigChange = useCallback(
-    (layoutConfig?: DashboardLayoutConfig) => {
-      dispatch(updateWorkspaceData({ layoutConfig }));
-    },
-    [dispatch]
-  );
-
   return (
     <div className="tab-content">
       {dashboards.map(d => (
@@ -104,10 +69,9 @@ export function AppDashboards({
         >
           <LazyDashboard
             id={d.id}
-            emptyDashboard={<EmptyDashboard />}
+            emptyDashboard={<LoadingOverlay isLoading />}
             getLayoutConfig={d.getLayoutConfig}
             onGoldenLayoutChange={onGoldenLayoutChange}
-            onLayoutConfigChange={handleLayoutConfigChange}
             hydrate={hydratePanel}
             plugins={plugins}
           />

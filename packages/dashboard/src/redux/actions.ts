@@ -46,14 +46,14 @@ export const updateDashboardData =
  * Action to set the plugin data for a dashboard
  * @param dashboardId The ID of the dashboard to set the data on
  * @param pluginId The ID of the plugin to set the data on
- * @param data Data for the dashboard
+ * @param data Data for the plugin on the dashboard
  * @returns The thunk to get dispatched
  */
 export const setDashboardPluginData =
   (
     dashboardId: string,
     pluginId: string,
-    data: DashboardData
+    data: unknown
   ): ThunkAction<unknown, RootState, undefined, Action<unknown>> =>
   (dispatch, getState) => {
     const dashboardData = getDashboardData(getState(), dashboardId);
