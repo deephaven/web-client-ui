@@ -65,7 +65,7 @@
   --dh-color-visual-indigo-hsl: var(--dh-color-indigo-900-hsl);
   --dh-color-visual-magenta-hsl: var(--dh-color-magenta-900-hsl);
   --dh-color-visual-orange-hsl: var(--dh-color-orange-800-hsl);
-  --dh-color-visual-purple-hsl: var(--dh-color-purple-800-hsl);
+  --dh-color-visual-purple-hsl: var(--dh-color-purple-1000-hsl);
   --dh-color-visual-red-hsl: var(--dh-color-red-800-hsl);
   --dh-color-visual-seafoam-hsl: var(--dh-color-seafoam-1100-hsl);
   --dh-color-visual-yellow-hsl: var(--dh-color-yellow-700-hsl);
@@ -220,5 +220,5 @@
   --dh-color-visual-info: hsl(var(--dh-color-visual-info-hsl));
 
   /* Editing */
-  --dh-color-modified: var(--dh-color-orange-800);
+  --dh-color-modified: var(--dh-color-green-700);
 }

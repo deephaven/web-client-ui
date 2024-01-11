@@ -3,7 +3,8 @@
 :root {
   --dh-color-chart-bg: var(--dh-color-content-bg);
   --dh-color-chart-plot-bg: var(--dh-color-gray-200);
-  --dh-color-chart-title: var(--dh-color-white);
+  --dh-color-chart-title: var(--dh-color-text);
+  --dh-color-chart-legend-fg: var(--dh-color-text);
 
   /* Colorway */
   --dh-color-chart-colorway: var(--dh-color-visual-cyan)
