@@ -75,7 +75,7 @@ $btn-play-color: $success;
 
     code {
       color: $foreground;
-      background: $gray-850;
+      background: var(--dh-color-gray-200);
       padding: $spacer-2;
       border-radius: $border-radius;
       border: 1px solid $black;
