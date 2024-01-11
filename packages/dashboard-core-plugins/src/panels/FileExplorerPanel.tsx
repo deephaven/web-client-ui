@@ -21,7 +21,7 @@ const log = Log.module('FileExplorerPanel');
 
 type StateProps = {
   fileStorage: FileStorage;
-  language: string;
+  language?: string;
   session?: IdeSession;
 };
 

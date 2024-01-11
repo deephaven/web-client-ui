@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
-import Log from '@deephaven/log';
 import { useIsMountedRef } from './useIsMountedRef';
-
-const log = Log.module('useAsyncInterval');
 
 /**
  * Calls the given async callback at a target interval.
@@ -41,12 +38,6 @@ export function useAsyncInterval(
         ? targetIntervalMs
         : now - trackingStartedRef.current;
 
-    log.debug(
-      `tick #${trackingCountRef.current}.`,
-      elapsedSinceLastTick,
-      'ms elapsed since last tick.'
-    );
-
     trackingStartedRef.current = now;
 
     await callback();
@@ -62,21 +53,10 @@ export function useAsyncInterval(
 
     const nextTickInterval = Math.max(0, targetIntervalMs - overage);
 
-    log.debug(
-      'Next tick target:',
-      targetIntervalMs,
-      ', overage',
-      overage,
-      ', adjusted:',
-      nextTickInterval
-    );
-
     setTimeoutRef.current = window.setTimeout(tick, nextTickInterval);
   }, [callback, isMountedRef, targetIntervalMs]);
 
   useEffect(() => {
-    log.debug('Setting target interval:', targetIntervalMs);
-
     trackingStartedRef.current = null;
     tick();
 

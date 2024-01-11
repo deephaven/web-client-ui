@@ -123,7 +123,7 @@ interface AppMainContainerProps {
   match: {
     params: { notebookPath: string };
   };
-  connection: IdeConnection;
+  connection?: IdeConnection;
   session?: IdeSession;
   sessionConfig?: SessionConfig;
   setActiveTool: (tool: string) => void;
@@ -255,6 +255,10 @@ export class AppMainContainer extends Component<
 
   initWidgets(): void {
     const { connection } = this.props;
+    if (connection == null) {
+      return;
+    }
+
     if (connection.subscribeToFieldUpdates == null) {
       log.warn(
         'subscribeToFieldUpdates not supported, not initializing widgets'
@@ -614,6 +618,10 @@ export class AppMainContainer extends Component<
 
   startListeningForDisconnect(): void {
     const { connection } = this.props;
+    if (connection == null) {
+      return;
+    }
+
     connection.addEventListener(
       dh.IdeConnection.EVENT_DISCONNECT,
       this.handleDisconnect
@@ -630,6 +638,10 @@ export class AppMainContainer extends Component<
 
   stopListeningForDisconnect(): void {
     const { connection } = this.props;
+    if (connection == null) {
+      return;
+    }
+
     connection.removeEventListener(
       dh.IdeConnection.EVENT_DISCONNECT,
       this.handleDisconnect
@@ -650,6 +662,7 @@ export class AppMainContainer extends Component<
   ): DehydratedDashboardPanelProps & { fetch?: () => Promise<unknown> } {
     const { connection } = this.props;
     const { metadata } = props;
+
     if (
       metadata?.type != null &&
       (metadata?.id != null || metadata?.name != null)
@@ -666,12 +679,14 @@ export class AppMainContainer extends Component<
               name: metadata.name,
               title: metadata.name,
             };
+
       return {
-        fetch: () => connection.getObject(widget),
+        fetch: async () => connection?.getObject(widget),
         ...props,
         localDashboardId: id,
       };
     }
+
     return DashboardUtils.hydrate(props, id);
   }
 
@@ -684,7 +699,7 @@ export class AppMainContainer extends Component<
     const { connection } = this.props;
     this.emitLayoutEvent(PanelEvent.OPEN, {
       dragEvent,
-      fetch: () => connection.getObject(widget),
+      fetch: async () => connection?.getObject(widget),
       widget,
     });
   }

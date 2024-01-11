@@ -63,7 +63,7 @@ interface ConsolePanelProps extends DashboardPanelProps {
 
   panelState?: PanelState;
 
-  sessionWrapper: SessionWrapper;
+  sessionWrapper?: SessionWrapper;
 
   timeZone: string;
   unzip?: (file: File) => Promise<JSZipObject[]>;
@@ -159,6 +159,10 @@ export class ConsolePanel extends PureComponent<
 
   subscribeToFieldUpdates(): void {
     const { sessionWrapper } = this.props;
+    if (sessionWrapper == null) {
+      return;
+    }
+
     const { session } = sessionWrapper;
 
     this.objectSubscriptionCleanup = session.subscribeToFieldUpdates(
@@ -244,6 +248,9 @@ export class ConsolePanel extends PureComponent<
 
   handleOpenObject(object: VariableDefinition, forceOpen = true): void {
     const { sessionWrapper } = this.props;
+    if (sessionWrapper == null) {
+      return;
+    }
     const { session } = sessionWrapper;
     const { root } = this.context;
     const oldPanelId =
@@ -359,7 +366,7 @@ export class ConsolePanel extends PureComponent<
     return <ObjectIcon type={type} />;
   }
 
-  render(): ReactElement {
+  render(): ReactElement | null {
     const {
       commandHistoryStorage,
       glContainer,
@@ -368,6 +375,11 @@ export class ConsolePanel extends PureComponent<
       timeZone,
       unzip,
     } = this.props;
+
+    if (sessionWrapper == null) {
+      return null;
+    }
+
     const { consoleSettings, error, objectMap } = this.state;
     const { config, session, connection, details = {}, dh } = sessionWrapper;
     const { workerName, processInfoId } = details;

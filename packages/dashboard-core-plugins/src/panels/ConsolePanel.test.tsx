@@ -1,12 +1,16 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import { CommandHistoryStorage } from '@deephaven/console';
-import type { Container } from '@deephaven/golden-layout';
+import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import type { IdeConnection, IdeSession } from '@deephaven/jsapi-types';
+import { dh } from '@deephaven/jsapi-shim';
 import { SessionConfig, SessionWrapper } from '@deephaven/jsapi-utils';
+import { TestUtils } from '@deephaven/utils';
 import { ConsolePanel } from './ConsolePanel';
 
-const mockConsole = jest.fn(() => null);
+type IdeSessionConstructor = new (language: string) => IdeSession;
+
+const mockConsole = jest.fn((_props: unknown) => null);
 jest.mock('@deephaven/console', () => ({
   ...(jest.requireActual('@deephaven/console') as Record<string, unknown>),
   Console: props => mockConsole(props),
@@ -14,7 +18,7 @@ jest.mock('@deephaven/console', () => ({
 }));
 
 function makeSession(language = 'TEST_LANG'): IdeSession {
-  return new dh.IdeSession(language) as unknown as IdeSession;
+  return new (dh.IdeSession as unknown as IdeSessionConstructor)(language);
 }
 
 function makeConnection({
@@ -42,31 +46,15 @@ function makeSessionWrapper({
   return { session, connection, config, dh };
 }
 
-function makeEventHub() {
-  return {
-    emit: jest.fn(),
-    on: jest.fn(),
-    off: jest.fn(),
-    trigger: jest.fn(),
-    unbind: jest.fn(),
-  };
-}
-
-function makeGlContainer(): Container {
-  return {
-    emit: jest.fn(),
-    on: jest.fn(),
-    off: jest.fn(),
-  } as unknown as Container;
-}
-
 function makeCommandHistoryStorage(): CommandHistoryStorage {
   return {} as CommandHistoryStorage;
 }
 
 function renderConsolePanel({
-  eventHub = makeEventHub(),
-  container = makeGlContainer(),
+  eventHub = TestUtils.createMockProxy<EventEmitter>(),
+  container = TestUtils.createMockProxy<Container>({
+    tab: undefined,
+  }),
   commandHistoryStorage = makeCommandHistoryStorage(),
   timeZone = 'MockTimeZone',
   sessionWrapper = makeSessionWrapper(),
@@ -78,11 +66,18 @@ function renderConsolePanel({
       commandHistoryStorage={commandHistoryStorage}
       timeZone={timeZone}
       sessionWrapper={sessionWrapper}
+      localDashboardId="mock-localDashboardId"
+      plugins={new Map()}
     />
   );
 }
 
 beforeEach(() => {
+  // Mocking the Console component causes it to be treated as a functional
+  // component which causes React to log an error about passing refs. Disable
+  // logging to supress this
+  TestUtils.disableConsoleOutput('error');
+
   mockConsole.mockClear();
 });
 
