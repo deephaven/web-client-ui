@@ -178,6 +178,11 @@ h5.sub-title {
     background-color: transparent;
     height: auto;
     padding: $spacer-2 2px;
+
+    .svg-inline--fa {
+      align-self: center;
+    }
+
     &:focus {
       border-color: $primary;
     }
