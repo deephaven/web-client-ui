@@ -24,6 +24,7 @@ import {
   RadioItem,
   Select,
 } from '@deephaven/components';
+import { EMPTY_FUNCTION } from '@deephaven/utils';
 import {
   SAMPLE_SECTION_E2E_IGNORE,
   SPECTRUM_COMPARISON_SAMPLES_ID,
@@ -43,10 +44,6 @@ const options = [
   { title: 'Two', value: '2' },
   { title: 'Three', value: '3' },
 ];
-
-function noop(): void {
-  // no-op
-}
 
 export function SpectrumComparison(): JSX.Element {
   const [isChecked, setIsChecked] = useState(false);
@@ -77,7 +74,7 @@ export function SpectrumComparison(): JSX.Element {
 
             {buttons.map(([level, variant]) => (
               <Fragment key={level}>
-                <BootstrapButtonOld onClick={noop} kind={level}>
+                <BootstrapButtonOld onClick={EMPTY_FUNCTION} kind={level}>
                   Button
                 </BootstrapButtonOld>
 
@@ -87,7 +84,11 @@ export function SpectrumComparison(): JSX.Element {
               </Fragment>
             ))}
 
-            <BootstrapButtonOld onClick={noop} kind="primary" disabled>
+            <BootstrapButtonOld
+              onClick={EMPTY_FUNCTION}
+              kind="primary"
+              disabled
+            >
               Disabled
             </BootstrapButtonOld>
             <Button variant="accent" style="fill" isDisabled>
@@ -104,7 +105,7 @@ export function SpectrumComparison(): JSX.Element {
 
             {buttons.map(([level, variant]) => (
               <Fragment key={level}>
-                <BootstrapButtonOld onClick={noop} kind={level}>
+                <BootstrapButtonOld onClick={EMPTY_FUNCTION} kind={level}>
                   {level}
                 </BootstrapButtonOld>
                 <Button variant={variant} style="outline">
@@ -113,7 +114,11 @@ export function SpectrumComparison(): JSX.Element {
               </Fragment>
             ))}
 
-            <BootstrapButtonOld onClick={noop} kind="secondary" disabled>
+            <BootstrapButtonOld
+              onClick={EMPTY_FUNCTION}
+              kind="secondary"
+              disabled
+            >
               Disabled
             </BootstrapButtonOld>
             <Button variant="primary" style="outline" isDisabled>
@@ -129,12 +134,12 @@ export function SpectrumComparison(): JSX.Element {
             <label>Bootstrap</label>
             <label>Spectrum</label>
 
-            <BootstrapButtonOld onClick={noop} kind="inline">
+            <BootstrapButtonOld onClick={EMPTY_FUNCTION} kind="inline">
               Inline
             </BootstrapButtonOld>
             <ActionButton>Action</ActionButton>
 
-            <BootstrapButtonOld onClick={noop} kind="inline" disabled>
+            <BootstrapButtonOld onClick={EMPTY_FUNCTION} kind="inline" disabled>
               Disabled
             </BootstrapButtonOld>
             <ActionButton isDisabled>Disabled</ActionButton>
