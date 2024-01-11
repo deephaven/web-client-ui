@@ -1,6 +1,10 @@
 import { createContext, ReactNode, useEffect, useMemo, useState } from 'react';
 import Log from '@deephaven/log';
-import { DEFAULT_DARK_THEME_KEY, ThemeData } from './ThemeModel';
+import {
+  DEFAULT_DARK_THEME_KEY,
+  DEFAULT_PRELOAD_DATA_VARIABLES,
+  ThemeData,
+} from './ThemeModel';
 import {
   calculatePreloadStyleContent,
   getActiveThemes,
@@ -30,11 +34,13 @@ export interface ThemeProviderProps {
    * tell the provider to activate the base themes.
    */
   themes: ThemeData[] | null;
+  defaultPreloadValues?: Record<string, string>;
   children: ReactNode;
 }
 
 export function ThemeProvider({
   themes: customThemes,
+  defaultPreloadValues = DEFAULT_PRELOAD_DATA_VARIABLES,
   children,
 }: ThemeProviderProps): JSX.Element | null {
   const baseThemes = useMemo(() => getDefaultBaseThemes(), []);
@@ -71,9 +77,10 @@ export function ThemeProvider({
 
       // Override fill color for certain inline SVGs (the originals are provided
       // by theme-svg.scss)
-      overrideSVGFillColors();
+      overrideSVGFillColors(defaultPreloadValues);
 
-      const preloadStyleContent = calculatePreloadStyleContent();
+      const preloadStyleContent =
+        calculatePreloadStyleContent(defaultPreloadValues);
 
       log.debug2('updateThemePreloadData:', {
         active: activeThemes.map(theme => theme.themeKey),
@@ -87,7 +94,7 @@ export function ThemeProvider({
         preloadStyleContent,
       });
     },
-    [activeThemes, selectedThemeKey, customThemes]
+    [activeThemes, selectedThemeKey, customThemes, defaultPreloadValues]
   );
 
   useEffect(() => {
