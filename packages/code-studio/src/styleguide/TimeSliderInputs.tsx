@@ -5,6 +5,8 @@ import { TimeSlider } from '@deephaven/components';
 import { sampleSectionIdAndClasses } from './utils';
 
 interface TimeSliderInputsState {
+  initialStartTime: number;
+  initialEndTime: number;
   startTime: number;
   endTime: number;
 }
@@ -17,7 +19,10 @@ class TimeSliderInputs extends PureComponent<
     super(props);
 
     this.handleSliderChange = this.handleSliderChange.bind(this);
+
     this.state = {
+      initialStartTime: 24 * 60 * 60 * 0.25,
+      initialEndTime: 24 * 60 * 60 * 0.75,
       startTime: 24 * 60 * 60 * 0.25, // example start and end times
       endTime: 24 * 60 * 60 * 0.75, // example start and end times
     };
@@ -31,6 +36,10 @@ class TimeSliderInputs extends PureComponent<
 
   render(): React.ReactElement {
     const { startTime, endTime } = this.state;
+
+    const isStartModified = startTime !== this.state.initialStartTime;
+    const isEndModified = endTime !== this.state.initialEndTime;
+
     return (
       <div
         {...sampleSectionIdAndClasses('time-slider-inputs', [
@@ -41,10 +50,16 @@ class TimeSliderInputs extends PureComponent<
         <TimeSlider
           startTime={startTime}
           endTime={endTime}
+          isStartModified={isStartModified}
+          isEndModified={isEndModified}
           onChange={this.handleSliderChange}
         />
-        <p>StartTime: {TimeUtils.formatTime(startTime)}</p>
-        <p>EndTime: {TimeUtils.formatTime(endTime)}</p>
+        <p style={isStartModified ? { color: 'var(--dh-color-modified)' } : {}}>
+          StartTime: {TimeUtils.formatTime(startTime)}
+        </p>
+        <p style={isEndModified ? { color: 'var(--dh-color-modified)' } : {}}>
+          EndTime: {TimeUtils.formatTime(endTime)}
+        </p>
       </div>
     );
   }
