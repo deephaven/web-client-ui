@@ -129,12 +129,12 @@ button:focus {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding-top: 3px;
-  padding-bottom: 5px;
-  gap: 4px;
+  // match spectrum button custom padding
+  padding: 4px 14px 3px 14px;
+  gap: 6px;
 
   .svg-inline--fa {
-    align-self: start;
+    padding-bottom: 2px;
   }
 }
 
