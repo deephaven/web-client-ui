@@ -1,6 +1,6 @@
 @import '@deephaven/components/scss/custom.scss';
 
-$file-explorer-bg: $gray-900;
+$file-explorer-bg: var(--dh-color-subdued-content-bg);
 
 .file-explorer {
   background: $file-explorer-bg;
