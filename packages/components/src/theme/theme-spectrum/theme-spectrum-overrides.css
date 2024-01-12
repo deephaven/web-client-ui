@@ -52,11 +52,11 @@ button[class^='spectrum-Button'] {
   /* center the text vertically, we have different font, it requires different centering */
   padding-bottom: calc(var(--spectrum-global-dimension-size-50) - 1px);
   padding-top: calc(var(--spectrum-global-dimension-size-50));
+}
 
-  svg {
-    /* our icons are smaller, center them too */
-    padding-bottom: 2px;
-  }
+button[class^='spectrum-Button'] svg {
+  /* our icons are smaller, center them too */
+  padding-bottom: 2px;
 }
 
 span[class^='spectrum-Checkbox-label'],
