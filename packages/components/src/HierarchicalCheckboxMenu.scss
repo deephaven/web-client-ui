@@ -20,6 +20,11 @@
     margin-right: 4px;
   }
 }
+
+.hcm-btn:focus {
+  border-color: $input-focus-border-color;
+}
+
 .hcm-btn:hover:not(:disabled) {
   border-color: var(--dh-color-input-hover-border);
   color: var(--dh-color-selector-hover-fg);
@@ -27,10 +32,6 @@
   .cs-caret {
     background-color: var(--dh-color-selector-hover-fg);
   }
-}
-
-.hcm-btn:focus {
-  border-color: $input-focus-border-color;
 }
 
 .hcm-menu-container {

@@ -8,7 +8,7 @@ import React, {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Log from '@deephaven/log';
 import { ColorUtils } from '@deephaven/utils';
-import { dhSort, vsCheck } from '@deephaven/icons';
+import { vsCheck } from '@deephaven/icons';
 import { Button, DropdownMenu } from '@deephaven/components';
 import {
   FormatStyleType,

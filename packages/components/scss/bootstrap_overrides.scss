@@ -183,6 +183,7 @@ $input-btn-line-height: 1.3;
 // Bootstrap uses a calc expression to determine the input height (calc(line-height + 2*padding-y + border)).
 // The padding-y value has to be in rem to match units as it is a SASS calc.
 // Using 0.42145rem with 1.3 line height gets us to spectrum's 32px.
+/* stylelint-disable-next-line number-max-precision */
 $input-btn-padding-y: 0.42145rem;
 
 //checkbox

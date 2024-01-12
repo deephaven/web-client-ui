@@ -34,9 +34,9 @@ class TimeSliderInputs extends PureComponent<
   }
 
   render(): React.ReactElement {
-    const { startTime, endTime } = this.state;
-    const isStartModified = startTime !== this.state.initialStartTime;
-    const isEndModified = endTime !== this.state.initialEndTime;
+    const { startTime, endTime, initialStartTime, initialEndTime } = this.state;
+    const isStartModified = startTime !== initialStartTime;
+    const isEndModified = endTime !== initialEndTime;
     return (
       <div
         {...sampleSectionIdAndClasses('time-slider-inputs', [
