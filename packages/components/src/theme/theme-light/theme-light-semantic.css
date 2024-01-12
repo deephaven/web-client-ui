@@ -4,6 +4,7 @@
   /* HSL base colors */
   --dh-color-bg-hsl: var(--dh-color-gray-300-hsl);
   --dh-color-content-bg-hsl: var(--dh-color-gray-100-hsl);
+  --dh-color-subdued-content-bg-hsl: var(--dh-color-gray-200-hsl);
   --dh-color-surface-bg-hsl: var(--dh-color-gray-200-hsl);
   --dh-color-fg-hsl: var(--dh-color-black-hsl);
 
@@ -78,6 +79,7 @@
   /* General */
   --dh-color-bg: hsl(var(--dh-color-bg-hsl));
   --dh-color-content-bg: hsl(var(--dh-color-content-bg-hsl));
+  --dh-color-subdued-content-bg: hsl(var(--dh-color-subdued-content-bg-hsl));
   --dh-color-surface-bg: hsl(var(--dh-color-surface-bg-hsl));
   --dh-color-fg: hsl(var(--dh-color-fg-hsl));
   --dh-color-border: hsl(var(--dh-color-border-hsl));

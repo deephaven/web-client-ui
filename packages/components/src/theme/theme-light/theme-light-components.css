@@ -7,9 +7,6 @@
   --dh-color-radial-reaction: hsla(var(--dh-color-visual-gray-hsl), 0.6);
   --dh-color-colorpicker-border: hsla(var(--dh-color-visual-gray-hsl), 0.1);
 
-  /* Used by file explorer and command history */
-  --dh-color-subdued-content-bg: var(--dh-color-gray-200);
-
   /* Logo */
   --dh-logo-img: var(--dh-logo-light-img);
 
