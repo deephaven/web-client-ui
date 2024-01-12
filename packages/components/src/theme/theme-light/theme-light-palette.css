@@ -2,13 +2,13 @@
 :root {
   /* Gray */
   --dh-color-gray-50-hsl: 0, 0%, 100%;
-  --dh-color-gray-75-hsl: 0, 0%, 99.22%;
-  --dh-color-gray-100-hsl: 0, 0%, 97.25%;
-  --dh-color-gray-200-hsl: 0, 0%, 90.2%;
-  --dh-color-gray-300-hsl: 0, 0%, 83.53%;
-  --dh-color-gray-400-hsl: 0, 0%, 69.41%;
-  --dh-color-gray-500-hsl: 0, 0%, 56.47%;
-  --dh-color-gray-600-hsl: 0, 0%, 42.75%;
+  --dh-color-gray-75-hsl: 0, 0%, 98.22%;
+  --dh-color-gray-100-hsl: 0, 0%, 96.85%;
+  --dh-color-gray-200-hsl: 0, 0%, 93.2%;
+  --dh-color-gray-300-hsl: 0, 0%, 85.53%;
+  --dh-color-gray-400-hsl: 0, 0%, 72.41%;
+  --dh-color-gray-500-hsl: 0, 0%, 58.47%;
+  --dh-color-gray-600-hsl: 0, 0%, 44.75%;
   --dh-color-gray-700-hsl: 0, 0%, 27.45%;
   --dh-color-gray-800-hsl: 0, 0%, 13.33%;
   --dh-color-gray-900-hsl: 0, 0%, 0%;

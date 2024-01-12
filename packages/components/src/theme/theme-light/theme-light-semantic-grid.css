@@ -32,9 +32,9 @@
   --dh-color-grid-scroll-bar-hover-bg: var(--dh-color-gray-200);
   --dh-color-grid-scroll-bar-casing: var(--dh-color-gray-400);
   --dh-color-grid-scroll-bar-corner: var(--dh-color-gray-100);
-  --dh-color-grid-scroll-bar: var(--dh-color-gray-500);
-  --dh-color-grid-scroll-bar-hover: var(--dh-color-gray-600);
-  --dh-color-grid-scroll-bar-active: var(--dh-color-gray-700);
+  --dh-color-grid-scroll-bar: var(--dh-color-gray-400);
+  --dh-color-grid-scroll-bar-hover: var(--dh-color-gray-500);
+  --dh-color-grid-scroll-bar-active: var(--dh-color-gray-600);
 
   /* Text */
   --dh-color-grid-text: var(--dh-color-text);
