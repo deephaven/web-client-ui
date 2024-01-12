@@ -11,7 +11,6 @@
   --dh-color-disabled-bg-hsl: var(--dh-color-gray-300-hsl);
   --dh-color-scrollbar-hsl: var(--dh-color-fg-hsl);
 
-  --dh-color-accent-hsl: var(--dh-color-blue-600-hsl);
   --dh-color-accent-100-hsl: var(--dh-color-blue-100-hsl);
   --dh-color-accent-200-hsl: var(--dh-color-blue-200-hsl);
   --dh-color-accent-300-hsl: var(--dh-color-blue-300-hsl);
@@ -26,6 +25,7 @@
   --dh-color-accent-1200-hsl: var(--dh-color-blue-1200-hsl);
   --dh-color-accent-1300-hsl: var(--dh-color-blue-1300-hsl);
   --dh-color-accent-1400-hsl: var(--dh-color-blue-1400-hsl);
+  --dh-color-accent-hsl: var(--dh-color-accent-600-hsl);
 
   --dh-color-border-hsl: var(--dh-color-gray-500-hsl);
   --dh-color-border-focus-hsl: var(--dh-color-accent-800-hsl);
