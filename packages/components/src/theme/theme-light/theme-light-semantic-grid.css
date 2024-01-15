@@ -5,7 +5,7 @@
   /* Header */
   --dh-color-grid-header-bg: var(--dh-color-gray-100);
   --dh-color-grid-header-text: var(--dh-color-heading-text);
-  --dh-color-grid-header-separator: var(--dh-color-gray-50);
+  --dh-color-grid-header-separator: var(--dh-color-gray-300);
   --dh-color-grid-header-separator-hover: var(--dh-color-gray-600);
   --dh-color-grid-header-separator-hidden-hover: var(--dh-color-accent-700);
   --dh-color-grid-header-sort-bar: var(--dh-color-visual-purple);
@@ -52,9 +52,9 @@
   /* Filter Bar */
   --dh-color-grid-filter-bar-active-bg: hsla(
     var(--dh-color-accent-700-hsl),
-    0.5
+    0.45
   );
-  --dh-color-grid-filter-bar-active: var(--dh-color-accent-600);
+  --dh-color-grid-filter-bar-active: var(--dh-color-accent-700);
   --dh-color-grid-filter-bar-expanded-bg: var(--dh-color-gray-50);
   --dh-color-grid-filter-bar-expanded-active-bg: hsla(
     var(--dh-color-accent-1000-hsl),
