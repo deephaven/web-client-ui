@@ -116,7 +116,7 @@ function ButtonsSample(): JSX.Element {
         autoFlow="column"
         columnGap="size-250"
         rowGap="size-150"
-        columns={repeat(4, 'size-2000')}
+        columns={repeat(4, minmax(0, 'size-2000'))}
         rows={repeat(8, 'size-400')}
       >
         <label>Button style=&quot;outline&quot;</label>
@@ -207,7 +207,7 @@ function ContextualHelpSample(): JSX.Element {
 function FormsSample(): JSX.Element {
   return (
     <Form>
-      <Grid gap={20} columns={repeat('auto-fit', '210px')}>
+      <Grid gap={20} columns={repeat('auto-fit', '210px')} alignItems="end">
         <TextField label="Text Field" />
         <ComboBox label="Combobox" menuTrigger="focus" defaultSelectedKey="two">
           <Item key="one">One</Item>
