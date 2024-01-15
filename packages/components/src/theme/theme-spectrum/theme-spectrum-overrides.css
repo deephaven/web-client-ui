@@ -47,21 +47,22 @@ label[class^='spectrum-'] {
 
 button[class^='spectrum-Button'] {
   /* make the icon closer to the text */
-  --spectrum-button-primary-text-gap: 6px;
+  --spectrum-button-primary-text-gap: var(--spectrum-global-dimension-size-75);
 
-  /* center the text vertically, we have different font, it requires different centering */
+  /* Center the text vertically. We use a different font then spectrum so we require different custom centering */
   padding-bottom: calc(var(--spectrum-global-dimension-size-50) - 1px);
   padding-top: calc(var(--spectrum-global-dimension-size-50));
 }
 
 button[class^='spectrum-Button'] svg {
   /* our icons are smaller, center them too */
-  padding-bottom: 2px;
+  padding-bottom: var(--spectrum-global-dimension-size-25);
 }
 
 span[class^='spectrum-Checkbox-label'],
 span[class^='spectrum-Radio-label'] {
-  /* I have no idea why these spectrum labels aren't centered, but this fixes it */
-  margin-top: 0;
-  align-self: center;
+  /* I have no idea why these spectrum labels aren't centered,
+   but this fixes it. Maybe difference in font baselines.
+   */
+  margin-top: var(--spectrum-global-dimension-size-85);
 }
