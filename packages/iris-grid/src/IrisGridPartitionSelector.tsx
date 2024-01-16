@@ -77,8 +77,12 @@ class IrisGridPartitionSelector extends Component<
         )
       );
 
-      this.setState({ isLoading: false, keysTable, partitionTables }, () => {
-        this.updatePartitionFilters();
+      const partitionFilters = this.getPartitionFilters(partitionTables);
+      this.setState({
+        isLoading: false,
+        keysTable,
+        partitionFilters,
+        partitionTables,
       });
     } catch (e) {
       if (!PromiseUtils.isCanceled(e)) {
@@ -167,7 +171,7 @@ class IrisGridPartitionSelector extends Component<
       const partitionFilters = newPartitions
         .slice(0, index + 1)
         .map((partition, i) => {
-          const partitionColumn = model.partitionColumns[i];
+          const partitionColumn = t.columns[i];
           return partitionColumn
             .filter()
             .eq(
@@ -180,14 +184,11 @@ class IrisGridPartitionSelector extends Component<
       t.applyFilter(partitionFilters);
       t.setViewport(0, 0, t.columns);
       const data = await this.pending.add(t.getViewportData());
-      t.close();
-
       const newConfig: PartitionConfig = {
-        partitions: model.partitionColumns.map(column =>
-          data.rows[0].get(column)
-        ),
+        partitions: t.columns.map(column => data.rows[0].get(column)),
         mode: 'partition',
       };
+      t.close();
       this.sendUpdate(newConfig);
     } catch (e) {
       if (!PromiseUtils.isCanceled(e)) {
@@ -230,14 +231,23 @@ class IrisGridPartitionSelector extends Component<
     const { partitionTables } = this.state;
     assertNotNull(partitionTables);
 
-    const { model, partitionConfig } = this.props;
-    const { mode, partitions } = partitionConfig;
+    const { partitionConfig } = this.props;
+    const { mode } = partitionConfig;
     log.debug('updatePartitionFilters', partitionConfig);
     if (mode !== 'partition') {
       // We only need to update the filters if the mode is `partitions`
       // In the other modes, we disable the dropdowns anyway
       return;
     }
+
+    const partitionFilters = this.getPartitionFilters(partitionTables);
+    this.setState({ partitionFilters });
+  }
+
+  getPartitionFilters(partitionTables: Table[]): FilterCondition[][] {
+    const { model, partitionConfig } = this.props;
+    const { partitions } = partitionConfig;
+    log.debug('getPartitionFilters', partitionConfig);
 
     if (partitions.length !== partitionTables.length) {
       throw new Error(
@@ -269,7 +279,7 @@ class IrisGridPartitionSelector extends Component<
         partitionFilters.push(partitionFilter);
       }
     }
-    this.setState({ partitionFilters });
+    return partitionFilters;
   }
 
   getCachedChangeCallback = memoizee(
@@ -293,7 +303,7 @@ class IrisGridPartitionSelector extends Component<
         <TableDropdown
           className="custom-select-sm"
           table={partitionTables?.[index]}
-          column={column}
+          column={partitionTables?.[index]?.columns[index]}
           filter={partitionFilters?.[index]}
           onChange={this.getCachedChangeCallback(index)}
           selectedValue={mode === 'partition' ? partitions[index] : undefined}

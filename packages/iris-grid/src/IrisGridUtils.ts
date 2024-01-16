@@ -49,7 +49,10 @@ import IrisGridModel from './IrisGridModel';
 import type AdvancedSettingsType from './sidebar/AdvancedSettingsType';
 import AdvancedSettings from './sidebar/AdvancedSettings';
 import ColumnHeaderGroup from './ColumnHeaderGroup';
-import { PartitionConfig } from './PartitionedGridModel';
+import {
+  isPartitionedGridModelProvider,
+  PartitionConfig,
+} from './PartitionedGridModel';
 
 const log = Log.module('IrisGridUtils');
 
@@ -1177,6 +1180,10 @@ class IrisGridUtils {
     assertNotNull(metrics);
     const { userColumnWidths, userRowHeights } = metrics;
     const { columns } = model;
+    const partitionColumns = isPartitionedGridModelProvider(model)
+      ? model.partitionColumns
+      : [];
+
     // Return value will be serialized, should not contain undefined
     return {
       advancedFilters: this.dehydrateAdvancedFilters(columns, advancedFilters),
@@ -1210,7 +1217,10 @@ class IrisGridUtils {
         children: item.children,
         color: item.color,
       })),
-      partitionConfig: this.dehydratePartitionConfig(columns, partitionConfig),
+      partitionConfig: this.dehydratePartitionConfig(
+        partitionColumns,
+        partitionConfig
+      ),
     };
   }
 
@@ -1250,7 +1260,9 @@ class IrisGridUtils {
       partitionConfig,
     } = irisGridState;
     const { columns, formatter } = model;
-
+    const partitionColumns = isPartitionedGridModelProvider(model)
+      ? model.partitionColumns
+      : [];
     return {
       advancedFilters: this.hydrateAdvancedFilters(
         columns,
@@ -1306,7 +1318,10 @@ class IrisGridUtils {
         model,
         columnHeaderGroups ?? model.layoutHints?.columnGroups ?? []
       ).groups,
-      partitionConfig: this.hydratePartitionConfig(columns, partitionConfig),
+      partitionConfig: this.hydratePartitionConfig(
+        partitionColumns,
+        partitionConfig
+      ),
     };
   }
 
@@ -1501,7 +1516,7 @@ class IrisGridUtils {
   }
 
   dehydratePartitionConfig(
-    columns: readonly Column[],
+    partitionColumns: readonly Column[],
     partitionConfig: PartitionConfig | undefined
   ): PartitionConfig | undefined {
     if (partitionConfig == null) {
@@ -1511,13 +1526,13 @@ class IrisGridUtils {
     return {
       ...partitionConfig,
       partitions: partitionConfig.partitions.map((partition, index) =>
-        this.dehydrateValue(partition, columns[index].type)
+        this.dehydrateValue(partition, partitionColumns[index].type)
       ),
     };
   }
 
   hydratePartitionConfig(
-    columns: readonly Column[],
+    partitionColumns: readonly Column[],
     partitionConfig: PartitionConfig | undefined
   ): PartitionConfig | undefined {
     if (partitionConfig == null) {
@@ -1527,7 +1542,7 @@ class IrisGridUtils {
     return {
       ...partitionConfig,
       partitions: partitionConfig.partitions.map((partition, index) =>
-        this.hydrateValue(partition, columns[index].type)
+        this.hydrateValue(partition, partitionColumns[index].type)
       ),
     };
   }
