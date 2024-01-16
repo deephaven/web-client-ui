@@ -239,6 +239,7 @@ function TableViewSample(): JSX.Element {
     <>
       <label id="table-view-sample">List View</label>
       <ListView
+        aria-labelledby="table-view-sample"
         selectionMode="multiple"
         maxWidth="size-6000"
         marginBottom="size-200"
