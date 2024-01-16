@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, ReactNode, useCallback } from 'react';
+import React, { useEffect, useState, ReactNode, ReactElement } from 'react';
 import * as monaco from 'monaco-editor';
 import { useTheme } from '@deephaven/components';
 
@@ -8,30 +8,38 @@ interface CodeProps {
 }
 
 function Code({ children, language }: CodeProps): JSX.Element {
-  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [colorizedHtml, setColorizedHtml] = useState<string | null>(null);
   const { activeThemes } = useTheme();
 
-  const colorize = useCallback(async () => {
-    if (containerRef.current && children != null) {
-      const result = await monaco.editor.colorize(
-        children.toString(),
-        language,
-        {}
-      );
-      containerRef.current.innerHTML = result;
-    }
-  }, [children, language]);
-
   useEffect(() => {
-    if (activeThemes != null) colorize();
-  }, [activeThemes, colorize]);
+    let isCanceled = false;
+    async function colorize() {
+      if (children != null) {
+        const result = await monaco.editor.colorize(
+          children.toString(),
+          language,
+          {}
+        );
+        if (!isCanceled) {
+          setColorizedHtml(result);
+        }
+      }
+    }
+    colorize();
+    return () => {
+      isCanceled = true;
+    };
+  }, [activeThemes, children, language]);
 
   return (
     <div
-      ref={containerRef}
       // Add pointerEvents: 'none' has huge benefits on performance with Hit Test testing on large colorized elements.
       // You can still select the text event with this set
       style={{ pointerEvents: 'none' }}
+      // eslint-disable-next-line react/no-danger
+      dangerouslySetInnerHTML={
+        colorizedHtml != null ? { __html: colorizedHtml } : undefined
+      }
     />
   );
 }
