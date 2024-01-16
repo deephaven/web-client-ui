@@ -1,4 +1,4 @@
-import React, { useEffect, useState, ReactNode, ReactElement } from 'react';
+import React, { useEffect, useState, ReactNode } from 'react';
 import * as monaco from 'monaco-editor';
 import { useTheme } from '@deephaven/components';
 
