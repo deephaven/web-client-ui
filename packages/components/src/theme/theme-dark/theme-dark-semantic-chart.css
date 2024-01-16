@@ -33,9 +33,9 @@
   --dh-color-plotly-notifier-note-bg: var(--dh-color-gray-500);
 
   /* Geo */
-  --dh-color-plotly-geo-coastline: var(--dh-color-gray-200);
-  --dh-color-plotly-geo-land: var(--dh-color-gray-700);
-  --dh-color-plotly-geo-ocean: var(--dh-color-gray-300);
-  --dh-color-plotly-geo-lake: var(--dh-color-blue-400);
-  --dh-color-plotly-geo-river: var(--dh-color-blue-400);
+  --dh-color-chart-geo-coastline: var(--dh-color-gray-200);
+  --dh-color-chart-geo-land: var(--dh-color-gray-700);
+  --dh-color-chart-geo-ocean: var(--dh-color-gray-300);
+  --dh-color-chart-geo-lake: var(--dh-color-blue-400);
+  --dh-color-chart-geo-river: var(--dh-color-blue-400);
 }

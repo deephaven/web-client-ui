@@ -15,9 +15,9 @@
   ohlc-decreasing: var(--dh-color-chart-ohlc-decrease);
 
   /* Geo */
-  coastline-color: var(-dh-color-plotly-geo-coastline);
-  land-color: var(--dh-color-plotly-geo-land);
-  ocean-color: var(--dh-color-plotly-geo-ocean);
-  lake-color: var(--dh-color-plotly-geo-lake);
-  river-color: var(--dh-color-plotly-geo-river);
+  coastline-color: var(--dh-color-chart-geo-coastline);
+  land-color: var(--dh-color-chart-geo-land);
+  ocean-color: var(--dh-color-chart-geo-ocean);
+  lake-color: var(--dh-color-chart-geo-lake);
+  river-color: var(--dh-color-chart-geo-river);
 }
