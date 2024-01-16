@@ -1872,6 +1872,11 @@ class ChartUtils {
     return axis;
   }
 
+  /**
+   * Creates a plotly layout object based on a given theme.
+   * See https://plotly.com/javascript/reference/layout/
+   * @param theme The theme to use for the layout
+   */
   makeDefaultLayout(theme: ChartTheme): Partial<Layout> {
     const { dh } = this;
 
@@ -1887,21 +1892,6 @@ class ChartUtils {
       lake_color,
       river_color,
       /* eslint-disable camelcase */
-
-      /* Used by `getColorwayFromTheme()` */
-      // colorway,
-
-      /* Used by `makeLayoutAxis()` */
-      // gridcolor,
-      // linecolor,
-      // zerolinecolor,
-
-      // Used by `getPlotlyErrorBars()`
-      // error_band_line_color,
-
-      /* Used by `addStylingToSeriesData()` */
-      // ohlc_increasing,
-      // ohlc_decreasing,
     } = theme;
 
     const layout: Partial<Layout> = {
