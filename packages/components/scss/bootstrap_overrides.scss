@@ -243,7 +243,7 @@ $tooltip-box-shadow: 0 0.1rem 1.5rem 0.1rem var(--dh-color-tooltip-box-shadow);
 $dropdown-bg: $gray-600;
 $dropdown-link-color: $foreground;
 $dropdown-link-hover-color: $foreground;
-$dropdown-link-hover-bg: $primary;
+$dropdown-link-hover-bg: var(--dh-color-item-list-hover-bg);
 $dropdown-divider-bg: $gray-700;
 
 //context menus

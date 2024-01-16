@@ -143,14 +143,11 @@
   --dh-color-focus-ring: var(--dh-color-focus);
 
   /* Highlight */
-  --dh-color-highlight-active: hsla(var(--dh-color-visual-gray-hsl), 0.15);
-  --dh-color-highlight-hover: hsla(var(--dh-color-visual-gray-hsl), 0.15);
+  --dh-color-highlight-active: hsla(var(--dh-color-visual-gray-hsl), 0.2);
+  --dh-color-highlight-hover: hsla(var(--dh-color-visual-gray-hsl), 0.18);
   --dh-color-highlight-invalid: hsla(var(--dh-color-visual-red-hsl), 0.15);
-  --dh-color-highlight-selected: hsla(var(--dh-color-visual-blue-hsl), 0.13);
-  --dh-color-highlight-selected-hover: hsla(
-    var(--dh-color-visual-blue-hsl),
-    0.2
-  );
+  --dh-color-highlight-selected: hsla(var(--dh-color-accent-hsl), 0.25);
+  --dh-color-highlight-selected-hover: hsla(var(--dh-color-accent-hsl), 0.35);
 
   /* Keyboard selected */
   --dh-color-keyboard-selected-bg: hsla(var(--dh-color-accent-hsl), 0.5);

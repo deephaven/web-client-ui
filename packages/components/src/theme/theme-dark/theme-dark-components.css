@@ -121,7 +121,7 @@
   --dh-color-menu-item-fg: var(--dh-color-gray-700);
 
   /* Hr */
-  --dh-color-hr: var(--dh-color-gray-200);
+  --dh-color-hr: var(--dh-color-gray-300);
 
   /* Dialogs */
   --dh-color-dialog-title-fg: var(--dh-color-heading-text);
