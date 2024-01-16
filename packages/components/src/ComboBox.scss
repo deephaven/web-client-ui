@@ -86,12 +86,13 @@ $cb-option-hover-color: $dropdown-link-hover-color;
     }
   }
 
+  .cb-option-btn:focus {
+    outline: none;
+  }
+
   .cb-option-btn:hover:not(.keyboard-active) {
     color: $cb-option-hover-color;
     background-color: $cb-option-hover-bg;
-  }
-  .cb-option-btn:focus {
-    outline: none;
   }
 
   .cb-options:last-child {
