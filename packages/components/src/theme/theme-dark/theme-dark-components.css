@@ -40,13 +40,13 @@
   --dh-color-action-hover-fg: var(--dh-color-text-hover);
   --dh-color-action-hover-border: var(--dh-color-hover-border);
 
-  --dh-color-action-active-bg: var(--dh-color-accent-bg);
-  --dh-color-action-active-fg: var(--dh-color-accent-contrast);
-  --dh-color-action-active-border: var(--dh-color-accent-bg);
+  --dh-color-action-active-bg: var(--dh-color-gray-800);
+  --dh-color-action-active-fg: var(--dh-color-gray-50);
+  --dh-color-action-active-border: var(--dh-color-gray-800);
 
-  --dh-color-action-active-hover-bg: var(--dh-color-accent-hover-bg);
-  --dh-color-action-active-hover-fg: var(--dh-color-accent-contrast);
-  --dh-color-action-active-hover-border: var(--dh-color-accent-hover-bg);
+  --dh-color-action-active-hover-bg: var(--dh-color-gray-900);
+  --dh-color-action-active-hover-fg: var(--dh-color-gray-50);
+  --dh-color-action-active-hover-border: var(--dh-color-gray-900);
 
   --dh-color-action-disabled-bg: transparent;
   --dh-color-action-disabled-fg: var(--dh-color-text-disabled);
@@ -57,7 +57,7 @@
   --dh-color-icon-disabled-fg: var(--dh-color-gray-400);
 
   /* Inputs */
-  --dh-color-input-bg: var(--dh-color-gray-50);
+  --dh-color-input-bg: var(--dh-color-gray-75);
   --dh-color-input-fg: var(--dh-color-text);
   --dh-color-input-border: var(--dh-color-border);
   --dh-color-input-placeholder: var(--dh-color-gray-600);
@@ -121,7 +121,7 @@
   --dh-color-menu-item-fg: var(--dh-color-gray-700);
 
   /* Hr */
-  --dh-color-hr: var(--dh-color-gray-200);
+  --dh-color-hr: var(--dh-color-gray-300);
 
   /* Dialogs */
   --dh-color-dialog-title-fg: var(--dh-color-heading-text);

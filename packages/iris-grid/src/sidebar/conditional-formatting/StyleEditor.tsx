@@ -8,7 +8,7 @@ import React, {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Log from '@deephaven/log';
 import { ColorUtils } from '@deephaven/utils';
-import { dhSort, vsCheck } from '@deephaven/icons';
+import { vsCheck } from '@deephaven/icons';
 import { Button, DropdownMenu } from '@deephaven/components';
 import {
   FormatStyleType,
@@ -152,7 +152,7 @@ function StyleEditor(props: ConditionEditorProps): JSX.Element {
         <label className="mb-0">Style</label>
         <Button
           kind="inline"
-          className="cs-dropdown"
+          className="cs-dropdown custom-select"
           style={{
             color: getColorForStyleConfig({ type: styleType }),
             background: getBackgroundForStyleConfig({ type: styleType }),
@@ -161,9 +161,6 @@ function StyleEditor(props: ConditionEditorProps): JSX.Element {
         >
           {getLabelForStyleType(styleType)}
 
-          <span>
-            <FontAwesomeIcon icon={dhSort} className="cs-caret" />
-          </span>
           <DropdownMenu
             isShown={isShown}
             actions={{ menuElement: renderMenuElement() }}

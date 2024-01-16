@@ -12,6 +12,7 @@ export interface ChartTheme {
   paper_bgcolor: string;
   plot_bgcolor: string;
   title_color: string;
+  legend_color: string;
   colorway: string;
   gridcolor: string;
   linecolor: string;
@@ -50,6 +51,7 @@ export function defaultChartTheme(): Readonly<ChartTheme> {
     paper_bgcolor: chartTheme['paper-bgcolor'],
     plot_bgcolor: chartTheme['plot-bgcolor'],
     title_color: chartTheme['title-color'],
+    legend_color: chartTheme['legend-color'],
     colorway: chartTheme.colorway,
     gridcolor: chartTheme.gridcolor,
     linecolor: chartTheme.linecolor,
