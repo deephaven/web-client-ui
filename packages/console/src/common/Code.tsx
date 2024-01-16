@@ -1,51 +1,39 @@
-import React, { Component, ReactElement, ReactNode } from 'react';
+import React, { cloneElement, useEffect, useRef, useState } from 'react';
 import * as monaco from 'monaco-editor';
+import { useTheme } from '@deephaven/components';
 
 interface CodeProps {
-  children: ReactNode;
+  children: React.ReactNode;
   language: string;
 }
 
-class Code extends Component<CodeProps, Record<string, never>> {
-  constructor(props: CodeProps) {
-    super(props);
+function Code({ children, language }: CodeProps) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const { activeThemes } = useTheme();
 
-    this.container = null;
-  }
+  useEffect(() => {
+    if (activeThemes != null) colorize();
+  }, [activeThemes]);
 
-  componentDidMount(): void {
-    this.colorize();
-  }
-
-  container: HTMLDivElement | null;
-
-  colorize(): void {
-    const { children } = this.props;
-    if (this.container && children != null) {
-      monaco.editor.colorizeElement(this.container, {
-        theme: 'dh-dark',
-      });
+  const colorize = async () => {
+    if (containerRef.current && children != null) {
+      const result = await monaco.editor.colorize(
+        children.toString(),
+        language,
+        {}
+      );
+      containerRef.current.innerHTML = result;
     }
-  }
+  };
 
-  render(): ReactElement {
-    const { children, language } = this.props;
-    return (
-      <div>
-        <div
-          data-lang={language}
-          ref={container => {
-            this.container = container;
-          }}
-          // Add pointerEvents: 'none' has huge benefits on performance with Hit Test testing on large colorized elements.
-          // You can still select the text event with this set
-          style={{ pointerEvents: 'none' }}
-        >
-          {children}
-        </div>
-      </div>
-    );
-  }
+  return (
+    <div
+      ref={containerRef}
+      // Add pointerEvents: 'none' has huge benefits on performance with Hit Test testing on large colorized elements.
+      // You can still select the text event with this set
+      style={{ pointerEvents: 'none' }}
+    ></div>
+  );
 }
 
 export default Code;
