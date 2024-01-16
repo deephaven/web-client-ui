@@ -14,7 +14,7 @@ function Code({ children, language }: CodeProps): JSX.Element {
   useEffect(() => {
     let isCanceled = false;
     async function colorize() {
-      if (children != null) {
+      if (children != null && activeThemes != null) {
         const result = await monaco.editor.colorize(
           children.toString(),
           language,
