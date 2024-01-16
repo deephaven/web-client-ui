@@ -1,9 +1,9 @@
-import React, { cloneElement, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, ReactNode } from 'react';
 import * as monaco from 'monaco-editor';
 import { useTheme } from '@deephaven/components';
 
 interface CodeProps {
-  children: React.ReactNode;
+  children: ReactNode;
   language: string;
 }
 
