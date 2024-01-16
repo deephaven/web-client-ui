@@ -82,7 +82,7 @@ import {
   CustomizableWorkspace,
   DashboardData,
 } from '@deephaven/redux';
-import { bindAllMethods, PromiseUtils } from '@deephaven/utils';
+import { bindAllMethods, EMPTY_ARRAY, PromiseUtils } from '@deephaven/utils';
 import GoldenLayout from '@deephaven/golden-layout';
 import type { ItemConfigType } from '@deephaven/golden-layout';
 import {
@@ -750,34 +750,26 @@ export class AppMainContainer extends Component<
     });
   }
 
-  getCodeStudioLayoutConfig(): ItemConfigType[] {
-    const { workspace } = this.props;
+  getDashboards(): {
+    id: string;
+    layoutConfig: ItemConfigType[];
+  }[] {
+    const { tabs } = this.state;
+    const { allDashboardData, workspace } = this.props;
     const { data: workspaceData } = workspace;
     const { layoutConfig } = workspaceData;
-    return layoutConfig as ItemConfigType[];
     // TODO: Move this to read dashboard data
     // const { dashboardData } = this.props;
     // return (dashboardData.layoutConfig ?? []) as ItemConfigType[];
-  }
-
-  getDashboards(): {
-    id: string;
-    getLayoutConfig: () => Promise<ItemConfigType[]>;
-  }[] {
-    const { tabs } = this.state;
-    const { allDashboardData } = this.props;
     return [
       {
         id: DEFAULT_DASHBOARD_ID,
-        getLayoutConfig: () =>
-          Promise.resolve(this.getCodeStudioLayoutConfig()),
+        layoutConfig: layoutConfig as ItemConfigType[],
       },
       ...tabs.map(tab => ({
         id: tab.key,
-        getLayoutConfig: () =>
-          Promise.resolve(
-            (allDashboardData[tab.key]?.layoutConfig ?? []) as ItemConfigType[]
-          ),
+        layoutConfig: (allDashboardData[tab.key]?.layoutConfig ??
+          EMPTY_ARRAY) as ItemConfigType[],
       })),
     ];
   }

@@ -13,7 +13,7 @@ import { LoadingOverlay } from '@deephaven/components';
 interface AppDashboardsProps {
   dashboards: {
     id: string;
-    getLayoutConfig: () => Promise<ItemConfigType[]>;
+    layoutConfig: ItemConfigType[];
   }[];
   activeDashboard: string;
   onGoldenLayoutChange: (goldenLayout: LayoutManager) => void;
@@ -69,8 +69,9 @@ export function AppDashboards({
         >
           <LazyDashboard
             id={d.id}
+            isActive={d.id === activeDashboard}
             emptyDashboard={<LoadingOverlay isLoading />}
-            getLayoutConfig={d.getLayoutConfig}
+            layoutConfig={d.layoutConfig}
             onGoldenLayoutChange={onGoldenLayoutChange}
             hydrate={hydratePanel}
             plugins={plugins}
