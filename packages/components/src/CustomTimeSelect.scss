@@ -1,15 +1,17 @@
 @import '../scss/custom.scss';
 @import '../scss/util.scss';
 
-$cs-option-btn-color: $dropdown-link-color;
-$cs-option-keyboard-selected-bg: var(--dh-color-keyboard-selected-bg);
-$cs-option-hover-bg: $dropdown-link-hover-bg;
+$cs-option-btn-color: var(--dh-color-item-list-selected-fg);
+$cs-option-selected-bg: var(--dh-color-item-list-selected-bg);
+$cs-option-selected-hover-bg: var(--dh-color-item-list-selected-hover-bg);
+$cs-option-hover-bg: var(--dh-color-item-list-hover-bg);
 $cs-option-hover-color: $dropdown-link-hover-color;
 
 .cs-container {
   flex-wrap: nowrap;
 
   .cs-dropdown .cs-btn {
+    color: var(--dh-color-input-fg);
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -70,7 +72,10 @@ $cs-option-hover-color: $dropdown-link-hover-color;
     display: block;
   }
   .cs-option-btn.keyboard-active {
-    background-color: $cs-option-keyboard-selected-bg;
+    background-color: $cs-option-selected-bg;
+    &:hover {
+      background-color: $cs-option-selected-hover-bg;
+    }
   }
 
   .cs-option-btn:hover {

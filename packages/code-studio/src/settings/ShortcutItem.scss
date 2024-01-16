@@ -34,12 +34,9 @@
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  padding: 0 0.5rem;
-  border-radius: $border-radius;
 
   &.is-invalid {
-    color: $danger;
-    background-color: $toast-error-bg;
+    color: var(--dh-color-form-control-error);
   }
 
   .shortcut-item-message {

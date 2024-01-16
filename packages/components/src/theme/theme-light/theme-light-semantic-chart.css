@@ -3,7 +3,8 @@
 :root {
   --dh-color-chart-bg: var(--dh-color-content-bg);
   --dh-color-chart-plot-bg: var(--dh-color-gray-200);
-  --dh-color-chart-title: var(--dh-color-white);
+  --dh-color-chart-title: var(--dh-color-text);
+  --dh-color-chart-legend-fg: var(--dh-color-text);
 
   /* Colorway */
   --dh-color-chart-colorway: var(--dh-color-visual-cyan)
@@ -41,7 +42,10 @@
   --dh-color-plotly-zoombox-corners-fill: var(--dh-color-white);
   --dh-color-plotly-zoombox-corners-stroke: var(--dh-color-gray-75);
 
-  --dh-color-plotly-modebar-btn-active: var(--dh-color-true-white-hsl, 0.7);
+  --dh-color-plotly-modebar-btn-active: hsla(
+    var(--dh-color-true-black-hsl),
+    0.3
+  );
   --dh-color-plotly-modebar-btn-warning: var(--dh-color-visual-orange);
   --dh-color-plotly-notifier-note-bg: var(--dh-color-gray-500);
 }

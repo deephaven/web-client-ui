@@ -6,7 +6,7 @@ $switch-font-size: 0.6rem;
 $switch-handle-color: $gray-300;
 $switch-handle-hover-color: $gray-100;
 $switch-text-color: $gray-300;
-$switch-text-color-active: $gray-200;
+$switch-text-color-active: var(--dh-color-accent-contrast);
 $switch-handle-padding: 1px;
 $switch-handle-size: $switch-size - ($switch-handle-padding * 2);
 $switch-background-color: $gray-800;

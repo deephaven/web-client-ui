@@ -8,11 +8,13 @@ import {
   ComboBox,
   Flex,
   Grid,
+  Icon,
   Item,
   Picker,
   Radio,
   RadioGroup,
   SpectrumButtonProps,
+  Text,
   TextField,
   View,
 } from '@adobe/react-spectrum';
@@ -25,6 +27,8 @@ import {
   Select,
 } from '@deephaven/components';
 import { EMPTY_FUNCTION } from '@deephaven/utils';
+import { vsPlay } from '@deephaven/icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   SAMPLE_SECTION_E2E_IGNORE,
   SPECTRUM_COMPARISON_SAMPLES_ID,
@@ -68,18 +72,31 @@ export function SpectrumComparison(): JSX.Element {
       <Flex gap={20} wrap>
         <View>
           <h3>Buttons - Filled</h3>
-          <Grid gap={20} columns="repeat(2, 120px)" autoRows="40x">
+          <Grid
+            gap={20}
+            columns="repeat(2, 120px)"
+            autoRows="40x"
+            justifyItems="start"
+            alignItems="start"
+          >
             <label>Bootstrap</label>
             <label>Spectrum</label>
 
             {buttons.map(([level, variant]) => (
               <Fragment key={level}>
-                <BootstrapButtonOld onClick={EMPTY_FUNCTION} kind={level}>
+                <BootstrapButtonOld
+                  onClick={EMPTY_FUNCTION}
+                  kind={level}
+                  icon={vsPlay}
+                >
                   Button
                 </BootstrapButtonOld>
 
                 <Button variant={variant} style="fill">
-                  Button
+                  <Icon>
+                    <FontAwesomeIcon icon={vsPlay} />
+                  </Icon>
+                  <Text>Button</Text>
                 </Button>
               </Fragment>
             ))}

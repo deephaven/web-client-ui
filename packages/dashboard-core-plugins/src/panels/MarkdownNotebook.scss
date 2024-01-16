@@ -14,7 +14,7 @@ $btn-play-color: $success;
     padding: $spacer-1;
     width: 100%;
     flex: 0 0 36px;
-    border-bottom: 2px solid $black;
+    border-bottom: 2px solid var(--dh-color-bg);
     .btn-play-selected-cell {
       color: $btn-play-color;
       min-height: 34px;
@@ -75,7 +75,7 @@ $btn-play-color: $success;
 
     code {
       color: $foreground;
-      background: $gray-700;
+      background: var(--dh-color-gray-200);
       padding: $spacer-2;
       border-radius: $border-radius;
       border: 1px solid $black;
