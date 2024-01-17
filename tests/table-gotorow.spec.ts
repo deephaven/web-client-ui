@@ -23,6 +23,7 @@ async function setColumnAndExpectInputValue({
   setColumnNameTo: string;
   expectInputValueToBe: string;
 }) {
+  console.log({ setInputValueTo, setColumnNameTo, expectInputValueToBe });
   if (setInputValueTo !== undefined) {
     const inputValue = await page.locator('input[aria-label="Value Input"]');
     await expect(inputValue).toHaveCount(1);
@@ -38,6 +39,12 @@ async function setColumnAndExpectInputValue({
   await expect(inputValue).toHaveValue(expectInputValueToBe);
 }
 
+async function waitForLoadingDone(page: Page) {
+  await expect(
+    page.locator('.iris-grid .iris-grid-loading-status')
+  ).toHaveCount(0);
+}
+
 test.describe.configure({ mode: 'serial' });
 
 test.describe('GoToRow change column', () => {
@@ -46,9 +53,7 @@ test.describe('GoToRow change column', () => {
   test.beforeAll(async ({ browser }) => {
     page = await browser.newPage();
     await page.goto('');
-    await expect(
-      page.locator('.iris-grid .iris-grid-loading-status')
-    ).toHaveCount(0);
+    await waitForLoadingDone(page);
 
     // create the table
     const consoleInput = page.locator('.console-input');
@@ -63,7 +68,7 @@ test.describe('GoToRow change column', () => {
 
     // get the grid
     const grid = await page.locator('.iris-grid-panel .iris-grid');
-    await expect(grid).toHaveCount(1);
+    await waitForLoadingDone(page);
     const gridLocation = await grid.boundingBox();
     expect(gridLocation).not.toBeNull();
     if (gridLocation === null) return;
