@@ -58,6 +58,32 @@ class TextUtils {
     }
     return 0;
   }
+
+  /**
+   * Makes a logical normal form where all terms have the same unary prefix
+   *
+   * Examples:
+   *  - A || B || C
+   *  - !=A && !=B && !=C
+   * @param items List of terms (e.g. `['A', 'B', 'C']`)
+   * @param binaryOp Operator to combine terms
+   * @param toStr Gunction to turn list of items to string (also for prefixes and suffixes)
+   * @returns
+   */
+  static makeLogicalNormalForm<T>(
+    items: T[],
+    binaryOp: '||' | '&&',
+    toStr = (item: T) => `${item}`
+  ): string {
+    if (items.length === 0) return '';
+    if (items.length === 1) return `${toStr(items[0])}`;
+
+    return (items as string[]).reduce((prev, curr, i) =>
+      i === 1
+        ? `${toStr(prev as T)} ${binaryOp} ${toStr(curr as T)}`
+        : `${prev} ${binaryOp} ${toStr(curr as T)}`
+    );
+  }
 }
 
 export default TextUtils;

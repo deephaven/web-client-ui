@@ -85,3 +85,27 @@ describe('sort text', () => {
     expect(TextUtils.sort('A', 'A', false)).toBe(0);
   });
 });
+
+describe('generate quick filter normal form', () => {
+  it('works on empty array', () => {
+    expect(TextUtils.makeLogicalNormalForm([], '||')).toBe('');
+  });
+  it('works on array with one item', () => {
+    expect(TextUtils.makeLogicalNormalForm(['A'], '||')).toBe('A');
+    expect(
+      TextUtils.makeLogicalNormalForm(['A'], '||', item => `!=${item}`)
+    ).toBe('!=A');
+  });
+  it('works on arrays', () => {
+    expect(TextUtils.makeLogicalNormalForm(['A', 'B', 'C'], '||')).toBe(
+      'A || B || C'
+    );
+    expect(
+      TextUtils.makeLogicalNormalForm(
+        ['A', 'B', 'C'],
+        '||',
+        item => `!=${item}`
+      )
+    ).toBe('!=A || !=B || !=C');
+  });
+});
