@@ -36,6 +36,17 @@ export function assertNotNull<T>(
   if (value == null) throw new Error(message);
 }
 
+export function assertNotEmpty(
+  value: Map<unknown, unknown> | Array<unknown>,
+  message = 'Size of value is 0'
+): void {
+  if (value instanceof Map) {
+    if (value.size === 0) throw new Error(message);
+  } else if (value.length === 0) {
+    throw new Error(message);
+  }
+}
+
 /**
  * Retrieve a value from a map. If the value is not found and no default value is provided, throw.
  * Use when the value _must_ be present
