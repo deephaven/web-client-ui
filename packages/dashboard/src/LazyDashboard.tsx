@@ -15,7 +15,6 @@ export function LazyDashboard({
   id,
   isActive,
   plugins,
-  layoutConfig,
   ...rest
 }: LazyDashboardProps): JSX.Element {
   const [isLoaded, setIsLoaded] = useState(isActive);
