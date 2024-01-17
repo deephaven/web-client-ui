@@ -18,7 +18,7 @@ export function LazyDashboard({
   layoutConfig,
   ...rest
 }: LazyDashboardProps): JSX.Element {
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(isActive);
   const dispatch = useDispatch();
 
   const handleLayoutConfigChange = useCallback(
@@ -39,7 +39,6 @@ export function LazyDashboard({
   return (
     <Dashboard
       id={id}
-      layoutConfig={layoutConfig}
       onLayoutConfigChange={handleLayoutConfigChange}
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...rest}

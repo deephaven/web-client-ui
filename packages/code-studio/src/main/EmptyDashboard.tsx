@@ -1,9 +1,16 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Button } from '@deephaven/components';
 import { vsArrowUp } from '@deephaven/icons';
 import './EmptyDashboard.scss';
 
-export function EmptyDashboard(): JSX.Element {
+export interface EmptyDashboardProps {
+  onAutoFillClick?: (event: React.MouseEvent) => void;
+}
+
+export function EmptyDashboard({
+  onAutoFillClick = () => undefined,
+}: EmptyDashboardProps): JSX.Element {
   return (
     <div className="empty-dashboard-container">
       <div className="hint-container">
@@ -12,6 +19,9 @@ export function EmptyDashboard(): JSX.Element {
       </div>
       <div className="empty-dashboard">
         <div className="add-panels-hint">Drag Panels Here</div>
+        <Button kind="tertiary" onClick={onAutoFillClick}>
+          Auto fill objects
+        </Button>
       </div>
     </div>
   );

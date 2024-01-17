@@ -491,6 +491,19 @@ export class AppMainContainer extends Component<
     this.setState({ isPanelsMenuShown: false });
   }
 
+  handleAutoFillClick(): void {
+    const { widgets } = this.state;
+
+    log.debug('handleAutoFillClick', widgets);
+
+    const sortedWidgets = widgets.sort((a, b) =>
+      a.title != null && b.title != null ? a.title.localeCompare(b.title) : 0
+    );
+    for (let i = 0; i < sortedWidgets.length; i += 1) {
+      this.openWidget(sortedWidgets[i]);
+    }
+  }
+
   handleExportLayoutClick(): void {
     log.info('handleExportLayoutClick');
 
@@ -678,15 +691,6 @@ export class AppMainContainer extends Component<
     const { connection } = this.props;
     this.emitLayoutEvent(PanelEvent.OPEN, {
       dragEvent,
-      fetch: () => connection.getObject(widget),
-      widget,
-    });
-  }
-
-  openDashboard(widget: VariableDefinition): void {
-    const { connection } = this.props;
-    this.emitLayoutEvent('dashboardOpen', {
-      undefined,
       fetch: () => connection.getObject(widget),
       widget,
     });
@@ -907,6 +911,7 @@ export class AppMainContainer extends Component<
           dashboards={this.getDashboards()}
           activeDashboard={activeTabKey}
           onGoldenLayoutChange={this.handleGoldenLayoutChange}
+          onAutoFillClick={this.handleAutoFillClick}
           plugins={[
             <ConsolePlugin
               key="ConsolePlugin"

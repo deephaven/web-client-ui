@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 import classNames from 'classnames';
 import {
   DashboardUtils,
+  DEFAULT_DASHBOARD_ID,
   DehydratedDashboardPanelProps,
   LazyDashboard,
 } from '@deephaven/dashboard';
@@ -9,6 +10,7 @@ import { useConnection } from '@deephaven/jsapi-components';
 import { VariableDefinition } from '@deephaven/jsapi-types';
 import LayoutManager, { ItemConfigType } from '@deephaven/golden-layout';
 import { LoadingOverlay } from '@deephaven/components';
+import EmptyDashboard from './EmptyDashboard';
 
 interface AppDashboardsProps {
   dashboards: {
@@ -18,6 +20,7 @@ interface AppDashboardsProps {
   activeDashboard: string;
   onGoldenLayoutChange: (goldenLayout: LayoutManager) => void;
   plugins: JSX.Element[];
+  onAutoFillClick: (event: React.MouseEvent) => void;
 }
 
 export function AppDashboards({
@@ -25,6 +28,7 @@ export function AppDashboards({
   activeDashboard,
   onGoldenLayoutChange,
   plugins,
+  onAutoFillClick,
 }: AppDashboardsProps): JSX.Element {
   const connection = useConnection();
 
@@ -70,7 +74,13 @@ export function AppDashboards({
           <LazyDashboard
             id={d.id}
             isActive={d.id === activeDashboard}
-            emptyDashboard={<LoadingOverlay isLoading />}
+            emptyDashboard={
+              d.id === DEFAULT_DASHBOARD_ID ? (
+                <EmptyDashboard onAutoFillClick={onAutoFillClick} />
+              ) : (
+                <LoadingOverlay />
+              )
+            }
             layoutConfig={d.layoutConfig}
             onGoldenLayoutChange={onGoldenLayoutChange}
             hydrate={hydratePanel}
