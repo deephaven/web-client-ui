@@ -29,11 +29,13 @@ import {
 } from '@deephaven/components';
 import { SHORTCUTS as IRIS_GRID_SHORTCUTS } from '@deephaven/iris-grid';
 import {
+  CreateDashboardPayload,
   DashboardUtils,
   DEFAULT_DASHBOARD_ID,
   DehydratedDashboardPanelProps,
   getAllDashboardsData,
   getDashboardData,
+  listenForCreateDashboard,
   PanelEvent,
   setDashboardData as setDashboardDataAction,
   setDashboardPluginData as setDashboardPluginDataAction,
@@ -442,32 +444,30 @@ export class AppMainContainer extends Component<
 
   handleGoldenLayoutChange(goldenLayout: GoldenLayout): void {
     this.goldenLayout = goldenLayout;
-    this.goldenLayout.eventHub.on(
-      'ui.dashboard',
-      ({
-        pluginId,
-        title,
-        data,
-      }: {
-        pluginId: string;
-        title: string;
-        data: unknown;
-      }) => {
-        const newId = shortid();
-        const { setDashboardPluginData } = this.props;
-        setDashboardPluginData(newId, pluginId, data);
-        this.setState(({ tabs }) => ({
-          tabs: [
-            ...tabs,
-            {
-              key: newId,
-              title,
-            },
-          ],
-          activeTabKey: newId,
-        }));
-      }
+    listenForCreateDashboard(
+      this.goldenLayout.eventHub,
+      this.handleCreateDashboard
     );
+  }
+
+  handleCreateDashboard({
+    pluginId,
+    title,
+    data,
+  }: CreateDashboardPayload): void {
+    const newId = shortid();
+    const { setDashboardPluginData } = this.props;
+    setDashboardPluginData(newId, pluginId, data);
+    this.setState(({ tabs }) => ({
+      tabs: [
+        ...tabs,
+        {
+          key: newId,
+          title,
+        },
+      ],
+      activeTabKey: newId,
+    }));
   }
 
   handleWidgetMenuClick(): void {

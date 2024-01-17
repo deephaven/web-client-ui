@@ -4,6 +4,7 @@ export default Dashboard;
 
 export * from './Dashboard';
 export * from './DashboardConstants';
+export * from './DashboardEvents';
 export * from './DashboardPlugin';
 export * from './DashboardLayout';
 export * from './DashboardUtils';
