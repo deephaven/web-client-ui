@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.59.0](https://github.com/deephaven/web-client-ui/compare/v0.58.0...v0.59.0) (2024-01-17)
+
+
+### Bug Fixes
+
+* re-colorize command codeblocks when theme changes ([#1731](https://github.com/deephaven/web-client-ui/issues/1731)) ([b1e42f5](https://github.com/deephaven/web-client-ui/commit/b1e42f58df5c9c478ff47d4823b517e23a94709f))
+
+
+### Features
+
+* theming tweaks ([#1727](https://github.com/deephaven/web-client-ui/issues/1727)) ([f919a7e](https://github.com/deephaven/web-client-ui/commit/f919a7ed333777e83ae6b0e3973991d2cf089359))
+
+
+
+
+
 # [0.58.0](https://github.com/deephaven/web-client-ui/compare/v0.57.1...v0.58.0) (2023-12-22)
 
 

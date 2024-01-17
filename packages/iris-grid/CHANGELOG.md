@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.59.0](https://github.com/deephaven/web-client-ui/compare/v0.58.0...v0.59.0) (2024-01-17)
+
+
+### Bug Fixes
+
+* GoToRow timestamp fails when selected row is out of view ([#1717](https://github.com/deephaven/web-client-ui/issues/1717)) ([9ddc973](https://github.com/deephaven/web-client-ui/commit/9ddc973108a6cc88999003c2d0dc6b48044967cc)), closes [#1561](https://github.com/deephaven/web-client-ui/issues/1561)
+* Interface for IrisGridTableModelTemplate.backgroundColorForCell ([#1699](https://github.com/deephaven/web-client-ui/issues/1699)) ([73e1837](https://github.com/deephaven/web-client-ui/commit/73e1837eb2fdb161779724a8b275f4d8147b95c0)), closes [#1697](https://github.com/deephaven/web-client-ui/issues/1697)
+
+
+### Features
+
+* theming tweaks ([#1727](https://github.com/deephaven/web-client-ui/issues/1727)) ([f919a7e](https://github.com/deephaven/web-client-ui/commit/f919a7ed333777e83ae6b0e3973991d2cf089359))
+
+
+### BREAKING CHANGES
+
+* - Subclasses of IrisGridTableModelTemplate or it's subclasses that use
+backgroundColorForCell may need to update their signature to accept the
+theme if they are calling the superclass
+
+
+
+
+
 # [0.58.0](https://github.com/deephaven/web-client-ui/compare/v0.57.1...v0.58.0) (2023-12-22)
 
 

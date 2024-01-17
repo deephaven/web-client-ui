@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.59.0](https://github.com/deephaven/web-client-ui/compare/v0.58.0...v0.59.0) (2024-01-17)
+
+
+### Features
+
+* Reject promise immediately if var not found ([#1718](https://github.com/deephaven/web-client-ui/issues/1718)) ([43d40bd](https://github.com/deephaven/web-client-ui/commit/43d40bd7962bf60ae692fdd47282d278d54b3f2b)), closes [#1701](https://github.com/deephaven/web-client-ui/issues/1701)
+
+
+
+
+
 # [0.58.0](https://github.com/deephaven/web-client-ui/compare/v0.57.1...v0.58.0) (2023-12-22)
 
 **Note:** Version bump only for package @deephaven/jsapi-utils
