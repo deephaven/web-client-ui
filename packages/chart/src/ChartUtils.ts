@@ -1936,10 +1936,12 @@ class ChartUtils {
       },
       geo: {
         showcoastlines: true,
+        showframe: false,
         showland: true,
         showocean: true,
         showlakes: true,
         showrivers: true,
+        bgcolor: paper_bgcolor,
         coastlinecolor: coastline_color,
         landcolor: land_color,
         oceancolor: ocean_color,
