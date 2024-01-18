@@ -5,6 +5,7 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { Code, Editor } from '@deephaven/console';
 import type * as monaco from 'monaco-editor';
+import 'katex/dist/katex.min.css';
 
 interface MarkdownEditorProps {
   isEditing: boolean;
