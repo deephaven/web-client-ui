@@ -9,34 +9,6 @@ $tab-link-disabled-color: $gray-600;
 
 $nav-space: 4px; // give a gap around some buttons for focus area that are in nav bar
 
-.grid-cursor-copy {
-  cursor:
-    url('../assets/svg/cursor-copy.svg') 8 8,
-    copy;
-}
-
-.grid-cursor-linker {
-  cursor:
-    url('../assets/svg/cursor-linker.svg') 8 8,
-    crosshair;
-}
-
-.grid-cursor-linker-not-allowed {
-  cursor:
-    url('../assets/svg/cursor-linker-not-allowed.svg') 8 8,
-    not-allowed;
-}
-
-.linker-overlay path.link-select {
-  cursor: pointer;
-}
-
-.linker-overlay.danger-delete path.link-select {
-  cursor:
-    url('../assets/svg/cursor-unlinker.svg') 8 8,
-    pointer;
-}
-
 .app-main-top-nav-menus {
   display: flex;
   width: 100%;

@@ -111,6 +111,7 @@ import PendingDataBottomBar from './PendingDataBottomBar';
 import IrisGridCopyHandler, { CopyOperation } from './IrisGridCopyHandler';
 import FilterInputField from './FilterInputField';
 import {
+  CopyCellKeyHandler,
   ClearFilterKeyHandler,
   CopyKeyHandler,
   ReverseKeyHandler,
@@ -489,7 +490,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     columnSelectionValidator: null,
     columnAllowedCursor: null,
     columnNotAllowedCursor: null,
-    copyCursor: null,
+    copyCursor: 'copy',
     name: 'table',
     onlyFetchVisibleColumns: true,
     showSearchBar: false,
@@ -703,6 +704,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     const { dh } = model;
     const keyHandlers: KeyHandler[] = [
+      new CopyCellKeyHandler(this),
       new ReverseKeyHandler(this),
       new ClearFilterKeyHandler(this),
     ];

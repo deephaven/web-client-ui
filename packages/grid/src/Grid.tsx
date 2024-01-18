@@ -1729,18 +1729,23 @@ class Grid extends PureComponent<GridProps, GridState> {
     event: GridKeyboardEvent
   ): void {
     const keyHandlers = this.getKeyHandlers();
+    let cursor = null;
     for (let i = 0; i < keyHandlers.length; i += 1) {
       const keyHandler = keyHandlers[i];
       const result =
         keyHandler[functionName] != null &&
         keyHandler[functionName](event, this);
       if (result !== false) {
+        if (keyHandler.cursor != null) {
+          ({ cursor } = keyHandler);
+        }
         const options = result as EventHandlerResultOptions;
         if (options?.stopPropagation ?? true) event.stopPropagation();
         if (options?.preventDefault ?? true) event.preventDefault();
         break;
       }
     }
+    this.setState({ cursor });
   }
 
   handleKeyDown(event: GridKeyboardEvent): void {
@@ -2236,6 +2241,8 @@ class Grid extends PureComponent<GridProps, GridState> {
   render(): ReactNode {
     const { children } = this.props;
     const { cursor } = this.state;
+
+    console.log(cursor);
 
     return (
       <div className="grid-wrapper" ref={this.canvasWrapper}>

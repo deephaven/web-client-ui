@@ -57,8 +57,7 @@
   "files": [
     "dist",
     "scss",
-    "css",
-    "logos"
+    "css"
   ],
   "sideEffects": [
     "*.css"

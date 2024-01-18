@@ -1,6 +1,6 @@
 :root {
-  --dh-logo-dark-img: url('../../logos/community-wordmark-dark.svg');
-  --dh-logo-light-img: url('../../logos/community-wordmark-light.svg');
+  --dh-logo-dark-img: url('../../assets/logos/community-wordmark-dark.svg');
+  --dh-logo-light-img: url('../../assets/logos/community-wordmark-light.svg');
 }
 
 .dh-logo {
