@@ -108,12 +108,19 @@ export function SamplesMenu(): JSX.Element {
         ? null
         : document.querySelector(window.location.hash);
 
-    if (el) {
-      // Give everything a chance to render before scrolling
-      setTimeout(() => {
+    // Give everything a chance to render before scrolling
+    setTimeout(() => {
+      if (el) {
         el.scrollIntoView();
-      }, 0);
-    }
+      } else {
+        // NavTabList sample causes auto scrolling to middle of page, so we
+        // have to explicilty scroll back to the top of the page
+        window.scrollTo({
+          top: 0,
+          behavior: 'auto',
+        });
+      }
+    }, 0);
   }, []);
 
   const onAction = useCallback((key: Key) => {
