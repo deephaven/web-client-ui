@@ -2242,8 +2242,6 @@ class Grid extends PureComponent<GridProps, GridState> {
     const { children } = this.props;
     const { cursor } = this.state;
 
-    console.log(cursor);
-
     return (
       <div className="grid-wrapper" ref={this.canvasWrapper}>
         <canvas
