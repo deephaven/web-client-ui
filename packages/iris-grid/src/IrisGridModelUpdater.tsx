@@ -15,6 +15,10 @@ import IrisGridUtils from './IrisGridUtils';
 import { ColumnName, UITotalsTableConfig, PendingDataMap } from './CommonTypes';
 import IrisGridModel from './IrisGridModel';
 import type ColumnHeaderGroup from './ColumnHeaderGroup';
+import {
+  PartitionConfig,
+  isPartitionedGridModel,
+} from './PartitionedGridModel';
 
 const COLUMN_BUFFER_PAGES = 1;
 
@@ -41,6 +45,7 @@ interface IrisGridModelUpdaterProps {
   selectDistinctColumns?: readonly ColumnName[];
   pendingRowCount?: number;
   pendingDataMap?: PendingDataMap;
+  partitionConfig?: PartitionConfig;
 }
 
 /**
@@ -70,6 +75,7 @@ const IrisGridModelUpdater = React.memo(
     frozenColumns,
     formatColumns,
     columnHeaderGroups,
+    partitionConfig,
   }: IrisGridModelUpdaterProps) => {
     const columns = useMemo(
       () =>
@@ -185,6 +191,14 @@ const IrisGridModelUpdater = React.memo(
         model.columnHeaderGroups = columnHeaderGroups;
       },
       [model, columnHeaderGroups]
+    );
+    useEffect(
+      function updatePartitionConfig() {
+        if (partitionConfig && isPartitionedGridModel(model)) {
+          model.partitionConfig = partitionConfig;
+        }
+      },
+      [model, partitionConfig]
     );
 
     return null;

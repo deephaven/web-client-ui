@@ -19,6 +19,7 @@ import type {
   Sort,
   Table,
   TreeTable,
+  PartitionedTable,
   ValueTypeUnion,
 } from '@deephaven/jsapi-types';
 import {
@@ -29,6 +30,7 @@ import {
   MoveOperation,
 } from '@deephaven/grid';
 import IrisGridTableModel from './IrisGridTableModel';
+import IrisGridPartitionedTableModel from './IrisGridPartitionedTableModel';
 import IrisGridTreeTableModel from './IrisGridTreeTableModel';
 import IrisGridModel from './IrisGridModel';
 import {
@@ -40,17 +42,25 @@ import {
 } from './CommonTypes';
 import { isIrisGridTableModelTemplate } from './IrisGridTableModelTemplate';
 import type ColumnHeaderGroup from './ColumnHeaderGroup';
+import {
+  PartitionConfig,
+  PartitionedGridModel,
+  isPartitionedGridModelProvider,
+} from './PartitionedGridModel';
 
 const log = Log.module('IrisGridProxyModel');
 
 function makeModel(
   dh: DhType,
-  table: Table | TreeTable,
+  table: Table | TreeTable | PartitionedTable,
   formatter?: Formatter,
   inputTable?: InputTable | null
 ): IrisGridModel {
   if (TableUtils.isTreeTable(table)) {
     return new IrisGridTreeTableModel(dh, table, formatter);
+  }
+  if (TableUtils.isPartitionedTable(table)) {
+    return new IrisGridPartitionedTableModel(dh, table, formatter);
   }
   return new IrisGridTableModel(dh, table, formatter, inputTable);
 }
@@ -59,7 +69,7 @@ function makeModel(
  * Model which proxies calls to other IrisGridModels.
  * This allows for operations that generate new tables, like rollups.
  */
-class IrisGridProxyModel extends IrisGridModel {
+class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
   /**
    * @param dh JSAPI instance
    * @param table Iris data table to be used in the model
@@ -77,11 +87,19 @@ class IrisGridProxyModel extends IrisGridModel {
 
   rollup: RollupConfig | null;
 
+  partition: PartitionConfig | null;
+
   selectDistinct: ColumnName[];
+
+  currentViewport?: {
+    top: number;
+    bottom: number;
+    columns?: Column[];
+  };
 
   constructor(
     dh: DhType,
-    table: Table | TreeTable,
+    table: Table | TreeTable | PartitionedTable,
     formatter = new Formatter(dh),
     inputTable: InputTable | null = null
   ) {
@@ -95,6 +113,7 @@ class IrisGridProxyModel extends IrisGridModel {
     this.model = model;
     this.modelPromise = null;
     this.rollup = null;
+    this.partition = null;
     this.selectDistinct = [];
   }
 
@@ -119,6 +138,7 @@ class IrisGridProxyModel extends IrisGridModel {
     log.debug('setModel', model);
 
     const oldModel = this.model;
+    const { columns: oldColumns } = oldModel;
 
     if (oldModel !== this.originalModel) {
       oldModel.close();
@@ -130,11 +150,17 @@ class IrisGridProxyModel extends IrisGridModel {
       this.addListeners(model);
     }
 
-    this.dispatchEvent(
-      new EventShimCustomEvent(IrisGridModel.EVENT.COLUMNS_CHANGED, {
-        detail: model.columns,
-      })
-    );
+    if (oldColumns !== model.columns) {
+      this.dispatchEvent(
+        new EventShimCustomEvent(IrisGridModel.EVENT.COLUMNS_CHANGED, {
+          detail: model.columns,
+        })
+      );
+    } else if (this.currentViewport != null) {
+      // If the columns haven't changed, the current viewport should still valid, and needs to be set on the new model
+      const { top, bottom, columns } = this.currentViewport;
+      model.setViewport(top, bottom, columns);
+    }
 
     if (isIrisGridTableModelTemplate(model)) {
       this.dispatchEvent(
@@ -452,6 +478,13 @@ class IrisGridProxyModel extends IrisGridModel {
     return this.model.groupedColumns;
   }
 
+  get partitionColumns(): readonly Column[] {
+    if (!isPartitionedGridModelProvider(this.originalModel)) {
+      return [];
+    }
+    return this.originalModel.partitionColumns;
+  }
+
   sourceForCell: IrisGridModel['sourceForCell'] = (...args) =>
     this.model.sourceForCell(...args);
 
@@ -480,6 +513,67 @@ class IrisGridProxyModel extends IrisGridModel {
 
   set filter(filter: readonly FilterCondition[]) {
     this.model.filter = filter;
+  }
+
+  get partitionConfig(): PartitionConfig | null {
+    if (
+      !isPartitionedGridModelProvider(this.originalModel) ||
+      !this.originalModel.isPartitionRequired
+    ) {
+      return null;
+    }
+    return this.partition;
+  }
+
+  set partitionConfig(partitionConfig: PartitionConfig | null) {
+    if (!this.isPartitionRequired) {
+      throw new Error('Partitions are not available');
+    }
+    log.debug('set partitionConfig', partitionConfig);
+    this.partition = partitionConfig;
+
+    let modelPromise = Promise.resolve(this.originalModel);
+    if (
+      partitionConfig != null &&
+      isPartitionedGridModelProvider(this.originalModel)
+    ) {
+      if (partitionConfig.mode === 'keys') {
+        modelPromise = this.originalModel
+          .partitionKeysTable()
+          .then(table => makeModel(this.dh, table, this.formatter));
+      } else if (partitionConfig.mode === 'merged') {
+        modelPromise = this.originalModel
+          .partitionMergedTable()
+          .then(table => makeModel(this.dh, table, this.formatter));
+      } else {
+        modelPromise = this.originalModel
+          .partitionTable(partitionConfig.partitions)
+          .then(table => makeModel(this.dh, table, this.formatter));
+      }
+    }
+
+    this.setNextModel(modelPromise);
+  }
+
+  partitionKeysTable(): Promise<Table> {
+    if (!isPartitionedGridModelProvider(this.originalModel)) {
+      throw new Error('Partitions are not available');
+    }
+    return this.originalModel.partitionKeysTable();
+  }
+
+  partitionMergedTable(): Promise<Table> {
+    if (!isPartitionedGridModelProvider(this.originalModel)) {
+      throw new Error('Partitions are not available');
+    }
+    return this.originalModel.partitionMergedTable();
+  }
+
+  partitionTable(partitions: unknown[]): Promise<Table> {
+    if (!isPartitionedGridModelProvider(this.originalModel)) {
+      throw new Error('Partitions are not available');
+    }
+    return this.originalModel.partitionTable(partitions);
   }
 
   get formatter(): Formatter {
@@ -604,7 +698,13 @@ class IrisGridProxyModel extends IrisGridModel {
   }
 
   get isFilterRequired(): boolean {
-    return this.model.isFilterRequired;
+    return this.originalModel.isFilterRequired;
+  }
+
+  get isPartitionRequired(): boolean {
+    return isPartitionedGridModelProvider(this.originalModel)
+      ? this.originalModel.isPartitionRequired
+      : false;
   }
 
   get isEditable(): boolean {
@@ -623,8 +723,10 @@ class IrisGridProxyModel extends IrisGridModel {
   isFilterable: IrisGridTableModel['isFilterable'] = (...args) =>
     this.model.isFilterable(...args);
 
-  setViewport = (top: number, bottom: number, columns: Column[]): void =>
+  setViewport = (top: number, bottom: number, columns?: Column[]): void => {
+    this.currentViewport = { top, bottom, columns };
     this.model.setViewport(top, bottom, columns);
+  };
 
   snapshot: IrisGridModel['snapshot'] = (...args) =>
     this.model.snapshot(...args);

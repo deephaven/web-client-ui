@@ -356,6 +356,7 @@ abstract class IrisGridModel<
   }
 
   /**
+   * @deprecated Replaced with isPartitionRequired()
    * @returns True if this model requires a filter to be set
    */
   get isFilterRequired(): boolean {
@@ -507,12 +508,12 @@ abstract class IrisGridModel<
    * Set the indices of the viewport
    * @param top Top of viewport
    * @param bottom Bottom of viewport
-   * @param columns The columns in the viewport. `null` for all columns
+   * @param columns The columns in the viewport. `undefined` for all columns
    */
   abstract setViewport(
     top: VisibleIndex,
     bottom: VisibleIndex,
-    columns: Column[] | null
+    columns?: Column[]
   ): void;
 
   /**
@@ -540,7 +541,7 @@ abstract class IrisGridModel<
    * @param column The columns to get the distinct values for
    * @returns A table partitioned on the specified columns in the order given in
    */
-  abstract valuesTable(columns: Column | Column[]): Promise<Table>;
+  abstract valuesTable(columns: Column | readonly Column[]): Promise<Table>;
 
   /**
    * Close this model. It can no longer be used after being closed
@@ -579,9 +580,9 @@ abstract class IrisGridModel<
 
   abstract get columnHeaderGroups(): readonly ColumnHeaderGroup[];
 
-  abstract get columnHeaderGroupMap(): ReadonlyMap<string, ColumnHeaderGroup>;
-
   abstract set columnHeaderGroups(groups: readonly ColumnHeaderGroup[]);
+
+  abstract get columnHeaderGroupMap(): ReadonlyMap<string, ColumnHeaderGroup>;
 
   abstract getColumnHeaderParentGroup(
     modelIndex: ModelIndex,

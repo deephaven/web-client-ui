@@ -3,6 +3,7 @@ export * from './HookTestUtils';
 export { default as TableInput } from './TableInput';
 export * from './RefreshTokenBootstrap';
 export * from './RefreshTokenUtils';
+export * from './TableDropdown';
 export { default as useBroadcastChannel } from './useBroadcastChannel';
 export { default as useBroadcastLoginListener } from './useBroadcastLoginListener';
 export * from './useCheckIfExistsValue';

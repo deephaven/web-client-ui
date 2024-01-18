@@ -1,316 +1,350 @@
 import React, { Component } from 'react';
+import memoizee from 'memoizee';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { DropdownMenu, Tooltip } from '@deephaven/components';
-import { vsTriangleDown, vsClose } from '@deephaven/icons';
+import { Button } from '@deephaven/components';
+import { vsChevronRight, vsMerge, vsKey } from '@deephaven/icons';
 import Log from '@deephaven/log';
-import debounce from 'lodash.debounce';
-import type { Column, dh as DhType, Table } from '@deephaven/jsapi-types';
+import { TableDropdown } from '@deephaven/jsapi-components';
+import type { FilterCondition, Table } from '@deephaven/jsapi-types';
 import { TableUtils } from '@deephaven/jsapi-utils';
-import PartitionSelectorSearch from './PartitionSelectorSearch';
+import { assertNotNull, Pending, PromiseUtils } from '@deephaven/utils';
 import './IrisGridPartitionSelector.scss';
-import IrisGridUtils from './IrisGridUtils';
+import { PartitionConfig, PartitionedGridModel } from './PartitionedGridModel';
 
 const log = Log.module('IrisGridPartitionSelector');
 
-const PARTITION_CHANGE_DEBOUNCE_MS = 250;
-interface IrisGridPartitionSelectorProps<T> {
-  dh: DhType;
-  getFormattedString: (value: T, type: string, name: string) => string;
-  table: Table;
-  columns: Column[];
-  partitions: (string | null)[];
-  onFetchAll: () => void;
-  onDone: (event?: React.MouseEvent<HTMLButtonElement>) => void;
-  onChange: (partitions: (string | null)[]) => void;
+interface IrisGridPartitionSelectorProps {
+  model: PartitionedGridModel;
+  partitionConfig: PartitionConfig;
+  onChange: (partitionConfig: PartitionConfig) => void;
 }
 interface IrisGridPartitionSelectorState {
-  partitions: (string | null)[];
+  isLoading: boolean;
+
+  keysTable: Table | null;
+
   partitionTables: Table[] | null;
+
+  /** The filters to apply to each partition table */
+  partitionFilters: FilterCondition[][] | null;
 }
-class IrisGridPartitionSelector<T> extends Component<
-  IrisGridPartitionSelectorProps<T>,
+class IrisGridPartitionSelector extends Component<
+  IrisGridPartitionSelectorProps,
   IrisGridPartitionSelectorState
 > {
-  static defaultProps = {
-    onChange: (): void => undefined,
-    onFetchAll: (): void => undefined,
-    onDone: (): void => undefined,
-    partitions: [],
-  };
-
-  constructor(props: IrisGridPartitionSelectorProps<T>) {
+  constructor(props: IrisGridPartitionSelectorProps) {
     super(props);
 
-    this.handleCloseClick = this.handleCloseClick.bind(this);
-    this.handleIgnoreClick = this.handleIgnoreClick.bind(this);
-    this.handlePartitionChange = this.handlePartitionChange.bind(this);
+    this.handleKeyTableClick = this.handleKeyTableClick.bind(this);
+    this.handleMergeClick = this.handleMergeClick.bind(this);
     this.handlePartitionSelect = this.handlePartitionSelect.bind(this);
-    this.handlePartitionListResized =
-      this.handlePartitionListResized.bind(this);
-    this.handleSearchOpened = this.handleSearchOpened.bind(this);
-    this.handleSearchClosed = this.handleSearchClosed.bind(this);
 
-    const { dh, columns, partitions } = props;
-    this.tableUtils = new TableUtils(dh);
-    this.searchMenu = columns.map(() => null);
-    this.selectorSearch = columns.map(() => null);
+    const { model } = props;
+    this.tableUtils = new TableUtils(model.dh);
+    this.pending = new Pending();
 
     this.state = {
-      partitions,
+      // We start be loading the partition tables, so we should be in a loading state
+      isLoading: true,
+
+      keysTable: null,
+      partitionFilters: null,
       partitionTables: null,
     };
   }
 
   async componentDidMount(): Promise<void> {
-    const { columns, table } = this.props;
-    const { partitions } = this.state;
+    const { model } = this.props;
 
-    const partitionTables = await Promise.all(
-      columns.map(async (_, i) => table.selectDistinct(columns.slice(0, i + 1)))
-    );
-    this.updatePartitionFilters(partitions, partitionTables);
+    try {
+      const keysTable = await this.pending.add(
+        model.partitionKeysTable().then(keyTable => {
+          const sorts = model.partitionColumns.map(column =>
+            column.sort().desc()
+          );
+          keyTable.applySort(sorts);
+          return keyTable;
+        }),
+        t => t.close()
+      );
+
+      const partitionTables = await Promise.all(
+        model.partitionColumns.map(async (_, i) =>
+          this.pending.add(
+            keysTable.selectDistinct(model.partitionColumns.slice(0, i + 1)),
+            t => t.close()
+          )
+        )
+      );
+
+      const partitionFilters = this.getPartitionFilters(partitionTables);
+      this.setState({
+        isLoading: false,
+        keysTable,
+        partitionFilters,
+        partitionTables,
+      });
+    } catch (e) {
+      if (!PromiseUtils.isCanceled(e)) {
+        // Just re-throw the error if it's not a cancel
+        throw e;
+      }
+    }
+  }
+
+  componentDidUpdate(prevProps: IrisGridPartitionSelectorProps): void {
+    const { partitionConfig: prevConfig } = prevProps;
+
+    const { partitionConfig } = this.props;
+
+    if (prevConfig !== partitionConfig) {
+      this.updatePartitionFilters();
+    }
   }
 
   componentWillUnmount(): void {
-    const { partitionTables } = this.state;
+    this.pending.cancel();
+
+    const { keysTable, partitionTables } = this.state;
+    keysTable?.close();
     partitionTables?.forEach(table => table.close());
-    this.debounceUpdate.cancel();
   }
+
+  pending: Pending;
 
   tableUtils: TableUtils;
 
-  searchMenu: (DropdownMenu | null)[];
+  handleKeyTableClick(): void {
+    log.debug2('handleKeyTableClick');
 
-  selectorSearch: (PartitionSelectorSearch<T> | null)[];
-
-  handleCloseClick(): void {
-    log.debug2('handleCloseClick');
-
-    this.sendDone();
+    const { partitionConfig } = this.props;
+    const newPartitionConfig = { ...partitionConfig };
+    // Toggle between Keys and Partition mode
+    newPartitionConfig.mode =
+      partitionConfig.mode === 'keys' ? 'partition' : 'keys';
+    this.sendUpdate(newPartitionConfig);
   }
 
-  handleIgnoreClick(): void {
-    log.debug2('handleIgnoreClick');
+  handleMergeClick(): void {
+    log.debug2('handleMergeClick');
 
-    this.sendFetchAll();
+    const { partitionConfig } = this.props;
+    const newPartitionConfig = { ...partitionConfig };
+    // Toggle between Merged and Partition mode
+    newPartitionConfig.mode =
+      partitionConfig.mode === 'merged' ? 'partition' : 'merged';
+    this.sendUpdate(newPartitionConfig);
   }
 
-  handlePartitionChange(
+  /**
+   * Handles when a partition dropdown selection is changed. Will send an update with the new partition config
+   * @param index Index of the partition column that was changed
+   * @param selectedValue Selected value of the partition column
+   */
+  async handlePartitionSelect(
     index: number,
-    event: React.ChangeEvent<HTMLInputElement>
-  ): void {
-    log.debug2('handlePartitionChange');
+    selectedValue: unknown
+  ): Promise<void> {
+    const { model, partitionConfig: prevConfig } = this.props;
 
-    const { columns } = this.props;
-    const { partitions, partitionTables } = this.state;
-    const { value: partition } = event.target;
+    log.debug('handlePartitionSelect', index, selectedValue, prevConfig);
 
-    const newPartitions = [...partitions];
-    newPartitions[index] =
-      TableUtils.isCharType(columns[index].type) && partition.length > 0
-        ? partition.charCodeAt(0).toString()
-        : partition;
-    if (partitionTables) {
-      this.updatePartitionFilters(newPartitions, partitionTables);
+    const newPartitions = [...prevConfig.partitions];
+    newPartitions[index] = selectedValue;
+
+    // If it's the last partition changed, we know it's already a valid value, just emit it
+    if (index === model.partitionColumns.length - 1) {
+      this.sendUpdate({ partitions: newPartitions, mode: 'partition' });
+      return;
     }
 
-    this.setState({
-      partitions: newPartitions,
-    });
+    const { keysTable } = this.state;
+    // Otherwise, we need to get the value from a filtered key table
+    assertNotNull(keysTable);
+    try {
+      this.setState({ isLoading: true });
+      const t = await this.pending.add(keysTable.copy(), tCopy =>
+        tCopy.close()
+      );
 
-    this.debounceUpdate();
-  }
-
-  handlePartitionSelect(index: number, partition: string): void {
-    const { partitions, partitionTables } = this.state;
-    const selectedMenu = this.searchMenu[index];
-    if (selectedMenu) {
-      selectedMenu.closeMenu();
-    }
-
-    const newPartitions = [...partitions];
-    newPartitions[index] = partition;
-    if (partitionTables) {
-      this.updatePartitionFilters(newPartitions, partitionTables);
-    }
-
-    this.setState({ partitions: newPartitions }, () => {
-      this.sendUpdate();
-    });
-  }
-
-  handlePartitionListResized(index: number): void {
-    const selectedMenu = this.searchMenu[index];
-    if (selectedMenu) {
-      selectedMenu.scheduleUpdate();
-    }
-  }
-
-  handleSearchClosed(): void {
-    // Reset the table filter so it's ready next time user opens search
-    const { table } = this.props;
-    table.applyFilter([]);
-  }
-
-  handleSearchOpened(index: number): void {
-    const selectedSearch = this.selectorSearch[index];
-    if (selectedSearch) {
-      selectedSearch.focus();
+      // Apply our partition filters, and just get the first value
+      const partitionFilters = newPartitions
+        .slice(0, index + 1)
+        .map((partition, i) => {
+          const partitionColumn = t.columns[i];
+          return partitionColumn
+            .filter()
+            .eq(
+              this.tableUtils.makeFilterRawValue(
+                partitionColumn.type,
+                partition
+              )
+            );
+        });
+      t.applyFilter(partitionFilters);
+      t.setViewport(0, 0, t.columns);
+      const data = await this.pending.add(t.getViewportData());
+      const newConfig: PartitionConfig = {
+        partitions: t.columns.map(column => data.rows[0].get(column)),
+        mode: 'partition',
+      };
+      t.close();
+      this.sendUpdate(newConfig);
+    } catch (e) {
+      if (!PromiseUtils.isCanceled(e)) {
+        log.error('Unable to get partition tables', e);
+      }
+    } finally {
+      this.setState({ isLoading: false });
     }
   }
 
-  debounceUpdate = debounce((): void => {
-    this.sendUpdate();
-  }, PARTITION_CHANGE_DEBOUNCE_MS);
-
-  sendDone(): void {
-    this.debounceUpdate.flush();
-
-    const { onDone } = this.props;
-    onDone();
-  }
-
-  sendUpdate(): void {
-    log.debug2('sendUpdate');
+  sendUpdate(partitionConfig: PartitionConfig): void {
+    log.debug2('sendUpdate', partitionConfig);
 
     const { onChange } = this.props;
-    const { partitions } = this.state;
-    onChange(partitions);
+    onChange(partitionConfig);
   }
 
-  sendFetchAll(): void {
-    log.debug2('sendFetchAll');
+  /**
+   * Calls model.displayString with a special character case
+   * @param index The index of the partition column to get the display value for
+   * @param value The partition value to get the display value for
+   */
+  getDisplayValue(index: number, value: unknown): string {
+    const { model } = this.props;
 
-    this.debounceUpdate.cancel();
-
-    const { onFetchAll } = this.props;
-    onFetchAll();
-  }
-
-  getDisplayValue(column: Column, index: number): string {
-    const { partitions } = this.state;
-    const partition = partitions[index];
-    if (partition == null) {
+    if (value == null || value === '') {
       return '';
     }
-    if (TableUtils.isCharType(column.type) && partition.toString().length > 0) {
-      return String.fromCharCode(parseInt(partition, 10));
+    const column = model.partitionColumns[index];
+    if (TableUtils.isCharType(column.type) && value.toString().length > 0) {
+      return String.fromCharCode(parseInt(value.toString(), 10));
     }
-    return IrisGridUtils.convertValueToText(partition, column.type);
+    return model.displayString(value, column.type, column.name);
   }
 
-  async updatePartitionFilters(
-    partitions: (string | null)[],
-    partitionTables: Table[]
-  ): Promise<void> {
-    const { columns, getFormattedString } = this.props;
+  /**
+   * Update the filters on the partition dropdown tables
+   */
+  updatePartitionFilters(): void {
+    const { partitionTables } = this.state;
+    assertNotNull(partitionTables);
 
-    const partitionFilters = [];
-    for (let i = 0; i < columns.length - 1; i += 1) {
-      const partition = partitions[i];
-      const partitionColumn = columns[i];
+    const { partitionConfig } = this.props;
+    const { mode } = partitionConfig;
+    log.debug('updatePartitionFilters', partitionConfig);
+    if (mode !== 'partition') {
+      // We only need to update the filters if the mode is `partitions`
+      // In the other modes, we disable the dropdowns anyway
+      return;
+    }
 
-      partitionTables[i]?.applyFilter(partitionFilters);
-      if (
-        partition !== null &&
-        !(TableUtils.isCharType(partitionColumn.type) && partition === '')
-      ) {
-        const partitionText = TableUtils.isCharType(partitionColumn.type)
-          ? getFormattedString(
-              partition as T,
-              partitionColumn.type,
-              partitionColumn.name
-            )
-          : partition;
-        const partitionFilter = this.tableUtils.makeQuickFilterFromComponent(
-          partitionColumn,
-          partitionText
-        );
-        if (partitionFilter !== null) {
-          partitionFilters.push(partitionFilter);
-        }
+    const partitionFilters = this.getPartitionFilters(partitionTables);
+    this.setState({ partitionFilters });
+  }
+
+  getPartitionFilters(partitionTables: Table[]): FilterCondition[][] {
+    const { model, partitionConfig } = this.props;
+    const { partitions } = partitionConfig;
+    log.debug('getPartitionFilters', partitionConfig);
+
+    if (partitions.length !== partitionTables.length) {
+      throw new Error(
+        `Invalid partition config set. Expected ${partitionTables.length} partitions, but got ${partitions.length}`
+      );
+    }
+
+    // The filters are applied in order, so we need to build up the filters for each partition
+    const partitionFilters: FilterCondition[][] = [];
+    for (let i = 0; i < partitions.length; i += 1) {
+      if (i === 0) {
+        // There's no reason to ever filter the first table
+        partitionFilters.push([]);
+      } else {
+        const previousFilter = partitionFilters[i - 1];
+        const previousPartition = partitions[i - 1];
+        const previousColumn = model.partitionColumns[i - 1];
+        const partitionFilter = [
+          ...previousFilter,
+          previousColumn
+            .filter()
+            .eq(
+              this.tableUtils.makeFilterRawValue(
+                previousColumn.type,
+                previousPartition
+              )
+            ),
+        ];
+        partitionFilters.push(partitionFilter);
       }
     }
-    partitionTables[partitionTables.length - 1]?.applyFilter(partitionFilters);
-    this.setState({ partitionTables });
+    return partitionFilters;
   }
 
-  render(): JSX.Element {
-    const { columns, dh, getFormattedString, onDone } = this.props;
-    const { partitionTables } = this.state;
+  getCachedChangeCallback = memoizee(
+    (index: number) => (value: unknown) =>
+      this.handlePartitionSelect(index, value)
+  );
 
-    const partitionSelectorSearch = columns.map(
-      (column, index) =>
-        partitionTables && (
-          <PartitionSelectorSearch
-            dh={dh}
-            key={`search-${column.name}`}
-            column={column}
-            getFormattedString={getFormattedString}
-            table={partitionTables[index]}
-            onSelect={(partition: string) =>
-              this.handlePartitionSelect(index, partition)
-            }
-            onListResized={() => this.handlePartitionListResized(index)}
-            ref={selectorSearch => {
-              this.selectorSearch[index] = selectorSearch;
-            }}
-          />
-        )
-    );
-    const partitionSelectors = columns.map((column, index) => (
-      <>
-        <div className="status-message">
-          <span>{column.name}: </span>
-        </div>
-        <div className="input-group">
-          <input
-            type="text"
-            value={this.getDisplayValue(column, index)}
-            onChange={e => {
-              this.handlePartitionChange(index, e);
-            }}
-            className="form-control input-partition"
-          />
-          <div className="input-group-append">
-            <button type="button" className="btn btn-outline-primary">
-              <FontAwesomeIcon icon={vsTriangleDown} />
-              <Tooltip>Partitions</Tooltip>
-              <DropdownMenu
-                ref={searchMenu => {
-                  this.searchMenu[index] = searchMenu;
-                }}
-                actions={[
-                  { menuElement: partitionSelectorSearch[index] ?? undefined },
-                ]}
-                onMenuOpened={() => {
-                  this.handleSearchOpened(index);
-                }}
-                onMenuClosed={this.handleSearchClosed}
-              />
-            </button>
-          </div>
-        </div>
-        <div className="iris-grid-partition-selector-spacer" />
-      </>
+  getCachedFormatValueCallback = memoizee(
+    (index: number) => (value: unknown) => this.getDisplayValue(index, value)
+  );
+
+  render(): JSX.Element {
+    const { model, partitionConfig } = this.props;
+    const { isLoading, partitionFilters, partitionTables } = this.state;
+
+    const { mode, partitions } = partitionConfig;
+
+    const partitionSelectors = model.partitionColumns.map((column, index) => (
+      <div key={`selector-${column.name}`} className="column-selector">
+        <div className="column-name">{column.name}</div>
+        <TableDropdown
+          className="custom-select-sm"
+          table={partitionTables?.[index]}
+          column={partitionTables?.[index]?.columns[index]}
+          filter={partitionFilters?.[index]}
+          onChange={this.getCachedChangeCallback(index)}
+          selectedValue={mode === 'partition' ? partitions[index] : undefined}
+          disabled={
+            (index > 0 && partitionConfig.mode !== 'partition') || isLoading
+          }
+          formatValue={this.getCachedFormatValueCallback(index)}
+        />
+        {model.partitionColumns.length - 1 === index || (
+          <FontAwesomeIcon icon={vsChevronRight} />
+        )}
+      </div>
     ));
     return (
       <div className="iris-grid-partition-selector">
+        <div className="table-name">Partitioned Table</div>
+        <div className="partition-button-group">
+          <Button
+            className="btn-sm"
+            onClick={this.handleKeyTableClick}
+            kind="inline"
+            tooltip="View keys as table"
+            icon={vsKey}
+            active={partitionConfig.mode === 'keys'}
+            disabled={isLoading}
+          >
+            Keys
+          </Button>
+          <Button
+            className="btn-sm"
+            onClick={this.handleMergeClick}
+            kind="inline"
+            tooltip="View all partitions as one merged table"
+            icon={<FontAwesomeIcon icon={vsMerge} rotation={90} />}
+            active={partitionConfig.mode === 'merged'}
+            disabled={isLoading}
+          >
+            Merge
+          </Button>
+        </div>
         {partitionSelectors}
-        <button
-          type="button"
-          className="btn btn-outline-primary btn-ignore"
-          onClick={this.handleIgnoreClick}
-        >
-          Ignore &amp; Fetch All
-        </button>
-        <button
-          type="button"
-          className="btn btn-link btn-link-icon btn-close"
-          onClick={onDone}
-        >
-          <FontAwesomeIcon icon={vsClose} />
-        </button>
       </div>
     );
   }

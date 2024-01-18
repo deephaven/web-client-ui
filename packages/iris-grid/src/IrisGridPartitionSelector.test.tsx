@@ -1,27 +1,39 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react';
+import { render } from '@testing-library/react';
+import { ApiContext } from '@deephaven/jsapi-bootstrap';
 import dh from '@deephaven/jsapi-shim';
 import IrisGridPartitionSelector from './IrisGridPartitionSelector';
 import IrisGridTestUtils from './IrisGridTestUtils';
+import { PartitionConfig, PartitionedGridModel } from './PartitionedGridModel';
+
+const irisGridTestUtils = new IrisGridTestUtils(dh);
+
+function makeModel(
+  columns = irisGridTestUtils.makeColumns()
+): PartitionedGridModel {
+  const model = {
+    ...irisGridTestUtils.makeModel(),
+    partitionKeysTable: jest.fn(() =>
+      Promise.resolve(irisGridTestUtils.makeTable())
+    ),
+    partitionColumns: columns,
+  } as unknown as PartitionedGridModel;
+  return model;
+}
 
 function makeIrisGridPartitionSelector(
-  table = new IrisGridTestUtils(dh).makeTable(),
-  columns = [new IrisGridTestUtils(dh).makeColumn()],
+  model = makeModel(),
   onChange = jest.fn(),
-  onDone = jest.fn(),
-  getFormattedString = jest.fn(value => `${value}`),
-  onAppend = undefined
+  partitionConfig = { partitions: [], mode: 'merged' }
 ) {
   return render(
-    <IrisGridPartitionSelector
-      dh={dh}
-      table={table}
-      columns={columns}
-      getFormattedString={getFormattedString}
-      onChange={onChange}
-      onDone={onDone}
-      onAppend={onAppend}
-    />
+    <ApiContext.Provider value={dh}>
+      <IrisGridPartitionSelector
+        model={model}
+        onChange={onChange}
+        partitionConfig={partitionConfig as PartitionConfig}
+      />
+    </ApiContext.Provider>
   );
 }
 
@@ -29,44 +41,13 @@ it('unmounts successfully without crashing', () => {
   makeIrisGridPartitionSelector();
 });
 
-it('calls onDone when close button is clicked', () => {
-  const onDone = jest.fn();
-  const component = makeIrisGridPartitionSelector(
-    undefined,
-    undefined,
-    undefined,
-    onDone
-  );
-
-  const closeButton = component.getAllByRole('button')[2];
-  fireEvent.click(closeButton);
-  expect(onDone).toHaveBeenCalled();
-});
-
 it('should display multiple selectors to match columns', () => {
   const columns = [
-    new IrisGridTestUtils(dh).makeColumn(),
-    new IrisGridTestUtils(dh).makeColumn(),
+    irisGridTestUtils.makeColumn('a'),
+    irisGridTestUtils.makeColumn('b'),
   ];
-  const component = makeIrisGridPartitionSelector(undefined, columns);
+  const component = makeIrisGridPartitionSelector(makeModel(columns));
 
-  const selectors = component.getAllByRole('textbox');
+  const selectors = component.getAllByRole('combobox');
   expect(selectors).toHaveLength(2);
-});
-
-it('calls handlePartitionChange when PartitionSelectorSearch value changes', () => {
-  const handlePartitionChange = jest.spyOn(
-    IrisGridPartitionSelector.prototype,
-    'handlePartitionChange'
-  );
-  const component = makeIrisGridPartitionSelector();
-
-  const partitionSelectorSearch = component.getByRole('textbox');
-  fireEvent.change(partitionSelectorSearch, { target: { value: 'test' } });
-  expect(handlePartitionChange).toHaveBeenCalledWith(
-    0,
-    expect.objectContaining({
-      target: expect.objectContaining({ value: 'test' }),
-    })
-  );
 });

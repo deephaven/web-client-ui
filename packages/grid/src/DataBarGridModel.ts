@@ -1,7 +1,6 @@
-import { GridThemeType } from '.';
 import { ModelIndex } from './GridMetrics';
 import GridModel from './GridModel';
-import { GridColor } from './GridTheme';
+import { GridColor, type GridTheme as GridThemeType } from './GridTheme';
 
 export type Marker = { value: number; color: string };
 export type AxisOption = 'proportional' | 'middle' | 'directional';

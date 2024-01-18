@@ -1,48 +1,26 @@
 @import '@deephaven/components/scss/custom.scss';
-$partition-selector-color: $white;
-$partition-selector-input-height: 2.25em;
 .iris-grid-partition-selector {
   display: flex;
   flex-wrap: wrap;
-  background: transparent;
-  vertical-align: middle;
-  .status-message {
-    text-overflow: ellipsis;
+  background: var(--dh-color-surface-bg);
+  align-items: center;
+  padding: $spacer-2;
+  gap: $spacer-2;
+
+  .column-selector {
     display: flex;
-    flex-direction: row;
     align-items: center;
-    padding: 0.5em;
-    white-space: nowrap;
-  }
-  div {
-    flex-grow: 0;
-  }
-  .input-group {
-    width: auto;
-    align-items: center;
-    .form-control {
-      background-color: transparent;
-      border: 2px solid $partition-selector-color;
-      border-right: none;
-      height: $partition-selector-input-height;
-    }
-    .btn {
-      background-color: transparent;
-      margin: 0;
+    gap: $spacer-2;
+
+    .custom-select {
+      min-width: 4rem;
     }
   }
-  .iris-grid-partition-selector-spacer {
-    flex-grow: 1;
-  }
-  .btn-outline-primary {
-    color: $white;
-    border-color: $white;
-    margin: 0.35em 0.3em;
-    padding: 0.25em 0.5em;
-  }
-  .btn-close {
-    padding: 0 0.5em;
-    margin: 0.25em 0.25em 0.25em 0;
-    min-width: 0;
+  .partition-button-group {
+    display: flex;
+    border: 1px var(--dh-color-hr);
+    border-style: none solid;
+    padding: 0 $spacer-2;
+    gap: $spacer-2;
   }
 }
