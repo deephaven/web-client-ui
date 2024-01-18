@@ -72,6 +72,7 @@ import type {
   Sort,
   Table,
   TableViewportSubscription,
+  ViewportData,
 } from '@deephaven/jsapi-types';
 import {
   DateUtils,
@@ -195,6 +196,7 @@ import {
 } from './CommonTypes';
 import ColumnHeaderGroup from './ColumnHeaderGroup';
 import { IrisGridThemeContext } from './IrisGridThemeProvider';
+import { isMissingPartitionError } from './MissingPartitionError';
 
 const log = Log.module('IrisGrid');
 
@@ -855,15 +857,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   componentDidMount(): void {
     const { model } = this.props;
-    try {
-      if (isPartitionedGridModel(model) && model.isPartitionRequired) {
-        this.loadPartitionsTable(model);
-      } else {
-        this.initState();
-      }
-    } catch (error) {
-      this.handleTableLoadError(error);
-    }
+    this.initState();
     this.startListening(model);
   }
 
@@ -1909,6 +1903,19 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   initState(): void {
+    const { model } = this.props;
+    try {
+      if (isPartitionedGridModel(model) && model.isPartitionRequired) {
+        this.loadPartitionsTable(model);
+      } else {
+        this.loadTableState();
+      }
+    } catch (error) {
+      this.handleTableLoadError(error);
+    }
+  }
+
+  loadTableState(): void {
     const {
       applyInputFiltersOnInit,
       inputFilters,
@@ -1950,43 +1957,70 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   async loadPartitionsTable(model: PartitionedGridModel): Promise<void> {
+    try {
+      const partitionConfig = await this.getInitialPartitionConfig(model);
+      this.setState(
+        { isSelectingPartition: true, partitionConfig },
+        this.loadTableState
+      );
+    } catch (error) {
+      if (!PromiseUtils.isCanceled(error)) {
+        this.handleTableLoadError(error);
+      }
+    }
+  }
+
+  /**
+   * Gets the initial partition config for the currently set model.
+   * Sorts the key table and gets the first key.
+   * If the table is ticking, it will wait for the first tick.
+   */
+  async getInitialPartitionConfig(
+    model: PartitionedGridModel
+  ): Promise<PartitionConfig> {
     const { partitionConfig } = this.state;
     if (partitionConfig !== undefined) {
-      this.setState({ isSelectingPartition: true }, this.initState);
-      return;
+      // User already has a partition selected, just use that
+      return partitionConfig;
     }
 
-    try {
-      const keyTable = await this.pending.add(
-        model.partitionKeysTable(),
-        resolved => resolved.close()
+    const keyTable = await this.pending.add(
+      model.partitionKeysTable(),
+      resolved => resolved.close()
+    );
+    const { dh } = model;
+
+    const sorts = keyTable.columns.map(column => column.sort().desc());
+    keyTable.applySort(sorts);
+    keyTable.setViewport(0, 0);
+
+    return new Promise((resolve, reject) => {
+      // We want to wait for the first UPDATED event instead of just getting viewport data here
+      // It's possible that the key table does not have any rows of data yet, so just wait until it does have one
+      keyTable.addEventListener(
+        dh.Table.EVENT_UPDATED,
+        (event: CustomEvent<ViewportData>) => {
+          try {
+            const { detail: data } = event;
+            if (data.rows.length === 0) {
+              // Table is empty, wait for the next updated event
+              return;
+            }
+            const row = data.rows[0];
+            const values = keyTable.columns.map(column => row.get(column));
+            const newPartition: PartitionConfig = {
+              partitions: values,
+              mode: 'partition',
+            };
+            keyTable.close();
+            resolve(newPartition);
+          } catch (e) {
+            keyTable.close();
+            reject(e);
+          }
+        }
       );
-
-      const sorts = keyTable.columns.map(column => column.sort().desc());
-      keyTable.applySort(sorts);
-      keyTable.setViewport(0, 0);
-
-      const data = await this.pending.add(keyTable.getViewportData());
-      if (data.rows.length > 0) {
-        const row = data.rows[0];
-        const values = keyTable.columns.map(column => row.get(column));
-        const newPartition: PartitionConfig = {
-          partitions: values,
-          mode: 'partition',
-        };
-
-        this.setState(
-          { isSelectingPartition: true, partitionConfig: newPartition },
-          this.initState
-        );
-      } else {
-        log.info('Table does not have any data');
-        this.setState({ isSelectingPartition: false }, this.initState);
-      }
-      keyTable.close();
-    } catch (error) {
-      this.handleTableLoadError(error);
-    }
+    });
   }
 
   copyCell(
@@ -2881,16 +2915,23 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   handleRequestFailed(event: Event): void {
-    const customEvent = event as CustomEvent;
-    log.error('request failed:', customEvent.detail);
+    const { detail: error } = event as CustomEvent;
+    log.error('request failed:', error);
     this.stopLoading();
-    if (this.canRollback()) {
+    const { partitionConfig } = this.state;
+    if (isMissingPartitionError(error) && partitionConfig != null) {
+      // We'll try loading the initial partition again
+      this.startLoading('Reloading partition...', true);
+      this.setState({ partitionConfig: undefined }, () => {
+        this.initState();
+      });
+    } else if (this.canRollback()) {
       this.startLoading('Rolling back changes...', true);
       this.rollback();
     } else {
       log.error('Table failed and unable to rollback');
       const { onError } = this.props;
-      onError(new Error(`Error displaying table: ${customEvent.detail}`));
+      onError(new Error(`Error displaying table: ${error}`));
     }
   }
 
@@ -3172,7 +3213,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.stopLoading();
       this.grid?.forceUpdate();
     } else {
-      this.initState();
+      this.loadTableState();
     }
   }
 

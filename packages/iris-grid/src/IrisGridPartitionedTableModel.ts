@@ -8,6 +8,9 @@ import type {
 import { Formatter } from '@deephaven/jsapi-utils';
 import { ColumnName } from './CommonTypes';
 import EmptyIrisGridModel from './EmptyIrisGridModel';
+import MissingPartitionError, {
+  isMissingPartitionError,
+} from './MissingPartitionError';
 import { PartitionedGridModelProvider } from './PartitionedGridModel';
 
 class IrisGridPartitionedTableModel
@@ -67,7 +70,20 @@ class IrisGridPartitionedTableModel
   }
 
   async partitionTable(partitions: unknown[]): Promise<Table> {
-    return this.partitionedTable.getTable(partitions);
+    try {
+      const table = await this.partitionedTable.getTable(partitions);
+      if (table == null) {
+        // TODO: Will be unnecessary with https://github.com/deephaven/deephaven-core/pull/5050
+        throw new MissingPartitionError('Partition not found');
+      }
+      return table;
+    } catch (e) {
+      if (!isMissingPartitionError(e)) {
+        throw new MissingPartitionError('Unable to retrieve partition');
+      } else {
+        throw e;
+      }
+    }
   }
 }
 
