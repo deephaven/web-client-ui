@@ -8,6 +8,7 @@ exports[`defaultChartTheme should create the default chart theme 1`] = `
   "error_band_fill_color": "chartTheme['error-band-fill-color']",
   "error_band_line_color": "chartTheme['error-band-line-color']",
   "gridcolor": "chartTheme['gridcolor']",
+  "legend_color": "chartTheme['legend-color']",
   "line_color": "chartTheme['line-color']",
   "linecolor": "chartTheme['linecolor']",
   "ohlc_decreasing": "chartTheme['ohlc-decreasing']",

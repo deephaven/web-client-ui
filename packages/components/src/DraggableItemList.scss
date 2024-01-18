@@ -1,10 +1,10 @@
 @import '../scss/custom.scss';
 
-$draggable-item-hover-bg: var(--dh-color-gray-500);
-$draggable-item-selected-bg: hsla(var(--dh-color-accent-hsl), 0.4);
-$draggable-item-selected-hover-bg: $primary;
+$draggable-item-hover-bg: var(--dh-color-item-list-hover-bg);
+$draggable-item-selected-bg: var(--dh-color-item-list-selected-bg);
+$draggable-item-selected-hover-bg: var(--dh-color-item-list-selected-hover-bg);
+$draggable-item-selected-dragging-bg: var(--dh-color-item-list-selected-bg);
 $draggable-item-dragging-bg: $primary;
-$draggable-item-selected-dragged-bg: hsla(var(--dh-color-accent-hsl), 0.35);
 $draggable-item-border: $input-border-width solid transparent;
 $draggable-item-focus-border: $input-border-width solid
   $input-focus-border-color;
@@ -24,6 +24,10 @@ $draggable-item-grip-color: $mid;
     margin: 0 0 $spacer-1 0;
     padding: $spacer-1 $spacer-2;
     position: relative;
+    color: var(--dh-color-accent-contrast);
+    .btn {
+      color: var(--dh-color-accent-contrast);
+    }
   }
 
   &:focus {
@@ -83,7 +87,7 @@ $draggable-item-grip-color: $mid;
 
     .item-list-item-content {
       border-radius: $border-radius;
-      margin: 0 $spacer-2 $spacer-1 $spacer-2;
+      margin: 0 $spacer-2 1px $spacer-2;
       padding: calc(#{$spacer-1} * 0.5) $spacer-1 0 $spacer-2;
       border: $draggable-item-border;
       line-height: $btn-line-height;
@@ -135,7 +139,7 @@ $draggable-item-grip-color: $mid;
     .item-list-item.active {
       .draggable-item-list-item {
         .item-list-item-content {
-          background-color: $draggable-item-selected-dragged-bg;
+          background-color: $draggable-item-selected-dragging-bg;
         }
       }
     }

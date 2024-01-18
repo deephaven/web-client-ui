@@ -40,12 +40,6 @@ $button-vert-margin: ConsoleVariables.$button-vert-margin;
     margin: $button-vert-margin $button-vert-margin $button-vert-margin 0;
     height: $button-height;
     border-radius: $button-height;
-
-    &[disabled] {
-      background-color: $gray-700;
-      border-color: $gray-700;
-      pointer-events: none;
-    }
   }
 
   .error-message {

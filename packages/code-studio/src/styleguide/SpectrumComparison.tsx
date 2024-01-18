@@ -8,11 +8,13 @@ import {
   ComboBox,
   Flex,
   Grid,
+  Icon,
   Item,
   Picker,
   Radio,
   RadioGroup,
   SpectrumButtonProps,
+  Text,
   TextField,
   View,
 } from '@adobe/react-spectrum';
@@ -24,6 +26,9 @@ import {
   RadioItem,
   Select,
 } from '@deephaven/components';
+import { EMPTY_FUNCTION } from '@deephaven/utils';
+import { vsPlay } from '@deephaven/icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   SAMPLE_SECTION_E2E_IGNORE,
   SPECTRUM_COMPARISON_SAMPLES_ID,
@@ -67,21 +72,40 @@ export function SpectrumComparison(): JSX.Element {
       <Flex gap={20} wrap>
         <View>
           <h3>Buttons - Filled</h3>
-          <Grid gap={20} columns="repeat(2, 120px)" autoRows="40x">
+          <Grid
+            gap={20}
+            columns="repeat(2, 120px)"
+            autoRows="40x"
+            justifyItems="start"
+            alignItems="start"
+          >
             <label>Bootstrap</label>
             <label>Spectrum</label>
 
             {buttons.map(([level, variant]) => (
               <Fragment key={level}>
-                <BootstrapButtonOld kind={level}>Button</BootstrapButtonOld>
+                <BootstrapButtonOld
+                  onClick={EMPTY_FUNCTION}
+                  kind={level}
+                  icon={vsPlay}
+                >
+                  Button
+                </BootstrapButtonOld>
 
                 <Button variant={variant} style="fill">
-                  Button
+                  <Icon>
+                    <FontAwesomeIcon icon={vsPlay} />
+                  </Icon>
+                  <Text>Button</Text>
                 </Button>
               </Fragment>
             ))}
 
-            <BootstrapButtonOld kind="primary" disabled>
+            <BootstrapButtonOld
+              onClick={EMPTY_FUNCTION}
+              kind="primary"
+              disabled
+            >
               Disabled
             </BootstrapButtonOld>
             <Button variant="accent" style="fill" isDisabled>
@@ -98,14 +122,20 @@ export function SpectrumComparison(): JSX.Element {
 
             {buttons.map(([level, variant]) => (
               <Fragment key={level}>
-                <BootstrapButtonOld kind={level}>{level}</BootstrapButtonOld>
+                <BootstrapButtonOld onClick={EMPTY_FUNCTION} kind={level}>
+                  {level}
+                </BootstrapButtonOld>
                 <Button variant={variant} style="outline">
                   {variant}
                 </Button>
               </Fragment>
             ))}
 
-            <BootstrapButtonOld kind="secondary" disabled>
+            <BootstrapButtonOld
+              onClick={EMPTY_FUNCTION}
+              kind="secondary"
+              disabled
+            >
               Disabled
             </BootstrapButtonOld>
             <Button variant="primary" style="outline" isDisabled>
@@ -121,10 +151,12 @@ export function SpectrumComparison(): JSX.Element {
             <label>Bootstrap</label>
             <label>Spectrum</label>
 
-            <BootstrapButtonOld kind="inline">Inline</BootstrapButtonOld>
+            <BootstrapButtonOld onClick={EMPTY_FUNCTION} kind="inline">
+              Inline
+            </BootstrapButtonOld>
             <ActionButton>Action</ActionButton>
 
-            <BootstrapButtonOld kind="inline" disabled>
+            <BootstrapButtonOld onClick={EMPTY_FUNCTION} kind="inline" disabled>
               Disabled
             </BootstrapButtonOld>
             <ActionButton isDisabled>Disabled</ActionButton>

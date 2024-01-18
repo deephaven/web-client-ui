@@ -56,38 +56,24 @@ it('finds the right definition if variable exists', async () => {
   expect(mockRemoveListener).toHaveBeenCalled();
 });
 
-it('finds the definition in the second update if not after the first update', async () => {
+it('throws a TimeoutError if finding the variable timed out', async () => {
+  const timeout = 1000;
   const fetchPromise = fetchVariableDefinition(
     connection,
-    testDefinition2.title
+    testDefinition2.title,
+    timeout
   );
 
   expect(mockSubscribeToFieldUpdates).toHaveBeenCalled();
   expect(mockRemoveListener).not.toHaveBeenCalled();
 
-  const listener = mockSubscribeToFieldUpdates.mock.calls[0][0];
+  jest.advanceTimersByTime(timeout + 2000);
 
-  listener({
-    created: [testDefinition1],
-    updated: [],
-    removed: [],
-  });
-
-  expect(mockRemoveListener).not.toHaveBeenCalled();
-
-  listener({
-    created: [testDefinition2],
-    updated: [],
-    removed: [],
-  });
-
-  const result = await fetchPromise;
-
-  expect(result).toBe(testDefinition2);
+  await expect(fetchPromise).rejects.toThrow(TimeoutError);
   expect(mockRemoveListener).toHaveBeenCalled();
 });
 
-it('throws a TimeoutError if variable not found', async () => {
+it('throws an Error if variable not found', async () => {
   const fetchPromise = fetchVariableDefinition(
     connection,
     testDefinition2.title
@@ -104,11 +90,7 @@ it('throws a TimeoutError if variable not found', async () => {
     removed: [],
   });
 
-  expect(mockRemoveListener).not.toHaveBeenCalled();
-
-  jest.runOnlyPendingTimers();
-
+  await expect(fetchPromise).rejects.toThrow(Error);
+  await expect(fetchPromise).rejects.not.toThrow(TimeoutError);
   expect(mockRemoveListener).toHaveBeenCalled();
-
-  await expect(fetchPromise).rejects.toThrow(TimeoutError);
 });

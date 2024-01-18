@@ -41,9 +41,8 @@
   hr {
     margin-left: -2em;
     margin-right: -2em;
-    margin-top: 0.5em;
-    margin-bottom: 0.5em;
-    background: $gray-800;
+    margin-top: $spacer-2;
+    margin-bottom: $spacer-2;
   }
 
   .col-chart-type {

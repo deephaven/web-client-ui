@@ -22,8 +22,12 @@ $background: var(--dh-surface-bg);
     }
 
     &.dragging {
-      background: $primary-dark;
+      background: $primary;
       box-shadow: $box-shadow;
+
+      .btn {
+        color: var(--dh-color-accent-contrast);
+      }
     }
   }
 

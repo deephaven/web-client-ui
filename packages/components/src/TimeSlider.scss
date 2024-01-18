@@ -23,10 +23,14 @@ $tick-label-color: $gray-300;
       padding: $spacer-2;
       width: $popover-width;
       border-radius: $border-radius;
-      background: $gray-700;
+      background: var(--dh-color-subdued-content-bg);
       flex-shrink: 0;
       text-align: center;
       margin: 0 1px;
+
+      label.modified {
+        color: var(--dh-color-modified);
+      }
       input {
         padding: $input-padding-y 0;
         text-align: center;

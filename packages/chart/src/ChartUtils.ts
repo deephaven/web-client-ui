@@ -1856,6 +1856,11 @@ class ChartUtils {
           color: theme.title_color,
         },
       },
+      legend: {
+        font: {
+          color: theme.legend_color,
+        },
+      },
     };
 
     if (type === dh.plot.AxisType.X) {

@@ -47,7 +47,6 @@ function Colors(): React.ReactElement {
     'foreground',
     'primary',
     'primary-dark',
-    'primary-light',
     'secondary',
     'secondary-hover',
     'success',

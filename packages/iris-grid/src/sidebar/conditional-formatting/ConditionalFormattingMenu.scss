@@ -58,7 +58,19 @@
     }
 
     &:hover {
-      background: $gray-500;
+      background: var(--dh-color-item-list-hover-bg);
+    }
+  }
+
+  .dragging > & {
+    .formatting-item {
+      background: $primary;
+      box-shadow: $box-shadow;
+      color: var(--dh-color-accent-contrast);
+
+      .btn {
+        color: var(--dh-color-accent-contrast);
+      }
     }
   }
 }

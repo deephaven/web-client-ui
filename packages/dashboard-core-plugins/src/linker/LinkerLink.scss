@@ -54,7 +54,7 @@ $dash-size: 10;
       }
       path {
         stroke-width: $link-width;
-        stroke: $primary-light;
+        stroke: var(--dh-color-accent-400);
         &.link-select {
           stroke-width: $selectable-width;
           stroke: transparent;
