@@ -55,35 +55,6 @@ body {
     height: 100vh;
     width: 100vw;
   }
-
-  // placed under root for additional specificity
-  .grid-cursor-copy {
-    cursor:
-      url('../assets/svg/cursor-copy.svg') 8 8,
-      copy;
-  }
-
-  .grid-cursor-linker {
-    cursor:
-      url('../assets/svg/cursor-linker.svg') 8 8,
-      crosshair;
-  }
-
-  .grid-cursor-linker-not-allowed {
-    cursor:
-      url('../assets/svg/cursor-linker-not-allowed.svg') 8 8,
-      not-allowed;
-  }
-
-  .linker-overlay path.link-select {
-    cursor: pointer;
-  }
-
-  .linker-overlay.danger-delete path.link-select {
-    cursor:
-      url('../assets/svg/cursor-unlinker.svg') 8 8,
-      pointer;
-  }
 }
 
 /** Convenience **/
