@@ -2,7 +2,7 @@
 .iris-grid-partition-selector {
   display: flex;
   flex-wrap: wrap;
-  background: $gray-850;
+  background: var(--dh-color-surface-bg);
   align-items: center;
   padding: $spacer-2;
   gap: $spacer-2;
@@ -18,7 +18,7 @@
   }
   .partition-button-group {
     display: flex;
-    border: 1px $gray-900;
+    border: 1px var(--dh-color-hr);
     border-style: none solid;
     padding: 0 $spacer-2;
     gap: $spacer-2;
