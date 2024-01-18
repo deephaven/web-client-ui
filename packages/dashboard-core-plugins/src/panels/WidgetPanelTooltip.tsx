@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import { CopyButton } from '@deephaven/components';
 import { GLPropTypes, LayoutUtils } from '@deephaven/dashboard';
 import './WidgetPanelTooltip.scss';
-import { ReactElement } from 'react-markdown';
 import type { Container } from '@deephaven/golden-layout';
+import { ReactElement } from 'react-markdown/lib/react-markdown';
 
 interface WidgetPanelTooltipProps {
   glContainer: Container;
