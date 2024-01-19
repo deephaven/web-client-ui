@@ -33,9 +33,9 @@ afterAll(() => {
 describe('useAsyncInterval', () => {
   /**
    * Creates a callback function that resolves after the given number of
-   * milliseconds. Accepts an optional array of booleans that determine whether
-   * calls to the callback will reject instead of resolve. They are mapped by
-   * index to the order in which the callback is called.
+   * milliseconds. Accepts an optional array of Error | undefined. They are
+   * mapped by index to the order in which the callback is called. An Error
+   * instance will cause a rejection, undefined will cause a resolution.
    */
   function createCallback(ms: number, rejectWith: (Error | undefined)[] = []) {
     return jest
