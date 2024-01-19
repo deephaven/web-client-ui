@@ -575,9 +575,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       }
     }
     // if snapshotValues is empty here, it means all of the snapshot's values were null/undefined
-
     const filterMenu = {
-      title: 'Filter by Value',
+      title: `Filter by Value${snapshotValues.size > 1 ? 's' : ''}`,
       icon: vsRemove,
       iconColor: filterIconColor,
       group: IrisGridContextMenuHandler.GROUP_FILTER,
@@ -608,6 +607,22 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         });
       }
       filterMenu.actions.push(...this.nullFilterActions(column));
+    } else if (snapshotValues.size === 1 && snapshotValues.has('')) {
+      // empty string gets a special menu
+      if (quickFilters.get(sourceColumn)) {
+        filterMenu.actions.push({
+          title: 'And',
+
+          actions: this.emptyStringFilterActions(
+            column,
+            quickFilters.get(sourceColumn),
+            '&&'
+          ),
+          order: 2,
+          group: ContextActions.groups.high,
+        });
+      }
+      filterMenu.actions.push(...this.emptyStringFilterActions(column));
     } else if (TableUtils.isBooleanType(column.type)) {
       // boolean should have OR condition, and handles it's own null menu options
       if (quickFilters.get(sourceColumn)) {
@@ -1146,7 +1161,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
                   .map(filterValue =>
                     column.filter().contains(filterValue).not()
                   )
-                  .reduce((prev, curr) => prev.and(curr))
+                  .reduce((prev, curr) => prev.or(curr))
               ),
             operator
           ),
@@ -1154,7 +1169,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
             filterText,
             TextUtils.makeLogicalNormalForm(
               values,
-              '&&',
+              '||',
               item => `!~${toFilterText(item)}`
             ),
             operator
