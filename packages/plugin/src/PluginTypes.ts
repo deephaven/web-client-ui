@@ -105,8 +105,8 @@ export function isDashboardPlugin(
   return 'type' in plugin && plugin.type === PluginType.DASHBOARD_PLUGIN;
 }
 
-export interface WidgetComponentProps {
-  fetch: () => Promise<unknown>;
+export interface WidgetComponentProps<T = unknown> {
+  fetch: () => Promise<T>;
 }
 
 export interface WidgetPanelProps extends WidgetComponentProps {
@@ -120,7 +120,7 @@ export interface WidgetPanelProps extends WidgetComponentProps {
   glEventHub: EventEmitter;
 }
 
-export interface WidgetPlugin extends Plugin {
+export interface WidgetPlugin<T = unknown> extends Plugin {
   type: typeof PluginType.WIDGET_PLUGIN;
   /**
    * The component that can render the widget types the plugin supports.
@@ -129,7 +129,7 @@ export interface WidgetPlugin extends Plugin {
    * then `panelComponent` will be used instead.
    * The component will be wrapped in a default panel if `panelComponent` is not provided.
    */
-  component: React.ComponentType<WidgetComponentProps>;
+  component: React.ComponentType<WidgetComponentProps<T>>;
 
   /**
    * The server widget types that this plugin will handle.
