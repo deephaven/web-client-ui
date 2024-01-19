@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useRef } from 'react';
+import Log from '@deephaven/log';
 import { useIsMountedRef } from './useIsMountedRef';
+
+const log = Log.module('useAsyncInterval');
 
 /**
  * Calls the given async callback at a target interval.
@@ -40,7 +43,11 @@ export function useAsyncInterval(
 
     trackingStartedRef.current = now;
 
-    await callback();
+    try {
+      await callback();
+    } catch (err) {
+      log.error('A tick error occurred:', err);
+    }
 
     if (!isMountedRef.current) {
       return;
