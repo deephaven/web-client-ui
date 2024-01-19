@@ -29,6 +29,8 @@ describe('assertNotEmpty', () => {
   expect(() => assertNotEmpty(new Map([[1, 2]]))).not.toThrowError(
     'Size of value is 0'
   );
+  expect(() => assertNotEmpty([])).toThrowError('Size of value is 0');
+  expect(() => assertNotEmpty([1, 2])).not.toThrowError('Size of value is 0');
 });
 
 describe('getOrThrow', () => {
