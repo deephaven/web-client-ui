@@ -8,6 +8,8 @@ import {
 } from '@deephaven/jsapi-utils';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
+import type { ServerConfigValues } from '@deephaven/redux';
+import Bowser from 'bowser';
 
 const log = Log.module('SettingsUtils');
 
@@ -30,6 +32,30 @@ function isFormatStringFormat(
   return (
     (format as Pick<TableColumnFormat, 'formatString'>).formatString != null
   );
+}
+
+/**
+ * Get an object containing all version information formatted for display
+ * @param serverConfigValues The server config values
+ * @returns The formatted version info or "Unknown" for any value not available
+ */
+export function getFormattedVersionInfo(
+  serverConfigValues: ServerConfigValues
+): Record<string, string> {
+  const ua = Bowser.parse(window.navigator.userAgent);
+  const browser = `${(ua.browser.name ?? '') || 'Unknown'} ${
+    // use only the major version and minor version, rest usually empty 120.1.0.0 -> 120.1
+    Number(parseFloat(ua.browser.version ?? '')) || ''
+  }`;
+  const os = `${(ua.os.name ?? '') || 'Unknown'} ${ua.os.version ?? ''}`;
+  return {
+    'Engine Version': serverConfigValues.get('deephaven.version') ?? 'Unknown',
+    'Web UI Version': import.meta.env.npm_package_version ?? 'Unknown',
+    'Java Version': serverConfigValues.get('java.version') ?? 'Unknown',
+    'Barrage Version': serverConfigValues.get('barrage.version') ?? 'Unknown',
+    'Browser Name': browser.trim(),
+    'OS Name': os.trim(),
+  };
 }
 
 export function focusFirstInputInContainer(
