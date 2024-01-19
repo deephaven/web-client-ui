@@ -4,6 +4,7 @@ import React, { PureComponent, ReactElement, RefObject } from 'react';
 import shortid from 'shortid';
 import debounce from 'lodash.debounce';
 import { connect } from 'react-redux';
+import { LoadingOverlay } from '@deephaven/components';
 import {
   CommandHistoryStorage,
   Console,
@@ -377,7 +378,12 @@ export class ConsolePanel extends PureComponent<
     } = this.props;
 
     if (sessionWrapper == null) {
-      return null;
+      return (
+        <LoadingOverlay
+          isLoading={false}
+          errorMessage="Console option is disabled."
+        />
+      );
     }
 
     const { consoleSettings, error, objectMap } = this.state;
