@@ -379,10 +379,7 @@ export class ConsolePanel extends PureComponent<
 
     if (sessionWrapper == null) {
       return (
-        <LoadingOverlay
-          isLoading={false}
-          errorMessage="Console option is disabled."
-        />
+        <LoadingOverlay isLoading={false} errorMessage="Console is disabled." />
       );
     }
 
