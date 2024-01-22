@@ -41,15 +41,13 @@ export function useAsyncInterval(
         ? targetIntervalMs
         : now - trackingStartedRef.current;
 
-    log.debug(
-      `tick #${trackingCountRef.current}.`,
-      elapsedSinceLastTick,
-      'ms elapsed since last tick.'
-    );
-
     trackingStartedRef.current = now;
 
-    await callback();
+    try {
+      await callback();
+    } catch (err) {
+      log.error('A tick error occurred:', err);
+    }
 
     if (!isMountedRef.current) {
       return;
@@ -62,21 +60,10 @@ export function useAsyncInterval(
 
     const nextTickInterval = Math.max(0, targetIntervalMs - overage);
 
-    log.debug(
-      'Next tick target:',
-      targetIntervalMs,
-      ', overage',
-      overage,
-      ', adjusted:',
-      nextTickInterval
-    );
-
     setTimeoutRef.current = window.setTimeout(tick, nextTickInterval);
   }, [callback, isMountedRef, targetIntervalMs]);
 
   useEffect(() => {
-    log.debug('Setting target interval:', targetIntervalMs);
-
     trackingStartedRef.current = null;
     tick();
 
