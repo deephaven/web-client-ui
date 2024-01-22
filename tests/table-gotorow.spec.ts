@@ -23,18 +23,18 @@ async function setColumnAndExpectInputValue({
   setColumnNameTo: string;
   expectInputValueToBe: string;
 }) {
-  console.log({ setInputValueTo, setColumnNameTo, expectInputValueToBe });
   if (setInputValueTo !== undefined) {
-    const inputValue = await page.locator('input[aria-label="Value Input"]');
+    const inputValue = page.locator('input[aria-label="Value Input"]');
     await expect(inputValue).toHaveCount(1);
     await inputValue.fill(setInputValueTo);
+    await page.waitForTimeout(300);
   }
 
-  const columnSelect = await page.locator('#column-name-select');
+  const columnSelect = page.locator('#column-name-select');
   await expect(columnSelect).toHaveCount(1);
   await columnSelect.selectOption(setColumnNameTo);
 
-  const inputValue = await page.locator('input[aria-label="Value Input"]');
+  const inputValue = page.locator('input[aria-label="Value Input"]');
   await expect(inputValue).toHaveCount(1);
   await expect(inputValue).toHaveValue(expectInputValueToBe);
 }
