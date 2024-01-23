@@ -169,7 +169,7 @@ function NavTabList({
   makeContextActions,
 }: NavTabListProps): React.ReactElement {
   const containerRef = useRef<HTMLDivElement>();
-  const [isOverflowing, setIsOverflowing] = useState(false);
+  const [isOverflowing, setIsOverflowing] = useState(true);
   const [disableScrollLeft, setDisableScrollLeft] = useState(true);
   const [disableScrollRight, setDisableScrollRight] = useState(true);
   const handleResize = useCallback(() => {

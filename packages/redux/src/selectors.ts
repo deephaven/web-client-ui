@@ -1,5 +1,4 @@
 import type { UndoPartial } from '@deephaven/utils';
-import { useSelector } from 'react-redux';
 import type { RootState, WorkspaceSettings } from './store';
 
 const EMPTY_OBJECT = Object.freeze({});
@@ -54,12 +53,6 @@ export const getWorkspace = <State extends RootState>(
   const { workspace } = store;
   return workspace;
 };
-
-export function useWorkspace<
-  State extends RootState = RootState,
->(): State['workspace'] {
-  return useSelector<State, State['workspace']>(getWorkspace);
-}
 
 // Settings
 export const getSettings = <State extends RootState>(
