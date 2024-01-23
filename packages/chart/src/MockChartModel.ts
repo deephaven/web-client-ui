@@ -97,7 +97,6 @@ class MockChartModel extends ChartModel {
       fill: 'tozeroy',
       hoverinfo: 'all',
       line: {
-        color: MockChartModel.theme.area_color,
         width: 3,
         // area patten gets applied as hack in post render plot.ly callback + css
       },
@@ -116,7 +115,6 @@ class MockChartModel extends ChartModel {
       line: {
         width: 3,
         dash: 'dot', // trendlines should follow some sort of color convention + dots/dashed. Remember there can multiple
-        color: MockChartModel.theme.trend_color,
         // chroma(c.$green).brighten(1.2).hex()
       },
     };
@@ -143,7 +141,6 @@ class MockChartModel extends ChartModel {
       mode: 'line' as PlotData['mode'],
       hoverinfo: 'skip',
       fill: 'toself', // there's some ordering bug with scattergl where if the areas traces are ordered after the lines they don't render
-      fillcolor: MockChartModel.theme.error_band_fill_color,
       line: {
         width: 0,
         color: MockChartModel.theme.error_band_line_color,
@@ -161,7 +158,6 @@ class MockChartModel extends ChartModel {
       mode: 'line' as PlotData['mode'],
       hoverinfo: 'x+y+text+name' as PlotData['hoverinfo'],
       line: {
-        color: MockChartModel.theme.line_color,
         width: 3,
       },
     };

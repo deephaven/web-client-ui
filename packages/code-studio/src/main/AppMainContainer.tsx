@@ -122,7 +122,7 @@ interface AppMainContainerProps {
   match: {
     params: { notebookPath: string };
   };
-  connection: IdeConnection;
+  connection?: IdeConnection;
   session?: IdeSession;
   sessionConfig?: SessionConfig;
   setActiveTool: (tool: string) => void;
@@ -274,6 +274,10 @@ export class AppMainContainer extends Component<
 
   initWidgets(): void {
     const { connection } = this.props;
+    if (connection == null) {
+      return;
+    }
+
     if (connection.subscribeToFieldUpdates == null) {
       log.warn(
         'subscribeToFieldUpdates not supported, not initializing widgets'
@@ -652,6 +656,10 @@ export class AppMainContainer extends Component<
 
   startListeningForDisconnect(): void {
     const { connection } = this.props;
+    if (connection == null) {
+      return;
+    }
+
     connection.addEventListener(
       dh.IdeConnection.EVENT_DISCONNECT,
       this.handleDisconnect
@@ -668,6 +676,10 @@ export class AppMainContainer extends Component<
 
   stopListeningForDisconnect(): void {
     const { connection } = this.props;
+    if (connection == null) {
+      return;
+    }
+
     connection.removeEventListener(
       dh.IdeConnection.EVENT_DISCONNECT,
       this.handleDisconnect
@@ -691,7 +703,7 @@ export class AppMainContainer extends Component<
     const { connection } = this.props;
     this.emitLayoutEvent(PanelEvent.OPEN, {
       dragEvent,
-      fetch: () => connection.getObject(widget),
+      fetch: async () => connection?.getObject(widget),
       widget,
     });
   }

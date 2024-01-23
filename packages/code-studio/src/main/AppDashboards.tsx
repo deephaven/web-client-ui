@@ -52,7 +52,7 @@ export function AppDashboards({
                 title: metadata.name,
               };
         return {
-          fetch: () => connection.getObject(widget),
+          fetch: async () => connection?.getObject(widget),
           ...hydrateProps,
           localDashboardId: id,
         };

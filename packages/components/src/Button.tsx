@@ -123,32 +123,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       );
     }
 
-    let iconOnly = iconElem != null && children == null;
-    // Best effort backwards-compatible attempt to auto add margin to icon if text is also present
-    // We would need to audit our usage of Buttons to remove margins by classname to just add the margin to every icon button with children
-    if (iconElem != null && children != null) {
-      // check if react children contains a text node to a depth of 2
-      // to exlude poppers/menus, but not button text nested in spans
-      let containsTextNode = false;
-      iconOnly = true; // assume icon only until we find a text node
-      React.Children.forEach(children, child => {
-        if (typeof child === 'string') {
-          containsTextNode = true;
-        } else if (React.isValidElement(child)) {
-          React.Children.forEach(child.props.children, grandchild => {
-            if (typeof grandchild === 'string') {
-              containsTextNode = true;
-            }
-          });
-        }
-      });
-      if (containsTextNode) {
-        iconOnly = false; // is not iconOnly if we found a text node
-        iconElem = React.cloneElement(iconElem, {
-          className: classNames('mr-1', iconElem.props.className),
-        });
-      }
-    }
+    // not entirely accurate, as button can have non-visible children
+    const iconOnly = iconElem != null && children == null;
 
     const btnClassName = getClassName(kind, iconOnly);
 

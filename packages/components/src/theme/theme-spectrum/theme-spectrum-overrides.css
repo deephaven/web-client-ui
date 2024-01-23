@@ -16,3 +16,53 @@ label[class^='spectrum-'] {
   */
   --spectrum-alias-workflow-icon-size: var(--dh-svg-inline-icon-size);
 }
+
+/** 
+ * Spectrum action button icons only include right padding if the the icon is 
+ * the only child. In cases where we add a <Tooltip>, we have to manually add 
+ * the right padding ourselves to keep the icon centered.
+ */
+.action-button-icon-with-tooltip {
+  padding-right: var(
+    --spectrum-actionbutton-icon-padding-x,
+    var(--spectrum-global-dimension-size-85)
+  );
+}
+
+[class^='spectrum-Table-headCell'] {
+  /* 
+  Tables are styled with the assumption that the header is the same color as the bg
+  which means they look bad against any other background color, instead just inherit the bg.
+  There is also no variable exposed for this, so we have to target the class directly.
+ */
+  --dh-table-header-cell-background-color: transparent;
+  background: var(--dh-table-header-cell-background-color);
+}
+
+/* Table */
+[class*='spectrum-Table--quiet'] {
+  /* Quiet shouldn't assume a bg color */
+  --spectrum-alias-background-color-default: transparent;
+}
+
+button[class^='spectrum-Button'] {
+  /* make the icon closer to the text */
+  --spectrum-button-primary-text-gap: var(--spectrum-global-dimension-size-75);
+
+  /* Center the text vertically. We use a different font then spectrum so we require different custom centering */
+  padding-bottom: calc(var(--spectrum-global-dimension-size-50) - 1px);
+  padding-top: calc(var(--spectrum-global-dimension-size-50));
+}
+
+button[class^='spectrum-Button'] svg {
+  /* our icons are smaller, center them too */
+  padding-bottom: var(--spectrum-global-dimension-size-25);
+}
+
+span[class^='spectrum-Checkbox-label'],
+span[class^='spectrum-Radio-label'] {
+  /* I have no idea why these spectrum labels aren't centered,
+   but this fixes it. Maybe difference in font baselines.
+   */
+  margin-top: var(--spectrum-global-dimension-size-85);
+}

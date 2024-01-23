@@ -12,11 +12,18 @@ $cs-option-hover-opacity: 0.8;
     border-radius: $border-radius;
     border: $input-border-width solid $input-border-color;
     min-width: 14rem;
+    background-position: right 0.75rem center;
+    background-size: 10px 6px;
+    background-repeat: no-repeat;
+
     &:focus {
       border-color: $input-focus-border-color;
     }
-    .cs-caret {
-      color: $input-border-color;
+    &.btn-inline:active {
+      background:
+        var(--dh-svg-icon-select-indicator) right 0.75rem center/10px 6px
+          no-repeat,
+        var(--dh-color-action-down-bg);
     }
   }
 }

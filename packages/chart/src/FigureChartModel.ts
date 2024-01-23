@@ -157,6 +157,9 @@ class FigureChartModel extends ChartModel {
     const { charts } = this.figure;
     const axisTypeMap = ChartUtils.getAxisTypeMap(this.figure);
     const activeSeriesNames: string[] = [];
+
+    this.seriesToProcess = new Set();
+
     for (let i = 0; i < charts.length; i += 1) {
       const chart = charts[i];
 
@@ -216,7 +219,6 @@ class FigureChartModel extends ChartModel {
       const seriesName = inactiveSeriesNames[i];
       this.seriesDataMap.delete(seriesName);
     }
-    this.seriesToProcess = new Set([...this.seriesDataMap.keys()]);
   }
 
   /**
@@ -241,6 +243,7 @@ class FigureChartModel extends ChartModel {
     );
 
     this.seriesDataMap.set(series.name, seriesData);
+    this.seriesToProcess.add(series.name);
 
     this.data = [...this.seriesDataMap.values()];
 

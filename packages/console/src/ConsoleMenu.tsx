@@ -251,6 +251,7 @@ class ConsoleMenu extends PureComponent<ConsoleMenuProps, ConsoleMenuState> {
           kind="ghost"
           icon={vsKebabVertical}
           tooltip="More Actions..."
+          aria-label="More Actions..."
           onClick={() => {
             // no-op: click is handled in `DropdownMenu`
           }}

@@ -6,6 +6,7 @@ import type {
   ColumnStatistics,
   CustomColumn,
   dh as DhType,
+  FilterCondition,
   InputTable,
   LayoutHints,
   Table,
@@ -13,10 +14,15 @@ import type {
 } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { Formatter } from '@deephaven/jsapi-utils';
-import { EventShimCustomEvent, assertNotNull } from '@deephaven/utils';
+import {
+  EventShimCustomEvent,
+  PromiseUtils,
+  assertNotNull,
+} from '@deephaven/utils';
 import IrisGridModel from './IrisGridModel';
-import { ColumnName, UIRow } from './CommonTypes';
+import { ColumnName, UIRow, UITotalsTableConfig } from './CommonTypes';
 import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
+import { PartitionedGridModelProvider } from './PartitionedGridModel';
 
 const log = Log.module('IrisGridTableModel');
 
@@ -24,12 +30,17 @@ const log = Log.module('IrisGridTableModel');
  * Model for a grid showing an iris data table
  */
 
-class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
+class IrisGridTableModel
+  extends IrisGridTableModelTemplate<Table, UIRow>
+  implements PartitionedGridModelProvider
+{
   userFrozenColumns?: ColumnName[];
 
   customColumnList: string[];
 
   formatColumnList: CustomColumn[];
+
+  initialFilters: FilterCondition[] = [];
 
   /**
    * @param dh JSAPI instance
@@ -46,6 +57,7 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
     super(dh, table, formatter, inputTable);
     this.customColumnList = [];
     this.formatColumnList = [];
+    this.initialFilters = table.filter;
   }
 
   get isExportAvailable(): boolean {
@@ -181,8 +193,99 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
     );
   }
 
+  get partitionColumns(): readonly Column[] {
+    return this.getCachedPartitionColumns(this.columns);
+  }
+
+  async partitionKeysTable(): Promise<Table> {
+    return this.valuesTable(this.partitionColumns);
+  }
+
+  async partitionMergedTable(): Promise<Table> {
+    const t = await this.table.copy();
+    t.applyFilter([]);
+    return t;
+  }
+
+  async partitionTable(partitions: unknown[]): Promise<Table> {
+    log.debug('getting partition table for partitions', partitions);
+
+    const partitionFilters: FilterCondition[] = [];
+    for (let i = 0; i < this.partitionColumns.length; i += 1) {
+      const partition = partitions[i];
+      const partitionColumn = this.partitionColumns[i];
+
+      const partitionFilter = this.tableUtils.makeFilterRawValue(
+        partitionColumn.type,
+        partition
+      );
+      partitionFilters.push(partitionColumn.filter().eq(partitionFilter));
+    }
+
+    const t = await this.table.copy();
+    t.applyFilter([...this.initialFilters, ...partitionFilters]);
+    return t;
+  }
+
+  set filter(filter: FilterCondition[]) {
+    this.closeSubscription();
+    this.table.applyFilter([...this.initialFilters, ...filter]);
+    this.applyViewport();
+  }
+
+  set totalsConfig(totalsConfig: UITotalsTableConfig | null) {
+    log.debug('set totalsConfig', totalsConfig);
+
+    if (totalsConfig === this.totals) {
+      // Totals already set, or it will be set when the next model actually gets set
+      return;
+    }
+
+    this.totals = totalsConfig;
+    this.formattedStringData = [];
+
+    if (this.totalsTablePromise != null) {
+      this.totalsTablePromise.cancel();
+    }
+
+    this.setTotalsTable(null);
+
+    if (totalsConfig == null) {
+      this.dispatchEvent(new EventShimCustomEvent(IrisGridModel.EVENT.UPDATED));
+      return;
+    }
+
+    this.totalsTablePromise = PromiseUtils.makeCancelable(
+      this.table.getTotalsTable(totalsConfig),
+      table => table.close()
+    );
+    this.totalsTablePromise
+      .then(totalsTable => {
+        this.totalsTablePromise = null;
+        this.setTotalsTable(totalsTable);
+      })
+      .catch(err => {
+        if (PromiseUtils.isCanceled(err)) {
+          return;
+        }
+
+        log.error('Unable to set next totalsTable', err);
+        this.totalsTablePromise = null;
+
+        this.dispatchEvent(
+          new EventShimCustomEvent(IrisGridModel.EVENT.REQUEST_FAILED, {
+            detail: err,
+          })
+        );
+      });
+  }
+
   get isFilterRequired(): boolean {
     return this.table.isUncoalesced;
+  }
+
+  get isPartitionRequired(): boolean {
+    return this.table.isUncoalesced && this.isValuesTableAvailable;
   }
 
   isFilterable(columnIndex: ModelIndex): boolean {
@@ -202,6 +305,10 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
       new Set(columns.map((_: Column, index: ModelIndex) => index))
   );
 
+  getCachedPartitionColumns = memoize((columns: readonly Column[]) =>
+    columns.filter(column => column.isPartitionColumn)
+  );
+
   isColumnMovable(modelIndex: ModelIndex): boolean {
     const columnName = this.columns[modelIndex].name;
     if (
@@ -218,7 +325,7 @@ class IrisGridTableModel extends IrisGridTableModelTemplate<Table, UIRow> {
     return this.frozenColumns.includes(this.columns[modelIndex].name);
   }
 
-  async delete(ranges: GridRange[]): Promise<void> {
+  async delete(ranges: readonly GridRange[]): Promise<void> {
     if (!this.isDeletableRanges(ranges)) {
       throw new Error(`Undeletable ranges ${ranges}`);
     }

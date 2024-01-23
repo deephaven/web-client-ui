@@ -59,9 +59,9 @@ describe('calculatePreloadStyleContent', () => {
   }
 
   it('should set defaults if css variables are not defined', () => {
-    expect(calculatePreloadStyleContent()).toEqual(
-      expectedContent(DEFAULT_PRELOAD_DATA_VARIABLES)
-    );
+    expect(
+      calculatePreloadStyleContent(DEFAULT_PRELOAD_DATA_VARIABLES)
+    ).toEqual(expectedContent(DEFAULT_PRELOAD_DATA_VARIABLES));
   });
 
   it('should resolve css variables', () => {
@@ -71,7 +71,9 @@ describe('calculatePreloadStyleContent', () => {
     );
     document.body.style.setProperty('--dh-color-bg', 'orange');
 
-    expect(calculatePreloadStyleContent()).toEqual(
+    expect(
+      calculatePreloadStyleContent(DEFAULT_PRELOAD_DATA_VARIABLES)
+    ).toEqual(
       expectedContent({
         ...DEFAULT_PRELOAD_DATA_VARIABLES,
         '--dh-color-loading-spinner-primary': 'pink',
@@ -96,7 +98,10 @@ describe.each([document.body, document.createElement('div')])(
     it('should return empty string if property does not exist and no default value exists', () => {
       asMock(computedStyle.getPropertyValue).mockReturnValue('');
 
-      const resolver = createCssVariableResolver(targetElement);
+      const resolver = createCssVariableResolver(
+        targetElement,
+        DEFAULT_PRELOAD_DATA_VARIABLES
+      );
 
       expect(getComputedStyle).toHaveBeenCalledWith(targetElement);
 
@@ -113,7 +118,10 @@ describe.each([document.body, document.createElement('div')])(
       (key, value) => {
         asMock(computedStyle.getPropertyValue).mockReturnValue('');
 
-        const resolver = createCssVariableResolver(targetElement);
+        const resolver = createCssVariableResolver(
+          targetElement,
+          DEFAULT_PRELOAD_DATA_VARIABLES
+        );
 
         expect(getComputedStyle).toHaveBeenCalledWith(targetElement);
 
@@ -126,7 +134,10 @@ describe.each([document.body, document.createElement('div')])(
         name => `resolved:${name}`
       );
 
-      const resolver = createCssVariableResolver(targetElement);
+      const resolver = createCssVariableResolver(
+        targetElement,
+        DEFAULT_PRELOAD_DATA_VARIABLES
+      );
 
       expect(getComputedStyle).toHaveBeenCalledWith(targetElement);
 
@@ -387,7 +398,7 @@ describe('overrideSVGFillColors', () => {
           : 'red'
       );
 
-      overrideSVGFillColors();
+      overrideSVGFillColors(DEFAULT_PRELOAD_DATA_VARIABLES);
 
       expect(getComputedStyle).toHaveBeenCalledWith(document.body);
       expect(document.body.style.removeProperty).toHaveBeenCalledWith(key);
@@ -418,12 +429,22 @@ describe('preloadTheme', () => {
 
     preloadTheme();
 
-    const styleEl = document.querySelector('style');
+    const [styleElDefaults, styleElPrevious] =
+      document.querySelectorAll('style');
 
-    expect(styleEl).not.toBeNull();
-    expect(styleEl?.innerHTML).toEqual(
-      preloadData?.preloadStyleContent ?? calculatePreloadStyleContent()
+    expect(styleElDefaults).not.toBeNull();
+    expect(styleElDefaults?.innerHTML).toEqual(
+      calculatePreloadStyleContent(DEFAULT_PRELOAD_DATA_VARIABLES)
     );
+
+    if (preloadData?.preloadStyleContent == null) {
+      expect(styleElPrevious).toBeUndefined();
+    } else {
+      expect(styleElPrevious).toBeDefined();
+      expect(styleElPrevious?.innerHTML).toEqual(
+        preloadData?.preloadStyleContent
+      );
+    }
   });
 });
 

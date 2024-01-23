@@ -2,21 +2,21 @@
 
 exports[`defaultChartTheme should create the default chart theme 1`] = `
 {
-  "activecolor": "chartTheme['activecolor']",
-  "area_color": "chartTheme['area-color']",
+  "coastline_color": "chartTheme['coastline-color']",
   "colorway": "chartTheme['colorway']",
-  "error_band_fill_color": "chartTheme['error-band-fill-color']",
   "error_band_line_color": "chartTheme['error-band-line-color']",
   "gridcolor": "chartTheme['gridcolor']",
-  "line_color": "chartTheme['line-color']",
+  "lake_color": "chartTheme['lake-color']",
+  "land_color": "chartTheme['land-color']",
+  "legend_color": "chartTheme['legend-color']",
   "linecolor": "chartTheme['linecolor']",
+  "ocean_color": "chartTheme['ocean-color']",
   "ohlc_decreasing": "chartTheme['ohlc-decreasing']",
   "ohlc_increasing": "chartTheme['ohlc-increasing']",
   "paper_bgcolor": "chartTheme['paper-bgcolor']",
   "plot_bgcolor": "chartTheme['plot-bgcolor']",
-  "rangebgcolor": "chartTheme['rangebgcolor']",
+  "river_color": "chartTheme['river-color']",
   "title_color": "chartTheme['title-color']",
-  "trend_color": "chartTheme['trend-color']",
   "zerolinecolor": "chartTheme['zerolinecolor']",
 }
 `;

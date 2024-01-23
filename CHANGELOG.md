@@ -3,6 +3,38 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.59.0](https://github.com/deephaven/web-client-ui/compare/v0.58.0...v0.59.0) (2024-01-17)
+
+
+### Bug Fixes
+
+* GoToRow timestamp fails when selected row is out of view ([#1717](https://github.com/deephaven/web-client-ui/issues/1717)) ([9ddc973](https://github.com/deephaven/web-client-ui/commit/9ddc973108a6cc88999003c2d0dc6b48044967cc)), closes [#1561](https://github.com/deephaven/web-client-ui/issues/1561)
+* Interface for IrisGridTableModelTemplate.backgroundColorForCell ([#1699](https://github.com/deephaven/web-client-ui/issues/1699)) ([73e1837](https://github.com/deephaven/web-client-ui/commit/73e1837eb2fdb161779724a8b275f4d8147b95c0)), closes [#1697](https://github.com/deephaven/web-client-ui/issues/1697)
+* Moved logos so they show in production build ([#1713](https://github.com/deephaven/web-client-ui/issues/1713)) ([a3bea73](https://github.com/deephaven/web-client-ui/commit/a3bea733b97dfafe33a54623ef8e8e04cb5aa44e)), closes [#1712](https://github.com/deephaven/web-client-ui/issues/1712)
+* re-colorize command codeblocks when theme changes ([#1731](https://github.com/deephaven/web-client-ui/issues/1731)) ([b1e42f5](https://github.com/deephaven/web-client-ui/commit/b1e42f58df5c9c478ff47d4823b517e23a94709f))
+* TimeInput not triggering onChange on incomplete values ([#1711](https://github.com/deephaven/web-client-ui/issues/1711)) ([6894d96](https://github.com/deephaven/web-client-ui/commit/6894d96f921f57f0abb108bc2f3d8d86e9fa3c56)), closes [#1710](https://github.com/deephaven/web-client-ui/issues/1710)
+
+
+### Features
+
+* Action button tooltips ([#1706](https://github.com/deephaven/web-client-ui/issues/1706)) ([bff6bf9](https://github.com/deephaven/web-client-ui/commit/bff6bf91b938bbba7f7649ac671d2e4447ea3439)), closes [#1705](https://github.com/deephaven/web-client-ui/issues/1705)
+* Add support for useDeferredApi ([#1725](https://github.com/deephaven/web-client-ui/issues/1725)) ([51ebe1b](https://github.com/deephaven/web-client-ui/commit/51ebe1bbf4da7bda1cc7b59da34aec88b3abc623))
+* Improved preload variable handling ([#1723](https://github.com/deephaven/web-client-ui/issues/1723)) ([ed41c42](https://github.com/deephaven/web-client-ui/commit/ed41c424de75fcba8751a70b54a189957f979e97)), closes [#1695](https://github.com/deephaven/web-client-ui/issues/1695) [#1679](https://github.com/deephaven/web-client-ui/issues/1679)
+* NavTabList component ([#1698](https://github.com/deephaven/web-client-ui/issues/1698)) ([96641fb](https://github.com/deephaven/web-client-ui/commit/96641fbc2f5f5ee291da15e464e80183d5107a57))
+* Reject promise immediately if var not found ([#1718](https://github.com/deephaven/web-client-ui/issues/1718)) ([43d40bd](https://github.com/deephaven/web-client-ui/commit/43d40bd7962bf60ae692fdd47282d278d54b3f2b)), closes [#1701](https://github.com/deephaven/web-client-ui/issues/1701)
+* theming tweaks ([#1727](https://github.com/deephaven/web-client-ui/issues/1727)) ([f919a7e](https://github.com/deephaven/web-client-ui/commit/f919a7ed333777e83ae6b0e3973991d2cf089359))
+
+
+### BREAKING CHANGES
+
+* - Subclasses of IrisGridTableModelTemplate or it's subclasses that use
+backgroundColorForCell may need to update their signature to accept the
+theme if they are calling the superclass
+
+
+
+
+
 # [0.58.0](https://github.com/deephaven/web-client-ui/compare/v0.57.1...v0.58.0) (2023-12-22)
 
 

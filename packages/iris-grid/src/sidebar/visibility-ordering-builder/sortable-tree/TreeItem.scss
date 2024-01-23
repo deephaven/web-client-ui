@@ -26,15 +26,15 @@ $depth-margin: calc(
     }
 
     &:hover {
-      background: $gray-500;
+      background: var(--dh-color-item-list-hover-bg);
       cursor: grab;
     }
 
     &.isSelected {
-      background-color: hsla(var(--dh-color-accent-hsl), 0.4);
+      background-color: var(--dh-color-item-list-selected-bg);
 
       &:hover {
-        background-color: $primary;
+        background-color: var(--dh-color-item-list-selected-hover-bg);
 
         svg:not(.color-swatch) {
           color: $foreground;
@@ -83,10 +83,11 @@ $depth-margin: calc(
       .tree-item {
         opacity: 1;
         background-color: $primary;
+        color: var(--dh-color-accent-contrast);
         box-shadow: $box-shadow;
 
         svg:not(.color-swatch) {
-          color: $foreground;
+          color: var(--dh-color-accent-contrast);
         }
 
         &.two-dragged {

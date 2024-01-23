@@ -23,6 +23,7 @@ const SUPPORTED_TYPES: string[] = [
   dh.VariableType.TREETABLE,
   dh.VariableType.HIERARCHICALTABLE,
   dh.VariableType.PANDAS,
+  dh.VariableType.PARTITIONEDTABLE,
 ];
 
 export type Command = 'filter' | 'sort';

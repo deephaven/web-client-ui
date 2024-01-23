@@ -62,7 +62,7 @@ import {
 import { IrisGridThemeType } from './IrisGridTheme';
 import ColumnHeaderGroup, { isColumnHeaderGroup } from './ColumnHeaderGroup';
 
-const log = Log.module('IrisGridTableModel');
+const log = Log.module('IrisGridTableModelTemplate');
 
 const SET_VIEWPORT_THROTTLE = 150;
 const APPLY_VIEWPORT_THROTTLE = 0;
@@ -164,7 +164,7 @@ class IrisGridTableModelTemplate<
   viewport: {
     top: VisibleIndex;
     bottom: VisibleIndex;
-    columns: Column[];
+    columns?: Column[];
   } | null;
 
   viewportData: UIViewportData<R> | null;
@@ -625,7 +625,11 @@ class IrisGridTableModelTemplate<
     return theme.textColor;
   }
 
-  backgroundColorForCell(x: ModelIndex, y: ModelIndex): string | null {
+  backgroundColorForCell(
+    x: ModelIndex,
+    y: ModelIndex,
+    theme: IrisGridThemeType
+  ): string | null {
     return this.formatForCell(x, y)?.backgroundColor ?? null;
   }
 
@@ -1324,7 +1328,7 @@ class IrisGridTableModelTemplate<
   }
 
   setViewport = throttle(
-    (top: VisibleIndex, bottom: VisibleIndex, columns: Column[]) => {
+    (top: VisibleIndex, bottom: VisibleIndex, columns?: Column[]) => {
       if (bottom < top) {
         log.error('Invalid viewport', top, bottom);
         return;
@@ -1377,7 +1381,7 @@ class IrisGridTableModelTemplate<
   applyBufferedViewport(
     viewportTop: number,
     viewportBottom: number,
-    columns: Column[]
+    columns?: Column[]
   ): void {
     log.debug2('applyBufferedViewport', viewportTop, viewportBottom, columns);
     if (this.subscription == null) {
@@ -1394,7 +1398,7 @@ class IrisGridTableModelTemplate<
   }
 
   async snapshot(
-    ranges: GridRange[],
+    ranges: readonly GridRange[],
     includeHeaders = false,
     formatValue: (value: unknown, column: Column) => unknown = value => value,
     consolidateRanges = true
@@ -1515,7 +1519,7 @@ class IrisGridTableModelTemplate<
    * @returns A formatted string of all the data, columns separated by `\t` and rows separated by `\n`
    */
   async textSnapshot(
-    ranges: GridRange[],
+    ranges: readonly GridRange[],
     includeHeaders = false,
     formatValue: (
       value: unknown,
@@ -1534,7 +1538,7 @@ class IrisGridTableModelTemplate<
     return data.map(row => row.join('\t')).join('\n');
   }
 
-  async valuesTable(columns: Column | Column[]): Promise<Table> {
+  async valuesTable(columns: Column | readonly Column[]): Promise<Table> {
     let table = null;
     try {
       table = await this.table.copy();
@@ -1695,7 +1699,7 @@ class IrisGridTableModelTemplate<
     return ranges.every(range => this.isEditableRange(range));
   }
 
-  isDeletableRanges(ranges: GridRange[]): boolean {
+  isDeletableRanges(ranges: readonly GridRange[]): boolean {
     return ranges.every(range => this.isDeletableRange(range));
   }
 

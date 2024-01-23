@@ -2,7 +2,8 @@
 @import '../scss/util.scss';
 
 $cb-option-btn-color: $dropdown-link-color;
-$cb-option-keyboard-selected-bg: var(--dh-color-keyboard-selected-bg);
+$cb-option-selected-bg: var(--dh-color-item-list-selected-bg);
+$cb-option-selected-hover-bg: var(--dh-color-item-list-selected-hover-bg);
 $cb-option-hover-bg: $dropdown-link-hover-bg;
 $cb-option-hover-color: $dropdown-link-hover-color;
 
@@ -79,15 +80,19 @@ $cb-option-hover-color: $dropdown-link-hover-color;
     display: block;
   }
   .cb-option-btn.keyboard-active {
-    background-color: $cb-option-keyboard-selected-bg;
+    background-color: $cb-option-selected-bg;
+    &:hover {
+      background-color: $cb-option-selected-hover-bg;
+    }
   }
 
-  .cb-option-btn:hover {
-    color: $cb-option-hover-color;
-    background-color: $cb-option-hover-bg;
-  }
   .cb-option-btn:focus {
     outline: none;
+  }
+
+  .cb-option-btn:hover:not(.keyboard-active) {
+    color: $cb-option-hover-color;
+    background-color: $cb-option-hover-bg;
   }
 
   .cb-options:last-child {

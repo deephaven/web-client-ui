@@ -174,6 +174,10 @@ interface ChartPanelState {
   panelState?: GLChartPanelState;
 }
 
+interface LoadState {
+  isLoading: boolean;
+}
+
 function hasInputFilter(
   panel: PanelProps
 ): panel is PanelProps & { inputFilters: InputFilter[] } {
@@ -714,8 +718,8 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     this.setActive(!isHidden);
   }
 
-  handleUpdate(): void {
-    this.setState({ isLoading: false });
+  handleUpdate({ isLoading }: LoadState): void {
+    this.setState({ isLoading });
   }
 
   handleClearAllFilters(): void {

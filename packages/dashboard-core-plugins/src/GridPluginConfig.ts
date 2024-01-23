@@ -9,7 +9,12 @@ const GridPluginConfig: WidgetPlugin = {
   type: PluginType.WIDGET_PLUGIN,
   component: GridWidgetPlugin,
   panelComponent: GridPanelPlugin,
-  supportedTypes: ['Table', 'TreeTable', 'HierarchicalTable'],
+  supportedTypes: [
+    'Table',
+    'TreeTable',
+    'HierarchicalTable',
+    'PartitionedTable',
+  ],
   icon: dhTable,
 };
 

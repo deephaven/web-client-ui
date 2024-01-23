@@ -646,7 +646,6 @@ describe('dehydration methods', () => {
       IrisGridUtils.dehydrateIrisGridPanelState(irisGridTestUtils.makeModel(), {
         isSelectingPartition: false,
         partitions: [],
-        partitionColumns: [],
         advancedSettings: new Map(),
       }),
     ],
@@ -677,54 +676,10 @@ describe('hydration methods', () => {
 
   it.each([
     [
-      'hydrateIrisGridPanelStateV1',
-      {
-        isSelectingPartition: false,
-        partition: null,
-        partitionColumn: 'INVALID',
-        advancedSettings: [],
-      },
-    ],
-    [
-      'hydrateIrisGridPanelStateV2',
-      {
-        isSelectingPartition: false,
-        partitions: [null],
-        partitionColumns: ['INVALID'],
-        advancedSettings: [],
-      },
-    ],
-  ])('%s invalid column error', (_label, panelState) => {
-    expect(() =>
-      IrisGridUtils.hydrateIrisGridPanelState(model, panelState)
-    ).toThrow('Invalid partition column INVALID');
-  });
-
-  it.each([
-    [
-      'hydrateIrisGridPanelStateV1 null partition column',
-      {
-        isSelectingPartition: false,
-        partition: null,
-        partitionColumn: null,
-        advancedSettings: [],
-      },
-    ],
-    [
       'hydrateIrisGridPanelStateV1 null partition',
       {
         isSelectingPartition: false,
         partition: null,
-        partitionColumn: 'name_0',
-        advancedSettings: [],
-      },
-    ],
-    [
-      'hydrateIrisGridPanelStateV1 unselected partition',
-      {
-        isSelectingPartition: false,
-        partition: 'a',
-        partitionColumn: 'name_0',
         advancedSettings: [],
       },
     ],
@@ -733,7 +688,6 @@ describe('hydration methods', () => {
       {
         isSelectingPartition: true,
         partition: 'a',
-        partitionColumn: 'name_0',
         advancedSettings: [],
       },
     ],
@@ -742,7 +696,6 @@ describe('hydration methods', () => {
       {
         isSelectingPartition: false,
         partitions: [],
-        partitionColumns: [],
         advancedSettings: [],
       },
     ],
@@ -751,7 +704,6 @@ describe('hydration methods', () => {
       {
         isSelectingPartition: true,
         partitions: [null, null],
-        partitionColumns: ['name_0', 'name_1'],
         advancedSettings: [],
       },
     ],
@@ -760,7 +712,6 @@ describe('hydration methods', () => {
       {
         isSelectingPartition: true,
         partitions: ['a', 'b'],
-        partitionColumns: ['name_0', 'name_1'],
         advancedSettings: [],
       },
     ],
@@ -769,7 +720,6 @@ describe('hydration methods', () => {
       {
         isSelectingPartition: true,
         partitions: [null, 'b', null],
-        partitionColumns: ['name_0', 'name_1', 'name_2'],
         advancedSettings: [],
       },
     ],
@@ -778,7 +728,6 @@ describe('hydration methods', () => {
       {
         isSelectingPartition: true,
         partitions: ['a', null, 'b'],
-        partitionColumns: ['name_0', 'name_1', 'name_2'],
         advancedSettings: [],
       },
     ],
@@ -787,18 +736,8 @@ describe('hydration methods', () => {
     expect(result.isSelectingPartition).toBe(panelState.isSelectingPartition);
     if (isPanelStateV1(panelState)) {
       expect(result.partitions).toEqual([panelState.partition]);
-      if (panelState.partitionColumn !== null) {
-        expect(result.partitionColumns[0].name).toBe(
-          panelState.partitionColumn
-        );
-      } else {
-        expect(result.partitionColumns).toEqual([]);
-      }
     } else {
       expect(result.partitions).toEqual(panelState.partitions);
-      panelState.partitionColumns.forEach((partition, index) => {
-        expect(result.partitionColumns[index].name === partition).toBeTruthy();
-      });
     }
   });
 });
