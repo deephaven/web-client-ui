@@ -4,7 +4,6 @@ $toolbar-padding: $spacer-1;
 $toolbar-font-size: 17px;
 $toolbar-btn-width: $input-height;
 $toolbar-bg: $content-bg;
-$file-list-search-bg: $gray-800;
 
 .file-explorer-toolbar {
   background: $toolbar-bg;
@@ -27,9 +26,6 @@ $file-list-search-bg: $gray-800;
     flex-grow: 1;
     .search-group {
       width: 100%;
-      input {
-        background-color: $file-list-search-bg;
-      }
     }
   }
   .btn {

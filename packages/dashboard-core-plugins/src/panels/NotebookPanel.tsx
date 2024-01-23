@@ -64,7 +64,7 @@ interface Metadata extends PanelMetadata {
   id: string;
 }
 interface NotebookSetting {
-  isMinimapEnabled: boolean;
+  isMinimapEnabled?: boolean;
 }
 
 interface FileMetadata {
@@ -78,16 +78,21 @@ interface PanelState {
   fileMetadata: FileMetadata | null;
 }
 
-interface NotebookPanelProps extends DashboardPanelProps {
+interface NotebookPanelMappedProps {
+  defaultNotebookSettings: NotebookSetting;
   fileStorage: FileStorage;
+  session?: IdeSession;
+  sessionLanguage?: string;
+}
+
+interface NotebookPanelProps
+  extends DashboardPanelProps,
+    NotebookPanelMappedProps {
   isDashboardActive: boolean;
   isPreview: boolean;
   metadata: Metadata;
-  session: IdeSession;
-  sessionLanguage: string;
   panelState: PanelState;
   notebooksUrl: string;
-  defaultNotebookSettings: NotebookSetting;
   updateSettings: (settings: Partial<WorkspaceSettings>) => void;
 }
 
@@ -790,7 +795,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     const { defaultNotebookSettings, updateSettings } = this.props;
     const newSettings = {
       defaultNotebookSettings: {
-        isMinimapEnabled: !defaultNotebookSettings.isMinimapEnabled,
+        isMinimapEnabled: !(defaultNotebookSettings.isMinimapEnabled ?? false),
       },
     };
     updateSettings(newSettings);
@@ -1176,10 +1181,10 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     const { defaultNotebookSettings } = this.props;
     const { settings: initialSettings } = this.state;
     return this.getOverflowActions(
-      defaultNotebookSettings.isMinimapEnabled,
+      defaultNotebookSettings.isMinimapEnabled ?? false,
       this.getSettings(
         initialSettings,
-        defaultNotebookSettings.isMinimapEnabled
+        defaultNotebookSettings.isMinimapEnabled ?? false
       ).wordWrap === 'on'
     );
   }
@@ -1216,7 +1221,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     const isExistingItem = fileMetadata?.id != null;
     const settings = this.getSettings(
       initialSettings,
-      defaultNotebookSettings.isMinimapEnabled
+      defaultNotebookSettings.isMinimapEnabled ?? false
     );
     const isSessionConnected = session != null;
     const isLanguageMatching = sessionLanguage === settings.language;
@@ -1428,10 +1433,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
 const mapStateToProps = (
   state: RootState,
   ownProps: { localDashboardId: string }
-): Pick<
-  NotebookPanelProps,
-  'defaultNotebookSettings' | 'fileStorage' | 'session' | 'sessionLanguage'
-> => {
+): NotebookPanelMappedProps => {
   const fileStorage = getFileStorage(state);
   const defaultNotebookSettings = getDefaultNotebookSettings(state);
   const sessionWrapper = getDashboardSessionWrapper(
@@ -1443,7 +1445,7 @@ const mapStateToProps = (
   const { type: sessionLanguage } = sessionConfig ?? {};
   return {
     fileStorage,
-    defaultNotebookSettings: defaultNotebookSettings as NotebookSetting,
+    defaultNotebookSettings,
     session,
     sessionLanguage,
   };

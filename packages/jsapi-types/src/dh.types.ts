@@ -165,6 +165,7 @@ export interface IdeSession extends Evented {
   getTable: (name: string) => Promise<Table>;
   getFigure: (name: string) => Promise<Figure>;
   getTreeTable: (name: string) => Promise<TreeTable>;
+  getPartitionedTable: (name: string) => Promise<PartitionedTable>;
   getObject: ((
     definition: VariableDefinition<typeof VariableType.TABLE>
   ) => Promise<Table>) &
@@ -177,6 +178,9 @@ export interface IdeSession extends Evented {
     ((
       definition: VariableDefinition<typeof VariableType.HIERARCHICALTABLE>
     ) => Promise<TreeTable>) &
+    ((
+      definition: VariableDefinition<typeof VariableType.PARTITIONEDTABLE>
+    ) => Promise<PartitionedTable>) &
     ((definition: VariableDefinition) => Promise<unknown>);
   onLogMessage: (logHandler: (logItem: LogItem) => void) => () => void;
   runCode: (code: string) => Promise<CommandResult>;
@@ -907,6 +911,13 @@ export interface ColumnStatistics {
   getType: (name: string) => string;
 }
 
+export interface PartitionedTableStatic {
+  readonly EVENT_KEYADDED: string;
+  readonly EVENT_DISCONNECT: string;
+  readonly EVENT_RECONNECT: string;
+  readonly EVENT_RECONNECTFAILED: string;
+}
+
 export interface TreeTableStatic {
   readonly EVENT_UPDATED: string;
   readonly EVENT_DISCONNECT: string;
@@ -939,6 +950,19 @@ export interface TableTemplate<T = Table> extends Evented {
   ) => TableViewportSubscription;
 
   copy: () => Promise<T>;
+  close: () => void;
+}
+
+export interface PartitionedTable extends Evented, PartitionedTableStatic {
+  readonly size: number;
+  readonly columns: Column[];
+  readonly keyColumns: Column[];
+
+  getTable: (key: unknown) => Promise<Table>;
+  getMergedTable: () => Promise<Table>;
+  getKeys: () => Set<object>;
+  getKeyTable: () => Promise<Table>;
+
   close: () => void;
 }
 
@@ -1067,6 +1091,9 @@ export interface IdeConnection
     ((
       definition: VariableDefinition<typeof VariableType.HIERARCHICALTABLE>
     ) => Promise<TreeTable>) &
+    ((
+      definition: VariableDefinition<typeof VariableType.PARTITIONEDTABLE>
+    ) => Promise<PartitionedTable>) &
     ((definition: VariableDefinition) => Promise<unknown>);
   subscribeToFieldUpdates: (
     param: (changes: VariableChanges) => void

@@ -1,9 +1,12 @@
 @import '../scss/custom.scss';
 
 $aci-option-btn-color: $foreground;
-$aci-option-keyboard-selected-bg: var(--dh-color-keyboard-selected-bg);
-$aci-option-hover-bg: $dropdown-link-hover-bg;
-$aci-option-hover-color: $dropdown-link-hover-color;
+$aci-option-hover-bg: var(--dh-color-item-list-hover-bg);
+$aci-option-keyboard-selected-bg: var(--dh-color-item-list-selected-bg);
+$aci-option-keyboard-selected-hover-bg: var(
+  --dh-color-item-list-selected-hover-bg
+);
+$aci-option-hover-color: $foreground;
 
 .aci-container {
   flex-grow: 1;
@@ -30,6 +33,9 @@ $aci-option-hover-color: $dropdown-link-hover-color;
   }
   .aci-option-btn.keyboard-active {
     background-color: $aci-option-keyboard-selected-bg;
+    &:hover {
+      background-color: $aci-option-keyboard-selected-hover-bg;
+    }
   }
 
   .aci-option-btn:hover {

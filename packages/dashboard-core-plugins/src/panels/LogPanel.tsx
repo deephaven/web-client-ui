@@ -14,11 +14,11 @@ import { getDashboardSessionWrapper } from '../redux';
 const log = Log.module('LogPanel');
 
 interface LogPanelProps extends DashboardPanelProps {
-  session: IdeSession;
+  session?: IdeSession;
 }
 
 interface LogPanelState {
-  session: IdeSession;
+  session?: IdeSession;
 }
 
 class LogPanel extends PureComponent<LogPanelProps, LogPanelState> {

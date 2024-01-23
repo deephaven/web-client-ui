@@ -114,7 +114,7 @@ describe('selection', () => {
 
     input.focus();
     input.setSelectionRange(selectionStart, selectionEnd, selectionDirection);
-    user.type(input, '{Shift}', {
+    await user.type(input, '{Shift}', {
       skipClick: true,
       initialSelectionStart: selectionStart,
       initialSelectionEnd: selectionEnd,
@@ -150,14 +150,14 @@ describe('selection', () => {
 });
 
 describe('select and type', () => {
-  async function testSelectAndType(
+  async function selectAndType(
     user: ReturnType<typeof userEvent.setup>,
     cursorPosition: number,
-    str: string,
-    expectedResult: string
+    str: string
   ) {
     const elementRef = React.createRef<TimeInputElement>();
-    const { unmount } = makeTimeInput({ ref: elementRef });
+    const onChange = jest.fn();
+    const { unmount } = makeTimeInput({ ref: elementRef, onChange });
     const input: HTMLInputElement = screen.getByRole('textbox');
 
     input.focus();
@@ -169,10 +169,36 @@ describe('select and type', () => {
       initialSelectionEnd: cursorPosition,
     });
     await user.keyboard(str);
+    return { input, onChange, unmount };
+  }
+  // Test internal/displayed value, but not the onChange callback
+  async function testSelectAndType(
+    user: ReturnType<typeof userEvent.setup>,
+    cursorPosition: number,
+    str: string,
+    expectedResult: string
+  ) {
+    const { input, unmount } = await selectAndType(user, cursorPosition, str);
 
     expect(input.value).toEqual(expectedResult);
     unmount();
   }
+  // Test the value in onChange callback
+  async function testSelectAndTypeOnChange(
+    user: ReturnType<typeof userEvent.setup>,
+    cursorPosition: number,
+    str: string,
+    expectedResult: string
+  ) {
+    const { onChange, unmount } = await selectAndType(
+      user,
+      cursorPosition,
+      str
+    );
+    expect(onChange).lastCalledWith(TimeUtils.parseTime(expectedResult));
+    unmount();
+  }
+
   it('handles typing after autoselecting a segment', async () => {
     const user = userEvent.setup();
     await testSelectAndType(user, 0, '0', '02:34:56');
@@ -243,6 +269,58 @@ describe('select and type', () => {
     });
 
     expect(input.value).toEqual(``);
+
+    unmount();
+  });
+
+  it('fills in missing chars and triggers onChange', async () => {
+    const user = userEvent.setup();
+    await testSelectAndTypeOnChange(user, 1, '{backspace}', '00:34:56');
+    await testSelectAndTypeOnChange(user, 3, '{backspace}', '12:00:56');
+    await testSelectAndTypeOnChange(user, 6, '{backspace}', '12:34:00');
+    await testSelectAndTypeOnChange(
+      user,
+      8,
+      // First backspace clears the whole section
+      '{backspace}{backspace}{backspace}{backspace}',
+      '10:00:00'
+    );
+  });
+
+  it('updates the displayed value on blur', async () => {
+    const user = userEvent.setup();
+    const onChange = jest.fn();
+    const { unmount } = makeTimeInput({ onChange });
+    const input: HTMLInputElement = screen.getByRole('textbox');
+    input.focus();
+    await user.type(input, '{shift}{backspace}{backspace}', {
+      initialSelectionStart: 6,
+      initialSelectionEnd: 6,
+    });
+    expect(onChange).toBeCalledTimes(2);
+    expect(onChange).lastCalledWith(TimeUtils.parseTime('12:30:00'));
+    expect(input.value).toEqual('12:3');
+
+    input.blur();
+
+    // Blur should update the internal value to match the last onChange
+    // but not trigger another onChange
+    expect(onChange).toBeCalledTimes(2);
+
+    expect(input.value).toEqual('12:30:00');
+
+    // Fill in missing chars in the middle
+    input.focus();
+    await user.type(input, '{shift}{backspace}', {
+      skipClick: true,
+      initialSelectionStart: 3,
+      initialSelectionEnd: 3,
+    });
+    expect(input.value).toEqual(
+      `12:${FIXED_WIDTH_SPACE}${FIXED_WIDTH_SPACE}:00`
+    );
+    input.blur();
+    expect(input.value).toEqual('12:00:00');
 
     unmount();
   });
@@ -439,4 +517,38 @@ it('updates properly when the value prop is updated', () => {
   rerender(<TimeInput value={0} onChange={jest.fn()} />);
 
   expect(textbox.value).toEqual('00:00:00');
+});
+
+it('ignores value prop changes matching displayed value', async () => {
+  const user = userEvent.setup();
+  const onChange = jest.fn();
+  const { rerender } = makeTimeInput({ value: 1, onChange });
+
+  const textbox: HTMLInputElement = screen.getByRole('textbox');
+  expect(textbox.value).toEqual('00:00:01');
+
+  textbox.focus();
+  await user.type(textbox, '{backspace}', {
+    skipClick: true,
+    initialSelectionStart: 8,
+    initialSelectionEnd: 8,
+  });
+
+  expect(textbox.value).toEqual('00:00:0');
+  expect(onChange).toBeCalledWith(0);
+
+  // Ignore prop update matching internal state
+  rerender(<TimeInput value={0} onChange={onChange} />);
+  expect(textbox.value).toEqual('00:00:0');
+  expect(onChange).toBeCalledTimes(1);
+
+  // Update internal value
+  rerender(<TimeInput value={1} onChange={onChange} />);
+  expect(textbox.value).toEqual('00:00:01');
+  expect(onChange).toBeCalledTimes(1);
+
+  // Update internal value
+  rerender(<TimeInput value={0} onChange={onChange} />);
+  expect(textbox.value).toEqual('00:00:00');
+  expect(onChange).toBeCalledTimes(1);
 });

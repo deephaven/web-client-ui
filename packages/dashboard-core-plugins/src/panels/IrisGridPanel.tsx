@@ -43,6 +43,7 @@ import {
   ColumnHeaderGroup,
   IrisGridContextMenuData,
   IrisGridTableModel,
+  PartitionConfig,
 } from '@deephaven/iris-grid';
 import {
   AdvancedFilterOptions,
@@ -126,9 +127,7 @@ export interface PanelState {
 type LoadedPanelState = PanelState & {
   irisGridPanelState: PanelState['irisGridPanelState'] & {
     partitions?: (string | null)[];
-    partitionColumns?: ColumnName[];
     partition?: string | null;
-    partitionColumn?: ColumnName | null;
   };
 };
 
@@ -190,7 +189,7 @@ interface IrisGridPanelState {
   movedRows: readonly MoveOperation[];
   isSelectingPartition: boolean;
   partitions: (string | null)[];
-  partitionColumns: Column[];
+  partitionConfig?: PartitionConfig;
   rollupConfig?: UIRollupConfig;
   showSearchBar: boolean;
   searchValue: string;
@@ -296,7 +295,6 @@ export class IrisGridPanel extends PureComponent<
       movedRows: [],
       isSelectingPartition: false,
       partitions: [],
-      partitionColumns: [],
       rollupConfig: undefined,
       showSearchBar: false,
       searchValue: '',
@@ -466,13 +464,11 @@ export class IrisGridPanel extends PureComponent<
       model: IrisGridModel,
       isSelectingPartition: boolean,
       partitions: (string | null)[],
-      partitionColumns: Column[],
       advancedSettings: Map<AdvancedSettingsType, boolean>
     ) =>
       IrisGridUtils.dehydrateIrisGridPanelState(model, {
         isSelectingPartition,
         partitions,
-        partitionColumns,
         advancedSettings,
       })
   );
@@ -499,7 +495,8 @@ export class IrisGridPanel extends PureComponent<
       pendingDataMap: PendingDataMap<UIRow>,
       frozenColumns: readonly ColumnName[],
       conditionalFormats: readonly SidebarFormattingRule[],
-      columnHeaderGroups: readonly ColumnHeaderGroup[]
+      columnHeaderGroups: readonly ColumnHeaderGroup[],
+      partitionConfig: PartitionConfig | undefined
     ) => {
       assertNotNull(this.irisGridUtils);
       return this.irisGridUtils.dehydrateIrisGridState(model, {
@@ -525,6 +522,7 @@ export class IrisGridPanel extends PureComponent<
         frozenColumns,
         conditionalFormats,
         columnHeaderGroups,
+        partitionConfig,
       });
     }
   );
@@ -1035,12 +1033,8 @@ export class IrisGridPanel extends PureComponent<
             }[]
           );
       }
-      const {
-        isSelectingPartition,
-        partitions,
-        partitionColumns,
-        advancedSettings,
-      } = IrisGridUtils.hydrateIrisGridPanelState(model, irisGridPanelState);
+      const { isSelectingPartition, partitions, advancedSettings } =
+        IrisGridUtils.hydrateIrisGridPanelState(model, irisGridPanelState);
       assertNotNull(this.irisGridUtils);
       const {
         advancedFilters,
@@ -1063,6 +1057,7 @@ export class IrisGridPanel extends PureComponent<
         frozenColumns,
         conditionalFormats,
         columnHeaderGroups,
+        partitionConfig,
       } = this.irisGridUtils.hydrateIrisGridState(model, {
         ...irisGridState,
         ...irisGridStateOverrides,
@@ -1084,7 +1079,6 @@ export class IrisGridPanel extends PureComponent<
         movedColumns,
         movedRows,
         partitions,
-        partitionColumns,
         quickFilters,
         reverseType,
         rollupConfig,
@@ -1102,6 +1096,7 @@ export class IrisGridPanel extends PureComponent<
         isStuckToBottom,
         isStuckToRight,
         columnHeaderGroups,
+        partitionConfig,
       });
     } catch (error) {
       log.error('loadPanelState failed to load panelState', panelState, error);
@@ -1117,7 +1112,6 @@ export class IrisGridPanel extends PureComponent<
       panelState: oldPanelState,
       isSelectingPartition,
       partitions,
-      partitionColumns,
       advancedSettings,
     } = this.state;
     const {
@@ -1140,6 +1134,7 @@ export class IrisGridPanel extends PureComponent<
       frozenColumns,
       conditionalFormats,
       columnHeaderGroups,
+      partitionConfig,
     } = irisGridState;
     assertNotNull(model);
     assertNotNull(metrics);
@@ -1153,7 +1148,6 @@ export class IrisGridPanel extends PureComponent<
         model,
         isSelectingPartition,
         partitions,
-        partitionColumns,
         advancedSettings
       ),
       this.getDehydratedIrisGridState(
@@ -1177,7 +1171,8 @@ export class IrisGridPanel extends PureComponent<
         pendingDataMap,
         frozenColumns,
         conditionalFormats,
-        columnHeaderGroups
+        columnHeaderGroups,
+        partitionConfig
       ),
       this.getDehydratedGridState(
         model,
@@ -1241,7 +1236,7 @@ export class IrisGridPanel extends PureComponent<
       movedColumns,
       movedRows,
       partitions,
-      partitionColumns,
+      partitionConfig,
       quickFilters,
       reverseType,
       rollupConfig,
@@ -1323,7 +1318,7 @@ export class IrisGridPanel extends PureComponent<
             movedColumns={movedColumns}
             movedRows={movedRows}
             partitions={partitions}
-            partitionColumns={partitionColumns}
+            partitionConfig={partitionConfig}
             quickFilters={quickFilters}
             reverseType={reverseType}
             rollupConfig={rollupConfig}

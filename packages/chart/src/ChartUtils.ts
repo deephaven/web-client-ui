@@ -1856,6 +1856,11 @@ class ChartUtils {
           color: theme.title_color,
         },
       },
+      legend: {
+        font: {
+          color: theme.legend_color,
+        },
+      },
     };
 
     if (type === dh.plot.AxisType.X) {
@@ -1872,19 +1877,40 @@ class ChartUtils {
     return axis;
   }
 
+  /**
+   * Creates a plotly layout object based on a given theme.
+   * See https://plotly.com/javascript/reference/layout/
+   * @param theme The theme to use for the layout
+   */
   makeDefaultLayout(theme: ChartTheme): Partial<Layout> {
     const { dh } = this;
+
+    const {
+      /* Used as top level properties of `Layout` */
+      /* eslint-disable camelcase */
+      paper_bgcolor,
+      plot_bgcolor,
+      title_color,
+      coastline_color,
+      land_color,
+      ocean_color,
+      lake_color,
+      river_color,
+      /* eslint-disable camelcase */
+    } = theme;
+
     const layout: Partial<Layout> = {
-      ...theme,
+      paper_bgcolor,
+      plot_bgcolor,
       autosize: true,
       colorway: ChartUtils.getColorwayFromTheme(theme),
       font: {
         family: "'Fira Sans', sans-serif",
-        color: theme.title_color,
+        color: title_color,
       },
       title: {
         font: {
-          color: theme.title_color,
+          color: title_color,
         },
         yanchor: 'top',
         pad: { ...ChartUtils.DEFAULT_TITLE_PADDING },
@@ -1892,7 +1918,7 @@ class ChartUtils {
       },
       legend: {
         font: {
-          color: theme.title_color,
+          color: title_color,
         },
       },
       margin: { ...ChartUtils.DEFAULT_MARGIN },
@@ -1908,8 +1934,23 @@ class ChartUtils {
         yaxis: this.makeLayoutAxis(dh.plot.AxisType.Y, theme),
         zaxis: this.makeLayoutAxis(dh.plot.AxisType.Z, theme),
       },
+      geo: {
+        showcoastlines: true,
+        showframe: false,
+        showland: true,
+        showocean: true,
+        showlakes: true,
+        showrivers: true,
+        bgcolor: paper_bgcolor,
+        coastlinecolor: coastline_color,
+        landcolor: land_color,
+        oceancolor: ocean_color,
+        lakecolor: lake_color,
+        rivercolor: river_color,
+      },
     };
     layout.datarevision = 0;
+
     return layout;
   }
 

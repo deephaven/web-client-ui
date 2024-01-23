@@ -33,6 +33,16 @@ export type TimeInputElement = {
   setSelection: (newSelection: SelectionSegment) => void;
 };
 
+function fixIncompleteValue(value: string): string {
+  // If value is not a complete HH:mm:ss time, fill missing parts with 0
+  if (value != null) {
+    return `${value
+      .substring(0, 8)
+      .replace(/\u2007/g, '0')}${`00:00:00`.substring(value.length)}`;
+  }
+  return value;
+}
+
 // Forward ref causes a false positive for display-name in eslint:
 // https://github.com/yannickcr/eslint-plugin-react/issues/2269
 // eslint-disable-next-line react/display-name
@@ -49,6 +59,7 @@ const TimeInput = React.forwardRef<TimeInputElement, TimeInputProps>(
       'data-testid': dataTestId,
     } = props;
     const [value, setValue] = useState(TimeUtils.formatTime(propsValue));
+    const parsedValueRef = useRef<number>(propsValue);
     const [selection, setSelection] = useState<SelectionSegment>();
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -68,9 +79,14 @@ const TimeInput = React.forwardRef<TimeInputElement, TimeInputProps>(
 
     useEffect(
       function setFormattedTime() {
-        setValue(TimeUtils.formatTime(propsValue));
+        // Ignore value prop update if it matches the displayed value
+        // to preserve the displayed value while typing
+        if (parsedValueRef.current !== propsValue) {
+          setValue(TimeUtils.formatTime(propsValue));
+          parsedValueRef.current = propsValue;
+        }
       },
-      [propsValue]
+      [parsedValueRef, propsValue]
     );
 
     function getNextSegmentValue(
@@ -115,15 +131,27 @@ const TimeInput = React.forwardRef<TimeInputElement, TimeInputProps>(
       );
     }
 
-    function handleChange(newValue: string): void {
-      log.debug('handleChange', newValue);
-      setValue(newValue);
+    const handleChange = useCallback(
+      (newValue: string): void => {
+        log.debug('handleChange', newValue);
+        setValue(newValue);
+        parsedValueRef.current = TimeUtils.parseTime(
+          fixIncompleteValue(newValue)
+        );
+        onChange(parsedValueRef.current);
+      },
+      [onChange]
+    );
 
-      // Only send a change if the value is actually valid
-      if (TimeUtils.isTimeString(newValue)) {
-        onChange(TimeUtils.parseTime(newValue));
+    const handleBlur = useCallback((): void => {
+      const fixedValue = fixIncompleteValue(value);
+      // Update the value displayed in the input
+      // onChange with the fixed value already triggered in handleChange
+      if (fixedValue !== value) {
+        setValue(fixedValue);
       }
-    }
+      onBlur();
+    }, [value, onBlur]);
 
     const handleSelect = useCallback(
       (newSelection: SelectionSegment) => {
@@ -146,7 +174,7 @@ const TimeInput = React.forwardRef<TimeInputElement, TimeInputProps>(
         selection={selection}
         value={value}
         onFocus={onFocus}
-        onBlur={onBlur}
+        onBlur={handleBlur}
         data-testid={dataTestId}
       />
     );

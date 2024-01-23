@@ -96,8 +96,10 @@ function makeChartPanelWrapper({
   );
 }
 
-function callUpdateFunction() {
-  MockChart.mock.calls[MockChart.mock.calls.length - 1][0]?.onUpdate();
+function callUpdateFunction(isLoading = false) {
+  MockChart.mock.calls[MockChart.mock.calls.length - 1][0]?.onUpdate({
+    isLoading,
+  });
 }
 
 function callErrorFunction() {
@@ -388,6 +390,27 @@ it('shows loading spinner until an error is received B', async () => {
   callErrorFunction();
 
   checkPanelOverlays({ container, isLoading: false });
+});
+
+it('shows loading spinner until all series to process are loaded', async () => {
+  const filterFields = [];
+  const model = makeChartModel({ filterFields });
+  const modelPromise = Promise.resolve(model);
+  const makeModel = () => modelPromise;
+
+  const { container } = render(makeChartPanelWrapper({ makeModel }));
+
+  await act(() => expect(modelPromise).resolves.toBe(model));
+
+  // Overlays shouldn't appear yet because we haven't received an update or error event, should just see loading
+  expectLoading(container);
+
+  // Loading spinner should be shown until the update event is received and the isLoading flag is false
+  callUpdateFunction(true);
+  expectLoading(container);
+
+  callUpdateFunction(false);
+  expectNotLoading(container);
 });
 
 describe('linker column selection', () => {

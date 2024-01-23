@@ -13,6 +13,7 @@ import type {
   FilterValue,
   LongWrapper,
   RemoverFn,
+  PartitionedTable,
   Sort,
   Table,
   TreeTable,
@@ -744,6 +745,15 @@ export class TableUtils {
       default:
         throw new Error(`Unexpected filter type ${operation}`);
     }
+  }
+
+  static isPartitionedTable(table: unknown): table is PartitionedTable {
+    return (
+      table != null &&
+      (table as PartitionedTable).getMergedTable !== undefined &&
+      (table as PartitionedTable).getKeyTable !== undefined &&
+      (table as PartitionedTable).getKeys !== undefined
+    );
   }
 
   static isTreeTable(table: unknown): table is TreeTable {
@@ -1778,6 +1788,11 @@ export class TableUtils {
    */
   makeFilterRawValue(columnType: string, rawValue: unknown): FilterValue {
     const { dh } = this;
+    if (TableUtils.isCharType(columnType)) {
+      return dh.FilterValue.ofString(
+        typeof rawValue === 'number' ? String.fromCharCode(rawValue) : rawValue
+      );
+    }
     if (TableUtils.isTextType(columnType)) {
       return dh.FilterValue.ofString(rawValue);
     }
