@@ -1,9 +1,11 @@
 import React, { useCallback, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { LoadingOverlay } from '@deephaven/components';
+import { updateWorkspaceData } from '@deephaven/redux';
 import { Dashboard, DashboardProps } from './Dashboard';
 import { updateDashboardData } from './redux';
 import { DashboardLayoutConfig } from './DashboardLayout';
+import { DEFAULT_DASHBOARD_ID } from './DashboardConstants';
 
 export interface LazyDashboardProps extends DashboardProps {
   id: string;
@@ -22,7 +24,15 @@ export function LazyDashboard({
 
   const handleLayoutConfigChange = useCallback(
     (config?: DashboardLayoutConfig) => {
-      dispatch(updateDashboardData(id, { layoutConfig: config }));
+      // TODO: #1746 Call updateDashboardData for every dashboard
+      // This currently allows the default dashboard to keep its layout since
+      // other dashboards are not persistent yet and we read workspaceData
+      // for the default dashboard layout
+      if (id === DEFAULT_DASHBOARD_ID) {
+        dispatch(updateWorkspaceData({ layoutConfig: config }));
+      } else {
+        dispatch(updateDashboardData(id, { layoutConfig: config }));
+      }
     },
     [id, dispatch]
   );

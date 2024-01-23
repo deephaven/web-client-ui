@@ -438,8 +438,8 @@ export class AppMainContainer extends Component<
     const { updateWorkspaceData } = this.props;
 
     // Only save the data that is serializable/we want to persist to the workspace
-    const { closed } = data;
-    updateWorkspaceData({ closed });
+    const { closed, filterSets, links } = data;
+    updateWorkspaceData({ closed, filterSets, links });
   }
 
   handleGoldenLayoutChange(goldenLayout: GoldenLayout): void {
@@ -731,10 +731,9 @@ export class AppMainContainer extends Component<
   }
 
   handleTabClose(tabId: string): void {
-    const { setDashboardData } = this.props;
-    // TODO: Figure out how to remove the dashboard data
-    // without updates after this recreating some dashboard data
-    setDashboardData(tabId, undefined as unknown as DashboardData);
+    // TODO: #1746 Do something to mark the dashboard as closed
+    // Remove any dashboard data we no longer need to keep so
+    // the dashboard data store doesn't grow unbounded
     this.setState(({ tabs: oldTabs, activeTabKey }) => {
       const newTabs = oldTabs.filter(tab => tab.key !== tabId);
       let newActiveTabKey = activeTabKey;
@@ -762,9 +761,7 @@ export class AppMainContainer extends Component<
     const { allDashboardData, workspace } = this.props;
     const { data: workspaceData } = workspace;
     const { layoutConfig } = workspaceData;
-    // TODO: Move this to read dashboard data
-    // const { dashboardData } = this.props;
-    // return (dashboardData.layoutConfig ?? []) as ItemConfigType[];
+    // TODO: #1746 Read the default dashboard layout from dashboardData instead of workspaceData
     return [
       {
         id: DEFAULT_DASHBOARD_ID,
