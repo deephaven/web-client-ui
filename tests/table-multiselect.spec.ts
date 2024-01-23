@@ -10,6 +10,13 @@ async function waitForLoadingDone(page: Page) {
   ).toHaveCount(0);
 }
 
+async function getGridLocation(page: Page) {
+  const grid = await page.locator('.iris-grid-panel .iris-grid');
+  const gridLocation = await grid.boundingBox();
+  expect(gridLocation).not.toBeNull();
+  return gridLocation;
+}
+
 async function createTable(page: Page, cmd: string) {
   const consoleInput = page.locator('.console-input');
   await pasteInMonaco(consoleInput, cmd);
@@ -74,10 +81,7 @@ function runMultiselectFilter(
   test(testName, async ({ page }) => {
     await page.goto('');
     await createTable(page, cmd);
-
-    const grid = await page.locator('.iris-grid-panel .iris-grid');
-    const gridLocation = await grid.boundingBox();
-    expect(gridLocation).not.toBeNull();
+    const gridLocation = await getGridLocation(page);
     if (gridLocation === null) return;
 
     // activate the quick filter to get that text as well
@@ -108,9 +112,7 @@ function runSpecialSelectFilter(
     await page.goto('');
     await createTable(page, cmd);
 
-    const grid = await page.locator('.iris-grid-panel .iris-grid');
-    const gridLocation = await grid.boundingBox();
-    expect(gridLocation).not.toBeNull();
+    const gridLocation = await getGridLocation(page);
     if (gridLocation === null) return;
 
     await page.mouse.click(
@@ -125,12 +127,10 @@ function runSpecialSelectFilter(
         await expect(page.getByRole('button', { name: button })).toBeVisible();
       })
     );
-    // await expect(
-    //   page.getByRole('button', { name: expectedButton })
-    // ).toBeVisible();
   });
 }
 
+// null, empty string, and bool, where
 runSpecialSelectFilter(
   'null select filter',
   `
@@ -142,7 +142,6 @@ my_table = new_table([
 ])`,
   ['is null', 'is not null']
 );
-
 runSpecialSelectFilter(
   'empty string select filter',
   `
@@ -154,7 +153,6 @@ my_table = new_table([
 ])`,
   ['is empty string', 'is not empty string']
 );
-
 runSpecialSelectFilter(
   'bool select filter',
   `
@@ -167,6 +165,7 @@ my_table = new_table([
   ['true', 'false', 'is null', 'is not null']
 );
 
+// the other types
 runMultiselectFilter(
   'multiselect string filters',
   'string',
@@ -186,7 +185,6 @@ my_table = new_table([
     { name: 'ends', filter: 'text ends with' },
   ]
 );
-
 runMultiselectFilter(
   'multiselect number filters',
   'number',
@@ -206,7 +204,6 @@ my_table = new_table([
     { name: 'less-eq', filter: 'less than or equal to' },
   ]
 );
-
 runMultiselectFilter(
   'multiselect date filters',
   'date',
@@ -232,3 +229,42 @@ result = new_table([
     { name: 'after-eq', filter: 'date is after or equal' },
   ]
 );
+
+// misc tests
+test('char formatting, non selected right click, preview formatting', async ({
+  page,
+}) => {
+  await page.goto('');
+  await createTable(
+    page,
+    `
+from deephaven.column import char_col
+from deephaven import new_table
+
+my_table = new_table([
+    char_col("MultiselectTestData", [97, 98, 99, 100, 101])
+])`
+  );
+  const gridLocation = await getGridLocation(page);
+  if (gridLocation === null) return;
+
+  // select row 2, 4
+  await page.keyboard.down('Control');
+  await page.mouse.click(
+    gridLocation.x + 1,
+    gridLocation.y + 1 + columnHeaderHeight / 2 + rowHeight
+  );
+  await page.mouse.click(
+    gridLocation.x + 1,
+    gridLocation.y + 1 + columnHeaderHeight / 2 + rowHeight * 3
+  );
+  await page.keyboard.up('Control');
+
+  await page.mouse.click(
+    gridLocation.x + 1,
+    gridLocation.y + 1 + columnHeaderHeight / 2,
+    { button: 'right' }
+  );
+  await page.getByRole('button', { name: 'Filter by Value' }).hover();
+  await expect(page.getByText('"a"', { exact: true })).toHaveCount(1);
+});
