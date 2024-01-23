@@ -8,7 +8,33 @@
   // Row height is set to the swatch height (35px) by dynamic `grid-row` style
   // attributes set in ThemeColors.tsx.
   grid-template-columns: repeat(auto-fit, 210px);
+}
 
+.themeColorsPalette {
+  display: grid;
+  grid-template-columns: repeat(15, 1fr);
+  gap: 1px;
+  align-items: center;
+
+  .swatch {
+    display: flex;
+    aspect-ratio: 4/3;
+    align-items: start;
+    justify-content: end;
+    // hide copy swatch button until hover
+    button {
+      opacity: 0;
+    }
+
+    &:hover {
+      button {
+        opacity: 1;
+      }
+    }
+  }
+}
+
+.themeColors {
   .label {
     display: flex;
     align-items: flex-end;
