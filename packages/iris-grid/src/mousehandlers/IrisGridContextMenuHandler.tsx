@@ -538,28 +538,51 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       );
     }
 
-    // truncate the range to 1000 rows max
-    const slicedSelectedRanges = [];
+    // this block handles"
+    //  - truncates the ranges to search to MAX_MULTISELECT_VALUES
+    //    - then gets all the unique values
+    //    - this is instead of stopping at MAX unique values to prevent the situation when
+    //      there's a large amount of rows with little unique values
+    //  - checks if the source cell is in the selected ranges
+    //    - if it isn't, then the selected cell is the source cell instead
+    let slicedSelectedRanges = [];
+    let sourceInSelected = false;
     let valuesLeft = MAX_MULTISELECT_VALUES;
     for (let i = 0; i < allSelectedRanges.length; i += 1) {
       const selectedRange = allSelectedRanges[i];
       if (selectedRange.startRow !== null && selectedRange.endRow !== null) {
+        // source cell in selected ranges
+        if (
+          selectedRange.startRow <= sourceRow &&
+          sourceRow <= selectedRange.endRow
+        ) {
+          sourceInSelected = true;
+        }
+        // gone past source cell and not in previous selected ranges
+        if (sourceRow < selectedRange.startRow && !sourceInSelected) break;
         // have to truncate the range
         if (selectedRange.endRow - selectedRange.startRow > valuesLeft) {
           slicedSelectedRanges.push(
             new GridRange(
-              sourceColumn,
+              selectedRange.startColumn,
               selectedRange.startRow,
-              sourceColumn,
-              selectedRange.startRow + valuesLeft
+              selectedRange.endColumn,
+              selectedRange.startRow + valuesLeft - 1
             )
           );
           break;
         }
         // add to range and count how many added
         slicedSelectedRanges.push(selectedRange);
-        valuesLeft -= selectedRange.endRow - selectedRange.startRow;
+        valuesLeft -= selectedRange.endRow - selectedRange.startRow + 1;
       }
+    }
+
+    // source row not in ranges, changed to selected row
+    if (!sourceInSelected) {
+      slicedSelectedRanges = [
+        new GridRange(sourceColumn, sourceRow, sourceColumn, sourceRow),
+      ];
     }
 
     // this should be non empty
@@ -1049,11 +1072,12 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           {operator
             ? IrisGridContextMenuHandler.getOperatorAsText(operator)
             : ''}{' '}
-          {values.map(key => `"${key}"`).join(', ')}
+          {TextUtils.join(
+            values.slice(0, 20).map(value => `"${toFilterText(value)}"`)
+          )}
           {values.length > 1 && (
             <div className="iris-grid-filter-menu-subtitle">
-              ({values.length} values selected
-              {values.length === 1000 ? ', truncated' : ''})
+              ({values.length} values selected)
             </div>
           )}
         </div>
@@ -1289,11 +1313,12 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           {operator
             ? IrisGridContextMenuHandler.getOperatorAsText(operator)
             : ''}{' '}
-          {TextUtils.join(values.map(value => `"${toFilterText(value)}"`))}
+          {TextUtils.join(
+            values.slice(0, 20).map(value => `"${toFilterText(value)}"`)
+          )}
           {values.length > 1 && (
             <div className="iris-grid-filter-menu-subtitle">
-              ({values.length} values selected
-              {values.length === 1000 ? ', truncated' : ''})
+              ({values.length} values selected)
             </div>
           )}
         </div>
@@ -1628,13 +1653,14 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           {operator
             ? IrisGridContextMenuHandler.getOperatorAsText(operator)
             : ''}{' '}
-          {values
-            .map(key => `"${previewFilterFormatter.format(key as Date)}"`)
-            .join(', ')}
+          {TextUtils.join(
+            values
+              .slice(0, 20)
+              .map(value => `"${previewFilterFormatter.format(value as Date)}"`)
+          )}
           {values.length > 1 && (
             <div className="iris-grid-filter-menu-subtitle">
-              ({values.length} values selected
-              {values.length === 1000 ? ', truncated' : ''})
+              ({values.length} values selected)
             </div>
           )}
         </div>
