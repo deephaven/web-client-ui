@@ -1,4 +1,8 @@
 import React from 'react';
+import Log from '@deephaven/log';
+import Cookies from 'js-cookie';
+
+const log = Log.module('AuthPluginPsk');
 
 /**
  * Map from auth config keys to their values
@@ -41,4 +45,15 @@ export function isAuthPlugin(plugin?: unknown): plugin is AuthPlugin {
     authPlugin.Component !== undefined &&
     typeof authPlugin.isAvailable === 'function'
   );
+}
+
+export const PSK_TOKEN_KEY = 'io.deephaven.web.client.auth.psk.token';
+
+export function storeCookieToken(token: string | null): void {
+  log.debug2('Storing token in cookie', token);
+  if (token != null) {
+    Cookies.set(PSK_TOKEN_KEY, token, { secure: true, sameSite: 'strict' });
+  } else {
+    Cookies.remove(PSK_TOKEN_KEY);
+  }
 }

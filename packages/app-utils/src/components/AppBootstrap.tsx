@@ -1,8 +1,10 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import '@deephaven/components/scss/BaseStyleSheet.scss';
+import { storeCookieToken } from '@deephaven/auth-plugins';
 import { ClientBootstrap } from '@deephaven/jsapi-bootstrap';
 import {
   RefreshTokenBootstrap,
+  storeRefreshToken,
   useBroadcastLoginListener,
 } from '@deephaven/jsapi-components';
 import { type Plugin } from '@deephaven/plugin';
@@ -53,6 +55,8 @@ export function AppBootstrap({
   const onLogin = useCallback(() => undefined, []);
   const onLogout = useCallback(() => {
     setLogoutCount(value => value + 1);
+    storeCookieToken(null);
+    storeRefreshToken(null);
   }, []);
   useBroadcastLoginListener(onLogin, onLogout);
   return (

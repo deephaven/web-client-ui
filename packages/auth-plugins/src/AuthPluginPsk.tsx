@@ -6,7 +6,12 @@ import { useBroadcastLoginListener } from '@deephaven/jsapi-components';
 import Log from '@deephaven/log';
 import { getErrorMessage } from '@deephaven/utils';
 import Cookies from 'js-cookie';
-import { AuthPlugin, AuthPluginProps } from './AuthPlugin';
+import {
+  AuthPlugin,
+  AuthPluginProps,
+  PSK_TOKEN_KEY,
+  storeCookieToken,
+} from './AuthPlugin';
 import LoginForm from './LoginForm';
 import Login from './Login';
 import AuthenticationError from './AuthenticationError';
@@ -14,8 +19,6 @@ import AuthenticationError from './AuthenticationError';
 const AUTH_TYPE = 'io.deephaven.authentication.psk.PskAuthenticationHandler';
 
 const PSK_QUERY_PARAM_KEY = 'psk';
-
-const PSK_TOKEN_KEY = 'io.deephaven.web.client.auth.psk.token';
 
 const log = Log.module('AuthPluginPsk');
 
@@ -33,15 +36,6 @@ function clearWindowToken(): void {
 
 function readCookieToken(): string | null {
   return Cookies.get(PSK_TOKEN_KEY) ?? null;
-}
-
-function storeCookieToken(token: string | null): void {
-  log.debug2('Storing token in cookie', token);
-  if (token != null) {
-    Cookies.set(PSK_TOKEN_KEY, token, { secure: true, sameSite: 'strict' });
-  } else {
-    Cookies.remove(PSK_TOKEN_KEY);
-  }
 }
 
 export type AuthPluginPskProps = AuthPluginProps & {
