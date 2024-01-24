@@ -8,7 +8,7 @@ import {
   PromiseUtils,
 } from '@deephaven/utils';
 import { ViewportData } from '@deephaven/storage';
-import type { IdeSession } from '@deephaven/jsapi-types';
+import type { dh.IdeSession } from '@deephaven/jsapi-types';
 import {
   CommandHistoryStorage,
   CommandHistoryStorageItem,
@@ -26,7 +26,7 @@ const MIN_INPUT_HEIGHT = LINE_HEIGHT + TOP_PADDING + BOTTOM_PADDING;
 const BUFFER_SIZE = 100;
 
 interface ConsoleInputProps {
-  session: IdeSession;
+  session: dh.IdeSession;
   language: string;
   scope?: string;
   commandHistoryStorage: CommandHistoryStorage;

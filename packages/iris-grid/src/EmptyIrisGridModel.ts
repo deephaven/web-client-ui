@@ -6,16 +6,16 @@ import {
   VisibleIndex,
 } from '@deephaven/grid';
 import {
-  Column,
-  ColumnStatistics,
-  CustomColumn,
+  dh.Column,
+  dh.ColumnStatistics,
+  dh.CustomColumn,
   dh as DhType,
-  FilterCondition,
-  Format,
-  RollupConfig,
-  Row,
-  Sort,
-  Table,
+  dh.FilterCondition,
+  dh.Format,
+  dh.RollupConfig,
+  dh.Row,
+  dh.Sort,
+  dh.Table,
 } from '@deephaven/jsapi-types';
 import { ColumnName, Formatter } from '@deephaven/jsapi-utils';
 import { EMPTY_ARRAY, EMPTY_MAP } from '@deephaven/utils';
@@ -52,7 +52,7 @@ class EmptyIrisGridModel extends IrisGridModel {
     return undefined;
   }
 
-  get columns(): readonly Column[] {
+  get columns(): readonly dh.Column[] {
     return EMPTY_ARRAY;
   }
 
@@ -72,11 +72,11 @@ class EmptyIrisGridModel extends IrisGridModel {
     return EMPTY_ARRAY;
   }
 
-  get groupedColumns(): readonly Column[] {
+  get groupedColumns(): readonly dh.Column[] {
     return EMPTY_ARRAY;
   }
 
-  formatForCell(column: ModelIndex, row: ModelIndex): Format | undefined {
+  formatForCell(column: ModelIndex, row: ModelIndex): dh.Format | undefined {
     return undefined;
   }
 
@@ -84,11 +84,11 @@ class EmptyIrisGridModel extends IrisGridModel {
     return undefined;
   }
 
-  get filter(): readonly FilterCondition[] {
+  get filter(): readonly dh.FilterCondition[] {
     return EMPTY_ARRAY;
   }
 
-  set filter(filter: readonly FilterCondition[]) {
+  set filter(filter: readonly dh.FilterCondition[]) {
     // No-op
   }
 
@@ -100,7 +100,7 @@ class EmptyIrisGridModel extends IrisGridModel {
     // No-op
   }
 
-  get partitionColumns(): readonly Column[] {
+  get partitionColumns(): readonly dh.Column[] {
     return EMPTY_ARRAY;
   }
 
@@ -120,11 +120,11 @@ class EmptyIrisGridModel extends IrisGridModel {
     return '';
   }
 
-  get sort(): readonly Sort[] {
+  get sort(): readonly dh.Sort[] {
     return EMPTY_ARRAY;
   }
 
-  set sort(sort: readonly Sort[]) {
+  set sort(sort: readonly dh.Sort[]) {
     // No-op
   }
 
@@ -136,7 +136,7 @@ class EmptyIrisGridModel extends IrisGridModel {
     // No-op
   }
 
-  get formatColumns(): readonly CustomColumn[] {
+  get formatColumns(): readonly dh.CustomColumn[] {
     return EMPTY_ARRAY;
   }
 
@@ -144,11 +144,11 @@ class EmptyIrisGridModel extends IrisGridModel {
     // Do nothing
   }
 
-  get rollupConfig(): RollupConfig | null {
+  get rollupConfig(): dh.RollupConfig | null {
     return null;
   }
 
-  set rollupConfig(rollupConfig: RollupConfig | null) {
+  set rollupConfig(rollupConfig: dh.RollupConfig | null) {
     // No-op
   }
 
@@ -160,11 +160,11 @@ class EmptyIrisGridModel extends IrisGridModel {
     // No-op
   }
 
-  export(): Promise<Table> {
+  export(): Promise<dh.Table> {
     throw new Error('Method not implemented.');
   }
 
-  columnStatistics(column: Column): Promise<ColumnStatistics> {
+  columnStatistics(column: dh.Column): Promise<dh.ColumnStatistics> {
     throw new Error('Method not implemented.');
   }
 
@@ -203,7 +203,7 @@ class EmptyIrisGridModel extends IrisGridModel {
   setViewport(
     top: VisibleIndex,
     bottom: VisibleIndex,
-    columns?: Column[]
+    columns?: dh.Column[]
   ): void {
     // No-op
   }
@@ -215,12 +215,12 @@ class EmptyIrisGridModel extends IrisGridModel {
   textSnapshot(
     ranges: readonly GridRange[],
     includeHeaders?: boolean,
-    formatValue?: (value: unknown, column: Column, row?: Row) => string
+    formatValue?: (value: unknown, column: dh.Column, row?: dh.Row) => string
   ): Promise<string> {
     return Promise.resolve('');
   }
 
-  valuesTable(columns: Column | readonly Column[]): Promise<Table> {
+  valuesTable(columns: dh.Column | readonly dh.Column[]): Promise<dh.Table> {
     throw new Error('Method not implemented.');
   }
 
@@ -230,7 +230,7 @@ class EmptyIrisGridModel extends IrisGridModel {
 
   seekRow(
     startRow: number,
-    column: Column,
+    column: dh.Column,
     valueType: unknown,
     value: unknown,
     insensitive?: boolean,

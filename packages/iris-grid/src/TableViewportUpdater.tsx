@@ -3,11 +3,11 @@ import memoize from 'memoize-one';
 import throttle from 'lodash.throttle';
 import { GridUtils, MoveOperation } from '@deephaven/grid';
 import type {
-  Column,
-  FilterCondition,
-  Sort,
-  Table,
-  TableViewportSubscription,
+  dh.Column,
+  dh.FilterCondition,
+  dh.Sort,
+  dh.Table,
+  dh.TableViewportSubscription,
 } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { ColumnName } from './CommonTypes';
@@ -22,17 +22,17 @@ const UPDATE_THROTTLE = 150;
  */
 
 interface TableViewportUpdaterProps {
-  table: Table;
+  table: dh.Table;
   top: number;
   bottom: number;
   left: number;
   right: number;
-  columns: Column[];
-  filters: FilterCondition[];
-  sorts: Sort[];
+  columns: dh.Column[];
+  filters: dh.FilterCondition[];
+  sorts: dh.Sort[];
   customColumns: ColumnName[];
   movedColumns: MoveOperation[];
-  onSubscription: (subscription?: TableViewportSubscription) => void;
+  onSubscription: (subscription?: dh.TableViewportSubscription) => void;
 }
 
 class TableViewportUpdater extends PureComponent<
@@ -122,10 +122,10 @@ class TableViewportUpdater extends PureComponent<
     this.closeSubscription();
   }
 
-  subscription?: TableViewportSubscription;
+  subscription?: dh.TableViewportSubscription;
 
   // eslint-disable-next-line class-methods-use-this
-  getViewportRowRange = memoize((table: Table, top: number, bottom: number) => {
+  getViewportRowRange = memoize((table: dh.Table, top: number, bottom: number) => {
     const viewHeight = bottom - top;
     const viewportTop = Math.max(
       0,
@@ -139,7 +139,7 @@ class TableViewportUpdater extends PureComponent<
   // eslint-disable-next-line class-methods-use-this
   getViewportColumns = memoize(
     (
-      table: Table,
+      table: dh.Table,
       left: number,
       right: number,
       movedColumns: MoveOperation[]
@@ -188,7 +188,7 @@ class TableViewportUpdater extends PureComponent<
       bottom: number,
       left: number,
       right: number,
-      viewColumns: Column[]
+      viewColumns: dh.Column[]
     ): void => {
       if (bottom < top) {
         log.error('Invalid viewport', top, bottom);

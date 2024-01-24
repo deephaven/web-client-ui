@@ -3,13 +3,13 @@ import memoize from 'memoizee';
 import debounce from 'lodash.debounce';
 import set from 'lodash.set';
 import type {
-  Axis,
-  Chart,
+  dh.plot.Axis,
+  dh.plot.Chart,
   dh as DhType,
-  Figure,
-  OneClick,
-  Series,
-  SourceType,
+  dh.plot.Figure,
+  dh.plot.OneClick,
+  dh.plot.Series,
+  dh.plot.SourceType,
 } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { Range } from '@deephaven/utils';
@@ -50,7 +50,7 @@ class FigureChartModel extends ChartModel {
    */
   constructor(
     dh: DhType,
-    figure: Figure,
+    figure: dh.plot.Figure,
     theme: ChartTheme,
     settings: Partial<ChartModelSettings> = {}
   ) {
@@ -102,7 +102,7 @@ class FigureChartModel extends ChartModel {
 
   dh: DhType;
 
-  figure: Figure;
+  figure: dh.plot.Figure;
 
   settings: Partial<ChartModelSettings>;
 
@@ -122,9 +122,9 @@ class FigureChartModel extends ChartModel {
     }
   >;
 
-  pendingSeries: Series[];
+  pendingSeries: dh.plot.Series[];
 
-  oneClicks: OneClick[];
+  oneClicks: dh.plot.OneClick[];
 
   filterColumnMap: FilterColumnMap;
 
@@ -228,7 +228,7 @@ class FigureChartModel extends ChartModel {
    * @param showLegend Whether this series should show the legend or not
    */
   addSeries(
-    series: Series,
+    series: dh.plot.Series,
     axisTypeMap: AxisTypeMap,
     showLegend: boolean | null
   ): void {
@@ -456,7 +456,7 @@ class FigureChartModel extends ChartModel {
    * Gets the parser for parsing the range from an axis within the given chart
    */
   getAxisRangeParser = memoize(
-    (chart: Chart, formatter?: Formatter) => (axis: Axis) => {
+    (chart: dh.plot.Chart, formatter?: Formatter) => (axis: dh.plot.Axis) => {
       const source = ChartUtils.getSourceForAxis(chart, axis);
       if (source != null) {
         return this.getRangeParser(source.columnType, formatter);
@@ -587,7 +587,7 @@ class FigureChartModel extends ChartModel {
     }
   }
 
-  handleFigureSeriesAdded(event: { detail: Series }): void {
+  handleFigureSeriesAdded(event: { detail: dh.plot.Series }): void {
     const { detail: series } = event;
     log.debug('handleFigureSeriesAdded', series);
 
@@ -703,8 +703,8 @@ class FigureChartModel extends ChartModel {
    * @param dataArray The array to use for the data for this series source.
    */
   setDataArrayForSeries(
-    series: Series,
-    sourceType: SourceType,
+    series: dh.plot.Series,
+    sourceType: dh.plot.SourceType,
     dataArray: unknown[]
   ): void {
     const { name, plotStyle } = series;
@@ -723,7 +723,7 @@ class FigureChartModel extends ChartModel {
    * value for x.
    * @param series The series to clean the data for
    */
-  cleanSeries(series: Series): void {
+  cleanSeries(series: dh.plot.Series): void {
     const { dh } = this;
     const { name, plotStyle } = series;
     const seriesData = this.seriesDataMap.get(name);
@@ -821,7 +821,7 @@ class FigureChartModel extends ChartModel {
     this.lastFilter = new Map(filterMap);
   }
 
-  setFigure(figure: Figure): void {
+  setFigure(figure: dh.plot.Figure): void {
     this.close();
 
     this.figure = figure;

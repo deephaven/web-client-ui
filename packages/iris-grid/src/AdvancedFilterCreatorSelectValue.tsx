@@ -5,8 +5,8 @@ import classNames from 'classnames';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import type {
   dh as DhType,
-  FilterCondition,
-  Table,
+  dh.FilterCondition,
+  dh.Table,
 } from '@deephaven/jsapi-types';
 import { Button } from '@deephaven/components';
 import AdvancedFilterCreatorSelectValueList from './AdvancedFilterCreatorSelectValueList';
@@ -17,7 +17,7 @@ interface AdvancedFilterCreatorSelectValueProps<T> {
   dh: DhType;
   invertSelection: boolean;
   selectedValues: (T | null)[];
-  table?: Table;
+  table?: dh.Table;
   formatter: Formatter;
   onChange: (selectedValues: (T | null)[], invertSelection: boolean) => void;
   showSearch: boolean;
@@ -26,11 +26,11 @@ interface AdvancedFilterCreatorSelectValueProps<T> {
 
 interface AdvancedFilterCreatorSelectValueState<T> {
   error?: string;
-  filters: FilterCondition[];
+  filters: dh.FilterCondition[];
   invertSelection: boolean;
   selectedValues: (T | null)[];
   searchText: string;
-  table?: Table;
+  table?: dh.Table;
 }
 
 class AdvancedFilterCreatorSelectValue<T = unknown> extends PureComponent<
@@ -114,7 +114,7 @@ class AdvancedFilterCreatorSelectValue<T = unknown> extends PureComponent<
     this.stopUpdateFilterTimer();
   }
 
-  searchTablePromise?: Promise<Table>;
+  searchTablePromise?: Promise<dh.Table>;
 
   tableUtils: TableUtils;
 

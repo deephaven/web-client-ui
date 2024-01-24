@@ -6,10 +6,10 @@ import memoize from 'memoizee';
 import { DashboardPanelProps, LayoutUtils } from '@deephaven/dashboard';
 import type {
   dh as DhType,
-  Column,
-  Row,
-  Table,
-  TableTemplate,
+  dh.Column,
+  dh.Row,
+  dh.Table,
+  dh.Table,
 } from '@deephaven/jsapi-types';
 import {
   DateTimeColumnFormatter,
@@ -56,10 +56,10 @@ interface PanelState {
   timestamp?: number;
 }
 
-type PanelTableMap = Map<string | string[], TableTemplate>;
+type PanelTableMap = Map<string | string[], dh.Table>;
 
 type StateProps = {
-  columns: Column[];
+  columns: dh.Column[];
   columnSelectionValidator?: ColumnSelectionValidator;
   dashboardLinks: Link[];
   dh: DhType;
@@ -115,8 +115,8 @@ export type DropdownFilterPanelProps = OwnProps &
 interface DropdownFilterPanelState {
   column?: DropdownFilterColumn;
   formatter: Formatter;
-  valuesTable?: TableTemplate;
-  valuesColumn?: Column;
+  valuesTable?: dh.Table;
+  valuesColumn?: dh.Column;
   sourceSize: number;
   value: string;
   timestamp?: number;
@@ -367,7 +367,7 @@ export class DropdownFilterPanel extends Component<
 
   getCachedSourceTable = memoize(
     (
-      panelTableMap: Map<string | string[], TableTemplate<Table>>,
+      panelTableMap: Map<string | string[], dh.Table<dh.Table>>,
       source: LinkPoint | undefined
     ) => {
       log.debug('getCachedSourceTable', panelTableMap, source);
@@ -380,7 +380,7 @@ export class DropdownFilterPanel extends Component<
   );
 
   getCachedSourceColumn = memoize(
-    (table: TableTemplate, source: LinkPoint | undefined) => {
+    (table: dh.Table, source: LinkPoint | undefined) => {
       log.debug('getCachedSourceColumn', table, source);
       if (table == null || source == null) {
         return null;
@@ -402,17 +402,17 @@ export class DropdownFilterPanel extends Component<
   getSourceTable(
     panelTableMap: PanelTableMap,
     links: Link[]
-  ): TableTemplate | null {
+  ): dh.Table | null {
     const source = this.getSource(links);
     return this.getCachedSourceTable(panelTableMap, source);
   }
 
-  getValuesColumn(valuesTable: TableTemplate, links: Link[]): Column | null {
+  getValuesColumn(valuesTable: dh.Table, links: Link[]): dh.Column | null {
     const source = this.getSource(links);
     return this.getCachedSourceColumn(valuesTable, source);
   }
 
-  startListeningToSource(sourceTable: TableTemplate): void {
+  startListeningToSource(sourceTable: dh.Table): void {
     const { dh } = this.props;
     log.debug('startListeningToSource');
     sourceTable.addEventListener(
@@ -437,7 +437,7 @@ export class DropdownFilterPanel extends Component<
     );
   }
 
-  stopListeningToSource(sourceTable: TableTemplate): void {
+  stopListeningToSource(sourceTable: dh.Table): void {
     const { dh } = this.props;
     log.debug('stopListeningToSource');
     sourceTable.removeEventListener(
@@ -467,7 +467,7 @@ export class DropdownFilterPanel extends Component<
     isValueShown = false,
     value,
   }: {
-    column: Partial<Column> | null;
+    column: Partial<dh.Column> | null;
     isValueShown?: boolean | undefined;
     value?: string | undefined;
   }): void {
@@ -669,7 +669,7 @@ export class DropdownFilterPanel extends Component<
     this.setViewport(valuesTable);
   }
 
-  updateViewportListener(valuesTable: TableTemplate): void {
+  updateViewportListener(valuesTable: dh.Table): void {
     const { dh } = this.props;
     log.debug('updateViewportListener', valuesTable?.size);
 
@@ -690,7 +690,7 @@ export class DropdownFilterPanel extends Component<
     this.setViewport(valuesTable);
   }
 
-  setViewport(valuesTable: TableTemplate): void {
+  setViewport(valuesTable: dh.Table): void {
     const { dashboardLinks } = this.props;
     const valuesColumn = this.getValuesColumn(valuesTable, dashboardLinks);
     if (!valuesColumn) {
@@ -713,7 +713,7 @@ export class DropdownFilterPanel extends Component<
     }
   }
 
-  handleValuesTableUpdate({ detail }: { detail: { rows: Row[] } }): void {
+  handleValuesTableUpdate({ detail }: { detail: { rows: dh.Row[] } }): void {
     const { rows } = detail;
     const { dashboardLinks } = this.props;
     const { valuesTable } = this.state;

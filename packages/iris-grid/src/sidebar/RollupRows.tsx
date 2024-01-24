@@ -26,7 +26,7 @@ import debounce from 'lodash.debounce';
 import Log from '@deephaven/log';
 import { assertNotNull } from '@deephaven/utils';
 import './RollupRows.scss';
-import type { Column } from '@deephaven/jsapi-types';
+import type { dh.Column } from '@deephaven/jsapi-types';
 import IrisGridModel from '../IrisGridModel';
 import { ColumnName } from '../CommonTypes';
 
@@ -74,7 +74,7 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     item,
     isClone,
     selectedCount,
-  }: RenderItemProps<Column> & {
+  }: RenderItemProps<dh.Column> & {
     isClone?: boolean;
     selectedCount?: number;
   }): ReactElement {
@@ -109,7 +109,7 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     return groupings;
   }
 
-  static isGroupable(column: Column): boolean {
+  static isGroupable(column: dh.Column): boolean {
     return !TableUtils.isDecimalType(column.type);
   }
 
@@ -183,7 +183,7 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     this.search.cancel();
   }
 
-  ungroupedList: RefObject<DraggableItemList<Column>>;
+  ungroupedList: RefObject<DraggableItemList<dh.Column>>;
 
   groupedList: RefObject<DraggableItemList<string>>;
 
@@ -401,9 +401,9 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
 
   getCachedUngroupedColumns = memoize(
     (
-      columns: readonly Column[],
+      columns: readonly dh.Column[],
       groupedColumns: readonly ColumnName[]
-    ): readonly Column[] =>
+    ): readonly dh.Column[] =>
       columns.filter(
         column =>
           RollupRows.isGroupable(column) &&
@@ -412,13 +412,13 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
   );
 
   getCachedSortedColumns = memoize(
-    (columns: readonly Column[], sort?: SortDirection): readonly Column[] =>
+    (columns: readonly dh.Column[], sort?: SortDirection): readonly dh.Column[] =>
       sort == null
         ? [...columns]
         : TableUtils.sortColumns(columns, sort === RollupRows.SORT.ASCENDING)
   );
 
-  getUngroupedColumns(): readonly Column[] {
+  getUngroupedColumns(): readonly dh.Column[] {
     const { model } = this.props;
     const { columns } = this.state;
     const { originalColumns } = model;
@@ -426,7 +426,7 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
     return this.getCachedUngroupedColumns(originalColumns, columns);
   }
 
-  getSortedUngroupedColumns(): readonly Column[] {
+  getSortedUngroupedColumns(): readonly dh.Column[] {
     const { sort } = this.state;
     const columns = this.getUngroupedColumns();
     return this.getCachedSortedColumns(columns, sort);

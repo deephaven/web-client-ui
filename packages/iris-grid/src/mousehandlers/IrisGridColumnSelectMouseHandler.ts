@@ -4,7 +4,7 @@ import {
   GridPoint,
   EventHandlerResult,
 } from '@deephaven/grid';
-import type { Column } from '@deephaven/jsapi-types';
+import type { dh.Column } from '@deephaven/jsapi-types';
 import { IrisGrid } from '../IrisGrid';
 import { DisplayColumn } from '../IrisGridModel';
 
@@ -45,7 +45,7 @@ class IrisGridColumnSelectMouseHandler extends GridMouseHandler {
     }
   }
 
-  private getTableColumn(columnIndex: number | null): Column | null {
+  private getTableColumn(columnIndex: number | null): dh.Column | null {
     if (columnIndex == null) {
       return null;
     }

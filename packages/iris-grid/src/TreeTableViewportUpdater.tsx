@@ -3,11 +3,11 @@ import throttle from 'lodash.throttle';
 import type {
   dh as DhType,
   EventListener,
-  FilterCondition,
+  dh.FilterCondition,
   RemoverFn,
-  Sort,
-  Table,
-  ViewportData,
+  dh.Sort,
+  dh.Table,
+  dh.ViewportData,
 } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 
@@ -17,13 +17,13 @@ const UPDATE_THROTTLE = 150;
 
 interface TreeTableViewportUpdaterProps {
   dh: DhType;
-  table: Table;
+  table: dh.Table;
   top: number;
   bottom: number;
-  filters: FilterCondition[];
-  sorts: Sort[];
+  filters: dh.FilterCondition[];
+  sorts: dh.Sort[];
   updateInterval: number;
-  onViewportUpdate: EventListener<ViewportData>;
+  onViewportUpdate: EventListener<dh.ViewportData>;
 }
 
 /**

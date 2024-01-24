@@ -2,7 +2,7 @@
  * Console display for use in the Iris environment.
  */
 import { type ReactElement } from 'react';
-import type { VariableDefinition } from '@deephaven/jsapi-types';
+import type { dh.VariableDefinition } from '@deephaven/jsapi-types';
 import ConsoleHistoryItem from './ConsoleHistoryItem';
 
 import './ConsoleHistory.scss';
@@ -11,7 +11,7 @@ import { ConsoleHistoryActionItem } from './ConsoleHistoryTypes';
 interface ConsoleHistoryProps {
   items: ConsoleHistoryActionItem[];
   language: string;
-  openObject: (object: VariableDefinition) => void;
+  openObject: (object: dh.VariableDefinition) => void;
   disabled?: boolean;
   supportsType: (type: string) => boolean;
   iconForType: (type: string) => ReactElement;

@@ -5,7 +5,7 @@ import { Button } from '@deephaven/components';
 import { vsChevronRight, vsMerge, vsKey } from '@deephaven/icons';
 import Log from '@deephaven/log';
 import { TableDropdown } from '@deephaven/jsapi-components';
-import type { FilterCondition, Table } from '@deephaven/jsapi-types';
+import type { dh.FilterCondition, dh.Table } from '@deephaven/jsapi-types';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import { assertNotNull, Pending, PromiseUtils } from '@deephaven/utils';
 import './IrisGridPartitionSelector.scss';
@@ -21,12 +21,12 @@ interface IrisGridPartitionSelectorProps {
 interface IrisGridPartitionSelectorState {
   isLoading: boolean;
 
-  keysTable: Table | null;
+  keysTable: dh.Table | null;
 
-  partitionTables: Table[] | null;
+  partitionTables: dh.Table[] | null;
 
   /** The filters to apply to each partition table */
-  partitionFilters: FilterCondition[][] | null;
+  partitionFilters: dh.FilterCondition[][] | null;
 }
 class IrisGridPartitionSelector extends Component<
   IrisGridPartitionSelectorProps,
@@ -244,7 +244,7 @@ class IrisGridPartitionSelector extends Component<
     this.setState({ partitionFilters });
   }
 
-  getPartitionFilters(partitionTables: Table[]): FilterCondition[][] {
+  getPartitionFilters(partitionTables: dh.Table[]): dh.FilterCondition[][] {
     const { model, partitionConfig } = this.props;
     const { partitions } = partitionConfig;
     log.debug('getPartitionFilters', partitionConfig);
@@ -256,7 +256,7 @@ class IrisGridPartitionSelector extends Component<
     }
 
     // The filters are applied in order, so we need to build up the filters for each partition
-    const partitionFilters: FilterCondition[][] = [];
+    const partitionFilters: dh.FilterCondition[][] = [];
     for (let i = 0; i < partitions.length; i += 1) {
       if (i === 0) {
         // There's no reason to ever filter the first table

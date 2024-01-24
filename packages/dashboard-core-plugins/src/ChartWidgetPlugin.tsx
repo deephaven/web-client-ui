@@ -6,7 +6,7 @@ import {
   ChartModelFactory,
   useChartTheme,
 } from '@deephaven/chart';
-import type { Figure } from '@deephaven/jsapi-types';
+import type { dh.plot.Figure } from '@deephaven/jsapi-types';
 import { type WidgetComponentProps } from '@deephaven/plugin';
 
 export function ChartWidgetPlugin(
@@ -21,7 +21,7 @@ export function ChartWidgetPlugin(
   useEffect(() => {
     let cancelled = false;
     async function init() {
-      const figure = (await fetch()) as unknown as Figure;
+      const figure = (await fetch()) as unknown as dh.plot.Figure;
       const newModel = await ChartModelFactory.makeModel(
         dh,
         undefined,

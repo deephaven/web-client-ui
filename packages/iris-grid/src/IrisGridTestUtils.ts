@@ -1,16 +1,16 @@
 import { GridRangeIndex, ModelSizeMap } from '@deephaven/grid';
 import type {
-  Column,
+  dh.Column,
   dh as DhType,
-  FilterCondition,
-  InputTable,
-  LayoutHints,
-  RollupConfig,
-  Row,
-  Sort,
-  Table,
-  TableViewportSubscription,
-  TreeTable,
+  dh.FilterCondition,
+  dh.InputTable,
+  dh.LayoutHints,
+  dh.RollupConfig,
+  dh.Row,
+  dh.Sort,
+  dh.Table,
+  dh.TableViewportSubscription,
+  dh.TreeTable,
 } from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
 import IrisGridProxyModel from './IrisGridProxyModel';
@@ -40,17 +40,17 @@ class IrisGridTestUtils {
     name?: string,
     type: string = IrisGridTestUtils.DEFAULT_TYPE,
     index = 0
-  ): Column {
+  ): dh.Column {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return new (this.dh as any).Column({ index, name, type });
   }
 
-  makeRollupTableConfig(): RollupConfig {
+  makeRollupTableConfig(): dh.RollupConfig {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return new (this.dh as any).RollupTableConfig();
   }
 
-  makeColumns(count = 5, prefix = ''): Column[] {
+  makeColumns(count = 5, prefix = ''): dh.Column[] {
     const columns = [];
     for (let i = 0; i < count; i += 1) {
       columns.push(
@@ -68,7 +68,7 @@ class IrisGridTestUtils {
     return userColumnWidths;
   }
 
-  makeRow(i: number): Row {
+  makeRow(i: number): dh.Row {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const row = new (this.dh as any).Row({ index: i, name: `${i}` });
 
@@ -79,12 +79,12 @@ class IrisGridTestUtils {
     return row;
   }
 
-  makeFilter(): FilterCondition {
+  makeFilter(): dh.FilterCondition {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return new (this.dh as any).FilterCondition();
   }
 
-  makeSort(): Sort {
+  makeSort(): dh.Sort {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return new (this.dh as any).Sort();
   }
@@ -95,11 +95,11 @@ class IrisGridTestUtils {
     sort = [],
     layoutHints = {},
   }: {
-    columns?: Column[];
+    columns?: dh.Column[];
     size?: number;
-    sort?: readonly Sort[];
-    layoutHints?: LayoutHints;
-  } = {}): Table {
+    sort?: readonly dh.Sort[];
+    layoutHints?: dh.LayoutHints;
+  } = {}): dh.Table {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const table = new (this.dh as any).Table({ columns, size, sort });
     table.copy = jest.fn(() => Promise.resolve(table));
@@ -112,19 +112,19 @@ class IrisGridTestUtils {
     columns = this.makeColumns(),
     size = 1000000000,
     sort = []
-  ): TreeTable {
+  ): dh.TreeTable {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const table = new (this.dh as any).TreeTable({ columns, size, sort });
     table.copy = jest.fn(() => Promise.resolve(table));
     return table;
   }
 
-  makeInputTable(keyColumns: Column[] = []): InputTable {
+  makeInputTable(keyColumns: dh.Column[] = []): dh.InputTable {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return new (this.dh as any).InputTable(keyColumns);
   }
 
-  makeSubscription(table = this.makeTable()): TableViewportSubscription {
+  makeSubscription(table = this.makeTable()): dh.TableViewportSubscription {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return new (this.dh as any).TableViewportSubscription({ table });
   }
@@ -132,7 +132,7 @@ class IrisGridTestUtils {
   makeModel(
     table = this.makeTable(),
     formatter: Formatter | null = null,
-    inputTable: InputTable | null = null
+    inputTable: dh.InputTable | null = null
   ): IrisGridProxyModel {
     const { dh } = this;
     return new IrisGridProxyModel(

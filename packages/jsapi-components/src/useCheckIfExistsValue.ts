@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import type { Table } from '@deephaven/jsapi-types';
+import type { dh.Table } from '@deephaven/jsapi-types';
 import { useDebouncedValue, usePromiseFactory } from '@deephaven/react-hooks';
 import useTableUtils from './useTableUtils';
 
@@ -28,7 +28,7 @@ export interface CheckIfExistsValue {
  * @param isCaseSensitive Whether the value check is case sensitive
  */
 export function useCheckIfExistsValue(
-  table: Table | null | undefined,
+  table: dh.Table | null | undefined,
   columnNames: string | string[],
   debounceMs: number,
   isCaseSensitive: boolean

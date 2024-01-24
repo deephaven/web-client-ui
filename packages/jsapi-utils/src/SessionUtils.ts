@@ -1,9 +1,9 @@
 import type {
-  ConnectOptions,
-  CoreClient,
+  dh.ConnectOptions,
+  dh.CoreClient,
   dh as DhType,
-  IdeConnection,
-  IdeSession,
+  dh.IdeConnection,
+  dh.IdeSession,
 } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import shortid from 'shortid';
@@ -23,8 +23,8 @@ export interface SessionDetails {
 }
 
 export interface SessionWrapper {
-  session: IdeSession;
-  connection: IdeConnection;
+  session: dh.IdeSession;
+  connection: dh.IdeConnection;
   config: SessionConfig;
   details?: SessionDetails;
   dh: DhType;
@@ -36,7 +36,7 @@ export interface SessionWrapper {
 export function createConnection(
   dh: DhType,
   websocketUrl: string
-): IdeConnection {
+): dh.IdeConnection {
   log.info(`Starting connection to '${websocketUrl}'...`);
 
   return new dh.IdeConnection(websocketUrl);
@@ -48,7 +48,7 @@ export function createConnection(
  */
 export async function createSessionWrapper(
   dh: DhType,
-  connection: IdeConnection,
+  connection: dh.IdeConnection,
   details: SessionDetails
 ): Promise<SessionWrapper> {
   log.info('Getting console types...');
@@ -83,8 +83,8 @@ export async function createSessionWrapper(
 export function createCoreClient(
   dh: DhType,
   websocketUrl: string,
-  options?: ConnectOptions
-): CoreClient {
+  options?: dh.ConnectOptions
+): dh.CoreClient {
   log.info('createCoreClient', websocketUrl);
 
   return new dh.CoreClient(websocketUrl, options);
@@ -113,7 +113,7 @@ export async function getSessionDetails(): Promise<SessionDetails> {
 
 export async function loadSessionWrapper(
   dh: DhType,
-  connection: IdeConnection,
+  connection: dh.IdeConnection,
   sessionDetails: SessionDetails
 ): Promise<SessionWrapper | undefined> {
   let sessionWrapper: SessionWrapper | undefined;

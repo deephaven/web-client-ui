@@ -6,7 +6,7 @@ import type {
   IrisGridModel,
 } from '@deephaven/iris-grid';
 import type { ResolvableContextAction } from '@deephaven/components';
-import type { Table } from '@deephaven/jsapi-types';
+import type { dh.Table } from '@deephaven/jsapi-types';
 
 export interface TablePluginElement {
   getMenu?: (data: IrisGridContextMenuData) => ResolvableContextAction[];
@@ -33,7 +33,7 @@ export interface TablePluginProps<S = unknown> {
   /**
    * The table this plugin was associated with.
    */
-  table: Table;
+  table: dh.Table;
 
   /**
    * Notify of a state change in the plugin state. Will be saved with the panel data.

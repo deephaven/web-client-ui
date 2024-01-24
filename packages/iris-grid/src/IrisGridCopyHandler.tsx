@@ -15,7 +15,7 @@ import {
   PromiseUtils,
 } from '@deephaven/utils';
 import Log from '@deephaven/log';
-import type { Column } from '@deephaven/jsapi-types';
+import type { dh.Column } from '@deephaven/jsapi-types';
 import IrisGridUtils from './IrisGridUtils';
 import IrisGridBottomBar from './IrisGridBottomBar';
 import './IrisGridCopyHandler.scss';
@@ -358,7 +358,7 @@ class IrisGridCopyHandler extends Component<
       // Remove the hidden columns from the snapshot
       const formatValue =
         formatValues != null && formatValues
-          ? (value: unknown, column: Column) =>
+          ? (value: unknown, column: dh.Column) =>
               model.displayString(value, column.type, column.name)
           : (value: unknown) => `${value}`;
 

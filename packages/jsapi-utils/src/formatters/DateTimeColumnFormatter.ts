@@ -1,8 +1,8 @@
 /* eslint class-methods-use-this: "off" */
 import type {
   dh as DhType,
-  DateWrapper,
-  TimeZone,
+  dh.DateWrapper,
+  dh.i18n.TimeZone,
 } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import TableColumnFormatter, {
@@ -26,7 +26,7 @@ export type DateTimeColumnFormatterOptions = {
 };
 
 export class DateTimeColumnFormatter extends TableColumnFormatter<
-  Date | DateWrapper | number
+  Date | dh.DateWrapper | number
 > {
   /**
    * Validates format object
@@ -143,7 +143,7 @@ export class DateTimeColumnFormatter extends TableColumnFormatter<
 
   dh: DhType;
 
-  dhTimeZone: TimeZone;
+  dhTimeZone: dh.i18n.TimeZone;
 
   defaultDateTimeFormatString: string;
 
@@ -190,7 +190,7 @@ export class DateTimeColumnFormatter extends TableColumnFormatter<
   }
 
   format(
-    value: Date | DateWrapper | number,
+    value: Date | dh.DateWrapper | number,
     format: Partial<TableColumnFormat> = {}
   ): string {
     const baseFormatString =

@@ -23,7 +23,7 @@ import type {
 } from '@deephaven/golden-layout';
 import { assertNotNull } from '@deephaven/utils';
 import Log from '@deephaven/log';
-import type { IdeSession } from '@deephaven/jsapi-types';
+import type { dh.IdeSession } from '@deephaven/jsapi-types';
 import { ConsoleEvent, InputFilterEvent, TabEvent } from '../events';
 import PanelContextMenu from './PanelContextMenu';
 import RenameDialog from './RenameDialog';
@@ -49,9 +49,9 @@ interface PanelProps {
   onClearAllFilters: (...args: unknown[]) => void;
   onHide: (...args: unknown[]) => void;
   onResize: (...args: unknown[]) => void;
-  onSessionClose: (session: IdeSession) => void;
+  onSessionClose: (session: dh.IdeSession) => void;
   onSessionOpen: (
-    session: IdeSession,
+    session: dh.IdeSession,
     { language, sessionId }: { language: string; sessionId: string }
   ) => void;
   onBeforeShow: (...args: unknown[]) => void;
@@ -229,13 +229,13 @@ class Panel extends PureComponent<PanelProps, PanelState> {
     onResize(...args);
   }
 
-  handleSessionClosed(session: IdeSession): void {
+  handleSessionClosed(session: dh.IdeSession): void {
     const { onSessionClose } = this.props;
     onSessionClose(session);
   }
 
   handleSessionOpened(
-    session: IdeSession,
+    session: dh.IdeSession,
     params: { language: string; sessionId: string }
   ): void {
     const { onSessionOpen } = this.props;

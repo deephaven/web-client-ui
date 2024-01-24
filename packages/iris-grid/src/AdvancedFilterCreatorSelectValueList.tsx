@@ -3,8 +3,8 @@ import React, { PureComponent, ReactElement } from 'react';
 import { CSSTransition } from 'react-transition-group';
 import type {
   dh as DhType,
-  FilterCondition,
-  Table,
+  dh.FilterCondition,
+  dh.Table,
 } from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
 import {
@@ -19,8 +19,8 @@ const log = Log.module('AdvancedFilterCreatorSelectValueList');
 interface AdvancedFilterCreatorSelectValueListProps<T> {
   dh: DhType;
   selectedValues: (T | null)[];
-  table?: Table;
-  filters: FilterCondition[];
+  table?: dh.Table;
+  filters: dh.FilterCondition[];
   invertSelection: boolean;
   onChange: (selectedValues: (T | null)[], invertSelection: boolean) => void;
   formatter: Formatter;
@@ -221,11 +221,11 @@ class AdvancedFilterCreatorSelectValueList<T = unknown> extends PureComponent<
     return invertSelection ? selectedIndex < 0 : selectedIndex >= 0;
   }
 
-  startListening(table: Table): void {
+  startListening(table: dh.Table): void {
     table.addEventListener(this.dh.Table.EVENT_UPDATED, this.handleTableUpdate);
   }
 
-  stopListening(table: Table): void {
+  stopListening(table: dh.Table): void {
     table.removeEventListener(
       this.dh.Table.EVENT_UPDATED,
       this.handleTableUpdate

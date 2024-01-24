@@ -27,11 +27,11 @@ import {
   ModelIndex,
 } from '@deephaven/grid';
 import type {
-  Column,
+  dh.Column,
   dh as DhType,
-  FilterCondition,
-  FilterValue,
-  Sort,
+  dh.FilterCondition,
+  dh.FilterValue,
+  dh.Sort,
 } from '@deephaven/jsapi-types';
 import {
   TableColumnFormatter,
@@ -95,10 +95,10 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
    * @param operator
    */
   static getQuickFilterCondition(
-    columnFilter: FilterCondition | null | undefined,
-    newColumnFilter: FilterCondition,
+    columnFilter: dh.FilterCondition | null | undefined,
+    newColumnFilter: dh.FilterCondition,
     operator?: '&&' | '||' | null
-  ): FilterCondition {
+  ): dh.FilterCondition {
     if (columnFilter && operator === '&&') {
       return columnFilter.and(newColumnFilter);
     }
@@ -675,7 +675,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
    * @param column The column to make the filter for
    * @param value The value to get the equality filter for
    */
-  getNumberValueEqualsFilter(column: Column, value: number): FilterCondition {
+  getNumberValueEqualsFilter(column: dh.Column, value: number): dh.FilterCondition {
     const { dh } = this;
     const columnFilter = column.filter();
     if (value === Number.POSITIVE_INFINITY) {
@@ -699,7 +699,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   getFilterValueForNumberOrChar(
     columnType: string,
     value: unknown
-  ): FilterValue {
+  ): dh.FilterValue {
     const { dh } = this;
     return TableUtils.isCharType(columnType)
       ? dh.FilterValue.ofString(String.fromCharCode(value as number))
@@ -858,7 +858,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     return true;
   }
 
-  dateFormatActions(column: Column): ContextAction[] {
+  dateFormatActions(column: dh.Column): ContextAction[] {
     const { model } = this.irisGrid.props;
     const { formatter } = model;
     const selectedFormat = formatter.getColumnFormat(column.type, column.name);
@@ -889,7 +889,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     return actions;
   }
 
-  numberFormatActions(column: Column): ContextAction[] | null {
+  numberFormatActions(column: dh.Column): ContextAction[] | null {
     const { model } = this.irisGrid.props;
     const { formatter } = model;
     const { dh } = this;
@@ -948,7 +948,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   }
 
   stringFilterActions(
-    column: Column,
+    column: dh.Column,
     valueText: string | null,
     value?: unknown,
     quickFilter?: QuickFilter,
@@ -958,7 +958,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const filterValue = dh.FilterValue.ofString(value);
     let newQuickFilter:
       | {
-          filter: null | FilterCondition | undefined;
+          filter: null | dh.FilterCondition | undefined;
           text: string | null;
         }
       | undefined
@@ -1134,14 +1134,14 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   }
 
   numberFilterActions(
-    column: Column,
+    column: dh.Column,
     valueText: string,
     value: unknown,
     quickFilter?: QuickFilter | null,
     operator?: '&&' | '||' | null
   ): ContextAction[] {
     const filterValue = this.getFilterValueForNumberOrChar(column.type, value);
-    let filter: FilterCondition | null = null;
+    let filter: dh.FilterCondition | null = null;
     let filterText: string | null = null;
     if (quickFilter) {
       filter = quickFilter.filter;
@@ -1311,7 +1311,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   }
 
   booleanFilterActions(
-    column: Column,
+    column: dh.Column,
     valueText: string | null,
     quickFilter?: QuickFilter | null,
     operator?: '&&' | '||' | null
@@ -1426,7 +1426,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   }
 
   dateFilterActions(
-    column: Column,
+    column: dh.Column,
     valueText: string,
     previewValue: unknown,
     value: unknown,
@@ -1436,7 +1436,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const { dh } = this;
     const filterValue = dh.FilterValue.ofNumber(value);
 
-    let filter: FilterCondition | null = null;
+    let filter: dh.FilterCondition | null = null;
     let filterText: string | null = null;
     if (quickFilter) {
       filter = quickFilter.filter;
@@ -1590,7 +1590,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   }
 
   emptyStringFilterActions(
-    column: Column,
+    column: dh.Column,
     quickFilter?: QuickFilter,
     operator?: '&&' | '||' | null
   ): ContextAction[] {
@@ -1598,7 +1598,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const filterValue = dh.FilterValue.ofString('');
     let newQuickFilter:
       | {
-          filter: null | FilterCondition | undefined;
+          filter: null | dh.FilterCondition | undefined;
           text: string | null;
         }
       | undefined
@@ -1672,11 +1672,11 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   }
 
   nullFilterActions(
-    column: Column,
+    column: dh.Column,
     quickFilter?: QuickFilter,
     operator?: '&&' | '||' | null
   ): ContextAction[] {
-    let filter: FilterCondition | null = null;
+    let filter: dh.FilterCondition | null = null;
     let filterText: string | null = null;
     if (quickFilter) {
       filter = quickFilter.filter;
@@ -1746,9 +1746,9 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   }
 
   sortByActions(
-    column: Column,
+    column: dh.Column,
     modelColumn: ModelIndex,
-    columnSort: Sort | null
+    columnSort: dh.Sort | null
   ): ContextAction[] {
     const theme = this.irisGrid.getTheme();
     const { contextMenuSortIconColor } = theme;
@@ -1845,7 +1845,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   }
 
   additionalSortActions(
-    column: Column,
+    column: dh.Column,
     columnIndex: ModelIndex
   ): ContextAction[] {
     const theme = this.irisGrid.getTheme();
@@ -1924,7 +1924,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   }
 
   checkColumnSort(
-    columnSort?: Sort | null,
+    columnSort?: dh.Sort | null,
     direction: SortDirection = null,
     isAbs = false
   ): boolean {

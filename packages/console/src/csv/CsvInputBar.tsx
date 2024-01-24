@@ -8,7 +8,7 @@ import React, {
 import classNames from 'classnames';
 import type { JSZipObject } from 'jszip';
 import { Button, Checkbox, Select } from '@deephaven/components';
-import type { IdeSession, Table } from '@deephaven/jsapi-types';
+import type { dh.IdeSession, dh.Table } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { DbNameValidator } from '@deephaven/utils';
 import CsvOverlay from './CsvOverlay';
@@ -25,7 +25,7 @@ const TYPE_OPTIONS = Object.entries(CsvFormats.TYPES).map(([key, value]) => (
 ));
 
 interface CsvInputBarProps {
-  session: IdeSession;
+  session: dh.IdeSession;
   onOpenTable: (name: string) => void;
   onClose: () => void;
   onUpdate: (update: string) => void;
@@ -186,7 +186,7 @@ class CsvInputBar extends Component<CsvInputBarProps, CsvInputBarState> {
     );
     const { session, timeZone, onInProgress } = this.props;
     const { tableName, isFirstRowHeaders, type } = this.state;
-    const handleParseDone = (tables: Table[]): void => {
+    const handleParseDone = (tables: dh.Table[]): void => {
       // Do not bother merging just one table
       if (tables.length === 1) {
         session

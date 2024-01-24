@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { WidgetComponentProps } from '@deephaven/plugin';
-import { type Table } from '@deephaven/jsapi-types';
+import { type dh.Table } from '@deephaven/jsapi-types';
 import IrisGrid, {
   IrisGridModelFactory,
   type IrisGridModel,
@@ -20,7 +20,7 @@ export function PandasWidgetPlugin(
   const { fetch } = props;
 
   const makeModel = useCallback(async () => {
-    const table = (await fetch()) as unknown as Table;
+    const table = (await fetch()) as unknown as dh.Table;
     return IrisGridModelFactory.makeModel(dh, table);
   }, [dh, fetch]);
 

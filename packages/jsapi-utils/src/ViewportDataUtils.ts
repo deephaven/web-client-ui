@@ -1,18 +1,18 @@
 import type { Key } from 'react';
 import clamp from 'lodash.clamp';
-import type { Column, Row, Table, TreeTable } from '@deephaven/jsapi-types';
+import type { dh.Column, dh.Row, dh.Table, dh.TreeTable } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import type { KeyedItem } from '@deephaven/utils';
 
 export type OnTableUpdatedEvent = CustomEvent<{
   offset: number;
-  columns: Column[];
+  columns: dh.Column[];
   rows: ViewportRow[];
 }>;
 
-export type RowDeserializer<T> = (row: ViewportRow, columns: Column[]) => T;
+export type RowDeserializer<T> = (row: ViewportRow, columns: dh.Column[]) => T;
 
-export type ViewportRow = Row & { offsetInSnapshot: number };
+export type ViewportRow = dh.Row & { offsetInSnapshot: number };
 
 const log = Log.module('ViewportDataUtils');
 
@@ -74,7 +74,7 @@ export function createOnTableUpdatedHandler<T>(
  */
 export function defaultRowDeserializer<T>(
   row: ViewportRow,
-  columns: Column[]
+  columns: dh.Column[]
 ): T {
   return columns.reduce((result, col) => {
     // eslint-disable-next-line no-param-reassign
@@ -108,7 +108,7 @@ export function* generateEmptyKeyedItems<T>(
  * @param table The table to check for its size.
  * @returns The size of the table or zero if the table is null or closed.
  */
-export function getSize(table?: Table | TreeTable | null): number {
+export function getSize(table?: dh.Table | dh.TreeTable | null): number {
   return table == null || isClosed(table) ? 0 : table.size;
 }
 
@@ -117,7 +117,7 @@ export function getSize(table?: Table | TreeTable | null): number {
  * so will always return false.
  * @param table The table to check if it is closed.
  */
-export function isClosed(table: Table | TreeTable): boolean {
+export function isClosed(table: dh.Table | dh.TreeTable): boolean {
   if ('isClosed' in table) {
     return table.isClosed;
   }

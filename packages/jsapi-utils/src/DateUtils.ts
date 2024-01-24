@@ -1,4 +1,4 @@
-import type { DateWrapper, dh as DhType } from '@deephaven/jsapi-types';
+import type { dh.DateWrapper, dh as DhType } from '@deephaven/jsapi-types';
 
 interface DateParts<T> {
   year: T;
@@ -49,7 +49,7 @@ export class DateUtils {
     minute = 0,
     second = 0,
     ns = 0
-  ): DateWrapper {
+  ): dh.DateWrapper {
     if (!timeZone) {
       throw new Error('No timezone provided');
     }
@@ -93,7 +93,7 @@ export class DateUtils {
     components: DateParts<string>,
     values: DateParts<number>,
     timeZone: string
-  ): DateWrapper | null {
+  ): dh.DateWrapper | null {
     let { year, month, date, hours, minutes, seconds, nanos } = values;
 
     if (components.nanos != null) {
@@ -260,7 +260,7 @@ export class DateUtils {
     dh: DhType,
     text: string,
     timeZone: string
-  ): [DateWrapper, DateWrapper | null] | [null, null] {
+  ): [dh.DateWrapper, dh.DateWrapper | null] | [null, null] {
     const cleanText = text.trim().toLowerCase();
     if (cleanText.length === 0) {
       throw new Error('Cannot parse date range from empty string');
@@ -368,7 +368,7 @@ export class DateUtils {
    * In unit test, DateWrapper is just a number provided in millis, so handles that case.
    * @param dateWrapper The DateWrapper object, or time in millis
    */
-  static getJsDate(dateWrapper: DateWrapper | number): Date {
+  static getJsDate(dateWrapper: dh.DateWrapper | number): Date {
     if (typeof dateWrapper === 'number') {
       return new Date(dateWrapper);
     }

@@ -1,12 +1,12 @@
 import { useCallback, useEffect } from 'react';
-import type { Table, TreeTable } from '@deephaven/jsapi-types';
+import type { dh.Table, dh.TreeTable } from '@deephaven/jsapi-types';
 import { usePromiseFactory } from '@deephaven/react-hooks';
 
 /**
  * Return type of `useSelectDistinctTable` hook.
  */
 export interface UseSelectDistinctTableResult {
-  distinctTable: Table | null;
+  distinctTable: dh.Table | null;
   error: string | Error | null;
   isError: boolean;
   isLoading: boolean;
@@ -19,7 +19,7 @@ export interface UseSelectDistinctTableResult {
  * @param columnNames The list of column names to pass to `selectDistinct`.
  */
 export default function useSelectDistinctTable(
-  table: Table | TreeTable | null,
+  table: dh.Table | dh.TreeTable | null,
   ...columnNames: string[]
 ): UseSelectDistinctTableResult {
   const selectDistinct = useCallback(

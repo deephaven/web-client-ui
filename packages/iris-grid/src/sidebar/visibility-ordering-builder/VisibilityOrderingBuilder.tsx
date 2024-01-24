@@ -22,7 +22,7 @@ import {
   vsCircleLargeFilled,
   vsAdd,
 } from '@deephaven/icons';
-import type { Column } from '@deephaven/jsapi-types';
+import type { dh.Column } from '@deephaven/jsapi-types';
 import memoize from 'memoizee';
 import debounce from 'lodash.debounce';
 import { Button, SearchInput } from '@deephaven/components';
@@ -983,7 +983,7 @@ class VisibilityOrderingBuilder extends PureComponent<
   getMemoizedFirstMovableIndex = memoize(
     (
       model: IrisGridModel,
-      columns: readonly Column[],
+      columns: readonly dh.Column[],
       movedColumns: readonly MoveOperation[]
     ) => {
       for (let i = 0; i < columns.length; i += 1) {
@@ -1013,7 +1013,7 @@ class VisibilityOrderingBuilder extends PureComponent<
   getMemoizedLastMovableIndex = memoize(
     (
       model: IrisGridModel,
-      columns: readonly Column[],
+      columns: readonly dh.Column[],
       movedColumns: readonly MoveOperation[]
     ) => {
       for (let i = columns.length - 1; i >= 0; i -= 1) {
@@ -1038,7 +1038,7 @@ class VisibilityOrderingBuilder extends PureComponent<
 
   memoizedGetTreeItems = memoize(
     (
-      columns: readonly Column[],
+      columns: readonly dh.Column[],
       movedColumns: readonly MoveOperation[],
       columnHeaderGroups: readonly ColumnHeaderGroup[],
       hiddenColumns: readonly ModelIndex[],

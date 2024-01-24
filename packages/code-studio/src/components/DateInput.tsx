@@ -1,6 +1,6 @@
 import React, { useState, ReactElement } from 'react';
 import dh from '@deephaven/jsapi-shim';
-import type { DateWrapper } from '@deephaven/jsapi-types';
+import type { dh.DateWrapper } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { MaskedInput, SelectionSegment } from '@deephaven/components';
 
@@ -17,13 +17,13 @@ const DH_FORMAT_PATTERN = 'yyyy-MM-dd HH:mm:ss.SSSSSSSSS';
 const DEFAULT_VALUE_STRING = '2019-01-01 00:00:00.000\u200B000\u200B000';
 const EXAMPLES = [DEFAULT_VALUE_STRING];
 
-const parseDateString = (dateString: string): DateWrapper =>
+const parseDateString = (dateString: string): dh.DateWrapper =>
   dh.i18n.DateTimeFormat.parse(
     DH_FORMAT_PATTERN,
     dateString.replace(/\u200B/g, '')
   );
 
-const formatDateAsString = (date: number | DateWrapper | Date): string => {
+const formatDateAsString = (date: number | dh.DateWrapper | Date): string => {
   const formattedString = dh.i18n.DateTimeFormat.format(
     DH_FORMAT_PATTERN,
     date
@@ -38,7 +38,7 @@ const formatDateAsString = (date: number | DateWrapper | Date): string => {
 
 interface DateInputProps {
   className?: string;
-  defaultValue?: DateWrapper;
+  defaultValue?: dh.DateWrapper;
   onChange?: (value: string) => void;
 }
 

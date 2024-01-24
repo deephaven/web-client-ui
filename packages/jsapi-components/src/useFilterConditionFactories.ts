@@ -1,12 +1,12 @@
 import { useMemo } from 'react';
-import type { FilterCondition, Table, TreeTable } from '@deephaven/jsapi-types';
+import type { dh.FilterCondition, dh.Table, dh.TreeTable } from '@deephaven/jsapi-types';
 import type { FilterConditionFactory } from '@deephaven/jsapi-utils';
 import { removeNullAndUndefined } from '@deephaven/utils';
 
 export function useFilterConditionFactories(
-  maybeTable: Table | TreeTable | null | undefined,
+  maybeTable: dh.Table | dh.TreeTable | null | undefined,
   ...filterConditionFactories: FilterConditionFactory[]
-): FilterCondition[] {
+): dh.FilterCondition[] {
   return useMemo(
     () =>
       removeNullAndUndefined(

@@ -25,7 +25,7 @@ import {
   CancelablePromise,
   PromiseUtils,
 } from '@deephaven/utils';
-import type { Column, FilterCondition, Table } from '@deephaven/jsapi-types';
+import type { dh.Column, dh.FilterCondition, dh.Table } from '@deephaven/jsapi-types';
 import shortid from 'shortid';
 import AdvancedFilterCreatorFilterItem from './AdvancedFilterCreatorFilterItem';
 import AdvancedFilterCreatorSelectValue from './AdvancedFilterCreatorSelectValue';
@@ -42,14 +42,14 @@ type FilterChangeHandler = (
 
 interface AdvancedFilterCreatorProps {
   model: IrisGridModel;
-  column: Column;
+  column: dh.Column;
   onFilterChange: (
-    column: Column,
-    filter: FilterCondition | null,
+    column: dh.Column,
+    filter: dh.FilterCondition | null,
     options: AdvancedFilterOptions
   ) => void;
   onSortChange: (
-    column: Column,
+    column: dh.Column,
     direction: SortDirection,
     addToExisting?: boolean
   ) => void;
@@ -78,7 +78,7 @@ interface AdvancedFilterCreatorState {
   selectedValues: unknown[];
 
   valuesTableError: null;
-  valuesTable?: Table;
+  valuesTable?: dh.Table;
 
   isSortable: boolean;
 }
@@ -187,7 +187,7 @@ class AdvancedFilterCreator extends PureComponent<
 
   debounceTimeout?: ReturnType<typeof setTimeout>;
 
-  valuesTablePromise?: CancelablePromise<Table>;
+  valuesTablePromise?: CancelablePromise<dh.Table>;
 
   getFilterChangeHandler(index: number): FilterChangeHandler {
     return this.handleFilterChange.bind(this, index);

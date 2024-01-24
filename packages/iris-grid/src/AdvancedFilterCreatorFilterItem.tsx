@@ -9,7 +9,7 @@ import {
   TypeValue as FilterTypeValue,
 } from '@deephaven/filters';
 import { vsTrash } from '@deephaven/icons';
-import type { Column } from '@deephaven/jsapi-types';
+import type { dh.Column } from '@deephaven/jsapi-types';
 import {
   AdvancedFilterItemType,
   Formatter,
@@ -23,7 +23,7 @@ import './AdvancedFilterCreatorFilterItem.scss';
 const log = Log.module('AdvancedFilterCreatorFilterItem');
 
 export interface AdvancedFilterCreatorFilterItemProps {
-  column: Column;
+  column: dh.Column;
   filterTypes: FilterTypeValue[];
   onChange: (type: FilterTypeValue, value: string) => void;
   onDelete: () => void;
@@ -133,7 +133,7 @@ export class AdvancedFilterCreatorFilterItem extends PureComponent<
 
   getCachedIsValid = memoizeOne(
     (
-      column: Column,
+      column: dh.Column,
       operation: FilterTypeValue,
       value: string,
       timeZone: string,

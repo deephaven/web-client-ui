@@ -1,7 +1,7 @@
 import Log from '@deephaven/log';
 import type {
-  Column,
-  CustomColumn,
+  dh.Column,
+  dh.CustomColumn,
   dh as DhType,
 } from '@deephaven/jsapi-types';
 import { DateUtils, TableUtils } from '@deephaven/jsapi-utils';
@@ -655,18 +655,18 @@ export function getShortLabelForConditionType(
  */
 export function getFormatColumns(
   dh: DhType,
-  columns: readonly Column[],
+  columns: readonly dh.Column[],
   rules: readonly FormattingRule[]
-): CustomColumn[] {
+): dh.CustomColumn[] {
   if (rules === undefined) {
     log.debug(`no rules passed.`);
     return [];
   }
-  const result: CustomColumn[] = [];
+  const result: dh.CustomColumn[] = [];
   // There can be only one row format custom column
   // and multiple column format custom columns (one per column)
-  let rowFormatConfig: [string, CustomColumn];
-  const columnFormatConfigMap = new Map<string, [string, CustomColumn]>();
+  let rowFormatConfig: [string, dh.CustomColumn];
+  const columnFormatConfigMap = new Map<string, [string, dh.CustomColumn]>();
   rules.forEach(({ config, type: formatterType }) => {
     const { column } = config;
     // Check both name and type because the type can change

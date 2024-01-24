@@ -1,5 +1,5 @@
 import { getDashboardData } from '@deephaven/dashboard';
-import type { Column, IdeConnection, Table } from '@deephaven/jsapi-types';
+import type { dh.Column, dh.IdeConnection, dh.Table } from '@deephaven/jsapi-types';
 import { SessionWrapper } from '@deephaven/jsapi-utils';
 import { RootState } from '@deephaven/redux';
 import { FilterChangeEvent } from '../FilterPlugin';
@@ -21,8 +21,8 @@ const EMPTY_ARRAY = Object.freeze([]);
 export const getColumnsForDashboard = (
   store: RootState,
   dashboardId: string
-): Column[] =>
-  (getDashboardData(store, dashboardId).columns ?? EMPTY_ARRAY) as Column[];
+): dh.Column[] =>
+  (getDashboardData(store, dashboardId).columns ?? EMPTY_ARRAY) as dh.Column[];
 
 /**
  * Get the known filter sets for the dashboard.
@@ -57,10 +57,10 @@ export const getInputFiltersForDashboard = (
 export const getTableMapForDashboard = (
   store: RootState,
   dashboardId: string
-): Map<string, Table> =>
+): Map<string, dh.Table> =>
   (getDashboardData(store, dashboardId).tableMap ?? EMPTY_MAP) as Map<
     string,
-    Table
+    dh.Table
   >;
 
 /**
@@ -121,8 +121,8 @@ export const getDashboardConsoleSettings = (
 export const getDashboardConnection = (
   store: RootState,
   dashboardId: string
-): IdeConnection | undefined =>
-  getDashboardData(store, dashboardId).connection as IdeConnection | undefined;
+): dh.IdeConnection | undefined =>
+  getDashboardData(store, dashboardId).connection as dh.IdeConnection | undefined;
 
 /**
  *

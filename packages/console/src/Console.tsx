@@ -20,10 +20,10 @@ import throttle from 'lodash.throttle';
 import type { JSZipObject } from 'jszip';
 import type {
   dh as DhType,
-  IdeSession,
-  LogItem,
-  VariableChanges,
-  VariableDefinition,
+  dh.IdeSession,
+  dh.ide.LogItem,
+  dh.ide.VariableChanges,
+  dh.VariableDefinition,
 } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { assertNotNull, Pending, PromiseUtils } from '@deephaven/utils';
@@ -65,11 +65,11 @@ interface ConsoleProps {
    * @param object The object to open
    * @param forceOpen If true, always open the object. If false, only update existing panels
    */
-  openObject: (object: VariableDefinition, forceOpen?: boolean) => void;
+  openObject: (object: dh.VariableDefinition, forceOpen?: boolean) => void;
 
   /** Closes all panels containing the object */
-  closeObject: (object: VariableDefinition) => void;
-  session: IdeSession;
+  closeObject: (object: dh.VariableDefinition) => void;
+  session: dh.IdeSession;
   language: string;
   commandHistoryStorage: CommandHistoryStorage;
   onSettingsChange: (settings: Record<string, unknown>) => void;
@@ -81,7 +81,7 @@ interface ConsoleProps {
   historyChildren: ReactNode;
 
   // Known object map
-  objectMap: Map<string, VariableDefinition>;
+  objectMap: Map<string, dh.VariableDefinition>;
 
   disabled: boolean;
 
@@ -107,7 +107,7 @@ interface ConsoleState {
   objectHistoryMap: Map<string, number>;
 
   // The object definitions, name/type
-  objectMap: Map<string, VariableDefinition>;
+  objectMap: Map<string, dh.VariableDefinition>;
 
   showCsvOverlay: boolean;
   csvFile: File | null;
@@ -351,7 +351,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
       | {
           message: string;
           error?: string;
-          changes: VariableChanges;
+          changes: dh.ide.VariableChanges;
         }
       | undefined,
     historyItem: ConsoleHistoryActionItem,
@@ -427,7 +427,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     focusCommandHistory();
   }
 
-  handleLogMessage(message: LogItem): void {
+  handleLogMessage(message: dh.ide.LogItem): void {
     const { isPrintStdOutEnabled } = this.state;
     if (!isPrintStdOutEnabled) {
       return;
@@ -477,7 +477,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     });
   }, Console.LOG_THROTTLE);
 
-  openUpdatedItems(changes: VariableChanges): void {
+  openUpdatedItems(changes: dh.ide.VariableChanges): void {
     log.debug('openUpdatedItems', changes);
     const { isAutoLaunchPanelsEnabled } = this.state;
     if (changes == null) {
@@ -494,7 +494,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     );
   }
 
-  closeRemovedItems(changes: VariableChanges): void {
+  closeRemovedItems(changes: dh.ide.VariableChanges): void {
     if (
       changes == null ||
       changes.removed == null ||
@@ -529,7 +529,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
   }
 
   updateKnownObjects(historyItem: ConsoleHistoryActionItem): void {
-    let changes: undefined | VariableChanges;
+    let changes: undefined | dh.ide.VariableChanges;
     if (historyItem.result) {
       changes = historyItem.result.changes;
     }
@@ -555,7 +555,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
       const objectMap = new Map(state.objectMap);
 
       const disableOldObject = (
-        object: VariableDefinition,
+        object: dh.VariableDefinition,
         isRemoved = false
       ): void => {
         const { title } = object;
@@ -901,7 +901,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     });
   }
 
-  getObjects = memoize((objectMap: Map<string, VariableDefinition>) => [
+  getObjects = memoize((objectMap: Map<string, dh.VariableDefinition>) => [
     ...objectMap.values(),
   ]);
 

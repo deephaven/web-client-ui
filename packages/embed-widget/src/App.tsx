@@ -5,7 +5,7 @@ import {
   LoadingOverlay,
 } from '@deephaven/components'; // Use the loading spinner from the Deephaven components package
 import { useConnection } from '@deephaven/jsapi-components';
-import type { VariableDefinition } from '@deephaven/jsapi-types';
+import type { dh.VariableDefinition } from '@deephaven/jsapi-types';
 import { fetchVariableDefinition } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { WidgetView } from '@deephaven/plugin';
@@ -23,7 +23,7 @@ const log = Log.module('EmbedWidget.App');
  */
 function App(): JSX.Element {
   const [error, setError] = useState<string>();
-  const [definition, setDefinition] = useState<VariableDefinition>();
+  const [definition, setDefinition] = useState<dh.VariableDefinition>();
   const searchParams = useMemo(
     () => new URLSearchParams(window.location.search),
     []

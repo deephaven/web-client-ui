@@ -17,7 +17,7 @@ import {
 } from '@deephaven/dashboard-core-plugins';
 import { FileStorage } from '@deephaven/file-explorer';
 import { useApi, useClient } from '@deephaven/jsapi-bootstrap';
-import type { dh as DhType, IdeConnection } from '@deephaven/jsapi-types';
+import type { dh as DhType, dh.IdeConnection } from '@deephaven/jsapi-types';
 import { useConnection } from '@deephaven/jsapi-components';
 import {
   getSessionDetails,
@@ -70,7 +70,7 @@ interface AppInitProps {
   ) => void;
   setFileStorage: (fileStorage: FileStorage) => void;
   setLayoutStorage: (layoutStorage: LayoutStorage) => void;
-  setDashboardConnection: (id: string, connection: IdeConnection) => void;
+  setDashboardConnection: (id: string, connection: dh.IdeConnection) => void;
   setDashboardSessionWrapper: (id: string, wrapper: SessionWrapper) => void;
   setPlugins: (map: PluginModuleMap) => void;
   setUser: (user: User) => void;

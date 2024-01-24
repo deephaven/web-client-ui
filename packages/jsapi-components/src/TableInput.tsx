@@ -11,7 +11,7 @@ import {
   SearchInput,
   SelectValueList,
 } from '@deephaven/components';
-import type { LongWrapper, Table } from '@deephaven/jsapi-types';
+import type { dh.LongWrapper, dh.Table } from '@deephaven/jsapi-types';
 import { PromiseUtils } from '@deephaven/utils';
 import Log from '@deephaven/log';
 import { Formatter, FormatterUtils, Settings } from '@deephaven/jsapi-utils';
@@ -22,7 +22,7 @@ import './TableInput.scss';
 
 const log = Log.module('TableInput');
 
-type Value = LongWrapper | string;
+type Value = dh.LongWrapper | string;
 
 interface SelectValueItem {
   displayValue: string;
@@ -36,7 +36,7 @@ interface TableInputProps {
   settings: Settings;
   defaultValue: Value[];
   isInvalid?: boolean;
-  table: Promise<Table>;
+  table: Promise<dh.Table>;
   onChange: (items: Value[]) => void;
   onBlur?: () => void;
 }
@@ -74,7 +74,7 @@ function TableInput(props: TableInputProps): JSX.Element {
   }, [dh, settings]);
   const [searchValue, setSearchValue] = useState('');
   const [selection, setSelection] = useState(new Set(defaultValue));
-  const [table, setTable] = useState<Table | undefined>();
+  const [table, setTable] = useState<dh.Table | undefined>();
   const listRef = useRef<SelectValueList<Value>>(null);
 
   const itemCount = Math.min(table?.size ?? 0, SIZE_LIMIT);

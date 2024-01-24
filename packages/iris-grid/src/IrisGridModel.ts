@@ -13,18 +13,18 @@ import {
   VisibleIndex,
 } from '@deephaven/grid';
 import type {
-  Column,
-  ColumnStatistics,
-  CustomColumn,
+  dh.Column,
+  dh.ColumnStatistics,
+  dh.CustomColumn,
   dh as DhType,
-  FilterCondition,
-  Format,
-  LayoutHints,
-  RollupConfig,
-  Row,
-  Sort,
-  Table,
-  ValueTypeUnion,
+  dh.FilterCondition,
+  dh.Format,
+  dh.LayoutHints,
+  dh.RollupConfig,
+  dh.Row,
+  dh.Sort,
+  dh.Table,
+  dh.ValueTypeType,
 } from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
 import {
@@ -35,7 +35,7 @@ import {
 } from './CommonTypes';
 import ColumnHeaderGroup from './ColumnHeaderGroup';
 
-export type DisplayColumn = Column & {
+export type DisplayColumn = dh.Column & {
   /**
    * Name to display with the column.
    * The `name` property on `Column` is a unique identifier and must be a valid Java identifier,
@@ -221,7 +221,7 @@ abstract class IrisGridModel<
   abstract formatForCell(
     column: ModelIndex,
     row: ModelIndex
-  ): Format | undefined;
+  ): dh.Format | undefined;
 
   /**
    * @param column The model column index
@@ -233,12 +233,12 @@ abstract class IrisGridModel<
   /**
    * @returns The filters set on this model
    */
-  abstract get filter(): readonly FilterCondition[];
+  abstract get filter(): readonly dh.FilterCondition[];
 
   /**
    * @param filter The filters to set
    */
-  abstract set filter(filter: readonly FilterCondition[]);
+  abstract set filter(filter: readonly dh.FilterCondition[]);
 
   /**
    * @returns The formatter used when formatting data
@@ -264,12 +264,12 @@ abstract class IrisGridModel<
   /**
    * @returns The sorts used on this model
    */
-  abstract get sort(): readonly Sort[];
+  abstract get sort(): readonly dh.Sort[];
 
   /**
    * @param sort The sorts to use on this model
    */
-  abstract set sort(sort: readonly Sort[]);
+  abstract set sort(sort: readonly dh.Sort[]);
 
   /**
   /**
@@ -285,12 +285,12 @@ abstract class IrisGridModel<
   /**
    * @returns The format columns on this model
    */
-  abstract get formatColumns(): readonly CustomColumn[];
+  abstract get formatColumns(): readonly dh.CustomColumn[];
 
   /**
    * @param formatColumns The format columns to use
    */
-  abstract set formatColumns(formatColumns: readonly CustomColumn[]);
+  abstract set formatColumns(formatColumns: readonly dh.CustomColumn[]);
 
   /**
    * @param columns The columns to treat as frozen
@@ -300,9 +300,9 @@ abstract class IrisGridModel<
   /**
    * @returns The config to use for rolling up this table
    */
-  abstract get rollupConfig(): RollupConfig | null;
+  abstract get rollupConfig(): dh.RollupConfig | null;
 
-  abstract set rollupConfig(rollupConfig: RollupConfig | null);
+  abstract set rollupConfig(rollupConfig: dh.RollupConfig | null);
 
   /**
    * @returns The config to use for the totals table of this model
@@ -314,7 +314,7 @@ abstract class IrisGridModel<
   /**
    * @returns The LayoutHints to use for the columns of this table model
    */
-  get layoutHints(): LayoutHints | null {
+  get layoutHints(): dh.LayoutHints | null {
     return null;
   }
 
@@ -370,7 +370,7 @@ abstract class IrisGridModel<
   /**
    * @returns Returns a raw table that is frozen and can be used for exporting data
    */
-  abstract export(): Promise<Table>;
+  abstract export(): Promise<dh.Table>;
 
   /**
    * @returns True if this model supports the columnStatistics(column) function
@@ -391,7 +391,7 @@ abstract class IrisGridModel<
    * @param column The column to get statistics for
    * @returns The column statistics
    */
-  abstract columnStatistics(column: Column): Promise<ColumnStatistics>;
+  abstract columnStatistics(column: dh.Column): Promise<dh.ColumnStatistics>;
 
   /**
    * @returns True if this model supports customColumns
@@ -513,7 +513,7 @@ abstract class IrisGridModel<
   abstract setViewport(
     top: VisibleIndex,
     bottom: VisibleIndex,
-    columns?: Column[]
+    columns?: dh.Column[]
   ): void;
 
   /**
@@ -534,14 +534,14 @@ abstract class IrisGridModel<
   abstract textSnapshot(
     ranges: readonly GridRange[],
     includeHeaders?: boolean,
-    formatValue?: (value: unknown, column: Column, row?: Row) => string
+    formatValue?: (value: unknown, column: dh.Column, row?: dh.Row) => string
   ): Promise<string>;
 
   /**
    * @param column The columns to get the distinct values for
    * @returns A table partitioned on the specified columns in the order given in
    */
-  abstract valuesTable(columns: Column | readonly Column[]): Promise<Table>;
+  abstract valuesTable(columns: dh.Column | readonly dh.Column[]): Promise<dh.Table>;
 
   /**
    * Close this model. It can no longer be used after being closed
@@ -566,8 +566,8 @@ abstract class IrisGridModel<
 
   abstract seekRow(
     startRow: number,
-    column: Column,
-    valueType: ValueTypeUnion,
+    column: dh.Column,
+    valueType: dh.ValueTypeType,
     value: unknown,
     insensitive?: boolean,
     contains?: boolean,

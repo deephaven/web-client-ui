@@ -1,4 +1,4 @@
-import type { dh as DhType, Figure, Table } from '@deephaven/jsapi-types';
+import type { dh as DhType, dh.plot.Figure, dh.Table } from '@deephaven/jsapi-types';
 import ChartUtils, { ChartModelSettings } from './ChartUtils';
 import FigureChartModel from './FigureChartModel';
 import { ChartTheme } from './ChartTheme';
@@ -24,7 +24,7 @@ class ChartModelFactory {
   static async makeModelFromSettings(
     dh: DhType,
     settings: ChartModelSettings,
-    table: Table,
+    table: dh.Table,
     theme: ChartTheme
   ): Promise<ChartModel> {
     const figure = await ChartModelFactory.makeFigureFromSettings(
@@ -51,8 +51,8 @@ class ChartModelFactory {
   static async makeFigureFromSettings(
     dh: DhType,
     settings: ChartModelSettings,
-    table: Table
-  ): Promise<Figure> {
+    table: dh.Table
+  ): Promise<dh.plot.Figure> {
     // Copy the table first and then re-apply the filters from the original table
     // When we add table linking we'll want to listen to the original table and update
     // the copied table with any changes that occur.
@@ -86,7 +86,7 @@ class ChartModelFactory {
   static async makeModel(
     dh: DhType,
     settings: ChartModelSettings | undefined,
-    figure: Figure,
+    figure: dh.plot.Figure,
     theme: ChartTheme
   ): Promise<ChartModel> {
     return new FigureChartModel(dh, figure, theme, settings);

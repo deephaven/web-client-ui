@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { type WidgetComponentProps } from '@deephaven/plugin';
-import { type Table } from '@deephaven/jsapi-types';
+import { type dh.Table } from '@deephaven/jsapi-types';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import {
   IrisGrid,
@@ -19,7 +19,7 @@ export function GridWidgetPlugin(
   useEffect(() => {
     let cancelled = false;
     async function init() {
-      const table = (await fetch()) as unknown as Table;
+      const table = (await fetch()) as unknown as dh.Table;
       const newModel = await IrisGridModelFactory.makeModel(dh, table);
       if (!cancelled) {
         setModel(newModel);

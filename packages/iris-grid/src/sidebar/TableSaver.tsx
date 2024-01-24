@@ -1,12 +1,12 @@
 import { PureComponent } from 'react';
 import type {
-  Column,
+  dh.Column,
   dh as DhType,
-  DateWrapper,
-  Table,
-  TableData,
-  TableViewportSubscription,
-  UpdateEventData,
+  dh.DateWrapper,
+  dh.Table,
+  dh.TableData,
+  dh.TableViewportSubscription,
+  dh.SubscriptionTableData,
 } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { GridRange, GridRangeIndex, memoizeClear } from '@deephaven/grid';
@@ -35,13 +35,13 @@ interface TableSaverProps {
   formatter: Formatter;
 }
 
-function isUpdateEventData(data: TableData): data is UpdateEventData {
-  return (data as UpdateEventData).added !== undefined;
+function isUpdateEventData(data: dh.TableData): data is dh.SubscriptionTableData {
+  return (data as dh.SubscriptionTableData).added !== undefined;
 }
 
 function assertIsUpdateEventData(
-  data: TableData
-): asserts data is UpdateEventData {
+  data: dh.TableData
+): asserts data is dh.SubscriptionTableData {
   if (!isUpdateEventData(data)) {
     throw new Error('event is not UpdateEventData');
   }
@@ -130,11 +130,11 @@ export default class TableSaver extends PureComponent<
 
   fileWriter?: WritableStreamDefaultWriter<unknown>;
 
-  table?: Table;
+  table?: dh.Table;
 
-  tableSubscription?: TableViewportSubscription;
+  tableSubscription?: dh.TableViewportSubscription;
 
-  columns?: readonly Column[];
+  columns?: readonly dh.Column[];
 
   fileName?: string;
 
@@ -156,7 +156,7 @@ export default class TableSaver extends PureComponent<
 
   snapshotCounter: number;
 
-  snapshotsBuffer: Map<number, UpdateEventData>;
+  snapshotsBuffer: Map<number, dh.SubscriptionTableData>;
 
   currentSnapshotIndex: number;
 
@@ -243,8 +243,8 @@ export default class TableSaver extends PureComponent<
 
   startDownload(
     fileName: string,
-    frozenTable: Table,
-    tableSubscription: TableViewportSubscription,
+    frozenTable: dh.Table,
+    tableSubscription: dh.TableViewportSubscription,
     snapshotRanges: readonly GridRange[],
     modelRanges: readonly GridRange[],
     includeColumnHeaders: boolean,
@@ -495,7 +495,7 @@ export default class TableSaver extends PureComponent<
     }
   }
 
-  convertSnapshotIntoCsv(snapshot: UpdateEventData): string {
+  convertSnapshotIntoCsv(snapshot: dh.SubscriptionTableData): string {
     let csvString = '';
     const snapshotIterator = snapshot.added.iterator();
     const { dh, formatter } = this.props;
@@ -519,7 +519,7 @@ export default class TableSaver extends PureComponent<
             // value is just a long value, we should return the value formatted as a full date string
             value = dh.i18n.DateTimeFormat.format(
               UNFORMATTED_DATE_PATTERN,
-              value as number | Date | DateWrapper,
+              value as number | Date | dh.DateWrapper,
               dh.i18n.TimeZone.getTimeZone(formatter.timeZone)
             );
           }
@@ -656,7 +656,7 @@ export default class TableSaver extends PureComponent<
   }
 
   handleSnapshotResolved(
-    snapshot: UpdateEventData,
+    snapshot: dh.SubscriptionTableData,
     snapshotIndex: number,
     snapshotStartRow: GridRangeIndex,
     snapshotEndRow: GridRangeIndex

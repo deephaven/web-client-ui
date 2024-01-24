@@ -13,7 +13,7 @@ import {
   useListener,
 } from '@deephaven/dashboard';
 import { useApi } from '@deephaven/jsapi-bootstrap';
-import type { Table } from '@deephaven/jsapi-types';
+import type { dh.Table } from '@deephaven/jsapi-types';
 import shortid from 'shortid';
 import { IrisGridEvent } from './events';
 import { ChartPanel } from './panels';
@@ -44,7 +44,7 @@ export function ChartBuilderPlugin(
         table: string;
       };
       panelId?: string;
-      table: Table;
+      table: dh.Table;
     }) => {
       const { settings } = metadata;
       const makeModel = (): Promise<ChartModel> =>

@@ -8,8 +8,8 @@ import {
 import { ContextMenuRoot, LoadingOverlay } from '@deephaven/components'; // Use the loading spinner from the Deephaven components package
 import type {
   dh as DhType,
-  Figure,
-  IdeConnection,
+  dh.plot.Figure,
+  dh.IdeConnection,
 } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import './App.scss'; // Styles for in this app
@@ -27,9 +27,9 @@ const log = Log.module('EmbedChart.App');
  */
 async function loadFigure(
   dh: DhType,
-  connection: IdeConnection,
+  connection: dh.IdeConnection,
   name: string
-): Promise<Figure> {
+): Promise<dh.plot.Figure> {
   log.info(`Fetching figure ${name}...`);
 
   const definition = { name, type: dh.VariableType.FIGURE };

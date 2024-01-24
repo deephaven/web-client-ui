@@ -1,7 +1,7 @@
 import type {
-  Column,
+  dh.Column,
   dh as DhType,
-  CustomColumn,
+  dh.CustomColumn,
 } from '@deephaven/jsapi-types';
 import {
   BaseFormatConfig,
@@ -25,13 +25,13 @@ export function makeTernaryFormatRule(
   return `${conditionDBString} ? ${styleDBString} : ${prevRule}`;
 }
 
-export function makeRowFormatColumn(dh: DhType, rule: string): CustomColumn {
+export function makeRowFormatColumn(dh: DhType, rule: string): dh.CustomColumn {
   return dh.Column.formatRowColor(rule);
 }
 
 export function makeColumnFormatColumn(
-  col: Column,
+  col: dh.Column,
   rule: string
-): CustomColumn {
+): dh.CustomColumn {
   return col.formatColor(rule);
 }

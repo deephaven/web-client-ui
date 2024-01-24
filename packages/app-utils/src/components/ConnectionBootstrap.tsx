@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { LoadingOverlay } from '@deephaven/components';
 import { useApi, useClient } from '@deephaven/jsapi-bootstrap';
-import type { IdeConnection } from '@deephaven/jsapi-types';
+import type { dh.IdeConnection } from '@deephaven/jsapi-types';
 import { ConnectionContext } from '@deephaven/jsapi-components';
 import Log from '@deephaven/log';
 
@@ -24,7 +24,7 @@ export function ConnectionBootstrap({
   const api = useApi();
   const client = useClient();
   const [error, setError] = useState<unknown>();
-  const [connection, setConnection] = useState<IdeConnection>();
+  const [connection, setConnection] = useState<dh.IdeConnection>();
   useEffect(
     function initConnection() {
       let isCanceled = false;

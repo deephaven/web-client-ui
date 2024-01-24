@@ -10,9 +10,9 @@ import {
   vsCircleLargeFilled,
 } from '@deephaven/icons';
 import type {
-  Column,
+  dh.Column,
   dh as DhType,
-  FilterCondition,
+  dh.FilterCondition,
 } from '@deephaven/jsapi-types';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import './CrossColumnSearch.scss';
@@ -42,9 +42,9 @@ class CrossColumnSearch extends PureComponent<
     dh: DhType,
     searchValue: string,
     selectedColumns: readonly ColumnName[],
-    columns: readonly Column[],
+    columns: readonly dh.Column[],
     invertSelection: boolean
-  ): FilterCondition | undefined {
+  ): dh.FilterCondition | undefined {
     const filterColumns = invertSelection
       ? columns
           .filter(column => !selectedColumns.includes(column.name))

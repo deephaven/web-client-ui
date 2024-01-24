@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { LoadingOverlay } from '@deephaven/components';
 import { useClient } from '@deephaven/jsapi-bootstrap';
 import Log from '@deephaven/log';
-import type { LoginOptions } from '@deephaven/jsapi-types';
+import type { dh.LoginCredentials } from '@deephaven/jsapi-types';
 import { CanceledPromiseError, getErrorMessage } from '@deephaven/utils';
 import AuthenticationError from './AuthenticationError';
 
@@ -18,7 +18,7 @@ export type AuthPluginBaseProps = {
    * Retrieve the login options for logging in to the client
    * @returns A promise for the login options
    */
-  getLoginOptions: () => LoginOptions | Promise<LoginOptions>;
+  getLoginOptions: () => dh.LoginCredentials | Promise<dh.LoginCredentials>;
 };
 
 /**

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import type { Table, TreeTable } from '@deephaven/jsapi-types';
+import type { dh.Table, dh.TreeTable } from '@deephaven/jsapi-types';
 import { generateEmptyKeyedItems } from '@deephaven/jsapi-utils';
 import { useWindowedListData, WindowedListData } from '@deephaven/react-hooks';
 import { KeyedItem } from '@deephaven/utils';
@@ -21,7 +21,7 @@ const log = Log.module('useInitializeViewportData');
  * @returns a WindowedListData object.
  */
 export function useInitializeViewportData<T>(
-  table: Table | TreeTable | null
+  table: dh.Table | dh.TreeTable | null
 ): WindowedListData<KeyedItem<T>> {
   const viewportData = useWindowedListData<KeyedItem<T>>({});
 

@@ -12,7 +12,7 @@ import { DashboardPanelProps } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import { getCommandHistoryStorage, RootState } from '@deephaven/redux';
 import { assertNotNull, Pending } from '@deephaven/utils';
-import type { IdeSession } from '@deephaven/jsapi-types';
+import type { dh.IdeSession } from '@deephaven/jsapi-types';
 import { ConsoleEvent, NotebookEvent } from '../events';
 import './CommandHistoryPanel.scss';
 import Panel from './Panel';
@@ -23,7 +23,7 @@ const log = Log.module('CommandHistoryPanel');
 interface CommandHistoryPanelProps extends DashboardPanelProps {
   // eslint-disable-next-line react/no-unused-prop-types
   panelState?: Record<string, never>;
-  session?: IdeSession;
+  session?: dh.IdeSession;
   sessionId?: string;
   language?: string;
   commandHistoryStorage: CommandHistoryStorage;
@@ -31,7 +31,7 @@ interface CommandHistoryPanelProps extends DashboardPanelProps {
 
 interface CommandHistoryPanelState {
   panelState: Record<string, never>;
-  session?: IdeSession;
+  session?: dh.IdeSession;
   sessionId?: string;
   language?: string;
   contextActions: ContextAction[];
@@ -111,7 +111,7 @@ class CommandHistoryPanel extends Component<
   }
 
   handleSessionOpened(
-    session: IdeSession,
+    session: dh.IdeSession,
     { language, sessionId }: { language: string; sessionId: string }
   ): void {
     this.setState(

@@ -59,9 +59,9 @@ import {
 } from '@deephaven/icons';
 import dh from '@deephaven/jsapi-shim';
 import type {
-  IdeConnection,
-  IdeSession,
-  VariableDefinition,
+  dh.IdeConnection,
+  dh.IdeSession,
+  dh.VariableDefinition,
 } from '@deephaven/jsapi-types';
 import { SessionConfig } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
@@ -123,8 +123,8 @@ interface AppMainContainerProps {
   match: {
     params: { notebookPath: string };
   };
-  connection?: IdeConnection;
-  session?: IdeSession;
+  connection?: dh.IdeConnection;
+  session?: dh.IdeSession;
   sessionConfig?: SessionConfig;
   setActiveTool: (tool: string) => void;
   updateDashboardData: (id: string, data: Partial<AppDashboardData>) => void;
@@ -143,7 +143,7 @@ interface AppMainContainerState {
   isResetLayoutPromptShown: boolean;
   isSettingsMenuShown: boolean;
   unsavedNotebookCount: number;
-  widgets: VariableDefinition[];
+  widgets: dh.VariableDefinition[];
 }
 
 export class AppMainContainer extends Component<
@@ -443,7 +443,7 @@ export class AppMainContainer extends Component<
   }
 
   handleWidgetSelect(
-    widget: VariableDefinition,
+    widget: dh.VariableDefinition,
     dragEvent?: WindowMouseEvent
   ): void {
     this.setState({ isPanelsMenuShown: false });
@@ -668,7 +668,7 @@ export class AppMainContainer extends Component<
       (metadata?.id != null || metadata?.name != null)
     ) {
       // Looks like a widget, hydrate it as such
-      const widget: VariableDefinition =
+      const widget: dh.VariableDefinition =
         metadata.id != null
           ? {
               type: metadata.type,
@@ -695,7 +695,7 @@ export class AppMainContainer extends Component<
    * @param widget The widget to open
    * @param dragEvent The mouse drag event that trigger it, undefined if it was not triggered by a drag
    */
-  openWidget(widget: VariableDefinition, dragEvent?: WindowMouseEvent): void {
+  openWidget(widget: dh.VariableDefinition, dragEvent?: WindowMouseEvent): void {
     const { connection } = this.props;
     this.emitLayoutEvent(PanelEvent.OPEN, {
       dragEvent,

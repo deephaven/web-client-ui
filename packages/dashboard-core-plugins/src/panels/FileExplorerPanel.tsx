@@ -11,7 +11,7 @@ import FileExplorer, {
 } from '@deephaven/file-explorer';
 import React, { ReactNode } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
-import type { IdeSession } from '@deephaven/jsapi-types';
+import type { dh.IdeSession } from '@deephaven/jsapi-types';
 import Panel from './Panel';
 import { NotebookEvent } from '../events';
 import './FileExplorerPanel.scss';
@@ -22,7 +22,7 @@ const log = Log.module('FileExplorerPanel');
 type StateProps = {
   fileStorage: FileStorage;
   language?: string;
-  session?: IdeSession;
+  session?: dh.IdeSession;
 };
 
 type OwnProps = DashboardPanelProps;
@@ -52,7 +52,7 @@ export type FileExplorerPanelProps = OwnProps &
 export type FileExplorerPanelState = {
   isShown: boolean;
   language?: string;
-  session?: IdeSession;
+  session?: dh.IdeSession;
   showCreateFolder: boolean;
   focusedFilePath: string;
 };
@@ -225,7 +225,7 @@ export class FileExplorerPanel extends React.Component<
   }
 
   handleSessionOpened(
-    session: IdeSession,
+    session: dh.IdeSession,
     { language }: { language: string }
   ): void {
     this.setState({

@@ -18,8 +18,8 @@ import {
 import { vsWarning } from '@deephaven/icons';
 import type {
   dh as DhType,
-  Table,
-  TableViewportSubscription,
+  dh.Table,
+  dh.TableViewportSubscription,
 } from '@deephaven/jsapi-types';
 import { TimeUtils } from '@deephaven/utils';
 import shortid from 'shortid';
@@ -41,8 +41,8 @@ interface TableCsvExporterProps {
   onDownloadStart: () => void;
   onDownload: (
     fileName: string,
-    frozenTable: Table,
-    tableSubscription: TableViewportSubscription,
+    frozenTable: dh.Table,
+    tableSubscription: dh.TableViewportSubscription,
     snapshotRanges: readonly GridRange[],
     modelRanges: readonly GridRange[],
     includeColumnHeaders: boolean,

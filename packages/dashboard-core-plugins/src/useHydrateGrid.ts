@@ -1,12 +1,12 @@
 import { useMemo } from 'react';
 import { useApi } from '@deephaven/jsapi-bootstrap';
-import { Table } from '@deephaven/jsapi-types';
+import { dh.Table } from '@deephaven/jsapi-types';
 import { IrisGridModelFactory } from '@deephaven/iris-grid';
 import { type IrisGridPanelProps } from './panels';
 import { useLoadTablePlugin } from './useLoadTablePlugin';
 
 export function useHydrateGrid(
-  fetch: () => Promise<Table>,
+  fetch: () => Promise<dh.Table>,
   id: string
 ): { localDashboardId: string } & Pick<
   IrisGridPanelProps,

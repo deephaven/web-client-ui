@@ -19,10 +19,10 @@ import {
   ColumnHeaderGroup,
 } from '@deephaven/iris-grid';
 import type {
-  Column,
-  CustomColumn,
+  dh.Column,
+  dh.CustomColumn,
   dh as DhType,
-  ValueTypeUnion,
+  dh.ValueTypeType,
 } from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
 
@@ -166,11 +166,11 @@ class MockIrisGridTreeModel
   }
 
   // Stub out functions for IrisGridModel functionality
-  get columns(): Column[] {
-    return this.getCachedColumns(this.columnCount) as Column[];
+  get columns(): dh.Column[] {
+    return this.getCachedColumns(this.columnCount) as dh.Column[];
   }
 
-  get groupedColumns(): Column[] {
+  get groupedColumns(): dh.Column[] {
     return EMPTY_ARRAY;
   }
 
@@ -198,11 +198,11 @@ class MockIrisGridTreeModel
     // Ignore for mock
   }
 
-  get formatColumns(): CustomColumn[] {
+  get formatColumns(): dh.CustomColumn[] {
     return [];
   }
 
-  set formatColumns(formatColumns: CustomColumn[]) {
+  set formatColumns(formatColumns: dh.CustomColumn[]) {
     // Ignore for mock
   }
 
@@ -292,7 +292,7 @@ class MockIrisGridTreeModel
     return true;
   }
 
-  async columnStatistics(column: Column): Promise<never> {
+  async columnStatistics(column: dh.Column): Promise<never> {
     throw new Error('Not defined in mock');
   }
 
@@ -340,14 +340,14 @@ class MockIrisGridTreeModel
     throw new Error('Not defined in mock');
   }
 
-  valuesTable(columns: Column | Column[]): Promise<never> {
+  valuesTable(columns: dh.Column | dh.Column[]): Promise<never> {
     throw new Error('Not defined in mock');
   }
 
   seekRow(
     startRow: number,
-    column: Column,
-    valueType: ValueTypeUnion,
+    column: dh.Column,
+    valueType: dh.ValueTypeType,
     value: unknown,
     insensitive?: boolean | undefined,
     contains?: boolean | undefined,

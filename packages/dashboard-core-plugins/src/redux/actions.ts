@@ -4,7 +4,7 @@ import { updateDashboardData } from '@deephaven/dashboard';
 import { SessionWrapper } from '@deephaven/jsapi-utils';
 import { RootState } from '@deephaven/redux';
 import { Action } from 'redux';
-import type { IdeConnection } from '@deephaven/jsapi-types';
+import type { dh.IdeConnection } from '@deephaven/jsapi-types';
 import { getLinksForDashboard } from './selectors';
 import { FilterSet } from '../panels';
 import { Link } from '../linker/LinkerUtils';
@@ -18,7 +18,7 @@ import { ColumnSelectionValidator } from '../linker/ColumnSelectionValidator';
 export const setDashboardConnection =
   (
     id: string,
-    connection: IdeConnection
+    connection: dh.IdeConnection
   ): ThunkAction<unknown, RootState, undefined, Action<unknown>> =>
   dispatch =>
     dispatch(updateDashboardData(id, { connection }));

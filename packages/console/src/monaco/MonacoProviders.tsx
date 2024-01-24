@@ -5,16 +5,16 @@ import { PureComponent } from 'react';
 import * as monaco from 'monaco-editor';
 import Log from '@deephaven/log';
 import type {
-  DocumentRange,
-  IdeSession,
-  Position,
+  dh.lsp.Range,
+  dh.IdeSession,
+  dh.lsp.Position,
 } from '@deephaven/jsapi-types';
 
 const log = Log.module('MonacoCompletionProvider');
 
 interface MonacoProviderProps {
   model: monaco.editor.ITextModel;
-  session: IdeSession;
+  session: dh.IdeSession;
   language: string;
 }
 
@@ -98,7 +98,7 @@ class MonacoProviders extends PureComponent<
    * @param range The LSP document range to convert
    * @returns The corresponding monaco range
    */
-  static lspToMonacoRange(range: DocumentRange): monaco.IRange {
+  static lspToMonacoRange(range: dh.lsp.Range): monaco.IRange {
     const { start, end } = range;
 
     // Monaco expects the columns/ranges to start at 1. LSP starts at 0
@@ -117,7 +117,7 @@ class MonacoProviders extends PureComponent<
    * @param position The monaco position
    * @returns The corresponding LSP position
    */
-  static monacoToLspPosition(position: monaco.IPosition): Position {
+  static monacoToLspPosition(position: monaco.IPosition): dh.lsp.Position {
     // Monaco 1-indexes Position. LSP 0-indexes Position
     return {
       line: position.lineNumber - 1,

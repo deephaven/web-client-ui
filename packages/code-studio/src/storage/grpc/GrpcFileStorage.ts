@@ -9,7 +9,7 @@ import {
   FileStorageTable,
   FileUtils,
 } from '@deephaven/file-explorer';
-import type { StorageService } from '@deephaven/jsapi-types';
+import type { dh.storage.StorageService } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import GrpcFileStorageTable from './GrpcFileStorageTable';
 
@@ -18,7 +18,7 @@ const log = Log.module('GrpcFileStorage');
 export class GrpcFileStorage implements FileStorage {
   private static readonly REFRESH_THROTTLE = 150;
 
-  private readonly storageService: StorageService;
+  private readonly storageService: dh.storage.StorageService;
 
   private tables = [] as GrpcFileStorageTable[];
 
@@ -29,7 +29,7 @@ export class GrpcFileStorage implements FileStorage {
    * @param storageService Storage service to use
    * @param root Root path for this instance. Should not contain trailing slash.
    */
-  constructor(storageService: StorageService, root = '') {
+  constructor(storageService: dh.storage.StorageService, root = '') {
     this.storageService = storageService;
     this.root = root;
   }

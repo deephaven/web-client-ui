@@ -7,7 +7,7 @@ import {
 } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import type { Container, EventEmitter } from '@deephaven/golden-layout';
-import type { TableTemplate } from '@deephaven/jsapi-types';
+import type { dh.Table } from '@deephaven/jsapi-types';
 import { RootState } from '@deephaven/redux';
 import {
   AdvancedFilter,
@@ -63,7 +63,7 @@ interface FilterSetManagerPanelProps {
     dashboardId: string,
     filterSets: FilterSet[]
   ) => void;
-  panelTableMap: Map<string | string[], TableTemplate>;
+  panelTableMap: Map<string | string[], dh.Table>;
 }
 
 interface FilterSetManagerPanelState {
@@ -95,7 +95,7 @@ export class FilterSetManagerPanel extends Component<
   static COMPONENT = 'FilterSetManagerPanel';
 
   static changeFilterIndexesToColumnNames<T>(
-    table: TableTemplate,
+    table: dh.Table,
     configs: [number, T][]
   ): { name: string; filter: T }[] {
     return configs

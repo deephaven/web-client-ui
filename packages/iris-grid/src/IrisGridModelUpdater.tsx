@@ -2,11 +2,11 @@
 /* eslint-disable no-param-reassign */
 import React, { useEffect, useMemo } from 'react';
 import type {
-  Column,
-  CustomColumn,
-  FilterCondition,
-  RollupConfig,
-  Sort,
+  dh.Column,
+  dh.CustomColumn,
+  dh.FilterCondition,
+  dh.RollupConfig,
+  dh.Sort,
 } from '@deephaven/jsapi-types';
 import { ModelIndex, MoveOperation } from '@deephaven/grid';
 import { Formatter, ReverseType, TableUtils } from '@deephaven/jsapi-utils';
@@ -24,23 +24,23 @@ const COLUMN_BUFFER_PAGES = 1;
 
 interface IrisGridModelUpdaterProps {
   model: IrisGridModel;
-  modelColumns: readonly Column[];
+  modelColumns: readonly dh.Column[];
   top: number;
   bottom: number;
   left: number | null;
   right: number | null;
-  filter: readonly FilterCondition[];
-  sorts: readonly Sort[];
+  filter: readonly dh.FilterCondition[];
+  sorts: readonly dh.Sort[];
   reverseType?: ReverseType;
   customColumns: readonly ColumnName[];
   movedColumns: readonly MoveOperation[];
   hiddenColumns: readonly ModelIndex[];
   frozenColumns?: readonly ColumnName[];
   columnHeaderGroups: readonly ColumnHeaderGroup[];
-  formatColumns: readonly CustomColumn[];
+  formatColumns: readonly dh.CustomColumn[];
   alwaysFetchColumns: readonly ColumnName[];
   formatter: Formatter;
-  rollupConfig?: RollupConfig | null;
+  rollupConfig?: dh.RollupConfig | null;
   totalsConfig?: UITotalsTableConfig | null;
   selectDistinctColumns?: readonly ColumnName[];
   pendingRowCount?: number;
