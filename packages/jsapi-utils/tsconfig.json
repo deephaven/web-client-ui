@@ -9,7 +9,6 @@
   "references": [
     { "path": "../filters" },
     { "path": "../jsapi-shim" },
-    { "path": "../jsapi-types" },
     { "path": "../log" },
     { "path": "../utils" }
   ]

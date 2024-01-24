@@ -38,7 +38,7 @@
     "@deephaven/iris-grid": "file:../iris-grid",
     "@deephaven/jsapi-bootstrap": "file:../jsapi-bootstrap",
     "@deephaven/jsapi-components": "file:../jsapi-components",
-    "@deephaven/jsapi-types": "file:../jsapi-types",
+    "@deephaven/jsapi-types": "1.0.0-dev0.31.0",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
     "@deephaven/plugin": "file:../plugin",

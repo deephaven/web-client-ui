@@ -13,7 +13,6 @@
     { "path": "../grid" },
     { "path": "../jsapi-components" },
     { "path": "../jsapi-shim" },
-    { "path": "../jsapi-types" },
     { "path": "../jsapi-utils" },
     { "path": "../log" },
     { "path": "../react-hooks" },
