@@ -6,7 +6,7 @@ import React, {
   MouseEventHandler,
 } from 'react';
 import classNames from 'classnames';
-import Markdown from 'react-markdown';
+import Markdown, { Options } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
@@ -14,11 +14,7 @@ import { Button } from '@deephaven/components';
 import { Code } from '@deephaven/console';
 import { vsPlay } from '@deephaven/icons';
 import './MarkdownNotebook.scss';
-import {
-  ReactMarkdownProps,
-  TransformImage,
-  TransformLink,
-} from 'react-markdown/lib/ast-to-react';
+import { ReactMarkdownProps } from 'react-markdown/lib/ast-to-react';
 import { assertNotNull } from '@deephaven/utils';
 import 'katex/dist/katex.min.css';
 
@@ -26,8 +22,8 @@ interface MarkdownNotebookProps {
   onRunCode: (command?: string) => void;
   content: string;
   onLinkClick: MouseEventHandler<HTMLAnchorElement>;
-  transformImageUri?: TransformImage;
-  transformLinkUri?: false | TransformLink | null;
+  transformImageUri?: Options['transformImageUri'];
+  transformLinkUri?: Options['transformLinkUri'];
 }
 
 interface MarkdownNotebookState {
