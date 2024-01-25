@@ -506,6 +506,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     return actions;
   }
 
+  // moved out of getCellActions since snapshots are async
   async getCellFilterActions(
     modelColumn: ModelIndex,
     grid: Grid,
@@ -538,13 +539,15 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       );
     }
 
-    // this block handles"
+    // this block handles:
     //  - truncates the ranges to search to MAX_MULTISELECT_VALUES
     //    - then gets all the unique values
     //    - this is instead of stopping at MAX unique values to prevent the situation when
     //      there's a large amount of rows with little unique values
     //  - checks if the source cell is in the selected ranges
     //    - if it isn't, then the selected cell is the source cell instead
+    //    - although GridSelectionMouseHandler does change selectedRanges, that function and
+    //      this one run in the same cycle so state is not updated
     let slicedSelectedRanges = [];
     let sourceInSelected = false;
     let valuesLeft = MAX_MULTISELECT_VALUES;
@@ -590,14 +593,22 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     //  - if there are no selected ranges, then one with sourceColumn/Row is added
     assertNotEmpty(slicedSelectedRanges);
 
+    // get the snapshot values, but ignore all null/undefined values
     const snapshot = await model.snapshot(slicedSelectedRanges);
     const snapshotValues = new Set();
     for (let i = 0; i < snapshot.length; i += 1) {
-      if (snapshot[i][sourceColumn] != null) {
+      if (snapshot[i].length === 1) {
+        // if the selected range has start/end columns defined, so the snapshot is a 1D array of the row
+        if (snapshot[i][0] != null) {
+          snapshotValues.add(snapshot[i][0]);
+        }
+      } else if (snapshot[i][sourceColumn] != null) {
+        // if the selected range is an entire row
         snapshotValues.add(snapshot[i][sourceColumn]);
       }
     }
     // if snapshotValues is empty here, it means all of the snapshot's values were null/undefined
+
     const filterMenu = {
       title: `Filter by Value${snapshotValues.size > 1 ? 's' : ''}`,
       icon: vsRemove,
@@ -1151,7 +1162,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
               .and(
                 filterValues
                   .map(filterValue => column.filter().contains(filterValue))
-                  .reduce((prev, curr) => prev.and(curr))
+                  .reduce((prev, curr) => prev.or(curr))
               ),
             operator
           ),
@@ -1159,7 +1170,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
             filterText,
             TextUtils.makeLogicalNormalForm(
               values,
-              '&&',
+              '||',
               item => `~${toFilterText(item)}`
             ),
             operator
@@ -1185,7 +1196,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
                   .map(filterValue =>
                     column.filter().contains(filterValue).not()
                   )
-                  .reduce((prev, curr) => prev.or(curr))
+                  .reduce((prev, curr) => prev.and(curr))
               ),
             operator
           ),
@@ -1193,7 +1204,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
             filterText,
             TextUtils.makeLogicalNormalForm(
               values,
-              '||',
+              '&&',
               item => `!~${toFilterText(item)}`
             ),
             operator
@@ -1220,7 +1231,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
                   .map(filterValue =>
                     column.filter().invoke('startsWith', filterValue)
                   )
-                  .reduce((prev, curr) => prev.and(curr))
+                  .reduce((prev, curr) => prev.or(curr))
               ),
             operator
           ),
@@ -1228,7 +1239,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
             filterText,
             TextUtils.makeLogicalNormalForm(
               values,
-              '&&',
+              '||',
               item => `${toFilterText(item)}*`
             ),
             operator
@@ -1255,7 +1266,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
                   .map(filterValue =>
                     column.filter().invoke('endsWith', filterValue)
                   )
-                  .reduce((prev, curr) => prev.and(curr))
+                  .reduce((prev, curr) => prev.or(curr))
               ),
             operator
           ),
@@ -1263,7 +1274,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
             filterText,
             TextUtils.makeLogicalNormalForm(
               values,
-              '&&',
+              '||',
               item => `*${toFilterText(item)}`
             ),
             operator
@@ -1283,12 +1294,6 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     operator?: '&&' | '||' | null
   ): ContextAction[] {
     const values = Array.from(snapshotValues.keys());
-    const isAllFinite = values.every(
-      value =>
-        value !== Number.POSITIVE_INFINITY &&
-        value !== Number.NEGATIVE_INFINITY &&
-        !Number.isNaN(value)
-    );
     const valueDesc = values.length === 1 ? `${values}` : 'the selected values';
     // We want to show the full unformatted value if it's a number, so user knows which value they are matching
     // If it's a Char we just show the char
@@ -1388,7 +1393,13 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     // IDS-6092 Less/greater than filters don't make sense for Infinite/NaN
     // TODO (DH-11799): These char filters should work in Bard, with the merge for DH-11040: https://gitlab.eng.illumon.com/illumon/iris/merge_requests/5801
     // They do not work in Powell though, so disable them.
-    if (isAllFinite && !TableUtils.isCharType(column.type)) {
+    if (
+      !snapshotValues.has(Number.NaN) &&
+      !snapshotValues.has(Number.POSITIVE_INFINITY) &&
+      !snapshotValues.has(Number.NEGATIVE_INFINITY) &&
+      !TableUtils.isCharType(column.type)
+    ) {
+      // get the min/max because these are all ge/ne filters
       const maxValue = values.reduce((a, b) => (a > b ? a : b));
       const minValue = values.reduce((a, b) => (a < b ? a : b));
       const maxFilterValue = this.getFilterValueForNumberOrChar(
@@ -1487,6 +1498,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         group: ContextActions.groups.low,
       });
     }
+
     return actions;
   }
 
