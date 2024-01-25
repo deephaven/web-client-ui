@@ -763,6 +763,56 @@ test('Sorts items', async () => {
   );
 });
 
+test('Sort ascending items with frozen columns', async () => {
+  const user = userEvent.setup({ delay: null });
+  const mockHandler = jest.fn();
+  const sortButton = () => screen.getByLabelText('Sort ascending');
+  const model = irisGridTestUtils.makeModel(
+    irisGridTestUtils.makeTable({
+      columns: COLUMNS,
+      layoutHints: {
+        frozenColumns: [`${COLUMN_PREFIX}0`, `${COLUMN_PREFIX}3`],
+      },
+    })
+  );
+  render(<Builder model={model} onMovedColumnsChanged={mockHandler} />);
+
+  await selectItems(user, [1]);
+  await user.click(sortButton());
+  const newMoves = [{ from: 3, to: 1 }];
+  expect(mockHandler).toBeCalledWith(newMoves);
+});
+
+test('Sort descending items with frozen columns', async () => {
+  const user = userEvent.setup({ delay: null });
+  const mockHandler = jest.fn();
+  const sortButton = () => screen.getByLabelText('Sort descending');
+  const model = irisGridTestUtils.makeModel(
+    irisGridTestUtils.makeTable({
+      columns: COLUMNS,
+      layoutHints: {
+        frozenColumns: [`${COLUMN_PREFIX}1`, `${COLUMN_PREFIX}3`],
+      },
+    })
+  );
+  render(<Builder model={model} onMovedColumnsChanged={mockHandler} />);
+
+  await selectItems(user, [1]);
+  await user.click(sortButton());
+  const newMoves = [
+    { from: 1, to: 0 },
+    { from: 3, to: 0 },
+    { from: 9, to: 2 },
+    { from: 9, to: 3 },
+    { from: 9, to: 4 },
+    { from: 9, to: 5 },
+    { from: 9, to: 6 },
+    { from: 9, to: 7 },
+    { from: 9, to: 8 },
+  ];
+  expect(mockHandler).toBeCalledWith(newMoves);
+});
+
 test('Creates groups', async () => {
   const user = userEvent.setup({ delay: null });
   const model = makeModel();
