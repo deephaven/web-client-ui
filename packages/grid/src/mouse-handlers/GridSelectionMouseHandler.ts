@@ -218,6 +218,41 @@ class GridSelectionMouseHandler extends GridMouseHandler {
     return false;
   }
 
+  onContextMenu(
+    gridPoint: GridPoint,
+    grid: Grid,
+    event: GridMouseEvent
+  ): EventHandlerResult {
+    // check if the selected is already in the selected range
+    const selectedRanges = grid.getSelectedRanges();
+    let isInRange = false;
+    for (let i = 0; i < selectedRanges.length; i += 1) {
+      const range = selectedRanges[i];
+      if (
+        range.startRow !== null &&
+        range.endRow !== null &&
+        gridPoint.row !== null &&
+        range.startRow <= gridPoint.row &&
+        gridPoint.row <= range.endRow
+      ) {
+        isInRange = true;
+        break;
+      }
+    }
+
+    // only change the selected range if the selected cell is not in the selected range
+    if (!isInRange) {
+      this.startPoint = undefined;
+      this.dragBounds = undefined;
+      this.stopTimer();
+      grid.clearSelectedRanges();
+      grid.moveSelection(gridPoint.column, gridPoint.row);
+      grid.commitSelection();
+    }
+
+    return false;
+  }
+
   moveSelection(
     grid: Grid,
     gridPoint: GridPoint,
