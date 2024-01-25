@@ -2,7 +2,8 @@ import { test, expect, Page } from '@playwright/test';
 import { pasteInMonaco } from './utils';
 
 const rowHeight = 19;
-const columnHeaderHeight = 60;
+const columnHeight = 30;
+const filterHeight = 30;
 
 async function waitForLoadingDone(page: Page) {
   await expect(
@@ -17,7 +18,7 @@ async function getGridLocation(page: Page) {
   return gridLocation;
 }
 
-async function createTable(page: Page, cmd: string) {
+async function createSingleColumnTable(page: Page, cmd: string) {
   const consoleInput = page.locator('.console-input');
   await pasteInMonaco(consoleInput, cmd);
   await page.keyboard.press('Enter');
@@ -44,17 +45,17 @@ async function filterAndScreenshot(
   // select the first 3 rows
   await page.mouse.move(
     gridLocation.x + 1,
-    gridLocation.y + 1 + columnHeaderHeight
+    gridLocation.y + 1 + columnHeight + filterHeight
   );
   await page.mouse.down();
   await page.mouse.move(
     gridLocation.x + 1,
-    gridLocation.y + 1 + columnHeaderHeight + rowHeight * 2
+    gridLocation.y + 1 + columnHeight + filterHeight + rowHeight * 2
   );
   await page.mouse.up();
   await page.mouse.click(
     gridLocation.x + 1,
-    gridLocation.y + 1 + columnHeaderHeight + rowHeight * 2,
+    gridLocation.y + 1 + columnHeight + filterHeight + rowHeight * 2,
     { button: 'right' }
   );
   // apply filter
@@ -80,7 +81,7 @@ function runMultiselectFilter(
 ) {
   test(testName, async ({ page }) => {
     await page.goto('');
-    await createTable(page, cmd);
+    await createSingleColumnTable(page, cmd);
     const gridLocation = await getGridLocation(page);
     if (gridLocation === null) return;
 
@@ -103,6 +104,7 @@ function runMultiselectFilter(
   });
 }
 
+// these are select filters that do not do multiselect
 function runSpecialSelectFilter(
   testName: string,
   cmd: string,
@@ -110,14 +112,14 @@ function runSpecialSelectFilter(
 ) {
   test(testName, async ({ page }) => {
     await page.goto('');
-    await createTable(page, cmd);
+    await createSingleColumnTable(page, cmd);
 
     const gridLocation = await getGridLocation(page);
     if (gridLocation === null) return;
 
     await page.mouse.click(
       gridLocation.x + 1,
-      gridLocation.y + 1 + columnHeaderHeight / 2,
+      gridLocation.y + 1 + columnHeight,
       { button: 'right' }
     );
 
@@ -235,7 +237,7 @@ test('char formatting, non selected right click, preview formatting', async ({
   page,
 }) => {
   await page.goto('');
-  await createTable(
+  await createSingleColumnTable(
     page,
     `
 from deephaven.column import char_col
@@ -252,17 +254,17 @@ my_table = new_table([
   await page.keyboard.down('Control');
   await page.mouse.click(
     gridLocation.x + 1,
-    gridLocation.y + 1 + columnHeaderHeight / 2 + rowHeight
+    gridLocation.y + 1 + columnHeight + rowHeight
   );
   await page.mouse.click(
     gridLocation.x + 1,
-    gridLocation.y + 1 + columnHeaderHeight / 2 + rowHeight * 3
+    gridLocation.y + 1 + columnHeight + rowHeight * 3
   );
   await page.keyboard.up('Control');
 
   await page.mouse.click(
     gridLocation.x + 1,
-    gridLocation.y + 1 + columnHeaderHeight / 2,
+    gridLocation.y + 1 + columnHeight,
     { button: 'right' }
   );
   await page.getByRole('button', { name: 'Filter by Value' }).hover();
