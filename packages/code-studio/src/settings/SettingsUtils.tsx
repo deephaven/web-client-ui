@@ -43,18 +43,18 @@ export function getFormattedVersionInfo(
   serverConfigValues: ServerConfigValues
 ): Record<string, string> {
   const ua = Bowser.parse(window.navigator.userAgent);
-  const browser = `${(ua.browser.name ?? '') || 'Unknown'} ${
-    // use only the major version and minor version, rest usually empty 120.1.0.0 -> 120.1
+  const browser = `${ua.browser.name ?? ''} ${
+    // use only the major version and minor version, rest is usually empty 120.1.0.0 -> 120.1
     Number(parseFloat(ua.browser.version ?? '')) || ''
   }`;
-  const os = `${(ua.os.name ?? '') || 'Unknown'} ${ua.os.version ?? ''}`;
+  const os = `${ua.os.name ?? ''} ${ua.os.version ?? ''}`;
   return {
     'Engine Version': serverConfigValues.get('deephaven.version') ?? 'Unknown',
     'Web UI Version': import.meta.env.npm_package_version ?? 'Unknown',
     'Java Version': serverConfigValues.get('java.version') ?? 'Unknown',
     'Barrage Version': serverConfigValues.get('barrage.version') ?? 'Unknown',
-    'Browser Name': browser.trim(),
-    'OS Name': os.trim(),
+    'Browser Name': browser.trim() || 'Unknown',
+    'OS Name': os.trim() || 'Unknown',
   };
 }
 
