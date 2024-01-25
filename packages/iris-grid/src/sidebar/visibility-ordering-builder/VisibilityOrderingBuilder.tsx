@@ -583,7 +583,8 @@ class VisibilityOrderingBuilder extends PureComponent<
   getSortMoves(
     itemsParam: readonly IrisGridTreeItem[],
     option: keyof typeof VisibilityOrderingBuilder.SORTING_OPTIONS,
-    movedColumns: readonly MoveOperation[]
+    movedColumns: readonly MoveOperation[],
+    frozenColumns: readonly string[]
   ): MoveOperation[] {
     const items = [...itemsParam];
     // Sort all the movable columns
@@ -592,6 +593,11 @@ class VisibilityOrderingBuilder extends PureComponent<
     items.sort((a, b) => {
       const aName = a.id.toUpperCase();
       const bName = b.id.toUpperCase();
+      if (frozenColumns.includes(a.id) && frozenColumns.includes(b.id)) {
+        return TextUtils.sort(aName, bName, isAscending);
+      }
+      if (frozenColumns.includes(a.id)) return -1;
+      if (frozenColumns.includes(b.id)) return 1;
       return TextUtils.sort(aName, bName, isAscending);
     });
 
@@ -622,7 +628,12 @@ class VisibilityOrderingBuilder extends PureComponent<
 
       if (Array.isArray(visibleIndex)) {
         // Recursively sort groups
-        newMoves = this.getSortMoves(item.children, option, newMoves);
+        newMoves = this.getSortMoves(
+          item.children,
+          option,
+          newMoves,
+          frozenColumns
+        );
       }
 
       moveToIndex += Array.isArray(modelIndex) ? modelIndex.length : 1;
@@ -639,7 +650,8 @@ class VisibilityOrderingBuilder extends PureComponent<
     const newMoves = this.getSortMoves(
       this.getTreeItems(),
       option,
-      model.initialMovedColumns
+      model.initialMovedColumns,
+      model.frozenColumns
     );
 
     onMovedColumnsChanged(newMoves);
