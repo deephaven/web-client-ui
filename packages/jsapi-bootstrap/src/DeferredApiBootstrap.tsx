@@ -13,7 +13,7 @@ type DeferredApiBootstrapProps = React.PropsWithChildren<{
 /**
  * Does not render children until the deferred API is resolved.
  */
-const DeferredApiBootstrap = React.memo(
+export const DeferredApiBootstrap = React.memo(
   ({
     children,
     onError,
