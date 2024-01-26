@@ -43,11 +43,12 @@ export const updateDashboardData =
     );
 
 /**
- * Action to update the dashboard data. Will combine the update with any existing dashboard data.
+ * Action to set the dashboard plugin data.
+ * Will replace any existing plugin data for the plugin in the dashboard with the data provided.
  * @param id The id of the dashboard to set the data on
  * @param pluginId The id of the plugin to set the data on
  * @param data The data to replace the existing plugin data with
- * @returns
+ * @returns Thunk action to dispatch
  */
 export const setDashboardPluginData =
   (
@@ -59,8 +60,9 @@ export const setDashboardPluginData =
     dispatch(
       setDashboardData(id, {
         ...getDashboardData(getState(), id),
-        pluginDataMap: new Map(
-          getPluginDataMapForDashboard(getState(), id)
-        ).set(pluginId, data),
+        pluginDataMap: {
+          ...getPluginDataMapForDashboard(getState(), id),
+          [pluginId]: data,
+        },
       })
     );
