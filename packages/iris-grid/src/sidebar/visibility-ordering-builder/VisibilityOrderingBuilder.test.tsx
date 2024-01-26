@@ -801,7 +801,7 @@ test('Sort descending items with frozen columns', async () => {
   await user.click(sortButton());
   const newMoves = [
     { from: 1, to: 0 },
-    { from: 3, to: 0 },
+    { from: 3, to: 1 },
     { from: 9, to: 2 },
     { from: 9, to: 3 },
     { from: 9, to: 4 },

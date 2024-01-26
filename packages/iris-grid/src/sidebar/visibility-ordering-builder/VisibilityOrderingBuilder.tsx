@@ -591,13 +591,18 @@ class VisibilityOrderingBuilder extends PureComponent<
     const isAscending =
       option === VisibilityOrderingBuilder.SORTING_OPTIONS.ASC;
     items.sort((a, b) => {
+      const aFrozenIndex = frozenColumns.indexOf(a.id);
+      const bFrozenIndex = frozenColumns.indexOf(b.id);
       const aName = a.id.toUpperCase();
       const bName = b.id.toUpperCase();
-      if (frozenColumns.includes(a.id) && frozenColumns.includes(b.id)) {
-        return TextUtils.sort(aName, bName, isAscending);
+      // both frozen
+      if (aFrozenIndex !== -1 && bFrozenIndex !== -1) {
+        return aFrozenIndex < bFrozenIndex ? -1 : 1;
       }
-      if (frozenColumns.includes(a.id)) return -1;
-      if (frozenColumns.includes(b.id)) return 1;
+      // one frozen
+      if (aFrozenIndex !== -1) return -1;
+      if (bFrozenIndex !== -1) return 1;
+      // no frozen
       return TextUtils.sort(aName, bName, isAscending);
     });
 
