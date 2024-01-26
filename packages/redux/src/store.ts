@@ -80,9 +80,12 @@ export interface Workspace {
 
 export type PluginData = unknown;
 
-export type PluginDataMap = Map<string, PluginData>;
+export type PluginDataMap = Record<string, PluginData>;
 
 export type DashboardData = Record<string, unknown> & {
+  title?: string;
+  closed?: unknown[];
+  filterSets?: unknown[];
   pluginDataMap?: PluginDataMap;
 };
 
@@ -105,7 +108,7 @@ export type RootState = {
   user: User;
   workspace: CustomizableWorkspace;
   defaultWorkspaceSettings: WorkspaceSettings;
-  dashboardData: Record<string, DashboardData>;
+  dashboardData: { [id: string]: DashboardData };
   layoutStorage: unknown;
   serverConfigValues: ServerConfigValues;
 };

@@ -10,6 +10,7 @@ import React, {
 import throttle from 'lodash.throttle';
 import GoldenLayout from '@deephaven/golden-layout';
 import type { ItemConfigType } from '@deephaven/golden-layout';
+import { useResizeObserver } from '@deephaven/react-hooks';
 import './layout/GoldenLayout.scss';
 import LayoutUtils from './layout/LayoutUtils';
 import PanelPlaceholder from './PanelPlaceholder';
@@ -123,15 +124,7 @@ export function Dashboard({
     [layout]
   );
 
-  useEffect(
-    function initResizeEventListner() {
-      window.addEventListener('resize', handleResize);
-      return () => {
-        window.removeEventListener('resize', handleResize);
-      };
-    },
-    [handleResize]
-  );
+  useResizeObserver(layoutElement.current, handleResize);
 
   return (
     <div className="dashboard-container w-100 h-100">

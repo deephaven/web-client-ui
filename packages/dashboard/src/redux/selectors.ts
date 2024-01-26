@@ -65,7 +65,7 @@ export const getPluginDataMapForDashboard = (
   store: RootState,
   dashboardId: string
 ): PluginDataMap =>
-  getDashboardData(store, dashboardId).pluginDataMap ?? EMPTY_MAP;
+  getDashboardData(store, dashboardId).pluginDataMap ?? EMPTY_OBJECT;
 
 /**
  * @param store The redux store
@@ -77,4 +77,4 @@ export const getPluginDataForDashboard = (
   store: RootState,
   dashboardId: string,
   pluginId: string
-): PluginData => getPluginDataMapForDashboard(store, dashboardId).get(pluginId);
+): PluginData => getPluginDataMapForDashboard(store, dashboardId)[pluginId];
