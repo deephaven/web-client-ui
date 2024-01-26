@@ -32,7 +32,10 @@ const mockViewportData =
   createMockProxy<WindowedListData<KeyedItem<unknown>>>();
 
 const mockSelection = {
-  useDebounceValueResult: { selection: new Set('a'), isInverted: true },
+  useDebounceValueResult: {
+    isDebouncing: false,
+    value: { selection: new Set('a'), isInverted: true },
+  },
   useIsEqualMemoResult: { selection: new Set('b'), isInverted: true },
   useMappedSelectionResult: { selection: new Set('c'), isInverted: true },
 } as const;
@@ -96,7 +99,7 @@ it('should memoize debounced selection based on value equality', () => {
   renderHook(() => useDebouncedViewportSelectionFilter(options));
 
   expect(useIsEqualMemo).toHaveBeenCalledWith(
-    mockSelection.useDebounceValueResult,
+    mockSelection.useDebounceValueResult.value,
     isSelectionMaybeInvertedEqual
   );
 });
