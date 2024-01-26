@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 /**
  * Debounces a value.
@@ -13,15 +13,18 @@ export function useDebouncedValue<T>(
   debounceMs: number
 ): { isDebouncing: boolean; value: T } {
   const [isDebouncing, setIsDebouncing] = useState(true);
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+  const [debouncedValue, setDebouncedValue] = useState(value);
 
-  // Set isDebouncing to true immediately whenever the value changes. Using
-  // `useMemo` instead of `useEffect` so that state is never out of sync whenever
-  // value and / or debounceMs have changed.
-  useMemo(() => {
+  // Keep `isDebouncing` in sync with `value` and `debounceMs` by setting state
+  // during render instead of in `useEffect`
+  // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  const [previousValue, setPreviousValue] = useState(value);
+  const [previousDebounceMs, setPreviousDebounceMs] = useState(debounceMs);
+  if (value !== previousValue || debounceMs !== previousDebounceMs) {
     setIsDebouncing(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, debounceMs]);
+    setPreviousValue(value);
+    setPreviousDebounceMs(debounceMs);
+  }
 
   useEffect(() => {
     let isCancelled = false;
