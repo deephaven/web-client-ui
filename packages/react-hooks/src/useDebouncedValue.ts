@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 /**
  * Debounces a value.
@@ -6,20 +6,39 @@ import { useEffect, useState } from 'react';
  * Returns the latest value after no changes have occurred for the debounce duration.
  * @param value Value to debounce
  * @param debounceMs Amount of time to debounce
- * @returns The debounced value
+ * @returns The debounced value + whether the value is still debouncing
  */
-export function useDebouncedValue<T>(value: T, debounceMs: number): T {
+export function useDebouncedValue<T>(
+  value: T,
+  debounceMs: number
+): { isDebouncing: boolean; value: T } {
+  const [isDebouncing, setIsDebouncing] = useState(true);
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  // Set isDebouncing to true immediately whenever the value changes. Using
+  // `useMemo` instead of `useEffect` so that state is never out of sync whenever
+  // value and / or debounceMs have changed.
+  useMemo(() => {
+    setIsDebouncing(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, debounceMs]);
+
   useEffect(() => {
+    let isCancelled = false;
+
     const timeoutId = setTimeout(() => {
-      setDebouncedValue(value);
+      if (!isCancelled) {
+        setIsDebouncing(false);
+        setDebouncedValue(value);
+      }
     }, debounceMs);
     return () => {
+      isCancelled = true;
       clearTimeout(timeoutId);
     };
   }, [value, debounceMs]);
 
-  return debouncedValue;
+  return { isDebouncing, value: debouncedValue };
 }
 
 export default useDebouncedValue;
