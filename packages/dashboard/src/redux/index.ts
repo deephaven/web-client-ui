@@ -8,4 +8,5 @@ Object.entries(reducers).map(([name, reducer]) =>
 export { reducers };
 export * from './actions';
 export * from './actionTypes';
+export * from './hooks';
 export * from './selectors';

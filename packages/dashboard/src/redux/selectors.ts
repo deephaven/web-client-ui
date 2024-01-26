@@ -1,4 +1,9 @@
-import { DashboardData, RootState } from '@deephaven/redux';
+import {
+  DashboardData,
+  PluginData,
+  PluginDataMap,
+  RootState,
+} from '@deephaven/redux';
 import { ClosedPanels, OpenedPanelMap } from '../PanelManager';
 
 const EMPTY_MAP = new Map();
@@ -50,3 +55,26 @@ export const getOpenedPanelMapForDashboard = (
 ): OpenedPanelMap =>
   (getDashboardData(store, dashboardId).openedMap ??
     EMPTY_MAP) as OpenedPanelMap;
+
+/**
+ * @param store The redux store
+ * @param dashboardId The dashboard ID to get data for
+ * @returns The map of plugin IDs to data for all plugins on the dashboard
+ */
+export const getPluginDataMapForDashboard = (
+  store: RootState,
+  dashboardId: string
+): PluginDataMap =>
+  getDashboardData(store, dashboardId).pluginDataMap ?? EMPTY_MAP;
+
+/**
+ * @param store The redux store
+ * @param dashboardId The dashboard ID to get data for
+ * @param pluginId The plugin ID to get data for
+ * @returns The plugin data
+ */
+export const getPluginDataForDashboard = (
+  store: RootState,
+  dashboardId: string,
+  pluginId: string
+): PluginData => getPluginDataMapForDashboard(store, dashboardId).get(pluginId);
