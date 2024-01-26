@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { dh.Column, dh.Table } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import useTable from './useTable';
 
 /**

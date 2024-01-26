@@ -1,4 +1,4 @@
-import type { dh.CoreClient } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { useContextOrThrow } from '@deephaven/react-hooks';
 import { ClientContext } from './ClientBootstrap';
 

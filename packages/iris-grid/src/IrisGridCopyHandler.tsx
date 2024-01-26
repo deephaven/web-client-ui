@@ -15,7 +15,7 @@ import {
   PromiseUtils,
 } from '@deephaven/utils';
 import Log from '@deephaven/log';
-import type { dh.Column } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import IrisGridUtils from './IrisGridUtils';
 import IrisGridBottomBar from './IrisGridBottomBar';
 import './IrisGridCopyHandler.scss';

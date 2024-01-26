@@ -1,6 +1,6 @@
 import type { Key } from 'react';
 import clamp from 'lodash.clamp';
-import type { dh.Column, dh.Row, dh.Table, dh.TreeTable } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import type { KeyedItem } from '@deephaven/utils';
 

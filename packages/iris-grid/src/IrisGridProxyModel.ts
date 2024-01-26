@@ -7,21 +7,7 @@ import {
   EventShimCustomEvent,
   PromiseUtils,
 } from '@deephaven/utils';
-import type {
-  dh.Column,
-  dh.ColumnStatistics,
-  dh.CustomColumn,
-  dh as DhType,
-  dh.FilterCondition,
-  dh.InputTable,
-  dh.LayoutHints,
-  dh.RollupConfig,
-  dh.Sort,
-  dh.Table,
-  dh.TreeTable,
-  dh.PartitionedTable,
-  dh.ValueTypeType,
-} from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
   EditableGridModel,
   isEditableGridModel,
@@ -51,10 +37,10 @@ import {
 const log = Log.module('IrisGridProxyModel');
 
 function makeModel(
-  dh: DhType,
-  table: dh.Table | dh.TreeTable | dh.PartitionedTable,
+  dh: typeof DhType,
+  table: DhType.Table | DhType.TreeTable | DhType.PartitionedTable,
   formatter?: Formatter,
-  inputTable?: dh.InputTable | null
+  inputTable?: DhType.InputTable | null
 ): IrisGridModel {
   if (TableUtils.isTreeTable(table)) {
     return new IrisGridTreeTableModel(dh, table, formatter);
@@ -77,7 +63,7 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
    * @param inputTable Iris input table associated with this table
    */
 
-  dh: DhType;
+  dh: typeof DhType;
 
   originalModel: IrisGridModel;
 
@@ -85,7 +71,7 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
 
   modelPromise: CancelablePromise<IrisGridModel> | null;
 
-  rollup: dh.RollupConfig | null;
+  rollup: DhType.RollupConfig | null;
 
   partition: PartitionConfig | null;
 
@@ -94,14 +80,14 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
   currentViewport?: {
     top: number;
     bottom: number;
-    columns?: dh.Column[];
+    columns?: DhType.Column[];
   };
 
   constructor(
-    dh: DhType,
-    table: dh.Table | dh.TreeTable | dh.PartitionedTable,
+    dh: typeof DhType,
+    table: DhType.Table | DhType.TreeTable | DhType.PartitionedTable,
     formatter = new Formatter(dh),
-    inputTable: dh.InputTable | null = null
+    inputTable: DhType.InputTable | null = null
   ) {
     super(dh);
 
@@ -411,7 +397,7 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     return this.model.isReversible;
   }
 
-  get columns(): readonly dh.Column[] {
+  get columns(): readonly DhType.Column[] {
     return this.model.columns;
   }
 
@@ -423,7 +409,7 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     return this.model.initialMovedRows;
   }
 
-  get layoutHints(): dh.LayoutHints | null {
+  get layoutHints(): DhType.LayoutHints | null | undefined {
     return this.model.layoutHints;
   }
 
@@ -470,15 +456,15 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     return this.model.updateFrozenColumns(columns);
   }
 
-  get originalColumns(): readonly dh.Column[] {
+  get originalColumns(): readonly DhType.Column[] {
     return this.originalModel.columns;
   }
 
-  get groupedColumns(): readonly dh.Column[] {
+  get groupedColumns(): readonly DhType.Column[] {
     return this.model.groupedColumns;
   }
 
-  get partitionColumns(): readonly dh.Column[] {
+  get partitionColumns(): readonly DhType.Column[] {
     if (!isPartitionedGridModelProvider(this.originalModel)) {
       return [];
     }
@@ -507,11 +493,11 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
   dataBarOptionsForCell: IrisGridModel['dataBarOptionsForCell'] = (...args) =>
     this.model.dataBarOptionsForCell(...args);
 
-  get filter(): readonly dh.FilterCondition[] {
+  get filter(): readonly DhType.FilterCondition[] {
     return this.model.filter;
   }
 
-  set filter(filter: readonly dh.FilterCondition[]) {
+  set filter(filter: readonly DhType.FilterCondition[]) {
     this.model.filter = filter;
   }
 
@@ -555,21 +541,21 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     this.setNextModel(modelPromise);
   }
 
-  partitionKeysTable(): Promise<dh.Table> {
+  partitionKeysTable(): Promise<DhType.Table> {
     if (!isPartitionedGridModelProvider(this.originalModel)) {
       throw new Error('Partitions are not available');
     }
     return this.originalModel.partitionKeysTable();
   }
 
-  partitionMergedTable(): Promise<dh.Table> {
+  partitionMergedTable(): Promise<DhType.Table> {
     if (!isPartitionedGridModelProvider(this.originalModel)) {
       throw new Error('Partitions are not available');
     }
     return this.originalModel.partitionMergedTable();
   }
 
-  partitionTable(partitions: unknown[]): Promise<dh.Table> {
+  partitionTable(partitions: unknown[]): Promise<DhType.Table> {
     if (!isPartitionedGridModelProvider(this.originalModel)) {
       throw new Error('Partitions are not available');
     }
@@ -587,11 +573,11 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
   displayString: IrisGridModel['displayString'] = (...args) =>
     this.model.displayString(...args);
 
-  get sort(): readonly dh.Sort[] {
+  get sort(): readonly DhType.Sort[] {
     return this.model.sort;
   }
 
-  set sort(sort: readonly dh.Sort[]) {
+  set sort(sort: readonly DhType.Sort[]) {
     this.model.sort = sort;
   }
 
@@ -603,19 +589,19 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     this.model.customColumns = customColumns;
   }
 
-  get formatColumns(): readonly dh.CustomColumn[] {
+  get formatColumns(): readonly DhType.CustomColumn[] {
     return this.model.formatColumns;
   }
 
-  set formatColumns(formatColumns: readonly dh.CustomColumn[]) {
+  set formatColumns(formatColumns: readonly DhType.CustomColumn[]) {
     this.model.formatColumns = formatColumns;
   }
 
-  get rollupConfig(): dh.RollupConfig | null {
+  get rollupConfig(): DhType.RollupConfig | null {
     return this.rollup;
   }
 
-  set rollupConfig(rollupConfig: dh.RollupConfig | null) {
+  set rollupConfig(rollupConfig: DhType.RollupConfig | null) {
     log.debug('set rollupConfig', rollupConfig);
 
     if (!this.isRollupAvailable) {
@@ -666,7 +652,7 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
 
     const selectDistinctColumns = columnNames
       .map(name => this.originalColumns.find(column => column.name === name))
-      .filter(column => column != null) as dh.Column[];
+      .filter(column => column != null) as DhType.Column[];
 
     let modelPromise = Promise.resolve(this.originalModel);
 
@@ -681,7 +667,7 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     this.setNextModel(modelPromise);
   }
 
-  get table(): dh.Table | dh.TreeTable | undefined {
+  get table(): DhType.Table | DhType.TreeTable | undefined {
     if (isIrisGridTableModelTemplate(this.model)) {
       return this.model.table;
     }
@@ -723,7 +709,11 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
   isFilterable: IrisGridTableModel['isFilterable'] = (...args) =>
     this.model.isFilterable(...args);
 
-  setViewport = (top: number, bottom: number, columns?: dh.Column[]): void => {
+  setViewport = (
+    top: number,
+    bottom: number,
+    columns?: DhType.Column[]
+  ): void => {
     this.currentViewport = { top, bottom, columns };
     this.model.setViewport(top, bottom, columns);
   };
@@ -734,7 +724,7 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
   textSnapshot: IrisGridTableModel['textSnapshot'] = (...args) =>
     this.model.textSnapshot(...args);
 
-  export(): Promise<dh.Table> {
+  export(): Promise<DhType.Table> {
     if (TableUtils.isTreeTable(this.model)) {
       throw new Error("TreeTable has no 'export' property");
     }
@@ -744,7 +734,7 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
   valuesTable: IrisGridTableModel['valuesTable'] = (...args) =>
     this.model.valuesTable(...args);
 
-  columnStatistics(column: dh.Column): Promise<dh.ColumnStatistics> {
+  columnStatistics(column: DhType.Column): Promise<DhType.ColumnStatistics> {
     if (TableUtils.isTreeTable(this.model)) {
       throw new Error("TreeTable has no 'columnStatistics' function");
     }
@@ -818,8 +808,8 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
 
   async seekRow(
     startRow: number,
-    column: dh.Column,
-    valueType: dh.ValueTypeType,
+    column: DhType.Column,
+    valueType: DhType.ValueTypeType,
     value: unknown,
     insensitive?: boolean,
     contains?: boolean,

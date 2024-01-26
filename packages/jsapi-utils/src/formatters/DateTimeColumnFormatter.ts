@@ -1,9 +1,5 @@
 /* eslint class-methods-use-this: "off" */
-import type {
-  dh as DhType,
-  dh.DateWrapper,
-  dh.i18n.TimeZone,
-} from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import TableColumnFormatter, {
   TableColumnFormat,
@@ -26,7 +22,7 @@ export type DateTimeColumnFormatterOptions = {
 };
 
 export class DateTimeColumnFormatter extends TableColumnFormatter<
-  Date | dh.DateWrapper | number
+  Date | DhType.DateWrapper | number
 > {
   /**
    * Validates format object
@@ -35,9 +31,12 @@ export class DateTimeColumnFormatter extends TableColumnFormatter<
    * @returns true for valid object
    */
   static isValid(
-    dh: DhType,
+    dh: typeof DhType,
     format: Pick<TableColumnFormat, 'formatString'>
   ): boolean {
+    if (format.formatString == null) {
+      return false;
+    }
     try {
       dh.i18n.DateTimeFormat.format(format.formatString, new Date());
       return true;
@@ -141,9 +140,9 @@ export class DateTimeColumnFormatter extends TableColumnFormatter<
     return [...formatStringMap.keys()];
   }
 
-  dh: DhType;
+  dh: typeof DhType;
 
-  dhTimeZone: dh.i18n.TimeZone;
+  dhTimeZone: DhType.i18n.TimeZone;
 
   defaultDateTimeFormatString: string;
 
@@ -154,7 +153,7 @@ export class DateTimeColumnFormatter extends TableColumnFormatter<
   formatStringMap: Map<string, string>;
 
   constructor(
-    dh: DhType,
+    dh: typeof DhType,
     {
       timeZone: timeZoneParam = '',
       showTimeZone = true,
@@ -190,7 +189,7 @@ export class DateTimeColumnFormatter extends TableColumnFormatter<
   }
 
   format(
-    value: Date | dh.DateWrapper | number,
+    value: Date | DhType.DateWrapper | number,
     format: Partial<TableColumnFormat> = {}
   ): string {
     const baseFormatString =

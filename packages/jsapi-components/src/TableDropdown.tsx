@@ -1,12 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Option, Select } from '@deephaven/components';
 import { useApi } from '@deephaven/jsapi-bootstrap';
-import {
-  dh.Column,
-  dh.FilterCondition,
-  dh.Table,
-  dh.ViewportData,
-} from '@deephaven/jsapi-types';
+import { dh } from '@deephaven/jsapi-types';
 import { EMPTY_ARRAY } from '@deephaven/utils';
 
 type JavaObject = {

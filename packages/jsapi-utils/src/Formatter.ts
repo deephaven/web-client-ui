@@ -74,7 +74,7 @@ export class Formatter {
    * @param truncateNumbersWithPound Determine if numbers should be truncated w/ repeating # instead of ellipsis at the end
    */
   constructor(
-    dh: DhType,
+    dh: typeof DhType,
     columnFormattingRules: FormattingRule[] = [],
     dateTimeOptions?: ConstructorParameters<typeof DateTimeColumnFormatter>[1],
     decimalFormatOptions?: ConstructorParameters<

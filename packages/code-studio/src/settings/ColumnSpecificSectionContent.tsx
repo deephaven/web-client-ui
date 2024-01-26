@@ -48,7 +48,7 @@ import ColumnTypeOptions from './ColumnTypeOptions';
 import DateTimeOptions from './DateTimeOptions';
 
 export interface ColumnSpecificSectionContentProps {
-  dh: DhType;
+  dh: typeof DhType;
   formatter: FormatterItem[];
   showTimeZone: boolean;
   showTSeparator: boolean;
@@ -304,7 +304,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
     }
 
     if (
-      rule.format.formatString !== undefined &&
+      rule.format.formatString != null &&
       rule.format.formatString.length === 0
     ) {
       error.hasFormatError = true;

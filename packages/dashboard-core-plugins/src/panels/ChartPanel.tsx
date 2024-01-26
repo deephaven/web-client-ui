@@ -27,11 +27,7 @@ import {
   ColumnName,
   TableSettings,
 } from '@deephaven/iris-grid';
-import type {
-  dh.plot.FigureDescriptor,
-  dh.plot.SeriesPlotStyle,
-  dh.Table,
-} from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { ThemeExport } from '@deephaven/components';
 import Log from '@deephaven/log';
 import {

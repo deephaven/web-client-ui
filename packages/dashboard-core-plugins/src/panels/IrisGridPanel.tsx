@@ -70,7 +70,7 @@ import {
   ContextMenuRoot,
   ResolvableContextAction,
 } from '@deephaven/components';
-import type { dh.Column, dh.FilterCondition, dh.Sort } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import {
   GridState,
   ModelIndex,

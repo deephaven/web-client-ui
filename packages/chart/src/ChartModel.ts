@@ -31,13 +31,13 @@ class ChartModel {
 
   static EVENT_ERROR = 'ChartModel.EVENT_ERROR';
 
-  constructor(dh: DhType) {
+  constructor(dh: typeof DhType) {
     this.dh = dh;
     this.listeners = [];
     this.isDownsamplingDisabled = false;
   }
 
-  dh: DhType;
+  dh: typeof DhType;
 
   listeners: ((event: ChartEvent) => void)[];
 

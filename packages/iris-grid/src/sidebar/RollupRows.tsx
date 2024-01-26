@@ -26,7 +26,7 @@ import debounce from 'lodash.debounce';
 import Log from '@deephaven/log';
 import { assertNotNull } from '@deephaven/utils';
 import './RollupRows.scss';
-import type { dh.Column } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import IrisGridModel from '../IrisGridModel';
 import { ColumnName } from '../CommonTypes';
 
@@ -412,7 +412,10 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
   );
 
   getCachedSortedColumns = memoize(
-    (columns: readonly dh.Column[], sort?: SortDirection): readonly dh.Column[] =>
+    (
+      columns: readonly dh.Column[],
+      sort?: SortDirection
+    ): readonly dh.Column[] =>
       sort == null
         ? [...columns]
         : TableUtils.sortColumns(columns, sort === RollupRows.SORT.ASCENDING)

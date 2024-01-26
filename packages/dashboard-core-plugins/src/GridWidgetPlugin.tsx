@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { type WidgetComponentProps } from '@deephaven/plugin';
-import { type dh.Table } from '@deephaven/jsapi-types';
+import { type dh } from '@deephaven/jsapi-types';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import {
   IrisGrid,

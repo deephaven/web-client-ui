@@ -7,7 +7,7 @@ import {
 } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import type { Container, EventEmitter } from '@deephaven/golden-layout';
-import type { dh.Table } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { RootState } from '@deephaven/redux';
 import {
   AdvancedFilter,

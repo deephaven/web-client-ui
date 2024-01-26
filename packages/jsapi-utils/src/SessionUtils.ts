@@ -1,10 +1,4 @@
-import type {
-  dh.ConnectOptions,
-  dh.CoreClient,
-  dh as DhType,
-  dh.IdeConnection,
-  dh.IdeSession,
-} from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import shortid from 'shortid';
 import { requestParentResponse, SESSION_DETAILS_REQUEST } from './MessageUtils';
@@ -23,20 +17,20 @@ export interface SessionDetails {
 }
 
 export interface SessionWrapper {
-  session: dh.IdeSession;
-  connection: dh.IdeConnection;
+  session: DhType.IdeSession;
+  connection: DhType.IdeConnection;
   config: SessionConfig;
   details?: SessionDetails;
-  dh: DhType;
+  dh: typeof DhType;
 }
 
 /**
  * @returns New connection to the server
  */
 export function createConnection(
-  dh: DhType,
+  dh: typeof DhType,
   websocketUrl: string
-): dh.IdeConnection {
+): DhType.IdeConnection {
   log.info(`Starting connection to '${websocketUrl}'...`);
 
   return new dh.IdeConnection(websocketUrl);
@@ -47,8 +41,8 @@ export function createConnection(
  * @returns A session and config that is ready to use
  */
 export async function createSessionWrapper(
-  dh: DhType,
-  connection: dh.IdeConnection,
+  dh: typeof DhType,
+  connection: DhType.IdeConnection,
   details: SessionDetails
 ): Promise<SessionWrapper> {
   log.info('Getting console types...');
@@ -81,10 +75,10 @@ export async function createSessionWrapper(
 }
 
 export function createCoreClient(
-  dh: DhType,
+  dh: typeof DhType,
   websocketUrl: string,
-  options?: dh.ConnectOptions
-): dh.CoreClient {
+  options?: DhType.ConnectOptions
+): DhType.CoreClient {
   log.info('createCoreClient', websocketUrl);
 
   return new dh.CoreClient(websocketUrl, options);
@@ -112,8 +106,8 @@ export async function getSessionDetails(): Promise<SessionDetails> {
 }
 
 export async function loadSessionWrapper(
-  dh: DhType,
-  connection: dh.IdeConnection,
+  dh: typeof DhType,
+  connection: DhType.IdeConnection,
   sessionDetails: SessionDetails
 ): Promise<SessionWrapper | undefined> {
   let sessionWrapper: SessionWrapper | undefined;

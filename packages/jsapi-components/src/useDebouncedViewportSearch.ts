@@ -1,5 +1,5 @@
 import debounce from 'lodash.debounce';
-import type { dh.Table, dh.TreeTable } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { useEffect, useMemo } from 'react';
 import { UseViewportDataResult } from './useViewportData';
@@ -17,7 +17,10 @@ export const DEBOUNCE_VIEWPORT_SEARCH_MS = 200;
  * @param debounceMs Millisecond value to debounce
  * @returns A debounced search function
  */
-export function useDebouncedViewportSearch<I, T extends dh.Table | dh.TreeTable>(
+export function useDebouncedViewportSearch<
+  I,
+  T extends dh.Table | dh.TreeTable,
+>(
   viewportData: UseViewportDataResult<I, T>,
   columnName: string,
   debounceMs = DEBOUNCE_VIEWPORT_SEARCH_MS

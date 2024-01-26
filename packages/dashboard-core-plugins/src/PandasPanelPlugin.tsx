@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 import { WidgetPanelProps } from '@deephaven/plugin';
-import { type dh.Table } from '@deephaven/jsapi-types';
+import { type dh } from '@deephaven/jsapi-types';
 import { PandasPanel } from './panels';
 import useHydrateGrid from './useHydrateGrid';
 

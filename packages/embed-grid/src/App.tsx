@@ -9,7 +9,7 @@ import {
   IrisGridModelFactory,
 } from '@deephaven/iris-grid'; // iris-grid is used to display Deephaven tables
 import dh from '@deephaven/jsapi-shim'; // Import the shim to use the JS API
-import type { dh.IdeConnection, dh.Sort, dh.Table } from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import { fetchVariableDefinition } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import './App.scss'; // Styles for in this app
@@ -47,9 +47,9 @@ export type SortCommandType = {
  * @returns Deephaven table
  */
 async function loadTable(
-  connection: dh.IdeConnection,
+  connection: DhType.IdeConnection,
   name: string
-): Promise<dh.Table> {
+): Promise<DhType.Table> {
   log.info(`Fetching table ${name}...`);
 
   const definition = await fetchVariableDefinition(connection, name);
@@ -59,7 +59,7 @@ async function loadTable(
     );
   }
   const object = await connection.getObject(definition);
-  return object as dh.Table;
+  return object as DhType.Table;
 }
 
 /**
@@ -76,7 +76,7 @@ function App(): JSX.Element {
   const [model, setModel] = useState<IrisGridModel>();
   const [error, setError] = useState<string>();
   const [inputFilters, setInputFilters] = useState<InputFilter[]>();
-  const [sorts, setSorts] = useState<dh.Sort[]>();
+  const [sorts, setSorts] = useState<DhType.Sort[]>();
   const [isLoading, setIsLoading] = useState(true);
   const searchParams = useMemo(
     () => new URLSearchParams(window.location.search),

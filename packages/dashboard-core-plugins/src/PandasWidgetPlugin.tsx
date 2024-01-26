@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { WidgetComponentProps } from '@deephaven/plugin';
-import { type dh.Table } from '@deephaven/jsapi-types';
+import { type dh } from '@deephaven/jsapi-types';
 import IrisGrid, {
   IrisGridModelFactory,
   type IrisGridModel,

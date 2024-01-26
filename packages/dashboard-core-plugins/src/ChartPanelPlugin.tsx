@@ -7,11 +7,7 @@ import {
   ChartTheme,
   useChartTheme,
 } from '@deephaven/chart';
-import type {
-  dh as DhType,
-  dh.plot.Figure,
-  dh.IdeConnection,
-} from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import { IrisGridUtils } from '@deephaven/iris-grid';
 import { getTimeZone, store } from '@deephaven/redux';
 import { WidgetPanelProps } from '@deephaven/plugin';
@@ -28,11 +24,11 @@ import ConnectedChartPanel, {
 } from './panels/ChartPanel';
 
 async function createChartModel(
-  dh: DhType,
+  dh: typeof DhType,
   chartTheme: ChartTheme,
-  connection: dh.IdeConnection,
+  connection: DhType.IdeConnection,
   metadata: ChartPanelMetadata,
-  fetch: () => Promise<dh.plot.Figure>,
+  fetch: () => Promise<DhType.plot.Figure>,
   panelState?: GLChartPanelState
 ): Promise<ChartModel> {
   let settings;
@@ -78,7 +74,7 @@ async function createChartModel(
   }
 
   if (figureName != null) {
-    let figure: dh.plot.Figure;
+    let figure: DhType.plot.Figure;
 
     if (metadata.type === dh.VariableType.FIGURE) {
       const definition = {
@@ -139,7 +135,7 @@ export const ChartPanelPlugin = forwardRef(
             chartTheme,
             connection,
             metadata as ChartPanelMetadata,
-            fetch as () => Promise<dh.plot.Figure>,
+            fetch as () => Promise<DhType.plot.Figure>,
             panelState
           );
         },

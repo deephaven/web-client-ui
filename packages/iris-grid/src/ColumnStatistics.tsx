@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, CopyButton, LoadingSpinner } from '@deephaven/components';
 import { dhFreeze, dhRefresh, dhSortSlash, vsLock } from '@deephaven/icons';
-import type { dh.ColumnStatistics as APIColumnStatistics } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
 import { isExpandableGridModel } from '@deephaven/grid';
@@ -78,7 +78,7 @@ class ColumnStatistics extends Component<
     }
   }
 
-  cancelablePromise: CancelablePromise<APIColumnStatistics> | null;
+  cancelablePromise: CancelablePromise<dh.ColumnStatistics> | null;
 
   maybeGenerateStatistics(): void {
     const { column, model } = this.props;
@@ -108,7 +108,7 @@ class ColumnStatistics extends Component<
     this.cancelablePromise.then(this.handleStatistics).catch(this.handleError);
   }
 
-  handleStatistics(stats: APIColumnStatistics): void {
+  handleStatistics(stats: dh.ColumnStatistics): void {
     log.debug('Received statistics', stats);
 
     const { model, onStatistics } = this.props;

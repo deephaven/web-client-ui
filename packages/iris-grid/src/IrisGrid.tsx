@@ -62,18 +62,7 @@ import {
   vsSymbolOperator,
   vsTools,
 } from '@deephaven/icons';
-import type {
-  dh.Column,
-  dh.ColumnGroup,
-  dh.CustomColumn,
-  dh.DateWrapper,
-  dh as DhType,
-  dh.FilterCondition,
-  dh.Sort,
-  dh.Table,
-  dh.TableViewportSubscription,
-  dh.ViewportData,
-} from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
   DateUtils,
   Formatter,
@@ -232,9 +221,9 @@ function isEmptyConfig({
   quickFilters: ReadonlyQuickFilterMap;
   reverseType: ReverseType;
   rollupConfig?: UIRollupConfig;
-  searchFilter?: dh.FilterCondition;
+  searchFilter?: DhType.FilterCondition;
   selectDistinctColumns: readonly ColumnName[];
-  sorts: readonly dh.Sort[];
+  sorts: readonly DhType.Sort[];
 }): boolean {
   return (
     advancedFilters.size === 0 &&
@@ -267,7 +256,7 @@ export interface IrisGridContextMenuData {
   model: IrisGridModel;
   value: unknown;
   valueText: string | null;
-  column: dh.Column;
+  column: DhType.Column;
   rowIndex: GridRangeIndex;
   columnIndex: GridRangeIndex;
   modelRow: GridRangeIndex;
@@ -286,10 +275,10 @@ export interface IrisGridProps {
   movedColumns: readonly MoveOperation[];
   movedRows: readonly MoveOperation[];
   inputFilters: readonly InputFilter[];
-  customFilters: readonly dh.FilterCondition[];
+  customFilters: readonly DhType.FilterCondition[];
   model: IrisGridModel;
   onCreateChart: (settings: ChartBuilderSettings, model: IrisGridModel) => void;
-  onColumnSelected: (column: dh.Column) => void;
+  onColumnSelected: (column: DhType.Column) => void;
   onError: (error: unknown) => void;
   onDataSelected: (index: ModelIndex, map: Record<ColumnName, unknown>) => void;
   onStateChange: (irisGridState: IrisGridState, gridState: GridState) => void;
@@ -298,7 +287,7 @@ export interface IrisGridProps {
   /** @deprecated use `partitionConfig` instead */
   partitions?: (string | null)[];
   partitionConfig?: PartitionConfig;
-  sorts: readonly dh.Sort[];
+  sorts: readonly DhType.Sort[];
   reverseType: ReverseType;
   quickFilters: ReadonlyQuickFilterMap | null;
   customColumns: readonly ColumnName[];
@@ -316,7 +305,7 @@ export interface IrisGridProps {
   isStuckToRight: boolean;
 
   // eslint-disable-next-line react/no-unused-prop-types
-  columnSelectionValidator: (value: dh.Column | null) => boolean;
+  columnSelectionValidator: (value: DhType.Column | null) => boolean;
   columnAllowedCursor: string;
 
   // eslint-disable-next-line react/no-unused-prop-types
@@ -370,7 +359,7 @@ export interface IrisGridState {
   shownAdvancedFilter: number | null;
   hoverAdvancedFilter: number | null;
 
-  sorts: readonly dh.Sort[];
+  sorts: readonly DhType.Sort[];
   reverseType: ReverseType;
   customColumns: readonly ColumnName[];
   selectDistinctColumns: readonly ColumnName[];
@@ -409,7 +398,7 @@ export interface IrisGridState {
   tableDownloadEstimatedTime: number | null;
 
   showSearchBar: boolean;
-  searchFilter?: dh.FilterCondition;
+  searchFilter?: DhType.FilterCondition;
   searchValue: string;
   selectedSearchColumns: readonly ColumnName[];
   invertSearchColumns: boolean;
@@ -1041,7 +1030,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   getCachedAdvancedFilterMenuActions = memoize(
     (
       model: IrisGridModel,
-      column: dh.Column,
+      column: DhType.Column,
       advancedFilterOptions: AdvancedFilterOptions | undefined,
       sortDirection: SortDirection | undefined,
       formatter: Formatter
@@ -1187,7 +1176,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   getAggregationMap = memoize(
     (
-      columns: readonly dh.Column[],
+      columns: readonly DhType.Column[],
       aggregations: readonly Aggregation[]
     ): ReadonlyAggregationMap => {
       const aggregationMap = {} as Record<AggregationOperation, string[]>;
@@ -1205,9 +1194,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   getOperationMap = memoize(
     (
-      columns: readonly dh.Column[],
+      columns: readonly DhType.Column[],
       aggregations: readonly Aggregation[]
-    ): ReadonlyOperationMap => {
+    ): OperationMap => {
       const operationMap: OperationMap = {};
       aggregations
         .filter(
@@ -1239,8 +1228,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   getCachedFormatColumns = memoize(
     (
-      dh: DhType,
-      columns: readonly dh.Column[],
+      dh: typeof DhType,
+      columns: readonly DhType.Column[],
       rules: readonly SidebarFormattingRule[]
     ) => getFormatColumns(dh, columns, rules)
   );
@@ -1255,12 +1244,12 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    */
   getCachedPreviewFormatColumns = memoize(
     (
-      dh: DhType,
-      columns: readonly dh.Column[],
+      dh: typeof DhType,
+      columns: readonly DhType.Column[],
       rulesParam: readonly SidebarFormattingRule[],
       preview?: SidebarFormattingRule,
       editIndex?: number
-    ): dh.CustomColumn[] => {
+    ): DhType.CustomColumn[] => {
       log.debug(
         'getCachedPreviewFormatColumns',
         rulesParam,
@@ -1279,7 +1268,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   getModelRollupConfig = memoize(
     (
-      originalColumns: readonly dh.Column[],
+      originalColumns: readonly DhType.Column[],
       config: UIRollupConfig | undefined,
       aggregationSettings: AggregationSettings
     ) =>
@@ -1292,7 +1281,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   getModelTotalsConfig = memoize(
     (
-      columns: readonly dh.Column[],
+      columns: readonly DhType.Column[],
       config: UIRollupConfig | undefined,
       aggregationSettings: AggregationSettings
     ): UITotalsTableConfig | null => {
@@ -1318,7 +1307,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         operationOrder,
         showOnTop: aggregationSettings.showOnTop,
         defaultOperation: AggregationOperation.SKIP,
-      };
+      } as UITotalsTableConfig;
     }
   );
 
@@ -1330,7 +1319,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       loadingScrimProgress: number | null,
       quickFilters: ReadonlyQuickFilterMap,
       advancedFilters: ReadonlyAdvancedFilterMap,
-      sorts: readonly dh.Sort[],
+      sorts: readonly DhType.Sort[],
       reverseType: ReverseType,
       rollupConfig: UIRollupConfig | undefined,
       isMenuShown: boolean
@@ -1351,10 +1340,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   getCachedFilter = memoize(
     (
-      customFilters: readonly dh.FilterCondition[],
+      customFilters: readonly DhType.FilterCondition[],
       quickFilters: ReadonlyQuickFilterMap,
       advancedFilters: ReadonlyAdvancedFilterMap,
-      searchFilter: dh.FilterCondition | undefined
+      searchFilter: DhType.FilterCondition | undefined
     ) => [
       ...(customFilters ?? []),
       ...IrisGridUtils.getFiltersFromFilterMap(quickFilters),
@@ -1408,7 +1397,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         const { formatter } = model;
         return dh.i18n.DateTimeFormat.format(
           UNFORMATTED_DATE_PATTERN,
-          value as number | Date | dh.DateWrapper,
+          value as number | Date | DhType.DateWrapper,
           dh.i18n.TimeZone.getTimeZone(formatter.timeZone)
         );
       }
@@ -1462,10 +1451,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   makeQuickFilter(
-    column: dh.Column,
+    column: DhType.Column,
     text: string,
     timeZone: string
-  ): dh.FilterCondition | null {
+  ): DhType.FilterCondition | null {
     try {
       return this.tableUtils.makeQuickFilter(column, text, timeZone);
     } catch (err) {
@@ -1554,7 +1543,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   setAdvancedFilter(
     modelIndex: ModelIndex,
-    filter: dh.FilterCondition | null,
+    filter: DhType.FilterCondition | null,
     options: AdvancedFilterOptions
   ): void {
     log.debug('Setting advanced filter', modelIndex, filter);
@@ -1583,7 +1572,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    */
   setQuickFilter(
     modelIndex: ModelIndex,
-    filter: dh.FilterCondition | null,
+    filter: DhType.FilterCondition | null,
     text: string
   ): void {
     log.debug('Setting quick filter', modelIndex, filter, text);
@@ -1830,7 +1819,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   getAlwaysFetchColumns = memoize(
     (
       alwaysFetchColumns: readonly ColumnName[],
-      columns: readonly dh.Column[],
+      columns: readonly DhType.Column[],
       movedColumns: readonly MoveOperation[],
       floatingLeftColumnCount: number,
       floatingRightColumnCount: number,
@@ -1999,7 +1988,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       // It's possible that the key table does not have any rows of data yet, so just wait until it does have one
       keyTable.addEventListener(
         dh.Table.EVENT_UPDATED,
-        (event: CustomEvent<dh.ViewportData>) => {
+        (event: CustomEvent<DhType.ViewportData>) => {
           try {
             const { detail: data } = event;
             if (data.rows.length === 0) {
@@ -2405,7 +2394,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     (
       searchValue: string,
       selectedSearchColumns: readonly ColumnName[],
-      columns: readonly dh.Column[],
+      columns: readonly DhType.Column[],
       invertSearchColumns: boolean
     ): void => {
       const { model } = this.props;
@@ -2493,7 +2482,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
   }
 
-  updateSorts(sorts: readonly dh.Sort[]): void {
+  updateSorts(sorts: readonly DhType.Sort[]): void {
     this.startLoading('Sorting...');
     this.setState({ sorts });
     this.grid?.forceUpdate();
@@ -2699,7 +2688,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    * Select the passed in column and notify listener
    * @param column The column in this table to link
    */
-  selectColumn(column: dh.Column): void {
+  selectColumn(column: DhType.Column): void {
     const { onColumnSelected } = this.props;
     onColumnSelected(column);
   }
@@ -2734,8 +2723,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   handleAdvancedFilterChange(
-    column: dh.Column,
-    filter: dh.FilterCondition | null,
+    column: DhType.Column,
+    filter: DhType.FilterCondition | null,
     options: AdvancedFilterOptions
   ): void {
     const { model } = this.props;
@@ -2745,7 +2734,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   handleAdvancedFilterSortChange(
-    column: dh.Column,
+    column: DhType.Column,
     direction: SortDirection,
     addToExisting = false
   ): void {
@@ -3026,7 +3015,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.setState({ movedColumns }, onChangeApplied);
   }
 
-  handleHeaderGroupsChanged(columnHeaderGroups: readonly dh.ColumnGroup[]): void {
+  handleHeaderGroupsChanged(
+    columnHeaderGroups: readonly (DhType.ColumnGroup | ColumnHeaderGroup)[]
+  ): void {
     const { model } = this.props;
     this.setState(
       {
@@ -3357,8 +3348,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   handleDownloadTable(
     fileName: string,
-    frozenTable: dh.Table,
-    tableSubscription: dh.TableViewportSubscription,
+    frozenTable: DhType.Table,
+    tableSubscription: DhType.TableViewportSubscription,
     snapshotRanges: readonly GridRange[],
     modelRanges: readonly GridRange[],
     includeColumnHeaders: boolean,
@@ -4351,7 +4342,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                     model,
                     column,
                     advancedFilterOptions,
-                    sortDirection,
+                    sortDirection as SortDirection,
                     formatter
                   )}
                 </Popper>

@@ -1,5 +1,5 @@
 import { getDashboardData } from '@deephaven/dashboard';
-import type { dh.Column, dh.IdeConnection, dh.Table } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { SessionWrapper } from '@deephaven/jsapi-utils';
 import { RootState } from '@deephaven/redux';
 import { FilterChangeEvent } from '../FilterPlugin';
@@ -122,7 +122,9 @@ export const getDashboardConnection = (
   store: RootState,
   dashboardId: string
 ): dh.IdeConnection | undefined =>
-  getDashboardData(store, dashboardId).connection as dh.IdeConnection | undefined;
+  getDashboardData(store, dashboardId).connection as
+    | dh.IdeConnection
+    | undefined;
 
 /**
  *

@@ -52,7 +52,7 @@ class ConsoleUtils {
     return `${hours}:${minutes}:${seconds}.${milliseconds}`;
   }
 
-  static isTableType(dh: DhType, type: string): boolean {
+  static isTableType(dh: typeof DhType, type: string): boolean {
     return (
       type === dh.VariableType.TABLE ||
       type === dh.VariableType.TREETABLE ||
@@ -61,7 +61,7 @@ class ConsoleUtils {
     );
   }
 
-  static isWidgetType(dh: DhType, type: string): boolean {
+  static isWidgetType(dh: typeof DhType, type: string): boolean {
     return (
       type === dh.VariableType.FIGURE ||
       type === dh.VariableType.OTHERWIDGET ||
@@ -69,17 +69,17 @@ class ConsoleUtils {
     );
   }
 
-  static isOpenableType(dh: DhType, type: string): boolean {
+  static isOpenableType(dh: typeof DhType, type: string): boolean {
     return (
       ConsoleUtils.isTableType(dh, type) || ConsoleUtils.isWidgetType(dh, type)
     );
   }
 
-  static isFigureType(dh: DhType, type: string): boolean {
+  static isFigureType(dh: typeof DhType, type: string): boolean {
     return type === dh.VariableType.FIGURE;
   }
 
-  static isPandas(dh: DhType, type: string): boolean {
+  static isPandas(dh: typeof DhType, type: string): boolean {
     return type === dh.VariableType.PANDAS;
   }
 }

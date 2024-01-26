@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { LoadingOverlay } from '@deephaven/components';
 import { useApi, useClient } from '@deephaven/jsapi-bootstrap';
-import type { dh.IdeConnection } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { ConnectionContext } from '@deephaven/jsapi-components';
 import Log from '@deephaven/log';
 

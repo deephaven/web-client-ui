@@ -12,20 +12,7 @@ import {
   MoveOperation,
   VisibleIndex,
 } from '@deephaven/grid';
-import type {
-  dh.Column,
-  dh.ColumnStatistics,
-  dh.CustomColumn,
-  dh as DhType,
-  dh.FilterCondition,
-  dh.Format,
-  dh.LayoutHints,
-  dh.RollupConfig,
-  dh.Row,
-  dh.Sort,
-  dh.Table,
-  dh.ValueTypeType,
-} from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
 import {
   ColumnName,
@@ -35,7 +22,7 @@ import {
 } from './CommonTypes';
 import ColumnHeaderGroup from './ColumnHeaderGroup';
 
-export type DisplayColumn = dh.Column & {
+export type DisplayColumn = DhType.Column & {
   /**
    * Name to display with the column.
    * The `name` property on `Column` is a unique identifier and must be a valid Java identifier,
@@ -90,14 +77,14 @@ abstract class IrisGridModel<
     PENDING_DATA_UPDATED: 'PENDING_DATA_UPDATED',
   } as const);
 
-  constructor(dh: DhType) {
+  constructor(dh: typeof DhType) {
     super();
 
     this.dh = dh;
     this.listenerCount = 0;
   }
 
-  dh: DhType;
+  dh: typeof DhType;
 
   listenerCount: number;
 
@@ -221,7 +208,7 @@ abstract class IrisGridModel<
   abstract formatForCell(
     column: ModelIndex,
     row: ModelIndex
-  ): dh.Format | undefined;
+  ): DhType.Format | undefined;
 
   /**
    * @param column The model column index
@@ -233,12 +220,12 @@ abstract class IrisGridModel<
   /**
    * @returns The filters set on this model
    */
-  abstract get filter(): readonly dh.FilterCondition[];
+  abstract get filter(): readonly DhType.FilterCondition[];
 
   /**
    * @param filter The filters to set
    */
-  abstract set filter(filter: readonly dh.FilterCondition[]);
+  abstract set filter(filter: readonly DhType.FilterCondition[]);
 
   /**
    * @returns The formatter used when formatting data
@@ -264,12 +251,12 @@ abstract class IrisGridModel<
   /**
    * @returns The sorts used on this model
    */
-  abstract get sort(): readonly dh.Sort[];
+  abstract get sort(): readonly DhType.Sort[];
 
   /**
    * @param sort The sorts to use on this model
    */
-  abstract set sort(sort: readonly dh.Sort[]);
+  abstract set sort(sort: readonly DhType.Sort[]);
 
   /**
   /**
@@ -285,12 +272,12 @@ abstract class IrisGridModel<
   /**
    * @returns The format columns on this model
    */
-  abstract get formatColumns(): readonly dh.CustomColumn[];
+  abstract get formatColumns(): readonly DhType.CustomColumn[];
 
   /**
    * @param formatColumns The format columns to use
    */
-  abstract set formatColumns(formatColumns: readonly dh.CustomColumn[]);
+  abstract set formatColumns(formatColumns: readonly DhType.CustomColumn[]);
 
   /**
    * @param columns The columns to treat as frozen
@@ -300,9 +287,9 @@ abstract class IrisGridModel<
   /**
    * @returns The config to use for rolling up this table
    */
-  abstract get rollupConfig(): dh.RollupConfig | null;
+  abstract get rollupConfig(): DhType.RollupConfig | null;
 
-  abstract set rollupConfig(rollupConfig: dh.RollupConfig | null);
+  abstract set rollupConfig(rollupConfig: DhType.RollupConfig | null);
 
   /**
    * @returns The config to use for the totals table of this model
@@ -314,7 +301,7 @@ abstract class IrisGridModel<
   /**
    * @returns The LayoutHints to use for the columns of this table model
    */
-  get layoutHints(): dh.LayoutHints | null {
+  get layoutHints(): DhType.LayoutHints | null | undefined {
     return null;
   }
 
@@ -370,7 +357,7 @@ abstract class IrisGridModel<
   /**
    * @returns Returns a raw table that is frozen and can be used for exporting data
    */
-  abstract export(): Promise<dh.Table>;
+  abstract export(): Promise<DhType.Table>;
 
   /**
    * @returns True if this model supports the columnStatistics(column) function
@@ -391,7 +378,9 @@ abstract class IrisGridModel<
    * @param column The column to get statistics for
    * @returns The column statistics
    */
-  abstract columnStatistics(column: dh.Column): Promise<dh.ColumnStatistics>;
+  abstract columnStatistics(
+    column: DhType.Column
+  ): Promise<DhType.ColumnStatistics>;
 
   /**
    * @returns True if this model supports customColumns
@@ -513,7 +502,7 @@ abstract class IrisGridModel<
   abstract setViewport(
     top: VisibleIndex,
     bottom: VisibleIndex,
-    columns?: dh.Column[]
+    columns?: DhType.Column[]
   ): void;
 
   /**
@@ -534,14 +523,20 @@ abstract class IrisGridModel<
   abstract textSnapshot(
     ranges: readonly GridRange[],
     includeHeaders?: boolean,
-    formatValue?: (value: unknown, column: dh.Column, row?: dh.Row) => string
+    formatValue?: (
+      value: unknown,
+      column: DhType.Column,
+      row?: DhType.Row
+    ) => string
   ): Promise<string>;
 
   /**
    * @param column The columns to get the distinct values for
    * @returns A table partitioned on the specified columns in the order given in
    */
-  abstract valuesTable(columns: dh.Column | readonly dh.Column[]): Promise<dh.Table>;
+  abstract valuesTable(
+    columns: DhType.Column | readonly DhType.Column[]
+  ): Promise<DhType.Table>;
 
   /**
    * Close this model. It can no longer be used after being closed
@@ -566,8 +561,8 @@ abstract class IrisGridModel<
 
   abstract seekRow(
     startRow: number,
-    column: dh.Column,
-    valueType: dh.ValueTypeType,
+    column: DhType.Column,
+    valueType: DhType.ValueTypeType,
     value: unknown,
     insensitive?: boolean,
     contains?: boolean,

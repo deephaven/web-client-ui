@@ -174,7 +174,7 @@
     "@deephaven/jsapi-bootstrap": "file:packages/jsapi-bootstrap",
     "@deephaven/jsapi-components": "file:packages/jsapi-components",
     "@deephaven/jsapi-shim": "file:packages/jsapi-shim",
-    "@deephaven/jsapi-types": "1.0.0-dev0.31.0",
+    "@deephaven/jsapi-types": "1.0.0-dev0.33.0",
     "@deephaven/jsapi-utils": "file:packages/jsapi-utils",
     "@deephaven/log": "file:packages/log",
     "@deephaven/mocks": "file:packages/mocks",

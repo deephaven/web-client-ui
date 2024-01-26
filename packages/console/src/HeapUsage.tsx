@@ -1,7 +1,7 @@
 import { useState, ReactElement, useRef, useCallback } from 'react';
 import classNames from 'classnames';
 import { Tooltip } from '@deephaven/components';
-import type { dh.dh.IdeConnection } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { Plot, useChartTheme } from '@deephaven/chart';
 import Log from '@deephaven/log';
 import { useAsyncInterval, useIsMountedRef } from '@deephaven/react-hooks';

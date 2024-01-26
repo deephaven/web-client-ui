@@ -6,7 +6,7 @@ import type {
   IrisGridModel,
 } from '@deephaven/iris-grid';
 import type { ResolvableContextAction } from '@deephaven/components';
-import type { dh.Table } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 
 export interface TablePluginElement {
   getMenu?: (data: IrisGridContextMenuData) => ResolvableContextAction[];

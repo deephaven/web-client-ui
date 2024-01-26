@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import type { dh.HasEventHandling, EventListener } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 
 const log = Log.module('useTableListener');
@@ -7,7 +7,7 @@ const log = Log.module('useTableListener');
 export const useTableListener = <T = unknown>(
   eventEmitter: dh.HasEventHandling | undefined | null,
   eventName: string,
-  callback: EventListener<T>
+  callback: (event: CustomEvent<T>) => void
 ): void =>
   useEffect(
     function initEventEmitter() {

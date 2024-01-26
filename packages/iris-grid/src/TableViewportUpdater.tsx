@@ -2,13 +2,7 @@ import { PureComponent } from 'react';
 import memoize from 'memoize-one';
 import throttle from 'lodash.throttle';
 import { GridUtils, MoveOperation } from '@deephaven/grid';
-import type {
-  dh.Column,
-  dh.FilterCondition,
-  dh.Sort,
-  dh.Table,
-  dh.TableViewportSubscription,
-} from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { ColumnName } from './CommonTypes';
 
@@ -125,16 +119,18 @@ class TableViewportUpdater extends PureComponent<
   subscription?: dh.TableViewportSubscription;
 
   // eslint-disable-next-line class-methods-use-this
-  getViewportRowRange = memoize((table: dh.Table, top: number, bottom: number) => {
-    const viewHeight = bottom - top;
-    const viewportTop = Math.max(
-      0,
-      top - viewHeight * TableViewportUpdater.ROW_BUFFER_PAGES
-    );
-    const viewportBottom =
-      bottom + viewHeight * TableViewportUpdater.ROW_BUFFER_PAGES;
-    return [viewportTop, viewportBottom];
-  });
+  getViewportRowRange = memoize(
+    (table: dh.Table, top: number, bottom: number) => {
+      const viewHeight = bottom - top;
+      const viewportTop = Math.max(
+        0,
+        top - viewHeight * TableViewportUpdater.ROW_BUFFER_PAGES
+      );
+      const viewportBottom =
+        bottom + viewHeight * TableViewportUpdater.ROW_BUFFER_PAGES;
+      return [viewportTop, viewportBottom];
+    }
+  );
 
   // eslint-disable-next-line class-methods-use-this
   getViewportColumns = memoize(

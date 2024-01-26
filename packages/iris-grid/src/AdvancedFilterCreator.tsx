@@ -25,7 +25,7 @@ import {
   CancelablePromise,
   PromiseUtils,
 } from '@deephaven/utils';
-import type { dh.Column, dh.FilterCondition, dh.Table } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import shortid from 'shortid';
 import AdvancedFilterCreatorFilterItem from './AdvancedFilterCreatorFilterItem';
 import AdvancedFilterCreatorSelectValue from './AdvancedFilterCreatorSelectValue';

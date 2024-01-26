@@ -11,7 +11,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import type { dh.Column } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import {
   Type as FilterType,
   TypeValue as FilterTypeValue,

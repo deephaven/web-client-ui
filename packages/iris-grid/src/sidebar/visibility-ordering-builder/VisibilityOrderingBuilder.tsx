@@ -22,7 +22,7 @@ import {
   vsCircleLargeFilled,
   vsAdd,
 } from '@deephaven/icons';
-import type { dh.Column } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import memoize from 'memoizee';
 import debounce from 'lodash.debounce';
 import { Button, SearchInput } from '@deephaven/components';
@@ -67,7 +67,9 @@ interface VisibilityOrderingBuilderProps {
     operations: readonly MoveOperation[],
     cb?: () => void
   ) => void;
-  onColumnHeaderGroupChanged: (groups: readonly ColumnHeaderGroup[]) => void;
+  onColumnHeaderGroupChanged: (
+    groups: readonly (dh.ColumnGroup | ColumnHeaderGroup)[]
+  ) => void;
 }
 
 interface VisibilityOrderingBuilderState {

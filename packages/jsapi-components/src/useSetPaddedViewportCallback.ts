@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import type { dh.Table, dh.TreeTable } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { getSize, padFirstAndLastRow } from '@deephaven/jsapi-utils';
 
 /**

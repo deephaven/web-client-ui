@@ -4,7 +4,7 @@ import {
   GridPoint,
   EventHandlerResult,
 } from '@deephaven/grid';
-import type { dh.Column } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { IrisGrid } from '../IrisGrid';
 import { DisplayColumn } from '../IrisGridModel';
 

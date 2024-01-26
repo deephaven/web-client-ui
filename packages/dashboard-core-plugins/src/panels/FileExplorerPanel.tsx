@@ -11,7 +11,7 @@ import FileExplorer, {
 } from '@deephaven/file-explorer';
 import React, { ReactNode } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
-import type { dh.IdeSession } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import Panel from './Panel';
 import { NotebookEvent } from '../events';
 import './FileExplorerPanel.scss';

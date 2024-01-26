@@ -1,8 +1,4 @@
-import type {
-  dh.IdeConnection,
-  dh.ide.VariableChanges,
-  dh.VariableDefinition,
-} from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { TimeoutError } from '@deephaven/utils';
 
 /** Default timeout for fetching a variable definition */
@@ -19,8 +15,8 @@ export function fetchVariableDefinition(
   connection: dh.IdeConnection,
   name: string,
   timeout = FETCH_TIMEOUT
-): Promise<dh.VariableDefinition> {
-  return new Promise<dh.VariableDefinition>((resolve, reject) => {
+): Promise<dh.ide.VariableDefinition> {
+  return new Promise<dh.ide.VariableDefinition>((resolve, reject) => {
     let removeListener: () => void;
 
     const timeoutId = setTimeout(() => {

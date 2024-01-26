@@ -1,4 +1,4 @@
-import type { dh.ConnectOptions, dh.CoreClient } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { useEffect, useMemo } from 'react';
 import useApi from './useApi';
 

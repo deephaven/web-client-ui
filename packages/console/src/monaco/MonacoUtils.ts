@@ -4,7 +4,7 @@ import shortid from 'shortid';
  * Exports a function for initializing monaco with the deephaven theme/config
  */
 import { resolveCssVariablesInRecord, Shortcut } from '@deephaven/components';
-import type { dh.IdeSession } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { assertNotNull } from '@deephaven/utils';
 import { find as linkifyFind } from 'linkifyjs';
 import * as monaco from 'monaco-editor';

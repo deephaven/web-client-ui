@@ -1,5 +1,5 @@
 import { Key, useCallback, useMemo, useState } from 'react';
-import type { dh.Table } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import {
   createSearchTextFilter,
   createSelectedValuesFilter,

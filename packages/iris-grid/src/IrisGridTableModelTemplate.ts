@@ -12,25 +12,7 @@ import {
   MoveOperation,
   VisibleIndex,
 } from '@deephaven/grid';
-import type {
-  dh.Column,
-  dh.ColumnStatistics,
-  dh.CustomColumn,
-  dh as DhType,
-  dh.FilterCondition,
-  dh.Format,
-  dh.InputTable,
-  dh.LayoutHints,
-  dh.RollupConfig,
-  dh.Row,
-  dh.Sort,
-  dh.Table,
-  dh.Table,
-  dh.TableViewportSubscription,
-  dh.TotalsTable,
-  dh.ValueTypeType,
-  dh.ViewportData,
-} from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import {
   CancelablePromise,
@@ -78,15 +60,15 @@ export function isIrisGridTableModelTemplate(
  */
 
 class IrisGridTableModelTemplate<
-  T extends dh.Table<T> = dh.Table,
+  T extends DhType.Table | DhType.TreeTable = DhType.Table,
   R extends UIRow = UIRow,
 > extends IrisGridModel {
   static ROW_BUFFER_PAGES = 1;
 
   seekRow(
     startRow: number,
-    column: dh.Column,
-    valueType: dh.ValueTypeType,
+    column: DhType.Column,
+    valueType: DhType.ValueTypeType,
     value: unknown,
     insensitive?: boolean | undefined,
     contains?: boolean | undefined,
@@ -95,11 +77,11 @@ class IrisGridTableModelTemplate<
     throw new Error('Method not implemented.');
   }
 
-  export(): Promise<dh.Table> {
+  export(): Promise<DhType.Table> {
     throw new Error('Method not implemented.');
   }
 
-  columnStatistics(column: dh.Column): Promise<dh.ColumnStatistics> {
+  columnStatistics(column: DhType.Column): Promise<DhType.ColumnStatistics> {
     throw new Error('Method not implemented.');
   }
 
@@ -111,11 +93,11 @@ class IrisGridTableModelTemplate<
     throw new Error('Method not implemented.');
   }
 
-  get formatColumns(): dh.CustomColumn[] {
+  get formatColumns(): DhType.CustomColumn[] {
     return [];
   }
 
-  set formatColumns(formatColumns: dh.CustomColumn[]) {
+  set formatColumns(formatColumns: DhType.CustomColumn[]) {
     throw new Error('Method not implemented.');
   }
 
@@ -123,11 +105,11 @@ class IrisGridTableModelTemplate<
     throw new Error('Method not implemented.');
   }
 
-  get rollupConfig(): dh.RollupConfig | null {
+  get rollupConfig(): DhType.RollupConfig | null {
     throw new Error('Method not implemented.');
   }
 
-  set rollupConfig(rollupConfig: dh.RollupConfig | null) {
+  set rollupConfig(rollupConfig: DhType.RollupConfig | null) {
     throw new Error('Method not implemented.');
   }
 
@@ -143,11 +125,11 @@ class IrisGridTableModelTemplate<
    * Returns an array of the columns in the model
    * The order of model columns should never change once established
    */
-  get columns(): dh.Column[] {
+  get columns(): DhType.Column[] {
     return this.table.columns;
   }
 
-  dh: DhType;
+  dh: typeof DhType;
 
   irisGridUtils: IrisGridUtils;
 
@@ -155,16 +137,16 @@ class IrisGridTableModelTemplate<
 
   private irisFormatter: Formatter;
 
-  inputTable: dh.InputTable | null;
+  inputTable: DhType.InputTable | null;
 
-  private subscription: dh.TableViewportSubscription | null;
+  private subscription: DhType.TableViewportSubscription | null;
 
   table: T;
 
   viewport: {
     top: VisibleIndex;
     bottom: VisibleIndex;
-    columns?: dh.Column[];
+    columns?: DhType.Column[];
   } | null;
 
   viewportData: UIViewportData<R> | null;
@@ -175,9 +157,9 @@ class IrisGridTableModelTemplate<
 
   private isSaveInProgress: boolean;
 
-  private totalsTable: dh.TotalsTable | null;
+  private totalsTable: DhType.TotalsTable | null;
 
-  totalsTablePromise: CancelablePromise<dh.TotalsTable> | null;
+  totalsTablePromise: CancelablePromise<DhType.TotalsTable> | null;
 
   totals: UITotalsTableConfig | null;
 
@@ -207,10 +189,10 @@ class IrisGridTableModelTemplate<
    * @param inputTable Iris input table associated with this table
    */
   constructor(
-    dh: DhType,
+    dh: typeof DhType,
     table: T,
     formatter = new Formatter(dh),
-    inputTable: dh.InputTable | null = null
+    inputTable: DhType.InputTable | null = null
   ) {
     super(dh);
 
@@ -325,7 +307,7 @@ class IrisGridTableModelTemplate<
     this.closeSubscription();
   }
 
-  addTotalsListeners(totalsTable: dh.TotalsTable): void {
+  addTotalsListeners(totalsTable: DhType.TotalsTable): void {
     const { dh } = this;
     totalsTable.addEventListener(
       dh.Table.EVENT_UPDATED,
@@ -336,7 +318,7 @@ class IrisGridTableModelTemplate<
     totalsTable.setViewport(0, 0);
   }
 
-  removeTotalsListeners(totalsTable: dh.TotalsTable): void {
+  removeTotalsListeners(totalsTable: DhType.TotalsTable): void {
     const { dh } = this;
     totalsTable.removeEventListener(
       dh.Table.EVENT_UPDATED,
@@ -662,9 +644,9 @@ class IrisGridTableModelTemplate<
     negativeColor = negativeColor ?? theme.negativeBarColor;
     let databarColor: string | string[] =
       format.color ?? (value >= 0 ? positiveColor : negativeColor);
-    if (databarColor.includes(',')) {
-      databarColor = databarColor.split(',');
-    }
+    // if (databarColor.includes(',')) {
+    //   databarColor = databarColor.split(',');
+    // }
     markerColor = markerColor ?? theme.markerBarColor;
 
     opacity = valuePlacement.toLowerCase() === 'overlap' ? 0.5 : opacity;
@@ -770,7 +752,7 @@ class IrisGridTableModelTemplate<
   }
 
   private getMemoizedInitialMovedColumns = memoize(
-    (layoutHints?: dh.LayoutHints): readonly MoveOperation[] => {
+    (layoutHints?: DhType.LayoutHints): readonly MoveOperation[] => {
       if (!layoutHints) {
         return [];
       }
@@ -807,11 +789,15 @@ class IrisGridTableModelTemplate<
         frozenColumns = [],
       } = layoutHints;
 
-      if (frontColumns.length || backColumns.length || frozenColumns.length) {
+      if (
+        frontColumns?.length ||
+        backColumns?.length ||
+        frozenColumns?.length
+      ) {
         const usedColumns = new Set();
 
         let frontIndex = 0;
-        frozenColumns.forEach(name => {
+        frozenColumns?.forEach(name => {
           if (usedColumns.has(name)) {
             throw new Error(
               `Column specified in multiple layout hints: ${name}`
@@ -831,7 +817,7 @@ class IrisGridTableModelTemplate<
         });
 
         let backIndex = this.columnMap.size - 1;
-        backColumns.forEach(name => {
+        backColumns?.forEach(name => {
           if (usedColumns.has(name)) {
             throw new Error(
               `Column specified in multiple layout hints: ${name}`
@@ -917,7 +903,7 @@ class IrisGridTableModelTemplate<
   }
 
   getMemoizedInitialColumnHeaderGroups = memoize(
-    (layoutHints?: dh.LayoutHints) =>
+    (layoutHints?: DhType.LayoutHints) =>
       IrisGridUtils.parseColumnHeaderGroups(
         this,
         layoutHints?.columnGroups ?? []
@@ -931,14 +917,14 @@ class IrisGridTableModelTemplate<
   }
 
   getMemoizedColumnMap = memoize(
-    (tableColumns: dh.Column[]): Map<string, dh.Column> => {
+    (tableColumns: DhType.Column[]): Map<string, DhType.Column> => {
       const columnMap = new Map();
       tableColumns.forEach(col => columnMap.set(col.name, col));
       return columnMap;
     }
   );
 
-  get columnMap(): Map<ColumnName, dh.Column> {
+  get columnMap(): Map<ColumnName, DhType.Column> {
     return this.getMemoizedColumnMap(this.table.columns);
   }
 
@@ -1005,7 +991,7 @@ class IrisGridTableModelTemplate<
    * @param column Column index to get the source column from
    * @param row Row index to get the source column from
    */
-  sourceColumn(column: ModelIndex, row: ModelIndex): dh.Column {
+  sourceColumn(column: ModelIndex, row: ModelIndex): DhType.Column {
     const totalsRow = this.totalsRow(row);
     if (totalsRow != null) {
       const operation = this.totals?.operationOrder[totalsRow];
@@ -1084,7 +1070,7 @@ class IrisGridTableModelTemplate<
     return this.row(y)?.data.get(x);
   }
 
-  formatForCell(x: ModelIndex, y: ModelIndex): dh.Format | undefined {
+  formatForCell(x: ModelIndex, y: ModelIndex): DhType.Format | undefined {
     return this.dataForCell(x, y)?.format;
   }
 
@@ -1101,7 +1087,7 @@ class IrisGridTableModelTemplate<
     return undefined;
   }
 
-  copyViewportData(data: dh.ViewportData): void {
+  copyViewportData(data: DhType.ViewportData): void {
     if (data == null) {
       log.warn('invalid data!');
       return;
@@ -1111,7 +1097,7 @@ class IrisGridTableModelTemplate<
     this.formattedStringData = [];
   }
 
-  copyTotalsData(totalsData: dh.ViewportData): void {
+  copyTotalsData(totalsData: DhType.ViewportData): void {
     if (totalsData == null) {
       log.warn('invalid data!');
       return;
@@ -1160,7 +1146,7 @@ class IrisGridTableModelTemplate<
   }
 
   getColumnIndicesByNameMap = memoize(
-    (columns: dh.Column[]): Map<ColumnName, ModelIndex> => {
+    (columns: DhType.Column[]): Map<ColumnName, ModelIndex> => {
       const indices = new Map();
       columns.forEach(({ name }, i) => indices.set(name, i));
       return indices;
@@ -1171,7 +1157,7 @@ class IrisGridTableModelTemplate<
    * Copies all the viewport data into an object that we can reference later.
    * @param data The data to copy from
    */
-  extractViewportData(data: dh.ViewportData): UIViewportData<R> {
+  extractViewportData(data: DhType.ViewportData): UIViewportData<R> {
     const newData: UIViewportData<R> = {
       offset: data.offset,
       rows: [],
@@ -1187,7 +1173,7 @@ class IrisGridTableModelTemplate<
     return newData;
   }
 
-  extractViewportRow(row: dh.Row, columns: dh.Column[]): R {
+  extractViewportRow(row: DhType.Row, columns: DhType.Column[]): R {
     const data = new Map<ModelIndex, CellData>();
     for (let c = 0; c < columns.length; c += 1) {
       const column = columns[c];
@@ -1214,11 +1200,11 @@ class IrisGridTableModelTemplate<
     this.applyViewport.cancel();
   }
 
-  get filter(): dh.FilterCondition[] {
+  get filter(): DhType.FilterCondition[] {
     return this.table.filter;
   }
 
-  set filter(filter: dh.FilterCondition[]) {
+  set filter(filter: DhType.FilterCondition[]) {
     this.closeSubscription();
     this.table.applyFilter(filter);
     this.applyViewport();
@@ -1240,7 +1226,7 @@ class IrisGridTableModelTemplate<
     value: unknown,
     columnType: string,
     columnName = '',
-    formatOverride?: { formatString: string }
+    formatOverride?: { formatString?: string | null }
   ): string {
     return this.getCachedFormattedString(
       this.formatter,
@@ -1251,11 +1237,11 @@ class IrisGridTableModelTemplate<
     );
   }
 
-  get sort(): dh.Sort[] {
+  get sort(): DhType.Sort[] {
     return this.table.sort;
   }
 
-  set sort(sort: dh.Sort[]) {
+  set sort(sort: DhType.Sort[]) {
     this.closeSubscription();
     this.table.applySort(sort);
     this.applyViewport();
@@ -1308,7 +1294,7 @@ class IrisGridTableModelTemplate<
       });
   }
 
-  setTotalsTable(totalsTable: dh.TotalsTable | null): void {
+  setTotalsTable(totalsTable: DhType.TotalsTable | null): void {
     log.debug('setTotalsTable', totalsTable);
 
     if (this.totalsTable !== null) {
@@ -1328,7 +1314,7 @@ class IrisGridTableModelTemplate<
   }
 
   setViewport = throttle(
-    (top: VisibleIndex, bottom: VisibleIndex, columns?: dh.Column[]) => {
+    (top: VisibleIndex, bottom: VisibleIndex, columns?: DhType.Column[]) => {
       if (bottom < top) {
         log.error('Invalid viewport', top, bottom);
         return;
@@ -1381,16 +1367,13 @@ class IrisGridTableModelTemplate<
   applyBufferedViewport(
     viewportTop: number,
     viewportBottom: number,
-    columns?: dh.Column[]
+    columns?: DhType.Column[]
   ): void {
     log.debug2('applyBufferedViewport', viewportTop, viewportBottom, columns);
     if (this.subscription == null) {
       log.debug2('applyBufferedViewport creating new subscription');
-      this.subscription = this.table.setViewport(
-        viewportTop,
-        viewportBottom,
-        columns
-      );
+      this.subscription =
+        this.table.setViewport(viewportTop, viewportBottom, columns) ?? null;
     } else {
       log.debug2('applyBufferedViewport using existing subscription');
       this.subscription.setViewport(viewportTop, viewportBottom, columns);
@@ -1400,7 +1383,8 @@ class IrisGridTableModelTemplate<
   async snapshot(
     ranges: readonly GridRange[],
     includeHeaders = false,
-    formatValue: (value: unknown, column: dh.Column) => unknown = value => value,
+    formatValue: (value: unknown, column: DhType.Column) => unknown = value =>
+      value,
     consolidateRanges = true
   ): Promise<unknown[][]> {
     if (this.subscription == null) {
@@ -1523,8 +1507,8 @@ class IrisGridTableModelTemplate<
     includeHeaders = false,
     formatValue: (
       value: unknown,
-      column: dh.Column,
-      row?: dh.Row
+      column: DhType.Column,
+      row?: DhType.Row
     ) => string = value => `${value}`
   ): Promise<string> {
     log.debug2('textSnapshot', ranges, includeHeaders);
@@ -1538,7 +1522,9 @@ class IrisGridTableModelTemplate<
     return data.map(row => row.join('\t')).join('\n');
   }
 
-  async valuesTable(columns: dh.Column | readonly dh.Column[]): Promise<dh.Table> {
+  async valuesTable(
+    columns: DhType.Column | readonly DhType.Column[]
+  ): Promise<DhType.Table> {
     let table = null;
     try {
       table = await this.table.copy();
@@ -1558,7 +1544,7 @@ class IrisGridTableModelTemplate<
       value: unknown,
       columnType: string,
       columnName: ColumnName,
-      formatOverride?: { formatString: string }
+      formatOverride?: { formatString?: string | null }
     ): string =>
       formatter.getFormattedString(
         value,
@@ -1590,7 +1576,7 @@ class IrisGridTableModelTemplate<
   getCachedPendingErrors = memoize(
     (
       pendingDataMap: PendingDataMap,
-      columns: dh.Column[],
+      columns: DhType.Column[],
       keyColumnCount: number
     ) => {
       const map = new Map<ModelIndex, MissingKeyError[]>();
@@ -1756,7 +1742,7 @@ class IrisGridTableModelTemplate<
 
     try {
       // Cache the value in our pending string cache so that it stays displayed until our edit has been completed
-      const columnSet = new Set<dh.Column>();
+      const columnSet = new Set<DhType.Column>();
 
       // Formatted text for each column
       // Since there could be different formatting for each column, but the value will be the same across rows

@@ -1,4 +1,4 @@
-import type { dh.storage.StorageService } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import LayoutStorage, { ExportedLayout } from '../LayoutStorage';
 
 export class GrpcLayoutStorage implements LayoutStorage {

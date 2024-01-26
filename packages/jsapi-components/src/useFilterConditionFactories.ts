@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { dh.FilterCondition, dh.Table, dh.TreeTable } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import type { FilterConditionFactory } from '@deephaven/jsapi-utils';
 import { removeNullAndUndefined } from '@deephaven/utils';
 

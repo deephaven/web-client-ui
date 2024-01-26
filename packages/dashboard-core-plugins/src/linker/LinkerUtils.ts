@@ -26,7 +26,7 @@ export type Link = {
 export type LinkColumn = {
   name: string;
   type: string | null;
-  description?: string;
+  description?: string | null;
 };
 
 export type LinkDataValue<T = unknown> = {

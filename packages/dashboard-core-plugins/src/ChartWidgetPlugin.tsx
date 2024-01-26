@@ -6,7 +6,7 @@ import {
   ChartModelFactory,
   useChartTheme,
 } from '@deephaven/chart';
-import type { dh.plot.Figure } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { type WidgetComponentProps } from '@deephaven/plugin';
 
 export function ChartWidgetPlugin(

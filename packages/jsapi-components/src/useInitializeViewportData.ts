@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import type { dh.Table, dh.TreeTable } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { generateEmptyKeyedItems } from '@deephaven/jsapi-utils';
 import { useWindowedListData, WindowedListData } from '@deephaven/react-hooks';
 import { KeyedItem } from '@deephaven/utils';

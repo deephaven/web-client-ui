@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { LoadingOverlay } from '@deephaven/components';
 import { useClient } from '@deephaven/jsapi-bootstrap';
 import Log from '@deephaven/log';
-import type { dh.LoginCredentials } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { CanceledPromiseError, getErrorMessage } from '@deephaven/utils';
 import AuthenticationError from './AuthenticationError';
 

@@ -1,7 +1,7 @@
 import Papa, { ParseLocalConfig, Parser, ParseResult } from 'papaparse';
 import Log from '@deephaven/log';
 import { assertNotNull, DbNameValidator } from '@deephaven/utils';
-import type { dh.IdeSession, dh.Table } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import type { JSZipObject } from 'jszip';
 import CsvTypeParser from './CsvTypeParser';
 import { CsvTypes } from './CsvFormats';

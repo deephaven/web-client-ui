@@ -19,16 +19,16 @@ import {
   vsTriangleDown,
 } from '@deephaven/icons';
 import Log from '@deephaven/log';
-import type { dh as DhType, dh.VariableDefinition } from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import memoize from 'memoize-one';
 import ConsoleUtils from './common/ConsoleUtils';
 
 const log = Log.module('ConsoleMenu');
 
 interface ConsoleMenuProps {
-  dh: DhType;
-  openObject: (object: dh.VariableDefinition) => void;
-  objects: dh.VariableDefinition[];
+  dh: typeof DhType;
+  openObject: (object: DhType.ide.VariableDefinition) => void;
+  objects: DhType.ide.VariableDefinition[];
   overflowActions: () => DropdownAction[];
 }
 
@@ -39,11 +39,11 @@ interface ConsoleMenuState {
 
 class ConsoleMenu extends PureComponent<ConsoleMenuProps, ConsoleMenuState> {
   static makeItemActions(
-    objects: dh.VariableDefinition[],
+    objects: DhType.ide.VariableDefinition[],
     filterText: string,
     refCallback: (ref: SearchInput) => void,
     changeCallback: ChangeEventHandler<HTMLInputElement>,
-    openCallback: (object: dh.VariableDefinition) => void
+    openCallback: (object: DhType.ide.VariableDefinition) => void
   ): DropdownAction[] {
     if (objects.length === 0) {
       return [];
@@ -99,9 +99,9 @@ class ConsoleMenu extends PureComponent<ConsoleMenuProps, ConsoleMenuState> {
 
   makeTableActions = memoize(
     (
-      objects: dh.VariableDefinition[],
+      objects: DhType.ide.VariableDefinition[],
       filterText: string,
-      openObject: (object: dh.VariableDefinition) => void
+      openObject: (object: DhType.ide.VariableDefinition) => void
     ): DropdownAction[] => {
       const { dh } = this.props;
       const tables = objects.filter(object =>
@@ -121,9 +121,9 @@ class ConsoleMenu extends PureComponent<ConsoleMenuProps, ConsoleMenuState> {
 
   makeWidgetActions = memoize(
     (
-      objects: dh.VariableDefinition[],
+      objects: DhType.ide.VariableDefinition[],
       filterText: string,
-      openObject: (object: dh.VariableDefinition) => void
+      openObject: (object: DhType.ide.VariableDefinition) => void
     ): DropdownAction[] => {
       const { dh } = this.props;
       const widgets = objects.filter(object =>

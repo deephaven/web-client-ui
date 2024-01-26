@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo } from 'react';
-import type { dh.FilterCondition, dh.Table, dh.TreeTable } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import {
   RowDeserializer,
   defaultRowDeserializer,
@@ -20,7 +20,10 @@ import useTableListener from './useTableListener';
 
 const log = Log.module('useViewportData');
 
-export interface UseViewportDataProps<TItem, TTable extends dh.Table | dh.TreeTable> {
+export interface UseViewportDataProps<
+  TItem,
+  TTable extends dh.Table | dh.TreeTable,
+> {
   table: TTable | null;
   itemHeight?: number;
   scrollDebounce?: number;

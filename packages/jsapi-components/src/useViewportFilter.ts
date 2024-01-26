@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import type { dh.FilterCondition, dh.Table } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { UseViewportDataResult } from './useViewportData';
 
 /**

@@ -17,7 +17,7 @@ import {
   SocketedButton,
 } from '@deephaven/components';
 import { vsGear } from '@deephaven/icons';
-import type { dh.Column } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import memoizee from 'memoizee';
 import memoize from 'memoize-one';

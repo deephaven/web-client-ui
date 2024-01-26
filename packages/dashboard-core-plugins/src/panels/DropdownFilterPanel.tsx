@@ -4,13 +4,7 @@ import debounce from 'lodash.debounce';
 import deepEqual from 'deep-equal';
 import memoize from 'memoizee';
 import { DashboardPanelProps, LayoutUtils } from '@deephaven/dashboard';
-import type {
-  dh as DhType,
-  dh.Column,
-  dh.Row,
-  dh.Table,
-  dh.Table,
-} from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
   DateTimeColumnFormatter,
   Formatter,
@@ -56,13 +50,13 @@ interface PanelState {
   timestamp?: number;
 }
 
-type PanelTableMap = Map<string | string[], dh.Table>;
+type PanelTableMap = Map<string | string[], DhType.Table>;
 
 type StateProps = {
-  columns: dh.Column[];
+  columns: DhType.Column[];
   columnSelectionValidator?: ColumnSelectionValidator;
   dashboardLinks: Link[];
-  dh: DhType;
+  dh: typeof DhType;
   disableLinking: boolean;
   isLinkerActive: boolean;
   panelTableMap: PanelTableMap;
@@ -115,8 +109,8 @@ export type DropdownFilterPanelProps = OwnProps &
 interface DropdownFilterPanelState {
   column?: DropdownFilterColumn;
   formatter: Formatter;
-  valuesTable?: dh.Table;
-  valuesColumn?: dh.Column;
+  valuesTable?: DhType.Table;
+  valuesColumn?: DhType.Column;
   sourceSize: number;
   value: string;
   timestamp?: number;
@@ -367,7 +361,7 @@ export class DropdownFilterPanel extends Component<
 
   getCachedSourceTable = memoize(
     (
-      panelTableMap: Map<string | string[], dh.Table<dh.Table>>,
+      panelTableMap: Map<string | string[], DhType.Table>,
       source: LinkPoint | undefined
     ) => {
       log.debug('getCachedSourceTable', panelTableMap, source);
@@ -380,7 +374,7 @@ export class DropdownFilterPanel extends Component<
   );
 
   getCachedSourceColumn = memoize(
-    (table: dh.Table, source: LinkPoint | undefined) => {
+    (table: DhType.Table, source: LinkPoint | undefined) => {
       log.debug('getCachedSourceColumn', table, source);
       if (table == null || source == null) {
         return null;
@@ -402,17 +396,20 @@ export class DropdownFilterPanel extends Component<
   getSourceTable(
     panelTableMap: PanelTableMap,
     links: Link[]
-  ): dh.Table | null {
+  ): DhType.Table | null {
     const source = this.getSource(links);
     return this.getCachedSourceTable(panelTableMap, source);
   }
 
-  getValuesColumn(valuesTable: dh.Table, links: Link[]): dh.Column | null {
+  getValuesColumn(
+    valuesTable: DhType.Table,
+    links: Link[]
+  ): DhType.Column | null {
     const source = this.getSource(links);
     return this.getCachedSourceColumn(valuesTable, source);
   }
 
-  startListeningToSource(sourceTable: dh.Table): void {
+  startListeningToSource(sourceTable: DhType.Table): void {
     const { dh } = this.props;
     log.debug('startListeningToSource');
     sourceTable.addEventListener(
@@ -437,7 +434,7 @@ export class DropdownFilterPanel extends Component<
     );
   }
 
-  stopListeningToSource(sourceTable: dh.Table): void {
+  stopListeningToSource(sourceTable: DhType.Table): void {
     const { dh } = this.props;
     log.debug('stopListeningToSource');
     sourceTable.removeEventListener(
@@ -467,7 +464,7 @@ export class DropdownFilterPanel extends Component<
     isValueShown = false,
     value,
   }: {
-    column: Partial<dh.Column> | null;
+    column: Partial<DhType.Column> | null;
     isValueShown?: boolean | undefined;
     value?: string | undefined;
   }): void {
@@ -669,7 +666,7 @@ export class DropdownFilterPanel extends Component<
     this.setViewport(valuesTable);
   }
 
-  updateViewportListener(valuesTable: dh.Table): void {
+  updateViewportListener(valuesTable: DhType.Table): void {
     const { dh } = this.props;
     log.debug('updateViewportListener', valuesTable?.size);
 
@@ -690,7 +687,7 @@ export class DropdownFilterPanel extends Component<
     this.setViewport(valuesTable);
   }
 
-  setViewport(valuesTable: dh.Table): void {
+  setViewport(valuesTable: DhType.Table): void {
     const { dashboardLinks } = this.props;
     const valuesColumn = this.getValuesColumn(valuesTable, dashboardLinks);
     if (!valuesColumn) {
@@ -713,7 +710,11 @@ export class DropdownFilterPanel extends Component<
     }
   }
 
-  handleValuesTableUpdate({ detail }: { detail: { rows: dh.Row[] } }): void {
+  handleValuesTableUpdate({
+    detail,
+  }: {
+    detail: { rows: DhType.Row[] };
+  }): void {
     const { rows } = detail;
     const { dashboardLinks } = this.props;
     const { valuesTable } = this.state;

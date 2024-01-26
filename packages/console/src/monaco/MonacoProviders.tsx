@@ -4,11 +4,7 @@
 import { PureComponent } from 'react';
 import * as monaco from 'monaco-editor';
 import Log from '@deephaven/log';
-import type {
-  dh.lsp.Range,
-  dh.IdeSession,
-  dh.lsp.Position,
-} from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 
 const log = Log.module('MonacoCompletionProvider');
 
@@ -117,7 +113,9 @@ class MonacoProviders extends PureComponent<
    * @param position The monaco position
    * @returns The corresponding LSP position
    */
-  static monacoToLspPosition(position: monaco.IPosition): dh.lsp.Position {
+  static monacoToLspPosition(
+    position: monaco.IPosition
+  ): Pick<dh.lsp.Position, 'line' | 'character'> {
     // Monaco 1-indexes Position. LSP 0-indexes Position
     return {
       line: position.lineNumber - 1,
@@ -142,7 +140,7 @@ class MonacoProviders extends PureComponent<
         triggerCharacters: ['.', '"', "'"],
       });
 
-    if (session.getSignatureHelp) {
+    if (session.getSignatureHelp != null) {
       this.registeredSignatureProvider =
         monaco.languages.registerSignatureHelpProvider(language, {
           provideSignatureHelp: this.handleSignatureRequest,
@@ -150,7 +148,7 @@ class MonacoProviders extends PureComponent<
         });
     }
 
-    if (session.getHover) {
+    if (session.getHover != null) {
       this.registeredHoverProvider = monaco.languages.registerHoverProvider(
         language,
         {

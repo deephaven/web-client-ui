@@ -46,7 +46,7 @@ import TimeZoneOptions from './TimeZoneOptions';
 const log = Log.module('FormattingSectionContent');
 
 interface FormattingSectionContentProps {
-  dh: DhType;
+  dh: typeof DhType;
   defaultDateTimeFormat: string;
   showTimeZone: boolean;
   showTSeparator: boolean;

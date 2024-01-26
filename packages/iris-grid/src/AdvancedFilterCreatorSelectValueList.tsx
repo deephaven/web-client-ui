@@ -1,11 +1,7 @@
 /* eslint react/no-did-update-set-state: "off" */
 import React, { PureComponent, ReactElement } from 'react';
 import { CSSTransition } from 'react-transition-group';
-import type {
-  dh as DhType,
-  dh.FilterCondition,
-  dh.Table,
-} from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
 import {
   LoadingSpinner,
@@ -17,10 +13,10 @@ import Log from '@deephaven/log';
 const log = Log.module('AdvancedFilterCreatorSelectValueList');
 
 interface AdvancedFilterCreatorSelectValueListProps<T> {
-  dh: DhType;
+  dh: typeof DhType;
   selectedValues: (T | null)[];
-  table?: dh.Table;
-  filters: dh.FilterCondition[];
+  table?: DhType.Table;
+  filters: DhType.FilterCondition[];
   invertSelection: boolean;
   onChange: (selectedValues: (T | null)[], invertSelection: boolean) => void;
   formatter: Formatter;
@@ -126,7 +122,7 @@ class AdvancedFilterCreatorSelectValueList<T = unknown> extends PureComponent<
     if (table) this.stopListening(table);
   }
 
-  dh: DhType;
+  dh: typeof DhType;
 
   list: SelectValueList<T> | null;
 
@@ -221,11 +217,11 @@ class AdvancedFilterCreatorSelectValueList<T = unknown> extends PureComponent<
     return invertSelection ? selectedIndex < 0 : selectedIndex >= 0;
   }
 
-  startListening(table: dh.Table): void {
+  startListening(table: DhType.Table): void {
     table.addEventListener(this.dh.Table.EVENT_UPDATED, this.handleTableUpdate);
   }
 
-  stopListening(table: dh.Table): void {
+  stopListening(table: DhType.Table): void {
     table.removeEventListener(
       this.dh.Table.EVENT_UPDATED,
       this.handleTableUpdate

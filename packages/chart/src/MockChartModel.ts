@@ -175,7 +175,7 @@ class MockChartModel extends ChartModel {
     return [areaPattern, trendLine, line, errorBand];
   }
 
-  static makeDefaultLayout(dh: DhType): Partial<Layout> {
+  static makeDefaultLayout(dh: typeof DhType): Partial<Layout> {
     const layout = new ChartUtils(dh).makeDefaultLayout(MockChartModel.theme);
     layout.title = 'Chart';
 
@@ -191,7 +191,7 @@ class MockChartModel extends ChartModel {
   }
 
   constructor(
-    dh: DhType,
+    dh: typeof DhType,
     {
       data = MockChartModel.makeRandomData(),
       layout = MockChartModel.makeDefaultLayout(dh),

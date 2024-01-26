@@ -5,19 +5,7 @@ import {
   OperatorValue as FilterOperatorValue,
 } from '@deephaven/filters';
 import Log from '@deephaven/log';
-import type {
-  dh.Column,
-  dh.CustomColumn,
-  dh as DhType,
-  dh.FilterCondition,
-  dh.FilterValue,
-  dh.LongWrapper,
-  RemoverFn,
-  dh.PartitionedTable,
-  dh.Sort,
-  dh.Table,
-  dh.TreeTable,
-} from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
   bindAllMethods,
   CancelablePromise,
@@ -102,8 +90,8 @@ export class TableUtils {
    * @returns A derived, filtered table
    */
   static async copyTableAndApplyFilters<
-    T extends dh.Table | null | undefined,
-    R extends T extends dh.Table ? T : null,
+    T extends DhType.Table | null | undefined,
+    R extends T extends DhType.Table ? T : null,
   >(maybeTable: T, ...filterFactories: FilterConditionFactory[]): Promise<R> {
     if (maybeTable == null) {
       return null as R;
@@ -130,7 +118,9 @@ export class TableUtils {
    * @returns a Promise to the original table that resolves on next `eventType`
    * event
    */
-  static executeAndWaitForEvent = async <T extends dh.Table | dh.TreeTable>(
+  static executeAndWaitForEvent = async <
+    T extends DhType.Table | DhType.TreeTable,
+  >(
     exec: (maybeTable: T | null | undefined) => void,
     table: T | null | undefined,
     eventType: string,
@@ -154,7 +144,7 @@ export class TableUtils {
   };
 
   static getSortIndex(
-    sort: readonly dh.Sort[],
+    sort: readonly DhType.Sort[],
     columnName: ColumnName
   ): number | null {
     for (let i = 0; i < sort.length; i += 1) {
@@ -173,9 +163,9 @@ export class TableUtils {
    * @returns The sort for the column, or null if it's not sorted
    */
   static getSortForColumn(
-    tableSort: readonly dh.Sort[],
+    tableSort: readonly DhType.Sort[],
     columnName: ColumnName
-  ): dh.Sort | null {
+  ): DhType.Sort | null {
     const sortIndex = TableUtils.getSortIndex(tableSort, columnName);
     if (sortIndex != null) {
       return tableSort[sortIndex];
@@ -183,7 +173,7 @@ export class TableUtils {
     return null;
   }
 
-  static getFilterText(filter?: dh.FilterCondition | null): string | null {
+  static getFilterText(filter?: DhType.FilterCondition | null): string | null {
     if (filter) {
       return filter.toString();
     }
@@ -225,10 +215,10 @@ export class TableUtils {
   }
 
   static getNextSort(
-    columns: readonly dh.Column[],
-    sorts: readonly dh.Sort[],
+    columns: readonly DhType.Column[],
+    sorts: readonly DhType.Sort[],
     columnIndex: number
-  ): dh.Sort | null {
+  ): DhType.Sort | null {
     if (columnIndex < 0 || columnIndex >= columns.length) {
       return null;
     }
@@ -244,11 +234,11 @@ export class TableUtils {
   }
 
   static makeColumnSort(
-    columns: readonly dh.Column[],
+    columns: readonly DhType.Column[],
     columnIndex: number,
     direction: SortDirection,
     isAbs: boolean
-  ): dh.Sort | null {
+  ): DhType.Sort | null {
     if (columnIndex < 0 || columnIndex >= columns.length) {
       return null;
     }
@@ -283,11 +273,11 @@ export class TableUtils {
    * @param addToExisting Add this sort to the existing sort
    */
   static toggleSortForColumn(
-    sorts: readonly dh.Sort[],
-    columns: readonly dh.Column[],
+    sorts: readonly DhType.Sort[],
+    columns: readonly DhType.Column[],
     columnIndex: number,
     addToExisting = false
-  ): dh.Sort[] {
+  ): DhType.Sort[] {
     if (columnIndex < 0 || columnIndex >= columns.length) {
       return [];
     }
@@ -303,13 +293,13 @@ export class TableUtils {
   }
 
   static sortColumn(
-    sorts: readonly dh.Sort[],
-    columns: readonly dh.Column[],
+    sorts: readonly DhType.Sort[],
+    columns: readonly DhType.Column[],
     modelColumn: number,
     direction: SortDirection,
     isAbs: boolean,
     addToExisting: boolean
-  ): dh.Sort[] {
+  ): DhType.Sort[] {
     if (modelColumn < 0 || modelColumn >= columns.length) {
       return [];
     }
@@ -338,13 +328,13 @@ export class TableUtils {
    * @returns Returns the modified array of sorts - removing reverses
    */
   static setSortForColumn(
-    tableSort: readonly dh.Sort[],
+    tableSort: readonly DhType.Sort[],
     columnName: ColumnName,
-    sort: dh.Sort | null,
+    sort: DhType.Sort | null,
     addToExisting = false
-  ): dh.Sort[] {
+  ): DhType.Sort[] {
     const sortIndex = TableUtils.getSortIndex(tableSort, columnName);
-    let sorts: dh.Sort[] = [];
+    let sorts: DhType.Sort[] = [];
     if (addToExisting) {
       sorts = sorts.concat(
         tableSort.filter(
@@ -578,10 +568,10 @@ export class TableUtils {
    * @returns The condition with the specified operation
    */
   static makeRangeFilterWithOperation(
-    filter: dh.FilterValue,
+    filter: DhType.FilterValue,
     operation: string,
-    value: dh.FilterValue
-  ): dh.FilterCondition | null {
+    value: DhType.FilterValue
+  ): DhType.FilterCondition | null {
     switch (operation) {
       case '=':
         return filter.eq(value);
@@ -609,8 +599,8 @@ export class TableUtils {
    * @param table The table promise to wrap
    */
   static makeCancelableTablePromise(
-    table: Promise<dh.Table> | dh.Table
-  ): CancelablePromise<dh.Table> {
+    table: Promise<DhType.Table> | DhType.Table
+  ): CancelablePromise<DhType.Table> {
     return PromiseUtils.makeCancelable(table, resolved => {
       resolved.close();
     });
@@ -625,12 +615,12 @@ export class TableUtils {
    * @returns Resolves with the event data
    */
   static makeCancelableTableEventPromise(
-    table: dh.Table | dh.TreeTable,
+    table: DhType.Table | DhType.TreeTable,
     eventName: string,
     timeout = 0,
     matcher: ((event: CustomEvent) => boolean) | null = null
   ): CancelablePromise<CustomEvent> {
-    let eventCleanup: RemoverFn;
+    let eventCleanup: () => void;
     let timeoutId: ReturnType<typeof setTimeout>;
     let isPending = true;
     const wrappedPromise = new Promise((resolve, reject) => {
@@ -747,20 +737,20 @@ export class TableUtils {
     }
   }
 
-  static isPartitionedTable(table: unknown): table is dh.PartitionedTable {
+  static isPartitionedTable(table: unknown): table is DhType.PartitionedTable {
     return (
       table != null &&
-      (table as dh.PartitionedTable).getMergedTable !== undefined &&
-      (table as dh.PartitionedTable).getKeyTable !== undefined &&
-      (table as dh.PartitionedTable).getKeys !== undefined
+      (table as DhType.PartitionedTable).getMergedTable !== undefined &&
+      (table as any).getKeyTable !== undefined &&
+      (table as DhType.PartitionedTable).getKeys !== undefined
     );
   }
 
-  static isTreeTable(table: unknown): table is dh.TreeTable {
+  static isTreeTable(table: unknown): table is DhType.TreeTable {
     return (
       table != null &&
-      (table as dh.TreeTable).expand !== undefined &&
-      (table as dh.TreeTable).collapse !== undefined
+      (table as DhType.TreeTable).expand !== undefined &&
+      (table as DhType.TreeTable).collapse !== undefined
     );
   }
 
@@ -769,7 +759,10 @@ export class TableUtils {
    * @param columns The columns to sort
    * @param isAscending Whether to sort ascending
    */
-  static sortColumns(columns: readonly dh.Column[], isAscending = true): dh.Column[] {
+  static sortColumns(
+    columns: readonly DhType.Column[],
+    isAscending = true
+  ): DhType.Column[] {
     return [...columns].sort((a, b) => {
       const aName = a.name.toUpperCase();
       const bName = b.name.toUpperCase();
@@ -777,9 +770,9 @@ export class TableUtils {
     });
   }
 
-  dh: DhType;
+  dh: typeof DhType;
 
-  constructor(dh: DhType) {
+  constructor(dh: typeof DhType) {
     this.dh = dh;
     bindAllMethods(this);
   }
@@ -795,11 +788,11 @@ export class TableUtils {
    * on columns other than the distinct value column
    */
   async createDistinctSortedColumnTable(
-    table: dh.Table | null | undefined,
+    table: DhType.Table | null | undefined,
     columnName: string,
     sortDirection: 'asc' | 'desc',
     ...filterConditionFactories: FilterConditionFactory[]
-  ): Promise<dh.Table | null> {
+  ): Promise<DhType.Table | null> {
     if (table == null) {
       return null;
     }
@@ -844,7 +837,7 @@ export class TableUtils {
    * @param isCaseSensitive Whether the value check is case sensitive
    */
   async doesColumnValueExist(
-    table: dh.Table | null | undefined,
+    table: DhType.Table | null | undefined,
     columnNames: string | string[],
     value: string,
     isCaseSensitive: boolean
@@ -882,10 +875,10 @@ export class TableUtils {
    * @returns Returns the created filter, null if text could not be parsed
    */
   makeQuickFilter(
-    column: dh.Column,
+    column: DhType.Column,
     text: string,
     timeZone?: string
-  ): dh.FilterCondition | null {
+  ): DhType.FilterCondition | null {
     const orComponents = text.split('||');
     let orFilter = null;
     for (let i = 0; i < orComponents.length; i += 1) {
@@ -930,10 +923,10 @@ export class TableUtils {
    * @returns Returns the created filter, null if text could not be parsed
    */
   makeQuickFilterFromComponent(
-    column: dh.Column,
+    column: DhType.Column,
     text: string,
     timeZone?: string
-  ): dh.FilterCondition | null {
+  ): DhType.FilterCondition | null {
     const { type } = column;
     if (TableUtils.isNumberType(type)) {
       return this.makeQuickNumberFilter(column, text);
@@ -950,7 +943,10 @@ export class TableUtils {
     return this.makeQuickTextFilter(column, text);
   }
 
-  makeQuickNumberFilter(column: dh.Column, text: string): dh.FilterCondition | null {
+  makeQuickNumberFilter(
+    column: DhType.Column,
+    text: string
+  ): DhType.FilterCondition | null {
     const columnFilter = column.filter();
     const { dh } = this;
     let filter = null;
@@ -1114,7 +1110,10 @@ export class TableUtils {
     return `${operation ?? ''}${value ?? ``}`;
   }
 
-  makeQuickTextFilter(column: dh.Column, text: string): dh.FilterCondition | null {
+  makeQuickTextFilter(
+    column: DhType.Column,
+    text: string
+  ): DhType.FilterCondition | null {
     const { dh } = this;
     const cleanText = `${text}`.trim();
     const regex = /^(!~|!=|~|=|!)?(.*)/;
@@ -1261,9 +1260,9 @@ export class TableUtils {
 
   // eslint-disable-next-line class-methods-use-this
   makeQuickBooleanFilter(
-    column: dh.Column,
+    column: DhType.Column,
     text: string | number
-  ): dh.FilterCondition | null {
+  ): DhType.FilterCondition | null {
     const regex = /^(!=|=|!)?(.*)/;
     const result = regex.exec(`${text}`.trim());
     if (result === null) {
@@ -1273,7 +1272,7 @@ export class TableUtils {
     const notEqual = operation === '!' || operation === '!=';
     const cleanValue = value.trim().toLowerCase();
 
-    let filter: dh.FilterCondition | dh.FilterValue = column.filter();
+    let filter: DhType.FilterCondition | DhType.FilterValue = column.filter();
 
     try {
       const boolValue = TableUtils.makeBooleanValue(cleanValue);
@@ -1298,10 +1297,10 @@ export class TableUtils {
    * @param timeZone The time zone to make this filter in if it is a date type. E.g. America/New_York
    */
   makeQuickDateFilter(
-    column: dh.Column,
+    column: DhType.Column,
     text: string,
     timeZone: string
-  ): dh.FilterCondition {
+  ): DhType.FilterCondition {
     const cleanText = text.trim();
     const regex = /\s*(>=|<=|=>|=<|>|<|!=|!|=)?(.*)/;
     const result = regex.exec(cleanText);
@@ -1357,11 +1356,11 @@ export class TableUtils {
    * @param timeZone The time zone to make this filter with. E.g. America/New_York
    */
   makeQuickDateFilterWithOperation(
-    column: dh.Column,
+    column: DhType.Column,
     text: string,
     operation: FilterTypeValue,
     timeZone: string
-  ): dh.FilterCondition {
+  ): DhType.FilterCondition {
     const { dh } = this;
     const [startDate, endDate] = DateUtils.parseDateRange(dh, text, timeZone);
 
@@ -1416,7 +1415,10 @@ export class TableUtils {
     }
   }
 
-  makeQuickCharFilter(column: dh.Column, text: string): dh.FilterCondition | null {
+  makeQuickCharFilter(
+    column: DhType.Column,
+    text: string
+  ): DhType.FilterCondition | null {
     const { dh } = this;
     const cleanText = `${text}`.trim();
     const regex = /^(>=|<=|=>|=<|>|<|!=|=|!)?(null|"."|'.'|.)?(.*)/;
@@ -1469,10 +1471,10 @@ export class TableUtils {
   }
 
   makeAdvancedFilter(
-    column: dh.Column,
+    column: DhType.Column,
     options: AdvancedFilterOptions,
     timeZone: string
-  ): dh.FilterCondition | null {
+  ): DhType.FilterCondition | null {
     const { filterItems, filterOperators, invertSelection, selectedValues } =
       options;
     let filter = null;
@@ -1539,11 +1541,11 @@ export class TableUtils {
   }
 
   makeAdvancedValueFilter(
-    column: dh.Column,
+    column: DhType.Column,
     operation: FilterTypeValue,
     value: string,
     timeZone: string
-  ): dh.FilterCondition | null {
+  ): DhType.FilterCondition | null {
     const { dh } = this;
     if (TableUtils.isDateType(column.type)) {
       return this.makeQuickDateFilterWithOperation(
@@ -1649,7 +1651,7 @@ export class TableUtils {
    * @returns a Promise to the Table that resolves after the next
    * dh.Table.EVENT_FILTERCHANGED event
    */
-  async applyNeverFilter<T extends dh.Table | dh.TreeTable>(
+  async applyNeverFilter<T extends DhType.Table | DhType.TreeTable>(
     table: T | null | undefined,
     columnName: string,
     timeout = TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
@@ -1675,10 +1677,10 @@ export class TableUtils {
    * columns are applied.
    */
   async applyCustomColumns(
-    table: dh.Table | null | undefined,
-    columns: (string | dh.CustomColumn)[],
+    table: DhType.Table | null | undefined,
+    columns: (string | DhType.CustomColumn)[],
     timeout = TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
-  ): Promise<dh.Table | null> {
+  ): Promise<DhType.Table | null> {
     const { dh } = this;
     return TableUtils.executeAndWaitForEvent(
       t => t?.applyCustomColumns(columns),
@@ -1697,9 +1699,9 @@ export class TableUtils {
    * @returns a Promise to the Table that resolves after the next
    * dh.Table.EVENT_FILTERCHANGED event
    */
-  async applyFilter<T extends dh.Table | dh.TreeTable>(
+  async applyFilter<T extends DhType.Table | DhType.TreeTable>(
     table: T | null | undefined,
-    filters: dh.FilterCondition[],
+    filters: DhType.FilterCondition[],
     timeout = TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
   ): Promise<T | null> {
     const { dh } = this;
@@ -1720,9 +1722,9 @@ export class TableUtils {
    * @returns a Promise to the Table that resolves after the next
    * dh.Table.EVENT_SORTCHANGED event
    */
-  async applySort<T extends dh.Table | dh.TreeTable>(
+  async applySort<T extends DhType.Table | DhType.TreeTable>(
     table: T | null | undefined,
-    sorts: dh.Sort[],
+    sorts: DhType.Sort[],
     timeout = TableUtils.APPLY_TABLE_CHANGE_TIMEOUT_MS
   ): Promise<T | null> {
     const { dh } = this;
@@ -1738,7 +1740,7 @@ export class TableUtils {
    * Create a filter condition that results in zero results for a given column
    * @param column
    */
-  makeNeverFilter(column: dh.Column): dh.FilterCondition {
+  makeNeverFilter(column: DhType.Column): DhType.FilterCondition {
     const { dh } = this;
     let value = null;
 
@@ -1764,7 +1766,7 @@ export class TableUtils {
    * @param value The value to make the filter value from.
    * @returns The FilterValue item for this column/value combination
    */
-  makeFilterValue(columnType: string, value: string): dh.FilterValue {
+  makeFilterValue(columnType: string, value: string): DhType.FilterValue {
     const { dh } = this;
     const type = TableUtils.getBaseType(columnType);
     if (TableUtils.isTextType(type)) {
@@ -1776,7 +1778,9 @@ export class TableUtils {
       );
     }
 
-    return dh.FilterValue.ofNumber(TableUtils.removeCommas(value));
+    return dh.FilterValue.ofNumber(
+      TableUtils.removeCommas(value) as unknown as number
+    );
   }
 
   /**
@@ -1786,7 +1790,10 @@ export class TableUtils {
    * @param value The value to actually set
    * @returns The FilterValue item for this column/value combination
    */
-  makeFilterRawValue(columnType: string, rawValue: unknown): dh.FilterValue {
+  makeFilterRawValue(
+    columnType: string,
+    rawValue: unknown
+  ): DhType.FilterValue {
     const { dh } = this;
     if (TableUtils.isCharType(columnType)) {
       return dh.FilterValue.ofString(
@@ -1798,10 +1805,10 @@ export class TableUtils {
     }
 
     if (TableUtils.isBooleanType(columnType)) {
-      return dh.FilterValue.ofBoolean(rawValue);
+      return dh.FilterValue.ofBoolean(rawValue as boolean);
     }
 
-    return dh.FilterValue.ofNumber(rawValue);
+    return dh.FilterValue.ofNumber(rawValue as number);
   }
 
   /**
@@ -1814,7 +1821,7 @@ export class TableUtils {
     columnType: string,
     text: string,
     timeZone: string
-  ): string | number | boolean | dh.LongWrapper | null {
+  ): string | number | boolean | DhType.LongWrapper | null {
     const { dh } = this;
     if (text === 'null') {
       return null;
@@ -1851,17 +1858,19 @@ export class TableUtils {
    * @returns Returns a `in` or `notIn` FilterCondition as necessary, or null if no filtering should be applied (everything selected)
    */
   makeSelectValueFilter<TInvert extends boolean>(
-    column: dh.Column,
+    column: DhType.Column,
     selectedValues: unknown[],
     invertSelection: TInvert
-  ): TInvert extends true ? dh.FilterCondition | null : dh.FilterCondition {
+  ): TInvert extends true
+    ? DhType.FilterCondition | null
+    : DhType.FilterCondition {
     const { dh } = this;
     if (selectedValues.length === 0) {
       if (invertSelection) {
         // No filter means select everything
         return null as TInvert extends true
-          ? dh.FilterCondition | null
-          : dh.FilterCondition;
+          ? DhType.FilterCondition | null
+          : DhType.FilterCondition;
       }
 
       // KLUDGE: Return a conflicting filter to show no results.
@@ -1885,7 +1894,7 @@ export class TableUtils {
       } else if (TableUtils.isBooleanType(column.type)) {
         values.push(dh.FilterValue.ofBoolean(Boolean(value)));
       } else {
-        values.push(dh.FilterValue.ofNumber(value));
+        values.push(dh.FilterValue.ofNumber(value as number));
       }
     }
 

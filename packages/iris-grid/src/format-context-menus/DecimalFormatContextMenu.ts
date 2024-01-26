@@ -24,7 +24,7 @@ class DecimalFormatContextMenu {
    * @returns Array of formatting options for the context menu
    */
   static getOptions(
-    dh: DhType,
+    dh: typeof DhType,
     selectedFormat: DecimalColumnFormat,
     onCustomFormatChange: (value: DecimalColumnFormat | null) => void
   ): FormatContextMenuOption[] {

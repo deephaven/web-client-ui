@@ -1,13 +1,7 @@
 /* eslint-disable react/require-default-props */
 /* eslint-disable no-param-reassign */
 import React, { useEffect, useMemo } from 'react';
-import type {
-  dh.Column,
-  dh.CustomColumn,
-  dh.FilterCondition,
-  dh.RollupConfig,
-  dh.Sort,
-} from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { ModelIndex, MoveOperation } from '@deephaven/grid';
 import { Formatter, ReverseType, TableUtils } from '@deephaven/jsapi-utils';
 import { EMPTY_ARRAY, EMPTY_MAP } from '@deephaven/utils';

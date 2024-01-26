@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useApi } from '@deephaven/jsapi-bootstrap';
-import type { dh.Table, dh.TreeTable } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { getSize } from '@deephaven/jsapi-utils';
 import useTableListener from './useTableListener';
 

@@ -1,4 +1,4 @@
-import type { dh.Column, dh.Table } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import IrisGridModel from './IrisGridModel';
 
 export function isPartitionedGridModelProvider(

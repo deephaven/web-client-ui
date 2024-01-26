@@ -1,14 +1,11 @@
-import type {
-  dh.Column,
-  dh.FilterCondition,
-  dh.Table,
-  dh.TreeTable,
-} from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import type { SelectionT } from '@deephaven/utils';
 import TableUtils from './TableUtils';
 
 export interface FilterConditionFactory {
-  (table: dh.Table | dh.TreeTable | null | undefined): dh.FilterCondition | null;
+  (
+    table: dh.Table | dh.TreeTable | null | undefined
+  ): dh.FilterCondition | null;
 }
 
 /**

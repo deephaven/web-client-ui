@@ -3,7 +3,7 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import { LogView } from '@deephaven/console';
-import type { dh.IdeSession } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { DashboardPanelProps } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import { RootState } from '@deephaven/redux';

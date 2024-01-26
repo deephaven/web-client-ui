@@ -12,7 +12,7 @@ import { DashboardPanelProps } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import { getCommandHistoryStorage, RootState } from '@deephaven/redux';
 import { assertNotNull, Pending } from '@deephaven/utils';
-import type { dh.IdeSession } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { ConsoleEvent, NotebookEvent } from '../events';
 import './CommandHistoryPanel.scss';
 import Panel from './Panel';

@@ -7,10 +7,10 @@ export type DeferredApiOptions = Record<string, unknown>;
 
 export type DeferredApiFetcher = (
   options?: DeferredApiOptions
-) => Promise<DhType>;
+) => Promise<typeof DhType>;
 
 export const DeferredApiContext = createContext<
-  DhType | DeferredApiFetcher | null
+  typeof DhType | DeferredApiFetcher | null
 >(null);
 
 /**
@@ -20,8 +20,8 @@ export const DeferredApiContext = createContext<
  */
 export function useDeferredApi(
   options?: Record<string, unknown>
-): [DhType | null, unknown | null] {
-  const [api, setApi] = useState<DhType | null>(null);
+): [typeof DhType | null, unknown | null] {
+  const [api, setApi] = useState<typeof DhType | null>(null);
   const [error, setError] = useState<unknown | null>(null);
   const deferredApi = useContext(DeferredApiContext);
   const contextApi = useContext(ApiContext);

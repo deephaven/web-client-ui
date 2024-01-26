@@ -1,4 +1,4 @@
-import type { dh as DhType, dh.plot.Figure, dh.Table } from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import ChartUtils, { ChartModelSettings } from './ChartUtils';
 import FigureChartModel from './FigureChartModel';
 import { ChartTheme } from './ChartTheme';
@@ -22,9 +22,9 @@ class ChartModelFactory {
    * This causes TS issues in 1 or 2 spots. Once this is TS it can be returned to just FigureChartModel
    */
   static async makeModelFromSettings(
-    dh: DhType,
+    dh: typeof DhType,
     settings: ChartModelSettings,
-    table: dh.Table,
+    table: DhType.Table,
     theme: ChartTheme
   ): Promise<ChartModel> {
     const figure = await ChartModelFactory.makeFigureFromSettings(
@@ -49,10 +49,10 @@ class ChartModelFactory {
    * @returns The Figure created with the settings provided
    */
   static async makeFigureFromSettings(
-    dh: DhType,
+    dh: typeof DhType,
     settings: ChartModelSettings,
-    table: dh.Table
-  ): Promise<dh.plot.Figure> {
+    table: DhType.Table
+  ): Promise<DhType.plot.Figure> {
     // Copy the table first and then re-apply the filters from the original table
     // When we add table linking we'll want to listen to the original table and update
     // the copied table with any changes that occur.
@@ -84,9 +84,9 @@ class ChartModelFactory {
    * This causes TS issues in 1 or 2 spots. Once this is TS it can be returned to just FigureChartModel
    */
   static async makeModel(
-    dh: DhType,
+    dh: typeof DhType,
     settings: ChartModelSettings | undefined,
-    figure: dh.plot.Figure,
+    figure: DhType.plot.Figure,
     theme: ChartTheme
   ): Promise<ChartModel> {
     return new FigureChartModel(dh, figure, theme, settings);

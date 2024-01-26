@@ -6,11 +6,7 @@ import {
   useChartTheme,
 } from '@deephaven/chart'; // chart is used to display Deephaven charts
 import { ContextMenuRoot, LoadingOverlay } from '@deephaven/components'; // Use the loading spinner from the Deephaven components package
-import type {
-  dh as DhType,
-  dh.plot.Figure,
-  dh.IdeConnection,
-} from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import './App.scss'; // Styles for in this app
 import { useApi } from '@deephaven/jsapi-bootstrap';
@@ -26,10 +22,10 @@ const log = Log.module('EmbedChart.App');
  * @returns Deephaven figure
  */
 async function loadFigure(
-  dh: DhType,
-  connection: dh.IdeConnection,
+  dh: typeof DhType,
+  connection: DhType.IdeConnection,
   name: string
-): Promise<dh.plot.Figure> {
+): Promise<DhType.plot.Figure> {
   log.info(`Fetching figure ${name}...`);
 
   const definition = { name, type: dh.VariableType.FIGURE };

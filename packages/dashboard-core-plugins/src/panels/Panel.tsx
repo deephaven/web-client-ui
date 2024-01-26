@@ -23,7 +23,7 @@ import type {
 } from '@deephaven/golden-layout';
 import { assertNotNull } from '@deephaven/utils';
 import Log from '@deephaven/log';
-import type { dh.IdeSession } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { ConsoleEvent, InputFilterEvent, TabEvent } from '../events';
 import PanelContextMenu from './PanelContextMenu';
 import RenameDialog from './RenameDialog';

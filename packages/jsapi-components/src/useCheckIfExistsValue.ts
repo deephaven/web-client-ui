@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import type { dh.Table } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { useDebouncedValue, usePromiseFactory } from '@deephaven/react-hooks';
 import useTableUtils from './useTableUtils';
 

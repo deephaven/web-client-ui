@@ -1,4 +1,4 @@
-import type { dh.IdeConnection } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { useContextOrThrow } from '@deephaven/react-hooks';
 import { ConnectionContext } from './ConnectionContext';
 
