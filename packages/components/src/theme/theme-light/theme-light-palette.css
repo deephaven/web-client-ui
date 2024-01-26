@@ -227,22 +227,6 @@
   --dh-color-black: hsl(var(--dh-color-black-hsl));
   --dh-color-white: hsl(var(--dh-color-white-hsl));
 
-  /* Blue */
-  --dh-color-blue-100: hsl(var(--dh-color-blue-100-hsl));
-  --dh-color-blue-200: hsl(var(--dh-color-blue-200-hsl));
-  --dh-color-blue-300: hsl(var(--dh-color-blue-300-hsl));
-  --dh-color-blue-400: hsl(var(--dh-color-blue-400-hsl));
-  --dh-color-blue-500: hsl(var(--dh-color-blue-500-hsl));
-  --dh-color-blue-600: hsl(var(--dh-color-blue-600-hsl));
-  --dh-color-blue-700: hsl(var(--dh-color-blue-700-hsl));
-  --dh-color-blue-800: hsl(var(--dh-color-blue-800-hsl));
-  --dh-color-blue-900: hsl(var(--dh-color-blue-900-hsl));
-  --dh-color-blue-1000: hsl(var(--dh-color-blue-1000-hsl));
-  --dh-color-blue-1100: hsl(var(--dh-color-blue-1100-hsl));
-  --dh-color-blue-1200: hsl(var(--dh-color-blue-1200-hsl));
-  --dh-color-blue-1300: hsl(var(--dh-color-blue-1300-hsl));
-  --dh-color-blue-1400: hsl(var(--dh-color-blue-1400-hsl));
-
   /* Red */
   --dh-color-red-100: hsl(var(--dh-color-red-100-hsl));
   --dh-color-red-200: hsl(var(--dh-color-red-200-hsl));
@@ -370,6 +354,22 @@
   --dh-color-cyan-1200: hsl(var(--dh-color-cyan-1200-hsl));
   --dh-color-cyan-1300: hsl(var(--dh-color-cyan-1300-hsl));
   --dh-color-cyan-1400: hsl(var(--dh-color-cyan-1400-hsl));
+
+  /* Blue */
+  --dh-color-blue-100: hsl(var(--dh-color-blue-100-hsl));
+  --dh-color-blue-200: hsl(var(--dh-color-blue-200-hsl));
+  --dh-color-blue-300: hsl(var(--dh-color-blue-300-hsl));
+  --dh-color-blue-400: hsl(var(--dh-color-blue-400-hsl));
+  --dh-color-blue-500: hsl(var(--dh-color-blue-500-hsl));
+  --dh-color-blue-600: hsl(var(--dh-color-blue-600-hsl));
+  --dh-color-blue-700: hsl(var(--dh-color-blue-700-hsl));
+  --dh-color-blue-800: hsl(var(--dh-color-blue-800-hsl));
+  --dh-color-blue-900: hsl(var(--dh-color-blue-900-hsl));
+  --dh-color-blue-1000: hsl(var(--dh-color-blue-1000-hsl));
+  --dh-color-blue-1100: hsl(var(--dh-color-blue-1100-hsl));
+  --dh-color-blue-1200: hsl(var(--dh-color-blue-1200-hsl));
+  --dh-color-blue-1300: hsl(var(--dh-color-blue-1300-hsl));
+  --dh-color-blue-1400: hsl(var(--dh-color-blue-1400-hsl));
 
   /* Indigo */
   --dh-color-indigo-100: hsl(var(--dh-color-indigo-100-hsl));

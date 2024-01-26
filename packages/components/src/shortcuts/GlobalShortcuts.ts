@@ -43,6 +43,14 @@ const GLOBAL_SHORTCUTS = {
     macShortcut: [KEY.ESCAPE],
     isEditable: false,
   }),
+  COPY_VERSION_INFO: ShortcutRegistry.createAndAdd({
+    id: 'GLOBAL.COPY_VERSION_INFO',
+    name: 'Copy Version Info',
+    // alt vs shift to not be the devtools shortcut on each platform
+    shortcut: [MODIFIER.CTRL, MODIFIER.ALT, KEY.I],
+    macShortcut: [MODIFIER.CMD, MODIFIER.SHIFT, KEY.I],
+    isEditable: true,
+  }),
   NEXT: ShortcutRegistry.createAndAdd({
     id: 'GLOBAL.NEXT',
     name: 'Next',

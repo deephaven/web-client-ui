@@ -84,7 +84,12 @@ import {
   CustomizableWorkspace,
   DashboardData,
 } from '@deephaven/redux';
-import { bindAllMethods, EMPTY_ARRAY, PromiseUtils } from '@deephaven/utils';
+import {
+  bindAllMethods,
+  copyToClipboard,
+  PromiseUtils,
+  EMPTY_ARRAY,
+} from '@deephaven/utils';
 import GoldenLayout from '@deephaven/golden-layout';
 import type { ItemConfigType } from '@deephaven/golden-layout';
 import {
@@ -103,6 +108,7 @@ import WidgetList, { WindowMouseEvent } from './WidgetList';
 import UserLayoutUtils from './UserLayoutUtils';
 import LayoutStorage from '../storage/LayoutStorage';
 import AppDashboards from './AppDashboards';
+import { getFormattedVersionInfo } from '../settings/SettingsUtils';
 
 const log = Log.module('AppMainContainer');
 
@@ -195,6 +201,19 @@ export class AppMainContainer extends Component<
 
     this.state = {
       contextActions: [
+        {
+          action: () => {
+            // Copies the version info to the clipboard for easy pasting into a ticket
+            const { serverConfigValues } = this.props;
+            const versionInfo = getFormattedVersionInfo(serverConfigValues);
+            const versionInfoText = Object.entries(versionInfo)
+              .map(([key, value]) => `${key}: ${value}`)
+              .join('\n');
+            copyToClipboard(versionInfoText);
+          },
+          shortcut: GLOBAL_SHORTCUTS.COPY_VERSION_INFO,
+          isGlobal: true,
+        },
         {
           action: () => {
             this.handleToolSelect(ToolType.LINKER);

@@ -1,8 +1,8 @@
-import { DashboardData, RootState } from '@deephaven/redux';
+import { DashboardData, PluginData, RootState } from '@deephaven/redux';
 import type { Action } from 'redux';
 import type { ThunkAction } from 'redux-thunk';
 import { SET_DASHBOARD_DATA } from './actionTypes';
-import { getDashboardData } from './selectors';
+import { getDashboardData, getPluginDataMapForDashboard } from './selectors';
 
 /**
  * Action to replace the dashboard data for a dashboard
@@ -43,27 +43,24 @@ export const updateDashboardData =
     );
 
 /**
- * Action to set the plugin data for a dashboard
- * @param dashboardId The ID of the dashboard to set the data on
- * @param pluginId The ID of the plugin to set the data on
- * @param data Data for the plugin on the dashboard
- * @returns The thunk to get dispatched
+ * Action to update the dashboard data. Will combine the update with any existing dashboard data.
+ * @param id The id of the dashboard to set the data on
+ * @param pluginId The id of the plugin to set the data on
+ * @param data The data to replace the existing plugin data with
+ * @returns
  */
 export const setDashboardPluginData =
   (
-    dashboardId: string,
+    id: string,
     pluginId: string,
-    data: unknown
+    data: PluginData
   ): ThunkAction<unknown, RootState, undefined, Action<unknown>> =>
-  (dispatch, getState) => {
-    const dashboardData = getDashboardData(getState(), dashboardId);
+  (dispatch, getState) =>
     dispatch(
-      setDashboardData(dashboardId, {
-        ...dashboardData,
-        pluginData: {
-          ...dashboardData.pluginData,
-          [pluginId]: data,
-        },
+      setDashboardData(id, {
+        ...getDashboardData(getState(), id),
+        pluginDataMap: new Map(
+          getPluginDataMapForDashboard(getState(), id)
+        ).set(pluginId, data),
       })
     );
-  };

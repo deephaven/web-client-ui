@@ -13,6 +13,7 @@ import {
 import {
   Button,
   CopyButton,
+  GLOBAL_SHORTCUTS,
   Logo,
   ThemeContext,
   ThemePicker,
@@ -32,6 +33,7 @@ import ShortcutSectionContent from './ShortcutsSectionContent';
 import { exportLogs } from '../log/LogExport';
 import './SettingsMenu.scss';
 import ColumnSpecificSectionContent from './ColumnSpecificSectionContent';
+import { getFormattedVersionInfo } from './SettingsUtils';
 
 interface SettingsMenuProps {
   serverConfigValues: ServerConfigValues;
@@ -128,14 +130,13 @@ export class SettingsMenu extends Component<
   }
 
   render(): ReactElement {
-    const uiVersion = import.meta.env.npm_package_version;
     const supportLink = import.meta.env.VITE_SUPPORT_LINK;
     const docsLink = import.meta.env.VITE_DOCS_LINK;
 
     const { serverConfigValues, user } = this.props;
-    const barrageVersion = serverConfigValues.get('barrage.version');
-    const javaVersion = serverConfigValues.get('java.version');
+    const versionInfo = getFormattedVersionInfo(serverConfigValues);
     const deephavenVersion = serverConfigValues.get('deephaven.version');
+    const copyShortcut = GLOBAL_SHORTCUTS.COPY_VERSION_INFO.getDisplayText();
 
     const getRow = (text: string, ver?: string): JSX.Element => (
       <>
@@ -327,16 +328,19 @@ export class SettingsMenu extends Component<
                   {deephavenVersion} <FontAwesomeIcon icon={vsInfo} />
                   <Tooltip interactive>
                     <div className="detailed-server-config">
-                      {getRow('Engine Version', deephavenVersion)}
-                      {getRow('Web UI Version', uiVersion)}
-                      {getRow('Java Version', javaVersion)}
-                      {getRow('Barrage Version', barrageVersion)}
+                      {Object.entries(versionInfo).map(([key, value]) =>
+                        getRow(key, value)
+                      )}
                     </div>
                     <CopyButton
+                      kind="inline"
                       tooltip="Copy version numbers"
-                      copy={`Engine Version: ${deephavenVersion}\nWeb UI Version: ${uiVersion}\nJava Version: ${javaVersion}\nBarrage Version: ${barrageVersion}`}
+                      copy={Object.entries(versionInfo)
+                        .map(([key, value]) => `${key}: ${value}`)
+                        .join('\n')}
                     >
                       Copy Versions
+                      <small className="text-muted">({copyShortcut})</small>
                     </CopyButton>
                   </Tooltip>
                 </span>
