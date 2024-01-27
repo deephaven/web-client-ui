@@ -498,8 +498,13 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           )
         );
       } else if (TableUtils.isDateType(column.type)) {
-        const dateValueText = dateFilterFormatter.format(value as Date);
-        const previewValue = previewFilterFormatter.format(value as Date);
+        if (!(value instanceof Date)) {
+          throw new Error(
+            `Filter value is not a date when it should be: ${value}`
+          );
+        }
+        const dateValueText = dateFilterFormatter.format(value);
+        const previewValue = previewFilterFormatter.format(value);
         if (quickFilters.get(sourceColumn)) {
           filterMenu.actions.push({
             title: 'And',
@@ -1426,12 +1431,12 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     column: DhType.Column,
     valueText: string,
     previewValue: unknown,
-    value: unknown,
+    value: Date,
     quickFilter?: QuickFilter | null,
     operator?: '&&' | '||' | null
   ): ContextAction[] {
     const { dh } = this;
-    const filterValue = dh.FilterValue.ofNumber(value as number);
+    const filterValue = dh.FilterValue.ofNumber(dh.DateWrapper.ofJsDate(value));
 
     let filter: DhType.FilterCondition | null = null;
     let filterText: string | null = null;

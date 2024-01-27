@@ -1015,7 +1015,9 @@ class IrisGridUtils {
     const groupMap: Map<string, ColumnHeaderGroup> = new Map();
 
     // Remove any empty groups before parsing
-    const groups = groupsParam?.filter(({ children }) => children.length > 0);
+    const groups = groupsParam?.filter(
+      ({ children }) => children != null && children.length > 0
+    );
 
     if (groups.length === 0) {
       return { groups: [], maxDepth, parentMap, groupMap };
@@ -1029,6 +1031,10 @@ class IrisGridUtils {
     ): ColumnHeaderGroup => {
       const { name } = group;
 
+      if (name == null) {
+        throw new Error('Column header group has no name');
+      }
+
       if (model.getColumnIndexByName(name) != null) {
         throw new Error(`Column header group has same name as column: ${name}`);
       }
@@ -1041,6 +1047,10 @@ class IrisGridUtils {
 
       const childIndexes: ColumnHeaderGroup['childIndexes'] = [];
       let depth = 1;
+
+      if (group.children == null) {
+        throw new Error(`Column header group ${name} has no children`);
+      }
 
       group.children.forEach(childName => {
         if (seenChildren.has(childName)) {
@@ -1068,12 +1078,14 @@ class IrisGridUtils {
 
       const columnHeaderGroup = new ColumnHeaderGroup({
         ...group,
+        name,
+        children: group.children,
         depth,
         childIndexes: childIndexes.flat(),
       });
 
       groupMap.set(name, columnHeaderGroup);
-      group.children.forEach(childName =>
+      group.children?.forEach(childName =>
         parentMap.set(childName, columnHeaderGroup)
       );
 
