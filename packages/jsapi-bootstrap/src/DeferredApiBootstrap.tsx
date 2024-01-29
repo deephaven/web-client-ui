@@ -1,13 +1,14 @@
 import React from 'react';
 import useDeferredApi from './useDeferredApi';
 import { ApiContext } from './ApiBootstrap';
+import { ObjectMetadata } from './useObjectFetcher';
 
 type DeferredApiBootstrapProps = React.PropsWithChildren<{
   onError?: (error: unknown) => void;
   /**
    * Options to use when fetching the deferred API.
    */
-  options?: Record<string, unknown>;
+  metadata: ObjectMetadata;
 }>;
 
 /**
@@ -17,9 +18,9 @@ export const DeferredApiBootstrap = React.memo(
   ({
     children,
     onError,
-    options,
+    metadata,
   }: DeferredApiBootstrapProps): JSX.Element | null => {
-    const [api, apiError] = useDeferredApi(options);
+    const [api, apiError] = useDeferredApi(metadata);
     if (apiError != null) {
       onError?.(apiError);
       return null;

@@ -2,12 +2,14 @@ import { act, renderHook } from '@testing-library/react-hooks';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { useContext } from 'react';
 import { TestUtils } from '@deephaven/utils';
-import { DeferredApiOptions, useDeferredApi } from './useDeferredApi';
+import { useDeferredApi } from './useDeferredApi';
+import { ObjectMetadata } from './useObjectFetcher';
 
 const { asMock, createMockProxy, flushPromises } = TestUtils;
 
 const dh1 = createMockProxy<DhType>();
 const dh2 = createMockProxy<DhType>();
+const objectMetadata = { type: 'TEST_TYPE' };
 
 jest.mock('react', () => ({
   ...jest.requireActual('react'),
@@ -19,22 +21,22 @@ beforeEach(() => {
   asMock(useContext).mockName('useContext');
 });
 
-describe('useApi', () => {
+describe('useDeferredApi', () => {
   it('should return API directly if a value is provided from useContext, whatever the options are', () => {
     asMock(useContext).mockReturnValue(dh1);
 
-    const { result } = renderHook(() => useDeferredApi());
+    const { result } = renderHook(() => useDeferredApi(objectMetadata));
     expect(result.current).toEqual([dh1, null]);
 
     const { result: result2 } = renderHook(() =>
-      useDeferredApi({ foo: 'bar' })
+      useDeferredApi({ type: 'foo', foo: 'bar' })
     );
     expect(result2.current).toEqual([dh1, null]);
   });
 
   it('should resolve to the API value when it is provided from the function', async () => {
-    asMock(useContext).mockReturnValue(async (options?: DeferredApiOptions) => {
-      switch (options?.id) {
+    asMock(useContext).mockReturnValue(async (metadata: ObjectMetadata) => {
+      switch (metadata.type) {
         case '1':
           return dh1;
         case '2':
@@ -45,17 +47,17 @@ describe('useApi', () => {
     });
 
     const { rerender, result } = renderHook(
-      (options?: DeferredApiOptions) => useDeferredApi(options),
-      { initialProps: { id: '1' } }
+      (metadata: ObjectMetadata) => useDeferredApi(metadata),
+      { initialProps: { type: '1' } }
     );
     await act(flushPromises);
     expect(result.current).toEqual([dh1, null]);
 
-    rerender({ id: '2' });
+    rerender({ type: '2' });
     await act(flushPromises);
     expect(result.current).toEqual([dh2, null]);
 
-    rerender({ id: '3' });
+    rerender({ type: '3' });
     await act(flushPromises);
     expect(result.current).toEqual([null, expect.any(Error)]);
   });
@@ -63,7 +65,7 @@ describe('useApi', () => {
   it('returns an error if the context is null', async () => {
     asMock(useContext).mockReturnValue(null);
 
-    const { result } = renderHook(() => useDeferredApi());
+    const { result } = renderHook(() => useDeferredApi({}));
     expect(result.current).toEqual([null, expect.any(Error)]);
   });
 });

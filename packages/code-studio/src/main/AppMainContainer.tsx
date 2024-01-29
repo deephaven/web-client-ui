@@ -62,6 +62,7 @@ import {
   dhSquareFilled,
   vsHome,
 } from '@deephaven/icons';
+import { getObjectMetadata } from '@deephaven/jsapi-bootstrap';
 import dh from '@deephaven/jsapi-shim';
 import type {
   IdeConnection,
@@ -723,6 +724,7 @@ export class AppMainContainer extends Component<
     this.emitLayoutEvent(PanelEvent.OPEN, {
       dragEvent,
       fetch: async () => connection?.getObject(widget),
+      metadata: getObjectMetadata(widget),
       widget,
     });
   }

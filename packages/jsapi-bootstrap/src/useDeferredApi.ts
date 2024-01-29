@@ -1,25 +1,22 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { ApiContext } from './ApiBootstrap';
+import { ObjectMetadata } from './useObjectFetcher';
 
-/** Options for retrieving the deferred */
-export type DeferredApiOptions = Record<string, unknown>;
-
-export type DeferredApiFetcher = (
-  options?: DeferredApiOptions
-) => Promise<DhType>;
+export type DeferredApiFetcher = (metadata?: ObjectMetadata) => Promise<DhType>;
 
 export const DeferredApiContext = createContext<
   DhType | DeferredApiFetcher | null
 >(null);
 
 /**
- * Retrieve the API for the current context, given the metadata provided.
+ * Retrieve the API for the current context, given the object metadata provided.
  * The API may need to be loaded, and will return `null` until it is ready.
+ * @param metadata The object metadata to use to fetch the API
  * @returns A tuple with the API instance, and an error if one occurred.
  */
 export function useDeferredApi(
-  options?: Record<string, unknown>
+  metadata: ObjectMetadata
 ): [DhType | null, unknown | null] {
   const [api, setApi] = useState<DhType | null>(null);
   const [error, setError] = useState<unknown | null>(null);
@@ -46,7 +43,7 @@ export function useDeferredApi(
     async function loadApi() {
       if (typeof deferredApi === 'function') {
         try {
-          const newApi = await deferredApi(options);
+          const newApi = await deferredApi(metadata);
           if (!isCancelled) {
             setApi(newApi);
             setError(null);
@@ -67,7 +64,7 @@ export function useDeferredApi(
     return () => {
       isCancelled = true;
     };
-  }, [contextApi, deferredApi, options]);
+  }, [contextApi, deferredApi, metadata]);
 
   return [api, error];
 }

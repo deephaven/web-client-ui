@@ -18,7 +18,8 @@ import {
   LayoutUtils,
   PanelEvent,
 } from '@deephaven/dashboard';
-import type { IdeSession, VariableDefinition } from '@deephaven/jsapi-types';
+import { getObjectMetadata } from '@deephaven/jsapi-bootstrap';
+import type { VariableDefinition } from '@deephaven/jsapi-types';
 import { SessionWrapper } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
@@ -248,11 +249,6 @@ export class ConsolePanel extends PureComponent<
   }
 
   handleOpenObject(object: VariableDefinition, forceOpen = true): void {
-    const { sessionWrapper } = this.props;
-    if (sessionWrapper == null) {
-      return;
-    }
-    const { session } = sessionWrapper;
     const { root } = this.context;
     const oldPanelId =
       object.title != null ? this.getItemId(object.title, false) : null;
@@ -267,7 +263,7 @@ export class ConsolePanel extends PureComponent<
           false
         ) != null)
     ) {
-      this.openWidget(object, session);
+      this.openWidget(object);
     }
   }
 
@@ -293,15 +289,22 @@ export class ConsolePanel extends PureComponent<
 
   /**
    * @param widget The widget to open
-   * @param session The session object
    */
-  openWidget(widget: VariableDefinition, session: IdeSession): void {
-    const { glEventHub } = this.props;
+  openWidget(widget: VariableDefinition): void {
+    const { glEventHub, sessionWrapper } = this.props;
+    assertNotNull(sessionWrapper);
+
+    const { config, session } = sessionWrapper;
     const { title } = widget;
     assertNotNull(title);
     const panelId = this.getItemId(title);
+    const metadata = {
+      ...getObjectMetadata(widget),
+      sessionId: config.id,
+    };
     const openOptions = {
       fetch: () => session.getObject(widget),
+      metadata,
       panelId,
       widget,
     };

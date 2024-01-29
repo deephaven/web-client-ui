@@ -7,7 +7,7 @@ import { DeferredApiContext } from './useDeferredApi';
 
 it('should call the error callback if no API provider wrapped', () => {
   const onError = jest.fn();
-  render(<DeferredApiBootstrap onError={onError} />);
+  render(<DeferredApiBootstrap onError={onError} metadata={{}} />);
   expect(onError).toHaveBeenCalled();
 });
 
@@ -15,7 +15,7 @@ it('renders children if the API is loaded', () => {
   const api = TestUtils.createMockProxy<DhType>();
   const { queryByText } = render(
     <DeferredApiContext.Provider value={api}>
-      <DeferredApiBootstrap>
+      <DeferredApiBootstrap metadata={{}}>
         <div>Child</div>
       </DeferredApiBootstrap>
     </DeferredApiContext.Provider>
@@ -29,17 +29,17 @@ it('waits to render children until the API is loaded', async () => {
     resolveApi = resolve;
   });
   const deferredApi = jest.fn(() => apiPromise);
-  const options = { foo: 'bar' };
+  const metadata = { foo: 'bar' };
   const { queryByText } = render(
     <DeferredApiContext.Provider value={deferredApi}>
-      <DeferredApiBootstrap options={options}>
+      <DeferredApiBootstrap metadata={metadata}>
         <div>Child</div>
       </DeferredApiBootstrap>
     </DeferredApiContext.Provider>
   );
   expect(queryByText('Child')).toBeNull();
   expect(deferredApi).toHaveBeenCalledTimes(1);
-  expect(deferredApi).toHaveBeenCalledWith(options);
+  expect(deferredApi).toHaveBeenCalledWith(metadata);
 
   const api = TestUtils.createMockProxy<DhType>();
   await act(async () => {
