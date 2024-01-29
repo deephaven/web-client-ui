@@ -583,26 +583,15 @@ class VisibilityOrderingBuilder extends PureComponent<
   getSortMoves(
     itemsParam: readonly IrisGridTreeItem[],
     option: keyof typeof VisibilityOrderingBuilder.SORTING_OPTIONS,
-    movedColumns: readonly MoveOperation[],
-    frozenColumns: readonly string[]
+    movedColumns: readonly MoveOperation[]
   ): MoveOperation[] {
     const items = [...itemsParam];
     // Sort all the movable columns
     const isAscending =
       option === VisibilityOrderingBuilder.SORTING_OPTIONS.ASC;
     items.sort((a, b) => {
-      const aFrozenIndex = frozenColumns.indexOf(a.id);
-      const bFrozenIndex = frozenColumns.indexOf(b.id);
       const aName = a.id.toUpperCase();
       const bName = b.id.toUpperCase();
-      // both frozen
-      if (aFrozenIndex !== -1 && bFrozenIndex !== -1) {
-        return aFrozenIndex < bFrozenIndex ? -1 : 1;
-      }
-      // one frozen
-      if (aFrozenIndex !== -1) return -1;
-      if (bFrozenIndex !== -1) return 1;
-      // no frozen
       return TextUtils.sort(aName, bName, isAscending);
     });
 
@@ -633,12 +622,7 @@ class VisibilityOrderingBuilder extends PureComponent<
 
       if (Array.isArray(visibleIndex)) {
         // Recursively sort groups
-        newMoves = this.getSortMoves(
-          item.children,
-          option,
-          newMoves,
-          frozenColumns
-        );
+        newMoves = this.getSortMoves(item.children, option, newMoves);
       }
 
       moveToIndex += Array.isArray(modelIndex) ? modelIndex.length : 1;
@@ -651,12 +635,47 @@ class VisibilityOrderingBuilder extends PureComponent<
     option: keyof typeof VisibilityOrderingBuilder.SORTING_OPTIONS
   ): void {
     const { model, onMovedColumnsChanged } = this.props;
+    const tree = this.getTreeItems();
+    const firstIndex = this.getFirstMovableIndex() ?? 0;
+    const lastIndex = this.getLastMovableIndex() ?? tree.length - 1;
+    const moveableTree = tree.slice(firstIndex, lastIndex + 1);
+
+    // add frozen moves
+    const initialAndFrozenMovedColumns = [...model.initialMovedColumns];
+    for (let i = 0; i < model.frozenColumns.length; i += 1) {
+      const frozenColumn = model.frozenColumns[i];
+      // get index of frozenColumn
+      let frozenIndex = 0;
+      for (let j = 0; j < model.columns.length; j += 1) {
+        if (model.columns[j].name === frozenColumn) {
+          frozenIndex = j;
+          break;
+        }
+      }
+      // offset by move changes
+      for (let j = 0; j < initialAndFrozenMovedColumns.length; j += 1) {
+        const { from, to } = initialAndFrozenMovedColumns[j];
+        // taken from in front, decrease index
+        if (Array.isArray(from)) {
+          if (from[0] < frozenIndex) frozenIndex -= 1;
+        } else if (from < frozenIndex) {
+          frozenIndex -= 1;
+        }
+        // placed in front, increase index
+        if (to < frozenIndex) frozenIndex += 1;
+      }
+      if (frozenIndex !== i) {
+        initialAndFrozenMovedColumns.push({
+          from: frozenIndex,
+          to: i,
+        });
+      }
+    }
 
     const newMoves = this.getSortMoves(
-      this.getTreeItems(),
+      moveableTree,
       option,
-      model.initialMovedColumns,
-      model.frozenColumns
+      initialAndFrozenMovedColumns
     );
 
     onMovedColumnsChanged(newMoves);
