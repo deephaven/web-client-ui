@@ -65,7 +65,7 @@ describe('useDeferredApi', () => {
   it('returns an error if the context is null', async () => {
     asMock(useContext).mockReturnValue(null);
 
-    const { result } = renderHook(() => useDeferredApi({}));
+    const { result } = renderHook(() => useDeferredApi(objectMetadata));
     expect(result.current).toEqual([null, expect.any(Error)]);
   });
 });
