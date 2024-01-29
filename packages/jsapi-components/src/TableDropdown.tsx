@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Option, Select } from '@deephaven/components';
 import { useApi } from '@deephaven/jsapi-bootstrap';
-import { dh } from '@deephaven/jsapi-types';
+import { dh as DhType } from '@deephaven/jsapi-types';
 import { EMPTY_ARRAY } from '@deephaven/utils';
 
 type JavaObject = {
@@ -23,16 +23,16 @@ function defaultFormatValue(value: unknown): string {
 
 export type TableDropdownProps = {
   /** Table to use as the source of data. Does not own the table, does not close it on unmount. */
-  table?: dh.Table;
+  table?: DhType.Table;
 
   /** Column to read data from the table. Defaults to the first column in the table if it's not provided. */
-  column?: dh.Column;
+  column?: DhType.Column;
 
   /** Triggered when the dropdown selection has changed */
   onChange: (value: unknown) => void;
 
   /** Filter to apply on the table */
-  filter?: readonly dh.FilterCondition[];
+  filter?: readonly DhType.FilterCondition[];
 
   /** The currently selected value */
   selectedValue?: unknown;
@@ -75,12 +75,12 @@ export function TableDropdown({
 
     const tableColumn = column ?? table.columns[0];
     // Need to set a viewport on the table and start listening to get the values to populate the dropdown
-    table.applyFilter(filter as dh.FilterCondition[]);
+    table.applyFilter(filter as DhType.FilterCondition[]);
     const subscription = table.setViewport(0, maxSize, [tableColumn]);
 
     subscription.addEventListener(
       dh.Table.EVENT_UPDATED,
-      (event: CustomEvent<dh.ViewportData>) => {
+      (event: CustomEvent<DhType.ViewportData>) => {
         const { detail } = event;
         const newValues = detail.rows.map(row => row.get(tableColumn));
         setValues(newValues);

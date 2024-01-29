@@ -179,7 +179,6 @@ import {
   QuickFilterMap,
   ReadonlyAdvancedFilterMap,
   ReadonlyAggregationMap,
-  ReadonlyOperationMap,
   ReadonlyQuickFilterMap,
   UITotalsTableConfig,
 } from './CommonTypes';

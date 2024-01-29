@@ -569,7 +569,7 @@ class IrisGridTableModelTemplate<
         assertNotNull(theme.nullStringColor);
         return theme.nullStringColor;
       }
-      if (format && format.color) {
+      if (format?.color != null) {
         return format.color;
       }
 
@@ -642,7 +642,7 @@ class IrisGridTableModelTemplate<
 
     positiveColor = positiveColor ?? theme.positiveBarColor;
     negativeColor = negativeColor ?? theme.negativeBarColor;
-    let databarColor: string | string[] =
+    const databarColor: string | string[] =
       format.color ?? (value >= 0 ? positiveColor : negativeColor);
     // if (databarColor.includes(',')) {
     //   databarColor = databarColor.split(',');
@@ -783,16 +783,14 @@ class IrisGridTableModelTemplate<
         movedColumns = GridUtils.moveRange(visibleRange, toIndex, movedColumns);
       };
 
-      const {
-        frontColumns = [],
-        backColumns = [],
-        frozenColumns = [],
-      } = layoutHints;
+      const frontColumns = layoutHints.frontColumns ?? [];
+      const backColumns = layoutHints.backColumns ?? [];
+      const frozenColumns = layoutHints.frozenColumns ?? [];
 
       if (
-        frontColumns?.length ||
-        backColumns?.length ||
-        frozenColumns?.length
+        frontColumns.length > 0 ||
+        backColumns.length > 0 ||
+        frozenColumns.length > 0
       ) {
         const usedColumns = new Set();
 

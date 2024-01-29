@@ -265,13 +265,13 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   }
 
   expandAll(): void {
-    if (this.table.expandAll) {
+    if (this.table.expandAll != null) {
       this.table.expandAll();
     }
   }
 
   collapseAll(): void {
-    if (this.table.collapseAll) {
+    if (this.table.collapseAll != null) {
       this.table.collapseAll();
     }
   }

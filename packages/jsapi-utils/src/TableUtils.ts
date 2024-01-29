@@ -741,7 +741,7 @@ export class TableUtils {
     return (
       table != null &&
       (table as DhType.PartitionedTable).getMergedTable !== undefined &&
-      (table as any).getKeyTable !== undefined &&
+      (table as DhType.PartitionedTable).getKeyTable !== undefined &&
       (table as DhType.PartitionedTable).getKeys !== undefined
     );
   }

@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react-hooks';
-import type { FilterCondition, Table } from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import dh from '@deephaven/jsapi-shim';
 import {
   OnTableUpdatedEvent,
@@ -39,7 +39,7 @@ function mockUpdateEvent(
 
 /** Get the last registered event handler for the given event name. */
 function getLastRegisteredEventHandler(
-  table: Table,
+  table: DhType.Table,
   eventName: string
 ): ((event: OnTableUpdatedEvent) => void) | undefined {
   const { calls } = TestUtils.asMock(table.addEventListener).mock;
@@ -47,9 +47,9 @@ function getLastRegisteredEventHandler(
   return lastCall?.[1];
 }
 
-const table = TestUtils.createMockProxy<Table>({ size: 100 });
-const table2 = TestUtils.createMockProxy<Table>({ size: table.size });
-const tableIsClosed = TestUtils.createMockProxy<Table>({
+const table = TestUtils.createMockProxy<DhType.Table>({ size: 100 });
+const table2 = TestUtils.createMockProxy<DhType.Table>({ size: table.size });
+const tableIsClosed = TestUtils.createMockProxy<DhType.Table>({
   size: 100,
   isClosed: true,
 });
@@ -57,7 +57,7 @@ const viewportSize = 10;
 const viewportPadding = 4;
 const deserializeRow = jest.fn().mockImplementation(row => row);
 
-const options: UseViewportDataProps<unknown, Table> = {
+const options: UseViewportDataProps<unknown, DhType.Table> = {
   table,
   itemHeight: 10,
   scrollDebounce: 900,
@@ -66,20 +66,20 @@ const options: UseViewportDataProps<unknown, Table> = {
   deserializeRow,
 };
 
-const optionsUseDefaults: UseViewportDataProps<unknown, Table> = {
+const optionsUseDefaults: UseViewportDataProps<unknown, DhType.Table> = {
   table,
 };
 
-const optionsTableIsClosed: UseViewportDataProps<unknown, Table> = {
+const optionsTableIsClosed: UseViewportDataProps<unknown, DhType.Table> = {
   table: tableIsClosed,
   itemHeight: 10,
 };
 
-const optionsTableNull: UseViewportDataProps<unknown, Table> = {
+const optionsTableNull: UseViewportDataProps<unknown, DhType.Table> = {
   table: null,
 };
 
-const wrapper: React.FC<Table> = makeApiContextWrapper(dh);
+const wrapper: React.FC<DhType.Table> = makeApiContextWrapper(dh);
 
 const useSetPaddedViewportCallbackResultA = jest
   .fn()
@@ -154,7 +154,7 @@ it.each([options, optionsTableNull, optionsTableIsClosed])(
     const { result } = renderHook(() => useViewportData(opt), { wrapper });
     jest.clearAllMocks();
 
-    const filters: FilterCondition[] = [];
+    const filters: DhType.FilterCondition[] = [];
 
     result.current.applyFiltersAndRefresh(filters);
 

@@ -206,7 +206,7 @@ class ChartUtils {
     columnType: string,
     formatPattern: string | null | undefined
   ): Partial<LayoutAxis> | null {
-    if (!formatPattern) {
+    if (formatPattern == null || formatPattern === '') {
       return null;
     }
 

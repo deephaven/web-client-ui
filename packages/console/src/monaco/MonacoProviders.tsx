@@ -258,7 +258,7 @@ class MonacoProviders extends PureComponent<
     };
 
     const { model: propModel, session } = this.props;
-    if (model !== propModel || !session.getSignatureHelp) {
+    if (model !== propModel || session.getSignatureHelp == null) {
       return null;
     }
 
@@ -322,7 +322,7 @@ class MonacoProviders extends PureComponent<
     position: monaco.Position
   ): monaco.languages.ProviderResult<monaco.languages.Hover> {
     const { model: propModel, session } = this.props;
-    if (model !== propModel || !session.getHover) {
+    if (model !== propModel || session.getHover == null) {
       return null;
     }
 
@@ -343,7 +343,7 @@ class MonacoProviders extends PureComponent<
         const { contents: hoverContents } = hoverItem;
 
         return {
-          contents: hoverContents ? [hoverContents] : [],
+          contents: hoverContents != null ? [hoverContents] : [],
         };
       })
       .catch((error: unknown) => {
