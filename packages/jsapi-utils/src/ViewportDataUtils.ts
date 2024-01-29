@@ -78,7 +78,7 @@ export function defaultRowDeserializer<T>(
 ): T {
   return columns.reduce((result, col) => {
     // eslint-disable-next-line no-param-reassign
-    result[col.name as keyof T] = row.get(col);
+    result[col.name as keyof T] = row.get(col) as T[keyof T];
     return result;
   }, {} as T);
 }

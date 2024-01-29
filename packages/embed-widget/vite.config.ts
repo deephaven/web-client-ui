@@ -64,7 +64,7 @@ export default defineConfig(({ mode }) => {
                 replacement: `${packagesDir}/$1/scss/$2`,
               },
               {
-                find: /^@deephaven\/(?!icons)(.*)/, // Icons package can not import from src
+                find: /^@deephaven\/(?!icons|jsapi-types)(.*)/, // Icons package can not import from src
                 replacement: `${packagesDir}/$1/src`,
               },
             ]
