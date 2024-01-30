@@ -84,7 +84,7 @@ class IrisGridTableModel
   );
 
   get frontColumns(): ColumnName[] {
-    return this.getMemoizedFrontColumns(this.layoutHints?.frontColumns);
+    return this.getMemoizedFrontColumns(this.layoutHints?.frontColumns ?? []);
   }
 
   getMemoizedBackColumns = memoize(
