@@ -1,5 +1,4 @@
 @import '@deephaven/components/scss/custom.scss';
-@import '@deephaven/components/scss/util.scss';
 
 $tab-height: 28px;
 $drag-border-width: 5px;
@@ -104,9 +103,7 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
     border: $ant-thickness solid transparent; //offset shadow using a transparent border
     box-shadow: inset 0 0 1rem 1px var(--dh-color-dropshadow);
     opacity: 1; //set opacity back to 1, default 0.2 and backroudn was solid.
-    background: accent-opacity(
-      10
-    ); //apply scrim as hsla background now instead;
+    background: accent-opacity(10);
   }
 }
 
@@ -337,7 +334,7 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
 
 // If a specific Pane is maximized
 .lm_maximised {
-  border: 15px solid background-opacity(80);
+  border: 15px solid bg-opacity(80);
   height: 100% !important;
   width: 100% !important;
   .lm_items {

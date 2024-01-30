@@ -7,8 +7,8 @@
   .swatch {
     display: flex;
     aspect-ratio: 4/3;
-    align-items: start;
-    justify-content: end;
+    align-items: flex-start;
+    justify-content: flex-end;
   }
 }
 

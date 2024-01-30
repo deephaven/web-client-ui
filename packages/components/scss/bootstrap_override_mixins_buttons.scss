@@ -9,7 +9,11 @@
   // DH Customization: Convert semantic value to css variables
   $background: var(--dh-color-#{$semantic-value}-bg);
   $border: var(--dh-color-#{$semantic-value}-bg);
-  $boxshadow-color: hsla(var(--dh-color-#{$semantic-value}-hsl), 0.5);
+  $boxshadow-color: color-mix(
+    in hsl,
+    var(--dh-color-#{$semantic-value}-bg) 50%,
+    transparent
+  );
   $hover-background: var(--dh-color-#{$semantic-value}-hover-bg);
   $hover-border: var(--dh-color-#{$semantic-value}-hover-bg);
   $active-background: var(--dh-color-#{$semantic-value}-down-bg);
@@ -76,7 +80,11 @@
   $semantic-value: map.get($bootstrap-dh-semantic-map, $bootstrap-value) or '';
 
   $color: var(--dh-color-#{$semantic-value}-bg);
-  $boxshadow-color: hsla(var(--dh-color-#{$semantic-value}-hsl), 0.5);
+  $boxshadow-color: color-mix(
+    in hsl,
+    var(--dh-color-#{$semantic-value}-bg) 50%,
+    transparent
+  );
   $hover-color: color-yiq($semantic-value);
   $hover-background: var(--dh-color-#{$semantic-value}-hover-bg);
   $active-background: var(--dh-color-#{$semantic-value}-down-bg);

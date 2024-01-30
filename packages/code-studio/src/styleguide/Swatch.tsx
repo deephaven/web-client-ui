@@ -24,7 +24,6 @@ export function Swatch({ className, children }: SwatchProps): JSX.Element {
       dhColor != null
         ? {
             value: dhColor,
-            normalized: ColorUtils.normalizeCssColor(dhColor, true),
           }
         : null,
     [dhColor]
@@ -43,7 +42,6 @@ export function Swatch({ className, children }: SwatchProps): JSX.Element {
       {hasValue && (
         <Tooltip interactive>
           <div>{tooltip.value}</div>
-          <div>{tooltip.normalized}</div>
         </Tooltip>
       )}
       {children}

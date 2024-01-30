@@ -25,13 +25,18 @@
   --dh-color-chart-ohlc-decrease: var(--dh-color-visual-red);
 
   --dh-color-plotly-axis-text: var(--dh-color-gray-500);
-  --dh-color-plotly-zoombox: hsla(var(--dh-color-true-black-hsl), 0.5);
+  --dh-color-plotly-zoombox: color-mix(
+    in hsl,
+    var(--dh-color-true-black) 50%,
+    transparent
+  );
   --dh-color-plotly-zoombox-corners-fill: var(--dh-color-white);
   --dh-color-plotly-zoombox-corners-stroke: var(--dh-color-gray-75);
 
-  --dh-color-plotly-modebar-btn-active: hsla(
-    var(--dh-color-true-white-hsl),
-    0.3
+  --dh-color-plotly-modebar-btn-active: color-mix(
+    in hsl,
+    var(--dh-color-true-white) 30%,
+    transparent
   );
   --dh-color-plotly-modebar-btn-warning: var(--dh-color-visual-orange);
   --dh-color-plotly-notifier-note-bg: var(--dh-color-gray-500);

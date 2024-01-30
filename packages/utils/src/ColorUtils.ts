@@ -1,18 +1,27 @@
 class ColorUtils {
   /**
+   * THIS HAS POOR PERFORMANCE DUE TO DOM MANIPULATION
    * Attempt to get the rgb or rgba string for a color string. If the color string
    * can't be resolved to a valid color, null is returned.
    * @param colorString The color string to resolve
    */
   static asRgbOrRgbaString(colorString: string): string | null {
-    const divEl = document.createElement('div');
-    divEl.style.backgroundColor = colorString;
-
-    if (divEl.style.backgroundColor === '') {
-      return null;
+    if (
+      // Since dom manipulation is expensive, we want to avoid it if possible.
+      /^rgb/.test(colorString) ||
+      /^rgba/.test(colorString) ||
+      /^color\(srgb/.test(colorString)
+    ) {
+      return colorString;
     }
 
-    return divEl.style.backgroundColor;
+    const divEl = document.createElement('div');
+    divEl.style.display = 'none';
+    divEl.style.backgroundColor = colorString;
+    const color = divEl.style.backgroundColor;
+    divEl.remove();
+
+    return color;
   }
 
   /**
@@ -50,6 +59,7 @@ class ColorUtils {
   }
 
   /**
+   * THIS HAS POOR PERFORMANCE DUE TO DOM MANIPULATION
    * Normalize a css color to 8 character hex value (or 6 character hex if
    * isAlphaOptional is true and alpha is 'ff'). If the color can't be resolved,
    * return the original color string.
@@ -72,7 +82,6 @@ class ColorUtils {
     }
 
     const hex8 = ColorUtils.rgbaToHex8(rgba);
-
     if (isAlphaOptional === true) {
       return hex8.replace(/^(#[a-f0-9]{6})ff$/, '$1');
     }
@@ -89,14 +98,33 @@ class ColorUtils {
    *
    * e.g. `rgb(255, 255, 255)` -> `{ r: 255, g: 255, b: 255, a: 1 }`
    * e.g. `rgba(255, 255, 255, 0.5)` -> `{ r: 255, g: 255, b: 255, a: 0.5 }`
+   * e.g. `color(srgb 1 1 0 / 0.25)` -> `{ r: 255, g: 255, b: 0, a: 0.25 }`
    * @param rgbOrRgbaString The rgb or rgba string to parse
    */
   static parseRgba(
     rgbOrRgbaString: string
   ): { r: number; g: number; b: number; a: number } | null {
-    const [, name, args] = /^(rgba?)\((.*?)\)$/.exec(rgbOrRgbaString) ?? [];
-    if (name == null) {
+    // if color(srgb) format, we handle that differently
+
+    const [r, g, b, a] =
+      rgbOrRgbaString.match(
+        // loose with the regex to allow for different formats between browsers
+        // take the first 4 digits that look like numbers, including decimals
+        // We've already checked it's a valid color with CSS.supports
+        /(?:\d+(?:\.\d+)?)/g
+      ) ?? [];
+
+    if (r == null || g == null || b == null) {
       return null;
+    }
+
+    if (rgbOrRgbaString.startsWith('color(srgb')) {
+      return {
+        r: Math.round(Number(r) * 255),
+        g: Math.round(Number(g) * 255),
+        b: Math.round(Number(b) * 255),
+        a: Number(a ?? 1),
+      };
     }
 
     // Split on spaces, commas, and slashes. Note that this more permissive than
@@ -104,15 +132,13 @@ class ColorUtils {
     // (e.g. r g b / a), but this would match r/g/b/a. It also would match a mixed
     // delimiter case (e.g. r,g b,a). This seems like a reasonable tradeoff for the
     // complexity that would be added to enforce the full spec.
-    const tokens = args.split(/[ ,/]/).filter(Boolean);
+    // const tokens = args.split(/[ ,/]/).filter(Boolean);
 
-    if (tokens.length < 3) {
-      return null;
-    }
+    // if (tokens.length < 3) {
+    //   return null;
+    // }
 
-    const [r, g, b, a = 1] = tokens.map(Number);
-
-    return { r, g, b, a };
+    return { r: Number(r), g: Number(g), b: Number(b), a: Number(a ?? 1) };
   }
 
   /**

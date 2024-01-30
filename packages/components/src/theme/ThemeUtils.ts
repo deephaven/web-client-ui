@@ -294,45 +294,48 @@ export function replaceSVGFillColor(
 export function resolveCssVariablesInRecord<T extends Record<string, string>>(
   record: T,
   targetElement: HTMLElement = document.body,
-  isAlphaOptional = false
+  isAlphaOptional = true
 ): T {
   const perfStart = performance.now();
 
   // Add a temporary div to attach temp css variables to
   const tmpPropEl = document.createElement('div');
-  targetElement.appendChild(tmpPropEl);
+  tmpPropEl.style.display = 'none';
 
-  const varExpressions = [...extractDistinctCssVariableExpressions(record)];
-
-  // Set temporary css variables for resolving var expressions
-  varExpressions.forEach((varExpression, i) => {
-    const tmpPropKey = `--${TMP_CSS_PROP_PREFIX}-${i}`;
-    tmpPropEl.style.setProperty(tmpPropKey, varExpression);
+  const recordArray = Object.entries(record);
+  recordArray.forEach(([, value], i) => {
+    tmpPropEl.style.setProperty(`--${TMP_CSS_PROP_PREFIX}-${i}`, value);
+    // faster to create these now all at once, even if we don't use them all
+    // since the parent isn't added yet to the DOM
+    const el = document.createElement('div');
+    el.style.backgroundColor = value;
+    tmpPropEl.appendChild(el);
   });
+
+  // append only once to avoid multiple re-layouts
+  targetElement.appendChild(tmpPropEl);
+  const tempPropElComputedStyle = window.getComputedStyle(tmpPropEl);
 
   const result = {} as T;
-
-  const computedStyle = window.getComputedStyle(tmpPropEl);
-
-  const resolver = (varExpression: string): string => {
-    const tmpPropKey = `--${TMP_CSS_PROP_PREFIX}-${varExpressions.indexOf(
-      varExpression
-    )}`;
-
-    const resolved = computedStyle.getPropertyValue(tmpPropKey);
-
-    return ColorUtils.normalizeCssColor(resolved, isAlphaOptional);
-  };
-
-  // Resolve the temporary css variables
-  Object.entries(record).forEach(([key, value]) => {
-    result[key as keyof T] = resolveCssVariablesInString(
-      resolver,
-      value
-    ) as T[keyof T];
+  recordArray.forEach(([key], i) => {
+    let resolved = tempPropElComputedStyle.getPropertyValue(
+      `--${TMP_CSS_PROP_PREFIX}-${i}`
+    );
+    if (
+      !/^#[0-9A-F]{6}[0-9a-f]{0,2}$/i.test(resolved) && // skip if already hex
+      CSS.supports('color', resolved)
+      // only try to normalize things that are valid colors
+      // otherwise non-colors will be made #00000000
+    ) {
+      const el = tmpPropEl.children[i] as HTMLDivElement;
+      const computedStyle = window.getComputedStyle(el);
+      const color = computedStyle.getPropertyValue('background-color');
+      resolved = ColorUtils.normalizeCssColor(color, isAlphaOptional);
+    }
+    (result as Record<string, string>)[key] = resolved;
   });
 
-  // Remove the temporary css variables
+  // Remove the temporary div
   tmpPropEl.remove();
 
   log.debug('Resolved css variables', performance.now() - perfStart, 'ms');

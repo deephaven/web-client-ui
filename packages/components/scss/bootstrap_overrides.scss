@@ -177,7 +177,11 @@ $input-placeholder-color: var(--dh-color-input-placeholder);
 $input-focus-border-color: var(--dh-color-input-focus-border);
 
 $input-btn-focus-width: 0.2rem;
-$input-btn-focus-color: hsla(var(--dh-color-accent-hsl), 0.35);
+$input-btn-focus-color: color-mix(
+  in hsl,
+  var(--dh-color-accent) 35%,
+  transparent
+);
 $input-btn-focus-box-shadow: 0 0 0 $input-btn-focus-width $input-btn-focus-color;
 $input-btn-line-height: 1.3;
 // Bootstrap uses a calc expression to determine the input height (calc(line-height + 2*padding-y + border)).

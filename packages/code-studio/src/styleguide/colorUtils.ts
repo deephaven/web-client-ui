@@ -170,8 +170,8 @@ export function buildColorGroups(
 
   const groupData = swatchData.reduce(
     (acc, { name, value }) => {
-      // Skip -hsl variables since they aren't actually colors yet
-      if (/^--dh-color-(.*?)-hsl$/.test(name)) {
+      // Skip true black/white
+      if (/^--dh-color-true-(.*?)$/.test(name)) {
         return acc;
       }
 
@@ -208,14 +208,7 @@ export function buildColorGroups(
         return acc;
       }
 
-      // It might be nice to make these dynamic, but for now just hardcode
-      const note = {
-        '--dh-color-gray-900': 'light',
-        '--dh-color-gray-600': 'mid',
-        '--dh-color-gray-300': 'dark',
-      }[name];
-
-      acc[group].push({ name, value, note });
+      acc[group].push({ name, value });
 
       return acc;
     },
