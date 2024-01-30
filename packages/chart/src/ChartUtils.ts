@@ -33,6 +33,7 @@ import type {
   AxisType as PlotlyAxisType,
   OhlcData,
   MarkerSymbol,
+  Font,
 } from 'plotly.js';
 import { assertNotNull, Range } from '@deephaven/utils';
 import { ChartTheme } from './ChartTheme';
@@ -511,24 +512,26 @@ class ChartUtils {
   }
 
   /**
-   * Parses the colorway property of a theme and returns an array of colors
-   * Theme could have a single string with space separated colors or an array of strings representing the colorway
-   * @param theme The theme to get colorway from
-   * @returns Colorway array for the theme
+   * Parses the colorway value of a theme and returns an array of colors
+   * Value could be a single string with space separated colors or already be an
+   * array of strings representing the colorway
+   * @param theme The value to get colorway from
+   * @returns Colorway array for the theme or undefined
    */
-  static getColorwayFromTheme(theme: ChartTheme): string[] {
-    let colorway: string[] = [];
-    if (theme.colorway) {
-      if (Array.isArray(theme.colorway)) {
-        colorway = theme.colorway;
-      } else if (typeof theme.colorway === 'string') {
-        colorway = theme.colorway.split(' ');
-      } else {
-        log.warn(`Unable to handle colorway property: ${theme.colorway}`);
-      }
+  static normalizeColorway(colorway?: string | string[]): string[] | undefined {
+    if (colorway == null) {
+      return;
     }
 
-    return colorway;
+    if (Array.isArray(colorway)) {
+      return colorway;
+    }
+
+    if (typeof colorway === 'string') {
+      return colorway.split(' ');
+    }
+
+    log.warn(`Unexpected colorway format: ${colorway}`);
   }
 
   static titleFromSettings(settings: ChartModelSettings): string {
@@ -539,6 +542,58 @@ class ChartUtils {
     } = settings;
 
     return title;
+  }
+
+  static applyThemeToLayoutAxis(
+    dh: DhType,
+    type: AxisType,
+    axis:
+      | Partial<LayoutAxis & { legend?: { font?: Partial<Font> } }>
+      | undefined,
+    /* eslint-disable camelcase */
+    {
+      gridcolor,
+      linecolor,
+      title_color,
+      legend_color,
+      paper_bgcolor,
+      zerolinecolor,
+    }: Partial<ChartTheme>
+  ): Partial<LayoutAxis & { legend?: { font?: Partial<Font> } }> {
+    const title =
+      typeof axis?.title === 'string'
+        ? {
+            text: axis?.title,
+            font: {
+              color: title_color,
+            },
+          }
+        : {
+            ...axis?.title,
+            font: {
+              color: title_color,
+            },
+          };
+    /* eslint-disable camelcase */
+
+    return {
+      ...axis,
+      gridcolor,
+      linecolor,
+      title,
+      tickcolor: paper_bgcolor, // hide ticks as padding
+      tickfont: {
+        ...axis?.tickfont,
+        color: zerolinecolor,
+      },
+      legend: {
+        ...axis?.legend,
+        font: {
+          color: legend_color,
+        },
+      },
+      zerolinecolor: type === dh.plot.AxisType.Y ? zerolinecolor : undefined,
+    };
   }
 
   private dh: DhType;
@@ -1352,7 +1407,7 @@ class ChartUtils {
             figureAxisIndex
           );
           if (layout[axisLayoutProperty] == null) {
-            layout[axisLayoutProperty] = this.makeLayoutAxis(axisType, theme);
+            layout[axisLayoutProperty] = this.makeLayoutAxis(axisType);
           }
 
           const layoutAxis = layout[axisLayoutProperty];
@@ -1838,29 +1893,13 @@ class ChartUtils {
     return value;
   }
 
-  makeLayoutAxis(type: AxisType, theme: ChartTheme): Partial<LayoutAxis> {
+  makeLayoutAxis(type: AxisType): Partial<LayoutAxis> {
     const { dh } = this;
     const axis = {
       automargin: true,
-      gridcolor: theme.gridcolor,
-      linecolor: theme.linecolor,
       rangeslider: { visible: false },
       showline: true,
       ticklen: 5, // act as padding, can't find a tick padding
-      tickcolor: theme.paper_bgcolor, // hide ticks as padding
-      tickfont: {
-        color: theme.zerolinecolor,
-      },
-      title: {
-        font: {
-          color: theme.title_color,
-        },
-      },
-      legend: {
-        font: {
-          color: theme.legend_color,
-        },
-      },
     };
 
     if (type === dh.plot.AxisType.X) {
@@ -1869,7 +1908,6 @@ class ChartUtils {
       });
     } else if (type === dh.plot.AxisType.Y) {
       Object.assign(axis, {
-        zerolinecolor: theme.zerolinecolor,
         zerolinewidth: 2,
       });
     }
@@ -1885,54 +1923,31 @@ class ChartUtils {
   makeDefaultLayout(theme: ChartTheme): Partial<Layout> {
     const { dh } = this;
 
-    const {
-      /* Used as top level properties of `Layout` */
-      /* eslint-disable camelcase */
-      paper_bgcolor,
-      plot_bgcolor,
-      title_color,
-      coastline_color,
-      land_color,
-      ocean_color,
-      lake_color,
-      river_color,
-      /* eslint-disable camelcase */
-    } = theme;
-
     const layout: Partial<Layout> = {
-      paper_bgcolor,
-      plot_bgcolor,
+      // paper_bgcolor,
+      // plot_bgcolor,
       autosize: true,
-      colorway: ChartUtils.getColorwayFromTheme(theme),
+      colorway: ChartUtils.normalizeColorway(theme?.colorway),
       font: {
         family: "'Fira Sans', sans-serif",
-        color: title_color,
       },
       title: {
-        font: {
-          color: title_color,
-        },
         yanchor: 'top',
         pad: { ...ChartUtils.DEFAULT_TITLE_PADDING },
         y: 1,
       },
-      legend: {
-        font: {
-          color: title_color,
-        },
-      },
       margin: { ...ChartUtils.DEFAULT_MARGIN },
-      xaxis: this.makeLayoutAxis(dh.plot.AxisType.X, theme),
-      yaxis: this.makeLayoutAxis(dh.plot.AxisType.Y, theme),
+      xaxis: this.makeLayoutAxis(dh.plot.AxisType.X),
+      yaxis: this.makeLayoutAxis(dh.plot.AxisType.Y),
       polar: {
-        angularaxis: this.makeLayoutAxis(dh.plot.AxisType.SHAPE, theme),
-        radialaxis: this.makeLayoutAxis(dh.plot.AxisType.SHAPE, theme),
+        angularaxis: this.makeLayoutAxis(dh.plot.AxisType.SHAPE),
+        radialaxis: this.makeLayoutAxis(dh.plot.AxisType.SHAPE),
         bgcolor: theme.plot_bgcolor,
       },
       scene: {
-        xaxis: this.makeLayoutAxis(dh.plot.AxisType.X, theme),
-        yaxis: this.makeLayoutAxis(dh.plot.AxisType.Y, theme),
-        zaxis: this.makeLayoutAxis(dh.plot.AxisType.Z, theme),
+        xaxis: this.makeLayoutAxis(dh.plot.AxisType.X),
+        yaxis: this.makeLayoutAxis(dh.plot.AxisType.Y),
+        zaxis: this.makeLayoutAxis(dh.plot.AxisType.Z),
       },
       geo: {
         showcoastlines: true,
@@ -1941,12 +1956,6 @@ class ChartUtils {
         showocean: true,
         showlakes: true,
         showrivers: true,
-        bgcolor: paper_bgcolor,
-        coastlinecolor: coastline_color,
-        landcolor: land_color,
-        oceancolor: ocean_color,
-        lakecolor: lake_color,
-        rivercolor: river_color,
       },
     };
     layout.datarevision = 0;
