@@ -1108,7 +1108,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           ),
           IrisGridContextMenuHandler.getQuickFilterText(
             filterText,
-            TextUtils.makeLogicalNormalForm(values, '||', toFilterText),
+            values.map(toFilterText).join(' || '),
             operator
           )
         );
@@ -1131,11 +1131,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           ),
           IrisGridContextMenuHandler.getQuickFilterText(
             filterText,
-            TextUtils.makeLogicalNormalForm(
-              values,
-              '&&',
-              item => `!=${toFilterText(item)}`
-            ),
+            values.map(value => `!=${toFilterText(value)}`).join(' && '),
             operator
           )
         );
@@ -1164,11 +1160,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           ),
           IrisGridContextMenuHandler.getQuickFilterText(
             filterText,
-            TextUtils.makeLogicalNormalForm(
-              values,
-              '||',
-              item => `~${toFilterText(item)}`
-            ),
+            values.map(value => `~${toFilterText(value)}`).join(' || '),
             operator
           )
         );
@@ -1198,11 +1190,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           ),
           IrisGridContextMenuHandler.getQuickFilterText(
             filterText,
-            TextUtils.makeLogicalNormalForm(
-              values,
-              '&&',
-              item => `!~${toFilterText(item)}`
-            ),
+            values.map(value => `!~${toFilterText(value)}`).join(' && '),
             operator
           )
         );
@@ -1233,11 +1221,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           ),
           IrisGridContextMenuHandler.getQuickFilterText(
             filterText,
-            TextUtils.makeLogicalNormalForm(
-              values,
-              '||',
-              item => `${toFilterText(item)}*`
-            ),
+            values.map(value => `${toFilterText(value)}*`).join(' || '),
             operator
           )
         );
@@ -1268,11 +1252,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           ),
           IrisGridContextMenuHandler.getQuickFilterText(
             filterText,
-            TextUtils.makeLogicalNormalForm(
-              values,
-              '||',
-              item => `*${toFilterText(item)}`
-            ),
+            values.map(value => `*${toFilterText(value)}`).join(' || '),
             operator
           )
         );
@@ -1344,11 +1324,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           ),
           IrisGridContextMenuHandler.getQuickFilterText(
             filterText,
-            TextUtils.makeLogicalNormalForm(
-              values,
-              '||',
-              item => `=${toFilterText(item)}`
-            ),
+            values.map(value => `=${toFilterText(value)}`).join(' || '),
             operator
           )
         );
@@ -1373,11 +1349,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           ),
           IrisGridContextMenuHandler.getQuickFilterText(
             filterText,
-            TextUtils.makeLogicalNormalForm(
-              values,
-              '&&',
-              item => `!=${toFilterText(item)}`
-            ),
+            values.map(value => `!=${toFilterText(value)}`).join(' && '),
             operator
           )
         );
@@ -1691,11 +1663,9 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           ),
           IrisGridContextMenuHandler.getQuickFilterText(
             filterText,
-            TextUtils.makeLogicalNormalForm(
-              values,
-              '||',
-              item => `=${dateFilterFormatter.format(item as Date)}`
-            ),
+            values
+              .map(value => `=${dateFilterFormatter.format(value as Date)}`)
+              .join(' || '),
             operator
           )
         );
@@ -1718,11 +1688,9 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           ),
           IrisGridContextMenuHandler.getQuickFilterText(
             filterText,
-            TextUtils.makeLogicalNormalForm(
-              values,
-              '&&',
-              item => `!=${dateFilterFormatter.format(item as Date)}`
-            ),
+            values
+              .map(value => `!=${dateFilterFormatter.format(value as Date)}`)
+              .join(' && '),
             operator
           )
         );
