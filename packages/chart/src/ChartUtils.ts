@@ -544,8 +544,38 @@ class ChartUtils {
     return title;
   }
 
-  static applyThemeToLayoutAxis(
-    dh: DhType,
+  static applyThemeToTitle(
+    title: Layout['title'] | undefined,
+    /* eslint-disable camelcase */
+    { title_color }: Partial<ChartTheme>
+  ): Layout['title'] {
+    return typeof title === 'string'
+      ? {
+          text: title,
+          font: {
+            color: title_color,
+          },
+        }
+      : {
+          ...title,
+          font: {
+            ...title?.font,
+            color: title_color,
+          },
+        };
+    /* eslint-disable camelcase */
+  }
+
+  private dh: DhType;
+
+  private daysOfWeek: readonly string[];
+
+  constructor(dh: DhType) {
+    this.dh = dh;
+    this.daysOfWeek = Object.freeze(dh.calendar.DayOfWeek.values());
+  }
+
+  applyThemeToLayoutAxis(
     type: AxisType,
     axis:
       | Partial<LayoutAxis & { legend?: { font?: Partial<Font> } }>
@@ -592,17 +622,9 @@ class ChartUtils {
           color: legend_color,
         },
       },
-      zerolinecolor: type === dh.plot.AxisType.Y ? zerolinecolor : undefined,
+      zerolinecolor:
+        type === this.dh.plot.AxisType.Y ? zerolinecolor : undefined,
     };
-  }
-
-  private dh: DhType;
-
-  private daysOfWeek: readonly string[];
-
-  constructor(dh: DhType) {
-    this.dh = dh;
-    this.daysOfWeek = Object.freeze(dh.calendar.DayOfWeek.values());
   }
 
   /**
@@ -1927,7 +1949,7 @@ class ChartUtils {
       // paper_bgcolor,
       // plot_bgcolor,
       autosize: true,
-      colorway: ChartUtils.normalizeColorway(theme?.colorway),
+      // colorway: ChartUtils.normalizeColorway(theme?.colorway),
       font: {
         family: "'Fira Sans', sans-serif",
       },

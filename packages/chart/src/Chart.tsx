@@ -558,6 +558,7 @@ class Chart extends Component<ChartProps, ChartState> {
   handleThemeChange(): void {
     const { theme, model } = this.props;
     const { dh } = model;
+    const chartUtils = new ChartUtils(dh);
 
     this.setState(({ layout }) => {
       const {
@@ -578,21 +579,12 @@ class Chart extends Component<ChartProps, ChartState> {
         /* eslint-disable camelcase */
       } = theme ?? {};
 
-      const title =
-        typeof layout.template?.layout?.title === 'string'
-          ? {
-              text: layout.template?.layout?.title,
-              font: {
-                color: title_color,
-              },
-            }
-          : {
-              ...layout.template?.layout?.title,
-              font: {
-                ...layout.template?.layout?.title?.font,
-                color: title_color,
-              },
-            };
+      const title = ChartUtils.applyThemeToTitle(
+        layout.template?.layout?.title,
+        {
+          title_color,
+        }
+      );
 
       const axisColors = {
         gridcolor,
@@ -609,8 +601,7 @@ class Chart extends Component<ChartProps, ChartState> {
           ...layout.template,
           layout: {
             ...layout.template?.layout,
-            // TODO: Need to figure out how to update colorway
-            // colorway: ChartUtils.normalizeColorway(colorway),
+            colorway: ChartUtils.normalizeColorway(colorway),
             title,
             paper_bgcolor,
             plot_bgcolor,
@@ -620,14 +611,12 @@ class Chart extends Component<ChartProps, ChartState> {
                 color: title_color,
               },
             },
-            xaxis: ChartUtils.applyThemeToLayoutAxis(
-              dh,
+            xaxis: chartUtils.applyThemeToLayoutAxis(
               dh.plot.AxisType.X,
               layout.template?.layout?.xaxis,
               axisColors
             ),
-            yaxis: ChartUtils.applyThemeToLayoutAxis(
-              dh,
+            yaxis: chartUtils.applyThemeToLayoutAxis(
               dh.plot.AxisType.Y,
               layout.template?.layout?.yaxis,
               axisColors
@@ -777,7 +766,7 @@ class Chart extends Component<ChartProps, ChartState> {
       error
     );
     const isPlotShown = data != null;
-    console.log('[TESTING] layout:', layout.template?.layout);
+
     return (
       <div className="h-100 w-100 chart-wrapper" ref={this.plotWrapper}>
         {isPlotShown && (
