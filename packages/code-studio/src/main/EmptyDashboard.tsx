@@ -1,11 +1,11 @@
-import React, { MouseEvent } from 'react';
+import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button } from '@deephaven/components';
 import { vsArrowUp } from '@deephaven/icons';
 import './EmptyDashboard.scss';
 
 export interface EmptyDashboardProps {
-  onAutoFillClick?: (event: MouseEvent) => void;
+  onAutoFillClick?: (event: React.MouseEvent) => void;
 }
 
 export function EmptyDashboard({

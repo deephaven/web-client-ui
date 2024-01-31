@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.60.0](https://github.com/deephaven/web-client-ui/compare/v0.59.0...v0.60.0) (2024-01-26)
+
+
+### Bug Fixes
+
+* Fix useDeferredApi export ([#1742](https://github.com/deephaven/web-client-ui/issues/1742)) ([af5f5f4](https://github.com/deephaven/web-client-ui/commit/af5f5f45c035fb0e2a9ca4c07a65070cbbd0ad0c))
+
+
+
+
+
 # [0.59.0](https://github.com/deephaven/web-client-ui/compare/v0.58.0...v0.59.0) (2024-01-17)
 
 
