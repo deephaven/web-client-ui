@@ -1,11 +1,7 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 import { useContext } from 'react';
 import { TestUtils } from '@deephaven/utils';
-import {
-  getObjectMetadata,
-  getVariableDefinition,
-  useObjectFetcher,
-} from './useObjectFetcher';
+import { getVariableDescriptor, useObjectFetcher } from './useObjectFetcher';
 
 const { asMock, flushPromises } = TestUtils;
 
@@ -20,30 +16,24 @@ beforeEach(() => {
 });
 
 describe('getObjectMetadata', () => {
-  it('should return the metadata for a definition', () => {
-    const definition = { id: '1', name: 'name', title: 'title', type: 'type' };
-    const metadata = getObjectMetadata(definition);
-    expect(metadata).toEqual(definition);
+  const id = 'id';
+  const name = 'name';
+  const type = 'type';
+  it('should return the descriptor for a title', () => {
+    const descriptor = getVariableDescriptor({ type, title: name });
+    expect(descriptor).toEqual({ type, name });
   });
-});
-
-describe('getVariableDefinition', () => {
-  it('should return the definition for the metadata', () => {
-    const metadata = { id: '1', type: 'type', name: 'name', title: 'title' };
-    const definition = { id: '1', type: 'type' };
-    expect(getVariableDefinition(metadata)).toEqual(definition);
+  it('should return the descriptor for a name (deprecated on VariableDefinition)', () => {
+    const descriptor = getVariableDescriptor({ type, name });
+    expect(descriptor).toEqual({ type, name });
   });
 
-  it('should return the definition for the metadata without an id', () => {
-    const metadata = { name: 'name', title: 'title', type: 'type' };
-    const definition = { name: 'name', title: 'title', type: 'type' };
-    expect(getVariableDefinition(metadata)).toEqual(definition);
+  it('should return the descriptor for an id', () => {
+    const descriptor = getVariableDescriptor({ type, id });
+    expect(descriptor).toEqual({ type, id });
   });
-
-  it('legacy handling should return the definition for the metadata without a title', () => {
-    const metadata = { name: 'name', type: 'type' };
-    const definition = { name: 'name', title: 'name', type: 'type' };
-    expect(getVariableDefinition(metadata)).toEqual(definition);
+  it('should throw if the name, title, or id are not provided', () => {
+    expect(() => getVariableDescriptor({ type })).toThrow();
   });
 });
 

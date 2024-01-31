@@ -3,7 +3,7 @@ import type { dh as DhType } from '@deephaven/jsapi-types';
 import { useContext } from 'react';
 import { TestUtils } from '@deephaven/utils';
 import { useDeferredApi } from './useDeferredApi';
-import { ObjectMetadata } from './useObjectFetcher';
+import { VariableDescriptor } from './useObjectFetcher';
 
 const { asMock, createMockProxy, flushPromises } = TestUtils;
 
@@ -35,7 +35,7 @@ describe('useDeferredApi', () => {
   });
 
   it('should resolve to the API value when it is provided from the function', async () => {
-    asMock(useContext).mockReturnValue(async (metadata: ObjectMetadata) => {
+    asMock(useContext).mockReturnValue(async (metadata: VariableDescriptor) => {
       switch (metadata.type) {
         case '1':
           return dh1;
@@ -47,7 +47,7 @@ describe('useDeferredApi', () => {
     });
 
     const { rerender, result } = renderHook(
-      (metadata: ObjectMetadata) => useDeferredApi(metadata),
+      (metadata: VariableDescriptor) => useDeferredApi(metadata),
       { initialProps: { type: '1' } }
     );
     await act(flushPromises);

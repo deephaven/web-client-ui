@@ -1,14 +1,14 @@
 import React from 'react';
+import { VariableDescriptor } from '@deephaven/jsapi-types';
 import useDeferredApi from './useDeferredApi';
 import { ApiContext } from './ApiBootstrap';
-import { ObjectMetadata } from './useObjectFetcher';
 
 type DeferredApiBootstrapProps = React.PropsWithChildren<{
   onError?: (error: unknown) => void;
   /**
    * Options to use when fetching the deferred API.
    */
-  metadata: ObjectMetadata;
+  descriptor: VariableDescriptor;
 }>;
 
 /**
@@ -18,9 +18,9 @@ export const DeferredApiBootstrap = React.memo(
   ({
     children,
     onError,
-    metadata,
+    descriptor,
   }: DeferredApiBootstrapProps): JSX.Element | null => {
-    const [api, apiError] = useDeferredApi(metadata);
+    const [api, apiError] = useDeferredApi(descriptor);
     if (apiError != null) {
       onError?.(apiError);
       return null;

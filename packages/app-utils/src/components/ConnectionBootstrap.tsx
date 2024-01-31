@@ -1,13 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { LoadingOverlay } from '@deephaven/components';
 import {
-  getVariableDefinition,
   ObjectFetcherContext,
-  ObjectMetadata,
   useApi,
   useClient,
 } from '@deephaven/jsapi-bootstrap';
-import type { IdeConnection } from '@deephaven/jsapi-types';
+import type { IdeConnection, VariableDescriptor } from '@deephaven/jsapi-types';
 import { ConnectionContext } from '@deephaven/jsapi-components';
 import Log from '@deephaven/log';
 import { assertNotNull } from '@deephaven/utils';
@@ -77,10 +75,9 @@ export function ConnectionBootstrap({
   );
 
   const objectFetcher = useCallback(
-    async (metadata: ObjectMetadata) => {
+    async (descriptor: VariableDescriptor) => {
       assertNotNull(connection, 'connection');
-      const widget = getVariableDefinition(metadata);
-      return connection.getObject(widget);
+      return connection.getObject(descriptor);
     },
     [connection]
   );

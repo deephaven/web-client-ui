@@ -1,55 +1,86 @@
-import { VariableDefinition } from '@deephaven/jsapi-types';
+import { VariableDescriptor, VariableDefinition } from '@deephaven/jsapi-types';
 import { useContextOrThrow } from '@deephaven/react-hooks';
 import { createContext } from 'react';
 
 /**
- * Metadata for an object. Used when needing to fetch an object.
+ * Descriptor for a variable by name. Used when needed to fetch an object.
  */
-export type ObjectMetadata = VariableDefinition;
+export type NameVariableDescriptor = {
+  /** Type of the variable */
+  type: string;
+  /** Name of the variable */
+  name: string;
+};
 
+/**
+ * Descriptor for a variable by id. Used when needed to fetch an object.
+ */
+export type IdVariableDescriptor = {
+  /** Type of the variable */
+  type: string;
+  /** Id of the variable */
+  id: string;
+};
+
+export function isNameVariableDescriptor(
+  value: unknown
+): value is NameVariableDescriptor {
+  return (
+    typeof value === 'object' &&
+    value != null &&
+    typeof (value as NameVariableDescriptor).type === 'string' &&
+    (value as NameVariableDescriptor).name != null
+  );
+}
+
+export function isIdVariableDescriptor(
+  value: unknown
+): value is IdVariableDescriptor {
+  return (
+    typeof value === 'object' &&
+    value != null &&
+    typeof (value as IdVariableDescriptor).type === 'string' &&
+    (value as IdVariableDescriptor).id != null
+  );
+}
+
+export function isVariableDescriptor(
+  value: unknown
+): value is VariableDescriptor {
+  return isNameVariableDescriptor(value) || isIdVariableDescriptor(value);
+}
+
+/**
+ * Function to fetch an object based on a provided descriptor object
+ */
 export type ObjectFetcher<T = unknown> = (
-  metadata: ObjectMetadata
+  descriptor: VariableDescriptor
 ) => Promise<T>;
 
 export const ObjectFetcherContext = createContext<ObjectFetcher | null>(null);
 
 /**
- * Get the serializable metadata for an object definition.
- * Includes the properties that define the variable, such as id, title, type, and name if available
- * @param definition Object definition to get the metadata for
- * @returns Metadata object that is serializable
+ * Get the serializable descriptor for a variable definition.
+ * @param definition Variable definition to get the serialized descriptor for
+ * @returns Descriptor object that is serializable
  */
-export function getObjectMetadata(
+export function getVariableDescriptor(
   definition: VariableDefinition
-): ObjectMetadata {
+): NameVariableDescriptor | IdVariableDescriptor {
   // Can't use a spread operator because of how the GWT compiled code defines properties on the object: https://github.com/gwtproject/gwt/issues/9913
-  return {
-    id: definition.id,
-    name: definition.name,
-    type: definition.type,
-    title: definition.title,
-  };
-}
-
-/**
- * Get the VariableDefinition from the provided object metadata
- * @param metadata Object metadata, which should include the type and either the id or title
- * @returns Variable definition based on the metadata
- */
-export function getVariableDefinition(
-  metadata: ObjectMetadata
-): VariableDefinition {
-  if (metadata.id != null) {
+  if (isIdVariableDescriptor(definition)) {
     return {
-      type: metadata.type,
-      id: metadata.id,
+      id: definition.id,
+      type: definition.type,
     };
   }
-  return {
-    type: metadata.type,
-    name: metadata.name,
-    title: metadata.title ?? metadata.name,
-  };
+  if (definition.title != null || definition.name != null) {
+    return {
+      name: definition.title ?? definition.name ?? '',
+      type: definition.type,
+    };
+  }
+  throw new Error(`Can't get a descriptor for definition: ${definition}`);
 }
 
 /**

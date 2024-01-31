@@ -1,22 +1,28 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import type { dh as DhType } from '@deephaven/jsapi-types';
+import type { dh as DhType, VariableDescriptor } from '@deephaven/jsapi-types';
 import { ApiContext } from './ApiBootstrap';
-import { ObjectMetadata } from './useObjectFetcher';
 
-export type DeferredApiFetcher = (metadata?: ObjectMetadata) => Promise<DhType>;
+/**
+ * Function to fetch an API based on a provided descriptor object.
+ * Depending on the context there may be more properties on the descriptor,
+ * providing more information about the object, such as a session ID.
+ */
+export type DeferredApiFetcher = (
+  descriptor?: VariableDescriptor
+) => Promise<DhType>;
 
 export const DeferredApiContext = createContext<
   DhType | DeferredApiFetcher | null
 >(null);
 
 /**
- * Retrieve the API for the current context, given the object metadata provided.
+ * Retrieve the API for the current context, given the descriptor provided.
  * The API may need to be loaded, and will return `null` until it is ready.
- * @param metadata The object metadata to use to fetch the API
+ * @param descriptor The object descriptor to use to fetch the API
  * @returns A tuple with the API instance, and an error if one occurred.
  */
 export function useDeferredApi(
-  metadata: ObjectMetadata
+  descriptor: VariableDescriptor
 ): [DhType | null, unknown | null] {
   const [api, setApi] = useState<DhType | null>(null);
   const [error, setError] = useState<unknown | null>(null);
@@ -43,7 +49,7 @@ export function useDeferredApi(
     async function loadApi() {
       if (typeof deferredApi === 'function') {
         try {
-          const newApi = await deferredApi(metadata);
+          const newApi = await deferredApi(descriptor);
           if (!isCancelled) {
             setApi(newApi);
             setError(null);
@@ -64,7 +70,7 @@ export function useDeferredApi(
     return () => {
       isCancelled = true;
     };
-  }, [contextApi, deferredApi, metadata]);
+  }, [contextApi, deferredApi, descriptor]);
 
   return [api, error];
 }

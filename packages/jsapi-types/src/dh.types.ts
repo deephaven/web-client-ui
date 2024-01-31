@@ -83,6 +83,12 @@ export interface VariableDefinition<T extends string = string> {
   id?: string;
 }
 
+export interface VariableDescriptor<T extends string = string> {
+  type: T;
+  name?: string | null;
+  id?: string | null;
+}
+
 export interface LogItem {
   micros: number;
   logLevel: string;
@@ -167,21 +173,21 @@ export interface IdeSession extends Evented {
   getTreeTable: (name: string) => Promise<TreeTable>;
   getPartitionedTable: (name: string) => Promise<PartitionedTable>;
   getObject: ((
-    definition: VariableDefinition<typeof VariableType.TABLE>
+    definition: VariableDescriptor<typeof VariableType.TABLE>
   ) => Promise<Table>) &
     ((
-      definition: VariableDefinition<typeof VariableType.FIGURE>
+      definition: VariableDescriptor<typeof VariableType.FIGURE>
     ) => Promise<Figure>) &
     ((
-      definition: VariableDefinition<typeof VariableType.TREETABLE>
+      definition: VariableDescriptor<typeof VariableType.TREETABLE>
     ) => Promise<TreeTable>) &
     ((
-      definition: VariableDefinition<typeof VariableType.HIERARCHICALTABLE>
+      definition: VariableDescriptor<typeof VariableType.HIERARCHICALTABLE>
     ) => Promise<TreeTable>) &
     ((
-      definition: VariableDefinition<typeof VariableType.PARTITIONEDTABLE>
+      definition: VariableDescriptor<typeof VariableType.PARTITIONEDTABLE>
     ) => Promise<PartitionedTable>) &
-    ((definition: VariableDefinition) => Promise<unknown>);
+    ((definition: VariableDescriptor) => Promise<unknown>);
   onLogMessage: (logHandler: (logItem: LogItem) => void) => () => void;
   runCode: (code: string) => Promise<CommandResult>;
   bindTableToVariable: (table: Table, variableName: string) => Promise<void>;
@@ -1080,21 +1086,21 @@ export interface IdeConnection
   running: () => Promise<IdeConnection>;
   disconnected: () => void;
   getObject: ((
-    definition: VariableDefinition<typeof VariableType.TABLE>
+    definition: VariableDescriptor<typeof VariableType.TABLE>
   ) => Promise<Table>) &
     ((
-      definition: VariableDefinition<typeof VariableType.FIGURE>
+      definition: VariableDescriptor<typeof VariableType.FIGURE>
     ) => Promise<Figure>) &
     ((
-      definition: VariableDefinition<typeof VariableType.TREETABLE>
+      definition: VariableDescriptor<typeof VariableType.TREETABLE>
     ) => Promise<TreeTable>) &
     ((
-      definition: VariableDefinition<typeof VariableType.HIERARCHICALTABLE>
+      definition: VariableDescriptor<typeof VariableType.HIERARCHICALTABLE>
     ) => Promise<TreeTable>) &
     ((
-      definition: VariableDefinition<typeof VariableType.PARTITIONEDTABLE>
+      definition: VariableDescriptor<typeof VariableType.PARTITIONEDTABLE>
     ) => Promise<PartitionedTable>) &
-    ((definition: VariableDefinition) => Promise<unknown>);
+    ((definition: VariableDescriptor) => Promise<unknown>);
   subscribeToFieldUpdates: (
     param: (changes: VariableChanges) => void
   ) => () => void;

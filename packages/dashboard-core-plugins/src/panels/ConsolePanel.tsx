@@ -18,7 +18,7 @@ import {
   LayoutUtils,
   PanelEvent,
 } from '@deephaven/dashboard';
-import { getObjectMetadata } from '@deephaven/jsapi-bootstrap';
+import { getVariableDescriptor } from '@deephaven/jsapi-bootstrap';
 import type { VariableDefinition } from '@deephaven/jsapi-types';
 import { SessionWrapper } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
@@ -299,7 +299,7 @@ export class ConsolePanel extends PureComponent<
     assertNotNull(title);
     const panelId = this.getItemId(title);
     const metadata = {
-      ...getObjectMetadata(widget),
+      ...getVariableDescriptor(widget),
       sessionId: config.id,
     };
     const openOptions = {
