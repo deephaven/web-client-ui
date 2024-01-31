@@ -12,12 +12,12 @@ import {
   PanelProps,
   canHaveRef,
 } from '@deephaven/dashboard';
+import Log from '@deephaven/log';
 import {
   isWidgetPlugin,
   usePlugins,
   type WidgetPlugin,
 } from '@deephaven/plugin';
-import Log from '@deephaven/log';
 import { WidgetPanel } from './panels';
 
 const log = Log.module('WidgetLoaderPlugin');
@@ -34,7 +34,7 @@ export function WrapWidgetPlugin(
 
     return (
       <WidgetPanel
-        widgetName={metadata?.name}
+        widgetName={metadata?.name ?? undefined}
         widgetType={plugin.title}
         // eslint-disable-next-line react/jsx-props-no-spreading
         {...props}
@@ -106,23 +106,18 @@ export function WidgetLoaderPlugin(
   const handlePanelOpen = useCallback(
     ({
       dragEvent,
-      fetch,
       panelId = shortid.generate(),
       widget,
     }: PanelOpenEventDetail) => {
-      const { id: widgetId, type } = widget;
-      const name = widget.title ?? widget.name;
+      const { type } = widget;
+      const name = widget.name ?? type;
       const plugin = supportedTypes.get(type);
       if (plugin == null) {
         return;
       }
-      const metadata = { id: widgetId, name, type };
-      const panelProps: DehydratedDashboardPanelProps & {
-        fetch?: typeof fetch;
-      } = {
+      const panelProps: DehydratedDashboardPanelProps = {
         localDashboardId: id,
-        metadata,
-        fetch,
+        widget,
       };
 
       const config: ReactComponentConfig = {

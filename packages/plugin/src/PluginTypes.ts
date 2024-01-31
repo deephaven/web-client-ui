@@ -109,7 +109,7 @@ export interface WidgetComponentProps {
   fetch: () => Promise<unknown>;
 }
 
-export interface WidgetPanelProps extends WidgetComponentProps {
+export interface WidgetPanelProps {
   metadata?: {
     id?: string;
     name?: string;

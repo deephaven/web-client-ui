@@ -4,8 +4,9 @@ import {
   ErrorBoundary,
   LoadingOverlay,
 } from '@deephaven/components'; // Use the loading spinner from the Deephaven components package
+import { getVariableDescriptor } from '@deephaven/jsapi-bootstrap';
 import { useConnection } from '@deephaven/jsapi-components';
-import type { VariableDefinition } from '@deephaven/jsapi-types';
+import type { VariableDescriptor } from '@deephaven/jsapi-types';
 import { fetchVariableDefinition } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { WidgetView } from '@deephaven/plugin';
@@ -23,7 +24,7 @@ const log = Log.module('EmbedWidget.App');
  */
 function App(): JSX.Element {
   const [error, setError] = useState<string>();
-  const [definition, setDefinition] = useState<VariableDefinition>();
+  const [descriptor, setDescriptor] = useState<VariableDescriptor>();
   const searchParams = useMemo(
     () => new URLSearchParams(window.location.search),
     []
@@ -40,15 +41,15 @@ function App(): JSX.Element {
             throw new Error('Missing URL parameter "name"');
           }
 
-          log.debug(`Loading widget definition for ${name}...`);
+          log.debug(`Loading widget descriptor for ${name}...`);
 
           const newDefinition = await fetchVariableDefinition(connection, name);
 
-          setDefinition(newDefinition);
+          setDescriptor(getVariableDescriptor(newDefinition));
 
-          log.debug(`Widget definition successfully loaded for ${name}`);
+          log.debug(`Widget descriptor successfully loaded for ${name}`);
         } catch (e: unknown) {
-          log.error(`Unable to load widget definition for ${name}`, e);
+          log.error(`Unable to load widget descriptor for ${name}`, e);
           setError(`${e}`);
         }
       }
@@ -57,23 +58,23 @@ function App(): JSX.Element {
     [connection, name]
   );
 
-  const isLoaded = definition != null && error == null;
-  const isLoading = definition == null && error == null;
+  const isLoaded = descriptor != null && error == null;
+  const isLoading = descriptor == null && error == null;
 
   const fetch = useMemo(() => {
-    if (definition == null) {
+    if (descriptor == null) {
       return async () => {
         throw new Error('Definition is null');
       };
     }
-    return () => connection.getObject(definition);
-  }, [connection, definition]);
+    return () => connection.getObject(descriptor);
+  }, [connection, descriptor]);
 
   return (
     <div className="App">
       {isLoaded && (
         <ErrorBoundary>
-          <WidgetView type={definition.type} fetch={fetch} />
+          <WidgetView type={descriptor.type} fetch={fetch} />
         </ErrorBoundary>
       )}
       {!isLoaded && (

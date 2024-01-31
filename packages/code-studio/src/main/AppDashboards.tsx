@@ -4,10 +4,13 @@ import {
   DashboardUtils,
   DEFAULT_DASHBOARD_ID,
   DehydratedDashboardPanelProps,
+  isLegacyPanelProps,
   LazyDashboard,
 } from '@deephaven/dashboard';
-import { useConnection } from '@deephaven/jsapi-components';
-import { VariableDefinition } from '@deephaven/jsapi-types';
+import {
+  getVariableDescriptor,
+  useObjectFetcher,
+} from '@deephaven/jsapi-bootstrap';
 import LayoutManager, { ItemConfigType } from '@deephaven/golden-layout';
 import { LoadingOverlay } from '@deephaven/components';
 import EmptyDashboard from './EmptyDashboard';
@@ -30,36 +33,23 @@ export function AppDashboards({
   plugins,
   onAutoFillClick,
 }: AppDashboardsProps): JSX.Element {
-  const connection = useConnection();
+  const fetch = useObjectFetcher();
 
   const hydratePanel = useCallback(
     (hydrateProps: DehydratedDashboardPanelProps, id: string) => {
-      const { metadata } = hydrateProps;
-      if (
-        metadata?.type != null &&
-        (metadata?.id != null || metadata?.name != null)
-      ) {
-        // Looks like a widget, hydrate it as such
-        const widget: VariableDefinition =
-          metadata.id != null
-            ? {
-                type: metadata.type,
-                id: metadata.id,
-              }
-            : {
-                type: metadata.type,
-                name: metadata.name,
-                title: metadata.name,
-              };
+      const widget = isLegacyPanelProps(hydrateProps)
+        ? getVariableDescriptor(hydrateProps.metadata)
+        : hydrateProps.widget;
+      if (widget != null) {
         return {
-          fetch: async () => connection?.getObject(widget),
+          fetch: async () => fetch(widget),
           ...hydrateProps,
           localDashboardId: id,
         };
       }
       return DashboardUtils.hydrate(hydrateProps, id);
     },
-    [connection]
+    [fetch]
   );
 
   return (

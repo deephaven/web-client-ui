@@ -51,12 +51,11 @@ export function useDashboardPanel<
   const handlePanelOpen = useCallback(
     ({
       dragEvent,
-      fetch,
       panelId = shortid.generate(),
       widget,
     }: PanelOpenEventDetail) => {
-      const { id: widgetId, type } = widget;
-      const name = widget.title ?? widget.name;
+      const { type } = widget;
+      const { name } = widget;
       const isSupportedType =
         (Array.isArray(supportedTypes) && supportedTypes.includes(type)) ||
         type === supportedTypes;
@@ -64,11 +63,9 @@ export function useDashboardPanel<
         // Only want to listen for your custom variable types
         return;
       }
-      const metadata = { id: widgetId, name, type };
-      let props: DehydratedDashboardPanelProps & { fetch?: typeof fetch } = {
+      let props: DehydratedDashboardPanelProps = {
         localDashboardId: id,
-        metadata,
-        fetch,
+        widget,
       };
       if (hydrate != null) {
         props = hydrate(props, id);

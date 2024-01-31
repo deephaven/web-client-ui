@@ -1,5 +1,5 @@
 import { forwardRef, useMemo } from 'react';
-import { useApi } from '@deephaven/jsapi-bootstrap';
+import { useApi, useObjectFetcher } from '@deephaven/jsapi-bootstrap';
 import { useConnection } from '@deephaven/jsapi-components';
 import {
   ChartModel,
@@ -117,13 +117,13 @@ export const ChartPanelPlugin = forwardRef(
   (props: WidgetPanelProps, ref: React.Ref<ChartPanel>) => {
     const dh = useApi();
     const chartTheme = useChartTheme();
-    const connection = useConnection();
+    const fetch = useObjectFetcher();
 
     const panelState = isChartPanelDehydratedProps(props)
       ? (props as unknown as ChartPanelProps).panelState
       : undefined;
 
-    const { fetch, metadata, localDashboardId } = props;
+    const { metadata, widget, localDashboardId } = props;
 
     const hydratedProps = useMemo(
       () => ({
