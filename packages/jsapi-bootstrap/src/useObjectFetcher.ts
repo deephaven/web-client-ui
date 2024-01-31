@@ -5,7 +5,7 @@ import { createContext } from 'react';
 /**
  * Metadata for an object. Used when needing to fetch an object.
  */
-export type ObjectMetadata = Record<string, unknown> & VariableDefinition;
+export type ObjectMetadata = VariableDefinition;
 
 export type ObjectFetcher<T = unknown> = (
   metadata: ObjectMetadata
@@ -22,8 +22,7 @@ export const ObjectFetcherContext = createContext<ObjectFetcher | null>(null);
 export function getObjectMetadata(
   definition: VariableDefinition
 ): ObjectMetadata {
-  // Can't use a spread operator because of how the GWT compiled code defines properties on the object.
-  // Logged a ticket against GWT to support this functionality: https://github.com/gwtproject/gwt/issues/9913
+  // Can't use a spread operator because of how the GWT compiled code defines properties on the object: https://github.com/gwtproject/gwt/issues/9913
   return {
     id: definition.id,
     name: definition.name,
@@ -61,5 +60,5 @@ export function useObjectFetcher<T = unknown>(): ObjectFetcher<T> {
   return useContextOrThrow(
     ObjectFetcherContext,
     'No ObjectFetcher available in useObjectFetcher. Was code wrapped in ObjectFetcherContext.Provider?'
-  );
+  ) as ObjectFetcher<T>;
 }
