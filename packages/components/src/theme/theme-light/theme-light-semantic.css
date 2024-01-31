@@ -109,7 +109,7 @@
   );
   --dh-color-highlight-hover: color-mix(
     in srgb,
-    var(--dh-color-visual-gray) 15%,
+    var(--dh-color-visual-gray) 10%,
     transparent
   );
   --dh-color-highlight-invalid: color-mix(
@@ -119,12 +119,12 @@
   );
   --dh-color-highlight-selected: color-mix(
     in srgb,
-    var(--dh-color-accent) 25%,
+    var(--dh-color-accent) 7%,
     transparent
   );
   --dh-color-highlight-selected-hover: color-mix(
     in srgb,
-    var(--dh-color-accent) 35%,
+    var(--dh-color-accent) 13%,
     transparent
   );
 
