@@ -10,7 +10,7 @@
   $background: var(--dh-color-#{$semantic-value}-bg);
   $border: var(--dh-color-#{$semantic-value}-bg);
   $boxshadow-color: color-mix(
-    in hsl,
+    in srgb,
     var(--dh-color-#{$semantic-value}-bg) 50%,
     transparent
   );
@@ -81,7 +81,7 @@
 
   $color: var(--dh-color-#{$semantic-value}-bg);
   $boxshadow-color: color-mix(
-    in hsl,
+    in srgb,
     var(--dh-color-#{$semantic-value}-bg) 50%,
     transparent
   );

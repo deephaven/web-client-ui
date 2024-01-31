@@ -123,7 +123,7 @@ $btn-play-color: $success;
 
   50% {
     text-shadow:
-      0 0 2px color-mix(in hsl, var(--dh-color-true-white) 50%, transparent),
+      0 0 2px color-mix(in srgb, var(--dh-color-true-white) 50%, transparent),
       0 0 10px $success;
   }
 

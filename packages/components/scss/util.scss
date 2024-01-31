@@ -56,7 +56,7 @@
 
 @function color-mix-opacity($semantic-name, $i: 100) {
   @return color-mix(
-    in hsl,
+    in srgb,
     /* if $i doesn't contain a % sign, add one */
       var(--dh-color-#{$semantic-name}) #{$i}#{if(unit($i) == '%', '', '%')},
     transparent

@@ -178,7 +178,7 @@ $input-focus-border-color: var(--dh-color-input-focus-border);
 
 $input-btn-focus-width: 0.2rem;
 $input-btn-focus-color: color-mix(
-  in hsl,
+  in srgb,
   var(--dh-color-accent) 35%,
   transparent
 );
