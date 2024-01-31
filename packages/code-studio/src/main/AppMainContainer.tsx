@@ -10,6 +10,7 @@ import memoize from 'memoize-one';
 import { CSSTransition } from 'react-transition-group';
 import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
+import shortid from 'shortid';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   ContextActions,
@@ -23,17 +24,21 @@ import {
   Logo,
   BasicModal,
   DebouncedModal,
+  NavTabList,
+  type NavTabItem,
 } from '@deephaven/components';
 import { SHORTCUTS as IRIS_GRID_SHORTCUTS } from '@deephaven/iris-grid';
 import {
-  ClosedPanels,
-  Dashboard,
-  DashboardLayoutConfig,
+  CreateDashboardPayload,
   DashboardUtils,
   DEFAULT_DASHBOARD_ID,
   DehydratedDashboardPanelProps,
+  getAllDashboardsData,
   getDashboardData,
+  listenForCreateDashboard,
   PanelEvent,
+  setDashboardData as setDashboardDataAction,
+  setDashboardPluginData as setDashboardPluginDataAction,
   updateDashboardData as updateDashboardDataAction,
 } from '@deephaven/dashboard';
 import {
@@ -46,7 +51,6 @@ import {
   ToolType,
   FilterSet,
   Link,
-  ColumnSelectionValidator,
   getDashboardConnection,
   NotebookPanel,
 } from '@deephaven/dashboard-core-plugins';
@@ -56,6 +60,7 @@ import {
   dhPanels,
   vsDebugDisconnect,
   dhSquareFilled,
+  vsHome,
 } from '@deephaven/icons';
 import dh from '@deephaven/jsapi-shim';
 import type {
@@ -77,11 +82,13 @@ import {
   User,
   ServerConfigValues,
   CustomizableWorkspace,
+  DashboardData,
 } from '@deephaven/redux';
 import {
   bindAllMethods,
   copyToClipboard,
   PromiseUtils,
+  EMPTY_ARRAY,
 } from '@deephaven/utils';
 import GoldenLayout from '@deephaven/golden-layout';
 import type { ItemConfigType } from '@deephaven/golden-layout';
@@ -98,9 +105,9 @@ import AppControlsMenu from './AppControlsMenu';
 import { getLayoutStorage, getServerConfigValues } from '../redux';
 import './AppMainContainer.scss';
 import WidgetList, { WindowMouseEvent } from './WidgetList';
-import EmptyDashboard from './EmptyDashboard';
 import UserLayoutUtils from './UserLayoutUtils';
 import LayoutStorage from '../storage/LayoutStorage';
+import AppDashboards from './AppDashboards';
 import { getFormattedVersionInfo } from '../settings/SettingsUtils';
 
 const log = Log.module('AppMainContainer');
@@ -113,17 +120,10 @@ type InputFileFormat =
   | Blob
   | NodeJS.ReadableStream;
 
-export type AppDashboardData = {
-  closed: ClosedPanels;
-  columnSelectionValidator?: ColumnSelectionValidator;
-  filterSets: FilterSet[];
-  links: Link[];
-  openedMap: Map<string | string[], Component>;
-};
-
 interface AppMainContainerProps {
   activeTool: string;
-  dashboardData: AppDashboardData;
+  allDashboardData: Record<string, DashboardData>;
+  dashboardData: DashboardData;
   layoutStorage: LayoutStorage;
   match: {
     params: { notebookPath: string };
@@ -132,7 +132,13 @@ interface AppMainContainerProps {
   session?: IdeSession;
   sessionConfig?: SessionConfig;
   setActiveTool: (tool: string) => void;
-  updateDashboardData: (id: string, data: Partial<AppDashboardData>) => void;
+  setDashboardData: (id: string, data: DashboardData) => void;
+  setDashboardPluginData: (
+    dashboardId: string,
+    pluginId: string,
+    data: unknown
+  ) => void;
+  updateDashboardData: (id: string, data: Partial<DashboardData>) => void;
   updateWorkspaceData: (workspaceData: Partial<WorkspaceData>) => void;
   user: User;
   workspace: CustomizableWorkspace;
@@ -149,6 +155,8 @@ interface AppMainContainerState {
   isSettingsMenuShown: boolean;
   unsavedNotebookCount: number;
   widgets: VariableDefinition[];
+  tabs: NavTabItem[];
+  activeTabKey: string;
 }
 
 export class AppMainContainer extends Component<
@@ -188,6 +196,8 @@ export class AppMainContainer extends Component<
     bindAllMethods(this);
 
     this.importElement = React.createRef();
+
+    const { allDashboardData } = this.props;
 
     this.state = {
       contextActions: [
@@ -235,6 +245,13 @@ export class AppMainContainer extends Component<
       isSettingsMenuShown: false,
       unsavedNotebookCount: 0,
       widgets: [],
+      tabs: Object.entries(allDashboardData)
+        .filter(([key]) => key !== DEFAULT_DASHBOARD_ID)
+        .map(([key, value]) => ({
+          key,
+          title: value.title ?? 'Untitled',
+        })),
+      activeTabKey: DEFAULT_DASHBOARD_ID,
     };
   }
 
@@ -248,7 +265,10 @@ export class AppMainContainer extends Component<
     );
   }
 
-  componentDidUpdate(prevProps: AppMainContainerProps): void {
+  componentDidUpdate(
+    prevProps: AppMainContainerProps,
+    prevState: AppMainContainerState
+  ): void {
     const { dashboardData } = this.props;
     if (prevProps.dashboardData !== dashboardData) {
       this.handleDataChange(dashboardData);
@@ -437,7 +457,7 @@ export class AppMainContainer extends Component<
     this.sendClearFilter();
   }
 
-  handleDataChange(data: AppDashboardData): void {
+  handleDataChange(data: DashboardData): void {
     const { updateWorkspaceData } = this.props;
 
     // Only save the data that is serializable/we want to persist to the workspace
@@ -447,11 +467,30 @@ export class AppMainContainer extends Component<
 
   handleGoldenLayoutChange(goldenLayout: GoldenLayout): void {
     this.goldenLayout = goldenLayout;
+    listenForCreateDashboard(
+      this.goldenLayout.eventHub,
+      this.handleCreateDashboard
+    );
   }
 
-  handleLayoutConfigChange(layoutConfig?: DashboardLayoutConfig): void {
-    const { updateWorkspaceData } = this.props;
-    updateWorkspaceData({ layoutConfig });
+  handleCreateDashboard({
+    pluginId,
+    title,
+    data,
+  }: CreateDashboardPayload): void {
+    const newId = shortid();
+    const { setDashboardPluginData } = this.props;
+    setDashboardPluginData(newId, pluginId, data);
+    this.setState(({ tabs }) => ({
+      tabs: [
+        ...tabs,
+        {
+          key: newId,
+          title,
+        },
+      ],
+      activeTabKey: newId,
+    }));
   }
 
   handleWidgetMenuClick(): void {
@@ -674,40 +713,6 @@ export class AppMainContainer extends Component<
     );
   }
 
-  hydrateDefault(
-    props: DehydratedDashboardPanelProps,
-    id: string
-  ): DehydratedDashboardPanelProps & { fetch?: () => Promise<unknown> } {
-    const { connection } = this.props;
-    const { metadata } = props;
-
-    if (
-      metadata?.type != null &&
-      (metadata?.id != null || metadata?.name != null)
-    ) {
-      // Looks like a widget, hydrate it as such
-      const widget: VariableDefinition =
-        metadata.id != null
-          ? {
-              type: metadata.type,
-              id: metadata.id,
-            }
-          : {
-              type: metadata.type,
-              name: metadata.name,
-              title: metadata.name,
-            };
-
-      return {
-        fetch: async () => connection?.getObject(widget),
-        ...props,
-        localDashboardId: id,
-      };
-    }
-
-    return DashboardUtils.hydrate(props, id);
-  }
-
   /**
    * Open a widget up, using a drag event if specified.
    * @param widget The widget to open
@@ -739,11 +744,70 @@ export class AppMainContainer extends Component<
     });
   });
 
-  render(): ReactElement {
-    const { activeTool, plugins, user, workspace, serverConfigValues } =
-      this.props;
+  handleHomeClick(): void {
+    this.handleTabSelect(DEFAULT_DASHBOARD_ID);
+  }
+
+  handleTabSelect(tabId: string): void {
+    this.setState({ activeTabKey: tabId });
+  }
+
+  handleTabReorder(from: number, to: number): void {
+    this.setState(({ tabs: oldTabs }) => {
+      const newTabs = [...oldTabs];
+      const [t] = newTabs.splice(from, 1);
+      newTabs.splice(to, 0, t);
+      return { tabs: newTabs };
+    });
+  }
+
+  handleTabClose(tabId: string): void {
+    // TODO: #1746 Do something to mark the dashboard as closed
+    // Remove any dashboard data we no longer need to keep so
+    // the dashboard data store doesn't grow unbounded
+    this.setState(({ tabs: oldTabs, activeTabKey }) => {
+      const newTabs = oldTabs.filter(tab => tab.key !== tabId);
+      let newActiveTabKey = activeTabKey;
+      if (activeTabKey === tabId && newTabs.length > 0) {
+        const oldActiveTabIndex = oldTabs.findIndex(tab => tab.key === tabId);
+        newActiveTabKey =
+          oldActiveTabIndex < oldTabs.length - 1
+            ? oldTabs[oldActiveTabIndex + 1].key
+            : oldTabs[oldActiveTabIndex - 1].key;
+      }
+
+      if (newTabs.length === 0) {
+        newActiveTabKey = DEFAULT_DASHBOARD_ID;
+      }
+
+      return { tabs: newTabs, activeTabKey: newActiveTabKey };
+    });
+  }
+
+  getDashboards(): {
+    id: string;
+    layoutConfig: ItemConfigType[];
+  }[] {
+    const { tabs } = this.state;
+    const { allDashboardData, workspace } = this.props;
     const { data: workspaceData } = workspace;
     const { layoutConfig } = workspaceData;
+    // TODO: #1746 Read the default dashboard layout from dashboardData instead of workspaceData
+    return [
+      {
+        id: DEFAULT_DASHBOARD_ID,
+        layoutConfig: layoutConfig as ItemConfigType[],
+      },
+      ...tabs.map(tab => ({
+        id: tab.key,
+        layoutConfig: (allDashboardData[tab.key]?.layoutConfig ??
+          EMPTY_ARRAY) as ItemConfigType[],
+      })),
+    ];
+  }
+
+  render(): ReactElement {
+    const { activeTool, plugins, user, serverConfigValues } = this.props;
     const { permissions } = user;
     const { canUsePanels } = permissions;
     const {
@@ -755,6 +819,8 @@ export class AppMainContainer extends Component<
       isSettingsMenuShown,
       unsavedNotebookCount,
       widgets,
+      tabs,
+      activeTabKey,
     } = this.state;
     const dashboardPlugins = this.getDashboardPlugins(plugins);
 
@@ -771,111 +837,123 @@ export class AppMainContainer extends Component<
         onPaste={this.handlePaste}
         tabIndex={-1}
       >
-        <nav className="nav-container">
-          <div className="app-main-top-nav-menus">
-            <Logo className="ml-1" style={{ maxHeight: '20px' }} />
-            <div>
+        <div className="app-main-top-nav-menus">
+          <Logo className="ml-1" style={{ maxHeight: '20px' }} />
+          {tabs.length > 0 && (
+            <div style={{ flexShrink: 0, flexGrow: 1, display: 'flex' }}>
               <Button
                 kind="ghost"
-                className="btn-panels-menu"
-                icon={dhShapes}
-                onClick={() => {
-                  // no-op: click is handled in `AppControlsMenu` (which uses a `DropdownMenu`)
-                }}
-              >
-                Controls
-                <AppControlsMenu
-                  handleControlSelect={this.handleControlSelect}
-                  handleToolSelect={this.handleToolSelect}
-                  onClearFilter={this.handleClearFilter}
-                />
-              </Button>
-              {canUsePanels && (
-                <Button
-                  kind="ghost"
-                  className="btn-panels-menu btn-show-panels"
-                  data-testid="app-main-panels-button"
-                  onClick={this.handleWidgetMenuClick}
-                  icon={dhPanels}
-                >
-                  Panels
-                  <Popper
-                    isShown={isPanelsMenuShown}
-                    className="panels-menu-popper"
-                    onExited={this.handleWidgetsMenuClose}
-                    options={{
-                      placement: 'bottom',
-                    }}
-                    closeOnBlur
-                    interactive
-                  >
-                    <WidgetList
-                      widgets={widgets}
-                      onExportLayout={this.handleExportLayoutClick}
-                      onImportLayout={this.handleImportLayoutClick}
-                      onResetLayout={this.handleResetLayoutClick}
-                      onSelect={this.handleWidgetSelect}
-                    />
-                  </Popper>
-                </Button>
-              )}
-              <Button
-                kind="ghost"
-                className={classNames('btn-settings-menu', {
-                  'text-warning':
-                    user.operateAs != null && user.operateAs !== user.name,
-                })}
-                onClick={this.handleSettingsMenuShow}
-                icon={
-                  <span className="fa-layers">
-                    <FontAwesomeIcon icon={vsGear} transform="grow-3" />
-                    {isDisconnected && !isAuthFailed && (
-                      <>
-                        <FontAwesomeIcon
-                          icon={dhSquareFilled}
-                          color={ThemeExport.background}
-                          transform="grow-2 right-8 down-8.5 rotate-45"
-                        />
-                        <FontAwesomeIcon
-                          icon={vsDebugDisconnect}
-                          color={ThemeExport.danger}
-                          transform="shrink-5 right-6 down-6"
-                        />
-                      </>
-                    )}
-                  </span>
-                }
-                tooltip={
-                  isDisconnected && !isAuthFailed
-                    ? 'Server disconnected'
-                    : 'User Settings'
-                }
+                icon={vsHome}
+                tooltip="Go to Code Studio"
+                onClick={this.handleHomeClick}
+              />
+              <NavTabList
+                tabs={tabs}
+                activeKey={activeTabKey}
+                onSelect={this.handleTabSelect}
+                onReorder={this.handleTabReorder}
+                onClose={this.handleTabClose}
               />
             </div>
+          )}
+          <div className="app-main-right-menu-buttons">
+            <Button
+              kind="ghost"
+              className="btn-panels-menu"
+              icon={dhShapes}
+              onClick={() => {
+                // no-op: click is handled in `AppControlsMenu` (which uses a `DropdownMenu`)
+              }}
+            >
+              Controls
+              <AppControlsMenu
+                handleControlSelect={this.handleControlSelect}
+                handleToolSelect={this.handleToolSelect}
+                onClearFilter={this.handleClearFilter}
+              />
+            </Button>
+            {canUsePanels && (
+              <Button
+                kind="ghost"
+                className="btn-panels-menu btn-show-panels"
+                data-testid="app-main-panels-button"
+                onClick={this.handleWidgetMenuClick}
+                icon={dhPanels}
+              >
+                Panels
+                <Popper
+                  isShown={isPanelsMenuShown}
+                  className="panels-menu-popper"
+                  onExited={this.handleWidgetsMenuClose}
+                  options={{
+                    placement: 'bottom',
+                  }}
+                  closeOnBlur
+                  interactive
+                >
+                  <WidgetList
+                    widgets={widgets}
+                    onExportLayout={this.handleExportLayoutClick}
+                    onImportLayout={this.handleImportLayoutClick}
+                    onResetLayout={this.handleResetLayoutClick}
+                    onSelect={this.handleWidgetSelect}
+                  />
+                </Popper>
+              </Button>
+            )}
+            <Button
+              kind="ghost"
+              className={classNames('btn-settings-menu', {
+                'text-warning':
+                  user.operateAs != null && user.operateAs !== user.name,
+              })}
+              onClick={this.handleSettingsMenuShow}
+              icon={
+                <span className="fa-layers">
+                  <FontAwesomeIcon icon={vsGear} transform="grow-3" />
+                  {isDisconnected && !isAuthFailed && (
+                    <>
+                      <FontAwesomeIcon
+                        icon={dhSquareFilled}
+                        color={ThemeExport.background}
+                        transform="grow-2 right-8 down-8.5 rotate-45"
+                      />
+                      <FontAwesomeIcon
+                        icon={vsDebugDisconnect}
+                        color={ThemeExport.danger}
+                        transform="shrink-5 right-6 down-6"
+                      />
+                    </>
+                  )}
+                </span>
+              }
+              tooltip={
+                isDisconnected && !isAuthFailed
+                  ? 'Server disconnected'
+                  : 'User Settings'
+              }
+            />
           </div>
-        </nav>
-        <Dashboard
-          emptyDashboard={
-            <EmptyDashboard onAutoFillClick={this.handleAutoFillClick} />
-          }
-          id={DEFAULT_DASHBOARD_ID}
-          layoutConfig={layoutConfig as ItemConfigType[]}
+        </div>
+        <AppDashboards
+          dashboards={this.getDashboards()}
+          activeDashboard={activeTabKey}
           onGoldenLayoutChange={this.handleGoldenLayoutChange}
-          onLayoutConfigChange={this.handleLayoutConfigChange}
-          onLayoutInitialized={this.openNotebookFromURL}
-          hydrate={this.hydrateDefault}
-        >
-          <ConsolePlugin
-            hydrateConsole={AppMainContainer.hydrateConsole}
-            notebooksUrl={
-              new URL(
-                `${import.meta.env.VITE_ROUTE_NOTEBOOKS}`,
-                document.baseURI
-              ).href
-            }
-          />
-          {dashboardPlugins}
-        </Dashboard>
+          onAutoFillClick={this.handleAutoFillClick}
+          plugins={[
+            <ConsolePlugin
+              key="ConsolePlugin"
+              hydrateConsole={AppMainContainer.hydrateConsole}
+              notebooksUrl={
+                new URL(
+                  `${import.meta.env.VITE_ROUTE_NOTEBOOKS}`,
+                  document.baseURI
+                ).href
+              }
+            />,
+            ...dashboardPlugins,
+          ]}
+        />
         <CSSTransition
           in={isSettingsMenuShown}
           timeout={ThemeExport.transitionMidMs}
@@ -944,13 +1022,16 @@ const mapStateToProps = (
   state: RootState
 ): Omit<
   AppMainContainerProps,
-  'match' | 'setActiveTool' | 'updateDashboardData' | 'updateWorkspaceData'
+  | 'match'
+  | 'setActiveTool'
+  | 'updateDashboardData'
+  | 'updateWorkspaceData'
+  | 'setDashboardData'
+  | 'setDashboardPluginData'
 > => ({
   activeTool: getActiveTool(state),
-  dashboardData: getDashboardData(
-    state,
-    DEFAULT_DASHBOARD_ID
-  ) as AppDashboardData,
+  allDashboardData: getAllDashboardsData(state),
+  dashboardData: getDashboardData(state, DEFAULT_DASHBOARD_ID),
   layoutStorage: getLayoutStorage(state),
   plugins: getPlugins(state),
   connection: getDashboardConnection(state, DEFAULT_DASHBOARD_ID),
@@ -964,6 +1045,8 @@ const mapStateToProps = (
 
 const ConnectedAppMainContainer = connect(mapStateToProps, {
   setActiveTool: setActiveToolAction,
+  setDashboardData: setDashboardDataAction,
+  setDashboardPluginData: setDashboardPluginDataAction,
   updateDashboardData: updateDashboardDataAction,
   updateWorkspaceData: updateWorkspaceDataAction,
 })(withRouter(AppMainContainer));
