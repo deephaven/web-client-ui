@@ -1053,7 +1053,6 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const valueDescription =
       filterValues.length === 1 ? filterValues[0] : 'the selected values';
 
-    // const filterValue = dh.FilterValue.ofString(value);
     let newQuickFilter:
       | {
           filter: null | FilterCondition | undefined;
