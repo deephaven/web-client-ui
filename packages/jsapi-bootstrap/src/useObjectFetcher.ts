@@ -14,14 +14,16 @@ export type ObjectFetcher<T = unknown> = (
 export const ObjectFetcherContext = createContext<ObjectFetcher | null>(null);
 
 /**
- * Get the metadata for an object definition that is serializable.
+ * Get the serializable metadata for an object definition.
+ * Includes the properties that define the variable, such as id, title, type, and name if available
  * @param definition Object definition to get the metadata for
  * @returns Metadata object that is serializable
  */
 export function getObjectMetadata(
   definition: VariableDefinition
 ): ObjectMetadata {
-  // Can't use a spread operator because the VariableDefinition JS API object uses property accessors
+  // Can't use a spread operator because of how the GWT compiled code defines properties on the object.
+  // Logged a ticket against GWT to support this functionality: https://github.com/gwtproject/gwt/issues/9913
   return {
     id: definition.id,
     name: definition.name,
@@ -30,6 +32,11 @@ export function getObjectMetadata(
   };
 }
 
+/**
+ * Get the VariableDefinition from the provided object metadata
+ * @param metadata Object metadata, which should include the type and either the id or title
+ * @returns Variable definition based on the metadata
+ */
 export function getVariableDefinition(
   metadata: ObjectMetadata
 ): VariableDefinition {
@@ -46,7 +53,11 @@ export function getVariableDefinition(
   };
 }
 
-export function useObjectFetcher(): ObjectFetcher {
+/**
+ * Use a function to fetch an object based on provided metadata
+ * @returns Function to asynchronously fetch an object based on provided metadata
+ */
+export function useObjectFetcher<T = unknown>(): ObjectFetcher<T> {
   return useContextOrThrow(
     ObjectFetcherContext,
     'No ObjectFetcher available in useObjectFetcher. Was code wrapped in ObjectFetcherContext.Provider?'
