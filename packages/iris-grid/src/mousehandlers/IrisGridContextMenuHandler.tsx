@@ -64,7 +64,7 @@ const log = Log.module('IrisGridContextMenuHandler');
 
 const DEBOUNCE_UPDATE_FORMAT = 150;
 const CONTEXT_MENU_DATE_FORMAT = 'yyyy-MM-dd HH:mm:ss.SSSSSSSSS';
-const MAX_MULTISELECT_VALUES = 1000;
+const MAX_MULTISELECT_ROWS = 1000;
 
 /**
  * Used to eat the mouse event in the bottom right corner of the scroll bar
@@ -531,59 +531,54 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const { filterIconColor } = theme;
     const { settings } = irisGrid.props;
 
-    const allSelectedRanges = [...getSelectedRanges()];
+    let selectedRanges = [...getSelectedRanges()];
     // no selected range (i.e. right clicked a cell without highlighting it)
-    if (allSelectedRanges.length === 0) {
-      allSelectedRanges.push(
+    // although GridSelectionMouseHandler does change selectedRanges, state isn't updated in
+    //   time for getSelectedRanges to show the selected cell
+    if (selectedRanges.length === 0) {
+      selectedRanges.push(
         new GridRange(sourceColumn, sourceRow, sourceColumn, sourceRow)
       );
     }
 
-    // this block handles:
-    //  - truncates the ranges to search to MAX_MULTISELECT_VALUES
-    //    - then gets all the unique values
-    //    - this is instead of stopping at MAX unique values to prevent the situation when
-    //      there's a large amount of rows with little unique values
-    //  - checks if the source cell is in the selected ranges
-    //    - if it isn't, then the selected cell is the source cell instead
-    //    - although GridSelectionMouseHandler does change selectedRanges, that function and
-    //      this one run in the same cycle so state is not updated
-    let slicedSelectedRanges = [];
-    let sourceInSelected = false;
-    let valuesLeft = MAX_MULTISELECT_VALUES;
-    for (let i = 0; i < allSelectedRanges.length; i += 1) {
-      const selectedRange = allSelectedRanges[i];
-      if (selectedRange.startRow !== null && selectedRange.endRow !== null) {
-        // source cell in selected ranges
-        if (
-          selectedRange.startRow <= sourceRow &&
-          sourceRow <= selectedRange.endRow
-        ) {
-          sourceInSelected = true;
+    // - this block truncates the selected ranges to MAX_MULTISELECT_ROWS rows
+    //   - NOT first MAX_MULTISELECT_ROWS rows after the first row
+    //   - NOT first MAX_MULTISELECT_ROWS unique values (prevent case where there are a small
+    //     amount of values, but a large amount of rows with those values)
+    if (GridRange.containsCell(selectedRanges, sourceColumn, sourceRow)) {
+      let rowCount = GridRange.rowCount(selectedRanges);
+      while (rowCount > MAX_MULTISELECT_ROWS) {
+        const lastRow = selectedRanges.pop();
+        // should never occur, sanity check
+        if (lastRow === undefined) {
+          throw Error('Selected ranges should not be empty');
         }
-        // gone past source cell and not in previous selected ranges
-        if (sourceRow < selectedRange.startRow && !sourceInSelected) break;
-        // have to truncate the range
-        if (selectedRange.endRow - selectedRange.startRow > valuesLeft) {
-          slicedSelectedRanges.push(
+        const lastRowSize = GridRange.rowCount([lastRow]);
+        // should never occur, sanity check
+        if (Number.isNaN(lastRowSize)) {
+          throw Error('Selected ranges should not be unbounded');
+        }
+
+        // if removing the last rows makes it dip below the max, then need to
+        //   bring it back but truncated
+        if (rowCount - lastRowSize < MAX_MULTISELECT_ROWS) {
+          // nullish operator to make TS happy, but the check above should prevent this
+          selectedRanges.push(
             new GridRange(
-              selectedRange.startColumn,
-              selectedRange.startRow,
-              selectedRange.endColumn,
-              selectedRange.startRow + valuesLeft - 1
+              lastRow.startColumn,
+              lastRow.startRow,
+              lastRow.endColumn,
+              (lastRow.endRow ?? 0) - (rowCount - MAX_MULTISELECT_ROWS)
             )
           );
           break;
         }
-        // add to range and count how many added
-        slicedSelectedRanges.push(selectedRange);
-        valuesLeft -= selectedRange.endRow - selectedRange.startRow + 1;
+        rowCount -= lastRowSize;
       }
-    }
-
-    // source row not in ranges, changed to selected row
-    if (!sourceInSelected) {
-      slicedSelectedRanges = [
+    } else {
+      // if the block is not in the selected ranges, meaning the user must've right-clicked
+      // outside the selected ranges`
+      selectedRanges = [
         new GridRange(sourceColumn, sourceRow, sourceColumn, sourceRow),
       ];
     }
@@ -591,10 +586,10 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     // this should be non empty
     //  - valid selected ranges will always have a startRow and endRow
     //  - if there are no selected ranges, then one with sourceColumn/Row is added
-    assertNotEmpty(slicedSelectedRanges);
+    assertNotEmpty(selectedRanges);
 
     // get the snapshot values, but ignore all null/undefined values
-    const snapshot = await model.snapshot(slicedSelectedRanges);
+    const snapshot = await model.snapshot(selectedRanges);
     const snapshotValues = new Set();
     for (let i = 0; i < snapshot.length; i += 1) {
       if (snapshot[i].length === 1) {
