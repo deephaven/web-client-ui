@@ -7,7 +7,7 @@ import {
   LazyDashboard,
 } from '@deephaven/dashboard';
 import { useConnection } from '@deephaven/jsapi-components';
-import { VariableDefinition } from '@deephaven/jsapi-types';
+import { dh } from '@deephaven/jsapi-types';
 import LayoutManager, { ItemConfigType } from '@deephaven/golden-layout';
 import { LoadingOverlay } from '@deephaven/components';
 import EmptyDashboard from './EmptyDashboard';
@@ -40,7 +40,7 @@ export function AppDashboards({
         (metadata?.id != null || metadata?.name != null)
       ) {
         // Looks like a widget, hydrate it as such
-        const widget: VariableDefinition =
+        const widget: dh.ide.VariableDescriptor =
           metadata.id != null
             ? {
                 type: metadata.type,
@@ -49,7 +49,6 @@ export function AppDashboards({
             : {
                 type: metadata.type,
                 name: metadata.name,
-                title: metadata.name,
               };
         return {
           fetch: async () => connection?.getObject(widget),
