@@ -308,11 +308,13 @@ export function resolveCssVariablesInRecord<T extends Record<string, string>>(
     // faster to create these now all at once, even if we don't use them all
     // since the parent isn't added yet to the DOM
     const el = document.createElement('div');
+    // use background color instead of color to avoid inherited values
     el.style.backgroundColor = value;
     tmpPropEl.appendChild(el);
   });
 
   // append only once to avoid multiple re-layouts
+  // must be part of DOM to get computed color
   targetElement.appendChild(tmpPropEl);
   const tempPropElComputedStyle = window.getComputedStyle(tmpPropEl);
 
@@ -323,19 +325,23 @@ export function resolveCssVariablesInRecord<T extends Record<string, string>>(
       (result as Record<string, string>)[key] = value;
       return;
     }
+    // resolves any variables in the expression
     let resolved = tempPropElComputedStyle.getPropertyValue(
       `--${TMP_CSS_PROP_PREFIX}-${i}`
     );
     if (
-      !/^#[0-9A-F]{6}[0-9a-f]{0,2}$/i.test(resolved) &&
       // skip if resolved is already hex
-      CSS.supports('color', resolved)
+      !/^#[0-9A-F]{6}[0-9a-f]{0,2}$/i.test(resolved) &&
       // only try to normalize things that are valid colors
       // otherwise non-colors will be made #00000000
+      CSS.supports('color', resolved)
     ) {
+      // getting the computed background color is necessary
+      // because resolved can still contain a color-mix() function
       const el = tmpPropEl.children[i] as HTMLDivElement;
       const computedStyle = window.getComputedStyle(el);
       const color = computedStyle.getPropertyValue('background-color');
+      // convert color to hex, which is what monaco and plotly require
       resolved = ColorUtils.normalizeCssColor(color, isAlphaOptional);
     }
     (result as Record<string, string>)[key] = resolved;
