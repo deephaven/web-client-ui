@@ -3,22 +3,22 @@
 :root {
   --dh-color-loading-spinner-primary: var(--dh-color-accent-bg);
   --dh-color-loading-spinner-secondary: color-mix(
-    in hsl,
+    in srgb,
     var(--dh-color-gray-800) 50%,
     transparent
   );
   --dh-color-quickactions-bg: color-mix(
-    in hsl,
+    in srgb,
     var(--dh-color-visual-gray) 90%,
     transparent
   );
   --dh-color-radial-reaction: color-mix(
-    in hsl,
+    in srgb,
     var(--dh-color-visual-gray) 60%,
     transparent
   );
   --dh-color-colorpicker-border: color-mix(
-    in hsl,
+    in srgb,
     var(--dh-color-visual-gray) 10%,
     transparent
   );
@@ -35,12 +35,12 @@
   /* We should base this color on something from the palette, but for now just
    * hard coding the original value */
   --dh-color-random-area-plot-animation-fg-fill: color-mix(
-    in hsl,
+    in srgb,
     var(--dh-color-accent) 8%,
     transparent
   );
   --dh-color-random-area-plot-animation-fg-stroke: color-mix(
-    in hsl,
+    in srgb,
     var(--dh-color-accent) 20%,
     transparent
   );
@@ -90,7 +90,7 @@
   --dh-color-search-icon: var(--dh-color-fg);
   --dh-color-form-control-error: var(--dh-color-visual-negative);
   --dh-color-form-control-error-shadow: color-mix(
-    in hsl,
+    in srgb,
     var(--dh-color-visual-negative) 25%,
     transparent
   );
@@ -116,14 +116,14 @@
   );
   --dh-color-item-list-selected-inactive-bg: var(--dh-color-gray-200);
   --dh-color-item-list-selected-border: color-mix(
-    in hsl,
+    in srgb,
     var(--dh-color-accent) 60%,
     transparent
   );
   --dh-color-item-list-drop-target-fg: var(--dh-color-white);
 
   --dh-color-item-list-keyboard-selected-bg: color-mix(
-    in hsl,
+    in srgb,
     var(--dh-color-accent) 50%,
     transparent
   );
@@ -161,12 +161,12 @@
 
   /* Wells */
   --dh-color-well-bg: color-mix(
-    in hsl,
+    in srgb,
     var(--dh-color-visual-gray) 2%,
     transparent
   );
   --dh-color-well-border: color-mix(
-    in hsl,
+    in srgb,
     var(--dh-color-visual-gray) 5%,
     transparent
   );

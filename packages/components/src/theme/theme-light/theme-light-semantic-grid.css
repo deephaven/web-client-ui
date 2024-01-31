@@ -51,19 +51,19 @@
 
   /* Filter Bar */
   --dh-color-grid-filter-bar-active-bg: color-mix(
-    in hsl,
+    in srgb,
     var(--dh-color-accent-700) 45%,
     transparent
   );
   --dh-color-grid-filter-bar-active: var(--dh-color-accent-700);
   --dh-color-grid-filter-bar-expanded-bg: var(--dh-color-gray-50);
   --dh-color-grid-filter-bar-expanded-active-bg: color-mix(
-    in hsl,
+    in srgb,
     var(--dh-color-accent-1000) 19%,
     transparent
   );
   --dh-color-grid-filter-bar-expanded-active-cell-bg: color-mix(
-    in hsl,
+    in srgb,
     var(--dh-color-accent-700) 32%,
     transparent
   );

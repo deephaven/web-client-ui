@@ -18,7 +18,7 @@
   --dh-color-text: var(--dh-color-gray-800);
   --dh-color-text-disabled: var(--dh-color-gray-600);
   --dh-color-text-highlight: color-mix(
-    in hsl,
+    in srgb,
     var(--dh-color-blue-700) 30%,
     transparent
   );
@@ -103,51 +103,51 @@
 
   /* Highlight */
   --dh-color-highlight-active: color-mix(
-    in hsl,
+    in srgb,
     var(--dh-color-visual-gray) 20%,
     transparent
   );
   --dh-color-highlight-hover: color-mix(
-    in hsl,
+    in srgb,
     var(--dh-color-visual-gray) 18%,
     transparent
   );
   --dh-color-highlight-invalid: color-mix(
-    in hsl,
+    in srgb,
     var(--dh-color-visual-red) 15%,
     transparent
   );
   --dh-color-highlight-selected: color-mix(
-    in hsl,
+    in srgb,
     var(--dh-color-accent) 25%,
     transparent
   );
   --dh-color-highlight-selected-hover: color-mix(
-    in hsl,
+    in srgb,
     var(--dh-color-accent) 35%,
     transparent
   );
 
   /* Keyboard selected */
   --dh-color-keyboard-selected-bg: color-mix(
-    in hsl,
+    in srgb,
     var(--dh-color-accent) 50%,
     transparent
   );
 
   /* Shadows / Overlays */
   --dh-color-dropshadow: color-mix(
-    in hsl,
+    in srgb,
     var(--dh-color-true-black) 80%,
     transparent
   );
   --dh-color-overlay-modal-bg: color-mix(
-    in hsl,
+    in srgb,
     var(--dh-color-visual-gray) 60%,
     transparent
   );
   --dh-color-overlay-hover-bg: color-mix(
-    in hsl,
+    in srgb,
     var(--dh-color-visual-gray) 8%,
     transparent
   );

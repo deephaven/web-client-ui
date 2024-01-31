@@ -26,7 +26,7 @@
 
   --dh-color-plotly-axis-text: var(--dh-color-gray-500);
   --dh-color-plotly-zoombox: color-mix(
-    in hsl,
+    in srgb,
     var(--dh-color-true-black) 50%,
     transparent
   );
@@ -34,7 +34,7 @@
   --dh-color-plotly-zoombox-corners-stroke: var(--dh-color-gray-75);
 
   --dh-color-plotly-modebar-btn-active: color-mix(
-    in hsl,
+    in srgb,
     var(--dh-color-true-black) 30%,
     transparent
   );
