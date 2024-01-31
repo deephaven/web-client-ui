@@ -6,20 +6,42 @@ import { useEffect, useState } from 'react';
  * Returns the latest value after no changes have occurred for the debounce duration.
  * @param value Value to debounce
  * @param debounceMs Amount of time to debounce
- * @returns The debounced value
+ * @returns The debounced value + whether the value is still debouncing
  */
-export function useDebouncedValue<T>(value: T, debounceMs: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+export function useDebouncedValue<T>(
+  value: T,
+  debounceMs: number
+): { isDebouncing: boolean; value: T } {
+  const [isDebouncing, setIsDebouncing] = useState(true);
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  // Keep `isDebouncing` in sync with `value` and `debounceMs` by setting state
+  // during render instead of in `useEffect`
+  // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  const [previousValue, setPreviousValue] = useState(value);
+  const [previousDebounceMs, setPreviousDebounceMs] = useState(debounceMs);
+  if (value !== previousValue || debounceMs !== previousDebounceMs) {
+    setIsDebouncing(true);
+    setPreviousValue(value);
+    setPreviousDebounceMs(debounceMs);
+  }
+
   useEffect(() => {
+    let isCancelled = false;
+
     const timeoutId = setTimeout(() => {
-      setDebouncedValue(value);
+      if (!isCancelled) {
+        setIsDebouncing(false);
+        setDebouncedValue(value);
+      }
     }, debounceMs);
     return () => {
+      isCancelled = true;
       clearTimeout(timeoutId);
     };
   }, [value, debounceMs]);
 
-  return debouncedValue;
+  return { isDebouncing, value: debouncedValue };
 }
 
 export default useDebouncedValue;
