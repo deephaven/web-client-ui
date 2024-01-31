@@ -10,7 +10,7 @@
   --dh-color-border: var(--dh-color-gray-700);
   --dh-color-hover-border: var(--dh-color-gray-900);
   --dh-color-border-focus: var(--dh-color-accent-800);
-  --dh-color-disabled-bg: var(--dh-color-gray-200);
+  --dh-color-disabled-bg: var(--dh-color-gray-300);
   --dh-color-scrollbar: var(--dh-color-fg);
 
   /* Text */
