@@ -83,7 +83,7 @@
   --dh-color-input-disabled-bg: var(--dh-color-disabled-bg);
   --dh-color-input-disabled-border: transparent;
   --dh-color-input-disabled-fg: var(--dh-color-text-disabled);
-  --dh-color-input-hover-border: var(--dh-color-gray-600);
+  --dh-color-input-hover-border: var(--dh-color-hover-border);
   --dh-color-input-focus-border: var(--dh-color-border-focus);
 
   /* Form Controls */
