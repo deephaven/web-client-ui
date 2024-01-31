@@ -8,7 +8,7 @@
   padding: $input-padding-y 0 $input-padding-y;
 
   &.is-invalid {
-    border-color: hsla(var(--dh-color-negative-hsl), 0.85);
+    border-color: negative-opacity(85);
   }
 }
 

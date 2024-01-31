@@ -2,10 +2,26 @@
 /* stylelint-disable alpha-value-notation */
 :root {
   --dh-color-loading-spinner-primary: var(--dh-color-accent-bg);
-  --dh-color-loading-spinner-secondary: hsla(var(--dh-color-gray-800-hsl), 0.5);
-  --dh-color-quickactions-bg: hsla(var(--dh-color-visual-gray-hsl), 0.9);
-  --dh-color-radial-reaction: hsla(var(--dh-color-visual-gray-hsl), 0.6);
-  --dh-color-colorpicker-border: hsla(var(--dh-color-visual-gray-hsl), 0.1);
+  --dh-color-loading-spinner-secondary: color-mix(
+    in srgb,
+    var(--dh-color-gray-800) 50%,
+    transparent
+  );
+  --dh-color-quickactions-bg: color-mix(
+    in srgb,
+    var(--dh-color-visual-gray) 90%,
+    transparent
+  );
+  --dh-color-radial-reaction: color-mix(
+    in srgb,
+    var(--dh-color-visual-gray) 60%,
+    transparent
+  );
+  --dh-color-colorpicker-border: color-mix(
+    in srgb,
+    var(--dh-color-visual-gray) 10%,
+    transparent
+  );
 
   /* Logo */
   --dh-logo-img: var(--dh-logo-dark-img);
@@ -18,13 +34,15 @@
 
   /* We should base this color on something from the palette, but for now just
    * hard coding the original value */
-  --dh-color-random-area-plot-animation-fg-fill: hsla(
-    var(--dh-color-accent-hsl),
-    0.08
+  --dh-color-random-area-plot-animation-fg-fill: color-mix(
+    in srgb,
+    var(--dh-color-accent) 8%,
+    transparent
   );
-  --dh-color-random-area-plot-animation-fg-stroke: hsla(
-    var(--dh-color-accent-hsl),
-    0.2
+  --dh-color-random-area-plot-animation-fg-stroke: color-mix(
+    in srgb,
+    var(--dh-color-accent) 20%,
+    transparent
   );
   --dh-color-random-area-plot-animation-bg: var(--dh-color-gray-75);
   --dh-color-random-area-plot-animation-grid: var(--dh-color-gray-300);
@@ -65,15 +83,16 @@
   --dh-color-input-disabled-bg: var(--dh-color-disabled-bg);
   --dh-color-input-disabled-border: transparent;
   --dh-color-input-disabled-fg: var(--dh-color-text-disabled);
-  --dh-color-input-hover-border: var(--dh-color-gray-600);
+  --dh-color-input-hover-border: var(--dh-color-hover-border);
   --dh-color-input-focus-border: var(--dh-color-border-focus);
 
   /* Form Controls */
   --dh-color-search-icon: var(--dh-color-fg);
-  --dh-color-form-control-error: hsl(var(--dh-color-visual-negative-hsl));
-  --dh-color-form-control-error-shadow: hsla(
-    var(--dh-color-visual-negative-hsl),
-    0.25
+  --dh-color-form-control-error: var(--dh-color-visual-negative);
+  --dh-color-form-control-error-shadow: color-mix(
+    in srgb,
+    var(--dh-color-visual-negative) 25%,
+    transparent
   );
 
   /* Labels */
@@ -96,12 +115,17 @@
     --dh-color-highlight-selected-hover
   );
   --dh-color-item-list-selected-inactive-bg: var(--dh-color-gray-200);
-  --dh-color-item-list-selected-border: hsla(var(--dh-color-accent-hsl), 0.6);
+  --dh-color-item-list-selected-border: color-mix(
+    in srgb,
+    var(--dh-color-accent) 60%,
+    transparent
+  );
   --dh-color-item-list-drop-target-fg: var(--dh-color-white);
 
-  --dh-color-item-list-keyboard-selected-bg: hsla(
-    var(--dh-color-accent-hsl),
-    0.5
+  --dh-color-item-list-keyboard-selected-bg: color-mix(
+    in srgb,
+    var(--dh-color-accent) 50%,
+    transparent
   );
 
   /* 
@@ -136,6 +160,14 @@
   --dh-color-tooltip-box-shadow: var(--dh-color-dropshadow);
 
   /* Wells */
-  --dh-color-well-bg: hsla(var(--dh-color-visual-gray-hsl), 0.02);
-  --dh-color-well-border: hsla(var(--dh-color-visual-gray-hsl), 0.05);
+  --dh-color-well-bg: color-mix(
+    in srgb,
+    var(--dh-color-visual-gray) 2%,
+    transparent
+  );
+  --dh-color-well-border: color-mix(
+    in srgb,
+    var(--dh-color-visual-gray) 5%,
+    transparent
+  );
 }

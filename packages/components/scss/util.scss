@@ -53,3 +53,32 @@
 @function solid-gradient($color) {
   @return linear-gradient(0deg, $color, $color);
 }
+
+@function color-mix-opacity($semantic-name, $i: 100) {
+  @return color-mix(
+    in srgb,
+    /* if $i doesn't contain a % sign, add one */
+      var(--dh-color-#{$semantic-name}) #{$i}#{if(unit($i) == '%', '', '%')},
+    transparent
+  );
+}
+
+@function accent-opacity($i: 100) {
+  @return color-mix-opacity('accent', $i);
+}
+
+@function negative-opacity($i: 100) {
+  @return color-mix-opacity('negative', $i);
+}
+
+@function black-opacity($i: 100) {
+  @return color-mix-opacity('black', $i);
+}
+
+@function bg-opacity($i: 100) {
+  @return color-mix-opacity('bg', $i);
+}
+
+@function fg-opacity($i: 100) {
+  @return color-mix-opacity('fg', $i);
+}

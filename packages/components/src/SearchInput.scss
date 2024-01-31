@@ -1,5 +1,4 @@
 @import '../scss/custom.scss';
-@import '../scss/util.scss';
 
 .search-group {
   position: relative;
@@ -50,13 +49,13 @@
   }
 
   .search-change-text {
-    background-color: hsla(var(--dh-color-white-hsl), 0.2);
+    background-color: fg-opacity(20);
     border-radius: 10px;
     padding: 1px 5px;
   }
 
   .search-match {
-    background-color: hsla(var(--dh-color-white-hsl), 0.2);
+    background-color: fg-opacity(20);
     border-radius: 10px;
     padding: 1px 5px;
     margin: 0 5px;

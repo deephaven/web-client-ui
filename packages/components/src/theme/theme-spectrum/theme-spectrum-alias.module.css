@@ -10,6 +10,7 @@
   --spectrum-alias-text-color-hover: var(--dh-color-text-hover);
   --spectrum-alias-text-color-disabled: var(--dh-color-text-disabled);
   --spectrum-alias-border-color: var(--dh-color-border);
+  --spectrum-alias-border-color-hover: var(--dh-color-hover-border);
   --spectrum-alias-border-color-focus: var(--dh-color-border-focus);
   --spectrum-alias-input-border-color-key-focus: var(
     --spectrum-alias-border-color-focus

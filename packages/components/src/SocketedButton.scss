@@ -108,7 +108,7 @@ $socket-bg: $content-bg;
 
 .btn-socketed.is-invalid,
 .btn-socketed.btn-socketed-linked.is-invalid {
-  border-color: hsla(var(--dh-color-negative-hsl), 0.85);
+  border-color: negative-opacity(85);
 
   &::after {
     border-color: var(--dh-color-negative-bg);
@@ -130,8 +130,7 @@ $socket-bg: $content-bg;
   }
 
   &:focus {
-    box-shadow: 0 0 0 $input-btn-focus-width
-      hsla(var(--dh-color-negative-hsl), 0.35);
+    box-shadow: 0 0 0 $input-btn-focus-width negative-opacity(35);
   }
 
   &:disabled,
