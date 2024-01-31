@@ -896,9 +896,6 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       // grid body context menu options
       if (modelColumn != null && modelRow != null) {
         actions.push(...this.getCellActions(modelColumn, grid, gridPoint));
-        // if (model.isFilterable(sourceColumn)) {
-
-        // }
         actions.push(this.getCellFilterActions(modelColumn, grid, gridPoint));
       }
 
