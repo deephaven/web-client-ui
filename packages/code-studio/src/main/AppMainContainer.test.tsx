@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
+import { Provider } from 'react-redux';
 import { render, screen } from '@testing-library/react';
 import { ToolType } from '@deephaven/dashboard-core-plugins';
 import { ApiContext } from '@deephaven/jsapi-bootstrap';
+import { ConnectionContext } from '@deephaven/jsapi-components';
 import dh from '@deephaven/jsapi-shim';
 import type {
   IdeConnection,
@@ -10,10 +12,10 @@ import type {
   VariableChanges,
 } from '@deephaven/jsapi-types';
 import { TestUtils } from '@deephaven/utils';
-import { Workspace } from '@deephaven/redux';
+import { Workspace, createMockStore } from '@deephaven/redux';
 import userEvent from '@testing-library/user-event';
 import { DEFAULT_DASHBOARD_ID } from '@deephaven/dashboard';
-import { AppMainContainer, AppDashboardData } from './AppMainContainer';
+import { AppMainContainer } from './AppMainContainer';
 import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
 import LayoutStorage from '../storage/LayoutStorage';
 
@@ -69,30 +71,38 @@ function renderAppMainContainer({
   match = makeMatch(),
   plugins = new Map(),
 } = {}) {
+  const store = createMockStore();
   return render(
-    <ApiContext.Provider value={dh}>
-      <AppMainContainer
-        dashboardData={dashboardData as AppDashboardData}
-        layoutStorage={layoutStorage as LayoutStorage}
-        saveWorkspace={saveWorkspace}
-        updateDashboardData={updateDashboardData}
-        updateWorkspaceData={updateWorkspaceData}
-        user={user}
-        workspace={workspace as Workspace}
-        workspaceStorage={workspaceStorage}
-        activeTool={activeTool}
-        setActiveTool={setActiveTool}
-        setDashboardIsolatedLinkerPanelId={setDashboardIsolatedLinkerPanelId}
-        client={client}
-        serverConfigValues={serverConfigValues}
-        dashboardOpenedPanelMaps={dashboardOpenedPanelMaps}
-        connection={connection}
-        session={session as unknown as IdeSession}
-        sessionConfig={sessionConfig}
-        match={match}
-        plugins={plugins}
-      />
-    </ApiContext.Provider>
+    <Provider store={store}>
+      <ApiContext.Provider value={dh}>
+        <ConnectionContext.Provider value={connection}>
+          <AppMainContainer
+            dashboardData={dashboardData}
+            allDashboardData={dashboardData}
+            layoutStorage={layoutStorage as LayoutStorage}
+            saveWorkspace={saveWorkspace}
+            updateDashboardData={updateDashboardData}
+            updateWorkspaceData={updateWorkspaceData}
+            user={user}
+            workspace={workspace as Workspace}
+            workspaceStorage={workspaceStorage}
+            activeTool={activeTool}
+            setActiveTool={setActiveTool}
+            setDashboardIsolatedLinkerPanelId={
+              setDashboardIsolatedLinkerPanelId
+            }
+            client={client}
+            serverConfigValues={serverConfigValues}
+            dashboardOpenedPanelMaps={dashboardOpenedPanelMaps}
+            connection={connection}
+            session={session as unknown as IdeSession}
+            sessionConfig={sessionConfig}
+            match={match}
+            plugins={plugins}
+          />
+        </ConnectionContext.Provider>
+      </ApiContext.Provider>
+    </Provider>
   );
 }
 let mockProp = {};
@@ -100,7 +110,7 @@ let mockId = DEFAULT_DASHBOARD_ID;
 jest.mock('@deephaven/dashboard', () => ({
   ...jest.requireActual('@deephaven/dashboard'),
   __esModule: true,
-  Dashboard: jest.fn(({ hydrate }) => {
+  LazyDashboard: jest.fn(({ hydrate }) => {
     const result = hydrate(mockProp, mockId);
     if (result.fetch != null) {
       result.fetch();

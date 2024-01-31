@@ -9,7 +9,7 @@ import {
 } from '@deephaven/iris-grid';
 
 export function GridWidgetPlugin(
-  props: WidgetComponentProps
+  props: WidgetComponentProps<dh.Table>
 ): JSX.Element | null {
   const dh = useApi();
   const [model, setModel] = useState<IrisGridModel>();
@@ -19,7 +19,7 @@ export function GridWidgetPlugin(
   useEffect(() => {
     let cancelled = false;
     async function init() {
-      const table = (await fetch()) as unknown as dh.Table;
+      const table = await fetch();
       const newModel = await IrisGridModelFactory.makeModel(dh, table);
       if (!cancelled) {
         setModel(newModel);

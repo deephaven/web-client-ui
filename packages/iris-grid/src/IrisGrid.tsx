@@ -432,6 +432,7 @@ export interface IrisGridState {
 
   gotoValueSelectedColumnName: ColumnName;
   gotoValueSelectedFilter: FilterTypeValue;
+  gotoValueManuallyChanged: boolean;
   gotoValue: string;
 
   columnHeaderGroups: readonly ColumnHeaderGroup[];
@@ -839,6 +840,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       gotoValueSelectedColumnName: model.columns[0]?.name ?? '',
       gotoValueSelectedFilter: FilterType.eqIgnoreCase,
       gotoValue: '',
+      gotoValueManuallyChanged: false,
       columnHeaderGroups: columnHeaderGroups ?? model.initialColumnHeaderGroups,
     };
   }
@@ -2594,6 +2596,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         gotoValueSelectedColumnName: columnName,
         gotoRowError: '',
         gotoValueError: '',
+        gotoValueManuallyChanged: false,
       });
       this.focusRowInGrid(row);
       this.gotoRowRef.current?.focus();
@@ -2611,6 +2614,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         gotoValue: '',
         gotoRowError: '',
         gotoValueError: '',
+        gotoValueManuallyChanged: false,
       });
       return;
     }
@@ -2627,6 +2631,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       gotoValueSelectedColumnName: name,
       gotoRowError: '',
       gotoValueError: '',
+      gotoValueManuallyChanged: false,
     });
   }
 
@@ -2775,11 +2780,11 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   handleGotoRowOpened(): void {
-    this.setState({ isGotoShown: true });
+    this.setState({ isGotoShown: true, gotoValueManuallyChanged: false });
   }
 
   handleGotoRowClosed(): void {
-    this.setState({ isGotoShown: false });
+    this.setState({ isGotoShown: false, gotoValueManuallyChanged: false });
   }
 
   handleAdvancedMenuClosed(columnIndex: number): void {
@@ -3925,20 +3930,39 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   handleGotoValueSelectedColumnNameChanged(columnName: ColumnName): void {
     const { model } = this.props;
     const cursorRow = this.grid?.state.cursorRow;
+    const {
+      gotoValueSelectedColumnName: prevColumnName,
+      gotoValueManuallyChanged,
+    } = this.state;
 
     if (cursorRow != null) {
       const index = model.getColumnIndexByName(columnName);
       const column = IrisGridUtils.getColumnByName(model.columns, columnName);
+      const prevColumn = IrisGridUtils.getColumnByName(
+        model.columns,
+        prevColumnName
+      );
       if (index == null || column == null) {
         return;
       }
       const value = model.valueForCell(index, cursorRow);
       const text = IrisGridUtils.convertValueToText(value, column.type);
-      this.setState({
-        gotoValueSelectedColumnName: columnName,
-        gotoValue: text,
-        gotoValueError: '',
-      });
+
+      // do NOT update value if user manually changed value AND column type remains the same
+      if (gotoValueManuallyChanged && column.type === prevColumn?.type) {
+        this.setState({
+          gotoValueSelectedColumnName: columnName,
+          gotoValueError: '',
+        });
+      } else {
+        // do update, and set goToValueManuallyChanged to false because value was automatically changed
+        this.setState({
+          gotoValueSelectedColumnName: columnName,
+          gotoValue: text,
+          gotoValueError: '',
+          gotoValueManuallyChanged: false,
+        });
+      }
     }
     this.setState({
       gotoValueSelectedColumnName: columnName,
@@ -3951,7 +3975,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   handleGotoValueChanged = (input: string): void => {
-    this.setState({ gotoValue: input });
+    this.setState({ gotoValue: input, gotoValueManuallyChanged: true });
     this.debouncedSeekRow(input);
   };
 

@@ -7,11 +7,10 @@ import {
   TableUtils,
 } from '@deephaven/jsapi-utils';
 import {
-  KeyedItem,
-  SEARCH_DEBOUNCE_MS,
-  TestUtils,
-  WindowedListData,
-} from '@deephaven/utils';
+  useDebouncedValue,
+  type WindowedListData,
+} from '@deephaven/react-hooks';
+import { KeyedItem, SEARCH_DEBOUNCE_MS, TestUtils } from '@deephaven/utils';
 import usePickerWithSelectedValues from './usePickerWithSelectedValues';
 import useViewportData, { UseViewportDataResult } from './useViewportData';
 import useViewportFilter from './useViewportFilter';
@@ -27,6 +26,10 @@ jest.mock('@deephaven/jsapi-utils', () => ({
   createSearchTextFilter: jest.fn(),
   createSelectedValuesFilter: jest.fn(),
 }));
+jest.mock('@deephaven/react-hooks', () => ({
+  ...jest.requireActual('@deephaven/react-hooks'),
+  useDebouncedValue: jest.fn(),
+}));
 
 const { asMock, createMockProxy } = TestUtils;
 
@@ -38,6 +41,8 @@ const tableUtils = createMockProxy<TableUtils>();
 
 const mock = {
   columnName: 'mock.columnName',
+  isDebouncingFalse: { isDebouncing: false },
+  isDebouncingTrue: { isDebouncing: true },
   filter: [
     createMockProxy<FilterCondition>(),
     createMockProxy<FilterCondition>(),
@@ -48,7 +53,8 @@ const mock = {
     item: { type: 'mock.item' },
   }),
   mapItemToValue: jest.fn<string, [item: KeyedItem<MockItem>]>(),
-  searchText: 'mock.searchText',
+  searchText: '  mock searchText  ',
+  searchTextTrimmed: 'mock searchText',
   searchTextFilter: jest.fn() as FilterConditionFactory,
   selectedKey: 'mock.selectedKey',
   excludeSelectedValuesFilter: jest.fn() as FilterConditionFactory,
@@ -73,14 +79,17 @@ function mockUseViewportData(size: number) {
     .mockReturnValue(viewportData as UseViewportDataResult<unknown, Table>);
 }
 
-async function renderOnceAndWait() {
+async function renderOnceAndWait(
+  overrides?: Partial<Parameters<typeof usePickerWithSelectedValues>[0]>
+) {
   const hookResult = renderHook(() =>
-    usePickerWithSelectedValues(
-      mockTable.usersAndGroups,
-      mock.columnName,
-      mock.mapItemToValue,
-      ...mock.filterConditionFactories
-    )
+    usePickerWithSelectedValues({
+      maybeTable: mockTable.usersAndGroups,
+      columnName: mock.columnName,
+      mapItemToValue: mock.mapItemToValue,
+      filterConditionFactories: mock.filterConditionFactories,
+      ...overrides,
+    })
   );
 
   await hookResult.waitForNextUpdate();
@@ -115,6 +124,10 @@ beforeEach(() => {
     .mockName('useFilterConditionFactories')
     .mockReturnValue(mock.filter);
 
+  asMock(useDebouncedValue)
+    .mockName('useDebouncedValue')
+    .mockReturnValue(mock.isDebouncingFalse);
+
   mockUseViewportData(1);
 
   asMock(mock.viewportData.findItem)
@@ -130,37 +143,54 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
-it('should initially filter viewport by empty search text and exclude nothing', async () => {
-  const { result } = await renderOnceAndWait();
+it.each([undefined, false, true])(
+  'should initially filter viewport by empty search text and exclude nothing: %s',
+  async trimSearchText => {
+    const { result } = await renderOnceAndWait({ trimSearchText });
 
-  expect(result.current.searchText).toEqual('');
-  expect(result.current.selectedKey).toBeNull();
+    expect(result.current.searchText).toEqual('');
+    expect(result.current.selectedKey).toBeNull();
 
-  expect(createSearchTextFilter).toHaveBeenCalledWith(
-    tableUtils,
-    mock.columnName,
-    ''
-  );
+    expect(createSearchTextFilter).toHaveBeenCalledWith(
+      tableUtils,
+      mock.columnName,
+      ''
+    );
 
-  expect(createSelectedValuesFilter).toHaveBeenCalledWith(
-    tableUtils,
-    mock.columnName,
-    new Set(),
-    false,
-    true
-  );
+    expect(createSelectedValuesFilter).toHaveBeenCalledWith(
+      tableUtils,
+      mock.columnName,
+      new Set(),
+      false,
+      true
+    );
 
-  expect(useFilterConditionFactories).toHaveBeenCalledWith(
-    mockTable.list,
-    mock.searchTextFilter,
-    mock.excludeSelectedValuesFilter
-  );
+    expect(useFilterConditionFactories).toHaveBeenCalledWith(
+      mockTable.list,
+      mock.searchTextFilter,
+      mock.excludeSelectedValuesFilter
+    );
 
-  expect(useViewportFilter).toHaveBeenCalledWith(
-    asMock(useViewportData).mock.results[0].value,
-    mock.filter
-  );
-});
+    expect(useViewportFilter).toHaveBeenCalledWith(
+      asMock(useViewportData).mock.results[0].value,
+      mock.filter
+    );
+  }
+);
+
+it.each([[undefined], [mock.filterConditionFactories]])(
+  'should create distinct sorted column table applying filter condition factories: %s',
+  async filterConditionFactories => {
+    await renderOnceAndWait({ filterConditionFactories });
+
+    expect(tableUtils.createDistinctSortedColumnTable).toHaveBeenCalledWith(
+      mockTable.usersAndGroups,
+      mock.columnName,
+      'asc',
+      ...(filterConditionFactories ?? [])
+    );
+  }
+);
 
 it('should memoize results', async () => {
   const { rerender, result } = await renderOnceAndWait();
@@ -172,46 +202,51 @@ it('should memoize results', async () => {
   expect(result.current).toBe(prevResult);
 });
 
-it('should filter viewport by search text after debounce', async () => {
-  const { result, waitForNextUpdate } = await renderOnceAndWait();
+it.each([undefined, false, true])(
+  'should filter viewport by search text after debounce',
+  async trimSearchText => {
+    const { result, waitForNextUpdate } = await renderOnceAndWait({
+      trimSearchText,
+    });
 
-  jest.clearAllMocks();
+    jest.clearAllMocks();
 
-  act(() => {
-    result.current.onSearchTextChange(mock.searchText);
-  });
+    act(() => {
+      result.current.onSearchTextChange(mock.searchText);
+    });
 
-  // search text updated, but debounce not expired
-  expect(result.current.searchText).toEqual(mock.searchText);
-  expect(createSearchTextFilter).not.toHaveBeenCalled();
+    // search text updated, but debounce not expired
+    expect(result.current.searchText).toEqual(mock.searchText);
+    expect(createSearchTextFilter).not.toHaveBeenCalled();
 
-  act(() => {
-    jest.advanceTimersByTime(SEARCH_DEBOUNCE_MS);
-  });
+    act(() => {
+      jest.advanceTimersByTime(SEARCH_DEBOUNCE_MS);
+    });
 
-  // debouncedSearchText change will trigger another doesColumnValueExist
-  // call which will update state once resolved
-  await waitForNextUpdate();
+    // debouncedSearchText change will trigger another doesColumnValueExist
+    // call which will update state once resolved
+    await waitForNextUpdate();
 
-  expect(createSearchTextFilter).toHaveBeenCalledWith(
-    tableUtils,
-    mock.columnName,
-    mock.searchText
-  );
+    expect(createSearchTextFilter).toHaveBeenCalledWith(
+      tableUtils,
+      mock.columnName,
+      trimSearchText === true ? mock.searchTextTrimmed : mock.searchText
+    );
 
-  expect(createSelectedValuesFilter).not.toHaveBeenCalled();
+    expect(createSelectedValuesFilter).not.toHaveBeenCalled();
 
-  expect(useFilterConditionFactories).toHaveBeenCalledWith(
-    mockTable.list,
-    mock.searchTextFilter,
-    mock.excludeSelectedValuesFilter
-  );
+    expect(useFilterConditionFactories).toHaveBeenCalledWith(
+      mockTable.list,
+      mock.searchTextFilter,
+      mock.excludeSelectedValuesFilter
+    );
 
-  expect(useViewportFilter).toHaveBeenCalledWith(
-    asMock(useViewportData).mock.results[0].value,
-    mock.filter
-  );
-});
+    expect(useViewportFilter).toHaveBeenCalledWith(
+      asMock(useViewportData).mock.results[0].value,
+      mock.filter
+    );
+  }
+);
 
 it.each([
   [null, null],
@@ -294,55 +329,70 @@ it.each([
 
 describe('Flags', () => {
   const search = {
-    empty: '',
-    inSelection: 'in.selection',
-    notInSelection: 'not.in.selection',
+    empty: '  ',
+    inSelection: '  in.selection  ',
+    notInSelection: '  not.in.selection  ',
   };
 
   beforeEach(() => {
     asMock(mock.mapItemToValue)
       .mockName('mockItemToValue')
-      .mockReturnValue(search.inSelection);
+      .mockReturnValue(search.inSelection.trim());
   });
 
-  it.each([
-    [search.empty, 0],
-    [search.empty, 1],
-    [search.inSelection, 0],
-    [search.inSelection, 1],
-    [search.notInSelection, 0],
-    [search.notInSelection, 1],
-  ])('should return search text flags: %s', async (searchText, listSize) => {
-    mockUseViewportData(listSize);
+  describe.each([undefined, false, true])(
+    'trimSearchText: %s',
+    trimSearchText => {
+      it.each([
+        [search.empty, 0],
+        [search.empty, 1],
+        [search.inSelection, 0],
+        [search.inSelection, 1],
+        [search.notInSelection, 0],
+        [search.notInSelection, 1],
+      ])(
+        'should return search text flags: %s',
+        async (searchText, listSize) => {
+          mockUseViewportData(listSize);
 
-    const { result, waitForNextUpdate } = await renderOnceAndWait();
+          const { result, waitForNextUpdate } = await renderOnceAndWait({
+            trimSearchText,
+          });
 
-    // Initial values
-    expect(result.current).toMatchObject({
-      hasSearchTextWithZeroResults: false,
-      searchTextIsInSelectedValues: false,
-    });
+          const searchTextMaybeTrimmed =
+            trimSearchText === true ? searchText.trim() : searchText;
 
-    act(() => {
-      // We need to set something so that selectedValueMap will get populated
-      // with result of mapItemToValue which returns `search.inSelection`
-      result.current.onSelectKey('some.key');
+          // Initial values
+          expect(result.current).toMatchObject({
+            hasSearchTextWithZeroResults: false,
+            searchTextIsInSelectedValues: false,
+          });
 
-      result.current.onSearchTextChange(searchText);
-      jest.advanceTimersByTime(SEARCH_DEBOUNCE_MS);
-    });
+          act(() => {
+            // We need to set something so that selectedValueMap will get populated
+            // with result of mapItemToValue which returns `search.inSelection`
+            result.current.onSelectKey('some.key');
 
-    // debouncedSearchText change will trigger another doesColumnValueExist
-    // call which will update state once resolved
-    if (searchText !== '') {
-      await waitForNextUpdate();
+            result.current.onSearchTextChange(searchText);
+            jest.advanceTimersByTime(SEARCH_DEBOUNCE_MS);
+          });
+
+          // debouncedSearchText change will trigger another doesColumnValueExist
+          // call which will update state once resolved
+          if (searchTextMaybeTrimmed !== '') {
+            await waitForNextUpdate();
+          }
+
+          expect(result.current).toMatchObject({
+            hasSearchTextWithZeroResults:
+              searchTextMaybeTrimmed.length > 0 && listSize === 0,
+            searchTextIsInSelectedValues:
+              searchTextMaybeTrimmed === search.inSelection.trim(),
+          });
+        }
+      );
     }
-
-    expect(result.current).toMatchObject({
-      hasSearchTextWithZeroResults: searchText.length > 0 && listSize === 0,
-      searchTextIsInSelectedValues: searchText === search.inSelection,
-    });
-  });
+  );
 });
 
 describe('onAddValues', () => {
@@ -411,6 +461,7 @@ describe('searchTextExists', () => {
 
   it.each([
     // isLoading, isDebouncing, exists
+    // (at least one of `isLoading` or `isDebouncing` is true in all cases)
     [true, true, true],
     [true, true, false],
     [true, false, true],
@@ -418,27 +469,26 @@ describe('searchTextExists', () => {
     [false, true, true],
     [false, true, false],
   ])(
-    'should be null if check is in progress: isLoading:%s, isDebouncing:%s, exists:%s',
-    async (isLoading, isDebouncing, exists) => {
+    'should be null if check is in progress: isLoading:%s, isDebouncing:%s, valueExists:%s',
+    async (valueExistsIsLoading, isDebouncing, valueExists) => {
       asMock(tableUtils.doesColumnValueExist).mockReturnValue(
-        isLoading ? unresolvedPromise : Promise.resolve(exists)
+        valueExistsIsLoading ? unresolvedPromise : Promise.resolve(valueExists)
       );
+
+      asMock(useDebouncedValue).mockReturnValue({
+        isDebouncing,
+      });
 
       const { result } = await renderOnceAndWait();
 
-      if (isDebouncing) {
-        act(() => {
-          // cause a mismatch of searchText with debouncedSearchText
-          result.current.onSearchTextChange('mismatch');
-        });
-      }
+      expect(useDebouncedValue).toHaveBeenCalledWith('', SEARCH_DEBOUNCE_MS);
 
       expect(result.current.searchTextExists).toBeNull();
     }
   );
 
   it.each([true, false])(
-    'should be doesColumnValueExist return value if check is complete',
+    'should equal the return value of `doesColumnValueExist` if check is complete',
     async exists => {
       asMock(tableUtils.doesColumnValueExist).mockResolvedValue(exists);
 

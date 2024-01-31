@@ -7,6 +7,7 @@ import {
 } from '@deephaven/jsapi-utils';
 import {
   useDebouncedCallback,
+  useDebouncedValue,
   usePromiseFactory,
 } from '@deephaven/react-hooks';
 import {
@@ -42,24 +43,45 @@ export interface UsePickerWithSelectedValuesResult<TItem, TValue> {
  * items are removed from the list and managed in a selectedValueMap data
  * structure. Useful for components that contain a picker but show selected
  * values in a separate component.
- * @param maybeTable
- * @param columnName
- * @param mapItemToValue
- * @param filterConditionFactories
+ * @param maybeTable The table to get the list of items from
+ * @param columnName The column name to get the list of items from
+ * @param mapItemToValue A function to map an item to a value
+ * @param filterConditionFactories Optional filter condition factories to apply to the list
+ * @param trimSearchText Whether to trim the search text before filtering. Defaults to false
  */
-export function usePickerWithSelectedValues<TItem, TValue>(
-  maybeTable: dh.Table | null,
-  columnName: string,
-  mapItemToValue: (item: KeyedItem<TItem>) => TValue,
-  ...filterConditionFactories: FilterConditionFactory[]
-): UsePickerWithSelectedValuesResult<TItem, TValue> {
+export function usePickerWithSelectedValues<TItem, TValue>({
+  maybeTable,
+  columnName,
+  mapItemToValue,
+  filterConditionFactories = [],
+  trimSearchText = false,
+}: {
+  maybeTable: dh.Table | null;
+  columnName: string;
+  mapItemToValue: (item: KeyedItem<TItem>) => TValue;
+  filterConditionFactories?: FilterConditionFactory[];
+  trimSearchText?: boolean;
+}): UsePickerWithSelectedValuesResult<TItem, TValue> {
   const tableUtils = useTableUtils();
 
   // `searchText` should always be up to date for controlled search input.
-  // `debouncedSearchText` will get updated after a delay to avoid updating
-  // filters on every key stroke.
+  // `appliedSearchText` will get updated after a delay to avoid updating
+  // filters on every key stroke. It will also be trimmed of leading / trailing
+  // spaces if `trimSearchText` is true.
   const [searchText, setSearchText] = useState('');
-  const [debouncedSearchText, setDebouncedSearchText] = useState('');
+  const [appliedSearchText, setAppliedSearchText] = useState('');
+
+  const applySearchText = useCallback(
+    (text: string) => {
+      setAppliedSearchText(trimSearchText ? text.trim() : text);
+    },
+    [trimSearchText]
+  );
+
+  const searchTextMaybeTrimmed = useMemo(
+    () => (trimSearchText ? searchText.trim() : searchText),
+    [searchText, trimSearchText]
+  );
 
   const [selectedKey, setSelectedKey] = useState<Key | null>(null);
   const [selectedValueMap, setSelectedValueMap] = useState<
@@ -70,20 +92,31 @@ export function usePickerWithSelectedValues<TItem, TValue>(
     usePromiseFactory(tableUtils.doesColumnValueExist, [
       maybeTable,
       columnName,
-      debouncedSearchText,
+      appliedSearchText,
       false /* isCaseSensitive */,
     ]);
+
+  // The `searchTextFilter` starts getting applied to the list whenever
+  // `appliedSearchText` changes, after which there is a small delay before the
+  // items are in sync. Use a debounce timer to allow a little extra time
+  // before calculating `searchTextExists` below. Note that there are 2 debounce
+  // timers at play here:
+  // 1. `onDebouncedSearchTextChange` applies the search text after user stops typing
+  // 2. `useDebouncedValue` debounces whenever the result of the first debounce
+  //    changes, and `isApplyingFilter` will be true while this 2nd timer is active.
+  const { isDebouncing: isApplyingFilter } = useDebouncedValue(
+    appliedSearchText,
+    SEARCH_DEBOUNCE_MS
+  );
 
   // If value exists check is still loading or if debounce hasn't completed, set
   // `searchTextExists` to null since it is indeterminate.
   const searchTextExists =
-    valueExistsIsLoading || debouncedSearchText !== searchText
-      ? null
-      : valueExists;
+    isApplyingFilter || valueExistsIsLoading ? null : valueExists;
 
   const searchTextFilter = useMemo(
-    () => createSearchTextFilter(tableUtils, columnName, debouncedSearchText),
-    [columnName, debouncedSearchText, tableUtils]
+    () => createSearchTextFilter(tableUtils, columnName, appliedSearchText),
+    [appliedSearchText, columnName, tableUtils]
   );
 
   // Filter out selected values from the picker
@@ -113,13 +146,14 @@ export function usePickerWithSelectedValues<TItem, TValue>(
     viewportPadding: VIEWPORT_PADDING,
   });
 
-  const hasSearchTextWithZeroResults = searchText.length > 0 && list.size === 0;
+  const hasSearchTextWithZeroResults =
+    searchTextMaybeTrimmed.length > 0 && list.size === 0;
   const searchTextIsInSelectedValues = selectedValueMap.has(
-    searchText as TValue
+    searchTextMaybeTrimmed as TValue
   );
 
   const onDebouncedSearchTextChange = useDebouncedCallback(
-    setDebouncedSearchText,
+    applySearchText,
     SEARCH_DEBOUNCE_MS
   );
 
@@ -136,7 +170,7 @@ export function usePickerWithSelectedValues<TItem, TValue>(
   const onSelectKey = useCallback(
     (key: Key | null) => {
       setSearchText('');
-      setDebouncedSearchText('');
+      applySearchText('');
 
       // Set the selection temporarily to avoid the picker staying open
       setSelectedKey(key);
@@ -165,7 +199,12 @@ export function usePickerWithSelectedValues<TItem, TValue>(
         return next;
       });
     },
-    [setSelectedKeyOnNextFrame, list.viewportData, mapItemToValue]
+    [
+      applySearchText,
+      setSelectedKeyOnNextFrame,
+      list.viewportData,
+      mapItemToValue,
+    ]
   );
 
   const onAddValues = useCallback((values: ReadonlySet<TValue>) => {

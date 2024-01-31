@@ -77,7 +77,17 @@ export interface CustomizableWorkspace {
 export interface Workspace {
   data: WorkspaceData;
 }
-export type DashboardData = Record<string, unknown>;
+
+export type PluginData = unknown;
+
+export type PluginDataMap = Record<string, PluginData>;
+
+export type DashboardData = Record<string, unknown> & {
+  title?: string;
+  closed?: unknown[];
+  filterSets?: unknown[];
+  pluginDataMap?: PluginDataMap;
+};
 
 export type WorkspaceStorageLoadOptions = {
   isConsoleAvailable: boolean;
@@ -98,7 +108,7 @@ export type RootState = {
   user: User;
   workspace: CustomizableWorkspace;
   defaultWorkspaceSettings: WorkspaceSettings;
-  dashboardData: Record<string, DashboardData>;
+  dashboardData: { [id: string]: DashboardData };
   layoutStorage: unknown;
   serverConfigValues: ServerConfigValues;
 };

@@ -372,6 +372,7 @@ const GotoRow = forwardRef<GotoRowElement, GotoRowProps>(
                     }}
                     value={gotoValueSelectedColumnName}
                     aria-label="column-name-select"
+                    id="column-name-select"
                   >
                     {columns.map(column => (
                       <option key={column.name} value={column.name}>

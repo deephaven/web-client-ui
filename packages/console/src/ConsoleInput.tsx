@@ -59,7 +59,7 @@ export class ConsoleInput extends PureComponent<
   constructor(props: ConsoleInputProps) {
     super(props);
 
-    this.handleWindowResize = this.handleWindowResize.bind(this);
+    this.handleResize = this.handleResize.bind(this);
 
     this.commandContainer = React.createRef();
     this.commandHistoryIndex = null;
@@ -68,6 +68,7 @@ export class ConsoleInput extends PureComponent<
     this.history = [];
     // Tracks every command that has been modified by its commandHistoryIndex. Cleared on any command being executed
     this.modifiedCommands = new Map();
+    this.resizeObserver = new window.ResizeObserver(this.handleResize);
 
     this.state = {
       commandEditorHeight: LINE_HEIGHT,
@@ -79,8 +80,6 @@ export class ConsoleInput extends PureComponent<
   componentDidMount(): void {
     this.initCommandEditor();
 
-    window.addEventListener('resize', this.handleWindowResize);
-
     this.loadMoreHistory();
   }
 
@@ -89,7 +88,7 @@ export class ConsoleInput extends PureComponent<
   }
 
   componentWillUnmount(): void {
-    window.removeEventListener('resize', this.handleWindowResize);
+    this.resizeObserver.disconnect();
 
     if (this.loadingPromise != null) {
       this.loadingPromise.cancel();
@@ -99,6 +98,8 @@ export class ConsoleInput extends PureComponent<
   }
 
   cancelListener?: () => void;
+
+  resizeObserver: ResizeObserver;
 
   commandContainer: RefObject<HTMLDivElement>;
 
@@ -279,6 +280,8 @@ export class ConsoleInput extends PureComponent<
 
     this.commandEditor.focus();
 
+    this.resizeObserver.observe(element);
+
     this.updateDimensions();
 
     this.setState({ model: this.commandEditor.getModel() });
@@ -293,7 +296,7 @@ export class ConsoleInput extends PureComponent<
     }
   }
 
-  handleWindowResize(): void {
+  handleResize(): void {
     this.updateDimensions();
   }
 

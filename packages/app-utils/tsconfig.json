@@ -12,6 +12,7 @@
     { "path": "../components" },
     { "path": "../console" },
     { "path": "../dashboard" },
+    { "path": "../dashboard-core-plugins" },
     { "path": "../iris-grid" },
     { "path": "../jsapi-bootstrap" },
     { "path": "../jsapi-components" },
