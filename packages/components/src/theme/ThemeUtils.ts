@@ -294,7 +294,7 @@ export function replaceSVGFillColor(
 export function resolveCssVariablesInRecord<T extends Record<string, string>>(
   record: T,
   targetElement: HTMLElement = document.body,
-  isAlphaOptional = true
+  isAlphaOptional = false
 ): T {
   const perfStart = performance.now();
 
@@ -317,12 +317,18 @@ export function resolveCssVariablesInRecord<T extends Record<string, string>>(
   const tempPropElComputedStyle = window.getComputedStyle(tmpPropEl);
 
   const result = {} as T;
-  recordArray.forEach(([key], i) => {
+  recordArray.forEach(([key, value], i) => {
+    // only resolve if it contains a css var expression
+    if (!value.includes(CSS_VAR_EXPRESSION_PREFIX)) {
+      (result as Record<string, string>)[key] = value;
+      return;
+    }
     let resolved = tempPropElComputedStyle.getPropertyValue(
       `--${TMP_CSS_PROP_PREFIX}-${i}`
     );
     if (
-      !/^#[0-9A-F]{6}[0-9a-f]{0,2}$/i.test(resolved) && // skip if already hex
+      !/^#[0-9A-F]{6}[0-9a-f]{0,2}$/i.test(resolved) &&
+      // skip if resolved is already hex
       CSS.supports('color', resolved)
       // only try to normalize things that are valid colors
       // otherwise non-colors will be made #00000000

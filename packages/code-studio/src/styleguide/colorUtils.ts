@@ -1,3 +1,4 @@
+import { getExpressionRanges } from '@deephaven/components';
 import { ColorUtils } from '@deephaven/utils';
 
 export const INVALID_COLOR_BORDER_STYLE = '2px solid var(--dh-color-notice-bg)';
@@ -136,11 +137,9 @@ export function extractColorVars(
       // values. We'll need to make this more robust if we ever change the
       // default themes to use non-hsl.
       if (varName === '--dh-color-chart-colorway') {
-        const colorwayColors = value
-          .split('hsl')
-          .filter(Boolean)
-          .map(v => `hsl${v.trim()}`);
-
+        const colorwayColors = getExpressionRanges(value ?? '').map(
+          ([start, end]) => value.substring(start, end + 1)
+        );
         return colorwayColors.map((varExp, i) => ({
           name: `${varName}-${i}`,
           value: varExp,

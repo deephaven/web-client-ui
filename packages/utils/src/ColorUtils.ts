@@ -18,10 +18,12 @@ class ColorUtils {
     const divEl = document.createElement('div');
     divEl.style.display = 'none';
     divEl.style.backgroundColor = colorString;
-    const color = divEl.style.backgroundColor;
+    const color = window
+      .getComputedStyle(document.body.appendChild(divEl))
+      .getPropertyValue('background-color');
     divEl.remove();
 
-    return color;
+    return color || null;
   }
 
   /**
@@ -34,9 +36,11 @@ class ColorUtils {
   static isDark(background: string): boolean {
     const d = document.createElement('div');
     d.style.display = 'none';
-    d.style.color = background;
+    d.style.backgroundColor = background;
 
-    const computedColor = getComputedStyle(document.body.appendChild(d)).color;
+    const computedColor = getComputedStyle(
+      document.body.appendChild(d)
+    ).backgroundColor;
     const colorTokens = computedColor.match(/\d+/g);
     let color: number[] = [];
 
@@ -62,7 +66,7 @@ class ColorUtils {
    * THIS HAS POOR PERFORMANCE DUE TO DOM MANIPULATION
    * Normalize a css color to 8 character hex value (or 6 character hex if
    * isAlphaOptional is true and alpha is 'ff'). If the color can't be resolved,
-   * return the original color string.
+   * return the original string.
    * @param colorString The color string to normalize
    * @param isAlphaOptional If true, the alpha value will be dropped if it is 'ff'.
    * Defaults to false.
@@ -111,7 +115,7 @@ class ColorUtils {
         // loose with the regex to allow for different formats between browsers
         // take the first 4 digits that look like numbers, including decimals
         // We've already checked it's a valid color with CSS.supports
-        /(?:\d+(?:\.\d+)?)/g
+        /(?:\b\d+\.\d*|\b\d+|\.\d+)/g
       ) ?? [];
 
     if (r == null || g == null || b == null) {
@@ -127,18 +131,13 @@ class ColorUtils {
       };
     }
 
-    // Split on spaces, commas, and slashes. Note that this more permissive than
-    // the CSS spec in that slashes should only be used to delimit the alpha value
-    // (e.g. r g b / a), but this would match r/g/b/a. It also would match a mixed
-    // delimiter case (e.g. r,g b,a). This seems like a reasonable tradeoff for the
-    // complexity that would be added to enforce the full spec.
-    // const tokens = args.split(/[ ,/]/).filter(Boolean);
-
-    // if (tokens.length < 3) {
-    //   return null;
-    // }
-
-    return { r: Number(r), g: Number(g), b: Number(b), a: Number(a ?? 1) };
+    // return 1 for any alpha value greater than 1
+    return {
+      r: Number(r),
+      g: Number(g),
+      b: Number(b),
+      a: Math.min(Number(a ?? 1), 1),
+    };
   }
 
   /**

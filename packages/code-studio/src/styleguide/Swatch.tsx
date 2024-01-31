@@ -1,6 +1,5 @@
 import React, { ReactNode, useMemo } from 'react';
 import { Tooltip } from '@deephaven/components';
-import { ColorUtils } from '@deephaven/utils';
 import { INVALID_COLOR_BORDER_STYLE } from './colorUtils';
 import { useContrastFgColorRef, useDhColorFromPseudoContent } from './hooks';
 

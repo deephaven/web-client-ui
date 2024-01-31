@@ -68,3 +68,8 @@ Object.defineProperty(document, 'getAnimations', {
   value: () => [],
   writable: true,
 });
+
+Object.defineProperty(window.CSS, 'supports', {
+  value: () => true,
+  writable: true,
+});
