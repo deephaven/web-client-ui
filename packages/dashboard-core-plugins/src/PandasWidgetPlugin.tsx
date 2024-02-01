@@ -10,7 +10,7 @@ import { LoadingOverlay } from '@deephaven/components';
 import { PandasReloadButton } from './panels/PandasReloadButton';
 
 export function PandasWidgetPlugin(
-  props: WidgetComponentProps
+  props: WidgetComponentProps<Table>
 ): JSX.Element | null {
   const dh = useApi();
   const [model, setModel] = useState<IrisGridModel>();
@@ -20,7 +20,7 @@ export function PandasWidgetPlugin(
   const { fetch } = props;
 
   const makeModel = useCallback(async () => {
-    const table = (await fetch()) as unknown as Table;
+    const table = await fetch();
     return IrisGridModelFactory.makeModel(dh, table);
   }, [dh, fetch]);
 

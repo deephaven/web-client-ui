@@ -114,7 +114,7 @@ async function createChartModel(
 }
 
 export const ChartPanelPlugin = forwardRef(
-  (props: WidgetPanelProps, ref: React.Ref<ChartPanel>) => {
+  (props: WidgetPanelProps<Figure>, ref: React.Ref<ChartPanel>) => {
     const dh = useApi();
     const chartTheme = useChartTheme();
     const connection = useConnection();
@@ -139,7 +139,7 @@ export const ChartPanelPlugin = forwardRef(
             chartTheme,
             connection,
             metadata as ChartPanelMetadata,
-            fetch as () => Promise<Figure>,
+            fetch,
             panelState
           );
         },
