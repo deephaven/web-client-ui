@@ -1,7 +1,20 @@
-from deephaven import empty_table, time_table
+from deephaven import new_table, empty_table, time_table
+from deephaven.column import string_col, double_col
 
 size = 20
 scale = 999
+
+
+simple_table = empty_table(100).update(["x=i", "y=Math.sin(i)", "z=Math.cos(i)"])
+
+column_groups = [{ 'name': 'YandZ', 'children': ['y', 'z'] }, { 'name': 'All', 'children': ['x', 'YandZ'], 'color': 'white' }]
+simple_table_header_group = simple_table.layout_hints(column_groups=column_groups)
+simple_table_header_group_hide = simple_table.layout_hints(column_groups=column_groups, hide=['y', 'z'])
+
+double_and_string = new_table([
+double_col("Doubles", [3.1, 5.45, -1.0, 1.0, 3.0, 4.20]),
+string_col("Strings", ["Creating", "New", "Tables", "Tables", "New", "Creating"])
+])
 
 all_types = empty_table(size).update([
   "String=(i%11==0 ? null : `a` + (int)(scale*(i%2==0? i+1 : 1)))",

@@ -1,6 +1,8 @@
 /* eslint-disable no-await-in-loop */
 import { expect, test } from '@playwright/test';
 
+test.describe.configure({ mode: 'parallel' });
+
 const sampleSectionIds: string[] = [
   'sample-section-typography',
   'sample-section-colors',

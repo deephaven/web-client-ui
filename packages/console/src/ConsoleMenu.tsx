@@ -189,6 +189,7 @@ class ConsoleMenu extends PureComponent<ConsoleMenuProps, ConsoleMenuState> {
     return (
       <div className="console-pane-menu">
         <Button
+          id="table-actions"
           kind="ghost"
           className="btn-link-icon"
           disabled={disableTableActions}
@@ -215,6 +216,7 @@ class ConsoleMenu extends PureComponent<ConsoleMenuProps, ConsoleMenuState> {
           />
         </Button>
         <Button
+          id="widget-actions"
           kind="ghost"
           className="btn-link-icon"
           disabled={widgetActions.length === 0}

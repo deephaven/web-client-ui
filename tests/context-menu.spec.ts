@@ -1,13 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
-import {
-  makeTableCommand,
-  pasteInMonaco,
-  TableTypes,
-  waitForLoadingDone,
-  generateVarName,
-} from './utils';
+import { waitForLoadingDone, openTableOrPlot } from './utils';
 
-test.describe.configure({ mode: 'serial' });
+test.describe.configure({ mode: 'parallel' });
 
 async function openAdvancedFilters(page: Page) {
   await page
@@ -21,27 +15,8 @@ async function moveMouseAwayFromTable(page: Page) {
   await page.mouse.click(0, 0);
 }
 
-const tableName = generateVarName('t');
 test.beforeEach(async ({ page }) => {
-  await page.goto('');
-
-  const consoleInput = page.locator('.console-input');
-
-  const command = makeTableCommand(tableName, TableTypes.AllTypes);
-
-  await pasteInMonaco(consoleInput, command);
-  await page.keyboard.press('Enter');
-
-  // Wait for the panel to show
-  await expect(page.locator('.iris-grid-panel')).toHaveCount(1);
-
-  // Wait until it's done loading
-  await expect(page.locator('.iris-grid-panel .loading-spinner')).toHaveCount(
-    0
-  );
-
-  // Model is loaded, need to make sure table data is also loaded
-  await waitForLoadingDone(page);
+  await openTableOrPlot(page, 'table', 'all_types');
 
   const tableOperationsMenu = page.locator(
     'data-testid=btn-iris-grid-settings-button-table'
@@ -50,15 +25,6 @@ test.beforeEach(async ({ page }) => {
 
   // Wait for Table Options menu to show
   await expect(page.locator('.table-sidebar')).toHaveCount(1);
-});
-
-test.afterEach(async ({ page }) => {
-  const consoleInput = page.locator('.console-input');
-  await consoleInput.click();
-
-  const command = `del ${tableName}`;
-  await pasteInMonaco(consoleInput, command);
-  await page.keyboard.press('Enter');
 });
 
 test('toggle column visibility', async ({ page }) => {

@@ -21,16 +21,16 @@ const config: PlaywrightTestConfig = {
      */
     timeout: 15000,
   },
-  /* We don't want to run tests in parallel because we have the same backend, tests may conflict with eachother */
-  fullyParallel: false,
+  /* Default to run each suite in parallel, suites and optional opt out */
+  fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Global setup file for initializing before all other tests */
   globalSetup: require.resolve('./tests/globalSetup.ts'),
   /* Retry on CI only */
   retries: process.env.CI ? 1 : 0,
-  /* Only have one worker since we don't want tests running in parallel, trampling over each other on the backend */
-  workers: 1,
+  /* Default to 50% of cores, don't want too many as core or web will become bottleneck */
+  workers: undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   /* Use host 0.0.0.0 so it can be forwarded from within docker */
   reporter: [['html', { host: '0.0.0.0', port: 9323 }]],

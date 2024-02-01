@@ -1,9 +1,12 @@
 import { test, expect, Page, Locator } from '@playwright/test';
 import shortid from 'shortid';
-import { generateVarName, makeTableCommand, pasteInMonaco } from './utils';
+import { generateVarName, pasteInMonaco, makeTableCommand } from './utils';
 
 let page: Page;
 let consoleInput: Locator;
+
+// keep this as serial becomes it runs commands
+test.describe.configure({ mode: 'serial' });
 
 test.beforeAll(async ({ browser }) => {
   page = await browser.newPage();
@@ -17,8 +20,8 @@ test.afterAll(async () => {
 });
 
 test.describe('console input tests', () => {
-  test('print commands get logged', async () => {
-    const message = `Hello ${shortid()}!`;
+  test('print commands get logged', async ({ browserName }) => {
+    const message = `Hello ${browserName} ${shortid()}!`;
     const command = `print("${message}")`;
 
     await pasteInMonaco(consoleInput, command);
@@ -30,8 +33,8 @@ test.describe('console input tests', () => {
     ).toHaveCount(1);
   });
 
-  test('object button is created when creating a table', async () => {
-    const tableName = generateVarName('t');
+  test('object button is created when creating a table', async ({ browserName }) => {
+    const tableName = `browserName${generateVarName('t')}`;
     const command = makeTableCommand(tableName);
 
     await pasteInMonaco(consoleInput, command);

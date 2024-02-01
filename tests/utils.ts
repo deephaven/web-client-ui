@@ -17,6 +17,59 @@ export enum TableTypes {
   AllTypes,
 }
 
+type TablePlotNames =
+  | 'all_types'
+  | 'simple_plot'
+  | 'simple_table'
+  | 'simple_table_header_group'
+  | 'simple_table_header_group_hide'
+  | 'double_and_string'
+  | 'trig_table'
+  | 'trig_figure';
+
+/**
+ * Opens a table loaded from application mode and returns the grid location
+ * @param page
+ * @param type Either 'table' or 'plot'
+ * @param name Name of the table or plot
+ */
+export async function openTableOrPlot(
+  page: Page,
+  type: 'table' | 'plot',
+  name: TablePlotNames
+) {
+  await page.goto('');
+  await expect(page.locator('.loading-spinner')).toHaveCount(0);
+
+  // open the tables/plot button
+  const dropdownButton = page.locator(type === 'table' ? '#table-actions' : '#widget-actions'); ;
+  expect(dropdownButton).not.toBeNull();
+  expect(dropdownButton).not.toBeDisabled();
+  await dropdownButton.click();
+
+  // search for the table/plot
+  const search = page.getByPlaceholder('Search');
+  expect(search).not.toBeNull();
+  expect(search).not.toBeDisabled();
+  await search.type(name);
+
+  // open the table/plot
+  const openButton = page.locator('.btn-context-menu').first();
+  expect(openButton).not.toBeNull();
+  expect(openButton).not.toBeDisabled();
+  await openButton.click();
+
+  await expect(
+    page.locator('.iris-grid .iris-grid-loading-status')
+  ).toHaveCount(0);
+
+  // get grid and return that
+  // const grid = await page.locator('.iris-grid-panel .iris-grid');
+  // const gridLocation = await grid.boundingBox();
+  // expect(gridLocation).not.toBeNull();
+  // return gridLocation;
+}
+
 /**
  * Generate a unique python variable name
  * @param prefix Prefix to give the variable name
@@ -186,7 +239,6 @@ export async function pasteInMonaco(
  * Wait for loading status of iris grid to disappear
  * @param page
  */
-
 export async function waitForLoadingDone(
   page: Page,
   tableNumber = 0
@@ -268,6 +320,7 @@ export async function openTableOption(
 
 export default {
   generateVarName,
+  openTable: openTableOrPlot,
   pasteInMonaco,
   typeInMonaco,
   waitForLoadingDone,
