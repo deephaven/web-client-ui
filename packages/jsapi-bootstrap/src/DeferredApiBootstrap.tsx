@@ -8,7 +8,7 @@ type DeferredApiBootstrapProps = React.PropsWithChildren<{
   /**
    * Options to use when fetching the deferred API.
    */
-  descriptor: VariableDescriptor;
+  widget: VariableDescriptor;
 }>;
 
 /**
@@ -18,9 +18,9 @@ export const DeferredApiBootstrap = React.memo(
   ({
     children,
     onError,
-    descriptor,
+    widget,
   }: DeferredApiBootstrapProps): JSX.Element | null => {
-    const [api, apiError] = useDeferredApi(descriptor);
+    const [api, apiError] = useDeferredApi(widget);
     if (apiError != null) {
       onError?.(apiError);
       return null;

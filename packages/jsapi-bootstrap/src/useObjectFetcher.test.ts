@@ -1,7 +1,11 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 import { useContext } from 'react';
 import { TestUtils } from '@deephaven/utils';
-import { getVariableDescriptor, useObjectFetcher } from './useObjectFetcher';
+import {
+  getVariableDescriptor,
+  sanitizeVariableDescriptor,
+  useObjectFetcher,
+} from './useObjectFetcher';
 
 const { asMock, flushPromises } = TestUtils;
 
@@ -15,7 +19,31 @@ beforeEach(() => {
   asMock(useContext).mockName('useContext');
 });
 
-describe('getObjectMetadata', () => {
+describe('sanitizeVariableDescriptor', () => {
+  const id = 'id';
+  const name = 'name';
+  const type = 'type';
+  it('should return the id if both name and id provided', () => {
+    expect(sanitizeVariableDescriptor({ type, name, id })).toEqual({
+      type,
+      id,
+    });
+  });
+  it('should return the name if no id provided', () => {
+    expect(sanitizeVariableDescriptor({ type, name })).toEqual({ type, name });
+  });
+  it('should return the id if no name provided', () => {
+    expect(sanitizeVariableDescriptor({ type, id })).toEqual({ type, id });
+  });
+  it('should throw if neither name nor id provided', () => {
+    expect(() => sanitizeVariableDescriptor({ type })).toThrow();
+  });
+  it('should throw if the type is not provided', () => {
+    expect(() => sanitizeVariableDescriptor({ name, id })).toThrow();
+  });
+});
+
+describe('getVariableDescriptor', () => {
   const id = 'id';
   const name = 'name';
   const type = 'type';
@@ -27,13 +55,9 @@ describe('getObjectMetadata', () => {
     const descriptor = getVariableDescriptor({ type, name });
     expect(descriptor).toEqual({ type, name });
   });
-
   it('should return the descriptor for an id', () => {
     const descriptor = getVariableDescriptor({ type, id });
     expect(descriptor).toEqual({ type, id });
-  });
-  it('should throw if the name, title, or id are not provided', () => {
-    expect(() => getVariableDescriptor({ type })).toThrow();
   });
 });
 

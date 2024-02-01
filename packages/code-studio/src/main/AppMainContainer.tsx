@@ -724,8 +724,7 @@ export class AppMainContainer extends Component<
     this.emitLayoutEvent(PanelEvent.OPEN, {
       dragEvent,
       fetch: async () => connection?.getObject(widget),
-      metadata: getVariableDescriptor(widget),
-      widget,
+      widget: getVariableDescriptor(widget),
     });
   }
 

@@ -220,7 +220,9 @@ function getTableNameFromMetadata(metadata?: PanelMetadata): string {
     return metadata.table;
   }
 
-  throw new Error(`Unable to determine table name from metadata: ${metadata}`);
+  throw new Error(
+    `Unable to determine table name from metadata: ${JSON.stringify(metadata)}`
+  );
 }
 
 export type IrisGridPanelProps = OwnProps & StateProps;

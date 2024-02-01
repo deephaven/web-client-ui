@@ -32,8 +32,8 @@ async function loadFigure(
 ): Promise<Figure> {
   log.info(`Fetching figure ${name}...`);
 
-  const definition = { name, type: dh.VariableType.FIGURE };
-  return connection.getObject(definition);
+  const descriptor = { name, type: dh.VariableType.FIGURE };
+  return connection.getObject(descriptor);
 }
 
 /**

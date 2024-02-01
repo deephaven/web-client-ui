@@ -298,15 +298,13 @@ export class ConsolePanel extends PureComponent<
     const { title } = widget;
     assertNotNull(title);
     const panelId = this.getItemId(title);
-    const metadata = {
-      ...getVariableDescriptor(widget),
-      sessionId: config.id,
-    };
     const openOptions = {
       fetch: () => session.getObject(widget),
-      metadata,
       panelId,
-      widget,
+      widget: {
+        ...getVariableDescriptor(widget),
+        sessionId: config.id,
+      },
     };
 
     log.debug('openWidget', openOptions);

@@ -8,9 +8,9 @@ export type WidgetDescriptor = {
 
 export type PanelOpenEventDetail<T = unknown> = {
   dragEvent?: DragEvent;
-  panelId?: string;
-  metadata: Partial<WidgetDescriptor>;
   fetch?: () => Promise<T>;
+  panelId?: string;
+  widget: Partial<WidgetDescriptor>;
 };
 
 /**

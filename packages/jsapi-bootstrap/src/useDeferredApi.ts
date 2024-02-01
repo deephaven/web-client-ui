@@ -16,13 +16,13 @@ export const DeferredApiContext = createContext<
 >(null);
 
 /**
- * Retrieve the API for the current context, given the descriptor provided.
+ * Retrieve the API for the current context, given the widget provided.
  * The API may need to be loaded, and will return `null` until it is ready.
- * @param descriptor The object descriptor to use to fetch the API
+ * @param widget The widget descriptor to use to fetch the API
  * @returns A tuple with the API instance, and an error if one occurred.
  */
 export function useDeferredApi(
-  descriptor: VariableDescriptor
+  widget: VariableDescriptor
 ): [DhType | null, unknown | null] {
   const [api, setApi] = useState<DhType | null>(null);
   const [error, setError] = useState<unknown | null>(null);
@@ -49,7 +49,7 @@ export function useDeferredApi(
     async function loadApi() {
       if (typeof deferredApi === 'function') {
         try {
-          const newApi = await deferredApi(descriptor);
+          const newApi = await deferredApi(widget);
           if (!isCancelled) {
             setApi(newApi);
             setError(null);
@@ -70,7 +70,7 @@ export function useDeferredApi(
     return () => {
       isCancelled = true;
     };
-  }, [contextApi, deferredApi, descriptor]);
+  }, [contextApi, deferredApi, widget]);
 
   return [api, error];
 }

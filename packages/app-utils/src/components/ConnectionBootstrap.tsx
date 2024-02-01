@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { LoadingOverlay } from '@deephaven/components';
 import {
   ObjectFetcherContext,
+  sanitizeVariableDescriptor,
   useApi,
   useClient,
 } from '@deephaven/jsapi-bootstrap';
@@ -77,7 +78,7 @@ export function ConnectionBootstrap({
   const objectFetcher = useCallback(
     async (descriptor: VariableDescriptor) => {
       assertNotNull(connection, 'connection');
-      return connection.getObject(descriptor);
+      return connection.getObject(sanitizeVariableDescriptor(descriptor));
     },
     [connection]
   );

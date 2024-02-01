@@ -105,7 +105,7 @@ describe('WidgetLoaderPlugin', () => {
     act(
       () =>
         layoutManager?.eventHub.emit(PanelEvent.OPEN, {
-          metadata: { type: 'test-widget' },
+          widget: { type: 'test-widget' },
         })
     );
     expect(screen.queryAllByText('TestWidget').length).toBe(1);
@@ -117,7 +117,7 @@ describe('WidgetLoaderPlugin', () => {
     act(
       () =>
         layoutManager?.eventHub.emit(PanelEvent.OPEN, {
-          metadata: { type: 'test-widget-panel' },
+          widget: { type: 'test-widget-panel' },
         })
     );
     expect(screen.queryAllByText('TestPanel').length).toBe(1);
@@ -139,7 +139,7 @@ describe('WidgetLoaderPlugin', () => {
     act(
       () =>
         layoutManager?.eventHub.emit(PanelEvent.OPEN, {
-          metadata: { type: 'test-widget-two-a' },
+          widget: { type: 'test-widget-two-a' },
         })
     );
     expect(screen.queryAllByText('TestWidgetTwo').length).toBe(1);
@@ -147,7 +147,7 @@ describe('WidgetLoaderPlugin', () => {
     act(
       () =>
         layoutManager?.eventHub.emit(PanelEvent.OPEN, {
-          metadata: { type: 'test-widget-two-b' },
+          widget: { type: 'test-widget-two-b' },
         })
     );
     expect(screen.queryAllByText('TestWidgetTwo').length).toBe(2);
@@ -159,7 +159,7 @@ describe('WidgetLoaderPlugin', () => {
     act(
       () =>
         layoutManager?.eventHub.emit(PanelEvent.OPEN, {
-          metadata: { type: 'unknown-widget' },
+          widget: { type: 'unknown-widget' },
         })
     );
     expect(screen.queryAllByText('TestWidget').length).toBe(0);
@@ -180,7 +180,7 @@ describe('WidgetLoaderPlugin', () => {
     act(
       () =>
         layoutManager?.eventHub.emit(PanelEvent.OPEN, {
-          metadata: { type: 'test-widget' },
+          widget: { type: 'test-widget' },
         })
     );
     expect(screen.queryAllByText('TestWidget').length).toBe(0);
@@ -209,7 +209,7 @@ describe('WidgetLoaderPlugin', () => {
     act(
       () =>
         layoutManager?.eventHub.emit(PanelEvent.OPEN, {
-          metadata: { type: 'test-widget', name: 'name' },
+          widget: { type: 'test-widget', name: 'name' },
         })
     );
     expect(screen.queryAllByText('TestWidget').length).toBe(0);
@@ -218,7 +218,7 @@ describe('WidgetLoaderPlugin', () => {
     act(
       () =>
         layoutManager?.eventHub.emit(PanelEvent.OPEN, {
-          metadata: { type: 'test-widget-a', name: 'name' },
+          widget: { type: 'test-widget-a', name: 'name' },
         })
     );
     expect(screen.queryAllByText('TestWidget').length).toBe(1);

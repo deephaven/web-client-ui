@@ -60,30 +60,43 @@ export type ObjectFetcher<T = unknown> = (
 export const ObjectFetcherContext = createContext<ObjectFetcher | null>(null);
 
 /**
- * Get the serializable descriptor for a variable definition.
- * @param definition Variable definition to get the serialized descriptor for
- * @returns Descriptor object that is serializable
+ * Gets a descriptor that only has the ID or name set, but not both.
+ * API will throw an error if both are set when fetching from the connection.
+ * @param descriptor Variable descriptor to sanitize
+ * @returns Descriptor object that has either the ID or name set, but not both.
+ */
+export function sanitizeVariableDescriptor(
+  descriptor: Partial<VariableDescriptor>
+): NameVariableDescriptor | IdVariableDescriptor {
+  // Can't use a spread operator because of how the GWT compiled code defines properties on the object: https://github.com/gwtproject/gwt/issues/9913
+  if (isIdVariableDescriptor(descriptor)) {
+    return {
+      id: descriptor.id,
+      type: descriptor.type,
+    };
+  }
+  if (isNameVariableDescriptor(descriptor)) {
+    return {
+      name: descriptor.name ?? '',
+      type: descriptor.type,
+    };
+  }
+  throw new Error(`Invalid descriptor: ${descriptor}`);
+}
+
+/**
+ * Get the variable descriptor for a definition.
+ * @param definition Definition to get the variable descriptor from
+ * @returns Serializable VariableDescriptor object
  */
 export function getVariableDescriptor(
   definition: Partial<VariableDefinition>
-): NameVariableDescriptor | IdVariableDescriptor {
-  // Can't use a spread operator because of how the GWT compiled code defines properties on the object: https://github.com/gwtproject/gwt/issues/9913
-  if (isIdVariableDescriptor(definition)) {
-    return {
-      id: definition.id,
-      type: definition.type,
-    };
-  }
-  if (
-    definition.type != null &&
-    (definition.title != null || definition.name != null)
-  ) {
-    return {
-      name: definition.title ?? definition.name ?? '',
-      type: definition.type,
-    };
-  }
-  throw new Error(`Can't get a descriptor for definition: ${definition}`);
+): VariableDescriptor {
+  return {
+    type: definition.type ?? '',
+    name: definition.title ?? definition.name,
+    id: definition.id,
+  };
 }
 
 /**

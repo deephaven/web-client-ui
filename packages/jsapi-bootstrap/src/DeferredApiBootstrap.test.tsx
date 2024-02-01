@@ -8,7 +8,7 @@ import { DeferredApiContext } from './useDeferredApi';
 const descriptor = { name: 'name', type: 'type' };
 it('should call the error callback if no API provider wrapped', () => {
   const onError = jest.fn();
-  render(<DeferredApiBootstrap onError={onError} descriptor={descriptor} />);
+  render(<DeferredApiBootstrap onError={onError} widget={descriptor} />);
   expect(onError).toHaveBeenCalled();
 });
 
@@ -16,7 +16,7 @@ it('renders children if the API is loaded', () => {
   const api = TestUtils.createMockProxy<DhType>();
   const { queryByText } = render(
     <DeferredApiContext.Provider value={api}>
-      <DeferredApiBootstrap descriptor={descriptor}>
+      <DeferredApiBootstrap widget={descriptor}>
         <div>Child</div>
       </DeferredApiBootstrap>
     </DeferredApiContext.Provider>
@@ -32,7 +32,7 @@ it('waits to render children until the API is loaded', async () => {
   const deferredApi = jest.fn(() => apiPromise);
   const { queryByText } = render(
     <DeferredApiContext.Provider value={deferredApi}>
-      <DeferredApiBootstrap descriptor={descriptor}>
+      <DeferredApiBootstrap widget={descriptor}>
         <div>Child</div>
       </DeferredApiBootstrap>
     </DeferredApiContext.Provider>
