@@ -107,17 +107,22 @@ export function WidgetLoaderPlugin(
     ({
       dragEvent,
       panelId = shortid.generate(),
-      widget,
+      fetch,
+      metadata,
     }: PanelOpenEventDetail) => {
-      const { type } = widget;
-      const name = widget.name ?? type;
-      const plugin = supportedTypes.get(type);
+      const { type } = metadata;
+      const plugin = type != null ? supportedTypes.get(type) : null;
       if (plugin == null) {
         return;
       }
-      const panelProps: DehydratedDashboardPanelProps = {
+      const name = metadata.name ?? type;
+
+      const panelProps: DehydratedDashboardPanelProps & {
+        fetch?: () => Promise<unknown>;
+      } = {
         localDashboardId: id,
-        widget,
+        metadata,
+        fetch,
       };
 
       const config: ReactComponentConfig = {

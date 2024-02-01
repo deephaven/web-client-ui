@@ -59,8 +59,10 @@ export function isWrappedComponent<
   return (type as WrappedComponentType<P, C>)?.WrappedComponent !== undefined;
 }
 
+export type PanelMetadata = Partial<WidgetDescriptor>;
+
 export type PanelProps = GLPanelProps & {
-  metadata?: WidgetDescriptor;
+  metadata?: PanelMetadata;
 };
 
 export type DehydratedPanelProps = Omit<PanelProps, keyof GLPanelProps>;

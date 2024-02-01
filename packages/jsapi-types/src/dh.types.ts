@@ -85,8 +85,8 @@ export interface VariableDefinition<T extends string = string> {
 
 export interface VariableDescriptor<T extends string = string> {
   type: T;
-  name?: string | null;
-  id?: string | null;
+  name?: string;
+  id?: string;
 }
 
 export interface LogItem {

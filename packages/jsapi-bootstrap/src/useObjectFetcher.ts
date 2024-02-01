@@ -65,7 +65,7 @@ export const ObjectFetcherContext = createContext<ObjectFetcher | null>(null);
  * @returns Descriptor object that is serializable
  */
 export function getVariableDescriptor(
-  definition: VariableDefinition
+  definition: Partial<VariableDefinition>
 ): NameVariableDescriptor | IdVariableDescriptor {
   // Can't use a spread operator because of how the GWT compiled code defines properties on the object: https://github.com/gwtproject/gwt/issues/9913
   if (isIdVariableDescriptor(definition)) {
@@ -74,7 +74,10 @@ export function getVariableDescriptor(
       type: definition.type,
     };
   }
-  if (definition.title != null || definition.name != null) {
+  if (
+    definition.type != null &&
+    (definition.title != null || definition.name != null)
+  ) {
     return {
       name: definition.title ?? definition.name ?? '',
       type: definition.type,

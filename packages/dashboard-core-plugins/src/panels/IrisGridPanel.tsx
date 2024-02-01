@@ -209,7 +209,7 @@ interface IrisGridPanelState {
   gridStateOverrides: Partial<GridState>;
 }
 
-function getTableNameFromMetadata(metadata: PanelMetadata | undefined): string {
+function getTableNameFromMetadata(metadata?: PanelMetadata): string {
   if (metadata == null) {
     throw new Error('No metadata provided');
   }

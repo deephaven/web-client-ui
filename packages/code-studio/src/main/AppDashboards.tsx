@@ -4,7 +4,6 @@ import {
   DashboardUtils,
   DEFAULT_DASHBOARD_ID,
   DehydratedDashboardPanelProps,
-  isLegacyPanelProps,
   LazyDashboard,
 } from '@deephaven/dashboard';
 import {
@@ -33,23 +32,26 @@ export function AppDashboards({
   plugins,
   onAutoFillClick,
 }: AppDashboardsProps): JSX.Element {
-  const fetch = useObjectFetcher();
+  const fetchObject = useObjectFetcher();
 
   const hydratePanel = useCallback(
     (hydrateProps: DehydratedDashboardPanelProps, id: string) => {
-      const widget = isLegacyPanelProps(hydrateProps)
-        ? getVariableDescriptor(hydrateProps.metadata)
-        : hydrateProps.widget;
-      if (widget != null) {
-        return {
-          fetch: async () => fetch(widget),
-          ...hydrateProps,
-          localDashboardId: id,
-        };
+      const { metadata } = hydrateProps;
+      try {
+        if (metadata != null) {
+          const widget = getVariableDescriptor(metadata);
+          return {
+            fetch: async () => fetchObject(widget),
+            ...hydrateProps,
+            localDashboardId: id,
+          };
+        }
+      } catch (e: unknown) {
+        // Ignore being unable to get the variable descriptor, do the default dashboard hydration
       }
       return DashboardUtils.hydrate(hydrateProps, id);
     },
-    [fetch]
+    [fetchObject]
   );
 
   return (

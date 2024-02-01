@@ -1,6 +1,7 @@
 export * from './AppBootstrap';
 export * from './AuthBootstrap';
 export * from './ConnectionBootstrap';
+export * from './ConnectionContext';
 export * from './FontBootstrap';
 export * from './FontsLoaded';
 export * from './PluginsBootstrap';

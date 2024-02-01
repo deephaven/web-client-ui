@@ -6,9 +6,9 @@ import {
   useClient,
 } from '@deephaven/jsapi-bootstrap';
 import type { IdeConnection, VariableDescriptor } from '@deephaven/jsapi-types';
-import { ConnectionContext } from '@deephaven/jsapi-components';
 import Log from '@deephaven/log';
 import { assertNotNull } from '@deephaven/utils';
+import ConnectionContext from './ConnectionContext';
 
 const log = Log.module('@deephaven/app-utils.ConnectionBootstrap');
 

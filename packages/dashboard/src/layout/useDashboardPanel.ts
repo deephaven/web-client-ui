@@ -52,20 +52,20 @@ export function useDashboardPanel<
     ({
       dragEvent,
       panelId = shortid.generate(),
-      widget,
+      metadata,
     }: PanelOpenEventDetail) => {
-      const { type } = widget;
-      const { name } = widget;
+      const { name, type } = metadata;
       const isSupportedType =
-        (Array.isArray(supportedTypes) && supportedTypes.includes(type)) ||
-        type === supportedTypes;
+        type != null &&
+        ((Array.isArray(supportedTypes) && supportedTypes.includes(type)) ||
+          type === supportedTypes);
       if (!isSupportedType) {
         // Only want to listen for your custom variable types
         return;
       }
       let props: DehydratedDashboardPanelProps = {
         localDashboardId: id,
-        widget,
+        metadata,
       };
       if (hydrate != null) {
         props = hydrate(props, id);

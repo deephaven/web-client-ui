@@ -6,10 +6,11 @@ export type WidgetDescriptor = {
   id?: string;
 };
 
-export type PanelOpenEventDetail = {
+export type PanelOpenEventDetail<T = unknown> = {
   dragEvent?: DragEvent;
   panelId?: string;
-  widget: WidgetDescriptor;
+  metadata: Partial<WidgetDescriptor>;
+  fetch?: () => Promise<T>;
 };
 
 /**

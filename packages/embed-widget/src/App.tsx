@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useConnection } from '@deephaven/app-utils';
 import {
   ContextMenuRoot,
   ErrorBoundary,
   LoadingOverlay,
 } from '@deephaven/components'; // Use the loading spinner from the Deephaven components package
 import { getVariableDescriptor } from '@deephaven/jsapi-bootstrap';
-import { useConnection } from '@deephaven/jsapi-components';
 import type { VariableDescriptor } from '@deephaven/jsapi-types';
 import { fetchVariableDefinition } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';

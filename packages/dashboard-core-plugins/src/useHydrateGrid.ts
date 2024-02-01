@@ -1,32 +1,32 @@
 import { useMemo } from 'react';
-import { WidgetDescriptor } from '@deephaven/dashboard';
-import { useApi, useObjectFetcher } from '@deephaven/jsapi-bootstrap';
-import { Table } from '@deephaven/jsapi-types';
+import { useApi } from '@deephaven/jsapi-bootstrap';
+import { Table, VariableDescriptor } from '@deephaven/jsapi-types';
 import { IrisGridModelFactory } from '@deephaven/iris-grid';
 import { type IrisGridPanelProps } from './panels';
 import { useLoadTablePlugin } from './useLoadTablePlugin';
 
 export function useHydrateGrid(
-  widget: WidgetDescriptor,
-  id: string
+  fetchTable: () => Promise<Table>,
+  id: string,
+  metadata?: VariableDescriptor
 ): { localDashboardId: string } & Pick<
   IrisGridPanelProps,
   'loadPlugin' | 'makeModel'
 > {
   const dh = useApi();
   const loadPlugin = useLoadTablePlugin();
-  const fetch = useObjectFetcher<Table>();
 
   const hydratedProps = useMemo(
     () => ({
       loadPlugin,
       localDashboardId: id,
       makeModel: async () => {
-        const table = await fetch(widget);
+        const table = await fetchTable();
         return IrisGridModelFactory.makeModel(dh, table);
       },
+      metadata,
     }),
-    [dh, fetch, id, loadPlugin, widget]
+    [dh, fetchTable, id, loadPlugin, metadata]
   );
 
   return hydratedProps;
