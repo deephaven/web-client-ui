@@ -1,28 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { makeTableCommand, pasteInMonaco } from './utils';
-
-// Run tests serially since they all use the same table
-test.describe.configure({ mode: 'serial' });
-
-async function openSimpleTable(page: Page) {
-  const consoleInput = page.locator('.console-input');
-
-  const command = makeTableCommand();
-
-  await pasteInMonaco(consoleInput, command);
-  await page.keyboard.press('Enter');
-
-  // Wait for the panel to show
-  await expect(page.locator('.iris-grid-panel')).toHaveCount(1);
-
-  // Wait until it's done loading
-  await expect(page.locator('.iris-grid-panel .loading-spinner')).toHaveCount(
-    0
-  );
-
-  // Model is loaded, need to make sure table data is also loaded
-  await waitForLoadingDone(page);
-}
+import { openTableOrPlot } from './utils';
 
 async function waitForLoadingDone(page: Page) {
   await expect(
@@ -31,16 +8,13 @@ async function waitForLoadingDone(page: Page) {
 }
 
 test('can open a simple table', async ({ page }) => {
-  await page.goto('');
-  await openSimpleTable(page);
-
+  await openTableOrPlot(page, 'table', 'simple_table');
   // Now we should be able to check the snapshot
   await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
 });
 
 test('can make a non-contiguous table row selection', async ({ page }) => {
-  await page.goto('');
-  await openSimpleTable(page);
+  await openTableOrPlot(page, 'table', 'simple_table');
 
   const grid = await page.locator('.iris-grid-panel .iris-grid');
   const gridLocation = await grid.boundingBox();
@@ -69,27 +43,7 @@ test('can make a non-contiguous table row selection', async ({ page }) => {
 });
 
 test('can open a table with column header groups', async ({ page }) => {
-  await page.goto('');
-  const consoleInput = page.locator('.console-input');
-
-  const command = `${makeTableCommand('column_header_group')}
-column_groups = [{ 'name': 'YandZ', 'children': ['y', 'z'] }, { 'name': 'All', 'children': ['x', 'YandZ'], 'color': 'white' }]
-column_header_group = column_header_group.layout_hints(column_groups=column_groups)`;
-
-  await pasteInMonaco(consoleInput, command);
-  await page.keyboard.press('Enter');
-
-  // Wait for the panel to show
-  await expect(page.locator('.iris-grid-panel')).toHaveCount(1);
-
-  // Wait until it's done loading
-  await expect(page.locator('.iris-grid-panel .loading-spinner')).toHaveCount(
-    0
-  );
-
-  // Model is loaded, need to make sure table data is also loaded
-  await waitForLoadingDone(page);
-
+  await openTableOrPlot(page, 'table', 'simple_table_header_group');
   // Now we should be able to check the snapshot
   await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
 });
@@ -97,40 +51,14 @@ column_header_group = column_header_group.layout_hints(column_groups=column_grou
 test('can open a table with column header groups and hidden columns', async ({
   page,
 }) => {
-  await page.goto('');
-  const consoleInput = page.locator('.console-input');
-
-  const command = `${makeTableCommand('column_header_group')}
-column_groups = [{ 'name': 'YandZ', 'children': ['y', 'z'] }, { 'name': 'All', 'children': ['x', 'YandZ'], 'color': 'white' }]
-column_header_group = column_header_group.layout_hints(column_groups=column_groups, hide=['y', 'z'])`;
-
-  await pasteInMonaco(consoleInput, command);
-  await page.keyboard.press('Enter');
-
-  // Wait for the panel to show
-  await expect(page.locator('.iris-grid-panel')).toHaveCount(1);
-
-  // Wait until it's done loading
-  await expect(page.locator('.iris-grid-panel .loading-spinner')).toHaveCount(
-    0
-  );
-
-  // Model is loaded, need to make sure table data is also loaded
-  await waitForLoadingDone(page);
-
+  await openTableOrPlot(page, 'table', 'simple_table_header_group_hide');
   // Now we should be able to check the snapshot
   await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
 });
 
 test.describe('tests simple table operations', () => {
-  let page: Page;
-
-  test.beforeAll(async ({ browser }) => {
-    page = await browser.newPage();
-    await page.goto('');
-    await openSimpleTable(page);
-  });
-  test.beforeEach(async () => {
+  test.beforeEach(async ({ page }) => {
+    await openTableOrPlot(page, 'table', 'simple_table');
     const tableOperationsMenu = page.locator(
       'data-testid=btn-iris-grid-settings-button-table'
     );
@@ -140,17 +68,7 @@ test.describe('tests simple table operations', () => {
     await expect(page.locator('.table-sidebar')).toHaveCount(1);
   });
 
-  test.afterEach(async () => {
-    // Close the table operations sidebar
-    await page
-      .locator('.iris-grid')
-      .locator('data-testid=btn-page-close')
-      .click();
-
-    await expect(page.locator('.iris-grid .table-sidebar')).toHaveCount(0);
-  });
-
-  test('can download table successfully', async () => {
+  test('can download table successfully', async ({ page }) => {
     // open Download CSV panel
     await page.locator('data-testid=menu-item-Download CSV').click();
 
@@ -180,7 +98,7 @@ test.describe('tests simple table operations', () => {
     ).toHaveCount(1);
   });
 
-  test('go to', async () => {
+  test('go to', async ({ page }) => {
     // open with sidepanel button
     await page.locator('data-testid=menu-item-Go to').click();
 
@@ -212,7 +130,7 @@ test.describe('tests simple table operations', () => {
     await expect(gotoBar).toHaveCount(0);
   });
 
-  test('advanced filters', async () => {
+  test('advanced filters', async ({ page }) => {
     // turn quick filters on
     const quickFiltersItem = page.locator(
       'data-testid=menu-item-Quick Filters'
@@ -273,9 +191,9 @@ test.describe('tests simple table operations', () => {
 
     // Check snapshot
     await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
-  });
 
-  test('quick filters (with the advanced filters in above test applied)', async () => {
+    // quick filter section (previously its own test)
+
     // check if quick filters are still on
     await expect(
       page

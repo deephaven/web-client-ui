@@ -4,10 +4,12 @@ services:
   dhc-server:
     image: ghcr.io/deephaven/server:${DHC_VERSION:-edge}
     pull_policy: always
+    volumes:
+      - ./data:/data
     expose:
       - 10000
     environment:
-      - START_OPTS=-Xmx4g -DAuthHandlers=io.deephaven.auth.AnonymousAuthenticationHandler -Ddeephaven.console.type=python
+      - START_OPTS=-Xmx4g -DAuthHandlers=io.deephaven.auth.AnonymousAuthenticationHandler -Ddeephaven.console.type=python -Ddeephaven.application.dir=./data/app.d
 
   web-ui-tests:
     build:
