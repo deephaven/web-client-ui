@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { LoadingOverlay } from '@deephaven/components';
 import {
-  ObjectFetcher,
   ObjectFetcherContext,
   sanitizeVariableDescriptor,
   useApi,
@@ -96,7 +95,7 @@ export function ConnectionBootstrap({
 
   return (
     <ConnectionContext.Provider value={connection}>
-      <ObjectFetcherContext.Provider value={objectFetcher as ObjectFetcher}>
+      <ObjectFetcherContext.Provider value={objectFetcher}>
         {children}
       </ObjectFetcherContext.Provider>
     </ConnectionContext.Provider>

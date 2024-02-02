@@ -187,7 +187,7 @@ export interface IdeSession extends Evented {
     ((
       definition: VariableDescriptor<typeof VariableType.PARTITIONEDTABLE>
     ) => Promise<PartitionedTable>) &
-    ((definition: VariableDescriptor) => Promise<unknown>);
+    ((definition: VariableDescriptor) => Promise<any>);
   onLogMessage: (logHandler: (logItem: LogItem) => void) => () => void;
   runCode: (code: string) => Promise<CommandResult>;
   bindTableToVariable: (table: Table, variableName: string) => Promise<void>;
@@ -1100,7 +1100,7 @@ export interface IdeConnection
     ((
       definition: VariableDescriptor<typeof VariableType.PARTITIONEDTABLE>
     ) => Promise<PartitionedTable>) &
-    ((definition: VariableDescriptor) => Promise<unknown>);
+    ((definition: VariableDescriptor) => Promise<any>);
   subscribeToFieldUpdates: (
     param: (changes: VariableChanges) => void
   ) => () => void;
