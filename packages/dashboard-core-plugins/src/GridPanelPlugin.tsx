@@ -8,8 +8,8 @@ import ConnectedIrisGridPanel, {
 
 export const GridPanelPlugin = forwardRef(
   (props: WidgetPanelProps<Table>, ref: React.Ref<IrisGridPanel>) => {
-    const { localDashboardId, fetch } = props;
-    const hydratedProps = useHydrateGrid(fetch, localDashboardId);
+    const { localDashboardId, fetch, metadata } = props;
+    const hydratedProps = useHydrateGrid(fetch, localDashboardId, metadata);
 
     // eslint-disable-next-line react/jsx-props-no-spreading
     return <ConnectedIrisGridPanel ref={ref} {...props} {...hydratedProps} />;

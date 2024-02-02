@@ -18,7 +18,6 @@ import {
 import { FileStorage } from '@deephaven/file-explorer';
 import { useApi, useClient } from '@deephaven/jsapi-bootstrap';
 import type { dh as DhType, IdeConnection } from '@deephaven/jsapi-types';
-import { useConnection } from '@deephaven/jsapi-components';
 import {
   getSessionDetails,
   loadSessionWrapper,
@@ -46,7 +45,7 @@ import {
   WorkspaceSettings,
   CustomizableWorkspace,
 } from '@deephaven/redux';
-import { useServerConfig, useUser } from '@deephaven/app-utils';
+import { useConnection, useServerConfig, useUser } from '@deephaven/app-utils';
 import { type PluginModuleMap, usePlugins } from '@deephaven/plugin';
 import { setLayoutStorage as setLayoutStorageAction } from '../redux/actions';
 import App from './App';

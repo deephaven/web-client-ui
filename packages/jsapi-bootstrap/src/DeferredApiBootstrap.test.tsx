@@ -5,9 +5,10 @@ import { TestUtils } from '@deephaven/utils';
 import DeferredApiBootstrap from './DeferredApiBootstrap';
 import { DeferredApiContext } from './useDeferredApi';
 
+const descriptor = { name: 'name', type: 'type' };
 it('should call the error callback if no API provider wrapped', () => {
   const onError = jest.fn();
-  render(<DeferredApiBootstrap onError={onError} />);
+  render(<DeferredApiBootstrap onError={onError} widget={descriptor} />);
   expect(onError).toHaveBeenCalled();
 });
 
@@ -15,7 +16,7 @@ it('renders children if the API is loaded', () => {
   const api = TestUtils.createMockProxy<DhType>();
   const { queryByText } = render(
     <DeferredApiContext.Provider value={api}>
-      <DeferredApiBootstrap>
+      <DeferredApiBootstrap widget={descriptor}>
         <div>Child</div>
       </DeferredApiBootstrap>
     </DeferredApiContext.Provider>
@@ -29,17 +30,16 @@ it('waits to render children until the API is loaded', async () => {
     resolveApi = resolve;
   });
   const deferredApi = jest.fn(() => apiPromise);
-  const options = { foo: 'bar' };
   const { queryByText } = render(
     <DeferredApiContext.Provider value={deferredApi}>
-      <DeferredApiBootstrap options={options}>
+      <DeferredApiBootstrap widget={descriptor}>
         <div>Child</div>
       </DeferredApiBootstrap>
     </DeferredApiContext.Provider>
   );
   expect(queryByText('Child')).toBeNull();
   expect(deferredApi).toHaveBeenCalledTimes(1);
-  expect(deferredApi).toHaveBeenCalledWith(options);
+  expect(deferredApi).toHaveBeenCalledWith(descriptor);
 
   const api = TestUtils.createMockProxy<DhType>();
   await act(async () => {

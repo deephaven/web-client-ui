@@ -1,23 +1,16 @@
 import { DragEvent } from 'react';
 
-export type WidgetDefinition = {
+export type WidgetDescriptor = {
   type: string;
-
-  /**
-   * @deprecated Use `title` instead.
-   */
   name?: string;
-
-  title?: string;
-
   id?: string;
 };
 
-export type PanelOpenEventDetail = {
+export type PanelOpenEventDetail<T = unknown> = {
   dragEvent?: DragEvent;
-  fetch?: () => Promise<unknown>;
+  fetch?: () => Promise<T>;
   panelId?: string;
-  widget: WidgetDefinition;
+  widget: WidgetDescriptor;
 };
 
 /**

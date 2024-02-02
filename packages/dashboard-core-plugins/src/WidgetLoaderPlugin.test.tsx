@@ -10,9 +10,7 @@ import { Provider } from 'react-redux';
 import { Dashboard, PanelEvent } from '@deephaven/dashboard';
 import { createMockStore } from '@deephaven/redux';
 import { dh } from '@deephaven/jsapi-shim';
-import { ApiContext } from '@deephaven/jsapi-bootstrap';
-import { type IdeConnection } from '@deephaven/jsapi-types';
-import { ConnectionContext } from '@deephaven/jsapi-components';
+import { ApiContext, ObjectFetcherContext } from '@deephaven/jsapi-bootstrap';
 import {
   type LayoutManager,
   EventEmitter,
@@ -65,11 +63,7 @@ const testWidgetRefPlugin: WidgetPlugin = {
   supportedTypes: 'test-widget-ref',
 };
 
-function makeConnection(): IdeConnection {
-  const connection = new dh.IdeConnection('http://mockserver');
-  connection.getObject = jest.fn();
-  return connection;
-}
+const objectFetcher = jest.fn(() => ({}));
 
 const DEFAULT_PLUGINS = [
   ['test-widget-plugin', testWidgetPlugin],
@@ -81,12 +75,11 @@ function createAndMountDashboard(
   plugins: [string, WidgetPlugin][] = DEFAULT_PLUGINS
 ) {
   const store = createMockStore();
-  const connection = makeConnection();
   let layoutManager: LayoutManager | undefined;
 
   render(
     <ApiContext.Provider value={dh}>
-      <ConnectionContext.Provider value={connection}>
+      <ObjectFetcherContext.Provider value={objectFetcher}>
         <PluginsContext.Provider value={new Map<string, WidgetPlugin>(plugins)}>
           <Provider store={store}>
             <Dashboard
@@ -98,7 +91,7 @@ function createAndMountDashboard(
             </Dashboard>
           </Provider>
         </PluginsContext.Provider>
-      </ConnectionContext.Provider>
+      </ObjectFetcherContext.Provider>
     </ApiContext.Provider>
   );
   assertNotNull(layoutManager);
@@ -216,7 +209,7 @@ describe('WidgetLoaderPlugin', () => {
     act(
       () =>
         layoutManager?.eventHub.emit(PanelEvent.OPEN, {
-          widget: { type: 'test-widget' },
+          widget: { type: 'test-widget', name: 'name' },
         })
     );
     expect(screen.queryAllByText('TestWidget').length).toBe(0);
@@ -225,7 +218,7 @@ describe('WidgetLoaderPlugin', () => {
     act(
       () =>
         layoutManager?.eventHub.emit(PanelEvent.OPEN, {
-          widget: { type: 'test-widget-a' },
+          widget: { type: 'test-widget-a', name: 'name' },
         })
     );
     expect(screen.queryAllByText('TestWidget').length).toBe(1);

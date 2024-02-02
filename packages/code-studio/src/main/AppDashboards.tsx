@@ -6,8 +6,10 @@ import {
   DehydratedDashboardPanelProps,
   LazyDashboard,
 } from '@deephaven/dashboard';
-import { useConnection } from '@deephaven/jsapi-components';
-import { VariableDefinition } from '@deephaven/jsapi-types';
+import {
+  sanitizeVariableDescriptor,
+  useObjectFetcher,
+} from '@deephaven/jsapi-bootstrap';
 import LayoutManager, { ItemConfigType } from '@deephaven/golden-layout';
 import { LoadingOverlay } from '@deephaven/components';
 import EmptyDashboard from './EmptyDashboard';
@@ -30,36 +32,26 @@ export function AppDashboards({
   plugins,
   onAutoFillClick,
 }: AppDashboardsProps): JSX.Element {
-  const connection = useConnection();
+  const fetchObject = useObjectFetcher();
 
   const hydratePanel = useCallback(
     (hydrateProps: DehydratedDashboardPanelProps, id: string) => {
       const { metadata } = hydrateProps;
-      if (
-        metadata?.type != null &&
-        (metadata?.id != null || metadata?.name != null)
-      ) {
-        // Looks like a widget, hydrate it as such
-        const widget: VariableDefinition =
-          metadata.id != null
-            ? {
-                type: metadata.type,
-                id: metadata.id,
-              }
-            : {
-                type: metadata.type,
-                name: metadata.name,
-                title: metadata.name,
-              };
-        return {
-          fetch: async () => connection?.getObject(widget),
-          ...hydrateProps,
-          localDashboardId: id,
-        };
+      try {
+        if (metadata != null) {
+          const widget = sanitizeVariableDescriptor(metadata);
+          return {
+            fetch: async () => fetchObject(widget),
+            ...hydrateProps,
+            localDashboardId: id,
+          };
+        }
+      } catch (e: unknown) {
+        // Ignore being unable to get the variable descriptor, do the default dashboard hydration
       }
       return DashboardUtils.hydrate(hydrateProps, id);
     },
-    [connection]
+    [fetchObject]
   );
 
   return (

@@ -1,13 +1,16 @@
 import React from 'react';
+import { VariableDescriptor } from '@deephaven/jsapi-types';
 import useDeferredApi from './useDeferredApi';
 import { ApiContext } from './ApiBootstrap';
 
 type DeferredApiBootstrapProps = React.PropsWithChildren<{
   onError?: (error: unknown) => void;
   /**
-   * Options to use when fetching the deferred API.
+   * Descriptor for the widget to load. Passed into an `ObjectFetcher` to load the widget.
+   * The descriptor may be extended to include session information or other data required to identify the widget.
+   * The surrounding `ObjectFetcherContext` will then be able to use that information to correctly load the widget.
    */
-  options?: Record<string, unknown>;
+  widget: VariableDescriptor;
 }>;
 
 /**
@@ -17,9 +20,9 @@ export const DeferredApiBootstrap = React.memo(
   ({
     children,
     onError,
-    options,
+    widget,
   }: DeferredApiBootstrapProps): JSX.Element | null => {
-    const [api, apiError] = useDeferredApi(options);
+    const [api, apiError] = useDeferredApi(widget);
     if (apiError != null) {
       onError?.(apiError);
       return null;
