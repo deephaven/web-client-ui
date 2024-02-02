@@ -1,5 +1,5 @@
 // Wrapper for the Notebook for use in a golden layout container
-import React, { Component, ReactElement } from 'react';
+import React, { Component, ReactElement, lazy } from 'react';
 import ReactDOM from 'react-dom';
 import memoize from 'memoize-one';
 import { connect } from 'react-redux';
@@ -53,8 +53,9 @@ import type { IdeSession } from '@deephaven/jsapi-types';
 import { ConsoleEvent, NotebookEvent } from '../events';
 import { getDashboardSessionWrapper } from '../redux';
 import Panel from './Panel';
-import MarkdownNotebook from './MarkdownNotebook';
 import './NotebookPanel.scss';
+
+const MarkdownNotebook = lazy(() => import('./MarkdownNotebook'));
 
 const log = Log.module('NotebookPanel');
 

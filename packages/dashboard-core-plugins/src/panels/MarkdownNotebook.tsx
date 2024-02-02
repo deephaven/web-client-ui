@@ -9,14 +9,13 @@ import classNames from 'classnames';
 import Markdown, { Options } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
+import rehypeMathjax from 'rehype-mathjax';
 import { Button } from '@deephaven/components';
 import { Code } from '@deephaven/console';
 import { vsPlay } from '@deephaven/icons';
 import './MarkdownNotebook.scss';
 import { ReactMarkdownProps } from 'react-markdown/lib/ast-to-react';
 import { assertNotNull } from '@deephaven/utils';
-import 'katex/dist/katex.min.css';
 
 interface MarkdownNotebookProps {
   onRunCode: (command?: string) => void;
@@ -245,7 +244,7 @@ export class MarkdownNotebook extends PureComponent<
             components={{ code: this.renderCodeBlock, a: this.renderLink }}
             linkTarget="_blank"
             remarkPlugins={[remarkGfm, remarkMath]}
-            rehypePlugins={[rehypeKatex]}
+            rehypePlugins={[rehypeMathjax]}
             transformLinkUri={transformLinkUri}
             transformImageUri={transformImageUri}
             includeElementIndex
