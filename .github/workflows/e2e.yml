@@ -23,14 +23,18 @@ jobs:
       - name: Check installed fonts
         run: 'fc-list : family'
 
+      - uses: actions/checkout@v3
+
+      - name: Testing tmp 1
+        run: ls
+
+      - name: Testing tmp 2
+        run: ls ~
+
       - name: Run core server:${{ env.DOCKER_TAG }}
         run: |
-          ls
-          ls ~
           docker pull --quiet ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
           docker run --detach --publish 10000:10000 --name dh-core-server -v ~/web-client-ui/tests/docker-scripts/data:/data --env "START_OPTS=-Xmx4g -DAuthHandlers=io.deephaven.auth.AnonymousAuthenticationHandler -Ddeephaven.application.dir=./data/app.d" ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
-
-      - uses: actions/checkout@v3
 
       - name: Use Node.js
         uses: actions/setup-node@v3
