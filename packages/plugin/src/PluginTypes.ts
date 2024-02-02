@@ -109,7 +109,7 @@ export interface WidgetComponentProps<T = unknown> {
   fetch: () => Promise<T>;
 }
 
-export interface WidgetPanelProps extends WidgetComponentProps {
+export interface WidgetPanelProps<T = unknown> extends WidgetComponentProps<T> {
   metadata?: {
     id?: string;
     name?: string;
@@ -154,7 +154,7 @@ export interface WidgetPlugin<T = unknown> extends Plugin {
    *
    * See @deephaven/dashboard-core-plugins WidgetPanel for the component that should be used here.
    */
-  panelComponent?: React.ComponentType<WidgetPanelProps>;
+  panelComponent?: React.ComponentType<WidgetPanelProps<T>>;
 
   /**
    * The icon to display next to the console button.

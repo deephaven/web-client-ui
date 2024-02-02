@@ -10,7 +10,7 @@ import type { Figure } from '@deephaven/jsapi-types';
 import { type WidgetComponentProps } from '@deephaven/plugin';
 
 export function ChartWidgetPlugin(
-  props: WidgetComponentProps
+  props: WidgetComponentProps<Figure>
 ): JSX.Element | null {
   const dh = useApi();
   const chartTheme = useChartTheme();
