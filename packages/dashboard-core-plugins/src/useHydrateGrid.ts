@@ -5,10 +5,17 @@ import { IrisGridModelFactory } from '@deephaven/iris-grid';
 import { type IrisGridPanelProps } from './panels';
 import { useLoadTablePlugin } from './useLoadTablePlugin';
 
+/**
+ * Hydrate the props for a grid panel
+ * @param fetchTable Function to fetch the Table object
+ * @param id ID of the dashboard
+ * @param metadata Optional serializable metadata for re-fetching the table later
+ * @returns Props hydrated for a grid panel
+ */
 export function useHydrateGrid(
   fetchTable: () => Promise<Table>,
   id: string,
-  metadata?: VariableDescriptor
+  metadata: VariableDescriptor | undefined
 ): { localDashboardId: string } & Pick<
   IrisGridPanelProps,
   'loadPlugin' | 'makeModel'

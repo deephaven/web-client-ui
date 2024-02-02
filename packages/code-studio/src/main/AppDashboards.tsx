@@ -7,7 +7,7 @@ import {
   LazyDashboard,
 } from '@deephaven/dashboard';
 import {
-  getVariableDescriptor,
+  sanitizeVariableDescriptor,
   useObjectFetcher,
 } from '@deephaven/jsapi-bootstrap';
 import LayoutManager, { ItemConfigType } from '@deephaven/golden-layout';
@@ -39,7 +39,7 @@ export function AppDashboards({
       const { metadata } = hydrateProps;
       try {
         if (metadata != null) {
-          const widget = getVariableDescriptor(metadata);
+          const widget = sanitizeVariableDescriptor(metadata);
           return {
             fetch: async () => fetchObject(widget),
             ...hydrateProps,

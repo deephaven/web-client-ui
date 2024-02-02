@@ -47,17 +47,37 @@ describe('getVariableDescriptor', () => {
   const id = 'id';
   const name = 'name';
   const type = 'type';
-  it('should return the descriptor for a title', () => {
-    const descriptor = getVariableDescriptor({ type, title: name });
-    expect(descriptor).toEqual({ type, name });
-  });
-  it('should return the descriptor for a name (deprecated on VariableDefinition)', () => {
-    const descriptor = getVariableDescriptor({ type, name });
-    expect(descriptor).toEqual({ type, name });
-  });
-  it('should return the descriptor for an id', () => {
-    const descriptor = getVariableDescriptor({ type, id });
-    expect(descriptor).toEqual({ type, id });
+  const title = 'title';
+
+  it.each([
+    [
+      { type, name, id },
+      { type, name, id },
+    ],
+    [
+      { type, title },
+      { type, name: title },
+    ],
+    // title takes precedence over name
+    [
+      { type, name, title, id },
+      { type, name: title, id },
+    ],
+    [
+      { type, title, name },
+      { type, name: title },
+    ],
+    [
+      { type, name },
+      { type, name },
+    ],
+    [
+      { type, id },
+      { type, id },
+    ],
+  ])('should return the descriptor for %p', (input, expected) => {
+    const descriptor = getVariableDescriptor(input);
+    expect(descriptor).toEqual(expected);
   });
 });
 

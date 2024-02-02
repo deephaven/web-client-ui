@@ -110,12 +110,12 @@ export interface WidgetComponentProps<T = unknown> {
   fetch: () => Promise<T>;
 }
 
-export type WidgetPanelProps<T = unknown> = WidgetComponentProps<T> & {
+export interface WidgetPanelProps<T = unknown> extends WidgetComponentProps<T> {
   metadata?: VariableDescriptor;
   localDashboardId: string;
   glContainer: ItemContainer;
   glEventHub: EventEmitter;
-};
+}
 
 export interface WidgetPlugin<T = unknown> extends Plugin {
   type: typeof PluginType.WIDGET_PLUGIN;

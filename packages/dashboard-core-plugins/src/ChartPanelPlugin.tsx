@@ -84,7 +84,7 @@ async function createChartModel(
         name: figureName,
         type: dh.VariableType.FIGURE,
       };
-      figure = (await fetchObject(descriptor)) as Figure;
+      figure = await fetchObject<Figure>(descriptor);
     } else {
       figure = await fetchFigure();
     }
@@ -116,7 +116,7 @@ export const ChartPanelPlugin = forwardRef(
   (props: WidgetPanelProps<Figure>, ref: React.Ref<ChartPanel>) => {
     const dh = useApi();
     const chartTheme = useChartTheme();
-    const objectFetcher = useObjectFetcher();
+    const fetchObject = useObjectFetcher();
 
     const panelState = isChartPanelDehydratedProps(props)
       ? (props as unknown as ChartPanelProps).panelState
@@ -136,7 +136,7 @@ export const ChartPanelPlugin = forwardRef(
           return createChartModel(
             dh,
             chartTheme,
-            objectFetcher,
+            fetchObject,
             metadata as ChartPanelMetadata,
             panelFetch,
             panelState
@@ -148,7 +148,7 @@ export const ChartPanelPlugin = forwardRef(
         localDashboardId,
         dh,
         chartTheme,
-        objectFetcher,
+        fetchObject,
         panelFetch,
         panelState,
       ]

@@ -6,7 +6,9 @@ import { ApiContext } from './ApiBootstrap';
 type DeferredApiBootstrapProps = React.PropsWithChildren<{
   onError?: (error: unknown) => void;
   /**
-   * Options to use when fetching the deferred API.
+   * Descriptor for the widget to load. Passed into an `ObjectFetcher` to load the widget.
+   * The descriptor may be extended to include session information or other data required to identify the widget.
+   * The surrounding `ObjectFetcherContext` will then be able to use that information to correctly load the widget.
    */
   widget: VariableDescriptor;
 }>;

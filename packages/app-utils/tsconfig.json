@@ -4,14 +4,7 @@
     "rootDir": "src/",
     "outDir": "dist/"
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "src/**/*.js",
-    "src/**/*.jsx",
-    "../jsapi-components/src/ConnectionContext.ts",
-    "../jsapi-components/src/useConnection.ts"
-  ],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx"],
   "exclude": ["node_modules", "src/**/*.test.*", "src/**/__mocks__/*"],
   "references": [
     { "path": "../auth-plugins" },

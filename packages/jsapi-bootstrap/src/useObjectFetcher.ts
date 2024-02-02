@@ -51,11 +51,13 @@ export function isVariableDescriptor(
 }
 
 /**
- * Function to fetch an object based on a provided descriptor object
+ * Function to fetch an object based on a provided descriptor object.
+ * @param descriptor Descriptor object to fetch the object from. Can be extended by a specific implementation to
+ *                    include additional fields (such as a session ID) to uniquely identify an object.
  */
-export type ObjectFetcher<T = unknown> = (
+export type ObjectFetcher<T = unknown> = <TT = T>(
   descriptor: VariableDescriptor
-) => Promise<T>;
+) => Promise<TT>;
 
 export const ObjectFetcherContext = createContext<ObjectFetcher | null>(null);
 
@@ -90,7 +92,7 @@ export function sanitizeVariableDescriptor(
  * @returns Serializable VariableDescriptor object
  */
 export function getVariableDescriptor(
-  definition: Partial<VariableDefinition>
+  definition: VariableDefinition
 ): VariableDescriptor {
   return {
     type: definition.type ?? '',
@@ -103,9 +105,9 @@ export function getVariableDescriptor(
  * Use a function to fetch an object based on provided metadata
  * @returns Function to asynchronously fetch an object based on provided metadata
  */
-export function useObjectFetcher<T = unknown>(): ObjectFetcher<T> {
+export function useObjectFetcher(): ObjectFetcher {
   return useContextOrThrow(
     ObjectFetcherContext,
     'No ObjectFetcher available in useObjectFetcher. Was code wrapped in ObjectFetcherContext.Provider?'
-  ) as ObjectFetcher<T>;
+  );
 }

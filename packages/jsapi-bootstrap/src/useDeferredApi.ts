@@ -6,9 +6,11 @@ import { ApiContext } from './ApiBootstrap';
  * Function to fetch an API based on a provided descriptor object.
  * Depending on the context there may be more properties on the descriptor,
  * providing more information about the object, such as a session ID.
+ * @param descriptor Descriptor object to fetch the API from.
+ * @returns A promise that resolves to the API instance for the provided variable descriptor.
  */
 export type DeferredApiFetcher = (
-  descriptor?: VariableDescriptor
+  descriptor: VariableDescriptor
 ) => Promise<DhType>;
 
 export const DeferredApiContext = createContext<

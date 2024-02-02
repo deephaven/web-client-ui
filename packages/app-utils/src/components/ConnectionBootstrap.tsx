@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { LoadingOverlay } from '@deephaven/components';
 import {
+  ObjectFetcher,
   ObjectFetcherContext,
   sanitizeVariableDescriptor,
   useApi,
@@ -77,7 +78,7 @@ export function ConnectionBootstrap({
 
   const objectFetcher = useCallback(
     async (descriptor: VariableDescriptor) => {
-      assertNotNull(connection, 'connection');
+      assertNotNull(connection, 'No connection available to fetch object with');
       return connection.getObject(sanitizeVariableDescriptor(descriptor));
     },
     [connection]
@@ -95,7 +96,7 @@ export function ConnectionBootstrap({
 
   return (
     <ConnectionContext.Provider value={connection}>
-      <ObjectFetcherContext.Provider value={objectFetcher}>
+      <ObjectFetcherContext.Provider value={objectFetcher as ObjectFetcher}>
         {children}
       </ObjectFetcherContext.Provider>
     </ConnectionContext.Provider>
