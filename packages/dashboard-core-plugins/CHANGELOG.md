@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.61.0](https://github.com/deephaven/web-client-ui/compare/v0.60.0...v0.61.0) (2024-02-01)
+
+
+### Bug Fixes
+
+* Made WidgetComponentProps generic ([#1760](https://github.com/deephaven/web-client-ui/issues/1760)) ([8cb0a10](https://github.com/deephaven/web-client-ui/commit/8cb0a10f796978fdf364c5f046ac60bf32eae6f5)), closes [#1759](https://github.com/deephaven/web-client-ui/issues/1759)
+
+
+### Features
+
+* allow themes to use any srgb color for definitions ([#1756](https://github.com/deephaven/web-client-ui/issues/1756)) ([b047fa3](https://github.com/deephaven/web-client-ui/commit/b047fa36de3a285be925736ef73722a60d1d9ed7))
+
+
+### BREAKING CHANGES
+
+* - IrisGridThemeContext no longer accepts a paritial theme. By
+guaranteeing the provider is a full theme we can resolve the CSS
+variables and normailze the colors only once per theme load globally,
+rather than having to do it once per grid.
+- Themes must be defined using valid srgb CSS colors, and not hsl raw
+component values
+
+
+
+
+
 # [0.60.0](https://github.com/deephaven/web-client-ui/compare/v0.59.0...v0.60.0) (2024-01-26)
 
 

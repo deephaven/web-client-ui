@@ -1,6 +1,5 @@
 import React, { ReactNode, useMemo } from 'react';
 import { Tooltip } from '@deephaven/components';
-import { ColorUtils } from '@deephaven/utils';
 import { INVALID_COLOR_BORDER_STYLE } from './colorUtils';
 import { useContrastFgColorRef, useDhColorFromPseudoContent } from './hooks';
 
@@ -24,7 +23,6 @@ export function Swatch({ className, children }: SwatchProps): JSX.Element {
       dhColor != null
         ? {
             value: dhColor,
-            normalized: ColorUtils.normalizeCssColor(dhColor, true),
           }
         : null,
     [dhColor]
@@ -43,7 +41,6 @@ export function Swatch({ className, children }: SwatchProps): JSX.Element {
       {hasValue && (
         <Tooltip interactive>
           <div>{tooltip.value}</div>
-          <div>{tooltip.normalized}</div>
         </Tooltip>
       )}
       {children}

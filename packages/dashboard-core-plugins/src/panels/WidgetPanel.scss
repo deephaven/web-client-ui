@@ -8,7 +8,7 @@
   text-align: left;
   display: block;
   padding: 3px 5px;
-  background: hsla(var(--dh-color-content-bg-hsl), 0.95);
+  background: color-mix(in srgb, var(--dh-color-content-bg) 95%, transparent);
   color: $gray-300;
   border-top: 1px solid $gray-500;
   border-right: 1px solid $gray-500;

@@ -29,6 +29,7 @@ label[class^='spectrum-'] {
   );
 }
 
+/* Table */
 [class^='spectrum-Table-headCell'] {
   /* 
   Tables are styled with the assumption that the header is the same color as the bg
@@ -36,13 +37,27 @@ label[class^='spectrum-'] {
   There is also no variable exposed for this, so we have to target the class directly.
  */
   --dh-table-header-cell-background-color: transparent;
+
   background: var(--dh-table-header-cell-background-color);
 }
 
-/* Table */
+[class^='spectrum-Table-row'] {
+  /* border of selected color is hard-coded as blue rather than accent color */
+  --spectrum-table-row-border-color-selected: var(
+    --dh-color-item-list-selected-border
+  );
+}
+
 [class*='spectrum-Table--quiet'] {
   /* Quiet shouldn't assume a bg color */
   --spectrum-alias-background-color-default: transparent;
+}
+
+[class*='spectrum-ListView'] {
+  /* border of selected color is hard-coded as blue rather than accent color */
+  --spectrum-listview-item-border-color-selected: var(
+    --dh-color-item-list-selected-border
+  );
 }
 
 button[class^='spectrum-Button'] {

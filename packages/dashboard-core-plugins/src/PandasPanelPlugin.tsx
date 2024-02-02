@@ -5,12 +5,9 @@ import { PandasPanel } from './panels';
 import useHydrateGrid from './useHydrateGrid';
 
 export const PandasPanelPlugin = forwardRef(
-  (props: WidgetPanelProps, ref: React.Ref<PandasPanel>) => {
+  (props: WidgetPanelProps<Table>, ref: React.Ref<PandasPanel>) => {
     const { localDashboardId, fetch } = props;
-    const hydratedProps = useHydrateGrid(
-      fetch as () => Promise<Table>,
-      localDashboardId
-    );
+    const hydratedProps = useHydrateGrid(fetch, localDashboardId);
 
     return (
       // eslint-disable-next-line react/jsx-props-no-spreading

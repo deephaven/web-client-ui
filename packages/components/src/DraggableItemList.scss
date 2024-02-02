@@ -68,7 +68,7 @@ $draggable-item-grip-color: $mid;
   .number-badge {
     padding: 0 $spacer-2;
     border-radius: 1rem;
-    background-color: hsla(var(--dh-color-white-hsl), 0.25);
+    background-color: fg-opacity(25);
     margin-right: $spacer-1;
   }
 }

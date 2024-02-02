@@ -2,7 +2,6 @@
 @import '@deephaven/components/scss/custom.scss';
 
 $error-gutter-width: 15px;
-$hover-item-fade: 0.5;
 $font-size: ConsoleVariables.$font-size;
 $button-height: ConsoleVariables.$button-height;
 $button-vert-margin: ConsoleVariables.$button-vert-margin;
@@ -59,7 +58,7 @@ $button-vert-margin: ConsoleVariables.$button-vert-margin;
         text-align: left;
         padding-left: 0;
         padding-right: 0;
-        color: hsla(var(--dh-color-negative-hsl), $hover-item-fade);
+        color: negative-opacity(50);
         transition: $btn-transition;
       }
 
@@ -91,7 +90,7 @@ $button-vert-margin: ConsoleVariables.$button-vert-margin;
         outline: 0;
       }
       &:focus-visible {
-        border: 1px solid hsla(var(--dh-color-negative-hsl), $hover-item-fade);
+        border: 1px solid negative-opacity(50);
       }
     }
   }
