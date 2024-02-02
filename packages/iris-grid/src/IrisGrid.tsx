@@ -1368,24 +1368,23 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   getCachedTheme = memoize(
     (
-      contextTheme: Partial<GridThemeType> | null,
-      theme: Partial<GridThemeType> | null,
+      contextTheme: IrisGridThemeType | null,
+      theme: Partial<IrisGridThemeType> | null,
       isEditable: boolean,
       floatingRowCount: number
-    ): Partial<IrisGridThemeType> => {
-      const defaultTheme = createDefaultIrisGridTheme();
+    ): IrisGridThemeType => {
+      // If a theme is available via context, use that as the base theme.
+      // If iris-grid is standalone without a context, initialize a default theme.
+      const defaultTheme = contextTheme ?? createDefaultIrisGridTheme();
 
       // We only show the row footers when we have floating rows for aggregations
       const rowFooterWidth =
         floatingRowCount > 0
-          ? theme?.rowFooterWidth ??
-            contextTheme?.rowFooterWidth ??
-            defaultTheme.rowFooterWidth
+          ? theme?.rowFooterWidth ?? defaultTheme.rowFooterWidth
           : 0;
 
       return {
         ...defaultTheme,
-        ...contextTheme,
         ...theme,
         autoSelectRow: !isEditable,
         rowFooterWidth,

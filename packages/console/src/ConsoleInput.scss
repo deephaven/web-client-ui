@@ -1,10 +1,8 @@
 @import '@deephaven/components/scss/custom.scss';
 
-$console-input-inner-bg: $content-bg;
 $console-input-min-height: 40px;
 $console-input-padding: 4px;
 $console-input-radius: $border-radius;
-$console-input-border-color: $input-border-color;
 $console-input-focus-border-color: $input-focus-border-color;
 $console-input-focus-box-shadow: $input-btn-focus-box-shadow;
 $console-input-border-width: $input-border-width;
@@ -16,9 +14,12 @@ $console-input-margin-padding-top: 7px;
 $console-input-margin-color: $foreground;
 
 .console-input-wrapper {
-  --console-input-bg: var(--dh-color-surface-bg);
+  --console-input-bg: var(--dh-color-input-bg);
+  --console-input-surface-bg: var(--dh-color-surface-bg);
+  --console-input-border-color: var(--dh-color-input-border);
+  --console-input-hover-border-color: var(--dh-color-input-hover-border);
 
-  background-color: var(--console-input-bg);
+  background-color: var(--console-input-surface-bg);
   padding: $console-input-padding;
   min-height: $console-input-min-height;
   display: flex;
@@ -42,16 +43,27 @@ $console-input-margin-color: $foreground;
   .console-input-inner-wrapper {
     min-width: 0;
     flex-grow: 1;
-    background-color: $console-input-inner-bg;
     border-radius: $console-input-radius;
-    border: $console-input-border-width solid $console-input-border-color;
+    border: $console-input-border-width solid var(--console-input-border-color);
+    @include transition($input-transition);
 
     .monaco-editor {
+      // can't use as part of editor theme since that is global
+      // and we want to apply this only to this specific editor
+      /* stylelint-disable-next-line custom-property-pattern */
+      --vscode-editorGutter-background: var(--console-input-bg);
+      --vscode-editor-background: var(--console-input-bg);
+
       border-radius: $console-input-radius;
 
       .overflow-guard {
         border-radius: $console-input-radius;
       }
+    }
+
+    &:hover,
+    &.hover {
+      border-color: var(--console-input-hover-border-color);
     }
 
     &:focus,

@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.61.0](https://github.com/deephaven/web-client-ui/compare/v0.60.0...v0.61.0) (2024-02-01)
+
+
+### Bug Fixes
+
+* missing react key on settings menu fragment ([#1757](https://github.com/deephaven/web-client-ui/issues/1757)) ([b14b714](https://github.com/deephaven/web-client-ui/commit/b14b714a7573ed4a3585b2e65334b57f9870b1ad))
+
+
+### Features
+
+* allow themes to use any srgb color for definitions ([#1756](https://github.com/deephaven/web-client-ui/issues/1756)) ([b047fa3](https://github.com/deephaven/web-client-ui/commit/b047fa36de3a285be925736ef73722a60d1d9ed7))
+
+
+### BREAKING CHANGES
+
+* - IrisGridThemeContext no longer accepts a paritial theme. By
+guaranteeing the provider is a full theme we can resolve the CSS
+variables and normailze the colors only once per theme load globally,
+rather than having to do it once per grid.
+- Themes must be defined using valid srgb CSS colors, and not hsl raw
+component values
+
+
+
+
+
 # [0.60.0](https://github.com/deephaven/web-client-ui/compare/v0.59.0...v0.60.0) (2024-01-26)
 
 

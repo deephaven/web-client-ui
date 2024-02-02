@@ -1,4 +1,4 @@
-import React, { Component, ReactElement, RefObject } from 'react';
+import React, { Component, Fragment, ReactElement, RefObject } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   vsClose,
@@ -139,10 +139,10 @@ export class SettingsMenu extends Component<
     const copyShortcut = GLOBAL_SHORTCUTS.COPY_VERSION_INFO.getDisplayText();
 
     const getRow = (text: string, ver?: string): JSX.Element => (
-      <>
+      <Fragment key={text}>
         <div>{text}</div>
         <div>{ver}</div>
-      </>
+      </Fragment>
     );
 
     const userDisplayName = user.displayName ?? user.name;

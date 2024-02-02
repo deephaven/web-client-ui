@@ -1,6 +1,6 @@
 import { PluginType, type WidgetPlugin } from '@deephaven/plugin';
 import { vsGraph } from '@deephaven/icons';
-import { Figure } from '@deephaven/jsapi-types';
+import type { Figure } from '@deephaven/jsapi-types';
 import { ChartWidgetPlugin } from './ChartWidgetPlugin';
 import { ChartPanelPlugin } from './ChartPanelPlugin';
 

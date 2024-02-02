@@ -36,7 +36,10 @@ export function useCheckIfExistsValue(
   const tableUtils = useTableUtils();
 
   const [valueTrimmed, setValueTrimmed] = useState('');
-  const valueTrimmedDebounced = useDebouncedValue(valueTrimmed, debounceMs);
+  const { value: valueTrimmedDebounced } = useDebouncedValue(
+    valueTrimmed,
+    debounceMs
+  );
 
   const trimAndUpdateValue = useCallback((text: string) => {
     setValueTrimmed(text.trim());
