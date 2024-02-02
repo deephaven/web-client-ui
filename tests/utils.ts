@@ -24,6 +24,7 @@ type TablePlotNames =
   | 'simple_table_header_group'
   | 'simple_table_header_group_hide'
   | 'double_and_string'
+  | 'ordered_int_and_offset'
   | 'trig_table'
   | 'trig_figure';
 
@@ -37,12 +38,14 @@ export async function openTableOrPlot(
   page: Page,
   type: 'table' | 'plot',
   name: TablePlotNames
-) {
+): Promise<void> {
   await page.goto('');
   await expect(page.locator('.loading-spinner')).toHaveCount(0);
 
   // open the tables/plot button
-  const dropdownButton = page.locator(type === 'table' ? '#table-actions' : '#widget-actions'); ;
+  const dropdownButton = page.locator(
+    type === 'table' ? '#table-actions' : '#widget-actions'
+  );
   expect(dropdownButton).not.toBeNull();
   expect(dropdownButton).not.toBeDisabled();
   await dropdownButton.click();

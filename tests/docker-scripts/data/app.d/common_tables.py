@@ -28,3 +28,9 @@ all_types = empty_table(size).update([
   "BigInt=(i%22==0 ? null : new java.math.BigInteger(Integer.toString((int)(scale*(i*2-1)))))",
   "Byte=(Byte)(i%19==0 ? null : new Byte( Integer.toString((int)(i))))",
 ])
+
+ordered_int_and_offset = empty_table(20).update([
+    "MyString=(`str`+i)",
+    "MyInt1=(i+100)",
+    "MyInt2=(i+200)",
+])
