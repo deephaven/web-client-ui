@@ -115,11 +115,7 @@
     --dh-color-highlight-selected-hover
   );
   --dh-color-item-list-selected-inactive-bg: var(--dh-color-gray-200);
-  --dh-color-item-list-selected-border: color-mix(
-    in srgb,
-    var(--dh-color-accent) 60%,
-    transparent
-  );
+  --dh-color-item-list-selected-border: var(--dh-color-accent-900);
   --dh-color-item-list-drop-target-fg: var(--dh-color-white);
 
   --dh-color-item-list-keyboard-selected-bg: color-mix(
