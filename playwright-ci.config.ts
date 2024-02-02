@@ -12,7 +12,8 @@ const config: PlaywrightTestConfig = {
     reuseExistingServer: false,
   },
   reporter: [['github'], ['html']],
-  retries: 2
+  retries: 2,
+  workers: 3
 };
 
 export default config;
