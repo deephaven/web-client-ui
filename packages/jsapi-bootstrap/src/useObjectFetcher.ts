@@ -55,9 +55,9 @@ export function isVariableDescriptor(
  * @param descriptor Descriptor object to fetch the object from. Can be extended by a specific implementation to
  *                    include additional fields (such as a session ID) to uniquely identify an object.
  */
-export type ObjectFetcher<T = unknown> = <TT = T>(
+export type ObjectFetcher = <T = unknown>(
   descriptor: VariableDescriptor
-) => Promise<TT>;
+) => Promise<T>;
 
 export const ObjectFetcherContext = createContext<ObjectFetcher | null>(null);
 
