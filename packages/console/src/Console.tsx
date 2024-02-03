@@ -60,7 +60,7 @@ interface ConsoleProps {
    * @param forceOpen If true, always open the object. If false, only update existing panels
    */
   openObject: (
-    object: Pick<DhType.ide.VariableDefinition, 'name' | 'title' | 'type'>,
+    object: DhType.ide.VariableDescriptor,
     forceOpen?: boolean
   ) => void;
 
@@ -784,7 +784,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     this.setState({ consoleHistory: history });
     this.scrollConsoleHistoryToBottom(true);
     this.updateKnownObjects(historyItem);
-    openObject({ name: title, title, type: dh.VariableType.TABLE });
+    openObject({ name: title, type: dh.VariableType.TABLE });
     commandHistoryStorage.addItem(language, scope, title, {
       command: title,
       startTime: new Date().toJSON(),

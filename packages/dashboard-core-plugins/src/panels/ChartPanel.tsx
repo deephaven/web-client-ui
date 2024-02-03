@@ -1099,7 +1099,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
         isDisconnected={isDisconnected}
         isLoading={isLoading}
         isLoaded={isLoaded}
-        widgetName={name}
+        widgetName={name ?? undefined}
         widgetType="Chart"
       >
         <div

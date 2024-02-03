@@ -248,7 +248,10 @@ export class ConsolePanel extends PureComponent<
     this.updateDimensions();
   }
 
-  handleOpenObject(object: dh.ide.VariableDefinition, forceOpen = true): void {
+  handleOpenObject(
+    object: dh.ide.VariableDescriptor & { title?: string },
+    forceOpen = true
+  ): void {
     const { root } = this.context;
     const oldPanelId =
       object.title != null ? this.getItemId(object.title, false) : null;
@@ -290,7 +293,7 @@ export class ConsolePanel extends PureComponent<
   /**
    * @param widget The widget to open
    */
-  openWidget(widget: dh.ide.VariableDefinition): void {
+  openWidget(widget: dh.ide.VariableDescriptor & { title?: string }): void {
     const { glEventHub, sessionWrapper } = this.props;
     assertNotNull(sessionWrapper);
 

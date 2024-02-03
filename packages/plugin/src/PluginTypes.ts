@@ -3,7 +3,7 @@ import {
   type EventEmitter,
   type ItemContainer,
 } from '@deephaven/golden-layout';
-import { VariableDescriptor } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import type { IconDefinition } from '@fortawesome/fontawesome-common-types';
 import type { TablePluginComponent } from './TablePlugin';
 
@@ -111,7 +111,7 @@ export interface WidgetComponentProps<T = unknown> {
 }
 
 export interface WidgetPanelProps<T = unknown> extends WidgetComponentProps<T> {
-  metadata?: VariableDescriptor;
+  metadata?: dh.ide.VariableDescriptor;
   localDashboardId: string;
   glContainer: ItemContainer;
   glEventHub: EventEmitter;

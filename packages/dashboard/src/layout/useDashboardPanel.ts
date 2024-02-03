@@ -74,7 +74,7 @@ export function useDashboardPanel<
         type: 'react-component',
         component: componentName,
         props,
-        title: name,
+        title: name ?? undefined,
         id: panelId,
       };
 

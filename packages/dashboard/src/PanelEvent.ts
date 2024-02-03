@@ -1,16 +1,11 @@
 import { DragEvent } from 'react';
-
-export type WidgetDescriptor = {
-  type: string;
-  name?: string;
-  id?: string;
-};
+import type { dh } from '@deephaven/jsapi-types';
 
 export type PanelOpenEventDetail<T = unknown> = {
   dragEvent?: DragEvent;
   fetch?: () => Promise<T>;
   panelId?: string;
-  widget: WidgetDescriptor;
+  widget: dh.ide.VariableDescriptor;
 };
 
 /**
