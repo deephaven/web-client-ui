@@ -1,9 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { LoadingOverlay } from '@deephaven/components';
-import { useApi, useClient } from '@deephaven/jsapi-bootstrap';
+import {
+  ObjectFetcherContext,
+  sanitizeVariableDescriptor,
+  useApi,
+  useClient,
+} from '@deephaven/jsapi-bootstrap';
 import type { dh } from '@deephaven/jsapi-types';
-import { ConnectionContext } from '@deephaven/jsapi-components';
 import Log from '@deephaven/log';
+import { assertNotNull } from '@deephaven/utils';
+import ConnectionContext from './ConnectionContext';
 
 const log = Log.module('@deephaven/app-utils.ConnectionBootstrap');
 
@@ -69,6 +75,14 @@ export function ConnectionBootstrap({
     [api, connection]
   );
 
+  const objectFetcher = useCallback(
+    async (descriptor: dh.ide.VariableDescriptor) => {
+      assertNotNull(connection, 'No connection available to fetch object with');
+      return connection.getObject(sanitizeVariableDescriptor(descriptor));
+    },
+    [connection]
+  );
+
   if (connection == null || error != null) {
     return (
       <LoadingOverlay
@@ -81,7 +95,9 @@ export function ConnectionBootstrap({
 
   return (
     <ConnectionContext.Provider value={connection}>
-      {children}
+      <ObjectFetcherContext.Provider value={objectFetcher}>
+        {children}
+      </ObjectFetcherContext.Provider>
     </ConnectionContext.Provider>
   );
 }

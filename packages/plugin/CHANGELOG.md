@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.61.1](https://github.com/deephaven/web-client-ui/compare/v0.61.0...v0.61.1) (2024-02-02)
+
+
+### Bug Fixes
+
+* Made some plugin types generic ([#1769](https://github.com/deephaven/web-client-ui/issues/1769)) ([ac40c6f](https://github.com/deephaven/web-client-ui/commit/ac40c6f4c0e75c34689c964c2614017d50e74d74)), closes [#1759](https://github.com/deephaven/web-client-ui/issues/1759)
+
+
+
+
+
+# [0.61.0](https://github.com/deephaven/web-client-ui/compare/v0.60.0...v0.61.0) (2024-02-01)
+
+
+### Bug Fixes
+
+* Made WidgetComponentProps generic ([#1760](https://github.com/deephaven/web-client-ui/issues/1760)) ([8cb0a10](https://github.com/deephaven/web-client-ui/commit/8cb0a10f796978fdf364c5f046ac60bf32eae6f5)), closes [#1759](https://github.com/deephaven/web-client-ui/issues/1759)
+
+
+
+
+
 # [0.60.0](https://github.com/deephaven/web-client-ui/compare/v0.59.0...v0.60.0) (2024-01-26)
 
 **Note:** Version bump only for package @deephaven/plugin

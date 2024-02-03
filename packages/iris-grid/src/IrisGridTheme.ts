@@ -1,7 +1,12 @@
-import { resolveCssVariablesInRecord } from '@deephaven/components';
+import {
+  getExpressionRanges,
+  resolveCssVariablesInRecord,
+} from '@deephaven/components';
 import type { GridThemeType } from '@deephaven/grid';
+import { GridTheme } from '@deephaven/grid';
 import Log from '@deephaven/log';
 import { GridColor, NullableGridColor } from '@deephaven/grid/src/GridTheme';
+import { ColorUtils } from '@deephaven/utils';
 import IrisGridThemeRaw from './IrisGridTheme.module.scss';
 
 const log = Log.module('IrisGridTheme');
@@ -49,12 +54,26 @@ export type IrisGridThemeType = GridThemeType & {
  * that the returned theme is statically defined and does not change when CSS
  * variables change.
  */
-export function createDefaultIrisGridTheme(): Partial<IrisGridThemeType> {
+export function createDefaultIrisGridTheme(): IrisGridThemeType {
   const IrisGridTheme = resolveCssVariablesInRecord(IrisGridThemeRaw);
+
+  // row-background-colors is a space-separated list of colors, so we need to
+  // normalize each color expression in the list individually
+  IrisGridTheme['row-background-colors'] = getExpressionRanges(
+    IrisGridTheme['row-background-colors'] ?? ''
+  )
+    .map(([start, end]) =>
+      ColorUtils.normalizeCssColor(
+        IrisGridTheme['row-background-colors'].substring(start, end + 1)
+      )
+    )
+    .join(' ');
+
   log.debug2('Iris grid theme:', IrisGridThemeRaw);
   log.debug2('Iris grid theme derived:', IrisGridTheme);
 
   return Object.freeze({
+    ...GridTheme,
     backgroundColor: IrisGridTheme['grid-bg'],
     white: IrisGridTheme.white,
     black: IrisGridTheme.black,

@@ -3,6 +3,7 @@ import {
   type EventEmitter,
   type ItemContainer,
 } from '@deephaven/golden-layout';
+import { VariableDescriptor } from '@deephaven/jsapi-types';
 import type { IconDefinition } from '@fortawesome/fontawesome-common-types';
 import type { TablePluginComponent } from './TablePlugin';
 
@@ -109,12 +110,8 @@ export interface WidgetComponentProps<T = unknown> {
   fetch: () => Promise<T>;
 }
 
-export interface WidgetPanelProps extends WidgetComponentProps {
-  metadata?: {
-    id?: string;
-    name?: string;
-    type?: string;
-  };
+export interface WidgetPanelProps<T = unknown> extends WidgetComponentProps<T> {
+  metadata?: VariableDescriptor;
   localDashboardId: string;
   glContainer: ItemContainer;
   glEventHub: EventEmitter;
@@ -154,7 +151,7 @@ export interface WidgetPlugin<T = unknown> extends Plugin {
    *
    * See @deephaven/dashboard-core-plugins WidgetPanel for the component that should be used here.
    */
-  panelComponent?: React.ComponentType<WidgetPanelProps>;
+  panelComponent?: React.ComponentType<WidgetPanelProps<T>>;
 
   /**
    * The icon to display next to the console button.

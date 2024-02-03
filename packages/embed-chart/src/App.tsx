@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useConnection } from '@deephaven/app-utils';
 import {
   Chart,
   ChartModel,
@@ -10,7 +11,6 @@ import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import './App.scss'; // Styles for in this app
 import { useApi } from '@deephaven/jsapi-bootstrap';
-import { useConnection } from '@deephaven/jsapi-components';
 
 const log = Log.module('EmbedChart.App');
 
@@ -28,8 +28,8 @@ async function loadFigure(
 ): Promise<DhType.plot.Figure> {
   log.info(`Fetching figure ${name}...`);
 
-  const definition = { name, type: dh.VariableType.FIGURE };
-  return connection.getObject(definition);
+  const descriptor = { name, type: dh.VariableType.FIGURE };
+  return connection.getObject(descriptor);
 }
 
 /**

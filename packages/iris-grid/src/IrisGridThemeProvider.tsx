@@ -2,7 +2,12 @@ import { useTheme } from '@deephaven/components';
 import { createContext, ReactNode, useMemo } from 'react';
 import { createDefaultIrisGridTheme, IrisGridThemeType } from './IrisGridTheme';
 
-export type IrisGridThemeContextValue = Partial<IrisGridThemeType>;
+/**
+ * The context value for the IrisGridThemeProvider.
+ * This must be a full object and not a partial so that we
+ * can createDefaultIrisGridTheme once, and not per grid.
+ */
+export type IrisGridThemeContextValue = IrisGridThemeType;
 
 export const IrisGridThemeContext =
   createContext<IrisGridThemeContextValue | null>(null);

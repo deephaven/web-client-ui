@@ -209,7 +209,9 @@ interface IrisGridPanelState {
   gridStateOverrides: Partial<GridState>;
 }
 
-function getTableNameFromMetadata(metadata: PanelMetadata | undefined): string {
+function getTableNameFromMetadata(
+  metadata: PanelMetadata | null | undefined
+): string {
   if (metadata == null) {
     throw new Error('No metadata provided');
   }
@@ -220,7 +222,9 @@ function getTableNameFromMetadata(metadata: PanelMetadata | undefined): string {
     return metadata.table;
   }
 
-  throw new Error(`Unable to determine table name from metadata: ${metadata}`);
+  throw new Error(
+    `Unable to determine table name from metadata: ${JSON.stringify(metadata)}`
+  );
 }
 
 export type IrisGridPanelProps = OwnProps & StateProps;

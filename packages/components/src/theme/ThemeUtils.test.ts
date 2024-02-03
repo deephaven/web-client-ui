@@ -473,32 +473,39 @@ describe.each([undefined, document.createElement('div')])(
   targetElement => {
     const computedStyle = createMockProxy<CSSStyleDeclaration>();
     const expectedTargetEl = targetElement ?? document.body;
-    const tmpPropEl = document.createElement('div');
+    const tmpPropEl = createMockProxy<HTMLDivElement>({
+      style: {
+        setProperty: jest.fn(),
+        removeProperty: jest.fn(),
+      } as unknown as CSSStyleDeclaration,
+      appendChild: jest.fn(),
+      remove: jest.fn(),
+    });
 
     beforeEach(() => {
       asMock(computedStyle.getPropertyValue)
         .mockName('getPropertyValue')
         .mockImplementation(key => `resolved:${key}`);
 
-      jest.spyOn(expectedTargetEl, 'appendChild').mockName('appendChild');
+      jest
+        .spyOn(window, 'getComputedStyle')
+        .mockName('getComputedStyle')
+        .mockReturnValue(computedStyle);
+
+      jest
+        .spyOn(expectedTargetEl, 'appendChild')
+        .mockName('appendChild')
+        .mockReturnValue(tmpPropEl);
 
       jest
         .spyOn(document, 'createElement')
         .mockName('createElement')
         .mockReturnValue(tmpPropEl);
 
-      jest.spyOn(tmpPropEl.style, 'setProperty').mockName('setProperty');
-      jest.spyOn(tmpPropEl.style, 'removeProperty').mockName('removeProperty');
-      jest.spyOn(tmpPropEl, 'remove').mockName('remove');
-
       jest
         .spyOn(ColorUtils, 'normalizeCssColor')
         .mockName('normalizeCssColor')
         .mockImplementation(key => `normalized:${key}`);
-      jest
-        .spyOn(window, 'getComputedStyle')
-        .mockName('getComputedStyle')
-        .mockReturnValue(computedStyle);
     });
 
     it('should map non-css variable values verbatim', () => {
@@ -519,12 +526,12 @@ describe.each([undefined, document.createElement('div')])(
       isAlphaOptional => {
         const given = {
           aaa: 'var(--aaa)',
-          bbb: 'var(--bbb1) var(--bbb2)',
+          bbb: 'var(--bbb1)',
         };
 
         const expected = {
-          aaa: 'normalized:resolved:--dh-tmp-0',
-          bbb: 'normalized:resolved:--dh-tmp-1 normalized:resolved:--dh-tmp-2',
+          aaa: 'normalized:resolved:background-color',
+          bbb: 'normalized:resolved:background-color',
         };
 
         const actual = resolveCssVariablesInRecord(
@@ -553,7 +560,7 @@ describe.each([undefined, document.createElement('div')])(
               tmpPropKey
             );
             expect(ColorUtils.normalizeCssColor).toHaveBeenCalledWith(
-              `resolved:${tmpPropKey}`,
+              `resolved:background-color`,
               isAlphaOptional ?? false
             );
           });

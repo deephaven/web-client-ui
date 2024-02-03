@@ -277,7 +277,11 @@ class IrisGridTableModel
   }
 
   get isPartitionRequired(): boolean {
-    return this.table.isUncoalesced && this.isValuesTableAvailable;
+    return (
+      this.table.isUncoalesced &&
+      this.isValuesTableAvailable &&
+      this.partitionColumns.length > 0
+    );
   }
 
   isFilterable(columnIndex: ModelIndex): boolean {

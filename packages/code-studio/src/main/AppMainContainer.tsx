@@ -62,6 +62,7 @@ import {
   dhSquareFilled,
   vsHome,
 } from '@deephaven/icons';
+import { getVariableDescriptor } from '@deephaven/jsapi-bootstrap';
 import dh from '@deephaven/jsapi-shim';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { SessionConfig } from '@deephaven/jsapi-utils';
@@ -722,7 +723,7 @@ export class AppMainContainer extends Component<
     this.emitLayoutEvent(PanelEvent.OPEN, {
       dragEvent,
       fetch: async () => connection?.getObject(widget),
-      widget,
+      widget: getVariableDescriptor(widget),
     });
   }
 
