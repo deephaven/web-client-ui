@@ -72,17 +72,13 @@ class FigureChartModel extends ChartModel {
     this.settings = settings;
     this.theme = theme;
     this.data = [];
-    const template = {
-      data: {},
-      layout: this.chartUtils.makeDefaultLayout(theme),
-    };
     this.layout = {
       grid: {
         rows: figure.rows,
         columns: figure.cols,
         pattern: 'independent',
       },
-      template,
+      template: this.chartUtils.makeDefaultTemplate(theme),
     };
     this.seriesDataMap = new Map();
     this.pendingSeries = [];
