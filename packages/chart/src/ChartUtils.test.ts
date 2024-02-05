@@ -1,6 +1,5 @@
 import dh from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
-import { TestUtils } from '@deephaven/utils';
 import { Layout } from 'plotly.js';
 import ChartUtils from './ChartUtils';
 import ChartTestUtils from './ChartTestUtils';
@@ -9,13 +8,23 @@ import type { ChartTheme } from './ChartTheme';
 const chartUtils = new ChartUtils(dh);
 const chartTestUtils = new ChartTestUtils(dh);
 
-const { createMockProxy } = TestUtils;
-
 function makeFormatter() {
   return new Formatter(dh);
 }
 
-const chartTheme = createMockProxy<ChartTheme>();
+// Proxy for ChartTheme
+const chartTheme = new Proxy(
+  {},
+  {
+    get(_target, name) {
+      if (name === 'colorway') {
+        return 'ChartTheme[colorway0] ChartTheme[colorway1] ChartTheme[colorway2]';
+      }
+
+      return `ChartTheme['${String(name)}']`;
+    },
+  }
+) as ChartTheme;
 
 it('groups the axes by type properly', () => {
   const testAxes = (axes, expectedResult) => {
@@ -644,5 +653,12 @@ describe('getMarkerSymbol', () => {
     expect(() => getMarkerSymbol('')).toThrow();
     expect(() => getMarkerSymbol('S')).toThrow();
     expect(() => getMarkerSymbol('&$*(#@&')).toThrow();
+  });
+});
+
+describe('makeDefaultTemplate', () => {
+  it('should create a default template', () => {
+    const template = chartUtils.makeDefaultTemplate(chartTheme);
+    expect(template).toMatchSnapshot();
   });
 });
