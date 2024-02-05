@@ -30,7 +30,7 @@ const config: PlaywrightTestConfig = {
   /* Retry on CI only */
   retries: process.env.CI ? 1 : 0,
   /* Default to 50% of cores, don't want too many as core or web will become bottleneck */
-  workers: process.env.CI ? undefined : 4,
+  workers: process.env.CI ? 4 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   /* Use host 0.0.0.0 so it can be forwarded from within docker */
   reporter: [['html', { host: '0.0.0.0', port: 9323 }]],
