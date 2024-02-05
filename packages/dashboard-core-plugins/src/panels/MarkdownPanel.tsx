@@ -224,19 +224,19 @@ export class MarkdownPanel extends Component<
         isClonable
         isRenamable
       >
-        <Suspense fallback={<LoadingOverlay />}>
-          {isStartPageShown ? (
-            <MarkdownStartPage
-              closedMarkdowns={closedMarkdowns}
-              onCreate={this.handleCreateMarkdown}
-              onOpen={this.handleOpenMarkdown}
-              onDelete={this.handleDeleteMarkdown}
-            />
-          ) : (
-            <MarkdownContainer
-              isEditing={isEditing}
-              onDoubleClick={this.handleContainerDoubleClick}
-            >
+        {isStartPageShown ? (
+          <MarkdownStartPage
+            closedMarkdowns={closedMarkdowns}
+            onCreate={this.handleCreateMarkdown}
+            onOpen={this.handleOpenMarkdown}
+            onDelete={this.handleDeleteMarkdown}
+          />
+        ) : (
+          <MarkdownContainer
+            isEditing={isEditing}
+            onDoubleClick={this.handleContainerDoubleClick}
+          >
+            <Suspense fallback={<LoadingOverlay />}>
               <MarkdownEditor
                 ref={markdownEditor => {
                   this.markdownEditor = markdownEditor;
@@ -245,9 +245,9 @@ export class MarkdownPanel extends Component<
                 content={content ?? undefined}
                 onEditorInitialized={this.handleEditorInitialized}
               />
-            </MarkdownContainer>
-          )}
-        </Suspense>
+            </Suspense>
+          </MarkdownContainer>
+        )}
       </Panel>
     );
   }
