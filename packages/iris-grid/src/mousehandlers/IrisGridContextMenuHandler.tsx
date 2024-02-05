@@ -47,6 +47,7 @@ import type { DebouncedFunc } from 'lodash';
 import {
   TextUtils,
   assertNotEmpty,
+  assertNotNaN,
   assertNotNull,
   copyToClipboard,
 } from '@deephaven/utils';
@@ -550,14 +551,11 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       while (rowCount > MAX_MULTISELECT_ROWS) {
         const lastRow = selectedRanges.pop();
         // should never occur, sanity check
-        if (lastRow === undefined) {
-          throw Error('Selected ranges should not be empty');
-        }
+        assertNotNull(lastRow, 'Selected ranges should not be empty');
+
         const lastRowSize = GridRange.rowCount([lastRow]);
         // should never occur, sanity check
-        if (Number.isNaN(lastRowSize)) {
-          throw Error('Selected ranges should not be unbounded');
-        }
+        assertNotNaN(lastRowSize, 'Selected ranges should not be unbounded');
 
         // if removing the last rows makes it dip below the max, then need to
         //   bring it back but truncated

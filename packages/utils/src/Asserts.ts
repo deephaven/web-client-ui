@@ -47,6 +47,10 @@ export function assertNotEmpty(
   }
 }
 
+export function assertNotNaN(value: number, message = 'Value is NaN'): void {
+  if (Number.isNaN(value)) throw new Error(message);
+}
+
 /**
  * Retrieve a value from a map. If the value is not found and no default value is provided, throw.
  * Use when the value _must_ be present

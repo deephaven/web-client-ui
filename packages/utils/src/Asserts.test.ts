@@ -1,6 +1,7 @@
 import {
   assertNever,
   assertNotEmpty,
+  assertNotNaN,
   assertNotNull,
   getOrThrow,
 } from './Asserts';
@@ -31,6 +32,11 @@ describe('assertNotEmpty', () => {
   );
   expect(() => assertNotEmpty([])).toThrowError('Size of value is 0');
   expect(() => assertNotEmpty([1, 2])).not.toThrowError('Size of value is 0');
+});
+
+describe('assertNotNaN', () => {
+  expect(() => assertNotNaN(NaN)).toThrowError('Value is NaN');
+  expect(() => assertNotNaN(0)).not.toThrowError('Value is NaN');
 });
 
 describe('getOrThrow', () => {
