@@ -644,29 +644,13 @@ class VisibilityOrderingBuilder extends PureComponent<
     const initialAndFrozenMovedColumns = [...model.initialMovedColumns];
     for (let i = 0; i < model.frozenColumns.length; i += 1) {
       const frozenColumn = model.frozenColumns[i];
-      // get index of frozenColumn
-      let frozenIndex = 0;
-      for (let j = 0; j < model.columns.length; j += 1) {
-        if (model.columns[j].name === frozenColumn) {
-          frozenIndex = j;
-          break;
-        }
-      }
-      // offset by move changes
-      for (let j = 0; j < initialAndFrozenMovedColumns.length; j += 1) {
-        const { from, to } = initialAndFrozenMovedColumns[j];
-        // taken from in front, decrease index
-        if (Array.isArray(from)) {
-          if (from[0] < frozenIndex) frozenIndex -= 1;
-        } else if (from < frozenIndex) {
-          frozenIndex -= 1;
-        }
-        // placed in front, increase index
-        if (to < frozenIndex) frozenIndex += 1;
-      }
-      if (frozenIndex !== i) {
+      const newFrozenIndex = GridUtils.getVisibleIndex(
+        model.getColumnIndexByName(frozenColumn) ?? 0,
+        initialAndFrozenMovedColumns
+      );
+      if (newFrozenIndex !== i) {
         initialAndFrozenMovedColumns.push({
-          from: frozenIndex,
+          from: newFrozenIndex,
           to: i,
         });
       }
