@@ -1,5 +1,5 @@
 // Wrapper for the Notebook for use in a golden layout container
-import React, { Component, ReactElement, lazy } from 'react';
+import React, { Component, ReactElement, Suspense, lazy } from 'react';
 import ReactDOM from 'react-dom';
 import memoize from 'memoize-one';
 import { connect } from 'react-redux';
@@ -13,6 +13,7 @@ import {
   GLOBAL_SHORTCUTS,
   Button,
   DropdownAction,
+  LoadingOverlay,
 } from '@deephaven/components';
 import { ScriptEditor, ScriptEditorUtils, SHORTCUTS } from '@deephaven/console';
 import {
@@ -1383,13 +1384,15 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
             </>
           )}
           {isMarkdown && (
-            <MarkdownNotebook
-              content={settings.value ?? ''}
-              onLinkClick={this.handleLinkClick}
-              onRunCode={this.handleRunCommand}
-              transformImageUri={this.handleTransformLinkUri}
-              transformLinkUri={this.handleTransformLinkUri}
-            />
+            <Suspense fallback={<LoadingOverlay />}>
+              <MarkdownNotebook
+                content={settings.value ?? ''}
+                onLinkClick={this.handleLinkClick}
+                onRunCode={this.handleRunCommand}
+                transformImageUri={this.handleTransformLinkUri}
+                transformLinkUri={this.handleTransformLinkUri}
+              />
+            </Suspense>
           )}
           <NewItemModal
             isOpen={showSaveAsModal}
