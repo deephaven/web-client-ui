@@ -94,11 +94,7 @@ it('converts histograms properly to bars', () => {
     expect.objectContaining({
       name: ChartTestUtils.DEFAULT_SERIES_NAME,
       type: 'bar',
-      marker: expect.objectContaining({
-        line: expect.objectContaining({
-          width: 1,
-        }),
-      }),
+      width: [],
     }),
   ]);
 });
