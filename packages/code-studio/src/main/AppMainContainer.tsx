@@ -165,6 +165,7 @@ export class AppMainContainer extends Component<
   AppMainContainerState
 > {
   static handleWindowBeforeUnload(event: BeforeUnloadEvent): void {
+    // in development, allow auto-reload
     if (import.meta.env.PROD) {
       event.preventDefault();
       // returnValue is required for beforeReload event prompt
