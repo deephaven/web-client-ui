@@ -31,7 +31,6 @@ import type {
   ErrorBar,
   LayoutAxis,
   AxisType as PlotlyAxisType,
-  OhlcData,
   MarkerSymbol,
   Template,
 } from 'plotly.js';
@@ -858,14 +857,12 @@ class ChartUtils {
    * @param series The series to create the series data with
    * @param axisTypeMap The map of axes grouped by type
    * @param seriesVisibility Visibility setting for the series
-   * @param theme The theme properties for the plot. See ChartTheme.js for an example
    * @returns The series data (trace) object for use with plotly.
    */
   makeSeriesDataFromSeries(
     series: Series,
     axisTypeMap: AxisTypeMap,
     seriesVisibility: boolean | 'legendonly',
-    theme: ChartTheme,
     showLegend: boolean | null = null
   ): Partial<PlotData> {
     const {
@@ -903,7 +900,6 @@ class ChartUtils {
     this.addStylingToSeriesData(
       seriesData,
       plotStyle,
-      theme,
       lineColor,
       shapeColor,
       shape,
@@ -946,7 +942,6 @@ class ChartUtils {
   addStylingToSeriesData(
     seriesDataParam: Partial<PlotData>,
     plotStyle: SeriesPlotStyle,
-    theme: ChartTheme,
     lineColor: string | null = null,
     shapeColor: string | null = null,
     shape: string | null = null,
@@ -971,22 +966,8 @@ class ChartUtils {
       // The default histfunc in plotly is 'count', but the data passed up from the API provides explicit x/y values and bins
       // Since it's converted to bar, just set the widths of each bar
       seriesData.width = [];
-    } else if (plotStyle === dh.plot.SeriesPlotStyle.OHLC) {
-      (seriesData as Partial<OhlcData>).increasing = {
-        line: { color: theme.ohlc_increasing },
-      };
-      (seriesData as Partial<OhlcData>).decreasing = {
-        line: { color: theme.ohlc_decreasing },
-      };
     } else if (plotStyle === dh.plot.SeriesPlotStyle.PIE) {
       seriesData.textinfo = 'label+percent';
-
-      // TODO Open DefinitelyTyped/Plotly PR to mark family and size as optional
-      // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/plotly.js/lib/traces/pie.d.ts#L6
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (seriesData as any).outsidetextfont = {
-        color: theme.title_color,
-      };
     } else if (plotStyle === dh.plot.SeriesPlotStyle.TREEMAP) {
       seriesData.hoverinfo = 'text';
       seriesData.textinfo = 'label+text';
@@ -995,8 +976,6 @@ class ChartUtils {
         pad: 0,
       };
       seriesData.textposition = 'middle center';
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (seriesData as any).outsidetextfont = { color: theme.title_color };
     }
 
     if (lineColor != null) {

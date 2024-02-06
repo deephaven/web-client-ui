@@ -234,7 +234,6 @@ class FigureChartModel extends ChartModel {
       series,
       axisTypeMap,
       ChartUtils.getSeriesVisibility(series.name, this.settings),
-      this.theme,
       showLegend
     );
 
