@@ -182,13 +182,8 @@ class MockChartModel extends ChartModel {
 
     layout.title = 'Chart';
 
-    if (layout.xaxis) {
-      layout.xaxis.title = 'Datestamp';
-    }
-
-    if (layout.yaxis) {
-      layout.yaxis.title = 'Price';
-    }
+    layout.xaxis = { title: 'Datestamp' };
+    layout.yaxis = { title: 'Price' };
 
     return layout;
   }
