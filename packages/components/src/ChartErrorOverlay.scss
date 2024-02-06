@@ -1,0 +1,17 @@
+@import '@deephaven/components/scss/custom.scss';
+
+$chart-error-column-valid-color: $green;
+$chart-error-column-invalid-color: $gray-400;
+
+.chart-error-overlay {
+  .chart-error-overlay-content {
+    .btn {
+      margin-top: $spacer-3;
+      margin-right: $spacer-3;
+    }
+    .info-message,
+    .waiting-filter-list {
+      text-align: left;
+    }
+  }
+}

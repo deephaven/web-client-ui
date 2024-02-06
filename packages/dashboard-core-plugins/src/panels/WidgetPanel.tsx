@@ -40,6 +40,7 @@ interface WidgetPanelProps {
   onTabBlur: () => void;
   onTabFocus: () => void;
   onTabClicked: () => void;
+  clearError?: () => void;
 }
 
 interface WidgetPanelState {
@@ -78,6 +79,7 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
     onTabBlur: (): void => undefined,
     onTabFocus: (): void => undefined,
     onTabClicked: (): void => undefined,
+    clearError: (): void => undefined,
   };
 
   constructor(props: WidgetPanelProps) {
@@ -191,6 +193,7 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
       onTabBlur,
       onTabFocus,
       onTabClicked,
+      clearError,
     } = this.props;
 
     const { isPanelDisconnected, isWidgetDisconnected, isPanelInactive } =
@@ -243,6 +246,7 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
         isClonable={isClonable}
         isRenamable={isRenamable}
         additionalActions={additionalActions}
+        clearError={clearError ?? undefined}
       >
         {children}
         {isPanelInactive && <div className="fill-parent-absolute" />}

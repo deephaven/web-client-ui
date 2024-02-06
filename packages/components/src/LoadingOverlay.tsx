@@ -1,16 +1,15 @@
-import React from 'react';
 import { CSSTransition } from 'react-transition-group';
 import classNames from 'classnames';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { vsWarning } from '@deephaven/icons';
 import ThemeExport from './ThemeExport';
 import LoadingSpinner from './LoadingSpinner';
 import './LoadingOverlay.scss';
+import ChartErrorOverlay from './ChartErrorOverlay';
 
 type LoadingOverlayProps = {
   isLoaded?: boolean;
   isLoading?: boolean;
   errorMessage?: string | null;
+  clearError?: () => void;
   'data-testid'?: string;
 };
 
@@ -21,10 +20,9 @@ function LoadingOverlay({
   isLoaded = false,
   isLoading = true,
   errorMessage = null,
+  clearError,
   'data-testid': dataTestId,
 }: LoadingOverlayProps): JSX.Element {
-  const messageTestId =
-    dataTestId != null ? `${dataTestId}-message` : undefined;
   const spinnerTestId =
     dataTestId != null ? `${dataTestId}-spinner` : undefined;
 
@@ -52,14 +50,13 @@ function LoadingOverlay({
                   data-testid={spinnerTestId}
                 />
               )}
-              {!isLoading && errorMessage != null && (
-                <FontAwesomeIcon icon={vsWarning} />
-              )}
             </div>
             {errorMessage != null && (
-              <div className="message-text" data-testid={messageTestId}>
-                {errorMessage}
-              </div>
+              <ChartErrorOverlay
+                errorMessage={errorMessage}
+                clearError={clearError}
+                data-testid={dataTestId}
+              />
             )}
           </div>
         </div>

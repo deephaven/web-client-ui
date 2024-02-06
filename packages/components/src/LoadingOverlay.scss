@@ -3,6 +3,7 @@
 $iris-panel-message-font-size: 1.2rem;
 $iris-panel-icon-font-size: 64px;
 $iris-panel-scrim-bg: hsla(var(--dh-color-black-hsl), 0.1);
+$iris-panel-error-bg: hsla(var(--dh-color-black-hsl), 1);
 
 .iris-panel-message-overlay {
   text-align: center;
@@ -25,6 +26,20 @@ $iris-panel-scrim-bg: hsla(var(--dh-color-black-hsl), 0.1);
         font-size: inherit;
       }
     }
+  }
+
+  .error-state {
+    background-color: $iris-panel-error-bg;
+    padding: 20px;
+    margin: 0 20px;
+    border-radius: 10px;
+  }
+
+  .error-dismiss {
+    border-radius: 8px;
+    max-width: 200px;
+    width: 80%;
+    margin: auto;
   }
 }
 

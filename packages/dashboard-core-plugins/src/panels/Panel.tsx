@@ -58,6 +58,7 @@ interface PanelProps {
   onShow: (...args: unknown[]) => void;
   onTabBlur: (...args: unknown[]) => void;
   onTabFocus: (...args: unknown[]) => void;
+  clearError: () => void;
   renderTabTooltip: () => ReactNode;
   additionalActions: ContextAction[];
   errorMessage: string;
@@ -93,6 +94,7 @@ class Panel extends PureComponent<PanelProps, PanelState> {
     onShow: (): void => undefined,
     onTabBlur: (): void => undefined,
     onTabFocus: (): void => undefined,
+    clearError: (): void => undefined,
     renderTabTooltip: null,
     additionalActions: [],
     errorMessage: null,
@@ -339,6 +341,7 @@ class Panel extends PureComponent<PanelProps, PanelState> {
       isLoading,
       isClonable,
       isRenamable,
+      clearError,
     } = this.props;
     const { tab: glTab } = glContainer;
     const { showRenameDialog, title, isWithinPanel } = this.state;
@@ -355,6 +358,7 @@ class Panel extends PureComponent<PanelProps, PanelState> {
           errorMessage={errorMessage}
           isLoaded={isLoaded}
           isLoading={isLoading}
+          clearError={clearError ?? undefined}
         />
         {!isWithinPanel &&
           glTab != null &&

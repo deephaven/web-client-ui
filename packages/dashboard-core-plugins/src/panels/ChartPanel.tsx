@@ -219,6 +219,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     this.handleFilterAdd = this.handleFilterAdd.bind(this);
     this.handleHide = this.handleHide.bind(this);
     this.handleError = this.handleError.bind(this);
+    this.clearError = this.clearError.bind(this);
     this.handleLoadError = this.handleLoadError.bind(this);
     this.handleLoadSuccess = this.handleLoadSuccess.bind(this);
     this.handleSettingsChanged = this.handleSettingsChanged.bind(this);
@@ -680,10 +681,17 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     });
   }
 
-  handleError(): void {
+  handleError(error: Error): void {
     // Don't want to set an error state, because the user can fix a chart error within the chart itself.
     // We're not loading anymore either so stop showing the spinner so the user can actually click those buttons.
-    this.setState({ isLoading: false });
+    this.setState({ isLoading: false, error: error.message });
+  }
+
+  clearError(): void {
+    const { error } = this.state;
+    if (error != null) {
+      this.setState({ error: undefined });
+    }
   }
 
   handleSettingsChanged(update: Partial<Settings>): void {
@@ -1096,6 +1104,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
         onTabBlur={this.handleTabBlur}
         onTabFocus={this.handleTabFocus}
         errorMessage={errorMessage}
+        clearError={this.clearError}
         isDisconnected={isDisconnected}
         isLoading={isLoading}
         isLoaded={isLoaded}
