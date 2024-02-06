@@ -26,7 +26,14 @@ type TablePlotNames =
   | 'double_and_string'
   | 'ordered_int_and_offset'
   | 'trig_table'
-  | 'trig_figure';
+  | 'trig_figure'
+  | 'multiselect_null'
+  | 'multiselect_empty'
+  | 'multiselect_bool'
+  | 'multiselect_datetime'
+  | 'multiselect_char'
+  | 'multiselect_number'
+  | 'multiselect_string';
 
 /**
  * Opens a table loaded from application mode and returns the grid location
