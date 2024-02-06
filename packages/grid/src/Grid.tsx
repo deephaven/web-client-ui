@@ -355,6 +355,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.handleMouseUp = this.handleMouseUp.bind(this);
     this.handleResize = this.handleResize.bind(this);
     this.handleWheel = this.handleWheel.bind(this);
+    this.getSelectedRanges = this.getSelectedRanges.bind(this);
 
     const {
       isStuckToBottom,
@@ -974,6 +975,12 @@ class Grid extends PureComponent<GridProps, GridState> {
         selectedRanges: selectedRanges.slice(selectedRanges.length - 1),
       });
     }
+  }
+
+  /** Gets the selected ranges */
+  getSelectedRanges(): readonly GridRange[] {
+    const { selectedRanges } = this.state;
+    return selectedRanges;
   }
 
   /**

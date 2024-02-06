@@ -1,7 +1,7 @@
 import { EventHandlerResult } from '../EventHandlerResult';
 import Grid from '../Grid';
-import { BoxCoordinates } from '../GridMetrics';
 import GridMouseHandler, { GridMouseEvent } from '../GridMouseHandler';
+import GridRange from '../GridRange';
 import GridUtils, { GridPoint } from '../GridUtils';
 
 const DEFAULT_INTERVAL_MS = 100;
@@ -15,8 +15,6 @@ class GridSelectionMouseHandler extends GridMouseHandler {
   private timer?: ReturnType<typeof setTimeout>;
 
   private lastTriggerTime?: number;
-
-  private dragBounds?: BoxCoordinates;
 
   onDown(
     gridPoint: GridPoint,
@@ -68,7 +66,6 @@ class GridSelectionMouseHandler extends GridMouseHandler {
 
     this.startPoint = gridPoint;
     this.hasExtendedFloating = false;
-    this.dragBounds = GridUtils.getScrollDragBounds(metrics, row, column);
 
     return true;
   }
@@ -210,9 +207,32 @@ class GridSelectionMouseHandler extends GridMouseHandler {
   onUp(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     if (this.startPoint !== undefined) {
       this.startPoint = undefined;
-      this.dragBounds = undefined;
       this.stopTimer();
       grid.commitSelection();
+    }
+
+    return false;
+  }
+
+  onContextMenu(
+    gridPoint: GridPoint,
+    grid: Grid,
+    event: GridMouseEvent
+  ): EventHandlerResult {
+    // check if the selected is already in the selected range
+    const selectedRanges = grid.getSelectedRanges();
+    const isInRange = GridRange.containsCell(
+      selectedRanges,
+      gridPoint.column,
+      gridPoint.row
+    );
+
+    // only change the selected range if the selected cell is not in the selected range
+    if (!isInRange && gridPoint.row !== null) {
+      this.startPoint = undefined;
+      this.stopTimer();
+      grid.clearSelectedRanges();
+      grid.moveCursorToPosition(gridPoint.column, gridPoint.row);
     }
 
     return false;
