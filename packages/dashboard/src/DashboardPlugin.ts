@@ -12,6 +12,7 @@ import type {
   ReactComponentConfig,
 } from '@deephaven/golden-layout';
 import PanelManager from './PanelManager';
+import { WidgetDescriptor } from './PanelEvent';
 
 /**
  * Panel components can provide static props that provide meta data about the
@@ -58,7 +59,7 @@ export function isWrappedComponent<
   return (type as WrappedComponentType<P, C>)?.WrappedComponent !== undefined;
 }
 
-export type PanelMetadata = { id?: string; name?: string; type?: string };
+export type PanelMetadata = Partial<WidgetDescriptor>;
 
 export type PanelProps = GLPanelProps & {
   metadata?: PanelMetadata;
@@ -66,12 +67,12 @@ export type PanelProps = GLPanelProps & {
 
 export type DehydratedPanelProps = Omit<PanelProps, keyof GLPanelProps>;
 
-export type DashboardPanelProps = PanelProps & { localDashboardId: string };
+export type LocalDashboardProps = { localDashboardId: string };
 
-export type DehydratedDashboardPanelProps = Omit<
-  DashboardPanelProps,
-  keyof GLPanelProps
->;
+export type DashboardPanelProps = PanelProps & LocalDashboardProps;
+
+export type DehydratedDashboardPanelProps = DehydratedPanelProps &
+  LocalDashboardProps;
 
 export type PanelComponent<T extends PanelProps = PanelProps> =
   | Component<T>

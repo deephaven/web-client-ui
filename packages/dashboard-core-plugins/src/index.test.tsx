@@ -4,9 +4,7 @@ import { Provider } from 'react-redux';
 import Dashboard from '@deephaven/dashboard';
 import { createMockStore } from '@deephaven/redux';
 import { dh } from '@deephaven/jsapi-shim';
-import { ApiContext } from '@deephaven/jsapi-bootstrap';
-import { type IdeConnection } from '@deephaven/jsapi-types';
-import { ConnectionContext } from '@deephaven/jsapi-components';
+import { ApiContext, ObjectFetcherContext } from '@deephaven/jsapi-bootstrap';
 import { PluginsContext } from '@deephaven/plugin';
 import {
   ConsolePlugin,
@@ -16,20 +14,12 @@ import {
   WidgetLoaderPlugin,
 } from '.';
 
-function makeConnection(): IdeConnection {
-  const connection = new dh.IdeConnection('http://mockserver');
-  connection.getTable = jest.fn();
-  connection.getObject = jest.fn();
-  connection.subscribeToFieldUpdates = jest.fn();
-  return connection;
-}
-
 it('handles mounting and unmount core plugins properly', () => {
   const store = createMockStore();
-  const connection = makeConnection();
+  const fetchObject = jest.fn();
   render(
     <ApiContext.Provider value={dh}>
-      <ConnectionContext.Provider value={connection}>
+      <ObjectFetcherContext.Provider value={fetchObject}>
         <PluginsContext.Provider value={new Map()}>
           <Provider store={store}>
             <Dashboard>
@@ -41,7 +31,7 @@ it('handles mounting and unmount core plugins properly', () => {
             </Dashboard>
           </Provider>
         </PluginsContext.Provider>
-      </ConnectionContext.Provider>
+      </ObjectFetcherContext.Provider>
     </ApiContext.Provider>
   );
 });

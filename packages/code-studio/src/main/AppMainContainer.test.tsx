@@ -2,9 +2,13 @@
 import React from 'react';
 import { Provider } from 'react-redux';
 import { render, screen } from '@testing-library/react';
+import { ConnectionContext } from '@deephaven/app-utils';
 import { ToolType } from '@deephaven/dashboard-core-plugins';
-import { ApiContext } from '@deephaven/jsapi-bootstrap';
-import { ConnectionContext } from '@deephaven/jsapi-components';
+import {
+  ApiContext,
+  ObjectFetcher,
+  ObjectFetcherContext,
+} from '@deephaven/jsapi-bootstrap';
 import dh from '@deephaven/jsapi-shim';
 import type {
   IdeConnection,
@@ -70,36 +74,39 @@ function renderAppMainContainer({
   sessionConfig = makeSessionConfig(),
   match = makeMatch(),
   plugins = new Map(),
+  objectFetcher = jest.fn() as ObjectFetcher,
 } = {}) {
   const store = createMockStore();
   return render(
     <Provider store={store}>
       <ApiContext.Provider value={dh}>
         <ConnectionContext.Provider value={connection}>
-          <AppMainContainer
-            dashboardData={dashboardData}
-            allDashboardData={dashboardData}
-            layoutStorage={layoutStorage as LayoutStorage}
-            saveWorkspace={saveWorkspace}
-            updateDashboardData={updateDashboardData}
-            updateWorkspaceData={updateWorkspaceData}
-            user={user}
-            workspace={workspace as Workspace}
-            workspaceStorage={workspaceStorage}
-            activeTool={activeTool}
-            setActiveTool={setActiveTool}
-            setDashboardIsolatedLinkerPanelId={
-              setDashboardIsolatedLinkerPanelId
-            }
-            client={client}
-            serverConfigValues={serverConfigValues}
-            dashboardOpenedPanelMaps={dashboardOpenedPanelMaps}
-            connection={connection}
-            session={session as unknown as IdeSession}
-            sessionConfig={sessionConfig}
-            match={match}
-            plugins={plugins}
-          />
+          <ObjectFetcherContext.Provider value={objectFetcher}>
+            <AppMainContainer
+              dashboardData={dashboardData}
+              allDashboardData={dashboardData}
+              layoutStorage={layoutStorage as LayoutStorage}
+              saveWorkspace={saveWorkspace}
+              updateDashboardData={updateDashboardData}
+              updateWorkspaceData={updateWorkspaceData}
+              user={user}
+              workspace={workspace as Workspace}
+              workspaceStorage={workspaceStorage}
+              activeTool={activeTool}
+              setActiveTool={setActiveTool}
+              setDashboardIsolatedLinkerPanelId={
+                setDashboardIsolatedLinkerPanelId
+              }
+              client={client}
+              serverConfigValues={serverConfigValues}
+              dashboardOpenedPanelMaps={dashboardOpenedPanelMaps}
+              connection={connection}
+              session={session as unknown as IdeSession}
+              sessionConfig={sessionConfig}
+              match={match}
+              plugins={plugins}
+            />
+          </ObjectFetcherContext.Provider>
         </ConnectionContext.Provider>
       </ApiContext.Provider>
     </Provider>
@@ -200,17 +207,17 @@ it('listens for widgets properly', async () => {
 describe('hydrates widgets correctly', () => {
   const localDashboardId = DEFAULT_DASHBOARD_ID;
   let connection: IdeConnection;
+  let objectFetcher: ObjectFetcher;
   beforeEach(() => {
     connection = makeConnection();
+    objectFetcher = jest.fn();
   });
 
   it('hydrates empty props with defaults', () => {
     mockProp = {};
     mockId = localDashboardId;
     renderAppMainContainer({ connection });
-    expect(
-      screen.getByText('{"metadata":{},"localDashboardId":"default"}')
-    ).toBeTruthy();
+    expect(screen.getByText('{"localDashboardId":"default"}')).toBeTruthy();
   });
   it('does not try and add fetch when metadata does not have widget metadata', () => {
     mockProp = { metadata: {} };
@@ -223,14 +230,14 @@ describe('hydrates widgets correctly', () => {
   it('hydrates a widget properly', () => {
     mockProp = { metadata: { type: 'TestType', name: 'TestName' } };
     mockId = localDashboardId;
-    expect(connection.getObject).not.toHaveBeenCalled();
-    renderAppMainContainer({ connection });
+    expect(objectFetcher).not.toHaveBeenCalled();
+    renderAppMainContainer({ objectFetcher });
 
     expect(
       screen.getByText(
         '{"metadata":{"type":"TestType","name":"TestName"},"localDashboardId":"default"}'
       )
     ).toBeTruthy();
-    expect(connection.getObject).toHaveBeenCalled();
+    expect(objectFetcher).toHaveBeenCalled();
   });
 });

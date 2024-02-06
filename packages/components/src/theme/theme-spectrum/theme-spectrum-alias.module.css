@@ -147,6 +147,21 @@
     --dh-color-accent-key-focus-bg
   );
 
+  --spectrum-accent-color-100: var(--dh-color-accent-100);
+  --spectrum-accent-color-200: var(--dh-color-accent-200);
+  --spectrum-accent-color-300: var(--dh-color-accent-300);
+  --spectrum-accent-color-400: var(--dh-color-accent-400);
+  --spectrum-accent-color-500: var(--dh-color-accent-500);
+  --spectrum-accent-color-600: var(--dh-color-accent-600);
+  --spectrum-accent-color-700: var(--dh-color-accent-700);
+  --spectrum-accent-color-800: var(--dh-color-accent-800);
+  --spectrum-accent-color-900: var(--dh-color-accent-900);
+  --spectrum-accent-color-1000: var(--dh-color-accent-1000);
+  --spectrum-accent-color-1100: var(--dh-color-accent-1100);
+  --spectrum-accent-color-1200: var(--dh-color-accent-1200);
+  --spectrum-accent-color-1300: var(--dh-color-accent-1300);
+  --spectrum-accent-color-1400: var(--dh-color-accent-1400);
+
   /* Neutral */
   --spectrum-neutral-background-color-default: var(--dh-color-neutral-bg);
   --spectrum-neutral-background-color-hover: var(--dh-color-neutral-hover-bg);

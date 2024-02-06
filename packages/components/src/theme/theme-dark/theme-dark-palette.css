@@ -1,4 +1,4 @@
-/* stylelint-disable custom-property-empty-line-before */
+/* stylelint-disable custom-property-empty-line-before, color-hex-length */
 :root {
   /* Gray */
   --dh-color-gray-50: #1a171a;

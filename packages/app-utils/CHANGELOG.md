@@ -3,6 +3,45 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.62.0](https://github.com/deephaven/web-client-ui/compare/v0.61.1...v0.62.0) (2024-02-05)
+
+
+### Features
+
+* Add ObjectFetcher context and useObjectFetcher hook ([#1753](https://github.com/deephaven/web-client-ui/issues/1753)) ([2cd46ce](https://github.com/deephaven/web-client-ui/commit/2cd46ce2d5107553d3f91933294638a5fb183245))
+
+
+### BREAKING CHANGES
+
+* - `useConnection` is moved from `jsapi-components` package to
+`app-utils` package
+- Should only be used at the app level, as there could be multiple
+connections
+- `WidgetDefinition` has been renamed to `WidgetDescriptor`
+
+
+
+
+
+## [0.61.1](https://github.com/deephaven/web-client-ui/compare/v0.61.0...v0.61.1) (2024-02-02)
+
+**Note:** Version bump only for package @deephaven/app-utils
+
+
+
+
+
+# [0.61.0](https://github.com/deephaven/web-client-ui/compare/v0.60.0...v0.61.0) (2024-02-01)
+
+
+### Features
+
+* Added dashboard-core-plugins to remote-component list ([#1762](https://github.com/deephaven/web-client-ui/issues/1762)) ([3194c4b](https://github.com/deephaven/web-client-ui/commit/3194c4b43264adbbd0ab02ef9461de590ca31797)), closes [#1728](https://github.com/deephaven/web-client-ui/issues/1728)
+
+
+
+
+
 # [0.60.0](https://github.com/deephaven/web-client-ui/compare/v0.59.0...v0.60.0) (2024-01-26)
 
 **Note:** Version bump only for package @deephaven/app-utils

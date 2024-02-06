@@ -21,6 +21,7 @@ $command-history-search-toolbar-bg: $content-bg;
     padding: 0;
     .item-list-scroll-pane {
       border: none;
+      border-radius: 0;
     }
   }
 }
