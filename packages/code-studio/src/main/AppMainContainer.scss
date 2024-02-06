@@ -42,7 +42,9 @@ $nav-space: 4px; // give a gap around some buttons for focus area that are in na
   width: 100%;
   justify-content: space-between;
   align-items: center;
+}
 
+.app-main-right-menu-buttons {
   .btn-link {
     font-size: $tab-font-size;
     text-decoration: none;
@@ -67,7 +69,9 @@ $nav-space: 4px; // give a gap around some buttons for focus area that are in na
 }
 
 .tab-pane {
+  height: 100%;
   width: 100%;
+  flex-grow: 1;
 }
 
 .app-main-tabs {

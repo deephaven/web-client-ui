@@ -8,14 +8,17 @@ $settings-menu-header-color: var(--dh-color-fg);
 
 $settings-menu-collapse-trigger-color: var(--dh-color-fg);
 
-$settings-menu-rule-bg: $gray-800;
+$settings-menu-rule-bg: var(--dh-color-gray-400);
 $settings-menu-rule-button-color: $gray-300;
 $settings-menu-rule-border: $gray-400;
 $settings-menu-rule-focused-border: $primary;
 
 $focus-over-primary-color: var(--dh-color-fg);
-$input-btn-focus-box-shadow-over-primary: 0 0 0 0.2rem
-  hsla(var(--dh-color-fg-hsl), 0.35);
+$input-btn-focus-box-shadow-over-primary: 0 0 0 0.2rem fg-opacity(35);
+
+$btn-focus-bg: fg-opacity($focus-bg-transparency);
+$btn-hover-bg: fg-opacity($hover-bg-transparency);
+$btn-active-bg: fg-opacity($active-bg-transparency);
 
 $settings-menu-z-index: $zindex-modal;
 
@@ -76,7 +79,7 @@ $settings-menu-z-index: $zindex-modal;
 
     &:focus {
       &::after {
-        background: hsla(var(--dh-color-fg-hsl), $focus-bg-transparency);
+        background: $btn-focus-bg;
         border: 1px solid var(--dh-color-fg);
         box-shadow: $input-btn-focus-box-shadow-over-primary;
       }
@@ -84,14 +87,14 @@ $settings-menu-z-index: $zindex-modal;
 
     &:hover {
       &::after {
-        background: hsla(var(--dh-color-fg-hsl), $hover-bg-transparency);
+        background: $btn-hover-bg;
       }
     }
 
     &:active {
       &::after {
         content: '';
-        background: hsla(var(--dh-color-fg-hsl), $active-bg-transparency);
+        background: $btn-active-bg;
       }
     }
   }
@@ -107,8 +110,13 @@ $settings-menu-z-index: $zindex-modal;
       height: $settings-menu-header-user-image-size;
       width: $settings-menu-header-user-image-size;
       margin: $spacer $spacer-2 $spacer $spacer;
-      background: $gray-400;
+      background: var(--dh-color-accent-1100);
       border-radius: $border-radius;
+
+      svg {
+        color: var(--dh-color-accent-contrast);
+      }
+
       img {
         height: $settings-menu-header-user-image-size;
         width: $settings-menu-header-user-image-size;
@@ -136,20 +144,21 @@ $settings-menu-z-index: $zindex-modal;
       text-decoration: underline;
       font-size: smaller;
       padding: 0 $spacer-1;
+      height: 28px;
 
       &:focus {
-        background: hsla(var(--dh-color-fg-hsl), $focus-bg-transparency);
+        background: $btn-focus-bg;
         border: 1px solid var(--dh-color-fg);
         box-shadow: $input-btn-focus-box-shadow-over-primary;
       }
 
       &:hover {
-        background: hsla(var(--dh-color-fg-hsl), $hover-bg-transparency);
+        background: $btn-hover-bg;
       }
 
       &:active {
         content: '';
-        background: hsla(var(--dh-color-fg-hsl), $active-bg-transparency);
+        background: $btn-active-bg;
       }
     }
   }

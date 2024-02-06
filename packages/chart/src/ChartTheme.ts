@@ -12,19 +12,22 @@ export interface ChartTheme {
   paper_bgcolor: string;
   plot_bgcolor: string;
   title_color: string;
+  legend_color: string;
   colorway: string;
   gridcolor: string;
   linecolor: string;
   zerolinecolor: string;
-  activecolor: string;
-  rangebgcolor: string;
-  area_color: string;
-  trend_color: string;
-  line_color: string;
+
   error_band_line_color: string;
-  error_band_fill_color: string;
   ohlc_increasing: string;
   ohlc_decreasing: string;
+
+  // Geo
+  coastline_color: string;
+  land_color: string;
+  ocean_color: string;
+  lake_color: string;
+  river_color: string;
 }
 
 export function defaultChartTheme(): Readonly<ChartTheme> {
@@ -48,19 +51,20 @@ export function defaultChartTheme(): Readonly<ChartTheme> {
     paper_bgcolor: chartTheme['paper-bgcolor'],
     plot_bgcolor: chartTheme['plot-bgcolor'],
     title_color: chartTheme['title-color'],
+    legend_color: chartTheme['legend-color'],
     colorway: chartTheme.colorway,
     gridcolor: chartTheme.gridcolor,
     linecolor: chartTheme.linecolor,
     zerolinecolor: chartTheme.zerolinecolor,
-    activecolor: chartTheme.activecolor,
-    rangebgcolor: chartTheme.rangebgcolor,
-    area_color: chartTheme['area-color'],
-    trend_color: chartTheme['trend-color'],
-    line_color: chartTheme['line-color'],
     error_band_line_color: chartTheme['error-band-line-color'],
-    error_band_fill_color: chartTheme['error-band-fill-color'],
     ohlc_increasing: chartTheme['ohlc-increasing'],
     ohlc_decreasing: chartTheme['ohlc-decreasing'],
+    // Geo
+    coastline_color: chartTheme['coastline-color'],
+    land_color: chartTheme['land-color'],
+    ocean_color: chartTheme['ocean-color'],
+    lake_color: chartTheme['lake-color'],
+    river_color: chartTheme['river-color'],
   });
 }
 

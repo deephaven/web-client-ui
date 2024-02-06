@@ -3,6 +3,87 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.62.0](https://github.com/deephaven/web-client-ui/compare/v0.61.1...v0.62.0) (2024-02-05)
+
+**Note:** Version bump only for package @deephaven/iris-grid
+
+
+
+
+
+## [0.61.1](https://github.com/deephaven/web-client-ui/compare/v0.61.0...v0.61.1) (2024-02-02)
+
+
+### Bug Fixes
+
+* Load full uncoalesced table if no partition columns available ([#1767](https://github.com/deephaven/web-client-ui/issues/1767)) ([e6dd3e1](https://github.com/deephaven/web-client-ui/commit/e6dd3e16a6018bfa0a11321d807015ce97f692fd)), closes [#1763](https://github.com/deephaven/web-client-ui/issues/1763)
+
+
+
+
+
+# [0.61.0](https://github.com/deephaven/web-client-ui/compare/v0.60.0...v0.61.0) (2024-02-01)
+
+
+### Features
+
+* allow themes to use any srgb color for definitions ([#1756](https://github.com/deephaven/web-client-ui/issues/1756)) ([b047fa3](https://github.com/deephaven/web-client-ui/commit/b047fa36de3a285be925736ef73722a60d1d9ed7))
+
+
+### BREAKING CHANGES
+
+* - IrisGridThemeContext no longer accepts a paritial theme. By
+guaranteeing the provider is a full theme we can resolve the CSS
+variables and normailze the colors only once per theme load globally,
+rather than having to do it once per grid.
+- Themes must be defined using valid srgb CSS colors, and not hsl raw
+component values
+
+
+
+
+
+# [0.60.0](https://github.com/deephaven/web-client-ui/compare/v0.59.0...v0.60.0) (2024-01-26)
+
+
+### Bug Fixes
+
+* keep manually entered value in GoToRow when changing to same column type ([#1743](https://github.com/deephaven/web-client-ui/issues/1743)) ([689a1e2](https://github.com/deephaven/web-client-ui/commit/689a1e2fda9a9dd9e50ae200b0ad0f2b69b1bdbc)), closes [#1562](https://github.com/deephaven/web-client-ui/issues/1562)
+
+
+### Features
+
+* Create UI to Display Partitioned Tables ([#1663](https://github.com/deephaven/web-client-ui/issues/1663)) ([db219ca](https://github.com/deephaven/web-client-ui/commit/db219ca66bd087d4b5ddb58b667de96deee97760)), closes [#1143](https://github.com/deephaven/web-client-ui/issues/1143)
+* double-clicking grid rows should select the row rather than toggle selection twice ([#1740](https://github.com/deephaven/web-client-ui/issues/1740)) ([f892e97](https://github.com/deephaven/web-client-ui/commit/f892e9764b596dae6bb33773d309c74bf1978470)), closes [#1704](https://github.com/deephaven/web-client-ui/issues/1704)
+
+
+
+
+
+# [0.59.0](https://github.com/deephaven/web-client-ui/compare/v0.58.0...v0.59.0) (2024-01-17)
+
+
+### Bug Fixes
+
+* GoToRow timestamp fails when selected row is out of view ([#1717](https://github.com/deephaven/web-client-ui/issues/1717)) ([9ddc973](https://github.com/deephaven/web-client-ui/commit/9ddc973108a6cc88999003c2d0dc6b48044967cc)), closes [#1561](https://github.com/deephaven/web-client-ui/issues/1561)
+* Interface for IrisGridTableModelTemplate.backgroundColorForCell ([#1699](https://github.com/deephaven/web-client-ui/issues/1699)) ([73e1837](https://github.com/deephaven/web-client-ui/commit/73e1837eb2fdb161779724a8b275f4d8147b95c0)), closes [#1697](https://github.com/deephaven/web-client-ui/issues/1697)
+
+
+### Features
+
+* theming tweaks ([#1727](https://github.com/deephaven/web-client-ui/issues/1727)) ([f919a7e](https://github.com/deephaven/web-client-ui/commit/f919a7ed333777e83ae6b0e3973991d2cf089359))
+
+
+### BREAKING CHANGES
+
+* - Subclasses of IrisGridTableModelTemplate or it's subclasses that use
+backgroundColorForCell may need to update their signature to accept the
+theme if they are calling the superclass
+
+
+
+
+
 # [0.58.0](https://github.com/deephaven/web-client-ui/compare/v0.57.1...v0.58.0) (2023-12-22)
 
 

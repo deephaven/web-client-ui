@@ -83,6 +83,12 @@ export interface VariableDefinition<T extends string = string> {
   id?: string;
 }
 
+export interface VariableDescriptor<T extends string = string> {
+  type: T;
+  name?: string;
+  id?: string;
+}
+
 export interface LogItem {
   micros: number;
   logLevel: string;
@@ -165,19 +171,23 @@ export interface IdeSession extends Evented {
   getTable: (name: string) => Promise<Table>;
   getFigure: (name: string) => Promise<Figure>;
   getTreeTable: (name: string) => Promise<TreeTable>;
+  getPartitionedTable: (name: string) => Promise<PartitionedTable>;
   getObject: ((
-    definition: VariableDefinition<typeof VariableType.TABLE>
+    definition: VariableDescriptor<typeof VariableType.TABLE>
   ) => Promise<Table>) &
     ((
-      definition: VariableDefinition<typeof VariableType.FIGURE>
+      definition: VariableDescriptor<typeof VariableType.FIGURE>
     ) => Promise<Figure>) &
     ((
-      definition: VariableDefinition<typeof VariableType.TREETABLE>
+      definition: VariableDescriptor<typeof VariableType.TREETABLE>
     ) => Promise<TreeTable>) &
     ((
-      definition: VariableDefinition<typeof VariableType.HIERARCHICALTABLE>
+      definition: VariableDescriptor<typeof VariableType.HIERARCHICALTABLE>
     ) => Promise<TreeTable>) &
-    ((definition: VariableDefinition) => Promise<unknown>);
+    ((
+      definition: VariableDescriptor<typeof VariableType.PARTITIONEDTABLE>
+    ) => Promise<PartitionedTable>) &
+    ((definition: VariableDescriptor) => Promise<any>);
   onLogMessage: (logHandler: (logItem: LogItem) => void) => () => void;
   runCode: (code: string) => Promise<CommandResult>;
   bindTableToVariable: (table: Table, variableName: string) => Promise<void>;
@@ -883,21 +893,6 @@ export interface Format {
   readonly color: string;
   readonly backgroundColor: string;
   readonly formatString: string;
-  readonly formatDataBar: DatabarFormat;
-}
-
-export interface DatabarFormat {
-  axis: string;
-  direction: string;
-  max: number;
-  min: number;
-  negativeColor: string | string[];
-  opacity: number;
-  positiveColor: string | string[];
-  valuePlacement: string;
-  value: number;
-  marker: number;
-  markerColor: string | string[];
 }
 
 export interface ColumnStatistics {
@@ -905,6 +900,13 @@ export interface ColumnStatistics {
   readonly uniqueValues: Map<string, number>;
 
   getType: (name: string) => string;
+}
+
+export interface PartitionedTableStatic {
+  readonly EVENT_KEYADDED: string;
+  readonly EVENT_DISCONNECT: string;
+  readonly EVENT_RECONNECT: string;
+  readonly EVENT_RECONNECTFAILED: string;
 }
 
 export interface TreeTableStatic {
@@ -939,6 +941,19 @@ export interface TableTemplate<T = Table> extends Evented {
   ) => TableViewportSubscription;
 
   copy: () => Promise<T>;
+  close: () => void;
+}
+
+export interface PartitionedTable extends Evented, PartitionedTableStatic {
+  readonly size: number;
+  readonly columns: Column[];
+  readonly keyColumns: Column[];
+
+  getTable: (key: unknown) => Promise<Table>;
+  getMergedTable: () => Promise<Table>;
+  getKeys: () => Set<object>;
+  getKeyTable: () => Promise<Table>;
+
   close: () => void;
 }
 
@@ -1056,18 +1071,21 @@ export interface IdeConnection
   running: () => Promise<IdeConnection>;
   disconnected: () => void;
   getObject: ((
-    definition: VariableDefinition<typeof VariableType.TABLE>
+    definition: VariableDescriptor<typeof VariableType.TABLE>
   ) => Promise<Table>) &
     ((
-      definition: VariableDefinition<typeof VariableType.FIGURE>
+      definition: VariableDescriptor<typeof VariableType.FIGURE>
     ) => Promise<Figure>) &
     ((
-      definition: VariableDefinition<typeof VariableType.TREETABLE>
+      definition: VariableDescriptor<typeof VariableType.TREETABLE>
     ) => Promise<TreeTable>) &
     ((
-      definition: VariableDefinition<typeof VariableType.HIERARCHICALTABLE>
+      definition: VariableDescriptor<typeof VariableType.HIERARCHICALTABLE>
     ) => Promise<TreeTable>) &
-    ((definition: VariableDefinition) => Promise<unknown>);
+    ((
+      definition: VariableDescriptor<typeof VariableType.PARTITIONEDTABLE>
+    ) => Promise<PartitionedTable>) &
+    ((definition: VariableDescriptor) => Promise<any>);
   subscribeToFieldUpdates: (
     param: (changes: VariableChanges) => void
   ) => () => void;

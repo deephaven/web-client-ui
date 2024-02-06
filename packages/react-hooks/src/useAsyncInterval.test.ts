@@ -1,8 +1,23 @@
 import { renderHook, act } from '@testing-library/react-hooks';
+import Log from '@deephaven/log';
 import { TestUtils } from '@deephaven/utils';
 import useAsyncInterval from './useAsyncInterval';
 
+jest.mock('@deephaven/log', () => {
+  const logger = {
+    error: jest.fn(),
+  };
+  return {
+    __esModule: true,
+    default: {
+      module: jest.fn(() => logger),
+    },
+  };
+});
+
 const { asMock } = TestUtils;
+
+const mockLoggerInstance = Log.module('mock.logger');
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -16,12 +31,22 @@ afterAll(() => {
 });
 
 describe('useAsyncInterval', () => {
-  function createCallback(ms: number) {
+  /**
+   * Creates a callback function that resolves after the given number of
+   * milliseconds. Accepts an optional array of Error | undefined. They are
+   * mapped by index to the order in which the callback is called. An Error
+   * instance will cause a rejection, undefined will cause a resolution.
+   */
+  function createCallback(ms: number, rejectWith: (Error | undefined)[] = []) {
     return jest
       .fn(
         async (): Promise<void> =>
-          new Promise(resolve => {
-            setTimeout(resolve, ms);
+          new Promise((resolve, reject) => {
+            const rejectArg = rejectWith.shift();
+            setTimeout(
+              rejectArg == null ? resolve : () => reject(rejectArg),
+              ms
+            );
 
             // Don't track the above call to `setTimeout`
             asMock(setTimeout).mock.calls.pop();
@@ -154,5 +179,30 @@ describe('useAsyncInterval', () => {
     await TestUtils.flushPromises();
 
     expect(window.setTimeout).not.toHaveBeenCalled();
+  });
+
+  it('should handle tick errors', async () => {
+    const callbackDelayMs = 50;
+    const mockError = new Error('mock.error');
+    const callback = createCallback(callbackDelayMs, [mockError, undefined]);
+
+    renderHook(() => useAsyncInterval(callback, targetIntervalMs));
+
+    // First callback fires immediately
+    expect(callback).toHaveBeenCalledTimes(1);
+
+    // Mimick the callback Promise rejecting
+    act(() => jest.advanceTimersByTime(callbackDelayMs));
+    await TestUtils.flushPromises();
+
+    expect(mockLoggerInstance.error).toHaveBeenCalledWith(
+      'A tick error occurred:',
+      mockError
+    );
+
+    // Advance to next interval
+    act(() => jest.advanceTimersByTime(targetIntervalMs));
+
+    expect(callback).toHaveBeenCalledTimes(2);
   });
 });

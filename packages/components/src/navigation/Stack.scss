@@ -17,7 +17,7 @@
 
   .pushing-view,
   .popping-view {
-    box-shadow: -4px 0 8px hsla(var(--dh-color-black-hsl), 0.45);
+    box-shadow: -4px 0 8px black-opacity(45);
   }
 
   .popping-view {

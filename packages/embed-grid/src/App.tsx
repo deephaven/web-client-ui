@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useUser } from '@deephaven/app-utils';
-import { useConnection } from '@deephaven/jsapi-components';
+import { useConnection, useUser } from '@deephaven/app-utils';
 import { ContextMenuRoot, LoadingOverlay } from '@deephaven/components'; // Use the loading spinner from the Deephaven components package
 import {
   InputFilter,
@@ -23,6 +22,7 @@ const SUPPORTED_TYPES: string[] = [
   dh.VariableType.TREETABLE,
   dh.VariableType.HIERARCHICALTABLE,
   dh.VariableType.PANDAS,
+  dh.VariableType.PARTITIONEDTABLE,
 ];
 
 export type Command = 'filter' | 'sort';

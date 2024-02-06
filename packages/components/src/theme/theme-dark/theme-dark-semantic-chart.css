@@ -3,7 +3,8 @@
 :root {
   --dh-color-chart-bg: var(--dh-color-content-bg);
   --dh-color-chart-plot-bg: var(--dh-color-gray-200);
-  --dh-color-chart-title: var(--dh-color-white);
+  --dh-color-chart-title: var(--dh-color-text);
+  --dh-color-chart-legend-fg: var(--dh-color-text);
 
   /* Colorway */
   --dh-color-chart-colorway: var(--dh-color-visual-cyan)
@@ -15,33 +16,35 @@
   --dh-color-chart-grid: var(--dh-color-gray-400);
   --dh-color-chart-axis-line: var(--dh-color-gray-500);
   --dh-color-chart-axis-line-zero: var(--dh-color-gray-700);
-  --dh-color-chart-active: var(--dh-color-accent-600);
-
-  --dh-color-chart-range-bg: hsla(var(--dh-color-gray-500-hsl) 0.7);
-  --dh-color-chart-area: var(--dh-color-visual-blue);
-  --dh-color-chart-trend: var(--dh-color-green-1200);
 
   /* Error band */
   --dh-color-chart-error-band-line: var(--dh-color-green-1400);
-  --dh-color-chart-error-band-fill: hsla(var(--dh-color-green-1200-hsl), 0.1);
 
   /* OHLC */
   --dh-color-chart-ohlc-increase: var(--dh-color-visual-green);
   --dh-color-chart-ohlc-decrease: var(--dh-color-visual-red);
 
-  /* 
-   * This color shows up in the styleguide, but it doesn't seem to be consumed
-   * in production code. There has been discussion about it not being needed 
-   * anymore. 
-   */
-  --dh-color-chart-line-deprecated: var(--dh-color-visual-green);
-
   --dh-color-plotly-axis-text: var(--dh-color-gray-500);
-  --dh-color-plotly-zoombox: hsla(var(--dh-color-true-black-hsl), 0.5);
+  --dh-color-plotly-zoombox: color-mix(
+    in srgb,
+    var(--dh-color-true-black) 50%,
+    transparent
+  );
   --dh-color-plotly-zoombox-corners-fill: var(--dh-color-white);
   --dh-color-plotly-zoombox-corners-stroke: var(--dh-color-gray-75);
 
-  --dh-color-plotly-modebar-btn-active: var(--dh-color-true-white-hsl, 0.7);
+  --dh-color-plotly-modebar-btn-active: color-mix(
+    in srgb,
+    var(--dh-color-true-white) 30%,
+    transparent
+  );
   --dh-color-plotly-modebar-btn-warning: var(--dh-color-visual-orange);
   --dh-color-plotly-notifier-note-bg: var(--dh-color-gray-500);
+
+  /* Geo */
+  --dh-color-chart-geo-coastline: var(--dh-color-gray-200);
+  --dh-color-chart-geo-land: var(--dh-color-gray-700);
+  --dh-color-chart-geo-ocean: var(--dh-color-gray-300);
+  --dh-color-chart-geo-lake: var(--dh-color-blue-200);
+  --dh-color-chart-geo-river: var(--dh-color-blue-200);
 }

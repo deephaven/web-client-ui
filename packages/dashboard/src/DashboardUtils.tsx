@@ -48,7 +48,6 @@ export function hydrate<T extends DehydratedDashboardPanelProps>(
   localDashboardId = ''
 ): T {
   return {
-    metadata: {},
     ...props,
     localDashboardId,
   };

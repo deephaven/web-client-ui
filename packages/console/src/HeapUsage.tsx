@@ -4,7 +4,7 @@ import { Tooltip } from '@deephaven/components';
 import type { QueryConnectable } from '@deephaven/jsapi-types';
 import { Plot, useChartTheme } from '@deephaven/chart';
 import Log from '@deephaven/log';
-import { useAsyncInterval } from '@deephaven/react-hooks';
+import { useAsyncInterval, useIsMountedRef } from '@deephaven/react-hooks';
 import './HeapUsage.scss';
 
 const log = Log.module('HeapUsage');
@@ -41,9 +41,16 @@ function HeapUsage({
     usages: [],
   });
 
+  const isMountedRef = useIsMountedRef();
+
   const setUsageUpdateInterval = useCallback(async () => {
     try {
       const newUsage = await connection.getWorkerHeapInfo();
+
+      if (!isMountedRef.current) {
+        return;
+      }
+
       setMemoryUsage(newUsage);
 
       if (bgMonitoring || isOpen) {
@@ -69,7 +76,7 @@ function HeapUsage({
     } catch (e) {
       log.warn('Unable to get heap usage', e);
     }
-  }, [isOpen, connection, monitorDuration, bgMonitoring]);
+  }, [connection, isMountedRef, bgMonitoring, isOpen, monitorDuration]);
 
   useAsyncInterval(
     setUsageUpdateInterval,

@@ -1,51 +1,47 @@
-import React, { Component, ReactElement, ReactNode } from 'react';
+import React, { useEffect, useState, ReactNode } from 'react';
 import * as monaco from 'monaco-editor';
+import { useTheme } from '@deephaven/components';
 
 interface CodeProps {
   children: ReactNode;
   language: string;
 }
 
-class Code extends Component<CodeProps, Record<string, never>> {
-  constructor(props: CodeProps) {
-    super(props);
+function Code({ children, language }: CodeProps): JSX.Element {
+  const [colorizedHtml, setColorizedHtml] = useState<string | null>(null);
+  const { activeThemes } = useTheme();
 
-    this.container = null;
-  }
-
-  componentDidMount(): void {
-    this.colorize();
-  }
-
-  container: HTMLDivElement | null;
-
-  colorize(): void {
-    const { children } = this.props;
-    if (this.container && children != null) {
-      monaco.editor.colorizeElement(this.container, {
-        theme: 'dh-dark',
-      });
+  useEffect(() => {
+    let isCanceled = false;
+    async function colorize() {
+      if (children != null && activeThemes != null) {
+        const result = await monaco.editor.colorize(
+          children.toString(),
+          language,
+          {}
+        );
+        if (!isCanceled) {
+          setColorizedHtml(result);
+        }
+      }
     }
-  }
+    colorize();
+    return () => {
+      isCanceled = true;
+    };
+  }, [activeThemes, children, language]);
 
-  render(): ReactElement {
-    const { children, language } = this.props;
-    return (
-      <div>
-        <div
-          data-lang={language}
-          ref={container => {
-            this.container = container;
-          }}
-          // Add pointerEvents: 'none' has huge benefits on performance with Hit Test testing on large colorized elements.
-          // You can still select the text event with this set
-          style={{ pointerEvents: 'none' }}
-        >
-          {children}
-        </div>
-      </div>
-    );
-  }
+  return (
+    <div
+      // Add pointerEvents: 'none' has huge benefits on performance with Hit Test testing on large colorized elements.
+      // You can still select the text event with this set
+      style={{ pointerEvents: 'none' }}
+      // eslint-disable-next-line react/no-danger
+      dangerouslySetInnerHTML={
+        colorizedHtml != null ? { __html: colorizedHtml } : undefined
+      }
+    />
+  );
 }
 
 export default Code;

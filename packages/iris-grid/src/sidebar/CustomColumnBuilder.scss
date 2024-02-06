@@ -22,8 +22,12 @@ $background: var(--dh-surface-bg);
     }
 
     &.dragging {
-      background: $primary-dark;
+      background: $primary;
       box-shadow: $box-shadow;
+
+      .btn {
+        color: var(--dh-color-accent-contrast);
+      }
     }
   }
 
@@ -42,7 +46,11 @@ $background: var(--dh-surface-bg);
     .error-box {
       padding: $spacer-1;
       border-radius: $border-radius;
-      background: hsla(var(--dh-color-negative-hsl), $exception-transparency);
+      background: color-mix(
+        in srgb,
+        var(--dh-color-negative) $exception-transparency,
+        transparent
+      );
     }
   }
 

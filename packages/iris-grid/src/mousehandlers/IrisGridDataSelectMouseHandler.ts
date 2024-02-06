@@ -1,5 +1,6 @@
 /* eslint class-methods-use-this: "off" */
 import {
+  type Grid,
   GridMouseHandler,
   GridPoint,
   EventHandlerResult,
@@ -18,13 +19,15 @@ class IrisGridDataSelectMouseHandler extends GridMouseHandler {
 
   irisGrid: IrisGrid;
 
-  onDoubleClick(gridPoint: GridPoint): EventHandlerResult {
+  onDoubleClick(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     const { column, row } = gridPoint;
     if (row == null || column == null) {
       return false;
     }
 
     this.irisGrid.selectData(column, row);
+
+    grid.moveCursorToPosition(column, row);
 
     return true;
   }

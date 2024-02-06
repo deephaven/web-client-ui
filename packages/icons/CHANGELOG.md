@@ -3,6 +3,41 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.62.0](https://github.com/deephaven/web-client-ui/compare/v0.61.1...v0.62.0) (2024-02-05)
+
+**Note:** Version bump only for package @deephaven/icons
+
+
+
+
+
+# [0.61.0](https://github.com/deephaven/web-client-ui/compare/v0.60.0...v0.61.0) (2024-02-01)
+
+**Note:** Version bump only for package @deephaven/icons
+
+
+
+
+
+# [0.60.0](https://github.com/deephaven/web-client-ui/compare/v0.59.0...v0.60.0) (2024-01-26)
+
+
+### Features
+
+* Adds icons dhUnderline and dhStrikethrough ([#1732](https://github.com/deephaven/web-client-ui/issues/1732)) ([c6a099d](https://github.com/deephaven/web-client-ui/commit/c6a099d84e8f474d4d418b631f45233bd874483f)), closes [#1715](https://github.com/deephaven/web-client-ui/issues/1715)
+
+
+
+
+
+# [0.59.0](https://github.com/deephaven/web-client-ui/compare/v0.58.0...v0.59.0) (2024-01-17)
+
+**Note:** Version bump only for package @deephaven/icons
+
+
+
+
+
 # [0.58.0](https://github.com/deephaven/web-client-ui/compare/v0.57.1...v0.58.0) (2023-12-22)
 
 **Note:** Version bump only for package @deephaven/icons

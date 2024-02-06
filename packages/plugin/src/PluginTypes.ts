@@ -3,6 +3,7 @@ import {
   type EventEmitter,
   type ItemContainer,
 } from '@deephaven/golden-layout';
+import { VariableDescriptor } from '@deephaven/jsapi-types';
 import type { IconDefinition } from '@fortawesome/fontawesome-common-types';
 import type { TablePluginComponent } from './TablePlugin';
 
@@ -105,22 +106,18 @@ export function isDashboardPlugin(
   return 'type' in plugin && plugin.type === PluginType.DASHBOARD_PLUGIN;
 }
 
-export interface WidgetComponentProps {
-  fetch: () => Promise<unknown>;
+export interface WidgetComponentProps<T = unknown> {
+  fetch: () => Promise<T>;
 }
 
-export interface WidgetPanelProps extends WidgetComponentProps {
-  metadata?: {
-    id?: string;
-    name?: string;
-    type?: string;
-  };
+export interface WidgetPanelProps<T = unknown> extends WidgetComponentProps<T> {
+  metadata?: VariableDescriptor;
   localDashboardId: string;
   glContainer: ItemContainer;
   glEventHub: EventEmitter;
 }
 
-export interface WidgetPlugin extends Plugin {
+export interface WidgetPlugin<T = unknown> extends Plugin {
   type: typeof PluginType.WIDGET_PLUGIN;
   /**
    * The component that can render the widget types the plugin supports.
@@ -129,7 +126,7 @@ export interface WidgetPlugin extends Plugin {
    * then `panelComponent` will be used instead.
    * The component will be wrapped in a default panel if `panelComponent` is not provided.
    */
-  component: React.ComponentType<WidgetComponentProps>;
+  component: React.ComponentType<WidgetComponentProps<T>>;
 
   /**
    * The server widget types that this plugin will handle.
@@ -154,7 +151,7 @@ export interface WidgetPlugin extends Plugin {
    *
    * See @deephaven/dashboard-core-plugins WidgetPanel for the component that should be used here.
    */
-  panelComponent?: React.ComponentType<WidgetPanelProps>;
+  panelComponent?: React.ComponentType<WidgetPanelProps<T>>;
 
   /**
    * The icon to display next to the console button.

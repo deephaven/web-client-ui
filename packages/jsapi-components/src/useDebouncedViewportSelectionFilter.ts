@@ -44,7 +44,7 @@ export function useDebouncedViewportSelectionFilter<TItem, TValue>({
 
   // Debounce so user can rapidly select multiple items in a row without the
   // cost of updating the table on each change
-  const debouncedValuesSelection = useDebouncedValue(
+  const { value: debouncedValuesSelection } = useDebouncedValue(
     valuesSelection,
     DEBOUNCE_MS
   );

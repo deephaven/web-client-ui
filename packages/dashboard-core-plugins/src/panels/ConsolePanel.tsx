@@ -4,6 +4,7 @@ import React, { PureComponent, ReactElement, RefObject } from 'react';
 import shortid from 'shortid';
 import debounce from 'lodash.debounce';
 import { connect } from 'react-redux';
+import { LoadingOverlay } from '@deephaven/components';
 import {
   CommandHistoryStorage,
   Console,
@@ -17,7 +18,8 @@ import {
   LayoutUtils,
   PanelEvent,
 } from '@deephaven/dashboard';
-import type { IdeSession, VariableDefinition } from '@deephaven/jsapi-types';
+import { getVariableDescriptor } from '@deephaven/jsapi-bootstrap';
+import type { VariableDefinition } from '@deephaven/jsapi-types';
 import { SessionWrapper } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
@@ -63,7 +65,7 @@ interface ConsolePanelProps extends DashboardPanelProps {
 
   panelState?: PanelState;
 
-  sessionWrapper: SessionWrapper;
+  sessionWrapper?: SessionWrapper;
 
   timeZone: string;
   unzip?: (file: File) => Promise<JSZipObject[]>;
@@ -159,6 +161,10 @@ export class ConsolePanel extends PureComponent<
 
   subscribeToFieldUpdates(): void {
     const { sessionWrapper } = this.props;
+    if (sessionWrapper == null) {
+      return;
+    }
+
     const { session } = sessionWrapper;
 
     this.objectSubscriptionCleanup = session.subscribeToFieldUpdates(
@@ -243,8 +249,6 @@ export class ConsolePanel extends PureComponent<
   }
 
   handleOpenObject(object: VariableDefinition, forceOpen = true): void {
-    const { sessionWrapper } = this.props;
-    const { session } = sessionWrapper;
     const { root } = this.context;
     const oldPanelId =
       object.title != null ? this.getItemId(object.title, false) : null;
@@ -259,7 +263,7 @@ export class ConsolePanel extends PureComponent<
           false
         ) != null)
     ) {
-      this.openWidget(object, session);
+      this.openWidget(object);
     }
   }
 
@@ -285,17 +289,22 @@ export class ConsolePanel extends PureComponent<
 
   /**
    * @param widget The widget to open
-   * @param session The session object
    */
-  openWidget(widget: VariableDefinition, session: IdeSession): void {
-    const { glEventHub } = this.props;
+  openWidget(widget: VariableDefinition): void {
+    const { glEventHub, sessionWrapper } = this.props;
+    assertNotNull(sessionWrapper);
+
+    const { config, session } = sessionWrapper;
     const { title } = widget;
     assertNotNull(title);
     const panelId = this.getItemId(title);
     const openOptions = {
       fetch: () => session.getObject(widget),
       panelId,
-      widget,
+      widget: {
+        ...getVariableDescriptor(widget),
+        sessionId: config.id,
+      },
     };
 
     log.debug('openWidget', openOptions);
@@ -359,7 +368,7 @@ export class ConsolePanel extends PureComponent<
     return <ObjectIcon type={type} />;
   }
 
-  render(): ReactElement {
+  render(): ReactElement | null {
     const {
       commandHistoryStorage,
       glContainer,
@@ -368,6 +377,13 @@ export class ConsolePanel extends PureComponent<
       timeZone,
       unzip,
     } = this.props;
+
+    if (sessionWrapper == null) {
+      return (
+        <LoadingOverlay isLoading={false} errorMessage="Console is disabled." />
+      );
+    }
+
     const { consoleSettings, error, objectMap } = this.state;
     const { config, session, connection, details = {}, dh } = sessionWrapper;
     const { workerName, processInfoId } = details;

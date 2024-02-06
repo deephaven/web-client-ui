@@ -1,23 +1,13 @@
-import React from 'react';
+import React, { OptionHTMLAttributes } from 'react';
 
-export type OptionProps = {
+export type OptionProps = OptionHTMLAttributes<HTMLOptionElement> & {
   children: React.ReactNode;
-  disabled?: boolean;
-  value: string;
   'data-testid'?: string;
 };
 
-function Option({
-  children,
-  disabled,
-  value,
-  'data-testid': dataTestId,
-}: OptionProps): JSX.Element {
-  return (
-    <option value={value} disabled={disabled} data-testid={dataTestId}>
-      {children}
-    </option>
-  );
+function Option({ children, ...props }: OptionProps): JSX.Element {
+  // eslint-disable-next-line react/jsx-props-no-spreading
+  return <option {...props}>{children}</option>;
 }
 
 export default Option;

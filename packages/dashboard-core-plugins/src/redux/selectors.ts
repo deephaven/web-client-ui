@@ -7,6 +7,8 @@ import { Link } from '../linker/LinkerUtils';
 import { FilterSet } from '../panels';
 import { ColumnSelectionValidator } from '../linker/ColumnSelectionValidator';
 
+const EMPTY_OBJECT = Object.freeze({});
+
 const EMPTY_MAP = new Map();
 
 const EMPTY_ARRAY = Object.freeze([]);
@@ -107,10 +109,8 @@ export const getDashboardConsoleSettings = (
   store: RootState,
   dashboardId: string
 ): Record<string, unknown> =>
-  getDashboardData(store, dashboardId).consoleSettings as Record<
-    string,
-    unknown
-  >;
+  (getDashboardData(store, dashboardId).consoleSettings ??
+    EMPTY_OBJECT) as Record<string, unknown>;
 
 /**
  *
@@ -121,8 +121,8 @@ export const getDashboardConsoleSettings = (
 export const getDashboardConnection = (
   store: RootState,
   dashboardId: string
-): IdeConnection =>
-  getDashboardData(store, dashboardId).connection as IdeConnection;
+): IdeConnection | undefined =>
+  getDashboardData(store, dashboardId).connection as IdeConnection | undefined;
 
 /**
  *
@@ -133,5 +133,7 @@ export const getDashboardConnection = (
 export const getDashboardSessionWrapper = (
   store: RootState,
   dashboardId: string
-): SessionWrapper =>
-  getDashboardData(store, dashboardId).sessionWrapper as SessionWrapper;
+): SessionWrapper | undefined =>
+  getDashboardData(store, dashboardId).sessionWrapper as
+    | SessionWrapper
+    | undefined;

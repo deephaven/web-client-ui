@@ -1,3 +1,17 @@
+.themeColorsPalette {
+  display: grid;
+  grid-template-columns: repeat(15, 1fr);
+  gap: 1px;
+  align-items: center;
+
+  .swatch {
+    display: flex;
+    aspect-ratio: 4/3;
+    align-items: flex-start;
+    justify-content: flex-end;
+  }
+}
+
 .themeColors {
   --swatch-height: 35px;
   --column-gap: 14px;
@@ -33,7 +47,12 @@
       white-space: nowrap;
       text-overflow: ellipsis;
     }
+  }
+}
 
+.themeColors,
+.themeColorsPalette {
+  .swatch {
     // hide copy swatch button until hover
     button {
       opacity: 0;

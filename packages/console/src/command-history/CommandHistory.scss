@@ -1,6 +1,6 @@
 @import '@deephaven/components/scss/custom.scss';
 
-$command-history-bg: $gray-900;
+$command-history-bg: var(--dh-color-subdued-content-bg);
 $command-history-color: $text-muted;
 $command-history-search-toolbar-bg: $content-bg;
 
@@ -21,6 +21,7 @@ $command-history-search-toolbar-bg: $content-bg;
     padding: 0;
     .item-list-scroll-pane {
       border: none;
+      border-radius: 0;
     }
   }
 }

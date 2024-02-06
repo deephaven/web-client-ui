@@ -15,6 +15,7 @@ const mockDivEl = createMockProxy<HTMLDivElement>({
       setBackgroundColor(value);
     },
   } as HTMLDivElement['style'],
+  remove: jest.fn(),
 });
 
 const colorMap = [
@@ -78,25 +79,54 @@ beforeEach(() => {
 });
 
 describe('asRgbOrRgbaString', () => {
-  beforeEach(() => {
-    jest
-      .spyOn(document, 'createElement')
-      .mockName('createElement')
-      .mockReturnValue(mockDivEl);
+  it.each([
+    ['rgb(0, 128, 255)'],
+    ['rgb(0,128,255)'],
+    ['rgba(0, 128, 255, 0.1)'],
+    ['rgba(0, 128, 255, 1)'],
+    ['color(srgb 1, 1, 1 / 1)'],
+    ['color(srgb 0,0,0 / 0)'],
+    ['color(srgb 0, 0.2, 0.2 / 0.2)'],
+    ['color(srgb 0,0,0)'],
+    ['color(srgb 0 0.2 0.2)'],
+  ])(
+    'should return the color string if it is already in the expected format: %s',
+    colorString => {
+      const result = ColorUtils.asRgbOrRgbaString(colorString);
+      expect(result).toEqual(colorString);
+    }
+  );
+
+  it('should return the resolved color string if it is not in the expected format', () => {
+    const colorString = 'red';
+    const resolvedColor = 'rgb(255, 0, 0)';
+
+    jest.spyOn(document, 'createElement').mockReturnValue(mockDivEl);
+    jest.spyOn(document.body, 'appendChild').mockReturnValue(mockDivEl);
+    jest.spyOn(window, 'getComputedStyle').mockReturnValue({
+      getPropertyValue: jest.fn().mockReturnValue(resolvedColor),
+    } as unknown as CSSStyleDeclaration);
+
+    const result = ColorUtils.asRgbOrRgbaString(colorString);
+    expect(result).toEqual(resolvedColor);
+    expect(document.createElement).toHaveBeenCalledWith('div');
+    expect(window.getComputedStyle).toHaveBeenCalledWith(mockDivEl);
+    expect(mockDivEl.remove).toHaveBeenCalled();
   });
 
-  it('should return resolved backgroundColor value', () => {
-    getBackgroundColor.mockReturnValue('get backgroundColor');
+  it('should return null if the resolved color string is null', () => {
+    const colorString = 'red';
+    jest.spyOn(document, 'createElement').mockReturnValue(mockDivEl);
+    jest.spyOn(document.body, 'appendChild').mockReturnValue(mockDivEl);
+    jest.spyOn(window, 'getComputedStyle').mockReturnValue({
+      getPropertyValue: jest.fn().mockReturnValue(null),
+    } as unknown as CSSStyleDeclaration);
 
-    const actual = ColorUtils.asRgbOrRgbaString('red');
-    expect(actual).toEqual('get backgroundColor');
-  });
-
-  it('should return null if backgroundColor resolves to empty string', () => {
-    getBackgroundColor.mockReturnValue('');
-
-    const actual = ColorUtils.asRgbOrRgbaString('red');
-    expect(actual).toBeNull();
+    const result = ColorUtils.asRgbOrRgbaString(colorString);
+    expect(result).toBeNull();
+    expect(document.createElement).toHaveBeenCalledWith('div');
+    expect(window.getComputedStyle).toHaveBeenCalledWith(mockDivEl);
+    expect(mockDivEl.remove).toHaveBeenCalled();
   });
 });
 
@@ -128,17 +158,22 @@ describe('normalizeCssColor', () => {
       .spyOn(document, 'createElement')
       .mockName('createElement')
       .mockReturnValue(mockDivEl);
+    jest.spyOn(document.body, 'appendChild').mockReturnValue(mockDivEl);
   });
 
   it.each([
     'rgb(0, 128, 255)',
-    'rgba(0, 128, 255, 64)',
+    'rgba(0, 128, 255, 255)',
     'rgb(0 128 255)',
-    'rgba(0 128 255 64)',
+    'rgba(0 128 255 0.1)',
   ])(
     'should normalize a resolved rgb/a color to 8 character hex value',
     rgbOrRgbaColor => {
       getBackgroundColor.mockReturnValue(rgbOrRgbaColor);
+
+      jest.spyOn(window, 'getComputedStyle').mockReturnValue({
+        getPropertyValue: jest.fn().mockReturnValue(rgbOrRgbaColor),
+      } as unknown as CSSStyleDeclaration);
 
       const actual = ColorUtils.normalizeCssColor('some.color');
       expect(actual).toEqual(
@@ -147,15 +182,23 @@ describe('normalizeCssColor', () => {
     }
   );
 
-  it('should return original color if backgroundColor resolves to empty string', () => {
+  it('should return original color if Color resolves to empty string', () => {
     getBackgroundColor.mockReturnValue('');
+
+    jest.spyOn(window, 'getComputedStyle').mockReturnValue({
+      getPropertyValue: jest.fn().mockReturnValue(''),
+    } as unknown as CSSStyleDeclaration);
 
     const actual = ColorUtils.normalizeCssColor('red');
     expect(actual).toEqual('red');
   });
 
-  it('should return original color if backgroundColor resolves to non rgb/a', () => {
+  it('should return original color if Color resolves to non rgb/a', () => {
     getBackgroundColor.mockReturnValue('xxx');
+
+    jest.spyOn(window, 'getComputedStyle').mockReturnValue({
+      getPropertyValue: jest.fn().mockReturnValue('xxx'),
+    } as unknown as CSSStyleDeclaration);
 
     const actual = ColorUtils.normalizeCssColor('red');
     expect(actual).toEqual('red');
@@ -176,10 +219,22 @@ describe('parseRgba', () => {
 
   it.each([
     ['rgba(255, 255, 255, 1)', { r: 255, g: 255, b: 255, a: 1 }],
+    ['rgba(255, 255, 255, 255)', { r: 255, g: 255, b: 255, a: 1 }],
     ['rgba(0,0,0,0)', { r: 0, g: 0, b: 0, a: 0 }],
     ['rgba(255 255 255 1)', { r: 255, g: 255, b: 255, a: 1 }],
     ['rgba(0 0 0 0)', { r: 0, g: 0, b: 0, a: 0 }],
     ['rgba(0 128 255 .5)', { r: 0, g: 128, b: 255, a: 0.5 }],
+  ])('should parse rgba: %s, %s', (rgba, hex) => {
+    expect(ColorUtils.parseRgba(rgba)).toEqual(hex);
+  });
+
+  it.each([
+    ['color(srgb 1 1 1 1)', { r: 255, g: 255, b: 255, a: 1 }],
+    ['color(srgb 1, 1, 1, 1)', { r: 255, g: 255, b: 255, a: 1 }],
+    ['color(srgb 1, 1, 1 / 1)', { r: 255, g: 255, b: 255, a: 1 }],
+    ['color(srgb 0,0,0 / 0)', { r: 0, g: 0, b: 0, a: 0 }],
+    ['color(srgb 0 0 0 / 0)', { r: 0, g: 0, b: 0, a: 0 }],
+    ['color(srgb 0 0.2 0.2 / 0.2)', { r: 0, g: 51, b: 51, a: 0.2 }],
   ])('should parse rgba: %s, %s', (rgba, hex) => {
     expect(ColorUtils.parseRgba(rgba)).toEqual(hex);
   });

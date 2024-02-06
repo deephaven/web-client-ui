@@ -250,10 +250,10 @@ test('organize columns', async ({ page }) => {
 
   await test.step('Search', async () => {
     await page.getByPlaceholder('Search').click();
-    await page.keyboard.type('dou');
 
+    // changed so the word "string" doesn't show up on screen due to a kerning issue
     // https://github.com/microsoft/playwright/issues/20203
-    await page.evaluate(() => document.fonts.ready);
+    await page.keyboard.type('bigd');
 
     await expect(
       page.locator('.visibility-ordering-builder')

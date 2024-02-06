@@ -1,4 +1,9 @@
-import type { dh as DhType, Table, TreeTable } from '@deephaven/jsapi-types';
+import type {
+  dh as DhType,
+  Table,
+  TreeTable,
+  PartitionedTable,
+} from '@deephaven/jsapi-types';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import IrisGridModel from './IrisGridModel';
 import IrisGridProxyModel from './IrisGridProxyModel';
@@ -14,11 +19,15 @@ class IrisGridModelFactory {
    */
   static async makeModel(
     dh: DhType,
-    table: Table | TreeTable,
+    table: Table | TreeTable | PartitionedTable,
     formatter = new Formatter(dh)
   ): Promise<IrisGridModel> {
     let inputTable = null;
-    if (!TableUtils.isTreeTable(table) && table.hasInputTable) {
+    if (
+      !TableUtils.isTreeTable(table) &&
+      !TableUtils.isPartitionedTable(table) &&
+      table.hasInputTable
+    ) {
       inputTable = await table.inputTable();
     }
     return new IrisGridProxyModel(dh, table, formatter, inputTable);

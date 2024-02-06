@@ -1,7 +1,6 @@
 // Import our custom variables and bootstrap
 // Can be imported directly by Vite since it resolves bootstrap to node_modules/bootstrap
 @import './custom.scss';
-@import './util.scss';
 @import './bootstrap_imports.scss';
 
 :root {
@@ -24,10 +23,10 @@ html {
 
 // override
 .text-black-50 {
-  color: background-opacity(50) !important;
+  color: bg-opacity(50) !important;
 }
 .text-white-50 {
-  color: foreground-opacity(50) !important;
+  color: fg-opacity(50) !important;
 }
 
 // deephaven-icons are designed on a 16px grid
@@ -46,7 +45,7 @@ body {
   padding: 0;
   overscroll-behavior: none;
   -ms-scroll-chaining: none;
-  scrollbar-color: foreground-opacity(10) background-opacity(10); //applies to firefox only
+  scrollbar-color: fg-opacity(10) bg-opacity(10); //applies to firefox only
 }
 
 #root {
@@ -129,8 +128,13 @@ button:focus {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding-top: 3px;
-  padding-bottom: 5px;
+  // match spectrum button custom padding
+  padding: 4px 14px 3px 14px;
+  gap: 6px;
+
+  .svg-inline--fa {
+    padding-bottom: 2px;
+  }
 }
 
 .btn-sm {
@@ -162,8 +166,8 @@ span.btn-disabled-wrapper {
   min-width: unset;
   padding: $spacer-1;
 
-  svg {
-    margin-right: $spacer-1;
+  .svg-inline--fa {
+    align-self: center;
   }
 
   &:not(.btn-link-icon) {
@@ -214,9 +218,6 @@ span.btn-disabled-wrapper {
 
 .btn-spinner {
   padding: $btn-padding-y 1rem;
-  .fa-layers {
-    margin-right: 0.5rem;
-  }
 }
 
 .btn-link.no-underline,
@@ -234,10 +235,6 @@ span.btn-disabled-wrapper {
   border: 0;
   padding-left: $spacer-1;
   padding-right: $spacer-1;
-
-  svg {
-    margin-right: 0;
-  }
 
   &::after {
     content: '';
@@ -338,6 +335,10 @@ span.btn-disabled-wrapper {
   border: 1px solid var(--dh-color-action-border);
   color: var(--dh-color-action-fg);
   font-weight: $font-weight-normal;
+
+  .svg-inline--fa {
+    align-self: center;
+  }
 
   &.active {
     border-color: var(--dh-color-action-active-border);
@@ -660,7 +661,7 @@ input[type='number']::-webkit-inner-spin-button {
 
 // style the same as monaco scrollbar
 ::-webkit-scrollbar-thumb {
-  background: hsla(var(--dh-color-scrollbar-hsl), 0.18);
+  background: color-mix(in srgb, var(--dh-color-scrollbar) 18%, transparent);
   border-radius: 0;
 }
 
@@ -670,23 +671,25 @@ input[type='number']::-webkit-inner-spin-button {
 }
 
 ::-webkit-scrollbar-corner {
-  background: background-opacity(10);
+  background: bg-opacity(10);
 }
 
 ::-webkit-scrollbar-track:horizontal {
-  border-top: 1px solid hsla(var(--dh-color-scrollbar-hsl), 0.15);
+  border-top: 1px solid
+    color-mix(in srgb, var(--dh-color-scrollbar) 15%, transparent);
 }
 
 ::-webkit-scrollbar-track:vertical {
-  border-left: 1px solid hsla(var(--dh-color-scrollbar-hsl), 0.15);
+  border-left: 1px solid
+    color-mix(in srgb, var(--dh-color-scrollbar) 15%, transparent);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsla(var(--dh-color-scrollbar-hsl), 0.25);
+  background: color-mix(in srgb, var(--dh-color-scrollbar) 25%, transparent);
 }
 
 ::-webkit-scrollbar-thumb:active {
-  background: hsla(var(--dh-color-scrollbar-hsl), 0.35);
+  background: color-mix(in srgb, var(--dh-color-scrollbar) 35%, transparent);
 }
 
 /********** Monaco Overides *********/
