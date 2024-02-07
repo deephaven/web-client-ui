@@ -54,6 +54,8 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
         defaultFormatString: IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
       },
       truncateNumbersWithPound: false,
+      showEmptyStrings: true,
+      showNullStrings: true,
       defaultNotebookSettings: {
         isMinimapEnabled: false,
       },
@@ -89,6 +91,14 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
       truncateNumbersWithPound: LocalWorkspaceStorage.getBooleanServerConfig(
         serverConfigValues,
         'truncateNumbersWithPound'
+      ),
+      showEmptyStrings: LocalWorkspaceStorage.getBooleanServerConfig(
+        serverConfigValues,
+        'showEmptyStrings'
+      ),
+      showNullStrings: LocalWorkspaceStorage.getBooleanServerConfig(
+        serverConfigValues,
+        'showNullStrings'
       ),
       defaultNotebookSettings:
         serverConfigValues?.get('isMinimapEnabled') !== undefined

@@ -26,6 +26,8 @@ import {
   getShowTimeZone,
   getShowTSeparator,
   getTruncateNumbersWithPound,
+  getShowEmptyStrings,
+  getShowNullStrings,
   updateSettings as updateSettingsAction,
   RootState,
   WorkspaceSettings,
@@ -52,6 +54,8 @@ interface FormattingSectionContentProps {
   showTSeparator: boolean;
   timeZone: string;
   truncateNumbersWithPound: boolean;
+  showEmptyStrings: boolean;
+  showNullStrings: boolean;
   updateSettings: (settings: Partial<WorkspaceSettings>) => void;
   defaultDecimalFormatOptions: FormatOption;
   defaultIntegerFormatOptions: FormatOption;
@@ -66,6 +70,8 @@ interface FormattingSectionContentState {
   defaultDecimalFormatOptions: FormatOption;
   defaultIntegerFormatOptions: FormatOption;
   truncateNumbersWithPound: boolean;
+  showEmptyStrings: boolean;
+  showNullStrings: boolean;
   timestampAtMenuOpen: Date;
 }
 
@@ -103,6 +109,10 @@ export class FormattingSectionContent extends PureComponent<
     this.handleResetTimeZone = this.handleResetTimeZone.bind(this);
     this.handleTruncateNumbersWithPoundChange =
       this.handleTruncateNumbersWithPoundChange.bind(this);
+    this.handleShowEmptyStringsChange =
+      this.handleShowEmptyStringsChange.bind(this);
+    this.handleShowNullStringsChange =
+      this.handleShowNullStringsChange.bind(this);
 
     const {
       defaultDateTimeFormat,
@@ -112,6 +122,8 @@ export class FormattingSectionContent extends PureComponent<
       showTSeparator,
       timeZone,
       truncateNumbersWithPound,
+      showEmptyStrings,
+      showNullStrings,
     } = props;
 
     this.containerRef = React.createRef();
@@ -125,6 +137,8 @@ export class FormattingSectionContent extends PureComponent<
       defaultDecimalFormatOptions,
       defaultIntegerFormatOptions,
       truncateNumbersWithPound,
+      showEmptyStrings,
+      showNullStrings,
       timestampAtMenuOpen: new Date(),
     };
   }
@@ -298,6 +312,24 @@ export class FormattingSectionContent extends PureComponent<
     this.queueUpdate(update);
   }
 
+  handleShowEmptyStringsChange(): void {
+    const { showEmptyStrings } = this.state;
+    const update = {
+      showEmptyStrings: !showEmptyStrings,
+    };
+    this.setState(update);
+    this.queueUpdate(update);
+  }
+
+  handleShowNullStringsChange(): void {
+    const { showNullStrings } = this.state;
+    const update = {
+      showNullStrings: !showNullStrings,
+    };
+    this.setState(update);
+    this.queueUpdate(update);
+  }
+
   commitChanges(): void {
     const { updateSettings } = this.props;
     const updates = this.pendingUpdates.reduce(
@@ -322,6 +354,8 @@ export class FormattingSectionContent extends PureComponent<
       showTimeZone,
       showTSeparator,
       truncateNumbersWithPound,
+      showEmptyStrings,
+      showNullStrings,
     } = this.state;
 
     const {
@@ -527,13 +561,42 @@ export class FormattingSectionContent extends PureComponent<
               />
             </div>
           </div>
-          <div className="form-row mb-3">
+          <div className="form-row mb-2">
             <div className="offset-3 col-9">
               <Checkbox
                 checked={truncateNumbersWithPound ?? null}
                 onChange={this.handleTruncateNumbersWithPoundChange}
               >
                 Show truncated numbers as ###
+              </Checkbox>
+            </div>
+          </div>
+
+          <div className="form-row mb-3">
+            <label
+              className="col-form-label col-3"
+              htmlFor="default-integer-format-input"
+            >
+              String
+            </label>
+            <div className="col pr-0 pt-2">
+              <Checkbox
+                checked={showEmptyStrings ?? null}
+                onChange={this.handleShowEmptyStringsChange}
+              >
+                Show empty strings as{' '}
+                <span className="font-italic">
+                  &quot;<span className="text-muted">empty</span>&quot;
+                </span>
+              </Checkbox>
+              <Checkbox
+                checked={showNullStrings ?? null}
+                onChange={this.handleShowNullStringsChange}
+              >
+                Show null strings as{' '}
+                <span className="font-italic">
+                  &quot;<span className="text-muted">null</span>&quot;
+                </span>
               </Checkbox>
             </div>
           </div>
@@ -553,6 +616,8 @@ const mapStateToProps = (
   showTimeZone: getShowTimeZone(state),
   showTSeparator: getShowTSeparator(state),
   truncateNumbersWithPound: getTruncateNumbersWithPound(state),
+  showEmptyStrings: getShowEmptyStrings(state),
+  showNullStrings: getShowNullStrings(state),
   timeZone: getTimeZone(state),
   defaults: getDefaultSettings(state),
 });
