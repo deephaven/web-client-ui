@@ -6,9 +6,9 @@
 
 .lm_tab .editor-unsaved-indicator {
   display: none;
-  margin-right: 5px;
   width: 8px;
   height: 8px;
+  margin-right: $spacer-1;
   border-radius: 50%;
   background: $primary;
 
