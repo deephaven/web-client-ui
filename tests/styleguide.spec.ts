@@ -52,7 +52,7 @@ const buttonSectionIds: string[] = [
   'buttons-socketed',
 ];
 
-// test.describe.configure({ mode: 'serial' });
+test.describe.configure({ mode: 'serial' });
 
 let page: Page;
 
