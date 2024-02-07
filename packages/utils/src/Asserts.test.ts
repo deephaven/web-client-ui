@@ -1,4 +1,10 @@
-import { assertNever, assertNotNull, getOrThrow } from './Asserts';
+import {
+  assertNever,
+  assertNotEmpty,
+  assertNotNaN,
+  assertNotNull,
+  getOrThrow,
+} from './Asserts';
 
 describe('assertNever', () => {
   it.each([undefined, 'mock.name'])('should throw if called', name => {
@@ -17,6 +23,20 @@ it('throws an error when a value is null', () => {
   expect(() => assertNotNull(null, 'Custom error message')).toThrowError(
     'Custom error message'
   );
+});
+
+describe('assertNotEmpty', () => {
+  expect(() => assertNotEmpty(new Map())).toThrowError('Size of value is 0');
+  expect(() => assertNotEmpty(new Map([[1, 2]]))).not.toThrowError(
+    'Size of value is 0'
+  );
+  expect(() => assertNotEmpty([])).toThrowError('Size of value is 0');
+  expect(() => assertNotEmpty([1, 2])).not.toThrowError('Size of value is 0');
+});
+
+describe('assertNotNaN', () => {
+  expect(() => assertNotNaN(NaN)).toThrowError('Value is NaN');
+  expect(() => assertNotNaN(0)).not.toThrowError('Value is NaN');
 });
 
 describe('getOrThrow', () => {

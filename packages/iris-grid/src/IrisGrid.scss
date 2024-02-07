@@ -40,6 +40,24 @@ $cell-invalid-box-shadow:
     position: relative;
   }
 
+  .grid-cursor-copy {
+    cursor:
+      url('../assets/svg/cursor-copy.svg') 8 8,
+      copy;
+  }
+
+  .grid-cursor-linker {
+    cursor:
+      url('../assets/svg/cursor-linker.svg') 8 8,
+      crosshair;
+  }
+
+  .grid-cursor-linker-not-allowed {
+    cursor:
+      url('../assets/svg/cursor-linker-not-allowed.svg') 8 8,
+      not-allowed;
+  }
+
   .table-sidebar {
     height: 100%;
     flex: 0 0 $table-sidebar-max-width;

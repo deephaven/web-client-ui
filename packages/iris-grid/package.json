@@ -69,7 +69,8 @@
     "@deephaven/mocks": "file:../mocks"
   },
   "files": [
-    "dist"
+    "dist",
+    "assets"
   ],
   "sideEffects": [
     "*.css"

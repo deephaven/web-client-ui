@@ -165,11 +165,14 @@ export class AppMainContainer extends Component<
   AppMainContainerState
 > {
   static handleWindowBeforeUnload(event: BeforeUnloadEvent): void {
-    event.preventDefault();
-    // returnValue is required for beforeReload event prompt
-    // https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onbeforeunload#example
-    // eslint-disable-next-line no-param-reassign
-    event.returnValue = '';
+    // in development, allow auto-reload
+    if (import.meta.env.PROD) {
+      event.preventDefault();
+      // returnValue is required for beforeReload event prompt
+      // https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onbeforeunload#example
+      // eslint-disable-next-line no-param-reassign
+      event.returnValue = '';
+    }
   }
 
   static hydrateConsole(
