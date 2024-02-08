@@ -6,25 +6,23 @@ import React, {
   MouseEventHandler,
 } from 'react';
 import classNames from 'classnames';
-import Markdown from 'react-markdown';
+import Markdown, { Options } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeMathjax from 'rehype-mathjax';
 import { Button } from '@deephaven/components';
 import { Code } from '@deephaven/console';
 import { vsPlay } from '@deephaven/icons';
 import './MarkdownNotebook.scss';
-import {
-  ReactMarkdownProps,
-  TransformImage,
-  TransformLink,
-} from 'react-markdown/src/ast-to-react';
+import { ReactMarkdownProps } from 'react-markdown/lib/ast-to-react';
 import { assertNotNull } from '@deephaven/utils';
 
 interface MarkdownNotebookProps {
   onRunCode: (command?: string) => void;
   content: string;
   onLinkClick: MouseEventHandler<HTMLAnchorElement>;
-  transformImageUri?: TransformImage;
-  transformLinkUri?: false | TransformLink | null;
+  transformImageUri?: Options['transformImageUri'];
+  transformLinkUri?: Options['transformLinkUri'];
 }
 
 interface MarkdownNotebookState {
@@ -245,7 +243,8 @@ export class MarkdownNotebook extends PureComponent<
           <Markdown
             components={{ code: this.renderCodeBlock, a: this.renderLink }}
             linkTarget="_blank"
-            remarkPlugins={[remarkGfm]}
+            remarkPlugins={[remarkGfm, remarkMath]}
+            rehypePlugins={[rehypeMathjax]}
             transformLinkUri={transformLinkUri}
             transformImageUri={transformImageUri}
             includeElementIndex

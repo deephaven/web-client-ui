@@ -51,11 +51,13 @@
     "memoize-one": "^5.1.1",
     "memoizee": "^0.4.15",
     "prop-types": "^15.7.2",
-    "react-markdown": "^6.0.2",
+    "react-markdown": "^8.0.7",
     "react-transition-group": "^4.4.2",
     "redux": "^4.2.0",
     "redux-thunk": "^2.4.1",
-    "remark-gfm": "1.0.0",
+    "rehype-mathjax": "^4.0.3",
+    "remark-gfm": "^4.0.0",
+    "remark-math": "^5.1.1",
     "shortid": "^2.2.16"
   },
   "peerDependencies": {
