@@ -7,7 +7,7 @@ import {
   waitForLoadingDone,
   openTableOption,
   generateVarName,
-  openTableOrPlot,
+  openTable,
 } from './utils';
 
 async function changeCondFormatComparison(
@@ -104,7 +104,7 @@ async function artificialWait(page: Page, tableNumber = 0) {
 }
 
 test.beforeEach(async ({ page }) => {
-  await openTableOrPlot(page, 'table', 'all_types');
+  await openTable(page, 'all_types');
 
   const tableOperationsMenu = page.locator(
     'data-testid=btn-iris-grid-settings-button-table'

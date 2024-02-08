@@ -17,7 +17,7 @@ export enum TableTypes {
   AllTypes,
 }
 
-type TablePlotNames =
+type TableNames =
   | 'all_types'
   | 'simple_plot'
   | 'simple_table'
@@ -26,7 +26,6 @@ type TablePlotNames =
   | 'double_and_string'
   | 'ordered_int_and_offset'
   | 'trig_table'
-  | 'trig_figure'
   | 'multiselect_null'
   | 'multiselect_empty'
   | 'multiselect_bool'
@@ -35,16 +34,20 @@ type TablePlotNames =
   | 'multiselect_number'
   | 'multiselect_string';
 
+type PlotNames = 'simple_plot' | 'trig_figure';
+
+type ObjectNames = TableNames | PlotNames;
+
 /**
- * Opens a table loaded from application mode and returns the grid location
+ * Opens an object loaded from application mode
  * @param page
  * @param type Either 'table' or 'plot'
  * @param name Name of the table or plot
  */
-export async function openTableOrPlot(
+async function openObject(
   page: Page,
   type: 'table' | 'plot',
-  name: TablePlotNames
+  name: ObjectNames
 ): Promise<void> {
   await page.goto('');
   await expect(page.locator('.loading-spinner')).toHaveCount(0);
@@ -68,16 +71,44 @@ export async function openTableOrPlot(
   expect(openButton).not.toBeNull();
   expect(openButton).not.toBeDisabled();
   await openButton.click();
+}
 
-  await expect(
-    page.locator('.iris-grid .iris-grid-loading-status')
-  ).toHaveCount(0);
+/**
+ * Opens a table loaded from application mode
+ * @param page
+ * @param name Name of the table
+ * @param waitForLoadFinished Whether to wait for the table to finish loading
+ */
+export async function openTable(
+  page: Page,
+  name: TableNames,
+  waitForLoadFinished = true
+): Promise<void> {
+  openObject(page, 'table', name);
 
-  // get grid and return that
-  // const grid = await page.locator('.iris-grid-panel .iris-grid');
-  // const gridLocation = await grid.boundingBox();
-  // expect(gridLocation).not.toBeNull();
-  // return gridLocation;
+  if (waitForLoadFinished) {
+    await expect(
+      page.locator('.iris-grid .iris-grid-loading-status')
+    ).toHaveCount(0);
+  }
+}
+
+/**
+ * Opens a plot loaded from application mode
+ * @param page
+ * @param name Name of the plot
+ */
+export async function openPlot(
+  page: Page,
+  name: PlotNames,
+  waitForLoadFinished = true
+): Promise<void> {
+  openObject(page, 'plot', name);
+
+  if (waitForLoadFinished) {
+    await expect(page.locator('.iris-grid-panel')).toHaveCount(1);
+    await waitForLoadingDone(page);
+  }
 }
 
 /**
@@ -330,7 +361,8 @@ export async function openTableOption(
 
 export default {
   generateVarName,
-  openTable: openTableOrPlot,
+  openTable,
+  openPlot,
   pasteInMonaco,
   typeInMonaco,
   waitForLoadingDone,

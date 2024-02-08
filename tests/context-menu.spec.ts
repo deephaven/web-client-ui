@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { waitForLoadingDone, openTableOrPlot } from './utils';
+import { waitForLoadingDone, openTable } from './utils';
 
 async function openAdvancedFilters(page: Page) {
   await page
@@ -14,7 +14,7 @@ async function moveMouseAwayFromTable(page: Page) {
 }
 
 test.beforeEach(async ({ page }) => {
-  await openTableOrPlot(page, 'table', 'all_types');
+  await openTable(page, 'all_types');
 
   const tableOperationsMenu = page.locator(
     'data-testid=btn-iris-grid-settings-button-table'
