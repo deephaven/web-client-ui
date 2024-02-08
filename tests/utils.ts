@@ -106,7 +106,7 @@ export async function openPlot(
   openObject(page, 'plot', name);
 
   if (waitForLoadFinished) {
-    await expect(page.locator('.iris-grid-panel')).toHaveCount(1);
+    await expect(page.locator('.chart-panel-container')).toHaveCount(1);
     await waitForLoadingDone(page);
   }
 }
