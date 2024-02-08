@@ -33,8 +33,10 @@ test.describe('console input tests', () => {
     ).toHaveCount(1);
   });
 
-  test('object button is created when creating a table', async ({ browserName }) => {
-    const tableName = `browserName${generateVarName('t')}`;
+  test('object button is created when creating a table', async ({
+    browserName,
+  }) => {
+    const tableName = `${generateVarName(`${browserName}_t`)}`;
     const command = makeTableCommand(tableName);
 
     await pasteInMonaco(consoleInput, command);
