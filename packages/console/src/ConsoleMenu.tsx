@@ -188,7 +188,7 @@ class ConsoleMenu extends PureComponent<ConsoleMenuProps, ConsoleMenuState> {
     return (
       <>
         <Button
-          id="table-actions"
+          aria-label="Tables"
           kind="ghost"
           disabled={disableTableActions}
           onClick={() => {
@@ -219,7 +219,7 @@ class ConsoleMenu extends PureComponent<ConsoleMenuProps, ConsoleMenuState> {
           />
         </Button>
         <Button
-          id="widget-actions"
+          aria-label="Widgets"
           kind="ghost"
           disabled={widgetActions.length === 0}
           onClick={() => {
