@@ -514,7 +514,7 @@ class ChartUtils {
    * Parses the colorway value of a theme and returns an array of colors
    * Value could be a single string with space separated colors or already be an
    * array of strings representing the colorway
-   * @param theme The value to get colorway from
+   * @param colorway The colorway value to normalize
    * @returns Colorway array for the theme or undefined
    */
   static normalizeColorway(colorway?: string | string[]): string[] | undefined {
@@ -1860,7 +1860,7 @@ class ChartUtils {
    * See https://plotly.com/javascript/reference/layout/#layout-template
    * @param theme The theme to use for the layout template
    */
-  makeDefaultTemplate(theme: Partial<ChartTheme>): Template {
+  makeDefaultTemplate(theme: ChartTheme): Template {
     /* eslint-disable camelcase */
     const {
       error_band_line_color,
@@ -1915,7 +1915,7 @@ class ChartUtils {
    * See https://plotly.com/javascript/reference/layout/
    * @param theme The theme to use for the layout
    */
-  makeDefaultLayout(theme: Partial<ChartTheme>): Partial<Layout> {
+  makeDefaultLayout(theme: ChartTheme): Partial<Layout> {
     const { dh } = this;
 
     const {

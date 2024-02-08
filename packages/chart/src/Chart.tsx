@@ -49,7 +49,7 @@ type FormatterSettings = ColumnFormatSettings &
 
 interface ChartProps {
   model: ChartModel;
-  theme: ChartTheme | null;
+  theme: ChartTheme;
   settings: FormatterSettings;
   isActive: boolean;
   Plotly: typeof Plotly;
@@ -61,17 +61,10 @@ interface ChartProps {
   onSettingsChanged: (settings: Partial<ChartModelSettings>) => void;
 }
 
-interface ChartContainerProps {
+// All of the ChartProps have default values except for model in the Chart
+// component, hence the Partial here.
+interface ChartContainerProps extends Partial<Omit<ChartProps, 'theme'>> {
   model: ChartModel;
-  settings?: FormatterSettings;
-  isActive?: boolean;
-  Plotly?: typeof Plotly;
-  containerRef?: React.RefObject<HTMLDivElement>;
-  onDisconnect?: () => void;
-  onReconnect?: () => void;
-  onUpdate?: (obj: { isLoading: boolean }) => void;
-  onError?: (error: Error) => void;
-  onSettingsChanged?: (settings: Partial<ChartModelSettings>) => void;
 }
 
 interface ChartState {
@@ -563,7 +556,7 @@ class Chart extends Component<ChartProps, ChartState> {
     this.setState(({ layout }) => ({
       layout: {
         ...layout,
-        template: chartUtils.makeDefaultTemplate(theme ?? {}),
+        template: chartUtils.makeDefaultTemplate(theme),
       },
     }));
   }
