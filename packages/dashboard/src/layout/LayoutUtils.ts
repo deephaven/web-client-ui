@@ -379,14 +379,15 @@ class LayoutUtils {
     layout2: DashboardLayoutConfig,
     major = false
   ): boolean {
+    const layout1Clone = LayoutUtils.cloneLayout(layout1);
+    const layout2Clone = LayoutUtils.cloneLayout(layout2);
     if (major) {
-      const layout1Clone = LayoutUtils.cloneLayout(layout1);
-      const layout2Clone = LayoutUtils.cloneLayout(layout2);
       LayoutUtils.dropLayoutMinorChange(layout1Clone);
       LayoutUtils.dropLayoutMinorChange(layout2Clone);
       return deepEqual(layout1Clone, layout2Clone);
     }
-    return deepEqual(layout1, layout2);
+    // Pass cloned layouts to avoid false positives when comparing undefined with missing properties
+    return deepEqual(layout1Clone, layout2Clone);
   }
 
   static cloneLayout(layout: DashboardLayoutConfig): DashboardLayoutConfig {
