@@ -386,7 +386,8 @@ class LayoutUtils {
       LayoutUtils.dropLayoutMinorChange(layout2Clone);
       return deepEqual(layout1Clone, layout2Clone);
     }
-    // Pass cloned layouts to avoid false positives when comparing undefined with missing properties
+    // Pass cloned layouts to avoid false negatives
+    // when comparing layouts with undefined and missing properties
     return deepEqual(layout1Clone, layout2Clone);
   }
 
