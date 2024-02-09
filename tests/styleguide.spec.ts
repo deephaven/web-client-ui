@@ -74,7 +74,10 @@ async function isolateAndGetSection(sectionId: string) {
 
 test.beforeAll(async ({ browser }) => {
   page = await browser.newPage();
-  await page.goto('/ide/styleguide?testMode=true');
+  await page.goto('/ide/styleguide?testmode=true');
+  await expect(
+    page.locator('.iris-grid .iris-grid-loading-status')
+  ).toHaveCount(0);
 });
 
 test.afterAll(async () => {
