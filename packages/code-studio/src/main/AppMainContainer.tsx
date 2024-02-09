@@ -39,6 +39,7 @@ import {
   PanelEvent,
   setDashboardData as setDashboardDataAction,
   setDashboardPluginData as setDashboardPluginDataAction,
+  stopListenForCreateDashboard,
   updateDashboardData as updateDashboardDataAction,
 } from '@deephaven/dashboard';
 import {
@@ -283,6 +284,13 @@ export class AppMainContainer extends Component<
     this.deinitWidgets();
     this.stopListeningForDisconnect();
 
+    if (this.goldenLayout != null) {
+      stopListenForCreateDashboard(
+        this.goldenLayout.eventHub,
+        this.handleCreateDashboard
+      );
+    }
+
     window.removeEventListener(
       'beforeunload',
       AppMainContainer.handleWindowBeforeUnload
@@ -470,7 +478,17 @@ export class AppMainContainer extends Component<
   }
 
   handleGoldenLayoutChange(goldenLayout: GoldenLayout): void {
+    if (this.goldenLayout === goldenLayout) return;
+
+    if (this.goldenLayout != null) {
+      stopListenForCreateDashboard(
+        this.goldenLayout.eventHub,
+        this.handleCreateDashboard
+      );
+    }
+
     this.goldenLayout = goldenLayout;
+
     listenForCreateDashboard(
       this.goldenLayout.eventHub,
       this.handleCreateDashboard
