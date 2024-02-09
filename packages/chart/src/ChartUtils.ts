@@ -190,15 +190,13 @@ class ChartUtils {
    * @param x The main data array
    * @param xLow The absolute low values
    * @param xHigh
-   * @param theme Theme properties for the chart
    *
    * @returns The error_x object required by plotly, or null if none is required
    */
   static getPlotlyErrorBars(
     x: number[],
     xLow: number[],
-    xHigh: number[],
-    theme: ChartTheme
+    xHigh: number[]
   ): ErrorBar {
     const array = xHigh.map((value, i) => value - x[i]);
     const arrayminus = xLow.map((value, i) => x[i] - value);
@@ -207,7 +205,6 @@ class ChartUtils {
       symmetric: false,
       array,
       arrayminus,
-      color: theme.error_band_line_color,
     };
   }
 
@@ -1064,7 +1061,6 @@ class ChartUtils {
    * Update the layout with all the axes information for the provided figure
    * @param figure Figure to update the axes for
    * @param layoutParam Layout object to update in place
-   * @param theme Theme used for displaying the plot
    * @param chartAxisRangeParser Function to retrieve the axis range parser
    * @param plotWidth Width of the plot in pixels
    * @param plotHeight Height of the plot in pixels
@@ -1072,7 +1068,6 @@ class ChartUtils {
   updateFigureAxes(
     layoutParam: Partial<Layout>,
     figure: Figure,
-    theme: ChartTheme,
     chartAxisRangeParser?: ChartAxisRangeParser,
     plotWidth = 0,
     plotHeight = 0
@@ -1087,7 +1082,6 @@ class ChartUtils {
         layout,
         chart.axes,
         figureAxes,
-        theme,
         plotWidth,
         plotHeight,
         bounds,
@@ -1261,7 +1255,6 @@ class ChartUtils {
    * @param layoutParam The layout object to update
    * @param chartAxes The chart axes to update the layout with
    * @param figureAxes All figure axes to update the layout with
-   * @param theme Theme used for displaying the plot
    * @param plotWidth The width of the plot to calculate the axis sizes for
    * @param plotHeight The height of the plot to calculate the axis sizes for
    * @param bounds The bounds for this set of axes
@@ -1271,7 +1264,6 @@ class ChartUtils {
     layoutParam: Partial<Layout>,
     chartAxes: Axis[],
     figureAxes: Axis[],
-    theme: ChartTheme,
     plotWidth = 0,
     plotHeight = 0,
     bounds: ChartBounds = { left: 0, top: 0, right: 1, bottom: 1 },
@@ -1326,9 +1318,6 @@ class ChartUtils {
             axisProperty,
             figureAxisIndex
           );
-          if (layout[axisLayoutProperty] == null) {
-            layout[axisLayoutProperty] = this.makeLayoutAxis(axisType, theme);
-          }
 
           const layoutAxis = layout[axisLayoutProperty];
           if (layoutAxis != null) {

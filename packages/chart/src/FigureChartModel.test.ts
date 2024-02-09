@@ -1,11 +1,8 @@
 import dh from '@deephaven/jsapi-shim';
-import { TestUtils } from '@deephaven/utils';
 import { Data } from 'plotly.js';
 import ChartTestUtils from './ChartTestUtils';
-import type { ChartTheme } from './ChartTheme';
 import FigureChartModel from './FigureChartModel';
 
-const { createMockProxy } = TestUtils;
 const chartTestUtils = new ChartTestUtils(dh);
 
 beforeEach(() => {
@@ -17,26 +14,14 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
-const chartTheme = createMockProxy<ChartTheme>();
-
 it('populates the layout properly', () => {
   const figure = chartTestUtils.makeFigure();
-  const model = new FigureChartModel(dh, figure, chartTheme);
+  const model = new FigureChartModel(dh, figure);
 
   expect(model.getLayout()).toEqual(
     expect.objectContaining({
       title: expect.objectContaining({
         text: ChartTestUtils.DEFAULT_FIGURE_TITLE,
-      }),
-      xaxis: expect.objectContaining({
-        title: expect.objectContaining({
-          text: ChartTestUtils.DEFAULT_X_TITLE,
-        }),
-      }),
-      yaxis: expect.objectContaining({
-        title: expect.objectContaining({
-          text: ChartTestUtils.DEFAULT_Y_TITLE,
-        }),
       }),
       annotations: expect.arrayContaining([
         expect.objectContaining({
@@ -51,7 +36,7 @@ it('populates the layout properly', () => {
 
 it('populates series data properly', () => {
   const figure = chartTestUtils.makeFigure();
-  const model = new FigureChartModel(dh, figure, chartTheme);
+  const model = new FigureChartModel(dh, figure);
 
   expect(model.getData()).toEqual([
     expect.objectContaining({
@@ -75,7 +60,7 @@ it('populates horizontal series properly', () => {
   const chart = chartTestUtils.makeChart({ series: [series], axes });
   const figure = chartTestUtils.makeFigure({ charts: [chart] });
 
-  const model = new FigureChartModel(dh, figure, chartTheme);
+  const model = new FigureChartModel(dh, figure);
 
   expect(model.getData()).toEqual([
     expect.objectContaining({ orientation: 'h' }),
@@ -88,7 +73,7 @@ it('converts histograms properly to bars', () => {
   });
   const chart = chartTestUtils.makeChart({ series: [series] });
   const figure = chartTestUtils.makeFigure({ charts: [chart] });
-  const model = new FigureChartModel(dh, figure, chartTheme);
+  const model = new FigureChartModel(dh, figure);
 
   expect(model.getData()).toEqual([
     expect.objectContaining({
@@ -109,7 +94,7 @@ it('handles colors on line charts properly', () => {
   });
   const chart = chartTestUtils.makeChart({ series: [series] });
   const figure = chartTestUtils.makeFigure({ charts: [chart] });
-  const model = new FigureChartModel(dh, figure, chartTheme);
+  const model = new FigureChartModel(dh, figure);
 
   expect(model.getData()).toEqual([
     expect.objectContaining({
@@ -131,7 +116,7 @@ it('handles colors on bar charts properly', () => {
   });
   const chart = chartTestUtils.makeChart({ series: [series] });
   const figure = chartTestUtils.makeFigure({ charts: [chart] });
-  const model = new FigureChartModel(dh, figure, chartTheme);
+  const model = new FigureChartModel(dh, figure);
 
   expect(model.getData()).toEqual([
     expect.objectContaining({
@@ -142,303 +127,13 @@ it('handles colors on bar charts properly', () => {
   ]);
 });
 
-describe('axis transform tests', () => {
-  it('handles log x-axis properly', () => {
-    const xAxis = chartTestUtils.makeAxis({
-      label: ChartTestUtils.DEFAULT_X_TITLE,
-      type: dh.plot.AxisType.X,
-      log: true,
-    });
-    const yAxis = chartTestUtils.makeAxis({
-      label: ChartTestUtils.DEFAULT_Y_TITLE,
-      type: dh.plot.AxisType.Y,
-    });
-    const axes = [xAxis, yAxis];
-    const sources = axes.map(axis => chartTestUtils.makeSource({ axis }));
-    const series = chartTestUtils.makeSeries({ sources });
-    const chart = chartTestUtils.makeChart({ series: [series], axes });
-    const figure = chartTestUtils.makeFigure({ charts: [chart] });
-    const model = new FigureChartModel(dh, figure, chartTheme);
-
-    expect(model.getLayout().xaxis).toMatchObject({
-      type: 'log',
-    });
-    expect(model.getLayout().yaxis).not.toMatchObject({
-      type: 'log',
-    });
-  });
-
-  it('handles log y-axis properly', () => {
-    const xAxis = chartTestUtils.makeAxis({
-      label: ChartTestUtils.DEFAULT_X_TITLE,
-      type: dh.plot.AxisType.X,
-    });
-    const yAxis = chartTestUtils.makeAxis({
-      label: ChartTestUtils.DEFAULT_Y_TITLE,
-      type: dh.plot.AxisType.Y,
-      log: true,
-    });
-    const axes = [xAxis, yAxis];
-    const sources = axes.map(axis => chartTestUtils.makeSource({ axis }));
-    const series = chartTestUtils.makeSeries({ sources });
-    const chart = chartTestUtils.makeChart({ series: [series], axes });
-    const figure = chartTestUtils.makeFigure({ charts: [chart] });
-    const model = new FigureChartModel(dh, figure, chartTheme);
-
-    expect(model.getLayout().xaxis).not.toMatchObject({
-      type: 'log',
-    });
-    expect(model.getLayout().yaxis).toMatchObject({
-      type: 'log',
-    });
-  });
-});
-
-describe('multiple axes', () => {
-  it('handles two y-axes properly', () => {
-    const xaxis = chartTestUtils.makeAxis({
-      label: 'x1',
-      type: dh.plot.AxisType.X,
-      position: dh.plot.AxisPosition.BOTTOM,
-    });
-
-    const yaxis1 = chartTestUtils.makeAxis({
-      label: 'y1',
-      type: dh.plot.AxisType.Y,
-      position: dh.plot.AxisPosition.LEFT,
-    });
-
-    const yaxis2 = chartTestUtils.makeAxis({
-      label: 'y2',
-      type: dh.plot.AxisType.Y,
-      position: dh.plot.AxisPosition.RIGHT,
-    });
-    const axes = [xaxis, yaxis1, yaxis2];
-
-    const chart = chartTestUtils.makeChart({ axes });
-    const figure = chartTestUtils.makeFigure({ charts: [chart] });
-    const model = new FigureChartModel(dh, figure, chartTheme);
-
-    const layout = model.getLayout();
-
-    expect(layout.xaxis).toEqual(
-      expect.objectContaining({
-        side: 'bottom',
-        title: expect.objectContaining({ text: 'x1' }),
-      })
-    );
-
-    expect(layout.yaxis).toEqual(
-      expect.objectContaining({
-        side: 'left',
-        title: expect.objectContaining({ text: 'y1' }),
-      })
-    );
-
-    expect(layout.yaxis2).toEqual(
-      expect.objectContaining({
-        side: 'right',
-        title: expect.objectContaining({ text: 'y2' }),
-        overlaying: 'y',
-      })
-    );
-  });
-
-  it('handles multiple y-axes on the same side properly', () => {
-    const xaxis = chartTestUtils.makeAxis({
-      label: 'x1',
-      type: dh.plot.AxisType.X,
-      position: dh.plot.AxisPosition.BOTTOM,
-    });
-
-    const yaxis1 = chartTestUtils.makeAxis({
-      label: 'y1',
-      type: dh.plot.AxisType.Y,
-      position: dh.plot.AxisPosition.RIGHT,
-    });
-
-    const yaxis2 = chartTestUtils.makeAxis({
-      label: 'y2',
-      type: dh.plot.AxisType.Y,
-      position: dh.plot.AxisPosition.RIGHT,
-    });
-
-    const yaxis3 = chartTestUtils.makeAxis({
-      label: 'y3',
-      type: dh.plot.AxisType.Y,
-      position: dh.plot.AxisPosition.RIGHT,
-    });
-
-    const axes = [xaxis, yaxis1, yaxis2, yaxis3];
-
-    const chart = chartTestUtils.makeChart({ axes });
-    const figure = chartTestUtils.makeFigure({ charts: [chart] });
-    const model = new FigureChartModel(dh, figure, chartTheme);
-
-    const layout = model.getLayout();
-
-    expect(layout.xaxis).toEqual(
-      expect.objectContaining({
-        side: 'bottom',
-        title: expect.objectContaining({ text: 'x1' }),
-        domain: [0, 0.55],
-      })
-    );
-
-    expect(layout.yaxis).toEqual(
-      expect.objectContaining({
-        side: 'right',
-        title: expect.objectContaining({ text: 'y1' }),
-      })
-    );
-
-    expect(layout.yaxis2).toEqual(
-      expect.objectContaining({
-        side: 'right',
-        title: expect.objectContaining({ text: 'y2' }),
-        overlaying: 'y',
-        position: 0.7,
-        anchor: 'free',
-      })
-    );
-
-    expect(layout.yaxis3).toEqual(
-      expect.objectContaining({
-        side: 'right',
-        title: expect.objectContaining({ text: 'y3' }),
-        overlaying: 'y',
-        position: 0.85,
-        anchor: 'free',
-      })
-    );
-  });
-
-  it('handles two x-axes properly', () => {
-    const xaxis1 = chartTestUtils.makeAxis({
-      label: 'x1',
-      type: dh.plot.AxisType.X,
-      position: dh.plot.AxisPosition.BOTTOM,
-    });
-
-    const xaxis2 = chartTestUtils.makeAxis({
-      label: 'x2',
-      type: dh.plot.AxisType.X,
-      position: dh.plot.AxisPosition.TOP,
-    });
-
-    const yaxis = chartTestUtils.makeAxis({
-      label: 'y1',
-      type: dh.plot.AxisType.Y,
-      position: dh.plot.AxisPosition.LEFT,
-    });
-    const axes = [xaxis1, xaxis2, yaxis];
-
-    const chart = chartTestUtils.makeChart({ axes });
-    const figure = chartTestUtils.makeFigure({ charts: [chart] });
-    const model = new FigureChartModel(dh, figure, chartTheme);
-
-    const layout = model.getLayout();
-
-    expect(layout.xaxis).toEqual(
-      expect.objectContaining({
-        side: 'bottom',
-        title: expect.objectContaining({ text: 'x1' }),
-      })
-    );
-
-    expect(layout.xaxis2).toEqual(
-      expect.objectContaining({
-        side: 'top',
-        title: expect.objectContaining({ text: 'x2' }),
-        overlaying: 'x',
-      })
-    );
-
-    expect(layout.yaxis).toEqual(
-      expect.objectContaining({
-        side: 'left',
-        title: expect.objectContaining({ text: 'y1' }),
-      })
-    );
-  });
-
-  it('handles multiple x-axes on the same side properly', () => {
-    const xaxis = chartTestUtils.makeAxis({
-      label: 'x1',
-      type: dh.plot.AxisType.X,
-      position: dh.plot.AxisPosition.TOP,
-    });
-
-    const xaxis2 = chartTestUtils.makeAxis({
-      label: 'x2',
-      type: dh.plot.AxisType.X,
-      position: dh.plot.AxisPosition.TOP,
-    });
-
-    const xaxis3 = chartTestUtils.makeAxis({
-      label: 'x3',
-      type: dh.plot.AxisType.X,
-      position: dh.plot.AxisPosition.TOP,
-    });
-
-    const yaxis = chartTestUtils.makeAxis({
-      label: 'y1',
-      type: dh.plot.AxisType.Y,
-      position: dh.plot.AxisPosition.LEFT,
-    });
-
-    const axes = [xaxis, xaxis2, xaxis3, yaxis];
-
-    const chart = chartTestUtils.makeChart({ axes });
-    const figure = chartTestUtils.makeFigure({ charts: [chart] });
-    const model = new FigureChartModel(dh, figure, chartTheme);
-
-    const layout = model.getLayout();
-
-    expect(layout.xaxis).toEqual(
-      expect.objectContaining({
-        side: 'top',
-        title: expect.objectContaining({ text: 'x1' }),
-      })
-    );
-
-    expect(layout.xaxis2).toEqual(
-      expect.objectContaining({
-        side: 'top',
-        title: expect.objectContaining({ text: 'x2' }),
-        overlaying: 'x',
-        position: 0.85,
-        anchor: 'free',
-      })
-    );
-
-    expect(layout.xaxis3).toEqual(
-      expect.objectContaining({
-        side: 'top',
-        title: expect.objectContaining({ text: 'x3' }),
-        overlaying: 'x',
-        position: 1,
-        anchor: 'free',
-      })
-    );
-
-    expect(layout.yaxis).toEqual(
-      expect.objectContaining({
-        side: 'left',
-        title: expect.objectContaining({ text: 'y1' }),
-        domain: [0, 0.7],
-      })
-    );
-  });
-});
-
 it('adds new series', () => {
   const series1 = chartTestUtils.makeSeries({ name: 'S1' });
   const chart = chartTestUtils.makeChart({ series: [series1] });
   const figure = chartTestUtils.makeFigure({
     charts: [chart],
   });
-  const model = new FigureChartModel(dh, figure, chartTheme);
+  const model = new FigureChartModel(dh, figure);
   model.subscribe(jest.fn());
 
   expect(model.getData()).toEqual([
@@ -471,7 +166,7 @@ it('emits finished loading if no series are added', () => {
   const figure = chartTestUtils.makeFigure({
     charts: [],
   });
-  const model = new FigureChartModel(dh, figure, chartTheme);
+  const model = new FigureChartModel(dh, figure);
   const callback = jest.fn();
   model.subscribe(callback);
 
@@ -491,7 +186,7 @@ describe('legend visibility', () => {
     const figure = chartTestUtils.makeFigure({
       charts: [chart],
     });
-    const model = new FigureChartModel(dh, figure, chartTheme);
+    const model = new FigureChartModel(dh, figure);
     model.subscribe(jest.fn());
 
     return model.getData();

@@ -4,7 +4,6 @@ import {
   ChartModelFactory,
   ChartModelSettings,
   ChartUtils,
-  useChartTheme,
 } from '@deephaven/chart';
 import {
   assertIsDashboardPluginProps,
@@ -30,7 +29,6 @@ export function ChartBuilderPlugin(
   assertIsDashboardPluginProps(props);
   const { id, layout } = props;
   const dh = useApi();
-  const chartTheme = useChartTheme();
 
   const handleCreateChart = useCallback(
     ({
@@ -48,12 +46,7 @@ export function ChartBuilderPlugin(
     }) => {
       const { settings } = metadata;
       const makeModel = (): Promise<ChartModel> =>
-        ChartModelFactory.makeModelFromSettings(
-          dh,
-          settings,
-          table,
-          chartTheme
-        );
+        ChartModelFactory.makeModelFromSettings(dh, settings, table);
       const title = ChartUtils.titleFromSettings(settings);
 
       const config = {
@@ -72,7 +65,7 @@ export function ChartBuilderPlugin(
       const { root } = layout;
       LayoutUtils.openComponent({ root, config });
     },
-    [chartTheme, dh, id, layout]
+    [dh, id, layout]
   );
 
   useListener(layout.eventHub, IrisGridEvent.CREATE_CHART, handleCreateChart);
