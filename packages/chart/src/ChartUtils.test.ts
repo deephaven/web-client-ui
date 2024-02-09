@@ -222,7 +222,11 @@ describe('updating layout axes', () => {
   });
 
   it('removes stale axes', () => {
-    const layout = {};
+    const layout = {
+      xaxis: {},
+      yaxis: {},
+      yaxis2: {},
+    };
     const axes = makeTwinAxes();
     const chart = chartTestUtils.makeChart({ axes });
     const figure = chartTestUtils.makeFigure({ charts: [chart] });
@@ -288,7 +292,12 @@ describe('updating layout axes', () => {
     });
 
     it('positions multiple axes on the same side correctly', () => {
-      const layout = {};
+      const layout = {
+        xaxis: {},
+        yaxis: {},
+        yaxis2: {},
+        yaxis3: {},
+      };
       const bounds = chartUtils.getChartBounds(figure, chart, width, height);
       const figureAxes = ChartUtils.getAllAxes(figure);
       chartUtils.updateLayoutAxes(
