@@ -55,7 +55,7 @@ async function openObject(
   // open the tables/plot button
   const dropdownButton = page.getByRole('button', {
     name: type === 'table' ? 'Tables' : 'Widgets',
-  })
+  });
   expect(dropdownButton).not.toBeNull();
   expect(dropdownButton).not.toBeDisabled();
   await dropdownButton.click();
@@ -84,7 +84,7 @@ export async function openTable(
   name: TableNames,
   waitForLoadFinished = true
 ): Promise<void> {
-  openObject(page, 'table', name);
+  await openObject(page, 'table', name);
 
   if (waitForLoadFinished) {
     await expect(
@@ -103,11 +103,13 @@ export async function openPlot(
   name: PlotNames,
   waitForLoadFinished = true
 ): Promise<void> {
-  openObject(page, 'plot', name);
+  await openObject(page, 'plot', name);
 
   if (waitForLoadFinished) {
-    await expect(page.locator('.chart-panel-container')).toHaveCount(1);
-    await waitForLoadingDone(page);
+    // Wait until it's done loading
+    await expect(
+      page.locator('.chart-panel-container .loading-spinner')
+    ).toHaveCount(0);
   }
 }
 
