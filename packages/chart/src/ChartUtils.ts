@@ -1848,6 +1848,7 @@ class ChartUtils {
    * Creates a plotly layout template object based on a given theme.
    * See https://plotly.com/javascript/reference/layout/#layout-template
    * @param theme The theme to use for the layout template
+   * @returns The layout template object
    */
   makeDefaultTemplate(theme: ChartTheme): Template {
     /* eslint-disable camelcase */
