@@ -262,6 +262,7 @@ export class AppMainContainer extends Component<
 
   componentDidMount(): void {
     this.initWidgets();
+    this.initDashboardData();
     this.startListeningForDisconnect();
 
     window.addEventListener(
@@ -343,6 +344,14 @@ export class AppMainContainer extends Component<
 
   deinitWidgets(): void {
     this.widgetListenerRemover?.();
+  }
+
+  initDashboardData(): void {
+    const { allDashboardData, workspace } = this.props;
+    const { data: workspaceData } = workspace;
+    // const { layoutConfig } = workspaceData;
+    console.log(allDashboardData, workspaceData);
+    debugger;
   }
 
   openNotebookFromURL(): void {
@@ -473,8 +482,8 @@ export class AppMainContainer extends Component<
     const { updateWorkspaceData } = this.props;
 
     // Only save the data that is serializable/we want to persist to the workspace
-    const { closed, filterSets, links } = data;
-    updateWorkspaceData({ closed, filterSets, links });
+    const { closed, filterSets, links, pluginDataMap } = data;
+    updateWorkspaceData({ closed, filterSets, links, pluginDataMap });
   }
 
   handleGoldenLayoutChange(goldenLayout: GoldenLayout): void {
