@@ -32,7 +32,9 @@ import { RandomAreaPlotAnimation } from './RandomAreaPlotAnimation';
 import SpectrumComparison from './SpectrumComparison';
 
 function StyleGuide(): React.ReactElement {
-  const isTestMode = window.location.search.includes('testMode=true');
+  const isTestMode = window.location.search
+    .toLowerCase()
+    .includes('testmode=true');
   const { themes } = useTheme();
   const hasMultipleThemes = themes.length > 1;
   const [targetSection, setTargetSection] = useState<string>(
@@ -91,7 +93,7 @@ function StyleGuide(): React.ReactElement {
             />
           )}
         </Flex>
-        {isTestMode && (
+        {!isTestMode && (
           <Flex
             {...stickyProps}
             UNSAFE_className={HIDE_FROM_E2E_TESTS_CLASS}
