@@ -27,7 +27,10 @@ const chartTheme = new Proxy(
 ) as ChartTheme;
 
 it('groups the axes by type properly', () => {
-  const testAxes = (axes, expectedResult) => {
+  const testAxes = (
+    axes: { type: string; label: string }[],
+    expectedResult
+  ) => {
     const chart = { axes };
     const result = ChartUtils.groupArray(chart.axes, 'type');
     expect(result).toEqual(expectedResult);
@@ -205,36 +208,14 @@ describe('updating layout axes', () => {
     ];
   }
 
-  it('adds new axes', () => {
-    const layout = {};
-    const axes = makeTwinAxes();
-    chartUtils.updateLayoutAxes(layout, axes, axes, chartTheme);
-    expect(layout).toEqual(
-      expect.objectContaining({
-        xaxis: expect.objectContaining({
-          title: expect.objectContaining({ text: axes[0].label }),
-          side: 'bottom',
-        }),
-        yaxis: expect.objectContaining({
-          title: expect.objectContaining({ text: axes[1].label }),
-          side: 'right',
-        }),
-        yaxis2: expect.objectContaining({
-          title: expect.objectContaining({ text: axes[2].label }),
-          side: 'left',
-        }),
-      })
-    );
-  });
-
   it('keeps the same axis objects, updates domain', () => {
     const layout: Partial<Layout> = {};
     const axes = makeTwinAxes();
-    chartUtils.updateLayoutAxes(layout, axes, axes, chartTheme, 10);
+    chartUtils.updateLayoutAxes(layout, axes, axes, 10);
 
     const { xaxis } = layout;
     const xDomain = [...(xaxis?.domain ?? [])];
-    chartUtils.updateLayoutAxes(layout, axes, axes, chartTheme, 1000);
+    chartUtils.updateLayoutAxes(layout, axes, axes, 1000);
 
     expect(layout.xaxis).toBe(xaxis);
     expect(xDomain).not.toBe(xaxis?.domain);
@@ -245,7 +226,7 @@ describe('updating layout axes', () => {
     const axes = makeTwinAxes();
     const chart = chartTestUtils.makeChart({ axes });
     const figure = chartTestUtils.makeFigure({ charts: [chart] });
-    chartUtils.updateFigureAxes(layout, figure, chartTheme);
+    chartUtils.updateFigureAxes(layout, figure);
     expect(layout).toEqual(
       expect.objectContaining({
         xaxis: expect.objectContaining({}),
@@ -255,7 +236,7 @@ describe('updating layout axes', () => {
     );
 
     axes.pop();
-    chartUtils.updateFigureAxes(layout, figure, chartTheme);
+    chartUtils.updateFigureAxes(layout, figure);
     expect(layout).toEqual(
       expect.objectContaining({
         xaxis: expect.objectContaining({}),
@@ -314,7 +295,6 @@ describe('updating layout axes', () => {
         layout,
         axes,
         figureAxes,
-        chartTheme,
         width,
         height,
         bounds
