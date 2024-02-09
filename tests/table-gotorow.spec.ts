@@ -22,7 +22,7 @@ async function setColumnAndExpectInputValue({
     const inputValue = page.locator('input[aria-label="Value Input"]');
     await expect(inputValue).toHaveCount(1);
     await inputValue.fill(setInputValueTo);
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(1000);
   }
 
   if (toggleGoToRow) {

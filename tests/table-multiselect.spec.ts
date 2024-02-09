@@ -11,6 +11,10 @@ async function waitForLoadingDone(page: Page) {
   ).toHaveCount(0);
 }
 
+async function expectContextMenus(page: Page, count: number) {
+  await expect(page.locator('.context-menu-container')).toHaveCount(count);
+}
+
 async function getGridLocation(page: Page) {
   const grid = await page.locator('.iris-grid-panel .iris-grid');
   const gridLocation = await grid.boundingBox();
@@ -45,8 +49,11 @@ async function filterAndScreenshot(
     gridLocation.y + 1 + columnHeight + filterHeight + rowHeight * 2,
     { button: 'right' }
   );
+  await expectContextMenus(page, 1);
+
   // apply filter
   await page.getByRole('button', { name: 'Filter by Values' }).hover();
+  await expectContextMenus(page, 2);
   await page.getByRole('button', { name: filterType, exact: true }).click();
   await waitForLoadingDone(page);
   await expect(page.locator('.iris-grid-column')).toHaveScreenshot(
@@ -75,8 +82,10 @@ function runSpecialSelectFilter(
       gridLocation.y + 1 + columnHeight,
       { button: 'right' }
     );
+    await expectContextMenus(page, 1);
 
     await page.getByRole('button', { name: 'Filter by Value' }).hover();
+    await expectContextMenus(page, 2);
     await Promise.all(
       expectedButtons.map(async button => {
         await expect(page.getByRole('button', { name: button })).toBeVisible();
