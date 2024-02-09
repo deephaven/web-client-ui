@@ -1,3 +1,5 @@
+# ⚠️This branch has been deprecated. Use v0.31 or v0.41 instead.⚠️
+
 # Web Javascript packages
 
 We're using a monorepo to manage our packages, as it becomes cumbersome to manage the overhead of multiple separate repos for each package. Using [lerna](https://github.com/lerna/lerna) to manage all of our packages in one repo simplifies the process.
