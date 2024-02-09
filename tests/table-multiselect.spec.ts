@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { openTable } from './utils';
+import { expectContextMenus, openTable } from './utils';
 
 const rowHeight = 19;
 const columnHeight = 30;
@@ -9,10 +9,6 @@ async function waitForLoadingDone(page: Page) {
   await expect(
     page.locator('.iris-grid .iris-grid-loading-status')
   ).toHaveCount(0);
-}
-
-async function expectContextMenus(page: Page, count: number) {
-  await expect(page.locator('.context-menu-container')).toHaveCount(count);
 }
 
 async function getGridLocation(page: Page) {

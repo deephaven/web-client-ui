@@ -295,6 +295,18 @@ export async function waitForLoadingDone(
 }
 
 /**
+ * Waits for a specified amount of context menus to exist
+ * @param page
+ * @param count The amount of context menus
+ */
+export async function expectContextMenus(
+  page: Page,
+  count: number
+): Promise<void> {
+  await expect(page.locator('.context-menu-container')).toHaveCount(count);
+}
+
+/**
  * Drags element to target and waits for drop indicator to show before releasing. Origin is the top-left of the page.
  *
  * Note: Can slow down drag by increasing the # of steps. Webkit is especially finicky if the drag happens too quick
@@ -368,6 +380,7 @@ export default {
   pasteInMonaco,
   typeInMonaco,
   waitForLoadingDone,
+  expectContextMenus,
   dragComponent,
   openTableOption,
 };
