@@ -50,7 +50,6 @@ import {
   assertNotNaN,
   assertNotNull,
   copyToClipboard,
-  bindAllMethods,
 } from '@deephaven/utils';
 import {
   DateTimeFormatContextMenu,
@@ -160,7 +159,10 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   constructor(irisGrid: IrisGrid, dh: DhType) {
     super();
 
-    bindAllMethods(this);
+    this.getNumberValueEqualsFilter =
+      this.getNumberValueEqualsFilter.bind(this);
+    this.getFilterValueForNumberOrChar =
+      this.getFilterValueForNumberOrChar.bind(this);
 
     this.debouncedUpdateCustomFormat = debounce(
       irisGrid.handleFormatSelection,
