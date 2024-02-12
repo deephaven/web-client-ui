@@ -59,7 +59,7 @@ jobs:
         run: npx playwright --version
 
       - name: Run Playwright tests
-        run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright test --config=playwright-ci.config.ts
+        run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright test --config=playwright-ci.config.ts operations:372
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v3
