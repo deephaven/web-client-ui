@@ -585,18 +585,14 @@ export class FormattingSectionContent extends PureComponent<
                 onChange={this.handleShowEmptyStringsChange}
               >
                 Show empty strings as{' '}
-                <span className="font-italic">
-                  &quot;<span className="text-muted">empty</span>&quot;
-                </span>
+                <span className="font-italic text-muted">empty</span>
               </Checkbox>
               <Checkbox
                 checked={showNullStrings ?? null}
                 onChange={this.handleShowNullStringsChange}
               >
                 Show null strings as{' '}
-                <span className="font-italic">
-                  &quot;<span className="text-muted">null</span>&quot;
-                </span>
+                <span className="font-italic text-muted">null</span>
               </Checkbox>
             </div>
           </div>
