@@ -208,6 +208,28 @@ describe('updating layout axes', () => {
     ];
   }
 
+  it('adds new axes', () => {
+    const layout = {};
+    const axes = makeTwinAxes();
+    chartUtils.updateLayoutAxes(layout, axes, axes);
+    expect(layout).toEqual(
+      expect.objectContaining({
+        xaxis: expect.objectContaining({
+          title: expect.objectContaining({ text: axes[0].label }),
+          side: 'bottom',
+        }),
+        yaxis: expect.objectContaining({
+          title: expect.objectContaining({ text: axes[1].label }),
+          side: 'right',
+        }),
+        yaxis2: expect.objectContaining({
+          title: expect.objectContaining({ text: axes[2].label }),
+          side: 'left',
+        }),
+      })
+    );
+  });
+
   it('keeps the same axis objects, updates domain', () => {
     const layout: Partial<Layout> = {};
     const axes = makeTwinAxes();
@@ -292,12 +314,7 @@ describe('updating layout axes', () => {
     });
 
     it('positions multiple axes on the same side correctly', () => {
-      const layout = {
-        xaxis: {},
-        yaxis: {},
-        yaxis2: {},
-        yaxis3: {},
-      };
+      const layout = {};
       const bounds = chartUtils.getChartBounds(figure, chart, width, height);
       const figureAxes = ChartUtils.getAllAxes(figure);
       chartUtils.updateLayoutAxes(
