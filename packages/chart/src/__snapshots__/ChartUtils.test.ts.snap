@@ -231,6 +231,8 @@ exports[`makeDefaultTemplate should create a default template 1`] = `
       "pad": {
         "t": 8,
       },
+      "xanchor": "center",
+      "xref": "paper",
       "y": 1,
       "yanchor": "top",
     },
