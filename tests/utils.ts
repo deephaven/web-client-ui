@@ -242,6 +242,7 @@ export async function dragComponent(
       steps,
     }
   );
+  await target.hover();
 
   await expect(targetIndicator).not.toHaveCount(0);
   await page.mouse.up();
