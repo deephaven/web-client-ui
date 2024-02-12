@@ -1319,6 +1319,10 @@ class ChartUtils {
             figureAxisIndex
           );
 
+          if (layout[axisLayoutProperty] == null) {
+            layout[axisLayoutProperty] = {};
+          }
+
           const layoutAxis = layout[axisLayoutProperty];
           if (layoutAxis != null) {
             this.updateLayoutAxis(
