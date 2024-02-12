@@ -160,6 +160,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   constructor(irisGrid: IrisGrid, dh: DhType) {
     super();
 
+    bindAllMethods(this);
+
     this.debouncedUpdateCustomFormat = debounce(
       irisGrid.handleFormatSelection,
       DEBOUNCE_UPDATE_FORMAT
@@ -167,7 +169,6 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
     this.dh = dh;
     this.irisGrid = irisGrid;
-    bindAllMethods(this);
   }
 
   componentWillUnmount(): void {
