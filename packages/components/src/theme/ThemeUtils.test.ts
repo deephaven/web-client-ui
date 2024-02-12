@@ -1,3 +1,6 @@
+import fs from 'fs';
+import path from 'path';
+
 import { ColorUtils, TestUtils } from '@deephaven/utils';
 import {
   DEFAULT_DARK_THEME_KEY,
@@ -332,6 +335,47 @@ describe('getDefaultBaseThemes', () => {
         ].join('\n'),
       },
     ]);
+  });
+
+  /**
+   * This test is to ensure that the css variables in theme-dark and theme-light are in sync,
+   * to prevent the case where a css variable is added to one theme and not the other.
+   */
+  it('should contain the same css variables between light and dark themes', () => {
+    const themeDarkDir = './packages/components/src/theme/theme-dark';
+    const themeLightDir = './packages/components/src/theme/theme-light';
+
+    function extractCssVariablesFromFiles(directory: string): Set<string>[] {
+      const files = fs.readdirSync(directory);
+      const fileVariables: Set<string>[] = [];
+      files.forEach(file => {
+        const variables = new Set<string>();
+        const filePath = path.join(directory, file);
+        const fileContent = fs.readFileSync(filePath, 'utf8');
+        // strip comments as they may contain css variable names
+        const fileContentsNoComments = fileContent.replace(
+          /\/\*[\s\S]*?\*\//g,
+          ''
+        );
+        const lines = fileContentsNoComments.split('\n');
+        // extract css variables from each line, before the colon
+        const matches = lines.map(line => /(--[a-zA-Z-]+):/.exec(line)?.[1]);
+        matches?.forEach(match => {
+          if (match != null) variables.add(match as string);
+        });
+        fileVariables.push(new Set([...variables].sort())); // sort is just for readability
+      });
+      return fileVariables;
+    }
+
+    const darkCssVariables = extractCssVariablesFromFiles(themeDarkDir);
+    const lightCssVariables = extractCssVariablesFromFiles(themeLightDir);
+    expect(darkCssVariables.length).toEqual(lightCssVariables.length);
+
+    for (let i = 0; i < darkCssVariables.length; i += 1) {
+      // expect each set to be equal
+      expect(darkCssVariables[i]).toEqual(lightCssVariables[i]);
+    }
   });
 });
 
