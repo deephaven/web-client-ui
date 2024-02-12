@@ -96,7 +96,6 @@ import {
   PromiseUtils,
   ValidationError,
   getOrThrow,
-  bindAllMethods,
 } from '@deephaven/utils';
 import {
   Type as FilterType,
@@ -533,7 +532,86 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   constructor(props: IrisGridProps) {
     super(props);
 
-    bindAllMethods(this);
+    this.handleAdvancedFilterChange =
+      this.handleAdvancedFilterChange.bind(this);
+    this.handleAdvancedFilterSortChange =
+      this.handleAdvancedFilterSortChange.bind(this);
+    this.handleAdvancedFilterDone = this.handleAdvancedFilterDone.bind(this);
+    this.handleAdvancedMenuOpened = this.handleAdvancedMenuOpened.bind(this);
+    this.handleGotoRowOpened = this.handleGotoRowOpened.bind(this);
+    this.handleGotoRowClosed = this.handleGotoRowClosed.bind(this);
+    this.handleAdvancedMenuClosed = this.handleAdvancedMenuClosed.bind(this);
+    this.handleAggregationChange = this.handleAggregationChange.bind(this);
+    this.handleAggregationsChange = this.handleAggregationsChange.bind(this);
+    this.handleAggregationEdit = this.handleAggregationEdit.bind(this);
+    this.handleAnimationLoop = this.handleAnimationLoop.bind(this);
+    this.handleAnimationStart = this.handleAnimationStart.bind(this);
+    this.handleAnimationEnd = this.handleAnimationEnd.bind(this);
+    this.handleChartChange = this.handleChartChange.bind(this);
+    this.handleChartCreate = this.handleChartCreate.bind(this);
+    this.handleGridError = this.handleGridError.bind(this);
+    this.handleFilterBarChange = this.handleFilterBarChange.bind(this);
+    this.handleFilterBarDone = this.handleFilterBarDone.bind(this);
+    this.handleFilterBarTab = this.handleFilterBarTab.bind(this);
+    this.handleCancel = this.handleCancel.bind(this);
+    this.handleMenu = this.handleMenu.bind(this);
+    this.handleMenuClose = this.handleMenuClose.bind(this);
+    this.handleMenuSelect = this.handleMenuSelect.bind(this);
+    this.handleMenuBack = this.handleMenuBack.bind(this);
+    this.handleRequestFailed = this.handleRequestFailed.bind(this);
+    this.handleSelectionChanged = this.handleSelectionChanged.bind(this);
+    this.handleMovedColumnsChanged = this.handleMovedColumnsChanged.bind(this);
+    this.handleHeaderGroupsChanged = this.handleHeaderGroupsChanged.bind(this);
+    this.handleUpdate = this.handleUpdate.bind(this);
+    this.handleTooltipRef = this.handleTooltipRef.bind(this);
+    this.handleViewChanged = this.handleViewChanged.bind(this);
+    this.handleFormatSelection = this.handleFormatSelection.bind(this);
+    this.handleConditionalFormatCreate =
+      this.handleConditionalFormatCreate.bind(this);
+    this.handleConditionalFormatEdit =
+      this.handleConditionalFormatEdit.bind(this);
+    this.handleConditionalFormatsChange =
+      this.handleConditionalFormatsChange.bind(this);
+    this.handleConditionalFormatEditorSave =
+      this.handleConditionalFormatEditorSave.bind(this);
+    this.handleConditionalFormatEditorCancel =
+      this.handleConditionalFormatEditorCancel.bind(this);
+    this.handleUpdateCustomColumns = this.handleUpdateCustomColumns.bind(this);
+    this.handleCustomColumnsChanged =
+      this.handleCustomColumnsChanged.bind(this);
+    this.handleSelectDistinctChanged =
+      this.handleSelectDistinctChanged.bind(this);
+    this.handlePendingDataUpdated = this.handlePendingDataUpdated.bind(this);
+    this.handlePendingCommitClicked =
+      this.handlePendingCommitClicked.bind(this);
+    this.handlePendingDiscardClicked =
+      this.handlePendingDiscardClicked.bind(this);
+    this.handleGotoRowSelectedRowNumberSubmit =
+      this.handleGotoRowSelectedRowNumberSubmit.bind(this);
+    this.focusRowInGrid = this.focusRowInGrid.bind(this);
+    this.handleDownloadTable = this.handleDownloadTable.bind(this);
+    this.handleDownloadTableStart = this.handleDownloadTableStart.bind(this);
+    this.handleCancelDownloadTable = this.handleCancelDownloadTable.bind(this);
+    this.handleDownloadCanceled = this.handleDownloadCanceled.bind(this);
+    this.handleDownloadCompleted = this.handleDownloadCompleted.bind(this);
+    this.handlePartitionChange = this.handlePartitionChange.bind(this);
+    this.handleColumnVisibilityChanged =
+      this.handleColumnVisibilityChanged.bind(this);
+    this.handleColumnVisibilityReset =
+      this.handleColumnVisibilityReset.bind(this);
+    this.handleCrossColumnSearch = this.handleCrossColumnSearch.bind(this);
+    this.handleRollupChange = this.handleRollupChange.bind(this);
+    this.handleOverflowClose = this.handleOverflowClose.bind(this);
+    this.getColumnBoundingRect = this.getColumnBoundingRect.bind(this);
+    this.handleGotoRowSelectedRowNumberChanged =
+      this.handleGotoRowSelectedRowNumberChanged.bind(this);
+    this.handleGotoValueSelectedColumnNameChanged =
+      this.handleGotoValueSelectedColumnNameChanged.bind(this);
+    this.handleGotoValueSelectedFilterChanged =
+      this.handleGotoValueSelectedFilterChanged.bind(this);
+    this.handleGotoValueChanged = this.handleGotoValueChanged.bind(this);
+    this.handleGotoValueSubmitted = this.handleGotoValueSubmitted.bind(this);
+    this.makeQuickFilter = this.makeQuickFilter.bind(this);
 
     this.grid = null;
     this.lastLoadedConfig = null;
