@@ -1940,6 +1940,8 @@ class ChartUtils {
         font: {
           color: title_color,
         },
+        xanchor: 'center',
+        xref: 'paper',
         yanchor: 'top',
         pad: { ...ChartUtils.DEFAULT_TITLE_PADDING },
         y: 1,
