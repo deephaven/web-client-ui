@@ -611,6 +611,7 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.handleGotoValueSelectedFilterChanged.bind(this);
     this.handleGotoValueChanged = this.handleGotoValueChanged.bind(this);
     this.handleGotoValueSubmitted = this.handleGotoValueSubmitted.bind(this);
+    this.makeQuickFilter = this.makeQuickFilter.bind(this);
 
     this.grid = null;
     this.lastLoadedConfig = null;
