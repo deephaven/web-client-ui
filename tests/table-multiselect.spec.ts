@@ -31,18 +31,18 @@ async function filterAndScreenshot(
 ) {
   // select the first 3 rows
   await page.mouse.move(
-    gridLocation.x + 1,
-    gridLocation.y + 1 + columnHeight + filterHeight
+    gridLocation.x + 5,
+    gridLocation.y + 5 + columnHeight + filterHeight
   );
   await page.mouse.down();
   await page.mouse.move(
-    gridLocation.x + 1,
-    gridLocation.y + 1 + columnHeight + filterHeight + rowHeight * 2
+    gridLocation.x + 5,
+    gridLocation.y + 5 + columnHeight + filterHeight + rowHeight * 2
   );
   await page.mouse.up();
   await page.mouse.click(
-    gridLocation.x + 1,
-    gridLocation.y + 1 + columnHeight + filterHeight + rowHeight * 2,
+    gridLocation.x + 5,
+    gridLocation.y + 5 + columnHeight + filterHeight + rowHeight * 2,
     { button: 'right' }
   );
   await expectContextMenus(page, 1);
@@ -74,8 +74,8 @@ function runSpecialSelectFilter(
     if (gridLocation === null) return;
 
     await page.mouse.click(
-      gridLocation.x + 1,
-      gridLocation.y + 1 + columnHeight,
+      gridLocation.x + 5,
+      gridLocation.y + 5 + columnHeight,
       { button: 'right' }
     );
     await expectContextMenus(page, 1);
@@ -160,18 +160,18 @@ test('char formatting, non selected right click, preview formatting', async ({
   // select row 2, 4
   await page.keyboard.down('Control');
   await page.mouse.click(
-    gridLocation.x + 1,
-    gridLocation.y + 1 + columnHeight + rowHeight
+    gridLocation.x + 5,
+    gridLocation.y + 5 + columnHeight + rowHeight
   );
   await page.mouse.click(
-    gridLocation.x + 1,
-    gridLocation.y + 1 + columnHeight + rowHeight * 3
+    gridLocation.x + 5,
+    gridLocation.y + 5 + columnHeight + rowHeight * 3
   );
   await page.keyboard.up('Control');
 
   await page.mouse.click(
-    gridLocation.x + 1,
-    gridLocation.y + 1 + columnHeight,
+    gridLocation.x + 5,
+    gridLocation.y + 5 + columnHeight,
     { button: 'right' }
   );
   await page.getByRole('button', { name: 'Filter by Value' }).hover();
