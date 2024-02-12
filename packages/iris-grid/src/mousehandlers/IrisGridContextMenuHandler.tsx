@@ -50,6 +50,7 @@ import {
   assertNotNaN,
   assertNotNull,
   copyToClipboard,
+  bindAllMethods,
 } from '@deephaven/utils';
 import {
   DateTimeFormatContextMenu,
@@ -166,6 +167,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
     this.dh = dh;
     this.irisGrid = irisGrid;
+    bindAllMethods(this);
   }
 
   componentWillUnmount(): void {
