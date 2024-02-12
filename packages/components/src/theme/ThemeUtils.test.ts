@@ -341,7 +341,7 @@ describe('getDefaultBaseThemes', () => {
    * This test is to ensure that the css variables in theme-dark and theme-light are in sync,
    * to prevent the case where a css variable is added to one theme and not the other.
    */
-  it('light and dark themes should contain the same css variables', () => {
+  it('should contain the same css variables between light and dark themes', () => {
     const themeDarkDir = './packages/components/src/theme/theme-dark';
     const themeLightDir = './packages/components/src/theme/theme-light';
 
