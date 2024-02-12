@@ -186,8 +186,10 @@ test('filter by value', async ({ page }) => {
   await page
     .locator('.iris-grid .grid-wrapper')
     .click({ button: 'right', position: { x: 20, y: 60 } });
+  await expectContextMenus(page, 1, true);
 
   await page.getByRole('button', { name: 'Filter by Value' }).hover();
+  await expectContextMenus(page, 2);
   await page.getByRole('button', { name: 'text is exactly' }).click();
 
   await waitForLoadingDone(page);
@@ -203,7 +205,7 @@ test('go to', async ({ page }) => {
   await page
     .locator('.iris-grid .grid-wrapper')
     .click({ button: 'right', position: { x: 20, y: 60 } });
-  await expectContextMenus(page, 1);
+  await expectContextMenus(page, 1, true);
 
   await page.getByRole('button', { name: 'Go to' }).click();
   await page.getByLabel('filter-type-select').selectOption('Equals');

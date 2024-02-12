@@ -301,9 +301,15 @@ export async function waitForLoadingDone(
  */
 export async function expectContextMenus(
   page: Page,
-  count: number
+  count: number,
+  waitForFiltersToLoad = false
 ): Promise<void> {
   await expect(page.locator('.context-menu-container')).toHaveCount(count);
+  if (waitForFiltersToLoad) {
+    await expect(
+      page.getByRole('button', { name: 'Filter by Value' })
+    ).not.toBeNull();
+  }
 }
 
 /**
