@@ -347,7 +347,7 @@ describe('getDefaultBaseThemes', () => {
 
     function extractCssVariablesFromFiles(directory: string): Set<string>[] {
       const files = fs.readdirSync(directory);
-      const fileVariables = [] as Set<string>[];
+      const fileVariables: Set<string>[] = [];
       files.forEach(file => {
         const variables = new Set<string>();
         const filePath = path.join(directory, file);
@@ -359,11 +359,11 @@ describe('getDefaultBaseThemes', () => {
         );
         const lines = fileContentsNoComments.split('\n');
         // extract css variables from each line, before the colon
-        const matches = lines.map(line => line.match(/(--[a-zA-Z-]+):/)?.[1]);
+        const matches = lines.map(line => /(--[a-zA-Z-]+):/.exec(line)?.[1]);
         matches?.forEach(match => {
-          if (match != null) return variables.add(match as string);
+          if (match != null) variables.add(match as string);
         });
-        fileVariables.push(new Set([...variables].sort()));
+        fileVariables.push(new Set([...variables].sort())); // sort is just for readability
       });
       return fileVariables;
     }
