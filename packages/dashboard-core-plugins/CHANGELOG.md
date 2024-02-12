@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.31.6](https://github.com/deephaven/web-client-ui/compare/v0.31.5...v0.31.6) (2024-02-12)
+
+**Note:** Version bump only for package @deephaven/dashboard-core-plugins
+
 ## [0.31.5](https://github.com/deephaven/web-client-ui/compare/v0.31.4...v0.31.5) (2023-04-20)
 
 ### Bug Fixes

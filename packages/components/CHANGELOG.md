@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.31.6](https://github.com/deephaven/web-client-ui/compare/v0.31.5...v0.31.6) (2024-02-12)
+
+### Bug Fixes
+
+- address chrome 121 scrollbar style behaviour change ([#1787](https://github.com/deephaven/web-client-ui/issues/1787)) ([#1789](https://github.com/deephaven/web-client-ui/issues/1789)) ([51e9b51](https://github.com/deephaven/web-client-ui/commit/51e9b5122d530dc282c938a2085e2fddbcc5520d))
+- drag to re-arrange custom columns not working ([#1299](https://github.com/deephaven/web-client-ui/issues/1299)) ([#1302](https://github.com/deephaven/web-client-ui/issues/1302)) ([0984632](https://github.com/deephaven/web-client-ui/commit/09846327f76b906b534d5b97d33948b5a0f9d6e7)), closes [#1282](https://github.com/deephaven/web-client-ui/issues/1282) [#1013](https://github.com/deephaven/web-client-ui/issues/1013)
+
 # [0.31.0](https://github.com/deephaven/web-client-ui/compare/v0.30.1...v0.31.0) (2023-03-03)
 
 ### Bug Fixes
