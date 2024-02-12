@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.41.5](https://github.com/deephaven/web-client-ui/compare/v0.41.4...v0.41.5) (2024-02-12)
+
+### Bug Fixes
+
+- address chrome 121 scrollbar style behaviour change ([#1787](https://github.com/deephaven/web-client-ui/issues/1787)) ([#1791](https://github.com/deephaven/web-client-ui/issues/1791)) ([d065679](https://github.com/deephaven/web-client-ui/commit/d065679e0e6d60fa42fcb2ad0b39b064771fba6c))
+
 ## [0.41.4](https://github.com/deephaven/web-client-ui/compare/v0.41.3...v0.41.4) (2023-11-08)
 
 ### Bug Fixes
