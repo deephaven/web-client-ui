@@ -110,6 +110,7 @@ exports[`makeDefaultTemplate should create a default template 1`] = `
           "color": "ChartTheme['zerolinecolor']",
         },
         "ticklen": 5,
+        "ticks": "outside",
         "title": {
           "font": {
             "color": "ChartTheme['title_color']",
@@ -135,6 +136,7 @@ exports[`makeDefaultTemplate should create a default template 1`] = `
           "color": "ChartTheme['zerolinecolor']",
         },
         "ticklen": 5,
+        "ticks": "outside",
         "title": {
           "font": {
             "color": "ChartTheme['title_color']",
@@ -162,6 +164,7 @@ exports[`makeDefaultTemplate should create a default template 1`] = `
           "color": "ChartTheme['zerolinecolor']",
         },
         "ticklen": 5,
+        "ticks": "outside",
         "title": {
           "font": {
             "color": "ChartTheme['title_color']",
@@ -186,6 +189,7 @@ exports[`makeDefaultTemplate should create a default template 1`] = `
           "color": "ChartTheme['zerolinecolor']",
         },
         "ticklen": 5,
+        "ticks": "outside",
         "title": {
           "font": {
             "color": "ChartTheme['title_color']",
@@ -212,6 +216,7 @@ exports[`makeDefaultTemplate should create a default template 1`] = `
           "color": "ChartTheme['zerolinecolor']",
         },
         "ticklen": 5,
+        "ticks": "outside",
         "title": {
           "font": {
             "color": "ChartTheme['title_color']",
@@ -248,6 +253,7 @@ exports[`makeDefaultTemplate should create a default template 1`] = `
         "color": "ChartTheme['zerolinecolor']",
       },
       "ticklen": 5,
+      "ticks": "outside",
       "title": {
         "font": {
           "color": "ChartTheme['title_color']",
@@ -272,6 +278,7 @@ exports[`makeDefaultTemplate should create a default template 1`] = `
         "color": "ChartTheme['zerolinecolor']",
       },
       "ticklen": 5,
+      "ticks": "outside",
       "title": {
         "font": {
           "color": "ChartTheme['title_color']",

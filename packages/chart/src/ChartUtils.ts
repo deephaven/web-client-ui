@@ -1817,6 +1817,7 @@ class ChartUtils {
       linecolor: theme.linecolor,
       rangeslider: { visible: false },
       showline: true,
+      ticks: 'outside' as const,
       ticklen: 5, // act as padding, can't find a tick padding
       tickcolor: theme.paper_bgcolor, // hide ticks as padding
       tickfont: {
