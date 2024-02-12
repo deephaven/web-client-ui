@@ -5,10 +5,11 @@ const rowHeight = 19;
 const columnHeight = 30;
 const filterHeight = 30;
 
-async function waitForLoadingDone(page: Page) {
-  await expect(
-    page.locator('.iris-grid .iris-grid-loading-status')
-  ).toHaveCount(0);
+async function waitForLoadingDone(
+  page: Page,
+  loadingLocator = '.iris-grid .iris-grid-loading-status'
+) {
+  await expect(page.locator(loadingLocator)).toHaveCount(0);
 }
 
 async function getGridLocation(page: Page) {
@@ -31,18 +32,18 @@ async function filterAndScreenshot(
 ) {
   // select the first 3 rows
   await page.mouse.move(
-    gridLocation.x + 5,
-    gridLocation.y + 5 + columnHeight + filterHeight
+    gridLocation.x + 1,
+    gridLocation.y + 1 + columnHeight + filterHeight
   );
   await page.mouse.down();
   await page.mouse.move(
-    gridLocation.x + 5,
-    gridLocation.y + 5 + columnHeight + filterHeight + rowHeight * 2
+    gridLocation.x + 1,
+    gridLocation.y + 1 + columnHeight + filterHeight + rowHeight * 2
   );
   await page.mouse.up();
   await page.mouse.click(
-    gridLocation.x + 5,
-    gridLocation.y + 5 + columnHeight + filterHeight + rowHeight * 2,
+    gridLocation.x + 1,
+    gridLocation.y + 1 + columnHeight + filterHeight + rowHeight * 2,
     { button: 'right' }
   );
   await expectContextMenus(page, 1);
@@ -60,7 +61,7 @@ async function filterAndScreenshot(
   await page.keyboard.down('Control');
   await page.keyboard.press('E');
   await page.keyboard.up('Control');
-  await waitForLoadingDone(page);
+  await waitForLoadingDone(page, '.iris-grid-loading-status-bar');
 }
 
 // these are select filters that do not do multiselect
@@ -74,8 +75,8 @@ function runSpecialSelectFilter(
     if (gridLocation === null) return;
 
     await page.mouse.click(
-      gridLocation.x + 5,
-      gridLocation.y + 5 + columnHeight,
+      gridLocation.x + 1,
+      gridLocation.y + 1 + columnHeight,
       { button: 'right' }
     );
     await expectContextMenus(page, 1);
@@ -160,18 +161,18 @@ test('char formatting, non selected right click, preview formatting', async ({
   // select row 2, 4
   await page.keyboard.down('Control');
   await page.mouse.click(
-    gridLocation.x + 5,
-    gridLocation.y + 5 + columnHeight + rowHeight
+    gridLocation.x + 1,
+    gridLocation.y + 1 + columnHeight + rowHeight
   );
   await page.mouse.click(
-    gridLocation.x + 5,
-    gridLocation.y + 5 + columnHeight + rowHeight * 3
+    gridLocation.x + 1,
+    gridLocation.y + 1 + columnHeight + rowHeight * 3
   );
   await page.keyboard.up('Control');
 
   await page.mouse.click(
-    gridLocation.x + 5,
-    gridLocation.y + 5 + columnHeight,
+    gridLocation.x + 1,
+    gridLocation.y + 1 + columnHeight,
     { button: 'right' }
   );
   await page.getByRole('button', { name: 'Filter by Value' }).hover();
