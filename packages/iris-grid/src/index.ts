@@ -1,4 +1,4 @@
-import IrisGrid from './IrisGrid';
+import IrisGrid from './LazyIrisGrid';
 
 export default IrisGrid;
 export { IrisGrid };
@@ -7,7 +7,7 @@ export * from './AdvancedFilterCreator';
 export * from './CommonTypes';
 export { default as ColumnHeaderGroup } from './ColumnHeaderGroup';
 export * from './PartitionedGridModel';
-export * from './IrisGrid';
+export * from './LazyIrisGrid';
 export { default as SHORTCUTS } from './IrisGridShortcuts';
 export { default as IrisGridModel } from './IrisGridModel';
 export { default as IrisGridTableModel } from './IrisGridTableModel';
