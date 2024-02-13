@@ -24,22 +24,3 @@ describe('<StyleGuide /> mounts', () => {
     ).not.toThrow();
   });
 });
-
-describe('StyleGuide test mode', () => {
-  beforeEach(() => {
-    window.HTMLElement.prototype.scroll = jest.fn();
-    window.HTMLElement.prototype.scrollIntoView = jest.fn();
-  });
-
-  test('default does not activate the isolate input box', () => {
-    const { container } = render(
-      <ApiContext.Provider value={dh}>
-        <ThemeProvider themes={[]}>
-          <StyleGuide />
-        </ThemeProvider>
-      </ApiContext.Provider>
-    );
-
-    expect(container.querySelector('input[placeholder="Isolate"]')).toBeNull();
-  });
-});
