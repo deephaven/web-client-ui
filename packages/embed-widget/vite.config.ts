@@ -44,6 +44,16 @@ export default defineConfig(({ mode }) => {
     });
   }
 
+  // Proxy to local dev server for js-plugins
+  if (env.VITE_JS_PLUGINS_DEV_PORT && env.VITE_MODULE_PLUGINS_URL) {
+    const route = new URL(env.VITE_MODULE_PLUGINS_URL, baseURL).pathname;
+    proxy[route] = {
+      target: `http://localhost:${env.VITE_JS_PLUGINS_DEV_PORT}`,
+      changeOrigin: true,
+      rewrite: (pathOrig: string) => pathOrig.replace(/^\/js-plugins/, ''),
+    };
+  }
+
   return {
     base: './', // Vite defaults to absolute URLs, but embed-widget is an embedded deployment so all assets are relative paths
     envPrefix: ['VITE_', 'npm_'], // Needed to use $npm_package_version
