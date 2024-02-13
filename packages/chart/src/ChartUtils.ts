@@ -31,8 +31,8 @@ import type {
   ErrorBar,
   LayoutAxis,
   AxisType as PlotlyAxisType,
-  OhlcData,
   MarkerSymbol,
+  Template,
 } from 'plotly.js';
 import { assertNotNull, bindAllMethods, Range } from '@deephaven/utils';
 import { ChartTheme } from './ChartTheme';
@@ -190,15 +190,13 @@ class ChartUtils {
    * @param x The main data array
    * @param xLow The absolute low values
    * @param xHigh
-   * @param theme Theme properties for the chart
    *
    * @returns The error_x object required by plotly, or null if none is required
    */
   static getPlotlyErrorBars(
     x: number[],
     xLow: number[],
-    xHigh: number[],
-    theme: ChartTheme
+    xHigh: number[]
   ): ErrorBar {
     const array = xHigh.map((value, i) => value - x[i]);
     const arrayminus = xLow.map((value, i) => x[i] - value);
@@ -207,7 +205,6 @@ class ChartUtils {
       symmetric: false,
       array,
       arrayminus,
-      color: theme.error_band_line_color,
     };
   }
 
@@ -511,24 +508,26 @@ class ChartUtils {
   }
 
   /**
-   * Parses the colorway property of a theme and returns an array of colors
-   * Theme could have a single string with space separated colors or an array of strings representing the colorway
-   * @param theme The theme to get colorway from
-   * @returns Colorway array for the theme
+   * Parses the colorway value of a theme and returns an array of colors
+   * Value could be a single string with space separated colors or already be an
+   * array of strings representing the colorway
+   * @param colorway The colorway value to normalize
+   * @returns Colorway array for the theme or undefined
    */
-  static getColorwayFromTheme(theme: ChartTheme): string[] {
-    let colorway: string[] = [];
-    if (theme.colorway) {
-      if (Array.isArray(theme.colorway)) {
-        colorway = theme.colorway;
-      } else if (typeof theme.colorway === 'string') {
-        colorway = theme.colorway.split(' ');
-      } else {
-        log.warn(`Unable to handle colorway property: ${theme.colorway}`);
-      }
+  static normalizeColorway(colorway?: string | string[]): string[] | undefined {
+    if (colorway == null) {
+      return;
     }
 
-    return colorway;
+    if (Array.isArray(colorway)) {
+      return colorway;
+    }
+
+    if (typeof colorway === 'string') {
+      return colorway.split(' ');
+    }
+
+    log.warn(`Unexpected colorway format: ${colorway}`);
   }
 
   static titleFromSettings(settings: ChartModelSettings): string {
@@ -856,14 +855,12 @@ class ChartUtils {
    * @param series The series to create the series data with
    * @param axisTypeMap The map of axes grouped by type
    * @param seriesVisibility Visibility setting for the series
-   * @param theme The theme properties for the plot. See ChartTheme.js for an example
    * @returns The series data (trace) object for use with plotly.
    */
   makeSeriesDataFromSeries(
     series: Series,
     axisTypeMap: AxisTypeMap,
     seriesVisibility: boolean | 'legendonly',
-    theme: ChartTheme,
     showLegend: boolean | null = null
   ): Partial<PlotData> {
     const {
@@ -901,7 +898,6 @@ class ChartUtils {
     this.addStylingToSeriesData(
       seriesData,
       plotStyle,
-      theme,
       lineColor,
       shapeColor,
       shape,
@@ -944,7 +940,6 @@ class ChartUtils {
   addStylingToSeriesData(
     seriesDataParam: Partial<PlotData>,
     plotStyle: SeriesPlotStyle,
-    theme: ChartTheme,
     lineColor: string | null = null,
     shapeColor: string | null = null,
     shape: string | null = null,
@@ -969,29 +964,8 @@ class ChartUtils {
       // The default histfunc in plotly is 'count', but the data passed up from the API provides explicit x/y values and bins
       // Since it's converted to bar, just set the widths of each bar
       seriesData.width = [];
-
-      if (seriesData.marker.line !== undefined) {
-        Object.assign(seriesData.marker.line, {
-          color: theme.paper_bgcolor,
-          width: 1,
-        });
-      }
-    } else if (plotStyle === dh.plot.SeriesPlotStyle.OHLC) {
-      (seriesData as Partial<OhlcData>).increasing = {
-        line: { color: theme.ohlc_increasing },
-      };
-      (seriesData as Partial<OhlcData>).decreasing = {
-        line: { color: theme.ohlc_decreasing },
-      };
     } else if (plotStyle === dh.plot.SeriesPlotStyle.PIE) {
       seriesData.textinfo = 'label+percent';
-
-      // TODO Open DefinitelyTyped/Plotly PR to mark family and size as optional
-      // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/plotly.js/lib/traces/pie.d.ts#L6
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (seriesData as any).outsidetextfont = {
-        color: theme.title_color,
-      };
     } else if (plotStyle === dh.plot.SeriesPlotStyle.TREEMAP) {
       seriesData.hoverinfo = 'text';
       seriesData.textinfo = 'label+text';
@@ -1000,8 +974,6 @@ class ChartUtils {
         pad: 0,
       };
       seriesData.textposition = 'middle center';
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (seriesData as any).outsidetextfont = { color: theme.title_color };
     }
 
     if (lineColor != null) {
@@ -1090,7 +1062,6 @@ class ChartUtils {
    * Update the layout with all the axes information for the provided figure
    * @param figure Figure to update the axes for
    * @param layoutParam Layout object to update in place
-   * @param theme Theme used for displaying the plot
    * @param chartAxisRangeParser Function to retrieve the axis range parser
    * @param plotWidth Width of the plot in pixels
    * @param plotHeight Height of the plot in pixels
@@ -1098,7 +1069,6 @@ class ChartUtils {
   updateFigureAxes(
     layoutParam: Partial<Layout>,
     figure: Figure,
-    theme: ChartTheme,
     chartAxisRangeParser?: ChartAxisRangeParser,
     plotWidth = 0,
     plotHeight = 0
@@ -1113,7 +1083,6 @@ class ChartUtils {
         layout,
         chart.axes,
         figureAxes,
-        theme,
         plotWidth,
         plotHeight,
         bounds,
@@ -1287,7 +1256,6 @@ class ChartUtils {
    * @param layoutParam The layout object to update
    * @param chartAxes The chart axes to update the layout with
    * @param figureAxes All figure axes to update the layout with
-   * @param theme Theme used for displaying the plot
    * @param plotWidth The width of the plot to calculate the axis sizes for
    * @param plotHeight The height of the plot to calculate the axis sizes for
    * @param bounds The bounds for this set of axes
@@ -1297,7 +1265,6 @@ class ChartUtils {
     layoutParam: Partial<Layout>,
     chartAxes: Axis[],
     figureAxes: Axis[],
-    theme: ChartTheme,
     plotWidth = 0,
     plotHeight = 0,
     bounds: ChartBounds = { left: 0, top: 0, right: 1, bottom: 1 },
@@ -1352,8 +1319,9 @@ class ChartUtils {
             axisProperty,
             figureAxisIndex
           );
+
           if (layout[axisLayoutProperty] == null) {
-            layout[axisLayoutProperty] = this.makeLayoutAxis(axisType, theme);
+            layout[axisLayoutProperty] = {};
           }
 
           const layoutAxis = layout[axisLayoutProperty];
@@ -1839,7 +1807,10 @@ class ChartUtils {
     return value;
   }
 
-  makeLayoutAxis(type: AxisType, theme: ChartTheme): Partial<LayoutAxis> {
+  makeLayoutAxis(
+    type: AxisType,
+    theme: Partial<ChartTheme>
+  ): Partial<LayoutAxis> {
     const { dh } = this;
     const axis = {
       automargin: true,
@@ -1847,6 +1818,7 @@ class ChartUtils {
       linecolor: theme.linecolor,
       rangeslider: { visible: false },
       showline: true,
+      ticks: 'outside' as const,
       ticklen: 5, // act as padding, can't find a tick padding
       tickcolor: theme.paper_bgcolor, // hide ticks as padding
       tickfont: {
@@ -1879,6 +1851,62 @@ class ChartUtils {
   }
 
   /**
+   * Creates a plotly layout template object based on a given theme.
+   * See https://plotly.com/javascript/reference/layout/#layout-template
+   * @param theme The theme to use for the layout template
+   * @returns The layout template object
+   */
+  makeDefaultTemplate(theme: ChartTheme): Template {
+    /* eslint-disable camelcase */
+    const {
+      error_band_line_color,
+      ohlc_increasing,
+      ohlc_decreasing,
+      title_color,
+    } = theme;
+
+    return {
+      data: {
+        bar: [
+          {
+            marker: {
+              line: { color: 'transparent' },
+            },
+          },
+        ],
+        scatter: [
+          {
+            error_x: { color: error_band_line_color } as ErrorBar,
+            error_y: { color: error_band_line_color } as ErrorBar,
+          },
+        ],
+        ohlc: [
+          {
+            increasing: { line: { color: ohlc_increasing } },
+            decreasing: { line: { color: ohlc_decreasing } },
+          },
+        ],
+        pie: [
+          {
+            outsidetextfont: {
+              color: title_color,
+            },
+          },
+        ],
+        treemap: [
+          {
+            outsidetextfont: {
+              color: title_color,
+            },
+          },
+        ],
+      },
+      /* eslint-enable camelcase */
+      layout: this.makeDefaultLayout(theme),
+    };
+  }
+
+  /**
    * Creates a plotly layout object based on a given theme.
    * See https://plotly.com/javascript/reference/layout/
    * @param theme The theme to use for the layout
@@ -1904,7 +1932,7 @@ class ChartUtils {
       paper_bgcolor,
       plot_bgcolor,
       autosize: true,
-      colorway: ChartUtils.getColorwayFromTheme(theme),
+      colorway: ChartUtils.normalizeColorway(theme?.colorway),
       font: {
         family: "'Fira Sans', sans-serif",
         color: title_color,
@@ -1913,6 +1941,8 @@ class ChartUtils {
         font: {
           color: title_color,
         },
+        xanchor: 'center',
+        xref: 'paper',
         yanchor: 'top',
         pad: { ...ChartUtils.DEFAULT_TITLE_PADDING },
         y: 1,

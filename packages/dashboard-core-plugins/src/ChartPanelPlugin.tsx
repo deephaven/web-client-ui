@@ -4,12 +4,7 @@ import {
   useApi,
   useObjectFetcher,
 } from '@deephaven/jsapi-bootstrap';
-import {
-  ChartModel,
-  ChartModelFactory,
-  ChartTheme,
-  useChartTheme,
-} from '@deephaven/chart';
+import { ChartModel, ChartModelFactory } from '@deephaven/chart';
 import type { dh as DhType, Figure, Table } from '@deephaven/jsapi-types';
 import { IrisGridUtils } from '@deephaven/iris-grid';
 import { getTimeZone, store } from '@deephaven/redux';
@@ -28,7 +23,6 @@ import ConnectedChartPanel, {
 
 async function createChartModel(
   dh: DhType,
-  chartTheme: ChartTheme,
   fetchObject: ObjectFetcher,
   metadata: ChartPanelMetadata,
   fetchFigure: () => Promise<Figure>,
@@ -73,7 +67,7 @@ async function createChartModel(
   if (figureName == null && tableName == null) {
     const figure = await fetchFigure();
 
-    return ChartModelFactory.makeModel(dh, settings, figure, chartTheme);
+    return ChartModelFactory.makeModel(dh, settings, figure);
   }
 
   if (figureName != null) {
@@ -89,7 +83,7 @@ async function createChartModel(
       figure = await fetchFigure();
     }
 
-    return ChartModelFactory.makeModel(dh, settings, figure, chartTheme);
+    return ChartModelFactory.makeModel(dh, settings, figure);
   }
 
   const descriptor = {
@@ -107,15 +101,13 @@ async function createChartModel(
     dh,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     settings as any,
-    table,
-    chartTheme
+    table
   );
 }
 
 export const ChartPanelPlugin = forwardRef(
   (props: WidgetPanelProps<Figure>, ref: React.Ref<ChartPanel>) => {
     const dh = useApi();
-    const chartTheme = useChartTheme();
     const fetchObject = useObjectFetcher();
 
     const panelState = isChartPanelDehydratedProps(props)
@@ -135,7 +127,6 @@ export const ChartPanelPlugin = forwardRef(
 
           return createChartModel(
             dh,
-            chartTheme,
             fetchObject,
             metadata as ChartPanelMetadata,
             panelFetch,
@@ -143,15 +134,7 @@ export const ChartPanelPlugin = forwardRef(
           );
         },
       }),
-      [
-        metadata,
-        localDashboardId,
-        dh,
-        chartTheme,
-        fetchObject,
-        panelFetch,
-        panelState,
-      ]
+      [metadata, localDashboardId, dh, fetchObject, panelFetch, panelState]
     );
 
     // eslint-disable-next-line react/jsx-props-no-spreading

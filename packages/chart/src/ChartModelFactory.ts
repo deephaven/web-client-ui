@@ -1,7 +1,6 @@
 import type { dh as DhType, Figure, Table } from '@deephaven/jsapi-types';
 import ChartUtils, { ChartModelSettings } from './ChartUtils';
 import FigureChartModel from './FigureChartModel';
-import { ChartTheme } from './ChartTheme';
 import ChartModel from './ChartModel';
 
 class ChartModelFactory {
@@ -16,7 +15,6 @@ class ChartModelFactory {
    * @param settings.xAxis The column name to use for the x-axis
    * @param [settings.hiddenSeries] Array of hidden series names
    * @param table The table to build the model for
-   * @param theme The theme for the figure
    * @returns The ChartModel Promise representing the figure
    * CRA sets tsconfig to type check JS based on jsdoc comments. It isn't able to figure out FigureChartModel extends ChartModel
    * This causes TS issues in 1 or 2 spots. Once this is TS it can be returned to just FigureChartModel
@@ -24,15 +22,14 @@ class ChartModelFactory {
   static async makeModelFromSettings(
     dh: DhType,
     settings: ChartModelSettings,
-    table: Table,
-    theme: ChartTheme
+    table: Table
   ): Promise<ChartModel> {
     const figure = await ChartModelFactory.makeFigureFromSettings(
       dh,
       settings,
       table
     );
-    return new FigureChartModel(dh, figure, theme, settings);
+    return new FigureChartModel(dh, figure, settings);
   }
 
   /**
@@ -78,7 +75,6 @@ class ChartModelFactory {
    * @param settings.xAxis The column name to use for the x-axis
    * @param [settings.hiddenSeries] Array of hidden series names
    * @param figure The figure to build the model for
-   * @param theme The theme for the figure
    * @returns The FigureChartModel representing the figure
    * CRA sets tsconfig to type check JS based on jsdoc comments. It isn't able to figure out FigureChartModel extends ChartModel
    * This causes TS issues in 1 or 2 spots. Once this is TS it can be returned to just FigureChartModel
@@ -86,10 +82,9 @@ class ChartModelFactory {
   static async makeModel(
     dh: DhType,
     settings: ChartModelSettings | undefined,
-    figure: Figure,
-    theme: ChartTheme
+    figure: Figure
   ): Promise<ChartModel> {
-    return new FigureChartModel(dh, figure, theme, settings);
+    return new FigureChartModel(dh, figure, settings);
   }
 }
 

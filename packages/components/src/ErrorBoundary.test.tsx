@@ -1,5 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react';
+import { TestUtils } from '@deephaven/utils';
 import ErrorBoundary, { ErrorBoundaryProps } from './ErrorBoundary';
 
 function ThrowComponent(): JSX.Element {
@@ -27,6 +28,8 @@ it('should render the children if there is no error', () => {
 });
 
 it('should render the fallback if there is an error', () => {
+  TestUtils.disableConsoleOutput();
+
   const onError = jest.fn();
   const error = new Error('Test error');
   const { getByText } = makeWrapper({
