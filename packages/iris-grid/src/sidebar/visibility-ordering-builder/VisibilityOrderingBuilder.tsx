@@ -637,11 +637,31 @@ class VisibilityOrderingBuilder extends PureComponent<
     option: keyof typeof VisibilityOrderingBuilder.SORTING_OPTIONS
   ): void {
     const { model, onMovedColumnsChanged } = this.props;
+    const tree = this.getTreeItems();
+    const firstIndex = this.getFirstMovableIndex() ?? 0;
+    const lastIndex = this.getLastMovableIndex() ?? tree.length - 1;
+    const moveableTree = tree.slice(firstIndex, lastIndex + 1);
+
+    // add frozen moves
+    const initialAndFrozenMovedColumns = [...model.initialMovedColumns];
+    for (let i = 0; i < model.frozenColumns.length; i += 1) {
+      const frozenColumn = model.frozenColumns[i];
+      const newFrozenIndex = GridUtils.getVisibleIndex(
+        model.getColumnIndexByName(frozenColumn) ?? 0,
+        initialAndFrozenMovedColumns
+      );
+      if (newFrozenIndex !== i) {
+        initialAndFrozenMovedColumns.push({
+          from: newFrozenIndex,
+          to: i,
+        });
+      }
+    }
 
     const newMoves = this.getSortMoves(
-      this.getTreeItems(),
+      moveableTree,
       option,
-      model.initialMovedColumns
+      initialAndFrozenMovedColumns
     );
 
     onMovedColumnsChanged(newMoves);

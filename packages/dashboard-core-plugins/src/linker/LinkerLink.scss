@@ -128,6 +128,12 @@ $dash-size: 10;
     }
 
     &.danger-delete {
+      path.link-select {
+        cursor:
+          url('../assets/svg/cursor-unlinker.svg') 8 8,
+          pointer;
+      }
+
       path.link-select:hover ~ path.link-background {
         stroke: $dash-delete-color-2;
       }

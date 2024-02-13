@@ -12,6 +12,7 @@ import {
 } from '@deephaven/icons';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
+import { bindAllMethods } from '@deephaven/utils';
 import shortid from 'shortid';
 import {
   BarIcon,
@@ -104,15 +105,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
   constructor(props: ChartBuilderProps) {
     super(props);
 
-    this.handleAddSeries = this.handleAddSeries.bind(this);
-    this.handleLinkStateChange = this.handleLinkStateChange.bind(this);
-    this.handleReset = this.handleReset.bind(this);
-    this.handleSeriesChange = this.handleSeriesChange.bind(this);
-    this.handleSeriesDeleteClick = this.handleSeriesDeleteClick.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleTypeClick = this.handleTypeClick.bind(this);
-    this.handleXAxisChange = this.handleXAxisChange.bind(this);
-    this.sendChange = this.sendChange.bind(this);
+    bindAllMethods(this);
 
     const { model } = props;
     const { columns, dh } = model;

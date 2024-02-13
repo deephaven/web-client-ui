@@ -199,6 +199,34 @@ function mouseClick(
   mouseUp(column, row, component, extraMouseArgs, clientX, clientY);
 }
 
+function mouseRightClick(
+  column: VisibleIndex,
+  row: VisibleIndex,
+  component: Grid,
+  extraMouseArgs?: MouseEventInit,
+  clientX?: number,
+  clientY?: number
+) {
+  mouseEvent(
+    column,
+    row,
+    component.handleContextMenu,
+    'mousedown',
+    extraMouseArgs,
+    clientX,
+    clientY
+  );
+  mouseEvent(
+    column,
+    row,
+    component.handleContextMenu,
+    'mouseup',
+    extraMouseArgs,
+    clientX,
+    clientY
+  );
+}
+
 function mouseDoubleClick(
   column: VisibleIndex,
   row: VisibleIndex,
@@ -332,6 +360,34 @@ it('ctrl clicking a selected cell should deselect it', () => {
   expect(component.state.cursorRow).toBe(null);
   expect(component.state.cursorColumn).toBe(null);
   expect(component.state.selectedRanges.length).toBe(0);
+});
+
+it('right click outside the range changes the selected ranges', () => {
+  const component = makeGridComponent();
+
+  mouseClick(3, 5, component);
+  mouseClick(3, 6, component, { ctrlKey: true });
+  expect(component.state.cursorColumn).toBe(3);
+  expect(component.state.cursorRow).toBe(6);
+  expect(component.state.selectedRanges[0]).toEqual(new GridRange(3, 5, 3, 6));
+
+  mouseRightClick(5, 7, component);
+  expect(component.state.cursorColumn).toBe(5);
+  expect(component.state.cursorRow).toBe(7);
+  expect(component.state.selectedRanges[0]).toEqual(new GridRange(5, 7, 5, 7));
+});
+
+it('right click inside the range keeps the selected ranges', () => {
+  const component = makeGridComponent();
+
+  mouseClick(3, 5, component);
+  mouseClick(3, 6, component, { ctrlKey: true });
+  expect(component.state.selectedRanges.length).toBe(1);
+  expect(component.state.selectedRanges[0]).toEqual(new GridRange(3, 5, 3, 6));
+
+  mouseRightClick(3, 5, component);
+  expect(component.state.selectedRanges.length).toBe(1);
+  expect(component.state.selectedRanges[0]).toEqual(new GridRange(3, 5, 3, 6));
 });
 
 it('handles mouse drag down to update selection', () => {

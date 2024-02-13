@@ -11,6 +11,11 @@ $padding-x: 2rem;
   overflow: hidden;
 }
 
+.iris-grid-filter-menu-subtitle {
+  color: $text-muted;
+  font-size: small;
+}
+
 .advanced-filter-button-container {
   transition: $transition opacity;
 }

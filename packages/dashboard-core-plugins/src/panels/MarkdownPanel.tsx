@@ -1,4 +1,11 @@
-import React, { Component, FocusEvent, MouseEvent, ReactElement } from 'react';
+import React, {
+  Component,
+  FocusEvent,
+  MouseEvent,
+  ReactElement,
+  Suspense,
+  lazy,
+} from 'react';
 import memoize from 'memoize-one';
 import { connect } from 'react-redux';
 import {
@@ -14,11 +21,16 @@ import type { ReactComponentConfig } from '@deephaven/golden-layout';
 import type * as monaco from 'monaco-editor';
 import { assertNotNull } from '@deephaven/utils';
 import { RootState } from '@deephaven/redux';
+import { LoadingOverlay } from '@deephaven/components';
 import Panel from './Panel';
 import MarkdownContainer from '../controls/markdown/MarkdownContainer';
 import MarkdownStartPage from '../controls/markdown/MarkdownStartPage';
-import MarkdownEditor from '../controls/markdown/MarkdownEditor';
 import './MarkdownPanel.scss';
+import type MarkdownEditorType from '../controls/markdown/MarkdownEditor';
+
+const MarkdownEditor = lazy(
+  () => import('../controls/markdown/MarkdownEditor')
+);
 
 const log = Log.module('MarkdownPanel');
 
@@ -80,14 +92,14 @@ export class MarkdownPanel extends Component<
     this.markdownEditor = null;
   }
 
-  markdownEditor: MarkdownEditor | null;
+  markdownEditor: MarkdownEditorType | null;
 
   editor?: monaco.editor.IStandaloneCodeEditor;
 
   setEditorPosition(clickPositionY: number): void {
     assertNotNull(this.markdownEditor);
     const { container: markdownEditorContainer } = this.markdownEditor;
-    if (this.editor && markdownEditorContainer) {
+    if (this.editor && markdownEditorContainer != null) {
       const contentTop = markdownEditorContainer.getBoundingClientRect().top;
       const contentScrollTop = markdownEditorContainer.scrollTop;
       const contentScrollHeight = markdownEditorContainer.scrollHeight;
@@ -224,14 +236,16 @@ export class MarkdownPanel extends Component<
             isEditing={isEditing}
             onDoubleClick={this.handleContainerDoubleClick}
           >
-            <MarkdownEditor
-              ref={markdownEditor => {
-                this.markdownEditor = markdownEditor;
-              }}
-              isEditing={isEditing}
-              content={content ?? undefined}
-              onEditorInitialized={this.handleEditorInitialized}
-            />
+            <Suspense fallback={<LoadingOverlay />}>
+              <MarkdownEditor
+                ref={markdownEditor => {
+                  this.markdownEditor = markdownEditor;
+                }}
+                isEditing={isEditing}
+                content={content ?? undefined}
+                onEditorInitialized={this.handleEditorInitialized}
+              />
+            </Suspense>
           </MarkdownContainer>
         )}
       </Panel>

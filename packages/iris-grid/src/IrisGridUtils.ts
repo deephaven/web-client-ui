@@ -16,7 +16,12 @@ import {
   FormattingRule,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
-import { assertNotNull, EMPTY_ARRAY, EMPTY_MAP } from '@deephaven/utils';
+import {
+  assertNotNull,
+  bindAllMethods,
+  EMPTY_ARRAY,
+  EMPTY_MAP,
+} from '@deephaven/utils';
 import AggregationUtils from './sidebar/aggregations/AggregationUtils';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import { FilterData, IrisGridProps, IrisGridState } from './IrisGrid';
@@ -1146,6 +1151,7 @@ class IrisGridUtils {
   constructor(dh: typeof DhType) {
     this.dh = dh;
     this.tableUtils = new TableUtils(dh);
+    bindAllMethods(this);
   }
 
   /**

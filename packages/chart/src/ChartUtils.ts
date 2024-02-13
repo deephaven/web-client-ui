@@ -18,7 +18,7 @@ import type {
   OhlcData,
   MarkerSymbol,
 } from 'plotly.js';
-import { assertNotNull, Range } from '@deephaven/utils';
+import { assertNotNull, bindAllMethods, Range } from '@deephaven/utils';
 import { ChartTheme } from './ChartTheme';
 
 export type FilterColumnMap = Map<
@@ -540,6 +540,7 @@ class ChartUtils {
   constructor(dh: typeof DhType) {
     this.dh = dh;
     this.daysOfWeek = Object.freeze(dh.calendar.DayOfWeek.values());
+    bindAllMethods(this);
   }
 
   /**

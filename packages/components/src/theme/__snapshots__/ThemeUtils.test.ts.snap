@@ -26,6 +26,7 @@ exports[`DEFAULT_PRELOAD_DATA_VARIABLES should match snapshot 1`] = `
   "--dh-color-random-area-plot-animation-fg-fill": "#3b6bda14",
   "--dh-color-random-area-plot-animation-fg-stroke": "#3b6bda33",
   "--dh-color-random-area-plot-animation-grid": "#373438",
+  "--dh-color-text-highlight": "#4c7dee4d",
 }
 `;
 
