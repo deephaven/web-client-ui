@@ -6,13 +6,13 @@ import type {
   RefAttributes,
 } from 'react';
 import { ConnectedComponent } from 'react-redux';
-import type { dh } from '@deephaven/jsapi-types';
 import GoldenLayout from '@deephaven/golden-layout';
 import type {
   GLPanelProps,
   ReactComponentConfig,
 } from '@deephaven/golden-layout';
 import PanelManager from './PanelManager';
+import { WidgetDescriptor } from './PanelEvent';
 
 /**
  * Panel components can provide static props that provide meta data about the
@@ -59,7 +59,7 @@ export function isWrappedComponent<
   return (type as WrappedComponentType<P, C>)?.WrappedComponent !== undefined;
 }
 
-export type PanelMetadata = dh.ide.VariableDescriptor;
+export type PanelMetadata = Partial<WidgetDescriptor>;
 
 export type PanelProps = GLPanelProps & {
   metadata?: PanelMetadata;
