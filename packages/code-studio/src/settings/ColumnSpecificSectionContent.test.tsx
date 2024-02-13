@@ -9,6 +9,7 @@ import React from 'react';
 import { Formatter } from '@deephaven/jsapi-utils';
 import { ApiContext } from '@deephaven/jsapi-bootstrap';
 import dh from '@deephaven/jsapi-shim';
+import { TestUtils } from '@deephaven/utils';
 import {
   ColumnSpecificSectionContent,
   ColumnSpecificSectionContentProps,
@@ -225,6 +226,8 @@ it('should change the input value when column type is Integer', async () => {
 });
 
 it('should throw an error if formatter is wrong', () => {
+  TestUtils.disableConsoleOutput();
+
   const formatter = [
     Formatter.makeColumnFormattingRule('string', 'TEST', {
       label: '',

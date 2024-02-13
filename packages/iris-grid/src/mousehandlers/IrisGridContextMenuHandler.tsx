@@ -159,6 +159,11 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   constructor(irisGrid: IrisGrid, dh: DhType) {
     super();
 
+    this.getNumberValueEqualsFilter =
+      this.getNumberValueEqualsFilter.bind(this);
+    this.getFilterValueForNumberOrChar =
+      this.getFilterValueForNumberOrChar.bind(this);
+
     this.debouncedUpdateCustomFormat = debounce(
       irisGrid.handleFormatSelection,
       DEBOUNCE_UPDATE_FORMAT

@@ -1,11 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useConnection } from '@deephaven/app-utils';
-import {
-  Chart,
-  ChartModel,
-  ChartModelFactory,
-  useChartTheme,
-} from '@deephaven/chart'; // chart is used to display Deephaven charts
+import { Chart, ChartModel, ChartModelFactory } from '@deephaven/chart'; // chart is used to display Deephaven charts
 import { ContextMenuRoot, LoadingOverlay } from '@deephaven/components'; // Use the loading spinner from the Deephaven components package
 import type {
   dh as DhType,
@@ -54,7 +49,6 @@ function App(): JSX.Element {
   );
   const connection = useConnection();
   const dh = useApi();
-  const chartTheme = useChartTheme();
 
   useEffect(
     function initializeApp() {
@@ -78,8 +72,7 @@ function App(): JSX.Element {
           const newModel = await ChartModelFactory.makeModel(
             dh,
             undefined,
-            figure,
-            chartTheme
+            figure
           );
 
           setModel(newModel);
@@ -93,7 +86,7 @@ function App(): JSX.Element {
       }
       initApp();
     },
-    [dh, connection, searchParams, chartTheme]
+    [dh, connection, searchParams]
   );
 
   const isLoaded = model != null;

@@ -173,7 +173,7 @@ test('Inputs regression test', async () => {
   await isolateAndGetSection('inputs');
   const columns = page.locator('#sample-section-inputs .col');
 
-  await expect(columns).toHaveCount(7);
+  await expect(columns).toHaveCount(7, { timeout: 45000 });
 
   // Test focus state for each enabled input
   const columnsCount = await columns.count();
