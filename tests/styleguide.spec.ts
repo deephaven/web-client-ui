@@ -54,16 +54,14 @@ const buttonSectionIds: string[] = [
   'buttons-socketed',
 ];
 
-test.describe.configure({ mode: 'serial' });
+test.describe.configure({
+  mode: process.env.CI === 'true' ? 'serial' : 'parallel',
+});
 
 let page: Page;
 
 async function isolateAndGetSection(sectionId: string) {
-  const isolator = page.getByPlaceholder('Isolate');
-  await expect(isolator).toHaveCount(1);
-  await isolator.fill(sectionId);
-  // sanity check
-  await expect(isolator).toHaveValue(sectionId);
+  await page.goto(`/ide/styleguide?isolatesection=true#${sectionId}`);
 
   const section = page.locator(`#sample-section-${sectionId}`);
   await expect(section).toHaveCount(1);
@@ -74,7 +72,7 @@ async function isolateAndGetSection(sectionId: string) {
 
 test.beforeAll(async ({ browser }) => {
   page = await browser.newPage();
-  await page.goto('/ide/styleguide?testmode=true');
+  await page.goto('/ide/styleguide?isolatesection=true');
   await expect(
     page.locator('.iris-grid .iris-grid-loading-status')
   ).toHaveCount(0);
@@ -102,7 +100,7 @@ test.describe('Styleguide section', () => {
   // Iterate over all sample sections and take a screenshot of each one.
   isolatedSampleSectionIds.forEach(id => {
     test(id, async ({ page: page2 }) => {
-      await page2.goto(`/ide/styleguide?testMode=true#${id}`);
+      await page2.goto(`/ide/styleguide?isolatesection=true#${id}`);
       const sampleSection = page2.locator(`#sample-section-${id}`);
       await expect(sampleSection).toHaveCount(1);
       await expect(sampleSection).toHaveScreenshot(`${id}.png`);
@@ -111,7 +109,7 @@ test.describe('Styleguide section', () => {
   sampleSectionIds.forEach(id => {
     test(id, async () => {
       const sampleSection = await isolateAndGetSection(id);
-      await expect(sampleSection).toHaveScreenshot(`${id}.png`);
+      await expect.soft(sampleSection).toHaveScreenshot(`${id}.png`);
     });
   });
 });

@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import { Flex } from '@adobe/react-spectrum';
 import { ContextMenuRoot, ThemePicker, useTheme } from '@deephaven/components';
 
@@ -31,24 +31,35 @@ import { GoldenLayout } from './GoldenLayout';
 import { RandomAreaPlotAnimation } from './RandomAreaPlotAnimation';
 import SpectrumComparison from './SpectrumComparison';
 
+const stickyProps = {
+  position: 'sticky',
+  justifyContent: 'end',
+  zIndex: 1,
+  UNSAFE_style: {
+    float: 'right',
+  },
+} as const;
+
 function StyleGuide(): React.ReactElement {
-  const isTestMode = window.location.search
+  const isolateSection = window.location.search
     .toLowerCase()
-    .includes('testmode=true');
+    .includes('isolatesection=true');
+  const [targetSection, setTargetSection] = React.useState<string>('');
   const { themes } = useTheme();
   const hasMultipleThemes = themes.length > 1;
-  const [targetSection, setTargetSection] = useState<string>(
-    window.location.hash.replace('#', '')
-  );
 
-  const stickyProps = {
-    position: isTestMode ? 'static' : 'sticky',
-    justifyContent: 'end',
-    zIndex: 1,
-    UNSAFE_style: {
-      float: 'right',
-    },
-  } as const;
+  useEffect(() => {
+    const hashChangeHandler = () => {
+      setTargetSection(window.location.hash.replace('#', ''));
+    };
+
+    hashChangeHandler();
+    window.addEventListener('hashchange', hashChangeHandler);
+
+    return () => {
+      window.removeEventListener('hashchange', hashChangeHandler);
+    };
+  }, []);
 
   return (
     // Needs a tabindex to capture focus on popper blur
@@ -58,7 +69,7 @@ function StyleGuide(): React.ReactElement {
         {/* For e2e tests this allows us to isolate sections for snapshots. This 
       mitigates an issue where a change to a section in the styleguide can cause
       subtle pixel shifts in other sections */}
-        {isTestMode && targetSection !== '' && (
+        {isolateSection && targetSection !== '' && (
           <style>
             {`.${HIDE_FROM_E2E_TESTS_CLASS}, .sample-section:not(#sample-section-${targetSection}), :not(.sample-section) > h2 {
           display: none;
@@ -76,7 +87,7 @@ function StyleGuide(): React.ReactElement {
 
         <Flex
           {...stickyProps}
-          // UNSAFE_className={HIDE_FROM_E2E_TESTS_CLASS}
+          UNSAFE_className={HIDE_FROM_E2E_TESTS_CLASS}
           marginTop={-56}
           top={20}
           gap={10}
@@ -84,26 +95,16 @@ function StyleGuide(): React.ReactElement {
         >
           {hasMultipleThemes ? <ThemePicker /> : null}
           <SamplesMenu />
-          {isTestMode && (
-            <input
-              type="text"
-              placeholder="Isolate"
-              onChange={e => setTargetSection(e.target.value)}
-              value={targetSection ?? ''}
-            />
-          )}
         </Flex>
-        {!isTestMode && (
-          <Flex
-            {...stickyProps}
-            UNSAFE_className={HIDE_FROM_E2E_TESTS_CLASS}
-            top="calc(100vh - 40px)"
-            marginTop={-32}
-            marginEnd={hasMultipleThemes ? -234 : 0}
-          >
-            <GotoTopButton />
-          </Flex>
-        )}
+        <Flex
+          {...stickyProps}
+          UNSAFE_className={HIDE_FROM_E2E_TESTS_CLASS}
+          top="calc(100vh - 40px)"
+          marginTop={-32}
+          marginEnd={hasMultipleThemes ? -234 : 0}
+        >
+          <GotoTopButton />
+        </Flex>
 
         <Typograpy />
 
