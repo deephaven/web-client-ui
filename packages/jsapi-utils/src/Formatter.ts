@@ -83,7 +83,9 @@ export class Formatter {
     integerFormatOptions?: ConstructorParameters<
       typeof IntegerColumnFormatter
     >[1],
-    truncateNumbersWithPound = false
+    truncateNumbersWithPound = false,
+    showEmptyStrings = true,
+    showNullStrings = true
   ) {
     // Formatting order:
     // - columnFormatMap[type][name]
@@ -114,6 +116,9 @@ export class Formatter {
     // Formats indexed by data type and column name
     this.columnFormatMap = Formatter.makeColumnFormatMap(columnFormattingRules);
     this.truncateNumbersWithPound = truncateNumbersWithPound;
+
+    this.showEmptyStrings = showEmptyStrings;
+    this.showNullStrings = showNullStrings;
   }
 
   defaultColumnFormatter: TableColumnFormatter;
@@ -123,6 +128,10 @@ export class Formatter {
   columnFormatMap: Map<DataType, Map<string, TableColumnFormat>>;
 
   truncateNumbersWithPound: boolean;
+
+  showEmptyStrings: boolean;
+
+  showNullStrings: boolean;
 
   /**
    * Gets columnFormatMap indexed by name for a given column type, creates new Map entry if necessary

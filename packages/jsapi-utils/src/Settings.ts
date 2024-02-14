@@ -19,6 +19,8 @@ export interface NumberFormatSettings {
     defaultFormatString?: string;
   };
   truncateNumbersWithPound?: boolean;
+  showEmptyStrings?: boolean;
+  showNullStrings?: boolean;
 }
 
 export interface Settings
