@@ -12,7 +12,9 @@ import './theme-spectrum-overrides.css';
  * e.g.
  * {
  *   'dh-spectrum-palette': '_dh-spectrum-palette_abr16_1',
+ *   'higher-palette-specificity': '_higher-palette-specificity_18mbe_1',
  *   'dh-spectrum-alias': '_dh-spectrum-alias_18mbe_1',
+ *   'higher-alias-specificity': '_higher-alias-specificity_18mbe_1',
  * }
  */
 export const themeSpectrumClassesCommon = {
