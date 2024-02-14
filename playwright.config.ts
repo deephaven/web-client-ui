@@ -7,19 +7,23 @@ import { devices } from '@playwright/test';
  */
 // require('dotenv').config();
 
+const TIMEOUT_MS = 120 * 1000;
+const TIMEOUT_ACTION_MS = 15 * 1000;
+const TIMEOUT_EXPECT_MS = 15 * 1000;
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
 const config: PlaywrightTestConfig = {
   testDir: './tests',
   /* Maximum time one test can run for. */
-  timeout: 120 * 1000,
+  timeout: TIMEOUT_MS,
   expect: {
     /**
      * Maximum time expect() should wait for the condition to be met.
      * For example in `await expect(locator).toHaveText();`
      */
-    timeout: 15000,
+    timeout: TIMEOUT_EXPECT_MS,
   },
   /* Default to run each suite in parallel, suites and optional opt out */
   fullyParallel: true,
@@ -37,7 +41,7 @@ const config: PlaywrightTestConfig = {
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
-    actionTimeout: 0,
+    actionTimeout: TIMEOUT_ACTION_MS,
 
     /* Navigation timeout for how long it takes to navigate to a page */
     navigationTimeout: 60 * 1000,

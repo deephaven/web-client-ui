@@ -118,6 +118,14 @@ export const getTruncateNumbersWithPound = <
 ): Settings<State>['truncateNumbersWithPound'] =>
   getSettings(store).truncateNumbersWithPound;
 
+export const getShowEmptyStrings = <State extends RootState = RootState>(
+  store: State
+): Settings<State>['showEmptyStrings'] => getSettings(store).showEmptyStrings;
+
+export const getShowNullStrings = <State extends RootState = RootState>(
+  store: State
+): Settings<State>['showNullStrings'] => getSettings(store).showNullStrings;
+
 export const getDisableMoveConfirmation = <State extends RootState>(
   store: State
 ): Settings<State>['disableMoveConfirmation'] =>
