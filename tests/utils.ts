@@ -71,7 +71,7 @@ async function openObject(
   expect(openButton).not.toBeNull();
   expect(openButton).not.toBeDisabled();
   await openButton.click();
-  
+
   await expect(page.locator('.loading-spinner')).toHaveCount(0);
 }
 
@@ -303,15 +303,10 @@ export async function waitForLoadingDone(
  */
 export async function expectContextMenus(
   page: Page,
-  count: number,
-  waitForFiltersToLoad = false
+  count: number
 ): Promise<void> {
   await expect(page.locator('.context-menu-container')).toHaveCount(count);
-  if (waitForFiltersToLoad) {
-    await expect(
-      page.getByRole('button', { name: 'Filter by Value' })
-    ).not.toBeNull();
-  }
+  await expect(page.locator('.loading-spinner')).toHaveCount(0);
 }
 
 /**
