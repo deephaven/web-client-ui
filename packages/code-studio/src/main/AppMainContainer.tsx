@@ -347,11 +347,17 @@ export class AppMainContainer extends Component<
   }
 
   initDashboardData(): void {
-    const { allDashboardData, workspace } = this.props;
+    const { setDashboardPluginData, workspace } = this.props;
     const { data: workspaceData } = workspace;
-    // const { layoutConfig } = workspaceData;
-    console.log(allDashboardData, workspaceData);
-    debugger;
+    const { pluginDataMap } = workspaceData;
+    const pluginKeys = Object.keys(pluginDataMap);
+    // TODO: There should be a more elegant way of loading this data... ie. with the dashboard, not from the workspace data. For now here we are.
+    for (let i = 0; i < pluginKeys.length; i += 1) {
+      const pluginId = pluginKeys[i];
+      const pluginData = pluginDataMap[pluginId];
+      log.debug('Initializing with plugin data', pluginId, pluginData);
+      setDashboardPluginData(DEFAULT_DASHBOARD_ID, pluginId, pluginData);
+    }
   }
 
   openNotebookFromURL(): void {
