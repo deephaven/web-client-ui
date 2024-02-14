@@ -71,6 +71,8 @@ async function openObject(
   expect(openButton).not.toBeNull();
   expect(openButton).not.toBeDisabled();
   await openButton.click();
+  
+  await expect(page.locator('.loading-spinner')).toHaveCount(0);
 }
 
 /**
