@@ -1,7 +1,7 @@
 import { KeyboardEvent } from 'react';
 import { KeyHandler } from '@deephaven/grid';
 import { TableUtils } from '@deephaven/jsapi-utils';
-import { IrisGrid } from '../IrisGrid';
+import type IrisGrid from '../IrisGrid';
 import IrisGridShortcuts from '../IrisGridShortcuts';
 
 class ReverseKeyHandler extends KeyHandler {

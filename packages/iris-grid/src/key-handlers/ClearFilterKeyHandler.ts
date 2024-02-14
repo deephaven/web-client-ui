@@ -1,6 +1,6 @@
 import { KeyboardEvent } from 'react';
 import { KeyHandler } from '@deephaven/grid';
-import { IrisGrid } from '../IrisGrid';
+import type IrisGrid from '../IrisGrid';
 import IrisGridShortcuts from '../IrisGridShortcuts';
 
 class ClearFilterKeyHandler extends KeyHandler {

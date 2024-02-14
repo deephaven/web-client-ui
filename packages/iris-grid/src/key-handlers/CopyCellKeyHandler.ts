@@ -2,7 +2,7 @@ import { KeyboardEvent } from 'react';
 import { KeyHandler } from '@deephaven/grid';
 import { ContextActionUtils } from '@deephaven/components';
 import type { Grid } from '@deephaven/grid';
-import { IrisGrid } from '../IrisGrid';
+import type IrisGrid from '../IrisGrid';
 
 class CopyCellKeyHandler extends KeyHandler {
   private irisGrid: IrisGrid;

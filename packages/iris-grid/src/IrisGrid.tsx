@@ -452,7 +452,7 @@ export interface IrisGridState {
   columnHeaderGroups: readonly ColumnHeaderGroup[];
 }
 
-export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
+class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   static contextType = IrisGridThemeContext;
 
   static minDebounce = 150;
