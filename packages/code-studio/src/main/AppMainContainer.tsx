@@ -347,11 +347,17 @@ export class AppMainContainer extends Component<
   }
 
   initDashboardData(): void {
-    const { setDashboardPluginData, workspace } = this.props;
+    // TODO: #1746 We should be loading data from a dashboard storage store
+    // For now only the default dashboard data is stored with the workspace and set on the default dashboard
+    const { setDashboardPluginData, updateDashboardData, workspace } =
+      this.props;
     const { data: workspaceData } = workspace;
-    const { pluginDataMap } = workspaceData;
+    const { filterSets, links, pluginDataMap } = workspaceData;
+    updateDashboardData(DEFAULT_DASHBOARD_ID, {
+      filterSets,
+      links,
+    });
     const pluginKeys = Object.keys(pluginDataMap);
-    // TODO: There should be a more elegant way of loading this data... ie. with the dashboard, not from the workspace data. For now here we are.
     for (let i = 0; i < pluginKeys.length; i += 1) {
       const pluginId = pluginKeys[i];
       const pluginData = pluginDataMap[pluginId];

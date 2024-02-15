@@ -58,13 +58,14 @@ export interface WorkspaceSettings {
 }
 
 export interface WorkspaceData {
+  settings: WorkspaceSettings;
+
+  // TODO: #1746 The rest of these options should not be stored with workspace data, we should have a separate DashboardStorage
   closed: unknown[];
   filterSets: unknown[];
   layoutConfig: unknown[];
   links: unknown;
-  // TODO: This should not be stored with workspace data, we should have a separate DashboardStorage
   pluginDataMap: PluginDataMap;
-  settings: WorkspaceSettings;
 }
 
 export interface CustomizableWorkspaceData
