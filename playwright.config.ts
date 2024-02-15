@@ -50,7 +50,7 @@ const config: PlaywrightTestConfig = {
     baseURL: 'http://localhost:4000/ide/',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'retain-on-failure',
+    trace: 'on-first-retry',
 
     /* Retain videos on failure for easier debugging */
     video: 'retain-on-failure',
