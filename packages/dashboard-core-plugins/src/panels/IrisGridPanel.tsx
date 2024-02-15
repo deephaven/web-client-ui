@@ -19,7 +19,7 @@ import {
 import {
   AdvancedSettings,
   IrisGrid,
-  IrisGridType,
+  type IrisGridType,
   IrisGridModel,
   IrisGridUtils,
   isIrisGridTableModelTemplate,
