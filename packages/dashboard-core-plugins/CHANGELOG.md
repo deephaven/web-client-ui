@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.64.0](https://github.com/deephaven/web-client-ui/compare/v0.63.0...v0.64.0) (2024-02-15)
+
+
+### Features
+
+* add LaTeX to Markdown ([#1734](https://github.com/deephaven/web-client-ui/issues/1734)) ([434930a](https://github.com/deephaven/web-client-ui/commit/434930af3e30fceab4e4dc193f29016522799cb1)), closes [#1720](https://github.com/deephaven/web-client-ui/issues/1720)
+* Chart responsible for its own theme ([#1772](https://github.com/deephaven/web-client-ui/issues/1772)) ([fabb055](https://github.com/deephaven/web-client-ui/commit/fabb055f9dacdbb4ad1b4ce7ca85d170f955366d)), closes [#1728](https://github.com/deephaven/web-client-ui/issues/1728)
+
+
+### BREAKING CHANGES
+
+* - Renamed `ColorUtils.getColorwayFromTheme` to `normalizeColorway`
+- Removed `chartTheme` arg from functions in `ChartUtils`,
+`ChartModelFactory` and `FigureChartModel` in @deephaven/chart
+
+
+
+
+
 # [0.63.0](https://github.com/deephaven/web-client-ui/compare/v0.62.0...v0.63.0) (2024-02-08)
 
 
