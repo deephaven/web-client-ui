@@ -204,6 +204,8 @@ export class AppMainContainer extends Component<
 
     const { allDashboardData } = this.props;
 
+    this.dashboardLayouts = new Map();
+
     this.state = {
       contextActions: [
         {
@@ -285,12 +287,9 @@ export class AppMainContainer extends Component<
     this.deinitWidgets();
     this.stopListeningForDisconnect();
 
-    if (this.goldenLayout != null) {
-      stopListenForCreateDashboard(
-        this.goldenLayout.eventHub,
-        this.handleCreateDashboard
-      );
-    }
+    this.dashboardLayouts.forEach(layout => {
+      stopListenForCreateDashboard(layout.eventHub, this.handleCreateDashboard);
+    });
 
     window.removeEventListener(
       'beforeunload',
@@ -298,7 +297,8 @@ export class AppMainContainer extends Component<
     );
   }
 
-  goldenLayout?: GoldenLayout;
+  /** Map from the dashboard ID to the GoldenLayout instance for that dashboard */
+  dashboardLayouts: Map<string, GoldenLayout>;
 
   importElement: RefObject<HTMLInputElement>;
 
@@ -357,12 +357,14 @@ export class AppMainContainer extends Component<
       filterSets,
       links,
     });
-    const pluginKeys = Object.keys(pluginDataMap);
-    for (let i = 0; i < pluginKeys.length; i += 1) {
-      const pluginId = pluginKeys[i];
-      const pluginData = pluginDataMap[pluginId];
-      log.debug('Initializing with plugin data', pluginId, pluginData);
-      setDashboardPluginData(DEFAULT_DASHBOARD_ID, pluginId, pluginData);
+    if (pluginDataMap != null) {
+      const pluginKeys = Object.keys(pluginDataMap);
+      for (let i = 0; i < pluginKeys.length; i += 1) {
+        const pluginId = pluginKeys[i];
+        const pluginData = pluginDataMap[pluginId];
+        log.debug('initDashboardData plugin data', pluginId, pluginData);
+        setDashboardPluginData(DEFAULT_DASHBOARD_ID, pluginId, pluginData);
+      }
     }
   }
 
@@ -403,7 +405,9 @@ export class AppMainContainer extends Component<
   }
 
   emitLayoutEvent(event: string, ...args: unknown[]): void {
-    this.goldenLayout?.eventHub.emit(event, ...args);
+    const { activeTabKey } = this.state;
+    const layout = this.dashboardLayouts.get(activeTabKey);
+    layout?.eventHub.emit(event, ...args);
   }
 
   handleCancelResetLayoutPrompt(): void {
@@ -498,22 +502,21 @@ export class AppMainContainer extends Component<
     updateWorkspaceData({ closed, filterSets, links, pluginDataMap });
   }
 
-  handleGoldenLayoutChange(goldenLayout: GoldenLayout): void {
-    if (this.goldenLayout === goldenLayout) return;
+  handleGoldenLayoutChange(newLayout: GoldenLayout): void {
+    const { activeTabKey } = this.state;
+    const oldLayout = this.dashboardLayouts.get(activeTabKey);
+    if (oldLayout === newLayout) return;
 
-    if (this.goldenLayout != null) {
+    if (oldLayout != null) {
       stopListenForCreateDashboard(
-        this.goldenLayout.eventHub,
+        oldLayout.eventHub,
         this.handleCreateDashboard
       );
     }
 
-    this.goldenLayout = goldenLayout;
+    this.dashboardLayouts.set(activeTabKey, newLayout);
 
-    listenForCreateDashboard(
-      this.goldenLayout.eventHub,
-      this.handleCreateDashboard
-    );
+    listenForCreateDashboard(newLayout.eventHub, this.handleCreateDashboard);
   }
 
   handleCreateDashboard({
