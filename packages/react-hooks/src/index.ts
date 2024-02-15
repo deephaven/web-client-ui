@@ -4,6 +4,7 @@ export * from './useAsyncInterval';
 export * from './useCallbackWithAction';
 export { default as useContextOrThrow } from './useContextOrThrow';
 export * from './useDebouncedCallback';
+export * from './useDelay';
 export * from './useDependentState';
 export * from './useEffectNTimesWhen';
 export * from './useIsEqualMemo';
