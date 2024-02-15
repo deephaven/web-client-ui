@@ -1,10 +1,7 @@
 /**
- * The higher-palette-specificity class is so we always take precedence over spectrum's definitions 
- * It must be different from any other CSS module specificity classes for spectrum's theme
- * Otherwise one of the classes will not get applied since the JS part receives the same key,
- * but the CSS module will generate a different class name suffix. This ends up with spectrum picking only 1.
+ * Intentionally using the classname twice so we have higher specificity than spectrum's definitions
  */
-.dh-spectrum-palette.higher-palette-specificity {
+.dh-spectrum-palette.dh-spectrum-palette {
   /* Gray */
   --spectrum-gray-50: var(--dh-color-gray-50);
   --spectrum-gray-75: var(--dh-color-gray-75);

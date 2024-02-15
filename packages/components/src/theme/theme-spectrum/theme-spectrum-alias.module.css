@@ -2,12 +2,9 @@
 /* stylelint-disable alpha-value-notation */
 
 /**
- * The higher-alias-specificity class is so we always take precedence over spectrum's definitions 
- * It must be different from any other CSS module specificity classes for spectrum's theme
- * Otherwise one of the classes will not get applied since the JS part receives the same key,
- * but the CSS module will generate a different class name suffix. This ends up with spectrum picking only 1.
+ * Intentionally using the classname twice so we have higher specificity than spectrum's definitions
  */
-.dh-spectrum-alias.higher-alias-specificity {
+.dh-spectrum-alias.dh-spectrum-alias {
   /*********** Override variables in spectrum-global.css **********************/
   --spectrum-alias-background-color-default: var(--dh-color-bg);
   --spectrum-alias-background-color-disabled: var(--dh-color-disabled-bg);

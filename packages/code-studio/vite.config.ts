@@ -101,6 +101,35 @@ export default defineConfig(({ mode }) => {
       emptyOutDir: true,
       sourcemap: true,
       target: 'esnext',
+      rollupOptions: {
+        output: {
+          manualChunks: id => {
+            /**
+             * Without this, our chunk order may cause a circular reference
+             * by putting the helpers in the vendor or plotly chunk
+             * This causes failures with loading the compiled version
+             *
+             * See https://github.com/rollup/plugins/issues/591
+             */
+            if (id === '\0commonjsHelpers.js') {
+              return 'helpers';
+            }
+
+            if (id.includes('node_modules')) {
+              if (id.includes('monaco-editor')) {
+                return 'monaco';
+              }
+              if (id.includes('plotly.js')) {
+                return 'plotly';
+              }
+              if (id.includes('mathjax')) {
+                return 'mathjax';
+              }
+              return 'vendor';
+            }
+          },
+        },
+      },
     },
     optimizeDeps: {
       esbuildOptions: {
