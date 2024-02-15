@@ -9,15 +9,11 @@ export function useDelay(delayMs: number): boolean {
   const [isDelayed, setIsDelayed] = useState(true);
 
   useEffect(() => {
-    let isCancelled = false;
     const timeout = setTimeout(() => {
-      if (!isCancelled) {
-        setIsDelayed(false);
-      }
+      setIsDelayed(false);
     }, delayMs);
 
     return () => {
-      isCancelled = true;
       clearTimeout(timeout);
     };
   }, [delayMs]);
