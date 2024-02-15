@@ -1,7 +1,7 @@
 import { LoadingOverlay } from '@deephaven/components';
 import { lazy, Suspense } from 'react';
 
-const PlotBase = lazy(() => import('./PlotBase.js'));
+const PlotBase = lazy(() => import('./Plot.js'));
 
 function Plot(props: React.ComponentProps<typeof PlotBase>): JSX.Element {
   return (
