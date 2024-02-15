@@ -8,6 +8,7 @@ import type {
   Figure,
   Series,
   SeriesDataSource,
+  SeriesPlotStyle,
 } from '@deephaven/jsapi-types';
 
 class ChartTestUtils {
@@ -84,6 +85,12 @@ class ChartTestUtils {
     sources = this.makeDefaultSources(),
     lineColor = null,
     shapeColor = null,
+  }: {
+    name?: string | null;
+    lineColor?: string | null;
+    plotStyle?: SeriesPlotStyle | null;
+    shapeColor?: string | null;
+    sources?: SeriesDataSource[];
   } = {}): Series {
     const { dh } = this;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -176,16 +176,14 @@ class MockChartModel extends ChartModel {
   }
 
   static makeDefaultLayout(dh: DhType): Partial<Layout> {
-    const layout = new ChartUtils(dh).makeDefaultLayout(MockChartModel.theme);
+    const layout: Partial<Layout> = {
+      template: new ChartUtils(dh).makeDefaultTemplate(MockChartModel.theme),
+    };
+
     layout.title = 'Chart';
 
-    if (layout.xaxis) {
-      layout.xaxis.title = 'Datestamp';
-    }
-
-    if (layout.yaxis) {
-      layout.yaxis.title = 'Price';
-    }
+    layout.xaxis = { title: 'Datestamp' };
+    layout.yaxis = { title: 'Price' };
 
     return layout;
   }

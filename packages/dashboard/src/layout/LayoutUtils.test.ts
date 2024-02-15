@@ -1,4 +1,7 @@
-import type { ContentItem } from '@deephaven/golden-layout';
+import type {
+  ContentItem,
+  ReactComponentConfig,
+} from '@deephaven/golden-layout';
 import LayoutUtils from './LayoutUtils';
 
 function makeContentItem(type = 'root'): Partial<ContentItem> {
@@ -123,5 +126,35 @@ describe('getContentItemInStack', () => {
       id: 'noItemFound',
     });
     expect(found).toBeNull();
+  });
+});
+
+describe('isEqual', () => {
+  function makeComponentConfig(
+    props: Record<string, unknown>
+  ): ReactComponentConfig {
+    return {
+      component: 'ReactComponent',
+      type: 'component',
+      props,
+    };
+  }
+
+  it('ignores the difference between undefined and missing properties', () => {
+    expect(
+      LayoutUtils.isEqual(
+        [makeComponentConfig({ a: 1, b: undefined })],
+        [makeComponentConfig({ a: 1 })]
+      )
+    ).toBe(true);
+  });
+
+  it('correctly differentiates null from undefined', () => {
+    expect(
+      LayoutUtils.isEqual(
+        [makeComponentConfig({ a: 1, b: undefined })],
+        [makeComponentConfig({ a: 1, b: null })]
+      )
+    ).toBe(false);
   });
 });

@@ -547,11 +547,11 @@ class IrisGridTableModelTemplate<
 
     if (TableUtils.isTextType(this.columns[x]?.type)) {
       if (text === null) {
-        return 'null';
+        return this.formatter.showNullStrings ? 'null' : '';
       }
 
       if (text === '') {
-        return 'empty';
+        return this.formatter.showEmptyStrings ? 'empty' : '';
       }
     }
 

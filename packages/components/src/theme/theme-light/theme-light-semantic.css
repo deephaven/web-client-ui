@@ -176,26 +176,26 @@
   /* Positive */
   --dh-color-positive: var(--dh-color-green-900);
   --dh-color-positive-bg: var(--dh-color-positive);
-  --dh-color-positive-hover-bg: var(--dh-color-green-800);
-  --dh-color-positive-down-bg: var(--dh-color-green-700);
-  --dh-color-positive-key-focus-bg: var(--dh-color-green-800);
+  --dh-color-positive-hover-bg: var(--dh-color-green-1000);
+  --dh-color-positive-down-bg: var(--dh-color-green-1100);
+  --dh-color-positive-key-focus-bg: var(--dh-color-green-1000);
   --dh-color-positive-contrast: var(--dh-color-contrast-dark);
 
   /* Informative */
   --dh-color-info: var(--dh-color-cyan-1000);
   --dh-color-info-bg: var(--dh-color-info);
-  --dh-color-info-hover-bg: var(--dh-color-cyan-900);
-  --dh-color-info-down-bg: var(--dh-color-cyan-800);
-  --dh-color-info-key-focus-bg: var(--dh-color-cyan-900);
+  --dh-color-info-hover-bg: var(--dh-color-cyan-1100);
+  --dh-color-info-down-bg: var(--dh-color-cyan-1200);
+  --dh-color-info-key-focus-bg: var(--dh-color-cyan-1100);
   --dh-color-info-contrast: var(--dh-color-contrast-dark);
 
   /* Notice */
-  --dh-color-notice: var(--dh-color-yellow-1000);
+  --dh-color-notice: var(--dh-color-yellow-500);
   --dh-color-notice-bg: var(--dh-color-notice);
-  --dh-color-notice-hover-bg: var(--dh-color-yellow-900);
-  --dh-color-notice-down-bg: var(--dh-color-yellow-800);
-  --dh-color-notice-key-focus-bg: var(--dh-color-yellow-1000);
-  --dh-color-notice-contrast: var(--dh-color-contrast-dark);
+  --dh-color-notice-hover-bg: var(--dh-color-yellow-600);
+  --dh-color-notice-down-bg: var(--dh-color-yellow-700);
+  --dh-color-notice-key-focus-bg: var(--dh-color-yellow-600);
+  --dh-color-notice-contrast: var(--dh-color-contrast-light);
 
   /* Editing */
   --dh-color-modified: var(--dh-color-green-700);

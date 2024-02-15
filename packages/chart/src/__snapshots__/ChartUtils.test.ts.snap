@@ -1,0 +1,294 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`makeDefaultTemplate should create a default template 1`] = `
+{
+  "data": {
+    "bar": [
+      {
+        "marker": {
+          "line": {
+            "color": "transparent",
+          },
+        },
+      },
+    ],
+    "ohlc": [
+      {
+        "decreasing": {
+          "line": {
+            "color": "ChartTheme['ohlc_decreasing']",
+          },
+        },
+        "increasing": {
+          "line": {
+            "color": "ChartTheme['ohlc_increasing']",
+          },
+        },
+      },
+    ],
+    "pie": [
+      {
+        "outsidetextfont": {
+          "color": "ChartTheme['title_color']",
+        },
+      },
+    ],
+    "scatter": [
+      {
+        "error_x": {
+          "color": "ChartTheme['error_band_line_color']",
+        },
+        "error_y": {
+          "color": "ChartTheme['error_band_line_color']",
+        },
+      },
+    ],
+    "treemap": [
+      {
+        "outsidetextfont": {
+          "color": "ChartTheme['title_color']",
+        },
+      },
+    ],
+  },
+  "layout": {
+    "autosize": true,
+    "colorway": [
+      "ChartTheme[colorway0]",
+      "ChartTheme[colorway1]",
+      "ChartTheme[colorway2]",
+    ],
+    "datarevision": 0,
+    "font": {
+      "color": "ChartTheme['title_color']",
+      "family": "'Fira Sans', sans-serif",
+    },
+    "geo": {
+      "bgcolor": "ChartTheme['paper_bgcolor']",
+      "coastlinecolor": "ChartTheme['coastline_color']",
+      "lakecolor": "ChartTheme['lake_color']",
+      "landcolor": "ChartTheme['land_color']",
+      "oceancolor": "ChartTheme['ocean_color']",
+      "rivercolor": "ChartTheme['river_color']",
+      "showcoastlines": true,
+      "showframe": false,
+      "showlakes": true,
+      "showland": true,
+      "showocean": true,
+      "showrivers": true,
+    },
+    "legend": {
+      "font": {
+        "color": "ChartTheme['title_color']",
+      },
+    },
+    "margin": {
+      "b": 60,
+      "l": 60,
+      "pad": 0,
+      "r": 50,
+      "t": 30,
+    },
+    "paper_bgcolor": "ChartTheme['paper_bgcolor']",
+    "plot_bgcolor": "ChartTheme['plot_bgcolor']",
+    "polar": {
+      "angularaxis": {
+        "automargin": true,
+        "gridcolor": "ChartTheme['gridcolor']",
+        "legend": {
+          "font": {
+            "color": "ChartTheme['legend_color']",
+          },
+        },
+        "linecolor": "ChartTheme['linecolor']",
+        "rangeslider": {
+          "visible": false,
+        },
+        "showline": true,
+        "tickcolor": "ChartTheme['paper_bgcolor']",
+        "tickfont": {
+          "color": "ChartTheme['zerolinecolor']",
+        },
+        "ticklen": 5,
+        "ticks": "outside",
+        "title": {
+          "font": {
+            "color": "ChartTheme['title_color']",
+          },
+        },
+      },
+      "bgcolor": "ChartTheme['plot_bgcolor']",
+      "radialaxis": {
+        "automargin": true,
+        "gridcolor": "ChartTheme['gridcolor']",
+        "legend": {
+          "font": {
+            "color": "ChartTheme['legend_color']",
+          },
+        },
+        "linecolor": "ChartTheme['linecolor']",
+        "rangeslider": {
+          "visible": false,
+        },
+        "showline": true,
+        "tickcolor": "ChartTheme['paper_bgcolor']",
+        "tickfont": {
+          "color": "ChartTheme['zerolinecolor']",
+        },
+        "ticklen": 5,
+        "ticks": "outside",
+        "title": {
+          "font": {
+            "color": "ChartTheme['title_color']",
+          },
+        },
+      },
+    },
+    "scene": {
+      "xaxis": {
+        "automargin": true,
+        "gridcolor": "ChartTheme['gridcolor']",
+        "legend": {
+          "font": {
+            "color": "ChartTheme['legend_color']",
+          },
+        },
+        "linecolor": "ChartTheme['linecolor']",
+        "rangeslider": {
+          "visible": false,
+        },
+        "showgrid": true,
+        "showline": true,
+        "tickcolor": "ChartTheme['paper_bgcolor']",
+        "tickfont": {
+          "color": "ChartTheme['zerolinecolor']",
+        },
+        "ticklen": 5,
+        "ticks": "outside",
+        "title": {
+          "font": {
+            "color": "ChartTheme['title_color']",
+          },
+        },
+      },
+      "yaxis": {
+        "automargin": true,
+        "gridcolor": "ChartTheme['gridcolor']",
+        "legend": {
+          "font": {
+            "color": "ChartTheme['legend_color']",
+          },
+        },
+        "linecolor": "ChartTheme['linecolor']",
+        "rangeslider": {
+          "visible": false,
+        },
+        "showline": true,
+        "tickcolor": "ChartTheme['paper_bgcolor']",
+        "tickfont": {
+          "color": "ChartTheme['zerolinecolor']",
+        },
+        "ticklen": 5,
+        "ticks": "outside",
+        "title": {
+          "font": {
+            "color": "ChartTheme['title_color']",
+          },
+        },
+        "zerolinecolor": "ChartTheme['zerolinecolor']",
+        "zerolinewidth": 2,
+      },
+      "zaxis": {
+        "automargin": true,
+        "gridcolor": "ChartTheme['gridcolor']",
+        "legend": {
+          "font": {
+            "color": "ChartTheme['legend_color']",
+          },
+        },
+        "linecolor": "ChartTheme['linecolor']",
+        "rangeslider": {
+          "visible": false,
+        },
+        "showline": true,
+        "tickcolor": "ChartTheme['paper_bgcolor']",
+        "tickfont": {
+          "color": "ChartTheme['zerolinecolor']",
+        },
+        "ticklen": 5,
+        "ticks": "outside",
+        "title": {
+          "font": {
+            "color": "ChartTheme['title_color']",
+          },
+        },
+      },
+    },
+    "title": {
+      "font": {
+        "color": "ChartTheme['title_color']",
+      },
+      "pad": {
+        "t": 8,
+      },
+      "xanchor": "center",
+      "xref": "paper",
+      "y": 1,
+      "yanchor": "top",
+    },
+    "xaxis": {
+      "automargin": true,
+      "gridcolor": "ChartTheme['gridcolor']",
+      "legend": {
+        "font": {
+          "color": "ChartTheme['legend_color']",
+        },
+      },
+      "linecolor": "ChartTheme['linecolor']",
+      "rangeslider": {
+        "visible": false,
+      },
+      "showgrid": true,
+      "showline": true,
+      "tickcolor": "ChartTheme['paper_bgcolor']",
+      "tickfont": {
+        "color": "ChartTheme['zerolinecolor']",
+      },
+      "ticklen": 5,
+      "ticks": "outside",
+      "title": {
+        "font": {
+          "color": "ChartTheme['title_color']",
+        },
+      },
+    },
+    "yaxis": {
+      "automargin": true,
+      "gridcolor": "ChartTheme['gridcolor']",
+      "legend": {
+        "font": {
+          "color": "ChartTheme['legend_color']",
+        },
+      },
+      "linecolor": "ChartTheme['linecolor']",
+      "rangeslider": {
+        "visible": false,
+      },
+      "showline": true,
+      "tickcolor": "ChartTheme['paper_bgcolor']",
+      "tickfont": {
+        "color": "ChartTheme['zerolinecolor']",
+      },
+      "ticklen": 5,
+      "ticks": "outside",
+      "title": {
+        "font": {
+          "color": "ChartTheme['title_color']",
+        },
+      },
+      "zerolinecolor": "ChartTheme['zerolinecolor']",
+      "zerolinewidth": 2,
+    },
+  },
+}
+`;

@@ -1,3 +1,4 @@
+/* stylelint-disable no-descending-specificity */
 // Width variables (appears count calculates by raw css)
 $width0: 100%; // Appears 3 times
 $width1: 20px; // Appears 2 times
@@ -140,7 +141,7 @@ $height6: 15px; // Appears 1 time
     cursor: pointer;
     height: $height2;
     margin-top: 1px;
-    padding: 0px 10px 5px;
+    padding: 0 10px 5px;
     padding-right: 25px;
     position: relative;
     min-width: 0;
@@ -185,7 +186,7 @@ $height6: 15px; // Appears 1 time
     .lm_tabs {
       transform-origin: left top;
       top: 0;
-      width: 1000px; /*hack*/
+      width: 1000px; /* hack */
     }
     .lm_controls {
       bottom: 0;

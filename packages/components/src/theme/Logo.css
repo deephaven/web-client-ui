@@ -1,11 +1,12 @@
 :root {
-  --dh-logo-dark-img: url('../../logos/community-wordmark-dark.svg');
-  --dh-logo-light-img: url('../../logos/community-wordmark-light.svg');
+  --dh-logo-dark-img: url('../../assets/logos/community-wordmark-dark.svg');
+  --dh-logo-light-img: url('../../assets/logos/community-wordmark-light.svg');
 }
 
 .dh-logo {
   --dh-logo-width: 230;
   --dh-logo-height: 40;
+
   aspect-ratio: var(--dh-logo-width) / var(--dh-logo-height);
   max-height: 100%;
   max-width: 100%;

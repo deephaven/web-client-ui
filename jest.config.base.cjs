@@ -1,5 +1,40 @@
 const path = require('path');
 
+// List of node_modules that need to be transformed from ESM to CJS for jest to work
+const nodeModulesToTransform = [
+  // monaco
+  'monaco-editor',
+  // plotly.js dependencies
+  'd3-interpolate',
+  'd3-color',
+  // react-markdown and its dependencies
+  'react-markdown',
+  'vfile',
+  'vfile-message',
+  'unist-util.*',
+  'unified',
+  'bail',
+  'is-plain-obj',
+  'trough',
+  'remark.*',
+  'mdast-util.*',
+  'micromark.*',
+  'decode-named-character-reference',
+  'trim-lines',
+  'property-information',
+  'hast-util.*',
+  '.*separated-tokens',
+  'ccount',
+  'devlop',
+  'escape-string-regexp',
+  'markdown-table',
+  'zwitch',
+  'longest-streak',
+  'rehype.*',
+  'web-namespaces',
+  'hastscript',
+];
+
 module.exports = {
   transform: {
     '.(ts|tsx|js|jsx)': [
@@ -10,9 +45,11 @@ module.exports = {
       },
     ],
   },
-  // Makes jest transform monaco, but continue ignoring other node_modules. Used for MonacoUtils test
+  // Makes Jest transform some node_modules when needed. Usually because they are pure ESM and Jest needs CJS
+  // By default, Jest ignores transforming node_modules
+  // When switching to transform all of node_modules, it caused a babel error
   transformIgnorePatterns: [
-    'node_modules/(?!(monaco-editor|d3-interpolate|d3-color)/)',
+    `node_modules/(?!(${nodeModulesToTransform.join('|')})/)`,
   ],
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',

@@ -1,11 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useApi } from '@deephaven/jsapi-bootstrap';
-import {
-  Chart,
-  ChartModel,
-  ChartModelFactory,
-  useChartTheme,
-} from '@deephaven/chart';
+import { Chart, ChartModel, ChartModelFactory } from '@deephaven/chart';
 import type { Figure } from '@deephaven/jsapi-types';
 import { type WidgetComponentProps } from '@deephaven/plugin';
 
@@ -13,7 +8,6 @@ export function ChartWidgetPlugin(
   props: WidgetComponentProps<Figure>
 ): JSX.Element | null {
   const dh = useApi();
-  const chartTheme = useChartTheme();
   const [model, setModel] = useState<ChartModel>();
 
   const { fetch } = props;
@@ -22,12 +16,7 @@ export function ChartWidgetPlugin(
     let cancelled = false;
     async function init() {
       const figure = (await fetch()) as unknown as Figure;
-      const newModel = await ChartModelFactory.makeModel(
-        dh,
-        undefined,
-        figure,
-        chartTheme
-      );
+      const newModel = await ChartModelFactory.makeModel(dh, undefined, figure);
 
       if (!cancelled) {
         setModel(newModel);
@@ -39,7 +28,7 @@ export function ChartWidgetPlugin(
     return () => {
       cancelled = true;
     };
-  }, [dh, fetch, chartTheme]);
+  }, [dh, fetch]);
 
   return model ? <Chart model={model} /> : null;
 }

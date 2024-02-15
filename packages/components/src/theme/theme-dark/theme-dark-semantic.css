@@ -179,14 +179,14 @@
   --dh-color-positive-hover-bg: var(--dh-color-green-800);
   --dh-color-positive-down-bg: var(--dh-color-green-700);
   --dh-color-positive-key-focus-bg: var(--dh-color-green-800);
-  --dh-color-positive-contrast: var(--dh-color-contrast-light);
+  --dh-color-positive-contrast: var(--dh-color-contrast-dark);
 
   /* Informative */
-  --dh-color-info: var(--dh-color-cyan-1000);
+  --dh-color-info: var(--dh-color-indigo-900);
   --dh-color-info-bg: var(--dh-color-info);
-  --dh-color-info-hover-bg: var(--dh-color-cyan-900);
-  --dh-color-info-down-bg: var(--dh-color-cyan-800);
-  --dh-color-info-key-focus-bg: var(--dh-color-cyan-900);
+  --dh-color-info-hover-bg: var(--dh-color-indigo-800);
+  --dh-color-info-down-bg: var(--dh-color-indigo-700);
+  --dh-color-info-key-focus-bg: var(--dh-color-indigo-800);
   --dh-color-info-contrast: var(--dh-color-contrast-dark);
 
   /* Notice */

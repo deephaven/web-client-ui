@@ -355,6 +355,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.handleMouseUp = this.handleMouseUp.bind(this);
     this.handleResize = this.handleResize.bind(this);
     this.handleWheel = this.handleWheel.bind(this);
+    this.getSelectedRanges = this.getSelectedRanges.bind(this);
 
     const {
       isStuckToBottom,
@@ -974,6 +975,12 @@ class Grid extends PureComponent<GridProps, GridState> {
         selectedRanges: selectedRanges.slice(selectedRanges.length - 1),
       });
     }
+  }
+
+  /** Gets the selected ranges */
+  getSelectedRanges(): readonly GridRange[] {
+    const { selectedRanges } = this.state;
+    return selectedRanges;
   }
 
   /**
@@ -1729,18 +1736,23 @@ class Grid extends PureComponent<GridProps, GridState> {
     event: GridKeyboardEvent
   ): void {
     const keyHandlers = this.getKeyHandlers();
+    let cursor = null;
     for (let i = 0; i < keyHandlers.length; i += 1) {
       const keyHandler = keyHandlers[i];
       const result =
         keyHandler[functionName] != null &&
         keyHandler[functionName](event, this);
       if (result !== false) {
+        if (keyHandler.cursor != null) {
+          ({ cursor } = keyHandler);
+        }
         const options = result as EventHandlerResultOptions;
         if (options?.stopPropagation ?? true) event.stopPropagation();
         if (options?.preventDefault ?? true) event.preventDefault();
         break;
       }
     }
+    this.setState({ cursor });
   }
 
   handleKeyDown(event: GridKeyboardEvent): void {

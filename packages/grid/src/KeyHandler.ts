@@ -26,6 +26,9 @@ export class KeyHandler {
     this.order = order;
   }
 
+  // Cursor to use if this returns any truthy value including { stopPropagation: false, preventDefault: false }
+  cursor: string | null = null;
+
   /**
    * Handle a keydown event on the grid.
    * @param event The keyboard event

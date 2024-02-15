@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.63.0](https://github.com/deephaven/web-client-ui/compare/v0.62.0...v0.63.0) (2024-02-08)
+
+
+### Bug Fixes
+
+* adjust theme notice and info colors ([#1779](https://github.com/deephaven/web-client-ui/issues/1779)) ([8930522](https://github.com/deephaven/web-client-ui/commit/893052295861cfca13e445abe61b3ac4aa55af61))
+* DH-16461: Preload --dh-color-text-highlight ([#1780](https://github.com/deephaven/web-client-ui/issues/1780)) ([#1781](https://github.com/deephaven/web-client-ui/issues/1781)) ([f7989b6](https://github.com/deephaven/web-client-ui/commit/f7989b6054e5301276f5b94e5ee1e8f5f73ca6a1))
+* show copy cursor in grid on key down and not just mouse move  ([#1735](https://github.com/deephaven/web-client-ui/issues/1735)) ([0781900](https://github.com/deephaven/web-client-ui/commit/0781900109439be8e0bca55f02665d2005df2136))
+
+
+### BREAKING CHANGES
+
+* linker and iris grid custom cursor styling and assets
+are now provided by components directly. DHE css and svg files
+containing linker cursors should be removed/de-duplicated.
+
+
+
+
+
 # [0.62.0](https://github.com/deephaven/web-client-ui/compare/v0.61.1...v0.62.0) (2024-02-05)
 
 **Note:** Version bump only for package @deephaven/components

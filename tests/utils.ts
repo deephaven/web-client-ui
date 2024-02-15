@@ -17,6 +17,102 @@ export enum TableTypes {
   AllTypes,
 }
 
+type TableNames =
+  | 'all_types'
+  | 'simple_plot'
+  | 'simple_table'
+  | 'simple_table_header_group'
+  | 'simple_table_header_group_hide'
+  | 'double_and_string'
+  | 'ordered_int_and_offset'
+  | 'trig_table'
+  | 'multiselect_null'
+  | 'multiselect_empty'
+  | 'multiselect_bool'
+  | 'multiselect_datetime'
+  | 'multiselect_char'
+  | 'multiselect_number'
+  | 'multiselect_string';
+
+type PlotNames = 'simple_plot' | 'trig_figure';
+
+type ObjectNames = TableNames | PlotNames;
+
+/**
+ * Opens an object loaded from application mode
+ * @param page
+ * @param type Either 'table' or 'plot'
+ * @param name Name of the table or plot
+ */
+async function openObject(
+  page: Page,
+  type: 'table' | 'plot',
+  name: ObjectNames
+): Promise<void> {
+  await page.goto('');
+  await expect(page.locator('.loading-spinner')).toHaveCount(0);
+
+  // open the tables/plot button
+  const dropdownButton = page.getByRole('button', {
+    name: type === 'table' ? 'Tables' : 'Widgets',
+  });
+  expect(dropdownButton).not.toBeNull();
+  expect(dropdownButton).not.toBeDisabled();
+  await dropdownButton.click();
+
+  // search for the table/plot
+  const search = page.getByPlaceholder('Search');
+  expect(search).not.toBeNull();
+  expect(search).not.toBeDisabled();
+  await search.type(name);
+
+  // open the table/plot
+  const openButton = page.locator('.btn-context-menu').first();
+  expect(openButton).not.toBeNull();
+  expect(openButton).not.toBeDisabled();
+  await openButton.click();
+}
+
+/**
+ * Opens a table loaded from application mode
+ * @param page
+ * @param name Name of the table
+ * @param waitForLoadFinished Whether to wait for the table to finish loading
+ */
+export async function openTable(
+  page: Page,
+  name: TableNames,
+  waitForLoadFinished = true
+): Promise<void> {
+  await openObject(page, 'table', name);
+
+  if (waitForLoadFinished) {
+    await expect(
+      page.locator('.iris-grid .iris-grid-loading-status')
+    ).toHaveCount(0);
+  }
+}
+
+/**
+ * Opens a plot loaded from application mode
+ * @param page
+ * @param name Name of the plot
+ */
+export async function openPlot(
+  page: Page,
+  name: PlotNames,
+  waitForLoadFinished = true
+): Promise<void> {
+  await openObject(page, 'plot', name);
+
+  if (waitForLoadFinished) {
+    // Wait until it's done loading
+    await expect(
+      page.locator('.chart-panel-container .loading-spinner')
+    ).toHaveCount(0);
+  }
+}
+
 /**
  * Generate a unique python variable name
  * @param prefix Prefix to give the variable name
@@ -186,7 +282,6 @@ export async function pasteInMonaco(
  * Wait for loading status of iris grid to disappear
  * @param page
  */
-
 export async function waitForLoadingDone(
   page: Page,
   tableNumber = 0
@@ -197,6 +292,24 @@ export async function waitForLoadingDone(
       .nth(tableNumber)
       .locator('.iris-grid-loading-status')
   ).toHaveCount(0);
+}
+
+/**
+ * Waits for a specified amount of context menus to exist
+ * @param page
+ * @param count The amount of context menus
+ */
+export async function expectContextMenus(
+  page: Page,
+  count: number,
+  waitForFiltersToLoad = false
+): Promise<void> {
+  await expect(page.locator('.context-menu-container')).toHaveCount(count);
+  if (waitForFiltersToLoad) {
+    await expect(
+      page.getByRole('button', { name: 'Filter by Value' })
+    ).not.toBeNull();
+  }
 }
 
 /**
@@ -268,9 +381,12 @@ export async function openTableOption(
 
 export default {
   generateVarName,
+  openTable,
+  openPlot,
   pasteInMonaco,
   typeInMonaco,
   waitForLoadingDone,
+  expectContextMenus,
   dragComponent,
   openTableOption,
 };

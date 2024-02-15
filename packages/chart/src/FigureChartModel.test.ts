@@ -1,11 +1,8 @@
 import dh from '@deephaven/jsapi-shim';
-import { TestUtils } from '@deephaven/utils';
 import { Data } from 'plotly.js';
 import ChartTestUtils from './ChartTestUtils';
-import type { ChartTheme } from './ChartTheme';
 import FigureChartModel from './FigureChartModel';
 
-const { createMockProxy } = TestUtils;
 const chartTestUtils = new ChartTestUtils(dh);
 
 beforeEach(() => {
@@ -17,11 +14,9 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
-const chartTheme = createMockProxy<ChartTheme>();
-
 it('populates the layout properly', () => {
   const figure = chartTestUtils.makeFigure();
-  const model = new FigureChartModel(dh, figure, chartTheme);
+  const model = new FigureChartModel(dh, figure);
 
   expect(model.getLayout()).toEqual(
     expect.objectContaining({
@@ -51,7 +46,7 @@ it('populates the layout properly', () => {
 
 it('populates series data properly', () => {
   const figure = chartTestUtils.makeFigure();
-  const model = new FigureChartModel(dh, figure, chartTheme);
+  const model = new FigureChartModel(dh, figure);
 
   expect(model.getData()).toEqual([
     expect.objectContaining({
@@ -75,7 +70,7 @@ it('populates horizontal series properly', () => {
   const chart = chartTestUtils.makeChart({ series: [series], axes });
   const figure = chartTestUtils.makeFigure({ charts: [chart] });
 
-  const model = new FigureChartModel(dh, figure, chartTheme);
+  const model = new FigureChartModel(dh, figure);
 
   expect(model.getData()).toEqual([
     expect.objectContaining({ orientation: 'h' }),
@@ -88,16 +83,15 @@ it('converts histograms properly to bars', () => {
   });
   const chart = chartTestUtils.makeChart({ series: [series] });
   const figure = chartTestUtils.makeFigure({ charts: [chart] });
-  const model = new FigureChartModel(dh, figure, chartTheme);
+  const model = new FigureChartModel(dh, figure);
 
   expect(model.getData()).toEqual([
     expect.objectContaining({
       name: ChartTestUtils.DEFAULT_SERIES_NAME,
       type: 'bar',
+      width: [],
       marker: expect.objectContaining({
-        line: expect.objectContaining({
-          width: 1,
-        }),
+        line: {},
       }),
     }),
   ]);
@@ -113,7 +107,7 @@ it('handles colors on line charts properly', () => {
   });
   const chart = chartTestUtils.makeChart({ series: [series] });
   const figure = chartTestUtils.makeFigure({ charts: [chart] });
-  const model = new FigureChartModel(dh, figure, chartTheme);
+  const model = new FigureChartModel(dh, figure);
 
   expect(model.getData()).toEqual([
     expect.objectContaining({
@@ -135,7 +129,7 @@ it('handles colors on bar charts properly', () => {
   });
   const chart = chartTestUtils.makeChart({ series: [series] });
   const figure = chartTestUtils.makeFigure({ charts: [chart] });
-  const model = new FigureChartModel(dh, figure, chartTheme);
+  const model = new FigureChartModel(dh, figure);
 
   expect(model.getData()).toEqual([
     expect.objectContaining({
@@ -162,7 +156,7 @@ describe('axis transform tests', () => {
     const series = chartTestUtils.makeSeries({ sources });
     const chart = chartTestUtils.makeChart({ series: [series], axes });
     const figure = chartTestUtils.makeFigure({ charts: [chart] });
-    const model = new FigureChartModel(dh, figure, chartTheme);
+    const model = new FigureChartModel(dh, figure);
 
     expect(model.getLayout().xaxis).toMatchObject({
       type: 'log',
@@ -187,7 +181,7 @@ describe('axis transform tests', () => {
     const series = chartTestUtils.makeSeries({ sources });
     const chart = chartTestUtils.makeChart({ series: [series], axes });
     const figure = chartTestUtils.makeFigure({ charts: [chart] });
-    const model = new FigureChartModel(dh, figure, chartTheme);
+    const model = new FigureChartModel(dh, figure);
 
     expect(model.getLayout().xaxis).not.toMatchObject({
       type: 'log',
@@ -221,7 +215,7 @@ describe('multiple axes', () => {
 
     const chart = chartTestUtils.makeChart({ axes });
     const figure = chartTestUtils.makeFigure({ charts: [chart] });
-    const model = new FigureChartModel(dh, figure, chartTheme);
+    const model = new FigureChartModel(dh, figure);
 
     const layout = model.getLayout();
 
@@ -277,7 +271,7 @@ describe('multiple axes', () => {
 
     const chart = chartTestUtils.makeChart({ axes });
     const figure = chartTestUtils.makeFigure({ charts: [chart] });
-    const model = new FigureChartModel(dh, figure, chartTheme);
+    const model = new FigureChartModel(dh, figure);
 
     const layout = model.getLayout();
 
@@ -339,7 +333,7 @@ describe('multiple axes', () => {
 
     const chart = chartTestUtils.makeChart({ axes });
     const figure = chartTestUtils.makeFigure({ charts: [chart] });
-    const model = new FigureChartModel(dh, figure, chartTheme);
+    const model = new FigureChartModel(dh, figure);
 
     const layout = model.getLayout();
 
@@ -395,7 +389,7 @@ describe('multiple axes', () => {
 
     const chart = chartTestUtils.makeChart({ axes });
     const figure = chartTestUtils.makeFigure({ charts: [chart] });
-    const model = new FigureChartModel(dh, figure, chartTheme);
+    const model = new FigureChartModel(dh, figure);
 
     const layout = model.getLayout();
 
@@ -442,7 +436,7 @@ it('adds new series', () => {
   const figure = chartTestUtils.makeFigure({
     charts: [chart],
   });
-  const model = new FigureChartModel(dh, figure, chartTheme);
+  const model = new FigureChartModel(dh, figure);
   model.subscribe(jest.fn());
 
   expect(model.getData()).toEqual([
@@ -475,7 +469,7 @@ it('emits finished loading if no series are added', () => {
   const figure = chartTestUtils.makeFigure({
     charts: [],
   });
-  const model = new FigureChartModel(dh, figure, chartTheme);
+  const model = new FigureChartModel(dh, figure);
   const callback = jest.fn();
   model.subscribe(callback);
 
@@ -495,7 +489,7 @@ describe('legend visibility', () => {
     const figure = chartTestUtils.makeFigure({
       charts: [chart],
     });
-    const model = new FigureChartModel(dh, figure, chartTheme);
+    const model = new FigureChartModel(dh, figure);
     model.subscribe(jest.fn());
 
     return model.getData();

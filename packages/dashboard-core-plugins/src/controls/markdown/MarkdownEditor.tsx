@@ -1,6 +1,8 @@
 import React, { PureComponent, ReactElement } from 'react';
 import Markdown from 'react-markdown';
-import { CodeComponent } from 'react-markdown/src/ast-to-react';
+import { CodeComponent } from 'react-markdown/lib/ast-to-react';
+import remarkMath from 'remark-math';
+import rehypeMathjax from 'rehype-mathjax';
 import { Code, Editor } from '@deephaven/console';
 import type * as monaco from 'monaco-editor';
 
@@ -63,7 +65,13 @@ export default class MarkdownEditor extends PureComponent<
             onEditorInitialized={onEditorInitialized}
           />
         ) : (
-          <Markdown components={{ code: renderMarkdown }}>{content}</Markdown>
+          <Markdown
+            components={{ code: renderMarkdown }}
+            remarkPlugins={[remarkMath]}
+            rehypePlugins={[rehypeMathjax]}
+          >
+            {content}
+          </Markdown>
         )}
       </div>
     );

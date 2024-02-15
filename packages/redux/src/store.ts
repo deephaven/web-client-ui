@@ -47,6 +47,8 @@ export interface WorkspaceSettings {
   showTimeZone: boolean;
   showTSeparator: boolean;
   truncateNumbersWithPound: boolean;
+  showEmptyStrings: boolean;
+  showNullStrings: boolean;
   disableMoveConfirmation: boolean;
   shortcutOverrides?: {
     windows?: { [id: string]: ValidKeyState };

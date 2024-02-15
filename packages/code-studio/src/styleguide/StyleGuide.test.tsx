@@ -1,5 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react';
+import { ChartThemeProvider } from '@deephaven/chart';
 import { ThemeData, ThemeProvider } from '@deephaven/components';
 import { dh } from '@deephaven/jsapi-shim';
 import { ApiContext } from '@deephaven/jsapi-bootstrap';
@@ -17,7 +18,9 @@ describe('<StyleGuide /> mounts', () => {
       render(
         <ApiContext.Provider value={dh}>
           <ThemeProvider themes={customThemes}>
-            <StyleGuide />
+            <ChartThemeProvider>
+              <StyleGuide />
+            </ChartThemeProvider>
           </ThemeProvider>
         </ApiContext.Provider>
       )

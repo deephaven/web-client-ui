@@ -1,9 +1,10 @@
+/* stylelint-disable no-descending-specificity */
 @import '@deephaven/components/scss/custom.scss';
 
 $tab-height: 28px;
+$tab-padding-x: 6px;
 $drag-border-width: 5px;
 
-$close-button-height: 8px;
 $tab-font-size: 12px;
 
 $lm-tab-color: $gray-400;
@@ -18,15 +19,6 @@ $lm-header-background: var(--dh-color-golden-layout-tab-header-bg);
 
 $lm-splitter-hover-color: $gray-400;
 $lm-splitter-active-color: $gray-300;
-
-@mixin hover-opacity {
-  opacity: 0.4;
-  transition: opacity 300ms ease;
-
-  &:hover {
-    opacity: 1;
-  }
-}
 
 // ".lm_dragging" is applied to BODY tag during Drag and is also directly applied to the root of the object being dragged
 //is added to the body class, prevents overflow in our app context
@@ -56,7 +48,15 @@ body:not(.lm_dragging) .lm_header .lm_tab:not(.lm_active):hover {
 }
 
 body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
-  @include hover-opacity;
+  opacity: 0.35;
+
+  &:hover {
+    opacity: 1;
+
+    &::before {
+      opacity: 1;
+    }
+  }
 }
 
 // Entire GoldenLayout Container, if a background is set, it is visible as color of "pane header" and "splitters" (if these latest has opacity very low)
@@ -155,20 +155,20 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
     color: $lm-tab-color;
     height: $tab-height;
     font-size: $tab-font-size;
-    min-width: 5rem;
+    min-width: 10ch;
     margin: 0;
-    padding: 0 $spacer-1 0 $spacer-2;
+    padding: 0 0 0 $tab-padding-x;
     box-shadow: inset -1px -1px 0 0 $background; // acting as bottom and right border
     transition:
       color $transition,
       background-color $transition;
-    max-width: 12rem;
+    max-width: 12.25rem;
     white-space: nowrap;
     overflow: hidden;
 
     .lm_title {
       flex-grow: 1;
-      padding-right: $spacer-1;
+      padding-right: $tab-padding-x;
       // add equalized spacing for tabs without close buttons
       // so that when a tab is longer then min-width it still
       // is balanced with equal padding. Extra padding is then
@@ -182,21 +182,42 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
 
     // Close Tab Icon
     .lm_close_tab {
-      $lm-close-button-padding: 4px;
+      $close-button-size: 8px;
 
-      @include icon-image-mask(
-        var(--dh-svg-icon-close-tab),
-        $close-button-height
-      );
-
+      margin-left: -$tab-padding-x;
+      flex-shrink: 0;
       cursor: pointer;
       position: relative;
-      width: $close-button-height;
-      height: $close-button-height;
-      padding: $lm-close-button-padding;
-      margin-left: -$spacer-1; // undo padding on title
+      width: 18px;
+      height: 100%;
       opacity: 0;
-      transition: opacity 300ms ease;
+      // intentionally no transition on close icon
+      // we want the button to appear instantly
+
+      &::before {
+        // used for hover background
+        // which is a different shape then the hit area
+        content: '';
+        position: absolute;
+        inset: 3px 3px 3px 1px; // looks better offset
+        border-radius: 2px;
+        background-color: var(--dh-color-highlight-selected-hover);
+        opacity: 0;
+        transition: opacity $transition ease;
+      }
+
+      &::after {
+        // since this is a mask, we need to isolate it
+        // so it doesn't mask our hover background
+        @include icon-image-mask(
+          var(--dh-svg-icon-close-tab),
+          $close-button-size
+        );
+
+        content: '';
+        position: absolute;
+        inset: 0 2px 0 0; // looks better offset
+      }
     }
   }
 }
@@ -221,6 +242,11 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
       inset 0 1px $primary,
       inset -1px 0 0 0 $background; // top focus indicator, right border
   }
+
+  .lm_close_tab {
+    // show close button on active tab
+    opacity: 0.35;
+  }
 }
 
 .lm_window_blur {
@@ -233,7 +259,12 @@ body:not(.lm_dragging) .lm_header .lm_tab:hover .lm_close_tab {
 .lm_controls {
   // All Pane controls shares these
   > li {
-    @include hover-opacity;
+    opacity: 0.4;
+    transition: opacity $transition ease;
+
+    &:hover {
+      opacity: 1;
+    }
 
     position: relative;
     background-position: center center;

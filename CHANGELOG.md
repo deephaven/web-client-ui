@@ -3,6 +3,35 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.63.0](https://github.com/deephaven/web-client-ui/compare/v0.62.0...v0.63.0) (2024-02-08)
+
+
+### Bug Fixes
+
+* adjust theme notice and info colors ([#1779](https://github.com/deephaven/web-client-ui/issues/1779)) ([8930522](https://github.com/deephaven/web-client-ui/commit/893052295861cfca13e445abe61b3ac4aa55af61))
+* DH-16461: Preload --dh-color-text-highlight ([#1780](https://github.com/deephaven/web-client-ui/issues/1780)) ([#1781](https://github.com/deephaven/web-client-ui/issues/1781)) ([f7989b6](https://github.com/deephaven/web-client-ui/commit/f7989b6054e5301276f5b94e5ee1e8f5f73ca6a1))
+* DH-16463: isEqual returns false for layouts with undefined and missing props in panelState ([#1783](https://github.com/deephaven/web-client-ui/issues/1783)) ([e90b627](https://github.com/deephaven/web-client-ui/commit/e90b627fed2c76b81ee96006abef14942388f3cc))
+* show copy cursor in grid on key down and not just mouse move  ([#1735](https://github.com/deephaven/web-client-ui/issues/1735)) ([0781900](https://github.com/deephaven/web-client-ui/commit/0781900109439be8e0bca55f02665d2005df2136))
+* sorting frozen columns ([#1749](https://github.com/deephaven/web-client-ui/issues/1749)) ([51e60c5](https://github.com/deephaven/web-client-ui/commit/51e60c5cc1bcdb5fb4e6ed74ad42d8b9507ff312)), closes [#1645](https://github.com/deephaven/web-client-ui/issues/1645)
+
+
+### Features
+
+* always show close button on the active panel in a stack ([#1773](https://github.com/deephaven/web-client-ui/issues/1773)) ([33c6a8d](https://github.com/deephaven/web-client-ui/commit/33c6a8d39c17fb60d291ce4be9a77bbad16b4e65))
+* disable "Changes you made may not be saved." prompt in dev mode ([#1775](https://github.com/deephaven/web-client-ui/issues/1775)) ([6b0dce1](https://github.com/deephaven/web-client-ui/commit/6b0dce168df01df02219f64dbd6f9b73eec1fb2a))
+* multiselect values ([#1736](https://github.com/deephaven/web-client-ui/issues/1736)) ([e6955c1](https://github.com/deephaven/web-client-ui/commit/e6955c1b330ae09d3bfbe3bbcb6d1bf303ea9b48)), closes [#1233](https://github.com/deephaven/web-client-ui/issues/1233)
+
+
+### BREAKING CHANGES
+
+* linker and iris grid custom cursor styling and assets
+are now provided by components directly. DHE css and svg files
+containing linker cursors should be removed/de-duplicated.
+
+
+
+
+
 # [0.62.0](https://github.com/deephaven/web-client-ui/compare/v0.61.1...v0.62.0) (2024-02-05)
 
 

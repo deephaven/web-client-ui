@@ -3,6 +3,11 @@ export type BaseThemeKey = `default-${BaseThemeType}`;
 export type CssVariableStyleContent = `:root{${string}`;
 export type ThemeCssVariableName = `--dh-${string}`;
 
+// DHC should only need to preload variables that are required by the empty page
+// with loading spinner that shows while plugins are loading. The rest of the
+// preload variables defined here are required by DHE due to theme plugins
+// loading after login. We should consider moving most of these to the DHE
+// codebase. To be addressed by #1679
 export type ThemePreloadColorVariable =
   | '--dh-color-accent-contrast'
   | '--dh-color-accent-bg'
@@ -20,9 +25,7 @@ export type ThemePreloadColorVariable =
   | '--dh-color-input-border'
   | '--dh-color-input-placeholder'
   | '--dh-color-input-focus-border'
-  // Preloading login specific variables should only be needed in DHE. Including
-  // them for now until we have a way for DHE to configure them. To be addressed
-  // by #1679
+  | '--dh-color-text-highlight'
   | '--dh-color-login-form-bg'
   | '--dh-color-login-status-message'
   | '--dh-color-login-logo-bg'
@@ -48,6 +51,7 @@ export const DEFAULT_DARK_THEME_PALETTE = {
     500: '#2f5bc0',
     400: '#254ba4',
     600: '#3b6bda', // accent color
+    700: '#4c7dee',
   },
   red: {
     600: '#c73f61',
@@ -66,6 +70,11 @@ export const DEFAULT_DARK_THEME_PALETTE = {
 } as const;
 
 // Css properties that are used in preload data with default values.
+// DHC should only need to preload variables that are required by the empty page
+// with loading spinner that shows while plugins are loading. The rest of the
+// preload variables defined here are required by DHE due to theme plugins
+// loading after login. We should consider moving most of these to the DHE
+// codebase. To be addressed by #1679
 export const DEFAULT_PRELOAD_DATA_VARIABLES: Record<
   ThemePreloadColorVariable,
   string
@@ -86,9 +95,7 @@ export const DEFAULT_PRELOAD_DATA_VARIABLES: Record<
   '--dh-color-input-border': DEFAULT_DARK_THEME_PALETTE.gray[600],
   '--dh-color-input-placeholder': DEFAULT_DARK_THEME_PALETTE.gray[600],
   '--dh-color-input-focus-border': `${DEFAULT_DARK_THEME_PALETTE.blue[600]}d9`, // 85% opacity
-  // Preloading login specific variables should only be needed in DHE. Including
-  // them for now until we have a way for DHE to configure them. To be addressed
-  // by #1679
+  '--dh-color-text-highlight': `${DEFAULT_DARK_THEME_PALETTE.blue[700]}4d`, // 30% opacity
   '--dh-color-login-form-bg': DEFAULT_DARK_THEME_PALETTE.gray[400],
   '--dh-color-login-status-message': DEFAULT_DARK_THEME_PALETTE.gray[600],
   '--dh-color-login-logo-bg': DEFAULT_DARK_THEME_PALETTE.gray[900],
