@@ -677,13 +677,9 @@ class ChartUtils {
     const { dh } = this;
     switch (plotStyle) {
       case dh.plot.SeriesPlotStyle.SCATTER:
+      case dh.plot.SeriesPlotStyle.LINE:
         // scattergl mode is more performant, but doesn't support the rangebreaks we need for businessTime calendars
         return !isBusinessTime ? 'scattergl' : 'scatter';
-      case dh.plot.SeriesPlotStyle.LINE:
-        // There is also still some artifacting bugs with scattergl: https://github.com/plotly/plotly.js/issues/3522
-        // The artifacting only occurs on line plots, which we can draw with fairly decent performance using SVG paths
-        // Once the above plotly issue is fixed, scattergl should be used here (when !isBusinessTime)
-        return 'scatter';
       case dh.plot.SeriesPlotStyle.BAR:
       case dh.plot.SeriesPlotStyle.STACKED_BAR:
         return 'bar';
