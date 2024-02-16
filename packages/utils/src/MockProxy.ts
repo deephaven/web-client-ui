@@ -1,8 +1,10 @@
+const labelSymbol: unique symbol = Symbol('mockProxyType');
 const defaultPropsSymbol: unique symbol = Symbol('mockProxyDefaultProps');
 const overridesSymbol: unique symbol = Symbol('mockProxyOverrides');
 const proxiesSymbol: unique symbol = Symbol('mockProxyProxies');
 
 export const MockProxySymbol = {
+  labelSymbol,
   defaultProps: defaultPropsSymbol,
   overrides: overridesSymbol,
   proxies: proxiesSymbol,
@@ -29,9 +31,24 @@ const mockProxyDefaultProps = {
  * The proxy target contains state + configuration for the proxy
  */
 export interface MockProxyTarget<T> {
+  [MockProxySymbol.labelSymbol]: string;
   [MockProxySymbol.defaultProps]: typeof mockProxyDefaultProps;
   [MockProxySymbol.overrides]: Partial<T>;
   [MockProxySymbol.proxies]: Record<keyof T, jest.Mock>;
+}
+
+export interface MockProxyConfig {
+  // Optional label to be assigned to the proxy object's
+  // `MockProxySymbol.labelSymbol` property.
+  label?: string;
+
+  // `ownKeys` has no way to know all of the potential auto proxy keys, but it
+  // can know auto proxies that have been called / cached. If this flag is true,
+  // include those in the `ownKeys` result. This is mostly useful for spread
+  // operations. Alternatively, the `overrides` are can explicitly include any
+  // proxies to be included in the `ownKeys` result without setting this flag.
+  // e.g. createMockProxy({ someMethod: jest.fn() }) would include `someMethod`.
+  includeAutoProxiesInOwnKeys?: boolean;
 }
 
 /**
@@ -40,12 +57,18 @@ export interface MockProxyTarget<T> {
  * to a jest.fn() instance on first access with the exeption of "then" which
  * will not be automatically proxied.
  * @param overrides Optional props to explicitly set on the Proxy.
- * @returns
+ * @param config Optional configuration for the proxy.
+ * @returns A mock Proxy object for type `T`.
  */
 export default function createMockProxy<T>(
-  overrides: Partial<T> = {}
+  overrides: Partial<T> = {},
+  {
+    label = 'Mock Proxy',
+    includeAutoProxiesInOwnKeys = false,
+  }: MockProxyConfig = {}
 ): T & MockProxyTarget<T> {
   const targetDef: MockProxyTarget<T> = {
+    [MockProxySymbol.labelSymbol]: label,
     [MockProxySymbol.defaultProps]: mockProxyDefaultProps,
     [MockProxySymbol.overrides]: overrides,
     [MockProxySymbol.proxies]: {} as Record<keyof T, jest.Mock>,
@@ -53,8 +76,8 @@ export default function createMockProxy<T>(
 
   return new Proxy(targetDef, {
     get(target, name) {
-      if (name === Symbol.toStringTag) {
-        return 'Mock Proxy';
+      if (name === Symbol.toStringTag || name === MockProxySymbol.labelSymbol) {
+        return targetDef[MockProxySymbol.labelSymbol];
       }
 
       // Reserved attributes for the proxy
@@ -91,6 +114,26 @@ export default function createMockProxy<T>(
     // Only consider explicitly defined props as "in" the proxy
     has(target, name) {
       return name in target[MockProxySymbol.overrides];
+    },
+    // Needed to support the spread (...) operator
+    getOwnPropertyDescriptor(_target, _prop) {
+      return { configurable: true, enumerable: true };
+    },
+    // Needed to support the spread (...) operator
+    ownKeys(target) {
+      const autoProxyKeys = includeAutoProxiesInOwnKeys
+        ? Reflect.ownKeys(target[MockProxySymbol.proxies])
+        : [];
+
+      const overridesKeys = Reflect.ownKeys(target[MockProxySymbol.overrides]);
+
+      return [
+        ...new Set<string | symbol>([
+          MockProxySymbol.labelSymbol,
+          ...autoProxyKeys,
+          ...overridesKeys,
+        ]),
+      ];
     },
   }) as T & typeof targetDef;
 }
