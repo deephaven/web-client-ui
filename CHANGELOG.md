@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.65.0](https://github.com/deephaven/web-client-ui/compare/v0.64.0...v0.65.0) (2024-02-20)
+
+
+### Bug Fixes
+
+* inline blocks throw error in md notebook ([#1820](https://github.com/deephaven/web-client-ui/issues/1820)) ([f871323](https://github.com/deephaven/web-client-ui/commit/f871323a069a160cae69e1f5722464bb5be604b5)), closes [#1817](https://github.com/deephaven/web-client-ui/issues/1817)
+
+
+### Features
+
+* Test Utils - Generate exhaustive boolean combinations and MockProxy spread ([#1811](https://github.com/deephaven/web-client-ui/issues/1811)) ([0a2f054](https://github.com/deephaven/web-client-ui/commit/0a2f054591d04dd32c4919ce90fd538638e0b563)), closes [#1809](https://github.com/deephaven/web-client-ui/issues/1809)
+* useDelay hook ([#1808](https://github.com/deephaven/web-client-ui/issues/1808)) ([445f9fe](https://github.com/deephaven/web-client-ui/commit/445f9fefc3c403f1b43031238d453105a3d1cc45)), closes [#1807](https://github.com/deephaven/web-client-ui/issues/1807)
+
+
+
+
+
 # [0.64.0](https://github.com/deephaven/web-client-ui/compare/v0.63.0...v0.64.0) (2024-02-15)
 
 

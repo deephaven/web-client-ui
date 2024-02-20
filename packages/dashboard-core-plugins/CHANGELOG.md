@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.65.0](https://github.com/deephaven/web-client-ui/compare/v0.64.0...v0.65.0) (2024-02-20)
+
+
+### Bug Fixes
+
+* inline blocks throw error in md notebook ([#1820](https://github.com/deephaven/web-client-ui/issues/1820)) ([f871323](https://github.com/deephaven/web-client-ui/commit/f871323a069a160cae69e1f5722464bb5be604b5)), closes [#1817](https://github.com/deephaven/web-client-ui/issues/1817)
+
+
+
+
+
 # [0.64.0](https://github.com/deephaven/web-client-ui/compare/v0.63.0...v0.64.0) (2024-02-15)
 
 
