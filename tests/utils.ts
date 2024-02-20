@@ -49,9 +49,6 @@ async function openObject(
   type: 'table' | 'plot',
   name: ObjectNames
 ): Promise<void> {
-  await page.goto('');
-  await expect(page.locator('.loading-spinner')).toHaveCount(0);
-
   // open the tables/plot button
   const dropdownButton = page.getByRole('button', {
     name: type === 'table' ? 'Tables' : 'Widgets',

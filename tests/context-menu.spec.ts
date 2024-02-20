@@ -14,6 +14,8 @@ async function moveMouseAwayFromTable(page: Page) {
 }
 
 test.beforeEach(async ({ page }) => {
+  await page.goto('');
+  await expect(page.locator('.loading-spinner')).toHaveCount(0);
   await openTable(page, 'all_types');
 
   const tableOperationsMenu = page.locator(

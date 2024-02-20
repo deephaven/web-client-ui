@@ -70,6 +70,8 @@ function runSpecialSelectFilter(
   expectedButtons: string[]
 ) {
   test(`select ${columnType} filters`, async ({ page }) => {
+    await page.goto('');
+    await expect(page.locator('.loading-spinner')).toHaveCount(0);
     await openTable(page, `multiselect_${columnType}`);
     const gridLocation = await getGridLocation(page);
     if (gridLocation === null) return;
@@ -96,6 +98,8 @@ function runMultiSelectFilter(
   filters: { filter: string; name: string }[]
 ) {
   test(`multiselect ${columnType} filters`, async ({ page }) => {
+    await page.goto('');
+    await expect(page.locator('.loading-spinner')).toHaveCount(0);
     await openTable(page, `multiselect_${columnType}`);
     const gridLocation = await getGridLocation(page);
     if (gridLocation === null) return;
@@ -154,6 +158,8 @@ runMultiSelectFilter('datetime', [
 test('char formatting, non selected right click, preview formatting', async ({
   page,
 }) => {
+  await page.goto('');
+  await expect(page.locator('.loading-spinner')).toHaveCount(0);
   await openTable(page, 'multiselect_char');
   const gridLocation = await getGridLocation(page);
   if (gridLocation === null) return;
