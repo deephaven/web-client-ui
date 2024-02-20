@@ -38,6 +38,19 @@ type PlotNames = 'simple_plot' | 'trig_figure';
 
 type ObjectNames = TableNames | PlotNames;
 
+export async function gotoPage(
+  page: Page,
+  url: string,
+  options?: {
+    referer?: string;
+    timeout?: number;
+    waitUntil?: 'load' | 'domcontentloaded' | 'networkidle' | 'commit';
+  }
+): Promise<void> {
+  await page.goto(url, options);
+  await expect(page.locator('.loading-spinner')).toHaveCount(0);
+}
+
 /**
  * Opens an object loaded from application mode
  * @param page
@@ -374,6 +387,7 @@ export async function openTableOption(
 }
 
 export default {
+  gotoPage,
   generateVarName,
   openTable,
   openPlot,

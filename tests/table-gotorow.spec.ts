@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { openTable } from './utils';
+import { gotoPage, openTable } from './utils';
 
 // relies on previous
 test.describe.configure({ mode: 'serial' });
@@ -54,8 +54,7 @@ test.describe('GoToRow change column', () => {
 
   test.beforeAll(async ({ browser }) => {
     page = await browser.newPage();
-    await page.goto('');
-    await expect(page.locator('.loading-spinner')).toHaveCount(0);
+    await gotoPage(page, '');
     await openTable(page, 'ordered_int_and_offset');
 
     // get the grid
