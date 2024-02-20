@@ -43,11 +43,11 @@ export function Pickers(): JSX.Element {
       <Flex gap={14}>
         <Picker label="Mixed Item Types" items={mixedItems} tooltip />
 
-        <Picker label="Single Child">
+        <Picker label="Single Child" tooltip={{ placement: 'bottom-end' }}>
           <Item id="a">Aaa</Item>
         </Picker>
 
-        <Picker label="Multiple Children">
+        <Picker label="Multiple Children" tooltip={false}>
           <Item id="a">Aaa</Item>
           <Item id="b">Bbb</Item>
         </Picker>

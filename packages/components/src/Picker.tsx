@@ -19,7 +19,7 @@ type TooltipOptions = { placement: PopperOptions['placement'] };
 /**
  * Map a given item to an object compatible with the Picker component.
  * @param item
- * @returns
+ * @returns DisplayItemWithID object
  */
 function mapToDisplayItemWithId<
   TID extends number | string,
@@ -30,6 +30,11 @@ function mapToDisplayItemWithId<
     : { id: item as TID, display: String(item) };
 }
 
+/**
+ * Returns a TooltipOptions object or null if options is false or null.
+ * @param options
+ * @returns TooltipOptions or null
+ */
 function normalizeToolTipOptions(
   options?: boolean | TooltipOptions | null
 ): PopperOptions | null {
