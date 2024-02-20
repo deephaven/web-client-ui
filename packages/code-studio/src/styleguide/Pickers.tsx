@@ -5,6 +5,14 @@ import { Flex, Icon, Text } from '@adobe/react-spectrum';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { sampleSectionIdAndClasses } from './utils';
 
+function PersonIcon(): JSX.Element {
+  return (
+    <Icon>
+      <FontAwesomeIcon icon={vsPerson} />
+    </Icon>
+  );
+}
+
 export function Pickers(): JSX.Element {
   const mixedItems = useMemo(
     () => [
@@ -19,9 +27,7 @@ export function Pickers(): JSX.Element {
       <Item id="a">Item Aaa</Item>,
       <Item id="b">Item Bbb</Item>,
       <Item id="c">
-        <Icon>
-          <FontAwesomeIcon icon={vsPerson} />
-        </Icon>
+        <PersonIcon />
         <Text>Complex Ccc</Text>
       </Item>,
       /* eslint-enable react/jsx-key */
@@ -48,15 +54,11 @@ export function Pickers(): JSX.Element {
 
         <Picker label="Complex Items">
           <Item id="a">
-            <Icon>
-              <FontAwesomeIcon icon={vsPerson} />
-            </Icon>
+            <PersonIcon />
             <Text>Person A</Text>
           </Item>
           <Item id="b">
-            <Icon>
-              <FontAwesomeIcon icon={vsPerson} />
-            </Icon>
+            <PersonIcon />
             <Text>Person B</Text>
           </Item>
         </Picker>
