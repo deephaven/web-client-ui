@@ -11,6 +11,8 @@ export function Pickers(): JSX.Element {
       'String 1',
       'String 2',
       'String 3',
+      '',
+      'Some really long text that should get truncated',
       444,
       999,
       /* eslint-disable react/jsx-key */
@@ -33,7 +35,7 @@ export function Pickers(): JSX.Element {
       <h2 className="ui-title">Pickers</h2>
 
       <Flex gap={14}>
-        <Picker label="Mixed Item Types" items={mixedItems} />
+        <Picker label="Mixed Item Types" items={mixedItems} tooltip />
 
         <Picker label="Single Child">
           <Item id="a">Aaa</Item>
