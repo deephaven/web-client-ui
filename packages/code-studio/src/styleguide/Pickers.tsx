@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
-import { Item, Picker } from '@deephaven/components';
+import { Picker } from '@deephaven/components';
 import { vsPerson } from '@deephaven/icons';
-import { Flex, Icon, Text } from '@adobe/react-spectrum';
+import { Flex, Icon, Item, Text } from '@adobe/react-spectrum';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { sampleSectionIdAndClasses } from './utils';
 
@@ -24,9 +24,9 @@ export function Pickers(): JSX.Element {
       444,
       999,
       /* eslint-disable react/jsx-key */
-      <Item id="a">Item Aaa</Item>,
-      <Item id="b">Item Bbb</Item>,
-      <Item id="c" textValue="Complex Ccc">
+      <Item>Item Aaa</Item>,
+      <Item>Item Bbb</Item>,
+      <Item textValue="Complex Ccc">
         <PersonIcon />
         <Text>Complex Ccc</Text>
       </Item>,
@@ -49,20 +49,20 @@ export function Pickers(): JSX.Element {
         />
 
         <Picker label="Single Child" tooltip={{ placement: 'bottom-end' }}>
-          <Item id="a">Aaa</Item>
+          <Item>Aaa</Item>
         </Picker>
 
         <Picker label="Multiple Children" tooltip={false}>
-          <Item id="a">Aaa</Item>
-          <Item id="b">Bbb</Item>
+          <Item>Aaa</Item>
+          <Item>Bbb</Item>
         </Picker>
 
         <Picker label="Complex Items">
-          <Item id="a" textValue="Person A">
+          <Item textValue="Person A">
             <PersonIcon />
             <Text>Person A</Text>
           </Item>
-          <Item id="b" textValue="Person B">
+          <Item textValue="Person B">
             <PersonIcon />
             <Text>Person B</Text>
           </Item>

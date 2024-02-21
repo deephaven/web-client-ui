@@ -25,7 +25,6 @@ export { default as EditableItemList } from './EditableItemList';
 export * from './ErrorBoundary';
 export { default as HierarchicalCheckboxMenu } from './HierarchicalCheckboxMenu';
 export * from './HierarchicalCheckboxMenu';
-export * from './Item';
 export * from './ItemList';
 export { default as ItemListItem } from './ItemListItem';
 export { default as LoadingOverlay } from './LoadingOverlay';

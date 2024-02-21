@@ -1,16 +1,12 @@
-import { ReactElement, ReactNode, useMemo } from 'react';
-import {
-  Item as SpectrumItem,
-  Picker as SpectrumPicker,
-  Text,
-} from '@adobe/react-spectrum';
+import { Key, ReactElement, ReactNode, useMemo } from 'react';
+import { Item, Picker as SpectrumPicker, Text } from '@adobe/react-spectrum';
 import type { SpectrumPickerProps } from '@react-types/select';
-import type { ItemProps } from './Item';
+import type { ItemProps } from '@react-types/shared';
 import { PopperOptions, Tooltip } from './popper';
 import stylesCommon from './SpectrumComponent.module.scss';
 
-interface DisplayItemWithID<TID extends number | string> {
-  id: TID;
+interface DisplayItemWithID {
+  id: Key;
   display: ReactNode;
   textValue: string;
 }
@@ -22,17 +18,29 @@ type TooltipOptions = { placement: PopperOptions['placement'] };
  * @param item
  * @returns DisplayItemWithID object
  */
-function mapToDisplayItemWithId<
-  TID extends number | string,
-  TItem extends TID | ReactElement<ItemProps<TID>>,
->(item: TItem): DisplayItemWithID<TID> {
-  return typeof item === 'object'
-    ? {
-        id: item.props.id,
-        display: item.props.children,
-        textValue: item.props.textValue ?? String(item.props.children),
-      }
-    : { id: item as TID, display: String(item), textValue: String(item) };
+function mapToDisplayItemWithId<TItem extends PickerItem>(
+  item: TItem
+): DisplayItemWithID {
+  if (typeof item === 'object') {
+    const id =
+      item.key ??
+      (typeof item.props.children === 'string'
+        ? item.props.children
+        : // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          item.props.textValue!);
+
+    return {
+      id,
+      display: item.props.children,
+      textValue: item.props.textValue ?? String(item.props.children),
+    };
+  }
+
+  return {
+    id: item,
+    display: String(item),
+    textValue: String(item),
+  };
 }
 
 /**
@@ -54,10 +62,9 @@ function normalizeToolTipOptions(
   return options;
 }
 
-interface PickerItemsProps<
-  TID extends number | string,
-  TItem extends TID | ReactElement<ItemProps<TID>>,
-> {
+type PickerItem = number | string | ReactElement<ItemProps<unknown>>;
+
+interface PickerItemsProps<TItem extends PickerItem> {
   /** Items provided via the items prop can be primitives or Item elements */
   items: TItem[];
 
@@ -65,37 +72,36 @@ interface PickerItemsProps<
   children?: undefined;
 }
 
-interface PickerChildrenProps<TID extends number | string> {
+interface PickerChildrenProps {
   /** Items provided via children prop have to be Item elements */
-  children: ReactElement<ItemProps<TID>> | ReactElement<ItemProps<TID>>[];
+  children:
+    | ReactElement<ItemProps<unknown>>
+    | ReactElement<ItemProps<unknown>>[];
 
   // This is just here to keep items and children mutually exclusive
   items?: undefined;
 }
 
-export type PickerProps<
-  TID extends number | string,
-  TItem extends TID | ReactElement<ItemProps<TID>>,
-> = (PickerItemsProps<TID, TItem> | PickerChildrenProps<TID>) & {
+export type PickerProps<TItem extends PickerItem> = (
+  | PickerItemsProps<TItem>
+  | PickerChildrenProps
+) & {
   /* Can be set to true or a TooltipOptions to enable item tooltips */
   tooltip?: boolean | TooltipOptions;
 } /* Support remaining SpectrumPickerProps */ & Omit<
     SpectrumPickerProps<{
-      id: TID;
+      id: Key;
       display: ReactNode;
     }>,
     'children' | 'items'
   >;
 
-export function Picker<
-  TID extends number | string,
-  TItem extends TID | ReactElement<ItemProps<TID>>,
->({
+export function Picker<TItem extends PickerItem>({
   children,
   items,
   tooltip,
   ...spectrumPickerProps
-}: PickerProps<TID, TItem>): JSX.Element {
+}: PickerProps<TItem>): JSX.Element {
   const itemsInternal = useMemo(() => {
     if (items == null) {
       return Array.isArray(children) ? children : [children];
@@ -118,7 +124,7 @@ export function Picker<
     // eslint-disable-next-line react/jsx-props-no-spreading
     <SpectrumPicker label {...spectrumPickerProps} items={itemsWithIds}>
       {({ display, textValue }) => (
-        <SpectrumItem textValue={textValue === '' ? 'Empty' : textValue}>
+        <Item textValue={textValue === '' ? 'Empty' : textValue}>
           <Text UNSAFE_className={stylesCommon.spectrumEllipsis}>
             {display === '' ? (
               /* &nbsp; so that height doesn't collapse when empty */
@@ -130,7 +136,7 @@ export function Picker<
           {tooltipOptions == null || display === '' ? null : (
             <Tooltip options={tooltipOptions}>{display}</Tooltip>
           )}
-        </SpectrumItem>
+        </Item>
       )}
     </SpectrumPicker>
   );
