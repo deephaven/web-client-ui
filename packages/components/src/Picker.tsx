@@ -12,6 +12,7 @@ import stylesCommon from './SpectrumComponent.module.scss';
 interface DisplayItemWithID<TID extends number | string> {
   id: TID;
   display: ReactNode;
+  textValue: string;
 }
 
 type TooltipOptions = { placement: PopperOptions['placement'] };
@@ -26,8 +27,12 @@ function mapToDisplayItemWithId<
   TItem extends TID | ReactElement<ItemProps<TID>>,
 >(item: TItem): DisplayItemWithID<TID> {
   return typeof item === 'object'
-    ? { id: item.props.id, display: item.props.children }
-    : { id: item as TID, display: String(item) };
+    ? {
+        id: item.props.id,
+        display: item.props.children,
+        textValue: item.props.textValue ?? String(item.props.children),
+      }
+    : { id: item as TID, display: String(item), textValue: String(item) };
 }
 
 /**
@@ -112,8 +117,8 @@ export function Picker<
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
     <SpectrumPicker label {...spectrumPickerProps} items={itemsWithIds}>
-      {({ display }) => (
-        <SpectrumItem>
+      {({ display, textValue }) => (
+        <SpectrumItem textValue={textValue === '' ? 'Empty' : textValue}>
           <Text UNSAFE_className={stylesCommon.spectrumEllipsis}>
             {display === '' ? (
               /* &nbsp; so that height doesn't collapse when empty */

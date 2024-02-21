@@ -26,7 +26,7 @@ export function Pickers(): JSX.Element {
       /* eslint-disable react/jsx-key */
       <Item id="a">Item Aaa</Item>,
       <Item id="b">Item Bbb</Item>,
-      <Item id="c">
+      <Item id="c" textValue="Complex Ccc">
         <PersonIcon />
         <Text>Complex Ccc</Text>
       </Item>,
@@ -41,7 +41,12 @@ export function Pickers(): JSX.Element {
       <h2 className="ui-title">Pickers</h2>
 
       <Flex gap={14}>
-        <Picker label="Mixed Item Types" items={mixedItems} tooltip />
+        <Picker
+          data-testid="picker"
+          label="Mixed Item Types"
+          items={mixedItems}
+          tooltip
+        />
 
         <Picker label="Single Child" tooltip={{ placement: 'bottom-end' }}>
           <Item id="a">Aaa</Item>
@@ -53,11 +58,11 @@ export function Pickers(): JSX.Element {
         </Picker>
 
         <Picker label="Complex Items">
-          <Item id="a">
+          <Item id="a" textValue="Person A">
             <PersonIcon />
             <Text>Person A</Text>
           </Item>
-          <Item id="b">
+          <Item id="b" textValue="Person B">
             <PersonIcon />
             <Text>Person B</Text>
           </Item>
