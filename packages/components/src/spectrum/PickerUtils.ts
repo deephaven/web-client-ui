@@ -5,21 +5,25 @@ import { PopperOptions } from '../popper';
 export type ItemElement = ReactElement<ItemProps<unknown>>;
 export type PickerItem = number | string | ItemElement;
 
-export interface PickerItemsProps {
-  /** Items provided via the items prop can be primitives or Item elements */
-  items: PickerItem[];
+/**
+ * Picker items can be provided via the items prop or as children. This type
+ * enforces mutual exclusivity between the two.
+ */
+export type PickerChildrenOrItemsProps =
+  | {
+      /** Items provided via the items prop can be primitives or Item elements */
+      items: PickerItem[];
 
-  // This is just here to keep items and children mutually exclusive
-  children?: undefined;
-}
+      // This is just here to keep items and children mutually exclusive
+      children?: undefined;
+    }
+  | {
+      /** Items provided via children prop have to be Item elements */
+      children: PickerItem | PickerItem[];
 
-export interface PickerChildrenProps {
-  /** Items provided via children prop have to be Item elements */
-  children: PickerItem | PickerItem[];
-
-  // This is just here to keep items and children mutually exclusive
-  items?: undefined;
-}
+      // This is just here to keep items and children mutually exclusive
+      items?: undefined;
+    };
 
 export interface NormalizedPickerItem {
   key: Key;
@@ -86,7 +90,7 @@ function normalizePickerItem(item: PickerItem): NormalizedPickerItem {
 export function getNormalizedPickerItemsFromProps({
   children,
   items,
-}: PickerItemsProps | PickerChildrenProps): NormalizedPickerItem[] {
+}: PickerChildrenOrItemsProps): NormalizedPickerItem[] {
   let itemsInternal: PickerItem[];
 
   if (items != null) {

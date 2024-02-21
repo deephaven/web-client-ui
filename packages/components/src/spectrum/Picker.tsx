@@ -5,13 +5,12 @@ import { Tooltip } from '../popper';
 import {
   getNormalizedPickerItemsFromProps,
   normalizeToolTipOptions,
-  PickerChildrenProps,
-  PickerItemsProps,
+  PickerChildrenOrItemsProps,
   TooltipOptions,
 } from './PickerUtils';
 import stylesCommon from '../SpectrumComponent.module.scss';
 
-export type PickerProps = (PickerItemsProps | PickerChildrenProps) & {
+export type PickerProps = PickerChildrenOrItemsProps & {
   /* Can be set to true or a TooltipOptions to enable item tooltips */
   tooltip?: boolean | TooltipOptions;
 } /* Support remaining SpectrumPickerProps */ & Omit<
@@ -30,9 +29,10 @@ export function Picker({
 }: PickerProps): JSX.Element {
   const normalizedItems = useMemo(
     () =>
-      getNormalizedPickerItemsFromProps({ children, items } as
-        | PickerItemsProps
-        | PickerChildrenProps),
+      getNormalizedPickerItemsFromProps({
+        children,
+        items,
+      } as PickerChildrenOrItemsProps),
     [children, items]
   );
 
