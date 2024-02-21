@@ -52,6 +52,10 @@ export function Pickers(): JSX.Element {
           <Item>Aaa</Item>
         </Picker>
 
+        <Picker label="Single Text Child" tooltip={{ placement: 'bottom-end' }}>
+          Aaa
+        </Picker>
+
         <Picker label="Multiple Children" tooltip={false}>
           <Item>Aaa</Item>
           <Item>Bbb</Item>
