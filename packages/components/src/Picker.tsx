@@ -49,21 +49,29 @@ function normalizeToolTipOptions(
   return options;
 }
 
+interface PickerItemsProps<
+  TID extends number | string,
+  TItem extends TID | ReactElement<ItemProps<TID>>,
+> {
+  /** Items provided via the items prop can be primitives or Item elements */
+  items: TItem[];
+
+  // This is just here to keep items and children mutually exclusive
+  children?: undefined;
+}
+
+interface PickerChildrenProps<TID extends number | string> {
+  /** Items provided via children prop have to be Item elements */
+  children: ReactElement<ItemProps<TID>> | ReactElement<ItemProps<TID>>[];
+
+  // This is just here to keep items and children mutually exclusive
+  items?: undefined;
+}
+
 export type PickerProps<
   TID extends number | string,
   TItem extends TID | ReactElement<ItemProps<TID>>,
-> = (
-  | {
-      /* Items provided via the items prop can be primitives or Item elements */
-      items: TItem[];
-      children?: undefined;
-    }
-  | {
-      /* Items provided via children prop have to be Item elements */
-      children: ReactElement<ItemProps<TID>> | ReactElement<ItemProps<TID>>[];
-      items?: undefined;
-    }
-) & {
+> = (PickerItemsProps<TID, TItem> | PickerChildrenProps<TID>) & {
   /* Can be set to true or a TooltipOptions to enable item tooltips */
   tooltip?: boolean | TooltipOptions;
 } /* Support remaining SpectrumPickerProps */ & Omit<
