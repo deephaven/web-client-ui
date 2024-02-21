@@ -33,7 +33,12 @@ export interface NormalizedPickerItem {
 
 export type TooltipOptions = { placement: PopperOptions['placement'] };
 
-function getItemKey(item: PickerItem): Key {
+/**
+ * Determine the `key` of a picker item.
+ * @param item The picker item
+ * @returns A `Key` for the picker item
+ */
+function normalizeItemKey(item: PickerItem): Key {
   if (typeof item !== 'object') {
     return String(item);
   }
@@ -49,7 +54,12 @@ function getItemKey(item: PickerItem): Key {
   return item.props.textValue ?? '';
 }
 
-function getTextValue(item: PickerItem): string {
+/**
+ * Get a normalized `textValue` for a picker item ensuring it is a string.
+ * @param item The picker item
+ * @returns A string `textValue` for the picker item
+ */
+function normalizeTextValue(item: PickerItem): string {
   if (typeof item !== 'object') {
     return String(item);
   }
@@ -71,9 +81,9 @@ function getTextValue(item: PickerItem): string {
  * @returns NormalizedPickerItem object
  */
 function normalizePickerItem(item: PickerItem): NormalizedPickerItem {
-  const key = getItemKey(item);
+  const key = normalizeItemKey(item);
   const display = typeof item === 'object' ? item.props.children : String(item);
-  const textValue = getTextValue(item);
+  const textValue = normalizeTextValue(item);
 
   return {
     key,
