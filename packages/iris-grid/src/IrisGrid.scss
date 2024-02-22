@@ -14,10 +14,11 @@ $iris-grid-bar-max-height: 250px;
 $iris-grid-bar-max-width: $table-sidebar-max-width;
 $transition-iris-grid-bar-flash: 1s;
 $cell-box-shadow:
-  0 0 0 2px var(--dh-color-accent),
+  0 0 0 $active-cell-selection-border-width
+    var(--dh-color-grid-selection-outline),
   0 0 0 5px accent-opacity(25);
 $cell-invalid-box-shadow:
-  0 0 0 2px var(--dh-color-negative),
+  0 0 0 $active-cell-selection-border-width var(--dh-color-negative),
   0 0 0 5px negative-opacity(25);
 
 .iris-grid {
@@ -134,8 +135,8 @@ $cell-invalid-box-shadow:
     }
 
     .grid-cell-input-field {
-      color: $gray-200;
-      background: $gray-800;
+      color: var(--dh-color-input-fg);
+      background: var(--dh-color-input-bg);
 
       &:focus {
         box-shadow: $cell-box-shadow;

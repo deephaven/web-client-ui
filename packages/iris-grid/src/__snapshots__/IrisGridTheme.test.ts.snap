@@ -2,6 +2,7 @@
 
 exports[`createDefaultIrisGridTheme should derive the default Iris grid theme 1`] = `
 {
+  "activeCellSelectionBorderWidth": 2,
   "allowColumnReorder": true,
   "allowColumnResize": true,
   "allowRowReorder": true,
