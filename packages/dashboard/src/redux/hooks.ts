@@ -10,10 +10,10 @@ import { setDashboardPluginData } from './actions';
  * @param pluginId - The ID of the plugin.
  * @returns A tuple containing the plugin data and a function to update the plugin data.
  */
-export function useDashboardPluginData(
+export function useDashboardPluginData<T = PluginData>(
   dashboardId: string,
   pluginId: string
-): [PluginData, (data: PluginData) => void] {
+): [T, (data: T) => void] {
   const dispatch = useDispatch();
   const data = useSelector((store: RootState) =>
     getPluginDataForDashboard(store, dashboardId, pluginId)
