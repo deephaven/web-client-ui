@@ -1,5 +1,6 @@
 /**
  * Intentionally using the classname twice so we have higher specificity than spectrum's definitions
+ * This is to ensure that our overrides are applied regardless of CSS chunk loading order
  */
 .dh-spectrum-palette.dh-spectrum-palette {
   /* Gray */
