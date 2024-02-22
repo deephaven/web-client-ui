@@ -52,23 +52,21 @@ export function Pickers(): JSX.Element {
           <Item>Aaa</Item>
         </Picker>
 
-        <Picker label="Single Text Child" tooltip={{ placement: 'bottom-end' }}>
-          Aaa
-        </Picker>
-
-        <Picker label="Multiple Children" tooltip={false}>
-          <Item>Aaa</Item>
-          <Item>Bbb</Item>
-        </Picker>
-
-        <Picker label="Complex Items">
-          <Item textValue="Person A">
+        <Picker label="Mixed Children Types" tooltip>
+          {/* eslint-disable react/jsx-curly-brace-presence */}
+          {'String 1'}
+          {'String 2'}
+          {'String 3'}
+          {''}
+          {'Some really long text that should get truncated'}
+          {/* eslint-enable react/jsx-curly-brace-presence */}
+          {444}
+          {999}
+          <Item>Item Aaa</Item>
+          <Item>Item Bbb</Item>
+          <Item textValue="Complex Ccc">
             <PersonIcon />
-            <Text>Person A</Text>
-          </Item>
-          <Item textValue="Person B">
-            <PersonIcon />
-            <Text>Person B</Text>
+            <Text>Complex Ccc</Text>
           </Item>
         </Picker>
       </Flex>
