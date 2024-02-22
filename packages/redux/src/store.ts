@@ -83,13 +83,16 @@ export interface Workspace {
 
 export type PluginData = unknown;
 
-export type PluginDataMap = Record<string, PluginData>;
+export type PluginDataMap<TData = PluginData> = Record<string, TData>;
 
-export type DashboardData = Record<string, unknown> & {
+export type DashboardData<TPluginData = PluginData> = Record<
+  string,
+  unknown
+> & {
   title?: string;
   closed?: unknown[];
   filterSets?: unknown[];
-  pluginDataMap?: PluginDataMap;
+  pluginDataMap?: PluginDataMap<TPluginData>;
 };
 
 export type WorkspaceStorageLoadOptions = {

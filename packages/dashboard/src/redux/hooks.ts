@@ -16,10 +16,11 @@ export function useDashboardPluginData<T = PluginData>(
 ): [T, (data: T) => void] {
   const dispatch = useDispatch();
   const data = useSelector((store: RootState) =>
-    getPluginDataForDashboard(store, dashboardId, pluginId)
+    getPluginDataForDashboard<T>(store, dashboardId, pluginId)
   );
   const setData = useCallback(
-    newData => dispatch(setDashboardPluginData(dashboardId, pluginId, newData)),
+    (newData: T) =>
+      dispatch(setDashboardPluginData(dashboardId, pluginId, newData)),
     [dashboardId, pluginId, dispatch]
   );
   return [data, setData];

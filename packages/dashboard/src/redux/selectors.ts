@@ -61,10 +61,10 @@ export const getOpenedPanelMapForDashboard = (
  * @param dashboardId The dashboard ID to get data for
  * @returns The map of plugin IDs to data for all plugins on the dashboard
  */
-export const getPluginDataMapForDashboard = (
+export const getPluginDataMapForDashboard = <T = PluginData>(
   store: RootState,
   dashboardId: string
-): PluginDataMap =>
+): PluginDataMap<T> =>
   getDashboardData(store, dashboardId).pluginDataMap ?? EMPTY_OBJECT;
 
 /**
@@ -73,8 +73,8 @@ export const getPluginDataMapForDashboard = (
  * @param pluginId The plugin ID to get data for
  * @returns The plugin data
  */
-export const getPluginDataForDashboard = (
+export const getPluginDataForDashboard = <T = PluginData>(
   store: RootState,
   dashboardId: string,
   pluginId: string
-): PluginData => getPluginDataMapForDashboard(store, dashboardId)[pluginId];
+): T => getPluginDataMapForDashboard<T>(store, dashboardId)[pluginId];
