@@ -90,23 +90,26 @@ const expectedNormalizations = new Map<PickerItem, NormalizedPickerItem>([
 
 const mixedItems = [...expectedNormalizations.keys()];
 
-const propsWithChildren = {
+const children = {
   empty: [] as PickerProps['children'],
   single: mixedItems[0] as PickerProps['children'],
   mixed: mixedItems as PickerProps['children'],
 };
 
 describe('normalizePickerItemList', () => {
-  it.each([
-    propsWithChildren.empty,
-    propsWithChildren.single,
-    propsWithChildren.mixed,
-  ])('should return normalized picker items: %s', children => {
-    const items = Array.isArray(children) ? children : [children];
-    const expected = items.map(item => expectedNormalizations.get(item));
-    const actual = normalizePickerItemList(children);
-    expect(actual).toEqual(expected);
-  });
+  it.each([children.empty, children.single, children.mixed])(
+    'should return normalized picker items: %s',
+    given => {
+      const childrenArray = Array.isArray(given) ? given : [given];
+
+      const expected = childrenArray.map(item =>
+        expectedNormalizations.get(item)
+      );
+
+      const actual = normalizePickerItemList(given);
+      expect(actual).toEqual(expected);
+    }
+  );
 });
 
 describe('normalizeTooltipOptions', () => {
