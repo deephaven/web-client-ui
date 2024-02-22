@@ -1,6 +1,6 @@
 import { Key, ReactElement, ReactNode } from 'react';
 import type { ItemProps } from '@react-types/shared';
-import { PopperOptions } from '../popper';
+import { PopperOptions } from '../../popper';
 
 export type ItemElement = ReactElement<ItemProps<unknown>>;
 export type PickerItem = number | string | ItemElement;

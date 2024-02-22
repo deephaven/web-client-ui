@@ -1,7 +1,7 @@
 import { Key, ReactNode, useMemo } from 'react';
 import { Item, Picker as SpectrumPicker, Text } from '@adobe/react-spectrum';
 import type { SpectrumPickerProps } from '@react-types/select';
-import { Tooltip } from '../popper';
+import { Tooltip } from '../../popper';
 import {
   getNormalizedPickerItemsFromProps,
   normalizeToolTipOptions,
