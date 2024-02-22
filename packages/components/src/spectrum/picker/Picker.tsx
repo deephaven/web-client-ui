@@ -3,21 +3,22 @@ import { Item, Picker as SpectrumPicker } from '@adobe/react-spectrum';
 import type { SpectrumPickerProps } from '@react-types/select';
 import { Tooltip } from '../../popper';
 import {
-  getNormalizedPickerItemsFromProps,
   NormalizedPickerItem,
+  normalizePickerItemList,
   normalizeTooltipOptions,
-  PickerChildrenOrItemsProps,
+  PickerItem,
   TooltipOptions,
 } from './PickerUtils';
 import { PickerItemContent } from './PickerItemContent';
 
-export type PickerProps = PickerChildrenOrItemsProps & {
+export type PickerProps = {
+  children: PickerItem | PickerItem[];
   /* Can be set to true or a TooltipOptions to enable item tooltips */
   tooltip?: boolean | TooltipOptions;
 } /* Support remaining SpectrumPickerProps */ & Omit<
-    SpectrumPickerProps<NormalizedPickerItem>,
-    'children' | 'items'
-  >;
+  SpectrumPickerProps<NormalizedPickerItem>,
+  'children' | 'items'
+>;
 
 /**
  * Picker component for selecting items from a list of items. Items can be
@@ -28,17 +29,12 @@ export type PickerProps = PickerChildrenOrItemsProps & {
  */
 export function Picker({
   children,
-  items,
   tooltip,
   ...spectrumPickerProps
 }: PickerProps): JSX.Element {
   const normalizedItems = useMemo(
-    () =>
-      getNormalizedPickerItemsFromProps({
-        children,
-        items,
-      } as PickerChildrenOrItemsProps),
-    [children, items]
+    () => normalizePickerItemList(children),
+    [children]
   );
 
   const tooltipOptions = useMemo(

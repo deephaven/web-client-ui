@@ -5,26 +5,6 @@ import { PopperOptions } from '../../popper';
 export type ItemElement = ReactElement<ItemProps<unknown>>;
 export type PickerItem = number | string | ItemElement;
 
-/**
- * Picker items can be provided via the items prop or as children. This type
- * enforces mutual exclusivity between the two.
- */
-export type PickerChildrenOrItemsProps =
-  | {
-      /** Items provided via the items prop can be primitives or Item elements */
-      items: PickerItem[];
-
-      // This is just here to keep items and children mutually exclusive
-      children?: undefined;
-    }
-  | {
-      /** Items provided via children prop have to be Item elements */
-      children: PickerItem | PickerItem[];
-
-      // This is just here to keep items and children mutually exclusive
-      items?: undefined;
-    };
-
 export interface NormalizedPickerItem {
   key: Key;
   content: ReactNode;
@@ -93,25 +73,15 @@ function normalizePickerItem(item: PickerItem): NormalizedPickerItem {
 }
 
 /**
- * Get normalized picker items from either the `items` or `children` prop.
- * @param props
- * @returns An array of picker items
+ * Get normalized picker items from a picker item or array of picker items.
+ * @param items A picker item or array of picker items
+ * @returns An array of normalized picker items
  */
-export function getNormalizedPickerItemsFromProps({
-  children,
-  items,
-}: PickerChildrenOrItemsProps): NormalizedPickerItem[] {
-  let itemsInternal: PickerItem[];
-
-  if (items != null) {
-    itemsInternal = items;
-  } else if (Array.isArray(children)) {
-    itemsInternal = children;
-  } else {
-    itemsInternal = [children];
-  }
-
-  return itemsInternal.map(normalizePickerItem);
+export function normalizePickerItemList(
+  items: PickerItem | PickerItem[]
+): NormalizedPickerItem[] {
+  const itemsArray = Array.isArray(items) ? items : [items];
+  return itemsArray.map(normalizePickerItem);
 }
 
 /**

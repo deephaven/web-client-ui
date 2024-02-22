@@ -1,12 +1,12 @@
 import React from 'react';
 import { Item, Text } from '@adobe/react-spectrum';
 import {
-  getNormalizedPickerItemsFromProps,
   NormalizedPickerItem,
   normalizeTooltipOptions,
-  PickerChildrenOrItemsProps,
+  normalizePickerItemList,
   PickerItem,
 } from './PickerUtils';
+import type { PickerProps } from './Picker';
 
 beforeEach(() => {
   expect.hasAssertions();
@@ -91,32 +91,20 @@ const expectedNormalizations = new Map<PickerItem, NormalizedPickerItem>([
 const mixedItems = [...expectedNormalizations.keys()];
 
 const propsWithChildren = {
-  empty: { children: [] } as PickerChildrenOrItemsProps,
-  single: { children: mixedItems[0] } as PickerChildrenOrItemsProps,
-  mixed: { children: mixedItems } as PickerChildrenOrItemsProps,
+  empty: [] as PickerProps['children'],
+  single: mixedItems[0] as PickerProps['children'],
+  mixed: mixedItems as PickerProps['children'],
 };
 
-const propsWithItems = {
-  empty: { items: [] } as PickerChildrenOrItemsProps,
-  mixed: { items: mixedItems } as PickerChildrenOrItemsProps,
-};
-
-describe('getNormalizedPickerItemsFromProps', () => {
+describe('normalizePickerItemList', () => {
   it.each([
     propsWithChildren.empty,
     propsWithChildren.single,
     propsWithChildren.mixed,
-    propsWithItems.empty,
-    propsWithItems.mixed,
-  ])('should return normalized picker items: %s', props => {
-    let items = props.items == null ? props.children : props.items;
-
-    if (!Array.isArray(items)) {
-      items = [items];
-    }
-
+  ])('should return normalized picker items: %s', children => {
+    const items = Array.isArray(children) ? children : [children];
     const expected = items.map(item => expectedNormalizations.get(item));
-    const actual = getNormalizedPickerItemsFromProps(props);
+    const actual = normalizePickerItemList(children);
     expect(actual).toEqual(expected);
   });
 });
