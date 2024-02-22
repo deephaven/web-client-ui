@@ -119,7 +119,7 @@ export function getNormalizedPickerItemsFromProps({
  * @param options
  * @returns TooltipOptions or null
  */
-export function normalizeToolTipOptions(
+export function normalizeTooltipOptions(
   options?: boolean | TooltipOptions | null
 ): PopperOptions | null {
   if (options == null || options === false) {

@@ -4,7 +4,7 @@ import type { SpectrumPickerProps } from '@react-types/select';
 import { Tooltip } from '../../popper';
 import {
   getNormalizedPickerItemsFromProps,
-  normalizeToolTipOptions,
+  normalizeTooltipOptions,
   PickerChildrenOrItemsProps,
   TooltipOptions,
 } from './PickerUtils';
@@ -21,6 +21,13 @@ export type PickerProps = PickerChildrenOrItemsProps & {
     'children' | 'items'
   >;
 
+/**
+ * Picker component for selecting items from a list of items. Items can be
+ * provided via the `items` prop or as children. Each item can be a string,
+ * number, or a Spectrum <Item> element. The remaining props are just pass
+ * through props for the Spectrum Picker component.
+ * See https://react-spectrum.adobe.com/react-spectrum/Picker.html
+ */
 export function Picker({
   children,
   items,
@@ -37,7 +44,7 @@ export function Picker({
   );
 
   const tooltipOptions = useMemo(
-    () => normalizeToolTipOptions(tooltip),
+    () => normalizeTooltipOptions(tooltip),
     [tooltip]
   );
 
