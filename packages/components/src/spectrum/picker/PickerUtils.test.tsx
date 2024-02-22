@@ -17,7 +17,7 @@ const expectedNormalizations = new Map<PickerItem, NormalizedPickerItem>([
   [
     999,
     {
-      display: '999',
+      content: '999',
       key: '999',
       textValue: '999',
     },
@@ -25,7 +25,7 @@ const expectedNormalizations = new Map<PickerItem, NormalizedPickerItem>([
   [
     '',
     {
-      display: '',
+      content: '',
       key: '',
       textValue: '',
     },
@@ -33,7 +33,7 @@ const expectedNormalizations = new Map<PickerItem, NormalizedPickerItem>([
   [
     'String',
     {
-      display: 'String',
+      content: 'String',
       key: 'String',
       textValue: 'String',
     },
@@ -41,7 +41,7 @@ const expectedNormalizations = new Map<PickerItem, NormalizedPickerItem>([
   [
     <Item>Single string child no textValue</Item>,
     {
-      display: 'Single string child no textValue',
+      content: 'Single string child no textValue',
       key: 'Single string child no textValue',
       textValue: 'Single string child no textValue',
     },
@@ -51,7 +51,7 @@ const expectedNormalizations = new Map<PickerItem, NormalizedPickerItem>([
       <span>No textValue</span>
     </Item>,
     {
-      display: <span>No textValue</span>,
+      content: <span>No textValue</span>,
       key: '',
       textValue: '',
     },
@@ -59,7 +59,7 @@ const expectedNormalizations = new Map<PickerItem, NormalizedPickerItem>([
   [
     <Item textValue="textValue">Single string</Item>,
     {
-      display: 'Single string',
+      content: 'Single string',
       key: 'Single string',
       textValue: 'textValue',
     },
@@ -69,7 +69,7 @@ const expectedNormalizations = new Map<PickerItem, NormalizedPickerItem>([
       Explicit key
     </Item>,
     {
-      display: 'Explicit key',
+      content: 'Explicit key',
       key: 'explicit.key',
       textValue: 'textValue',
     },
@@ -80,7 +80,7 @@ const expectedNormalizations = new Map<PickerItem, NormalizedPickerItem>([
       <Text>Complex</Text>
     </Item>,
     {
-      display: [<i>i</i>, <Text>Complex</Text>],
+      content: [<i>i</i>, <Text>Complex</Text>],
       key: 'textValue',
       textValue: 'textValue',
     },

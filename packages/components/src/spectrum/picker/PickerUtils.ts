@@ -27,7 +27,7 @@ export type PickerChildrenOrItemsProps =
 
 export interface NormalizedPickerItem {
   key: Key;
-  display: ReactNode;
+  content: ReactNode;
   textValue: string;
 }
 
@@ -82,12 +82,12 @@ function normalizeTextValue(item: PickerItem): string {
  */
 function normalizePickerItem(item: PickerItem): NormalizedPickerItem {
   const key = normalizeItemKey(item);
-  const display = typeof item === 'object' ? item.props.children : String(item);
+  const content = typeof item === 'object' ? item.props.children : String(item);
   const textValue = normalizeTextValue(item);
 
   return {
     key,
-    display,
+    content,
     textValue,
   };
 }

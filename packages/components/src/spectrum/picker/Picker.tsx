@@ -1,23 +1,21 @@
-import { Key, ReactNode, useMemo } from 'react';
-import { Item, Picker as SpectrumPicker, Text } from '@adobe/react-spectrum';
+import { useMemo } from 'react';
+import { Item, Picker as SpectrumPicker } from '@adobe/react-spectrum';
 import type { SpectrumPickerProps } from '@react-types/select';
 import { Tooltip } from '../../popper';
 import {
   getNormalizedPickerItemsFromProps,
+  NormalizedPickerItem,
   normalizeTooltipOptions,
   PickerChildrenOrItemsProps,
   TooltipOptions,
 } from './PickerUtils';
-import stylesCommon from '../SpectrumComponent.module.scss';
+import { PickerItemContent } from './PickerItemContent';
 
 export type PickerProps = PickerChildrenOrItemsProps & {
   /* Can be set to true or a TooltipOptions to enable item tooltips */
   tooltip?: boolean | TooltipOptions;
 } /* Support remaining SpectrumPickerProps */ & Omit<
-    SpectrumPickerProps<{
-      id: Key;
-      display: ReactNode;
-    }>,
+    SpectrumPickerProps<NormalizedPickerItem>,
     'children' | 'items'
   >;
 
@@ -51,18 +49,11 @@ export function Picker({
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
     <SpectrumPicker label {...spectrumPickerProps} items={normalizedItems}>
-      {({ display, textValue }) => (
+      {({ content, textValue }) => (
         <Item textValue={textValue === '' ? 'Empty' : textValue}>
-          <Text UNSAFE_className={stylesCommon.spectrumEllipsis}>
-            {display === '' ? (
-              /* &nbsp; so that height doesn't collapse when empty */
-              <>&nbsp;</>
-            ) : (
-              display
-            )}
-          </Text>
-          {tooltipOptions == null || display === '' ? null : (
-            <Tooltip options={tooltipOptions}>{display}</Tooltip>
+          <PickerItemContent>{content}</PickerItemContent>
+          {tooltipOptions == null || content === '' ? null : (
+            <Tooltip options={tooltipOptions}>{content}</Tooltip>
           )}
         </Item>
       )}
