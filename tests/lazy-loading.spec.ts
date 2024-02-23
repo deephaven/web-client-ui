@@ -9,7 +9,10 @@ import { openPlot } from './utils';
  * @param request The request object. Playwright provides size on the request, not the response
  * @param size The minimum size in bytes
  */
-async function expectResponseSize(request: Request | undefined, size: number) {
+async function expectMinimumResponseSize(
+  request: Request | undefined,
+  size: number
+) {
   if (!request) {
     throw new Error('Request is undefined');
   }
@@ -37,7 +40,7 @@ test('lazy loads plotly', async ({ page }) => {
     req.url().includes('assets/plotly')
   );
   expect(plotlyRequest).toBeDefined();
-  await expectResponseSize(plotlyRequest, 300 * 1000); // 300kB
+  await expectMinimumResponseSize(plotlyRequest, 300 * 1000); // 300kB
 });
 
 test('lazy loads mathjax', async ({ page }) => {
@@ -63,5 +66,5 @@ test('lazy loads mathjax', async ({ page }) => {
     req.url().includes('assets/mathjax')
   );
   expect(mathjaxRequest).toBeDefined();
-  await expectResponseSize(mathjaxRequest, 500 * 1000); // 500kB
+  await expectMinimumResponseSize(mathjaxRequest, 500 * 1000); // 500kB
 });
