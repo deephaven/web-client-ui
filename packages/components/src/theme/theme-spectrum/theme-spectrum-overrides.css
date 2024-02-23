@@ -9,6 +9,11 @@ label[class^='spectrum-'] {
   margin-bottom: 0;
 }
 
+svg[class*='spectrum-Textfield-validationIcon'] {
+  /* set as border-box by reboot, but spectrum expects this to be content-box */
+  box-sizing: content-box;
+}
+
 .svg-inline--fa[class*='spectrum-Icon--sizeS'] {
   /* 
   Resize fontawesome icons used inside a spectrum icon wrapper to match
