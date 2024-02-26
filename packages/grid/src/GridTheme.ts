@@ -84,6 +84,7 @@ export type GridTheme = {
   scrollBarActiveSelectionTickColor: NullableGridColor;
 
   // Look of the current selection
+  activeCellSelectionBorderWidth: number;
   selectionColor: GridColor;
   selectionOutlineColor: GridColor;
   selectionOutlineCasingColor: GridColor;
@@ -187,6 +188,7 @@ const defaultTheme: GridTheme = Object.freeze({
   scrollBarCasingWidth: 1,
   scrollSnapToColumn: false,
   scrollSnapToRow: false,
+  activeCellSelectionBorderWidth: 2,
   selectionColor: '#4286f433',
   selectionOutlineColor: '#4286f4',
   selectionOutlineCasingColor: '#222222',

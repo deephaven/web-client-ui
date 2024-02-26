@@ -4,6 +4,7 @@
 $font-size: 12px;
 $row-height: 19px;
 $header-height: 30px;
+$active-cell-selection-border-width: 2px;
 
 :export {
   grid-bg: var(--dh-color-grid-bg);
@@ -29,6 +30,7 @@ $header-height: 30px;
   row-height: $row-height;
   row-background-colors: var(--dh-color-grid-row-0-bg)
     var(--dh-color-grid-row-1-bg);
+  active-cell-selection-border-width: $active-cell-selection-border-width;
   selection-color: var(--dh-color-grid-selection);
   selection-outline-color: var(--dh-color-grid-selection-outline);
   selection-outline-casing-color: var(--dh-color-grid-selection-outline-casing);

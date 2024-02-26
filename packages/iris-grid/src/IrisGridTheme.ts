@@ -150,6 +150,9 @@ export function createDefaultIrisGridTheme(): IrisGridThemeType {
     reverseHeaderBarHeight: 4,
     filterBarHorizontalPadding: 4,
 
+    activeCellSelectionBorderWidth:
+      parseInt(IrisGridTheme['active-cell-selection-border-width'], 10) || 2,
+
     shadowAlpha: parseFloat(IrisGridTheme['row-shadow-alpha']) || 0.15,
 
     // Amount of blur to apply to the bottom of the scrim while animating in

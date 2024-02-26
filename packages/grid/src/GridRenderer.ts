@@ -30,9 +30,6 @@ export class GridRenderer {
   // Default radius in pixels for corners for some elements (like the active cell)
   static DEFAULT_EDGE_RADIUS = 2;
 
-  // Default width in pixels for the border of the active cell
-  static ACTIVE_CELL_BORDER_WIDTH = 2;
-
   protected textCellRenderer = new TextCellRenderer();
 
   protected dataBarCellRenderer = new DataBarCellRenderer();
@@ -2151,11 +2148,18 @@ export class GridRenderer {
     context: CanvasRenderingContext2D,
     state: GridRenderState,
     column: VisibleIndex,
-    row: VisibleIndex,
-    borderWidth = GridRenderer.ACTIVE_CELL_BORDER_WIDTH
+    row: VisibleIndex
   ): void {
     const { metrics, theme } = state;
-    const { allColumnWidths, allColumnXs, allRowHeights, allRowYs } = metrics;
+    const {
+      scrollX,
+      scrollY,
+      allColumnWidths,
+      allColumnXs,
+      allRowHeights,
+      allRowYs,
+    } = metrics;
+    const { activeCellSelectionBorderWidth: borderWidth } = theme;
     const cellX = getOrThrow(allColumnXs, column);
     const cellY = getOrThrow(allRowYs, row);
     const cellW = getOrThrow(allColumnWidths, column);
@@ -2168,13 +2172,13 @@ export class GridRenderer {
     let h = cellH + borderWidth;
 
     // Make sure the outline is interior on the edge
-    if (x <= 0) {
-      w += x - 1;
-      x = 1;
+    if (x <= 0 && scrollX <= 0) {
+      w -= borderWidth - x;
+      x = borderWidth * 0.5;
     }
-    if (y <= 0) {
-      h += y - 1;
-      y = 1;
+    if (y <= 0 && scrollY <= 0) {
+      h -= borderWidth - y;
+      y = borderWidth * 0.5;
     }
 
     const { lineWidth } = context;

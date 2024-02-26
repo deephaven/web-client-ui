@@ -2133,6 +2133,7 @@ class Grid extends PureComponent<GridProps, GridState> {
     const { selectionRange, value, isQuickEdit } = editingCell;
     const { column, row } = editingCell;
     const {
+      scrollX,
       gridX,
       gridY,
       allColumnXs,
@@ -2141,19 +2142,27 @@ class Grid extends PureComponent<GridProps, GridState> {
       allRowHeights,
     } = metrics;
 
+    const { activeCellSelectionBorderWidth } = this.getTheme();
+
     const x = allColumnXs.get(column);
     const y = allRowYs.get(row);
     const w = allColumnWidths.get(column);
     const h = allRowHeights.get(row);
+
+    // make sure cell doeesn't go off the left side of the grid
+    const leftBorderOffset =
+      gridX + (x ?? 0) <= 0 && scrollX <= 0
+        ? activeCellSelectionBorderWidth
+        : 0;
 
     // If the cell isn't visible, we still need to display an invisible cell for focus purposes
     const wrapperStyle: CSSProperties =
       x != null && y != null && w != null && h != null
         ? {
             position: 'absolute',
-            left: gridX + x,
+            left: gridX + x + leftBorderOffset,
             top: gridY + y,
-            width: w,
+            width: w - leftBorderOffset,
             height: h,
           }
         : { opacity: 0 };
