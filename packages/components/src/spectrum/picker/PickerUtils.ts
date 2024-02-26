@@ -5,9 +5,27 @@ import { PopperOptions } from '../../popper';
 
 export type ItemElement = ReactElement<ItemProps<unknown>>;
 export type PickerItem = number | string | boolean | ItemElement;
+
+/**
+ * Augment the Spectrum selection key type to include boolean values.
+ * The Spectrum Picker already supports this, but the built in types don't
+ * reflect it.
+ */
 export type PickerItemKey = Key | boolean;
+
+/**
+ * Augment the Spectrum selection change handler type to include boolean keys.
+ * The Spectrum Picker already supports this, but the built in types don't
+ * reflect it.
+ */
 export type PickerSelectionChangeHandler = (key: PickerItemKey) => void;
 
+/**
+ * The Picker supports a variety of item types, including strings, numbers,
+ * booleans, and more complex React elements. This type represents a normalized
+ * form to make rendering items simpler and keep the logic of transformation
+ * in separate util methods.
+ */
 export interface NormalizedPickerItem {
   key: PickerItemKey;
   content: ReactNode;
@@ -25,10 +43,12 @@ export type TooltipOptions = { placement: PopperOptions['placement'] };
  * @returns A `PickerItemKey` for the picker item
  */
 function normalizeItemKey(item: PickerItem): PickerItemKey {
+  // string, number, or boolean
   if (typeof item !== 'object') {
     return item;
   }
 
+  // `ItemElement` with `key` prop set
   if (item.key != null) {
     return item.key;
   }
