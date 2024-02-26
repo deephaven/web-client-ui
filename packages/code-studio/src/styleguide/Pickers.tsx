@@ -34,6 +34,8 @@ export function Pickers(): JSX.Element {
           {/* eslint-enable react/jsx-curly-brace-presence */}
           {444}
           {999}
+          {true}
+          {false}
           <Item>Item Aaa</Item>
           <Item>Item Bbb</Item>
           <Item textValue="Complex Ccc">

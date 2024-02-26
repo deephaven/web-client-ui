@@ -1,26 +1,32 @@
 import { Key, ReactElement, ReactNode } from 'react';
+import type { SpectrumPickerProps } from '@adobe/react-spectrum';
 import type { ItemProps } from '@react-types/shared';
 import { PopperOptions } from '../../popper';
 
 export type ItemElement = ReactElement<ItemProps<unknown>>;
-export type PickerItem = number | string | ItemElement;
+export type PickerItem = number | string | boolean | ItemElement;
+export type PickerItemKey = Key | boolean;
+export type PickerSelectionChangeHandler = (key: PickerItemKey) => void;
 
 export interface NormalizedPickerItem {
-  key: Key;
+  key: PickerItemKey;
   content: ReactNode;
   textValue: string;
 }
+
+export type NormalizedSpectrumPickerProps =
+  SpectrumPickerProps<NormalizedPickerItem>;
 
 export type TooltipOptions = { placement: PopperOptions['placement'] };
 
 /**
  * Determine the `key` of a picker item.
  * @param item The picker item
- * @returns A `Key` for the picker item
+ * @returns A `PickerItemKey` for the picker item
  */
-function normalizeItemKey(item: PickerItem): Key {
+function normalizeItemKey(item: PickerItem): PickerItemKey {
   if (typeof item !== 'object') {
-    return String(item);
+    return item;
   }
 
   if (item.key != null) {

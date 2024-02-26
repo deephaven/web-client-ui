@@ -18,8 +18,24 @@ const expectedNormalizations = new Map<PickerItem, NormalizedPickerItem>([
     999,
     {
       content: '999',
-      key: '999',
+      key: 999,
       textValue: '999',
+    },
+  ],
+  [
+    true,
+    {
+      content: 'true',
+      key: true,
+      textValue: 'true',
+    },
+  ],
+  [
+    false,
+    {
+      content: 'false',
+      key: false,
+      textValue: 'false',
     },
   ],
   [
