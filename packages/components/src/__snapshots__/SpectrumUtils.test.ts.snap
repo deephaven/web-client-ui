@@ -3,29 +3,29 @@
 exports[`themeDHDefault should merge Spectrum default with DH custom styles 1`] = `
 {
   "dark": {
-    "spectrum--darkest": "spectrum--darkest_256eeb",
+    "spectrum--darkest": "gP7gvq_spectrum--darkest",
     "theme-spectrum-alias": "theme-spectrum-alias",
     "theme-spectrum-palette": "theme-spectrum-palette",
   },
   "global": {
-    "spectrum": "spectrum_9e130c",
-    "spectrum--dark": "spectrum--dark_9e130c",
-    "spectrum--darkest": "spectrum--darkest_9e130c",
-    "spectrum--large": "spectrum--large_9e130c",
-    "spectrum--light": "spectrum--light_9e130c",
-    "spectrum--lightest": "spectrum--lightest_9e130c",
-    "spectrum--medium": "spectrum--medium_9e130c",
+    "spectrum": "zA6MfG_spectrum",
+    "spectrum--dark": "zA6MfG_spectrum--dark",
+    "spectrum--darkest": "zA6MfG_spectrum--darkest",
+    "spectrum--large": "zA6MfG_spectrum--large",
+    "spectrum--light": "zA6MfG_spectrum--light",
+    "spectrum--lightest": "zA6MfG_spectrum--lightest",
+    "spectrum--medium": "zA6MfG_spectrum--medium",
   },
   "large": {
-    "spectrum--large": "spectrum--large_c40598",
+    "spectrum--large": "HAZavG_spectrum--large",
   },
   "light": {
-    "spectrum--light": "spectrum--light_a40724",
+    "spectrum--light": "PFjRbG_spectrum--light",
     "theme-spectrum-alias": "theme-spectrum-alias",
     "theme-spectrum-palette": "theme-spectrum-palette",
   },
   "medium": {
-    "spectrum--medium": "spectrum--medium_4b172c",
+    "spectrum--medium": "xSyFOq_spectrum--medium",
   },
 }
 `;
