@@ -31,7 +31,7 @@ export type PickerProps = {
  * Support remaining SpectrumPickerProps.
  * Note that `selectedKey`, `defaultSelectedKey`, and `onSelectionChange` are
  * re-defined above to account for boolean types which aren't included in the
- * React `key` type, but are actually supported by the Spectrum Picker component.
+ * React `Key` type, but are actually supported by the Spectrum Picker component.
  */ & Omit<
   NormalizedSpectrumPickerProps,
   | 'children'
