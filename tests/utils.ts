@@ -62,17 +62,14 @@ export async function gotoPage(
 async function openPanel(page: Page, name: PanelNames): Promise<void> {
   // open the tables/plot button
   const dropdownButton = page.getByRole('button', { name: 'Panels' });
-  expect(dropdownButton).toBeEnabled();
   await dropdownButton.click();
 
   // search for the table/plot
   const search = page.getByPlaceholder('Find Table, Plot or Widget');
-  expect(search).toBeEnabled();
   await search.type(name);
 
   // open the table/plot
   const openButton = page.getByRole('button', { name, exact: true });
-  expect(openButton).toBeEnabled();
   await openButton.click();
 }
 
@@ -113,9 +110,13 @@ export async function openPlot(
 
   if (waitForLoadFinished) {
     await expect(page.locator('.iris-chart-panel')).toHaveCount(panelCount + 1);
+    await expect(page.locator('.chart-panel-container')).toHaveCount(1);
     await expect(
       page.locator('.chart-panel-container .loading-spinner')
     ).toHaveCount(0);
+    await expect(
+      page.locator('.chart-panel-container .chart-wrapper')
+    ).toHaveCount(1);
   }
 }
 
