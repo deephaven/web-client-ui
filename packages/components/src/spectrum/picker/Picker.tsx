@@ -19,6 +19,12 @@ export type PickerProps = {
   selectedKey?: PickerItemKey | null;
   /** The initial selected key in the collection (uncontrolled). */
   defaultSelectedKey?: PickerItemKey;
+  /**
+   * Handler that is called when the selection change.
+   * Note that this is just an alias for `onSelectionChange` for better
+   * consistency with other components.
+   */
+  onChange?: (key: PickerItemKey) => void;
   /** Handler that is called when the selection changes. */
   onSelectionChange?: (key: PickerItemKey) => void;
 } /*
@@ -47,6 +53,7 @@ export function Picker({
   tooltip,
   defaultSelectedKey,
   selectedKey,
+  onChange,
   onSelectionChange,
   ...spectrumPickerProps
 }: PickerProps): JSX.Element {
@@ -72,8 +79,10 @@ export function Picker({
       defaultSelectedKey={
         defaultSelectedKey as NormalizedSpectrumPickerProps['defaultSelectedKey']
       }
+      // `onChange` is just an alias for `onSelectionChange`
       onSelectionChange={
-        onSelectionChange as NormalizedSpectrumPickerProps['onSelectionChange']
+        (onChange ??
+          onSelectionChange) as NormalizedSpectrumPickerProps['onSelectionChange']
       }
     >
       {({ content, textValue }) => (
