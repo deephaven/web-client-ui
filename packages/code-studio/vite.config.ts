@@ -122,6 +122,9 @@ export default defineConfig(({ mode }) => {
               if (id.includes('plotly.js')) {
                 return 'plotly';
               }
+              if (id.includes('mathjax')) {
+                return 'mathjax';
+              }
               return 'vendor';
             }
           },

@@ -1,6 +1,11 @@
 /* stylelint-disable custom-property-empty-line-before */
 /* stylelint-disable alpha-value-notation */
-.dh-spectrum-alias {
+
+/**
+ * Intentionally using the classname twice so we have higher specificity than spectrum's definitions
+ * This is to ensure that our overrides are applied regardless of CSS chunk loading order
+ */
+.dh-spectrum-alias.dh-spectrum-alias {
   /*********** Override variables in spectrum-global.css **********************/
   --spectrum-alias-background-color-default: var(--dh-color-bg);
   --spectrum-alias-background-color-disabled: var(--dh-color-disabled-bg);

@@ -109,9 +109,13 @@ export async function openPlot(
 
   if (waitForLoadFinished) {
     // Wait until it's done loading
+    await expect(page.locator('.chart-panel-container')).toHaveCount(1);
     await expect(
       page.locator('.chart-panel-container .loading-spinner')
     ).toHaveCount(0);
+    await expect(
+      page.locator('.chart-panel-container .chart-wrapper')
+    ).toHaveCount(1);
   }
 }
 

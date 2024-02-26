@@ -249,6 +249,7 @@ function isEmptyConfig({
     sorts.length === 0
   );
 }
+
 export type FilterData = {
   operator: FilterTypeValue;
   text: string;
@@ -451,7 +452,7 @@ export interface IrisGridState {
   columnHeaderGroups: readonly ColumnHeaderGroup[];
 }
 
-export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
+class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   static contextType = IrisGridThemeContext;
 
   static minDebounce = 150;

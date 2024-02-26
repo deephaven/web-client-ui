@@ -5,7 +5,7 @@ import {
   EventHandlerResult,
 } from '@deephaven/grid';
 import type { Column } from '@deephaven/jsapi-types';
-import { IrisGrid } from '../IrisGrid';
+import type IrisGrid from '../IrisGrid';
 import { DisplayColumn } from '../IrisGridModel';
 
 /**

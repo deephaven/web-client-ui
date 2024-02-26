@@ -19,6 +19,7 @@ import {
 import {
   AdvancedSettings,
   IrisGrid,
+  type IrisGridType,
   IrisGridModel,
   IrisGridUtils,
   isIrisGridTableModelTemplate,
@@ -362,7 +363,7 @@ export class IrisGridPanel extends PureComponent<
     }
   }
 
-  irisGrid: RefObject<IrisGrid>;
+  irisGrid: RefObject<IrisGridType>;
 
   pluginRef: RefObject<TablePluginElement>;
 

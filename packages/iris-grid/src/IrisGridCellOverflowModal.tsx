@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Editor } from '@deephaven/console';
-import * as monaco from 'monaco-editor';
+import type * as monaco from 'monaco-editor';
 import {
   Button,
   CopyButton,
