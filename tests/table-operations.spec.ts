@@ -411,7 +411,7 @@ test('custom column', async ({ page }) => {
       .locator('.custom-column-builder-container')
       .locator('.dragging');
 
-    await dragComponent(dragButton, panelAbove, dropIndicator, 0, 0);
+    await dragComponent(dragButton, panelAbove, dropIndicator, 0);
 
     await saveButton.click();
 

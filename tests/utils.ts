@@ -336,7 +336,6 @@ export async function dragComponent(
 
   await element.hover();
   await page.mouse.down();
-  await page.waitForTimeout(1000);
   await page.mouse.move(
     destinationPos.x + destinationPos.width / 2,
     destinationPos.y + destinationPos.height / 2 + offsetY,
