@@ -152,6 +152,26 @@ function isRangedPlotlyAxis(value: unknown): value is { range: Range[] } {
   );
 }
 
+/**
+ * Check if WebGL is supported in the current environment.
+ * Most modern browsers do support WebGL, but it's possible to disable it and it is also not available
+ * in some headless environments, which can affect e2e tests.
+ *
+ * https://github.com/microsoft/playwright/issues/13146
+ * https://bugzilla.mozilla.org/show_bug.cgi?id=1375585
+ *
+ * @returns True if Web GL is supported, false otherwise
+ */
+function isWebGLSupported(): boolean {
+  // https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/By_example/Detect_WebGL
+  const canvas = document.createElement('canvas');
+  const gl =
+    canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+  return gl != null && gl instanceof WebGLRenderingContext;
+}
+
+const IS_WEBGL_SUPPORTED = isWebGLSupported();
+
 class ChartUtils {
   static DEFAULT_AXIS_SIZE = 0.15;
 
@@ -679,7 +699,7 @@ class ChartUtils {
       case dh.plot.SeriesPlotStyle.SCATTER:
       case dh.plot.SeriesPlotStyle.LINE:
         // scattergl mode is more performant, but doesn't support the rangebreaks we need for businessTime calendars
-        return !isBusinessTime ? 'scattergl' : 'scatter';
+        return !isBusinessTime && IS_WEBGL_SUPPORTED ? 'scattergl' : 'scatter';
       case dh.plot.SeriesPlotStyle.BAR:
       case dh.plot.SeriesPlotStyle.STACKED_BAR:
         return 'bar';
