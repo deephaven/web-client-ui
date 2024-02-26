@@ -21,11 +21,15 @@ export type PickerProps = {
   defaultSelectedKey?: PickerItemKey;
   /**
    * Handler that is called when the selection change.
-   * Note that this is just an alias for `onSelectionChange` for better
-   * consistency with other components.
+   * Note that under the hood, this is just an alias for Spectrum's
+   * `onSelectionChange`. We are renaming for better consistency with other
+   * components.
    */
   onChange?: (key: PickerItemKey) => void;
-  /** Handler that is called when the selection changes. */
+  /**
+   * Handler that is called when the selection changes.
+   * @deprecated Use `onChange` instead
+   */
   onSelectionChange?: (key: PickerItemKey) => void;
 } /*
  * Support remaining SpectrumPickerProps.
