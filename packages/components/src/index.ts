@@ -48,6 +48,7 @@ export { default as SelectValueList } from './SelectValueList';
 export * from './SelectValueList';
 export * from './shortcuts';
 export { default as SocketedButton } from './SocketedButton';
+export * from './spectrum';
 export * from './SpectrumUtils';
 export * from './TableViewEmptyState';
 export * from './TextWithTooltip';
