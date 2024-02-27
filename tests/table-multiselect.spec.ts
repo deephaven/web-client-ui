@@ -41,11 +41,13 @@ async function filterAndScreenshot(
       gridLocation.y + 1 + columnHeight + filterHeight + rowHeight * 2
     );
     await page.mouse.up();
+    await page.waitForTimeout(500);
     await page.mouse.click(
       gridLocation.x + 1,
       gridLocation.y + 1 + columnHeight + filterHeight + rowHeight * 2,
       { button: 'right' }
     );
+    await page.waitForTimeout(500);
     await expectContextMenus(page, 1);
   });
 
