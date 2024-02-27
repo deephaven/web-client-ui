@@ -36,7 +36,22 @@ type TableNames =
 
 type PlotNames = 'simple_plot' | 'trig_figure';
 
-type ObjectNames = TableNames | PlotNames;
+type PanelNames = TableNames | PlotNames;
+
+export async function gotoPage(
+  page: Page,
+  url: string,
+  options?: {
+    referer?: string;
+    timeout?: number;
+    waitUntil?: 'load' | 'domcontentloaded' | 'networkidle' | 'commit';
+  }
+): Promise<void> {
+  await page.goto(url, options);
+  await expect(
+    page.getByRole('progressbar', { name: 'Loading...', exact: true })
+  ).not.toBeVisible();
+}
 
 /**
  * Opens an object loaded from application mode
@@ -44,35 +59,18 @@ type ObjectNames = TableNames | PlotNames;
  * @param type Either 'table' or 'plot'
  * @param name Name of the table or plot
  */
-async function openObject(
-  page: Page,
-  type: 'table' | 'plot',
-  name: ObjectNames
-): Promise<void> {
-  await page.goto('');
-  await expect(page.locator('.loading-spinner')).toHaveCount(0);
-
+async function openPanel(page: Page, name: PanelNames): Promise<void> {
   // open the tables/plot button
-  const dropdownButton = page.getByRole('button', {
-    name: type === 'table' ? 'Tables' : 'Widgets',
-  });
-  expect(dropdownButton).not.toBeNull();
-  expect(dropdownButton).not.toBeDisabled();
+  const dropdownButton = page.getByRole('button', { name: 'Panels' });
   await dropdownButton.click();
 
   // search for the table/plot
-  const search = page.getByPlaceholder('Search');
-  expect(search).not.toBeNull();
-  expect(search).not.toBeDisabled();
+  const search = page.getByPlaceholder('Find Table, Plot or Widget');
   await search.type(name);
 
   // open the table/plot
-  const openButton = page.locator('.btn-context-menu').first();
-  expect(openButton).not.toBeNull();
-  expect(openButton).not.toBeDisabled();
+  const openButton = page.getByRole('button', { name, exact: true });
   await openButton.click();
-
-  await expect(page.locator('.loading-spinner')).toHaveCount(0);
 }
 
 /**
@@ -86,9 +84,11 @@ export async function openTable(
   name: TableNames,
   waitForLoadFinished = true
 ): Promise<void> {
-  await openObject(page, 'table', name);
+  const panelCount = await page.locator('.iris-grid-panel').count();
+  await openPanel(page, name);
 
   if (waitForLoadFinished) {
+    await expect(page.locator('.iris-grid-panel')).toHaveCount(panelCount + 1);
     await expect(
       page.locator('.iris-grid .iris-grid-loading-status')
     ).toHaveCount(0);
@@ -105,17 +105,19 @@ export async function openPlot(
   name: PlotNames,
   waitForLoadFinished = true
 ): Promise<void> {
-  await openObject(page, 'plot', name);
+  const panelCount = await page.locator('.chart-panel-container').count();
+  await openPanel(page, name);
 
   if (waitForLoadFinished) {
-    // Wait until it's done loading
-    await expect(page.locator('.chart-panel-container')).toHaveCount(1);
+    await expect(page.locator('.chart-panel-container')).toHaveCount(
+      panelCount + 1
+    );
     await expect(
       page.locator('.chart-panel-container .loading-spinner')
     ).toHaveCount(0);
     await expect(
       page.locator('.chart-panel-container .chart-wrapper')
-    ).toHaveCount(1);
+    ).toHaveCount(panelCount + 1);
   }
 }
 
@@ -381,6 +383,7 @@ export async function openTableOption(
 }
 
 export default {
+  gotoPage,
   generateVarName,
   openTable,
   openPlot,

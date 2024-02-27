@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { openTable } from './utils';
+import { gotoPage, openTable } from './utils';
 
 async function waitForLoadingDone(page: Page) {
   await expect(
@@ -8,12 +8,14 @@ async function waitForLoadingDone(page: Page) {
 }
 
 test('can open a simple table', async ({ page }) => {
+  await gotoPage(page, '');
   await openTable(page, 'simple_table');
   // Now we should be able to check the snapshot
   await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
 });
 
 test('can make a non-contiguous table row selection', async ({ page }) => {
+  await gotoPage(page, '');
   await openTable(page, 'simple_table');
 
   const grid = await page.locator('.iris-grid-panel .iris-grid');
@@ -43,6 +45,7 @@ test('can make a non-contiguous table row selection', async ({ page }) => {
 });
 
 test('can open a table with column header groups', async ({ page }) => {
+  await gotoPage(page, '');
   await openTable(page, 'simple_table_header_group');
   // Now we should be able to check the snapshot
   await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
@@ -51,6 +54,7 @@ test('can open a table with column header groups', async ({ page }) => {
 test('can open a table with column header groups and hidden columns', async ({
   page,
 }) => {
+  await gotoPage(page, '');
   await openTable(page, 'simple_table_header_group_hide');
   // Now we should be able to check the snapshot
   await expect(page.locator('.iris-grid-panel .iris-grid')).toHaveScreenshot();
@@ -58,6 +62,7 @@ test('can open a table with column header groups and hidden columns', async ({
 
 test.describe('tests simple table operations', () => {
   test.beforeEach(async ({ page }) => {
+    await gotoPage(page, '');
     await openTable(page, 'simple_table');
     const tableOperationsMenu = page.locator(
       'data-testid=btn-iris-grid-settings-button-table'
