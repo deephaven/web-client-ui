@@ -9,7 +9,7 @@
   color: var(--dh-color-text);
 
   .spectrum-theme-provider,
-  [class^='spectrum_'] {
+  [class*='_spectrum--'] {
     color: var(--dh-color-text);
   }
 }
