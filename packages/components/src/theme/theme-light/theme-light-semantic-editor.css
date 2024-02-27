@@ -3,7 +3,8 @@
   --dh-color-editor-bg: var(--dh-color-content-bg);
   --dh-color-editor-fg: var(--dh-color-gray-900);
   --dh-color-editor-error-fg: var(--dh-color-visual-red);
-  --dh-color-editor-line-number-fg: var(--dh-color-gray-700);
+  --dh-color-editor-line-number-fg: var(--dh-color-cyan-1000);
+  --dh-color-editor-line-number-active-fg: var(--dh-color-gray-900);
   --dh-color-editor-line-highlight-bg: var(--dh-color-gray-100);
   --dh-color-editor-selection-bg: var(--dh-color-text-highlight);
   --dh-color-editor-inactive-selection-bg: var(--dh-color-gray-200);
