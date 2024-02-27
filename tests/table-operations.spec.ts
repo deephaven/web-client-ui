@@ -8,6 +8,7 @@ import {
   openTableOption,
   generateVarName,
   openTable,
+  gotoPage,
 } from './utils';
 
 async function changeCondFormatComparison(
@@ -104,6 +105,7 @@ async function artificialWait(page: Page, tableNumber = 0) {
 }
 
 test.beforeEach(async ({ page }) => {
+  await gotoPage(page, '');
   await openTable(page, 'all_types');
 
   const tableOperationsMenu = page.locator(

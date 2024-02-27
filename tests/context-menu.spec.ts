@@ -1,5 +1,10 @@
 import { test, expect, Page } from '@playwright/test';
-import { waitForLoadingDone, openTable, expectContextMenus } from './utils';
+import {
+  waitForLoadingDone,
+  openTable,
+  expectContextMenus,
+  gotoPage,
+} from './utils';
 
 async function openAdvancedFilters(page: Page) {
   await page
@@ -14,6 +19,7 @@ async function moveMouseAwayFromTable(page: Page) {
 }
 
 test.beforeEach(async ({ page }) => {
+  await gotoPage(page, '');
   await openTable(page, 'all_types');
 
   const tableOperationsMenu = page.locator(
