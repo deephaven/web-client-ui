@@ -3,7 +3,7 @@ import { expectContextMenus, gotoPage, openTable } from './utils';
 
 const rowHeight = 19;
 const columnHeight = 30;
-const filterHeight = 30;
+const filterHeight = 35;
 
 async function waitForLoadingDone(
   page: Page,
@@ -30,38 +30,43 @@ async function filterAndScreenshot(
   filterType: string,
   screenshotName: string
 ) {
-  // select the first 3 rows
-  await page.mouse.move(
-    gridLocation.x + 1,
-    gridLocation.y + 1 + columnHeight + filterHeight
-  );
-  await page.mouse.down();
-  await page.mouse.move(
-    gridLocation.x + 1,
-    gridLocation.y + 1 + columnHeight + filterHeight + rowHeight * 2
-  );
-  await page.mouse.up();
-  await page.mouse.click(
-    gridLocation.x + 1,
-    gridLocation.y + 1 + columnHeight + filterHeight + rowHeight * 2,
-    { button: 'right' }
-  );
-  await expectContextMenus(page, 1);
+  await test.step('Select first 3 rows', async () => {
+    await page.mouse.move(
+      gridLocation.x + 1,
+      gridLocation.y + 1 + columnHeight + filterHeight
+    );
+    await page.mouse.down();
+    await page.mouse.move(
+      gridLocation.x + 1,
+      gridLocation.y + 1 + columnHeight + filterHeight + rowHeight * 2
+    );
+    await page.mouse.up();
+    await page.waitForTimeout(500);
+    await page.mouse.click(
+      gridLocation.x + 1,
+      gridLocation.y + 1 + columnHeight + filterHeight + rowHeight * 2,
+      { button: 'right' }
+    );
+    await page.waitForTimeout(500);
+    await expectContextMenus(page, 1);
+  });
 
-  // apply filter
-  await page.getByRole('button', { name: 'Filter by Values' }).hover();
-  await expectContextMenus(page, 2);
-  await page.getByRole('button', { name: filterType, exact: true }).click();
-  await waitForLoadingDone(page, '.iris-grid-loading-status-bar');
-  await expect(page.locator('.iris-grid-column')).toHaveScreenshot(
-    screenshotName
-  );
+  await test.step('Apply filter', async () => {
+    await page.getByRole('button', { name: 'Filter by Values' }).hover();
+    await expectContextMenus(page, 2);
+    await page.getByRole('button', { name: filterType, exact: true }).click();
+    await waitForLoadingDone(page, '.iris-grid-loading-status-bar');
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot(
+      screenshotName
+    );
+  });
 
-  // reset
-  await page.keyboard.down('Control');
-  await page.keyboard.press('E');
-  await page.keyboard.up('Control');
-  await waitForLoadingDone(page, '.iris-grid-loading-status-bar');
+  await test.step('Reset filter', async () => {
+    await page.keyboard.down('Control');
+    await page.keyboard.press('E');
+    await page.keyboard.up('Control');
+    await waitForLoadingDone(page, '.iris-grid-loading-status-bar');
+  });
 }
 
 // these are select filters that do not do multiselect
@@ -103,19 +108,23 @@ function runMultiSelectFilter(
     if (gridLocation === null) return;
 
     // activate the quick filter to get that text as well
-    await page.mouse.click(gridLocation.x + 805, gridLocation.y + 1);
-    await page.keyboard.down('Control');
-    await page.keyboard.press('F');
-    await page.keyboard.up('Control');
+    await test.step('Show quick filter step', async () => {
+      await page.mouse.click(gridLocation.x + 805, gridLocation.y + 1);
+      await page.keyboard.down('Control');
+      await page.keyboard.press('F');
+      await page.keyboard.up('Control');
+    });
 
     /* eslint-disable no-await-in-loop */
     for (let i = 0; i < filters.length; i += 1) {
-      await filterAndScreenshot(
-        page,
-        gridLocation,
-        filters[i].filter,
-        `${columnType}-${i + 1}-${filters[i].name}.png`
-      );
+      await test.step(`Filter ${filters[i].name}`, async () => {
+        await filterAndScreenshot(
+          page,
+          gridLocation,
+          filters[i].filter,
+          `${columnType}-${i + 1}-${filters[i].name}.png`
+        );
+      });
     }
     /* eslint-enable no-await-in-loop */
   });
