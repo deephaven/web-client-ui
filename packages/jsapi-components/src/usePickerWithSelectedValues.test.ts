@@ -41,8 +41,12 @@ const tableUtils = createMockProxy<TableUtils>();
 
 const mock = {
   columnName: 'mock.columnName',
-  isDebouncingFalse: { isDebouncing: false },
-  isDebouncingTrue: { isDebouncing: true },
+  isDebouncingFalse: { isDebouncing: false } as ReturnType<
+    typeof useDebouncedValue
+  >,
+  isDebouncingTrue: { isDebouncing: true } as ReturnType<
+    typeof useDebouncedValue
+  >,
   filter: [
     createMockProxy<FilterCondition>(),
     createMockProxy<FilterCondition>(),
@@ -459,16 +463,7 @@ describe('searchTextExists', () => {
   // eslint-disable-next-line no-promise-executor-return
   const unresolvedPromise = new Promise<boolean>(() => undefined);
 
-  it.each([
-    // isLoading, isDebouncing, exists
-    // (at least one of `isLoading` or `isDebouncing` is true in all cases)
-    [true, true, true],
-    [true, true, false],
-    [true, false, true],
-    [true, false, false],
-    [false, true, true],
-    [false, true, false],
-  ])(
+  it.each(TestUtils.generateBooleanCombinations(3))(
     'should be null if check is in progress: isLoading:%s, isDebouncing:%s, valueExists:%s',
     async (valueExistsIsLoading, isDebouncing, valueExists) => {
       asMock(tableUtils.doesColumnValueExist).mockReturnValue(
@@ -477,13 +472,17 @@ describe('searchTextExists', () => {
 
       asMock(useDebouncedValue).mockReturnValue({
         isDebouncing,
-      });
+      } as ReturnType<typeof useDebouncedValue>);
 
       const { result } = await renderOnceAndWait();
 
       expect(useDebouncedValue).toHaveBeenCalledWith('', SEARCH_DEBOUNCE_MS);
 
-      expect(result.current.searchTextExists).toBeNull();
+      if (valueExistsIsLoading || isDebouncing) {
+        expect(result.current.searchTextExists).toBeNull();
+      } else {
+        expect(result.current.searchTextExists).toEqual(valueExists);
+      }
     }
   );
 

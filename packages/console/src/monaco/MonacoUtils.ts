@@ -136,6 +136,8 @@ class MonacoUtils {
         MonacoTheme['editor-line-highlight-background'],
       'editorLineNumber.foreground':
         MonacoTheme['editor-line-number-foreground'],
+      'editorLineNumber.activeForeground':
+        MonacoTheme['editor-line-number-active-foreground'],
       'editor.selectionBackground': MonacoTheme['editor-selection-background'],
       'editor.inactiveSelectionBackground':
         MonacoTheme['editor-inactive-selection-background'],

@@ -1,5 +1,5 @@
 import React from 'react';
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { GridUtils } from '@deephaven/grid';
 import type { MoveOperation } from '@deephaven/grid';
@@ -945,9 +945,7 @@ test('Search columns', async () => {
   const searchInput = screen.getByPlaceholderText('Search');
 
   await user.type(searchInput, GROUP_PREFIX);
-  act(() => {
-    jest.advanceTimersByTime(500); // Advance past debounce timeout.
-  }); // Not sure why only this call needs act to silence the test warnings
+  jest.advanceTimersByTime(500); // Advance past debounce timeout.
 
   // 1 is first group, 2 and 3 are children. 4 is 2nd group, 5 and 6 are children
   expectSelection([1, 2, 3, 4, 5, 6]);

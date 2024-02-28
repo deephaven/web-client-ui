@@ -1,5 +1,6 @@
 import type userEvent from '@testing-library/user-event';
 import createMockProxy from './MockProxy';
+import { Tuple } from './TypeUtils';
 
 interface MockContext {
   arc: jest.Mock<void>;
@@ -101,6 +102,30 @@ class TestUtils {
     predicate: (args: TArgs) => boolean
   ): TArgs | undefined =>
     TestUtils.asMock(fn).mock.calls.reverse().find(predicate);
+
+  /**
+   * Generate all possible combinations of boolean values for a given number of
+   * variables
+   * @param n The number of boolean values to generate combinations for.
+   * @returns An array of tuples representing all possible combinations
+   * of boolean values for the given number of values.
+   */
+  static generateBooleanCombinations = <T extends number>(
+    n: T
+  ): Tuple<boolean, T>[] => {
+    const combinations = 2 ** n;
+    const result: Tuple<boolean, T>[] = [];
+
+    // eslint-disable-next-line no-plusplus
+    for (let i = 0; i < combinations; i++) {
+      // eslint-disable-next-line no-bitwise
+      const binary = (i >>> 0).toString(2).padStart(n, '0');
+      const bitArray = Array.from(binary).map(bit => bit === '1');
+      result.push(bitArray as Tuple<boolean, T>);
+    }
+
+    return result;
+  };
 
   static makeMockContext(): MockContext {
     return {

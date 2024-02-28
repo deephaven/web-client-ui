@@ -5,7 +5,7 @@ import {
   GridPoint,
   EventHandlerResult,
 } from '@deephaven/grid';
-import type { IrisGrid } from '../IrisGrid';
+import type IrisGrid from '../IrisGrid';
 
 /**
  * Handles sending data selected via double click

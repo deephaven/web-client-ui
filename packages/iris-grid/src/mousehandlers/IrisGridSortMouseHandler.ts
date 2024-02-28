@@ -8,7 +8,7 @@ import {
   GridRangeIndex,
   EventHandlerResult,
 } from '@deephaven/grid';
-import type { IrisGrid } from '../IrisGrid';
+import type IrisGrid from '../IrisGrid';
 
 /**
  * Used to handle sorting on column header clicks

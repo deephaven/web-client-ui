@@ -1,9 +1,24 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { TestUtils } from '@deephaven/utils';
 import CommandHistoryActions from './CommandHistoryActions';
 
-jest.useFakeTimers();
+const { asMock } = TestUtils;
+
+jest.mock('@fortawesome/react-fontawesome', () => ({
+  FontAwesomeIcon: jest.fn(),
+}));
+
+beforeEach(() => {
+  jest.useFakeTimers();
+  asMock(FontAwesomeIcon).mockReturnValue(<div>Mock FontAwesomeIcon</div>);
+});
+
+afterAll(() => {
+  jest.useRealTimers();
+});
 
 const toBeClicked = jest.fn();
 const makeHistoryActionsMock = () => [

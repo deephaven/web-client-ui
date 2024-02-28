@@ -6,7 +6,7 @@ import { LoadingOverlay, ShortcutRegistry } from '@deephaven/components';
 import Log from '@deephaven/log';
 import type { dh } from '@deephaven/jsapi-types';
 import { assertNotNull } from '@deephaven/utils';
-import { editor, IDisposable } from 'monaco-editor';
+import type { editor, IDisposable } from 'monaco-editor';
 import Editor from './Editor';
 import { MonacoProviders, MonacoUtils } from '../monaco';
 import './ScriptEditor.scss';

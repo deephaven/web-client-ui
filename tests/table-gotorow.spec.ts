@@ -1,16 +1,8 @@
 import { test, expect, Page } from '@playwright/test';
-import { pasteInMonaco } from './utils';
+import { gotoPage, openTable } from './utils';
 
-const customTableCommand = `
-from deephaven import empty_table
-
-size = 20
-
-ordered_int_and_offset = empty_table(20).update([
-    "MyString=(\`str\`+i)",
-    "MyInt1=(i+100)",
-    "MyInt2=(i+200)",
-])`;
+// relies on previous
+test.describe.configure({ mode: 'serial' });
 
 async function setColumnAndExpectInputValue({
   page,
@@ -30,7 +22,7 @@ async function setColumnAndExpectInputValue({
     const inputValue = page.locator('input[aria-label="Value Input"]');
     await expect(inputValue).toHaveCount(1);
     await inputValue.fill(setInputValueTo);
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(1000);
   }
 
   if (toggleGoToRow) {
@@ -57,26 +49,13 @@ async function waitForLoadingDone(page: Page) {
   ).toHaveCount(0);
 }
 
-test.describe.configure({ mode: 'serial' });
-
 test.describe('GoToRow change column', () => {
   let page: Page;
 
   test.beforeAll(async ({ browser }) => {
     page = await browser.newPage();
-    await page.goto('');
-    await waitForLoadingDone(page);
-
-    // create the table
-    const consoleInput = page.locator('.console-input');
-    await pasteInMonaco(consoleInput, customTableCommand);
-    await page.keyboard.press('Enter');
-
-    // wait for panel to show and finish loading
-    await expect(page.locator('.iris-grid-panel')).toHaveCount(1);
-    await expect(page.locator('.iris-grid-panel .loading-spinner')).toHaveCount(
-      0
-    );
+    await gotoPage(page, '');
+    await openTable(page, 'ordered_int_and_offset');
 
     // get the grid
     const grid = await page.locator('.iris-grid-panel .iris-grid');

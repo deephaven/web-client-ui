@@ -1,13 +1,10 @@
 import { test, expect, Page } from '@playwright/test';
 import {
-  makeTableCommand,
-  pasteInMonaco,
-  TableTypes,
   waitForLoadingDone,
-  generateVarName,
+  openTable,
+  expectContextMenus,
+  gotoPage,
 } from './utils';
-
-test.describe.configure({ mode: 'serial' });
 
 async function openAdvancedFilters(page: Page) {
   await page
@@ -21,27 +18,9 @@ async function moveMouseAwayFromTable(page: Page) {
   await page.mouse.click(0, 0);
 }
 
-const tableName = generateVarName('t');
 test.beforeEach(async ({ page }) => {
-  await page.goto('');
-
-  const consoleInput = page.locator('.console-input');
-
-  const command = makeTableCommand(tableName, TableTypes.AllTypes);
-
-  await pasteInMonaco(consoleInput, command);
-  await page.keyboard.press('Enter');
-
-  // Wait for the panel to show
-  await expect(page.locator('.iris-grid-panel')).toHaveCount(1);
-
-  // Wait until it's done loading
-  await expect(page.locator('.iris-grid-panel .loading-spinner')).toHaveCount(
-    0
-  );
-
-  // Model is loaded, need to make sure table data is also loaded
-  await waitForLoadingDone(page);
+  await gotoPage(page, '');
+  await openTable(page, 'all_types');
 
   const tableOperationsMenu = page.locator(
     'data-testid=btn-iris-grid-settings-button-table'
@@ -50,15 +29,6 @@ test.beforeEach(async ({ page }) => {
 
   // Wait for Table Options menu to show
   await expect(page.locator('.table-sidebar')).toHaveCount(1);
-});
-
-test.afterEach(async ({ page }) => {
-  const consoleInput = page.locator('.console-input');
-  await consoleInput.click();
-
-  const command = `del ${tableName}`;
-  await pasteInMonaco(consoleInput, command);
-  await page.keyboard.press('Enter');
 });
 
 test('toggle column visibility', async ({ page }) => {
@@ -222,8 +192,10 @@ test('filter by value', async ({ page }) => {
   await page
     .locator('.iris-grid .grid-wrapper')
     .click({ button: 'right', position: { x: 20, y: 60 } });
+  await expectContextMenus(page, 1);
 
   await page.getByRole('button', { name: 'Filter by Value' }).hover();
+  await expectContextMenus(page, 2);
   await page.getByRole('button', { name: 'text is exactly' }).click();
 
   await waitForLoadingDone(page);
@@ -239,6 +211,7 @@ test('go to', async ({ page }) => {
   await page
     .locator('.iris-grid .grid-wrapper')
     .click({ button: 'right', position: { x: 20, y: 60 } });
+  await expectContextMenus(page, 1);
 
   await page.getByRole('button', { name: 'Go to' }).click();
   await page.getByLabel('filter-type-select').selectOption('Equals');

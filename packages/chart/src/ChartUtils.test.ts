@@ -1,6 +1,5 @@
 import dh from '@deephaven/jsapi-shim';
 import { Formatter } from '@deephaven/jsapi-utils';
-import { TestUtils } from '@deephaven/utils';
 import { Layout } from 'plotly.js';
 import ChartUtils from './ChartUtils';
 import ChartTestUtils from './ChartTestUtils';
@@ -9,16 +8,29 @@ import type { ChartTheme } from './ChartTheme';
 const chartUtils = new ChartUtils(dh);
 const chartTestUtils = new ChartTestUtils(dh);
 
-const { createMockProxy } = TestUtils;
-
 function makeFormatter() {
   return new Formatter(dh);
 }
 
-const chartTheme = createMockProxy<ChartTheme>();
+// Proxy for ChartTheme
+const chartTheme = new Proxy(
+  {},
+  {
+    get(_target, name) {
+      if (name === 'colorway') {
+        return 'ChartTheme[colorway0] ChartTheme[colorway1] ChartTheme[colorway2]';
+      }
+
+      return `ChartTheme['${String(name)}']`;
+    },
+  }
+) as ChartTheme;
 
 it('groups the axes by type properly', () => {
-  const testAxes = (axes, expectedResult) => {
+  const testAxes = (
+    axes: { type: string; label: string }[],
+    expectedResult
+  ) => {
     const chart = { axes };
     const result = ChartUtils.groupArray(chart.axes, 'type');
     expect(result).toEqual(expectedResult);
@@ -199,7 +211,7 @@ describe('updating layout axes', () => {
   it('adds new axes', () => {
     const layout = {};
     const axes = makeTwinAxes();
-    chartUtils.updateLayoutAxes(layout, axes, axes, chartTheme);
+    chartUtils.updateLayoutAxes(layout, axes, axes);
     expect(layout).toEqual(
       expect.objectContaining({
         xaxis: expect.objectContaining({
@@ -221,22 +233,26 @@ describe('updating layout axes', () => {
   it('keeps the same axis objects, updates domain', () => {
     const layout: Partial<Layout> = {};
     const axes = makeTwinAxes();
-    chartUtils.updateLayoutAxes(layout, axes, axes, chartTheme, 10);
+    chartUtils.updateLayoutAxes(layout, axes, axes, 10);
 
     const { xaxis } = layout;
     const xDomain = [...(xaxis?.domain ?? [])];
-    chartUtils.updateLayoutAxes(layout, axes, axes, chartTheme, 1000);
+    chartUtils.updateLayoutAxes(layout, axes, axes, 1000);
 
     expect(layout.xaxis).toBe(xaxis);
     expect(xDomain).not.toBe(xaxis?.domain);
   });
 
   it('removes stale axes', () => {
-    const layout = {};
+    const layout = {
+      xaxis: {},
+      yaxis: {},
+      yaxis2: {},
+    };
     const axes = makeTwinAxes();
     const chart = chartTestUtils.makeChart({ axes });
     const figure = chartTestUtils.makeFigure({ charts: [chart] });
-    chartUtils.updateFigureAxes(layout, figure, chartTheme);
+    chartUtils.updateFigureAxes(layout, figure);
     expect(layout).toEqual(
       expect.objectContaining({
         xaxis: expect.objectContaining({}),
@@ -246,7 +262,7 @@ describe('updating layout axes', () => {
     );
 
     axes.pop();
-    chartUtils.updateFigureAxes(layout, figure, chartTheme);
+    chartUtils.updateFigureAxes(layout, figure);
     expect(layout).toEqual(
       expect.objectContaining({
         xaxis: expect.objectContaining({}),
@@ -305,7 +321,6 @@ describe('updating layout axes', () => {
         layout,
         axes,
         figureAxes,
-        chartTheme,
         width,
         height,
         bounds
@@ -644,5 +659,12 @@ describe('getMarkerSymbol', () => {
     expect(() => getMarkerSymbol('')).toThrow();
     expect(() => getMarkerSymbol('S')).toThrow();
     expect(() => getMarkerSymbol('&$*(#@&')).toThrow();
+  });
+});
+
+describe('makeDefaultTemplate', () => {
+  it('should create a default template', () => {
+    const template = chartUtils.makeDefaultTemplate(chartTheme);
+    expect(template).toMatchSnapshot();
   });
 });

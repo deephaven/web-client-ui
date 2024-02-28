@@ -6,7 +6,7 @@ import {
   Grid,
   GridMouseEvent,
 } from '@deephaven/grid';
-import type { IrisGrid } from '../IrisGrid';
+import type IrisGrid from '../IrisGrid';
 
 /**
  * Detects mouse hover over column headers and displays the appropriate tooltip

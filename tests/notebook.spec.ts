@@ -2,8 +2,11 @@ import { test, expect } from '@playwright/test';
 import shortid from 'shortid';
 import { pasteInMonaco } from './utils';
 
+// keep this as serial becomes it runs commands
+test.describe.configure({ mode: 'serial' });
+
 test('test creating a file, saving it, reloading the page, closing it, re-opening it, running it, then deleting it', async ({
-  page,
+  page, browserName
 }) => {
   await page.goto('');
 
@@ -16,7 +19,7 @@ test('test creating a file, saving it, reloading the page, closing it, re-openin
   // Click editor container
   await page.locator('.editor-container').click();
 
-  const message = `Hello notebook ${shortid()}!`;
+  const message = `Hello notebook ${browserName} ${shortid()}!`;
   const command = `print("${message}")`;
 
   await pasteInMonaco(page.locator('.editor-container'), command);

@@ -30,6 +30,7 @@ import { HIDE_FROM_E2E_TESTS_CLASS } from './utils';
 import { GoldenLayout } from './GoldenLayout';
 import { RandomAreaPlotAnimation } from './RandomAreaPlotAnimation';
 import SpectrumComparison from './SpectrumComparison';
+import Pickers from './Pickers';
 
 const stickyProps = {
   position: 'sticky',
@@ -111,6 +112,7 @@ function StyleGuide(): React.ReactElement {
         <ContextMenus />
         <DropdownMenus />
         <Navigations />
+        <Pickers />
         <Tooltips />
         <Icons />
         <Editors />

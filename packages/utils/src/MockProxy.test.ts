@@ -85,4 +85,58 @@ describe('createMockProxy', () => {
     });
     expect(mock.testMethod).toBeInstanceOf(jest.fn().constructor);
   });
+
+  it.each([undefined, 'some label'])('should be spreadable: %s', label => {
+    const overrides = {
+      name: 'mock.name',
+      age: 42,
+    };
+
+    const mock = createMockProxy<{
+      name: string;
+      age: number;
+      testMethod: () => void;
+    }>(overrides, { label });
+
+    expect({ ...mock }).toEqual({
+      [MockProxySymbol.labelSymbol]: label ?? 'Mock Proxy',
+      name: 'mock.name',
+      age: 42,
+    });
+  });
+
+  it.each([undefined, true, false])(
+    'should include accessed auto proxy props if includeAutoProxiesInOwnKeys is true: %s',
+    includeAutoProxiesInOwnKeys => {
+      const overrides = {
+        name: 'mock.name',
+        age: 42,
+      };
+
+      const mock = createMockProxy<{
+        name: string;
+        age: number;
+        testMethod: () => void;
+      }>(overrides, { includeAutoProxiesInOwnKeys });
+
+      const expectedBase = {
+        [MockProxySymbol.labelSymbol]: 'Mock Proxy',
+        name: 'mock.name',
+        age: 42,
+      };
+
+      expect({ ...mock }).toEqual(expectedBase);
+
+      mock.testMethod();
+
+      if (includeAutoProxiesInOwnKeys === true) {
+        expect({ ...mock }).toEqual({
+          ...expectedBase,
+          testMethod: expect.any(Function),
+        });
+      } else {
+        expect({ ...mock }).toEqual(expectedBase);
+      }
+    }
+  );
 });

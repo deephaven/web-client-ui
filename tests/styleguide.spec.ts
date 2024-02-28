@@ -26,6 +26,7 @@ const sampleSectionIds: string[] = [
   'sample-section-context-menus',
   'sample-section-dropdown-menus',
   'sample-section-navigations',
+  'sample-section-pickers',
   'sample-section-tooltips',
   'sample-section-icons',
   'sample-section-editors',
@@ -58,7 +59,9 @@ test('UI regression test - Styleguide section count', async ({ page }) => {
     '.sample-section:not(.sample-section-e2e-ignore)'
   );
 
-  await expect(sampleSections).toHaveCount(sampleSectionIds.length);
+  await expect(sampleSections).toHaveCount(sampleSectionIds.length, {
+    timeout: 45000,
+  });
 });
 
 test('UI regression test - Styleguide button section count', async ({
@@ -68,7 +71,9 @@ test('UI regression test - Styleguide button section count', async ({
 
   const buttonSections = await page.locator('[id^="sample-section-buttons-"]');
 
-  await expect(buttonSections).toHaveCount(buttonSectionIds.length);
+  await expect(buttonSections).toHaveCount(buttonSectionIds.length, {
+    timeout: 45000,
+  });
 });
 
 // Iterate over all sample sections and take a screenshot of each one.
@@ -80,7 +85,8 @@ sampleSectionIds.forEach(id => {
     const sampleSection = page.locator(`#${id}`);
 
     await expect(sampleSection).toHaveScreenshot(
-      `${id.replace(/^sample-section-/, '')}.png`
+      `${id.replace(/^sample-section-/, '')}.png`,
+      { timeout: 45000 }
     );
   });
 });
@@ -93,7 +99,9 @@ buttonSectionIds.forEach((id, i) => {
     const sampleSection = page.locator(`#${id}`);
 
     const buttons = sampleSection.locator('button');
-    await expect(buttons, `Button section: '${id}'`).not.toHaveCount(0);
+    await expect(buttons, `Button section: '${id}'`).not.toHaveCount(0, {
+      timeout: 45000,
+    });
 
     const buttonCount = await buttons.count();
 
@@ -148,7 +156,7 @@ test('Inputs regression test', async ({ page }) => {
 
   const columns = page.locator('#sample-section-inputs .col');
 
-  await expect(columns).toHaveCount(7);
+  await expect(columns).toHaveCount(7, { timeout: 45000 });
 
   // Test focus state for each enabled input
   const columnsCount = await columns.count();

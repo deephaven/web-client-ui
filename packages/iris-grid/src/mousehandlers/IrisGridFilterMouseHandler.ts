@@ -4,7 +4,7 @@ import {
   GridPoint,
   EventHandlerResult,
 } from '@deephaven/grid';
-import type { IrisGrid } from '../IrisGrid';
+import type IrisGrid from '../IrisGrid';
 
 /**
  * Trigger quick filters and advanced filters

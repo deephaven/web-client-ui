@@ -78,6 +78,40 @@ describe('findLastCall', () => {
   });
 });
 
+describe('generateBooleanCombinations', () => {
+  it.each([
+    [1, [[false], [true]]],
+    [
+      2,
+      [
+        [false, false],
+        [false, true],
+        [true, false],
+        [true, true],
+      ],
+    ],
+    [
+      3,
+      [
+        [false, false, false],
+        [false, false, true],
+        [false, true, false],
+        [false, true, true],
+        [true, false, false],
+        [true, false, true],
+        [true, true, false],
+        [true, true, true],
+      ],
+    ],
+  ])(
+    'should generate all possible combinations of boolean values',
+    (n, expected) => {
+      const result = TestUtils.generateBooleanCombinations(n);
+      expect(result).toEqual(expected);
+    }
+  );
+});
+
 describe('makeMockContext', () => {
   it('should make a MockContext object', () => {
     const mockContext = TestUtils.makeMockContext();

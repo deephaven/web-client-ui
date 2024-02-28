@@ -1,4 +1,8 @@
-.dh-spectrum-palette {
+/**
+ * Intentionally using the classname twice so we have higher specificity than spectrum's definitions
+ * This is to ensure that our overrides are applied regardless of CSS chunk loading order
+ */
+.dh-spectrum-palette.dh-spectrum-palette {
   /* Gray */
   --spectrum-gray-50: var(--dh-color-gray-50);
   --spectrum-gray-75: var(--dh-color-gray-75);

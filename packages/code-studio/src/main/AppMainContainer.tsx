@@ -39,6 +39,7 @@ import {
   PanelEvent,
   setDashboardData as setDashboardDataAction,
   setDashboardPluginData as setDashboardPluginDataAction,
+  stopListenForCreateDashboard,
   updateDashboardData as updateDashboardDataAction,
 } from '@deephaven/dashboard';
 import {
@@ -199,6 +200,8 @@ export class AppMainContainer extends Component<
 
     const { allDashboardData } = this.props;
 
+    this.dashboardLayouts = new Map();
+
     this.state = {
       contextActions: [
         {
@@ -257,6 +260,7 @@ export class AppMainContainer extends Component<
 
   componentDidMount(): void {
     this.initWidgets();
+    this.initDashboardData();
     this.startListeningForDisconnect();
 
     window.addEventListener(
@@ -279,13 +283,18 @@ export class AppMainContainer extends Component<
     this.deinitWidgets();
     this.stopListeningForDisconnect();
 
+    this.dashboardLayouts.forEach(layout => {
+      stopListenForCreateDashboard(layout.eventHub, this.handleCreateDashboard);
+    });
+
     window.removeEventListener(
       'beforeunload',
       AppMainContainer.handleWindowBeforeUnload
     );
   }
 
-  goldenLayout?: GoldenLayout;
+  /** Map from the dashboard ID to the GoldenLayout instance for that dashboard */
+  dashboardLayouts: Map<string, GoldenLayout>;
 
   importElement: RefObject<HTMLInputElement>;
 
@@ -333,6 +342,28 @@ export class AppMainContainer extends Component<
     this.widgetListenerRemover?.();
   }
 
+  initDashboardData(): void {
+    // TODO: #1746 We should be loading data from a dashboard storage store
+    // For now only the default dashboard data is stored with the workspace and set on the default dashboard
+    const { setDashboardPluginData, updateDashboardData, workspace } =
+      this.props;
+    const { data: workspaceData } = workspace;
+    const { filterSets, links, pluginDataMap } = workspaceData;
+    updateDashboardData(DEFAULT_DASHBOARD_ID, {
+      filterSets,
+      links,
+    });
+    if (pluginDataMap != null) {
+      const pluginKeys = Object.keys(pluginDataMap);
+      for (let i = 0; i < pluginKeys.length; i += 1) {
+        const pluginId = pluginKeys[i];
+        const pluginData = pluginDataMap[pluginId];
+        log.debug('initDashboardData plugin data', pluginId, pluginData);
+        setDashboardPluginData(DEFAULT_DASHBOARD_ID, pluginId, pluginData);
+      }
+    }
+  }
+
   openNotebookFromURL(): void {
     const { match } = this.props;
     const { notebookPath } = match.params;
@@ -370,7 +401,9 @@ export class AppMainContainer extends Component<
   }
 
   emitLayoutEvent(event: string, ...args: unknown[]): void {
-    this.goldenLayout?.eventHub.emit(event, ...args);
+    const { activeTabKey } = this.state;
+    const layout = this.dashboardLayouts.get(activeTabKey);
+    layout?.eventHub.emit(event, ...args);
   }
 
   handleCancelResetLayoutPrompt(): void {
@@ -461,16 +494,25 @@ export class AppMainContainer extends Component<
     const { updateWorkspaceData } = this.props;
 
     // Only save the data that is serializable/we want to persist to the workspace
-    const { closed, filterSets, links } = data;
-    updateWorkspaceData({ closed, filterSets, links });
+    const { closed, filterSets, links, pluginDataMap } = data;
+    updateWorkspaceData({ closed, filterSets, links, pluginDataMap });
   }
 
-  handleGoldenLayoutChange(goldenLayout: GoldenLayout): void {
-    this.goldenLayout = goldenLayout;
-    listenForCreateDashboard(
-      this.goldenLayout.eventHub,
-      this.handleCreateDashboard
-    );
+  handleGoldenLayoutChange(newLayout: GoldenLayout): void {
+    const { activeTabKey } = this.state;
+    const oldLayout = this.dashboardLayouts.get(activeTabKey);
+    if (oldLayout === newLayout) return;
+
+    if (oldLayout != null) {
+      stopListenForCreateDashboard(
+        oldLayout.eventHub,
+        this.handleCreateDashboard
+      );
+    }
+
+    this.dashboardLayouts.set(activeTabKey, newLayout);
+
+    listenForCreateDashboard(newLayout.eventHub, this.handleCreateDashboard);
   }
 
   handleCreateDashboard({

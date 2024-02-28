@@ -78,6 +78,12 @@ class ChartTestUtils {
     sources = this.makeDefaultSources(),
     lineColor = null,
     shapeColor = null,
+  }: {
+    name?: string | null;
+    lineColor?: string | null;
+    plotStyle?: DhType.plot.SeriesPlotStyleType | null;
+    shapeColor?: string | null;
+    sources?: DhType.plot.SeriesDataSource[];
   } = {}): DhType.plot.Series {
     const { dh } = this;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

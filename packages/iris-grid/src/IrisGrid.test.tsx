@@ -4,7 +4,7 @@ import dh from '@deephaven/jsapi-shim';
 import { DateUtils, Settings } from '@deephaven/jsapi-utils';
 import { TestUtils } from '@deephaven/utils';
 import { TypeValue } from '@deephaven/filters';
-import { IrisGrid } from './IrisGrid';
+import IrisGrid from './IrisGrid';
 import IrisGridTestUtils from './IrisGridTestUtils';
 
 class MockPath2D {

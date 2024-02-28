@@ -29,12 +29,15 @@ import {
   ModeBarButtonAny,
 } from 'plotly.js';
 import type { PlotParams } from 'react-plotly.js';
+import { bindAllMethods } from '@deephaven/utils';
 import createPlotlyComponent from './plotly/createPlotlyComponent';
 import Plotly from './plotly/Plotly';
 import ChartModel from './ChartModel';
+import { ChartTheme } from './ChartTheme';
 import ChartUtils, { ChartModelSettings } from './ChartUtils';
 import './Chart.scss';
 import DownsamplingError from './DownsamplingError';
+import useChartTheme from './useChartTheme';
 
 const log = Log.module('Chart');
 
@@ -46,6 +49,7 @@ type FormatterSettings = ColumnFormatSettings &
 
 interface ChartProps {
   model: ChartModel;
+  theme: ChartTheme;
   settings: FormatterSettings;
   isActive: boolean;
   Plotly: typeof Plotly;
@@ -55,6 +59,12 @@ interface ChartProps {
   onUpdate: (obj: { isLoading: boolean }) => void;
   onError: (error: Error) => void;
   onSettingsChanged: (settings: Partial<ChartModelSettings>) => void;
+}
+
+// All of the ChartProps have default values except for model in the Chart
+// component, hence the Partial here.
+interface ChartContainerProps extends Partial<Omit<ChartProps, 'theme'>> {
+  model: ChartModel;
 }
 
 interface ChartState {
@@ -72,7 +82,7 @@ interface ChartState {
   revision: number;
 }
 
-export class Chart extends Component<ChartProps, ChartState> {
+class Chart extends Component<ChartProps, ChartState> {
   static defaultProps = {
     isActive: true,
     settings: {
@@ -135,14 +145,7 @@ export class Chart extends Component<ChartProps, ChartState> {
   constructor(props: ChartProps) {
     super(props);
 
-    this.handleAfterPlot = this.handleAfterPlot.bind(this);
-    this.handleDownsampleClick = this.handleDownsampleClick.bind(this);
-    this.handleErrorClose = this.handleErrorClose.bind(this);
-    this.handleModelEvent = this.handleModelEvent.bind(this);
-    this.handlePlotUpdate = this.handlePlotUpdate.bind(this);
-    this.handleRelayout = this.handleRelayout.bind(this);
-    this.handleResize = this.handleResize.bind(this);
-    this.handleRestyle = this.handleRestyle.bind(this);
+    bindAllMethods(this);
 
     this.PlotComponent = createPlotlyComponent(props.Plotly);
     this.plot = React.createRef();
@@ -186,10 +189,12 @@ export class Chart extends Component<ChartProps, ChartState> {
     if (this.plotWrapper.current != null) {
       this.resizeObserver.observe(this.plotWrapper.current);
     }
+
+    this.handleThemeChange();
   }
 
   componentDidUpdate(prevProps: ChartProps): void {
-    const { isActive, model, settings } = this.props;
+    const { isActive, model, settings, theme } = this.props;
     this.updateFormatterSettings(settings as FormatterSettings);
 
     if (model !== prevProps.model) {
@@ -204,6 +209,10 @@ export class Chart extends Component<ChartProps, ChartState> {
       } else {
         this.unsubscribe(model);
       }
+    }
+
+    if (theme !== prevProps.theme) {
+      this.handleThemeChange();
     }
   }
 
@@ -348,14 +357,14 @@ export class Chart extends Component<ChartProps, ChartState> {
 
   initData(): void {
     const { model } = this.props;
-    const { layout } = this.state;
-    this.setState({
+
+    this.setState(({ layout }) => ({
       data: model.getData(),
       layout: {
         ...layout,
         ...model.getLayout(),
       },
-    });
+    }));
   }
 
   subscribe(model: ChartModel): void {
@@ -539,6 +548,19 @@ export class Chart extends Component<ChartProps, ChartState> {
     }
   }
 
+  handleThemeChange(): void {
+    const { theme, model } = this.props;
+    const { dh } = model;
+    const chartUtils = new ChartUtils(dh);
+
+    this.setState(({ layout }) => ({
+      layout: {
+        ...layout,
+        template: chartUtils.makeDefaultTemplate(theme),
+      },
+    }));
+  }
+
   /**
    * Toggle the error message. If it is already being displayed, then hide it.
    */
@@ -661,6 +683,7 @@ export class Chart extends Component<ChartProps, ChartState> {
       error
     );
     const isPlotShown = data != null;
+
     return (
       <div className="h-100 w-100 chart-wrapper" ref={this.plotWrapper}>
         {isPlotShown && (
@@ -703,4 +726,10 @@ export class Chart extends Component<ChartProps, ChartState> {
   }
 }
 
-export default Chart;
+export default function ChartContainer(
+  props: ChartContainerProps
+): JSX.Element {
+  const chartTheme = useChartTheme();
+  // eslint-disable-next-line react/jsx-props-no-spreading
+  return <Chart {...props} theme={chartTheme} />;
+}

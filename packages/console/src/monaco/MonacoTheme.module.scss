@@ -42,6 +42,9 @@
 
   //editor
   editor-line-number-foreground: var(--dh-color-editor-line-number-fg);
+  editor-line-number-active-foreground: var(
+    --dh-color-editor-line-number-active-fg
+  );
   editor-selection-background: var(--dh-color-editor-selection-bg);
   editor-inactive-selection-background: var(
     --dh-color-editor-inactive-selection-bg

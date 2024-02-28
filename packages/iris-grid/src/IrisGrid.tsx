@@ -237,6 +237,7 @@ function isEmptyConfig({
     sorts.length === 0
   );
 }
+
 export type FilterData = {
   operator: FilterTypeValue;
   text: string;
@@ -439,7 +440,7 @@ export interface IrisGridState {
   columnHeaderGroups: readonly ColumnHeaderGroup[];
 }
 
-export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
+class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   static contextType = IrisGridThemeContext;
 
   static minDebounce = 150;
@@ -502,6 +503,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       showTimeZone: false,
       showTSeparator: true,
       truncateNumbersWithPound: false,
+      showEmptyStrings: true,
+      showNullStrings: true,
       formatter: EMPTY_ARRAY,
       decimalFormatOptions: PropTypes.shape({
         defaultFormatString: PropTypes.string,
@@ -608,6 +611,8 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.decimalFormatOptions = {};
     this.integerFormatOptions = {};
     this.truncateNumbersWithPound = false;
+    this.showEmptyStrings = true;
+    this.showNullStrings = true;
 
     // When the loading scrim started/when it should extend to the end of the screen.
     this.renderer = new IrisGridRenderer();
@@ -984,6 +989,10 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   integerFormatOptions: { defaultFormatString?: string };
 
   truncateNumbersWithPound: boolean;
+
+  showEmptyStrings: boolean;
+
+  showNullStrings: boolean;
 
   // When the loading scrim started/when it should extend to the end of the screen.
   loadingScrimStartTime?: number;
@@ -1781,6 +1790,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const truncateNumbersWithPound =
       settings?.truncateNumbersWithPound ?? false;
 
+    const showEmptyStrings = settings?.showEmptyStrings ?? true;
+    const showNullStrings = settings?.showNullStrings ?? true;
+
     const isColumnFormatChanged = !deepEqual(
       this.globalColumnFormats,
       globalColumnFormats
@@ -1799,18 +1811,26 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     );
     const isTruncateNumbersChanged =
       this.truncateNumbersWithPound !== truncateNumbersWithPound;
+    const isShowEmptyStringsChanged =
+      this.showEmptyStrings !== showEmptyStrings;
+    const isShowNullStringsChanged = this.showNullStrings !== showNullStrings;
+
     if (
       isColumnFormatChanged ||
       isDateFormattingChanged ||
       isDecimalFormattingChanged ||
       isIntegerFormattingChanged ||
-      isTruncateNumbersChanged
+      isTruncateNumbersChanged ||
+      isShowEmptyStringsChanged ||
+      isShowNullStringsChanged
     ) {
       this.globalColumnFormats = globalColumnFormats;
       this.dateTimeFormatterOptions = dateTimeFormatterOptions;
       this.decimalFormatOptions = defaultDecimalFormatOptions;
       this.integerFormatOptions = defaultIntegerFormatOptions;
       this.truncateNumbersWithPound = truncateNumbersWithPound;
+      this.showEmptyStrings = showEmptyStrings;
+      this.showNullStrings = showNullStrings;
       this.updateFormatter({}, forceUpdate);
 
       if (isDateFormattingChanged && forceUpdate) {
@@ -1877,7 +1897,9 @@ export class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.dateTimeFormatterOptions,
       this.decimalFormatOptions,
       this.integerFormatOptions,
-      this.truncateNumbersWithPound
+      this.truncateNumbersWithPound,
+      this.showEmptyStrings,
+      this.showNullStrings
     );
 
     log.debug('updateFormatter', this.globalColumnFormats, mergedColumnFormats);

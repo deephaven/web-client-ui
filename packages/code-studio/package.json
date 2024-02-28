@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/code-studio",
-  "version": "0.63.0",
+  "version": "0.66.1",
   "description": "Deephaven Code Studio",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -11,7 +11,7 @@
     "directory": "packages/code-studio"
   },
   "dependencies": {
-    "@adobe/react-spectrum": "^3.29.0",
+    "@adobe/react-spectrum": "^3.34.1",
     "@deephaven/app-utils": "file:../app-utils",
     "@deephaven/auth-plugins": "file:../auth-plugins",
     "@deephaven/chart": "file:../chart",

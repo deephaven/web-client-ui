@@ -1,12 +1,17 @@
-[class^='spectrum'] {
+[class*='spectrum'] {
   /* --font-family-sans-serif is defined in Bootstrap's _root.scss. We want
   Spectrum to use the same default font-family */
   font-family: var(--font-family-sans-serif) !important;
 }
 
 /* Override _reboot.scss */
-label[class^='spectrum-'] {
+label[class*='spectrum-'] {
   margin-bottom: 0;
+}
+
+svg[class*='spectrum-Textfield-validationIcon'] {
+  /* set as border-box by reboot, but spectrum expects this to be content-box */
+  box-sizing: content-box;
 }
 
 .svg-inline--fa[class*='spectrum-Icon--sizeS'] {
@@ -30,7 +35,7 @@ label[class^='spectrum-'] {
 }
 
 /* Table */
-[class^='spectrum-Table-headCell'] {
+[class*='spectrum-Table-headCell'] {
   /* 
   Tables are styled with the assumption that the header is the same color as the bg
   which means they look bad against any other background color, instead just inherit the bg.
@@ -41,7 +46,7 @@ label[class^='spectrum-'] {
   background: var(--dh-table-header-cell-background-color);
 }
 
-[class^='spectrum-Table-row'] {
+[class*='spectrum-Table-row'] {
   /* border of selected color is hard-coded as blue rather than accent color */
   --spectrum-table-row-border-color-selected: var(
     --dh-color-item-list-selected-border
@@ -60,7 +65,7 @@ label[class^='spectrum-'] {
   );
 }
 
-button[class^='spectrum-Button'] {
+button[class*='spectrum-Button'] {
   /* make the icon closer to the text */
   --spectrum-button-primary-text-gap: var(--spectrum-global-dimension-size-75);
 
@@ -69,13 +74,13 @@ button[class^='spectrum-Button'] {
   padding-top: calc(var(--spectrum-global-dimension-size-50));
 }
 
-button[class^='spectrum-Button'] svg {
+button[class*='spectrum-Button'] svg {
   /* our icons are smaller, center them too */
   padding-bottom: var(--spectrum-global-dimension-size-25);
 }
 
-span[class^='spectrum-Checkbox-label'],
-span[class^='spectrum-Radio-label'] {
+span[class*='spectrum-Checkbox-label'],
+span[class*='spectrum-Radio-label'] {
   /* I have no idea why these spectrum labels aren't centered,
    but this fixes it. Maybe difference in font baselines.
    */

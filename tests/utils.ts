@@ -17,6 +17,110 @@ export enum TableTypes {
   AllTypes,
 }
 
+type TableNames =
+  | 'all_types'
+  | 'simple_plot'
+  | 'simple_table'
+  | 'simple_table_header_group'
+  | 'simple_table_header_group_hide'
+  | 'double_and_string'
+  | 'ordered_int_and_offset'
+  | 'trig_table'
+  | 'multiselect_null'
+  | 'multiselect_empty'
+  | 'multiselect_bool'
+  | 'multiselect_datetime'
+  | 'multiselect_char'
+  | 'multiselect_number'
+  | 'multiselect_string';
+
+type PlotNames = 'simple_plot' | 'trig_figure';
+
+type PanelNames = TableNames | PlotNames;
+
+export async function gotoPage(
+  page: Page,
+  url: string,
+  options?: {
+    referer?: string;
+    timeout?: number;
+    waitUntil?: 'load' | 'domcontentloaded' | 'networkidle' | 'commit';
+  }
+): Promise<void> {
+  await page.goto(url, options);
+  await expect(
+    page.getByRole('progressbar', { name: 'Loading...', exact: true })
+  ).not.toBeVisible();
+}
+
+/**
+ * Opens an object loaded from application mode
+ * @param page
+ * @param type Either 'table' or 'plot'
+ * @param name Name of the table or plot
+ */
+async function openPanel(page: Page, name: PanelNames): Promise<void> {
+  // open the tables/plot button
+  const dropdownButton = page.getByRole('button', { name: 'Panels' });
+  await dropdownButton.click();
+
+  // search for the table/plot
+  const search = page.getByPlaceholder('Find Table, Plot or Widget');
+  await search.type(name);
+
+  // open the table/plot
+  const openButton = page.getByRole('button', { name, exact: true });
+  await openButton.click();
+}
+
+/**
+ * Opens a table loaded from application mode
+ * @param page
+ * @param name Name of the table
+ * @param waitForLoadFinished Whether to wait for the table to finish loading
+ */
+export async function openTable(
+  page: Page,
+  name: TableNames,
+  waitForLoadFinished = true
+): Promise<void> {
+  const panelCount = await page.locator('.iris-grid-panel').count();
+  await openPanel(page, name);
+
+  if (waitForLoadFinished) {
+    await expect(page.locator('.iris-grid-panel')).toHaveCount(panelCount + 1);
+    await expect(
+      page.locator('.iris-grid .iris-grid-loading-status')
+    ).toHaveCount(0);
+  }
+}
+
+/**
+ * Opens a plot loaded from application mode
+ * @param page
+ * @param name Name of the plot
+ */
+export async function openPlot(
+  page: Page,
+  name: PlotNames,
+  waitForLoadFinished = true
+): Promise<void> {
+  const panelCount = await page.locator('.chart-panel-container').count();
+  await openPanel(page, name);
+
+  if (waitForLoadFinished) {
+    await expect(page.locator('.chart-panel-container')).toHaveCount(
+      panelCount + 1
+    );
+    await expect(
+      page.locator('.chart-panel-container .loading-spinner')
+    ).toHaveCount(0);
+    await expect(
+      page.locator('.chart-panel-container .chart-wrapper')
+    ).toHaveCount(panelCount + 1);
+  }
+}
+
 /**
  * Generate a unique python variable name
  * @param prefix Prefix to give the variable name
@@ -186,7 +290,6 @@ export async function pasteInMonaco(
  * Wait for loading status of iris grid to disappear
  * @param page
  */
-
 export async function waitForLoadingDone(
   page: Page,
   tableNumber = 0
@@ -197,6 +300,19 @@ export async function waitForLoadingDone(
       .nth(tableNumber)
       .locator('.iris-grid-loading-status')
   ).toHaveCount(0);
+}
+
+/**
+ * Waits for a specified amount of context menus to exist
+ * @param page
+ * @param count The amount of context menus
+ */
+export async function expectContextMenus(
+  page: Page,
+  count: number
+): Promise<void> {
+  await expect(page.locator('.context-menu-container')).toHaveCount(count);
+  await expect(page.locator('.loading-spinner')).toHaveCount(0);
 }
 
 /**
@@ -267,10 +383,14 @@ export async function openTableOption(
 }
 
 export default {
+  gotoPage,
   generateVarName,
+  openTable,
+  openPlot,
   pasteInMonaco,
   typeInMonaco,
   waitForLoadingDone,
+  expectContextMenus,
   dragComponent,
   openTableOption,
 };

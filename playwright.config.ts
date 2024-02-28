@@ -7,37 +7,41 @@ import { devices } from '@playwright/test';
  */
 // require('dotenv').config();
 
+const TIMEOUT_MS = 120 * 1000;
+const TIMEOUT_ACTION_MS = 15 * 1000;
+const TIMEOUT_EXPECT_MS = 15 * 1000;
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
 const config: PlaywrightTestConfig = {
   testDir: './tests',
   /* Maximum time one test can run for. */
-  timeout: 120 * 1000,
+  timeout: TIMEOUT_MS,
   expect: {
     /**
      * Maximum time expect() should wait for the condition to be met.
      * For example in `await expect(locator).toHaveText();`
      */
-    timeout: 15000,
+    timeout: TIMEOUT_EXPECT_MS,
   },
-  /* We don't want to run tests in parallel because we have the same backend, tests may conflict with eachother */
-  fullyParallel: false,
+  /* Default to run each suite in parallel, suites and optional opt out */
+  fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Global setup file for initializing before all other tests */
   globalSetup: require.resolve('./tests/globalSetup.ts'),
   /* Retry on CI only */
   retries: process.env.CI ? 1 : 0,
-  /* Only have one worker since we don't want tests running in parallel, trampling over each other on the backend */
-  workers: 1,
+  /* Default to 50% of cores, don't want too many as core or web will become bottleneck */
+  workers: undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   /* Use host 0.0.0.0 so it can be forwarded from within docker */
   reporter: [['html', { host: '0.0.0.0', port: 9323 }]],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
-    actionTimeout: 0,
+    actionTimeout: TIMEOUT_ACTION_MS,
 
     /* Navigation timeout for how long it takes to navigate to a page */
     navigationTimeout: 60 * 1000,
