@@ -697,10 +697,9 @@ class ChartUtils {
     const { dh } = this;
     switch (plotStyle) {
       case dh.plot.SeriesPlotStyle.SCATTER:
+      case dh.plot.SeriesPlotStyle.LINE:
         // scattergl mode is more performant, but doesn't support the rangebreaks we need for businessTime calendars
         return !isBusinessTime && IS_WEBGL_SUPPORTED ? 'scattergl' : 'scatter';
-      case dh.plot.SeriesPlotStyle.LINE:
-        return 'scatter';
       case dh.plot.SeriesPlotStyle.BAR:
       case dh.plot.SeriesPlotStyle.STACKED_BAR:
         return 'bar';
