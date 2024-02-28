@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.66.1](https://github.com/deephaven/web-client-ui/compare/v0.66.0...v0.66.1) (2024-02-28)
+
+
+### Bug Fixes
+
+* Load default dashboard data from workspace data ([#1810](https://github.com/deephaven/web-client-ui/issues/1810)) ([6dd9814](https://github.com/deephaven/web-client-ui/commit/6dd9814d5dde7928c3ad765ce8a0e25f770c1871)), closes [#1746](https://github.com/deephaven/web-client-ui/issues/1746)
+* Spectrum actionbar selector ([#1841](https://github.com/deephaven/web-client-ui/issues/1841)) ([67de0e0](https://github.com/deephaven/web-client-ui/commit/67de0e09d11ba340aa546be71c400852a5a2092c))
+
+
+
+
+
 # [0.66.0](https://github.com/deephaven/web-client-ui/compare/v0.65.0...v0.66.0) (2024-02-27)
 
 
