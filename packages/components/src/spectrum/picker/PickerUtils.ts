@@ -1,10 +1,24 @@
-import { Key, ReactElement, ReactNode } from 'react';
-import type { SpectrumPickerProps } from '@adobe/react-spectrum';
-import type { ItemProps } from '@react-types/shared';
+import { isValidElement, Key, ReactElement, ReactNode } from 'react';
+import { Item, Section, SpectrumPickerProps } from '@adobe/react-spectrum';
+import type {
+  ItemProps,
+  ItemRenderer,
+  SectionProps,
+} from '@react-types/shared';
 import { PopperOptions } from '../../popper';
 
+export type SectionPropsNoItemRenderer<T> = Omit<
+  SectionProps<T>,
+  'children'
+> & {
+  children: Exclude<SectionProps<T>['children'], ItemRenderer<T>>;
+};
+
 export type ItemElement = ReactElement<ItemProps<unknown>>;
+export type SectionElement = ReactElement<SectionPropsNoItemRenderer<unknown>>;
 export type PickerItem = number | string | boolean | ItemElement;
+export type PickerSection = SectionElement;
+export type PickerItemOrSection = PickerItem | PickerSection;
 
 /**
  * Augment the Spectrum selection key type to include boolean values.
@@ -32,32 +46,64 @@ export interface NormalizedPickerItem {
   textValue: string;
 }
 
+export interface NormalizedPickerSection {
+  key: Key;
+  title: ReactNode;
+  items: NormalizedPickerItem[];
+}
+
 export type NormalizedSpectrumPickerProps =
   SpectrumPickerProps<NormalizedPickerItem>;
 
 export type TooltipOptions = { placement: PopperOptions['placement'] };
 
+export function isSectionElement<T>(
+  node: ReactNode
+): node is ReactElement<SectionProps<T>> {
+  return isValidElement<SectionProps<T>>(node) && node.type === Section;
+}
+
+export function isItemElement<T>(
+  node: ReactNode
+): node is ReactElement<ItemProps<T>> {
+  return isValidElement<ItemProps<T>>(node) && node.type === Item;
+}
+
 /**
  * Determine the `key` of a picker item.
- * @param item The picker item
+ * @param item The picker item or section
  * @returns A `PickerItemKey` for the picker item
  */
-function normalizeItemKey(item: PickerItem): PickerItemKey {
+function normalizeItemKey(item: PickerItem): PickerItemKey;
+function normalizeItemKey(item: PickerSection): Key;
+function normalizeItemKey(
+  item: PickerItem | PickerSection
+): Key | PickerItemKey {
   // string, number, or boolean
   if (typeof item !== 'object') {
-    return item;
+    return item as PickerItemKey;
   }
 
-  // `ItemElement` with `key` prop set
+  // If `key` prop is explicitly set
   if (item.key != null) {
     return item.key;
+  }
+
+  if (isSectionElement(item)) {
+    if (typeof item.props.title === 'string') {
+      return item.props.title;
+    }
+  } else if (isItemElement(item)) {
+    if (item.props.textValue != null) {
+      return item.props.textValue;
+    }
   }
 
   if (typeof item.props.children === 'string') {
     return item.props.children;
   }
 
-  return item.props.textValue ?? '';
+  return '';
 }
 
 /**
@@ -86,7 +132,25 @@ function normalizeTextValue(item: PickerItem): string {
  * @param item item to normalize
  * @returns NormalizedPickerItem object
  */
-function normalizePickerItem(item: PickerItem): NormalizedPickerItem {
+function normalizePickerItem(
+  item: PickerItemOrSection
+): NormalizedPickerItem | NormalizedPickerSection {
+  if (isSectionElement(item)) {
+    const key = normalizeItemKey(item);
+    const { title } = item.props;
+
+    const items = normalizePickerItemList(item.props.children).filter(
+      // We don't support nested section elements
+      childItem => !isSectionElement(childItem)
+    ) as NormalizedPickerItem[];
+
+    return {
+      key,
+      title,
+      items,
+    };
+  }
+
   const key = normalizeItemKey(item);
   const content = typeof item === 'object' ? item.props.children : String(item);
   const textValue = normalizeTextValue(item);
@@ -104,8 +168,8 @@ function normalizePickerItem(item: PickerItem): NormalizedPickerItem {
  * @returns An array of normalized picker items
  */
 export function normalizePickerItemList(
-  items: PickerItem | PickerItem[]
-): NormalizedPickerItem[] {
+  items: PickerItemOrSection | PickerItemOrSection[]
+): (NormalizedPickerItem | NormalizedPickerSection)[] {
   const itemsArray = Array.isArray(items) ? items : [items];
   return itemsArray.map(normalizePickerItem);
 }

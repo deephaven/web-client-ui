@@ -1,18 +1,19 @@
-import { useMemo } from 'react';
-import { Item, Picker as SpectrumPicker } from '@adobe/react-spectrum';
+import { useCallback, useMemo } from 'react';
+import { Item, Picker as SpectrumPicker, Section } from '@adobe/react-spectrum';
 import { Tooltip } from '../../popper';
 import {
   NormalizedSpectrumPickerProps,
   normalizePickerItemList,
   normalizeTooltipOptions,
-  PickerItem,
+  PickerItemOrSection,
   PickerItemKey,
   TooltipOptions,
+  NormalizedPickerItem,
 } from './PickerUtils';
 import { PickerItemContent } from './PickerItemContent';
 
 export type PickerProps = {
-  children: PickerItem | PickerItem[];
+  children: PickerItemOrSection | PickerItemOrSection[];
   /** Can be set to true or a TooltipOptions to enable item tooltips */
   tooltip?: boolean | TooltipOptions;
   /** The currently selected key in the collection (controlled). */
@@ -71,6 +72,18 @@ export function Picker({
     [tooltip]
   );
 
+  const renderItem = useCallback(
+    ({ content, textValue }: NormalizedPickerItem) => (
+      <Item textValue={textValue === '' ? 'Empty' : textValue}>
+        <PickerItemContent>{content}</PickerItemContent>
+        {tooltipOptions == null || content === '' ? null : (
+          <Tooltip options={tooltipOptions}>{content}</Tooltip>
+        )}
+      </Item>
+    ),
+    [tooltipOptions]
+  );
+
   return (
     <SpectrumPicker
       // eslint-disable-next-line react/jsx-props-no-spreading
@@ -89,14 +102,21 @@ export function Picker({
           onSelectionChange) as NormalizedSpectrumPickerProps['onSelectionChange']
       }
     >
-      {({ content, textValue }) => (
-        <Item textValue={textValue === '' ? 'Empty' : textValue}>
-          <PickerItemContent>{content}</PickerItemContent>
-          {tooltipOptions == null || content === '' ? null : (
-            <Tooltip options={tooltipOptions}>{content}</Tooltip>
-          )}
-        </Item>
-      )}
+      {itemOrSection => {
+        if ('items' in itemOrSection) {
+          return (
+            <Section
+              key={itemOrSection.key}
+              title={itemOrSection.title}
+              items={itemOrSection.items}
+            >
+              {renderItem}
+            </Section>
+          );
+        }
+
+        return renderItem(itemOrSection);
+      }}
     </SpectrumPicker>
   );
 }
