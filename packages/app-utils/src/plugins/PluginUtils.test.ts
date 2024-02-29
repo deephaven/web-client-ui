@@ -121,4 +121,9 @@ describe('getPluginModuleValue', () => {
       expect(moduleValue).toBe(plugin.default);
     }
   );
+
+  it('returns null if the module value is not a plugin', () => {
+    const moduleValue = getPluginModuleValue({} as Plugin);
+    expect(moduleValue).toBeNull();
+  });
 });
