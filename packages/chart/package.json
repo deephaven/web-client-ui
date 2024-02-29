@@ -39,7 +39,9 @@
     "lodash.set": "^4.3.2",
     "memoize-one": "^5.1.1",
     "memoizee": "^0.4.15",
-    "prop-types": "^15.7.2"
+    "plotly.js": "^2.29.1",
+    "prop-types": "^15.7.2",
+    "react-plotly.js": "^2.6.0"
   },
   "peerDependencies": {
     "react": "^17.x"
