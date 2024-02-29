@@ -89,10 +89,12 @@ export async function openTable(
 
   if (waitForLoadFinished) {
     await expect(page.locator('.iris-grid-panel')).toHaveCount(panelCount + 1);
+    await expect(page.locator('.iris-grid-panel .loading-spinner')).toHaveCount(
+      0
+    );
     await expect(
       page.locator('.iris-grid .iris-grid-loading-status')
     ).toHaveCount(0);
-    await expect(page.locator('.loading-spinner')).toHaveCount(0);
   }
 }
 
