@@ -226,3 +226,13 @@ export interface ThemePlugin extends Plugin {
 export function isThemePlugin(plugin: PluginModule): plugin is ThemePlugin {
   return 'type' in plugin && plugin.type === PluginType.THEME_PLUGIN;
 }
+
+export function isPlugin(plugin: unknown): plugin is Plugin {
+  return (
+    isDashboardPlugin(plugin as PluginModule) ||
+    isAuthPlugin(plugin as PluginModule) ||
+    isTablePlugin(plugin as PluginModule) ||
+    isThemePlugin(plugin as PluginModule) ||
+    isWidgetPlugin(plugin as PluginModule)
+  );
+}
