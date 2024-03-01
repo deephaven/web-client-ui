@@ -11,6 +11,11 @@ const log = Log.module('PickerUtils');
 export const INVALID_PICKER_ITEM_ERROR_MESSAGE =
   'Picker items must be strings, numbers, booleans, <Item> or <Section> elements:';
 
+/**
+ * React Spectrum <Section> supports an `ItemRenderer` function as a child. The
+ * DH picker makes use of this internally, but we don't want to support it as
+ * an incoming prop.
+ */
 export type SectionPropsNoItemRenderer<T> = Omit<
   SectionProps<T>,
   'children'
@@ -18,8 +23,9 @@ export type SectionPropsNoItemRenderer<T> = Omit<
   children: Exclude<SectionProps<T>['children'], ItemRenderer<T>>;
 };
 
-export type ItemElement = ReactElement<ItemProps<unknown>>;
-export type SectionElement = ReactElement<SectionPropsNoItemRenderer<unknown>>;
+type ItemElement = ReactElement<ItemProps<unknown>>;
+type SectionElement = ReactElement<SectionPropsNoItemRenderer<unknown>>;
+
 export type PickerItem = number | string | boolean | ItemElement;
 export type PickerSection = SectionElement;
 export type PickerItemOrSection = PickerItem | PickerSection;
