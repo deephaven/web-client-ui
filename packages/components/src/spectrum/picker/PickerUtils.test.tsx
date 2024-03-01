@@ -104,18 +104,7 @@ const expectedItems = {
 } satisfies Record<string, [PickerItem, NormalizedPickerItem]>;
 /* eslint-enable react/jsx-key */
 
-/* eslint-disable react/jsx-key */
-const expectedItemsInvalid = {
-  nonItemElement: [
-    <span>Non-item element</span>,
-    {
-      content: <span>Non-item element</span>,
-      key: 'Non-item element',
-      textValue: 'Non-item element',
-    },
-  ],
-} satisfies Record<string, [PickerItem, NormalizedPickerItem]>;
-/* eslint-enable react/jsx-key */
+const nonItemElement = <span>Non-item element</span>;
 
 /* eslint-disable react/jsx-key */
 const expectedSections = {
@@ -153,15 +142,11 @@ const expectedNormalizations = new Map<
 >([...Object.values(expectedItems), ...Object.values(expectedSections)]);
 
 const mixedItems = [...expectedNormalizations.keys()];
-const invalidItems = [...Object.values(expectedItemsInvalid)].map(
-  ([item]) => item
-);
 
 const children = {
   empty: [] as PickerProps['children'],
   single: mixedItems[0] as PickerProps['children'],
   mixed: mixedItems as PickerProps['children'],
-  invalid: invalidItems as PickerProps['children'],
 };
 
 describe('isSectionElement', () => {
@@ -216,14 +201,11 @@ describe('normalizePickerItemList', () => {
     }
   );
 
-  it.each([children.invalid])(
-    `should throw for invalid items: %#: %s`,
-    given => {
-      expect(() => normalizePickerItemList(given)).toThrow(
-        INVALID_PICKER_ITEM_ERROR_MESSAGE
-      );
-    }
-  );
+  it(`should throw for invalid items: %#: %s`, () => {
+    expect(() => normalizePickerItemList(nonItemElement)).toThrow(
+      INVALID_PICKER_ITEM_ERROR_MESSAGE
+    );
+  });
 });
 
 describe('normalizeTooltipOptions', () => {
