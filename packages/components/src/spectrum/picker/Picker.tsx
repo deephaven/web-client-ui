@@ -79,7 +79,9 @@ export function Picker({
       <Item textValue={textValue === '' ? 'Empty' : textValue}>
         <PickerItemContent>{content}</PickerItemContent>
         {tooltipOptions == null || content === '' ? null : (
-          <Tooltip options={tooltipOptions}>{content}</Tooltip>
+          <Tooltip options={tooltipOptions}>
+            {typeof content === 'boolean' ? String(content) : content}
+          </Tooltip>
         )}
       </Item>
     ),
