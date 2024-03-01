@@ -1,7 +1,7 @@
 import React from 'react';
-import { Picker } from '@deephaven/components';
+import { Item, Picker, Section } from '@deephaven/components';
 import { vsPerson } from '@deephaven/icons';
-import { Flex, Icon, Item, Text } from '@adobe/react-spectrum';
+import { Flex, Icon, Text } from '@adobe/react-spectrum';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { sampleSectionIdAndClasses } from './utils';
 
@@ -42,6 +42,29 @@ export function Pickers(): JSX.Element {
             <PersonIcon />
             <Text>Complex Ccc</Text>
           </Item>
+        </Picker>
+
+        <Picker label="Sections" tooltip>
+          {/* eslint-disable react/jsx-curly-brace-presence */}
+          {'String 1'}
+          {'String 2'}
+          {'String 3'}
+          <Section title="Section A">
+            <Item>Item Aaa</Item>
+            <Item>Item Bbb</Item>
+            <Item textValue="Complex Ccc">
+              <PersonIcon />
+              <Text>Complex Ccc</Text>
+            </Item>
+          </Section>
+          <Section>
+            <Item>Item Ddd</Item>
+            <Item>Item Eee</Item>
+            <Item textValue="Complex Fff">
+              <PersonIcon />
+              <Text>Complex Fff</Text>
+            </Item>
+          </Section>
         </Picker>
       </Flex>
     </div>

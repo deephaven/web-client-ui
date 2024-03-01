@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { Item, Picker as SpectrumPicker, Section } from '@adobe/react-spectrum';
+import { Picker as SpectrumPicker } from '@adobe/react-spectrum';
 import { Tooltip } from '../../popper';
 import {
   NormalizedSpectrumPickerProps,
@@ -11,6 +11,8 @@ import {
   NormalizedPickerItem,
 } from './PickerUtils';
 import { PickerItemContent } from './PickerItemContent';
+import { Item } from '../Item';
+import { Section } from '../Section';
 
 export type PickerProps = {
   children: PickerItemOrSection | PickerItemOrSection[];
