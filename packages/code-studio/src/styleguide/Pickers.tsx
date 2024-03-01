@@ -40,7 +40,7 @@ export function Pickers(): JSX.Element {
           <Item>Item Bbb</Item>
           <Item textValue="Complex Ccc">
             <PersonIcon />
-            <Text>Complex Ccc</Text>
+            <Text>Complex Ccc with text that should be truncated</Text>
           </Item>
         </Picker>
 

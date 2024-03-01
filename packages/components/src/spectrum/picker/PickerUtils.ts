@@ -191,10 +191,9 @@ function normalizePickerItem(
   }
 
   const key = normalizeItemKey(itemOrSection);
-  const content =
-    typeof itemOrSection === 'object'
-      ? itemOrSection.props.children
-      : String(itemOrSection);
+  const content = isItemElement(itemOrSection)
+    ? itemOrSection.props.children
+    : itemOrSection;
   const textValue = normalizeTextValue(itemOrSection);
 
   return {

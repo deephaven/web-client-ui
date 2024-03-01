@@ -23,6 +23,12 @@ export function PickerItemContent({
     content = <>&nbsp;</>;
   }
 
+  if (typeof content === 'boolean') {
+    // Boolean values need to be stringified to render
+    // eslint-disable-next-line no-param-reassign
+    content = String(content);
+  }
+
   return (
     <Text UNSAFE_className={stylesCommon.spectrumEllipsis}>{content}</Text>
   );
