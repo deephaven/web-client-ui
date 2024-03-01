@@ -16,10 +16,7 @@ export const INVALID_PICKER_ITEM_ERROR_MESSAGE =
  * DH picker makes use of this internally, but we don't want to support it as
  * an incoming prop.
  */
-export type SectionPropsNoItemRenderer<T> = Omit<
-  SectionProps<T>,
-  'children'
-> & {
+type SectionPropsNoItemRenderer<T> = Omit<SectionProps<T>, 'children'> & {
   children: Exclude<SectionProps<T>['children'], ItemRenderer<T>>;
 };
 
