@@ -1,10 +1,8 @@
 import { isValidElement, Key, ReactElement, ReactNode } from 'react';
-import { Item, Section, SpectrumPickerProps } from '@adobe/react-spectrum';
-import type {
-  ItemProps,
-  ItemRenderer,
-  SectionProps,
-} from '@react-types/shared';
+import { SpectrumPickerProps } from '@adobe/react-spectrum';
+import type { ItemRenderer } from '@react-types/shared';
+import { Item, ItemProps } from '../Item';
+import { Section, SectionProps } from '../Section';
 import { PopperOptions } from '../../popper';
 
 export type SectionPropsNoItemRenderer<T> = Omit<
@@ -57,12 +55,22 @@ export type NormalizedSpectrumPickerProps =
 
 export type TooltipOptions = { placement: PopperOptions['placement'] };
 
+/**
+ * Determine if a node is a Section element.
+ * @param node The node to check
+ * @returns True if the node is a Section element
+ */
 export function isSectionElement<T>(
   node: ReactNode
 ): node is ReactElement<SectionProps<T>> {
   return isValidElement<SectionProps<T>>(node) && node.type === Section;
 }
 
+/**
+ * Determine if a node is an Item element.
+ * @param node The node to check
+ * @returns True if the node is an Item element
+ */
 export function isItemElement<T>(
   node: ReactNode
 ): node is ReactElement<ItemProps<T>> {

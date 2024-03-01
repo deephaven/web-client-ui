@@ -1,12 +1,15 @@
-import React from 'react';
+import React, { createElement } from 'react';
 import { Item, Text } from '@adobe/react-spectrum';
 import {
   NormalizedPickerItem,
   normalizeTooltipOptions,
   normalizePickerItemList,
   PickerItem,
+  isSectionElement,
+  isItemElement,
 } from './PickerUtils';
 import type { PickerProps } from './Picker';
+import { Section } from '../Section';
 
 beforeEach(() => {
   expect.hasAssertions();
@@ -76,7 +79,7 @@ const expectedNormalizations = new Map<PickerItem, NormalizedPickerItem>([
     <Item textValue="textValue">Single string</Item>,
     {
       content: 'Single string',
-      key: 'Single string',
+      key: 'textValue',
       textValue: 'textValue',
     },
   ],
@@ -111,6 +114,26 @@ const children = {
   single: mixedItems[0] as PickerProps['children'],
   mixed: mixedItems as PickerProps['children'],
 };
+
+describe('isSectionElement', () => {
+  it.each([
+    [createElement(Section), true],
+    [createElement(Item), false],
+    ['some string', false],
+  ])('should return true for a Section element', (element, expected) => {
+    expect(isSectionElement(element)).toBe(expected);
+  });
+});
+
+describe('isItemElement', () => {
+  it.each([
+    [createElement(Item), true],
+    [createElement(Section), false],
+    ['some string', false],
+  ])('should return true for a Item element', (element, expected) => {
+    expect(isItemElement(element)).toBe(expected);
+  });
+});
 
 describe('normalizePickerItemList', () => {
   it.each([children.empty, children.single, children.mixed])(
