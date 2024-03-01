@@ -1,9 +1,15 @@
 import { isValidElement, Key, ReactElement, ReactNode } from 'react';
 import { SpectrumPickerProps } from '@adobe/react-spectrum';
 import type { ItemRenderer } from '@react-types/shared';
+import Log from '@deephaven/log';
 import { Item, ItemProps } from '../Item';
 import { Section, SectionProps } from '../Section';
 import { PopperOptions } from '../../popper';
+
+const log = Log.module('PickerUtils');
+
+export const INVALID_PICKER_ITEM_ERROR_MESSAGE =
+  'Picker items must be strings, numbers, booleans, <Item> or <Section> elements:';
 
 export type SectionPropsNoItemRenderer<T> = Omit<
   SectionProps<T>,
@@ -46,7 +52,7 @@ export interface NormalizedPickerItem {
 
 export interface NormalizedPickerSection {
   key: Key;
-  title: ReactNode;
+  title?: ReactNode;
   items: NormalizedPickerItem[];
 }
 
@@ -78,6 +84,24 @@ export function isItemElement<T>(
 }
 
 /**
+ * Determine if a node is a Picker item or section. Valid types include strings,
+ * numbers, booleans, Item elements, and Section elements.
+ * @param node The node to check
+ * @returns True if the node is a Picker item or section
+ */
+export function isPickerItemOrSection(
+  node: ReactNode
+): node is PickerItemOrSection {
+  return (
+    typeof node === 'string' ||
+    typeof node === 'number' ||
+    typeof node === 'boolean' ||
+    isItemElement(node) ||
+    isSectionElement(node)
+  );
+}
+
+/**
  * Determine the `key` of a picker item.
  * @param item The picker item or section
  * @returns A `PickerItemKey` for the picker item
@@ -97,21 +121,17 @@ function normalizeItemKey(
     return item.key;
   }
 
+  // Section element
   if (isSectionElement(item)) {
     if (typeof item.props.title === 'string') {
       return item.props.title;
     }
-  } else if (isItemElement(item)) {
-    if (item.props.textValue != null) {
-      return item.props.textValue;
-    }
+
+    return '';
   }
 
-  if (typeof item.props.children === 'string') {
-    return item.props.children;
-  }
-
-  return '';
+  // Item element
+  return item.props.textValue ?? '';
 }
 
 /**
@@ -143,6 +163,11 @@ function normalizeTextValue(item: PickerItem): string {
 function normalizePickerItem(
   item: PickerItemOrSection
 ): NormalizedPickerItem | NormalizedPickerSection {
+  if (!isPickerItemOrSection(item)) {
+    log.debug(INVALID_PICKER_ITEM_ERROR_MESSAGE, item);
+    throw new Error(INVALID_PICKER_ITEM_ERROR_MESSAGE);
+  }
+
   if (isSectionElement(item)) {
     const key = normalizeItemKey(item);
     const { title } = item.props;
