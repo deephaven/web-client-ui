@@ -152,6 +152,26 @@ function isRangedPlotlyAxis(value: unknown): value is { range: Range[] } {
   );
 }
 
+/**
+ * Check if WebGL is supported in the current environment.
+ * Most modern browsers do support WebGL, but it's possible to disable it and it is also not available
+ * in some headless environments, which can affect e2e tests.
+ *
+ * https://github.com/microsoft/playwright/issues/13146
+ * https://bugzilla.mozilla.org/show_bug.cgi?id=1375585
+ *
+ * @returns True if Web GL is supported, false otherwise
+ */
+function isWebGLSupported(): boolean {
+  // https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/By_example/Detect_WebGL
+  const canvas = document.createElement('canvas');
+  const gl =
+    canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+  return gl != null && gl instanceof WebGLRenderingContext;
+}
+
+const IS_WEBGL_SUPPORTED = isWebGLSupported();
+
 class ChartUtils {
   static DEFAULT_AXIS_SIZE = 0.15;
 
@@ -677,13 +697,9 @@ class ChartUtils {
     const { dh } = this;
     switch (plotStyle) {
       case dh.plot.SeriesPlotStyle.SCATTER:
-        // scattergl mode is more performant, but doesn't support the rangebreaks we need for businessTime calendars
-        return !isBusinessTime ? 'scattergl' : 'scatter';
       case dh.plot.SeriesPlotStyle.LINE:
-        // There is also still some artifacting bugs with scattergl: https://github.com/plotly/plotly.js/issues/3522
-        // The artifacting only occurs on line plots, which we can draw with fairly decent performance using SVG paths
-        // Once the above plotly issue is fixed, scattergl should be used here (when !isBusinessTime)
-        return 'scatter';
+        // scattergl mode is more performant, but doesn't support the rangebreaks we need for businessTime calendars
+        return !isBusinessTime && IS_WEBGL_SUPPORTED ? 'scattergl' : 'scatter';
       case dh.plot.SeriesPlotStyle.BAR:
       case dh.plot.SeriesPlotStyle.STACKED_BAR:
         return 'bar';
