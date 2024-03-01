@@ -102,34 +102,38 @@ export function isPickerItemOrSection(
 }
 
 /**
- * Determine the `key` of a picker item.
- * @param item The picker item or section
+ * Determine the `key` of a picker item or section.
+ * @param itemOrSection The picker item or section
  * @returns A `PickerItemKey` for the picker item
  */
 function normalizeItemKey(item: PickerItem): PickerItemKey;
-function normalizeItemKey(item: PickerSection): Key;
+function normalizeItemKey(section: PickerSection): Key;
 function normalizeItemKey(
-  item: PickerItem | PickerSection
+  itemOrSection: PickerItem | PickerSection
 ): Key | PickerItemKey {
   // string, number, or boolean
-  if (typeof item !== 'object') {
-    return item;
+  if (typeof itemOrSection !== 'object') {
+    return itemOrSection;
   }
 
   // If `key` prop is explicitly set
-  if (item.key != null) {
-    return item.key;
+  if (itemOrSection.key != null) {
+    return itemOrSection.key;
   }
 
   // Section element
-  if (isSectionElement(item)) {
-    return typeof item.props.title === 'string' ? item.props.title : '';
+  if (isSectionElement(itemOrSection)) {
+    return typeof itemOrSection.props.title === 'string'
+      ? itemOrSection.props.title
+      : '';
   }
 
   // Item element
   return (
-    item.props.textValue ??
-    (typeof item.props.children === 'string' ? item.props.children : '')
+    itemOrSection.props.textValue ??
+    (typeof itemOrSection.props.children === 'string'
+      ? itemOrSection.props.children
+      : '')
   );
 }
 
@@ -156,22 +160,22 @@ function normalizeTextValue(item: PickerItem): string {
 
 /**
  * Normalize a picker item to an object form.
- * @param item item to normalize
+ * @param itemOrSection item to normalize
  * @returns NormalizedPickerItem object
  */
 function normalizePickerItem(
-  item: PickerItemOrSection
+  itemOrSection: PickerItemOrSection
 ): NormalizedPickerItem | NormalizedPickerSection {
-  if (!isPickerItemOrSection(item)) {
-    log.debug(INVALID_PICKER_ITEM_ERROR_MESSAGE, item);
+  if (!isPickerItemOrSection(itemOrSection)) {
+    log.debug(INVALID_PICKER_ITEM_ERROR_MESSAGE, itemOrSection);
     throw new Error(INVALID_PICKER_ITEM_ERROR_MESSAGE);
   }
 
-  if (isSectionElement(item)) {
-    const key = normalizeItemKey(item);
-    const { title } = item.props;
+  if (isSectionElement(itemOrSection)) {
+    const key = normalizeItemKey(itemOrSection);
+    const { title } = itemOrSection.props;
 
-    const items = normalizePickerItemList(item.props.children).filter(
+    const items = normalizePickerItemList(itemOrSection.props.children).filter(
       // We don't support nested section elements
       childItem => !isSectionElement(childItem)
     ) as NormalizedPickerItem[];
@@ -183,9 +187,12 @@ function normalizePickerItem(
     };
   }
 
-  const key = normalizeItemKey(item);
-  const content = typeof item === 'object' ? item.props.children : String(item);
-  const textValue = normalizeTextValue(item);
+  const key = normalizeItemKey(itemOrSection);
+  const content =
+    typeof itemOrSection === 'object'
+      ? itemOrSection.props.children
+      : String(itemOrSection);
+  const textValue = normalizeTextValue(itemOrSection);
 
   return {
     key,
@@ -196,13 +203,15 @@ function normalizePickerItem(
 
 /**
  * Get normalized picker items from a picker item or array of picker items.
- * @param items A picker item or array of picker items
+ * @param itemsOrSections A picker item or array of picker items
  * @returns An array of normalized picker items
  */
 export function normalizePickerItemList(
-  items: PickerItemOrSection | PickerItemOrSection[]
+  itemsOrSections: PickerItemOrSection | PickerItemOrSection[]
 ): (NormalizedPickerItem | NormalizedPickerSection)[] {
-  const itemsArray = Array.isArray(items) ? items : [items];
+  const itemsArray = Array.isArray(itemsOrSections)
+    ? itemsOrSections
+    : [itemsOrSections];
   return itemsArray.map(normalizePickerItem);
 }
 
