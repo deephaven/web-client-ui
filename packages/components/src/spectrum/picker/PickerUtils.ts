@@ -113,7 +113,7 @@ function normalizeItemKey(
 ): Key | PickerItemKey {
   // string, number, or boolean
   if (typeof item !== 'object') {
-    return item as PickerItemKey;
+    return item;
   }
 
   // If `key` prop is explicitly set
@@ -123,15 +123,14 @@ function normalizeItemKey(
 
   // Section element
   if (isSectionElement(item)) {
-    if (typeof item.props.title === 'string') {
-      return item.props.title;
-    }
-
-    return '';
+    return typeof item.props.title === 'string' ? item.props.title : '';
   }
 
   // Item element
-  return item.props.textValue ?? '';
+  return (
+    item.props.textValue ??
+    (typeof item.props.children === 'string' ? item.props.children : '')
+  );
 }
 
 /**
