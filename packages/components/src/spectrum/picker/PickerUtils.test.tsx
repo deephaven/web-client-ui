@@ -10,6 +10,7 @@ import {
   NormalizedPickerSection,
   INVALID_PICKER_ITEM_ERROR_MESSAGE,
   isPickerItemOrSection,
+  isNormalizedPickerSection,
 } from './PickerUtils';
 import type { PickerProps } from './Picker';
 import { Item } from '../Item';
@@ -182,6 +183,18 @@ describe('isPickerItemOrSection', () => {
     'should return true for a Item or Section element: %s, %s',
     (element, expected) => {
       expect(isPickerItemOrSection(element)).toBe(expected);
+    }
+  );
+});
+
+describe('isNormalizedPickerSection', () => {
+  it.each([
+    [{ key: 'mock.key' } as NormalizedPickerItem, false],
+    [{ key: 'mock.key', items: [] } as NormalizedPickerSection, true],
+  ])(
+    'should return true for a normalized Picker section: %s',
+    (obj, expected) => {
+      expect(isNormalizedPickerSection(obj)).toBe(expected);
     }
   );
 });

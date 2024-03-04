@@ -105,6 +105,17 @@ export function isPickerItemOrSection(
 }
 
 /**
+ * Determine if an object is a normalized Picker section.
+ * @param maybeNormalizedPickerSection The object to check
+ * @returns True if the object is a normalized Picker section
+ */
+export function isNormalizedPickerSection(
+  maybeNormalizedPickerSection: NormalizedPickerItem | NormalizedPickerSection
+): maybeNormalizedPickerSection is NormalizedPickerSection {
+  return 'items' in maybeNormalizedPickerSection;
+}
+
+/**
  * Determine the `key` of a picker item or section.
  * @param itemOrSection The picker item or section
  * @returns A `PickerItemKey` for the picker item

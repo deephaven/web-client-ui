@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { Key, useCallback, useMemo } from 'react';
 import { Picker as SpectrumPicker } from '@adobe/react-spectrum';
 import cl from 'classnames';
 import { Tooltip } from '../../popper';
@@ -10,6 +10,7 @@ import {
   PickerItemKey,
   TooltipOptions,
   NormalizedPickerItem,
+  isNormalizedPickerSection,
 } from './PickerUtils';
 import { PickerItemContent } from './PickerItemContent';
 import { Item } from '../Item';
@@ -78,8 +79,8 @@ export function Picker({
   );
 
   const renderItem = useCallback(
-    ({ content, textValue }: NormalizedPickerItem) => (
-      <Item textValue={textValue === '' ? 'Empty' : textValue}>
+    ({ key, content, textValue }: NormalizedPickerItem) => (
+      <Item key={key as Key} textValue={textValue === '' ? 'Empty' : textValue}>
         <PickerItemContent>{content}</PickerItemContent>
         {tooltipOptions == null || content === '' ? null : (
           <Tooltip options={tooltipOptions}>
@@ -111,7 +112,7 @@ export function Picker({
       }
     >
       {itemOrSection => {
-        if ('items' in itemOrSection) {
+        if (isNormalizedPickerSection(itemOrSection)) {
           return (
             <Section
               key={itemOrSection.key}
