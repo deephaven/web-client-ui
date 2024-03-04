@@ -24,7 +24,7 @@ const expectedItems = {
   numberLiteral: [
     999,
     {
-      content: '999',
+      content: 999,
       key: 999,
       textValue: '999',
     },
@@ -48,7 +48,7 @@ const expectedItems = {
   booleanLiteral: [
     false,
     {
-      content: 'false',
+      content: false,
       key: false,
       textValue: 'false',
     },
