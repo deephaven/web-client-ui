@@ -57,7 +57,7 @@ export type PickerProps = {
  */
 export function Picker({
   children,
-  tooltip,
+  tooltip = true,
   defaultSelectedKey,
   selectedKey,
   onChange,
