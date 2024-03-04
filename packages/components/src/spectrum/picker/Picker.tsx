@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { Picker as SpectrumPicker } from '@adobe/react-spectrum';
+import cl from 'classnames';
 import { Tooltip } from '../../popper';
 import {
   NormalizedSpectrumPickerProps,
@@ -62,6 +63,8 @@ export function Picker({
   selectedKey,
   onChange,
   onSelectionChange,
+  // eslint-disable-next-line camelcase
+  UNSAFE_className,
   ...spectrumPickerProps
 }: PickerProps): JSX.Element {
   const normalizedItems = useMemo(
@@ -92,6 +95,7 @@ export function Picker({
     <SpectrumPicker
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...spectrumPickerProps}
+      UNSAFE_className={cl('dh-picker', UNSAFE_className)}
       items={normalizedItems}
       // Type assertions are necessary for `selectedKey`, `defaultSelectedKey`,
       // and `onSelectionChange` due to Spectrum types not accounting for
