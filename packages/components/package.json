@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@adobe/react-spectrum": "^3.34.1",
+    "@react-types/shared": "^3.22.1",
     "@deephaven/icons": "file:../icons",
     "@deephaven/log": "file:../log",
     "@deephaven/react-hooks": "file:../react-hooks",
