@@ -10,6 +10,8 @@ import {
   PluginType,
   isLegacyAuthPlugin,
   isLegacyPlugin,
+  PluginModule,
+  isPlugin,
 } from '@deephaven/plugin';
 import loadRemoteModule from './loadRemoteModule';
 
@@ -52,6 +54,33 @@ export async function loadJson(jsonUrl: string): Promise<PluginManifest> {
   }
 }
 
+function hasDefaultExport(value: unknown): value is { default: Plugin } {
+  return (
+    typeof value === 'object' &&
+    value != null &&
+    typeof (value as { default?: unknown }).default === 'object'
+  );
+}
+
+export function getPluginModuleValue(
+  value: LegacyPlugin | Plugin | { default: Plugin }
+): PluginModule | null {
+  // TypeScript builds CJS default exports differently depending on
+  // whether there are also named exports. If the default is the only
+  // export, it will be the value. If there are also named exports,
+  // it will be assigned to the `default` property on the value.
+  if (isPlugin(value)) {
+    return value;
+  }
+  if (hasDefaultExport(value) && isPlugin(value.default)) {
+    return value.default;
+  }
+  if (isLegacyPlugin(value)) {
+    return value;
+  }
+  return null;
+}
+
 /**
  * Load all plugin modules available based on the manifest file at the provided base URL
  * @param modulePluginsUrl The base URL of the module plugins to load
@@ -83,14 +112,7 @@ export async function loadModulePlugins(
       const module = pluginModules[i];
       const { name } = manifest.plugins[i];
       if (module.status === 'fulfilled') {
-        const moduleValue = isLegacyPlugin(module.value)
-          ? module.value
-          : // TypeScript builds CJS default exports differently depending on
-            // whether there are also named exports. If the default is the only
-            // export, it will be the value. If there are also named exports,
-            // it will be assigned to the `default` property on the value.
-            module.value.default ?? module.value;
-
+        const moduleValue = getPluginModuleValue(module.value);
         if (moduleValue == null) {
           log.error(`Plugin '${name}' is missing an exported value.`);
         } else {
