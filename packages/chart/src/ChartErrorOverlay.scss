@@ -1,8 +1,5 @@
 @import '@deephaven/components/scss/custom.scss';
 
-$chart-error-column-valid-color: $green;
-$chart-error-column-invalid-color: $gray-400;
-
 .chart-error-overlay {
   .chart-error-overlay-content {
     .btn {

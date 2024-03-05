@@ -1,5 +1,4 @@
 import { ReactElement } from 'react';
-import classNames from 'classnames';
 import { ButtonOld } from '@deephaven/components';
 import './ChartErrorOverlay.scss';
 
@@ -26,11 +25,7 @@ function ChartErrorOverlay({
 
   return (
     <div className="chart-panel-overlay chart-error-overlay">
-      <div
-        className={classNames(
-          'chart-panel-overlay-content chart-error-overlay-content'
-        )}
-      >
+      <div className="chart-panel-overlay-content chart-error-overlay-content">
         <div className="info-message" data-testid={messageTestId}>
           {errorMessage}
         </div>

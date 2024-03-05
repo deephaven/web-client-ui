@@ -1,7 +1,6 @@
 import React, { Component, ReactElement, RefObject } from 'react';
 import deepEqual from 'deep-equal';
 import memoize from 'memoize-one';
-import { CopyButton, Popper } from '@deephaven/components';
 import {
   vsLoading,
   dhGraphLineDown,
