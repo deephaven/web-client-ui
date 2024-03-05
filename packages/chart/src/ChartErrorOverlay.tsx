@@ -18,7 +18,7 @@ function ChartErrorOverlay({
 
   const slowPerformanceMessage = errorMessage.includes(
     'Plot contains more than'
-  ); // TODO: core side changes to detect slow performance and show this message
+  ); // TODO: DHC #5220 to detect slow performance and show this message
 
   const undismissableError =
     errorMessage === 'Too many items to disable downsampling';
