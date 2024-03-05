@@ -841,6 +841,16 @@ class Table extends DeephavenObject {
   }
 }
 
+// TreeTable and Table are different in actual implementation, but should be okay for the mock
+class TreeTable extends Table {
+  constructor(props) {
+    super(props);
+
+    const { groupedColumns = [] } = props;
+    this.groupedColumns = groupedColumns;
+  }
+}
+
 Table.EVENT_CUSTOMCOLUMNSCHANGED = 'customcolumnschanged';
 Table.EVENT_FILTERCHANGED = 'filterchanged';
 Table.EVENT_ROWADDED = 'rowadded';
@@ -1991,8 +2001,7 @@ const dh = {
   TotalsTableConfig: TotalsTableConfig,
   TableViewportSubscription,
   TableSubscription,
-  // TreeTable and Table are different in actual implementation, but should be okay for the mock
-  TreeTable: Table,
+  TreeTable: TreeTable,
   Column: Column,
   RangeSet,
   Row: Row,

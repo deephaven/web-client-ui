@@ -110,11 +110,17 @@ class IrisGridTestUtils {
 
   makeTreeTable(
     columns = this.makeColumns(),
+    groupedColumns: Column[] = [],
     size = 1000000000,
     sort = []
   ): TreeTable {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const table = new (this.dh as any).TreeTable({ columns, size, sort });
+    const table = new (this.dh as any).TreeTable({
+      columns,
+      groupedColumns,
+      size,
+      sort,
+    });
     table.copy = jest.fn(() => Promise.resolve(table));
     return table;
   }

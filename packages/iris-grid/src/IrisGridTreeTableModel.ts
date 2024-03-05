@@ -41,30 +41,33 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     inputTable: InputTable | null = null
   ) {
     super(dh, table, formatter, inputTable);
-    this.virtualColumns = [
-      {
-        name: '__DH_UI_GROUP__',
-        displayName: 'Group',
-        type: TableUtils.dataType.STRING,
-        constituentType: TableUtils.dataType.STRING,
-        isPartitionColumn: false,
-        isSortable: false,
-        isProxy: true,
-        description: 'Key column',
-        filter: () => {
-          throw new Error('Filter not implemented for virtual column');
-        },
-        sort: () => {
-          throw new Error('Sort not implemented virtual column');
-        },
-        formatColor: () => {
-          throw new Error('Color not implemented for virtual column');
-        },
-        formatRowColor: () => {
-          throw new Error('Color not implemented for virtual column');
-        },
-      },
-    ];
+    this.virtualColumns =
+      table.groupedColumns.length > 1
+        ? [
+            {
+              name: '__DH_UI_GROUP__',
+              displayName: 'Group',
+              type: TableUtils.dataType.STRING,
+              constituentType: TableUtils.dataType.STRING,
+              isPartitionColumn: false,
+              isSortable: false,
+              isProxy: true,
+              description: 'Key column',
+              filter: () => {
+                throw new Error('Filter not implemented for virtual column');
+              },
+              sort: () => {
+                throw new Error('Sort not implemented virtual column');
+              },
+              formatColor: () => {
+                throw new Error('Color not implemented for virtual column');
+              },
+              formatRowColor: () => {
+                throw new Error('Color not implemented for virtual column');
+              },
+            },
+          ]
+        : [];
   }
 
   applyBufferedViewport(
