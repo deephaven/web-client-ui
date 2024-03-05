@@ -2,8 +2,8 @@ import { DragEvent } from 'react';
 
 export type WidgetDescriptor = {
   type: string;
-  name?: string;
-  id?: string;
+  name?: string | null;
+  id?: string | null;
 };
 
 export type PanelOpenEventDetail<T = unknown> = {

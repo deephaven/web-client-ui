@@ -1,14 +1,11 @@
-import type {
-  Column,
-  FilterCondition,
-  Table,
-  TreeTable,
-} from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import type { SelectionT } from '@deephaven/utils';
 import TableUtils from './TableUtils';
 
 export interface FilterConditionFactory {
-  (table: Table | TreeTable | null | undefined): FilterCondition | null;
+  (
+    table: dh.Table | dh.TreeTable | null | undefined
+  ): dh.FilterCondition | null;
 }
 
 /**
@@ -44,8 +41,8 @@ export function createSearchTextFilter(
    * @param maybeTable Table to filter
    */
   return function searchTextFilter(
-    maybeTable: Table | TreeTable | null | undefined
-  ): FilterCondition | null {
+    maybeTable: dh.Table | dh.TreeTable | null | undefined
+  ): dh.FilterCondition | null {
     const searchTextTrimmed = searchText.trim();
 
     if (searchTextTrimmed === '') {
@@ -78,12 +75,12 @@ export function createSearchTextFilter(
  */
 export function createFilterConditionFactory(
   columnNames: string | string[],
-  createColumnCondition: (column: Column) => FilterCondition,
+  createColumnCondition: (column: dh.Column) => dh.FilterCondition,
   conditionOperator: 'and' | 'or' = 'or'
 ): FilterConditionFactory {
   return function filterConditionFactory(
-    maybeTable: Table | TreeTable | null | undefined
-  ): FilterCondition | null {
+    maybeTable: dh.Table | dh.TreeTable | null | undefined
+  ): dh.FilterCondition | null {
     const maybeColumns = maybeTable?.findColumns(
       typeof columnNames === 'string' ? [columnNames] : columnNames
     );
@@ -156,8 +153,8 @@ export function createSelectedValuesFilter<TValue>(
    * @param maybeTable the table to filter
    */
   return function selectedValuesFilter(
-    maybeTable: Table | TreeTable | null | undefined
-  ): FilterCondition | null {
+    maybeTable: dh.Table | dh.TreeTable | null | undefined
+  ): dh.FilterCondition | null {
     const maybeColumn = maybeTable?.findColumn(columnName);
 
     const isAllSelected =
@@ -185,8 +182,8 @@ export function createNotNullOrEmptyFilterCondition(tableUtils: TableUtils) {
    * not null or empty string.
    */
   return function notNullOrEmptyFilterCondition(
-    column: Column
-  ): FilterCondition {
+    column: dh.Column
+  ): dh.FilterCondition {
     return column
       .filter()
       .isNull()
@@ -211,8 +208,8 @@ export function createShowOnlyEmptyFilterCondition(
    * If `isOn` is false, it will return a filter that matches all values.
    */
   return function showOnlyEmptyFilterCondition(
-    column: Column
-  ): FilterCondition {
+    column: dh.Column
+  ): dh.FilterCondition {
     const filter = column.filter();
     const emptyStringValue = tableUtils.makeFilterValue(column.type, '');
     const eqEmptyStringCondition = filter.eq(emptyStringValue);

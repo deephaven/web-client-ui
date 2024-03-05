@@ -11,7 +11,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import type { Column } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import {
   Type as FilterType,
   TypeValue as FilterTypeValue,
@@ -88,7 +88,7 @@ const GotoRow = forwardRef<GotoRowElement, GotoRowProps>(
     const gotoValueInputRef = useRef<HTMLInputElement>(null);
 
     const [isGotoRowActive, setIsGotoRowActive] = useState(false);
-    let columns: Column[] = [];
+    let columns: dh.Column[] = [];
 
     if (isIrisGridProxyModel(model) && model.table !== undefined) {
       ({ columns } = model.table);

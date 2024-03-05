@@ -52,7 +52,7 @@ const log = Log.module('Linker');
 
 interface StateProps {
   activeTool: string;
-  dh: DhType;
+  dh: typeof DhType;
   isolatedLinkerPanelId?: string;
   links: Link[];
   timeZone: string;

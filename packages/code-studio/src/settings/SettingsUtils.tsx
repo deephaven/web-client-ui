@@ -95,7 +95,7 @@ export function isValidColumnName(name: string): boolean {
 }
 
 export function isValidFormat(
-  dh: DhType,
+  dh: typeof DhType,
   columnType: string,
   format: Partial<TableColumnFormat>
 ): boolean {
@@ -129,7 +129,7 @@ export function removeFormatRuleExtraProps(
 }
 
 export function isFormatRuleValidForSave(
-  dh: DhType,
+  dh: typeof DhType,
   rule: FormatterItem
 ): rule is ValidFormatterItem {
   return (

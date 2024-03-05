@@ -25,9 +25,12 @@ export class IntegerColumnFormatter extends TableColumnFormatter<number> {
    * @returns true for valid object
    */
   static isValid(
-    dh: DhType,
+    dh: typeof DhType,
     format: Pick<TableColumnFormat, 'formatString'>
   ): boolean {
+    if (format.formatString == null) {
+      return false;
+    }
     try {
       dh.i18n.NumberFormat.format(format.formatString, 0);
       return true;
@@ -129,12 +132,12 @@ export class IntegerColumnFormatter extends TableColumnFormatter<number> {
     '0.0000E0'
   );
 
-  dh: DhType;
+  dh: typeof DhType;
 
   defaultFormatString: string;
 
   constructor(
-    dh: DhType,
+    dh: typeof DhType,
     {
       defaultFormatString = IntegerColumnFormatter.DEFAULT_FORMAT_STRING,
     }: IntegerColumnFormatterOptions = {}

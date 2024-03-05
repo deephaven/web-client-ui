@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { type WidgetComponentProps } from '@deephaven/plugin';
-import { type Table } from '@deephaven/jsapi-types';
+import { type dh } from '@deephaven/jsapi-types';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import {
   IrisGrid,
@@ -9,7 +9,7 @@ import {
 } from '@deephaven/iris-grid';
 
 export function GridWidgetPlugin(
-  props: WidgetComponentProps<Table>
+  props: WidgetComponentProps<dh.Table>
 ): JSX.Element | null {
   const dh = useApi();
   const [model, setModel] = useState<IrisGridModel>();

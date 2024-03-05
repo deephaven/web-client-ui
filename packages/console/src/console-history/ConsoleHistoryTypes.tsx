@@ -1,5 +1,5 @@
 import { CancelablePromise } from '@deephaven/utils';
-import type { VariableChanges } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 
 export type ConsoleHistoryError =
   | string
@@ -13,7 +13,7 @@ export interface ConsoleHistoryActionItem {
   result?: {
     message?: string;
     error?: unknown;
-    changes?: VariableChanges;
+    changes?: dh.ide.VariableChanges;
   };
   disabledObjects?: string[];
   startTime?: number;

@@ -14,7 +14,7 @@ export type IrisGridPanelMetadata = {
 };
 
 export function isLegacyIrisGridPanelMetadata(
-  metadata?: PanelMetadata
+  metadata?: Partial<PanelMetadata>
 ): metadata is LegacyIrisGridPanelMetadata {
   if (metadata == null) return false;
   const irisGridPanelMetadata = metadata as LegacyIrisGridPanelMetadata;

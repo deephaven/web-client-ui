@@ -1,5 +1,5 @@
 import { arrayMove } from '@dnd-kit/sortable';
-import type { Column } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { GridUtils, ModelIndex, MoveOperation } from '@deephaven/grid';
 import type ColumnHeaderGroup from '../../../ColumnHeaderGroup';
 import { isFlattenedTreeItem, ReadonlyTreeItems } from './types';
@@ -28,7 +28,7 @@ export type IrisGridTreeItem = TreeItem<IrisGridTreeItemData>;
 export type FlattenedIrisGridTreeItem = FlattenedItem<IrisGridTreeItemData>;
 
 function getTreeItem(
-  columns: readonly Column[],
+  columns: readonly dh.Column[],
   movedColumns: readonly MoveOperation[],
   columnHeaderGroupMap: Map<string, ColumnHeaderGroup>,
   name: string,
@@ -90,7 +90,7 @@ function getTreeItem(
 }
 
 export function getTreeItems(
-  columns: readonly Column[],
+  columns: readonly dh.Column[],
   movedColumns: readonly MoveOperation[],
   columnHeaderGroups: readonly ColumnHeaderGroup[],
   hiddenColumns: readonly ModelIndex[],

@@ -13,7 +13,6 @@
     { "path": "../dashboard-core-plugins" },
     { "path": "../jsapi-bootstrap" },
     { "path": "../jsapi-components" },
-    { "path": "../jsapi-types" },
     { "path": "../jsapi-utils" },
     { "path": "../log" },
     { "path": "../plugin" }

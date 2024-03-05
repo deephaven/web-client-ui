@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import type { Table, TreeTable } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { isClosed } from '@deephaven/jsapi-utils';
 
 /**
@@ -8,7 +8,7 @@ import { isClosed } from '@deephaven/jsapi-utils';
  * @param table
  */
 export default function useTableClose(
-  table: Table | TreeTable | null | undefined
+  table: dh.Table | dh.TreeTable | null | undefined
 ): void {
   useEffect(
     () => () => {

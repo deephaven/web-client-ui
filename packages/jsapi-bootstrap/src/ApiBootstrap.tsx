@@ -10,7 +10,7 @@ import Log from '@deephaven/log';
 
 const log = Log.module('@deephaven/jsapi-bootstrap.ApiBootstrap');
 
-export const ApiContext = createContext<DhType | null>(null);
+export const ApiContext = createContext<typeof DhType | null>(null);
 
 export type ApiBootstrapProps = {
   /** URL of the API to load */
@@ -36,11 +36,11 @@ export function ApiBootstrap({
   setGlobally = false,
 }: ApiBootstrapProps): JSX.Element {
   const [isLoading, setIsLoading] = useState(true);
-  const [api, setApi] = useState<DhType>();
+  const [api, setApi] = useState<typeof DhType>();
   useEffect(() => {
     async function loadApi(): Promise<void> {
       try {
-        const dh: DhType =
+        const dh: typeof DhType =
           // Ignore the warning about dynamic import in both Vite and Webpack.
           // We use Vite, but some clients may use Webpack.
           (await import(/* @vite-ignore */ /* webpackIgnore: true */ apiUrl))

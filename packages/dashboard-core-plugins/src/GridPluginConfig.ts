@@ -1,10 +1,10 @@
 import { PluginType, type WidgetPlugin } from '@deephaven/plugin';
 import { dhTable } from '@deephaven/icons';
-import { Table } from '@deephaven/jsapi-types';
+import { dh } from '@deephaven/jsapi-types';
 import { GridWidgetPlugin } from './GridWidgetPlugin';
 import { GridPanelPlugin } from './GridPanelPlugin';
 
-const GridPluginConfig: WidgetPlugin<Table> = {
+const GridPluginConfig: WidgetPlugin<dh.Table> = {
   name: 'IrisGridPanel',
   title: 'Table',
   type: PluginType.WIDGET_PLUGIN,

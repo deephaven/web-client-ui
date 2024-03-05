@@ -16,11 +16,7 @@ import {
   MoveOperation,
 } from '@deephaven/grid';
 import { vsWarning } from '@deephaven/icons';
-import type {
-  dh as DhType,
-  Table,
-  TableViewportSubscription,
-} from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import { TimeUtils } from '@deephaven/utils';
 import shortid from 'shortid';
 import './TableCsvExporter.scss';
@@ -41,8 +37,8 @@ interface TableCsvExporterProps {
   onDownloadStart: () => void;
   onDownload: (
     fileName: string,
-    frozenTable: Table,
-    tableSubscription: TableViewportSubscription,
+    frozenTable: DhType.Table,
+    tableSubscription: DhType.TableViewportSubscription,
     snapshotRanges: readonly GridRange[],
     modelRanges: readonly GridRange[],
     includeColumnHeaders: boolean,
@@ -101,7 +97,7 @@ class TableCsvExporter extends Component<
     selectedRanges: [],
   };
 
-  static getDateString(dh: DhType): string {
+  static getDateString(dh: typeof DhType): string {
     return dh.i18n.DateTimeFormat.format(
       TableCsvExporter.FILENAME_DATE_FORMAT,
       new Date()

@@ -18,8 +18,8 @@ import {
   LayoutUtils,
   PanelEvent,
 } from '@deephaven/dashboard';
+import type { dh } from '@deephaven/jsapi-types';
 import { getVariableDescriptor } from '@deephaven/jsapi-bootstrap';
-import type { VariableDefinition } from '@deephaven/jsapi-types';
 import { SessionWrapper } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
@@ -76,7 +76,7 @@ interface ConsolePanelState {
   consoleSettings: ConsoleSettings;
   itemIds: ItemIds;
 
-  objectMap: Map<string, VariableDefinition>;
+  objectMap: Map<string, dh.ide.VariableDefinition>;
 
   // eslint-disable-next-line react/no-unused-state
   panelState: PanelState;
@@ -248,7 +248,10 @@ export class ConsolePanel extends PureComponent<
     this.updateDimensions();
   }
 
-  handleOpenObject(object: VariableDefinition, forceOpen = true): void {
+  handleOpenObject(
+    object: dh.ide.VariableDescriptor & { title?: string },
+    forceOpen = true
+  ): void {
     const { root } = this.context;
     const oldPanelId =
       object.title != null ? this.getItemId(object.title, false) : null;
@@ -267,7 +270,7 @@ export class ConsolePanel extends PureComponent<
     }
   }
 
-  handleCloseObject(object: VariableDefinition): void {
+  handleCloseObject(object: dh.ide.VariableDefinition): void {
     const { title } = object;
     if (title !== undefined) {
       const id = this.getItemId(title, false);
@@ -290,7 +293,7 @@ export class ConsolePanel extends PureComponent<
   /**
    * @param widget The widget to open
    */
-  openWidget(widget: VariableDefinition): void {
+  openWidget(widget: dh.ide.VariableDescriptor & { title?: string }): void {
     const { glEventHub, sessionWrapper } = this.props;
     assertNotNull(sessionWrapper);
 

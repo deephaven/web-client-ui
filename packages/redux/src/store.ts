@@ -109,7 +109,7 @@ export interface WorkspaceStorage {
 }
 
 export type RootState = {
-  api: DhType;
+  api: typeof DhType;
   activeTool: string;
   plugins: PluginModuleMap;
   storage: Storage;

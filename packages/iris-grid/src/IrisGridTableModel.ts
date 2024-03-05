@@ -1,17 +1,7 @@
 /* eslint class-methods-use-this: "off" */
 import memoize from 'memoize-one';
 import { GridRange, ModelIndex } from '@deephaven/grid';
-import type {
-  Column,
-  ColumnStatistics,
-  CustomColumn,
-  dh as DhType,
-  FilterCondition,
-  InputTable,
-  LayoutHints,
-  Table,
-  ValueTypeUnion,
-} from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { Formatter } from '@deephaven/jsapi-utils';
 import {
@@ -31,16 +21,16 @@ const log = Log.module('IrisGridTableModel');
  */
 
 class IrisGridTableModel
-  extends IrisGridTableModelTemplate<Table, UIRow>
+  extends IrisGridTableModelTemplate<DhType.Table, UIRow>
   implements PartitionedGridModelProvider
 {
   userFrozenColumns?: ColumnName[];
 
   customColumnList: string[];
 
-  formatColumnList: CustomColumn[];
+  formatColumnList: DhType.CustomColumn[];
 
-  initialFilters: FilterCondition[] = [];
+  initialFilters: DhType.FilterCondition[] = [];
 
   /**
    * @param dh JSAPI instance
@@ -49,10 +39,10 @@ class IrisGridTableModel
    * @param inputTable Iris input table associated with this table
    */
   constructor(
-    dh: DhType,
-    table: Table,
+    dh: typeof DhType,
+    table: DhType.Table,
     formatter = new Formatter(dh),
-    inputTable: InputTable | null = null
+    inputTable: DhType.InputTable | null = null
   ) {
     super(dh, table, formatter, inputTable);
     this.customColumnList = [];
@@ -94,7 +84,7 @@ class IrisGridTableModel
   );
 
   get frontColumns(): ColumnName[] {
-    return this.getMemoizedFrontColumns(this.layoutHints?.frontColumns);
+    return this.getMemoizedFrontColumns(this.layoutHints?.frontColumns ?? []);
   }
 
   getMemoizedBackColumns = memoize(
@@ -103,7 +93,9 @@ class IrisGridTableModel
   );
 
   get backColumns(): ColumnName[] {
-    return this.getMemoizedBackColumns(this.layoutHints?.backColumns);
+    return this.getMemoizedBackColumns(
+      this.layoutHints?.backColumns ?? undefined
+    );
   }
 
   getMemoizedFrozenColumns = memoize(
@@ -115,12 +107,12 @@ class IrisGridTableModel
 
   get frozenColumns(): ColumnName[] {
     return this.getMemoizedFrozenColumns(
-      this.layoutHints?.frozenColumns,
+      this.layoutHints?.frozenColumns ?? undefined,
       this.userFrozenColumns
     );
   }
 
-  get layoutHints(): LayoutHints {
+  get layoutHints(): DhType.LayoutHints | null | undefined {
     return this.table.layoutHints;
   }
 
@@ -129,7 +121,7 @@ class IrisGridTableModel
   }
 
   get description(): string {
-    return this.table.description;
+    return this.table.description ?? '';
   }
 
   get customColumns(): ColumnName[] {
@@ -158,11 +150,11 @@ class IrisGridTableModel
     this.applyViewport();
   }
 
-  get formatColumns(): CustomColumn[] {
+  get formatColumns(): DhType.CustomColumn[] {
     return this.formatColumnList;
   }
 
-  set formatColumns(formatColumns: CustomColumn[]) {
+  set formatColumns(formatColumns: DhType.CustomColumn[]) {
     log.debug2(
       'set formatColumns',
       formatColumns,
@@ -193,24 +185,24 @@ class IrisGridTableModel
     );
   }
 
-  get partitionColumns(): readonly Column[] {
+  get partitionColumns(): readonly DhType.Column[] {
     return this.getCachedPartitionColumns(this.columns);
   }
 
-  async partitionKeysTable(): Promise<Table> {
+  async partitionKeysTable(): Promise<DhType.Table> {
     return this.valuesTable(this.partitionColumns);
   }
 
-  async partitionMergedTable(): Promise<Table> {
+  async partitionMergedTable(): Promise<DhType.Table> {
     const t = await this.table.copy();
     t.applyFilter([]);
     return t;
   }
 
-  async partitionTable(partitions: unknown[]): Promise<Table> {
+  async partitionTable(partitions: unknown[]): Promise<DhType.Table> {
     log.debug('getting partition table for partitions', partitions);
 
-    const partitionFilters: FilterCondition[] = [];
+    const partitionFilters: DhType.FilterCondition[] = [];
     for (let i = 0; i < this.partitionColumns.length; i += 1) {
       const partition = partitions[i];
       const partitionColumn = this.partitionColumns[i];
@@ -227,7 +219,7 @@ class IrisGridTableModel
     return t;
   }
 
-  set filter(filter: FilterCondition[]) {
+  set filter(filter: DhType.FilterCondition[]) {
     this.closeSubscription();
     this.table.applyFilter([...this.initialFilters, ...filter]);
     this.applyViewport();
@@ -296,20 +288,20 @@ class IrisGridTableModel
     return this.getCachedFilterableColumnSet(this.columns).has(columnIndex);
   }
 
-  async export(): Promise<Table> {
+  async export(): Promise<DhType.Table> {
     return this.table.freeze();
   }
 
-  columnStatistics(column: Column): Promise<ColumnStatistics> {
+  columnStatistics(column: DhType.Column): Promise<DhType.ColumnStatistics> {
     return this.table.getColumnStatistics(column);
   }
 
   getCachedFilterableColumnSet = memoize(
-    (columns: Column[]) =>
-      new Set(columns.map((_: Column, index: ModelIndex) => index))
+    (columns: DhType.Column[]) =>
+      new Set(columns.map((_: DhType.Column, index: ModelIndex) => index))
   );
 
-  getCachedPartitionColumns = memoize((columns: readonly Column[]) =>
+  getCachedPartitionColumns = memoize((columns: readonly DhType.Column[]) =>
     columns.filter(column => column.isPartitionColumn)
   );
 
@@ -435,8 +427,8 @@ class IrisGridTableModel
 
   async seekRow(
     startRow: number,
-    column: Column,
-    valueType: ValueTypeUnion,
+    column: DhType.Column,
+    valueType: DhType.ValueTypeType,
     value: unknown,
     insensitive?: boolean,
     contains?: boolean,

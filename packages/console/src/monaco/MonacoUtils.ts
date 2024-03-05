@@ -4,7 +4,7 @@ import shortid from 'shortid';
  * Exports a function for initializing monaco with the deephaven theme/config
  */
 import { resolveCssVariablesInRecord, Shortcut } from '@deephaven/components';
-import type { IdeSession } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { assertNotNull } from '@deephaven/utils';
 import { find as linkifyFind } from 'linkifyjs';
 import * as monaco from 'monaco-editor';
@@ -287,7 +287,7 @@ class MonacoUtils {
    */
   static openDocument(
     editor: monaco.editor.IStandaloneCodeEditor,
-    session: IdeSession
+    session: dh.IdeSession
   ): monaco.IDisposable {
     const model = editor.getModel();
     assertNotNull(model);
@@ -346,7 +346,7 @@ class MonacoUtils {
 
   static closeDocument(
     editor: monaco.editor.IStandaloneCodeEditor,
-    session: IdeSession
+    session: dh.IdeSession
   ): void {
     const model = editor.getModel();
     assertNotNull(model);

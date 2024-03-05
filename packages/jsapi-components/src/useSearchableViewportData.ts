@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import type { Table } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import {
   createSearchTextFilter,
   FilterConditionFactory,
@@ -17,7 +17,7 @@ import useFilterConditionFactories from './useFilterConditionFactories';
 import useViewportFilter from './useViewportFilter';
 
 export interface SearchableViewportData<TData> {
-  list: UseViewportDataResult<TData, Table>;
+  list: UseViewportDataResult<TData, dh.Table>;
   onSearchTextChange: (searchText: string) => void;
 }
 
@@ -28,7 +28,7 @@ export interface SearchableViewportData<TData> {
  * @param additionalFilterConditionFactories Additional filter condition factories
  */
 export function useSearchableViewportData<TData>(
-  maybeTable: Table | null,
+  maybeTable: dh.Table | null,
   searchColumnNames: string | string[],
   ...additionalFilterConditionFactories: FilterConditionFactory[]
 ): SearchableViewportData<TData> {
@@ -46,7 +46,7 @@ export function useSearchableViewportData<TData>(
     SEARCH_DEBOUNCE_MS
   );
 
-  const list = useViewportData<TData, Table>({
+  const list = useViewportData<TData, dh.Table>({
     table: maybeTable,
     itemHeight: TABLE_ROW_HEIGHT,
     viewportSize: VIEWPORT_SIZE,

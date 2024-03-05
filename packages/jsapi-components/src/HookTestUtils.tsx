@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react';
 import { ApiContext } from '@deephaven/jsapi-bootstrap';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 
-export function makeApiContextWrapper(dh: DhType) {
+export function makeApiContextWrapper(dh: typeof DhType) {
   return function ApiContextWrapper({
     children,
   }: {

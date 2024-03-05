@@ -50,7 +50,7 @@ import {
 import Log from '@deephaven/log';
 import { assertNotNull, Pending, PromiseUtils } from '@deephaven/utils';
 import type { Tab, CloseOptions } from '@deephaven/golden-layout';
-import type { IdeSession } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { ConsoleEvent, NotebookEvent } from '../events';
 import { getDashboardSessionWrapper } from '../redux';
 import Panel from './Panel';
@@ -83,7 +83,7 @@ interface PanelState {
 interface NotebookPanelMappedProps {
   defaultNotebookSettings: NotebookSetting;
   fileStorage: FileStorage;
-  session?: IdeSession;
+  session?: dh.IdeSession;
   sessionLanguage?: string;
 }
 
@@ -113,7 +113,7 @@ interface NotebookPanelState {
   fileMetadata: FileMetadata | null;
   settings: editor.IStandaloneEditorConstructionOptions;
 
-  session?: IdeSession;
+  session?: dh.IdeSession;
   sessionLanguage?: string;
 
   // eslint-disable-next-line react/no-unused-state
@@ -1021,7 +1021,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   }
 
   handleSessionOpened(
-    session: IdeSession,
+    session: dh.IdeSession,
     { language }: { language: string }
   ): void {
     this.setState({

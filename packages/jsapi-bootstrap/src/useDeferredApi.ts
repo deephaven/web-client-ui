@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import type { dh as DhType, VariableDescriptor } from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import { ApiContext } from './ApiBootstrap';
 
 /**
@@ -10,11 +10,11 @@ import { ApiContext } from './ApiBootstrap';
  * @returns A promise that resolves to the API instance for the provided variable descriptor.
  */
 export type DeferredApiFetcher = (
-  descriptor: VariableDescriptor
-) => Promise<DhType>;
+  descriptor: DhType.ide.VariableDescriptor
+) => Promise<typeof DhType>;
 
 export const DeferredApiContext = createContext<
-  DhType | DeferredApiFetcher | null
+  typeof DhType | DeferredApiFetcher | null
 >(null);
 
 /**
@@ -24,9 +24,9 @@ export const DeferredApiContext = createContext<
  * @returns A tuple with the API instance, and an error if one occurred.
  */
 export function useDeferredApi(
-  widget: VariableDescriptor
-): [DhType | null, unknown | null] {
-  const [api, setApi] = useState<DhType | null>(null);
+  widget: DhType.ide.VariableDescriptor
+): [typeof DhType | null, unknown | null] {
+  const [api, setApi] = useState<typeof DhType | null>(null);
   const [error, setError] = useState<unknown | null>(null);
   const deferredApi = useContext(DeferredApiContext);
   const contextApi = useContext(ApiContext);

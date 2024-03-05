@@ -3,7 +3,7 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import { LogView } from '@deephaven/console';
-import type { IdeSession } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { DashboardPanelProps } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import { RootState } from '@deephaven/redux';
@@ -14,11 +14,11 @@ import { getDashboardSessionWrapper } from '../redux';
 const log = Log.module('LogPanel');
 
 interface LogPanelProps extends DashboardPanelProps {
-  session?: IdeSession;
+  session?: dh.IdeSession;
 }
 
 interface LogPanelState {
-  session?: IdeSession;
+  session?: dh.IdeSession;
 }
 
 class LogPanel extends PureComponent<LogPanelProps, LogPanelState> {
@@ -72,13 +72,13 @@ class LogPanel extends PureComponent<LogPanelProps, LogPanelState> {
     }
   }
 
-  handleSessionOpened(session: IdeSession): void {
+  handleSessionOpened(session: dh.IdeSession): void {
     log.debug('Session opened', [session]);
     this.setState({ session });
   }
 
   // eslint-disable-next-line class-methods-use-this
-  handleSessionClosed(session: IdeSession): void {
+  handleSessionClosed(session: dh.IdeSession): void {
     log.debug('Session closed', session);
     // Keep the session reference in state unchanged until the session is re-connected
   }

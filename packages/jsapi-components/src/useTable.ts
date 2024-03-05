@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useApi } from '@deephaven/jsapi-bootstrap';
-import type { Column, Row, Table } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import useTableListener from './useTableListener';
 import ColumnNameError from './ColumnNameError';
@@ -9,17 +9,17 @@ import TableDisconnectError from './TableDisconnectError';
 const log = Log.module('useTable');
 
 const useTable = (
-  table: Table | undefined,
+  table: dh.Table | undefined,
   firstRow: number,
   lastRow: number,
   columnNames?: string[]
 ): {
-  columns: Column[] | undefined;
+  columns: dh.Column[] | undefined;
   data: unknown[][];
   error: Error | null;
 } => {
   const dh = useApi();
-  const [columns, setColumns] = useState<Column[] | undefined>(undefined);
+  const [columns, setColumns] = useState<dh.Column[] | undefined>(undefined);
   const [data, setData] = useState<unknown[][]>([]);
   const [columnError, setColumnError] = useState<Error | null>(null);
   const [tableError, setTableError] = useState<Error | null>(null);
@@ -55,7 +55,7 @@ const useTable = (
         return;
       }
       const viewportData = columns.map(column =>
-        (detail.rows as Row[]).map(r => r.get(column))
+        (detail.rows as dh.Row[]).map(r => r.get(column))
       );
       setData(viewportData);
     },

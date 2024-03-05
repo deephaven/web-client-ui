@@ -8,8 +8,9 @@ import {
   FileStorageItem,
   FileStorageTable,
   FileUtils,
+  isFileType,
 } from '@deephaven/file-explorer';
-import type { StorageService } from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import GrpcFileStorageTable from './GrpcFileStorageTable';
 
@@ -18,7 +19,7 @@ const log = Log.module('GrpcFileStorage');
 export class GrpcFileStorage implements FileStorage {
   private static readonly REFRESH_THROTTLE = 150;
 
-  private readonly storageService: StorageService;
+  private readonly storageService: DhType.storage.StorageService;
 
   private tables = [] as GrpcFileStorageTable[];
 
@@ -29,7 +30,7 @@ export class GrpcFileStorage implements FileStorage {
    * @param storageService Storage service to use
    * @param root Root path for this instance. Should not contain trailing slash.
    */
-  constructor(storageService: StorageService, root = '') {
+  constructor(storageService: DhType.storage.StorageService, root = '') {
     this.storageService = storageService;
     this.root = root;
   }
@@ -118,7 +119,13 @@ export class GrpcFileStorage implements FileStorage {
       );
       throw new Error('More than one matching file found');
     }
+
     const itemDetails = allItems[0];
+
+    if (!isFileType(itemDetails.type)) {
+      throw new Error(`Unexpected file type: ${itemDetails.type}`);
+    }
+
     return {
       filename: this.removeRoot(itemDetails.filename),
       basename: itemDetails.basename,

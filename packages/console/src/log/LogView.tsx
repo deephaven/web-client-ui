@@ -2,7 +2,7 @@ import React, { PureComponent, ReactElement } from 'react';
 import { Button, DropdownActions, DropdownMenu } from '@deephaven/components';
 import { vsGear, dhTrashUndo } from '@deephaven/icons';
 import { assertNotNull } from '@deephaven/utils';
-import type { IdeSession, LogItem } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { Placement } from 'popper.js';
 import * as monaco from 'monaco-editor';
 import ConsoleUtils from '../common/ConsoleUtils';
@@ -12,7 +12,7 @@ import LogLevelMenuItem from './LogLevelMenuItem';
 import { MonacoUtils } from '../monaco';
 
 interface LogViewProps {
-  session: IdeSession;
+  session: dh.IdeSession;
 }
 
 interface LogViewState {
@@ -49,7 +49,7 @@ class LogView extends PureComponent<LogViewProps, LogViewState> {
 
   static truncateSize = 65536;
 
-  static getLogText(logItem: LogItem): string {
+  static getLogText(logItem: dh.ide.LogItem): string {
     const date = new Date(logItem.micros / 1000);
     const timestamp = ConsoleUtils.formatTimestamp(date);
     return `${timestamp} ${logItem.logLevel} ${logItem.message}`;
@@ -121,9 +121,9 @@ class LogView extends PureComponent<LogViewProps, LogViewState> {
 
   flushTimer?: ReturnType<typeof setTimeout>;
 
-  bufferedMessages: LogItem[];
+  bufferedMessages: dh.ide.LogItem[];
 
-  messages: LogItem[];
+  messages: dh.ide.LogItem[];
 
   getMenuActions(shownLogLevels: Record<string, boolean>): DropdownActions {
     const actions = [];
@@ -440,7 +440,7 @@ class LogView extends PureComponent<LogViewProps, LogViewState> {
   }
 
   /** Checks if the given log message is visible with the current filters */
-  isLogItemVisible(message: LogItem): boolean {
+  isLogItemVisible(message: dh.ide.LogItem): boolean {
     const { shownLogLevels } = this.state;
     return shownLogLevels[message.logLevel];
   }
@@ -461,7 +461,7 @@ class LogView extends PureComponent<LogViewProps, LogViewState> {
     this.appendLogText(text);
   }
 
-  queue(message: LogItem): void {
+  queue(message: dh.ide.LogItem): void {
     this.bufferedMessages.push(message);
     if (this.bufferedMessages.length === 1) {
       this.flushTimer = setTimeout(
@@ -498,7 +498,7 @@ class LogView extends PureComponent<LogViewProps, LogViewState> {
     this.flush();
   }
 
-  handleLogMessage(message: LogItem): void {
+  handleLogMessage(message: dh.ide.LogItem): void {
     this.messages.push(message);
 
     if (this.editor && this.isLogItemVisible(message)) {

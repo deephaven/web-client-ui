@@ -27,11 +27,7 @@ import {
   ColumnName,
   TableSettings,
 } from '@deephaven/iris-grid';
-import type {
-  FigureDescriptor,
-  SeriesPlotStyle,
-  TableTemplate,
-} from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { ThemeExport } from '@deephaven/components';
 import Log from '@deephaven/log';
 import {
@@ -94,7 +90,7 @@ export interface ChartPanelTableMetadata extends PanelMetadata {
     title: string;
     xAxis: string;
     series: string[];
-    type: keyof SeriesPlotStyle;
+    type: keyof dh.plot.SeriesPlotStyle;
   };
   tableSettings: TableSettings;
 }
@@ -138,7 +134,7 @@ interface StateProps {
   inputFilters: InputFilter[];
   links: Link[];
   isLinkerActive: boolean;
-  source?: TableTemplate;
+  source?: dh.Table;
   sourcePanel?: PanelComponent;
   columnSelectionValidator?: ColumnSelectionValidator;
   settings: Partial<WorkspaceSettings>;
@@ -463,7 +459,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
       }))
   );
 
-  startListeningToSource(table: TableTemplate): void {
+  startListeningToSource(table: dh.Table): void {
     log.debug('startListeningToSource', table);
     const { model } = this.state;
     assertNotNull(model);
@@ -482,7 +478,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     );
   }
 
-  stopListeningToSource(table: TableTemplate): void {
+  stopListeningToSource(table: dh.Table): void {
     log.debug('stopListeningToSource', table);
     const { model } = this.state;
     assertNotNull(model);
@@ -638,7 +634,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
             new ChartUtils(dh).makeFigureSettings(
               settings,
               source
-            ) as unknown as FigureDescriptor
+            ) as unknown as dh.plot.FigureDescriptor
           )
         )
         .then(figure => {
@@ -1103,7 +1099,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
         isDisconnected={isDisconnected}
         isLoading={isLoading}
         isLoaded={isLoaded}
-        widgetName={name}
+        widgetName={name ?? undefined}
         widgetType="Chart"
       >
         <div

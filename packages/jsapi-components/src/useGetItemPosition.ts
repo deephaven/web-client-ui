@@ -1,8 +1,8 @@
 import { useCallback } from 'react';
-import type { Table } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 
 export interface UseGetItemPositionOptions {
-  table?: Table | null;
+  table?: dh.Table | null;
   columnName: string;
   defaultValue?: string | null;
   itemHeight: number;

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { WidgetComponentProps } from '@deephaven/plugin';
-import { type Table } from '@deephaven/jsapi-types';
+import { type dh } from '@deephaven/jsapi-types';
 import IrisGrid, {
   IrisGridModelFactory,
   type IrisGridModel,
@@ -10,7 +10,7 @@ import { LoadingOverlay } from '@deephaven/components';
 import { PandasReloadButton } from './panels/PandasReloadButton';
 
 export function PandasWidgetPlugin(
-  props: WidgetComponentProps<Table>
+  props: WidgetComponentProps<dh.Table>
 ): JSX.Element | null {
   const dh = useApi();
   const [model, setModel] = useState<IrisGridModel>();

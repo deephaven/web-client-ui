@@ -22,7 +22,7 @@ class IntegerFormatContextMenu {
    * @returns Array of formatting options for the context menu
    */
   static getOptions(
-    dh: DhType,
+    dh: typeof DhType,
     selectedFormat: IntegerColumnFormat,
     onCustomFormatChange: (value: IntegerColumnFormat | null) => void
   ): FormatContextMenuOption[] {

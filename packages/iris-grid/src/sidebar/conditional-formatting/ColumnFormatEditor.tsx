@@ -19,7 +19,7 @@ const log = Log.module('ColumnFormatEditor');
 export interface ColumnFormatEditorProps {
   columns: ModelColumn[];
   config?: BaseFormatConfig;
-  dh: DhType;
+  dh: typeof DhType;
   onChange?: ChangeCallback;
 }
 

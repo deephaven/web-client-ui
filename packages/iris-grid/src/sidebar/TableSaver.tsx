@@ -1,13 +1,5 @@
 import { PureComponent } from 'react';
-import type {
-  Column,
-  dh as DhType,
-  DateWrapper,
-  Table,
-  TableData,
-  TableViewportSubscription,
-  UpdateEventData,
-} from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { GridRange, GridRangeIndex, memoizeClear } from '@deephaven/grid';
 import { Formatter, FormatterUtils, TableUtils } from '@deephaven/jsapi-utils';
@@ -23,7 +15,7 @@ const log = Log.module('TableSaver');
 const UNFORMATTED_DATE_PATTERN = `yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS z`;
 
 interface TableSaverProps {
-  dh: DhType;
+  dh: typeof DhType;
   getDownloadWorker: () => Promise<ServiceWorker>;
   isDownloading: boolean;
   onDownloadCompleted: () => void;
@@ -35,13 +27,15 @@ interface TableSaverProps {
   formatter: Formatter;
 }
 
-function isUpdateEventData(data: TableData): data is UpdateEventData {
-  return (data as UpdateEventData).added !== undefined;
+function isUpdateEventData(
+  data: DhType.TableData
+): data is DhType.SubscriptionTableData {
+  return (data as DhType.SubscriptionTableData).added !== undefined;
 }
 
 function assertIsUpdateEventData(
-  data: TableData
-): asserts data is UpdateEventData {
+  data: DhType.TableData
+): asserts data is DhType.SubscriptionTableData {
   if (!isUpdateEventData(data)) {
     throw new Error('event is not UpdateEventData');
   }
@@ -130,11 +124,11 @@ export default class TableSaver extends PureComponent<
 
   fileWriter?: WritableStreamDefaultWriter<unknown>;
 
-  table?: Table;
+  table?: DhType.Table;
 
-  tableSubscription?: TableViewportSubscription;
+  tableSubscription?: DhType.TableViewportSubscription;
 
-  columns?: readonly Column[];
+  columns?: readonly DhType.Column[];
 
   fileName?: string;
 
@@ -156,7 +150,7 @@ export default class TableSaver extends PureComponent<
 
   snapshotCounter: number;
 
-  snapshotsBuffer: Map<number, UpdateEventData>;
+  snapshotsBuffer: Map<number, DhType.SubscriptionTableData>;
 
   currentSnapshotIndex: number;
 
@@ -243,8 +237,8 @@ export default class TableSaver extends PureComponent<
 
   startDownload(
     fileName: string,
-    frozenTable: Table,
-    tableSubscription: TableViewportSubscription,
+    frozenTable: DhType.Table,
+    tableSubscription: DhType.TableViewportSubscription,
     snapshotRanges: readonly GridRange[],
     modelRanges: readonly GridRange[],
     includeColumnHeaders: boolean,
@@ -495,7 +489,7 @@ export default class TableSaver extends PureComponent<
     }
   }
 
-  convertSnapshotIntoCsv(snapshot: UpdateEventData): string {
+  convertSnapshotIntoCsv(snapshot: DhType.SubscriptionTableData): string {
     let csvString = '';
     const snapshotIterator = snapshot.added.iterator();
     const { dh, formatter } = this.props;
@@ -519,7 +513,7 @@ export default class TableSaver extends PureComponent<
             // value is just a long value, we should return the value formatted as a full date string
             value = dh.i18n.DateTimeFormat.format(
               UNFORMATTED_DATE_PATTERN,
-              value as number | Date | DateWrapper,
+              value as number | Date | DhType.DateWrapper,
               dh.i18n.TimeZone.getTimeZone(formatter.timeZone)
             );
           }
@@ -589,7 +583,7 @@ export default class TableSaver extends PureComponent<
           this.tableSubscription
             .snapshot(
               dh.RangeSet.ofRange(snapshotStartRow, snapshotEndRow),
-              this.columns
+              this.columns as DhType.Column[]
             )
             .then(snapshot => {
               assertIsUpdateEventData(snapshot);
@@ -656,7 +650,7 @@ export default class TableSaver extends PureComponent<
   }
 
   handleSnapshotResolved(
-    snapshot: UpdateEventData,
+    snapshot: DhType.SubscriptionTableData,
     snapshotIndex: number,
     snapshotStartRow: GridRangeIndex,
     snapshotEndRow: GridRangeIndex

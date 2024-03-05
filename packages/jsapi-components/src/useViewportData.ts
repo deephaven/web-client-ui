@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo } from 'react';
-import type { FilterCondition, Table, TreeTable } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import {
   RowDeserializer,
   defaultRowDeserializer,
@@ -20,7 +20,10 @@ import useTableListener from './useTableListener';
 
 const log = Log.module('useViewportData');
 
-export interface UseViewportDataProps<TItem, TTable extends Table | TreeTable> {
+export interface UseViewportDataProps<
+  TItem,
+  TTable extends dh.Table | dh.TreeTable,
+> {
   table: TTable | null;
   itemHeight?: number;
   scrollDebounce?: number;
@@ -31,7 +34,7 @@ export interface UseViewportDataProps<TItem, TTable extends Table | TreeTable> {
 
 export interface UseViewportDataResult<
   TItem,
-  TTable extends Table | TreeTable,
+  TTable extends dh.Table | dh.TreeTable,
 > {
   /** Manages deserialized row items associated with a DH Table */
   viewportData: WindowedListData<KeyedItem<TItem>>;
@@ -40,7 +43,7 @@ export interface UseViewportDataResult<
 
   table: TTable | null;
   /** Apply filters and refresh viewport. */
-  applyFiltersAndRefresh: (filters: FilterCondition[]) => void;
+  applyFiltersAndRefresh: (filters: dh.FilterCondition[]) => void;
   /** Set the viewport of the Table */
   setViewport: (firstRow: number) => void;
   /** Handler for scroll events to update viewport */
@@ -61,7 +64,7 @@ export interface UseViewportDataResult<
  * @param viewportPadding
  * @returns An object for managing Table viewport state.
  */
-export function useViewportData<TItem, TTable extends Table | TreeTable>({
+export function useViewportData<TItem, TTable extends dh.Table | dh.TreeTable>({
   table,
   itemHeight = 1,
   scrollDebounce = SCROLL_DEBOUNCE_MS,
@@ -89,7 +92,7 @@ export function useViewportData<TItem, TTable extends Table | TreeTable>({
   );
 
   const applyFiltersAndRefresh = useCallback(
-    (filters: FilterCondition[]) => {
+    (filters: dh.FilterCondition[]) => {
       if (table && !isClosed(table)) {
         table.applyFilter(filters);
         setViewport(0);

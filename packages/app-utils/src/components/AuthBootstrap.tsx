@@ -48,7 +48,10 @@ export function AuthBootstrap({ children }: AuthBootstrapProps): JSX.Element {
       let isCanceled = false;
       async function loadAuthConfigValues(): Promise<void> {
         try {
-          const newAuthConfigValues = await client.getAuthConfigValues();
+          const newAuthConfigValues = (await client.getAuthConfigValues()) as [
+            string,
+            string,
+          ][];
           if (!isCanceled) {
             setAuthConfig(new Map(newAuthConfigValues));
           }

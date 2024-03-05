@@ -13,7 +13,7 @@ import {
   GridUtils,
   VisibleIndex,
 } from '@deephaven/grid';
-import type { Sort } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { TableUtils, ReverseType } from '@deephaven/jsapi-utils';
 import { assertNotNull, getOrThrow } from '@deephaven/utils';
 import {
@@ -69,7 +69,7 @@ export class IrisGridRenderer extends GridRenderer {
 
   protected dataBarCellRenderer = new IrisGridDataBarCellRenderer();
 
-  getSortIcon(sort: Sort | null): Path2D | null {
+  getSortIcon(sort: dh.Sort | null): Path2D | null {
     if (!sort) {
       return null;
     }
