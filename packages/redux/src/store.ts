@@ -60,11 +60,14 @@ export interface WorkspaceSettings {
 }
 
 export interface WorkspaceData {
+  settings: WorkspaceSettings;
+
+  // TODO: #1746 The rest of these options should not be stored with workspace data, we should have a separate DashboardStorage
   closed: unknown[];
   filterSets: unknown[];
   layoutConfig: unknown[];
   links: unknown;
-  settings: WorkspaceSettings;
+  pluginDataMap: PluginDataMap;
 }
 
 export interface CustomizableWorkspaceData
@@ -82,13 +85,16 @@ export interface Workspace {
 
 export type PluginData = unknown;
 
-export type PluginDataMap = Record<string, PluginData>;
+export type PluginDataMap<TData = PluginData> = Record<string, TData>;
 
-export type DashboardData = Record<string, unknown> & {
+export type DashboardData<TPluginData = PluginData> = Record<
+  string,
+  unknown
+> & {
   title?: string;
   closed?: unknown[];
   filterSets?: unknown[];
-  pluginDataMap?: PluginDataMap;
+  pluginDataMap?: PluginDataMap<TPluginData>;
 };
 
 export type WorkspaceStorageLoadOptions = {

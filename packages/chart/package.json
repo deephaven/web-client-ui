@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/chart",
-  "version": "0.66.0",
+  "version": "0.67.0",
   "description": "Deephaven Chart",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -39,7 +39,7 @@
     "lodash.set": "^4.3.2",
     "memoize-one": "^5.1.1",
     "memoizee": "^0.4.15",
-    "plotly.js": "^2.18.2",
+    "plotly.js": "^2.29.1",
     "prop-types": "^15.7.2",
     "react-plotly.js": "^2.6.0"
   },

@@ -3,7 +3,7 @@
  * Overriding so the bar fills the same width as its associated list component.
  */
 .spectrumActionBar {
-  [class^='react-spectrum-ActionBar-bar'] {
+  [class*='react-spectrum-ActionBar-bar'] {
     max-width: none;
   }
 }

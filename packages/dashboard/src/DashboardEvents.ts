@@ -2,22 +2,30 @@ import type { EventHub } from '@deephaven/golden-layout';
 
 export const CREATE_DASHBOARD = 'CREATE_DASHBOARD';
 
-export interface CreateDashboardPayload {
+export interface CreateDashboardPayload<T = unknown> {
   pluginId: string;
   title: string;
-  data: unknown;
+  data: T;
 }
 
-export function listenForCreateDashboard(
+export function stopListenForCreateDashboard<T = unknown>(
   eventHub: EventHub,
-  handler: (p: CreateDashboardPayload) => void
+  handler: (p: CreateDashboardPayload<T>) => void
 ): void {
-  eventHub.on(CREATE_DASHBOARD, handler);
+  eventHub.off(CREATE_DASHBOARD, handler);
 }
 
-export function emitCreateDashboard(
+export function listenForCreateDashboard<T = unknown>(
   eventHub: EventHub,
-  payload: CreateDashboardPayload
+  handler: (p: CreateDashboardPayload<T>) => void
+): () => void {
+  eventHub.on(CREATE_DASHBOARD, handler);
+  return () => stopListenForCreateDashboard(eventHub, handler);
+}
+
+export function emitCreateDashboard<T = unknown>(
+  eventHub: EventHub,
+  payload: CreateDashboardPayload<T>
 ): void {
   eventHub.emit(CREATE_DASHBOARD, payload);
 }

@@ -137,6 +137,7 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
       closed: [{}],
       links,
       filterSets,
+      pluginDataMap: {},
     };
   }
 

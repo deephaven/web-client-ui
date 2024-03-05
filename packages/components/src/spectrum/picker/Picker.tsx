@@ -1,18 +1,23 @@
-import { useMemo } from 'react';
-import { Item, Picker as SpectrumPicker } from '@adobe/react-spectrum';
+import { Key, useCallback, useMemo } from 'react';
+import { Picker as SpectrumPicker } from '@adobe/react-spectrum';
+import cl from 'classnames';
 import { Tooltip } from '../../popper';
 import {
   NormalizedSpectrumPickerProps,
   normalizePickerItemList,
   normalizeTooltipOptions,
-  PickerItem,
+  PickerItemOrSection,
   PickerItemKey,
   TooltipOptions,
+  NormalizedPickerItem,
+  isNormalizedPickerSection,
 } from './PickerUtils';
 import { PickerItemContent } from './PickerItemContent';
+import { Item } from '../Item';
+import { Section } from '../Section';
 
 export type PickerProps = {
-  children: PickerItem | PickerItem[];
+  children: PickerItemOrSection | PickerItemOrSection[];
   /** Can be set to true or a TooltipOptions to enable item tooltips */
   tooltip?: boolean | TooltipOptions;
   /** The currently selected key in the collection (controlled). */
@@ -54,11 +59,13 @@ export type PickerProps = {
  */
 export function Picker({
   children,
-  tooltip,
+  tooltip = true,
   defaultSelectedKey,
   selectedKey,
   onChange,
   onSelectionChange,
+  // eslint-disable-next-line camelcase
+  UNSAFE_className,
   ...spectrumPickerProps
 }: PickerProps): JSX.Element {
   const normalizedItems = useMemo(
@@ -71,10 +78,29 @@ export function Picker({
     [tooltip]
   );
 
+  const renderItem = useCallback(
+    ({ key, content, textValue }: NormalizedPickerItem) => (
+      // The `textValue` prop gets used to provide the content of `<option>`
+      // elements that back the Spectrum Picker. These are not visible in the UI,
+      // but are used for accessibility purposes, so we set to an arbitrary
+      // 'Empty' value so that they are not empty strings.
+      <Item key={key as Key} textValue={textValue === '' ? 'Empty' : textValue}>
+        <PickerItemContent>{content}</PickerItemContent>
+        {tooltipOptions == null || content === '' ? null : (
+          <Tooltip options={tooltipOptions}>
+            {typeof content === 'boolean' ? String(content) : content}
+          </Tooltip>
+        )}
+      </Item>
+    ),
+    [tooltipOptions]
+  );
+
   return (
     <SpectrumPicker
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...spectrumPickerProps}
+      UNSAFE_className={cl('dh-picker', UNSAFE_className)}
       items={normalizedItems}
       // Type assertions are necessary for `selectedKey`, `defaultSelectedKey`,
       // and `onSelectionChange` due to Spectrum types not accounting for
@@ -89,14 +115,21 @@ export function Picker({
           onSelectionChange) as NormalizedSpectrumPickerProps['onSelectionChange']
       }
     >
-      {({ content, textValue }) => (
-        <Item textValue={textValue === '' ? 'Empty' : textValue}>
-          <PickerItemContent>{content}</PickerItemContent>
-          {tooltipOptions == null || content === '' ? null : (
-            <Tooltip options={tooltipOptions}>{content}</Tooltip>
-          )}
-        </Item>
-      )}
+      {itemOrSection => {
+        if (isNormalizedPickerSection(itemOrSection)) {
+          return (
+            <Section
+              key={itemOrSection.key}
+              title={itemOrSection.title}
+              items={itemOrSection.items}
+            >
+              {renderItem}
+            </Section>
+          );
+        }
+
+        return renderItem(itemOrSection);
+      }}
     </SpectrumPicker>
   );
 }

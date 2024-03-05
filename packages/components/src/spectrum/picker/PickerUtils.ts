@@ -1,10 +1,31 @@
-import { Key, ReactElement, ReactNode } from 'react';
-import type { SpectrumPickerProps } from '@adobe/react-spectrum';
-import type { ItemProps } from '@react-types/shared';
+import { isValidElement, Key, ReactElement, ReactNode } from 'react';
+import { SpectrumPickerProps } from '@adobe/react-spectrum';
+import type { ItemRenderer } from '@react-types/shared';
+import Log from '@deephaven/log';
+import { Item, ItemProps } from '../Item';
+import { Section, SectionProps } from '../Section';
 import { PopperOptions } from '../../popper';
 
-export type ItemElement = ReactElement<ItemProps<unknown>>;
+const log = Log.module('PickerUtils');
+
+export const INVALID_PICKER_ITEM_ERROR_MESSAGE =
+  'Picker items must be strings, numbers, booleans, <Item> or <Section> elements:';
+
+/**
+ * React Spectrum <Section> supports an `ItemRenderer` function as a child. The
+ * DH picker makes use of this internally, but we don't want to support it as
+ * an incoming prop.
+ */
+type SectionPropsNoItemRenderer<T> = Omit<SectionProps<T>, 'children'> & {
+  children: Exclude<SectionProps<T>['children'], ItemRenderer<T>>;
+};
+
+type ItemElement = ReactElement<ItemProps<unknown>>;
+type SectionElement = ReactElement<SectionPropsNoItemRenderer<unknown>>;
+
 export type PickerItem = number | string | boolean | ItemElement;
+export type PickerSection = SectionElement;
+export type PickerItemOrSection = PickerItem | PickerSection;
 
 /**
  * Augment the Spectrum selection key type to include boolean values.
@@ -32,32 +53,102 @@ export interface NormalizedPickerItem {
   textValue: string;
 }
 
+export interface NormalizedPickerSection {
+  key: Key;
+  title?: ReactNode;
+  items: NormalizedPickerItem[];
+}
+
 export type NormalizedSpectrumPickerProps =
   SpectrumPickerProps<NormalizedPickerItem>;
 
 export type TooltipOptions = { placement: PopperOptions['placement'] };
 
 /**
- * Determine the `key` of a picker item.
- * @param item The picker item
+ * Determine if a node is a Section element.
+ * @param node The node to check
+ * @returns True if the node is a Section element
+ */
+export function isSectionElement<T>(
+  node: ReactNode
+): node is ReactElement<SectionProps<T>> {
+  return isValidElement<SectionProps<T>>(node) && node.type === Section;
+}
+
+/**
+ * Determine if a node is an Item element.
+ * @param node The node to check
+ * @returns True if the node is an Item element
+ */
+export function isItemElement<T>(
+  node: ReactNode
+): node is ReactElement<ItemProps<T>> {
+  return isValidElement<ItemProps<T>>(node) && node.type === Item;
+}
+
+/**
+ * Determine if a node is a Picker item or section. Valid types include strings,
+ * numbers, booleans, Item elements, and Section elements.
+ * @param node The node to check
+ * @returns True if the node is a Picker item or section
+ */
+export function isPickerItemOrSection(
+  node: ReactNode
+): node is PickerItemOrSection {
+  return (
+    typeof node === 'string' ||
+    typeof node === 'number' ||
+    typeof node === 'boolean' ||
+    isItemElement(node) ||
+    isSectionElement(node)
+  );
+}
+
+/**
+ * Determine if an object is a normalized Picker section.
+ * @param maybeNormalizedPickerSection The object to check
+ * @returns True if the object is a normalized Picker section
+ */
+export function isNormalizedPickerSection(
+  maybeNormalizedPickerSection: NormalizedPickerItem | NormalizedPickerSection
+): maybeNormalizedPickerSection is NormalizedPickerSection {
+  return 'items' in maybeNormalizedPickerSection;
+}
+
+/**
+ * Determine the `key` of a picker item or section.
+ * @param itemOrSection The picker item or section
  * @returns A `PickerItemKey` for the picker item
  */
-function normalizeItemKey(item: PickerItem): PickerItemKey {
+function normalizeItemKey(item: PickerItem): PickerItemKey;
+function normalizeItemKey(section: PickerSection): Key;
+function normalizeItemKey(
+  itemOrSection: PickerItem | PickerSection
+): Key | PickerItemKey {
   // string, number, or boolean
-  if (typeof item !== 'object') {
-    return item;
+  if (typeof itemOrSection !== 'object') {
+    return itemOrSection;
   }
 
-  // `ItemElement` with `key` prop set
-  if (item.key != null) {
-    return item.key;
+  // If `key` prop is explicitly set
+  if (itemOrSection.key != null) {
+    return itemOrSection.key;
   }
 
-  if (typeof item.props.children === 'string') {
-    return item.props.children;
+  // Section element
+  if (isSectionElement(itemOrSection)) {
+    return typeof itemOrSection.props.title === 'string'
+      ? itemOrSection.props.title
+      : '';
   }
 
-  return item.props.textValue ?? '';
+  // Item element
+  return (
+    itemOrSection.props.textValue ??
+    (typeof itemOrSection.props.children === 'string'
+      ? itemOrSection.props.children
+      : '')
+  );
 }
 
 /**
@@ -83,13 +174,38 @@ function normalizeTextValue(item: PickerItem): string {
 
 /**
  * Normalize a picker item to an object form.
- * @param item item to normalize
+ * @param itemOrSection item to normalize
  * @returns NormalizedPickerItem object
  */
-function normalizePickerItem(item: PickerItem): NormalizedPickerItem {
-  const key = normalizeItemKey(item);
-  const content = typeof item === 'object' ? item.props.children : String(item);
-  const textValue = normalizeTextValue(item);
+function normalizePickerItem(
+  itemOrSection: PickerItemOrSection
+): NormalizedPickerItem | NormalizedPickerSection {
+  if (!isPickerItemOrSection(itemOrSection)) {
+    log.debug(INVALID_PICKER_ITEM_ERROR_MESSAGE, itemOrSection);
+    throw new Error(INVALID_PICKER_ITEM_ERROR_MESSAGE);
+  }
+
+  if (isSectionElement(itemOrSection)) {
+    const key = normalizeItemKey(itemOrSection);
+    const { title } = itemOrSection.props;
+
+    const items = normalizePickerItemList(itemOrSection.props.children).filter(
+      // We don't support nested section elements
+      childItem => !isSectionElement(childItem)
+    ) as NormalizedPickerItem[];
+
+    return {
+      key,
+      title,
+      items,
+    };
+  }
+
+  const key = normalizeItemKey(itemOrSection);
+  const content = isItemElement(itemOrSection)
+    ? itemOrSection.props.children
+    : itemOrSection;
+  const textValue = normalizeTextValue(itemOrSection);
 
   return {
     key,
@@ -100,13 +216,15 @@ function normalizePickerItem(item: PickerItem): NormalizedPickerItem {
 
 /**
  * Get normalized picker items from a picker item or array of picker items.
- * @param items A picker item or array of picker items
+ * @param itemsOrSections A picker item or array of picker items
  * @returns An array of normalized picker items
  */
 export function normalizePickerItemList(
-  items: PickerItem | PickerItem[]
-): NormalizedPickerItem[] {
-  const itemsArray = Array.isArray(items) ? items : [items];
+  itemsOrSections: PickerItemOrSection | PickerItemOrSection[]
+): (NormalizedPickerItem | NormalizedPickerSection)[] {
+  const itemsArray = Array.isArray(itemsOrSections)
+    ? itemsOrSections
+    : [itemsOrSections];
   return itemsArray.map(normalizePickerItem);
 }
 

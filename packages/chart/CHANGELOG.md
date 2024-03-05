@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.67.0](https://github.com/deephaven/web-client-ui/compare/v0.66.1...v0.67.0) (2024-03-04)
+
+
+### Bug Fixes
+
+* Update plotly to v2.29, resolve some rendering issues ([#1806](https://github.com/deephaven/web-client-ui/issues/1806)) ([8892074](https://github.com/deephaven/web-client-ui/commit/8892074da397f677b5556cd1161dcff8e41fcd9c))
+
+
+
+
+
+## [0.66.1](https://github.com/deephaven/web-client-ui/compare/v0.66.0...v0.66.1) (2024-02-28)
+
+**Note:** Version bump only for package @deephaven/chart
+
+
+
+
+
 # [0.66.0](https://github.com/deephaven/web-client-ui/compare/v0.65.0...v0.66.0) (2024-02-27)
 
 
