@@ -48,13 +48,13 @@ export type PickerSelectionChangeHandler = (key: PickerItemKey) => void;
  * in separate util methods.
  */
 export interface NormalizedPickerItem {
-  key: PickerItemKey;
+  key?: PickerItemKey;
   content: ReactNode;
-  textValue: string;
+  textValue?: string;
 }
 
 export interface NormalizedPickerSection {
-  key: Key;
+  key?: Key;
   title?: ReactNode;
   items: NormalizedPickerItem[];
 }
@@ -120,11 +120,11 @@ export function isNormalizedPickerSection(
  * @param itemOrSection The picker item or section
  * @returns A `PickerItemKey` for the picker item
  */
-function normalizeItemKey(item: PickerItem): PickerItemKey;
-function normalizeItemKey(section: PickerSection): Key;
+function normalizeItemKey(item: PickerItem): PickerItemKey | undefined;
+function normalizeItemKey(section: PickerSection): Key | undefined;
 function normalizeItemKey(
   itemOrSection: PickerItem | PickerSection
-): Key | PickerItemKey {
+): Key | PickerItemKey | undefined {
   // string, number, or boolean
   if (typeof itemOrSection !== 'object') {
     return itemOrSection;
@@ -139,7 +139,7 @@ function normalizeItemKey(
   if (isSectionElement(itemOrSection)) {
     return typeof itemOrSection.props.title === 'string'
       ? itemOrSection.props.title
-      : '';
+      : undefined;
   }
 
   // Item element
@@ -147,7 +147,7 @@ function normalizeItemKey(
     itemOrSection.props.textValue ??
     (typeof itemOrSection.props.children === 'string'
       ? itemOrSection.props.children
-      : '')
+      : undefined)
   );
 }
 
@@ -156,7 +156,7 @@ function normalizeItemKey(
  * @param item The picker item
  * @returns A string `textValue` for the picker item
  */
-function normalizeTextValue(item: PickerItem): string {
+function normalizeTextValue(item: PickerItem): string | undefined {
   if (typeof item !== 'object') {
     return String(item);
   }
@@ -169,7 +169,7 @@ function normalizeTextValue(item: PickerItem): string {
     return item.props.children;
   }
 
-  return '';
+  return undefined;
 }
 
 /**

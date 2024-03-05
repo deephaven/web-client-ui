@@ -77,8 +77,6 @@ const expectedItems = {
     </Item>,
     {
       content: <span>No textValue</span>,
-      key: '',
-      textValue: '',
     },
   ],
   explicitKey: [
@@ -112,7 +110,6 @@ const expectedSections = {
   noTitle: [
     <Section>{expectedItems.singleStringChild[0]}</Section>,
     {
-      key: '',
       items: [expectedItems.singleStringChild[1]],
     },
   ],

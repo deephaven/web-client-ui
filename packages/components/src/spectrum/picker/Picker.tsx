@@ -84,7 +84,10 @@ export function Picker({
       // elements that back the Spectrum Picker. These are not visible in the UI,
       // but are used for accessibility purposes, so we set to an arbitrary
       // 'Empty' value so that they are not empty strings.
-      <Item key={key as Key} textValue={textValue === '' ? 'Empty' : textValue}>
+      <Item
+        key={key as Key}
+        textValue={textValue === '' || textValue == null ? 'Empty' : textValue}
+      >
         <PickerItemContent>{content}</PickerItemContent>
         {tooltipOptions == null || content === '' ? null : (
           <Tooltip options={tooltipOptions}>
