@@ -58,10 +58,12 @@ export interface UseViewportDataResult<
  * IMPORTANT: this will create an empty KeyedItem object for every row in the
  * source table. This is intended for "human" sized tables such as those used in
  * admin panels. This is not suitable for "machine" scale with millions+ rows.
- * @param table
- * @param itemHeight
- * @param viewportSize
- * @param viewportPadding
+ * @param table The Table to viewport.
+ * @param itemHeight The height of each item in the viewport.
+ * @param scrollDebounce The number of milliseconds to debounce scroll events.
+ * @param viewportSize The number of items to display in the viewport.
+ * @param viewportPadding The number of items to fetch at start and end of the viewport.
+ * @param deserializeRow A function to deserialize a row from the Table.
  * @returns An object for managing Table viewport state.
  */
 export function useViewportData<TItem, TTable extends dh.Table | dh.TreeTable>({
