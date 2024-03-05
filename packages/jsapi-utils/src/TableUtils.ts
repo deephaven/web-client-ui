@@ -53,6 +53,15 @@ export type RowDataMapValue = {
 
 export type RowDataMap = Record<ColumnName, RowDataMapValue>;
 
+export function isSortDirection(value: string | null): value is SortDirection {
+  return (
+    value === TableUtils.sortDirection.ascending ||
+    value === TableUtils.sortDirection.descending ||
+    value === TableUtils.sortDirection.reverse ||
+    value === TableUtils.sortDirection.none
+  );
+}
+
 /** Utility class to provide some functions for working with tables */
 export class TableUtils {
   static dataType = {

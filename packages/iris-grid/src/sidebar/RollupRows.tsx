@@ -201,18 +201,14 @@ class RollupRows extends Component<RollupRowsProps, RollupRowsState> {
   handleSortAscending(): void {
     this.setState(({ sort }) => ({
       sort:
-        sort === RollupRows.SORT.ASCENDING
-          ? null
-          : (RollupRows.SORT.ASCENDING as SortDirection),
+        sort === RollupRows.SORT.ASCENDING ? null : RollupRows.SORT.ASCENDING,
     }));
   }
 
   handleSortDescending(): void {
     this.setState(({ sort }) => ({
       sort:
-        sort === RollupRows.SORT.DESCENDING
-          ? null
-          : (RollupRows.SORT.DESCENDING as SortDirection),
+        sort === RollupRows.SORT.DESCENDING ? null : RollupRows.SORT.DESCENDING,
     }));
   }
 

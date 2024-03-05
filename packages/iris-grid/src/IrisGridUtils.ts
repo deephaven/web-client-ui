@@ -140,7 +140,7 @@ export interface DehydratedIrisGridState {
   invertSearchColumns: boolean;
   pendingDataMap: DehydratedPendingDataMap<string | CellData | null>;
   frozenColumns: readonly ColumnName[];
-  columnHeaderGroups?: DhType.ColumnGroup[];
+  columnHeaderGroups?: readonly DhType.ColumnGroup[];
   partitionConfig?: DehydratedPartitionConfig;
 }
 
@@ -1036,9 +1036,7 @@ class IrisGridUtils {
     ): ColumnHeaderGroup => {
       const { name } = group;
 
-      if (name == null) {
-        throw new Error('Column header group has no name');
-      }
+      assertNotNull(name, 'Column header group has no name');
 
       if (model.getColumnIndexByName(name) != null) {
         throw new Error(`Column header group has same name as column: ${name}`);

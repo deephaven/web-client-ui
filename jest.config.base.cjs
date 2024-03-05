@@ -63,7 +63,7 @@ module.exports = {
     ),
     // Handle monaco worker files
     '\\.worker.*$': 'identity-obj-proxy',
-    // All packages except icons use src code
+    // All packages except icons and jsapi-types use src code
     '^@deephaven/(?!icons|jsapi-types)(.*)$': path.join(
       __dirname,
       './packages/$1/src'

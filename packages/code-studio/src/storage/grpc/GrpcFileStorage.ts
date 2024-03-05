@@ -8,6 +8,7 @@ import {
   FileStorageItem,
   FileStorageTable,
   FileUtils,
+  isFileType,
 } from '@deephaven/file-explorer';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
@@ -118,7 +119,13 @@ export class GrpcFileStorage implements FileStorage {
       );
       throw new Error('More than one matching file found');
     }
+
     const itemDetails = allItems[0];
+
+    if (!isFileType(itemDetails.type)) {
+      throw new Error(`Unexpected file type: ${itemDetails.type}`);
+    }
+
     return {
       filename: this.removeRoot(itemDetails.filename),
       basename: itemDetails.basename,

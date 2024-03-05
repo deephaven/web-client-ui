@@ -561,7 +561,7 @@ class IrisGridTableModelTemplate<
         assertNotNull(theme.nullStringColor);
         return theme.nullStringColor;
       }
-      if (format?.color != null) {
+      if (format?.color != null && format.color !== '') {
         return format.color;
       }
 

@@ -75,6 +75,7 @@ import {
   DateTimeColumnFormatterOptions,
   TableColumnFormat,
   Settings,
+  isSortDirection,
 } from '@deephaven/jsapi-utils';
 import {
   assertNotNull,
@@ -4365,7 +4366,12 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             const advancedFilter = advancedFilters.get(modelColumn);
             const { options: advancedFilterOptions } = advancedFilter || {};
             const sort = TableUtils.getSortForColumn(model.sort, column.name);
+
             const sortDirection = sort ? sort.direction : null;
+            if (!isSortDirection(sortDirection)) {
+              throw new Error(`Invalid sort direction: ${sortDirection}`);
+            }
+
             const element = (
               <div
                 key={columnIndex}
@@ -4389,7 +4395,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                     model,
                     column,
                     advancedFilterOptions,
-                    sortDirection as SortDirection,
+                    sortDirection,
                     formatter
                   )}
                 </Popper>

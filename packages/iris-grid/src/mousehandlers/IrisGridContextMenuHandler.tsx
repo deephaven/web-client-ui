@@ -1590,10 +1590,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   ): ContextAction[] {
     const { dh } = this;
 
-    const values = Array.from(snapshotValues.keys()) as Date[];
-    const filterValues = values.map(value =>
-      dh.FilterValue.ofNumber(dh.DateWrapper.ofJsDate(value))
-    );
+    const values = Array.from(snapshotValues.keys()) as DhType.DateWrapper[];
+    const filterValues = values.map(value => dh.FilterValue.ofNumber(value));
     const valueDesc =
       filterValues.length === 1
         ? previewFilterFormatter.format(values[0])
@@ -1601,12 +1599,8 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
     const maxValue = values.reduce((a, b) => (a > b ? a : b));
     const minValue = values.reduce((a, b) => (a < b ? a : b));
-    const maxFilterValue = dh.FilterValue.ofNumber(
-      dh.DateWrapper.ofJsDate(maxValue)
-    );
-    const minFilterValue = dh.FilterValue.ofNumber(
-      dh.DateWrapper.ofJsDate(minValue)
-    );
+    const maxFilterValue = dh.FilterValue.ofNumber(maxValue);
+    const minFilterValue = dh.FilterValue.ofNumber(minValue);
     const maxDateText = dateFilterFormatter.format(maxValue);
     const minDateText = dateFilterFormatter.format(minValue);
     const maxPreviewText = previewFilterFormatter.format(maxValue);
@@ -1633,7 +1627,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           {TextUtils.join(
             values
               .slice(0, 20)
-              .map(value => `"${previewFilterFormatter.format(value as Date)}"`)
+              .map(value => `"${previewFilterFormatter.format(value)}"`)
           )}
           {values.length > 1 && (
             <div className="iris-grid-filter-menu-subtitle">
@@ -1661,7 +1655,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           IrisGridContextMenuHandler.getQuickFilterText(
             filterText,
             values
-              .map(value => `=${dateFilterFormatter.format(value as Date)}`)
+              .map(value => `=${dateFilterFormatter.format(value)}`)
               .join(' || '),
             operator
           )
@@ -1686,7 +1680,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           IrisGridContextMenuHandler.getQuickFilterText(
             filterText,
             values
-              .map(value => `!=${dateFilterFormatter.format(value as Date)}`)
+              .map(value => `!=${dateFilterFormatter.format(value)}`)
               .join(' && '),
             operator
           )

@@ -2,7 +2,7 @@ import type { Key } from 'react';
 import clamp from 'lodash.clamp';
 import type { dh } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
-import type { KeyedItem } from '@deephaven/utils';
+import type { KeyedItem, ValueOf } from '@deephaven/utils';
 
 export type OnTableUpdatedEvent = CustomEvent<{
   offset: number;
@@ -78,7 +78,7 @@ export function defaultRowDeserializer<T>(
 ): T {
   return columns.reduce((result, col) => {
     // eslint-disable-next-line no-param-reassign
-    result[col.name as keyof T] = row.get(col) as T[keyof T];
+    result[col.name as keyof T] = row.get(col) as ValueOf<T>;
     return result;
   }, {} as T);
 }
