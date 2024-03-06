@@ -223,7 +223,7 @@ describe('normalizeTooltipOptions', () => {
     [undefined, null],
     [null, null],
     [false, null],
-    [true, { placement: 'top-start' }],
+    [true, { placement: 'right' }],
     [{ placement: 'bottom-end' }, { placement: 'bottom-end' }],
   ] as const)('should return: %s', (options, expected) => {
     const actual = normalizeTooltipOptions(options);
