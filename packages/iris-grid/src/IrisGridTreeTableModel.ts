@@ -47,6 +47,7 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
               isSortable: false,
               isProxy: true,
               description: 'Key column',
+              index: -1,
               filter: () => {
                 throw new Error('Filter not implemented for virtual column');
               },
@@ -56,8 +57,21 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
               formatColor: () => {
                 throw new Error('Color not implemented for virtual column');
               },
-              formatRowColor: () => {
-                throw new Error('Color not implemented for virtual column');
+              get: () => {
+                throw new Error('get not implemented for virtual column');
+              },
+              getFormat: () => {
+                throw new Error('getFormat not implemented for virtual column');
+              },
+              formatNumber: () => {
+                throw new Error(
+                  'formatNumber not implemented for virtual column'
+                );
+              },
+              formatDate: () => {
+                throw new Error(
+                  'formatDate not implemented for virtual column'
+                );
               },
             },
           ]

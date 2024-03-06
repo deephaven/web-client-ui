@@ -98,7 +98,7 @@ class IrisGridTestUtils {
 
   makeTreeTable(
     columns = this.makeColumns(),
-    groupedColumns: Column[] = [],
+    groupedColumns: DhType.Column[] = [],
     size = 1000000000,
     sort = []
   ): DhType.TreeTable {
