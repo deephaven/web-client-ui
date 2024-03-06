@@ -35,27 +35,47 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     inputTable: DhType.InputTable | null = null
   ) {
     super(dh, table, formatter, inputTable);
-    this.virtualColumns = [
-      {
-        name: '__DH_UI_GROUP__',
-        displayName: 'Group',
-        type: TableUtils.dataType.STRING,
-        constituentType: TableUtils.dataType.STRING,
-        isPartitionColumn: false,
-        isSortable: false,
-        isProxy: true,
-        description: 'Key column',
-        filter: () => {
-          throw new Error('Filter not implemented for virtual column');
-        },
-        sort: () => {
-          throw new Error('Sort not implemented virtual column');
-        },
-        formatColor: () => {
-          throw new Error('Color not implemented for virtual column');
-        },
-      } as unknown as DisplayColumn,
-    ];
+    this.virtualColumns =
+      table.groupedColumns.length > 1
+        ? [
+            {
+              name: '__DH_UI_GROUP__',
+              displayName: 'Group',
+              type: TableUtils.dataType.STRING,
+              constituentType: TableUtils.dataType.STRING,
+              isPartitionColumn: false,
+              isSortable: false,
+              isProxy: true,
+              description: 'Key column',
+              index: -1,
+              filter: () => {
+                throw new Error('Filter not implemented for virtual column');
+              },
+              sort: () => {
+                throw new Error('Sort not implemented virtual column');
+              },
+              formatColor: () => {
+                throw new Error('Color not implemented for virtual column');
+              },
+              get: () => {
+                throw new Error('get not implemented for virtual column');
+              },
+              getFormat: () => {
+                throw new Error('getFormat not implemented for virtual column');
+              },
+              formatNumber: () => {
+                throw new Error(
+                  'formatNumber not implemented for virtual column'
+                );
+              },
+              formatDate: () => {
+                throw new Error(
+                  'formatDate not implemented for virtual column'
+                );
+              },
+            },
+          ]
+        : [];
   }
 
   applyBufferedViewport(
