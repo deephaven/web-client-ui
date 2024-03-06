@@ -235,13 +235,13 @@ export function normalizePickerItemList(
  */
 export function normalizeTooltipOptions(
   options?: boolean | TooltipOptions | null
-): PopperOptions | null {
+): TooltipOptions | null {
   if (options == null || options === false) {
     return null;
   }
 
   if (options === true) {
-    return { placement: 'top-start' };
+    return { placement: 'right' };
   }
 
   return options;

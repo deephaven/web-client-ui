@@ -23,6 +23,7 @@ import PopperJs, { PopperOptions, ReferenceObject } from 'popper.js';
 import PropTypes from 'prop-types';
 import ThemeExport from '../ThemeExport';
 import './Popper.scss';
+import { SpectrumThemeProvider } from '../theme/SpectrumThemeProvider';
 
 interface PopperProps {
   options: PopperOptions;
@@ -251,25 +252,27 @@ class Popper extends Component<PopperProps, PopperState> {
         onEntered={this.handleEnter}
         onExited={this.handleExit}
       >
-        <div
-          onClick={e => {
-            // stop click events from escaping popper
-            e.stopPropagation();
-          }}
-          onKeyDown={e => {
-            if (e.key === 'Escape') this.hide();
-          }}
-          className={classNames('popper', { interactive }, className)}
-          onBlur={closeOnBlur ? this.handleBlur : undefined}
-          tabIndex={closeOnBlur ? -1 : undefined}
-          role="presentation"
-        >
-          <div className="popper-content">
-            {children}
-            {/* eslint-disable-next-line react/no-unknown-property */}
-            <div className="popper-arrow" x-arrow="" />
+        <SpectrumThemeProvider isPortal>
+          <div
+            onClick={e => {
+              // stop click events from escaping popper
+              e.stopPropagation();
+            }}
+            onKeyDown={e => {
+              if (e.key === 'Escape') this.hide();
+            }}
+            className={classNames('popper', { interactive }, className)}
+            onBlur={closeOnBlur ? this.handleBlur : undefined}
+            tabIndex={closeOnBlur ? -1 : undefined}
+            role="presentation"
+          >
+            <div className="popper-content">
+              {children}
+              {/* eslint-disable-next-line react/no-unknown-property */}
+              <div className="popper-arrow" x-arrow="" />
+            </div>
           </div>
-        </div>
+        </SpectrumThemeProvider>
       </CSSTransition>
     );
   }
