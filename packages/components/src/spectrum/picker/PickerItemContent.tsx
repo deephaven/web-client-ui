@@ -48,7 +48,7 @@ export function PickerItemContent({
   }
   /* eslint-enable no-param-reassign */
 
-  return typeof content === 'string' ? (
+  return typeof content === 'string' || typeof content === 'number' ? (
     <Text UNSAFE_className={stylesCommon.spectrumEllipsis}>{content}</Text>
   ) : (
     // eslint-disable-next-line react/jsx-no-useless-fragment

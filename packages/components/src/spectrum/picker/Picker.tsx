@@ -62,7 +62,7 @@ function createTooltipContent(content: ReactNode) {
 
   if (Array.isArray(content)) {
     return (
-      <Flex direction="column">
+      <Flex direction="column" alignItems="start">
         {content.filter(node => isElementOfType(node, Text))}
       </Flex>
     );
