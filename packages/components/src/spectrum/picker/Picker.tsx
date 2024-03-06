@@ -52,7 +52,8 @@ export type PickerProps = {
 >;
 
 /**
- * Create tooltip content optionally wrapping with a Flex column for array content
+ * Create tooltip content optionally wrapping with a Flex column for array
+ * content. This is needed for Items containing description `Text` elements.
  */
 function createTooltipContent(content: ReactNode) {
   if (typeof content === 'boolean') {
