@@ -1,5 +1,5 @@
 import React from 'react';
-import { VariableDescriptor } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import useDeferredApi from './useDeferredApi';
 import { ApiContext } from './ApiBootstrap';
 
@@ -10,7 +10,7 @@ type DeferredApiBootstrapProps = React.PropsWithChildren<{
    * The descriptor may be extended to include session information or other data required to identify the widget.
    * The surrounding `ObjectFetcherContext` will then be able to use that information to correctly load the widget.
    */
-  widget: VariableDescriptor;
+  widget: dh.ide.VariableDescriptor;
 }>;
 
 /**

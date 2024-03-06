@@ -1,15 +1,4 @@
-import type {
-  Axis,
-  AxisFormatType,
-  AxisPosition,
-  AxisType,
-  Chart,
-  dh as DhType,
-  Figure,
-  Series,
-  SeriesDataSource,
-  SeriesPlotStyle,
-} from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 
 class ChartTestUtils {
   static DEFAULT_FIGURE_TITLE = 'Figure Title';
@@ -22,9 +11,9 @@ class ChartTestUtils {
 
   static DEFAULT_SERIES_NAME = 'MySeries';
 
-  private dh: DhType;
+  private dh: typeof DhType;
 
-  constructor(dh: DhType) {
+  constructor(dh: typeof DhType) {
     this.dh = dh;
   }
 
@@ -37,25 +26,25 @@ class ChartTestUtils {
     log = false,
   }: {
     label?: string;
-    type?: AxisType;
-    position?: AxisPosition;
-    formatType?: AxisFormatType;
+    type?: DhType.plot.AxisType;
+    position?: DhType.plot.AxisPosition;
+    formatType?: DhType.plot.AxisFormatType;
     formatPattern?: string;
     log?: boolean;
-  } = {}): Axis {
+  } = {}): DhType.plot.Axis {
     const { dh } = this;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return new (dh as any).Axis({
       label,
       type: type ?? dh.plot.AxisType.X,
       position: position ?? dh.plot.AxisPosition.BOTTOM,
-      formatType: formatType ?? dh.Axis.FORMAT_TYPE_NUMBER,
+      formatType: formatType ?? dh.plot.AxisFormatType.NUMBER,
       formatPattern,
       log,
     });
   }
 
-  makeDefaultAxes(): Axis[] {
+  makeDefaultAxes(): DhType.plot.Axis[] {
     const { dh } = this;
     return [
       this.makeAxis({
@@ -69,12 +58,16 @@ class ChartTestUtils {
     ];
   }
 
-  makeSource({ axis = this.makeAxis() }: { axis: Axis }): SeriesDataSource {
+  makeSource({
+    axis = this.makeAxis(),
+  }: {
+    axis: DhType.plot.Axis;
+  }): DhType.plot.SeriesDataSource {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return new (this.dh as any).SeriesDataSource({ axis, type: axis.type });
   }
 
-  makeDefaultSources(): SeriesDataSource[] {
+  makeDefaultSources(): DhType.plot.SeriesDataSource[] {
     const axes = this.makeDefaultAxes();
     return axes.map(axis => this.makeSource({ axis }));
   }
@@ -88,10 +81,10 @@ class ChartTestUtils {
   }: {
     name?: string | null;
     lineColor?: string | null;
-    plotStyle?: SeriesPlotStyle | null;
+    plotStyle?: DhType.plot.SeriesPlotStyleType | null;
     shapeColor?: string | null;
-    sources?: SeriesDataSource[];
-  } = {}): Series {
+    sources?: DhType.plot.SeriesDataSource[];
+  } = {}): DhType.plot.Series {
     const { dh } = this;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return new (dh as any).Series(
@@ -114,14 +107,14 @@ class ChartTestUtils {
     column = 0,
   }: {
     title?: string;
-    series?: Series[];
-    axes?: Axis[];
+    series?: DhType.plot.Series[];
+    axes?: DhType.plot.Axis[];
     showLegend?: boolean | null;
     rowspan?: number;
     colspan?: number;
     row?: number;
     column?: number;
-  } = {}): Chart {
+  } = {}): DhType.plot.Chart {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return new (this.dh as any).Chart({
       title,
@@ -141,7 +134,7 @@ class ChartTestUtils {
     rows = 1,
     cols = 1,
     errors = [],
-  } = {}): Figure {
+  } = {}): DhType.plot.Figure {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return new (this.dh as any).plot.Figure({
       title,

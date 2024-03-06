@@ -65,11 +65,7 @@ import {
 } from '@deephaven/icons';
 import { getVariableDescriptor } from '@deephaven/jsapi-bootstrap';
 import dh from '@deephaven/jsapi-shim';
-import type {
-  IdeConnection,
-  IdeSession,
-  VariableDefinition,
-} from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import { SessionConfig } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
@@ -130,8 +126,8 @@ interface AppMainContainerProps {
   match: {
     params: { notebookPath: string };
   };
-  connection?: IdeConnection;
-  session?: IdeSession;
+  connection?: DhType.IdeConnection;
+  session?: DhType.IdeSession;
   sessionConfig?: SessionConfig;
   setActiveTool: (tool: string) => void;
   setDashboardData: (id: string, data: DashboardData) => void;
@@ -156,7 +152,7 @@ interface AppMainContainerState {
   isResetLayoutPromptShown: boolean;
   isSettingsMenuShown: boolean;
   unsavedNotebookCount: number;
-  widgets: VariableDefinition[];
+  widgets: DhType.ide.VariableDefinition[];
   tabs: NavTabItem[];
   activeTabKey: string;
 }
@@ -546,7 +542,7 @@ export class AppMainContainer extends Component<
   }
 
   handleWidgetSelect(
-    widget: VariableDefinition,
+    widget: DhType.ide.VariableDefinition,
     dragEvent?: WindowMouseEvent
   ): void {
     this.setState({ isPanelsMenuShown: false });
@@ -764,7 +760,10 @@ export class AppMainContainer extends Component<
    * @param widget The widget to open
    * @param dragEvent The mouse drag event that trigger it, undefined if it was not triggered by a drag
    */
-  openWidget(widget: VariableDefinition, dragEvent?: WindowMouseEvent): void {
+  openWidget(
+    widget: DhType.ide.VariableDefinition,
+    dragEvent?: WindowMouseEvent
+  ): void {
     const { connection } = this.props;
     this.emitLayoutEvent(PanelEvent.OPEN, {
       dragEvent,

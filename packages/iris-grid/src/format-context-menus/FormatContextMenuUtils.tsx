@@ -88,7 +88,7 @@ class FormatContextMenuUtils {
       isSelected,
       menuElement: (
         <CustomFormatAction
-          formatString={format.formatString}
+          formatString={format.formatString ?? undefined}
           title={format.label}
           placeholder={placeholder}
           onChange={onChange}

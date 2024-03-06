@@ -19,7 +19,7 @@ import {
   FileStorageTable,
   FileUtils,
 } from '@deephaven/file-explorer';
-import type { StorageService } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import debounce from 'lodash.debounce';
 
 const log = Log.module('GrpcFileStorageTable');
@@ -31,7 +31,7 @@ const log = Log.module('GrpcFileStorageTable');
 export class GrpcFileStorageTable implements FileStorageTable {
   static REFRESH_DEBOUNCE = 50;
 
-  private readonly storageService: StorageService;
+  private readonly storageService: dh.storage.StorageService;
 
   private readonly baseRoot: string;
 
@@ -60,7 +60,11 @@ export class GrpcFileStorageTable implements FileStorageTable {
    * @param baseRoot Base root for the service
    * @param root The root path for this storage table
    */
-  constructor(storageService: StorageService, baseRoot = '', root = baseRoot) {
+  constructor(
+    storageService: dh.storage.StorageService,
+    baseRoot = '',
+    root = baseRoot
+  ) {
     this.storageService = storageService;
     this.baseRoot = baseRoot;
     this.root = root;

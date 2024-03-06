@@ -5,7 +5,7 @@ import {
   useObjectFetcher,
 } from '@deephaven/jsapi-bootstrap';
 import { ChartModel, ChartModelFactory } from '@deephaven/chart';
-import type { dh as DhType, Figure, Table } from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import { IrisGridUtils } from '@deephaven/iris-grid';
 import { getTimeZone, store } from '@deephaven/redux';
 import { WidgetPanelProps } from '@deephaven/plugin';
@@ -22,10 +22,10 @@ import ConnectedChartPanel, {
 } from './panels/ChartPanel';
 
 async function createChartModel(
-  dh: DhType,
+  dh: typeof DhType,
   fetchObject: ObjectFetcher,
   metadata: ChartPanelMetadata,
-  fetchFigure: () => Promise<Figure>,
+  fetchFigure: () => Promise<DhType.plot.Figure>,
   panelState?: GLChartPanelState
 ): Promise<ChartModel> {
   let settings;
@@ -71,14 +71,14 @@ async function createChartModel(
   }
 
   if (figureName != null) {
-    let figure: Figure;
+    let figure: DhType.plot.Figure;
 
     if (metadata.type === dh.VariableType.FIGURE) {
       const descriptor = {
         name: figureName,
         type: dh.VariableType.FIGURE,
       };
-      figure = await fetchObject<Figure>(descriptor);
+      figure = await fetchObject<DhType.plot.Figure>(descriptor);
     } else {
       figure = await fetchFigure();
     }
@@ -90,7 +90,7 @@ async function createChartModel(
     name: tableName,
     type: dh.VariableType.TABLE,
   };
-  const table = (await fetchObject(descriptor)) as Table;
+  const table = await fetchObject<DhType.Table>(descriptor);
   new IrisGridUtils(dh).applyTableSettings(
     table,
     tableSettings,
@@ -106,7 +106,7 @@ async function createChartModel(
 }
 
 export const ChartPanelPlugin = forwardRef(
-  (props: WidgetPanelProps<Figure>, ref: React.Ref<ChartPanel>) => {
+  (props: WidgetPanelProps<DhType.plot.Figure>, ref: React.Ref<ChartPanel>) => {
     const dh = useApi();
     const fetchObject = useObjectFetcher();
 

@@ -25,7 +25,7 @@ import {
 const log = Log.module('ConditionEditor');
 
 export interface ConditionEditorProps {
-  dh: DhType;
+  dh: typeof DhType;
   column: ModelColumn;
   config: ConditionConfig;
   onChange?: (config: ConditionConfig, isValid: boolean) => void;

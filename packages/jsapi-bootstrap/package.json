@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@deephaven/components": "file:../components",
-    "@deephaven/jsapi-types": "file:../jsapi-types",
+    "@deephaven/jsapi-types": "1.0.0-dev0.33.1",
     "@deephaven/log": "file:../log",
     "@deephaven/react-hooks": "file:../react-hooks"
   },

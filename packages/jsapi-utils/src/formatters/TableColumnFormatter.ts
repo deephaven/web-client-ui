@@ -13,7 +13,7 @@ export type TableColumnFormatType =
 
 export type TableColumnFormat = {
   label: string;
-  formatString: string;
+  formatString: string | null;
   type: TableColumnFormatType;
 };
 
@@ -30,7 +30,7 @@ export class TableColumnFormatter<T = unknown> {
    * @param format Format object
    * @returns true for valid object
    */
-  static isValid(dh: DhType, format: TableColumnFormat): boolean {
+  static isValid(dh: typeof DhType, format: TableColumnFormat): boolean {
     return true;
   }
 

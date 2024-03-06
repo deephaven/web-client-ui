@@ -10,11 +10,7 @@ import {
   vsCircleLargeFilled,
   vsTrash,
 } from '@deephaven/icons';
-import type {
-  Column,
-  dh as DhType,
-  SeriesPlotStyle,
-} from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { bindAllMethods } from '@deephaven/utils';
 import shortid from 'shortid';
@@ -31,7 +27,7 @@ import IrisGridModel from '../IrisGridModel';
 const log = Log.module('ChartBuilder');
 
 export type ChartBuilderSettings = {
-  type: SeriesPlotStyle;
+  type: DhType.plot.SeriesPlotStyle;
   series: string[];
   xAxis: string;
   isLinked: boolean;
@@ -48,7 +44,7 @@ interface ChartBuilderProps {
 }
 interface ChartBuilderState {
   /** The selected chart type */
-  type: SeriesPlotStyle;
+  type: DhType.plot.SeriesPlotStyle;
 
   /** Array of column names of the series to display */
   seriesItems: readonly SeriesItem[];
@@ -63,7 +59,10 @@ interface ChartBuilderState {
  * Form for configuring all the settings when creating a console.
  */
 class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
-  static getMaxSeriesCount(dh: DhType, type: SeriesPlotStyle): number {
+  static getMaxSeriesCount(
+    dh: typeof DhType,
+    type: DhType.plot.SeriesPlotStyle
+  ): number {
     switch (type) {
       case dh.plot.SeriesPlotStyle.PIE:
         return 1;
@@ -79,9 +78,9 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
   }
 
   static makeDefaultSeriesItems(
-    dh: DhType,
-    type: SeriesPlotStyle,
-    columns: readonly Column[]
+    dh: typeof DhType,
+    type: DhType.plot.SeriesPlotStyle,
+    columns: readonly DhType.Column[]
   ): SeriesItem[] {
     const maxSeriesCount = ChartBuilder.getMaxSeriesCount(dh, type);
     if (maxSeriesCount === 0 || columns == null || columns.length === 0) {
@@ -93,8 +92,8 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
   }
 
   static getDefaultXAxis(
-    type: SeriesPlotStyle,
-    columns: readonly Column[]
+    type: DhType.plot.SeriesPlotStyle,
+    columns: readonly DhType.Column[]
   ): string | null {
     if (columns != null && columns.length > 0) {
       return columns[0].name;
@@ -130,7 +129,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     };
   }
 
-  getTypes(): SeriesPlotStyle[] {
+  getTypes(): DhType.plot.SeriesPlotStyle[] {
     const { model } = this.props;
     const { dh } = model;
     return [
@@ -147,7 +146,9 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
    * Converts the provided chart type into a readable type.
    * Just replaces underscores with spaces and capitals the first letter of each word.
    */
-  getTypeName(type: SeriesPlotStyle): string | SeriesPlotStyle {
+  getTypeName(
+    type: DhType.plot.SeriesPlotStyle
+  ): string | DhType.plot.SeriesPlotStyle {
     const { model } = this.props;
     const { dh } = model;
     switch (type) {
@@ -166,7 +167,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     }
   }
 
-  getTypeIcon(type: SeriesPlotStyle): React.ReactElement | null {
+  getTypeIcon(type: DhType.plot.SeriesPlotStyle): React.ReactElement | null {
     const { model } = this.props;
     const { dh } = model;
     switch (type) {
@@ -185,7 +186,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     }
   }
 
-  getXAxisLabel(type: SeriesPlotStyle): string {
+  getXAxisLabel(type: DhType.plot.SeriesPlotStyle): string {
     const { model } = this.props;
     const { dh } = model;
     switch (type) {
@@ -198,7 +199,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     }
   }
 
-  getSeriesLabel(type: SeriesPlotStyle): string {
+  getSeriesLabel(type: DhType.plot.SeriesPlotStyle): string {
     const { model } = this.props;
     const { dh } = model;
     switch (type) {

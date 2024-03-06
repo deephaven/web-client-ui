@@ -17,7 +17,7 @@ import {
 } from '@deephaven/dashboard-core-plugins';
 import { FileStorage } from '@deephaven/file-explorer';
 import { useApi, useClient } from '@deephaven/jsapi-bootstrap';
-import type { dh as DhType, IdeConnection } from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
   getSessionDetails,
   loadSessionWrapper,
@@ -61,7 +61,7 @@ interface AppInitProps {
   workspaceStorage: WorkspaceStorage;
 
   setActiveTool: (type: (typeof ToolType)[keyof typeof ToolType]) => void;
-  setApi: (api: DhType) => void;
+  setApi: (api: typeof DhType) => void;
   setCommandHistoryStorage: (storage: PouchCommandHistoryStorage) => void;
   setDashboardData: (
     id: string,
@@ -69,7 +69,10 @@ interface AppInitProps {
   ) => void;
   setFileStorage: (fileStorage: FileStorage) => void;
   setLayoutStorage: (layoutStorage: LayoutStorage) => void;
-  setDashboardConnection: (id: string, connection: IdeConnection) => void;
+  setDashboardConnection: (
+    id: string,
+    connection: DhType.IdeConnection
+  ) => void;
   setDashboardSessionWrapper: (id: string, wrapper: SessionWrapper) => void;
   setPlugins: (map: PluginModuleMap) => void;
   setUser: (user: User) => void;

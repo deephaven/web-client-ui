@@ -71,7 +71,7 @@ import {
   ContextMenuRoot,
   ResolvableContextAction,
 } from '@deephaven/components';
-import type { Column, FilterCondition, Sort } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import {
   GridState,
   ModelIndex,
@@ -182,7 +182,7 @@ interface IrisGridPanelState {
   customColumnFormatMap: Map<string, FormattingRule>;
   isFilterBarShown: boolean;
   quickFilters: ReadonlyQuickFilterMap;
-  sorts: readonly Sort[];
+  sorts: readonly dh.Sort[];
   userColumnWidths: ModelSizeMap;
   userRowHeights: ModelSizeMap;
   reverseType: ReverseType;
@@ -197,7 +197,7 @@ interface IrisGridPanelState {
   selectedSearchColumns?: readonly string[];
   invertSearchColumns: boolean;
   Plugin?: TablePluginComponent;
-  pluginFilters: readonly FilterCondition[];
+  pluginFilters: readonly dh.FilterCondition[];
   pluginFetchColumns: readonly string[];
   modelQueue: ModelQueue;
   pendingDataMap?: PendingDataMap<UIRow>;
@@ -383,7 +383,7 @@ export class IrisGridPanel extends PureComponent<
   }
 
   getGridInputFilters = memoize(
-    (columns: readonly Column[], inputFilters: readonly InputFilter[]) =>
+    (columns: readonly dh.Column[], inputFilters: readonly InputFilter[]) =>
       IrisGridUtils.getInputFiltersForColumns(
         columns,
         // They may have picked a column, but not actually entered a value yet. In that case, don't need to update.
@@ -481,7 +481,7 @@ export class IrisGridPanel extends PureComponent<
   getDehydratedIrisGridState = memoize(
     (
       model: IrisGridModel,
-      sorts: readonly Sort[],
+      sorts: readonly dh.Sort[],
       advancedFilters: ReadonlyAdvancedFilterMap,
       customColumnFormatMap: Map<ColumnName, FormattingRule>,
       isFilterBarShown: boolean,
@@ -669,7 +669,7 @@ export class IrisGridPanel extends PureComponent<
     return this.pluginRef.current?.getMenu?.(data) ?? [];
   }
 
-  isColumnSelectionValid(tableColumn: Column | null): boolean {
+  isColumnSelectionValid(tableColumn: dh.Column | null): boolean {
     const { columnSelectionValidator } = this.props;
     if (columnSelectionValidator && tableColumn) {
       return columnSelectionValidator(this, tableColumn);
@@ -763,7 +763,7 @@ export class IrisGridPanel extends PureComponent<
     );
   }
 
-  handleColumnSelected(column: Column): void {
+  handleColumnSelected(column: dh.Column): void {
     const { glEventHub } = this.props;
     glEventHub.emit(IrisGridEvent.COLUMN_SELECTED, this, column);
   }
@@ -842,7 +842,7 @@ export class IrisGridPanel extends PureComponent<
     }
   }
 
-  sendColumnsChange(columns: readonly Column[]): void {
+  sendColumnsChange(columns: readonly dh.Column[]): void {
     log.debug2('sendColumnsChange', columns);
     const { glEventHub } = this.props;
     glEventHub.emit(InputFilterEvent.COLUMNS_CHANGED, this, columns);

@@ -18,7 +18,7 @@ const log = Log.module('RowFormatEditor');
 export interface RowFormatEditorProps {
   columns: ModelColumn[];
   config?: BaseFormatConfig;
-  dh: DhType;
+  dh: typeof DhType;
   onChange?: ChangeCallback;
 }
 

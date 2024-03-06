@@ -4,7 +4,7 @@
 import React, { PureComponent, ReactElement } from 'react';
 import { Button } from '@deephaven/components';
 import Log from '@deephaven/log';
-import type { VariableDefinition } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import classNames from 'classnames';
 import { Code } from '../common';
 import ConsoleHistoryItemResult from './ConsoleHistoryItemResult';
@@ -18,7 +18,7 @@ const log = Log.module('ConsoleHistoryItem');
 interface ConsoleHistoryItemProps {
   item: ConsoleHistoryActionItem;
   language: string;
-  openObject: (object: VariableDefinition) => void;
+  openObject: (object: dh.ide.VariableDefinition) => void;
   disabled?: boolean;
   // TODO: #1573 Remove this eslint disable
   // eslint-disable-next-line react/no-unused-prop-types
@@ -41,7 +41,7 @@ class ConsoleHistoryItem extends PureComponent<
     this.handleObjectClick = this.handleObjectClick.bind(this);
   }
 
-  handleObjectClick(object: VariableDefinition): void {
+  handleObjectClick(object: dh.ide.VariableDefinition): void {
     log.debug('handleObjectClick', object);
 
     const { openObject } = this.props;

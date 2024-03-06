@@ -1,7 +1,7 @@
 import Papa, { ParseLocalConfig, Parser, ParseResult } from 'papaparse';
 import Log from '@deephaven/log';
 import { assertNotNull, DbNameValidator } from '@deephaven/utils';
-import type { IdeSession, Table } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import type { JSZipObject } from 'jszip';
 import CsvTypeParser from './CsvTypeParser';
 import { CsvTypes } from './CsvFormats';
@@ -14,8 +14,8 @@ const log = Log.module('CsvParser');
 const ZIP_CONSOLIDATE_CHUNKS = 650;
 
 interface CsvParserConstructor {
-  onFileCompleted: (tables: Table[]) => void;
-  session: IdeSession;
+  onFileCompleted: (tables: dh.Table[]) => void;
+  session: dh.IdeSession;
   file: File | Blob | JSZipObject;
   type: CsvTypes;
   readHeaders: boolean;
@@ -101,9 +101,9 @@ class CsvParser {
     };
   }
 
-  onFileCompleted: (tables: Table[]) => void;
+  onFileCompleted: (tables: dh.Table[]) => void;
 
-  session: IdeSession;
+  session: dh.IdeSession;
 
   file: File | Blob | JSZipObject;
 
@@ -119,7 +119,7 @@ class CsvParser {
 
   onError: (e: unknown) => void;
 
-  tables: Table[];
+  tables: dh.Table[];
 
   headers?: string[];
 

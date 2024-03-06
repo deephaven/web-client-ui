@@ -1,4 +1,4 @@
-import type { DateWrapper, dh as DhType } from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 
 interface DateParts<T> {
   year: T;
@@ -40,7 +40,7 @@ export class DateUtils {
    * @param ns The nanoseconds
    */
   static makeDateWrapper(
-    dh: DhType,
+    dh: typeof DhType,
     timeZone: string,
     year: number,
     month = 0,
@@ -49,7 +49,7 @@ export class DateUtils {
     minute = 0,
     second = 0,
     ns = 0
-  ): DateWrapper {
+  ): DhType.DateWrapper {
     if (!timeZone) {
       throw new Error('No timezone provided');
     }
@@ -89,11 +89,11 @@ export class DateUtils {
    * @returns Returns the DateWrapper for the next date, or null if a full date was passed in
    */
   static getNextDate(
-    dh: DhType,
+    dh: typeof DhType,
     components: DateParts<string>,
     values: DateParts<number>,
     timeZone: string
-  ): DateWrapper | null {
+  ): DhType.DateWrapper | null {
     let { year, month, date, hours, minutes, seconds, nanos } = values;
 
     if (components.nanos != null) {
@@ -257,10 +257,10 @@ export class DateUtils {
    * @returns A tuple with the start and end value/null for that date range, or both null
    */
   static parseDateRange(
-    dh: DhType,
+    dh: typeof DhType,
     text: string,
     timeZone: string
-  ): [DateWrapper, DateWrapper | null] | [null, null] {
+  ): [DhType.DateWrapper, DhType.DateWrapper | null] | [null, null] {
     const cleanText = text.trim().toLowerCase();
     if (cleanText.length === 0) {
       throw new Error('Cannot parse date range from empty string');
@@ -368,7 +368,7 @@ export class DateUtils {
    * In unit test, DateWrapper is just a number provided in millis, so handles that case.
    * @param dateWrapper The DateWrapper object, or time in millis
    */
-  static getJsDate(dateWrapper: DateWrapper | number): Date {
+  static getJsDate(dateWrapper: DhType.DateWrapper | number): Date {
     if (typeof dateWrapper === 'number') {
       return new Date(dateWrapper);
     }

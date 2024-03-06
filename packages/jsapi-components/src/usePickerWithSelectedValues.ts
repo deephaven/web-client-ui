@@ -1,5 +1,5 @@
 import { Key, useCallback, useMemo, useState } from 'react';
-import type { Table } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import {
   createSearchTextFilter,
   createSelectedValuesFilter,
@@ -25,7 +25,7 @@ import useTableUtils from './useTableUtils';
 import useTableClose from './useTableClose';
 
 export interface UsePickerWithSelectedValuesResult<TItem, TValue> {
-  list: UseViewportDataResult<TItem, Table>;
+  list: UseViewportDataResult<TItem, dh.Table>;
   hasSearchTextWithZeroResults: boolean;
   searchText: string;
   searchTextExists: boolean | null;
@@ -56,7 +56,7 @@ export function usePickerWithSelectedValues<TItem, TValue>({
   filterConditionFactories = [],
   trimSearchText = false,
 }: {
-  maybeTable: Table | null;
+  maybeTable: dh.Table | null;
   columnName: string;
   mapItemToValue: (item: KeyedItem<TItem>) => TValue;
   filterConditionFactories?: FilterConditionFactory[];
@@ -139,7 +139,7 @@ export function usePickerWithSelectedValues<TItem, TValue>({
 
   useTableClose(listTable);
 
-  const list = useViewportData<TItem, Table>({
+  const list = useViewportData<TItem, dh.Table>({
     table: listTable,
     itemHeight: COMBO_BOX_ITEM_HEIGHT,
     viewportSize: VIEWPORT_SIZE,

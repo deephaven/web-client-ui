@@ -24,9 +24,12 @@ export class DecimalColumnFormatter extends TableColumnFormatter<number> {
    * @returns true for valid object
    */
   static isValid(
-    dh: DhType,
+    dh: typeof DhType,
     format: Pick<TableColumnFormat, 'formatString'>
   ): boolean {
+    if (format.formatString == null) {
+      return false;
+    }
     try {
       dh.i18n.NumberFormat.format(format.formatString, 0);
       return true;
@@ -156,10 +159,10 @@ export class DecimalColumnFormatter extends TableColumnFormatter<number> {
 
   defaultFormatString: string;
 
-  dh: DhType;
+  dh: typeof DhType;
 
   constructor(
-    dh: DhType,
+    dh: typeof DhType,
     {
       defaultFormatString = DecimalColumnFormatter.DEFAULT_FORMAT_STRING,
     }: DecimalColumnFormatterOptions = {}

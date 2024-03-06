@@ -36,7 +36,7 @@ export const setUser: PayloadActionCreator<User> = user => ({
   payload: user,
 });
 
-export const setApi: PayloadActionCreator<DhType> = api => ({
+export const setApi: PayloadActionCreator<typeof DhType> = api => ({
   type: SET_API,
   payload: api,
 });

@@ -11,7 +11,6 @@
     { "path": "../golden-layout" },
     { "path": "../iris-grid" },
     { "path": "../log" },
-    { "path": "../jsapi-types" },
     { "path": "../react-hooks" }
   ]
 }

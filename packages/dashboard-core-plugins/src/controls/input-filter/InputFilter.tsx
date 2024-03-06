@@ -13,7 +13,7 @@ import React, {
 import { Button, CardFlip, Select } from '@deephaven/components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsGear } from '@deephaven/icons';
-import type { Column } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import memoizee from 'memoizee';
 import debounce from 'lodash.debounce';
 import Log from '@deephaven/log';
@@ -22,7 +22,7 @@ import './InputFilter.scss';
 const log = Log.module('InputFilter');
 const UPDATE_DEBOUNCE = 150;
 
-export type InputFilterColumn = Pick<Column, 'type' | 'name'>;
+export type InputFilterColumn = Pick<dh.Column, 'type' | 'name'>;
 
 interface InputFilterProps {
   columns: InputFilterColumn[];

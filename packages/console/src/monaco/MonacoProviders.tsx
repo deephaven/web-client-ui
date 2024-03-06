@@ -4,17 +4,13 @@
 import { PureComponent } from 'react';
 import * as monaco from 'monaco-editor';
 import Log from '@deephaven/log';
-import type {
-  DocumentRange,
-  IdeSession,
-  Position,
-} from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 
 const log = Log.module('MonacoCompletionProvider');
 
 interface MonacoProviderProps {
   model: monaco.editor.ITextModel;
-  session: IdeSession;
+  session: dh.IdeSession;
   language: string;
 }
 
@@ -98,7 +94,7 @@ class MonacoProviders extends PureComponent<
    * @param range The LSP document range to convert
    * @returns The corresponding monaco range
    */
-  static lspToMonacoRange(range: DocumentRange): monaco.IRange {
+  static lspToMonacoRange(range: dh.lsp.Range): monaco.IRange {
     const { start, end } = range;
 
     // Monaco expects the columns/ranges to start at 1. LSP starts at 0
@@ -117,7 +113,9 @@ class MonacoProviders extends PureComponent<
    * @param position The monaco position
    * @returns The corresponding LSP position
    */
-  static monacoToLspPosition(position: monaco.IPosition): Position {
+  static monacoToLspPosition(
+    position: monaco.IPosition
+  ): Pick<dh.lsp.Position, 'line' | 'character'> {
     // Monaco 1-indexes Position. LSP 0-indexes Position
     return {
       line: position.lineNumber - 1,
@@ -142,7 +140,7 @@ class MonacoProviders extends PureComponent<
         triggerCharacters: ['.', '"', "'"],
       });
 
-    if (session.getSignatureHelp) {
+    if (session.getSignatureHelp != null) {
       this.registeredSignatureProvider =
         monaco.languages.registerSignatureHelpProvider(language, {
           provideSignatureHelp: this.handleSignatureRequest,
@@ -150,7 +148,7 @@ class MonacoProviders extends PureComponent<
         });
     }
 
-    if (session.getHover) {
+    if (session.getHover != null) {
       this.registeredHoverProvider = monaco.languages.registerHoverProvider(
         language,
         {
@@ -260,7 +258,7 @@ class MonacoProviders extends PureComponent<
     };
 
     const { model: propModel, session } = this.props;
-    if (model !== propModel || !session.getSignatureHelp) {
+    if (model !== propModel || session.getSignatureHelp == null) {
       return null;
     }
 
@@ -324,7 +322,7 @@ class MonacoProviders extends PureComponent<
     position: monaco.Position
   ): monaco.languages.ProviderResult<monaco.languages.Hover> {
     const { model: propModel, session } = this.props;
-    if (model !== propModel || !session.getHover) {
+    if (model !== propModel || session.getHover == null) {
       return null;
     }
 
@@ -345,7 +343,7 @@ class MonacoProviders extends PureComponent<
         const { contents: hoverContents } = hoverItem;
 
         return {
-          contents: hoverContents ? [hoverContents] : [],
+          contents: hoverContents != null ? [hoverContents] : [],
         };
       })
       .catch((error: unknown) => {

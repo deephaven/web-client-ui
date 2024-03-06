@@ -1,10 +1,5 @@
 /* eslint class-methods-use-this: "off" */
-import type {
-  Column,
-  dh as DhType,
-  PartitionedTable,
-  Table,
-} from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
 import { ColumnName } from './CommonTypes';
 import EmptyIrisGridModel from './EmptyIrisGridModel';
@@ -17,7 +12,7 @@ class IrisGridPartitionedTableModel
   extends EmptyIrisGridModel
   implements PartitionedGridModelProvider
 {
-  readonly partitionedTable: PartitionedTable;
+  readonly partitionedTable: DhType.PartitionedTable;
 
   /**
    * @param dh JSAPI instance
@@ -25,8 +20,8 @@ class IrisGridPartitionedTableModel
    * @param formatter The formatter to use when getting formats
    */
   constructor(
-    dh: DhType,
-    partitionedTable: PartitionedTable,
+    dh: typeof DhType,
+    partitionedTable: DhType.PartitionedTable,
     formatter = new Formatter(dh)
   ) {
     super(dh, formatter);
@@ -53,23 +48,23 @@ class IrisGridPartitionedTableModel
     this.partitionedTable.close();
   }
 
-  get columns(): readonly Column[] {
+  get columns(): readonly DhType.Column[] {
     return this.partitionedTable.columns;
   }
 
-  get partitionColumns(): readonly Column[] {
+  get partitionColumns(): readonly DhType.Column[] {
     return this.partitionedTable.keyColumns;
   }
 
-  async partitionKeysTable(): Promise<Table> {
+  async partitionKeysTable(): Promise<DhType.Table> {
     return this.partitionedTable.getKeyTable();
   }
 
-  async partitionMergedTable(): Promise<Table> {
+  async partitionMergedTable(): Promise<DhType.Table> {
     return this.partitionedTable.getMergedTable();
   }
 
-  async partitionTable(partitions: unknown[]): Promise<Table> {
+  async partitionTable(partitions: unknown[]): Promise<DhType.Table> {
     try {
       const table = await this.partitionedTable.getTable(partitions);
       if (table == null) {

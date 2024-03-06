@@ -24,7 +24,7 @@ export type UpdateCallback = (rule?: FormattingRule) => void;
 export type CancelCallback = () => void;
 
 export interface ConditionalFormatEditorProps {
-  dh: DhType;
+  dh: typeof DhType;
   columns: readonly ModelColumn[];
   rule?: FormattingRule;
   onCancel?: CancelCallback;

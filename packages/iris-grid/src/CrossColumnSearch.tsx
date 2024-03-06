@@ -9,11 +9,7 @@ import {
   dhWarningCircleFilled,
   vsCircleLargeFilled,
 } from '@deephaven/icons';
-import type {
-  Column,
-  dh as DhType,
-  FilterCondition,
-} from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import './CrossColumnSearch.scss';
 import { ColumnName } from './CommonTypes';
@@ -39,12 +35,12 @@ class CrossColumnSearch extends PureComponent<
   CrossColumnSearchState
 > {
   static createSearchFilter(
-    dh: DhType,
+    dh: typeof DhType,
     searchValue: string,
     selectedColumns: readonly ColumnName[],
-    columns: readonly Column[],
+    columns: readonly DhType.Column[],
     invertSelection: boolean
-  ): FilterCondition | undefined {
+  ): DhType.FilterCondition | undefined {
     const filterColumns = invertSelection
       ? columns
           .filter(column => !selectedColumns.includes(column.name))

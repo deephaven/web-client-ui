@@ -1,10 +1,6 @@
 import React, { PureComponent, ReactElement, ReactNode } from 'react';
 import classNames from 'classnames';
-import type {
-  dh as DhType,
-  IdeSession,
-  VariableDefinition,
-} from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import { DropdownAction, Tooltip } from '@deephaven/components';
 import { CanceledPromiseError, Pending } from '@deephaven/utils';
 import ConsoleMenu from './ConsoleMenu';
@@ -12,10 +8,10 @@ import './ConsoleStatusBar.scss';
 
 interface ConsoleStatusBarProps {
   children: ReactNode;
-  dh: DhType;
-  session: IdeSession;
-  openObject: (object: VariableDefinition) => void;
-  objects: VariableDefinition[];
+  dh: typeof DhType;
+  session: DhType.IdeSession;
+  openObject: (object: DhType.ide.VariableDefinition) => void;
+  objects: DhType.ide.VariableDefinition[];
   overflowActions: () => DropdownAction[];
 }
 

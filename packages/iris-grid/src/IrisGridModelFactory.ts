@@ -1,9 +1,4 @@
-import type {
-  dh as DhType,
-  Table,
-  TreeTable,
-  PartitionedTable,
-} from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import IrisGridModel from './IrisGridModel';
 import IrisGridProxyModel from './IrisGridProxyModel';
@@ -18,8 +13,8 @@ class IrisGridModelFactory {
    * @returns An IrisGridModel that uses the table provided
    */
   static async makeModel(
-    dh: DhType,
-    table: Table | TreeTable | PartitionedTable,
+    dh: typeof DhType,
+    table: DhType.Table | DhType.TreeTable | DhType.PartitionedTable,
     formatter = new Formatter(dh)
   ): Promise<IrisGridModel> {
     let inputTable = null;

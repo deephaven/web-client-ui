@@ -4,7 +4,7 @@
 import React, { Component, ReactElement, RefObject } from 'react';
 import { LoadingOverlay, ShortcutRegistry } from '@deephaven/components';
 import Log from '@deephaven/log';
-import type { IdeSession } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { assertNotNull } from '@deephaven/utils';
 import type { editor, IDisposable } from 'monaco-editor';
 import Editor from './Editor';
@@ -24,7 +24,7 @@ interface ScriptEditorProps {
   onRunCommand: (command: string) => void;
   onEditorInitialized: (editor: editor.IStandaloneCodeEditor) => void;
   onEditorWillDestroy: (editor: editor.IStandaloneCodeEditor) => void;
-  session: IdeSession | null;
+  session: dh.IdeSession | null;
   sessionLanguage?: string;
   settings?: editor.IStandaloneEditorConstructionOptions;
 }
