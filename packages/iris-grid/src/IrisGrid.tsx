@@ -282,7 +282,7 @@ export interface IrisGridProps {
   onCreateChart: (settings: ChartBuilderSettings, model: IrisGridModel) => void;
   onColumnSelected: (column: DhType.Column) => void;
   onError: (error: unknown) => void;
-  onDataSelected: (index: ModelIndex, map: Record<ColumnName, unknown>) => void;
+  onDataSelected: (index: ModelIndex, map: RowDataMap) => void;
   onStateChange: (irisGridState: IrisGridState, gridState: GridState) => void;
   onAdvancedSettingsChange: AdvancedSettingsMenuCallback;
 
@@ -341,6 +341,10 @@ export interface IrisGridProps {
   canToggleSearch: boolean;
 
   columnHeaderGroups?: readonly ColumnHeaderGroup[];
+
+  // Optional key and mouse handlers
+  keyHandlers: readonly KeyHandler[];
+  mouseHandlers: readonly GridMouseHandler[];
 }
 
 export interface IrisGridState {
@@ -349,8 +353,6 @@ export interface IrisGridState {
   focusedFilterBarColumn: number | null;
   metricCalculator: IrisGridMetricCalculator;
   metrics?: GridMetrics;
-  keyHandlers: readonly KeyHandler[];
-  mouseHandlers: readonly GridMouseHandler[];
 
   partitionConfig?: PartitionConfig;
 
@@ -519,6 +521,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     frozenColumns: null,
     theme: null,
     canToggleSearch: true,
+    mouseHandlers: EMPTY_ARRAY,
+    keyHandlers: EMPTY_ARRAY,
   };
 
   constructor(props: IrisGridProps) {
@@ -754,14 +758,15 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     this.tableUtils = new TableUtils(dh);
 
+    this.mouseHandlers = mouseHandlers;
+    this.keyHandlers = keyHandlers;
+
     this.state = {
       isFilterBarShown,
       isSelectingPartition,
       focusedFilterBarColumn: null,
       metricCalculator,
       metrics: undefined,
-      keyHandlers,
-      mouseHandlers,
 
       partitionConfig:
         partitionConfig ??
@@ -1031,6 +1036,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   contextActions: ContextAction[];
 
   tableUtils: TableUtils;
+
+  keyHandlers: readonly KeyHandler[];
+
+  mouseHandlers: readonly GridMouseHandler[];
 
   get gridWrapper(): HTMLDivElement | null {
     return this.grid?.canvasWrapper.current ?? null;
@@ -1393,6 +1402,26 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     },
     { max: 1 }
   );
+
+  getCachedKeyHandlers = memoize((keyHandlers: readonly KeyHandler[]) =>
+    [...keyHandlers, ...this.keyHandlers].sort((a, b) => a.order - b.order)
+  );
+
+  getKeyHandlers(): readonly KeyHandler[] {
+    const { keyHandlers } = this.props;
+    return this.getCachedKeyHandlers(keyHandlers);
+  }
+
+  getCachedMouseHandlers = memoize(
+    (
+      mouseHandlers: readonly GridMouseHandler[]
+    ): readonly GridMouseHandler[] => [...mouseHandlers, ...this.mouseHandlers]
+  );
+
+  getMouseHandlers(): readonly GridMouseHandler[] {
+    const { mouseHandlers } = this.props;
+    return this.getCachedMouseHandlers(mouseHandlers);
+  }
 
   getValueForCell(
     columnIndex: GridRangeIndex,
@@ -2723,9 +2752,20 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   /**
-   * Select all the data for a given row and notify listener
+   * Get the row data map for a given row and notifies the listener
    */
   selectData(columnIndex: ModelIndex, rowIndex: ModelIndex): void {
+    const dataMap = this.getRowDataMap(rowIndex);
+    const { onDataSelected } = this.props;
+    onDataSelected(rowIndex, dataMap);
+  }
+
+  /**
+   * Get the data map for the given row
+   * @param rowIndex Row to get the data map for
+   * @returns Data map for the row
+   */
+  getRowDataMap(rowIndex: ModelIndex): RowDataMap {
     const { model } = this.props;
     const { columns, groupedColumns } = model;
     const dataMap: RowDataMap = {};
@@ -2747,8 +2787,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         visibleIndex,
       };
     }
-    const { onDataSelected } = this.props;
-    onDataSelected(rowIndex, dataMap);
+    return dataMap;
   }
 
   handleAdvancedFilterChange(
@@ -4042,8 +4081,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       loadingText,
       loadingScrimProgress,
       loadingSpinnerShown,
-      keyHandlers,
-      mouseHandlers,
       shownColumnTooltip,
       hoverAdvancedFilter,
       shownAdvancedFilter,
@@ -4615,8 +4652,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             isStuckToRight={isStuckToRight}
             metricCalculator={metricCalculator}
             model={model}
-            keyHandlers={keyHandlers}
-            mouseHandlers={mouseHandlers}
+            keyHandlers={this.getKeyHandlers()}
+            mouseHandlers={this.getMouseHandlers()}
             movedColumns={movedColumns}
             movedRows={movedRows}
             onError={this.handleGridError}

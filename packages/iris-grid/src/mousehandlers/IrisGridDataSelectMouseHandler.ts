@@ -12,7 +12,7 @@ import type IrisGrid from '../IrisGrid';
  */
 class IrisGridDataSelectMouseHandler extends GridMouseHandler {
   constructor(irisGrid: IrisGrid) {
-    super();
+    super(825);
 
     this.irisGrid = irisGrid;
   }
@@ -27,9 +27,7 @@ class IrisGridDataSelectMouseHandler extends GridMouseHandler {
 
     this.irisGrid.selectData(column, row);
 
-    grid.moveCursorToPosition(column, row);
-
-    return true;
+    return false;
   }
 }
 
