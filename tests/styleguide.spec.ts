@@ -59,9 +59,7 @@ test('UI regression test - Styleguide section count', async ({ page }) => {
     '.sample-section:not(.sample-section-e2e-ignore)'
   );
 
-  await expect(sampleSections).toHaveCount(sampleSectionIds.length, {
-    timeout: 45000,
-  });
+  await expect(sampleSections).toHaveCount(sampleSectionIds.length);
 });
 
 test('UI regression test - Styleguide button section count', async ({
@@ -71,9 +69,7 @@ test('UI regression test - Styleguide button section count', async ({
 
   const buttonSections = await page.locator('[id^="sample-section-buttons-"]');
 
-  await expect(buttonSections).toHaveCount(buttonSectionIds.length, {
-    timeout: 45000,
-  });
+  await expect(buttonSections).toHaveCount(buttonSectionIds.length);
 });
 
 // Iterate over all sample sections and take a screenshot of each one.
@@ -85,8 +81,7 @@ sampleSectionIds.forEach(id => {
     const sampleSection = page.locator(`#${id}`);
 
     await expect(sampleSection).toHaveScreenshot(
-      `${id.replace(/^sample-section-/, '')}.png`,
-      { timeout: 45000 }
+      `${id.replace(/^sample-section-/, '')}.png`
     );
   });
 });
@@ -99,9 +94,7 @@ buttonSectionIds.forEach((id, i) => {
     const sampleSection = page.locator(`#${id}`);
 
     const buttons = sampleSection.locator('button');
-    await expect(buttons, `Button section: '${id}'`).not.toHaveCount(0, {
-      timeout: 45000,
-    });
+    await expect(buttons, `Button section: '${id}'`).not.toHaveCount(0);
 
     const buttonCount = await buttons.count();
 
@@ -156,7 +149,7 @@ test('Inputs regression test', async ({ page }) => {
 
   const columns = page.locator('#sample-section-inputs .col');
 
-  await expect(columns).toHaveCount(7, { timeout: 45000 });
+  await expect(columns).toHaveCount(7);
 
   // Test focus state for each enabled input
   const columnsCount = await columns.count();
