@@ -39,22 +39,12 @@ import {
 } from '@adobe/react-spectrum';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhTruck, vsEmptyWindow } from '@deephaven/icons';
-import {
-  SAMPLE_SECTION_E2E_IGNORE,
-  SPECTRUM_COMPONENT_SAMPLES_ID,
-} from './constants';
-import {
-  sampleSectionIdAndClasses,
-  sampleSectionIdAndClassesSpectrum,
-} from './utils';
+import { SPECTRUM_COMPONENT_SAMPLES_ID } from './constants';
+import { sampleSectionIdAndClassesSpectrum } from './utils';
 
 export function SpectrumComponents(): JSX.Element {
   return (
-    <div
-      {...sampleSectionIdAndClasses(SPECTRUM_COMPONENT_SAMPLES_ID, [
-        SAMPLE_SECTION_E2E_IGNORE,
-      ])}
-    >
+    <div id={SPECTRUM_COMPONENT_SAMPLES_ID}>
       <h2 className="ui-title" data-no-menu>
         Spectrum Components
       </h2>

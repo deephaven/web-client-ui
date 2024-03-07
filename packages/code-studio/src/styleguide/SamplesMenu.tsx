@@ -52,7 +52,7 @@ export function SamplesMenu(): JSX.Element {
     const categories: LinkCategory[] = [currentCategory];
 
     const spectrumComponentsSamples = document.querySelector(
-      `#sample-section-${SPECTRUM_COMPONENT_SAMPLES_ID}`
+      `#${SPECTRUM_COMPONENT_SAMPLES_ID}`
     );
 
     const spectrumComparisonSamples = document.querySelector(
