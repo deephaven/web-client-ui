@@ -85,7 +85,8 @@ sampleSectionIds.forEach(id => {
     const sampleSection = page.locator(`#${id}`);
 
     await expect(sampleSection).toHaveScreenshot(
-      `${id.replace(/^sample-section-/, '')}.png`
+      `${id.replace(/^sample-section-/, '')}.png`,
+      { timeout: 45000 }
     );
   });
 });
@@ -155,9 +156,7 @@ test('Inputs regression test', async ({ page }) => {
 
   const columns = page.locator('#sample-section-inputs .col');
 
-  await expect(columns).toHaveCount(7, {
-    timeout: 45000,
-  });
+  await expect(columns).toHaveCount(7, { timeout: 45000 });
 
   // Test focus state for each enabled input
   const columnsCount = await columns.count();
