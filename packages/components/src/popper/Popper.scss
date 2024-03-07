@@ -59,39 +59,60 @@ $animation-offset: 10px;
   transition: all $transition;
 }
 
-.popper-container[x-placement^='top'] > .popper-transition-enter,
-.popper-container[x-placement^='top'] > .popper-transition-exit {
+.popper-container[x-placement^='top']
+  > .spectrum-theme-provider
+  .popper-transition-enter,
+.popper-container[x-placement^='top']
+  > .spectrum-theme-provider
+  .popper-transition-exit {
   transform: scale($animation-scale) translate(0, $animation-offset);
 }
 
-.popper-container[x-placement^='right'] > .popper-transition-enter,
-.popper-container[x-placement^='right'] > .popper-transition-exit {
+.popper-container[x-placement^='right']
+  > .spectrum-theme-provider
+  .popper-transition-enter,
+.popper-container[x-placement^='right']
+  > .spectrum-theme-provider
+  .popper-transition-exit {
   transform: scale($animation-scale) translate(-$animation-offset, 0);
 }
 
-.popper-container[x-placement^='bottom'] > .popper-transition-enter,
-.popper-container[x-placement^='bottom'] > .popper-transition-exit {
+.popper-container[x-placement^='bottom']
+  > .spectrum-theme-provider
+  .popper-transition-enter,
+.popper-container[x-placement^='bottom']
+  > .spectrum-theme-provider
+  .popper-transition-exit {
   transform: scale($animation-scale) translate(0, -$animation-offset);
 }
 
-.popper-container[x-placement^='left'] > .popper-transition-enter,
-.popper-container[x-placement^='left'] > .popper-transition-exit {
+.popper-container[x-placement^='left']
+  > .spectrum-theme-provider
+  .popper-transition-enter,
+.popper-container[x-placement^='left']
+  > .spectrum-theme-provider
+  .popper-transition-exit {
   transform: scale($animation-scale) translate($animation-offset, 0);
 }
 
-.popper-container[x-placement^='top'] > .popper-transition-enter-active.popper,
+.popper-container[x-placement^='top']
+  > .spectrum-theme-provider
+  .popper-transition-enter-active.popper,
 .popper-container[x-placement^='right']
-  > .popper-transition-enter-active.popper,
+  > .spectrum-theme-provider
+  .popper-transition-enter-active.popper,
 .popper-container[x-placement^='bottom']
-  > .popper-transition-enter-active.popper,
+  > .spectrum-theme-provider
+  .popper-transition-enter-active.popper,
 .popper-container[x-placement^='left']
-  > .popper-transition-enter-active.popper {
+  > .spectrum-theme-provider
+  .popper-transition-enter-active.popper {
   opacity: 1;
   transform: none;
   transition: all $transition ease-out;
 }
 
-.popper-container[x-placement^='top'] > .popper {
+.popper-container[x-placement^='top'] > .spectrum-theme-provider .popper {
   margin-bottom: $arrow-width;
 
   .popper-arrow {
@@ -105,7 +126,7 @@ $animation-offset: 10px;
   }
 }
 
-.popper-container[x-placement^='bottom'] > .popper {
+.popper-container[x-placement^='bottom'] > .spectrum-theme-provider .popper {
   margin-top: $arrow-width;
 
   .popper-arrow {
@@ -119,7 +140,7 @@ $animation-offset: 10px;
   }
 }
 
-.popper-container[x-placement^='right'] > .popper {
+.popper-container[x-placement^='right'] > .spectrum-theme-provider .popper {
   margin-left: $arrow-width;
 
   .popper-arrow {
@@ -133,7 +154,7 @@ $animation-offset: 10px;
   }
 }
 
-.popper-container[x-placement^='left'] > .popper {
+.popper-container[x-placement^='left'] > .spectrum-theme-provider .popper {
   margin-right: $arrow-width;
 
   .popper-arrow {

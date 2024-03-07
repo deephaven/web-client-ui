@@ -245,14 +245,14 @@ class Popper extends Component<PopperProps, PopperState> {
     const { show } = this.state;
 
     return (
-      <CSSTransition
-        in={show}
-        timeout={timeout}
-        classNames="popper-transition"
-        onEntered={this.handleEnter}
-        onExited={this.handleExit}
-      >
-        <SpectrumThemeProvider isPortal>
+      <SpectrumThemeProvider isPortal>
+        <CSSTransition
+          in={show}
+          timeout={timeout}
+          classNames="popper-transition"
+          onEntered={this.handleEnter}
+          onExited={this.handleExit}
+        >
           <div
             onClick={e => {
               // stop click events from escaping popper
@@ -272,8 +272,8 @@ class Popper extends Component<PopperProps, PopperState> {
               <div className="popper-arrow" x-arrow="" />
             </div>
           </div>
-        </SpectrumThemeProvider>
-      </CSSTransition>
+        </CSSTransition>
+      </SpectrumThemeProvider>
     );
   }
 
