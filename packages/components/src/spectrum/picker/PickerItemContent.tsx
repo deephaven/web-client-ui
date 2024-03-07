@@ -1,4 +1,4 @@
-import { cloneElement, isValidElement, ReactNode } from 'react';
+import { Children, cloneElement, isValidElement, ReactNode } from 'react';
 import { Text } from '@adobe/react-spectrum';
 import cl from 'classnames';
 import { isElementOfType } from '@deephaven/react-hooks';
@@ -35,27 +35,16 @@ export function PickerItemContent({
     //   <Text>Some Label</Text>
     //   <Text slot="description">Some Description</Text>
     // </Item>
-    content = content.map((item, i) =>
-      isElementOfType(item, Text)
-        ? cloneElement(item, {
-            ...item.props,
-            // `cloneElement` has the side effect of resetting React's internal
-            // `_store.validated` value to `false on the item. This causes it
-            // to be re-validated as a child in an array when is is rendered,
-            // even if the item was originally provided as an inline child.
-            // Since React expects array children to have explicit keys, this
-            // will show devtools warnings for items that wouldn't usually
-            // require explicit keys. Since we are only cloning `Text` nodes, it
-            // should be reasonable to fallback to a key matching the stringified
-            // content. The index suffix is an extra precation for when 2 <Text>
-            // nodes have the same value.
-            key: item.key ?? `${item.props.children}_${i}`,
+    content = Children.map(content, (el, i) =>
+      isElementOfType(el, Text)
+        ? cloneElement(el, {
+            ...el.props,
             UNSAFE_className: cl(
-              item.props.UNSAFE_className,
+              el.props.UNSAFE_className,
               stylesCommon.spectrumEllipsis
             ),
           })
-        : item
+        : el
     );
   }
   /* eslint-enable no-param-reassign */

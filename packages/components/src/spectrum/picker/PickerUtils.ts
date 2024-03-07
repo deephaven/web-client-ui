@@ -118,7 +118,7 @@ export function isNormalizedPickerSection(
 /**
  * Determine the `key` of a picker item or section.
  * @param itemOrSection The picker item or section
- * @returns A `PickerItemKey` for the picker item
+ * @returns A `PickerItemKey` for the picker item or undefined if a key can't be determined
  */
 function normalizeItemKey(item: PickerItem): PickerItemKey | undefined;
 function normalizeItemKey(section: PickerSection): Key | undefined;
