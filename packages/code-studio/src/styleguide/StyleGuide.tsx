@@ -104,6 +104,7 @@ function StyleGuide(): React.ReactElement {
         <Buttons />
         <Progress />
         <Inputs />
+        <Pickers />
         <ItemListInputs />
         <DraggableLists />
         <TimeSliderInputs />
@@ -112,7 +113,6 @@ function StyleGuide(): React.ReactElement {
         <ContextMenus />
         <DropdownMenus />
         <Navigations />
-        <Pickers />
         <Tooltips />
         <Icons />
         <Editors />

@@ -56,7 +56,7 @@ export function SamplesMenu(): JSX.Element {
     );
 
     const spectrumComparisonSamples = document.querySelector(
-      `#${SPECTRUM_COMPARISON_SAMPLES_ID}`
+      `#sample-section-${SPECTRUM_COMPARISON_SAMPLES_ID}`
     );
 
     document
