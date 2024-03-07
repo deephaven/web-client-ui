@@ -25,6 +25,8 @@ import ThemeExport from '../ThemeExport';
 import './Popper.scss';
 import { SpectrumThemeProvider } from '../theme/SpectrumThemeProvider';
 
+const POPPER_CLASS_NAME = 'popper';
+
 interface PopperProps {
   options: PopperOptions;
   className: string;
@@ -167,12 +169,17 @@ class Popper extends Component<PopperProps, PopperState> {
     // delayed due to scheduleUpdate
     cancelAnimationFrame(this.rAF);
     this.rAF = window.requestAnimationFrame(() => {
-      // for blur on close to work, focus needs to be on or within the popper
-      if (closeOnBlur && !this.element.contains(document.activeElement)) {
-        // only set focus, if a focus isn't already set within
-        const elem = this.element.firstElementChild;
-        if (elem instanceof HTMLElement) {
-          elem.focus(); // first child of the portal element
+      // If the current focus is not on the .popper or one of its descendants,
+      // set the focus to the .popper element. This is necessary for close on
+      // blur to work.
+      if (closeOnBlur) {
+        const popperEl = this.element.querySelector(`.${POPPER_CLASS_NAME}`);
+
+        if (
+          popperEl instanceof HTMLElement &&
+          !popperEl.contains(document.activeElement)
+        ) {
+          popperEl.focus();
         }
       }
     });
@@ -261,7 +268,11 @@ class Popper extends Component<PopperProps, PopperState> {
             onKeyDown={e => {
               if (e.key === 'Escape') this.hide();
             }}
-            className={classNames('popper', { interactive }, className)}
+            className={classNames(
+              POPPER_CLASS_NAME,
+              { interactive },
+              className
+            )}
             onBlur={closeOnBlur ? this.handleBlur : undefined}
             tabIndex={closeOnBlur ? -1 : undefined}
             role="presentation"
