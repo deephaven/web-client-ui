@@ -57,12 +57,22 @@ export function Pickers(): JSX.Element {
               <Text>Complex Ccc</Text>
             </Item>
           </Section>
-          <Section>
+          <Section key="Key B">
             <Item>Item Ddd</Item>
             <Item>Item Eee</Item>
             <Item textValue="Complex Fff">
               <PersonIcon />
               <Text>Complex Fff</Text>
+            </Item>
+            <Item key="Ggg">
+              <PersonIcon />
+              <Text>Label</Text>
+              <Text slot="description">Description</Text>
+            </Item>
+            <Item key="Hhh">
+              <PersonIcon />
+              <Text>Label that causes overflow</Text>
+              <Text slot="description">Description that causes overflow</Text>
             </Item>
           </Section>
         </Picker>

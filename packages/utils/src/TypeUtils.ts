@@ -1,3 +1,5 @@
+import type { Component, FunctionComponent } from 'react';
+
 /**
  * Util type to create a "subtype" of T. Useful for creating subsets of union
  * types.
@@ -12,6 +14,15 @@
  * type NotDirection = Extends<Direction, 'blah'>
  */
 export type Extends<T, U extends T> = U extends T ? U : never;
+
+/**
+ * Extracts the props type from a React component type.
+ */
+export type InferComponentProps<T> = T extends FunctionComponent<infer P>
+  ? P
+  : T extends Component<infer P>
+  ? P
+  : never;
 
 /**
  * Derives a union type where all constituents define 1 property of the original

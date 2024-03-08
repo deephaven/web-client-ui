@@ -1,5 +1,6 @@
-import { Key, useCallback, useMemo } from 'react';
-import { Picker as SpectrumPicker } from '@adobe/react-spectrum';
+import { Key, ReactNode, useCallback, useMemo } from 'react';
+import { Flex, Picker as SpectrumPicker, Text } from '@adobe/react-spectrum';
+import { isElementOfType } from '@deephaven/react-hooks';
 import cl from 'classnames';
 import { Tooltip } from '../../popper';
 import {
@@ -51,6 +52,26 @@ export type PickerProps = {
 >;
 
 /**
+ * Create tooltip content optionally wrapping with a Flex column for array
+ * content. This is needed for Items containing description `Text` elements.
+ */
+function createTooltipContent(content: ReactNode) {
+  if (typeof content === 'boolean') {
+    return String(content);
+  }
+
+  if (Array.isArray(content)) {
+    return (
+      <Flex direction="column" alignItems="start">
+        {content.filter(node => isElementOfType(node, Text))}
+      </Flex>
+    );
+  }
+
+  return content;
+}
+
+/**
  * Picker component for selecting items from a list of items. Items can be
  * provided via the `items` prop or as children. Each item can be a string,
  * number, boolean, or a Spectrum <Item> element. The remaining props are just
@@ -84,11 +105,14 @@ export function Picker({
       // elements that back the Spectrum Picker. These are not visible in the UI,
       // but are used for accessibility purposes, so we set to an arbitrary
       // 'Empty' value so that they are not empty strings.
-      <Item key={key as Key} textValue={textValue === '' ? 'Empty' : textValue}>
+      <Item
+        key={key as Key}
+        textValue={textValue === '' || textValue == null ? 'Empty' : textValue}
+      >
         <PickerItemContent>{content}</PickerItemContent>
         {tooltipOptions == null || content === '' ? null : (
           <Tooltip options={tooltipOptions}>
-            {typeof content === 'boolean' ? String(content) : content}
+            {createTooltipContent(content)}
           </Tooltip>
         )}
       </Item>
