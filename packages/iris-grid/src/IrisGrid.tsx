@@ -3756,6 +3756,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       }
 
       const { expandTooltipDisplayValue } = this.state;
+      const { model } = this.props;
+      const isExpandAllAvailable =
+        isExpandableGridModel(model) && model.isExpandAllAvailable;
 
       const wrapperStyle: CSSProperties = {
         position: 'absolute',
@@ -3776,9 +3779,13 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           >
             <div style={{ textAlign: 'left' }}>
               Click to {expandTooltipDisplayValue} row
-              <br />
-              {ContextActionUtils.isMacPlatform() ? '⌘' : 'Ctrl+'}Click to
-              expand row and all children
+              {isExpandAllAvailable && (
+                <>
+                  <br />
+                  {ContextActionUtils.isMacPlatform() ? '⌘' : 'Ctrl+'}Click to
+                  expand row and all children
+                </>
+              )}
             </div>
           </Tooltip>
         </div>
