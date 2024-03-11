@@ -577,13 +577,7 @@ export class AppMainContainer extends Component<
     try {
       const { workspace } = this.props;
       const { data } = workspace;
-      const exportedConfig = UserLayoutUtils.exportLayout(
-        data as {
-          filterSets: FilterSet[];
-          links: Link[];
-          layoutConfig: ItemConfigType[];
-        }
-      );
+      const exportedConfig = UserLayoutUtils.exportLayout(data);
 
       log.info('handleExportLayoutClick exportedConfig', exportedConfig);
 
@@ -658,13 +652,14 @@ export class AppMainContainer extends Component<
       const { updateDashboardData, updateWorkspaceData } = this.props;
       const fileText = await file.text();
       const exportedLayout = JSON.parse(fileText);
-      const { filterSets, layoutConfig, links } =
+      const { filterSets, layoutConfig, links, pluginDataMap } =
         UserLayoutUtils.normalizeLayout(exportedLayout);
 
       updateWorkspaceData({ layoutConfig });
       updateDashboardData(DEFAULT_DASHBOARD_ID, {
         filterSets,
         links,
+        pluginDataMap,
       });
     } catch (e) {
       log.error('Unable to import layout', e);
