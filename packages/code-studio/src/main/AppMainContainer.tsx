@@ -50,8 +50,6 @@ import {
   getDashboardSessionWrapper,
   ControlType,
   ToolType,
-  FilterSet,
-  Link,
   getDashboardConnection,
   NotebookPanel,
 } from '@deephaven/dashboard-core-plugins';
@@ -155,6 +153,9 @@ interface AppMainContainerState {
   widgets: DhType.ide.VariableDefinition[];
   tabs: NavTabItem[];
   activeTabKey: string;
+
+  // Number of times the layout has been re-initialized
+  layoutIteration: number;
 }
 
 export class AppMainContainer extends Component<
@@ -255,6 +256,7 @@ export class AppMainContainer extends Component<
           title: value.title ?? 'Untitled',
         })),
       activeTabKey: DEFAULT_DASHBOARD_ID,
+      layoutIteration: 0,
     };
   }
 
@@ -661,6 +663,9 @@ export class AppMainContainer extends Component<
         links,
         pluginDataMap,
       });
+      this.setState(({ layoutIteration }) => ({
+        layoutIteration: layoutIteration + 1,
+      }));
     } catch (e) {
       log.error('Unable to import layout', e);
     }
@@ -827,8 +832,9 @@ export class AppMainContainer extends Component<
   getDashboards(): {
     id: string;
     layoutConfig: ItemConfigType[];
+    key?: string;
   }[] {
-    const { tabs } = this.state;
+    const { layoutIteration, tabs } = this.state;
     const { allDashboardData, workspace } = this.props;
     const { data: workspaceData } = workspace;
     const { layoutConfig } = workspaceData;
@@ -837,6 +843,7 @@ export class AppMainContainer extends Component<
       {
         id: DEFAULT_DASHBOARD_ID,
         layoutConfig: layoutConfig as ItemConfigType[],
+        key: `${DEFAULT_DASHBOARD_ID}|${layoutIteration}`,
       },
       ...tabs.map(tab => ({
         id: tab.key,
