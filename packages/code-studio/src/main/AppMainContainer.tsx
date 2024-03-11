@@ -843,7 +843,7 @@ export class AppMainContainer extends Component<
       {
         id: DEFAULT_DASHBOARD_ID,
         layoutConfig: layoutConfig as ItemConfigType[],
-        key: `${DEFAULT_DASHBOARD_ID}|${layoutIteration}`,
+        key: `${DEFAULT_DASHBOARD_ID}-${layoutIteration}`,
       },
       ...tabs.map(tab => ({
         id: tab.key,
