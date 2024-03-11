@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import { Provider } from 'react-redux';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { ConnectionContext } from '@deephaven/app-utils';
 import { ToolType } from '@deephaven/dashboard-core-plugins';
 import {
@@ -112,8 +112,17 @@ function renderAppMainContainer({
     </Provider>
   );
 }
+
+const EMPTY_LAYOUT = {
+  filterSets: [],
+  layoutConfig: [],
+  links: [],
+  version: 2,
+};
+
 let mockProp = {};
 let mockId = DEFAULT_DASHBOARD_ID;
+let mockIteration = 0;
 jest.mock('@deephaven/dashboard', () => ({
   ...jest.requireActual('@deephaven/dashboard'),
   __esModule: true,
@@ -122,7 +131,14 @@ jest.mock('@deephaven/dashboard', () => ({
     if (result.fetch != null) {
       result.fetch();
     }
-    return <p>{JSON.stringify(result)}</p>;
+    const key = `${mockIteration}`;
+    mockIteration += 1;
+    return (
+      <>
+        <p>{JSON.stringify(result)}</p>
+        <p data-testid="dashboard-key">{key}</p>
+      </>
+    );
   }),
   default: jest.fn(),
 }));
@@ -136,6 +152,7 @@ beforeEach(() => {
     cb(0);
     return 0;
   });
+  mockProp = {};
 });
 
 afterEach(() => {
@@ -239,5 +256,34 @@ describe('hydrates widgets correctly', () => {
       )
     ).toBeTruthy();
     expect(objectFetcher).toHaveBeenCalled();
+  });
+});
+
+describe('imports layout correctly', () => {
+  it('uses a new key when layout is imported', async () => {
+    renderAppMainContainer();
+
+    expect(screen.getByText('{"localDashboardId":"default"}')).toBeTruthy();
+
+    const oldKey = screen.getByTestId('dashboard-key').textContent ?? '';
+    expect(oldKey.length).not.toBe(0);
+
+    const importInput = screen.getByTestId('btn-import-layout');
+    await act(async () => {
+      const text = JSON.stringify(EMPTY_LAYOUT);
+      const file = TestUtils.createMockProxy<File>({
+        text: () => Promise.resolve(text),
+        name: 'layout.json',
+        type: 'application/json',
+      });
+      await userEvent.upload(importInput, file);
+    });
+
+    expect(screen.getByText('{"localDashboardId":"default"}')).toBeTruthy();
+
+    const newKey = screen.getByTestId('dashboard-key').textContent ?? '';
+
+    expect(newKey.length).not.toBe(0);
+    expect(newKey).not.toBe(oldKey);
   });
 });

@@ -1021,6 +1021,7 @@ export class AppMainContainer extends Component<
           accept=".json"
           style={{ display: 'none' }}
           onChange={this.handleImportLayoutFiles}
+          data-testid="btn-import-layout"
         />
         <DebouncedModal
           isOpen={isDisconnected && !isAuthFailed}
