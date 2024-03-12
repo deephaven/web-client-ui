@@ -13,8 +13,18 @@ npm install --save @deephaven/components
 Then, import and use the components from the package:
 
 ```
-import { Button } from '@deephaven/components';
+import React from "react";
+import ReactDOM from "react-dom";
+import { Button, ThemeProvider } from "@deephaven/components";
+import "@deephaven/components/scss/BaseStyleSheet.scss";
 
-<Button kind="primary">Hello</Button>
+ReactDOM.render(
+  <React.StrictMode>
+    <ThemeProvider themes={[]}>
+      <Button kind="primary">Hello</Button>
+    </ThemeProvider>
+  </React.StrictMode>,
+  document.getElementById("root")
+);
 
 ```
