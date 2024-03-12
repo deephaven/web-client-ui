@@ -386,7 +386,7 @@ const GotoRow = forwardRef<GotoRowElement, GotoRowProps>(
 
                 <div>
                   <Button
-                    tooltip="Next match"
+                    tooltip="Previous match"
                     icon={vsArrowUp}
                     kind="ghost"
                     disabled={gotoValue === ''}
@@ -395,7 +395,7 @@ const GotoRow = forwardRef<GotoRowElement, GotoRowProps>(
                     }}
                   />
                   <Button
-                    tooltip="Previous match"
+                    tooltip="Next match"
                     icon={vsArrowDown}
                     kind="ghost"
                     disabled={gotoValue === ''}
