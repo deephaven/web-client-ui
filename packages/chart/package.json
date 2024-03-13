@@ -44,7 +44,7 @@
     "react-plotly.js": "^2.6.0"
   },
   "peerDependencies": {
-    "react": "^17.x"
+    "react": ">=16.8.0"
   },
   "devDependencies": {
     "@deephaven/jsapi-shim": "file:../jsapi-shim",
