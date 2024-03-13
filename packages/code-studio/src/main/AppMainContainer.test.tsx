@@ -127,12 +127,18 @@ jest.mock('@deephaven/dashboard', () => ({
   ...jest.requireActual('@deephaven/dashboard'),
   __esModule: true,
   LazyDashboard: jest.fn(({ hydrate }) => {
+    const { useMemo } = jest.requireActual('react');
+    // We use the `key` to determine how many times this LazyDashboard component was re-rendered with a new key
+    // When rendered with a new key, the `useMemo` will be useless and will return a new key
+    const key = useMemo(() => {
+      const newKey = `${mockIteration}`;
+      mockIteration += 1;
+      return newKey;
+    }, []);
     const result = hydrate(mockProp, mockId);
     if (result.fetch != null) {
       result.fetch();
     }
-    const key = `${mockIteration}`;
-    mockIteration += 1;
     return (
       <>
         <p>{JSON.stringify(result)}</p>
@@ -153,6 +159,7 @@ beforeEach(() => {
     return 0;
   });
   mockProp = {};
+  mockIteration = 0;
 });
 
 afterEach(() => {
@@ -268,7 +275,6 @@ describe('imports layout correctly', () => {
     const oldKey = screen.getByTestId('dashboard-key').textContent ?? '';
     expect(oldKey.length).not.toBe(0);
 
-    const importInput = screen.getByTestId('btn-import-layout');
     await act(async () => {
       const text = JSON.stringify(EMPTY_LAYOUT);
       const file = TestUtils.createMockProxy<File>({
@@ -276,6 +282,11 @@ describe('imports layout correctly', () => {
         name: 'layout.json',
         type: 'application/json',
       });
+
+      // Technically, the "Import Layout" button in the panels list is what the user clicks on to show the file picker
+      // However, the testing library uses the `.upload` command on the `input` element directly, which we don't display
+      // So just fetch it by testid and use the `.upload` command: https://testing-library.com/docs/user-event/utility/#upload
+      const importInput = screen.getByTestId('btn-import-layout');
       await userEvent.upload(importInput, file);
     });
 

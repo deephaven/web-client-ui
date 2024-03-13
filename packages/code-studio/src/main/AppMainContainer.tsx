@@ -849,6 +849,7 @@ export class AppMainContainer extends Component<
         id: tab.key,
         layoutConfig: (allDashboardData[tab.key]?.layoutConfig ??
           EMPTY_ARRAY) as ItemConfigType[],
+        key: `${tab.key}-${layoutIteration}`,
       })),
     ];
   }
