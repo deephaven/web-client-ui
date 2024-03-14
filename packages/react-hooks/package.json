@@ -28,7 +28,7 @@
     "shortid": "^2.2.16"
   },
   "peerDependencies": {
-    "react": "^17.x"
+    "react": ">=16.8.0"
   },
   "files": [
     "dist"

@@ -31,7 +31,7 @@
     "pouchdb-find": "^7.3.0"
   },
   "peerDependencies": {
-    "react": "^17.x"
+    "react": ">=16.8.0"
   },
   "files": [
     "dist"
