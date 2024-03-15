@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en">
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+
+    <script>
+      // Needs to be in JS so we can keep the search params
+      const url = new URL(window.location);
+      url.pathname = '/iframe/';
+      window.location.replace(url);
+    </script>
+  </body>
+</html>
