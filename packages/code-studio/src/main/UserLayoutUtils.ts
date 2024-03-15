@@ -2,12 +2,10 @@ import {
   CommandHistoryPanel,
   ConsolePanel,
   FileExplorerPanel,
-  FilterSet,
-  Link,
   LogPanel,
 } from '@deephaven/dashboard-core-plugins';
-import type { ItemConfigType } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
+import { CustomizableWorkspaceData } from '@deephaven/redux';
 import LayoutStorage, {
   ExportedLayout,
   ExportedLayoutV2,
@@ -137,16 +135,18 @@ export async function getDefaultLayout(
     : DEFAULT_LAYOUT_CONFIG_NO_CONSOLE;
 }
 
-export function exportLayout(data: {
-  filterSets: FilterSet[];
-  links: Link[];
-  layoutConfig: ItemConfigType[];
-}): ExportedLayoutV2 {
-  const { filterSets, layoutConfig, links } = data;
+export function exportLayout(
+  data: CustomizableWorkspaceData
+): ExportedLayoutV2 {
+  const { filterSets, layoutConfig, links, pluginDataMap } = data as Omit<
+    ExportedLayoutV2,
+    'version'
+  >;
   const exportedLayout: ExportedLayoutV2 = {
     filterSets,
     layoutConfig,
     links,
+    pluginDataMap,
     version: 2,
   };
   return exportedLayout;

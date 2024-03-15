@@ -18,6 +18,7 @@ interface AppDashboardsProps {
   dashboards: {
     id: string;
     layoutConfig: ItemConfigType[];
+    key?: string;
   }[];
   activeDashboard: string;
   onGoldenLayoutChange: (goldenLayout: LayoutManager) => void;
@@ -65,6 +66,7 @@ export function AppDashboards({
         >
           <LazyDashboard
             id={d.id}
+            key={d.key}
             isActive={d.id === activeDashboard}
             emptyDashboard={
               d.id === DEFAULT_DASHBOARD_ID ? (
