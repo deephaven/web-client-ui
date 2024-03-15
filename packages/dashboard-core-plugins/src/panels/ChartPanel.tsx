@@ -28,7 +28,7 @@ import {
   TableSettings,
 } from '@deephaven/iris-grid';
 import type { dh } from '@deephaven/jsapi-types';
-import { ThemeExport } from '@deephaven/components';
+import { FadeTransition, ThemeExport } from '@deephaven/components';
 import Log from '@deephaven/log';
 import {
   getActiveTool,
@@ -1122,10 +1122,8 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
               />
             )}
           </div>
-          <CSSTransition
+          <FadeTransition
             in={isWaitingForFilter && !isSelectingColumn && !isLoading}
-            timeout={ThemeExport.transitionMs}
-            classNames="fade"
             mountOnEnter
             unmountOnExit
           >
@@ -1138,14 +1136,8 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
               waitingFilterMap={waitingFilterMap}
               waitingInputMap={waitingInputMap}
             />
-          </CSSTransition>
-          <CSSTransition
-            in={isSelectingColumn}
-            timeout={ThemeExport.transitionMs}
-            classNames="fade"
-            mountOnEnter
-            unmountOnExit
-          >
+          </FadeTransition>
+          <FadeTransition in={isSelectingColumn} mountOnEnter unmountOnExit>
             <ChartColumnSelectorOverlay
               columns={this.getSelectorColumns(
                 columnMap,
@@ -1156,7 +1148,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
               onMouseEnter={this.handleColumnMouseEnter}
               onMouseLeave={this.handleColumnMouseLeave}
             />
-          </CSSTransition>
+          </FadeTransition>
         </div>
       </WidgetPanel>
     );

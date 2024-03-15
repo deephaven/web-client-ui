@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { CSSTransition } from 'react-transition-group';
 import { usePrevious } from '@deephaven/react-hooks';
 import ThemeExport from '../ThemeExport';
 import './Stack.scss';
+import { SlideTransition } from '../transitions';
 
 export type StackProps = {
   children: React.ReactNode | React.ReactNode[];
@@ -88,10 +88,9 @@ export function Stack({
         {mainView}
       </div>
 
-      <CSSTransition
+      <SlideTransition
+        direction="right"
         in={poppingView != null}
-        timeout={ThemeExport.transitionMidMs}
-        classNames="slide-right"
         onEntered={popComplete}
       >
         {/* Without the fragment, the transition doesn't work. Without the conditional render, the stack is blank */}
@@ -101,11 +100,10 @@ export function Stack({
             <div className="popping-view">{poppingView}</div>
           )}
         </>
-      </CSSTransition>
-      <CSSTransition
+      </SlideTransition>
+      <SlideTransition
+        direction="left"
         in={pushingView != null}
-        timeout={ThemeExport.transitionMidMs}
-        classNames="slide-left"
         onEntered={pushComplete}
       >
         {/* eslint-disable-next-line react/jsx-no-useless-fragment */}
@@ -114,7 +112,7 @@ export function Stack({
             <div className="pushing-view">{pushingView}</div>
           )}
         </>
-      </CSSTransition>
+      </SlideTransition>
     </div>
   );
 }
