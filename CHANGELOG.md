@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.69.1](https://github.com/deephaven/web-client-ui/compare/v0.69.0...v0.69.1) (2024-03-15)
+
+
+### Bug Fixes
+
+* Loading workspace plugin data ([#1872](https://github.com/deephaven/web-client-ui/issues/1872)) ([1def969](https://github.com/deephaven/web-client-ui/commit/1def969d81b4209df1e06cd99c0d5afc71d14844))
+
+
+
+
+
 # [0.69.0](https://github.com/deephaven/web-client-ui/compare/v0.68.0...v0.69.0) (2024-03-15)
 
 
