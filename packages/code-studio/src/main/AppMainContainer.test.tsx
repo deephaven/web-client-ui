@@ -286,7 +286,7 @@ describe('imports layout correctly', () => {
       // Technically, the "Import Layout" button in the panels list is what the user clicks on to show the file picker
       // However, the testing library uses the `.upload` command on the `input` element directly, which we don't display
       // So just fetch it by testid and use the `.upload` command: https://testing-library.com/docs/user-event/utility/#upload
-      const importInput = screen.getByTestId('btn-import-layout');
+      const importInput = screen.getByTestId('input-import-layout');
       await userEvent.upload(importInput, file);
     });
 
