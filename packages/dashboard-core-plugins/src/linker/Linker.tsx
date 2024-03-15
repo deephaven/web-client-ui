@@ -2,7 +2,7 @@ import React, { Component, ErrorInfo } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import shortid from 'shortid';
 import memoize from 'memoize-one';
-import { FadeTransition, ThemeExport } from '@deephaven/components';
+import { FadeTransition } from '@deephaven/components';
 import {
   LayoutUtils,
   PanelComponent,

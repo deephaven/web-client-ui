@@ -52,7 +52,6 @@
     "memoizee": "^0.4.15",
     "prop-types": "^15.7.2",
     "react-markdown": "^8.0.7",
-    "react-transition-group": "^4.4.2",
     "redux": "^4.2.0",
     "redux-thunk": "^2.4.1",
     "rehype-mathjax": "^4.0.3",

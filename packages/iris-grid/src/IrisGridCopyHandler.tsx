@@ -1,12 +1,6 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
-import { CSSTransition } from 'react-transition-group';
-import {
-  Button,
-  FadeTransition,
-  LoadingSpinner,
-  ThemeExport,
-} from '@deephaven/components';
+import { Button, FadeTransition, LoadingSpinner } from '@deephaven/components';
 import {
   GridRange,
   GridUtils,

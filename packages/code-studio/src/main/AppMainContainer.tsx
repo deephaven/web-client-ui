@@ -999,12 +999,7 @@ export class AppMainContainer extends Component<
             ...dashboardPlugins,
           ]}
         />
-        <SlideTransition
-          direction="left"
-          in={isSettingsMenuShown}
-          mountOnEnter
-          unmountOnExit
-        >
+        <SlideTransition in={isSettingsMenuShown} mountOnEnter unmountOnExit>
           <SettingsMenu
             serverConfigValues={serverConfigValues}
             onDone={this.handleSettingsMenuHide}

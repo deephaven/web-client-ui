@@ -10,12 +10,7 @@ import memoize from 'memoizee';
 import { TransitionGroup } from 'react-transition-group';
 import debounce from 'lodash.debounce';
 import classNames from 'classnames';
-import {
-  Button,
-  FadeTransition,
-  Select,
-  ThemeExport,
-} from '@deephaven/components';
+import { Button, FadeTransition, Select } from '@deephaven/components';
 import {
   DateTimeColumnFormatter,
   IntegerColumnFormatter,

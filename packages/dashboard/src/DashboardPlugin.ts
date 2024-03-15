@@ -63,6 +63,7 @@ export type PanelMetadata = Partial<WidgetDescriptor>;
 
 export type PanelProps = GLPanelProps & {
   metadata?: PanelMetadata;
+  panelState?: unknown;
 };
 
 export type DehydratedPanelProps = Omit<PanelProps, keyof GLPanelProps>;
@@ -80,6 +81,12 @@ export type PanelComponent<T extends PanelProps = PanelProps> =
 
 export type PanelConfig = ReactComponentConfig & {
   componentState?: Record<string, unknown> | null;
+};
+
+export type DehydratedPanelConfig = PanelConfig & {
+  componentState: null;
+  props: DehydratedPanelProps;
+  type: 'react-component';
 };
 
 export type DashboardConfig = {

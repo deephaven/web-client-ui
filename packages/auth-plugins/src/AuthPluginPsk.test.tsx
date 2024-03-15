@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import Cookies from 'js-cookie';
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -18,6 +18,17 @@ jest.mock('@deephaven/jsapi-components', () => ({
     mockOnBroadcastLogin = onLogin;
     mockOnBroadcastLogout = onLogout;
   }),
+}));
+
+jest.mock('@deephaven/components', () => ({
+  ...jest.requireActual('@deephaven/components'),
+  FadeTransition: ({
+    children,
+    in: inProp,
+  }: {
+    children: ReactNode;
+    in: boolean;
+  }) => (inProp ? children : null),
 }));
 
 jest.mock('js-cookie');

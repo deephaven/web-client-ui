@@ -2,7 +2,6 @@ import React, { Component, ReactElement, RefObject } from 'react';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
 import { connect } from 'react-redux';
-import { CSSTransition } from 'react-transition-group';
 import debounce from 'lodash.debounce';
 import {
   Chart,
@@ -28,7 +27,7 @@ import {
   TableSettings,
 } from '@deephaven/iris-grid';
 import type { dh } from '@deephaven/jsapi-types';
-import { FadeTransition, ThemeExport } from '@deephaven/components';
+import { FadeTransition } from '@deephaven/components';
 import Log from '@deephaven/log';
 import {
   getActiveTool,

@@ -18,18 +18,23 @@ type SlideTransitionProps<Ref extends undefined | HTMLElement = undefined> =
     addEndHandler?: EndHandler<Ref> | undefined;
   } & {
     /**
-     * The direction of the slide transition.
+     * The direction of the slide transition. Defaults to left.
      */
-    direction: SlideDirection;
+    direction?: SlideDirection;
+
+    timeout?: number;
   };
 
 /**
- * Slides one component overtop of another component in the direction specified.
+ * Slides one component overtop of another component.
+ * Defaults to sliding left, unless `direction='right'` is provided.
  * Timeout defaults to 200ms.
  */
 function SlideTransition({
-  direction,
+  direction = 'left',
   className,
+
+  /** Default sto mid */
   timeout = ThemeExport.transitionMidMs,
   ...props
 }: SlideTransitionProps): JSX.Element {

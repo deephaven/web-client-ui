@@ -1,6 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import classNames from 'classnames';
-import { CSSTransition } from 'react-transition-group';
 import {
   Button,
   Checkbox,

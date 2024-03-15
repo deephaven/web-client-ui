@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { usePrevious } from '@deephaven/react-hooks';
-import ThemeExport from '../ThemeExport';
 import './Stack.scss';
 import { SlideTransition } from '../transitions';
 
@@ -101,11 +100,7 @@ export function Stack({
           )}
         </>
       </SlideTransition>
-      <SlideTransition
-        direction="left"
-        in={pushingView != null}
-        onEntered={pushComplete}
-      >
+      <SlideTransition in={pushingView != null} onEntered={pushComplete}>
         {/* eslint-disable-next-line react/jsx-no-useless-fragment */}
         <>
           {pushingView != null && (

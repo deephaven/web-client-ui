@@ -1,6 +1,7 @@
 import { ForwardRef } from 'react-is';
 import {
   DehydratedDashboardPanelProps,
+  DehydratedPanelConfig,
   isWrappedComponent,
   PanelComponentType,
   PanelConfig,
@@ -13,7 +14,7 @@ import {
  * @param config The panel config to dehydrate
  * @returns The dehydrated PanelConfig
  */
-export function dehydrate(config: PanelConfig): PanelConfig | null {
+export function dehydrate(config: PanelConfig): DehydratedPanelConfig {
   const { props, componentState } = config;
   const { metadata } = props;
   let { panelState = null } = props;
