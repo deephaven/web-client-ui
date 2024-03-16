@@ -23,7 +23,7 @@ jobs:
       - name: Check installed fonts
         run: 'fc-list : family'
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Run core server:${{ env.DOCKER_TAG }}
         run: |
@@ -31,14 +31,14 @@ jobs:
           docker run --detach --publish 10000:10000 --name dh-core-server -v ./tests/docker-scripts/data:/data --env "START_OPTS=-Xmx4g -DAuthHandlers=io.deephaven.auth.AnonymousAuthenticationHandler -Ddeephaven.application.dir=./data/app.d" ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
 
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
 
       - name: Cache node modules
         id: cache-node-modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             node_modules
@@ -62,7 +62,7 @@ jobs:
         run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright test --config=playwright-ci.config.ts
 
       - name: Upload Playwright report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: playwright-report
@@ -73,7 +73,7 @@ jobs:
         run: docker logs dh-core-server > /tmp/server-log.txt
       - name: Upload server logs
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: server-logs
           path: /tmp/server-log.txt
