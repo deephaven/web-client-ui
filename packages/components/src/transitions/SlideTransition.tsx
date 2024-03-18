@@ -34,7 +34,7 @@ function SlideTransition({
   direction = 'left',
   className,
 
-  /** Default sto mid */
+  /** Defaults to mid */
   timeout = ThemeExport.transitionMidMs,
   ...props
 }: SlideTransitionProps): JSX.Element {
