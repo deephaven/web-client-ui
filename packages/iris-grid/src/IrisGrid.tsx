@@ -4823,7 +4823,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         </div>
         <SlideTransition
           in={isMenuShown}
-          timeout={ThemeExport.transitionMidMs}
           onEntering={this.handleAnimationStart}
           onEntered={this.handleAnimationEnd}
           onExiting={this.handleAnimationStart}
