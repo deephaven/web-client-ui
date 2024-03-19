@@ -6,6 +6,41 @@ import { logHistory } from './LogInit';
 
 const FILENAME_DATE_FORMAT = 'yyyy-MM-dd-HHmmss';
 
+// Blacklist applies to all keys (e.g. blacklist foo will blacklist foo, a.foo, and b.foo)
+const KEY_BLACKLIST: string[] = ['client'];
+// Blacklist specific paths (e.g. blacklist foo will only blacklist foo but NOT a.foo or b.foo)
+const PATH_BLACKLIST: string[] = [];
+
+/**
+ * Replacer function for JSON.stringify to remove keys that should not be included in the output
+ * @param key
+ * @param value
+ */
+function blacklistReplacer(key: string, value: unknown, path: string) {
+  if (!KEY_BLACKLIST.includes(key) && !PATH_BLACKLIST.includes(path)) {
+    return value;
+  }
+}
+
+/**
+ * Returns a replacer that has path included
+ * @param key
+ * @param value
+ */
+function replacerWithPath(
+  r: (key: string, value: unknown, path: string) => unknown
+) {
+  const m = new Map();
+  return function replacer(this: unknown, field: string, value: unknown) {
+    const path =
+      m.get(this) + (Array.isArray(this) ? `[${field}]` : `.${field}`);
+    if (value === Object(value)) m.set(value, path);
+    return r.call(this, field, value, path.replace(/undefined\.\.?/, ''));
+  };
+}
+
+const stringifyReplacer = replacerWithPath(blacklistReplacer);
+
 /**
  * Returns a new object that is safe to stringify
  * All circular references are replaced by the path to the value creating a circular ref
@@ -31,7 +66,7 @@ function makeSafeToStringify(
 
   Object.entries(obj).forEach(([key, val]) => {
     try {
-      JSON.stringify(val);
+      JSON.stringify(val, stringifyReplacer);
       output[key] = val;
     } catch (e) {
       // The value must be a Circular object or BigInt here
@@ -65,7 +100,7 @@ function getReduxDataString(): string {
   const reduxData = store.getState();
   return JSON.stringify(
     makeSafeToStringify(reduxData),
-    null,
+    stringifyReplacer,
     2 // Indent w/ 2 spaces
   );
 }
@@ -77,7 +112,7 @@ function getMetadata(meta?: Record<string, unknown>): string {
     ...meta,
   };
 
-  return JSON.stringify(metadata, null, 2);
+  return JSON.stringify(metadata, stringifyReplacer, 2);
 }
 
 /**
