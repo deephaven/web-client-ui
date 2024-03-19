@@ -41,6 +41,18 @@ export type PickerItemKey = Key | boolean;
  */
 export type PickerSelectionChangeHandler = (key: PickerItemKey) => void;
 
+export interface NormalizedPickerItemData {
+  key?: PickerItemKey;
+  content: ReactNode;
+  textValue?: string;
+}
+
+export interface NormalizedPickerSectionData {
+  key?: Key;
+  title?: ReactNode;
+  items: NormalizedPickerItem[];
+}
+
 /**
  * The Picker supports a variety of item types, including strings, numbers,
  * booleans, and more complex React elements. This type represents a normalized
@@ -48,18 +60,12 @@ export type PickerSelectionChangeHandler = (key: PickerItemKey) => void;
  * in separate util methods.
  */
 export type NormalizedPickerItem = KeyedItem<
-  {
-    content: ReactNode;
-    textValue?: string;
-  },
+  NormalizedPickerItemData,
   PickerItemKey | undefined
 >;
 
 export type NormalizedPickerSection = KeyedItem<
-  {
-    title?: ReactNode;
-    items: NormalizedPickerItem[];
-  },
+  NormalizedPickerSectionData,
   Key | undefined
 >;
 
@@ -105,6 +111,17 @@ export function isPickerItemOrSection(
     typeof node === 'boolean' ||
     isItemElement(node) ||
     isSectionElement(node)
+  );
+}
+
+export function isNormalizedPickerItemList(
+  node: PickerItemOrSection | PickerItemOrSection[] | NormalizedPickerItem[]
+): node is NormalizedPickerItem[] {
+  return (
+    Array.isArray(node) &&
+    node.length > 0 &&
+    !isPickerItemOrSection(node[0]) &&
+    'key' in node[0]
   );
 }
 
@@ -228,11 +245,20 @@ function normalizePickerItem(
  * @returns An array of normalized picker items
  */
 export function normalizePickerItemList(
-  itemsOrSections: PickerItemOrSection | PickerItemOrSection[]
+  itemsOrSections:
+    | PickerItemOrSection
+    | PickerItemOrSection[]
+    | NormalizedPickerItem[]
 ): (NormalizedPickerItem | NormalizedPickerSection)[] {
+  // If already normalized, just return as-is
+  if (isNormalizedPickerItemList(itemsOrSections)) {
+    return itemsOrSections;
+  }
+
   const itemsArray = Array.isArray(itemsOrSections)
     ? itemsOrSections
     : [itemsOrSections];
+
   return itemsArray.map(normalizePickerItem);
 }
 

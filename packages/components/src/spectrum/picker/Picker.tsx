@@ -17,7 +17,10 @@ import { PickerItemContent } from './PickerItemContent';
 import { Item, Section } from '../shared';
 
 export type PickerProps = {
-  children: PickerItemOrSection | PickerItemOrSection[];
+  children:
+    | PickerItemOrSection
+    | PickerItemOrSection[]
+    | NormalizedPickerItem[];
   /** Can be set to true or a TooltipOptions to enable item tooltips */
   tooltip?: boolean | TooltipOptions;
   /** The currently selected key in the collection (controlled). */
@@ -99,31 +102,38 @@ export function Picker({
   );
 
   const renderItem = useCallback(
-    ({ key, item }: NormalizedPickerItem) => (
-      // The `textValue` prop gets used to provide the content of `<option>`
-      // elements that back the Spectrum Picker. These are not visible in the UI,
-      // but are used for accessibility purposes, so we set to an arbitrary
-      // 'Empty' value so that they are not empty strings.
-      <Item
-        key={key as Key}
-        textValue={
-          item?.textValue === '' || item?.textValue == null
-            ? 'Empty'
-            : item.textValue
-        }
-      >
-        {item?.content == null ? null : (
-          <>
-            <PickerItemContent>{item.content}</PickerItemContent>
-            {tooltipOptions == null || item.content === '' ? null : (
-              <Tooltip options={tooltipOptions}>
-                {createTooltipContent(item.content)}
-              </Tooltip>
-            )}
-          </>
-        )}
-      </Item>
-    ),
+    (normalizedItem: NormalizedPickerItem) => {
+      // In Windowed data scenarios, the `item` is loaded asynchronously.
+      // Fallback to the top-level `key` if the `item` is not yet available.
+      const key = normalizedItem.item?.key ?? normalizedItem.key;
+      const { item } = normalizedItem;
+
+      return (
+        // The `textValue` prop gets used to provide the content of `<option>`
+        // elements that back the Spectrum Picker. These are not visible in the UI,
+        // but are used for accessibility purposes, so we set to an arbitrary
+        // 'Empty' value so that they are not empty strings.
+        <Item
+          key={key as Key}
+          textValue={
+            item?.textValue === '' || item?.textValue == null
+              ? 'Empty'
+              : item.textValue
+          }
+        >
+          {item?.content == null ? null : (
+            <>
+              <PickerItemContent>{item.content}</PickerItemContent>
+              {tooltipOptions == null || item.content === '' ? null : (
+                <Tooltip options={tooltipOptions}>
+                  {createTooltipContent(item.content)}
+                </Tooltip>
+              )}
+            </>
+          )}
+        </Item>
+      );
+    },
     [tooltipOptions]
   );
 
@@ -150,7 +160,9 @@ export function Picker({
         if (isNormalizedPickerSection(itemOrSection)) {
           return (
             <Section
-              key={itemOrSection.key}
+              // In Windowed data scenarios, the `item` is loaded asynchronously
+              // Fallback to the top-level `key` if the `item` is not yet available
+              key={itemOrSection.item?.key ?? itemOrSection.key}
               title={itemOrSection.item?.title}
               items={itemOrSection.item?.items}
             >
