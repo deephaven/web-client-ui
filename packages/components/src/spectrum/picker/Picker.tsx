@@ -14,8 +14,7 @@ import {
   isNormalizedPickerSection,
 } from './PickerUtils';
 import { PickerItemContent } from './PickerItemContent';
-import { Item } from '../Item';
-import { Section } from '../Section';
+import { Item, Section } from '../shared';
 
 export type PickerProps = {
   children: PickerItemOrSection | PickerItemOrSection[];
