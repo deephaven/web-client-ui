@@ -2,6 +2,7 @@ import { isValidElement, Key, ReactElement, ReactNode } from 'react';
 import { SpectrumPickerProps } from '@adobe/react-spectrum';
 import type { ItemRenderer } from '@react-types/shared';
 import Log from '@deephaven/log';
+import { KeyedItem } from '@deephaven/utils';
 import { Item, ItemProps, Section, SectionProps } from '../shared';
 import { PopperOptions } from '../../popper';
 
@@ -46,17 +47,21 @@ export type PickerSelectionChangeHandler = (key: PickerItemKey) => void;
  * form to make rendering items simpler and keep the logic of transformation
  * in separate util methods.
  */
-export interface NormalizedPickerItem {
-  key?: PickerItemKey;
-  content: ReactNode;
-  textValue?: string;
-}
+export type NormalizedPickerItem = KeyedItem<
+  {
+    content: ReactNode;
+    textValue?: string;
+  },
+  PickerItemKey | undefined
+>;
 
-export interface NormalizedPickerSection {
-  key?: Key;
-  title?: ReactNode;
-  items: NormalizedPickerItem[];
-}
+export type NormalizedPickerSection = KeyedItem<
+  {
+    title?: ReactNode;
+    items: NormalizedPickerItem[];
+  },
+  Key | undefined
+>;
 
 export type NormalizedSpectrumPickerProps =
   SpectrumPickerProps<NormalizedPickerItem>;
@@ -111,7 +116,10 @@ export function isPickerItemOrSection(
 export function isNormalizedPickerSection(
   maybeNormalizedPickerSection: NormalizedPickerItem | NormalizedPickerSection
 ): maybeNormalizedPickerSection is NormalizedPickerSection {
-  return 'items' in maybeNormalizedPickerSection;
+  return (
+    maybeNormalizedPickerSection.item != null &&
+    'items' in maybeNormalizedPickerSection.item
+  );
 }
 
 /**
@@ -195,8 +203,10 @@ function normalizePickerItem(
 
     return {
       key,
-      title,
-      items,
+      item: {
+        title,
+        items,
+      },
     };
   }
 
@@ -208,8 +218,7 @@ function normalizePickerItem(
 
   return {
     key,
-    content,
-    textValue,
+    item: { content, textValue },
   };
 }
 

@@ -99,20 +99,28 @@ export function Picker({
   );
 
   const renderItem = useCallback(
-    ({ key, content, textValue }: NormalizedPickerItem) => (
+    ({ key, item }: NormalizedPickerItem) => (
       // The `textValue` prop gets used to provide the content of `<option>`
       // elements that back the Spectrum Picker. These are not visible in the UI,
       // but are used for accessibility purposes, so we set to an arbitrary
       // 'Empty' value so that they are not empty strings.
       <Item
         key={key as Key}
-        textValue={textValue === '' || textValue == null ? 'Empty' : textValue}
+        textValue={
+          item?.textValue === '' || item?.textValue == null
+            ? 'Empty'
+            : item.textValue
+        }
       >
-        <PickerItemContent>{content}</PickerItemContent>
-        {tooltipOptions == null || content === '' ? null : (
-          <Tooltip options={tooltipOptions}>
-            {createTooltipContent(content)}
-          </Tooltip>
+        {item?.content == null ? null : (
+          <>
+            <PickerItemContent>{item.content}</PickerItemContent>
+            {tooltipOptions == null || item.content === '' ? null : (
+              <Tooltip options={tooltipOptions}>
+                {createTooltipContent(item.content)}
+              </Tooltip>
+            )}
+          </>
         )}
       </Item>
     ),
@@ -143,8 +151,8 @@ export function Picker({
           return (
             <Section
               key={itemOrSection.key}
-              title={itemOrSection.title}
-              items={itemOrSection.items}
+              title={itemOrSection.item?.title}
+              items={itemOrSection.item?.items}
             >
               {renderItem}
             </Section>
