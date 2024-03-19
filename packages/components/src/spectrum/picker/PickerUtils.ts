@@ -2,8 +2,7 @@ import { isValidElement, Key, ReactElement, ReactNode } from 'react';
 import { SpectrumPickerProps } from '@adobe/react-spectrum';
 import type { ItemRenderer } from '@react-types/shared';
 import Log from '@deephaven/log';
-import { Item, ItemProps } from '../Item';
-import { Section, SectionProps } from '../Section';
+import { Item, ItemProps, Section, SectionProps } from '../shared';
 import { PopperOptions } from '../../popper';
 
 const log = Log.module('PickerUtils');
