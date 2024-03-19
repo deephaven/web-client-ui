@@ -31,6 +31,8 @@ function replacerWithPath(
   r: (key: string, value: unknown, path: string) => unknown
 ) {
   const m = new Map();
+  // code source and explanation;
+  // https://stackoverflow.com/questions/61681176/json-stringify-replacer-how-to-get-full-path
   return function replacer(this: unknown, field: string, value: unknown) {
     const path =
       m.get(this) + (Array.isArray(this) ? `[${field}]` : `.${field}`);
