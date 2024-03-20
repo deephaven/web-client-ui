@@ -45,7 +45,7 @@ function resizeItemsArray<T>({
 
   // Drop extra items
   if (currentSize > targetSize) {
-    return items.slice(0, targetSize - 1);
+    return items.slice(0, targetSize);
   }
 
   // Add missing items
@@ -62,9 +62,17 @@ function resizeItemsArray<T>({
  * source table. This is intended for "human" sized tables such as those used in
  * admin panels. This is not suitable for "machine" scale with millions+ rows.
  * @param table The table that will be used to determine the list size.
- * @param reuseItemsOnTableResize If true, the items will be reused when the
- * table resizes. Defaults to false which will replace the items when the table
- * resizes.
+ * @param reuseItemsOnTableResize Whether to reuse existing items when the table
+ * size changes (defaults to false).
+ * - If true, existing items will be reused when the table resizes. This is
+ * recommended for ticking tables where the data is frequently updated in order
+ * to avoid UI flicker.
+ * - If false, all of the items will be replaced when the table resizes. This is
+ * recommnded for tables that don't change size frequently but may change size
+ * due to a user interaction. e.g. Filter via a search input. This avoids a
+ * different kind of flicker, where the item values will shift around as the
+ * user types. It is less jarring for the items to all reset to empty and then
+ * show the new results all at once.
  * @returns a WindowedListData object.
  */
 export function useInitializeViewportData<T>(
