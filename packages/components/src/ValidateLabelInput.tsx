@@ -46,7 +46,7 @@ export interface ValidateLabelInputProps {
 /**
  * Takes a child and adds a label and validation error
  */
-function ValidateLabelInput(
+export function ValidateLabelInput(
   props: ValidateLabelInputProps
 ): React.ReactElement {
   const {
