@@ -1,6 +1,11 @@
 import { Key, ReactNode, useCallback, useMemo } from 'react';
+import { DOMRef } from '@react-types/shared';
 import { Flex, Picker as SpectrumPicker, Text } from '@adobe/react-spectrum';
-import { isElementOfType } from '@deephaven/react-hooks';
+import {
+  findSpectrumPickerScrollArea,
+  isElementOfType,
+  usePopoverOnScrollRef,
+} from '@deephaven/react-hooks';
 import cl from 'classnames';
 import { Tooltip } from '../../popper';
 import {
@@ -34,6 +39,10 @@ export type PickerProps = {
    * components.
    */
   onChange?: (key: PickerItemKey) => void;
+
+  /** Handler that is called when the popover is scrolled. */
+  onScroll?: (event: Event) => void;
+
   /**
    * Handler that is called when the selection changes.
    * @deprecated Use `onChange` instead
@@ -73,6 +82,10 @@ function createTooltipContent(content: ReactNode) {
   return content;
 }
 
+function noOp(): void {
+  // No-op
+}
+
 /**
  * Picker component for selecting items from a list of items. Items can be
  * provided via the `items` prop or as children. Each item can be a string,
@@ -86,6 +99,8 @@ export function Picker({
   defaultSelectedKey,
   selectedKey,
   onChange,
+  onOpenChange,
+  onScroll = noOp,
   onSelectionChange,
   // eslint-disable-next-line camelcase
   UNSAFE_className,
@@ -107,6 +122,8 @@ export function Picker({
       // Fallback to the top-level `key` if the `item` is not yet available.
       const key = normalizedItem.item?.key ?? normalizedItem.key;
       const { item } = normalizedItem;
+      const content = item?.content ?? '';
+      const textValue = item?.textValue ?? '';
 
       return (
         // The `textValue` prop gets used to provide the content of `<option>`
@@ -115,32 +132,42 @@ export function Picker({
         // 'Empty' value so that they are not empty strings.
         <Item
           key={key as Key}
-          textValue={
-            item?.textValue === '' || item?.textValue == null
-              ? 'Empty'
-              : item.textValue
-          }
+          textValue={textValue === '' ? 'Empty' : textValue}
         >
-          {item?.content == null ? null : (
-            <>
-              <PickerItemContent>{item.content}</PickerItemContent>
-              {tooltipOptions == null || item.content === '' ? null : (
-                <Tooltip options={tooltipOptions}>
-                  {createTooltipContent(item.content)}
-                </Tooltip>
-              )}
-            </>
-          )}
+          <>
+            <PickerItemContent>{content}</PickerItemContent>
+            {tooltipOptions == null || content === '' ? null : (
+              <Tooltip options={tooltipOptions}>
+                {createTooltipContent(content)}
+              </Tooltip>
+            )}
+          </>
         </Item>
       );
     },
     [tooltipOptions]
   );
 
+  const { ref: scrollRef, onOpenChange: popoverOnOpenChange } =
+    usePopoverOnScrollRef(findSpectrumPickerScrollArea, onScroll);
+
+  const onOpenChangeInternal = useCallback(
+    (isOpen: boolean): void => {
+      // Attach scroll event handling
+      popoverOnOpenChange(isOpen);
+
+      onOpenChange?.(isOpen);
+    },
+    [onOpenChange, popoverOnOpenChange]
+  );
+
   return (
     <SpectrumPicker
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...spectrumPickerProps}
+      // The `ref` prop type defined by React Spectrum is incorrect here
+      ref={scrollRef as unknown as DOMRef<HTMLDivElement>}
+      onOpenChange={onOpenChangeInternal}
       UNSAFE_className={cl('dh-picker', UNSAFE_className)}
       items={normalizedItems}
       // Type assertions are necessary for `selectedKey`, `defaultSelectedKey`,
