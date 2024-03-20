@@ -36,10 +36,8 @@ function resizeItemsArray<T>({
 
   log.debug('size changed:', { currentSize, targetSize });
 
+  // Re-create entire array with empty items
   if (!reuseExistingItems) {
-    // All items will be replaced with new data. This is preferred in certain
-    // scenarios to avoid the user seeing items shift around multiple times
-    // while data is being loaded.
     return Array.from(generateEmptyKeyedItems<T>(0, targetSize - 1));
   }
 
