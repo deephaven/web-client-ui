@@ -48,14 +48,38 @@ export function extractSpectrumLastChildHTMLElement(
 
 /**
  * Find the popover associated with a given Spectrum ComboBox ref.
- * @param ref
+ * @param ref The ref to the Spectrum ComboBox component
  */
 export function findSpectrumComboBoxScrollArea(
   ref: ReactSpectrumComponent | null
 ): HTMLElement | null {
+  return findSpectrumPopoverScrollArea(ref, 'input');
+}
+
+/**
+ * Find the popover associated with a given Spectrum Picker ref.
+ * @param ref The ref to the Spectrum Picker component
+ */
+export function findSpectrumPickerScrollArea(
+  ref: ReactSpectrumComponent | null
+): HTMLElement | null {
+  return findSpectrumPopoverScrollArea(ref, 'button');
+}
+
+/**
+ * Find the popover associated with a given Spectrum component ref.
+ * @param ref The ref to the Spectrum component
+ * @param triggerElementType The type of element that triggers the popover
+ */
+export function findSpectrumPopoverScrollArea<
+  K extends keyof HTMLElementTagNameMap,
+>(
+  ref: ReactSpectrumComponent | null,
+  triggerElementType: K
+): HTMLElement | null {
   const maybeHTMLElement = ref?.UNSAFE_getDOMNode();
-  const input = maybeHTMLElement?.querySelector('input');
-  const popupId = input?.getAttribute('aria-controls');
+  const trigger = maybeHTMLElement?.querySelector(triggerElementType);
+  const popupId = trigger?.getAttribute('aria-controls');
 
   const scrollArea = popupId == null ? null : document.getElementById(popupId);
 

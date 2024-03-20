@@ -4,6 +4,8 @@ import {
   extractSpectrumHTMLElement,
   extractSpectrumLastChildHTMLElement,
   findSpectrumComboBoxScrollArea,
+  findSpectrumPickerScrollArea,
+  findSpectrumPopoverScrollArea,
   identityExtractHTMLElement,
   ReactSpectrumComponent,
 } from './SpectrumUtils';
@@ -81,64 +83,74 @@ describe('extractSpectrumLastChildHTMLElement', () => {
   });
 });
 
-describe('findSpectrumComboBoxScrollArea', () => {
-  let el: {
-    component: HTMLDivElement;
-    input: HTMLInputElement;
-    popup: HTMLDivElement;
-  };
-
-  beforeEach(() => {
-    el = {
-      component: document.createElement('div'),
-      input: document.createElement('input'),
-      popup: document.createElement('div'),
+describe.each([
+  // General popover function
+  ['i', findSpectrumPopoverScrollArea],
+  ['span', findSpectrumPopoverScrollArea],
+  // Specific consumer functions
+  ['input', findSpectrumComboBoxScrollArea],
+  ['button', findSpectrumPickerScrollArea],
+] as const)(
+  'findSpectrumPopoverScrollArea: %s, %s',
+  (triggerElementType, findPopoverScrollArea) => {
+    let el: {
+      component: HTMLDivElement;
+      trigger: HTMLElement;
+      popup: HTMLDivElement;
     };
 
-    el.popup.id = 'popup.id';
-    el.input.setAttribute('aria-controls', el.popup.id);
-  });
+    beforeEach(() => {
+      el = {
+        component: document.createElement('div'),
+        trigger: document.createElement(triggerElementType),
+        popup: document.createElement('div'),
+      };
 
-  afterEach(() => {
-    document.body.replaceChildren();
-  });
+      el.popup.id = 'popup.id';
+      el.trigger.setAttribute('aria-controls', el.popup.id);
+    });
 
-  it.each([
-    [0, 0, 0, false],
-    [0, 0, 1, false],
-    [0, 1, 0, false],
-    [0, 1, 1, false],
-    [1, 0, 0, false],
-    [1, 0, 1, false],
-    [1, 1, 0, false],
-    [1, 1, 1, true],
-  ])(
-    'should find `aria-controls` element of input',
-    (hasRef, hasInput, hasPopup, shouldFind) => {
-      const ref = hasRef
-        ? createMockProxy<ReactSpectrumComponent>({
-            UNSAFE_getDOMNode: () => el.component,
-          })
-        : null;
+    afterEach(() => {
+      document.body.replaceChildren();
+    });
 
-      if (hasInput) {
-        el.component.appendChild(el.input);
+    it.each([
+      [0, 0, 0, false],
+      [0, 0, 1, false],
+      [0, 1, 0, false],
+      [0, 1, 1, false],
+      [1, 0, 0, false],
+      [1, 0, 1, false],
+      [1, 1, 0, false],
+      [1, 1, 1, true],
+    ])(
+      'should find `aria-controls` element of trigger element',
+      (hasRef, hasTrigger, hasPopup, shouldFind) => {
+        const ref = hasRef
+          ? createMockProxy<ReactSpectrumComponent>({
+              UNSAFE_getDOMNode: () => el.component,
+            })
+          : null;
+
+        if (hasTrigger) {
+          el.component.appendChild(el.trigger);
+        }
+
+        if (hasPopup) {
+          document.body.appendChild(el.popup);
+        }
+
+        const actual = findPopoverScrollArea(ref, triggerElementType);
+
+        if (shouldFind) {
+          expect(actual).toBe(el.popup);
+        } else {
+          expect(actual).toBeNull();
+        }
       }
-
-      if (hasPopup) {
-        document.body.appendChild(el.popup);
-      }
-
-      const actual = findSpectrumComboBoxScrollArea(ref);
-
-      if (shouldFind) {
-        expect(actual).toBe(el.popup);
-      } else {
-        expect(actual).toBeNull();
-      }
-    }
-  );
-});
+    );
+  }
+);
 
 describe('identityExtractHTMLElement', () => {
   it.each([null, createMockProxy<Element>()])(
