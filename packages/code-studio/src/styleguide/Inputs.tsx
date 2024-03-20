@@ -43,8 +43,6 @@ const TIMEOUTS = [
   { title: '4 hours', value: 4 * 60 * 60 * 1000 },
 ];
 
-const VALIDATE_OPTIONS = ['Invalid', 'Valid'];
-
 function Inputs(): React.ReactElement {
   const [on, setOn] = useState(false);
   const [searchValue, setSearchValue] = useState('');
@@ -58,9 +56,6 @@ function Inputs(): React.ReactElement {
   const [autoResizeTextareaValue, setAutoResizeTextareaValue] = useState(
     '-DLiveTableMonitor.updateThreads=8 -DLiveTableMonitor.printDependencyInformation=false -Dassertion.heapDump=true -Drequire.heapDump=true -Dassertion.heapDump=true -Drequire.heapDump=true'
   );
-  const [validateValue, setValidateValue] = useState('');
-  const [validateOption, setValidateOption] = useState(VALIDATE_OPTIONS[0]);
-
   const handleRadioChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       setRadioValue(event.target.value);
@@ -75,13 +70,6 @@ function Inputs(): React.ReactElement {
   const handleSearchInputChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       setSearchValue(event.target.value);
-    },
-    []
-  );
-
-  const handleValidateInputChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      setValidateValue(event.target.value);
     },
     []
   );
