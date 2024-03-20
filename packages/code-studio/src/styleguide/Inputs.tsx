@@ -306,6 +306,7 @@ function Inputs(): React.ReactElement {
               id="validateInput1"
               labelText={`Input Field${on ? ' (disabled)' : ''}`}
               hintText="Hint text"
+              tooltipText="Tooltip text"
             >
               <input
                 disabled={on}
@@ -322,6 +323,7 @@ function Inputs(): React.ReactElement {
               }
               id="validateLabelInput2"
               labelText={`Dropdown${on ? ' (disabled)' : ''}`}
+              isRequired
             >
               <Select
                 disabled={on}

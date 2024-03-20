@@ -1,14 +1,19 @@
 import React, { useRef } from 'react';
 import classNames from 'classnames';
 import shortid from 'shortid';
-import './ValidateLabelInput.scss';
+import { Tooltip } from '@deephaven/components';
+import { vsQuestion } from '@deephaven/icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-export type ValidateLabelInputProps = {
+export interface ValidateLabelInputProps {
   /** Element to add label to */
   children: React.ReactNode;
 
-  /** Any classnames to add */
+  /** Any classnames to add to the label and the children */
   className?: string | string[];
+
+  /** Any classnames to add to the label */
+  labelClassName?: string | string[];
 
   /** Text for this validation label */
   labelText?: string;
@@ -16,8 +21,14 @@ export type ValidateLabelInputProps = {
   /** Small hint text next to the main label */
   hintText?: string;
 
+  /** Text to show in a tooltip */
+  tooltipText?: string;
+
   /** Show a modified state. Defaults to false. */
   isModified?: boolean;
+
+  /** Show a required state. Defaults to false. */
+  isRequired?: boolean;
 
   /** Validation error that has occurred */
   validationError?: string;
@@ -30,20 +41,23 @@ export type ValidateLabelInputProps = {
 
   /** data-testid to apply to the label */
   'data-testid'?: string;
-};
+}
 
 /**
- * Takes a child and add a label and validaton error
+ * Takes a child and adds a label and validation error
  */
-export function ValidateLabelInput(
+function ValidateLabelInput(
   props: ValidateLabelInputProps
 ): React.ReactElement {
   const {
     children,
     className,
+    labelClassName,
     labelText,
     hintText,
+    tooltipText,
     isModified,
+    isRequired,
     validationError,
     showValidationError = true,
     'data-testid': dataTestId,
@@ -55,32 +69,40 @@ export function ValidateLabelInput(
   return (
     <>
       <label
-        className={classNames('validate-label', className, {
+        className={classNames('validate-label', labelClassName, className, {
           modified: isModified,
         })}
         htmlFor={id}
         data-testid={dataTestId}
       >
         {labelText}
+        {tooltipText && (
+          <>
+            <FontAwesomeIcon icon={vsQuestion} className="fa-fw text-muted" />
+            <Tooltip>{tooltipText}</Tooltip>
+          </>
+        )}
+        {isRequired && <span className="text-muted small pl-1">*required</span>}
       </label>
       {React.Children.toArray(children).map(child => {
-        if (!React.isValidElement<React.HTMLAttributes<HTMLElement>>(child)) {
-          // eslint-disable-next-line react/jsx-key
-          return <div className={classNames(className)}>{child}</div>;
-        }
-
+        const isDOMElement =
+          React.isValidElement(child) && typeof child.type === 'string';
+        const childProps = isDOMElement
+          ? {}
+          : { isInvalid: Boolean(validationError) };
         // toArray strips null children
-        return React.cloneElement(child, {
-          className: classNames(child.props.className, {
+        // casting since TS cannot recognize child cannot be {}
+        return React.cloneElement(child as React.ReactElement, {
+          className: classNames((child as React.ReactElement).props.className, {
             'is-invalid': validationError,
           }),
+          ...childProps,
+          id,
         });
       })}
-      {hintText !== undefined && (
-        <small className="form-text text-muted">{hintText}</small>
-      )}
-      {validationError !== undefined && showValidationError && (
-        <p className="validate-label-error text-danger">{validationError}</p>
+      {hintText && <small className="form-text text-muted">{hintText}</small>}
+      {validationError && showValidationError && (
+        <p className="form-text text-danger">{validationError}</p>
       )}
     </>
   );
