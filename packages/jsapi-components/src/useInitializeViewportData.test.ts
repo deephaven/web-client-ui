@@ -1,6 +1,9 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 import type { dh } from '@deephaven/jsapi-types';
-import { generateEmptyKeyedItems } from '@deephaven/jsapi-utils';
+import {
+  generateEmptyKeyedItems,
+  ITEM_KEY_PREFIX,
+} from '@deephaven/jsapi-utils';
 import { KeyedItem, TestUtils } from '@deephaven/utils';
 import useInitializeViewportData from './useInitializeViewportData';
 import useTableSize from './useTableSize';
@@ -23,7 +26,7 @@ function updatedItems(size: number): { key: string; item: string }[] {
   const items: { key: string; item: string }[] = [];
 
   for (let i = 0; i < size; i += 1) {
-    items.push({ key: `${i}`, item: `mock.item.${i}` });
+    items.push({ key: `${ITEM_KEY_PREFIX}_${i}`, item: `mock.item.${i}` });
   }
 
   return items;

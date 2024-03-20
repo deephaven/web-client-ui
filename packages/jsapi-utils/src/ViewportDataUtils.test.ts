@@ -1,5 +1,5 @@
 import { act } from '@testing-library/react-hooks';
-import type { Column, Table, TreeTable } from '@deephaven/jsapi-types';
+import { dh } from '@deephaven/jsapi-types';
 import { TestUtils } from '@deephaven/utils';
 import {
   OnTableUpdatedEvent,
@@ -12,6 +12,7 @@ import {
   getSize,
   isClosed,
   padFirstAndLastRow,
+  ITEM_KEY_PREFIX,
 } from './ViewportDataUtils';
 
 const { asMock, createMockProxy } = TestUtils;
@@ -23,7 +24,7 @@ function mockViewportRow(offsetInSnapshot: number): ViewportRow {
 function mockColumn(name: string) {
   return {
     name,
-  } as Column;
+  } as dh.Column;
 }
 
 const deserializeRow: RowDeserializer<unknown> = jest.fn();
@@ -37,8 +38,8 @@ beforeEach(() => {
 
 describe('createKeyFromOffsetRow', () => {
   it.each([
-    [{ offsetInSnapshot: 4 } as ViewportRow, 5, '9'],
-    [{ offsetInSnapshot: 27 } as ViewportRow, 99, '126'],
+    [{ offsetInSnapshot: 4 } as ViewportRow, 5, `${ITEM_KEY_PREFIX}_9`],
+    [{ offsetInSnapshot: 27 } as ViewportRow, 99, `${ITEM_KEY_PREFIX}_126`],
   ] as const)(
     'should create a string key based on the actual row offset: %o',
     (row, offset, expected) => {
@@ -56,7 +57,7 @@ describe('createOnTableUpdatedHandler', () => {
       createMockProxy<ViewportRow>({ offsetInSnapshot: 1 }),
       createMockProxy<ViewportRow>({ offsetInSnapshot: 2 }),
     ],
-    updateEvent: (offset: number, rows: ViewportRow[], columns: Column[]) =>
+    updateEvent: (offset: number, rows: ViewportRow[], columns: dh.Column[]) =>
       createMockProxy<OnTableUpdatedEvent>({
         detail: {
           offset,
@@ -66,7 +67,7 @@ describe('createOnTableUpdatedHandler', () => {
       }),
   };
 
-  const cols: Column[] = [];
+  const cols: dh.Column[] = [];
 
   beforeEach(() => {
     asMock(mock.deserializeRow).mockImplementation(a => ({
@@ -119,14 +120,28 @@ describe('defaultRowDeserializer', () => {
 
 describe('generateEmptyKeyedItems', () => {
   it.each([
-    [0, 0, [{ key: '0' }]],
-    [0, 1, [{ key: '0' }, { key: '1' }]],
+    [0, 0, [{ key: `${ITEM_KEY_PREFIX}_0` }]],
+    [0, 1, [{ key: `${ITEM_KEY_PREFIX}_0` }, { key: `${ITEM_KEY_PREFIX}_1` }]],
     [
       0,
       4,
-      [{ key: '0' }, { key: '1' }, { key: '2' }, { key: '3' }, { key: '4' }],
+      [
+        { key: `${ITEM_KEY_PREFIX}_0` },
+        { key: `${ITEM_KEY_PREFIX}_1` },
+        { key: `${ITEM_KEY_PREFIX}_2` },
+        { key: `${ITEM_KEY_PREFIX}_3` },
+        { key: `${ITEM_KEY_PREFIX}_4` },
+      ],
     ],
-    [3, 5, [{ key: '3' }, { key: '4' }, { key: '5' }]],
+    [
+      3,
+      5,
+      [
+        { key: `${ITEM_KEY_PREFIX}_3` },
+        { key: `${ITEM_KEY_PREFIX}_4` },
+        { key: `${ITEM_KEY_PREFIX}_5` },
+      ],
+    ],
   ] as const)(
     'should generate a sequence of string keys for the given range: %s',
     (start, end, expected) => {
@@ -146,21 +161,21 @@ describe('getSize', () => {
   );
 
   it('should return zero if is closed', () => {
-    const table = { isClosed: true, size: 10 } as Table;
+    const table = { isClosed: true, size: 10 } as dh.Table;
     const actual = getSize(table);
     expect(actual).toEqual(0);
   });
 
   it('should return table size if no "isClosed" property exists', () => {
     const size = 10;
-    const table = { size } as TreeTable;
+    const table = { size } as dh.TreeTable;
     const actual = getSize(table);
     expect(actual).toEqual(size);
   });
 
   it('should return table size if is open', () => {
     const size = 10;
-    const table = { isClosed: false, size } as Table;
+    const table = { isClosed: false, size } as dh.Table;
     const actual = getSize(table);
     expect(actual).toEqual(size);
   });
@@ -168,14 +183,14 @@ describe('getSize', () => {
 
 describe('isClosed', () => {
   it('should return false if "isClosed property does not exist', () => {
-    const table = {} as Table;
+    const table = {} as dh.Table;
     expect(isClosed(table)).toStrictEqual(false);
   });
 
   it.each([false, true])(
     'should return value of "isClosed" if property exists: %s',
     value => {
-      const table = { isClosed: value } as Table;
+      const table = { isClosed: value } as dh.Table;
       expect(isClosed(table)).toStrictEqual(value);
     }
   );
