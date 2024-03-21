@@ -1,4 +1,5 @@
 import React, { createElement } from 'react';
+import { ITEM_KEY_PREFIX } from '@deephaven/utils';
 import {
   NormalizedPickerItem,
   normalizeTooltipOptions,
@@ -24,50 +25,52 @@ const expectedItems = {
   numberLiteral: [
     999,
     {
-      content: 999,
-      key: 999,
-      textValue: '999',
+      key: `${ITEM_KEY_PREFIX}_999`,
+      item: { content: 999, key: 999, textValue: '999' },
     },
   ],
   stringLiteral: [
     'String',
     {
-      content: 'String',
-      key: 'String',
-      textValue: 'String',
+      key: `${ITEM_KEY_PREFIX}_String`,
+      item: { content: 'String', key: 'String', textValue: 'String' },
     },
   ],
   emptyStringLiteral: [
     '',
     {
-      content: '',
-      key: '',
-      textValue: '',
+      key: `${ITEM_KEY_PREFIX}_`,
+      item: { content: '', key: '', textValue: '' },
     },
   ],
   booleanLiteral: [
     false,
     {
-      content: false,
-      key: false,
-      textValue: 'false',
+      key: `${ITEM_KEY_PREFIX}_false`,
+      item: { content: false, key: false, textValue: 'false' },
     },
   ],
   singleStringChild: [
     <Item textValue="textValue">Single string</Item>,
     {
-      content: 'Single string',
-      key: 'textValue',
-      textValue: 'textValue',
+      key: `${ITEM_KEY_PREFIX}_textValue`,
+      item: {
+        content: 'Single string',
+        key: 'textValue',
+        textValue: 'textValue',
+      },
     },
   ],
   singleStringChildNoTextValue: [
     // eslint-disable-next-line react/jsx-key
     <Item>Single string child no textValue</Item>,
     {
-      content: 'Single string child no textValue',
-      key: 'Single string child no textValue',
-      textValue: 'Single string child no textValue',
+      key: `${ITEM_KEY_PREFIX}_Single string child no textValue`,
+      item: {
+        content: 'Single string child no textValue',
+        key: 'Single string child no textValue',
+        textValue: 'Single string child no textValue',
+      },
     },
   ],
   elementChildNoTextValue: [
@@ -75,7 +78,8 @@ const expectedItems = {
       <span>No textValue</span>
     </Item>,
     {
-      content: <span>No textValue</span>,
+      key: undefined,
+      item: { content: <span>No textValue</span> },
     },
   ],
   explicitKey: [
@@ -83,9 +87,12 @@ const expectedItems = {
       Explicit key
     </Item>,
     {
-      content: 'Explicit key',
-      key: 'explicit.key',
-      textValue: 'textValue',
+      key: `${ITEM_KEY_PREFIX}_explicit.key`,
+      item: {
+        content: 'Explicit key',
+        key: 'explicit.key',
+        textValue: 'textValue',
+      },
     },
   ],
   complex: [
@@ -94,9 +101,12 @@ const expectedItems = {
       <Text>Complex</Text>
     </Item>,
     {
-      content: [<i>i</i>, <Text>Complex</Text>],
-      key: 'textValue',
-      textValue: 'textValue',
+      key: `${ITEM_KEY_PREFIX}_textValue`,
+      item: {
+        content: [<i>i</i>, <Text>Complex</Text>],
+        key: 'textValue',
+        textValue: 'textValue',
+      },
     },
   ],
 } satisfies Record<string, [PickerItem, NormalizedPickerItem]>;
@@ -109,15 +119,19 @@ const expectedSections = {
   noTitle: [
     <Section>{expectedItems.singleStringChild[0]}</Section>,
     {
-      items: [expectedItems.singleStringChild[1]],
+      key: undefined,
+      item: { items: [expectedItems.singleStringChild[1]] },
     },
   ],
   title: [
     <Section title="Some Title">{expectedItems.singleStringChild[0]}</Section>,
     {
-      key: 'Some Title',
-      title: 'Some Title',
-      items: [expectedItems.singleStringChild[1]],
+      key: `${ITEM_KEY_PREFIX}_Some Title`,
+      item: {
+        key: 'Some Title',
+        title: 'Some Title',
+        items: [expectedItems.singleStringChild[1]],
+      },
     },
   ],
   explicitKey: [
@@ -125,9 +139,12 @@ const expectedSections = {
       {expectedItems.singleStringChild[0]}
     </Section>,
     {
-      key: 'Some Key',
-      title: 'Some Title',
-      items: [expectedItems.singleStringChild[1]],
+      key: `${ITEM_KEY_PREFIX}_Some Key`,
+      item: {
+        key: 'Some Key',
+        title: 'Some Title',
+        items: [expectedItems.singleStringChild[1]],
+      },
     },
   ],
 } satisfies Record<string, [PickerItem, NormalizedPickerSection]>;
@@ -185,8 +202,20 @@ describe('isPickerItemOrSection', () => {
 
 describe('isNormalizedPickerSection', () => {
   it.each([
-    [{ key: 'mock.key' } as NormalizedPickerItem, false],
-    [{ key: 'mock.key', items: [] } as NormalizedPickerSection, true],
+    [
+      {
+        key: undefined,
+        item: {},
+      } as NormalizedPickerItem,
+      false,
+    ],
+    [
+      {
+        key: undefined,
+        item: { items: [] },
+      } as NormalizedPickerSection,
+      true,
+    ],
   ])(
     'should return true for a normalized Picker section: %s',
     (obj, expected) => {

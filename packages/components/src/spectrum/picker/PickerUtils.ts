@@ -239,7 +239,7 @@ function normalizePickerItem(
     ) as NormalizedPickerItem[];
 
     return {
-      key: `${ITEM_KEY_PREFIX}_${key}`,
+      key: key == null ? key : `${ITEM_KEY_PREFIX}_${key}`,
       item: {
         key,
         title,
@@ -255,7 +255,7 @@ function normalizePickerItem(
   const textValue = normalizeTextValue(itemOrSection);
 
   return {
-    key: `${ITEM_KEY_PREFIX}_${key}`,
+    key: key == null ? key : `${ITEM_KEY_PREFIX}_${key}`,
     item: { key, content, textValue },
   };
 }
