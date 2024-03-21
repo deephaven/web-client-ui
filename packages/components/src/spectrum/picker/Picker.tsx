@@ -158,7 +158,7 @@ export function Picker({
       getInitialScrollPosition == null
         ? defaultGetInitialScrollPosition({
             keyedItems: normalizedItems,
-            // TODO: add support for sections and items with descriptions since they
+            // TODO: #1890 add support for sections and items with descriptions since they
             // impact the height calculations
             itemHeight: PICKER_ITEM_HEIGHT,
             selectedKey,
