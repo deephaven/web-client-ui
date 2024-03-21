@@ -19,7 +19,7 @@ export interface UsePopoverOnScrollRefResult<T> {
 export function usePopoverOnScrollRef<T>(
   findScrollArea: (ref: T | null) => HTMLElement | null,
   onScroll: (event: Event) => void,
-  getInitialScrollPosition?: () => Promise<number>
+  getInitialScrollPosition?: () => Promise<number | null>
 ): UsePopoverOnScrollRefResult<T> {
   const ref = useRef<T>(null);
   const [scrollAreaEl, setScrollAreaEl] = useState<HTMLElement | null>(null);
@@ -30,6 +30,11 @@ export function usePopoverOnScrollRef<T>(
     }
 
     const position = await getInitialScrollPosition();
+
+    // If the position is null, don't scroll
+    if (position == null) {
+      return;
+    }
 
     scrollAreaEl.scroll(0, position);
   }, [getInitialScrollPosition, scrollAreaEl]);
@@ -44,15 +49,21 @@ export function usePopoverOnScrollRef<T>(
     };
   }, [onScroll, scrollAreaEl, scrollToInitialPosition]);
 
+  const scrollTimeoutRef = useRef<number>();
+
   // Popovers for picker components only exist when the popover opens, so we
   // have to wait to attach scroll listeners
   const onOpenChange = useCallback(
     (isOpen: boolean) => {
+      window.clearTimeout(scrollTimeoutRef.current);
+
       if (isOpen) {
         // setTimeout is necessary for popover to be available
-        setTimeout(() => {
+        scrollTimeoutRef.current = window.setTimeout(() => {
           setScrollAreaEl(findScrollArea(ref.current));
         }, 0);
+      } else {
+        setScrollAreaEl(null);
       }
     },
     [findScrollArea]

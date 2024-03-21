@@ -1,4 +1,5 @@
 import type { SpectrumTextFieldProps } from '@adobe/react-spectrum';
+import { KeyedItem } from '@deephaven/utils';
 import type { DOMRefValue } from '@react-types/shared';
 
 export type ReactSpectrumComponent<T extends HTMLElement = HTMLElement> =
@@ -22,6 +23,30 @@ export function createValidationProps(
     errorMessage,
     validationState: 'invalid',
   };
+}
+
+export async function defaultGetInitialScrollPosition<
+  TKey extends string | number | boolean | undefined,
+>({
+  keyedItems,
+  itemHeight,
+  selectedKey,
+  topOffset,
+}: {
+  keyedItems: KeyedItem<{ key?: TKey }, TKey>[];
+  itemHeight: number;
+  selectedKey: TKey | null | undefined;
+  topOffset: number;
+}): Promise<number> {
+  const i = keyedItems.findIndex(
+    item => item.item?.key === selectedKey || item.key === selectedKey
+  );
+
+  if (i <= 0) {
+    return 0;
+  }
+
+  return itemHeight * i + topOffset;
 }
 
 /**

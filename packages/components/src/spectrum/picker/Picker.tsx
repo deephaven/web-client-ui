@@ -4,8 +4,10 @@ import { Flex, Picker as SpectrumPicker, Text } from '@adobe/react-spectrum';
 import {
   findSpectrumPickerScrollArea,
   isElementOfType,
+  useGetInitialScrollPosition,
   usePopoverOnScrollRef,
 } from '@deephaven/react-hooks';
+import { PICKER_ITEM_HEIGHT, PICKER_TOP_OFFSET } from '@deephaven/utils';
 import cl from 'classnames';
 import { Tooltip } from '../../popper';
 import {
@@ -32,6 +34,8 @@ export type PickerProps = {
   selectedKey?: PickerItemKey | null;
   /** The initial selected key in the collection (uncontrolled). */
   defaultSelectedKey?: PickerItemKey;
+  /** Function to retrieve initial scroll position when opening the picker */
+  getInitialScrollPosition?: () => Promise<number>;
   /**
    * Handler that is called when the selection change.
    * Note that under the hood, this is just an alias for Spectrum's
@@ -98,6 +102,7 @@ export function Picker({
   tooltip = true,
   defaultSelectedKey,
   selectedKey,
+  getInitialScrollPosition,
   onChange,
   onOpenChange,
   onScroll = noOp,
@@ -148,17 +153,36 @@ export function Picker({
     [tooltipOptions]
   );
 
+  const {
+    enableScrollOnOpen,
+    getInitialScrollPosition: getInitialScrollPositionInternal,
+  } = useGetInitialScrollPosition({
+    getInitialScrollPosition,
+    keyedItems: normalizedItems,
+    // TODO: add support for sections and items with descriptions since they
+    // impact the height calculations
+    itemHeight: PICKER_ITEM_HEIGHT,
+    selectedKey,
+    topOffset: PICKER_TOP_OFFSET,
+  });
+
   const { ref: scrollRef, onOpenChange: popoverOnOpenChange } =
-    usePopoverOnScrollRef(findSpectrumPickerScrollArea, onScroll);
+    usePopoverOnScrollRef(
+      findSpectrumPickerScrollArea,
+      onScroll,
+      getInitialScrollPositionInternal
+    );
 
   const onOpenChangeInternal = useCallback(
     (isOpen: boolean): void => {
+      enableScrollOnOpen();
+
       // Attach scroll event handling
       popoverOnOpenChange(isOpen);
 
       onOpenChange?.(isOpen);
     },
-    [onOpenChange, popoverOnOpenChange]
+    [enableScrollOnOpen, onOpenChange, popoverOnOpenChange]
   );
 
   return (
