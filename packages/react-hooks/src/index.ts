@@ -27,7 +27,6 @@ export type {
   UsePromiseFactoryResult,
 } from './usePromiseFactory';
 export * from './useDebouncedValue';
-export * from './useGetInitialScrollPosition';
 export * from './useSetAttributesCallback';
 export * from './useSpectrumDisableSpellcheckRef';
 export * from './useWindowedListData';

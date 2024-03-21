@@ -2,9 +2,9 @@ import { Key, ReactNode, useCallback, useMemo } from 'react';
 import { DOMRef } from '@react-types/shared';
 import { Flex, Picker as SpectrumPicker, Text } from '@adobe/react-spectrum';
 import {
+  defaultGetInitialScrollPosition,
   findSpectrumPickerScrollArea,
   isElementOfType,
-  useGetInitialScrollPosition,
   usePopoverOnScrollRef,
 } from '@deephaven/react-hooks';
 import { PICKER_ITEM_HEIGHT, PICKER_TOP_OFFSET } from '@deephaven/utils';
@@ -153,18 +153,20 @@ export function Picker({
     [tooltipOptions]
   );
 
-  const {
-    enableScrollOnOpen,
-    getInitialScrollPosition: getInitialScrollPositionInternal,
-  } = useGetInitialScrollPosition({
-    getInitialScrollPosition,
-    keyedItems: normalizedItems,
-    // TODO: add support for sections and items with descriptions since they
-    // impact the height calculations
-    itemHeight: PICKER_ITEM_HEIGHT,
-    selectedKey,
-    topOffset: PICKER_TOP_OFFSET,
-  });
+  const getInitialScrollPositionInternal = useCallback(
+    () =>
+      getInitialScrollPosition == null
+        ? defaultGetInitialScrollPosition({
+            keyedItems: normalizedItems,
+            // TODO: add support for sections and items with descriptions since they
+            // impact the height calculations
+            itemHeight: PICKER_ITEM_HEIGHT,
+            selectedKey,
+            topOffset: PICKER_TOP_OFFSET,
+          })
+        : getInitialScrollPosition(),
+    [getInitialScrollPosition, normalizedItems, selectedKey]
+  );
 
   const { ref: scrollRef, onOpenChange: popoverOnOpenChange } =
     usePopoverOnScrollRef(
@@ -175,14 +177,12 @@ export function Picker({
 
   const onOpenChangeInternal = useCallback(
     (isOpen: boolean): void => {
-      enableScrollOnOpen();
-
       // Attach scroll event handling
       popoverOnOpenChange(isOpen);
 
       onOpenChange?.(isOpen);
     },
-    [enableScrollOnOpen, onOpenChange, popoverOnOpenChange]
+    [onOpenChange, popoverOnOpenChange]
   );
 
   return (

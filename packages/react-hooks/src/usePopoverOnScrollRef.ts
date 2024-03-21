@@ -22,6 +22,7 @@ export function usePopoverOnScrollRef<T>(
   getInitialScrollPosition?: () => Promise<number | null>
 ): UsePopoverOnScrollRefResult<T> {
   const ref = useRef<T>(null);
+  const isScrollOnOpenEnabledRef = useRef(false);
   const [scrollAreaEl, setScrollAreaEl] = useState<HTMLElement | null>(null);
 
   const scrollToInitialPosition = useCallback(async () => {
@@ -42,7 +43,12 @@ export function usePopoverOnScrollRef<T>(
   useEffect(() => {
     scrollAreaEl?.addEventListener('scroll', onScroll);
 
-    scrollToInitialPosition();
+    // Ticking tables can cause this effect to fire multiple times while the
+    // popover is still open. This check ensures that we only scroll 1x.
+    if (isScrollOnOpenEnabledRef.current) {
+      scrollToInitialPosition();
+      isScrollOnOpenEnabledRef.current = false;
+    }
 
     return () => {
       scrollAreaEl?.removeEventListener('scroll', onScroll);
@@ -58,6 +64,8 @@ export function usePopoverOnScrollRef<T>(
       window.clearTimeout(scrollTimeoutRef.current);
 
       if (isOpen) {
+        isScrollOnOpenEnabledRef.current = true;
+
         // setTimeout is necessary for popover to be available
         scrollTimeoutRef.current = window.setTimeout(() => {
           setScrollAreaEl(findScrollArea(ref.current));
