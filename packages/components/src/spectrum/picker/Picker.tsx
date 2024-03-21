@@ -11,14 +11,15 @@ import { PICKER_ITEM_HEIGHT, PICKER_TOP_OFFSET } from '@deephaven/utils';
 import cl from 'classnames';
 import { Tooltip } from '../../popper';
 import {
+  isNormalizedPickerSection,
   NormalizedSpectrumPickerProps,
   normalizePickerItemList,
   normalizeTooltipOptions,
-  PickerItemOrSection,
-  PickerItemKey,
-  TooltipOptions,
   NormalizedPickerItem,
-  isNormalizedPickerSection,
+  PickerItemOrSection,
+  TooltipOptions,
+  PickerItemKey,
+  getPickerItemKey,
 } from './PickerUtils';
 import { PickerItemContent } from './PickerItemContent';
 import { Item, Section } from '../shared';
@@ -125,7 +126,7 @@ export function Picker({
     (normalizedItem: NormalizedPickerItem) => {
       // In Windowed data scenarios, the `item` is loaded asynchronously.
       // Fallback to the top-level `key` if the `item` is not yet available.
-      const key = normalizedItem.item?.key ?? normalizedItem.key;
+      const key = getPickerItemKey(normalizedItem);
       const { item } = normalizedItem;
       const content = item?.content ?? '';
       const textValue = item?.textValue ?? '';
@@ -136,6 +137,13 @@ export function Picker({
         // but are used for accessibility purposes, so we set to an arbitrary
         // 'Empty' value so that they are not empty strings.
         <Item
+          // Note that setting the `key` prop explicitly on `Item` elements
+          // causes the picker to expect `selectedKey` and `defaultSelectedKey`
+          // to be strings. It also passes the stringified value of the key to
+          // `onSelectionChange` handlers` regardless of the actual type of the
+          // key. We can't really get around setting in order to support Windowed
+          // data, so we'll need to do some manual conversion of keys to strings
+          // in other places of this component.
           key={key as Key}
           textValue={textValue === '' ? 'Empty' : textValue}
         >
@@ -185,6 +193,20 @@ export function Picker({
     [onOpenChange, popoverOnOpenChange]
   );
 
+  const onSelectionChangeInternal = useCallback(
+    (key: PickerItemKey): void => {
+      // The `key` prop will always be a string due to us setting the `Item` key
+      // prop in `renderItem`. We need to convert it back to the original type.
+      const match = normalizedItems.find(
+        item => String(getPickerItemKey(item)) === key
+      );
+      const convertedKey = getPickerItemKey(match) ?? key;
+
+      (onChange ?? onSelectionChange)?.(convertedKey);
+    },
+    [normalizedItems, onChange, onSelectionChange]
+  );
+
   return (
     <SpectrumPicker
       // eslint-disable-next-line react/jsx-props-no-spreading
@@ -194,17 +216,15 @@ export function Picker({
       onOpenChange={onOpenChangeInternal}
       UNSAFE_className={cl('dh-picker', UNSAFE_className)}
       items={normalizedItems}
-      // Type assertions are necessary for `selectedKey`, `defaultSelectedKey`,
-      // and `onSelectionChange` due to Spectrum types not accounting for
-      // `boolean` keys
-      selectedKey={selectedKey as NormalizedSpectrumPickerProps['selectedKey']}
-      defaultSelectedKey={
-        defaultSelectedKey as NormalizedSpectrumPickerProps['defaultSelectedKey']
-      }
+      // Spectrum Picker treats keys as strings if the `key` prop is explicitly
+      // set on `Item` elements. Since we do this in `renderItem`, we need to
+      // ensure that `selectedKey` and `defaultSelectedKey` are strings in order
+      // for selection to work.
+      selectedKey={String(selectedKey)}
+      defaultSelectedKey={String(defaultSelectedKey)}
       // `onChange` is just an alias for `onSelectionChange`
       onSelectionChange={
-        (onChange ??
-          onSelectionChange) as NormalizedSpectrumPickerProps['onSelectionChange']
+        onSelectionChangeInternal as NormalizedSpectrumPickerProps['onSelectionChange']
       }
     >
       {itemOrSection => {

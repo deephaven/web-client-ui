@@ -2,7 +2,7 @@ import type { Key } from 'react';
 import clamp from 'lodash.clamp';
 import type { dh } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
-import type { KeyedItem, ValueOf } from '@deephaven/utils';
+import { ITEM_KEY_PREFIX, KeyedItem, ValueOf } from '@deephaven/utils';
 
 export type OnTableUpdatedEvent = CustomEvent<{
   offset: number;
@@ -15,8 +15,6 @@ export type RowDeserializer<T> = (row: ViewportRow, columns: dh.Column[]) => T;
 export type ViewportRow = dh.Row & { offsetInSnapshot: number };
 
 const log = Log.module('ViewportDataUtils');
-
-export const ITEM_KEY_PREFIX = 'DH_ITEM_KEY';
 
 /**
  * Create a key for a given index. The prefix is necessary to avoid collisions

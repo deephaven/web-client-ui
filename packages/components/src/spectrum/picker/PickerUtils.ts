@@ -2,7 +2,7 @@ import { isValidElement, Key, ReactElement, ReactNode } from 'react';
 import { SpectrumPickerProps } from '@adobe/react-spectrum';
 import type { ItemRenderer } from '@react-types/shared';
 import Log from '@deephaven/log';
-import { KeyedItem } from '@deephaven/utils';
+import { ITEM_KEY_PREFIX, KeyedItem } from '@deephaven/utils';
 import { Item, ItemProps, Section, SectionProps } from '../shared';
 import { PopperOptions } from '../../popper';
 
@@ -73,6 +73,26 @@ export type NormalizedSpectrumPickerProps =
   SpectrumPickerProps<NormalizedPickerItem>;
 
 export type TooltipOptions = { placement: PopperOptions['placement'] };
+
+/**
+ * Picker uses a normalized item that includes a `key` prop and an optional
+ * `item` prop. This is mostly to support Windowed data where items are created
+ * before their data has been loaded (data gets set in the `item` prop). If
+ * data has loaded, return its `key`. If not, return the top-level `key` on the
+ * normalized item.
+ * @param item The normalized picker item or section
+ * @returns The `key` of the item or section
+ */
+export function getPickerItemKey<
+  TItem extends NormalizedPickerItem | NormalizedPickerSection,
+  TKey extends TItem extends NormalizedPickerItem
+    ? PickerItemKey | undefined
+    : TItem extends NormalizedPickerSection
+    ? Key | undefined
+    : undefined,
+>(item: TItem | null | undefined): TKey {
+  return (item?.item?.key ?? item?.key) as TKey;
+}
 
 /**
  * Determine if a node is a Section element.
@@ -219,8 +239,9 @@ function normalizePickerItem(
     ) as NormalizedPickerItem[];
 
     return {
-      key,
+      key: `${ITEM_KEY_PREFIX}_${key}`,
       item: {
+        key,
         title,
         items,
       },
@@ -234,8 +255,8 @@ function normalizePickerItem(
   const textValue = normalizeTextValue(itemOrSection);
 
   return {
-    key,
-    item: { content, textValue },
+    key: `${ITEM_KEY_PREFIX}_${key}`,
+    item: { key, content, textValue },
   };
 }
 
