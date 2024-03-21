@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { NormalizedPickerItemData } from '@deephaven/components';
 import { dh } from '@deephaven/jsapi-types';
+import { getPickerKeyColumn, getPickerLabelColumn } from './PickerUtils';
 
 function formatValue(value: unknown): string | number | boolean {
   if (
@@ -25,16 +26,12 @@ export function usePickerItemRowDeserializer({
   labelColumnName?: string;
 }): (row: dh.Row) => NormalizedPickerItemData {
   const keyColumn = useMemo(
-    () =>
-      table.findColumn(
-        keyColumnName == null ? table.columns[0].name : keyColumnName
-      ),
+    () => getPickerKeyColumn(table, keyColumnName),
     [keyColumnName, table]
   );
 
   const labelColumn = useMemo(
-    () =>
-      labelColumnName == null ? keyColumn : table.findColumn(labelColumnName),
+    () => getPickerLabelColumn(table, keyColumn, labelColumnName),
     [keyColumn, labelColumnName, table]
   );
 

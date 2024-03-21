@@ -5,7 +5,9 @@ import {
 } from '@deephaven/components';
 import { dh } from '@deephaven/jsapi-types';
 import { PICKER_ITEM_HEIGHT } from '@deephaven/utils';
+import { useEffect } from 'react';
 import { useViewportData } from '../../useViewportData';
+import { getPickerKeyColumn } from './PickerUtils';
 import usePickerItemRowDeserializer from './usePickerItemRowDeserializer';
 
 export interface PickerProps extends PickerPropsBase {
@@ -20,6 +22,7 @@ export function Picker({
   table,
   keyColumn: keyColumnName,
   labelColumn: labelColumnName,
+  selectedKey,
   ...props
 }: PickerProps): JSX.Element {
   const deserializeRow = usePickerItemRowDeserializer({
@@ -28,7 +31,7 @@ export function Picker({
     labelColumnName,
   });
 
-  const { viewportData, onScroll } = useViewportData<
+  const { viewportData, onScroll, setViewport } = useViewportData<
     NormalizedPickerItemData,
     dh.Table
   >({
@@ -38,9 +41,23 @@ export function Picker({
     deserializeRow,
   });
 
+  useEffect(() => {
+    if (selectedKey == null) {
+      return;
+    }
+
+    const keyColumn = getPickerKeyColumn(table, keyColumnName);
+
+    // Set viewport to include the selected item so that its data will load and
+    // the real `key` will be available to show the selection in the UI.
+    table.seekRow(0, keyColumn, keyColumn.type, selectedKey).then(rowIndex => {
+      setViewport(rowIndex);
+    });
+  }, [keyColumnName, selectedKey, setViewport, table]);
+
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
-    <PickerBase {...props} onScroll={onScroll}>
+    <PickerBase {...props} selectedKey={selectedKey} onScroll={onScroll}>
       {viewportData.items}
     </PickerBase>
   );

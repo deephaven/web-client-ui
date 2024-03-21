@@ -220,8 +220,8 @@ export function Picker({
       // set on `Item` elements. Since we do this in `renderItem`, we need to
       // ensure that `selectedKey` and `defaultSelectedKey` are strings in order
       // for selection to work.
-      selectedKey={String(selectedKey)}
-      defaultSelectedKey={String(defaultSelectedKey)}
+      selectedKey={selectedKey?.toString()}
+      defaultSelectedKey={defaultSelectedKey?.toString()}
       // `onChange` is just an alias for `onSelectionChange`
       onSelectionChange={
         onSelectionChangeInternal as NormalizedSpectrumPickerProps['onSelectionChange']
