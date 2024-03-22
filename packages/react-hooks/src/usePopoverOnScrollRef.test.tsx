@@ -75,7 +75,7 @@ describe('usePopoverOnScrollRef', () => {
   });
 
   describe.each([null, mock.result.getInitialScrollPosition])(
-    'onOpenChange callback',
+    'onOpenChange callback: %s',
     position => {
       it.each([undefined, mock.getInitialScrollPosition])(
         'should initialize scroll position on open if given getInitialScrollPosition callback: %s',
