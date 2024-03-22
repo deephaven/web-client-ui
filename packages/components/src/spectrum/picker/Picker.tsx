@@ -124,18 +124,11 @@ export function Picker({
 
   const renderItem = useCallback(
     (normalizedItem: NormalizedPickerItem) => {
-      // In Windowed data scenarios, the `item` is loaded asynchronously.
-      // Fallback to the top-level `key` if the `item` is not yet available.
       const key = getPickerItemKey(normalizedItem);
-      const { item } = normalizedItem;
-      const content = item?.content ?? '';
-      const textValue = item?.textValue ?? '';
+      const content = normalizedItem.item?.content ?? '';
+      const textValue = normalizedItem.item?.textValue ?? '';
 
       return (
-        // The `textValue` prop gets used to provide the content of `<option>`
-        // elements that back the Spectrum Picker. These are not visible in the UI,
-        // but are used for accessibility purposes, so we set to an arbitrary
-        // 'Empty' value so that they are not empty strings.
         <Item
           // Note that setting the `key` prop explicitly on `Item` elements
           // causes the picker to expect `selectedKey` and `defaultSelectedKey`
@@ -145,6 +138,10 @@ export function Picker({
           // data, so we'll need to do some manual conversion of keys to strings
           // in other places of this component.
           key={key as Key}
+          // The `textValue` prop gets used to provide the content of `<option>`
+          // elements that back the Spectrum Picker. These are not visible in the UI,
+          // but are used for accessibility purposes, so we set to an arbitrary
+          // 'Empty' value so that they are not empty strings.
           textValue={textValue === '' ? 'Empty' : textValue}
         >
           <>
@@ -166,8 +163,8 @@ export function Picker({
       getInitialScrollPosition == null
         ? defaultGetInitialScrollPosition({
             keyedItems: normalizedItems,
-            // TODO: #1890 add support for sections and items with descriptions since they
-            // impact the height calculations
+            // TODO: #1890 & deephaven-plugins#371 add support for sections and
+            // items with descriptions since they impact the height calculations
             itemHeight: PICKER_ITEM_HEIGHT,
             selectedKey,
             topOffset: PICKER_TOP_OFFSET,
@@ -195,14 +192,16 @@ export function Picker({
 
   const onSelectionChangeInternal = useCallback(
     (key: PickerItemKey): void => {
-      // The `key` prop will always be a string due to us setting the `Item` key
-      // prop in `renderItem`. We need to convert it back to the original type.
-      const match = normalizedItems.find(
+      // The `key` arg will always be a string due to us setting the `Item` key
+      // prop in `renderItem`. We need to find the matching item to determine
+      // the actual key.
+      const selectedItem = normalizedItems.find(
         item => String(getPickerItemKey(item)) === key
       );
-      const convertedKey = getPickerItemKey(match) ?? key;
 
-      (onChange ?? onSelectionChange)?.(convertedKey);
+      const actualKey = getPickerItemKey(selectedItem) ?? key;
+
+      (onChange ?? onSelectionChange)?.(actualKey);
     },
     [normalizedItems, onChange, onSelectionChange]
   );
@@ -231,9 +230,7 @@ export function Picker({
         if (isNormalizedPickerSection(itemOrSection)) {
           return (
             <Section
-              // In Windowed data scenarios, the `item` is loaded asynchronously
-              // Fallback to the top-level `key` if the `item` is not yet available
-              key={itemOrSection.item?.key ?? itemOrSection.key}
+              key={getPickerItemKey(itemOrSection)}
               title={itemOrSection.item?.title}
               items={itemOrSection.item?.items}
             >

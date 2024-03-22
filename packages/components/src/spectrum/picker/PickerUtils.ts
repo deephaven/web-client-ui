@@ -57,7 +57,8 @@ export interface NormalizedPickerSectionData {
  * The Picker supports a variety of item types, including strings, numbers,
  * booleans, and more complex React elements. This type represents a normalized
  * form to make rendering items simpler and keep the logic of transformation
- * in separate util methods.
+ * in separate util methods. It also adheres to the `KeyedItem` interface to
+ * be compatible with Windowed data utils (e.g. `useViewportData`).
  */
 export type NormalizedPickerItem = KeyedItem<
   NormalizedPickerItemData,
@@ -117,6 +118,22 @@ export function isItemElement<T>(
 }
 
 /**
+ * Determine if a node is a normalized Picker item array.
+ * @param node The node to check
+ * @returns True if the node is a normalized Picker item array
+ */
+export function isNormalizedPickerItemList(
+  node: PickerItemOrSection | PickerItemOrSection[] | NormalizedPickerItem[]
+): node is NormalizedPickerItem[] {
+  return (
+    Array.isArray(node) &&
+    node.length > 0 &&
+    !isPickerItemOrSection(node[0]) &&
+    'key' in node[0]
+  );
+}
+
+/**
  * Determine if a node is a Picker item or section. Valid types include strings,
  * numbers, booleans, Item elements, and Section elements.
  * @param node The node to check
@@ -131,17 +148,6 @@ export function isPickerItemOrSection(
     typeof node === 'boolean' ||
     isItemElement(node) ||
     isSectionElement(node)
-  );
-}
-
-export function isNormalizedPickerItemList(
-  node: PickerItemOrSection | PickerItemOrSection[] | NormalizedPickerItem[]
-): node is NormalizedPickerItem[] {
-  return (
-    Array.isArray(node) &&
-    node.length > 0 &&
-    !isPickerItemOrSection(node[0]) &&
-    'key' in node[0]
   );
 }
 
@@ -239,11 +245,7 @@ function normalizePickerItem(
     ) as NormalizedPickerItem[];
 
     return {
-      item: {
-        key,
-        title,
-        items,
-      },
+      item: { key, title, items },
     };
   }
 

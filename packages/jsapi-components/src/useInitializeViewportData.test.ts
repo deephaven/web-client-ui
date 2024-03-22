@@ -1,6 +1,7 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 import type { dh } from '@deephaven/jsapi-types';
 import { generateEmptyKeyedItems } from '@deephaven/jsapi-utils';
+import { WindowedListData } from '@deephaven/react-hooks';
 import { ITEM_KEY_PREFIX, KeyedItem, TestUtils } from '@deephaven/utils';
 import useInitializeViewportData from './useInitializeViewportData';
 import useTableSize from './useTableSize';
@@ -19,12 +20,30 @@ const expectedInitial4: KeyedItem<unknown>[] = expectedInitialItems(
 const tableSize2 = TestUtils.createMockProxy<dh.Table>({ size: 2 });
 const expectedInitial2 = expectedInitialItems(tableSize2.size);
 
-function updatedItems(size: number): { key: string; item: string }[] {
+/**
+ * Update a given number of items in the given windowed data
+ * @param data Windowed data to update
+ * @param size Number of items to update
+ * @returns Updated items array
+ */
+function updateItems(
+  data: WindowedListData<{
+    key: string;
+    item?: unknown;
+  }>,
+  size: number
+): { key: string; item: string }[] {
   const items: { key: string; item: string }[] = [];
 
   for (let i = 0; i < size; i += 1) {
     items.push({ key: `${ITEM_KEY_PREFIX}_${i}`, item: `mock.item.${i}` });
   }
+
+  act(() => {
+    items.forEach(updatedItem => {
+      data.update(updatedItem.key, updatedItem);
+    });
+  });
 
   return items;
 }
@@ -60,14 +79,7 @@ describe.each([undefined, true, false])(
         }
       );
 
-      const updatedItems4 = updatedItems(tableSize4.size);
-
-      // Update items
-      act(() => {
-        updatedItems4.forEach(updatedItem => {
-          result.current.update(updatedItem.key, updatedItem);
-        });
-      });
+      const updatedItems4 = updateItems(result.current, tableSize4.size);
 
       expect(result.current.items).toEqual(updatedItems4);
 
@@ -106,14 +118,7 @@ describe.each([undefined, true, false])(
 
         expect(result.current.items).toEqual(expectedInitial4);
 
-        const updatedItems4 = updatedItems(tableSize4.size);
-
-        // Update items
-        act(() => {
-          updatedItems4.forEach(updatedItem => {
-            result.current.update(updatedItem.key, updatedItem);
-          });
-        });
+        const updatedItems4 = updateItems(result.current, tableSize4.size);
 
         expect(result.current.items).toEqual(updatedItems4);
 

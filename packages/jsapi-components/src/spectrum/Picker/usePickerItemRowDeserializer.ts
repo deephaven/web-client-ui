@@ -16,6 +16,15 @@ function formatValue(value: unknown): string | number | boolean {
   return String(value);
 }
 
+/**
+ * Returns a function that deserializes a row into a normalized picker item data
+ * object.
+ * @param table The table to get the key and label columns from
+ * @param keyColumnName The name of the column to use for key data
+ * @param labelColumnName The name of the column to use for label data
+ * @returns A function that deserializes a row into a normalized picker item
+ * data object
+ */
 export function usePickerItemRowDeserializer({
   table,
   keyColumnName,

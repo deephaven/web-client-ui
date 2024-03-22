@@ -189,20 +189,8 @@ describe('isPickerItemOrSection', () => {
 
 describe('isNormalizedPickerSection', () => {
   it.each([
-    [
-      {
-        key: undefined,
-        item: {},
-      } as NormalizedPickerItem,
-      false,
-    ],
-    [
-      {
-        key: undefined,
-        item: { items: [] },
-      } as NormalizedPickerSection,
-      true,
-    ],
+    [{ item: {} } as NormalizedPickerItem, false],
+    [{ item: { items: [] } } as NormalizedPickerSection, true],
   ])(
     'should return true for a normalized Picker section: %s',
     (obj, expected) => {
