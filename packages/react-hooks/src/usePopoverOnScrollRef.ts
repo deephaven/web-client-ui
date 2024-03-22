@@ -15,7 +15,8 @@ export interface UsePopoverOnScrollRefResult<T> {
  * event listener to
  * @param onScroll Scroll event listener function to attach
  * @param getInitialScrollPosition Function to retrieve the initial scroll
- * position. If it returns `null`, no scrolling will occur.
+ * position. If no function is given, or if the function returns `null`, no
+ * initial scrolling will occur.
  */
 export function usePopoverOnScrollRef<T>(
   findScrollArea: (ref: T | null) => HTMLElement | null,
