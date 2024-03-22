@@ -335,9 +335,12 @@ class IrisGridUtils {
   } {
     const { isSelectingPartition, advancedSettings } = irisGridPanelState;
 
-    const partitions = isPanelStateV2(irisGridPanelState)
-      ? irisGridPanelState.partitions
-      : [irisGridPanelState.partition];
+    let partitions: (string | null)[] = [];
+    if (isPanelStateV2(irisGridPanelState)) {
+      partitions = irisGridPanelState.partitions;
+    } else if (irisGridPanelState.partition != null) {
+      partitions = [irisGridPanelState.partition];
+    }
 
     return {
       isSelectingPartition,
