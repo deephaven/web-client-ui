@@ -36,7 +36,7 @@ export type PickerProps = {
   /** The initial selected key in the collection (uncontrolled). */
   defaultSelectedKey?: PickerItemKey;
   /** Function to retrieve initial scroll position when opening the picker */
-  getInitialScrollPosition?: () => Promise<number>;
+  getInitialScrollPosition?: () => Promise<number | null>;
   /**
    * Handler that is called when the selection change.
    * Note that under the hood, this is just an alias for Spectrum's

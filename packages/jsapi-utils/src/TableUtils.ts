@@ -876,6 +876,37 @@ export class TableUtils {
     return size > 0;
   }
 
+  getValueType(columnType?: string): string {
+    if (columnType == null) {
+      return this.dh.ValueType.STRING;
+    }
+
+    const columnDataType = TableUtils.getNormalizedType(columnType);
+
+    switch (columnDataType) {
+      case TableUtils.dataType.CHAR:
+      case TableUtils.dataType.STRING:
+        return this.dh.ValueType.STRING;
+
+      case TableUtils.dataType.DATETIME:
+        return this.dh.ValueType.DATETIME;
+
+      case TableUtils.dataType.DECIMAL:
+      case TableUtils.dataType.INT:
+        if (
+          TableUtils.isBigDecimalType(columnType) ||
+          TableUtils.isBigIntegerType(columnType)
+        ) {
+          return this.dh.ValueType.STRING;
+        }
+
+        return this.dh.ValueType.NUMBER;
+
+      default:
+        return this.dh.ValueType.STRING;
+    }
+  }
+
   /**
    * Create filter with the provided column and text. Handles multiple filters joined with && or ||
    * @param column The column to set the filter on

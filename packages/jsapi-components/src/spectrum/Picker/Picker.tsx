@@ -4,11 +4,12 @@ import {
   PickerProps as PickerPropsBase,
 } from '@deephaven/components';
 import { dh } from '@deephaven/jsapi-types';
-import { PICKER_ITEM_HEIGHT } from '@deephaven/utils';
-import { useEffect } from 'react';
+import { PICKER_ITEM_HEIGHT, PICKER_TOP_OFFSET } from '@deephaven/utils';
+import { useCallback, useEffect, useMemo } from 'react';
+import useGetItemIndexByValue from '../../useGetItemIndexByValue';
 import { useViewportData } from '../../useViewportData';
 import { getPickerKeyColumn } from './PickerUtils';
-import usePickerItemRowDeserializer from './usePickerItemRowDeserializer';
+import { usePickerItemRowDeserializer } from './usePickerItemRowDeserializer';
 
 export interface PickerProps extends PickerPropsBase {
   table: dh.Table;
@@ -25,11 +26,32 @@ export function Picker({
   selectedKey,
   ...props
 }: PickerProps): JSX.Element {
+  const keyColumn = useMemo(
+    () => getPickerKeyColumn(table, keyColumnName),
+    [keyColumnName, table]
+  );
+
   const deserializeRow = usePickerItemRowDeserializer({
     table,
     keyColumnName,
     labelColumnName,
   });
+
+  const getItemIndexByValue = useGetItemIndexByValue({
+    table,
+    columnName: keyColumn.name,
+    value: selectedKey,
+  });
+
+  const getInitialScrollPosition = useCallback(async () => {
+    const index = await getItemIndexByValue();
+
+    if (index == null) {
+      return null;
+    }
+
+    return index * PICKER_ITEM_HEIGHT + PICKER_TOP_OFFSET;
+  }, [getItemIndexByValue]);
 
   const { viewportData, onScroll, setViewport } = useViewportData<
     NormalizedPickerItemData,
@@ -45,24 +67,23 @@ export function Picker({
     // Set viewport to include the selected item so that its data will load and
     // the real `key` will be available to show the selection in the UI.
     function setViewportFromSelectedKey() {
-      if (selectedKey == null) {
-        return;
-      }
-
-      const keyColumn = getPickerKeyColumn(table, keyColumnName);
-
-      table
-        .seekRow(0, keyColumn, keyColumn.type, selectedKey)
-        .then(rowIndex => {
-          setViewport(rowIndex);
-        });
+      getItemIndexByValue().then(index => {
+        if (index != null) {
+          setViewport(index);
+        }
+      });
     },
-    [keyColumnName, selectedKey, setViewport, table]
+    [getItemIndexByValue, setViewport]
   );
 
   return (
-    // eslint-disable-next-line react/jsx-props-no-spreading
-    <PickerBase {...props} selectedKey={selectedKey} onScroll={onScroll}>
+    <PickerBase
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      {...props}
+      getInitialScrollPosition={getInitialScrollPosition}
+      selectedKey={selectedKey}
+      onScroll={onScroll}
+    >
       {viewportData.items}
     </PickerBase>
   );
