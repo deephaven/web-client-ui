@@ -1,7 +1,12 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import classNames from 'classnames';
-import { CSSTransition } from 'react-transition-group';
-import { Button, Checkbox, ItemList, ThemeExport } from '@deephaven/components';
+import {
+  Button,
+  Checkbox,
+  FadeTransition,
+  ItemList,
+  ThemeExport,
+} from '@deephaven/components';
 import { dhSortAlphaDown, dhSortAlphaUp } from '@deephaven/icons';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import { Aggregation } from './Aggregations';
@@ -121,17 +126,16 @@ function AggregationEdit({
             Toggle All
           </Checkbox>
           <div className="spacer" />
-          <CSSTransition
+          <FadeTransition
             in={isModified}
             timeout={ThemeExport.transitionSlowMs}
-            classNames="fade"
             mountOnEnter
             unmountOnExit
           >
             <Button kind="ghost" className="btn-reset" onClick={handleReset}>
               Reset
             </Button>
-          </CSSTransition>
+          </FadeTransition>
           <Button
             kind="ghost"
             className={classNames({

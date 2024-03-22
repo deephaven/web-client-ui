@@ -2,8 +2,7 @@ import React, { Component, ErrorInfo } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import shortid from 'shortid';
 import memoize from 'memoize-one';
-import { CSSTransition } from 'react-transition-group';
-import { ThemeExport } from '@deephaven/components';
+import { FadeTransition } from '@deephaven/components';
 import {
   LayoutUtils,
   PanelComponent,
@@ -740,10 +739,8 @@ export class Linker extends Component<LinkerProps, LinkerState> {
         : 'Create a link between the source column button and a table column by clicking on one, then the other. Delete a filter link by clicking the delete button or with alt+click. Click done when finished.';
 
     return !isDraggingPanel ? (
-      <CSSTransition
+      <FadeTransition
         in={isLinkOverlayShown}
-        timeout={ThemeExport.transitionMs}
-        classNames="fade"
         mountOnEnter
         unmountOnExit
         onExited={this.handleExited}
@@ -765,7 +762,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
           onDone={this.handleDone}
           onCancel={this.handleCancel}
         />
-      </CSSTransition>
+      </FadeTransition>
     ) : null;
   }
 }

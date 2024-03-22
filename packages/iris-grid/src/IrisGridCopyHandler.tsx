@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
-import { CSSTransition } from 'react-transition-group';
-import { Button, LoadingSpinner, ThemeExport } from '@deephaven/components';
+import { Button, FadeTransition, LoadingSpinner } from '@deephaven/components';
 import {
   GridRange,
   GridUtils,
@@ -451,10 +450,8 @@ class IrisGridCopyHandler extends Component<
         <div className="status-message">
           <span>{statusMessageText}</span>
         </div>
-        <CSSTransition
+        <FadeTransition
           in={isButtonContainerVisible}
-          timeout={ThemeExport.transitionMs}
-          classNames="fade"
           mountOnEnter
           unmountOnExit
         >
@@ -480,7 +477,7 @@ class IrisGridCopyHandler extends Component<
               {copyButtonText}
             </Button>
           </div>
-        </CSSTransition>
+        </FadeTransition>
       </IrisGridBottomBar>
     );
   }

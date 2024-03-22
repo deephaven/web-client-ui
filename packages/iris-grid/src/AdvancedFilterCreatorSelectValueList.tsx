@@ -1,12 +1,12 @@
 /* eslint react/no-did-update-set-state: "off" */
 import React, { PureComponent, ReactElement } from 'react';
-import { CSSTransition } from 'react-transition-group';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
 import {
   LoadingSpinner,
   SelectValueList,
   SelectItem,
+  FadeTransition,
 } from '@deephaven/components';
 import Log from '@deephaven/log';
 
@@ -281,17 +281,11 @@ class AdvancedFilterCreatorSelectValueList<T = unknown> extends PureComponent<
             this.list = list;
           }}
         />
-        <CSSTransition
-          in={isLoading}
-          timeout={250}
-          classNames="fade"
-          mountOnEnter
-          unmountOnExit
-        >
+        <FadeTransition in={isLoading} mountOnEnter unmountOnExit>
           <div className="loading-list">
             <LoadingSpinner className="loading-spinner-large" />
           </div>
-        </CSSTransition>
+        </FadeTransition>
       </div>
     );
   }

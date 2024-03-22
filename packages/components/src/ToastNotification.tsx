@@ -5,6 +5,7 @@ import { vsClose } from '@deephaven/icons';
 import Button from './Button';
 import ThemeExport from './ThemeExport';
 import './ToastNotification.scss';
+import { FadeTransition } from './transitions';
 
 type ToastNotificationProps = {
   buttons?: (typeof Button)[];
@@ -50,15 +51,14 @@ function ToastNotification({
         <div className="message-container">
           <span className="message">{message}</span>
         </div>
-        <CSSTransition
+        <FadeTransition
           in={hasButtons}
           timeout={ThemeExport.transitionSlowMs}
-          classNames="fade"
           mountOnEnter
           unmountOnExit
         >
           <div className="buttons-container">{buttons}</div>
-        </CSSTransition>
+        </FadeTransition>
         {onDismiss && (
           <Button
             kind="ghost"

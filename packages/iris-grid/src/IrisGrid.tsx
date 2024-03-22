@@ -26,6 +26,7 @@ import {
   Button,
   ContextActionUtils,
   ResolvableContextAction,
+  SlideTransition,
 } from '@deephaven/components';
 import {
   Grid,
@@ -4820,10 +4821,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             formatter={formatter}
           />
         </div>
-        <CSSTransition
+        <SlideTransition
           in={isMenuShown}
-          timeout={ThemeExport.transitionMidMs}
-          classNames="slide-left"
           onEntering={this.handleAnimationStart}
           onEntered={this.handleAnimationEnd}
           onExiting={this.handleAnimationStart}
@@ -4851,7 +4850,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               ))}
             </Stack>
           </div>
-        </CSSTransition>
+        </SlideTransition>
         <ContextActions actions={this.contextActions} />
       </div>
     );

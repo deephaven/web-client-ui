@@ -7,7 +7,6 @@ import React, {
 } from 'react';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
-import { CSSTransition } from 'react-transition-group';
 import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
 import shortid from 'shortid';
@@ -26,6 +25,7 @@ import {
   DebouncedModal,
   NavTabList,
   type NavTabItem,
+  SlideTransition,
 } from '@deephaven/components';
 import { SHORTCUTS as IRIS_GRID_SHORTCUTS } from '@deephaven/iris-grid';
 import {
@@ -1002,19 +1002,13 @@ export class AppMainContainer extends Component<
             ...dashboardPlugins,
           ]}
         />
-        <CSSTransition
-          in={isSettingsMenuShown}
-          timeout={ThemeExport.transitionMidMs}
-          classNames="slide-left"
-          mountOnEnter
-          unmountOnExit
-        >
+        <SlideTransition in={isSettingsMenuShown} mountOnEnter unmountOnExit>
           <SettingsMenu
             serverConfigValues={serverConfigValues}
             onDone={this.handleSettingsMenuHide}
             user={user}
           />
-        </CSSTransition>
+        </SlideTransition>
         <ContextActions actions={contextActions} />
         <input
           ref={this.importElement}
