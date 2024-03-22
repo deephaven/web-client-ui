@@ -1,6 +1,6 @@
 import { act } from '@testing-library/react-hooks';
 import { dh } from '@deephaven/jsapi-types';
-import { TestUtils } from '@deephaven/utils';
+import { ITEM_KEY_PREFIX, TestUtils } from '@deephaven/utils';
 import {
   OnTableUpdatedEvent,
   RowDeserializer,
@@ -12,7 +12,6 @@ import {
   getSize,
   isClosed,
   padFirstAndLastRow,
-  ITEM_KEY_PREFIX,
 } from './ViewportDataUtils';
 
 const { asMock, createMockProxy } = TestUtils;

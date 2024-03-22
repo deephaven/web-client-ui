@@ -8,7 +8,11 @@ import {
   isClosed,
 } from '@deephaven/jsapi-utils';
 import { useOnScrollOffsetChangeCallback } from '@deephaven/react-hooks';
-import { SCROLL_DEBOUNCE_MS, TestUtils } from '@deephaven/utils';
+import {
+  ITEM_KEY_PREFIX,
+  SCROLL_DEBOUNCE_MS,
+  TestUtils,
+} from '@deephaven/utils';
 import useViewportData, { UseViewportDataProps } from './useViewportData';
 import { makeApiContextWrapper } from './HookTestUtils';
 import { useTableSize } from './useTableSize';
@@ -223,7 +227,7 @@ it('should update state on dh.Table.EVENT_UPDATED event', () => {
   const expectedItems = [
     ...expectedInitialItems.slice(0, expectedKeyIndex),
     {
-      key: String(expectedKeyIndex),
+      key: `${ITEM_KEY_PREFIX}_${expectedKeyIndex}`,
       item: row,
     },
     ...expectedInitialItems.slice(expectedKeyIndex + 1),
