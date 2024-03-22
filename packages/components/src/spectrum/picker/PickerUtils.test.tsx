@@ -199,7 +199,7 @@ describe('isNormalizedItemsWithKeysList', () => {
     [['normalizedItemWithKey', 'item'], true],
     [['normalizedSectionWithKey', 'section'], true],
   ] as [(keyof typeof mock)[], boolean][])(
-    'should return true for a normalized Picker item list: %s, %s',
+    'should return true for a normalized items with keys list: %s, %s',
     (givenKeys, expected) => {
       const given = givenKeys.map(key => mock[key]) as
         | PickerItemOrSection[]
