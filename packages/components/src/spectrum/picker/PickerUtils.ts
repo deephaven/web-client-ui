@@ -118,18 +118,39 @@ export function isItemElement<T>(
 }
 
 /**
- * Determine if a node is a normalized Picker item array.
+ * Determine if a node is an array containing normalized items with keys.
+ * Note that this only checks the first node in the array.
  * @param node The node to check
- * @returns True if the node is a normalized Picker item array
+ * @returns True if the node is a normalized item with keys array
  */
-export function isNormalizedPickerItemList(
-  node: PickerItemOrSection | PickerItemOrSection[] | NormalizedPickerItem[]
-): node is NormalizedPickerItem[] {
+export function isNormalizedItemsWithKeysList(
+  node:
+    | PickerItemOrSection
+    | PickerItemOrSection[]
+    | (NormalizedPickerItem | NormalizedPickerSection)[]
+): node is (NormalizedPickerItem | NormalizedPickerSection)[] {
+  if (!Array.isArray(node)) {
+    return false;
+  }
+
+  if (node.length === 0) {
+    return true;
+  }
+
+  return !isPickerItemOrSection(node[0]) && 'key' in node[0];
+}
+
+/**
+ * Determine if an object is a normalized Picker section.
+ * @param maybeNormalizedPickerSection The object to check
+ * @returns True if the object is a normalized Picker section
+ */
+export function isNormalizedPickerSection(
+  maybeNormalizedPickerSection: NormalizedPickerItem | NormalizedPickerSection
+): maybeNormalizedPickerSection is NormalizedPickerSection {
   return (
-    Array.isArray(node) &&
-    node.length > 0 &&
-    !isPickerItemOrSection(node[0]) &&
-    'key' in node[0]
+    maybeNormalizedPickerSection.item != null &&
+    'items' in maybeNormalizedPickerSection.item
   );
 }
 
@@ -148,20 +169,6 @@ export function isPickerItemOrSection(
     typeof node === 'boolean' ||
     isItemElement(node) ||
     isSectionElement(node)
-  );
-}
-
-/**
- * Determine if an object is a normalized Picker section.
- * @param maybeNormalizedPickerSection The object to check
- * @returns True if the object is a normalized Picker section
- */
-export function isNormalizedPickerSection(
-  maybeNormalizedPickerSection: NormalizedPickerItem | NormalizedPickerSection
-): maybeNormalizedPickerSection is NormalizedPickerSection {
-  return (
-    maybeNormalizedPickerSection.item != null &&
-    'items' in maybeNormalizedPickerSection.item
   );
 }
 
@@ -272,7 +279,7 @@ export function normalizePickerItemList(
     | NormalizedPickerItem[]
 ): (NormalizedPickerItem | NormalizedPickerSection)[] {
   // If already normalized, just return as-is
-  if (isNormalizedPickerItemList(itemsOrSections)) {
+  if (isNormalizedItemsWithKeysList(itemsOrSections)) {
     return itemsOrSections;
   }
 

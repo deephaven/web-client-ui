@@ -1,15 +1,19 @@
 import React, { createElement } from 'react';
 import {
-  NormalizedPickerItem,
-  normalizeTooltipOptions,
-  normalizePickerItemList,
-  PickerItem,
-  isSectionElement,
-  isItemElement,
-  NormalizedPickerSection,
+  getPickerItemKey,
   INVALID_PICKER_ITEM_ERROR_MESSAGE,
-  isPickerItemOrSection,
+  isItemElement,
+  isNormalizedItemsWithKeysList,
   isNormalizedPickerSection,
+  isPickerItemOrSection,
+  isSectionElement,
+  NormalizedPickerItem,
+  NormalizedPickerSection,
+  normalizePickerItemList,
+  normalizeTooltipOptions,
+  PickerItem,
+  PickerItemOrSection,
+  PickerSection,
 } from './PickerUtils';
 import type { PickerProps } from './Picker';
 import { Item, Section } from '../shared';
@@ -149,6 +153,62 @@ const children = {
   single: mixedItems[0] as PickerProps['children'],
   mixed: mixedItems as PickerProps['children'],
 };
+
+describe('getPickerItemKey', () => {
+  it.each([
+    [{ key: 'top-level.key', item: { key: 'item.key' } }, 'item.key'],
+    [{ key: 'top-level.key', item: {} }, 'top-level.key'],
+    [{ key: 'top-level.key' }, 'top-level.key'],
+    [{ item: { key: 'item.key' } }, 'item.key'],
+    [{}, undefined],
+  ] as NormalizedPickerItem[])(
+    'should return the item.key or fallback to the top-level key: %s, %s',
+    (given, expected) => {
+      const actual = getPickerItemKey(given);
+      expect(actual).toBe(expected);
+    }
+  );
+});
+
+describe('isNormalizedItemsWithKeysList', () => {
+  const mock = {
+    normalizedItemWithKey: {
+      key: 'some.key',
+      item: { content: '' },
+    } as NormalizedPickerItem,
+    normalizedSectionWithKey: {
+      key: 'some.key',
+      item: { items: [] },
+    } as NormalizedPickerSection,
+    item: (<Item>Item</Item>) as PickerItem,
+    section: (
+      <Section>
+        <Item>Item</Item>
+      </Section>
+    ) as PickerSection,
+  } as const;
+
+  it.each([
+    [['item'], false],
+    [['section'], false],
+    [['item', 'normalizedItemWithKey'], false],
+    [['section', 'normalizedItemWithKey'], false],
+    [[], true],
+    [['normalizedItemWithKey'], true],
+    [['normalizedSectionWithKey'], true],
+    [['normalizedItemWithKey', 'item'], true],
+    [['normalizedSectionWithKey', 'section'], true],
+  ] as [(keyof typeof mock)[], boolean][])(
+    'should return true for a normalized Picker item list: %s, %s',
+    (givenKeys, expected) => {
+      const given = givenKeys.map(key => mock[key]) as
+        | PickerItemOrSection[]
+        | (NormalizedPickerItem | NormalizedPickerSection)[];
+
+      expect(isNormalizedItemsWithKeysList(given)).toBe(expected);
+    }
+  );
+});
 
 describe('isSectionElement', () => {
   it.each([
