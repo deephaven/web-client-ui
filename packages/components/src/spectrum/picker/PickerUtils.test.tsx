@@ -1,5 +1,4 @@
 import React, { createElement } from 'react';
-import { Text } from '@adobe/react-spectrum';
 import {
   NormalizedPickerItem,
   normalizeTooltipOptions,
@@ -13,8 +12,8 @@ import {
   isNormalizedPickerSection,
 } from './PickerUtils';
 import type { PickerProps } from './Picker';
-import { Item } from '../Item';
-import { Section } from '../Section';
+import { Item, Section } from '../shared';
+import { Text } from '../content';
 
 beforeEach(() => {
   expect.hasAssertions();

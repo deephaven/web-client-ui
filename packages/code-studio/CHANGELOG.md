@@ -3,6 +3,45 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.70.0](https://github.com/deephaven/web-client-ui/compare/v0.69.1...v0.70.0) (2024-03-22)
+
+
+### chore
+
+* Delete ValidateLabelInput ([#1887](https://github.com/deephaven/web-client-ui/issues/1887)) ([5d6ebe9](https://github.com/deephaven/web-client-ui/commit/5d6ebe92d91f39c1a2343721f5a4f53a6e02f3a5))
+
+
+### BREAKING CHANGES
+
+* ValidateLabelInput is no longer included in the
+`@deephaven/components` package.
+
+
+
+
+
+## [0.69.1](https://github.com/deephaven/web-client-ui/compare/v0.69.0...v0.69.1) (2024-03-15)
+
+
+### Bug Fixes
+
+* Loading workspace plugin data ([#1872](https://github.com/deephaven/web-client-ui/issues/1872)) ([1def969](https://github.com/deephaven/web-client-ui/commit/1def969d81b4209df1e06cd99c0d5afc71d14844))
+
+
+
+
+
+# [0.69.0](https://github.com/deephaven/web-client-ui/compare/v0.68.0...v0.69.0) (2024-03-15)
+
+
+### Bug Fixes
+
+* Save/load plugin data with layout ([#1866](https://github.com/deephaven/web-client-ui/issues/1866)) ([e64407d](https://github.com/deephaven/web-client-ui/commit/e64407d8e5c162bd3de07b84257a15e3330f415e)), closes [#1861](https://github.com/deephaven/web-client-ui/issues/1861)
+
+
+
+
+
 # [0.68.0](https://github.com/deephaven/web-client-ui/compare/v0.67.0...v0.68.0) (2024-03-08)
 
 
