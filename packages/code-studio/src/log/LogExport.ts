@@ -9,7 +9,10 @@ const FILENAME_DATE_FORMAT = 'yyyy-MM-dd-HHmmss';
 // Blacklist applies to all keys (e.g. blacklist foo will blacklist foo, a.foo, and b.foo)
 const KEY_BLACKLIST: string[] = ['client'];
 // Blacklist specific paths (e.g. blacklist foo will only blacklist foo but NOT a.foo or b.foo)
-const PATH_BLACKLIST: string[] = [];
+const PATH_BLACKLIST: string[] = [
+  'dashboardData.defaultLayout.connection',
+  'layoutStorage.storageService.connection',
+];
 
 /**
  * Replacer function for JSON.stringify to remove keys that should not be included in the output
