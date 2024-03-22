@@ -1,15 +1,6 @@
 import dh from '@deephaven/jsapi-shim';
-import type {
-  Column,
-  CustomColumn,
-  DateWrapper,
-  FilterCondition,
-  FilterValue,
-  LongWrapper,
-  Sort,
-  Table,
-  TreeTable,
-} from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
+
 import {
   Operator as FilterOperator,
   Type as FilterType,
@@ -23,6 +14,16 @@ import IrisGridTestUtils from '../../iris-grid/src/IrisGridTestUtils';
 import { ColumnName } from './Formatter';
 import { createValueFilter, FilterConditionFactory } from './FilterUtils';
 import { getSize } from './ViewportDataUtils';
+
+type Column = DhType.Column;
+type CustomColumn = DhType.CustomColumn;
+type DateWrapper = DhType.DateWrapper;
+type FilterCondition = DhType.FilterCondition;
+type FilterValue = DhType.FilterValue;
+type LongWrapper = DhType.LongWrapper;
+type Sort = DhType.Sort;
+type Table = DhType.Table;
+type TreeTable = DhType.TreeTable;
 
 jest.mock('./FilterUtils');
 jest.mock('./ViewportDataUtils');
@@ -568,6 +569,51 @@ describe('executeAndWaitForEvent', () => {
       jest.advanceTimersByTime(timeout);
 
       expect(tablePromise).rejects.toThrow(`Event "${eventType}" timed out.`);
+    }
+  );
+});
+
+describe('getValueType', () => {
+  it.each([
+    // TODO: Is there a better mapping for boolean?
+    ['boolean', dh.ValueType.STRING],
+    ['java.lang.Boolean', dh.ValueType.STRING],
+    [TableUtils.dataType.BOOLEAN, dh.ValueType.STRING],
+
+    ['char', dh.ValueType.STRING],
+    ['java.lang.Character', dh.ValueType.STRING],
+    [TableUtils.dataType.CHAR, dh.ValueType.STRING],
+    ['java.lang.String', dh.ValueType.STRING],
+    [TableUtils.dataType.STRING, dh.ValueType.STRING],
+
+    ['io.deephaven.db.tables.utils.DBDateTime', dh.ValueType.DATETIME],
+    ['io.deephaven.time.DateTime', dh.ValueType.DATETIME],
+    ['com.illumon.iris.db.tables.utils.DBDateTime', dh.ValueType.DATETIME],
+    ['java.time.Instant', dh.ValueType.DATETIME],
+    ['java.time.ZonedDateTime', dh.ValueType.DATETIME],
+    [TableUtils.dataType.DATETIME, dh.ValueType.DATETIME],
+
+    ['double', dh.ValueType.NUMBER],
+    ['java.lang.Double', dh.ValueType.NUMBER],
+    ['float', dh.ValueType.NUMBER],
+    ['java.lang.Float', dh.ValueType.NUMBER],
+    ['java.math.BigDecimal', dh.ValueType.STRING],
+    [TableUtils.dataType.DECIMAL, dh.ValueType.NUMBER],
+
+    ['int', dh.ValueType.NUMBER],
+    ['java.lang.Integer', dh.ValueType.NUMBER],
+    ['long', dh.ValueType.NUMBER],
+    ['java.lang.Long', dh.ValueType.NUMBER],
+    ['short', dh.ValueType.NUMBER],
+    ['java.lang.Short', dh.ValueType.NUMBER],
+    ['byte', dh.ValueType.NUMBER],
+    ['java.lang.Byte', dh.ValueType.NUMBER],
+    ['java.math.BigInteger', dh.ValueType.STRING],
+    [TableUtils.dataType.INT, dh.ValueType.NUMBER],
+  ])(
+    'should return the correct value type for columnType: %s, %s',
+    (columnType, valueType) => {
+      expect(tableUtils.getValueType(columnType)).toBe(valueType);
     }
   );
 });

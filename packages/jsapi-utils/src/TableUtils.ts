@@ -876,6 +876,11 @@ export class TableUtils {
     return size > 0;
   }
 
+  /**
+   * Get the `dh.ValueType` correspoding to the given `dh.Column.type` value.
+   * @param columnType The column type to get the value type for
+   * @returns The `dh.ValueType` corresponding to the column type
+   */
   getValueType(columnType?: string): string {
     if (columnType == null) {
       return this.dh.ValueType.STRING;
