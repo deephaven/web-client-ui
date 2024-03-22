@@ -4,13 +4,15 @@ export const EMPTY_MAP: ReadonlyMap<never, never> = new Map<never, never>();
 
 export const EMPTY_FUNCTION = (): void => undefined;
 
-export interface KeyedItem<
+export type KeyedItem<
   TItem,
   TKey extends string | number | boolean | undefined = string,
-> {
-  key: TKey;
-  item?: TItem;
-}
+> = TKey extends undefined
+  ? { key?: TKey; item?: TItem }
+  : {
+      key: TKey;
+      item?: TItem;
+    };
 
 export type SelectionT<T = string> = 'all' | Set<T>;
 

@@ -2,7 +2,7 @@ import { isValidElement, Key, ReactElement, ReactNode } from 'react';
 import { SpectrumPickerProps } from '@adobe/react-spectrum';
 import type { ItemRenderer } from '@react-types/shared';
 import Log from '@deephaven/log';
-import { ITEM_KEY_PREFIX, KeyedItem } from '@deephaven/utils';
+import { KeyedItem } from '@deephaven/utils';
 import { Item, ItemProps, Section, SectionProps } from '../shared';
 import { PopperOptions } from '../../popper';
 
@@ -239,7 +239,6 @@ function normalizePickerItem(
     ) as NormalizedPickerItem[];
 
     return {
-      key: key == null ? key : `${ITEM_KEY_PREFIX}_${key}`,
       item: {
         key,
         title,
@@ -255,7 +254,6 @@ function normalizePickerItem(
   const textValue = normalizeTextValue(itemOrSection);
 
   return {
-    key: key == null ? key : `${ITEM_KEY_PREFIX}_${key}`,
     item: { key, content, textValue },
   };
 }

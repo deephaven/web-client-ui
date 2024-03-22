@@ -1,5 +1,4 @@
 import React, { createElement } from 'react';
-import { ITEM_KEY_PREFIX } from '@deephaven/utils';
 import {
   NormalizedPickerItem,
   normalizeTooltipOptions,
@@ -25,35 +24,30 @@ const expectedItems = {
   numberLiteral: [
     999,
     {
-      key: `${ITEM_KEY_PREFIX}_999`,
       item: { content: 999, key: 999, textValue: '999' },
     },
   ],
   stringLiteral: [
     'String',
     {
-      key: `${ITEM_KEY_PREFIX}_String`,
       item: { content: 'String', key: 'String', textValue: 'String' },
     },
   ],
   emptyStringLiteral: [
     '',
     {
-      key: `${ITEM_KEY_PREFIX}_`,
       item: { content: '', key: '', textValue: '' },
     },
   ],
   booleanLiteral: [
     false,
     {
-      key: `${ITEM_KEY_PREFIX}_false`,
       item: { content: false, key: false, textValue: 'false' },
     },
   ],
   singleStringChild: [
     <Item textValue="textValue">Single string</Item>,
     {
-      key: `${ITEM_KEY_PREFIX}_textValue`,
       item: {
         content: 'Single string',
         key: 'textValue',
@@ -65,7 +59,6 @@ const expectedItems = {
     // eslint-disable-next-line react/jsx-key
     <Item>Single string child no textValue</Item>,
     {
-      key: `${ITEM_KEY_PREFIX}_Single string child no textValue`,
       item: {
         content: 'Single string child no textValue',
         key: 'Single string child no textValue',
@@ -78,7 +71,6 @@ const expectedItems = {
       <span>No textValue</span>
     </Item>,
     {
-      key: undefined,
       item: { content: <span>No textValue</span> },
     },
   ],
@@ -87,7 +79,6 @@ const expectedItems = {
       Explicit key
     </Item>,
     {
-      key: `${ITEM_KEY_PREFIX}_explicit.key`,
       item: {
         content: 'Explicit key',
         key: 'explicit.key',
@@ -101,7 +92,6 @@ const expectedItems = {
       <Text>Complex</Text>
     </Item>,
     {
-      key: `${ITEM_KEY_PREFIX}_textValue`,
       item: {
         content: [<i>i</i>, <Text>Complex</Text>],
         key: 'textValue',
@@ -119,14 +109,12 @@ const expectedSections = {
   noTitle: [
     <Section>{expectedItems.singleStringChild[0]}</Section>,
     {
-      key: undefined,
       item: { items: [expectedItems.singleStringChild[1]] },
     },
   ],
   title: [
     <Section title="Some Title">{expectedItems.singleStringChild[0]}</Section>,
     {
-      key: `${ITEM_KEY_PREFIX}_Some Title`,
       item: {
         key: 'Some Title',
         title: 'Some Title',
@@ -139,7 +127,6 @@ const expectedSections = {
       {expectedItems.singleStringChild[0]}
     </Section>,
     {
-      key: `${ITEM_KEY_PREFIX}_Some Key`,
       item: {
         key: 'Some Key',
         title: 'Some Title',
