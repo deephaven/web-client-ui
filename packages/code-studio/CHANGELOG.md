@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.70.0](https://github.com/deephaven/web-client-ui/compare/v0.69.1...v0.70.0) (2024-03-22)
+
+
+### chore
+
+* Delete ValidateLabelInput ([#1887](https://github.com/deephaven/web-client-ui/issues/1887)) ([5d6ebe9](https://github.com/deephaven/web-client-ui/commit/5d6ebe92d91f39c1a2343721f5a4f53a6e02f3a5))
+
+
+### BREAKING CHANGES
+
+* ValidateLabelInput is no longer included in the
+`@deephaven/components` package.
+
+
+
+
+
 ## [0.69.1](https://github.com/deephaven/web-client-ui/compare/v0.69.0...v0.69.1) (2024-03-15)
 
 
