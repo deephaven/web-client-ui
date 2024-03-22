@@ -1,4 +1,4 @@
-import { TestUtils } from '@deephaven/utils';
+import { KeyedItem, TestUtils } from '@deephaven/utils';
 import {
   createValidationProps,
   extractSpectrumHTMLElement,
@@ -6,6 +6,7 @@ import {
   findSpectrumComboBoxScrollArea,
   findSpectrumPickerScrollArea,
   findSpectrumPopoverScrollArea,
+  getPositionOfSelectedItem,
   identityExtractHTMLElement,
   ReactSpectrumComponent,
 } from './SpectrumUtils';
@@ -151,6 +152,40 @@ describe.each([
     );
   }
 );
+
+describe('getPositionOfSelectedItem', () => {
+  const keyedItems: KeyedItem<{ key?: string; content: string }, string>[] = [
+    { key: 'top-level-key-1', item: { key: 'key-1', content: '1' } },
+    { key: 'top-level-key-2', item: { key: 'key-2', content: '2' } },
+    { key: 'top-level-key-3', item: { key: 'key-3', content: '3' } },
+    { key: 'top-level-key-4', item: { content: '4' } },
+  ];
+
+  const itemHeight = 8;
+  const topOffset = 2;
+
+  it.each([
+    ['top-level-key-2', 0],
+    ['key-2', 1],
+    ['key-3', 2],
+    ['key-4', 0],
+    ['top-level-key-4', 3],
+  ])(
+    'should find the position of the selected item: %s, %s',
+    async (selectedKey, expectedIndex) => {
+      const actual = await getPositionOfSelectedItem({
+        keyedItems,
+        itemHeight,
+        selectedKey,
+        topOffset,
+      });
+
+      const expected = itemHeight * expectedIndex + topOffset;
+
+      expect(actual).toBe(expected);
+    }
+  );
+});
 
 describe('identityExtractHTMLElement', () => {
   it.each([null, createMockProxy<Element>()])(

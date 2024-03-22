@@ -25,30 +25,6 @@ export function createValidationProps(
   };
 }
 
-export async function defaultGetInitialScrollPosition<
-  TKey extends string | number | boolean | undefined,
->({
-  keyedItems,
-  itemHeight,
-  selectedKey,
-  topOffset,
-}: {
-  keyedItems: KeyedItem<{ key?: TKey }, TKey>[];
-  itemHeight: number;
-  selectedKey: TKey | null | undefined;
-  topOffset: number;
-}): Promise<number> {
-  const i = keyedItems.findIndex(
-    item => item.item?.key === selectedKey || item.key === selectedKey
-  );
-
-  if (i <= 0) {
-    return 0;
-  }
-
-  return itemHeight * i + topOffset;
-}
-
 /**
  * Extract DOM node from React Spectrum component ref.
  * @param ref
@@ -109,6 +85,39 @@ export function findSpectrumPopoverScrollArea<
   const scrollArea = popupId == null ? null : document.getElementById(popupId);
 
   return scrollArea;
+}
+
+/**
+ * Get the position of a selected item in a list of keyed items. The position is
+ * based on the index, item height, and top offset.
+ * @param keyedItems The list of keyed items
+ * @param itemHeight The height of each item
+ * @param selectedKey The key of the selected item
+ * @param topOffset The offset from the top of the list (e.g. if there is top
+ * padding surrounding the entire list)
+ */
+export async function getPositionOfSelectedItem<
+  TKey extends string | number | boolean | undefined,
+>({
+  keyedItems,
+  itemHeight,
+  selectedKey,
+  topOffset,
+}: {
+  keyedItems: KeyedItem<{ key?: TKey }, TKey>[];
+  itemHeight: number;
+  selectedKey: TKey | null | undefined;
+  topOffset: number;
+}): Promise<number> {
+  const i = keyedItems.findIndex(
+    item => (item.item?.key ?? item.key) === selectedKey
+  );
+
+  if (i <= 0) {
+    return topOffset;
+  }
+
+  return itemHeight * i + topOffset;
 }
 
 /**

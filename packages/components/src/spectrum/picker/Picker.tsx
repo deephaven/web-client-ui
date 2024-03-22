@@ -2,7 +2,7 @@ import { Key, ReactNode, useCallback, useMemo } from 'react';
 import { DOMRef } from '@react-types/shared';
 import { Flex, Picker as SpectrumPicker, Text } from '@adobe/react-spectrum';
 import {
-  defaultGetInitialScrollPosition,
+  getPositionOfSelectedItem,
   findSpectrumPickerScrollArea,
   isElementOfType,
   usePopoverOnScrollRef,
@@ -161,7 +161,7 @@ export function Picker({
   const getInitialScrollPositionInternal = useCallback(
     () =>
       getInitialScrollPosition == null
-        ? defaultGetInitialScrollPosition({
+        ? getPositionOfSelectedItem({
             keyedItems: normalizedItems,
             // TODO: #1890 & deephaven-plugins#371 add support for sections and
             // items with descriptions since they impact the height calculations
