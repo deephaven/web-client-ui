@@ -16,4 +16,4 @@ export {
   type SpectrumTextFieldProps as TextFieldProps,
 } from '@adobe/react-spectrum';
 
-export { type SpectrumTextAreaProps as TextAreaProps } from '@react-types/textfield';
+export type { SpectrumTextAreaProps as TextAreaProps } from '@react-types/textfield';
