@@ -17,13 +17,13 @@ export type ViewportRow = dh.Row & { offsetInSnapshot: number };
 const log = Log.module('ViewportDataUtils');
 
 /**
- * Create a key for a given index. The prefix is necessary to avoid collisions
- * with property values in the `item` property that may be used as keys once
- * the item is loaded and rendered.
+ * Create a `KeyedItem.key` for a given index. The prefix is necessary to avoid
+ * collisions with property values in the `item` property that may be used as
+ * keys once the item is loaded and rendered.
  * @param index Index to create a key for.
  * @returns A unique key for the given index.
  */
-export function createItemKey(index: number): string {
+export function createKeyedItemKey(index: number): string {
   return `${ITEM_KEY_PREFIX}_${index}`;
 }
 
@@ -39,7 +39,7 @@ export function createKeyFromOffsetRow(
   row: ViewportRow,
   offset: number
 ): string {
-  return createItemKey(row.offsetInSnapshot + offset);
+  return createKeyedItemKey(row.offsetInSnapshot + offset);
 }
 
 /**
@@ -108,7 +108,7 @@ export function* generateEmptyKeyedItems<T>(
 ): Generator<KeyedItem<T>, void, unknown> {
   // eslint-disable-next-line no-plusplus
   for (let i = start; i <= end; ++i) {
-    yield { key: createItemKey(i) };
+    yield { key: createKeyedItemKey(i) };
   }
 }
 

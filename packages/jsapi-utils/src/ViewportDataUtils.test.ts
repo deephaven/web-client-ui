@@ -12,6 +12,7 @@ import {
   getSize,
   isClosed,
   padFirstAndLastRow,
+  createKeyedItemKey,
 } from './ViewportDataUtils';
 
 const { asMock, createMockProxy } = TestUtils;
@@ -33,6 +34,13 @@ beforeEach(() => {
 
   // Mock deserializer just returns the row given to it.
   TestUtils.asMock(deserializeRow).mockImplementation(row => row);
+});
+
+describe('createdKeyedItemKey', () => {
+  it('should append prefix to given index', () => {
+    const actual = createKeyedItemKey(10);
+    expect(actual).toEqual(`${ITEM_KEY_PREFIX}_10`);
+  });
 });
 
 describe('createKeyFromOffsetRow', () => {
