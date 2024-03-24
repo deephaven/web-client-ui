@@ -1,5 +1,6 @@
 {
   "name": "ruff_wasm",
+  "private": true,
   "collaborators": [
     "Charlie Marsh <charlie.r.marsh@gmail.com>"
   ],
