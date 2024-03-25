@@ -11,7 +11,7 @@ import { useViewportData } from '../../useViewportData';
 import { getPickerKeyColumn } from './PickerUtils';
 import { usePickerItemRowDeserializer } from './usePickerItemRowDeserializer';
 
-export interface PickerProps extends PickerPropsBase {
+export interface PickerProps extends Omit<PickerPropsBase, 'children'> {
   table: dh.Table;
   /* The column of values to use as item keys. Defaults to the first column. */
   keyColumn?: string;
