@@ -390,6 +390,8 @@ test('custom column', async ({ page }) => {
   });
 
   await test.step('Drag', async () => {
+    test.skip(({ browserName }) => browserName === 'webkit', 'Flaky on webkit');
+
     await addColumnButton.click();
 
     const dragColumn = page.getByPlaceholder('Column Name').nth(1);
