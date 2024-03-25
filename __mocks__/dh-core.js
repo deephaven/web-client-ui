@@ -1990,8 +1990,10 @@ class SourceType {
 }
 
 class ValueType {
-  static CHAR = 'CHAR';
+  static BOOLEAN = 'BOOLEAN';
   static DATETIME = 'DATETIME';
+  static DOUBLE = 'DOUBLE';
+  static LONG = 'LONG';
   static NUMBER = 'NUMBER';
   static STRING = 'STRING';
 }

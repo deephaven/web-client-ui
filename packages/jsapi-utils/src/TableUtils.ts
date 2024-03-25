@@ -877,7 +877,7 @@ export class TableUtils {
   }
 
   /**
-   * Get the `dh.ValueType` correspoding to the given `dh.Column.type` value.
+   * Get the `dh.ValueType` corresponding to the given `dh.Column.type` value.
    * @param columnType The column type to get the value type for
    * @returns The `dh.ValueType` corresponding to the column type
    */
@@ -889,6 +889,9 @@ export class TableUtils {
     const columnDataType = TableUtils.getNormalizedType(columnType);
 
     switch (columnDataType) {
+      case TableUtils.dataType.BOOLEAN:
+        return this.dh.ValueType.BOOLEAN;
+
       case TableUtils.dataType.CHAR:
       case TableUtils.dataType.STRING:
         return this.dh.ValueType.STRING;

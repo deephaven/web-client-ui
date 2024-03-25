@@ -575,10 +575,9 @@ describe('executeAndWaitForEvent', () => {
 
 describe('getValueType', () => {
   it.each([
-    // TODO: Is there a better mapping for boolean?
-    ['boolean', dh.ValueType.STRING],
-    ['java.lang.Boolean', dh.ValueType.STRING],
-    [TableUtils.dataType.BOOLEAN, dh.ValueType.STRING],
+    ['boolean', dh.ValueType.BOOLEAN],
+    ['java.lang.Boolean', dh.ValueType.BOOLEAN],
+    [TableUtils.dataType.BOOLEAN, dh.ValueType.BOOLEAN],
 
     ['char', dh.ValueType.STRING],
     ['java.lang.Character', dh.ValueType.STRING],
