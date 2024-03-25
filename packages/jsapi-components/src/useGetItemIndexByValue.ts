@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { dh } from '@deephaven/jsapi-types';
-import useTableUtils from './useTableUtils';
+import { useTableUtils } from './useTableUtils';
 
 /**
  * Returns a function that gets the index of the first row containing a column
@@ -30,10 +30,9 @@ export function useGetItemIndexByValue<TValue>({
     const column = table.findColumn(columnName);
     const columnValueType = tableUtils.getValueType(column.type);
 
-    // TODO: It seems that `seekRow` returns the index of the last row when
-    // no match is found. We need a way to distinguish between a match in the
-    // last row and no match at all and return `null` in the latter case.
-    return table.seekRow(0, column, columnValueType, value);
+    const index = await table.seekRow(0, column, columnValueType, value);
+
+    return index === -1 ? null : index;
   }, [columnName, table, tableUtils, value]);
 }
 

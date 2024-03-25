@@ -66,10 +66,22 @@ class TestUtils {
    * // `asMock` will infer the type as jest.Mock<number, [string]> which gives
    * // us the ability to call `mockImplementation` in a type safe way.
    * TestUtils.asMock(someFunc).mockImplementation(name => name.split(',').length)
+   * @param fn The function to assert as a jest.Mock function.
+   * @param mockName Optional name to assign to the mock function. Defaults to the
+   * original function's name if it has one.
    */
   static asMock = <TResult, TArgs extends unknown[]>(
-    fn: (...args: TArgs) => TResult
-  ): jest.Mock<TResult, TArgs> => fn as unknown as jest.Mock<TResult, TArgs>;
+    fn: (...args: TArgs) => TResult,
+    mockName = fn.name
+  ): jest.Mock<TResult, TArgs> => {
+    const mockFn = fn as unknown as jest.Mock<TResult, TArgs>;
+
+    if (mockName) {
+      return mockFn.mockName(mockName);
+    }
+
+    return mockFn;
+  };
 
   /**
    * Selectively disable logging methods on `console` object. Uses spyOn so that
