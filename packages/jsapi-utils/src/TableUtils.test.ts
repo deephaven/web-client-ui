@@ -596,7 +596,6 @@ describe('getValueType', () => {
     ['java.lang.Double', dh.ValueType.NUMBER],
     ['float', dh.ValueType.NUMBER],
     ['java.lang.Float', dh.ValueType.NUMBER],
-    ['java.math.BigDecimal', dh.ValueType.STRING],
     [TableUtils.dataType.DECIMAL, dh.ValueType.NUMBER],
 
     ['int', dh.ValueType.NUMBER],
@@ -607,8 +606,10 @@ describe('getValueType', () => {
     ['java.lang.Short', dh.ValueType.NUMBER],
     ['byte', dh.ValueType.NUMBER],
     ['java.lang.Byte', dh.ValueType.NUMBER],
-    ['java.math.BigInteger', dh.ValueType.STRING],
     [TableUtils.dataType.INT, dh.ValueType.NUMBER],
+
+    ['java.math.BigDecimal', dh.ValueType.STRING],
+    ['java.math.BigInteger', dh.ValueType.STRING],
   ])(
     'should return the correct value type for columnType: %s, %s',
     (columnType, valueType) => {
