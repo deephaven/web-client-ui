@@ -485,6 +485,13 @@ abstract class IrisGridModel<
   abstract commitPending(): Promise<void>;
 
   /**
+   * Check if viewport is still loading data
+   */
+  get hasPendingOperations(): boolean {
+    return false;
+  }
+
+  /**
    * Check if a column is filterable
    * @param columnIndex The column index to check for filterability
    * @returns True if the current provided column index is filterable, false otherwise

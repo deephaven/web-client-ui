@@ -455,6 +455,21 @@ class IrisGridTableModelTemplate<
     return !this.isSaveInProgress && this.inputTable != null;
   }
 
+  get hasPendingOperations(): boolean {
+    if (this.viewport == null || this.viewportData == null) {
+      return true;
+    }
+
+    // offset + row.length is last row of loaded data
+    // offset is first row of loaded data
+    // last row of loaded data < last row of viewport
+    // first row of viewport < first row of loaded data
+    return (
+      this.viewportData.offset + this.viewportData.rows.length <
+        this.viewport.bottom || this.viewport.top < this.viewportData.offset
+    );
+  }
+
   cacheFormattedValue(x: ModelIndex, y: ModelIndex, text: string | null): void {
     if (this.formattedStringData[x] == null) {
       this.formattedStringData[x] = [];

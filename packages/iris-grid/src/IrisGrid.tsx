@@ -608,6 +608,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.handleGotoValueSelectedFilterChanged.bind(this);
     this.handleGotoValueChanged = this.handleGotoValueChanged.bind(this);
     this.handleGotoValueSubmitted = this.handleGotoValueSubmitted.bind(this);
+    this.onViewportUpdate = this.onViewportUpdate.bind(this);
     this.makeQuickFilter = this.makeQuickFilter.bind(this);
 
     this.grid = null;
@@ -619,6 +620,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.truncateNumbersWithPound = false;
     this.showEmptyStrings = true;
     this.showNullStrings = true;
+    this.pendingOperationsTimeout = null;
 
     // When the loading scrim started/when it should extend to the end of the screen.
     this.renderer = new IrisGridRenderer();
@@ -1035,6 +1037,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   commitAction: Action;
 
   contextActions: ContextAction[];
+
+  pendingOperationsTimeout: NodeJS.Timeout | null;
 
   tableUtils: TableUtils;
 
@@ -2504,6 +2508,20 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     onError(error);
   }
 
+  onViewportUpdate(): void {
+    const { model } = this.props;
+    // pending and no timer already exists
+    if (model.hasPendingOperations && this.pendingOperationsTimeout === null) {
+      this.pendingOperationsTimeout = setTimeout(() => {
+        // still pending after timeout
+        if (model.hasPendingOperations) {
+          this.startLoading('Waiting for viewport...');
+        }
+        this.pendingOperationsTimeout = null;
+      }, 500);
+    }
+  }
+
   showAllColumns(): void {
     const { metricCalculator } = this.state;
     const userColumnWidths = metricCalculator.getUserColumnWidths();
@@ -3026,6 +3044,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.lastLoadedConfig = null;
     }
 
+    if (this.pendingOperationsTimeout !== null) {
+      clearTimeout(this.pendingOperationsTimeout);
+      this.pendingOperationsTimeout = null;
+    }
     this.grid?.forceUpdate();
     this.stopLoading();
   }
@@ -4727,6 +4749,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                 frozenColumns={frozenColumns}
                 columnHeaderGroups={columnHeaderGroups}
                 partitionConfig={partitionConfig}
+                onViewportUpdate={this.onViewportUpdate}
               />
             )}
             {!isMenuShown && (
