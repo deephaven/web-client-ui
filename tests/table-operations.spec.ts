@@ -341,7 +341,7 @@ test('organize columns', async ({ page }) => {
   });
 });
 
-test('custom column', async ({ page }) => {
+test('custom column', async ({ page, browserName }) => {
   await openTableOption(page, 'Custom Columns');
 
   await test.step('Create custom column', async () => {
@@ -390,7 +390,7 @@ test('custom column', async ({ page }) => {
   });
 
   await test.step('Drag', async () => {
-    test.skip(({ browserName }) => browserName === 'webkit', 'Flaky on webkit');
+    if (browserName === 'webkit') return;
 
     await addColumnButton.click();
 
