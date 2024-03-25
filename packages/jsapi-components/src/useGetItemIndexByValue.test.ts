@@ -34,7 +34,7 @@ describe('useGetItemIndexByValue', () => {
     [mockTable, null],
     [null, 'mock.value'],
   ])(
-    'should return `null` if the table or value is `null`',
+    'should return `null` if the table or value is `null`: table: %s, value: "%s"',
     async (table, value) => {
       const { result } = renderHook(() =>
         useGetItemIndexByValue({
