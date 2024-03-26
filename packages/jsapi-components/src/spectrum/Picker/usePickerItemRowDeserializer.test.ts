@@ -74,11 +74,11 @@ describe('usePickerItemRowDeserializer', () => {
     [
       'Object key',
       {},
-      'mock.labelValue',
+      {},
       undefined,
       {
         key: String({}),
-        content: 'mock.labelValue',
+        content: String({}),
       },
     ],
     [
