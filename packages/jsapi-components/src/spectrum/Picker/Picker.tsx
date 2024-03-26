@@ -3,7 +3,9 @@ import {
   Picker as PickerBase,
   PickerProps as PickerPropsBase,
 } from '@deephaven/components';
-import { dh } from '@deephaven/jsapi-types';
+import { useApi } from '@deephaven/jsapi-bootstrap';
+import { dh as DhType } from '@deephaven/jsapi-types';
+import { Formatter } from '@deephaven/jsapi-utils';
 import { PICKER_ITEM_HEIGHT, PICKER_TOP_OFFSET } from '@deephaven/utils';
 import { useCallback, useEffect, useMemo } from 'react';
 import useGetItemIndexByValue from '../../useGetItemIndexByValue';
@@ -12,7 +14,7 @@ import { getPickerKeyColumn } from './PickerUtils';
 import { usePickerItemRowDeserializer } from './usePickerItemRowDeserializer';
 
 export interface PickerProps extends Omit<PickerPropsBase, 'children'> {
-  table: dh.Table;
+  table: DhType.Table;
   /* The column of values to use as item keys. Defaults to the first column. */
   keyColumn?: string;
   /* The column of values to display as primary text. Defaults to the `keyColumn` value. */
@@ -26,6 +28,13 @@ export function Picker({
   selectedKey,
   ...props
 }: PickerProps): JSX.Element {
+  const dh = useApi();
+
+  const formatValue = useMemo(() => {
+    const formatter = new Formatter(dh);
+    return formatter.getFormattedString.bind(formatter);
+  }, [dh]);
+
   const keyColumn = useMemo(
     () => getPickerKeyColumn(table, keyColumnName),
     [keyColumnName, table]
@@ -35,6 +44,7 @@ export function Picker({
     table,
     keyColumnName,
     labelColumnName,
+    formatValue,
   });
 
   const getItemIndexByValue = useGetItemIndexByValue({
@@ -55,7 +65,7 @@ export function Picker({
 
   const { viewportData, onScroll, setViewport } = useViewportData<
     NormalizedPickerItemData,
-    dh.Table
+    DhType.Table
   >({
     reuseItemsOnTableResize: true,
     table,
