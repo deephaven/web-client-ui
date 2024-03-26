@@ -1,5 +1,5 @@
 import { ReactElement } from 'react';
-import { ButtonOld, CopyButton, Button } from '@deephaven/components';
+import { CopyButton, Button } from '@deephaven/components';
 import './ChartErrorOverlay.scss';
 
 interface ChartErrorOverlayProps {
