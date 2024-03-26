@@ -708,18 +708,22 @@ class Chart extends Component<ChartProps, ChartState> {
             style={{ height: '100%', width: '100%' }}
           />
         )}
-        {downsamplingError != null && (
+        {downsamplingError != null && shownError == null && (
           <ChartErrorOverlay
             errorMessage={`${downsamplingError}`}
-            clearError={() => {
+            onDiscard={() => {
               this.handleDownsampleErrorClose();
+            }}
+            onConfirm={() => {
+              this.handleDownsampleErrorClose();
+              this.handleDownsampleClick();
             }}
           />
         )}
         {shownError != null && (
           <ChartErrorOverlay
             errorMessage={`${shownError}`}
-            clearError={() => {
+            onDiscard={() => {
               this.handleErrorClose();
             }}
           />

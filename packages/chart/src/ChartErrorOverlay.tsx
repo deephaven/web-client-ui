@@ -1,24 +1,26 @@
 import { ReactElement } from 'react';
-import { ButtonOld } from '@deephaven/components';
+import { ButtonOld, CopyButton } from '@deephaven/components';
 import './ChartErrorOverlay.scss';
 
 interface ChartErrorOverlayProps {
   errorMessage: string;
-  clearError?: () => void;
+  onDiscard?: () => void;
+  onCancel?: () => void;
+  onConfirm?: () => void;
   'data-testid'?: string;
 }
 
 function ChartErrorOverlay({
   errorMessage,
-  clearError,
+  onDiscard,
+  onConfirm,
+  onCancel,
   'data-testid': dataTestId,
 }: ChartErrorOverlayProps): ReactElement {
   const messageTestId =
     dataTestId != null ? `${dataTestId}-message` : undefined;
 
-  const slowPerformanceMessage = errorMessage.includes(
-    'Plot contains more than'
-  ); // TODO: DHC #5220 to detect slow performance and show this message
+  // TODO: DHC #5220 to detect slow performance and show this message
 
   const undismissableError =
     errorMessage === 'Too many items to disable downsampling';
@@ -28,14 +30,27 @@ function ChartErrorOverlay({
       <div className="chart-panel-overlay-content chart-error-overlay-content">
         <div className="info-message" data-testid={messageTestId}>
           {errorMessage}
+          <CopyButton copy={errorMessage} style={{ margin: '0' }} />
         </div>
-        {!undismissableError && (
-          <div>
-            <ButtonOld onClick={clearError} className="btn-primary">
-              {slowPerformanceMessage ? 'Continue Anyways' : 'Continue'}
+        {/* {!undismissableError && ( */}
+        <div>
+          {onCancel && (
+            <ButtonOld onClick={onCancel} className="btn-primary">
+              Dismiss
             </ButtonOld>
-          </div>
-        )}
+          )}
+          {onDiscard && (
+            <ButtonOld onClick={onDiscard} className="btn-primary">
+              Dismiss
+            </ButtonOld>
+          )}
+          {onConfirm && !undismissableError && (
+            <ButtonOld onClick={onConfirm} className="btn-primary">
+              Continue
+            </ButtonOld>
+          )}
+        </div>
+        {/* )} */}
       </div>
     </div>
   );
