@@ -10,8 +10,10 @@ const FILENAME_DATE_FORMAT = 'yyyy-MM-dd-HHmmss';
 const KEY_BLACKLIST: string[] = ['client'];
 // Blacklist specific paths (e.g. blacklist foo will only blacklist foo but NOT a.foo or b.foo)
 const PATH_BLACKLIST: string[] = [
+  'api',
   'dashboardData.defaultLayout.connection',
-  'layoutStorage.storageService.connection',
+  'layoutStorage',
+  'storage',
 ];
 
 /**
