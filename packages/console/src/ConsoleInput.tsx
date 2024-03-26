@@ -183,6 +183,7 @@ export class ConsoleInput extends PureComponent<
       },
       value: '',
       wordWrap: 'on',
+      autoClosingBrackets: 'beforeWhitespace',
     } as const;
 
     const element = this.commandContainer.current;
