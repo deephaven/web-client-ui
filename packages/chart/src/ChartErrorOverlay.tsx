@@ -1,5 +1,5 @@
 import { ReactElement } from 'react';
-import { ButtonOld, CopyButton } from '@deephaven/components';
+import { ButtonOld, CopyButton, Button } from '@deephaven/components';
 import './ChartErrorOverlay.scss';
 
 interface ChartErrorOverlayProps {
@@ -35,19 +35,19 @@ function ChartErrorOverlay({
         {/* {!undismissableError && ( */}
         <div>
           {onCancel && (
-            <ButtonOld onClick={onCancel} className="btn-primary">
-              Dismiss
-            </ButtonOld>
+            <Button onClick={onCancel} kind="secondary">
+              Cancel
+            </Button>
           )}
           {onDiscard && (
-            <ButtonOld onClick={onDiscard} className="btn-primary">
+            <Button onClick={onDiscard} kind="secondary">
               Dismiss
-            </ButtonOld>
+            </Button>
           )}
           {onConfirm && !undismissableError && (
-            <ButtonOld onClick={onConfirm} className="btn-primary">
+            <Button onClick={onConfirm} kind="primary">
               Continue
-            </ButtonOld>
+            </Button>
           )}
         </div>
         {/* )} */}
