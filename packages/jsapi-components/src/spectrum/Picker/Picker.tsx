@@ -6,12 +6,15 @@ import {
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import { dh as DhType } from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
+import Log from '@deephaven/log';
 import { PICKER_ITEM_HEIGHT, PICKER_TOP_OFFSET } from '@deephaven/utils';
 import { useCallback, useEffect, useMemo } from 'react';
 import useGetItemIndexByValue from '../../useGetItemIndexByValue';
 import { useViewportData } from '../../useViewportData';
 import { getPickerKeyColumn } from './PickerUtils';
 import { usePickerItemRowDeserializer } from './usePickerItemRowDeserializer';
+
+const log = Log.module('Picker');
 
 export interface PickerProps extends Omit<PickerPropsBase, 'children'> {
   table: DhType.Table;
@@ -81,13 +84,17 @@ export function Picker({
     function setViewportFromSelectedKey() {
       let isCanceled = false;
 
-      getItemIndexByValue().then(index => {
-        if (index == null || isCanceled) {
-          return;
-        }
+      getItemIndexByValue()
+        .then(index => {
+          if (index == null || isCanceled) {
+            return;
+          }
 
-        setViewport(index);
-      });
+          setViewport(index);
+        })
+        .catch(err => {
+          log.error('Error setting viewport from selected key', err);
+        });
 
       return () => {
         isCanceled = true;
