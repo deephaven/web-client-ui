@@ -91,6 +91,7 @@ class Editor extends Component<EditorProps, Record<string, never>> {
       value: '',
       wordWrap: 'off',
       links: true,
+      autoClosingBrackets: 'beforeWhitespace',
       ...settings,
     };
     assertNotNull(this.container);

@@ -88,6 +88,7 @@ export class InputEditor extends Component<InputEditorProps, InputEditorState> {
       value,
       wordWrap: 'on',
       automaticLayout: true,
+      autoClosingBrackets: 'beforeWhitespace',
       ...editorSettings,
     } as monaco.editor.IStandaloneEditorConstructionOptions;
     if (!this.editorContainer) {
