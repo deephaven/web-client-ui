@@ -610,7 +610,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.handleGotoValueSelectedFilterChanged.bind(this);
     this.handleGotoValueChanged = this.handleGotoValueChanged.bind(this);
     this.handleGotoValueSubmitted = this.handleGotoValueSubmitted.bind(this);
-    this.onViewportUpdate = this.onViewportUpdate.bind(this);
+    this.handleViewportUpdate = this.handleViewportUpdate.bind(this);
     this.makeQuickFilter = this.makeQuickFilter.bind(this);
 
     this.grid = null;
@@ -2513,7 +2513,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     onError(error);
   }
 
-  onViewportUpdate(): void {
+  handleViewportUpdate(): void {
     const { model } = this.props;
     // pending and no timer already exists
     if (model.isViewportPending && this.viewportLoadingTimeout === null) {
@@ -4754,7 +4754,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                 frozenColumns={frozenColumns}
                 columnHeaderGroups={columnHeaderGroups}
                 partitionConfig={partitionConfig}
-                onViewportUpdate={this.onViewportUpdate}
+                onViewportUpdate={this.handleViewportUpdate}
               />
             )}
             {!isMenuShown && (
