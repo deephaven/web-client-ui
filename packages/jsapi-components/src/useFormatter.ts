@@ -31,10 +31,11 @@ export interface FormatterOptions {
 }
 
 /**
- * Returns a subset of `Formatter` instance members based on the current
- * `FormatSettingsContext`. Methods are bound to a `Formatter` instance, so they
- * are safe to destructure. Static methods can still be accessed statically from
- * the `Formatter` class.
+ * Returns a subset of members of a `Formatter` instance. The `Formatter` will be
+ * constructed based on the given options or fallback to the configuration found
+ * in the current `FormatSettingsContext`. Members that are functions are bound
+ * to the `Formatter` instance, so they are safe to destructure. Static methods
+ * can still be accessed statically from the `Formatter` class.
  * @param columnRules Column formatting rules to use, if not provided, will use
  * the rules from the `FormatSettingsContext`
  * @param dateTimeOptions DateTime formatting options to use, if not provided,
