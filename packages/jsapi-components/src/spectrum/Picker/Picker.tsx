@@ -14,7 +14,7 @@ import { useViewportData } from '../../useViewportData';
 import { getPickerKeyColumn } from './PickerUtils';
 import { usePickerItemRowDeserializer } from './usePickerItemRowDeserializer';
 
-const log = Log.module('Picker');
+const log = Log.module('jsapi-components.Picker');
 
 export interface PickerProps extends Omit<PickerPropsBase, 'children'> {
   table: DhType.Table;
