@@ -20,11 +20,6 @@ function ChartErrorOverlay({
   const messageTestId =
     dataTestId != null ? `${dataTestId}-message` : undefined;
 
-  // TODO: DHC #5220 to detect slow performance and show this message
-
-  const undismissableError =
-    errorMessage === 'Too many items to disable downsampling';
-
   return (
     <div className="chart-panel-overlay chart-error-overlay">
       <div className="chart-panel-overlay-content chart-error-overlay-content">
@@ -32,7 +27,6 @@ function ChartErrorOverlay({
           {errorMessage}
           <CopyButton copy={errorMessage} style={{ margin: '0' }} />
         </div>
-        {/* {!undismissableError && ( */}
         <div>
           {onCancel && (
             <Button onClick={onCancel} kind="secondary">
@@ -50,7 +44,6 @@ function ChartErrorOverlay({
             </Button>
           )}
         </div>
-        {/* )} */}
       </div>
     </div>
   );
