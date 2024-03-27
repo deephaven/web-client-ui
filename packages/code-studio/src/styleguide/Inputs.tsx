@@ -259,6 +259,24 @@ function Inputs(): React.ReactElement {
           </div>
 
           <div className="form-group">
+            <Select
+              onChange={v => {
+                // no-op
+              }}
+              defaultValue="0"
+              className="custom-select"
+              isInvalid
+            >
+              <Option disabled value="0">
+                Custom Selection
+              </Option>
+              <Option value="1">One</Option>
+              <Option value="2">Two</Option>
+              <Option value="3">Three</Option>
+            </Select>
+          </div>
+
+          <div className="form-group">
             <h5>Input with Select</h5>
             <div className="input-group">
               <ComboBox
