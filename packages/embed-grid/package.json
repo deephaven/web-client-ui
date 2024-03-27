@@ -11,6 +11,9 @@
     "directory": "packages/embed-grid"
   },
   "homepage": ".",
+  "scripts": {
+    "build": "vite build --outDir build"
+  },
   "files": [
     "build"
   ],

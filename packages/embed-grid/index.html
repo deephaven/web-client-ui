@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <base href="./" />
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+
+    <script>
+      // Can't be an HTML meta redirect because we need to keep the search params
+      const url = new URL('../../iframe/widget/', document.baseURI);
+      url.search = window.location.search;
+      window.location.replace(url);
+    </script>
+  </body>
+</html>
