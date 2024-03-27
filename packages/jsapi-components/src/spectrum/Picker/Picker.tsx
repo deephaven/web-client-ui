@@ -19,6 +19,8 @@ export interface PickerProps extends Omit<PickerPropsBase, 'children'> {
   keyColumn?: string;
   /* The column of values to display as primary text. Defaults to the `keyColumn` value. */
   labelColumn?: string;
+
+  // TODO #1890 : descriptionColumn, iconColumn
 }
 
 export function Picker({
@@ -77,11 +79,19 @@ export function Picker({
     // Set viewport to include the selected item so that its data will load and
     // the real `key` will be available to show the selection in the UI.
     function setViewportFromSelectedKey() {
+      let isCanceled = false;
+
       getItemIndexByValue().then(index => {
-        if (index != null) {
-          setViewport(index);
+        if (index == null || isCanceled) {
+          return;
         }
+
+        setViewport(index);
       });
+
+      return () => {
+        isCanceled = true;
+      };
     },
     [getItemIndexByValue, setViewport]
   );

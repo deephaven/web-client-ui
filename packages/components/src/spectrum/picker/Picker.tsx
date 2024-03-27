@@ -7,7 +7,11 @@ import {
   isElementOfType,
   usePopoverOnScrollRef,
 } from '@deephaven/react-hooks';
-import { PICKER_ITEM_HEIGHT, PICKER_TOP_OFFSET } from '@deephaven/utils';
+import {
+  EMPTY_FUNCTION,
+  PICKER_ITEM_HEIGHT,
+  PICKER_TOP_OFFSET,
+} from '@deephaven/utils';
 import cl from 'classnames';
 import { Tooltip } from '../../popper';
 import {
@@ -45,7 +49,7 @@ export type PickerProps = {
    */
   onChange?: (key: PickerItemKey) => void;
 
-  /** Handler that is called when the popover is scrolled. */
+  /** Handler that is called when the picker is scrolled. */
   onScroll?: (event: Event) => void;
 
   /**
@@ -87,10 +91,6 @@ function createTooltipContent(content: ReactNode) {
   return content;
 }
 
-function noOp(): void {
-  // No-op
-}
-
 /**
  * Picker component for selecting items from a list of items. Items can be
  * provided via the `items` prop or as children. Each item can be a string,
@@ -106,7 +106,7 @@ export function Picker({
   getInitialScrollPosition,
   onChange,
   onOpenChange,
-  onScroll = noOp,
+  onScroll = EMPTY_FUNCTION,
   onSelectionChange,
   // eslint-disable-next-line camelcase
   UNSAFE_className,
