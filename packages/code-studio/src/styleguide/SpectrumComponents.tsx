@@ -49,22 +49,6 @@ export function SpectrumComponents(): JSX.Element {
       <h2 className="ui-title" data-no-menu>
         Spectrum Components
       </h2>
-
-      <View>Test</View>
-
-      <View UNSAFE_style={{ padding: '100px' }}>Test</View>
-      <View UNSAFE_style={{ padding: '100px' }} backgroundColor="accent">
-        Test
-      </View>
-
-      <View UNSAFE_style={{ padding: '100px' }} backgroundColor="red-100">
-        Test
-      </View>
-
-      <View UNSAFE_style={{ padding: '100px' }} backgroundColor="red">
-        Test
-      </View>
-
       <Grid gap={20} columns={minmax('0px', '1fr')}>
         <View {...sampleSectionIdAndClassesSpectrum('spectrum-buttons')}>
           <h3>Buttons</h3>
