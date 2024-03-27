@@ -224,11 +224,15 @@ export const ColorValues = [
   'fg',
 ] as const;
 
-export type ColorValue =
-  | (typeof ColorValues)[number]
-  // This allows autocomplete to work properly and not collapse the above options into just `string`.
-  // See https://github.com/microsoft/TypeScript/issues/29729.
-  | CSSProperties['color'];
+type DHColorValue = (typeof ColorValues)[number];
+
+export type ColorValue = DHColorValue | CSSProperties['color'];
+
+export function isDHColorValue(value: string): value is DHColorValue {
+  return (
+    typeof value === 'string' && ColorValues.includes(value as DHColorValue)
+  );
+}
 
 /**
  * Returns the a css variable color value for a given theme color.
@@ -240,9 +244,10 @@ export type ColorValue =
  *
  * ex. colorValueStyle('blue-1000') => 'var(--dh-color-blue-1000)'
  * ex. colorValueStyle('red') => 'red'
+ * ex. colorValueStyle('#F00') => '#F00'
  */
-export function colorValueStyle(value: string): string {
-  if ((ColorValues as readonly string[]).includes(value)) {
+export function colorValueStyle(value: string | undefined): string | undefined {
+  if (value != null && isDHColorValue(value)) {
     return `var(--dh-color-${value})`;
   }
 

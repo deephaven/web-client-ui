@@ -1,4 +1,5 @@
 /* eslint-disable react/jsx-props-no-spreading */
+import { useMemo } from 'react';
 import {
   Heading as SpectrumHeading,
   type HeadingProps as SpectrumHeadingProps,
@@ -21,19 +22,15 @@ export type HeadingProps = SpectrumHeadingProps & {
 
 export function Heading(props: HeadingProps): JSX.Element {
   const { color, UNSAFE_style, ...rest } = props;
-  if (color != null) {
-    return (
-      <SpectrumHeading
-        {...(rest as SpectrumHeadingProps)}
-        UNSAFE_style={{
-          ...UNSAFE_style,
-          color: colorValueStyle(color),
-        }}
-      />
-    );
-  }
+  const style = useMemo(
+    () => ({
+      ...UNSAFE_style,
+      color: colorValueStyle(color),
+    }),
+    [color, UNSAFE_style]
+  );
 
-  return <SpectrumHeading {...(props as SpectrumHeadingProps)} />;
+  return <SpectrumHeading {...rest} UNSAFE_style={style} />;
 }
 
 export default Heading;

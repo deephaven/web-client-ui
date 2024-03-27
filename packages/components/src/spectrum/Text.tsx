@@ -1,4 +1,5 @@
 /* eslint-disable react/jsx-props-no-spreading */
+import { useMemo } from 'react';
 import {
   Text as SpectrumText,
   type TextProps as SpectrumTextProps,
@@ -21,19 +22,15 @@ export type TextProps = SpectrumTextProps & {
 
 export function Text(props: TextProps): JSX.Element {
   const { color, UNSAFE_style, ...rest } = props;
-  if (color != null) {
-    return (
-      <SpectrumText
-        {...(rest as SpectrumTextProps)}
-        UNSAFE_style={{
-          ...UNSAFE_style,
-          color: colorValueStyle(color),
-        }}
-      />
-    );
-  }
+  const style = useMemo(
+    () => ({
+      ...UNSAFE_style,
+      color: colorValueStyle(color),
+    }),
+    [color, UNSAFE_style]
+  );
 
-  return <SpectrumText {...(props as SpectrumTextProps)} />;
+  return <SpectrumText {...rest} UNSAFE_style={style} />;
 }
 
 export default Text;

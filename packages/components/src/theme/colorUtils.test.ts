@@ -10,5 +10,6 @@ describe('ColorValues', () => {
     expect(colorValueStyle('red')).toBe('red');
     expect(colorValueStyle('rgb(255, 0, 0)')).toBe('rgb(255, 0, 0)');
     expect(colorValueStyle('#ff0000')).toBe('#ff0000');
+    expect(colorValueStyle(undefined)).toBe(undefined);
   });
 });

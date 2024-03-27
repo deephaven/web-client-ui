@@ -1,4 +1,5 @@
 /* eslint-disable react/jsx-props-no-spreading */
+import { useMemo } from 'react';
 import {
   View as SpectrumView,
   type ViewProps as SpectrumViewProps,
@@ -21,19 +22,15 @@ export type ViewProps = Omit<SpectrumViewProps<6>, 'backgroundColor'> & {
 
 export function View(props: ViewProps): JSX.Element {
   const { backgroundColor, UNSAFE_style, ...rest } = props;
-  if (backgroundColor != null) {
-    return (
-      <SpectrumView
-        {...(rest as SpectrumViewProps<6>)}
-        UNSAFE_style={{
-          ...UNSAFE_style,
-          backgroundColor: colorValueStyle(backgroundColor),
-        }}
-      />
-    );
-  }
+  const style = useMemo(
+    () => ({
+      ...UNSAFE_style,
+      backgroundColor: colorValueStyle(backgroundColor),
+    }),
+    [backgroundColor, UNSAFE_style]
+  );
 
-  return <SpectrumView {...(props as SpectrumViewProps<6>)} />;
+  return <SpectrumView {...rest} UNSAFE_style={style} />;
 }
 
 export default View;
