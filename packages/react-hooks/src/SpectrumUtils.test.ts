@@ -1,9 +1,12 @@
-import { TestUtils } from '@deephaven/utils';
+import { KeyedItem, TestUtils } from '@deephaven/utils';
 import {
   createValidationProps,
   extractSpectrumHTMLElement,
   extractSpectrumLastChildHTMLElement,
   findSpectrumComboBoxScrollArea,
+  findSpectrumPickerScrollArea,
+  findSpectrumPopoverScrollArea,
+  getPositionOfSelectedItem,
   identityExtractHTMLElement,
   ReactSpectrumComponent,
 } from './SpectrumUtils';
@@ -81,61 +84,105 @@ describe('extractSpectrumLastChildHTMLElement', () => {
   });
 });
 
-describe('findSpectrumComboBoxScrollArea', () => {
-  let el: {
-    component: HTMLDivElement;
-    input: HTMLInputElement;
-    popup: HTMLDivElement;
-  };
-
-  beforeEach(() => {
-    el = {
-      component: document.createElement('div'),
-      input: document.createElement('input'),
-      popup: document.createElement('div'),
+describe.each([
+  // General popover function
+  ['i', findSpectrumPopoverScrollArea],
+  ['span', findSpectrumPopoverScrollArea],
+  // Specific consumer functions
+  ['input', findSpectrumComboBoxScrollArea],
+  ['button', findSpectrumPickerScrollArea],
+] as const)(
+  'findSpectrumPopoverScrollArea: %s, %s',
+  (triggerElementType, findPopoverScrollArea) => {
+    let el: {
+      component: HTMLDivElement;
+      trigger: HTMLElement;
+      popup: HTMLDivElement;
     };
 
-    el.popup.id = 'popup.id';
-    el.input.setAttribute('aria-controls', el.popup.id);
-  });
+    beforeEach(() => {
+      el = {
+        component: document.createElement('div'),
+        trigger: document.createElement(triggerElementType),
+        popup: document.createElement('div'),
+      };
 
-  afterEach(() => {
-    document.body.replaceChildren();
-  });
+      el.popup.id = 'popup.id';
+      el.trigger.setAttribute('aria-controls', el.popup.id);
+    });
+
+    afterEach(() => {
+      document.body.replaceChildren();
+    });
+
+    it.each([
+      [0, 0, 0, false],
+      [0, 0, 1, false],
+      [0, 1, 0, false],
+      [0, 1, 1, false],
+      [1, 0, 0, false],
+      [1, 0, 1, false],
+      [1, 1, 0, false],
+      [1, 1, 1, true],
+    ])(
+      'should find `aria-controls` element of trigger element',
+      (hasRef, hasTrigger, hasPopup, shouldFind) => {
+        const ref = hasRef
+          ? createMockProxy<ReactSpectrumComponent>({
+              UNSAFE_getDOMNode: () => el.component,
+            })
+          : null;
+
+        if (hasTrigger) {
+          el.component.appendChild(el.trigger);
+        }
+
+        if (hasPopup) {
+          document.body.appendChild(el.popup);
+        }
+
+        const actual = findPopoverScrollArea(ref, triggerElementType);
+
+        if (shouldFind) {
+          expect(actual).toBe(el.popup);
+        } else {
+          expect(actual).toBeNull();
+        }
+      }
+    );
+  }
+);
+
+describe('getPositionOfSelectedItem', () => {
+  const keyedItems: KeyedItem<{ key?: string; content: string }, string>[] = [
+    { key: 'top-level-key-1', item: { key: 'key-1', content: '1' } },
+    { key: 'top-level-key-2', item: { key: 'key-2', content: '2' } },
+    { key: 'top-level-key-3', item: { key: 'key-3', content: '3' } },
+    { key: 'top-level-key-4', item: { content: '4' } },
+  ];
+
+  const itemHeight = 8;
+  const topOffset = 2;
 
   it.each([
-    [0, 0, 0, false],
-    [0, 0, 1, false],
-    [0, 1, 0, false],
-    [0, 1, 1, false],
-    [1, 0, 0, false],
-    [1, 0, 1, false],
-    [1, 1, 0, false],
-    [1, 1, 1, true],
+    ['top-level-key-2', 0],
+    ['key-2', 1],
+    ['key-3', 2],
+    ['key-4', 0],
+    ['top-level-key-4', 3],
   ])(
-    'should find `aria-controls` element of input',
-    (hasRef, hasInput, hasPopup, shouldFind) => {
-      const ref = hasRef
-        ? createMockProxy<ReactSpectrumComponent>({
-            UNSAFE_getDOMNode: () => el.component,
-          })
-        : null;
+    'should find the position of the selected item: %s, %s',
+    async (selectedKey, expectedIndex) => {
+      const actual = await getPositionOfSelectedItem({
+        keyedItems,
+        itemHeight,
+        selectedKey,
+        topOffset,
+      });
 
-      if (hasInput) {
-        el.component.appendChild(el.input);
-      }
+      const expected = itemHeight * expectedIndex + topOffset;
 
-      if (hasPopup) {
-        document.body.appendChild(el.popup);
-      }
-
-      const actual = findSpectrumComboBoxScrollArea(ref);
-
-      if (shouldFind) {
-        expect(actual).toBe(el.popup);
-      } else {
-        expect(actual).toBeNull();
-      }
+      expect(actual).toBe(expected);
     }
   );
 });

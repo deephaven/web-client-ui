@@ -1,9 +1,17 @@
-import React from 'react';
-import { Item, Picker, Section } from '@deephaven/components';
+import React, { useCallback, useState } from 'react';
+import { Picker, PickerItemKey, Section } from '@deephaven/components';
 import { vsPerson } from '@deephaven/icons';
-import { Flex, Icon, Text } from '@adobe/react-spectrum';
+import { Flex, Icon, Item, Text } from '@adobe/react-spectrum';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { sampleSectionIdAndClasses } from './utils';
+
+// Generate enough items to require scrolling
+const items = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+  .split('')
+  .map((key, i) => ({
+    key,
+    item: { key: (i + 1) * 100, content: `${key}${key}${key}` },
+  }));
 
 function PersonIcon(): JSX.Element {
   return (
@@ -14,6 +22,12 @@ function PersonIcon(): JSX.Element {
 }
 
 export function Pickers(): JSX.Element {
+  const [selectedKey, setSelectedKey] = useState<PickerItemKey>();
+
+  const onChange = useCallback((key: PickerItemKey): void => {
+    setSelectedKey(key);
+  }, []);
+
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
     <div {...sampleSectionIdAndClasses('pickers')}>
@@ -24,7 +38,7 @@ export function Pickers(): JSX.Element {
           <Item>Aaa</Item>
         </Picker>
 
-        <Picker label="Mixed Children Types" tooltip>
+        <Picker label="Mixed Children Types" defaultSelectedKey={999} tooltip>
           {/* eslint-disable react/jsx-curly-brace-presence */}
           {'String 1'}
           {'String 2'}
@@ -75,6 +89,14 @@ export function Pickers(): JSX.Element {
               <Text slot="description">Description that causes overflow</Text>
             </Item>
           </Section>
+        </Picker>
+
+        <Picker
+          label="Controlled"
+          selectedKey={selectedKey}
+          onChange={onChange}
+        >
+          {items}
         </Picker>
       </Flex>
     </div>

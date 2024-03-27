@@ -2,7 +2,7 @@ import type { Key } from 'react';
 import clamp from 'lodash.clamp';
 import type { dh } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
-import type { KeyedItem, ValueOf } from '@deephaven/utils';
+import { ITEM_KEY_PREFIX, KeyedItem, ValueOf } from '@deephaven/utils';
 
 export type OnTableUpdatedEvent = CustomEvent<{
   offset: number;
@@ -17,6 +17,17 @@ export type ViewportRow = dh.Row & { offsetInSnapshot: number };
 const log = Log.module('ViewportDataUtils');
 
 /**
+ * Create a `KeyedItem.key` for a given index. The prefix is necessary to avoid
+ * collisions with property values in the `item` property that may be used as
+ * keys once the item is loaded and rendered.
+ * @param index Index to create a key for.
+ * @returns A unique key for the given index.
+ */
+export function createKeyedItemKey(index: number): string {
+  return `${ITEM_KEY_PREFIX}_${index}`;
+}
+
+/**
  * Create a unique string key for a row based on its ordinal position in its
  * source table. This is calculated based on it's offset in the viewport
  * (row.offsetInSnapshot) + the offset of the snapshot.
@@ -28,7 +39,7 @@ export function createKeyFromOffsetRow(
   row: ViewportRow,
   offset: number
 ): string {
-  return String(row.offsetInSnapshot + offset);
+  return createKeyedItemKey(row.offsetInSnapshot + offset);
 }
 
 /**
@@ -97,7 +108,7 @@ export function* generateEmptyKeyedItems<T>(
 ): Generator<KeyedItem<T>, void, unknown> {
   // eslint-disable-next-line no-plusplus
   for (let i = start; i <= end; ++i) {
-    yield { key: String(i) };
+    yield { key: createKeyedItemKey(i) };
   }
 }
 
