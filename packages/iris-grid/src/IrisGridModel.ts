@@ -487,7 +487,7 @@ abstract class IrisGridModel<
   /**
    * Check if viewport is still loading data
    */
-  get hasPendingOperations(): boolean {
+  get isViewportPending(): boolean {
     return false;
   }
 

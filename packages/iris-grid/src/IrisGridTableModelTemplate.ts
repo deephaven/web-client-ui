@@ -455,7 +455,7 @@ class IrisGridTableModelTemplate<
     return !this.isSaveInProgress && this.inputTable != null;
   }
 
-  get hasPendingOperations(): boolean {
+  get isViewportPending(): boolean {
     if (this.viewport == null || this.viewportData == null) {
       return true;
     }

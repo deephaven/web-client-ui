@@ -191,6 +191,8 @@ import { isMissingPartitionError } from './MissingPartitionError';
 
 const log = Log.module('IrisGrid');
 
+const VIEWPORT_LOADING_DELAY = 500;
+
 const UPDATE_DOWNLOAD_THROTTLE = 500;
 
 const SET_FILTER_DEBOUNCE = 250;
@@ -620,7 +622,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.truncateNumbersWithPound = false;
     this.showEmptyStrings = true;
     this.showNullStrings = true;
-    this.pendingOperationsTimeout = null;
+    this.viewportLoadingTimeout = null;
 
     // When the loading scrim started/when it should extend to the end of the screen.
     this.renderer = new IrisGridRenderer();
@@ -966,6 +968,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     if (this.animationFrame !== undefined) {
       cancelAnimationFrame(this.animationFrame);
     }
+    if (this.viewportLoadingTimeout !== null) {
+      clearTimeout(this.viewportLoadingTimeout);
+    }
   }
 
   grid: Grid | null;
@@ -1038,7 +1043,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   contextActions: ContextAction[];
 
-  pendingOperationsTimeout: NodeJS.Timeout | null;
+  viewportLoadingTimeout: NodeJS.Timeout | null;
 
   tableUtils: TableUtils;
 
@@ -2511,14 +2516,14 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   onViewportUpdate(): void {
     const { model } = this.props;
     // pending and no timer already exists
-    if (model.hasPendingOperations && this.pendingOperationsTimeout === null) {
-      this.pendingOperationsTimeout = setTimeout(() => {
+    if (model.isViewportPending && this.viewportLoadingTimeout === null) {
+      this.viewportLoadingTimeout = setTimeout(() => {
         // still pending after timeout
-        if (model.hasPendingOperations) {
+        if (model.isViewportPending) {
           this.startLoading('Waiting for viewport...');
         }
-        this.pendingOperationsTimeout = null;
-      }, 500);
+        this.viewportLoadingTimeout = null;
+      }, VIEWPORT_LOADING_DELAY);
     }
   }
 
@@ -3044,9 +3049,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.lastLoadedConfig = null;
     }
 
-    if (this.pendingOperationsTimeout !== null) {
-      clearTimeout(this.pendingOperationsTimeout);
-      this.pendingOperationsTimeout = null;
+    if (this.viewportLoadingTimeout !== null) {
+      clearTimeout(this.viewportLoadingTimeout);
+      this.viewportLoadingTimeout = null;
     }
     this.grid?.forceUpdate();
     this.stopLoading();
