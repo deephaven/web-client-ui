@@ -1,5 +1,8 @@
-import Formatter from './Formatter';
+import dh from '@deephaven/jsapi-shim';
+import { TestUtils } from '@deephaven/utils';
+import Formatter, { FormattingRule } from './Formatter';
 import FormatterUtils, {
+  createFormatterFromSettings,
   getColumnFormats,
   getDateTimeFormatterOptions,
 } from './FormatterUtils';
@@ -9,7 +12,31 @@ import {
   TableColumnFormatType,
 } from './formatters';
 import TableUtils from './TableUtils';
-import { ColumnFormatSettings, DateTimeFormatSettings } from './Settings';
+import Settings, {
+  ColumnFormatSettings,
+  DateTimeFormatSettings,
+} from './Settings';
+
+jest.mock('./Formatter', () => {
+  const FormatterActual = jest.requireActual('./Formatter').default;
+
+  // Extract static methods
+  const { makeColumnFormatMap, makeColumnFormattingRule } = FormatterActual;
+
+  // Wrap Formatter constructor so we can spy on it
+  const mockFormatter = jest.fn((...args) => new FormatterActual(...args));
+
+  return {
+    __esModule: true,
+    default: Object.assign(mockFormatter, {
+      makeColumnFormatMap,
+      makeColumnFormattingRule,
+    }),
+  };
+});
+
+const { createMockProxy } = TestUtils;
+const FormatterActual = jest.requireActual('./Formatter').default;
 
 function makeFormatter(...settings: ConstructorParameters<typeof Formatter>) {
   return new Formatter(...settings);
@@ -22,6 +49,46 @@ function makeFormattingRule(
 ): TableColumnFormat {
   return { label, formatString, type };
 }
+
+describe('createFormatterFromSettings', () => {
+  const mockSettings = createMockProxy<Settings>({
+    formatter: [
+      createMockProxy<FormattingRule>({
+        format: createMockProxy<TableColumnFormat>(),
+      }),
+    ],
+  });
+
+  it.each([undefined, mockSettings])(
+    'should create a formatter with the given settings: %s',
+    settings => {
+      const columnRules = getColumnFormats(settings);
+      const dateTimeOptions = getDateTimeFormatterOptions(settings);
+
+      const {
+        defaultDecimalFormatOptions,
+        defaultIntegerFormatOptions,
+        truncateNumbersWithPound,
+        showEmptyStrings,
+        showNullStrings,
+      } = settings ?? {};
+
+      const actual = createFormatterFromSettings(dh, settings);
+
+      expect(Formatter).toHaveBeenCalledWith(
+        dh,
+        columnRules,
+        dateTimeOptions,
+        defaultDecimalFormatOptions,
+        defaultIntegerFormatOptions,
+        truncateNumbersWithPound,
+        showEmptyStrings,
+        showNullStrings
+      );
+      expect(actual).toBeInstanceOf(FormatterActual);
+    }
+  );
+});
 
 describe('isCustomColumnFormatDefined', () => {
   const columnFormats = [
