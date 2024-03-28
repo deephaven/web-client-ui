@@ -877,6 +877,45 @@ export class TableUtils {
   }
 
   /**
+   * Get the `dh.ValueType` corresponding to the given `dh.Column.type` value.
+   * @param columnType The column type to get the value type for
+   * @returns The `dh.ValueType` corresponding to the column type
+   */
+  getValueType(columnType?: string): string {
+    if (columnType == null) {
+      return this.dh.ValueType.STRING;
+    }
+
+    const columnDataType = TableUtils.getNormalizedType(columnType);
+
+    switch (columnDataType) {
+      case TableUtils.dataType.BOOLEAN:
+        return this.dh.ValueType.BOOLEAN;
+
+      case TableUtils.dataType.CHAR:
+      case TableUtils.dataType.STRING:
+        return this.dh.ValueType.STRING;
+
+      case TableUtils.dataType.DATETIME:
+        return this.dh.ValueType.DATETIME;
+
+      case TableUtils.dataType.DECIMAL:
+      case TableUtils.dataType.INT:
+        if (
+          TableUtils.isBigDecimalType(columnType) ||
+          TableUtils.isBigIntegerType(columnType)
+        ) {
+          return this.dh.ValueType.STRING;
+        }
+
+        return this.dh.ValueType.NUMBER;
+
+      default:
+        return this.dh.ValueType.STRING;
+    }
+  }
+
+  /**
    * Create filter with the provided column and text. Handles multiple filters joined with && or ||
    * @param column The column to set the filter on
    * @param text The text string to create the filter from

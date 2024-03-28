@@ -10,7 +10,6 @@ import IrisGridTestUtils from './IrisGridTestUtils';
 import IrisGridUtils, {
   DehydratedSort,
   LegacyDehydratedSort,
-  isPanelStateV1,
 } from './IrisGridUtils';
 
 const irisGridUtils = new IrisGridUtils(dh);
@@ -682,6 +681,7 @@ describe('hydration methods', () => {
         partition: null,
         advancedSettings: [],
       },
+      [],
     ],
     [
       'hydrateIrisGridPanelStateV1 one selected partition',
@@ -690,6 +690,7 @@ describe('hydration methods', () => {
         partition: 'a',
         advancedSettings: [],
       },
+      ['a'],
     ],
     [
       'hydrateIrisGridPanelStateV2 no partition columns',
@@ -698,6 +699,7 @@ describe('hydration methods', () => {
         partitions: [],
         advancedSettings: [],
       },
+      [],
     ],
     [
       'hydrateIrisGridPanelStateV2 two unselected columns',
@@ -706,6 +708,7 @@ describe('hydration methods', () => {
         partitions: [null, null],
         advancedSettings: [],
       },
+      [null, null],
     ],
     [
       'hydrateIrisGridPanelStateV2 two selected columns',
@@ -714,6 +717,7 @@ describe('hydration methods', () => {
         partitions: ['a', 'b'],
         advancedSettings: [],
       },
+      ['a', 'b'],
     ],
     [
       'hydrateIrisGridPanelStateV2 mixed selection columns',
@@ -722,6 +726,7 @@ describe('hydration methods', () => {
         partitions: [null, 'b', null],
         advancedSettings: [],
       },
+      [null, 'b', null],
     ],
     [
       'hydrateIrisGridPanelStateV2 mixed selection columns',
@@ -730,14 +735,14 @@ describe('hydration methods', () => {
         partitions: ['a', null, 'b'],
         advancedSettings: [],
       },
+      ['a', null, 'b'],
     ],
-  ])('%s partitions and columns match', (_label, panelState) => {
-    const result = IrisGridUtils.hydrateIrisGridPanelState(model, panelState);
-    expect(result.isSelectingPartition).toBe(panelState.isSelectingPartition);
-    if (isPanelStateV1(panelState)) {
-      expect(result.partitions).toEqual([panelState.partition]);
-    } else {
-      expect(result.partitions).toEqual(panelState.partitions);
+  ])(
+    '%s partitions and columns match',
+    (_label, panelState, expectedPartitions) => {
+      const result = IrisGridUtils.hydrateIrisGridPanelState(model, panelState);
+      expect(result.isSelectingPartition).toBe(panelState.isSelectingPartition);
+      expect(result.partitions).toEqual(expectedPartitions);
     }
-  });
+  );
 });

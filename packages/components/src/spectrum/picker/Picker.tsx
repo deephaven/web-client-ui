@@ -1,29 +1,46 @@
 import { Key, ReactNode, useCallback, useMemo } from 'react';
+import { DOMRef } from '@react-types/shared';
 import { Flex, Picker as SpectrumPicker, Text } from '@adobe/react-spectrum';
-import { isElementOfType } from '@deephaven/react-hooks';
+import {
+  getPositionOfSelectedItem,
+  findSpectrumPickerScrollArea,
+  isElementOfType,
+  usePopoverOnScrollRef,
+} from '@deephaven/react-hooks';
+import {
+  EMPTY_FUNCTION,
+  PICKER_ITEM_HEIGHT,
+  PICKER_TOP_OFFSET,
+} from '@deephaven/utils';
 import cl from 'classnames';
 import { Tooltip } from '../../popper';
 import {
+  isNormalizedPickerSection,
   NormalizedSpectrumPickerProps,
   normalizePickerItemList,
   normalizeTooltipOptions,
-  PickerItemOrSection,
-  PickerItemKey,
-  TooltipOptions,
   NormalizedPickerItem,
-  isNormalizedPickerSection,
+  PickerItemOrSection,
+  TooltipOptions,
+  PickerItemKey,
+  getPickerItemKey,
 } from './PickerUtils';
 import { PickerItemContent } from './PickerItemContent';
 import { Item, Section } from '../shared';
 
 export type PickerProps = {
-  children: PickerItemOrSection | PickerItemOrSection[];
+  children:
+    | PickerItemOrSection
+    | PickerItemOrSection[]
+    | NormalizedPickerItem[];
   /** Can be set to true or a TooltipOptions to enable item tooltips */
   tooltip?: boolean | TooltipOptions;
   /** The currently selected key in the collection (controlled). */
   selectedKey?: PickerItemKey | null;
   /** The initial selected key in the collection (uncontrolled). */
   defaultSelectedKey?: PickerItemKey;
+  /** Function to retrieve initial scroll position when opening the picker */
+  getInitialScrollPosition?: () => Promise<number | null>;
   /**
    * Handler that is called when the selection change.
    * Note that under the hood, this is just an alias for Spectrum's
@@ -31,6 +48,10 @@ export type PickerProps = {
    * components.
    */
   onChange?: (key: PickerItemKey) => void;
+
+  /** Handler that is called when the picker is scrolled. */
+  onScroll?: (event: Event) => void;
+
   /**
    * Handler that is called when the selection changes.
    * @deprecated Use `onChange` instead
@@ -82,7 +103,10 @@ export function Picker({
   tooltip = true,
   defaultSelectedKey,
   selectedKey,
+  getInitialScrollPosition,
   onChange,
+  onOpenChange,
+  onScroll = EMPTY_FUNCTION,
   onSelectionChange,
   // eslint-disable-next-line camelcase
   UNSAFE_className,
@@ -99,52 +123,116 @@ export function Picker({
   );
 
   const renderItem = useCallback(
-    ({ key, content, textValue }: NormalizedPickerItem) => (
-      // The `textValue` prop gets used to provide the content of `<option>`
-      // elements that back the Spectrum Picker. These are not visible in the UI,
-      // but are used for accessibility purposes, so we set to an arbitrary
-      // 'Empty' value so that they are not empty strings.
-      <Item
-        key={key as Key}
-        textValue={textValue === '' || textValue == null ? 'Empty' : textValue}
-      >
-        <PickerItemContent>{content}</PickerItemContent>
-        {tooltipOptions == null || content === '' ? null : (
-          <Tooltip options={tooltipOptions}>
-            {createTooltipContent(content)}
-          </Tooltip>
-        )}
-      </Item>
-    ),
+    (normalizedItem: NormalizedPickerItem) => {
+      const key = getPickerItemKey(normalizedItem);
+      const content = normalizedItem.item?.content ?? '';
+      const textValue = normalizedItem.item?.textValue ?? '';
+
+      return (
+        <Item
+          // Note that setting the `key` prop explicitly on `Item` elements
+          // causes the picker to expect `selectedKey` and `defaultSelectedKey`
+          // to be strings. It also passes the stringified value of the key to
+          // `onSelectionChange` handlers` regardless of the actual type of the
+          // key. We can't really get around setting in order to support Windowed
+          // data, so we'll need to do some manual conversion of keys to strings
+          // in other places of this component.
+          key={key as Key}
+          // The `textValue` prop gets used to provide the content of `<option>`
+          // elements that back the Spectrum Picker. These are not visible in the UI,
+          // but are used for accessibility purposes, so we set to an arbitrary
+          // 'Empty' value so that they are not empty strings.
+          textValue={textValue === '' ? 'Empty' : textValue}
+        >
+          <>
+            <PickerItemContent>{content}</PickerItemContent>
+            {tooltipOptions == null || content === '' ? null : (
+              <Tooltip options={tooltipOptions}>
+                {createTooltipContent(content)}
+              </Tooltip>
+            )}
+          </>
+        </Item>
+      );
+    },
     [tooltipOptions]
+  );
+
+  const getInitialScrollPositionInternal = useCallback(
+    () =>
+      getInitialScrollPosition == null
+        ? getPositionOfSelectedItem({
+            keyedItems: normalizedItems,
+            // TODO: #1890 & deephaven-plugins#371 add support for sections and
+            // items with descriptions since they impact the height calculations
+            itemHeight: PICKER_ITEM_HEIGHT,
+            selectedKey,
+            topOffset: PICKER_TOP_OFFSET,
+          })
+        : getInitialScrollPosition(),
+    [getInitialScrollPosition, normalizedItems, selectedKey]
+  );
+
+  const { ref: scrollRef, onOpenChange: popoverOnOpenChange } =
+    usePopoverOnScrollRef(
+      findSpectrumPickerScrollArea,
+      onScroll,
+      getInitialScrollPositionInternal
+    );
+
+  const onOpenChangeInternal = useCallback(
+    (isOpen: boolean): void => {
+      // Attach scroll event handling
+      popoverOnOpenChange(isOpen);
+
+      onOpenChange?.(isOpen);
+    },
+    [onOpenChange, popoverOnOpenChange]
+  );
+
+  const onSelectionChangeInternal = useCallback(
+    (key: PickerItemKey): void => {
+      // The `key` arg will always be a string due to us setting the `Item` key
+      // prop in `renderItem`. We need to find the matching item to determine
+      // the actual key.
+      const selectedItem = normalizedItems.find(
+        item => String(getPickerItemKey(item)) === key
+      );
+
+      const actualKey = getPickerItemKey(selectedItem) ?? key;
+
+      (onChange ?? onSelectionChange)?.(actualKey);
+    },
+    [normalizedItems, onChange, onSelectionChange]
   );
 
   return (
     <SpectrumPicker
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...spectrumPickerProps}
+      // The `ref` prop type defined by React Spectrum is incorrect here
+      ref={scrollRef as unknown as DOMRef<HTMLDivElement>}
+      onOpenChange={onOpenChangeInternal}
       UNSAFE_className={cl('dh-picker', UNSAFE_className)}
       items={normalizedItems}
-      // Type assertions are necessary for `selectedKey`, `defaultSelectedKey`,
-      // and `onSelectionChange` due to Spectrum types not accounting for
-      // `boolean` keys
-      selectedKey={selectedKey as NormalizedSpectrumPickerProps['selectedKey']}
-      defaultSelectedKey={
-        defaultSelectedKey as NormalizedSpectrumPickerProps['defaultSelectedKey']
-      }
+      // Spectrum Picker treats keys as strings if the `key` prop is explicitly
+      // set on `Item` elements. Since we do this in `renderItem`, we need to
+      // ensure that `selectedKey` and `defaultSelectedKey` are strings in order
+      // for selection to work.
+      selectedKey={selectedKey?.toString()}
+      defaultSelectedKey={defaultSelectedKey?.toString()}
       // `onChange` is just an alias for `onSelectionChange`
       onSelectionChange={
-        (onChange ??
-          onSelectionChange) as NormalizedSpectrumPickerProps['onSelectionChange']
+        onSelectionChangeInternal as NormalizedSpectrumPickerProps['onSelectionChange']
       }
     >
       {itemOrSection => {
         if (isNormalizedPickerSection(itemOrSection)) {
           return (
             <Section
-              key={itemOrSection.key}
-              title={itemOrSection.title}
-              items={itemOrSection.items}
+              key={getPickerItemKey(itemOrSection)}
+              title={itemOrSection.item?.title}
+              items={itemOrSection.item?.items}
             >
               {renderItem}
             </Section>

@@ -1989,6 +1989,15 @@ class SourceType {
   static Z = 'Z';
 }
 
+class ValueType {
+  static BOOLEAN = 'BOOLEAN';
+  static DATETIME = 'DATETIME';
+  static DOUBLE = 'DOUBLE';
+  static LONG = 'LONG';
+  static NUMBER = 'NUMBER';
+  static STRING = 'STRING';
+}
+
 const dh = {
   FilterCondition: FilterCondition,
   FilterValue: FilterValue,
@@ -2034,6 +2043,7 @@ const dh = {
     DayOfWeek,
   },
   DateWrapper: DateWrapper,
+  ValueType,
   ViewportData,
   VariableType,
   storage: {

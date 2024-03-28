@@ -24,6 +24,7 @@ export interface UseViewportDataProps<
   TItem,
   TTable extends dh.Table | dh.TreeTable,
 > {
+  reuseItemsOnTableResize?: boolean;
   table: TTable | null;
   itemHeight?: number;
   scrollDebounce?: number;
@@ -64,6 +65,8 @@ export interface UseViewportDataResult<
  * @param viewportSize The number of items to display in the viewport.
  * @param viewportPadding The number of items to fetch at start and end of the viewport.
  * @param deserializeRow A function to deserialize a row from the Table.
+ * @param reuseItemsOnTableResize If true, existing items will be re-used when
+ * the table size changes.
  * @returns An object for managing Table viewport state.
  */
 export function useViewportData<TItem, TTable extends dh.Table | dh.TreeTable>({
@@ -73,8 +76,12 @@ export function useViewportData<TItem, TTable extends dh.Table | dh.TreeTable>({
   viewportSize = 10,
   viewportPadding = 50,
   deserializeRow = defaultRowDeserializer,
+  reuseItemsOnTableResize = false,
 }: UseViewportDataProps<TItem, TTable>): UseViewportDataResult<TItem, TTable> {
-  const viewportData = useInitializeViewportData<TItem>(table);
+  const viewportData = useInitializeViewportData<TItem>(
+    table,
+    reuseItemsOnTableResize
+  );
 
   const setPaddedViewport = useSetPaddedViewportCallback(
     table,

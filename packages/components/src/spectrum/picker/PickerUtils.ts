@@ -2,6 +2,7 @@ import { isValidElement, Key, ReactElement, ReactNode } from 'react';
 import { SpectrumPickerProps } from '@adobe/react-spectrum';
 import type { ItemRenderer } from '@react-types/shared';
 import Log from '@deephaven/log';
+import { KeyedItem } from '@deephaven/utils';
 import { Item, ItemProps, Section, SectionProps } from '../shared';
 import { PopperOptions } from '../../popper';
 
@@ -40,28 +41,59 @@ export type PickerItemKey = Key | boolean;
  */
 export type PickerSelectionChangeHandler = (key: PickerItemKey) => void;
 
-/**
- * The Picker supports a variety of item types, including strings, numbers,
- * booleans, and more complex React elements. This type represents a normalized
- * form to make rendering items simpler and keep the logic of transformation
- * in separate util methods.
- */
-export interface NormalizedPickerItem {
+export interface NormalizedPickerItemData {
   key?: PickerItemKey;
   content: ReactNode;
   textValue?: string;
 }
 
-export interface NormalizedPickerSection {
+export interface NormalizedPickerSectionData {
   key?: Key;
   title?: ReactNode;
   items: NormalizedPickerItem[];
 }
 
+/**
+ * The Picker supports a variety of item types, including strings, numbers,
+ * booleans, and more complex React elements. This type represents a normalized
+ * form to make rendering items simpler and keep the logic of transformation
+ * in separate util methods. It also adheres to the `KeyedItem` interface to
+ * be compatible with Windowed data utils (e.g. `useViewportData`).
+ */
+export type NormalizedPickerItem = KeyedItem<
+  NormalizedPickerItemData,
+  PickerItemKey | undefined
+>;
+
+export type NormalizedPickerSection = KeyedItem<
+  NormalizedPickerSectionData,
+  Key | undefined
+>;
+
 export type NormalizedSpectrumPickerProps =
   SpectrumPickerProps<NormalizedPickerItem>;
 
 export type TooltipOptions = { placement: PopperOptions['placement'] };
+
+/**
+ * Picker uses a normalized item that includes a `key` prop and an optional
+ * `item` prop. This is mostly to support Windowed data where items are created
+ * before their data has been loaded (data gets set in the `item` prop). If
+ * data has loaded, return its `key`. If not, return the top-level `key` on the
+ * normalized item.
+ * @param item The normalized picker item or section
+ * @returns The `key` of the item or section
+ */
+export function getPickerItemKey<
+  TItem extends NormalizedPickerItem | NormalizedPickerSection,
+  TKey extends TItem extends NormalizedPickerItem
+    ? PickerItemKey | undefined
+    : TItem extends NormalizedPickerSection
+    ? Key | undefined
+    : undefined,
+>(item: TItem | null | undefined): TKey {
+  return (item?.item?.key ?? item?.key) as TKey;
+}
 
 /**
  * Determine if a node is a Section element.
@@ -86,6 +118,43 @@ export function isItemElement<T>(
 }
 
 /**
+ * Determine if a node is an array containing normalized items with keys.
+ * Note that this only checks the first node in the array.
+ * @param node The node to check
+ * @returns True if the node is a normalized item with keys array
+ */
+export function isNormalizedItemsWithKeysList(
+  node:
+    | PickerItemOrSection
+    | PickerItemOrSection[]
+    | (NormalizedPickerItem | NormalizedPickerSection)[]
+): node is (NormalizedPickerItem | NormalizedPickerSection)[] {
+  if (!Array.isArray(node)) {
+    return false;
+  }
+
+  if (node.length === 0) {
+    return true;
+  }
+
+  return !isPickerItemOrSection(node[0]) && 'key' in node[0];
+}
+
+/**
+ * Determine if an object is a normalized Picker section.
+ * @param maybeNormalizedPickerSection The object to check
+ * @returns True if the object is a normalized Picker section
+ */
+export function isNormalizedPickerSection(
+  maybeNormalizedPickerSection: NormalizedPickerItem | NormalizedPickerSection
+): maybeNormalizedPickerSection is NormalizedPickerSection {
+  return (
+    maybeNormalizedPickerSection.item != null &&
+    'items' in maybeNormalizedPickerSection.item
+  );
+}
+
+/**
  * Determine if a node is a Picker item or section. Valid types include strings,
  * numbers, booleans, Item elements, and Section elements.
  * @param node The node to check
@@ -101,17 +170,6 @@ export function isPickerItemOrSection(
     isItemElement(node) ||
     isSectionElement(node)
   );
-}
-
-/**
- * Determine if an object is a normalized Picker section.
- * @param maybeNormalizedPickerSection The object to check
- * @returns True if the object is a normalized Picker section
- */
-export function isNormalizedPickerSection(
-  maybeNormalizedPickerSection: NormalizedPickerItem | NormalizedPickerSection
-): maybeNormalizedPickerSection is NormalizedPickerSection {
-  return 'items' in maybeNormalizedPickerSection;
 }
 
 /**
@@ -194,9 +252,7 @@ function normalizePickerItem(
     ) as NormalizedPickerItem[];
 
     return {
-      key,
-      title,
-      items,
+      item: { key, title, items },
     };
   }
 
@@ -207,9 +263,7 @@ function normalizePickerItem(
   const textValue = normalizeTextValue(itemOrSection);
 
   return {
-    key,
-    content,
-    textValue,
+    item: { key, content, textValue },
   };
 }
 
@@ -219,11 +273,20 @@ function normalizePickerItem(
  * @returns An array of normalized picker items
  */
 export function normalizePickerItemList(
-  itemsOrSections: PickerItemOrSection | PickerItemOrSection[]
+  itemsOrSections:
+    | PickerItemOrSection
+    | PickerItemOrSection[]
+    | NormalizedPickerItem[]
 ): (NormalizedPickerItem | NormalizedPickerSection)[] {
+  // If already normalized, just return as-is
+  if (isNormalizedItemsWithKeysList(itemsOrSections)) {
+    return itemsOrSections;
+  }
+
   const itemsArray = Array.isArray(itemsOrSections)
     ? itemsOrSections
     : [itemsOrSections];
+
   return itemsArray.map(normalizePickerItem);
 }
 

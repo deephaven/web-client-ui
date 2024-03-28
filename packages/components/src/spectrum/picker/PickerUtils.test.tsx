@@ -1,15 +1,19 @@
 import React, { createElement } from 'react';
 import {
-  NormalizedPickerItem,
-  normalizeTooltipOptions,
-  normalizePickerItemList,
-  PickerItem,
-  isSectionElement,
-  isItemElement,
-  NormalizedPickerSection,
+  getPickerItemKey,
   INVALID_PICKER_ITEM_ERROR_MESSAGE,
-  isPickerItemOrSection,
+  isItemElement,
+  isNormalizedItemsWithKeysList,
   isNormalizedPickerSection,
+  isPickerItemOrSection,
+  isSectionElement,
+  NormalizedPickerItem,
+  NormalizedPickerSection,
+  normalizePickerItemList,
+  normalizeTooltipOptions,
+  PickerItem,
+  PickerItemOrSection,
+  PickerSection,
 } from './PickerUtils';
 import type { PickerProps } from './Picker';
 import { Item, Section } from '../shared';
@@ -24,50 +28,46 @@ const expectedItems = {
   numberLiteral: [
     999,
     {
-      content: 999,
-      key: 999,
-      textValue: '999',
+      item: { content: 999, key: 999, textValue: '999' },
     },
   ],
   stringLiteral: [
     'String',
     {
-      content: 'String',
-      key: 'String',
-      textValue: 'String',
+      item: { content: 'String', key: 'String', textValue: 'String' },
     },
   ],
   emptyStringLiteral: [
     '',
     {
-      content: '',
-      key: '',
-      textValue: '',
+      item: { content: '', key: '', textValue: '' },
     },
   ],
   booleanLiteral: [
     false,
     {
-      content: false,
-      key: false,
-      textValue: 'false',
+      item: { content: false, key: false, textValue: 'false' },
     },
   ],
   singleStringChild: [
     <Item textValue="textValue">Single string</Item>,
     {
-      content: 'Single string',
-      key: 'textValue',
-      textValue: 'textValue',
+      item: {
+        content: 'Single string',
+        key: 'textValue',
+        textValue: 'textValue',
+      },
     },
   ],
   singleStringChildNoTextValue: [
     // eslint-disable-next-line react/jsx-key
     <Item>Single string child no textValue</Item>,
     {
-      content: 'Single string child no textValue',
-      key: 'Single string child no textValue',
-      textValue: 'Single string child no textValue',
+      item: {
+        content: 'Single string child no textValue',
+        key: 'Single string child no textValue',
+        textValue: 'Single string child no textValue',
+      },
     },
   ],
   elementChildNoTextValue: [
@@ -75,7 +75,7 @@ const expectedItems = {
       <span>No textValue</span>
     </Item>,
     {
-      content: <span>No textValue</span>,
+      item: { content: <span>No textValue</span> },
     },
   ],
   explicitKey: [
@@ -83,9 +83,11 @@ const expectedItems = {
       Explicit key
     </Item>,
     {
-      content: 'Explicit key',
-      key: 'explicit.key',
-      textValue: 'textValue',
+      item: {
+        content: 'Explicit key',
+        key: 'explicit.key',
+        textValue: 'textValue',
+      },
     },
   ],
   complex: [
@@ -94,9 +96,11 @@ const expectedItems = {
       <Text>Complex</Text>
     </Item>,
     {
-      content: [<i>i</i>, <Text>Complex</Text>],
-      key: 'textValue',
-      textValue: 'textValue',
+      item: {
+        content: [<i>i</i>, <Text>Complex</Text>],
+        key: 'textValue',
+        textValue: 'textValue',
+      },
     },
   ],
 } satisfies Record<string, [PickerItem, NormalizedPickerItem]>;
@@ -109,15 +113,17 @@ const expectedSections = {
   noTitle: [
     <Section>{expectedItems.singleStringChild[0]}</Section>,
     {
-      items: [expectedItems.singleStringChild[1]],
+      item: { items: [expectedItems.singleStringChild[1]] },
     },
   ],
   title: [
     <Section title="Some Title">{expectedItems.singleStringChild[0]}</Section>,
     {
-      key: 'Some Title',
-      title: 'Some Title',
-      items: [expectedItems.singleStringChild[1]],
+      item: {
+        key: 'Some Title',
+        title: 'Some Title',
+        items: [expectedItems.singleStringChild[1]],
+      },
     },
   ],
   explicitKey: [
@@ -125,9 +131,11 @@ const expectedSections = {
       {expectedItems.singleStringChild[0]}
     </Section>,
     {
-      key: 'Some Key',
-      title: 'Some Title',
-      items: [expectedItems.singleStringChild[1]],
+      item: {
+        key: 'Some Key',
+        title: 'Some Title',
+        items: [expectedItems.singleStringChild[1]],
+      },
     },
   ],
 } satisfies Record<string, [PickerItem, NormalizedPickerSection]>;
@@ -145,6 +153,62 @@ const children = {
   single: mixedItems[0] as PickerProps['children'],
   mixed: mixedItems as PickerProps['children'],
 };
+
+describe('getPickerItemKey', () => {
+  it.each([
+    [{ key: 'top-level.key', item: { key: 'item.key' } }, 'item.key'],
+    [{ key: 'top-level.key', item: {} }, 'top-level.key'],
+    [{ key: 'top-level.key' }, 'top-level.key'],
+    [{ item: { key: 'item.key' } }, 'item.key'],
+    [{}, undefined],
+  ] as NormalizedPickerItem[])(
+    'should return the item.key or fallback to the top-level key: %s, %s',
+    (given, expected) => {
+      const actual = getPickerItemKey(given);
+      expect(actual).toBe(expected);
+    }
+  );
+});
+
+describe('isNormalizedItemsWithKeysList', () => {
+  const mock = {
+    normalizedItemWithKey: {
+      key: 'some.key',
+      item: { content: '' },
+    } as NormalizedPickerItem,
+    normalizedSectionWithKey: {
+      key: 'some.key',
+      item: { items: [] },
+    } as NormalizedPickerSection,
+    item: (<Item>Item</Item>) as PickerItem,
+    section: (
+      <Section>
+        <Item>Item</Item>
+      </Section>
+    ) as PickerSection,
+  } as const;
+
+  it.each([
+    [['item'], false],
+    [['section'], false],
+    [['item', 'normalizedItemWithKey'], false],
+    [['section', 'normalizedItemWithKey'], false],
+    [[], true],
+    [['normalizedItemWithKey'], true],
+    [['normalizedSectionWithKey'], true],
+    [['normalizedItemWithKey', 'item'], true],
+    [['normalizedSectionWithKey', 'section'], true],
+  ] as [(keyof typeof mock)[], boolean][])(
+    'should return true for a normalized items with keys list: %s, %s',
+    (givenKeys, expected) => {
+      const given = givenKeys.map(key => mock[key]) as
+        | PickerItemOrSection[]
+        | (NormalizedPickerItem | NormalizedPickerSection)[];
+
+      expect(isNormalizedItemsWithKeysList(given)).toBe(expected);
+    }
+  );
+});
 
 describe('isSectionElement', () => {
   it.each([
@@ -185,8 +249,8 @@ describe('isPickerItemOrSection', () => {
 
 describe('isNormalizedPickerSection', () => {
   it.each([
-    [{ key: 'mock.key' } as NormalizedPickerItem, false],
-    [{ key: 'mock.key', items: [] } as NormalizedPickerSection, true],
+    [{ item: {} } as NormalizedPickerItem, false],
+    [{ item: { items: [] } } as NormalizedPickerSection, true],
   ])(
     'should return true for a normalized Picker section: %s',
     (obj, expected) => {
