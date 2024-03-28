@@ -98,7 +98,7 @@ export function Picker({
         isCanceled = true;
       };
     },
-    [getItemIndexByValue, setViewport]
+    [getItemIndexByValue, settings, setViewport]
   );
 
   return (
