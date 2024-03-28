@@ -191,6 +191,8 @@ import { isMissingPartitionError } from './MissingPartitionError';
 
 const log = Log.module('IrisGrid');
 
+const VIEWPORT_LOADING_DELAY = 500;
+
 const UPDATE_DOWNLOAD_THROTTLE = 500;
 
 const SET_FILTER_DEBOUNCE = 250;
@@ -608,6 +610,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.handleGotoValueSelectedFilterChanged.bind(this);
     this.handleGotoValueChanged = this.handleGotoValueChanged.bind(this);
     this.handleGotoValueSubmitted = this.handleGotoValueSubmitted.bind(this);
+    this.handleViewportUpdate = this.handleViewportUpdate.bind(this);
     this.makeQuickFilter = this.makeQuickFilter.bind(this);
 
     this.grid = null;
@@ -619,6 +622,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.truncateNumbersWithPound = false;
     this.showEmptyStrings = true;
     this.showNullStrings = true;
+    this.viewportLoadingTimeout = null;
 
     // When the loading scrim started/when it should extend to the end of the screen.
     this.renderer = new IrisGridRenderer();
@@ -964,6 +968,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     if (this.animationFrame !== undefined) {
       cancelAnimationFrame(this.animationFrame);
     }
+    if (this.viewportLoadingTimeout !== null) {
+      clearTimeout(this.viewportLoadingTimeout);
+    }
   }
 
   grid: Grid | null;
@@ -1035,6 +1042,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   commitAction: Action;
 
   contextActions: ContextAction[];
+
+  viewportLoadingTimeout: NodeJS.Timeout | null;
 
   tableUtils: TableUtils;
 
@@ -2504,6 +2513,20 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     onError(error);
   }
 
+  handleViewportUpdate(): void {
+    const { model } = this.props;
+    // pending and no timer already exists
+    if (model.isViewportPending && this.viewportLoadingTimeout === null) {
+      this.viewportLoadingTimeout = setTimeout(() => {
+        // still pending after timeout
+        if (model.isViewportPending) {
+          this.startLoading('Waiting for viewport...');
+        }
+        this.viewportLoadingTimeout = null;
+      }, VIEWPORT_LOADING_DELAY);
+    }
+  }
+
   showAllColumns(): void {
     const { metricCalculator } = this.state;
     const userColumnWidths = metricCalculator.getUserColumnWidths();
@@ -3026,6 +3049,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.lastLoadedConfig = null;
     }
 
+    if (this.viewportLoadingTimeout !== null) {
+      clearTimeout(this.viewportLoadingTimeout);
+      this.viewportLoadingTimeout = null;
+    }
     this.grid?.forceUpdate();
     this.stopLoading();
   }
@@ -4727,6 +4754,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                 frozenColumns={frozenColumns}
                 columnHeaderGroups={columnHeaderGroups}
                 partitionConfig={partitionConfig}
+                onViewportUpdate={this.handleViewportUpdate}
               />
             )}
             {!isMenuShown && (
