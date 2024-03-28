@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Text } from '@adobe/react-spectrum';
+import { Text } from './spectrum';
 import stylesCommon from './SpectrumComponent.module.scss';
 import { PopperOptions, Tooltip } from './popper';
 

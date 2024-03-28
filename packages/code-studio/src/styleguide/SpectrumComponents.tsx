@@ -11,7 +11,6 @@ import {
   Column,
   ComboBox,
   Form,
-  Heading,
   Grid,
   Icon,
   IllustratedMessage,
@@ -24,10 +23,8 @@ import {
   TableBody,
   TableHeader,
   TableView,
-  Text,
   TextField,
   ToggleButton,
-  // View,
   Well,
   DialogTrigger,
   Dialog,
@@ -39,7 +36,7 @@ import {
 } from '@adobe/react-spectrum';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhTruck, vsEmptyWindow } from '@deephaven/icons';
-import { View } from '@deephaven/components';
+import { Heading, View, Text } from '@deephaven/components';
 import { SPECTRUM_COMPONENT_SAMPLES_ID } from './constants';
 import { sampleSectionIdAndClassesSpectrum } from './utils';
 

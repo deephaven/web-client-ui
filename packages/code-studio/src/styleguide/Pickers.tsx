@@ -1,7 +1,7 @@
 import React from 'react';
-import { Item, Picker, Section } from '@deephaven/components';
+import { Item, Flex, Text, Picker, Section } from '@deephaven/components';
 import { vsPerson } from '@deephaven/icons';
-import { Flex, Icon, Text } from '@adobe/react-spectrum';
+import { Icon } from '@adobe/react-spectrum';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { sampleSectionIdAndClasses } from './utils';
 

@@ -14,9 +14,7 @@ import {
   Radio,
   RadioGroup,
   SpectrumButtonProps,
-  Text,
   TextField,
-  View,
 } from '@adobe/react-spectrum';
 import {
   Button as BootstrapButtonOld,
@@ -25,6 +23,8 @@ import {
   RadioGroup as RadioGroupOld,
   RadioItem,
   Select,
+  View,
+  Text,
 } from '@deephaven/components';
 import { EMPTY_FUNCTION } from '@deephaven/utils';
 import { vsPlay } from '@deephaven/icons';
