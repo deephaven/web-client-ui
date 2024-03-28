@@ -1,5 +1,9 @@
 import { useApi } from '@deephaven/jsapi-bootstrap';
-import { Formatter, FormatterUtils, Settings } from '@deephaven/jsapi-utils';
+import {
+  createFormatterFromSettings,
+  Formatter,
+  Settings,
+} from '@deephaven/jsapi-utils';
 import { bindAllMethods } from '@deephaven/utils';
 import { useMemo } from 'react';
 
@@ -24,29 +28,7 @@ export function useFormatter(settings?: Settings): UseFormatterResult {
   const dh = useApi();
 
   const formatter = useMemo(() => {
-    const columnRules = FormatterUtils.getColumnFormats(settings);
-
-    const dateTimeOptions =
-      FormatterUtils.getDateTimeFormatterOptions(settings);
-
-    const {
-      defaultDecimalFormatOptions,
-      defaultIntegerFormatOptions,
-      truncateNumbersWithPound,
-      showEmptyStrings,
-      showNullStrings,
-    } = settings ?? {};
-
-    const instance = new Formatter(
-      dh,
-      columnRules,
-      dateTimeOptions,
-      defaultDecimalFormatOptions,
-      defaultIntegerFormatOptions,
-      truncateNumbersWithPound,
-      showEmptyStrings,
-      showNullStrings
-    );
+    const instance = createFormatterFromSettings(dh, settings);
 
     // Bind all methods so we can destructure them
     bindAllMethods(instance);
