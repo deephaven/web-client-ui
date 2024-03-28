@@ -2,7 +2,7 @@ import { ReactNode, useState } from 'react';
 import { Provider } from '@adobe/react-spectrum';
 import type { Theme } from '@react-types/provider';
 import shortid from 'shortid';
-import { themeDHDefault } from '../SpectrumUtils';
+import { themeDHDefault } from '../spectrum/utils';
 
 export interface SpectrumThemeProviderProps {
   children: ReactNode;

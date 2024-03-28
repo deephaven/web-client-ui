@@ -1,5 +1,5 @@
 import { theme } from '@react-spectrum/theme-default';
-import { themeSpectrumClassesCommon } from './theme/theme-spectrum';
+import { themeSpectrumClassesCommon } from '../theme/theme-spectrum';
 
 const { global, light, dark, medium, large } = theme;
 

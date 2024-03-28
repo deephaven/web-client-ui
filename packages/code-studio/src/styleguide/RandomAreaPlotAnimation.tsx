@@ -1,7 +1,9 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
-import { View } from '@adobe/react-spectrum';
-import { RandomAreaPlotAnimation as Animation } from '@deephaven/components';
+import {
+  View,
+  RandomAreaPlotAnimation as Animation,
+} from '@deephaven/components';
 import { sampleSectionIdAndClasses } from './utils';
 
 export function RandomAreaPlotAnimation(): JSX.Element {

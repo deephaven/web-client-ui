@@ -7,10 +7,10 @@ import {
   Dialog,
   Divider,
   Form,
-  Heading,
 } from '@adobe/react-spectrum';
 import type { SpectrumLabelableProps } from '@react-types/shared';
 import { useFormWithDetachedSubmitButton } from '@deephaven/react-hooks';
+import { Heading } from '../spectrum';
 import styles from '../SpectrumComponent.module.scss';
 
 export interface ConfirmationDialogProps {

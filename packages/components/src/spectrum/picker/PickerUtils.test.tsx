@@ -17,7 +17,7 @@ import {
 } from './PickerUtils';
 import type { PickerProps } from './Picker';
 import { Item, Section } from '../shared';
-import { Text } from '../content';
+import { Text } from '../Text';
 
 beforeEach(() => {
   expect.hasAssertions();

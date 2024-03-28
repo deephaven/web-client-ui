@@ -1,7 +1,13 @@
 import React, { useCallback, useState } from 'react';
-import { Picker, PickerItemKey, Section } from '@deephaven/components';
+import {
+  Flex,
+  Picker,
+  PickerItemKey,
+  Section,
+  Text,
+} from '@deephaven/components';
 import { vsPerson } from '@deephaven/icons';
-import { Flex, Icon, Item, Text } from '@adobe/react-spectrum';
+import { Icon, Item } from '@adobe/react-spectrum';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { sampleSectionIdAndClasses } from './utils';
 

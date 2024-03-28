@@ -54,6 +54,13 @@ module.exports = {
     'react/require-default-props': 'off',
     'react/jsx-no-bind': 'off',
     'react-refresh/only-export-components': 'warn',
+    camelcase: [
+      'error',
+      {
+        allow: ['^UNSAFE_'], // allow UNSAFE_styles UNSAFE_className
+        properties: 'never', // restore airbnb default, just setting allow overrides it
+      },
+    ],
   },
   parserOptions: {
     ecmaFeatures: {
