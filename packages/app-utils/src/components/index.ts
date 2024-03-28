@@ -4,7 +4,6 @@ export * from './ConnectionBootstrap';
 export * from './ConnectionContext';
 export * from './FontBootstrap';
 export * from './FontsLoaded';
-export * from './FormatSettingsBootstrap';
 export * from './PluginsBootstrap';
 export * from './ThemeBootstrap';
 export * from './useConnection';
