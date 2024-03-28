@@ -1,7 +1,6 @@
 import React, { Component, ReactElement, RefObject } from 'react';
 import deepEqual from 'deep-equal';
 import memoize from 'memoize-one';
-import { CopyButton, Popper } from '@deephaven/components';
 import {
   vsLoading,
   dhGraphLineDown,
@@ -33,6 +32,7 @@ import { bindAllMethods } from '@deephaven/utils';
 import createPlotlyComponent from './plotly/createPlotlyComponent';
 import Plotly from './plotly/Plotly';
 import ChartModel from './ChartModel';
+import ChartErrorOverlay from './ChartErrorOverlay';
 import { ChartTheme } from './ChartTheme';
 import ChartUtils, { ChartModelSettings } from './ChartUtils';
 import './Chart.scss';
@@ -415,6 +415,10 @@ class Chart extends Component<ChartProps, ChartState> {
     this.setState({ shownError: null });
   }
 
+  handleDownsampleErrorClose(): void {
+    this.setState({ downsamplingError: null });
+  }
+
   handleModelEvent(event: CustomEvent): void {
     const { type, detail } = event;
     log.debug2('Received data update', type, detail);
@@ -704,23 +708,26 @@ class Chart extends Component<ChartProps, ChartState> {
             style={{ height: '100%', width: '100%' }}
           />
         )}
-        <Popper
-          className="chart-error-popper"
-          options={{ placement: 'top' }}
-          isShown={shownError != null}
-          onExited={this.handleErrorClose}
-          closeOnBlur
-          interactive
-        >
-          {shownError != null && (
-            <>
-              <div className="chart-error">{shownError}</div>
-              <CopyButton tooltip="Copy Error" copy={shownError}>
-                Copy Error
-              </CopyButton>
-            </>
-          )}
-        </Popper>
+        {downsamplingError != null && shownError == null && (
+          <ChartErrorOverlay
+            errorMessage={`${downsamplingError}`}
+            onDiscard={() => {
+              this.handleDownsampleErrorClose();
+            }}
+            onConfirm={() => {
+              this.handleDownsampleErrorClose();
+              this.handleDownsampleClick();
+            }}
+          />
+        )}
+        {shownError != null && (
+          <ChartErrorOverlay
+            errorMessage={`${shownError}`}
+            onDiscard={() => {
+              this.handleErrorClose();
+            }}
+          />
+        )}
       </div>
     );
   }
