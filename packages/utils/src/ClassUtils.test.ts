@@ -7,6 +7,11 @@ class Aaa {
   getAaa() {
     return this.nameA;
   }
+
+  // eslint-disable-next-line class-methods-use-this
+  get someGetter() {
+    throw new Error('This should not get evaluated as a method');
+  }
 }
 
 class Bbb extends Aaa {
@@ -14,6 +19,11 @@ class Bbb extends Aaa {
 
   getBbb() {
     return this.nameB;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  get someGetter() {
+    throw new Error('This should not get evaluated as a method');
   }
 }
 
@@ -25,6 +35,11 @@ class Ccc extends Bbb {
   }
 
   getCcc2 = () => this.nameC;
+
+  // eslint-disable-next-line class-methods-use-this
+  get someGetter() {
+    throw new Error('This should not get evaluated as a method');
+  }
 }
 
 beforeEach(() => {

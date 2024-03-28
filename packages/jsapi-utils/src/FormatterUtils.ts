@@ -1,7 +1,44 @@
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import type { FormattingRule } from './Formatter';
 import Formatter from './Formatter';
 import { DateTimeColumnFormatter, TableColumnFormatter } from './formatters';
-import { ColumnFormatSettings, DateTimeFormatSettings } from './Settings';
+import Settings, {
+  ColumnFormatSettings,
+  DateTimeFormatSettings,
+} from './Settings';
+
+/**
+ * Instantiate a `Formatter` from the given settings.
+ * @param dh The `dh` object
+ * @param settings Optional settings to use
+ * @returns A new `Formatter` instance
+ */
+export function createFormatterFromSettings(
+  dh: typeof DhType,
+  settings?: Settings
+): Formatter {
+  const columnRules = getColumnFormats(settings);
+  const dateTimeOptions = getDateTimeFormatterOptions(settings);
+
+  const {
+    defaultDecimalFormatOptions,
+    defaultIntegerFormatOptions,
+    truncateNumbersWithPound,
+    showEmptyStrings,
+    showNullStrings,
+  } = settings ?? {};
+
+  return new Formatter(
+    dh,
+    columnRules,
+    dateTimeOptions,
+    defaultDecimalFormatOptions,
+    defaultIntegerFormatOptions,
+    truncateNumbersWithPound,
+    showEmptyStrings,
+    showNullStrings
+  );
+}
 
 export function getColumnFormats(
   settings?: ColumnFormatSettings
@@ -45,6 +82,7 @@ export function isCustomColumnFormatDefined(
 }
 
 export default {
+  createFormatterFromSettings,
   getColumnFormats,
   getDateTimeFormatterOptions,
   isCustomColumnFormatDefined,
