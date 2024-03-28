@@ -40,10 +40,10 @@ We use Chrome for development with the React and Redux extensions.
 ## Scripts
 
 - `npm install` : Install all dependencies and automatically bootstrap packages. Should be run before any of the other steps.
-- `npm start`: Start building all packages and watching them (when possible). Use when you're developing, and your changes will be picked up automatically. Servers will open up for code-studio, embed-grid, embed-chart, and embed-widget. These will open on localhost on ports 4000, 4010, 4020, and 4030 respectively.
+- `npm start`: Start building all packages and watching them (when possible). Use when you're developing, and your changes will be picked up automatically. Servers will open up for code-studio and embed-widget. These will open on localhost on ports 4000 and 4010 respectively.
 - `npm test`: Start running tests in all packages and watching (when possible). Use when you're developing, and any breaking changes will be printed out automatically. See [Unit tests](#unit-tests) for more details.
 - `npm run build`: Create a production build of all packages. Mainly used by CI when packaging up a production version of the app.
-- `npm run preview`: Runs the Vite preview server for the built code-studio, embed-grid, embed-chart, and embed-widget. These will open on ports 4000, 4010, 4020, and 4030 respectively.
+- `npm run preview`: Runs the Vite preview server for the built code-studio and embed-widget. These will open on ports 4000 and 4010 respectively.
 - `npm run e2e`: Runs the Playwright end-to-end tests locally. See [E2E Tests](#e2e-tests) for more details.
 
 If your DHC address is different from the default `http://localhost:10000`, edit `.env.local` in each package to point to your local DHC. This is needed for the session websocket and for things like notebooks to be proxied correctly by Vite.
@@ -115,7 +115,7 @@ Depending on what your package is, there are a couple of different templates tha
 
 ### Application package
 
-A standalone application with it's own entry point. Recommend copying the [embed-grid](./packages/embed-grid/) package, removing any dependencies and files not required.
+A standalone application with it's own entry point. Recommend copying the [embed-widget](./packages/embed-widget/) package, removing any dependencies and files not required.
 
 ### Component/library package
 
