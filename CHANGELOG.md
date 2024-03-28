@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.71.0](https://github.com/deephaven/web-client-ui/compare/v0.70.0...v0.71.0) (2024-03-28)
+
+
+### Bug Fixes
+
+* Fixed re-export ([#1894](https://github.com/deephaven/web-client-ui/issues/1894)) ([#1895](https://github.com/deephaven/web-client-ui/issues/1895)) ([b49b506](https://github.com/deephaven/web-client-ui/commit/b49b5069d637ac136578ce839d9fc0416f468adf))
+* Invalid migration of legacy partitions ([#1892](https://github.com/deephaven/web-client-ui/issues/1892)) ([96298f6](https://github.com/deephaven/web-client-ui/commit/96298f6d9c0de44c73f0965eba2055997d17a2fa))
+
+
+### Features
+
+* Change autoclosing bracket behavior to beforeWhitespace ([#1905](https://github.com/deephaven/web-client-ui/issues/1905)) ([80207f4](https://github.com/deephaven/web-client-ui/commit/80207f4178aa4a524de70644a715e1f030b5122d))
+* Picker - Table support for key + label columns ([#1876](https://github.com/deephaven/web-client-ui/issues/1876)) ([bfbf7b1](https://github.com/deephaven/web-client-ui/commit/bfbf7b128f0be0a82c7dd33e9023ff7df3f480fc)), closes [#1858](https://github.com/deephaven/web-client-ui/issues/1858)
+
+
+
+
+
 # [0.70.0](https://github.com/deephaven/web-client-ui/compare/v0.69.1...v0.70.0) (2024-03-22)
 
 
