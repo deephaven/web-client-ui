@@ -1,15 +1,7 @@
 import { useApi } from '@deephaven/jsapi-bootstrap';
-import {
-  DateTimeColumnFormatterOptions,
-  DecimalColumnFormatterOptions,
-  Formatter,
-  FormatterUtils,
-  FormattingRule,
-  IntegerColumnFormatterOptions,
-} from '@deephaven/jsapi-utils';
+import { Formatter, FormatterUtils, Settings } from '@deephaven/jsapi-utils';
 import { bindAllMethods } from '@deephaven/utils';
 import { useMemo } from 'react';
-import { useFormatSettings } from './useFormatSettings';
 
 export type UseFormatterResult = Pick<
   Formatter,
@@ -20,65 +12,37 @@ export type UseFormatterResult = Pick<
   | 'timeZone'
 >;
 
-export interface FormatterOptions {
-  columnRules?: FormattingRule[];
-  dateTimeOptions?: DateTimeColumnFormatterOptions;
-  decimalFormatOptions?: DecimalColumnFormatterOptions;
-  integerFormatOptions?: IntegerColumnFormatterOptions;
-  truncateNumbersWithPound?: boolean;
-  showEmptyStrings?: boolean;
-  showNullStrings?: boolean;
-}
-
 /**
  * Returns a subset of members of a `Formatter` instance. The `Formatter` will be
  * constructed based on the given options or fallback to the configuration found
  * in the current `FormatSettingsContext`. Members that are functions are bound
  * to the `Formatter` instance, so they are safe to destructure. Static methods
  * can still be accessed statically from the `Formatter` class.
- * @param columnRules Column formatting rules to use, if not provided, will use
- * the rules from the `FormatSettingsContext`
- * @param dateTimeOptions DateTime formatting options to use, if not provided,
- * will use the options from the `FormatSettingsContext`
- * @param decimalFormatOptions Decimal formatting options to use, if not provided,
- * will use the options from the `FormatSettingsContext`
- * @param integerFormatOptions Integer formatting options to use, if not provided,
- * will use the options from the `FormatSettingsContext`
- * @param truncateNumbersWithPound Determine if numbers should be truncated w/
- * repeating # instead of ellipsis at the end
- * @param showEmptyStrings Determine if empty strings should be shown
- * @param showNullStrings Determine if null strings should be shown
- * @returns Formatter util functions + timeZone value
+ * @param settings Optional settings to use when constructing the `Formatter`
  */
-export function useFormatter({
-  columnRules: columnRulesOverrides,
-  dateTimeOptions: dateTimeOptionsOverrides,
-  decimalFormatOptions: decimalFormatOptionsOverrides,
-  integerFormatOptions: integerFormatOptionsOverrides,
-  truncateNumbersWithPound,
-  showEmptyStrings,
-  showNullStrings,
-}: FormatterOptions = {}): UseFormatterResult {
+export function useFormatter(settings?: Settings): UseFormatterResult {
   const dh = useApi();
-  const formatSettings = useFormatSettings();
 
   const formatter = useMemo(() => {
-    const columnRules =
-      columnRulesOverrides ?? FormatterUtils.getColumnFormats(formatSettings);
+    const columnRules = FormatterUtils.getColumnFormats(settings);
 
     const dateTimeOptions =
-      dateTimeOptionsOverrides ??
-      FormatterUtils.getDateTimeFormatterOptions(formatSettings);
+      FormatterUtils.getDateTimeFormatterOptions(settings);
 
-    const { defaultDecimalFormatOptions, defaultIntegerFormatOptions } =
-      formatSettings;
+    const {
+      defaultDecimalFormatOptions,
+      defaultIntegerFormatOptions,
+      truncateNumbersWithPound,
+      showEmptyStrings,
+      showNullStrings,
+    } = settings ?? {};
 
     const instance = new Formatter(
       dh,
       columnRules,
       dateTimeOptions,
-      decimalFormatOptionsOverrides ?? defaultDecimalFormatOptions,
-      integerFormatOptionsOverrides ?? defaultIntegerFormatOptions,
+      defaultDecimalFormatOptions,
+      defaultIntegerFormatOptions,
       truncateNumbersWithPound,
       showEmptyStrings,
       showNullStrings
@@ -88,17 +52,7 @@ export function useFormatter({
     bindAllMethods(instance);
 
     return instance;
-  }, [
-    columnRulesOverrides,
-    dateTimeOptionsOverrides,
-    decimalFormatOptionsOverrides,
-    dh,
-    formatSettings,
-    integerFormatOptionsOverrides,
-    showEmptyStrings,
-    showNullStrings,
-    truncateNumbersWithPound,
-  ]);
+  }, [dh, settings]);
 
   const {
     getColumnFormat,
