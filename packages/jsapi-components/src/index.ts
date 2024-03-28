@@ -11,6 +11,8 @@ export { default as useDebouncedViewportSearch } from './useDebouncedViewportSea
 export * from './useDebouncedViewportSelectionFilter';
 export * from './useFilterConditionFactories';
 export * from './useFilteredItemsWithDefaultValue';
+export * from './useFormatSettings';
+export * from './useFormatter';
 export * from './useGetItemIndexByValue';
 export * from './useGetItemPosition';
 export { default as useInitializeViewportData } from './useInitializeViewportData';

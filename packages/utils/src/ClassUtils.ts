@@ -51,7 +51,9 @@ export function getAllMethodNames<T>(
     for (const name of Object.getOwnPropertyNames(current)) {
       if (
         name !== 'constructor' &&
-        typeof current[name as keyof typeof current] === 'function'
+        // Ensure this is a method and not a getter
+        typeof Object.getOwnPropertyDescriptor(current, name)?.value ===
+          'function'
       ) {
         methodNames.add(name as MethodName<T>);
       }
