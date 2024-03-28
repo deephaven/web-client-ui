@@ -54,6 +54,22 @@ describe('useGetItemIndexByValue', () => {
     }
   );
 
+  it('should return null if seekRow fails', async () => {
+    asMock(mockTable.seekRow).mockRejectedValue('Some error');
+
+    const { result } = renderHook(() =>
+      useGetItemIndexByValue({
+        columnName: 'mock.columnName',
+        table: mockTable,
+        value: 'mock.value',
+      })
+    );
+
+    const actual = await result.current();
+
+    expect(actual).toBeNull();
+  });
+
   it.each([
     ['mock.value', 42, 42],
     ['mock.value', -1, null],

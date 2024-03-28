@@ -1,6 +1,9 @@
 import { useCallback } from 'react';
 import { dh } from '@deephaven/jsapi-types';
+import Log from '@deephaven/log';
 import { useTableUtils } from './useTableUtils';
+
+const log = Log.module('useGetItemIndexByValue');
 
 /**
  * Returns a function that gets the index of the first row containing a column
@@ -30,9 +33,13 @@ export function useGetItemIndexByValue<TValue>({
     const column = table.findColumn(columnName);
     const columnValueType = tableUtils.getValueType(column.type);
 
-    const index = await table.seekRow(0, column, columnValueType, value);
-
-    return index === -1 ? null : index;
+    try {
+      const index = await table.seekRow(0, column, columnValueType, value);
+      return index === -1 ? null : index;
+    } catch (err) {
+      log.debug('Error seeking row', { column, value, columnValueType });
+      return null;
+    }
   }, [columnName, table, tableUtils, value]);
 }
 
