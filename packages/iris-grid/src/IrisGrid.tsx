@@ -381,6 +381,7 @@ export interface IrisGridState {
   loadingText: string | null;
   loadingScrimProgress: number | null;
   loadingSpinnerShown: boolean;
+  loadingCancelShown: boolean;
 
   movedColumns: readonly MoveOperation[];
   movedRows: readonly MoveOperation[];
@@ -800,6 +801,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       loadingText: null,
       loadingScrimProgress: null,
       loadingSpinnerShown: false,
+      loadingCancelShown: false,
 
       movedColumns,
       movedRows,
@@ -2149,7 +2151,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
   }
 
-  startLoading(loadingText: string, resetRanges = false): void {
+  startLoading(
+    loadingText: string,
+    resetRanges = false,
+    loadingSpinnerShown = true
+  ): void {
     this.setState({ loadingText });
 
     const theme = this.getTheme();
@@ -2174,11 +2180,13 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.setState({
         loadingScrimProgress: 0,
       });
-      this.loadingTimer = setTimeout(() => {
-        this.setState({
-          loadingSpinnerShown: true,
-        });
-      }, IrisGrid.loadingSpinnerDelay);
+      if (loadingSpinnerShown) {
+        this.loadingTimer = setTimeout(() => {
+          this.setState({
+            loadingSpinnerShown,
+          });
+        }, IrisGrid.loadingSpinnerDelay);
+      }
     }
   }
 
@@ -2189,6 +2197,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       loadingText: null,
       loadingScrimProgress: null,
       loadingSpinnerShown: false,
+      loadingCancelShown: false,
     });
 
     if (this.loadingTimer != null) {
@@ -2520,7 +2529,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.viewportLoadingTimeout = setTimeout(() => {
         // still pending after timeout
         if (model.isViewportPending) {
-          this.startLoading('Waiting for viewport...');
+          this.startLoading('Waiting for viewport...', false);
         }
         this.viewportLoadingTimeout = null;
       }, VIEWPORT_LOADING_DELAY);
@@ -4116,6 +4125,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       loadingText,
       loadingScrimProgress,
       loadingSpinnerShown,
+      loadingCancelShown,
       shownColumnTooltip,
       hoverAdvancedFilter,
       shownAdvancedFilter,
@@ -4288,7 +4298,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             type="button"
             onClick={this.handleCancel}
             className={classNames('iris-grid-btn-cancel', {
-              show: loadingSpinnerShown,
+              show: loadingCancelShown,
             })}
           >
             <FontAwesomeIcon icon={vsClose} transform="down-1" />
