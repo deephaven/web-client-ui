@@ -8,7 +8,7 @@
 
     <script>
       // Can't be an HTML meta redirect because we need to keep the search params
-      const url = new URL('../../iframe/widget/', document.baseURI);
+      const url = new URL('../widget/', document.baseURI);
       url.search = window.location.search;
       window.location.replace(url);
     </script>
