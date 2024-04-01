@@ -1,6 +1,6 @@
 import { Key, ReactNode, useCallback, useMemo } from 'react';
 import { DOMRef } from '@react-types/shared';
-import { Flex, Picker as SpectrumPicker, Text } from '@adobe/react-spectrum';
+import { Flex, Picker as SpectrumPicker } from '@adobe/react-spectrum';
 import {
   getPositionOfSelectedItem,
   findSpectrumPickerScrollArea,
@@ -24,9 +24,10 @@ import {
   TooltipOptions,
   PickerItemKey,
   getPickerItemKey,
-} from './PickerUtils';
+} from '../utils/itemUtils';
 import { PickerItemContent } from './PickerItemContent';
 import { Item, Section } from '../shared';
+import { Text } from '../Text';
 
 export type PickerProps = {
   children:

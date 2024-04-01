@@ -14,8 +14,8 @@ import {
   PickerItem,
   PickerItemOrSection,
   PickerSection,
-} from './PickerUtils';
-import type { PickerProps } from './Picker';
+} from './itemUtils';
+import type { PickerProps } from '../picker/Picker';
 import { Item, Section } from '../shared';
 import { Text } from '../Text';
 
