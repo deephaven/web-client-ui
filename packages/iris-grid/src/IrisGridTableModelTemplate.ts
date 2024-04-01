@@ -463,8 +463,11 @@ class IrisGridTableModelTemplate<
     ) {
       return true;
     }
-    // no columns
-    if (this.viewport.columns.length === 0) {
+    // no columns or no rows
+    if (
+      this.viewport.columns.length === 0 ||
+      this.viewportData.rows.length === 0
+    ) {
       return false;
     }
 
