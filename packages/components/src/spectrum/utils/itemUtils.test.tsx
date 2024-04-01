@@ -1,19 +1,19 @@
 import React, { createElement } from 'react';
 import {
-  getPickerItemKey,
-  INVALID_PICKER_ITEM_ERROR_MESSAGE,
+  getItemKey,
+  INVALID_ITEM_ERROR_MESSAGE,
   isItemElement,
   isNormalizedItemsWithKeysList,
-  isNormalizedPickerSection,
-  isPickerItemOrSection,
+  isNormalizedSection,
+  isItemOrSection,
   isSectionElement,
-  NormalizedPickerItem,
-  NormalizedPickerSection,
-  normalizePickerItemList,
+  NormalizedItem,
+  NormalizedSection,
+  normalizeItemList,
   normalizeTooltipOptions,
-  PickerItem,
-  PickerItemOrSection,
-  PickerSection,
+  ItemElementOrPrimitive,
+  ItemOrSection,
+  SectionElement,
 } from './itemUtils';
 import type { PickerProps } from '../picker/Picker';
 import { Item, Section } from '../shared';
@@ -103,7 +103,7 @@ const expectedItems = {
       },
     },
   ],
-} satisfies Record<string, [PickerItem, NormalizedPickerItem]>;
+} satisfies Record<string, [ItemElementOrPrimitive, NormalizedItem]>;
 /* eslint-enable react/jsx-key */
 
 const nonItemElement = <span>Non-item element</span>;
@@ -138,12 +138,12 @@ const expectedSections = {
       },
     },
   ],
-} satisfies Record<string, [PickerItem, NormalizedPickerSection]>;
+} satisfies Record<string, [ItemElementOrPrimitive, NormalizedSection]>;
 /* eslint-enable react/jsx-key */
 
 const expectedNormalizations = new Map<
-  PickerItem,
-  NormalizedPickerItem | NormalizedPickerSection
+  ItemElementOrPrimitive,
+  NormalizedItem | NormalizedSection
 >([...Object.values(expectedItems), ...Object.values(expectedSections)]);
 
 const mixedItems = [...expectedNormalizations.keys()];
@@ -154,17 +154,17 @@ const children = {
   mixed: mixedItems as PickerProps['children'],
 };
 
-describe('getPickerItemKey', () => {
+describe('getItemKey', () => {
   it.each([
     [{ key: 'top-level.key', item: { key: 'item.key' } }, 'item.key'],
     [{ key: 'top-level.key', item: {} }, 'top-level.key'],
     [{ key: 'top-level.key' }, 'top-level.key'],
     [{ item: { key: 'item.key' } }, 'item.key'],
     [{}, undefined],
-  ] as NormalizedPickerItem[])(
+  ] as NormalizedItem[])(
     'should return the item.key or fallback to the top-level key: %s, %s',
     (given, expected) => {
-      const actual = getPickerItemKey(given);
+      const actual = getItemKey(given);
       expect(actual).toBe(expected);
     }
   );
@@ -175,17 +175,17 @@ describe('isNormalizedItemsWithKeysList', () => {
     normalizedItemWithKey: {
       key: 'some.key',
       item: { content: '' },
-    } as NormalizedPickerItem,
+    } as NormalizedItem,
     normalizedSectionWithKey: {
       key: 'some.key',
       item: { items: [] },
-    } as NormalizedPickerSection,
-    item: (<Item>Item</Item>) as PickerItem,
+    } as NormalizedSection,
+    item: (<Item>Item</Item>) as ItemElementOrPrimitive,
     section: (
       <Section>
         <Item>Item</Item>
       </Section>
-    ) as PickerSection,
+    ) as SectionElement,
   } as const;
 
   it.each([
@@ -202,8 +202,8 @@ describe('isNormalizedItemsWithKeysList', () => {
     'should return true for a normalized items with keys list: %s, %s',
     (givenKeys, expected) => {
       const given = givenKeys.map(key => mock[key]) as
-        | PickerItemOrSection[]
-        | (NormalizedPickerItem | NormalizedPickerSection)[];
+        | ItemOrSection[]
+        | (NormalizedItem | NormalizedSection)[];
 
       expect(isNormalizedItemsWithKeysList(given)).toBe(expected);
     }
@@ -230,7 +230,7 @@ describe('isItemElement', () => {
   });
 });
 
-describe('isPickerItemOrSection', () => {
+describe('isItemOrSection', () => {
   it.each([
     [createElement(Item), true],
     [createElement(Section), true],
@@ -242,26 +242,23 @@ describe('isPickerItemOrSection', () => {
   ])(
     'should return true for a Item or Section element: %s, %s',
     (element, expected) => {
-      expect(isPickerItemOrSection(element)).toBe(expected);
+      expect(isItemOrSection(element)).toBe(expected);
     }
   );
 });
 
-describe('isNormalizedPickerSection', () => {
+describe('isNormalizedSection', () => {
   it.each([
-    [{ item: {} } as NormalizedPickerItem, false],
-    [{ item: { items: [] } } as NormalizedPickerSection, true],
-  ])(
-    'should return true for a normalized Picker section: %s',
-    (obj, expected) => {
-      expect(isNormalizedPickerSection(obj)).toBe(expected);
-    }
-  );
+    [{ item: {} } as NormalizedItem, false],
+    [{ item: { items: [] } } as NormalizedSection, true],
+  ])('should return true for a normalized section: %s', (obj, expected) => {
+    expect(isNormalizedSection(obj)).toBe(expected);
+  });
 });
 
-describe('normalizePickerItemList', () => {
+describe('normalizeItemList', () => {
   it.each([children.empty, children.single, children.mixed])(
-    'should return normalized picker items: %#: %s',
+    'should return normalized items: %#: %s',
     given => {
       const childrenArray = Array.isArray(given) ? given : [given];
 
@@ -269,14 +266,14 @@ describe('normalizePickerItemList', () => {
         expectedNormalizations.get(item)
       );
 
-      const actual = normalizePickerItemList(given);
+      const actual = normalizeItemList(given);
       expect(actual).toEqual(expected);
     }
   );
 
   it(`should throw for invalid items: %#: %s`, () => {
-    expect(() => normalizePickerItemList(nonItemElement)).toThrow(
-      INVALID_PICKER_ITEM_ERROR_MESSAGE
+    expect(() => normalizeItemList(nonItemElement)).toThrow(
+      INVALID_ITEM_ERROR_MESSAGE
     );
   });
 });

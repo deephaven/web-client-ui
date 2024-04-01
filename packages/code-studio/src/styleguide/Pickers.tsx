@@ -3,7 +3,7 @@ import {
   Flex,
   Item,
   Picker,
-  PickerItemKey,
+  ItemKey,
   Section,
   Text,
 } from '@deephaven/components';
@@ -29,9 +29,9 @@ function PersonIcon(): JSX.Element {
 }
 
 export function Pickers(): JSX.Element {
-  const [selectedKey, setSelectedKey] = useState<PickerItemKey>();
+  const [selectedKey, setSelectedKey] = useState<ItemKey>();
 
-  const onChange = useCallback((key: PickerItemKey): void => {
+  const onChange = useCallback((key: ItemKey): void => {
     setSelectedKey(key);
   }, []);
 

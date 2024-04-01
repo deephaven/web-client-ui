@@ -1,5 +1,5 @@
 import {
-  NormalizedPickerItemData,
+  NormalizedItemData,
   Picker as PickerBase,
   PickerProps as PickerPropsBase,
 } from '@deephaven/components';
@@ -67,7 +67,7 @@ export function Picker({
   }, [getItemIndexByValue]);
 
   const { viewportData, onScroll, setViewport } = useViewportData<
-    NormalizedPickerItemData,
+    NormalizedItemData,
     DhType.Table
   >({
     reuseItemsOnTableResize: true,

@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { NormalizedPickerItemData } from '@deephaven/components';
+import { NormalizedItemData } from '@deephaven/components';
 import { dh } from '@deephaven/jsapi-types';
 import { getPickerKeyColumn, getPickerLabelColumn } from './PickerUtils';
 
@@ -39,7 +39,7 @@ export function usePickerItemRowDeserializer({
   keyColumnName?: string;
   labelColumnName?: string;
   formatValue?: (value: unknown, columnType: string) => string;
-}): (row: dh.Row) => NormalizedPickerItemData {
+}): (row: dh.Row) => NormalizedItemData {
   const keyColumn = useMemo(
     () => getPickerKeyColumn(table, keyColumnName),
     [keyColumnName, table]
@@ -51,7 +51,7 @@ export function usePickerItemRowDeserializer({
   );
 
   const deserializeRow = useCallback(
-    (row: dh.Row): NormalizedPickerItemData => {
+    (row: dh.Row): NormalizedItemData => {
       const key = defaultFormatKey(row.get(keyColumn));
       const content = formatValue(row.get(labelColumn), labelColumn.type);
 
