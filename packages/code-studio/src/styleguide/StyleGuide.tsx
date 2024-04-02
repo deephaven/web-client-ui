@@ -36,6 +36,7 @@ import { GoldenLayout } from './GoldenLayout';
 import { RandomAreaPlotAnimation } from './RandomAreaPlotAnimation';
 import SpectrumComparison from './SpectrumComparison';
 import Pickers from './Pickers';
+import ListViews from './ListViews';
 
 const stickyProps = {
   position: 'sticky',
@@ -109,6 +110,7 @@ function StyleGuide(): React.ReactElement {
         <Buttons />
         <Progress />
         <Inputs />
+        <ListViews />
         <Pickers />
         <ItemListInputs />
         <DraggableLists />

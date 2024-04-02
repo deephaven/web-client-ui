@@ -16,6 +16,7 @@ export * from './status';
 /**
  * Custom DH components wrapping React Spectrum components.
  */
+export * from './listView';
 export * from './picker';
 export * from './Heading';
 export * from './Text';

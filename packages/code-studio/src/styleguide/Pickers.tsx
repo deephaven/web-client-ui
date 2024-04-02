@@ -29,7 +29,7 @@ function PersonIcon(): JSX.Element {
 }
 
 export function Pickers(): JSX.Element {
-  const [selectedKey, setSelectedKey] = useState<ItemKey>();
+  const [selectedKey, setSelectedKey] = useState<ItemKey | null>(null);
 
   const onChange = useCallback((key: ItemKey): void => {
     setSelectedKey(key);
