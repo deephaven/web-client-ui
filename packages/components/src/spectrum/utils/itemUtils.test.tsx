@@ -289,4 +289,9 @@ describe('normalizeTooltipOptions', () => {
     const actual = normalizeTooltipOptions(options);
     expect(actual).toEqual(expected);
   });
+
+  it('should allow overriding default placement', () => {
+    const actual = normalizeTooltipOptions(true, 'top');
+    expect(actual).toEqual({ placement: 'top' });
+  });
 });

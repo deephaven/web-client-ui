@@ -288,18 +288,21 @@ export function normalizeItemList<TItemOrSection extends ItemOrSection>(
 
 /**
  * Returns a TooltipOptions object or null if options is false or null.
- * @param options
+ * @param options Tooltip options
+ * @param placement Default placement for the tooltip if `options` is set
+ * explicitly to `true`
  * @returns TooltipOptions or null
  */
 export function normalizeTooltipOptions(
-  options?: boolean | TooltipOptions | null
+  options?: boolean | TooltipOptions | null,
+  placement: TooltipOptions['placement'] = 'right'
 ): TooltipOptions | null {
   if (options == null || options === false) {
     return null;
   }
 
   if (options === true) {
-    return { placement: 'right' };
+    return { placement };
   }
 
   return options;
