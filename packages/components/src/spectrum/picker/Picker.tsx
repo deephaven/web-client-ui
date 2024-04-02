@@ -25,7 +25,7 @@ import {
   ItemKey,
   getItemKey,
 } from '../utils/itemUtils';
-import { PickerItemContent } from './PickerItemContent';
+import { ItemContent } from '../ItemContent';
 import { Item, Section } from '../shared';
 import { Text } from '../Text';
 
@@ -143,7 +143,7 @@ export function Picker({
           textValue={textValue === '' ? 'Empty' : textValue}
         >
           <>
-            <PickerItemContent>{content}</PickerItemContent>
+            <ItemContent>{content}</ItemContent>
             {tooltipOptions == null || content === '' ? null : (
               <Tooltip options={tooltipOptions}>
                 {createTooltipContent(content)}

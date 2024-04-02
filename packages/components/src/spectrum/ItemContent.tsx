@@ -2,9 +2,9 @@ import { Children, cloneElement, isValidElement, ReactNode } from 'react';
 import { Text } from '@adobe/react-spectrum';
 import cl from 'classnames';
 import { isElementOfType } from '@deephaven/react-hooks';
-import stylesCommon from '../../SpectrumComponent.module.scss';
+import stylesCommon from '../SpectrumComponent.module.scss';
 
-export interface PickerItemContentProps {
+export interface ItemContentProps {
   children: ReactNode;
 }
 
@@ -12,9 +12,9 @@ export interface PickerItemContentProps {
  * Picker item content. Text content will be wrapped in a Spectrum Text
  * component with ellipsis overflow handling.
  */
-export function PickerItemContent({
+export function ItemContent({
   children: content,
-}: PickerItemContentProps): JSX.Element | null {
+}: ItemContentProps): JSX.Element | null {
   if (isValidElement(content)) {
     return content;
   }
@@ -57,4 +57,4 @@ export function PickerItemContent({
   );
 }
 
-export default PickerItemContent;
+export default ItemContent;
