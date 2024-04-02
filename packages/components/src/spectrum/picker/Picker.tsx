@@ -1,10 +1,9 @@
-import { Key, ReactNode, useCallback, useMemo } from 'react';
+import { Key, useCallback, useMemo } from 'react';
 import { DOMRef } from '@react-types/shared';
-import { Flex, Picker as SpectrumPicker } from '@adobe/react-spectrum';
+import { Picker as SpectrumPicker } from '@adobe/react-spectrum';
 import {
   getPositionOfSelectedItem,
   findSpectrumPickerScrollArea,
-  isElementOfType,
   usePopoverOnScrollRef,
 } from '@deephaven/react-hooks';
 import {
@@ -13,7 +12,6 @@ import {
   PICKER_TOP_OFFSET,
 } from '@deephaven/utils';
 import cl from 'classnames';
-import { Tooltip } from '../../popper';
 import {
   isNormalizedSection,
   NormalizedSpectrumPickerProps,
@@ -27,7 +25,6 @@ import {
 } from '../utils/itemUtils';
 import { ItemContent } from '../ItemContent';
 import { Item, Section } from '../shared';
-import { Text } from '../Text';
 
 export type PickerProps = {
   children: ItemOrSection | ItemOrSection[] | NormalizedItem[];
@@ -68,26 +65,6 @@ export type PickerProps = {
   | 'selectedKey'
   | 'defaultSelectedKey'
 >;
-
-/**
- * Create tooltip content optionally wrapping with a Flex column for array
- * content. This is needed for Items containing description `Text` elements.
- */
-function createTooltipContent(content: ReactNode) {
-  if (typeof content === 'boolean') {
-    return String(content);
-  }
-
-  if (Array.isArray(content)) {
-    return (
-      <Flex direction="column" alignItems="start">
-        {content.filter(node => isElementOfType(node, Text))}
-      </Flex>
-    );
-  }
-
-  return content;
-}
 
 /**
  * Picker component for selecting items from a list of items. Items can be
@@ -142,14 +119,7 @@ export function Picker({
           // 'Empty' value so that they are not empty strings.
           textValue={textValue === '' ? 'Empty' : textValue}
         >
-          <>
-            <ItemContent>{content}</ItemContent>
-            {tooltipOptions == null || content === '' ? null : (
-              <Tooltip options={tooltipOptions}>
-                {createTooltipContent(content)}
-              </Tooltip>
-            )}
-          </>
+          <ItemContent tooltipOptions={tooltipOptions}>{content}</ItemContent>
         </Item>
       );
     },

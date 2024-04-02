@@ -25,4 +25,5 @@ export * from './View';
  * Custom DH spectrum utils
  */
 export * from './ItemContent';
+export * from './ItemTooltip';
 export * from './utils';
