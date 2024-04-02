@@ -8,11 +8,11 @@ import { Settings } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { PICKER_ITEM_HEIGHT, PICKER_TOP_OFFSET } from '@deephaven/utils';
 import { useCallback, useEffect, useMemo } from 'react';
-import useFormatter from '../../useFormatter';
-import useGetItemIndexByValue from '../../useGetItemIndexByValue';
-import { useViewportData } from '../../useViewportData';
-import { getItemKeyColumn } from '../utils/itemUtils';
-import { useItemRowDeserializer } from '../utils/useItemRowDeserializer';
+import useFormatter from '../useFormatter';
+import useGetItemIndexByValue from '../useGetItemIndexByValue';
+import { useViewportData } from '../useViewportData';
+import { getItemKeyColumn } from './utils/itemUtils';
+import { useItemRowDeserializer } from './utils/useItemRowDeserializer';
 
 const log = Log.module('jsapi-components.Picker');
 
