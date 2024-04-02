@@ -4,7 +4,7 @@ import {
   Text as SpectrumText,
   type TextProps as SpectrumTextProps,
 } from '@adobe/react-spectrum';
-import type { DOMRef, DOMRefValue } from '@react-types/shared';
+import type { DOMRefValue } from '@react-types/shared';
 import { type ColorValue, colorValueStyle } from '../theme/colorUtils';
 
 export type TextProps = SpectrumTextProps & {
@@ -20,8 +20,8 @@ export type TextProps = SpectrumTextProps & {
  * @returns The Text component
  *
  */
-export const Text = forwardRef<DOMRefValue<HTMLSpanElement>, SpectrumTextProps>(
-  (props: TextProps, ref): JSX.Element => {
+export const Text = forwardRef<DOMRefValue<HTMLSpanElement>, TextProps>(
+  (props, forwardedRef): JSX.Element => {
     const { color, UNSAFE_style, ...rest } = props;
     const style = useMemo(
       () => ({
@@ -31,13 +31,7 @@ export const Text = forwardRef<DOMRefValue<HTMLSpanElement>, SpectrumTextProps>(
       [color, UNSAFE_style]
     );
 
-    return (
-      <SpectrumText
-        {...rest}
-        ref={ref as unknown as DOMRef<HTMLDivElement>}
-        UNSAFE_style={style}
-      />
-    );
+    return <SpectrumText {...rest} ref={forwardedRef} UNSAFE_style={style} />;
   }
 );
 
