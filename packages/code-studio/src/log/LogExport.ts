@@ -6,47 +6,41 @@ import { logHistory } from './LogInit';
 
 const FILENAME_DATE_FORMAT = 'yyyy-MM-dd-HHmmss';
 
-// Blacklist applies to all keys (e.g. blacklist foo will blacklist foo, a.foo, and b.foo)
-const KEY_BLACKLIST: string[] = ['client'];
-// Blacklist specific paths (e.g. blacklist foo will only blacklist foo but NOT a.foo or b.foo)
-const PATH_BLACKLIST: string[] = [
-  'api',
-  'dashboardData.defaultLayout.connection',
-  'layoutStorage',
-  'storage',
+// List of objects to blacklist
+// '' represents the root object
+export const PATH_BLACKLIST: string[][] = [
+  ['', 'api'],
+  ['', 'client'],
+  ['', 'dashboardData', 'defaultLayout', 'connection'],
+  ['', 'layoutStorage'],
+  ['', 'storage'],
 ];
 
-/**
- * Replacer function for JSON.stringify to remove keys that should not be included in the output
- * @param key
- * @param value
- */
-function blacklistReplacer(key: string, value: unknown, path: string) {
-  if (!KEY_BLACKLIST.includes(key) && !PATH_BLACKLIST.includes(path)) {
-    return value;
-  }
-}
-
-/**
- * Returns a replacer that has path included
- * @param key
- * @param value
- */
-function replacerWithPath(
-  r: (key: string, value: unknown, path: string) => unknown
-) {
-  const m = new Map();
-  // code source and explanation;
+function stringifyReplacer(blacklist: string[][]) {
+  // modified from:
   // https://stackoverflow.com/questions/61681176/json-stringify-replacer-how-to-get-full-path
+  const pathMap = new Map();
+
   return function replacer(this: unknown, field: string, value: unknown) {
-    const path =
-      m.get(this) + (Array.isArray(this) ? `[${field}]` : `.${field}`);
-    if (value === Object(value)) m.set(value, path);
-    return r.call(this, field, value, path.replace(/undefined\.\.?/, ''));
+    // get and store path
+    const currPath = [...(pathMap.get(this) ?? []), field];
+    if (value === Object(value)) pathMap.set(value, currPath);
+
+    // check blacklists
+    for (let i = 0; i < blacklist.length; i += 1) {
+      if (
+        currPath.length === blacklist[i].length &&
+        currPath.every((v, index) => v === blacklist[i][index])
+      ) {
+        // blacklist match
+        return undefined;
+      }
+    }
+
+    // not in blacklist, return value
+    return value;
   };
 }
-
-const stringifyReplacer = replacerWithPath(blacklistReplacer);
 
 /**
  * Returns a new object that is safe to stringify
@@ -64,6 +58,7 @@ const stringifyReplacer = replacerWithPath(blacklistReplacer);
  */
 function makeSafeToStringify(
   obj: Record<string, unknown>,
+  blacklist: string[][],
   path = 'root',
   potentiallyCircularValues: Map<Record<string, unknown>, string> = new Map([
     [obj, ''],
@@ -73,7 +68,7 @@ function makeSafeToStringify(
 
   Object.entries(obj).forEach(([key, val]) => {
     try {
-      JSON.stringify(val, stringifyReplacer);
+      JSON.stringify(val, stringifyReplacer(blacklist));
       output[key] = val;
     } catch (e) {
       // The value must be a Circular object or BigInt here
@@ -93,6 +88,7 @@ function makeSafeToStringify(
         potentiallyCircularValues.set(valRecord, curPath);
         output[key] = makeSafeToStringify(
           val as Record<string, unknown>,
+          blacklist,
           curPath,
           potentiallyCircularValues
         );
@@ -103,23 +99,26 @@ function makeSafeToStringify(
   return output;
 }
 
-function getReduxDataString(): string {
+function getReduxDataString(blacklist: string[][]): string {
   const reduxData = store.getState();
   return JSON.stringify(
-    makeSafeToStringify(reduxData),
-    stringifyReplacer,
+    makeSafeToStringify(reduxData, blacklist),
+    stringifyReplacer(blacklist),
     2 // Indent w/ 2 spaces
   );
 }
 
-function getMetadata(meta?: Record<string, unknown>): string {
+function getMetadata(
+  blacklist: string[][],
+  meta?: Record<string, unknown>
+): string {
   const metadata = {
     uiVersion: import.meta.env.npm_package_version,
     userAgent: navigator.userAgent,
     ...meta,
   };
 
-  return JSON.stringify(metadata, stringifyReplacer, 2);
+  return JSON.stringify(metadata, stringifyReplacer(blacklist), 2);
 }
 
 /**
@@ -131,13 +130,14 @@ export async function exportLogs(
     FILENAME_DATE_FORMAT,
     new Date()
   )}_support_logs`,
-  metadata?: Record<string, unknown>
+  metadata?: Record<string, unknown>,
+  blacklist: string[][] = PATH_BLACKLIST
 ): Promise<void> {
   const zip = new JSZip();
   const folder = zip.folder(fileNamePrefix) as JSZip;
   folder.file('console.txt', logHistory.getFormattedHistory());
-  folder.file('redux.json', getReduxDataString());
-  folder.file('metadata.json', getMetadata(metadata));
+  folder.file('redux.json', getReduxDataString(blacklist));
+  folder.file('metadata.json', getMetadata(blacklist, metadata));
 
   const blob = await zip.generateAsync({ type: 'blob' });
   const link = document.createElement('a');
