@@ -151,7 +151,6 @@ export function Picker({
     <SpectrumPicker
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...spectrumPickerProps}
-      // The `ref` prop type defined by React Spectrum is incorrect here
       ref={scrollRef as unknown as DOMRef<HTMLDivElement>}
       onOpenChange={onOpenChangeInternal}
       UNSAFE_className={cl('dh-picker', UNSAFE_className)}

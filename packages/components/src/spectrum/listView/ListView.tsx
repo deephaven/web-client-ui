@@ -3,6 +3,11 @@ import {
   ListView as SpectrumListView,
   SpectrumListViewProps,
 } from '@adobe/react-spectrum';
+import { EMPTY_FUNCTION } from '@deephaven/utils';
+import {
+  extractSpectrumHTMLElement,
+  useOnScrollRef,
+} from '@deephaven/react-hooks';
 import cl from 'classnames';
 import {
   ItemElementOrPrimitive,
@@ -33,6 +38,9 @@ export type ListViewProps = {
    */
   onChange?: (keys: 'all' | Set<ItemKey>) => void;
 
+  /** Handler that is called when the picker is scrolled. */
+  onScroll?: (event: Event) => void;
+
   /**
    * Handler that is called when the selection changes.
    * @deprecated Use `onChange` instead
@@ -56,6 +64,7 @@ export function ListView({
   disabledKeys,
   UNSAFE_className,
   onChange,
+  onScroll = EMPTY_FUNCTION,
   onSelectionChange,
   ...spectrumListViewProps
 }: ListViewProps): JSX.Element {
@@ -84,10 +93,13 @@ export function ListView({
     onChange: onChange ?? onSelectionChange,
   });
 
+  const scrollRef = useOnScrollRef(onScroll, extractSpectrumHTMLElement);
+
   return (
     <SpectrumListView
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...spectrumListViewProps}
+      ref={scrollRef}
       UNSAFE_className={cl('dh-list-view', UNSAFE_className)}
       items={normalizedItems}
       selectedKeys={selectedStringKeys}
