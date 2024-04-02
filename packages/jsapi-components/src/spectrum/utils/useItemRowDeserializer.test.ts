@@ -1,8 +1,8 @@
 import { renderHook } from '@testing-library/react-hooks';
 import type { dh } from '@deephaven/jsapi-types';
 import { TestUtils } from '@deephaven/utils';
-import { usePickerItemRowDeserializer } from './usePickerItemRowDeserializer';
-import { getPickerKeyColumn, getPickerLabelColumn } from './PickerUtils';
+import { usePickerItemRowDeserializer } from './useItemRowDeserializer';
+import { getPickerKeyColumn, getPickerLabelColumn } from './collectionUtils';
 
 jest.mock('./PickerUtils');
 

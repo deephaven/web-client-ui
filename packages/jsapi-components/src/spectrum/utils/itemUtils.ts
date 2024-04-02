@@ -6,7 +6,7 @@ import { dh } from '@deephaven/jsapi-types';
  * @param keyColumnName The name of the column to use for key data
  * @returns DH Column containing the key values
  */
-export function getPickerKeyColumn(
+export function getItemKeyColumn(
   table: dh.Table,
   keyColumnName?: string
 ): dh.Column {
@@ -22,7 +22,7 @@ export function getPickerKeyColumn(
  * @param labelColumnName The name of the column to use for label data
  * @returns DH Column containing the label values
  */
-export function getPickerLabelColumn(
+export function getItemLabelColumn(
   table: dh.Table,
   keyColumn: dh.Column,
   labelColumnName?: string

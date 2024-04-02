@@ -11,8 +11,8 @@ import { useCallback, useEffect, useMemo } from 'react';
 import useFormatter from '../../useFormatter';
 import useGetItemIndexByValue from '../../useGetItemIndexByValue';
 import { useViewportData } from '../../useViewportData';
-import { getPickerKeyColumn } from './PickerUtils';
-import { usePickerItemRowDeserializer } from './usePickerItemRowDeserializer';
+import { getItemKeyColumn } from '../utils/itemUtils';
+import { useItemRowDeserializer } from '../utils/useItemRowDeserializer';
 
 const log = Log.module('jsapi-components.Picker');
 
@@ -39,11 +39,11 @@ export function Picker({
   const { getFormattedString: formatValue } = useFormatter(settings);
 
   const keyColumn = useMemo(
-    () => getPickerKeyColumn(table, keyColumnName),
+    () => getItemKeyColumn(table, keyColumnName),
     [keyColumnName, table]
   );
 
-  const deserializeRow = usePickerItemRowDeserializer({
+  const deserializeRow = useItemRowDeserializer({
     table,
     keyColumnName,
     labelColumnName,
