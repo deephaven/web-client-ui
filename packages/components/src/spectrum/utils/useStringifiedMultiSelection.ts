@@ -1,5 +1,5 @@
 import { Key, useCallback, useMemo } from 'react';
-import { getItemKey, ItemKey, NormalizedItem } from '.';
+import { getItemKey, ItemKey, NormalizedItem } from './itemUtils';
 
 function toStringKeySet(
   keys?: 'all' | Iterable<ItemKey>
