@@ -3,15 +3,10 @@ import { Grid, Item, ListView, ItemKey, Text } from '@deephaven/components';
 import { vsAccount, vsPerson } from '@deephaven/icons';
 import { Icon } from '@adobe/react-spectrum';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { sampleSectionIdAndClasses } from './utils';
+import { generateNormalizedItems, sampleSectionIdAndClasses } from './utils';
 
 // Generate enough items to require scrolling
-const itemsSimple = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
-  .split('')
-  .map((key, i) => ({
-    key,
-    item: { key: (i + 1) * 100, content: `${key}${key}${key}` },
-  }));
+const itemsSimple = [...generateNormalizedItems(52)];
 
 function AccountIcon({
   slot,

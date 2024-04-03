@@ -1,0 +1,706 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`generateNormalizedItems should generate normalized items 1`] = `
+[
+  {
+    "item": {
+      "content": "AAA",
+      "key": 100,
+    },
+    "key": "A",
+  },
+  {
+    "item": {
+      "content": "BBB",
+      "key": 200,
+    },
+    "key": "B",
+  },
+  {
+    "item": {
+      "content": "CCC",
+      "key": 300,
+    },
+    "key": "C",
+  },
+  {
+    "item": {
+      "content": "DDD",
+      "key": 400,
+    },
+    "key": "D",
+  },
+  {
+    "item": {
+      "content": "EEE",
+      "key": 500,
+    },
+    "key": "E",
+  },
+  {
+    "item": {
+      "content": "FFF",
+      "key": 600,
+    },
+    "key": "F",
+  },
+  {
+    "item": {
+      "content": "GGG",
+      "key": 700,
+    },
+    "key": "G",
+  },
+  {
+    "item": {
+      "content": "HHH",
+      "key": 800,
+    },
+    "key": "H",
+  },
+  {
+    "item": {
+      "content": "III",
+      "key": 900,
+    },
+    "key": "I",
+  },
+  {
+    "item": {
+      "content": "JJJ",
+      "key": 1000,
+    },
+    "key": "J",
+  },
+  {
+    "item": {
+      "content": "KKK",
+      "key": 1100,
+    },
+    "key": "K",
+  },
+  {
+    "item": {
+      "content": "LLL",
+      "key": 1200,
+    },
+    "key": "L",
+  },
+  {
+    "item": {
+      "content": "MMM",
+      "key": 1300,
+    },
+    "key": "M",
+  },
+  {
+    "item": {
+      "content": "NNN",
+      "key": 1400,
+    },
+    "key": "N",
+  },
+  {
+    "item": {
+      "content": "OOO",
+      "key": 1500,
+    },
+    "key": "O",
+  },
+  {
+    "item": {
+      "content": "PPP",
+      "key": 1600,
+    },
+    "key": "P",
+  },
+  {
+    "item": {
+      "content": "QQQ",
+      "key": 1700,
+    },
+    "key": "Q",
+  },
+  {
+    "item": {
+      "content": "RRR",
+      "key": 1800,
+    },
+    "key": "R",
+  },
+  {
+    "item": {
+      "content": "SSS",
+      "key": 1900,
+    },
+    "key": "S",
+  },
+  {
+    "item": {
+      "content": "TTT",
+      "key": 2000,
+    },
+    "key": "T",
+  },
+  {
+    "item": {
+      "content": "UUU",
+      "key": 2100,
+    },
+    "key": "U",
+  },
+  {
+    "item": {
+      "content": "VVV",
+      "key": 2200,
+    },
+    "key": "V",
+  },
+  {
+    "item": {
+      "content": "WWW",
+      "key": 2300,
+    },
+    "key": "W",
+  },
+  {
+    "item": {
+      "content": "XXX",
+      "key": 2400,
+    },
+    "key": "X",
+  },
+  {
+    "item": {
+      "content": "YYY",
+      "key": 2500,
+    },
+    "key": "Y",
+  },
+  {
+    "item": {
+      "content": "ZZZ",
+      "key": 2600,
+    },
+    "key": "Z",
+  },
+  {
+    "item": {
+      "content": "aaa",
+      "key": 2700,
+    },
+    "key": "a",
+  },
+  {
+    "item": {
+      "content": "bbb",
+      "key": 2800,
+    },
+    "key": "b",
+  },
+  {
+    "item": {
+      "content": "ccc",
+      "key": 2900,
+    },
+    "key": "c",
+  },
+  {
+    "item": {
+      "content": "ddd",
+      "key": 3000,
+    },
+    "key": "d",
+  },
+  {
+    "item": {
+      "content": "eee",
+      "key": 3100,
+    },
+    "key": "e",
+  },
+  {
+    "item": {
+      "content": "fff",
+      "key": 3200,
+    },
+    "key": "f",
+  },
+  {
+    "item": {
+      "content": "ggg",
+      "key": 3300,
+    },
+    "key": "g",
+  },
+  {
+    "item": {
+      "content": "hhh",
+      "key": 3400,
+    },
+    "key": "h",
+  },
+  {
+    "item": {
+      "content": "iii",
+      "key": 3500,
+    },
+    "key": "i",
+  },
+  {
+    "item": {
+      "content": "jjj",
+      "key": 3600,
+    },
+    "key": "j",
+  },
+  {
+    "item": {
+      "content": "kkk",
+      "key": 3700,
+    },
+    "key": "k",
+  },
+  {
+    "item": {
+      "content": "lll",
+      "key": 3800,
+    },
+    "key": "l",
+  },
+  {
+    "item": {
+      "content": "mmm",
+      "key": 3900,
+    },
+    "key": "m",
+  },
+  {
+    "item": {
+      "content": "nnn",
+      "key": 4000,
+    },
+    "key": "n",
+  },
+  {
+    "item": {
+      "content": "ooo",
+      "key": 4100,
+    },
+    "key": "o",
+  },
+  {
+    "item": {
+      "content": "ppp",
+      "key": 4200,
+    },
+    "key": "p",
+  },
+  {
+    "item": {
+      "content": "qqq",
+      "key": 4300,
+    },
+    "key": "q",
+  },
+  {
+    "item": {
+      "content": "rrr",
+      "key": 4400,
+    },
+    "key": "r",
+  },
+  {
+    "item": {
+      "content": "sss",
+      "key": 4500,
+    },
+    "key": "s",
+  },
+  {
+    "item": {
+      "content": "ttt",
+      "key": 4600,
+    },
+    "key": "t",
+  },
+  {
+    "item": {
+      "content": "uuu",
+      "key": 4700,
+    },
+    "key": "u",
+  },
+  {
+    "item": {
+      "content": "vvv",
+      "key": 4800,
+    },
+    "key": "v",
+  },
+  {
+    "item": {
+      "content": "www",
+      "key": 4900,
+    },
+    "key": "w",
+  },
+  {
+    "item": {
+      "content": "xxx",
+      "key": 5000,
+    },
+    "key": "x",
+  },
+  {
+    "item": {
+      "content": "yyy",
+      "key": 5100,
+    },
+    "key": "y",
+  },
+  {
+    "item": {
+      "content": "zzz",
+      "key": 5200,
+    },
+    "key": "z",
+  },
+  {
+    "item": {
+      "content": "AAA1",
+      "key": 5300,
+    },
+    "key": "A1",
+  },
+  {
+    "item": {
+      "content": "BBB1",
+      "key": 5400,
+    },
+    "key": "B1",
+  },
+  {
+    "item": {
+      "content": "CCC1",
+      "key": 5500,
+    },
+    "key": "C1",
+  },
+  {
+    "item": {
+      "content": "DDD1",
+      "key": 5600,
+    },
+    "key": "D1",
+  },
+  {
+    "item": {
+      "content": "EEE1",
+      "key": 5700,
+    },
+    "key": "E1",
+  },
+  {
+    "item": {
+      "content": "FFF1",
+      "key": 5800,
+    },
+    "key": "F1",
+  },
+  {
+    "item": {
+      "content": "GGG1",
+      "key": 5900,
+    },
+    "key": "G1",
+  },
+  {
+    "item": {
+      "content": "HHH1",
+      "key": 6000,
+    },
+    "key": "H1",
+  },
+  {
+    "item": {
+      "content": "III1",
+      "key": 6100,
+    },
+    "key": "I1",
+  },
+  {
+    "item": {
+      "content": "JJJ1",
+      "key": 6200,
+    },
+    "key": "J1",
+  },
+  {
+    "item": {
+      "content": "KKK1",
+      "key": 6300,
+    },
+    "key": "K1",
+  },
+  {
+    "item": {
+      "content": "LLL1",
+      "key": 6400,
+    },
+    "key": "L1",
+  },
+  {
+    "item": {
+      "content": "MMM1",
+      "key": 6500,
+    },
+    "key": "M1",
+  },
+  {
+    "item": {
+      "content": "NNN1",
+      "key": 6600,
+    },
+    "key": "N1",
+  },
+  {
+    "item": {
+      "content": "OOO1",
+      "key": 6700,
+    },
+    "key": "O1",
+  },
+  {
+    "item": {
+      "content": "PPP1",
+      "key": 6800,
+    },
+    "key": "P1",
+  },
+  {
+    "item": {
+      "content": "QQQ1",
+      "key": 6900,
+    },
+    "key": "Q1",
+  },
+  {
+    "item": {
+      "content": "RRR1",
+      "key": 7000,
+    },
+    "key": "R1",
+  },
+  {
+    "item": {
+      "content": "SSS1",
+      "key": 7100,
+    },
+    "key": "S1",
+  },
+  {
+    "item": {
+      "content": "TTT1",
+      "key": 7200,
+    },
+    "key": "T1",
+  },
+  {
+    "item": {
+      "content": "UUU1",
+      "key": 7300,
+    },
+    "key": "U1",
+  },
+  {
+    "item": {
+      "content": "VVV1",
+      "key": 7400,
+    },
+    "key": "V1",
+  },
+  {
+    "item": {
+      "content": "WWW1",
+      "key": 7500,
+    },
+    "key": "W1",
+  },
+  {
+    "item": {
+      "content": "XXX1",
+      "key": 7600,
+    },
+    "key": "X1",
+  },
+  {
+    "item": {
+      "content": "YYY1",
+      "key": 7700,
+    },
+    "key": "Y1",
+  },
+  {
+    "item": {
+      "content": "ZZZ1",
+      "key": 7800,
+    },
+    "key": "Z1",
+  },
+  {
+    "item": {
+      "content": "aaa1",
+      "key": 7900,
+    },
+    "key": "a1",
+  },
+  {
+    "item": {
+      "content": "bbb1",
+      "key": 8000,
+    },
+    "key": "b1",
+  },
+  {
+    "item": {
+      "content": "ccc1",
+      "key": 8100,
+    },
+    "key": "c1",
+  },
+  {
+    "item": {
+      "content": "ddd1",
+      "key": 8200,
+    },
+    "key": "d1",
+  },
+  {
+    "item": {
+      "content": "eee1",
+      "key": 8300,
+    },
+    "key": "e1",
+  },
+  {
+    "item": {
+      "content": "fff1",
+      "key": 8400,
+    },
+    "key": "f1",
+  },
+  {
+    "item": {
+      "content": "ggg1",
+      "key": 8500,
+    },
+    "key": "g1",
+  },
+  {
+    "item": {
+      "content": "hhh1",
+      "key": 8600,
+    },
+    "key": "h1",
+  },
+  {
+    "item": {
+      "content": "iii1",
+      "key": 8700,
+    },
+    "key": "i1",
+  },
+  {
+    "item": {
+      "content": "jjj1",
+      "key": 8800,
+    },
+    "key": "j1",
+  },
+  {
+    "item": {
+      "content": "kkk1",
+      "key": 8900,
+    },
+    "key": "k1",
+  },
+  {
+    "item": {
+      "content": "lll1",
+      "key": 9000,
+    },
+    "key": "l1",
+  },
+  {
+    "item": {
+      "content": "mmm1",
+      "key": 9100,
+    },
+    "key": "m1",
+  },
+  {
+    "item": {
+      "content": "nnn1",
+      "key": 9200,
+    },
+    "key": "n1",
+  },
+  {
+    "item": {
+      "content": "ooo1",
+      "key": 9300,
+    },
+    "key": "o1",
+  },
+  {
+    "item": {
+      "content": "ppp1",
+      "key": 9400,
+    },
+    "key": "p1",
+  },
+  {
+    "item": {
+      "content": "qqq1",
+      "key": 9500,
+    },
+    "key": "q1",
+  },
+  {
+    "item": {
+      "content": "rrr1",
+      "key": 9600,
+    },
+    "key": "r1",
+  },
+  {
+    "item": {
+      "content": "sss1",
+      "key": 9700,
+    },
+    "key": "s1",
+  },
+  {
+    "item": {
+      "content": "ttt1",
+      "key": 9800,
+    },
+    "key": "t1",
+  },
+  {
+    "item": {
+      "content": "uuu1",
+      "key": 9900,
+    },
+    "key": "u1",
+  },
+  {
+    "item": {
+      "content": "vvv1",
+      "key": 10000,
+    },
+    "key": "v1",
+  },
+]
+`;

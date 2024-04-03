@@ -1,8 +1,38 @@
 import cl from 'classnames';
 import { useCallback, useState } from 'react';
+import { NormalizedItem } from '@deephaven/components';
 
 export const HIDE_FROM_E2E_TESTS_CLASS = 'hide-from-e2e-tests';
 export const SAMPLE_SECTION_CLASS = 'sample-section';
+
+/**
+ * Generate a given number of NormalizedItems.
+ * @param count The number of items to generate
+ */
+export function* generateNormalizedItems(
+  count: number
+): Generator<NormalizedItem> {
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  const len = letters.length;
+
+  for (let i = 0; i < count; i += 1) {
+    const charI = i % len;
+    let suffix = String(Math.floor(i / len));
+    if (suffix === '0') {
+      suffix = '';
+    }
+    const letter = letters[charI];
+    const key = `${letter}${suffix}`;
+
+    yield {
+      key,
+      item: {
+        key: (i + 1) * 100,
+        content: `${letter}${letter}${letter}${suffix}`,
+      },
+    };
+  }
+}
 
 /**
  * Pseudo random number generator with seed so we get reproducible output.
