@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.41.6](https://github.com/deephaven/web-client-ui/compare/v0.41.5...v0.41.6) (2024-04-03)
+
+### Bug Fixes
+
+- Cannot import CSV with LOCAL_TIME ([#1434](https://github.com/deephaven/web-client-ui/issues/1434)) ([#1915](https://github.com/deephaven/web-client-ui/issues/1915)) ([27fae23](https://github.com/deephaven/web-client-ui/commit/27fae238d4d2239d75666a828dd372da980b6a0f)), closes [#1432](https://github.com/deephaven/web-client-ui/issues/1432)
+
 ## [0.41.5](https://github.com/deephaven/web-client-ui/compare/v0.41.4...v0.41.5) (2024-02-12)
 
 ### Bug Fixes
