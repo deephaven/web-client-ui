@@ -9,12 +9,12 @@ const FILENAME_DATE_FORMAT = 'yyyy-MM-dd-HHmmss';
 // List of objects to blacklist
 // '' represents the root object
 export const PATH_BLACKLIST: string[][] = [
-  ['', 'api'],
-  ['', 'client'],
-  ['', 'dashboardData', 'defaultLayout', 'connection'],
-  ['', 'layoutStorage'],
-  ['', 'storage'],
-];
+  ['api'],
+  ['client'],
+  ['dashboardData', 'defaultLayout', 'connection'],
+  ['layoutStorage'],
+  ['storage'],
+].map(path => ['', ...path]);
 
 function stringifyReplacer(blacklist: string[][]) {
   // modified from:
@@ -55,6 +55,7 @@ function stringifyReplacer(blacklist: string[][]) {
  * Then if the object is seen again, it must be a circular ref since that object could not be stringified safely
  *
  * @param obj Object to make safe to stringify
+ * @param blacklist List of JSON paths to blacklist. A JSON path is a list representing the path to that value (e.g. client.data would be `['client', 'data']`)
  */
 function makeSafeToStringify(
   obj: Record<string, unknown>,
@@ -124,6 +125,7 @@ function getMetadata(
 /**
  * Export support logs with the given name.
  * @param fileNamePrefix The zip file name without the .zip extension. Ex: test will be saved as test.zip
+ * @param blacklist List of JSON paths to blacklist. A JSON path is a list representing the path to that value (e.g. client.data would be `['client', 'data']`)
  */
 export async function exportLogs(
   fileNamePrefix = `${dh.i18n.DateTimeFormat.format(
