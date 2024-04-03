@@ -1288,6 +1288,7 @@ class VisibilityOrderingBuilder extends PureComponent<
           <Button
             kind="ghost"
             icon={vsRefresh}
+            className="px-1"
             tooltip="Reset to default"
             onClick={() => {
               this.resetVisibilityOrdering();
@@ -1299,6 +1300,7 @@ class VisibilityOrderingBuilder extends PureComponent<
           <Button
             kind="ghost"
             icon={dhSortAlphaDown}
+            className="px-1"
             tooltip="Sort ascending"
             onClick={() => {
               this.handleSortColumns(
@@ -1309,6 +1311,7 @@ class VisibilityOrderingBuilder extends PureComponent<
           <Button
             kind="ghost"
             icon={dhSortAlphaUp}
+            className="px-1"
             tooltip="Sort descending"
             onClick={() => {
               this.handleSortColumns(
@@ -1319,11 +1322,12 @@ class VisibilityOrderingBuilder extends PureComponent<
           <span className="vertical-divider" />
           <Button
             kind="ghost"
+            className="px-1"
             tooltip="Create group from selection"
             disabled={!hasSelection}
             onClick={this.handleGroupCreate}
           >
-            <span className="fa-layers" style={{ marginRight: '0.75rem' }}>
+            <span className="fa-layers">
               <FontAwesomeIcon
                 mask={vsSymbolStructure}
                 icon={vsCircleLargeFilled}
@@ -1340,6 +1344,7 @@ class VisibilityOrderingBuilder extends PureComponent<
           <Button
             kind="ghost"
             icon={vsChevronUp}
+            className="px-1"
             tooltip="Move selection up"
             onClick={() => {
               this.handleMoveColumns(VisibilityOrderingBuilder.MOVE_OPTIONS.UP);
@@ -1349,6 +1354,7 @@ class VisibilityOrderingBuilder extends PureComponent<
           <Button
             kind="ghost"
             icon={vsChevronDown}
+            className="px-1"
             tooltip="Move selection down"
             onClick={() => {
               this.handleMoveColumns(
@@ -1360,6 +1366,7 @@ class VisibilityOrderingBuilder extends PureComponent<
           <Button
             kind="ghost"
             icon={dhArrowToTop}
+            className="px-1"
             tooltip="Move selection to top"
             onClick={() => {
               this.handleMoveColumns(
@@ -1371,6 +1378,7 @@ class VisibilityOrderingBuilder extends PureComponent<
           <Button
             kind="ghost"
             icon={dhArrowToBottom}
+            className="px-1"
             tooltip="Move selection to bottom"
             onClick={() => {
               this.handleMoveColumns(
