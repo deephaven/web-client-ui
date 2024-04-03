@@ -11,35 +11,12 @@
     "directory": "packages/embed-grid"
   },
   "homepage": ".",
-  "main": "public/index.js",
+  "scripts": {
+    "build": "vite build --outDir build"
+  },
   "files": [
     "build"
   ],
-  "dependencies": {
-    "@deephaven/app-utils": "file:../app-utils",
-    "@deephaven/components": "file:../components",
-    "@deephaven/iris-grid": "file:../iris-grid",
-    "@deephaven/jsapi-bootstrap": "file:../jsapi-bootstrap",
-    "@deephaven/jsapi-components": "file:../jsapi-components",
-    "@deephaven/jsapi-shim": "file:../jsapi-shim",
-    "@deephaven/jsapi-utils": "file:../jsapi-utils",
-    "@deephaven/log": "file:../log",
-    "fira": "mozilla/fira#4.202",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2"
-  },
-  "scripts": {
-    "analyze": "source-map-explorer build/assets/*.js --no-border-checks",
-    "start": "vite",
-    "build": "NODE_OPTIONS='--max-old-space-size=4096' vite build",
-    "preview": "vite preview"
-  },
-  "devDependencies": {
-    "@deephaven/eslint-config": "file:../eslint-config",
-    "@deephaven/mocks": "file:../mocks",
-    "@deephaven/prettier-config": "file:../prettier-config",
-    "@deephaven/stylelint-config": "file:../stylelint-config"
-  },
   "publishConfig": {
     "access": "public"
   }

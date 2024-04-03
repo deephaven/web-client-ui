@@ -1,21 +1,16 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <base href="%BASE_URL%" />
-    <meta name="ui-version" content="v%npm_package_version%" />
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, shrink-to-fit=no"
-    />
-    <meta name="theme-color" content="#2d2a2e" />
-    <link rel="manifest" href="/manifest.json" />
-    <link rel="icon" href="%VITE_FAVICON%" />
-    <title>Deephaven Embedded Grid</title>
+    <base href="./" />
   </head>
   <body>
-    <noscript> You need to enable JavaScript to run this app. </noscript>
-    <div id="root"></div>
-    <script type="module" src="/src/index.tsx"></script>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+
+    <script>
+      // Can't be an HTML meta redirect because we need to keep the search params
+      const url = new URL('../widget/', document.baseURI);
+      url.search = window.location.search;
+      window.location.replace(url);
+    </script>
   </body>
 </html>
