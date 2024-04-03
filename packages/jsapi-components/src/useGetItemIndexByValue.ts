@@ -38,7 +38,7 @@ export function useGetItemIndexByValue<TValue>({
       return index === -1 ? null : index;
     } catch (err) {
       log.debug('Error seeking row', { column, value, columnValueType });
-      return null;
+      throw err;
     }
   }, [columnName, table, tableUtils, value]);
 }
