@@ -40,7 +40,6 @@ interface IrisGridModelUpdaterProps {
   pendingRowCount?: number;
   pendingDataMap?: PendingDataMap;
   partitionConfig?: PartitionConfig;
-  onViewportUpdate?: () => void;
 }
 
 /**
@@ -71,7 +70,6 @@ const IrisGridModelUpdater = React.memo(
     formatColumns,
     columnHeaderGroups,
     partitionConfig,
-    onViewportUpdate,
   }: IrisGridModelUpdaterProps) => {
     const columns = useMemo(
       () =>
@@ -135,9 +133,8 @@ const IrisGridModelUpdater = React.memo(
     useEffect(
       function updateViewport() {
         model.setViewport(top, bottom, columns);
-        onViewportUpdate?.();
       },
-      [model, top, bottom, columns, onViewportUpdate]
+      [model, top, bottom, columns]
     );
     useEffect(
       function updateRollupCOnfig() {

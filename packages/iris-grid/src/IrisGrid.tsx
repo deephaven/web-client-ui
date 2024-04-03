@@ -382,6 +382,7 @@ export interface IrisGridState {
   loadingScrimProgress: number | null;
   loadingSpinnerShown: boolean;
   loadingCancelShown: boolean;
+  loadingBlocksGrid: boolean;
 
   movedColumns: readonly MoveOperation[];
   movedRows: readonly MoveOperation[];
@@ -582,6 +583,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleSelectDistinctChanged =
       this.handleSelectDistinctChanged.bind(this);
     this.handlePendingDataUpdated = this.handlePendingDataUpdated.bind(this);
+    this.handleViewportUpdated = this.handleViewportUpdated.bind(this);
     this.handlePendingCommitClicked =
       this.handlePendingCommitClicked.bind(this);
     this.handlePendingDiscardClicked =
@@ -611,7 +613,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.handleGotoValueSelectedFilterChanged.bind(this);
     this.handleGotoValueChanged = this.handleGotoValueChanged.bind(this);
     this.handleGotoValueSubmitted = this.handleGotoValueSubmitted.bind(this);
-    this.handleViewportUpdate = this.handleViewportUpdate.bind(this);
+    this.handleViewportUpdated = this.handleViewportUpdated.bind(this);
     this.makeQuickFilter = this.makeQuickFilter.bind(this);
 
     this.grid = null;
@@ -802,6 +804,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       loadingScrimProgress: null,
       loadingSpinnerShown: false,
       loadingCancelShown: false,
+      loadingBlocksGrid: false,
 
       movedColumns,
       movedRows,
@@ -903,7 +906,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         this.clearGridInputField();
         this.clearCrossColumSearch();
       }
-      this.startLoading('Filtering...', true);
+      this.startLoading('Filtering...', { resetRanges: true });
       this.applyInputFilters(changedInputFilters, replaceExistingFilters);
     }
 
@@ -914,7 +917,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.updateFormatterSettings(settings);
     }
     if (customFilters !== prevProps.customFilters) {
-      this.startLoading('Filtering...', true);
+      this.startLoading('Filtering...', { resetRanges: true });
     }
     if (sorts !== prevProps.sorts) {
       this.updateSorts(sorts);
@@ -1602,7 +1605,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   ): void {
     log.debug('Setting advanced filter', modelIndex, filter);
 
-    this.startLoading('Filtering...', true);
+    this.startLoading('Filtering...', { resetRanges: true });
 
     this.setState(({ advancedFilters }) => {
       const newAdvancedFilters = new Map(advancedFilters);
@@ -1631,7 +1634,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   ): void {
     log.debug('Setting quick filter', modelIndex, filter, text);
 
-    this.startLoading('Filtering...', true);
+    this.startLoading('Filtering...', { resetRanges: true });
 
     this.setState(({ quickFilters }) => {
       const newQuickFilters = new Map(quickFilters);
@@ -1684,7 +1687,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   removeColumnFilter(modelRange: ModelIndex | BoundedAxisRange): void {
-    this.startLoading('Filtering...', true);
+    this.startLoading('Filtering...', { resetRanges: true });
 
     const clearRange: BoundedAxisRange = Array.isArray(modelRange)
       ? modelRange
@@ -1718,7 +1721,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   removeQuickFilter(modelColumn: ModelIndex): void {
-    this.startLoading('Clearing Filter...', true);
+    this.startLoading('Clearing Filter...', { resetRanges: true });
 
     this.setState(({ quickFilters }) => {
       const newQuickFilters = new Map(quickFilters);
@@ -1743,7 +1746,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     // if there is an active quick filter input field, reset it as well
     this.clearGridInputField();
 
-    this.startLoading('Clearing Filters...', true);
+    this.startLoading('Clearing Filters...', { resetRanges: true });
     this.setState({
       quickFilters: new Map(),
       advancedFilters: new Map(),
@@ -1803,7 +1806,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       });
     });
 
-    this.startLoading('Rebuilding filters...', true);
+    this.startLoading('Rebuilding filters...', { resetRanges: true });
     this.setState({
       quickFilters: newQuickFilters,
       advancedFilters: newAdvancedFilters,
@@ -2153,10 +2156,13 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   startLoading(
     loadingText: string,
-    resetRanges = false,
-    loadingSpinnerShown = true
+    {
+      resetRanges = false,
+      loadingCancelShown = true,
+      loadingBlocksGrid = true,
+    } = {}
   ): void {
-    this.setState({ loadingText });
+    this.setState({ loadingText, loadingCancelShown, loadingBlocksGrid });
 
     const theme = this.getTheme();
 
@@ -2180,13 +2186,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.setState({
         loadingScrimProgress: 0,
       });
-      if (loadingSpinnerShown) {
-        this.loadingTimer = setTimeout(() => {
-          this.setState({
-            loadingSpinnerShown,
-          });
-        }, IrisGrid.loadingSpinnerDelay);
-      }
+      this.loadingTimer = setTimeout(() => {
+        this.setState({
+          loadingSpinnerShown: true,
+        });
+      }, IrisGrid.loadingSpinnerDelay);
     }
   }
 
@@ -2273,6 +2277,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       IrisGridModel.EVENT.PENDING_DATA_UPDATED,
       this.handlePendingDataUpdated
     );
+    model.addEventListener(
+      IrisGridModel.EVENT.VIEWPORT_UPDATED,
+      this.handleViewportUpdated
+    );
   }
 
   stopListening(model: IrisGridModel): void {
@@ -2288,6 +2296,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     model.removeEventListener(
       IrisGridModel.EVENT.PENDING_DATA_UPDATED,
       this.handlePendingDataUpdated
+    );
+    model.removeEventListener(
+      IrisGridModel.EVENT.VIEWPORT_UPDATED,
+      this.handleViewportUpdated
     );
   }
 
@@ -2522,17 +2534,26 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     onError(error);
   }
 
-  handleViewportUpdate(): void {
+  handleViewportUpdated(): void {
     const { model } = this.props;
+    const { loadingText } = this.state;
+    const loadingMessage = 'Waiting for viewport...';
+
     // pending and no timer already exists
     if (model.isViewportPending && this.viewportLoadingTimeout === null) {
       this.viewportLoadingTimeout = setTimeout(() => {
         // still pending after timeout
         if (model.isViewportPending) {
-          this.startLoading('Waiting for viewport...', false);
+          this.startLoading(loadingMessage, {
+            loadingCancelShown: false,
+            loadingBlocksGrid: false,
+          });
         }
         this.viewportLoadingTimeout = null;
       }, VIEWPORT_LOADING_DELAY);
+    } else if (loadingText === loadingMessage && !model.isViewportPending) {
+      // extra conditions because timeout might get cleared by update
+      this.stopLoading();
     }
   }
 
@@ -2923,7 +2944,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   handleFilterBarChange(value: string): void {
-    this.startLoading('Filtering...', true);
+    this.startLoading('Filtering...', { resetRanges: true });
 
     this.setState(({ focusedFilterBarColumn, quickFilters }) => {
       const newQuickFilters = new Map(quickFilters);
@@ -3011,12 +3032,12 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const { partitionConfig } = this.state;
     if (isMissingPartitionError(error) && partitionConfig != null) {
       // We'll try loading the initial partition again
-      this.startLoading('Reloading partition...', true);
+      this.startLoading('Reloading partition...', { resetRanges: true });
       this.setState({ partitionConfig: undefined }, () => {
         this.initState();
       });
     } else if (this.canRollback()) {
-      this.startLoading('Rolling back changes...', true);
+      this.startLoading('Rolling back changes...', { resetRanges: true });
       this.rollback();
     } else {
       log.error('Table failed and unable to rollback');
@@ -4126,6 +4147,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       loadingScrimProgress,
       loadingSpinnerShown,
       loadingCancelShown,
+      loadingBlocksGrid,
       shownColumnTooltip,
       hoverAdvancedFilter,
       shownAdvancedFilter,
@@ -4308,7 +4330,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       );
       const gridY = metrics ? metrics.gridY : 0;
       loadingElement = (
-        <div className="iris-grid-loading" style={{ top: gridY }}>
+        <div
+          className="iris-grid-loading"
+          style={loadingBlocksGrid ? { top: gridY } : {}}
+        >
           {loadingStatus}
         </div>
       );
@@ -4764,7 +4789,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                 frozenColumns={frozenColumns}
                 columnHeaderGroups={columnHeaderGroups}
                 partitionConfig={partitionConfig}
-                onViewportUpdate={this.handleViewportUpdate}
               />
             )}
             {!isMenuShown && (

@@ -75,6 +75,7 @@ abstract class IrisGridModel<
     RECONNECT: 'RECONNECT',
     TOTALS_UPDATED: 'TOTALS_UPDATED',
     PENDING_DATA_UPDATED: 'PENDING_DATA_UPDATED',
+    VIEWPORT_UPDATED: 'VIEWPORT_UPDATED',
   } as const);
 
   constructor(dh: typeof DhType) {

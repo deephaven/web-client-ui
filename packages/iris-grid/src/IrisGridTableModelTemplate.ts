@@ -1346,6 +1346,9 @@ class IrisGridTableModelTemplate<
     viewportBottom: number,
     columns?: DhType.Column[]
   ): void {
+    this.dispatchEvent(
+      new EventShimCustomEvent(IrisGridModel.EVENT.VIEWPORT_UPDATED)
+    );
     log.debug2('applyBufferedViewport', viewportTop, viewportBottom, columns);
     if (this.subscription == null) {
       log.debug2('applyBufferedViewport creating new subscription');
