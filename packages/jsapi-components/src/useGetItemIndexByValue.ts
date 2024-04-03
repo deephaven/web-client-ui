@@ -31,7 +31,6 @@ export function useGetItemIndexByValue<TValue>({
     const columnValueType = tableUtils.getValueType(column.type);
 
     const index = await table.seekRow(0, column, columnValueType, value);
-
     return index === -1 ? null : index;
   }, [columnName, table, tableUtils, value]);
 }
