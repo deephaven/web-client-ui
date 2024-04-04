@@ -97,10 +97,14 @@ export function DashboardLayout({
   const [initialClosedPanels] = useState<ReactComponentConfig[] | undefined>(
     (data as DashboardData)?.closed ?? []
   );
-  const [isDashboardInitialized, setIsDashboardInitialized] = useState(false);
   const [layoutChildren, setLayoutChildren] = useState(
     layout.getReactChildren()
   );
+
+  // Fire only once after the layout is mounted
+  // This should ensure DashboardPlugins have been mounted
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => onLayoutInitialized(), []);
 
   const hydrateMap = useMemo(() => new Map(), []);
   const dehydrateMap = useMemo(() => new Map(), []);
@@ -201,11 +205,6 @@ export function DashboardLayout({
     // we risk the last saved state being one without that panel in the layout entirely
     if (isItemDragging) return;
 
-    if (!isDashboardInitialized) {
-      onLayoutInitialized();
-      setIsDashboardInitialized(true);
-    }
-
     const glConfig = layout.toConfig();
     const contentConfig = glConfig.content;
     const dehydratedLayoutConfig = LayoutUtils.dehydrateLayoutConfig(
@@ -232,15 +231,7 @@ export function DashboardLayout({
 
       setLayoutChildren(layout.getReactChildren());
     }
-  }, [
-    dehydrateComponent,
-    isDashboardInitialized,
-    isItemDragging,
-    lastConfig,
-    layout,
-    onLayoutChange,
-    onLayoutInitialized,
-  ]);
+  }, [dehydrateComponent, isItemDragging, lastConfig, layout, onLayoutChange]);
 
   const handleLayoutItemPickedUp = useCallback(
     (component: Container) => {
