@@ -1,10 +1,10 @@
 import { renderHook } from '@testing-library/react-hooks';
 import type { dh } from '@deephaven/jsapi-types';
 import { TestUtils } from '@deephaven/utils';
-import { usePickerItemRowDeserializer } from './usePickerItemRowDeserializer';
-import { getPickerKeyColumn, getPickerLabelColumn } from './PickerUtils';
+import { useItemRowDeserializer } from './useItemRowDeserializer';
+import { getItemKeyColumn, getItemLabelColumn } from './itemUtils';
 
-jest.mock('./PickerUtils');
+jest.mock('./itemUtils');
 
 const { asMock, createMockProxy } = TestUtils;
 
@@ -13,7 +13,7 @@ beforeEach(() => {
   expect.hasAssertions();
 });
 
-describe('usePickerItemRowDeserializer', () => {
+describe('useItemRowDeserializer', () => {
   const table = createMockProxy<dh.Table>();
   const row = createMockProxy<dh.Row>();
   const keyColumnName = 'mock.keyColumnName';
@@ -25,8 +25,8 @@ describe('usePickerItemRowDeserializer', () => {
   const formatValue = jest.fn().mockName('formatValue');
 
   beforeEach(() => {
-    asMock(getPickerKeyColumn).mockReturnValue(keyColumn);
-    asMock(getPickerLabelColumn).mockReturnValue(labelColumn);
+    asMock(getItemKeyColumn).mockReturnValue(keyColumn);
+    asMock(getItemLabelColumn).mockReturnValue(labelColumn);
     asMock(formatValue).mockReturnValue(formattedValue);
   });
 
@@ -99,7 +99,7 @@ describe('usePickerItemRowDeserializer', () => {
       );
 
       const { result } = renderHook(() =>
-        usePickerItemRowDeserializer({
+        useItemRowDeserializer({
           table,
           keyColumnName,
           labelColumnName,
@@ -107,8 +107,8 @@ describe('usePickerItemRowDeserializer', () => {
         })
       );
 
-      expect(getPickerKeyColumn).toHaveBeenCalledWith(table, keyColumnName);
-      expect(getPickerLabelColumn).toHaveBeenCalledWith(
+      expect(getItemKeyColumn).toHaveBeenCalledWith(table, keyColumnName);
+      expect(getItemLabelColumn).toHaveBeenCalledWith(
         table,
         keyColumn,
         labelColumnName

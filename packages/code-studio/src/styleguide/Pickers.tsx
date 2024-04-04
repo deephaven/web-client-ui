@@ -1,13 +1,14 @@
 import React, { useCallback, useState } from 'react';
 import {
   Flex,
+  Item,
   Picker,
-  PickerItemKey,
+  ItemKey,
   Section,
   Text,
 } from '@deephaven/components';
 import { vsPerson } from '@deephaven/icons';
-import { Icon, Item } from '@adobe/react-spectrum';
+import { Icon } from '@adobe/react-spectrum';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { sampleSectionIdAndClasses } from './utils';
 
@@ -28,9 +29,9 @@ function PersonIcon(): JSX.Element {
 }
 
 export function Pickers(): JSX.Element {
-  const [selectedKey, setSelectedKey] = useState<PickerItemKey>();
+  const [selectedKey, setSelectedKey] = useState<ItemKey>();
 
-  const onChange = useCallback((key: PickerItemKey): void => {
+  const onChange = useCallback((key: ItemKey): void => {
     setSelectedKey(key);
   }, []);
 

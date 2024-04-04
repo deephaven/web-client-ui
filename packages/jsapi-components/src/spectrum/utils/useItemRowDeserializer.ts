@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
-import { NormalizedPickerItemData } from '@deephaven/components';
+import { NormalizedItemData } from '@deephaven/components';
 import { dh } from '@deephaven/jsapi-types';
-import { getPickerKeyColumn, getPickerLabelColumn } from './PickerUtils';
+import { getItemKeyColumn, getItemLabelColumn } from './itemUtils';
 
 function defaultFormatKey(value: unknown): string | number | boolean {
   if (
@@ -20,16 +20,14 @@ function defaultFormatValue(value: unknown, _columnType: string): string {
 }
 
 /**
- * Returns a function that deserializes a row into a normalized picker item data
- * object.
+ * Returns a function that deserializes a row into a normalized item data object.
  * @param table The table to get the key and label columns from
  * @param keyColumnName The name of the column to use for key data
  * @param labelColumnName The name of the column to use for label data
  * @param formatValue Optional function to format the label value
- * @returns A function that deserializes a row into a normalized picker item
- * data object
+ * @returns A function that deserializes a row into a normalized item data object
  */
-export function usePickerItemRowDeserializer({
+export function useItemRowDeserializer({
   table,
   keyColumnName,
   labelColumnName,
@@ -39,19 +37,19 @@ export function usePickerItemRowDeserializer({
   keyColumnName?: string;
   labelColumnName?: string;
   formatValue?: (value: unknown, columnType: string) => string;
-}): (row: dh.Row) => NormalizedPickerItemData {
+}): (row: dh.Row) => NormalizedItemData {
   const keyColumn = useMemo(
-    () => getPickerKeyColumn(table, keyColumnName),
+    () => getItemKeyColumn(table, keyColumnName),
     [keyColumnName, table]
   );
 
   const labelColumn = useMemo(
-    () => getPickerLabelColumn(table, keyColumn, labelColumnName),
+    () => getItemLabelColumn(table, keyColumn, labelColumnName),
     [keyColumn, labelColumnName, table]
   );
 
   const deserializeRow = useCallback(
-    (row: dh.Row): NormalizedPickerItemData => {
+    (row: dh.Row): NormalizedItemData => {
       const key = defaultFormatKey(row.get(keyColumn));
       const content = formatValue(row.get(labelColumn), labelColumn.type);
 
@@ -66,4 +64,4 @@ export function usePickerItemRowDeserializer({
   return deserializeRow;
 }
 
-export default usePickerItemRowDeserializer;
+export default useItemRowDeserializer;

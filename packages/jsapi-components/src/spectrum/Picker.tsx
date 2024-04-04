@@ -1,5 +1,5 @@
 import {
-  NormalizedPickerItemData,
+  NormalizedItemData,
   Picker as PickerBase,
   PickerProps as PickerPropsBase,
 } from '@deephaven/components';
@@ -8,11 +8,11 @@ import { Settings } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { PICKER_ITEM_HEIGHT, PICKER_TOP_OFFSET } from '@deephaven/utils';
 import { useCallback, useEffect, useMemo } from 'react';
-import useFormatter from '../../useFormatter';
-import useGetItemIndexByValue from '../../useGetItemIndexByValue';
-import { useViewportData } from '../../useViewportData';
-import { getPickerKeyColumn } from './PickerUtils';
-import { usePickerItemRowDeserializer } from './usePickerItemRowDeserializer';
+import useFormatter from '../useFormatter';
+import useGetItemIndexByValue from '../useGetItemIndexByValue';
+import { useViewportData } from '../useViewportData';
+import { getItemKeyColumn } from './utils/itemUtils';
+import { useItemRowDeserializer } from './utils/useItemRowDeserializer';
 
 const log = Log.module('jsapi-components.Picker');
 
@@ -39,11 +39,11 @@ export function Picker({
   const { getFormattedString: formatValue } = useFormatter(settings);
 
   const keyColumn = useMemo(
-    () => getPickerKeyColumn(table, keyColumnName),
+    () => getItemKeyColumn(table, keyColumnName),
     [keyColumnName, table]
   );
 
-  const deserializeRow = usePickerItemRowDeserializer({
+  const deserializeRow = useItemRowDeserializer({
     table,
     keyColumnName,
     labelColumnName,
@@ -67,7 +67,7 @@ export function Picker({
   }, [getItemIndexByValue]);
 
   const { viewportData, onScroll, setViewport } = useViewportData<
-    NormalizedPickerItemData,
+    NormalizedItemData,
     DhType.Table
   >({
     reuseItemsOnTableResize: true,

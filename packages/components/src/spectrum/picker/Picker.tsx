@@ -1,6 +1,6 @@
 import { Key, ReactNode, useCallback, useMemo } from 'react';
 import { DOMRef } from '@react-types/shared';
-import { Flex, Picker as SpectrumPicker, Text } from '@adobe/react-spectrum';
+import { Flex, Picker as SpectrumPicker } from '@adobe/react-spectrum';
 import {
   getPositionOfSelectedItem,
   findSpectrumPickerScrollArea,
@@ -15,30 +15,28 @@ import {
 import cl from 'classnames';
 import { Tooltip } from '../../popper';
 import {
-  isNormalizedPickerSection,
+  isNormalizedSection,
   NormalizedSpectrumPickerProps,
-  normalizePickerItemList,
+  normalizeItemList,
   normalizeTooltipOptions,
-  NormalizedPickerItem,
-  PickerItemOrSection,
+  NormalizedItem,
+  ItemOrSection,
   TooltipOptions,
-  PickerItemKey,
-  getPickerItemKey,
-} from './PickerUtils';
+  ItemKey,
+  getItemKey,
+} from '../utils/itemUtils';
 import { PickerItemContent } from './PickerItemContent';
 import { Item, Section } from '../shared';
+import { Text } from '../Text';
 
 export type PickerProps = {
-  children:
-    | PickerItemOrSection
-    | PickerItemOrSection[]
-    | NormalizedPickerItem[];
+  children: ItemOrSection | ItemOrSection[] | NormalizedItem[];
   /** Can be set to true or a TooltipOptions to enable item tooltips */
   tooltip?: boolean | TooltipOptions;
   /** The currently selected key in the collection (controlled). */
-  selectedKey?: PickerItemKey | null;
+  selectedKey?: ItemKey | null;
   /** The initial selected key in the collection (uncontrolled). */
-  defaultSelectedKey?: PickerItemKey;
+  defaultSelectedKey?: ItemKey;
   /** Function to retrieve initial scroll position when opening the picker */
   getInitialScrollPosition?: () => Promise<number | null>;
   /**
@@ -47,7 +45,7 @@ export type PickerProps = {
    * `onSelectionChange`. We are renaming for better consistency with other
    * components.
    */
-  onChange?: (key: PickerItemKey) => void;
+  onChange?: (key: ItemKey) => void;
 
   /** Handler that is called when the picker is scrolled. */
   onScroll?: (event: Event) => void;
@@ -56,7 +54,7 @@ export type PickerProps = {
    * Handler that is called when the selection changes.
    * @deprecated Use `onChange` instead
    */
-  onSelectionChange?: (key: PickerItemKey) => void;
+  onSelectionChange?: (key: ItemKey) => void;
 } /*
  * Support remaining SpectrumPickerProps.
  * Note that `selectedKey`, `defaultSelectedKey`, and `onSelectionChange` are
@@ -113,7 +111,7 @@ export function Picker({
   ...spectrumPickerProps
 }: PickerProps): JSX.Element {
   const normalizedItems = useMemo(
-    () => normalizePickerItemList(children),
+    () => normalizeItemList(children),
     [children]
   );
 
@@ -123,8 +121,8 @@ export function Picker({
   );
 
   const renderItem = useCallback(
-    (normalizedItem: NormalizedPickerItem) => {
-      const key = getPickerItemKey(normalizedItem);
+    (normalizedItem: NormalizedItem) => {
+      const key = getItemKey(normalizedItem);
       const content = normalizedItem.item?.content ?? '';
       const textValue = normalizedItem.item?.textValue ?? '';
 
@@ -191,15 +189,15 @@ export function Picker({
   );
 
   const onSelectionChangeInternal = useCallback(
-    (key: PickerItemKey): void => {
+    (key: ItemKey): void => {
       // The `key` arg will always be a string due to us setting the `Item` key
       // prop in `renderItem`. We need to find the matching item to determine
       // the actual key.
       const selectedItem = normalizedItems.find(
-        item => String(getPickerItemKey(item)) === key
+        item => String(getItemKey(item)) === key
       );
 
-      const actualKey = getPickerItemKey(selectedItem) ?? key;
+      const actualKey = getItemKey(selectedItem) ?? key;
 
       (onChange ?? onSelectionChange)?.(actualKey);
     },
@@ -227,10 +225,10 @@ export function Picker({
       }
     >
       {itemOrSection => {
-        if (isNormalizedPickerSection(itemOrSection)) {
+        if (isNormalizedSection(itemOrSection)) {
           return (
             <Section
-              key={getPickerItemKey(itemOrSection)}
+              key={getItemKey(itemOrSection)}
               title={itemOrSection.item?.title}
               items={itemOrSection.item?.items}
             >
