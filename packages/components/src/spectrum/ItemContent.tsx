@@ -28,9 +28,9 @@ export function ItemContent({
   tooltipOptions,
 }: ItemContentProps): JSX.Element | null {
   const {
+    checkOverflowRef,
     isOverflowing: isTextOverflowing,
-    ref: checkTextOverflowRef,
-    reset: resetIsOverflowing,
+    resetIsOverflowing,
   } = useCheckOverflowRef();
 
   const [previousContent, setPreviousContent] = useState(content);
@@ -66,7 +66,7 @@ export function ItemContent({
       isElementOfType(el, Text)
         ? cloneElement(el, {
             ...el.props,
-            ref: checkTextOverflowRef,
+            ref: checkOverflowRef,
             UNSAFE_className: cl(
               el.props.UNSAFE_className,
               stylesCommon.spectrumEllipsis
@@ -79,7 +79,7 @@ export function ItemContent({
   if (typeof content === 'string' || typeof content === 'number') {
     content = (
       <Text
-        ref={checkTextOverflowRef}
+        ref={checkOverflowRef}
         UNSAFE_className={stylesCommon.spectrumEllipsis}
       >
         {content}

@@ -2,9 +2,11 @@ import { useCallback, useState } from 'react';
 import type { DOMRefValue } from '@react-types/shared';
 
 export interface CheckOverflowRefResult {
+  checkOverflowRef: <T extends HTMLElement>(
+    elRef: DOMRefValue<T> | null
+  ) => void;
   isOverflowing: boolean;
-  ref: <T extends HTMLElement>(elRef: DOMRefValue<T> | null) => void;
-  reset: () => void;
+  resetIsOverflowing: () => void;
 }
 
 export function useCheckOverflowRef(): CheckOverflowRefResult {
@@ -15,7 +17,7 @@ export function useCheckOverflowRef(): CheckOverflowRefResult {
    * overflowing so we know whether to render a tooltip showing the full content
    * or not.
    */
-  const ref = useCallback(
+  const checkOverflowRef = useCallback(
     <T extends HTMLElement>(elRef: DOMRefValue<T> | null) => {
       const el = elRef?.UNSAFE_getDOMNode();
 
@@ -30,14 +32,14 @@ export function useCheckOverflowRef(): CheckOverflowRefResult {
     []
   );
 
-  const reset = useCallback(() => {
+  const resetIsOverflowing = useCallback(() => {
     setIsOverflowing(false);
   }, []);
 
   return {
     isOverflowing,
-    ref,
-    reset,
+    checkOverflowRef,
+    resetIsOverflowing,
   };
 }
 
