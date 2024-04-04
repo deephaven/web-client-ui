@@ -1,6 +1,12 @@
 import { theme } from '@react-spectrum/theme-default';
 import { themeSpectrumClassesCommon } from '../../theme/theme-spectrum';
 
+export {
+  useStyleProps,
+  baseStyleProps,
+  viewStyleProps,
+} from '@react-spectrum/utils';
+
 const { global, light, dark, medium, large } = theme;
 
 /**
