@@ -1,8 +1,4 @@
-import type {
-  IdeConnection,
-  VariableChanges,
-  VariableDefinition,
-} from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { TimeoutError } from '@deephaven/utils';
 
 /** Default timeout for fetching a variable definition */
@@ -16,11 +12,11 @@ export const FETCH_TIMEOUT = 10_000;
  * @returns Promise the resolves to the variable definition if found, or rejects if there's an error or the timeout has exceeded
  */
 export function fetchVariableDefinition(
-  connection: IdeConnection,
+  connection: dh.IdeConnection,
   name: string,
   timeout = FETCH_TIMEOUT
-): Promise<VariableDefinition> {
-  return new Promise<VariableDefinition>((resolve, reject) => {
+): Promise<dh.ide.VariableDefinition> {
+  return new Promise<dh.ide.VariableDefinition>((resolve, reject) => {
     let removeListener: () => void;
 
     const timeoutId = setTimeout(() => {
@@ -32,7 +28,7 @@ export function fetchVariableDefinition(
      * Checks if the variable we're looking for is in the changes, and resolves the promise if it does
      * @param changes Variables changes that have occurred
      */
-    function handleFieldUpdates(changes: VariableChanges): void {
+    function handleFieldUpdates(changes: dh.ide.VariableChanges): void {
       const definition = changes.created.find(def => def.title === name);
       clearTimeout(timeoutId);
       removeListener?.();

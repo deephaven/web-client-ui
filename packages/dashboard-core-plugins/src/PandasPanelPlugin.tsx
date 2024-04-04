@@ -1,11 +1,11 @@
 import { forwardRef } from 'react';
 import { WidgetPanelProps } from '@deephaven/plugin';
-import { type Table } from '@deephaven/jsapi-types';
+import { type dh } from '@deephaven/jsapi-types';
 import { PandasPanel } from './panels';
 import useHydrateGrid from './useHydrateGrid';
 
 export const PandasPanelPlugin = forwardRef(
-  (props: WidgetPanelProps<Table>, ref: React.Ref<PandasPanel>) => {
+  (props: WidgetPanelProps<dh.Table>, ref: React.Ref<PandasPanel>) => {
     const { localDashboardId, fetch, metadata } = props;
     const hydratedProps = useHydrateGrid(fetch, localDashboardId, metadata);
 

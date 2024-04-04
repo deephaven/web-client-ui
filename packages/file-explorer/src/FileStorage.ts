@@ -13,6 +13,10 @@ export interface FileMetadata {
 
 export type FileType = 'file' | 'directory';
 
+export function isFileType(type: string): type is FileType {
+  return type === 'file' || type === 'directory';
+}
+
 export interface FileStorageItem extends StorageItem, FileMetadata {
   type: FileType;
 }

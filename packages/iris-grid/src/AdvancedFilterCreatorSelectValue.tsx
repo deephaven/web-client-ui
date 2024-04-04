@@ -1,23 +1,18 @@
 /* eslint react/no-did-update-set-state: "off" */
 import React, { PureComponent } from 'react';
-import { CSSTransition } from 'react-transition-group';
 import classNames from 'classnames';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
-import type {
-  dh as DhType,
-  FilterCondition,
-  Table,
-} from '@deephaven/jsapi-types';
-import { Button } from '@deephaven/components';
+import type { dh as DhType } from '@deephaven/jsapi-types';
+import { Button, FadeTransition } from '@deephaven/components';
 import AdvancedFilterCreatorSelectValueList from './AdvancedFilterCreatorSelectValueList';
 import './AdvancedFilterCreatorSelectValue.scss';
 import { ColumnName } from './CommonTypes';
 
 interface AdvancedFilterCreatorSelectValueProps<T> {
-  dh: DhType;
+  dh: typeof DhType;
   invertSelection: boolean;
   selectedValues: (T | null)[];
-  table?: Table;
+  table?: DhType.Table;
   formatter: Formatter;
   onChange: (selectedValues: (T | null)[], invertSelection: boolean) => void;
   showSearch: boolean;
@@ -26,11 +21,11 @@ interface AdvancedFilterCreatorSelectValueProps<T> {
 
 interface AdvancedFilterCreatorSelectValueState<T> {
   error?: string;
-  filters: FilterCondition[];
+  filters: DhType.FilterCondition[];
   invertSelection: boolean;
   selectedValues: (T | null)[];
   searchText: string;
-  table?: Table;
+  table?: DhType.Table;
 }
 
 class AdvancedFilterCreatorSelectValue<T = unknown> extends PureComponent<
@@ -114,7 +109,7 @@ class AdvancedFilterCreatorSelectValue<T = unknown> extends PureComponent<
     this.stopUpdateFilterTimer();
   }
 
-  searchTablePromise?: Promise<Table>;
+  searchTablePromise?: Promise<DhType.Table>;
 
   tableUtils: TableUtils;
 
@@ -321,15 +316,13 @@ class AdvancedFilterCreatorSelectValue<T = unknown> extends PureComponent<
               Clear
             </Button>
           </div>
-          <CSSTransition
+          <FadeTransition
             in={displayedValuesText != null}
-            timeout={250}
-            classNames="fade"
             mountOnEnter
             unmountOnExit
           >
             <div className="row-count-info">{displayedValuesText}</div>
-          </CSSTransition>
+          </FadeTransition>
         </div>
       </div>
     );

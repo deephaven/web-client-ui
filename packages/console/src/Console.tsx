@@ -18,13 +18,7 @@ import classNames from 'classnames';
 import memoize from 'memoize-one';
 import throttle from 'lodash.throttle';
 import type { JSZipObject } from 'jszip';
-import type {
-  dh as DhType,
-  IdeSession,
-  LogItem,
-  VariableChanges,
-  VariableDefinition,
-} from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { assertNotNull, Pending, PromiseUtils } from '@deephaven/utils';
 import ConsoleHistory from './console-history/ConsoleHistory';
@@ -56,7 +50,7 @@ const DEFAULT_SETTINGS: Settings = {
 } as const;
 
 interface ConsoleProps {
-  dh: DhType;
+  dh: typeof DhType;
   statusBarChildren: ReactNode;
   settings: Partial<Settings>;
   focusCommandHistory: () => void;
@@ -65,11 +59,14 @@ interface ConsoleProps {
    * @param object The object to open
    * @param forceOpen If true, always open the object. If false, only update existing panels
    */
-  openObject: (object: VariableDefinition, forceOpen?: boolean) => void;
+  openObject: (
+    object: DhType.ide.VariableDescriptor,
+    forceOpen?: boolean
+  ) => void;
 
   /** Closes all panels containing the object */
-  closeObject: (object: VariableDefinition) => void;
-  session: IdeSession;
+  closeObject: (object: DhType.ide.VariableDefinition) => void;
+  session: DhType.IdeSession;
   language: string;
   commandHistoryStorage: CommandHistoryStorage;
   onSettingsChange: (settings: Record<string, unknown>) => void;
@@ -81,7 +78,7 @@ interface ConsoleProps {
   historyChildren: ReactNode;
 
   // Known object map
-  objectMap: Map<string, VariableDefinition>;
+  objectMap: Map<string, DhType.ide.VariableDefinition>;
 
   disabled: boolean;
 
@@ -107,7 +104,7 @@ interface ConsoleState {
   objectHistoryMap: Map<string, number>;
 
   // The object definitions, name/type
-  objectMap: Map<string, VariableDefinition>;
+  objectMap: Map<string, DhType.ide.VariableDefinition>;
 
   showCsvOverlay: boolean;
   csvFile: File | null;
@@ -351,7 +348,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
       | {
           message: string;
           error?: string;
-          changes: VariableChanges;
+          changes: DhType.ide.VariableChanges;
         }
       | undefined,
     historyItem: ConsoleHistoryActionItem,
@@ -427,7 +424,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     focusCommandHistory();
   }
 
-  handleLogMessage(message: LogItem): void {
+  handleLogMessage(message: DhType.ide.LogItem): void {
     const { isPrintStdOutEnabled } = this.state;
     if (!isPrintStdOutEnabled) {
       return;
@@ -477,7 +474,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     });
   }, Console.LOG_THROTTLE);
 
-  openUpdatedItems(changes: VariableChanges): void {
+  openUpdatedItems(changes: DhType.ide.VariableChanges): void {
     log.debug('openUpdatedItems', changes);
     const { isAutoLaunchPanelsEnabled } = this.state;
     if (changes == null) {
@@ -494,7 +491,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     );
   }
 
-  closeRemovedItems(changes: VariableChanges): void {
+  closeRemovedItems(changes: DhType.ide.VariableChanges): void {
     if (
       changes == null ||
       changes.removed == null ||
@@ -529,7 +526,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
   }
 
   updateKnownObjects(historyItem: ConsoleHistoryActionItem): void {
-    let changes: undefined | VariableChanges;
+    let changes: undefined | DhType.ide.VariableChanges;
     if (historyItem.result) {
       changes = historyItem.result.changes;
     }
@@ -555,7 +552,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
       const objectMap = new Map(state.objectMap);
 
       const disableOldObject = (
-        object: VariableDefinition,
+        object: DhType.ide.VariableDefinition,
         isRemoved = false
       ): void => {
         const { title } = object;
@@ -787,7 +784,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     this.setState({ consoleHistory: history });
     this.scrollConsoleHistoryToBottom(true);
     this.updateKnownObjects(historyItem);
-    openObject({ name: title, title, type: dh.VariableType.TABLE });
+    openObject({ name: title, type: dh.VariableType.TABLE });
     commandHistoryStorage.addItem(language, scope, title, {
       command: title,
       startTime: new Date().toJSON(),
@@ -901,9 +898,11 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     });
   }
 
-  getObjects = memoize((objectMap: Map<string, VariableDefinition>) => [
-    ...objectMap.values(),
-  ]);
+  getObjects = memoize(
+    (objectMap: Map<string, DhType.ide.VariableDefinition>) => [
+      ...objectMap.values(),
+    ]
+  );
 
   getContextActions = memoize(
     (actions: DropdownAction[]): ResolvableContextAction[] => [

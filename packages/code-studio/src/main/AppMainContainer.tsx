@@ -7,7 +7,6 @@ import React, {
 } from 'react';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
-import { CSSTransition } from 'react-transition-group';
 import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
 import shortid from 'shortid';
@@ -26,6 +25,7 @@ import {
   DebouncedModal,
   NavTabList,
   type NavTabItem,
+  SlideTransition,
 } from '@deephaven/components';
 import { SHORTCUTS as IRIS_GRID_SHORTCUTS } from '@deephaven/iris-grid';
 import {
@@ -50,8 +50,6 @@ import {
   getDashboardSessionWrapper,
   ControlType,
   ToolType,
-  FilterSet,
-  Link,
   getDashboardConnection,
   NotebookPanel,
 } from '@deephaven/dashboard-core-plugins';
@@ -65,11 +63,7 @@ import {
 } from '@deephaven/icons';
 import { getVariableDescriptor } from '@deephaven/jsapi-bootstrap';
 import dh from '@deephaven/jsapi-shim';
-import type {
-  IdeConnection,
-  IdeSession,
-  VariableDefinition,
-} from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import { SessionConfig } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
@@ -130,8 +124,8 @@ interface AppMainContainerProps {
   match: {
     params: { notebookPath: string };
   };
-  connection?: IdeConnection;
-  session?: IdeSession;
+  connection?: DhType.IdeConnection;
+  session?: DhType.IdeSession;
   sessionConfig?: SessionConfig;
   setActiveTool: (tool: string) => void;
   setDashboardData: (id: string, data: DashboardData) => void;
@@ -156,9 +150,12 @@ interface AppMainContainerState {
   isResetLayoutPromptShown: boolean;
   isSettingsMenuShown: boolean;
   unsavedNotebookCount: number;
-  widgets: VariableDefinition[];
+  widgets: DhType.ide.VariableDefinition[];
   tabs: NavTabItem[];
   activeTabKey: string;
+
+  // Number of times the layout has been re-initialized
+  layoutIteration: number;
 }
 
 export class AppMainContainer extends Component<
@@ -259,6 +256,7 @@ export class AppMainContainer extends Component<
           title: value.title ?? 'Untitled',
         })),
       activeTabKey: DEFAULT_DASHBOARD_ID,
+      layoutIteration: 0,
     };
   }
 
@@ -546,7 +544,7 @@ export class AppMainContainer extends Component<
   }
 
   handleWidgetSelect(
-    widget: VariableDefinition,
+    widget: DhType.ide.VariableDefinition,
     dragEvent?: WindowMouseEvent
   ): void {
     this.setState({ isPanelsMenuShown: false });
@@ -581,13 +579,7 @@ export class AppMainContainer extends Component<
     try {
       const { workspace } = this.props;
       const { data } = workspace;
-      const exportedConfig = UserLayoutUtils.exportLayout(
-        data as {
-          filterSets: FilterSet[];
-          links: Link[];
-          layoutConfig: ItemConfigType[];
-        }
-      );
+      const exportedConfig = UserLayoutUtils.exportLayout(data);
 
       log.info('handleExportLayoutClick exportedConfig', exportedConfig);
 
@@ -662,14 +654,18 @@ export class AppMainContainer extends Component<
       const { updateDashboardData, updateWorkspaceData } = this.props;
       const fileText = await file.text();
       const exportedLayout = JSON.parse(fileText);
-      const { filterSets, layoutConfig, links } =
+      const { filterSets, layoutConfig, links, pluginDataMap } =
         UserLayoutUtils.normalizeLayout(exportedLayout);
 
       updateWorkspaceData({ layoutConfig });
       updateDashboardData(DEFAULT_DASHBOARD_ID, {
         filterSets,
         links,
+        pluginDataMap,
       });
+      this.setState(({ layoutIteration }) => ({
+        layoutIteration: layoutIteration + 1,
+      }));
     } catch (e) {
       log.error('Unable to import layout', e);
     }
@@ -764,7 +760,10 @@ export class AppMainContainer extends Component<
    * @param widget The widget to open
    * @param dragEvent The mouse drag event that trigger it, undefined if it was not triggered by a drag
    */
-  openWidget(widget: VariableDefinition, dragEvent?: WindowMouseEvent): void {
+  openWidget(
+    widget: DhType.ide.VariableDefinition,
+    dragEvent?: WindowMouseEvent
+  ): void {
     const { connection } = this.props;
     this.emitLayoutEvent(PanelEvent.OPEN, {
       dragEvent,
@@ -833,8 +832,9 @@ export class AppMainContainer extends Component<
   getDashboards(): {
     id: string;
     layoutConfig: ItemConfigType[];
+    key?: string;
   }[] {
-    const { tabs } = this.state;
+    const { layoutIteration, tabs } = this.state;
     const { allDashboardData, workspace } = this.props;
     const { data: workspaceData } = workspace;
     const { layoutConfig } = workspaceData;
@@ -843,11 +843,13 @@ export class AppMainContainer extends Component<
       {
         id: DEFAULT_DASHBOARD_ID,
         layoutConfig: layoutConfig as ItemConfigType[],
+        key: `${DEFAULT_DASHBOARD_ID}-${layoutIteration}`,
       },
       ...tabs.map(tab => ({
         id: tab.key,
         layoutConfig: (allDashboardData[tab.key]?.layoutConfig ??
           EMPTY_ARRAY) as ItemConfigType[],
+        key: `${tab.key}-${layoutIteration}`,
       })),
     ];
   }
@@ -1000,19 +1002,13 @@ export class AppMainContainer extends Component<
             ...dashboardPlugins,
           ]}
         />
-        <CSSTransition
-          in={isSettingsMenuShown}
-          timeout={ThemeExport.transitionMidMs}
-          classNames="slide-left"
-          mountOnEnter
-          unmountOnExit
-        >
+        <SlideTransition in={isSettingsMenuShown} mountOnEnter unmountOnExit>
           <SettingsMenu
             serverConfigValues={serverConfigValues}
             onDone={this.handleSettingsMenuHide}
             user={user}
           />
-        </CSSTransition>
+        </SlideTransition>
         <ContextActions actions={contextActions} />
         <input
           ref={this.importElement}
@@ -1020,6 +1016,7 @@ export class AppMainContainer extends Component<
           accept=".json"
           style={{ display: 'none' }}
           onChange={this.handleImportLayoutFiles}
+          data-testid="input-import-layout"
         />
         <DebouncedModal
           isOpen={isDisconnected && !isAuthFailed}

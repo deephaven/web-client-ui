@@ -18,12 +18,7 @@ import {
   UITreeRow,
   ColumnHeaderGroup,
 } from '@deephaven/iris-grid';
-import type {
-  Column,
-  CustomColumn,
-  dh as DhType,
-  ValueTypeUnion,
-} from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
 
 // We need to cast our CustomEvent so it's happy with event-target-shim
@@ -47,7 +42,7 @@ class MockIrisGridTreeModel
 
   protected editedData: string[][];
 
-  constructor(dh: DhType, model = new MockTreeGridModel()) {
+  constructor(dh: typeof DhType, model = new MockTreeGridModel()) {
     super(dh);
 
     this.model = model;
@@ -166,11 +161,11 @@ class MockIrisGridTreeModel
   }
 
   // Stub out functions for IrisGridModel functionality
-  get columns(): Column[] {
-    return this.getCachedColumns(this.columnCount) as Column[];
+  get columns(): DhType.Column[] {
+    return this.getCachedColumns(this.columnCount) as DhType.Column[];
   }
 
-  get groupedColumns(): Column[] {
+  get groupedColumns(): DhType.Column[] {
     return EMPTY_ARRAY;
   }
 
@@ -198,11 +193,11 @@ class MockIrisGridTreeModel
     // Ignore for mock
   }
 
-  get formatColumns(): CustomColumn[] {
+  get formatColumns(): DhType.CustomColumn[] {
     return [];
   }
 
-  set formatColumns(formatColumns: CustomColumn[]) {
+  set formatColumns(formatColumns: DhType.CustomColumn[]) {
     // Ignore for mock
   }
 
@@ -292,7 +287,7 @@ class MockIrisGridTreeModel
     return true;
   }
 
-  async columnStatistics(column: Column): Promise<never> {
+  async columnStatistics(column: DhType.Column): Promise<never> {
     throw new Error('Not defined in mock');
   }
 
@@ -340,14 +335,14 @@ class MockIrisGridTreeModel
     throw new Error('Not defined in mock');
   }
 
-  valuesTable(columns: Column | Column[]): Promise<never> {
+  valuesTable(columns: DhType.Column | DhType.Column[]): Promise<never> {
     throw new Error('Not defined in mock');
   }
 
   seekRow(
     startRow: number,
-    column: Column,
-    valueType: ValueTypeUnion,
+    column: DhType.Column,
+    valueType: DhType.ValueTypeType,
     value: unknown,
     insensitive?: boolean | undefined,
     contains?: boolean | undefined,

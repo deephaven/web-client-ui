@@ -1,4 +1,4 @@
-import type { Column, Table } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import IrisGridModel from './IrisGridModel';
 
 export function isPartitionedGridModelProvider(
@@ -38,19 +38,19 @@ export interface PartitionedGridModelProvider extends IrisGridModel {
    * Retrieve the columns this model is partitioned on
    * @returns All columns to partition on
    */
-  get partitionColumns(): readonly Column[];
+  get partitionColumns(): readonly dh.Column[];
 
   /** Whether a partition is required to be set on this model */
   get isPartitionRequired(): boolean;
 
   /** Get a keys table for the partitions */
-  partitionKeysTable: () => Promise<Table>;
+  partitionKeysTable: () => Promise<dh.Table>;
 
   /** Get a merged table containing all partitions */
-  partitionMergedTable: () => Promise<Table>;
+  partitionMergedTable: () => Promise<dh.Table>;
 
   /** Get a table containing the selected partition */
-  partitionTable: (partitions: unknown[]) => Promise<Table>;
+  partitionTable: (partitions: unknown[]) => Promise<dh.Table>;
 }
 
 /**

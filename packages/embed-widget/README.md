@@ -16,7 +16,7 @@ To start the Embed Widget server, run `npm install` and `npm start` in the root 
 
 See the guide for how to set up core in Application Mode: https://deephaven.io/core/docs/how-to-guides/application-mode/
 
-Once Deephaven is running, you can open a widget with a specific name by adding the query param `name`, e.g. http://localhost:4030/?name=world
+Once Deephaven is running, you can open a widget with a specific name by adding the query param `name`, e.g. http://localhost:4010/?name=world
 
 ### Configuring Server Address
 

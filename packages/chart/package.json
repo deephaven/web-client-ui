@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/chart",
-  "version": "0.67.0",
+  "version": "0.71.0",
   "description": "Deephaven Chart",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -29,11 +29,12 @@
   "dependencies": {
     "@deephaven/components": "file:../components",
     "@deephaven/icons": "file:../icons",
-    "@deephaven/jsapi-types": "file:../jsapi-types",
+    "@deephaven/jsapi-types": "1.0.0-dev0.33.1",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
     "@deephaven/react-hooks": "file:../react-hooks",
     "@deephaven/utils": "file:../utils",
+    "buffer": "^6.0.3",
     "deep-equal": "^2.0.5",
     "lodash.debounce": "^4.0.8",
     "lodash.set": "^4.3.2",
@@ -44,7 +45,7 @@
     "react-plotly.js": "^2.6.0"
   },
   "peerDependencies": {
-    "react": "^17.x"
+    "react": ">=16.8.0"
   },
   "devDependencies": {
     "@deephaven/jsapi-shim": "file:../jsapi-shim",

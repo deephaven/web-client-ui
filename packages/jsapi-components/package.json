@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/jsapi-components",
-  "version": "0.67.0",
+  "version": "0.71.0",
   "description": "Deephaven JSAPI Components",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -24,7 +24,7 @@
   "dependencies": {
     "@deephaven/components": "file:../components",
     "@deephaven/jsapi-bootstrap": "file:../jsapi-bootstrap",
-    "@deephaven/jsapi-types": "file:../jsapi-types",
+    "@deephaven/jsapi-types": "1.0.0-dev0.33.1",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
     "@deephaven/react-hooks": "file:../react-hooks",
@@ -40,7 +40,7 @@
     "react-test-renderer": "^17.0.2"
   },
   "peerDependencies": {
-    "react": "^17.x"
+    "react": ">=16.8.0"
   },
   "files": [
     "dist"

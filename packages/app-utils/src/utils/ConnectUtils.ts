@@ -1,4 +1,4 @@
-import type { ConnectOptions } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 
 /**
  * Get the base URL of the API
@@ -18,7 +18,7 @@ export function getEnvoyPrefix(): string | null {
   return searchParams.get('envoyPrefix');
 }
 
-export function getConnectOptions(): ConnectOptions {
+export function getConnectOptions(): dh.ConnectOptions {
   const envoyPrefix = getEnvoyPrefix();
   return envoyPrefix != null
     ? { headers: { 'envoy-prefix': envoyPrefix } }

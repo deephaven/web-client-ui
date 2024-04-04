@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/iris-grid",
-  "version": "0.67.0",
+  "version": "0.71.0",
   "description": "Deephaven Iris Grid",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -37,7 +37,7 @@
     "@deephaven/grid": "file:../grid",
     "@deephaven/icons": "file:../icons",
     "@deephaven/jsapi-components": "file:../jsapi-components",
-    "@deephaven/jsapi-types": "file:../jsapi-types",
+    "@deephaven/jsapi-types": "1.0.0-dev0.33.1",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
     "@deephaven/react-hooks": "file:../react-hooks",
@@ -61,8 +61,8 @@
     "shortid": "^2.2.16"
   },
   "peerDependencies": {
-    "react": "^17.x",
-    "react-dom": "^17.x"
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0"
   },
   "devDependencies": {
     "@deephaven/jsapi-shim": "file:../jsapi-shim",

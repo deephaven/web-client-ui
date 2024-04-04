@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/react-hooks",
-  "version": "0.67.0",
+  "version": "0.71.0",
   "description": "Deephaven React hooks library",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -28,7 +28,7 @@
     "shortid": "^2.2.16"
   },
   "peerDependencies": {
-    "react": "^17.x"
+    "react": ">=16.8.0"
   },
   "files": [
     "dist"

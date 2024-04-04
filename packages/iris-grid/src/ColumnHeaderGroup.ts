@@ -39,14 +39,14 @@ export default class ColumnHeaderGroup implements IColumnHeaderGroup {
   }: {
     name: string;
     children: string[];
-    color?: string;
+    color?: string | null;
     depth: number;
     childIndexes: ModelIndex[];
     parent?: string;
   }) {
     this.name = name;
     this.children = children;
-    this.color = color;
+    this.color = color ?? undefined;
     this.depth = depth;
     this.childIndexes = childIndexes;
     this.parent = parent;

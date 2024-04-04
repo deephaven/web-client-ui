@@ -26,7 +26,7 @@ export type Link = {
 export type LinkColumn = {
   name: string;
   type: string | null;
-  description?: string;
+  description?: string | null;
 };
 
 export type LinkDataValue<T = unknown> = {
@@ -74,8 +74,8 @@ export function isLinkablePanel(panel: PanelComponent): panel is LinkablePanel {
 export function isLinkableColumn(column: LinkColumn): boolean {
   // TODO: core/#3358 Use preview/original type property instead of checking description
   return (
-    column.description === undefined ||
-    !column.description?.startsWith('Preview of type: ')
+    column.description == null ||
+    !column.description.startsWith('Preview of type: ')
   );
 }
 

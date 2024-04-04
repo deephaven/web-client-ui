@@ -2,6 +2,7 @@ export * from './HookTestUtils';
 export { default as TableInput } from './TableInput';
 export * from './RefreshTokenBootstrap';
 export * from './RefreshTokenUtils';
+export * from './spectrum';
 export * from './TableDropdown';
 export { default as useBroadcastChannel } from './useBroadcastChannel';
 export { default as useBroadcastLoginListener } from './useBroadcastLoginListener';
@@ -10,6 +11,8 @@ export { default as useDebouncedViewportSearch } from './useDebouncedViewportSea
 export * from './useDebouncedViewportSelectionFilter';
 export * from './useFilterConditionFactories';
 export * from './useFilteredItemsWithDefaultValue';
+export * from './useFormatter';
+export * from './useGetItemIndexByValue';
 export * from './useGetItemPosition';
 export { default as useInitializeViewportData } from './useInitializeViewportData';
 export * from './useSearchableViewportData';

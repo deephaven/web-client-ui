@@ -14,7 +14,7 @@ import {
   vsPreview,
   vsRefresh,
 } from '@deephaven/icons';
-import type { VariableDefinition } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import './WidgetList.scss';
 
@@ -27,15 +27,15 @@ export type WindowMouseEvent = globalThis.MouseEvent;
 export type SelectStartEvent = {
   x: number;
   y: number;
-  widget: VariableDefinition;
+  widget: dh.ide.VariableDefinition;
 };
 
 export interface WidgetListProps {
-  onSelect: (widget: VariableDefinition, e?: WindowMouseEvent) => void;
+  onSelect: (widget: dh.ide.VariableDefinition, e?: WindowMouseEvent) => void;
   onExportLayout: () => void;
   onImportLayout: () => void;
   onResetLayout: () => void;
-  widgets?: VariableDefinition[];
+  widgets?: dh.ide.VariableDefinition[];
 }
 
 /**
@@ -64,7 +64,7 @@ export function WidgetList(props: WidgetListProps): JSX.Element {
    * @param event
    */
   const sendSelect = useCallback(
-    (widget: VariableDefinition, event?: WindowMouseEvent) => {
+    (widget: dh.ide.VariableDefinition, event?: WindowMouseEvent) => {
       if (widget != null) onSelect(widget, event);
     },
     [onSelect]
@@ -96,7 +96,7 @@ export function WidgetList(props: WidgetListProps): JSX.Element {
   );
 
   const handleMouseDown = useCallback(
-    (e: MouseEvent, widget: VariableDefinition) => {
+    (e: MouseEvent, widget: dh.ide.VariableDefinition) => {
       selectStartEvent.current = {
         x: e.clientX,
         y: e.clientY,
@@ -108,7 +108,7 @@ export function WidgetList(props: WidgetListProps): JSX.Element {
   );
 
   const handleMouseUp = useCallback(
-    (e: MouseEvent, widget: VariableDefinition) => {
+    (e: MouseEvent, widget: dh.ide.VariableDefinition) => {
       window.removeEventListener('mousemove', handleMouseMove);
 
       // down and up need to occur on same object to constitute a click event

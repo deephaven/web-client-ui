@@ -341,7 +341,7 @@ test('organize columns', async ({ page }) => {
   });
 });
 
-test('custom column', async ({ page }) => {
+test('custom column', async ({ page, browserName }) => {
   await openTableOption(page, 'Custom Columns');
 
   await test.step('Create custom column', async () => {
@@ -390,6 +390,8 @@ test('custom column', async ({ page }) => {
   });
 
   await test.step('Drag', async () => {
+    if (browserName === 'webkit') return;
+
     await addColumnButton.click();
 
     const dragColumn = page.getByPlaceholder('Column Name').nth(1);
@@ -421,7 +423,7 @@ test('custom column', async ({ page }) => {
 
     // TODO: This is disabled due to test failing in CI but not locally. Should
     // be fixed and re-enabled in #1553.
-    // await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
+    await expect(page.locator('.iris-grid-column')).toHaveScreenshot();
   });
 });
 

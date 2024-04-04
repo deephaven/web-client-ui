@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/pouch-storage",
-  "version": "0.67.0",
+  "version": "0.71.0",
   "description": "Deephaven Storage based on PouchDB",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -31,7 +31,7 @@
     "pouchdb-find": "^7.3.0"
   },
   "peerDependencies": {
-    "react": "^17.x"
+    "react": ">=16.8.0"
   },
   "files": [
     "dist"

@@ -841,6 +841,16 @@ class Table extends DeephavenObject {
   }
 }
 
+// TreeTable and Table are different in actual implementation, but should be okay for the mock
+class TreeTable extends Table {
+  constructor(props) {
+    super(props);
+
+    const { groupedColumns = [] } = props;
+    this.groupedColumns = groupedColumns;
+  }
+}
+
 Table.EVENT_CUSTOMCOLUMNSCHANGED = 'customcolumnschanged';
 Table.EVENT_FILTERCHANGED = 'filterchanged';
 Table.EVENT_ROWADDED = 'rowadded';
@@ -1979,6 +1989,15 @@ class SourceType {
   static Z = 'Z';
 }
 
+class ValueType {
+  static BOOLEAN = 'BOOLEAN';
+  static DATETIME = 'DATETIME';
+  static DOUBLE = 'DOUBLE';
+  static LONG = 'LONG';
+  static NUMBER = 'NUMBER';
+  static STRING = 'STRING';
+}
+
 const dh = {
   FilterCondition: FilterCondition,
   FilterValue: FilterValue,
@@ -1991,8 +2010,7 @@ const dh = {
   TotalsTableConfig: TotalsTableConfig,
   TableViewportSubscription,
   TableSubscription,
-  // TreeTable and Table are different in actual implementation, but should be okay for the mock
-  TreeTable: Table,
+  TreeTable: TreeTable,
   Column: Column,
   RangeSet,
   Row: Row,
@@ -2025,6 +2043,7 @@ const dh = {
     DayOfWeek,
   },
   DateWrapper: DateWrapper,
+  ValueType,
   ViewportData,
   VariableType,
   storage: {

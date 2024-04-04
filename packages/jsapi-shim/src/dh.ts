@@ -4,7 +4,7 @@ import type { dh as DhType } from '@deephaven/jsapi-types';
 
 declare global {
   // eslint-disable-next-line vars-on-top,no-var
-  var dh: DhType;
+  var dh: typeof DhType;
 }
 
 const { dh } = globalThis;

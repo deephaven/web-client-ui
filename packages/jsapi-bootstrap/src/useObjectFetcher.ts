@@ -1,4 +1,4 @@
-import { VariableDescriptor, VariableDefinition } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { useContextOrThrow } from '@deephaven/react-hooks';
 import { createContext } from 'react';
 
@@ -46,7 +46,7 @@ export function isIdVariableDescriptor(
 
 export function isVariableDescriptor(
   value: unknown
-): value is VariableDescriptor {
+): value is dh.ide.VariableDescriptor {
   return isNameVariableDescriptor(value) || isIdVariableDescriptor(value);
 }
 
@@ -56,7 +56,7 @@ export function isVariableDescriptor(
  *                    include additional fields (such as a session ID) to uniquely identify an object.
  */
 export type ObjectFetcher = <T = unknown>(
-  descriptor: VariableDescriptor
+  descriptor: dh.ide.VariableDescriptor
 ) => Promise<T>;
 
 export const ObjectFetcherContext = createContext<ObjectFetcher | null>(null);
@@ -68,7 +68,7 @@ export const ObjectFetcherContext = createContext<ObjectFetcher | null>(null);
  * @returns Descriptor object that has either the ID or name set, but not both.
  */
 export function sanitizeVariableDescriptor(
-  descriptor: Partial<VariableDescriptor>
+  descriptor: Partial<dh.ide.VariableDescriptor>
 ): NameVariableDescriptor | IdVariableDescriptor {
   // Can't use a spread operator because of how the GWT compiled code defines properties on the object: https://github.com/gwtproject/gwt/issues/9913
   if (isIdVariableDescriptor(descriptor)) {
@@ -92,8 +92,8 @@ export function sanitizeVariableDescriptor(
  * @returns Serializable VariableDescriptor object
  */
 export function getVariableDescriptor(
-  definition: VariableDefinition
-): VariableDescriptor {
+  definition: dh.ide.VariableDescriptor & { title?: string }
+): dh.ide.VariableDescriptor {
   return {
     type: definition.type ?? '',
     name: definition.title ?? definition.name,

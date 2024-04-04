@@ -7,10 +7,10 @@ import React, {
 import { connect } from 'react-redux';
 import { dhNewCircleLargeFilled, vsTrash } from '@deephaven/icons';
 import memoize from 'memoizee';
-import { CSSTransition, TransitionGroup } from 'react-transition-group';
+import { TransitionGroup } from 'react-transition-group';
 import debounce from 'lodash.debounce';
 import classNames from 'classnames';
-import { Button, Select, ThemeExport } from '@deephaven/components';
+import { Button, FadeTransition, Select } from '@deephaven/components';
 import {
   DateTimeColumnFormatter,
   IntegerColumnFormatter,
@@ -48,7 +48,7 @@ import ColumnTypeOptions from './ColumnTypeOptions';
 import DateTimeOptions from './DateTimeOptions';
 
 export interface ColumnSpecificSectionContentProps {
-  dh: DhType;
+  dh: typeof DhType;
   formatter: FormatterItem[];
   showTimeZone: boolean;
   showTSeparator: boolean;
@@ -304,7 +304,7 @@ export class ColumnSpecificSectionContent extends PureComponent<
     }
 
     if (
-      rule.format.formatString !== undefined &&
+      rule.format.formatString != null &&
       rule.format.formatString.length === 0
     ) {
       error.hasFormatError = true;
@@ -577,14 +577,9 @@ export class ColumnSpecificSectionContent extends PureComponent<
     const { formatRulesChanged, formatSettings } = this.state;
 
     const formatRules = formatSettings.map((rule, index) => (
-      <CSSTransition
-        key={rule.id}
-        classNames="fade"
-        timeout={ThemeExport.transitionMs}
-        onEnter={this.handleFormatRuleEntered}
-      >
+      <FadeTransition key={rule.id} onEnter={this.handleFormatRuleEntered}>
         {this.renderFormatRule(index, rule)}
-      </CSSTransition>
+      </FadeTransition>
     ));
 
     const addNewRuleButton = (

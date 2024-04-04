@@ -1,10 +1,6 @@
 import { AdvancedFilterOptions } from '@deephaven/jsapi-utils';
 import { ModelIndex } from '@deephaven/grid';
-import type {
-  TotalsTableConfig,
-  FilterCondition,
-  Format,
-} from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { Shortcut } from '@deephaven/components';
 import { IconDefinition } from '@deephaven/icons';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
@@ -28,11 +24,11 @@ export type ReadonlyOperationMap = Readonly<
 
 export type QuickFilter = {
   text: string;
-  filter: FilterCondition | null;
+  filter: dh.FilterCondition | null;
 };
 
 export type AdvancedFilter = {
-  filter: FilterCondition | null;
+  filter: dh.FilterCondition | null;
   options: AdvancedFilterOptions;
 };
 
@@ -50,7 +46,7 @@ export type OptionItem = {
   onChange?: () => void;
 };
 
-export interface UITotalsTableConfig extends TotalsTableConfig {
+export interface UITotalsTableConfig extends dh.TotalsTableConfig {
   operationOrder: AggregationOperation[];
   showOnTop: boolean;
 }
@@ -74,7 +70,7 @@ export type RowData<T = unknown> = Map<number, { value: T }>;
 
 export type CellData = {
   value: unknown;
-  format?: Format;
+  format?: dh.Format;
 };
 export type PendingDataMap<R extends UIRow = UIRow> = ReadonlyMap<RowIndex, R>;
 

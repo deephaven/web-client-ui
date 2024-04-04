@@ -3,6 +3,58 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.71.0](https://github.com/deephaven/web-client-ui/compare/v0.70.0...v0.71.0) (2024-03-28)
+
+
+### Bug Fixes
+
+* Invalid migration of legacy partitions ([#1892](https://github.com/deephaven/web-client-ui/issues/1892)) ([96298f6](https://github.com/deephaven/web-client-ui/commit/96298f6d9c0de44c73f0965eba2055997d17a2fa))
+
+
+### Features
+
+* Change autoclosing bracket behavior to beforeWhitespace ([#1905](https://github.com/deephaven/web-client-ui/issues/1905)) ([80207f4](https://github.com/deephaven/web-client-ui/commit/80207f4178aa4a524de70644a715e1f030b5122d))
+
+
+
+
+
+# [0.70.0](https://github.com/deephaven/web-client-ui/compare/v0.69.1...v0.70.0) (2024-03-22)
+
+**Note:** Version bump only for package @deephaven/iris-grid
+
+
+
+
+
+# [0.69.0](https://github.com/deephaven/web-client-ui/compare/v0.68.0...v0.69.0) (2024-03-15)
+
+
+### Bug Fixes
+
+* swap goto tooltips ([#1860](https://github.com/deephaven/web-client-ui/issues/1860)) ([6236b47](https://github.com/deephaven/web-client-ui/commit/6236b477cfbc79ab9ef92dd120fefe52e0fd9b55)), closes [#1826](https://github.com/deephaven/web-client-ui/issues/1826)
+
+
+
+
+
+# [0.68.0](https://github.com/deephaven/web-client-ui/compare/v0.67.0...v0.68.0) (2024-03-08)
+
+
+### Bug Fixes
+
+* Do not show Group column for tree-tables ([#1851](https://github.com/deephaven/web-client-ui/issues/1851)) ([1ce6aac](https://github.com/deephaven/web-client-ui/commit/1ce6aac82071303fdbed064e8b71b54f741d0a87)), closes [#1831](https://github.com/deephaven/web-client-ui/issues/1831) [#1853](https://github.com/deephaven/web-client-ui/issues/1853)
+* hide expand all when not available ([#1854](https://github.com/deephaven/web-client-ui/issues/1854)) ([aa34ace](https://github.com/deephaven/web-client-ui/commit/aa34ace66982047113a5d29b1840d946b1a04399)), closes [#1822](https://github.com/deephaven/web-client-ui/issues/1822)
+
+
+### Features
+
+* Add support to pass in mouseHandlers into IrisGrid ([#1857](https://github.com/deephaven/web-client-ui/issues/1857)) ([acf32a6](https://github.com/deephaven/web-client-ui/commit/acf32a6d014b9b7cd8d1b10f08145992c6a589fd))
+
+
+
+
+
 # [0.67.0](https://github.com/deephaven/web-client-ui/compare/v0.66.1...v0.67.0) (2024-03-04)
 
 **Note:** Version bump only for package @deephaven/iris-grid

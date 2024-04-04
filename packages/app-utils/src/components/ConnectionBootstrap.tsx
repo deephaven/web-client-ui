@@ -6,7 +6,7 @@ import {
   useApi,
   useClient,
 } from '@deephaven/jsapi-bootstrap';
-import type { IdeConnection, VariableDescriptor } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { assertNotNull } from '@deephaven/utils';
 import ConnectionContext from './ConnectionContext';
@@ -30,7 +30,7 @@ export function ConnectionBootstrap({
   const api = useApi();
   const client = useClient();
   const [error, setError] = useState<unknown>();
-  const [connection, setConnection] = useState<IdeConnection>();
+  const [connection, setConnection] = useState<dh.IdeConnection>();
   useEffect(
     function initConnection() {
       let isCanceled = false;
@@ -76,7 +76,7 @@ export function ConnectionBootstrap({
   );
 
   const objectFetcher = useCallback(
-    async (descriptor: VariableDescriptor) => {
+    async (descriptor: dh.ide.VariableDescriptor) => {
       assertNotNull(connection, 'No connection available to fetch object with');
       return connection.getObject(sanitizeVariableDescriptor(descriptor));
     },

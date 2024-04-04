@@ -214,6 +214,24 @@ class GridSelectionMouseHandler extends GridMouseHandler {
     return false;
   }
 
+  // eslint-disable-next-line class-methods-use-this
+  onDoubleClick(
+    gridPoint: GridPoint,
+    grid: Grid,
+    event: GridMouseEvent
+  ): EventHandlerResult {
+    const { column, row } = gridPoint;
+    if (row == null || column == null) {
+      return false;
+    }
+
+    grid.clearSelectedRanges();
+    grid.moveCursorToPosition(column, row);
+    grid.commitSelection();
+
+    return true;
+  }
+
   onContextMenu(
     gridPoint: GridPoint,
     grid: Grid,

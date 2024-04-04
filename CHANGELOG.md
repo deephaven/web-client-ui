@@ -3,6 +3,92 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.71.0](https://github.com/deephaven/web-client-ui/compare/v0.70.0...v0.71.0) (2024-03-28)
+
+
+### Bug Fixes
+
+* Fixed re-export ([#1894](https://github.com/deephaven/web-client-ui/issues/1894)) ([#1895](https://github.com/deephaven/web-client-ui/issues/1895)) ([b49b506](https://github.com/deephaven/web-client-ui/commit/b49b5069d637ac136578ce839d9fc0416f468adf))
+* Invalid migration of legacy partitions ([#1892](https://github.com/deephaven/web-client-ui/issues/1892)) ([96298f6](https://github.com/deephaven/web-client-ui/commit/96298f6d9c0de44c73f0965eba2055997d17a2fa))
+
+
+### Features
+
+* Change autoclosing bracket behavior to beforeWhitespace ([#1905](https://github.com/deephaven/web-client-ui/issues/1905)) ([80207f4](https://github.com/deephaven/web-client-ui/commit/80207f4178aa4a524de70644a715e1f030b5122d))
+* Picker - Table support for key + label columns ([#1876](https://github.com/deephaven/web-client-ui/issues/1876)) ([bfbf7b1](https://github.com/deephaven/web-client-ui/commit/bfbf7b128f0be0a82c7dd33e9023ff7df3f480fc)), closes [#1858](https://github.com/deephaven/web-client-ui/issues/1858)
+
+
+
+
+
+# [0.70.0](https://github.com/deephaven/web-client-ui/compare/v0.69.1...v0.70.0) (2024-03-22)
+
+
+### chore
+
+* Delete ValidateLabelInput ([#1887](https://github.com/deephaven/web-client-ui/issues/1887)) ([5d6ebe9](https://github.com/deephaven/web-client-ui/commit/5d6ebe92d91f39c1a2343721f5a4f53a6e02f3a5))
+
+
+### Features
+
+* Re-export Spectrum components + prop types ([#1880](https://github.com/deephaven/web-client-ui/issues/1880)) ([4783092](https://github.com/deephaven/web-client-ui/commit/478309289f727c560ae92722c96fed964ba98d9d)), closes [#1852](https://github.com/deephaven/web-client-ui/issues/1852)
+
+
+### BREAKING CHANGES
+
+* ValidateLabelInput is no longer included in the
+`@deephaven/components` package.
+
+
+
+
+
+## [0.69.1](https://github.com/deephaven/web-client-ui/compare/v0.69.0...v0.69.1) (2024-03-15)
+
+
+### Bug Fixes
+
+* Loading workspace plugin data ([#1872](https://github.com/deephaven/web-client-ui/issues/1872)) ([1def969](https://github.com/deephaven/web-client-ui/commit/1def969d81b4209df1e06cd99c0d5afc71d14844))
+
+
+
+
+
+# [0.69.0](https://github.com/deephaven/web-client-ui/compare/v0.68.0...v0.69.0) (2024-03-15)
+
+
+### Bug Fixes
+
+* Save/load plugin data with layout ([#1866](https://github.com/deephaven/web-client-ui/issues/1866)) ([e64407d](https://github.com/deephaven/web-client-ui/commit/e64407d8e5c162bd3de07b84257a15e3330f415e)), closes [#1861](https://github.com/deephaven/web-client-ui/issues/1861)
+* swap goto tooltips ([#1860](https://github.com/deephaven/web-client-ui/issues/1860)) ([6236b47](https://github.com/deephaven/web-client-ui/commit/6236b477cfbc79ab9ef92dd120fefe52e0fd9b55)), closes [#1826](https://github.com/deephaven/web-client-ui/issues/1826)
+
+
+### Features
+
+* expose spectrum `Flex` component as wrapped deephaven component ([#1869](https://github.com/deephaven/web-client-ui/issues/1869)) ([5e71488](https://github.com/deephaven/web-client-ui/commit/5e71488d142b4d2b427bc0b81d17a0f538b09c26))
+
+
+
+
+
+# [0.68.0](https://github.com/deephaven/web-client-ui/compare/v0.67.0...v0.68.0) (2024-03-08)
+
+
+### Bug Fixes
+
+* Do not show Group column for tree-tables ([#1851](https://github.com/deephaven/web-client-ui/issues/1851)) ([1ce6aac](https://github.com/deephaven/web-client-ui/commit/1ce6aac82071303fdbed064e8b71b54f741d0a87)), closes [#1831](https://github.com/deephaven/web-client-ui/issues/1831) [#1853](https://github.com/deephaven/web-client-ui/issues/1853)
+* hide expand all when not available ([#1854](https://github.com/deephaven/web-client-ui/issues/1854)) ([aa34ace](https://github.com/deephaven/web-client-ui/commit/aa34ace66982047113a5d29b1840d946b1a04399)), closes [#1822](https://github.com/deephaven/web-client-ui/issues/1822)
+
+
+### Features
+
+* Add support to pass in mouseHandlers into IrisGrid ([#1857](https://github.com/deephaven/web-client-ui/issues/1857)) ([acf32a6](https://github.com/deephaven/web-client-ui/commit/acf32a6d014b9b7cd8d1b10f08145992c6a589fd))
+* Picker - Item description support ([#1855](https://github.com/deephaven/web-client-ui/issues/1855)) ([026c101](https://github.com/deephaven/web-client-ui/commit/026c1018e6cbac485182d89d4dcc20f2e7e6e54c))
+
+
+
+
+
 # [0.67.0](https://github.com/deephaven/web-client-ui/compare/v0.66.1...v0.67.0) (2024-03-04)
 
 

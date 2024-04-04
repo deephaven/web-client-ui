@@ -1,10 +1,10 @@
 import { renderHook } from '@testing-library/react-hooks';
-import type { Table } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { TestUtils } from '@deephaven/utils';
 import useTableClose from './useTableClose';
 
-const table = TestUtils.createMockProxy<Table>({});
-const closedTable = TestUtils.createMockProxy<Table>({ isClosed: true });
+const table = TestUtils.createMockProxy<dh.Table>({});
+const closedTable = TestUtils.createMockProxy<dh.Table>({ isClosed: true });
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -34,7 +34,7 @@ it.each([closedTable, null, undefined])(
 );
 
 it('should close previous table if reference changes', () => {
-  const nextTable = TestUtils.createMockProxy<Table>({});
+  const nextTable = TestUtils.createMockProxy<dh.Table>({});
 
   const { rerender } = renderHook(t => useTableClose(t), {
     initialProps: table,

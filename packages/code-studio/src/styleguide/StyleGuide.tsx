@@ -1,7 +1,12 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
-import { Flex } from '@adobe/react-spectrum';
-import { ContextMenuRoot, ThemePicker, useTheme } from '@deephaven/components';
+
+import {
+  ContextMenuRoot,
+  ThemePicker,
+  useTheme,
+  Flex,
+} from '@deephaven/components';
 
 import Buttons from './Buttons';
 import Charts from './Charts';
@@ -104,6 +109,7 @@ function StyleGuide(): React.ReactElement {
         <Buttons />
         <Progress />
         <Inputs />
+        <Pickers />
         <ItemListInputs />
         <DraggableLists />
         <TimeSliderInputs />
@@ -112,7 +118,6 @@ function StyleGuide(): React.ReactElement {
         <ContextMenus />
         <DropdownMenus />
         <Navigations />
-        <Pickers />
         <Tooltips />
         <Icons />
         <Editors />

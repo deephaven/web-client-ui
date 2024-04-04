@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/components",
-  "version": "0.67.0",
+  "version": "0.71.0",
   "description": "Deephaven React component library",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -33,6 +33,7 @@
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@react-spectrum/theme-default": "^3.5.1",
     "@react-types/shared": "^3.22.1",
+    "@react-types/textfield": "^3.9.1",
     "bootstrap": "4.6.2",
     "classnames": "^2.3.1",
     "event-target-shim": "^6.0.2",
@@ -49,8 +50,8 @@
     "shortid": "^2.2.16"
   },
   "peerDependencies": {
-    "react": "^17.x",
-    "react-dom": "^17.x"
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0"
   },
   "devDependencies": {
     "@deephaven/mocks": "file:../mocks"

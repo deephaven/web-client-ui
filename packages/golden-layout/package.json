@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/golden-layout",
-  "version": "0.67.0",
+  "version": "0.71.0",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
   "description": "A multi-screen javascript Layout manager",
@@ -14,8 +14,8 @@
     "jquery": "^3.6.0"
   },
   "peerDependencies": {
-    "react": "^17.x",
-    "react-dom": "^17.x"
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0"
   },
   "scripts": {
     "build": "cross-env NODE_ENV=production run-p build:*",

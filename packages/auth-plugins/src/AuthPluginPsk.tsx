@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { CSSTransition } from 'react-transition-group';
-import { LoadingOverlay, ThemeExport } from '@deephaven/components';
+import { FadeTransition, LoadingOverlay } from '@deephaven/components';
 import { useClient } from '@deephaven/jsapi-bootstrap';
 import { useBroadcastLoginListener } from '@deephaven/jsapi-components';
 import Log from '@deephaven/log';
@@ -169,13 +168,7 @@ function Component({ children, logoPath }: AuthPluginPskProps): JSX.Element {
     <>
       {isLoggedIn && children}
       {isInputRequired && (
-        <CSSTransition
-          in={!isLoggedIn}
-          timeout={ThemeExport.transitionMs}
-          classNames="fade"
-          mountOnEnter
-          unmountOnExit
-        >
+        <FadeTransition in={!isLoggedIn} mountOnEnter unmountOnExit>
           <Login logoPath={logoPath}>
             <LoginForm
               errorMessage={getErrorMessage(error)}
@@ -203,7 +196,7 @@ function Component({ children, logoPath }: AuthPluginPskProps): JSX.Element {
               </div>
             </LoginForm>
           </Login>
-        </CSSTransition>
+        </FadeTransition>
       )}
       <LoadingOverlay
         data-testid="auth-psk-loading"

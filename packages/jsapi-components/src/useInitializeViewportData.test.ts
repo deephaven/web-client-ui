@@ -1,7 +1,8 @@
 import { act, renderHook } from '@testing-library/react-hooks';
-import type { Table } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { generateEmptyKeyedItems } from '@deephaven/jsapi-utils';
-import { KeyedItem, TestUtils } from '@deephaven/utils';
+import { WindowedListData } from '@deephaven/react-hooks';
+import { ITEM_KEY_PREFIX, KeyedItem, TestUtils } from '@deephaven/utils';
 import useInitializeViewportData from './useInitializeViewportData';
 import useTableSize from './useTableSize';
 
@@ -11,81 +12,132 @@ function expectedInitialItems(size: number) {
   return [...generateEmptyKeyedItems(0, size - 1)];
 }
 
-const tableA = TestUtils.createMockProxy<Table>({ size: 4 });
-const expectedInitialA: KeyedItem<unknown>[] = expectedInitialItems(
-  tableA.size
+const tableSize4 = TestUtils.createMockProxy<dh.Table>({ size: 4 });
+const expectedInitial4: KeyedItem<unknown>[] = expectedInitialItems(
+  tableSize4.size
 );
 
-const tableB = TestUtils.createMockProxy<Table>({ size: 2 });
-const expectedInitialB = expectedInitialItems(tableB.size);
+const tableSize2 = TestUtils.createMockProxy<dh.Table>({ size: 2 });
+const expectedInitial2 = expectedInitialItems(tableSize2.size);
+
+/**
+ * Update a given number of items in the given windowed data
+ * @param data Windowed data to update
+ * @param size Number of items to update
+ * @returns Updated items array
+ */
+function updateItems(
+  data: WindowedListData<{
+    key: string;
+    item?: unknown;
+  }>,
+  size: number
+): { key: string; item: string }[] {
+  const items: { key: string; item: string }[] = [];
+
+  for (let i = 0; i < size; i += 1) {
+    items.push({ key: `${ITEM_KEY_PREFIX}_${i}`, item: `mock.item.${i}` });
+  }
+
+  act(() => {
+    items.forEach(updatedItem => {
+      data.update(updatedItem.key, updatedItem);
+    });
+  });
+
+  return items;
+}
 
 beforeEach(() => {
   TestUtils.asMock(useTableSize).mockImplementation(table => table?.size ?? 0);
 });
 
-it.each([null])('should safely handle no table: %s', noTable => {
-  const { result } = renderHook(() => useInitializeViewportData(noTable));
-  expect(result.current.items).toEqual([]);
-});
-
-it('should initialize a ListData object based on Table size', () => {
-  const { result } = renderHook(() => useInitializeViewportData(tableA));
-
-  expect(result.current.items).toEqual(expectedInitialA);
-});
-
-it('should re-initialize a ListData object if Table reference changes', () => {
-  const { result, rerender } = renderHook(
-    ({ table }) => useInitializeViewportData(table),
-    {
-      initialProps: { table: tableA },
-    }
-  );
-
-  // Update an item
-  const updatedItem = { key: '0', item: 'mock.item' };
-  act(() => {
-    result.current.update(updatedItem.key, updatedItem);
-  });
-
-  const expectedAfterUpdate = [updatedItem, ...expectedInitialA.slice(1)];
-  expect(result.current.items).toEqual(expectedAfterUpdate);
-
-  // Re-render with a new table instance
-  rerender({ table: tableB });
-
-  const expectedAfterRerender = expectedInitialB;
-  expect(result.current.items).toEqual(expectedAfterRerender);
-});
-
-it.each([
-  [3, expectedInitialItems(3)],
-  [5, expectedInitialItems(5)],
-])(
-  'should re-initialize a ListData object if Table size changes: %s, %s',
-  (newSize, expectedAfterSizeChange) => {
-    const { result, rerender } = renderHook(
-      ({ table }) => useInitializeViewportData(table),
-      {
-        initialProps: { table: tableA },
-      }
-    );
-
-    expect(result.current.items).toEqual(expectedInitialA);
-
-    // Update an item
-    const updatedItem = { key: '0', item: 'mock.item' };
-    act(() => {
-      result.current.update(updatedItem.key, updatedItem);
+describe.each([undefined, true, false])(
+  'reuseItemsOnTableResize: %s',
+  reuseItemsOnTableResize => {
+    it.each([null])('should safely handle no table: %s', noTable => {
+      const { result } = renderHook(() =>
+        useInitializeViewportData(noTable, reuseItemsOnTableResize)
+      );
+      expect(result.current.items).toEqual([]);
     });
 
-    const expectedAfterUpdate = [updatedItem, ...expectedInitialA.slice(1)];
-    expect(result.current.items).toEqual(expectedAfterUpdate);
+    it('should initialize a ListData object based on Table size', () => {
+      const { result } = renderHook(() =>
+        useInitializeViewportData(tableSize4, reuseItemsOnTableResize)
+      );
 
-    // Re-render with new size
-    TestUtils.asMock(useTableSize).mockImplementation(() => newSize);
-    rerender({ table: tableA });
+      expect(result.current.items).toEqual(expectedInitial4);
+    });
 
-    expect(result.current.items).toEqual(expectedAfterSizeChange);
+    it('should re-initialize a ListData object if Table reference changes', () => {
+      const { result, rerender } = renderHook(
+        ({ table }) =>
+          useInitializeViewportData(table, reuseItemsOnTableResize),
+        {
+          initialProps: { table: tableSize4 },
+        }
+      );
+
+      const updatedItems4 = updateItems(result.current, tableSize4.size);
+
+      expect(result.current.items).toEqual(updatedItems4);
+
+      // Re-render with a smaller table instance
+      rerender({ table: tableSize2 });
+
+      expect(result.current.items).toEqual(
+        reuseItemsOnTableResize === true
+          ? updatedItems4.slice(0, tableSize2.size)
+          : expectedInitial2
+      );
+
+      // Re-render with a larger table instance
+      rerender({ table: tableSize4 });
+
+      expect(result.current.items).toEqual(
+        reuseItemsOnTableResize === true
+          ? [
+              ...updatedItems4.slice(0, tableSize2.size),
+              ...expectedInitial4.slice(tableSize2.size),
+            ]
+          : expectedInitial4
+      );
+    });
+
+    it.each([3, 5])(
+      'should re-initialize a ListData object if Table size changes: %s',
+      newSize => {
+        const { result, rerender } = renderHook(
+          ({ table }) =>
+            useInitializeViewportData(table, reuseItemsOnTableResize),
+          {
+            initialProps: { table: tableSize4 },
+          }
+        );
+
+        expect(result.current.items).toEqual(expectedInitial4);
+
+        const updatedItems4 = updateItems(result.current, tableSize4.size);
+
+        expect(result.current.items).toEqual(updatedItems4);
+
+        // Re-render with new size
+        TestUtils.asMock(useTableSize).mockImplementation(() => newSize);
+        rerender({
+          table:
+            tableSize4 /* this table is not actually used due to mocking `useTableSize` above */,
+        });
+
+        expect(result.current.items).toEqual(
+          reuseItemsOnTableResize === true
+            ? [
+                ...updatedItems4.slice(0, newSize),
+                ...expectedInitialItems(newSize).slice(4),
+              ]
+            : expectedInitialItems(newSize)
+        );
+      }
+    );
   }
 );

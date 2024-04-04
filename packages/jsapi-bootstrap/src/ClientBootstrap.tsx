@@ -1,15 +1,15 @@
 import React, { createContext } from 'react';
-import type { ConnectOptions, CoreClient } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import useCreateClient from './useCreateClient';
 
-export const ClientContext = createContext<CoreClient | null>(null);
+export const ClientContext = createContext<dh.CoreClient | null>(null);
 
 export type ClientBootstrapProps = {
   /** URL of the server to connect to */
   serverUrl: string;
 
   /** Connection options to pass to CoreClient when connecting */
-  options?: ConnectOptions;
+  options?: dh.ConnectOptions;
 
   /**
    * The children to render wrapped with the ClientContext.

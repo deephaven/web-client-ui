@@ -5,6 +5,7 @@ import { useForwardedRef } from '@deephaven/react-hooks';
 type baseSelectProps = Omit<React.HTMLProps<HTMLSelectElement>, 'onChange'>;
 
 export type SelectProps = baseSelectProps & {
+  isInvalid?: boolean;
   onChange: (value: string) => void;
   'data-testid'?: string;
 };
@@ -20,6 +21,7 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
     const {
       children,
       className,
+      isInvalid,
       onChange,
       'data-testid': dataTestId,
       ...rest
@@ -37,7 +39,9 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
     return (
       <select
         ref={ref}
-        className={classNames('custom-select', className)}
+        className={classNames('custom-select', className, {
+          'is-invalid': isInvalid,
+        })}
         onChange={handleChange}
         data-testid={dataTestId}
         // eslint-disable-next-line react/jsx-props-no-spreading

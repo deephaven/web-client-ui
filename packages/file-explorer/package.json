@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/file-explorer",
-  "version": "0.67.0",
+  "version": "0.71.0",
   "description": "Deephaven File Explorer React component",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -34,7 +34,7 @@
     "prop-types": "^15.7.2"
   },
   "peerDependencies": {
-    "react": "^17.0.0"
+    "react": ">=16.8.0"
   },
   "devDependencies": {
     "@deephaven/mocks": "file:../mocks"

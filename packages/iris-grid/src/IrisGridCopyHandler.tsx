@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
-import { CSSTransition } from 'react-transition-group';
-import { Button, LoadingSpinner, ThemeExport } from '@deephaven/components';
+import { Button, FadeTransition, LoadingSpinner } from '@deephaven/components';
 import {
   GridRange,
   GridUtils,
@@ -15,7 +14,7 @@ import {
   PromiseUtils,
 } from '@deephaven/utils';
 import Log from '@deephaven/log';
-import type { Column } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import IrisGridUtils from './IrisGridUtils';
 import IrisGridBottomBar from './IrisGridBottomBar';
 import './IrisGridCopyHandler.scss';
@@ -358,7 +357,7 @@ class IrisGridCopyHandler extends Component<
       // Remove the hidden columns from the snapshot
       const formatValue =
         formatValues != null && formatValues
-          ? (value: unknown, column: Column) =>
+          ? (value: unknown, column: dh.Column) =>
               model.displayString(value, column.type, column.name)
           : (value: unknown) => `${value}`;
 
@@ -451,10 +450,8 @@ class IrisGridCopyHandler extends Component<
         <div className="status-message">
           <span>{statusMessageText}</span>
         </div>
-        <CSSTransition
+        <FadeTransition
           in={isButtonContainerVisible}
-          timeout={ThemeExport.transitionMs}
-          classNames="fade"
           mountOnEnter
           unmountOnExit
         >
@@ -480,7 +477,7 @@ class IrisGridCopyHandler extends Component<
               {copyButtonText}
             </Button>
           </div>
-        </CSSTransition>
+        </FadeTransition>
       </IrisGridBottomBar>
     );
   }

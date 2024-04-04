@@ -1,20 +1,31 @@
 import type { Key } from 'react';
 import clamp from 'lodash.clamp';
-import type { Column, Row, Table, TreeTable } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
-import type { KeyedItem } from '@deephaven/utils';
+import { ITEM_KEY_PREFIX, KeyedItem, ValueOf } from '@deephaven/utils';
 
 export type OnTableUpdatedEvent = CustomEvent<{
   offset: number;
-  columns: Column[];
+  columns: dh.Column[];
   rows: ViewportRow[];
 }>;
 
-export type RowDeserializer<T> = (row: ViewportRow, columns: Column[]) => T;
+export type RowDeserializer<T> = (row: ViewportRow, columns: dh.Column[]) => T;
 
-export type ViewportRow = Row & { offsetInSnapshot: number };
+export type ViewportRow = dh.Row & { offsetInSnapshot: number };
 
 const log = Log.module('ViewportDataUtils');
+
+/**
+ * Create a `KeyedItem.key` for a given index. The prefix is necessary to avoid
+ * collisions with property values in the `item` property that may be used as
+ * keys once the item is loaded and rendered.
+ * @param index Index to create a key for.
+ * @returns A unique key for the given index.
+ */
+export function createKeyedItemKey(index: number): string {
+  return `${ITEM_KEY_PREFIX}_${index}`;
+}
 
 /**
  * Create a unique string key for a row based on its ordinal position in its
@@ -28,7 +39,7 @@ export function createKeyFromOffsetRow(
   row: ViewportRow,
   offset: number
 ): string {
-  return String(row.offsetInSnapshot + offset);
+  return createKeyedItemKey(row.offsetInSnapshot + offset);
 }
 
 /**
@@ -74,11 +85,11 @@ export function createOnTableUpdatedHandler<T>(
  */
 export function defaultRowDeserializer<T>(
   row: ViewportRow,
-  columns: Column[]
+  columns: dh.Column[]
 ): T {
   return columns.reduce((result, col) => {
     // eslint-disable-next-line no-param-reassign
-    result[col.name as keyof T] = row.get(col);
+    result[col.name as keyof T] = row.get(col) as ValueOf<T>;
     return result;
   }, {} as T);
 }
@@ -97,7 +108,7 @@ export function* generateEmptyKeyedItems<T>(
 ): Generator<KeyedItem<T>, void, unknown> {
   // eslint-disable-next-line no-plusplus
   for (let i = start; i <= end; ++i) {
-    yield { key: String(i) };
+    yield { key: createKeyedItemKey(i) };
   }
 }
 
@@ -108,7 +119,7 @@ export function* generateEmptyKeyedItems<T>(
  * @param table The table to check for its size.
  * @returns The size of the table or zero if the table is null or closed.
  */
-export function getSize(table?: Table | TreeTable | null): number {
+export function getSize(table?: dh.Table | dh.TreeTable | null): number {
   return table == null || isClosed(table) ? 0 : table.size;
 }
 
@@ -117,7 +128,7 @@ export function getSize(table?: Table | TreeTable | null): number {
  * so will always return false.
  * @param table The table to check if it is closed.
  */
-export function isClosed(table: Table | TreeTable): boolean {
+export function isClosed(table: dh.Table | dh.TreeTable): boolean {
   if ('isClosed' in table) {
     return table.isClosed;
   }

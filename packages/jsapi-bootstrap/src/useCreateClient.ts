@@ -1,11 +1,11 @@
-import type { ConnectOptions, CoreClient } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { useEffect, useMemo } from 'react';
 import useApi from './useApi';
 
 export function useCreateClient(
   serverUrl: string,
-  options?: ConnectOptions
-): CoreClient {
+  options?: dh.ConnectOptions
+): dh.CoreClient {
   const api = useApi();
   const client = useMemo(
     () => new api.CoreClient(serverUrl, options),

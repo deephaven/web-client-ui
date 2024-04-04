@@ -63,8 +63,11 @@ module.exports = {
     ),
     // Handle monaco worker files
     '\\.worker.*$': 'identity-obj-proxy',
-    // All packages except icons use src code
-    '^@deephaven/(?!icons)(.*)$': path.join(__dirname, './packages/$1/src'),
+    // All packages except icons and jsapi-types use src code
+    '^@deephaven/(?!icons|jsapi-types)(.*)$': path.join(
+      __dirname,
+      './packages/$1/src'
+    ),
   },
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: [path.join(__dirname, './jest.setup.ts')],

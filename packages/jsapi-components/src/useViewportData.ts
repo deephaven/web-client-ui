@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo } from 'react';
-import type { FilterCondition, Table, TreeTable } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import {
   RowDeserializer,
   defaultRowDeserializer,
@@ -20,7 +20,11 @@ import useTableListener from './useTableListener';
 
 const log = Log.module('useViewportData');
 
-export interface UseViewportDataProps<TItem, TTable extends Table | TreeTable> {
+export interface UseViewportDataProps<
+  TItem,
+  TTable extends dh.Table | dh.TreeTable,
+> {
+  reuseItemsOnTableResize?: boolean;
   table: TTable | null;
   itemHeight?: number;
   scrollDebounce?: number;
@@ -31,7 +35,7 @@ export interface UseViewportDataProps<TItem, TTable extends Table | TreeTable> {
 
 export interface UseViewportDataResult<
   TItem,
-  TTable extends Table | TreeTable,
+  TTable extends dh.Table | dh.TreeTable,
 > {
   /** Manages deserialized row items associated with a DH Table */
   viewportData: WindowedListData<KeyedItem<TItem>>;
@@ -40,7 +44,7 @@ export interface UseViewportDataResult<
 
   table: TTable | null;
   /** Apply filters and refresh viewport. */
-  applyFiltersAndRefresh: (filters: FilterCondition[]) => void;
+  applyFiltersAndRefresh: (filters: dh.FilterCondition[]) => void;
   /** Set the viewport of the Table */
   setViewport: (firstRow: number) => void;
   /** Handler for scroll events to update viewport */
@@ -55,21 +59,29 @@ export interface UseViewportDataResult<
  * IMPORTANT: this will create an empty KeyedItem object for every row in the
  * source table. This is intended for "human" sized tables such as those used in
  * admin panels. This is not suitable for "machine" scale with millions+ rows.
- * @param table
- * @param itemHeight
- * @param viewportSize
- * @param viewportPadding
+ * @param table The Table to viewport.
+ * @param itemHeight The height of each item in the viewport.
+ * @param scrollDebounce The number of milliseconds to debounce scroll events.
+ * @param viewportSize The number of items to display in the viewport.
+ * @param viewportPadding The number of items to fetch at start and end of the viewport.
+ * @param deserializeRow A function to deserialize a row from the Table.
+ * @param reuseItemsOnTableResize If true, existing items will be re-used when
+ * the table size changes.
  * @returns An object for managing Table viewport state.
  */
-export function useViewportData<TItem, TTable extends Table | TreeTable>({
+export function useViewportData<TItem, TTable extends dh.Table | dh.TreeTable>({
   table,
   itemHeight = 1,
   scrollDebounce = SCROLL_DEBOUNCE_MS,
   viewportSize = 10,
   viewportPadding = 50,
   deserializeRow = defaultRowDeserializer,
+  reuseItemsOnTableResize = false,
 }: UseViewportDataProps<TItem, TTable>): UseViewportDataResult<TItem, TTable> {
-  const viewportData = useInitializeViewportData<TItem>(table);
+  const viewportData = useInitializeViewportData<TItem>(
+    table,
+    reuseItemsOnTableResize
+  );
 
   const setPaddedViewport = useSetPaddedViewportCallback(
     table,
@@ -89,7 +101,7 @@ export function useViewportData<TItem, TTable extends Table | TreeTable>({
   );
 
   const applyFiltersAndRefresh = useCallback(
-    (filters: FilterCondition[]) => {
+    (filters: dh.FilterCondition[]) => {
       if (table && !isClosed(table)) {
         table.applyFilter(filters);
         setViewport(0);

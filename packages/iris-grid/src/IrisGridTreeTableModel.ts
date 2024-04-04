@@ -6,13 +6,7 @@ import {
   GridRange,
   ModelIndex,
 } from '@deephaven/grid';
-import type {
-  dh as DhType,
-  Column,
-  InputTable,
-  TreeRow,
-  TreeTable,
-} from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import { assertNotNull } from '@deephaven/utils';
@@ -28,49 +22,66 @@ export interface UITreeRow extends UIRow {
   depth: number;
 }
 class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
-  TreeTable,
+  DhType.TreeTable,
   UITreeRow
 > {
   /** We keep a virtual column at the front that tracks the "group" that is expanded */
   private virtualColumns: DisplayColumn[];
 
   constructor(
-    dh: DhType,
-    table: TreeTable,
+    dh: typeof DhType,
+    table: DhType.TreeTable,
     formatter = new Formatter(dh),
-    inputTable: InputTable | null = null
+    inputTable: DhType.InputTable | null = null
   ) {
     super(dh, table, formatter, inputTable);
-    this.virtualColumns = [
-      {
-        name: '__DH_UI_GROUP__',
-        displayName: 'Group',
-        type: TableUtils.dataType.STRING,
-        constituentType: TableUtils.dataType.STRING,
-        isPartitionColumn: false,
-        isSortable: false,
-        isProxy: true,
-        description: 'Key column',
-        filter: () => {
-          throw new Error('Filter not implemented for virtual column');
-        },
-        sort: () => {
-          throw new Error('Sort not implemented virtual column');
-        },
-        formatColor: () => {
-          throw new Error('Color not implemented for virtual column');
-        },
-        formatRowColor: () => {
-          throw new Error('Color not implemented for virtual column');
-        },
-      },
-    ];
+    this.virtualColumns =
+      table.groupedColumns.length > 1
+        ? [
+            {
+              name: '__DH_UI_GROUP__',
+              displayName: 'Group',
+              type: TableUtils.dataType.STRING,
+              constituentType: TableUtils.dataType.STRING,
+              isPartitionColumn: false,
+              isSortable: false,
+              isProxy: true,
+              description: 'Key column',
+              index: -1,
+              filter: () => {
+                throw new Error('Filter not implemented for virtual column');
+              },
+              sort: () => {
+                throw new Error('Sort not implemented virtual column');
+              },
+              formatColor: () => {
+                throw new Error('Color not implemented for virtual column');
+              },
+              get: () => {
+                throw new Error('get not implemented for virtual column');
+              },
+              getFormat: () => {
+                throw new Error('getFormat not implemented for virtual column');
+              },
+              formatNumber: () => {
+                throw new Error(
+                  'formatNumber not implemented for virtual column'
+                );
+              },
+              formatDate: () => {
+                throw new Error(
+                  'formatDate not implemented for virtual column'
+                );
+              },
+            },
+          ]
+        : [];
   }
 
   applyBufferedViewport(
     viewportTop: number,
     viewportBottom: number,
-    columns: Column[]
+    columns: DhType.Column[]
   ): void {
     const viewportColumns = [
       // Need to always fetch the grouped columns so we always have key data for the rows
@@ -106,7 +117,7 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     return super.textForCell(x, y);
   }
 
-  extractViewportRow(row: TreeRow, columns: Column[]): UITreeRow {
+  extractViewportRow(row: DhType.TreeRow, columns: DhType.Column[]): UITreeRow {
     const { isExpanded, hasChildren, depth } = row;
     const extractedRow = super.extractViewportRow(row, columns);
     const modifiedData = new Map<ModelIndex, CellData>(extractedRow.data);
@@ -134,7 +145,7 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   async snapshot(
     ranges: GridRange[],
     includeHeaders?: boolean,
-    formatValue?: (value: unknown, column: Column) => unknown
+    formatValue?: (value: unknown, column: DhType.Column) => unknown
   ): Promise<unknown[][]> {
     assertNotNull(this.viewport);
     assertNotNull(this.viewportData);
@@ -182,11 +193,11 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     return result;
   }
 
-  get columns(): Column[] {
+  get columns(): DhType.Column[] {
     return this.getCachedColumns(this.virtualColumns, super.columns);
   }
 
-  get groupedColumns(): readonly Column[] {
+  get groupedColumns(): readonly DhType.Column[] {
     return this.getCachedGroupColumns(
       this.virtualColumns,
       this.table.groupedColumns
@@ -201,7 +212,7 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     return { column: column + depth, row };
   }
 
-  sourceColumn(column: ModelIndex, row: ModelIndex): Column {
+  sourceColumn(column: ModelIndex, row: ModelIndex): DhType.Column {
     if (column >= this.virtualColumns.length) {
       return super.sourceColumn(column, row);
     }
@@ -274,13 +285,13 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   }
 
   expandAll(): void {
-    if (this.table.expandAll) {
+    if (this.table.expandAll != null) {
       this.table.expandAll();
     }
   }
 
   collapseAll(): void {
-    if (this.table.collapseAll) {
+    if (this.table.collapseAll != null) {
       this.table.collapseAll();
     }
   }
@@ -291,24 +302,24 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   }
 
   getCachedColumns = memoize(
-    (virtualColumns: readonly Column[], tableColumns: readonly Column[]) => [
-      ...virtualColumns,
-      ...tableColumns,
-    ]
+    (
+      virtualColumns: readonly DhType.Column[],
+      tableColumns: readonly DhType.Column[]
+    ) => [...virtualColumns, ...tableColumns]
   );
 
   getCachedGroupColumns = memoize(
     (
-      virtualColumns: readonly Column[],
-      tableGroupedColumns: readonly Column[]
+      virtualColumns: readonly DhType.Column[],
+      tableGroupedColumns: readonly DhType.Column[]
     ) => [...virtualColumns, ...tableGroupedColumns]
   );
 
   getCachedFilterableColumnSet = memoize(
     (
-      columns: readonly Column[],
-      groupedColumns: readonly Column[],
-      virtualColumns: readonly Column[]
+      columns: readonly DhType.Column[],
+      groupedColumns: readonly DhType.Column[],
+      virtualColumns: readonly DhType.Column[]
     ) =>
       new Set(
         (groupedColumns?.length > 0 ? groupedColumns : columns)
@@ -318,7 +329,7 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   );
 
   getCachedGroupedColumnSet = memoize(
-    (groupedColumns: readonly Column[]) =>
+    (groupedColumns: readonly DhType.Column[]) =>
       new Set(
         groupedColumns.map(c1 =>
           this.columns.findIndex(c2 => c1.name === c2.name)

@@ -1,9 +1,24 @@
-import React from 'react';
-import { Item, Picker, Section } from '@deephaven/components';
+import React, { useCallback, useState } from 'react';
+import {
+  Flex,
+  Item,
+  Picker,
+  ItemKey,
+  Section,
+  Text,
+} from '@deephaven/components';
 import { vsPerson } from '@deephaven/icons';
-import { Flex, Icon, Text } from '@adobe/react-spectrum';
+import { Icon } from '@adobe/react-spectrum';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { sampleSectionIdAndClasses } from './utils';
+
+// Generate enough items to require scrolling
+const items = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+  .split('')
+  .map((key, i) => ({
+    key,
+    item: { key: (i + 1) * 100, content: `${key}${key}${key}` },
+  }));
 
 function PersonIcon(): JSX.Element {
   return (
@@ -14,6 +29,12 @@ function PersonIcon(): JSX.Element {
 }
 
 export function Pickers(): JSX.Element {
+  const [selectedKey, setSelectedKey] = useState<ItemKey>();
+
+  const onChange = useCallback((key: ItemKey): void => {
+    setSelectedKey(key);
+  }, []);
+
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
     <div {...sampleSectionIdAndClasses('pickers')}>
@@ -24,7 +45,7 @@ export function Pickers(): JSX.Element {
           <Item>Aaa</Item>
         </Picker>
 
-        <Picker label="Mixed Children Types" tooltip>
+        <Picker label="Mixed Children Types" defaultSelectedKey={999} tooltip>
           {/* eslint-disable react/jsx-curly-brace-presence */}
           {'String 1'}
           {'String 2'}
@@ -57,14 +78,32 @@ export function Pickers(): JSX.Element {
               <Text>Complex Ccc</Text>
             </Item>
           </Section>
-          <Section>
+          <Section key="Key B">
             <Item>Item Ddd</Item>
             <Item>Item Eee</Item>
             <Item textValue="Complex Fff">
               <PersonIcon />
               <Text>Complex Fff</Text>
             </Item>
+            <Item key="Ggg">
+              <PersonIcon />
+              <Text>Label</Text>
+              <Text slot="description">Description</Text>
+            </Item>
+            <Item key="Hhh">
+              <PersonIcon />
+              <Text>Label that causes overflow</Text>
+              <Text slot="description">Description that causes overflow</Text>
+            </Item>
           </Section>
+        </Picker>
+
+        <Picker
+          label="Controlled"
+          selectedKey={selectedKey}
+          onChange={onChange}
+        >
+          {items}
         </Picker>
       </Flex>
     </div>

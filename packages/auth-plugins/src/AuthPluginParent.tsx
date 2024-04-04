@@ -1,5 +1,5 @@
 import React from 'react';
-import type { LoginOptions } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import {
   getWindowParent,
   LOGIN_OPTIONS_REQUEST,
@@ -17,11 +17,13 @@ const log = Log.module('AuthPluginParent');
 
 const permissionsOverrides: UserPermissionsOverride = { canLogout: false };
 
-function isLoginOptions(options: unknown): options is LoginOptions {
-  return options != null && typeof (options as LoginOptions).type === 'string';
+function isLoginOptions(options: unknown): options is dh.LoginCredentials {
+  return (
+    options != null && typeof (options as dh.LoginCredentials).type === 'string'
+  );
 }
 
-async function getLoginOptions(): Promise<LoginOptions> {
+async function getLoginOptions(): Promise<dh.LoginCredentials> {
   log.info('Logging in by delegating to parent window...');
   const response = await requestParentResponse(LOGIN_OPTIONS_REQUEST);
   if (!isLoginOptions(response)) {

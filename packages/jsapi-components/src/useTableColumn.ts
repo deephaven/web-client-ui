@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { Column, Table } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import useTable from './useTable';
 
 /**
@@ -11,12 +11,12 @@ import useTable from './useTable';
  * @returns Column object, data array for the column, error, setViewport method
  */
 const useTableColumn = (
-  table: Table | undefined,
+  table: dh.Table | undefined,
   firstRow: number,
   lastRow: number,
   columnName: string
 ): {
-  column: Column | undefined;
+  column: dh.Column | undefined;
   data: unknown[];
   error: Error | null;
 } => {

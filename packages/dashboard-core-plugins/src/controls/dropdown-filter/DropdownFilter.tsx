@@ -17,7 +17,7 @@ import {
   SocketedButton,
 } from '@deephaven/components';
 import { vsGear } from '@deephaven/icons';
-import type { Column } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import memoizee from 'memoizee';
 import memoize from 'memoize-one';
@@ -49,7 +49,7 @@ export interface DropdownFilterProps {
   value: string | null;
   values: (string | null)[];
   onChange: (change: {
-    column: Partial<Column> | null;
+    column: Partial<dh.Column> | null;
     isValueShown?: boolean;
     value?: string;
   }) => void;

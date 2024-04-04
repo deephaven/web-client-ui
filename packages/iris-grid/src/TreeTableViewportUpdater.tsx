@@ -1,14 +1,6 @@
 import { PureComponent } from 'react';
 import throttle from 'lodash.throttle';
-import type {
-  dh as DhType,
-  EventListener,
-  FilterCondition,
-  RemoverFn,
-  Sort,
-  Table,
-  ViewportData,
-} from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 
 const log = Log.module('TreeTableViewportUpdater');
@@ -16,14 +8,14 @@ const log = Log.module('TreeTableViewportUpdater');
 const UPDATE_THROTTLE = 150;
 
 interface TreeTableViewportUpdaterProps {
-  dh: DhType;
-  table: Table;
+  dh: typeof DhType;
+  table: DhType.Table;
   top: number;
   bottom: number;
-  filters: FilterCondition[];
-  sorts: Sort[];
+  filters: DhType.FilterCondition[];
+  sorts: DhType.Sort[];
   updateInterval: number;
-  onViewportUpdate: EventListener<ViewportData>;
+  onViewportUpdate: (e: CustomEvent<DhType.ViewportData>) => void;
 }
 
 /**
@@ -81,7 +73,7 @@ class TreeTableViewportUpdater extends PureComponent<
     }
   }
 
-  listenerCleanup: RemoverFn | null;
+  listenerCleanup: (() => void) | null;
 
   updateViewport = throttle((top: number, bottom: number): void => {
     if (bottom < top) {

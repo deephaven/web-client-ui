@@ -29,7 +29,8 @@ export function ServerConfigBootstrap({
       let isCanceled = false;
       async function loadServerConfigValues(): Promise<void> {
         try {
-          const newServerConfigValues = await client.getServerConfigValues();
+          const newServerConfigValues =
+            (await client.getServerConfigValues()) as [string, string][];
           if (!isCanceled) {
             setServerConfig(new Map(newServerConfigValues));
           }

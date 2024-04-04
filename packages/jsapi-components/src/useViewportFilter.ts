@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import type { FilterCondition, Table } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { UseViewportDataResult } from './useViewportData';
 
 /**
@@ -8,8 +8,8 @@ import { UseViewportDataResult } from './useViewportData';
  * @param filter Filter to apply
  */
 export function useViewportFilter<TItem>(
-  viewportData: UseViewportDataResult<TItem, Table>,
-  filter: FilterCondition[]
+  viewportData: UseViewportDataResult<TItem, dh.Table>,
+  filter: dh.FilterCondition[]
 ): void {
   const { applyFiltersAndRefresh } = viewportData;
 

@@ -13,7 +13,6 @@ import {
   DateTimeInput,
   CustomTimeSelect,
   UISwitch,
-  ValidateLabelInput,
   Select,
   Option,
 } from '@deephaven/components';
@@ -44,8 +43,6 @@ const TIMEOUTS = [
   { title: '4 hours', value: 4 * 60 * 60 * 1000 },
 ];
 
-const VALIDATE_OPTIONS = ['Invalid', 'Valid'];
-
 function Inputs(): React.ReactElement {
   const [on, setOn] = useState(false);
   const [searchValue, setSearchValue] = useState('');
@@ -59,9 +56,6 @@ function Inputs(): React.ReactElement {
   const [autoResizeTextareaValue, setAutoResizeTextareaValue] = useState(
     '-DLiveTableMonitor.updateThreads=8 -DLiveTableMonitor.printDependencyInformation=false -Dassertion.heapDump=true -Drequire.heapDump=true -Dassertion.heapDump=true -Drequire.heapDump=true'
   );
-  const [validateValue, setValidateValue] = useState('');
-  const [validateOption, setValidateOption] = useState(VALIDATE_OPTIONS[0]);
-
   const handleRadioChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       setRadioValue(event.target.value);
@@ -76,13 +70,6 @@ function Inputs(): React.ReactElement {
   const handleSearchInputChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       setSearchValue(event.target.value);
-    },
-    []
-  );
-
-  const handleValidateInputChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      setValidateValue(event.target.value);
     },
     []
   );
@@ -244,12 +231,12 @@ function Inputs(): React.ReactElement {
               defaultValue="0"
               className="custom-select"
             >
-              <option disabled value="0">
+              <Option disabled value="0">
                 Custom Selection
-              </option>
-              <option value="1">One</option>
-              <option value="2">Two</option>
-              <option value="3">Three</option>
+              </Option>
+              <Option value="1">One</Option>
+              <Option value="2">Two</Option>
+              <Option value="3">Three</Option>
             </Select>
           </div>
 
@@ -262,12 +249,30 @@ function Inputs(): React.ReactElement {
               className="custom-select"
               disabled
             >
-              <option disabled value="0">
+              <Option disabled value="0">
                 Custom Selection
-              </option>
-              <option value="1">One</option>
-              <option value="2">Two</option>
-              <option value="3">Three</option>
+              </Option>
+              <Option value="1">One</Option>
+              <Option value="2">Two</Option>
+              <Option value="3">Three</Option>
+            </Select>
+          </div>
+
+          <div className="form-group">
+            <Select
+              onChange={v => {
+                // no-op
+              }}
+              defaultValue="0"
+              className="custom-select"
+              isInvalid
+            >
+              <Option disabled value="0">
+                Custom Selection
+              </Option>
+              <Option value="1">One</Option>
+              <Option value="2">Two</Option>
+              <Option value="3">Three</Option>
             </Select>
           </div>
 
@@ -294,52 +299,6 @@ function Inputs(): React.ReactElement {
           <div className="form-group">
             <h5>AutoCompleteInput</h5>
             <AutoCompleteInput options={EXAMPLES} noMatchText="No Matches." />
-          </div>
-        </div>
-
-        <div className="col">
-          <div className="form-group">
-            <h5>Validate Label</h5>
-            <ValidateLabelInput
-              validationError={!validateValue ? 'Value not set' : undefined}
-              isModified={!!validateValue}
-              id="validateInput1"
-              labelText={`Input Field${on ? ' (disabled)' : ''}`}
-              hintText="Hint text"
-            >
-              <input
-                disabled={on}
-                type="text"
-                className="form-control"
-                aria-describedby="emailHelp"
-                placeholder="Type to modify"
-                onChange={handleValidateInputChange}
-              />
-            </ValidateLabelInput>
-            <ValidateLabelInput
-              validationError={
-                validateOption === 'Invalid' ? 'Invalid value' : undefined
-              }
-              id="validateLabelInput2"
-              labelText={`Dropdown${on ? ' (disabled)' : ''}`}
-            >
-              <Select
-                disabled={on}
-                onChange={eventTargetValue =>
-                  setValidateOption(eventTargetValue)
-                }
-                value={validateOption}
-              >
-                {VALIDATE_OPTIONS.map(option => (
-                  <Option value={option} key={option}>
-                    {option}
-                  </Option>
-                ))}
-              </Select>
-            </ValidateLabelInput>
-            <ValidateLabelInput labelText="Switch" isModified={on}>
-              <UISwitch on={on} onClick={handleToggleClick} />
-            </ValidateLabelInput>
           </div>
         </div>
 

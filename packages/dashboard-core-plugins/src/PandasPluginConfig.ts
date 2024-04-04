@@ -1,10 +1,10 @@
 import { PluginType, WidgetPlugin } from '@deephaven/plugin';
 import { dhPandas } from '@deephaven/icons';
-import type { Table } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { PandasWidgetPlugin } from './PandasWidgetPlugin';
 import { PandasPanelPlugin } from './PandasPanelPlugin';
 
-const PandasPluginConfig: WidgetPlugin<Table> = {
+const PandasPluginConfig: WidgetPlugin<dh.Table> = {
   name: 'PandasPanel',
   title: 'Pandas',
   type: PluginType.WIDGET_PLUGIN,

@@ -1,8 +1,8 @@
-import type { StorageService } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import LayoutStorage, { ExportedLayout } from '../LayoutStorage';
 
 export class GrpcLayoutStorage implements LayoutStorage {
-  readonly storageService: StorageService;
+  readonly storageService: dh.storage.StorageService;
 
   readonly root: string;
 
@@ -11,7 +11,7 @@ export class GrpcLayoutStorage implements LayoutStorage {
    * @param storageService The gRPC storage service to use
    * @param root The root path where the layouts are stored
    */
-  constructor(storageService: StorageService, root = '') {
+  constructor(storageService: dh.storage.StorageService, root = '') {
     this.storageService = storageService;
     this.root = root;
   }

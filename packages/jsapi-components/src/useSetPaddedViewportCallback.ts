@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import type { Table, TreeTable } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import { getSize, padFirstAndLastRow } from '@deephaven/jsapi-utils';
 
 /**
@@ -13,7 +13,7 @@ import { getSize, padFirstAndLastRow } from '@deephaven/jsapi-utils';
  * @returns A callback function for setting the viewport.
  */
 export function useSetPaddedViewportCallback(
-  table: Table | TreeTable | null,
+  table: dh.Table | dh.TreeTable | null,
   viewportSize: number,
   viewportPadding: number
 ): (firstRow: number) => void {
