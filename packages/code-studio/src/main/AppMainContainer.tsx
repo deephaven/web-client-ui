@@ -35,6 +35,7 @@ import {
   DehydratedDashboardPanelProps,
   getAllDashboardsData,
   getDashboardData,
+  LayoutUtils,
   listenForCreateDashboard,
   PanelEvent,
   setDashboardData as setDashboardDataAction,
@@ -317,6 +318,10 @@ export class AppMainContainer extends Component<
 
     this.widgetListenerRemover = connection.subscribeToFieldUpdates(updates => {
       log.debug('Got updates', updates);
+
+      const { activeTabKey } = this.state;
+      const layout = this.dashboardLayouts.get(activeTabKey);
+
       this.setState(({ widgets }) => {
         const { updated, created, removed } = updates;
 
@@ -333,6 +338,35 @@ export class AppMainContainer extends Component<
           if (toAdd.name != null && toAdd.name !== '') {
             newWidgets.push(toAdd);
           }
+        });
+
+        updated.forEach(toUpdate => {
+          let panelId: string | undefined = undefined;
+
+          if (layout) {
+            const widgetContentItem = LayoutUtils.getContentItemInRoot(
+              layout.root,
+              {
+                title: toUpdate.title,
+              }
+            );
+
+            log.debug('widgetContentItem:', widgetContentItem, updates);
+            panelId = widgetContentItem?.config.id as string;
+          }
+
+          if (panelId) {
+            log.debug('Updating widget:', toUpdate);
+
+            // Open on next tick to Avoid flushing updates while React is already
+            // rendering (presumably due to ConsolePanel also updating the widget)
+            setTimeout(() => {
+              this.openWidget(toUpdate, undefined, panelId);
+            }, 0);
+          }
+          // else if (enableCreation) {
+          //   this.openWidget(toUpdate);
+          // }
         });
 
         return { widgets: newWidgets };
@@ -759,15 +793,19 @@ export class AppMainContainer extends Component<
    * Open a widget up, using a drag event if specified.
    * @param widget The widget to open
    * @param dragEvent The mouse drag event that trigger it, undefined if it was not triggered by a drag
+   * @param paramId Optional panelId to open the widget in
    */
   openWidget(
     widget: DhType.ide.VariableDefinition,
-    dragEvent?: WindowMouseEvent
+    dragEvent?: WindowMouseEvent,
+    panelId?: string
   ): void {
     const { connection } = this.props;
+
     this.emitLayoutEvent(PanelEvent.OPEN, {
       dragEvent,
       fetch: async () => connection?.getObject(widget),
+      panelId,
       widget: getVariableDescriptor(widget),
     });
   }

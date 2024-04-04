@@ -190,6 +190,25 @@ class LayoutUtils {
     return null;
   }
 
+  static getContentItemInRoot(
+    root: ContentItem,
+    config: Partial<ReactComponentConfig>
+  ): ContentItem | null {
+    const stack = LayoutUtils.getStackForRoot(
+      root,
+      config,
+      false,
+      false,
+      false
+    );
+
+    if (stack == null) {
+      return null;
+    }
+
+    return LayoutUtils.getContentItemInStack(stack, config);
+  }
+
   /**
    * Gets a stack matching the specified config
    * @param root The root GoldenLayout element
