@@ -38,7 +38,7 @@ function ChartErrorOverlay({
               Dismiss
             </Button>
           )}
-          {onConfirm && !undismissableError && (
+          {onConfirm && (
             <Button onClick={onConfirm} kind="primary">
               Continue
             </Button>
