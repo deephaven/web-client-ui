@@ -43,7 +43,7 @@ export function ItemContent({
    * Whenever a `Text` component renders, see if the content is overflowing so
    * we know whether to render a tooltip showing the full content or not.
    */
-  const checkOverflow = useCallback(
+  const checkTextOverflowRef = useCallback(
     (ref: DOMRefValue<HTMLSpanElement> | null) => {
       const el = ref?.UNSAFE_getDOMNode();
 
@@ -82,7 +82,7 @@ export function ItemContent({
       isElementOfType(el, Text)
         ? cloneElement(el, {
             ...el.props,
-            ref: checkOverflow,
+            ref: checkTextOverflowRef,
             UNSAFE_className: cl(
               el.props.UNSAFE_className,
               stylesCommon.spectrumEllipsis
@@ -95,7 +95,7 @@ export function ItemContent({
   if (typeof content === 'string' || typeof content === 'number') {
     content = (
       <Text
-        ref={checkOverflow}
+        ref={checkTextOverflowRef}
         UNSAFE_className={stylesCommon.spectrumEllipsis}
       >
         {content}
