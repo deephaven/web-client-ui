@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.72.0](https://github.com/deephaven/web-client-ui/compare/v0.71.0...v0.72.0) (2024-04-04)
+
+
+### Code Refactoring
+
+* Change embed-grid and embed-chart to redirects ([#1873](https://github.com/deephaven/web-client-ui/issues/1873)) ([e17619a](https://github.com/deephaven/web-client-ui/commit/e17619a703fb621a091211820c7f7eedfe3b9f8e))
+
+
+### BREAKING CHANGES
+
+* `@deephaven/embed-grid` does not handle messages to the
+iframe for filtering or sorting the grid any more
+
+
+
+
+
 # [0.71.0](https://github.com/deephaven/web-client-ui/compare/v0.70.0...v0.71.0) (2024-03-28)
 
 **Note:** Version bump only for package @deephaven/embed-grid
