@@ -3,6 +3,7 @@ export * from './SelectionUtils';
 export * from './SpectrumUtils';
 export * from './useAsyncInterval';
 export * from './useCallbackWithAction';
+export * from './useCheckOverflowRef';
 export { default as useContextOrThrow } from './useContextOrThrow';
 export * from './useDebouncedCallback';
 export * from './useDelay';

@@ -3,12 +3,10 @@ import {
   cloneElement,
   isValidElement,
   ReactNode,
-  useCallback,
   useState,
 } from 'react';
-import { DOMRefValue } from '@react-types/shared';
 import cl from 'classnames';
-import { isElementOfType } from '@deephaven/react-hooks';
+import { isElementOfType, useCheckOverflowRef } from '@deephaven/react-hooks';
 import { Text } from './Text';
 import { TooltipOptions } from './utils';
 import ItemTooltip from './ItemTooltip';
@@ -29,34 +27,20 @@ export function ItemContent({
   children: content,
   tooltipOptions,
 }: ItemContentProps): JSX.Element | null {
+  const {
+    isOverflowing: isTextOverflowing,
+    ref: checkTextOverflowRef,
+    reset: resetIsOverflowing,
+  } = useCheckOverflowRef();
+
   const [previousContent, setPreviousContent] = useState(content);
-  const [isOverflowing, setIsOverflowing] = useState(false);
 
   // Reset `isOverflowing` if content changes. It will get re-calculated as
   // `Text` components render.
   if (previousContent !== content) {
     setPreviousContent(content);
-    setIsOverflowing(false);
+    resetIsOverflowing();
   }
-
-  /**
-   * Whenever a `Text` component renders, see if the content is overflowing so
-   * we know whether to render a tooltip showing the full content or not.
-   */
-  const checkTextOverflowRef = useCallback(
-    (ref: DOMRefValue<HTMLSpanElement> | null) => {
-      const el = ref?.UNSAFE_getDOMNode();
-
-      if (el == null) {
-        return;
-      }
-
-      if (el.scrollWidth > el.offsetWidth) {
-        setIsOverflowing(true);
-      }
-    },
-    []
-  );
 
   if (isValidElement(content)) {
     return content;
@@ -105,7 +89,7 @@ export function ItemContent({
   /* eslint-enable no-param-reassign */
 
   const tooltip =
-    tooltipOptions == null || !isOverflowing ? null : (
+    tooltipOptions == null || !isTextOverflowing ? null : (
       <ItemTooltip options={tooltipOptions}>{content}</ItemTooltip>
     );
 
