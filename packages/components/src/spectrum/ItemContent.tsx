@@ -6,7 +6,7 @@ import {
   useState,
 } from 'react';
 import cl from 'classnames';
-import { isElementOfType, useCheckOverflowRef } from '@deephaven/react-hooks';
+import { isElementOfType, useCheckOverflow } from '@deephaven/react-hooks';
 import { Text } from './Text';
 import { TooltipOptions } from './utils';
 import ItemTooltip from './ItemTooltip';
@@ -27,11 +27,8 @@ export function ItemContent({
   children: content,
   tooltipOptions,
 }: ItemContentProps): JSX.Element | null {
-  const {
-    checkOverflowRef,
-    isOverflowing: isTextOverflowing,
-    resetIsOverflowing,
-  } = useCheckOverflowRef();
+  const { checkOverflow, isOverflowing, resetIsOverflowing } =
+    useCheckOverflow();
 
   const [previousContent, setPreviousContent] = useState(content);
 
@@ -66,7 +63,7 @@ export function ItemContent({
       isElementOfType(el, Text)
         ? cloneElement(el, {
             ...el.props,
-            ref: checkOverflowRef,
+            ref: checkOverflow,
             UNSAFE_className: cl(
               el.props.UNSAFE_className,
               stylesCommon.spectrumEllipsis
@@ -79,7 +76,7 @@ export function ItemContent({
   if (typeof content === 'string' || typeof content === 'number') {
     content = (
       <Text
-        ref={checkOverflowRef}
+        ref={checkOverflow}
         UNSAFE_className={stylesCommon.spectrumEllipsis}
       >
         {content}
@@ -89,7 +86,7 @@ export function ItemContent({
   /* eslint-enable no-param-reassign */
 
   const tooltip =
-    tooltipOptions == null || !isTextOverflowing ? null : (
+    tooltipOptions == null || !isOverflowing ? null : (
       <ItemTooltip options={tooltipOptions}>{content}</ItemTooltip>
     );
 
