@@ -36,13 +36,11 @@ function stringifyReplacer(blacklist: string[][]) {
         currPath.every((v, index) => v === blacklist[i][index])
       ) {
         // blacklist match
-        console.log('Blacklist match', currPath);
         return undefined;
       }
     }
 
     // not in blacklist, return value
-    console.log('No blacklist match', currPath);
     return value;
   };
 }
