@@ -59,7 +59,7 @@ export function ItemContent({
     //   <Text>Some Label</Text>
     //   <Text slot="description">Some Description</Text>
     // </Item>
-    content = Children.map(content, (el, i) =>
+    content = Children.map(content, el =>
       isElementOfType(el, Text)
         ? cloneElement(el, {
             ...el.props,
