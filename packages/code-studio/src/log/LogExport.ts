@@ -8,23 +8,26 @@ const FILENAME_DATE_FORMAT = 'yyyy-MM-dd-HHmmss';
 
 // List of objects to blacklist
 // '' represents the root object
-export const PATH_BLACKLIST: string[][] = [
+export const DEFAULT_PATH_BLACKLIST: string[][] = [
   ['api'],
   ['client'],
   ['dashboardData', 'defaultLayout', 'connection'],
   ['layoutStorage'],
   ['storage'],
-].map(path => ['', ...path]);
+];
 
 function stringifyReplacer(blacklist: string[][]) {
   // modified from:
   // https://stackoverflow.com/questions/61681176/json-stringify-replacer-how-to-get-full-path
   const pathMap = new Map();
+  // replacer function is also called for the initial object, key is ""
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#the_replacer_parameter
 
-  return function replacer(this: unknown, field: string, value: unknown) {
+  return function replacer(this: unknown, key: string, value: unknown) {
     // get and store path
-    const currPath = [...(pathMap.get(this) ?? []), field];
-    if (value === Object(value)) pathMap.set(value, currPath);
+    const currPath = [...(pathMap.get(this) ?? []), key];
+    if (value === Object(value)) pathMap.set(value, [...currPath]);
+    currPath.shift();
 
     // check blacklists
     for (let i = 0; i < blacklist.length; i += 1) {
@@ -33,11 +36,13 @@ function stringifyReplacer(blacklist: string[][]) {
         currPath.every((v, index) => v === blacklist[i][index])
       ) {
         // blacklist match
+        console.log('Blacklist match', currPath);
         return undefined;
       }
     }
 
     // not in blacklist, return value
+    console.log('No blacklist match', currPath);
     return value;
   };
 }
@@ -125,7 +130,9 @@ function getMetadata(
 /**
  * Export support logs with the given name.
  * @param fileNamePrefix The zip file name without the .zip extension. Ex: test will be saved as test.zip
+ * @param metadata Additional metadata to include in the metadata.json file
  * @param blacklist List of JSON paths to blacklist. A JSON path is a list representing the path to that value (e.g. client.data would be `['client', 'data']`)
+ * @returns A promise that resolves successfully if the log archive is created and downloaded successfully, rejected if there's an error
  */
 export async function exportLogs(
   fileNamePrefix = `${dh.i18n.DateTimeFormat.format(
@@ -133,7 +140,7 @@ export async function exportLogs(
     new Date()
   )}_support_logs`,
   metadata?: Record<string, unknown>,
-  blacklist: string[][] = PATH_BLACKLIST
+  blacklist: string[][] = DEFAULT_PATH_BLACKLIST
 ): Promise<void> {
   const zip = new JSZip();
   const folder = zip.folder(fileNamePrefix) as JSZip;
