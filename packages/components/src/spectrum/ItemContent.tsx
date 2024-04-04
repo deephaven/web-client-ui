@@ -10,9 +10,9 @@ import { DOMRefValue } from '@react-types/shared';
 import cl from 'classnames';
 import { isElementOfType } from '@deephaven/react-hooks';
 import { Text } from './Text';
-import stylesCommon from '../SpectrumComponent.module.scss';
 import { TooltipOptions } from './utils';
 import ItemTooltip from './ItemTooltip';
+import stylesCommon from '../SpectrumComponent.module.scss';
 
 export interface ItemContentProps {
   children: ReactNode;
@@ -20,8 +20,8 @@ export interface ItemContentProps {
 }
 
 /**
- * Picker item content. Text content will be wrapped in a Spectrum Text
- * component with ellipsis overflow handling. If text content overflow and
+ * Item content. Text content will be wrapped in a Spectrum Text
+ * component with ellipsis overflow handling. If text content overflows and
  * tooltipOptions are provided a tooltip will be displayed when hovering over
  * the item content.
  */
@@ -41,7 +41,7 @@ export function ItemContent({
 
   /**
    * Whenever a `Text` component renders, see if the content is overflowing so
-   * we can render a tooltip.
+   * we know whether to render a tooltip showing the full content or not.
    */
   const checkOverflow = useCallback(
     (ref: DOMRefValue<HTMLSpanElement> | null) => {
