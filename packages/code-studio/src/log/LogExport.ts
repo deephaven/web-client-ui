@@ -11,7 +11,8 @@ const FILENAME_DATE_FORMAT = 'yyyy-MM-dd-HHmmss';
 export const DEFAULT_PATH_BLACKLIST: string[][] = [
   ['api'],
   ['client'],
-  ['dashboardData', 'defaultLayout', 'connection'],
+  ['dashboardData', 'default', 'connection'],
+  ['dashboardData', 'default', 'sessionWrapper', 'dh'],
   ['layoutStorage'],
   ['storage'],
 ];
