@@ -32,6 +32,9 @@ export default Object.freeze({
   // Panel was re-opened from a dehydrated state
   REOPEN: 'PanelEvent.REOPEN',
 
+  // Reopen last closed panel
+  REOPEN_LAST: 'PanelEvent.REOPEN_LAST',
+
   // Panel was deleted
   DELETE: 'PanelEvent.DELETE',
 

@@ -236,6 +236,13 @@ export class AppMainContainer extends Component<
         },
         {
           action: () => {
+            this.sendReopenLast();
+          },
+          shortcut: GLOBAL_SHORTCUTS.REOPEN_CLOSED_PANEL,
+          isGlobal: true,
+        },
+        {
+          action: () => {
             log.debug('Consume unhandled save shortcut');
           },
           shortcut: GLOBAL_SHORTCUTS.SAVE,
@@ -400,6 +407,10 @@ export class AppMainContainer extends Component<
 
   sendClearFilter(): void {
     this.emitLayoutEvent(InputFilterEvent.CLEAR_ALL_FILTERS);
+  }
+
+  sendReopenLast(): void {
+    this.emitLayoutEvent(PanelEvent.REOPEN_LAST);
   }
 
   emitLayoutEvent(event: string, ...args: unknown[]): void {
