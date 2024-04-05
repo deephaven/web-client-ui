@@ -74,6 +74,7 @@ abstract class IrisGridModel<
     DISCONNECT: 'DISCONNECT',
     RECONNECT: 'RECONNECT',
     TOTALS_UPDATED: 'TOTALS_UPDATED',
+    /** Fired when the viewport is applied to the table and we're waiting for a response. */
     PENDING_DATA_UPDATED: 'PENDING_DATA_UPDATED',
     VIEWPORT_UPDATED: 'VIEWPORT_UPDATED',
   } as const);
