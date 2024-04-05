@@ -58,3 +58,5 @@ export { default as TimeInput } from './TimeInput';
 export { default as TimeSlider } from './TimeSlider';
 export { default as ToastNotification } from './ToastNotification';
 export { default as UISwitch } from './UISwitch';
+export * from './XComponent';
+export * from './XComponentMap';

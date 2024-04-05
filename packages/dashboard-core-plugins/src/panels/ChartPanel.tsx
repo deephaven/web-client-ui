@@ -65,6 +65,7 @@ import {
   isChartPanelTableMetadata,
 } from './ChartPanelUtils';
 import { ColumnSelectionValidator } from '../linker/ColumnSelectionValidator';
+import { WidgetPanelDescriptor } from './WidgetPanelTypes';
 
 const log = Log.module('ChartPanel');
 const UPDATE_MODEL_DEBOUNCE = 150;
@@ -456,6 +457,24 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
           : false,
         isActive: linkedColumnMap.has(column.name),
       }))
+  );
+
+  getWidgetPanelDescriptor = memoize(
+    (metadata: ChartPanelProps['metadata']): WidgetPanelDescriptor => {
+      let name = 'Chart';
+      if (isChartPanelTableMetadata(metadata)) {
+        name = metadata.table;
+      } else if (isChartPanelFigureMetadata(metadata)) {
+        name = metadata.figure ?? name;
+      } else {
+        name = metadata.name ?? name;
+      }
+      return {
+        ...metadata,
+        type: 'Chart',
+        name,
+      };
+    }
   );
 
   startListeningToSource(table: dh.Table): void {
@@ -1046,14 +1065,6 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
       isLoaded,
       isLoading,
     } = this.state;
-    let name;
-    if (isChartPanelTableMetadata(metadata)) {
-      name = metadata.table;
-    } else if (isChartPanelFigureMetadata(metadata)) {
-      name = metadata.figure;
-    } else {
-      name = metadata.name;
-    }
     const inputFilterMap = this.getInputFilterColumnMap(
       columnMap,
       inputFilters
@@ -1081,6 +1092,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
       error != null ? `Unable to open chart. ${error}` : undefined;
     const isWaitingForFilter = waitingInputMap.size > 0;
     const isSelectingColumn = columnMap.size > 0 && isLinkerActive;
+    const descriptor = this.getWidgetPanelDescriptor(metadata);
     return (
       <WidgetPanel
         className={classNames('iris-chart-panel', {
@@ -1098,8 +1110,7 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
         isDisconnected={isDisconnected}
         isLoading={isLoading}
         isLoaded={isLoaded}
-        widgetName={name ?? undefined}
-        widgetType="Chart"
+        descriptor={descriptor}
       >
         <div
           ref={this.panelContainer}

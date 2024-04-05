@@ -96,6 +96,7 @@ import {
   isIrisGridPanelMetadata,
   isLegacyIrisGridPanelMetadata,
 } from './IrisGridPanelTypes';
+import { WidgetPanelDescriptor } from './WidgetPanelTypes';
 
 const log = Log.module('IrisGridPanel');
 
@@ -560,6 +561,21 @@ export class IrisGridPanel extends PureComponent<
       gridState,
       pluginState,
     })
+  );
+
+  getWidgetPanelDescriptor = memoize(
+    (
+      metadata: IrisGridPanelProps['metadata'],
+      description?: string
+    ): WidgetPanelDescriptor => {
+      const name = getTableNameFromMetadata(metadata);
+      return {
+        ...metadata,
+        type: 'Table',
+        name,
+        description,
+      };
+    }
   );
 
   initModel(): void {
@@ -1270,6 +1286,10 @@ export class IrisGridPanel extends PureComponent<
       this.getPluginContent(Plugin, model, user, workspace, pluginState);
     const { permissions } = user;
     const { canCopy, canDownloadCsv } = permissions;
+    const widgetPanelDescriptor = this.getWidgetPanelDescriptor(
+      metadata,
+      model?.description
+    );
 
     return (
       <WidgetPanel
@@ -1290,10 +1310,8 @@ export class IrisGridPanel extends PureComponent<
         componentPanel={this}
         renderTabTooltip={() => (
           <IrisGridPanelTooltip
+            descriptor={widgetPanelDescriptor}
             model={model}
-            widgetName={name}
-            glContainer={glContainer}
-            description={description}
           />
         )}
       >

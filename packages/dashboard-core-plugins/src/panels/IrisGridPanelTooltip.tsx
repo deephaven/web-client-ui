@@ -1,19 +1,14 @@
 import React, { ReactElement } from 'react';
-import { GLPropTypes } from '@deephaven/dashboard';
-import type { ComponentConfig, Container } from '@deephaven/golden-layout';
 import { IrisGridModel } from '@deephaven/iris-grid';
-import PropTypes from 'prop-types';
 import WidgetPanelTooltip from './WidgetPanelTooltip';
+import { WidgetPanelTooltipProps } from './WidgetPanelTypes';
 
-interface IrisGridPanelTooltipProps {
+type IrisGridPanelTooltipProps = WidgetPanelTooltipProps & {
   model?: IrisGridModel;
-  widgetName: string;
-  glContainer: Container<ComponentConfig>;
-  description?: string;
-}
+};
 
 function IrisGridPanelTooltip(props: IrisGridPanelTooltipProps): ReactElement {
-  const { model, widgetName, glContainer, description } = props;
+  const { model } = props;
 
   const rowCount =
     (model?.rowCount ?? 0) -
@@ -26,12 +21,7 @@ function IrisGridPanelTooltip(props: IrisGridPanelTooltipProps): ReactElement {
   const formattedcolumnCount = model?.displayString(columnCount, 'long');
 
   return (
-    <WidgetPanelTooltip
-      widgetType="Table"
-      widgetName={widgetName}
-      glContainer={glContainer}
-      description={description}
-    >
+    <WidgetPanelTooltip {...props}>
       <hr className="tab-tooltip-divider" />
       <span>Number of Columns</span>
       <span className="tab-tooltip-statistic-value">
@@ -42,15 +32,5 @@ function IrisGridPanelTooltip(props: IrisGridPanelTooltipProps): ReactElement {
     </WidgetPanelTooltip>
   );
 }
-
-IrisGridPanelTooltip.propTypes = {
-  glContainer: GLPropTypes.Container.isRequired,
-  widgetName: PropTypes.string.isRequired,
-  description: PropTypes.string,
-};
-
-IrisGridPanelTooltip.defaultProps = {
-  description: null,
-};
 
 export default IrisGridPanelTooltip;
