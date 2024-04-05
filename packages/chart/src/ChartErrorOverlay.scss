@@ -1,0 +1,14 @@
+@import '@deephaven/components/scss/custom.scss';
+
+.chart-error-overlay {
+  .chart-error-overlay-content {
+    .btn {
+      margin-top: $spacer-3;
+      margin-right: $spacer-3;
+    }
+    .info-message,
+    .waiting-filter-list {
+      text-align: left;
+    }
+  }
+}
