@@ -625,7 +625,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.truncateNumbersWithPound = false;
     this.showEmptyStrings = true;
     this.showNullStrings = true;
-    this.viewportLoadingTimeout = null;
 
     // When the loading scrim started/when it should extend to the end of the screen.
     this.renderer = new IrisGridRenderer();
@@ -973,9 +972,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     if (this.animationFrame !== undefined) {
       cancelAnimationFrame(this.animationFrame);
     }
-    if (this.viewportLoadingTimeout !== null) {
-      clearTimeout(this.viewportLoadingTimeout);
-    }
+
+    this.showViewportLoading.cancel();
   }
 
   grid: Grid | null;
@@ -1047,8 +1045,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   commitAction: Action;
 
   contextActions: ContextAction[];
-
-  viewportLoadingTimeout: NodeJS.Timeout | null;
 
   tableUtils: TableUtils;
 
@@ -2195,6 +2191,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   stopLoading(): void {
+    this.showViewportLoading.cancel();
     this.loadingScrimStartTime = undefined;
     this.loadingScrimFinishTime = undefined;
     this.setState({
@@ -2536,26 +2533,34 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   handleViewportUpdated(): void {
     const { model } = this.props;
-    const { loadingText } = this.state;
+    const { loadingText, loadingSpinnerShown } = this.state;
     const loadingMessage = 'Waiting for viewport...';
 
     // pending and no timer already exists
-    if (model.isViewportPending && this.viewportLoadingTimeout === null) {
-      this.viewportLoadingTimeout = setTimeout(() => {
-        // still pending after timeout
-        if (model.isViewportPending) {
-          this.startLoading(loadingMessage, {
-            loadingCancelShown: false,
-            loadingBlocksGrid: false,
-          });
-        }
-        this.viewportLoadingTimeout = null;
-      }, VIEWPORT_LOADING_DELAY);
+    if (model.isViewportPending && !loadingSpinnerShown) {
+      this.showViewportLoading();
     } else if (loadingText === loadingMessage && !model.isViewportPending) {
       // extra conditions because timeout might get cleared by update
       this.stopLoading();
     }
   }
+
+  showViewportLoading = throttle(
+    (): void => {
+      const { model } = this.props;
+      const { loadingSpinnerShown } = this.state;
+      if (model.isViewportPending && !loadingSpinnerShown) {
+        // We only want to show the viewport loading if the viewport is still loading
+        // and we're not already showing a loader for something else
+        this.startLoading('Waiting for viewport...', {
+          loadingCancelShown: false,
+          loadingBlocksGrid: false,
+        });
+      }
+    },
+    VIEWPORT_LOADING_DELAY,
+    { leading: false, trailing: true }
+  );
 
   showAllColumns(): void {
     const { metricCalculator } = this.state;
@@ -3079,10 +3084,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.lastLoadedConfig = null;
     }
 
-    if (this.viewportLoadingTimeout !== null) {
-      clearTimeout(this.viewportLoadingTimeout);
-      this.viewportLoadingTimeout = null;
-    }
     this.grid?.forceUpdate();
     this.stopLoading();
   }
