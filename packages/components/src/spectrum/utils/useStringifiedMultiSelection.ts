@@ -1,5 +1,10 @@
 import { Key, useCallback, useMemo } from 'react';
-import { getItemKey, ItemKey, NormalizedItem } from './itemUtils';
+import {
+  getItemKey,
+  ItemKey,
+  ItemSelection,
+  NormalizedItem,
+} from './itemUtils';
 
 function toStringKeySet(
   keys?: 'all' | Iterable<ItemKey>
@@ -22,7 +27,7 @@ export interface UseStringifiedMultiSelectionOptions {
    * `onSelectionChange`. We are renaming for better consistency with other
    * components.
    */
-  onChange?: (keys: 'all' | Set<ItemKey>) => void;
+  onChange?: (keys: ItemSelection) => void;
 }
 
 export interface UseStringifiedMultiSelectionResult {

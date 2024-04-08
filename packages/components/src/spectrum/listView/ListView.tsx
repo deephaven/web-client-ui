@@ -12,6 +12,7 @@ import cl from 'classnames';
 import {
   ItemElementOrPrimitive,
   ItemKey,
+  ItemSelection,
   NormalizedItem,
   normalizeItemList,
   normalizeTooltipOptions,
@@ -36,7 +37,7 @@ export type ListViewProps = {
    * `onSelectionChange`. We are renaming for better consistency with other
    * components.
    */
-  onChange?: (keys: 'all' | Set<ItemKey>) => void;
+  onChange?: (keys: ItemSelection) => void;
 
   /** Handler that is called when the picker is scrolled. */
   onScroll?: (event: Event) => void;
@@ -45,7 +46,7 @@ export type ListViewProps = {
    * Handler that is called when the selection changes.
    * @deprecated Use `onChange` instead
    */
-  onSelectionChange?: (keys: 'all' | Set<ItemKey>) => void;
+  onSelectionChange?: (keys: ItemSelection) => void;
 } & Omit<
   SpectrumListViewProps<NormalizedItem>,
   | 'children'

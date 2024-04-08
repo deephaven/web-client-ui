@@ -33,6 +33,8 @@ export type ItemOrSection = ItemElementOrPrimitive | SectionElement;
  */
 export type ItemKey = Key | boolean;
 
+export type ItemSelection = 'all' | Set<ItemKey>;
+
 /**
  * Augment the Spectrum selection change handler type to include boolean keys.
  * Spectrum components already supports this, but the built in types don't
