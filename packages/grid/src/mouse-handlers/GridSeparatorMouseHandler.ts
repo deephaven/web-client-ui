@@ -174,12 +174,13 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
       const targetSize = this.targetSizes.get(modelIndex);
       const isResizingMultiple = this.resizingItems.length > 1;
       const hiddenIndex = this.hiddenItems.indexOf(resizeIndex);
-      let calculatedSize = getOrThrow(calculatedSizes, modelIndex);
-      if (resizeIndex === firstIndex) {
+      let calculatedSize = calculatedSizes.get(modelIndex);
+      if (calculatedSize != null && resizeIndex === firstIndex) {
         calculatedSize += treePadding;
       }
       let newSize = itemSize;
       if (
+        calculatedSize != null &&
         Math.abs(itemSize - calculatedSize) <= theme.headerResizeSnapThreshold
       ) {
         // Snapping behaviour to "natural" width
@@ -275,14 +276,12 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
       const modelIndexes = metrics[this.modelIndexesProperty];
       const modelIndex = getOrThrow(modelIndexes, separator.index);
 
-      const calculatedSize = getOrThrow(
-        metrics[this.calculatedSizesProperty],
-        modelIndex
-      );
+      const calculatedSize =
+        metrics[this.calculatedSizesProperty].get(modelIndex);
       const defaultSize =
         metricCalculator[this.initialSizesProperty].get(modelIndex);
 
-      if (calculatedSize === defaultSize) {
+      if (calculatedSize === defaultSize || calculatedSize == null) {
         this.resetSize(metricCalculator, modelIndex);
       } else {
         this.setSize(metricCalculator, modelIndex, calculatedSize);
@@ -314,7 +313,7 @@ abstract class GridSeparatorMouseHandler extends GridMouseHandler {
     const modelIndex = getOrThrow(modelIndexes, itemIndex);
     let targetSize = userSizes.get(modelIndex);
     if (targetSize == null || targetSize === 0) {
-      targetSize = getOrThrow(calculatedSizes, modelIndex) + treePadding;
+      targetSize = (calculatedSizes.get(modelIndex) ?? 0) + treePadding;
     }
     this.targetSizes.set(modelIndex, targetSize);
   }
