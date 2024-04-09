@@ -33,11 +33,12 @@ describe('useStringifiedMultiSelection', () => {
       })
     );
 
-    expect(result.current.selectedStringKeys).toEqual(selectedStringKeys);
-    expect(result.current.defaultSelectedStringKeys).toEqual(
-      defaultSelectedStringKeys
-    );
-    expect(result.current.disabledStringKeys).toEqual(disabledStringKeys);
+    expect(result.current).toEqual({
+      selectedStringKeys,
+      defaultSelectedStringKeys,
+      disabledStringKeys,
+      onStringSelectionChange: expect.any(Function),
+    });
   });
 
   it.each([
