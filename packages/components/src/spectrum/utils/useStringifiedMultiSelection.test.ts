@@ -47,7 +47,8 @@ describe('useStringifiedMultiSelection', () => {
   ] as const)(
     `should call onChange with 'all' or actual keys`,
     (given, expected) => {
-      const onChange = jest.fn();
+      const onChange = jest.fn().mockName('onChange');
+
       const { result } = renderHook(() =>
         useStringifiedMultiSelection({
           normalizedItems,
