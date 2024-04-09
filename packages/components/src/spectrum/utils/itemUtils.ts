@@ -309,3 +309,18 @@ export function normalizeTooltipOptions(
 
   return options;
 }
+
+/**
+ * Convert a selection of `ItemKey`s to a selection of strings.
+ * @param itemKeys The selection of `ItemKey`s
+ * @returns The selection of strings
+ */
+export function itemSelectionToStringSet(
+  itemKeys?: 'all' | Iterable<ItemKey>
+): undefined | 'all' | Set<string> {
+  if (itemKeys == null || itemKeys === 'all') {
+    return itemKeys as undefined | 'all';
+  }
+
+  return new Set([...itemKeys].map(String));
+}

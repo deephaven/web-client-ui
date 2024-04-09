@@ -14,6 +14,7 @@ import {
   ItemElementOrPrimitive,
   ItemOrSection,
   SectionElement,
+  itemSelectionToStringSet,
 } from './itemUtils';
 import type { PickerProps } from '../picker/Picker';
 import { Item, Section } from '../shared';
@@ -254,6 +255,19 @@ describe('isNormalizedSection', () => {
   ])('should return true for a normalized section: %s', (obj, expected) => {
     expect(isNormalizedSection(obj)).toBe(expected);
   });
+});
+
+describe('itemSelectionToStringSet', () => {
+  it.each([
+    ['all', 'all'],
+    [new Set([1, 2, 3]), new Set(['1', '2', '3'])],
+  ] as const)(
+    `should return 'all' or stringify the keys`,
+    (given, expected) => {
+      const actual = itemSelectionToStringSet(given);
+      expect(actual).toEqual(expected);
+    }
+  );
 });
 
 describe('normalizeItemList', () => {

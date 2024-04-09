@@ -3,18 +3,9 @@ import {
   getItemKey,
   ItemKey,
   ItemSelection,
+  itemSelectionToStringSet,
   NormalizedItem,
 } from './itemUtils';
-
-function toStringKeySet(
-  keys?: 'all' | Iterable<ItemKey>
-): undefined | 'all' | Set<Key> {
-  if (keys == null || keys === 'all') {
-    return keys as undefined | 'all';
-  }
-
-  return new Set([...keys].map(String));
-}
 
 export interface UseStringifiedMultiSelectionOptions {
   normalizedItems: NormalizedItem[];
@@ -64,17 +55,17 @@ export function useStringifiedMultiSelection({
   onChange,
 }: UseStringifiedMultiSelectionOptions): UseStringifiedMultiSelectionResult {
   const selectedStringKeys = useMemo(
-    () => toStringKeySet(selectedKeys),
+    () => itemSelectionToStringSet(selectedKeys),
     [selectedKeys]
   );
 
   const defaultSelectedStringKeys = useMemo(
-    () => toStringKeySet(defaultSelectedKeys),
+    () => itemSelectionToStringSet(defaultSelectedKeys),
     [defaultSelectedKeys]
   );
 
   const disabledStringKeys = useMemo(
-    () => toStringKeySet(disabledKeys),
+    () => itemSelectionToStringSet(disabledKeys),
     [disabledKeys]
   );
 
