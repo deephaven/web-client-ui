@@ -1,5 +1,5 @@
 import { identityExtractHTMLElement } from '@deephaven/utils';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import useMappedRef from './useMappedRef';
 import useResizeObserver from './useResizeObserver';
 
@@ -19,21 +19,39 @@ export interface UseContentRectResult<T> {
 export function useContentRect<T>(
   map: (ref: T) => HTMLElement | null = identityExtractHTMLElement
 ): UseContentRectResult<T> {
-  const [contentRect, setContentRect] = useState<DOMRectReadOnly>(
-    new DOMRect()
+  const [x, setX] = useState<number>(0);
+  const [y, setY] = useState<number>(0);
+  const [width, setWidth] = useState<number>(0);
+  const [height, setHeight] = useState<number>(0);
+
+  const contentRect = useMemo(
+    () => new DOMRect(x, y, width, height),
+    [height, width, x, y]
   );
+
+  const [el, setEl] = useState<HTMLElement | null>(null);
+
+  // Callback ref maps the passed in refValue and passes to `setEl`
+  const ref = useMappedRef(setEl, map);
 
   const handleResize = useCallback(
     ([firstEntry]: ResizeObserverEntry[]): void => {
-      setContentRect(firstEntry?.contentRect ?? new DOMRect());
+      const rect = firstEntry?.contentRect ?? {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0,
+      };
+
+      setX(rect.x);
+      setY(rect.y);
+      setWidth(rect.width);
+      setHeight(rect.height);
     },
     []
   );
 
-  const observerRef = useRef<HTMLElement>(null);
-  useResizeObserver(observerRef.current, handleResize);
-
-  const ref = useMappedRef(observerRef, map);
+  useResizeObserver(el, handleResize);
 
   return {
     ref,

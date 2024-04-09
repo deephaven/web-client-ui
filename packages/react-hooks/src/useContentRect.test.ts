@@ -32,10 +32,11 @@ describe.each([true, false])('useContentRect - explicitMap:%s', explicitMap => {
   });
 
   it('should pass expected value to resize observer based on presence of map function', () => {
-    const { result, rerender } = renderHook(() => useContentRect(mockMap));
+    const { result } = renderHook(() => useContentRect(mockMap));
 
-    result.current.ref(mock.refValue);
-    rerender();
+    act(() => {
+      result.current.ref(mock.refValue);
+    });
 
     if (mockMap != null) {
       expect(mockMap).toHaveBeenCalledWith(mock.refValue);
@@ -53,10 +54,11 @@ describe.each([true, false])('useContentRect - explicitMap:%s', explicitMap => {
   ])(
     'should update contentRect when resize observer triggers: %s',
     (entries, expected) => {
-      const { result, rerender } = renderHook(() => useContentRect(mockMap));
+      const { result } = renderHook(() => useContentRect(mockMap));
 
-      result.current.ref(mock.refValue);
-      rerender();
+      act(() => {
+        result.current.ref(mock.refValue);
+      });
 
       const handleResize = asMock(useResizeObserver).mock.calls.at(-1)?.[1];
 
