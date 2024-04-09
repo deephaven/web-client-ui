@@ -1,3 +1,4 @@
+import { useProvider } from '@adobe/react-spectrum';
 import {
   ListView as ListViewBase,
   ListViewProps as ListViewPropsBase,
@@ -5,7 +6,7 @@ import {
 } from '@deephaven/components';
 import { dh as DhType } from '@deephaven/jsapi-types';
 import { Settings } from '@deephaven/jsapi-utils';
-import { LIST_VIEW_ROW_HEIGHT } from '@deephaven/utils';
+import { LIST_VIEW_ROW_HEIGHTS } from '@deephaven/utils';
 import useFormatter from '../useFormatter';
 import useViewportData from '../useViewportData';
 import { useItemRowDeserializer } from './utils';
@@ -29,6 +30,9 @@ export function ListView({
   settings,
   ...props
 }: ListViewProps): JSX.Element {
+  const { scale } = useProvider();
+  const itemHeight = LIST_VIEW_ROW_HEIGHTS[props.density ?? 'regular'][scale];
+
   const { getFormattedString: formatValue } = useFormatter(settings);
 
   const deserializeRow = useItemRowDeserializer({
@@ -44,7 +48,7 @@ export function ListView({
   >({
     reuseItemsOnTableResize: true,
     table,
-    itemHeight: LIST_VIEW_ROW_HEIGHT,
+    itemHeight,
     deserializeRow,
   });
 
