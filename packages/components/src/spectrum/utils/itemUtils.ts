@@ -2,7 +2,7 @@ import { isValidElement, Key, ReactElement, ReactNode } from 'react';
 import { SpectrumPickerProps } from '@adobe/react-spectrum';
 import type { ItemRenderer } from '@react-types/shared';
 import Log from '@deephaven/log';
-import { KeyedItem } from '@deephaven/utils';
+import { KeyedItem, SelectionT } from '@deephaven/utils';
 import { Item, ItemProps, Section, SectionProps } from '../shared';
 import { PopperOptions } from '../../popper';
 
@@ -33,7 +33,7 @@ export type ItemOrSection = ItemElementOrPrimitive | SectionElement;
  */
 export type ItemKey = Key | boolean;
 
-export type ItemSelection = 'all' | Set<ItemKey>;
+export type ItemSelection = SelectionT<ItemKey>;
 
 /**
  * Augment the Spectrum selection change handler type to include boolean keys.
