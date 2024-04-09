@@ -3,6 +3,12 @@ import { ItemContent } from '../ItemContent';
 import { Item } from '../shared';
 import { getItemKey, NormalizedItem, TooltipOptions } from './itemUtils';
 
+/**
+ * Returns a render function that can be used to render a normalized item in
+ * collection components.
+ * @param tooltipOptions Tooltip options to use when rendering the item
+ * @returns Render function for normalized items
+ */
 export function useRenderNormalizedItem(
   tooltipOptions: TooltipOptions | null
 ): (normalizedItem: NormalizedItem) => JSX.Element {
@@ -20,7 +26,7 @@ export function useRenderNormalizedItem(
           // `onSelectionChange` handlers` regardless of the actual type of the
           // key. We can't really get around setting in order to support Windowed
           // data, so we'll need to do some manual conversion of keys to strings
-          // in other places of this component.
+          // in other components that use this hook.
           key={key as Key}
           // The `textValue` prop gets used to provide the content of `<option>`
           // elements that back the Spectrum Picker. These are not visible in the UI,
