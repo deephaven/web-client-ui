@@ -117,13 +117,13 @@ export function ListView({
         // Use &nbsp; to ensure content has a non-zero height. This ensures the
         // container will also have a non-zero height unless its height is
         // explicitly set to zero. Example use case:
-        // 1. Tab containing ListView is visible. Height is non-zero. ListView is
-        //   rendered.
-        // 2. Tab is hidden. Height of container is explicitly constrained to zero.
-        //   ListView is not rendered.
+        // 1. Tab containing ListView is visible. Container height is non-zero.
+        //    ListView is rendered.
+        // 2. Tab is hidden. Container height is explicitly constrained to zero.
+        //    ListView is not rendered.
         // 3. Tab is shown again. Height constraint is removed. Resize observer
         //    fires and shows non-zero height due to the &nbsp; (without this,
-        //    the height would remain zero forever)
+        //    the height would remain zero forever since ListView hasn't rendered yet)
         // 4. ListView is rendered again.
         <>&nbsp;</>
       ) : (
