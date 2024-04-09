@@ -24,7 +24,7 @@ export function useContentRect<T>(
   );
 
   const handleResize = useCallback(
-    ([firstEntry]: ResizeObserverEntry[], _observer: ResizeObserver): void => {
+    ([firstEntry]: ResizeObserverEntry[]): void => {
       setContentRect(firstEntry?.contentRect ?? new DOMRect());
     },
     []
