@@ -22,6 +22,7 @@
     "build:sass": "sass --embed-sources --load-path=../../node_modules ./src:./dist"
   },
   "dependencies": {
+    "@adobe/react-spectrum": "^3.34.1",
     "@deephaven/components": "file:../components",
     "@deephaven/jsapi-bootstrap": "file:../jsapi-bootstrap",
     "@deephaven/jsapi-types": "1.0.0-dev0.33.1",

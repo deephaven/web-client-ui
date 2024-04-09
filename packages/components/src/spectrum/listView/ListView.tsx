@@ -1,11 +1,13 @@
 import { useMemo } from 'react';
 import {
+  Flex,
   ListView as SpectrumListView,
   SpectrumListViewProps,
 } from '@adobe/react-spectrum';
 import { EMPTY_FUNCTION } from '@deephaven/utils';
 import {
   extractSpectrumHTMLElement,
+  useContentRect,
   useOnScrollRef,
 } from '@deephaven/react-hooks';
 import cl from 'classnames';
@@ -68,7 +70,7 @@ export function ListView({
   onScroll = EMPTY_FUNCTION,
   onSelectionChange,
   ...spectrumListViewProps
-}: ListViewProps): JSX.Element {
+}: ListViewProps): JSX.Element | null {
   const normalizedItems = useMemo(
     () => normalizeItemList(children),
     [children]
@@ -96,20 +98,43 @@ export function ListView({
 
   const scrollRef = useOnScrollRef(onScroll, extractSpectrumHTMLElement);
 
+  // Spectrum ListView crashes when it has zero height. Trac the contentRect
+  // of the parent container and only render the ListView when it has a height.
+  const { ref: contentRectRef, contentRect } = useContentRect(
+    extractSpectrumHTMLElement
+  );
+
   return (
-    <SpectrumListView
-      // eslint-disable-next-line react/jsx-props-no-spreading
-      {...spectrumListViewProps}
-      ref={scrollRef}
+    <Flex
+      ref={contentRectRef}
+      direction="column"
+      flex={spectrumListViewProps.flex ?? 1}
+      minHeight={0}
       UNSAFE_className={cl('dh-list-view', UNSAFE_className)}
-      items={normalizedItems}
-      selectedKeys={selectedStringKeys}
-      defaultSelectedKeys={defaultSelectedStringKeys}
-      disabledKeys={disabledStringKeys}
-      onSelectionChange={onStringSelectionChange}
     >
-      {renderNormalizedItem}
-    </SpectrumListView>
+      {contentRect.height === 0 ? (
+        // Ensure content has a non-zero height so that the container has a height
+        // whenever it is visible. This helps differentiate when the container
+        // height has been set to zero (e.g. when a tab is not visible) vs when
+        // the container height has not been constrained but has not yet rendered
+        // the ListView.
+        <>&nbsp;</>
+      ) : (
+        <SpectrumListView
+          // eslint-disable-next-line react/jsx-props-no-spreading
+          {...spectrumListViewProps}
+          minHeight={10}
+          ref={scrollRef}
+          items={normalizedItems}
+          selectedKeys={selectedStringKeys}
+          defaultSelectedKeys={defaultSelectedStringKeys}
+          disabledKeys={disabledStringKeys}
+          onSelectionChange={onStringSelectionChange}
+        >
+          {renderNormalizedItem}
+        </SpectrumListView>
+      )}
+    </Flex>
   );
 }
 
