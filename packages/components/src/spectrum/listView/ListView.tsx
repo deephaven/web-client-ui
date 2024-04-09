@@ -123,7 +123,6 @@ export function ListView({
         <SpectrumListView
           // eslint-disable-next-line react/jsx-props-no-spreading
           {...spectrumListViewProps}
-          minHeight={10}
           ref={scrollRef}
           items={normalizedItems}
           selectedKeys={selectedStringKeys}
