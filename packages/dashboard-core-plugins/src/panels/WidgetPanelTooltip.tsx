@@ -1,4 +1,4 @@
-import React, { ReactNode, ReactElement } from 'react';
+import React, { ReactElement } from 'react';
 import { CopyButton, createXComponent } from '@deephaven/components';
 import './WidgetPanelTooltip.scss';
 import {
@@ -22,13 +22,13 @@ function WidgetPanelTooltip(props: WidgetPanelTooltipProps): ReactElement {
           copy={name}
         />
       </div>
-      {name !== displayName && displayName && (
+      {name !== displayName && Boolean(displayName) && (
         <>
           <span className="tab-tooltip-title">Display Name</span>
           <span className="tab-tooltip-name">{displayName}</span>
         </>
       )}
-      {description && (
+      {Boolean(description) && (
         <div className="tab-tooltip-description">{description}</div>
       )}
       {children}
@@ -36,4 +36,6 @@ function WidgetPanelTooltip(props: WidgetPanelTooltipProps): ReactElement {
   );
 }
 
-export default createXComponent(WidgetPanelTooltip);
+const XWidgetPanelTooltip = createXComponent(WidgetPanelTooltip);
+
+export default XWidgetPanelTooltip;

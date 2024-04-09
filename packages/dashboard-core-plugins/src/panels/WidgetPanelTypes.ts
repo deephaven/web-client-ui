@@ -1,5 +1,5 @@
-import React, { ReactNode, ReactElement } from 'react';
-import { LayoutUtils, WidgetDescriptor } from '@deephaven/dashboard';
+import { ReactNode } from 'react';
+import { LayoutUtils } from '@deephaven/dashboard';
 import type { Container } from '@deephaven/golden-layout';
 
 export type WidgetPanelDescriptor = {

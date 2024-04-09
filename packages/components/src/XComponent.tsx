@@ -49,6 +49,7 @@ export function createXComponent<P extends Record<string, unknown>>(
   };
 
   XComponent.Original = Component;
+  XComponent.isXComponent = true;
 
   return XComponent;
 }

@@ -4,6 +4,7 @@ import React, { useContext } from 'react';
 export type XComponentType<P extends Record<string, unknown>> =
   React.ComponentType<P> & {
     Original: React.ComponentType<P>;
+    isXComponent: boolean;
   };
 
 export const XComponentMapContext = React.createContext(

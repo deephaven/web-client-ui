@@ -21,6 +21,7 @@ function IrisGridPanelTooltip(props: IrisGridPanelTooltipProps): ReactElement {
   const formattedcolumnCount = model?.displayString(columnCount, 'long');
 
   return (
+    // eslint-disable-next-line react/jsx-props-no-spreading
     <WidgetPanelTooltip {...props}>
       <hr className="tab-tooltip-divider" />
       <span>Number of Columns</span>

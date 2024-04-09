@@ -1,7 +1,7 @@
 import React, { PureComponent, ReactElement, ReactNode } from 'react';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
-import { PanelComponent, WidgetDescriptor } from '@deephaven/dashboard';
+import { PanelComponent } from '@deephaven/dashboard';
 import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import { ContextActions, createXComponent } from '@deephaven/components';
 import { copyToClipboard } from '@deephaven/utils';
@@ -99,7 +99,7 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
       isWidgetDisconnected,
       isWaitingForReconnect,
     } = this.state;
-    if (errorMessage) {
+    if (errorMessage != null && errorMessage !== '') {
       return `${errorMessage}`;
     }
     if (isClientDisconnected && isPanelDisconnected && isWaitingForReconnect) {
@@ -228,4 +228,6 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
   }
 }
 
-export default createXComponent(WidgetPanel);
+const XWidgetPanel = createXComponent(WidgetPanel);
+
+export default XWidgetPanel;
