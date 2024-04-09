@@ -37,9 +37,10 @@ export function ListViews(): JSX.Element {
     <div {...sampleSectionIdAndClasses('list-views')}>
       <h2 className="ui-title">List View</h2>
 
-      <Grid columnGap={14} height="size-4600">
+      <Grid columnGap={14} height="size-6000">
         <Text>Single Child</Text>
         <ListView
+          density="compact"
           gridRow="2"
           aria-label="Single Child"
           selectionMode="multiple"
@@ -48,7 +49,12 @@ export function ListViews(): JSX.Element {
         </ListView>
 
         <label>Icons</label>
-        <ListView gridRow="2" aria-label="Icon" selectionMode="multiple">
+        <ListView
+          gridRow="2"
+          aria-label="Icon"
+          density="compact"
+          selectionMode="multiple"
+        >
           <Item textValue="Item with icon A">
             <AccountIcon slot="image" />
             <Text>Item with icon A</Text>
@@ -71,6 +77,7 @@ export function ListViews(): JSX.Element {
         <ListView
           gridRow="2"
           aria-label="Mixed Children Types"
+          density="compact"
           maxWidth="size-2400"
           selectionMode="multiple"
           defaultSelectedKeys={[999, 444]}
