@@ -98,8 +98,9 @@ export function ListView({
 
   const scrollRef = useOnScrollRef(onScroll, extractSpectrumHTMLElement);
 
-  // Spectrum ListView crashes when it has zero height. Trac the contentRect
-  // of the parent container and only render the ListView when it has a height.
+  // Spectrum ListView crashes when it has zero height. Track the contentRect
+  // of the parent container and only render the ListView when it has a non-zero
+  // height.
   const { ref: contentRectRef, contentRect } = useContentRect(
     extractSpectrumHTMLElement
   );
@@ -113,11 +114,17 @@ export function ListView({
       UNSAFE_className={cl('dh-list-view', UNSAFE_className)}
     >
       {contentRect.height === 0 ? (
-        // Ensure content has a non-zero height so that the container has a height
-        // whenever it is visible. This helps differentiate when the container
-        // height has been set to zero (e.g. when a tab is not visible) vs when
-        // the container height has not been constrained but has not yet rendered
-        // the ListView.
+        // Use &nbsp; to ensure content has a non-zero height. This ensures the
+        // container will also have a non-zero height unless its height is
+        // explicitly set to zero. Example use case:
+        // 1. Tab containing ListView is visible. Height is non-zero. ListView is
+        //   rendered.
+        // 2. Tab is hidden. Height of container is explicitly constrained to zero.
+        //   ListView is not rendered.
+        // 3. Tab is shown again. Height constraint is removed. Resize observer
+        //    fires and shows non-zero height due to the &nbsp; (without this,
+        //    the height would remain zero forever)
+        // 4. ListView is rendered again.
         <>&nbsp;</>
       ) : (
         <SpectrumListView
