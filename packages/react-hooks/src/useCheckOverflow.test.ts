@@ -27,17 +27,21 @@ describe('useCheckOverflow', () => {
   });
 
   it.each([
+    [null, false],
     [isOverflowing, true],
     [scrollWidthMatchesOffsetWidth, false],
     [offsetWidthGreaterThanScrollWidth, false],
   ])(
-    'should check if a Spectrum `DOMRefValue` is overflowing',
+    'should check if a Spectrum `DOMRefValue` is overflowing: %s, %s',
     (el, expected) => {
       const { result } = renderHook(() => useCheckOverflow());
 
-      const elRef = createMockProxy<DOMRefValue<HTMLDivElement>>({
-        UNSAFE_getDOMNode: () => createMockProxy<HTMLDivElement>(el),
-      });
+      const elRef =
+        el == null
+          ? null
+          : createMockProxy<DOMRefValue<HTMLDivElement>>({
+              UNSAFE_getDOMNode: () => createMockProxy<HTMLDivElement>(el),
+            });
 
       act(() => {
         result.current.checkOverflow(elRef);
