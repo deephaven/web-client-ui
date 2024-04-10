@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { dh } from '@deephaven/jsapi-types';
 import {
   RowDeserializer,
@@ -78,6 +78,8 @@ export function useViewportData<TItem, TTable extends dh.Table | dh.TreeTable>({
   deserializeRow = defaultRowDeserializer,
   reuseItemsOnTableResize = false,
 }: UseViewportDataProps<TItem, TTable>): UseViewportDataResult<TItem, TTable> {
+  const currentViewportFirstRowRef = useRef<number>(0);
+
   const viewportData = useInitializeViewportData<TItem>(
     table,
     reuseItemsOnTableResize
@@ -91,6 +93,12 @@ export function useViewportData<TItem, TTable extends dh.Table | dh.TreeTable>({
 
   const setViewport = useCallback(
     (firstRow: number) => {
+      log.debug('setViewport.', {
+        prev: currentViewportFirstRowRef.current,
+        next: firstRow,
+      });
+      currentViewportFirstRowRef.current = firstRow;
+
       if (table && !isClosed(table)) {
         setPaddedViewport(firstRow);
       } else {
@@ -127,7 +135,13 @@ export function useViewportData<TItem, TTable extends dh.Table | dh.TreeTable>({
     // Hydrate the viewport with real data. This will fetch data from index
     // 0 to the end of the viewport + padding.
     setViewport(0);
-  }, [table, setViewport, size]);
+  }, [table, setViewport]);
+
+  useEffect(() => {
+    // TODO: This is optimized for ticking tables, but need to test this with
+    // filtered data scenarios in ACL Editor such as table size decreasing.
+    setViewport(currentViewportFirstRowRef.current);
+  }, [setViewport, size]);
 
   const onScroll = useOnScrollOffsetChangeCallback(
     itemHeight,
