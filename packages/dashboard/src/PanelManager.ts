@@ -82,6 +82,7 @@ class PanelManager {
     // and PanelEvent.CLOSED for cleanup (delete links, add panel to closed panels list, etc)
     this.handleUnmount = this.handleUnmount.bind(this);
     this.handleReopen = this.handleReopen.bind(this);
+    this.handleReopenLast = this.handleReopenLast.bind(this);
     this.handleDeleted = this.handleDeleted.bind(this);
     this.handleClosed = this.handleClosed.bind(this);
     this.handleControlClose = this.handleControlClose.bind(this);
@@ -106,6 +107,7 @@ class PanelManager {
     eventHub.on(PanelEvent.MOUNT, this.handleMount);
     eventHub.on(PanelEvent.UNMOUNT, this.handleUnmount);
     eventHub.on(PanelEvent.REOPEN, this.handleReopen);
+    eventHub.on(PanelEvent.REOPEN_LAST, this.handleReopenLast);
     eventHub.on(PanelEvent.DELETE, this.handleDeleted);
     eventHub.on(PanelEvent.CLOSED, this.handleClosed);
     eventHub.on(PanelEvent.CLOSE, this.handleControlClose);
@@ -118,6 +120,7 @@ class PanelManager {
     eventHub.off(PanelEvent.MOUNT, this.handleMount);
     eventHub.off(PanelEvent.UNMOUNT, this.handleUnmount);
     eventHub.off(PanelEvent.REOPEN, this.handleReopen);
+    eventHub.off(PanelEvent.REOPEN_LAST, this.handleReopenLast);
     eventHub.off(PanelEvent.DELETE, this.handleDeleted);
     eventHub.off(PanelEvent.CLOSED, this.handleClosed);
     eventHub.off(PanelEvent.CLOSE, this.handleControlClose);
@@ -289,6 +292,11 @@ class PanelManager {
 
     const { root } = this.layout;
     LayoutUtils.openComponent({ root, config, replaceConfig });
+  }
+
+  handleReopenLast(): void {
+    if (this.closed.length === 0) return;
+    this.handleReopen(this.closed[this.closed.length - 1]);
   }
 
   handleDeleted(panelConfig: ClosedPanel): void {
