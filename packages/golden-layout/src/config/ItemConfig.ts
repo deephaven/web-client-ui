@@ -86,6 +86,11 @@ export interface ReactComponentConfig extends ItemConfig {
    * Properties that will be passed to the component and accessible using this.props.
    */
   props?: any;
+
+  /**
+   * The stack the component is in.
+   */
+  parentStackId?: string | string[];
 }
 
 export function isGLComponentConfig(

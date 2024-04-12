@@ -291,12 +291,40 @@ class PanelManager {
     };
 
     const { root } = this.layout;
-    LayoutUtils.openComponent({ root, config, replaceConfig });
+    const stack =
+      panelConfig.parentStackId === undefined
+        ? undefined
+        : LayoutUtils.getStackById(root, panelConfig.parentStackId);
+    LayoutUtils.openComponent({
+      root,
+      config,
+      replaceConfig,
+      stack: stack ?? undefined,
+    });
   }
 
-  handleReopenLast(): void {
+  /**
+   *
+   * @param glContainer Only reopen panels that were closed from the stack of this container, is defined
+   */
+  handleReopenLast(glContainer?: Container): void {
     if (this.closed.length === 0) return;
-    this.handleReopen(this.closed[this.closed.length - 1]);
+    if (glContainer === undefined) {
+      this.handleReopen(this.closed[this.closed.length - 1]);
+      return;
+    }
+
+    const stackId = LayoutUtils.getStackForConfig(
+      this.layout.root,
+      glContainer.getConfig()
+    )?.config.id;
+    for (let i = this.closed.length - 1; i >= 0; i -= 1) {
+      const panelConfig = this.closed[i];
+      if (panelConfig.parentStackId === stackId) {
+        this.handleReopen(panelConfig);
+        return;
+      }
+    }
   }
 
   handleDeleted(panelConfig: ClosedPanel): void {
@@ -322,12 +350,17 @@ class PanelManager {
   }
 
   addClosedPanel(glContainer: Container): void {
+    const { root } = this.layout;
     const config = LayoutUtils.getComponentConfigFromContainer(glContainer);
     if (config && isReactComponentConfig(config)) {
       const dehydratedConfig = this.dehydrateComponent(
         config.component,
         config
       );
+      dehydratedConfig.parentStackId = LayoutUtils.getStackForConfig(
+        root,
+        config
+      )?.config.id;
       if (dehydratedConfig != null) {
         this.closed.push(dehydratedConfig);
       }

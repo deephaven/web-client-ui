@@ -333,6 +333,7 @@ class Panel extends PureComponent<PanelProps, PanelState> {
       className,
       renderTabTooltip,
       glContainer,
+      glEventHub,
       additionalActions,
       errorMessage,
       isLoaded,
@@ -362,6 +363,7 @@ class Panel extends PureComponent<PanelProps, PanelState> {
             <>
               <PanelContextMenu
                 glContainer={glContainer}
+                glEventHub={glEventHub}
                 additionalActions={this.getAdditionActions(
                   additionalActions,
                   isClonable,
