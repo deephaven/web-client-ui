@@ -1,9 +1,5 @@
 import React, { PureComponent, ReactElement } from 'react';
-import {
-  ContextAction,
-  ContextActions,
-  GLOBAL_SHORTCUTS,
-} from '@deephaven/components';
+import { ContextAction, ContextActions } from '@deephaven/components';
 import type {
   Container,
   EventEmitter,
