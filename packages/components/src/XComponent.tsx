@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
+import { canHaveRef } from './ComponentUtils';
 import { useXComponent, XComponentType } from './XComponentMap';
 
 /**
@@ -13,19 +14,14 @@ import { useXComponent, XComponentType } from './XComponentMap';
  * function MyComponent() {
  *   return <div>MyComponent</div>;
  * }
- * const XMyComponent = extendableComponent(MyComponent);
  *
+ * const XMyComponent = extendableComponent(MyComponent);
  *
  * function MyReplacementComponent() {
  *  return <div>MyReplacementComponent</div>;
  * }
  *
- *
- * ...
- *
  * <XMyComponent /> // Will render MyComponent
- *
- * ...
  *
  * <XComponentMapProvider value={new Map([[XMyComponent, MyReplacementComponent]])}>
  *   <XMyComponent /> // Will render MyReplacementComponent
@@ -42,16 +38,27 @@ import { useXComponent, XComponentType } from './XComponentMap';
 export function createXComponent<P extends Record<string, unknown>>(
   Component: React.ComponentType<P>
 ): XComponentType<P> {
-  function XComponent(props: P): JSX.Element {
-    const ReplacementComponent = useXComponent(XComponent);
-    // eslint-disable-next-line react/jsx-props-no-spreading
-    return <ReplacementComponent {...props} />;
+  let forwardedRefComponent: XComponentType<P>;
+  function XComponent(props: P, ref: React.ForwardedRef<unknown>): JSX.Element {
+    const ReplacementComponent = useXComponent(forwardedRefComponent);
+    return canHaveRef(Component) ? (
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      <ReplacementComponent {...props} ref={ref} />
+    ) : (
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      <ReplacementComponent {...props} />
+    );
   }
 
   XComponent.Original = Component;
   XComponent.isXComponent = true;
+  // Add the display name so this appears as a tag in the React DevTools
+  XComponent.displayName = `XComponent(${Component.displayName})`;
 
-  return XComponent;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  forwardedRefComponent = forwardRef(XComponent) as any;
+
+  return forwardedRefComponent;
 }
 
 export default createXComponent;

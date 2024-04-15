@@ -3,9 +3,9 @@ import React, { PropsWithChildren } from 'react';
 import { connect } from 'react-redux';
 import {
   canHaveRef,
-  isForwardRefComponent,
   isClassComponent,
   isWrappedComponent,
+  isForwardRefComponentType,
 } from './ComponentUtils';
 
 function TestComponent() {
@@ -19,11 +19,13 @@ class TestClass extends React.PureComponent<PropsWithChildren<never>> {
 }
 
 test('isForwardRefComponent', () => {
-  expect(isForwardRefComponent(TestComponent)).toBe(false);
-  expect(isForwardRefComponent(React.forwardRef(TestComponent))).toBe(true);
-  expect(isForwardRefComponent(TestClass)).toBe(false);
-  expect(isForwardRefComponent(connect(null, null)(TestComponent))).toBe(false);
-  expect(isForwardRefComponent(connect(null, null)(TestClass))).toBe(false);
+  expect(isForwardRefComponentType(TestComponent)).toBe(false);
+  expect(isForwardRefComponentType(React.forwardRef(TestComponent))).toBe(true);
+  expect(isForwardRefComponentType(TestClass)).toBe(false);
+  expect(isForwardRefComponentType(connect(null, null)(TestComponent))).toBe(
+    false
+  );
+  expect(isForwardRefComponentType(connect(null, null)(TestClass))).toBe(false);
 });
 
 test('isClassComponent', () => {

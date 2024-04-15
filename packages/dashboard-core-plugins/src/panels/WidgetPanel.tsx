@@ -11,11 +11,14 @@ import './WidgetPanel.scss';
 import {
   getWidgetPanelDescriptorFromProps,
   WidgetPanelDescriptor,
-  WidgetPanelTooltipProps,
 } from './WidgetPanelTypes';
 
-type WidgetPanelProps = WidgetPanelTooltipProps & {
+type WidgetPanelProps = {
   children: ReactNode;
+
+  // Gets used in the `getPanelDescriptor` function
+  // eslint-disable-next-line react/no-unused-prop-types
+  descriptor: WidgetPanelDescriptor;
   componentPanel?: PanelComponent;
 
   glContainer: Container;

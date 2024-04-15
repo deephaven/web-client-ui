@@ -24,7 +24,7 @@ function MyReplacementWrapperComponent({
   return (
     <div>
       <div>MyReplacementWrapperComponent</div>
-      <XMyComponent.Original>{children}</XMyComponent.Original>
+      <XMyComponent.render.Original>{children}</XMyComponent.render.Original>
     </div>
   );
 }

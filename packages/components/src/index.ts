@@ -12,6 +12,7 @@ export * from './context-actions';
 export { default as Collapse } from './Collapse';
 export { default as Checkbox } from './Checkbox';
 export { default as ComboBox } from './ComboBox';
+export * from './ComponentUtils';
 export { default as CopyButton } from './CopyButton';
 export { default as CustomTimeSelect } from './CustomTimeSelect';
 export { default as DateTimeInput } from './DateTimeInput';

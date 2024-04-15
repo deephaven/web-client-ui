@@ -317,8 +317,8 @@ class Panel extends PureComponent<PanelProps, PanelState> {
       errorMessage,
       isLoaded = true,
       isLoading = false,
-      isClonable = true,
-      isRenamable = true,
+      isClonable = false,
+      isRenamable = false,
     } = this.props;
 
     const { tab: glTab } = glContainer;

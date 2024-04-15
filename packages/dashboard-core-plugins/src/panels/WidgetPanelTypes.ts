@@ -16,7 +16,7 @@ export type WidgetPanelDescriptor = {
   description?: string;
 };
 
-/** @deprecated Use WidgetPanelTooltipPropsV1 instead */
+/** @deprecated Use WidgetPanelTooltipPropsV2 instead */
 export type WidgetPanelTooltipPropsV1 = {
   glContainer: Container;
   widgetType: string;

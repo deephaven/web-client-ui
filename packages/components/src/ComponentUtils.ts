@@ -38,8 +38,11 @@ export function isWrappedComponent<P extends Props, C extends ComponentType<P>>(
 export function isClassComponent<P extends Props>(
   Component: React.ComponentType<P>
 ): Component is React.ComponentClass<P> {
-  if (isWrappedComponent(Component)) {
-    return isClassComponent(Component.WrappedComponent);
+  if (
+    isWrappedComponent(Component) &&
+    isClassComponent(Component.WrappedComponent)
+  ) {
+    return true;
   }
   return (
     (Component as React.ComponentClass<P>).prototype != null &&
@@ -52,23 +55,26 @@ export function isClassComponent<P extends Props>(
  * @param Component The component to check
  * @returns Whether the component is a forward ref component or not
  */
-export function isForwardRefComponent<P extends Props>(
+export function isForwardRefComponentType<P extends Props>(
   Component: ComponentType<P>
 ): Component is ForwardRefExoticComponent<P> {
   return (
     !isWrappedComponent(Component) &&
+    // Do a check right on the `$$typeof` the component. The `isForwardRef` function in `react-is` checks against a `Component`, whereas
+    // we want to check against a `ComponentType`.
     '$$typeof' in Component &&
     Component.$$typeof === ForwardRef
   );
 }
 
 /**
- * Checks if a component can have a ref.
- * @param Component The component to check
+ * Checks if a component can have a ref. Helps silence react dev errors
+ * if a ref is passed to a functional component without forwardRef.
+ * @param Component The component to check if it can take a ref
  * @returns Whether the component can have a ref or not
  */
 export function canHaveRef<P extends Props>(
   Component: ComponentType<P> | WrappedComponentType<P, ComponentType<P>>
 ): boolean {
-  return isClassComponent(Component) || isForwardRefComponent(Component);
+  return isClassComponent(Component) || isForwardRefComponentType(Component);
 }
