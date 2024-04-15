@@ -42,11 +42,11 @@ import { useXComponent, XComponentType } from './XComponentMap';
 export function createXComponent<P extends Record<string, unknown>>(
   Component: React.ComponentType<P>
 ): XComponentType<P> {
-  const XComponent = function ExtendableComponent(props: P): JSX.Element {
+  function XComponent(props: P): JSX.Element {
     const ReplacementComponent = useXComponent(XComponent);
     // eslint-disable-next-line react/jsx-props-no-spreading
     return <ReplacementComponent {...props} />;
-  };
+  }
 
   XComponent.Original = Component;
   XComponent.isXComponent = true;

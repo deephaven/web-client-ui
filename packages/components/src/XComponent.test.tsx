@@ -1,7 +1,3 @@
-/**
- * Test file for ExtendableComponent
- */
-
 import React from 'react';
 import { render } from '@testing-library/react';
 import { createXComponent } from './XComponent';
