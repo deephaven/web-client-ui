@@ -142,7 +142,6 @@ class PanelContextMenu extends PureComponent<
 
     contextActions.push(() => ({
       title: 'Re-open closed panel',
-      shortcut: GLOBAL_SHORTCUTS.REOPEN_CLOSED_PANEL,
       order: 10,
       group: ContextActions.groups.reopen,
       action: this.handleReopenLast,
