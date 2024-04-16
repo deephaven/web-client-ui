@@ -1,14 +1,10 @@
 import React, { ReactElement } from 'react';
 import { CopyButton, createXComponent } from '@deephaven/components';
 import './WidgetPanelTooltip.scss';
-import {
-  getWidgetPanelDescriptorFromProps,
-  WidgetPanelTooltipProps,
-} from './WidgetPanelTypes';
+import { WidgetPanelTooltipProps } from './WidgetPanelTypes';
 
 function WidgetPanelTooltip(props: WidgetPanelTooltipProps): ReactElement {
-  const { children } = props;
-  const descriptor = getWidgetPanelDescriptorFromProps(props);
+  const { children, descriptor } = props;
   const { name, type, description, displayName } = descriptor;
 
   return (

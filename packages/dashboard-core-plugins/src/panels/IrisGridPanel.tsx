@@ -570,8 +570,9 @@ export class IrisGridPanel extends PureComponent<
     ): WidgetPanelDescriptor => {
       const name = getTableNameFromMetadata(metadata);
       return {
-        ...metadata,
         type: 'Table',
+        displayType: 'Table',
+        ...metadata,
         name,
         description,
       };
@@ -1278,7 +1279,6 @@ export class IrisGridPanel extends PureComponent<
     } = this.state;
     const errorMessage =
       error != null ? `Unable to open table. ${error}` : undefined;
-    const name = getTableNameFromMetadata(metadata);
     const description = model?.description ?? undefined;
     const pluginState = panelState?.pluginState ?? null;
     const childrenContent =
@@ -1288,7 +1288,7 @@ export class IrisGridPanel extends PureComponent<
     const { canCopy, canDownloadCsv } = permissions;
     const widgetPanelDescriptor = this.getWidgetPanelDescriptor(
       metadata,
-      model?.description
+      description
     );
 
     return (
@@ -1304,10 +1304,8 @@ export class IrisGridPanel extends PureComponent<
         onShow={this.handleShow}
         onTabFocus={this.handleShow}
         onTabClicked={this.handleTabClicked}
-        widgetName={name}
-        widgetType="Table"
-        description={description}
         componentPanel={this}
+        descriptor={widgetPanelDescriptor}
         renderTabTooltip={() => (
           <IrisGridPanelTooltip
             descriptor={widgetPanelDescriptor}

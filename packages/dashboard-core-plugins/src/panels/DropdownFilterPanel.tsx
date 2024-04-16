@@ -19,7 +19,7 @@ import {
   getSettings,
   RootState,
 } from '@deephaven/redux';
-import { Pending, PromiseUtils } from '@deephaven/utils';
+import { EMPTY_ARRAY, Pending, PromiseUtils } from '@deephaven/utils';
 import DropdownFilter, {
   DropdownFilterColumn,
 } from '../controls/dropdown-filter/DropdownFilter';
@@ -387,6 +387,11 @@ export class DropdownFilterPanel extends Component<
       );
     }
   );
+
+  getCachedDescriptor = memoize(() => ({
+    name: 'Dropdown Filter',
+    type: 'DropdownFilter',
+  }));
 
   getSource(links: Link[]): LinkPoint | undefined {
     const panelLinks = this.getCachedPanelLinks(links, this);
@@ -773,7 +778,7 @@ export class DropdownFilterPanel extends Component<
     const formattedValues =
       isLoaded && valuesColumn != null
         ? this.getCachedValues(values, valuesColumn, formatter)
-        : [];
+        : EMPTY_ARRAY;
 
     return (
       <WidgetPanel
@@ -786,8 +791,7 @@ export class DropdownFilterPanel extends Component<
         glContainer={glContainer}
         glEventHub={glEventHub}
         onClearAllFilters={this.handleClearAllFilters}
-        widgetName="Dropdown Filter"
-        widgetType="DropdownFilter"
+        descriptor={this.getCachedDescriptor()}
       >
         <div
           ref={this.panelContainer}

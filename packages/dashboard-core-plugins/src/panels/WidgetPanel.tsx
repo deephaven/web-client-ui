@@ -8,16 +8,11 @@ import { copyToClipboard } from '@deephaven/utils';
 import Panel from './Panel';
 import WidgetPanelTooltip from './WidgetPanelTooltip';
 import './WidgetPanel.scss';
-import {
-  getWidgetPanelDescriptorFromProps,
-  WidgetPanelDescriptor,
-} from './WidgetPanelTypes';
+import { WidgetPanelDescriptor } from './WidgetPanelTypes';
 
 type WidgetPanelProps = {
   children: ReactNode;
 
-  // Gets used in the `getPanelDescriptor` function
-  // eslint-disable-next-line react/no-unused-prop-types
   descriptor: WidgetPanelDescriptor;
   componentPanel?: PanelComponent;
 
@@ -67,9 +62,10 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
     isLoaded: true,
     isRenamable: true,
     showTabTooltip: true,
-    widgetName: 'Widget',
-    widgetType: 'Widget',
-    description: '',
+    descriptor: {
+      name: 'Widget',
+      type: 'Widget',
+    },
   };
 
   constructor(props: WidgetPanelProps) {
@@ -89,13 +85,12 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
   }
 
   handleCopyName(): void {
-    const panelDescriptor = this.getPanelDescriptor();
-    copyToClipboard(panelDescriptor?.name ?? '');
+    const { descriptor } = this.props;
+    copyToClipboard(descriptor.name);
   }
 
   getErrorMessage(): string | undefined {
-    const { errorMessage } = this.props;
-    const panelDescriptor = this.getPanelDescriptor();
+    const { descriptor, errorMessage } = this.props;
     const {
       isClientDisconnected,
       isPanelDisconnected,
@@ -112,11 +107,11 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
       return 'Disconnected from server.';
     }
     if (isPanelDisconnected) {
-      const { name, type } = panelDescriptor;
+      const { name, type } = descriptor;
       return `Variable "${name}" not set.\n${type} does not exist yet.`;
     }
     if (isWidgetDisconnected) {
-      return `${panelDescriptor.name} is unavailable.`;
+      return `${descriptor.name} is unavailable.`;
     }
     return undefined;
   }
@@ -128,13 +123,14 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
         : undefined
   );
 
-  getCachedPanelDescriptor = memoize((props: WidgetPanelProps) =>
-    getWidgetPanelDescriptorFromProps(props)
-  );
-
-  getPanelDescriptor(): WidgetPanelDescriptor {
-    return this.getCachedPanelDescriptor(this.props);
-  }
+  getCachedActions = memoize((descriptor: WidgetPanelDescriptor) => [
+    {
+      title: `Copy ${descriptor.displayType} Name`,
+      group: ContextActions.groups.medium,
+      order: 20,
+      action: this.handleCopyName,
+    },
+  ]);
 
   handleSessionClosed(...args: unknown[]): void {
     const { onSessionClose } = this.props;
@@ -156,6 +152,7 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
       children,
       className,
       componentPanel,
+      descriptor,
       isLoaded,
       isLoading,
       glContainer,
@@ -177,23 +174,14 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
       onTabClicked,
     } = this.props;
 
-    const panelDescriptor = this.getPanelDescriptor();
-
     const { isPanelDisconnected, isWidgetDisconnected, isPanelInactive } =
       this.state;
     const errorMessage = this.getErrorMessage();
     const doRenderTabTooltip =
       renderTabTooltip ??
-      this.getCachedRenderTabTooltip(showTabTooltip, panelDescriptor);
+      this.getCachedRenderTabTooltip(showTabTooltip, descriptor);
 
-    const additionalActions = [
-      {
-        title: `Copy ${panelDescriptor.type} Name`,
-        group: ContextActions.groups.medium,
-        order: 20,
-        action: this.handleCopyName,
-      },
-    ];
+    const additionalActions = this.getCachedActions(descriptor);
 
     return (
       <Panel
