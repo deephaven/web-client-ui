@@ -96,6 +96,42 @@ export function getItemKey<
   return (item?.item?.key ?? item?.key) as TKey;
 }
 
+export async function getPositionOfSelectedItem<
+  TKey extends string | number | boolean | undefined,
+>({
+  scrollAreaEl,
+  selectedKey,
+}: {
+  scrollAreaEl: HTMLElement;
+  selectedKey: TKey | null | undefined;
+}): Promise<number> {
+  const el = scrollAreaEl.querySelector<HTMLElement>(
+    `[data-key="${selectedKey}"]`
+  );
+  console.log(
+    '[TESTING] el:',
+    el,
+    selectedKey,
+    scrollAreaEl.firstChild?.childNodes.length
+  );
+  if (el == null) {
+    return 0;
+  }
+
+  const containerRect = scrollAreaEl.getBoundingClientRect();
+  const elRect = el.getBoundingClientRect();
+
+  // Account for scrolling by subtracting the scroll position of the container
+  const scrollOffset = scrollAreaEl.scrollTop;
+
+  // Calculate the position of the element relative to the container, accounting for scrolling
+  const relativeTopPosition = elRect.top - containerRect.top - scrollOffset;
+
+  console.log('[TESTING] position:', relativeTopPosition, scrollOffset);
+
+  return relativeTopPosition;
+}
+
 /**
  * Determine if a node is a Section element.
  * @param node The node to check
