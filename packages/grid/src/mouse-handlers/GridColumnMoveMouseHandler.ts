@@ -13,6 +13,7 @@ import type {
 import type { BoundedAxisRange } from '../GridAxisRange';
 import type GridModel from '../GridModel';
 import type { IColumnHeaderGroup } from '../ColumnHeaderGroup';
+import { assertNotNull } from '@deephaven/utils';
 
 const SLOPPY_CLICK_DISTANCE = 5;
 const SCROLL_INTERVAL = 1000 / 60;
@@ -381,6 +382,9 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
     ) {
       return;
     }
+    const { metrics } = grid;
+    assertNotNull(metrics, 'Metrics not set');
+    const { gridX } = metrics;
 
     // Cursor has moved past the column drag bounds, don't move the column until we hit the initial offset point again
     if (this.initialOffset !== this.draggingOffset) {
@@ -400,7 +404,7 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
 
       this.draggingColumn = {
         ...this.draggingColumn,
-        left: mouseX - this.draggingOffset,
+        left: mouseX - this.draggingOffset - gridX,
       };
       grid.setState({ draggingColumn: this.draggingColumn });
       return;
@@ -410,8 +414,6 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
 
     const { model } = grid.props;
     const { movedColumns } = grid.state;
-    const { metrics } = grid;
-    if (!metrics) throw new Error('Metrics not set');
 
     const { floatingLeftWidth, width, columnHeaderMaxDepth, allColumnXs } =
       metrics;
@@ -431,8 +433,9 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
 
     // The returned left/right are the original position, not dragged position
     // This is where the dragging column's floating position accounting for dragged distance
-    const floatingDraggingLeft = mouseX - this.draggingOffset;
-    const floatingDraggingRight = floatingDraggingLeft + draggingColumn.width;
+    const floatingDraggingLeft = mouseX - this.draggingOffset - gridX;
+    const floatingDraggingRight =
+      floatingDraggingLeft + draggingColumn.width - gridX;
 
     this.draggingColumn = {
       ...this.draggingColumn,
@@ -481,7 +484,7 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
           mouseX - (allColumnXs.get(parentVisibleRange[0]) ?? 0);
         this.draggingColumn = {
           ...this.draggingColumn,
-          left: mouseX - this.draggingOffset,
+          left: mouseX - this.draggingOffset - gridX,
         };
         this.clearScrollInterval();
         grid.setState({
@@ -506,7 +509,7 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
         this.draggingOffset = mouseX - (parentRight - draggingColumn.width);
         this.draggingColumn = {
           ...this.draggingColumn,
-          left: mouseX - this.draggingOffset,
+          left: mouseX - this.draggingOffset - gridX,
         };
         this.clearScrollInterval();
         grid.setState({
@@ -570,7 +573,7 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
 
       this.draggingColumn = {
         ...this.draggingColumn,
-        left: mouseX - this.draggingOffset,
+        left: mouseX - this.draggingOffset - gridX,
       };
 
       grid.setState({
