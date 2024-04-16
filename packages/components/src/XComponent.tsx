@@ -50,13 +50,13 @@ export function createXComponent<P extends Record<string, unknown>>(
     );
   }
 
-  XComponent.Original = Component;
-  XComponent.isXComponent = true;
-  // Add the display name so this appears as a tag in the React DevTools
-  XComponent.displayName = `XComponent(${Component.displayName})`;
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   forwardedRefComponent = forwardRef(XComponent) as any;
+
+  forwardedRefComponent.Original = Component;
+  forwardedRefComponent.isXComponent = true;
+  // Add the display name so this appears as a tag in the React DevTools
+  forwardedRefComponent.displayName = `XComponent(${Component.displayName})`;
 
   return forwardedRefComponent;
 }

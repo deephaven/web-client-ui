@@ -3,10 +3,8 @@ import React, { useContext } from 'react';
 /** Type for an extended component. Can fetch the original component using `.Original` */
 export type XComponentType<P extends Record<string, unknown>> =
   React.ForwardRefExoticComponent<P> & {
-    render: React.ComponentType<P> & {
-      Original: React.ComponentType<P>;
-      isXComponent: boolean;
-    };
+    Original: React.ComponentType<P>;
+    isXComponent: boolean;
   };
 
 export const XComponentMapContext = React.createContext(
@@ -25,5 +23,5 @@ export function useXComponent<P extends Record<string, unknown>>(
   Component: XComponentType<P>
 ): React.ComponentType<P> {
   const ctx = useContext(XComponentMapContext);
-  return ctx.get(Component) ?? Component.render.Original;
+  return ctx.get(Component) ?? Component.Original;
 }
