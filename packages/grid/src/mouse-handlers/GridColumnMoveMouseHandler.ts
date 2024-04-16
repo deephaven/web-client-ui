@@ -451,7 +451,7 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
           isDraggingLeft ? floatingDraggingLeft : floatingDraggingRight,
           floatingLeftWidth,
           width
-        ),
+        ) + gridX,
         metrics,
         true
       ),
