@@ -1,7 +1,13 @@
 import React, { useCallback, useState } from 'react';
-import { Grid, Item, ListView, ItemKey, Text } from '@deephaven/components';
+import {
+  Grid,
+  Icon,
+  Item,
+  ListView,
+  ItemKey,
+  Text,
+} from '@deephaven/components';
 import { vsAccount, vsPerson } from '@deephaven/icons';
-import { Icon } from '@adobe/react-spectrum';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { generateNormalizedItems, sampleSectionIdAndClasses } from './utils';
 

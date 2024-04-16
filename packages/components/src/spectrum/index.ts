@@ -6,6 +6,7 @@ export * from './collections';
 export * from './content';
 export * from './dateAndTime';
 export * from './forms';
+export * from './icons';
 export * from './layout';
 export * from './navigation';
 export * from './overlays';

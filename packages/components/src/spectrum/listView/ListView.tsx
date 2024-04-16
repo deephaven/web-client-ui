@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
+import cl from 'classnames';
 import {
-  Flex,
   ListView as SpectrumListView,
   SpectrumListViewProps,
 } from '@adobe/react-spectrum';
@@ -10,7 +10,7 @@ import {
   useContentRect,
   useOnScrollRef,
 } from '@deephaven/react-hooks';
-import cl from 'classnames';
+import { Flex } from '../layout';
 import {
   ItemElementOrPrimitive,
   ItemKey,
@@ -100,7 +100,7 @@ export function ListView({
 
   // Spectrum ListView crashes when it has zero height. Track the contentRect
   // of the parent container and only render the ListView when it has a non-zero
-  // height.
+  // height. See https://github.com/adobe/react-spectrum/issues/6213
   const { ref: contentRectRef, contentRect } = useContentRect(
     extractSpectrumHTMLElement
   );
