@@ -2,7 +2,9 @@ import React, { useContext } from 'react';
 
 /** Type for an extended component. Can fetch the original component using `.Original` */
 export type XComponentType<P extends Record<string, unknown>> =
-  React.ForwardRefExoticComponent<P> & {
+  React.ForwardRefExoticComponent<
+    React.PropsWithoutRef<P> & React.RefAttributes<unknown>
+  > & {
     Original: React.ComponentType<P>;
     isXComponent: boolean;
   };

@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { ComponentType, forwardRef } from 'react';
 import { canHaveRef } from './ComponentUtils';
 import { useXComponent, XComponentType } from './XComponentMap';
 
@@ -39,7 +39,10 @@ export function createXComponent<P extends Record<string, unknown>>(
   Component: React.ComponentType<P>
 ): XComponentType<P> {
   let forwardedRefComponent: XComponentType<P>;
-  function XComponent(props: P, ref: React.ForwardedRef<unknown>): JSX.Element {
+  function XComponent(
+    props: P,
+    ref: React.ForwardedRef<ComponentType<P>>
+  ): JSX.Element {
     const ReplacementComponent = useXComponent(forwardedRefComponent);
     return canHaveRef(Component) ? (
       // eslint-disable-next-line react/jsx-props-no-spreading

@@ -13,6 +13,10 @@ function MyComponent({ children }: { children?: React.ReactNode } = {}) {
   );
 }
 
+function FooComponent({ foo = 'foo' }: { foo: string }) {
+  return <div>{foo}</div>;
+}
+
 const MyRefComponent = React.forwardRef<
   HTMLDivElement,
   { children?: React.ReactNode }
@@ -34,6 +38,7 @@ class MyClassComponent extends React.Component {
 }
 
 const XMyComponent = createXComponent(MyComponent);
+const XFooComponent = createXComponent(FooComponent);
 const XMyRefComponent = createXComponent(MyRefComponent);
 const XMyClassComponent = createXComponent(MyClassComponent);
 
@@ -50,6 +55,10 @@ function MyReplacementWrapperComponent({
       <XMyComponent.Original>{children}</XMyComponent.Original>
     </div>
   );
+}
+
+function ReverseFooComponent({ foo }: { foo: string }) {
+  return <div>{foo.split('').reverse().join('')}</div>;
 }
 
 const MyReplacementRefComponent = React.forwardRef<
@@ -101,6 +110,22 @@ describe('ExtendableComponent', () => {
     expect(getByText('MyComponent')).toBeInTheDocument();
   });
 
+  it('should render the original component with props', () => {
+    const { getByText } = render(<XFooComponent foo="bar" />);
+    expect(getByText('bar')).toBeInTheDocument();
+  });
+
+  it('should render the replacement component with props', () => {
+    const { getByText } = render(
+      <XComponentMapProvider
+        value={new Map([[XFooComponent, ReverseFooComponent]])}
+      >
+        <XFooComponent foo="bar" />
+      </XComponentMapProvider>
+    );
+    expect(getByText('rab')).toBeInTheDocument();
+  });
+
   it('should render the original ref component', () => {
     const ref = React.createRef<HTMLDivElement>();
     const { getByText } = render(<XMyRefComponent ref={ref} />);
@@ -126,7 +151,8 @@ describe('ExtendableComponent', () => {
   });
 
   it('should render the original class component', () => {
-    const { getByText } = render(<XMyClassComponent />);
+    const ref = React.createRef<MyClassComponent>();
+    const { getByText } = render(<XMyClassComponent ref={ref} />);
     expect(getByText('MyClassComponent')).toBeInTheDocument();
   });
 
@@ -139,5 +165,27 @@ describe('ExtendableComponent', () => {
       </XComponentMapProvider>
     );
     expect(getByText('MyReplacementClassComponent')).toBeInTheDocument();
+  });
+
+  it('should render the original class component with the ref', () => {
+    const ref = React.createRef<MyClassComponent>();
+    const { getByText } = render(<XMyClassComponent ref={ref} />);
+    expect(getByText('MyClassComponent')).toBeInTheDocument();
+    expect(ref.current).toBeInstanceOf(MyClassComponent);
+    expect(ref.current?.foo).toBe('bar');
+  });
+
+  it('should render the replacement class component with the ref', () => {
+    const ref = React.createRef<MyReplacementClassComponent>();
+    const { getByText } = render(
+      <XComponentMapProvider
+        value={new Map([[XMyClassComponent, MyReplacementClassComponent]])}
+      >
+        <XMyClassComponent ref={ref} />
+      </XComponentMapProvider>
+    );
+    expect(getByText('MyReplacementClassComponent')).toBeInTheDocument();
+    expect(ref.current).toBeInstanceOf(MyReplacementClassComponent);
+    expect(ref.current?.foo).toBe('baz');
   });
 });
