@@ -102,6 +102,11 @@ export function Picker({
     deserializeRow,
   });
 
+  const normalizedItems = viewportData.items as (
+    | NormalizedItem
+    | NormalizedSection
+  )[];
+
   useEffect(
     // Set viewport to include the selected item so that its data will load and
     // the real `key` will be available to show the selection in the UI.
@@ -141,9 +146,9 @@ export function Picker({
       // The `key` arg will always be a string due to us setting the `Item` key
       // prop in `renderItem`. We need to find the matching item to determine
       // the actual key.
-      const selectedItem = (
-        viewportData.items as (NormalizedItem | NormalizedSection)[]
-      ).find(item => String(getItemKey(item)) === key);
+      const selectedItem = normalizedItems.find(
+        item => String(getItemKey(item)) === key
+      );
 
       const actualKey = getItemKey(selectedItem) ?? key;
 
@@ -155,7 +160,7 @@ export function Picker({
 
       (onChange ?? onSelectionChange)?.(actualKey);
     },
-    [viewportData.items, selectedKey, onChange, onSelectionChange]
+    [normalizedItems, selectedKey, onChange, onSelectionChange]
   );
 
   return (
@@ -164,7 +169,7 @@ export function Picker({
       {...props}
       ref={scrollRef as DOMRef<HTMLDivElement>}
       UNSAFE_className={cl('dh-picker', UNSAFE_className)}
-      items={viewportData.items as (NormalizedItem | NormalizedSection)[]}
+      items={normalizedItems}
       // Spectrum Picker treats keys as strings if the `key` prop is explicitly
       // set on `Item` elements. Since we do this in `renderItem`, we need to
       // ensure that `selectedKey` and `defaultSelectedKey` are strings in order
