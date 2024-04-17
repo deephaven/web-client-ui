@@ -1,13 +1,13 @@
 import {
   NormalizedItemData,
-  PickerBase,
-  PickerBaseProps,
+  Picker as PickerBase,
+  PickerProps as PickerBaseProps,
 } from '@deephaven/components';
 import { dh as DhType } from '@deephaven/jsapi-types';
 import { Settings } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { PICKER_ITEM_HEIGHTS, PICKER_TOP_OFFSET } from '@deephaven/utils';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import useFormatter from '../useFormatter';
 import useGetItemIndexByValue from '../useGetItemIndexByValue';
 import { useViewportData } from '../useViewportData';
@@ -37,6 +37,10 @@ export function Picker({
   ...props
 }: PickerProps): JSX.Element {
   const { getFormattedString: formatValue } = useFormatter(settings);
+
+  const [uncontrolledSelectedKey, setUncontrolledSelectedKey] = useState(
+    props.defaultSelectedKey
+  );
 
   const keyColumn = useMemo(
     () => getItemKeyColumn(table, keyColumnName),
