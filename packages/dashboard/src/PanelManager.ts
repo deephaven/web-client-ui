@@ -344,7 +344,6 @@ class PanelManager {
     // Panel component should be already unmounted at this point
     // so the emitted event sends the container object instead of the panel.
     log.debug2('Closed: ', panelId);
-    console.log(glContainer);
     this.addClosedPanel(glContainer);
     this.sendUpdate();
   }
