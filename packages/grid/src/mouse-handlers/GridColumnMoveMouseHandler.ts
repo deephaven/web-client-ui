@@ -1,4 +1,5 @@
 import clamp from 'lodash.clamp';
+import { assertNotNull } from '@deephaven/utils';
 import Grid from '../Grid';
 import GridUtils, { GridPoint } from '../GridUtils';
 import GridMouseHandler, { GridMouseEvent } from '../GridMouseHandler';
@@ -13,7 +14,6 @@ import type {
 import type { BoundedAxisRange } from '../GridAxisRange';
 import type GridModel from '../GridModel';
 import type { IColumnHeaderGroup } from '../ColumnHeaderGroup';
-import { assertNotNull } from '@deephaven/utils';
 
 const SLOPPY_CLICK_DISTANCE = 5;
 const SCROLL_INTERVAL = 1000 / 60;
