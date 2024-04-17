@@ -122,25 +122,30 @@ class PanelContextMenu extends PureComponent<
     return disabled;
   }
 
-  render(): ReactElement {
-    const { additionalActions, workspace, glContainer } = this.props;
-
-    const contextActions: (ContextAction | (() => ContextAction))[] = [
-      ...additionalActions,
-    ];
+  canReopenLast(): boolean {
+    const { workspace, glContainer } = this.props;
     const stackId = LayoutUtils.getStackForConfig(
       glContainer.layoutManager.root,
       glContainer.getConfig()
     )?.config.id;
-    const hasPanelToReopen = workspace.data.closed?.some(
+
+    return !workspace.data.closed?.some(
       panel => (panel as ReactComponentConfig).parentStackId === stackId
     );
+  }
+
+  render(): ReactElement {
+    const { additionalActions, glContainer } = this.props;
+
+    const contextActions: (ContextAction | (() => ContextAction))[] = [
+      ...additionalActions,
+    ];
 
     contextActions.push(() => ({
       title: 'Re-open closed panel',
       group: ContextActions.groups.medium + 2004,
       action: this.handleReopenLast,
-      disabled: !hasPanelToReopen,
+      disabled: this.canReopenLast(),
     }));
 
     const closable = glContainer.tab?.contentItem?.config?.isClosable;
