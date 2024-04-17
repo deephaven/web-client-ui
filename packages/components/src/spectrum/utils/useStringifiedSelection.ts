@@ -12,7 +12,7 @@ export interface UseStringifiedSelectionOptions {
   selectedKey: ItemKey | null | undefined;
   defaultSelectedKey: ItemKey | undefined;
   disabledKeys: Iterable<ItemKey> | undefined;
-  onChange: (key: ItemKey) => void | undefined;
+  onChange: ((key: ItemKey) => void) | undefined;
 }
 
 export interface UseStringifiedSelectionResult {
