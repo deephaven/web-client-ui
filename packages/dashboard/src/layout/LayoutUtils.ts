@@ -166,7 +166,10 @@ class LayoutUtils {
     }
 
     if (searchId === item.config?.id) {
-      return item as Stack;
+      if (isStack(item)) {
+        return item as Stack;
+      }
+      throw new Error(`Item with ID ${searchId} is not a stack`);
     }
 
     if (item.contentItems == null) {
