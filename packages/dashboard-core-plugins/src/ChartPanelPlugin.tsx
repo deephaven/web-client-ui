@@ -86,7 +86,7 @@ async function createChartModel(
     return ChartModelFactory.makeModel(dh, settings, figure);
   }
 
-  // TODO: This won't work on Enterprise. We will need to refactor how ChartBuilder works.
+  // TODO #1940: This won't work on Enterprise. We will need to refactor how ChartBuilder works.
   const descriptor = {
     name: tableName,
     type: dh.VariableType.TABLE,

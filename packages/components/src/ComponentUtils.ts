@@ -8,7 +8,7 @@ import { ForwardRef } from 'react-is';
 export type Props = Record<string, unknown> | RefAttributes<unknown>;
 
 /**
- * Type that represents a component that has been wrapped by another component.
+ * Type that represents a component that has been wrapped by redux.
  */
 export type WrappedComponentType<
   P extends Props,
@@ -60,8 +60,8 @@ export function isForwardRefComponentType<P extends Props>(
 ): Component is ForwardRefExoticComponent<P> {
   return (
     !isWrappedComponent(Component) &&
-    // Do a check right on the `$$typeof` the component. The `isForwardRef` function in `react-is` checks against a `Component`, whereas
-    // we want to check against a `ComponentType`.
+    // Do a check right on the `$$typeof` the component. The `isForwardRef` function in `react-is` checks against a `Component` instance, whereas
+    // we want to check against a `ComponentType` which is the class/function that defines a component.
     '$$typeof' in Component &&
     Component.$$typeof === ForwardRef
   );

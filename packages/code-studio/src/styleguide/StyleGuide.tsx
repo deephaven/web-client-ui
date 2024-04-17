@@ -36,6 +36,7 @@ import { GoldenLayout } from './GoldenLayout';
 import { RandomAreaPlotAnimation } from './RandomAreaPlotAnimation';
 import SpectrumComparison from './SpectrumComparison';
 import Pickers from './Pickers';
+import XComponents from './XComponents';
 
 const stickyProps = {
   position: 'sticky',
@@ -123,6 +124,7 @@ function StyleGuide(): React.ReactElement {
         <Editors />
         <Grids />
         <Charts />
+        <XComponents />
         <ContextMenuRoot />
         <RandomAreaPlotAnimation />
 

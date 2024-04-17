@@ -62,10 +62,6 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
     isLoaded: true,
     isRenamable: true,
     showTabTooltip: true,
-    descriptor: {
-      name: 'Widget',
-      type: 'Widget',
-    },
   };
 
   constructor(props: WidgetPanelProps) {
@@ -125,7 +121,7 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
 
   getCachedActions = memoize((descriptor: WidgetPanelDescriptor) => [
     {
-      title: `Copy ${descriptor.displayType} Name`,
+      title: `Copy ${descriptor.displayType ?? descriptor.type} Name`,
       group: ContextActions.groups.medium,
       order: 20,
       action: this.handleCopyName,

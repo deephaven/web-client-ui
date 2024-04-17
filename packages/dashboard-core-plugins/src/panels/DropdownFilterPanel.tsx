@@ -42,6 +42,11 @@ const log = Log.module('DropdownFilterPanel');
 
 const DROPDOWN_FILTER_DEBOUNCE = 250;
 
+const WIDGET_DESCRIPTOR = Object.freeze({
+  name: 'Dropdown Filter',
+  type: 'DropdownFilter',
+});
+
 interface PanelState {
   name?: string;
   type?: string;
@@ -387,11 +392,6 @@ export class DropdownFilterPanel extends Component<
       );
     }
   );
-
-  getCachedDescriptor = memoize(() => ({
-    name: 'Dropdown Filter',
-    type: 'DropdownFilter',
-  }));
 
   getSource(links: Link[]): LinkPoint | undefined {
     const panelLinks = this.getCachedPanelLinks(links, this);
@@ -791,7 +791,7 @@ export class DropdownFilterPanel extends Component<
         glContainer={glContainer}
         glEventHub={glEventHub}
         onClearAllFilters={this.handleClearAllFilters}
-        descriptor={this.getCachedDescriptor()}
+        descriptor={WIDGET_DESCRIPTOR}
       >
         <div
           ref={this.panelContainer}

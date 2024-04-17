@@ -50,6 +50,7 @@ test('canHaveRef', () => {
   expect(canHaveRef(TestComponent)).toBe(false);
   expect(canHaveRef(forwardedType)).toBe(true);
   expect(canHaveRef(TestClass)).toBe(true);
+  expect(canHaveRef(connect(null, null)(TestClass))).toBe(true);
   expect(
     canHaveRef(connect(null, null, null, { forwardRef: true })(TestClass))
   ).toBe(true);
