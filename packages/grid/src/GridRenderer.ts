@@ -2335,6 +2335,8 @@ export class GridRenderer {
       visibleColumns.push(i);
     }
 
+    // The headers expect the context to be at the edge...
+    context.translate(-gridX, 0);
     /**
      * This will not draw the header text properly, but extensions of Grid
      * may draw extra things in the header like sorts and filters
@@ -2351,6 +2353,7 @@ export class GridRenderer {
         maxX: width,
       }
     );
+    context.translate(gridX, 0);
 
     context.translate(0, gridY);
     context.font = font;

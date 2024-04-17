@@ -434,8 +434,7 @@ class GridColumnMoveMouseHandler extends GridMouseHandler {
     // The returned left/right are the original position, not dragged position
     // This is where the dragging column's floating position accounting for dragged distance
     const floatingDraggingLeft = mouseX - this.draggingOffset - gridX;
-    const floatingDraggingRight =
-      floatingDraggingLeft + draggingColumn.width - gridX;
+    const floatingDraggingRight = floatingDraggingLeft + draggingColumn.width;
 
     this.draggingColumn = {
       ...this.draggingColumn,
