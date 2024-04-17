@@ -380,12 +380,17 @@ export function normalizeTooltipOptions(
  * @param itemKeys The selection of `ItemKey`s
  * @returns The selection of strings
  */
-export function itemSelectionToStringSet(
-  itemKeys?: 'all' | Iterable<ItemKey>
-): undefined | 'all' | Set<string> {
+export function itemSelectionToStringSet<
+  TKeys extends 'all' | Iterable<ItemKey> | undefined,
+  TResult extends TKeys extends 'all'
+    ? 'all'
+    : TKeys extends Iterable<ItemKey>
+    ? Set<string>
+    : undefined,
+>(itemKeys: TKeys): TResult {
   if (itemKeys == null || itemKeys === 'all') {
-    return itemKeys as undefined | 'all';
+    return itemKeys as undefined | 'all' as TResult;
   }
 
-  return new Set([...itemKeys].map(String));
+  return new Set([...itemKeys].map(String)) as TResult;
 }

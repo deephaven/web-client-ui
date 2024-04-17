@@ -71,8 +71,12 @@ export function useStringifiedMultiSelection({
 
   const onStringSelectionChange = useCallback(
     (keys: 'all' | Set<Key>) => {
+      if (onChange == null) {
+        return;
+      }
+
       if (keys === 'all') {
-        onChange?.('all');
+        onChange('all');
         return;
       }
 
@@ -84,7 +88,7 @@ export function useStringifiedMultiSelection({
         }
       });
 
-      onChange?.(actualKeys);
+      onChange(actualKeys);
     },
     [normalizedItems, onChange]
   );

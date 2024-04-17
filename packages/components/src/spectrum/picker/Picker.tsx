@@ -78,6 +78,7 @@ export function Picker({
     [tooltip]
   );
 
+  const isUncontrolled = selectedKey === undefined;
   const [uncontrolledSelectedKey, setUncontrolledSelectedKey] =
     useState(defaultSelectedKey);
 
@@ -101,13 +102,14 @@ export function Picker({
   const onSelectionChangeInternal = useCallback(
     (key: ItemKey): void => {
       // If our component is uncontrolled, track the selected key internally
-      if (selectedKey == null) {
+      // so that we can scroll to the selected item if the user re-opens
+      if (isUncontrolled) {
         setUncontrolledSelectedKey(key);
       }
 
       (onChange ?? onSelectionChange)?.(key);
     },
-    [onChange, onSelectionChange, selectedKey]
+    [isUncontrolled, onChange, onSelectionChange]
   );
 
   const { ref: scrollRef, onOpenChange: onOpenChangeInternal } =

@@ -15,6 +15,7 @@ import {
   Section,
   usePickerScrollOnOpen,
   useRenderNormalizedItem,
+  useStringifiedSelection,
 } from '@deephaven/components';
 import { dh as DhType } from '@deephaven/jsapi-types';
 import { Settings } from '@deephaven/jsapi-utils';
@@ -48,6 +49,7 @@ export function Picker({
   tooltip = true,
   selectedKey,
   defaultSelectedKey,
+  disabledKeys,
   UNSAFE_className,
   onChange,
   onOpenChange,
@@ -61,6 +63,7 @@ export function Picker({
     [tooltip]
   );
 
+  const isUncontrolled = selectedKey === undefined;
   const [uncontrolledSelectedKey, setUncontrolledSelectedKey] =
     useState(defaultSelectedKey);
 
@@ -143,25 +146,32 @@ export function Picker({
 
   const onSelectionChangeInternal = useCallback(
     (key: ItemKey): void => {
-      // The `key` arg will always be a string due to us setting the `Item` key
-      // prop in `renderItem`. We need to find the matching item to determine
-      // the actual key.
-      const selectedItem = normalizedItems.find(
-        item => String(getItemKey(item)) === key
-      );
-
-      const actualKey = getItemKey(selectedItem) ?? key;
-
       // If our component is uncontrolled, track the selected key internally
       // so that we can scroll to the selected item if the user re-opens
-      if (selectedKey == null) {
+      if (isUncontrolled) {
         setUncontrolledSelectedKey(key);
       }
 
-      (onChange ?? onSelectionChange)?.(actualKey);
+      (onChange ?? onSelectionChange)?.(key);
     },
-    [normalizedItems, selectedKey, onChange, onSelectionChange]
+    [isUncontrolled, onChange, onSelectionChange]
   );
+
+  // Spectrum Picker treats keys as strings if the `key` prop is explicitly
+  // set on `Item` elements. Since we do this in `renderItem`, we need to
+  // map original key types to and from strings so that selection works.
+  const {
+    selectedStringKey,
+    defaultSelectedStringKey,
+    disabledStringKeys,
+    onStringSelectionChange,
+  } = useStringifiedSelection({
+    normalizedItems,
+    selectedKey,
+    defaultSelectedKey,
+    disabledKeys,
+    onChange: onSelectionChangeInternal,
+  });
 
   return (
     <SpectrumPicker
@@ -170,19 +180,10 @@ export function Picker({
       ref={scrollRef as DOMRef<HTMLDivElement>}
       UNSAFE_className={cl('dh-picker', UNSAFE_className)}
       items={normalizedItems}
-      // Spectrum Picker treats keys as strings if the `key` prop is explicitly
-      // set on `Item` elements. Since we do this in `renderItem`, we need to
-      // ensure that `selectedKey` and `defaultSelectedKey` are strings in order
-      // for selection to work.
-      selectedKey={selectedKey == null ? selectedKey : selectedKey.toString()}
-      defaultSelectedKey={
-        defaultSelectedKey == null
-          ? defaultSelectedKey
-          : defaultSelectedKey.toString()
-      }
-      onSelectionChange={
-        onSelectionChangeInternal // as NormalizedSpectrumPickerProps['onSelectionChange']
-      }
+      selectedKey={selectedStringKey}
+      defaultSelectedKey={defaultSelectedStringKey}
+      disabledKeys={disabledStringKeys}
+      onSelectionChange={onStringSelectionChange}
       onOpenChange={onOpenChangeInternal}
     >
       {itemOrSection => {
