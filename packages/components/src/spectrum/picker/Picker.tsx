@@ -1,14 +1,13 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { DOMRef } from '@react-types/shared';
 import { Picker as SpectrumPicker } from '@adobe/react-spectrum';
 import {
-  getPositionOfSelectedItem,
   findSpectrumPickerScrollArea,
   usePopoverOnScrollRef,
 } from '@deephaven/react-hooks';
 import {
   EMPTY_FUNCTION,
-  PICKER_ITEM_HEIGHT,
+  PICKER_ITEM_HEIGHTS,
   PICKER_TOP_OFFSET,
 } from '@deephaven/utils';
 import cl from 'classnames';
@@ -22,9 +21,11 @@ import {
   TooltipOptions,
   ItemKey,
   getItemKey,
+  getPositionOfSelectedItem,
 } from '../utils/itemUtils';
 import { Section } from '../shared';
 import { useRenderNormalizedItem } from '../utils';
+import { wrapItemChildren } from '../utils/itemWrapperUtils';
 
 export type PickerProps = {
   children: ItemOrSection | ItemOrSection[] | NormalizedItem[];
@@ -97,21 +98,29 @@ export function Picker({
     [tooltip]
   );
 
+  const [uncontrolledSelectedKey, setUncontrolledSelectedKey] =
+    useState(defaultSelectedKey);
+
   const renderNormalizedItem = useRenderNormalizedItem(tooltipOptions);
 
   const getInitialScrollPositionInternal = useCallback(
     () =>
       getInitialScrollPosition == null
         ? getPositionOfSelectedItem({
-            keyedItems: normalizedItems,
-            // TODO: #1890 & deephaven-plugins#371 add support for sections and
-            // items with descriptions since they impact the height calculations
-            itemHeight: PICKER_ITEM_HEIGHT,
-            selectedKey,
+            children: wrapItemChildren(children, tooltipOptions),
+            itemHeight: PICKER_ITEM_HEIGHTS.noDescription,
+            itemHeightWithDescription: PICKER_ITEM_HEIGHTS.withDescription,
+            selectedKey: selectedKey ?? uncontrolledSelectedKey,
             topOffset: PICKER_TOP_OFFSET,
           })
         : getInitialScrollPosition(),
-    [getInitialScrollPosition, normalizedItems, selectedKey]
+    [
+      children,
+      getInitialScrollPosition,
+      selectedKey,
+      tooltipOptions,
+      uncontrolledSelectedKey,
+    ]
   );
 
   const { ref: scrollRef, onOpenChange: popoverOnOpenChange } =
@@ -142,9 +151,14 @@ export function Picker({
 
       const actualKey = getItemKey(selectedItem) ?? key;
 
+      // If our component is uncontrolled, track the selected key internally
+      if (selectedKey == null) {
+        setUncontrolledSelectedKey(actualKey);
+      }
+
       (onChange ?? onSelectionChange)?.(actualKey);
     },
-    [normalizedItems, onChange, onSelectionChange]
+    [normalizedItems, onChange, onSelectionChange, selectedKey]
   );
 
   return (

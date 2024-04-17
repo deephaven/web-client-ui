@@ -1,10 +1,13 @@
-import { isValidElement, Key, ReactElement, ReactNode } from 'react';
+import { Key, ReactElement, ReactNode } from 'react';
 import { SpectrumPickerProps } from '@adobe/react-spectrum';
 import type { ItemRenderer } from '@react-types/shared';
 import Log from '@deephaven/log';
-import { KeyedItem, SelectionT } from '@deephaven/utils';
+import { isElementOfType } from '@deephaven/react-hooks';
+import { KeyedItem, PICKER_ITEM_HEIGHTS, SelectionT } from '@deephaven/utils';
 import { Item, ItemProps, Section, SectionProps } from '../shared';
 import { PopperOptions } from '../../popper';
+import { Text } from '../Text';
+import ItemContent from '../ItemContent';
 
 const log = Log.module('itemUtils');
 
@@ -20,7 +23,7 @@ type SectionPropsNoItemRenderer<T> = Omit<SectionProps<T>, 'children'> & {
   children: Exclude<SectionProps<T>['children'], ItemRenderer<T>>;
 };
 
-type ItemElement = ReactElement<ItemProps<unknown>>;
+export type ItemElement = ReactElement<ItemProps<unknown>>;
 export type SectionElement = ReactElement<SectionPropsNoItemRenderer<unknown>>;
 
 export type ItemElementOrPrimitive = number | string | boolean | ItemElement;
@@ -99,37 +102,34 @@ export function getItemKey<
 export async function getPositionOfSelectedItem<
   TKey extends string | number | boolean | undefined,
 >({
-  scrollAreaEl,
+  children,
+  itemHeight,
+  itemHeightWithDescription,
   selectedKey,
+  topOffset,
 }: {
-  scrollAreaEl: HTMLElement;
+  children: (ItemElement | SectionElement)[];
   selectedKey: TKey | null | undefined;
+  itemHeight: number;
+  itemHeightWithDescription: number;
+  topOffset: number;
 }): Promise<number> {
-  const el = scrollAreaEl.querySelector<HTMLElement>(
-    `[data-key="${selectedKey}"]`
-  );
-  console.log(
-    '[TESTING] el:',
-    el,
-    selectedKey,
-    scrollAreaEl.firstChild?.childNodes.length
-  );
-  if (el == null) {
-    return 0;
+  let position = 0;
+
+  // eslint-disable-next-line no-restricted-syntax
+  for (const child of children) {
+    if (child.key === selectedKey) {
+      break;
+    }
+
+    if (isItemElementWithDescription(child)) {
+      position += PICKER_ITEM_HEIGHTS.withDescription;
+    } else {
+      position += PICKER_ITEM_HEIGHTS.noDescription;
+    }
   }
 
-  const containerRect = scrollAreaEl.getBoundingClientRect();
-  const elRect = el.getBoundingClientRect();
-
-  // Account for scrolling by subtracting the scroll position of the container
-  const scrollOffset = scrollAreaEl.scrollTop;
-
-  // Calculate the position of the element relative to the container, accounting for scrolling
-  const relativeTopPosition = elRect.top - containerRect.top - scrollOffset;
-
-  console.log('[TESTING] position:', relativeTopPosition, scrollOffset);
-
-  return relativeTopPosition;
+  return position + topOffset;
 }
 
 /**
@@ -140,7 +140,7 @@ export async function getPositionOfSelectedItem<
 export function isSectionElement<T>(
   node: ReactNode
 ): node is ReactElement<SectionProps<T>> {
-  return isValidElement<SectionProps<T>>(node) && node.type === Section;
+  return isElementOfType(node, Section);
 }
 
 /**
@@ -151,7 +151,36 @@ export function isSectionElement<T>(
 export function isItemElement<T>(
   node: ReactNode
 ): node is ReactElement<ItemProps<T>> {
-  return isValidElement<ItemProps<T>>(node) && node.type === Item;
+  return isElementOfType(node, Item);
+}
+
+export function isItemElementWithDescription<T>(
+  node: ReactNode
+): node is ReactElement<ItemProps<T>> {
+  if (!isItemElement(node)) {
+    return false;
+  }
+
+  const children = isElementOfType(node.props.children, ItemContent)
+    ? node.props.children.props.children
+    : node.props.children;
+
+  const childrenArray = Array.isArray(children) ? children : [children];
+
+  const result = childrenArray.some(
+    child => child.props?.slot === 'description' && isElementOfType(child, Text)
+    // (isElementOfType(child, Text) || child.props.children?.[0].type === Text)
+  );
+
+  // console.log(
+  //   '[TESTING] result:',
+  //   result,
+  //   node.key,
+  //   childrenArray,
+  //   childrenArray.map(child => [child, Text])
+  // );
+
+  return result;
 }
 
 /**

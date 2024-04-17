@@ -2,7 +2,10 @@ export const ACTION_ICON_HEIGHT = 24;
 export const COMBO_BOX_ITEM_HEIGHT = 32;
 export const COMBO_BOX_TOP_OFFSET = 4;
 export const ITEM_KEY_PREFIX = 'DH_ITEM_KEY';
-export const PICKER_ITEM_HEIGHT = 32;
+export const PICKER_ITEM_HEIGHTS = {
+  noDescription: 32,
+  withDescription: 48,
+} as const;
 export const PICKER_TOP_OFFSET = 4;
 export const TABLE_ROW_HEIGHT = 33;
 export const SCROLL_DEBOUNCE_MS = 150;

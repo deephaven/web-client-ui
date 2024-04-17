@@ -1,4 +1,6 @@
-class TextUtils {
+export const NON_BREAKING_SPACE = '\xa0';
+
+export class TextUtils {
   /**
    * Joins a list of strings with a comma, keeping the oxford comma and adding "and" as appropriate.
    * Eg.
