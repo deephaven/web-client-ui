@@ -74,7 +74,9 @@ abstract class IrisGridModel<
     DISCONNECT: 'DISCONNECT',
     RECONNECT: 'RECONNECT',
     TOTALS_UPDATED: 'TOTALS_UPDATED',
+    /** Fired when the viewport is applied to the table and we're waiting for a response. */
     PENDING_DATA_UPDATED: 'PENDING_DATA_UPDATED',
+    VIEWPORT_UPDATED: 'VIEWPORT_UPDATED',
   } as const);
 
   constructor(dh: typeof DhType) {
@@ -483,6 +485,13 @@ abstract class IrisGridModel<
    * Commit pending data and save all data to the table
    */
   abstract commitPending(): Promise<void>;
+
+  /**
+   * Check if viewport is still loading data
+   */
+  get isViewportPending(): boolean {
+    return false;
+  }
 
   /**
    * Check if a column is filterable

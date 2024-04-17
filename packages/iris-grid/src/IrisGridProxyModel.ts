@@ -697,6 +697,10 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     return isEditableGridModel(this.model) && this.model.isEditable;
   }
 
+  get isViewportPending(): boolean {
+    return this.model.isViewportPending;
+  }
+
   isEditableRange: IrisGridTableModel['isEditableRange'] = (
     ...args
   ): boolean => {

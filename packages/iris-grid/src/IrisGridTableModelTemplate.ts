@@ -455,6 +455,41 @@ class IrisGridTableModelTemplate<
     return !this.isSaveInProgress && this.inputTable != null;
   }
 
+  get isViewportPending(): boolean {
+    if (
+      this.viewport == null ||
+      this.viewport.columns === undefined ||
+      this.viewportData == null
+    ) {
+      return true;
+    }
+    // no columns or no rows
+    if (
+      this.viewport.columns.length === 0 ||
+      this.viewportData.rows.length === 0
+    ) {
+      return false;
+    }
+
+    // offset is first row of loaded data
+    const pendingTop = this.viewport.top < this.viewportData.offset;
+    // offset + row.length is last row of loaded data
+    const pendingBottom =
+      this.viewportData.offset + this.viewportData.rows.length <
+      this.viewport.bottom;
+    // left column doesn't exist in data
+    const pendingLeft =
+      this.viewportData.rows[0].data.get(this.viewport.columns[0].index) ===
+      undefined;
+    // right column doesn't exist in data
+    const pendingRight =
+      this.viewportData.rows[0].data.get(
+        this.viewport.columns[this.viewport.columns.length - 1].index
+      ) === undefined;
+
+    return pendingTop || pendingBottom || pendingLeft || pendingRight;
+  }
+
   cacheFormattedValue(x: ModelIndex, y: ModelIndex, text: string | null): void {
     if (this.formattedStringData[x] == null) {
       this.formattedStringData[x] = [];
@@ -1311,6 +1346,9 @@ class IrisGridTableModelTemplate<
     viewportBottom: number,
     columns?: DhType.Column[]
   ): void {
+    this.dispatchEvent(
+      new EventShimCustomEvent(IrisGridModel.EVENT.VIEWPORT_UPDATED)
+    );
     log.debug2('applyBufferedViewport', viewportTop, viewportBottom, columns);
     if (this.subscription == null) {
       log.debug2('applyBufferedViewport creating new subscription');

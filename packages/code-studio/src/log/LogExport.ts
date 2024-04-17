@@ -6,6 +6,46 @@ import { logHistory } from './LogInit';
 
 const FILENAME_DATE_FORMAT = 'yyyy-MM-dd-HHmmss';
 
+// List of objects to blacklist
+// '' represents the root object
+export const DEFAULT_PATH_BLACKLIST: string[][] = [
+  ['api'],
+  ['client'],
+  ['dashboardData', 'default', 'connection'],
+  ['dashboardData', 'default', 'sessionWrapper', 'dh'],
+  ['layoutStorage'],
+  ['storage'],
+];
+
+function stringifyReplacer(blacklist: string[][]) {
+  // modified from:
+  // https://stackoverflow.com/questions/61681176/json-stringify-replacer-how-to-get-full-path
+  const pathMap = new Map();
+  // replacer function is also called for the initial object, key is ""
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#the_replacer_parameter
+
+  return function replacer(this: unknown, key: string, value: unknown) {
+    // get and store path
+    const currPath = [...(pathMap.get(this) ?? []), key];
+    if (value === Object(value)) pathMap.set(value, [...currPath]);
+    currPath.shift();
+
+    // check blacklists
+    for (let i = 0; i < blacklist.length; i += 1) {
+      if (
+        currPath.length === blacklist[i].length &&
+        currPath.every((v, index) => v === blacklist[i][index])
+      ) {
+        // blacklist match
+        return undefined;
+      }
+    }
+
+    // not in blacklist, return value
+    return value;
+  };
+}
+
 /**
  * Returns a new object that is safe to stringify
  * All circular references are replaced by the path to the value creating a circular ref
@@ -19,9 +59,11 @@ const FILENAME_DATE_FORMAT = 'yyyy-MM-dd-HHmmss';
  * Then if the object is seen again, it must be a circular ref since that object could not be stringified safely
  *
  * @param obj Object to make safe to stringify
+ * @param blacklist List of JSON paths to blacklist. A JSON path is a list representing the path to that value (e.g. client.data would be `['client', 'data']`)
  */
 function makeSafeToStringify(
   obj: Record<string, unknown>,
+  blacklist: string[][],
   path = 'root',
   potentiallyCircularValues: Map<Record<string, unknown>, string> = new Map([
     [obj, ''],
@@ -31,7 +73,7 @@ function makeSafeToStringify(
 
   Object.entries(obj).forEach(([key, val]) => {
     try {
-      JSON.stringify(val);
+      JSON.stringify(val, stringifyReplacer(blacklist));
       output[key] = val;
     } catch (e) {
       // The value must be a Circular object or BigInt here
@@ -51,6 +93,7 @@ function makeSafeToStringify(
         potentiallyCircularValues.set(valRecord, curPath);
         output[key] = makeSafeToStringify(
           val as Record<string, unknown>,
+          blacklist,
           curPath,
           potentiallyCircularValues
         );
@@ -61,41 +104,48 @@ function makeSafeToStringify(
   return output;
 }
 
-function getReduxDataString(): string {
+function getReduxDataString(blacklist: string[][]): string {
   const reduxData = store.getState();
   return JSON.stringify(
-    makeSafeToStringify(reduxData),
-    null,
+    makeSafeToStringify(reduxData, blacklist),
+    stringifyReplacer(blacklist),
     2 // Indent w/ 2 spaces
   );
 }
 
-function getMetadata(meta?: Record<string, unknown>): string {
+function getMetadata(
+  blacklist: string[][],
+  meta?: Record<string, unknown>
+): string {
   const metadata = {
     uiVersion: import.meta.env.npm_package_version,
     userAgent: navigator.userAgent,
     ...meta,
   };
 
-  return JSON.stringify(metadata, null, 2);
+  return JSON.stringify(metadata, stringifyReplacer(blacklist), 2);
 }
 
 /**
  * Export support logs with the given name.
  * @param fileNamePrefix The zip file name without the .zip extension. Ex: test will be saved as test.zip
+ * @param metadata Additional metadata to include in the metadata.json file
+ * @param blacklist List of JSON paths to blacklist. A JSON path is a list representing the path to that value (e.g. client.data would be `['client', 'data']`)
+ * @returns A promise that resolves successfully if the log archive is created and downloaded successfully, rejected if there's an error
  */
 export async function exportLogs(
   fileNamePrefix = `${dh.i18n.DateTimeFormat.format(
     FILENAME_DATE_FORMAT,
     new Date()
   )}_support_logs`,
-  metadata?: Record<string, unknown>
+  metadata?: Record<string, unknown>,
+  blacklist: string[][] = DEFAULT_PATH_BLACKLIST
 ): Promise<void> {
   const zip = new JSZip();
   const folder = zip.folder(fileNamePrefix) as JSZip;
   folder.file('console.txt', logHistory.getFormattedHistory());
-  folder.file('redux.json', getReduxDataString());
-  folder.file('metadata.json', getMetadata(metadata));
+  folder.file('redux.json', getReduxDataString(blacklist));
+  folder.file('metadata.json', getMetadata(blacklist, metadata));
 
   const blob = await zip.generateAsync({ type: 'blob' });
   const link = document.createElement('a');

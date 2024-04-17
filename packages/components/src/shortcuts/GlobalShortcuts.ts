@@ -30,6 +30,13 @@ const GLOBAL_SHORTCUTS = {
     macShortcut: [MODIFIER.CMD, KEY.A],
     isEditable: false,
   }),
+  REOPEN_CLOSED_PANEL: ShortcutRegistry.createAndAdd({
+    id: 'GLOBAL.REOPEN_CLOSED_PANEL',
+    name: 'Re-open Closed Panel',
+    shortcut: [MODIFIER.ALT, MODIFIER.SHIFT, KEY.T],
+    macShortcut: [MODIFIER.OPTION, MODIFIER.SHIFT, KEY.T],
+    isEditable: true,
+  }),
   LINKER: ShortcutRegistry.createAndAdd({
     id: 'GLOBAL.LINKER',
     name: 'Linker',
