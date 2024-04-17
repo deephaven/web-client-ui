@@ -1,21 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Picker as SpectrumPicker } from '@adobe/react-spectrum';
-import type { DOMRef } from '@react-types/shared';
-import cl from 'classnames';
 import {
-  getItemKey,
-  isNormalizedSection,
   ItemKey,
   NormalizedItem,
   NormalizedItemData,
   NormalizedSection,
   NormalizedSectionData,
-  normalizeTooltipOptions,
+  PickerNormalized,
   PickerProps as PickerBaseProps,
-  Section,
-  usePickerScrollOnOpen,
-  useRenderNormalizedItem,
-  useStringifiedSelection,
 } from '@deephaven/components';
 import { dh as DhType } from '@deephaven/jsapi-types';
 import { Settings } from '@deephaven/jsapi-utils';
@@ -46,26 +37,16 @@ export function Picker({
   keyColumn: keyColumnName,
   labelColumn: labelColumnName,
   settings,
-  tooltip = true,
-  selectedKey,
-  defaultSelectedKey,
-  disabledKeys,
-  UNSAFE_className,
   onChange,
-  onOpenChange,
   onSelectionChange,
   ...props
 }: PickerProps): JSX.Element {
   const { getFormattedString: formatValue } = useFormatter(settings);
 
-  const tooltipOptions = useMemo(
-    () => normalizeTooltipOptions(tooltip),
-    [tooltip]
+  const isUncontrolled = props.selectedKey === undefined;
+  const [uncontrolledSelectedKey, setUncontrolledSelectedKey] = useState(
+    props.defaultSelectedKey
   );
-
-  const isUncontrolled = selectedKey === undefined;
-  const [uncontrolledSelectedKey, setUncontrolledSelectedKey] =
-    useState(defaultSelectedKey);
 
   const keyColumn = useMemo(
     () => getItemKeyColumn(table, keyColumnName),
@@ -82,7 +63,7 @@ export function Picker({
   const getItemIndexByValue = useGetItemIndexByValue({
     table,
     columnName: keyColumn.name,
-    value: selectedKey ?? uncontrolledSelectedKey,
+    value: props.selectedKey ?? uncontrolledSelectedKey,
   });
 
   const getInitialScrollPosition = useCallback(async () => {
@@ -135,15 +116,6 @@ export function Picker({
     [getItemIndexByValue, settings, setViewport]
   );
 
-  const renderNormalizedItem = useRenderNormalizedItem(tooltipOptions);
-
-  const { ref: scrollRef, onOpenChange: onOpenChangeInternal } =
-    usePickerScrollOnOpen({
-      getInitialScrollPosition,
-      onScroll,
-      onOpenChange,
-    });
-
   const onSelectionChangeInternal = useCallback(
     (key: ItemKey): void => {
       // If our component is uncontrolled, track the selected key internally
@@ -157,51 +129,15 @@ export function Picker({
     [isUncontrolled, onChange, onSelectionChange]
   );
 
-  // Spectrum Picker treats keys as strings if the `key` prop is explicitly
-  // set on `Item` elements. Since we do this in `renderItem`, we need to
-  // map original key types to and from strings so that selection works.
-  const {
-    selectedStringKey,
-    defaultSelectedStringKey,
-    disabledStringKeys,
-    onStringSelectionChange,
-  } = useStringifiedSelection({
-    normalizedItems,
-    selectedKey,
-    defaultSelectedKey,
-    disabledKeys,
-    onChange: onSelectionChangeInternal,
-  });
-
   return (
-    <SpectrumPicker
+    <PickerNormalized
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...props}
-      ref={scrollRef as DOMRef<HTMLDivElement>}
-      UNSAFE_className={cl('dh-picker', UNSAFE_className)}
-      items={normalizedItems}
-      selectedKey={selectedStringKey}
-      defaultSelectedKey={defaultSelectedStringKey}
-      disabledKeys={disabledStringKeys}
-      onSelectionChange={onStringSelectionChange}
-      onOpenChange={onOpenChangeInternal}
-    >
-      {itemOrSection => {
-        if (isNormalizedSection(itemOrSection)) {
-          return (
-            <Section
-              key={getItemKey(itemOrSection)}
-              title={itemOrSection.item?.title}
-              items={itemOrSection.item?.items}
-            >
-              {renderNormalizedItem}
-            </Section>
-          );
-        }
-
-        return renderNormalizedItem(itemOrSection);
-      }}
-    </SpectrumPicker>
+      normalizedItems={normalizedItems}
+      getInitialScrollPosition={getInitialScrollPosition}
+      onChange={onSelectionChangeInternal}
+      onScroll={onScroll}
+    />
   );
 }
 

@@ -24,6 +24,11 @@ export interface PickerNormalizedProps
   onScroll?: (event: Event) => void;
 }
 
+/**
+ * Picker that takes an array of `NormalizedItem` or `NormalizedSection` items
+ * as children and uses a render item function to render the items. This is
+ * necessary to support windowed data.
+ */
 export function PickerNormalized({
   normalizedItems,
   tooltip = true,
@@ -73,7 +78,11 @@ export function PickerNormalized({
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...props}
       ref={scrollRef as DOMRef<HTMLDivElement>}
-      UNSAFE_className={cl('dh-picker', UNSAFE_className)}
+      UNSAFE_className={cl(
+        'dh-picker',
+        'dh-picker-normalized',
+        UNSAFE_className
+      )}
       items={normalizedItems}
       selectedKey={selectedStringKey}
       defaultSelectedKey={defaultSelectedStringKey}

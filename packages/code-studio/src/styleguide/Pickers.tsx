@@ -50,68 +50,62 @@ export function Pickers(): JSX.Element {
       <h2 className="ui-title">Pickers</h2>
 
       <Flex gap={14}>
-        {true && (
-          <Picker label="Single Child" tooltip={{ placement: 'bottom-end' }}>
-            <Item>Aaa</Item>
-          </Picker>
-        )}
+        <Picker label="Single Child" tooltip={{ placement: 'bottom-end' }}>
+          <Item>Aaa</Item>
+        </Picker>
 
-        {false && (
-          <Picker label="Mixed Children Types" defaultSelectedKey={999} tooltip>
-            {/* eslint-disable react/jsx-curly-brace-presence */}
-            {'String 1'}
-            {'String 2'}
-            {'String 3'}
-            {''}
-            {'Some really long text that should get truncated'}
-            {/* eslint-enable react/jsx-curly-brace-presence */}
-            {444}
-            {999}
-            {true}
-            {false}
+        <Picker label="Mixed Children Types" defaultSelectedKey={999} tooltip>
+          {/* eslint-disable react/jsx-curly-brace-presence */}
+          {'String 1'}
+          {'String 2'}
+          {'String 3'}
+          {''}
+          {'Some really long text that should get truncated'}
+          {/* eslint-enable react/jsx-curly-brace-presence */}
+          {444}
+          {999}
+          {true}
+          {false}
+          <Item>Item Aaa</Item>
+          <Item>Item Bbb</Item>
+          <Item textValue="Complex Ccc">
+            <PersonIcon />
+            <Text>Complex Ccc with text that should be truncated</Text>
+          </Item>
+        </Picker>
+
+        <Picker label="Sections" tooltip>
+          {/* eslint-disable react/jsx-curly-brace-presence */}
+          {'String 1'}
+          {'String 2'}
+          {'String 3'}
+          <Section title="Section A">
             <Item>Item Aaa</Item>
             <Item>Item Bbb</Item>
             <Item textValue="Complex Ccc">
               <PersonIcon />
-              <Text>Complex Ccc with text that should be truncated</Text>
+              <Text>Complex Ccc</Text>
             </Item>
-          </Picker>
-        )}
-
-        {false && (
-          <Picker label="Sections" tooltip>
-            {/* eslint-disable react/jsx-curly-brace-presence */}
-            {'String 1'}
-            {'String 2'}
-            {'String 3'}
-            <Section title="Section A">
-              <Item>Item Aaa</Item>
-              <Item>Item Bbb</Item>
-              <Item textValue="Complex Ccc">
-                <PersonIcon />
-                <Text>Complex Ccc</Text>
-              </Item>
-            </Section>
-            <Section key="Key B">
-              <Item>Item Ddd</Item>
-              <Item>Item Eee</Item>
-              <Item textValue="Complex Fff">
-                <PersonIcon />
-                <Text>Complex Fff</Text>
-              </Item>
-              <Item key="Ggg">
-                <PersonIcon />
-                <Text>Label</Text>
-                <Text slot="description">Description</Text>
-              </Item>
-              <Item key="Hhh">
-                <PersonIcon />
-                <Text>Label that causes overflow</Text>
-                <Text slot="description">Description that causes overflow</Text>
-              </Item>
-            </Section>
-          </Picker>
-        )}
+          </Section>
+          <Section key="Key B">
+            <Item>Item Ddd</Item>
+            <Item>Item Eee</Item>
+            <Item textValue="Complex Fff">
+              <PersonIcon />
+              <Text>Complex Fff</Text>
+            </Item>
+            <Item key="Ggg">
+              <PersonIcon />
+              <Text>Label</Text>
+              <Text slot="description">Description</Text>
+            </Item>
+            <Item key="Hhh">
+              <PersonIcon />
+              <Text>Label that causes overflow</Text>
+              <Text slot="description">Description that causes overflow</Text>
+            </Item>
+          </Section>
+        </Picker>
 
         <PickerNormalized
           label="Controlled"
