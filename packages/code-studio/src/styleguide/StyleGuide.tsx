@@ -124,7 +124,6 @@ function StyleGuide(): React.ReactElement {
         <Editors />
         <Grids />
         <Charts />
-        <XComponents />
         <ContextMenuRoot />
         <RandomAreaPlotAnimation />
 
@@ -133,6 +132,7 @@ function StyleGuide(): React.ReactElement {
 
         <SampleMenuCategory data-menu-category="Spectrum Comparison" />
         <SpectrumComparison />
+        <XComponents />
       </div>
     </div>
   );
