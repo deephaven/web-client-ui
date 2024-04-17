@@ -68,7 +68,6 @@ class ContextActions extends Component<
     global: 100000,
 
     edit: 100,
-    reopen: 9000,
   };
 
   static triggerMenu(
