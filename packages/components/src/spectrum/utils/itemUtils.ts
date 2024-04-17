@@ -123,9 +123,9 @@ export async function getPositionOfSelectedItem<
     }
 
     if (isItemElementWithDescription(child)) {
-      position += PICKER_ITEM_HEIGHTS.withDescription;
+      position += itemHeightWithDescription;
     } else {
-      position += PICKER_ITEM_HEIGHTS.noDescription;
+      position += itemHeight;
     }
   }
 

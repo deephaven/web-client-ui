@@ -22,6 +22,7 @@ import {
   ItemKey,
   getItemKey,
   getPositionOfSelectedItem,
+  isNormalizedItemsWithKeysList,
 } from '../utils/itemUtils';
 import { Section } from '../shared';
 import { useRenderNormalizedItem } from '../utils';
@@ -103,25 +104,29 @@ export function Picker({
 
   const renderNormalizedItem = useRenderNormalizedItem(tooltipOptions);
 
-  const getInitialScrollPositionInternal = useCallback(
-    () =>
-      getInitialScrollPosition == null
-        ? getPositionOfSelectedItem({
-            children: wrapItemChildren(children, tooltipOptions),
-            itemHeight: PICKER_ITEM_HEIGHTS.noDescription,
-            itemHeightWithDescription: PICKER_ITEM_HEIGHTS.withDescription,
-            selectedKey: selectedKey ?? uncontrolledSelectedKey,
-            topOffset: PICKER_TOP_OFFSET,
-          })
-        : getInitialScrollPosition(),
-    [
-      children,
-      getInitialScrollPosition,
-      selectedKey,
-      tooltipOptions,
-      uncontrolledSelectedKey,
-    ]
-  );
+  const getInitialScrollPositionInternal = useCallback(async () => {
+    if (getInitialScrollPosition != null) {
+      return getInitialScrollPosition();
+    }
+
+    if (isNormalizedItemsWithKeysList(children)) {
+      return null;
+    }
+
+    return getPositionOfSelectedItem({
+      children: wrapItemChildren(children, tooltipOptions),
+      itemHeight: PICKER_ITEM_HEIGHTS.noDescription,
+      itemHeightWithDescription: PICKER_ITEM_HEIGHTS.withDescription,
+      selectedKey: selectedKey ?? uncontrolledSelectedKey,
+      topOffset: PICKER_TOP_OFFSET,
+    });
+  }, [
+    children,
+    getInitialScrollPosition,
+    selectedKey,
+    tooltipOptions,
+    uncontrolledSelectedKey,
+  ]);
 
   const { ref: scrollRef, onOpenChange: popoverOnOpenChange } =
     usePopoverOnScrollRef(
