@@ -2323,7 +2323,9 @@ export class GridRenderer {
     );
     context.clip();
 
-    context.translate(draggingLeft - originalLeft, 0);
+    // The header drawing functions expect the context to be at the edge of the canvas
+    // We offset it by how much the user has dragged
+    context.translate(draggingLeft - originalLeft - gridX, 0);
     context.font = headerFont;
 
     const visibleColumns: VisibleIndex[] = [];
@@ -2335,8 +2337,6 @@ export class GridRenderer {
       visibleColumns.push(i);
     }
 
-    // The headers expect the context to be at the edge...
-    context.translate(-gridX, 0);
     /**
      * This will not draw the header text properly, but extensions of Grid
      * may draw extra things in the header like sorts and filters
@@ -2353,9 +2353,9 @@ export class GridRenderer {
         maxX: width,
       }
     );
-    context.translate(gridX, 0);
 
-    context.translate(0, gridY);
+    // Now move to the edge of the "grid" in the so we can draw the contents of the dragging column in the clipped region
+    context.translate(gridX, gridY);
     context.font = font;
 
     this.drawGridBackground(context, state);
