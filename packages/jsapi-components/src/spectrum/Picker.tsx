@@ -1,7 +1,7 @@
 import {
   NormalizedItemData,
-  Picker as PickerBase,
-  PickerProps as PickerPropsBase,
+  PickerBase,
+  PickerBaseProps,
 } from '@deephaven/components';
 import { dh as DhType } from '@deephaven/jsapi-types';
 import { Settings } from '@deephaven/jsapi-utils';
@@ -16,7 +16,7 @@ import { useItemRowDeserializer } from './utils/useItemRowDeserializer';
 
 const log = Log.module('jsapi-components.Picker');
 
-export interface PickerProps extends Omit<PickerPropsBase, 'children'> {
+export interface PickerProps extends Omit<PickerBaseProps, 'children'> {
   table: DhType.Table;
   /* The column of values to use as item keys. Defaults to the first column. */
   keyColumn?: string;

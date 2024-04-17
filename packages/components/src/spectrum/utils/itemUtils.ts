@@ -3,7 +3,7 @@ import { SpectrumPickerProps } from '@adobe/react-spectrum';
 import type { ItemRenderer } from '@react-types/shared';
 import Log from '@deephaven/log';
 import { isElementOfType } from '@deephaven/react-hooks';
-import { KeyedItem, PICKER_ITEM_HEIGHTS, SelectionT } from '@deephaven/utils';
+import { KeyedItem, SelectionT } from '@deephaven/utils';
 import { Item, ItemProps, Section, SectionProps } from '../shared';
 import { PopperOptions } from '../../popper';
 import { Text } from '../Text';
@@ -99,7 +99,7 @@ export function getItemKey<
   return (item?.item?.key ?? item?.key) as TKey;
 }
 
-export async function getPositionOfSelectedItem<
+export async function getPositionOfSelectedItemElement<
   TKey extends string | number | boolean | undefined,
 >({
   children,
