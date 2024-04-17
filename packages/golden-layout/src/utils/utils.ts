@@ -1,5 +1,4 @@
 import $ from 'jquery';
-import { nanoid } from 'nanoid'
 
 export function getHashValue(key: string) {
   var matches = location.hash.match(new RegExp(key + '=([^&]*)'));
@@ -41,7 +40,7 @@ export function removeFromArray<T>(item: T, array: T[]) {
 }
 
 export function getUniqueId() {
-  return nanoid();
+  return (Math.random() * 1000000000000000).toString(36).replace('.', '');
 }
 
 /**
