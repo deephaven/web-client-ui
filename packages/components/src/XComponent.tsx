@@ -53,13 +53,17 @@ export function createXComponent<P extends Record<string, unknown>>(
     );
   }
 
+  // Add the display name so this appears as a tag in the React DevTools
+  // Need to add it here, and then when it's wrapped with the `forwardRef` it will automatically get the display name of the original component
+  XComponent.displayName = `XComponent(${
+    Component.displayName ?? Component.name
+  })`;
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   forwardedRefComponent = forwardRef(XComponent) as any;
 
   forwardedRefComponent.Original = Component;
   forwardedRefComponent.isXComponent = true;
-  // Add the display name so this appears as a tag in the React DevTools
-  forwardedRefComponent.displayName = `XComponent(${Component.displayName})`;
 
   return forwardedRefComponent;
 }
