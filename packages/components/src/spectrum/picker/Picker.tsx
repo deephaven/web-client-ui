@@ -1,159 +1,100 @@
-import { useMemo } from 'react';
-
+import { useCallback, useMemo, useState } from 'react';
+import type { DOMRef } from '@react-types/shared';
+import { Picker as SpectrumPicker } from '@adobe/react-spectrum';
+import cl from 'classnames';
 import {
+  EMPTY_FUNCTION,
+  PICKER_ITEM_HEIGHTS,
+  PICKER_TOP_OFFSET,
+} from '@deephaven/utils';
+import {
+  NormalizedSpectrumPickerProps,
+  ItemOrSection,
+  getPositionOfSelectedItemElement,
+  ItemKey,
   normalizeTooltipOptions,
-  TooltipOptions,
-  isNormalizedItemsWithKeysList,
 } from '../utils/itemUtils';
+import { wrapItemChildren } from '../utils/itemWrapperUtils';
 import { PickerCommonProps } from './PickerModel';
-import {
-  PickerFromChildrenProps,
-  PickerFromChildren,
-} from './PickerFromChildren';
-import PickerFromItems, { PickerFromItemsProps } from './PickerFromItems';
+import usePickerScrollOnOpen from './usePickerScrollOnOpen';
 
-export type PickerProps = {
-  /** Can be set to true or a TooltipOptions to enable item tooltips */
-  tooltip?: boolean | TooltipOptions;
+export interface PickerProps extends PickerCommonProps {
+  children: ItemOrSection | ItemOrSection[];
+}
 
-  /** Function to retrieve initial scroll position when opening the picker */
-  // getInitialScrollPosition?: () => Promise<number | null>;
-} & PickerCommonProps &
-  (
-    | { children: PickerFromChildrenProps['children'] }
-    | {
-        children: PickerFromItemsProps['items'];
-        getInitialScrollPosition: () => Promise<number | null | undefined>;
-      }
-  );
-
-/**
- * Picker component for selecting items from a list of items. Items can be
- * provided via the `items` prop or as children. Each item can be a string,
- * number, boolean, or a Spectrum <Item> element. The remaining props are just
- * pass through props for the Spectrum Picker component.
- * See https://react-spectrum.adobe.com/react-spectrum/Picker.html
- */
 export function Picker({
   children,
   tooltip = true,
-  // defaultSelectedKey,
-  // selectedKey,
-  // onChange,
-  // onOpenChange,
-  // onSelectionChange,
+  defaultSelectedKey,
+  selectedKey,
+  onChange,
+  onOpenChange,
+  onScroll = EMPTY_FUNCTION,
+  onSelectionChange,
   // eslint-disable-next-line camelcase
   UNSAFE_className,
-  ...props
+  ...spectrumPickerProps
 }: PickerProps): JSX.Element {
   const tooltipOptions = useMemo(
     () => normalizeTooltipOptions(tooltip),
     [tooltip]
   );
 
-  // const [uncontrolledSelectedKey, setUncontrolledSelectedKey] =
-  //   useState(defaultSelectedKey);
+  const [uncontrolledSelectedKey, setUncontrolledSelectedKey] =
+    useState(defaultSelectedKey);
 
-  // const getInitialScrollPositionInternal = useCallback(async () => {
-  //   if (getInitialScrollPosition != null) {
-  //     return getInitialScrollPosition();
-  //   }
-
-  //   if (isNormalizedItemsWithKeysList(children)) {
-  //     return null;
-  //   }
-
-  //   return getPositionOfSelectedItemElement({
-  //     children: wrapItemChildren(children, tooltipOptions),
-  //     itemHeight: PICKER_ITEM_HEIGHTS.noDescription,
-  //     itemHeightWithDescription: PICKER_ITEM_HEIGHTS.withDescription,
-  //     selectedKey: selectedKey ?? uncontrolledSelectedKey,
-  //     topOffset: PICKER_TOP_OFFSET,
-  //   });
-  // }, [
-  //   children,
-  //   getInitialScrollPosition,
-  //   selectedKey,
-  //   tooltipOptions,
-  //   uncontrolledSelectedKey,
-  // ]);
-
-  // const { ref: scrollRef, onOpenChange: onOpenChangeInternal } =
-  //   usePickerScrollOnOpen({
-  //     getInitialScrollPosition: getInitialScrollPositionInternal,
-  //     onScroll,
-  //     onOpenChange,
-  //   });
-
-  // const onChangeInternal = useCallback(
-  //   (key: ItemKey): void => {
-  //     // If our component is uncontrolled, track the selected key internally
-  //     if (selectedKey == null) {
-  //       setUncontrolledSelectedKey(key);
-  //     }
-
-  //     (onChange ?? onSelectionChange)?.(key);
-  //   },
-  //   [onChange, onSelectionChange, selectedKey]
-  // );
-
-  return isNormalizedItemsWithKeysList(children) ? (
-    <PickerFromItems
-      // eslint-disable-next-line react/jsx-props-no-spreading
-      {...(props as PickerFromItemsProps)}
-      items={children}
-      tooltipOptions={tooltipOptions}
-    />
-  ) : (
-    <PickerFromChildren
-      // eslint-disable-next-line react/jsx-props-no-spreading
-      {...props}
-      tooltipOptions={tooltipOptions}
-    >
-      {children}
-    </PickerFromChildren>
+  const wrappedItems = useMemo(
+    () => wrapItemChildren(children, tooltipOptions),
+    [children, tooltipOptions]
   );
 
-  // return (
-  //   <SpectrumPicker
-  //     // eslint-disable-next-line react/jsx-props-no-spreading
-  //     {...spectrumPickerProps}
-  //     ref={scrollRef as unknown as DOMRef<HTMLDivElement>}
-  //     onOpenChange={onOpenChangeInternal}
-  //     UNSAFE_className={cl('dh-picker', UNSAFE_className)}
-  //     items={normalizedItems}
-  //     // Spectrum Picker treats keys as strings if the `key` prop is explicitly
-  //     // set on `Item` elements. Since we do this in `renderItem`, we need to
-  //     // ensure that `selectedKey` and `defaultSelectedKey` are strings in order
-  //     // for selection to work.
-  //     selectedKey={selectedKey == null ? selectedKey : selectedKey.toString()}
-  //     defaultSelectedKey={
-  //       defaultSelectedKey == null
-  //         ? defaultSelectedKey
-  //         : defaultSelectedKey.toString()
-  //     }
-  //     // `onChange` is just an alias for `onSelectionChange`
-  //     onSelectionChange={
-  //       onSelectionChangeInternal as NormalizedSpectrumPickerProps['onSelectionChange']
-  //     }
-  //   >
-  //     {itemOrSection => {
-  //       if (isNormalizedSection(itemOrSection)) {
-  //         return (
-  //           <Section
-  //             key={getItemKey(itemOrSection)}
-  //             title={itemOrSection.item?.title}
-  //             items={itemOrSection.item?.items}
-  //           >
-  //             {renderNormalizedItem}
-  //           </Section>
-  //         );
-  //       }
+  const getInitialScrollPosition = useCallback(
+    async () =>
+      getPositionOfSelectedItemElement({
+        children: wrappedItems,
+        itemHeight: PICKER_ITEM_HEIGHTS.noDescription,
+        itemHeightWithDescription: PICKER_ITEM_HEIGHTS.withDescription,
+        selectedKey: selectedKey ?? uncontrolledSelectedKey,
+        topOffset: PICKER_TOP_OFFSET,
+      }),
+    [selectedKey, uncontrolledSelectedKey, wrappedItems]
+  );
 
-  //       return renderNormalizedItem(itemOrSection);
-  //     }}
-  //   </SpectrumPicker>
-  // );
+  const onSelectionChangeInternal = useCallback(
+    (key: ItemKey): void => {
+      // If our component is uncontrolled, track the selected key internally
+      if (selectedKey == null) {
+        setUncontrolledSelectedKey(key);
+      }
+
+      (onChange ?? onSelectionChange)?.(key);
+    },
+    [onChange, onSelectionChange, selectedKey]
+  );
+
+  const { ref: scrollRef, onOpenChange: onOpenChangeInternal } =
+    usePickerScrollOnOpen({
+      getInitialScrollPosition,
+      onScroll,
+      onOpenChange,
+    });
+
+  return (
+    <SpectrumPicker
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      {...spectrumPickerProps}
+      ref={scrollRef as DOMRef<HTMLDivElement>}
+      UNSAFE_className={cl('dh-picker', UNSAFE_className)}
+      selectedKey={selectedKey as NormalizedSpectrumPickerProps['selectedKey']}
+      defaultSelectedKey={
+        defaultSelectedKey as NormalizedSpectrumPickerProps['defaultSelectedKey']
+      }
+      onSelectionChange={onSelectionChangeInternal}
+      onOpenChange={onOpenChangeInternal}
+    >
+      {wrappedItems}
+    </SpectrumPicker>
+  );
 }
 
 export default Picker;

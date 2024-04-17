@@ -1,10 +1,18 @@
-import type { ItemKey, NormalizedSpectrumPickerProps } from '../utils';
+import type {
+  ItemKey,
+  NormalizedSpectrumPickerProps,
+  TooltipOptions,
+} from '../utils';
 
 export type PickerCommonProps = {
   /** The currently selected key in the collection (controlled). */
   selectedKey?: ItemKey | null;
+
   /** The initial selected key in the collection (uncontrolled). */
   defaultSelectedKey?: ItemKey;
+
+  /** Can be set to true or a TooltipOptions to enable item tooltips */
+  tooltip?: boolean | TooltipOptions;
 
   /** Handler that is called when the picker is scrolled. */
   onScroll?: (event: Event) => void;

@@ -1,13 +1,25 @@
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Picker as SpectrumPicker } from '@adobe/react-spectrum';
+import type { DOMRef } from '@react-types/shared';
+import cl from 'classnames';
 import {
+  getItemKey,
+  isNormalizedSection,
+  ItemKey,
+  NormalizedItem,
   NormalizedItemData,
-  Picker as PickerBase,
+  NormalizedSection,
+  NormalizedSectionData,
+  normalizeTooltipOptions,
   PickerProps as PickerBaseProps,
+  Section,
+  usePickerScrollOnOpen,
+  useRenderNormalizedItem,
 } from '@deephaven/components';
 import { dh as DhType } from '@deephaven/jsapi-types';
 import { Settings } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { PICKER_ITEM_HEIGHTS, PICKER_TOP_OFFSET } from '@deephaven/utils';
-import { useCallback, useEffect, useMemo, useState } from 'react';
 import useFormatter from '../useFormatter';
 import useGetItemIndexByValue from '../useGetItemIndexByValue';
 import { useViewportData } from '../useViewportData';
@@ -32,15 +44,25 @@ export function Picker({
   table,
   keyColumn: keyColumnName,
   labelColumn: labelColumnName,
-  selectedKey,
   settings,
+  tooltip = true,
+  selectedKey,
+  defaultSelectedKey,
+  UNSAFE_className,
+  onChange,
+  onOpenChange,
+  onSelectionChange,
   ...props
 }: PickerProps): JSX.Element {
   const { getFormattedString: formatValue } = useFormatter(settings);
 
-  const [uncontrolledSelectedKey, setUncontrolledSelectedKey] = useState(
-    props.defaultSelectedKey
+  const tooltipOptions = useMemo(
+    () => normalizeTooltipOptions(tooltip),
+    [tooltip]
   );
+
+  const [uncontrolledSelectedKey, setUncontrolledSelectedKey] =
+    useState(defaultSelectedKey);
 
   const keyColumn = useMemo(
     () => getItemKeyColumn(table, keyColumnName),
@@ -57,7 +79,7 @@ export function Picker({
   const getItemIndexByValue = useGetItemIndexByValue({
     table,
     columnName: keyColumn.name,
-    value: selectedKey,
+    value: selectedKey ?? uncontrolledSelectedKey,
   });
 
   const getInitialScrollPosition = useCallback(async () => {
@@ -71,7 +93,7 @@ export function Picker({
   }, [getItemIndexByValue]);
 
   const { viewportData, onScroll, setViewport } = useViewportData<
-    NormalizedItemData,
+    NormalizedItemData | NormalizedSectionData,
     DhType.Table
   >({
     reuseItemsOnTableResize: true,
@@ -105,16 +127,75 @@ export function Picker({
     [getItemIndexByValue, settings, setViewport]
   );
 
+  const renderNormalizedItem = useRenderNormalizedItem(tooltipOptions);
+
+  const { ref: scrollRef, onOpenChange: onOpenChangeInternal } =
+    usePickerScrollOnOpen({
+      getInitialScrollPosition,
+      onScroll,
+      onOpenChange,
+    });
+
+  const onSelectionChangeInternal = useCallback(
+    (key: ItemKey): void => {
+      // The `key` arg will always be a string due to us setting the `Item` key
+      // prop in `renderItem`. We need to find the matching item to determine
+      // the actual key.
+      const selectedItem = (
+        viewportData.items as (NormalizedItem | NormalizedSection)[]
+      ).find(item => String(getItemKey(item)) === key);
+
+      const actualKey = getItemKey(selectedItem) ?? key;
+
+      // If our component is uncontrolled, track the selected key internally
+      // so that we can scroll to the selected item if the user re-opens
+      if (selectedKey == null) {
+        setUncontrolledSelectedKey(key);
+      }
+
+      (onChange ?? onSelectionChange)?.(actualKey);
+    },
+    [viewportData.items, selectedKey, onChange, onSelectionChange]
+  );
+
   return (
-    <PickerBase
+    <SpectrumPicker
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...props}
-      getInitialScrollPosition={getInitialScrollPosition}
-      selectedKey={selectedKey}
-      onScroll={onScroll}
+      ref={scrollRef as DOMRef<HTMLDivElement>}
+      UNSAFE_className={cl('dh-picker', UNSAFE_className)}
+      items={viewportData.items as (NormalizedItem | NormalizedSection)[]}
+      // Spectrum Picker treats keys as strings if the `key` prop is explicitly
+      // set on `Item` elements. Since we do this in `renderItem`, we need to
+      // ensure that `selectedKey` and `defaultSelectedKey` are strings in order
+      // for selection to work.
+      selectedKey={selectedKey == null ? selectedKey : selectedKey.toString()}
+      defaultSelectedKey={
+        defaultSelectedKey == null
+          ? defaultSelectedKey
+          : defaultSelectedKey.toString()
+      }
+      onSelectionChange={
+        onSelectionChangeInternal // as NormalizedSpectrumPickerProps['onSelectionChange']
+      }
+      onOpenChange={onOpenChangeInternal}
     >
-      {viewportData.items}
-    </PickerBase>
+      {itemOrSection => {
+        if (isNormalizedSection(itemOrSection)) {
+          return (
+            <Section
+              key={getItemKey(itemOrSection)}
+              title={itemOrSection.item?.title}
+              items={itemOrSection.item?.items}
+            >
+              {renderNormalizedItem}
+            </Section>
+          );
+        }
+
+        return renderNormalizedItem(itemOrSection);
+      }}
+    </SpectrumPicker>
   );
 }
 
