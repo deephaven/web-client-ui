@@ -1,11 +1,6 @@
 import React, { PureComponent, ReactElement } from 'react';
 import { ContextAction, ContextActions } from '@deephaven/components';
-import type {
-  Container,
-  EventEmitter,
-  ReactComponentConfig,
-  Tab,
-} from '@deephaven/golden-layout';
+import type { Container, EventEmitter, Tab } from '@deephaven/golden-layout';
 import {
   CustomizableWorkspace,
   RootState,
@@ -13,7 +8,7 @@ import {
   setWorkspace as setWorkspaceAction,
 } from '@deephaven/redux';
 import { connect } from 'react-redux';
-import { LayoutUtils, PanelEvent } from '@deephaven/dashboard';
+import { ClosedPanel, LayoutUtils, PanelEvent } from '@deephaven/dashboard';
 
 interface PanelContextMenuProps {
   additionalActions: ContextAction[];
@@ -130,7 +125,7 @@ class PanelContextMenu extends PureComponent<
     )?.config.id;
 
     return !workspace.data.closed?.some(
-      panel => (panel as ReactComponentConfig).parentStackId === stackId
+      panel => (panel as ClosedPanel).parentStackId === stackId
     );
   }
 

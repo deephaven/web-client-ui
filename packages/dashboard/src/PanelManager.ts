@@ -28,7 +28,12 @@ export type PanelDehydraterFunction = (
   config: ReactComponentConfig
 ) => ReactComponentConfig;
 
-export type ClosedPanel = ReactComponentConfig;
+export type ClosedPanel = ReactComponentConfig & {
+  /**
+   * The stack the component is in.
+   */
+  parentStackId?: string | string[];
+};
 
 export type ClosedPanels = ClosedPanel[];
 
@@ -339,6 +344,7 @@ class PanelManager {
     // Panel component should be already unmounted at this point
     // so the emitted event sends the container object instead of the panel.
     log.debug2('Closed: ', panelId);
+    console.log(glContainer);
     this.addClosedPanel(glContainer);
     this.sendUpdate();
   }
@@ -357,10 +363,8 @@ class PanelManager {
         config.component,
         config
       );
-      dehydratedConfig.parentStackId = LayoutUtils.getStackForConfig(
-        root,
-        config
-      )?.config.id;
+      (dehydratedConfig as ClosedPanel).parentStackId =
+        LayoutUtils.getStackForConfig(root, config)?.config.id;
       if (dehydratedConfig != null) {
         this.closed.push(dehydratedConfig);
       }
