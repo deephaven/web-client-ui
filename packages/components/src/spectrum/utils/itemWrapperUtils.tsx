@@ -6,6 +6,7 @@ import {
   isSectionElement,
   ItemElement,
   ItemOrSection,
+  ITEM_EMPTY_STRING_TEXT_VALUE,
   SectionElement,
   TooltipOptions,
 } from './itemUtils';
@@ -34,11 +35,18 @@ export function wrapItemChildren(
         return item;
       }
 
+      const key = item.key ?? item.props.textValue;
+      const textValue =
+        item.props.textValue === ''
+          ? ITEM_EMPTY_STRING_TEXT_VALUE
+          : item.props.textValue;
+
       // Wrap in `ItemContent` so we can support tooltips and handle text
       // overflow
       return cloneElement(item, {
         ...item.props,
-        key: item.key ?? item.props.textValue,
+        key,
+        textValue,
         children: (
           <ItemContent tooltipOptions={tooltipOptions}>
             {item.props.children}
@@ -66,8 +74,10 @@ export function wrapItemChildren(
       typeof item === 'boolean'
     ) {
       const text = String(item);
+      const textValue = text === '' ? ITEM_EMPTY_STRING_TEXT_VALUE : text;
+
       return (
-        <Item key={text} textValue={text}>
+        <Item key={text} textValue={textValue}>
           <ItemContent tooltipOptions={tooltipOptions}>{text}</ItemContent>
         </Item>
       );

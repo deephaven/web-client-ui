@@ -11,6 +11,8 @@ import ItemContent from '../ItemContent';
 
 const log = Log.module('itemUtils');
 
+export const ITEM_EMPTY_STRING_TEXT_VALUE = 'Empty';
+
 export const INVALID_ITEM_ERROR_MESSAGE =
   'Items must be strings, numbers, booleans, <Item> or <Section> elements:';
 

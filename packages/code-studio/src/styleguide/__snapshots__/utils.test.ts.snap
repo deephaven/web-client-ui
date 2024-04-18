@@ -6,6 +6,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "AAA",
       "key": 100,
+      "textValue": "AAA",
     },
     "key": "A",
   },
@@ -13,6 +14,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "BBB",
       "key": 200,
+      "textValue": "BBB",
     },
     "key": "B",
   },
@@ -20,6 +22,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "CCC",
       "key": 300,
+      "textValue": "CCC",
     },
     "key": "C",
   },
@@ -27,6 +30,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "DDD",
       "key": 400,
+      "textValue": "DDD",
     },
     "key": "D",
   },
@@ -34,6 +38,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "EEE",
       "key": 500,
+      "textValue": "EEE",
     },
     "key": "E",
   },
@@ -41,6 +46,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "FFF",
       "key": 600,
+      "textValue": "FFF",
     },
     "key": "F",
   },
@@ -48,6 +54,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "GGG",
       "key": 700,
+      "textValue": "GGG",
     },
     "key": "G",
   },
@@ -55,6 +62,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "HHH",
       "key": 800,
+      "textValue": "HHH",
     },
     "key": "H",
   },
@@ -62,6 +70,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "III",
       "key": 900,
+      "textValue": "III",
     },
     "key": "I",
   },
@@ -69,6 +78,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "JJJ",
       "key": 1000,
+      "textValue": "JJJ",
     },
     "key": "J",
   },
@@ -76,6 +86,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "KKK",
       "key": 1100,
+      "textValue": "KKK",
     },
     "key": "K",
   },
@@ -83,6 +94,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "LLL",
       "key": 1200,
+      "textValue": "LLL",
     },
     "key": "L",
   },
@@ -90,6 +102,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "MMM",
       "key": 1300,
+      "textValue": "MMM",
     },
     "key": "M",
   },
@@ -97,6 +110,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "NNN",
       "key": 1400,
+      "textValue": "NNN",
     },
     "key": "N",
   },
@@ -104,6 +118,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "OOO",
       "key": 1500,
+      "textValue": "OOO",
     },
     "key": "O",
   },
@@ -111,6 +126,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "PPP",
       "key": 1600,
+      "textValue": "PPP",
     },
     "key": "P",
   },
@@ -118,6 +134,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "QQQ",
       "key": 1700,
+      "textValue": "QQQ",
     },
     "key": "Q",
   },
@@ -125,6 +142,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "RRR",
       "key": 1800,
+      "textValue": "RRR",
     },
     "key": "R",
   },
@@ -132,6 +150,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "SSS",
       "key": 1900,
+      "textValue": "SSS",
     },
     "key": "S",
   },
@@ -139,6 +158,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "TTT",
       "key": 2000,
+      "textValue": "TTT",
     },
     "key": "T",
   },
@@ -146,6 +166,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "UUU",
       "key": 2100,
+      "textValue": "UUU",
     },
     "key": "U",
   },
@@ -153,6 +174,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "VVV",
       "key": 2200,
+      "textValue": "VVV",
     },
     "key": "V",
   },
@@ -160,6 +182,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "WWW",
       "key": 2300,
+      "textValue": "WWW",
     },
     "key": "W",
   },
@@ -167,6 +190,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "XXX",
       "key": 2400,
+      "textValue": "XXX",
     },
     "key": "X",
   },
@@ -174,6 +198,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "YYY",
       "key": 2500,
+      "textValue": "YYY",
     },
     "key": "Y",
   },
@@ -181,6 +206,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "ZZZ",
       "key": 2600,
+      "textValue": "ZZZ",
     },
     "key": "Z",
   },
@@ -188,6 +214,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "aaa",
       "key": 2700,
+      "textValue": "aaa",
     },
     "key": "a",
   },
@@ -195,6 +222,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "bbb",
       "key": 2800,
+      "textValue": "bbb",
     },
     "key": "b",
   },
@@ -202,6 +230,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "ccc",
       "key": 2900,
+      "textValue": "ccc",
     },
     "key": "c",
   },
@@ -209,6 +238,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "ddd",
       "key": 3000,
+      "textValue": "ddd",
     },
     "key": "d",
   },
@@ -216,6 +246,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "eee",
       "key": 3100,
+      "textValue": "eee",
     },
     "key": "e",
   },
@@ -223,6 +254,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "fff",
       "key": 3200,
+      "textValue": "fff",
     },
     "key": "f",
   },
@@ -230,6 +262,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "ggg",
       "key": 3300,
+      "textValue": "ggg",
     },
     "key": "g",
   },
@@ -237,6 +270,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "hhh",
       "key": 3400,
+      "textValue": "hhh",
     },
     "key": "h",
   },
@@ -244,6 +278,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "iii",
       "key": 3500,
+      "textValue": "iii",
     },
     "key": "i",
   },
@@ -251,6 +286,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "jjj",
       "key": 3600,
+      "textValue": "jjj",
     },
     "key": "j",
   },
@@ -258,6 +294,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "kkk",
       "key": 3700,
+      "textValue": "kkk",
     },
     "key": "k",
   },
@@ -265,6 +302,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "lll",
       "key": 3800,
+      "textValue": "lll",
     },
     "key": "l",
   },
@@ -272,6 +310,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "mmm",
       "key": 3900,
+      "textValue": "mmm",
     },
     "key": "m",
   },
@@ -279,6 +318,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "nnn",
       "key": 4000,
+      "textValue": "nnn",
     },
     "key": "n",
   },
@@ -286,6 +326,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "ooo",
       "key": 4100,
+      "textValue": "ooo",
     },
     "key": "o",
   },
@@ -293,6 +334,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "ppp",
       "key": 4200,
+      "textValue": "ppp",
     },
     "key": "p",
   },
@@ -300,6 +342,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "qqq",
       "key": 4300,
+      "textValue": "qqq",
     },
     "key": "q",
   },
@@ -307,6 +350,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "rrr",
       "key": 4400,
+      "textValue": "rrr",
     },
     "key": "r",
   },
@@ -314,6 +358,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "sss",
       "key": 4500,
+      "textValue": "sss",
     },
     "key": "s",
   },
@@ -321,6 +366,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "ttt",
       "key": 4600,
+      "textValue": "ttt",
     },
     "key": "t",
   },
@@ -328,6 +374,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "uuu",
       "key": 4700,
+      "textValue": "uuu",
     },
     "key": "u",
   },
@@ -335,6 +382,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "vvv",
       "key": 4800,
+      "textValue": "vvv",
     },
     "key": "v",
   },
@@ -342,6 +390,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "www",
       "key": 4900,
+      "textValue": "www",
     },
     "key": "w",
   },
@@ -349,6 +398,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "xxx",
       "key": 5000,
+      "textValue": "xxx",
     },
     "key": "x",
   },
@@ -356,6 +406,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "yyy",
       "key": 5100,
+      "textValue": "yyy",
     },
     "key": "y",
   },
@@ -363,6 +414,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "zzz",
       "key": 5200,
+      "textValue": "zzz",
     },
     "key": "z",
   },
@@ -370,6 +422,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "AAA1",
       "key": 5300,
+      "textValue": "AAA1",
     },
     "key": "A1",
   },
@@ -377,6 +430,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "BBB1",
       "key": 5400,
+      "textValue": "BBB1",
     },
     "key": "B1",
   },
@@ -384,6 +438,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "CCC1",
       "key": 5500,
+      "textValue": "CCC1",
     },
     "key": "C1",
   },
@@ -391,6 +446,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "DDD1",
       "key": 5600,
+      "textValue": "DDD1",
     },
     "key": "D1",
   },
@@ -398,6 +454,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "EEE1",
       "key": 5700,
+      "textValue": "EEE1",
     },
     "key": "E1",
   },
@@ -405,6 +462,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "FFF1",
       "key": 5800,
+      "textValue": "FFF1",
     },
     "key": "F1",
   },
@@ -412,6 +470,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "GGG1",
       "key": 5900,
+      "textValue": "GGG1",
     },
     "key": "G1",
   },
@@ -419,6 +478,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "HHH1",
       "key": 6000,
+      "textValue": "HHH1",
     },
     "key": "H1",
   },
@@ -426,6 +486,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "III1",
       "key": 6100,
+      "textValue": "III1",
     },
     "key": "I1",
   },
@@ -433,6 +494,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "JJJ1",
       "key": 6200,
+      "textValue": "JJJ1",
     },
     "key": "J1",
   },
@@ -440,6 +502,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "KKK1",
       "key": 6300,
+      "textValue": "KKK1",
     },
     "key": "K1",
   },
@@ -447,6 +510,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "LLL1",
       "key": 6400,
+      "textValue": "LLL1",
     },
     "key": "L1",
   },
@@ -454,6 +518,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "MMM1",
       "key": 6500,
+      "textValue": "MMM1",
     },
     "key": "M1",
   },
@@ -461,6 +526,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "NNN1",
       "key": 6600,
+      "textValue": "NNN1",
     },
     "key": "N1",
   },
@@ -468,6 +534,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "OOO1",
       "key": 6700,
+      "textValue": "OOO1",
     },
     "key": "O1",
   },
@@ -475,6 +542,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "PPP1",
       "key": 6800,
+      "textValue": "PPP1",
     },
     "key": "P1",
   },
@@ -482,6 +550,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "QQQ1",
       "key": 6900,
+      "textValue": "QQQ1",
     },
     "key": "Q1",
   },
@@ -489,6 +558,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "RRR1",
       "key": 7000,
+      "textValue": "RRR1",
     },
     "key": "R1",
   },
@@ -496,6 +566,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "SSS1",
       "key": 7100,
+      "textValue": "SSS1",
     },
     "key": "S1",
   },
@@ -503,6 +574,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "TTT1",
       "key": 7200,
+      "textValue": "TTT1",
     },
     "key": "T1",
   },
@@ -510,6 +582,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "UUU1",
       "key": 7300,
+      "textValue": "UUU1",
     },
     "key": "U1",
   },
@@ -517,6 +590,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "VVV1",
       "key": 7400,
+      "textValue": "VVV1",
     },
     "key": "V1",
   },
@@ -524,6 +598,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "WWW1",
       "key": 7500,
+      "textValue": "WWW1",
     },
     "key": "W1",
   },
@@ -531,6 +606,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "XXX1",
       "key": 7600,
+      "textValue": "XXX1",
     },
     "key": "X1",
   },
@@ -538,6 +614,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "YYY1",
       "key": 7700,
+      "textValue": "YYY1",
     },
     "key": "Y1",
   },
@@ -545,6 +622,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "ZZZ1",
       "key": 7800,
+      "textValue": "ZZZ1",
     },
     "key": "Z1",
   },
@@ -552,6 +630,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "aaa1",
       "key": 7900,
+      "textValue": "aaa1",
     },
     "key": "a1",
   },
@@ -559,6 +638,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "bbb1",
       "key": 8000,
+      "textValue": "bbb1",
     },
     "key": "b1",
   },
@@ -566,6 +646,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "ccc1",
       "key": 8100,
+      "textValue": "ccc1",
     },
     "key": "c1",
   },
@@ -573,6 +654,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "ddd1",
       "key": 8200,
+      "textValue": "ddd1",
     },
     "key": "d1",
   },
@@ -580,6 +662,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "eee1",
       "key": 8300,
+      "textValue": "eee1",
     },
     "key": "e1",
   },
@@ -587,6 +670,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "fff1",
       "key": 8400,
+      "textValue": "fff1",
     },
     "key": "f1",
   },
@@ -594,6 +678,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "ggg1",
       "key": 8500,
+      "textValue": "ggg1",
     },
     "key": "g1",
   },
@@ -601,6 +686,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "hhh1",
       "key": 8600,
+      "textValue": "hhh1",
     },
     "key": "h1",
   },
@@ -608,6 +694,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "iii1",
       "key": 8700,
+      "textValue": "iii1",
     },
     "key": "i1",
   },
@@ -615,6 +702,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "jjj1",
       "key": 8800,
+      "textValue": "jjj1",
     },
     "key": "j1",
   },
@@ -622,6 +710,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "kkk1",
       "key": 8900,
+      "textValue": "kkk1",
     },
     "key": "k1",
   },
@@ -629,6 +718,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "lll1",
       "key": 9000,
+      "textValue": "lll1",
     },
     "key": "l1",
   },
@@ -636,6 +726,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "mmm1",
       "key": 9100,
+      "textValue": "mmm1",
     },
     "key": "m1",
   },
@@ -643,6 +734,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "nnn1",
       "key": 9200,
+      "textValue": "nnn1",
     },
     "key": "n1",
   },
@@ -650,6 +742,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "ooo1",
       "key": 9300,
+      "textValue": "ooo1",
     },
     "key": "o1",
   },
@@ -657,6 +750,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "ppp1",
       "key": 9400,
+      "textValue": "ppp1",
     },
     "key": "p1",
   },
@@ -664,6 +758,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "qqq1",
       "key": 9500,
+      "textValue": "qqq1",
     },
     "key": "q1",
   },
@@ -671,6 +766,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "rrr1",
       "key": 9600,
+      "textValue": "rrr1",
     },
     "key": "r1",
   },
@@ -678,6 +774,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "sss1",
       "key": 9700,
+      "textValue": "sss1",
     },
     "key": "s1",
   },
@@ -685,6 +782,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "ttt1",
       "key": 9800,
+      "textValue": "ttt1",
     },
     "key": "t1",
   },
@@ -692,6 +790,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "uuu1",
       "key": 9900,
+      "textValue": "uuu1",
     },
     "key": "u1",
   },
@@ -699,6 +798,7 @@ exports[`generateNormalizedItems should generate normalized items 1`] = `
     "item": {
       "content": "vvv1",
       "key": 10000,
+      "textValue": "vvv1",
     },
     "key": "v1",
   },
