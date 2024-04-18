@@ -2354,12 +2354,14 @@ export class GridRenderer {
       }
     );
 
-    // Now move to the edge of the "grid" in the so we can draw the contents of the dragging column in the clipped region
+    // Now move to the edge of the "grid" (top-left of top-left cell). We then draw the
+    // grid background, but only the clipped region will be drawn where the dragging column is.
     context.translate(gridX, gridY);
     context.font = font;
 
     this.drawGridBackground(context, state);
 
+    // Then draw the contents of the column that is being dragged
     for (let i = startIndex; i <= endIndex; i += 1) {
       this.drawColumnCellContents(context, state, i);
     }
