@@ -78,6 +78,8 @@ export function Picker({
     [tooltip]
   );
 
+  // `null` is a valid value for `selectedKey` in controlled mode, so we check
+  // for explicit `undefined` to identify uncontrolled mode.
   const isUncontrolled = selectedKey === undefined;
   const [uncontrolledSelectedKey, setUncontrolledSelectedKey] =
     useState(defaultSelectedKey);
@@ -93,10 +95,10 @@ export function Picker({
         children: wrappedItems,
         itemHeight: PICKER_ITEM_HEIGHTS.noDescription,
         itemHeightWithDescription: PICKER_ITEM_HEIGHTS.withDescription,
-        selectedKey: selectedKey ?? uncontrolledSelectedKey,
+        selectedKey: isUncontrolled ? uncontrolledSelectedKey : selectedKey,
         topOffset: PICKER_TOP_OFFSET,
       }),
-    [selectedKey, uncontrolledSelectedKey, wrappedItems]
+    [isUncontrolled, selectedKey, uncontrolledSelectedKey, wrappedItems]
   );
 
   const onSelectionChangeInternal = useCallback(

@@ -43,6 +43,8 @@ export function Picker({
 }: PickerProps): JSX.Element {
   const { getFormattedString: formatValue } = useFormatter(settings);
 
+  // `null` is a valid value for `selectedKey` in controlled mode, so we check
+  // for explicit `undefined` to identify uncontrolled mode.
   const isUncontrolled = props.selectedKey === undefined;
   const [uncontrolledSelectedKey, setUncontrolledSelectedKey] = useState(
     props.defaultSelectedKey
@@ -63,7 +65,7 @@ export function Picker({
   const getItemIndexByValue = useGetItemIndexByValue({
     table,
     columnName: keyColumn.name,
-    value: props.selectedKey ?? uncontrolledSelectedKey,
+    value: isUncontrolled ? uncontrolledSelectedKey : props.selectedKey,
   });
 
   const getInitialScrollPosition = useCallback(async () => {
