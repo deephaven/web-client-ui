@@ -14,16 +14,12 @@ import { generateNormalizedItems, sampleSectionIdAndClasses } from './utils';
 // Generate enough items to require scrolling
 const itemsSimple = [...generateNormalizedItems(52)];
 
-function AccountIcon({
-  slot,
-}: {
-  slot?: 'illustration' | 'image';
-}): JSX.Element {
+function AccountIllustration(): JSX.Element {
   return (
     // Images in ListView items require a slot of 'image' or 'illustration' to
     // be set in order to be positioned correctly:
     // https://github.com/adobe/react-spectrum/blob/784737effd44b9d5e2b1316e690da44555eafd7e/packages/%40react-spectrum/list/src/ListViewItem.tsx#L266-L267
-    <Icon slot={slot}>
+    <Icon slot="illustration">
       <FontAwesomeIcon icon={vsAccount} />
     </Icon>
   );
@@ -62,19 +58,19 @@ export function ListViews(): JSX.Element {
           selectionMode="multiple"
         >
           <Item textValue="Item with icon A">
-            <AccountIcon slot="image" />
+            <AccountIllustration />
             <Text>Item with icon A</Text>
           </Item>
           <Item textValue="Item with icon B">
-            <AccountIcon slot="image" />
+            <AccountIllustration />
             <Text>Item with icon B</Text>
           </Item>
           <Item textValue="Item with icon C">
-            <AccountIcon slot="image" />
+            <AccountIllustration />
             <Text>Item with icon C</Text>
           </Item>
           <Item textValue="Item with icon D">
-            <AccountIcon slot="image" />
+            <AccountIllustration />
             <Text>Item with icon D with overflowing content</Text>
           </Item>
         </ListView>
