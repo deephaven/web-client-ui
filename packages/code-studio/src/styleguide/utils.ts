@@ -1,9 +1,38 @@
 import cl from 'classnames';
-import { useCallback, useState } from 'react';
-import { NormalizedItem } from '@deephaven/components';
+import { createElement, useCallback, useState } from 'react';
+import { Item, ItemElement, NormalizedItem } from '@deephaven/components';
 
 export const HIDE_FROM_E2E_TESTS_CLASS = 'hide-from-e2e-tests';
 export const SAMPLE_SECTION_CLASS = 'sample-section';
+
+/**
+ * Generate a given number of `Item` elements.
+ */
+export function* generateItemElements(
+  start: number,
+  end: number
+): Generator<ItemElement> {
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  const len = letters.length;
+
+  for (let i = start; i <= end; i += 1) {
+    const charI = i % len;
+    let suffix = String(Math.floor(i / len));
+    if (suffix === '0') {
+      suffix = '';
+    }
+    const letter = letters[charI];
+    const key = `${letter}${suffix}`;
+    const content = `${letter}${letter}${letter}${suffix}`;
+
+    // eslint-disable-next-line react/no-children-prop
+    yield createElement(Item, {
+      key,
+      textValue: content,
+      children: content,
+    });
+  }
+}
 
 /**
  * Generate a given number of NormalizedItems.

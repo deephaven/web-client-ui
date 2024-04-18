@@ -101,37 +101,67 @@ export function getItemKey<
   return (item?.item?.key ?? item?.key) as TKey;
 }
 
+/**
+ * Get the position of the item with the given selected key in a list of items.
+ */
 export async function getPositionOfSelectedItemElement<
   TKey extends string | number | boolean | undefined,
 >({
-  children,
+  itemsOrSections,
   itemHeight,
   itemHeightWithDescription,
+  sectionTitleHeight,
+  sectionEmptyTitleHeight,
   selectedKey,
   topOffset,
 }: {
-  children: (ItemElement | SectionElement)[];
+  itemsOrSections: (ItemElement | SectionElement)[];
   selectedKey: TKey | null | undefined;
   itemHeight: number;
   itemHeightWithDescription: number;
+  sectionTitleHeight: number;
+  sectionEmptyTitleHeight: number;
   topOffset: number;
 }): Promise<number> {
-  let position = 0;
+  let position = topOffset;
+
+  if (selectedKey == null) {
+    return position;
+  }
+
+  const getItemHeight = (item: ItemElement) =>
+    isItemElementWithDescription(item) ? itemHeightWithDescription : itemHeight;
 
   // eslint-disable-next-line no-restricted-syntax
-  for (const child of children) {
-    if (child.key === selectedKey) {
-      break;
+  for (const itemOrSection of itemsOrSections) {
+    if (itemOrSection.key === selectedKey) {
+      return position;
     }
 
-    if (isItemElementWithDescription(child)) {
-      position += itemHeightWithDescription;
+    if (isSectionElement(itemOrSection)) {
+      position +=
+        (itemOrSection.props.title ?? '') === ''
+          ? sectionEmptyTitleHeight
+          : sectionTitleHeight;
+
+      const childItems = Array.isArray(itemOrSection.props.children)
+        ? itemOrSection.props.children
+        : [itemOrSection.props.children];
+
+      // eslint-disable-next-line no-restricted-syntax
+      for (const childItem of childItems) {
+        if (childItem.key === selectedKey) {
+          return position;
+        }
+
+        position += getItemHeight(childItem);
+      }
     } else {
-      position += itemHeight;
+      position += getItemHeight(itemOrSection);
     }
   }
 
-  return position + topOffset;
+  return topOffset;
 }
 
 /**

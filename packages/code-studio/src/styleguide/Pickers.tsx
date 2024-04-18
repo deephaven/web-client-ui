@@ -13,10 +13,19 @@ import { Icon } from '@adobe/react-spectrum';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { getPositionOfSelectedItem } from '@deephaven/react-hooks';
 import { PICKER_ITEM_HEIGHTS, PICKER_TOP_OFFSET } from '@deephaven/utils';
-import { generateNormalizedItems, sampleSectionIdAndClasses } from './utils';
+import {
+  generateItemElements,
+  generateNormalizedItems,
+  sampleSectionIdAndClasses,
+} from './utils';
 
 // Generate enough items to require scrolling
 const items = [...generateNormalizedItems(52)];
+const itemElementsA = [...generateItemElements(0, 51)];
+const itemElementsB = [...generateItemElements(52, 103)];
+const itemElementsC = [...generateItemElements(104, 155)];
+const itemElementsD = [...generateItemElements(156, 207)];
+const itemElementsE = [...generateItemElements(208, 259)];
 
 function PersonIcon(): JSX.Element {
   return (
@@ -79,7 +88,7 @@ export function Pickers(): JSX.Element {
           {'String 1'}
           {'String 2'}
           {'String 3'}
-          <Section title="Section A">
+          <Section title="Section">
             <Item textValue="Item Aaa">Item Aaa</Item>
             <Item textValue="Item Bbb">Item Bbb</Item>
             <Item textValue="Complex Ccc">
@@ -105,6 +114,11 @@ export function Pickers(): JSX.Element {
               <Text slot="description">Description that causes overflow</Text>
             </Item>
           </Section>
+          <Section title="Section A">{itemElementsA}</Section>
+          <Section title="Section B">{itemElementsB}</Section>
+          <Section key="Section C">{itemElementsC}</Section>
+          <Section key="Section D">{itemElementsD}</Section>
+          <Section title="Section E">{itemElementsE}</Section>
         </Picker>
 
         <PickerNormalized

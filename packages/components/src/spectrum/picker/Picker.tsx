@@ -5,6 +5,7 @@ import cl from 'classnames';
 import {
   EMPTY_FUNCTION,
   PICKER_ITEM_HEIGHTS,
+  PICKER_SECTION_HEIGHTS,
   PICKER_TOP_OFFSET,
 } from '@deephaven/utils';
 import {
@@ -92,9 +93,11 @@ export function Picker({
   const getInitialScrollPosition = useCallback(
     async () =>
       getPositionOfSelectedItemElement({
-        children: wrappedItems,
+        itemsOrSections: wrappedItems,
         itemHeight: PICKER_ITEM_HEIGHTS.noDescription,
         itemHeightWithDescription: PICKER_ITEM_HEIGHTS.withDescription,
+        sectionTitleHeight: PICKER_SECTION_HEIGHTS.title,
+        sectionEmptyTitleHeight: PICKER_SECTION_HEIGHTS.emptyTitle,
         selectedKey: isUncontrolled ? uncontrolledSelectedKey : selectedKey,
         topOffset: PICKER_TOP_OFFSET,
       }),
