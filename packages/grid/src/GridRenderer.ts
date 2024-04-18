@@ -2323,7 +2323,9 @@ export class GridRenderer {
     );
     context.clip();
 
-    context.translate(draggingLeft - originalLeft, 0);
+    // The header drawing functions expect the context to be at the edge of the canvas
+    // We offset it by how much the user has dragged
+    context.translate(draggingLeft - originalLeft - gridX, 0);
     context.font = headerFont;
 
     const visibleColumns: VisibleIndex[] = [];
@@ -2352,11 +2354,14 @@ export class GridRenderer {
       }
     );
 
-    context.translate(0, gridY);
+    // Now move to the edge of the "grid" (top-left of top-left cell). We then draw the
+    // grid background, but only the clipped region will be drawn where the dragging column is.
+    context.translate(gridX, gridY);
     context.font = font;
 
     this.drawGridBackground(context, state);
 
+    // Then draw the contents of the column that is being dragged
     for (let i = startIndex; i <= endIndex; i += 1) {
       this.drawColumnCellContents(context, state, i);
     }
