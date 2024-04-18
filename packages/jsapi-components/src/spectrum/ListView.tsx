@@ -1,8 +1,8 @@
-import { useProvider } from '@adobe/react-spectrum';
 import {
   ListView as ListViewBase,
   ListViewProps as ListViewPropsBase,
   NormalizedItemData,
+  useSpectrumThemeProvider,
 } from '@deephaven/components';
 import { dh as DhType } from '@deephaven/jsapi-types';
 import { Settings } from '@deephaven/jsapi-utils';
@@ -30,7 +30,7 @@ export function ListView({
   settings,
   ...props
 }: ListViewProps): JSX.Element {
-  const { scale } = useProvider();
+  const { scale } = useSpectrumThemeProvider();
   const itemHeight = LIST_VIEW_ROW_HEIGHTS[props.density ?? 'regular'][scale];
 
   const { getFormattedString: formatValue } = useFormatter(settings);
