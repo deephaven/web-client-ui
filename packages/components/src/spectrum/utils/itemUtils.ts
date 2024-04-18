@@ -48,7 +48,7 @@ export type ItemSelectionChangeHandler = (key: ItemKey) => void;
 export interface NormalizedItemData {
   key?: ItemKey;
   content: ReactNode;
-  textValue?: string;
+  textValue: string;
 }
 
 export interface NormalizedSectionData {

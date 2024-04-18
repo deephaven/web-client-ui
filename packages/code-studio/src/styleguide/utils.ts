@@ -23,12 +23,14 @@ export function* generateNormalizedItems(
     }
     const letter = letters[charI];
     const key = `${letter}${suffix}`;
+    const content = `${letter}${letter}${letter}${suffix}`;
 
     yield {
       key,
       item: {
         key: (i + 1) * 100,
-        content: `${letter}${letter}${letter}${suffix}`,
+        content,
+        textValue: content,
       },
     };
   }

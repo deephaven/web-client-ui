@@ -38,6 +38,7 @@ export function wrapItemChildren(
       // overflow
       return cloneElement(item, {
         ...item.props,
+        key: item.key ?? item.props.textValue,
         children: (
           <ItemContent tooltipOptions={tooltipOptions}>
             {item.props.children}
@@ -49,6 +50,9 @@ export function wrapItemChildren(
     if (isSectionElement(item)) {
       return cloneElement(item, {
         ...item.props,
+        key:
+          item.key ??
+          (typeof item.props.title === 'string' ? item.props.title : undefined),
         children: wrapItemChildren(
           item.props.children,
           tooltipOptions
