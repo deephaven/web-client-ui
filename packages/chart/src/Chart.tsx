@@ -332,6 +332,10 @@ class Chart extends Component<ChartProps, ChartState> {
       return {
         displaylogo: false,
 
+        // scales the plot to the container size
+        // https://github.com/plotly/react-plotly.js/issues/102
+        responsive: true,
+
         // Display the mode bar if there's an error or downsampling so user can see progress
         // Yes, the value is a boolean or the string 'hover': https://github.com/plotly/plotly.js/blob/master/src/plot_api/plot_config.js#L249
         displayModeBar:
@@ -704,7 +708,6 @@ class Chart extends Component<ChartProps, ChartState> {
             onRelayout={this.handleRelayout}
             onUpdate={this.handlePlotUpdate}
             onRestyle={this.handleRestyle}
-            useResizeHandler
             style={{ height: '100%', width: '100%' }}
           />
         )}
