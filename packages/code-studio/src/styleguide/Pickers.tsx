@@ -51,7 +51,9 @@ export function Pickers(): JSX.Element {
 
       <Flex gap={14}>
         <Picker label="Single Child" tooltip={{ placement: 'bottom-end' }}>
-          <Item textValue="Aaa">Aaa</Item>
+          <Item key="Aaa" textValue="Aaa">
+            Aaa
+          </Item>
         </Picker>
 
         <Picker label="Mixed Children Types" defaultSelectedKey="999" tooltip>
@@ -66,9 +68,13 @@ export function Pickers(): JSX.Element {
           {999}
           {true}
           {false}
-          <Item textValue="Item Aaa">Item Aaa</Item>
-          <Item textValue="Item Bbb">Item Bbb</Item>
-          <Item textValue="Complex Ccc">
+          <Item key="Item Aaa" textValue="Item Aaa">
+            Item Aaa
+          </Item>
+          <Item key="Item Bbb" textValue="Item Bbb">
+            Item Bbb
+          </Item>
+          <Item key="Complex Ccc" textValue="Complex Ccc">
             <PersonIcon />
             <Text>Complex Ccc with text that should be truncated</Text>
           </Item>
@@ -79,18 +85,26 @@ export function Pickers(): JSX.Element {
           {'String 1'}
           {'String 2'}
           {'String 3'}
-          <Section title="Section A">
-            <Item textValue="Item Aaa">Item Aaa</Item>
-            <Item textValue="Item Bbb">Item Bbb</Item>
-            <Item textValue="Complex Ccc">
+          <Section key="Section A" title="Section A">
+            <Item key="Item Aaa" textValue="Item Aaa">
+              Item Aaa
+            </Item>
+            <Item key="Item Bbb" textValue="Item Bbb">
+              Item Bbb
+            </Item>
+            <Item key="Complex Ccc" textValue="Complex Ccc">
               <PersonIcon />
               <Text>Complex Ccc</Text>
             </Item>
           </Section>
           <Section key="Key B">
-            <Item textValue="Item Ddd">Item Ddd</Item>
-            <Item textValue="Item Eee">Item Eee</Item>
-            <Item textValue="Complex Fff">
+            <Item key="Item Ddd" textValue="Item Ddd">
+              Item Ddd
+            </Item>
+            <Item key="Item Eee" textValue="Item Eee">
+              Item Eee
+            </Item>
+            <Item key="Complex Fff" textValue="Complex Fff">
               <PersonIcon />
               <Text>Complex Fff</Text>
             </Item>
