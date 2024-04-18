@@ -7,6 +7,7 @@ import {
 } from 'react';
 import cl from 'classnames';
 import { isElementOfType, useCheckOverflow } from '@deephaven/react-hooks';
+import { NON_BREAKING_SPACE } from '@deephaven/utils';
 import { Text } from './Text';
 import { TooltipOptions } from './utils';
 import ItemTooltip from './ItemTooltip';
@@ -46,7 +47,7 @@ export function ItemContent({
   /* eslint-disable no-param-reassign */
   if (content === '') {
     // Prevent the item height from collapsing when the content is empty
-    content = '\xa0'; // Non-breaking space
+    content = NON_BREAKING_SPACE;
   } else if (typeof content === 'boolean') {
     // Boolean values need to be stringified to render
     content = String(content);

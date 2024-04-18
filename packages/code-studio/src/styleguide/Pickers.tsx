@@ -51,10 +51,10 @@ export function Pickers(): JSX.Element {
 
       <Flex gap={14}>
         <Picker label="Single Child" tooltip={{ placement: 'bottom-end' }}>
-          <Item>Aaa</Item>
+          <Item textValue="Aaa">Aaa</Item>
         </Picker>
 
-        <Picker label="Mixed Children Types" defaultSelectedKey={999} tooltip>
+        <Picker label="Mixed Children Types" defaultSelectedKey="999" tooltip>
           {/* eslint-disable react/jsx-curly-brace-presence */}
           {'String 1'}
           {'String 2'}
@@ -66,8 +66,8 @@ export function Pickers(): JSX.Element {
           {999}
           {true}
           {false}
-          <Item>Item Aaa</Item>
-          <Item>Item Bbb</Item>
+          <Item textValue="Item Aaa">Item Aaa</Item>
+          <Item textValue="Item Bbb">Item Bbb</Item>
           <Item textValue="Complex Ccc">
             <PersonIcon />
             <Text>Complex Ccc with text that should be truncated</Text>
@@ -80,26 +80,26 @@ export function Pickers(): JSX.Element {
           {'String 2'}
           {'String 3'}
           <Section title="Section A">
-            <Item>Item Aaa</Item>
-            <Item>Item Bbb</Item>
+            <Item textValue="Item Aaa">Item Aaa</Item>
+            <Item textValue="Item Bbb">Item Bbb</Item>
             <Item textValue="Complex Ccc">
               <PersonIcon />
               <Text>Complex Ccc</Text>
             </Item>
           </Section>
           <Section key="Key B">
-            <Item>Item Ddd</Item>
-            <Item>Item Eee</Item>
+            <Item textValue="Item Ddd">Item Ddd</Item>
+            <Item textValue="Item Eee">Item Eee</Item>
             <Item textValue="Complex Fff">
               <PersonIcon />
               <Text>Complex Fff</Text>
             </Item>
-            <Item key="Ggg">
+            <Item key="Ggg" textValue="Ggg">
               <PersonIcon />
               <Text>Label</Text>
               <Text slot="description">Description</Text>
             </Item>
-            <Item key="Hhh">
+            <Item key="Hhh" textValue="Hhh">
               <PersonIcon />
               <Text>Label that causes overflow</Text>
               <Text slot="description">Description that causes overflow</Text>

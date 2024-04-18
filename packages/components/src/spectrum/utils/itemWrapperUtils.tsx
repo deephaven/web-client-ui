@@ -1,8 +1,6 @@
-import { cloneElement, ReactElement, ReactNode } from 'react';
+import { cloneElement, ReactElement } from 'react';
 import { Item } from '@adobe/react-spectrum';
 import { isElementOfType } from '@deephaven/react-hooks';
-import { NON_BREAKING_SPACE } from '@deephaven/utils';
-import { Text } from '../Text';
 import {
   isItemElement,
   isSectionElement,
@@ -13,30 +11,6 @@ import {
 } from './itemUtils';
 import { ItemProps } from '../shared';
 import ItemContent from '../ItemContent';
-
-/**
- * If the given content is a primitive type, wrap it in a Text component.
- * @param content The content to wrap
- * @param slot The slot to use for the Text component
- * @returns The wrapped content or original content if not a primitive type
- */
-export function wrapPrimitiveWithText(
-  content?: ReactNode,
-  slot?: string
-): ReactNode {
-  // eslint-disable-next-line no-param-reassign
-  content = content ?? '';
-
-  if (['string', 'boolean', 'number'].includes(typeof content)) {
-    return (
-      <Text slot={slot}>
-        {content === '' ? NON_BREAKING_SPACE : String(content)}
-      </Text>
-    );
-  }
-
-  return content;
-}
 
 /**
  * Ensure all primitive children are wrapped in `Item` elements and that all
@@ -54,7 +28,7 @@ export function wrapItemChildren(
     ? itemsOrSections
     : [itemsOrSections];
 
-  return itemsOrSectionsArray.map((item: ItemOrSection) => {
+  return itemsOrSectionsArray.map(item => {
     if (isItemElement(item)) {
       if (isElementOfType(item.props.children, ItemContent)) {
         return item;
@@ -66,7 +40,7 @@ export function wrapItemChildren(
         ...item.props,
         children: (
           <ItemContent tooltipOptions={tooltipOptions}>
-            {wrapPrimitiveWithText(item.props.children)}
+            {item.props.children}
           </ItemContent>
         ),
       });
@@ -98,3 +72,5 @@ export function wrapItemChildren(
     return item;
   });
 }
+
+export default wrapItemChildren;
