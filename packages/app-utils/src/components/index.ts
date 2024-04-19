@@ -1,4 +1,5 @@
 export * from './AppBootstrap';
+export * from './AppDashboards';
 export * from './AuthBootstrap';
 export * from './ConnectionBootstrap';
 export * from './ConnectionContext';

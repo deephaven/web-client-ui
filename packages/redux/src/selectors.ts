@@ -58,7 +58,7 @@ export const getWorkspace = <State extends RootState>(
 export const getSettings = <State extends RootState>(
   store: State
 ): UndoPartial<State['workspace']['data']['settings']> => {
-  const customizedSettings = getWorkspace(store).data.settings;
+  const customizedSettings = getWorkspace(store)?.data.settings ?? {};
 
   const settings = { ...getDefaultWorkspaceSettings(store) };
   const keys = Object.keys(customizedSettings) as (keyof WorkspaceSettings)[];

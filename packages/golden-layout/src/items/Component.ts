@@ -27,6 +27,16 @@ export default class Component extends AbstractContentItem {
     config: ComponentConfig,
     parent: AbstractContentItem
   ) {
+    // Extend before super so the AbstractContentItem defualts aren't applied first
+    Object.entries(
+      layoutManager.config.settings.defaultComponentConfig ?? {}
+    ).forEach(([k, v]) => {
+      // @ts-ignore
+      if (config[k] === undefined) {
+        // @ts-ignore
+        config[k] = v;
+      }
+    });
     super(layoutManager, config, parent, $());
     this.config = config;
     this.parent = parent;

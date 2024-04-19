@@ -101,11 +101,6 @@ export function DashboardLayout({
     layout.getReactChildren()
   );
 
-  // Fire only once after the layout is mounted
-  // This should ensure DashboardPlugins have been mounted
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => onLayoutInitialized(), []);
-
   const hydrateMap = useMemo(() => new Map(), []);
   const dehydrateMap = useMemo(() => new Map(), []);
   const registerComponent = useCallback(
@@ -319,6 +314,13 @@ export function DashboardLayout({
       previousLayoutConfig,
     ]
   );
+
+  // This should be the last hook called in this component
+  // Ensures it runs after any other effects on mount
+  // Fire only once after the layout is mounted
+  // This should ensure DashboardPlugins have been mounted
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => onLayoutInitialized(), []);
 
   return (
     <>
