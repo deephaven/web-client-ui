@@ -20,17 +20,16 @@ import { wrapItemChildren } from '../utils/itemWrapperUtils';
 import usePickerScrollOnOpen from './usePickerScrollOnOpen';
 
 export type PickerProps = {
+  children: ItemOrSection | ItemOrSection[];
+
+  /** Can be set to true or a TooltipOptions to enable item tooltips */
+  tooltip?: boolean | TooltipOptions;
+
   /** The currently selected key in the collection (controlled). */
   selectedKey?: ItemKey | null;
 
   /** The initial selected key in the collection (uncontrolled). */
   defaultSelectedKey?: ItemKey;
-
-  /** Can be set to true or a TooltipOptions to enable item tooltips */
-  tooltip?: boolean | TooltipOptions;
-
-  /** Handler that is called when the picker is scrolled. */
-  onScroll?: (event: Event) => void;
 
   /**
    * Handler that is called when the selection change.
@@ -40,19 +39,20 @@ export type PickerProps = {
    */
   onChange?: (key: ItemKey) => void;
 
+  /** Handler that is called when the picker is scrolled. */
+  onScroll?: (event: Event) => void;
+
   /**
    * Handler that is called when the selection changes.
    * @deprecated Use `onChange` instead
    */
   onSelectionChange?: (key: ItemKey) => void;
-
-  children: ItemOrSection | ItemOrSection[];
-} & /*
+} /*
  * Support remaining SpectrumPickerProps.
  * Note that `selectedKey`, `defaultSelectedKey`, and `onSelectionChange` are
  * re-defined above to account for boolean types which aren't included in the
  * React `Key` type, but are actually supported by the Spectrum Picker component.
- */ Omit<
+ */ & Omit<
   NormalizedSpectrumPickerProps,
   | 'children'
   | 'items'
