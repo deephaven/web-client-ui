@@ -258,10 +258,7 @@ export class AppMainContainer extends Component<
       widgets: [],
       tabs: Object.entries(allDashboardData).map(([key, value]) => ({
         key,
-        title:
-          key !== DEFAULT_DASHBOARD_ID
-            ? value.title ?? 'Untitled'
-            : 'Code Studio',
+        title: value.title ?? 'Untitled',
         isClosable: key !== DEFAULT_DASHBOARD_ID,
         icon: key === DEFAULT_DASHBOARD_ID ? vsTerminal : undefined,
       })),

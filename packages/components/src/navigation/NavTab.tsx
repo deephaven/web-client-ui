@@ -33,7 +33,7 @@ const NavTab = memo(
     const { key, isClosable = onClose != null, title, icon } = tab;
 
     let iconElem: JSX.Element | undefined;
-    if (icon) {
+    if (icon != null) {
       iconElem = React.isValidElement(icon) ? (
         icon
       ) : (
