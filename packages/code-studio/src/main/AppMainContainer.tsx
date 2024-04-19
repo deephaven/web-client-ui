@@ -59,7 +59,7 @@ import {
   dhPanels,
   vsDebugDisconnect,
   dhSquareFilled,
-  vsHome,
+  vsTerminal,
 } from '@deephaven/icons';
 import { getVariableDescriptor } from '@deephaven/jsapi-bootstrap';
 import dh from '@deephaven/jsapi-shim';
@@ -256,12 +256,15 @@ export class AppMainContainer extends Component<
       isSettingsMenuShown: false,
       unsavedNotebookCount: 0,
       widgets: [],
-      tabs: Object.entries(allDashboardData)
-        .filter(([key]) => key !== DEFAULT_DASHBOARD_ID)
-        .map(([key, value]) => ({
-          key,
-          title: value.title ?? 'Untitled',
-        })),
+      tabs: Object.entries(allDashboardData).map(([key, value]) => ({
+        key,
+        title:
+          key !== DEFAULT_DASHBOARD_ID
+            ? value.title ?? 'Untitled'
+            : 'Code Studio',
+        isClosable: key !== DEFAULT_DASHBOARD_ID,
+        icon: key === DEFAULT_DASHBOARD_ID ? vsTerminal : undefined,
+      })),
       activeTabKey: DEFAULT_DASHBOARD_ID,
       layoutIteration: 0,
     };
@@ -856,12 +859,14 @@ export class AppMainContainer extends Component<
         layoutConfig: layoutConfig as ItemConfigType[],
         key: `${DEFAULT_DASHBOARD_ID}-${layoutIteration}`,
       },
-      ...tabs.map(tab => ({
-        id: tab.key,
-        layoutConfig: (allDashboardData[tab.key]?.layoutConfig ??
-          EMPTY_ARRAY) as ItemConfigType[],
-        key: `${tab.key}-${layoutIteration}`,
-      })),
+      ...tabs
+        .filter(tab => tab.key !== DEFAULT_DASHBOARD_ID)
+        .map(tab => ({
+          id: tab.key,
+          layoutConfig: (allDashboardData[tab.key]?.layoutConfig ??
+            EMPTY_ARRAY) as ItemConfigType[],
+          key: `${tab.key}-${layoutIteration}`,
+        })),
     ];
   }
 
@@ -898,14 +903,9 @@ export class AppMainContainer extends Component<
       >
         <div className="app-main-top-nav-menus">
           <Logo className="ml-1" style={{ maxHeight: '20px' }} />
-          {tabs.length > 0 && (
+          {/* Only show the Code Studio tab if there is also an open dashboard */}
+          {tabs.length > 1 && (
             <div style={{ flexShrink: 0, flexGrow: 1, display: 'flex' }}>
-              <Button
-                kind="ghost"
-                icon={vsHome}
-                tooltip="Go to Code Studio"
-                onClick={this.handleHomeClick}
-              />
               <NavTabList
                 tabs={tabs}
                 activeKey={activeTabKey}
