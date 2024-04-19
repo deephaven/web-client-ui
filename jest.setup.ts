@@ -50,6 +50,21 @@ Object.defineProperty(window, 'ResizeObserver', {
   },
 });
 
+Object.defineProperty(window, 'DOMRect', {
+  value: function (x: number = 0, y: number = 0, width = 0, height = 0) {
+    return TestUtils.createMockProxy<DOMRect>({
+      x,
+      y,
+      width,
+      height,
+      top: y,
+      bottom: y + height,
+      left: x,
+      right: x + width,
+    });
+  },
+});
+
 Object.defineProperty(window, 'TextDecoder', {
   value: TextDecoder,
 });

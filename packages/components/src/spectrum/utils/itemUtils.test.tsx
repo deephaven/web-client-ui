@@ -14,6 +14,7 @@ import {
   ItemElementOrPrimitive,
   ItemOrSection,
   SectionElement,
+  itemSelectionToStringSet,
 } from './itemUtils';
 import type { PickerProps } from '../picker/Picker';
 import { Item, Section } from '../shared';
@@ -256,6 +257,19 @@ describe('isNormalizedSection', () => {
   });
 });
 
+describe('itemSelectionToStringSet', () => {
+  it.each([
+    ['all', 'all'],
+    [new Set([1, 2, 3]), new Set(['1', '2', '3'])],
+  ] as const)(
+    `should return 'all' or stringify the keys`,
+    (given, expected) => {
+      const actual = itemSelectionToStringSet(given);
+      expect(actual).toEqual(expected);
+    }
+  );
+});
+
 describe('normalizeItemList', () => {
   it.each([children.empty, children.single, children.mixed])(
     'should return normalized items: %#: %s',
@@ -288,5 +302,10 @@ describe('normalizeTooltipOptions', () => {
   ] as const)('should return: %s', (options, expected) => {
     const actual = normalizeTooltipOptions(options);
     expect(actual).toEqual(expected);
+  });
+
+  it('should allow overriding default placement', () => {
+    const actual = normalizeTooltipOptions(true, 'top');
+    expect(actual).toEqual({ placement: 'top' });
   });
 });

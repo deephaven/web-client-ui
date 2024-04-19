@@ -2,7 +2,7 @@ import { isValidElement, Key, ReactElement, ReactNode } from 'react';
 import { SpectrumPickerProps } from '@adobe/react-spectrum';
 import type { ItemRenderer } from '@react-types/shared';
 import Log from '@deephaven/log';
-import { KeyedItem } from '@deephaven/utils';
+import { KeyedItem, SelectionT } from '@deephaven/utils';
 import { Item, ItemProps, Section, SectionProps } from '../shared';
 import { PopperOptions } from '../../popper';
 
@@ -32,6 +32,8 @@ export type ItemOrSection = ItemElementOrPrimitive | SectionElement;
  * don't reflect it.
  */
 export type ItemKey = Key | boolean;
+
+export type ItemSelection = SelectionT<ItemKey>;
 
 /**
  * Augment the Spectrum selection change handler type to include boolean keys.
@@ -66,6 +68,9 @@ export type NormalizedSection = KeyedItem<
   NormalizedSectionData,
   Key | undefined
 >;
+
+export type NormalizedItemOrSection<TItemOrSection extends ItemOrSection> =
+  TItemOrSection extends SectionElement ? NormalizedSection : NormalizedItem;
 
 export type NormalizedSpectrumPickerProps = SpectrumPickerProps<NormalizedItem>;
 
@@ -114,14 +119,19 @@ export function isItemElement<T>(
 }
 
 /**
- * Determine if a node is an array containing normalized items with keys.
- * Note that this only checks the first node in the array.
+ * Determine if a node is an array containing normalized items or sections with
+ * keys. Note that this only checks the first node in the array.
  * @param node The node to check
- * @returns True if the node is a normalized item with keys array
+ * @returns True if the node is a normalized item or section with keys array
  */
-export function isNormalizedItemsWithKeysList(
-  node: ItemOrSection | ItemOrSection[] | (NormalizedItem | NormalizedSection)[]
-): node is (NormalizedItem | NormalizedSection)[] {
+export function isNormalizedItemsWithKeysList<
+  TItemOrSection extends ItemOrSection,
+>(
+  node:
+    | TItemOrSection
+    | TItemOrSection[]
+    | NormalizedItemOrSection<TItemOrSection>[]
+): node is NormalizedItemOrSection<TItemOrSection>[] {
   if (!Array.isArray(node)) {
     return false;
   }
@@ -225,9 +235,9 @@ function normalizeTextValue(item: ItemElementOrPrimitive): string | undefined {
  * @param itemOrSection item to normalize
  * @returns NormalizedItem or NormalizedSection object
  */
-function normalizeItem(
-  itemOrSection: ItemOrSection
-): NormalizedItem | NormalizedSection {
+function normalizeItem<TItemOrSection extends ItemOrSection>(
+  itemOrSection: TItemOrSection
+): NormalizedItemOrSection<TItemOrSection> {
   if (!isItemOrSection(itemOrSection)) {
     log.debug(INVALID_ITEM_ERROR_MESSAGE, itemOrSection);
     throw new Error(INVALID_ITEM_ERROR_MESSAGE);
@@ -244,7 +254,7 @@ function normalizeItem(
 
     return {
       item: { key, title, items },
-    };
+    } as NormalizedItemOrSection<TItemOrSection>;
   }
 
   const key = normalizeItemKey(itemOrSection);
@@ -255,23 +265,23 @@ function normalizeItem(
 
   return {
     item: { key, content, textValue },
-  };
+  } as NormalizedItemOrSection<TItemOrSection>;
 }
 
 /**
- * Get normalized items from an item or array of items.
- * @param itemsOrSections An item or array of items
- * @returns An array of normalized items
+ * Normalize an item or section or a list of items or sections.
+ * @param itemsOrSections An item or section or array of items or sections
+ * @returns An array of normalized items or sections
  */
-export function normalizeItemList(
-  itemsOrSections: ItemOrSection | ItemOrSection[] | NormalizedItem[]
-): (NormalizedItem | NormalizedSection)[] {
+export function normalizeItemList<TItemOrSection extends ItemOrSection>(
+  itemsOrSections: TItemOrSection | TItemOrSection[] | NormalizedItem[]
+): NormalizedItemOrSection<TItemOrSection>[] {
   // If already normalized, just return as-is
   if (isNormalizedItemsWithKeysList(itemsOrSections)) {
-    return itemsOrSections;
+    return itemsOrSections as NormalizedItemOrSection<TItemOrSection>[];
   }
 
-  const itemsArray = Array.isArray(itemsOrSections)
+  const itemsArray: TItemOrSection[] = Array.isArray(itemsOrSections)
     ? itemsOrSections
     : [itemsOrSections];
 
@@ -280,19 +290,37 @@ export function normalizeItemList(
 
 /**
  * Returns a TooltipOptions object or null if options is false or null.
- * @param options
+ * @param options Tooltip options
+ * @param placement Default placement for the tooltip if `options` is set
+ * explicitly to `true`
  * @returns TooltipOptions or null
  */
 export function normalizeTooltipOptions(
-  options?: boolean | TooltipOptions | null
+  options?: boolean | TooltipOptions | null,
+  placement: TooltipOptions['placement'] = 'right'
 ): TooltipOptions | null {
   if (options == null || options === false) {
     return null;
   }
 
   if (options === true) {
-    return { placement: 'right' };
+    return { placement };
   }
 
   return options;
+}
+
+/**
+ * Convert a selection of `ItemKey`s to a selection of strings.
+ * @param itemKeys The selection of `ItemKey`s
+ * @returns The selection of strings
+ */
+export function itemSelectionToStringSet(
+  itemKeys?: 'all' | Iterable<ItemKey>
+): undefined | 'all' | Set<string> {
+  if (itemKeys == null || itemKeys === 'all') {
+    return itemKeys as undefined | 'all';
+  }
+
+  return new Set([...itemKeys].map(String));
 }

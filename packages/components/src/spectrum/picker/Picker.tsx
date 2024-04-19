@@ -1,10 +1,9 @@
-import { Key, ReactNode, useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { DOMRef } from '@react-types/shared';
-import { Flex, Picker as SpectrumPicker } from '@adobe/react-spectrum';
+import { Picker as SpectrumPicker } from '@adobe/react-spectrum';
 import {
   getPositionOfSelectedItem,
   findSpectrumPickerScrollArea,
-  isElementOfType,
   usePopoverOnScrollRef,
 } from '@deephaven/react-hooks';
 import {
@@ -13,7 +12,6 @@ import {
   PICKER_TOP_OFFSET,
 } from '@deephaven/utils';
 import cl from 'classnames';
-import { Tooltip } from '../../popper';
 import {
   isNormalizedSection,
   NormalizedSpectrumPickerProps,
@@ -25,9 +23,8 @@ import {
   ItemKey,
   getItemKey,
 } from '../utils/itemUtils';
-import { PickerItemContent } from './PickerItemContent';
-import { Item, Section } from '../shared';
-import { Text } from '../Text';
+import { Section } from '../shared';
+import { useRenderNormalizedItem } from '../utils';
 
 export type PickerProps = {
   children: ItemOrSection | ItemOrSection[] | NormalizedItem[];
@@ -70,26 +67,6 @@ export type PickerProps = {
 >;
 
 /**
- * Create tooltip content optionally wrapping with a Flex column for array
- * content. This is needed for Items containing description `Text` elements.
- */
-function createTooltipContent(content: ReactNode) {
-  if (typeof content === 'boolean') {
-    return String(content);
-  }
-
-  if (Array.isArray(content)) {
-    return (
-      <Flex direction="column" alignItems="start">
-        {content.filter(node => isElementOfType(node, Text))}
-      </Flex>
-    );
-  }
-
-  return content;
-}
-
-/**
  * Picker component for selecting items from a list of items. Items can be
  * provided via the `items` prop or as children. Each item can be a string,
  * number, boolean, or a Spectrum <Item> element. The remaining props are just
@@ -120,41 +97,7 @@ export function Picker({
     [tooltip]
   );
 
-  const renderItem = useCallback(
-    (normalizedItem: NormalizedItem) => {
-      const key = getItemKey(normalizedItem);
-      const content = normalizedItem.item?.content ?? '';
-      const textValue = normalizedItem.item?.textValue ?? '';
-
-      return (
-        <Item
-          // Note that setting the `key` prop explicitly on `Item` elements
-          // causes the picker to expect `selectedKey` and `defaultSelectedKey`
-          // to be strings. It also passes the stringified value of the key to
-          // `onSelectionChange` handlers` regardless of the actual type of the
-          // key. We can't really get around setting in order to support Windowed
-          // data, so we'll need to do some manual conversion of keys to strings
-          // in other places of this component.
-          key={key as Key}
-          // The `textValue` prop gets used to provide the content of `<option>`
-          // elements that back the Spectrum Picker. These are not visible in the UI,
-          // but are used for accessibility purposes, so we set to an arbitrary
-          // 'Empty' value so that they are not empty strings.
-          textValue={textValue === '' ? 'Empty' : textValue}
-        >
-          <>
-            <PickerItemContent>{content}</PickerItemContent>
-            {tooltipOptions == null || content === '' ? null : (
-              <Tooltip options={tooltipOptions}>
-                {createTooltipContent(content)}
-              </Tooltip>
-            )}
-          </>
-        </Item>
-      );
-    },
-    [tooltipOptions]
-  );
+  const renderNormalizedItem = useRenderNormalizedItem(tooltipOptions);
 
   const getInitialScrollPositionInternal = useCallback(
     () =>
@@ -208,7 +151,6 @@ export function Picker({
     <SpectrumPicker
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...spectrumPickerProps}
-      // The `ref` prop type defined by React Spectrum is incorrect here
       ref={scrollRef as unknown as DOMRef<HTMLDivElement>}
       onOpenChange={onOpenChangeInternal}
       UNSAFE_className={cl('dh-picker', UNSAFE_className)}
@@ -217,8 +159,12 @@ export function Picker({
       // set on `Item` elements. Since we do this in `renderItem`, we need to
       // ensure that `selectedKey` and `defaultSelectedKey` are strings in order
       // for selection to work.
-      selectedKey={selectedKey?.toString()}
-      defaultSelectedKey={defaultSelectedKey?.toString()}
+      selectedKey={selectedKey == null ? selectedKey : selectedKey.toString()}
+      defaultSelectedKey={
+        defaultSelectedKey == null
+          ? defaultSelectedKey
+          : defaultSelectedKey.toString()
+      }
       // `onChange` is just an alias for `onSelectionChange`
       onSelectionChange={
         onSelectionChangeInternal as NormalizedSpectrumPickerProps['onSelectionChange']
@@ -232,12 +178,12 @@ export function Picker({
               title={itemOrSection.item?.title}
               items={itemOrSection.item?.items}
             >
-              {renderItem}
+              {renderNormalizedItem}
             </Section>
           );
         }
 
-        return renderItem(itemOrSection);
+        return renderNormalizedItem(itemOrSection);
       }}
     </SpectrumPicker>
   );
