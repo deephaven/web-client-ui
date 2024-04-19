@@ -61,6 +61,13 @@ export type PickerProps = {
   | 'defaultSelectedKey'
 >;
 
+/**
+ * Picker component for selecting items from a list of items. Items can be
+ * provided via the `children` prop. Each item can be a string,	number, boolean,
+ * or a Spectrum <Item> element. The remaining props are just	pass through props
+ * for the Spectrum Picker component.
+ * See https://react-spectrum.adobe.com/react-spectrum/Picker.html
+ */
 export function Picker({
   children,
   tooltip = true,
