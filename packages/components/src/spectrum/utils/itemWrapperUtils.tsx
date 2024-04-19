@@ -31,6 +31,7 @@ export function wrapItemChildren(
 
   return itemsOrSectionsArray.map(item => {
     if (isItemElement(item)) {
+      // Item content is already wrapped
       if (isElementOfType(item.props.children, ItemContent)) {
         return item;
       }

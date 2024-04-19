@@ -11,6 +11,10 @@ import ItemContent from '../ItemContent';
 
 const log = Log.module('itemUtils');
 
+/**
+ * `Item.textValue` prop needs to be a non-empty string for accessibility
+ * purposes. This is not displayed in the UI.
+ */
 export const ITEM_EMPTY_STRING_TEXT_VALUE = 'Empty';
 
 export const INVALID_ITEM_ERROR_MESSAGE =
@@ -186,6 +190,12 @@ export function isItemElement<T>(
   return isElementOfType(node, Item);
 }
 
+/**
+ * Determine if a node is an Item element containing a child `Text` element with
+ * a `slot` prop set to `description`.
+ * @param node The node to check
+ * @returns True if the node is an Item element with a description
+ */
 export function isItemElementWithDescription<T>(
   node: ReactNode
 ): node is ReactElement<ItemProps<T>> {
@@ -193,6 +203,7 @@ export function isItemElementWithDescription<T>(
     return false;
   }
 
+  // If children are wrapped in `ItemContent`, go down 1 level
   const children = isElementOfType(node.props.children, ItemContent)
     ? node.props.children.props.children
     : node.props.children;
@@ -201,16 +212,7 @@ export function isItemElementWithDescription<T>(
 
   const result = childrenArray.some(
     child => child.props?.slot === 'description' && isElementOfType(child, Text)
-    // (isElementOfType(child, Text) || child.props.children?.[0].type === Text)
   );
-
-  // console.log(
-  //   '[TESTING] result:',
-  //   result,
-  //   node.key,
-  //   childrenArray,
-  //   childrenArray.map(child => [child, Text])
-  // );
 
   return result;
 }
