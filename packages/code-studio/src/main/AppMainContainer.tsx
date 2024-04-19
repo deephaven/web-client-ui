@@ -26,6 +26,7 @@ import {
   NavTabList,
   type NavTabItem,
   SlideTransition,
+  LoadingOverlay,
 } from '@deephaven/components';
 import { SHORTCUTS as IRIS_GRID_SHORTCUTS } from '@deephaven/iris-grid';
 import {
@@ -95,6 +96,7 @@ import {
   isLegacyDashboardPlugin,
   type PluginModuleMap,
 } from '@deephaven/plugin';
+import { AppDashboards } from '@deephaven/app-utils';
 import JSZip from 'jszip';
 import SettingsMenu from '../settings/SettingsMenu';
 import AppControlsMenu from './AppControlsMenu';
@@ -103,8 +105,8 @@ import './AppMainContainer.scss';
 import WidgetList, { WindowMouseEvent } from './WidgetList';
 import UserLayoutUtils from './UserLayoutUtils';
 import LayoutStorage from '../storage/LayoutStorage';
-import AppDashboards from './AppDashboards';
 import { getFormattedVersionInfo } from '../settings/SettingsUtils';
+import EmptyDashboard from './EmptyDashboard';
 
 const log = Log.module('AppMainContainer');
 
@@ -998,7 +1000,13 @@ export class AppMainContainer extends Component<
           dashboards={this.getDashboards()}
           activeDashboard={activeTabKey}
           onGoldenLayoutChange={this.handleGoldenLayoutChange}
-          onAutoFillClick={this.handleAutoFillClick}
+          emptyDashboard={
+            activeTabKey === DEFAULT_DASHBOARD_ID ? (
+              <EmptyDashboard onAutoFillClick={this.handleAutoFillClick} />
+            ) : (
+              <LoadingOverlay />
+            )
+          }
           plugins={[
             <ConsolePlugin
               key="ConsolePlugin"
