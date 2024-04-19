@@ -2,11 +2,11 @@ import React, { memo } from 'react';
 import classNames from 'classnames';
 import { Draggable } from 'react-beautiful-dnd';
 import { IconDefinition, vsClose } from '@deephaven/icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { NavTabItem } from './NavTabList';
 import Button from '../Button';
 import ContextActions from '../context-actions/ContextActions';
 import { ResolvableContextAction } from '../context-actions';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 interface NavTabProps {
   tab: NavTabItem;
