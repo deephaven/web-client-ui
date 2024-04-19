@@ -22,6 +22,21 @@ export interface UseStringifiedSelectionResult {
   onStringSelectionChange: (key: Key) => void;
 }
 
+/**
+ * Spectrum collection components treat keys as strings if the `key` prop is
+ * explicitly set on `Item` elements. Since we do this in `useRenderNormalizedItem`,
+ * we need to ensure that keys are strings in order for selection to work. We
+ * then need to convert back to the original key types in the onChange handler.
+ * This hook encapsulates converting to and from strings so that keys can match
+ * the original key type.
+ * @param normalizedItems The normalized items to select from.
+ * @param selectedKey The currently selected key in the collection.
+ * @param defaultSelectedKey The initial selected key in the collection.
+ * @param disabledKeys The currently disabled keys in the collection.
+ * @param onChange Handler that is called when the selection changes.
+ * @returns UseStringifiedSelectionResult with stringified key sets and string
+ * key selection change handler.
+ */
 export function useStringifiedSelection({
   normalizedItems,
   defaultSelectedKey,
