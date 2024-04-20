@@ -1,7 +1,8 @@
 import React, { memo } from 'react';
 import classNames from 'classnames';
 import { Draggable } from 'react-beautiful-dnd';
-import { vsClose } from '@deephaven/icons';
+import { IconDefinition, vsClose } from '@deephaven/icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { NavTabItem } from './NavTabList';
 import Button from '../Button';
 import ContextActions from '../context-actions/ContextActions';
@@ -29,7 +30,16 @@ const NavTab = memo(
     isDraggable,
     contextActions,
   }: NavTabProps) => {
-    const { key, isClosable = onClose != null, title } = tab;
+    const { key, isClosable = onClose != null, title, icon } = tab;
+
+    let iconElem: JSX.Element | undefined;
+    if (icon != null) {
+      iconElem = React.isValidElement(icon) ? (
+        icon
+      ) : (
+        <FontAwesomeIcon icon={icon as IconDefinition} />
+      );
+    }
 
     return (
       <Draggable
@@ -68,6 +78,7 @@ const NavTab = memo(
                 if (event.key === 'Enter') onSelect(key);
               }}
             >
+              {iconElem}
               {title}
               {isClosable && (
                 <Button

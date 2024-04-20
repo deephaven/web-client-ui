@@ -13,6 +13,7 @@ import {
   OnDragEndResponder,
 } from 'react-beautiful-dnd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { vsChevronRight, vsChevronLeft } from '@deephaven/icons';
 import { useResizeObserver } from '@deephaven/react-hooks';
 import DragUtils from '../DragUtils';
@@ -38,6 +39,11 @@ export interface NavTabItem {
    * Title to display on the tab.
    */
   title: string;
+
+  /**
+   * Icon to display on the tab.
+   */
+  icon?: IconDefinition | JSX.Element;
 
   /**
    * Whether the tab is closable.
