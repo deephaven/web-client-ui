@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import shortid from 'shortid';
 import { AppDashboards, useConnection, useUser } from '@deephaven/app-utils';
 import type GoldenLayout from '@deephaven/golden-layout';
 import type { ItemConfigType } from '@deephaven/golden-layout';
@@ -11,14 +12,16 @@ import {
 import type { dh } from '@deephaven/jsapi-types';
 import { fetchVariableDefinition } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
+import { useDashboardPlugins } from '@deephaven/plugin';
 import {
-  usePlugins,
-  isDashboardPlugin,
-  isLegacyDashboardPlugin,
-  type DashboardPlugin,
-  type LegacyDashboardPlugin,
-} from '@deephaven/plugin';
-import { PanelEvent, getAllDashboardsData } from '@deephaven/dashboard';
+  PanelEvent,
+  getAllDashboardsData,
+  listenForCreateDashboard,
+  CreateDashboardPayload,
+  DEFAULT_DASHBOARD_ID,
+  setDashboardPluginData,
+  stopListenForCreateDashboard,
+} from '@deephaven/dashboard';
 import { getVariableDescriptor } from '@deephaven/jsapi-bootstrap';
 import { EMPTY_ARRAY } from '@deephaven/utils';
 import { setUser } from '@deephaven/redux';
@@ -26,10 +29,15 @@ import './App.scss'; // Styles for in this app
 
 const log = Log.module('EmbedWidget.App');
 
+const LAYOUT_SETTINGS = {
+  hasHeaders: true,
+  defaultComponentConfig: { isClosable: false },
+};
+
 /**
  * A functional React component that displays a Deephaven Widget using the @deephaven/plugin package.
  * It will attempt to open and display the widget specified with the `name` parameter, expecting it to be present on the server.
- * E.g. http://localhost:4030/?name=myWidget will attempt to open a widget `myWidget`
+ * E.g. http://localhost:4010/?name=myWidget will attempt to open a widget `myWidget` by emitting a `PanelEvent.OPEN` event.
  * If no query param is provided, it will display an error.
  * By default, tries to connect to the server defined in the VITE_CORE_API_URL variable, which is set to http://localhost:10000/jsapi
  * See Vite docs for how to update these env vars: https://vitejs.dev/guide/env-and-mode.html
@@ -82,45 +90,60 @@ function App(): JSX.Element {
     return () => connection.getObject(definition);
   }, [connection, definition]);
 
-  const [gl, setGl] = useState<GoldenLayout | null>(null);
+  const user = useUser();
+  const dispatch = useDispatch();
 
-  const handleGoldenLayoutChange = useCallback((newLayout: GoldenLayout) => {
-    setGl(newLayout);
-  }, []);
+  useEffect(() => {
+    dispatch(setUser(user));
+  }, [dispatch, user]);
+
+  const [goldenLayout, setGoldenLayout] = useState<GoldenLayout | null>(null);
+  const [dashboardId, setDashboardId] = useState(DEFAULT_DASHBOARD_ID);
+
+  const handleGoldenLayoutChange = useCallback(
+    (newLayout: GoldenLayout) => {
+      function handleCreateDashboard({
+        pluginId,
+        data,
+      }: CreateDashboardPayload) {
+        const id = shortid();
+        dispatch(setDashboardPluginData(id, pluginId, data));
+        setDashboardId(id);
+      }
+
+      setGoldenLayout(oldLayout => {
+        if (oldLayout != null) {
+          stopListenForCreateDashboard(
+            oldLayout.eventHub,
+            handleCreateDashboard
+          );
+        }
+        listenForCreateDashboard(newLayout.eventHub, handleCreateDashboard);
+        return newLayout;
+      });
+    },
+    [dispatch]
+  );
+
+  const [hasEmittedWidget, setHasEmittedWidget] = useState(false);
 
   const handleDashboardInitialized = useCallback(() => {
-    if (gl == null || definition == null) {
-      log.debug2('this is a test');
+    if (goldenLayout == null || definition == null || hasEmittedWidget) {
       return;
     }
-    gl.eventHub.emit(PanelEvent.OPEN, {
+
+    setHasEmittedWidget(true);
+    goldenLayout.eventHub.emit(PanelEvent.OPEN, {
       fetch,
       widget: getVariableDescriptor(definition),
     });
-  }, [gl, definition, fetch]);
+  }, [goldenLayout, definition, fetch, hasEmittedWidget]);
 
   const allDashboardData = useSelector(getAllDashboardsData);
 
-  const plugins = usePlugins();
+  const dashboardPlugins = useDashboardPlugins();
 
-  const dashboardPlugins = useMemo(() => {
-    const dbPlugins = [...plugins.entries()].filter(
-      ([, plugin]) =>
-        isDashboardPlugin(plugin) || isLegacyDashboardPlugin(plugin)
-    ) as [string, DashboardPlugin | LegacyDashboardPlugin][];
-
-    return dbPlugins.map(([pluginName, plugin]) => {
-      if (isLegacyDashboardPlugin(plugin)) {
-        const { DashboardPlugin: DPlugin } = plugin;
-        return <DPlugin key={pluginName} />;
-      }
-
-      const { component: DPlugin } = plugin;
-      return <DPlugin key={pluginName} />;
-    });
-  }, [plugins]);
-
-  const layoutConfig = (allDashboardData['a']?.layoutConfig ??
+  const layoutConfig = (allDashboardData[dashboardId]?.layoutConfig ??
     EMPTY_ARRAY) as ItemConfigType[];
 
   const hasMultipleComponents = useMemo(() => {
@@ -145,31 +168,19 @@ function App(): JSX.Element {
 
   // Do this instead of changing layoutSettings because it will create
   // a new gl instance and can cause some loading failures likely due to
-  // some race conditions
-  useEffect(() => {
-    if (gl != null) {
-      if (hasMultipleComponents) {
-        gl.enableHeaders();
-      } else {
-        gl.disableHeaders();
+  // some race conditions w/ deephaven UI
+  useEffect(
+    function togglePanelHeaders() {
+      if (goldenLayout != null) {
+        if (hasMultipleComponents) {
+          goldenLayout.enableHeaders();
+        } else {
+          goldenLayout.disableHeaders();
+        }
       }
-    }
-  }, [hasMultipleComponents, gl]);
-
-  const layoutSettings = useMemo(
-    () => ({
-      hasHeaders: true,
-      defaultComponentConfig: { isClosable: false },
-    }),
-    []
+    },
+    [hasMultipleComponents, goldenLayout]
   );
-
-  const user = useUser();
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    dispatch(setUser(user));
-  }, [dispatch, user]);
 
   return (
     <div className="App">
@@ -178,12 +189,12 @@ function App(): JSX.Element {
           <AppDashboards
             dashboards={[
               {
-                id: 'a',
+                id: dashboardId,
                 layoutConfig,
-                layoutSettings,
+                layoutSettings: LAYOUT_SETTINGS,
               },
             ]}
-            activeDashboard="a"
+            activeDashboard={dashboardId}
             onLayoutInitialized={handleDashboardInitialized}
             onGoldenLayoutChange={handleGoldenLayoutChange}
             plugins={dashboardPlugins}

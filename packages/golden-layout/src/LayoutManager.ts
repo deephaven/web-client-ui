@@ -440,7 +440,6 @@ export class LayoutManager extends EventEmitter {
   updateSize(width?: number, height?: number) {
     this.width = width ?? this.container.width() ?? 0;
     this.height = height ?? this.container.height() ?? 0;
-    console.log(this.width, this.height);
 
     if (this.isInitialised === true) {
       this.root.callDownwards('setSize', [this.width, this.height]);

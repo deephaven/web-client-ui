@@ -89,13 +89,7 @@ import {
 } from '@deephaven/utils';
 import GoldenLayout from '@deephaven/golden-layout';
 import type { ItemConfigType } from '@deephaven/golden-layout';
-import {
-  type DashboardPlugin,
-  isDashboardPlugin,
-  type LegacyDashboardPlugin,
-  isLegacyDashboardPlugin,
-  type PluginModuleMap,
-} from '@deephaven/plugin';
+import { type PluginModuleMap, getDashboardPlugins } from '@deephaven/plugin';
 import { AppDashboards } from '@deephaven/app-utils';
 import JSZip from 'jszip';
 import SettingsMenu from '../settings/SettingsMenu';
@@ -785,22 +779,9 @@ export class AppMainContainer extends Component<
     });
   }
 
-  getDashboardPlugins = memoize((plugins: PluginModuleMap) => {
-    const dashboardPlugins = [...plugins.entries()].filter(
-      ([, plugin]) =>
-        isDashboardPlugin(plugin) || isLegacyDashboardPlugin(plugin)
-    ) as [string, DashboardPlugin | LegacyDashboardPlugin][];
-
-    return dashboardPlugins.map(([name, plugin]) => {
-      if (isLegacyDashboardPlugin(plugin)) {
-        const { DashboardPlugin: DPlugin } = plugin;
-        return <DPlugin key={name} />;
-      }
-
-      const { component: DPlugin } = plugin;
-      return <DPlugin key={name} />;
-    });
-  });
+  getDashboardPlugins = memoize((plugins: PluginModuleMap) =>
+    getDashboardPlugins(plugins)
+  );
 
   handleHomeClick(): void {
     this.handleTabSelect(DEFAULT_DASHBOARD_ID);
