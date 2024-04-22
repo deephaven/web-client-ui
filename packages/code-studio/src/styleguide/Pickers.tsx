@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { cloneElement, useCallback, useState } from 'react';
 import {
   Flex,
   Item,
@@ -26,6 +26,31 @@ const itemElementsB = [...generateItemElements(52, 103)];
 const itemElementsC = [...generateItemElements(104, 155)];
 const itemElementsD = [...generateItemElements(156, 207)];
 const itemElementsE = [...generateItemElements(208, 259)];
+
+const mixedItemsWithIconsNoDescriptions = [
+  'String 1',
+  'String 2',
+  'String 3',
+  '',
+  'Some really long text that should get truncated',
+  444,
+  999,
+  true,
+  false,
+  ...itemElementsA.map((itemEl, i) =>
+    i % 5 > 0
+      ? itemEl
+      : cloneElement(itemEl, {
+          ...itemEl.props,
+          children: [
+            <PersonIcon key={`icon-${itemEl.props.children}`} />,
+            <Text key={`label-${itemEl.props.children}`}>
+              {itemEl.props.children}
+            </Text>,
+          ],
+        })
+  ),
+];
 
 function PersonIcon(): JSX.Element {
   return (
@@ -64,23 +89,7 @@ export function Pickers(): JSX.Element {
         </Picker>
 
         <Picker label="Mixed Children Types" defaultSelectedKey="999" tooltip>
-          {/* eslint-disable react/jsx-curly-brace-presence */}
-          {'String 1'}
-          {'String 2'}
-          {'String 3'}
-          {''}
-          {'Some really long text that should get truncated'}
-          {/* eslint-enable react/jsx-curly-brace-presence */}
-          {444}
-          {999}
-          {true}
-          {false}
-          <Item textValue="Item Aaa">Item Aaa</Item>
-          <Item textValue="Item Bbb">Item Bbb</Item>
-          <Item textValue="Complex Ccc">
-            <PersonIcon />
-            <Text>Complex Ccc with text that should be truncated</Text>
-          </Item>
+          {mixedItemsWithIconsNoDescriptions}
         </Picker>
 
         <Picker label="Sections" tooltip>
