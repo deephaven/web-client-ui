@@ -42,7 +42,7 @@ export function Pickers(): JSX.Element {
     async () =>
       getPositionOfSelectedItem({
         keyedItems: items,
-        itemHeight: PICKER_ITEM_HEIGHTS.noDescription,
+        itemHeight: PICKER_ITEM_HEIGHTS.medium,
         selectedKey,
         topOffset: PICKER_TOP_OFFSET,
       }),
