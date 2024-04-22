@@ -47,6 +47,7 @@ export function ListViewNormalized({
     <ListViewWrapper
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...props}
+      items={normalizedItems}
       selectedKeys={selectedStringKeys}
       defaultSelectedKeys={defaultSelectedStringKeys}
       disabledKeys={disabledStringKeys}

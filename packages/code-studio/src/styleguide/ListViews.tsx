@@ -4,6 +4,7 @@ import {
   Icon,
   Item,
   ListView,
+  ListViewNormalized,
   ItemKey,
   Text,
 } from '@deephaven/components';
@@ -47,7 +48,7 @@ export function ListViews(): JSX.Element {
           aria-label="Single Child"
           selectionMode="multiple"
         >
-          <Item>Aaa</Item>
+          <Item textValue="Aaa">Aaa</Item>
         </ListView>
 
         <label>Icons</label>
@@ -95,8 +96,8 @@ export function ListViews(): JSX.Element {
           {999}
           {true}
           {false}
-          <Item>Item Aaa</Item>
-          <Item>Item Bbb</Item>
+          <Item textValue="Item Aaa">Item Aaa</Item>
+          <Item textValue="Item Bbb">Item Bbb</Item>
           <Item textValue="Complex Ccc">
             <Icon slot="image">
               <FontAwesomeIcon icon={vsPerson} />
@@ -106,15 +107,14 @@ export function ListViews(): JSX.Element {
         </ListView>
 
         <label>Controlled</label>
-        <ListView
+        <ListViewNormalized
+          normalizedItems={itemsSimple}
           gridRow="2"
           aria-label="Controlled"
           selectionMode="multiple"
           selectedKeys={selectedKeys}
           onChange={onChange}
-        >
-          {itemsSimple}
-        </ListView>
+        />
       </Grid>
     </div>
   );
