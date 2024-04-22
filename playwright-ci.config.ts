@@ -11,6 +11,7 @@ const config: PlaywrightTestConfig = {
     timeout: 60 * 1000,
     reuseExistingServer: false,
   },
+  // Applies to the npm command and CI, but CI will get overwritten in the CI config
   reporter: [['github'], ['html']],
 };
 
