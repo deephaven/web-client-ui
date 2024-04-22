@@ -214,7 +214,11 @@ class IrisGridPartitionSelector extends Component<
   getDisplayValue(index: number, value: unknown): string {
     const { model } = this.props;
 
-    if (value == null || value === '') {
+    if (value === null) {
+      return 'null';
+    }
+
+    if (value === undefined || value === '') {
       return '';
     }
     const column = model.partitionColumns[index];
