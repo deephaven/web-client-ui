@@ -18,6 +18,28 @@ describe('useStringifiedSelection', () => {
   const defaultSelectedStringKey = '4';
   const disabledStringKeys = new Set(['7', '8', '9']);
 
+  it.each([null, undefined])(
+    'should return null or undefined for null or undefined keys: %s',
+    nullOrUndefinedKey => {
+      const { result } = renderHook(() =>
+        useStringifiedSelection({
+          normalizedItems,
+          selectedKey: nullOrUndefinedKey,
+          defaultSelectedKey: undefined,
+          disabledKeys: undefined,
+          onChange: undefined,
+        })
+      );
+
+      expect(result.current).toEqual({
+        selectedStringKey: nullOrUndefinedKey,
+        defaultSelectedStringKey: undefined,
+        disabledStringKeys: undefined,
+        onStringSelectionChange: expect.any(Function),
+      });
+    }
+  );
+
   it('should stringify selections', () => {
     const { result } = renderHook(() =>
       useStringifiedSelection({
@@ -37,7 +59,28 @@ describe('useStringifiedSelection', () => {
     });
   });
 
-  it('should call onChange with actual key', () => {
+  it.each([undefined, jest.fn().mockName('onChange')])(
+    'should call onChange with actual key: %s',
+    onChange => {
+      const { result } = renderHook(() =>
+        useStringifiedSelection({
+          normalizedItems,
+          selectedKey,
+          defaultSelectedKey,
+          disabledKeys,
+          onChange,
+        })
+      );
+
+      result.current.onStringSelectionChange('2');
+
+      if (onChange) {
+        expect(onChange).toHaveBeenCalledWith(2);
+      }
+    }
+  );
+
+  it('should call onChange with given key when actual key is not found', () => {
     const onChange = jest.fn().mockName('onChange');
 
     const { result } = renderHook(() =>
@@ -50,8 +93,8 @@ describe('useStringifiedSelection', () => {
       })
     );
 
-    result.current.onStringSelectionChange('2');
+    result.current.onStringSelectionChange('some.key');
 
-    expect(onChange).toHaveBeenCalledWith(2);
+    expect(onChange).toHaveBeenCalledWith('some.key');
   });
 });
