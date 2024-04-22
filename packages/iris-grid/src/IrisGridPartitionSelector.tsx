@@ -215,7 +215,7 @@ class IrisGridPartitionSelector extends Component<
     const { model } = this.props;
 
     if (value === null) {
-      return 'null';
+      return '(null)';
     }
 
     if (value === undefined || value === '') {
