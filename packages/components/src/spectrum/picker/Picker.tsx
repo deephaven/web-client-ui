@@ -5,7 +5,6 @@ import cl from 'classnames';
 import {
   EMPTY_FUNCTION,
   PICKER_ITEM_HEIGHTS,
-  PICKER_SECTION_HEIGHTS,
   PICKER_TOP_OFFSET,
 } from '@deephaven/utils';
 import {
@@ -15,9 +14,12 @@ import {
   ItemKey,
   normalizeTooltipOptions,
   TooltipOptions,
+  isItemElementWithDescription,
+  isSectionElement,
 } from '../utils/itemUtils';
 import { wrapItemChildren } from '../utils/itemWrapperUtils';
 import usePickerScrollOnOpen from './usePickerScrollOnOpen';
+import { useSpectrumThemeProvider } from '../../theme';
 
 export type PickerProps = {
   children: ItemOrSection | ItemOrSection[];
@@ -81,6 +83,9 @@ export function Picker({
   UNSAFE_className,
   ...spectrumPickerProps
 }: PickerProps): JSX.Element {
+  const { scale } = useSpectrumThemeProvider();
+  const itemHeight = PICKER_ITEM_HEIGHTS[scale];
+
   const tooltipOptions = useMemo(
     () => normalizeTooltipOptions(tooltip),
     [tooltip]
@@ -97,18 +102,35 @@ export function Picker({
     [children, tooltipOptions]
   );
 
+  // Item descriptions and Section elements introduce variable item heights.
+  // This throws off scroll position calculations, so we disable auto scrolling
+  // if either of these are found.
+  const disableScrollOnOpen = useMemo(
+    () =>
+      wrappedItems.some(
+        item => isSectionElement(item) || isItemElementWithDescription(item)
+      ),
+    [wrappedItems]
+  );
+
   const getInitialScrollPosition = useCallback(
     async () =>
-      getPositionOfSelectedItemElement({
-        itemsOrSections: wrappedItems,
-        itemHeight: PICKER_ITEM_HEIGHTS.noDescription,
-        itemHeightWithDescription: PICKER_ITEM_HEIGHTS.withDescription,
-        sectionTitleHeight: PICKER_SECTION_HEIGHTS.title,
-        sectionEmptyTitleHeight: PICKER_SECTION_HEIGHTS.emptyTitle,
-        selectedKey: isUncontrolled ? uncontrolledSelectedKey : selectedKey,
-        topOffset: PICKER_TOP_OFFSET,
-      }),
-    [isUncontrolled, selectedKey, uncontrolledSelectedKey, wrappedItems]
+      disableScrollOnOpen
+        ? null
+        : getPositionOfSelectedItemElement({
+            items: wrappedItems,
+            itemHeight,
+            selectedKey: isUncontrolled ? uncontrolledSelectedKey : selectedKey,
+            topOffset: PICKER_TOP_OFFSET,
+          }),
+    [
+      disableScrollOnOpen,
+      isUncontrolled,
+      itemHeight,
+      selectedKey,
+      uncontrolledSelectedKey,
+      wrappedItems,
+    ]
   );
 
   const onSelectionChangeInternal = useCallback(

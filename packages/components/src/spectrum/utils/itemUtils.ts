@@ -111,20 +111,14 @@ export function getItemKey<
 export async function getPositionOfSelectedItemElement<
   TKey extends string | number | boolean | undefined,
 >({
-  itemsOrSections,
+  items,
   itemHeight,
-  itemHeightWithDescription,
-  sectionTitleHeight,
-  sectionEmptyTitleHeight,
   selectedKey,
   topOffset,
 }: {
-  itemsOrSections: (ItemElement | SectionElement)[];
+  items: ItemElement[];
   selectedKey: TKey | null | undefined;
   itemHeight: number;
-  itemHeightWithDescription: number;
-  sectionTitleHeight: number;
-  sectionEmptyTitleHeight: number;
   topOffset: number;
 }): Promise<number> {
   let position = topOffset;
@@ -133,36 +127,13 @@ export async function getPositionOfSelectedItemElement<
     return position;
   }
 
-  const getItemHeight = (item: ItemElement) =>
-    isItemElementWithDescription(item) ? itemHeightWithDescription : itemHeight;
-
   // eslint-disable-next-line no-restricted-syntax
-  for (const itemOrSection of itemsOrSections) {
-    if (itemOrSection.key === selectedKey) {
+  for (const item of items) {
+    if (item.key === selectedKey) {
       return position;
     }
 
-    if (isSectionElement(itemOrSection)) {
-      position +=
-        (itemOrSection.props.title ?? '') === ''
-          ? sectionEmptyTitleHeight
-          : sectionTitleHeight;
-
-      const childItems = Array.isArray(itemOrSection.props.children)
-        ? itemOrSection.props.children
-        : [itemOrSection.props.children];
-
-      // eslint-disable-next-line no-restricted-syntax
-      for (const childItem of childItems) {
-        if (childItem.key === selectedKey) {
-          return position;
-        }
-
-        position += getItemHeight(childItem);
-      }
-    } else {
-      position += getItemHeight(itemOrSection);
-    }
+    position += itemHeight;
   }
 
   return topOffset;

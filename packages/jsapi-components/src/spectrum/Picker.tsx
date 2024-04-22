@@ -7,6 +7,7 @@ import {
   NormalizedSectionData,
   PickerNormalized,
   PickerProps as PickerBaseProps,
+  useSpectrumThemeProvider,
 } from '@deephaven/components';
 import { dh as DhType } from '@deephaven/jsapi-types';
 import { Settings } from '@deephaven/jsapi-utils';
@@ -41,6 +42,9 @@ export function Picker({
   onSelectionChange,
   ...props
 }: PickerProps): JSX.Element {
+  const { scale } = useSpectrumThemeProvider();
+  const itemHeight = PICKER_ITEM_HEIGHTS[scale];
+
   const { getFormattedString: formatValue } = useFormatter(settings);
 
   // `null` is a valid value for `selectedKey` in controlled mode, so we check
@@ -75,8 +79,8 @@ export function Picker({
       return null;
     }
 
-    return index * PICKER_ITEM_HEIGHTS.noDescription + PICKER_TOP_OFFSET;
-  }, [getItemIndexByValue]);
+    return index * itemHeight + PICKER_TOP_OFFSET;
+  }, [getItemIndexByValue, itemHeight]);
 
   const { viewportData, onScroll, setViewport } = useViewportData<
     NormalizedItemData | NormalizedSectionData,
@@ -84,7 +88,7 @@ export function Picker({
   >({
     reuseItemsOnTableResize: true,
     table,
-    itemHeight: PICKER_ITEM_HEIGHTS.noDescription,
+    itemHeight,
     deserializeRow,
   });
 
