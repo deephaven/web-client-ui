@@ -107,6 +107,11 @@ export function getItemKey<
 
 /**
  * Get the position of the item with the given selected key in a list of items.
+ * @param items The items to search
+ * @param itemHeight The height of each item
+ * @param selectedKey The key of the selected item
+ * @param topOffset The top offset of the list
+ * @returns The position of the selected item or the top offset if not found
  */
 export async function getPositionOfSelectedItemElement<
   TKey extends string | number | boolean | undefined,
