@@ -16,6 +16,15 @@ export interface UsePickerScrollOnOpenResult {
   onOpenChange: (isOpen: boolean) => void;
 }
 
+/**
+ * Handle scroll event registration and scrolling to initial scroll position
+ * whenever a Picker popover is opened.
+ * @param getInitialScrollPosition Function to get the initial scroll position.
+ * @param onScroll Callback for scroll events.
+ * @param onOpenChange Callback for open change events.
+ * @return A ref to attach to the Picker and a callback to handle open change
+ * events for the Picker.
+ */
 export function usePickerScrollOnOpen({
   getInitialScrollPosition,
   onScroll,
