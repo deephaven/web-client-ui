@@ -1,6 +1,6 @@
 import {
-  ListView as ListViewBase,
-  ListViewProps as ListViewPropsBase,
+  ListViewNormalized,
+  ListViewNormalizedProps,
   NormalizedItemData,
   useSpectrumThemeProvider,
 } from '@deephaven/components';
@@ -11,7 +11,7 @@ import useFormatter from '../useFormatter';
 import useViewportData from '../useViewportData';
 import { useItemRowDeserializer } from './utils';
 
-export interface ListViewProps extends Omit<ListViewPropsBase, 'children'> {
+export interface ListViewProps extends ListViewNormalizedProps {
   table: DhType.Table;
   /* The column of values to use as item keys. Defaults to the first column. */
   keyColumn?: string;
@@ -53,13 +53,12 @@ export function ListView({
   });
 
   return (
-    <ListViewBase
+    <ListViewNormalized
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...props}
+      normalizedItems={viewportData.items}
       onScroll={onScroll}
-    >
-      {viewportData.items}
-    </ListViewBase>
+    />
   );
 }
 
