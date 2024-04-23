@@ -15,7 +15,6 @@ export interface UseRenderNormalizedItemOptions {
   showItemDescriptions: boolean;
   showItemIcons: boolean;
   tooltipOptions: TooltipOptions | null;
-  iconSize?: number;
 }
 
 /**
