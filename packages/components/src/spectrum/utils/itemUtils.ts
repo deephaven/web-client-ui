@@ -1,7 +1,6 @@
 import { Key, ReactElement, ReactNode } from 'react';
 import { SpectrumPickerProps } from '@adobe/react-spectrum';
 import type { ItemRenderer } from '@react-types/shared';
-import Log from '@deephaven/log';
 import { isElementOfType } from '@deephaven/react-hooks';
 import { KeyedItem, SelectionT } from '@deephaven/utils';
 import { Item, ItemProps, Section, SectionProps } from '../shared';
@@ -9,16 +8,11 @@ import { PopperOptions } from '../../popper';
 import { Text } from '../Text';
 import ItemContent from '../ItemContent';
 
-const log = Log.module('itemUtils');
-
 /**
  * `Item.textValue` prop needs to be a non-empty string for accessibility
  * purposes. This is not displayed in the UI.
  */
 export const ITEM_EMPTY_STRING_TEXT_VALUE = 'Empty';
-
-export const INVALID_ITEM_ERROR_MESSAGE =
-  'Items must be strings, numbers, booleans, <Item> or <Section> elements:';
 
 /**
  * React Spectrum <Section> supports an `ItemRenderer` function as a child. The
@@ -246,121 +240,6 @@ export function isItemOrSection(node: ReactNode): node is ItemOrSection {
     isItemElement(node) ||
     isSectionElement(node)
   );
-}
-
-/**
- * Determine the `key` of an item or section.
- * @param itemOrSection The item or section
- * @returns A `ItemKey` for the item or undefined if a key can't be determined
- */
-function normalizeItemKey(item: ItemElementOrPrimitive): ItemKey | undefined;
-function normalizeItemKey(section: SectionElement): Key | undefined;
-function normalizeItemKey(
-  itemOrSection: ItemElementOrPrimitive | SectionElement
-): Key | ItemKey | undefined {
-  // string, number, or boolean
-  if (typeof itemOrSection !== 'object') {
-    return itemOrSection;
-  }
-
-  // If `key` prop is explicitly set
-  if (itemOrSection.key != null) {
-    return itemOrSection.key;
-  }
-
-  // Section element
-  if (isSectionElement(itemOrSection)) {
-    return typeof itemOrSection.props.title === 'string'
-      ? itemOrSection.props.title
-      : undefined;
-  }
-
-  // Item element
-  return (
-    itemOrSection.props.textValue ??
-    (typeof itemOrSection.props.children === 'string'
-      ? itemOrSection.props.children
-      : undefined)
-  );
-}
-
-/**
- * Get a normalized `textValue` for an item ensuring it is a string.
- * @param item The item
- * @returns A string `textValue` for the item
- */
-function normalizeTextValue(item: ItemElementOrPrimitive): string | undefined {
-  if (typeof item !== 'object') {
-    return String(item);
-  }
-
-  if (item.props.textValue != null) {
-    return item.props.textValue;
-  }
-
-  if (typeof item.props.children === 'string') {
-    return item.props.children;
-  }
-
-  return undefined;
-}
-
-/**
- * Normalize an item or section to an object form.
- * @param itemOrSection item to normalize
- * @returns NormalizedItem or NormalizedSection object
- */
-function normalizeItem<TItemOrSection extends ItemOrSection>(
-  itemOrSection: TItemOrSection
-): NormalizedItemOrSection<TItemOrSection> {
-  if (!isItemOrSection(itemOrSection)) {
-    log.debug(INVALID_ITEM_ERROR_MESSAGE, itemOrSection);
-    throw new Error(INVALID_ITEM_ERROR_MESSAGE);
-  }
-
-  if (isSectionElement(itemOrSection)) {
-    const key = normalizeItemKey(itemOrSection);
-    const { title } = itemOrSection.props;
-
-    const items = normalizeItemList(itemOrSection.props.children).filter(
-      // We don't support nested section elements
-      childItem => !isSectionElement(childItem)
-    ) as NormalizedItem[];
-
-    return {
-      item: { key, title, items },
-    } as NormalizedItemOrSection<TItemOrSection>;
-  }
-
-  const key = normalizeItemKey(itemOrSection);
-  const content = isItemElement(itemOrSection)
-    ? itemOrSection.props.children
-    : itemOrSection;
-  const textValue = normalizeTextValue(itemOrSection);
-
-  return {
-    item: { key, content, textValue },
-  } as NormalizedItemOrSection<TItemOrSection>;
-}
-
-/**
- * Normalize an item or section or a list of items or sections.
- * @param itemsOrSections An item or section or array of items or sections
- * @returns An array of normalized items or sections
- */
-export function normalizeItemList<TItemOrSection extends ItemOrSection>(
-  itemsOrSections: TItemOrSection | TItemOrSection[] | NormalizedItem[]
-): NormalizedItemOrSection<TItemOrSection>[] {
-  // If already normalized, just return as-is
-  if (isNormalizedItemsWithKeysList(itemsOrSections)) {
-    return itemsOrSections as NormalizedItemOrSection<TItemOrSection>[];
-  }
-
-  const itemsArray: TItemOrSection[] = Array.isArray(itemsOrSections)
-    ? itemsOrSections
-    : [itemsOrSections];
-
-  return itemsArray.map(normalizeItem);
 }
 
 /**
