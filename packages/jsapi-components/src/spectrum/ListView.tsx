@@ -6,10 +6,7 @@ import {
 } from '@deephaven/components';
 import { dh as DhType } from '@deephaven/jsapi-types';
 import { Settings } from '@deephaven/jsapi-utils';
-import {
-  LIST_VIEW_ROW_HEIGHTS,
-  LIST_VIEW_ROW_HEIGHTS_WITH_DESCRIPTIONS,
-} from '@deephaven/utils';
+import { LIST_VIEW_ROW_HEIGHTS } from '@deephaven/utils';
 import useFormatter from '../useFormatter';
 import useViewportData from '../useViewportData';
 import { useItemRowDeserializer } from './utils';
@@ -34,23 +31,17 @@ export function ListView({
   table,
   keyColumn: keyColumnName,
   labelColumn: labelColumnName,
-  descriptionColumn: descriptionColumnName,
   iconColumn: iconColumnName,
   settings,
   ...props
 }: ListViewProps): JSX.Element {
   const { scale } = useSpectrumThemeProvider();
-  const itemHeight = (
-    descriptionColumnName == null
-      ? LIST_VIEW_ROW_HEIGHTS
-      : LIST_VIEW_ROW_HEIGHTS_WITH_DESCRIPTIONS
-  )[props.density ?? 'regular'][scale];
+  const itemHeight = LIST_VIEW_ROW_HEIGHTS[props.density ?? 'regular'][scale];
 
   const { getFormattedString: formatValue } = useFormatter(settings);
 
   const deserializeRow = useItemRowDeserializer({
     table,
-    descriptionColumnName,
     iconColumnName,
     keyColumnName,
     labelColumnName,
@@ -72,7 +63,6 @@ export function ListView({
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...props}
       normalizedItems={viewportData.items}
-      showItemDescriptions={descriptionColumnName != null}
       showItemIcons={iconColumnName != null}
       onScroll={onScroll}
     />

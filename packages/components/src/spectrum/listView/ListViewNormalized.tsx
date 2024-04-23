@@ -14,7 +14,6 @@ import { useSpectrumThemeProvider } from '../../theme';
 export interface ListViewNormalizedProps
   extends Omit<ListViewProps, 'children'> {
   normalizedItems: NormalizedItem[];
-  showItemDescriptions: boolean;
   showItemIcons: boolean;
 }
 
@@ -24,7 +23,6 @@ export function ListViewNormalized({
   selectedKeys,
   defaultSelectedKeys,
   disabledKeys,
-  showItemDescriptions,
   showItemIcons,
   UNSAFE_className,
   onChange,
@@ -42,7 +40,11 @@ export function ListViewNormalized({
 
   const renderNormalizedItem = useRenderNormalizedItem({
     itemIconSlot: 'illustration',
-    showItemDescriptions,
+    // Descriptions introduce variable item heights which throws off setting
+    // viewport on windowed data. For now not going to implement description
+    // support in Picker.
+    // https://github.com/deephaven/web-client-ui/issues/1958
+    showItemDescriptions: false,
     showItemIcons,
     tooltipOptions,
     iconSize,
@@ -51,7 +53,7 @@ export function ListViewNormalized({
   // Spectrum doesn't re-render if only the `renderNormalizedItems` function
   // changes, so we create a key from its dependencies that can be used to force
   // re-render.
-  const forceRerenderKey = `${showItemIcons}-${showItemDescriptions}-${tooltipOptions?.placement}`;
+  const forceRerenderKey = `${showItemIcons}-${tooltipOptions?.placement}-${iconSize}`;
 
   const {
     selectedStringKeys,

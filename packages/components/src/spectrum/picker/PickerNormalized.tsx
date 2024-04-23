@@ -53,8 +53,9 @@ export function PickerNormalized({
   const renderNormalizedItem = useRenderNormalizedItem({
     itemIconSlot: 'icon',
     // Descriptions introduce variable item heights which throws off calculation
-    // of initial scroll position. For now not going to implement description
-    // support in Picker.
+    // of initial scroll position and setting viewport on windowed data. For now
+    // not going to implement description support in Picker.
+    // https://github.com/deephaven/web-client-ui/issues/1958
     showItemDescriptions: false,
     showItemIcons,
     tooltipOptions,
