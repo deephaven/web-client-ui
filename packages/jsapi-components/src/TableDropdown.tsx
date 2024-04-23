@@ -82,7 +82,9 @@ export function TableDropdown({
       dh.Table.EVENT_UPDATED,
       (event: CustomEvent<DhType.ViewportData>) => {
         const { detail } = event;
-        const newValues = detail.rows.map(row => row.get(tableColumn));
+        // Core JSAPI returns undefined for null table values,
+        // coalesce with null to differentiate null from no selection in the dropdown
+        const newValues = detail.rows.map(row => row.get(tableColumn) ?? null);
         setValues(newValues);
       }
     );

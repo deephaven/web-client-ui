@@ -172,20 +172,18 @@ class IrisGridPartitionSelector extends Component<
         .slice(0, index + 1)
         .map((partition, i) => {
           const partitionColumn = t.columns[i];
-          return partitionColumn
-            .filter()
-            .eq(
-              this.tableUtils.makeFilterRawValue(
-                partitionColumn.type,
-                partition
-              )
-            );
+          return this.tableUtils.makeNullableEqFilter(
+            partitionColumn,
+            partition
+          );
         });
       t.applyFilter(partitionFilters);
       t.setViewport(0, 0, t.columns);
       const data = await this.pending.add(t.getViewportData());
       const newConfig: PartitionConfig = {
-        partitions: t.columns.map(column => data.rows[0].get(column)),
+        // Core JSAPI returns undefined for null table values,
+        // coalesce with null to differentiate null from no selection in the dropdown
+        partitions: t.columns.map(column => data.rows[0].get(column) ?? null),
         mode: 'partition',
       };
       t.close();
@@ -271,14 +269,10 @@ class IrisGridPartitionSelector extends Component<
         const previousColumn = model.partitionColumns[i - 1];
         const partitionFilter = [
           ...previousFilter,
-          previousColumn
-            .filter()
-            .eq(
-              this.tableUtils.makeFilterRawValue(
-                previousColumn.type,
-                previousPartition
-              )
-            ),
+          this.tableUtils.makeNullableEqFilter(
+            previousColumn,
+            previousPartition
+          ),
         ];
         partitionFilters.push(partitionFilter);
       }
