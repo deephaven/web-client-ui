@@ -15,6 +15,7 @@ export interface UseRenderNormalizedItemOptions {
   showItemDescriptions: boolean;
   showItemIcons: boolean;
   tooltipOptions: TooltipOptions | null;
+  iconSize?: number;
 }
 
 /**
@@ -28,6 +29,7 @@ export function useRenderNormalizedItem({
   showItemDescriptions,
   showItemIcons,
   tooltipOptions,
+  iconSize,
 }: UseRenderNormalizedItemOptions): (
   normalizedItem: NormalizedItem
 ) => JSX.Element {
@@ -42,7 +44,7 @@ export function useRenderNormalizedItem({
         : null;
 
       const icon = showItemIcons
-        ? wrapIcon(normalizedItem.item?.icon, itemIconSlot)
+        ? wrapIcon(normalizedItem.item?.icon, itemIconSlot, iconSize)
         : null;
 
       return (
@@ -71,7 +73,13 @@ export function useRenderNormalizedItem({
         </Item>
       );
     },
-    [itemIconSlot, showItemDescriptions, showItemIcons, tooltipOptions]
+    [
+      iconSize,
+      itemIconSlot,
+      showItemDescriptions,
+      showItemIcons,
+      tooltipOptions,
+    ]
   );
 }
 

@@ -32,6 +32,21 @@ export const LIST_VIEW_ROW_HEIGHTS = {
   },
 } as const;
 
+export const LIST_VIEW_ICON_SIZES = {
+  compact: {
+    medium: 24,
+    large: 30,
+  },
+  regular: {
+    medium: 26,
+    large: 32,
+  },
+  spacious: {
+    medium: 32,
+    large: 40,
+  },
+} as const;
+
 export const LIST_VIEW_ROW_HEIGHTS_WITH_DESCRIPTIONS = {
   compact: {
     medium: 48,

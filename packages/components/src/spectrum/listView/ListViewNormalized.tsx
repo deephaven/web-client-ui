@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import cl from 'classnames';
+import { LIST_VIEW_ICON_SIZES } from '@deephaven/utils';
 import {
   NormalizedItem,
   normalizeTooltipOptions,
@@ -8,6 +9,7 @@ import {
 } from '../utils';
 import type { ListViewProps } from './ListView';
 import { ListViewWrapper } from './ListViewWrapper';
+import { useSpectrumThemeProvider } from '../../theme';
 
 export interface ListViewNormalizedProps
   extends Omit<ListViewProps, 'children'> {
@@ -29,6 +31,10 @@ export function ListViewNormalized({
   onSelectionChange,
   ...props
 }: ListViewNormalizedProps): JSX.Element {
+  const { scale } = useSpectrumThemeProvider();
+
+  const iconSize = LIST_VIEW_ICON_SIZES[props.density ?? 'regular'][scale];
+
   const tooltipOptions = useMemo(
     () => normalizeTooltipOptions(tooltip, 'bottom'),
     [tooltip]
@@ -39,6 +45,7 @@ export function ListViewNormalized({
     showItemDescriptions,
     showItemIcons,
     tooltipOptions,
+    iconSize,
   });
 
   // Spectrum doesn't re-render if only the `renderNormalizedItems` function
