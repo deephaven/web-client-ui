@@ -21,6 +21,9 @@ export interface UseRenderNormalizedItemOptions {
 /**
  * Returns a render function that can be used to render a normalized item in
  * collection components.
+ * @param itemIconSlot Slot to use for item icons
+ * @param showItemDescriptions Whether to show item descriptions
+ * @param showItemIcons Whether to show item icons
  * @param tooltipOptions Tooltip options to use when rendering the item
  * @returns Render function for normalized items
  */
@@ -29,7 +32,6 @@ export function useRenderNormalizedItem({
   showItemDescriptions,
   showItemIcons,
   tooltipOptions,
-  iconSize,
 }: UseRenderNormalizedItemOptions): (
   normalizedItem: NormalizedItem
 ) => JSX.Element {
@@ -44,7 +46,7 @@ export function useRenderNormalizedItem({
         : null;
 
       const icon = showItemIcons
-        ? wrapIcon(normalizedItem.item?.icon, itemIconSlot, iconSize)
+        ? wrapIcon(normalizedItem.item?.icon, itemIconSlot)
         : null;
 
       return (
@@ -73,13 +75,7 @@ export function useRenderNormalizedItem({
         </Item>
       );
     },
-    [
-      iconSize,
-      itemIconSlot,
-      showItemDescriptions,
-      showItemIcons,
-      tooltipOptions,
-    ]
+    [itemIconSlot, showItemDescriptions, showItemIcons, tooltipOptions]
   );
 }
 

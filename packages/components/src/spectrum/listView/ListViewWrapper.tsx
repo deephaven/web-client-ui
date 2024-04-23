@@ -9,7 +9,9 @@ import {
 } from '@deephaven/react-hooks';
 import { EMPTY_FUNCTION } from '@deephaven/utils';
 import cl from 'classnames';
+import { useSpectrumThemeProvider } from '../../theme';
 import { Flex } from '../layout';
+import './ListViewWrapper.scss';
 
 export interface ListViewWrapperProps<T> extends SpectrumListViewProps<T> {
   /** Handler that is called when the picker is scrolled. */
@@ -22,6 +24,8 @@ export function ListViewWrapper<T>({
   onScroll = EMPTY_FUNCTION,
   ...props
 }: ListViewWrapperProps<T>): JSX.Element {
+  const { scale } = useSpectrumThemeProvider();
+
   // Spectrum ListView crashes when it has zero height. Track the contentRect
   // of the parent container and only render the ListView when it has a non-zero
   // height. See https://github.com/adobe/react-spectrum/issues/6213
@@ -37,7 +41,12 @@ export function ListViewWrapper<T>({
       direction="column"
       flex={flex ?? 1}
       minHeight={0}
-      UNSAFE_className={cl('dh-list-view-wrapper', UNSAFE_className)}
+      UNSAFE_className={cl(
+        'dh-list-view-wrapper',
+        `dh-list-view-wrapper-density-${props.density ?? 'regular'}`,
+        `dh-list-view-wrapper-scale-${scale}`,
+        UNSAFE_className
+      )}
     >
       {contentRect.height === 0 ? (
         // Use &nbsp; to ensure content has a non-zero height. This ensures the

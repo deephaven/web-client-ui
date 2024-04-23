@@ -25,13 +25,11 @@ import { Text } from '../Text';
  * the vsBlank icon will be used.
  * @param maybeIconKey The content to wrap
  * @param slot The slot to use for the Icon component
- * @param iconSize The size of the icon
  * @returns The wrapped content or original content if not a string
  */
 export function wrapIcon(
   maybeIconKey: ReactNode,
-  slot: ItemIconSlot,
-  iconSize?: number
+  slot: ItemIconSlot
 ): ReactNode {
   // eslint-disable-next-line no-param-reassign
   maybeIconKey = maybeIconKey ?? '';
@@ -41,7 +39,7 @@ export function wrapIcon(
   }
 
   return (
-    <Icon height={iconSize} slot={slot}>
+    <Icon slot={slot}>
       <FontAwesomeIcon icon={dhIcons[maybeIconKey] ?? dhIcons.vsBlank} />
     </Icon>
   );

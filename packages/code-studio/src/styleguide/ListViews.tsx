@@ -18,9 +18,6 @@ import { generateNormalizedItems, sampleSectionIdAndClasses } from './utils';
 // Generate enough items to require scrolling
 const itemsSimple = [...generateNormalizedItems(52)];
 const itemsWithIcons = [...generateNormalizedItems(52, { icons: true })];
-const itemsWithIconsAndDescriptions = [
-  ...generateNormalizedItems(52, { icons: true, descriptions: true }),
-];
 
 function AccountIllustration(): JSX.Element {
   return (
@@ -54,7 +51,6 @@ export function ListViews(): JSX.Element {
   );
 
   const [showIcons, setShowIcons] = useState(true);
-  const [showDescriptions, setShowDescriptions] = useState(true);
 
   const onChange = useCallback((keys: 'all' | Iterable<ItemKey>): void => {
     setSelectedKeys(keys);
@@ -153,12 +149,6 @@ export function ListViews(): JSX.Element {
           >
             Show Ions
           </Checkbox>
-          <Checkbox
-            checked={showDescriptions}
-            onChange={e => setShowDescriptions(e.currentTarget.checked)}
-          >
-            Show Descriptions
-          </Checkbox>
         </Flex>
 
         <LabeledFlexColumn label="Controlled">
@@ -167,7 +157,6 @@ export function ListViews(): JSX.Element {
             normalizedItems={itemsSimple}
             selectionMode="multiple"
             selectedKeys={selectedKeys}
-            showItemDescriptions={showDescriptions}
             showItemIcons={showIcons}
             onChange={onChange}
           />
@@ -179,19 +168,6 @@ export function ListViews(): JSX.Element {
             normalizedItems={itemsWithIcons}
             selectionMode="multiple"
             selectedKeys={selectedKeys}
-            showItemDescriptions={showDescriptions}
-            showItemIcons={showIcons}
-            onChange={onChange}
-          />
-        </LabeledFlexColumn>
-
-        <LabeledFlexColumn label="Controlled (with icons and descriptions)">
-          <ListViewNormalized
-            aria-label="Controlled (with icons and descriptions)"
-            normalizedItems={itemsWithIconsAndDescriptions}
-            selectionMode="multiple"
-            selectedKeys={selectedKeys}
-            showItemDescriptions={showDescriptions}
             showItemIcons={showIcons}
             onChange={onChange}
           />
