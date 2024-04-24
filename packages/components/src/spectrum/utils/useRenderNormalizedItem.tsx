@@ -1,7 +1,12 @@
 import { Key, useCallback } from 'react';
 import { ItemContent } from '../ItemContent';
 import { Item } from '../shared';
-import { getItemKey, NormalizedItem, TooltipOptions } from './itemUtils';
+import {
+  getItemKey,
+  ITEM_EMPTY_STRING_TEXT_VALUE,
+  NormalizedItem,
+  TooltipOptions,
+} from './itemUtils';
 
 /**
  * Returns a render function that can be used to render a normalized item in
@@ -31,8 +36,10 @@ export function useRenderNormalizedItem(
           // The `textValue` prop gets used to provide the content of `<option>`
           // elements that back the Spectrum Picker. These are not visible in the UI,
           // but are used for accessibility purposes, so we set to an arbitrary
-          // 'Empty' value so that they are not empty strings.
-          textValue={textValue === '' ? 'Empty' : textValue}
+          // `ITEM_EMPTY_STRING_TEXT_VALUE` value so that they are not empty strings.
+          textValue={
+            textValue === '' ? ITEM_EMPTY_STRING_TEXT_VALUE : textValue
+          }
         >
           <ItemContent tooltipOptions={tooltipOptions}>{content}</ItemContent>
         </Item>

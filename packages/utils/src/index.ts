@@ -18,7 +18,7 @@ export * from './ErrorUtils';
 export * from './ObjectUtils';
 export { default as RangeUtils, generateRange } from './RangeUtils';
 export type { Range } from './RangeUtils';
-export { default as TextUtils } from './TextUtils';
+export * from './TextUtils';
 export { default as TimeoutError } from './TimeoutError';
 export { default as TimeUtils } from './TimeUtils';
 export * from './TypeUtils';

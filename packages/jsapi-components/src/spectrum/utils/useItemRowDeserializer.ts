@@ -56,6 +56,7 @@ export function useItemRowDeserializer({
       return {
         key,
         content,
+        textValue: content,
       };
     },
     [formatValue, keyColumn, labelColumn]
