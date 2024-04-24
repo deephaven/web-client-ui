@@ -97,10 +97,10 @@ export function Picker({
   const [uncontrolledSelectedKey, setUncontrolledSelectedKey] =
     useState(defaultSelectedKey);
 
-  const wrappedItems = useMemo(
-    () => wrapItemChildren(children, tooltipOptions),
-    [children, tooltipOptions]
-  );
+  const wrappedItems = useMemo(() => {
+    const wrapped = wrapItemChildren(children, tooltipOptions);
+    return Array.isArray(wrapped) ? wrapped : [wrapped];
+  }, [children, tooltipOptions]);
 
   // Item descriptions and Section elements introduce variable item heights.
   // This throws off scroll position calculations, so we disable auto scrolling

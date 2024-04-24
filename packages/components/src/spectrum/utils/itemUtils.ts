@@ -26,10 +26,7 @@ export const ITEM_EMPTY_STRING_TEXT_VALUE = 'Empty';
  * an incoming prop.
  */
 type SectionPropsNoItemRenderer<T> = Omit<SectionProps<T>, 'children'> & {
-  children:
-    | Exclude<SectionProps<T>['children'], ItemRenderer<T>>
-    | ItemElementOrPrimitive<T>
-    | ItemElementOrPrimitive<T>[];
+  children: Exclude<SectionProps<T>['children'], ItemRenderer<T>>;
 };
 
 export type ItemElement<T = unknown> = ReactElement<ItemProps<T>>;
