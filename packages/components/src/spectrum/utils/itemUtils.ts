@@ -132,7 +132,7 @@ export async function getPositionOfSelectedItemElement<
     return position;
   }
 
-  for (let i = 0; i <= items.length; i += 1) {
+  for (let i = 0; i < items.length; i += 1) {
     const item = items[i];
     if (item.key === selectedKey) {
       return position;
