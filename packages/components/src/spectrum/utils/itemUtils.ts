@@ -3,7 +3,13 @@ import { SpectrumPickerProps } from '@adobe/react-spectrum';
 import type { ItemRenderer } from '@react-types/shared';
 import { isElementOfType } from '@deephaven/react-hooks';
 import { KeyedItem, SelectionT } from '@deephaven/utils';
-import { Item, ItemProps, Section, SectionProps } from '../shared';
+import {
+  Item,
+  ItemElementOrPrimitive,
+  ItemProps,
+  Section,
+  SectionProps,
+} from '../shared';
 import { PopperOptions } from '../../popper';
 import { Text } from '../Text';
 import ItemContent from '../ItemContent';
@@ -20,14 +26,20 @@ export const ITEM_EMPTY_STRING_TEXT_VALUE = 'Empty';
  * an incoming prop.
  */
 type SectionPropsNoItemRenderer<T> = Omit<SectionProps<T>, 'children'> & {
-  children: Exclude<SectionProps<T>['children'], ItemRenderer<T>>;
+  children:
+    | Exclude<SectionProps<T>['children'], ItemRenderer<T>>
+    | ItemElementOrPrimitive<T>
+    | ItemElementOrPrimitive<T>[];
 };
 
-export type ItemElement = ReactElement<ItemProps<unknown>>;
-export type SectionElement = ReactElement<SectionPropsNoItemRenderer<unknown>>;
+export type ItemElement<T = unknown> = ReactElement<ItemProps<T>>;
+export type SectionElement<T = unknown> = ReactElement<
+  SectionPropsNoItemRenderer<T>
+>;
 
-export type ItemElementOrPrimitive = number | string | boolean | ItemElement;
-export type ItemOrSection = ItemElementOrPrimitive | SectionElement;
+export type ItemOrSection<T = unknown> =
+  | ItemElementOrPrimitive<T>
+  | SectionElement<T>;
 
 // Picker uses `icon` slot. ListView can use `image` or `illustration` slots.
 // https://github.com/adobe/react-spectrum/blob/main/packages/%40react-spectrum/picker/src/Picker.tsx#L194
@@ -152,7 +164,7 @@ export async function getPositionOfSelectedItemElement<
  */
 export function isSectionElement<T>(
   node: ReactNode
-): node is ReactElement<SectionProps<T>> {
+): node is SectionElement<T> {
   return isElementOfType(node, Section);
 }
 
@@ -161,9 +173,7 @@ export function isSectionElement<T>(
  * @param node The node to check
  * @returns True if the node is an Item element
  */
-export function isItemElement<T>(
-  node: ReactNode
-): node is ReactElement<ItemProps<T>> {
+export function isItemElement<T>(node: ReactNode): node is ItemElement<T> {
   return isElementOfType(node, Item);
 }
 

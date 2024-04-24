@@ -79,7 +79,7 @@ describe.each([
         'wrapPrimitiveWithText(mock.description, description)',
       ],
     ] as [NormalizedItem, string, string, string, string][])(
-      'should return a render function that can be used to render a normalized item in collection components.',
+      'should return a render function that can be used to render a normalized item in collection components: %s, %s, %s, %s, %s',
       (normalizedItem, textValue, icon, content, description) => {
         const { result } = renderHook(() =>
           useRenderNormalizedItem({

@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { SpectrumListViewProps } from '@adobe/react-spectrum';
 import { EMPTY_FUNCTION } from '@deephaven/utils';
 import {
-  ItemElementOrPrimitive,
   ItemKey,
   ItemSelection,
   NormalizedItem,
@@ -11,6 +10,7 @@ import {
   wrapItemChildren,
 } from '../utils';
 import { ListViewWrapper } from './ListViewWrapper';
+import { ItemElementOrPrimitive } from '../shared';
 
 export type ListViewProps = {
   children: ItemElementOrPrimitive | ItemElementOrPrimitive[];

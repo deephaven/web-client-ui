@@ -56,12 +56,12 @@ export function wrapIcon(
 export function wrapItemChildren(
   itemsOrSections: ItemOrSection | ItemOrSection[],
   tooltipOptions: TooltipOptions | null
-): (ItemElement | SectionElement)[] {
+): ItemElement | SectionElement | (ItemElement | SectionElement)[] {
   const itemsOrSectionsArray = Array.isArray(itemsOrSections)
     ? itemsOrSections
     : [itemsOrSections];
 
-  return itemsOrSectionsArray.map(item => {
+  const result = itemsOrSectionsArray.map(item => {
     if (isItemElement(item)) {
       // Item content is already wrapped
       if (isElementOfType(item.props.children, ItemContent)) {
@@ -101,23 +101,17 @@ export function wrapItemChildren(
       });
     }
 
-    if (
-      typeof item === 'string' ||
-      typeof item === 'number' ||
-      typeof item === 'boolean'
-    ) {
-      const text = String(item);
-      const textValue = text === '' ? ITEM_EMPTY_STRING_TEXT_VALUE : text;
+    const text = String(item);
+    const textValue = text === '' ? ITEM_EMPTY_STRING_TEXT_VALUE : text;
 
-      return (
-        <Item key={text} textValue={textValue}>
-          <ItemContent tooltipOptions={tooltipOptions}>{text}</ItemContent>
-        </Item>
-      );
-    }
-
-    return item;
+    return (
+      <Item key={text} textValue={textValue}>
+        <ItemContent tooltipOptions={tooltipOptions}>{text}</ItemContent>
+      </Item>
+    );
   });
+
+  return Array.isArray(itemsOrSections) ? result : result[0];
 }
 
 /**
