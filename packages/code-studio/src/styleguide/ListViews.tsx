@@ -1,4 +1,4 @@
-import React, { ReactNode, useCallback, useState } from 'react';
+import React, { ChangeEvent, ReactNode, useCallback, useState } from 'react';
 import type { StyleProps } from '@react-types/shared';
 import {
   Grid,
@@ -10,13 +10,15 @@ import {
   Text,
   Flex,
   Checkbox,
+  ListViewProps,
+  RadioGroup,
+  RadioItem,
 } from '@deephaven/components';
 import { vsAccount, vsPerson } from '@deephaven/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { generateNormalizedItems, sampleSectionIdAndClasses } from './utils';
 
 // Generate enough items to require scrolling
-const itemsSimple = [...generateNormalizedItems(52)];
 const itemsWithIcons = [...generateNormalizedItems(52, { icons: true })];
 
 function AccountIllustration(): JSX.Element {
@@ -32,13 +34,25 @@ function AccountIllustration(): JSX.Element {
 
 interface LabeledProps extends StyleProps {
   label: string;
+  direction?: 'row' | 'column';
   children: ReactNode;
 }
 
-function LabeledFlexColumn({ label, children, ...styleProps }: LabeledProps) {
+function LabeledFlexContainer({
+  label,
+  direction = 'column',
+  children,
+  ...styleProps
+}: LabeledProps) {
   return (
-    // eslint-disable-next-line react/jsx-props-no-spreading
-    <Flex {...styleProps} direction="column" minHeight={0} minWidth={0}>
+    <Flex
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      {...styleProps}
+      direction={direction}
+      gap={10}
+      minHeight={0}
+      minWidth={0}
+    >
       <Text>{label}</Text>
       {children}
     </Flex>
@@ -47,6 +61,15 @@ function LabeledFlexColumn({ label, children, ...styleProps }: LabeledProps) {
 
 export function ListViews(): JSX.Element {
   const [selectedKeys, setSelectedKeys] = useState<'all' | Iterable<ItemKey>>(
+    []
+  );
+
+  const [density, setDensity] = useState<ListViewProps['density']>('compact');
+
+  const onDensityChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      setDensity(event.currentTarget.value as ListViewProps['density']);
+    },
     []
   );
 
@@ -62,20 +85,32 @@ export function ListViews(): JSX.Element {
       <h2 className="ui-title">List View</h2>
 
       <Grid gap={14} height="size-6000" columns="1fr 1fr 1fr">
-        <LabeledFlexColumn label="Single Child" gridColumn="span 3">
+        <LabeledFlexContainer
+          direction="row"
+          label="Density"
+          gridColumn="span 3"
+        >
+          <RadioGroup value={density} onChange={onDensityChange}>
+            <RadioItem value="compact">Compact</RadioItem>
+            <RadioItem value="regular">Regular</RadioItem>
+            <RadioItem value="spacious">Spacious</RadioItem>
+          </RadioGroup>
+        </LabeledFlexContainer>
+
+        <LabeledFlexContainer label="Single Child" gridColumn="span 3">
           <ListView
-            density="compact"
+            density={density}
             aria-label="Single Child"
             selectionMode="multiple"
           >
             <Item textValue="Aaa">Aaa</Item>
           </ListView>
-        </LabeledFlexColumn>
+        </LabeledFlexContainer>
 
-        <LabeledFlexColumn label="Icons" gridColumn="span 2">
+        <LabeledFlexContainer label="Icons" gridColumn="span 2">
           <ListView
             aria-label="Icon"
-            density="compact"
+            density={density}
             selectionMode="multiple"
           >
             <Item textValue="Item with icon A">
@@ -99,12 +134,12 @@ export function ListViews(): JSX.Element {
               <Text>Item with icon E</Text>
             </Item>
           </ListView>
-        </LabeledFlexColumn>
+        </LabeledFlexContainer>
 
-        <LabeledFlexColumn label="Mixed Children Types">
+        <LabeledFlexContainer label="Mixed Children Types">
           <ListView
             aria-label="Mixed Children Types"
-            density="compact"
+            density={density}
             maxWidth="size-2400"
             selectionMode="multiple"
             defaultSelectedKeys={['999', 444]}
@@ -140,7 +175,7 @@ export function ListViews(): JSX.Element {
               <Text slot="description">Description</Text>
             </Item>
           </ListView>
-        </LabeledFlexColumn>
+        </LabeledFlexContainer>
 
         <Flex gridColumn="span 3" gap={14}>
           <Checkbox
@@ -151,27 +186,17 @@ export function ListViews(): JSX.Element {
           </Checkbox>
         </Flex>
 
-        <LabeledFlexColumn label="Controlled">
+        <LabeledFlexContainer label="Controlled">
           <ListViewNormalized
             aria-label="Controlled"
-            normalizedItems={itemsSimple}
-            selectionMode="multiple"
-            selectedKeys={selectedKeys}
-            showItemIcons={showIcons}
-            onChange={onChange}
-          />
-        </LabeledFlexColumn>
-
-        <LabeledFlexColumn label="Controlled (with icons)">
-          <ListViewNormalized
-            aria-label="Controlled (with icons)"
+            density={density}
             normalizedItems={itemsWithIcons}
             selectionMode="multiple"
             selectedKeys={selectedKeys}
             showItemIcons={showIcons}
             onChange={onChange}
           />
-        </LabeledFlexColumn>
+        </LabeledFlexContainer>
       </Grid>
     </div>
   );

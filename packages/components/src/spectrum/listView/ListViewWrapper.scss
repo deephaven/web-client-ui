@@ -1,4 +1,4 @@
-.dh-list-view-wrapper-scale-medium {
+.dh-list-view-wrapper {
   --dh-list-view-item-icon-compact: 24px;
   --dh-list-view-item-icon-regular: 26px;
   --dh-list-view-item-icon-spacious: 32px;
@@ -15,11 +15,13 @@
     height: var(--dh-list-view-item-icon-compact);
   }
 }
+
 .dh-list-view-wrapper-density-regular {
   svg[class*='react-spectrum-ListViewItem-thumbnail'] {
     height: var(--dh-list-view-item-icon-regular);
   }
 }
+
 .dh-list-view-wrapper-density-spacious {
   svg[class*='react-spectrum-ListViewItem-thumbnail'] {
     height: var(--dh-list-view-item-icon-spacious);
