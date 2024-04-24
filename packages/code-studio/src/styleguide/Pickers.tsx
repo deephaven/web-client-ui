@@ -7,6 +7,7 @@ import {
   Section,
   Text,
   PickerNormalized,
+  Checkbox,
 } from '@deephaven/components';
 import { vsPerson } from '@deephaven/icons';
 import { Icon } from '@adobe/react-spectrum';
@@ -21,6 +22,7 @@ import {
 
 // Generate enough items to require scrolling
 const items = [...generateNormalizedItems(52)];
+const itemsWithIcons = [...generateNormalizedItems(52, { icons: true })];
 const itemElementsA = [...generateItemElements(0, 51)];
 const itemElementsB = [...generateItemElements(52, 103)];
 const itemElementsC = [...generateItemElements(104, 155)];
@@ -63,6 +65,8 @@ function PersonIcon(): JSX.Element {
 export function Pickers(): JSX.Element {
   const [selectedKey, setSelectedKey] = useState<ItemKey | null>(null);
 
+  const [showIcons, setShowIcons] = useState(true);
+
   const getInitialScrollPosition = useCallback(
     async () =>
       getPositionOfSelectedItem({
@@ -83,60 +87,72 @@ export function Pickers(): JSX.Element {
     <div {...sampleSectionIdAndClasses('pickers')}>
       <h2 className="ui-title">Pickers</h2>
 
-      <Flex gap={14}>
-        <Picker label="Single Child" tooltip={{ placement: 'bottom-end' }}>
-          <Item textValue="Aaa">Aaa</Item>
-        </Picker>
+      <Flex gap={14} direction="column">
+        <Flex direction="row" gap={14}>
+          <Picker label="Single Child" tooltip={{ placement: 'bottom-end' }}>
+            <Item textValue="Aaa">Aaa</Item>
+          </Picker>
 
-        <Picker label="Mixed Children Types" defaultSelectedKey="999" tooltip>
-          {mixedItemsWithIconsNoDescriptions}
-        </Picker>
+          <Picker label="Mixed Children Types" defaultSelectedKey="999" tooltip>
+            {mixedItemsWithIconsNoDescriptions}
+          </Picker>
 
-        <Picker label="Sections" tooltip>
-          {/* eslint-disable react/jsx-curly-brace-presence */}
-          {'String 1'}
-          {'String 2'}
-          {'String 3'}
-          <Section title="Section">
-            <Item textValue="Item Aaa">Item Aaa</Item>
-            <Item textValue="Item Bbb">Item Bbb</Item>
-            <Item textValue="Complex Ccc">
-              <PersonIcon />
-              <Text>Complex Ccc</Text>
-            </Item>
-          </Section>
-          <Section key="Key B">
-            <Item textValue="Item Ddd">Item Ddd</Item>
-            <Item textValue="Item Eee">Item Eee</Item>
-            <Item textValue="Complex Fff">
-              <PersonIcon />
-              <Text>Complex Fff</Text>
-            </Item>
-            <Item textValue="Ggg">
-              <PersonIcon />
-              <Text>Label</Text>
-              <Text slot="description">Description</Text>
-            </Item>
-            <Item textValue="Hhh">
-              <PersonIcon />
-              <Text>Label that causes overflow</Text>
-              <Text slot="description">Description that causes overflow</Text>
-            </Item>
-          </Section>
-          <Section title="Section A">{itemElementsA}</Section>
-          <Section title="Section B">{itemElementsB}</Section>
-          <Section key="Section C">{itemElementsC}</Section>
-          <Section key="Section D">{itemElementsD}</Section>
-          <Section title="Section E">{itemElementsE}</Section>
-        </Picker>
+          <Picker label="Sections" tooltip>
+            {/* eslint-disable react/jsx-curly-brace-presence */}
+            {'String 1'}
+            {'String 2'}
+            {'String 3'}
+            <Section title="Section">
+              <Item textValue="Item Aaa">Item Aaa</Item>
+              <Item textValue="Item Bbb">Item Bbb</Item>
+              <Item textValue="Complex Ccc">
+                <PersonIcon />
+                <Text>Complex Ccc</Text>
+              </Item>
+            </Section>
+            <Section key="Key B">
+              <Item textValue="Item Ddd">Item Ddd</Item>
+              <Item textValue="Item Eee">Item Eee</Item>
+              <Item textValue="Complex Fff">
+                <PersonIcon />
+                <Text>Complex Fff</Text>
+              </Item>
+              <Item textValue="Ggg">
+                <PersonIcon />
+                <Text>Label</Text>
+                <Text slot="description">Description</Text>
+              </Item>
+              <Item textValue="Hhh">
+                <PersonIcon />
+                <Text>Label that causes overflow</Text>
+                <Text slot="description">Description that causes overflow</Text>
+              </Item>
+            </Section>
+            <Section title="Section A">{itemElementsA}</Section>
+            <Section title="Section B">{itemElementsB}</Section>
+            <Section key="Section C">{itemElementsC}</Section>
+            <Section key="Section D">{itemElementsD}</Section>
+            <Section title="Section E">{itemElementsE}</Section>
+          </Picker>
+        </Flex>
 
-        <PickerNormalized
-          label="Controlled"
-          getInitialScrollPosition={getInitialScrollPosition}
-          normalizedItems={items}
-          selectedKey={selectedKey}
-          onChange={onChange}
-        />
+        <Checkbox
+          checked={showIcons}
+          onChange={e => setShowIcons(e.currentTarget.checked)}
+        >
+          Show Ions
+        </Checkbox>
+
+        <Flex direction="row" gap={14}>
+          <PickerNormalized
+            label="Controlled"
+            getInitialScrollPosition={getInitialScrollPosition}
+            normalizedItems={itemsWithIcons}
+            selectedKey={selectedKey}
+            showItemIcons={showIcons}
+            onChange={onChange}
+          />
+        </Flex>
       </Flex>
     </div>
   );

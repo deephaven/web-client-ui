@@ -29,6 +29,11 @@ export type SectionElement = ReactElement<SectionPropsNoItemRenderer<unknown>>;
 export type ItemElementOrPrimitive = number | string | boolean | ItemElement;
 export type ItemOrSection = ItemElementOrPrimitive | SectionElement;
 
+// Picker uses `icon` slot. ListView can use `image` or `illustration` slots.
+// https://github.com/adobe/react-spectrum/blob/main/packages/%40react-spectrum/picker/src/Picker.tsx#L194
+// https://github.com/adobe/react-spectrum/blob/main/packages/%40react-spectrum/list/src/ListViewItem.tsx#L266-L267
+export type ItemIconSlot = 'icon' | 'image' | 'illustration';
+
 /**
  * Augment the Spectrum selection key type to include boolean values.
  * Spectrum collection components already supports this, but the built in types
@@ -48,6 +53,8 @@ export type ItemSelectionChangeHandler = (key: ItemKey) => void;
 export interface NormalizedItemData {
   key?: ItemKey;
   content: ReactNode;
+  description?: ReactNode;
+  icon?: ReactNode;
   textValue: string | undefined;
 }
 

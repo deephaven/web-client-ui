@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import cl from 'classnames';
 import {
   NormalizedItem,
   normalizeTooltipOptions,
@@ -11,6 +12,8 @@ import { ListViewWrapper } from './ListViewWrapper';
 export interface ListViewNormalizedProps
   extends Omit<ListViewProps, 'children'> {
   normalizedItems: NormalizedItem[];
+  showItemDescriptions: boolean;
+  showItemIcons: boolean;
 }
 
 export function ListViewNormalized({
@@ -19,6 +22,9 @@ export function ListViewNormalized({
   selectedKeys,
   defaultSelectedKeys,
   disabledKeys,
+  showItemDescriptions,
+  showItemIcons,
+  UNSAFE_className,
   onChange,
   onSelectionChange,
   ...props
@@ -28,7 +34,17 @@ export function ListViewNormalized({
     [tooltip]
   );
 
-  const renderNormalizedItem = useRenderNormalizedItem(tooltipOptions);
+  const renderNormalizedItem = useRenderNormalizedItem({
+    itemIconSlot: 'illustration',
+    showItemDescriptions,
+    showItemIcons,
+    tooltipOptions,
+  });
+
+  // Spectrum doesn't re-render if only the `renderNormalizedItems` function
+  // changes, so we create a key from its dependencies that can be used to force
+  // re-render.
+  const forceRerenderKey = `${showItemIcons}-${showItemDescriptions}-${tooltipOptions?.placement}`;
 
   const {
     selectedStringKeys,
@@ -47,6 +63,8 @@ export function ListViewNormalized({
     <ListViewWrapper
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...props}
+      UNSAFE_className={cl('dh-list-view-normalized', UNSAFE_className)}
+      key={forceRerenderKey}
       items={normalizedItems}
       selectedKeys={selectedStringKeys}
       defaultSelectedKeys={defaultSelectedStringKeys}

@@ -31,3 +31,18 @@ export const LIST_VIEW_ROW_HEIGHTS = {
     large: 60,
   },
 } as const;
+
+export const LIST_VIEW_ROW_HEIGHTS_WITH_DESCRIPTIONS = {
+  compact: {
+    medium: 48,
+    large: 59,
+  },
+  regular: {
+    medium: 54,
+    large: 67,
+  },
+  spacious: {
+    medium: 56,
+    large: 69,
+  },
+} as const;

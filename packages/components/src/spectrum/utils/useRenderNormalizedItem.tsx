@@ -3,10 +3,19 @@ import { ItemContent } from '../ItemContent';
 import { Item } from '../shared';
 import {
   getItemKey,
+  ItemIconSlot,
   ITEM_EMPTY_STRING_TEXT_VALUE,
   NormalizedItem,
   TooltipOptions,
 } from './itemUtils';
+import { wrapIcon, wrapPrimitiveWithText } from './itemWrapperUtils';
+
+export interface UseRenderNormalizedItemOptions {
+  itemIconSlot: ItemIconSlot;
+  showItemDescriptions: boolean;
+  showItemIcons: boolean;
+  tooltipOptions: TooltipOptions | null;
+}
 
 /**
  * Returns a render function that can be used to render a normalized item in
@@ -14,14 +23,27 @@ import {
  * @param tooltipOptions Tooltip options to use when rendering the item
  * @returns Render function for normalized items
  */
-export function useRenderNormalizedItem(
-  tooltipOptions: TooltipOptions | null
-): (normalizedItem: NormalizedItem) => JSX.Element {
+export function useRenderNormalizedItem({
+  itemIconSlot,
+  showItemDescriptions,
+  showItemIcons,
+  tooltipOptions,
+}: UseRenderNormalizedItemOptions): (
+  normalizedItem: NormalizedItem
+) => JSX.Element {
   return useCallback(
     (normalizedItem: NormalizedItem) => {
       const key = getItemKey(normalizedItem);
-      const content = normalizedItem.item?.content ?? '';
+      const content = wrapPrimitiveWithText(normalizedItem.item?.content);
       const textValue = normalizedItem.item?.textValue ?? '';
+
+      const description = showItemDescriptions
+        ? wrapPrimitiveWithText(normalizedItem.item?.description, 'description')
+        : null;
+
+      const icon = showItemIcons
+        ? wrapIcon(normalizedItem.item?.icon, itemIconSlot)
+        : null;
 
       return (
         <Item
@@ -41,11 +63,15 @@ export function useRenderNormalizedItem(
             textValue === '' ? ITEM_EMPTY_STRING_TEXT_VALUE : textValue
           }
         >
-          <ItemContent tooltipOptions={tooltipOptions}>{content}</ItemContent>
+          <ItemContent tooltipOptions={tooltipOptions}>
+            {icon}
+            {content}
+            {description}
+          </ItemContent>
         </Item>
       );
     },
-    [tooltipOptions]
+    [itemIconSlot, showItemDescriptions, showItemIcons, tooltipOptions]
   );
 }
 
