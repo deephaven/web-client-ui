@@ -2062,7 +2062,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               return;
             }
             const row = data.rows[0];
-            // Core JSAPI returns undefined for null table values, IrisGridPartitionSelector expects null
+            // Core JSAPI returns undefined for null table values, IrisGridPartitionSelector expects null (https://github.com/deephaven/deephaven-core/issues/5400)
             const values = keyTable.columns.map(
               column => row.get(column) ?? null
             );
