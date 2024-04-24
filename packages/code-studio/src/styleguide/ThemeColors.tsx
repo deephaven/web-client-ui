@@ -10,7 +10,7 @@ import semanticEditor from '@deephaven/components/src/theme/theme-dark/theme-dar
 import semanticGrid from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic-grid.css?inline';
 import components from '@deephaven/components/src/theme/theme-dark/theme-dark-components.css?inline';
 import styles from './ThemeColors.module.scss';
-import { sampleSectionIdAndClasses } from './utils';
+import { IsHashProp, sampleSectionIdAndClasses } from './utils';
 import {
   buildColorGroups,
   contrastColor,
@@ -28,14 +28,14 @@ function buildSwatchDataGroups() {
   };
 }
 
-export function ThemeColors(): JSX.Element {
+export function ThemeColors({ isHash }: IsHashProp): JSX.Element {
   const { selectedThemeKey } = useTheme();
   const swatchDataGroups = useMemo(buildSwatchDataGroups, [selectedThemeKey]);
 
   return (
     <>
       {Object.entries(swatchDataGroups).map(([label, data], i) => {
-        if (label === 'Theme Color Palette') {
+        if (label === 'Theme Color Palette' && isHash('theme-color-palette')) {
           return (
             <div key={label} {...sampleSectionIdAndClasses(label)}>
               <h2 className="ui-title">{label}</h2>
@@ -89,6 +89,7 @@ export function ThemeColors(): JSX.Element {
             </div>
           );
         }
+        if (!isHash(label, true)) return null;
         return (
           <div key={label} {...sampleSectionIdAndClasses(label)}>
             <h2 className="ui-title">{label}</h2>

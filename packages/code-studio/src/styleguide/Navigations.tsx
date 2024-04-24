@@ -130,20 +130,31 @@ function makeMenuItem(
 function makeMenuItems(
   submenuCount: number = getRandomCount(),
   pageCount: number = getRandomCount(),
-  switchCount: number = getRandomCount()
+  switchCount: number = getRandomCount(),
+  presetId = false
 ): MenuItem[] {
   const items: MenuItem[] = [];
+  let customId = 0;
 
   for (let i = 0; i < submenuCount; i += 1) {
-    items.push(makeMenuItem(MENU_ITEM_TYPE.SUBMENU));
+    items.push(
+      makeMenuItem(MENU_ITEM_TYPE.SUBMENU, presetId ? customId : undefined)
+    );
+    customId += 1;
   }
 
   for (let i = 0; i < pageCount; i += 1) {
-    items.push(makeMenuItem(MENU_ITEM_TYPE.PAGE));
+    items.push(
+      makeMenuItem(MENU_ITEM_TYPE.PAGE, presetId ? customId : undefined)
+    );
+    customId += 1;
   }
 
   for (let i = 0; i < switchCount; i += 1) {
-    items.push(makeMenuItem(MENU_ITEM_TYPE.SWITCH));
+    items.push(
+      makeMenuItem(MENU_ITEM_TYPE.SWITCH, presetId ? customId : undefined)
+    );
+    customId += 1;
   }
 
   return items;
@@ -236,7 +247,7 @@ function Navigations(): JSX.Element {
     setStackItems([
       {
         title: 'Navigation Menu',
-        items: makeMenuItems(),
+        items: makeMenuItems(1, 2, 5, true),
       },
     ]);
   }, []);

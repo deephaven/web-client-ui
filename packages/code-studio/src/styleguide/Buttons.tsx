@@ -3,7 +3,7 @@ import React, { Component, ReactElement } from 'react';
 import { Flex } from '@adobe/react-spectrum';
 import { Button, ButtonOld, SocketedButton } from '@deephaven/components';
 import { dhTruck } from '@deephaven/icons';
-import { sampleSectionIdAndClasses } from './utils';
+import { IsHashProp, sampleSectionIdAndClasses } from './utils';
 
 function noOp(): void {
   return undefined;
@@ -12,7 +12,7 @@ function noOp(): void {
 interface ButtonsState {
   toggle: boolean;
 }
-class Buttons extends Component<Record<string, never>, ButtonsState> {
+class Buttons extends Component<IsHashProp, ButtonsState> {
   static renderButtonBrand(type: string, brand: string): ReactElement {
     const className = type.length ? `btn-${type}-${brand}` : `btn-${brand}`;
     return (
@@ -123,7 +123,7 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
     );
   }
 
-  constructor(props: Record<string, never>) {
+  constructor(props: IsHashProp) {
     super(props);
 
     this.state = {
@@ -183,20 +183,23 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
     );
   }
 
-  render(): React.ReactElement {
-    const buttons = ['', 'outline'].map(type => Buttons.renderButtons(type));
+  render(): React.ReactNode {
+    const { isHash } = this.props;
+    const buttonsRegular = Buttons.renderButtons('');
+    const buttonsOutline = Buttons.renderButtons('outline');
     const inlineButtons = this.renderInlineButtons();
     const socketedButtons = Buttons.renderSocketedButtons();
     const links = Buttons.renderLinks();
 
     return (
       <div>
-        <h2 className="ui-title">Buttons</h2>
+        {isHash('') && <h2 className="ui-title">Buttons</h2>}
         <div style={{ padding: '1rem 0' }}>
-          {buttons}
-          {inlineButtons}
-          {socketedButtons}
-          {links}
+          {isHash('buttons-regular') && buttonsRegular}
+          {isHash('buttons-outline') && buttonsOutline}
+          {isHash('buttons-inline') && inlineButtons}
+          {isHash('buttons-socketed') && socketedButtons}
+          {isHash('links') && links}
         </div>
       </div>
     );

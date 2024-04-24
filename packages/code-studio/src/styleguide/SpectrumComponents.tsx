@@ -38,62 +38,82 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhTruck, vsEmptyWindow } from '@deephaven/icons';
 import { Heading, View, Text } from '@deephaven/components';
 import { SPECTRUM_COMPONENT_SAMPLES_ID } from './constants';
-import { sampleSectionIdAndClassesSpectrum } from './utils';
+import { IsHashProp, sampleSectionIdAndClassesSpectrum } from './utils';
 
-export function SpectrumComponents(): JSX.Element {
+export function SpectrumComponents({ isHash }: IsHashProp): JSX.Element {
   return (
     <div id={SPECTRUM_COMPONENT_SAMPLES_ID}>
-      <h2 className="ui-title" data-no-menu>
-        Spectrum Components
-      </h2>
+      {isHash('') && (
+        <h2 className="ui-title" data-no-menu>
+          Spectrum Components
+        </h2>
+      )}
+
       <Grid gap={20} columns={minmax('0px', '1fr')}>
-        <View {...sampleSectionIdAndClassesSpectrum('spectrum-buttons')}>
-          <h3>Buttons</h3>
-          <ButtonsSample />
-        </View>
-        <View {...sampleSectionIdAndClassesSpectrum('spectrum-collections')}>
-          <h3>Collections</h3>
-          <TableViewSample />
-        </View>
-        <View {...sampleSectionIdAndClassesSpectrum('spectrum-content')}>
-          <h3>Content</h3>
-          <IllustratedMessageSample />
-        </View>
-        <View {...sampleSectionIdAndClassesSpectrum('spectrum-forms')}>
-          <h3>Forms</h3>
-          <FormsSample />
-        </View>
-        <View {...sampleSectionIdAndClassesSpectrum('spectrum-overlays')}>
-          <h3>Overlays</h3>
-          <Flex gap="size-160">
-            <ContextualHelpSample />
-            <DialogTrigger>
-              <ActionButton>Dialog Trigger</ActionButton>
-              {close => (
-                <Dialog>
-                  <Heading>Some Heading</Heading>
-                  <Header>Some Header</Header>
-                  <Divider />
-                  <Content>
-                    <Text>Are you sure?</Text>
-                  </Content>
-                  <ButtonGroup>
-                    <Button variant="secondary" onPress={close}>
-                      Cancel
-                    </Button>
-                    <Button variant="accent" onPress={close}>
-                      Confirm
-                    </Button>
-                  </ButtonGroup>
-                </Dialog>
-              )}
-            </DialogTrigger>
-          </Flex>
-        </View>
-        <View {...sampleSectionIdAndClassesSpectrum('spectrum-well')}>
-          <h3>Wells</h3>
-          <Well>This is a well.</Well>
-        </View>
+        {isHash('spectrum-buttons') && (
+          <View {...sampleSectionIdAndClassesSpectrum('spectrum-buttons')}>
+            <h3>Buttons</h3>
+            <ButtonsSample />
+          </View>
+        )}
+
+        {isHash('spectrum-collections') && (
+          <View {...sampleSectionIdAndClassesSpectrum('spectrum-collections')}>
+            <h3>Collections</h3>
+            <TableViewSample />
+          </View>
+        )}
+
+        {isHash('spectrum-content') && (
+          <View {...sampleSectionIdAndClassesSpectrum('spectrum-content')}>
+            <h3>Content</h3>
+            <IllustratedMessageSample />
+          </View>
+        )}
+
+        {isHash('spectrum-forms') && (
+          <View {...sampleSectionIdAndClassesSpectrum('spectrum-forms')}>
+            <h3>Forms</h3>
+            <FormsSample />
+          </View>
+        )}
+
+        {isHash('spectrum-overlays') && (
+          <View {...sampleSectionIdAndClassesSpectrum('spectrum-overlays')}>
+            <h3>Overlays</h3>
+            <Flex gap="size-160">
+              <ContextualHelpSample />
+              <DialogTrigger>
+                <ActionButton>Dialog Trigger</ActionButton>
+                {close => (
+                  <Dialog>
+                    <Heading>Some Heading</Heading>
+                    <Header>Some Header</Header>
+                    <Divider />
+                    <Content>
+                      <Text>Are you sure?</Text>
+                    </Content>
+                    <ButtonGroup>
+                      <Button variant="secondary" onPress={close}>
+                        Cancel
+                      </Button>
+                      <Button variant="accent" onPress={close}>
+                        Confirm
+                      </Button>
+                    </ButtonGroup>
+                  </Dialog>
+                )}
+              </DialogTrigger>
+            </Flex>
+          </View>
+        )}
+
+        {isHash('spectrum-well') && (
+          <View {...sampleSectionIdAndClassesSpectrum('spectrum-well')}>
+            <h3>Wells</h3>
+            <Well>This is a well.</Well>
+          </View>
+        )}
       </Grid>
     </div>
   );

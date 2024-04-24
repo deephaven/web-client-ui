@@ -5,6 +5,10 @@ import { Item, ItemElement, NormalizedItem } from '@deephaven/components';
 export const HIDE_FROM_E2E_TESTS_CLASS = 'hide-from-e2e-tests';
 export const SAMPLE_SECTION_CLASS = 'sample-section';
 
+export interface IsHashProp {
+  isHash: (label: string, processLabel?: boolean) => boolean;
+}
+
 /**
  * Generate a given number of `Item` elements.
  */

@@ -16,9 +16,9 @@ import QuadrillionExample from './grid-examples/QuadrillionExample';
 import TreeExample from './grid-examples/TreeExample';
 import AsyncExample from './grid-examples/AsyncExample';
 import DataBarExample from './grid-examples/DataBarExample';
-import { sampleSectionIdAndClassesSpectrum } from './utils';
+import { IsHashProp, sampleSectionIdAndClassesSpectrum } from './utils';
 
-function Grids(): ReactElement {
+function Grids({ isHash }: IsHashProp): ReactElement {
   const dh = useApi();
   const [irisGridModel] = useState(
     new MockIrisGridTreeModel(dh, new MockTreeGridModel())
@@ -39,48 +39,76 @@ function Grids(): ReactElement {
   return (
     <div>
       <ThemeContext.Provider value={contextTheme}>
-        <h2 className="ui-title">Grid</h2>
-        <Flex {...sampleSectionIdAndClassesSpectrum('grids-grid')}>
-          <Grid model={model} theme={theme} />
-        </Flex>
-        <h2 className="ui-title">Static Data</h2>
-        <Flex
-          {...sampleSectionIdAndClassesSpectrum('grids-static')}
-          height={200}
-        >
-          <StaticExample />
-        </Flex>
-        <h2 className="ui-title">Data Bar</h2>
-        <Flex
-          {...sampleSectionIdAndClassesSpectrum('grids-data-bar')}
-          height={500}
-        >
-          <DataBarExample />
-        </Flex>
-        <h2 className="ui-title">Quadrillion rows and columns</h2>
-        <Flex
-          {...sampleSectionIdAndClassesSpectrum('grids-quadrillion')}
-          position="relative"
-          height={500}
-        >
-          <QuadrillionExample />
-        </Flex>
-        <h2 className="ui-title">Async example</h2>
-        <Flex
-          {...sampleSectionIdAndClassesSpectrum('grids-async')}
-          position="relative"
-          height={500}
-        >
-          <AsyncExample />
-        </Flex>
-        <h2 className="ui-title">Tree Grid</h2>
-        <Flex {...sampleSectionIdAndClassesSpectrum('grids-tree')} height={500}>
-          <TreeExample />
-        </Flex>
-        <h2 className="ui-title">Iris Grid</h2>
-        <Flex {...sampleSectionIdAndClassesSpectrum('grids-iris')} height={500}>
-          <IrisGrid model={irisGridModel} />
-        </Flex>
+        {isHash('' && <h2 className="ui-title">Grid</h2>)}
+        {isHash('grids-grid') && (
+          <Flex {...sampleSectionIdAndClassesSpectrum('grids-grid')}>
+            <Grid model={model} theme={theme} />
+          </Flex>
+        )}
+
+        {isHash('' && <h2 className="ui-title">Static Data</h2>)}
+        {isHash('grids-static') && (
+          <Flex
+            {...sampleSectionIdAndClassesSpectrum('grids-static')}
+            height={200}
+          >
+            <StaticExample />
+          </Flex>
+        )}
+
+        {isHash('' && <h2 className="ui-title">Data Bar</h2>)}
+        {isHash('grids-data-bar') && (
+          <Flex
+            {...sampleSectionIdAndClassesSpectrum('grids-data-bar')}
+            height={500}
+          >
+            <DataBarExample />
+          </Flex>
+        )}
+
+        {isHash(
+          '' && <h2 className="ui-title">Quadrillion rows and columns</h2>
+        )}
+        {isHash('grids-quadrillion') && (
+          <Flex
+            {...sampleSectionIdAndClassesSpectrum('grids-quadrillion')}
+            position="relative"
+            height={500}
+          >
+            <QuadrillionExample />
+          </Flex>
+        )}
+
+        {isHash('' && <h2 className="ui-title">Async example</h2>)}
+        {isHash('grids-async') && (
+          <Flex
+            {...sampleSectionIdAndClassesSpectrum('grids-async')}
+            position="relative"
+            height={500}
+          >
+            <AsyncExample />
+          </Flex>
+        )}
+
+        {isHash('' && <h2 className="ui-title">Tree Grid</h2>)}
+        {isHash('grids-tree') && (
+          <Flex
+            {...sampleSectionIdAndClassesSpectrum('grids-tree')}
+            height={500}
+          >
+            <TreeExample />
+          </Flex>
+        )}
+
+        {isHash('' && <h2 className="ui-title">Iris Grid</h2>)}
+        {isHash('grids-iris') && (
+          <Flex
+            {...sampleSectionIdAndClassesSpectrum('grids-iris')}
+            height={500}
+          >
+            <IrisGrid model={irisGridModel} />
+          </Flex>
+        )}
       </ThemeContext.Provider>
     </div>
   );

@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 import {
   ContextMenuRoot,
@@ -48,25 +48,28 @@ const stickyProps = {
 } as const;
 
 function StyleGuide(): React.ReactElement {
-  const isolateSection = window.location.search.includes('isolateSection=true');
   const { themes } = useTheme();
+  const [hash, setHash] = useState(window.location.hash);
   const hasMultipleThemes = themes.length > 1;
+
+  function isHash(label: string, processLabel = false): boolean {
+    const newLabel = processLabel
+      ? label.toLocaleLowerCase().replaceAll(' ', '-')
+      : label;
+    return hash === `#${newLabel}` || hash === '';
+  }
+
+  useEffect(() => {
+    const hashChangeHandler = () => setHash(window.location.hash);
+    window.addEventListener('hashchange', hashChangeHandler);
+    return () => window.removeEventListener('hashchange', hashChangeHandler);
+  }, []);
 
   return (
     // Needs a tabindex to capture focus on popper blur
     // AppMainContainer has a tabindex of -1 in the app itself
     <div tabIndex={-1} role="main">
       <div className="container style-guide-container">
-        {/* For e2e tests this allows us to isolate sections for snapshots. This 
-      mitigates an issue where a change to a section in the styleguide can cause
-      subtle pixel shifts in other sections */}
-        {isolateSection && (
-          <style>
-            {`.${HIDE_FROM_E2E_TESTS_CLASS}, .sample-section:not(${window.location.hash}), :not(.sample-section) > h2 {
-          display: none;
-        }`}
-          </style>
-        )}
         <Flex
           justifyContent="space-between"
           alignItems="center"
@@ -76,63 +79,91 @@ function StyleGuide(): React.ReactElement {
           <h1 style={{ paddingTop: '2rem' }}>Deephaven UI Components</h1>
         </Flex>
 
-        <Flex
-          {...stickyProps}
-          UNSAFE_className={HIDE_FROM_E2E_TESTS_CLASS}
-          marginTop={-56}
-          top={20}
-          gap={10}
-          alignItems="end"
-        >
-          {hasMultipleThemes ? <ThemePicker /> : null}
-          <SamplesMenu />
-        </Flex>
-        <Flex
-          {...stickyProps}
-          UNSAFE_className={HIDE_FROM_E2E_TESTS_CLASS}
-          top="calc(100vh - 40px)"
-          marginTop={-32}
-          marginEnd={hasMultipleThemes ? -234 : 0}
-        >
-          <GotoTopButton />
-        </Flex>
+        {isHash('') && (
+          <>
+            <Flex
+              {...stickyProps}
+              UNSAFE_className={HIDE_FROM_E2E_TESTS_CLASS}
+              marginTop={-56}
+              top={20}
+              gap={10}
+              alignItems="end"
+            >
+              {hasMultipleThemes ? <ThemePicker /> : null}
+              <SamplesMenu />
+            </Flex>
+            <Flex
+              {...stickyProps}
+              UNSAFE_className={HIDE_FROM_E2E_TESTS_CLASS}
+              top="calc(100vh - 40px)"
+              marginTop={-32}
+              marginEnd={hasMultipleThemes ? -234 : 0}
+            >
+              <GotoTopButton />
+            </Flex>
+          </>
+        )}
 
-        <Typograpy />
+        {isHash('typography') && <Typograpy />}
 
-        <SampleMenuCategory data-menu-category="Colors" />
-        <Colors />
-        <ThemeColors />
+        {isHash('') && <SampleMenuCategory data-menu-category="Colors" />}
+        {isHash('colors') && <Colors />}
+        {(isHash('theme-color-palette') ||
+          isHash('semantic-colors') ||
+          isHash('chart-colors') ||
+          isHash('editor-colors') ||
+          isHash('grid-colors') ||
+          isHash('component-colors')) && <ThemeColors isHash={isHash} />}
 
-        <SampleMenuCategory data-menu-category="Layout" />
-        <GoldenLayout />
+        {isHash('') && <SampleMenuCategory data-menu-category="Layout" />}
+        {isHash('golden-layout') && <GoldenLayout />}
 
-        <SampleMenuCategory data-menu-category="Components" />
-        <Buttons />
-        <Progress />
-        <Inputs />
-        <ListViews />
-        <Pickers />
-        <ItemListInputs />
-        <DraggableLists />
-        <TimeSliderInputs />
-        <Dialog />
-        <Modals />
-        <ContextMenus />
-        <DropdownMenus />
-        <Navigations />
-        <Tooltips />
-        <Icons />
-        <Editors />
-        <Grids />
-        <Charts />
-        <ContextMenuRoot />
-        <RandomAreaPlotAnimation />
+        {isHash('') && <SampleMenuCategory data-menu-category="Components" />}
+        {(isHash('buttons-regular') ||
+          isHash('buttons-outline') ||
+          isHash('buttons-inline') ||
+          isHash('buttons-socketed') ||
+          isHash('links')) && <Buttons isHash={isHash} />}
+        {isHash('progress') && <Progress />}
+        {isHash('inputs') && <Inputs />}
+        {isHash('list-views') && <ListViews />}
+        {isHash('pickers') && <Pickers />}
+        {isHash('item-list-inputs') && <ItemListInputs />}
+        {isHash('draggable-lists') && <DraggableLists />}
+        {isHash('time-slider-inputs') && <TimeSliderInputs />}
+        {isHash('dialog') && <Dialog />}
+        {isHash('modals') && <Modals />}
+        {isHash('context-menus') && <ContextMenus />}
+        {isHash('dropdown-menus') && <DropdownMenus />}
+        {isHash('navigations') && <Navigations />}
+        {isHash('tooltips') && <Tooltips />}
+        {isHash('icons') && <Icons />}
+        {isHash('editors') && <Editors />}
+        {(isHash('grids-grid') ||
+          isHash('grids-static') ||
+          isHash('grids-data-bar') ||
+          isHash('grids-quadrillion') ||
+          isHash('grids-async') ||
+          isHash('grids-tree') ||
+          isHash('grids-iris')) && <Grids isHash={isHash} />}
+        {isHash('charts') && <Charts />}
+        {isHash('context-menu-root') && <ContextMenuRoot />}
+        {isHash('random-area-plot-animation') && <RandomAreaPlotAnimation />}
 
-        <SampleMenuCategory data-menu-category="Spectrum Components" />
-        <SpectrumComponents />
+        {isHash('') && (
+          <SampleMenuCategory data-menu-category="Spectrum Components" />
+        )}
+        {(isHash('spectrum-buttons') ||
+          isHash('spectrum-collections') ||
+          isHash('spectrum-content') ||
+          isHash('spectrum-forms') ||
+          isHash('spectrum-overlays') ||
+          isHash('spectrum-well')) && <SpectrumComponents isHash={isHash} />}
 
-        <SampleMenuCategory data-menu-category="Spectrum Comparison" />
-        <SpectrumComparison />
+        {isHash('') && (
+          <SampleMenuCategory data-menu-category="Spectrum Comparison" />
+        )}
+        {isHash('spectrum-comparison') && <SpectrumComparison />}
       </div>
     </div>
   );
