@@ -2,6 +2,23 @@
   --dh-list-view-item-icon-compact: 24px;
   --dh-list-view-item-icon-regular: 26px;
   --dh-list-view-item-icon-spacious: 32px;
+
+  // set the wrapper to grow to the size of the parent container
+  height: 100%;
+  max-width: 100%;
+  position: relative;
+
+  > div {
+    // absolute position the list view to fill the wrapper
+    // so that it will grow and shrink with the wrapper
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    > div > div {
+      // disable the transition on the list view items
+      transition: none !important;
+    }
+  }
 }
 
 .dh-list-view-wrapper-scale-large {

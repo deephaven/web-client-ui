@@ -39,8 +39,7 @@ export function ListViewWrapper<T>({
     <Flex
       ref={contentRectRef}
       direction="column"
-      flex={flex ?? 1}
-      minHeight={0}
+      flex={flex ?? 'auto'}
       UNSAFE_className={cl(
         'dh-list-view-wrapper',
         `dh-list-view-wrapper-density-${props.density ?? 'regular'}`,
