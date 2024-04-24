@@ -19,8 +19,27 @@ export interface ListViewWrapperProps<T> extends SpectrumListViewProps<T> {
 }
 
 export function ListViewWrapper<T>({
+  // List view specific props are passed to the ListView,
+  // the remaining Layout specific props are passed to the Flex
+  density,
+  isQuiet,
+  loadingState,
+  overflowMode,
+  renderEmptyState,
+  dragAndDropHooks,
+  disabledBehavior,
+  items,
+  disabledKeys,
+  selectionMode,
+  disallowEmptySelection,
+  selectedKeys,
+  defaultSelectedKeys,
+  selectionStyle,
+  onAction,
+  onSelectionChange,
+  onLoadMore,
+  children,
   UNSAFE_className,
-  flex,
   onScroll = EMPTY_FUNCTION,
   ...props
 }: ListViewWrapperProps<T>): JSX.Element {
@@ -39,13 +58,14 @@ export function ListViewWrapper<T>({
     <Flex
       ref={contentRectRef}
       direction="column"
-      flex={flex ?? 'auto'}
       UNSAFE_className={cl(
         'dh-list-view-wrapper',
-        `dh-list-view-wrapper-density-${props.density ?? 'regular'}`,
+        `dh-list-view-wrapper-density-${density ?? 'regular'}`,
         `dh-list-view-wrapper-scale-${scale}`,
         UNSAFE_className
       )}
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      {...props}
     >
       {contentRect.height === 0 ? (
         // Use &nbsp; to ensure content has a non-zero height. This ensures the
@@ -62,10 +82,27 @@ export function ListViewWrapper<T>({
         <>&nbsp;</>
       ) : (
         <SpectrumListView
-          // eslint-disable-next-line react/jsx-props-no-spreading
-          {...props}
+          density={density}
+          isQuiet={isQuiet}
+          loadingState={loadingState}
+          overflowMode={overflowMode}
+          renderEmptyState={renderEmptyState}
+          dragAndDropHooks={dragAndDropHooks}
+          disabledBehavior={disabledBehavior}
+          items={items}
+          disabledKeys={disabledKeys}
+          selectionMode={selectionMode}
+          disallowEmptySelection={disallowEmptySelection}
+          selectedKeys={selectedKeys}
+          defaultSelectedKeys={defaultSelectedKeys}
+          selectionStyle={selectionStyle}
+          onAction={onAction}
+          onSelectionChange={onSelectionChange}
+          onLoadMore={onLoadMore}
           ref={scrollRef}
-        />
+        >
+          {children}
+        </SpectrumListView>
       )}
     </Flex>
   );
