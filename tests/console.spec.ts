@@ -36,6 +36,7 @@ test.describe('console input tests', () => {
   test('object button is created when creating a table', async ({
     browserName,
   }) => {
+    expect(1 + 1).toBe(0);
     const tableName = `${generateVarName(`${browserName}_t`)}`;
     const command = makeTableCommand(tableName);
 
