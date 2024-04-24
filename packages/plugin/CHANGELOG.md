@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.74.0](https://github.com/deephaven/web-client-ui/compare/v0.73.0...v0.74.0) (2024-04-24)
+
+### Features
+
+- Add DashboardPlugin support to embed-widget ([#1950](https://github.com/deephaven/web-client-ui/issues/1950)) ([27fc8bd](https://github.com/deephaven/web-client-ui/commit/27fc8bd49debf7b37fed9e91cbaf784c9ebb9347))
+
 # [0.73.0](https://github.com/deephaven/web-client-ui/compare/v0.72.0...v0.73.0) (2024-04-19)
 
 **Note:** Version bump only for package @deephaven/plugin
