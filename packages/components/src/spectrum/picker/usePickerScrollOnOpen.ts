@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import type { DOMRefValue } from '@react-types/shared';
+import type { DOMRef } from '@react-types/shared';
 import {
   findSpectrumPickerScrollArea,
   usePopoverOnScrollRef,
@@ -12,7 +12,7 @@ export interface UsePickerScrollOnOpenOptions {
 }
 
 export interface UsePickerScrollOnOpenResult {
-  ref: React.RefObject<DOMRefValue<HTMLElement>>;
+  ref: DOMRef<HTMLElement>;
   onOpenChange: (isOpen: boolean) => void;
 }
 

@@ -132,8 +132,8 @@ export async function getPositionOfSelectedItemElement<
     return position;
   }
 
-  // eslint-disable-next-line no-restricted-syntax
-  for (const item of items) {
+  for (let i = 0; i <= items.length; i += 1) {
+    const item = items[i];
     if (item.key === selectedKey) {
       return position;
     }

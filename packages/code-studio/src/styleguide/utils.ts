@@ -23,7 +23,7 @@ export function* generateItemElements(
     }
     const letter = letters[charI];
     const key = `${letter}${suffix}`;
-    const content = `${letter}${letter}${letter}${suffix}`;
+    const content = `${letter.repeat(3)}${suffix}`;
 
     // eslint-disable-next-line react/no-children-prop
     yield createElement(Item, {
@@ -52,7 +52,7 @@ export function* generateNormalizedItems(
     }
     const letter = letters[charI];
     const key = `${letter}${suffix}`;
-    const content = `${letter}${letter}${letter}${suffix}`;
+    const content = `${letter.repeat(3)}${suffix}`;
 
     yield {
       key,
