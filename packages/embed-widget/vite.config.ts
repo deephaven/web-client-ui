@@ -66,6 +66,7 @@ export default defineConfig(({ mode }) => {
       proxy,
     },
     resolve: {
+      dedupe: ['react', 'react-redux', 'redux'],
       alias:
         mode === 'development'
           ? [

@@ -35,6 +35,7 @@
     "@deephaven/console": "file:../console",
     "@deephaven/dashboard": "file:../dashboard",
     "@deephaven/dashboard-core-plugins": "file:../dashboard-core-plugins",
+    "@deephaven/golden-layout": "file:../golden-layout",
     "@deephaven/icons": "file:../icons",
     "@deephaven/iris-grid": "file:../iris-grid",
     "@deephaven/jsapi-bootstrap": "file:../jsapi-bootstrap",
@@ -48,6 +49,7 @@
     "@deephaven/utils": "file:../utils",
     "@paciolan/remote-component": "2.13.0",
     "@paciolan/remote-module-loader": "^3.0.2",
+    "classnames": "^2.5.1",
     "fira": "mozilla/fira#4.202"
   },
   "peerDependencies": {

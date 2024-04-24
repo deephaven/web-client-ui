@@ -93,7 +93,7 @@ export const saveWorkspace =
     dispatch(setWorkspace(workspace));
     const { storage } = getState();
     const { workspaceStorage } = storage;
-    return workspaceStorage.save(workspace);
+    return workspaceStorage?.save(workspace);
   };
 
 /**
@@ -111,14 +111,14 @@ export const updateWorkspaceData =
   > =>
   (dispatch, getState) => {
     const { workspace } = getState();
-    const { data } = workspace;
+    const { data } = workspace ?? {};
     const newWorkspace = {
       ...workspace,
       data: {
         ...data,
         ...workspaceData,
         settings: {
-          ...data.settings,
+          ...data?.settings,
           ...workspaceData.settings,
         },
       },
