@@ -32,11 +32,9 @@ export type ItemElementOrPrimitive<T = unknown> =
  */
 export type SectionProps<T> = Omit<SpectrumSectionProps<T>, 'children'> & {
   children:
-    | ItemElement<T>
-    | ItemElement<T>[]
-    | ItemRenderer<T>
     | ItemElementOrPrimitive<T>
-    | ItemElementOrPrimitive<T>[];
+    | ItemElementOrPrimitive<T>[]
+    | ItemRenderer<T>;
 };
 
 /**
