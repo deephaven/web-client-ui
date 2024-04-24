@@ -48,7 +48,7 @@
     "@deephaven/redux": "file:../redux",
     "@deephaven/utils": "file:../utils",
     "@fontsource/fira-mono": "^5.0.13",
-    "@fontsource/fira-sans": "^5.0.19",
+    "@fontsource/fira-sans": "^5.0.20",
     "@paciolan/remote-component": "2.13.0",
     "@paciolan/remote-module-loader": "^3.0.2",
     "classnames": "^2.5.1"
