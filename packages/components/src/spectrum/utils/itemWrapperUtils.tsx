@@ -111,6 +111,7 @@ export function wrapItemChildren(
     );
   });
 
+  // Keep consistent with original data structure as array or single node
   return Array.isArray(itemsOrSections) ? result : result[0];
 }
 
