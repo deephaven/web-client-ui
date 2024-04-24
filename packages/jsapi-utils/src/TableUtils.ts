@@ -1860,6 +1860,22 @@ export class TableUtils {
   }
 
   /**
+   * Creates an Eq filter for the given column and raw value
+   * @param column The column to set the filter on
+   * @param rawValue The nullable value to filter on
+   * @returns The filter for this column/value combination
+   */
+  makeNullableEqFilter(
+    column: DhType.Column,
+    rawValue: unknown
+  ): DhType.FilterCondition {
+    if (rawValue == null) {
+      return column.filter().isNull();
+    }
+    return column.filter().eq(this.makeFilterRawValue(column.type, rawValue));
+  }
+
+  /**
    * Converts a string value to a value appropriate for the column
    * @param columnType The column type to make the value for
    * @param text The string value to make a type for
