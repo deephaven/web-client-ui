@@ -183,6 +183,7 @@ class IrisGridPartitionSelector extends Component<
       const newConfig: PartitionConfig = {
         // Core JSAPI returns undefined for null table values,
         // coalesce with null to differentiate null from no selection in the dropdown
+        // https://github.com/deephaven/deephaven-core/issues/5400
         partitions: t.columns.map(column => data.rows[0].get(column) ?? null),
         mode: 'partition',
       };

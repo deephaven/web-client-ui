@@ -84,6 +84,7 @@ export function TableDropdown({
         const { detail } = event;
         // Core JSAPI returns undefined for null table values,
         // coalesce with null to differentiate null from no selection in the dropdown
+        // https://github.com/deephaven/deephaven-core/issues/5400
         const newValues = detail.rows.map(row => row.get(tableColumn) ?? null);
         setValues(newValues);
       }
