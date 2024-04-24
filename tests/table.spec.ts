@@ -91,7 +91,9 @@ test.describe('tests simple table operations', () => {
     await page.keyboard.type('sin-and-cos.csv');
     await expect(fileNameInputField).toHaveValue('sin-and-cos.csv');
 
+    const downloadPromise = page.waitForEvent('download');
     downloadButton.click();
+    await downloadPromise;
 
     // Wait for download to complete
     await expect(
