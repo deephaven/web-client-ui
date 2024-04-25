@@ -1,11 +1,13 @@
 import React, { createContext, useEffect, useState } from 'react';
 import '@fontsource/fira-mono/400.css';
 import '@fontsource/fira-sans/300.css';
+import '@fontsource/fira-sans/300-italic.css';
 import '@fontsource/fira-sans/400.css';
 import '@fontsource/fira-sans/400-italic.css';
 import '@fontsource/fira-sans/500.css';
 import '@fontsource/fira-sans/600.css';
 import '@fontsource/fira-sans/700.css';
+import '@fontsource/fira-sans/700-italic.css';
 
 export const FontsLoadedContext = createContext<boolean>(false);
 
