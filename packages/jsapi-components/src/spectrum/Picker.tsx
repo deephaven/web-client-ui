@@ -28,9 +28,6 @@ export interface PickerProps extends Omit<PickerBaseProps, 'children'> {
   /* The column of values to display as primary text. Defaults to the `keyColumn` value. */
   labelColumn?: string;
 
-  /* The column of values to display as descriptions. */
-  descriptionColumn?: string;
-
   /* The column of values to map to icons. */
   iconColumn?: string;
 
