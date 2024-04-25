@@ -50,7 +50,7 @@ export function separateSpectrumProps<T extends AriaLabelingProps & StyleProps>(
     left,
     right,
     isHidden,
-    ...restProps
+    ...componentProps
   } = props;
 
   return {
@@ -93,7 +93,7 @@ export function separateSpectrumProps<T extends AriaLabelingProps & StyleProps>(
       right,
       isHidden,
     },
-    componentProps: restProps as Omit<
+    componentProps: componentProps as Omit<
       T,
       keyof (AriaLabelingProps & StyleProps)
     >,
