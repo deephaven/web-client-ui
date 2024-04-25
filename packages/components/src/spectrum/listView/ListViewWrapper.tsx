@@ -4,7 +4,6 @@ import {
 } from '@adobe/react-spectrum';
 import {
   extractSpectrumHTMLElement,
-  useContentRect,
   useOnScrollRef,
 } from '@deephaven/react-hooks';
 import { EMPTY_FUNCTION } from '@deephaven/utils';
@@ -29,18 +28,10 @@ export function ListViewWrapper<T>(
 
   const { scale } = useSpectrumThemeProvider();
 
-  // Spectrum ListView crashes when it has zero height. Track the contentRect
-  // of the parent container and only render the ListView when it has a non-zero
-  // height. See https://github.com/adobe/react-spectrum/issues/6213
-  const { ref: contentRectRef, contentRect } = useContentRect(
-    extractSpectrumHTMLElement
-  );
-
   const scrollRef = useOnScrollRef(onScroll, extractSpectrumHTMLElement);
 
   return (
     <Flex
-      ref={contentRectRef}
       direction="column"
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...styleProps}
@@ -51,28 +42,13 @@ export function ListViewWrapper<T>(
         styleProps.UNSAFE_className
       )}
     >
-      {contentRect.height === 0 ? (
-        // Use &nbsp; to ensure content has a non-zero height. This ensures the
-        // container will also have a non-zero height unless its height is
-        // explicitly set to zero. Example use case:
-        // 1. Tab containing ListView is visible. Container height is non-zero.
-        //    ListView is rendered.
-        // 2. Tab is hidden. Container height is explicitly constrained to zero.
-        //    ListView is not rendered.
-        // 3. Tab is shown again. Height constraint is removed. Resize observer
-        //    fires and shows non-zero height due to the &nbsp; (without this,
-        //    the height would remain zero forever since ListView hasn't rendered yet)
-        // 4. ListView is rendered again.
-        <>&nbsp;</>
-      ) : (
-        <SpectrumListView
-          ref={scrollRef}
-          // eslint-disable-next-line react/jsx-props-no-spreading
-          {...ariaLabelProps}
-          // eslint-disable-next-line react/jsx-props-no-spreading
-          {...listViewProps}
-        />
-      )}
+      <SpectrumListView
+        ref={scrollRef}
+        // eslint-disable-next-line react/jsx-props-no-spreading
+        {...ariaLabelProps}
+        // eslint-disable-next-line react/jsx-props-no-spreading
+        {...listViewProps}
+      />
     </Flex>
   );
 }
