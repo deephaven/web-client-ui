@@ -11,6 +11,7 @@ import { EMPTY_FUNCTION } from '@deephaven/utils';
 import cl from 'classnames';
 import { useSpectrumThemeProvider } from '../../theme';
 import { Flex } from '../layout';
+import { separateSpectrumProps } from '../utils';
 import './ListViewWrapper.scss';
 
 export interface ListViewWrapperProps<T> extends SpectrumListViewProps<T> {
@@ -18,31 +19,14 @@ export interface ListViewWrapperProps<T> extends SpectrumListViewProps<T> {
   onScroll?: (event: Event) => void;
 }
 
-export function ListViewWrapper<T>({
-  // List view specific props are passed to the ListView,
-  children,
-  defaultSelectedKeys,
-  density,
-  disabledBehavior,
-  disabledKeys,
-  disallowEmptySelection,
-  dragAndDropHooks,
-  isQuiet,
-  items,
-  loadingState,
-  overflowMode,
-  renderEmptyState,
-  selectedKeys,
-  selectionMode,
-  selectionStyle,
-  onAction,
-  onLoadMore,
-  onSelectionChange,
-  onScroll = EMPTY_FUNCTION,
-  // Layout specific props to be applied to the Flex container
-  UNSAFE_className,
-  ...layoutProps
-}: ListViewWrapperProps<T>): JSX.Element {
+export function ListViewWrapper<T>(
+  props: ListViewWrapperProps<T>
+): JSX.Element {
+  const { ariaLabelProps, componentProps, styleProps } =
+    separateSpectrumProps(props);
+
+  const { onScroll = EMPTY_FUNCTION, ...listViewProps } = componentProps;
+
   const { scale } = useSpectrumThemeProvider();
 
   // Spectrum ListView crashes when it has zero height. Track the contentRect
@@ -58,14 +42,14 @@ export function ListViewWrapper<T>({
     <Flex
       ref={contentRectRef}
       direction="column"
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      {...styleProps}
       UNSAFE_className={cl(
         'dh-list-view-wrapper',
-        `dh-list-view-wrapper-density-${density ?? 'regular'}`,
+        `dh-list-view-wrapper-density-${listViewProps.density ?? 'regular'}`,
         `dh-list-view-wrapper-scale-${scale}`,
-        UNSAFE_className
+        styleProps.UNSAFE_className
       )}
-      // eslint-disable-next-line react/jsx-props-no-spreading
-      {...layoutProps}
     >
       {contentRect.height === 0 ? (
         // Use &nbsp; to ensure content has a non-zero height. This ensures the
@@ -83,26 +67,11 @@ export function ListViewWrapper<T>({
       ) : (
         <SpectrumListView
           ref={scrollRef}
-          defaultSelectedKeys={defaultSelectedKeys}
-          density={density}
-          disabledBehavior={disabledBehavior}
-          disabledKeys={disabledKeys}
-          disallowEmptySelection={disallowEmptySelection}
-          dragAndDropHooks={dragAndDropHooks}
-          isQuiet={isQuiet}
-          items={items}
-          loadingState={loadingState}
-          overflowMode={overflowMode}
-          renderEmptyState={renderEmptyState}
-          selectedKeys={selectedKeys}
-          selectionMode={selectionMode}
-          selectionStyle={selectionStyle}
-          onAction={onAction}
-          onLoadMore={onLoadMore}
-          onSelectionChange={onSelectionChange}
-        >
-          {children}
-        </SpectrumListView>
+          // eslint-disable-next-line react/jsx-props-no-spreading
+          {...ariaLabelProps}
+          // eslint-disable-next-line react/jsx-props-no-spreading
+          {...listViewProps}
+        />
       )}
     </Flex>
   );
