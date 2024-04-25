@@ -1,5 +1,7 @@
 import React, { createContext, useEffect, useState } from 'react';
 import '@fontsource/fira-mono/400.css';
+import '@fontsource/fira-mono/500.css';
+import '@fontsource/fira-mono/700.css';
 import '@fontsource/fira-sans/300.css';
 import '@fontsource/fira-sans/300-italic.css';
 import '@fontsource/fira-sans/400.css';
