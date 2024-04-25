@@ -1,0 +1,66 @@
+@import '../scss/custom.scss';
+
+.error-view {
+  position: relative;
+  color: $danger;
+  border-radius: $border-radius;
+  background-color: negative-opacity($exception-transparency);
+  display: flex;
+  flex-direction: column;
+  flex-grow: 0;
+  font-family: $font-family-monospace;
+  transition: flex-grow $transition ease-in-out;
+  &.expanded {
+    flex-grow: 1;
+  }
+
+  label {
+    display: block;
+    padding: $spacer;
+    font-weight: bold;
+  }
+
+  textarea {
+    width: 100%;
+    padding: $spacer;
+    color: $danger;
+    background-color: transparent;
+    border: 0;
+    resize: none;
+    outline: none;
+    min-height: 100px;
+    transition: height $transition ease-in-out;
+    white-space: pre;
+    flex-grow: 1;
+  }
+
+  .error-view-buttons {
+    display: flex;
+    flex-direction: row;
+    gap: 1px;
+    position: absolute;
+    top: 0;
+    right: 0;
+
+    .btn-danger {
+      color: $black;
+      opacity: 0.8;
+      padding: $spacer-1;
+      &:active {
+        color: $black;
+      }
+    }
+
+    .error-view-copy-button {
+      border-radius: 0;
+      min-width: 3rem;
+    }
+
+    .error-view-expand-button {
+      border-radius: 0 $border-radius 0 0;
+      svg {
+        margin-right: $spacer-1;
+      }
+    }
+  }
+}
