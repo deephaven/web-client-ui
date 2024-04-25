@@ -1,4 +1,5 @@
 import React, { ChangeEvent, ReactNode, useCallback, useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { StyleProps } from '@react-types/shared';
 import {
   Grid,
@@ -13,9 +14,10 @@ import {
   ListViewProps,
   RadioGroup,
   RadioItem,
+  useSpectrumThemeProvider,
 } from '@deephaven/components';
 import { vsAccount, vsPerson } from '@deephaven/icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { LIST_VIEW_ROW_HEIGHTS } from '@deephaven/utils';
 import { generateNormalizedItems, sampleSectionIdAndClasses } from './utils';
 
 // Generate enough items to require scrolling
@@ -38,6 +40,11 @@ interface LabeledProps extends StyleProps {
   children: ReactNode;
 }
 
+const LABELED_FLEX_CONTAINER_HEIGHTS = {
+  gap: 10,
+  label: 21,
+};
+
 function LabeledFlexContainer({
   label,
   direction = 'column',
@@ -49,9 +56,7 @@ function LabeledFlexContainer({
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...styleProps}
       direction={direction}
-      gap={10}
-      minHeight={0}
-      minWidth={0}
+      gap={LABELED_FLEX_CONTAINER_HEIGHTS.gap}
     >
       <Text>{label}</Text>
       {children}
@@ -60,11 +65,17 @@ function LabeledFlexContainer({
 }
 
 export function ListViews(): JSX.Element {
+  const { scale } = useSpectrumThemeProvider();
   const [selectedKeys, setSelectedKeys] = useState<'all' | Iterable<ItemKey>>(
     []
   );
 
   const [density, setDensity] = useState<ListViewProps['density']>('compact');
+  const singleChildExampleHeight =
+    LABELED_FLEX_CONTAINER_HEIGHTS.label +
+    LABELED_FLEX_CONTAINER_HEIGHTS.gap +
+    2 + // listview border
+    LIST_VIEW_ROW_HEIGHTS[density ?? 'compact'][scale];
 
   const onDensityChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
@@ -84,7 +95,12 @@ export function ListViews(): JSX.Element {
     <div {...sampleSectionIdAndClasses('list-views')}>
       <h2 className="ui-title">List View</h2>
 
-      <Grid gap={14} height="size-6000" columns="1fr 1fr 1fr">
+      <Grid
+        gap={14}
+        height="size-6000"
+        columns="1fr 1fr 1fr"
+        rows={`auto minmax(${singleChildExampleHeight}px, auto) 1fr auto 1fr`}
+      >
         <LabeledFlexContainer
           direction="row"
           label="Density"
@@ -97,7 +113,11 @@ export function ListViews(): JSX.Element {
           </RadioGroup>
         </LabeledFlexContainer>
 
-        <LabeledFlexContainer label="Single Child" gridColumn="span 3">
+        <LabeledFlexContainer
+          label="Single Child"
+          gridColumn="span 3"
+          height="100%"
+        >
           <ListView
             density={density}
             aria-label="Single Child"
