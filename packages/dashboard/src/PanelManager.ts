@@ -310,7 +310,7 @@ class PanelManager {
 
   /**
    *
-   * @param glContainer Only reopen panels that were closed from the stack of this container, is defined
+   * @param glContainer Only reopen panels that were closed from the stack of this container, if defined
    */
   handleReopenLast(glContainer?: Container): void {
     if (this.closed.length === 0) return;
