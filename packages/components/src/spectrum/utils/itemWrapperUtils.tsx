@@ -3,7 +3,7 @@ import { Item } from '@adobe/react-spectrum';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dh as dhIcons } from '@deephaven/icons';
 import { isElementOfType } from '@deephaven/react-hooks';
-import { NON_BREAKING_SPACE } from '@deephaven/utils';
+import { ensureArray, NON_BREAKING_SPACE } from '@deephaven/utils';
 import {
   isItemElement,
   isSectionElement,
@@ -57,9 +57,7 @@ export function wrapItemChildren(
   itemsOrSections: ItemOrSection | ItemOrSection[],
   tooltipOptions: TooltipOptions | null
 ): ItemElement | SectionElement | (ItemElement | SectionElement)[] {
-  const itemsOrSectionsArray = Array.isArray(itemsOrSections)
-    ? itemsOrSections
-    : [itemsOrSections];
+  const itemsOrSectionsArray = ensureArray(itemsOrSections);
 
   const result = itemsOrSectionsArray.map(item => {
     if (isItemElement(item)) {

@@ -2,7 +2,7 @@ import { Key, ReactElement, ReactNode } from 'react';
 import { SpectrumPickerProps } from '@adobe/react-spectrum';
 import type { ItemRenderer } from '@react-types/shared';
 import { isElementOfType } from '@deephaven/react-hooks';
-import { KeyedItem, SelectionT } from '@deephaven/utils';
+import { ensureArray, KeyedItem, SelectionT } from '@deephaven/utils';
 import {
   Item,
   ItemElementOrPrimitive,
@@ -192,10 +192,10 @@ export function isItemElementWithDescription<T>(
     ? node.props.children.props.children
     : node.props.children;
 
-  const childrenArray = Array.isArray(children) ? children : [children];
+  const childrenArray = ensureArray(children);
 
   const result = childrenArray.some(
-    child => child.props?.slot === 'description' && isElementOfType(child, Text)
+    child => isElementOfType(child, Text) && child.props?.slot === 'description'
   );
 
   return result;
