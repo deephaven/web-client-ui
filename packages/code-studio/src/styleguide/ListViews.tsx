@@ -42,7 +42,10 @@ interface LabeledProps extends StyleProps {
 
 const LABELED_FLEX_CONTAINER_HEIGHTS = {
   gap: 10,
-  label: 21,
+  label: {
+    medium: 21,
+    large: 25.5,
+  },
 };
 
 function LabeledFlexContainer({
@@ -71,8 +74,10 @@ export function ListViews(): JSX.Element {
   );
 
   const [density, setDensity] = useState<ListViewProps['density']>('compact');
+
+  // Calculate the height of the single child example
   const singleChildExampleHeight =
-    LABELED_FLEX_CONTAINER_HEIGHTS.label +
+    LABELED_FLEX_CONTAINER_HEIGHTS.label[scale] +
     LABELED_FLEX_CONTAINER_HEIGHTS.gap +
     2 + // listview border
     LIST_VIEW_ROW_HEIGHTS[density ?? 'compact'][scale];
