@@ -20,28 +20,28 @@ export interface ListViewWrapperProps<T> extends SpectrumListViewProps<T> {
 
 export function ListViewWrapper<T>({
   // List view specific props are passed to the ListView,
-  // the remaining Layout specific props are passed to the Flex
+  children,
+  defaultSelectedKeys,
   density,
+  disabledBehavior,
+  disabledKeys,
+  disallowEmptySelection,
+  dragAndDropHooks,
   isQuiet,
+  items,
   loadingState,
   overflowMode,
   renderEmptyState,
-  dragAndDropHooks,
-  disabledBehavior,
-  items,
-  disabledKeys,
-  selectionMode,
-  disallowEmptySelection,
   selectedKeys,
-  defaultSelectedKeys,
+  selectionMode,
   selectionStyle,
   onAction,
-  onSelectionChange,
   onLoadMore,
-  children,
-  UNSAFE_className,
+  onSelectionChange,
   onScroll = EMPTY_FUNCTION,
-  ...props
+  // Layout specific props to be applied to the Flex container
+  UNSAFE_className,
+  ...layoutProps
 }: ListViewWrapperProps<T>): JSX.Element {
   const { scale } = useSpectrumThemeProvider();
 
@@ -65,7 +65,7 @@ export function ListViewWrapper<T>({
         UNSAFE_className
       )}
       // eslint-disable-next-line react/jsx-props-no-spreading
-      {...props}
+      {...layoutProps}
     >
       {contentRect.height === 0 ? (
         // Use &nbsp; to ensure content has a non-zero height. This ensures the
@@ -82,24 +82,24 @@ export function ListViewWrapper<T>({
         <>&nbsp;</>
       ) : (
         <SpectrumListView
+          ref={scrollRef}
+          defaultSelectedKeys={defaultSelectedKeys}
           density={density}
+          disabledBehavior={disabledBehavior}
+          disabledKeys={disabledKeys}
+          disallowEmptySelection={disallowEmptySelection}
+          dragAndDropHooks={dragAndDropHooks}
           isQuiet={isQuiet}
+          items={items}
           loadingState={loadingState}
           overflowMode={overflowMode}
           renderEmptyState={renderEmptyState}
-          dragAndDropHooks={dragAndDropHooks}
-          disabledBehavior={disabledBehavior}
-          items={items}
-          disabledKeys={disabledKeys}
-          selectionMode={selectionMode}
-          disallowEmptySelection={disallowEmptySelection}
           selectedKeys={selectedKeys}
-          defaultSelectedKeys={defaultSelectedKeys}
+          selectionMode={selectionMode}
           selectionStyle={selectionStyle}
           onAction={onAction}
-          onSelectionChange={onSelectionChange}
           onLoadMore={onLoadMore}
-          ref={scrollRef}
+          onSelectionChange={onSelectionChange}
         >
           {children}
         </SpectrumListView>
