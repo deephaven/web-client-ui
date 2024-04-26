@@ -6,30 +6,49 @@ import { sampleSectionIdAndClasses } from './utils';
 
 function ErrorViews(): React.ReactElement {
   const columnStyle: CSSProperties = {
-    height: 500,
+    maxHeight: 500,
     display: 'flex',
     flexDirection: 'column',
     maxWidth: 400,
   };
+
+  const shortErrorMessage = 'This is a short error message';
+  const midErrorMessage = 'Mid length error message\n'.repeat(10);
+  const longErrorMessage = 'Really long error message\n'.repeat(100);
+
+  const midErrorType = 'MidError';
+  const longErrorType = 'SuperLongErrorMessageType';
+
   return (
     <div {...sampleSectionIdAndClasses('error-views')}>
       <h2 className="ui-title" title="Display error messages easily">
         Error Views
       </h2>
+      <h3>Expandable</h3>
       <div className="row" style={{ maxHeight: 500 }}>
         <div className="col" style={columnStyle}>
-          <ErrorView message="This is a short error message" />
+          <ErrorView message={shortErrorMessage} />
+        </div>
+        <div className="col" style={columnStyle}>
+          <ErrorView message={midErrorMessage} type={midErrorType} />
+        </div>
+        <div className="col" style={columnStyle}>
+          <ErrorView message={longErrorMessage} type={longErrorType} />
+        </div>
+      </div>
+      <h3>Always expanded</h3>
+      <div className="row" style={{ maxHeight: 500 }}>
+        <div className="col" style={columnStyle}>
+          <ErrorView message={shortErrorMessage} isExpanded />
+        </div>
+        <div className="col" style={columnStyle}>
+          <ErrorView message={midErrorMessage} type={midErrorType} isExpanded />
         </div>
         <div className="col" style={columnStyle}>
           <ErrorView
-            message={'Mid length error message\n'.repeat(10)}
-            type="MidError"
-          />
-        </div>
-        <div className="col" style={columnStyle}>
-          <ErrorView
-            message={'Really long error message\n'.repeat(100)}
-            type="SuperLongErrorMessageType"
+            message={longErrorMessage}
+            type={longErrorType}
+            isExpanded
           />
         </div>
       </div>
