@@ -28,21 +28,21 @@
 }
 
 .dh-list-view-wrapper-density-compact {
-  svg[class*='react-spectrum-ListViewItem-thumbnail'] {
+  svg[class*='spectrum-Icon'] {
     height: var(--dh-list-view-item-icon-compact);
     width: var(--dh-list-view-item-icon-compact);
   }
 }
 
 .dh-list-view-wrapper-density-regular {
-  svg[class*='react-spectrum-ListViewItem-thumbnail'] {
+  svg[class*='spectrum-Icon'] {
     height: var(--dh-list-view-item-icon-regular);
     width: var(--dh-list-view-item-icon-regular);
   }
 }
 
 .dh-list-view-wrapper-density-spacious {
-  svg[class*='react-spectrum-ListViewItem-thumbnail'] {
+  svg[class*='spectrum-Icon'] {
     height: var(--dh-list-view-item-icon-spacious);
     width: var(--dh-list-view-item-icon-spacious);
   }

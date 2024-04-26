@@ -101,12 +101,9 @@ export interface NormalizedSectionData {
  * `KeyedItem` interface to be compatible with Windowed data utils
  * (e.g. `useViewportData`).
  */
-export type NormalizedItem = KeyedItem<NormalizedItemData, ItemKey | undefined>;
+export type NormalizedItem = KeyedItem<NormalizedItemData, ItemKey>;
 
-export type NormalizedSection = KeyedItem<
-  NormalizedSectionData,
-  Key | undefined
->;
+export type NormalizedSection = KeyedItem<NormalizedSectionData, Key>;
 
 export type NormalizedItemOrSection<TItemOrSection extends ItemOrSection> =
   TItemOrSection extends SectionElement ? NormalizedSection : NormalizedItem;
@@ -127,9 +124,9 @@ export type TooltipOptions = { placement: PopperOptions['placement'] };
 export function getItemKey<
   TItem extends NormalizedItem | NormalizedSection,
   TKey extends TItem extends NormalizedItem
-    ? ItemKey | undefined
+    ? ItemKey
     : TItem extends NormalizedSection
-    ? Key | undefined
+    ? Key
     : undefined,
 >(item: TItem | null | undefined): TKey {
   return (item?.item?.key ?? item?.key) as TKey;

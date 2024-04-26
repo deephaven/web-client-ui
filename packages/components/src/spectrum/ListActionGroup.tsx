@@ -1,8 +1,11 @@
-import { ActionGroupProps } from '../ActionGroup';
-import { ItemKey, ItemSelection } from '../utils';
+import { ActionGroupProps } from './ActionGroup';
+import { ItemKey, ItemSelection } from './utils';
 
 export interface ListActionGroupProps<T>
-  extends Omit<ActionGroupProps<T>, 'onAction' | 'onChange'> {
+  extends Omit<
+    ActionGroupProps<T>,
+    'onAction' | 'onChange' | 'onSelectionChange'
+  > {
   /**
    * Handler that is called when an item is pressed.
    */
