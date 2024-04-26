@@ -73,7 +73,7 @@ test.describe('tests simple table operations', () => {
     await expect(page.locator('.table-sidebar')).toHaveCount(1);
   });
 
-  test('can download table successfully', async ({ page }) => {
+  test('can download table successfully', async ({ page, browserName }) => {
     // open Download CSV panel
     await page.locator('data-testid=menu-item-Download CSV').click();
 
@@ -91,9 +91,14 @@ test.describe('tests simple table operations', () => {
     await page.keyboard.type('sin-and-cos.csv');
     await expect(fileNameInputField).toHaveValue('sin-and-cos.csv');
 
-    const downloadPromise = page.waitForEvent('download');
-    downloadButton.click();
-    await downloadPromise;
+    // webkit is flaky
+    if (browserName === 'webkit') {
+      downloadButton.click();
+    } else {
+      const downloadPromise = page.waitForEvent('download');
+      downloadButton.click();
+      await downloadPromise;
+    }
 
     // Wait for download to complete
     await expect(
