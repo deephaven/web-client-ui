@@ -23,7 +23,7 @@ export function useIsHash(): (
     (labelArg: string | string[], processLabel: boolean = false): boolean => {
       const rawLabels = Array.isArray(labelArg) ? labelArg : [labelArg];
       const labels = processLabel
-        ? rawLabels.map(label => label.toLocaleLowerCase())
+        ? rawLabels.map(label => label.toLocaleLowerCase().replaceAll(' ', '-'))
         : rawLabels;
 
       return labels.some(label => hash === `#${label}` || hash === '');
