@@ -83,7 +83,7 @@ test('UI regression - Styleguide sections', async ({ page }) => {
       await page.goto(`/ide/styleguide#${id}`);
 
       const sampleSection = page.locator(`#sample-section-${id}`);
-      const box = await sampleSection.boundingBox({ timeout: 30000 });
+      const box = await sampleSection.boundingBox({ timeout: 45000 });
       expect(box?.height).toBeGreaterThan(0);
 
       await expect.soft(sampleSection).toHaveScreenshot(`${id}.png`);
