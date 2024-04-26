@@ -16,10 +16,11 @@ import QuadrillionExample from './grid-examples/QuadrillionExample';
 import TreeExample from './grid-examples/TreeExample';
 import AsyncExample from './grid-examples/AsyncExample';
 import DataBarExample from './grid-examples/DataBarExample';
-import { IsHashProp, sampleSectionIdAndClassesSpectrum } from './utils';
+import { sampleSectionIdAndClassesSpectrum, useIsHash } from './utils';
 
-function Grids({ isHash }: IsHashProp): ReactElement {
+function Grids(): ReactElement {
   const dh = useApi();
+  const isHash = useIsHash();
   const [irisGridModel] = useState(
     new MockIrisGridTreeModel(dh, new MockTreeGridModel())
   );

@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 import {
   ContextMenuRoot,
@@ -31,7 +31,7 @@ import ThemeColors from './ThemeColors';
 import SpectrumComponents from './SpectrumComponents';
 import SamplesMenu, { SampleMenuCategory } from './SamplesMenu';
 import GotoTopButton from './GotoTopButton';
-import { HIDE_FROM_E2E_TESTS_CLASS } from './utils';
+import { HIDE_FROM_E2E_TESTS_CLASS, useIsHash } from './utils';
 import { GoldenLayout } from './GoldenLayout';
 import { RandomAreaPlotAnimation } from './RandomAreaPlotAnimation';
 import SpectrumComparison from './SpectrumComparison';
@@ -49,21 +49,8 @@ const stickyProps = {
 
 function StyleGuide(): React.ReactElement {
   const { themes } = useTheme();
-  const [hash, setHash] = useState(window.location.hash);
+  const isHash = useIsHash();
   const hasMultipleThemes = themes.length > 1;
-
-  function isHash(label: string, processLabel = false): boolean {
-    const newLabel = processLabel
-      ? label.toLocaleLowerCase().replaceAll(' ', '-')
-      : label;
-    return hash === `#${newLabel}` || hash === '';
-  }
-
-  useEffect(() => {
-    const hashChangeHandler = () => setHash(window.location.hash);
-    window.addEventListener('hashchange', hashChangeHandler);
-    return () => window.removeEventListener('hashchange', hashChangeHandler);
-  }, []);
 
   return (
     // Needs a tabindex to capture focus on popper blur
@@ -108,22 +95,27 @@ function StyleGuide(): React.ReactElement {
 
         {isHash('') && <SampleMenuCategory data-menu-category="Colors" />}
         {isHash('colors') && <Colors />}
-        {(isHash('theme-color-palette') ||
-          isHash('semantic-colors') ||
-          isHash('chart-colors') ||
-          isHash('editor-colors') ||
-          isHash('grid-colors') ||
-          isHash('component-colors')) && <ThemeColors isHash={isHash} />}
+        {isHash([
+          'theme-color-palette',
+          'semantic-colors',
+          'chart-colors',
+          'editor-colors',
+          'grid-colors',
+          'component-colors',
+        ]) && <ThemeColors />}
 
         {isHash('') && <SampleMenuCategory data-menu-category="Layout" />}
         {isHash('golden-layout') && <GoldenLayout />}
 
         {isHash('') && <SampleMenuCategory data-menu-category="Components" />}
-        {(isHash('buttons-regular') ||
-          isHash('buttons-outline') ||
-          isHash('buttons-inline') ||
-          isHash('buttons-socketed') ||
-          isHash('links')) && <Buttons isHash={isHash} />}
+        {isHash([
+          'buttons',
+          'buttons-regular',
+          'buttons-outline',
+          'buttons-inline',
+          'buttons-socketed',
+          'links',
+        ]) && <Buttons />}
         {isHash('progress') && <Progress />}
         {isHash('inputs') && <Inputs />}
         {isHash('list-views') && <ListViews />}
@@ -139,13 +131,16 @@ function StyleGuide(): React.ReactElement {
         {isHash('tooltips') && <Tooltips />}
         {isHash('icons') && <Icons />}
         {isHash('editors') && <Editors />}
-        {(isHash('grids-grid') ||
-          isHash('grids-static') ||
-          isHash('grids-data-bar') ||
-          isHash('grids-quadrillion') ||
-          isHash('grids-async') ||
-          isHash('grids-tree') ||
-          isHash('grids-iris')) && <Grids isHash={isHash} />}
+        {isHash([
+          'grids',
+          'grids-grid',
+          'grids-static',
+          'grids-data-bar',
+          'grids-quadrillion',
+          'grids-async',
+          'grids-tree',
+          'grids-iris',
+        ]) && <Grids />}
         {isHash('charts') && <Charts />}
         {isHash('context-menu-root') && <ContextMenuRoot />}
         {isHash('random-area-plot-animation') && <RandomAreaPlotAnimation />}
@@ -153,12 +148,14 @@ function StyleGuide(): React.ReactElement {
         {isHash('') && (
           <SampleMenuCategory data-menu-category="Spectrum Components" />
         )}
-        {(isHash('spectrum-buttons') ||
-          isHash('spectrum-collections') ||
-          isHash('spectrum-content') ||
-          isHash('spectrum-forms') ||
-          isHash('spectrum-overlays') ||
-          isHash('spectrum-well')) && <SpectrumComponents isHash={isHash} />}
+        {isHash([
+          'spectrum-buttons',
+          'spectrum-collections',
+          'spectrum-content',
+          'spectrum-forms',
+          'spectrum-overlays',
+          'spectrum-well',
+        ]) && <SpectrumComponents />}
 
         {isHash('') && (
           <SampleMenuCategory data-menu-category="Spectrum Comparison" />

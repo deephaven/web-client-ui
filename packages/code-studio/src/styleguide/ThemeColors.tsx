@@ -10,7 +10,7 @@ import semanticEditor from '@deephaven/components/src/theme/theme-dark/theme-dar
 import semanticGrid from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic-grid.css?inline';
 import components from '@deephaven/components/src/theme/theme-dark/theme-dark-components.css?inline';
 import styles from './ThemeColors.module.scss';
-import { IsHashProp, sampleSectionIdAndClasses } from './utils';
+import { sampleSectionIdAndClasses, useIsHash } from './utils';
 import {
   buildColorGroups,
   contrastColor,
@@ -28,7 +28,8 @@ function buildSwatchDataGroups() {
   };
 }
 
-export function ThemeColors({ isHash }: IsHashProp): JSX.Element {
+export function ThemeColors(): JSX.Element {
+  const isHash = useIsHash();
   const { selectedThemeKey } = useTheme();
   const swatchDataGroups = useMemo(buildSwatchDataGroups, [selectedThemeKey]);
 

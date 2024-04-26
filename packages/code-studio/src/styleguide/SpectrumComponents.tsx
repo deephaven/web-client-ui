@@ -38,9 +38,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhTruck, vsEmptyWindow } from '@deephaven/icons';
 import { Heading, View, Text } from '@deephaven/components';
 import { SPECTRUM_COMPONENT_SAMPLES_ID } from './constants';
-import { IsHashProp, sampleSectionIdAndClassesSpectrum } from './utils';
+import { sampleSectionIdAndClassesSpectrum, useIsHash } from './utils';
 
-export function SpectrumComponents({ isHash }: IsHashProp): JSX.Element {
+export function SpectrumComponents(): JSX.Element {
+  const isHash = useIsHash();
+
   return (
     <div id={SPECTRUM_COMPONENT_SAMPLES_ID}>
       {isHash('') && (

@@ -1,12 +1,37 @@
 import cl from 'classnames';
-import { createElement, useCallback, useState } from 'react';
+import { createElement, useCallback, useEffect, useState } from 'react';
 import { Item, ItemElement, NormalizedItem } from '@deephaven/components';
 
 export const HIDE_FROM_E2E_TESTS_CLASS = 'hide-from-e2e-tests';
 export const SAMPLE_SECTION_CLASS = 'sample-section';
 
-export interface IsHashProp {
-  isHash: (label: string, processLabel?: boolean) => boolean;
+export function useIsHash(): (
+  label: string | string[],
+  processLabel?: boolean
+) => boolean {
+  const [hash, setHash] = useState(window.location.hash);
+
+  useEffect(() => {
+    const hashChangeHandler = () => setHash(window.location.hash);
+    window.addEventListener('hashchange', hashChangeHandler);
+    return () => window.removeEventListener('hashchange', hashChangeHandler);
+  }, []);
+
+  const isHash = useCallback(
+    // disable because eslint is not inferring as boolean
+    // eslint-disable-next-line @typescript-eslint/no-inferrable-types
+    (labelArg: string | string[], processLabel: boolean = false): boolean => {
+      const rawLabels = Array.isArray(labelArg) ? labelArg : [labelArg];
+      const labels = processLabel
+        ? rawLabels.map(label => label.toLocaleLowerCase())
+        : rawLabels;
+
+      return labels.some(label => hash === `#${label}` || hash === '');
+    },
+    [hash]
+  );
+
+  return isHash;
 }
 
 /**
