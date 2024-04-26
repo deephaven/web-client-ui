@@ -59,6 +59,26 @@ export type ItemSelection = SelectionT<ItemKey>;
  */
 export type ItemSelectionChangeHandler = (key: ItemKey) => void;
 
+export interface MultipleItemSelectionProps {
+  selectedKeys?: 'all' | Iterable<ItemKey>;
+  defaultSelectedKeys?: 'all' | Iterable<ItemKey>;
+  disabledKeys?: Iterable<ItemKey>;
+
+  /**
+   * Handler that is called when the selection change.
+   * Note that under the hood, this is just an alias for Spectrum's
+   * `onSelectionChange`. We are renaming for better consistency with other
+   * components.
+   */
+  onChange?: (keys: ItemSelection) => void;
+
+  /**
+   * Handler that is called when the selection changes.
+   * @deprecated Use `onChange` instead
+   */
+  onSelectionChange?: (keys: ItemSelection) => void;
+}
+
 export interface NormalizedItemData {
   key?: ItemKey;
   content: ReactNode;

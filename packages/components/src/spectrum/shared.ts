@@ -27,14 +27,43 @@ export type ItemElementOrPrimitive<T = unknown> =
   | boolean
   | ItemElement<T>;
 
+export type ItemsChildren<T> =
+  | ItemElement<T>
+  | ItemElement<T>[]
+  | ItemRenderer<T>;
+
+export type ItemsOrPrimitiveChildren<T> =
+  | ItemElementOrPrimitive<T>
+  | ItemElementOrPrimitive<T>[]
+  | ItemRenderer<T>;
+
+// export type AugmentItemChildrenWithPrimitives<
+//   T,
+//   U extends T extends {
+//     children: ItemsChildren<infer A>;
+//   }
+//     ? A
+//     : never = T extends {
+//     children: ItemsChildren<infer A>;
+//   }
+//     ? A
+//     : never,
+// > = Omit<T, 'children'> & {
+//   children: ItemsOrPrimitiveChildren<U>;
+// };
+
+// /**
+//  * Spectrum SectionProps augmented with support for primitive item children.
+//  */
+// export type SectionProps<T> = AugmentItemChildrenWithPrimitives<
+//   SpectrumSectionProps<T>
+// >;
+
 /**
  * Spectrum SectionProps augmented with support for primitive item children.
  */
 export type SectionProps<T> = Omit<SpectrumSectionProps<T>, 'children'> & {
-  children:
-    | ItemElementOrPrimitive<T>
-    | ItemElementOrPrimitive<T>[]
-    | ItemRenderer<T>;
+  children: ItemsOrPrimitiveChildren<T>;
 };
 
 /**
