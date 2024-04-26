@@ -9,20 +9,27 @@ function ErrorViews(): React.ReactElement {
     height: 500,
     display: 'flex',
     flexDirection: 'column',
+    maxWidth: 400,
   };
   return (
     <div {...sampleSectionIdAndClasses('error-views')}>
       <h2 className="ui-title" title="Display error messages easily">
         Error Views
       </h2>
-      <div className="row">
+      <div className="row" style={{ maxHeight: 500 }}>
         <div className="col" style={columnStyle}>
-          <ErrorView message="This is an error message" />
+          <ErrorView message="This is a short error message" />
+        </div>
+        <div className="col" style={columnStyle}>
+          <ErrorView
+            message={'Mid length error message\n'.repeat(10)}
+            type="MidError"
+          />
         </div>
         <div className="col" style={columnStyle}>
           <ErrorView
             message={'Really long error message\n'.repeat(100)}
-            type="LongError"
+            type="SuperLongErrorMessageType"
           />
         </div>
       </div>

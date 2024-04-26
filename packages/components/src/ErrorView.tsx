@@ -1,7 +1,11 @@
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsDiffAdded, vsDiffRemoved, vsWarning } from '@deephaven/icons';
+import {
+  useDebouncedCallback,
+  useResizeObserver,
+} from '@deephaven/react-hooks';
 import CopyButton from './CopyButton';
 import Button from './Button';
 import './ErrorView.scss';
@@ -17,22 +21,34 @@ export type ErrorViewerProps = {
 function ErrorView({ message, type = 'Error' }: ErrorViewerProps): JSX.Element {
   const [isExpandable, setIsExpandable] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const viewRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLPreElement>(null);
 
-  useLayoutEffect(() => {
-    const textarea = textareaRef.current;
-    if (textarea == null) {
+  const handleResize = useCallback(() => {
+    if (isExpanded || textareaRef.current == null) {
       return;
     }
-    setIsExpandable(textarea.scrollHeight > textarea.clientHeight);
+    const newIsExpandable =
+      textareaRef.current.scrollHeight > textareaRef.current.clientHeight;
+    setIsExpandable(newIsExpandable);
   }, [isExpanded]);
 
+  const debouncedHandleResize = useDebouncedCallback(handleResize, 100);
+
+  useResizeObserver(viewRef.current, debouncedHandleResize);
+
+  useLayoutEffect(debouncedHandleResize, [debouncedHandleResize]);
+
   return (
-    <div className={classNames('error-view', { expanded: isExpanded })}>
+    <div
+      className={classNames('error-view', { expanded: isExpanded })}
+      ref={viewRef}
+    >
       <div className="error-view-header">
-        <label className="text-danger">
-          <FontAwesomeIcon icon={vsWarning} /> {type}
-        </label>
+        <div className="error-view-header-text">
+          <FontAwesomeIcon icon={vsWarning} />
+          <span>{type}</span>
+        </div>
         <div className="error-view-buttons">
           <CopyButton
             kind="danger"
@@ -54,7 +70,9 @@ function ErrorView({ message, type = 'Error' }: ErrorViewerProps): JSX.Element {
           )}
         </div>
       </div>
-      <textarea readOnly value={message} ref={textareaRef} />
+      <pre className="error-view-text" ref={textareaRef}>
+        {message}
+      </pre>
     </div>
   );
 }
