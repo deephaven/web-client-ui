@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.74.0](https://github.com/deephaven/web-client-ui/compare/v0.73.0...v0.74.0) (2024-04-24)
+
+**Note:** Version bump only for package @deephaven/iris-grid
+
 # [0.73.0](https://github.com/deephaven/web-client-ui/compare/v0.72.0...v0.73.0) (2024-04-19)
 
 ### Features
@@ -319,8 +323,8 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 - Verified that newline with leading space no longer crashes the browser
   tab
   `       a
-       a
-      `
+     a
+    `
 - Wrote some Python code. Intellisense, syntax highlighting, and general
   typing experience seemed as expected
   - Execute full code + selected code successfully

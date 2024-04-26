@@ -1,6 +1,10 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import type { Container } from '@deephaven/golden-layout';
+import { EventEmitter, type Container } from '@deephaven/golden-layout';
+import { createMockStore } from '@deephaven/redux';
+import { ApiContext } from '@deephaven/jsapi-bootstrap';
+import dh from '@deephaven/jsapi-shim';
+import { Provider } from 'react-redux';
 import PanelContextMenu from './PanelContextMenu';
 
 function makeGlComponent({
@@ -9,13 +13,25 @@ function makeGlComponent({
   emit = jest.fn(),
   unbind = jest.fn(),
   trigger = jest.fn(),
+  layoutManager = {
+    root: {},
+  },
+  getConfig = jest.fn(),
 } = {}) {
-  return { on, off, emit, unbind, trigger };
+  return { on, off, emit, unbind, trigger, layoutManager, getConfig };
 }
 
 function mountPanelContextMenu() {
+  const store = createMockStore();
   return render(
-    <PanelContextMenu glContainer={makeGlComponent() as unknown as Container} />
+    <ApiContext.Provider value={dh}>
+      <Provider store={store}>
+        <PanelContextMenu
+          glContainer={makeGlComponent() as unknown as Container}
+          glEventHub={new EventEmitter()}
+        />
+      </Provider>
+    </ApiContext.Provider>
   );
 }
 

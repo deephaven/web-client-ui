@@ -1,10 +1,20 @@
 import React, { PureComponent, ReactElement } from 'react';
 import { ContextAction, ContextActions } from '@deephaven/components';
-import type { Container, Tab } from '@deephaven/golden-layout';
+import type { Container, EventEmitter, Tab } from '@deephaven/golden-layout';
+import {
+  CustomizableWorkspace,
+  RootState,
+  getWorkspace,
+  setWorkspace as setWorkspaceAction,
+} from '@deephaven/redux';
+import { connect } from 'react-redux';
+import { ClosedPanel, LayoutUtils, PanelEvent } from '@deephaven/dashboard';
 
 interface PanelContextMenuProps {
   additionalActions: ContextAction[];
   glContainer: Container;
+  glEventHub: EventEmitter;
+  workspace: CustomizableWorkspace;
 }
 
 interface HasContainer {
@@ -26,6 +36,7 @@ class PanelContextMenu extends PureComponent<
     this.handleCloseTab = this.handleCloseTab.bind(this);
     this.handleCloseTabsRight = this.handleCloseTabsRight.bind(this);
     this.handleCloseTabsAll = this.handleCloseTabsAll.bind(this);
+    this.handleReopenLast = this.handleReopenLast.bind(this);
   }
 
   getAllTabs(): Tab[] {
@@ -66,6 +77,11 @@ class PanelContextMenu extends PureComponent<
     }
   }
 
+  handleReopenLast(): void {
+    const { glContainer, glEventHub } = this.props;
+    glEventHub.emit(PanelEvent.REOPEN_LAST, glContainer);
+  }
+
   canCloseTabsRight(): boolean {
     const { glContainer } = this.props;
     const tabs = this.getAllTabs();
@@ -101,12 +117,31 @@ class PanelContextMenu extends PureComponent<
     return disabled;
   }
 
+  canReopenLast(): boolean {
+    const { workspace, glContainer } = this.props;
+    const stackId = LayoutUtils.getStackForConfig(
+      glContainer.layoutManager.root,
+      glContainer.getConfig()
+    )?.config.id;
+
+    return !workspace.data.closed?.some(
+      panel => (panel as ClosedPanel).parentStackId === stackId
+    );
+  }
+
   render(): ReactElement {
     const { additionalActions, glContainer } = this.props;
 
     const contextActions: (ContextAction | (() => ContextAction))[] = [
       ...additionalActions,
     ];
+
+    contextActions.push(() => ({
+      title: 'Re-open closed panel',
+      group: ContextActions.groups.medium + 2004,
+      action: this.handleReopenLast,
+      disabled: this.canReopenLast(),
+    }));
 
     const closable = glContainer.tab?.contentItem?.config?.isClosable;
     contextActions.push({
@@ -138,4 +173,16 @@ class PanelContextMenu extends PureComponent<
   }
 }
 
-export default PanelContextMenu;
+const mapStateToProps = (
+  state: RootState
+): {
+  workspace: CustomizableWorkspace;
+} => ({
+  workspace: getWorkspace(state),
+});
+
+const ConnectedPanelContextMenu = connect(mapStateToProps, {
+  setWorkspace: setWorkspaceAction,
+})(PanelContextMenu);
+
+export default ConnectedPanelContextMenu;

@@ -15,10 +15,13 @@ import {
   ItemOrSection,
   SectionElement,
   itemSelectionToStringSet,
+  getPositionOfSelectedItemElement,
+  isItemElementWithDescription,
 } from './itemUtils';
 import type { PickerProps } from '../picker/Picker';
 import { Item, Section } from '../shared';
 import { Text } from '../Text';
+import ItemContent from '../ItemContent';
 
 beforeEach(() => {
   expect.hasAssertions();
@@ -76,7 +79,10 @@ const expectedItems = {
       <span>No textValue</span>
     </Item>,
     {
-      item: { content: <span>No textValue</span> },
+      item: {
+        content: <span>No textValue</span>,
+        textValue: undefined,
+      },
     },
   ],
   explicitKey: [
@@ -169,6 +175,111 @@ describe('getItemKey', () => {
       expect(actual).toBe(expected);
     }
   );
+});
+
+describe('getPositionOfSelectedItemElement', () => {
+  const items = [
+    <Item key="1">A</Item>,
+    <Item key="2">B</Item>,
+    <Item key="3">C</Item>,
+  ];
+  const itemHeight = 40;
+  const topOffset = 5;
+
+  it.each([null, undefined])(
+    'should return top offset if selectedKey is not defined: %s',
+    async selectedKey => {
+      const actual = await getPositionOfSelectedItemElement({
+        items,
+        itemHeight,
+        selectedKey,
+        topOffset,
+      });
+
+      expect(actual).toEqual(topOffset);
+    }
+  );
+
+  it('should return top offset if selectedKey is not found', async () => {
+    const selectedKey = '4';
+
+    const actual = await getPositionOfSelectedItemElement({
+      items,
+      itemHeight,
+      selectedKey,
+      topOffset,
+    });
+
+    expect(actual).toEqual(topOffset);
+  });
+
+  it.each(['1', '2', '3'])(
+    'should return the position of the selected item element: %s',
+    async selectedKey => {
+      const expected = (Number(selectedKey) - 1) * itemHeight + topOffset;
+
+      const actual = await getPositionOfSelectedItemElement({
+        items,
+        itemHeight,
+        selectedKey,
+        topOffset,
+      });
+
+      expect(actual).toEqual(expected);
+    }
+  );
+});
+
+describe('isItemElementWithDescription', () => {
+  it.each([
+    [
+      'Item with description',
+      true,
+      <Item key="1">
+        <Text>Label</Text>
+        <Text slot="description">Description</Text>
+      </Item>,
+    ],
+    [
+      'ItemContent with description',
+      true,
+      <Item key="1">
+        <ItemContent>
+          <Text>Label</Text>
+          <Text slot="description">Description</Text>
+        </ItemContent>
+      </Item>,
+    ],
+    [
+      'Section with Item description',
+      false,
+      <Section key="1">
+        <Item key="1">
+          <Text>Label</Text>
+          <Text slot="description">Description</Text>
+        </Item>
+      </Section>,
+    ],
+    [
+      'Item no description',
+      false,
+      <Item key="1">
+        <Text>Label</Text>
+      </Item>,
+    ],
+    [
+      'ItemContent no description',
+      false,
+      <Item key="1">
+        <ItemContent>
+          <Text>Label</Text>
+        </ItemContent>
+      </Item>,
+    ],
+  ])(`%s should return %s`, (_label, expected, node) => {
+    const actual = isItemElementWithDescription(node);
+    expect(actual).toEqual(expected);
+  });
 });
 
 describe('isNormalizedItemsWithKeysList', () => {

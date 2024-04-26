@@ -1,12 +1,21 @@
-import { isValidElement, Key, ReactElement, ReactNode } from 'react';
+import { Key, ReactElement, ReactNode } from 'react';
 import { SpectrumPickerProps } from '@adobe/react-spectrum';
 import type { ItemRenderer } from '@react-types/shared';
 import Log from '@deephaven/log';
+import { isElementOfType } from '@deephaven/react-hooks';
 import { KeyedItem, SelectionT } from '@deephaven/utils';
 import { Item, ItemProps, Section, SectionProps } from '../shared';
 import { PopperOptions } from '../../popper';
+import { Text } from '../Text';
+import ItemContent from '../ItemContent';
 
 const log = Log.module('itemUtils');
+
+/**
+ * `Item.textValue` prop needs to be a non-empty string for accessibility
+ * purposes. This is not displayed in the UI.
+ */
+export const ITEM_EMPTY_STRING_TEXT_VALUE = 'Empty';
 
 export const INVALID_ITEM_ERROR_MESSAGE =
   'Items must be strings, numbers, booleans, <Item> or <Section> elements:';
@@ -20,7 +29,7 @@ type SectionPropsNoItemRenderer<T> = Omit<SectionProps<T>, 'children'> & {
   children: Exclude<SectionProps<T>['children'], ItemRenderer<T>>;
 };
 
-type ItemElement = ReactElement<ItemProps<unknown>>;
+export type ItemElement = ReactElement<ItemProps<unknown>>;
 export type SectionElement = ReactElement<SectionPropsNoItemRenderer<unknown>>;
 
 export type ItemElementOrPrimitive = number | string | boolean | ItemElement;
@@ -45,7 +54,7 @@ export type ItemSelectionChangeHandler = (key: ItemKey) => void;
 export interface NormalizedItemData {
   key?: ItemKey;
   content: ReactNode;
-  textValue?: string;
+  textValue: string | undefined;
 }
 
 export interface NormalizedSectionData {
@@ -97,6 +106,45 @@ export function getItemKey<
 }
 
 /**
+ * Get the position of the item with the given selected key in a list of items.
+ * @param items The items to search
+ * @param itemHeight The height of each item
+ * @param selectedKey The key of the selected item
+ * @param topOffset The top offset of the list
+ * @returns The position of the selected item or the top offset if not found
+ */
+export async function getPositionOfSelectedItemElement<
+  TKey extends string | number | boolean | undefined,
+>({
+  items,
+  itemHeight,
+  selectedKey,
+  topOffset,
+}: {
+  items: ItemElement[];
+  selectedKey: TKey | null | undefined;
+  itemHeight: number;
+  topOffset: number;
+}): Promise<number> {
+  let position = topOffset;
+
+  if (selectedKey == null) {
+    return position;
+  }
+
+  for (let i = 0; i < items.length; i += 1) {
+    const item = items[i];
+    if (item.key === selectedKey) {
+      return position;
+    }
+
+    position += itemHeight;
+  }
+
+  return topOffset;
+}
+
+/**
  * Determine if a node is a Section element.
  * @param node The node to check
  * @returns True if the node is a Section element
@@ -104,7 +152,7 @@ export function getItemKey<
 export function isSectionElement<T>(
   node: ReactNode
 ): node is ReactElement<SectionProps<T>> {
-  return isValidElement<SectionProps<T>>(node) && node.type === Section;
+  return isElementOfType(node, Section);
 }
 
 /**
@@ -115,7 +163,34 @@ export function isSectionElement<T>(
 export function isItemElement<T>(
   node: ReactNode
 ): node is ReactElement<ItemProps<T>> {
-  return isValidElement<ItemProps<T>>(node) && node.type === Item;
+  return isElementOfType(node, Item);
+}
+
+/**
+ * Determine if a node is an Item element containing a child `Text` element with
+ * a `slot` prop set to `description`.
+ * @param node The node to check
+ * @returns True if the node is an Item element with a description
+ */
+export function isItemElementWithDescription<T>(
+  node: ReactNode
+): node is ReactElement<ItemProps<T>> {
+  if (!isItemElement(node)) {
+    return false;
+  }
+
+  // If children are wrapped in `ItemContent`, go down 1 level
+  const children = isElementOfType(node.props.children, ItemContent)
+    ? node.props.children.props.children
+    : node.props.children;
+
+  const childrenArray = Array.isArray(children) ? children : [children];
+
+  const result = childrenArray.some(
+    child => child.props?.slot === 'description' && isElementOfType(child, Text)
+  );
+
+  return result;
 }
 
 /**
@@ -315,12 +390,17 @@ export function normalizeTooltipOptions(
  * @param itemKeys The selection of `ItemKey`s
  * @returns The selection of strings
  */
-export function itemSelectionToStringSet(
-  itemKeys?: 'all' | Iterable<ItemKey>
-): undefined | 'all' | Set<string> {
+export function itemSelectionToStringSet<
+  TKeys extends 'all' | Iterable<ItemKey> | undefined,
+  TResult extends TKeys extends 'all'
+    ? 'all'
+    : TKeys extends Iterable<ItemKey>
+    ? Set<string>
+    : undefined,
+>(itemKeys: TKeys): TResult {
   if (itemKeys == null || itemKeys === 'all') {
-    return itemKeys as undefined | 'all';
+    return itemKeys as undefined | 'all' as TResult;
   }
 
-  return new Set([...itemKeys].map(String));
+  return new Set([...itemKeys].map(String)) as TResult;
 }

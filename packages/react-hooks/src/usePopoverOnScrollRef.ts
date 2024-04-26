@@ -21,7 +21,7 @@ export interface UsePopoverOnScrollRefResult<T> {
 export function usePopoverOnScrollRef<T>(
   findScrollArea: (ref: T | null) => HTMLElement | null,
   onScroll: (event: Event) => void,
-  getInitialScrollPosition?: () => Promise<number | null>
+  getInitialScrollPosition?: () => Promise<number | null | undefined>
 ): UsePopoverOnScrollRefResult<T> {
   const ref = useRef<T>(null);
   const isScrollOnOpenEnabledRef = useRef(false);

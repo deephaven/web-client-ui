@@ -535,6 +535,7 @@ export class LayoutManager extends EventEmitter {
       };
     }
 
+    config.id = config.id ?? getUniqueId();
     contentItem = new this._typeToItem[config.type](this, config, parent);
     return contentItem;
   }
