@@ -183,6 +183,15 @@ export default class ItemContainer<
   }
 
   /**
+   * Returns the object's config
+   *
+   * @returns id
+   */
+  getConfig() {
+    return this._config;
+  }
+
+  /**
    * Merges the provided state into the current one
    *
    * @param state

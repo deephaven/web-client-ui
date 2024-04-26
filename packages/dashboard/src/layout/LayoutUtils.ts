@@ -152,6 +152,45 @@ class LayoutUtils {
   }
 
   /**
+   * Gets a stack by its ID
+   * @param item Golden layout content item to search for the stack
+   * @param searchId the ID
+   */
+  static getStackById(
+    item: ContentItem,
+    searchId: string | string[],
+    allowEmptyStack = false
+  ): Stack | null {
+    if (allowEmptyStack && isStack(item) && item.contentItems.length === 0) {
+      return item;
+    }
+
+    if (searchId === item.config?.id) {
+      if (isStack(item)) {
+        return item as Stack;
+      }
+      throw new Error(`Item with ID ${searchId} is not a stack`);
+    }
+
+    if (item.contentItems == null) {
+      return null;
+    }
+
+    for (let i = 0; i < item.contentItems.length; i += 1) {
+      const stack = this.getStackById(
+        item.contentItems[i],
+        searchId,
+        allowEmptyStack
+      );
+      if (stack) {
+        return stack;
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * Gets the first stack which contains a contentItem with the given config values
    * @param item Golden layout content item to search for the stack
    * @param config The item properties to match
@@ -466,6 +505,7 @@ class LayoutUtils {
   static openComponent({
     root,
     config: configParam,
+    stack: stackParam = undefined,
     replaceExisting = true,
     replaceConfig = undefined,
     createNewStack = false,
@@ -474,6 +514,7 @@ class LayoutUtils {
   }: {
     root?: ContentItem;
     config?: Partial<ReactComponentConfig>;
+    stack?: Stack;
     replaceExisting?: boolean;
     replaceConfig?: Partial<ItemConfigType>;
     createNewStack?: boolean;
@@ -498,9 +539,11 @@ class LayoutUtils {
       component: config.component,
     };
     assertNotNull(root);
-    const stack = createNewStack
-      ? LayoutUtils.addStack(root)
-      : LayoutUtils.getStackForRoot(root, searchConfig);
+    const stack =
+      stackParam ??
+      (createNewStack
+        ? LayoutUtils.addStack(root)
+        : LayoutUtils.getStackForRoot(root, searchConfig));
 
     assertNotNull(stack);
     const oldContentItem = LayoutUtils.getContentItemInStack(
