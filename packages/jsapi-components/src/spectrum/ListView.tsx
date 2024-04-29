@@ -11,7 +11,8 @@ import useFormatter from '../useFormatter';
 import useViewportData from '../useViewportData';
 import { useItemRowDeserializer } from './utils';
 
-export interface ListViewProps extends ListViewNormalizedProps {
+export interface ListViewProps
+  extends Omit<ListViewNormalizedProps, 'normalizedItems' | 'showItemIcons'> {
   table: DhType.Table;
   /* The column of values to use as item keys. Defaults to the first column. */
   keyColumn?: string;
