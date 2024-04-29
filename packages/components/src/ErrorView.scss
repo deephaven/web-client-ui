@@ -30,7 +30,6 @@
       padding-left: $spacer;
       padding-right: $spacer;
       font-weight: bold;
-      text-overflow: ellipsis;
       flex-shrink: 1;
       overflow: hidden;
       white-space: nowrap;
@@ -64,12 +63,6 @@
 
       .error-view-copy-button {
         min-width: 3rem;
-      }
-
-      .error-view-expand-button {
-        svg {
-          margin-right: $spacer-1;
-        }
       }
     }
   }

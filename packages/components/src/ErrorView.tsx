@@ -32,14 +32,14 @@ function ErrorView({
   const [isExpandable, setIsExpandable] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const viewRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLPreElement>(null);
+  const textRef = useRef<HTMLPreElement>(null);
 
   const handleResize = useCallback(() => {
-    if (isExpanded || textareaRef.current == null) {
+    if (isExpanded || textRef.current == null) {
       return;
     }
     const newIsExpandable =
-      textareaRef.current.scrollHeight > textareaRef.current.clientHeight;
+      textRef.current.scrollHeight > textRef.current.clientHeight;
     setIsExpandable(newIsExpandable);
   }, [isExpanded]);
 
@@ -82,7 +82,7 @@ function ErrorView({
           )}
         </div>
       </div>
-      <pre className="error-view-text" ref={textareaRef}>
+      <pre className="error-view-text" ref={textRef}>
         {message}
       </pre>
     </div>
