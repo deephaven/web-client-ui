@@ -15,6 +15,18 @@ export interface ListViewNormalizedProps
   showItemIcons: boolean;
 }
 
+/**
+ * ListView supporting normalized item data. This component mostly exists to
+ * decouple some of the logic needed to support table data. Specifically it
+ * handles item rendering configurations as well as converting selection keys
+ * to / from strings. This makes it easier to test logic in isolation without
+ * a dependency on JS apis (e.g. in the Styleguide).
+ *
+ * Note that This component will usually not be used directly. Instead, it is
+ * recommended to use
+ * - `@deephaven/components`'s `ListView` for non-table data sources
+ * - `@deephaven/jsapi-components`'s `ListView` for table data sources
+ */
 export function ListViewNormalized({
   normalizedItems,
   tooltip = true,

@@ -18,6 +18,17 @@ export interface ListViewWrapperProps<T> extends SpectrumListViewProps<T> {
   onScroll?: (event: Event) => void;
 }
 
+/**
+ * Helper component to wrap a ListView with the appropriate styling + scroll
+ * handling. This is used by both the `@deephaven/components` `ListView` and
+ * the `@deephaven/jsapi-components` `ListView` (via `ListViewNormalized`) to
+ * ensure consistency.
+ *
+ * Note that This component will usually not be used directly. Instead, it is
+ * recommended to use
+ * - `@deephaven/components`'s `ListView` for non-table data sources
+ * - `@deephaven/jsapi-components`'s `ListView` for table data sources
+ */
 export function ListViewWrapper<T>(
   props: ListViewWrapperProps<T>
 ): JSX.Element {

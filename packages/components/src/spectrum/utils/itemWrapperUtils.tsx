@@ -129,6 +129,8 @@ export function wrapPrimitiveWithText(
   if (['string', 'boolean', 'number'].includes(typeof content)) {
     return (
       <Text slot={slot}>
+        {/* Non-breaking space is needed to avoid the Text element's height 
+        collapsing when content is empty */}
         {content === '' ? NON_BREAKING_SPACE : String(content)}
       </Text>
     );
