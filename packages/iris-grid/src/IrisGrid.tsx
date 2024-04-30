@@ -2052,7 +2052,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     let values = [];
     if (rows.length > 0) {
       const row = rows[0];
-      values = keyTable.columns.map(column => row.get(column));
+      // Core JSAPI returns undefined for null table values,
+      // coalesce with null to differentiate null from no selection in the dropdown
+      // https://github.com/deephaven/deephaven-core/issues/5400
+      values = keyTable.columns.map(column => row.get(column) ?? null);
     }
     const newPartition: PartitionConfig = {
       partitions: values,
