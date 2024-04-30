@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@deephaven/filters": "file:../filters",
-    "@deephaven/jsapi-types": "1.0.0-dev0.33.1",
+    "@deephaven/jsapi-types": "1.0.0-dev0.34.0",
     "@deephaven/log": "file:../log",
     "@deephaven/utils": "file:../utils",
     "lodash.clamp": "^4.0.3",
