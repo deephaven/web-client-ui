@@ -539,9 +539,10 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
         // originalModel.partitionTable([]) would throw an error
         // Return an empty model instead
         modelPromise = this.originalModel
+          // .partitionMergedTable() is a workaround to get a table with the needed schema.
+          // It will not be expensive since there is no partitions.
           // TODO:
-          // Can we get a table with all columns without calling `partitionMergedTable`?
-          // Would have to implement all methods in `IrisGridEmptyTableModel` if we only pass columns instead of a table with a matching schema
+          // Can we get a table without `partitionMergedTable`?
           .partitionMergedTable()
           .then(
             table => new IrisGridEmptyTableModel(this.dh, table, this.formatter)
