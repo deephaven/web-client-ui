@@ -2043,43 +2043,23 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       model.partitionKeysTable(),
       resolved => resolved.close()
     );
-    const { dh } = model;
 
     const sorts = keyTable.columns.map(column => column.sort().desc());
     keyTable.applySort(sorts);
     keyTable.setViewport(0, 0);
 
-    return new Promise((resolve, reject) => {
-      // We want to wait for the first UPDATED event instead of just getting viewport data here
-      // It's possible that the key table does not have any rows of data yet, so just wait until it does have one
-      keyTable.addEventListener(
-        dh.Table.EVENT_UPDATED,
-        (event: CustomEvent<DhType.ViewportData>) => {
-          try {
-            const { detail: data } = event;
-            if (data.rows.length === 0) {
-              // Table is empty, wait for the next updated event
-              return;
-            }
-            const row = data.rows[0];
-            // Core JSAPI returns undefined for null table values, IrisGridPartitionSelector expects null
-            // https://github.com/deephaven/deephaven-core/issues/5400
-            const values = keyTable.columns.map(
-              column => row.get(column) ?? null
-            );
-            const newPartition: PartitionConfig = {
-              partitions: values,
-              mode: 'partition',
-            };
-            keyTable.close();
-            resolve(newPartition);
-          } catch (e) {
-            keyTable.close();
-            reject(e);
-          }
-        }
-      );
-    });
+    const { rows } = await keyTable.getViewportData();
+    let values = [];
+    if (rows.length > 0) {
+      const row = rows[0];
+      values = keyTable.columns.map(column => row.get(column));
+    }
+    const newPartition: PartitionConfig = {
+      partitions: values,
+      mode: 'partition',
+    };
+    keyTable.close();
+    return newPartition;
   }
 
   copyCell(
