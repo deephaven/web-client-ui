@@ -53,11 +53,11 @@
 
       .btn-danger {
         border-radius: 0;
-        color: $black;
+        color: var(--dh-color-contrast-dark);
         opacity: 0.8;
         padding: $spacer-1;
         &:active {
-          color: $black;
+          color: var(--dh-color-contrast-dark);
         }
       }
 

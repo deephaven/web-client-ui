@@ -35,13 +35,13 @@ function ErrorView({
   const textRef = useRef<HTMLPreElement>(null);
 
   const handleResize = useCallback(() => {
-    if (isExpanded || textRef.current == null) {
+    if (isExpanded || isExpandedProp || textRef.current == null) {
       return;
     }
     const newIsExpandable =
       textRef.current.scrollHeight > textRef.current.clientHeight;
     setIsExpandable(newIsExpandable);
-  }, [isExpanded]);
+  }, [isExpanded, isExpandedProp]);
 
   const debouncedHandleResize = useDebouncedCallback(handleResize, 100);
 
