@@ -37,6 +37,7 @@ import { RandomAreaPlotAnimation } from './RandomAreaPlotAnimation';
 import SpectrumComparison from './SpectrumComparison';
 import Pickers from './Pickers';
 import ListViews from './ListViews';
+import ErrorViews from './ErrorViews';
 
 const stickyProps = {
   position: 'sticky',
@@ -133,6 +134,7 @@ function StyleGuide(): React.ReactElement {
 
         <SampleMenuCategory data-menu-category="Spectrum Comparison" />
         <SpectrumComparison />
+        <ErrorViews />
       </div>
     </div>
   );
