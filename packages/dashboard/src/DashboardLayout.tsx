@@ -14,8 +14,9 @@ import type {
   ReactComponentConfig,
 } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
-import { useDebouncedCallback, usePrevious } from '@deephaven/react-hooks';
+import { usePrevious } from '@deephaven/react-hooks';
 import { RootState } from '@deephaven/redux';
+import throttle from 'lodash.throttle';
 import { useDispatch, useSelector } from 'react-redux';
 import PanelManager, { ClosedPanels } from './PanelManager';
 import PanelErrorBoundary from './PanelErrorBoundary';
@@ -230,9 +231,9 @@ export function DashboardLayout({
     }
   }, [dehydrateComponent, isItemDragging, lastConfig, layout, onLayoutChange]);
 
-  const debouncedHandleLayoutStateChanged = useDebouncedCallback(
-    handleLayoutStateChanged,
-    STATE_CHANGE_DEBOUNCE_MS
+  const throttledHandleLayoutStateChanged = useMemo(
+    () => throttle(handleLayoutStateChanged, STATE_CHANGE_DEBOUNCE_MS),
+    [handleLayoutStateChanged]
   );
 
   const handleLayoutItemPickedUp = useCallback(
@@ -276,7 +277,7 @@ export function DashboardLayout({
     setLayoutChildren(layout.getReactChildren());
   }, [layout]);
 
-  useListener(layout, 'stateChanged', debouncedHandleLayoutStateChanged);
+  useListener(layout, 'stateChanged', throttledHandleLayoutStateChanged);
   useListener(layout, 'itemPickedUp', handleLayoutItemPickedUp);
   useListener(layout, 'itemDropped', handleLayoutItemDropped);
   useListener(layout, 'componentCreated', handleComponentCreated);
