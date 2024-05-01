@@ -1,5 +1,5 @@
 import React, { Component, ReactElement, RefObject } from 'react';
-import deepEqual from 'deep-equal';
+import deepEqual from 'fast-deep-equal';
 import memoize from 'memoize-one';
 import {
   vsLoading,

@@ -1,4 +1,4 @@
-import deepEqual from 'deep-equal';
+import deepEqual from 'fast-deep-equal';
 import { GridUtils, GridRange, MoveOperation } from '@deephaven/grid';
 import dh from '@deephaven/jsapi-shim';
 import type { Column, Table, Sort } from '@deephaven/jsapi-types';
