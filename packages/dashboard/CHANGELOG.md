@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.75.0](https://github.com/deephaven/web-client-ui/compare/v0.74.0...v0.75.0) (2024-05-01)
+
+### Features
+
+- context menu reopen for stack only ([#1932](https://github.com/deephaven/web-client-ui/issues/1932)) ([6a9a6a4](https://github.com/deephaven/web-client-ui/commit/6a9a6a4d4f09fd0723456b45a3dab1603e181f7c)), closes [#1931](https://github.com/deephaven/web-client-ui/issues/1931)
+
 # [0.74.0](https://github.com/deephaven/web-client-ui/compare/v0.73.0...v0.74.0) (2024-04-24)
 
 ### Features

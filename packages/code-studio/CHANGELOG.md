@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.75.0](https://github.com/deephaven/web-client-ui/compare/v0.74.0...v0.75.0) (2024-05-01)
+
+### Features
+
+- Create an ErrorView that can be used to display errors ([#1965](https://github.com/deephaven/web-client-ui/issues/1965)) ([65ef1a7](https://github.com/deephaven/web-client-ui/commit/65ef1a79bb2b098e1d64046447794ba23b5a65c8))
+- ListView + Picker - Item icon support ([#1959](https://github.com/deephaven/web-client-ui/issues/1959)) ([cb13c60](https://github.com/deephaven/web-client-ui/commit/cb13c6094f2f416e7682da67fde9fc05f68b9b17)), closes [#1890](https://github.com/deephaven/web-client-ui/issues/1890)
+- Picker - initial scroll position ([#1942](https://github.com/deephaven/web-client-ui/issues/1942)) ([5f49761](https://github.com/deephaven/web-client-ui/commit/5f4976115bfc016e6d9cbe9fd77413c3fd8f8353)), closes [#1890](https://github.com/deephaven/web-client-ui/issues/1890) [#1935](https://github.com/deephaven/web-client-ui/issues/1935)
+
 # [0.74.0](https://github.com/deephaven/web-client-ui/compare/v0.73.0...v0.74.0) (2024-04-24)
 
 ### Features
@@ -374,8 +382,8 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 - Verified that newline with leading space no longer crashes the browser
   tab
   `       a
-     a
-    `
+   a
+  `
 - Wrote some Python code. Intellisense, syntax highlighting, and general
   typing experience seemed as expected
   - Execute full code + selected code successfully

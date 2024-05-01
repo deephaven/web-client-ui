@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.75.0](https://github.com/deephaven/web-client-ui/compare/v0.74.0...v0.75.0) (2024-05-01)
+
+### Bug Fixes
+
+- change fira source ([#1944](https://github.com/deephaven/web-client-ui/issues/1944)) ([07e5a26](https://github.com/deephaven/web-client-ui/commit/07e5a268fd5c4df6e24359266008c24c4c25d2a9)), closes [#1902](https://github.com/deephaven/web-client-ui/issues/1902)
+- Fix null partition filter ([#1954](https://github.com/deephaven/web-client-ui/issues/1954)) ([3a1f92b](https://github.com/deephaven/web-client-ui/commit/3a1f92be1183adf99b7b6a553684533cc9fab9d7)), closes [#1867](https://github.com/deephaven/web-client-ui/issues/1867)
+
+### Features
+
+- context menu reopen for stack only ([#1932](https://github.com/deephaven/web-client-ui/issues/1932)) ([6a9a6a4](https://github.com/deephaven/web-client-ui/commit/6a9a6a4d4f09fd0723456b45a3dab1603e181f7c)), closes [#1931](https://github.com/deephaven/web-client-ui/issues/1931)
+- Create an ErrorView that can be used to display errors ([#1965](https://github.com/deephaven/web-client-ui/issues/1965)) ([65ef1a7](https://github.com/deephaven/web-client-ui/commit/65ef1a79bb2b098e1d64046447794ba23b5a65c8))
+- ListView + Picker - Item icon support ([#1959](https://github.com/deephaven/web-client-ui/issues/1959)) ([cb13c60](https://github.com/deephaven/web-client-ui/commit/cb13c6094f2f416e7682da67fde9fc05f68b9b17)), closes [#1890](https://github.com/deephaven/web-client-ui/issues/1890)
+- Picker - initial scroll position ([#1942](https://github.com/deephaven/web-client-ui/issues/1942)) ([5f49761](https://github.com/deephaven/web-client-ui/commit/5f4976115bfc016e6d9cbe9fd77413c3fd8f8353)), closes [#1890](https://github.com/deephaven/web-client-ui/issues/1890) [#1935](https://github.com/deephaven/web-client-ui/issues/1935)
+
 # [0.74.0](https://github.com/deephaven/web-client-ui/compare/v0.73.0...v0.74.0) (2024-04-24)
 
 ### Bug Fixes
@@ -591,8 +605,8 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 - Verified that newline with leading space no longer crashes the browser
   tab
   `       a
-     a
-    `
+   a
+  `
 - Wrote some Python code. Intellisense, syntax highlighting, and general
   typing experience seemed as expected
   - Execute full code + selected code successfully
