@@ -14,7 +14,7 @@ import type {
   ReactComponentConfig,
 } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
-import { usePrevious } from '@deephaven/react-hooks';
+import { useDebouncedCallback, usePrevious } from '@deephaven/react-hooks';
 import { RootState } from '@deephaven/redux';
 import { useDispatch, useSelector } from 'react-redux';
 import PanelManager, { ClosedPanels } from './PanelManager';
@@ -45,6 +45,8 @@ const EMPTY_OBJECT = Object.freeze({});
 const DEFAULT_LAYOUT_CONFIG: DashboardLayoutConfig = [];
 
 const DEFAULT_CALLBACK = (): void => undefined;
+
+const STATE_CHANGE_DEBOUNCE_MS = 1000;
 
 // If a component isn't registered, just pass through the props so they are saved if a plugin is loaded later
 const FALLBACK_CALLBACK = (props: unknown): unknown => props;
@@ -228,6 +230,11 @@ export function DashboardLayout({
     }
   }, [dehydrateComponent, isItemDragging, lastConfig, layout, onLayoutChange]);
 
+  const debouncedHandleLayoutStateChanged = useDebouncedCallback(
+    handleLayoutStateChanged,
+    STATE_CHANGE_DEBOUNCE_MS
+  );
+
   const handleLayoutItemPickedUp = useCallback(
     (component: Container) => {
       const componentId = LayoutUtils.getIdFromContainer(component);
@@ -269,7 +276,7 @@ export function DashboardLayout({
     setLayoutChildren(layout.getReactChildren());
   }, [layout]);
 
-  useListener(layout, 'stateChanged', handleLayoutStateChanged);
+  useListener(layout, 'stateChanged', debouncedHandleLayoutStateChanged);
   useListener(layout, 'itemPickedUp', handleLayoutItemPickedUp);
   useListener(layout, 'itemDropped', handleLayoutItemDropped);
   useListener(layout, 'componentCreated', handleComponentCreated);
