@@ -81,6 +81,13 @@ test('UI regression test - Styleguide button section count', async ({
 // Iterate over all sample sections and take a screenshot of each one.
 sampleSectionIds.forEach(id => {
   test(`UI regression test - Styleguide section - ${id}`, async ({ page }) => {
+    // Fail quickly if console errors are detected
+    page.on('console', msg => {
+      if (msg.type() === 'error') {
+        throw new Error(msg.text());
+      }
+    });
+
     // Isolate the section
     await page.goto(`/ide/styleguide?isolateSection=true#${id}`);
 

@@ -1,6 +1,6 @@
 import {
-  ListView as ListViewBase,
-  ListViewProps as ListViewPropsBase,
+  ListViewNormalized,
+  ListViewNormalizedProps,
   NormalizedItemData,
   useSpectrumThemeProvider,
 } from '@deephaven/components';
@@ -11,14 +11,16 @@ import useFormatter from '../useFormatter';
 import useViewportData from '../useViewportData';
 import { useItemRowDeserializer } from './utils';
 
-export interface ListViewProps extends Omit<ListViewPropsBase, 'children'> {
+export interface ListViewProps
+  extends Omit<ListViewNormalizedProps, 'normalizedItems' | 'showItemIcons'> {
   table: DhType.Table;
   /* The column of values to use as item keys. Defaults to the first column. */
   keyColumn?: string;
   /* The column of values to display as primary text. Defaults to the `keyColumn` value. */
   labelColumn?: string;
 
-  // TODO #1890 : descriptionColumn, iconColumn
+  /* The column of values to map to icons. */
+  iconColumn?: string;
 
   settings?: Settings;
 }
@@ -27,6 +29,7 @@ export function ListView({
   table,
   keyColumn: keyColumnName,
   labelColumn: labelColumnName,
+  iconColumn: iconColumnName,
   settings,
   ...props
 }: ListViewProps): JSX.Element {
@@ -37,6 +40,7 @@ export function ListView({
 
   const deserializeRow = useItemRowDeserializer({
     table,
+    iconColumnName,
     keyColumnName,
     labelColumnName,
     formatValue,
@@ -53,13 +57,13 @@ export function ListView({
   });
 
   return (
-    <ListViewBase
+    <ListViewNormalized
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...props}
+      normalizedItems={viewportData.items}
+      showItemIcons={iconColumnName != null}
       onScroll={onScroll}
-    >
-      {viewportData.items}
-    </ListViewBase>
+    />
   );
 }
 

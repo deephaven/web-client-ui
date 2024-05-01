@@ -28,7 +28,8 @@ export interface PickerProps extends Omit<PickerBaseProps, 'children'> {
   /* The column of values to display as primary text. Defaults to the `keyColumn` value. */
   labelColumn?: string;
 
-  // TODO #1890 : descriptionColumn, iconColumn
+  /* The column of values to map to icons. */
+  iconColumn?: string;
 
   settings?: Settings;
 }
@@ -37,6 +38,7 @@ export function Picker({
   table,
   keyColumn: keyColumnName,
   labelColumn: labelColumnName,
+  iconColumn: iconColumnName,
   settings,
   onChange,
   onSelectionChange,
@@ -61,6 +63,7 @@ export function Picker({
 
   const deserializeRow = useItemRowDeserializer({
     table,
+    iconColumnName,
     keyColumnName,
     labelColumnName,
     formatValue,
@@ -140,6 +143,7 @@ export function Picker({
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...props}
       normalizedItems={normalizedItems}
+      showItemIcons={iconColumnName != null}
       getInitialScrollPosition={getInitialScrollPosition}
       onChange={onSelectionChangeInternal}
       onScroll={onScroll}

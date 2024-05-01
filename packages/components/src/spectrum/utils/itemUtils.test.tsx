@@ -1,7 +1,6 @@
 import React, { createElement } from 'react';
 import {
   getItemKey,
-  INVALID_ITEM_ERROR_MESSAGE,
   isItemElement,
   isNormalizedItemsWithKeysList,
   isNormalizedSection,
@@ -9,7 +8,6 @@ import {
   isSectionElement,
   NormalizedItem,
   NormalizedSection,
-  normalizeItemList,
   normalizeTooltipOptions,
   ItemElementOrPrimitive,
   ItemOrSection,
@@ -18,7 +16,6 @@ import {
   getPositionOfSelectedItemElement,
   isItemElementWithDescription,
 } from './itemUtils';
-import type { PickerProps } from '../picker/Picker';
 import { Item, Section } from '../shared';
 import { Text } from '../Text';
 import ItemContent from '../ItemContent';
@@ -26,140 +23,6 @@ import ItemContent from '../ItemContent';
 beforeEach(() => {
   expect.hasAssertions();
 });
-
-/* eslint-disable react/jsx-key */
-const expectedItems = {
-  numberLiteral: [
-    999,
-    {
-      item: { content: 999, key: 999, textValue: '999' },
-    },
-  ],
-  stringLiteral: [
-    'String',
-    {
-      item: { content: 'String', key: 'String', textValue: 'String' },
-    },
-  ],
-  emptyStringLiteral: [
-    '',
-    {
-      item: { content: '', key: '', textValue: '' },
-    },
-  ],
-  booleanLiteral: [
-    false,
-    {
-      item: { content: false, key: false, textValue: 'false' },
-    },
-  ],
-  singleStringChild: [
-    <Item textValue="textValue">Single string</Item>,
-    {
-      item: {
-        content: 'Single string',
-        key: 'textValue',
-        textValue: 'textValue',
-      },
-    },
-  ],
-  singleStringChildNoTextValue: [
-    // eslint-disable-next-line react/jsx-key
-    <Item>Single string child no textValue</Item>,
-    {
-      item: {
-        content: 'Single string child no textValue',
-        key: 'Single string child no textValue',
-        textValue: 'Single string child no textValue',
-      },
-    },
-  ],
-  elementChildNoTextValue: [
-    <Item>
-      <span>No textValue</span>
-    </Item>,
-    {
-      item: {
-        content: <span>No textValue</span>,
-        textValue: undefined,
-      },
-    },
-  ],
-  explicitKey: [
-    <Item key="explicit.key" textValue="textValue">
-      Explicit key
-    </Item>,
-    {
-      item: {
-        content: 'Explicit key',
-        key: 'explicit.key',
-        textValue: 'textValue',
-      },
-    },
-  ],
-  complex: [
-    <Item textValue="textValue">
-      <i>i</i>
-      <Text>Complex</Text>
-    </Item>,
-    {
-      item: {
-        content: [<i>i</i>, <Text>Complex</Text>],
-        key: 'textValue',
-        textValue: 'textValue',
-      },
-    },
-  ],
-} satisfies Record<string, [ItemElementOrPrimitive, NormalizedItem]>;
-/* eslint-enable react/jsx-key */
-
-const nonItemElement = <span>Non-item element</span>;
-
-/* eslint-disable react/jsx-key */
-const expectedSections = {
-  noTitle: [
-    <Section>{expectedItems.singleStringChild[0]}</Section>,
-    {
-      item: { items: [expectedItems.singleStringChild[1]] },
-    },
-  ],
-  title: [
-    <Section title="Some Title">{expectedItems.singleStringChild[0]}</Section>,
-    {
-      item: {
-        key: 'Some Title',
-        title: 'Some Title',
-        items: [expectedItems.singleStringChild[1]],
-      },
-    },
-  ],
-  explicitKey: [
-    <Section key="Some Key" title="Some Title">
-      {expectedItems.singleStringChild[0]}
-    </Section>,
-    {
-      item: {
-        key: 'Some Key',
-        title: 'Some Title',
-        items: [expectedItems.singleStringChild[1]],
-      },
-    },
-  ],
-} satisfies Record<string, [ItemElementOrPrimitive, NormalizedSection]>;
-/* eslint-enable react/jsx-key */
-
-const expectedNormalizations = new Map<
-  ItemElementOrPrimitive,
-  NormalizedItem | NormalizedSection
->([...Object.values(expectedItems), ...Object.values(expectedSections)]);
-
-const mixedItems = [...expectedNormalizations.keys()];
-
-const children = {
-  empty: [] as PickerProps['children'],
-  single: mixedItems[0] as PickerProps['children'],
-  mixed: mixedItems as PickerProps['children'],
-};
 
 describe('getItemKey', () => {
   it.each([
@@ -379,28 +242,6 @@ describe('itemSelectionToStringSet', () => {
       expect(actual).toEqual(expected);
     }
   );
-});
-
-describe('normalizeItemList', () => {
-  it.each([children.empty, children.single, children.mixed])(
-    'should return normalized items: %#: %s',
-    given => {
-      const childrenArray = Array.isArray(given) ? given : [given];
-
-      const expected = childrenArray.map(item =>
-        expectedNormalizations.get(item)
-      );
-
-      const actual = normalizeItemList(given);
-      expect(actual).toEqual(expected);
-    }
-  );
-
-  it(`should throw for invalid items: %#: %s`, () => {
-    expect(() => normalizeItemList(nonItemElement)).toThrow(
-      INVALID_ITEM_ERROR_MESSAGE
-    );
-  });
 });
 
 describe('normalizeTooltipOptions', () => {

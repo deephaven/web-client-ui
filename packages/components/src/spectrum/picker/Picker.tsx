@@ -4,6 +4,7 @@ import { Picker as SpectrumPicker } from '@adobe/react-spectrum';
 import cl from 'classnames';
 import {
   EMPTY_FUNCTION,
+  ensureArray,
   PICKER_ITEM_HEIGHTS,
   PICKER_TOP_OFFSET,
 } from '@deephaven/utils';
@@ -98,7 +99,7 @@ export function Picker({
     useState(defaultSelectedKey);
 
   const wrappedItems = useMemo(
-    () => wrapItemChildren(children, tooltipOptions),
+    () => ensureArray(wrapItemChildren(children, tooltipOptions)),
     [children, tooltipOptions]
   );
 

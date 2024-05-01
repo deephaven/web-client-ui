@@ -22,6 +22,8 @@ function defaultFormatValue(value: unknown, _columnType: string): string {
 /**
  * Returns a function that deserializes a row into a normalized item data object.
  * @param table The table to get the key and label columns from
+ * @param descriptionColumnName The name of the column to use for description data
+ * @param iconColumnName The name of the column to use for icon data
  * @param keyColumnName The name of the column to use for key data
  * @param labelColumnName The name of the column to use for label data
  * @param formatValue Optional function to format the label value
@@ -29,11 +31,15 @@ function defaultFormatValue(value: unknown, _columnType: string): string {
  */
 export function useItemRowDeserializer({
   table,
+  descriptionColumnName,
+  iconColumnName,
   keyColumnName,
   labelColumnName,
   formatValue = defaultFormatValue,
 }: {
   table: dh.Table;
+  descriptionColumnName?: string;
+  iconColumnName?: string;
   keyColumnName?: string;
   labelColumnName?: string;
   formatValue?: (value: unknown, columnType: string) => string;
@@ -48,18 +54,40 @@ export function useItemRowDeserializer({
     [keyColumn, labelColumnName, table]
   );
 
+  const descriptionColumn = useMemo(
+    () =>
+      descriptionColumnName == null
+        ? null
+        : table.findColumn(descriptionColumnName),
+    [descriptionColumnName, table]
+  );
+
+  const iconColumn = useMemo(
+    () => (iconColumnName == null ? null : table.findColumn(iconColumnName)),
+    [iconColumnName, table]
+  );
+
   const deserializeRow = useCallback(
     (row: dh.Row): NormalizedItemData => {
       const key = defaultFormatKey(row.get(keyColumn));
       const content = formatValue(row.get(labelColumn), labelColumn.type);
 
+      const description =
+        descriptionColumn == null
+          ? undefined
+          : formatValue(row.get(descriptionColumn), descriptionColumn.type);
+
+      const icon = iconColumn == null ? undefined : row.get(iconColumn);
+
       return {
         key,
         content,
         textValue: content,
+        description,
+        icon,
       };
     },
-    [formatValue, keyColumn, labelColumn]
+    [descriptionColumn, formatValue, iconColumn, keyColumn, labelColumn]
   );
 
   return deserializeRow;

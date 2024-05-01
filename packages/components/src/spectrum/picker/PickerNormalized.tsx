@@ -20,6 +20,7 @@ import usePickerScrollOnOpen from './usePickerScrollOnOpen';
 export interface PickerNormalizedProps
   extends Omit<PickerBaseProps, 'children'> {
   normalizedItems: (NormalizedItem | NormalizedSection)[];
+  showItemIcons: boolean;
   getInitialScrollPosition?: () => Promise<number | null | undefined>;
   onScroll?: (event: Event) => void;
 }
@@ -35,6 +36,7 @@ export function PickerNormalized({
   selectedKey,
   defaultSelectedKey,
   disabledKeys,
+  showItemIcons,
   UNSAFE_className,
   getInitialScrollPosition,
   onChange,
@@ -48,7 +50,21 @@ export function PickerNormalized({
     [tooltip]
   );
 
-  const renderNormalizedItem = useRenderNormalizedItem(tooltipOptions);
+  const renderNormalizedItem = useRenderNormalizedItem({
+    itemIconSlot: 'icon',
+    // Descriptions introduce variable item heights which throws off calculation
+    // of initial scroll position and setting viewport on windowed data. For now
+    // not going to implement description support in Picker.
+    // https://github.com/deephaven/web-client-ui/issues/1958
+    showItemDescriptions: false,
+    showItemIcons,
+    tooltipOptions,
+  });
+
+  // Spectrum doesn't re-render if only the `renderNormalizedItems` function
+  // changes, so we create a key from its dependencies that can be used to force
+  // re-render.
+  const forceRerenderKey = `${showItemIcons}-${tooltipOptions?.placement}`;
 
   const { ref: scrollRef, onOpenChange: onOpenChangeInternal } =
     usePickerScrollOnOpen({
@@ -77,6 +93,7 @@ export function PickerNormalized({
     <SpectrumPicker
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...props}
+      key={forceRerenderKey}
       ref={scrollRef as DOMRef<HTMLDivElement>}
       UNSAFE_className={cl(
         'dh-picker',
