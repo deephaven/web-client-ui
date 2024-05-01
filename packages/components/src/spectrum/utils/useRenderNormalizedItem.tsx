@@ -1,7 +1,10 @@
+import { isElementOfType } from '@deephaven/react-hooks';
 import { Key, ReactElement, useCallback } from 'react';
 import ActionGroup from '../ActionGroup';
+import ActionMenu from '../ActionMenu';
 import { ItemContent } from '../ItemContent';
-import { ListActionGroupProps } from '../ListActionGroup';
+import { ListActionGroup, ListActionGroupProps } from '../ListActionGroup';
+import { ListActionMenu, ListActionMenuProps } from '../ListActionMenu';
 import { Item } from '../shared';
 import {
   getItemKey,
@@ -12,7 +15,9 @@ import {
 } from './itemUtils';
 import { wrapIcon, wrapPrimitiveWithText } from './itemWrapperUtils';
 
-export type ListActions<T> = ReactElement<ListActionGroupProps<T>>;
+export type ListActions<T> =
+  | ReactElement<ListActionGroupProps<T>>
+  | ReactElement<ListActionMenuProps<T>>;
 
 export interface UseRenderNormalizedItemOptions {
   itemIconSlot: ItemIconSlot;
@@ -55,6 +60,30 @@ export function useRenderNormalizedItem({
         ? wrapIcon(normalizedItem.item?.icon, itemIconSlot)
         : null;
 
+      let action = null;
+
+      if (isElementOfType(actions, ListActionGroup)) {
+        action = (
+          <ActionGroup
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            {...actions.props}
+            onAction={key => actions.props.onAction(key, itemKey)}
+            onChange={keys => actions.props.onChange?.(keys, itemKey)}
+          />
+        );
+      } else if (isElementOfType(actions, ListActionMenu)) {
+        action = (
+          <ActionMenu
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            {...actions.props}
+            onAction={key => actions.props.onAction(key, itemKey)}
+            onOpenChange={isOpen =>
+              actions.props.onOpenChange?.(isOpen, itemKey)
+            }
+          />
+        );
+      }
+
       return (
         <Item
           // Note that setting the `key` prop explicitly on `Item` elements
@@ -77,14 +106,7 @@ export function useRenderNormalizedItem({
             {icon}
             {content}
             {description}
-            {actions?.props == null ? null : (
-              <ActionGroup
-                // eslint-disable-next-line react/jsx-props-no-spreading
-                {...actions.props}
-                onAction={key => actions.props.onAction(key, itemKey)}
-                onChange={keys => actions.props.onChange?.(keys, itemKey)}
-              />
-            )}
+            {action}
           </ItemContent>
         </Item>
       );

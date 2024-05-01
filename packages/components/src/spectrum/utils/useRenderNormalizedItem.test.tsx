@@ -9,6 +9,8 @@ import { getItemKey, NormalizedItem } from './itemUtils';
 import { wrapIcon, wrapPrimitiveWithText } from './itemWrapperUtils';
 import { ListActionGroup } from '../ListActionGroup';
 import { ActionGroup } from '../ActionGroup';
+import { ListActionMenu } from '../ListActionMenu';
+import ActionMenu from '../ActionMenu';
 
 jest.mock('./itemWrapperUtils');
 
@@ -21,12 +23,43 @@ beforeEach(() => {
 
 const onAction = jest.fn();
 const onChange = jest.fn();
+const onOpenChange = jest.fn();
 
 const listActionGroup = (
   <ListActionGroup onAction={onAction} onChange={onChange}>
     <Item>Item 1</Item>
   </ListActionGroup>
 );
+
+const listActionMenu = (
+  <ListActionMenu onAction={onAction} onOpenChange={onOpenChange}>
+    <Item>Item 1</Item>
+  </ListActionMenu>
+);
+
+const expectedActions = new Map([
+  [undefined, null],
+  [
+    listActionGroup,
+    // eslint-disable-next-line react/jsx-key
+    <ActionGroup
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      {...listActionGroup.props}
+      onAction={expect.any(Function)}
+      onChange={expect.any(Function)}
+    />,
+  ],
+  [
+    listActionMenu,
+    // eslint-disable-next-line react/jsx-key
+    <ActionMenu
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      {...listActionMenu.props}
+      onAction={expect.any(Function)}
+      onOpenChange={expect.any(Function)}
+    />,
+  ],
+]);
 
 describe.each([
   [true, true, null, undefined],
@@ -46,12 +79,23 @@ describe.each([
   [false, true, { placement: 'top' }, listActionGroup],
   [false, false, null, listActionGroup],
   [false, false, { placement: 'top' }, listActionGroup],
+  // ListActionMenu
+  [true, true, null, listActionMenu],
+  [true, true, { placement: 'top' }, listActionMenu],
+  [true, false, null, listActionMenu],
+  [true, false, { placement: 'top' }, listActionMenu],
+  [false, true, null, listActionMenu],
+  [false, true, { placement: 'top' }, listActionMenu],
+  [false, false, null, listActionMenu],
+  [false, false, { placement: 'top' }, listActionMenu],
 ] as const)(
   'useRenderNormalizedItem: %s, %s, %s',
   (showItemIcons, showItemDescriptions, tooltipOptions, actions) => {
     beforeEach(() => {
       asMock(onAction).mockName('onAction');
       asMock(onChange).mockName('onChange');
+      asMock(onOpenChange).mockName('onOpenChange');
+
       asMock(wrapIcon).mockImplementation((a, b) => `wrapIcon(${a}, ${b})`);
       asMock(wrapPrimitiveWithText).mockImplementation(
         (a, b) => `wrapPrimitiveWithText(${a}, ${b})`
@@ -138,14 +182,7 @@ describe.each([
               {showItemIcons ? icon : null}
               {content}
               {showItemDescriptions ? description : null}
-              {actions === listActionGroup ? (
-                <ActionGroup
-                  // eslint-disable-next-line react/jsx-props-no-spreading
-                  {...listActionGroup.props}
-                  onAction={expect.any(Function)}
-                  onChange={expect.any(Function)}
-                />
-              ) : null}
+              {expectedActions.get(actions)}
             </ItemContent>
           </Item>
         );
@@ -161,6 +198,17 @@ describe.each([
           const actionKeys = ['actionKey1', 'actionKey2'];
           actionGroup.props.onChange(actionKeys);
           expect(onChange).toHaveBeenCalledWith(actionKeys, itemKey);
+        } else if (actions === listActionMenu) {
+          const actionMenu = actual.props.children.props.children[3];
+          expect(isElementOfType(actionMenu, ActionMenu)).toBe(true);
+
+          const actionKey = 'actionKey';
+          actionMenu.props.onAction(actionKey);
+          expect(onAction).toHaveBeenCalledWith(actionKey, itemKey);
+
+          const isOpen = true;
+          actionMenu.props.onOpenChange(isOpen);
+          expect(onOpenChange).toHaveBeenCalledWith(isOpen, itemKey);
         }
       }
     );
