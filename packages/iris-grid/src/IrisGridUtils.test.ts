@@ -1,4 +1,4 @@
-import deepEqual from 'fast-deep-equal';
+import deepEqual from 'deep-equal';
 import { GridUtils, GridRange, MoveOperation } from '@deephaven/grid';
 import dh from '@deephaven/jsapi-shim';
 import type { Column, Table, Sort } from '@deephaven/jsapi-types';
@@ -661,6 +661,8 @@ describe('dehydration methods', () => {
     expect(
       // This makes sure the result doesn't contain undefined
       // so it can be serialized and de-serialized without changes
+      // Note we're using the `deep-equal` package here for strict deep comparison, so we know if there's an undefined.
+      // e.g. { foo: undefined } when stringified will be '{}', we want to catch that case
       deepEqual(result, JSON.parse(JSON.stringify(result)), { strict: true })
     ).toBe(true);
   });
