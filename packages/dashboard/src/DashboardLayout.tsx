@@ -14,9 +14,8 @@ import type {
   ReactComponentConfig,
 } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
-import { usePrevious } from '@deephaven/react-hooks';
+import { usePrevious, useThrottledCallback } from '@deephaven/react-hooks';
 import { RootState } from '@deephaven/redux';
-import throttle from 'lodash.throttle';
 import { useDispatch, useSelector } from 'react-redux';
 import PanelManager, { ClosedPanels } from './PanelManager';
 import PanelErrorBoundary from './PanelErrorBoundary';
@@ -198,6 +197,34 @@ export function DashboardLayout({
     ]
   );
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const processDehydratedLayoutConfig = useCallback(
+    dehydratedLayoutConfig => {
+      const hasChanged =
+        lastConfig == null ||
+        !LayoutUtils.isEqual(lastConfig, dehydratedLayoutConfig);
+
+      log.debug('handleLayoutStateChanged', hasChanged, dehydratedLayoutConfig);
+
+      if (hasChanged) {
+        setIsDashboardEmpty(layout.root.contentItems.length === 0);
+
+        setLastConfig(dehydratedLayoutConfig);
+
+        onLayoutChange(dehydratedLayoutConfig);
+
+        setLayoutChildren(layout.getReactChildren());
+      }
+    },
+    [lastConfig, layout, onLayoutChange]
+  );
+
+  // Throttle the calls so that we don't flood comparing these layouts
+  const throttledProcessDehydratedLayoutConfig = useThrottledCallback(
+    processDehydratedLayoutConfig,
+    STATE_CHANGE_DEBOUNCE_MS
+  );
+
   const handleLayoutStateChanged = useCallback(() => {
     // we don't want to emit stateChanges that happen during item drags or else
     // we risk the last saved state being one without that panel in the layout entirely
@@ -209,32 +236,13 @@ export function DashboardLayout({
       contentConfig,
       dehydrateComponent
     );
-    const hasChanged =
-      lastConfig == null ||
-      !LayoutUtils.isEqual(lastConfig, dehydratedLayoutConfig);
-
-    log.debug(
-      'handleLayoutStateChanged',
-      hasChanged,
-      contentConfig,
-      dehydratedLayoutConfig
-    );
-
-    if (hasChanged) {
-      setIsDashboardEmpty(layout.root.contentItems.length === 0);
-
-      setLastConfig(dehydratedLayoutConfig);
-
-      onLayoutChange(dehydratedLayoutConfig);
-
-      setLayoutChildren(layout.getReactChildren());
-    }
-  }, [dehydrateComponent, isItemDragging, lastConfig, layout, onLayoutChange]);
-
-  const throttledHandleLayoutStateChanged = useMemo(
-    () => throttle(handleLayoutStateChanged, STATE_CHANGE_DEBOUNCE_MS),
-    [handleLayoutStateChanged]
-  );
+    throttledProcessDehydratedLayoutConfig(dehydratedLayoutConfig);
+  }, [
+    dehydrateComponent,
+    isItemDragging,
+    layout,
+    throttledProcessDehydratedLayoutConfig,
+  ]);
 
   const handleLayoutItemPickedUp = useCallback(
     (component: Container) => {
@@ -277,7 +285,7 @@ export function DashboardLayout({
     setLayoutChildren(layout.getReactChildren());
   }, [layout]);
 
-  useListener(layout, 'stateChanged', throttledHandleLayoutStateChanged);
+  useListener(layout, 'stateChanged', handleLayoutStateChanged);
   useListener(layout, 'itemPickedUp', handleLayoutItemPickedUp);
   useListener(layout, 'itemDropped', handleLayoutItemDropped);
   useListener(layout, 'componentCreated', handleComponentCreated);
