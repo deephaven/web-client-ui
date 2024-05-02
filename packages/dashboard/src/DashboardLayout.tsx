@@ -46,7 +46,7 @@ const DEFAULT_LAYOUT_CONFIG: DashboardLayoutConfig = [];
 
 const DEFAULT_CALLBACK = (): void => undefined;
 
-const STATE_CHANGE_DEBOUNCE_MS = 1000;
+const STATE_CHANGE_THROTTLE_MS = 1000;
 
 // If a component isn't registered, just pass through the props so they are saved if a plugin is loaded later
 const FALLBACK_CALLBACK = (props: unknown): unknown => props;
@@ -216,7 +216,7 @@ export function DashboardLayout({
         setLayoutChildren(layout.getReactChildren());
       }
     },
-    STATE_CHANGE_DEBOUNCE_MS,
+    STATE_CHANGE_THROTTLE_MS,
     { flushOnUnmount: true }
   );
 

@@ -11,6 +11,10 @@ beforeEach(() => {
   jest.useFakeTimers();
 });
 
+afterEach(() => {
+  jest.useRealTimers();
+});
+
 it('should throttle a given callback', () => {
   const { result } = renderHook(() =>
     useThrottledCallback(callback, throttleMs)
