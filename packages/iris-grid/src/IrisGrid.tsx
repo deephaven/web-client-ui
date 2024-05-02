@@ -9,7 +9,7 @@ import memoize from 'memoizee';
 import classNames from 'classnames';
 import { CSSTransition } from 'react-transition-group';
 import PropTypes from 'prop-types';
-import deepEqual from 'deep-equal';
+import deepEqual from 'fast-deep-equal';
 import Log from '@deephaven/log';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {

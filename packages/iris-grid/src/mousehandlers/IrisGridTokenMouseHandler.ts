@@ -9,7 +9,7 @@ import {
   TokenBox,
   isTokenBoxCellRenderer,
 } from '@deephaven/grid';
-import deepEqual from 'deep-equal';
+import deepEqual from 'fast-deep-equal';
 import IrisGrid from '../IrisGrid';
 
 class IrisGridTokenMouseHandler extends GridMouseHandler {

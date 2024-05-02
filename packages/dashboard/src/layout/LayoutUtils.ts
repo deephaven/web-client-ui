@@ -1,5 +1,5 @@
 import { DragEvent } from 'react';
-import deepEqual from 'deep-equal';
+import deepEqual from 'fast-deep-equal';
 import shortid from 'shortid';
 import isMatch from 'lodash.ismatch';
 import Log from '@deephaven/log';
