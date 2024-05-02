@@ -248,7 +248,7 @@ class ColumnStatistics extends Component<
             kind="ghost"
             className="px-0"
             onClick={this.handleGenerateStatistics}
-            icon={<FontAwesomeIcon icon={dhRefresh} className="mr-1" />}
+            icon={dhRefresh}
           >
             Refresh
           </Button>
