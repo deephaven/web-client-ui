@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.75.1](https://github.com/deephaven/web-client-ui/compare/v0.75.0...v0.75.1) (2024-05-02)
+
+**Note:** Version bump only for package @deephaven/code-studio
+
 # [0.75.0](https://github.com/deephaven/web-client-ui/compare/v0.74.0...v0.75.0) (2024-05-01)
 
 ### Features
@@ -381,9 +385,8 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 - Code Editor
 - Verified that newline with leading space no longer crashes the browser
   tab
-  `       a
-   a
-  `
+  `      a
+ a`
 - Wrote some Python code. Intellisense, syntax highlighting, and general
   typing experience seemed as expected
   - Execute full code + selected code successfully
