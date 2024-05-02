@@ -103,7 +103,6 @@ interface NotebookPanelState {
     message?: string | undefined;
   };
   isDashboardActive: boolean;
-  isFocused: boolean;
   isLoading: boolean;
   isLoaded: boolean;
   isPreview: boolean;
@@ -181,7 +180,6 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   constructor(props: NotebookPanelProps) {
     super(props);
 
-    this.handleBlur = this.handleBlur.bind(this);
     this.handleCloseCancel = this.handleCloseCancel.bind(this);
     this.handleCloseDiscard = this.handleCloseDiscard.bind(this);
     this.handleCloseSave = this.handleCloseSave.bind(this);
@@ -195,7 +193,6 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.handleFind = this.handleFind.bind(this);
     this.handleMinimapChange = this.handleMinimapChange.bind(this);
     this.handleWordWrapChange = this.handleWordWrapChange.bind(this);
-    this.handleFocus = this.handleFocus.bind(this);
     this.handleLinkClick = this.handleLinkClick.bind(this);
     this.handleLoadSuccess = this.handleLoadSuccess.bind(this);
     this.handleLoadError = this.handleLoadError.bind(this);
@@ -273,7 +270,6 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.state = {
       error: undefined,
       isDashboardActive,
-      isFocused: false,
       isLoading: true,
       isLoaded: false,
       isPreview,
@@ -828,16 +824,6 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     }
   }
 
-  handleBlur(): void {
-    log.debug('handleBlur');
-    this.setState({ isFocused: false });
-  }
-
-  handleFocus(): void {
-    log.debug('handleFocus');
-    this.setState({ isFocused: true });
-  }
-
   /**
    * @param event The click event from clicking on the link
    */
@@ -1304,8 +1290,6 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
           onTabBlur={this.handleTabBlur}
           onSessionOpen={this.handleSessionOpened}
           onSessionClose={this.handleSessionClosed}
-          onFocus={this.handleFocus}
-          onBlur={this.handleBlur}
           additionalActions={additionalActions}
           renderTabTooltip={() => itemName}
         >
