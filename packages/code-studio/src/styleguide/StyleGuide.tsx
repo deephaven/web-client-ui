@@ -36,6 +36,7 @@ import { GoldenLayout } from './GoldenLayout';
 import { RandomAreaPlotAnimation } from './RandomAreaPlotAnimation';
 import SpectrumComparison from './SpectrumComparison';
 import Pickers from './Pickers';
+import XComponents from './XComponents';
 
 const stickyProps = {
   position: 'sticky',
@@ -131,6 +132,7 @@ function StyleGuide(): React.ReactElement {
 
         <SampleMenuCategory data-menu-category="Spectrum Comparison" />
         <SpectrumComparison />
+        <XComponents />
       </div>
     </div>
   );

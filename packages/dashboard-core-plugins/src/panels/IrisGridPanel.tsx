@@ -96,6 +96,7 @@ import {
   isIrisGridPanelMetadata,
   isLegacyIrisGridPanelMetadata,
 } from './IrisGridPanelTypes';
+import { WidgetPanelDescriptor } from './WidgetPanelTypes';
 
 const log = Log.module('IrisGridPanel');
 
@@ -560,6 +561,22 @@ export class IrisGridPanel extends PureComponent<
       gridState,
       pluginState,
     })
+  );
+
+  getWidgetPanelDescriptor = memoize(
+    (
+      metadata: IrisGridPanelProps['metadata'],
+      description?: string
+    ): WidgetPanelDescriptor => {
+      const name = getTableNameFromMetadata(metadata);
+      return {
+        type: 'Table',
+        displayType: 'Table',
+        ...metadata,
+        name,
+        description,
+      };
+    }
   );
 
   initModel(): void {
@@ -1262,7 +1279,6 @@ export class IrisGridPanel extends PureComponent<
     } = this.state;
     const errorMessage =
       error != null ? `Unable to open table. ${error}` : undefined;
-    const name = getTableNameFromMetadata(metadata);
     const description = model?.description ?? undefined;
     const pluginState = panelState?.pluginState ?? null;
     const childrenContent =
@@ -1270,6 +1286,10 @@ export class IrisGridPanel extends PureComponent<
       this.getPluginContent(Plugin, model, user, workspace, pluginState);
     const { permissions } = user;
     const { canCopy, canDownloadCsv } = permissions;
+    const widgetPanelDescriptor = this.getWidgetPanelDescriptor(
+      metadata,
+      description
+    );
 
     return (
       <WidgetPanel
@@ -1284,16 +1304,12 @@ export class IrisGridPanel extends PureComponent<
         onShow={this.handleShow}
         onTabFocus={this.handleShow}
         onTabClicked={this.handleTabClicked}
-        widgetName={name}
-        widgetType="Table"
-        description={description}
         componentPanel={this}
+        descriptor={widgetPanelDescriptor}
         renderTabTooltip={() => (
           <IrisGridPanelTooltip
+            descriptor={widgetPanelDescriptor}
             model={model}
-            widgetName={name}
-            glContainer={glContainer}
-            description={description}
           />
         )}
       >

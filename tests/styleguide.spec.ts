@@ -38,6 +38,7 @@ const sampleSectionIds: string[] = [
   'sample-section-grids-tree',
   'sample-section-grids-iris',
   'sample-section-charts',
+  'sample-section-xcomponents',
   'sample-section-spectrum-buttons',
   'sample-section-spectrum-collections',
   'sample-section-spectrum-content',

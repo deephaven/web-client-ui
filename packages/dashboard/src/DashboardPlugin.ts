@@ -14,6 +14,8 @@ import type {
 import PanelManager from './PanelManager';
 import { WidgetDescriptor } from './PanelEvent';
 
+export { isWrappedComponent } from '@deephaven/components';
+
 /**
  * Panel components can provide static props that provide meta data about the
  * panel.
@@ -51,13 +53,6 @@ export type PanelComponentType<
   P extends PanelProps = PanelProps,
   C extends ComponentType<P> = ComponentType<P>,
 > = (ComponentType<P> | WrappedComponentType<P, C>) & PanelStaticMetaData;
-
-export function isWrappedComponent<
-  P extends PanelProps,
-  C extends ComponentType<P>,
->(type: PanelComponentType<P, C>): type is WrappedComponentType<P, C> {
-  return (type as WrappedComponentType<P, C>)?.WrappedComponent !== undefined;
-}
 
 export type PanelMetadata = Partial<WidgetDescriptor>;
 

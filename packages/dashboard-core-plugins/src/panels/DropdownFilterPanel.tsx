@@ -19,7 +19,7 @@ import {
   getSettings,
   RootState,
 } from '@deephaven/redux';
-import { Pending, PromiseUtils } from '@deephaven/utils';
+import { EMPTY_ARRAY, Pending, PromiseUtils } from '@deephaven/utils';
 import DropdownFilter, {
   DropdownFilterColumn,
 } from '../controls/dropdown-filter/DropdownFilter';
@@ -41,6 +41,11 @@ import { PanelState as InputFilterPanelState } from './InputFilterPanel';
 const log = Log.module('DropdownFilterPanel');
 
 const DROPDOWN_FILTER_DEBOUNCE = 250;
+
+const WIDGET_DESCRIPTOR = Object.freeze({
+  name: 'Dropdown Filter',
+  type: 'DropdownFilter',
+});
 
 interface PanelState {
   name?: string;
@@ -773,7 +778,7 @@ export class DropdownFilterPanel extends Component<
     const formattedValues =
       isLoaded && valuesColumn != null
         ? this.getCachedValues(values, valuesColumn, formatter)
-        : [];
+        : EMPTY_ARRAY;
 
     return (
       <WidgetPanel
@@ -786,8 +791,7 @@ export class DropdownFilterPanel extends Component<
         glContainer={glContainer}
         glEventHub={glEventHub}
         onClearAllFilters={this.handleClearAllFilters}
-        widgetName="Dropdown Filter"
-        widgetType="DropdownFilter"
+        descriptor={WIDGET_DESCRIPTOR}
       >
         <div
           ref={this.panelContainer}
