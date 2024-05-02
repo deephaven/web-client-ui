@@ -43,7 +43,6 @@ import {
   DehydratedIrisGridPanelState,
   ColumnHeaderGroup,
   IrisGridContextMenuData,
-  IrisGridTableModel,
   PartitionConfig,
 } from '@deephaven/iris-grid';
 import {
@@ -54,10 +53,8 @@ import {
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
-  CustomizableWorkspace,
   getSettings,
   getUser,
-  getWorkspace,
   RootState,
   User,
   WorkspaceSettings,
@@ -67,10 +64,7 @@ import {
   CancelablePromise,
   PromiseUtils,
 } from '@deephaven/utils';
-import {
-  ContextMenuRoot,
-  ResolvableContextAction,
-} from '@deephaven/components';
+import { ResolvableContextAction } from '@deephaven/components';
 import type { dh } from '@deephaven/jsapi-types';
 import {
   GridState,
@@ -100,8 +94,6 @@ import {
 const log = Log.module('IrisGridPanel');
 
 const DEBOUNCE_PANEL_STATE_UPDATE = 500;
-
-const PLUGIN_COMPONENTS = { IrisGrid, IrisGridTableModel, ContextMenuRoot };
 
 type ModelQueueFunction = (model: IrisGridModel) => void;
 
@@ -157,7 +149,6 @@ interface StateProps {
     tableColumn?: LinkColumn
   ) => boolean;
   user: User;
-  workspace: CustomizableWorkspace;
   settings: WorkspaceSettings;
 }
 
@@ -420,8 +411,6 @@ export class IrisGridPanel extends PureComponent<
     (
       Plugin: TablePluginComponent | undefined,
       model: IrisGridModel | undefined,
-      user: User,
-      workspace: CustomizableWorkspace,
       pluginState: unknown
     ) => {
       if (
@@ -433,19 +422,6 @@ export class IrisGridPanel extends PureComponent<
         return null;
       }
 
-      // The panel in the deprecated props makes an ugly dependency of the plugin on the panel
-      // Since we didn't have TS when the old plugins would have been implemented,
-      // just pass the deprecated props without type checking
-      // so we can break the ugly dependency of plugin on panel
-      const deprecatedProps = {
-        panel: this,
-        onFilter: this.handlePluginFilter,
-        onFetchColumns: this.handlePluginFetchColumns,
-        user,
-        workspace,
-        components: PLUGIN_COMPONENTS,
-      };
-
       return (
         <div className="iris-grid-plugin">
           <Plugin
@@ -456,8 +432,6 @@ export class IrisGridPanel extends PureComponent<
             table={model.table}
             onStateChange={this.handlePluginStateChange}
             pluginState={pluginState}
-            // eslint-disable-next-line react/jsx-props-no-spreading
-            {...deprecatedProps}
           />
         </div>
       );
@@ -1217,7 +1191,6 @@ export class IrisGridPanel extends PureComponent<
       metadata,
       panelState,
       user,
-      workspace,
       settings,
       theme,
     } = this.props;
@@ -1266,8 +1239,7 @@ export class IrisGridPanel extends PureComponent<
     const description = model?.description ?? undefined;
     const pluginState = panelState?.pluginState ?? null;
     const childrenContent =
-      children ??
-      this.getPluginContent(Plugin, model, user, workspace, pluginState);
+      children ?? this.getPluginContent(Plugin, model, pluginState);
     const { permissions } = user;
     const { canCopy, canDownloadCsv } = permissions;
 
@@ -1373,7 +1345,6 @@ const mapStateToProps = (
     localDashboardId
   ),
   user: getUser(state),
-  workspace: getWorkspace(state),
   settings: getSettings(state),
 });
 
