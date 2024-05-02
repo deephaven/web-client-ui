@@ -14,9 +14,10 @@ import type {
   ReactComponentConfig,
 } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
-import { usePrevious, useThrottledCallback } from '@deephaven/react-hooks';
+import { usePrevious } from '@deephaven/react-hooks';
 import { RootState } from '@deephaven/redux';
 import { useDispatch, useSelector } from 'react-redux';
+import throttle from 'lodash.throttle';
 import PanelManager, { ClosedPanels } from './PanelManager';
 import PanelErrorBoundary from './PanelErrorBoundary';
 import LayoutUtils from './layout/LayoutUtils';
@@ -220,9 +221,14 @@ export function DashboardLayout({
   );
 
   // Throttle the calls so that we don't flood comparing these layouts
-  const throttledProcessDehydratedLayoutConfig = useThrottledCallback(
-    processDehydratedLayoutConfig,
-    STATE_CHANGE_DEBOUNCE_MS
+  const throttledProcessDehydratedLayoutConfig = useMemo(
+    () => throttle(processDehydratedLayoutConfig, STATE_CHANGE_DEBOUNCE_MS),
+    [processDehydratedLayoutConfig]
+  );
+
+  useEffect(
+    () => () => throttledProcessDehydratedLayoutConfig.flush(),
+    [throttledProcessDehydratedLayoutConfig]
   );
 
   const handleLayoutStateChanged = useCallback(() => {
