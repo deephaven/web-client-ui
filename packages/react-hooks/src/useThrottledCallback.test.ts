@@ -60,7 +60,7 @@ it('should cancel throttle if component unmounts', () => {
   expect(callback).not.toHaveBeenCalled();
 });
 
-it('should cancel throttle if callback reference changes', () => {
+it('should call the updated callback if the ref changes', () => {
   const { rerender, result } = renderHook(
     fn => useThrottledCallback(fn, throttleMs),
     {
@@ -78,9 +78,38 @@ it('should cancel throttle if callback reference changes', () => {
 
   jest.advanceTimersByTime(throttleMs - 1);
 
-  rerender(jest.fn());
+  const newCallback = jest.fn();
+  rerender(newCallback);
 
-  jest.advanceTimersByTime(5);
+  jest.advanceTimersByTime(1);
 
   expect(callback).not.toHaveBeenCalled();
+  expect(newCallback).toHaveBeenCalledTimes(1);
+  expect(newCallback).toHaveBeenCalledWith(arg2);
+});
+
+it('should flush on unmount if that option is set', () => {
+  const { result, unmount } = renderHook(() =>
+    useThrottledCallback(callback, throttleMs, { flushOnUnmount: true })
+  );
+
+  result.current(arg);
+  result.current(arg2);
+
+  jest.advanceTimersByTime(throttleMs - 1);
+
+  expect(callback).toHaveBeenCalledTimes(1);
+  expect(callback).toHaveBeenCalledWith(arg);
+  callback.mockClear();
+
+  jest.spyOn(result.current, 'flush');
+
+  unmount();
+
+  expect(result.current.flush).toHaveBeenCalled();
+
+  jest.advanceTimersByTime(1);
+
+  expect(callback).toHaveBeenCalledTimes(1);
+  expect(callback).toHaveBeenCalledWith(arg2);
 });
