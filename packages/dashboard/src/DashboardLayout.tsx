@@ -197,9 +197,9 @@ export function DashboardLayout({
     ]
   );
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const processDehydratedLayoutConfig = useCallback(
-    dehydratedLayoutConfig => {
+  // Throttle the calls so that we don't flood comparing these layouts
+  const throttledProcessDehydratedLayoutConfig = useThrottledCallback(
+    (dehydratedLayoutConfig: DashboardLayoutConfig) => {
       const hasChanged =
         lastConfig == null ||
         !LayoutUtils.isEqual(lastConfig, dehydratedLayoutConfig);
@@ -216,12 +216,6 @@ export function DashboardLayout({
         setLayoutChildren(layout.getReactChildren());
       }
     },
-    [lastConfig, layout, onLayoutChange]
-  );
-
-  // Throttle the calls so that we don't flood comparing these layouts
-  const throttledProcessDehydratedLayoutConfig = useThrottledCallback(
-    processDehydratedLayoutConfig,
     STATE_CHANGE_DEBOUNCE_MS,
     { flushOnUnmount: true }
   );
