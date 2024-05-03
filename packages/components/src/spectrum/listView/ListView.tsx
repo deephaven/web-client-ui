@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { SpectrumListViewProps } from '@adobe/react-spectrum';
+import cl from 'classnames';
 import { EMPTY_FUNCTION } from '@deephaven/utils';
 import {
   ItemKey,
@@ -9,7 +10,7 @@ import {
   TooltipOptions,
   wrapItemChildren,
 } from '../utils';
-import { ListViewWrapper } from './ListViewWrapper';
+import { ListViewWrapper, ListViewWrapperProps } from './ListViewWrapper';
 import { ItemElementOrPrimitive } from '../shared';
 
 export type ListViewProps = {
@@ -71,8 +72,18 @@ export function ListView({
     <ListViewWrapper
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...spectrumListViewProps}
-      UNSAFE_className="dh-list-view"
+      UNSAFE_className={cl('dh-list-view', UNSAFE_className)}
+      selectedKeys={
+        selectedKeys as ListViewWrapperProps<unknown>['selectedKeys']
+      }
+      defaultSelectedKeys={
+        defaultSelectedKeys as ListViewWrapperProps<unknown>['defaultSelectedKeys']
+      }
+      disabledKeys={
+        disabledKeys as ListViewWrapperProps<unknown>['disabledKeys']
+      }
       onScroll={onScroll}
+      onSelectionChange={onChange ?? onSelectionChange}
     >
       {wrappedItems}
     </ListViewWrapper>
