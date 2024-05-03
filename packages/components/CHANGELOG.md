@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.76.0](https://github.com/deephaven/web-client-ui/compare/v0.75.1...v0.76.0) (2024-05-03)
+
+### Bug Fixes
+
+- Fixed ListView props ([#1986](https://github.com/deephaven/web-client-ui/issues/1986)) ([0ca3a66](https://github.com/deephaven/web-client-ui/commit/0ca3a66bb090d4ce3a7e05bf53154eb86b367e8d))
+
 ## [0.75.1](https://github.com/deephaven/web-client-ui/compare/v0.75.0...v0.75.1) (2024-05-02)
 
 **Note:** Version bump only for package @deephaven/components

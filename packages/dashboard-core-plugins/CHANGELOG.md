@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.76.0](https://github.com/deephaven/web-client-ui/compare/v0.75.1...v0.76.0) (2024-05-03)
+
+### Performance Improvements
+
+- remove focus tracking in notebook panel causing extra re-render ([#1983](https://github.com/deephaven/web-client-ui/issues/1983)) ([a283e13](https://github.com/deephaven/web-client-ui/commit/a283e13fafe1ecb156985fab00ba15344f180ff4))
+- remove workspace dependancy from iris-grid-panel and memoize settings redux selector ([#1982](https://github.com/deephaven/web-client-ui/issues/1982)) ([c3ea867](https://github.com/deephaven/web-client-ui/commit/c3ea86709f0a184065dd346d71d6525ed881e465)), closes [#1977](https://github.com/deephaven/web-client-ui/issues/1977)
+
+### BREAKING CHANGES
+
+- getPluginContent deprecatedProps have been removed from
+  iris-grid
+
 ## [0.75.1](https://github.com/deephaven/web-client-ui/compare/v0.75.0...v0.75.1) (2024-05-02)
 
 ### Performance Improvements

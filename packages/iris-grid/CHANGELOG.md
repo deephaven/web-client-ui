@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.76.0](https://github.com/deephaven/web-client-ui/compare/v0.75.1...v0.76.0) (2024-05-03)
+
+### Bug Fixes
+
+- remove extra padding on column statistic refresh button ([#1984](https://github.com/deephaven/web-client-ui/issues/1984)) ([dc29aa9](https://github.com/deephaven/web-client-ui/commit/dc29aa92de83f1aedeeb787ce89ed442d3536867))
+
 ## [0.75.1](https://github.com/deephaven/web-client-ui/compare/v0.75.0...v0.75.1) (2024-05-02)
 
 ### Performance Improvements
@@ -335,7 +341,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 - Verified that newline with leading space no longer crashes the browser
   tab
   `      a
- a`
+a`
 - Wrote some Python code. Intellisense, syntax highlighting, and general
   typing experience seemed as expected
   - Execute full code + selected code successfully
