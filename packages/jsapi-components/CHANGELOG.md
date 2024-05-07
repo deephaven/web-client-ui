@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.77.0](https://github.com/deephaven/web-client-ui/compare/v0.76.0...v0.77.0) (2024-05-07)
+
+### Bug Fixes
+
+- Added `getKey` to `SelectionUtils.optimizeSelection` ([#1994](https://github.com/deephaven/web-client-ui/issues/1994)) ([4404894](https://github.com/deephaven/web-client-ui/commit/440489437de62b1e57cdbb7a85adeff97969f7f2))
+
+### BREAKING CHANGES
+
+- @deephaven/react-hooks:
+  `SelectionUtils.optimizeSelection` and `useMappedSelection` require
+  additional `getKey` arg
+
 # [0.76.0](https://github.com/deephaven/web-client-ui/compare/v0.75.1...v0.76.0) (2024-05-03)
 
 **Note:** Version bump only for package @deephaven/jsapi-components
