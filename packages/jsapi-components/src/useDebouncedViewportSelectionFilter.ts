@@ -1,4 +1,5 @@
 import {
+  createKeyedItemKey,
   createSelectedValuesFilter,
   FilterConditionFactory,
 } from '@deephaven/jsapi-utils';
@@ -40,7 +41,11 @@ export function useDebouncedViewportSelectionFilter<TItem, TValue>({
   const tableUtils = useTableUtils();
 
   // Map selection to values contained in the column to filter
-  const valuesSelection = useMappedSelection(viewportData, mapItemToValue);
+  const valuesSelection = useMappedSelection(
+    viewportData,
+    mapItemToValue,
+    createKeyedItemKey
+  );
 
   // Debounce so user can rapidly select multiple items in a row without the
   // cost of updating the table on each change
