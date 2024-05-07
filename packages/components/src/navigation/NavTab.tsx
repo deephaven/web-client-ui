@@ -79,10 +79,14 @@ const NavTab = memo(
                   onClose?.(key);
                   return;
                 }
-                (e.target as HTMLDivElement).focus();
-                // focus is normally set on mousedown, but dnd calls preventDefault for drag purposes
-                // so we can call focus on the firing of the actual click event manually
-                onSelect(key);
+                // button equaling 0 corresponds to left mouse button being clicked, and buttons equaling 0 corresponds to it being the only button pressed
+                if (e.button === 0 && e.buttons === 0) {
+                  // focus is normally set on mousedown, but dnd calls preventDefault for drag purposes
+                  // so we can call focus on the firing of the actual click event manually
+                  (e.target as HTMLDivElement).focus();
+
+                  onSelect(key);
+                }
               }}
               onKeyPress={event => {
                 if (event.key === 'Enter') onSelect(key);
