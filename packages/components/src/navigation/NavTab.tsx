@@ -67,6 +67,12 @@ const NavTab = memo(
               data-testid={`btn-nav-tab-${title}`}
               role="tab"
               tabIndex={0}
+              onAuxClick={event => {
+                // e.button equaling 1 corresponds to middle mouse button being clicked
+                if (isClosable && event.button === 1) {
+                  onClose?.(key);
+                }
+              }}
               onClick={e => {
                 (e.target as HTMLDivElement).focus();
                 // focus is normally set on mousedown, but dnd calls preventDefault for drag purposes
