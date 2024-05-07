@@ -7,11 +7,17 @@ import {
   IrisGridModelFactory,
   type IrisGridModel,
 } from '@deephaven/iris-grid';
+import { useSelector } from 'react-redux';
+import { getSettings, RootState } from '@deephaven/redux';
 
 export function GridWidgetPlugin(
   props: WidgetComponentProps<dh.Table>
 ): JSX.Element | null {
   const dh = useApi();
+  const settings = useSelector<
+    RootState,
+    RootState['workspace']['data']['settings']
+  >(getSettings);
   const [model, setModel] = useState<IrisGridModel>();
 
   const { fetch } = props;
@@ -33,7 +39,7 @@ export function GridWidgetPlugin(
     };
   }, [dh, fetch]);
 
-  return model ? <IrisGrid model={model} /> : null;
+  return model ? <IrisGrid model={model} settings={settings} /> : null;
 }
 
 export default GridWidgetPlugin;
