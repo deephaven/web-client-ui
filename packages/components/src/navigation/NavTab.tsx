@@ -67,17 +67,21 @@ const NavTab = memo(
               data-testid={`btn-nav-tab-${title}`}
               role="tab"
               tabIndex={0}
-              onAuxClick={event => {
-                // e.button equaling 1 corresponds to middle mouse button being clicked
-                if (isClosable && event.button === 1) {
+              onAuxClick={e => {
+                // button equaling 1 corresponds to middle mouse button being clicked, and buttons equaling 0 corresponds to it being the only button pressed
+                if (isClosable && e.button === 1 && e.buttons === 0) {
                   onClose?.(key);
                 }
               }}
               onClick={e => {
+                // have to have seperate check onClick for Safari not supporting AuxClick
+                if (isClosable && e.button === 1 && e.buttons === 0) {
+                  onClose?.(key);
+                  return;
+                }
                 (e.target as HTMLDivElement).focus();
                 // focus is normally set on mousedown, but dnd calls preventDefault for drag purposes
                 // so we can call focus on the firing of the actual click event manually
-
                 onSelect(key);
               }}
               onKeyPress={event => {
