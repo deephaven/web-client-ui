@@ -14,10 +14,7 @@ export function GridWidgetPlugin(
   props: WidgetComponentProps<dh.Table>
 ): JSX.Element | null {
   const dh = useApi();
-  const settings = useSelector<
-    RootState,
-    RootState['workspace']['data']['settings']
-  >(getSettings);
+  const settings = useSelector(getSettings<RootState>);
   const [model, setModel] = useState<IrisGridModel>();
 
   const { fetch } = props;
