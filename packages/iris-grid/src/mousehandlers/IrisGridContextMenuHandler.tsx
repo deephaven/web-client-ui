@@ -54,6 +54,7 @@ import './IrisGridContextMenuHandler.scss';
 import SHORTCUTS from '../IrisGridShortcuts';
 import IrisGrid from '../IrisGrid';
 import { QuickFilter } from '../CommonTypes';
+import { isIrisGridTableModelTemplate } from '../IrisGridTableModelTemplate';
 
 const log = Log.module('IrisGridContextMenuHandler');
 
@@ -925,6 +926,10 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
           title: 'Delete Selected Rows',
           group: IrisGridContextMenuHandler.GROUP_EDIT,
           order: 50,
+          disabled:
+            !isIrisGridTableModelTemplate(model) ||
+            model.inputTable == null ||
+            model.inputTable.keyColumns.length === 0,
           action: () => {
             this.irisGrid.deleteRanges(selectedRanges);
           },

@@ -296,6 +296,13 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     return false;
   }
 
+  get inputTable(): DhType.InputTable | null {
+    if (!isIrisGridTableModelTemplate(this.model)) {
+      return null;
+    }
+    return this.model.inputTable;
+  }
+
   get isExpandAllAvailable(): boolean {
     if (isExpandableGridModel(this.model)) {
       return this.model.isExpandAllAvailable ?? false;
