@@ -7,7 +7,7 @@ import {
 } from '@deephaven/grid';
 import { dh as DhType } from '@deephaven/jsapi-types';
 import { ColumnName, Formatter } from '@deephaven/jsapi-utils';
-import { EMPTY_ARRAY, EMPTY_MAP } from '@deephaven/utils';
+import { EMPTY_ARRAY, EMPTY_MAP, EventShimCustomEvent } from '@deephaven/utils';
 import IrisGridModel from './IrisGridModel';
 import ColumnHeaderGroup from './ColumnHeaderGroup';
 import {
@@ -15,15 +15,13 @@ import {
   PendingDataMap,
   UITotalsTableConfig,
 } from './CommonTypes';
+import IrisGridSchemaModelTemplate from './IrisGridSchemaModelTemplate';
 
-class EmptyIrisGridModel extends IrisGridModel {
+// TODO: delete all methods overlapping with IrisGridSchemaModelTemplate
+class EmptyIrisGridModel extends IrisGridSchemaModelTemplate {
   constructor(dh: typeof DhType, formatter = new Formatter(dh)) {
-    super(dh);
-
-    this.modelFormatter = formatter;
+    super(dh, []);
   }
-
-  modelFormatter: Formatter;
 
   get rowCount(): number {
     return 0;
@@ -94,14 +92,6 @@ class EmptyIrisGridModel extends IrisGridModel {
 
   get partitionColumns(): readonly DhType.Column[] {
     return EMPTY_ARRAY;
-  }
-
-  get formatter(): Formatter {
-    return this.modelFormatter;
-  }
-
-  set formatter(formatter: Formatter) {
-    this.modelFormatter = formatter;
   }
 
   displayString(
@@ -197,7 +187,8 @@ class EmptyIrisGridModel extends IrisGridModel {
     bottom: VisibleIndex,
     columns?: DhType.Column[]
   ): void {
-    // No-op
+    // TODO: move to IrisGridSchemaModelTemplate
+    this.dispatchEvent(new EventShimCustomEvent(IrisGridModel.EVENT.UPDATED));
   }
 
   snapshot(ranges: readonly GridRange[]): Promise<readonly unknown[][]> {

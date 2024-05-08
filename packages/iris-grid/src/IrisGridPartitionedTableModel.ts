@@ -1,15 +1,15 @@
+/* eslint-disable no-underscore-dangle */
 /* eslint class-methods-use-this: "off" */
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
-import { ColumnName } from './CommonTypes';
-import EmptyIrisGridModel from './EmptyIrisGridModel';
+import IrisGridSchemaModelTemplate from './IrisGridSchemaModelTemplate';
 import MissingPartitionError, {
   isMissingPartitionError,
 } from './MissingPartitionError';
 import { PartitionedGridModelProvider } from './PartitionedGridModel';
 
 class IrisGridPartitionedTableModel
-  extends EmptyIrisGridModel
+  extends IrisGridSchemaModelTemplate
   implements PartitionedGridModelProvider
 {
   readonly partitionedTable: DhType.PartitionedTable;
@@ -24,7 +24,7 @@ class IrisGridPartitionedTableModel
     partitionedTable: DhType.PartitionedTable,
     formatter = new Formatter(dh)
   ) {
-    super(dh, formatter);
+    super(dh, partitionedTable.columns, formatter);
     this.partitionedTable = partitionedTable;
   }
 
@@ -34,14 +34,6 @@ class IrisGridPartitionedTableModel
 
   get isReversible(): boolean {
     return false;
-  }
-
-  displayString(
-    value: unknown,
-    columnType: string,
-    columnName?: ColumnName
-  ): string {
-    return '';
   }
 
   close(): void {

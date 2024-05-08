@@ -33,7 +33,6 @@ import {
   PartitionedGridModel,
   isPartitionedGridModelProvider,
 } from './PartitionedGridModel';
-import IrisGridEmptyTableModel from './IrisGridEmptyTableModel';
 
 const log = Log.module('IrisGridProxyModel');
 
@@ -533,25 +532,15 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
           .partitionMergedTable()
           .then(table => makeModel(this.dh, table, this.formatter));
       } else if (
-        partitionConfig.mode === 'partition' &&
-        partitionConfig.partitions.length === 0
+        partitionConfig.mode !== 'partition' ||
+        partitionConfig.partitions.length > 0
       ) {
-        // originalModel.partitionTable([]) would throw an error
-        // Return an empty model instead
-        modelPromise = this.originalModel
-          // .partitionMergedTable() is a workaround to get a table with the needed schema.
-          // It will not be expensive since there is no partitions.
-          // TODO:
-          // Can we get a table without `partitionMergedTable`?
-          .partitionMergedTable()
-          .then(
-            table => new IrisGridEmptyTableModel(this.dh, table, this.formatter)
-          );
-      } else {
         modelPromise = this.originalModel
           .partitionTable(partitionConfig.partitions)
           .then(table => makeModel(this.dh, table, this.formatter));
       }
+      // If partitionConfig.mode === 'partition' && partitionConfig.partitions.length === 0
+      // we keep the original model to show an empty table
     }
 
     this.setNextModel(modelPromise);
