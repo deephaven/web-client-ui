@@ -68,7 +68,7 @@ const NavTab = memo(
               role="tab"
               tabIndex={0}
               onAuxClick={e => {
-                // button equaling 1 corresponds to middle mouse button being clicked, and buttons equaling 0 corresponds to it being the only button pressed
+                // Middle mouse button was clicked, and no buttons remain pressed
                 if (isClosable && e.button === 1 && e.buttons === 0) {
                   onClose?.(key);
                 }
@@ -79,7 +79,7 @@ const NavTab = memo(
                   onClose?.(key);
                   return;
                 }
-                // button equaling 0 corresponds to left mouse button being clicked, and buttons equaling 0 corresponds to it being the only button pressed
+                // Left mouse button was clicked, and no buttons remain pressed
                 if (e.button === 0 && e.buttons === 0) {
                   // focus is normally set on mousedown, but dnd calls preventDefault for drag purposes
                   // so we can call focus on the firing of the actual click event manually
