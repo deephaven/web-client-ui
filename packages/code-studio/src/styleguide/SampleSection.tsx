@@ -38,8 +38,6 @@ export function SampleSection({
     return () => window.removeEventListener('hashchange', hashChangeHandler);
   }, []);
 
-  console.log('[TESTING] hash:', { hash, sectionId });
-
   const shouldRender = hash === '' || hash === `sample-section-${sectionId}`;
 
   if (!shouldRender) {
