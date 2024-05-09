@@ -18,34 +18,6 @@ type NoneNullColumnRange = { startColumn: number; endColumn: number };
 
 type NoneNullRowRange = { startRow: number; endRow: number };
 
-/**
- * Cache shared between all grids. Often grids will have the same theme/colors, so we should share the cache.
- */
-const getCachedBackgroundColors = memoizeClear(
-  (backgroundColors: GridColorWay, maxDepth: number): GridColor[][] =>
-    backgroundColors.split(' ').map(color => {
-      const colors = [];
-      for (let i = 0; i < maxDepth; i += 1) {
-        colors.push(GridColorUtils.darkenForDepth(color, i, maxDepth));
-      }
-      return colors;
-    }),
-  { max: 1000 }
-);
-
-/**
- * A memoized version of the GridColorUtils.colorWithAlpha function.
- */
-const getCachedColorWithAlpha = memoizeClear(GridColorUtils.colorWithAlpha, {
-  max: 1000,
-});
-
-/**
- * A memoized version of the ColorUtils.isDark function.
- * ColorUtils.isDark is a very expensive function, and having a shared cache between all grids is a good idea.
- */
-const getCachedColorIsDark = memoizeClear(ColorUtils.isDark, { max: 1000 });
-
 /* eslint react/destructuring-assignment: "off" */
 /* eslint class-methods-use-this: "off" */
 /* eslint no-param-reassign: "off" */
@@ -172,6 +144,34 @@ export class GridRenderer {
       truncationChar
     );
   }
+
+  /**
+   * Cache shared between all grids. Often grids will have the same theme/colors, so we should share the cache.
+   */
+  static getCachedBackgroundColors = memoizeClear(
+    (backgroundColors: GridColorWay, maxDepth: number): GridColor[][] =>
+      backgroundColors.split(' ').map(color => {
+        const colors = [];
+        for (let i = 0; i < maxDepth; i += 1) {
+          colors.push(GridColorUtils.darkenForDepth(color, i, maxDepth));
+        }
+        return colors;
+      }),
+    { max: 1000 }
+  );
+
+  /**
+   * A memoized version of the GridColorUtils.colorWithAlpha function.
+   */
+  static getCachedColorWithAlpha = memoizeClear(GridColorUtils.colorWithAlpha, {
+    max: 1000,
+  });
+
+  /**
+   * A memoized version of the ColorUtils.isDark function.
+   * ColorUtils.isDark is a very expensive function, and having a shared cache between all grids is a good idea.
+   */
+  static getCachedColorIsDark = memoizeClear(ColorUtils.isDark, { max: 1000 });
 
   /**
    * Draw the grid canvas with the state provided
@@ -624,7 +624,10 @@ export class GridRenderer {
     const { theme, metrics, model } = state;
     const { maxDepth, shadowBlur, shadowColor, shadowAlpha } = theme;
 
-    const colorSets = getCachedBackgroundColors(rowBackgroundColors, maxDepth);
+    const colorSets = GridRenderer.getCachedBackgroundColors(
+      rowBackgroundColors,
+      maxDepth
+    );
     const { allRowYs, allRowHeights } = metrics;
 
     // Optimize by grouping together all rows that end up with the same color
@@ -679,8 +682,11 @@ export class GridRenderer {
     if (topShadowRows.length > 0) {
       context.save();
 
-      const startColor = getCachedColorWithAlpha(shadowColor, shadowAlpha);
-      const endColor = getCachedColorWithAlpha(shadowColor, 0);
+      const startColor = GridRenderer.getCachedColorWithAlpha(
+        shadowColor,
+        shadowAlpha
+      );
+      const endColor = GridRenderer.getCachedColorWithAlpha(shadowColor, 0);
       const gradient = context.createLinearGradient(0, 0, 0, shadowBlur);
       gradient.addColorStop(0, startColor);
       gradient.addColorStop(1, endColor);
@@ -701,8 +707,11 @@ export class GridRenderer {
     if (bottomShadowRows.length > 0) {
       context.save();
 
-      const startColor = getCachedColorWithAlpha(shadowColor, 0);
-      const endColor = getCachedColorWithAlpha(shadowColor, shadowAlpha);
+      const startColor = GridRenderer.getCachedColorWithAlpha(shadowColor, 0);
+      const endColor = GridRenderer.getCachedColorWithAlpha(
+        shadowColor,
+        shadowAlpha
+      );
       const gradient = context.createLinearGradient(0, 0, 0, shadowBlur);
       gradient.addColorStop(0, startColor);
       gradient.addColorStop(1, endColor);
@@ -1549,8 +1558,9 @@ export class GridRenderer {
     let { textColor = headerColor } = style ?? {};
 
     try {
-      const isDarkBackground = getCachedColorIsDark(backgroundColor);
-      const isDarkText = getCachedColorIsDark(textColor);
+      const isDarkBackground =
+        GridRenderer.getCachedColorIsDark(backgroundColor);
+      const isDarkText = GridRenderer.getCachedColorIsDark(textColor);
       if (isDarkBackground && isDarkText) {
         textColor = white;
       } else if (!isDarkBackground && !isDarkText) {
