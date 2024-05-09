@@ -54,7 +54,6 @@ import './IrisGridContextMenuHandler.scss';
 import SHORTCUTS from '../IrisGridShortcuts';
 import IrisGrid from '../IrisGrid';
 import { QuickFilter } from '../CommonTypes';
-import { isIrisGridTableModelTemplate } from '../IrisGridTableModelTemplate';
 
 const log = Log.module('IrisGridContextMenuHandler');
 
