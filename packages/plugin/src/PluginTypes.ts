@@ -75,6 +75,9 @@ export function isLegacyPlugin(plugin: unknown): plugin is LegacyPlugin {
 
 export type PluginModule = Plugin | LegacyPlugin;
 
+// NEED TO CLARIFY
+// export type VersionedPluginModule = PluginModule & { version: string };
+
 export interface Plugin {
   /**
    * The name of the plugin. This will be used as an identifier for the plugin and should be unique.
@@ -85,6 +88,7 @@ export interface Plugin {
    * The type of plugin.
    */
   type: (typeof PluginType)[keyof typeof PluginType];
+  version: string;
 }
 
 /**

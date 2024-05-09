@@ -34,6 +34,7 @@ import { exportLogs } from '../log/LogExport';
 import './SettingsMenu.scss';
 import ColumnSpecificSectionContent from './ColumnSpecificSectionContent';
 import { getFormattedVersionInfo } from './SettingsUtils';
+import PluginInformation from './PluginInformation';
 
 interface SettingsMenuProps {
   serverConfigValues: ServerConfigValues;
@@ -344,6 +345,10 @@ export class SettingsMenu extends Component<
                     </CopyButton>
                   </Tooltip>
                 </span>
+              </div>
+              <div className="app-settings-footer-item">
+                <div className="font-weight-bold">Plugins</div>
+                <PluginInformation />
               </div>
               <div className="app-settings-footer-item">
                 <LegalNotice />
