@@ -146,6 +146,34 @@ export class GridRenderer {
   }
 
   /**
+   * Cache shared between all grids. Often grids will have the same theme/colors, so we should share the cache.
+   */
+  static getCachedBackgroundColors = memoizeClear(
+    (backgroundColors: GridColorWay, maxDepth: number): GridColor[][] =>
+      backgroundColors.split(' ').map(color => {
+        const colors = [];
+        for (let i = 0; i < maxDepth; i += 1) {
+          colors.push(GridColorUtils.darkenForDepth(color, i, maxDepth));
+        }
+        return colors;
+      }),
+    { max: 1000 }
+  );
+
+  /**
+   * A memoized version of the GridColorUtils.colorWithAlpha function.
+   */
+  static getCachedColorWithAlpha = memoizeClear(GridColorUtils.colorWithAlpha, {
+    max: 1000,
+  });
+
+  /**
+   * A memoized version of the ColorUtils.isDark function.
+   * ColorUtils.isDark is a very expensive function, and having a shared cache between all grids is a good idea.
+   */
+  static getCachedColorIsDark = memoizeClear(ColorUtils.isDark, { max: 1000 });
+
+  /**
    * Draw the grid canvas with the state provided
    * @param state The state of the grid
    */
@@ -596,7 +624,7 @@ export class GridRenderer {
     const { theme, metrics, model } = state;
     const { maxDepth, shadowBlur, shadowColor, shadowAlpha } = theme;
 
-    const colorSets = this.getCachedBackgroundColors(
+    const colorSets = GridRenderer.getCachedBackgroundColors(
       rowBackgroundColors,
       maxDepth
     );
@@ -654,8 +682,11 @@ export class GridRenderer {
     if (topShadowRows.length > 0) {
       context.save();
 
-      const startColor = this.getCachedColorWithAlpha(shadowColor, shadowAlpha);
-      const endColor = this.getCachedColorWithAlpha(shadowColor, 0);
+      const startColor = GridRenderer.getCachedColorWithAlpha(
+        shadowColor,
+        shadowAlpha
+      );
+      const endColor = GridRenderer.getCachedColorWithAlpha(shadowColor, 0);
       const gradient = context.createLinearGradient(0, 0, 0, shadowBlur);
       gradient.addColorStop(0, startColor);
       gradient.addColorStop(1, endColor);
@@ -676,8 +707,11 @@ export class GridRenderer {
     if (bottomShadowRows.length > 0) {
       context.save();
 
-      const startColor = this.getCachedColorWithAlpha(shadowColor, 0);
-      const endColor = this.getCachedColorWithAlpha(shadowColor, shadowAlpha);
+      const startColor = GridRenderer.getCachedColorWithAlpha(shadowColor, 0);
+      const endColor = GridRenderer.getCachedColorWithAlpha(
+        shadowColor,
+        shadowAlpha
+      );
       const gradient = context.createLinearGradient(0, 0, 0, shadowBlur);
       gradient.addColorStop(0, startColor);
       gradient.addColorStop(1, endColor);
@@ -1081,29 +1115,6 @@ export class GridRenderer {
       context.stroke();
     }
   }
-
-  getCachedBackgroundColors = memoizeClear(
-    (backgroundColors: GridColorWay, maxDepth: number): GridColor[][] =>
-      backgroundColors.split(' ').map(color => {
-        const colors = [];
-        for (let i = 0; i < maxDepth; i += 1) {
-          colors.push(GridColorUtils.darkenForDepth(color, i, maxDepth));
-        }
-        return colors;
-      }),
-    { max: 1000 }
-  );
-
-  getCachedColorWithAlpha = memoizeClear(
-    (color: string, alpha: number) =>
-      GridColorUtils.colorWithAlpha(color, alpha),
-    { max: 1000 }
-  );
-
-  getCachedColorIsDark = memoizeClear(
-    (color: string) => ColorUtils.isDark(color),
-    { max: 1000 }
-  );
 
   drawHeaders(context: CanvasRenderingContext2D, state: GridRenderState): void {
     const { theme } = state;
@@ -1547,8 +1558,9 @@ export class GridRenderer {
     let { textColor = headerColor } = style ?? {};
 
     try {
-      const isDarkBackground = this.getCachedColorIsDark(backgroundColor);
-      const isDarkText = this.getCachedColorIsDark(textColor);
+      const isDarkBackground =
+        GridRenderer.getCachedColorIsDark(backgroundColor);
+      const isDarkText = GridRenderer.getCachedColorIsDark(textColor);
       if (isDarkBackground && isDarkText) {
         textColor = white;
       } else if (!isDarkBackground && !isDarkText) {
