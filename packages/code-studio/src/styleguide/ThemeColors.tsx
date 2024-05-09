@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, { Fragment, useMemo } from 'react';
 import cl from 'classnames';
 import { CopyButton, Tooltip, useTheme } from '@deephaven/components';
@@ -10,12 +9,12 @@ import semanticEditor from '@deephaven/components/src/theme/theme-dark/theme-dar
 import semanticGrid from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic-grid.css?inline';
 import components from '@deephaven/components/src/theme/theme-dark/theme-dark-components.css?inline';
 import styles from './ThemeColors.module.scss';
-import { sampleSectionIdAndClasses } from './utils';
 import {
   buildColorGroups,
   contrastColor,
   INVALID_COLOR_BORDER_STYLE,
 } from './colorUtils';
+import SampleSection from './SampleSection';
 
 function buildSwatchDataGroups() {
   return {
@@ -37,7 +36,7 @@ export function ThemeColors(): JSX.Element {
       {Object.entries(swatchDataGroups).map(([label, data], i) => {
         if (label === 'Theme Color Palette') {
           return (
-            <div key={label} {...sampleSectionIdAndClasses(label)}>
+            <SampleSection key={label} sectionId={label}>
               <h2 className="ui-title">{label}</h2>
 
               <div className={styles.themeColorsPalette}>
@@ -86,11 +85,11 @@ export function ThemeColors(): JSX.Element {
                   </Fragment>
                 ))}
               </div>
-            </div>
+            </SampleSection>
           );
         }
         return (
-          <div key={label} {...sampleSectionIdAndClasses(label)}>
+          <SampleSection key={label} sectionId={label}>
             <h2 className="ui-title">{label}</h2>
             <div className={styles.themeColors}>
               {Object.entries(data).map(([group, swatchData]) => (
@@ -147,7 +146,7 @@ export function ThemeColors(): JSX.Element {
                 </div>
               ))}
             </div>
-          </div>
+          </SampleSection>
         );
       })}
     </>

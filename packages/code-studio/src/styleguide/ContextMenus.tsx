@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 /* eslint no-alert: "off" */
 /* eslint no-console: "off" */
 import React, { Component } from 'react';
@@ -16,7 +15,7 @@ import {
   vsQuestion,
   IconDefinition,
 } from '@deephaven/icons';
-import { sampleSectionIdAndClasses } from './utils';
+import SampleSection from './SampleSection';
 
 interface ContextMenuItem {
   title: string;
@@ -108,7 +107,7 @@ class ContextMenus extends Component {
       });
 
     return (
-      <div {...sampleSectionIdAndClasses('context-menus')}>
+      <SampleSection sectionId="context-menus">
         <h2 className="ui-title">Context Menu</h2>
         <Button
           kind="primary"
@@ -134,7 +133,7 @@ class ContextMenus extends Component {
           Right Click Me
           <ContextActions actions={delayedActions} />
         </Button>
-      </div>
+      </SampleSection>
     );
   }
 }

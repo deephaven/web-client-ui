@@ -63,7 +63,7 @@ function StyleGuide(): React.ReactElement {
       subtle pixel shifts in other sections */}
         {isolateSection && (
           <style>
-            {`.${HIDE_FROM_E2E_TESTS_CLASS}, .sample-section:not(${window.location.hash}), :not(.sample-section) > h2 {
+            {`.${HIDE_FROM_E2E_TESTS_CLASS}, :not(.sample-section) > h2 {
           display: none;
         }`}
           </style>

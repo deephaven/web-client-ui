@@ -1,10 +1,9 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
-import { sampleSectionIdAndClasses } from './utils';
+import SampleSection from './SampleSection';
 
 function Typography(): React.ReactElement {
   return (
-    <div {...sampleSectionIdAndClasses('typography')}>
+    <SampleSection sectionId="typography">
       <h2 className="ui-title">Typography</h2>
       <div className="row">
         <div className="col">
@@ -32,7 +31,7 @@ function Typography(): React.ReactElement {
           <p>Default font-size: 14px = 1rem</p>
         </div>
       </div>
-    </div>
+    </SampleSection>
   );
 }
 

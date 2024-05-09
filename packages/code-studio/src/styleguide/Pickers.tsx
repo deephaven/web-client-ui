@@ -14,11 +14,8 @@ import { Icon } from '@adobe/react-spectrum';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { getPositionOfSelectedItem } from '@deephaven/react-hooks';
 import { PICKER_ITEM_HEIGHTS, PICKER_TOP_OFFSET } from '@deephaven/utils';
-import {
-  generateItemElements,
-  generateNormalizedItems,
-  sampleSectionIdAndClasses,
-} from './utils';
+import { generateItemElements, generateNormalizedItems } from './utils';
+import SampleSection from './SampleSection';
 
 // Generate enough items to require scrolling
 const items = [...generateNormalizedItems(52)];
@@ -84,7 +81,7 @@ export function Pickers(): JSX.Element {
 
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
-    <div {...sampleSectionIdAndClasses('pickers')}>
+    <SampleSection sectionId="pickers">
       <h2 className="ui-title">Pickers</h2>
 
       <Flex gap={14} direction="column">
@@ -154,7 +151,7 @@ export function Pickers(): JSX.Element {
           />
         </Flex>
       </Flex>
-    </div>
+    </SampleSection>
   );
 }
 

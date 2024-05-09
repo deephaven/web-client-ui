@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable react/style-prop-object */
 import React, { Fragment, useCallback, useState } from 'react';
 import {
@@ -33,7 +32,7 @@ import {
   SAMPLE_SECTION_E2E_IGNORE,
   SPECTRUM_COMPARISON_SAMPLES_ID,
 } from './constants';
-import { sampleSectionIdAndClasses } from './utils';
+import SampleSection from './SampleSection';
 
 type BootstrapLevel = 'primary' | 'secondary' | 'danger';
 
@@ -61,10 +60,9 @@ export function SpectrumComparison(): JSX.Element {
   );
 
   return (
-    <div
-      {...sampleSectionIdAndClasses(SPECTRUM_COMPARISON_SAMPLES_ID, [
-        SAMPLE_SECTION_E2E_IGNORE,
-      ])}
+    <SampleSection
+      sectionId={SPECTRUM_COMPARISON_SAMPLES_ID}
+      className={SAMPLE_SECTION_E2E_IGNORE}
     >
       <h2 className="ui-title" data-no-menu>
         Bootstrap / Spectrum Comparison
@@ -309,7 +307,7 @@ export function SpectrumComparison(): JSX.Element {
           </Grid>
         </View>
       </Flex>
-    </div>
+    </SampleSection>
   );
 }
 

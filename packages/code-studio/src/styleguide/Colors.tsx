@@ -1,8 +1,7 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
 import classNames from 'classnames';
-import { sampleSectionIdAndClasses } from './utils';
 import { Swatch } from './Swatch';
+import SampleSection from './SampleSection';
 
 function Colors(): React.ReactElement {
   const graySwatches = [
@@ -61,7 +60,7 @@ function Colors(): React.ReactElement {
   ));
 
   return (
-    <div {...sampleSectionIdAndClasses('colors')}>
+    <SampleSection sectionId="colors">
       <h2 className="ui-title">Colors</h2>
       <div className="row">
         <div className="col">
@@ -79,7 +78,7 @@ function Colors(): React.ReactElement {
           </p>
         </div>
       </div>
-    </div>
+    </SampleSection>
   );
 }
 

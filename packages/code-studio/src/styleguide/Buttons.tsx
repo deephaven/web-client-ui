@@ -1,9 +1,8 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, { Component, ReactElement } from 'react';
 import { Flex } from '@adobe/react-spectrum';
 import { Button, ButtonOld, SocketedButton } from '@deephaven/components';
 import { dhTruck } from '@deephaven/icons';
-import { sampleSectionIdAndClasses } from './utils';
+import SampleSection from './SampleSection';
 
 function noOp(): void {
   return undefined;
@@ -40,15 +39,13 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
     ].map((brand: string) => Buttons.renderButtonBrand(type, brand));
 
     return (
-      <div
+      <SampleSection
         key={type}
-        {...sampleSectionIdAndClasses(
-          `buttons-${type.length ? 'outline' : 'regular'}`
-        )}
+        sectionId={`buttons-${type.length ? 'outline' : 'regular'}`}
       >
         <h5>{type.length ? 'Outline' : 'Regular'}</h5>
         {brands}
-      </div>
+      </SampleSection>
     );
   }
 
@@ -63,10 +60,7 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
     };
 
     return (
-      <div
-        {...sampleSectionIdAndClasses('links')}
-        style={{ paddingTop: '1rem' }}
-      >
+      <SampleSection sectionId="links" style={{ paddingTop: '1rem' }}>
         <h5>Links</h5>
         <Flex gap="1rem">
           {Object.entries(levelMap).map(([level, semantic]) => (
@@ -76,13 +70,13 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
             </a>
           ))}
         </Flex>
-      </div>
+      </SampleSection>
     );
   }
 
   static renderSocketedButtons(): ReactElement {
     return (
-      <div {...sampleSectionIdAndClasses('buttons-socketed')}>
+      <SampleSection sectionId="buttons-socketed">
         <h5>Socketed Buttons (for linker)</h5>
         <SocketedButton
           style={{ marginBottom: '1rem', marginRight: '1rem' }}
@@ -119,7 +113,7 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
         >
           Disabled
         </SocketedButton>
-      </div>
+      </SampleSection>
     );
   }
 
@@ -135,10 +129,7 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
     const { toggle } = this.state;
 
     return (
-      <div
-        {...sampleSectionIdAndClasses('buttons-inline')}
-        style={{ padding: '1rem 0' }}
-      >
+      <SampleSection sectionId="buttons-inline" style={{ padding: '1rem 0' }}>
         <h5>Inline Buttons</h5>
         Regular btn-inline:
         <Button
@@ -179,7 +170,7 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
         <Button kind="ghost" icon={dhTruck} onClick={noOp}>
           Text Button
         </Button>
-      </div>
+      </SampleSection>
     );
   }
 

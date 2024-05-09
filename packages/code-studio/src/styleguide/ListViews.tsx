@@ -18,7 +18,8 @@ import {
 } from '@deephaven/components';
 import { vsAccount, vsPerson } from '@deephaven/icons';
 import { LIST_VIEW_ROW_HEIGHTS } from '@deephaven/utils';
-import { generateNormalizedItems, sampleSectionIdAndClasses } from './utils';
+import { generateNormalizedItems } from './utils';
+import SampleSection from './SampleSection';
 
 // Generate enough items to require scrolling
 const itemsWithIcons = [...generateNormalizedItems(52, { icons: true })];
@@ -97,7 +98,7 @@ export function ListViews(): JSX.Element {
 
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
-    <div {...sampleSectionIdAndClasses('list-views')}>
+    <SampleSection sectionId="list-views">
       <h2 className="ui-title">List View</h2>
 
       <Grid
@@ -223,7 +224,7 @@ export function ListViews(): JSX.Element {
           />
         </LabeledFlexContainer>
       </Grid>
-    </div>
+    </SampleSection>
   );
 }
 

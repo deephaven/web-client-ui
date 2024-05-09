@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { vsFile, dhTruck, vsListUnordered } from '@deephaven/icons';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
@@ -9,7 +8,8 @@ import {
   Stack,
   type NavTabItem,
 } from '@deephaven/components';
-import { pseudoRandomWithSeed, sampleSectionIdAndClasses } from './utils';
+import { pseudoRandomWithSeed } from './utils';
+import SampleSection from './SampleSection';
 
 function NavTabListExample({
   count = 5,
@@ -287,7 +287,7 @@ function Navigations(): JSX.Element {
   );
 
   return (
-    <div {...sampleSectionIdAndClasses('navigations')}>
+    <SampleSection sectionId="navigations">
       <h2 className="ui-title">Navigations</h2>
       <div style={{ marginBottom: '1rem' }}>
         <NavTabListExample count={100} activeKey="15" />
@@ -298,7 +298,7 @@ function Navigations(): JSX.Element {
       <div className="navigations">
         <Stack>{stack}</Stack>
       </div>
-    </div>
+    </SampleSection>
   );
 }
 

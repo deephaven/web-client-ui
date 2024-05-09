@@ -1,8 +1,7 @@
-/* eslint-disable react/jsx-props-no-spreading */
 /* eslint no-alert: "off" */
 import React, { CSSProperties } from 'react';
 import { ErrorView } from '@deephaven/components';
-import { sampleSectionIdAndClasses } from './utils';
+import SampleSection from './SampleSection';
 
 function ErrorViews(): React.ReactElement {
   const columnStyle: CSSProperties = {
@@ -20,7 +19,7 @@ function ErrorViews(): React.ReactElement {
   const longErrorType = 'SuperLongErrorMessageType';
 
   return (
-    <div {...sampleSectionIdAndClasses('error-views')}>
+    <SampleSection sectionId="error-views">
       <h2 className="ui-title" title="Display error messages easily">
         Error Views
       </h2>
@@ -52,7 +51,7 @@ function ErrorViews(): React.ReactElement {
           />
         </div>
       </div>
-    </div>
+    </SampleSection>
   );
 }
 
