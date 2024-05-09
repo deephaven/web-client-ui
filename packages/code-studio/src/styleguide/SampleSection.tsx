@@ -1,9 +1,11 @@
 import { Flex, Grid, View } from '@deephaven/components';
 import type { StyleProps } from '@react-types/shared';
-import React, { CSSProperties, ReactNode, useEffect, useState } from 'react';
+import React, { CSSProperties, ReactNode } from 'react';
 import {
+  getSectionIdFromName,
   sampleSectionIdAndClasses,
   sampleSectionIdAndClassesSpectrum,
+  useIsolateSectionHash,
 } from './utils';
 
 export interface SampleSectionProps extends StyleProps {
@@ -14,36 +16,19 @@ export interface SampleSectionProps extends StyleProps {
   children: ReactNode;
 }
 
-/**
- * If isolatedSection=true, return the current location hash. Otherwise ''
- */
-function getIsolatedHash() {
-  const isolateSection = window.location.search.includes('isolateSection=true');
-  return isolateSection ? window.location.hash.replace(/^#/, '') : '';
-}
-
 export function SampleSection({
   sectionId,
   className = '',
   component: Component = 'div',
   ...styleProps
 }: SampleSectionProps): JSX.Element | null {
-  const [hash, setHash] = useState(getIsolatedHash);
+  const hash = useIsolateSectionHash();
 
-  useEffect(() => {
-    const hashChangeHandler = () => setHash(getIsolatedHash());
-
-    window.addEventListener('hashchange', hashChangeHandler);
-
-    return () => window.removeEventListener('hashchange', hashChangeHandler);
-  }, []);
-
-  const shouldRender = hash === '' || hash === `sample-section-${sectionId}`;
+  const shouldRender = hash === '' || hash === getSectionIdFromName(sectionId);
 
   if (!shouldRender) {
     return null;
   }
-
   const sectionIdAndClasses =
     Component === 'div'
       ? sampleSectionIdAndClasses

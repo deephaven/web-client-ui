@@ -2,6 +2,12 @@
 @use 'sass:string';
 @import '@deephaven/components/scss/custom.scss';
 
+.isolated-section-query {
+  :not(.sample-section) > h2 {
+    display: none;
+  }
+}
+
 .ui-title {
   color: var(--dh-color-text);
   border-bottom: 1px solid $gray-200;

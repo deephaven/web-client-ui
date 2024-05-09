@@ -1,5 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
+import cl from 'classnames';
 
 import {
   ContextMenuRoot,
@@ -31,7 +32,7 @@ import ThemeColors from './ThemeColors';
 import SpectrumComponents from './SpectrumComponents';
 import SamplesMenu, { SampleMenuCategory } from './SamplesMenu';
 import GotoTopButton from './GotoTopButton';
-import { HIDE_FROM_E2E_TESTS_CLASS } from './utils';
+import { ISOLATED_SECTION_QUERY_CLASS, useIsolateSectionHash } from './utils';
 import { GoldenLayout } from './GoldenLayout';
 import { RandomAreaPlotAnimation } from './RandomAreaPlotAnimation';
 import SpectrumComparison from './SpectrumComparison';
@@ -49,25 +50,22 @@ const stickyProps = {
 } as const;
 
 function StyleGuide(): React.ReactElement {
-  const isolateSection = window.location.search.includes('isolateSection=true');
   const { themes } = useTheme();
   const hasMultipleThemes = themes.length > 1;
+
+  const isIsolatedSection = useIsolateSectionHash() !== '';
 
   return (
     // Needs a tabindex to capture focus on popper blur
     // AppMainContainer has a tabindex of -1 in the app itself
     <div tabIndex={-1} role="main">
-      <div className="container style-guide-container">
-        {/* For e2e tests this allows us to isolate sections for snapshots. This 
-      mitigates an issue where a change to a section in the styleguide can cause
-      subtle pixel shifts in other sections */}
-        {isolateSection && (
-          <style>
-            {`.${HIDE_FROM_E2E_TESTS_CLASS}, :not(.sample-section) > h2 {
-          display: none;
-        }`}
-          </style>
+      <div
+        className={cl(
+          'container',
+          'style-guide-container',
+          isIsolatedSection && ISOLATED_SECTION_QUERY_CLASS
         )}
+      >
         <Flex
           justifyContent="space-between"
           alignItems="center"
@@ -77,26 +75,28 @@ function StyleGuide(): React.ReactElement {
           <h1 style={{ paddingTop: '2rem' }}>Deephaven UI Components</h1>
         </Flex>
 
-        <Flex
-          {...stickyProps}
-          UNSAFE_className={HIDE_FROM_E2E_TESTS_CLASS}
-          marginTop={-56}
-          top={20}
-          gap={10}
-          alignItems="end"
-        >
-          {hasMultipleThemes ? <ThemePicker /> : null}
-          <SamplesMenu />
-        </Flex>
-        <Flex
-          {...stickyProps}
-          UNSAFE_className={HIDE_FROM_E2E_TESTS_CLASS}
-          top="calc(100vh - 40px)"
-          marginTop={-32}
-          marginEnd={hasMultipleThemes ? -234 : 0}
-        >
-          <GotoTopButton />
-        </Flex>
+        {isIsolatedSection ? null : (
+          <Flex
+            {...stickyProps}
+            marginTop={-56}
+            top={20}
+            gap={10}
+            alignItems="end"
+          >
+            {hasMultipleThemes ? <ThemePicker /> : null}
+            <SamplesMenu />
+          </Flex>
+        )}
+        {isIsolatedSection ? null : (
+          <Flex
+            {...stickyProps}
+            top="calc(100vh - 40px)"
+            marginTop={-32}
+            marginEnd={hasMultipleThemes ? -234 : 0}
+          >
+            <GotoTopButton />
+          </Flex>
+        )}
 
         <Typograpy />
 
