@@ -5,7 +5,6 @@ export { default as AutoResizeTextarea } from './AutoResizeTextarea';
 export { default as BasicModal } from './BasicModal';
 export { default as Button } from './Button';
 export { default as ButtonGroup } from './ButtonGroup';
-export { default as ButtonOld } from './ButtonOld';
 export * from './BulkActionBar';
 export { default as CardFlip } from './CardFlip';
 export * from './context-actions';

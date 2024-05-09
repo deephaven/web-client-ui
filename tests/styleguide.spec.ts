@@ -12,7 +12,6 @@ const sampleSectionIds: string[] = [
   'sample-section-component-colors',
   'sample-section-golden-layout',
   'sample-section-buttons-regular',
-  'sample-section-buttons-outline',
   'sample-section-buttons-inline',
   'sample-section-buttons-socketed',
   'sample-section-links',
@@ -49,7 +48,6 @@ const sampleSectionIds: string[] = [
 ];
 const buttonSectionIds: string[] = [
   'sample-section-buttons-regular',
-  'sample-section-buttons-outline',
   'sample-section-buttons-inline',
   'sample-section-buttons-socketed',
 ];
