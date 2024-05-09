@@ -300,6 +300,10 @@ abstract class IrisGridModel<
 
   abstract set totalsConfig(totalsConfig: UITotalsTableConfig | null);
 
+  abstract isDeletableRange(range: GridRange): boolean;
+
+  abstract isDeletableRanges(ranges: readonly GridRange[]): boolean;
+
   /**
    * @returns The LayoutHints to use for the columns of this table model
    */

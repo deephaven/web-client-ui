@@ -152,6 +152,14 @@ class EmptyIrisGridModel extends IrisGridModel {
     // No-op
   }
 
+  isDeletableRange(range: GridRange): boolean {
+    return false;
+  }
+
+  isDeletableRanges(ranges: readonly GridRange[]): boolean {
+    return false;
+  }
+
   export(): Promise<DhType.Table> {
     throw new Error('Method not implemented.');
   }

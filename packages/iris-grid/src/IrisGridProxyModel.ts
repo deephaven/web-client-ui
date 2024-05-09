@@ -10,6 +10,7 @@ import {
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
   EditableGridModel,
+  GridRange,
   isEditableGridModel,
   isExpandableGridModel,
   ModelIndex,
@@ -352,6 +353,25 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     return 0;
     // throw Error('Function depthForRow does not exist on IrisGridTableModel');
   };
+
+  isDeletableRange(range: GridRange): boolean {
+    return (
+      this.inputTable != null &&
+      this.inputTable.keyColumns.length !== 0 &&
+      this.table != null &&
+      range.startRow != null &&
+      range.endRow != null &&
+      range.startRow >= this.floatingTopRowCount &&
+      range.startRow <
+        this.floatingTopRowCount + this.table.size + this.pendingRowCount &&
+      range.endRow <
+        this.floatingTopRowCount + this.table.size + this.pendingRowCount
+    );
+  }
+
+  isDeletableRanges(ranges: readonly GridRange[]): boolean {
+    return ranges.every(range => this.isDeletableRange(range));
+  }
 
   get isExportAvailable(): boolean {
     return this.model.isExportAvailable;
