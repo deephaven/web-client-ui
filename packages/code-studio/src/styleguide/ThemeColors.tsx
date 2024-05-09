@@ -36,7 +36,7 @@ export function ThemeColors(): JSX.Element {
       {Object.entries(swatchDataGroups).map(([label, data], i) => {
         if (label === 'Theme Color Palette') {
           return (
-            <SampleSection key={label} sectionId={label}>
+            <SampleSection key={label} name={label}>
               <h2 className="ui-title">{label}</h2>
 
               <div className={styles.themeColorsPalette}>
@@ -89,7 +89,7 @@ export function ThemeColors(): JSX.Element {
           );
         }
         return (
-          <SampleSection key={label} sectionId={label}>
+          <SampleSection key={label} name={label}>
             <h2 className="ui-title">{label}</h2>
             <div className={styles.themeColors}>
               {Object.entries(data).map(([group, swatchData]) => (

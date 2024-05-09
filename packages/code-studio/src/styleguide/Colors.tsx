@@ -60,7 +60,7 @@ function Colors(): React.ReactElement {
   ));
 
   return (
-    <SampleSection sectionId="colors">
+    <SampleSection name="colors">
       <h2 className="ui-title">Colors</h2>
       <div className="row">
         <div className="col">

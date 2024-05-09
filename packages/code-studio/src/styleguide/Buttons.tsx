@@ -41,7 +41,7 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
     return (
       <SampleSection
         key={type}
-        sectionId={`buttons-${type.length ? 'outline' : 'regular'}`}
+        name={`buttons-${type.length ? 'outline' : 'regular'}`}
       >
         <h5>{type.length ? 'Outline' : 'Regular'}</h5>
         {brands}
@@ -60,7 +60,7 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
     };
 
     return (
-      <SampleSection sectionId="links" style={{ paddingTop: '1rem' }}>
+      <SampleSection name="links" style={{ paddingTop: '1rem' }}>
         <h5>Links</h5>
         <Flex gap="1rem">
           {Object.entries(levelMap).map(([level, semantic]) => (
@@ -76,7 +76,7 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
 
   static renderSocketedButtons(): ReactElement {
     return (
-      <SampleSection sectionId="buttons-socketed">
+      <SampleSection name="buttons-socketed">
         <h5>Socketed Buttons (for linker)</h5>
         <SocketedButton
           style={{ marginBottom: '1rem', marginRight: '1rem' }}
@@ -129,7 +129,7 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
     const { toggle } = this.state;
 
     return (
-      <SampleSection sectionId="buttons-inline" style={{ padding: '1rem 0' }}>
+      <SampleSection name="buttons-inline" style={{ padding: '1rem 0' }}>
         <h5>Inline Buttons</h5>
         Regular btn-inline:
         <Button

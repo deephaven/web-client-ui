@@ -3,7 +3,7 @@ import SampleSection from './SampleSection';
 
 function Typography(): React.ReactElement {
   return (
-    <SampleSection sectionId="typography">
+    <SampleSection name="typography">
       <h2 className="ui-title">Typography</h2>
       <div className="row">
         <div className="col">

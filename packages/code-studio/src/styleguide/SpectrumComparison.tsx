@@ -61,7 +61,7 @@ export function SpectrumComparison(): JSX.Element {
 
   return (
     <SampleSection
-      sectionId={SPECTRUM_COMPARISON_SAMPLES_ID}
+      name={SPECTRUM_COMPARISON_SAMPLES_ID}
       className={SAMPLE_SECTION_E2E_IGNORE}
     >
       <h2 className="ui-title" data-no-menu>

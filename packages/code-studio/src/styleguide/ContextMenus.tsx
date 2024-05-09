@@ -107,7 +107,7 @@ class ContextMenus extends Component {
       });
 
     return (
-      <SampleSection sectionId="context-menus">
+      <SampleSection name="context-menus">
         <h2 className="ui-title">Context Menu</h2>
         <Button
           kind="primary"

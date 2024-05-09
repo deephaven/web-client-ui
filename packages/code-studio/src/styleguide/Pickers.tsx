@@ -81,7 +81,7 @@ export function Pickers(): JSX.Element {
 
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
-    <SampleSection sectionId="pickers">
+    <SampleSection name="pickers">
       <h2 className="ui-title">Pickers</h2>
 
       <Flex gap={14} direction="column">

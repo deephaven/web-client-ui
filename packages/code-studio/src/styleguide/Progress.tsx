@@ -4,7 +4,7 @@ import SampleSection from './SampleSection';
 
 function Progress(): React.ReactElement {
   return (
-    <SampleSection sectionId="progress">
+    <SampleSection name="progress">
       <h2 className="ui-title">Progress</h2>
       <div className="row">
         <div className="col">

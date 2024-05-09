@@ -46,23 +46,23 @@ export function SpectrumComponents(): JSX.Element {
         Spectrum Components
       </h2>
       <Grid gap={20} columns={minmax('0px', '1fr')}>
-        <SampleSection sectionId="spectrum-buttons" component={View}>
+        <SampleSection name="spectrum-buttons" component={View}>
           <h3>Buttons</h3>
           <ButtonsSample />
         </SampleSection>
-        <SampleSection sectionId="spectrum-collections" component={View}>
+        <SampleSection name="spectrum-collections" component={View}>
           <h3>Collections</h3>
           <TableViewSample />
         </SampleSection>
-        <SampleSection sectionId="spectrum-content" component={View}>
+        <SampleSection name="spectrum-content" component={View}>
           <h3>Content</h3>
           <IllustratedMessageSample />
         </SampleSection>
-        <SampleSection sectionId="spectrum-forms" component={View}>
+        <SampleSection name="spectrum-forms" component={View}>
           <h3>Forms</h3>
           <FormsSample />
         </SampleSection>
-        <SampleSection sectionId="spectrum-overlays" component={View}>
+        <SampleSection name="spectrum-overlays" component={View}>
           <h3>Overlays</h3>
           <Flex gap="size-160">
             <ContextualHelpSample />
@@ -89,7 +89,7 @@ export function SpectrumComponents(): JSX.Element {
             </DialogTrigger>
           </Flex>
         </SampleSection>
-        <SampleSection sectionId="spectrum-well" component={View}>
+        <SampleSection name="spectrum-well" component={View}>
           <h3>Wells</h3>
           <Well>This is a well.</Well>
         </SampleSection>

@@ -189,7 +189,7 @@ class DraggableLists extends Component<
   render(): React.ReactElement {
     const { items, lists, selectedRanges } = this.state;
     return (
-      <SampleSection sectionId="draggable-lists" className="style-guide-inputs">
+      <SampleSection name="draggable-lists" className="style-guide-inputs">
         <h2 className="ui-title">Drag and Drop Lists</h2>
         <div className="row">
           <DragDropContext

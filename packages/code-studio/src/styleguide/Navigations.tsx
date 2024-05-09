@@ -287,7 +287,7 @@ function Navigations(): JSX.Element {
   );
 
   return (
-    <SampleSection sectionId="navigations">
+    <SampleSection name="navigations">
       <h2 className="ui-title">Navigations</h2>
       <div style={{ marginBottom: '1rem' }}>
         <NavTabListExample count={100} activeKey="15" />

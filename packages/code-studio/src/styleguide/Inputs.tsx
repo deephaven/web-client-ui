@@ -74,7 +74,7 @@ function Inputs(): React.ReactElement {
   );
 
   return (
-    <SampleSection sectionId="inputs" className="style-guide-inputs">
+    <SampleSection name="inputs" className="style-guide-inputs">
       <h2 className="ui-title">Inputs</h2>
       <div className="row">
         <div className="col">

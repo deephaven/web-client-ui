@@ -98,7 +98,7 @@ export function ListViews(): JSX.Element {
 
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
-    <SampleSection sectionId="list-views">
+    <SampleSection name="list-views">
       <h2 className="ui-title">List View</h2>
 
       <Grid

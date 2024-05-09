@@ -9,7 +9,7 @@ import {
 } from './utils';
 
 export interface SampleSectionProps extends StyleProps {
-  sectionId: string;
+  name: string;
   className?: string;
   component?: 'div' | typeof Flex | typeof Grid | typeof View;
   style?: CSSProperties;
@@ -17,18 +17,19 @@ export interface SampleSectionProps extends StyleProps {
 }
 
 export function SampleSection({
-  sectionId,
+  name,
   className = '',
   component: Component = 'div',
   ...styleProps
 }: SampleSectionProps): JSX.Element | null {
   const hash = useIsolateSectionHash();
-
-  const shouldRender = hash === '' || hash === getSectionIdFromName(sectionId);
+  const sectionId = getSectionIdFromName(name);
+  const shouldRender = hash === '' || hash === sectionId;
 
   if (!shouldRender) {
     return null;
   }
+
   const sectionIdAndClasses =
     Component === 'div'
       ? sampleSectionIdAndClasses
@@ -39,7 +40,7 @@ export function SampleSection({
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...styleProps}
       // eslint-disable-next-line react/jsx-props-no-spreading
-      {...sectionIdAndClasses(sectionId, [className])}
+      {...sectionIdAndClasses(name, [className])}
     />
   );
 }

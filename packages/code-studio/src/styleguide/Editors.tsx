@@ -5,7 +5,7 @@ import SampleSection from './SampleSection';
 
 function Editors(): React.ReactElement {
   return (
-    <SampleSection sectionId="editors">
+    <SampleSection name="editors">
       <h2 className="ui-title">Editor</h2>
       <h5 className="sub-title">Python</h5>
       <div style={{ height: 400, position: 'relative' }}>

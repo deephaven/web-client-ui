@@ -19,7 +19,7 @@ function ErrorViews(): React.ReactElement {
   const longErrorType = 'SuperLongErrorMessageType';
 
   return (
-    <SampleSection sectionId="error-views">
+    <SampleSection name="error-views">
       <h2 className="ui-title" title="Display error messages easily">
         Error Views
       </h2>

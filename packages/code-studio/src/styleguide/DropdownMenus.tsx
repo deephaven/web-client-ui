@@ -91,7 +91,7 @@ class DropdownMenus extends Component<
     const { isShown } = this.state;
 
     return (
-      <SampleSection sectionId="dropdown-menus">
+      <SampleSection name="dropdown-menus">
         <h2 className="ui-title">Dropdown Menu</h2>
         <p>
           A simple dropdown menu of actions, can open on click of parent

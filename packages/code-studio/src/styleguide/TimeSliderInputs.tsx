@@ -37,10 +37,7 @@ class TimeSliderInputs extends PureComponent<
     const isStartModified = startTime !== initialStartTime;
     const isEndModified = endTime !== initialEndTime;
     return (
-      <SampleSection
-        sectionId="time-slider-inputs"
-        className="style-guide-inputs"
-      >
+      <SampleSection name="time-slider-inputs" className="style-guide-inputs">
         <h2 className="ui-title">Time Slider</h2>
         <TimeSlider
           startTime={startTime}

@@ -22,7 +22,7 @@ function Tab({
 
 export function GoldenLayout(): JSX.Element {
   return (
-    <SampleSection sectionId="golden-layout">
+    <SampleSection name="golden-layout">
       <h2 className="ui-title">Golden Layout</h2>
       {[false, true].map(isMaximised => (
         <React.Fragment key={String(isMaximised)}>

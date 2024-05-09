@@ -34,7 +34,7 @@ function Modals(): React.ReactElement {
   }
 
   return (
-    <SampleSection sectionId="modals">
+    <SampleSection name="modals">
       <h2 className="ui-title">Basic Modals</h2>
       <div style={{ padding: '1rem' }}>
         {[1, 2, 3].map(buttonCount => renderBasicModal(buttonCount))}

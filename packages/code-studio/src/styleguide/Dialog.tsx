@@ -88,7 +88,7 @@ class Dialog extends Component<unknown, DialogState> {
     const { isShown, checkBoxMap } = this.state;
 
     return (
-      <SampleSection sectionId="dialog">
+      <SampleSection name="dialog">
         <h2 className="ui-title">Popover Dialog</h2>
         <p>
           Popover dialog that can contain interactive elements, can be set to

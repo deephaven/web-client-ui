@@ -13,7 +13,7 @@ function Tooltips(): React.ReactElement {
   ));
 
   return (
-    <SampleSection sectionId="tooltips">
+    <SampleSection name="tooltips">
       <h2
         className="ui-title"
         title="Make better looking tooltips than this one!"

@@ -6,7 +6,7 @@ import SampleSection from './SampleSection';
 
 function ItemListInputs(): React.ReactElement {
   return (
-    <SampleSection sectionId="item-list-inputs" className="style-guide-inputs">
+    <SampleSection name="item-list-inputs" className="style-guide-inputs">
       <h2 className="ui-title">Item Lists</h2>
 
       <div className="row">

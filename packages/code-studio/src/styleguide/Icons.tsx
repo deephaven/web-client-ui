@@ -128,7 +128,7 @@ function Icons(): React.ReactElement {
   </div>`;
 
   return (
-    <SampleSection sectionId="icons">
+    <SampleSection name="icons">
       <h2 className="ui-title">Icons</h2>
 
       <div className="row">

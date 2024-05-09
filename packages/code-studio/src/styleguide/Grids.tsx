@@ -39,20 +39,20 @@ function Grids(): ReactElement {
     <div>
       <ThemeContext.Provider value={contextTheme}>
         <h2 className="ui-title">Grid</h2>
-        <SampleSection sectionId="grids-grid" component={Flex}>
+        <SampleSection name="grids-grid" component={Flex}>
           <Grid model={model} theme={theme} />
         </SampleSection>
         <h2 className="ui-title">Static Data</h2>
-        <SampleSection sectionId="grids-static" component={Flex} height={200}>
+        <SampleSection name="grids-static" component={Flex} height={200}>
           <StaticExample />
         </SampleSection>
         <h2 className="ui-title">Data Bar</h2>
-        <SampleSection sectionId="grids-data-bar" component={Flex} height={500}>
+        <SampleSection name="grids-data-bar" component={Flex} height={500}>
           <DataBarExample />
         </SampleSection>
         <h2 className="ui-title">Quadrillion rows and columns</h2>
         <SampleSection
-          sectionId="grids-quadrillion"
+          name="grids-quadrillion"
           component={Flex}
           position="relative"
           height={500}
@@ -61,7 +61,7 @@ function Grids(): ReactElement {
         </SampleSection>
         <h2 className="ui-title">Async example</h2>
         <SampleSection
-          sectionId="grids-async"
+          name="grids-async"
           component={Flex}
           position="relative"
           height={500}
@@ -69,11 +69,11 @@ function Grids(): ReactElement {
           <AsyncExample />
         </SampleSection>
         <h2 className="ui-title">Tree Grid</h2>
-        <SampleSection sectionId="grids-tree" component={Flex} height={500}>
+        <SampleSection name="grids-tree" component={Flex} height={500}>
           <TreeExample />
         </SampleSection>
         <h2 className="ui-title">Iris Grid</h2>
-        <SampleSection sectionId="grids-iris" component={Flex} height={500}>
+        <SampleSection name="grids-iris" component={Flex} height={500}>
           <IrisGrid model={irisGridModel} />
         </SampleSection>
       </ThemeContext.Provider>
