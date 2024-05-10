@@ -26,7 +26,7 @@ const config: PlaywrightTestConfig = {
     timeout: TIMEOUT_EXPECT_MS,
 
     toHaveScreenshot: {
-      stylePath: './tests/playwright.css',
+      stylePath: require.resolve('./tests/playwright.css'),
     },
   },
   /* Default to run each suite in parallel, suites and optional opt out */
