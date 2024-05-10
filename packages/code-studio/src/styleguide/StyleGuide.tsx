@@ -75,28 +75,34 @@ function StyleGuide(): React.ReactElement {
           <h1 style={{ paddingTop: '2rem' }}>Deephaven UI Components</h1>
         </Flex>
 
-        {isIsolatedSection ? null : (
-          <Flex
-            {...stickyProps}
-            marginTop={-56}
-            top={20}
-            gap={10}
-            alignItems="end"
-          >
-            {hasMultipleThemes ? <ThemePicker /> : null}
-            <SamplesMenu />
-          </Flex>
-        )}
-        {isIsolatedSection ? null : (
-          <Flex
-            {...stickyProps}
-            top="calc(100vh - 40px)"
-            marginTop={-32}
-            marginEnd={hasMultipleThemes ? -234 : 0}
-          >
-            <GotoTopButton />
-          </Flex>
-        )}
+        {/* {isIsolatedSection ? null : ( */}
+        <Flex
+          {...stickyProps}
+          UNSAFE_className={
+            isIsolatedSection ? 'hide-when-isolated' : undefined
+          }
+          marginTop={-56}
+          top={20}
+          gap={10}
+          alignItems="end"
+        >
+          {hasMultipleThemes ? <ThemePicker /> : null}
+          <SamplesMenu />
+        </Flex>
+        {/* )} */}
+        {/* {isIsolatedSection ? null : ( */}
+        <Flex
+          {...stickyProps}
+          UNSAFE_className={
+            isIsolatedSection ? 'hide-when-isolated' : undefined
+          }
+          top="calc(100vh - 40px)"
+          marginTop={-32}
+          marginEnd={hasMultipleThemes ? -234 : 0}
+        >
+          <GotoTopButton />
+        </Flex>
+        {/* )} */}
 
         <Typograpy />
 

@@ -3,6 +3,7 @@
 @import '@deephaven/components/scss/custom.scss';
 
 .isolated-section-query {
+  .hide-when-isolated,
   :not(.sample-section) > h2 {
     display: none;
   }
