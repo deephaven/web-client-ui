@@ -68,6 +68,8 @@ class IrisGridPartitionSelector extends Component<
         t => t.close()
       );
 
+      // TODO: find out how partitionTables can be null after this
+
       const partitionTables = await Promise.all(
         model.partitionColumns.map(async (_, i) =>
           this.pending.add(
@@ -232,7 +234,12 @@ class IrisGridPartitionSelector extends Component<
    */
   updatePartitionFilters(): void {
     const { partitionTables } = this.state;
-    assertNotNull(partitionTables);
+    // assertNotNull(partitionTables);
+
+    if (partitionTables == null) {
+      this.setState({ partitionFilters: [] });
+      return;
+    }
 
     const { partitionConfig } = this.props;
     const { mode } = partitionConfig;
@@ -253,8 +260,11 @@ class IrisGridPartitionSelector extends Component<
     log.debug('getPartitionFilters', partitionConfig);
 
     if (partitions.length !== partitionTables.length) {
-      throw new Error(
-        `Invalid partition config set. Expected ${partitionTables.length} partitions, but got ${partitions.length}`
+      // throw new Error(
+      //   `Invalid partition config set. Expected ${partitionTables.length} partitions, but got ${partitions.length}`
+      // );
+      log.warn(
+        `Expected ${partitionTables.length} partitions, but got ${partitions.length}`
       );
     }
 

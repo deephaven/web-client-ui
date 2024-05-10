@@ -23,8 +23,6 @@ import {
 } from './CommonTypes';
 import ColumnHeaderGroup, { isColumnHeaderGroup } from './ColumnHeaderGroup';
 
-const log = Log.module('IrisGridSchemaModelTemplate');
-
 /**
  * Template model for a grid with a schema and no rows
  */
@@ -62,23 +60,8 @@ class IrisGridSchemaModelTemplate extends IrisGridModel {
     this.handleCustomColumnsChanged =
       this.handleCustomColumnsChanged.bind(this);
 
-    // this.dh = dh;
     this.modelFormatter = formatter;
-    // this.irisGridUtils = new IrisGridUtils(dh);
-    // this.inputTable = inputTable;
-    // this.subscription = null;
     this._columns = columns;
-    // this.totalsTable = null;
-    // this.totalsTablePromise = null;
-    // this.totals = null;
-    // this.totalsDataMap = null;
-
-    // Map from new row index to their values. Only for input tables that can have new rows added.
-    // The index of these rows start at 0, and they are appended at the end of the regular table data.
-    // These rows can be sparse, so using a map instead of an array.
-    // this.pendingNewDataMap = new Map();
-    // this.pendingNewRowCount = 0;
-
     this.columnHeaderGroups = IrisGridUtils.parseColumnHeaderGroups(
       this,
       this.layoutHints?.columnGroups ?? []
@@ -203,7 +186,7 @@ class IrisGridSchemaModelTemplate extends IrisGridModel {
   }
 
   updateFrozenColumns(columns: readonly ColumnName[]): void {
-    // Do nothing
+    // No-op
   }
 
   get rollupConfig(): DhType.RollupConfig | null {
@@ -653,6 +636,11 @@ class IrisGridSchemaModelTemplate extends IrisGridModel {
   }
 
   isRowMovable(): boolean {
+    return false;
+  }
+
+  /* IrisGridTableModel */
+  get isSeekRowAvailable(): boolean {
     return false;
   }
 }
