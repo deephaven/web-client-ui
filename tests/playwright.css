@@ -1,0 +1,14 @@
+/*
+* This stylesheet is only applied to Playwright screenshots.
+*
+* Attempting to fix kerning issues with webkit
+* by disabling ligatures and kerning for all tests
+* https://github.com/microsoft/playwright/issues/20203
+*/
+
+* {
+  font-variant-ligatures: none !important;
+  font-feature-settings: 'liga' 0 !important;
+  font-kerning: none !important;
+  text-rendering: optimizeSpeed !important;
+}
