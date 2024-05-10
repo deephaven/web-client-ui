@@ -46,19 +46,13 @@ class IrisGridSchemaModelTemplate extends IrisGridModel {
    * @param dh JSAPI instance
    * @param columns Columns array to be used in the model
    * @param formatter The formatter to use when getting formats
-   * @param inputTable Iris input table associated with this table
    */
   constructor(
     dh: typeof DhType,
     columns: DhType.Column[],
-    formatter = new Formatter(dh),
-    inputTable: DhType.InputTable | null = null
+    formatter = new Formatter(dh)
   ) {
     super(dh);
-
-    // TODO:
-    this.handleCustomColumnsChanged =
-      this.handleCustomColumnsChanged.bind(this);
 
     this.modelFormatter = formatter;
     this._columns = columns;
@@ -250,7 +244,6 @@ class IrisGridSchemaModelTemplate extends IrisGridModel {
     bottom: VisibleIndex,
     columns?: DhType.Column[]
   ): void {
-    // TODO: move to IrisGridSchemaModelTemplate
     this.dispatchEvent(new EventShimCustomEvent(IrisGridModel.EVENT.UPDATED));
   }
 
@@ -294,15 +287,6 @@ class IrisGridSchemaModelTemplate extends IrisGridModel {
 
   close(): void {
     // No-op
-  }
-
-  handleCustomColumnsChanged(): void {
-    // TODO: dispatch event when setting custom columns
-    this.dispatchEvent(
-      new EventShimCustomEvent(IrisGridModel.EVENT.COLUMNS_CHANGED, {
-        detail: this.columns,
-      })
-    );
   }
 
   get maxPendingDataRow(): number {
@@ -639,10 +623,7 @@ class IrisGridSchemaModelTemplate extends IrisGridModel {
     return false;
   }
 
-  /* IrisGridTableModel */
-  get isSeekRowAvailable(): boolean {
-    return false;
-  }
+  // TODO: Add frozen columns, isColumnMoveable, isFilterable, etc. from IrisGridModel
 }
 
 export default IrisGridSchemaModelTemplate;

@@ -2034,7 +2034,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     if (data.rows.length > 0) {
       const row = data.rows[0];
       values = keyTable.columns.map(column => row.get(column));
-      // TODO: test the case with deleting partitions, and ticking in and out, etc
     }
     log.debug2('Partition table update', values);
     this.setState(state => {
@@ -2308,8 +2307,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     );
     const { dh } = model;
 
-    // TODO: move isSelectingPartition higher?
-    // TODO: set initial partitionConfig to empty?
     this.setState({ keyTable });
 
     keyTable.addEventListener(
