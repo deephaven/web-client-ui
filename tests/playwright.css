@@ -11,4 +11,5 @@
   font-feature-settings: 'liga' 0 !important;
   font-kerning: none !important;
   text-rendering: optimizeSpeed !important;
+  color: red !important;
 }
