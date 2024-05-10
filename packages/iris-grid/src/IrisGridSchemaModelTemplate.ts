@@ -9,7 +9,6 @@ import {
   VisibleIndex,
 } from '@deephaven/grid';
 import type { dh as DhType } from '@deephaven/jsapi-types';
-import Log from '@deephaven/log';
 import { EMPTY_ARRAY, EMPTY_MAP, EventShimCustomEvent } from '@deephaven/utils';
 import { Formatter } from '@deephaven/jsapi-utils';
 import IrisGridModel, { DisplayColumn } from './IrisGridModel';
