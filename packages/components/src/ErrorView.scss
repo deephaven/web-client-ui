@@ -4,7 +4,7 @@
   position: relative;
   color: $danger;
   border-radius: $border-radius;
-  background-color: negative-opacity($exception-transparency);
+  background-color: negative-down-bg-opacity($exception-transparency);
   display: flex;
   flex-direction: column;
   flex-grow: 0;
