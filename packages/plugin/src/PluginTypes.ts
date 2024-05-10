@@ -42,7 +42,7 @@ export function isLegacyAuthPlugin(
   return 'AuthPlugin' in plugin;
 }
 
-export type PluginModuleMap = Map<string, PluginModule>;
+export type PluginModuleMap = Map<string, VersionedPluginModule>;
 
 /**
  * @deprecated Use TablePlugin instead
@@ -75,8 +75,7 @@ export function isLegacyPlugin(plugin: unknown): plugin is LegacyPlugin {
 
 export type PluginModule = Plugin | LegacyPlugin;
 
-// NEED TO CLARIFY
-// export type VersionedPluginModule = PluginModule & { version: string };
+export type VersionedPluginModule = PluginModule & { version?: string };
 
 export interface Plugin {
   /**
@@ -88,7 +87,6 @@ export interface Plugin {
    * The type of plugin.
    */
   type: (typeof PluginType)[keyof typeof PluginType];
-  version: string;
 }
 
 /**
@@ -165,7 +163,9 @@ export interface WidgetPlugin<T = unknown> extends Plugin {
   icon?: IconDefinition | React.ReactElement;
 }
 
-export function isWidgetPlugin(plugin: PluginModule): plugin is WidgetPlugin {
+export function isWidgetPlugin(
+  plugin: PluginModule | VersionedPluginModule
+): plugin is WidgetPlugin {
   return 'type' in plugin && plugin.type === PluginType.WIDGET_PLUGIN;
 }
 
@@ -211,7 +211,9 @@ export interface AuthPlugin extends Plugin {
   isAvailable: (authHandlers: string[], authConfig: AuthConfigMap) => boolean;
 }
 
-export function isAuthPlugin(plugin: PluginModule): plugin is AuthPlugin {
+export function isAuthPlugin(
+  plugin: PluginModule | VersionedPluginModule
+): plugin is AuthPlugin {
   return 'type' in plugin && plugin.type === PluginType.AUTH_PLUGIN;
 }
 
@@ -227,7 +229,9 @@ export interface ThemePlugin extends Plugin {
 }
 
 /** Type guard to check if given plugin is a `ThemePlugin` */
-export function isThemePlugin(plugin: PluginModule): plugin is ThemePlugin {
+export function isThemePlugin(
+  plugin: PluginModule | VersionedPluginModule
+): plugin is ThemePlugin {
   return 'type' in plugin && plugin.type === PluginType.THEME_PLUGIN;
 }
 
