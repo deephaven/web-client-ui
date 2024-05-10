@@ -10,8 +10,6 @@ import {
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
   EditableGridModel,
-  DeletableGridModel,
-  GridRange,
   isEditableGridModel,
   isExpandableGridModel,
   ModelIndex,
