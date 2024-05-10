@@ -455,6 +455,10 @@ class IrisGridTableModelTemplate<
     return !this.isSaveInProgress && this.inputTable != null;
   }
 
+  get isDeletable(): boolean {
+    return this.isDeletable;
+  }
+
   get isViewportPending(): boolean {
     if (
       this.viewport == null ||

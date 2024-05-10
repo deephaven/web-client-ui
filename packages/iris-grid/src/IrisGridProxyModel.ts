@@ -10,11 +10,13 @@ import {
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
   EditableGridModel,
+  DeletableGridModel,
   GridRange,
   isEditableGridModel,
   isExpandableGridModel,
   ModelIndex,
   MoveOperation,
+  isDeletableGridModel,
 } from '@deephaven/grid';
 import IrisGridTableModel from './IrisGridTableModel';
 import IrisGridPartitionedTableModel from './IrisGridPartitionedTableModel';
@@ -297,13 +299,6 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     return false;
   }
 
-  get inputTable(): DhType.InputTable | null {
-    if (!isIrisGridTableModelTemplate(this.model)) {
-      return null;
-    }
-    return this.model.inputTable;
-  }
-
   get isExpandAllAvailable(): boolean {
     if (isExpandableGridModel(this.model)) {
       return this.model.isExpandAllAvailable ?? false;
@@ -353,25 +348,6 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     return 0;
     // throw Error('Function depthForRow does not exist on IrisGridTableModel');
   };
-
-  isDeletableRange(range: GridRange): boolean {
-    return (
-      this.inputTable != null &&
-      this.inputTable.keyColumns.length !== 0 &&
-      this.table != null &&
-      range.startRow != null &&
-      range.endRow != null &&
-      range.startRow >= this.floatingTopRowCount &&
-      range.startRow <
-        this.floatingTopRowCount + this.table.size + this.pendingRowCount &&
-      range.endRow <
-        this.floatingTopRowCount + this.table.size + this.pendingRowCount
-    );
-  }
-
-  isDeletableRanges(ranges: readonly GridRange[]): boolean {
-    return ranges.every(range => this.isDeletableRange(range));
-  }
 
   get isExportAvailable(): boolean {
     return this.model.isExportAvailable;
@@ -724,6 +700,10 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     return isEditableGridModel(this.model) && this.model.isEditable;
   }
 
+  get isDeletable(): boolean {
+    return isDeletableGridModel(this.model) && this.model.isDeletable;
+  }
+
   get isViewportPending(): boolean {
     return this.model.isViewportPending;
   }
@@ -733,6 +713,24 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
   ): boolean => {
     if (isEditableGridModel(this.model)) {
       return this.model.isEditableRange(...args);
+    }
+    return false;
+  };
+
+  isDeletableRange: IrisGridTableModel['isDeletableRange'] = (
+    ...args
+  ): boolean => {
+    if (isDeletableGridModel(this.model)) {
+      return this.model.isDeletableRange(...args);
+    }
+    return false;
+  };
+
+  isDeletableRanges: IrisGridModel['isDeletableRanges'] = (
+    ...args
+  ): boolean => {
+    if (isDeletableGridModel(this.model)) {
+      return this.model.isDeletableRanges(...args);
     }
     return false;
   };
