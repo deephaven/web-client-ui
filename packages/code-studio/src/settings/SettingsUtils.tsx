@@ -10,6 +10,7 @@ import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import type { ServerConfigValues } from '@deephaven/redux';
 import Bowser from 'bowser';
+import { PluginModuleMap } from '@deephaven/plugin';
 
 const log = Log.module('SettingsUtils');
 
@@ -56,6 +57,19 @@ export function getFormattedVersionInfo(
     'Browser Name': browser.trim() || 'Unknown',
     'OS Name': os.trim() || 'Unknown',
   };
+}
+
+/**
+ * Get an object containing all JS plugin information formatted for display
+ * @param serverConfigValues The information for all plugins
+ * @returns The formatted mapping from plugin name to version
+ */
+export function getFormattedPluginInfo(
+  pluginDataValues: PluginModuleMap
+): Record<string, string> {
+  return Array.from(pluginDataValues.entries())
+    .filter(plugin => plugin[1].version !== undefined)
+    .reduce((acc, [key, value]) => ({ ...acc, [key]: value.version }), {});
 }
 
 export function focusFirstInputInContainer(
