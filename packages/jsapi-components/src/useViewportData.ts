@@ -94,11 +94,6 @@ export function useViewportData<TItem, TTable extends dh.Table | dh.TreeTable>({
 
   const setViewport = useCallback(
     (firstRow: number) => {
-      log.debug('setViewport.', {
-        prev: currentViewportFirstRowRef.current,
-        next: firstRow,
-      });
-
       currentViewportFirstRowRef.current = firstRow;
 
       if (table && !isClosed(table)) {
