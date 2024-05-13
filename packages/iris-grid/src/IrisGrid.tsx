@@ -3723,13 +3723,15 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    */
   deleteRanges(ranges: readonly GridRange[]): void {
     const { model } = this.props;
-    if (isDeletableGridModel(model) && model.isDeletable) {
-      this.pending.add(model.delete(ranges)).catch(e => {
-        if (!PromiseUtils.isCanceled(e)) {
-          log.error('Unable to delete ranges', ranges, e);
-        }
-      });
+    if (!isDeletableGridModel(model) || !model.isDeletable) {
+      throw new Error('Model does not support deleting ranges');
     }
+
+    this.pending.add(model.delete(ranges)).catch(e => {
+      if (!PromiseUtils.isCanceled(e)) {
+        log.error('Unable to delete ranges', ranges, e);
+      }
+    });
   }
 
   resetColumnSelection(): void {
