@@ -234,6 +234,7 @@ class IrisGridPartitionSelector extends Component<
    */
   updatePartitionFilters(): void {
     const { partitionTables } = this.state;
+    // TODO: cleanup, partitionTables can be null now
     // assertNotNull(partitionTables);
 
     if (partitionTables == null) {
