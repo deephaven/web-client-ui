@@ -45,6 +45,7 @@ import {
   isEditableGridModel,
   BoundedAxisRange,
   isExpandableGridModel,
+  isDeletableGridModel,
 } from '@deephaven/grid';
 import {
   dhEye,
@@ -3722,11 +3723,13 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    */
   deleteRanges(ranges: readonly GridRange[]): void {
     const { model } = this.props;
-    this.pending.add(model.delete(ranges)).catch(e => {
-      if (!PromiseUtils.isCanceled(e)) {
-        log.error('Unable to delete ranges', ranges, e);
-      }
-    });
+    if (isDeletableGridModel(model) && model.isDeletable) {
+      this.pending.add(model.delete(ranges)).catch(e => {
+        if (!PromiseUtils.isCanceled(e)) {
+          log.error('Unable to delete ranges', ranges, e);
+        }
+      });
+    }
   }
 
   resetColumnSelection(): void {

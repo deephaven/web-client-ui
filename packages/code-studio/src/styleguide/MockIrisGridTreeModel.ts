@@ -335,14 +335,6 @@ class MockIrisGridTreeModel
     throw new Error('Not defined in mock');
   }
 
-  isDeletableRange(range: GridRange): boolean {
-    return false;
-  }
-
-  isDeletableRanges(ranges: readonly GridRange[]): boolean {
-    return false;
-  }
-
   valuesTable(columns: DhType.Column | DhType.Column[]): Promise<never> {
     throw new Error('Not defined in mock');
   }

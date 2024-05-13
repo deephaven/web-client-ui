@@ -19,9 +19,10 @@ export function assertIsDeletableGridModel(
 }
 
 /**
- * Model for an deletable grid
+ * Model for a deletable grid
  */
 export interface DeletableGridModel extends GridModel {
+  /** Whether this model is deletable or not */
   isDeletable: boolean;
 
   /**
@@ -32,11 +33,18 @@ export interface DeletableGridModel extends GridModel {
   isDeletableRange: (range: GridRange) => boolean;
 
   /**
-   * Check if an array of ranges is deletable
+   * Check if an array of ranges are deletable
    * @param ranges The ranges to check if they are deletable
-   * @returns True if the ranges is deletable
+   * @returns True if the ranges are deletable
    */
   isDeletableRanges: (ranges: readonly GridRange[]) => boolean;
+
+  /**
+   * Delete ranges from an input grid.
+   * @param ranges The ranges to delete
+   * @returns A promise that resolves successfully when the operation is complete or rejects if there's an error
+   */
+  delete: (ranges: readonly GridRange[]) => Promise<void>;
 }
 
 export default DeletableGridModel;

@@ -724,7 +724,7 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     return false;
   };
 
-  isDeletableRanges: IrisGridModel['isDeletableRanges'] = (
+  isDeletableRanges: IrisGridTableModel['isDeletableRanges'] = (
     ...args
   ): boolean => {
     if (isDeletableGridModel(this.model)) {
@@ -803,8 +803,12 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     return false;
   };
 
-  delete: IrisGridTableModel['delete'] = (...args) =>
-    this.model.delete(...args);
+  delete: IrisGridTableModel['delete'] = (...args) => {
+    if (isDeletableGridModel(this.model)) {
+      return this.model.delete(...args);
+    }
+    return Promise.reject(new Error('Model is not deletable'));
+  };
 
   get pendingDataMap(): PendingDataMap<UIRow> {
     return this.model.pendingDataMap;

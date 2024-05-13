@@ -456,7 +456,10 @@ class IrisGridTableModelTemplate<
   }
 
   get isDeletable(): boolean {
-    return this.isDeletable;
+    if (this.inputTable !== null) {
+      return this.inputTable?.keyColumns.length > 0;
+    }
+    return false;
   }
 
   get isViewportPending(): boolean {
