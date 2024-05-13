@@ -7,10 +7,12 @@ on:
     branches:
       - main
       - 'release/**'
+      - 'feature/**'
   pull_request:
     branches:
       - main
       - 'release/**'
+      - 'feature/**'
 jobs:
   unit:
     runs-on: ubuntu-22.04
