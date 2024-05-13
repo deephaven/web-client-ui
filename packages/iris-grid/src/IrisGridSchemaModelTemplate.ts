@@ -247,7 +247,7 @@ class IrisGridSchemaModelTemplate extends IrisGridModel {
   }
 
   snapshot(ranges: readonly GridRange[]): Promise<readonly unknown[][]> {
-    return Promise.resolve([]);
+    return Promise.resolve(EMPTY_ARRAY);
   }
 
   textSnapshot(
