@@ -10,6 +10,10 @@ beforeEach(() => {
   jest.useFakeTimers();
 });
 
+afterEach(() => {
+  jest.useRealTimers();
+});
+
 it('should debounce a given callback', () => {
   const { result } = renderHook(() =>
     useDebouncedCallback(callback, debounceMs)

@@ -12,7 +12,11 @@ export function stopListenForCreateDashboard<T = unknown>(
   eventHub: EventHub,
   handler: (p: CreateDashboardPayload<T>) => void
 ): void {
-  eventHub.off(CREATE_DASHBOARD, handler);
+  try {
+    eventHub.off(CREATE_DASHBOARD, handler);
+  } catch {
+    // golden-layout throws if the handler is not found. Instead catch it and no-op
+  }
 }
 
 export function listenForCreateDashboard<T = unknown>(

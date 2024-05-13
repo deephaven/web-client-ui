@@ -3,341 +3,232 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-# [0.72.0](https://github.com/deephaven/web-client-ui/compare/v0.71.0...v0.72.0) (2024-04-04)
+# [0.77.0](https://github.com/deephaven/web-client-ui/compare/v0.76.0...v0.77.0) (2024-05-07)
 
 **Note:** Version bump only for package @deephaven/chart
 
+# [0.76.0](https://github.com/deephaven/web-client-ui/compare/v0.75.1...v0.76.0) (2024-05-03)
 
+**Note:** Version bump only for package @deephaven/chart
 
+## [0.75.1](https://github.com/deephaven/web-client-ui/compare/v0.75.0...v0.75.1) (2024-05-02)
 
+### Performance Improvements
+
+- Use `fast-deep-equal` instead of `deep-equal ([#1979](https://github.com/deephaven/web-client-ui/issues/1979)) ([3f3de9f](https://github.com/deephaven/web-client-ui/commit/3f3de9fd6a150f59cf6bf8e08eb1c11f0d9d93e1))
+
+# [0.75.0](https://github.com/deephaven/web-client-ui/compare/v0.74.0...v0.75.0) (2024-05-01)
+
+**Note:** Version bump only for package @deephaven/chart
+
+# [0.74.0](https://github.com/deephaven/web-client-ui/compare/v0.73.0...v0.74.0) (2024-04-24)
+
+**Note:** Version bump only for package @deephaven/chart
+
+# [0.73.0](https://github.com/deephaven/web-client-ui/compare/v0.72.0...v0.73.0) (2024-04-19)
+
+### Bug Fixes
+
+- allow plotly plots to shrink inside ui.flex/grid layouts ([#1946](https://github.com/deephaven/web-client-ui/issues/1946)) ([88fbe86](https://github.com/deephaven/web-client-ui/commit/88fbe86f819a446228ef47dcc117888af908f98c))
+
+### Features
+
+- New chart error panel ([#1850](https://github.com/deephaven/web-client-ui/issues/1850)) ([309ff79](https://github.com/deephaven/web-client-ui/commit/309ff795dcb367fc9b7b6f2abb4a07b10cf8ab55)), closes [#1520](https://github.com/deephaven/web-client-ui/issues/1520)
+
+# [0.72.0](https://github.com/deephaven/web-client-ui/compare/v0.71.0...v0.72.0) (2024-04-04)
+
+**Note:** Version bump only for package @deephaven/chart
 
 # [0.71.0](https://github.com/deephaven/web-client-ui/compare/v0.70.0...v0.71.0) (2024-03-28)
 
 **Note:** Version bump only for package @deephaven/chart
 
-
-
-
-
 # [0.70.0](https://github.com/deephaven/web-client-ui/compare/v0.69.1...v0.70.0) (2024-03-22)
 
 **Note:** Version bump only for package @deephaven/chart
-
-
-
-
 
 # [0.69.0](https://github.com/deephaven/web-client-ui/compare/v0.68.0...v0.69.0) (2024-03-15)
 
 **Note:** Version bump only for package @deephaven/chart
 
-
-
-
-
 # [0.68.0](https://github.com/deephaven/web-client-ui/compare/v0.67.0...v0.68.0) (2024-03-08)
 
 **Note:** Version bump only for package @deephaven/chart
 
-
-
-
-
 # [0.67.0](https://github.com/deephaven/web-client-ui/compare/v0.66.1...v0.67.0) (2024-03-04)
-
 
 ### Bug Fixes
 
-* Update plotly to v2.29, resolve some rendering issues ([#1806](https://github.com/deephaven/web-client-ui/issues/1806)) ([8892074](https://github.com/deephaven/web-client-ui/commit/8892074da397f677b5556cd1161dcff8e41fcd9c))
-
-
-
-
+- Update plotly to v2.29, resolve some rendering issues ([#1806](https://github.com/deephaven/web-client-ui/issues/1806)) ([8892074](https://github.com/deephaven/web-client-ui/commit/8892074da397f677b5556cd1161dcff8e41fcd9c))
 
 ## [0.66.1](https://github.com/deephaven/web-client-ui/compare/v0.66.0...v0.66.1) (2024-02-28)
 
 **Note:** Version bump only for package @deephaven/chart
 
-
-
-
-
 # [0.66.0](https://github.com/deephaven/web-client-ui/compare/v0.65.0...v0.66.0) (2024-02-27)
-
 
 ### Features
 
-* Lazy loading and code splitting ([#1802](https://github.com/deephaven/web-client-ui/issues/1802)) ([25d1c09](https://github.com/deephaven/web-client-ui/commit/25d1c09b2f55f9f10eff5918501d385554f237e6))
-
-
-
-
+- Lazy loading and code splitting ([#1802](https://github.com/deephaven/web-client-ui/issues/1802)) ([25d1c09](https://github.com/deephaven/web-client-ui/commit/25d1c09b2f55f9f10eff5918501d385554f237e6))
 
 # [0.65.0](https://github.com/deephaven/web-client-ui/compare/v0.64.0...v0.65.0) (2024-02-20)
 
 **Note:** Version bump only for package @deephaven/chart
 
-
-
-
-
 # [0.64.0](https://github.com/deephaven/web-client-ui/compare/v0.63.0...v0.64.0) (2024-02-15)
-
 
 ### Bug Fixes
 
-* Bind this to utils that moved from static to non-static with js api de-globalization ([#1795](https://github.com/deephaven/web-client-ui/issues/1795)) ([d137ee7](https://github.com/deephaven/web-client-ui/commit/d137ee7d33ac0b0babd3336624b5db608eca44ba))
-
+- Bind this to utils that moved from static to non-static with js api de-globalization ([#1795](https://github.com/deephaven/web-client-ui/issues/1795)) ([d137ee7](https://github.com/deephaven/web-client-ui/commit/d137ee7d33ac0b0babd3336624b5db608eca44ba))
 
 ### Features
 
-* Chart responsible for its own theme ([#1772](https://github.com/deephaven/web-client-ui/issues/1772)) ([fabb055](https://github.com/deephaven/web-client-ui/commit/fabb055f9dacdbb4ad1b4ce7ca85d170f955366d)), closes [#1728](https://github.com/deephaven/web-client-ui/issues/1728)
-
+- Chart responsible for its own theme ([#1772](https://github.com/deephaven/web-client-ui/issues/1772)) ([fabb055](https://github.com/deephaven/web-client-ui/commit/fabb055f9dacdbb4ad1b4ce7ca85d170f955366d)), closes [#1728](https://github.com/deephaven/web-client-ui/issues/1728)
 
 ### BREAKING CHANGES
 
-* - Renamed `ColorUtils.getColorwayFromTheme` to `normalizeColorway`
-- Removed `chartTheme` arg from functions in `ChartUtils`,
-`ChartModelFactory` and `FigureChartModel` in @deephaven/chart
+- - Renamed `ColorUtils.getColorwayFromTheme` to `normalizeColorway`
 
-
-
-
+* Removed `chartTheme` arg from functions in `ChartUtils`,
+  `ChartModelFactory` and `FigureChartModel` in @deephaven/chart
 
 # [0.63.0](https://github.com/deephaven/web-client-ui/compare/v0.62.0...v0.63.0) (2024-02-08)
 
 **Note:** Version bump only for package @deephaven/chart
 
-
-
-
-
 # [0.62.0](https://github.com/deephaven/web-client-ui/compare/v0.61.1...v0.62.0) (2024-02-05)
 
 **Note:** Version bump only for package @deephaven/chart
-
-
-
-
 
 ## [0.61.1](https://github.com/deephaven/web-client-ui/compare/v0.61.0...v0.61.1) (2024-02-02)
 
 **Note:** Version bump only for package @deephaven/chart
 
-
-
-
-
 # [0.61.0](https://github.com/deephaven/web-client-ui/compare/v0.60.0...v0.61.0) (2024-02-01)
-
 
 ### Features
 
-* allow themes to use any srgb color for definitions ([#1756](https://github.com/deephaven/web-client-ui/issues/1756)) ([b047fa3](https://github.com/deephaven/web-client-ui/commit/b047fa36de3a285be925736ef73722a60d1d9ed7))
-
+- allow themes to use any srgb color for definitions ([#1756](https://github.com/deephaven/web-client-ui/issues/1756)) ([b047fa3](https://github.com/deephaven/web-client-ui/commit/b047fa36de3a285be925736ef73722a60d1d9ed7))
 
 ### BREAKING CHANGES
 
-* - IrisGridThemeContext no longer accepts a paritial theme. By
-guaranteeing the provider is a full theme we can resolve the CSS
-variables and normailze the colors only once per theme load globally,
-rather than having to do it once per grid.
-- Themes must be defined using valid srgb CSS colors, and not hsl raw
-component values
+- - IrisGridThemeContext no longer accepts a paritial theme. By
+    guaranteeing the provider is a full theme we can resolve the CSS
+    variables and normailze the colors only once per theme load globally,
+    rather than having to do it once per grid.
 
-
-
-
+* Themes must be defined using valid srgb CSS colors, and not hsl raw
+  component values
 
 # [0.60.0](https://github.com/deephaven/web-client-ui/compare/v0.59.0...v0.60.0) (2024-01-26)
 
-
 ### Bug Fixes
 
-* loading spinner finishes before all series load ([#1729](https://github.com/deephaven/web-client-ui/issues/1729)) ([e79297b](https://github.com/deephaven/web-client-ui/commit/e79297b213dbf3e615bae9024323efb45c29cda3)), closes [#1654](https://github.com/deephaven/web-client-ui/issues/1654)
-
+- loading spinner finishes before all series load ([#1729](https://github.com/deephaven/web-client-ui/issues/1729)) ([e79297b](https://github.com/deephaven/web-client-ui/commit/e79297b213dbf3e615bae9024323efb45c29cda3)), closes [#1654](https://github.com/deephaven/web-client-ui/issues/1654)
 
 ### Features
 
-* Default Plotly map colors ([#1721](https://github.com/deephaven/web-client-ui/issues/1721)) ([e8b9f12](https://github.com/deephaven/web-client-ui/commit/e8b9f121afaeb2c3dd6484a05ca1966a1d769260))
-
-
-
-
+- Default Plotly map colors ([#1721](https://github.com/deephaven/web-client-ui/issues/1721)) ([e8b9f12](https://github.com/deephaven/web-client-ui/commit/e8b9f121afaeb2c3dd6484a05ca1966a1d769260))
 
 # [0.59.0](https://github.com/deephaven/web-client-ui/compare/v0.58.0...v0.59.0) (2024-01-17)
 
-
 ### Features
 
-* theming tweaks ([#1727](https://github.com/deephaven/web-client-ui/issues/1727)) ([f919a7e](https://github.com/deephaven/web-client-ui/commit/f919a7ed333777e83ae6b0e3973991d2cf089359))
-
-
-
-
+- theming tweaks ([#1727](https://github.com/deephaven/web-client-ui/issues/1727)) ([f919a7e](https://github.com/deephaven/web-client-ui/commit/f919a7ed333777e83ae6b0e3973991d2cf089359))
 
 # [0.58.0](https://github.com/deephaven/web-client-ui/compare/v0.57.1...v0.58.0) (2023-12-22)
 
-
 ### Bug Fixes
 
-* `figure_title` and `chart_title` were not mapped up correctly ([#1676](https://github.com/deephaven/web-client-ui/issues/1676)) ([73e0b65](https://github.com/deephaven/web-client-ui/commit/73e0b658edffc7ef89b3b786f3fe30c0e64c96f9)), closes [#1674](https://github.com/deephaven/web-client-ui/issues/1674) [#1675](https://github.com/deephaven/web-client-ui/issues/1675)
-
-
-
-
+- `figure_title` and `chart_title` were not mapped up correctly ([#1676](https://github.com/deephaven/web-client-ui/issues/1676)) ([73e0b65](https://github.com/deephaven/web-client-ui/commit/73e0b658edffc7ef89b3b786f3fe30c0e64c96f9)), closes [#1674](https://github.com/deephaven/web-client-ui/issues/1674) [#1675](https://github.com/deephaven/web-client-ui/issues/1675)
 
 ## [0.57.1](https://github.com/deephaven/web-client-ui/compare/v0.57.0...v0.57.1) (2023-12-14)
 
 **Note:** Version bump only for package @deephaven/chart
 
-
-
-
-
 # [0.57.0](https://github.com/deephaven/web-client-ui/compare/v0.56.0...v0.57.0) (2023-12-13)
-
 
 ### Features
 
-* Theming - Moved ThemeProvider updates into effect ([#1682](https://github.com/deephaven/web-client-ui/issues/1682)) ([a09bdca](https://github.com/deephaven/web-client-ui/commit/a09bdcaebc692a07ad6b243bd93f7cbd62c61a74)), closes [#1669](https://github.com/deephaven/web-client-ui/issues/1669)
-
-
-
-
+- Theming - Moved ThemeProvider updates into effect ([#1682](https://github.com/deephaven/web-client-ui/issues/1682)) ([a09bdca](https://github.com/deephaven/web-client-ui/commit/a09bdcaebc692a07ad6b243bd93f7cbd62c61a74)), closes [#1669](https://github.com/deephaven/web-client-ui/issues/1669)
 
 # [0.56.0](https://github.com/deephaven/web-client-ui/compare/v0.55.0...v0.56.0) (2023-12-11)
 
-
 ### Features
 
-* Theming - Bootstrap ([#1603](https://github.com/deephaven/web-client-ui/issues/1603)) ([88bcae0](https://github.com/deephaven/web-client-ui/commit/88bcae02791776464c2f774653764fb479d28700))
-
+- Theming - Bootstrap ([#1603](https://github.com/deephaven/web-client-ui/issues/1603)) ([88bcae0](https://github.com/deephaven/web-client-ui/commit/88bcae02791776464c2f774653764fb479d28700))
 
 ### BREAKING CHANGES
 
-* Bootstrap color variables are now predominantly hsl
-based. SCSS will need to be updated accordingly. Theme providers are
-needed to load themes.
-
-
-
-
+- Bootstrap color variables are now predominantly hsl
+  based. SCSS will need to be updated accordingly. Theme providers are
+  needed to load themes.
 
 # [0.55.0](https://github.com/deephaven/web-client-ui/compare/v0.54.0...v0.55.0) (2023-11-20)
 
-
 ### Bug Fixes
 
-* Changes for Deephaven UI embedding widget plugins ([#1644](https://github.com/deephaven/web-client-ui/issues/1644)) ([b6eeb30](https://github.com/deephaven/web-client-ui/commit/b6eeb309e8e55522d99c1528958bd0c7674e2d0f))
-* Fixed chart e2e test changing daily ([#1652](https://github.com/deephaven/web-client-ui/issues/1652)) ([f9f62db](https://github.com/deephaven/web-client-ui/commit/f9f62db37fbb0fbb97a012b33d27d383ccd1ca40)), closes [#1634](https://github.com/deephaven/web-client-ui/issues/1634)
-
+- Changes for Deephaven UI embedding widget plugins ([#1644](https://github.com/deephaven/web-client-ui/issues/1644)) ([b6eeb30](https://github.com/deephaven/web-client-ui/commit/b6eeb309e8e55522d99c1528958bd0c7674e2d0f))
+- Fixed chart e2e test changing daily ([#1652](https://github.com/deephaven/web-client-ui/issues/1652)) ([f9f62db](https://github.com/deephaven/web-client-ui/commit/f9f62db37fbb0fbb97a012b33d27d383ccd1ca40)), closes [#1634](https://github.com/deephaven/web-client-ui/issues/1634)
 
 ### Features
 
-* Styleguide regression tests ([#1639](https://github.com/deephaven/web-client-ui/issues/1639)) ([561ff22](https://github.com/deephaven/web-client-ui/commit/561ff22714a8b39cc55b41549712b5ef23bd39cf)), closes [#1634](https://github.com/deephaven/web-client-ui/issues/1634)
-
-
-
-
+- Styleguide regression tests ([#1639](https://github.com/deephaven/web-client-ui/issues/1639)) ([561ff22](https://github.com/deephaven/web-client-ui/commit/561ff22714a8b39cc55b41549712b5ef23bd39cf)), closes [#1634](https://github.com/deephaven/web-client-ui/issues/1634)
 
 # [0.54.0](https://github.com/deephaven/web-client-ui/compare/v0.53.0...v0.54.0) (2023-11-10)
 
-
 ### Bug Fixes
 
-* Log figure errors, don't show infinite spinner ([#1614](https://github.com/deephaven/web-client-ui/issues/1614)) ([75783d0](https://github.com/deephaven/web-client-ui/commit/75783d0ed96e9e28214ca8681a73f23b1dc78085))
-
+- Log figure errors, don't show infinite spinner ([#1614](https://github.com/deephaven/web-client-ui/issues/1614)) ([75783d0](https://github.com/deephaven/web-client-ui/commit/75783d0ed96e9e28214ca8681a73f23b1dc78085))
 
 ### Features
 
-* Add ResizeObserver to Grid and Chart ([#1626](https://github.com/deephaven/web-client-ui/issues/1626)) ([35311c8](https://github.com/deephaven/web-client-ui/commit/35311c832040b29e362c28f80983b4664c9aa1d5))
-* Theming - Charts ([#1608](https://github.com/deephaven/web-client-ui/issues/1608)) ([d5b3b48](https://github.com/deephaven/web-client-ui/commit/d5b3b485dfc95248bdd1d664152c6c1ab288720a)), closes [#1572](https://github.com/deephaven/web-client-ui/issues/1572)
-
+- Add ResizeObserver to Grid and Chart ([#1626](https://github.com/deephaven/web-client-ui/issues/1626)) ([35311c8](https://github.com/deephaven/web-client-ui/commit/35311c832040b29e362c28f80983b4664c9aa1d5))
+- Theming - Charts ([#1608](https://github.com/deephaven/web-client-ui/issues/1608)) ([d5b3b48](https://github.com/deephaven/web-client-ui/commit/d5b3b485dfc95248bdd1d664152c6c1ab288720a)), closes [#1572](https://github.com/deephaven/web-client-ui/issues/1572)
 
 ### BREAKING CHANGES
 
-* - ChartThemeProvider is now required to provide ChartTheme
-- ChartModelFactory and ChartUtils now require chartTheme args
+- - ChartThemeProvider is now required to provide ChartTheme
 
-
-
-
+* ChartModelFactory and ChartUtils now require chartTheme args
 
 # [0.53.0](https://github.com/deephaven/web-client-ui/compare/v0.52.0...v0.53.0) (2023-11-03)
 
 **Note:** Version bump only for package @deephaven/chart
 
-
-
-
-
 # [0.52.0](https://github.com/deephaven/web-client-ui/compare/v0.51.0...v0.52.0) (2023-10-27)
 
 **Note:** Version bump only for package @deephaven/chart
 
-
-
-
-
 # [0.51.0](https://github.com/deephaven/web-client-ui/compare/v0.50.0...v0.51.0) (2023-10-24)
-
 
 ### Features
 
-* web-client-ui changes required for deephaven.ui ([#1567](https://github.com/deephaven/web-client-ui/issues/1567)) ([94ab25c](https://github.com/deephaven/web-client-ui/commit/94ab25cb16593f175ef4669a6845cdc22b847fc2))
-
-
-
-
+- web-client-ui changes required for deephaven.ui ([#1567](https://github.com/deephaven/web-client-ui/issues/1567)) ([94ab25c](https://github.com/deephaven/web-client-ui/commit/94ab25cb16593f175ef4669a6845cdc22b847fc2))
 
 # [0.50.0](https://github.com/deephaven/web-client-ui/compare/v0.49.1...v0.50.0) (2023-10-13)
 
 **Note:** Version bump only for package @deephaven/chart
 
-
-
-
-
 # [0.49.0](https://github.com/deephaven/web-client-ui/compare/v0.48.0...v0.49.0) (2023-09-15)
 
 **Note:** Version bump only for package @deephaven/chart
-
-
-
-
 
 # [0.48.0](https://github.com/deephaven/web-client-ui/compare/v0.47.0...v0.48.0) (2023-09-12)
 
 **Note:** Version bump only for package @deephaven/chart
 
-
-
-
-
 # [0.47.0](https://github.com/deephaven/web-client-ui/compare/v0.46.1...v0.47.0) (2023-09-08)
 
 **Note:** Version bump only for package @deephaven/chart
-
-
-
-
 
 ## [0.46.1](https://github.com/deephaven/web-client-ui/compare/v0.46.0...v0.46.1) (2023-09-01)
 
 **Note:** Version bump only for package @deephaven/chart
 
-
-
-
-
 # [0.46.0](https://github.com/deephaven/web-client-ui/compare/v0.45.1...v0.46.0) (2023-08-18)
 
 **Note:** Version bump only for package @deephaven/chart
-
-
-
-
 
 # [0.45.0](https://github.com/deephaven/web-client-ui/compare/v0.44.1...v0.45.0) (2023-07-31)
 

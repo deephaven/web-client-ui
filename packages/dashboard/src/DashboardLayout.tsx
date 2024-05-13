@@ -14,7 +14,7 @@ import type {
   ReactComponentConfig,
 } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
-import { usePrevious } from '@deephaven/react-hooks';
+import { usePrevious, useThrottledCallback } from '@deephaven/react-hooks';
 import { RootState } from '@deephaven/redux';
 import { useDispatch, useSelector } from 'react-redux';
 import PanelManager, { ClosedPanels } from './PanelManager';
@@ -45,6 +45,8 @@ const EMPTY_OBJECT = Object.freeze({});
 const DEFAULT_LAYOUT_CONFIG: DashboardLayoutConfig = [];
 
 const DEFAULT_CALLBACK = (): void => undefined;
+
+const STATE_CHANGE_THROTTLE_MS = 1000;
 
 // If a component isn't registered, just pass through the props so they are saved if a plugin is loaded later
 const FALLBACK_CALLBACK = (props: unknown): unknown => props;
@@ -100,11 +102,6 @@ export function DashboardLayout({
   const [layoutChildren, setLayoutChildren] = useState(
     layout.getReactChildren()
   );
-
-  // Fire only once after the layout is mounted
-  // This should ensure DashboardPlugins have been mounted
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => onLayoutInitialized(), []);
 
   const hydrateMap = useMemo(() => new Map(), []);
   const dehydrateMap = useMemo(() => new Map(), []);
@@ -200,6 +197,34 @@ export function DashboardLayout({
     ]
   );
 
+  // Throttle the calls so that we don't flood comparing these layouts
+  const throttledProcessDehydratedLayoutConfig = useThrottledCallback(
+    (dehydratedLayoutConfig: DashboardLayoutConfig) => {
+      const hasChanged =
+        lastConfig == null ||
+        !LayoutUtils.isEqual(lastConfig, dehydratedLayoutConfig);
+
+      log.debug('handleLayoutStateChanged', hasChanged, dehydratedLayoutConfig);
+
+      if (hasChanged) {
+        setIsDashboardEmpty(layout.root.contentItems.length === 0);
+
+        setLastConfig(dehydratedLayoutConfig);
+
+        onLayoutChange(dehydratedLayoutConfig);
+
+        setLayoutChildren(layout.getReactChildren());
+      }
+    },
+    STATE_CHANGE_THROTTLE_MS,
+    { flushOnUnmount: true }
+  );
+
+  useEffect(
+    () => () => throttledProcessDehydratedLayoutConfig.flush(),
+    [throttledProcessDehydratedLayoutConfig]
+  );
+
   const handleLayoutStateChanged = useCallback(() => {
     // we don't want to emit stateChanges that happen during item drags or else
     // we risk the last saved state being one without that panel in the layout entirely
@@ -211,27 +236,13 @@ export function DashboardLayout({
       contentConfig,
       dehydrateComponent
     );
-    const hasChanged =
-      lastConfig == null ||
-      !LayoutUtils.isEqual(lastConfig, dehydratedLayoutConfig);
-
-    log.debug(
-      'handleLayoutStateChanged',
-      hasChanged,
-      contentConfig,
-      dehydratedLayoutConfig
-    );
-
-    if (hasChanged) {
-      setIsDashboardEmpty(layout.root.contentItems.length === 0);
-
-      setLastConfig(dehydratedLayoutConfig);
-
-      onLayoutChange(dehydratedLayoutConfig);
-
-      setLayoutChildren(layout.getReactChildren());
-    }
-  }, [dehydrateComponent, isItemDragging, lastConfig, layout, onLayoutChange]);
+    throttledProcessDehydratedLayoutConfig(dehydratedLayoutConfig);
+  }, [
+    dehydrateComponent,
+    isItemDragging,
+    layout,
+    throttledProcessDehydratedLayoutConfig,
+  ]);
 
   const handleLayoutItemPickedUp = useCallback(
     (component: Container) => {
@@ -319,6 +330,13 @@ export function DashboardLayout({
       previousLayoutConfig,
     ]
   );
+
+  // This should be the last hook called in this component
+  // Ensures it runs after any other effects on mount
+  // Fire only once after the layout is mounted
+  // This should ensure DashboardPlugins have been mounted
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => onLayoutInitialized(), []);
 
   return (
     <>

@@ -26,6 +26,7 @@ const sampleSectionIds: string[] = [
   'sample-section-context-menus',
   'sample-section-dropdown-menus',
   'sample-section-navigations',
+  'sample-section-list-views',
   'sample-section-pickers',
   'sample-section-tooltips',
   'sample-section-icons',
@@ -45,6 +46,7 @@ const sampleSectionIds: string[] = [
   'sample-section-spectrum-forms',
   'sample-section-spectrum-overlays',
   'sample-section-spectrum-well',
+  'sample-section-error-views',
 ];
 const buttonSectionIds: string[] = [
   'sample-section-buttons-regular',
@@ -80,6 +82,13 @@ test('UI regression test - Styleguide button section count', async ({
 // Iterate over all sample sections and take a screenshot of each one.
 sampleSectionIds.forEach(id => {
   test(`UI regression test - Styleguide section - ${id}`, async ({ page }) => {
+    // Fail quickly if console errors are detected
+    page.on('console', msg => {
+      if (msg.type() === 'error') {
+        throw new Error(msg.text());
+      }
+    });
+
     // Isolate the section
     await page.goto(`/ide/styleguide?isolateSection=true#${id}`);
 

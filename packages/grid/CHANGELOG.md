@@ -3,299 +3,191 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-# [0.72.0](https://github.com/deephaven/web-client-ui/compare/v0.71.0...v0.72.0) (2024-04-04)
+# [0.77.0](https://github.com/deephaven/web-client-ui/compare/v0.76.0...v0.77.0) (2024-05-07)
 
 **Note:** Version bump only for package @deephaven/grid
 
+# [0.76.0](https://github.com/deephaven/web-client-ui/compare/v0.75.1...v0.76.0) (2024-05-03)
 
+**Note:** Version bump only for package @deephaven/grid
 
+# [0.75.0](https://github.com/deephaven/web-client-ui/compare/v0.74.0...v0.75.0) (2024-05-01)
 
+**Note:** Version bump only for package @deephaven/grid
+
+# [0.74.0](https://github.com/deephaven/web-client-ui/compare/v0.73.0...v0.74.0) (2024-04-24)
+
+**Note:** Version bump only for package @deephaven/grid
+
+# [0.73.0](https://github.com/deephaven/web-client-ui/compare/v0.72.0...v0.73.0) (2024-04-19)
+
+### Bug Fixes
+
+- Fix issues when auto-size columns/rows is false, and when row headers are not 0 ([#1927](https://github.com/deephaven/web-client-ui/issues/1927)) ([01c2a06](https://github.com/deephaven/web-client-ui/commit/01c2a064f287638382f0f7fe474098393b73b9ca))
+
+# [0.72.0](https://github.com/deephaven/web-client-ui/compare/v0.71.0...v0.72.0) (2024-04-04)
+
+**Note:** Version bump only for package @deephaven/grid
 
 # [0.71.0](https://github.com/deephaven/web-client-ui/compare/v0.70.0...v0.71.0) (2024-03-28)
 
 **Note:** Version bump only for package @deephaven/grid
 
-
-
-
-
 # [0.70.0](https://github.com/deephaven/web-client-ui/compare/v0.69.1...v0.70.0) (2024-03-22)
 
 **Note:** Version bump only for package @deephaven/grid
-
-
-
-
 
 # [0.69.0](https://github.com/deephaven/web-client-ui/compare/v0.68.0...v0.69.0) (2024-03-15)
 
 **Note:** Version bump only for package @deephaven/grid
 
-
-
-
-
 # [0.68.0](https://github.com/deephaven/web-client-ui/compare/v0.67.0...v0.68.0) (2024-03-08)
-
 
 ### Features
 
-* Add support to pass in mouseHandlers into IrisGrid ([#1857](https://github.com/deephaven/web-client-ui/issues/1857)) ([acf32a6](https://github.com/deephaven/web-client-ui/commit/acf32a6d014b9b7cd8d1b10f08145992c6a589fd))
-
-
-
-
+- Add support to pass in mouseHandlers into IrisGrid ([#1857](https://github.com/deephaven/web-client-ui/issues/1857)) ([acf32a6](https://github.com/deephaven/web-client-ui/commit/acf32a6d014b9b7cd8d1b10f08145992c6a589fd))
 
 # [0.67.0](https://github.com/deephaven/web-client-ui/compare/v0.66.1...v0.67.0) (2024-03-04)
 
 **Note:** Version bump only for package @deephaven/grid
 
-
-
-
-
 # [0.66.0](https://github.com/deephaven/web-client-ui/compare/v0.65.0...v0.66.0) (2024-02-27)
-
 
 ### Bug Fixes
 
-* keep active cell selection in first column from going offscreen ([#1823](https://github.com/deephaven/web-client-ui/issues/1823)) ([69e8cdd](https://github.com/deephaven/web-client-ui/commit/69e8cdd1d138c661ed56bbd5e03e31713e8113a4))
-
-
-
-
+- keep active cell selection in first column from going offscreen ([#1823](https://github.com/deephaven/web-client-ui/issues/1823)) ([69e8cdd](https://github.com/deephaven/web-client-ui/commit/69e8cdd1d138c661ed56bbd5e03e31713e8113a4))
 
 # [0.65.0](https://github.com/deephaven/web-client-ui/compare/v0.64.0...v0.65.0) (2024-02-20)
 
 **Note:** Version bump only for package @deephaven/grid
 
-
-
-
-
 # [0.64.0](https://github.com/deephaven/web-client-ui/compare/v0.63.0...v0.64.0) (2024-02-15)
 
 **Note:** Version bump only for package @deephaven/grid
 
-
-
-
-
 # [0.63.0](https://github.com/deephaven/web-client-ui/compare/v0.62.0...v0.63.0) (2024-02-08)
-
 
 ### Bug Fixes
 
-* show copy cursor in grid on key down and not just mouse move  ([#1735](https://github.com/deephaven/web-client-ui/issues/1735)) ([0781900](https://github.com/deephaven/web-client-ui/commit/0781900109439be8e0bca55f02665d2005df2136))
-
+- show copy cursor in grid on key down and not just mouse move ([#1735](https://github.com/deephaven/web-client-ui/issues/1735)) ([0781900](https://github.com/deephaven/web-client-ui/commit/0781900109439be8e0bca55f02665d2005df2136))
 
 ### Features
 
-* multiselect values ([#1736](https://github.com/deephaven/web-client-ui/issues/1736)) ([e6955c1](https://github.com/deephaven/web-client-ui/commit/e6955c1b330ae09d3bfbe3bbcb6d1bf303ea9b48)), closes [#1233](https://github.com/deephaven/web-client-ui/issues/1233)
-
+- multiselect values ([#1736](https://github.com/deephaven/web-client-ui/issues/1736)) ([e6955c1](https://github.com/deephaven/web-client-ui/commit/e6955c1b330ae09d3bfbe3bbcb6d1bf303ea9b48)), closes [#1233](https://github.com/deephaven/web-client-ui/issues/1233)
 
 ### BREAKING CHANGES
 
-* linker and iris grid custom cursor styling and assets
-are now provided by components directly. DHE css and svg files
-containing linker cursors should be removed/de-duplicated.
-
-
-
-
+- linker and iris grid custom cursor styling and assets
+  are now provided by components directly. DHE css and svg files
+  containing linker cursors should be removed/de-duplicated.
 
 # [0.62.0](https://github.com/deephaven/web-client-ui/compare/v0.61.1...v0.62.0) (2024-02-05)
 
 **Note:** Version bump only for package @deephaven/grid
 
-
-
-
-
 # [0.61.0](https://github.com/deephaven/web-client-ui/compare/v0.60.0...v0.61.0) (2024-02-01)
 
 **Note:** Version bump only for package @deephaven/grid
 
-
-
-
-
 # [0.60.0](https://github.com/deephaven/web-client-ui/compare/v0.59.0...v0.60.0) (2024-01-26)
-
 
 ### Features
 
-* Create UI to Display Partitioned Tables ([#1663](https://github.com/deephaven/web-client-ui/issues/1663)) ([db219ca](https://github.com/deephaven/web-client-ui/commit/db219ca66bd087d4b5ddb58b667de96deee97760)), closes [#1143](https://github.com/deephaven/web-client-ui/issues/1143)
-
-
-
-
+- Create UI to Display Partitioned Tables ([#1663](https://github.com/deephaven/web-client-ui/issues/1663)) ([db219ca](https://github.com/deephaven/web-client-ui/commit/db219ca66bd087d4b5ddb58b667de96deee97760)), closes [#1143](https://github.com/deephaven/web-client-ui/issues/1143)
 
 # [0.59.0](https://github.com/deephaven/web-client-ui/compare/v0.58.0...v0.59.0) (2024-01-17)
 
-
 ### Bug Fixes
 
-* Interface for IrisGridTableModelTemplate.backgroundColorForCell ([#1699](https://github.com/deephaven/web-client-ui/issues/1699)) ([73e1837](https://github.com/deephaven/web-client-ui/commit/73e1837eb2fdb161779724a8b275f4d8147b95c0)), closes [#1697](https://github.com/deephaven/web-client-ui/issues/1697)
-
+- Interface for IrisGridTableModelTemplate.backgroundColorForCell ([#1699](https://github.com/deephaven/web-client-ui/issues/1699)) ([73e1837](https://github.com/deephaven/web-client-ui/commit/73e1837eb2fdb161779724a8b275f4d8147b95c0)), closes [#1697](https://github.com/deephaven/web-client-ui/issues/1697)
 
 ### BREAKING CHANGES
 
-* - Subclasses of IrisGridTableModelTemplate or it's subclasses that use
-backgroundColorForCell may need to update their signature to accept the
-theme if they are calling the superclass
-
-
-
-
+- - Subclasses of IrisGridTableModelTemplate or it's subclasses that use
+    backgroundColorForCell may need to update their signature to accept the
+    theme if they are calling the superclass
 
 # [0.58.0](https://github.com/deephaven/web-client-ui/compare/v0.57.1...v0.58.0) (2023-12-22)
 
-
 ### Features
 
-* "Group" column for rollup/tree tables ([#1636](https://github.com/deephaven/web-client-ui/issues/1636)) ([ba1d51b](https://github.com/deephaven/web-client-ui/commit/ba1d51baf20d5426746243ed0022848747dc44f8)), closes [#1555](https://github.com/deephaven/web-client-ui/issues/1555)
-* Add alt+click shortcut to copy cell and column headers ([#1694](https://github.com/deephaven/web-client-ui/issues/1694)) ([4a8a81a](https://github.com/deephaven/web-client-ui/commit/4a8a81a3185af45a265c2e7b489e4a40180c66c0)), closes [deephaven/web-client-ui#1585](https://github.com/deephaven/web-client-ui/issues/1585)
-* Theming - Spectrum variable mapping and light theme ([#1680](https://github.com/deephaven/web-client-ui/issues/1680)) ([2278697](https://github.com/deephaven/web-client-ui/commit/2278697b8c0f62f4294c261f6f6de608fea3d2d5)), closes [#1669](https://github.com/deephaven/web-client-ui/issues/1669) [#1539](https://github.com/deephaven/web-client-ui/issues/1539)
-
-
-
-
+- "Group" column for rollup/tree tables ([#1636](https://github.com/deephaven/web-client-ui/issues/1636)) ([ba1d51b](https://github.com/deephaven/web-client-ui/commit/ba1d51baf20d5426746243ed0022848747dc44f8)), closes [#1555](https://github.com/deephaven/web-client-ui/issues/1555)
+- Add alt+click shortcut to copy cell and column headers ([#1694](https://github.com/deephaven/web-client-ui/issues/1694)) ([4a8a81a](https://github.com/deephaven/web-client-ui/commit/4a8a81a3185af45a265c2e7b489e4a40180c66c0)), closes [deephaven/web-client-ui#1585](https://github.com/deephaven/web-client-ui/issues/1585)
+- Theming - Spectrum variable mapping and light theme ([#1680](https://github.com/deephaven/web-client-ui/issues/1680)) ([2278697](https://github.com/deephaven/web-client-ui/commit/2278697b8c0f62f4294c261f6f6de608fea3d2d5)), closes [#1669](https://github.com/deephaven/web-client-ui/issues/1669) [#1539](https://github.com/deephaven/web-client-ui/issues/1539)
 
 # [0.57.0](https://github.com/deephaven/web-client-ui/compare/v0.56.0...v0.57.0) (2023-12-13)
 
 **Note:** Version bump only for package @deephaven/grid
 
-
-
-
-
 # [0.56.0](https://github.com/deephaven/web-client-ui/compare/v0.55.0...v0.56.0) (2023-12-11)
-
 
 ### Features
 
-* Theme Selector ([#1661](https://github.com/deephaven/web-client-ui/issues/1661)) ([5e2be64](https://github.com/deephaven/web-client-ui/commit/5e2be64bfa93c5aff8aa936d3de476eccde0a6e7)), closes [#1660](https://github.com/deephaven/web-client-ui/issues/1660)
-
-
-
-
+- Theme Selector ([#1661](https://github.com/deephaven/web-client-ui/issues/1661)) ([5e2be64](https://github.com/deephaven/web-client-ui/commit/5e2be64bfa93c5aff8aa936d3de476eccde0a6e7)), closes [#1660](https://github.com/deephaven/web-client-ui/issues/1660)
 
 # [0.55.0](https://github.com/deephaven/web-client-ui/compare/v0.54.0...v0.55.0) (2023-11-20)
 
-
 ### Features
 
-* Styleguide regression tests ([#1639](https://github.com/deephaven/web-client-ui/issues/1639)) ([561ff22](https://github.com/deephaven/web-client-ui/commit/561ff22714a8b39cc55b41549712b5ef23bd39cf)), closes [#1634](https://github.com/deephaven/web-client-ui/issues/1634)
-
-
-
-
+- Styleguide regression tests ([#1639](https://github.com/deephaven/web-client-ui/issues/1639)) ([561ff22](https://github.com/deephaven/web-client-ui/commit/561ff22714a8b39cc55b41549712b5ef23bd39cf)), closes [#1634](https://github.com/deephaven/web-client-ui/issues/1634)
 
 # [0.54.0](https://github.com/deephaven/web-client-ui/compare/v0.53.0...v0.54.0) (2023-11-10)
 
-
 ### Bug Fixes
 
-* Infinite loop with grid rendering ([#1631](https://github.com/deephaven/web-client-ui/issues/1631)) ([4875d2e](https://github.com/deephaven/web-client-ui/commit/4875d2e1e895478720950ad73f28d1b895114a58)), closes [#1626](https://github.com/deephaven/web-client-ui/issues/1626)
-* non-contiguous table row selection background colour ([#1623](https://github.com/deephaven/web-client-ui/issues/1623)) ([61d1a53](https://github.com/deephaven/web-client-ui/commit/61d1a537ac9df31e3fe3dad95107b065a12ebd3b)), closes [#1619](https://github.com/deephaven/web-client-ui/issues/1619)
-* remove unecessary dom re-calc in grid render ([#1632](https://github.com/deephaven/web-client-ui/issues/1632)) ([ce7cc3e](https://github.com/deephaven/web-client-ui/commit/ce7cc3e6104eb208b3b36e51f62d284dfd7f57bc))
-
+- Infinite loop with grid rendering ([#1631](https://github.com/deephaven/web-client-ui/issues/1631)) ([4875d2e](https://github.com/deephaven/web-client-ui/commit/4875d2e1e895478720950ad73f28d1b895114a58)), closes [#1626](https://github.com/deephaven/web-client-ui/issues/1626)
+- non-contiguous table row selection background colour ([#1623](https://github.com/deephaven/web-client-ui/issues/1623)) ([61d1a53](https://github.com/deephaven/web-client-ui/commit/61d1a537ac9df31e3fe3dad95107b065a12ebd3b)), closes [#1619](https://github.com/deephaven/web-client-ui/issues/1619)
+- remove unecessary dom re-calc in grid render ([#1632](https://github.com/deephaven/web-client-ui/issues/1632)) ([ce7cc3e](https://github.com/deephaven/web-client-ui/commit/ce7cc3e6104eb208b3b36e51f62d284dfd7f57bc))
 
 ### Features
 
-* Add ResizeObserver to Grid and Chart ([#1626](https://github.com/deephaven/web-client-ui/issues/1626)) ([35311c8](https://github.com/deephaven/web-client-ui/commit/35311c832040b29e362c28f80983b4664c9aa1d5))
-
-
-
-
+- Add ResizeObserver to Grid and Chart ([#1626](https://github.com/deephaven/web-client-ui/issues/1626)) ([35311c8](https://github.com/deephaven/web-client-ui/commit/35311c832040b29e362c28f80983b4664c9aa1d5))
 
 # [0.53.0](https://github.com/deephaven/web-client-ui/compare/v0.52.0...v0.53.0) (2023-11-03)
 
-
 ### Reverts
 
-* "fix: stuck to bottom on filter clear" ([#1616](https://github.com/deephaven/web-client-ui/issues/1616)) ([806a6b6](https://github.com/deephaven/web-client-ui/commit/806a6b61543cfb13cd7905a9d42edb32aeb3c577)), closes [deephaven/web-client-ui#1579](https://github.com/deephaven/web-client-ui/issues/1579) [#1615](https://github.com/deephaven/web-client-ui/issues/1615)
-
-
-
-
+- "fix: stuck to bottom on filter clear" ([#1616](https://github.com/deephaven/web-client-ui/issues/1616)) ([806a6b6](https://github.com/deephaven/web-client-ui/commit/806a6b61543cfb13cd7905a9d42edb32aeb3c577)), closes [deephaven/web-client-ui#1579](https://github.com/deephaven/web-client-ui/issues/1579) [#1615](https://github.com/deephaven/web-client-ui/issues/1615)
 
 # [0.52.0](https://github.com/deephaven/web-client-ui/compare/v0.51.0...v0.52.0) (2023-10-27)
 
-
 ### Bug Fixes
 
-* stuck to bottom on filter clear ([#1579](https://github.com/deephaven/web-client-ui/issues/1579)) ([ef52749](https://github.com/deephaven/web-client-ui/commit/ef527498970fd0d994d90d9824bc3a55582f5b4c)), closes [#1477](https://github.com/deephaven/web-client-ui/issues/1477) [#1571](https://github.com/deephaven/web-client-ui/issues/1571) [#1571](https://github.com/deephaven/web-client-ui/issues/1571)
-
-
-
-
+- stuck to bottom on filter clear ([#1579](https://github.com/deephaven/web-client-ui/issues/1579)) ([ef52749](https://github.com/deephaven/web-client-ui/commit/ef527498970fd0d994d90d9824bc3a55582f5b4c)), closes [#1477](https://github.com/deephaven/web-client-ui/issues/1477) [#1571](https://github.com/deephaven/web-client-ui/issues/1571) [#1571](https://github.com/deephaven/web-client-ui/issues/1571)
 
 # [0.51.0](https://github.com/deephaven/web-client-ui/compare/v0.50.0...v0.51.0) (2023-10-24)
 
-
 ### Bug Fixes
 
-* cap width of columns with long names ([#1574](https://github.com/deephaven/web-client-ui/issues/1574)) ([876a6ac](https://github.com/deephaven/web-client-ui/commit/876a6acd00d239f3ac7df21e27db74a16e4fd1b7)), closes [#1276](https://github.com/deephaven/web-client-ui/issues/1276)
-
-
-
-
+- cap width of columns with long names ([#1574](https://github.com/deephaven/web-client-ui/issues/1574)) ([876a6ac](https://github.com/deephaven/web-client-ui/commit/876a6acd00d239f3ac7df21e27db74a16e4fd1b7)), closes [#1276](https://github.com/deephaven/web-client-ui/issues/1276)
 
 # [0.50.0](https://github.com/deephaven/web-client-ui/compare/v0.49.1...v0.50.0) (2023-10-13)
 
-
 ### Features
 
-* data bar render from API ([#1415](https://github.com/deephaven/web-client-ui/issues/1415)) ([ee7d1c1](https://github.com/deephaven/web-client-ui/commit/ee7d1c108e86973b4c6855e482dce21d665dfe28)), closes [#0000](https://github.com/deephaven/web-client-ui/issues/0000) [#FF0000](https://github.com/deephaven/web-client-ui/issues/FF0000) [#FFFF00](https://github.com/deephaven/web-client-ui/issues/FFFF00) [#FFFF00](https://github.com/deephaven/web-client-ui/issues/FFFF00) [#00FF00](https://github.com/deephaven/web-client-ui/issues/00FF00)
-
-
-
-
+- data bar render from API ([#1415](https://github.com/deephaven/web-client-ui/issues/1415)) ([ee7d1c1](https://github.com/deephaven/web-client-ui/commit/ee7d1c108e86973b4c6855e482dce21d665dfe28)), closes [#0000](https://github.com/deephaven/web-client-ui/issues/0000) [#FF0000](https://github.com/deephaven/web-client-ui/issues/FF0000) [#FFFF00](https://github.com/deephaven/web-client-ui/issues/FFFF00) [#FFFF00](https://github.com/deephaven/web-client-ui/issues/FFFF00) [#00FF00](https://github.com/deephaven/web-client-ui/issues/00FF00)
 
 # [0.49.0](https://github.com/deephaven/web-client-ui/compare/v0.48.0...v0.49.0) (2023-09-15)
 
-
 ### Bug Fixes
 
-* Table overflow button has lower priority than grid tokens ([#1510](https://github.com/deephaven/web-client-ui/issues/1510)) ([32e6d20](https://github.com/deephaven/web-client-ui/commit/32e6d208d0977092f315caa122b8ab23f0fc110a)), closes [#1480](https://github.com/deephaven/web-client-ui/issues/1480)
-
-
-
-
+- Table overflow button has lower priority than grid tokens ([#1510](https://github.com/deephaven/web-client-ui/issues/1510)) ([32e6d20](https://github.com/deephaven/web-client-ui/commit/32e6d208d0977092f315caa122b8ab23f0fc110a)), closes [#1480](https://github.com/deephaven/web-client-ui/issues/1480)
 
 # [0.48.0](https://github.com/deephaven/web-client-ui/compare/v0.47.0...v0.48.0) (2023-09-12)
 
 **Note:** Version bump only for package @deephaven/grid
 
-
-
-
-
 # [0.47.0](https://github.com/deephaven/web-client-ui/compare/v0.46.1...v0.47.0) (2023-09-08)
 
 **Note:** Version bump only for package @deephaven/grid
-
-
-
-
 
 ## [0.46.1](https://github.com/deephaven/web-client-ui/compare/v0.46.0...v0.46.1) (2023-09-01)
 
 **Note:** Version bump only for package @deephaven/grid
 
-
-
-
-
 # [0.46.0](https://github.com/deephaven/web-client-ui/compare/v0.45.1...v0.46.0) (2023-08-18)
 
 **Note:** Version bump only for package @deephaven/grid
-
-
-
-
 
 # [0.45.0](https://github.com/deephaven/web-client-ui/compare/v0.44.1...v0.45.0) (2023-07-31)
 

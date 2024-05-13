@@ -71,6 +71,10 @@
   @return color-mix-opacity('negative', $i);
 }
 
+@function negative-down-bg-opacity($i: 100) {
+  @return color-mix-opacity('negative-down-bg', $i);
+}
+
 @function black-opacity($i: 100) {
   @return color-mix-opacity('black', $i);
 }

@@ -1,0 +1,49 @@
+.dh-list-view-wrapper {
+  --dh-list-view-item-icon-compact: 16px;
+  --dh-list-view-item-icon-regular: 18px;
+  --dh-list-view-item-icon-spacious: 24px;
+
+  // set the wrapper to grow to the size of the parent container
+  height: 100%;
+  width: 100%;
+  position: relative;
+
+  > div {
+    // absolute position the list view to fill the wrapper
+    // so that it will grow and shrink with the wrapper
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    > div > div {
+      // disable the transition on the list view items
+      transition: none !important;
+    }
+  }
+}
+
+.dh-list-view-wrapper-scale-large {
+  --dh-list-view-item-icon-compact: 20px;
+  --dh-list-view-item-icon-regular: 24px;
+  --dh-list-view-item-icon-spacious: 30px;
+}
+
+.dh-list-view-wrapper-density-compact {
+  svg[class*='react-spectrum-ListViewItem-thumbnail'] {
+    height: var(--dh-list-view-item-icon-compact);
+    width: var(--dh-list-view-item-icon-compact);
+  }
+}
+
+.dh-list-view-wrapper-density-regular {
+  svg[class*='react-spectrum-ListViewItem-thumbnail'] {
+    height: var(--dh-list-view-item-icon-regular);
+    width: var(--dh-list-view-item-icon-regular);
+  }
+}
+
+.dh-list-view-wrapper-density-spacious {
+  svg[class*='react-spectrum-ListViewItem-thumbnail'] {
+    height: var(--dh-list-view-item-icon-spacious);
+    width: var(--dh-list-view-item-icon-spacious);
+  }
+}

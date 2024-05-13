@@ -3,7 +3,7 @@ import {
   GridMouseHandler,
   EventHandlerResult,
 } from '@deephaven/grid';
-import deepEqual from 'deep-equal';
+import deepEqual from 'fast-deep-equal';
 import type IrisGrid from '../IrisGrid';
 import { IrisGridRenderState } from '../IrisGridRenderer';
 

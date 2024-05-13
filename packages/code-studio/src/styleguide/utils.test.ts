@@ -1,7 +1,15 @@
 import {
+  generateNormalizedItems,
   sampleSectionIdAndClasses,
   sampleSectionIdAndClassesSpectrum,
 } from './utils';
+
+describe('generateNormalizedItems', () => {
+  it('should generate normalized items', () => {
+    const actual = [...generateNormalizedItems(100)];
+    expect(actual).toMatchSnapshot();
+  });
+});
 
 describe('sampleSectionIdAndClasses', () => {
   it('should return id and className', () => {

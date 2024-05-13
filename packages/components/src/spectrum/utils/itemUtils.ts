@@ -1,15 +1,24 @@
-import { isValidElement, Key, ReactElement, ReactNode } from 'react';
+import { Key, ReactElement, ReactNode } from 'react';
 import { SpectrumPickerProps } from '@adobe/react-spectrum';
 import type { ItemRenderer } from '@react-types/shared';
-import Log from '@deephaven/log';
-import { KeyedItem } from '@deephaven/utils';
-import { Item, ItemProps, Section, SectionProps } from '../shared';
+import { isElementOfType } from '@deephaven/react-hooks';
+import { ensureArray, KeyedItem, SelectionT } from '@deephaven/utils';
+import {
+  Item,
+  ItemElementOrPrimitive,
+  ItemProps,
+  Section,
+  SectionProps,
+} from '../shared';
 import { PopperOptions } from '../../popper';
+import { Text } from '../Text';
+import ItemContent from '../ItemContent';
 
-const log = Log.module('itemUtils');
-
-export const INVALID_ITEM_ERROR_MESSAGE =
-  'Items must be strings, numbers, booleans, <Item> or <Section> elements:';
+/**
+ * `Item.textValue` prop needs to be a non-empty string for accessibility
+ * purposes. This is not displayed in the UI.
+ */
+export const ITEM_EMPTY_STRING_TEXT_VALUE = 'Empty';
 
 /**
  * React Spectrum <Section> supports an `ItemRenderer` function as a child. The
@@ -20,11 +29,19 @@ type SectionPropsNoItemRenderer<T> = Omit<SectionProps<T>, 'children'> & {
   children: Exclude<SectionProps<T>['children'], ItemRenderer<T>>;
 };
 
-type ItemElement = ReactElement<ItemProps<unknown>>;
-export type SectionElement = ReactElement<SectionPropsNoItemRenderer<unknown>>;
+export type ItemElement<T = unknown> = ReactElement<ItemProps<T>>;
+export type SectionElement<T = unknown> = ReactElement<
+  SectionPropsNoItemRenderer<T>
+>;
 
-export type ItemElementOrPrimitive = number | string | boolean | ItemElement;
-export type ItemOrSection = ItemElementOrPrimitive | SectionElement;
+export type ItemOrSection<T = unknown> =
+  | ItemElementOrPrimitive<T>
+  | SectionElement<T>;
+
+// Picker uses `icon` slot. ListView can use `image` or `illustration` slots.
+// https://github.com/adobe/react-spectrum/blob/main/packages/%40react-spectrum/picker/src/Picker.tsx#L194
+// https://github.com/adobe/react-spectrum/blob/main/packages/%40react-spectrum/list/src/ListViewItem.tsx#L266-L267
+export type ItemIconSlot = 'icon' | 'image' | 'illustration';
 
 /**
  * Augment the Spectrum selection key type to include boolean values.
@@ -32,6 +49,8 @@ export type ItemOrSection = ItemElementOrPrimitive | SectionElement;
  * don't reflect it.
  */
 export type ItemKey = Key | boolean;
+
+export type ItemSelection = SelectionT<ItemKey>;
 
 /**
  * Augment the Spectrum selection change handler type to include boolean keys.
@@ -43,7 +62,9 @@ export type ItemSelectionChangeHandler = (key: ItemKey) => void;
 export interface NormalizedItemData {
   key?: ItemKey;
   content: ReactNode;
-  textValue?: string;
+  description?: ReactNode;
+  icon?: ReactNode;
+  textValue: string | undefined;
 }
 
 export interface NormalizedSectionData {
@@ -66,6 +87,9 @@ export type NormalizedSection = KeyedItem<
   NormalizedSectionData,
   Key | undefined
 >;
+
+export type NormalizedItemOrSection<TItemOrSection extends ItemOrSection> =
+  TItemOrSection extends SectionElement ? NormalizedSection : NormalizedItem;
 
 export type NormalizedSpectrumPickerProps = SpectrumPickerProps<NormalizedItem>;
 
@@ -92,14 +116,53 @@ export function getItemKey<
 }
 
 /**
+ * Get the position of the item with the given selected key in a list of items.
+ * @param items The items to search
+ * @param itemHeight The height of each item
+ * @param selectedKey The key of the selected item
+ * @param topOffset The top offset of the list
+ * @returns The position of the selected item or the top offset if not found
+ */
+export async function getPositionOfSelectedItemElement<
+  TKey extends string | number | boolean | undefined,
+>({
+  items,
+  itemHeight,
+  selectedKey,
+  topOffset,
+}: {
+  items: ItemElement[];
+  selectedKey: TKey | null | undefined;
+  itemHeight: number;
+  topOffset: number;
+}): Promise<number> {
+  let position = topOffset;
+
+  if (selectedKey == null) {
+    return position;
+  }
+
+  for (let i = 0; i < items.length; i += 1) {
+    const item = items[i];
+    if (item.key === selectedKey) {
+      return position;
+    }
+
+    position += itemHeight;
+  }
+
+  return topOffset;
+}
+
+/**
  * Determine if a node is a Section element.
  * @param node The node to check
  * @returns True if the node is a Section element
  */
 export function isSectionElement<T>(
   node: ReactNode
-): node is ReactElement<SectionProps<T>> {
-  return isValidElement<SectionProps<T>>(node) && node.type === Section;
+): node is SectionElement<T> {
+  return isElementOfType(node, Section);
 }
 
 /**
@@ -107,21 +170,51 @@ export function isSectionElement<T>(
  * @param node The node to check
  * @returns True if the node is an Item element
  */
-export function isItemElement<T>(
-  node: ReactNode
-): node is ReactElement<ItemProps<T>> {
-  return isValidElement<ItemProps<T>>(node) && node.type === Item;
+export function isItemElement<T>(node: ReactNode): node is ItemElement<T> {
+  return isElementOfType(node, Item);
 }
 
 /**
- * Determine if a node is an array containing normalized items with keys.
- * Note that this only checks the first node in the array.
+ * Determine if a node is an Item element containing a child `Text` element with
+ * a `slot` prop set to `description`.
  * @param node The node to check
- * @returns True if the node is a normalized item with keys array
+ * @returns True if the node is an Item element with a description
  */
-export function isNormalizedItemsWithKeysList(
-  node: ItemOrSection | ItemOrSection[] | (NormalizedItem | NormalizedSection)[]
-): node is (NormalizedItem | NormalizedSection)[] {
+export function isItemElementWithDescription<T>(
+  node: ReactNode
+): node is ReactElement<ItemProps<T>> {
+  if (!isItemElement(node)) {
+    return false;
+  }
+
+  // If children are wrapped in `ItemContent`, go down 1 level
+  const children = isElementOfType(node.props.children, ItemContent)
+    ? node.props.children.props.children
+    : node.props.children;
+
+  const childrenArray = ensureArray(children);
+
+  const result = childrenArray.some(
+    child => isElementOfType(child, Text) && child.props?.slot === 'description'
+  );
+
+  return result;
+}
+
+/**
+ * Determine if a node is an array containing normalized items or sections with
+ * keys. Note that this only checks the first node in the array.
+ * @param node The node to check
+ * @returns True if the node is a normalized item or section with keys array
+ */
+export function isNormalizedItemsWithKeysList<
+  TItemOrSection extends ItemOrSection,
+>(
+  node:
+    | TItemOrSection
+    | TItemOrSection[]
+    | NormalizedItemOrSection<TItemOrSection>[]
+): node is NormalizedItemOrSection<TItemOrSection>[] {
   if (!Array.isArray(node)) {
     return false;
   }
@@ -164,135 +257,43 @@ export function isItemOrSection(node: ReactNode): node is ItemOrSection {
 }
 
 /**
- * Determine the `key` of an item or section.
- * @param itemOrSection The item or section
- * @returns A `ItemKey` for the item or undefined if a key can't be determined
- */
-function normalizeItemKey(item: ItemElementOrPrimitive): ItemKey | undefined;
-function normalizeItemKey(section: SectionElement): Key | undefined;
-function normalizeItemKey(
-  itemOrSection: ItemElementOrPrimitive | SectionElement
-): Key | ItemKey | undefined {
-  // string, number, or boolean
-  if (typeof itemOrSection !== 'object') {
-    return itemOrSection;
-  }
-
-  // If `key` prop is explicitly set
-  if (itemOrSection.key != null) {
-    return itemOrSection.key;
-  }
-
-  // Section element
-  if (isSectionElement(itemOrSection)) {
-    return typeof itemOrSection.props.title === 'string'
-      ? itemOrSection.props.title
-      : undefined;
-  }
-
-  // Item element
-  return (
-    itemOrSection.props.textValue ??
-    (typeof itemOrSection.props.children === 'string'
-      ? itemOrSection.props.children
-      : undefined)
-  );
-}
-
-/**
- * Get a normalized `textValue` for an item ensuring it is a string.
- * @param item The item
- * @returns A string `textValue` for the item
- */
-function normalizeTextValue(item: ItemElementOrPrimitive): string | undefined {
-  if (typeof item !== 'object') {
-    return String(item);
-  }
-
-  if (item.props.textValue != null) {
-    return item.props.textValue;
-  }
-
-  if (typeof item.props.children === 'string') {
-    return item.props.children;
-  }
-
-  return undefined;
-}
-
-/**
- * Normalize an item or section to an object form.
- * @param itemOrSection item to normalize
- * @returns NormalizedItem or NormalizedSection object
- */
-function normalizeItem(
-  itemOrSection: ItemOrSection
-): NormalizedItem | NormalizedSection {
-  if (!isItemOrSection(itemOrSection)) {
-    log.debug(INVALID_ITEM_ERROR_MESSAGE, itemOrSection);
-    throw new Error(INVALID_ITEM_ERROR_MESSAGE);
-  }
-
-  if (isSectionElement(itemOrSection)) {
-    const key = normalizeItemKey(itemOrSection);
-    const { title } = itemOrSection.props;
-
-    const items = normalizeItemList(itemOrSection.props.children).filter(
-      // We don't support nested section elements
-      childItem => !isSectionElement(childItem)
-    ) as NormalizedItem[];
-
-    return {
-      item: { key, title, items },
-    };
-  }
-
-  const key = normalizeItemKey(itemOrSection);
-  const content = isItemElement(itemOrSection)
-    ? itemOrSection.props.children
-    : itemOrSection;
-  const textValue = normalizeTextValue(itemOrSection);
-
-  return {
-    item: { key, content, textValue },
-  };
-}
-
-/**
- * Get normalized items from an item or array of items.
- * @param itemsOrSections An item or array of items
- * @returns An array of normalized items
- */
-export function normalizeItemList(
-  itemsOrSections: ItemOrSection | ItemOrSection[] | NormalizedItem[]
-): (NormalizedItem | NormalizedSection)[] {
-  // If already normalized, just return as-is
-  if (isNormalizedItemsWithKeysList(itemsOrSections)) {
-    return itemsOrSections;
-  }
-
-  const itemsArray = Array.isArray(itemsOrSections)
-    ? itemsOrSections
-    : [itemsOrSections];
-
-  return itemsArray.map(normalizeItem);
-}
-
-/**
  * Returns a TooltipOptions object or null if options is false or null.
- * @param options
+ * @param options Tooltip options
+ * @param placement Default placement for the tooltip if `options` is set
+ * explicitly to `true`
  * @returns TooltipOptions or null
  */
 export function normalizeTooltipOptions(
-  options?: boolean | TooltipOptions | null
+  options?: boolean | TooltipOptions | null,
+  placement: TooltipOptions['placement'] = 'right'
 ): TooltipOptions | null {
   if (options == null || options === false) {
     return null;
   }
 
   if (options === true) {
-    return { placement: 'right' };
+    return { placement };
   }
 
   return options;
+}
+
+/**
+ * Convert a selection of `ItemKey`s to a selection of strings.
+ * @param itemKeys The selection of `ItemKey`s
+ * @returns The selection of strings
+ */
+export function itemSelectionToStringSet<
+  TKeys extends 'all' | Iterable<ItemKey> | undefined,
+  TResult extends TKeys extends 'all'
+    ? 'all'
+    : TKeys extends Iterable<ItemKey>
+    ? Set<string>
+    : undefined,
+>(itemKeys: TKeys): TResult {
+  if (itemKeys == null || itemKeys === 'all') {
+    return itemKeys as undefined | 'all' as TResult;
+  }
+
+  return new Set([...itemKeys].map(String)) as TResult;
 }

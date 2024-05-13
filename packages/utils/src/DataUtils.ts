@@ -22,6 +22,16 @@ export interface SelectionMaybeInverted<TValue> {
 }
 
 /**
+ * Wrap a value in an array if it is not already an array. Otherwise return the
+ * value.
+ * @param value The value to ensure is an array
+ * @returns The value as an array
+ */
+export function ensureArray<T>(value: T | T[]): T[] {
+  return Array.isArray(value) ? value : [value];
+}
+
+/**
  * Filters out any null or undefined values from an array.
  * @param maybeDefined
  */

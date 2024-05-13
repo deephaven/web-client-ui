@@ -1,4 +1,4 @@
-import type { ItemConfigType } from './ItemConfig';
+import type { ItemConfig, ItemConfigType } from './ItemConfig';
 
 export type Config = {
   settings: Partial<Settings>;
@@ -98,6 +98,11 @@ export interface Settings {
   tabOverlapAllowance: number;
 
   tabControlOffset: number;
+
+  /**
+   * The default config to apply to Components
+   */
+  defaultComponentConfig: Partial<Omit<ItemConfig, 'type'>>;
 }
 
 export interface Dimensions {

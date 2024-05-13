@@ -166,6 +166,7 @@ function AppInit(props: AppInitProps): JSX.Element {
           });
 
           const dashboardData = {
+            title: 'Code Studio',
             filterSets: data.filterSets,
             links: data.links,
           };

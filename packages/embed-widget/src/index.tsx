@@ -1,5 +1,7 @@
 import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom';
+import { Provider } from 'react-redux';
+import { store } from '@deephaven/redux';
 import '@deephaven/components/scss/BaseStyleSheet.scss';
 import { LoadingOverlay, preloadTheme } from '@deephaven/components';
 import { ApiBootstrap } from '@deephaven/jsapi-bootstrap';
@@ -32,9 +34,18 @@ async function getCorePlugins() {
   const dashboardCorePlugins = await import(
     '@deephaven/dashboard-core-plugins'
   );
-  const { GridPluginConfig, PandasPluginConfig, ChartPluginConfig } =
-    dashboardCorePlugins;
-  return [GridPluginConfig, PandasPluginConfig, ChartPluginConfig];
+  const {
+    GridPluginConfig,
+    PandasPluginConfig,
+    ChartPluginConfig,
+    WidgetLoaderPluginConfig,
+  } = dashboardCorePlugins;
+  return [
+    GridPluginConfig,
+    PandasPluginConfig,
+    ChartPluginConfig,
+    WidgetLoaderPluginConfig,
+  ];
 }
 
 ReactDOM.render(
@@ -45,7 +56,9 @@ ReactDOM.render(
         serverUrl={apiURL.origin}
         pluginsUrl={pluginsURL.href}
       >
-        <App />
+        <Provider store={store}>
+          <App />
+        </Provider>
       </AppBootstrap>
     </Suspense>
   </ApiBootstrap>,

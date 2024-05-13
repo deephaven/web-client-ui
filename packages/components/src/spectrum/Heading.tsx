@@ -1,9 +1,10 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import { useMemo } from 'react';
+import { forwardRef, useMemo } from 'react';
 import {
   Heading as SpectrumHeading,
   type HeadingProps as SpectrumHeadingProps,
 } from '@adobe/react-spectrum';
+import type { DOMRefValue } from '@react-types/shared';
 import { type ColorValue, colorValueStyle } from '../theme/colorUtils';
 
 export type HeadingProps = SpectrumHeadingProps & {
@@ -20,7 +21,10 @@ export type HeadingProps = SpectrumHeadingProps & {
  *
  */
 
-export function Heading(props: HeadingProps): JSX.Element {
+export const Heading = forwardRef<
+  DOMRefValue<HTMLHeadingElement>,
+  HeadingProps
+>((props, forwardedRef): JSX.Element => {
   const { color, UNSAFE_style, ...rest } = props;
   const style = useMemo(
     () => ({
@@ -30,7 +34,9 @@ export function Heading(props: HeadingProps): JSX.Element {
     [color, UNSAFE_style]
   );
 
-  return <SpectrumHeading {...rest} UNSAFE_style={style} />;
-}
+  return <SpectrumHeading {...rest} ref={forwardedRef} UNSAFE_style={style} />;
+});
+
+Heading.displayName = 'Heading';
 
 export default Heading;
