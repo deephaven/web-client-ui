@@ -5,6 +5,7 @@ import {
   defaultRowDeserializer,
   isClosed,
   createOnTableUpdatedHandler,
+  OnTableUpdatedEvent,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { useApi } from '@deephaven/jsapi-bootstrap';
@@ -97,6 +98,7 @@ export function useViewportData<TItem, TTable extends dh.Table | dh.TreeTable>({
         prev: currentViewportFirstRowRef.current,
         next: firstRow,
       });
+
       currentViewportFirstRowRef.current = firstRow;
 
       if (table && !isClosed(table)) {
@@ -122,24 +124,32 @@ export function useViewportData<TItem, TTable extends dh.Table | dh.TreeTable>({
 
   const dh = useApi();
 
-  const onTableUpdated = useMemo(
+  // Store the memoized callback in a ref so that changes to `viewportData`
+  // don't invalidate the memoization of `onTableUpdated`. This avoids
+  // `useTableListener` from re-subscribing to the same event over and over.
+  const onTableUpdatedRef = useRef<(event: OnTableUpdatedEvent) => void>();
+  onTableUpdatedRef.current = useMemo(
     () => createOnTableUpdatedHandler(viewportData, deserializeRow),
     [deserializeRow, viewportData]
   );
+
+  const onTableUpdated = useCallback((event: OnTableUpdatedEvent) => {
+    onTableUpdatedRef.current?.(event);
+  }, []);
 
   useTableListener(table, dh.Table.EVENT_UPDATED, onTableUpdated);
 
   const size = useTableSize(table);
 
   useEffect(() => {
+    log.debug('Initializing viewport');
+
     // Hydrate the viewport with real data. This will fetch data from index
     // 0 to the end of the viewport + padding.
     setViewport(0);
   }, [table, setViewport]);
 
   useEffect(() => {
-    // TODO: This is optimized for ticking tables, but need to test this with
-    // filtered data scenarios in ACL Editor such as table size decreasing.
     setViewport(currentViewportFirstRowRef.current);
   }, [setViewport, size]);
 
