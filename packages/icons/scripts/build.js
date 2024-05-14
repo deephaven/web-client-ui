@@ -54,7 +54,7 @@ async function getFiles(src) {
       .filter(
         file =>
           // file is svg and not in excluded list
-          file.slice(file.length - 1) !== '.svg' &&
+          file.endsWith('.svg') &&
           EXCLUDED_ICONS.indexOf(file.slice(0, -4)) === -1
       )
       .map(async file => {
