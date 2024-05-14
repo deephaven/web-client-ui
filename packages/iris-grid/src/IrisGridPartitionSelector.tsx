@@ -303,15 +303,16 @@ class IrisGridPartitionSelector extends Component<
     }
     const partitionSelectors = model.partitionColumns.map((column, index) => (
       <div key={`selector-${column.name}`} className="column-selector">
-        <div className="column-name">{column.name}</div>
         {partitionTables?.[index] && (
           <Picker
+            label={column.name}
             table={partitionTables[index]}
             direction="bottom"
             shouldFlip={false}
             keyColumn={partitionTables[index].columns[index].name}
             placeholder={'Loading...' as string}
             labelColumn={partitionTables[index].columns[index].name}
+            labelPosition="side"
             onChange={this.getCachedChangeCallback(index)}
             defaultSelectedKey={partitions[index] as ItemKey}
             isDisabled={
