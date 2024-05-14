@@ -74,7 +74,7 @@ jobs:
           echo "SHARD_TOTAL=${MATRIX_CONFIG: -1:1}" >> $GITHUB_ENV
 
       - name: Run tests
-        run: './tools/run.sh e2e-ci-matrix'
+        run: './tests/docker-scripts/run.sh e2e-ci-matrix'
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
