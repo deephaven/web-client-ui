@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import type { dh } from '@deephaven/jsapi-types';
 import { getSize } from '@deephaven/jsapi-utils';
@@ -18,9 +18,11 @@ export function useTableSize(
 
   const dh = useApi();
 
-  useTableListener(table, dh.Table.EVENT_SIZECHANGED, () => {
+  const onSizeChanged = useCallback(() => {
     forceRerender(i => i + 1);
-  });
+  }, []);
+
+  useTableListener(table, dh.Table.EVENT_SIZECHANGED, onSizeChanged);
 
   return getSize(table);
 }
