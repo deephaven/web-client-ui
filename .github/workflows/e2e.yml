@@ -36,6 +36,7 @@ jobs:
 
       - name: Build and Save docker image ./tests/docker-scripts/Dockerfile as e2e-ci.tar.gz to /image-cache
         run: |
+          mkdir -p image-cache
           docker build -t e2e-ci -f ./tests/docker-scripts/Dockerfile .
           docker save e2e-ci -o ./image-cache/e2e-ci.tar.gz
 
