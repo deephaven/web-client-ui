@@ -30,12 +30,14 @@ jobs:
       - name: Create cache for docker image
         uses: actions/cache@v4
         with:
-          path: /var/lib/docker
+          path: /image-cache
           # key it to just this job
           key: docker-${{ runner.os }}-${{ github.run_id }}
 
-      - name: Build Docker Image
-        run: docker build -t e2e-ci --file ./tests/docker-scripts/Dockerfile ../../
+      - name: Build and Save docker image ./tests/docker-scripts/Dockerfile as e2e-ci.tar.gz to /image-cache
+        run: |
+          docker build -t e2e-ci -f ./tests/docker-scripts/Dockerfile .
+          docker save e2e-ci -o ./image-cache/e2e-ci.tar.gz
 
   e2e-tests:
     runs-on: ubuntu-22.04
@@ -53,8 +55,11 @@ jobs:
       - name: Restore cached docker image
         uses: actions/cache/restore@v4
         with:
-          path: /var/lib/docker
+          path: /image-cache
           key: docker-${{ runner.os }}-${{ github.run_id }}
+
+      - name: Load docker image from cache
+        run: docker load -i /image-cache/e2e-ci.tar.gz
 
       - name: Extract browser config
         id: config

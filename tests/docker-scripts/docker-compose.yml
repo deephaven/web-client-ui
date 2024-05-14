@@ -12,7 +12,6 @@ services:
       - START_OPTS=-Xmx4g -DAuthHandlers=io.deephaven.auth.AnonymousAuthenticationHandler -Ddeephaven.console.type=python -Ddeephaven.application.dir=./data/app.d
 
   e2e-ci-matrix:
-    # use the already built image from the build job
     image: e2e-ci
     ipc: host
     environment:
