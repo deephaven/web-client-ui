@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import memoizee from 'memoizee';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button } from '@deephaven/components';
+import { Button, ItemKey } from '@deephaven/components';
 import { vsChevronRight, vsMerge, vsKey } from '@deephaven/icons';
 import Log from '@deephaven/log';
-import { TableDropdown } from '@deephaven/jsapi-components';
+import { Picker } from '@deephaven/jsapi-components';
 import type { dh } from '@deephaven/jsapi-types';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import { assertNotNull, Pending, PromiseUtils } from '@deephaven/utils';
@@ -294,23 +294,31 @@ class IrisGridPartitionSelector extends Component<
     const { model, partitionConfig } = this.props;
     const { isLoading, partitionFilters, partitionTables } = this.state;
 
-    const { mode, partitions } = partitionConfig;
+    const { partitions } = partitionConfig;
 
+    if (partitionFilters !== null && partitionTables !== null) {
+      partitionFilters.forEach((filter, index) => {
+        partitionTables[index].applyFilter(filter as dh.FilterCondition[]);
+      });
+    }
     const partitionSelectors = model.partitionColumns.map((column, index) => (
       <div key={`selector-${column.name}`} className="column-selector">
         <div className="column-name">{column.name}</div>
-        <TableDropdown
-          className="custom-select-sm"
-          table={partitionTables?.[index]}
-          column={partitionTables?.[index]?.columns[index]}
-          filter={partitionFilters?.[index]}
-          onChange={this.getCachedChangeCallback(index)}
-          selectedValue={mode === 'partition' ? partitions[index] : undefined}
-          disabled={
-            (index > 0 && partitionConfig.mode !== 'partition') || isLoading
-          }
-          formatValue={this.getCachedFormatValueCallback(index)}
-        />
+        {partitionTables?.[index] && (
+          <Picker
+            table={partitionTables[index]}
+            direction="bottom"
+            shouldFlip={false}
+            keyColumn={partitionTables[index].columns[index].name}
+            placeholder={'Loading...' as string}
+            labelColumn={partitionTables[index].columns[index].name}
+            onChange={this.getCachedChangeCallback(index)}
+            defaultSelectedKey={partitions[index] as ItemKey}
+            isDisabled={
+              (index > 0 && partitionConfig.mode !== 'partition') || isLoading
+            }
+          />
+        )}
         {model.partitionColumns.length - 1 === index || (
           <FontAwesomeIcon icon={vsChevronRight} />
         )}
