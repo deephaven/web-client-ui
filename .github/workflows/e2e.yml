@@ -27,16 +27,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Make cache directory
+        run: mkdir image-cache
+
       - name: Create cache for docker image
         uses: actions/cache@v4
         with:
-          path: /image-cache
+          path: image-cache
           # key it to just this job
           key: docker-${{ runner.os }}-${{ github.run_id }}
 
-      - name: Build and Save docker image ./tests/docker-scripts/Dockerfile as e2e-ci.tar.gz to /image-cache
+      - name: Build and Save docker image
         run: |
-          mkdir -p image-cache
           docker build -t e2e-ci -f ./tests/docker-scripts/Dockerfile .
           docker save e2e-ci -o ./image-cache/e2e-ci.tar.gz
 
@@ -56,7 +58,7 @@ jobs:
       - name: Restore cached docker image
         uses: actions/cache/restore@v4
         with:
-          path: /image-cache
+          path: image-cache
           key: docker-${{ runner.os }}-${{ github.run_id }}
 
       - name: Load docker image from cache
