@@ -46,7 +46,6 @@ type PouchFilter = OnlyOneProp<{
 }> &
   Omit<PouchDB.Find.ConditionOperators, '$regex'>;
 
-// eslint-disable-next-line import/prefer-default-export
 export function makePouchFilter(
   type: string,
   value: FilterValue | FilterValue[]
