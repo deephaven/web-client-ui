@@ -1,4 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
+import { gotoPage, openPlot, openTable } from './utils';
 
 // Run tests serially
 test.describe.configure({ mode: 'serial' });
@@ -167,5 +168,65 @@ test.describe('tests golden-layout operations', () => {
 
     // check new layout
     await expect(page.locator('.lm_root')).toHaveScreenshot();
+  });
+});
+
+test('reopen last closed panel', async ({ page }) => {
+  /**
+   * Closes the 4th panel and 2nd panel, in that order
+   */
+  const closePanelCopies = async () =>
+    test.step('Close panel copies', async () => {
+      await expect(page.getByLabel('Close tab')).toHaveCount(4);
+      await page.getByLabel('Close tab').nth(3).click();
+      await page.getByLabel('Close tab').nth(1).click();
+      await expect(page.getByLabel('Close tab')).toHaveCount(2);
+    });
+
+  /**
+   * Clicks on a menu option of a panel
+   * @param panelName Name of the panel to right-click
+   * @param menuName Name of the option in the context menu
+   */
+  const clickPanelContextMenu = async (panelName: string, menuName: string) =>
+    test.step(`Run ${panelName} context menu - ${menuName}`, async () => {
+      await page
+        .getByText(panelName, { exact: true })
+        .click({ button: 'right' });
+      await page.getByRole('button', { name: menuName, exact: true }).click();
+    });
+
+  await gotoPage(page, '');
+
+  await test.step('Open panels', async () => {
+    await openTable(page, 'all_types');
+    await openPlot(page, 'simple_plot');
+  });
+
+  await clickPanelContextMenu('all_types', 'Copy Panel');
+  await clickPanelContextMenu('simple_plot', 'Copy Panel');
+
+  await test.step('Reopen through shortcut', async () => {
+    await closePanelCopies();
+
+    await page.keyboard.press('Alt+Shift+T');
+    await expect(page.getByText('all_types Copy')).toHaveCount(1);
+    await expect(page.getByText('simple_plot Copy')).toHaveCount(0);
+
+    await page.keyboard.press('Alt+Shift+T');
+    await expect(page.getByText('all_types Copy')).toHaveCount(1);
+    await expect(page.getByText('simple_plot Copy')).toHaveCount(1);
+  });
+
+  await test.step('Reopen through context menu', async () => {
+    await closePanelCopies();
+
+    await clickPanelContextMenu('simple_plot', 'Re-open closed panel');
+    await expect(page.getByText('all_types Copy')).toHaveCount(0);
+    await expect(page.getByText('simple_plot Copy')).toHaveCount(1);
+
+    await clickPanelContextMenu('all_types', 'Re-open closed panel');
+    await expect(page.getByText('all_types Copy')).toHaveCount(1);
+    await expect(page.getByText('simple_plot Copy')).toHaveCount(1);
   });
 });

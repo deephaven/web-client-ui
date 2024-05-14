@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/embed-widget",
-  "version": "0.72.0",
+  "version": "0.77.0",
   "description": "Deephaven Embedded Widget",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -18,16 +18,22 @@
   "dependencies": {
     "@deephaven/app-utils": "file:../app-utils",
     "@deephaven/components": "file:../components",
+    "@deephaven/dashboard": "file:../dashboard",
     "@deephaven/dashboard-core-plugins": "file:../dashboard-core-plugins",
     "@deephaven/jsapi-bootstrap": "file:../jsapi-bootstrap",
     "@deephaven/jsapi-components": "file:../jsapi-components",
-    "@deephaven/jsapi-types": "1.0.0-dev0.33.1",
+    "@deephaven/jsapi-types": "1.0.0-dev0.34.0",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
     "@deephaven/plugin": "file:../plugin",
-    "fira": "mozilla/fira#4.202",
+    "@deephaven/redux": "file:../redux",
+    "@deephaven/utils": "file:../utils",
+    "@fontsource/fira-mono": "5.0.13",
+    "@fontsource/fira-sans": "5.0.20",
     "react": "^17.0.2",
-    "react-dom": "^17.0.2"
+    "react-dom": "^17.0.2",
+    "react-redux": "^7.2.4",
+    "shortid": "^2.2.16"
   },
   "scripts": {
     "analyze": "source-map-explorer build/assets/*.js --no-border-checks",

@@ -7,28 +7,27 @@ on:
     branches:
       - main
       - 'release/**'
+      - 'feature/**'
   pull_request:
     branches:
       - main
       - 'release/**'
+      - 'feature/**'
 env:
   DOCKER_TAG: edge
+
 jobs:
   build:
     runs-on: ubuntu-22.04
     concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
+      group: ${{ github.workflow }}-${{ github.ref }}-build
       cancel-in-progress: true
+
     steps:
       - name: Check installed fonts
         run: 'fc-list : family'
 
       - uses: actions/checkout@v4
-
-      - name: Run core server:${{ env.DOCKER_TAG }}
-        run: |
-          docker pull --quiet ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
-          docker run --detach --publish 10000:10000 --name dh-core-server -v ./tests/docker-scripts/data:/data --env "START_OPTS=-Xmx4g -DAuthHandlers=io.deephaven.auth.AnonymousAuthenticationHandler -Ddeephaven.application.dir=./data/app.d" ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
 
       - name: Use Node.js
         uses: actions/setup-node@v4
@@ -52,28 +51,111 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Upload build for test jobs
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: |
+            *
+            !node_modules
+          retention-days: 1
+
+  e2e-tests:
+    runs-on: ubuntu-22.04
+    needs: build
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}-e2e-tests-${{ matrix.config }}
+      cancel-in-progress: true
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config: [chromium-1-1, firefox-1-1, webkit-1-2, webkit-2-2]
+
+    steps:
+      - name: Download build
+        uses: actions/download-artifact@v4
+        with:
+          name: web-build
+
+      - name: Run core server:${{ env.DOCKER_TAG }}
+        run: |
+          docker pull --quiet ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
+          docker run --detach --publish 10000:10000 --name dh-core-server -v ./tests/docker-scripts/data:/data --env "START_OPTS=-Xmx4g -DAuthHandlers=io.deephaven.auth.AnonymousAuthenticationHandler -Ddeephaven.application.dir=./data/app.d" ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
+
+      - name: Cache node modules
+        id: cache-node-modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+          key: e2e-node-modules-${{ hashFiles('package-lock.json')}}
+
       - name: Install Playwright dependencies
         run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright install --with-deps
 
       - name: Playwright version
         run: npx playwright --version
 
+      - name: Install dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: npm ci --no-audit
+
+      - name: Extract browser config
+        id: config
+        env:
+          MATRIX_CONFIG: ${{ matrix.config }}
+        run: |
+          echo "browser=${MATRIX_CONFIG:0:-4}" >> $GITHUB_OUTPUT
+          echo "shard=${MATRIX_CONFIG: -3:1}" >> $GITHUB_OUTPUT
+          echo "shardTotal=${MATRIX_CONFIG: -1:1}" >> $GITHUB_OUTPUT
+
       - name: Run Playwright tests
-        run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright test --config=playwright-ci.config.ts
+        run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright test --config=playwright-ci.config.ts --reporter=blob --project=${{ steps.config.outputs.browser }} --shard=${{ steps.config.outputs.shard }}/${{ steps.config.outputs.shardTotal }}
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 90
+          name: playwright-report-blob-${{ matrix.config }}
+          path: blob-report/
+          retention-days: 1
+
       - name: Dump server logs
         if: failure()
         run: docker logs dh-core-server > /tmp/server-log.txt
+
       - name: Upload server logs
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: server-logs
+          name: server-logs-${{ matrix.config }}
           path: /tmp/server-log.txt
+
+  merge-reports:
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-22.04
+    needs: [e2e-tests]
+
+    steps:
+      - name: Download blob reports from GitHub Actions Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: playwright-report-blob-*
+
+      - name: Merge into HTML Report
+        run: |
+          mkdir -p all-blob-reports
+          mv playwright-report-blob-chromium-1-1/report-1.zip all-blob-reports/chromium-1-1.zip
+          mv playwright-report-blob-firefox-1-1/report-1.zip all-blob-reports/firefox-1-1.zip
+          mv playwright-report-blob-webkit-1-2/report-1.zip all-blob-reports/webkit-1-2.zip
+          mv playwright-report-blob-webkit-2-2/report-2.zip all-blob-reports/webkit-2-2.zip
+          npx playwright merge-reports --reporter html,github ./all-blob-reports
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 90

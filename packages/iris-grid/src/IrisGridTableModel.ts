@@ -206,12 +206,11 @@ class IrisGridTableModel
     for (let i = 0; i < this.partitionColumns.length; i += 1) {
       const partition = partitions[i];
       const partitionColumn = this.partitionColumns[i];
-
-      const partitionFilter = this.tableUtils.makeFilterRawValue(
-        partitionColumn.type,
+      const partitionFilter = this.tableUtils.makeNullableEqFilter(
+        partitionColumn,
         partition
       );
-      partitionFilters.push(partitionColumn.filter().eq(partitionFilter));
+      partitionFilters.push(partitionFilter);
     }
 
     const t = await this.table.copy();

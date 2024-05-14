@@ -2,7 +2,6 @@ import React, { useCallback } from 'react';
 import classNames from 'classnames';
 import {
   DashboardUtils,
-  DEFAULT_DASHBOARD_ID,
   DehydratedDashboardPanelProps,
   LazyDashboard,
 } from '@deephaven/dashboard';
@@ -10,28 +9,33 @@ import {
   sanitizeVariableDescriptor,
   useObjectFetcher,
 } from '@deephaven/jsapi-bootstrap';
-import LayoutManager, { ItemConfigType } from '@deephaven/golden-layout';
+import LayoutManager, {
+  ItemConfigType,
+  Settings as LayoutSettings,
+} from '@deephaven/golden-layout';
 import { LoadingOverlay } from '@deephaven/components';
-import EmptyDashboard from './EmptyDashboard';
 
 interface AppDashboardsProps {
   dashboards: {
     id: string;
     layoutConfig: ItemConfigType[];
+    layoutSettings?: Partial<LayoutSettings>;
     key?: string;
   }[];
   activeDashboard: string;
+  onLayoutInitialized?: () => void;
   onGoldenLayoutChange: (goldenLayout: LayoutManager) => void;
   plugins: JSX.Element[];
-  onAutoFillClick: (event: React.MouseEvent) => void;
+  emptyDashboard?: JSX.Element;
 }
 
 export function AppDashboards({
   dashboards,
   activeDashboard,
+  onLayoutInitialized,
   onGoldenLayoutChange,
   plugins,
-  onAutoFillClick,
+  emptyDashboard = <LoadingOverlay />,
 }: AppDashboardsProps): JSX.Element {
   const fetchObject = useObjectFetcher();
 
@@ -68,14 +72,10 @@ export function AppDashboards({
             id={d.id}
             key={d.key}
             isActive={d.id === activeDashboard}
-            emptyDashboard={
-              d.id === DEFAULT_DASHBOARD_ID ? (
-                <EmptyDashboard onAutoFillClick={onAutoFillClick} />
-              ) : (
-                <LoadingOverlay />
-              )
-            }
+            emptyDashboard={emptyDashboard}
             layoutConfig={d.layoutConfig}
+            layoutSettings={d.layoutSettings}
+            onLayoutInitialized={onLayoutInitialized}
             onGoldenLayoutChange={onGoldenLayoutChange}
             hydrate={hydratePanel}
             plugins={plugins}

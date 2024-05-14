@@ -1,4 +1,5 @@
 import type { UndoPartial } from '@deephaven/utils';
+import { memoize } from 'proxy-memoize';
 import type { RootState, WorkspaceSettings } from './store';
 
 const EMPTY_OBJECT = Object.freeze({});
@@ -55,22 +56,24 @@ export const getWorkspace = <State extends RootState>(
 };
 
 // Settings
-export const getSettings = <State extends RootState>(
-  store: State
-): UndoPartial<State['workspace']['data']['settings']> => {
-  const customizedSettings = getWorkspace(store).data.settings;
+export const getSettings = memoize(
+  <State extends RootState>(
+    store: State
+  ): UndoPartial<State['workspace']['data']['settings']> => {
+    const customizedSettings = getWorkspace(store)?.data.settings ?? {};
 
-  const settings = { ...getDefaultWorkspaceSettings(store) };
-  const keys = Object.keys(customizedSettings) as (keyof WorkspaceSettings)[];
-  for (let i = 0; i < keys.length; i += 1) {
-    const key = keys[i];
-    if (customizedSettings[key] !== undefined) {
-      // @ts-expect-error assign non-undefined customized settings to settings
-      settings[key] = customizedSettings[key];
+    const settings = { ...getDefaultWorkspaceSettings(store) };
+    const keys = Object.keys(customizedSettings) as (keyof WorkspaceSettings)[];
+    for (let i = 0; i < keys.length; i += 1) {
+      const key = keys[i];
+      if (customizedSettings[key] !== undefined) {
+        // @ts-expect-error assign non-undefined customized settings to settings
+        settings[key] = customizedSettings[key];
+      }
     }
+    return settings as UndoPartial<State['workspace']['data']['settings']>;
   }
-  return settings as UndoPartial<State['workspace']['data']['settings']>;
-};
+);
 
 export const getDefaultSettings = <State extends RootState>(
   store: State

@@ -39,6 +39,7 @@ describe('useItemRowDeserializer', () => {
       {
         key: 'mock.keyValue',
         content: 'mock.labelValue',
+        textValue: 'mock.labelValue',
       },
     ],
     [
@@ -49,6 +50,7 @@ describe('useItemRowDeserializer', () => {
       {
         key: 888,
         content: '999',
+        textValue: '999',
       },
     ],
     [
@@ -59,6 +61,7 @@ describe('useItemRowDeserializer', () => {
       {
         key: true,
         content: 'false',
+        textValue: 'false',
       },
     ],
     [
@@ -69,6 +72,7 @@ describe('useItemRowDeserializer', () => {
       {
         key: false,
         content: 'true',
+        textValue: 'true',
       },
     ],
     [
@@ -79,6 +83,7 @@ describe('useItemRowDeserializer', () => {
       {
         key: String({}),
         content: String({}),
+        textValue: String({}),
       },
     ],
     [
@@ -89,6 +94,7 @@ describe('useItemRowDeserializer', () => {
       {
         key: 'mock.keyValue',
         content: formattedValue,
+        textValue: formattedValue,
       },
     ],
   ])(

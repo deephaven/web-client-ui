@@ -1,5 +1,6 @@
 import { renderHook } from '@testing-library/react-hooks';
 import {
+  createKeyedItemKey,
   createSelectedValuesFilter,
   FilterConditionFactory,
   TableUtils,
@@ -82,7 +83,8 @@ it('should map selection to values', () => {
 
   expect(useMappedSelection).toHaveBeenCalledWith(
     mockViewportData,
-    mapItemToValue
+    mapItemToValue,
+    createKeyedItemKey
   );
 });
 

@@ -1,0 +1,83 @@
+@import '../scss/custom.scss';
+
+.error-view {
+  position: relative;
+  color: $danger;
+  border-radius: $border-radius;
+  background-color: negative-down-bg-opacity($exception-transparency);
+  display: flex;
+  flex-direction: column;
+  flex-grow: 0;
+  font-family: $font-family-monospace;
+  transition: all $transition ease-in-out;
+  max-height: 150px;
+
+  &.expanded {
+    max-height: 100%;
+  }
+
+  .error-view-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    text-wrap: nowrap;
+    width: 100%;
+
+    .error-view-header-text {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      padding-left: $spacer;
+      padding-right: $spacer;
+      font-weight: bold;
+      flex-shrink: 1;
+      overflow: hidden;
+      white-space: nowrap;
+
+      span {
+        flex-shrink: 1;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        padding-left: $spacer-1;
+      }
+    }
+
+    .error-view-buttons {
+      display: flex;
+      flex-direction: row;
+      gap: 1px;
+      overflow: hidden;
+      border-radius: 0 $border-radius 0 0;
+      flex-shrink: 0;
+
+      .btn-danger {
+        border-radius: 0;
+        color: var(--dh-color-contrast-dark);
+        opacity: 0.8;
+        padding: $spacer-1;
+        &:active {
+          color: var(--dh-color-contrast-dark);
+        }
+      }
+
+      .error-view-copy-button {
+        min-width: 3rem;
+      }
+    }
+  }
+
+  .error-view-text {
+    width: 100%;
+    padding: $spacer;
+    margin-bottom: 0;
+    color: $danger;
+    background-color: transparent;
+    border: 0;
+    resize: none;
+    outline: none;
+    white-space: pre;
+    flex-grow: 1;
+    overflow: auto;
+  }
+}

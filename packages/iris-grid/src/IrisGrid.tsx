@@ -9,7 +9,7 @@ import memoize from 'memoizee';
 import classNames from 'classnames';
 import { CSSTransition } from 'react-transition-group';
 import PropTypes from 'prop-types';
-import deepEqual from 'deep-equal';
+import deepEqual from 'fast-deep-equal';
 import Log from '@deephaven/log';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -2062,7 +2062,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               return;
             }
             const row = data.rows[0];
-            const values = keyTable.columns.map(column => row.get(column));
+            // Core JSAPI returns undefined for null table values, IrisGridPartitionSelector expects null
+            // https://github.com/deephaven/deephaven-core/issues/5400
+            const values = keyTable.columns.map(
+              column => row.get(column) ?? null
+            );
             const newPartition: PartitionConfig = {
               partitions: values,
               mode: 'partition',

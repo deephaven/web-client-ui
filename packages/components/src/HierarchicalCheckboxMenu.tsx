@@ -115,7 +115,7 @@ class HierarchicalCheckboxMenu extends Component<
     if (children instanceof Map) {
       const newChildren = new Map(children);
       if (child != null) {
-        newChildren.set(child, children.get(child) === undefined);
+        newChildren.set(child, children.get(child) !== true);
       } else {
         const parentSelected = HierarchicalCheckboxMenu.isParentSelected(
           parent,

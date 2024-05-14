@@ -1,5 +1,5 @@
 import React, { Component, ReactElement } from 'react';
-import deepEqual from 'deep-equal';
+import deepEqual from 'fast-deep-equal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhNewCircleLargeFilled, vsTrash } from '@deephaven/icons';
 import { Button, Select } from '@deephaven/components';

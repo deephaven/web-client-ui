@@ -122,11 +122,13 @@ describe('mapSelection', () => {
 });
 
 describe('optimizeSelection', () => {
+  const getKey = (i: number) => 'abcdefg'.charAt(i);
+
   it('should invert selection if selection is "all"', () => {
     const selection = 'all';
     const totalRecords = 10;
 
-    const actual = optimizeSelection(selection, totalRecords);
+    const actual = optimizeSelection(selection, totalRecords, getKey);
 
     expect(actual).toEqual({
       isInverted: true,
@@ -137,16 +139,16 @@ describe('optimizeSelection', () => {
   it.each([
     // Odd record count
     [new Set(''), 5, { isInverted: false, selection: new Set('') }],
-    [new Set('12'), 5, { isInverted: false, selection: new Set('12') }],
-    [new Set('123'), 5, { isInverted: true, selection: new Set('04') }],
+    [new Set('bc'), 5, { isInverted: false, selection: new Set('bc') }],
+    [new Set('bcd'), 5, { isInverted: true, selection: new Set('ae') }],
     // Even record count
     [new Set(''), 6, { isInverted: false, selection: new Set('') }],
-    [new Set('123'), 6, { isInverted: false, selection: new Set('123') }],
-    [new Set('1234'), 6, { isInverted: true, selection: new Set('05') }],
+    [new Set('bcd'), 6, { isInverted: false, selection: new Set('bcd') }],
+    [new Set('bcde'), 6, { isInverted: true, selection: new Set('af') }],
   ] as const)(
     'should invert selection if selection size > half the total size',
     (selection, totalRecords, expected) => {
-      const actual = optimizeSelection(selection, totalRecords);
+      const actual = optimizeSelection(selection, totalRecords, getKey);
 
       expect(actual).toEqual(expected);
     }

@@ -7,7 +7,7 @@ import {
   isExpandableGridModel,
 } from '@deephaven/grid';
 import { assertNotNull } from '@deephaven/utils';
-import deepEqual from 'deep-equal';
+import deepEqual from 'fast-deep-equal';
 import type IrisGrid from '../IrisGrid';
 
 class IrisGridRowTreeMouseHandler extends GridMouseHandler {

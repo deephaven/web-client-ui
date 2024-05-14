@@ -40,13 +40,16 @@ beforeEach(() => {
 });
 
 it('should optimize selection and map it to another selection', () => {
+  const getKey = jest.fn().mockName('getKey');
+
   const { result } = renderHook(() =>
-    useMappedSelection(viewportData, mapName)
+    useMappedSelection(viewportData, mapName, getKey)
   );
 
   expect(optimizeSelection).toHaveBeenCalledWith(
     viewportData.selectedKeys,
-    viewportData.items.length
+    viewportData.items.length,
+    getKey
   );
 
   expect(mapSelection).toHaveBeenCalledWith(

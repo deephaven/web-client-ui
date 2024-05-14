@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/app-utils",
-  "version": "0.72.0",
+  "version": "0.77.0",
   "description": "Deephaven App Utils",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -28,27 +28,30 @@
     "redux": "^4.x"
   },
   "dependencies": {
-    "@adobe/react-spectrum": "^3.34.1",
+    "@adobe/react-spectrum": "3.33.1",
     "@deephaven/auth-plugins": "file:../auth-plugins",
     "@deephaven/chart": "file:../chart",
     "@deephaven/components": "file:../components",
     "@deephaven/console": "file:../console",
     "@deephaven/dashboard": "file:../dashboard",
     "@deephaven/dashboard-core-plugins": "file:../dashboard-core-plugins",
+    "@deephaven/golden-layout": "file:../golden-layout",
     "@deephaven/icons": "file:../icons",
     "@deephaven/iris-grid": "file:../iris-grid",
     "@deephaven/jsapi-bootstrap": "file:../jsapi-bootstrap",
     "@deephaven/jsapi-components": "file:../jsapi-components",
-    "@deephaven/jsapi-types": "1.0.0-dev0.33.1",
+    "@deephaven/jsapi-types": "1.0.0-dev0.34.0",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
     "@deephaven/plugin": "file:../plugin",
     "@deephaven/react-hooks": "file:../react-hooks",
     "@deephaven/redux": "file:../redux",
     "@deephaven/utils": "file:../utils",
+    "@fontsource/fira-mono": "5.0.13",
+    "@fontsource/fira-sans": "5.0.20",
     "@paciolan/remote-component": "2.13.0",
     "@paciolan/remote-module-loader": "^3.0.2",
-    "fira": "mozilla/fira#4.202"
+    "classnames": "^2.5.1"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

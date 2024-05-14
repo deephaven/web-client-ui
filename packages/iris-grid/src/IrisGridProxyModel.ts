@@ -1,5 +1,5 @@
 /* eslint class-methods-use-this: "off" */
-import deepEqual from 'deep-equal';
+import deepEqual from 'fast-deep-equal';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {

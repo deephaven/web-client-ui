@@ -94,10 +94,12 @@ export function mapSelection<TItem, TMap>(
  * "no filter".
  * @param selection The selection to optimize
  * @param totalRecords The total number of records that can potentially be selected
+ * @param getKey A function to get the key for a given index.
  */
 export function optimizeSelection(
   selection: Selection,
-  totalRecords: number
+  totalRecords: number,
+  getKey: (i: number) => string
 ): { selection: Selection; isInverted: boolean } {
   const isInverted = selection === 'all' || selection.size > totalRecords / 2;
 
@@ -110,8 +112,8 @@ export function optimizeSelection(
         : new Set<Key>(
             // Create a new set from any key that is not selected
             [...generateRange(0, totalRecords - 1)]
-              .filter(i => !selection.has(String(i)))
-              .map(i => String(i))
+              .map(getKey)
+              .filter(key => !selection.has(key))
           );
   }
 

@@ -104,6 +104,7 @@ export class LayoutManager extends EventEmitter {
   private _firstLoad = true;
   private _reactChildMap = new Map<string, React.ReactNode>();
   private _reactChildren: React.ReactNode = null;
+  private _initialHeaderHeight: number;
 
   width: number | null = null;
   height: number | null = null;
@@ -136,6 +137,7 @@ export class LayoutManager extends EventEmitter {
     this.config = this._createConfig(config);
     this._originalContainer = container;
     this.container = this._getContainer();
+    this._initialHeaderHeight = this.config.dimensions.headerHeight;
 
     if (this.isSubWindow) {
       $('body').css('visibility', 'hidden');
@@ -410,6 +412,26 @@ export class LayoutManager extends EventEmitter {
     return this._reactChildren;
   }
 
+  enableHeaders() {
+    this.config.settings.hasHeaders = true;
+    this.config.dimensions.headerHeight = this._initialHeaderHeight;
+    this._findAllStackContainers().forEach(stack => {
+      stack._header.show = true;
+      stack.header.element.toggle(true);
+    });
+    this.updateSize();
+  }
+
+  disableHeaders() {
+    this.config.settings.hasHeaders = false;
+    this.config.dimensions.headerHeight = 0;
+    this._findAllStackContainers().forEach(stack => {
+      stack._header.show = false;
+      stack.header.element.toggle(false);
+    });
+    this.updateSize();
+  }
+
   /**
    * Updates the layout managers size
    * @param width width in pixels
@@ -513,6 +535,7 @@ export class LayoutManager extends EventEmitter {
       };
     }
 
+    config.id = config.id ?? getUniqueId();
     contentItem = new this._typeToItem[config.type](this, config, parent);
     return contentItem;
   }
