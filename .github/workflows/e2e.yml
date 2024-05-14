@@ -62,7 +62,7 @@ jobs:
           key: docker-${{ runner.os }}-${{ github.run_id }}
 
       - name: Load docker image from cache
-        run: docker load -i /image-cache/e2e-ci.tar.gz
+        run: docker load -i image-cache/e2e-ci.tar.gz
 
       - name: Extract browser config
         id: config
