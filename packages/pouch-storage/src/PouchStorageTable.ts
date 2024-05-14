@@ -43,8 +43,7 @@ type PouchFilter = OnlyOneProp<{
   $lt: FilterValue | FilterValue[];
   $lte: FilterValue | FilterValue[];
   $regex: RegExp | string;
-}> &
-  Omit<PouchDB.Find.ConditionOperators, '$regex'>;
+}>;
 
 export function makePouchFilter(
   type: string,
