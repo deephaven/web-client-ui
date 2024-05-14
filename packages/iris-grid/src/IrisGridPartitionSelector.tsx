@@ -329,7 +329,6 @@ class IrisGridPartitionSelector extends Component<
         <div className="table-name">Partitioned Table</div>
         <div className="partition-button-group">
           <Button
-            className="btn-sm"
             onClick={this.handleKeyTableClick}
             kind="inline"
             tooltip="View keys as table"
@@ -340,7 +339,6 @@ class IrisGridPartitionSelector extends Component<
             Keys
           </Button>
           <Button
-            className="btn-sm"
             onClick={this.handleMergeClick}
             kind="inline"
             tooltip="View all partitions as one merged table"
