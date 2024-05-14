@@ -2063,7 +2063,7 @@ class IrisGridTableModelTemplate<
   }
 
   editValueForCell(column: ModelIndex, row: ModelIndex): string {
-    return this.textValueForCell(column, row) as string;
+    return this.textValueForCell(column, row) ?? '';
   }
 
   async delete(ranges: readonly GridRange[]): Promise<void> {
