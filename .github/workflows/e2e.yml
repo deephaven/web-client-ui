@@ -37,6 +37,9 @@ jobs:
           # key it to just this job
           key: docker-${{ runner.os }}-${{ github.run_id }}
 
+      # todo we should probably build and install outside the container
+      # because then it can use the npm cache and not have to install node in container
+
       - name: Build and Save docker image
         run: |
           docker build -t e2e-ci:test -f ./tests/docker-scripts/Dockerfile .
@@ -75,6 +78,8 @@ jobs:
           echo "BROWSER=${MATRIX_CONFIG:0:-4}" >> $GITHUB_ENV
           echo "SHARD=${MATRIX_CONFIG: -3:1}" >> $GITHUB_ENV
           echo "SHARD_TOTAL=${MATRIX_CONFIG: -1:1}" >> $GITHUB_ENV
+
+      # TODO BAKE the server image into the e2e-ci image?
 
       - name: Run tests
         run: './tests/docker-scripts/run.sh e2e-ci-matrix'
