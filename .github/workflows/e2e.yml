@@ -39,7 +39,7 @@ jobs:
 
       - name: Build and Save docker image
         run: |
-          docker build -t e2e-ci -f ./tests/docker-scripts/Dockerfile .
+          docker build -t e2e-ci:test -f ./tests/docker-scripts/Dockerfile .
           docker save e2e-ci -o ./image-cache/e2e-ci.tar.gz
 
   e2e-tests:
