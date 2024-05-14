@@ -35,15 +35,12 @@ export type PouchDBSort = Array<
   string | { [propName: string]: 'asc' | 'desc' }
 >;
 
-type PouchFilter = OnlyOneProp<{
-  $eq: FilterValue | FilterValue[];
-  $ne: FilterValue | FilterValue[];
-  $gt: FilterValue | FilterValue[];
-  $gte: FilterValue | FilterValue[];
-  $lt: FilterValue | FilterValue[];
-  $lte: FilterValue | FilterValue[];
-  $regex: RegExp | string;
-}>;
+type PouchFilter = OnlyOneProp<
+  Pick<
+    PouchDB.Find.ConditionOperators,
+    '$eq' | '$ne' | '$gt' | '$gte' | '$lt' | '$lte' | '$regex'
+  >
+>;
 
 export function makePouchFilter(
   type: string,
@@ -52,9 +49,9 @@ export function makePouchFilter(
   switch (type) {
     case FilterType.in:
     case FilterType.contains:
-      return { $regex: new RegExp(`${value}`) };
+      return { $regex: new RegExp(`${value}`).toString() };
     case FilterType.inIgnoreCase:
-      return { $regex: new RegExp(`${value}`, 'i') };
+      return { $regex: new RegExp(`${value}`, 'i').toString() };
     case FilterType.eq:
       return { $eq: value };
     case FilterType.notEq:
@@ -68,7 +65,7 @@ export function makePouchFilter(
     case FilterType.lessThanOrEqualTo:
       return { $lte: value };
     case FilterType.startsWith:
-      return { $regex: new RegExp(`^(?${value}).*`) };
+      return { $regex: new RegExp(`^(?${value}).*`).toString() };
     default:
       throw new Error(`Unsupported type: ${type}`);
   }
