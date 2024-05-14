@@ -55,6 +55,9 @@ jobs:
         config: [chromium-1-1, firefox-1-1, webkit-1-2, webkit-2-2]
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Restore cached docker image
         uses: actions/cache/restore@v4
         with:
@@ -74,7 +77,7 @@ jobs:
           echo "SHARD_TOTAL=${MATRIX_CONFIG: -1:1}" >> $GITHUB_ENV
 
       - name: Run tests
-        run: 'tests/docker-scripts/run.sh e2e-ci-matrix'
+        run: './tests/docker-scripts/run.sh e2e-ci-matrix'
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
