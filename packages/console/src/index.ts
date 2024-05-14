@@ -3,7 +3,6 @@ import Console from './Console';
 export default Console;
 export { Console };
 export { default as ConsoleInput } from './ConsoleInput';
-export { default as ConsoleMenu } from './ConsoleMenu';
 export { default as SHORTCUTS } from './ConsoleShortcuts';
 export { default as ConsoleStatusBar } from './ConsoleStatusBar';
 export * from './monaco/MonacoThemeProvider';
