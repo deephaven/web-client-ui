@@ -3,8 +3,7 @@ import { SpectrumListViewProps } from '@adobe/react-spectrum';
 import cl from 'classnames';
 import { EMPTY_FUNCTION } from '@deephaven/utils';
 import {
-  ItemKey,
-  ItemSelection,
+  MultipleItemSelectionProps,
   NormalizedItem,
   normalizeTooltipOptions,
   TooltipOptions,
@@ -13,38 +12,22 @@ import {
 import { ListViewWrapper, ListViewWrapperProps } from './ListViewWrapper';
 import { ItemElementOrPrimitive } from '../shared';
 
-export type ListViewProps = {
+export type ListViewProps = MultipleItemSelectionProps & {
   children: ItemElementOrPrimitive | ItemElementOrPrimitive[];
   /** Can be set to true or a TooltipOptions to enable item tooltips */
   tooltip?: boolean | TooltipOptions;
-  selectedKeys?: 'all' | Iterable<ItemKey>;
-  defaultSelectedKeys?: 'all' | Iterable<ItemKey>;
-  disabledKeys?: Iterable<ItemKey>;
-  /**
-   * Handler that is called when the selection change.
-   * Note that under the hood, this is just an alias for Spectrum's
-   * `onSelectionChange`. We are renaming for better consistency with other
-   * components.
-   */
-  onChange?: (keys: ItemSelection) => void;
 
   /** Handler that is called when the picker is scrolled. */
   onScroll?: (event: Event) => void;
-
-  /**
-   * Handler that is called when the selection changes.
-   * @deprecated Use `onChange` instead
-   */
-  onSelectionChange?: (keys: ItemSelection) => void;
 } & Omit<
-  SpectrumListViewProps<NormalizedItem>,
-  | 'children'
-  | 'items'
-  | 'selectedKeys'
-  | 'defaultSelectedKeys'
-  | 'disabledKeys'
-  | 'onSelectionChange'
->;
+    SpectrumListViewProps<NormalizedItem>,
+    | 'children'
+    | 'items'
+    | 'selectedKeys'
+    | 'defaultSelectedKeys'
+    | 'disabledKeys'
+    | 'onSelectionChange'
+  >;
 
 export function ListView({
   children,

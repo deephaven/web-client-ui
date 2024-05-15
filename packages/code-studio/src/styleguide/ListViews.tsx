@@ -15,8 +15,9 @@ import {
   RadioGroup,
   RadioItem,
   useSpectrumThemeProvider,
+  ListActionGroup,
 } from '@deephaven/components';
-import { vsAccount, vsPerson } from '@deephaven/icons';
+import { vsAccount, vsEdit, vsPerson, vsTrash } from '@deephaven/icons';
 import { LIST_VIEW_ROW_HEIGHTS } from '@deephaven/utils';
 import { generateNormalizedItems, sampleSectionIdAndClasses } from './utils';
 
@@ -90,6 +91,13 @@ export function ListViews(): JSX.Element {
   );
 
   const [showIcons, setShowIcons] = useState(true);
+  const [lastActionKey, setLastActionKey] = useState<ItemKey>('');
+  const [lastActionItemKey, setLastActionItemKey] = useState<ItemKey>('');
+
+  const onAction = useCallback((actionKey: ItemKey, itemKey: ItemKey): void => {
+    setLastActionKey(actionKey);
+    setLastActionItemKey(itemKey);
+  }, []);
 
   const onChange = useCallback((keys: 'all' | Iterable<ItemKey>): void => {
     setSelectedKeys(keys);
@@ -211,7 +219,7 @@ export function ListViews(): JSX.Element {
           </Checkbox>
         </Flex>
 
-        <LabeledFlexContainer label="Controlled">
+        <LabeledFlexContainer label="Controlled" gridColumn="span 2">
           <ListViewNormalized
             aria-label="Controlled"
             density={density}
@@ -220,7 +228,29 @@ export function ListViews(): JSX.Element {
             selectedKeys={selectedKeys}
             showItemIcons={showIcons}
             onChange={onChange}
+            actions={
+              <ListActionGroup
+                overflowMode="collapse"
+                buttonLabelBehavior="collapse"
+                maxWidth={80}
+                onAction={onAction}
+              >
+                <Item key="Edit">
+                  <Icon>
+                    <FontAwesomeIcon icon={vsEdit} />
+                  </Icon>
+                  <Text>Edit</Text>
+                </Item>
+                <Item key="Delete">
+                  <Icon>
+                    <FontAwesomeIcon icon={vsTrash} />
+                  </Icon>
+                  <Text>Delete</Text>
+                </Item>
+              </ListActionGroup>
+            }
           />
+          {lastActionKey} {lastActionItemKey}
         </LabeledFlexContainer>
       </Grid>
     </div>

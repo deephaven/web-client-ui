@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import cl from 'classnames';
 import {
+  ListActions,
   NormalizedItem,
   normalizeTooltipOptions,
   useRenderNormalizedItem,
@@ -13,6 +14,7 @@ export interface ListViewNormalizedProps
   extends Omit<ListViewProps, 'children'> {
   normalizedItems: NormalizedItem[];
   showItemIcons: boolean;
+  actions?: ListActions<unknown>;
 }
 
 /**
@@ -34,6 +36,7 @@ export function ListViewNormalized({
   defaultSelectedKeys,
   disabledKeys,
   showItemIcons,
+  actions,
   UNSAFE_className,
   onChange,
   onSelectionChange,
@@ -53,6 +56,7 @@ export function ListViewNormalized({
     showItemDescriptions: false,
     showItemIcons,
     tooltipOptions,
+    actions,
   });
 
   // Spectrum doesn't re-render if only the `renderNormalizedItems` function
