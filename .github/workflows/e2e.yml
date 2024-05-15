@@ -53,7 +53,7 @@ jobs:
 
         # builds the test image and saves it to the cache
         run: |
-          docker-compose -f tests/docker-scripts/docker-compose.yml build e2e-ci-matrix
+          docker compose -f tests/docker-scripts/docker-compose.yml build e2e-ci-matrix
           docker save e2e-ci -o ./image-cache/e2e-ci.tar.gz
 
   e2e-tests:
