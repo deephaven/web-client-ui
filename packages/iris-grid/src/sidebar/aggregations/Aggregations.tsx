@@ -266,8 +266,9 @@ function Aggregations({
         <>
           {!isRollup && (
             <div>
-              <label>Placement:&nbsp;</label>
+              <label id="placement-options-label">Placement:&nbsp;</label>
               <RadioGroup
+                aria-labelledby="placement-options-label"
                 marginStart="size-125"
                 orientation="horizontal"
                 onChange={handleShowOnTopChange}

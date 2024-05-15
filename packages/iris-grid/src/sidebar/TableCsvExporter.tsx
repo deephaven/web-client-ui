@@ -354,9 +354,12 @@ class TableCsvExporter extends Component<
     const { rowCount } = model;
     return (
       <div className="table-csv-exporter">
-        <div className="section-title">Download Rows</div>
+        <div id="download-rows-label" className="section-title">
+          Download Rows
+        </div>
         <div className="form-group">
           <RadioGroup
+            aria-labelledby="download-rows-label"
             onChange={this.handleDownloadRowOptionChanged}
             value={downloadRowOption}
             isDisabled={isDownloading}

@@ -86,3 +86,14 @@ span[class*='spectrum-Radio-label'] {
    */
   margin-top: var(--spectrum-global-dimension-size-85);
 }
+label[class*='spectrum-Radio'] {
+  --spectrum-radio-emphasized-circle-border-color-error: var(
+    --dh-color-negative-bg
+  );
+  --spectrum-radio-emphasized-circle-border-color-error-hover: var(
+    --dh-color-negative-hover-bg
+  );
+  --spectrum-radio-emphasized-circle-border-color-error-down: var(
+    --dh-color-negative-down-bg
+  );
+}

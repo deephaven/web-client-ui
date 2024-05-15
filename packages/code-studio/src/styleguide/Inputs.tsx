@@ -183,8 +183,12 @@ function Inputs(): React.ReactElement {
 
         <div className="col">
           <form>
-            <h5> Radios </h5>
-            <RadioGroup onChange={handleRadioChange} value={radioValue}>
+            <h5 id="inputs-radios-heading">Radios</h5>
+            <RadioGroup
+              aria-labelledby="inputs-radios-heading"
+              onChange={handleRadioChange}
+              value={radioValue}
+            >
               <Radio value="1">Toggle this custom radio</Radio>
               <Radio value="2">Or toggle this other custom radio</Radio>
               <Radio value="3" isDisabled>

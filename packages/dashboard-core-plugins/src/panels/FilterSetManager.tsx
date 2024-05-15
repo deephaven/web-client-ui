@@ -583,6 +583,7 @@ class FilterSetManager extends Component<
                   </div>
                   <div className="form-group">
                     <RadioGroup
+                      aria-label="Restoration options"
                       onChange={this.handleRestoreFullStateChange}
                       value={`${restoreFullState}`}
                     >

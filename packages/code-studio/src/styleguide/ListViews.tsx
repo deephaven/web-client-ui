@@ -116,7 +116,11 @@ export function ListViews(): JSX.Element {
           label="Density"
           gridColumn="span 3"
         >
-          <RadioGroup value={density} onChange={onDensityChange}>
+          <RadioGroup
+            aria-label="Density"
+            value={density}
+            onChange={onDensityChange}
+          >
             <Radio value="compact">Compact</Radio>
             <Radio value="regular">Regular</Radio>
             <Radio value="spacious">Spacious</Radio>
