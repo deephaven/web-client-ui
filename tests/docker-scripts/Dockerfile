@@ -17,21 +17,27 @@ RUN fc-list : family;
 # This is a workaround for copying all package.json files w/ directory structure
 # without needing to list every file as a COPY command
 # The copy --from=copy-packages command will be a cache hit if the package.json files didn't change
-FROM alpine AS copy-packages
-WORKDIR /work/
-COPY . /tmp/web-client-ui
-COPY package.json package-lock.json skip.js ./
-# cd first so the cp doesn't include /tmp/web-client-ui in the paths
-RUN cd /tmp/web-client-ui && cp --parents ./packages/*/package.json /work/ && cp --parents ./packages/code-studio/build /work/
+# FROM alpine AS copy-packages
+# WORKDIR /work/
+# COPY . /tmp/web-client-ui
+# COPY package.json package-lock.json skip.js ./
+# # cd first so the cp doesn't include /tmp/web-client-ui in the paths
+# RUN cd /tmp/web-client-ui && cp --parents ./packages/*/package.json /work/ 
 
-FROM playwright AS copy-playwright
-WORKDIR /work/
-COPY --from=copy-packages /work/ .
+# Copy from the local directory to the /work/ directory
+FROM playwright AS copy
+COPY . .
 
-FROM copy-playwright AS build
-# Copy just the .nvmrc first and install nvm/node/npm first as these will change the least often
-# https://docs.docker.com/build/cache/
-COPY .nvmrc .
+
+FROM copy as build
+# FROM playwright AS copy-playwright
+# WORKDIR /work/
+# COPY --from=copy-packages /work/ .
+
+# FROM copy-playwright AS build
+# # Copy just the .nvmrc first and install nvm/node/npm first as these will change the least often
+# # https://docs.docker.com/build/cache/
+# COPY .nvmrc .
 
 # Set the default shell so the correct node/npm is used after install
 # https://stackoverflow.com/a/60137919
@@ -48,7 +54,7 @@ RUN SKIP_POSTINSTALL=1 npm ci
 # We do this last because the source files are the most likely to change
 # This requires the Dockerfile to be built in the context of the root of the web-client-ui repository
 # https://stackoverflow.com/a/34300129
-COPY . .
+# COPY . .
 
 # Now build the app
 RUN npm run build
