@@ -306,13 +306,13 @@ class IrisGridPartitionSelector extends Component<
         {partitionTables?.[index] && (
           <Picker
             label={column.name}
+            labelPosition="side"
             table={partitionTables[index]}
             direction="bottom"
             shouldFlip={false}
             keyColumn={partitionTables[index].columns[index].name}
             placeholder={'Loading...' as string}
             labelColumn={partitionTables[index].columns[index].name}
-            labelPosition="side"
             onChange={this.getCachedChangeCallback(index)}
             defaultSelectedKey={partitions[index] as ItemKey}
             isDisabled={
