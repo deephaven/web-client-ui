@@ -12,12 +12,8 @@ services:
       - START_OPTS=-Xmx4g -DAuthHandlers=io.deephaven.auth.AnonymousAuthenticationHandler -Ddeephaven.console.type=python -Ddeephaven.application.dir=./data/app.d
 
   e2e-ci-matrix:
-    build:
-      context: ../../
-      dockerfile: ./tests/docker-scripts/Dockerfile
-      target: copy
-      tags:
-        - 'e2e-ci:test'
+    # requires a built image to be provided
+    image: e2e-ci:test
     ipc: host
     environment:
       - VITE_PROXY_URL=http://dhc-server:10000
@@ -26,7 +22,7 @@ services:
       - ../../test-results:/work/test-results
       - ../../playwright-report:/work/playwright-report
       - ../../blob-report:/work/blob-report
-    entrypoint: 'npx playwright test --config=playwright-ci.config.ts --reporter=blob --project=${BROWSER:-default} --shard=${SHARD:-default}/${SHARD_TOTAL:-default}'
+    entrypoint: 'npx --yes playwright test --config=playwright-ci.config.ts --reporter=blob --project=${BROWSER:-chromium} --shard=${SHARD:-1}/${SHARD_TOTAL:-1}'
     depends_on:
       dhc-server:
         condition: service_healthy

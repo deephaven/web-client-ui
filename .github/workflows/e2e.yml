@@ -51,7 +51,7 @@ jobs:
 
       - name: Build and Save docker image
         run: |
-          docker compose -f tests/docker-scripts/docker-compose.yml build e2e-ci-matrix
+          docker build -t e2e-ci:test -f ./tests/docker-scripts/Dockerfile .
           docker save e2e-ci -o ./image-cache/e2e-ci.tar.gz
 
   e2e-tests:
@@ -86,7 +86,7 @@ jobs:
           echo "SHARD_TOTAL=${MATRIX_CONFIG: -1:1}" >> $GITHUB_ENV
 
       - name: Run tests
-        run: docker run e2e-ci:test
+        run: './tests/docker-scripts/run.sh e2e-ci-matrix'
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4

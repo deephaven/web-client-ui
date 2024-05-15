@@ -7,9 +7,9 @@ jest*
 __mocks__/
 .github/
 
-# # production
-# **/build/
-# **/dist/
+# production
+**/build/
+**/dist/
 
 # misc
 .git/
