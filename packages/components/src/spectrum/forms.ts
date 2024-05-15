@@ -1,10 +1,13 @@
 export {
+  // Checkbox can't be re-exported as it collides with DH component
   CheckboxGroup,
   type SpectrumCheckboxGroupProps as CheckboxGroupProps,
   Form,
   type SpectrumFormProps as FormProps,
   NumberField,
   type SpectrumNumberFieldProps as NumberFieldProps,
+  // Radio - re-export once we re-export RadioGroup
+  // RadioGroup - can't be re-exported as it collides with DH component
   RangeSlider,
   type SpectrumRangeSliderProps as RangeSliderProps,
   Slider,
