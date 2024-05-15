@@ -433,6 +433,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
               </div>
             </label>
             <RadioGroup
+              orientation="horizontal"
               onChange={this.handleLinkStateChange}
               value={`${isLinked}`}
             >

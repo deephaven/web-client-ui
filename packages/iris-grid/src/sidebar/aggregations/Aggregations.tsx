@@ -265,9 +265,11 @@ function Aggregations({
       {isAggregationsShown && (
         <>
           {!isRollup && (
-            <div className="form-inline">
+            <div>
               <label>Placement:&nbsp;</label>
               <RadioGroup
+                marginStart="size-125"
+                orientation="horizontal"
                 onChange={handleShowOnTopChange}
                 value={`${showOnTop}`}
               >
