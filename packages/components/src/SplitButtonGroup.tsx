@@ -2,14 +2,14 @@ import React from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
 
-interface ButtonGroupProps {
+interface SplitButtonGroupProps {
   children?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
   'data-testid'?: string;
 }
 
-function ButtonGroup(props: ButtonGroupProps): JSX.Element {
+export function SplitButtonGroup(props: SplitButtonGroupProps): JSX.Element {
   const { children, className, style, 'data-testid': dataTestId } = props;
 
   return (
@@ -24,19 +24,19 @@ function ButtonGroup(props: ButtonGroupProps): JSX.Element {
   );
 }
 
-ButtonGroup.displayName = 'ButtonGroup';
+SplitButtonGroup.displayName = 'SplitButtonGroup';
 
-ButtonGroup.propTypes = {
+SplitButtonGroup.propTypes = {
   children: PropTypes.node.isRequired,
   className: PropTypes.string,
   style: PropTypes.object,
   'data-testid': PropTypes.string,
 };
 
-ButtonGroup.defaultProps = {
+SplitButtonGroup.defaultProps = {
   className: null,
   style: {},
   'data-testid': undefined,
 };
 
-export default ButtonGroup;
+export default SplitButtonGroup;
