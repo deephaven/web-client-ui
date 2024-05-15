@@ -190,7 +190,7 @@ function Inputs(): React.ReactElement {
               <Radio value="3" isDisabled>
                 Disabled radio
               </Radio>
-              <Radio value="4" isDisabled>
+              <Radio value="4" UNSAFE_className="is-invalid">
                 Invalid radio
               </Radio>
               <Radio isHidden={!check4} value="5">
