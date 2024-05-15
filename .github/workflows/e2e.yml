@@ -7,12 +7,14 @@ on:
     branches:
       - main
       - 'release/**'
+      - 'feature/**'
   pull_request:
     branches:
       - main
       - 'release/**'
+      - 'feature/**'
 env:
-  DOCKER_TAG: edge
+  DHC_VERSION: edge
 
 jobs:
   build:
@@ -22,41 +24,26 @@ jobs:
       cancel-in-progress: true
 
     steps:
-      - name: Check installed fonts
-        run: 'fc-list : family'
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/checkout@v4
+      - name: Make cache directory
+        run: mkdir image-cache
 
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
-
-      - name: Cache node modules
-        id: cache-node-modules
+      - name: Create cache for docker image
         uses: actions/cache@v4
         with:
-          path: |
-            node_modules
-            packages/*/node_modules
-          key: e2e-node-modules-${{ hashFiles('package-lock.json')}}
+          path: image-cache
+          # key it to just this job
+          key: docker-${{ runner.os }}-${{ github.run_id }}
 
-      - name: Install dependencies
-        if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        run: npm ci --no-audit
+      # todo we should probably build and install outside the container
+      # because then it can use the npm cache and not have to install node in container
 
-      - name: Build
-        run: npm run build
-
-      - name: Upload build for test jobs
-        uses: actions/upload-artifact@v4
-        with:
-          name: web-build
-          path: |
-            *
-            !node_modules
-          retention-days: 1
+      - name: Build and Save docker image
+        run: |
+          docker build -t e2e-ci:test -f ./tests/docker-scripts/Dockerfile .
+          docker save e2e-ci -o ./image-cache/e2e-ci.tar.gz
 
   e2e-tests:
     runs-on: ubuntu-22.04
@@ -71,46 +58,31 @@ jobs:
         config: [chromium-1-1, firefox-1-1, webkit-1-2, webkit-2-2]
 
     steps:
-      - name: Download build
-        uses: actions/download-artifact@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restore cached docker image
+        uses: actions/cache/restore@v4
         with:
-          name: web-build
+          path: image-cache
+          key: docker-${{ runner.os }}-${{ github.run_id }}
 
-      - name: Run core server:${{ env.DOCKER_TAG }}
-        run: |
-          docker pull --quiet ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
-          docker run --detach --publish 10000:10000 --name dh-core-server -v ./tests/docker-scripts/data:/data --env "START_OPTS=-Xmx4g -DAuthHandlers=io.deephaven.auth.AnonymousAuthenticationHandler -Ddeephaven.application.dir=./data/app.d" ghcr.io/deephaven/server:${{ env.DOCKER_TAG }}
-
-      - name: Cache node modules
-        id: cache-node-modules
-        uses: actions/cache@v4
-        with:
-          path: |
-            node_modules
-            packages/*/node_modules
-          key: e2e-node-modules-${{ hashFiles('package-lock.json')}}
-
-      - name: Install Playwright dependencies
-        run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright install --with-deps
-
-      - name: Playwright version
-        run: npx playwright --version
-
-      - name: Install dependencies
-        if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        run: npm ci --no-audit
+      - name: Load docker image from cache
+        run: docker load -i image-cache/e2e-ci.tar.gz
 
       - name: Extract browser config
         id: config
         env:
           MATRIX_CONFIG: ${{ matrix.config }}
         run: |
-          echo "browser=${MATRIX_CONFIG:0:-4}" >> $GITHUB_OUTPUT
-          echo "shard=${MATRIX_CONFIG: -3:1}" >> $GITHUB_OUTPUT
-          echo "shardTotal=${MATRIX_CONFIG: -1:1}" >> $GITHUB_OUTPUT
+          echo "BROWSER=${MATRIX_CONFIG:0:-4}" >> $GITHUB_ENV
+          echo "SHARD=${MATRIX_CONFIG: -3:1}" >> $GITHUB_ENV
+          echo "SHARD_TOTAL=${MATRIX_CONFIG: -1:1}" >> $GITHUB_ENV
 
-      - name: Run Playwright tests
-        run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright test --config=playwright-ci.config.ts --reporter=blob --project=${{ steps.config.outputs.browser }} --shard=${{ steps.config.outputs.shard }}/${{ steps.config.outputs.shardTotal }}
+      # TODO BAKE the server image into the e2e-ci image?
+
+      - name: Run tests
+        run: './tests/docker-scripts/run.sh e2e-ci-matrix'
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
@@ -156,4 +128,4 @@ jobs:
         with:
           name: playwright-report
           path: playwright-report
-          retention-days: 90
+          retention-days: 30
