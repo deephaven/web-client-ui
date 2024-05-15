@@ -37,18 +37,6 @@ jobs:
           # key it to just this job
           key: docker-${{ runner.os }}-${{ github.run_id }}
 
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: npm run build
-        run: npm run build
-
       - name: Build and Save docker image
         run: |
           docker build -t e2e-ci:test -f ./tests/docker-scripts/Dockerfile .
@@ -67,6 +55,9 @@ jobs:
         config: [chromium-1-1, firefox-1-1, webkit-1-2, webkit-2-2]
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Restore cached docker image
         uses: actions/cache/restore@v4
         with:
