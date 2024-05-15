@@ -9,6 +9,9 @@ describe('PouchStorageTable - Filter Functions', () => {
       ['greaterThanOrEqualTo', 'value', { $gte: 'value' }],
       ['lessThan', 'value', { $lt: 'value' }],
       ['lessThanOrEqualTo', 'value', { $lte: 'value' }],
+      ['startsWith', 'val', { $regex: `/^val.*/` }],
+      ['contains', 'value', { $regex: '/value/' }],
+      ['inIgnoreCase', ['value1', 'value2'], { $regex: '/value1,value2/i' }],
     ])(
       'should create a PouchFilter for %s operator',
       (type, value, expected) => {

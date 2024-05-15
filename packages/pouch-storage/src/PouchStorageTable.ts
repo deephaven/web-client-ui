@@ -65,7 +65,7 @@ export function makePouchFilter(
     case FilterType.lessThanOrEqualTo:
       return { $lte: value };
     case FilterType.startsWith:
-      return { $regex: new RegExp(`^(?${value}).*`).toString() };
+      return { $regex: new RegExp(`^${value}.*`).toString() };
     default:
       throw new Error(`Unsupported type: ${type}`);
   }
