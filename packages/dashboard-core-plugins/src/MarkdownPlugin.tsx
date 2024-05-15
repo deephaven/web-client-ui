@@ -22,20 +22,11 @@ export function MarkdownPlugin(props: MarkdownPluginProps): JSX.Element | null {
   assertIsDashboardPluginProps(props);
   const { id, layout, panelManager, registerComponent } = props;
   const dehydrateMarkdown = useCallback(config => {
-    const { title, componentState, props: configProps } = config;
+    const { componentState, props: configProps } = config;
     let { panelState = null }: MarkdownComponentState = configProps;
     if (componentState != null) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       ({ panelState = null } = componentState as MarkdownComponentState);
-    }
-    if (
-      title == null ||
-      panelState == null ||
-      panelState.content == null ||
-      panelState.content.length === 0 ||
-      panelState.content === MarkdownUtils.DEFAULT_CONTENT
-    ) {
-      // We don't want to save it if there's no content
-      return null;
     }
     return dehydrate(config);
   }, []);
