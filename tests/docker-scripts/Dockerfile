@@ -14,17 +14,6 @@ RUN set -eux; \
 
 RUN fc-list : family;
 
-# Copy just the .nvmrc first and install nvm/node/npm first as these will change the least often
-# https://docs.docker.com/build/cache/
-COPY .nvmrc .
-
-# Set the default shell so the correct node/npm is used after install
-# https://stackoverflow.com/a/60137919
-SHELL ["/bin/bash", "--login", "-i", "-c"]
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
-RUN source /root/.bashrc && nvm install
-SHELL ["/bin/bash", "--login", "-c"]
-
 # This is a workaround for copying all package.json files w/ directory structure
 # without needing to list every file as a COPY command
 # The copy --from=copy-packages command will be a cache hit if the package.json files didn't change
@@ -35,9 +24,28 @@ COPY package.json package-lock.json skip.js ./
 # cd first so the cp doesn't include /tmp/web-client-ui in the paths
 RUN cd /tmp/web-client-ui && cp --parents ./packages/*/package.json /work/
 
-FROM playwright AS build
+FROM playwright AS copy-playwright
 WORKDIR /work/
 COPY --from=copy-packages /work/ .
+
+# Will copy the existing local build files to the docker image
+# CI targets this stage and stops here to run the tests
+# Locally we continue to the next stage to build the app
+FROM copy-playwright AS copy-existing-build
+ADD /packages/code-studio/*build /work/packages/code-studio/build
+
+
+FROM copy-existing-build AS build
+# Copy just the .nvmrc first and install nvm/node/npm first as these will change the least often
+# https://docs.docker.com/build/cache/
+COPY .nvmrc .
+
+# Set the default shell so the correct node/npm is used after install
+# https://stackoverflow.com/a/60137919
+SHELL ["/bin/bash", "--login", "-i", "-c"]
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+RUN source /root/.bashrc && nvm install
+SHELL ["/bin/bash", "--login", "-c"]
 
 # Disable the postinstall script, or npm ci will try and build and the files won't be there
 # We don't need the postinstall since we're going to rebuild right after

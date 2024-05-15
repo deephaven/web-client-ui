@@ -37,12 +37,23 @@ jobs:
           # key it to just this job
           key: docker-${{ runner.os }}-${{ github.run_id }}
 
-      # todo we should probably build and install outside the container
-      # because then it can use the npm cache and not have to install node in container
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: npm run build
+        run: npm run build
 
       - name: Build and Save docker image
+
+        # builds the test image and saves it to the cache
         run: |
-          docker build -t e2e-ci:test -f --build-arg CI=TRUE ./tests/docker-scripts/Dockerfile .
+          docker-compose -f tests/docker-scripts/docker-compose.yml build e2e-ci-matrix
           docker save e2e-ci -o ./image-cache/e2e-ci.tar.gz
 
   e2e-tests:
@@ -58,9 +69,6 @@ jobs:
         config: [chromium-1-1, firefox-1-1, webkit-1-2, webkit-2-2]
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Restore cached docker image
         uses: actions/cache/restore@v4
         with:
@@ -79,10 +87,8 @@ jobs:
           echo "SHARD=${MATRIX_CONFIG: -3:1}" >> $GITHUB_ENV
           echo "SHARD_TOTAL=${MATRIX_CONFIG: -1:1}" >> $GITHUB_ENV
 
-      # TODO BAKE the server image into the e2e-ci image?
-
       - name: Run tests
-        run: './tests/docker-scripts/run.sh e2e-ci-matrix'
+        run: docker run e2e-ci:test
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
