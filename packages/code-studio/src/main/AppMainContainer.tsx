@@ -1002,6 +1002,7 @@ export class AppMainContainer extends Component<
         <SlideTransition in={isSettingsMenuShown} mountOnEnter unmountOnExit>
           <SettingsMenu
             serverConfigValues={serverConfigValues}
+            pluginData={plugins}
             onDone={this.handleSettingsMenuHide}
             user={user}
           />

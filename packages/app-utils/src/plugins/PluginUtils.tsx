@@ -110,13 +110,13 @@ export async function loadModulePlugins(
     const pluginMap: PluginModuleMap = new Map();
     for (let i = 0; i < pluginModules.length; i += 1) {
       const module = pluginModules[i];
-      const { name } = manifest.plugins[i];
+      const { name, version } = manifest.plugins[i];
       if (module.status === 'fulfilled') {
         const moduleValue = getPluginModuleValue(module.value);
         if (moduleValue == null) {
           log.error(`Plugin '${name}' is missing an exported value.`);
         } else {
-          pluginMap.set(name, moduleValue);
+          pluginMap.set(name, { ...moduleValue, version });
         }
       } else {
         log.error(`Unable to load plugin '${name}'`, module.reason);

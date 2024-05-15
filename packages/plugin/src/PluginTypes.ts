@@ -42,7 +42,7 @@ export function isLegacyAuthPlugin(
   return 'AuthPlugin' in plugin;
 }
 
-export type PluginModuleMap = Map<string, PluginModule>;
+export type PluginModuleMap = Map<string, VersionedPluginModule>;
 
 /**
  * @deprecated Use TablePlugin instead
@@ -74,6 +74,8 @@ export function isLegacyPlugin(plugin: unknown): plugin is LegacyPlugin {
 }
 
 export type PluginModule = Plugin | LegacyPlugin;
+
+export type VersionedPluginModule = PluginModule & { version?: string };
 
 export interface Plugin {
   /**
