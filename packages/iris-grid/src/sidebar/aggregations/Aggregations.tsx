@@ -1,10 +1,4 @@
-import React, {
-  ChangeEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { DragDropContext } from 'react-beautiful-dnd';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -20,7 +14,7 @@ import {
   DragUtils,
   Option,
   Select,
-  RadioItem,
+  Radio,
   RadioGroup,
   Button,
 } from '@deephaven/components';
@@ -169,8 +163,8 @@ function Aggregations({
   );
 
   const handleShowOnTopChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      changeShowOnTop(event.target.value === 'true');
+    (value: string) => {
+      changeShowOnTop(value === 'true');
     },
     [changeShowOnTop]
   );
@@ -277,8 +271,8 @@ function Aggregations({
                 onChange={handleShowOnTopChange}
                 value={`${showOnTop}`}
               >
-                <RadioItem value="true">Top</RadioItem>
-                <RadioItem value="false">Bottom</RadioItem>
+                <Radio value="true">Top</Radio>
+                <Radio value="false">Bottom</Radio>
               </RadioGroup>
             </div>
           )}

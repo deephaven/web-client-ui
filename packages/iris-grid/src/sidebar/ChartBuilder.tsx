@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button, RadioGroup, RadioItem, Select } from '@deephaven/components';
+import { Button, RadioGroup, Radio, Select } from '@deephaven/components';
 import {
   vsLink,
   dhUnlink,
@@ -226,8 +226,8 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     }, this.sendChange);
   }
 
-  handleLinkStateChange(event: React.ChangeEvent<HTMLInputElement>): void {
-    this.setState({ isLinked: event.target.value === 'true' }, this.sendChange);
+  handleLinkStateChange(value: string): void {
+    this.setState({ isLinked: value === 'true' }, this.sendChange);
   }
 
   handleReset(): void {
@@ -436,8 +436,8 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
               onChange={this.handleLinkStateChange}
               value={`${isLinked}`}
             >
-              <RadioItem value="true">Sync State</RadioItem>
-              <RadioItem value="false">Freeze State</RadioItem>
+              <Radio value="true">Sync State</Radio>
+              <Radio value="false">Freeze State</Radio>
             </RadioGroup>
           </div>
           <div className="form-row">

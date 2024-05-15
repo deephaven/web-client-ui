@@ -6,8 +6,8 @@ export {
   type SpectrumFormProps as FormProps,
   NumberField,
   type SpectrumNumberFieldProps as NumberFieldProps,
-  // Radio - re-export once we re-export RadioGroup
-  // RadioGroup - we need to replace references to our DH `RadioGroup` before we can re-export
+  Radio,
+  RadioGroup,
   RangeSlider,
   type SpectrumRangeSliderProps as RangeSliderProps,
   Slider,

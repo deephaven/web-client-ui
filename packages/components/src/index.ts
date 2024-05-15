@@ -38,8 +38,6 @@ export * from './navigation';
 export { default as Option } from './Option';
 export * from './popper';
 export * from './modal';
-export { default as RadioGroup } from './RadioGroup';
-export { default as RadioItem } from './RadioItem';
 export { default as RandomAreaPlotAnimation } from './RandomAreaPlotAnimation';
 export * from './SearchableCombobox';
 export { default as Select } from './Select';

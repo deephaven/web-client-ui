@@ -6,7 +6,7 @@ import {
   Checkbox,
   LoadingSpinner,
   RadioGroup,
-  RadioItem,
+  Radio,
   Select,
 } from '@deephaven/components';
 import {
@@ -261,10 +261,8 @@ class TableCsvExporter extends Component<
     }
   }
 
-  handleDownloadRowOptionChanged(
-    event: React.ChangeEvent<HTMLInputElement>
-  ): void {
-    this.setState({ downloadRowOption: event.target.value });
+  handleDownloadRowOptionChanged(value: string): void {
+    this.setState({ downloadRowOption: value });
   }
 
   handleCustomizedDownloadRowOptionChanged(eventTargetValue: string): void {
@@ -361,9 +359,9 @@ class TableCsvExporter extends Component<
           <RadioGroup
             onChange={this.handleDownloadRowOptionChanged}
             value={downloadRowOption}
-            disabled={isDownloading}
+            isDisabled={isDownloading}
           >
-            <RadioItem
+            <Radio
               value={TableCsvExporter.DOWNLOAD_ROW_OPTIONS.ALL_ROWS}
               data-testid="radio-csv-exporter-download-all"
             >
@@ -373,8 +371,8 @@ class TableCsvExporter extends Component<
                   .toString()
                   .replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} rows)`}
               </span>
-            </RadioItem>
-            <RadioItem
+            </Radio>
+            <Radio
               value={TableCsvExporter.DOWNLOAD_ROW_OPTIONS.SELECTED_ROWS}
               data-testid="radio-csv-exporter-only-selected"
             >
@@ -386,8 +384,8 @@ class TableCsvExporter extends Component<
                       .replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} rows)`
                   : null}
               </span>
-            </RadioItem>
-            <RadioItem
+            </Radio>
+            <Radio
               value={TableCsvExporter.DOWNLOAD_ROW_OPTIONS.CUSTOMIZED_ROWS}
               data-testid="radio-csv-exporter-customized-rows"
             >
@@ -424,7 +422,7 @@ class TableCsvExporter extends Component<
                 />
                 <div>Rows</div>
               </div>
-            </RadioItem>
+            </Radio>
           </RadioGroup>
         </div>
         <div className="form-group">

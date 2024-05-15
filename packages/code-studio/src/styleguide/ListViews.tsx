@@ -1,4 +1,4 @@
-import React, { ChangeEvent, ReactNode, useCallback, useState } from 'react';
+import React, { ReactNode, useCallback, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { StyleProps } from '@react-types/shared';
 import {
@@ -13,7 +13,7 @@ import {
   Checkbox,
   ListViewProps,
   RadioGroup,
-  RadioItem,
+  Radio,
   useSpectrumThemeProvider,
   ListActionGroup,
 } from '@deephaven/components';
@@ -83,12 +83,9 @@ export function ListViews(): JSX.Element {
     2 + // listview border
     LIST_VIEW_ROW_HEIGHTS[density ?? 'compact'][scale];
 
-  const onDensityChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      setDensity(event.currentTarget.value as ListViewProps['density']);
-    },
-    []
-  );
+  const onDensityChange = useCallback((value: string) => {
+    setDensity(value as ListViewProps['density']);
+  }, []);
 
   const [showIcons, setShowIcons] = useState(true);
   const [lastActionKey, setLastActionKey] = useState<ItemKey>('');
@@ -120,9 +117,9 @@ export function ListViews(): JSX.Element {
           gridColumn="span 3"
         >
           <RadioGroup value={density} onChange={onDensityChange}>
-            <RadioItem value="compact">Compact</RadioItem>
-            <RadioItem value="regular">Regular</RadioItem>
-            <RadioItem value="spacious">Spacious</RadioItem>
+            <Radio value="compact">Compact</Radio>
+            <Radio value="regular">Regular</Radio>
+            <Radio value="spacious">Spacious</Radio>
           </RadioGroup>
         </LabeledFlexContainer>
 

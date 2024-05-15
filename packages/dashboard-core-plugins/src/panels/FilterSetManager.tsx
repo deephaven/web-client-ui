@@ -29,7 +29,7 @@ import {
   Button,
   CardFlip,
   RadioGroup,
-  RadioItem,
+  Radio,
   Select,
 } from '@deephaven/components';
 
@@ -255,9 +255,9 @@ class FilterSetManager extends Component<
     this.setState({ renameSet: undefined });
   }
 
-  handleRestoreFullStateChange(event: ChangeEvent<HTMLInputElement>): void {
+  handleRestoreFullStateChange(value: string): void {
     this.setState({
-      restoreFullState: event.target.value === 'true',
+      restoreFullState: value === 'true',
     });
   }
 
@@ -586,10 +586,8 @@ class FilterSetManager extends Component<
                       onChange={this.handleRestoreFullStateChange}
                       value={`${restoreFullState}`}
                     >
-                      <RadioItem value="false">Restore only filters</RadioItem>
-                      <RadioItem value="true">
-                        Restore full table state
-                      </RadioItem>
+                      <Radio value="false">Restore only filters</Radio>
+                      <Radio value="true">Restore full table state</Radio>
                     </RadioGroup>
                   </div>
                 </div>
