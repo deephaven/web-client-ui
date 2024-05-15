@@ -42,7 +42,7 @@ function ConsoleObjectsMenu({
       ? objects.filter(
           ({ title }: { title?: string }) =>
             title != null &&
-            title.toLowerCase().indexOf(filterText.toLowerCase()) >= 0
+            title.toLowerCase().includes(filterText.toLowerCase())
         )
       : objects;
     const objectActions = filteredObjects.map(object => ({
