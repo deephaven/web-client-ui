@@ -9,14 +9,13 @@ import {
   NormalizedItem,
   NormalizedSection,
   normalizeTooltipOptions,
-  ItemElementOrPrimitive,
   ItemOrSection,
   SectionElement,
   itemSelectionToStringSet,
   getPositionOfSelectedItemElement,
   isItemElementWithDescription,
 } from './itemUtils';
-import { Item, Section } from '../shared';
+import { Item, ItemElementOrPrimitive, Section } from '../shared';
 import { Text } from '../Text';
 import ItemContent from '../ItemContent';
 
@@ -29,9 +28,7 @@ describe('getItemKey', () => {
     [{ key: 'top-level.key', item: { key: 'item.key' } }, 'item.key'],
     [{ key: 'top-level.key', item: {} }, 'top-level.key'],
     [{ key: 'top-level.key' }, 'top-level.key'],
-    [{ item: { key: 'item.key' } }, 'item.key'],
-    [{}, undefined],
-  ] as NormalizedItem[])(
+  ] as [NormalizedItem, string][])(
     'should return the item.key or fallback to the top-level key: %s, %s',
     (given, expected) => {
       const actual = getItemKey(given);
@@ -224,8 +221,8 @@ describe('isItemOrSection', () => {
 
 describe('isNormalizedSection', () => {
   it.each([
-    [{ item: {} } as NormalizedItem, false],
-    [{ item: { items: [] } } as NormalizedSection, true],
+    [{ key: 'mock.key', item: {} } as NormalizedItem, false],
+    [{ key: 'mock.key', item: { items: [] } } as NormalizedSection, true],
   ])('should return true for a normalized section: %s', (obj, expected) => {
     expect(isNormalizedSection(obj)).toBe(expected);
   });

@@ -26,6 +26,7 @@ import {
   makeMessage,
 } from '@deephaven/jsapi-utils';
 import { assertNotNull } from '@deephaven/utils';
+import { PluginModuleMap } from '@deephaven/plugin';
 import FormattingSectionContent from './FormattingSectionContent';
 import LegalNotice from './LegalNotice';
 import SettingsMenuSection from './SettingsMenuSection';
@@ -33,10 +34,14 @@ import ShortcutSectionContent from './ShortcutsSectionContent';
 import { exportLogs } from '../log/LogExport';
 import './SettingsMenu.scss';
 import ColumnSpecificSectionContent from './ColumnSpecificSectionContent';
-import { getFormattedVersionInfo } from './SettingsUtils';
+import {
+  getFormattedPluginInfo,
+  getFormattedVersionInfo,
+} from './SettingsUtils';
 
 interface SettingsMenuProps {
   serverConfigValues: ServerConfigValues;
+  pluginData: PluginModuleMap;
   user: User;
   onDone: () => void;
 }
@@ -125,16 +130,21 @@ export class SettingsMenu extends Component<
   }
 
   handleExportSupportLogs(): void {
-    const { serverConfigValues } = this.props;
-    exportLogs(undefined, Object.fromEntries(serverConfigValues));
+    const { serverConfigValues, pluginData } = this.props;
+    const pluginInfo = getFormattedPluginInfo(pluginData);
+    exportLogs(undefined, {
+      ...Object.fromEntries(serverConfigValues),
+      pluginInfo,
+    });
   }
 
   render(): ReactElement {
     const supportLink = import.meta.env.VITE_SUPPORT_LINK;
     const docsLink = import.meta.env.VITE_DOCS_LINK;
 
-    const { serverConfigValues, user } = this.props;
+    const { serverConfigValues, pluginData, user } = this.props;
     const versionInfo = getFormattedVersionInfo(serverConfigValues);
+    const pluginInfo = getFormattedPluginInfo(pluginData);
     const deephavenVersion = serverConfigValues.get('deephaven.version');
     const copyShortcut = GLOBAL_SHORTCUTS.COPY_VERSION_INFO.getDisplayText();
 
@@ -335,7 +345,10 @@ export class SettingsMenu extends Component<
                     <CopyButton
                       kind="inline"
                       tooltip="Copy version numbers"
-                      copy={Object.entries(versionInfo)
+                      copy={Object.entries({
+                        ...versionInfo,
+                        ...pluginInfo,
+                      })
                         .map(([key, value]) => `${key}: ${value}`)
                         .join('\n')}
                     >
@@ -344,6 +357,26 @@ export class SettingsMenu extends Component<
                     </CopyButton>
                   </Tooltip>
                 </span>
+              </div>
+              <div className="app-settings-footer-item">
+                <div className="font-weight-bold">Plugins</div>
+                <div className="container">
+                  {Array.from(pluginData.entries())
+                    .filter(plugin => plugin[1].version !== undefined)
+                    .map(([key, value]) => (
+                      <div
+                        key={key}
+                        className="row justify-content-start align-items-center"
+                      >
+                        <div className="col pl-0">
+                          <span className="my-0 text-truncate">{key}</span>
+                        </div>
+                        <div className="col-auto">
+                          <span>{value?.version}</span>
+                        </div>
+                      </div>
+                    ))}
+                </div>
               </div>
               <div className="app-settings-footer-item">
                 <LegalNotice />

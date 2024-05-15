@@ -105,7 +105,7 @@
     "@types/shell-quote": "^1.7.1",
     "@types/shortid": "0.0.29",
     "@vitejs/plugin-react-swc": "^3.3.0",
-    "@vscode/codicons": "0.0.33",
+    "@vscode/codicons": "0.0.36",
     "chokidar-cli": "^2.1.0",
     "cross-env": "^7.0.2",
     "eslint": "^8.29.0",
