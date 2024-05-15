@@ -22,20 +22,13 @@ WORKDIR /work/
 COPY . /tmp/web-client-ui
 COPY package.json package-lock.json skip.js ./
 # cd first so the cp doesn't include /tmp/web-client-ui in the paths
-RUN cd /tmp/web-client-ui && cp --parents ./packages/*/package.json /work/
+RUN cd /tmp/web-client-ui && cp --parents ./packages/*/package.json /work/ && cp --parents ./packages/code-studio/build /work/
 
 FROM playwright AS copy-playwright
 WORKDIR /work/
 COPY --from=copy-packages /work/ .
 
-# Will copy the existing local build files to the docker image
-# CI targets this stage and stops here to run the tests
-# Locally we continue to the next stage to build the app
-FROM copy-playwright AS copy-existing-build
-ADD /packages/code-studio/*build /work/packages/code-studio/build
-
-
-FROM copy-existing-build AS build
+FROM copy-playwright AS build
 # Copy just the .nvmrc first and install nvm/node/npm first as these will change the least often
 # https://docs.docker.com/build/cache/
 COPY .nvmrc .

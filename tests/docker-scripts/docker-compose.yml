@@ -15,7 +15,7 @@ services:
     build:
       context: ../../
       dockerfile: ./tests/docker-scripts/Dockerfile
-      target: copy-existing-build
+      target: copy-playwright
       tags:
         - 'e2e-ci:test'
     ipc: host
