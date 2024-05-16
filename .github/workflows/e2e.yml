@@ -39,7 +39,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: image-cache
-          path: image-cache
+          path: image-cache/
           retention-days: 1
 
   e2e-tests:
