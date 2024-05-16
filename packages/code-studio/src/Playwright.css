@@ -10,7 +10,6 @@
 */
 
 * {
-  font-smooth: none !important;
   -webkit-font-smoothing: none !important;
   font-variant-ligatures: none !important;
   font-feature-settings: 'liga' 0 !important;
