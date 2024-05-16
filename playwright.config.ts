@@ -24,10 +24,6 @@ const config: PlaywrightTestConfig = {
      * For example in `await expect(locator).toHaveText();`
      */
     timeout: TIMEOUT_EXPECT_MS,
-
-    toHaveScreenshot: {
-      stylePath: require.resolve('./tests/playwright.css'),
-    },
   },
   /* Default to run each suite in parallel, suites and optional opt out */
   fullyParallel: true,

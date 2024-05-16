@@ -1,6 +1,6 @@
 /*
-* This stylesheet is only applied to Playwright screenshots.
-*
+* This stylesheet is only applied during playwright tests.
+
 * Attempting to fix kerning issues with webkit
 * by disabling ligatures, kerning and smoothing for all tests
 * https://github.com/microsoft/playwright/issues/20203
