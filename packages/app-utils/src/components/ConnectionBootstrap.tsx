@@ -30,6 +30,7 @@ export function ConnectionBootstrap({
 }: ConnectionBootstrapProps): JSX.Element {
   const api = useApi();
   const client = useClient();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState<unknown>();
   const [connection, setConnection] = useState<DhType.IdeConnection>();
   const [authFailedState, setIsAuthFailedState] = useState<boolean>(false);
@@ -86,7 +87,7 @@ export function ConnectionBootstrap({
       handleAuthFailed
     );
 
-    return authFailedState ? authFailed() : removerFn();
+    return authFailedState ? authFailed : removerFn;
   }, [api, connection, authFailedState]);
 
   const objectFetcher = useCallback(
