@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { LoadingOverlay } from '@deephaven/components';
+import { BasicModal, LoadingOverlay } from '@deephaven/components';
 import {
   ObjectFetcherContext,
   sanitizeVariableDescriptor,
   useApi,
   useClient,
 } from '@deephaven/jsapi-bootstrap';
-import type { dh } from '@deephaven/jsapi-types';
+import dh from '@deephaven/jsapi-shim';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { assertNotNull } from '@deephaven/utils';
 import ConnectionContext from './ConnectionContext';
@@ -30,7 +31,8 @@ export function ConnectionBootstrap({
   const api = useApi();
   const client = useClient();
   const [error, setError] = useState<unknown>();
-  const [connection, setConnection] = useState<dh.IdeConnection>();
+  const [connection, setConnection] = useState<DhType.IdeConnection>();
+  const [authFailedState, setIsAuthFailedState] = useState(false);
   useEffect(
     function initConnection() {
       let isCanceled = false;
@@ -56,47 +58,61 @@ export function ConnectionBootstrap({
     [api, client]
   );
 
-  useEffect(
-    function listenForShutdown() {
-      if (connection == null) return;
+  useEffect(() => {
+    if (connection == null) return;
 
-      function handleShutdown(event: CustomEvent): void {
-        const { detail } = event;
-        log.info('Shutdown', `${JSON.stringify(detail)}`);
-        setError(`Server shutdown: ${detail ?? 'Unknown reason'}`);
-      }
+    // handles the shutdown event
+    function handleShutdown(event: CustomEvent): void {
+      const { detail } = event;
+      log.info('Shutdown', `${JSON.stringify(detail)}`);
+      setError(`Server shutdown: ${detail ?? 'Unknown reason'}`);
+    }
+    const removerFn = connection.addEventListener(
+      api.IdeConnection.EVENT_SHUTDOWN,
+      handleShutdown
+    );
 
-      const removerFn = connection.addEventListener(
-        api.IdeConnection.EVENT_SHUTDOWN,
-        handleShutdown
+    // handles the auth failed event
+    function handleAuthFailed(event: CustomEvent): void {
+      const { detail } = event;
+      log.warn('Reconnect authentication failed', `${JSON.stringify(detail)}`);
+      setError(
+        `Reconnect authentication failed: ${detail ?? 'Unknown reason'}`
       );
-      return removerFn;
-    },
-    [api, connection]
-  );
+      setIsAuthFailedState(true);
+    }
+    const authFailed = connection.addEventListener(
+      dh.CoreClient.EVENT_RECONNECT_AUTH_FAILED,
+      handleAuthFailed
+    );
+
+    return authFailedState ? authFailed() : removerFn();
+  }, [api, connection, authFailedState]);
 
   const objectFetcher = useCallback(
-    async (descriptor: dh.ide.VariableDescriptor) => {
+    async (descriptor: DhType.ide.VariableDescriptor) => {
       assertNotNull(connection, 'No connection available to fetch object with');
       return connection.getObject(sanitizeVariableDescriptor(descriptor));
     },
     [connection]
   );
 
-  if (connection == null || error != null) {
-    return (
-      <LoadingOverlay
-        data-testid="connection-bootstrap-loading"
-        isLoading={connection == null}
-        errorMessage={error != null ? `${error}` : undefined}
-      />
-    );
+  function handleRefresh(): void {
+    log.info('Refreshing application');
+    window.location.reload();
   }
 
   return (
-    <ConnectionContext.Provider value={connection}>
+    <ConnectionContext.Provider value={connection ?? null}>
       <ObjectFetcherContext.Provider value={objectFetcher}>
         {children}
+        <BasicModal
+          confirmButtonText="Refresh"
+          onConfirm={handleRefresh}
+          isOpen={authFailedState}
+          headerText="Authentication failed"
+          bodyText="Credentials are invalid. Please refresh your browser to try and reconnect."
+        />
       </ObjectFetcherContext.Provider>
     </ConnectionContext.Provider>
   );
