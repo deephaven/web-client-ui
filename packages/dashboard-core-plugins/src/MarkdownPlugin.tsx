@@ -27,14 +27,26 @@ export function MarkdownPlugin(props: MarkdownPluginProps): JSX.Element | null {
     if (componentState != null) {
       ({ panelState = null } = componentState as MarkdownComponentState);
     }
-    if (
-      title == null ||
-      panelState == null ||
-      panelState.content == null ||
-      panelState.content.length === 0
-    ) {
+    if (title == null || panelState == null || panelState.content == null) {
       // We don't want to save it if there's no content
       return null;
+    }
+    if (panelState.content === '') {
+      // If the content is empty, display markdown panel with default content
+      const configNew = {
+        type: 'react-component' as const,
+        component: MarkdownPanel.COMPONENT,
+        props: {
+          id: configProps.id,
+          metaData: {},
+          panelState: {
+            content: MarkdownUtils.DEFAULT_CONTENT,
+          },
+        },
+        localDashboardId: configProps.id,
+        title: MarkdownUtils.DEFAULT_TITLE,
+      };
+      return hydrate(configNew);
     }
     return dehydrate(config);
   }, []);
