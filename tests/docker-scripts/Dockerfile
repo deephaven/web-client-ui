@@ -42,4 +42,4 @@ RUN SKIP_POSTINSTALL=1 npm ci
 COPY . .
 
 # Now build the app
-RUN VITE_PLAYWRIGHT=1 npm run build
+RUN VITE_PLAYWRIGHT_CSS=1 npm run build

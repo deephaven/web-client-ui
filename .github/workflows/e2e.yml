@@ -30,17 +30,17 @@ jobs:
       - name: Make cache directory
         run: mkdir image-cache
 
-      - name: Create cache for docker image
-        uses: actions/cache@v4
-        with:
-          path: image-cache
-          # key it to just this job
-          key: docker-${{ runner.os }}-${{ github.run_id }}
-
       - name: Build and Save docker image
         run: |
           docker build -t e2e-ci:test -f ./tests/docker-scripts/Dockerfile .
           docker save e2e-ci -o ./image-cache/e2e-ci.tar.gz
+
+      - name: Store docker build for test matrix
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-cache
+          path: image-cache
+          retention-days: 1
 
   e2e-tests:
     runs-on: ubuntu-22.04
@@ -58,13 +58,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Restore cached docker image
-        uses: actions/cache/restore@v4
+      - name: Download docker image for test matrix
+        uses: actions/download-artifact@v4
         with:
-          path: image-cache
-          key: docker-${{ runner.os }}-${{ github.run_id }}
+          name: image-cache
 
-      - name: Load docker image from cache
+      - name: Load docker image
         run: docker load -i image-cache/e2e-ci.tar.gz
 
       - name: Extract browser config
@@ -89,7 +88,7 @@ jobs:
 
       - name: Dump server logs
         if: failure()
-        run: docker logs dh-core-server > /tmp/server-log.txt
+        run: docker logs dhc-server > /tmp/server-log.txt
 
       - name: Upload server logs
         if: failure()
@@ -97,6 +96,7 @@ jobs:
         with:
           name: server-logs-${{ matrix.config }}
           path: /tmp/server-log.txt
+          retention-days: 14
 
   merge-reports:
     if: ${{ !cancelled() }}
