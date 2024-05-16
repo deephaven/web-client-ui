@@ -96,6 +96,9 @@ label[class*='spectrum-Radio'] {
   --spectrum-radio-emphasized-circle-border-color-error-down: var(
     --dh-color-negative-down-bg
   );
+  --spectrum-radio-circle-border-color-error-key-focus: var(
+    --dh-color-negative-key-focus-bg
+  );
   --spectrum-radio-circle-border-color-error-selected-key-focus: var(
     --dh-color-negative-key-focus-bg
   );
