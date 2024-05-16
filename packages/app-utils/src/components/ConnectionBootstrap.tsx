@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { BasicModal, LoadingOverlay } from '@deephaven/components';
+import { BasicModal } from '@deephaven/components';
 import {
   ObjectFetcherContext,
   sanitizeVariableDescriptor,
@@ -32,7 +32,7 @@ export function ConnectionBootstrap({
   const client = useClient();
   const [error, setError] = useState<unknown>();
   const [connection, setConnection] = useState<DhType.IdeConnection>();
-  const [authFailedState, setIsAuthFailedState] = useState(false);
+  const [authFailedState, setIsAuthFailedState] = useState<boolean>(false);
   useEffect(
     function initConnection() {
       let isCanceled = false;
@@ -105,14 +105,16 @@ export function ConnectionBootstrap({
   return (
     <ConnectionContext.Provider value={connection ?? null}>
       <ObjectFetcherContext.Provider value={objectFetcher}>
-        {children}
-        <BasicModal
-          confirmButtonText="Refresh"
-          onConfirm={handleRefresh}
-          isOpen={authFailedState}
-          headerText="Authentication failed"
-          bodyText="Credentials are invalid. Please refresh your browser to try and reconnect."
-        />
+        <>
+          {children}
+          <BasicModal
+            confirmButtonText="Refresh"
+            onConfirm={handleRefresh}
+            isOpen={authFailedState}
+            headerText="Authentication failed"
+            bodyText="Credentials are invalid. Please refresh your browser to try and reconnect."
+          />
+        </>
       </ObjectFetcherContext.Provider>
     </ConnectionContext.Provider>
   );
