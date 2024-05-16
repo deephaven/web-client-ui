@@ -522,18 +522,6 @@ function __wbg_get_imports() {
         const ret = typeof(getObject(arg0)) === 'bigint';
         return ret;
     };
-    imports.wbg.__wbindgen_bigint_from_i64 = function(arg0) {
-        const ret = arg0;
-        return addHeapObject(ret);
-    };
-    imports.wbg.__wbindgen_jsval_eq = function(arg0, arg1) {
-        const ret = getObject(arg0) === getObject(arg1);
-        return ret;
-    };
-    imports.wbg.__wbindgen_bigint_from_u64 = function(arg0) {
-        const ret = BigInt.asUintN(64, arg0);
-        return addHeapObject(ret);
-    };
     imports.wbg.__wbindgen_number_get = function(arg0, arg1) {
         const obj = getObject(arg1);
         const ret = typeof(obj) === 'number' ? obj : undefined;
@@ -556,6 +544,18 @@ function __wbg_get_imports() {
     imports.wbg.__wbindgen_in = function(arg0, arg1) {
         const ret = getObject(arg0) in getObject(arg1);
         return ret;
+    };
+    imports.wbg.__wbindgen_bigint_from_i64 = function(arg0) {
+        const ret = arg0;
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbindgen_jsval_eq = function(arg0, arg1) {
+        const ret = getObject(arg0) === getObject(arg1);
+        return ret;
+    };
+    imports.wbg.__wbindgen_bigint_from_u64 = function(arg0) {
+        const ret = BigInt.asUintN(64, arg0);
+        return addHeapObject(ret);
     };
     imports.wbg.__wbindgen_is_undefined = function(arg0) {
         const ret = getObject(arg0) === undefined;
@@ -587,19 +587,19 @@ function __wbg_get_imports() {
     imports.wbg.__wbg_set_f975102236d3c502 = function(arg0, arg1, arg2) {
         getObject(arg0)[takeObject(arg1)] = takeObject(arg2);
     };
-    imports.wbg.__wbg_debug_7d82cf3cd21e00b0 = function(arg0) {
+    imports.wbg.__wbg_debug_5fb96680aecf5dc8 = function(arg0) {
         console.debug(getObject(arg0));
     };
-    imports.wbg.__wbg_error_b834525fe62708f5 = function(arg0) {
+    imports.wbg.__wbg_error_8e3928cfb8a43e2b = function(arg0) {
         console.error(getObject(arg0));
     };
-    imports.wbg.__wbg_info_12174227444ccc71 = function(arg0) {
+    imports.wbg.__wbg_info_530a29cb2e4e3304 = function(arg0) {
         console.info(getObject(arg0));
     };
-    imports.wbg.__wbg_log_79d3c56888567995 = function(arg0) {
+    imports.wbg.__wbg_log_5bb5f88f245d7762 = function(arg0) {
         console.log(getObject(arg0));
     };
-    imports.wbg.__wbg_warn_2a68e3ab54e55f28 = function(arg0) {
+    imports.wbg.__wbg_warn_63bbae1730aead09 = function(arg0) {
         console.warn(getObject(arg0));
     };
     imports.wbg.__wbg_new_abda76e883ba8a5f = function() {
