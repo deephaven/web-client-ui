@@ -6,6 +6,7 @@ import * as monaco from 'monaco-editor';
 import Log from '@deephaven/log';
 import type { dh } from '@deephaven/jsapi-types';
 import init, { Workspace, type Diagnostic } from './ruff/ruff_wasm';
+import throttle from 'lodash.throttle';
 
 const log = Log.module('MonacoCompletionProvider');
 
@@ -24,57 +25,91 @@ class MonacoProviders extends PureComponent<
 > {
   static workspace?: Workspace;
 
+  static lintPython = throttle((model: monaco.editor.ITextModel): void => {
+    if (!MonacoProviders.workspace) {
+      return;
+    }
+
+    monaco.editor.setModelMarkers(
+      model,
+      'ruff',
+      MonacoProviders.workspace
+        .check(model.getValue())
+        .map((d: Diagnostic) => ({
+          startLineNumber: d.location.row,
+          startColumn: d.location.column,
+          endLineNumber: d.end_location.row,
+          endColumn: d.end_location.column,
+          message: `${d.code}: ${d.message}`,
+          severity: monaco.MarkerSeverity.Error,
+          tags:
+            d.code === 'F401' || d.code === 'F841'
+              ? [monaco.MarkerTag.Unnecessary]
+              : [],
+        }))
+    );
+  }, 250);
+
+  static initRuffPromise?: Promise<void>;
+
   static async initRuff(): Promise<void> {
-    await init();
-    MonacoProviders.workspace = new Workspace({
-      preview: true,
-      builtins: [],
-      'target-version': 'py38',
-      'line-length': 88,
-      'indent-width': 4,
-      lint: {
-        'allowed-confusables': [],
-        'dummy-variable-rgx': '^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$',
-        'extend-select': [],
-        'extend-fixable': [],
-        'flake8-implicit-str-concat': {
-          'allow-multiline': false,
+    if (MonacoProviders.initRuffPromise) {
+      return MonacoProviders.initRuffPromise;
+    }
+
+    MonacoProviders.initRuffPromise = init().then(() => {
+      MonacoProviders.workspace = new Workspace({
+        preview: true,
+        builtins: [],
+        'target-version': 'py38',
+        'line-length': 88,
+        'indent-width': 4,
+        lint: {
+          'allowed-confusables': [],
+          'dummy-variable-rgx': '^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$',
+          'extend-select': [],
+          'extend-fixable': [],
+          'flake8-implicit-str-concat': {
+            'allow-multiline': false,
+          },
+          external: [],
+          ignore: ['ISC003'],
+          select: [
+            'F',
+            'E1',
+            'E2',
+            'E9',
+            'E711',
+            'W291',
+            'W293',
+            'W605',
+            'I002',
+            'B002',
+            'B015',
+            'B016',
+            'B018',
+            'B020',
+            'B023',
+            'B032',
+            'B035',
+            'B909',
+            'COM818',
+            'ISC',
+            'PLE',
+            'RUF001',
+            'RUF021',
+            'RUF027',
+            'PLR1704',
+          ],
         },
-        external: [],
-        ignore: ['ISC003'],
-        select: [
-          'F',
-          'E1',
-          'E2',
-          'E9',
-          'E711',
-          'W291',
-          'W293',
-          'W605',
-          'I002',
-          'B002',
-          'B015',
-          'B016',
-          'B018',
-          'B020',
-          'B023',
-          'B032',
-          'B035',
-          'B909',
-          'COM818',
-          'ISC',
-          'PLE',
-          'RUF001',
-          'RUF021',
-          'RUF027',
-          'PLR1704',
-        ],
-      },
-      format: {
-        'indent-style': 'space',
-        'quote-style': 'double',
-      },
+        format: {
+          'indent-style': 'space',
+          'quote-style': 'double',
+        },
+      });
     });
+
+    return MonacoProviders.initRuffPromise;
   }
 
   /**
@@ -327,31 +362,6 @@ class MonacoProviders extends PureComponent<
         text: MonacoProviders.workspace.format(model.getValue()),
       },
     ];
-  }
-
-  static lintPython(model: monaco.editor.ITextModel): void {
-    if (!MonacoProviders.workspace) {
-      return;
-    }
-
-    monaco.editor.setModelMarkers(
-      model,
-      'ruff',
-      MonacoProviders.workspace
-        .check(model.getValue())
-        .map((d: Diagnostic) => ({
-          startLineNumber: d.location.row,
-          startColumn: d.location.column,
-          endLineNumber: d.end_location.row,
-          endColumn: d.end_location.column,
-          message: `${d.code}: ${d.message}`,
-          severity: monaco.MarkerSeverity.Error,
-          tags:
-            d.code === 'F401' || d.code === 'F841'
-              ? [monaco.MarkerTag.Unnecessary]
-              : [],
-        }))
-    );
   }
 
   constructor(props: MonacoProviderProps) {
