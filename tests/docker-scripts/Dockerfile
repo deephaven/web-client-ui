@@ -33,7 +33,7 @@ COPY --from=copy-packages /work/ .
 
 # Disable the postinstall script, or npm ci will try and build and the files won't be there
 # We don't need the postinstall since we're going to rebuild right after
-RUN SKIP_POSTINSTALL=1 npm ci
+RUN nvm use && SKIP_POSTINSTALL=1 npm ci
 
 # Copy the web-client-ui src folder to the docker image
 # We do this last because the source files are the most likely to change
