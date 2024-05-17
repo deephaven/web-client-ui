@@ -1,6 +1,6 @@
 import { Component, useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 import {
   assertIsDashboardPluginProps,
   DashboardPluginComponentProps,
@@ -143,7 +143,7 @@ export function FilterPlugin(props: FilterPluginProps): JSX.Element | null {
       title = 'DropdownFilter',
       metadata = {},
       panelState = null,
-      id = shortid.generate(),
+      id = nanoid(),
       focusElement = LayoutUtils.DEFAULT_FOCUS_SELECTOR,
       createNewStack = false,
       dragEvent = null,
@@ -173,7 +173,7 @@ export function FilterPlugin(props: FilterPluginProps): JSX.Element | null {
       title = 'InputFilter',
       metadata = {},
       panelState = null,
-      id = shortid.generate(),
+      id = nanoid(),
       focusElement = LayoutUtils.DEFAULT_FOCUS_SELECTOR,
       createNewStack = false,
       dragEvent = undefined,
@@ -203,7 +203,7 @@ export function FilterPlugin(props: FilterPluginProps): JSX.Element | null {
       title = 'FilterSets',
       metadata = {},
       panelState = null,
-      id = shortid.generate(),
+      id = nanoid(),
       focusElement = LayoutUtils.DEFAULT_FOCUS_SELECTOR,
       createNewStack = false,
       dragEvent = null,

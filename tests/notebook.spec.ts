@@ -1,12 +1,13 @@
 import { test, expect } from '@playwright/test';
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 import { pasteInMonaco } from './utils';
 
 // keep this as serial becomes it runs commands
 test.describe.configure({ mode: 'serial' });
 
 test('test creating a file, saving it, reloading the page, closing it, re-opening it, running it, then deleting it', async ({
-  page, browserName
+  page,
+  browserName,
 }) => {
   await page.goto('');
 
@@ -19,7 +20,7 @@ test('test creating a file, saving it, reloading the page, closing it, re-openin
   // Click editor container
   await page.locator('.editor-container').click();
 
-  const message = `Hello notebook ${browserName} ${shortid()}!`;
+  const message = `Hello notebook ${browserName} ${nanoid()}!`;
   const command = `print("${message}")`;
 
   await pasteInMonaco(page.locator('.editor-container'), command);
@@ -28,7 +29,7 @@ test('test creating a file, saving it, reloading the page, closing it, re-openin
   await page.locator('[aria-label="Save"]').click();
 
   // Generate a unique filename so it doesn't conflict with any previously created files
-  const filename = `__playwright_test${shortid()}.py`;
+  const filename = `__playwright_test${nanoid()}.py`;
 
   // Fill id=file-name-input
   await page.locator('id=file-name-input').fill(filename);

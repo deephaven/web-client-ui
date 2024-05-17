@@ -26,7 +26,7 @@
     "@deephaven/utils": "file:../utils",
     "lodash.debounce": "^4.0.8",
     "lodash.throttle": "^4.1.1",
-    "shortid": "^2.2.16"
+    "nanoid": "^5.0.7"
   },
   "peerDependencies": {
     "react": ">=16.8.0"

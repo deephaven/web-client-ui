@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 import { AppDashboards, useConnection, useUser } from '@deephaven/app-utils';
 import type GoldenLayout from '@deephaven/golden-layout';
 import type { ItemConfigType } from '@deephaven/golden-layout';
@@ -106,7 +106,7 @@ function App(): JSX.Element {
         pluginId,
         data,
       }: CreateDashboardPayload) {
-        const id = shortid();
+        const id = nanoid();
         dispatch(setDashboardPluginData(id, pluginId, data));
         setDashboardId(id);
       }

@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 
 export function getHashValue(key: string) {
   var matches = location.hash.match(new RegExp(key + '=([^&]*)'));
@@ -41,7 +41,7 @@ export function removeFromArray<T>(item: T, array: T[]) {
 }
 
 export function getUniqueId() {
-  return shortid();
+  return nanoid();
 }
 
 /**

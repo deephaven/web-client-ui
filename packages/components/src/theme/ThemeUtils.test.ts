@@ -29,7 +29,7 @@ import {
   TMP_CSS_PROP_PREFIX,
 } from './ThemeUtils';
 
-jest.mock('shortid');
+jest.mock('nanoid');
 
 const { asMock, createMockProxy } = TestUtils;
 

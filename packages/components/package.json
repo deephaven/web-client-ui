@@ -42,13 +42,13 @@
     "lodash.debounce": "^4.0.8",
     "lodash.flatten": "^4.4.0",
     "memoizee": "^0.4.15",
+    "nanoid": "^5.0.7",
     "popper.js": "^1.16.1",
     "prop-types": "^15.7.2",
     "react-beautiful-dnd": "^13.1.0",
     "react-transition-group": "^4.4.2",
     "react-virtualized-auto-sizer": "1.0.6",
-    "react-window": "^1.8.6",
-    "shortid": "^2.2.16"
+    "react-window": "^1.8.6"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

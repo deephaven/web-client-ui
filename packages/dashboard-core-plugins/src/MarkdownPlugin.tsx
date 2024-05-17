@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react';
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 import {
   assertIsDashboardPluginProps,
   DashboardPluginComponentProps,
@@ -44,7 +44,7 @@ export function MarkdownPlugin(props: MarkdownPluginProps): JSX.Element | null {
     ({
       title = '',
       metadata = {},
-      id: panelId = shortid.generate(),
+      id: panelId = nanoid(),
       focusElement = LayoutUtils.DEFAULT_FOCUS_SELECTOR,
       createNewStack = false,
       dragEvent = null,

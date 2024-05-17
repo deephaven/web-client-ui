@@ -7,7 +7,7 @@ import {
   webkit,
 } from '@playwright/test';
 import os from 'node:os';
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 
 export const HIDE_FROM_E2E_TESTS_CLASS = 'hide-from-e2e-tests';
 
@@ -134,7 +134,7 @@ export function generateVarName(prefix = 'v'): string {
   // Don't allow a `-` in variable names
   let id: string;
   do {
-    id = shortid();
+    id = nanoid();
   } while (id.includes('-'));
   return `${prefix}_${id}`;
 }
