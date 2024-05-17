@@ -3,8 +3,6 @@ import shortid from 'shortid';
 import {
   assertIsDashboardPluginProps,
   DashboardPluginComponentProps,
-  dehydrate,
-  hydrate,
   LayoutUtils,
   useListener,
 } from '@deephaven/dashboard';
@@ -32,9 +30,6 @@ export function MarkdownPlugin(props: MarkdownPluginProps): JSX.Element | null {
       dragEvent = null,
     } = {}) => {
       const openedMarkdowns = panelManager.getOpenedPanelConfigsOfType(
-        MarkdownPanel.COMPONENT
-      );
-      const closedMarkdowns = panelManager.getClosedPanelConfigsOfType(
         MarkdownPanel.COMPONENT
       );
       const usedTitles = openedMarkdowns.map(markdown => markdown.title ?? '');
