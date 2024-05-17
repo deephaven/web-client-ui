@@ -5,7 +5,7 @@ import { PureComponent } from 'react';
 import * as monaco from 'monaco-editor';
 import Log from '@deephaven/log';
 import type { dh } from '@deephaven/jsapi-types';
-import init, { Workspace } from './ruff/ruff_wasm';
+import init, { Workspace, type Diagnostic } from './ruff/ruff_wasm';
 
 const log = Log.module('MonacoCompletionProvider');
 
@@ -22,6 +22,61 @@ class MonacoProviders extends PureComponent<
   MonacoProviderProps,
   Record<string, never>
 > {
+  static workspace?: Workspace;
+
+  static async initRuff(): Promise<void> {
+    await init();
+    MonacoProviders.workspace = new Workspace({
+      preview: true,
+      builtins: [],
+      'target-version': 'py38',
+      'line-length': 88,
+      'indent-width': 4,
+      lint: {
+        'allowed-confusables': [],
+        'dummy-variable-rgx': '^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$',
+        'extend-select': [],
+        'extend-fixable': [],
+        'flake8-implicit-str-concat': {
+          'allow-multiline': false,
+        },
+        external: [],
+        ignore: ['ISC003'],
+        select: [
+          'F',
+          'E1',
+          'E2',
+          'E9',
+          'E711',
+          'W291',
+          'W293',
+          'W605',
+          'I002',
+          'B002',
+          'B015',
+          'B016',
+          'B018',
+          'B020',
+          'B023',
+          'B032',
+          'B035',
+          'B909',
+          'COM818',
+          'ISC',
+          'PLE',
+          'RUF001',
+          'RUF021',
+          'RUF027',
+          'PLR1704',
+        ],
+      },
+      format: {
+        'indent-style': 'space',
+        'quote-style': 'double',
+      },
+    });
+  }
+
   /**
    * Converts LSP CompletionItemKind to Monaco CompletionItemKind
    * Defaults to Variable if no LSP kind was provided
@@ -124,15 +179,187 @@ class MonacoProviders extends PureComponent<
     };
   }
 
+  static handlePythonCodeActionRequest(
+    model: monaco.editor.ITextModel,
+    range: monaco.Range
+  ): monaco.languages.ProviderResult<monaco.languages.CodeActionList> {
+    if (!MonacoProviders.workspace) {
+      return {
+        actions: [],
+        dispose: () => {
+          /* no-op */
+        },
+      };
+    }
+
+    const diagnostics = (
+      MonacoProviders.workspace.check(model.getValue()) as Diagnostic[]
+    ).filter(
+      d =>
+        d.location.row === range.startLineNumber &&
+        d.location.column >= range.startColumn &&
+        d.location.column <= range.endColumn
+    );
+
+    const fixActions: monaco.languages.CodeAction[] = diagnostics
+      .filter(({ fix }) => fix != null)
+      .map(d => {
+        let title = 'Fix';
+        if (d.fix != null) {
+          if (d.fix.message != null && d.fix.message !== '') {
+            title = `${d.code}: ${d.fix.message}`;
+          } else {
+            title = `Fix ${d.code}`;
+          }
+        }
+        return {
+          title,
+          id: `fix-${d.code}`,
+          kind: 'quickfix',
+          edit: d.fix
+            ? {
+                edits: d.fix.edits.map(edit => ({
+                  resource: model.uri,
+                  versionId: model.getVersionId(),
+                  textEdit: {
+                    range: {
+                      startLineNumber: edit.location.row,
+                      startColumn: edit.location.column,
+                      endLineNumber: edit.end_location.row,
+                      endColumn: edit.end_location.column,
+                    },
+                    text: edit.content ?? '',
+                  },
+                })),
+              }
+            : undefined,
+        };
+      });
+
+    const disableActions: monaco.languages.CodeAction[] = diagnostics
+      .map(d => {
+        const line = model.getLineContent(d.location.row);
+        const lastToken = monaco.editor
+          .tokenize(line, model.getLanguageId())[0]
+          .at(-1);
+        const lineEdit = {
+          range: {
+            startLineNumber: d.location.row,
+            startColumn: line.length + 1,
+            endLineNumber: d.location.row,
+            endColumn: line.length + 1,
+          },
+          text: ` # noqa: ${d.code}`,
+        };
+        if (lastToken != null && lastToken.type.startsWith('comment')) {
+          // Already a comment at the end of the line
+          lineEdit.text = `# noqa: ${d.code} `;
+          if (line.startsWith('# noqa:', lastToken.offset)) {
+            // Already another suppressed rule on the line
+            lineEdit.range.startColumn = lastToken.offset + 1;
+            lineEdit.range.endColumn = lastToken.offset + 9; // "# noqa: " length + 1 to offset
+          } else {
+            lineEdit.range.startColumn = lastToken.offset + 1;
+            lineEdit.range.endColumn = line.startsWith('# ', lastToken.offset)
+              ? lastToken.offset + 3 // "# " + 1 to offset
+              : lastToken.offset + 2; // "#" + 1 to offset
+          }
+        }
+        return [
+          {
+            title: `Disable ${d.code} for this line`,
+            kind: 'quickfix',
+            edit: {
+              edits: [
+                {
+                  resource: model.uri,
+                  versionId: model.getVersionId(),
+                  textEdit: lineEdit,
+                },
+              ],
+            },
+          },
+          {
+            title: `Disable ${d.code} for this file`,
+            kind: 'quickfix',
+            edit: {
+              edits: [
+                {
+                  resource: model.uri,
+                  versionId: model.getVersionId(),
+                  textEdit: {
+                    range: {
+                      startLineNumber: 1,
+                      startColumn: 1,
+                      endLineNumber: 1,
+                      endColumn: 1,
+                    },
+                    text: `# ruff: noqa: ${d.code}\n`,
+                  },
+                },
+              ],
+            },
+          },
+        ];
+      })
+      .flat();
+
+    return {
+      actions: [...fixActions, ...disableActions],
+      dispose: () => {
+        /* no-op */
+      },
+    };
+  }
+
+  static handlePythonFormatRequest(
+    model: monaco.editor.ITextModel,
+    options: monaco.languages.FormattingOptions,
+    token: monaco.CancellationToken
+  ): monaco.languages.ProviderResult<monaco.languages.TextEdit[]> {
+    if (!MonacoProviders.workspace) {
+      return;
+    }
+
+    return [
+      {
+        range: model.getFullModelRange(),
+        text: MonacoProviders.workspace.format(model.getValue()),
+      },
+    ];
+  }
+
+  static lintPython(model: monaco.editor.ITextModel): void {
+    if (!MonacoProviders.workspace) {
+      return;
+    }
+
+    monaco.editor.setModelMarkers(
+      model,
+      'ruff',
+      MonacoProviders.workspace
+        .check(model.getValue())
+        .map((d: Diagnostic) => ({
+          startLineNumber: d.location.row,
+          startColumn: d.location.column,
+          endLineNumber: d.end_location.row,
+          endColumn: d.end_location.column,
+          message: `${d.code}: ${d.message}`,
+          severity: monaco.MarkerSeverity.Error,
+          tags:
+            d.code === 'F401' || d.code === 'F841'
+              ? [monaco.MarkerTag.Unnecessary]
+              : [],
+        }))
+    );
+  }
+
   constructor(props: MonacoProviderProps) {
     super(props);
 
     this.handleCompletionRequest = this.handleCompletionRequest.bind(this);
     this.handleSignatureRequest = this.handleSignatureRequest.bind(this);
     this.handleHoverRequest = this.handleHoverRequest.bind(this);
-    this.handleFormatRequest = this.handleFormatRequest.bind(this);
-    this.handleLinting = this.handleLinting.bind(this);
-    this.handleCodeActionRequest = this.handleCodeActionRequest.bind(this);
   }
 
   componentDidMount(): void {
@@ -161,42 +388,16 @@ class MonacoProviders extends PureComponent<
       );
     }
 
-    init().then(() => {
-      this.workspace = new Workspace({
-        preview: false,
-        builtins: [],
-        'target-version': 'py38',
-        'line-length': 88,
-        'indent-width': 4,
-        lint: {
-          'allowed-confusables': [],
-          'dummy-variable-rgx': '^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$',
-          'extend-select': [],
-          'extend-fixable': [],
-          external: [],
-          ignore: [],
-          select: ['F', 'E4', 'E7', 'E9'],
-        },
-        format: {
-          'indent-style': 'space',
-          'quote-style': 'double',
-        },
+    if (MonacoProviders.workspace == null) {
+      MonacoProviders.initRuff().then(() => {
+        MonacoProviders.lintPython(model);
       });
+    } else {
+      MonacoProviders.lintPython(model);
+    }
 
-      monaco.languages.registerDocumentFormattingEditProvider(language, {
-        provideDocumentFormattingEdits: this.handleFormatRequest,
-      });
-
-      console.log(monaco);
-      monaco.languages.registerCodeActionProvider(language, {
-        provideCodeActions: this.handleCodeActionRequest,
-      });
-
-      this.handleLinting(model);
-
-      model.onDidChangeContent(() => {
-        this.handleLinting(model);
-      });
+    model.onDidChangeContent(() => {
+      MonacoProviders.lintPython(model);
     });
   }
 
@@ -211,8 +412,6 @@ class MonacoProviders extends PureComponent<
   registeredSignatureProvider?: monaco.IDisposable;
 
   registeredHoverProvider?: monaco.IDisposable;
-
-  workspace?: Workspace;
 
   handleCompletionRequest(
     model: monaco.editor.ITextModel,
@@ -396,100 +595,6 @@ class MonacoProviders extends PureComponent<
       });
 
     return monacoHover;
-  }
-
-  handleFormatRequest(
-    model: monaco.editor.ITextModel,
-    options: monaco.languages.FormattingOptions,
-    token: monaco.CancellationToken
-  ): monaco.languages.ProviderResult<monaco.languages.TextEdit[]> {
-    if (!this.workspace) {
-      return;
-    }
-
-    return [
-      {
-        range: model.getFullModelRange(),
-        text: this.workspace.format(model.getValue()),
-      },
-    ];
-  }
-
-  handleLinting(model: monaco.editor.ITextModel): void {
-    if (!this.workspace) {
-      return;
-    }
-
-    monaco.editor.setModelMarkers(
-      model,
-      'ruff',
-      this.workspace.check(model.getValue()).map((d: any) => ({
-        startLineNumber: d.location.row,
-        startColumn: d.location.column,
-        endLineNumber: d.end_location.row,
-        endColumn: d.end_location.column,
-        message: `${d.code}: ${d.message}`,
-        severity: monaco.MarkerSeverity.Error,
-        tags:
-          d.code === 'F401' || d.code === 'F841'
-            ? [monaco.MarkerTag.Unnecessary]
-            : [],
-      }))
-    );
-  }
-
-  handleCodeActionRequest(
-    model: monaco.editor.ITextModel,
-    range: monaco.Range
-  ): monaco.languages.ProviderResult<monaco.languages.CodeActionList> {
-    if (!this.workspace) {
-      return {
-        actions: [],
-        dispose: () => {
-          /* no-op */
-        },
-      };
-    }
-
-    console.log(this.workspace.check(model.getValue()));
-
-    const actions = this.workspace
-      .check(model.getValue())
-      .filter((d: any) => range.startLineNumber === d.location.row)
-      .filter(({ fix }: { fix: any }) => fix != null)
-      .map((d: any) => ({
-        title: d.fix
-          ? d.fix.message
-            ? `${d.code}: ${d.fix.message}`
-            : `Fix ${d.code}`
-          : 'Fix',
-        id: `fix-${d.code}`,
-        kind: 'quickfix',
-        edit: d.fix
-          ? {
-              edits: d.fix.edits.map((edit: any) => ({
-                resource: model.uri,
-                versionId: model.getVersionId(),
-                textEdit: {
-                  range: {
-                    startLineNumber: edit.location.row,
-                    startColumn: edit.location.column,
-                    endLineNumber: edit.end_location.row,
-                    endColumn: edit.end_location.column,
-                  },
-                  text: edit.content || '',
-                },
-              })),
-            }
-          : undefined,
-      }));
-
-    return {
-      actions,
-      dispose: () => {
-        /* no-op */
-      },
-    };
   }
 
   render(): null {
