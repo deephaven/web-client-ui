@@ -129,7 +129,7 @@ export async function openPlot(
  * @param length Length to give id
  * @returns A unique valid id
  */
-function generateId(length = 21) {
+export function generateId(length = 21): string {
   let id = '';
   for (let i = 0; i < length; i += 1) {
     id += Math.random().toString(36).substr(2, 1);

@@ -1,6 +1,10 @@
 import { test, expect, Page, Locator } from '@playwright/test';
-import { nanoid } from 'nanoid';
-import { generateVarName, pasteInMonaco, makeTableCommand } from './utils';
+import {
+  generateVarName,
+  pasteInMonaco,
+  makeTableCommand,
+  generateId,
+} from './utils';
 
 let page: Page;
 let consoleInput: Locator;
@@ -21,7 +25,7 @@ test.afterAll(async () => {
 
 test.describe('console input tests', () => {
   test('print commands get logged', async ({ browserName }) => {
-    const message = `Hello ${browserName} ${nanoid()}!`;
+    const message = `Hello ${browserName} ${generateId()}!`;
     const command = `print("${message}")`;
 
     await pasteInMonaco(consoleInput, command);
