@@ -27,9 +27,10 @@ COPY .nvmrc .
 
 # Set the default shell so the correct node/npm is used after install
 # Based on https://stackoverflow.com/a/60137919
-# All node/npm commands should be run with /bin/bash --login -i -c "command" to run with the nvmrc version
-RUN /bin/bash --login -i -c "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash && \
-source /root/.bashrc && nvm install"
+# Shell needs to be on for all node commands, and docker compose entry points need /bin/bash -i
+SHELL ["/bin/bash", "--login", "-i", "-c"]
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+RUN source /root/.bashrc && nvm install
 
 # Copy the package.json files
 COPY --from=copy-packages /work/ .
@@ -37,7 +38,9 @@ COPY --from=copy-packages /work/ .
 # Disable the postinstall script, or npm ci will try and build and the files won't be there
 # We don't need the postinstall since we're going to rebuild right after
 
-RUN /bin/bash --login -i -c "SKIP_POSTINSTALL=1 npm ci"
+RUN node --version
+
+RUN SKIP_POSTINSTALL=1 npm ci
 
 # Copy the web-client-ui src folder to the docker image
 # We do this last because the source files are the most likely to change
@@ -46,4 +49,4 @@ RUN /bin/bash --login -i -c "SKIP_POSTINSTALL=1 npm ci"
 COPY . .
 
 # Now build the app
-RUN RUN /bin/bash --login -c "VITE_PLAYWRIGHT_CSS=1 npm run build"
+RUN VITE_PLAYWRIGHT_CSS=1 npm run build
