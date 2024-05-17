@@ -21,35 +21,6 @@ export type MarkdownComponentState = {
 export function MarkdownPlugin(props: MarkdownPluginProps): JSX.Element | null {
   assertIsDashboardPluginProps(props);
   const { id, layout, panelManager, registerComponent } = props;
-  const dehydrateMarkdown = useCallback(config => {
-    const { title, componentState, props: configProps } = config;
-    let { panelState = null }: MarkdownComponentState = configProps;
-    if (componentState != null) {
-      ({ panelState = null } = componentState as MarkdownComponentState);
-    }
-    if (title == null || panelState == null || panelState.content == null) {
-      // We don't want to save it if there's no content
-      return null;
-    }
-    if (panelState.content === '') {
-      // If the content is empty, display markdown panel with default content
-      const configNew = {
-        type: 'react-component' as const,
-        component: MarkdownPanel.COMPONENT,
-        props: {
-          id: configProps.id,
-          metaData: {},
-          panelState: {
-            content: MarkdownUtils.DEFAULT_CONTENT,
-          },
-        },
-        localDashboardId: configProps.id,
-        title: MarkdownUtils.DEFAULT_TITLE,
-      };
-      return hydrate(configNew);
-    }
-    return dehydrate(config);
-  }, []);
 
   const handleOpen = useCallback(
     ({
@@ -71,8 +42,7 @@ export function MarkdownPlugin(props: MarkdownPluginProps): JSX.Element | null {
         title != null && title !== ''
           ? title
           : MarkdownUtils.getNewMarkdownTitle(usedTitles);
-      const content =
-        closedMarkdowns.length > 0 ? null : MarkdownUtils.DEFAULT_CONTENT;
+      const content = MarkdownUtils.DEFAULT_CONTENT;
       const config = {
         type: 'react-component' as const,
         component: MarkdownPanel.COMPONENT,
@@ -101,19 +71,14 @@ export function MarkdownPlugin(props: MarkdownPluginProps): JSX.Element | null {
   useEffect(
     function registerComponentsAndReturnCleanup() {
       const cleanups = [
-        registerComponent(
-          MarkdownPanel.COMPONENT,
-          MarkdownPanel,
-          hydrate,
-          dehydrateMarkdown
-        ),
+        registerComponent(MarkdownPanel.COMPONENT, MarkdownPanel),
       ];
 
       return () => {
         cleanups.forEach(cleanup => cleanup());
       };
     },
-    [dehydrateMarkdown, registerComponent]
+    [registerComponent]
   );
 
   useListener(layout.eventHub, MarkdownEvent.OPEN, handleOpen);

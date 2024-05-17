@@ -364,7 +364,9 @@ class PanelManager {
       );
       (dehydratedConfig as ClosedPanel).parentStackId =
         LayoutUtils.getStackForConfig(root, config)?.config.id;
-      this.closed.push(dehydratedConfig);
+      if (this.dehydrateComponent !== null) {
+        this.closed.push(dehydratedConfig);
+      }
     }
   }
 

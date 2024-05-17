@@ -27,6 +27,7 @@ import MarkdownContainer from '../controls/markdown/MarkdownContainer';
 import MarkdownStartPage from '../controls/markdown/MarkdownStartPage';
 import './MarkdownPanel.scss';
 import type MarkdownEditorType from '../controls/markdown/MarkdownEditor';
+import MarkdownUtils from '../controls/markdown/MarkdownUtils';
 
 const MarkdownEditor = lazy(
   () => import('../controls/markdown/MarkdownEditor')
@@ -77,7 +78,11 @@ export class MarkdownPanel extends Component<
     const { panelState } = props;
     let content = null;
     if (panelState != null && panelState.content != null) {
-      ({ content } = panelState);
+      if (panelState.content !== '') {
+        ({ content } = panelState);
+      } else {
+        content = MarkdownUtils.DEFAULT_CONTENT;
+      }
     }
 
     this.state = {
@@ -124,7 +129,11 @@ export class MarkdownPanel extends Component<
   }
 
   getClosedMarkdowns = memoize((closedPanels: ClosedPanels) =>
-    closedPanels.filter(panel => panel.component === 'MarkdownPanel').reverse()
+    closedPanels
+      .filter(
+        panel => panel.component === 'MarkdownPanel' && panel.content !== null
+      )
+      .reverse()
   );
 
   handleContainerDoubleClick(event: MouseEvent<Element>): void {
@@ -149,11 +158,11 @@ export class MarkdownPanel extends Component<
     this.setState(
       {
         isStartPageShown: false,
-        content: '',
+        content: MarkdownUtils.DEFAULT_CONTENT,
         isEditing: true,
 
         // eslint-disable-next-line react/no-unused-state
-        panelState: { content: '' },
+        panelState: { content: MarkdownUtils.DEFAULT_CONTENT },
       },
       () => {
         if (this.editor != null && this.editor.focus != null) {
