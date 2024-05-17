@@ -50,12 +50,15 @@ class MonacoUtils {
 
     registerLanguages([DbLang, PyLang, GroovyLang, LogLang, ScalaLang]);
 
-    monaco.languages.registerCodeActionProvider('python', {
-      provideCodeActions: MonacoProviders.handlePythonCodeActionRequest,
-    });
+    monaco.languages.onLanguage('python', () => {
+      monaco.languages.registerCodeActionProvider('python', {
+        provideCodeActions: MonacoProviders.handlePythonCodeActionRequest,
+      });
 
-    monaco.languages.registerDocumentFormattingEditProvider('python', {
-      provideDocumentFormattingEdits: MonacoProviders.handlePythonFormatRequest,
+      monaco.languages.registerDocumentFormattingEditProvider('python', {
+        provideDocumentFormattingEdits:
+          MonacoProviders.handlePythonFormatRequest,
+      });
     });
 
     MonacoUtils.removeConflictingKeybindings();
