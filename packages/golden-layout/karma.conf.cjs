@@ -21,7 +21,7 @@ module.exports = function (config) {
     preprocessors: {
       // '../src/**': 'coverage'
       './test/helper.js': ['browserify'],
-      './node_modules/nanoid/nanoid.js': ['browserify'],
+      'nanoid': ['browserify'],
     },
 
     browserify: {
