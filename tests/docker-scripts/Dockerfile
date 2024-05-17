@@ -1,22 +1,3 @@
-# syntax=docker/dockerfile:1
-# Dockerfile for updating the snapshots.
-# Expects to be run from the root of the web-client-ui repo
-FROM mcr.microsoft.com/playwright:v1.44.0-jammy AS playwright
-WORKDIR /work/
-
-RUN fc-list : family;
-
-# Copy just the .nvmrc first and install nvm/node/npm first as these will change the least often
-# https://docs.docker.com/build/cache/
-COPY .nvmrc .
-
-# Set the default shell so the correct node/npm is used after install
-# https://stackoverflow.com/a/60137919
-SHELL ["/bin/bash", "--login", "-i", "-c"]
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
-RUN source /root/.bashrc && nvm install
-SHELL ["/bin/bash", "--login", "-c"]
-
 # This is a workaround for copying all package.json files w/ directory structure
 # without needing to list every file as a COPY command
 # The copy --from=copy-packages command will be a cache hit if the package.json files didn't change
@@ -27,13 +8,36 @@ COPY package.json package-lock.json skip.js ./
 # cd first so the cp doesn't include /tmp/web-client-ui in the paths
 RUN cd /tmp/web-client-ui && cp --parents ./packages/*/package.json /work/
 
-FROM playwright AS build
+# syntax=docker/dockerfile:1
+# Dockerfile for updating the snapshots.
+# Expects to be run from the root of the web-client-ui repo
+FROM mcr.microsoft.com/playwright:v1.44.0-jammy AS playwright
 WORKDIR /work/
+
+# Update packages list and install some build tools
+RUN set -eux; \
+    apt-get update; \
+    apt-get install build-essential --yes;
+
+RUN fc-list : family;
+
+# Copy just the .nvmrc first and install nvm/node/npm first as these will change the least often
+# https://docs.docker.com/build/cache/
+COPY .nvmrc .
+
+# Set the default shell so the correct node/npm is used after install
+# Based on https://stackoverflow.com/a/60137919
+# All node/npm commands should be run with /bin/bash --login -i -c "command" to run with the nvmrc version
+RUN /bin/bash --login -i -c "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash && \
+source /root/.bashrc && nvm install"
+
+# Copy the package.json files
 COPY --from=copy-packages /work/ .
 
 # Disable the postinstall script, or npm ci will try and build and the files won't be there
 # We don't need the postinstall since we're going to rebuild right after
-RUN nvm use && SKIP_POSTINSTALL=1 npm ci
+
+RUN /bin/bash --login -i -c "SKIP_POSTINSTALL=1 npm ci"
 
 # Copy the web-client-ui src folder to the docker image
 # We do this last because the source files are the most likely to change
@@ -42,4 +46,4 @@ RUN nvm use && SKIP_POSTINSTALL=1 npm ci
 COPY . .
 
 # Now build the app
-RUN VITE_PLAYWRIGHT_CSS=1 npm run build
+RUN RUN /bin/bash --login -c "VITE_PLAYWRIGHT_CSS=1 npm run build"
