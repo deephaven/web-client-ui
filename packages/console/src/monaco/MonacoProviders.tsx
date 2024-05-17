@@ -3,10 +3,10 @@
  */
 import { PureComponent } from 'react';
 import * as monaco from 'monaco-editor';
+import throttle from 'lodash.throttle';
 import Log from '@deephaven/log';
 import type { dh } from '@deephaven/jsapi-types';
 import init, { Workspace, type Diagnostic } from './ruff/ruff_wasm';
-import throttle from 'lodash.throttle';
 
 const log = Log.module('MonacoCompletionProvider');
 
