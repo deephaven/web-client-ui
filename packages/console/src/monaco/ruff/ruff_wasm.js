@@ -1,3 +1,4 @@
+/// <reference types="./ruff_wasm.d.ts" />
 let wasm;
 
 const heap = new Array(128).fill(undefined);
