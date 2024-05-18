@@ -33,29 +33,35 @@ class MonacoProviders extends PureComponent<
     monaco.editor.setModelMarkers(
       model,
       'ruff',
-      MonacoProviders.workspace
-        .check(model.getValue())
-        .map((d: Diagnostic) => ({
+      MonacoProviders.workspace.check(model.getValue()).map((d: Diagnostic) => {
+        const isUnnecessary = d.code === 'F401' || d.code === 'F841';
+        return {
           startLineNumber: d.location.row,
           startColumn: d.location.column,
           endLineNumber: d.end_location.row,
           endColumn: d.end_location.column,
           message: `${d.code}: ${d.message}`,
-          severity: monaco.MarkerSeverity.Error,
-          tags:
-            d.code === 'F401' || d.code === 'F841'
-              ? [monaco.MarkerTag.Unnecessary]
-              : [],
-        }))
+          severity: isUnnecessary
+            ? monaco.MarkerSeverity.Warning
+            : monaco.MarkerSeverity.Error,
+          tags: isUnnecessary ? [monaco.MarkerTag.Unnecessary] : [],
+        };
+      })
     );
-  }, 250);
+  }, 0);
 
   static initRuffPromise?: Promise<void>;
 
+  /**
+   * Loads and initializes Ruff.
+   * Subsequent calls will return the same promise.
+   */
   static async initRuff(): Promise<void> {
     if (MonacoProviders.initRuffPromise) {
       return MonacoProviders.initRuffPromise;
     }
+
+    log.debug('Initializing Ruff');
 
     MonacoProviders.initRuffPromise = init().then(() => {
       MonacoProviders.workspace = new Workspace({
@@ -398,17 +404,24 @@ class MonacoProviders extends PureComponent<
       );
     }
 
-    if (MonacoProviders.workspace == null) {
-      MonacoProviders.initRuff().then(() => {
+    if (language === 'python') {
+      if (MonacoProviders.workspace == null) {
+        MonacoProviders.initRuff().then(() => {
+          MonacoProviders.lintPython(model);
+        });
+      } else {
         MonacoProviders.lintPython(model);
-      });
-    } else {
-      MonacoProviders.lintPython(model);
-    }
+      }
 
-    model.onDidChangeContent(() => {
-      MonacoProviders.lintPython(model);
-    });
+      const throttledLint = throttle(
+        (m: monaco.editor.ITextModel) => MonacoProviders.lintPython(m),
+        250
+      );
+
+      model.onDidChangeContent(() => {
+        throttledLint(model);
+      });
+    }
   }
 
   componentWillUnmount(): void {
