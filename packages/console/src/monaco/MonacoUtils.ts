@@ -51,9 +51,14 @@ class MonacoUtils {
     registerLanguages([DbLang, PyLang, GroovyLang, LogLang, ScalaLang]);
 
     monaco.languages.onLanguage('python', () => {
-      monaco.languages.registerCodeActionProvider('python', {
-        provideCodeActions: MonacoProviders.handlePythonCodeActionRequest,
-      });
+      console.log('on python');
+      monaco.languages.registerCodeActionProvider(
+        'python',
+        {
+          provideCodeActions: MonacoProviders.handlePythonCodeActionRequest,
+        },
+        { providedCodeActionKinds: ['quickfix'] }
+      );
 
       monaco.languages.registerDocumentFormattingEditProvider('python', {
         provideDocumentFormattingEdits:

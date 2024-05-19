@@ -16,6 +16,55 @@ interface MonacoProviderProps {
   language: string;
 }
 
+const DEFAULT_RUFF_SETTINGS = {
+  preview: true,
+  builtins: [],
+  'target-version': 'py38',
+  'line-length': 88,
+  'indent-width': 4,
+  lint: {
+    'allowed-confusables': [],
+    'dummy-variable-rgx': '^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$',
+    'extend-select': [],
+    'extend-fixable': [],
+    'flake8-implicit-str-concat': {
+      'allow-multiline': false,
+    },
+    external: [],
+    ignore: ['ISC003'],
+    select: [
+      'F',
+      'E1',
+      'E9',
+      'E711',
+      'W291',
+      'W293',
+      'W605',
+      'I002',
+      'B002',
+      'B015',
+      'B016',
+      'B018',
+      'B020',
+      'B023',
+      'B032',
+      'B035',
+      'B909',
+      'COM818',
+      'ISC',
+      'PLE',
+      'RUF001',
+      'RUF021',
+      'RUF027',
+      'PLR1704',
+    ],
+  },
+  format: {
+    'indent-style': 'space',
+    'quote-style': 'double',
+  },
+};
+
 /**
  * Registers a completion provider with monaco for the language and session provided.
  */
@@ -64,58 +113,23 @@ class MonacoProviders extends PureComponent<
     log.debug('Initializing Ruff');
 
     MonacoProviders.initRuffPromise = init().then(() => {
-      MonacoProviders.workspace = new Workspace({
-        preview: true,
-        builtins: [],
-        'target-version': 'py38',
-        'line-length': 88,
-        'indent-width': 4,
-        lint: {
-          'allowed-confusables': [],
-          'dummy-variable-rgx': '^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$',
-          'extend-select': [],
-          'extend-fixable': [],
-          'flake8-implicit-str-concat': {
-            'allow-multiline': false,
-          },
-          external: [],
-          ignore: ['ISC003'],
-          select: [
-            'F',
-            'E1',
-            'E2',
-            'E9',
-            'E711',
-            'W291',
-            'W293',
-            'W605',
-            'I002',
-            'B002',
-            'B015',
-            'B016',
-            'B018',
-            'B020',
-            'B023',
-            'B032',
-            'B035',
-            'B909',
-            'COM818',
-            'ISC',
-            'PLE',
-            'RUF001',
-            'RUF021',
-            'RUF027',
-            'PLR1704',
-          ],
-        },
-        format: {
-          'indent-style': 'space',
-          'quote-style': 'double',
-        },
-      });
+      MonacoProviders.setRuffSettings();
     });
 
     return MonacoProviders.initRuffPromise;
+  }
+
+  static async setRuffSettings(
+    settings: Record<string, unknown> = DEFAULT_RUFF_SETTINGS
+  ): Promise<void> {
+    await MonacoProviders.initRuff();
+
+    MonacoProviders.workspace = new Workspace(settings);
+
+    monaco.editor
+      .getModels()
+      .filter(m => m.getLanguageId() === 'python')
+      .forEach(MonacoProviders.lintPython);
   }
 
   /**
@@ -235,12 +249,15 @@ class MonacoProviders extends PureComponent<
 
     const diagnostics = (
       MonacoProviders.workspace.check(model.getValue()) as Diagnostic[]
-    ).filter(
-      d =>
-        d.location.row === range.startLineNumber &&
-        d.location.column >= range.startColumn &&
-        d.location.column <= range.endColumn
-    );
+    ).filter(d => {
+      const diagnosticRange = new monaco.Range(
+        d.location.row,
+        d.location.column,
+        d.end_location.row,
+        d.end_location.column
+      );
+      return diagnosticRange.intersectRanges(range);
+    });
 
     const fixActions: monaco.languages.CodeAction[] = diagnostics
       .filter(({ fix }) => fix != null)
@@ -406,9 +423,7 @@ class MonacoProviders extends PureComponent<
 
     if (language === 'python') {
       if (MonacoProviders.workspace == null) {
-        MonacoProviders.initRuff().then(() => {
-          MonacoProviders.lintPython(model);
-        });
+        MonacoProviders.initRuff(); // This will also lint all open editors
       } else {
         MonacoProviders.lintPython(model);
       }
