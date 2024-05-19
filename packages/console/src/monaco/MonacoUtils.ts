@@ -51,7 +51,6 @@ class MonacoUtils {
     registerLanguages([DbLang, PyLang, GroovyLang, LogLang, ScalaLang]);
 
     monaco.languages.onLanguage('python', () => {
-      console.log('on python');
       monaco.languages.registerCodeActionProvider(
         'python',
         {
