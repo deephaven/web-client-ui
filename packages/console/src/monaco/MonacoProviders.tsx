@@ -74,31 +74,6 @@ class MonacoProviders extends PureComponent<
 > {
   static workspace?: Workspace;
 
-  static lintPython = throttle((model: monaco.editor.ITextModel): void => {
-    if (!MonacoProviders.workspace) {
-      return;
-    }
-
-    monaco.editor.setModelMarkers(
-      model,
-      'ruff',
-      MonacoProviders.workspace.check(model.getValue()).map((d: Diagnostic) => {
-        const isUnnecessary = d.code === 'F401' || d.code === 'F841';
-        return {
-          startLineNumber: d.location.row,
-          startColumn: d.location.column,
-          endLineNumber: d.end_location.row,
-          endColumn: d.end_location.column,
-          message: `${d.code}: ${d.message}`,
-          severity: isUnnecessary
-            ? monaco.MarkerSeverity.Warning
-            : monaco.MarkerSeverity.Error,
-          tags: isUnnecessary ? [monaco.MarkerTag.Unnecessary] : [],
-        };
-      })
-    );
-  }, 0);
-
   static initRuffPromise?: Promise<void>;
 
   /**
@@ -130,6 +105,31 @@ class MonacoProviders extends PureComponent<
       .getModels()
       .filter(m => m.getLanguageId() === 'python')
       .forEach(MonacoProviders.lintPython);
+  }
+
+  static lintPython(model: monaco.editor.ITextModel): void {
+    if (!MonacoProviders.workspace) {
+      return;
+    }
+
+    monaco.editor.setModelMarkers(
+      model,
+      'ruff',
+      MonacoProviders.workspace.check(model.getValue()).map((d: Diagnostic) => {
+        const isUnnecessary = d.code === 'F401' || d.code === 'F841';
+        return {
+          startLineNumber: d.location.row,
+          startColumn: d.location.column,
+          endLineNumber: d.end_location.row,
+          endColumn: d.end_location.column,
+          message: `${d.code}: ${d.message}`,
+          severity: isUnnecessary
+            ? monaco.MarkerSeverity.Warning
+            : monaco.MarkerSeverity.Error,
+          tags: isUnnecessary ? [monaco.MarkerTag.Unnecessary] : [],
+        };
+      })
+    );
   }
 
   /**
