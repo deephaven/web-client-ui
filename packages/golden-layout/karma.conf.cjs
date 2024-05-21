@@ -21,11 +21,13 @@ module.exports = function (config) {
     preprocessors: {
       // '../src/**': 'coverage'
       './test/helper.js': ['browserify'],
-      'nanoid': ['browserify'],
+      nanoid: ['browserify'],
     },
 
     browserify: {
-      plugin: ['esmify'],
+      transform: [
+        ['babelify', { presets: ['@babel/preset-env'], global: true }],
+      ],
       // ignored because it doesn't understand the scss import in GoldenLayoutThemeExport
       configure: function (bundle) {
         bundle.on('prebundle', function () {
