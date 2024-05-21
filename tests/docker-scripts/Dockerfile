@@ -19,12 +19,14 @@ RUN set -eux; \
     apt-get update; \
     apt-get install build-essential --yes;
 
+# print installed fonts for debugging
 RUN fc-list : family;
 
 # Copy just the .nvmrc first and install nvm/node/npm first as these will change the least often
 # https://docs.docker.com/build/cache/
 COPY .nvmrc .
 
+# nvm needs to be run in a bash shell
 SHELL ["/bin/bash", "--login", "-c"]  
 # The default `.bashrc` bails on the first line if not in interactive shell. 
 # We can just empty it so that the nvm install below will actually run when sourcing 
@@ -34,7 +36,7 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | b
 RUN source /root/.bashrc && nvm install
 
 
-# Now clober the default node insalled from the playwright
+# Now clobber the default node installed by the playwright
 # image so that the commands in docker compose entrypoint will 
 # also use the correct version of node without running in bash
 RUN ln -s $(which node) /usr/local/bin/nodejs
@@ -45,7 +47,7 @@ RUN ln -s $(which npm) /usr/local/bin/npm
 # Copy the package.json files
 COPY --from=copy-packages /work/ .
 
-# Confirm node version is correct
+# Confirm node version is correct for debugging
 RUN node --version
 
 # Disable the postinstall script, or npm ci will try and build and the files won't be there
@@ -58,5 +60,5 @@ RUN SKIP_POSTINSTALL=1 npm ci
 # https://stackoverflow.com/a/34300129
 COPY . .
 
-# Now build the app
+# Now build the app with our playwright.css included
 RUN VITE_PLAYWRIGHT_CSS=1 npm run build
