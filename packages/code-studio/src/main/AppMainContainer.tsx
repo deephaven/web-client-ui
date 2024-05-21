@@ -140,7 +140,6 @@ interface AppMainContainerProps {
 
 interface AppMainContainerState {
   contextActions: ContextAction[];
-  isAuthFailed: boolean;
   isDisconnected: boolean;
   isPanelsMenuShown: boolean;
   isResetLayoutPromptShown: boolean;
@@ -245,7 +244,6 @@ export class AppMainContainer extends Component<
           isGlobal: true,
         },
       ],
-      isAuthFailed: false,
       isDisconnected: false,
       isPanelsMenuShown: false,
       isResetLayoutPromptShown: false,
@@ -647,11 +645,6 @@ export class AppMainContainer extends Component<
     this.setState({ isDisconnected: false });
   }
 
-  handleReconnectAuthFailed(): void {
-    log.warn('Reconnect authentication failed');
-    this.setState({ isAuthFailed: true });
-  }
-
   /**
    * Import the provided file and set it in the workspace data (which should then load it in the dashboard)
    * @param file JSON file to import
@@ -736,10 +729,6 @@ export class AppMainContainer extends Component<
       dh.IdeConnection.EVENT_RECONNECT,
       this.handleReconnect
     );
-    connection.addEventListener(
-      dh.CoreClient.EVENT_RECONNECT_AUTH_FAILED,
-      this.handleReconnectAuthFailed
-    );
   }
 
   stopListeningForDisconnect(): void {
@@ -755,10 +744,6 @@ export class AppMainContainer extends Component<
     connection.removeEventListener(
       dh.IdeConnection.EVENT_RECONNECT,
       this.handleReconnect
-    );
-    connection.removeEventListener(
-      dh.CoreClient.EVENT_RECONNECT_AUTH_FAILED,
-      this.handleReconnectAuthFailed
     );
   }
 
@@ -856,7 +841,6 @@ export class AppMainContainer extends Component<
     const { canUsePanels } = permissions;
     const {
       contextActions,
-      isAuthFailed,
       isDisconnected,
       isPanelsMenuShown,
       isResetLayoutPromptShown,
@@ -950,7 +934,7 @@ export class AppMainContainer extends Component<
               icon={
                 <span className="fa-layers">
                   <FontAwesomeIcon icon={vsGear} transform="grow-3" />
-                  {isDisconnected && !isAuthFailed && (
+                  {isDisconnected && (
                     <>
                       <FontAwesomeIcon
                         icon={dhSquareFilled}
@@ -966,11 +950,7 @@ export class AppMainContainer extends Component<
                   )}
                 </span>
               }
-              tooltip={
-                isDisconnected && !isAuthFailed
-                  ? 'Server disconnected'
-                  : 'User Settings'
-              }
+              tooltip="Server disconnected"
             />
           </div>
         </div>
@@ -1015,10 +995,7 @@ export class AppMainContainer extends Component<
           onChange={this.handleImportLayoutFiles}
           data-testid="input-import-layout"
         />
-        <DebouncedModal
-          isOpen={isDisconnected && !isAuthFailed}
-          debounceMs={1000}
-        >
+        <DebouncedModal isOpen={isDisconnected} debounceMs={1000}>
           <InfoModal
             icon={vsDebugDisconnect}
             title={
@@ -1045,13 +1022,6 @@ export class AppMainContainer extends Component<
               ? 'Do you want to reset your layout? Your existing layout will be lost.'
               : 'Do you want to reset your layout? Any unsaved notebooks will be lost.'
           }
-        />
-        <BasicModal
-          confirmButtonText="Refresh"
-          onConfirm={AppMainContainer.handleRefresh}
-          isOpen={isAuthFailed}
-          headerText="Authentication failed"
-          bodyText="Credentials are invalid. Please refresh your browser to try and reconnect."
         />
       </div>
     );

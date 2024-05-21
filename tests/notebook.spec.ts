@@ -6,7 +6,8 @@ import { pasteInMonaco } from './utils';
 test.describe.configure({ mode: 'serial' });
 
 test('test creating a file, saving it, reloading the page, closing it, re-opening it, running it, then deleting it', async ({
-  page, browserName
+  page,
+  browserName,
 }) => {
   await page.goto('');
 

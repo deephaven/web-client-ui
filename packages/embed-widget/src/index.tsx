@@ -5,7 +5,6 @@ import { store } from '@deephaven/redux';
 import '@deephaven/components/scss/BaseStyleSheet.scss';
 import { LoadingOverlay, preloadTheme } from '@deephaven/components';
 import { ApiBootstrap } from '@deephaven/jsapi-bootstrap';
-import './index.scss';
 
 preloadTheme();
 
