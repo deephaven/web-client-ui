@@ -23,7 +23,7 @@ services:
       - ../../test-results:/work/test-results
       - ../../playwright-report:/work/playwright-report
       - ../../blob-report:/work/blob-report
-    entrypoint: '/bin/bash --login -i -c "npm run e2e -- --config=playwright-ci.config.ts --reporter=blob --project=${BROWSER:-chromium} --shard=${SHARD:-1}/${SHARD_TOTAL:-1}"'
+    entrypoint: 'npm run e2e -- --config=playwright-ci.config.ts --reporter=blob --project=${BROWSER:-chromium} --shard=${SHARD:-1}/${SHARD_TOTAL:-1}'
     depends_on:
       dhc-server:
         condition: service_healthy
@@ -41,7 +41,7 @@ services:
       - ../../tests:/work/tests
       - ../../test-results:/work/test-results
       - ../../playwright-report:/work/playwright-report
-    entrypoint: '/bin/bash --login -i -c "npm run e2e -- --config=playwright-ci.config.ts"'
+    entrypoint: 'npm run e2e -- --config=playwright-ci.config.ts'
     depends_on:
       dhc-server:
         condition: service_healthy
@@ -49,7 +49,7 @@ services:
   web-ui-update-snapshots:
     extends:
       service: web-ui-tests
-    entrypoint: '/bin/bash --login -i -c "npm run e2e:update-snapshots -- --config=playwright-ci.config.ts"'
+    entrypoint: 'npm run e2e:update-snapshots -- --config=playwright-ci.config.ts'
     depends_on: # depends_on is not shared with extends
       dhc-server:
         condition: service_healthy

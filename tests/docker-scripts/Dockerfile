@@ -25,21 +25,31 @@ RUN fc-list : family;
 # https://docs.docker.com/build/cache/
 COPY .nvmrc .
 
-# Set the default shell so the correct node/npm is used after install
-# Based on https://stackoverflow.com/a/60137919
-# Shell needs to be on for all node commands, and docker compose entry points need /bin/bash -i
-SHELL ["/bin/bash", "--login", "-i", "-c"]
+SHELL ["/bin/bash", "--login", "-c"]  
+# The default `.bashrc` bails on the first line if not in interactive shell. 
+# We can just empty it so that the nvm install below will actually run when sourcing 
+# `.bashrc`  
+RUN echo "" > /root/.bashrc  
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
 RUN source /root/.bashrc && nvm install
+
+
+# Now clober the default node insalled from the playwright
+# image so that the commands in docker compose entrypoint will 
+# also use the correct version of node without running in bash
+RUN ln -s $(which node) /usr/local/bin/nodejs
+RUN ln -s $(which node) /usr/local/bin/node
+RUN ln -s $(which npm) /usr/local/bin/npm
+
 
 # Copy the package.json files
 COPY --from=copy-packages /work/ .
 
-# Disable the postinstall script, or npm ci will try and build and the files won't be there
-# We don't need the postinstall since we're going to rebuild right after
-
+# Confirm node version is correct
 RUN node --version
 
+# Disable the postinstall script, or npm ci will try and build and the files won't be there
+# We don't need the postinstall since we're going to rebuild right after
 RUN SKIP_POSTINSTALL=1 npm ci
 
 # Copy the web-client-ui src folder to the docker image
