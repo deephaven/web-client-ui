@@ -11,7 +11,8 @@
   "type": "module",
   "dependencies": {
     "@deephaven/components": "file:../components",
-    "jquery": "^3.6.0"
+    "jquery": "^3.6.0",
+    "nanoid": "^5.0.7"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
@@ -53,7 +54,6 @@
     "babelify": "^10.0.0",
     "browserify": "^17.0.0",
     "karma-browserify": "^8.1.0",
-    "nanoid": "^5.0.7",
     "watchify": "^4.0.0"
   }
 }
