@@ -561,13 +561,6 @@ abstract class IrisGridModel<
     return false;
   }
 
-  /**
-   * Delete ranges from an input grid. Will delete the entire row, causing data to shift up
-   * @param ranges The ranges to delete
-   * @returns A promise that resolves successfully when the operation is complete or rejects if there's an error
-   */
-  abstract delete(ranges: readonly GridRange[]): Promise<void>;
-
   abstract seekRow(
     startRow: number,
     column: DhType.Column,

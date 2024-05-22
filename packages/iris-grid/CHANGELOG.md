@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.78.0](https://github.com/deephaven/web-client-ui/compare/v0.77.0...v0.78.0) (2024-05-16)
+
+### Bug Fixes
+
+- "Delete Selected Rows" bug for tables with no key columns ([#1996](https://github.com/deephaven/web-client-ui/issues/1996)) ([37fe009](https://github.com/deephaven/web-client-ui/commit/37fe00914253822a56033bee49570e82caff9334))
+- Use picker for iris grid partition selector ([#2012](https://github.com/deephaven/web-client-ui/issues/2012)) ([b61c518](https://github.com/deephaven/web-client-ui/commit/b61c51840ae5f83dc00bf9dab0d1e6a7e4ba64d5))
+
 # [0.77.0](https://github.com/deephaven/web-client-ui/compare/v0.76.0...v0.77.0) (2024-05-07)
 
 **Note:** Version bump only for package @deephaven/iris-grid

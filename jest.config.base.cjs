@@ -63,6 +63,12 @@ module.exports = {
     ),
     // Handle monaco worker files
     '\\.worker.*$': 'identity-obj-proxy',
+    // Handle pouchdb modules
+    '^pouchdb-browser$': path.join(
+      __dirname,
+      './packages/mocks/src/pouchdb-browser.js'
+    ),
+    '^pouchdb-find': 'identity-obj-proxy',
     // All packages except icons and jsapi-types use src code
     '^@deephaven/(?!icons|jsapi-types)(.*)$': path.join(
       __dirname,

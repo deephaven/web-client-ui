@@ -1,5 +1,10 @@
-import { Key, useCallback } from 'react';
+import { isElementOfType } from '@deephaven/react-hooks';
+import { Key, ReactElement, useCallback } from 'react';
+import ActionGroup from '../ActionGroup';
+import ActionMenu from '../ActionMenu';
 import { ItemContent } from '../ItemContent';
+import { ListActionGroup, ListActionGroupProps } from '../ListActionGroup';
+import { ListActionMenu, ListActionMenuProps } from '../ListActionMenu';
 import { Item } from '../shared';
 import {
   getItemKey,
@@ -10,11 +15,16 @@ import {
 } from './itemUtils';
 import { wrapIcon, wrapPrimitiveWithText } from './itemWrapperUtils';
 
+export type ListActions<T> =
+  | ReactElement<ListActionGroupProps<T>>
+  | ReactElement<ListActionMenuProps<T>>;
+
 export interface UseRenderNormalizedItemOptions {
   itemIconSlot: ItemIconSlot;
   showItemDescriptions: boolean;
   showItemIcons: boolean;
   tooltipOptions: TooltipOptions | null;
+  actions?: ListActions<unknown>;
 }
 
 /**
@@ -24,6 +34,7 @@ export interface UseRenderNormalizedItemOptions {
  * @param showItemDescriptions Whether to show item descriptions
  * @param showItemIcons Whether to show item icons
  * @param tooltipOptions Tooltip options to use when rendering the item
+ * @param actions Optional actions to render with the item
  * @returns Render function for normalized items
  */
 export function useRenderNormalizedItem({
@@ -31,12 +42,13 @@ export function useRenderNormalizedItem({
   showItemDescriptions,
   showItemIcons,
   tooltipOptions,
+  actions,
 }: UseRenderNormalizedItemOptions): (
   normalizedItem: NormalizedItem
 ) => JSX.Element {
   return useCallback(
     (normalizedItem: NormalizedItem) => {
-      const key = getItemKey(normalizedItem);
+      const itemKey = getItemKey(normalizedItem);
       const content = wrapPrimitiveWithText(normalizedItem.item?.content);
       const textValue = normalizedItem.item?.textValue ?? '';
 
@@ -48,6 +60,30 @@ export function useRenderNormalizedItem({
         ? wrapIcon(normalizedItem.item?.icon, itemIconSlot)
         : null;
 
+      let action = null;
+
+      if (isElementOfType(actions, ListActionGroup)) {
+        action = (
+          <ActionGroup
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            {...actions.props}
+            onAction={key => actions.props.onAction(key, itemKey)}
+            onChange={keys => actions.props.onChange?.(keys, itemKey)}
+          />
+        );
+      } else if (isElementOfType(actions, ListActionMenu)) {
+        action = (
+          <ActionMenu
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            {...actions.props}
+            onAction={key => actions.props.onAction(key, itemKey)}
+            onOpenChange={isOpen =>
+              actions.props.onOpenChange?.(isOpen, itemKey)
+            }
+          />
+        );
+      }
+
       return (
         <Item
           // Note that setting the `key` prop explicitly on `Item` elements
@@ -57,7 +93,7 @@ export function useRenderNormalizedItem({
           // key. We can't really get around setting in order to support Windowed
           // data, so we'll need to do some manual conversion of keys to strings
           // in other components that use this hook.
-          key={key as Key}
+          key={itemKey as Key}
           // The `textValue` prop gets used to provide the content of `<option>`
           // elements that back the Spectrum Picker. These are not visible in the UI,
           // but are used for accessibility purposes, so we set to an arbitrary
@@ -70,11 +106,12 @@ export function useRenderNormalizedItem({
             {icon}
             {content}
             {description}
+            {action}
           </ItemContent>
         </Item>
       );
     },
-    [itemIconSlot, showItemDescriptions, showItemIcons, tooltipOptions]
+    [actions, itemIconSlot, showItemDescriptions, showItemIcons, tooltipOptions]
   );
 }
 
