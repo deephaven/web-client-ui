@@ -172,21 +172,35 @@ test('Inputs regression test', async ({ page }) => {
     const inputs = column.locator('input,select,button');
 
     const inputsCount = await inputs.count();
+    let hiddenOffset = 0;
+
     for (let j = 0; j < inputsCount; j += 1) {
       const input = inputs.nth(j);
 
-      const [tagName, type, isDisabled] = await input.evaluate(el => [
-        el.tagName.toLowerCase(),
-        el.getAttribute('type'),
-        el.hasAttribute('disabled'),
-      ]);
+      const [tagName, type, isDisabled, isParentHidden] = await input.evaluate(
+        el => [
+          el.tagName.toLowerCase(),
+          el.getAttribute('type'),
+          el.hasAttribute('disabled'),
+          el.parentElement?.hasAttribute('hidden') ?? false,
+        ]
+      );
+
+      // Spectrum Radio component uses the `hidden` attribute of the wrapping
+      // label to hide the input. Skip these since they aren't visible.
+      if (isParentHidden) {
+        hiddenOffset += 1;
+
+        // eslint-disable-next-line no-continue
+        continue;
+      }
 
       const label = tagName === 'input' ? type ?? 'text' : tagName;
 
       await input.focus();
 
       await expect(column).toHaveScreenshot(
-        `inputs-focus-col${i}-row${j}-${label}${
+        `inputs-focus-col${i}-row${j - hiddenOffset}-${label}${
           isDisabled ? '-disabled' : ''
         }.png`
       );
