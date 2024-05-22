@@ -362,9 +362,9 @@ class PanelManager {
         config.component,
         config
       );
-      (dehydratedConfig as ClosedPanel).parentStackId =
-        LayoutUtils.getStackForConfig(root, config)?.config.id;
       if (dehydratedConfig != null) {
+        (dehydratedConfig as ClosedPanel).parentStackId =
+          LayoutUtils.getStackForConfig(root, config)?.config.id;
         this.closed.push(dehydratedConfig);
       }
     }
