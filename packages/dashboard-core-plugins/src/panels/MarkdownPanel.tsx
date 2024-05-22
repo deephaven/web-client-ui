@@ -86,7 +86,7 @@ export class MarkdownPanel extends Component<
     }
 
     this.state = {
-      isStartPageShown: content == null,
+      isStartPageShown: content == null && props.closedPanels.length === 0,
       isEditing: false,
       content,
 
@@ -131,7 +131,9 @@ export class MarkdownPanel extends Component<
   getClosedMarkdowns = memoize((closedPanels: ClosedPanels) =>
     closedPanels
       .filter(
-        panel => panel.component === 'MarkdownPanel' && panel.content !== null
+        panel =>
+          panel.component === 'MarkdownPanel' &&
+          panel.props.panelState.content === ''
       )
       .reverse()
   );
@@ -158,11 +160,11 @@ export class MarkdownPanel extends Component<
     this.setState(
       {
         isStartPageShown: false,
-        content: MarkdownUtils.DEFAULT_CONTENT,
+        content: '',
         isEditing: true,
 
         // eslint-disable-next-line react/no-unused-state
-        panelState: { content: MarkdownUtils.DEFAULT_CONTENT },
+        panelState: { content: '' },
       },
       () => {
         if (this.editor != null && this.editor.focus != null) {
@@ -251,7 +253,7 @@ export class MarkdownPanel extends Component<
                   this.markdownEditor = markdownEditor;
                 }}
                 isEditing={isEditing}
-                content={content ?? undefined}
+                content={content ?? MarkdownUtils.DEFAULT_CONTENT}
                 onEditorInitialized={this.handleEditorInitialized}
               />
             </Suspense>
