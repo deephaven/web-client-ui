@@ -1,6 +1,6 @@
 import React, { ReactNode, useCallback, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import type { StyleProps } from '@react-types/shared';
+import type { BoxAlignmentStyleProps, StyleProps } from '@react-types/shared';
 import {
   Grid,
   Icon,
@@ -35,7 +35,7 @@ function AccountIllustration(): JSX.Element {
   );
 }
 
-interface LabeledProps extends StyleProps {
+interface LabeledProps extends BoxAlignmentStyleProps, StyleProps {
   label: string;
   direction?: 'row' | 'column';
   children: ReactNode;
@@ -112,12 +112,14 @@ export function ListViews(): JSX.Element {
         rows={`auto minmax(${singleChildExampleHeight}px, auto) 1fr auto 1fr`}
       >
         <LabeledFlexContainer
+          alignItems="center"
           direction="row"
           label="Density"
           gridColumn="span 3"
         >
           <RadioGroup
             aria-label="Density"
+            orientation="horizontal"
             value={density}
             onChange={onDensityChange}
           >
