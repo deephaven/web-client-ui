@@ -37,7 +37,7 @@ export function MarkdownPlugin(props: MarkdownPluginProps): JSX.Element | null {
         title != null && title !== ''
           ? title
           : MarkdownUtils.getNewMarkdownTitle(usedTitles);
-      const content = MarkdownUtils.DEFAULT_CONTENT;
+      const content = null;
       const config = {
         type: 'react-component' as const,
         component: MarkdownPanel.COMPONENT,

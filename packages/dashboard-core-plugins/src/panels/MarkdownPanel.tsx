@@ -131,7 +131,9 @@ export class MarkdownPanel extends Component<
   getClosedMarkdowns = memoize((closedPanels: ClosedPanels) =>
     closedPanels
       .filter(
-        panel => panel.component === 'MarkdownPanel' && panel.content !== null
+        panel =>
+          panel.component === 'MarkdownPanel' &&
+          panel.props.panelState.content !== ''
       )
       .reverse()
   );
