@@ -188,15 +188,18 @@ function Inputs(): React.ReactElement {
               aria-labelledby="inputs-radios-heading"
               onChange={handleRadioChange}
               value={radioValue}
+              isInvalid={radioValue === '4'}
+              description="Select a radio item"
+              errorMessage={
+                radioValue === '4' ? 'Invalid radio selected' : undefined
+              }
             >
               <Radio value="1">Toggle this custom radio</Radio>
               <Radio value="2">Or toggle this other custom radio</Radio>
               <Radio value="3" isDisabled>
                 Disabled radio
               </Radio>
-              <Radio value="4" UNSAFE_className="is-invalid">
-                Invalid radio
-              </Radio>
+              <Radio value="4">Invalid radio</Radio>
               <Radio isHidden={!check4} value="5">
                 Extra radio item
               </Radio>
