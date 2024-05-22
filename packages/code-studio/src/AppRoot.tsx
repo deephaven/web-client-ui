@@ -6,6 +6,11 @@ import { DownloadServiceWorkerUtils } from '@deephaven/iris-grid';
 import MonacoWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 import AppRouter from './main/AppRouter';
 
+// load addional css for playwright docker tests
+if (import.meta.env.VITE_PLAYWRIGHT_CSS === '1') {
+  await import('./Playwright.css');
+}
+
 export function AppRoot(): JSX.Element {
   DownloadServiceWorkerUtils.register(
     new URL(
