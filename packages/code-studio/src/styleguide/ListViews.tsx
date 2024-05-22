@@ -1,6 +1,6 @@
-import React, { ChangeEvent, ReactNode, useCallback, useState } from 'react';
+import React, { ReactNode, useCallback, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import type { StyleProps } from '@react-types/shared';
+import type { BoxAlignmentStyleProps, StyleProps } from '@react-types/shared';
 import {
   Grid,
   Icon,
@@ -13,10 +13,11 @@ import {
   Checkbox,
   ListViewProps,
   RadioGroup,
-  RadioItem,
+  Radio,
   useSpectrumThemeProvider,
+  ListActionGroup,
 } from '@deephaven/components';
-import { vsAccount, vsPerson } from '@deephaven/icons';
+import { vsAccount, vsEdit, vsPerson, vsTrash } from '@deephaven/icons';
 import { LIST_VIEW_ROW_HEIGHTS } from '@deephaven/utils';
 import { generateNormalizedItems } from './utils';
 import SampleSection from './SampleSection';
@@ -35,7 +36,7 @@ function AccountIllustration(): JSX.Element {
   );
 }
 
-interface LabeledProps extends StyleProps {
+interface LabeledProps extends BoxAlignmentStyleProps, StyleProps {
   label: string;
   direction?: 'row' | 'column';
   children: ReactNode;
@@ -83,14 +84,18 @@ export function ListViews(): JSX.Element {
     2 + // listview border
     LIST_VIEW_ROW_HEIGHTS[density ?? 'compact'][scale];
 
-  const onDensityChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      setDensity(event.currentTarget.value as ListViewProps['density']);
-    },
-    []
-  );
+  const onDensityChange = useCallback((value: string) => {
+    setDensity(value as ListViewProps['density']);
+  }, []);
 
   const [showIcons, setShowIcons] = useState(true);
+  const [lastActionKey, setLastActionKey] = useState<ItemKey>('');
+  const [lastActionItemKey, setLastActionItemKey] = useState<ItemKey>('');
+
+  const onAction = useCallback((actionKey: ItemKey, itemKey: ItemKey): void => {
+    setLastActionKey(actionKey);
+    setLastActionItemKey(itemKey);
+  }, []);
 
   const onChange = useCallback((keys: 'all' | Iterable<ItemKey>): void => {
     setSelectedKeys(keys);
@@ -108,14 +113,20 @@ export function ListViews(): JSX.Element {
         rows={`auto minmax(${singleChildExampleHeight}px, auto) 1fr auto 1fr`}
       >
         <LabeledFlexContainer
+          alignItems="center"
           direction="row"
           label="Density"
           gridColumn="span 3"
         >
-          <RadioGroup value={density} onChange={onDensityChange}>
-            <RadioItem value="compact">Compact</RadioItem>
-            <RadioItem value="regular">Regular</RadioItem>
-            <RadioItem value="spacious">Spacious</RadioItem>
+          <RadioGroup
+            aria-label="Density"
+            orientation="horizontal"
+            value={density}
+            onChange={onDensityChange}
+          >
+            <Radio value="compact">Compact</Radio>
+            <Radio value="regular">Regular</Radio>
+            <Radio value="spacious">Spacious</Radio>
           </RadioGroup>
         </LabeledFlexContainer>
 
@@ -212,7 +223,7 @@ export function ListViews(): JSX.Element {
           </Checkbox>
         </Flex>
 
-        <LabeledFlexContainer label="Controlled">
+        <LabeledFlexContainer label="Controlled" gridColumn="span 2">
           <ListViewNormalized
             aria-label="Controlled"
             density={density}
@@ -221,7 +232,29 @@ export function ListViews(): JSX.Element {
             selectedKeys={selectedKeys}
             showItemIcons={showIcons}
             onChange={onChange}
+            actions={
+              <ListActionGroup
+                overflowMode="collapse"
+                buttonLabelBehavior="collapse"
+                maxWidth={80}
+                onAction={onAction}
+              >
+                <Item key="Edit">
+                  <Icon>
+                    <FontAwesomeIcon icon={vsEdit} />
+                  </Icon>
+                  <Text>Edit</Text>
+                </Item>
+                <Item key="Delete">
+                  <Icon>
+                    <FontAwesomeIcon icon={vsTrash} />
+                  </Icon>
+                  <Text>Delete</Text>
+                </Item>
+              </ListActionGroup>
+            }
           />
+          {lastActionKey} {lastActionItemKey}
         </LabeledFlexContainer>
       </Grid>
     </SampleSection>

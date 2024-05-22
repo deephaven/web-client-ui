@@ -1,6 +1,6 @@
 import React, { Component, ReactElement } from 'react';
-import { Flex } from '@adobe/react-spectrum';
-import { Button, ButtonOld, SocketedButton } from '@deephaven/components';
+import { Button, SocketedButton, Flex } from '@deephaven/components';
+
 import { dhTruck } from '@deephaven/icons';
 import SampleSection from './SampleSection';
 
@@ -12,40 +12,39 @@ interface ButtonsState {
   toggle: boolean;
 }
 class Buttons extends Component<Record<string, never>, ButtonsState> {
-  static renderButtonBrand(type: string, brand: string): ReactElement {
-    const className = type.length ? `btn-${type}-${brand}` : `btn-${brand}`;
+  static renderButtons(): ReactElement {
     return (
-      <ButtonOld
-        key={brand}
-        className={className}
-        style={{ marginBottom: '1rem', marginRight: '1rem' }}
-      >
-        {brand}
-      </ButtonOld>
-    );
-  }
-
-  static renderButtons(type: string): ReactElement {
-    const brands = [
-      'primary',
-      'secondary',
-      'success',
-      'warning',
-      'danger',
-      // Temporarily putting this at end of list for easier regression comparison.
-      // Once the colors are finalized, this should semantically go between
-      // success and warning
-      'info',
-    ].map((brand: string) => Buttons.renderButtonBrand(type, brand));
-
-    return (
-      <SampleSection
-        key={type}
-        name={`buttons-${type.length ? 'outline' : 'regular'}`}
-      >
-        <h5>{type.length ? 'Outline' : 'Regular'}</h5>
-        {brands}
-      </SampleSection>
+      <>
+        <h5>Button Kinds</h5>
+        <div
+          {...sampleSectionIdAndClasses('buttons-regular')}
+          style={{ padding: '1rem 0' }}
+        >
+          <Flex gap="size-100">
+            <Button kind="primary" onClick={noOp}>
+              Primary
+            </Button>
+            <Button kind="secondary" onClick={noOp}>
+              Secondary
+            </Button>
+            <Button kind="tertiary" onClick={noOp}>
+              Tertiary
+            </Button>
+            <Button kind="success" onClick={noOp}>
+              Success
+            </Button>
+            <Button kind="danger" onClick={noOp}>
+              Danger
+            </Button>
+            <Button kind="inline" onClick={noOp}>
+              Inline
+            </Button>
+            <Button kind="ghost" onClick={noOp}>
+              Ghost
+            </Button>
+          </Flex>
+        </div>
+      </>
     );
   }
 
@@ -175,7 +174,7 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
   }
 
   render(): React.ReactElement {
-    const buttons = ['', 'outline'].map(type => Buttons.renderButtons(type));
+    const buttons = Buttons.renderButtons();
     const inlineButtons = this.renderInlineButtons();
     const socketedButtons = Buttons.renderSocketedButtons();
     const links = Buttons.renderLinks();

@@ -23,6 +23,7 @@ import {
   GridPoint,
   GridRange,
   GridRenderer,
+  isDeletableGridModel,
   isEditableGridModel,
   isExpandableGridModel,
   ModelIndex,
@@ -919,11 +920,14 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       if (
         isEditableGridModel(model) &&
         model.isEditable &&
-        selectedRanges.length > 0
+        selectedRanges.length > 0 &&
+        isDeletableGridModel(model) &&
+        model.isDeletable
       ) {
         actions.push({
           title: 'Delete Selected Rows',
           group: IrisGridContextMenuHandler.GROUP_EDIT,
+          disabled: !model.isDeletableRanges(selectedRanges),
           order: 50,
           action: () => {
             this.irisGrid.deleteRanges(selectedRanges);

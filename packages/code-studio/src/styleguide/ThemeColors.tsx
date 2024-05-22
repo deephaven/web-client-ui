@@ -8,13 +8,9 @@ import chart from '@deephaven/components/src/theme/theme-dark/theme-dark-semanti
 import semanticEditor from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic-editor.css?inline';
 import semanticGrid from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic-grid.css?inline';
 import components from '@deephaven/components/src/theme/theme-dark/theme-dark-components.css?inline';
-import styles from './ThemeColors.module.scss';
-import {
-  buildColorGroups,
-  contrastColor,
-  INVALID_COLOR_BORDER_STYLE,
-} from './colorUtils';
+import { buildColorGroups, INVALID_COLOR_BORDER_STYLE } from './colorUtils';
 import SampleSection from './SampleSection';
+import styles from './ThemeColors.module.scss';
 
 function buildSwatchDataGroups() {
   return {
@@ -25,6 +21,17 @@ function buildSwatchDataGroups() {
     'Grid Colors': buildColorGroups('grid', semanticGrid, 2),
     'Component Colors': buildColorGroups('component', components, 1),
   };
+}
+
+function TooltipContent({ name, value }: { name: string; value: string }) {
+  return (
+    <>
+      <div>{name}</div>
+      <div>{value}</div>
+      {/* expensive call, don't normalize until popup shown */}
+      <div>{ColorUtils.normalizeCssColor(value, true)}</div>
+    </>
+  );
 }
 
 export function ThemeColors(): JSX.Element {
@@ -65,21 +72,13 @@ export function ThemeColors(): JSX.Element {
                             value === '' && name.length > 0
                               ? INVALID_COLOR_BORDER_STYLE
                               : undefined,
-                          color: `var(--dh-color-${contrastColor(value)})`,
                         }}
                         className={cl(styles.swatch, 'px-0')}
                       >
                         <Tooltip interactive>
-                          <div>{name}</div>
-                          <div>{value}</div>
-                          <div>{ColorUtils.normalizeCssColor(value, true)}</div>
+                          <TooltipContent name={name} value={value} />
                         </Tooltip>
-                        <CopyButton
-                          copy={name}
-                          style={{
-                            color: `var(--dh-color-${contrastColor(value)})`,
-                          }}
-                        />
+                        {name && <CopyButton copy={name} />}
                       </div>
                     ))}
                   </Fragment>
@@ -117,29 +116,27 @@ export function ThemeColors(): JSX.Element {
                         key={name}
                         className={styles.swatch}
                         style={{
-                          backgroundColor: value,
                           border:
                             value === '' && name.length > 0
                               ? INVALID_COLOR_BORDER_STYLE
                               : undefined,
-                          color: `var(--dh-color-${contrastColor(value)})`,
                         }}
                       >
+                        <div
+                          style={{
+                            backgroundColor: value,
+                            height: 'var(--swatch-height)',
+                            aspectRatio: '1 / 1',
+                          }}
+                        />
                         <Tooltip interactive>
-                          <div>{name}</div>
-                          <div>{value}</div>
-                          <div>{ColorUtils.normalizeCssColor(value, true)}</div>
+                          <TooltipContent name={name} value={value} />
                         </Tooltip>
                         <span>{name.replace('--dh-color-', '')}</span>
                         {name.endsWith('-hue') || note != null ? (
                           <span>{note ?? value}</span>
                         ) : null}
-                        <CopyButton
-                          copy={name}
-                          style={{
-                            color: `var(--dh-color-${contrastColor(value)})`,
-                          }}
-                        />
+                        <CopyButton copy={name} />
                       </div>
                     )
                   )}

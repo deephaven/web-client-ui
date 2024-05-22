@@ -1,10 +1,13 @@
 export {
+  // Checkbox - we want to use our own `Checkbox` component instead of Spectrum's
   CheckboxGroup,
   type SpectrumCheckboxGroupProps as CheckboxGroupProps,
   Form,
   type SpectrumFormProps as FormProps,
   NumberField,
   type SpectrumNumberFieldProps as NumberFieldProps,
+  Radio,
+  RadioGroup,
   RangeSlider,
   type SpectrumRangeSliderProps as RangeSliderProps,
   Slider,
