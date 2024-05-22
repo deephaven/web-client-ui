@@ -3,6 +3,37 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.78.0](https://github.com/deephaven/web-client-ui/compare/v0.77.0...v0.78.0) (2024-05-16)
+
+### Bug Fixes
+
+- "Delete Selected Rows" bug for tables with no key columns ([#1996](https://github.com/deephaven/web-client-ui/issues/1996)) ([37fe009](https://github.com/deephaven/web-client-ui/commit/37fe00914253822a56033bee49570e82caff9334))
+- Improve the look of the error view ([#2001](https://github.com/deephaven/web-client-ui/issues/2001)) ([3236c9b](https://github.com/deephaven/web-client-ui/commit/3236c9b7acb53e9468f09c1e57a99d79bb953774))
+- PouchStorageTable using incorrect $ne operator ([#2011](https://github.com/deephaven/web-client-ui/issues/2011)) ([6cf1240](https://github.com/deephaven/web-client-ui/commit/6cf124012a19b122b3a96f620886b970c12b6d29))
+- Use picker for iris grid partition selector ([#2012](https://github.com/deephaven/web-client-ui/issues/2012)) ([b61c518](https://github.com/deephaven/web-client-ui/commit/b61c51840ae5f83dc00bf9dab0d1e6a7e4ba64d5))
+- useViewportData - memoize subscriptions and first row of viewport ([#2008](https://github.com/deephaven/web-client-ui/issues/2008)) ([2246a4a](https://github.com/deephaven/web-client-ui/commit/2246a4a1ef087db060f2130c5a2d7c1e037746b4)), closes [#2003](https://github.com/deephaven/web-client-ui/issues/2003) [#1928](https://github.com/deephaven/web-client-ui/issues/1928)
+
+### Code Refactoring
+
+- Rename `ButtonGroup` to `SplitButtonGroup` ([#1997](https://github.com/deephaven/web-client-ui/issues/1997)) ([95a589c](https://github.com/deephaven/web-client-ui/commit/95a589ca4b471e2c357e8fcaf6c9e1f4581a5231))
+
+### Features
+
+- Add JS Plugin Information ([#2002](https://github.com/deephaven/web-client-ui/issues/2002)) ([6ff378c](https://github.com/deephaven/web-client-ui/commit/6ff378cf5c47382e5e7d48e086c5554c4ea4560f))
+- add middle click dashboard tab deletion ([#1992](https://github.com/deephaven/web-client-ui/issues/1992)) ([c922f87](https://github.com/deephaven/web-client-ui/commit/c922f87941858466e90802f4171104129284037b)), closes [#1990](https://github.com/deephaven/web-client-ui/issues/1990)
+- ListView actions ([#1968](https://github.com/deephaven/web-client-ui/issues/1968)) ([8e325ec](https://github.com/deephaven/web-client-ui/commit/8e325ec30e68d612e8d696d0c6fec193a8c4ebdd))
+- Make grid widget respect global formatter settings ([#1995](https://github.com/deephaven/web-client-ui/issues/1995)) ([d1fba8f](https://github.com/deephaven/web-client-ui/commit/d1fba8f664e1b33e492ddd9fe68d50545a08a3f9))
+- update @vscode/codicons to 0.36 ([#2010](https://github.com/deephaven/web-client-ui/issues/2010)) ([3a6a439](https://github.com/deephaven/web-client-ui/commit/3a6a439c80054e6b92440690ee5e9762f6e691d4))
+
+### Performance Improvements
+
+- Improve performance of lots of grids in a dashboard ([#1987](https://github.com/deephaven/web-client-ui/issues/1987)) ([3de52d6](https://github.com/deephaven/web-client-ui/commit/3de52d6fa0512792c97928f65f0b4b1080da2c49))
+
+### BREAKING CHANGES
+
+- Renamed @deephaven/components `ButtonGroup` to
+  `SplitButtonGroup`
+
 # [0.77.0](https://github.com/deephaven/web-client-ui/compare/v0.76.0...v0.77.0) (2024-05-07)
 
 ### Bug Fixes

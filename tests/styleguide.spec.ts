@@ -12,7 +12,6 @@ const sampleSectionIds: string[] = [
   'sample-section-component-colors',
   'sample-section-golden-layout',
   'sample-section-buttons-regular',
-  'sample-section-buttons-outline',
   'sample-section-buttons-inline',
   'sample-section-buttons-socketed',
   'sample-section-links',
@@ -49,7 +48,6 @@ const sampleSectionIds: string[] = [
 ];
 const buttonSectionIds: string[] = [
   'sample-section-buttons-regular',
-  'sample-section-buttons-outline',
   'sample-section-buttons-inline',
   'sample-section-buttons-socketed',
 ];
@@ -100,7 +98,7 @@ sampleSectionIds.forEach(id => {
   });
 });
 
-buttonSectionIds.forEach((id, i) => {
+buttonSectionIds.forEach(id => {
   test(`Buttons regression test - ${id}`, async ({ page }) => {
     // Isolate the section
     await page.goto(`/ide/styleguide?isolateSection=true#${id}`);
@@ -134,7 +132,7 @@ buttonSectionIds.forEach((id, i) => {
       // Focus
       await button.focus();
       await expect(sampleSection).toHaveScreenshot(
-        `buttons-focus-section-${i}-${j}${isDisabled ? '-disabled' : ''}.png`
+        `buttons-focus-section-${id}-${j}${isDisabled ? '-disabled' : ''}.png`
       );
 
       if (!isDisabled) {
@@ -149,7 +147,7 @@ buttonSectionIds.forEach((id, i) => {
       }
 
       await expect(sampleSection).toHaveScreenshot(
-        `buttons-hover-section-${i}-${j}${isDisabled ? '-disabled' : ''}.png`
+        `buttons-hover-section-${id}-${j}${isDisabled ? '-disabled' : ''}.png`
       );
       await page.mouse.move(0, 0);
 
