@@ -16,10 +16,7 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
     return (
       <>
         <h5>Button Kinds</h5>
-        <div
-          {...sampleSectionIdAndClasses('buttons-regular')}
-          style={{ padding: '1rem 0' }}
-        >
+        <SampleSection name="buttons-regular" style={{ padding: '1rem 0' }}>
           <Flex gap="size-100">
             <Button kind="primary" onClick={noOp}>
               Primary
@@ -43,7 +40,7 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
               Ghost
             </Button>
           </Flex>
-        </div>
+        </SampleSection>
       </>
     );
   }
