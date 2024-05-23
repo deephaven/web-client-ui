@@ -79,41 +79,21 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
     return (
       <SampleSection name="buttons-socketed">
         <h5>Socketed Buttons (for linker)</h5>
-        <SocketedButton
-          style={{ marginBottom: '1rem', marginRight: '1rem' }}
-          onClick={noOp}
-        >
-          Unlinked
-        </SocketedButton>
-        <SocketedButton
-          style={{ marginBottom: '1rem', marginRight: '1rem' }}
-          isLinked
-          onClick={noOp}
-        >
-          Linked
-        </SocketedButton>
-        <SocketedButton
-          style={{ marginBottom: '1rem', marginRight: '1rem' }}
-          isLinkedSource
-          onClick={noOp}
-        >
-          Linked Source
-        </SocketedButton>
-        <SocketedButton
-          style={{ marginBottom: '1rem', marginRight: '1rem' }}
-          isLinked
-          isInvalid
-          onClick={noOp}
-        >
-          Error
-        </SocketedButton>
-        <SocketedButton
-          style={{ marginBottom: '1rem', marginRight: '1rem' }}
-          disabled
-          onClick={noOp}
-        >
-          Disabled
-        </SocketedButton>
+        <ButtonGroup>
+          <SocketedButton onClick={noOp}>Unlinked</SocketedButton>
+          <SocketedButton isLinked onClick={noOp}>
+            Linked
+          </SocketedButton>
+          <SocketedButton isLinkedSource onClick={noOp}>
+            Linked Source
+          </SocketedButton>
+          <SocketedButton isLinked isInvalid onClick={noOp}>
+            Error
+          </SocketedButton>
+          <SocketedButton disabled onClick={noOp}>
+            Disabled
+          </SocketedButton>
+        </ButtonGroup>
       </SampleSection>
     );
   }

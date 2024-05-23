@@ -113,7 +113,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     // Spectrum container components such as `ButtonGroup` provide
     // UNSAFE_className prop for the `button` slot via a SlotProvider (
     // https://github.com/adobe/react-spectrum/blob/%40adobe/react-spectrum%403.33.1/packages/%40react-spectrum/buttongroup/src/ButtonGroup.tsx#L104-L107)
-    // This can be retrieves via `useSlotProps` to allow our buttons to be styled
+    // This can be retrieved via `useSlotProps` to allow our buttons to be styled
     // correctly inside the container.
     const { UNSAFE_className } = useSlotProps<{ UNSAFE_className?: string }>(
       {},
