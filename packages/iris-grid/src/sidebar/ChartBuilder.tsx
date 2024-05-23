@@ -13,7 +13,7 @@ import {
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { bindAllMethods } from '@deephaven/utils';
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 import {
   BarIcon,
   HistogramIcon,
@@ -74,7 +74,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
   }
 
   static makeSeriesItem(value: string): SeriesItem {
-    return { id: shortid.generate(), value };
+    return { id: nanoid(), value };
   }
 
   static makeDefaultSeriesItems(
@@ -218,7 +218,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
       const { model } = this.props;
       const { columns } = model;
       newSeriesItems.push({
-        id: shortid.generate(),
+        id: nanoid(),
         value: columns[0].name,
       });
 

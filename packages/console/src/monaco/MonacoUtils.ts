@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 /**
  * Exports a function for initializing monaco with the deephaven theme/config
  */
@@ -444,7 +444,7 @@ class MonacoUtils {
   ): void {
     editor.addAction({
       // This shouldn't be referenced by anything so using an arbitrary unique id
-      id: `disable-keybindings-${shortid()}`,
+      id: `disable-keybindings-${nanoid()}`,
       label: '', // This action won't be shown in the UI so no need for a label
       keybindings,
       run: () => undefined,

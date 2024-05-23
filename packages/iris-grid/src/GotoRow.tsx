@@ -20,7 +20,7 @@ import { Button, DateTimeInput, Select } from '@deephaven/components';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import classNames from 'classnames';
 import './GotoRow.scss';
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 import IrisGridModel from './IrisGridModel';
 import IrisGridProxyModel from './IrisGridProxyModel';
 import IrisGridBottomBar from './IrisGridBottomBar';
@@ -96,7 +96,7 @@ const GotoRow = forwardRef<GotoRowElement, GotoRowProps>(
 
     const { dh, rowCount } = model;
 
-    const gotoRowInputId = useMemo(() => `goto-row-input-${shortid()}`, []);
+    const gotoRowInputId = useMemo(() => `goto-row-input-${nanoid()}`, []);
 
     const handleGotoValueNumberKeyDown = (
       e: KeyboardEvent<HTMLInputElement>

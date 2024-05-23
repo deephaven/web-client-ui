@@ -26,7 +26,7 @@ import {
   PromiseUtils,
 } from '@deephaven/utils';
 import type { dh } from '@deephaven/jsapi-types';
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 import AdvancedFilterCreatorFilterItem from './AdvancedFilterCreatorFilterItem';
 import AdvancedFilterCreatorSelectValue from './AdvancedFilterCreatorSelectValue';
 import './AdvancedFilterCreator.scss';
@@ -100,7 +100,7 @@ class AdvancedFilterCreator extends PureComponent<
   };
 
   static makeFilterItem(): AdvancedFilterItem {
-    return { key: shortid() };
+    return { key: nanoid() };
   }
 
   constructor(props: AdvancedFilterCreatorProps) {
@@ -132,7 +132,7 @@ class AdvancedFilterCreator extends PureComponent<
       options.filterItems?.map(({ selectedType, value }) => ({
         selectedType,
         value,
-        key: shortid(),
+        key: nanoid(),
       })) ?? [];
     if (filterItems.length === 0) {
       filterItems.push(AdvancedFilterCreator.makeFilterItem());

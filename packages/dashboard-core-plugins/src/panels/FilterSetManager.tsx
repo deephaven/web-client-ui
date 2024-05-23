@@ -10,7 +10,7 @@ import React, {
   MouseEvent,
 } from 'react';
 import memoizeOne from 'memoize-one';
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   vsEdit,
@@ -240,7 +240,7 @@ class FilterSetManager extends Component<
   handleCaptureNewSet(): void {
     const { getFilterState } = this.props;
     FilterSetManager.animateScreenFlash();
-    const id = shortid();
+    const id = nanoid();
     const panels = getFilterState();
     const renameSet = {
       id,

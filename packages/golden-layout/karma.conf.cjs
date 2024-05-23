@@ -24,7 +24,9 @@ module.exports = function (config) {
     },
 
     browserify: {
-      plugin: ['esmify'],
+      transform: [
+        ['babelify', { presets: ['@babel/preset-env'], global: true }],
+      ],
       // ignored because it doesn't understand the scss import in GoldenLayoutThemeExport
       configure: function (bundle) {
         bundle.on('prebundle', function () {
