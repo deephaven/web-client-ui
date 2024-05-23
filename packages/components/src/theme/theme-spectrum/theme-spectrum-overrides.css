@@ -78,14 +78,13 @@ button[class*='spectrum-Button']:not(.btn):not(.btn-socketed) {
   /* Center the text vertically. We use a different font then spectrum so we require different custom centering */
   padding-bottom: calc(var(--spectrum-global-dimension-size-50) - 1px);
   padding-top: calc(var(--spectrum-global-dimension-size-50));
-
-  & svg {
-    /* 
+}
+button[class*='spectrum-Button']:not(.btn):not(.btn-socketed) svg {
+  /* 
     We use smaller icons than Spectrum, so we need to adjust the padding to 
     center when we use our icons inside of Spectrum buttons.
     */
-    padding-bottom: var(--spectrum-global-dimension-size-25);
-  }
+  padding-bottom: var(--spectrum-global-dimension-size-25);
 }
 
 span[class*='spectrum-Checkbox-label'],
