@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, { ReactElement, useState } from 'react';
 import {
   Grid,
@@ -16,7 +15,7 @@ import QuadrillionExample from './grid-examples/QuadrillionExample';
 import TreeExample from './grid-examples/TreeExample';
 import AsyncExample from './grid-examples/AsyncExample';
 import DataBarExample from './grid-examples/DataBarExample';
-import { sampleSectionIdAndClassesSpectrum } from './utils';
+import SampleSection from './SampleSection';
 
 function Grids(): ReactElement {
   const dh = useApi();
@@ -34,47 +33,43 @@ function Grids(): ReactElement {
     <div>
       <ThemeContext.Provider value={contextTheme}>
         <h2 className="ui-title">Grid</h2>
-        <Flex {...sampleSectionIdAndClassesSpectrum('grids-grid')}>
+        <SampleSection name="grids-grid" component={Flex}>
           <Grid model={model} theme={theme} />
-        </Flex>
+        </SampleSection>
         <h2 className="ui-title">Static Data</h2>
-        <Flex
-          {...sampleSectionIdAndClassesSpectrum('grids-static')}
-          height={200}
-        >
+        <SampleSection name="grids-static" component={Flex} height={200}>
           <StaticExample />
-        </Flex>
+        </SampleSection>
         <h2 className="ui-title">Data Bar</h2>
-        <Flex
-          {...sampleSectionIdAndClassesSpectrum('grids-data-bar')}
-          height={500}
-        >
+        <SampleSection name="grids-data-bar" component={Flex} height={500}>
           <DataBarExample />
-        </Flex>
+        </SampleSection>
         <h2 className="ui-title">Quadrillion rows and columns</h2>
-        <Flex
-          {...sampleSectionIdAndClassesSpectrum('grids-quadrillion')}
+        <SampleSection
+          name="grids-quadrillion"
+          component={Flex}
           position="relative"
           height={500}
         >
           <QuadrillionExample />
-        </Flex>
+        </SampleSection>
         <h2 className="ui-title">Async example</h2>
-        <Flex
-          {...sampleSectionIdAndClassesSpectrum('grids-async')}
+        <SampleSection
+          name="grids-async"
+          component={Flex}
           position="relative"
           height={500}
         >
           <AsyncExample />
-        </Flex>
+        </SampleSection>
         <h2 className="ui-title">Tree Grid</h2>
-        <Flex {...sampleSectionIdAndClassesSpectrum('grids-tree')} height={500}>
+        <SampleSection name="grids-tree" component={Flex} height={500}>
           <TreeExample />
-        </Flex>
+        </SampleSection>
         <h2 className="ui-title">Iris Grid</h2>
-        <Flex {...sampleSectionIdAndClassesSpectrum('grids-iris')} height={500}>
+        <SampleSection name="grids-iris" component={Flex} height={500}>
           <IrisGrid model={irisGridModel} />
-        </Flex>
+        </SampleSection>
       </ThemeContext.Provider>
     </div>
   );

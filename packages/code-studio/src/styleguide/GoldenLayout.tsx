@@ -1,7 +1,6 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
 import classnames from 'classnames';
-import { sampleSectionIdAndClasses } from './utils';
+import SampleSection from './SampleSection';
 
 const tabs = ['Tab 1', 'Tab 2', 'Tab 3'];
 
@@ -23,7 +22,7 @@ function Tab({
 
 export function GoldenLayout(): JSX.Element {
   return (
-    <div {...sampleSectionIdAndClasses('golden-layout')}>
+    <SampleSection name="golden-layout">
       <h2 className="ui-title">Golden Layout</h2>
       {[false, true].map(isMaximised => (
         <React.Fragment key={String(isMaximised)}>
@@ -50,7 +49,7 @@ export function GoldenLayout(): JSX.Element {
           </div>
         </React.Fragment>
       ))}
-    </div>
+    </SampleSection>
   );
 }
 

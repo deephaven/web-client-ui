@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, { useState, useEffect } from 'react';
 import {
   dh,
@@ -11,7 +10,7 @@ import { Icon } from '@adobe/react-spectrum';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button } from '@deephaven/components';
 import PropTypes from 'prop-types';
-import { sampleSectionIdAndClasses } from './utils';
+import SampleSection from './SampleSection';
 
 async function copyText(text: string): Promise<void | ErrorConstructor> {
   try {
@@ -129,7 +128,7 @@ function Icons(): React.ReactElement {
   </div>`;
 
   return (
-    <div {...sampleSectionIdAndClasses('icons')}>
+    <SampleSection name="icons">
       <h2 className="ui-title">Icons</h2>
 
       <div className="row">
@@ -233,7 +232,7 @@ function Icons(): React.ReactElement {
           </div>
         </div>
       </div>
-    </div>
+    </SampleSection>
   );
 }
 

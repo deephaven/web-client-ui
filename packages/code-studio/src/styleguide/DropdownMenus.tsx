@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 /* eslint no-alert: "off" */
 /* eslint no-console: "off" */
 import React, { Component } from 'react';
@@ -18,7 +17,7 @@ import {
   vsKebabVertical,
   vsQuestion,
 } from '@deephaven/icons';
-import { sampleSectionIdAndClasses } from './utils';
+import SampleSection from './SampleSection';
 
 interface DropdownMenus {
   button: React.RefObject<HTMLDivElement>;
@@ -92,7 +91,7 @@ class DropdownMenus extends Component<
     const { isShown } = this.state;
 
     return (
-      <div {...sampleSectionIdAndClasses('dropdown-menus')}>
+      <SampleSection name="dropdown-menus">
         <h2 className="ui-title">Dropdown Menu</h2>
         <p>
           A simple dropdown menu of actions, can open on click of parent
@@ -136,7 +135,7 @@ class DropdownMenus extends Component<
             actions={actions}
           />
         </div>
-      </div>
+      </SampleSection>
     );
   }
 }
