@@ -85,9 +85,7 @@ jobs:
 
       - name: Dump server logs
         if: failure()
-        run: |
-          docker ps -a
-          docker logs dhc-server > /tmp/server-log.txt
+        run: docker logs dhc-server > /tmp/server-log.txt
 
       - name: Upload server logs
         if: failure()
