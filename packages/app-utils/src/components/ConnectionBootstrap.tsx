@@ -1,7 +1,9 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { LoadingOverlay } from '@deephaven/components';
 import {
   ObjectFetcherContext,
+  ObjectFetchManager,
+  ObjectFetchManagerContext,
   sanitizeVariableDescriptor,
   useApi,
   useClient,
@@ -31,6 +33,7 @@ export function ConnectionBootstrap({
   const client = useClient();
   const [error, setError] = useState<unknown>();
   const [connection, setConnection] = useState<dh.IdeConnection>();
+
   useEffect(
     function initConnection() {
       let isCanceled = false;
@@ -83,6 +86,24 @@ export function ConnectionBootstrap({
     [connection]
   );
 
+  /** We don't really need to do anything fancy in Core to manage an object, just fetch it  */
+  const objectManager: ObjectFetchManager = useMemo(
+    () => ({
+      subscribe: (descriptor, onUpdate) => {
+        // We send an update with the fetch right away
+        onUpdate({
+          fetch: () => objectFetcher(descriptor),
+          error: null,
+        });
+        return () => {
+          // no-op
+          // For Core, if the server dies then we can't reconnect anyway, so no need to bother listening for subscription or cleaning up
+        };
+      },
+    }),
+    [objectFetcher]
+  );
+
   if (connection == null || error != null) {
     return (
       <LoadingOverlay
@@ -96,7 +117,9 @@ export function ConnectionBootstrap({
   return (
     <ConnectionContext.Provider value={connection}>
       <ObjectFetcherContext.Provider value={objectFetcher}>
-        {children}
+        <ObjectFetchManagerContext.Provider value={objectManager}>
+          {children}
+        </ObjectFetchManagerContext.Provider>
       </ObjectFetcherContext.Provider>
     </ConnectionContext.Provider>
   );
