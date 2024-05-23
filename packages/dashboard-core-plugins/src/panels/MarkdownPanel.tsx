@@ -86,7 +86,9 @@ export class MarkdownPanel extends Component<
     }
 
     this.state = {
-      isStartPageShown: content == null && props.closedPanels.length === 0,
+      isStartPageShown:
+        content == null &&
+        MarkdownUtils.getClosedMarkdowns(props.closedPanels).length !== 0,
       isEditing: false,
       content,
 
@@ -127,16 +129,6 @@ export class MarkdownPanel extends Component<
       this.editor.focus();
     }
   }
-
-  getClosedMarkdowns = memoize((closedPanels: ClosedPanels) =>
-    closedPanels
-      .filter(
-        panel =>
-          panel.component === 'MarkdownPanel' &&
-          panel.props.panelState.content === ''
-      )
-      .reverse()
-  );
 
   handleContainerDoubleClick(event: MouseEvent<Element>): void {
     const { isEditing } = this.state;
@@ -222,7 +214,7 @@ export class MarkdownPanel extends Component<
   render(): ReactElement {
     const { glContainer, glEventHub, closedPanels } = this.props;
     const { isEditing, isStartPageShown, content } = this.state;
-    const closedMarkdowns = this.getClosedMarkdowns(closedPanels);
+    const closedMarkdowns = MarkdownUtils.getClosedMarkdowns(closedPanels);
 
     return (
       <Panel
