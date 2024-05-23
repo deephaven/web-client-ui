@@ -79,7 +79,7 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
     return (
       <SampleSection name="buttons-socketed">
         <h5>Socketed Buttons (for linker)</h5>
-        <ButtonGroup>
+        <ButtonGroup marginBottom="1rem">
           <SocketedButton onClick={noOp}>Unlinked</SocketedButton>
           <SocketedButton isLinked onClick={noOp}>
             Linked
