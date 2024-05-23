@@ -1,5 +1,10 @@
 import React, { Component, ReactElement } from 'react';
-import { Button, SocketedButton, Flex } from '@deephaven/components';
+import {
+  Button,
+  SocketedButton,
+  Flex,
+  ButtonGroup,
+} from '@deephaven/components';
 
 import { dhTruck } from '@deephaven/icons';
 import SampleSection from './SampleSection';
@@ -17,7 +22,7 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
       <>
         <h5>Button Kinds</h5>
         <SampleSection name="buttons-regular" style={{ padding: '1rem 0' }}>
-          <Flex gap="size-100">
+          <ButtonGroup>
             <Button kind="primary" onClick={noOp}>
               Primary
             </Button>
@@ -39,7 +44,7 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
             <Button kind="ghost" onClick={noOp}>
               Ghost
             </Button>
-          </Flex>
+          </ButtonGroup>
         </SampleSection>
       </>
     );
