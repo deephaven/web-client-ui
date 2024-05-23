@@ -13,7 +13,7 @@
 }
 
 .themeColors {
-  --swatch-height: 35px;
+  --swatch-height: 24px;
   --column-gap: 14px;
 
   display: grid;
@@ -24,12 +24,10 @@
   grid-template-columns: repeat(auto-fit, 210px);
 
   .label {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 4px;
-    height: var(--swatch-height);
-    white-space: nowrap;
+    display: block;
+    padding: 1rem 0;
+    font-weight: bold;
+
     &.capitalize {
       text-transform: capitalize;
     }
@@ -39,8 +37,8 @@
     display: flex;
     align-items: center;
     height: var(--swatch-height);
-    justify-content: space-between;
-    padding-left: 10px;
+    gap: 4px;
+    margin-bottom: 1px;
 
     span {
       overflow: hidden;

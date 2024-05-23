@@ -2,7 +2,7 @@ import React, { MouseEvent, ReactElement, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { ButtonOld } from '@deephaven/components';
+import { Button } from '@deephaven/components';
 import { vsPass, vsWarning } from '@deephaven/icons';
 import { TextUtils } from '@deephaven/utils';
 import { ColumnName, InputFilter } from '@deephaven/iris-grid';
@@ -110,12 +110,12 @@ function ChartFilterOverlay({
               })}
             </div>
             <div>
-              <ButtonOld onClick={handleAddClick} className="btn-primary">
+              <Button kind="primary" onClick={handleAddClick}>
                 Add Input Filters
-              </ButtonOld>
-              <ButtonOld onClick={handleOpenLinker} className="btn-primary">
+              </Button>
+              <Button kind="primary" onClick={handleOpenLinker}>
                 Open Linker Tool
-              </ButtonOld>
+              </Button>
             </div>
           </>
         )}
