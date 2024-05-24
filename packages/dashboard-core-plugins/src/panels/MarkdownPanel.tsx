@@ -10,7 +10,6 @@ import memoize from 'memoize-one';
 import { connect } from 'react-redux';
 import {
   ClosedPanel,
-  ClosedPanels,
   DashboardPanelProps,
   getClosedPanelsForDashboard,
   LayoutUtils,
