@@ -9,7 +9,7 @@ pushd "$(dirname "$0")" # Set pwd to this directory
 if [[ "${CI}" == "1" || "${CI}" == "true" ]]; then
   # In CI, keep the container in case we need to dump logs in another
   # step of the GH action. It should be cleaned up automatically by the CI runner.
-  docker compose run --service-ports --build "$@"
+  docker compose run --service-ports --build -e CI=true "$@"
   exit_code=$?
   docker compose stop
 else
