@@ -6,3 +6,4 @@ export * from './useClient';
 export * from './useDeferredApi';
 export * from './useObjectFetch';
 export * from './useObjectFetcher';
+export * from './useWidget';
