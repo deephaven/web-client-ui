@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { dh } from '@deephaven/jsapi-types';
+import { ObjectFetcherContext } from './useObjectFetcher';
 
 /** Function for unsubscribing from a given subscription */
 export type UnsubscribeFunction = () => void;
@@ -23,6 +24,10 @@ export type ObjectFetchUpdate<T = unknown> = {
   error: unknown | null;
 };
 
+export type ObjectFetchUpdateCallback<T = unknown> = (
+  update: ObjectFetchUpdate<T>
+) => void;
+
 /** ObjectFetchManager for managing a subscription to an object using a VariableDescriptor */
 export type ObjectFetchManager = {
   /**
@@ -33,7 +38,7 @@ export type ObjectFetchManager = {
    */
   subscribe: <T = unknown>(
     descriptor: dh.ide.VariableDescriptor,
-    onUpdate: (update: ObjectFetchUpdate<T>) => void
+    onUpdate: ObjectFetchUpdateCallback<T>
   ) => UnsubscribeFunction;
 };
 
@@ -58,14 +63,22 @@ export function useObjectFetch<T = unknown>(
     })
   );
 
+  const objectFetcher = useContext(ObjectFetcherContext);
   const objectFetchManager = useContext(ObjectFetchManagerContext);
 
   useEffect(() => {
     if (objectFetchManager == null) {
-      setCurrentUpdate({
-        fetch: null,
-        error: new Error('No ObjectFetchManager available in context'),
-      });
+      if (objectFetcher == null) {
+        setCurrentUpdate({
+          fetch: null,
+          error: new Error('No ObjectFetchManager available in context'),
+        });
+      } else {
+        setCurrentUpdate({
+          fetch: () => objectFetcher(descriptor),
+          error: null,
+        });
+      }
       return;
     }
     // Signal that we're still loading
@@ -74,7 +87,7 @@ export function useObjectFetch<T = unknown>(
       error: null,
     });
     return objectFetchManager.subscribe(descriptor, setCurrentUpdate);
-  }, [descriptor, objectFetchManager]);
+  }, [descriptor, objectFetcher, objectFetchManager]);
 
   return currentUpdate;
 }
