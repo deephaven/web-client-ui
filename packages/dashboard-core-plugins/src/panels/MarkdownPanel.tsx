@@ -130,9 +130,7 @@ export class MarkdownPanel extends Component<
     }
   }
 
-  getClosedMarkdowns = memoize((closedPanels: ClosedPanels) =>
-    MarkdownUtils.getClosedMarkdowns(closedPanels)
-  );
+  getClosedMarkdowns = memoize(MarkdownUtils.getClosedMarkdowns);
 
   handleContainerDoubleClick(event: MouseEvent<Element>): void {
     const { isEditing } = this.state;
