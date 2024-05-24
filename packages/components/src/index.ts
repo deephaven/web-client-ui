@@ -3,7 +3,7 @@ export * from './actions';
 export { default as AutoCompleteInput } from './AutoCompleteInput';
 export { default as AutoResizeTextarea } from './AutoResizeTextarea';
 export { default as BasicModal } from './BasicModal';
-export { default as Button } from './Button';
+export * from './Button';
 export * from './BulkActionBar';
 export { default as CardFlip } from './CardFlip';
 export * from './context-actions';

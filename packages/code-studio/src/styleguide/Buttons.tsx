@@ -1,5 +1,10 @@
 import React, { Component, ReactElement } from 'react';
-import { Button, SocketedButton, Flex } from '@deephaven/components';
+import {
+  Button,
+  SocketedButton,
+  Flex,
+  ButtonGroup,
+} from '@deephaven/components';
 
 import { dhTruck } from '@deephaven/icons';
 import SampleSection from './SampleSection';
@@ -17,7 +22,7 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
       <>
         <h5>Button Kinds</h5>
         <SampleSection name="buttons-regular" style={{ padding: '1rem 0' }}>
-          <Flex gap="size-100">
+          <ButtonGroup>
             <Button kind="primary" onClick={noOp}>
               Primary
             </Button>
@@ -39,7 +44,7 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
             <Button kind="ghost" onClick={noOp}>
               Ghost
             </Button>
-          </Flex>
+          </ButtonGroup>
         </SampleSection>
       </>
     );
@@ -74,41 +79,21 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
     return (
       <SampleSection name="buttons-socketed">
         <h5>Socketed Buttons (for linker)</h5>
-        <SocketedButton
-          style={{ marginBottom: '1rem', marginRight: '1rem' }}
-          onClick={noOp}
-        >
-          Unlinked
-        </SocketedButton>
-        <SocketedButton
-          style={{ marginBottom: '1rem', marginRight: '1rem' }}
-          isLinked
-          onClick={noOp}
-        >
-          Linked
-        </SocketedButton>
-        <SocketedButton
-          style={{ marginBottom: '1rem', marginRight: '1rem' }}
-          isLinkedSource
-          onClick={noOp}
-        >
-          Linked Source
-        </SocketedButton>
-        <SocketedButton
-          style={{ marginBottom: '1rem', marginRight: '1rem' }}
-          isLinked
-          isInvalid
-          onClick={noOp}
-        >
-          Error
-        </SocketedButton>
-        <SocketedButton
-          style={{ marginBottom: '1rem', marginRight: '1rem' }}
-          disabled
-          onClick={noOp}
-        >
-          Disabled
-        </SocketedButton>
+        <ButtonGroup marginBottom="1rem">
+          <SocketedButton onClick={noOp}>Unlinked</SocketedButton>
+          <SocketedButton isLinked onClick={noOp}>
+            Linked
+          </SocketedButton>
+          <SocketedButton isLinkedSource onClick={noOp}>
+            Linked Source
+          </SocketedButton>
+          <SocketedButton isLinked isInvalid onClick={noOp}>
+            Error
+          </SocketedButton>
+          <SocketedButton disabled onClick={noOp}>
+            Disabled
+          </SocketedButton>
+        </ButtonGroup>
       </SampleSection>
     );
   }
