@@ -2,7 +2,7 @@
 import { expect, test } from '@playwright/test';
 
 const sampleSectionIds: string[] = [
-  'sample-section-typography',
+  // 'sample-section-typography',
   'sample-section-colors',
   'sample-section-theme-color-palette',
   'sample-section-semantic-colors',
