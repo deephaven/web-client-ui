@@ -28,7 +28,8 @@ class MarkdownUtils {
       .filter(
         panel =>
           panel.component === 'MarkdownPanel' &&
-          panel.props.panelState.content !== ''
+          panel.props.panelState.content !== '' &&
+          panel.props.panelState.content !== null
       )
       .reverse()
   );
