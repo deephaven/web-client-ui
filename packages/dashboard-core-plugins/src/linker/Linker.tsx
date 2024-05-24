@@ -1,6 +1,6 @@
 import React, { Component, ErrorInfo } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 import memoize from 'memoize-one';
 import { FadeTransition } from '@deephaven/components';
 import {
@@ -306,7 +306,7 @@ export class Linker extends Component<LinkerProps, LinkerState> {
     const { name: columnName, type: columnType } = column;
     if (linkInProgress == null || linkInProgress.start == null) {
       const newLink: Link = {
-        id: shortid.generate(),
+        id: nanoid(),
         start: {
           panelId,
           panelComponent,

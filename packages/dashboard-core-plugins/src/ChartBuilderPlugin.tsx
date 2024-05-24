@@ -13,7 +13,7 @@ import {
 } from '@deephaven/dashboard';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import type { dh } from '@deephaven/jsapi-types';
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 import { IrisGridEvent } from './events';
 import { ChartPanel } from './panels';
 
@@ -33,7 +33,7 @@ export function ChartBuilderPlugin(
   const handleCreateChart = useCallback(
     ({
       metadata,
-      panelId = shortid.generate(),
+      panelId = nanoid(),
       table,
     }: {
       metadata: {

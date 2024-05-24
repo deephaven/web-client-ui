@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, { useCallback, useState } from 'react';
 import {
   AutoCompleteInput,
@@ -16,7 +15,7 @@ import {
   Select,
   Option,
 } from '@deephaven/components';
-import { sampleSectionIdAndClasses } from './utils';
+import SampleSection from './SampleSection';
 
 const EXAMPLES = [
   { title: 'Title 1', value: 'Value 1' },
@@ -72,7 +71,7 @@ function Inputs(): React.ReactElement {
   );
 
   return (
-    <div {...sampleSectionIdAndClasses('inputs', ['style-guide-inputs'])}>
+    <SampleSection name="inputs" className="style-guide-inputs">
       <h2 className="ui-title">Inputs</h2>
       <div className="row">
         <div className="col">
@@ -343,7 +342,7 @@ function Inputs(): React.ReactElement {
           </div>
         </div>
       </div>
-    </div>
+    </SampleSection>
   );
 }
 export default Inputs;

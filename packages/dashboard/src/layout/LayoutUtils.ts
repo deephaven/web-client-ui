@@ -1,6 +1,6 @@
 import { DragEvent } from 'react';
 import deepEqual from 'fast-deep-equal';
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 import isMatch from 'lodash.ismatch';
 import Log from '@deephaven/log';
 import GoldenLayout, {
@@ -458,7 +458,7 @@ class LayoutUtils {
         const { component, props = {} } = itemConfig;
         hydratedConfig.push({
           ...itemConfig,
-          id: itemConfig?.id ?? shortid(),
+          id: itemConfig?.id ?? nanoid(),
           props: hydrateComponent(component, props),
         });
       } else if (itemConfig.content !== undefined) {
@@ -526,7 +526,7 @@ class LayoutUtils {
     const config = { ...configParam } as ReactComponentConfig;
 
     if (config.id == null) {
-      config.id = shortid.generate();
+      config.id = nanoid();
     }
 
     if (dragEvent != null) {
@@ -716,7 +716,7 @@ class LayoutUtils {
         panelState,
       },
       title: `${config.title} Copy`,
-      id: shortid.generate(),
+      id: nanoid(),
     };
     LayoutUtils.openComponentInStack(stack, cloneConfig);
     return cloneConfig;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 import { useForwardedRef } from '@deephaven/react-hooks';
 
 interface CheckboxProps {
@@ -35,7 +35,7 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
       'data-testid': dataTestId,
     } = props;
 
-    const [id] = useState(shortid());
+    const [id] = useState(nanoid());
 
     const ref = useForwardedRef<HTMLInputElement>(forwardedRef);
 

@@ -1,7 +1,7 @@
 // Wrapper for the Console for use in a golden layout container
 // Will probably need to handle window popping out from golden layout here.
 import React, { PureComponent, ReactElement, RefObject } from 'react';
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 import debounce from 'lodash.debounce';
 import { connect } from 'react-redux';
 import { LoadingOverlay } from '@deephaven/components';
@@ -209,7 +209,7 @@ export class ConsolePanel extends PureComponent<
     const { itemIds } = this.state;
     let id = itemIds.get(name);
     if (id == null && createIfNecessary) {
-      id = shortid.generate();
+      id = nanoid();
       this.setItemId(name, id);
     }
     return id;

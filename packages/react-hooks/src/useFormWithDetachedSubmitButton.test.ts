@@ -1,40 +1,40 @@
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 import { TestUtils } from '@deephaven/utils';
 import { renderHook } from '@testing-library/react-hooks';
 import type { FocusableRefValue } from '@react-types/shared';
 import useFormWithDetachedSubmitButton from './useFormWithDetachedSubmitButton';
 
-jest.mock('shortid');
+jest.mock('nanoid');
 
-let shortIdCount = 0;
+let nanoIdCount = 0;
 
 beforeEach(() => {
   jest.clearAllMocks();
 
-  TestUtils.asMock(shortid).mockImplementation(() => {
-    shortIdCount += 1;
-    return String(shortIdCount);
+  TestUtils.asMock(nanoid).mockImplementation(() => {
+    nanoIdCount += 1;
+    return String(nanoIdCount);
   });
 });
 
 describe('useFormWithDetachedSubmitButton', () => {
   it('should generate new formId on mount', () => {
     const { rerender } = renderHook(() => useFormWithDetachedSubmitButton());
-    expect(shortIdCount).toEqual(1);
+    expect(nanoIdCount).toEqual(1);
 
     // Should not generate new id on re-render
     rerender();
-    expect(shortIdCount).toEqual(1);
+    expect(nanoIdCount).toEqual(1);
 
     // Should generate new id if fresh mount
     renderHook(() => useFormWithDetachedSubmitButton());
-    expect(shortIdCount).toEqual(2);
+    expect(nanoIdCount).toEqual(2);
   });
 
   it('should generate form and button props', () => {
     const { result } = renderHook(() => useFormWithDetachedSubmitButton());
 
-    const formId = `useSubmitButtonRef-${shortIdCount}`;
+    const formId = `useSubmitButtonRef-${nanoIdCount}`;
 
     expect(result.current).toEqual({
       formProps: {
@@ -81,7 +81,7 @@ describe('useFormWithDetachedSubmitButton', () => {
 
     result.current.submitButtonProps.ref(buttonRef);
 
-    const formId = `useSubmitButtonRef-${shortIdCount}`;
+    const formId = `useSubmitButtonRef-${nanoIdCount}`;
 
     expect(button.setAttribute).toHaveBeenCalledWith('form', formId);
   });
