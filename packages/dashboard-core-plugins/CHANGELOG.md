@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.79.0](https://github.com/deephaven/web-client-ui/compare/v0.78.0...v0.79.0) (2024-05-24)
+
+### Bug Fixes
+
+- Replace shortid package with nanoid package ([#2025](https://github.com/deephaven/web-client-ui/issues/2025)) ([30d9d3c](https://github.com/deephaven/web-client-ui/commit/30d9d3c1438a8a4d1f351d6f6f677f8ee7c22fbe))
+- Unedited markdown widgets not persisting ([#2019](https://github.com/deephaven/web-client-ui/issues/2019)) ([c17f136](https://github.com/deephaven/web-client-ui/commit/c17f1367e3575f634b93f29ff3623b99db3c1f0d))
+
+### Features
+
+- e2e combined improvements ([#1998](https://github.com/deephaven/web-client-ui/issues/1998)) ([99fc2f6](https://github.com/deephaven/web-client-ui/commit/99fc2f69758aa8b0289507b50c1ec52be0934d29))
+- Replaced `RadioGroup` with Spectrum's ([#2020](https://github.com/deephaven/web-client-ui/issues/2020)) ([#2021](https://github.com/deephaven/web-client-ui/issues/2021)) ([c9ac72d](https://github.com/deephaven/web-client-ui/commit/c9ac72daddc4bc63012a675aa801af8ee807eff6))
+
+### BREAKING CHANGES
+
+- `RadioGroup` has been replaced by Spectrum
+  `RadioGroup`. `RadioItem` has been replaced by Spectrum `Radio`
+- Removed ButtonOld component, use Button instead.
+
 # [0.78.0](https://github.com/deephaven/web-client-ui/compare/v0.77.0...v0.78.0) (2024-05-16)
 
 ### Bug Fixes
