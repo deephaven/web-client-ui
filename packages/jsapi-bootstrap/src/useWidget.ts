@@ -51,6 +51,8 @@ export function useWidget<T extends dh.Widget = dh.Widget>(
       }
 
       // We should be able to load the widget. Load it asynchronously, and set the widget when it's done.
+      // If we get cancelled before the fetch is done, we should close the widget and its exported objects.
+      // If not though, the consumer of the widget is expected to take ownership and close the widget appropriately.
       let isCancelled = false;
       async function loadWidgetInternal() {
         try {
