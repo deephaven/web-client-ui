@@ -50,6 +50,7 @@ export function useWidget<T extends dh.Widget = dh.Widget>(
         return;
       }
 
+      // We should be able to load the widget. Load it asynchronously, and set the widget when it's done.
       let isCancelled = false;
       async function loadWidgetInternal() {
         try {
