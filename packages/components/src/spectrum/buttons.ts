@@ -1,7 +1,8 @@
 export {
   ActionButton,
   type SpectrumActionButtonProps as ActionButtonProps,
-  // Button - we want to use our own `Button` component instead of Spectrum's
+  Button as SpectrumButton,
+  type SpectrumButtonProps,
   ButtonGroup,
   type SpectrumButtonGroupProps as ButtonGroupProps,
   // FileTrigger - we aren't planning to support this component
