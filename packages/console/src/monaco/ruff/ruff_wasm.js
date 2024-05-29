@@ -1,3 +1,4 @@
+/* eslint-disable */
 /// <reference types="./ruff_wasm.d.ts" />
 let wasm;
 
