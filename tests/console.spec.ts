@@ -34,7 +34,7 @@ test.describe('console input tests', () => {
     // Expect the output to show up in the log
     await expect(
       page.locator('.console-history .log-message').filter({ hasText: message })
-    ).toHaveCount(0);
+    ).toHaveCount(2);
   });
 
   test('object button is created when creating a table', async ({
