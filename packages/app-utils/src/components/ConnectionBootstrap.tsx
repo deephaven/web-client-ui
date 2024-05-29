@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { BasicModal } from '@deephaven/components';
+import { BasicModal, LoadingOverlay } from '@deephaven/components';
 import {
   ObjectFetcherContext,
   sanitizeVariableDescriptor,
@@ -32,7 +32,7 @@ export function ConnectionBootstrap({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState<unknown>();
   const [connection, setConnection] = useState<dh.IdeConnection>();
-  const [authFailedState, setIsAuthFailedState] = useState<boolean>(false);
+  const [isAuthFailed, setIsAuthFailed] = useState<boolean>(false);
   useEffect(
     function initConnection() {
       let isCanceled = false;
@@ -91,14 +91,14 @@ export function ConnectionBootstrap({
         setError(
           `Reconnect authentication failed: ${detail ?? 'Unknown reason'}`
         );
-        setIsAuthFailedState(true);
+        setIsAuthFailed(true);
       }
-      const authFailed = connection.addEventListener(
+      const removerFn = connection.addEventListener(
         api.CoreClient.EVENT_RECONNECT_AUTH_FAILED,
         handleAuthFailed
       );
 
-      return authFailed;
+      return removerFn;
     },
     [api, connection]
   );
@@ -110,6 +110,16 @@ export function ConnectionBootstrap({
     },
     [connection]
   );
+
+  if (connection == null || error != null) {
+    return (
+      <LoadingOverlay
+        data-testid="connection-bootstrap-loading"
+        isLoading={connection == null}
+        errorMessage={error != null ? `${error}` : undefined}
+      />
+    );
+  }
 
   function handleRefresh(): void {
     log.info('Refreshing application');
@@ -124,7 +134,7 @@ export function ConnectionBootstrap({
           <BasicModal
             confirmButtonText="Refresh"
             onConfirm={handleRefresh}
-            isOpen={authFailedState}
+            isOpen={isAuthFailed}
             headerText="Authentication failed"
             bodyText="Credentials are invalid. Please refresh your browser to try and reconnect."
           />
