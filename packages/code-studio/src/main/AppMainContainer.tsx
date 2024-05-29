@@ -996,17 +996,6 @@ export class AppMainContainer extends Component<
           onChange={this.handleImportLayoutFiles}
           data-testid="input-import-layout"
         />
-        <DebouncedModal isOpen={isDisconnected} debounceMs={1000}>
-          <InfoModal
-            icon={vsDebugDisconnect}
-            title={
-              <>
-                <LoadingSpinner /> Attempting to reconnect...
-              </>
-            }
-            subtitle="Please check your network connection."
-          />
-        </DebouncedModal>
         <BasicModal
           confirmButtonText="Reset"
           onConfirm={this.handleConfirmResetLayoutPrompt}

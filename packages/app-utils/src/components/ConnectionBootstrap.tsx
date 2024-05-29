@@ -1,5 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { BasicModal, LoadingOverlay } from '@deephaven/components';
+import {
+  BasicModal,
+  DebouncedModal,
+  InfoModal,
+  LoadingOverlay,
+  LoadingSpinner,
+} from '@deephaven/components';
 import {
   ObjectFetcherContext,
   sanitizeVariableDescriptor,
@@ -9,6 +15,7 @@ import {
 import type { dh } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { assertNotNull } from '@deephaven/utils';
+import { vsDebugDisconnect } from '@deephaven/icons';
 import ConnectionContext from './ConnectionContext';
 
 const log = Log.module('@deephaven/app-utils.ConnectionBootstrap');
@@ -33,6 +40,9 @@ export function ConnectionBootstrap({
   const [error, setError] = useState<unknown>();
   const [connection, setConnection] = useState<dh.IdeConnection>();
   const [isAuthFailed, setIsAuthFailed] = useState<boolean>(false);
+  const [isShutdown, setIsShutdown] = useState<boolean>(false);
+  const [isReconnecting, setIsReconnecting] = useState<boolean>(false);
+
   useEffect(
     function initConnection() {
       let isCanceled = false;
@@ -59,6 +69,26 @@ export function ConnectionBootstrap({
   );
 
   useEffect(
+    function listenForReconnect() {
+      if (connection == null) return;
+
+      // handles the reconnect event
+      function handleReconnect(event: CustomEvent): void {
+        const { detail } = event;
+        log.info('Reconnect', `${JSON.stringify(detail)}`);
+        setIsReconnecting(false);
+      }
+      const removerFn = connection.addEventListener(
+        api.CoreClient.EVENT_RECONNECT,
+        handleReconnect
+      );
+
+      return removerFn;
+    },
+    [api, connection]
+  );
+
+  useEffect(
     function listenForShutdown() {
       if (connection == null) return;
 
@@ -67,6 +97,7 @@ export function ConnectionBootstrap({
         const { detail } = event;
         log.info('Shutdown', `${JSON.stringify(detail)}`);
         setError(`Server shutdown: ${detail ?? 'Unknown reason'}`);
+        setIsShutdown(true);
       }
       const removerFn = connection.addEventListener(
         api.IdeConnection.EVENT_SHUTDOWN,
@@ -81,6 +112,7 @@ export function ConnectionBootstrap({
   useEffect(
     function listenForAuthFailed() {
       if (connection == null) return;
+
       // handles the auth failed event
       function handleAuthFailed(event: CustomEvent): void {
         const { detail } = event;
@@ -111,7 +143,34 @@ export function ConnectionBootstrap({
     [connection]
   );
 
-  if (connection == null || error != null) {
+  if (isReconnecting) {
+    return (
+      <DebouncedModal isOpen={isReconnecting} debounceMs={1000}>
+        <InfoModal
+          icon={vsDebugDisconnect}
+          title={
+            <>
+              <LoadingSpinner /> Attempting to reconnect...
+            </>
+          }
+          subtitle="Please check your network connection."
+        />
+      </DebouncedModal>
+    );
+  }
+
+  if (isAuthFailed) {
+    return (
+      <BasicModal
+        confirmButtonText="Refresh"
+        onConfirm={handleRefresh}
+        isOpen={isAuthFailed}
+        headerText="Authentication failed"
+        bodyText="Credentials are invalid. Please refresh your browser to try and reconnect."
+      />
+    );
+  }
+  if (isShutdown) {
     return (
       <LoadingOverlay
         data-testid="connection-bootstrap-loading"
@@ -129,16 +188,7 @@ export function ConnectionBootstrap({
   return (
     <ConnectionContext.Provider value={connection ?? null}>
       <ObjectFetcherContext.Provider value={objectFetcher}>
-        <>
-          {children}
-          <BasicModal
-            confirmButtonText="Refresh"
-            onConfirm={handleRefresh}
-            isOpen={isAuthFailed}
-            headerText="Authentication failed"
-            bodyText="Credentials are invalid. Please refresh your browser to try and reconnect."
-          />
-        </>
+        {children}
       </ObjectFetcherContext.Provider>
     </ConnectionContext.Provider>
   );
