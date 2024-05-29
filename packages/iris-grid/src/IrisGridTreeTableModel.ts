@@ -230,6 +230,12 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     return [this.virtualColumns.length, this.groupedColumns.length];
   }
 
+  get layoutHints(): DhType.LayoutHints | null | undefined {
+    // TODO: Update this when JS API types are updated with this.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (this.table as any).layoutHints;
+  }
+
   get hasExpandableRows(): boolean {
     return true;
   }

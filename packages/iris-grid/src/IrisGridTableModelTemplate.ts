@@ -177,6 +177,8 @@ class IrisGridTableModelTemplate<
 
   private _columnHeaderGroups: ColumnHeaderGroup[] = [];
 
+  private _isColumnHeaderGroupsInitialized = false;
+
   private _movedColumns: MoveOperation[] | null = null;
 
   /**
@@ -224,11 +226,6 @@ class IrisGridTableModelTemplate<
     // These rows can be sparse, so using a map instead of an array.
     this.pendingNewDataMap = new Map();
     this.pendingNewRowCount = 0;
-
-    this.columnHeaderGroups = IrisGridUtils.parseColumnHeaderGroups(
-      this,
-      this.layoutHints?.columnGroups ?? []
-    ).groups;
   }
 
   close(): void {
@@ -926,10 +923,12 @@ class IrisGridTableModelTemplate<
   }
 
   get columnHeaderGroupMap(): Map<string, ColumnHeaderGroup> {
+    this.initializeColumnHeaderGroups();
     return this._columnHeaderGroupMap;
   }
 
   get columnHeaderGroups(): ColumnHeaderGroup[] {
+    this.initializeColumnHeaderGroups();
     return this._columnHeaderGroups;
   }
 
@@ -952,6 +951,16 @@ class IrisGridTableModelTemplate<
     this.columnHeaderMaxDepth = maxDepth;
     this.columnHeaderParentMap = parentMap;
     this._columnHeaderGroupMap = groupMap;
+    this._isColumnHeaderGroupsInitialized = true;
+  }
+
+  private initializeColumnHeaderGroups(): void {
+    if (!this._isColumnHeaderGroupsInitialized) {
+      this.columnHeaderGroups = IrisGridUtils.parseColumnHeaderGroups(
+        this,
+        this.layoutHints?.columnGroups ?? []
+      ).groups;
+    }
   }
 
   row(y: ModelIndex): R | null {
