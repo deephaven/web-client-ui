@@ -68,6 +68,23 @@ export function ConnectionBootstrap({
     [api, client]
   );
 
+  useEffect(function listenForDisconnect() {
+    if (connection == null) return;
+
+    // handles the disconnect event
+    function handleDisconnect(event: CustomEvent): void {
+      const { detail } = event;
+      log.info('Disconnect', `${JSON.stringify(detail)}`);
+      setIsReconnecting(true);
+    }
+    const removerFn = connection.addEventListener(
+      api.IdeConnection.EVENT_DISCONNECT,
+      handleDisconnect
+    );
+
+    return removerFn;
+  });
+
   useEffect(
     function listenForReconnect() {
       if (connection == null) return;
@@ -143,7 +160,7 @@ export function ConnectionBootstrap({
     [connection]
   );
 
-  if (isReconnecting) {
+  if (isReconnecting && !isShutdown) {
     return (
       <DebouncedModal isOpen={isReconnecting} debounceMs={1000}>
         <InfoModal

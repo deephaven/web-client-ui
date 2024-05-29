@@ -137,7 +137,6 @@ interface AppMainContainerProps {
 
 interface AppMainContainerState {
   contextActions: ContextAction[];
-  isDisconnected: boolean;
   isPanelsMenuShown: boolean;
   isResetLayoutPromptShown: boolean;
   isSettingsMenuShown: boolean;
@@ -241,7 +240,6 @@ export class AppMainContainer extends Component<
           isGlobal: true,
         },
       ],
-      isDisconnected: false,
       isPanelsMenuShown: false,
       isResetLayoutPromptShown: false,
       isSettingsMenuShown: false,
@@ -261,7 +259,6 @@ export class AppMainContainer extends Component<
   componentDidMount(): void {
     this.initWidgets();
     this.initDashboardData();
-    this.startListeningForDisconnect();
 
     window.addEventListener(
       'beforeunload',
@@ -281,7 +278,6 @@ export class AppMainContainer extends Component<
 
   componentWillUnmount(): void {
     this.deinitWidgets();
-    this.stopListeningForDisconnect();
 
     this.dashboardLayouts.forEach(layout => {
       stopListenForCreateDashboard(layout.eventHub, this.handleCreateDashboard);
@@ -632,16 +628,6 @@ export class AppMainContainer extends Component<
     }
   }
 
-  handleDisconnect(): void {
-    log.info('Disconnected from server');
-    this.setState({ isDisconnected: true });
-  }
-
-  handleReconnect(): void {
-    log.info('Reconnected to server');
-    this.setState({ isDisconnected: false });
-  }
-
   /**
    * Import the provided file and set it in the workspace data (which should then load it in the dashboard)
    * @param file JSON file to import
@@ -710,38 +696,6 @@ export class AppMainContainer extends Component<
         pastedData.replace(replacedChars, '"')
       );
     }
-  }
-
-  startListeningForDisconnect(): void {
-    const { connection } = this.props;
-    if (connection == null) {
-      return;
-    }
-
-    connection.addEventListener(
-      dh.IdeConnection.EVENT_DISCONNECT,
-      this.handleDisconnect
-    );
-    connection.addEventListener(
-      dh.IdeConnection.EVENT_RECONNECT,
-      this.handleReconnect
-    );
-  }
-
-  stopListeningForDisconnect(): void {
-    const { connection } = this.props;
-    if (connection == null) {
-      return;
-    }
-
-    connection.removeEventListener(
-      dh.IdeConnection.EVENT_DISCONNECT,
-      this.handleDisconnect
-    );
-    connection.removeEventListener(
-      dh.IdeConnection.EVENT_RECONNECT,
-      this.handleReconnect
-    );
   }
 
   /**
@@ -833,12 +787,12 @@ export class AppMainContainer extends Component<
   }
 
   render(): ReactElement {
-    const { activeTool, plugins, user, serverConfigValues } = this.props;
+    const { activeTool, plugins, user, serverConfigValues, connection } =
+      this.props;
     const { permissions } = user;
     const { canUsePanels } = permissions;
     const {
       contextActions,
-      isDisconnected,
       isPanelsMenuShown,
       isResetLayoutPromptShown,
       isSettingsMenuShown,
@@ -931,7 +885,7 @@ export class AppMainContainer extends Component<
               icon={
                 <span className="fa-layers">
                   <FontAwesomeIcon icon={vsGear} transform="grow-3" />
-                  {isDisconnected && (
+                  {connection == null && (
                     <>
                       <FontAwesomeIcon
                         icon={dhSquareFilled}
@@ -947,7 +901,7 @@ export class AppMainContainer extends Component<
                   )}
                 </span>
               }
-              tooltip="Server disconnected"
+              tooltip="User Settings"
             />
           </div>
         </div>
