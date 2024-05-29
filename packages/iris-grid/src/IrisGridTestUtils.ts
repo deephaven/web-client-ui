@@ -100,7 +100,8 @@ class IrisGridTestUtils {
     columns = this.makeColumns(),
     groupedColumns: DhType.Column[] = [],
     size = 1000000000,
-    sort = []
+    sort = [],
+    layoutHints?: Partial<DhType.LayoutHints>
   ): DhType.TreeTable {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const table = new (this.dh as any).TreeTable({
@@ -108,6 +109,7 @@ class IrisGridTestUtils {
       groupedColumns,
       size,
       sort,
+      layoutHints,
     });
     table.copy = jest.fn(() => Promise.resolve(table));
     return table;

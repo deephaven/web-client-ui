@@ -21,6 +21,15 @@ export interface UITreeRow extends UIRow {
   hasChildren: boolean;
   depth: number;
 }
+
+type LayoutTreeTable = DhType.TreeTable & {
+  layoutHints?: null | DhType.LayoutHints;
+};
+
+function isLayoutTreeTable(table: DhType.TreeTable): table is LayoutTreeTable {
+  return (table as LayoutTreeTable).layoutHints !== undefined;
+}
+
 class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   DhType.TreeTable,
   UITreeRow
@@ -231,9 +240,10 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   }
 
   get layoutHints(): DhType.LayoutHints | null | undefined {
-    // TODO: Update this when JS API types are updated with this.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (this.table as any).layoutHints;
+    if (isLayoutTreeTable(this.table)) {
+      return this.table.layoutHints;
+    }
+    return undefined;
   }
 
   get hasExpandableRows(): boolean {
