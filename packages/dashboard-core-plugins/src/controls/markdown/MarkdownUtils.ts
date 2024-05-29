@@ -1,3 +1,6 @@
+import { ClosedPanels } from '@deephaven/dashboard';
+import memoize from 'memoize-one';
+
 class MarkdownUtils {
   static DEFAULT_TITLE = 'Note';
 
@@ -19,6 +22,17 @@ class MarkdownUtils {
 
     return title;
   }
+
+  static getClosedMarkdowns = memoize((closedPanels: ClosedPanels) =>
+    closedPanels
+      .filter(
+        panel =>
+          panel.component === 'MarkdownPanel' &&
+          panel.props.panelState.content !== '' &&
+          panel.props.panelState.content !== null
+      )
+      .reverse()
+  );
 }
 
 export default MarkdownUtils;

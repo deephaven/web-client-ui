@@ -1,6 +1,6 @@
 import { ComponentType, useCallback } from 'react';
 import type { ReactComponentConfig } from '@deephaven/golden-layout';
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 import {
   DashboardPanelProps,
   DashboardPluginComponentProps,
@@ -49,11 +49,7 @@ export function useDashboardPanel<
   const { id, layout, registerComponent } = dashboardProps;
 
   const handlePanelOpen = useCallback(
-    ({
-      dragEvent,
-      panelId = shortid.generate(),
-      widget,
-    }: PanelOpenEventDetail) => {
+    ({ dragEvent, panelId = nanoid(), widget }: PanelOpenEventDetail) => {
       const { name, type } = widget;
       const isSupportedType =
         type != null &&

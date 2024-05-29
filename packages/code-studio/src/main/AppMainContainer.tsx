@@ -9,7 +9,7 @@ import classNames from 'classnames';
 import memoize from 'memoize-one';
 import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   ContextActions,
@@ -527,7 +527,7 @@ export class AppMainContainer extends Component<
     title,
     data,
   }: CreateDashboardPayload): void {
-    const newId = shortid();
+    const newId = nanoid();
     const { setDashboardPluginData } = this.props;
     setDashboardPluginData(newId, pluginId, data);
     this.setState(({ tabs }) => ({
@@ -982,6 +982,7 @@ export class AppMainContainer extends Component<
         <SlideTransition in={isSettingsMenuShown} mountOnEnter unmountOnExit>
           <SettingsMenu
             serverConfigValues={serverConfigValues}
+            pluginData={plugins}
             onDone={this.handleSettingsMenuHide}
             user={user}
           />

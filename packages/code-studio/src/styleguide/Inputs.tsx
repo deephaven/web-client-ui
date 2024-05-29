@@ -1,11 +1,10 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, { useCallback, useState } from 'react';
 import {
   AutoCompleteInput,
   AutoResizeTextarea,
   Checkbox,
   ComboBox,
-  RadioItem,
+  Radio,
   RadioGroup,
   SearchInput,
   TimeInput,
@@ -16,7 +15,7 @@ import {
   Select,
   Option,
 } from '@deephaven/components';
-import { sampleSectionIdAndClasses } from './utils';
+import SampleSection from './SampleSection';
 
 const EXAMPLES = [
   { title: 'Title 1', value: 'Value 1' },
@@ -56,12 +55,9 @@ function Inputs(): React.ReactElement {
   const [autoResizeTextareaValue, setAutoResizeTextareaValue] = useState(
     '-DLiveTableMonitor.updateThreads=8 -DLiveTableMonitor.printDependencyInformation=false -Dassertion.heapDump=true -Drequire.heapDump=true -Dassertion.heapDump=true -Drequire.heapDump=true'
   );
-  const handleRadioChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      setRadioValue(event.target.value);
-    },
-    []
-  );
+  const handleRadioChange = useCallback((value: string) => {
+    setRadioValue(value);
+  }, []);
 
   const handleToggleClick = useCallback(() => {
     setOn(!on);
@@ -75,7 +71,7 @@ function Inputs(): React.ReactElement {
   );
 
   return (
-    <div {...sampleSectionIdAndClasses('inputs', ['style-guide-inputs'])}>
+    <SampleSection name="inputs" className="style-guide-inputs">
       <h2 className="ui-title">Inputs</h2>
       <div className="row">
         <div className="col">
@@ -186,18 +182,26 @@ function Inputs(): React.ReactElement {
 
         <div className="col">
           <form>
-            <h5> Radios </h5>
-            <RadioGroup onChange={handleRadioChange} value={radioValue}>
-              <RadioItem value="1">Toggle this custom radio</RadioItem>
-              <RadioItem value="2">Or toggle this other custom radio</RadioItem>
-              <RadioItem value="3" disabled>
+            <h5 id="inputs-radios-heading">Radios</h5>
+            <RadioGroup
+              aria-labelledby="inputs-radios-heading"
+              onChange={handleRadioChange}
+              value={radioValue}
+              isInvalid={radioValue === '4'}
+              description="Select a radio item"
+              errorMessage={
+                radioValue === '4' ? 'Invalid radio selected' : undefined
+              }
+            >
+              <Radio value="1">Toggle this custom radio</Radio>
+              <Radio value="2">Or toggle this other custom radio</Radio>
+              <Radio value="3" isDisabled>
                 Disabled radio
-              </RadioItem>
-              <RadioItem value="4" isInvalid>
-                Invalid radio
-              </RadioItem>
-              {/* eslint-disable-next-line react/jsx-no-useless-fragment */}
-              <>{check4 && <RadioItem value="5">Extra radio item</RadioItem>}</>
+              </Radio>
+              <Radio value="4">Invalid radio</Radio>
+              <Radio isHidden={!check4} value="5">
+                Extra radio item
+              </Radio>
             </RadioGroup>
           </form>
           <div className="form-group">
@@ -338,7 +342,7 @@ function Inputs(): React.ReactElement {
           </div>
         </div>
       </div>
-    </div>
+    </SampleSection>
   );
 }
 export default Inputs;

@@ -3,6 +3,8 @@
 import memoize from 'memoize-one';
 import throttle from 'lodash.throttle';
 import {
+  DeletableGridModel,
+  EditableGridModel,
   EditOperation,
   GridRange,
   GridUtils,
@@ -52,9 +54,12 @@ export function isIrisGridTableModelTemplate(
  */
 
 class IrisGridTableModelTemplate<
-  T extends DhType.Table | DhType.TreeTable = DhType.Table,
-  R extends UIRow = UIRow,
-> extends IrisGridModel {
+    T extends DhType.Table | DhType.TreeTable = DhType.Table,
+    R extends UIRow = UIRow,
+  >
+  extends IrisGridModel
+  implements DeletableGridModel, EditableGridModel
+{
   static ROW_BUFFER_PAGES = 1;
 
   seekRow(
@@ -453,6 +458,13 @@ class IrisGridTableModelTemplate<
 
   get isEditable(): boolean {
     return !this.isSaveInProgress && this.inputTable != null;
+  }
+
+  get isDeletable(): boolean {
+    if (this.inputTable !== null) {
+      return this.inputTable?.keyColumns.length > 0;
+    }
+    return false;
   }
 
   get isViewportPending(): boolean {
@@ -1715,8 +1727,11 @@ class IrisGridTableModelTemplate<
    * @param value The values to set
    * @returns A promise that resolves successfully when the operation is complete, or rejects if there's an error
    */
-  async setValueForRanges(ranges: GridRange[], text: string): Promise<void> {
-    if (!this.isEditableRanges(ranges)) {
+  async setValueForRanges(
+    ranges: readonly GridRange[],
+    text: string
+  ): Promise<void> {
+    if (!this.isEditableRanges(ranges as GridRange[])) {
       throw new Error(`Uneditable ranges ${ranges}`);
     }
 
@@ -1853,7 +1868,7 @@ class IrisGridTableModelTemplate<
     }
   }
 
-  async setValues(edits: EditOperation[] = []): Promise<void> {
+  async setValues(edits: readonly EditOperation[] = []): Promise<void> {
     log.debug('setValues(', edits, ')');
     if (
       !edits.every(edit =>
@@ -2047,11 +2062,11 @@ class IrisGridTableModelTemplate<
     }
   }
 
-  editValueForCell(x: ModelIndex, y: ModelIndex): string | null | undefined {
-    return this.textValueForCell(x, y);
+  editValueForCell(column: ModelIndex, row: ModelIndex): string {
+    return this.textValueForCell(column, row) ?? '';
   }
 
-  async delete(ranges: GridRange[]): Promise<void> {
+  async delete(ranges: readonly GridRange[]): Promise<void> {
     throw new Error('Delete not implemented');
   }
 

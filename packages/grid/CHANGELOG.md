@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.79.0](https://github.com/deephaven/web-client-ui/compare/v0.78.0...v0.79.0) (2024-05-24)
+
+**Note:** Version bump only for package @deephaven/grid
+
+# [0.78.0](https://github.com/deephaven/web-client-ui/compare/v0.77.0...v0.78.0) (2024-05-16)
+
+### Bug Fixes
+
+- "Delete Selected Rows" bug for tables with no key columns ([#1996](https://github.com/deephaven/web-client-ui/issues/1996)) ([37fe009](https://github.com/deephaven/web-client-ui/commit/37fe00914253822a56033bee49570e82caff9334))
+
+### Performance Improvements
+
+- Improve performance of lots of grids in a dashboard ([#1987](https://github.com/deephaven/web-client-ui/issues/1987)) ([3de52d6](https://github.com/deephaven/web-client-ui/commit/3de52d6fa0512792c97928f65f0b4b1080da2c49))
+
 # [0.77.0](https://github.com/deephaven/web-client-ui/compare/v0.76.0...v0.77.0) (2024-05-07)
 
 **Note:** Version bump only for package @deephaven/grid

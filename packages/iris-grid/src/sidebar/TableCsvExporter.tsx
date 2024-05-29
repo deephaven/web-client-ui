@@ -6,7 +6,7 @@ import {
   Checkbox,
   LoadingSpinner,
   RadioGroup,
-  RadioItem,
+  Radio,
   Select,
 } from '@deephaven/components';
 import {
@@ -18,7 +18,7 @@ import {
 import { vsWarning } from '@deephaven/icons';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { TimeUtils } from '@deephaven/utils';
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 import './TableCsvExporter.scss';
 import Log from '@deephaven/log';
 import IrisGridModel from '../IrisGridModel';
@@ -135,7 +135,7 @@ class TableCsvExporter extends Component<
       useUnformattedValues: false,
 
       errorMessage: null,
-      id: shortid.generate(),
+      id: nanoid(),
     };
   }
 
@@ -261,10 +261,8 @@ class TableCsvExporter extends Component<
     }
   }
 
-  handleDownloadRowOptionChanged(
-    event: React.ChangeEvent<HTMLInputElement>
-  ): void {
-    this.setState({ downloadRowOption: event.target.value });
+  handleDownloadRowOptionChanged(value: string): void {
+    this.setState({ downloadRowOption: value });
   }
 
   handleCustomizedDownloadRowOptionChanged(eventTargetValue: string): void {
@@ -356,14 +354,17 @@ class TableCsvExporter extends Component<
     const { rowCount } = model;
     return (
       <div className="table-csv-exporter">
-        <div className="section-title">Download Rows</div>
+        <div id="download-rows-label" className="section-title">
+          Download Rows
+        </div>
         <div className="form-group">
           <RadioGroup
+            aria-labelledby="download-rows-label"
             onChange={this.handleDownloadRowOptionChanged}
             value={downloadRowOption}
-            disabled={isDownloading}
+            isDisabled={isDownloading}
           >
-            <RadioItem
+            <Radio
               value={TableCsvExporter.DOWNLOAD_ROW_OPTIONS.ALL_ROWS}
               data-testid="radio-csv-exporter-download-all"
             >
@@ -373,8 +374,8 @@ class TableCsvExporter extends Component<
                   .toString()
                   .replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} rows)`}
               </span>
-            </RadioItem>
-            <RadioItem
+            </Radio>
+            <Radio
               value={TableCsvExporter.DOWNLOAD_ROW_OPTIONS.SELECTED_ROWS}
               data-testid="radio-csv-exporter-only-selected"
             >
@@ -386,8 +387,8 @@ class TableCsvExporter extends Component<
                       .replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} rows)`
                   : null}
               </span>
-            </RadioItem>
-            <RadioItem
+            </Radio>
+            <Radio
               value={TableCsvExporter.DOWNLOAD_ROW_OPTIONS.CUSTOMIZED_ROWS}
               data-testid="radio-csv-exporter-customized-rows"
             >
@@ -424,7 +425,7 @@ class TableCsvExporter extends Component<
                 />
                 <div>Rows</div>
               </div>
-            </RadioItem>
+            </Radio>
           </RadioGroup>
         </div>
         <div className="form-group">

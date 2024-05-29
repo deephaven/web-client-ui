@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button, RadioGroup, RadioItem, Select } from '@deephaven/components';
+import { Button, RadioGroup, Radio, Select } from '@deephaven/components';
 import {
   vsLink,
   dhUnlink,
@@ -13,7 +13,7 @@ import {
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { bindAllMethods } from '@deephaven/utils';
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 import {
   BarIcon,
   HistogramIcon,
@@ -74,7 +74,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
   }
 
   static makeSeriesItem(value: string): SeriesItem {
-    return { id: shortid.generate(), value };
+    return { id: nanoid(), value };
   }
 
   static makeDefaultSeriesItems(
@@ -218,7 +218,7 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
       const { model } = this.props;
       const { columns } = model;
       newSeriesItems.push({
-        id: shortid.generate(),
+        id: nanoid(),
         value: columns[0].name,
       });
 
@@ -226,8 +226,8 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
     }, this.sendChange);
   }
 
-  handleLinkStateChange(event: React.ChangeEvent<HTMLInputElement>): void {
-    this.setState({ isLinked: event.target.value === 'true' }, this.sendChange);
+  handleLinkStateChange(value: string): void {
+    this.setState({ isLinked: value === 'true' }, this.sendChange);
   }
 
   handleReset(): void {
@@ -433,11 +433,13 @@ class ChartBuilder extends PureComponent<ChartBuilderProps, ChartBuilderState> {
               </div>
             </label>
             <RadioGroup
+              aria-label="Link state options"
+              orientation="horizontal"
               onChange={this.handleLinkStateChange}
               value={`${isLinked}`}
             >
-              <RadioItem value="true">Sync State</RadioItem>
-              <RadioItem value="false">Freeze State</RadioItem>
+              <Radio value="true">Sync State</Radio>
+              <Radio value="false">Freeze State</Radio>
             </RadioGroup>
           </div>
           <div className="form-row">

@@ -15,7 +15,7 @@ import { CloseOptions, isComponent } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
 import { useCallback, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 import { ConsoleEvent, NotebookEvent } from './events';
 import {
   ConsolePanel,
@@ -166,7 +166,7 @@ export function ConsolePlugin(
         return previewFileMap.get(fileId);
       }
       if (createIfNecessary as boolean) {
-        return shortid.generate();
+        return nanoid();
       }
       return undefined;
     },

@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.79.0](https://github.com/deephaven/web-client-ui/compare/v0.78.0...v0.79.0) (2024-05-24)
+
+### Bug Fixes
+
+- Replace shortid package with nanoid package ([#2025](https://github.com/deephaven/web-client-ui/issues/2025)) ([30d9d3c](https://github.com/deephaven/web-client-ui/commit/30d9d3c1438a8a4d1f351d6f6f677f8ee7c22fbe))
+
+### Features
+
+- e2e combined improvements ([#1998](https://github.com/deephaven/web-client-ui/issues/1998)) ([99fc2f6](https://github.com/deephaven/web-client-ui/commit/99fc2f69758aa8b0289507b50c1ec52be0934d29))
+- re-export Spectrum ButtonGroup ([#2028](https://github.com/deephaven/web-client-ui/issues/2028)) ([3115dd1](https://github.com/deephaven/web-client-ui/commit/3115dd1e0b2c13c5d2899529b0cbfd53d2bb823f)), closes [#2016](https://github.com/deephaven/web-client-ui/issues/2016)
+- Replaced `RadioGroup` with Spectrum's ([#2020](https://github.com/deephaven/web-client-ui/issues/2020)) ([#2021](https://github.com/deephaven/web-client-ui/issues/2021)) ([c9ac72d](https://github.com/deephaven/web-client-ui/commit/c9ac72daddc4bc63012a675aa801af8ee807eff6))
+
+### BREAKING CHANGES
+
+- `RadioGroup` has been replaced by Spectrum
+  `RadioGroup`. `RadioItem` has been replaced by Spectrum `Radio`
+- Removed ButtonOld component, use Button instead.
+
+# [0.78.0](https://github.com/deephaven/web-client-ui/compare/v0.77.0...v0.78.0) (2024-05-16)
+
+### Features
+
+- Add JS Plugin Information ([#2002](https://github.com/deephaven/web-client-ui/issues/2002)) ([6ff378c](https://github.com/deephaven/web-client-ui/commit/6ff378cf5c47382e5e7d48e086c5554c4ea4560f))
+- ListView actions ([#1968](https://github.com/deephaven/web-client-ui/issues/1968)) ([8e325ec](https://github.com/deephaven/web-client-ui/commit/8e325ec30e68d612e8d696d0c6fec193a8c4ebdd))
+
 # [0.77.0](https://github.com/deephaven/web-client-ui/compare/v0.76.0...v0.77.0) (2024-05-07)
 
 **Note:** Version bump only for package @deephaven/code-studio

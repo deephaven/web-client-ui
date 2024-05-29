@@ -10,7 +10,6 @@ import memoize from 'memoize-one';
 import { connect } from 'react-redux';
 import {
   ClosedPanel,
-  ClosedPanels,
   DashboardPanelProps,
   getClosedPanelsForDashboard,
   LayoutUtils,
@@ -27,6 +26,7 @@ import MarkdownContainer from '../controls/markdown/MarkdownContainer';
 import MarkdownStartPage from '../controls/markdown/MarkdownStartPage';
 import './MarkdownPanel.scss';
 import type MarkdownEditorType from '../controls/markdown/MarkdownEditor';
+import MarkdownUtils from '../controls/markdown/MarkdownUtils';
 
 const MarkdownEditor = lazy(
   () => import('../controls/markdown/MarkdownEditor')
@@ -77,11 +77,17 @@ export class MarkdownPanel extends Component<
     const { panelState } = props;
     let content = null;
     if (panelState != null && panelState.content != null) {
-      ({ content } = panelState);
+      if (panelState.content !== '') {
+        ({ content } = panelState);
+      } else {
+        content = MarkdownUtils.DEFAULT_CONTENT;
+      }
     }
 
     this.state = {
-      isStartPageShown: content == null,
+      isStartPageShown:
+        content == null &&
+        this.getClosedMarkdowns(props.closedPanels).length !== 0,
       isEditing: false,
       content,
 
@@ -123,9 +129,7 @@ export class MarkdownPanel extends Component<
     }
   }
 
-  getClosedMarkdowns = memoize((closedPanels: ClosedPanels) =>
-    closedPanels.filter(panel => panel.component === 'MarkdownPanel').reverse()
-  );
+  getClosedMarkdowns = memoize(MarkdownUtils.getClosedMarkdowns);
 
   handleContainerDoubleClick(event: MouseEvent<Element>): void {
     const { isEditing } = this.state;
@@ -242,7 +246,7 @@ export class MarkdownPanel extends Component<
                   this.markdownEditor = markdownEditor;
                 }}
                 isEditing={isEditing}
-                content={content ?? undefined}
+                content={content ?? MarkdownUtils.DEFAULT_CONTENT}
                 onEditorInitialized={this.handleEditorInitialized}
               />
             </Suspense>

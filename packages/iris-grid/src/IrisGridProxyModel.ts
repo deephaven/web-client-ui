@@ -14,6 +14,7 @@ import {
   isExpandableGridModel,
   ModelIndex,
   MoveOperation,
+  isDeletableGridModel,
 } from '@deephaven/grid';
 import IrisGridTableModel from './IrisGridTableModel';
 import IrisGridPartitionedTableModel from './IrisGridPartitionedTableModel';
@@ -697,6 +698,10 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     return isEditableGridModel(this.model) && this.model.isEditable;
   }
 
+  get isDeletable(): boolean {
+    return isDeletableGridModel(this.model) && this.model.isDeletable;
+  }
+
   get isViewportPending(): boolean {
     return this.model.isViewportPending;
   }
@@ -706,6 +711,24 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
   ): boolean => {
     if (isEditableGridModel(this.model)) {
       return this.model.isEditableRange(...args);
+    }
+    return false;
+  };
+
+  isDeletableRange: IrisGridTableModel['isDeletableRange'] = (
+    ...args
+  ): boolean => {
+    if (isDeletableGridModel(this.model)) {
+      return this.model.isDeletableRange(...args);
+    }
+    return false;
+  };
+
+  isDeletableRanges: IrisGridTableModel['isDeletableRanges'] = (
+    ...args
+  ): boolean => {
+    if (isDeletableGridModel(this.model)) {
+      return this.model.isDeletableRanges(...args);
     }
     return false;
   };
@@ -780,8 +803,12 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     return false;
   };
 
-  delete: IrisGridTableModel['delete'] = (...args) =>
-    this.model.delete(...args);
+  delete: IrisGridTableModel['delete'] = (...args) => {
+    if (isDeletableGridModel(this.model)) {
+      return this.model.delete(...args);
+    }
+    return Promise.reject(new Error('Model is not deletable'));
+  };
 
   get pendingDataMap(): PendingDataMap<UIRow> {
     return this.model.pendingDataMap;

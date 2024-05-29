@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.79.0](https://github.com/deephaven/web-client-ui/compare/v0.78.0...v0.79.0) (2024-05-24)
+
+**Note:** Version bump only for package @deephaven/jsapi-components
+
+# [0.78.0](https://github.com/deephaven/web-client-ui/compare/v0.77.0...v0.78.0) (2024-05-16)
+
+### Bug Fixes
+
+- useViewportData - memoize subscriptions and first row of viewport ([#2008](https://github.com/deephaven/web-client-ui/issues/2008)) ([2246a4a](https://github.com/deephaven/web-client-ui/commit/2246a4a1ef087db060f2130c5a2d7c1e037746b4)), closes [#2003](https://github.com/deephaven/web-client-ui/issues/2003) [#1928](https://github.com/deephaven/web-client-ui/issues/1928)
+
 # [0.77.0](https://github.com/deephaven/web-client-ui/compare/v0.76.0...v0.77.0) (2024-05-07)
 
 ### Bug Fixes

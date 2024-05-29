@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSlotProps } from '@react-spectrum/utils';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -83,7 +84,7 @@ function getVariantClasses(kind: VariantKind): string {
   }
 }
 
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (props: ButtonProps, ref) => {
     const {
       kind,
@@ -108,6 +109,16 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       'aria-label': ariaLabel,
       ...rest
     } = props;
+
+    // Spectrum container components such as `ButtonGroup` provide
+    // UNSAFE_className prop for the `button` slot via a SlotProvider (
+    // https://github.com/adobe/react-spectrum/blob/%40adobe/react-spectrum%403.33.1/packages/%40react-spectrum/buttongroup/src/ButtonGroup.tsx#L104-L107)
+    // This can be retrieved via `useSlotProps` to allow our buttons to be styled
+    // correctly inside the container.
+    const { UNSAFE_className } = useSlotProps<{ UNSAFE_className?: string }>(
+      {},
+      'button'
+    );
 
     let variantClassName;
     if (variant) {
@@ -157,7 +168,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           btnClassName,
           variantClassName,
           { active },
-          className
+          className,
+          UNSAFE_className
         )}
         onClick={onClick}
         onContextMenu={onContextMenu}

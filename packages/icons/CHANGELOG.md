@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.79.0](https://github.com/deephaven/web-client-ui/compare/v0.78.0...v0.79.0) (2024-05-24)
+
+**Note:** Version bump only for package @deephaven/icons
+
+# [0.78.0](https://github.com/deephaven/web-client-ui/compare/v0.77.0...v0.78.0) (2024-05-16)
+
+### Features
+
+- update @vscode/codicons to 0.36 ([#2010](https://github.com/deephaven/web-client-ui/issues/2010)) ([3a6a439](https://github.com/deephaven/web-client-ui/commit/3a6a439c80054e6b92440690ee5e9762f6e691d4))
+
 # [0.77.0](https://github.com/deephaven/web-client-ui/compare/v0.76.0...v0.77.0) (2024-05-07)
 
 **Note:** Version bump only for package @deephaven/icons

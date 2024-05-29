@@ -52,8 +52,14 @@ const config: PlaywrightTestConfig = {
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
 
-    /* Retain videos on failure for easier debugging */
-    video: 'retain-on-failure',
+    /**
+     * Retain videos on failure locally for easier debugging.
+     * In CI, only retain videos on the first retry to speed
+     * up tests. Successful tests can skip recording and
+     * saving entirely which is notably slow in webkit. See:
+     * https://github.com/microsoft/playwright/issues/18119#issuecomment-1867426196
+     */
+    video: process.env.CI ? 'on-first-retry' : 'retain-on-failure',
   },
 
   /* Configure projects for major browsers */
