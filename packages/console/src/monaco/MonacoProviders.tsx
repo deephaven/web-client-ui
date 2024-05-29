@@ -18,19 +18,17 @@ interface MonacoProviderProps {
 
 const DEFAULT_RUFF_SETTINGS = {
   preview: true,
-  builtins: [],
   'target-version': 'py38',
   'line-length': 88,
   'indent-width': 4,
+  format: {
+    'indent-style': 'space',
+    'quote-style': 'double',
+  },
   lint: {
-    'allowed-confusables': [],
-    'dummy-variable-rgx': '^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$',
-    'extend-select': [],
-    'extend-fixable': [],
     'flake8-implicit-str-concat': {
       'allow-multiline': false,
     },
-    external: [],
     ignore: ['ISC003'],
     select: [
       'F',
@@ -41,15 +39,8 @@ const DEFAULT_RUFF_SETTINGS = {
       'W293',
       'W605',
       'I002',
-      'B002',
-      'B015',
-      'B016',
-      'B018',
-      'B020',
-      'B023',
-      'B032',
-      'B035',
-      'B909',
+      'B',
+      'A',
       'COM818',
       'ISC',
       'PLE',
@@ -57,11 +48,17 @@ const DEFAULT_RUFF_SETTINGS = {
       'RUF021',
       'RUF027',
       'PLR1704',
+      'LOG',
+      'ASYNC',
+      'RET501',
+      'RET502',
+      'RET503',
+      'PLC2401',
+      'PLC2403',
+      'NPY',
+      'PERF',
+      'C4',
     ],
-  },
-  format: {
-    'indent-style': 'space',
-    'quote-style': 'double',
   },
 };
 

@@ -219,6 +219,8 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.handleTransformLinkUri = this.handleTransformLinkUri.bind(this);
     this.handleOverwrite = this.handleOverwrite.bind(this);
     this.handlePreviewPromotion = this.handlePreviewPromotion.bind(this);
+    this.handleFormat = this.handleFormat.bind(this);
+    this.canFormat = this.canFormat.bind(this);
     this.getDropdownOverflowActions =
       this.getDropdownOverflowActions.bind(this);
     this.pending = new Pending();
@@ -561,53 +563,66 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   );
 
   getOverflowActions = memoize(
-    (isMinimapEnabled: boolean, isWordWrapEnabled: boolean) => [
-      {
-        title: 'Find',
-        icon: dhFileSearch,
-        action: this.handleFind,
-        group: ContextActions.groups.high,
-        shortcut: SHORTCUTS.NOTEBOOK.FIND,
-        order: 10,
-      },
-      {
-        title: 'Copy File',
-        icon: vsCopy,
-        action: this.handleCopy,
-        group: ContextActions.groups.medium,
-        order: 20,
-      },
-      {
-        title: 'Rename File',
-        icon: dhICursor,
-        action: this.handleShowRename,
-        group: ContextActions.groups.medium,
-        order: 30,
-      },
-      {
-        title: 'Delete File',
-        icon: vsTrash,
-        action: this.handleDelete,
-        group: ContextActions.groups.medium,
-        order: 40,
-      },
-      {
-        title: 'Show Minimap',
-        icon: isMinimapEnabled ? vsCheck : undefined,
-        action: this.handleMinimapChange,
-        group: ContextActions.groups.low,
-        shortcut: SHORTCUTS.NOTEBOOK.MINIMAP,
-        order: 20,
-      },
-      {
-        title: 'Word Wrap',
-        icon: isWordWrapEnabled ? vsCheck : undefined,
-        action: this.handleWordWrapChange,
-        group: ContextActions.groups.low,
-        shortcut: SHORTCUTS.NOTEBOOK.WORDWRAP,
-        order: 30,
-      },
-    ]
+    (isMinimapEnabled: boolean, isWordWrapEnabled: boolean) => {
+      const actions: DropdownAction[] = [
+        {
+          title: 'Find',
+          icon: dhFileSearch,
+          action: this.handleFind,
+          group: ContextActions.groups.high,
+          shortcut: SHORTCUTS.NOTEBOOK.FIND,
+          order: 10,
+        },
+        {
+          title: 'Copy File',
+          icon: vsCopy,
+          action: this.handleCopy,
+          group: ContextActions.groups.medium,
+          order: 20,
+        },
+        {
+          title: 'Rename File',
+          icon: dhICursor,
+          action: this.handleShowRename,
+          group: ContextActions.groups.medium,
+          order: 30,
+        },
+        {
+          title: 'Delete File',
+          icon: vsTrash,
+          action: this.handleDelete,
+          group: ContextActions.groups.medium,
+          order: 40,
+        },
+        {
+          title: 'Show Minimap',
+          icon: isMinimapEnabled ? vsCheck : undefined,
+          action: this.handleMinimapChange,
+          group: ContextActions.groups.low,
+          shortcut: SHORTCUTS.NOTEBOOK.MINIMAP,
+          order: 20,
+        },
+        {
+          title: 'Word Wrap',
+          icon: isWordWrapEnabled ? vsCheck : undefined,
+          action: this.handleWordWrapChange,
+          group: ContextActions.groups.low,
+          shortcut: SHORTCUTS.NOTEBOOK.WORDWRAP,
+          order: 30,
+        },
+      ];
+
+      if (this.canFormat()) {
+        actions.push({
+          title: 'Format Document',
+          action: this.handleFormat,
+          group: ContextActions.groups.low,
+          order: 10,
+        });
+      }
+
+      return actions;
+    }
   );
 
   savePanelState(): void {
@@ -960,10 +975,24 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.saveContent(name, content);
   }
 
+  canFormat(): boolean {
+    return (
+      this.notebook?.editor
+        ?.getAction('editor.action.formatDocument')
+        ?.isSupported() === true
+    );
+  }
+
+  async handleFormat(): Promise<void> {
+    if (this.canFormat()) {
+      await this.notebook?.editor
+        ?.getAction('editor.action.formatDocument')
+        ?.run();
+    }
+  }
+
   async handleSaveFromShortcut(): Promise<void> {
-    await this.notebook?.editor
-      ?.getAction('editor.action.formatDocument')
-      ?.run();
+    await this.handleFormat();
     this.save();
   }
 
