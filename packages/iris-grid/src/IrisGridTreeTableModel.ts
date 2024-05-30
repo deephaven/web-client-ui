@@ -181,9 +181,8 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
           c <= intersection.endColumn;
           c += 1
         ) {
-          assertNotNull(formatValue);
           resultRow.push(
-            formatValue(viewportRow.data.get(c)?.value, this.columns[c])
+            formatValue?.(viewportRow.data.get(c)?.value, this.columns[c])
           );
         }
         result.push(resultRow);
