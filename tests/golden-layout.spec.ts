@@ -1,8 +1,8 @@
 import { test, expect, Page } from '@playwright/test';
 import { gotoPage, openPlot, openTable } from './utils';
 
-// Run tests serially
-test.describe.configure({ mode: 'serial' });
+// doesn't execute any server commands, safe to run in parallel
+test.describe.configure({ mode: 'parallel' });
 
 test.describe('tests golden-layout operations', () => {
   let page: Page;

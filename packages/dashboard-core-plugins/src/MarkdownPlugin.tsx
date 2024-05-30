@@ -1,10 +1,8 @@
 import { useCallback, useEffect } from 'react';
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 import {
   assertIsDashboardPluginProps,
   DashboardPluginComponentProps,
-  dehydrate,
-  hydrate,
   LayoutUtils,
   useListener,
 } from '@deephaven/dashboard';
@@ -21,30 +19,12 @@ export type MarkdownComponentState = {
 export function MarkdownPlugin(props: MarkdownPluginProps): JSX.Element | null {
   assertIsDashboardPluginProps(props);
   const { id, layout, panelManager, registerComponent } = props;
-  const dehydrateMarkdown = useCallback(config => {
-    const { title, componentState, props: configProps } = config;
-    let { panelState = null }: MarkdownComponentState = configProps;
-    if (componentState != null) {
-      ({ panelState = null } = componentState as MarkdownComponentState);
-    }
-    if (
-      title == null ||
-      panelState == null ||
-      panelState.content == null ||
-      panelState.content.length === 0 ||
-      panelState.content === MarkdownUtils.DEFAULT_CONTENT
-    ) {
-      // We don't want to save it if there's no content
-      return null;
-    }
-    return dehydrate(config);
-  }, []);
 
   const handleOpen = useCallback(
     ({
       title = '',
       metadata = {},
-      id: panelId = shortid.generate(),
+      id: panelId = nanoid(),
       focusElement = LayoutUtils.DEFAULT_FOCUS_SELECTOR,
       createNewStack = false,
       dragEvent = null,
@@ -52,16 +32,12 @@ export function MarkdownPlugin(props: MarkdownPluginProps): JSX.Element | null {
       const openedMarkdowns = panelManager.getOpenedPanelConfigsOfType(
         MarkdownPanel.COMPONENT
       );
-      const closedMarkdowns = panelManager.getClosedPanelConfigsOfType(
-        MarkdownPanel.COMPONENT
-      );
       const usedTitles = openedMarkdowns.map(markdown => markdown.title ?? '');
       const panelTitle =
         title != null && title !== ''
           ? title
           : MarkdownUtils.getNewMarkdownTitle(usedTitles);
-      const content =
-        closedMarkdowns.length > 0 ? null : MarkdownUtils.DEFAULT_CONTENT;
+      const content = null;
       const config = {
         type: 'react-component' as const,
         component: MarkdownPanel.COMPONENT,
@@ -90,19 +66,14 @@ export function MarkdownPlugin(props: MarkdownPluginProps): JSX.Element | null {
   useEffect(
     function registerComponentsAndReturnCleanup() {
       const cleanups = [
-        registerComponent(
-          MarkdownPanel.COMPONENT,
-          MarkdownPanel,
-          hydrate,
-          dehydrateMarkdown
-        ),
+        registerComponent(MarkdownPanel.COMPONENT, MarkdownPanel),
       ];
 
       return () => {
         cleanups.forEach(cleanup => cleanup());
       };
     },
-    [dehydrateMarkdown, registerComponent]
+    [registerComponent]
   );
 
   useListener(layout.eventHub, MarkdownEvent.OPEN, handleOpen);

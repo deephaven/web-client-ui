@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable react/style-prop-object */
 import React from 'react';
 import {
@@ -38,7 +37,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhTruck, vsEmptyWindow } from '@deephaven/icons';
 import { Heading, View, Text } from '@deephaven/components';
 import { SPECTRUM_COMPONENT_SAMPLES_ID } from './constants';
-import { sampleSectionIdAndClassesSpectrum } from './utils';
+import SampleSection from './SampleSection';
 
 export function SpectrumComponents(): JSX.Element {
   return (
@@ -47,23 +46,23 @@ export function SpectrumComponents(): JSX.Element {
         Spectrum Components
       </h2>
       <Grid gap={20} columns={minmax('0px', '1fr')}>
-        <View {...sampleSectionIdAndClassesSpectrum('spectrum-buttons')}>
+        <SampleSection name="spectrum-buttons" component={View}>
           <h3>Buttons</h3>
           <ButtonsSample />
-        </View>
-        <View {...sampleSectionIdAndClassesSpectrum('spectrum-collections')}>
+        </SampleSection>
+        <SampleSection name="spectrum-collections" component={View}>
           <h3>Collections</h3>
           <TableViewSample />
-        </View>
-        <View {...sampleSectionIdAndClassesSpectrum('spectrum-content')}>
+        </SampleSection>
+        <SampleSection name="spectrum-content" component={View}>
           <h3>Content</h3>
           <IllustratedMessageSample />
-        </View>
-        <View {...sampleSectionIdAndClassesSpectrum('spectrum-forms')}>
+        </SampleSection>
+        <SampleSection name="spectrum-forms" component={View}>
           <h3>Forms</h3>
           <FormsSample />
-        </View>
-        <View {...sampleSectionIdAndClassesSpectrum('spectrum-overlays')}>
+        </SampleSection>
+        <SampleSection name="spectrum-overlays" component={View}>
           <h3>Overlays</h3>
           <Flex gap="size-160">
             <ContextualHelpSample />
@@ -89,11 +88,11 @@ export function SpectrumComponents(): JSX.Element {
               )}
             </DialogTrigger>
           </Flex>
-        </View>
-        <View {...sampleSectionIdAndClassesSpectrum('spectrum-well')}>
+        </SampleSection>
+        <SampleSection name="spectrum-well" component={View}>
           <h3>Wells</h3>
           <Well>This is a well.</Well>
-        </View>
+        </SampleSection>
       </Grid>
     </div>
   );

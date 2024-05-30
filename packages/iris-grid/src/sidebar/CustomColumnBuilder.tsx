@@ -1,6 +1,6 @@
 import React, { Component, ReactElement } from 'react';
 import classNames from 'classnames';
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 import memoize from 'memoize-one';
 import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -39,12 +39,12 @@ class CustomColumnBuilder extends Component<
   static SUCCESS_SHOW_DURATION = 750;
 
   static makeCustomColumnInputEventKey(): string {
-    return shortid.generate();
+    return nanoid();
   }
 
   static createCustomColumnInput(): Input {
     return {
-      eventKey: shortid.generate(),
+      eventKey: nanoid(),
       name: '',
       formula: '',
     };

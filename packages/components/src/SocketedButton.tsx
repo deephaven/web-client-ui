@@ -1,7 +1,8 @@
 import React from 'react';
 import classNames from 'classnames';
-import { dhExclamation, vsLink } from '@deephaven/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useSlotProps } from '@react-spectrum/utils';
+import { dhExclamation, vsLink } from '@deephaven/icons';
 
 import './SocketedButton.scss';
 
@@ -36,6 +37,17 @@ const SocketedButton = React.forwardRef<HTMLButtonElement, SocketedButtonProps>(
       style,
       'data-testid': dataTestId,
     } = props;
+
+    // Spectrum container components such as `ButtonGroup` provide
+    // UNSAFE_className prop for the `button` slot via a SlotProvider (
+    // https://github.com/adobe/react-spectrum/blob/%40adobe/react-spectrum%403.33.1/packages/%40react-spectrum/buttongroup/src/ButtonGroup.tsx#L104-L107)
+    // This can be retrieved via `useSlotProps` to allow our buttons to be styled
+    // correctly inside the container.
+    const { UNSAFE_className } = useSlotProps<{ UNSAFE_className?: string }>(
+      {},
+      'button'
+    );
+
     return (
       <button
         ref={ref}
@@ -48,7 +60,8 @@ const SocketedButton = React.forwardRef<HTMLButtonElement, SocketedButtonProps>(
           },
           { 'btn-socketed-linked-source': isLinkedSource },
           { 'is-invalid': isInvalid },
-          className
+          className,
+          UNSAFE_className
         )}
         id={id}
         onClick={onClick}

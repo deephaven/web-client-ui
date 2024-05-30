@@ -33,6 +33,7 @@ const nodeModulesToTransform = [
   'rehype.*',
   'web-namespaces',
   'hastscript',
+  'nanoid',
 ];
 
 module.exports = {

@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/dashboard-core-plugins",
-  "version": "0.77.0",
+  "version": "0.79.0",
   "description": "Deephaven Dashboard Core Plugins",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -50,14 +50,14 @@
     "lodash.throttle": "^4.1.1",
     "memoize-one": "^5.1.1",
     "memoizee": "^0.4.15",
+    "nanoid": "^5.0.7",
     "prop-types": "^15.7.2",
     "react-markdown": "^8.0.7",
     "redux": "^4.2.0",
     "redux-thunk": "^2.4.1",
     "rehype-mathjax": "^4.0.3",
     "remark-gfm": "^3.0.1",
-    "remark-math": "^5.1.1",
-    "shortid": "^2.2.16"
+    "remark-math": "^5.1.1"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

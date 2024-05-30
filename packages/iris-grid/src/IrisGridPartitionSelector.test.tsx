@@ -46,8 +46,10 @@ it('should display multiple selectors to match columns', () => {
     irisGridTestUtils.makeColumn('a'),
     irisGridTestUtils.makeColumn('b'),
   ];
-  const component = makeIrisGridPartitionSelector(makeModel(columns));
+  const { container } = makeIrisGridPartitionSelector(makeModel(columns));
 
-  const selectors = component.getAllByRole('combobox');
+  const selectors = Array.from(
+    container.getElementsByClassName('column-selector')
+  );
   expect(selectors).toHaveLength(2);
 });

@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/golden-layout",
-  "version": "0.77.0",
+  "version": "0.79.0",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
   "description": "A multi-screen javascript Layout manager",
@@ -11,7 +11,8 @@
   "type": "module",
   "dependencies": {
     "@deephaven/components": "file:../components",
-    "jquery": "^3.6.0"
+    "jquery": "^3.6.0",
+    "nanoid": "^5.0.7"
   },
   "peerDependencies": {
     "react": ">=16.8.0",
@@ -50,8 +51,8 @@
     "access": "public"
   },
   "devDependencies": {
+    "babelify": "^10.0.0",
     "browserify": "^17.0.0",
-    "esmify": "^2.1.1",
     "karma-browserify": "^8.1.0",
     "watchify": "^4.0.0"
   }

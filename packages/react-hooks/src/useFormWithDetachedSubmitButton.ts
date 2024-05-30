@@ -1,5 +1,5 @@
 import { FormEvent, useCallback, useMemo } from 'react';
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 import type { FocusableRefValue } from '@react-types/shared';
 
 function preventDefault(event: FormEvent): void {
@@ -36,7 +36,7 @@ export interface UseFormWithDetachedSubmitButtonResult {
 export default function useFormWithDetachedSubmitButton(
   enableDefaultFormSubmitBehavior = false
 ): UseFormWithDetachedSubmitButtonResult {
-  const formId = useMemo(() => `useSubmitButtonRef-${shortid()}`, []);
+  const formId = useMemo(() => `useSubmitButtonRef-${nanoid()}`, []);
 
   const submitButtonRef = useCallback(
     (buttonEl: FocusableRefValue<HTMLButtonElement> | null) => {

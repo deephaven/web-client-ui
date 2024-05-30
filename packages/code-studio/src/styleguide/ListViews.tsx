@@ -1,6 +1,6 @@
-import React, { ChangeEvent, ReactNode, useCallback, useState } from 'react';
+import React, { ReactNode, useCallback, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import type { StyleProps } from '@react-types/shared';
+import type { BoxAlignmentStyleProps, StyleProps } from '@react-types/shared';
 import {
   Grid,
   Icon,
@@ -13,13 +13,14 @@ import {
   Checkbox,
   ListViewProps,
   RadioGroup,
-  RadioItem,
+  Radio,
   useSpectrumThemeProvider,
   ListActionGroup,
 } from '@deephaven/components';
 import { vsAccount, vsEdit, vsPerson, vsTrash } from '@deephaven/icons';
 import { LIST_VIEW_ROW_HEIGHTS } from '@deephaven/utils';
-import { generateNormalizedItems, sampleSectionIdAndClasses } from './utils';
+import { generateNormalizedItems } from './utils';
+import SampleSection from './SampleSection';
 
 // Generate enough items to require scrolling
 const itemsWithIcons = [...generateNormalizedItems(52, { icons: true })];
@@ -35,7 +36,7 @@ function AccountIllustration(): JSX.Element {
   );
 }
 
-interface LabeledProps extends StyleProps {
+interface LabeledProps extends BoxAlignmentStyleProps, StyleProps {
   label: string;
   direction?: 'row' | 'column';
   children: ReactNode;
@@ -83,12 +84,9 @@ export function ListViews(): JSX.Element {
     2 + // listview border
     LIST_VIEW_ROW_HEIGHTS[density ?? 'compact'][scale];
 
-  const onDensityChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      setDensity(event.currentTarget.value as ListViewProps['density']);
-    },
-    []
-  );
+  const onDensityChange = useCallback((value: string) => {
+    setDensity(value as ListViewProps['density']);
+  }, []);
 
   const [showIcons, setShowIcons] = useState(true);
   const [lastActionKey, setLastActionKey] = useState<ItemKey>('');
@@ -105,7 +103,7 @@ export function ListViews(): JSX.Element {
 
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
-    <div {...sampleSectionIdAndClasses('list-views')}>
+    <SampleSection name="list-views">
       <h2 className="ui-title">List View</h2>
 
       <Grid
@@ -115,14 +113,20 @@ export function ListViews(): JSX.Element {
         rows={`auto minmax(${singleChildExampleHeight}px, auto) 1fr auto 1fr`}
       >
         <LabeledFlexContainer
+          alignItems="center"
           direction="row"
           label="Density"
           gridColumn="span 3"
         >
-          <RadioGroup value={density} onChange={onDensityChange}>
-            <RadioItem value="compact">Compact</RadioItem>
-            <RadioItem value="regular">Regular</RadioItem>
-            <RadioItem value="spacious">Spacious</RadioItem>
+          <RadioGroup
+            aria-label="Density"
+            orientation="horizontal"
+            value={density}
+            onChange={onDensityChange}
+          >
+            <Radio value="compact">Compact</Radio>
+            <Radio value="regular">Regular</Radio>
+            <Radio value="spacious">Spacious</Radio>
           </RadioGroup>
         </LabeledFlexContainer>
 
@@ -253,7 +257,7 @@ export function ListViews(): JSX.Element {
           {lastActionKey} {lastActionItemKey}
         </LabeledFlexContainer>
       </Grid>
-    </div>
+    </SampleSection>
   );
 }
 

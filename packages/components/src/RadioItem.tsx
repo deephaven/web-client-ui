@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import classNames from 'classnames';
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 
 type RadioItemProps = {
   /** Whether this value is currently checked or not */
@@ -56,7 +56,7 @@ const RadioItem = React.forwardRef<HTMLInputElement, RadioItemProps>(
       'data-testid': dataTestId,
     } = props;
 
-    const [id] = useState(shortid());
+    const [id] = useState(nanoid());
 
     return (
       <div className={classNames('custom-control custom-radio', className)}>

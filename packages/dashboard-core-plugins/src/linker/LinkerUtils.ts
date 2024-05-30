@@ -1,4 +1,4 @@
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 import { LayoutUtils, PanelComponent } from '@deephaven/dashboard';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import { TypeValue as FilterTypeValue } from '@deephaven/filters';
@@ -200,13 +200,13 @@ class LinkerUtils {
       if (link.start.panelId === panelId && link.type !== 'filterSource') {
         clonedLinks.push({
           ...link,
-          id: shortid.generate(),
+          id: nanoid(),
           start: { ...link.start, panelId: cloneId },
         });
       } else if (link.end?.panelId === panelId) {
         clonedLinks.push({
           ...link,
-          id: shortid.generate(),
+          id: nanoid(),
           end: { ...link.end, panelId: cloneId },
         });
       }

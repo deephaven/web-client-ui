@@ -1,8 +1,7 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, { PureComponent } from 'react';
 import { TimeUtils } from '@deephaven/utils';
 import { TimeSlider } from '@deephaven/components';
-import { sampleSectionIdAndClasses } from './utils';
+import SampleSection from './SampleSection';
 
 interface TimeSliderInputsState {
   initialStartTime: number;
@@ -38,11 +37,7 @@ class TimeSliderInputs extends PureComponent<
     const isStartModified = startTime !== initialStartTime;
     const isEndModified = endTime !== initialEndTime;
     return (
-      <div
-        {...sampleSectionIdAndClasses('time-slider-inputs', [
-          'style-guide-inputs',
-        ])}
-      >
+      <SampleSection name="time-slider-inputs" className="style-guide-inputs">
         <h2 className="ui-title">Time Slider</h2>
         <TimeSlider
           startTime={startTime}
@@ -57,7 +52,7 @@ class TimeSliderInputs extends PureComponent<
         <p style={isEndModified ? { color: 'var(--dh-color-modified)' } : {}}>
           EndTime: {TimeUtils.formatTime(endTime)}
         </p>
-      </div>
+      </SampleSection>
     );
   }
 }
