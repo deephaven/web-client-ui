@@ -158,4 +158,13 @@ jobs:
         with:
           name: playwright-report
           path: playwright-report
-          retention-days: 90
+          retention-days: 30
+
+  e2e-results:
+    if: ${{ always() }}
+    runs-on: ubuntu-22.04
+    needs: [e2e-tests]
+    steps:
+      - name: Fail if any tests failed or cancelled
+        run: exit 1
+        if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
