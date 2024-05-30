@@ -127,6 +127,6 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [e2e-tests]
     steps:
-      - name: Check if any tests failed or cancelled
+      - name: Fail if any tests failed or cancelled
         run: exit 1
         if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
