@@ -1,5 +1,6 @@
 export {
-  // Checkbox - we want to use our own `Checkbox` component instead of Spectrum's
+  Checkbox as SpectrumCheckbox,
+  type SpectrumCheckboxProps,
   CheckboxGroup,
   type SpectrumCheckboxGroupProps as CheckboxGroupProps,
   Form,
