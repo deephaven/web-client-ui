@@ -176,14 +176,16 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
           this.viewportData.rows[r - this.viewportData.offset];
         assertNotNull(intersection.startColumn);
         assertNotNull(intersection.endColumn);
-        for (
-          let c = intersection.startColumn;
-          c <= intersection.endColumn;
-          c += 1
-        ) {
-          resultRow.push(
-            formatValue?.(viewportRow.data.get(c)?.value, this.columns[c])
-          );
+        if (formatValue != null) {
+          for (
+            let c = intersection.startColumn;
+            c <= intersection.endColumn;
+            c += 1
+          ) {
+            resultRow.push(
+              formatValue(viewportRow.data.get(c)?.value, this.columns[c])
+            );
+          }
         }
         result.push(resultRow);
       }
