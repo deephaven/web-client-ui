@@ -176,7 +176,7 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
           this.viewportData.rows[r - this.viewportData.offset];
         assertNotNull(intersection.startColumn);
         assertNotNull(intersection.endColumn);
-        if (formatValue != null) {
+        if (formatValue !== undefined) {
           for (
             let c = intersection.startColumn;
             c <= intersection.endColumn;
