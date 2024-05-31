@@ -93,7 +93,7 @@ export function ConnectionBootstrap({
         // We send an update with the fetch right away
         onUpdate({
           fetch: () => objectFetcher(descriptor),
-          error: null,
+          status: 'ready',
         });
         return () => {
           // no-op

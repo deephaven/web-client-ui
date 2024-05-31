@@ -1,7 +1,8 @@
 import { dh } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { assertNotNull } from '@deephaven/utils';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import useApi from './useApi';
 import { useObjectFetch } from './useObjectFetch';
 
 const log = Log.module('useWidget');
@@ -14,12 +15,12 @@ type WidgetWrapper<T extends dh.Widget = dh.Widget> = {
   widget: T | null;
 
   /** Error status if there was an issue fetching the widget */
-  error: unknown | null;
+  error: NonNullable<unknown> | null;
 };
 
 /**
  * Retrieve a widget for the given variable descriptor. Note that if the widget is successfully fetched, ownership of the widget is passed to the consumer and will need to close the object as well.
- * @param descriptor Descriptor to get the widget for
+ * @param descriptor Descriptor to get the widget for. Should be stable to avoid infinite re-fetching.
  * @returns A WidgetWrapper object that contains the widget or an error status if there was an issue fetching the widget. Will contain nulls if still loading.
  */
 export function useWidget<T extends dh.Widget = dh.Widget>(
@@ -29,27 +30,50 @@ export function useWidget<T extends dh.Widget = dh.Widget>(
     widget: null,
     error: null,
   }));
-
+  const api = useApi();
+  const unsupportedTypes = useMemo(
+    () => [
+      api.VariableType.TABLE,
+      api.VariableType.TREETABLE,
+      api.VariableType.HIERARCHICALTABLE,
+      api.VariableType.TABLEMAP,
+      api.VariableType.PARTITIONEDTABLE,
+      api.VariableType.FIGURE,
+      api.VariableType.PANDAS,
+      api.VariableType.TREEMAP,
+    ],
+    [api]
+  );
   const objectFetch = useObjectFetch<T>(descriptor);
 
   useEffect(
     function loadWidget() {
       log.debug('loadWidget', descriptor);
 
-      const { fetch, error } = objectFetch;
-
-      if (error != null) {
-        // We can't fetch if there's an error getting the fetcher, just return an error
-        setWrapper({ widget: null, error });
+      if (unsupportedTypes.includes(descriptor.type)) {
+        // We only support fetching widgets with this hook
+        setWrapper({
+          widget: null,
+          error: new Error(`Unsupported descriptor type: ${descriptor.type}`),
+        });
         return;
       }
 
-      if (fetch == null) {
+      const { status } = objectFetch;
+
+      if (status === 'error') {
+        // We can't fetch if there's an error getting the fetcher, just return an error
+        setWrapper({ widget: null, error: objectFetch.error });
+        return;
+      }
+
+      if (status === 'loading') {
         // Still loading
         setWrapper({ widget: null, error: null });
         return;
       }
 
+      const { fetch } = objectFetch;
       // We should be able to load the widget. Load it asynchronously, and set the widget when it's done.
       // If we get cancelled before the fetch is done, we should close the widget and its exported objects.
       // If not though, the consumer of the widget is expected to take ownership and close the widget appropriately.
@@ -76,7 +100,7 @@ export function useWidget<T extends dh.Widget = dh.Widget>(
             return;
           }
           log.error('loadWidgetInternal error', descriptor, e);
-          setWrapper({ widget: null, error: e });
+          setWrapper({ widget: null, error: e ?? new Error('Null error') });
         }
       }
       loadWidgetInternal();
@@ -84,7 +108,7 @@ export function useWidget<T extends dh.Widget = dh.Widget>(
         isCancelled = true;
       };
     },
-    [descriptor, objectFetch]
+    [descriptor, objectFetch, unsupportedTypes]
   );
 
   return wrapper;

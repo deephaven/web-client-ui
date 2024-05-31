@@ -1,28 +1,36 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { dh } from '@deephaven/jsapi-types';
-import { ObjectFetcherContext } from './useObjectFetcher';
 
 /** Function for unsubscribing from a given subscription */
 export type UnsubscribeFunction = () => void;
 
+/** Update when the ObjectFetch is still loading */
+export type ObjectFetchLoading = {
+  status: 'loading';
+};
+
+/** Update when the ObjectFetch has errored */
+export type ObjectFetchError = {
+  error: NonNullable<unknown>;
+  status: 'error';
+};
+
+/** Update when the object is ready */
+export type ObjectFetchReady<T> = {
+  fetch: () => Promise<T>;
+  status: 'ready';
+};
+
 /**
- * Update with the current `fetch` fuonction and status of the object.
+ * Update with the current `fetch` function and status of the object.
  * - If both `fetch` and `error` are `null`, it is still loading the fetcher
  * - If `fetch` is not `null`, the object is ready to be fetched
  * - If `error` is not `null`, there was an error loading the object
  */
-export type ObjectFetchUpdate<T = unknown> = {
-  /**
-   * Function to fetch the object. If `null`, the object is still loading or there was an error.
-   */
-  fetch: (() => Promise<T>) | null;
-
-  /**
-   * Error that occurred while fetching the object. If `null`, there was no error.
-   * Will automatically retry when possible while the subscribed.
-   */
-  error: unknown | null;
-};
+export type ObjectFetchUpdate<T = unknown> =
+  | ObjectFetchLoading
+  | ObjectFetchError
+  | ObjectFetchReady<T>;
 
 export type ObjectFetchUpdateCallback<T = unknown> = (
   update: ObjectFetchUpdate<T>
@@ -31,7 +39,7 @@ export type ObjectFetchUpdateCallback<T = unknown> = (
 /** ObjectFetchManager for managing a subscription to an object using a VariableDescriptor */
 export type ObjectFetchManager = {
   /**
-   *
+   * Subscribe to an object using a variable descriptor.
    * @param descriptor Descriptor object to fetch the object from. Can be extended by a specific implementation to include more details necessary for the ObjectManager.
    * @param onUpdate Callback function to be called when the object is updated.
    * @returns An unsubscribe function to stop listening for updates and clean up the object.
@@ -56,38 +64,26 @@ export const ObjectFetchManagerContext =
 export function useObjectFetch<T = unknown>(
   descriptor: dh.ide.VariableDescriptor
 ): ObjectFetchUpdate<T> {
-  const [currentUpdate, setCurrentUpdate] = useState<ObjectFetchUpdate<T>>(
-    () => ({
-      fetch: null,
-      error: null,
-    })
-  );
+  const [currentUpdate, setCurrentUpdate] = useState<ObjectFetchUpdate<T>>({
+    status: 'loading',
+  });
 
-  const objectFetcher = useContext(ObjectFetcherContext);
   const objectFetchManager = useContext(ObjectFetchManagerContext);
 
   useEffect(() => {
     if (objectFetchManager == null) {
-      if (objectFetcher == null) {
-        setCurrentUpdate({
-          fetch: null,
-          error: new Error('No ObjectFetchManager available in context'),
-        });
-      } else {
-        setCurrentUpdate({
-          fetch: () => objectFetcher(descriptor),
-          error: null,
-        });
-      }
+      setCurrentUpdate({
+        error: new Error('No ObjectFetchManager available in context'),
+        status: 'error',
+      });
       return;
     }
-    // Signal that we're still loading
-    setCurrentUpdate({
-      fetch: null,
-      error: null,
-    });
+    // Update to signal we're still loading, if we're not already in a loading state.
+    setCurrentUpdate(oldUpdate =>
+      oldUpdate.status === 'loading' ? oldUpdate : { status: 'loading' }
+    );
     return objectFetchManager.subscribe(descriptor, setCurrentUpdate);
-  }, [descriptor, objectFetcher, objectFetchManager]);
+  }, [descriptor, objectFetchManager]);
 
   return currentUpdate;
 }

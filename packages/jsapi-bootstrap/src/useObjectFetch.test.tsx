@@ -8,7 +8,7 @@ it('should resolve the objectFetch when in the context', async () => {
   const descriptor = { type: 'type', name: 'name' };
   const subscribe = jest.fn((subscribeDescriptor, onUpdate) => {
     expect(subscribeDescriptor).toEqual(descriptor);
-    onUpdate({ fetch: objectFetch, error: null });
+    onUpdate({ fetch: objectFetch, status: 'ready' });
     return unsubscribe;
   });
   const objectManager = { subscribe };
@@ -19,7 +19,7 @@ it('should resolve the objectFetch when in the context', async () => {
   );
 
   const { result } = renderHook(() => useObjectFetch(descriptor), { wrapper });
-  expect(result.current).toEqual({ fetch: objectFetch, error: null });
+  expect(result.current).toEqual({ fetch: objectFetch, status: 'ready' });
   expect(result.error).toBeUndefined();
   expect(objectFetch).not.toHaveBeenCalled();
 });
@@ -28,8 +28,8 @@ it('should return an error, not throw if objectFetch not available in the contex
   const descriptor = { type: 'type', name: 'name' };
   const { result } = renderHook(() => useObjectFetch(descriptor));
   expect(result.current).toEqual({
-    fetch: null,
     error: expect.any(Error),
+    status: 'error',
   });
   expect(result.error).toBeUndefined();
 });
