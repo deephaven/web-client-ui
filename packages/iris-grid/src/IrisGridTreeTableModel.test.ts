@@ -52,7 +52,7 @@ describe('IrisGridTreeTableModel layoutHints', () => {
     expect(model.layoutHints).toEqual(layoutHints);
   });
 
-  test('layoutHints undefined (e.g. not set on the table', () => {
+  test('layoutHints undefined (e.g. not set on the table)', () => {
     const columns = irisGridTestUtils.makeColumns();
     const table = irisGridTestUtils.makeTreeTable(columns, columns, 100, []);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
