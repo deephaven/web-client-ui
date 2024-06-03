@@ -322,6 +322,13 @@ abstract class IrisGridModel<
   }
 
   /**
+   * @returns Names of key columns
+   */
+  get keyColumnSet(): Set<ColumnName> {
+    return new Set();
+  }
+
+  /**
    * @returns Names of columns which should be frozen to the front and floating
    */
   get frozenColumns(): readonly ColumnName[] {

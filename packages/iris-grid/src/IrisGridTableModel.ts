@@ -78,6 +78,24 @@ class IrisGridTableModel
     return this.table.applyCustomColumns != null;
   }
 
+  getMemoizedKeyColumnSet = memoize(
+    (tableColumns: DhType.Column[], inputTableKeys: string[]) =>
+      new Set(
+        tableColumns
+          .filter((column: DhType.Column) =>
+            inputTableKeys.includes(column.name)
+          )
+          .map((column: DhType.Column) => column.name)
+      )
+  );
+
+  get keyColumnSet(): Set<ColumnName> {
+    return this.getMemoizedKeyColumnSet(
+      this.table.columns,
+      this.inputTable?.keys ?? []
+    );
+  }
+
   getMemoizedFrontColumns = memoize(
     (layoutHintsFrontColumns: ColumnName[] | undefined) =>
       layoutHintsFrontColumns ?? []
@@ -313,7 +331,7 @@ class IrisGridTableModel
     ) {
       return false;
     }
-    return !this.isKeyColumn(modelIndex);
+    return !this.isKeyColumn(this.columns[modelIndex]);
   }
 
   isColumnFrozen(modelIndex: ModelIndex): boolean {
@@ -327,7 +345,7 @@ class IrisGridTableModel
 
     assertNotNull(this.inputTable);
     const { keyColumns } = this.inputTable;
-    if (keyColumns.length === 0) {
+    if (this.keyColumnSet.size === 0) {
       throw new Error('No key columns to allow deletion');
     }
 

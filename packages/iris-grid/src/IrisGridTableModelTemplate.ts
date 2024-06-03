@@ -459,7 +459,7 @@ class IrisGridTableModelTemplate<
 
   get isDeletable(): boolean {
     if (this.inputTable !== null) {
-      return this.inputTable?.keyColumns.length > 0;
+      return this.keyColumnSet.size > 0;
     }
     return false;
   }
@@ -563,7 +563,7 @@ class IrisGridTableModelTemplate<
 
   textForCell(x: ModelIndex, y: ModelIndex): string {
     const text = this.textValueForCell(x, y);
-    if (text == null && this.isKeyColumn(x)) {
+    if (text == null && this.isKeyColumn(this.columns[x])) {
       const pendingRow = this.pendingRow(y);
       if (pendingRow != null && this.pendingDataMap.has(pendingRow)) {
         // Asterisk to show a value is required for a key column on a row that has some data entered
@@ -635,7 +635,7 @@ class IrisGridTableModelTemplate<
           return theme.zeroNumberColor;
         }
       }
-    } else if (this.isPendingRow(y) && this.isKeyColumn(x)) {
+    } else if (this.isPendingRow(y) && this.isKeyColumn(this.columns[x])) {
       assertNotNull(theme.errorTextColor);
       return theme.errorTextColor;
     }
@@ -1617,15 +1617,15 @@ class IrisGridTableModelTemplate<
     ) {
       return false;
     }
-    return !this.isKeyColumn(modelIndex);
+    return !this.isKeyColumn(this.columns[modelIndex]);
   }
 
   isColumnSortable(modelIndex: ModelIndex): boolean {
     return this.columns[modelIndex].isSortable ?? true;
   }
 
-  isKeyColumn(x: ModelIndex): boolean {
-    return x < (this.inputTable?.keyColumns.length ?? 0);
+  isKeyColumn(column: DhType.Column): boolean {
+    return this.keyColumnSet.has(column.name);
   }
 
   isRowMovable(): boolean {
@@ -1652,17 +1652,14 @@ class IrisGridTableModelTemplate<
       column <= range.endColumn;
       column += 1
     ) {
-      if (this.inputTable.keyColumns.includes(this.columns[column])) {
+      if (this.isKeyColumn(this.columns[column])) {
         isKeyColumnInRange = true;
         break;
       }
     }
 
     if (
-      !(
-        isPendingRange ||
-        (this.inputTable.keyColumns.length !== 0 && !isKeyColumnInRange)
-      )
+      !(isPendingRange || (this.keyColumnSet.size !== 0 && !isKeyColumnInRange))
     ) {
       return false;
     }
