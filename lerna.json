@@ -4,6 +4,9 @@
   "command": {
     "publish": {
       "distTag": "latest"
+    },
+    "version": {
+      "changelogPreset": "conventionalcommits"
     }
   }
 }
