@@ -1644,12 +1644,24 @@ class IrisGridTableModelTemplate<
     // Pending rows are always editable
     const isPendingRange =
       this.isPendingRow(range.startRow) && this.isPendingRow(range.endRow);
+
+    let isKeyColumnInRange = false;
+    // Check if any of the columns in grid range are key columns
+    for (
+      let column = range.startColumn;
+      column <= range.endColumn;
+      column += 1
+    ) {
+      if (this.inputTable.keyColumns.includes(this.columns[column])) {
+        isKeyColumnInRange = true;
+        break;
+      }
+    }
+
     if (
       !(
         isPendingRange ||
-        (this.inputTable.keyColumns.length !== 0 &&
-          range.startColumn >= this.inputTable.keyColumns.length &&
-          range.endColumn >= this.inputTable.keyColumns.length)
+        (this.inputTable.keyColumns.length !== 0 && !isKeyColumnInRange)
       )
     ) {
       return false;
