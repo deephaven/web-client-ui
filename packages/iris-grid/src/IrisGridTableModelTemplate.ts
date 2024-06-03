@@ -1625,6 +1625,9 @@ class IrisGridTableModelTemplate<
   }
 
   isKeyColumn(column: DhType.Column): boolean {
+    if (column == null) {
+      return false;
+    }
     return this.keyColumnSet.has(column.name);
   }
 
