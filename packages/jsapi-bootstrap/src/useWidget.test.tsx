@@ -4,16 +4,8 @@ import { dh } from '@deephaven/jsapi-types';
 import { TestUtils } from '@deephaven/utils';
 import { useWidget } from './useWidget';
 import { ObjectFetchManagerContext } from './useObjectFetch';
-import { ApiContext } from './ApiBootstrap';
 
 const WIDGET_TYPE = 'OtherWidget';
-
-const api = TestUtils.createMockProxy<typeof dh>({
-  VariableType: TestUtils.createMockProxy<typeof dh.VariableType>({
-    OTHERWIDGET: WIDGET_TYPE,
-    TABLE: 'Table',
-  }),
-});
 
 describe('useWidget', () => {
   it('should return a widget when available', async () => {
@@ -31,11 +23,9 @@ describe('useWidget', () => {
     });
     const objectManager = { subscribe };
     const wrapper = ({ children }) => (
-      <ApiContext.Provider value={api}>
-        <ObjectFetchManagerContext.Provider value={objectManager}>
-          {children}
-        </ObjectFetchManagerContext.Provider>
-      </ApiContext.Provider>
+      <ObjectFetchManagerContext.Provider value={objectManager}>
+        {children}
+      </ObjectFetchManagerContext.Provider>
     );
     const { result } = renderHook(() => useWidget(descriptor), { wrapper });
     await act(TestUtils.flushPromises);
@@ -57,11 +47,9 @@ describe('useWidget', () => {
     });
     const objectManager = { subscribe };
     const wrapper = ({ children }) => (
-      <ApiContext.Provider value={api}>
-        <ObjectFetchManagerContext.Provider value={objectManager}>
-          {children}
-        </ObjectFetchManagerContext.Provider>
-      </ApiContext.Provider>
+      <ObjectFetchManagerContext.Provider value={objectManager}>
+        {children}
+      </ObjectFetchManagerContext.Provider>
     );
 
     const { result } = renderHook(() => useWidget(descriptor), { wrapper });
@@ -78,30 +66,119 @@ describe('useWidget', () => {
     });
     const objectManager = { subscribe };
     const wrapper = ({ children }) => (
-      <ApiContext.Provider value={api}>
-        <ObjectFetchManagerContext.Provider value={objectManager}>
-          {children}
-        </ObjectFetchManagerContext.Provider>
-      </ApiContext.Provider>
+      <ObjectFetchManagerContext.Provider value={objectManager}>
+        {children}
+      </ObjectFetchManagerContext.Provider>
     );
     const { result } = renderHook(() => useWidget(descriptor), { wrapper });
 
     expect(result.current).toEqual({ widget: null, error: null });
   });
 
-  it('should return an error when the descriptor type is not supported', () => {
+  it('should close the widget and exported objects when cancelled', async () => {
+    const descriptor = { type: WIDGET_TYPE, name: 'name' };
+    const widget: dh.Widget = TestUtils.createMockProxy<dh.Widget>({
+      close: jest.fn(),
+      exportedObjects: [
+        TestUtils.createMockProxy<dh.WidgetExportedObject>({
+          close: jest.fn(),
+        }),
+        TestUtils.createMockProxy<dh.WidgetExportedObject>({
+          close: jest.fn(),
+        }),
+      ],
+    });
+    const fetch = jest.fn(async () => widget);
+    const objectFetch = { fetch, error: null };
+    const subscribe = jest.fn((_, onUpdate) => {
+      onUpdate(objectFetch);
+      return jest.fn();
+    });
+    const objectManager = { subscribe };
+    const wrapper = ({ children }) => (
+      <ObjectFetchManagerContext.Provider value={objectManager}>
+        {children}
+      </ObjectFetchManagerContext.Provider>
+    );
+    const { result, unmount } = renderHook(() => useWidget(descriptor), {
+      wrapper,
+    });
+    expect(widget.close).not.toHaveBeenCalled();
+    expect(widget.exportedObjects[0].close).not.toHaveBeenCalled();
+    expect(widget.exportedObjects[1].close).not.toHaveBeenCalled();
+
+    expect(result.current).toEqual({ widget: null, error: null });
+
+    // Unmount before flushing the promise
+    unmount();
+    await act(TestUtils.flushPromises);
+    expect(widget.close).toHaveBeenCalledTimes(1);
+    expect(widget.exportedObjects[0].close).toHaveBeenCalledTimes(1);
+    expect(widget.exportedObjects[1].close).toHaveBeenCalledTimes(1);
+  });
+
+  it('should not close the widget if it is returned before unmount', async () => {
+    const descriptor = { type: WIDGET_TYPE, name: 'name' };
+    const widget: dh.Widget = TestUtils.createMockProxy<dh.Widget>({
+      close: jest.fn(),
+      exportedObjects: [
+        TestUtils.createMockProxy<dh.WidgetExportedObject>({
+          close: jest.fn(),
+        }),
+        TestUtils.createMockProxy<dh.WidgetExportedObject>({
+          close: jest.fn(),
+        }),
+      ],
+    });
+    const fetch = jest.fn(async () => widget);
+    const objectFetch = { fetch, error: null };
+    const subscribe = jest.fn((_, onUpdate) => {
+      onUpdate(objectFetch);
+      return jest.fn();
+    });
+    const objectManager = { subscribe };
+    const wrapper = ({ children }) => (
+      <ObjectFetchManagerContext.Provider value={objectManager}>
+        {children}
+      </ObjectFetchManagerContext.Provider>
+    );
+    const { result, unmount } = renderHook(() => useWidget(descriptor), {
+      wrapper,
+    });
+
+    expect(result.current).toEqual({ widget: null, error: null });
+    await act(TestUtils.flushPromises);
+    unmount();
+    expect(widget.close).not.toHaveBeenCalled();
+    expect(widget.exportedObjects[0].close).not.toHaveBeenCalled();
+    expect(widget.exportedObjects[1].close).not.toHaveBeenCalled();
+  });
+
+  it('should handle a Table being fetched', async () => {
     const descriptor: dh.ide.VariableDescriptor = {
       type: 'Table',
       name: 'name',
     };
-    const wrapper = ({ children }) => (
-      <ApiContext.Provider value={api}>{children}</ApiContext.Provider>
-    );
-    const { result } = renderHook(() => useWidget(descriptor), { wrapper });
-
-    expect(result.current).toEqual({
-      widget: null,
-      error: new Error(`Unsupported descriptor type: ${descriptor.type}`),
+    const widget = { close: jest.fn() };
+    const fetch = jest.fn(async () => widget);
+    const objectFetch = { fetch, error: null };
+    const subscribe = jest.fn((subscribeDescriptor, onUpdate) => {
+      expect(subscribeDescriptor).toEqual(descriptor);
+      onUpdate(objectFetch);
+      return jest.fn();
     });
+    const objectManager = { subscribe };
+    const wrapper = ({ children }) => (
+      <ObjectFetchManagerContext.Provider value={objectManager}>
+        {children}
+      </ObjectFetchManagerContext.Provider>
+    );
+    const { result, unmount } = renderHook(() => useWidget(descriptor), {
+      wrapper,
+    });
+    await act(TestUtils.flushPromises);
+    expect(result.current).toEqual({ widget, error: null });
+    expect(fetch).toHaveBeenCalledTimes(1);
+    unmount();
   });
 });

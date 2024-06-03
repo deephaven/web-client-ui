@@ -39,10 +39,12 @@ export type ObjectFetchUpdateCallback<T = unknown> = (
 /** ObjectFetchManager for managing a subscription to an object using a VariableDescriptor */
 export type ObjectFetchManager = {
   /**
-   * Subscribe to an object using a variable descriptor.
-   * @param descriptor Descriptor object to fetch the object from. Can be extended by a specific implementation to include more details necessary for the ObjectManager.
+   * Subscribe to the fetch function for an object using a variable descriptor.
+   * It's possible that the fetch function changes over time, due to disconnection/reconnection, starting/stopping of applications that the object may be associated with, etc.
+   *
+   * @param descriptor Descriptor object of the object to fetch. Can be extended by a specific implementation to include more details necessary for the ObjectManager.
    * @param onUpdate Callback function to be called when the object is updated.
-   * @returns An unsubscribe function to stop listening for updates and clean up the object.
+   * @returns An unsubscribe function to stop listening for fetch updates and clean up the object.
    */
   subscribe: <T = unknown>(
     descriptor: dh.ide.VariableDescriptor,
