@@ -298,9 +298,9 @@ export class ConsolePanel extends PureComponent<
     assertNotNull(sessionWrapper);
 
     const { config, session } = sessionWrapper;
-    const { name } = widget;
-    assertNotNull(name);
-    const panelId = this.getItemId(name);
+    const { title = widget.name } = widget;
+    assertNotNull(title);
+    const panelId = this.getItemId(title);
     const openOptions = {
       fetch: () => session.getObject(widget),
       panelId,
