@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.80.1](https://github.com/deephaven/web-client-ui/compare/v0.80.0...v0.80.1) (2024-06-04)
+
+### Bug Fixes
+
+- CSV Drag and Drop Console Error ([#2052](https://github.com/deephaven/web-client-ui/issues/2052)) ([85811dd](https://github.com/deephaven/web-client-ui/commit/85811dd64f1cb04fedc85d1f674ec90a2ea1556c))
+- re-export Radio and RadioGroup prop types ([#2055](https://github.com/deephaven/web-client-ui/issues/2055)) ([06b9767](https://github.com/deephaven/web-client-ui/commit/06b976752d756db17a491645cebe79a7293ce132)), closes [#2020](https://github.com/deephaven/web-client-ui/issues/2020)
+
 # [0.80.0](https://github.com/deephaven/web-client-ui/compare/v0.79.0...v0.80.0) (2024-06-03)
 
 ### Bug Fixes
