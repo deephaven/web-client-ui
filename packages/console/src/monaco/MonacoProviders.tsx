@@ -29,35 +29,35 @@ const DEFAULT_RUFF_SETTINGS = {
     'flake8-implicit-str-concat': {
       'allow-multiline': false,
     },
-    ignore: ['ISC003'],
+    // More info on rules at https://docs.astral.sh/ruff/rules/
+    ignore: ['ISC003'], // Ignoring this rule permits explicit string concatenation
     select: [
-      'F',
-      'E1',
-      'E9',
-      'E711',
-      'W291',
-      'W293',
-      'W605',
-      'I002',
-      'B',
-      'A',
-      'COM818',
-      'ISC',
-      'PLE',
-      'RUF001',
-      'RUF021',
-      'RUF027',
-      'PLR1704',
-      'LOG',
-      'ASYNC',
-      'RET501',
-      'RET502',
-      'RET503',
-      'PLC2401',
-      'PLC2403',
-      'NPY',
-      'PERF',
-      'C4',
+      'F', // Pyflakes
+      'E1', // Pycodestyle indentation errors
+      'E9', // Pycodestyle syntax errors
+      'E711', // Pycodestyle comparison to None
+      'W291', // Pycodestyle trailing whitespace
+      'W293', // Pycodestyle blank line contains whitespace
+      'W605', // Pycodestyle invalid escape sequence
+      'B', // flake8-bugbear
+      'A', // flake8-builtins
+      'COM818', // flake8-commas trailing comma on bare tuple
+      'ISC', // flake8-implicit-str-concat
+      'PLE', // pylint errors
+      'RUF001', // ambiguous-unicode-character-string
+      'RUF021', // parenthesize-chained-operators
+      'RUF027', // missing-f-string-syntax
+      'PLR1704', // Redefined argument from local
+      'LOG', // flake8-logging
+      'ASYNC', // flake8-async
+      'RET501', // unnecessary-return-none
+      'RET502', // implicit-return-value
+      'RET503', // implicit-return
+      'PLC2401', // non-ascii-name
+      'PLC2403', // non-ascii-import-name
+      'NPY', // NumPy-specific rules
+      'PERF', // Perflint
+      'C4', // flake8-comprehensions
     ],
   },
 };
@@ -113,6 +113,7 @@ class MonacoProviders extends PureComponent<
       model,
       'ruff',
       MonacoProviders.workspace.check(model.getValue()).map((d: Diagnostic) => {
+        // Unused variable or import. Mark as warning and unnecessary to
         const isUnnecessary = d.code === 'F401' || d.code === 'F841';
         return {
           startLineNumber: d.location.row,
