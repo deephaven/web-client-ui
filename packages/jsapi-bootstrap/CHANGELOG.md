@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.78.2](https://github.com/deephaven/web-client-ui/compare/v0.78.1...v0.78.2) (2024-06-04)
+
+### Features
+
+- DH-16737 Add ObjectManager, `useWidget` hook ([#2030](https://github.com/deephaven/web-client-ui/issues/2030)) ([207a470](https://github.com/deephaven/web-client-ui/commit/207a47060ef30be388ffbeba9a1715a56aff881c))
+
 # [0.78.0](https://github.com/deephaven/web-client-ui/compare/v0.77.0...v0.78.0) (2024-05-16)
 
 **Note:** Version bump only for package @deephaven/jsapi-bootstrap
