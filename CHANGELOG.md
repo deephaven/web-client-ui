@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.80.1](https://github.com/deephaven/web-client-ui/compare/v0.80.0...v0.80.1) (2024-06-04)
+
+### Bug Fixes
+
+- CSV Drag and Drop Console Error ([#2052](https://github.com/deephaven/web-client-ui/issues/2052)) ([85811dd](https://github.com/deephaven/web-client-ui/commit/85811dd64f1cb04fedc85d1f674ec90a2ea1556c))
+- re-export Radio and RadioGroup prop types ([#2055](https://github.com/deephaven/web-client-ui/issues/2055)) ([06b9767](https://github.com/deephaven/web-client-ui/commit/06b976752d756db17a491645cebe79a7293ce132)), closes [#2020](https://github.com/deephaven/web-client-ui/issues/2020)
+
+# [0.80.0](https://github.com/deephaven/web-client-ui/compare/v0.79.0...v0.80.0) (2024-06-03)
+
+### Bug Fixes
+
+- Console error when opening context menu on tree table ([#2047](https://github.com/deephaven/web-client-ui/issues/2047)) ([77bea7d](https://github.com/deephaven/web-client-ui/commit/77bea7d2badbc37eb3259a85873d6f900a07be14))
+- DH-17076 LayoutHints on TreeTables were not being applied ([#2041](https://github.com/deephaven/web-client-ui/issues/2041)) ([2977dd2](https://github.com/deephaven/web-client-ui/commit/2977dd262ae4b8dcd82e4622fb6f61b6c4e7b06e)), closes [#2035](https://github.com/deephaven/web-client-ui/issues/2035)
+- e2e - docker logs fix ([#2032](https://github.com/deephaven/web-client-ui/issues/2032)) ([297ad9a](https://github.com/deephaven/web-client-ui/commit/297ad9ab765ac7859479b7b8e531f1c88f8d82db)), closes [#2031](https://github.com/deephaven/web-client-ui/issues/2031)
+- e2e test status reporting incorrectly ([#2045](https://github.com/deephaven/web-client-ui/issues/2045)) ([8e6b6da](https://github.com/deephaven/web-client-ui/commit/8e6b6da4a4ccfc9bc852318e16ea5f0c4d21bf64)), closes [#2044](https://github.com/deephaven/web-client-ui/issues/2044)
+
+### Features
+
+- Re-export Spectrum button and checkbox ([#2039](https://github.com/deephaven/web-client-ui/issues/2039)) ([0e22d11](https://github.com/deephaven/web-client-ui/commit/0e22d11a6da3f189530b2ce0c8751d44097db971))
+
 # [0.79.0](https://github.com/deephaven/web-client-ui/compare/v0.78.0...v0.79.0) (2024-05-24)
 
 ### Bug Fixes

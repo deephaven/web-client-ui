@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   BasicModal,
   DebouncedModal,
@@ -8,6 +8,8 @@ import {
 } from '@deephaven/components';
 import {
   ObjectFetcherContext,
+  ObjectFetchManager,
+  ObjectFetchManagerContext,
   sanitizeVariableDescriptor,
   useApi,
   useClient,
@@ -166,6 +168,24 @@ export function ConnectionBootstrap({
     [connection]
   );
 
+  /** We don't really need to do anything fancy in Core to manage an object, just fetch it  */
+  const objectManager: ObjectFetchManager = useMemo(
+    () => ({
+      subscribe: (descriptor, onUpdate) => {
+        // We send an update with the fetch right away
+        onUpdate({
+          fetch: () => objectFetcher(descriptor),
+          status: 'ready',
+        });
+        return () => {
+          // no-op
+          // For Core, if the server dies then we can't reconnect anyway, so no need to bother listening for subscription or cleaning up
+        };
+      },
+    }),
+    [objectFetcher]
+  );
+
   function handleRefresh(): void {
     log.info('Refreshing application');
     window.location.reload();
@@ -174,50 +194,52 @@ export function ConnectionBootstrap({
   return (
     <ConnectionContext.Provider value={connection ?? null}>
       <ObjectFetcherContext.Provider value={objectFetcher}>
-        {(() => {
-          if (isShutdown) {
-            return (
-              <LoadingOverlay
-                isLoading={false}
-                errorMessage={error != null ? `${error}` : undefined}
-              />
-            );
-          }
-          if (isReconnecting) {
-            return (
-              <>
-                {children}
-                <DebouncedModal isOpen={isReconnecting} debounceMs={1000}>
-                  <InfoModal
-                    icon={vsDebugDisconnect}
-                    title={
-                      <>
-                        <LoadingSpinner /> Attempting to reconnect...
-                      </>
-                    }
-                    subtitle="Please check your network connection."
-                  />
-                </DebouncedModal>
-              </>
-            );
-          }
-          if (isAuthFailed) {
-            return (
-              <>
-                {children}
-                <BasicModal
-                  confirmButtonText="Refresh"
-                  onConfirm={handleRefresh}
-                  isOpen={isAuthFailed}
-                  headerText="Authentication failed"
-                  bodyText="Credentials are invalid. Please refresh your browser to try and reconnect."
+        <ObjectFetchManagerContext.Provider value={objectManager}>
+          {(() => {
+            if (isShutdown) {
+              return (
+                <LoadingOverlay
+                  isLoading={false}
+                  errorMessage={error != null ? `${error}` : undefined}
                 />
-              </>
-            );
-          }
-          // If none of the conditions are met, render the children
-          return children;
-        })()}
+              );
+            }
+            if (isReconnecting) {
+              return (
+                <>
+                  {children}
+                  <DebouncedModal isOpen={isReconnecting} debounceMs={1000}>
+                    <InfoModal
+                      icon={vsDebugDisconnect}
+                      title={
+                        <>
+                          <LoadingSpinner /> Attempting to reconnect...
+                        </>
+                      }
+                      subtitle="Please check your network connection."
+                    />
+                  </DebouncedModal>
+                </>
+              );
+            }
+            if (isAuthFailed) {
+              return (
+                <>
+                  {children}
+                  <BasicModal
+                    confirmButtonText="Refresh"
+                    onConfirm={handleRefresh}
+                    isOpen={isAuthFailed}
+                    headerText="Authentication failed"
+                    bodyText="Credentials are invalid. Please refresh your browser to try and reconnect."
+                  />
+                </>
+              );
+            }
+            // If none of the conditions are met, render the children
+            return children;
+          })()}
+        </ObjectFetchManagerContext.Provider>
       </ObjectFetcherContext.Provider>
     </ConnectionContext.Provider>
   );

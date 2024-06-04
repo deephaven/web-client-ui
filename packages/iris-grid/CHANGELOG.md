@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.80.1](https://github.com/deephaven/web-client-ui/compare/v0.80.0...v0.80.1) (2024-06-04)
+
+**Note:** Version bump only for package @deephaven/iris-grid
+
+# [0.80.0](https://github.com/deephaven/web-client-ui/compare/v0.79.0...v0.80.0) (2024-06-03)
+
+### Bug Fixes
+
+- Console error when opening context menu on tree table ([#2047](https://github.com/deephaven/web-client-ui/issues/2047)) ([77bea7d](https://github.com/deephaven/web-client-ui/commit/77bea7d2badbc37eb3259a85873d6f900a07be14))
+- DH-17076 LayoutHints on TreeTables were not being applied ([#2041](https://github.com/deephaven/web-client-ui/issues/2041)) ([2977dd2](https://github.com/deephaven/web-client-ui/commit/2977dd262ae4b8dcd82e4622fb6f61b6c4e7b06e)), closes [#2035](https://github.com/deephaven/web-client-ui/issues/2035)
+
 # [0.79.0](https://github.com/deephaven/web-client-ui/compare/v0.78.0...v0.79.0) (2024-05-24)
 
 ### Bug Fixes
