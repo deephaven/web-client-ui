@@ -20,5 +20,7 @@ export {
   type SpectrumTextFieldProps as TextFieldProps,
 } from '@adobe/react-spectrum';
 
+export type { RadioGroupProps, RadioProps } from '@react-types/radio';
+
 // @react-types/textfield is unecessary if https://github.com/adobe/react-spectrum/pull/6090 merge
 export type { SpectrumTextAreaProps as TextAreaProps } from '@react-types/textfield';
