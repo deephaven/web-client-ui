@@ -72,11 +72,9 @@ export function useWidget<T extends WidgetTypes = dh.Widget>(
             log.debug2('loadWidgetInternal cancelled', descriptor, newWidget);
             newWidget.close();
             if ('exportedObjects' in newWidget) {
-              newWidget.exportedObjects.forEach(
-                (exportedObject: dh.WidgetExportedObject) => {
-                  exportedObject.close();
-                }
-              );
+              newWidget.exportedObjects.forEach(exportedObject => {
+                exportedObject.close();
+              });
             }
             return;
           }

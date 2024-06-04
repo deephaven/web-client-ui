@@ -159,8 +159,8 @@ describe('useWidget', () => {
       type: 'Table',
       name: 'name',
     };
-    const widget = { close: jest.fn() };
-    const fetch = jest.fn(async () => widget);
+    const table = TestUtils.createMockProxy<dh.Table>({ close: jest.fn() });
+    const fetch = jest.fn(async () => table);
     const objectFetch = { fetch, error: null };
     const subscribe = jest.fn((subscribeDescriptor, onUpdate) => {
       expect(subscribeDescriptor).toEqual(descriptor);
@@ -177,8 +177,37 @@ describe('useWidget', () => {
       wrapper,
     });
     await act(TestUtils.flushPromises);
-    expect(result.current).toEqual({ widget, error: null });
+    expect(result.current).toEqual({ widget: table, error: null });
     expect(fetch).toHaveBeenCalledTimes(1);
     unmount();
+
+    // Shouldn't be called if it was returned before unmount
+    expect(table.close).not.toHaveBeenCalled();
+  });
+
+  it('should close the Table if unmounted before the fetch is done', async () => {
+    const descriptor: dh.ide.VariableDescriptor = {
+      type: 'Table',
+      name: 'name',
+    };
+    const table = TestUtils.createMockProxy<dh.Table>({ close: jest.fn() });
+    const fetch = jest.fn(async () => table);
+    const objectFetch = { fetch, error: null };
+    const subscribe = jest.fn((subscribeDescriptor, onUpdate) => {
+      expect(subscribeDescriptor).toEqual(descriptor);
+      onUpdate(objectFetch);
+      return jest.fn();
+    });
+    const objectManager = { subscribe };
+    const wrapper = ({ children }) => (
+      <ObjectFetchManagerContext.Provider value={objectManager}>
+        {children}
+      </ObjectFetchManagerContext.Provider>
+    );
+    const { unmount } = renderHook(() => useWidget(descriptor), { wrapper });
+
+    unmount();
+    await act(TestUtils.flushPromises);
+    expect(table.close).toHaveBeenCalledTimes(1);
   });
 });
