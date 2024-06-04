@@ -4,4 +4,6 @@ export * from './DeferredApiBootstrap';
 export * from './useApi';
 export * from './useClient';
 export * from './useDeferredApi';
+export * from './useObjectFetch';
 export * from './useObjectFetcher';
+export * from './useWidget';
