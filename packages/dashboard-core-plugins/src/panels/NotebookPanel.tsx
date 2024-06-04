@@ -992,7 +992,10 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   }
 
   async handleSaveFromShortcut(): Promise<void> {
-    await this.handleFormat();
+    // TODO: Check if the user has enabled format on save
+    // if (formatOnSave) {
+    //   await this.handleFormat();
+    // }
     this.save();
   }
 
