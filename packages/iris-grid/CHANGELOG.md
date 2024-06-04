@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.78.1](https://github.com/deephaven/web-client-ui/compare/v0.78.0...v0.78.1) (2024-06-04)
+
+### Bug Fixes
+
+- DH-17076 LayoutHints on TreeTables were not being applied ([#2041](https://github.com/deephaven/web-client-ui/issues/2041)) ([#2050](https://github.com/deephaven/web-client-ui/issues/2050)) ([923c7b4](https://github.com/deephaven/web-client-ui/commit/923c7b4803c9012fcc0afc773e1f112ecacde941)), closes [#2035](https://github.com/deephaven/web-client-ui/issues/2035)
+
 # [0.78.0](https://github.com/deephaven/web-client-ui/compare/v0.77.0...v0.78.0) (2024-05-16)
 
 ### Bug Fixes
