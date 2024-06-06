@@ -349,6 +349,9 @@ export interface IrisGridProps {
   // Optional key and mouse handlers
   keyHandlers: readonly KeyHandler[];
   mouseHandlers: readonly GridMouseHandler[];
+
+  // Pass in a custom renderer to the grid for advanced use cases
+  renderer?: IrisGridRenderer;
 }
 
 export interface IrisGridState {
@@ -628,7 +631,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.showNullStrings = true;
 
     // When the loading scrim started/when it should extend to the end of the screen.
-    this.renderer = new IrisGridRenderer();
     this.tableSaver = null;
     this.crossColumnRef = React.createRef();
     this.isAnimating = false;
@@ -1020,8 +1022,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   animationFrame?: number;
 
   loadingTimer?: ReturnType<typeof setTimeout>;
-
-  renderer: IrisGridRenderer;
 
   tableSaver: TableSaver | null;
 
@@ -1429,6 +1429,15 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       mouseHandlers: readonly GridMouseHandler[]
     ): readonly GridMouseHandler[] => [...mouseHandlers, ...this.mouseHandlers]
   );
+
+  getCachedRenderer = memoize(
+    (rendererProp?: IrisGridRenderer) => rendererProp ?? new IrisGridRenderer()
+  );
+
+  get renderer(): IrisGridRenderer {
+    const { renderer } = this.props;
+    return this.getCachedRenderer(renderer);
+  }
 
   getMouseHandlers(): readonly GridMouseHandler[] {
     const { mouseHandlers } = this.props;
