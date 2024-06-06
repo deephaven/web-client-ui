@@ -41,11 +41,17 @@ export function ConnectionBootstrap({
   const [error, setError] = useState<unknown>();
   const [connection, setConnection] = useState<dh.IdeConnection>();
   const [connectionState, setConnectionState] = useState<
-    'connected' | 'connecting' | 'reconnecting' | 'failed' | 'shutdown'
+    | 'not_connecting'
+    | 'connecting'
+    | 'connected'
+    | 'reconnecting'
+    | 'failed'
+    | 'shutdown'
   >('connecting');
   const isAuthFailed = connectionState === 'failed';
   const isShutdown = connectionState === 'shutdown';
   const isReconnecting = connectionState === 'reconnecting';
+  const isNotConnecting = connectionState === 'not_connecting';
 
   useEffect(
     function initConnection() {
@@ -63,7 +69,7 @@ export function ConnectionBootstrap({
             return;
           }
           setError(e);
-          setConnectionState('failed');
+          setConnectionState('not_connecting');
         }
       }
       loadConnection();
@@ -192,7 +198,7 @@ export function ConnectionBootstrap({
     window.location.reload();
   }
 
-  if (isShutdown || connectionState === 'connecting') {
+  if (isShutdown || connectionState === 'connecting' || isNotConnecting) {
     return (
       <LoadingOverlay
         data-testid="connection-bootstrap-loading"
