@@ -13,7 +13,6 @@ import { nanoid } from 'nanoid';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   ContextActions,
-  ThemeExport,
   GLOBAL_SHORTCUTS,
   Popper,
   ContextAction,
@@ -51,14 +50,7 @@ import {
   getDashboardConnection,
   NotebookPanel,
 } from '@deephaven/dashboard-core-plugins';
-import {
-  vsGear,
-  dhShapes,
-  dhPanels,
-  vsDebugDisconnect,
-  dhSquareFilled,
-  vsTerminal,
-} from '@deephaven/icons';
+import { vsGear, dhShapes, dhPanels, vsTerminal } from '@deephaven/icons';
 import { getVariableDescriptor } from '@deephaven/jsapi-bootstrap';
 import dh from '@deephaven/jsapi-shim';
 import type { dh as DhType } from '@deephaven/jsapi-types';
@@ -787,8 +779,7 @@ export class AppMainContainer extends Component<
   }
 
   render(): ReactElement {
-    const { activeTool, plugins, user, serverConfigValues, connection } =
-      this.props;
+    const { activeTool, plugins, user, serverConfigValues } = this.props;
     const { permissions } = user;
     const { canUsePanels } = permissions;
     const {

@@ -63,6 +63,7 @@ export function ConnectionBootstrap({
             return;
           }
           setError(e);
+          setConnectionState('failed');
         }
       }
       loadConnection();
