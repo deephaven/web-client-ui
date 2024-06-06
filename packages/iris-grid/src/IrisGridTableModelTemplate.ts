@@ -1622,6 +1622,10 @@ class IrisGridTableModelTemplate<
   }
 
   isKeyColumn(x: ModelIndex): boolean {
+    if (x < 0 || x >= this.columnCount) {
+      return false;
+    }
+
     return this.keyColumnSet.has(this.columns[x].name);
   }
 
