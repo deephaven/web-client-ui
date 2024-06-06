@@ -16,6 +16,8 @@ import { PartitionedGridModelProvider } from './PartitionedGridModel';
 
 const log = Log.module('IrisGridTableModel');
 
+const EMPTY_ARRAY: readonly string[] = [];
+
 /**
  * Model for a grid showing an iris data table
  */
@@ -79,38 +81,31 @@ class IrisGridTableModel
   }
 
   getMemoizedKeyColumnSet = memoize(
-    (tableColumns: DhType.Column[], inputTableKeys: string[]) =>
-      new Set(
-        tableColumns
-          .filter((column: DhType.Column) =>
-            inputTableKeys.includes(column.name)
-          )
-          .map((column: DhType.Column) => column.name)
-      )
+    (inputTableKeys?: readonly string[]) =>
+      new Set(inputTableKeys ?? EMPTY_ARRAY)
   );
 
   get keyColumnSet(): Set<ColumnName> {
-    return this.getMemoizedKeyColumnSet(
-      this.table.columns,
-      this.inputTable?.keys ?? []
-    );
+    return this.getMemoizedKeyColumnSet(this.inputTable?.keys ?? EMPTY_ARRAY);
   }
 
   getMemoizedFrontColumns = memoize(
     (layoutHintsFrontColumns: ColumnName[] | undefined) =>
-      layoutHintsFrontColumns ?? []
+      layoutHintsFrontColumns ?? EMPTY_ARRAY
   );
 
-  get frontColumns(): ColumnName[] {
-    return this.getMemoizedFrontColumns(this.layoutHints?.frontColumns ?? []);
+  get frontColumns(): ColumnName[] | readonly ColumnName[] {
+    return this.getMemoizedFrontColumns(
+      this.layoutHints?.frontColumns ?? undefined
+    );
   }
 
   getMemoizedBackColumns = memoize(
     (layoutHintsBackColumns: ColumnName[] | undefined) =>
-      layoutHintsBackColumns ?? []
+      layoutHintsBackColumns ?? EMPTY_ARRAY
   );
 
-  get backColumns(): ColumnName[] {
+  get backColumns(): ColumnName[] | readonly ColumnName[] {
     return this.getMemoizedBackColumns(
       this.layoutHints?.backColumns ?? undefined
     );
@@ -120,10 +115,11 @@ class IrisGridTableModel
     (
       layoutHintsFrozenColumns?: ColumnName[],
       userFrozenColumns?: ColumnName[]
-    ): ColumnName[] => userFrozenColumns ?? layoutHintsFrozenColumns ?? []
+    ): ColumnName[] | readonly ColumnName[] =>
+      userFrozenColumns ?? layoutHintsFrozenColumns ?? EMPTY_ARRAY
   );
 
-  get frozenColumns(): ColumnName[] {
+  get frozenColumns(): ColumnName[] | readonly ColumnName[] {
     return this.getMemoizedFrozenColumns(
       this.layoutHints?.frozenColumns ?? undefined,
       this.userFrozenColumns
@@ -331,7 +327,7 @@ class IrisGridTableModel
     ) {
       return false;
     }
-    return !this.isKeyColumn(this.columns[modelIndex]);
+    return !this.isKeyColumn(modelIndex);
   }
 
   isColumnFrozen(modelIndex: ModelIndex): boolean {

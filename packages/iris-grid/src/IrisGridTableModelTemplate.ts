@@ -458,10 +458,7 @@ class IrisGridTableModelTemplate<
   }
 
   get isDeletable(): boolean {
-    if (this.inputTable !== null) {
-      return this.keyColumnSet.size > 0;
-    }
-    return false;
+    return this.keyColumnSet.size > 0;
   }
 
   get isViewportPending(): boolean {
@@ -563,7 +560,7 @@ class IrisGridTableModelTemplate<
 
   textForCell(x: ModelIndex, y: ModelIndex): string {
     const text = this.textValueForCell(x, y);
-    if (text == null && this.isKeyColumn(this.columns[x])) {
+    if (text == null && this.isKeyColumn(x)) {
       const pendingRow = this.pendingRow(y);
       if (pendingRow != null && this.pendingDataMap.has(pendingRow)) {
         // Asterisk to show a value is required for a key column on a row that has some data entered
@@ -635,7 +632,7 @@ class IrisGridTableModelTemplate<
           return theme.zeroNumberColor;
         }
       }
-    } else if (this.isPendingRow(y) && this.isKeyColumn(this.columns[x])) {
+    } else if (this.isPendingRow(y) && this.isKeyColumn(x)) {
       assertNotNull(theme.errorTextColor);
       return theme.errorTextColor;
     }
@@ -1617,18 +1614,15 @@ class IrisGridTableModelTemplate<
     ) {
       return false;
     }
-    return !this.isKeyColumn(this.columns[modelIndex]);
+    return !this.isKeyColumn(modelIndex);
   }
 
   isColumnSortable(modelIndex: ModelIndex): boolean {
     return this.columns[modelIndex].isSortable ?? true;
   }
 
-  isKeyColumn(column: DhType.Column): boolean {
-    if (column == null) {
-      return false;
-    }
-    return this.keyColumnSet.has(column.name);
+  isKeyColumn(x: ModelIndex): boolean {
+    return this.keyColumnSet.has(this.columns[x].name);
   }
 
   isRowMovable(): boolean {
@@ -1655,7 +1649,7 @@ class IrisGridTableModelTemplate<
       column <= range.endColumn;
       column += 1
     ) {
-      if (this.isKeyColumn(this.columns[column])) {
+      if (this.isKeyColumn(column)) {
         isKeyColumnInRange = true;
         break;
       }

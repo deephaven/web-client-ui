@@ -45,6 +45,7 @@ type IrisGridModelEventMap = {
 };
 
 const EMPTY_ARRAY: never[] = [];
+const EMPTY_SET: Set<never> = new Set();
 
 /**
  * Abstract class that extends the GridModel to have more functionality, like filtering and sorting.
@@ -325,7 +326,7 @@ abstract class IrisGridModel<
    * @returns Names of key columns
    */
   get keyColumnSet(): Set<ColumnName> {
-    return new Set();
+    return EMPTY_SET;
   }
 
   /**
