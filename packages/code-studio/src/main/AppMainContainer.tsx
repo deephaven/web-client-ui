@@ -885,20 +885,6 @@ export class AppMainContainer extends Component<
               icon={
                 <span className="fa-layers">
                   <FontAwesomeIcon icon={vsGear} transform="grow-3" />
-                  {connection == null && (
-                    <>
-                      <FontAwesomeIcon
-                        icon={dhSquareFilled}
-                        color={ThemeExport.background}
-                        transform="grow-2 right-8 down-8.5 rotate-45"
-                      />
-                      <FontAwesomeIcon
-                        icon={vsDebugDisconnect}
-                        color={ThemeExport.danger}
-                        transform="shrink-5 right-6 down-6"
-                      />
-                    </>
-                  )}
                 </span>
               }
               tooltip="User Settings"

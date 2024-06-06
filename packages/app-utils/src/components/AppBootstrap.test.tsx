@@ -174,7 +174,7 @@ it('should log in automatically when the anonymous handler is supported', async 
 
   expect(screen.queryByTestId('auth-base-loading')).toBeNull();
   expect(screen.queryByTestId('connection-bootstrap-loading')).toBeNull();
-  expect(screen.queryByText(mockChildText)).not.toBeNull();
+  expect(screen.queryByText(mockChildText)).toBeNull();
   expect(mockChannel.postMessage).toHaveBeenCalledWith(
     expect.objectContaining({
       message: BROADCAST_LOGIN_MESSAGE,

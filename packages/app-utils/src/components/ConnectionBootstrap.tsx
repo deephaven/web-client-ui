@@ -38,7 +38,6 @@ export function ConnectionBootstrap({
 }: ConnectionBootstrapProps): JSX.Element {
   const api = useApi();
   const client = useClient();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState<unknown>();
   const [connection, setConnection] = useState<dh.IdeConnection>();
   const [connectionState, setConnectionState] = useState<
@@ -58,6 +57,7 @@ export function ConnectionBootstrap({
             return;
           }
           setConnection(newConnection);
+          setConnectionState('connected');
         } catch (e) {
           if (isCanceled) {
             return;
@@ -191,9 +191,10 @@ export function ConnectionBootstrap({
     window.location.reload();
   }
 
-  if (isShutdown) {
+  if (isShutdown || connectionState === 'connecting') {
     return (
       <LoadingOverlay
+        data-testid="connection-bootstrap-loading"
         isLoading={false}
         errorMessage={error != null ? `${error}` : undefined}
       />
