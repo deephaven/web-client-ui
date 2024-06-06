@@ -3,8 +3,10 @@
  */
 import { PureComponent } from 'react';
 import * as monaco from 'monaco-editor';
+import throttle from 'lodash.throttle';
 import Log from '@deephaven/log';
 import type { dh } from '@deephaven/jsapi-types';
+import init, { Workspace, type Diagnostic } from './ruff/ruff_wasm';
 
 const log = Log.module('MonacoCompletionProvider');
 
@@ -14,6 +16,52 @@ interface MonacoProviderProps {
   language: string;
 }
 
+const DEFAULT_RUFF_SETTINGS = {
+  preview: true,
+  'target-version': 'py38',
+  'line-length': 88,
+  'indent-width': 4,
+  format: {
+    'indent-style': 'space',
+    'quote-style': 'double',
+  },
+  lint: {
+    'flake8-implicit-str-concat': {
+      'allow-multiline': false,
+    },
+    // More info on rules at https://docs.astral.sh/ruff/rules/
+    ignore: ['ISC003'], // Ignoring this rule permits explicit string concatenation
+    select: [
+      'F', // Pyflakes
+      'E1', // Pycodestyle indentation errors
+      'E9', // Pycodestyle syntax errors
+      'E711', // Pycodestyle comparison to None
+      'W291', // Pycodestyle trailing whitespace
+      'W293', // Pycodestyle blank line contains whitespace
+      'W605', // Pycodestyle invalid escape sequence
+      'B', // flake8-bugbear
+      'A', // flake8-builtins
+      'COM818', // flake8-commas trailing comma on bare tuple
+      'ISC', // flake8-implicit-str-concat
+      'PLE', // pylint errors
+      'RUF001', // ambiguous-unicode-character-string
+      'RUF021', // parenthesize-chained-operators
+      'RUF027', // missing-f-string-syntax
+      'PLR1704', // Redefined argument from local
+      'LOG', // flake8-logging
+      'ASYNC', // flake8-async
+      'RET501', // unnecessary-return-none
+      'RET502', // implicit-return-value
+      'RET503', // implicit-return
+      'PLC2401', // non-ascii-name
+      'PLC2403', // non-ascii-import-name
+      'NPY', // NumPy-specific rules
+      'PERF', // Perflint
+      'C4', // flake8-comprehensions
+    ],
+  },
+};
+
 /**
  * Registers a completion provider with monaco for the language and session provided.
  */
@@ -21,6 +69,67 @@ class MonacoProviders extends PureComponent<
   MonacoProviderProps,
   Record<string, never>
 > {
+  static workspace?: Workspace;
+
+  static initRuffPromise?: Promise<void>;
+
+  /**
+   * Loads and initializes Ruff.
+   * Subsequent calls will return the same promise.
+   */
+  static async initRuff(): Promise<void> {
+    if (MonacoProviders.initRuffPromise) {
+      return MonacoProviders.initRuffPromise;
+    }
+
+    log.debug('Initializing Ruff');
+
+    MonacoProviders.initRuffPromise = init().then(() => {
+      MonacoProviders.setRuffSettings();
+    });
+
+    return MonacoProviders.initRuffPromise;
+  }
+
+  static async setRuffSettings(
+    settings: Record<string, unknown> = DEFAULT_RUFF_SETTINGS
+  ): Promise<void> {
+    await MonacoProviders.initRuff();
+
+    MonacoProviders.workspace = new Workspace(settings);
+
+    monaco.editor
+      .getModels()
+      .filter(m => m.getLanguageId() === 'python')
+      .forEach(MonacoProviders.lintPython);
+  }
+
+  static lintPython(model: monaco.editor.ITextModel): void {
+    if (!MonacoProviders.workspace) {
+      return;
+    }
+
+    monaco.editor.setModelMarkers(
+      model,
+      'ruff',
+      MonacoProviders.workspace.check(model.getValue()).map((d: Diagnostic) => {
+        // Unused variable or import. Mark as warning and unnecessary to
+        const isUnnecessary = d.code === 'F401' || d.code === 'F841';
+        return {
+          startLineNumber: d.location.row,
+          startColumn: d.location.column,
+          endLineNumber: d.end_location.row,
+          endColumn: d.end_location.column,
+          message: `${d.code}: ${d.message}`,
+          severity: isUnnecessary
+            ? monaco.MarkerSeverity.Warning
+            : monaco.MarkerSeverity.Error,
+          tags: isUnnecessary ? [monaco.MarkerTag.Unnecessary] : [],
+        };
+      })
+    );
+  }
+
   /**
    * Converts LSP CompletionItemKind to Monaco CompletionItemKind
    * Defaults to Variable if no LSP kind was provided
@@ -123,6 +232,159 @@ class MonacoProviders extends PureComponent<
     };
   }
 
+  static handlePythonCodeActionRequest(
+    model: monaco.editor.ITextModel,
+    range: monaco.Range
+  ): monaco.languages.ProviderResult<monaco.languages.CodeActionList> {
+    if (!MonacoProviders.workspace) {
+      return {
+        actions: [],
+        dispose: () => {
+          /* no-op */
+        },
+      };
+    }
+
+    const diagnostics = (
+      MonacoProviders.workspace.check(model.getValue()) as Diagnostic[]
+    ).filter(d => {
+      const diagnosticRange = new monaco.Range(
+        d.location.row,
+        d.location.column,
+        d.end_location.row,
+        d.end_location.column
+      );
+      return diagnosticRange.intersectRanges(range);
+    });
+
+    const fixActions: monaco.languages.CodeAction[] = diagnostics
+      .filter(({ fix }) => fix != null)
+      .map(d => {
+        let title = 'Fix';
+        if (d.fix != null) {
+          if (d.fix.message != null && d.fix.message !== '') {
+            title = `${d.code}: ${d.fix.message}`;
+          } else {
+            title = `Fix ${d.code}`;
+          }
+        }
+        return {
+          title,
+          id: `fix-${d.code}`,
+          kind: 'quickfix',
+          edit: d.fix
+            ? {
+                edits: d.fix.edits.map(edit => ({
+                  resource: model.uri,
+                  versionId: model.getVersionId(),
+                  textEdit: {
+                    range: {
+                      startLineNumber: edit.location.row,
+                      startColumn: edit.location.column,
+                      endLineNumber: edit.end_location.row,
+                      endColumn: edit.end_location.column,
+                    },
+                    text: edit.content ?? '',
+                  },
+                })),
+              }
+            : undefined,
+        };
+      });
+
+    const disableActions: monaco.languages.CodeAction[] = diagnostics
+      .map(d => {
+        const line = model.getLineContent(d.location.row);
+        const lastToken = monaco.editor
+          .tokenize(line, model.getLanguageId())[0]
+          .at(-1);
+        const lineEdit = {
+          range: {
+            startLineNumber: d.location.row,
+            startColumn: line.length + 1,
+            endLineNumber: d.location.row,
+            endColumn: line.length + 1,
+          },
+          text: ` # noqa: ${d.code}`,
+        };
+        if (lastToken != null && lastToken.type.startsWith('comment')) {
+          // Already a comment at the end of the line
+          lineEdit.text = `# noqa: ${d.code} `;
+          if (line.startsWith('# noqa:', lastToken.offset)) {
+            // Already another suppressed rule on the line
+            lineEdit.range.startColumn = lastToken.offset + 1;
+            lineEdit.range.endColumn = lastToken.offset + 9; // "# noqa: " length + 1 to offset
+          } else {
+            lineEdit.range.startColumn = lastToken.offset + 1;
+            lineEdit.range.endColumn = line.startsWith('# ', lastToken.offset)
+              ? lastToken.offset + 3 // "# " + 1 to offset
+              : lastToken.offset + 2; // "#" + 1 to offset
+          }
+        }
+        return [
+          {
+            title: `Disable ${d.code} for this line`,
+            kind: 'quickfix',
+            edit: {
+              edits: [
+                {
+                  resource: model.uri,
+                  versionId: model.getVersionId(),
+                  textEdit: lineEdit,
+                },
+              ],
+            },
+          },
+          {
+            title: `Disable ${d.code} for this file`,
+            kind: 'quickfix',
+            edit: {
+              edits: [
+                {
+                  resource: model.uri,
+                  versionId: model.getVersionId(),
+                  textEdit: {
+                    range: {
+                      startLineNumber: 1,
+                      startColumn: 1,
+                      endLineNumber: 1,
+                      endColumn: 1,
+                    },
+                    text: `# ruff: noqa: ${d.code}\n`,
+                  },
+                },
+              ],
+            },
+          },
+        ];
+      })
+      .flat();
+
+    return {
+      actions: [...fixActions, ...disableActions],
+      dispose: () => {
+        /* no-op */
+      },
+    };
+  }
+
+  static handlePythonFormatRequest(
+    model: monaco.editor.ITextModel,
+    options: monaco.languages.FormattingOptions,
+    token: monaco.CancellationToken
+  ): monaco.languages.ProviderResult<monaco.languages.TextEdit[]> {
+    if (!MonacoProviders.workspace) {
+      return;
+    }
+
+    return [
+      {
+        range: model.getFullModelRange(),
+        text: MonacoProviders.workspace.format(model.getValue()),
+      },
+    ];
+  }
+
   constructor(props: MonacoProviderProps) {
     super(props);
 
@@ -132,7 +394,7 @@ class MonacoProviders extends PureComponent<
   }
 
   componentDidMount(): void {
-    const { language, session } = this.props;
+    const { language, session, model } = this.props;
 
     this.registeredCompletionProvider =
       monaco.languages.registerCompletionItemProvider(language, {
@@ -155,6 +417,23 @@ class MonacoProviders extends PureComponent<
           provideHover: this.handleHoverRequest,
         }
       );
+    }
+
+    if (language === 'python') {
+      if (MonacoProviders.workspace == null) {
+        MonacoProviders.initRuff(); // This will also lint all open editors
+      } else {
+        MonacoProviders.lintPython(model);
+      }
+
+      const throttledLint = throttle(
+        (m: monaco.editor.ITextModel) => MonacoProviders.lintPython(m),
+        250
+      );
+
+      model.onDidChangeContent(() => {
+        throttledLint(model);
+      });
     }
   }
 

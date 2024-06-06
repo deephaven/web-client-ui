@@ -19,6 +19,7 @@ import ScalaLang from './lang/scala';
 import DbLang from './lang/db';
 import LogLang from './lang/log';
 import { Language } from './lang/Language';
+import MonacoProviders from './MonacoProviders';
 
 const log = Log.module('MonacoUtils');
 
@@ -48,6 +49,21 @@ class MonacoUtils {
     initTheme();
 
     registerLanguages([DbLang, PyLang, GroovyLang, LogLang, ScalaLang]);
+
+    monaco.languages.onLanguage('python', () => {
+      monaco.languages.registerCodeActionProvider(
+        'python',
+        {
+          provideCodeActions: MonacoProviders.handlePythonCodeActionRequest,
+        },
+        { providedCodeActionKinds: ['quickfix'] }
+      );
+
+      monaco.languages.registerDocumentFormattingEditProvider('python', {
+        provideDocumentFormattingEdits:
+          MonacoProviders.handlePythonFormatRequest,
+      });
+    });
 
     MonacoUtils.removeConflictingKeybindings();
 

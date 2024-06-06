@@ -7,6 +7,7 @@ module.exports = api => {
       !isTest ? /\.test.(tsx?|jsx?)$/ : false,
       !isTest ? '**/__mocks__/*' : false,
       '**/*.scss',
+      '**/*.d.ts',
     ].filter(Boolean),
   };
 };
