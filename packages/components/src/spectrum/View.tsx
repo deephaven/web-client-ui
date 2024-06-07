@@ -52,39 +52,48 @@ export const View = forwardRef<DOMRefValue<HTMLElement>, ViewProps>(
       ...rest
     } = props;
 
-    const borderStyle: CSSProperties = {};
-    if (borderColor) {
-      borderStyle.borderColor = colorValueStyle(borderColor);
-    }
-    if (borderXColor) {
-      borderStyle.borderLeftColor = colorValueStyle(borderXColor);
-      borderStyle.borderRightColor = colorValueStyle(borderXColor);
-    }
-    if (borderYColor) {
-      borderStyle.borderTopColor = colorValueStyle(borderYColor);
-      borderStyle.borderBottomColor = colorValueStyle(borderYColor);
-    }
-    if (borderStartColor) {
-      borderStyle.borderLeftColor = colorValueStyle(borderStartColor);
-    }
-    if (borderEndColor) {
-      borderStyle.borderRightColor = colorValueStyle(borderEndColor);
-    }
-    if (borderTopColor) {
-      borderStyle.borderTopColor = colorValueStyle(borderTopColor);
-    }
-    if (borderBottomColor) {
-      borderStyle.borderBottomColor = colorValueStyle(borderBottomColor);
-    }
+    const style = useMemo(() => {
+      const borderStyle: CSSProperties = {};
+      if (borderColor !== undefined) {
+        borderStyle.borderColor = colorValueStyle(borderColor);
+      }
+      if (borderXColor !== undefined) {
+        borderStyle.borderLeftColor = colorValueStyle(borderXColor);
+        borderStyle.borderRightColor = colorValueStyle(borderXColor);
+      }
+      if (borderYColor !== undefined) {
+        borderStyle.borderTopColor = colorValueStyle(borderYColor);
+        borderStyle.borderBottomColor = colorValueStyle(borderYColor);
+      }
+      if (borderStartColor !== undefined) {
+        borderStyle.borderLeftColor = colorValueStyle(borderStartColor);
+      }
+      if (borderEndColor !== undefined) {
+        borderStyle.borderRightColor = colorValueStyle(borderEndColor);
+      }
+      if (borderTopColor !== undefined) {
+        borderStyle.borderTopColor = colorValueStyle(borderTopColor);
+      }
+      if (borderBottomColor !== undefined) {
+        borderStyle.borderBottomColor = colorValueStyle(borderBottomColor);
+      }
 
-    const style = useMemo(
-      () => ({
+      return {
         ...UNSAFE_style,
         backgroundColor: colorValueStyle(backgroundColor),
         ...borderStyle,
-      }),
-      [backgroundColor, UNSAFE_style, borderStyle]
-    );
+      };
+    }, [
+      backgroundColor,
+      UNSAFE_style,
+      borderColor,
+      borderStartColor,
+      borderEndColor,
+      borderTopColor,
+      borderBottomColor,
+      borderXColor,
+      borderYColor,
+    ]);
 
     return <SpectrumView {...rest} ref={forwardedRef} UNSAFE_style={style} />;
   }
