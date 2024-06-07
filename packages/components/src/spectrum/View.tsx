@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import { forwardRef, useMemo } from 'react';
+import { forwardRef, useMemo, useEffect, CSSProperties } from 'react';
 import {
   View as SpectrumView,
   type ViewProps as SpectrumViewProps,
@@ -9,6 +9,13 @@ import { type ColorValue, colorValueStyle } from '../theme/colorUtils';
 
 export type ViewProps = Omit<SpectrumViewProps<6>, 'backgroundColor'> & {
   backgroundColor?: ColorValue;
+  borderColor?: ColorValue;
+  borderStartColor?: ColorValue;
+  borderEndColor?: ColorValue;
+  borderTopColor?: ColorValue;
+  borderBottomColor?: ColorValue;
+  borderXColor?: ColorValue;
+  borderYColor?: ColorValue;
 };
 
 /**
@@ -23,15 +30,48 @@ export type ViewProps = Omit<SpectrumViewProps<6>, 'backgroundColor'> & {
 
 export const View = forwardRef<DOMRefValue<HTMLElement>, ViewProps>(
   (props, forwardedRef): JSX.Element => {
-    const { backgroundColor, UNSAFE_style, ...rest } = props;
-    const style = useMemo(
-      () => ({
+    const {
+      backgroundColor,
+      borderColor,
+      borderStartColor,
+      borderEndColor,
+      borderTopColor,
+      borderBottomColor,
+      borderXColor,
+      borderYColor,
+      UNSAFE_style,
+      ...rest
+    } = props;
+
+    const defaultBorderColor = colorValueStyle(borderColor) ?? 'transparent';
+    const defaultBorderXColor =
+      colorValueStyle(borderXColor) ?? defaultBorderColor;
+    const defaultBorderYColor =
+      colorValueStyle(borderYColor) ?? defaultBorderColor;
+    const topColor = colorValueStyle(borderTopColor) ?? defaultBorderYColor;
+    const bottomColor =
+      colorValueStyle(borderBottomColor) ?? defaultBorderYColor;
+    const leftColor = colorValueStyle(borderStartColor) ?? defaultBorderXColor;
+    const rightColor = colorValueStyle(borderEndColor) ?? defaultBorderXColor;
+
+    const style = useMemo(() => {
+      return {
         ...UNSAFE_style,
         backgroundColor: colorValueStyle(backgroundColor),
-      }),
-      [backgroundColor, UNSAFE_style]
-    );
-
+        borderColor: `${topColor} ${rightColor} ${bottomColor} ${leftColor}`,
+      };
+    }, [
+      backgroundColor,
+      UNSAFE_style,
+      borderColor,
+      borderStartColor,
+      borderEndColor,
+      borderTopColor,
+      borderBottomColor,
+      borderXColor,
+      borderYColor,
+    ]);
+    
     return <SpectrumView {...rest} ref={forwardedRef} UNSAFE_style={style} />;
   }
 );
