@@ -46,7 +46,7 @@ const EXAMPLES = [addSeparators(DEFAULT_VALUE_STRING)];
 export const DateTimeInput = React.forwardRef<
   HTMLInputElement,
   DateTimeInputProps
->((props: DateTimeInputProps, ref) => {
+>((props, ref) => {
   const {
     className = '',
     onChange = () => undefined,
