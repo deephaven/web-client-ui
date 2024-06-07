@@ -43,6 +43,8 @@ export const View = forwardRef<DOMRefValue<HTMLElement>, ViewProps>(
       ...rest
     } = props;
 
+    // Using shorthand to define border styling. Removing a style property during rerender can lead to styling bugs
+    // ex. changing from borderXColor = blue to borderColor = blue will cause the left and right borders to disappear
     const defaultBorderColor = colorValueStyle(borderColor) ?? 'transparent';
     const defaultBorderXColor =
       colorValueStyle(borderXColor) ?? defaultBorderColor;
@@ -71,7 +73,7 @@ export const View = forwardRef<DOMRefValue<HTMLElement>, ViewProps>(
       borderXColor,
       borderYColor,
     ]);
-    
+
     return <SpectrumView {...rest} ref={forwardedRef} UNSAFE_style={style} />;
   }
 );
