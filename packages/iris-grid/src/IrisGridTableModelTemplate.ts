@@ -1622,10 +1622,7 @@ class IrisGridTableModelTemplate<
   }
 
   isKeyColumn(x: ModelIndex): boolean {
-    if (this.columns[x] != null) {
-      return this.keyColumnSet.has(this.columns[x].name);
-    }
-    return false;
+    return this.keyColumnSet.has(this.columns[x].name);
   }
 
   isRowMovable(): boolean {

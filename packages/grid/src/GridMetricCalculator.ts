@@ -800,6 +800,10 @@ export class GridMetricCalculator {
     const { model } = state;
     const { columnCount, floatingRightColumnCount } = model;
 
+    if (columnCount === 0) {
+      return 0;
+    }
+
     let lastLeft = Math.max(0, columnCount - floatingRightColumnCount - 1);
     if (right != null) {
       lastLeft = right;
