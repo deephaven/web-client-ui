@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import { forwardRef, useMemo, useEffect, CSSProperties } from 'react';
+import { forwardRef, useMemo } from 'react';
 import {
   View as SpectrumView,
   type ViewProps as SpectrumViewProps,
@@ -56,23 +56,21 @@ export const View = forwardRef<DOMRefValue<HTMLElement>, ViewProps>(
     const leftColor = colorValueStyle(borderStartColor) ?? defaultBorderXColor;
     const rightColor = colorValueStyle(borderEndColor) ?? defaultBorderXColor;
 
-    const style = useMemo(() => {
-      return {
+    const style = useMemo(
+      () => ({
         ...UNSAFE_style,
         backgroundColor: colorValueStyle(backgroundColor),
         borderColor: `${topColor} ${rightColor} ${bottomColor} ${leftColor}`,
-      };
-    }, [
-      backgroundColor,
-      UNSAFE_style,
-      borderColor,
-      borderStartColor,
-      borderEndColor,
-      borderTopColor,
-      borderBottomColor,
-      borderXColor,
-      borderYColor,
-    ]);
+      }),
+      [
+        backgroundColor,
+        UNSAFE_style,
+        topColor,
+        rightColor,
+        bottomColor,
+        leftColor,
+      ]
+    );
 
     return <SpectrumView {...rest} ref={forwardedRef} UNSAFE_style={style} />;
   }
