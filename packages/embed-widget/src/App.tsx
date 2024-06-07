@@ -18,7 +18,6 @@ import {
   getAllDashboardsData,
   listenForCreateDashboard,
   CreateDashboardPayload,
-  DEFAULT_DASHBOARD_ID,
   setDashboardPluginData,
   stopListenForCreateDashboard,
 } from '@deephaven/dashboard';
@@ -98,7 +97,7 @@ function App(): JSX.Element {
   }, [dispatch, user]);
 
   const [goldenLayout, setGoldenLayout] = useState<GoldenLayout | null>(null);
-  const [dashboardId, setDashboardId] = useState(DEFAULT_DASHBOARD_ID);
+  const [dashboardId, setDashboardId] = useState('default-embed-widget'); // Can't be DEFAULT_DASHBOARD_ID because its dashboard layout is not stored in dashboardData
 
   const handleGoldenLayoutChange = useCallback(
     (newLayout: GoldenLayout) => {
