@@ -30,6 +30,12 @@ type IrisGridModelEventMap = {
   [E in IrisGridModelEventNames]: Event<E>;
 };
 
+<<<<<<< HEAD
+=======
+const EMPTY_ARRAY: never[] = [];
+const EMPTY_SET: Set<never> = new Set();
+
+>>>>>>> 1bbcc73dda (fix: Editing issues when key columns are not first columns (#2053))
 /**
  * Abstract class that extends the GridModel to have more functionality, like filtering and sorting.
  * For use from IrisGrid.
@@ -270,6 +276,13 @@ abstract class IrisGridModel<
    */
   get backColumns(): string[] {
     return [];
+  }
+
+  /**
+   * @returns Names of key columns
+   */
+  get keyColumnSet(): Set<ColumnName> {
+    return EMPTY_SET;
   }
 
   /**

@@ -15,6 +15,7 @@ const log = Log.module('IrisGridTableModel');
 
 const SET_VIEWPORT_THROTTLE = 150;
 const APPLY_VIEWPORT_THROTTLE = 0;
+const EMPTY_ARRAY = Object.freeze([]);
 
 /**
  * Model for a grid showing an iris data table
@@ -543,8 +544,16 @@ class IrisGridTableModel extends IrisGridModel {
     return this.getMemoizedColumnMap(this.table.columns);
   }
 
+  getMemoizedKeyColumnSet = memoize(
+    inputTableKeys => new Set(inputTableKeys ?? EMPTY_ARRAY)
+  );
+
+  get keyColumnSet() {
+    return this.getMemoizedKeyColumnSet(this.inputTable?.keys);
+  }
+
   getMemoizedFrontColumns = memoize(
-    layoutHintsFrontColumns => layoutHintsFrontColumns ?? []
+    layoutHintsFrontColumns => layoutHintsFrontColumns ?? EMPTY_ARRAY
   );
 
   get frontColumns() {
@@ -552,7 +561,7 @@ class IrisGridTableModel extends IrisGridModel {
   }
 
   getMemoizedBackColumns = memoize(
-    layoutHintsBackColumns => layoutHintsBackColumns ?? []
+    layoutHintsBackColumns => layoutHintsBackColumns ?? EMPTY_ARRAY
   );
 
   get backColumns() {
@@ -561,7 +570,7 @@ class IrisGridTableModel extends IrisGridModel {
 
   getMemoizedFrozenColumns = memoize(
     (layoutHintsFrozenColumns, userFrozenColumns) =>
-      userFrozenColumns ?? layoutHintsFrozenColumns ?? []
+      userFrozenColumns ?? layoutHintsFrozenColumns ?? EMPTY_ARRAY
   );
 
   get frozenColumns() {
@@ -580,7 +589,7 @@ class IrisGridTableModel extends IrisGridModel {
   }
 
   get groupedColumns() {
-    return [];
+    return EMPTY_ARRAY;
   }
 
   get description() {
@@ -1249,7 +1258,7 @@ class IrisGridTableModel extends IrisGridModel {
   }
 
   isKeyColumn(x) {
-    return x < (this.inputTable?.keyColumns.length ?? 0);
+    return this.keyColumnSet.has(this.columns[x].name);
   }
 
   isRowMovable() {
