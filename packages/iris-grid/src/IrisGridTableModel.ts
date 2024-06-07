@@ -8,6 +8,7 @@ import {
   EventShimCustomEvent,
   PromiseUtils,
   assertNotNull,
+  EMPTY_ARRAY,
 } from '@deephaven/utils';
 import IrisGridModel from './IrisGridModel';
 import { ColumnName, UIRow, UITotalsTableConfig } from './CommonTypes';
@@ -15,8 +16,6 @@ import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
 import { PartitionedGridModelProvider } from './PartitionedGridModel';
 
 const log = Log.module('IrisGridTableModel');
-
-const EMPTY_ARRAY: readonly string[] = [];
 
 /**
  * Model for a grid showing an iris data table
@@ -81,12 +80,12 @@ class IrisGridTableModel
   }
 
   getMemoizedKeyColumnSet = memoize(
-    (inputTableKeys?: readonly string[]) =>
+    (inputTableKeys?: readonly ColumnName[]) =>
       new Set(inputTableKeys ?? EMPTY_ARRAY)
   );
 
   get keyColumnSet(): Set<ColumnName> {
-    return this.getMemoizedKeyColumnSet(this.inputTable?.keys ?? EMPTY_ARRAY);
+    return this.getMemoizedKeyColumnSet(this.inputTable?.keys);
   }
 
   getMemoizedFrontColumns = memoize(
@@ -94,7 +93,7 @@ class IrisGridTableModel
       layoutHintsFrontColumns ?? EMPTY_ARRAY
   );
 
-  get frontColumns(): ColumnName[] | readonly ColumnName[] {
+  get frontColumns(): readonly ColumnName[] {
     return this.getMemoizedFrontColumns(
       this.layoutHints?.frontColumns ?? undefined
     );
@@ -105,7 +104,7 @@ class IrisGridTableModel
       layoutHintsBackColumns ?? EMPTY_ARRAY
   );
 
-  get backColumns(): ColumnName[] | readonly ColumnName[] {
+  get backColumns(): readonly ColumnName[] {
     return this.getMemoizedBackColumns(
       this.layoutHints?.backColumns ?? undefined
     );
@@ -115,11 +114,11 @@ class IrisGridTableModel
     (
       layoutHintsFrozenColumns?: ColumnName[],
       userFrozenColumns?: ColumnName[]
-    ): ColumnName[] | readonly ColumnName[] =>
+    ): readonly ColumnName[] =>
       userFrozenColumns ?? layoutHintsFrozenColumns ?? EMPTY_ARRAY
   );
 
-  get frozenColumns(): ColumnName[] | readonly ColumnName[] {
+  get frozenColumns(): readonly ColumnName[] {
     return this.getMemoizedFrozenColumns(
       this.layoutHints?.frozenColumns ?? undefined,
       this.userFrozenColumns
