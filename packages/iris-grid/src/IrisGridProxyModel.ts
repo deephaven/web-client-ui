@@ -426,6 +426,10 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     return this.model.frozenColumns;
   }
 
+  get keyColumnSet(): Set<ColumnName> {
+    return this.model.keyColumnSet;
+  }
+
   getColumnHeaderGroup: IrisGridModel['getColumnHeaderGroup'] = (...args) =>
     this.model.getColumnHeaderGroup(...args);
 

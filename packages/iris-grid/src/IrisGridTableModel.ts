@@ -8,6 +8,7 @@ import {
   EventShimCustomEvent,
   PromiseUtils,
   assertNotNull,
+  EMPTY_ARRAY,
 } from '@deephaven/utils';
 import IrisGridModel from './IrisGridModel';
 import { ColumnName, UIRow, UITotalsTableConfig } from './CommonTypes';
@@ -78,21 +79,32 @@ class IrisGridTableModel
     return this.table.applyCustomColumns != null;
   }
 
-  getMemoizedFrontColumns = memoize(
-    (layoutHintsFrontColumns: ColumnName[] | undefined) =>
-      layoutHintsFrontColumns ?? []
+  getMemoizedKeyColumnSet = memoize(
+    (inputTableKeys?: readonly ColumnName[]) =>
+      new Set(inputTableKeys ?? EMPTY_ARRAY)
   );
 
-  get frontColumns(): ColumnName[] {
-    return this.getMemoizedFrontColumns(this.layoutHints?.frontColumns ?? []);
+  get keyColumnSet(): Set<ColumnName> {
+    return this.getMemoizedKeyColumnSet(this.inputTable?.keys);
+  }
+
+  getMemoizedFrontColumns = memoize(
+    (layoutHintsFrontColumns: ColumnName[] | undefined) =>
+      layoutHintsFrontColumns ?? EMPTY_ARRAY
+  );
+
+  get frontColumns(): readonly ColumnName[] {
+    return this.getMemoizedFrontColumns(
+      this.layoutHints?.frontColumns ?? undefined
+    );
   }
 
   getMemoizedBackColumns = memoize(
     (layoutHintsBackColumns: ColumnName[] | undefined) =>
-      layoutHintsBackColumns ?? []
+      layoutHintsBackColumns ?? EMPTY_ARRAY
   );
 
-  get backColumns(): ColumnName[] {
+  get backColumns(): readonly ColumnName[] {
     return this.getMemoizedBackColumns(
       this.layoutHints?.backColumns ?? undefined
     );
@@ -102,10 +114,11 @@ class IrisGridTableModel
     (
       layoutHintsFrozenColumns?: ColumnName[],
       userFrozenColumns?: ColumnName[]
-    ): ColumnName[] => userFrozenColumns ?? layoutHintsFrozenColumns ?? []
+    ): readonly ColumnName[] =>
+      userFrozenColumns ?? layoutHintsFrozenColumns ?? EMPTY_ARRAY
   );
 
-  get frozenColumns(): ColumnName[] {
+  get frozenColumns(): readonly ColumnName[] {
     return this.getMemoizedFrozenColumns(
       this.layoutHints?.frozenColumns ?? undefined,
       this.userFrozenColumns
@@ -327,7 +340,7 @@ class IrisGridTableModel
 
     assertNotNull(this.inputTable);
     const { keyColumns } = this.inputTable;
-    if (keyColumns.length === 0) {
+    if (this.keyColumnSet.size === 0) {
       throw new Error('No key columns to allow deletion');
     }
 

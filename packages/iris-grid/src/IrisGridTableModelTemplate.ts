@@ -458,10 +458,7 @@ class IrisGridTableModelTemplate<
   }
 
   get isDeletable(): boolean {
-    if (this.inputTable !== null) {
-      return this.inputTable?.keyColumns.length > 0;
-    }
-    return false;
+    return this.keyColumnSet.size > 0;
   }
 
   get isViewportPending(): boolean {
@@ -1625,7 +1622,7 @@ class IrisGridTableModelTemplate<
   }
 
   isKeyColumn(x: ModelIndex): boolean {
-    return x < (this.inputTable?.keyColumns.length ?? 0);
+    return this.keyColumnSet.has(this.columns[x].name);
   }
 
   isRowMovable(): boolean {
@@ -1644,13 +1641,22 @@ class IrisGridTableModelTemplate<
     // Pending rows are always editable
     const isPendingRange =
       this.isPendingRow(range.startRow) && this.isPendingRow(range.endRow);
+
+    let isKeyColumnInRange = false;
+    // Check if any of the columns in grid range are key columns
+    for (
+      let column = range.startColumn;
+      column <= range.endColumn;
+      column += 1
+    ) {
+      if (this.isKeyColumn(column)) {
+        isKeyColumnInRange = true;
+        break;
+      }
+    }
+
     if (
-      !(
-        isPendingRange ||
-        (this.inputTable.keyColumns.length !== 0 &&
-          range.startColumn >= this.inputTable.keyColumns.length &&
-          range.endColumn >= this.inputTable.keyColumns.length)
-      )
+      !(isPendingRange || (this.keyColumnSet.size !== 0 && !isKeyColumnInRange))
     ) {
       return false;
     }
