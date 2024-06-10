@@ -12,7 +12,7 @@ export { default as Checkbox } from './Checkbox';
 export { default as ComboBox } from './ComboBox';
 export { default as CopyButton } from './CopyButton';
 export { default as CustomTimeSelect } from './CustomTimeSelect';
-export { default as DateTimeInput } from './DateTimeInput';
+export * from './DateTimeInput';
 export { default as DateInput } from './DateInput';
 export { default as DebouncedSearchInput } from './DebouncedSearchInput';
 export * from './dialogs';
