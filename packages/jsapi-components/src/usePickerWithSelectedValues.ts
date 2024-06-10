@@ -10,8 +10,8 @@ import {
   useDebouncedValue,
   usePromiseFactory,
 } from '@deephaven/react-hooks';
+import { useComboBoxItemScale } from '@deephaven/components';
 import {
-  COMBO_BOX_ITEM_HEIGHT,
   KeyedItem,
   SEARCH_DEBOUNCE_MS,
   SelectionT,
@@ -62,6 +62,8 @@ export function usePickerWithSelectedValues<TItem, TValue>({
   filterConditionFactories?: FilterConditionFactory[];
   trimSearchText?: boolean;
 }): UsePickerWithSelectedValuesResult<TItem, TValue> {
+  const { itemHeight } = useComboBoxItemScale();
+
   const tableUtils = useTableUtils();
 
   // `searchText` should always be up to date for controlled search input.
@@ -141,7 +143,7 @@ export function usePickerWithSelectedValues<TItem, TValue>({
 
   const list = useViewportData<TItem, dh.Table>({
     table: listTable,
-    itemHeight: COMBO_BOX_ITEM_HEIGHT,
+    itemHeight,
     viewportSize: VIEWPORT_SIZE,
     viewportPadding: VIEWPORT_PADDING,
   });

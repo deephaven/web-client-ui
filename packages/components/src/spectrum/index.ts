@@ -10,7 +10,6 @@ export * from './icons';
 export * from './layout';
 export * from './navigation';
 export * from './overlays';
-export * from './pickers';
 export * from './shared';
 export * from './status';
 
@@ -19,6 +18,7 @@ export * from './status';
  */
 export * from './ActionMenu';
 export * from './ActionGroup';
+export * from './comboBox';
 export * from './ListActionGroup';
 export * from './ListActionMenu';
 export * from './listView';

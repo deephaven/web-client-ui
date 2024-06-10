@@ -14,6 +14,7 @@ import {
   UISwitch,
   Select,
   Option,
+  Item,
 } from '@deephaven/components';
 import SampleSection from './SampleSection';
 
@@ -32,6 +33,10 @@ const EXAMPLES = [
   { title: 'Title 11', value: 'Value 11' },
   { title: 'Title 12', value: 'Value 12' },
 ];
+
+const items = EXAMPLES.map(({ title, value }) => (
+  <Item key={value}>{title}</Item>
+));
 
 const TIMEOUTS = [
   { title: '1 minute', value: 1 * 60 * 1000 },
@@ -283,20 +288,13 @@ function Inputs(): React.ReactElement {
           <div className="form-group">
             <h5>Input with Select</h5>
             <div className="input-group">
-              <ComboBox
-                options={EXAMPLES}
-                inputPlaceholder="10.128.0.8"
-                searchPlaceholder="Search actions here"
-              />
+              <ComboBox description="Search actions here">{items}</ComboBox>
             </div>
             <br />
             <div className="input-group">
-              <ComboBox
-                options={EXAMPLES}
-                inputPlaceholder="10.128.0.8"
-                searchPlaceholder="Search actions here"
-                disabled
-              />
+              <ComboBox description="Search actions here" isDisabled>
+                {items}
+              </ComboBox>
             </div>
           </div>
 

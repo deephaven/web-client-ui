@@ -4,7 +4,6 @@ import {
   ActionButton,
   Button,
   Checkbox,
-  ComboBox,
   Flex,
   Grid,
   Icon,
@@ -16,7 +15,6 @@ import {
 import {
   Button as BootstrapButtonOld,
   Checkbox as CheckboxOld,
-  ComboBox as ComboBoxOld,
   Select,
   View,
   Text,
@@ -36,12 +34,6 @@ const buttons: [BootstrapLevel, SpectrumButtonProps['variant']][] = [
   ['primary', 'accent'],
   ['secondary', 'primary'],
   ['danger', 'negative'],
-];
-
-const options = [
-  { title: 'One', value: '1' },
-  { title: 'Two', value: '2' },
-  { title: 'Three', value: '3' },
 ];
 
 export function SpectrumComparison(): JSX.Element {
@@ -154,31 +146,6 @@ export function SpectrumComparison(): JSX.Element {
           <Grid gap={20} columns="repeat(2, 192px)" autoRows="40x">
             <label>Bootstrap</label>
             <label>Spectrum</label>
-
-            {[false, true].map(isDisabled => (
-              <Fragment key={String(isDisabled)}>
-                <div>
-                  <label className="input-label">
-                    {isDisabled ? 'Disabled ' : ''}Combobox
-                  </label>
-                  <ComboBoxOld
-                    disabled={isDisabled}
-                    options={options}
-                    defaultValue="One"
-                  />
-                </div>
-
-                <ComboBox
-                  isDisabled={isDisabled}
-                  label={isDisabled ? 'Disabled Combobox' : 'Combobox'}
-                  inputValue="One"
-                >
-                  <Item key="1">One</Item>
-                  <Item key="2">Two</Item>
-                  <Item key="3">Three</Item>
-                </ComboBox>
-              </Fragment>
-            ))}
 
             {[false, true].map(isDisabled => (
               <Fragment key={String(isDisabled)}>

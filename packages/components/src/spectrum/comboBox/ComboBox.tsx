@@ -1,29 +1,29 @@
 import { useMemo } from 'react';
-import type { DOMRef } from '@react-types/shared';
-import { Picker as SpectrumPicker } from '@adobe/react-spectrum';
 import cl from 'classnames';
 import {
+  ComboBox as SpectrumComboBox,
+  SpectrumComboBoxProps,
+} from '@adobe/react-spectrum';
+import {
+  COMBO_BOX_TOP_OFFSET,
   EMPTY_FUNCTION,
   ensureArray,
-  PICKER_ITEM_HEIGHTS,
-  PICKER_TOP_OFFSET,
 } from '@deephaven/utils';
+import { FocusableRef } from '@react-types/shared';
+import { usePickerScrollOnOpen } from '../picker';
 import {
-  NormalizedSpectrumPickerProps,
-  ItemOrSection,
   ItemKey,
+  ItemOrSection,
+  NormalizedItem,
   normalizeTooltipOptions,
   TooltipOptions,
-} from '../utils/itemUtils';
-import { wrapItemChildren } from '../utils/itemWrapperUtils';
-import usePickerScrollOnOpen from './usePickerScrollOnOpen';
-import { useSpectrumThemeProvider } from '../../theme';
-import {
   useOnChangeTrackUncontrolled,
   useStaticItemInitialScrollPosition,
+  wrapItemChildren,
 } from '../utils';
+import { useComboBoxItemScale } from './useComboBoxItemScale';
 
-export type PickerProps = {
+export type ComboBoxProps = {
   children: ItemOrSection | ItemOrSection[];
 
   /** Can be set to true or a TooltipOptions to enable item tooltips */
@@ -41,7 +41,7 @@ export type PickerProps = {
    * `onSelectionChange`. We are renaming for better consistency with other
    * components.
    */
-  onChange?: (key: ItemKey) => void;
+  onChange?: (key: ItemKey | null) => void;
 
   /** Handler that is called when the picker is scrolled. */
   onScroll?: (event: Event) => void;
@@ -50,14 +50,9 @@ export type PickerProps = {
    * Handler that is called when the selection changes.
    * @deprecated Use `onChange` instead
    */
-  onSelectionChange?: (key: ItemKey) => void;
-} /*
- * Support remaining SpectrumPickerProps.
- * Note that `selectedKey`, `defaultSelectedKey`, and `onSelectionChange` are
- * re-defined above to account for boolean types which aren't included in the
- * React `Key` type, but are actually supported by the Spectrum Picker component.
- */ & Omit<
-  NormalizedSpectrumPickerProps,
+  onSelectionChange?: (key: ItemKey | null) => void;
+} & Omit<
+  SpectrumComboBoxProps<NormalizedItem>,
   | 'children'
   | 'items'
   | 'onSelectionChange'
@@ -65,14 +60,7 @@ export type PickerProps = {
   | 'defaultSelectedKey'
 >;
 
-/**
- * Picker component for selecting items from a list of items. Items can be
- * provided via the `children` prop. Each item can be a string,	number, boolean,
- * or a Spectrum <Item> element. The remaining props are just	pass through props
- * for the Spectrum Picker component.
- * See https://react-spectrum.adobe.com/react-spectrum/Picker.html
- */
-export function Picker({
+export function ComboBox({
   children,
   tooltip = true,
   defaultSelectedKey,
@@ -83,10 +71,9 @@ export function Picker({
   onSelectionChange,
   // eslint-disable-next-line camelcase
   UNSAFE_className,
-  ...spectrumPickerProps
-}: PickerProps): JSX.Element {
-  const { scale } = useSpectrumThemeProvider();
-  const itemHeight = PICKER_ITEM_HEIGHTS[scale];
+  ...spectrumComboBoxProps
+}: ComboBoxProps): JSX.Element {
+  const { itemHeight } = useComboBoxItemScale();
 
   const tooltipOptions = useMemo(
     () => normalizeTooltipOptions(tooltip),
@@ -109,7 +96,7 @@ export function Picker({
     itemHeight,
     items: wrappedItems,
     selectedKey: selectedKeyMaybeUncontrolled,
-    topOffset: PICKER_TOP_OFFSET,
+    topOffset: COMBO_BOX_TOP_OFFSET,
   });
 
   const { ref: scrollRef, onOpenChange: onOpenChangeInternal } =
@@ -120,21 +107,21 @@ export function Picker({
     });
 
   return (
-    <SpectrumPicker
+    <SpectrumComboBox
       // eslint-disable-next-line react/jsx-props-no-spreading
-      {...spectrumPickerProps}
-      ref={scrollRef as DOMRef<HTMLDivElement>}
-      UNSAFE_className={cl('dh-picker', UNSAFE_className)}
-      selectedKey={selectedKey as NormalizedSpectrumPickerProps['selectedKey']}
+      {...spectrumComboBoxProps}
+      ref={scrollRef as FocusableRef<HTMLDivElement>}
+      UNSAFE_className={cl('dh-combobox', UNSAFE_className)}
+      selectedKey={
+        selectedKey as SpectrumComboBoxProps<NormalizedItem>['selectedKey']
+      }
       defaultSelectedKey={
-        defaultSelectedKey as NormalizedSpectrumPickerProps['defaultSelectedKey']
+        defaultSelectedKey as SpectrumComboBoxProps<NormalizedItem>['defaultSelectedKey']
       }
       onSelectionChange={onChangeMaybeUncontrolled}
       onOpenChange={onOpenChangeInternal}
     >
       {wrappedItems}
-    </SpectrumPicker>
+    </SpectrumComboBox>
   );
 }
-
-export default Picker;
