@@ -1431,7 +1431,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   );
 
   getCachedRenderer = memoize(
-    (rendererProp?: IrisGridRenderer) => rendererProp ?? new IrisGridRenderer()
+    (rendererProp?: IrisGridRenderer) => rendererProp ?? new IrisGridRenderer(),
+    { max: 1 }
   );
 
   get renderer(): IrisGridRenderer {
