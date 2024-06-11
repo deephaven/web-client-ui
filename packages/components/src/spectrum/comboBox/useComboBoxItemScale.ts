@@ -3,7 +3,7 @@ import { useSpectrumThemeProvider } from '../../theme';
 
 /**
  * Get ComboBox Item height for current scale.
- * @returns
+ * @returns ComboBox Item height
  */
 export function useComboBoxItemScale(): { itemHeight: number } {
   const { scale } = useSpectrumThemeProvider();

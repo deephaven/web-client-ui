@@ -5,7 +5,6 @@ import cl from 'classnames';
 import {
   EMPTY_FUNCTION,
   ensureArray,
-  PICKER_ITEM_HEIGHTS,
   PICKER_TOP_OFFSET,
 } from '@deephaven/utils';
 import {
@@ -17,11 +16,11 @@ import {
 } from '../utils/itemUtils';
 import { wrapItemChildren } from '../utils/itemWrapperUtils';
 import usePickerScrollOnOpen from './usePickerScrollOnOpen';
-import { useSpectrumThemeProvider } from '../../theme';
 import {
   useOnChangeTrackUncontrolled,
   useStaticItemInitialScrollPosition,
 } from '../utils';
+import usePickerItemScale from './usePickerItemScale';
 
 export type PickerProps = {
   children: ItemOrSection | ItemOrSection[];
@@ -85,8 +84,7 @@ export function Picker({
   UNSAFE_className,
   ...spectrumPickerProps
 }: PickerProps): JSX.Element {
-  const { scale } = useSpectrumThemeProvider();
-  const itemHeight = PICKER_ITEM_HEIGHTS[scale];
+  const { itemHeight } = usePickerItemScale();
 
   const tooltipOptions = useMemo(
     () => normalizeTooltipOptions(tooltip),
