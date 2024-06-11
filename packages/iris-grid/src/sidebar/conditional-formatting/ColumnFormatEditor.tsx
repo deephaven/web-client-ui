@@ -122,6 +122,7 @@ function ColumnFormatEditor(props: ColumnFormatEditorProps): JSX.Element {
       <div className="mb-2">
         <label className="mb-0">Format Cell If</label>
         <ComboBox
+          aria-label="Select column to format"
           defaultSelectedKey={selectedColumn?.name}
           onChange={handleColumnChange}
         >

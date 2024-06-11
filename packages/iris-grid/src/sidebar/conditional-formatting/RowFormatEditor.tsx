@@ -115,6 +115,7 @@ function RowFormatEditor(props: RowFormatEditorProps): JSX.Element {
       <div className="mb-2">
         <label className="mb-0">Format Row If</label>
         <ComboBox
+          aria-label="Select column to format row by"
           defaultSelectedKey={selectedColumn?.name}
           onChange={handleColumnChange}
         >
