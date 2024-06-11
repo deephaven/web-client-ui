@@ -12,6 +12,11 @@ export interface UseOnChangeTrackUncontrolledResult<TChangeKey> {
   onChangeMaybeUncontrolled: (key: TChangeKey) => void;
 }
 
+/**
+ * Returns a selectedKey and onChange handler that can manage selection for both
+ * controlled and uncontrolled components. Useful for cases where the component
+ * needs to know the last selectedKey regardless of controlled or uncontrolled.
+ */
 export function useOnChangeTrackUncontrolled<TChangeKey>({
   defaultSelectedKey,
   selectedKey,
@@ -27,7 +32,6 @@ export function useOnChangeTrackUncontrolled<TChangeKey>({
   const onChangeMaybeUncontrolled = useCallback(
     (key: TChangeKey): void => {
       // If our component is uncontrolled, track the selected key internally
-      // so that we can scroll to the selected item if the user re-opens
       if (isUncontrolled) {
         setUncontrolledSelectedKey(key);
       }
@@ -38,11 +42,9 @@ export function useOnChangeTrackUncontrolled<TChangeKey>({
   );
 
   return {
-    // isUncontrolled,
     selectedKeyMaybeUncontrolled: isUncontrolled
       ? uncontrolledSelectedKey
       : selectedKey,
-    // uncontrolledSelectedKey,
     onChangeMaybeUncontrolled,
   };
 }
