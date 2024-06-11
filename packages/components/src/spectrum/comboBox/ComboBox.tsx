@@ -5,12 +5,12 @@ import {
   SpectrumComboBoxProps,
 } from '@adobe/react-spectrum';
 import {
-  COMBO_BOX_TOP_OFFSET,
   EMPTY_FUNCTION,
+  PICKER_TOP_OFFSET,
   ensureArray,
 } from '@deephaven/utils';
 import { FocusableRef } from '@react-types/shared';
-import { usePickerScrollOnOpen } from '../picker';
+import { usePickerItemScale, usePickerScrollOnOpen } from '../picker';
 import {
   ItemKey,
   ItemOrSection,
@@ -21,7 +21,6 @@ import {
   useStaticItemInitialScrollPosition,
   wrapItemChildren,
 } from '../utils';
-import { useComboBoxItemScale } from './useComboBoxItemScale';
 
 export type ComboBoxProps = {
   children: ItemOrSection | ItemOrSection[];
@@ -78,7 +77,7 @@ export function ComboBox({
   UNSAFE_className,
   ...spectrumComboBoxProps
 }: ComboBoxProps): JSX.Element {
-  const { itemHeight } = useComboBoxItemScale();
+  const { itemHeight } = usePickerItemScale();
 
   const tooltipOptions = useMemo(
     () => normalizeTooltipOptions(tooltip),
@@ -101,7 +100,7 @@ export function ComboBox({
     itemHeight,
     items: wrappedItems,
     selectedKey: selectedKeyMaybeUncontrolled,
-    topOffset: COMBO_BOX_TOP_OFFSET,
+    topOffset: PICKER_TOP_OFFSET,
   });
 
   const { ref: scrollRef, onOpenChange: onOpenChangeInternal } =
