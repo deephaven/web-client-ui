@@ -1,13 +1,17 @@
 import { useCallback, useState } from 'react';
 import { ItemKey } from './itemUtils';
 
-export interface UseOnChangeTrackUncontrolledOptions<TChangeKey> {
+export interface UseOnChangeTrackUncontrolledOptions<
+  TChangeKey extends ItemKey | null,
+> {
   defaultSelectedKey?: ItemKey;
   selectedKey?: ItemKey | null;
   onChange?: (key: TChangeKey) => void;
 }
 
-export interface UseOnChangeTrackUncontrolledResult<TChangeKey> {
+export interface UseOnChangeTrackUncontrolledResult<
+  TChangeKey extends ItemKey | null,
+> {
   selectedKeyMaybeUncontrolled?: TChangeKey | ItemKey | null;
   onChangeMaybeUncontrolled: (key: TChangeKey) => void;
 }
@@ -18,7 +22,9 @@ export interface UseOnChangeTrackUncontrolledResult<TChangeKey> {
  * component needs to always track its selection state regardless of its
  * controlled / uncontrolled status.
  */
-export function useOnChangeTrackUncontrolled<TChangeKey>({
+export function useOnChangeTrackUncontrolled<
+  TChangeKey extends ItemKey | null,
+>({
   defaultSelectedKey,
   selectedKey,
   onChange: onChangeHandler,
