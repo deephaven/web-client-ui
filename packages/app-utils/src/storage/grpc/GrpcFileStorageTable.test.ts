@@ -1,20 +1,22 @@
 import { FileUtils } from '@deephaven/file-explorer';
-import type { ItemDetails, StorageService } from '@deephaven/jsapi-types';
+import type { dh } from '@deephaven/jsapi-types';
 import GrpcFileStorageTable from './GrpcFileStorageTable';
 
-let storageService: StorageService;
+let storageService: dh.storage.StorageService;
 function makeTable(baseRoot = '', root = ''): GrpcFileStorageTable {
   return new GrpcFileStorageTable(storageService, baseRoot, root);
 }
 
-function makeStorageService(): StorageService {
+function makeStorageService(): dh.storage.StorageService {
   return {
     listItems: jest.fn(async () => []),
     loadFile: jest.fn(async () => {
       throw new Error('No file loaded');
     }),
     deleteItem: jest.fn(async () => undefined),
-    saveFile: jest.fn(async () => undefined),
+    saveFile: jest.fn(
+      async () => undefined as unknown as dh.storage.FileContents
+    ),
     moveItem: jest.fn(async () => undefined),
     createDirectory: jest.fn(async () => undefined),
   };
@@ -38,7 +40,7 @@ it('Does not get contents until a viewport is set', () => {
 });
 
 describe('directory expansion tests', () => {
-  function makeFile(name: string, path = ''): ItemDetails {
+  function makeFile(name: string, path = ''): dh.storage.ItemDetails {
     return {
       basename: name,
       filename: `${path}/${name}`,
@@ -49,7 +51,7 @@ describe('directory expansion tests', () => {
     };
   }
 
-  function makeDirectory(name: string, path = ''): ItemDetails {
+  function makeDirectory(name: string, path = ''): dh.storage.ItemDetails {
     const file = makeFile(name, path);
     file.type = 'directory';
     return file;
@@ -59,8 +61,8 @@ describe('directory expansion tests', () => {
     path = '/',
     numDirs = 3,
     numFiles = 2
-  ): Array<ItemDetails> {
-    const results = [] as ItemDetails[];
+  ): Array<dh.storage.ItemDetails> {
+    const results = [] as dh.storage.ItemDetails[];
 
     for (let i = 0; i < numDirs; i += 1) {
       const name = `dir${i}`;
@@ -75,7 +77,7 @@ describe('directory expansion tests', () => {
     return results;
   }
 
-  function expectItem(itemDetails: ItemDetails) {
+  function expectItem(itemDetails: dh.storage.ItemDetails) {
     return expect.objectContaining({
       basename: itemDetails.basename,
       filename: itemDetails.filename,

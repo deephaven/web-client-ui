@@ -1,4 +1,4 @@
-import LayoutStorage from '../storage/LayoutStorage';
+import LayoutStorage from '../../../app-utils/src/storage/LayoutStorage';
 import { SET_LAYOUT_STORAGE } from './actionTypes';
 
 // eslint-disable-next-line import/prefer-default-export

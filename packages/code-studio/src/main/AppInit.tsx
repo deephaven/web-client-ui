@@ -1,115 +1,56 @@
 import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   LoadingOverlay,
   Shortcut,
   ShortcutRegistry,
 } from '@deephaven/components';
+import { DEFAULT_DASHBOARD_ID, setDashboardData } from '@deephaven/dashboard';
 import {
-  DEFAULT_DASHBOARD_ID,
-  setDashboardData as setDashboardDataAction,
-} from '@deephaven/dashboard';
-import {
-  setDashboardConnection as setDashboardConnectionAction,
-  setDashboardSessionWrapper as setDashboardSessionWrapperAction,
+  setDashboardConnection,
+  setDashboardSessionWrapper,
   ToolType,
 } from '@deephaven/dashboard-core-plugins';
-import { FileStorage } from '@deephaven/file-explorer';
 import { useApi, useClient } from '@deephaven/jsapi-bootstrap';
-import type { dh as DhType } from '@deephaven/jsapi-types';
-import {
-  getSessionDetails,
-  loadSessionWrapper,
-  SessionWrapper,
-} from '@deephaven/jsapi-utils';
+import { getSessionDetails, loadSessionWrapper } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { PouchCommandHistoryStorage } from '@deephaven/pouch-storage';
 import {
   getWorkspace,
-  getWorkspaceStorage,
   RootState,
-  setActiveTool as setActiveToolAction,
-  setApi as setApiAction,
-  setCommandHistoryStorage as setCommandHistoryStorageAction,
-  setFileStorage as setFileStorageAction,
-  setPlugins as setPluginsAction,
-  setUser as setUserAction,
-  setWorkspace as setWorkspaceAction,
-  setDefaultWorkspaceSettings as setDefaultWorkspaceSettingsAction,
-  setWorkspaceStorage as setWorkspaceStorageAction,
-  setServerConfigValues as setServerConfigValuesAction,
-  User,
-  WorkspaceStorage,
-  ServerConfigValues,
-  WorkspaceSettings,
-  CustomizableWorkspace,
+  setActiveTool,
+  setApi,
+  setCommandHistoryStorage,
+  setFileStorage,
+  setPlugins,
+  setWorkspace,
+  setDefaultWorkspaceSettings,
+  setWorkspaceStorage,
 } from '@deephaven/redux';
-import { useConnection, useServerConfig, useUser } from '@deephaven/app-utils';
-import { type PluginModuleMap, usePlugins } from '@deephaven/plugin';
-import { setLayoutStorage as setLayoutStorageAction } from '../redux/actions';
+import {
+  LocalWorkspaceStorage,
+  GrpcFileStorage,
+  GrpcLayoutStorage,
+  useConnection,
+  useServerConfig,
+} from '@deephaven/app-utils';
+import { usePlugins } from '@deephaven/plugin';
+import { setLayoutStorage } from '../redux/actions';
 import App from './App';
-import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
-import LayoutStorage from '../storage/LayoutStorage';
-import GrpcLayoutStorage from '../storage/grpc/GrpcLayoutStorage';
-import GrpcFileStorage from '../storage/grpc/GrpcFileStorage';
 
 const log = Log.module('AppInit');
-
-interface AppInitProps {
-  workspace: CustomizableWorkspace;
-  workspaceStorage: WorkspaceStorage;
-
-  setActiveTool: (type: (typeof ToolType)[keyof typeof ToolType]) => void;
-  setApi: (api: typeof DhType) => void;
-  setCommandHistoryStorage: (storage: PouchCommandHistoryStorage) => void;
-  setDashboardData: (
-    id: string,
-    dashboardData: Record<string, unknown>
-  ) => void;
-  setFileStorage: (fileStorage: FileStorage) => void;
-  setLayoutStorage: (layoutStorage: LayoutStorage) => void;
-  setDashboardConnection: (
-    id: string,
-    connection: DhType.IdeConnection
-  ) => void;
-  setDashboardSessionWrapper: (id: string, wrapper: SessionWrapper) => void;
-  setPlugins: (map: PluginModuleMap) => void;
-  setUser: (user: User) => void;
-  setWorkspace: (workspace: CustomizableWorkspace) => void;
-  setDefaultWorkspaceSettings: (settings: WorkspaceSettings) => void;
-  setWorkspaceStorage: (workspaceStorage: WorkspaceStorage) => void;
-  setServerConfigValues: (config: ServerConfigValues) => void;
-}
 
 /**
  * Component that sets some default values needed
  */
-function AppInit(props: AppInitProps): JSX.Element {
-  const {
-    workspace,
-    setActiveTool,
-    setApi,
-    setCommandHistoryStorage,
-    setDashboardData,
-    setFileStorage,
-    setLayoutStorage,
-    setDashboardConnection,
-    setDashboardSessionWrapper,
-    setPlugins,
-    setUser,
-    setWorkspace,
-    setWorkspaceStorage,
-    setDefaultWorkspaceSettings,
-    setServerConfigValues,
-  } = props;
-
+function AppInit(): JSX.Element {
   const api = useApi();
   const client = useClient();
   const connection = useConnection();
   const plugins = usePlugins();
   const serverConfig = useServerConfig();
-  const user = useUser();
+  const workspace = useSelector<RootState>(getWorkspace);
+  const dispatch = useDispatch();
 
   // General error means the app is dead and is unlikely to recover
   const [error, setError] = useState<unknown>();
@@ -118,7 +59,7 @@ function AppInit(props: AppInitProps): JSX.Element {
     function setReduxPlugins() {
       setPlugins(plugins);
     },
-    [plugins, setPlugins]
+    [plugins]
   );
 
   useEffect(
@@ -138,6 +79,7 @@ function AppInit(props: AppInitProps): JSX.Element {
             import.meta.env.VITE_STORAGE_PATH_LAYOUTS ?? ''
           );
           const fileStorage = new GrpcFileStorage(
+            api,
             storageService,
             import.meta.env.VITE_STORAGE_PATH_NOTEBOOKS ?? ''
           );
@@ -171,22 +113,24 @@ function AppInit(props: AppInitProps): JSX.Element {
             links: data.links,
           };
 
-          setApi(api);
-          setActiveTool(ToolType.DEFAULT);
-          setServerConfigValues(serverConfig);
-          setCommandHistoryStorage(commandHistoryStorage);
-          setDashboardData(DEFAULT_DASHBOARD_ID, dashboardData);
-          setFileStorage(fileStorage);
-          setLayoutStorage(layoutStorage);
-          setDashboardConnection(DEFAULT_DASHBOARD_ID, connection);
+          dispatch(setApi(api));
+          dispatch(setActiveTool(ToolType.DEFAULT));
+          dispatch(setCommandHistoryStorage(commandHistoryStorage));
+          dispatch(setDashboardData(DEFAULT_DASHBOARD_ID, dashboardData));
+          dispatch(setFileStorage(fileStorage));
+          dispatch(setLayoutStorage(layoutStorage));
+          dispatch(setDashboardConnection(DEFAULT_DASHBOARD_ID, connection));
           if (sessionWrapper !== undefined) {
-            setDashboardSessionWrapper(DEFAULT_DASHBOARD_ID, sessionWrapper);
+            dispatch(
+              setDashboardSessionWrapper(DEFAULT_DASHBOARD_ID, sessionWrapper)
+            );
           }
-          setUser(user);
-          setWorkspaceStorage(workspaceStorage);
-          setWorkspace(loadedWorkspace);
-          setDefaultWorkspaceSettings(
-            LocalWorkspaceStorage.makeDefaultWorkspaceSettings(serverConfig)
+          dispatch(setWorkspaceStorage(workspaceStorage));
+          dispatch(setWorkspace(loadedWorkspace));
+          dispatch(
+            setDefaultWorkspaceSettings(
+              LocalWorkspaceStorage.makeDefaultWorkspaceSettings(serverConfig)
+            )
           );
         } catch (e) {
           log.error(e);
@@ -195,26 +139,7 @@ function AppInit(props: AppInitProps): JSX.Element {
       }
       loadApp();
     },
-    [
-      api,
-      client,
-      connection,
-      serverConfig,
-      setActiveTool,
-      setApi,
-      setCommandHistoryStorage,
-      setDashboardData,
-      setFileStorage,
-      setLayoutStorage,
-      setDashboardConnection,
-      setDashboardSessionWrapper,
-      setUser,
-      setWorkspace,
-      setDefaultWorkspaceSettings,
-      setWorkspaceStorage,
-      setServerConfigValues,
-      user,
-    ]
+    [api, client, connection, serverConfig, dispatch]
   );
 
   const isLoading = workspace == null && error == null;
@@ -233,51 +158,4 @@ function AppInit(props: AppInitProps): JSX.Element {
   );
 }
 
-AppInit.propTypes = {
-  workspace: PropTypes.shape({}),
-  workspaceStorage: PropTypes.shape({ close: PropTypes.func }),
-
-  setActiveTool: PropTypes.func.isRequired,
-  setApi: PropTypes.func.isRequired,
-  setCommandHistoryStorage: PropTypes.func.isRequired,
-  setDashboardData: PropTypes.func.isRequired,
-  setFileStorage: PropTypes.func.isRequired,
-  setLayoutStorage: PropTypes.func.isRequired,
-  setDashboardConnection: PropTypes.func.isRequired,
-  setDashboardSessionWrapper: PropTypes.func.isRequired,
-  setPlugins: PropTypes.func.isRequired,
-  setUser: PropTypes.func.isRequired,
-  setWorkspace: PropTypes.func.isRequired,
-  setWorkspaceStorage: PropTypes.func.isRequired,
-};
-
-AppInit.defaultProps = {
-  workspace: null,
-  workspaceStorage: null,
-};
-
-const mapStateToProps = (
-  state: RootState
-): Pick<AppInitProps, 'workspace' | 'workspaceStorage'> => ({
-  workspace: getWorkspace(state),
-  workspaceStorage: getWorkspaceStorage(state),
-});
-
-const ConnectedAppInit = connect(mapStateToProps, {
-  setActiveTool: setActiveToolAction,
-  setApi: setApiAction,
-  setCommandHistoryStorage: setCommandHistoryStorageAction,
-  setDashboardData: setDashboardDataAction,
-  setFileStorage: setFileStorageAction,
-  setLayoutStorage: setLayoutStorageAction,
-  setDashboardConnection: setDashboardConnectionAction,
-  setDashboardSessionWrapper: setDashboardSessionWrapperAction,
-  setPlugins: setPluginsAction,
-  setUser: setUserAction,
-  setWorkspace: setWorkspaceAction,
-  setDefaultWorkspaceSettings: setDefaultWorkspaceSettingsAction,
-  setWorkspaceStorage: setWorkspaceStorageAction,
-  setServerConfigValues: setServerConfigValuesAction,
-})(AppInit);
-
-export default ConnectedAppInit;
+export default AppInit;
