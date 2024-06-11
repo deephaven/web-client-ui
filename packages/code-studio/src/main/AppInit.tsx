@@ -26,6 +26,8 @@ import {
   setWorkspace,
   setDefaultWorkspaceSettings,
   setWorkspaceStorage,
+  setServerConfigValues,
+  setUser,
 } from '@deephaven/redux';
 import {
   LocalWorkspaceStorage,
@@ -33,6 +35,7 @@ import {
   GrpcLayoutStorage,
   useConnection,
   useServerConfig,
+  useUser,
 } from '@deephaven/app-utils';
 import { usePlugins } from '@deephaven/plugin';
 import { setLayoutStorage } from '../redux/actions';
@@ -49,6 +52,7 @@ function AppInit(): JSX.Element {
   const connection = useConnection();
   const plugins = usePlugins();
   const serverConfig = useServerConfig();
+  const user = useUser();
   const workspace = useSelector<RootState>(getWorkspace);
   const dispatch = useDispatch();
 
@@ -115,6 +119,7 @@ function AppInit(): JSX.Element {
 
           dispatch(setApi(api));
           dispatch(setActiveTool(ToolType.DEFAULT));
+          dispatch(setServerConfigValues(serverConfig));
           dispatch(setCommandHistoryStorage(commandHistoryStorage));
           dispatch(setDashboardData(DEFAULT_DASHBOARD_ID, dashboardData));
           dispatch(setFileStorage(fileStorage));
@@ -125,6 +130,7 @@ function AppInit(): JSX.Element {
               setDashboardSessionWrapper(DEFAULT_DASHBOARD_ID, sessionWrapper)
             );
           }
+          dispatch(setUser(user));
           dispatch(setWorkspaceStorage(workspaceStorage));
           dispatch(setWorkspace(loadedWorkspace));
           dispatch(
@@ -139,7 +145,7 @@ function AppInit(): JSX.Element {
       }
       loadApp();
     },
-    [api, client, connection, serverConfig, dispatch]
+    [api, client, connection, serverConfig, dispatch, user]
   );
 
   const isLoading = workspace == null && error == null;

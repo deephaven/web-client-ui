@@ -1,5 +1,5 @@
 import { RootState } from '@deephaven/redux';
-import LayoutStorage from '../../../app-utils/src/storage/LayoutStorage';
+import type { LayoutStorage } from '@deephaven/app-utils';
 
 /**
  * Get the layout storage used by the app

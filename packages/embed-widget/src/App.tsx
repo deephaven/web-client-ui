@@ -7,6 +7,7 @@ import {
   LocalWorkspaceStorage,
   useConnection,
   useServerConfig,
+  useUser,
 } from '@deephaven/app-utils';
 import type GoldenLayout from '@deephaven/golden-layout';
 import type { ItemConfigType } from '@deephaven/golden-layout';
@@ -43,6 +44,8 @@ import {
   setDefaultWorkspaceSettings,
   setWorkspace,
   setApi,
+  setUser,
+  setServerConfigValues,
 } from '@deephaven/redux';
 import './App.scss'; // Styles for in this app
 
@@ -73,6 +76,7 @@ function App(): JSX.Element {
   const api = useApi();
   const connection = useConnection();
   const client = useClient();
+  const user = useUser();
   const dispatch = useDispatch();
   const serverConfig = useServerConfig();
 
@@ -108,6 +112,8 @@ function App(): JSX.Element {
             ShortcutRegistry.get(id)?.setKeyState(keyState);
           });
           dispatch(setApi(api));
+          dispatch(setServerConfigValues(serverConfig));
+          dispatch(setUser(user));
           dispatch(setWorkspace(loadedWorkspace));
           dispatch(
             setDefaultWorkspaceSettings(
@@ -121,7 +127,7 @@ function App(): JSX.Element {
       }
       initRedux();
     },
-    [api, client, connection, dispatch, serverConfig]
+    [api, client, connection, dispatch, serverConfig, user]
   );
 
   useEffect(
