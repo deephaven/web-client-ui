@@ -54,6 +54,7 @@ export type ComboBoxProps = {
 } & Omit<
   SpectrumComboBoxProps<NormalizedItem>,
   | 'children'
+  | 'defaultItems'
   | 'items'
   | 'onSelectionChange'
   | 'selectedKey'
