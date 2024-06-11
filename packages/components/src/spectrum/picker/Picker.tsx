@@ -1,4 +1,5 @@
 import { Picker as SpectrumPicker } from '@adobe/react-spectrum';
+import type { DOMRef } from '@react-types/shared';
 import cl from 'classnames';
 import {
   NormalizedSpectrumPickerProps,
@@ -19,13 +20,14 @@ export function Picker({
   UNSAFE_className,
   ...props
 }: PickerProps): JSX.Element {
-  const { defaultSelectedKey, selectedKey, ...pickerProps } =
+  const { defaultSelectedKey, selectedKey, scrollRef, ...pickerProps } =
     usePickerProps(props);
 
   return (
     <SpectrumPicker
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...pickerProps}
+      ref={scrollRef as DOMRef<HTMLDivElement>}
       UNSAFE_className={cl('dh-picker', UNSAFE_className)}
       // Type assertions are necessary here since Spectrum types don't account
       // for number and boolean key values even though they are valid runtime
