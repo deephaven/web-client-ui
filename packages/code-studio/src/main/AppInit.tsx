@@ -61,9 +61,9 @@ function AppInit(): JSX.Element {
 
   useEffect(
     function setReduxPlugins() {
-      setPlugins(plugins);
+      dispatch(setPlugins(plugins));
     },
-    [plugins]
+    [plugins, dispatch]
   );
 
   useEffect(

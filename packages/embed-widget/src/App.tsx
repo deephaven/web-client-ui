@@ -81,9 +81,13 @@ function App(): JSX.Element {
   const serverConfig = useServerConfig();
 
   useEffect(
-    function initializeRedux() {
-      async function initRedux() {
+    function initializeApp() {
+      async function initApp(): Promise<void> {
         try {
+          if (name == null) {
+            throw new Error('Missing URL parameter "name"');
+          }
+
           const sessionDetails = await getSessionDetails();
           const sessionWrapper = await loadSessionWrapper(
             api,
@@ -120,23 +124,6 @@ function App(): JSX.Element {
               LocalWorkspaceStorage.makeDefaultWorkspaceSettings(serverConfig)
             )
           );
-        } catch (e) {
-          log.error(e);
-          setError('Unable to initialize.');
-        }
-      }
-      initRedux();
-    },
-    [api, client, connection, dispatch, serverConfig, user]
-  );
-
-  useEffect(
-    function initializeApp() {
-      async function initApp(): Promise<void> {
-        try {
-          if (name == null) {
-            throw new Error('Missing URL parameter "name"');
-          }
 
           log.debug(`Loading widget definition for ${name}...`);
 
@@ -152,7 +139,7 @@ function App(): JSX.Element {
       }
       initApp();
     },
-    [connection, name]
+    [api, client, connection, dispatch, name, serverConfig, user]
   );
 
   const isLoaded = definition != null && error == null;
