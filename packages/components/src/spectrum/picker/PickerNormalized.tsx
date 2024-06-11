@@ -22,7 +22,6 @@ export interface PickerNormalizedProps
   normalizedItems: (NormalizedItem | NormalizedSection)[];
   showItemIcons: boolean;
   getInitialScrollPosition?: () => Promise<number | null | undefined>;
-  onScroll?: (event: Event) => void;
 }
 
 /**
