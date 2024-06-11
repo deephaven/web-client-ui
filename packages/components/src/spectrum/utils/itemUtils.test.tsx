@@ -14,6 +14,8 @@ import {
   itemSelectionToStringSet,
   getPositionOfSelectedItemElement,
   isItemElementWithDescription,
+  getItemTextValue,
+  ITEM_EMPTY_STRING_TEXT_VALUE,
 } from './itemUtils';
 import { Item, ItemElementOrPrimitive, Section } from '../shared';
 import { Text } from '../Text';
@@ -33,6 +35,39 @@ describe('getItemKey', () => {
     (given, expected) => {
       const actual = getItemKey(given);
       expect(actual).toBe(expected);
+    }
+  );
+});
+
+describe('getItemTextValue', () => {
+  it.each([
+    [<Item key="">string</Item>, 'string'],
+    [<Item key="">{4}</Item>, '4'],
+    [<Item key="">{true}</Item>, 'true'],
+    [<Item key="">{false}</Item>, 'false'],
+    [
+      <Item key="" textValue="textValue">
+        string
+      </Item>,
+      'textValue',
+    ],
+    [
+      <Item key="" textValue="">
+        string
+      </Item>,
+      ITEM_EMPTY_STRING_TEXT_VALUE,
+    ],
+    [
+      <Item key="">
+        <span>object</span>
+      </Item>,
+      undefined,
+    ],
+  ])(
+    'should return the expected `textValue`: %s, %s',
+    (item, expectedValue) => {
+      const actual = getItemTextValue(item);
+      expect(actual).toBe(expectedValue);
     }
   );
 });

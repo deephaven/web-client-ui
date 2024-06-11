@@ -133,6 +133,24 @@ export function getItemKey<
 }
 
 /**
+ * Determine Item `textValue` based on the `textValue` prop or primitive children
+ * value.
+ * @param item The item to get the text value for
+ * @returns The text value of the item
+ */
+export function getItemTextValue<T>(item: ItemElement<T>): string | undefined {
+  if (item.props.textValue == null) {
+    return ['string', 'boolean', 'number'].includes(typeof item.props.children)
+      ? String(item.props.children)
+      : undefined;
+  }
+
+  return item.props.textValue === ''
+    ? ITEM_EMPTY_STRING_TEXT_VALUE
+    : item.props.textValue;
+}
+
+/**
  * Get the position of the item with the given selected key in a list of items.
  * @param items The items to search
  * @param itemHeight The height of each item
