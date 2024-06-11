@@ -13,9 +13,10 @@ export interface UseOnChangeTrackUncontrolledResult<TChangeKey> {
 }
 
 /**
- * Returns a selectedKey and onChange handler that can manage selection for both
- * controlled and uncontrolled components. Useful for cases where the component
- * needs to know the last selectedKey regardless of controlled or uncontrolled.
+ * Returns a selectedKey and onChange handler that can manage selection state
+ * for both controlled and uncontrolled components. Useful for cases where a
+ * component needs to always track its selection state regardless of its
+ * controlled / uncontrolled status.
  */
 export function useOnChangeTrackUncontrolled<TChangeKey>({
   defaultSelectedKey,
