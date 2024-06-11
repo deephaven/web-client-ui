@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 import type { dh as DhType } from '@deephaven/jsapi-types';
-import { useComboBoxItemScale } from '@deephaven/components';
+import { usePickerItemScale } from '@deephaven/components';
 import {
   createSearchTextFilter,
   createSelectedValuesFilter,
@@ -24,7 +24,7 @@ jest.mock('./useViewportData');
 jest.mock('./useViewportFilter');
 jest.mock('@deephaven/components', () => ({
   ...jest.requireActual('@deephaven/components'),
-  useComboBoxItemScale: jest.fn(),
+  usePickerItemScale: jest.fn(),
 }));
 jest.mock('@deephaven/jsapi-utils', () => ({
   ...jest.requireActual('@deephaven/jsapi-utils'),
@@ -113,11 +113,9 @@ async function renderOnceAndWait(
 beforeEach(() => {
   jest.clearAllMocks();
 
-  asMock(useComboBoxItemScale)
-    .mockName('useComboBoxItemScale')
-    .mockReturnValue({
-      itemHeight: 32,
-    });
+  asMock(usePickerItemScale).mockName('usePickerItemScale').mockReturnValue({
+    itemHeight: 32,
+  });
   asMock(useTableUtils).mockName('useTableUtils').mockReturnValue(tableUtils);
 
   asMock(mock.mapItemToValue)

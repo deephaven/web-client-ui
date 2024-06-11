@@ -10,7 +10,7 @@ import {
   useDebouncedValue,
   usePromiseFactory,
 } from '@deephaven/react-hooks';
-import { useComboBoxItemScale } from '@deephaven/components';
+import { usePickerItemScale } from '@deephaven/components';
 import {
   KeyedItem,
   SEARCH_DEBOUNCE_MS,
@@ -62,7 +62,7 @@ export function usePickerWithSelectedValues<TItem, TValue>({
   filterConditionFactories?: FilterConditionFactory[];
   trimSearchText?: boolean;
 }): UsePickerWithSelectedValuesResult<TItem, TValue> {
-  const { itemHeight } = useComboBoxItemScale();
+  const { itemHeight } = usePickerItemScale();
 
   const tableUtils = useTableUtils();
 
