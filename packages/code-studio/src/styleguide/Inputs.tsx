@@ -288,11 +288,13 @@ function Inputs(): React.ReactElement {
           <div className="form-group">
             <h5>Input with Select</h5>
             <div className="input-group">
-              <ComboBox aria-label="ComboBox">{items}</ComboBox>
+              <ComboBox aria-label="ComboBox" width="100%">
+                {items}
+              </ComboBox>
             </div>
             <br />
             <div className="input-group">
-              <ComboBox aria-label="Disabled ComboBox" isDisabled>
+              <ComboBox aria-label="Disabled ComboBox" isDisabled width="100%">
                 {items}
               </ComboBox>
             </div>
