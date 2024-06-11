@@ -35,7 +35,7 @@ export function useStaticItemInitialScrollPosition({
   const getInitialScrollPosition = useCallback(
     async () =>
       disableScrollOnOpen
-        ? null
+        ? topOffset
         : getPositionOfSelectedItemElement({
             items,
             itemHeight,
