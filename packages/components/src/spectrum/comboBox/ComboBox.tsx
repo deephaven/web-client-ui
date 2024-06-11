@@ -53,12 +53,16 @@ export type ComboBoxProps = {
   onSelectionChange?: (key: ItemKey | null) => void;
 } & Omit<
   SpectrumComboBoxProps<NormalizedItem>,
+  // These props are all re-defined above
   | 'children'
-  | 'defaultItems'
-  | 'items'
   | 'onSelectionChange'
   | 'selectedKey'
   | 'defaultSelectedKey'
+  // Excluding `defaultItems` and `items` since we are not currently supporting
+  // a render function as `children`. This simplifies the API for determining
+  // initial scroll position and wrapping items with tooltips.
+  | 'defaultItems'
+  | 'items'
 >;
 
 export function ComboBox({

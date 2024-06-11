@@ -57,11 +57,15 @@ export type PickerProps = {
  * React `Key` type, but are actually supported by the Spectrum Picker component.
  */ & Omit<
   NormalizedSpectrumPickerProps,
+  // These props are all re-defined above
   | 'children'
-  | 'items'
   | 'onSelectionChange'
   | 'selectedKey'
   | 'defaultSelectedKey'
+  // Excluding `items` since we are not currently supporting a render function
+  // as `children`. This simplifies the API for determining initial scroll
+  // position and wrapping items with tooltips.
+  | 'items'
 >;
 
 /**
