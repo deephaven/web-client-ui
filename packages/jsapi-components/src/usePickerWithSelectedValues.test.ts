@@ -1,5 +1,6 @@
 import { act, renderHook } from '@testing-library/react-hooks';
-import type { FilterCondition, Table } from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
+import { useComboBoxItemScale } from '@deephaven/components';
 import {
   createSearchTextFilter,
   createSelectedValuesFilter,
@@ -21,6 +22,10 @@ jest.mock('./useFilterConditionFactories');
 jest.mock('./useTableUtils');
 jest.mock('./useViewportData');
 jest.mock('./useViewportFilter');
+jest.mock('@deephaven/components', () => ({
+  ...jest.requireActual('@deephaven/components'),
+  useComboBoxItemScale: jest.fn(),
+}));
 jest.mock('@deephaven/jsapi-utils', () => ({
   ...jest.requireActual('@deephaven/jsapi-utils'),
   createSearchTextFilter: jest.fn(),
@@ -48,8 +53,8 @@ const mock = {
     typeof useDebouncedValue
   >,
   filter: [
-    createMockProxy<FilterCondition>(),
-    createMockProxy<FilterCondition>(),
+    createMockProxy<DhType.FilterCondition>(),
+    createMockProxy<DhType.FilterCondition>(),
   ],
   filterConditionFactories: [jest.fn(), jest.fn()] as FilterConditionFactory[],
   keyedItem: createMockProxy<KeyedItem<MockItem>>({
@@ -67,12 +72,14 @@ const mock = {
 };
 
 const mockTable = {
-  usersAndGroups: createMockProxy<Table>(),
-  list: createMockProxy<Table>(),
+  usersAndGroups: createMockProxy<DhType.Table>(),
+  list: createMockProxy<DhType.Table>(),
 };
 
 function mockUseViewportData(size: number) {
-  const viewportData = createMockProxy<UseViewportDataResult<MockItem, Table>>({
+  const viewportData = createMockProxy<
+    UseViewportDataResult<MockItem, DhType.Table>
+  >({
     table: mockTable.list,
     viewportData: mock.viewportData,
     size,
@@ -80,7 +87,9 @@ function mockUseViewportData(size: number) {
 
   asMock(useViewportData)
     .mockName('useViewportData')
-    .mockReturnValue(viewportData as UseViewportDataResult<unknown, Table>);
+    .mockReturnValue(
+      viewportData as UseViewportDataResult<unknown, DhType.Table>
+    );
 }
 
 async function renderOnceAndWait(
@@ -104,6 +113,11 @@ async function renderOnceAndWait(
 beforeEach(() => {
   jest.clearAllMocks();
 
+  asMock(useComboBoxItemScale)
+    .mockName('useComboBoxItemScale')
+    .mockReturnValue({
+      itemHeight: 32,
+    });
   asMock(useTableUtils).mockName('useTableUtils').mockReturnValue(tableUtils);
 
   asMock(mock.mapItemToValue)
