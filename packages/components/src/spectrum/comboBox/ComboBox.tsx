@@ -23,6 +23,9 @@ export function ComboBox({
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...comboBoxProps}
       UNSAFE_className={cl('dh-combobox', UNSAFE_className)}
+      // Type assertions are necessary here since Spectrum types don't account
+      // for number and boolean key values even though they are valid runtime
+      // values.
       defaultSelectedKey={
         defaultSelectedKey as SpectrumComboBoxProps<NormalizedItem>['defaultSelectedKey']
       }

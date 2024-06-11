@@ -27,6 +27,9 @@ export function Picker({
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...pickerProps}
       UNSAFE_className={cl('dh-picker', UNSAFE_className)}
+      // Type assertions are necessary here since Spectrum types don't account
+      // for number and boolean key values even though they are valid runtime
+      // values.
       defaultSelectedKey={
         defaultSelectedKey as NormalizedSpectrumPickerProps['defaultSelectedKey']
       }
