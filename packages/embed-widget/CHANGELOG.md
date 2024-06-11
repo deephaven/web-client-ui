@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.82.0](https://github.com/deephaven/web-client-ui/compare/v0.81.2...v0.82.0) (2024-06-11)
+
+### Bug Fixes
+
+- Embed-widget with multiple panels not showing panel headers ([#2064](https://github.com/deephaven/web-client-ui/issues/2064)) ([3f45f07](https://github.com/deephaven/web-client-ui/commit/3f45f07afb2c18c5c2ff9a16e3c48f6ce0d70dda))
+
 ## [0.81.2](https://github.com/deephaven/web-client-ui/compare/v0.81.1...v0.81.2) (2024-06-06)
 
 **Note:** Version bump only for package @deephaven/embed-widget

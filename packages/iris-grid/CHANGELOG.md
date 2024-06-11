@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.82.0](https://github.com/deephaven/web-client-ui/compare/v0.81.2...v0.82.0) (2024-06-11)
+
+### ⚠ BREAKING CHANGES
+
+- Removed
+  `TreeTableViewportUpdater`,`TableViewportUpdater`, and
+  `StorageTableViewportUpdater`. If wanting to continue using them, copy
+  the deleted files from this PR.
+
+### Features
+
+- Allow custom renderer to be passed into IrisGrid ([#2061](https://github.com/deephaven/web-client-ui/issues/2061)) ([41233b5](https://github.com/deephaven/web-client-ui/commit/41233b5f4ed49b8af63506ca5d2af6653ab5eb9c))
+
+### Bug Fixes
+
+- Editing issues when key columns are not first columns ([#2053](https://github.com/deephaven/web-client-ui/issues/2053)) ([1bbcc73](https://github.com/deephaven/web-client-ui/commit/1bbcc73ddaa51502d8e14b2bffd3414998d6436a))
+- Remove TreeTableViewportUpdater, TableViewportUpdater, and StorageTableViewportUpdater ([#2057](https://github.com/deephaven/web-client-ui/issues/2057)) ([0943041](https://github.com/deephaven/web-client-ui/commit/09430415ab91636b24c9388e87c0a45a1807aaeb))
+
 ## [0.81.2](https://github.com/deephaven/web-client-ui/compare/v0.81.1...v0.81.2) (2024-06-06)
 
 **Note:** Version bump only for package @deephaven/iris-grid

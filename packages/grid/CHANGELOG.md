@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.82.0](https://github.com/deephaven/web-client-ui/compare/v0.81.2...v0.82.0) (2024-06-11)
+
+### Features
+
+- Allow custom renderer to be passed into IrisGrid ([#2061](https://github.com/deephaven/web-client-ui/issues/2061)) ([41233b5](https://github.com/deephaven/web-client-ui/commit/41233b5f4ed49b8af63506ca5d2af6653ab5eb9c))
+
+### Bug Fixes
+
+- Editing issues when key columns are not first columns ([#2053](https://github.com/deephaven/web-client-ui/issues/2053)) ([1bbcc73](https://github.com/deephaven/web-client-ui/commit/1bbcc73ddaa51502d8e14b2bffd3414998d6436a))
+
 ## [0.81.0](https://github.com/deephaven/web-client-ui/compare/v0.80.1...v0.81.0) (2024-06-04)
 
 **Note:** Version bump only for package @deephaven/grid

@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.82.0](https://github.com/deephaven/web-client-ui/compare/v0.81.2...v0.82.0) (2024-06-11)
+
+### ⚠ BREAKING CHANGES
+
+- Removed
+  `TreeTableViewportUpdater`,`TableViewportUpdater`, and
+  `StorageTableViewportUpdater`. If wanting to continue using them, copy
+  the deleted files from this PR.
+
+### Bug Fixes
+
+- Remove TreeTableViewportUpdater, TableViewportUpdater, and StorageTableViewportUpdater ([#2057](https://github.com/deephaven/web-client-ui/issues/2057)) ([0943041](https://github.com/deephaven/web-client-ui/commit/09430415ab91636b24c9388e87c0a45a1807aaeb))
+
 ## [0.81.0](https://github.com/deephaven/web-client-ui/compare/v0.80.1...v0.81.0) (2024-06-04)
 
 **Note:** Version bump only for package @deephaven/storage
