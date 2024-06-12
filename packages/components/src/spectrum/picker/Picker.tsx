@@ -19,8 +19,13 @@ export function Picker({
   UNSAFE_className,
   ...props
 }: PickerProps): JSX.Element {
-  const { defaultSelectedKey, selectedKey, scrollRef, ...pickerProps } =
-    usePickerProps(props);
+  const {
+    defaultSelectedKey,
+    disabledKeys,
+    selectedKey,
+    scrollRef,
+    ...pickerProps
+  } = usePickerProps(props);
 
   return (
     <SpectrumPicker
@@ -33,6 +38,9 @@ export function Picker({
       // values.
       defaultSelectedKey={
         defaultSelectedKey as SpectrumPickerProps<NormalizedItem>['defaultSelectedKey']
+      }
+      disabledKeys={
+        disabledKeys as SpectrumPickerProps<NormalizedItem>['disabledKeys']
       }
       selectedKey={
         selectedKey as SpectrumPickerProps<NormalizedItem>['selectedKey']

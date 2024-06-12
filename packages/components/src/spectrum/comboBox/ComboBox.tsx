@@ -16,8 +16,13 @@ export function ComboBox({
   UNSAFE_className,
   ...props
 }: ComboBoxProps): JSX.Element {
-  const { defaultSelectedKey, selectedKey, scrollRef, ...comboBoxProps } =
-    usePickerProps(props);
+  const {
+    defaultSelectedKey,
+    disabledKeys,
+    selectedKey,
+    scrollRef,
+    ...comboBoxProps
+  } = usePickerProps(props);
 
   return (
     <SpectrumComboBox
@@ -30,6 +35,9 @@ export function ComboBox({
       // values.
       defaultSelectedKey={
         defaultSelectedKey as SpectrumComboBoxProps<NormalizedItem>['defaultSelectedKey']
+      }
+      disabledKeys={
+        disabledKeys as SpectrumComboBoxProps<NormalizedItem>['disabledKeys']
       }
       selectedKey={
         selectedKey as SpectrumComboBoxProps<NormalizedItem>['selectedKey']
