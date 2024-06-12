@@ -19,21 +19,18 @@ import usePickerItemScale from './usePickerItemScale';
 import usePickerScrollOnOpen from './usePickerScrollOnOpen';
 
 /** Props that are derived. */
-export type UsePickerDerivedProps<TChange extends ItemKey | null> = {
+export type UsePickerDerivedProps = {
   children: (SectionElement<unknown> | ItemElement<unknown>)[];
   defaultSelectedKey?: ItemKey | undefined;
   selectedKey?: ItemKey | null | undefined;
   scrollRef: DOMRef<HTMLElement>;
   onOpenChange: (isOpen: boolean) => void;
-  onSelectionChange: ((key: TChange) => void) | undefined;
+  onSelectionChange: ((key: ItemKey | null) => void) | undefined;
 };
 
 /** Props that are passed through untouched. */
-export type UsePickerPassthroughProps<
-  TProps,
-  TChange extends ItemKey | null,
-> = Omit<
-  PickerPropsT<TProps, TChange>,
+export type UsePickerPassthroughProps<TProps> = Omit<
+  PickerPropsT<TProps>,
   | 'children'
   | 'defaultSelectedKey'
   | 'selectedKey'
@@ -44,17 +41,15 @@ export type UsePickerPassthroughProps<
   | 'onSelectionChange'
 >;
 
-export type UsePickerProps<
-  TProps,
-  TChange extends ItemKey | null,
-> = UsePickerDerivedProps<TChange> & UsePickerPassthroughProps<TProps, TChange>;
+export type UsePickerProps<TProps> = UsePickerDerivedProps &
+  UsePickerPassthroughProps<TProps>;
 
 /**
  * Derive props for Picker components (e.g. Picker and ComboBox). Specifically
  * handles wrapping children items and initial scroll position when the picker
  * is opened.
  */
-export function usePickerProps<TProps, TChange extends ItemKey | null>({
+export function usePickerProps<TProps>({
   children,
   defaultSelectedKey,
   selectedKey,
@@ -64,7 +59,7 @@ export function usePickerProps<TProps, TChange extends ItemKey | null>({
   onScroll = EMPTY_FUNCTION,
   onSelectionChange: onSelectionChangeHandler,
   ...props
-}: PickerPropsT<TProps, TChange>): UsePickerProps<TProps, TChange> {
+}: PickerPropsT<TProps>): UsePickerProps<TProps> {
   const { itemHeight } = usePickerItemScale();
 
   const tooltipOptions = useMemo(

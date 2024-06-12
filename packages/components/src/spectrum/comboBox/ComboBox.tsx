@@ -4,13 +4,10 @@ import {
 } from '@adobe/react-spectrum';
 import type { FocusableRef } from '@react-types/shared';
 import cl from 'classnames';
-import type { ItemKey, NormalizedItem } from '../utils';
+import type { NormalizedItem } from '../utils';
 import { PickerPropsT, usePickerProps } from '../picker';
 
-export type ComboBoxProps = PickerPropsT<
-  SpectrumComboBoxProps<NormalizedItem>,
-  ItemKey | null
->;
+export type ComboBoxProps = PickerPropsT<SpectrumComboBoxProps<NormalizedItem>>;
 
 export function ComboBox({
   UNSAFE_className,

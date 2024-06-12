@@ -1,19 +1,15 @@
 import { useCallback, useState } from 'react';
 import { ItemKey } from './itemUtils';
 
-export interface UseOnChangeTrackUncontrolledOptions<
-  TChangeKey extends ItemKey | null,
-> {
+export interface UseOnChangeTrackUncontrolledOptions {
   defaultSelectedKey?: ItemKey;
   selectedKey?: ItemKey | null;
-  onChange?: (key: TChangeKey) => void;
+  onChange?: (key: ItemKey | null) => void;
 }
 
-export interface UseOnChangeTrackUncontrolledResult<
-  TChangeKey extends ItemKey | null,
-> {
-  selectedKeyMaybeUncontrolled?: TChangeKey | ItemKey | null;
-  onChangeMaybeUncontrolled: (key: TChangeKey) => void;
+export interface UseOnChangeTrackUncontrolledResult {
+  selectedKeyMaybeUncontrolled?: ItemKey | null;
+  onChangeMaybeUncontrolled: (key: ItemKey | null) => void;
 }
 
 /**
@@ -22,22 +18,20 @@ export interface UseOnChangeTrackUncontrolledResult<
  * component needs to always track its selection state regardless of its
  * controlled / uncontrolled status.
  */
-export function useOnChangeTrackUncontrolled<
-  TChangeKey extends ItemKey | null,
->({
+export function useOnChangeTrackUncontrolled({
   defaultSelectedKey,
   selectedKey,
   onChange: onChangeHandler,
-}: UseOnChangeTrackUncontrolledOptions<TChangeKey>): UseOnChangeTrackUncontrolledResult<TChangeKey> {
+}: UseOnChangeTrackUncontrolledOptions): UseOnChangeTrackUncontrolledResult {
   // `null` is a valid value for `selectedKey` in controlled mode, so we check
   // for explicit `undefined` to identify uncontrolled mode.
   const isUncontrolled = selectedKey === undefined;
   const [uncontrolledSelectedKey, setUncontrolledSelectedKey] = useState<
-    ItemKey | TChangeKey | undefined
+    ItemKey | null | undefined
   >(defaultSelectedKey);
 
   const onChangeMaybeUncontrolled = useCallback(
-    (key: TChangeKey): void => {
+    (key: ItemKey | null): void => {
       // If our component is uncontrolled, track the selected key internally
       if (isUncontrolled) {
         setUncontrolledSelectedKey(key);

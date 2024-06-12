@@ -16,7 +16,7 @@ import type {
  * - selection key types are extended to include number + boolean primitive types
  * - remaining props from the original type are passed through
  */
-export type PickerPropsT<TProps, TChange = ItemKey> = Omit<
+export type PickerPropsT<TProps> = Omit<
   TProps,
   // These props are all re-defined below
   | 'children'
@@ -53,7 +53,7 @@ export type PickerPropsT<TProps, TChange = ItemKey> = Omit<
    * `onSelectionChange`. We are renaming for better consistency with other
    * components.
    */
-  onChange?: (key: TChange) => void;
+  onChange?: (key: ItemKey | null) => void;
 
   /**
    * Method that is called when the open state of the menu changes.
@@ -67,7 +67,7 @@ export type PickerPropsT<TProps, TChange = ItemKey> = Omit<
    * Handler that is called when the selection changes.
    * @deprecated Use `onChange` instead
    */
-  onSelectionChange?: (key: TChange) => void;
+  onSelectionChange?: (key: ItemKey | null) => void;
 };
 
 /**
