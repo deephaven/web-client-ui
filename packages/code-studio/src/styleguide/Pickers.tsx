@@ -9,6 +9,7 @@ import {
   PickerNormalized,
   Checkbox,
   ComboBox,
+  ComboBoxNormalized,
 } from '@deephaven/components';
 import { vsPerson } from '@deephaven/icons';
 import { Icon } from '@adobe/react-spectrum';
@@ -61,9 +62,23 @@ function PersonIcon(): JSX.Element {
 }
 
 export function Pickers(): JSX.Element {
-  const [selectedKey, setSelectedKey] = useState<ItemKey | null>(null);
+  const [selectedKey, setSelectedKey] = useState<ItemKey | null>(200);
 
   const [showIcons, setShowIcons] = useState(true);
+
+  const [filteredItems, setFilteredItems] = useState(itemsWithIcons);
+
+  const onSearch = useCallback(
+    (searchText: string) =>
+      setFilteredItems(
+        searchText === ''
+          ? itemsWithIcons
+          : itemsWithIcons.filter(
+              ({ item }) => item?.textValue?.includes(searchText)
+            )
+      ),
+    []
+  );
 
   const getInitialScrollPosition = useCallback(
     async () =>
@@ -162,6 +177,17 @@ export function Pickers(): JSX.Element {
             selectedKey={selectedKey}
             showItemIcons={showIcons}
             onChange={onChange}
+          />
+          <ComboBoxNormalized
+            label="ComboBox (Controlled)"
+            getInitialScrollPosition={getInitialScrollPosition}
+            normalizedItems={filteredItems}
+            selectedKey={selectedKey}
+            showItemIcons={showIcons}
+            onChange={onChange}
+            validationState={selectedKey == null ? 'invalid' : 'valid'}
+            errorMessage="Please select an item."
+            onInputChange={onSearch}
           />
         </Flex>
       </Flex>
