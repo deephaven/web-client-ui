@@ -18,7 +18,7 @@ import type { PickerPropsT } from './PickerProps';
 import usePickerItemScale from './usePickerItemScale';
 import usePickerScrollOnOpen from './usePickerScrollOnOpen';
 
-/** Props that are derived. */
+/** Props that are derived by `usePickerProps`. */
 export type UsePickerDerivedProps<THtml extends HTMLElement> = {
   children: (SectionElement<unknown> | ItemElement<unknown>)[];
   defaultSelectedKey?: ItemKey | undefined;
@@ -28,7 +28,11 @@ export type UsePickerDerivedProps<THtml extends HTMLElement> = {
   onSelectionChange: ((key: ItemKey | null) => void) | undefined;
 };
 
-/** Props that are passed through untouched. */
+/** 
+ * Props that are passed through untouched. (should exclude all of the
+ * destructured props passed into `usePickerProps` that are not in the spread
+ * ...props)
+) */
 export type UsePickerPassthroughProps<TProps> = Omit<
   PickerPropsT<TProps>,
   | 'children'
@@ -41,6 +45,7 @@ export type UsePickerPassthroughProps<TProps> = Omit<
   | 'onSelectionChange'
 >;
 
+/** Props passed to `usePickerProps` hook. */
 export type UsePickerProps<
   TProps,
   THtml extends HTMLElement,

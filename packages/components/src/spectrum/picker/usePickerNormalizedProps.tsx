@@ -14,6 +14,7 @@ import { PickerNormalizedPropsT } from './PickerProps';
 import { usePickerScrollOnOpen } from './usePickerScrollOnOpen';
 import { Section } from '../shared';
 
+/** Props that are derived by `usePickerNormalizedProps` */
 export type UsePickerNormalizedDerivedProps<THtml extends HTMLElement> = {
   children: (itemOrSection: NormalizedItem | NormalizedSection) => JSX.Element;
   forceRerenderKey: Key;
@@ -26,21 +27,27 @@ export type UsePickerNormalizedDerivedProps<THtml extends HTMLElement> = {
   onOpenChange: (isOpen: boolean) => void;
 };
 
+/**
+ * Props that are passed through untouched. (should exclude all of the
+ * destructured props passed into `usePickerNormalizedProps` that are not in the
+ * spread ...props)
+ */
 export type UsePickerNormalizedPassthroughProps<TProps> = Omit<
   PickerNormalizedPropsT<TProps>,
-  | 'normalizedItems'
-  | 'tooltip'
-  | 'selectedKey'
   | 'defaultSelectedKey'
   | 'disabledKeys'
-  | 'showItemIcons'
   | 'getInitialScrollPosition'
+  | 'normalizedItems'
   | 'onChange'
   | 'onOpenChange'
   | 'onScroll'
   | 'onSelectionChange'
+  | 'selectedKey'
+  | 'showItemIcons'
+  | 'tooltip'
 >;
 
+/** Props passed to `usePickerNormalizedProps` hook. */
 export type UsePickerNormalizedProps<
   TProps,
   THtml extends HTMLElement,
@@ -51,17 +58,17 @@ export function usePickerNormalizedProps<
   TProps,
   THtml extends HTMLElement = HTMLElement,
 >({
-  normalizedItems,
-  tooltip = true,
-  selectedKey,
   defaultSelectedKey,
   disabledKeys,
-  showItemIcons,
   getInitialScrollPosition,
+  normalizedItems,
   onChange,
   onOpenChange,
   onScroll = EMPTY_FUNCTION,
   onSelectionChange,
+  selectedKey,
+  showItemIcons,
+  tooltip = true,
   ...props
 }: PickerNormalizedPropsT<TProps>): UsePickerNormalizedProps<TProps, THtml> {
   const tooltipOptions = useMemo(
