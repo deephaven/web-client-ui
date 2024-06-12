@@ -1,8 +1,6 @@
 import { SPELLCHECK_FALSE_ATTRIBUTE } from '@deephaven/utils';
-import {
-  extractSpectrumHTMLElement,
-  ReactSpectrumComponent,
-} from './SpectrumUtils';
+import type { DOMRefValue } from '@react-types/shared';
+import { extractSpectrumHTMLElement } from './SpectrumUtils';
 import useMappedRef from './useMappedRef';
 import useSetAttributesCallback from './useSetAttributesCallback';
 
@@ -15,7 +13,7 @@ import useSetAttributesCallback from './useSetAttributesCallback';
  */
 export function useSpectrumDisableSpellcheckRef(
   selectors?: string
-): (ref: ReactSpectrumComponent | null) => void {
+): (ref: DOMRefValue | null) => void {
   const disableSpellcheck = useSetAttributesCallback(
     SPELLCHECK_FALSE_ATTRIBUTE,
     selectors

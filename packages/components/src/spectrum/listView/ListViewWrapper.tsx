@@ -46,7 +46,7 @@ export function ListViewWrapper<T>(
   // of the parent container and only render the ListView when it has a non-zero
   // height. See https://github.com/adobe/react-spectrum/issues/6213
   const { ref: contentRectRef, contentRect } = useContentRect(
-    extractSpectrumHTMLElement
+    extractSpectrumHTMLElement<HTMLDivElement>
   );
 
   return (
