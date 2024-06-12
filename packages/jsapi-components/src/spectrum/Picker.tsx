@@ -52,9 +52,9 @@ export function Picker({
   // `null` is a valid value for `selectedKey` in controlled mode, so we check
   // for explicit `undefined` to identify uncontrolled mode.
   const isUncontrolled = props.selectedKey === undefined;
-  const [uncontrolledSelectedKey, setUncontrolledSelectedKey] = useState(
-    props.defaultSelectedKey
-  );
+  const [uncontrolledSelectedKey, setUncontrolledSelectedKey] = useState<
+    ItemKey | null | undefined
+  >(props.defaultSelectedKey);
 
   const keyColumn = useMemo(
     () => getItemKeyColumn(table, keyColumnName),
@@ -126,7 +126,7 @@ export function Picker({
   );
 
   const onSelectionChangeInternal = useCallback(
-    (key: ItemKey): void => {
+    (key: ItemKey | null): void => {
       // If our component is uncontrolled, track the selected key internally
       // so that we can scroll to the selected item if the user re-opens
       if (isUncontrolled) {
