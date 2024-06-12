@@ -76,7 +76,7 @@ export function Pickers(): JSX.Element {
     [selectedKey]
   );
 
-  const onChange = useCallback((key: ItemKey): void => {
+  const onChange = useCallback((key: ItemKey | null): void => {
     setSelectedKey(key);
   }, []);
 
