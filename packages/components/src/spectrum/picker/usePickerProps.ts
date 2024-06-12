@@ -45,7 +45,7 @@ export type UsePickerPassthroughProps<TProps> = Omit<
   | 'onSelectionChange'
 >;
 
-/** Props passed to `usePickerProps` hook. */
+/** Props returned from `usePickerProps` hook. */
 export type UsePickerProps<
   TProps,
   THtml extends HTMLElement,

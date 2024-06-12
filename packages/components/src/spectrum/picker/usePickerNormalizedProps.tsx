@@ -47,7 +47,7 @@ export type UsePickerNormalizedPassthroughProps<TProps> = Omit<
   | 'tooltip'
 >;
 
-/** Props passed to `usePickerNormalizedProps` hook. */
+/** Props returned from `usePickerNormalizedProps` hook. */
 export type UsePickerNormalizedProps<
   TProps,
   THtml extends HTMLElement,
