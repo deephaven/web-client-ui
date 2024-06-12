@@ -4,25 +4,16 @@ import type { DOMRef } from '@react-types/shared';
 import cl from 'classnames';
 import { EMPTY_FUNCTION } from '@deephaven/utils';
 import { Section } from '../shared';
-import type { PickerProps as PickerBaseProps } from './PickerProps';
+import type { PickerNormalizedProps } from './PickerProps';
 
 import {
   getItemKey,
   isNormalizedSection,
-  NormalizedItem,
-  NormalizedSection,
   normalizeTooltipOptions,
   useRenderNormalizedItem,
   useStringifiedSelection,
 } from '../utils';
 import usePickerScrollOnOpen from './usePickerScrollOnOpen';
-
-export interface PickerNormalizedProps
-  extends Omit<PickerBaseProps, 'children'> {
-  normalizedItems: (NormalizedItem | NormalizedSection)[];
-  showItemIcons: boolean;
-  getInitialScrollPosition?: () => Promise<number | null | undefined>;
-}
 
 /**
  * Picker that takes an array of `NormalizedItem` or `NormalizedSection` items

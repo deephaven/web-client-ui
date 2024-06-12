@@ -1,5 +1,4 @@
 import { Key, ReactElement, ReactNode } from 'react';
-import { SpectrumPickerProps } from '@adobe/react-spectrum';
 import type { ItemRenderer } from '@react-types/shared';
 import { isElementOfType } from '@deephaven/react-hooks';
 import { ensureArray, KeyedItem, SelectionT } from '@deephaven/utils';
@@ -107,8 +106,6 @@ export type NormalizedSection = KeyedItem<NormalizedSectionData, Key>;
 
 export type NormalizedItemOrSection<TItemOrSection extends ItemOrSection> =
   TItemOrSection extends SectionElement ? NormalizedSection : NormalizedItem;
-
-export type NormalizedSpectrumPickerProps = SpectrumPickerProps<NormalizedItem>;
 
 export type TooltipOptions = { placement: PopperOptions['placement'] };
 

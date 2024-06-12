@@ -1,7 +1,9 @@
+import type { SpectrumPickerProps } from '@adobe/react-spectrum';
 import type {
   ItemKey,
   ItemOrSection,
-  NormalizedSpectrumPickerProps,
+  NormalizedItem,
+  NormalizedSection,
   TooltipOptions,
 } from '../utils';
 
@@ -58,4 +60,11 @@ export type PickerPropsT<TProps, TChange = ItemKey> = Omit<
   onSelectionChange?: (key: TChange) => void;
 };
 
-export type PickerProps = PickerPropsT<NormalizedSpectrumPickerProps>;
+export type PickerNormalizedPropsT<TProps> = Omit<TProps, 'children'> & {
+  normalizedItems: (NormalizedItem | NormalizedSection)[];
+  showItemIcons: boolean;
+  getInitialScrollPosition?: () => Promise<number | null | undefined>;
+};
+
+export type PickerProps = PickerPropsT<SpectrumPickerProps<NormalizedItem>>;
+export type PickerNormalizedProps = PickerNormalizedPropsT<PickerProps>;

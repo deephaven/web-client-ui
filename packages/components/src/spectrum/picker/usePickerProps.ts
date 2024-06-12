@@ -10,11 +10,11 @@ import {
   wrapItemChildren,
   useOnChangeTrackUncontrolled,
   useStaticItemInitialScrollPosition,
-  PickerPropsT,
   ItemKey,
   SectionElement,
   ItemElement,
 } from '../utils';
+import type { PickerPropsT } from './PickerProps';
 import usePickerItemScale from './usePickerItemScale';
 import usePickerScrollOnOpen from './usePickerScrollOnOpen';
 

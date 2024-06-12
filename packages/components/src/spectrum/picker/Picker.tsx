@@ -1,7 +1,10 @@
-import { Picker as SpectrumPicker } from '@adobe/react-spectrum';
+import {
+  Picker as SpectrumPicker,
+  SpectrumPickerProps,
+} from '@adobe/react-spectrum';
 import type { DOMRef } from '@react-types/shared';
 import cl from 'classnames';
-import { NormalizedSpectrumPickerProps } from '../utils/itemUtils';
+import type { NormalizedItem } from '../utils';
 import type { PickerProps } from './PickerProps';
 import { usePickerProps } from './usePickerProps';
 
@@ -29,9 +32,11 @@ export function Picker({
       // for number and boolean key values even though they are valid runtime
       // values.
       defaultSelectedKey={
-        defaultSelectedKey as NormalizedSpectrumPickerProps['defaultSelectedKey']
+        defaultSelectedKey as SpectrumPickerProps<NormalizedItem>['defaultSelectedKey']
       }
-      selectedKey={selectedKey as NormalizedSpectrumPickerProps['selectedKey']}
+      selectedKey={
+        selectedKey as SpectrumPickerProps<NormalizedItem>['selectedKey']
+      }
     />
   );
 }
