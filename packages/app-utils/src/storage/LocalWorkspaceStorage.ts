@@ -12,7 +12,7 @@ import {
   DecimalColumnFormatter,
   IntegerColumnFormatter,
 } from '@deephaven/jsapi-utils';
-import UserLayoutUtils from '../main/UserLayoutUtils';
+import UserLayoutUtils from './UserLayoutUtils';
 import LayoutStorage from './LayoutStorage';
 
 const log = Log.module('LocalWorkspaceStorage');

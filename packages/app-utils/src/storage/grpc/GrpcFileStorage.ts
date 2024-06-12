@@ -1,5 +1,3 @@
-/* eslint-disable class-methods-use-this */
-
 import throttle from 'lodash.throttle';
 import {
   FileNotFoundError,
@@ -19,6 +17,8 @@ const log = Log.module('GrpcFileStorage');
 export class GrpcFileStorage implements FileStorage {
   private static readonly REFRESH_THROTTLE = 150;
 
+  private dh: typeof DhType;
+
   private readonly storageService: DhType.storage.StorageService;
 
   private tables = [] as GrpcFileStorageTable[];
@@ -30,7 +30,12 @@ export class GrpcFileStorage implements FileStorage {
    * @param storageService Storage service to use
    * @param root Root path for this instance. Should not contain trailing slash.
    */
-  constructor(storageService: DhType.storage.StorageService, root = '') {
+  constructor(
+    dh: typeof DhType,
+    storageService: DhType.storage.StorageService,
+    root = ''
+  ) {
+    this.dh = dh;
     this.storageService = storageService;
     this.root = root;
   }
@@ -61,7 +66,7 @@ export class GrpcFileStorage implements FileStorage {
   }
 
   async saveFile(file: File): Promise<File> {
-    const fileContents = dh.storage.FileContents.text(file.content);
+    const fileContents = this.dh.storage.FileContents.text(file.content);
     await this.storageService.saveFile(
       this.addRoot(file.filename),
       fileContents,

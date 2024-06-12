@@ -1,16 +1,29 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { nanoid } from 'nanoid';
-import { AppDashboards, useConnection, useUser } from '@deephaven/app-utils';
+import {
+  AppDashboards,
+  GrpcLayoutStorage,
+  LocalWorkspaceStorage,
+  useConnection,
+  useServerConfig,
+  useUser,
+} from '@deephaven/app-utils';
 import type GoldenLayout from '@deephaven/golden-layout';
 import type { ItemConfigType } from '@deephaven/golden-layout';
 import {
   ContextMenuRoot,
   ErrorBoundary,
   LoadingOverlay,
+  Shortcut,
+  ShortcutRegistry,
 } from '@deephaven/components'; // Use the loading spinner from the Deephaven components package
 import type { dh } from '@deephaven/jsapi-types';
-import { fetchVariableDefinition } from '@deephaven/jsapi-utils';
+import {
+  fetchVariableDefinition,
+  getSessionDetails,
+  loadSessionWrapper,
+} from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { useDashboardPlugins } from '@deephaven/plugin';
 import {
@@ -21,9 +34,19 @@ import {
   setDashboardPluginData,
   stopListenForCreateDashboard,
 } from '@deephaven/dashboard';
-import { getVariableDescriptor } from '@deephaven/jsapi-bootstrap';
+import {
+  getVariableDescriptor,
+  useApi,
+  useClient,
+} from '@deephaven/jsapi-bootstrap';
 import { EMPTY_ARRAY } from '@deephaven/utils';
-import { setUser } from '@deephaven/redux';
+import {
+  setDefaultWorkspaceSettings,
+  setWorkspace,
+  setApi,
+  setUser,
+  setServerConfigValues,
+} from '@deephaven/redux';
 import './App.scss'; // Styles for in this app
 
 const log = Log.module('EmbedWidget.App');
@@ -50,7 +73,12 @@ function App(): JSX.Element {
   );
   // Get the widget name from the query param `name`.
   const name = searchParams.get('name');
+  const api = useApi();
   const connection = useConnection();
+  const client = useClient();
+  const user = useUser();
+  const dispatch = useDispatch();
+  const serverConfig = useServerConfig();
 
   useEffect(
     function initializeApp() {
@@ -59,6 +87,43 @@ function App(): JSX.Element {
           if (name == null) {
             throw new Error('Missing URL parameter "name"');
           }
+
+          const sessionDetails = await getSessionDetails();
+          const sessionWrapper = await loadSessionWrapper(
+            api,
+            connection,
+            sessionDetails
+          );
+          const storageService = client.getStorageService();
+          const layoutStorage = new GrpcLayoutStorage(
+            storageService,
+            import.meta.env.VITE_STORAGE_PATH_LAYOUTS ?? ''
+          );
+          const workspaceStorage = new LocalWorkspaceStorage(layoutStorage);
+          const loadedWorkspace = await workspaceStorage.load({
+            isConsoleAvailable: sessionWrapper !== undefined,
+          });
+          const {
+            data: { settings },
+          } = loadedWorkspace;
+          // Set any shortcuts that user has overridden on this platform
+          const { shortcutOverrides = {} } = settings;
+          const isMac = Shortcut.isMacPlatform;
+          const platformOverrides = isMac
+            ? shortcutOverrides.mac ?? {}
+            : shortcutOverrides.windows ?? {};
+          Object.entries(platformOverrides).forEach(([id, keyState]) => {
+            ShortcutRegistry.get(id)?.setKeyState(keyState);
+          });
+          dispatch(setApi(api));
+          dispatch(setServerConfigValues(serverConfig));
+          dispatch(setUser(user));
+          dispatch(setWorkspace(loadedWorkspace));
+          dispatch(
+            setDefaultWorkspaceSettings(
+              LocalWorkspaceStorage.makeDefaultWorkspaceSettings(serverConfig)
+            )
+          );
 
           log.debug(`Loading widget definition for ${name}...`);
 
@@ -74,7 +139,7 @@ function App(): JSX.Element {
       }
       initApp();
     },
-    [connection, name]
+    [api, client, connection, dispatch, name, serverConfig, user]
   );
 
   const isLoaded = definition != null && error == null;
@@ -88,13 +153,6 @@ function App(): JSX.Element {
     }
     return () => connection.getObject(definition);
   }, [connection, definition]);
-
-  const user = useUser();
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    dispatch(setUser(user));
-  }, [dispatch, user]);
 
   const [goldenLayout, setGoldenLayout] = useState<GoldenLayout | null>(null);
   const [dashboardId, setDashboardId] = useState('default-embed-widget'); // Can't be DEFAULT_DASHBOARD_ID because its dashboard layout is not stored in dashboardData

@@ -90,15 +90,17 @@ import {
 import GoldenLayout from '@deephaven/golden-layout';
 import type { ItemConfigType } from '@deephaven/golden-layout';
 import { type PluginModuleMap, getDashboardPlugins } from '@deephaven/plugin';
-import { AppDashboards } from '@deephaven/app-utils';
+import {
+  AppDashboards,
+  LayoutStorage,
+  UserLayoutUtils,
+} from '@deephaven/app-utils';
 import JSZip from 'jszip';
 import SettingsMenu from '../settings/SettingsMenu';
 import AppControlsMenu from './AppControlsMenu';
 import { getLayoutStorage, getServerConfigValues } from '../redux';
 import './AppMainContainer.scss';
 import WidgetList, { WindowMouseEvent } from './WidgetList';
-import UserLayoutUtils from './UserLayoutUtils';
-import LayoutStorage from '../storage/LayoutStorage';
 import { getFormattedVersionInfo } from '../settings/SettingsUtils';
 import EmptyDashboard from './EmptyDashboard';
 

@@ -2,7 +2,11 @@
 import React from 'react';
 import { Provider } from 'react-redux';
 import { act, render, screen } from '@testing-library/react';
-import { ConnectionContext } from '@deephaven/app-utils';
+import {
+  ConnectionContext,
+  LocalWorkspaceStorage,
+  LayoutStorage,
+} from '@deephaven/app-utils';
 import { ToolType } from '@deephaven/dashboard-core-plugins';
 import {
   ApiContext,
@@ -20,8 +24,6 @@ import { Workspace, createMockStore } from '@deephaven/redux';
 import userEvent from '@testing-library/user-event';
 import { DEFAULT_DASHBOARD_ID } from '@deephaven/dashboard';
 import { AppMainContainer } from './AppMainContainer';
-import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
-import LayoutStorage from '../storage/LayoutStorage';
 
 function makeConnection(): IdeConnection {
   const connection = new dh.IdeConnection('http://mockserver');

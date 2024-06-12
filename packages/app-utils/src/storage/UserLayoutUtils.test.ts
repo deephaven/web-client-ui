@@ -4,7 +4,7 @@ import LayoutStorage, {
   ExportedLayout,
   ExportedLayoutV1,
   ExportedLayoutV2,
-} from '../storage/LayoutStorage';
+} from './LayoutStorage';
 import UserLayoutUtils, {
   DEFAULT_LAYOUT_CONFIG,
   DEFAULT_LAYOUT_CONFIG_NO_CONSOLE,

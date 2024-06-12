@@ -11,7 +11,7 @@ import LayoutStorage, {
   ExportedLayoutV2,
   isLayoutV1,
   isLayoutV2,
-} from '../storage/LayoutStorage';
+} from './LayoutStorage';
 
 const log = Log.module('UserLayoutUtils');
 
