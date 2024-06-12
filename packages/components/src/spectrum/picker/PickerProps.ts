@@ -23,6 +23,7 @@ export type PickerPropsT<TProps, TChange = ItemKey> = Omit<
   | 'onSelectionChange'
   | 'selectedKey'
   | 'defaultSelectedKey'
+  | 'disabledKeys'
   // Excluding `defaultItems` and `items` since we are not currently supporting
   // a render function as `children`. This simplifies the API for determining
   // initial scroll position and wrapping items with tooltips.
@@ -39,6 +40,12 @@ export type PickerPropsT<TProps, TChange = ItemKey> = Omit<
 
   /** The initial selected key in the collection (uncontrolled). */
   defaultSelectedKey?: ItemKey;
+
+  /**
+   * The item keys that are disabled. These items cannot be selected, focused,
+   * or otherwise interacted with.
+   */
+  disabledKeys?: Iterable<ItemKey>;
 
   /**
    * Handler that is called when the selection change.
@@ -67,7 +74,10 @@ export type PickerPropsT<TProps, TChange = ItemKey> = Omit<
  * Extend Picker props for usage with normalized items list instead of React
  * `children` elements.
  */
-export type PickerNormalizedPropsT<TProps> = Omit<TProps, 'children'> & {
+export type PickerNormalizedPropsT<TProps> = Omit<
+  PickerPropsT<TProps>,
+  'children'
+> & {
   /**
    * Normalized format for items and sections instead React elements.
    */
