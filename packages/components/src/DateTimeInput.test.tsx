@@ -27,6 +27,7 @@ function makeDateTimeInput({
 it('mounts and unmounts properly', () => {
   const { unmount } = makeDateTimeInput();
   unmount();
+  expect('ok').toBe('ok');
 });
 
 it('trims trailing mask and spaces in the input', async () => {

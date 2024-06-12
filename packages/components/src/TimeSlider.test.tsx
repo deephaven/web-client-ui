@@ -13,5 +13,5 @@ function makeTimeSlider({
 }
 
 it('mounts and unmounts properly', () => {
-  makeTimeSlider();
+  expect(makeTimeSlider()).toBeDefined();
 });

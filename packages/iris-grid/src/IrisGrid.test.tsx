@@ -87,7 +87,7 @@ function keyDown(key, component, extraArgs?) {
 }
 
 it('renders without crashing', () => {
-  makeComponent();
+  expect(makeComponent()).toBeDefined();
 });
 
 it('handles ctrl+shift+e to clear filters', () => {

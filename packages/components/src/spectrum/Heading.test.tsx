@@ -4,7 +4,7 @@ import { Heading } from './Heading';
 
 describe('Heading', () => {
   it('mounts and unmounts', () => {
-    render(<Heading>{null}</Heading>);
+    expect(render(<Heading>{null}</Heading>)).toBeDefined();
   });
 
   it('renders without color', () => {

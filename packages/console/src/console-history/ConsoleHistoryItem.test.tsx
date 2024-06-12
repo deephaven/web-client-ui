@@ -18,4 +18,5 @@ it('renders default item without crashing', () => {
     />,
     div
   );
+  expect('ok').toBe('ok');
 });

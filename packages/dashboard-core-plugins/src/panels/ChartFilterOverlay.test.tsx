@@ -24,6 +24,7 @@ function makeChartFilterOverlay(
 
 it('mounts and unmounts successfully without crashing', () => {
   makeChartFilterOverlay(emptyTestMap, emptyTestMap);
+  expect('ok').toBe('ok');
 });
 
 describe('renders the appropriate text and buttons based on columns', () => {

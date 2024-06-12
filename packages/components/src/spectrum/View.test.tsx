@@ -4,7 +4,7 @@ import { View } from './View';
 
 describe('View', () => {
   it('mounts and unmounts', () => {
-    render(<View>{null}</View>);
+    expect(render(<View>{null}</View>)).toBeDefined();
   });
 
   it('renders without backgroundColor', () => {

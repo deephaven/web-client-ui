@@ -14,7 +14,7 @@ function makeUISwitch({
 }
 
 it('mounts and unmounts properly', () => {
-  makeUISwitch();
+  expect(makeUISwitch()).toBeDefined();
 });
 
 it('get element by data-testid works', async () => {

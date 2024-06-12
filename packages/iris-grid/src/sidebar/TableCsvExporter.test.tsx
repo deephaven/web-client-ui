@@ -54,7 +54,7 @@ function makeTableCsvExporterWrapper({
 }
 
 it('renders without crashing', () => {
-  makeTableCsvExporterWrapper();
+  expect(makeTableCsvExporterWrapper()).toBeDefined();
 });
 
 it('downloads properly with default settings', async () => {

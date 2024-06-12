@@ -154,7 +154,7 @@ function checkPanelOverlays({
 }
 
 it('mounts/unmounts without crashing', () => {
-  render(makeChartPanelWrapper());
+  expect(render(makeChartPanelWrapper())).toBeDefined();
 });
 
 it('unmounts while still resolving the model successfully', async () => {

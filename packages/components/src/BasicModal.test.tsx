@@ -23,7 +23,7 @@ function makeWrapper(partialProps: Partial<BasicModalProps> | undefined = {}) {
 }
 
 it('mounts and unmounts without failing', () => {
-  makeWrapper();
+  expect(makeWrapper()).toBeDefined();
 });
 
 it('focuses default button on first render after opening', () => {

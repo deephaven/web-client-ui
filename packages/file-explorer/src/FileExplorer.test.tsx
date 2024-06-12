@@ -47,7 +47,7 @@ function renderFileExplorer({
 }
 
 it('mounts and unmounts successfully without crashing', () => {
-  renderFileExplorer({ storage: makeMockFileStorage() });
+  expect(renderFileExplorer({ storage: makeMockFileStorage() })).toBeDefined();
 });
 
 it('mounts properly and shows file list', async () => {

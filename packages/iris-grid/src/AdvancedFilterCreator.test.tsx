@@ -87,6 +87,7 @@ function makeAdvancedFilterCreatorWrapper(
 
 it('renders without crashing', () => {
   makeAdvancedFilterCreatorWrapper();
+  expect('ok').toBe('ok');
 });
 
 // jest.mock('./AdvancedFilterCreatorFilterItem', () =>

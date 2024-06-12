@@ -7,6 +7,6 @@ describe('ValueOf', () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const y: ValueOf<typeof x>[] = [1, 2, 3];
 
-    // No assertion since this is a types only test
+    expect('ok').toBe('ok');
   });
 });

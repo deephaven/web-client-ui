@@ -38,7 +38,7 @@ function makeIrisGridPartitionSelector(
 }
 
 it('unmounts successfully without crashing', () => {
-  makeIrisGridPartitionSelector();
+  expect(makeIrisGridPartitionSelector()).toBeDefined();
 });
 
 it('should display multiple selectors to match columns', () => {

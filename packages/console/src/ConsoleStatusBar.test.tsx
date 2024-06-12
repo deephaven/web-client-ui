@@ -35,7 +35,7 @@ afterEach(() => {
 });
 
 it('renders without crashing', () => {
-  makeConsoleStatusBarWrapper();
+  expect(makeConsoleStatusBarWrapper()).toBeDefined();
 });
 
 it('dropdown menu disappears on toggle', async () => {

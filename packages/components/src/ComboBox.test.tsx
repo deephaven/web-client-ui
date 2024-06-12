@@ -7,5 +7,5 @@ function makeWrapper(options = []) {
 }
 
 it('mounts and unmounts without failing', () => {
-  makeWrapper();
+  expect(makeWrapper()).toBeDefined();
 });

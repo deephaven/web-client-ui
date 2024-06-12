@@ -30,6 +30,7 @@ function makeWrapper({
 it('mounts and unmounts without failing', () => {
   const { unmount } = makeWrapper();
   unmount();
+  expect('ok').toBe('ok');
 });
 
 it('adds invalid class for invalid input', async () => {

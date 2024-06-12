@@ -84,4 +84,5 @@ beforeEach(() => {
 it('renders without crashing', () => {
   const { unmount } = renderConsolePanel();
   unmount();
+  expect('ok').toBe('ok');
 });

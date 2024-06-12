@@ -39,5 +39,5 @@ function mountMarkdownPanel(
 }
 
 it('mount/unmount MarkdownPanel without crashing', () => {
-  mountMarkdownPanel();
+  expect(mountMarkdownPanel()).toBeDefined();
 });

@@ -19,5 +19,5 @@ function makeChartColumnSelectorOverlay({
 }
 
 it('mounts and unmounts successfully without crashing', () => {
-  makeChartColumnSelectorOverlay();
+  expect(makeChartColumnSelectorOverlay()).toBeDefined();
 });

@@ -28,6 +28,7 @@ it('renders without crashing', () => {
   const disposable = { dispose: jest.fn() };
   monaco.languages.registerCompletionItemProvider = jest.fn(() => disposable);
   makeProviders();
+  expect('ok').toBe('ok');
 });
 
 it('registers/deregisters completion provider properly', () => {

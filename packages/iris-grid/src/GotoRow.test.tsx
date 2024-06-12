@@ -68,7 +68,7 @@ afterEach(() => {
 });
 
 it('mounts and unmounts properly', () => {
-  makeGotoRow();
+  expect(makeGotoRow()).toBeDefined();
 });
 
 describe('Go to row', () => {

@@ -167,7 +167,7 @@ afterEach(() => {
 });
 
 it('mounts and unmounts AppMainContainer without crashing', () => {
-  renderAppMainContainer();
+  expect(renderAppMainContainer()).toBeDefined();
 });
 
 it('listens for widgets properly', async () => {

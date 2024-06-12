@@ -101,7 +101,7 @@ async function expectNotLoading(container) {
 }
 
 it('mounts and unmounts without crashing', async () => {
-  makeIrisGridPanelWrapper();
+  expect(makeIrisGridPanelWrapper()).toBeDefined();
 });
 
 it('unmounts while still resolving a table successfully', async () => {

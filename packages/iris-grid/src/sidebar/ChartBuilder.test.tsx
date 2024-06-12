@@ -24,7 +24,7 @@ function makeChartBuilderWrapper({
 }
 
 it('renders without crashing', () => {
-  makeChartBuilderWrapper();
+  expect(makeChartBuilderWrapper()).toBeDefined();
 });
 
 it('updates the chart type', async () => {

@@ -81,7 +81,7 @@ beforeEach(() => {
 });
 
 it('renders without crashing', () => {
-  mountCopySelection();
+  expect(mountCopySelection()).toBeDefined();
 });
 
 it('copies column header', async () => {

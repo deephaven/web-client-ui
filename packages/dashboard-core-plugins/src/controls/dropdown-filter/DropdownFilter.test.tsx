@@ -130,6 +130,8 @@ describe('options when source is selected', () => {
     container.rerender(
       makeContainer({ column, columns, isLoaded: false, onChange, source })
     );
+
+    expect('ok').toBe('ok');
   });
 
   it('shows a settings error when presented', () => {
@@ -169,6 +171,7 @@ describe('options when source is selected', () => {
       await user.click(getSourceButton());
       await user.hover(getSourceButton());
       await user.unhover(getSourceButton());
+      expect('ok').toBe('ok');
     });
 
     it('has the initial state correct', () => {

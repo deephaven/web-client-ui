@@ -37,5 +37,5 @@ function makeDashboard({
 }
 
 it('mounts and unmounts properly', () => {
-  makeDashboard();
+  expect(makeDashboard()).toBeDefined();
 });

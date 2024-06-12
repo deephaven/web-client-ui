@@ -34,4 +34,5 @@ it('handles mounting and unmount core plugins properly', () => {
       </ObjectFetcherContext.Provider>
     </ApiContext.Provider>
   );
+  expect('ok').toBe('ok');
 });

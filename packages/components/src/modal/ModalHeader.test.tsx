@@ -31,7 +31,7 @@ function makeModalHeader({
 }
 
 it('renders', () => {
-  makeModalHeader({});
+  expect(makeModalHeader({})).toBeDefined();
 });
 
 it('renders a functional close button', async () => {

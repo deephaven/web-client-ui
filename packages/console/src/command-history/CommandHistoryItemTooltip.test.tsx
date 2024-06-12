@@ -67,7 +67,7 @@ function shallowTooltip(
 }
 
 it('mounts and unmounts without crashing', () => {
-  shallowTooltip();
+  expect(shallowTooltip()).toBeDefined();
 });
 
 describe('different command results', () => {

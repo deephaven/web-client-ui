@@ -56,7 +56,7 @@ function renderPanel({
 }
 
 it('renders without crashing', () => {
-  renderPanel();
+  expect(renderPanel()).toBeDefined();
 });
 
 describe('adds and emits events correctly', () => {

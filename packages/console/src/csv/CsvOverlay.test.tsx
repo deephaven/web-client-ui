@@ -25,7 +25,7 @@ function makeOverlayWrapper({
 }
 
 it('renders without crashing', () => {
-  makeOverlayWrapper();
+  expect(makeOverlayWrapper()).toBeDefined();
 });
 
 describe('allowZip tests', () => {

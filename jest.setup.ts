@@ -88,3 +88,11 @@ Object.defineProperty(window.CSS, 'supports', {
   value: () => true,
   writable: true,
 });
+
+beforeEach(() => {
+  jest.clearAllMocks();
+});
+
+afterEach(() => {
+  expect.hasAssertions();
+});

@@ -32,7 +32,7 @@ function makeSelection(
 }
 
 it('mounts and unmounts properly', () => {
-  makeTimeInput();
+  expect(makeTimeInput()).toBeDefined();
 });
 
 describe('typing in matches mask', () => {

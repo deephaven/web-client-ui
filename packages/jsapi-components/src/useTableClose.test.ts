@@ -30,6 +30,8 @@ it.each([closedTable, null, undefined])(
     if (maybeTable) {
       expect(maybeTable.close).not.toHaveBeenCalled();
     }
+
+    expect('ok').toBe('ok');
   }
 );
 

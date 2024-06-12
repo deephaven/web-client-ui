@@ -38,7 +38,7 @@ function makeModal({
 }
 
 it('mounts', () => {
-  render(makeModal({}));
+  expect(render(makeModal({}))).toBeDefined();
 });
 
 it('does not render when isOpen is false', () => {

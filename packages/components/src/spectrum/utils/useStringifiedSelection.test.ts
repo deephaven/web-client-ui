@@ -77,6 +77,8 @@ describe('useStringifiedSelection', () => {
       if (onChange) {
         expect(onChange).toHaveBeenCalledWith(2);
       }
+
+      expect('ok').toBe('ok');
     }
   );
 

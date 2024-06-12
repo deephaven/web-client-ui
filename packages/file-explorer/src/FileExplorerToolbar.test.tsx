@@ -17,5 +17,5 @@ function makeFileExplorerToolbar({
 }
 
 it('mounts and unmounts successfully without crashing', () => {
-  makeFileExplorerToolbar();
+  expect(makeFileExplorerToolbar()).toBeDefined();
 });

@@ -4,7 +4,7 @@ import { Text } from './Text';
 
 describe('Text', () => {
   it('mounts and unmounts', () => {
-    render(<Text>test</Text>);
+    expect(render(<Text>test</Text>)).toBeDefined();
   });
 
   it('renders without color', () => {

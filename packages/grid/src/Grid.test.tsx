@@ -291,7 +291,7 @@ function paste(component: Grid, data = DEFAULT_PASTE_DATA) {
 }
 
 it('renders mock data model without crashing', () => {
-  makeGridComponent(new MockGridModel());
+  expect(makeGridComponent(new MockGridModel())).toBeDefined();
 });
 
 it('handles mouse down in top left to update selection', () => {

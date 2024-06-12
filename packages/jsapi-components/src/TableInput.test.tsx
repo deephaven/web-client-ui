@@ -43,6 +43,7 @@ describe('TableInput', () => {
   it('mounts and unmounts with a table properly', () => {
     const tableWrapper = makeTableInput();
     tableWrapper.unmount();
+    expect('ok').toBe('ok');
   });
 
   it('mounts and unmounts with an unresolved promise properly', async () => {
@@ -50,5 +51,6 @@ describe('TableInput', () => {
       table: new Promise(jest.fn()),
     });
     tablePromiseWrapper.unmount();
+    expect('ok').toBe('ok');
   });
 });

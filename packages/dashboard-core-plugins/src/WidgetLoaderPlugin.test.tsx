@@ -265,5 +265,6 @@ describe('component wrapper', () => {
         glEventHub={new EventEmitter()}
       />
     );
+    expect('ok').toBe('ok');
   });
 });

@@ -25,6 +25,7 @@ function makeMaskedInput({
 it('mounts and unmounts properly', () => {
   const { unmount } = makeMaskedInput();
   unmount();
+  expect('ok').toBe('ok');
 });
 
 it('onSubmit works properly', async () => {

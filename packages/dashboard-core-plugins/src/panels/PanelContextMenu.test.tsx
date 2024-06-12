@@ -36,5 +36,5 @@ function mountPanelContextMenu() {
 }
 
 it('mounts and unmounts without crashing', () => {
-  mountPanelContextMenu();
+  expect(mountPanelContextMenu()).toBeDefined();
 });

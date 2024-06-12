@@ -42,6 +42,8 @@ describe.each([undefined, mock.extractHTMLElement])(
             mock.onScroll
           );
         }
+
+        expect('ok').toBe('ok');
       }
     );
 

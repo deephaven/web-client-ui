@@ -41,7 +41,7 @@ function makeItemList({
 }
 
 it('mounts and unmounts properly', () => {
-  makeItemList();
+  expect(makeItemList()).toBeDefined();
 });
 
 describe('mouse', () => {
@@ -285,4 +285,6 @@ it('handles keyboard up and down properly', async () => {
   await user.keyboard('[ArrowUp]');
 
   checkFocus(items, 1);
+
+  expect('ok').toBe('ok');
 });

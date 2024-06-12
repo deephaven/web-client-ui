@@ -50,7 +50,7 @@ function makeConsoleWrapper(consoleRef = React.createRef<Console>()) {
 }
 
 it('renders without crashing', () => {
-  makeConsoleWrapper();
+  expect(makeConsoleWrapper()).toBeDefined();
 });
 
 it('Handles arrow to prev item and back to blank', async () => {

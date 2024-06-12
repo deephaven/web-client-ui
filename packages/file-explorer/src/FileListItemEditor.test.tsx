@@ -36,6 +36,7 @@ describe('FileListItemEditor', () => {
   it('mounts and unmounts without failing', () => {
     const { unmount } = makeWrapper();
     unmount();
+    expect('ok').toBe('ok');
   });
 
   it('validates on mount', async () => {

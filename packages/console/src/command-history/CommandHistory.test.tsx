@@ -95,11 +95,11 @@ function dragRange(start, end) {
 }
 
 it('renders an empty list without crashing', () => {
-  mountItems(0);
+  expect(mountItems(0)).toBeDefined();
 });
 
 it('renders a list with items without crashing', () => {
-  mountItems();
+  expect(mountItems()).toBeDefined();
 });
 
 function expectSelected(index) {

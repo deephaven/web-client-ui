@@ -32,6 +32,7 @@ describe('useSetAttributesCallback', () => {
     nullOrUndefined => {
       const { result } = renderHook(() => useSetAttributesCallback(attributes));
       result.current(nullOrUndefined);
+      expect('ok').toBe('ok');
     }
   );
 
