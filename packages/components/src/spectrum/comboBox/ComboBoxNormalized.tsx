@@ -6,6 +6,14 @@ import { ComboBoxProps } from './ComboBox';
 
 export type ComboBoxNormalizedProps = PickerNormalizedPropsT<ComboBoxProps>;
 
+/**
+ * ComboBox that takes an array of `NormalizedItem` or `NormalizedSection` items
+ * as children and uses a render item function to render the items. `NormalizedItem`
+ * and `NormalizedSection` datums always provide a `key` property but have an
+ * optional `item` property that can be lazy loaded. This is necessary to support
+ * windowed data since we need a representative key for every item in the
+ * collection.
+ */
 export function ComboBoxNormalized({
   UNSAFE_className,
   ...props
