@@ -48,6 +48,9 @@ export type PickerPropsT<TProps, TChange = ItemKey> = Omit<
    */
   onChange?: (key: TChange) => void;
 
+  /**
+   * Method that is called when the open state of the menu changes.
+   */
   onOpenChange?: (isOpen: boolean) => void;
 
   /** Handler that is called when the picker is scrolled. */
@@ -60,9 +63,24 @@ export type PickerPropsT<TProps, TChange = ItemKey> = Omit<
   onSelectionChange?: (key: TChange) => void;
 };
 
+/**
+ * Extend Picker props for usage with normalized items list instead of React
+ * `children` elements.
+ */
 export type PickerNormalizedPropsT<TProps> = Omit<TProps, 'children'> & {
+  /**
+   * Normalized format for items and sections instead React elements.
+   */
   normalizedItems: (NormalizedItem | NormalizedSection)[];
+
+  /**
+   * Whether to show icons in items.
+   */
   showItemIcons: boolean;
+
+  /**
+   * Get the initial scroll position to use when picker is opened.
+   */
   getInitialScrollPosition?: () => Promise<number | null | undefined>;
 };
 
