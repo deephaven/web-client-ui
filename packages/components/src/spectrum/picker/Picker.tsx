@@ -1,13 +1,9 @@
 import { Picker as SpectrumPicker } from '@adobe/react-spectrum';
 import type { DOMRef } from '@react-types/shared';
 import cl from 'classnames';
-import {
-  NormalizedSpectrumPickerProps,
-  PickerPropsT,
-} from '../utils/itemUtils';
+import { NormalizedSpectrumPickerProps } from '../utils/itemUtils';
+import type { PickerProps } from './PickerProps';
 import { usePickerProps } from './usePickerProps';
-
-export type PickerProps = PickerPropsT<NormalizedSpectrumPickerProps>;
 
 /**
  * Picker component for selecting items from a list of items. Items can be

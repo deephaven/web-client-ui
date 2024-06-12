@@ -4,7 +4,7 @@ import type { DOMRef } from '@react-types/shared';
 import cl from 'classnames';
 import { EMPTY_FUNCTION } from '@deephaven/utils';
 import { Section } from '../shared';
-import type { PickerProps as PickerBaseProps } from './Picker';
+import type { PickerProps as PickerBaseProps } from './PickerProps';
 
 import {
   getItemKey,
