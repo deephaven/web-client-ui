@@ -662,16 +662,16 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
   handleScrollPaneScroll(): void {
     const scrollPane = this.consoleHistoryScrollPane.current;
     assertNotNull(scrollPane);
-    const isAtBottom =
-      Math.abs(
-        scrollPane.scrollHeight - scrollPane.clientHeight - scrollPane.scrollTop
-      ) >= 1;
-
     this.setState({
       isScrollDecorationShown:
         scrollPane.scrollTop > 0 &&
         scrollPane.scrollHeight > scrollPane.clientHeight,
-      isStuckToBottom: isAtBottom,
+      isStuckToBottom:
+        Math.abs(
+          scrollPane.scrollHeight -
+            scrollPane.clientHeight -
+            scrollPane.scrollTop
+        ) >= 1,
     });
   }
 
