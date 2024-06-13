@@ -111,6 +111,7 @@ interface ConsoleState {
   csvPaste: string | null;
   dragError: string | null;
   csvUploadInProgress: boolean;
+  isStuckToBottom: boolean;
   isAutoLaunchPanelsEnabled: boolean;
   isPrintStdOutEnabled: boolean;
   isClosePanelsOnDisconnectEnabled: boolean;
@@ -226,6 +227,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
       csvPaste: null,
       dragError: null,
       csvUploadInProgress: false,
+      isStuckToBottom: true,
 
       ...DEFAULT_SETTINGS,
       ...settings,
@@ -250,6 +252,10 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
 
     if (props.objectMap !== prevProps.objectMap) {
       this.updateObjectMap();
+    }
+
+    if (state.isStuckToBottom) {
+      this.scrollConsoleHistoryToBottom();
     }
   }
 
@@ -656,14 +662,17 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
   handleScrollPaneScroll(): void {
     const scrollPane = this.consoleHistoryScrollPane.current;
     assertNotNull(scrollPane);
-    if (
-      scrollPane.scrollTop > 0 &&
-      scrollPane.scrollHeight > scrollPane.clientHeight
-    ) {
-      this.setState({ isScrollDecorationShown: true });
-    } else {
-      this.setState({ isScrollDecorationShown: false });
-    }
+    const isAtBottom =
+      Math.abs(
+        scrollPane.scrollHeight - scrollPane.clientHeight - scrollPane.scrollTop
+      ) >= 1;
+
+    this.setState({
+      isScrollDecorationShown:
+        scrollPane.scrollTop > 0 &&
+        scrollPane.scrollHeight > scrollPane.clientHeight,
+      isStuckToBottom: isAtBottom,
+    });
   }
 
   handleToggleAutoLaunchPanels(): void {
