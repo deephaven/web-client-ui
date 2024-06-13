@@ -154,7 +154,8 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   async snapshot(
     ranges: GridRange[],
     includeHeaders?: boolean,
-    formatValue?: (value: unknown, column: DhType.Column) => unknown
+    formatValue: (value: unknown, column: DhType.Column) => unknown = value =>
+      value
   ): Promise<unknown[][]> {
     assertNotNull(this.viewport);
     assertNotNull(this.viewportData);
@@ -190,7 +191,6 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
           c <= intersection.endColumn;
           c += 1
         ) {
-          assertNotNull(formatValue);
           resultRow.push(
             formatValue(viewportRow.data.get(c)?.value, this.columns[c])
           );
