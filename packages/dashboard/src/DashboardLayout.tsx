@@ -345,6 +345,8 @@ export function DashboardLayout({
       {layoutChildren}
       {React.Children.map(children, child =>
         child != null ? (
+          // Have fallback be an empty array so that we don't show the error message over entire app
+          // Look into using toast message in the future
           <ErrorBoundary fallback={[]}>
             {React.cloneElement(child as ReactElement, {
               id,
