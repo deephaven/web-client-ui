@@ -23,6 +23,7 @@ import {
   type NavTabItem,
   SlideTransition,
   LoadingOverlay,
+  ErrorBoundary,
 } from '@deephaven/components';
 import { SHORTCUTS as IRIS_GRID_SHORTCUTS } from '@deephaven/iris-grid';
 import {
@@ -906,7 +907,11 @@ export class AppMainContainer extends Component<
                 ).href
               }
             />,
-            ...dashboardPlugins,
+            ...dashboardPlugins.map((plugin, index) => (
+              <ErrorBoundary key={plugin.key} fallback={[]}>
+                {plugin}
+              </ErrorBoundary>
+            )),
           ]}
         />
         <SlideTransition in={isSettingsMenuShown} mountOnEnter unmountOnExit>

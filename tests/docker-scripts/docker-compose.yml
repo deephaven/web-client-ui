@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   dhc-server:
     container_name: dhc-server

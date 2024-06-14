@@ -22,9 +22,9 @@ export function getDashboardPlugins(plugins: PluginModuleMap): JSX.Element[] {
 
     const { component: DPlugin } = plugin;
     return (
-      <ErrorBoundary key={pluginName} fallback={[]}>
-        <DPlugin key={pluginName} />
-      </ErrorBoundary>
+      // <ErrorBoundary key={pluginName} fallback={[]}>
+      <DPlugin key={pluginName} />
+      // </ErrorBoundary>
     );
   });
 }
