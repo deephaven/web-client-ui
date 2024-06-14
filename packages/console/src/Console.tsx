@@ -304,7 +304,6 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     }
     const { scrollHeight, clientHeight, scrollTop } =
       this.consoleHistoryScrollPane.current;
-    console.log({ scrollHeight, clientHeight, scrollTop });
     return Math.abs(scrollHeight - clientHeight - scrollTop) <= 1;
   }
 
