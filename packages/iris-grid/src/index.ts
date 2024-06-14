@@ -5,6 +5,7 @@ export { IrisGrid };
 export * from './sidebar';
 export * from './AdvancedFilterCreator';
 export * from './CommonTypes';
+export * from './mousehandlers';
 export { default as ColumnHeaderGroup } from './ColumnHeaderGroup';
 export * from './PartitionedGridModel';
 export * from './IrisGrid';
