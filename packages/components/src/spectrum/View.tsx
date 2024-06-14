@@ -99,6 +99,7 @@ export const View = forwardRef<DOMRefValue<HTMLElement>, ViewProps>(
       borderBottomColor,
       borderXColor,
       borderYColor,
+      direction,
     ]);
 
     return <SpectrumView {...rest} ref={forwardedRef} UNSAFE_style={style} />;
