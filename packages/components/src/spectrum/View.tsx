@@ -53,8 +53,8 @@ export const View = forwardRef<DOMRefValue<HTMLElement>, ViewProps>(
       ...rest
     } = props;
 
+    const { direction } = useLocale();
     const style = useMemo(() => {
-      const { direction } = useLocale();
       const borderStyle: CSSProperties = {};
       if (borderColor !== undefined) {
         borderStyle.borderColor = colorValueStyle(borderColor);
