@@ -8,12 +8,11 @@ import Linker from './linker/Linker';
 export type LinkerPluginProps = Partial<DashboardPluginComponentProps>;
 
 export function LinkerPlugin(props: LinkerPluginProps): JSX.Element {
-  throw new Error('LinkerPlugin is not implemented');
-  // assertIsDashboardPluginProps(props);
-  // const { id, layout, panelManager } = props;
-  // return (
-  //   <Linker layout={layout} localDashboardId={id} panelManager={panelManager} />
-  // );
+  assertIsDashboardPluginProps(props);
+  const { id, layout, panelManager } = props;
+  return (
+    <Linker layout={layout} localDashboardId={id} panelManager={panelManager} />
+  );
 }
 
 export default LinkerPlugin;
