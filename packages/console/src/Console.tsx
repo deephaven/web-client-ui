@@ -255,7 +255,15 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
       this.updateObjectMap();
     }
 
-    if (state.isStuckToBottom) {
+    if (
+      state.isStuckToBottom &&
+      this.consolePane.current != null &&
+      Math.abs(
+        this.consolePane.current.scrollHeight -
+          this.consolePane.current.clientHeight -
+          this.consolePane.current.scrollTop
+      ) < 1
+    ) {
       this.scrollConsoleHistoryToBottom();
     }
   }
