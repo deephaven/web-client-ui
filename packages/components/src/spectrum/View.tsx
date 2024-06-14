@@ -1,6 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import { CSSProperties, forwardRef, useMemo } from 'react';
 import {
+  useLocale,
   View as SpectrumView,
   type ViewProps as SpectrumViewProps,
 } from '@adobe/react-spectrum';
@@ -53,6 +54,7 @@ export const View = forwardRef<DOMRefValue<HTMLElement>, ViewProps>(
     } = props;
 
     const style = useMemo(() => {
+      const { direction } = useLocale();
       const borderStyle: CSSProperties = {};
       if (borderColor !== undefined) {
         borderStyle.borderColor = colorValueStyle(borderColor);
@@ -66,10 +68,14 @@ export const View = forwardRef<DOMRefValue<HTMLElement>, ViewProps>(
         borderStyle.borderBottomColor = colorValueStyle(borderYColor);
       }
       if (borderStartColor !== undefined) {
-        borderStyle.borderLeftColor = colorValueStyle(borderStartColor);
+        borderStyle[
+          direction === 'rtl' ? 'borderRightColor' : 'borderLeftColor'
+        ] = colorValueStyle(borderStartColor);
       }
       if (borderEndColor !== undefined) {
-        borderStyle.borderRightColor = colorValueStyle(borderEndColor);
+        borderStyle[
+          direction === 'rtl' ? 'borderLeftColor' : 'borderRightColor'
+        ] = colorValueStyle(borderEndColor);
       }
       if (borderTopColor !== undefined) {
         borderStyle.borderTopColor = colorValueStyle(borderTopColor);
