@@ -262,7 +262,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
         this.consolePane.current.scrollHeight -
           this.consolePane.current.clientHeight -
           this.consolePane.current.scrollTop
-      ) < 1
+      ) < 0.5
     ) {
       this.scrollConsoleHistoryToBottom();
     }
@@ -669,7 +669,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
           scrollPane.scrollHeight -
             scrollPane.clientHeight -
             scrollPane.scrollTop
-        ) <= 1,
+        ) <= 0.5,
     });
   }
 
