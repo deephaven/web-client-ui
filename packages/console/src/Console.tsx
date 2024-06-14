@@ -255,15 +255,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
       this.updateObjectMap();
     }
 
-    if (
-      state.isStuckToBottom &&
-      this.consolePane.current != null &&
-      Math.abs(
-        this.consolePane.current.scrollHeight -
-          this.consolePane.current.clientHeight -
-          this.consolePane.current.scrollTop
-      ) < 0.5
-    ) {
+    if (state.isStuckToBottom && !this.isAtBottom()) {
       this.scrollConsoleHistoryToBottom();
     }
   }
@@ -304,6 +296,16 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
       this.cancelListener();
       this.cancelListener = undefined;
     }
+  }
+
+  isAtBottom(): boolean {
+    if (this.consoleHistoryScrollPane.current == null) {
+      return false;
+    }
+    const { scrollHeight, clientHeight, scrollTop } =
+      this.consoleHistoryScrollPane.current;
+    console.log({ scrollHeight, clientHeight, scrollTop });
+    return Math.abs(scrollHeight - clientHeight - scrollTop) <= 1;
   }
 
   handleClearShortcut(event: Event): void {
@@ -664,12 +666,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
       isScrollDecorationShown:
         scrollPane.scrollTop > 0 &&
         scrollPane.scrollHeight > scrollPane.clientHeight,
-      isStuckToBottom:
-        Math.abs(
-          scrollPane.scrollHeight -
-            scrollPane.clientHeight -
-            scrollPane.scrollTop
-        ) <= 0.5,
+      isStuckToBottom: this.isAtBottom(),
     });
   }
 
