@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+// import PanelErrorBoundary from '@deephaven/dashboard';
 import {
   isDashboardPlugin,
   isLegacyDashboardPlugin,
@@ -21,9 +22,9 @@ export function getDashboardPlugins(plugins: PluginModuleMap): JSX.Element[] {
 
     const { component: DPlugin } = plugin;
     return (
-      // <ErrorBoundary key={pluginName} fallback={[]}>
+      // <PanelErrorBoundary key={pluginName}>
       <DPlugin key={pluginName} />
-      // </ErrorBoundary>
+      // </PanelErrorBoundary>
     );
   });
 }
