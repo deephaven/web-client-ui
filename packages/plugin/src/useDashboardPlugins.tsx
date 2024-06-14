@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { ErrorBoundary } from '@deephaven/components';
 import {
   isDashboardPlugin,
   isLegacyDashboardPlugin,
