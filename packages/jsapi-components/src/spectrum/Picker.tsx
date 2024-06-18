@@ -3,7 +3,7 @@ import { PickerProps } from './PickerProps';
 import { usePickerProps } from './utils';
 
 export function Picker(props: PickerProps): JSX.Element {
-  const pickerProps = usePickerProps(props);
+  const pickerProps = usePickerProps<PickerProps>(props);
 
   return (
     <PickerNormalized

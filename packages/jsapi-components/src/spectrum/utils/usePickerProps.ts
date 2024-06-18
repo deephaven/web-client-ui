@@ -2,20 +2,19 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ItemKey,
   NormalizedItem,
-  NormalizedItemData,
   NormalizedSection,
-  NormalizedSectionData,
   usePickerItemScale,
 } from '@deephaven/components';
-import { dh as DhType } from '@deephaven/jsapi-types';
+import { TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
+import { usePromiseFactory } from '@deephaven/react-hooks';
 import { PICKER_TOP_OFFSET } from '@deephaven/utils';
 import useFormatter from '../../useFormatter';
 import type { PickerWithTableProps } from '../PickerProps';
-import { getItemKeyColumn } from './itemUtils';
-import useItemRowDeserializer from './useItemRowDeserializer';
-import useGetItemIndexByValue from '../../useGetItemIndexByValue';
-import useViewportData from '../../useViewportData';
+import { getItemKeyColumn, getItemLabelColumn } from './itemUtils';
+import { useItemRowDeserializer } from './useItemRowDeserializer';
+import { useGetItemIndexByValue } from '../../useGetItemIndexByValue';
+import useSearchableViewportData from '../../useSearchableViewportData';
 
 const log = Log.module('jsapi-components.usePickerProps');
 
@@ -26,6 +25,7 @@ export type UsePickerDerivedProps = {
   getInitialScrollPosition: () => Promise<number | null>;
   onChange: (key: ItemKey | null) => void;
   onScroll: (event: Event) => void;
+  onSearchTextChange: (searchText: string) => void;
 };
 
 /** 
@@ -49,7 +49,7 @@ export type UsePickerProps<TProps> = UsePickerDerivedProps &
   UsePickerPassthroughProps<TProps>;
 
 export function usePickerProps<TProps>({
-  table,
+  table: tableSource,
   keyColumn: keyColumnName,
   labelColumn: labelColumnName,
   iconColumn: iconColumnName,
@@ -69,13 +69,35 @@ export function usePickerProps<TProps>({
     ItemKey | null | undefined
   >(props.defaultSelectedKey);
 
+  // Copy table so we can apply filters without affecting the original table.
+  // (Note that this call is not actually applying any filters. Filter will be
+  // applied in `useSearchableViewportData`.)
+  const { data: tableCopy } = usePromiseFactory(
+    TableUtils.copyTableAndApplyFilters,
+    [tableSource]
+  );
+
   const keyColumn = useMemo(
-    () => getItemKeyColumn(table, keyColumnName),
-    [keyColumnName, table]
+    () =>
+      tableCopy == null ? null : getItemKeyColumn(tableCopy, keyColumnName),
+    [keyColumnName, tableCopy]
+  );
+
+  const labelColumn = useMemo(
+    () =>
+      tableCopy == null || keyColumn == null
+        ? null
+        : getItemLabelColumn(tableCopy, keyColumn, labelColumnName),
+    [keyColumn, labelColumnName, tableCopy]
+  );
+
+  const searchColumnNames = useMemo(
+    () => (labelColumn == null ? [] : [labelColumn.name]),
+    [labelColumn]
   );
 
   const deserializeRow = useItemRowDeserializer({
-    table,
+    table: tableCopy,
     iconColumnName,
     keyColumnName,
     labelColumnName,
@@ -83,8 +105,8 @@ export function usePickerProps<TProps>({
   });
 
   const getItemIndexByValue = useGetItemIndexByValue({
-    table,
-    columnName: keyColumn.name,
+    table: tableCopy,
+    columnName: keyColumn?.name ?? null,
     value: isUncontrolled ? uncontrolledSelectedKey : props.selectedKey,
   });
 
@@ -98,15 +120,14 @@ export function usePickerProps<TProps>({
     return index * itemHeight + PICKER_TOP_OFFSET;
   }, [getItemIndexByValue, itemHeight]);
 
-  const { viewportData, onScroll, setViewport } = useViewportData<
-    NormalizedItemData | NormalizedSectionData,
-    DhType.Table
-  >({
-    reuseItemsOnTableResize: true,
-    table,
-    itemHeight,
-    deserializeRow,
-  });
+  const { onScroll, onSearchTextChange, setViewport, viewportData } =
+    useSearchableViewportData({
+      reuseItemsOnTableResize: true,
+      table: tableCopy,
+      itemHeight,
+      deserializeRow,
+      searchColumnNames,
+    });
 
   const normalizedItems = viewportData.items as (
     | NormalizedItem
@@ -158,6 +179,7 @@ export function usePickerProps<TProps>({
     getInitialScrollPosition,
     onChange: onSelectionChangeInternal,
     onScroll,
+    onSearchTextChange,
   };
 }
 
