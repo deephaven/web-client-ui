@@ -29,8 +29,8 @@ export interface UseViewportDataProps<
   table: TTable | null;
   itemHeight?: number;
   scrollDebounce?: number;
-  viewportSize?: number;
   viewportPadding?: number;
+  viewportSize?: number;
   deserializeRow?: RowDeserializer<TItem>;
 }
 
