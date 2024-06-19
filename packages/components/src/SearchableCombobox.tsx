@@ -1,8 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import { Key, useCallback } from 'react';
 import { ComboBox, Item, SpectrumComboBoxProps } from '@adobe/react-spectrum';
-import type { FocusableRef } from '@react-types/shared';
-import type { ReactSpectrumComponent } from '@deephaven/react-hooks';
+import type { DOMRefValue, FocusableRef } from '@react-types/shared';
 import TextWithTooltip from './TextWithTooltip';
 
 export interface SearchableComboboxProps<TItem, TKey extends Key>
@@ -12,7 +11,7 @@ export interface SearchableComboboxProps<TItem, TKey extends Key>
   > {
   getItemDisplayText: (item: TItem | null | undefined) => string | null;
   getKey: (item: TItem | null | undefined) => TKey | null;
-  scrollRef: React.RefObject<ReactSpectrumComponent<HTMLElement>>;
+  scrollRef: React.RefObject<DOMRefValue>;
   onSelectionChange: (key: TKey | null) => void;
 }
 

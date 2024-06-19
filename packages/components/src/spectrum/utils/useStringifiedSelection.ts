@@ -12,14 +12,14 @@ export interface UseStringifiedSelectionOptions {
   selectedKey: ItemKey | null | undefined;
   defaultSelectedKey: ItemKey | undefined;
   disabledKeys: Iterable<ItemKey> | undefined;
-  onChange: ((key: ItemKey) => void) | undefined;
+  onChange: ((key: ItemKey | null) => void) | undefined;
 }
 
 export interface UseStringifiedSelectionResult {
   defaultSelectedStringKey?: Key;
   selectedStringKey?: Key | null;
   disabledStringKeys?: Set<Key>;
-  onStringSelectionChange: (key: Key) => void;
+  onStringSelectionChange: (key: Key | null) => void;
 }
 
 /**
@@ -63,7 +63,7 @@ export function useStringifiedSelection({
   );
 
   const onStringSelectionChange = useCallback(
-    (key: Key): void => {
+    (key: Key | null): void => {
       if (onChange == null) {
         return;
       }

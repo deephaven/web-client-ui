@@ -2,9 +2,6 @@ import type { SpectrumTextFieldProps } from '@adobe/react-spectrum';
 import { KeyedItem } from '@deephaven/utils';
 import type { DOMRefValue } from '@react-types/shared';
 
-export type ReactSpectrumComponent<T extends HTMLElement = HTMLElement> =
-  DOMRefValue<T>;
-
 /**
  * Creates validation props for a Spectrum field. If `isValid` is true, returns
  * empty props. If false, returns  { errorMessage, validationState: 'invalid' }
@@ -29,9 +26,9 @@ export function createValidationProps(
  * Extract DOM node from React Spectrum component ref.
  * @param ref
  */
-export function extractSpectrumHTMLElement(
-  ref: ReactSpectrumComponent | null
-): HTMLElement | null {
+export function extractSpectrumHTMLElement<
+  THtml extends HTMLElement = HTMLElement,
+>(ref: DOMRefValue<THtml> | null): HTMLElement | null {
   return ref?.UNSAFE_getDOMNode() ?? null;
 }
 
@@ -40,9 +37,9 @@ export function extractSpectrumHTMLElement(
  * ref.
  * @param ref
  */
-export function extractSpectrumLastChildHTMLElement(
-  ref: ReactSpectrumComponent | null
-): HTMLElement | null {
+export function extractSpectrumLastChildHTMLElement<
+  THtml extends HTMLElement = HTMLElement,
+>(ref: DOMRefValue<THtml> | null): HTMLElement | null {
   const maybeHTMLElement = ref?.UNSAFE_getDOMNode().lastElementChild;
   return identityExtractHTMLElement(maybeHTMLElement);
 }
@@ -51,9 +48,9 @@ export function extractSpectrumLastChildHTMLElement(
  * Find the popover associated with a given Spectrum ComboBox ref.
  * @param ref The ref to the Spectrum ComboBox component
  */
-export function findSpectrumComboBoxScrollArea(
-  ref: ReactSpectrumComponent | null
-): HTMLElement | null {
+export function findSpectrumComboBoxScrollArea<
+  THtml extends HTMLElement = HTMLElement,
+>(ref: DOMRefValue<THtml> | null): HTMLElement | null {
   return findSpectrumPopoverScrollArea(ref, 'input');
 }
 
@@ -61,9 +58,9 @@ export function findSpectrumComboBoxScrollArea(
  * Find the popover associated with a given Spectrum Picker ref.
  * @param ref The ref to the Spectrum Picker component
  */
-export function findSpectrumPickerScrollArea(
-  ref: ReactSpectrumComponent | null
-): HTMLElement | null {
+export function findSpectrumPickerScrollArea<
+  THtml extends HTMLElement = HTMLElement,
+>(ref: DOMRefValue<THtml> | null): HTMLElement | null {
   return findSpectrumPopoverScrollArea(ref, 'button');
 }
 
@@ -74,10 +71,8 @@ export function findSpectrumPickerScrollArea(
  */
 export function findSpectrumPopoverScrollArea<
   K extends keyof HTMLElementTagNameMap,
->(
-  ref: ReactSpectrumComponent | null,
-  triggerElementType: K
-): HTMLElement | null {
+  THtml extends HTMLElement = HTMLElement,
+>(ref: DOMRefValue<THtml> | null, triggerElementType: K): HTMLElement | null {
   const maybeHTMLElement = ref?.UNSAFE_getDOMNode();
   const trigger = maybeHTMLElement?.querySelector(triggerElementType);
   const popupId = trigger?.getAttribute('aria-controls');

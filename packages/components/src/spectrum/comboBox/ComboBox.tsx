@@ -16,8 +16,8 @@ export function ComboBox({
   const {
     defaultSelectedKey,
     disabledKeys,
+    ref,
     selectedKey,
-    scrollRef,
     ...comboBoxProps
   } = usePickerProps(props);
 
@@ -25,8 +25,8 @@ export function ComboBox({
     <SpectrumComboBox
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...comboBoxProps}
-      ref={scrollRef as FocusableRef<HTMLElement>}
       UNSAFE_className={cl('dh-combobox', UNSAFE_className)}
+      ref={ref as FocusableRef<HTMLElement>}
       // Type assertions are necessary here since Spectrum types don't account
       // for number and boolean key values even though they are valid runtime
       // values.
