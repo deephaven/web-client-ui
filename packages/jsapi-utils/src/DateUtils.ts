@@ -1,5 +1,8 @@
 import type { dh as DhType } from '@deephaven/jsapi-types';
 
+const DATE_TIME_REGEX =
+  /\s*(\d{4})([-./]([\da-z]+))?([-./](\d{1,2}))?([tT\s](\d{2})([:](\d{2}))?([:](\d{2}))?([.](\d{1,9}))?)?(.*)/;
+
 interface DateParts<T> {
   year: T;
   month: T;
@@ -214,12 +217,25 @@ export class DateUtils {
    * Anything that is not captured in the string will be undefined.
    *
    * @param dateTimeString The date time string to parse
+   * @param allowOverflow If true, will allow overflow characters after the date
+   * string
    * @returns Containing the date time components
    */
-  static parseDateTimeString(dateTimeString: string): DateParts<string> {
-    const regex =
-      /\s*(\d{4})([-./]([\da-z]+))?([-./](\d{1,2}))?([tT\s](\d{2})([:](\d{2}))?([:](\d{2}))?([.](\d{1,9}))?)?(.*)/;
-    const result = regex.exec(dateTimeString);
+  static parseDateTimeString(
+    dateTimeString: string,
+    allowOverflow?: false
+  ): DateParts<string>;
+
+  static parseDateTimeString(
+    dateTimeString: string,
+    allowOverflow: true
+  ): DateParts<string> & { overflow?: string };
+
+  static parseDateTimeString(
+    dateTimeString: string,
+    allowOverflow = false
+  ): DateParts<string> & { overflow?: string } {
+    const result = DATE_TIME_REGEX.exec(dateTimeString);
     if (result == null) {
       throw new Error(`Unexpected date string: ${dateTimeString}`);
     }
@@ -241,13 +257,15 @@ export class DateUtils {
       nanos,
       overflow,
     ] = result;
-    if (overflow != null && overflow.length > 0) {
+    if (!allowOverflow && overflow != null && overflow.length > 0) {
       throw new Error(
         `Unexpected characters after date string '${dateTimeString}': ${overflow}`
       );
     }
 
-    return { year, month, date, hours, minutes, seconds, nanos };
+    const dateParts = { year, month, date, hours, minutes, seconds, nanos };
+
+    return allowOverflow ? { ...dateParts, overflow } : dateParts;
   }
 
   /**
@@ -373,6 +391,20 @@ export class DateUtils {
       return new Date(dateWrapper);
     }
     return dateWrapper.asDate();
+  }
+
+  /**
+   * Trim overflow (usually timezone) from a date time string.
+   * @param dateTimeString The date time string to trim
+   * @returns The date time string without overflow
+   */
+  static trimDateTimeStringOverflow(dateTimeString: string): string {
+    const { overflow = '' } = DateUtils.parseDateTimeString(
+      dateTimeString,
+      true
+    );
+
+    return dateTimeString.slice(0, -overflow.length);
   }
 }
 
