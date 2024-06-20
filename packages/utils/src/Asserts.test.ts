@@ -1,10 +1,30 @@
+/* eslint-disable max-classes-per-file */
 import {
+  assertInstanceOf,
   assertNever,
   assertNotEmpty,
   assertNotNaN,
   assertNotNull,
   getOrThrow,
 } from './Asserts';
+
+describe('assertInstanceOf', () => {
+  class SomeClass {}
+  class OtherClass {}
+
+  it('should not throw if an instance of', () => {
+    expect(() => assertInstanceOf(new SomeClass(), SomeClass)).not.toThrow();
+  });
+
+  it.each([{}, 'test', 1, true, new OtherClass()])(
+    'should throw if not an instance of',
+    instance => {
+      expect(() => assertInstanceOf(instance, SomeClass)).toThrowError(
+        'Expected instance of SomeClass'
+      );
+    }
+  );
+});
 
 describe('assertNever', () => {
   it.each([undefined, 'mock.name'])('should throw if called', name => {
