@@ -60,7 +60,7 @@ export function usePickerProps<TProps>({
 }: PickerWithTableProps<TProps>): UsePickerProps<TProps> {
   const { itemHeight } = usePickerItemScale();
 
-  const { getFormattedString: formatValue } = useFormatter(settings);
+  const { getFormattedString: formatValue, timeZone } = useFormatter(settings);
 
   // `null` is a valid value for `selectedKey` in controlled mode, so we check
   // for explicit `undefined` to identify uncontrolled mode.
@@ -127,6 +127,7 @@ export function usePickerProps<TProps>({
       itemHeight,
       deserializeRow,
       searchColumnNames,
+      timeZone,
     });
 
   const normalizedItems = viewportData.items as (
