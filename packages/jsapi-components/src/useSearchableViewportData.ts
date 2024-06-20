@@ -21,8 +21,9 @@ import useViewportFilter from './useViewportFilter';
 
 export interface UseSearchableViewportDataProps<TData>
   extends UseViewportDataProps<TData, dh.Table> {
-  searchColumnNames: string | string[];
   additionalFilterConditionFactories?: FilterConditionFactory[];
+  searchColumnNames: string | string[];
+  timeZone: string;
 }
 
 export interface SearchableViewportData<TData>
@@ -39,11 +40,13 @@ export interface SearchableViewportData<TData>
  * @param viewportPadding The padding around the viewport
  * @param deserializeRow The row deserializer
  * @param searchColumnNames The column names to search
+ * @param timeZone Timezone to use for date parsing
  * @param additionalFilterConditionFactories Additional filter condition factories
  */
 export function useSearchableViewportData<TData>({
-  searchColumnNames,
   additionalFilterConditionFactories = [],
+  searchColumnNames,
+  timeZone,
   ...props
 }: UseSearchableViewportDataProps<TData>): SearchableViewportData<TData> {
   const tableUtils = useTableUtils();
@@ -51,8 +54,14 @@ export function useSearchableViewportData<TData>({
   const [searchText, setSearchText] = useState<string>('');
 
   const searchTextFilter = useMemo(
-    () => createSearchTextFilter(tableUtils, searchColumnNames, searchText),
-    [searchColumnNames, searchText, tableUtils]
+    () =>
+      createSearchTextFilter(
+        tableUtils,
+        searchColumnNames,
+        searchText,
+        timeZone
+      ),
+    [searchColumnNames, searchText, tableUtils, timeZone]
   );
 
   const onSearchTextChange = useDebouncedCallback(

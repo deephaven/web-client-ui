@@ -30,11 +30,13 @@ export function createComboboxFilterArgs(
  * @param tableUtils TableUtils instance to create filter from
  * @param columnNames Names of the columns to filter
  * @param searchText Text to search (will be trimmed of leading / trailing whitespace)
+ * @param timeZone Timezone to use for date parsing
  */
 export function createSearchTextFilter(
   tableUtils: TableUtils,
   columnNames: string | string[],
-  searchText: string
+  searchText: string,
+  timeZone: string
 ): FilterConditionFactory {
   /**
    * Creates a filter condition that matches based on search text.
@@ -51,12 +53,7 @@ export function createSearchTextFilter(
 
     const factory = createFilterConditionFactory(
       columnNames,
-      col =>
-        col
-          .filter()
-          .containsIgnoreCase(
-            tableUtils.makeFilterValue(col.type, searchTextTrimmed)
-          ),
+      col => tableUtils.makeSearchTextFilter(col, searchTextTrimmed, timeZone),
       'or'
     );
 
