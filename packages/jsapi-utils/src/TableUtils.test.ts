@@ -618,6 +618,173 @@ describe('getValueType', () => {
   );
 });
 
+describe('makeSearchTextFilter', () => {
+  const mockTableUtils = new TableUtils(dh);
+  const mockSearchText = 'mock.searchText';
+  const mockTimeZone = 'mock.timeZone';
+
+  const mockReturnedFilterCondition = createMockProxy<FilterCondition>(
+    {},
+    { label: 'mockReturnedFilterCondition' }
+  );
+  const mockNeverFilterCondition = createMockProxy<FilterCondition>(
+    {},
+    { label: 'mockNeverFilterCondition' }
+  );
+  const mockMakeFilterValue = createMockProxy<FilterValue>(
+    {},
+    { label: 'mockMakeFilterValue' }
+  );
+  const mockColumnFilterResult = createMockProxy<FilterValue>(
+    {},
+    { label: 'mockColumnFilterResult' }
+  );
+  const mockOperatorResult = createMockProxy<FilterCondition>(
+    {},
+    { label: 'mockOperatorResult' }
+  );
+
+  beforeEach(() => {
+    jest.spyOn(mockTableUtils, 'makeQuickBooleanFilter');
+    jest.spyOn(mockTableUtils, 'makeQuickDateFilterWithOperation');
+    jest.spyOn(mockTableUtils, 'makeQuickNumberFilter');
+    jest.spyOn(mockTableUtils, 'makeFilterValue');
+    jest
+      .spyOn(mockTableUtils, 'makeNeverFilter')
+      .mockReturnValue(mockNeverFilterCondition);
+  });
+
+  it.each([mockReturnedFilterCondition, null])(
+    'should make boolean filters: %s',
+    returnedFilterCondition => {
+      asMock(mockTableUtils.makeQuickBooleanFilter).mockReturnValue(
+        returnedFilterCondition
+      );
+
+      const booleanColumn = createMockProxy<Column>({
+        type: TableUtils.dataType.BOOLEAN,
+      });
+
+      const actual = mockTableUtils.makeSearchTextFilter(
+        booleanColumn,
+        mockSearchText,
+        mockTimeZone
+      );
+
+      expect(mockTableUtils.makeQuickBooleanFilter).toHaveBeenCalledWith(
+        booleanColumn,
+        mockSearchText
+      );
+
+      if (returnedFilterCondition == null) {
+        expect(actual).toBe(mockNeverFilterCondition);
+      } else {
+        expect(actual).toBe(returnedFilterCondition);
+      }
+    }
+  );
+
+  it.each(['2021-07-04T08:00:00 ET', 'invalid'])(
+    'should make datetime filters: %s',
+    searchText => {
+      asMock(mockTableUtils.makeQuickDateFilterWithOperation).mockReturnValue(
+        mockReturnedFilterCondition
+      );
+
+      const dateColumn = createMockProxy<Column>({
+        type: TableUtils.dataType.DATETIME,
+      });
+
+      const actual = mockTableUtils.makeSearchTextFilter(
+        dateColumn,
+        searchText,
+        mockTimeZone
+      );
+
+      if (searchText === 'invalid') {
+        expect(actual).toBe(mockNeverFilterCondition);
+      } else {
+        expect(
+          mockTableUtils.makeQuickDateFilterWithOperation
+        ).toHaveBeenCalledWith(
+          dateColumn,
+          DateUtils.trimDateTimeStringOverflow(searchText),
+          'eq',
+          mockTimeZone
+        );
+        expect(actual).toBe(mockReturnedFilterCondition);
+      }
+    }
+  );
+
+  it.each(['java.math.BigDecimal', 'java.math.BigInteger'])(
+    'should handle big number types as string eq filters: %s',
+    bigNumberType => {
+      jest
+        .spyOn(mockTableUtils, 'makeFilterValue')
+        .mockReturnValue(mockMakeFilterValue);
+
+      asMock(mockColumnFilterResult.eq).mockImplementation(
+        () => mockOperatorResult
+      );
+
+      const bigNumberColumn = createMockProxy<Column>({
+        type: bigNumberType,
+        filter: () => mockColumnFilterResult,
+      });
+
+      const actual = mockTableUtils.makeSearchTextFilter(
+        bigNumberColumn,
+        mockSearchText,
+        mockTimeZone
+      );
+
+      expect(mockTableUtils.makeFilterValue).toHaveBeenCalledWith(
+        bigNumberColumn.type,
+        mockSearchText
+      );
+      expect(bigNumberColumn.filter().eq).toHaveBeenCalledWith(
+        mockMakeFilterValue
+      );
+      expect(actual).toBe(mockOperatorResult);
+    }
+  );
+
+  it.each([
+    TableUtils.dataType.CHAR,
+    TableUtils.dataType.STRING,
+    TableUtils.dataType.UNKNOWN,
+  ])('should default to string contains filter: %s', columnType => {
+    jest
+      .spyOn(mockTableUtils, 'makeFilterValue')
+      .mockReturnValue(mockMakeFilterValue);
+
+    asMock(mockColumnFilterResult.containsIgnoreCase).mockImplementation(
+      () => mockOperatorResult
+    );
+
+    const column = createMockProxy<Column>({
+      type: columnType,
+      filter: () => mockColumnFilterResult,
+    });
+
+    const actual = mockTableUtils.makeSearchTextFilter(
+      column,
+      mockSearchText,
+      mockTimeZone
+    );
+
+    expect(mockTableUtils.makeFilterValue).toHaveBeenCalledWith(
+      column.type,
+      mockSearchText
+    );
+    expect(column.filter().containsIgnoreCase).toHaveBeenCalledWith(
+      mockMakeFilterValue
+    );
+    expect(actual).toBe(mockOperatorResult);
+  });
+});
+
 describe('toggleSortForColumn', () => {
   it('toggles sort properly', () => {
     const columns = makeColumns();
