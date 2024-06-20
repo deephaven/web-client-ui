@@ -1,4 +1,5 @@
 import type { dh as DhType } from '@deephaven/jsapi-types';
+import { assertInstanceOf } from '@deephaven/utils';
 import TableUtils, { DataType } from './TableUtils';
 import {
   BooleanColumnFormatter,
@@ -123,7 +124,7 @@ export class Formatter {
 
   defaultColumnFormatter: TableColumnFormatter;
 
-  typeFormatterMap: Map<DataType, TableColumnFormatter>;
+  typeFormatterMap: ReadonlyMap<DataType, TableColumnFormatter>;
 
   columnFormatMap: Map<DataType, Map<string, TableColumnFormat>>;
 
@@ -207,10 +208,11 @@ export class Formatter {
    * @returns The time zone name E.g. America/New_York
    */
   get timeZone(): string {
-    const formatter = this.typeFormatterMap.get(
-      TableUtils.dataType.DATETIME
-    ) as DateTimeColumnFormatter;
-    return formatter?.dhTimeZone?.id;
+    const formatter = this.typeFormatterMap.get(TableUtils.dataType.DATETIME);
+
+    assertInstanceOf(formatter, DateTimeColumnFormatter);
+
+    return formatter.dhTimeZone.id;
   }
 }
 
