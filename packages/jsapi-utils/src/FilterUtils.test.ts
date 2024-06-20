@@ -1,11 +1,6 @@
 import { Key } from 'react';
 import dh from '@deephaven/jsapi-shim';
-import type {
-  Column,
-  FilterCondition,
-  FilterValue,
-  Table,
-} from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import { KeyedItem, TestUtils } from '@deephaven/utils';
 import {
   createComboboxFilterArgs,
@@ -20,20 +15,23 @@ import TableUtils from './TableUtils';
 
 const { asMock, createMockProxy } = TestUtils;
 
-const table = createMockProxy<Table>({});
+const table = createMockProxy<DhType.Table>({});
 const tableUtils = new TableUtils(dh);
 const makeFilterValue = jest.spyOn(tableUtils, 'makeFilterValue');
+const makeSearchTextFilter = jest.spyOn(tableUtils, 'makeSearchTextFilter');
 
 const mockColumn = {
-  A: createMockProxy<Column>({
+  A: createMockProxy<DhType.Column>({
     type: 'columnA.type',
     name: 'A',
   }),
-  B: createMockProxy<Column>({
+  B: createMockProxy<DhType.Column>({
     type: 'columnB.type',
     name: 'B',
   }),
 } as const;
+
+const mockTimeZone = 'mock.timeZone';
 
 type MockColumnName = keyof typeof mockColumn;
 
@@ -41,15 +39,15 @@ const findColumn = (columnName: string) =>
   mockColumn[columnName as MockColumnName];
 
 const makeSelectValueFilter = jest.spyOn(tableUtils, 'makeSelectValueFilter');
-const makeSelectValueFilterResult = createMockProxy<FilterCondition>({});
-const makeFilterValueResultCache = new Map<string, FilterValue>();
+const makeSelectValueFilterResult = createMockProxy<DhType.FilterCondition>({});
+const makeFilterValueResultCache = new Map<string, DhType.FilterValue>();
 
 type MonkeyName = `monkey-${string}`;
 const getMonkeyDataItem = jest.fn<KeyedItem<{ name: MonkeyName }>, [Key]>();
 const mapItem = jest.fn<Key, [KeyedItem<{ name: MonkeyName }>]>();
 
 function createMockFilterCondition(depth: number) {
-  return createMockProxy<FilterCondition>(
+  return createMockProxy<DhType.FilterCondition>(
     ['and', 'or', 'not'].reduce(
       (config, key) => {
         // eslint-disable-next-line no-param-reassign
@@ -59,7 +57,7 @@ function createMockFilterCondition(depth: number) {
           .mockReturnValue(
             depth > 0
               ? createMockFilterCondition(depth - 1)
-              : createMockProxy<FilterCondition>()
+              : createMockProxy<DhType.FilterCondition>()
           );
         return config;
       },
@@ -69,7 +67,7 @@ function createMockFilterCondition(depth: number) {
 }
 
 function createMockFilterValue() {
-  return createMockProxy<FilterValue>(
+  return createMockProxy<DhType.FilterValue>(
     [
       'contains',
       'containsIgnoreCase',
@@ -96,7 +94,7 @@ function createMockFilterValue() {
  * Get `makeFilterValue` mock result from the cache. Adds new instance to the
  * cache if it doesn't exist
  */
-function getMakeFilterValueResult(value: string): FilterValue {
+function getMakeFilterValueResult(value: string): DhType.FilterValue {
   if (!makeFilterValueResultCache.has(value)) {
     makeFilterValueResultCache.set(value, createMockFilterValue());
   }
@@ -165,7 +163,7 @@ describe('createNotNullOrEmptyFilterCondition', () => {
     );
 
     expect(column.filter().isNull().not().and).toHaveBeenCalledWith(
-      column.filter().notEq({} as FilterValue)
+      column.filter().notEq({} as DhType.FilterValue)
     );
 
     expect(actual).toBe(
@@ -173,7 +171,7 @@ describe('createNotNullOrEmptyFilterCondition', () => {
         .filter()
         .isNull()
         .not()
-        .and({} as FilterCondition)
+        .and({} as DhType.FilterCondition)
     );
   });
 });
@@ -183,11 +181,17 @@ describe('createSearchTextFilter', () => {
     const searchText = '   blah     ';
     const trimmedSearchText = 'blah';
 
-    createSearchTextFilter(tableUtils, mockColumn.A.name, searchText)(table);
+    createSearchTextFilter(
+      tableUtils,
+      mockColumn.A.name,
+      searchText,
+      mockTimeZone
+    )(table);
 
-    expect(makeFilterValue).toHaveBeenCalledWith(
-      mockColumn.A.type,
-      trimmedSearchText
+    expect(makeSearchTextFilter).toHaveBeenCalledWith(
+      mockColumn.A,
+      trimmedSearchText,
+      mockTimeZone
     );
   });
 
@@ -198,7 +202,8 @@ describe('createSearchTextFilter', () => {
       createSearchTextFilter(
         tableUtils,
         mockColumn.A.name,
-        'mock.searchText'
+        'mock.searchText',
+        mockTimeZone
       )(tableArg)
     ).toBeNull();
   });
@@ -210,7 +215,8 @@ describe('createSearchTextFilter', () => {
       createSearchTextFilter(
         tableUtils,
         mockColumn.A.name,
-        'mock.searchText'
+        'mock.searchText',
+        mockTimeZone
       )(table)
     ).toBeNull();
   });
@@ -222,7 +228,8 @@ describe('createSearchTextFilter', () => {
         createSearchTextFilter(
           tableUtils,
           mockColumn.A.name,
-          searchTextArg
+          searchTextArg,
+          mockTimeZone
         )(table)
       ).toBeNull();
     }
@@ -239,7 +246,8 @@ describe('createSearchTextFilter', () => {
       const actual = createSearchTextFilter(
         tableUtils,
         columnOrColumnNames,
-        searchText
+        searchText,
+        mockTimeZone
       )(table);
 
       // Normalize to an array
@@ -285,19 +293,19 @@ describe('createShowOnlyEmptyFilterCondition', () => {
 
       if (isOn) {
         expect(column.filter().isNull().or).toHaveBeenCalledWith(
-          column.filter().eq({} as FilterValue)
+          column.filter().eq({} as DhType.FilterValue)
         );
         expect(actual).toBe(
           column
             .filter()
             .isNull()
-            .or({} as FilterCondition)
+            .or({} as DhType.FilterCondition)
         );
       } else {
         expect(column.filter().notEq).toHaveBeenCalledWith(emptyStringValue);
-        expect(column.filter().eq({} as FilterValue).or).toHaveBeenCalledWith(
-          column.filter().notEq({} as FilterValue)
-        );
+        expect(
+          column.filter().eq({} as DhType.FilterValue).or
+        ).toHaveBeenCalledWith(column.filter().notEq({} as DhType.FilterValue));
       }
     }
   );
@@ -306,9 +314,15 @@ describe('createShowOnlyEmptyFilterCondition', () => {
 describe.each([undefined, 'and', 'or'] as const)(
   'createFilterConditionFactory: %s',
   operator => {
-    const createColumnCondition = jest.fn<FilterCondition, [Column]>();
+    const createColumnCondition = jest.fn<
+      DhType.FilterCondition,
+      [DhType.Column]
+    >();
 
-    const createMockFilterConditionResult: Record<string, FilterCondition> = {
+    const createMockFilterConditionResult: Record<
+      string,
+      DhType.FilterCondition
+    > = {
       [mockColumn.A.name]: createMockFilterCondition(1),
       [mockColumn.B.name]: createMockFilterCondition(1),
     };
