@@ -101,6 +101,7 @@ async function renderOnceAndWait(
       columnName: mock.columnName,
       mapItemToValue: mock.mapItemToValue,
       filterConditionFactories: mock.filterConditionFactories,
+      timeZone: 'mock.timeZone',
       ...overrides,
     })
   );
