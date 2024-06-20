@@ -50,6 +50,8 @@ describe('useSearchableViewportData: %s', () => {
     jest.fn(),
   ] as FilterConditionFactory[];
 
+  const mockTimeZone = 'mock.timeZone';
+
   const mockResult = {
     createSearchTextFilter: jest.fn() as FilterConditionFactory,
     useDebouncedCallback: jest.fn() as unknown as SearchTextChangeHandler,
@@ -105,6 +107,7 @@ describe('useSearchableViewportData: %s', () => {
         table,
         searchColumnNames,
         additionalFilterConditionFactories,
+        timeZone: mockTimeZone,
       })
     );
 
@@ -132,6 +135,7 @@ describe('useSearchableViewportData: %s', () => {
         table,
         searchColumnNames,
         additionalFilterConditionFactories,
+        timeZone: mockTimeZone,
       })
     );
 
@@ -139,7 +143,8 @@ describe('useSearchableViewportData: %s', () => {
       expect(createSearchTextFilter).toHaveBeenCalledWith(
         mockResult.useTableUtils,
         searchColumnNames,
-        expectedSearchText
+        expectedSearchText,
+        mockTimeZone
       );
 
       expect(useFilterConditionFactories).toHaveBeenCalledWith(
