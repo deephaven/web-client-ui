@@ -223,16 +223,6 @@ export class DateUtils {
    */
   static parseDateTimeString(
     dateTimeString: string,
-    allowOverflow?: false
-  ): DateParts<string>;
-
-  static parseDateTimeString(
-    dateTimeString: string,
-    allowOverflow: true
-  ): DateParts<string> & { overflow?: string };
-
-  static parseDateTimeString(
-    dateTimeString: string,
     allowOverflow = false
   ): DateParts<string> & { overflow?: string } {
     const result = DATE_TIME_REGEX.exec(dateTimeString);

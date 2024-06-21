@@ -618,6 +618,71 @@ describe('getValueType', () => {
   );
 });
 
+describe('makeFilterValue', () => {
+  const mockDh = {
+    FilterValue: {
+      ofString: jest.fn(),
+      ofNumber: jest.fn(),
+    },
+    LongWrapper: {
+      ofString: jest.fn(),
+    },
+  } as unknown as typeof dh;
+
+  const mockTableUtils = new TableUtils(mockDh);
+
+  it.each(['char', 'java.lang.Character', 'java.lang.String'])(
+    'should handle text type: %s',
+    columnType => {
+      const value = 'test';
+      mockTableUtils.makeFilterValue(columnType, value);
+      expect(mockDh.FilterValue.ofString).toHaveBeenCalledWith(value);
+    }
+  );
+
+  it.each(['long', 'java.lang.Long'])(
+    'should handle long type: %s',
+    columnType => {
+      const value = '1,000';
+      mockTableUtils.makeFilterValue(columnType, value);
+      expect(mockDh.LongWrapper.ofString).toHaveBeenCalledWith('1000');
+    }
+  );
+
+  it.each([
+    'io.deephaven.db.tables.utils.DBDateTime',
+    'io.deephaven.time.DateTime',
+    'java.time.Instant',
+    'java.time.ZonedDateTime',
+    'com.illumon.iris.db.tables.utils.DBDateTime',
+  ])('should handle date type: %s', columnType => {
+    const value = '2023-12-21';
+    mockTableUtils.makeFilterValue(columnType, value);
+    expect(mockDh.FilterValue.ofNumber).toHaveBeenCalledWith(
+      DateUtils.trimDateTimeStringOverflow(value)
+    );
+  });
+
+  it.each([
+    'int',
+    'java.lang.Integer',
+    'java.math.BigInteger',
+    'short',
+    'java.lang.Short',
+    'byte',
+    'java.lang.Byte',
+    'double',
+    'java.lang.Double',
+    'java.math.BigDecimal',
+    'float',
+    'java.lang.Float',
+  ])('should handle number type: %s', columnType => {
+    const value = '1,234';
+    mockTableUtils.makeFilterValue(columnType, value);
+    expect(mockDh.FilterValue.ofNumber).toHaveBeenCalledWith('1234');
+  });
+});
+
 describe('makeSearchTextFilter', () => {
   const mockTableUtils = new TableUtils(dh);
   const mockSearchText = 'mock.searchText';
