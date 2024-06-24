@@ -394,6 +394,10 @@ export class DateUtils {
       true
     );
 
+    if (overflow === '') {
+      return dateTimeString;
+    }
+
     return dateTimeString.slice(0, -overflow.length);
   }
 }

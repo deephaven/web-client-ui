@@ -450,7 +450,7 @@ describe('getJsDate', () => {
 });
 
 describe('trimDateTimeStringOverflow', () => {
-  it.each([
+  const dateTimeTexts = [
     '2024',
     '2012-04',
     '2012-04-20',
@@ -458,9 +458,22 @@ describe('trimDateTimeStringOverflow', () => {
     '2012-04-20T12:13',
     '2012-04-20T12:13:14',
     '2012-04-20T12:13:14.321',
-  ])('should trim date time string overflow: %s', expected => {
-    const given = `${expected} overflow`;
-    const actual = DateUtils.trimDateTimeStringOverflow(given);
-    expect(actual).toEqual(expected);
-  });
+  ];
+
+  it.each(dateTimeTexts)(
+    'should return given string if no overflow: %s',
+    given => {
+      const actual = DateUtils.trimDateTimeStringOverflow(given);
+      expect(actual).toEqual(given);
+    }
+  );
+
+  it.each(dateTimeTexts)(
+    'should trim date time string overflow: %s',
+    expected => {
+      const given = `${expected} overflow`;
+      const actual = DateUtils.trimDateTimeStringOverflow(given);
+      expect(actual).toEqual(expected);
+    }
+  );
 });
