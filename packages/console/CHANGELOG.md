@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.83.0](https://github.com/deephaven/web-client-ui/compare/v0.82.0...v0.83.0) (2024-06-25)
+
+### Bug Fixes
+
+- Console scroll bar following dynamic output ([#2076](https://github.com/deephaven/web-client-ui/issues/2076)) ([a91e4f3](https://github.com/deephaven/web-client-ui/commit/a91e4f348fc23618f10ac1d8c3a87bf237eb7bbd))
+
 ## [0.82.0](https://github.com/deephaven/web-client-ui/compare/v0.81.2...v0.82.0) (2024-06-11)
 
 **Note:** Version bump only for package @deephaven/console
