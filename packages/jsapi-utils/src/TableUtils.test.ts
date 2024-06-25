@@ -659,7 +659,7 @@ describe('makeFilterValue', () => {
     const value = '2023-12-21';
     mockTableUtils.makeFilterValue(columnType, value);
     expect(mockDh.FilterValue.ofNumber).toHaveBeenCalledWith(
-      DateUtils.trimDateTimeStringOverflow(value)
+      DateUtils.trimDateTimeStringTimeZone(value)
     );
   });
 
@@ -773,7 +773,7 @@ describe('makeSearchTextFilter', () => {
           mockTableUtils.makeQuickDateFilterWithOperation
         ).toHaveBeenCalledWith(
           dateColumn,
-          DateUtils.trimDateTimeStringOverflow(searchText),
+          DateUtils.trimDateTimeStringTimeZone(searchText),
           'eq',
           mockTimeZone
         );

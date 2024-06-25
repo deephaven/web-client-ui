@@ -1,7 +1,7 @@
 import type { dh as DhType } from '@deephaven/jsapi-types';
 
 const DATE_TIME_REGEX =
-  /\s*(\d{4})([-./]([\da-z]+))?([-./](\d{1,2}))?([tT\s](\d{2})([:](\d{2}))?([:](\d{2}))?([.](\d{1,9}))?)?(.*)/;
+  /\s*(\d{4})([-./](\d{1,2}|[a-z]+))?([-./](\d{1,2}))?([tT\s](\d{2})([:](\d{2}))?([:](\d{2}))?([.](\d{1,9}))?)?(.*)/;
 
 interface DateParts<T> {
   year: T;
@@ -247,6 +247,7 @@ export class DateUtils {
       nanos,
       overflow,
     ] = result;
+
     if (!allowOverflow && overflow != null && overflow.length > 0) {
       throw new Error(
         `Unexpected characters after date string '${dateTimeString}': ${overflow}`
@@ -388,7 +389,7 @@ export class DateUtils {
    * @param dateTimeString The date time string to trim
    * @returns The date time string without overflow
    */
-  static trimDateTimeStringOverflow(dateTimeString: string): string {
+  static trimDateTimeStringTimeZone(dateTimeString: string): string {
     const { overflow = '' } = DateUtils.parseDateTimeString(
       dateTimeString,
       true
@@ -396,6 +397,14 @@ export class DateUtils {
 
     if (overflow === '') {
       return dateTimeString;
+    }
+
+    // Expecting timezone overflow to be a single space followed by some
+    // combination of letters
+    if (!/^\s[A-Za-z]+/.test(overflow)) {
+      throw new Error(
+        `Unexpected timezone format in overflow: '${dateTimeString}'`
+      );
     }
 
     return dateTimeString.slice(0, -overflow.length);

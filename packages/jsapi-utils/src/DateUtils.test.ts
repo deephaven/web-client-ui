@@ -109,6 +109,37 @@ describe('dateTimeString parsing tests', () => {
     );
   });
 
+  it('handles YYYY-xxx', () => {
+    testDateTimeString('2012-mar', {
+      year: '2012',
+      month: 'mar',
+    });
+
+    testDateTimeString('2012-march', {
+      year: '2012',
+      month: 'march',
+    });
+  });
+
+  it('handles YYYY-m-d', () => {
+    testDateTimeString('2012-4-6', {
+      year: '2012',
+      month: '4',
+      date: '6',
+    });
+
+    testDateTimeString(
+      '2012-04-20 overflow',
+      {
+        year: '2012',
+        month: '04',
+        date: '20',
+        overflow: ' overflow',
+      },
+      true
+    );
+  });
+
   it('handles YYYY-mm-dd', () => {
     testDateTimeString('2012-04-20', {
       year: '2012',
@@ -304,6 +335,7 @@ describe('dateTimeString parsing tests', () => {
 
   it('throws an error for invalid dates', () => {
     testDateTimeStringThrows('not a date');
+    testDateTimeStringThrows('2013-231-04');
     testDateTimeStringThrows('20133-23-04');
     testDateTimeStringThrows('2013-23-043');
     testDateTimeStringThrows('2013-23-34zzz');
@@ -449,7 +481,7 @@ describe('getJsDate', () => {
   });
 });
 
-describe('trimDateTimeStringOverflow', () => {
+describe('trimDateTimeStringTimeZone', () => {
   const dateTimeTexts = [
     '2024',
     '2012-04',
@@ -463,7 +495,7 @@ describe('trimDateTimeStringOverflow', () => {
   it.each(dateTimeTexts)(
     'should return given string if no overflow: %s',
     given => {
-      const actual = DateUtils.trimDateTimeStringOverflow(given);
+      const actual = DateUtils.trimDateTimeStringTimeZone(given);
       expect(actual).toEqual(given);
     }
   );
@@ -472,8 +504,29 @@ describe('trimDateTimeStringOverflow', () => {
     'should trim date time string overflow: %s',
     expected => {
       const given = `${expected} overflow`;
-      const actual = DateUtils.trimDateTimeStringOverflow(given);
+      const actual = DateUtils.trimDateTimeStringTimeZone(given);
       expect(actual).toEqual(expected);
     }
   );
+
+  it.each([
+    '2024overflow',
+    '2012-04overflow',
+    '2012-04-20overflow',
+    '2012-04-20T12overflow',
+    '2012-04-20T12:13overflow',
+    '2012-04-20T12:13:14overflow',
+    '2012-04-20T12:13:14.321overflow',
+    '2024overflow',
+    '2012-04  overflow',
+    '2012-04-20  overflow',
+    '2012-04-20T12  overflow',
+    '2012-04-20T12:13  overflow',
+    '2012-04-20T12:13:14  overflow',
+    '2012-04-20T12:13:14.321  overflow',
+  ])('should throw for invalid timezone overflow: %s', invalidOverflow => {
+    expect(() => DateUtils.trimDateTimeStringTimeZone(invalidOverflow)).toThrow(
+      `Unexpected timezone format in overflow: '${invalidOverflow}'`
+    );
+  });
 });

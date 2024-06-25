@@ -1719,7 +1719,7 @@ export class TableUtils {
       if (valueType === this.dh.ValueType.DATETIME) {
         return this.makeQuickDateFilterWithOperation(
           column,
-          DateUtils.trimDateTimeStringOverflow(searchText),
+          DateUtils.trimDateTimeStringTimeZone(searchText),
           'eq',
           timeZone
         );
@@ -1889,7 +1889,7 @@ export class TableUtils {
     }
     if (TableUtils.isDateType(type)) {
       return dh.FilterValue.ofNumber(
-        DateUtils.trimDateTimeStringOverflow(value) as unknown as number
+        DateUtils.trimDateTimeStringTimeZone(value) as unknown as number
       );
     }
 
