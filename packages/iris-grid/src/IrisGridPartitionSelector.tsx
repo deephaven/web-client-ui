@@ -21,7 +21,7 @@ interface IrisGridPartitionSelectorProps {
 interface IrisGridPartitionSelectorState {
   isLoading: boolean;
 
-  underlyingTable: dh.Table | null;
+  baseTable: dh.Table | null;
 
   keysTable: dh.Table | null;
 
@@ -49,7 +49,7 @@ class IrisGridPartitionSelector extends Component<
       // We start be loading the partition tables, so we should be in a loading state
       isLoading: true,
 
-      underlyingTable: null,
+      baseTable: null,
       keysTable: null,
       partitionFilters: null,
       partitionTables: null,
@@ -71,9 +71,8 @@ class IrisGridPartitionSelector extends Component<
         t => t.close()
       );
 
-      const underlyingTable = await this.pending.add(
-        model.partitionBaseTable(),
-        t => t.close()
+      const baseTable = await this.pending.add(model.partitionBaseTable(), t =>
+        t.close()
       );
 
       const partitionTables = await Promise.all(
@@ -89,7 +88,7 @@ class IrisGridPartitionSelector extends Component<
       this.setState({
         isLoading: false,
         keysTable,
-        underlyingTable,
+        baseTable,
         partitionFilters,
         partitionTables,
       });
@@ -114,8 +113,8 @@ class IrisGridPartitionSelector extends Component<
   componentWillUnmount(): void {
     this.pending.cancel();
 
-    const { keysTable, underlyingTable, partitionTables } = this.state;
-    underlyingTable?.close();
+    const { keysTable, baseTable, partitionTables } = this.state;
+    baseTable?.close();
     keysTable?.close();
     partitionTables?.forEach(table => table.close());
   }
@@ -163,15 +162,15 @@ class IrisGridPartitionSelector extends Component<
     const newPartitions = [...prevConfig.partitions];
     newPartitions[index] = selectedValue;
 
-    const { underlyingTable } = this.state;
+    const { baseTable } = this.state;
     const { keysTable } = this.state;
 
-    assertNotNull(underlyingTable);
+    assertNotNull(baseTable);
     assertNotNull(keysTable);
     try {
       this.setState({ isLoading: true });
 
-      const t = await this.pending.add(underlyingTable.copy(), tCopy =>
+      const t = await this.pending.add(baseTable.copy(), tCopy =>
         tCopy.close()
       );
 
