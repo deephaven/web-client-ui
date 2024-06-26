@@ -172,7 +172,7 @@ class IrisGridPartitionSelector extends Component<
           );
         });
       t.applyFilter(partitionFilters);
-      t.setViewport(0, 10, t.columns);
+      t.setViewport(0, 0, t.columns);
       const data = await this.pending.add(t.getViewportData());
       const newConfig: PartitionConfig = {
         // Core JSAPI returns undefined for null table values,
@@ -291,6 +291,8 @@ class IrisGridPartitionSelector extends Component<
     if (partitionFilters !== null && partitionTables !== null) {
       partitionFilters.forEach((filter, index) => {
         partitionTables[index].applyFilter(filter as dh.FilterCondition[]);
+        // Have to set viewport since it is cleared after making selection in picker
+        // setting it to 50 to avoid loading all the data, but sufficient for most datasets for initial render
         partitionTables[index].setViewport(0, 50);
       });
     }
@@ -321,9 +323,6 @@ class IrisGridPartitionSelector extends Component<
     ));
     return (
       <div className="iris-grid-partition-selector">
-        <div className="table-name">
-          {model.isPartitionRequired ? 'Partitioned Table' : ''}
-        </div>
         <div className="partition-button-group">
           <Button
             onClick={this.handleKeyTableClick}
