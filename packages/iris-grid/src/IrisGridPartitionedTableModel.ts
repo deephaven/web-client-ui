@@ -32,6 +32,10 @@ class IrisGridPartitionedTableModel
     return true;
   }
 
+  get isPartitionAwareSourceTable(): boolean {
+    return false;
+  }
+
   get isReversible(): boolean {
     return false;
   }
@@ -58,6 +62,11 @@ class IrisGridPartitionedTableModel
 
   async partitionKeysTable(): Promise<DhType.Table> {
     return this.partitionedTable.getKeyTable();
+  }
+
+  async partitionBaseTable(): Promise<DhType.Table> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (this.partitionedTable as any).getBaseTable();
   }
 
   async partitionMergedTable(): Promise<DhType.Table> {

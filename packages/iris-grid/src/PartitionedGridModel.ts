@@ -43,8 +43,13 @@ export interface PartitionedGridModelProvider extends IrisGridModel {
   /** Whether a partition is required to be set on this model */
   get isPartitionRequired(): boolean;
 
+  /** Whether the table is a partition-aware source table or a partition table */
+  get isPartitionAwareSourceTable(): boolean;
+
   /** Get a keys table for the partitions */
   partitionKeysTable: () => Promise<dh.Table>;
+
+  partitionBaseTable: () => Promise<dh.Table>;
 
   /** Get a merged table containing all partitions */
   partitionMergedTable: () => Promise<dh.Table>;

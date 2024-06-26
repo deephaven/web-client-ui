@@ -530,7 +530,7 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     ) {
       if (partitionConfig.mode === 'keys') {
         modelPromise = this.originalModel
-          .partitionKeysTable()
+          .partitionBaseTable()
           .then(table => makeModel(this.dh, table, this.formatter));
       } else if (partitionConfig.mode === 'merged') {
         modelPromise = this.originalModel
@@ -551,6 +551,13 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
       throw new Error('Partitions are not available');
     }
     return this.originalModel.partitionKeysTable();
+  }
+
+  partitionBaseTable(): Promise<DhType.Table> {
+    if (!isPartitionedGridModelProvider(this.originalModel)) {
+      throw new Error('Partitions are not available');
+    }
+    return this.originalModel.partitionBaseTable();
   }
 
   partitionMergedTable(): Promise<DhType.Table> {
@@ -695,6 +702,12 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
   get isPartitionRequired(): boolean {
     return isPartitionedGridModelProvider(this.originalModel)
       ? this.originalModel.isPartitionRequired
+      : false;
+  }
+
+  get isPartitionAwareSourceTable(): boolean {
+    return isPartitionedGridModelProvider(this.originalModel)
+      ? this.originalModel.isPartitionAwareSourceTable
       : false;
   }
 
