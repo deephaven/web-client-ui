@@ -77,15 +77,22 @@ function AppInit(): JSX.Element {
             sessionDetails
           );
 
+          const fileSeparator = serverConfig.get('file.separator') ?? '/';
+          const notebookRoot =
+            serverConfig.get('web.storage.notebook.directory') ?? '';
+          const layoutRoot =
+            serverConfig.get('web.storage.layout.directory') ?? '';
           const storageService = client.getStorageService();
           const layoutStorage = new GrpcLayoutStorage(
             storageService,
-            import.meta.env.VITE_STORAGE_PATH_LAYOUTS ?? ''
+            layoutRoot,
+            fileSeparator
           );
           const fileStorage = new GrpcFileStorage(
             api,
             storageService,
-            import.meta.env.VITE_STORAGE_PATH_NOTEBOOKS ?? ''
+            notebookRoot,
+            fileSeparator
           );
 
           const workspaceStorage = new LocalWorkspaceStorage(layoutStorage);

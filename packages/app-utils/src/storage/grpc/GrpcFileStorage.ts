@@ -25,6 +25,8 @@ export class GrpcFileStorage implements FileStorage {
 
   private readonly root: string;
 
+  private readonly separator: string;
+
   /**
    * FileStorage implementation using gRPC
    * @param storageService Storage service to use
@@ -33,11 +35,13 @@ export class GrpcFileStorage implements FileStorage {
   constructor(
     dh: typeof DhType,
     storageService: DhType.storage.StorageService,
-    root = ''
+    root = '',
+    separator = '/'
   ) {
     this.dh = dh;
     this.storageService = storageService;
     this.root = root;
+    this.separator = separator;
   }
 
   private removeRoot(filename: string): string {
@@ -60,7 +64,12 @@ export class GrpcFileStorage implements FileStorage {
   }
 
   async getTable(): Promise<FileStorageTable> {
-    const table = new GrpcFileStorageTable(this.storageService, this.root);
+    const table = new GrpcFileStorageTable(
+      this.storageService,
+      this.root,
+      this.root,
+      this.separator
+    );
     this.tables.push(table);
     return table;
   }

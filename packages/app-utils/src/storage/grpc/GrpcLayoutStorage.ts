@@ -6,14 +6,22 @@ export class GrpcLayoutStorage implements LayoutStorage {
 
   readonly root: string;
 
+  private readonly separator: string;
+
   /**
    *
    * @param storageService The gRPC storage service to use
    * @param root The root path where the layouts are stored
+   * @param separator The separator used in the paths
    */
-  constructor(storageService: dh.storage.StorageService, root = '') {
+  constructor(
+    storageService: dh.storage.StorageService,
+    root = '',
+    separator = '/'
+  ) {
     this.storageService = storageService;
     this.root = root;
+    this.separator = separator;
   }
 
   async getLayouts(): Promise<string[]> {
@@ -24,7 +32,7 @@ export class GrpcLayoutStorage implements LayoutStorage {
 
   async getLayout(name: string): Promise<ExportedLayout> {
     const fileContents = await this.storageService.loadFile(
-      `${this.root}/${name}`
+      `${this.root}${this.separator}${name}`
     );
     const content = await fileContents.text();
 

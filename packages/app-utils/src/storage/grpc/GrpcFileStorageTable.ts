@@ -37,6 +37,8 @@ export class GrpcFileStorageTable implements FileStorageTable {
 
   private readonly root: string;
 
+  private readonly separator: string;
+
   private currentSize = 0;
 
   private currentViewport?: StorageTableViewport;
@@ -58,16 +60,19 @@ export class GrpcFileStorageTable implements FileStorageTable {
   /**
    * @param storageService The storage service to use
    * @param baseRoot Base root for the service
-   * @param root The root path for this storage table
+   * @param root Root path for this storage table
+   * @param separator Separator used in the paths
    */
   constructor(
     storageService: dh.storage.StorageService,
     baseRoot = '',
-    root = baseRoot
+    root = baseRoot,
+    separator = '/'
   ) {
     this.storageService = storageService;
     this.baseRoot = baseRoot;
     this.root = root;
+    this.separator = separator;
     if (root === baseRoot) {
       this.doRefresh = debounce(
         this.doRefresh.bind(this),
@@ -100,7 +105,7 @@ export class GrpcFileStorageTable implements FileStorageTable {
   }
 
   setExpanded(path: string, expanded: boolean): void {
-    const paths = path.split('/');
+    const paths = path.split(this.separator);
     let nextPath = paths.shift();
     if (nextPath === undefined || nextPath === '') {
       nextPath = paths.shift();
@@ -108,13 +113,13 @@ export class GrpcFileStorageTable implements FileStorageTable {
     if (nextPath === undefined || nextPath === '') {
       throw new Error(`Invalid path: ${path}`);
     }
-    const remainingPath = paths.join('/');
+    const remainingPath = paths.join(this.separator);
     if (expanded) {
       if (!this.childTables.has(nextPath)) {
         const childTable = new GrpcFileStorageTable(
           this.storageService,
           this.baseRoot,
-          `${this.root}/${nextPath}`
+          `${this.root}${this.separator}${nextPath}`
         );
         this.childTables.set(nextPath, childTable);
       }
