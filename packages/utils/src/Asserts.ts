@@ -1,4 +1,19 @@
 /**
+ * Throws if given object is not an instance of a given type.
+ * @param instance
+ * @param type
+ */
+export function assertInstanceOf<T>(
+  instance: unknown,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  type: new (...args: any[]) => T
+): asserts instance is T {
+  if (!(instance instanceof type)) {
+    throw new Error(`Expected instance of ${type.name}`);
+  }
+}
+
+/**
  * Throws an error if excecuted. Useful for exhaustive switch statements.
  *
  * e.g.

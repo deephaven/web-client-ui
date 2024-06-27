@@ -67,6 +67,7 @@ const mock = {
   searchTextFilter: jest.fn() as FilterConditionFactory,
   selectedKey: 'mock.selectedKey',
   excludeSelectedValuesFilter: jest.fn() as FilterConditionFactory,
+  timeZone: 'mock.timeZone',
   value: 'mock.value',
   viewportData: createMockProxy<WindowedListData<KeyedItem<MockItem>>>(),
 };
@@ -101,6 +102,7 @@ async function renderOnceAndWait(
       columnName: mock.columnName,
       mapItemToValue: mock.mapItemToValue,
       filterConditionFactories: mock.filterConditionFactories,
+      timeZone: 'mock.timeZone',
       ...overrides,
     })
   );
@@ -170,7 +172,8 @@ it.each([undefined, false, true])(
     expect(createSearchTextFilter).toHaveBeenCalledWith(
       tableUtils,
       mock.columnName,
-      ''
+      '',
+      mock.timeZone
     );
 
     expect(createSelectedValuesFilter).toHaveBeenCalledWith(
@@ -246,7 +249,8 @@ it.each([undefined, false, true])(
     expect(createSearchTextFilter).toHaveBeenCalledWith(
       tableUtils,
       mock.columnName,
-      trimSearchText === true ? mock.searchTextTrimmed : mock.searchText
+      trimSearchText === true ? mock.searchTextTrimmed : mock.searchText,
+      mock.timeZone
     );
 
     expect(createSelectedValuesFilter).not.toHaveBeenCalled();

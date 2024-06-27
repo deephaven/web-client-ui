@@ -43,6 +43,7 @@ describe('dateTimeString parsing tests', () => {
       minutes,
       seconds,
       nanos,
+      overflow,
     }: {
       year?: string;
       month?: string;
@@ -51,9 +52,11 @@ describe('dateTimeString parsing tests', () => {
       minutes?: string;
       seconds?: string;
       nanos?: string;
-    }
+      overflow?: string;
+    },
+    allowOverflow = false
   ) {
-    expect(DateUtils.parseDateTimeString(text)).toMatchObject({
+    const expected = {
       year,
       month,
       date,
@@ -61,7 +64,11 @@ describe('dateTimeString parsing tests', () => {
       minutes,
       seconds,
       nanos,
-    });
+    };
+
+    expect(DateUtils.parseDateTimeString(text, allowOverflow)).toMatchObject(
+      allowOverflow ? { ...expected, overflow } : expected
+    );
   }
 
   function testDateTimeStringThrows(text) {
@@ -74,6 +81,15 @@ describe('dateTimeString parsing tests', () => {
     testDateTimeString('2012', {
       year: '2012',
     });
+
+    testDateTimeString(
+      '2012 overflow',
+      {
+        year: '2012',
+        overflow: ' overflow',
+      },
+      true
+    );
   });
 
   it('handles YYYY-mm', () => {
@@ -81,6 +97,47 @@ describe('dateTimeString parsing tests', () => {
       year: '2012',
       month: '04',
     });
+
+    testDateTimeString(
+      '2012-04 overflow',
+      {
+        year: '2012',
+        month: '04',
+        overflow: ' overflow',
+      },
+      true
+    );
+  });
+
+  it('handles YYYY-xxx', () => {
+    testDateTimeString('2012-mar', {
+      year: '2012',
+      month: 'mar',
+    });
+
+    testDateTimeString('2012-march', {
+      year: '2012',
+      month: 'march',
+    });
+  });
+
+  it('handles YYYY-m-d', () => {
+    testDateTimeString('2012-4-6', {
+      year: '2012',
+      month: '4',
+      date: '6',
+    });
+
+    testDateTimeString(
+      '2012-04-20 overflow',
+      {
+        year: '2012',
+        month: '04',
+        date: '20',
+        overflow: ' overflow',
+      },
+      true
+    );
   });
 
   it('handles YYYY-mm-dd', () => {
@@ -89,6 +146,17 @@ describe('dateTimeString parsing tests', () => {
       month: '04',
       date: '20',
     });
+
+    testDateTimeString(
+      '2012-04-20 overflow',
+      {
+        year: '2012',
+        month: '04',
+        date: '20',
+        overflow: ' overflow',
+      },
+      true
+    );
   });
 
   it('handles YYYY-mm-ddTHH', () => {
@@ -98,6 +166,18 @@ describe('dateTimeString parsing tests', () => {
       date: '20',
       hours: '12',
     });
+
+    testDateTimeString(
+      '2012-04-20T12 overflow',
+      {
+        year: '2012',
+        month: '04',
+        date: '20',
+        hours: '12',
+        overflow: ' overflow',
+      },
+      true
+    );
   });
 
   it('handles YYYY-mm-ddTHH:mm', () => {
@@ -108,6 +188,19 @@ describe('dateTimeString parsing tests', () => {
       hours: '12',
       minutes: '13',
     });
+
+    testDateTimeString(
+      '2012-04-20T12:13 overflow',
+      {
+        year: '2012',
+        month: '04',
+        date: '20',
+        hours: '12',
+        minutes: '13',
+        overflow: ' overflow',
+      },
+      true
+    );
   });
 
   it('handles YYYY-mm-ddTHH:mm:ss', () => {
@@ -119,6 +212,20 @@ describe('dateTimeString parsing tests', () => {
       minutes: '13',
       seconds: '14',
     });
+
+    testDateTimeString(
+      '2012-04-20T12:13:14 overflow',
+      {
+        year: '2012',
+        month: '04',
+        date: '20',
+        hours: '12',
+        minutes: '13',
+        seconds: '14',
+        overflow: ' overflow',
+      },
+      true
+    );
   });
 
   it('handles YYYY-mm-ddTHH:mm:ss.SSS', () => {
@@ -131,6 +238,21 @@ describe('dateTimeString parsing tests', () => {
       seconds: '14',
       nanos: '321',
     });
+
+    testDateTimeString(
+      '2012-04-20T12:13:14.321 overflow',
+      {
+        year: '2012',
+        month: '04',
+        date: '20',
+        hours: '12',
+        minutes: '13',
+        seconds: '14',
+        nanos: '321',
+        overflow: ' overflow',
+      },
+      true
+    );
   });
   it('handles YYYY-mm-dd HH:mm:ss.SSSSSS', () => {
     testDateTimeString('2012-04-20 12:13:14.654321', {
@@ -142,6 +264,21 @@ describe('dateTimeString parsing tests', () => {
       seconds: '14',
       nanos: '654321',
     });
+
+    testDateTimeString(
+      '2012-04-20 12:13:14.654321 overflow',
+      {
+        year: '2012',
+        month: '04',
+        date: '20',
+        hours: '12',
+        minutes: '13',
+        seconds: '14',
+        nanos: '654321',
+        overflow: ' overflow',
+      },
+      true
+    );
   });
   it('handles YYYY-mm-dd HH:mm:ss.SSSSSS', () => {
     testDateTimeString('2012-04-20 12:13:14.654321', {
@@ -153,6 +290,21 @@ describe('dateTimeString parsing tests', () => {
       seconds: '14',
       nanos: '654321',
     });
+
+    testDateTimeString(
+      '2012-04-20 12:13:14.654321 overflow',
+      {
+        year: '2012',
+        month: '04',
+        date: '20',
+        hours: '12',
+        minutes: '13',
+        seconds: '14',
+        nanos: '654321',
+        overflow: ' overflow',
+      },
+      true
+    );
   });
   it('handles YYYY-mm-dd HH:mm:ss.SSSSSSSSS', () => {
     testDateTimeString('2012-04-20 12:13:14.987654321', {
@@ -164,10 +316,26 @@ describe('dateTimeString parsing tests', () => {
       seconds: '14',
       nanos: '987654321',
     });
+
+    testDateTimeString(
+      '2012-04-20 12:13:14.987654321 overflow',
+      {
+        year: '2012',
+        month: '04',
+        date: '20',
+        hours: '12',
+        minutes: '13',
+        seconds: '14',
+        nanos: '987654321',
+        overflow: ' overflow',
+      },
+      true
+    );
   });
 
   it('throws an error for invalid dates', () => {
     testDateTimeStringThrows('not a date');
+    testDateTimeStringThrows('2013-231-04');
     testDateTimeStringThrows('20133-23-04');
     testDateTimeStringThrows('2013-23-043');
     testDateTimeStringThrows('2013-23-34zzz');
@@ -310,5 +478,55 @@ describe('getJsDate', () => {
   it('returns a date object given a DateWrapper', () => {
     const dateWrapper = DateUtils.makeDateWrapper(dh, 'America/New_York', 2022);
     expect(DateUtils.getJsDate(dateWrapper)).toEqual(dateWrapper.asDate());
+  });
+});
+
+describe('trimDateTimeStringTimeZone', () => {
+  const dateTimeTexts = [
+    '2024',
+    '2012-04',
+    '2012-04-20',
+    '2012-04-20T12',
+    '2012-04-20T12:13',
+    '2012-04-20T12:13:14',
+    '2012-04-20T12:13:14.321',
+  ];
+
+  it.each(dateTimeTexts)(
+    'should return given string if no overflow: %s',
+    given => {
+      const actual = DateUtils.trimDateTimeStringTimeZone(given);
+      expect(actual).toEqual(given);
+    }
+  );
+
+  it.each(dateTimeTexts)(
+    'should trim date time string overflow: %s',
+    expected => {
+      const given = `${expected} overflow`;
+      const actual = DateUtils.trimDateTimeStringTimeZone(given);
+      expect(actual).toEqual(expected);
+    }
+  );
+
+  it.each([
+    '2024overflow',
+    '2012-04overflow',
+    '2012-04-20overflow',
+    '2012-04-20T12overflow',
+    '2012-04-20T12:13overflow',
+    '2012-04-20T12:13:14overflow',
+    '2012-04-20T12:13:14.321overflow',
+    '2024overflow',
+    '2012-04  overflow',
+    '2012-04-20  overflow',
+    '2012-04-20T12  overflow',
+    '2012-04-20T12:13  overflow',
+    '2012-04-20T12:13:14  overflow',
+    '2012-04-20T12:13:14.321  overflow',
+  ])('should throw for invalid timezone overflow: %s', invalidOverflow => {
+    expect(() => DateUtils.trimDateTimeStringTimeZone(invalidOverflow)).toThrow(
+      `Unexpected timezone format in overflow: '${invalidOverflow}'`
+    );
   });
 });
