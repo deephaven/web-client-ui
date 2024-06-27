@@ -142,6 +142,21 @@ describe.each([
       ],
       [
         {
+          key: '',
+          item: {
+            textValue: undefined,
+            icon: 'mock.icon',
+            content: 'mock.content',
+            description: 'mock.description',
+          },
+        },
+        'Empty',
+        'wrapIcon(mock.icon, illustration)',
+        'wrapPrimitiveWithText(mock.content, undefined)',
+        'wrapPrimitiveWithText(mock.description, description)',
+      ],
+      [
+        {
           key: undefined,
           item: {
             textValue: undefined,
