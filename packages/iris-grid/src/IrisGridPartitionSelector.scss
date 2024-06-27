@@ -18,8 +18,7 @@
   }
   .partition-button-group {
     display: flex;
-    border: 1px var(--dh-color-hr);
-    border-style: none solid;
+    border-right: 1px solid var(--dh-color-hr);
     padding: 0 $spacer-2;
     gap: $spacer-2;
   }
