@@ -137,10 +137,10 @@ export function getItemKey<
  */
 export function getItemTextValue<T>(item: ItemElement<T>): string | undefined {
   if (item.props.textValue == null) {
-    const itemKey = item.key !== undefined ? String(item.key) : undefined;
+    const itemKeyStr = item.key == null ? undefined : String(item.key);
     return ['string', 'boolean', 'number'].includes(typeof item.props.children)
       ? String(item.props.children)
-      : itemKey;
+      : itemKeyStr;
   }
 
   return item.props.textValue === ''

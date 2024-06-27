@@ -51,7 +51,8 @@ export function useRenderNormalizedItem({
       const itemKey = getItemKey(normalizedItem);
       const content = wrapPrimitiveWithText(normalizedItem.item?.content);
       const textValue =
-        normalizedItem.item?.textValue ?? (normalizedItem.item?.key as string);
+        normalizedItem.item?.textValue ??
+        (itemKey == null ? undefined : String(itemKey));
 
       const description = showItemDescriptions
         ? wrapPrimitiveWithText(normalizedItem.item?.description, 'description')
