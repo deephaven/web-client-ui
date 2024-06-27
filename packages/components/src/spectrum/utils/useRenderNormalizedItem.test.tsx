@@ -123,6 +123,16 @@ describe.each([
       [
         {
           key: 'mock.key',
+          item: { content: 'mock.content', textValue: '' },
+        },
+        'Empty',
+        'wrapIcon(undefined, illustration)',
+        'wrapPrimitiveWithText(mock.content, undefined)',
+        'wrapPrimitiveWithText(undefined, description)',
+      ],
+      [
+        {
+          key: 'mock.key',
           item: { textValue: 'mock.textValue', content: 'mock.content' },
         },
         'mock.textValue',
@@ -132,15 +142,15 @@ describe.each([
       ],
       [
         {
-          key: 'mock.key',
+          key: undefined,
           item: {
-            textValue: 'mock.textValue',
+            textValue: undefined,
             icon: 'mock.icon',
             content: 'mock.content',
             description: 'mock.description',
           },
         },
-        'mock.textValue',
+        undefined,
         'wrapIcon(mock.icon, illustration)',
         'wrapPrimitiveWithText(mock.content, undefined)',
         'wrapPrimitiveWithText(mock.description, description)',
