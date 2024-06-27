@@ -13,7 +13,7 @@ import { isPartitionedGridModel } from '../PartitionedGridModel';
  */
 class IrisGridPartitionedTableMouseHandler extends GridMouseHandler {
   constructor(irisGrid: IrisGrid) {
-    super(880);
+    super(878);
 
     this.irisGrid = irisGrid;
   }
@@ -22,15 +22,21 @@ class IrisGridPartitionedTableMouseHandler extends GridMouseHandler {
 
   onDoubleClick(gridPoint: GridPoint, grid: Grid): EventHandlerResult {
     const { column, row } = gridPoint;
+    const { irisGrid } = this;
+    const { model } = irisGrid.props;
+    const { partitionConfig } = irisGrid.state;
+
     if (
       row == null ||
       column == null ||
-      !isPartitionedGridModel(this.irisGrid.props.model)
+      !isPartitionedGridModel(model) ||
+      partitionConfig == null ||
+      partitionConfig.mode !== 'keys'
     ) {
       return false;
     }
 
-    this.irisGrid.setPartitionConfig(this.irisGrid.props.model, row);
+    this.irisGrid.selectPartitionKeyFromTable(row);
 
     return true;
   }

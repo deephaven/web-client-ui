@@ -301,7 +301,7 @@ class IrisGridTableModel
   }
 
   get isPartitionAwareSourceTable(): boolean {
-    return true;
+    return this.isPartitionRequired && true;
   }
 
   isFilterable(columnIndex: ModelIndex): boolean {

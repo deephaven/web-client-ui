@@ -511,7 +511,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         group: IrisGridContextMenuHandler.GROUP_VIEW_CONTENTS,
         order: 40,
         action: () => {
-          irisGrid.setPartitionConfig(model, rowIndex);
+          irisGrid.selectPartitionKeyFromTable(rowIndex);
         },
       });
     }
@@ -894,7 +894,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       isFilterBarShown
         ? y <= gridY
         : y <= columnHeaderHeight * columnHeaderMaxDepth &&
-          columnHeaderDepth === 0
+        columnHeaderDepth === 0
     ) {
       // grid header context menu options
       if (modelColumn != null) {
@@ -1066,9 +1066,9 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
 
     let newQuickFilter:
       | {
-          filter: null | DhType.FilterCondition | undefined;
-          text: string | null;
-        }
+        filter: null | DhType.FilterCondition | undefined;
+        text: string | null;
+      }
       | undefined
       | null = quickFilter;
     if (!newQuickFilter) {
@@ -1801,9 +1801,9 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
     const filterValue = dh.FilterValue.ofString('');
     let newQuickFilter:
       | {
-          filter: null | DhType.FilterCondition | undefined;
-          text: string | null;
-        }
+        filter: null | DhType.FilterCondition | undefined;
+        text: string | null;
+      }
       | undefined
       | null = quickFilter;
     if (!newQuickFilter) {

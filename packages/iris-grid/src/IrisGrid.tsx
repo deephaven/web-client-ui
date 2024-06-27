@@ -735,13 +735,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       new IrisGridContextMenuHandler(this, dh),
       new IrisGridDataSelectMouseHandler(this),
       new PendingMouseHandler(this),
+      new IrisGridPartitionedTableMouseHandler(this),
     ];
     if (canCopy) {
       keyHandlers.push(new CopyKeyHandler(this));
       mouseHandlers.push(new IrisGridCopyCellMouseHandler(this));
-    }
-    if (isPartitionedGridModel(model)) {
-      mouseHandlers.push(new IrisGridPartitionedTableMouseHandler(this));
     }
     const movedColumns =
       movedColumnsProp.length > 0
@@ -899,8 +897,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const changedInputFilters =
       inputFilters !== prevProps.inputFilters
         ? inputFilters.filter(
-            inputFilter => !prevProps.inputFilters.includes(inputFilter)
-          )
+          inputFilter => !prevProps.inputFilters.includes(inputFilter)
+        )
         : [];
     if (changedInputFilters.length > 0) {
       const { advancedSettings } = this.props;
@@ -1384,11 +1382,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       advancedFilters: ReadonlyAdvancedFilterMap,
       searchFilter: DhType.FilterCondition | undefined
     ) => [
-      ...(customFilters ?? []),
-      ...IrisGridUtils.getFiltersFromFilterMap(quickFilters),
-      ...IrisGridUtils.getFiltersFromFilterMap(advancedFilters),
-      ...(searchFilter !== undefined ? [searchFilter] : []),
-    ],
+        ...(customFilters ?? []),
+        ...IrisGridUtils.getFiltersFromFilterMap(quickFilters),
+        ...IrisGridUtils.getFiltersFromFilterMap(advancedFilters),
+        ...(searchFilter !== undefined ? [searchFilter] : []),
+      ],
     { max: 1 }
   );
 
@@ -2097,35 +2095,31 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     });
   }
 
-  async setPartitionConfig(
-    model: PartitionedGridModel,
-    rowIndex: GridRangeIndex
-  ): Promise<void> {
-    const keyTable = await this.pending.add(
-      model.partitionKeysTable(),
-      resolved => resolved.close()
-    );
+  /**
+   * Selects a partition key from the table based on the provided row index.
+   *
+   * @param rowIndex The index of the row from which the partition will be selected.
+   * @returns A promise that resolves when the partition key has been successfully selected.
+   */
+  selectPartitionKeyFromTable(rowIndex: GridRangeIndex): void {
+    const { model } = this.props;
     assertNotNull(rowIndex);
-    keyTable.setViewport(rowIndex, rowIndex);
-    try {
+    if (isPartitionedGridModel(model)) {
       const data = this.getRowDataMap(rowIndex);
+      const partitionColumnSet = new Set(
+        model.partitionColumns.map(column => column.name)
+      );
       const values = Object.entries(data)
-        .filter(([key, value]) =>
-          model.partitionColumns.map(column => column.name).includes(key)
-        )
-        .map(column => column[1].value);
-
+        .filter(([key, _]) => partitionColumnSet.has(key))
+        .map(([key, columnData]) => columnData.value);
       const newPartition: PartitionConfig = {
         partitions: values,
         mode: 'partition',
       };
-      keyTable.close();
       this.setState({
         isSelectingPartition: true,
         partitionConfig: newPartition,
       });
-    } catch (e) {
-      keyTable.close();
     }
   }
 
@@ -3161,10 +3155,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         pendingRowCount = Math.max(
           0,
           bottomViewport -
-            (model.rowCount - model.pendingRowCount) -
-            model.floatingTopRowCount -
-            model.floatingBottomRowCount -
-            1
+          (model.rowCount - model.pendingRowCount) -
+          model.floatingTopRowCount -
+          model.floatingBottomRowCount -
+          1
         );
       }
     }
@@ -3495,8 +3489,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.clearAllFilters();
 
     this.startLoading(
-      `Selecting distinct values in ${
-        columnNames.length > 0 ? columnNames.join(', ') : ''
+      `Selecting distinct values in ${columnNames.length > 0 ? columnNames.join(', ') : ''
       }...`
     );
 
@@ -4304,9 +4297,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     const debounceMs = metrics
       ? Math.min(
-          Math.max(IrisGrid.minDebounce, Math.round(metrics.rowCount / 200)),
-          IrisGrid.maxDebounce
-        )
+        Math.max(IrisGrid.minDebounce, Math.round(metrics.rowCount / 200)),
+        IrisGrid.maxDebounce
+      )
       : IrisGrid.maxDebounce;
 
     if (isFilterBarShown && focusedFilterBarColumn != null && metrics != null) {
@@ -4502,19 +4495,19 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           const xFilterBar = gridX + columnX + columnWidth - 20;
           const style: CSSProperties = isFilterBarShown
             ? {
-                position: 'absolute',
-                top: columnHeaderHeight,
-                left: xFilterBar,
-                width: 20,
-                height: theme.filterBarHeight,
-              }
+              position: 'absolute',
+              top: columnHeaderHeight,
+              left: xFilterBar,
+              width: 20,
+              height: theme.filterBarHeight,
+            }
             : {
-                position: 'absolute',
-                top: 0,
-                left: xColumnHeader,
-                width: columnWidth,
-                height: columnHeaderHeight,
-              };
+              position: 'absolute',
+              top: 0,
+              left: xColumnHeader,
+              width: columnWidth,
+              height: columnHeaderHeight,
+            };
           const modelColumn = this.getModelColumn(columnIndex);
           if (modelColumn != null) {
             const column = model.columns[modelColumn];
