@@ -19,7 +19,7 @@
   .partition-button-group {
     display: flex;
     border-right: 1px solid var(--dh-color-hr);
-    padding: 0 $spacer-2;
+    padding-right: $spacer-2;
     gap: $spacer-2;
   }
 }
