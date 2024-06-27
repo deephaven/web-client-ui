@@ -130,11 +130,6 @@ export function usePickerProps<TProps>({
       timeZone,
     });
 
-  const normalizedItems = viewportData.items as (
-    | NormalizedItem
-    | NormalizedSection
-  )[];
-
   useEffect(
     // Set viewport to include the selected item so that its data will load and
     // the real `key` will be available to show the selection in the UI.
@@ -175,7 +170,7 @@ export function usePickerProps<TProps>({
 
   return {
     ...props,
-    normalizedItems,
+    normalizedItems: viewportData.items,
     showItemIcons: iconColumnName != null,
     getInitialScrollPosition,
     onChange: onSelectionChangeInternal,
