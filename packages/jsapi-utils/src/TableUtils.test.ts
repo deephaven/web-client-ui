@@ -650,20 +650,6 @@ describe('makeFilterValue', () => {
   );
 
   it.each([
-    'io.deephaven.db.tables.utils.DBDateTime',
-    'io.deephaven.time.DateTime',
-    'java.time.Instant',
-    'java.time.ZonedDateTime',
-    'com.illumon.iris.db.tables.utils.DBDateTime',
-  ])('should handle date type: %s', columnType => {
-    const value = '2023-12-21';
-    mockTableUtils.makeFilterValue(columnType, value);
-    expect(mockDh.FilterValue.ofNumber).toHaveBeenCalledWith(
-      DateUtils.trimDateTimeStringTimeZone(value)
-    );
-  });
-
-  it.each([
     'int',
     'java.lang.Integer',
     'java.math.BigInteger',

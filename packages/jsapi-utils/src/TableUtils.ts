@@ -1887,11 +1887,6 @@ export class TableUtils {
         dh.LongWrapper.ofString(TableUtils.removeCommas(value))
       );
     }
-    if (TableUtils.isDateType(type)) {
-      return dh.FilterValue.ofNumber(
-        DateUtils.trimDateTimeStringTimeZone(value) as unknown as number
-      );
-    }
 
     return dh.FilterValue.ofNumber(
       TableUtils.removeCommas(value) as unknown as number
