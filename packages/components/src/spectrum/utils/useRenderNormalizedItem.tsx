@@ -8,8 +8,8 @@ import { ListActionMenu, ListActionMenuProps } from '../ListActionMenu';
 import { Item } from '../shared';
 import {
   getItemKey,
-  ItemIconSlot,
   ITEM_EMPTY_STRING_TEXT_VALUE,
+  ItemIconSlot,
   NormalizedItem,
   TooltipOptions,
 } from './itemUtils';
@@ -50,7 +50,8 @@ export function useRenderNormalizedItem({
     (normalizedItem: NormalizedItem) => {
       const itemKey = getItemKey(normalizedItem);
       const content = wrapPrimitiveWithText(normalizedItem.item?.content);
-      const textValue = normalizedItem.item?.textValue ?? '';
+      const textValue =
+        normalizedItem.item?.textValue ?? (normalizedItem.item?.key as string);
 
       const description = showItemDescriptions
         ? wrapPrimitiveWithText(normalizedItem.item?.description, 'description')
