@@ -649,7 +649,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     }
 
     window.requestAnimationFrame(() => {
-      pane.scrollTop = pane.scrollHeight;
+      pane.scrollTo({ top: pane.scrollHeight });
     });
   }
 
