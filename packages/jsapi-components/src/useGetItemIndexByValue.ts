@@ -16,14 +16,14 @@ export function useGetItemIndexByValue<TValue>({
   value,
   table,
 }: {
-  columnName: string;
+  columnName: string | null;
   table: dh.Table | null;
   value: TValue | null | undefined;
 }): () => Promise<number | null> {
   const tableUtils = useTableUtils();
 
   return useCallback(async () => {
-    if (table == null || value == null) {
+    if (table == null || value == null || columnName == null) {
       return null;
     }
 
