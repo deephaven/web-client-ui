@@ -114,7 +114,6 @@ export class GrpcFileStorageTable implements FileStorageTable {
       throw new Error(`Invalid path: ${path}`);
     }
     const remainingPath = paths.join(this.separator);
-    console.log('setExpanded', nextPath, remainingPath, expanded);
     if (expanded) {
       if (!this.childTables.has(nextPath)) {
         const childTable = new GrpcFileStorageTable(

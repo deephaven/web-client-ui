@@ -6,7 +6,7 @@ let storageService: dh.storage.StorageService;
 function makeTable(
   baseRoot = '',
   root = '',
-  separator = ''
+  separator = '/'
 ): GrpcFileStorageTable {
   return new GrpcFileStorageTable(storageService, baseRoot, root, separator);
 }
@@ -102,7 +102,6 @@ describe('directory expansion tests', () => {
     storageService.listItems = jest.fn(async path => {
       const depth = path.length > 0 ? FileUtils.getDepth(path) + 1 : 1;
       const dirContents = makeDirectoryContents(path, 5 - depth, 10 - depth);
-      console.log('dirContents for ', path, dirContents);
       return dirContents;
     });
   });
@@ -110,8 +109,7 @@ describe('directory expansion tests', () => {
   it.each(['/'])(
     `expands multiple directories correctly with '%s' separator`,
     async separator => {
-      console.log('Creating a new table');
-      const table = makeTable();
+      const table = makeTable('', '', separator);
       const handleUpdate = jest.fn();
       table.onUpdate(handleUpdate);
       table.setViewport({ top: 0, bottom: 5 });
@@ -132,9 +130,7 @@ describe('directory expansion tests', () => {
       handleUpdate.mockReset();
 
       const dirPath = `${separator}dir1${separator}`;
-      console.log(`Expanding ${dirPath}`);
       table.setExpanded(dirPath, true);
-      console.log('Done expansion');
 
       jest.runAllTimers();
 
