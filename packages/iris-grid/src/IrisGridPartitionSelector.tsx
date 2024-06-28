@@ -322,7 +322,7 @@ class IrisGridPartitionSelector extends Component<
                 ? null
                 : (partitionConfig.partitions[index] as ItemKey)
             }
-            placeholder={'Select an option' as string}
+            placeholder={'Select a key' as string}
             labelColumn={partitionTables[index].columns[index].name}
             onChange={this.getCachedChangeCallback(index)}
             isDisabled={isLoading}
@@ -339,7 +339,11 @@ class IrisGridPartitionSelector extends Component<
           <Button
             onClick={this.handlePartitionTableClick}
             kind="inline"
-            tooltip="View keys as table"
+            tooltip={
+              model.isPartitionAwareSourceTable
+                ? 'View keys as table'
+                : 'View underlying partition table'
+            }
             icon={vsKey}
             active={partitionConfig.mode === 'keys'}
             disabled={isLoading}
@@ -354,7 +358,7 @@ class IrisGridPartitionSelector extends Component<
             active={partitionConfig.mode === 'merged'}
             disabled={isLoading}
           >
-            {model.isPartitionAwareSourceTable ? 'Merge' : 'Coalesce'}
+            {model.isPartitionAwareSourceTable ? 'Coalesce' : 'Merge'}
           </Button>
         </div>
         {partitionSelectors}

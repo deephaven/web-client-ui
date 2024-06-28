@@ -213,7 +213,7 @@ class IrisGridTableModel
   }
 
   async partitionBaseTable(): Promise<DhType.Table> {
-    return this.valuesTable(this.columns);
+    return this.partitionKeysTable();
   }
 
   async partitionTable(partitions: unknown[]): Promise<DhType.Table> {
