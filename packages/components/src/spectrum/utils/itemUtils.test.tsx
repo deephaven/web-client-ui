@@ -61,7 +61,7 @@ describe('getItemTextValue', () => {
       <Item key="">
         <span>object</span>
       </Item>,
-      undefined,
+      '',
     ],
   ])(
     'should return the expected `textValue`: %s, %s',
