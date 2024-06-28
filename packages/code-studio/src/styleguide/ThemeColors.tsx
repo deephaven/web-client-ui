@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, { Fragment, useMemo } from 'react';
 import cl from 'classnames';
 import { CopyButton, Tooltip, useTheme } from '@deephaven/components';
@@ -9,13 +8,9 @@ import chart from '@deephaven/components/src/theme/theme-dark/theme-dark-semanti
 import semanticEditor from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic-editor.css?inline';
 import semanticGrid from '@deephaven/components/src/theme/theme-dark/theme-dark-semantic-grid.css?inline';
 import components from '@deephaven/components/src/theme/theme-dark/theme-dark-components.css?inline';
+import { buildColorGroups, INVALID_COLOR_BORDER_STYLE } from './colorUtils';
+import SampleSection from './SampleSection';
 import styles from './ThemeColors.module.scss';
-import { sampleSectionIdAndClasses } from './utils';
-import {
-  buildColorGroups,
-  contrastColor,
-  INVALID_COLOR_BORDER_STYLE,
-} from './colorUtils';
 
 function buildSwatchDataGroups() {
   return {
@@ -28,6 +23,17 @@ function buildSwatchDataGroups() {
   };
 }
 
+function TooltipContent({ name, value }: { name: string; value: string }) {
+  return (
+    <>
+      <div>{name}</div>
+      <div>{value}</div>
+      {/* expensive call, don't normalize until popup shown */}
+      <div>{ColorUtils.normalizeCssColor(value, true)}</div>
+    </>
+  );
+}
+
 export function ThemeColors(): JSX.Element {
   const { selectedThemeKey } = useTheme();
   const swatchDataGroups = useMemo(buildSwatchDataGroups, [selectedThemeKey]);
@@ -37,7 +43,7 @@ export function ThemeColors(): JSX.Element {
       {Object.entries(swatchDataGroups).map(([label, data], i) => {
         if (label === 'Theme Color Palette') {
           return (
-            <div key={label} {...sampleSectionIdAndClasses(label)}>
+            <SampleSection key={label} name={label}>
               <h2 className="ui-title">{label}</h2>
 
               <div className={styles.themeColorsPalette}>
@@ -66,31 +72,23 @@ export function ThemeColors(): JSX.Element {
                             value === '' && name.length > 0
                               ? INVALID_COLOR_BORDER_STYLE
                               : undefined,
-                          color: `var(--dh-color-${contrastColor(value)})`,
                         }}
                         className={cl(styles.swatch, 'px-0')}
                       >
                         <Tooltip interactive>
-                          <div>{name}</div>
-                          <div>{value}</div>
-                          <div>{ColorUtils.normalizeCssColor(value, true)}</div>
+                          <TooltipContent name={name} value={value} />
                         </Tooltip>
-                        <CopyButton
-                          copy={name}
-                          style={{
-                            color: `var(--dh-color-${contrastColor(value)})`,
-                          }}
-                        />
+                        {name && <CopyButton copy={name} />}
                       </div>
                     ))}
                   </Fragment>
                 ))}
               </div>
-            </div>
+            </SampleSection>
           );
         }
         return (
-          <div key={label} {...sampleSectionIdAndClasses(label)}>
+          <SampleSection key={label} name={label}>
             <h2 className="ui-title">{label}</h2>
             <div className={styles.themeColors}>
               {Object.entries(data).map(([group, swatchData]) => (
@@ -118,36 +116,34 @@ export function ThemeColors(): JSX.Element {
                         key={name}
                         className={styles.swatch}
                         style={{
-                          backgroundColor: value,
                           border:
                             value === '' && name.length > 0
                               ? INVALID_COLOR_BORDER_STYLE
                               : undefined,
-                          color: `var(--dh-color-${contrastColor(value)})`,
                         }}
                       >
+                        <div
+                          style={{
+                            backgroundColor: value,
+                            height: 'var(--swatch-height)',
+                            aspectRatio: '1 / 1',
+                          }}
+                        />
                         <Tooltip interactive>
-                          <div>{name}</div>
-                          <div>{value}</div>
-                          <div>{ColorUtils.normalizeCssColor(value, true)}</div>
+                          <TooltipContent name={name} value={value} />
                         </Tooltip>
                         <span>{name.replace('--dh-color-', '')}</span>
                         {name.endsWith('-hue') || note != null ? (
                           <span>{note ?? value}</span>
                         ) : null}
-                        <CopyButton
-                          copy={name}
-                          style={{
-                            color: `var(--dh-color-${contrastColor(value)})`,
-                          }}
-                        />
+                        <CopyButton copy={name} />
                       </div>
                     )
                   )}
                 </div>
               ))}
             </div>
-          </div>
+          </SampleSection>
         );
       })}
     </>

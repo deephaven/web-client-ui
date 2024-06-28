@@ -10,7 +10,7 @@ import React, {
   MouseEvent,
 } from 'react';
 import memoizeOne from 'memoize-one';
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   vsEdit,
@@ -29,7 +29,7 @@ import {
   Button,
   CardFlip,
   RadioGroup,
-  RadioItem,
+  Radio,
   Select,
 } from '@deephaven/components';
 
@@ -240,7 +240,7 @@ class FilterSetManager extends Component<
   handleCaptureNewSet(): void {
     const { getFilterState } = this.props;
     FilterSetManager.animateScreenFlash();
-    const id = shortid();
+    const id = nanoid();
     const panels = getFilterState();
     const renameSet = {
       id,
@@ -255,9 +255,9 @@ class FilterSetManager extends Component<
     this.setState({ renameSet: undefined });
   }
 
-  handleRestoreFullStateChange(event: ChangeEvent<HTMLInputElement>): void {
+  handleRestoreFullStateChange(value: string): void {
     this.setState({
-      restoreFullState: event.target.value === 'true',
+      restoreFullState: value === 'true',
     });
   }
 
@@ -583,13 +583,12 @@ class FilterSetManager extends Component<
                   </div>
                   <div className="form-group">
                     <RadioGroup
+                      aria-label="Restoration options"
                       onChange={this.handleRestoreFullStateChange}
                       value={`${restoreFullState}`}
                     >
-                      <RadioItem value="false">Restore only filters</RadioItem>
-                      <RadioItem value="true">
-                        Restore full table state
-                      </RadioItem>
+                      <Radio value="false">Restore only filters</Radio>
+                      <Radio value="true">Restore full table state</Radio>
                     </RadioGroup>
                   </div>
                 </div>

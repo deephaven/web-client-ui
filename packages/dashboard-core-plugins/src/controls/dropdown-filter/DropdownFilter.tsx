@@ -22,7 +22,7 @@ import { TableUtils } from '@deephaven/jsapi-utils';
 import memoizee from 'memoizee';
 import memoize from 'memoize-one';
 import debounce from 'lodash.debounce';
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 import Log from '@deephaven/log';
 import './DropdownFilter.scss';
 import { LinkPoint } from '../../linker/LinkerUtils';
@@ -107,7 +107,7 @@ export class DropdownFilter extends Component<
     const { column, isValueShown, value } = props;
     this.state = {
       column,
-      id: shortid(),
+      id: nanoid(),
       selectedColumn: column,
       disableCancel: !isValueShown,
       isValueShown,

@@ -18,6 +18,10 @@ const OUTPUT_SIZE = 512;
 const codiconFolder = { dir: path.resolve(BUILD_DIR, 'svg/vs'), prefix: 'vs' };
 const dhiconFolder = { dir: path.resolve(BUILD_DIR, 'svg/dh'), prefix: 'dh' };
 
+const EXCLUDED_ICONS = [
+  'repo-fetch', // excluded because rounded rects can't be converted to a single path by svgo
+];
+
 function getPrefixedName(name, prefix) {
   return (
     prefix.toLowerCase() +
@@ -47,7 +51,12 @@ async function getFiles(src) {
   const files = await getFilesInFolder(src.dir);
   const contents = await Promise.all(
     files
-      .filter(file => file.slice(file.length - 1) !== '.svg')
+      .filter(
+        file =>
+          // file is svg and not in excluded list
+          file.endsWith('.svg') &&
+          EXCLUDED_ICONS.indexOf(file.slice(0, -4)) === -1
+      )
       .map(async file => {
         const name = file.slice(0, -4);
         return {

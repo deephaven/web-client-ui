@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, { Key, useCallback, useEffect, useState } from 'react';
 import {
   ActionButton,
@@ -31,6 +30,7 @@ type LinkCategory = { category: string; items: Link[] };
 export function SampleMenuCategory(
   props: Record<typeof MENU_CATEGORY_DATA_ATTRIBUTE, string>
 ): JSX.Element {
+  // eslint-disable-next-line react/jsx-props-no-spreading
   return <div {...props} />;
 }
 

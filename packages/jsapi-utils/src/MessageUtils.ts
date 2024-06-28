@@ -1,4 +1,4 @@
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 import Log from '@deephaven/log';
 import { TimeoutError } from '@deephaven/utils';
 
@@ -79,7 +79,7 @@ export function isResponse(obj: unknown): obj is Response {
  */
 export function makeMessage<T>(
   message: string,
-  id = shortid(),
+  id = nanoid(),
   payload?: T
 ): Message<T> {
   return { message, id, payload };
@@ -121,7 +121,7 @@ export async function requestParentResponse(
   }
   return new Promise((resolve, reject) => {
     let timeoutId: number;
-    const id = shortid();
+    const id = nanoid();
     const listener = (event: MessageEvent): void => {
       const { data } = event;
       if (!isResponse(data)) {

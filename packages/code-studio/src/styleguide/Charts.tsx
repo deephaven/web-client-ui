@@ -1,11 +1,8 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, { ReactElement, useState } from 'react';
 import { Chart, ChartModel, MockChartModel } from '@deephaven/chart';
 import { useApi } from '@deephaven/jsapi-bootstrap';
-import {
-  sampleSectionIdAndClasses,
-  useSeededRandomNumberCallback,
-} from './utils';
+import { useSeededRandomNumberCallback } from './utils';
+import SampleSection from './SampleSection';
 
 function Charts(): ReactElement {
   const dh = useApi();
@@ -15,12 +12,12 @@ function Charts(): ReactElement {
   const [model] = useState(() => new MockChartModel(dh));
 
   return (
-    <div {...sampleSectionIdAndClasses('charts')}>
+    <SampleSection name="charts">
       <h2 className="ui-title">Chart</h2>
       <div style={{ height: 500 }}>
         <Chart model={model as ChartModel} />
       </div>
-    </div>
+    </SampleSection>
   );
 }
 

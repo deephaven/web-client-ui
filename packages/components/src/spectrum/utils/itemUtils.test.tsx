@@ -9,14 +9,15 @@ import {
   NormalizedItem,
   NormalizedSection,
   normalizeTooltipOptions,
-  ItemElementOrPrimitive,
   ItemOrSection,
   SectionElement,
   itemSelectionToStringSet,
   getPositionOfSelectedItemElement,
   isItemElementWithDescription,
+  getItemTextValue,
+  ITEM_EMPTY_STRING_TEXT_VALUE,
 } from './itemUtils';
-import { Item, Section } from '../shared';
+import { Item, ItemElementOrPrimitive, Section } from '../shared';
 import { Text } from '../Text';
 import ItemContent from '../ItemContent';
 
@@ -29,13 +30,44 @@ describe('getItemKey', () => {
     [{ key: 'top-level.key', item: { key: 'item.key' } }, 'item.key'],
     [{ key: 'top-level.key', item: {} }, 'top-level.key'],
     [{ key: 'top-level.key' }, 'top-level.key'],
-    [{ item: { key: 'item.key' } }, 'item.key'],
-    [{}, undefined],
-  ] as NormalizedItem[])(
+  ] as [NormalizedItem, string][])(
     'should return the item.key or fallback to the top-level key: %s, %s',
     (given, expected) => {
       const actual = getItemKey(given);
       expect(actual).toBe(expected);
+    }
+  );
+});
+
+describe('getItemTextValue', () => {
+  it.each([
+    [<Item key="">string</Item>, 'string'],
+    [<Item key="">{4}</Item>, '4'],
+    [<Item key="">{true}</Item>, 'true'],
+    [<Item key="">{false}</Item>, 'false'],
+    [
+      <Item key="" textValue="textValue">
+        string
+      </Item>,
+      'textValue',
+    ],
+    [
+      <Item key="" textValue="">
+        string
+      </Item>,
+      ITEM_EMPTY_STRING_TEXT_VALUE,
+    ],
+    [
+      <Item key="">
+        <span>object</span>
+      </Item>,
+      '',
+    ],
+  ])(
+    'should return the expected `textValue`: %s, %s',
+    (item, expectedValue) => {
+      const actual = getItemTextValue(item);
+      expect(actual).toBe(expectedValue);
     }
   );
 });
@@ -224,8 +256,8 @@ describe('isItemOrSection', () => {
 
 describe('isNormalizedSection', () => {
   it.each([
-    [{ item: {} } as NormalizedItem, false],
-    [{ item: { items: [] } } as NormalizedSection, true],
+    [{ key: 'mock.key', item: {} } as NormalizedItem, false],
+    [{ key: 'mock.key', item: { items: [] } } as NormalizedSection, true],
   ])('should return true for a normalized section: %s', (obj, expected) => {
     expect(isNormalizedSection(obj)).toBe(expected);
   });

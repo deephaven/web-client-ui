@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Log from '@deephaven/log';
 import { ComboBox } from '@deephaven/components';
 import type { dh as DhType } from '@deephaven/jsapi-types';
@@ -115,23 +115,19 @@ function ColumnFormatEditor(props: ColumnFormatEditorProps): JSX.Element {
     [onChange, selectedColumn, selectedStyle, conditionConfig, conditionValid]
   );
 
-  const columnInputOptions = columns.map(({ name }) => ({
-    title: name,
-    value: name,
-  }));
+  const columnNames = useMemo(() => columns.map(({ name }) => name), [columns]);
 
   return (
     <div className="conditional-rule-editor form">
       <div className="mb-2">
         <label className="mb-0">Format Cell If</label>
         <ComboBox
-          defaultValue={selectedColumn?.name}
-          options={columnInputOptions}
-          inputPlaceholder="Select a column"
-          spellCheck={false}
+          aria-label="Select column to format"
+          defaultSelectedKey={selectedColumn?.name}
           onChange={handleColumnChange}
-          searchPlaceholder="Filter columns"
-        />
+        >
+          {columnNames}
+        </ComboBox>
       </div>
 
       {selectedColumn !== undefined && (

@@ -28,22 +28,37 @@
 }
 
 .dh-list-view-wrapper-density-compact {
-  svg[class*='react-spectrum-ListViewItem-thumbnail'] {
+  // Ensure icons don't change the item height
+  svg[class*='spectrum-Icon'] {
     height: var(--dh-list-view-item-icon-compact);
     width: var(--dh-list-view-item-icon-compact);
+  }
+  // Ensure action buttons don't change the item height
+  button {
+    height: var(--dh-list-view-item-icon-compact);
   }
 }
 
 .dh-list-view-wrapper-density-regular {
-  svg[class*='react-spectrum-ListViewItem-thumbnail'] {
+  // Ensure icons don't change the item height
+  svg[class*='spectrum-Icon'] {
     height: var(--dh-list-view-item-icon-regular);
     width: var(--dh-list-view-item-icon-regular);
+  }
+  // Ensure action buttons don't change the item height
+  button {
+    height: var(--dh-list-view-item-icon-regular);
   }
 }
 
 .dh-list-view-wrapper-density-spacious {
-  svg[class*='react-spectrum-ListViewItem-thumbnail'] {
+  // Ensure icons don't change the item height
+  svg[class*='spectrum-Icon'] {
     height: var(--dh-list-view-item-icon-spacious);
     width: var(--dh-list-view-item-icon-spacious);
+  }
+  // Ensure action buttons don't change the item height
+  button {
+    height: var(--dh-list-view-item-icon-spacious);
   }
 }

@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { dh } from '@deephaven/jsapi-types';
 import {
   RowDeserializer,
   defaultRowDeserializer,
   isClosed,
   createOnTableUpdatedHandler,
+  OnTableUpdatedEvent,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { useApi } from '@deephaven/jsapi-bootstrap';
@@ -78,6 +79,8 @@ export function useViewportData<TItem, TTable extends dh.Table | dh.TreeTable>({
   deserializeRow = defaultRowDeserializer,
   reuseItemsOnTableResize = false,
 }: UseViewportDataProps<TItem, TTable>): UseViewportDataResult<TItem, TTable> {
+  const currentViewportFirstRowRef = useRef<number>(0);
+
   const viewportData = useInitializeViewportData<TItem>(
     table,
     reuseItemsOnTableResize
@@ -91,6 +94,8 @@ export function useViewportData<TItem, TTable extends dh.Table | dh.TreeTable>({
 
   const setViewport = useCallback(
     (firstRow: number) => {
+      currentViewportFirstRowRef.current = firstRow;
+
       if (table && !isClosed(table)) {
         setPaddedViewport(firstRow);
       } else {
@@ -114,20 +119,35 @@ export function useViewportData<TItem, TTable extends dh.Table | dh.TreeTable>({
 
   const dh = useApi();
 
-  const onTableUpdated = useMemo(
+  // Store the memoized callback in a ref so that changes to `viewportData`
+  // don't invalidate the memoization of `onTableUpdated`. This prevents
+  // `useTableListener` from unnecessarily re-subscribing to the same event over
+  // and over.
+  const onTableUpdatedRef = useRef<(event: OnTableUpdatedEvent) => void>();
+  onTableUpdatedRef.current = useMemo(
     () => createOnTableUpdatedHandler(viewportData, deserializeRow),
     [deserializeRow, viewportData]
   );
+
+  const onTableUpdated = useCallback((event: OnTableUpdatedEvent) => {
+    onTableUpdatedRef.current?.(event);
+  }, []);
 
   useTableListener(table, dh.Table.EVENT_UPDATED, onTableUpdated);
 
   const size = useTableSize(table);
 
   useEffect(() => {
+    log.debug('Initializing viewport');
+
     // Hydrate the viewport with real data. This will fetch data from index
     // 0 to the end of the viewport + padding.
     setViewport(0);
-  }, [table, setViewport, size]);
+  }, [table, setViewport]);
+
+  useEffect(() => {
+    setViewport(currentViewportFirstRowRef.current);
+  }, [setViewport, size]);
 
   const onScroll = useOnScrollOffsetChangeCallback(
     itemHeight,

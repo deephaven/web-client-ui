@@ -21,6 +21,15 @@ export interface UITreeRow extends UIRow {
   hasChildren: boolean;
   depth: number;
 }
+
+type LayoutTreeTable = DhType.TreeTable & {
+  layoutHints?: null | DhType.LayoutHints;
+};
+
+function isLayoutTreeTable(table: DhType.TreeTable): table is LayoutTreeTable {
+  return (table as LayoutTreeTable).layoutHints !== undefined;
+}
+
 class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   DhType.TreeTable,
   UITreeRow
@@ -145,7 +154,8 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   async snapshot(
     ranges: GridRange[],
     includeHeaders?: boolean,
-    formatValue?: (value: unknown, column: DhType.Column) => unknown
+    formatValue: (value: unknown, column: DhType.Column) => unknown = value =>
+      value
   ): Promise<unknown[][]> {
     assertNotNull(this.viewport);
     assertNotNull(this.viewportData);
@@ -181,7 +191,6 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
           c <= intersection.endColumn;
           c += 1
         ) {
-          assertNotNull(formatValue);
           resultRow.push(
             formatValue(viewportRow.data.get(c)?.value, this.columns[c])
           );
@@ -228,6 +237,13 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     // Source for the proxied column could be any of the grouped columns.
     // Return the range of columns matching the grouped columns.
     return [this.virtualColumns.length, this.groupedColumns.length];
+  }
+
+  get layoutHints(): DhType.LayoutHints | null | undefined {
+    if (isLayoutTreeTable(this.table)) {
+      return this.table.layoutHints;
+    }
+    return undefined;
   }
 
   get hasExpandableRows(): boolean {

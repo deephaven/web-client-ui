@@ -1,5 +1,6 @@
 import { act, renderHook } from '@testing-library/react-hooks';
-import type { FilterCondition, Table } from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
+import { usePickerItemScale } from '@deephaven/components';
 import {
   createSearchTextFilter,
   createSelectedValuesFilter,
@@ -21,6 +22,10 @@ jest.mock('./useFilterConditionFactories');
 jest.mock('./useTableUtils');
 jest.mock('./useViewportData');
 jest.mock('./useViewportFilter');
+jest.mock('@deephaven/components', () => ({
+  ...jest.requireActual('@deephaven/components'),
+  usePickerItemScale: jest.fn(),
+}));
 jest.mock('@deephaven/jsapi-utils', () => ({
   ...jest.requireActual('@deephaven/jsapi-utils'),
   createSearchTextFilter: jest.fn(),
@@ -48,8 +53,8 @@ const mock = {
     typeof useDebouncedValue
   >,
   filter: [
-    createMockProxy<FilterCondition>(),
-    createMockProxy<FilterCondition>(),
+    createMockProxy<DhType.FilterCondition>(),
+    createMockProxy<DhType.FilterCondition>(),
   ],
   filterConditionFactories: [jest.fn(), jest.fn()] as FilterConditionFactory[],
   keyedItem: createMockProxy<KeyedItem<MockItem>>({
@@ -62,17 +67,20 @@ const mock = {
   searchTextFilter: jest.fn() as FilterConditionFactory,
   selectedKey: 'mock.selectedKey',
   excludeSelectedValuesFilter: jest.fn() as FilterConditionFactory,
+  timeZone: 'mock.timeZone',
   value: 'mock.value',
   viewportData: createMockProxy<WindowedListData<KeyedItem<MockItem>>>(),
 };
 
 const mockTable = {
-  usersAndGroups: createMockProxy<Table>(),
-  list: createMockProxy<Table>(),
+  usersAndGroups: createMockProxy<DhType.Table>(),
+  list: createMockProxy<DhType.Table>(),
 };
 
 function mockUseViewportData(size: number) {
-  const viewportData = createMockProxy<UseViewportDataResult<MockItem, Table>>({
+  const viewportData = createMockProxy<
+    UseViewportDataResult<MockItem, DhType.Table>
+  >({
     table: mockTable.list,
     viewportData: mock.viewportData,
     size,
@@ -80,7 +88,9 @@ function mockUseViewportData(size: number) {
 
   asMock(useViewportData)
     .mockName('useViewportData')
-    .mockReturnValue(viewportData as UseViewportDataResult<unknown, Table>);
+    .mockReturnValue(
+      viewportData as UseViewportDataResult<unknown, DhType.Table>
+    );
 }
 
 async function renderOnceAndWait(
@@ -92,6 +102,7 @@ async function renderOnceAndWait(
       columnName: mock.columnName,
       mapItemToValue: mock.mapItemToValue,
       filterConditionFactories: mock.filterConditionFactories,
+      timeZone: 'mock.timeZone',
       ...overrides,
     })
   );
@@ -104,6 +115,9 @@ async function renderOnceAndWait(
 beforeEach(() => {
   jest.clearAllMocks();
 
+  asMock(usePickerItemScale).mockName('usePickerItemScale').mockReturnValue({
+    itemHeight: 32,
+  });
   asMock(useTableUtils).mockName('useTableUtils').mockReturnValue(tableUtils);
 
   asMock(mock.mapItemToValue)
@@ -158,7 +172,8 @@ it.each([undefined, false, true])(
     expect(createSearchTextFilter).toHaveBeenCalledWith(
       tableUtils,
       mock.columnName,
-      ''
+      '',
+      mock.timeZone
     );
 
     expect(createSelectedValuesFilter).toHaveBeenCalledWith(
@@ -234,7 +249,8 @@ it.each([undefined, false, true])(
     expect(createSearchTextFilter).toHaveBeenCalledWith(
       tableUtils,
       mock.columnName,
-      trimSearchText === true ? mock.searchTextTrimmed : mock.searchText
+      trimSearchText === true ? mock.searchTextTrimmed : mock.searchText,
+      mock.timeZone
     );
 
     expect(createSelectedValuesFilter).not.toHaveBeenCalled();

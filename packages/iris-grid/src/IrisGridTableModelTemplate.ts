@@ -3,6 +3,8 @@
 import memoize from 'memoize-one';
 import throttle from 'lodash.throttle';
 import {
+  DeletableGridModel,
+  EditableGridModel,
   EditOperation,
   GridRange,
   GridUtils,
@@ -52,9 +54,12 @@ export function isIrisGridTableModelTemplate(
  */
 
 class IrisGridTableModelTemplate<
-  T extends DhType.Table | DhType.TreeTable = DhType.Table,
-  R extends UIRow = UIRow,
-> extends IrisGridModel {
+    T extends DhType.Table | DhType.TreeTable = DhType.Table,
+    R extends UIRow = UIRow,
+  >
+  extends IrisGridModel
+  implements DeletableGridModel, EditableGridModel
+{
   static ROW_BUFFER_PAGES = 1;
 
   seekRow(
@@ -172,6 +177,8 @@ class IrisGridTableModelTemplate<
 
   private _columnHeaderGroups: ColumnHeaderGroup[] = [];
 
+  private _isColumnHeaderGroupsInitialized = false;
+
   private _movedColumns: MoveOperation[] | null = null;
 
   /**
@@ -219,11 +226,6 @@ class IrisGridTableModelTemplate<
     // These rows can be sparse, so using a map instead of an array.
     this.pendingNewDataMap = new Map();
     this.pendingNewRowCount = 0;
-
-    this.columnHeaderGroups = IrisGridUtils.parseColumnHeaderGroups(
-      this,
-      this.layoutHints?.columnGroups ?? []
-    ).groups;
   }
 
   close(): void {
@@ -453,6 +455,10 @@ class IrisGridTableModelTemplate<
 
   get isEditable(): boolean {
     return !this.isSaveInProgress && this.inputTable != null;
+  }
+
+  get isDeletable(): boolean {
+    return this.keyColumnSet.size > 0;
   }
 
   get isViewportPending(): boolean {
@@ -914,10 +920,12 @@ class IrisGridTableModelTemplate<
   }
 
   get columnHeaderGroupMap(): Map<string, ColumnHeaderGroup> {
+    this.initializeColumnHeaderGroups();
     return this._columnHeaderGroupMap;
   }
 
   get columnHeaderGroups(): ColumnHeaderGroup[] {
+    this.initializeColumnHeaderGroups();
     return this._columnHeaderGroups;
   }
 
@@ -940,6 +948,16 @@ class IrisGridTableModelTemplate<
     this.columnHeaderMaxDepth = maxDepth;
     this.columnHeaderParentMap = parentMap;
     this._columnHeaderGroupMap = groupMap;
+    this._isColumnHeaderGroupsInitialized = true;
+  }
+
+  private initializeColumnHeaderGroups(): void {
+    if (!this._isColumnHeaderGroupsInitialized) {
+      this.columnHeaderGroups = IrisGridUtils.parseColumnHeaderGroups(
+        this,
+        this.layoutHints?.columnGroups ?? []
+      ).groups;
+    }
   }
 
   row(y: ModelIndex): R | null {
@@ -1604,7 +1622,7 @@ class IrisGridTableModelTemplate<
   }
 
   isKeyColumn(x: ModelIndex): boolean {
-    return x < (this.inputTable?.keyColumns.length ?? 0);
+    return this.keyColumnSet.has(this.columns[x].name);
   }
 
   isRowMovable(): boolean {
@@ -1623,13 +1641,22 @@ class IrisGridTableModelTemplate<
     // Pending rows are always editable
     const isPendingRange =
       this.isPendingRow(range.startRow) && this.isPendingRow(range.endRow);
+
+    let isKeyColumnInRange = false;
+    // Check if any of the columns in grid range are key columns
+    for (
+      let column = range.startColumn;
+      column <= range.endColumn;
+      column += 1
+    ) {
+      if (this.isKeyColumn(column)) {
+        isKeyColumnInRange = true;
+        break;
+      }
+    }
+
     if (
-      !(
-        isPendingRange ||
-        (this.inputTable.keyColumns.length !== 0 &&
-          range.startColumn >= this.inputTable.keyColumns.length &&
-          range.endColumn >= this.inputTable.keyColumns.length)
-      )
+      !(isPendingRange || (this.keyColumnSet.size !== 0 && !isKeyColumnInRange))
     ) {
       return false;
     }
@@ -1715,8 +1742,11 @@ class IrisGridTableModelTemplate<
    * @param value The values to set
    * @returns A promise that resolves successfully when the operation is complete, or rejects if there's an error
    */
-  async setValueForRanges(ranges: GridRange[], text: string): Promise<void> {
-    if (!this.isEditableRanges(ranges)) {
+  async setValueForRanges(
+    ranges: readonly GridRange[],
+    text: string
+  ): Promise<void> {
+    if (!this.isEditableRanges(ranges as GridRange[])) {
       throw new Error(`Uneditable ranges ${ranges}`);
     }
 
@@ -1853,7 +1883,7 @@ class IrisGridTableModelTemplate<
     }
   }
 
-  async setValues(edits: EditOperation[] = []): Promise<void> {
+  async setValues(edits: readonly EditOperation[] = []): Promise<void> {
     log.debug('setValues(', edits, ')');
     if (
       !edits.every(edit =>
@@ -2047,11 +2077,11 @@ class IrisGridTableModelTemplate<
     }
   }
 
-  editValueForCell(x: ModelIndex, y: ModelIndex): string | null | undefined {
-    return this.textValueForCell(x, y);
+  editValueForCell(column: ModelIndex, row: ModelIndex): string {
+    return this.textValueForCell(column, row) ?? '';
   }
 
-  async delete(ranges: GridRange[]): Promise<void> {
+  async delete(ranges: readonly GridRange[]): Promise<void> {
     throw new Error('Delete not implemented');
   }
 

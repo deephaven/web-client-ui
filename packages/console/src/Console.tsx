@@ -98,6 +98,7 @@ interface ConsoleState {
   // Height of the viewport of the console input and history
   consoleHeight: number;
 
+  // Scroll decoration is a drop shadow across the top border of the console
   isScrollDecorationShown: boolean;
 
   // Location of objects in the console history
@@ -111,6 +112,7 @@ interface ConsoleState {
   csvPaste: string | null;
   dragError: string | null;
   csvUploadInProgress: boolean;
+  isStuckToBottom: boolean;
   isAutoLaunchPanelsEnabled: boolean;
   isPrintStdOutEnabled: boolean;
   isClosePanelsOnDisconnectEnabled: boolean;
@@ -226,6 +228,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
       csvPaste: null,
       dragError: null,
       csvUploadInProgress: false,
+      isStuckToBottom: true,
 
       ...DEFAULT_SETTINGS,
       ...settings,
@@ -250,6 +253,10 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
 
     if (props.objectMap !== prevProps.objectMap) {
       this.updateObjectMap();
+    }
+
+    if (state.isStuckToBottom && !this.isAtBottom()) {
+      this.scrollConsoleHistoryToBottom();
     }
   }
 
@@ -291,6 +298,15 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     }
   }
 
+  isAtBottom(): boolean {
+    if (this.consoleHistoryScrollPane.current == null) {
+      return false;
+    }
+    const { scrollHeight, clientHeight, scrollTop } =
+      this.consoleHistoryScrollPane.current;
+    return Math.abs(scrollHeight - clientHeight - scrollTop) <= 1;
+  }
+
   handleClearShortcut(event: Event): void {
     event.preventDefault();
     event.stopPropagation();
@@ -330,7 +346,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
         consoleHistory: state.consoleHistory.concat(historyItem),
       }),
       () => {
-        this.scrollConsoleHistoryToBottom(true);
+        this.scrollConsoleHistoryToBottom();
       }
     );
 
@@ -457,8 +473,6 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
   }
 
   processLogMessageQueue = throttle(() => {
-    this.scrollConsoleHistoryToBottom();
-
     this.setState(state => {
       log.debug2(
         'processLogMessageQueue',
@@ -515,8 +529,6 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     }
 
     historyItem.endTime = Date.now();
-
-    this.scrollConsoleHistoryToBottom();
 
     // Update history to re-render items as necessary
     this.setState(state => {
@@ -638,32 +650,26 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
       });
   }
 
-  scrollConsoleHistoryToBottom(force = false): void {
+  scrollConsoleHistoryToBottom(): void {
     const pane = this.consoleHistoryScrollPane.current;
-    assertNotNull(pane);
-    if (
-      !force &&
-      Math.abs(pane.scrollHeight - pane.clientHeight - pane.scrollTop) >= 1
-    ) {
+    if (pane == null) {
       return;
     }
 
     window.requestAnimationFrame(() => {
-      pane.scrollTop = pane.scrollHeight;
+      pane.scrollTo({ top: pane.scrollHeight });
     });
   }
 
   handleScrollPaneScroll(): void {
     const scrollPane = this.consoleHistoryScrollPane.current;
     assertNotNull(scrollPane);
-    if (
-      scrollPane.scrollTop > 0 &&
-      scrollPane.scrollHeight > scrollPane.clientHeight
-    ) {
-      this.setState({ isScrollDecorationShown: true });
-    } else {
-      this.setState({ isScrollDecorationShown: false });
-    }
+    this.setState({
+      isScrollDecorationShown:
+        scrollPane.scrollTop > 0 &&
+        scrollPane.scrollHeight > scrollPane.clientHeight,
+      isStuckToBottom: this.isAtBottom(),
+    });
   }
 
   handleToggleAutoLaunchPanels(): void {
@@ -782,7 +788,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
 
     const history = consoleHistory.concat(historyItem);
     this.setState({ consoleHistory: history });
-    this.scrollConsoleHistoryToBottom(true);
+    this.scrollConsoleHistoryToBottom();
     this.updateKnownObjects(historyItem);
     openObject({ name: title, type: dh.VariableType.TABLE });
     commandHistoryStorage.addItem(language, scope, title, {
@@ -877,7 +883,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
         endTime: Date.now(),
       };
 
-      this.scrollConsoleHistoryToBottom(true);
+      this.scrollConsoleHistoryToBottom();
 
       this.setState(state => ({
         consoleHistory: state.consoleHistory.concat(historyItem),
@@ -925,7 +931,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     this.consoleInput.current.setConsoleText(command, focus, execute);
 
     if (focus) {
-      this.scrollConsoleHistoryToBottom(true);
+      this.scrollConsoleHistoryToBottom();
     }
   }
 

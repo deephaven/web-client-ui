@@ -1,9 +1,6 @@
 import { renderHook } from '@testing-library/react-hooks';
-import {
-  ReactSpectrumComponent,
-  SPELLCHECK_FALSE_ATTRIBUTE,
-  TestUtils,
-} from '@deephaven/utils';
+import { DOMRefValue } from '@react-types/shared';
+import { SPELLCHECK_FALSE_ATTRIBUTE, TestUtils } from '@deephaven/utils';
 import useSetAttributesCallback from './useSetAttributesCallback';
 import useSpectrumDisableSpellcheckRef from './useSpectrumDisableSpellcheckRef';
 
@@ -20,7 +17,7 @@ describe('useSpectrumDisableSpellcheckRef', () => {
   const mock = {
     useSetAttributesCallbackResult: jest.fn(),
     selectors: 'mock.selectors',
-    ref: createMockProxy<ReactSpectrumComponent>(),
+    ref: createMockProxy<DOMRefValue>(),
     rootEl: createMockProxy<HTMLDivElement>(),
   };
 

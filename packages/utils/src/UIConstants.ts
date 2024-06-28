@@ -1,6 +1,4 @@
 export const ACTION_ICON_HEIGHT = 24;
-export const COMBO_BOX_ITEM_HEIGHT = 32;
-export const COMBO_BOX_TOP_OFFSET = 4;
 export const ITEM_KEY_PREFIX = 'DH_ITEM_KEY';
 // https://github.com/adobe/react-spectrum/blob/main/packages/%40react-spectrum/listbox/src/ListBoxBase.tsx#L56
 export const PICKER_ITEM_HEIGHTS = {

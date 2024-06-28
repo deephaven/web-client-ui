@@ -11,8 +11,8 @@ export interface UsePickerScrollOnOpenOptions {
   onOpenChange?: (isOpen: boolean) => void;
 }
 
-export interface UsePickerScrollOnOpenResult {
-  ref: DOMRef<HTMLElement>;
+export interface UsePickerScrollOnOpenResult<THtml extends HTMLElement> {
+  ref: DOMRef<THtml>;
   onOpenChange: (isOpen: boolean) => void;
 }
 
@@ -25,13 +25,13 @@ export interface UsePickerScrollOnOpenResult {
  * @return A ref to attach to the Picker and a callback to handle open change
  * events for the Picker.
  */
-export function usePickerScrollOnOpen({
+export function usePickerScrollOnOpen<THtml extends HTMLElement = HTMLElement>({
   getInitialScrollPosition,
   onScroll,
   onOpenChange,
-}: UsePickerScrollOnOpenOptions): UsePickerScrollOnOpenResult {
+}: UsePickerScrollOnOpenOptions): UsePickerScrollOnOpenResult<THtml> {
   const { ref, onOpenChange: popoverOnOpenChange } = usePopoverOnScrollRef(
-    findSpectrumPickerScrollArea,
+    findSpectrumPickerScrollArea<THtml>,
     onScroll,
     getInitialScrollPosition
   );

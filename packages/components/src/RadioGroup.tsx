@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 
 type RadioGroupProps = {
   /** The radio items to populate this radio. Should be of type RadioItem. */
@@ -34,7 +34,7 @@ function RadioGroup(props: RadioGroupProps): JSX.Element {
     value = '',
     'data-testid': dataTestId,
   } = props;
-  const [name] = useState(propsName ?? shortid());
+  const [name] = useState(propsName ?? nanoid());
 
   // Need to use "text" type so we can apply a pattern and make selection properly
   return (

@@ -1,13 +1,13 @@
 import { renderHook } from '@testing-library/react-hooks';
 import { DependencyList } from 'react';
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 import useEffectNTimesWhen from './useEffectNTimesWhen';
 
 const conditionTrue = true;
 const conditionFalse = false;
 
 // Creates unique dependencies array to ensure useEffect fires on every render
-const dependencies = (): DependencyList => [shortid()];
+const dependencies = (): DependencyList => [nanoid()];
 const effectFn = jest.fn().mockName('effectFn');
 
 beforeEach(() => {

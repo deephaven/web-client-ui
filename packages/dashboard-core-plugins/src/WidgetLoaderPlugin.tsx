@@ -1,6 +1,6 @@
 import { useMemo, useCallback, useEffect, forwardRef } from 'react';
 import type { ReactComponentConfig } from '@deephaven/golden-layout';
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 import {
   assertIsDashboardPluginProps,
   DashboardPluginComponentProps,
@@ -112,7 +112,7 @@ export function WidgetLoaderPlugin(
   const handlePanelOpen = useCallback(
     ({
       dragEvent,
-      panelId = shortid.generate(),
+      panelId = nanoid(),
       fetch,
       widget,
     }: PanelOpenEventDetail) => {

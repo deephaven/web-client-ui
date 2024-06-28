@@ -1,5 +1,4 @@
 import { Key, ReactElement, ReactNode } from 'react';
-import { SpectrumPickerProps } from '@adobe/react-spectrum';
 import type { ItemRenderer } from '@react-types/shared';
 import { isElementOfType } from '@deephaven/react-hooks';
 import { ensureArray, KeyedItem, SelectionT } from '@deephaven/utils';
@@ -59,6 +58,26 @@ export type ItemSelection = SelectionT<ItemKey>;
  */
 export type ItemSelectionChangeHandler = (key: ItemKey) => void;
 
+export interface MultipleItemSelectionProps {
+  selectedKeys?: 'all' | Iterable<ItemKey>;
+  defaultSelectedKeys?: 'all' | Iterable<ItemKey>;
+  disabledKeys?: Iterable<ItemKey>;
+
+  /**
+   * Handler that is called when the selection change.
+   * Note that under the hood, this is just an alias for Spectrum's
+   * `onSelectionChange`. We are renaming for better consistency with other
+   * components.
+   */
+  onChange?: (keys: ItemSelection) => void;
+
+  /**
+   * Handler that is called when the selection changes.
+   * @deprecated Use `onChange` instead
+   */
+  onSelectionChange?: (keys: ItemSelection) => void;
+}
+
 export interface NormalizedItemData {
   key?: ItemKey;
   content: ReactNode;
@@ -81,17 +100,12 @@ export interface NormalizedSectionData {
  * `KeyedItem` interface to be compatible with Windowed data utils
  * (e.g. `useViewportData`).
  */
-export type NormalizedItem = KeyedItem<NormalizedItemData, ItemKey | undefined>;
+export type NormalizedItem = KeyedItem<NormalizedItemData, ItemKey>;
 
-export type NormalizedSection = KeyedItem<
-  NormalizedSectionData,
-  Key | undefined
->;
+export type NormalizedSection = KeyedItem<NormalizedSectionData, Key>;
 
 export type NormalizedItemOrSection<TItemOrSection extends ItemOrSection> =
   TItemOrSection extends SectionElement ? NormalizedSection : NormalizedItem;
-
-export type NormalizedSpectrumPickerProps = SpectrumPickerProps<NormalizedItem>;
 
 export type TooltipOptions = { placement: PopperOptions['placement'] };
 
@@ -107,12 +121,31 @@ export type TooltipOptions = { placement: PopperOptions['placement'] };
 export function getItemKey<
   TItem extends NormalizedItem | NormalizedSection,
   TKey extends TItem extends NormalizedItem
-    ? ItemKey | undefined
+    ? ItemKey
     : TItem extends NormalizedSection
-    ? Key | undefined
+    ? Key
     : undefined,
 >(item: TItem | null | undefined): TKey {
   return (item?.item?.key ?? item?.key) as TKey;
+}
+
+/**
+ * Determine Item `textValue` based on the `textValue` prop or primitive children
+ * value.
+ * @param item The item to get the text value for
+ * @returns The text value of the item
+ */
+export function getItemTextValue<T>(item: ItemElement<T>): string | undefined {
+  if (item.props.textValue == null) {
+    const itemKeyStr = item.key == null ? undefined : String(item.key);
+    return ['string', 'boolean', 'number'].includes(typeof item.props.children)
+      ? String(item.props.children)
+      : itemKeyStr;
+  }
+
+  return item.props.textValue === ''
+    ? ITEM_EMPTY_STRING_TEXT_VALUE
+    : item.props.textValue;
 }
 
 /**

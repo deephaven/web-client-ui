@@ -1,6 +1,6 @@
 import React, { useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import ButtonGroup from './ButtonGroup';
+import { SplitButtonGroup } from './SplitButtonGroup';
 import Button from './Button';
 import { Modal, ModalBody, ModalFooter, ModalHeader } from './modal';
 
@@ -126,7 +126,7 @@ function BasicModal(props: BasicModalProps): JSX.Element {
             {cancelButtonText}
           </Button>
         )}
-        <ButtonGroup>
+        <SplitButtonGroup>
           <Button
             kind={isConfirmDanger ? 'danger' : 'primary'}
             onClick={onConfirmClicked}
@@ -138,7 +138,7 @@ function BasicModal(props: BasicModalProps): JSX.Element {
             {confirmButtonText}
           </Button>
           {children}
-        </ButtonGroup>
+        </SplitButtonGroup>
       </ModalFooter>
     </Modal>
   );

@@ -1,5 +1,6 @@
 export * from './ColumnHeaderGroup';
 export * from './EditableGridModel';
+export * from './DeletableGridModel';
 export * from './ExpandableGridModel';
 export { default as Grid } from './Grid';
 export * from './Grid';
@@ -27,7 +28,8 @@ export * from './mouse-handlers';
 export * from './errors';
 export * from './EventHandlerResult';
 export * from './ThemeContext';
-export type { default as CellRenderer, CellRenderType } from './CellRenderer';
+export { default as CellRenderer } from './CellRenderer';
+export type { CellRenderType } from './CellRenderer';
 export { default as TextCellRenderer } from './TextCellRenderer';
 export { default as DataBarCellRenderer } from './DataBarCellRenderer';
 export * from './TokenBoxCellRenderer';

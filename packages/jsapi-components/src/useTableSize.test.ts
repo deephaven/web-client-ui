@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 import dh from '@deephaven/jsapi-shim';
-import type { Table } from '@deephaven/jsapi-types';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import { TestUtils } from '@deephaven/utils';
 import useTableSize from './useTableSize';
 import useTableListener from './useTableListener';
@@ -21,7 +21,7 @@ it.each([null, undefined])('should return 0 if no table', table => {
 
 it('should return the size of the given table', () => {
   const size = 10;
-  const table = TestUtils.createMockProxy<Table>({ size });
+  const table = TestUtils.createMockProxy<DhType.Table>({ size });
 
   const { result } = renderHook(() => useTableSize(table), { wrapper });
 
@@ -33,7 +33,7 @@ it('should re-render if dh.Table.EVENT_SIZECHANGED event occurs', () => {
   const table = {
     addEventListener: jest.fn(),
     size: initialSize,
-  } as unknown as Table;
+  } as unknown as DhType.Table;
 
   const { result } = renderHook(() => useTableSize(table), { wrapper });
 

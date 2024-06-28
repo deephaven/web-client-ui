@@ -3,6 +3,164 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.83.0](https://github.com/deephaven/web-client-ui/compare/v0.82.0...v0.83.0) (2024-06-25)
+
+### ⚠ BREAKING CHANGES
+
+- ComboBox component has been replaced.
+  To migrate to new version:
+
+* Passing children is used instead of `options` prop to define dropdown
+  items. For cases where option value and display are the same, passing an
+  array of values as `children` will work. For cases where value and
+  display differ, `Item` elements must be passed as children. e.g. `<Item
+key={value}>{display}</Item>`
+  e.g.
+
+```typescript
+// values will be used for display + value
+const items = useMemo(
+  () => ['Aaa', 'Bbb', 'Ccc'],
+  []
+)
+<ComboBox>{items}</ComboBox>
+```
+
+```typescript
+<ComboBox>
+  <Item key="aaa">Aaa</Item>
+  <Item key="bbb">Bbb</Item>
+  <Item key="ccc">Ccc</Item>
+</ComboBox>
+```
+
+- The `spellcheck=false` prop is no longer supported or needed
+- `searchPlaceholder` and `inputPlaceholder` props are no longer
+  supported and should be omitted. There is an optional `description` prop
+  for cases where a descriptive label is desired. There is also a `label`
+  prop for the primary component label.
+
+### Features
+
+- ComboBox - @deephaven/components ([#2067](https://github.com/deephaven/web-client-ui/issues/2067)) ([640e002](https://github.com/deephaven/web-client-ui/commit/640e002f85ea86961a22695c9c7659ca5d1de1ee)), closes [#2065](https://github.com/deephaven/web-client-ui/issues/2065)
+- ComboBoxNormalized - windowed data component ([#2072](https://github.com/deephaven/web-client-ui/issues/2072)) ([a30341a](https://github.com/deephaven/web-client-ui/commit/a30341a728625dc7fdc2b0a54b88dfc737977b7a)), closes [#2071](https://github.com/deephaven/web-client-ui/issues/2071)
+- Embed widget loading workspace settings ([#2068](https://github.com/deephaven/web-client-ui/issues/2068)) ([b090f20](https://github.com/deephaven/web-client-ui/commit/b090f200b38a7ecab1056b17f445c2af3ae09a41)), closes [#1964](https://github.com/deephaven/web-client-ui/issues/1964)
+- Export iris-grid mouse handlers ([#2083](https://github.com/deephaven/web-client-ui/issues/2083)) ([336c078](https://github.com/deephaven/web-client-ui/commit/336c07872af4f750c8b3d38638a8893670e0881a))
+
+### Bug Fixes
+
+- Console scroll bar following dynamic output ([#2076](https://github.com/deephaven/web-client-ui/issues/2076)) ([a91e4f3](https://github.com/deephaven/web-client-ui/commit/a91e4f348fc23618f10ac1d8c3a87bf237eb7bbd))
+- Dashboard plugin crashing UI on throw ([#2080](https://github.com/deephaven/web-client-ui/issues/2080)) ([e6b55cf](https://github.com/deephaven/web-client-ui/commit/e6b55cf78561a1508d49109e9003813b9cc27262))
+- DH-17199: Filter by value in the tree table context menu always shows null ([#2078](https://github.com/deephaven/web-client-ui/issues/2078)) ([4eb38dd](https://github.com/deephaven/web-client-ui/commit/4eb38dd2c47071516269662f8a975044e6bb0a9a))
+- Reconnect Auth Fail Fix - embed-widget ([#2023](https://github.com/deephaven/web-client-ui/issues/2023)) ([3e52242](https://github.com/deephaven/web-client-ui/commit/3e522428b88ed59cb9f8c38612a80236fd219e5d))
+- view border styling ([#2063](https://github.com/deephaven/web-client-ui/issues/2063)) ([6f99e6b](https://github.com/deephaven/web-client-ui/commit/6f99e6b764a63e31aec36d435ec62926d109955e))
+
+## [0.82.0](https://github.com/deephaven/web-client-ui/compare/v0.81.2...v0.82.0) (2024-06-11)
+
+### ⚠ BREAKING CHANGES
+
+- Removed
+  `TreeTableViewportUpdater`,`TableViewportUpdater`, and
+  `StorageTableViewportUpdater`. If wanting to continue using them, copy
+  the deleted files from this PR.
+
+### Features
+
+- Allow custom renderer to be passed into IrisGrid ([#2061](https://github.com/deephaven/web-client-ui/issues/2061)) ([41233b5](https://github.com/deephaven/web-client-ui/commit/41233b5f4ed49b8af63506ca5d2af6653ab5eb9c))
+
+### Bug Fixes
+
+- A few small cleanups for DateTimeInput ([#2062](https://github.com/deephaven/web-client-ui/issues/2062)) ([ec11736](https://github.com/deephaven/web-client-ui/commit/ec117365f17ac6c4635c5b73c28c9cc8bee10d84))
+- Editing issues when key columns are not first columns ([#2053](https://github.com/deephaven/web-client-ui/issues/2053)) ([1bbcc73](https://github.com/deephaven/web-client-ui/commit/1bbcc73ddaa51502d8e14b2bffd3414998d6436a))
+- Embed-widget with multiple panels not showing panel headers ([#2064](https://github.com/deephaven/web-client-ui/issues/2064)) ([3f45f07](https://github.com/deephaven/web-client-ui/commit/3f45f07afb2c18c5c2ff9a16e3c48f6ce0d70dda))
+- Remove TreeTableViewportUpdater, TableViewportUpdater, and StorageTableViewportUpdater ([#2057](https://github.com/deephaven/web-client-ui/issues/2057)) ([0943041](https://github.com/deephaven/web-client-ui/commit/09430415ab91636b24c9388e87c0a45a1807aaeb))
+
+## [0.81.2](https://github.com/deephaven/web-client-ui/compare/v0.81.1...v0.81.2) (2024-06-06)
+
+**Note:** Version bump only for package @deephaven/web-client-ui
+
+## [0.81.1](https://github.com/deephaven/web-client-ui/compare/v0.81.0...v0.81.1) (2024-06-04)
+
+### Bug Fixes
+
+- Exporting correct Radio prop types ([#2058](https://github.com/deephaven/web-client-ui/issues/2058)) ([98be05a](https://github.com/deephaven/web-client-ui/commit/98be05aa0897ac479ff13d26e7902f129ac9a749)), closes [40react-types/radio/src/index.d.ts#L58-L71](https://github.com/40react-types/radio/src/index.d.ts/issues/L58-L71) [#2020](https://github.com/deephaven/web-client-ui/issues/2020)
+
+## [0.81.0](https://github.com/deephaven/web-client-ui/compare/v0.80.1...v0.81.0) (2024-06-04)
+
+### Features
+
+- DH-16737 Add ObjectManager, `useWidget` hook ([#2030](https://github.com/deephaven/web-client-ui/issues/2030)) ([#2056](https://github.com/deephaven/web-client-ui/issues/2056)) ([dbf613b](https://github.com/deephaven/web-client-ui/commit/dbf613b01507f85274e3a034a21151e746d4505c))
+
+## [0.80.1](https://github.com/deephaven/web-client-ui/compare/v0.80.0...v0.80.1) (2024-06-04)
+
+### Bug Fixes
+
+- CSV Drag and Drop Console Error ([#2052](https://github.com/deephaven/web-client-ui/issues/2052)) ([85811dd](https://github.com/deephaven/web-client-ui/commit/85811dd64f1cb04fedc85d1f674ec90a2ea1556c))
+- re-export Radio and RadioGroup prop types ([#2055](https://github.com/deephaven/web-client-ui/issues/2055)) ([06b9767](https://github.com/deephaven/web-client-ui/commit/06b976752d756db17a491645cebe79a7293ce132)), closes [#2020](https://github.com/deephaven/web-client-ui/issues/2020)
+
+# [0.80.0](https://github.com/deephaven/web-client-ui/compare/v0.79.0...v0.80.0) (2024-06-03)
+
+### Bug Fixes
+
+- Console error when opening context menu on tree table ([#2047](https://github.com/deephaven/web-client-ui/issues/2047)) ([77bea7d](https://github.com/deephaven/web-client-ui/commit/77bea7d2badbc37eb3259a85873d6f900a07be14))
+- DH-17076 LayoutHints on TreeTables were not being applied ([#2041](https://github.com/deephaven/web-client-ui/issues/2041)) ([2977dd2](https://github.com/deephaven/web-client-ui/commit/2977dd262ae4b8dcd82e4622fb6f61b6c4e7b06e)), closes [#2035](https://github.com/deephaven/web-client-ui/issues/2035)
+- e2e - docker logs fix ([#2032](https://github.com/deephaven/web-client-ui/issues/2032)) ([297ad9a](https://github.com/deephaven/web-client-ui/commit/297ad9ab765ac7859479b7b8e531f1c88f8d82db)), closes [#2031](https://github.com/deephaven/web-client-ui/issues/2031)
+- e2e test status reporting incorrectly ([#2045](https://github.com/deephaven/web-client-ui/issues/2045)) ([8e6b6da](https://github.com/deephaven/web-client-ui/commit/8e6b6da4a4ccfc9bc852318e16ea5f0c4d21bf64)), closes [#2044](https://github.com/deephaven/web-client-ui/issues/2044)
+
+### Features
+
+- Re-export Spectrum button and checkbox ([#2039](https://github.com/deephaven/web-client-ui/issues/2039)) ([0e22d11](https://github.com/deephaven/web-client-ui/commit/0e22d11a6da3f189530b2ce0c8751d44097db971))
+
+# [0.79.0](https://github.com/deephaven/web-client-ui/compare/v0.78.0...v0.79.0) (2024-05-24)
+
+### Bug Fixes
+
+- Replace shortid package with nanoid package ([#2025](https://github.com/deephaven/web-client-ui/issues/2025)) ([30d9d3c](https://github.com/deephaven/web-client-ui/commit/30d9d3c1438a8a4d1f351d6f6f677f8ee7c22fbe))
+- Unedited markdown widgets not persisting ([#2019](https://github.com/deephaven/web-client-ui/issues/2019)) ([c17f136](https://github.com/deephaven/web-client-ui/commit/c17f1367e3575f634b93f29ff3623b99db3c1f0d))
+
+### Features
+
+- e2e combined improvements ([#1998](https://github.com/deephaven/web-client-ui/issues/1998)) ([99fc2f6](https://github.com/deephaven/web-client-ui/commit/99fc2f69758aa8b0289507b50c1ec52be0934d29))
+- re-export Spectrum ButtonGroup ([#2028](https://github.com/deephaven/web-client-ui/issues/2028)) ([3115dd1](https://github.com/deephaven/web-client-ui/commit/3115dd1e0b2c13c5d2899529b0cbfd53d2bb823f)), closes [#2016](https://github.com/deephaven/web-client-ui/issues/2016)
+- Replaced `RadioGroup` with Spectrum's ([#2020](https://github.com/deephaven/web-client-ui/issues/2020)) ([#2021](https://github.com/deephaven/web-client-ui/issues/2021)) ([c9ac72d](https://github.com/deephaven/web-client-ui/commit/c9ac72daddc4bc63012a675aa801af8ee807eff6))
+
+### BREAKING CHANGES
+
+- `RadioGroup` has been replaced by Spectrum
+  `RadioGroup`. `RadioItem` has been replaced by Spectrum `Radio`
+- Removed ButtonOld component, use Button instead.
+
+# [0.78.0](https://github.com/deephaven/web-client-ui/compare/v0.77.0...v0.78.0) (2024-05-16)
+
+### Bug Fixes
+
+- "Delete Selected Rows" bug for tables with no key columns ([#1996](https://github.com/deephaven/web-client-ui/issues/1996)) ([37fe009](https://github.com/deephaven/web-client-ui/commit/37fe00914253822a56033bee49570e82caff9334))
+- Improve the look of the error view ([#2001](https://github.com/deephaven/web-client-ui/issues/2001)) ([3236c9b](https://github.com/deephaven/web-client-ui/commit/3236c9b7acb53e9468f09c1e57a99d79bb953774))
+- PouchStorageTable using incorrect $ne operator ([#2011](https://github.com/deephaven/web-client-ui/issues/2011)) ([6cf1240](https://github.com/deephaven/web-client-ui/commit/6cf124012a19b122b3a96f620886b970c12b6d29))
+- Use picker for iris grid partition selector ([#2012](https://github.com/deephaven/web-client-ui/issues/2012)) ([b61c518](https://github.com/deephaven/web-client-ui/commit/b61c51840ae5f83dc00bf9dab0d1e6a7e4ba64d5))
+- useViewportData - memoize subscriptions and first row of viewport ([#2008](https://github.com/deephaven/web-client-ui/issues/2008)) ([2246a4a](https://github.com/deephaven/web-client-ui/commit/2246a4a1ef087db060f2130c5a2d7c1e037746b4)), closes [#2003](https://github.com/deephaven/web-client-ui/issues/2003) [#1928](https://github.com/deephaven/web-client-ui/issues/1928)
+
+### Code Refactoring
+
+- Rename `ButtonGroup` to `SplitButtonGroup` ([#1997](https://github.com/deephaven/web-client-ui/issues/1997)) ([95a589c](https://github.com/deephaven/web-client-ui/commit/95a589ca4b471e2c357e8fcaf6c9e1f4581a5231))
+
+### Features
+
+- Add JS Plugin Information ([#2002](https://github.com/deephaven/web-client-ui/issues/2002)) ([6ff378c](https://github.com/deephaven/web-client-ui/commit/6ff378cf5c47382e5e7d48e086c5554c4ea4560f))
+- add middle click dashboard tab deletion ([#1992](https://github.com/deephaven/web-client-ui/issues/1992)) ([c922f87](https://github.com/deephaven/web-client-ui/commit/c922f87941858466e90802f4171104129284037b)), closes [#1990](https://github.com/deephaven/web-client-ui/issues/1990)
+- ListView actions ([#1968](https://github.com/deephaven/web-client-ui/issues/1968)) ([8e325ec](https://github.com/deephaven/web-client-ui/commit/8e325ec30e68d612e8d696d0c6fec193a8c4ebdd))
+- Make grid widget respect global formatter settings ([#1995](https://github.com/deephaven/web-client-ui/issues/1995)) ([d1fba8f](https://github.com/deephaven/web-client-ui/commit/d1fba8f664e1b33e492ddd9fe68d50545a08a3f9))
+- update @vscode/codicons to 0.36 ([#2010](https://github.com/deephaven/web-client-ui/issues/2010)) ([3a6a439](https://github.com/deephaven/web-client-ui/commit/3a6a439c80054e6b92440690ee5e9762f6e691d4))
+
+### Performance Improvements
+
+- Improve performance of lots of grids in a dashboard ([#1987](https://github.com/deephaven/web-client-ui/issues/1987)) ([3de52d6](https://github.com/deephaven/web-client-ui/commit/3de52d6fa0512792c97928f65f0b4b1080da2c49))
+
+### BREAKING CHANGES
+
+- Renamed @deephaven/components `ButtonGroup` to
+  `SplitButtonGroup`
+
 # [0.77.0](https://github.com/deephaven/web-client-ui/compare/v0.76.0...v0.77.0) (2024-05-07)
 
 ### Bug Fixes

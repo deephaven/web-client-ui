@@ -1,10 +1,11 @@
-import { cloneElement, ReactElement, ReactNode } from 'react';
+import { cloneElement, ReactNode } from 'react';
 import { Item } from '@adobe/react-spectrum';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dh as dhIcons } from '@deephaven/icons';
 import { isElementOfType } from '@deephaven/react-hooks';
 import { ensureArray, NON_BREAKING_SPACE } from '@deephaven/utils';
 import {
+  getItemTextValue,
   isItemElement,
   isSectionElement,
   ItemElement,
@@ -14,7 +15,6 @@ import {
   SectionElement,
   TooltipOptions,
 } from './itemUtils';
-import { ItemProps } from '../shared';
 import { ItemContent } from '../ItemContent';
 import { Icon } from '../icons';
 import { Text } from '../Text';
@@ -53,10 +53,10 @@ export function wrapIcon(
  * @param tooltipOptions The tooltip options to use when wrapping items
  * @returns The wrapped items or sections
  */
-export function wrapItemChildren(
-  itemsOrSections: ItemOrSection | ItemOrSection[],
+export function wrapItemChildren<T>(
+  itemsOrSections: ItemOrSection<T> | ItemOrSection<T>[],
   tooltipOptions: TooltipOptions | null
-): ItemElement | SectionElement | (ItemElement | SectionElement)[] {
+): ItemElement<T> | SectionElement<T> | (ItemElement<T> | SectionElement<T>)[] {
   const itemsOrSectionsArray = ensureArray(itemsOrSections);
 
   const result = itemsOrSectionsArray.map(item => {
@@ -67,10 +67,7 @@ export function wrapItemChildren(
       }
 
       const key = item.key ?? item.props.textValue;
-      const textValue =
-        item.props.textValue === ''
-          ? ITEM_EMPTY_STRING_TEXT_VALUE
-          : item.props.textValue;
+      const textValue = getItemTextValue(item);
 
       // Wrap in `ItemContent` so we can support tooltips and handle text
       // overflow
@@ -92,10 +89,7 @@ export function wrapItemChildren(
         key:
           item.key ??
           (typeof item.props.title === 'string' ? item.props.title : undefined),
-        children: wrapItemChildren(
-          item.props.children,
-          tooltipOptions
-        ) as ReactElement<ItemProps<unknown>>[],
+        children: wrapItemChildren<T>(item.props.children, tooltipOptions),
       });
     }
 

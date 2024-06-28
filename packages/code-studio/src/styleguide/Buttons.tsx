@@ -1,9 +1,13 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, { Component, ReactElement } from 'react';
-import { Flex } from '@adobe/react-spectrum';
-import { Button, ButtonOld, SocketedButton } from '@deephaven/components';
+import {
+  Button,
+  SocketedButton,
+  Flex,
+  ButtonGroup,
+} from '@deephaven/components';
+
 import { dhTruck } from '@deephaven/icons';
-import { sampleSectionIdAndClasses } from './utils';
+import SampleSection from './SampleSection';
 
 function noOp(): void {
   return undefined;
@@ -13,42 +17,36 @@ interface ButtonsState {
   toggle: boolean;
 }
 class Buttons extends Component<Record<string, never>, ButtonsState> {
-  static renderButtonBrand(type: string, brand: string): ReactElement {
-    const className = type.length ? `btn-${type}-${brand}` : `btn-${brand}`;
+  static renderButtons(): ReactElement {
     return (
-      <ButtonOld
-        key={brand}
-        className={className}
-        style={{ marginBottom: '1rem', marginRight: '1rem' }}
-      >
-        {brand}
-      </ButtonOld>
-    );
-  }
-
-  static renderButtons(type: string): ReactElement {
-    const brands = [
-      'primary',
-      'secondary',
-      'success',
-      'warning',
-      'danger',
-      // Temporarily putting this at end of list for easier regression comparison.
-      // Once the colors are finalized, this should semantically go between
-      // success and warning
-      'info',
-    ].map((brand: string) => Buttons.renderButtonBrand(type, brand));
-
-    return (
-      <div
-        key={type}
-        {...sampleSectionIdAndClasses(
-          `buttons-${type.length ? 'outline' : 'regular'}`
-        )}
-      >
-        <h5>{type.length ? 'Outline' : 'Regular'}</h5>
-        {brands}
-      </div>
+      <>
+        <h5>Button Kinds</h5>
+        <SampleSection name="buttons-regular" style={{ padding: '1rem 0' }}>
+          <ButtonGroup>
+            <Button kind="primary" onClick={noOp}>
+              Primary
+            </Button>
+            <Button kind="secondary" onClick={noOp}>
+              Secondary
+            </Button>
+            <Button kind="tertiary" onClick={noOp}>
+              Tertiary
+            </Button>
+            <Button kind="success" onClick={noOp}>
+              Success
+            </Button>
+            <Button kind="danger" onClick={noOp}>
+              Danger
+            </Button>
+            <Button kind="inline" onClick={noOp}>
+              Inline
+            </Button>
+            <Button kind="ghost" onClick={noOp}>
+              Ghost
+            </Button>
+          </ButtonGroup>
+        </SampleSection>
+      </>
     );
   }
 
@@ -63,10 +61,7 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
     };
 
     return (
-      <div
-        {...sampleSectionIdAndClasses('links')}
-        style={{ paddingTop: '1rem' }}
-      >
+      <SampleSection name="links" style={{ paddingTop: '1rem' }}>
         <h5>Links</h5>
         <Flex gap="1rem">
           {Object.entries(levelMap).map(([level, semantic]) => (
@@ -76,50 +71,30 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
             </a>
           ))}
         </Flex>
-      </div>
+      </SampleSection>
     );
   }
 
   static renderSocketedButtons(): ReactElement {
     return (
-      <div {...sampleSectionIdAndClasses('buttons-socketed')}>
+      <SampleSection name="buttons-socketed">
         <h5>Socketed Buttons (for linker)</h5>
-        <SocketedButton
-          style={{ marginBottom: '1rem', marginRight: '1rem' }}
-          onClick={noOp}
-        >
-          Unlinked
-        </SocketedButton>
-        <SocketedButton
-          style={{ marginBottom: '1rem', marginRight: '1rem' }}
-          isLinked
-          onClick={noOp}
-        >
-          Linked
-        </SocketedButton>
-        <SocketedButton
-          style={{ marginBottom: '1rem', marginRight: '1rem' }}
-          isLinkedSource
-          onClick={noOp}
-        >
-          Linked Source
-        </SocketedButton>
-        <SocketedButton
-          style={{ marginBottom: '1rem', marginRight: '1rem' }}
-          isLinked
-          isInvalid
-          onClick={noOp}
-        >
-          Error
-        </SocketedButton>
-        <SocketedButton
-          style={{ marginBottom: '1rem', marginRight: '1rem' }}
-          disabled
-          onClick={noOp}
-        >
-          Disabled
-        </SocketedButton>
-      </div>
+        <ButtonGroup marginBottom="1rem">
+          <SocketedButton onClick={noOp}>Unlinked</SocketedButton>
+          <SocketedButton isLinked onClick={noOp}>
+            Linked
+          </SocketedButton>
+          <SocketedButton isLinkedSource onClick={noOp}>
+            Linked Source
+          </SocketedButton>
+          <SocketedButton isLinked isInvalid onClick={noOp}>
+            Error
+          </SocketedButton>
+          <SocketedButton disabled onClick={noOp}>
+            Disabled
+          </SocketedButton>
+        </ButtonGroup>
+      </SampleSection>
     );
   }
 
@@ -135,10 +110,7 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
     const { toggle } = this.state;
 
     return (
-      <div
-        {...sampleSectionIdAndClasses('buttons-inline')}
-        style={{ padding: '1rem 0' }}
-      >
+      <SampleSection name="buttons-inline" style={{ padding: '1rem 0' }}>
         <h5>Inline Buttons</h5>
         Regular btn-inline:
         <Button
@@ -179,12 +151,12 @@ class Buttons extends Component<Record<string, never>, ButtonsState> {
         <Button kind="ghost" icon={dhTruck} onClick={noOp}>
           Text Button
         </Button>
-      </div>
+      </SampleSection>
     );
   }
 
   render(): React.ReactElement {
-    const buttons = ['', 'outline'].map(type => Buttons.renderButtons(type));
+    const buttons = Buttons.renderButtons();
     const inlineButtons = this.renderInlineButtons();
     const socketedButtons = Buttons.renderSocketedButtons();
     const links = Buttons.renderLinks();

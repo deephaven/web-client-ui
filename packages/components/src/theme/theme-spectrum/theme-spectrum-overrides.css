@@ -65,7 +65,13 @@ svg[class*='spectrum-Textfield-validationIcon'] {
   );
 }
 
-button[class*='spectrum-Button'] {
+/**
+  Adjust Spectrum button text and icon alignment to account for DH using a
+  different font and smaller icons. Spectrum `ButtonGroup` will add additional
+  `-spectrum-ButtonGroup` classes to child buttons (including DH ones), so we
+  explicitly exclude our buttons from the selector.
+  */
+button[class*='spectrum-Button']:not(.btn):not(.btn-socketed) {
   /* make the icon closer to the text */
   --spectrum-button-primary-text-gap: var(--spectrum-global-dimension-size-75);
 
@@ -73,9 +79,11 @@ button[class*='spectrum-Button'] {
   padding-bottom: calc(var(--spectrum-global-dimension-size-50) - 1px);
   padding-top: calc(var(--spectrum-global-dimension-size-50));
 }
-
-button[class*='spectrum-Button'] svg {
-  /* our icons are smaller, center them too */
+button[class*='spectrum-Button']:not(.btn):not(.btn-socketed) svg {
+  /* 
+    We use smaller icons than Spectrum, so we need to adjust the padding to 
+    center when we use our icons inside of Spectrum buttons.
+    */
   padding-bottom: var(--spectrum-global-dimension-size-25);
 }
 
@@ -85,4 +93,21 @@ span[class*='spectrum-Radio-label'] {
    but this fixes it. Maybe difference in font baselines.
    */
   margin-top: var(--spectrum-global-dimension-size-85);
+}
+label[class*='spectrum-Radio'] {
+  --spectrum-radio-emphasized-circle-border-color-error: var(
+    --dh-color-negative-bg
+  );
+  --spectrum-radio-emphasized-circle-border-color-error-hover: var(
+    --dh-color-negative-hover-bg
+  );
+  --spectrum-radio-emphasized-circle-border-color-error-down: var(
+    --dh-color-negative-down-bg
+  );
+  --spectrum-radio-circle-border-color-error-key-focus: var(
+    --dh-color-negative-key-focus-bg
+  );
+  --spectrum-radio-circle-border-color-error-selected-key-focus: var(
+    --dh-color-negative-key-focus-bg
+  );
 }

@@ -8,17 +8,16 @@ import {
   Text,
   PickerNormalized,
   Checkbox,
+  ComboBox,
+  ComboBoxNormalized,
 } from '@deephaven/components';
 import { vsPerson } from '@deephaven/icons';
 import { Icon } from '@adobe/react-spectrum';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { getPositionOfSelectedItem } from '@deephaven/react-hooks';
 import { PICKER_ITEM_HEIGHTS, PICKER_TOP_OFFSET } from '@deephaven/utils';
-import {
-  generateItemElements,
-  generateNormalizedItems,
-  sampleSectionIdAndClasses,
-} from './utils';
+import { generateItemElements, generateNormalizedItems } from './utils';
+import SampleSection from './SampleSection';
 
 // Generate enough items to require scrolling
 const items = [...generateNormalizedItems(52)];
@@ -63,9 +62,23 @@ function PersonIcon(): JSX.Element {
 }
 
 export function Pickers(): JSX.Element {
-  const [selectedKey, setSelectedKey] = useState<ItemKey | null>(null);
+  const [selectedKey, setSelectedKey] = useState<ItemKey | null>(200);
 
   const [showIcons, setShowIcons] = useState(true);
+
+  const [filteredItems, setFilteredItems] = useState(itemsWithIcons);
+
+  const onSearch = useCallback(
+    (searchText: string) =>
+      setFilteredItems(
+        searchText === ''
+          ? itemsWithIcons
+          : itemsWithIcons.filter(
+              ({ item }) => item?.textValue?.includes(searchText)
+            )
+      ),
+    []
+  );
 
   const getInitialScrollPosition = useCallback(
     async () =>
@@ -78,63 +91,76 @@ export function Pickers(): JSX.Element {
     [selectedKey]
   );
 
-  const onChange = useCallback((key: ItemKey): void => {
+  const onChange = useCallback((key: ItemKey | null): void => {
     setSelectedKey(key);
   }, []);
 
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
-    <div {...sampleSectionIdAndClasses('pickers')}>
+    <SampleSection name="pickers">
       <h2 className="ui-title">Pickers</h2>
 
       <Flex gap={14} direction="column">
-        <Flex direction="row" gap={14}>
-          <Picker label="Single Child" tooltip={{ placement: 'bottom-end' }}>
-            <Item textValue="Aaa">Aaa</Item>
-          </Picker>
-
-          <Picker label="Mixed Children Types" defaultSelectedKey="999" tooltip>
-            {mixedItemsWithIconsNoDescriptions}
-          </Picker>
-
-          <Picker label="Sections" tooltip>
-            {/* eslint-disable react/jsx-curly-brace-presence */}
-            {'String 1'}
-            {'String 2'}
-            {'String 3'}
-            <Section title="Section">
-              <Item textValue="Item Aaa">Item Aaa</Item>
-              <Item textValue="Item Bbb">Item Bbb</Item>
-              <Item textValue="Complex Ccc">
-                <PersonIcon />
-                <Text>Complex Ccc</Text>
-              </Item>
-            </Section>
-            <Section key="Key B">
-              <Item textValue="Item Ddd">Item Ddd</Item>
-              <Item textValue="Item Eee">Item Eee</Item>
-              <Item textValue="Complex Fff">
-                <PersonIcon />
-                <Text>Complex Fff</Text>
-              </Item>
-              <Item textValue="Ggg">
-                <PersonIcon />
-                <Text>Label</Text>
-                <Text slot="description">Description</Text>
-              </Item>
-              <Item textValue="Hhh">
-                <PersonIcon />
-                <Text>Label that causes overflow</Text>
-                <Text slot="description">Description that causes overflow</Text>
-              </Item>
-            </Section>
-            <Section title="Section A">{itemElementsA}</Section>
-            <Section title="Section B">{itemElementsB}</Section>
-            <Section key="Section C">{itemElementsC}</Section>
-            <Section key="Section D">{itemElementsD}</Section>
-            <Section title="Section E">{itemElementsE}</Section>
-          </Picker>
-        </Flex>
+        {[Picker, ComboBox].map(Component => {
+          const label = (suffix: string) =>
+            `${Component === Picker ? 'Picker' : 'ComboBox'} (${suffix})`;
+          return (
+            <Flex key={Component.name} direction="row" gap={14}>
+              <Component
+                label={label('Single Child')}
+                tooltip={{ placement: 'bottom-end' }}
+              >
+                <Item textValue="Aaa">Aaa</Item>
+              </Component>
+              <Component
+                label={label('Mixed Children Types')}
+                defaultSelectedKey="999"
+                tooltip
+              >
+                {mixedItemsWithIconsNoDescriptions}
+              </Component>
+              <Component label={label('Sections')} tooltip>
+                {/* eslint-disable react/jsx-curly-brace-presence */}
+                {'String 1'}
+                {'String 2'}
+                {'String 3'}
+                <Section title="Section">
+                  <Item textValue="Item Aaa">Item Aaa</Item>
+                  <Item textValue="Item Bbb">Item Bbb</Item>
+                  <Item textValue="Complex Ccc">
+                    <PersonIcon />
+                    <Text>Complex Ccc</Text>
+                  </Item>
+                </Section>
+                <Section key="Key B">
+                  <Item textValue="Item Ddd">Item Ddd</Item>
+                  <Item textValue="Item Eee">Item Eee</Item>
+                  <Item textValue="Complex Fff">
+                    <PersonIcon />
+                    <Text>Complex Fff</Text>
+                  </Item>
+                  <Item textValue="Ggg">
+                    <PersonIcon />
+                    <Text>Label</Text>
+                    <Text slot="description">Description</Text>
+                  </Item>
+                  <Item textValue="Hhh">
+                    <PersonIcon />
+                    <Text>Label that causes overflow</Text>
+                    <Text slot="description">
+                      Description that causes overflow
+                    </Text>
+                  </Item>
+                </Section>
+                <Section title="Section A">{itemElementsA}</Section>
+                <Section title="Section B">{itemElementsB}</Section>
+                <Section key="Section C">{itemElementsC}</Section>
+                <Section key="Section D">{itemElementsD}</Section>
+                <Section title="Section E">{itemElementsE}</Section>
+              </Component>
+            </Flex>
+          );
+        })}
 
         <Checkbox
           checked={showIcons}
@@ -145,16 +171,27 @@ export function Pickers(): JSX.Element {
 
         <Flex direction="row" gap={14}>
           <PickerNormalized
-            label="Controlled"
+            label="Picker (Controlled)"
             getInitialScrollPosition={getInitialScrollPosition}
             normalizedItems={itemsWithIcons}
             selectedKey={selectedKey}
             showItemIcons={showIcons}
             onChange={onChange}
           />
+          <ComboBoxNormalized
+            label="ComboBox (Controlled)"
+            getInitialScrollPosition={getInitialScrollPosition}
+            normalizedItems={filteredItems}
+            selectedKey={selectedKey}
+            showItemIcons={showIcons}
+            onChange={onChange}
+            validationState={selectedKey == null ? 'invalid' : 'valid'}
+            errorMessage="Please select an item."
+            onInputChange={onSearch}
+          />
         </Flex>
       </Flex>
-    </div>
+    </SampleSection>
   );
 }
 

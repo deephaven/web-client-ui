@@ -1,6 +1,6 @@
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 import { requestParentResponse, SESSION_DETAILS_REQUEST } from './MessageUtils';
 import NoConsolesError, { isNoConsolesError } from './NoConsolesError';
 
@@ -61,7 +61,7 @@ export async function createSessionWrapper(
 
   const session = await connection.startSession(type);
 
-  const config = { type, id: shortid.generate() };
+  const config = { type, id: nanoid() };
 
   log.info('Console session established', config);
 

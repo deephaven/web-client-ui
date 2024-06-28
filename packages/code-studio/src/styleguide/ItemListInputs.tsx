@@ -1,15 +1,12 @@
-/* eslint-disable react/jsx-props-no-spreading */
 /* eslint no-console: "off" */
 import React from 'react';
 import SelectValueListInput from './SelectValueListInput';
 import ItemListInput from './ItemListInput';
-import { sampleSectionIdAndClasses } from './utils';
+import SampleSection from './SampleSection';
 
 function ItemListInputs(): React.ReactElement {
   return (
-    <div
-      {...sampleSectionIdAndClasses('item-list-inputs', ['style-guide-inputs'])}
-    >
+    <SampleSection name="item-list-inputs" className="style-guide-inputs">
       <h2 className="ui-title">Item Lists</h2>
 
       <div className="row">
@@ -38,7 +35,7 @@ function ItemListInputs(): React.ReactElement {
           </div>
         </div>
       </div>
-    </div>
+    </SampleSection>
   );
 }
 

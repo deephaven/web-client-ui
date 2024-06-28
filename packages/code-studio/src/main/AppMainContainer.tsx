@@ -9,20 +9,16 @@ import classNames from 'classnames';
 import memoize from 'memoize-one';
 import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   ContextActions,
-  ThemeExport,
   GLOBAL_SHORTCUTS,
   Popper,
   ContextAction,
   Button,
-  InfoModal,
-  LoadingSpinner,
   Logo,
   BasicModal,
-  DebouncedModal,
   NavTabList,
   type NavTabItem,
   SlideTransition,
@@ -90,15 +86,17 @@ import {
 import GoldenLayout from '@deephaven/golden-layout';
 import type { ItemConfigType } from '@deephaven/golden-layout';
 import { type PluginModuleMap, getDashboardPlugins } from '@deephaven/plugin';
-import { AppDashboards } from '@deephaven/app-utils';
+import {
+  AppDashboards,
+  LayoutStorage,
+  UserLayoutUtils,
+} from '@deephaven/app-utils';
 import JSZip from 'jszip';
 import SettingsMenu from '../settings/SettingsMenu';
 import AppControlsMenu from './AppControlsMenu';
 import { getLayoutStorage, getServerConfigValues } from '../redux';
 import './AppMainContainer.scss';
 import WidgetList, { WindowMouseEvent } from './WidgetList';
-import UserLayoutUtils from './UserLayoutUtils';
-import LayoutStorage from '../storage/LayoutStorage';
 import { getFormattedVersionInfo } from '../settings/SettingsUtils';
 import EmptyDashboard from './EmptyDashboard';
 
@@ -140,8 +138,6 @@ interface AppMainContainerProps {
 
 interface AppMainContainerState {
   contextActions: ContextAction[];
-  isAuthFailed: boolean;
-  isDisconnected: boolean;
   isPanelsMenuShown: boolean;
   isResetLayoutPromptShown: boolean;
   isSettingsMenuShown: boolean;
@@ -245,8 +241,6 @@ export class AppMainContainer extends Component<
           isGlobal: true,
         },
       ],
-      isAuthFailed: false,
-      isDisconnected: false,
       isPanelsMenuShown: false,
       isResetLayoutPromptShown: false,
       isSettingsMenuShown: false,
@@ -266,7 +260,6 @@ export class AppMainContainer extends Component<
   componentDidMount(): void {
     this.initWidgets();
     this.initDashboardData();
-    this.startListeningForDisconnect();
 
     window.addEventListener(
       'beforeunload',
@@ -286,7 +279,6 @@ export class AppMainContainer extends Component<
 
   componentWillUnmount(): void {
     this.deinitWidgets();
-    this.stopListeningForDisconnect();
 
     this.dashboardLayouts.forEach(layout => {
       stopListenForCreateDashboard(layout.eventHub, this.handleCreateDashboard);
@@ -529,7 +521,7 @@ export class AppMainContainer extends Component<
     title,
     data,
   }: CreateDashboardPayload): void {
-    const newId = shortid();
+    const newId = nanoid();
     const { setDashboardPluginData } = this.props;
     setDashboardPluginData(newId, pluginId, data);
     this.setState(({ tabs }) => ({
@@ -637,21 +629,6 @@ export class AppMainContainer extends Component<
     }
   }
 
-  handleDisconnect(): void {
-    log.info('Disconnected from server');
-    this.setState({ isDisconnected: true });
-  }
-
-  handleReconnect(): void {
-    log.info('Reconnected to server');
-    this.setState({ isDisconnected: false });
-  }
-
-  handleReconnectAuthFailed(): void {
-    log.warn('Reconnect authentication failed');
-    this.setState({ isAuthFailed: true });
-  }
-
   /**
    * Import the provided file and set it in the workspace data (which should then load it in the dashboard)
    * @param file JSON file to import
@@ -720,46 +697,6 @@ export class AppMainContainer extends Component<
         pastedData.replace(replacedChars, '"')
       );
     }
-  }
-
-  startListeningForDisconnect(): void {
-    const { connection } = this.props;
-    if (connection == null) {
-      return;
-    }
-
-    connection.addEventListener(
-      dh.IdeConnection.EVENT_DISCONNECT,
-      this.handleDisconnect
-    );
-    connection.addEventListener(
-      dh.IdeConnection.EVENT_RECONNECT,
-      this.handleReconnect
-    );
-    connection.addEventListener(
-      dh.CoreClient.EVENT_RECONNECT_AUTH_FAILED,
-      this.handleReconnectAuthFailed
-    );
-  }
-
-  stopListeningForDisconnect(): void {
-    const { connection } = this.props;
-    if (connection == null) {
-      return;
-    }
-
-    connection.removeEventListener(
-      dh.IdeConnection.EVENT_DISCONNECT,
-      this.handleDisconnect
-    );
-    connection.removeEventListener(
-      dh.IdeConnection.EVENT_RECONNECT,
-      this.handleReconnect
-    );
-    connection.removeEventListener(
-      dh.CoreClient.EVENT_RECONNECT_AUTH_FAILED,
-      this.handleReconnectAuthFailed
-    );
   }
 
   /**
@@ -856,8 +793,6 @@ export class AppMainContainer extends Component<
     const { canUsePanels } = permissions;
     const {
       contextActions,
-      isAuthFailed,
-      isDisconnected,
       isPanelsMenuShown,
       isResetLayoutPromptShown,
       isSettingsMenuShown,
@@ -950,27 +885,9 @@ export class AppMainContainer extends Component<
               icon={
                 <span className="fa-layers">
                   <FontAwesomeIcon icon={vsGear} transform="grow-3" />
-                  {isDisconnected && !isAuthFailed && (
-                    <>
-                      <FontAwesomeIcon
-                        icon={dhSquareFilled}
-                        color={ThemeExport.background}
-                        transform="grow-2 right-8 down-8.5 rotate-45"
-                      />
-                      <FontAwesomeIcon
-                        icon={vsDebugDisconnect}
-                        color={ThemeExport.danger}
-                        transform="shrink-5 right-6 down-6"
-                      />
-                    </>
-                  )}
                 </span>
               }
-              tooltip={
-                isDisconnected && !isAuthFailed
-                  ? 'Server disconnected'
-                  : 'User Settings'
-              }
+              tooltip="User Settings"
             />
           </div>
         </div>
@@ -1002,6 +919,7 @@ export class AppMainContainer extends Component<
         <SlideTransition in={isSettingsMenuShown} mountOnEnter unmountOnExit>
           <SettingsMenu
             serverConfigValues={serverConfigValues}
+            pluginData={plugins}
             onDone={this.handleSettingsMenuHide}
             user={user}
           />
@@ -1015,20 +933,6 @@ export class AppMainContainer extends Component<
           onChange={this.handleImportLayoutFiles}
           data-testid="input-import-layout"
         />
-        <DebouncedModal
-          isOpen={isDisconnected && !isAuthFailed}
-          debounceMs={1000}
-        >
-          <InfoModal
-            icon={vsDebugDisconnect}
-            title={
-              <>
-                <LoadingSpinner /> Attempting to reconnect...
-              </>
-            }
-            subtitle="Please check your network connection."
-          />
-        </DebouncedModal>
         <BasicModal
           confirmButtonText="Reset"
           onConfirm={this.handleConfirmResetLayoutPrompt}
@@ -1045,13 +949,6 @@ export class AppMainContainer extends Component<
               ? 'Do you want to reset your layout? Your existing layout will be lost.'
               : 'Do you want to reset your layout? Any unsaved notebooks will be lost.'
           }
-        />
-        <BasicModal
-          confirmButtonText="Refresh"
-          onConfirm={AppMainContainer.handleRefresh}
-          isOpen={isAuthFailed}
-          headerText="Authentication failed"
-          bodyText="Credentials are invalid. Please refresh your browser to try and reconnect."
         />
       </div>
     );
