@@ -149,7 +149,6 @@ import IrisGridModel from './IrisGridModel';
 import {
   isPartitionedGridModel,
   PartitionConfig,
-  PartitionedGridModel,
 } from './PartitionedGridModel';
 import IrisGridPartitionSelector from './IrisGridPartitionSelector';
 import SelectDistinctBuilder from './sidebar/SelectDistinctBuilder';
@@ -361,6 +360,7 @@ export interface IrisGridState {
   metricCalculator: IrisGridMetricCalculator;
   metrics?: GridMetrics;
 
+  keyTable?: DhType.Table;
   partitionConfig?: PartitionConfig;
 
   // setAdvancedFilter and setQuickFilter mutate the arguments
@@ -601,6 +601,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.handleDownloadCanceled = this.handleDownloadCanceled.bind(this);
     this.handleDownloadCompleted = this.handleDownloadCompleted.bind(this);
     this.handlePartitionChange = this.handlePartitionChange.bind(this);
+    this.handlePartitionTableUpdate =
+      this.handlePartitionTableUpdate.bind(this);
     this.handleColumnVisibilityChanged =
       this.handleColumnVisibilityChanged.bind(this);
     this.handleColumnVisibilityReset =
@@ -778,6 +780,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       metricCalculator,
       metrics: undefined,
 
+      keyTable: undefined,
       partitionConfig:
         partitionConfig ??
         (partitions && partitions.length
@@ -875,6 +878,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const { model } = this.props;
     this.initState();
     this.startListening(model);
+    this.startListeningForPartitionChanges(model);
   }
 
   componentDidUpdate(prevProps: IrisGridProps, prevState: IrisGridState): void {
@@ -887,9 +891,17 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       sorts,
     } = this.props;
 
+    const { isSelectingPartition } = this.state;
+
+    if (isSelectingPartition && !prevState.isSelectingPartition) {
+      this.loadTableState();
+    }
+
     if (model !== prevProps.model) {
+      this.stopListeningForPartitionChanges(prevProps.model, true);
       this.stopListening(prevProps.model);
       this.startListening(model);
+      this.startListeningForPartitionChanges(model);
     }
 
     const changedInputFilters =
@@ -964,6 +976,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   componentWillUnmount(): void {
     const { model } = this.props;
+    this.stopListeningForPartitionChanges(model);
     this.stopListening(model);
     this.pending.cancel();
     this.updateSearchFilter.cancel();
@@ -1969,10 +1982,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   initState(): void {
-    const { model } = this.props;
     try {
+      const { model } = this.props;
       if (isPartitionedGridModel(model) && model.isPartitionRequired) {
-        this.loadPartitionsTable(model);
+        // Wait for the partition table to load
+        log.debug('Loading partition table');
       } else {
         this.loadTableState();
       }
@@ -1982,6 +1996,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   loadTableState(): void {
+    log.debug('Loading table state');
     const {
       applyInputFiltersOnInit,
       inputFilters,
@@ -2022,74 +2037,31 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.initFormatter();
   }
 
-  async loadPartitionsTable(model: PartitionedGridModel): Promise<void> {
-    try {
-      const partitionConfig = await this.getInitialPartitionConfig(model);
-      this.setState(
-        { isSelectingPartition: true, partitionConfig },
-        this.loadTableState
-      );
-    } catch (error) {
-      if (!PromiseUtils.isCanceled(error)) {
-        this.handleTableLoadError(error);
+  handlePartitionTableUpdate(event: CustomEvent<DhType.ViewportData>): void {
+    const { keyTable } = this.state;
+    assertNotNull(keyTable);
+    const { detail: data } = event;
+    let values: unknown[] = [];
+    if (data.rows.length > 0) {
+      const row = data.rows[0];
+      values = keyTable.columns.map(column => row.get(column));
+    }
+    log.debug2('Partition table update', values);
+    this.setState(state => {
+      const { partitions = [] } = state.partitionConfig ?? {};
+      if (
+        (partitions.length > 0 && values.length > 0) ||
+        (partitions.length === 0 && values.length === 0)
+      ) {
+        // Partitions already set, ignore update
+        return null;
       }
-    }
-  }
-
-  /**
-   * Gets the initial partition config for the currently set model.
-   * Sorts the key table and gets the first key.
-   * If the table is ticking, it will wait for the first tick.
-   */
-  async getInitialPartitionConfig(
-    model: PartitionedGridModel
-  ): Promise<PartitionConfig> {
-    const { partitionConfig } = this.state;
-    if (partitionConfig !== undefined) {
-      // User already has a partition selected, just use that
-      return partitionConfig;
-    }
-
-    const keyTable = await this.pending.add(
-      model.partitionKeysTable(),
-      resolved => resolved.close()
-    );
-    const { dh } = model;
-
-    const sorts = keyTable.columns.map(column => column.sort().desc());
-    keyTable.applySort(sorts);
-    keyTable.setViewport(0, 0);
-
-    return new Promise((resolve, reject) => {
-      // We want to wait for the first UPDATED event instead of just getting viewport data here
-      // It's possible that the key table does not have any rows of data yet, so just wait until it does have one
-      keyTable.addEventListener(
-        dh.Table.EVENT_UPDATED,
-        (event: CustomEvent<DhType.ViewportData>) => {
-          try {
-            const { detail: data } = event;
-            if (data.rows.length === 0) {
-              // Table is empty, wait for the next updated event
-              return;
-            }
-            const row = data.rows[0];
-            // Core JSAPI returns undefined for null table values, IrisGridPartitionSelector expects null
-            // https://github.com/deephaven/deephaven-core/issues/5400
-            const values = keyTable.columns.map(
-              column => row.get(column) ?? null
-            );
-            const newPartition: PartitionConfig = {
-              partitions: values,
-              mode: 'partition',
-            };
-            keyTable.close();
-            resolve(newPartition);
-          } catch (e) {
-            keyTable.close();
-            reject(e);
-          }
-        }
-      );
+      // Added first partition, or removed last - change mode
+      const partitionConfig: PartitionConfig = {
+        mode: 'partition',
+        partitions: values,
+      };
+      return { partitionConfig };
     });
   }
 
@@ -2313,6 +2285,69 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       IrisGridModel.EVENT.VIEWPORT_UPDATED,
       this.handleViewportUpdated
     );
+  }
+
+  async startListeningForPartitionChanges(model: IrisGridModel): Promise<void> {
+    log.debug('startListeningForPartitionChanges');
+    if (!isPartitionedGridModel(model) || !model.isPartitionRequired) {
+      return;
+    }
+    const { partitionConfig } = this.state;
+    if (partitionConfig !== undefined) {
+      // User already has a partition selected, just use that
+      return;
+    }
+
+    this.setState({
+      isSelectingPartition: true,
+      partitionConfig: {
+        mode: 'partition',
+        partitions: [],
+      },
+    });
+
+    log.debug('startListeningForPartitionChanges before keyTable');
+    const keyTable = await this.pending.add(
+      model.partitionKeysTable(),
+      resolved => resolved.close()
+    );
+    log.debug(
+      'startListeningForPartitionChanges after keyTable',
+      keyTable,
+      keyTable.size
+    );
+    const { dh } = model;
+
+    this.setState({ keyTable });
+
+    keyTable.addEventListener(
+      dh.Table.EVENT_UPDATED,
+      this.handlePartitionTableUpdate
+    );
+
+    const sorts = keyTable.columns.map(column => column.sort().desc());
+    keyTable.applySort(sorts);
+    // Select the last partition by default
+    keyTable.setViewport(0, 0);
+  }
+
+  stopListeningForPartitionChanges(
+    model: IrisGridModel,
+    resetState = false
+  ): void {
+    const { keyTable } = this.state;
+    const { dh } = model;
+
+    keyTable?.removeEventListener(
+      dh.Table.EVENT_UPDATED,
+      this.handlePartitionTableUpdate
+    );
+
+    keyTable?.close();
+
+    if (resetState) {
+      this.setState({ keyTable: undefined });
+    }
   }
 
   focus(): void {
@@ -3049,12 +3084,13 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const { detail: error } = event as CustomEvent;
     log.error('request failed:', error);
     this.stopLoading();
-    const { partitionConfig } = this.state;
+    const { partitionConfig, keyTable } = this.state;
     if (isMissingPartitionError(error) && partitionConfig != null) {
       // We'll try loading the initial partition again
       this.startLoading('Reloading partition...', { resetRanges: true });
       this.setState({ partitionConfig: undefined }, () => {
-        this.initState();
+        // Trigger EVENT_UPDATED
+        keyTable?.setViewport(0, 0);
       });
     } else if (this.canRollback()) {
       this.startLoading('Rolling back changes...', { resetRanges: true });
