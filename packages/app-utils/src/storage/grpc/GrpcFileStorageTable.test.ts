@@ -131,7 +131,10 @@ describe('directory expansion tests', () => {
       });
       handleUpdate.mockReset();
 
-      table.setExpanded(`${separator}dir1${separator}`, true);
+      const dirPath = `${separator}dir1${separator}`;
+      console.log(`Expanding ${dirPath}`);
+      table.setExpanded(dirPath, true);
+      console.log('Done expansion');
 
       jest.runAllTimers();
 
