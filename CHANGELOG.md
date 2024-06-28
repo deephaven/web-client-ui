@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.84.0](https://github.com/deephaven/web-client-ui/compare/v0.83.0...v0.84.0) (2024-06-28)
+
+### ⚠ BREAKING CHANGES
+
+- - @deephaven/jsapi-components - The contract of
+    `useSearchableViewportData` to be more consistent with
+    `useViewportData`. `usePickerWithSelectedValues` now requires
+    `timeZone`.
+
+* @deephaven/jsapi-utils - `createSearchTextFilter` requires `timeZone`
+
+### Features
+
+- useSearchableViewportData - support non-text filters ([#2092](https://github.com/deephaven/web-client-ui/issues/2092)) ([7009e21](https://github.com/deephaven/web-client-ui/commit/7009e2142d6f1624d0810a027e19e3a2b567e38a)), closes [#2102](https://github.com/deephaven/web-client-ui/issues/2102) [#2091](https://github.com/deephaven/web-client-ui/issues/2091)
+
+### Bug Fixes
+
+- `isElementOfType` Improved type inference ([#2099](https://github.com/deephaven/web-client-ui/issues/2099)) ([e13c9d7](https://github.com/deephaven/web-client-ui/commit/e13c9d78decdfba2ff76657a024b2df44f2ae0fc)), closes [#2094](https://github.com/deephaven/web-client-ui/issues/2094)
+- Console does not scroll to bottom when code run from notebook ([#2114](https://github.com/deephaven/web-client-ui/issues/2114)) ([e75e716](https://github.com/deephaven/web-client-ui/commit/e75e716a2d184e3ff5572fa609301bf6ac35da99))
+- make textValue default to key for Normalized Item ([#2113](https://github.com/deephaven/web-client-ui/issues/2113)) ([bd3e944](https://github.com/deephaven/web-client-ui/commit/bd3e944a53fe577fb48a3c8720c8b9c3881a5a04))
+- Update IrisGridContextMenuHandler getHeaderActions return type to be more permissive ([#2117](https://github.com/deephaven/web-client-ui/issues/2117)) ([4e08b79](https://github.com/deephaven/web-client-ui/commit/4e08b79a1555fb9959fcf0f6d4fecc8c7eff0467))
+
 ## [0.83.0](https://github.com/deephaven/web-client-ui/compare/v0.82.0...v0.83.0) (2024-06-25)
 
 ### ⚠ BREAKING CHANGES
