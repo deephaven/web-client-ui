@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.84.0](https://github.com/deephaven/web-client-ui/compare/v0.83.0...v0.84.0) (2024-06-28)
+
+**Note:** Version bump only for package @deephaven/dashboard
+
+## [0.83.0](https://github.com/deephaven/web-client-ui/compare/v0.82.0...v0.83.0) (2024-06-25)
+
+### Bug Fixes
+
+- Dashboard plugin crashing UI on throw ([#2080](https://github.com/deephaven/web-client-ui/issues/2080)) ([e6b55cf](https://github.com/deephaven/web-client-ui/commit/e6b55cf78561a1508d49109e9003813b9cc27262))
+
 ## [0.82.0](https://github.com/deephaven/web-client-ui/compare/v0.81.2...v0.82.0) (2024-06-11)
 
 **Note:** Version bump only for package @deephaven/dashboard

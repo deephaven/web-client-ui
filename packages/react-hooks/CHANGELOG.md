@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.84.0](https://github.com/deephaven/web-client-ui/compare/v0.83.0...v0.84.0) (2024-06-28)
+
+### Bug Fixes
+
+- `isElementOfType` Improved type inference ([#2099](https://github.com/deephaven/web-client-ui/issues/2099)) ([e13c9d7](https://github.com/deephaven/web-client-ui/commit/e13c9d78decdfba2ff76657a024b2df44f2ae0fc)), closes [#2094](https://github.com/deephaven/web-client-ui/issues/2094)
+
+## [0.83.0](https://github.com/deephaven/web-client-ui/compare/v0.82.0...v0.83.0) (2024-06-25)
+
+### Features
+
+- ComboBoxNormalized - windowed data component ([#2072](https://github.com/deephaven/web-client-ui/issues/2072)) ([a30341a](https://github.com/deephaven/web-client-ui/commit/a30341a728625dc7fdc2b0a54b88dfc737977b7a)), closes [#2071](https://github.com/deephaven/web-client-ui/issues/2071)
+
 ## [0.82.0](https://github.com/deephaven/web-client-ui/compare/v0.81.2...v0.82.0) (2024-06-11)
 
 **Note:** Version bump only for package @deephaven/react-hooks

@@ -48,6 +48,7 @@ export interface UsePickerWithSelectedValuesResult<TItem, TValue> {
  * @param mapItemToValue A function to map an item to a value
  * @param filterConditionFactories Optional filter condition factories to apply to the list
  * @param trimSearchText Whether to trim the search text before filtering. Defaults to false
+ * @param timeZone The timezone to use for date parsing
  */
 export function usePickerWithSelectedValues<TItem, TValue>({
   maybeTable,
@@ -55,12 +56,14 @@ export function usePickerWithSelectedValues<TItem, TValue>({
   mapItemToValue,
   filterConditionFactories = [],
   trimSearchText = false,
+  timeZone,
 }: {
   maybeTable: dh.Table | null;
   columnName: string;
   mapItemToValue: (item: KeyedItem<TItem>) => TValue;
   filterConditionFactories?: FilterConditionFactory[];
   trimSearchText?: boolean;
+  timeZone: string;
 }): UsePickerWithSelectedValuesResult<TItem, TValue> {
   const { itemHeight } = usePickerItemScale();
 
@@ -117,8 +120,14 @@ export function usePickerWithSelectedValues<TItem, TValue>({
     isApplyingFilter || valueExistsIsLoading ? null : valueExists;
 
   const searchTextFilter = useMemo(
-    () => createSearchTextFilter(tableUtils, columnName, appliedSearchText),
-    [appliedSearchText, columnName, tableUtils]
+    () =>
+      createSearchTextFilter(
+        tableUtils,
+        columnName,
+        appliedSearchText,
+        timeZone
+      ),
+    [appliedSearchText, columnName, tableUtils, timeZone]
   );
 
   // Filter out selected values from the picker

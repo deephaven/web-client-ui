@@ -3,6 +3,58 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.84.0](https://github.com/deephaven/web-client-ui/compare/v0.83.0...v0.84.0) (2024-06-28)
+
+### Bug Fixes
+
+- make textValue default to key for Normalized Item ([#2113](https://github.com/deephaven/web-client-ui/issues/2113)) ([bd3e944](https://github.com/deephaven/web-client-ui/commit/bd3e944a53fe577fb48a3c8720c8b9c3881a5a04))
+
+## [0.83.0](https://github.com/deephaven/web-client-ui/compare/v0.82.0...v0.83.0) (2024-06-25)
+
+### ⚠ BREAKING CHANGES
+
+- ComboBox component has been replaced.
+  To migrate to new version:
+
+* Passing children is used instead of `options` prop to define dropdown
+  items. For cases where option value and display are the same, passing an
+  array of values as `children` will work. For cases where value and
+  display differ, `Item` elements must be passed as children. e.g. `<Item
+key={value}>{display}</Item>`
+  e.g.
+
+```typescript
+// values will be used for display + value
+const items = useMemo(
+  () => ['Aaa', 'Bbb', 'Ccc'],
+  []
+)
+<ComboBox>{items}</ComboBox>
+```
+
+```typescript
+<ComboBox>
+  <Item key="aaa">Aaa</Item>
+  <Item key="bbb">Bbb</Item>
+  <Item key="ccc">Ccc</Item>
+</ComboBox>
+```
+
+- The `spellcheck=false` prop is no longer supported or needed
+- `searchPlaceholder` and `inputPlaceholder` props are no longer
+  supported and should be omitted. There is an optional `description` prop
+  for cases where a descriptive label is desired. There is also a `label`
+  prop for the primary component label.
+
+### Features
+
+- ComboBox - @deephaven/components ([#2067](https://github.com/deephaven/web-client-ui/issues/2067)) ([640e002](https://github.com/deephaven/web-client-ui/commit/640e002f85ea86961a22695c9c7659ca5d1de1ee)), closes [#2065](https://github.com/deephaven/web-client-ui/issues/2065)
+- ComboBoxNormalized - windowed data component ([#2072](https://github.com/deephaven/web-client-ui/issues/2072)) ([a30341a](https://github.com/deephaven/web-client-ui/commit/a30341a728625dc7fdc2b0a54b88dfc737977b7a)), closes [#2071](https://github.com/deephaven/web-client-ui/issues/2071)
+
+### Bug Fixes
+
+- view border styling ([#2063](https://github.com/deephaven/web-client-ui/issues/2063)) ([6f99e6b](https://github.com/deephaven/web-client-ui/commit/6f99e6b764a63e31aec36d435ec62926d109955e))
+
 ## [0.82.0](https://github.com/deephaven/web-client-ui/compare/v0.81.2...v0.82.0) (2024-06-11)
 
 ### Bug Fixes

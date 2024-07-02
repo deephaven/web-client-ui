@@ -3,6 +3,57 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.84.0](https://github.com/deephaven/web-client-ui/compare/v0.83.0...v0.84.0) (2024-06-28)
+
+**Note:** Version bump only for package @deephaven/code-studio
+
+## [0.83.0](https://github.com/deephaven/web-client-ui/compare/v0.82.0...v0.83.0) (2024-06-25)
+
+### ⚠ BREAKING CHANGES
+
+- ComboBox component has been replaced.
+  To migrate to new version:
+
+* Passing children is used instead of `options` prop to define dropdown
+  items. For cases where option value and display are the same, passing an
+  array of values as `children` will work. For cases where value and
+  display differ, `Item` elements must be passed as children. e.g. `<Item
+key={value}>{display}</Item>`
+  e.g.
+
+```typescript
+// values will be used for display + value
+const items = useMemo(
+  () => ['Aaa', 'Bbb', 'Ccc'],
+  []
+)
+<ComboBox>{items}</ComboBox>
+```
+
+```typescript
+<ComboBox>
+  <Item key="aaa">Aaa</Item>
+  <Item key="bbb">Bbb</Item>
+  <Item key="ccc">Ccc</Item>
+</ComboBox>
+```
+
+- The `spellcheck=false` prop is no longer supported or needed
+- `searchPlaceholder` and `inputPlaceholder` props are no longer
+  supported and should be omitted. There is an optional `description` prop
+  for cases where a descriptive label is desired. There is also a `label`
+  prop for the primary component label.
+
+### Features
+
+- ComboBox - @deephaven/components ([#2067](https://github.com/deephaven/web-client-ui/issues/2067)) ([640e002](https://github.com/deephaven/web-client-ui/commit/640e002f85ea86961a22695c9c7659ca5d1de1ee)), closes [#2065](https://github.com/deephaven/web-client-ui/issues/2065)
+- ComboBoxNormalized - windowed data component ([#2072](https://github.com/deephaven/web-client-ui/issues/2072)) ([a30341a](https://github.com/deephaven/web-client-ui/commit/a30341a728625dc7fdc2b0a54b88dfc737977b7a)), closes [#2071](https://github.com/deephaven/web-client-ui/issues/2071)
+- Embed widget loading workspace settings ([#2068](https://github.com/deephaven/web-client-ui/issues/2068)) ([b090f20](https://github.com/deephaven/web-client-ui/commit/b090f200b38a7ecab1056b17f445c2af3ae09a41)), closes [#1964](https://github.com/deephaven/web-client-ui/issues/1964)
+
+### Bug Fixes
+
+- Reconnect Auth Fail Fix - embed-widget ([#2023](https://github.com/deephaven/web-client-ui/issues/2023)) ([3e52242](https://github.com/deephaven/web-client-ui/commit/3e522428b88ed59cb9f8c38612a80236fd219e5d))
+
 ## [0.82.0](https://github.com/deephaven/web-client-ui/compare/v0.81.2...v0.82.0) (2024-06-11)
 
 **Note:** Version bump only for package @deephaven/code-studio

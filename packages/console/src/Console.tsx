@@ -655,7 +655,10 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     if (pane == null) {
       return;
     }
-    pane.scrollTo({ top: pane.scrollHeight });
+
+    window.requestAnimationFrame(() => {
+      pane.scrollTo({ top: pane.scrollHeight });
+    });
   }
 
   handleScrollPaneScroll(): void {

@@ -178,7 +178,7 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
   getHeaderActions(
     modelIndex: ModelIndex,
     gridPoint: GridPoint
-  ): ContextAction[] {
+  ): ResolvableContextAction[] {
     const { irisGrid } = this;
     const { column: visibleIndex } = gridPoint;
     assertNotNull(visibleIndex);

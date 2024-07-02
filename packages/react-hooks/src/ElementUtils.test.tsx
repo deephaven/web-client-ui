@@ -1,6 +1,11 @@
 import { createElement } from 'react';
-import { Text } from '@adobe/react-spectrum';
+import { ItemElement, Item, Text } from '@deephaven/components';
 import { isElementOfType } from './ElementUtils';
+
+beforeEach(() => {
+  jest.clearAllMocks();
+  expect.hasAssertions();
+});
 
 describe('isElementOfType', () => {
   function MockComponent() {
@@ -21,4 +26,16 @@ describe('isElementOfType', () => {
       expect(isElementOfType(element, type)).toBe(expected);
     }
   );
+
+  it('should derive the `type` prop', () => {
+    const element: ItemElement = createElement(Item);
+
+    if (isElementOfType(element, Item)) {
+      // This is a type check that verifies the type guard narrows this to the
+      // `Item` function instead of `string | JSXElementConstructor<any>`. This
+      // proves that #2094 is working as expected. Namely, the compiler will
+      // complain if it thinks `type` could be a string.
+      expect(element.type.name).toEqual(Item.name);
+    }
+  });
 });
