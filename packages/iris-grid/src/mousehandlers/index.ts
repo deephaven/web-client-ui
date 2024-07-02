@@ -9,3 +9,4 @@ export { default as IrisGridRowTreeMouseHandler } from './IrisGridRowTreeMouseHa
 export { default as IrisGridSortMouseHandler } from './IrisGridSortMouseHandler';
 export { default as PendingMouseHandler } from './PendingMouseHandler';
 export { default as IrisGridTokenMouseHandler } from './IrisGridTokenMouseHandler';
+export { default as IrisGridPartitionedTableMouseHandler } from './IrisGridPartitionedTableMouseHandler';

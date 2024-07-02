@@ -116,6 +116,7 @@ import {
   IrisGridContextMenuHandler,
   IrisGridCopyCellMouseHandler,
   IrisGridDataSelectMouseHandler,
+  IrisGridPartitionedTableMouseHandler,
   IrisGridFilterMouseHandler,
   IrisGridRowTreeMouseHandler,
   IrisGridSortMouseHandler,
@@ -734,6 +735,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       new IrisGridContextMenuHandler(this, dh),
       new IrisGridDataSelectMouseHandler(this),
       new PendingMouseHandler(this),
+      new IrisGridPartitionedTableMouseHandler(this),
     ];
     if (canCopy) {
       keyHandlers.push(new CopyKeyHandler(this));
@@ -2080,7 +2082,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             );
             const newPartition: PartitionConfig = {
               partitions: values,
-              mode: 'partition',
+              mode: model.isPartitionAwareSourceTable ? 'partition' : 'keys',
             };
             keyTable.close();
             resolve(newPartition);
@@ -2091,6 +2093,34 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         }
       );
     });
+  }
+
+  /**
+   * Selects a partition key from the table based on the provided row index.
+   *
+   * @param rowIndex The index of the row from which the partition will be selected.
+   * @returns A promise that resolves when the partition key has been successfully selected.
+   */
+  selectPartitionKeyFromTable(rowIndex: GridRangeIndex): void {
+    const { model } = this.props;
+    assertNotNull(rowIndex);
+    if (isPartitionedGridModel(model)) {
+      const data = this.getRowDataMap(rowIndex);
+      const partitionColumnSet = new Set(
+        model.partitionColumns.map(column => column.name)
+      );
+      const values = Object.entries(data)
+        .filter(([key, _]) => partitionColumnSet.has(key))
+        .map(([key, columnData]) => columnData.value);
+      const newPartition: PartitionConfig = {
+        partitions: values,
+        mode: 'partition',
+      };
+      this.setState({
+        isSelectingPartition: true,
+        partitionConfig: newPartition,
+      });
+    }
   }
 
   copyCell(
