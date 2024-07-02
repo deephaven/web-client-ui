@@ -145,18 +145,12 @@ class IrisGridPartitionSelector extends Component<
     index: number,
     selectedValue: unknown
   ): Promise<void> {
-    const { model, partitionConfig: prevConfig } = this.props;
+    const { partitionConfig: prevConfig } = this.props;
 
     log.debug('handlePartitionSelect', index, selectedValue, prevConfig);
 
     const newPartitions = [...prevConfig.partitions];
     newPartitions[index] = selectedValue;
-
-    // If it's the last partition changed, we know it's already a valid value, just emit it
-    if (index === model.partitionColumns.length - 1) {
-      this.sendUpdate({ partitions: newPartitions, mode: 'partition' });
-      return;
-    }
 
     const { keysTable } = this.state;
     // Otherwise, we need to get the value from a filtered key table
@@ -184,7 +178,7 @@ class IrisGridPartitionSelector extends Component<
         // Core JSAPI returns undefined for null table values,
         // coalesce with null to differentiate null from no selection in the dropdown
         // https://github.com/deephaven/deephaven-core/issues/5400
-        partitions: t.columns.map(column => data.rows[0].get(column) ?? null),
+        partitions: t.columns.map(column => data.rows[0].get(column)),
         mode: 'partition',
       };
       t.close();
@@ -294,13 +288,15 @@ class IrisGridPartitionSelector extends Component<
     const { model, partitionConfig } = this.props;
     const { isLoading, partitionFilters, partitionTables } = this.state;
 
-    const { partitions } = partitionConfig;
-
     if (partitionFilters !== null && partitionTables !== null) {
       partitionFilters.forEach((filter, index) => {
         partitionTables[index].applyFilter(filter as dh.FilterCondition[]);
+        // Have to set viewport since it is cleared after making selection in picker
+        // setting it to 50 to avoid loading all the data, but sufficient for most datasets for initial render
+        partitionTables[index].setViewport(0, 50);
       });
     }
+
     const partitionSelectors = model.partitionColumns.map((column, index) => (
       <div key={`selector-${column.name}`} className="column-selector">
         {partitionTables?.[index] && (
@@ -311,10 +307,10 @@ class IrisGridPartitionSelector extends Component<
             direction="bottom"
             shouldFlip={false}
             keyColumn={partitionTables[index].columns[index].name}
+            selectedKey={partitionConfig.partitions[index] as ItemKey}
             placeholder={'Loading...' as string}
             labelColumn={partitionTables[index].columns[index].name}
             onChange={this.getCachedChangeCallback(index)}
-            defaultSelectedKey={partitions[index] as ItemKey}
             isDisabled={
               (index > 0 && partitionConfig.mode !== 'partition') || isLoading
             }
@@ -327,7 +323,6 @@ class IrisGridPartitionSelector extends Component<
     ));
     return (
       <div className="iris-grid-partition-selector">
-        <div className="table-name">Partitioned Table</div>
         <div className="partition-button-group">
           <Button
             onClick={this.handleKeyTableClick}
@@ -337,7 +332,7 @@ class IrisGridPartitionSelector extends Component<
             active={partitionConfig.mode === 'keys'}
             disabled={isLoading}
           >
-            Keys
+            Partitions
           </Button>
           <Button
             onClick={this.handleMergeClick}
@@ -347,7 +342,7 @@ class IrisGridPartitionSelector extends Component<
             active={partitionConfig.mode === 'merged'}
             disabled={isLoading}
           >
-            Merge
+            {model.isPartitionRequired ? 'Merge' : 'Coalesce'}
           </Button>
         </div>
         {partitionSelectors}
