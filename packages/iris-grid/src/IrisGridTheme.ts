@@ -46,6 +46,7 @@ export type IrisGridThemeType = GridThemeType & {
   overflowButtonColor: GridColor;
   overflowButtonHoverColor: GridColor;
   floatingGridRowColor: NullableGridColor;
+  iconSize: number;
 };
 
 /**
@@ -149,6 +150,7 @@ export function createDefaultIrisGridTheme(): IrisGridThemeType {
     sortHeaderBarHeight: 2,
     reverseHeaderBarHeight: 4,
     filterBarHorizontalPadding: 4,
+    iconSize: 16,
 
     activeCellSelectionBorderWidth:
       parseInt(IrisGridTheme['active-cell-selection-border-width'], 10) || 2,
@@ -182,5 +184,5 @@ export function createDefaultIrisGridTheme(): IrisGridThemeType {
     positiveBarColor: IrisGridTheme['positive-bar-color'],
     negativeBarColor: IrisGridTheme['negative-bar-color'],
     markerBarColor: IrisGridTheme['marker-bar-color'],
-  });
+  } satisfies IrisGridThemeType);
 }
