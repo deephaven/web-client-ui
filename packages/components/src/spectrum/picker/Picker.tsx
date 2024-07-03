@@ -7,6 +7,7 @@ import cl from 'classnames';
 import React from 'react';
 import type { NormalizedItem } from '../utils';
 import type { PickerProps } from './PickerProps';
+import useMultiRef from './useMultiRef';
 import { usePickerProps } from './usePickerProps';
 
 /**
@@ -20,14 +21,19 @@ export const Picker = React.forwardRef(function Picker(
   { UNSAFE_className, ...props }: PickerProps,
   ref: DOMRef<HTMLDivElement>
 ): JSX.Element {
-  const { defaultSelectedKey, disabledKeys, selectedKey, ...pickerProps } =
-    usePickerProps(props);
-
+  const {
+    defaultSelectedKey,
+    disabledKeys,
+    selectedKey,
+    ref: scrollRef,
+    ...pickerProps
+  } = usePickerProps(props);
+  const pickerRef = useMultiRef(ref, scrollRef);
   return (
     <SpectrumPicker
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...pickerProps}
-      ref={ref}
+      ref={pickerRef}
       UNSAFE_className={cl('dh-picker', UNSAFE_className)}
       // Type assertions are necessary here since Spectrum types don't account
       // for number and boolean key values even though they are valid runtime
