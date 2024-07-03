@@ -1498,7 +1498,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     return rowIndex != null ? modelRows.get(rowIndex) : null;
   }
 
-  getTheme(): Partial<IrisGridThemeType> {
+  getTheme(): IrisGridThemeType {
     const { model, theme } = this.props;
 
     return this.getCachedTheme(

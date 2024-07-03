@@ -133,7 +133,7 @@ export class IrisGridRenderer extends GridRenderer {
     mouseX: Coordinate | null;
     mouseY: Coordinate | null;
     metrics: GridMetrics | undefined;
-    theme: GridThemeType;
+    theme: IrisGridThemeType;
   }): {
     left: Coordinate | null;
     top: Coordinate | null;

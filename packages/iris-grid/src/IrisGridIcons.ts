@@ -7,8 +7,6 @@ import {
   IconDefinition,
 } from '@deephaven/icons';
 
-export const ICON_SIZE = 16;
-
 export type IconName =
   | 'sortUp'
   | 'sortDown'
