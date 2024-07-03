@@ -1085,8 +1085,7 @@ export class GridRenderer {
           columnX +
           i * treeDepthIndent +
           treeDepthIndent * 0.5 +
-          treeHorizontalPadding +
-          0.5;
+          treeHorizontalPadding;
         context.moveTo(lineX, rowY);
         context.lineTo(lineX, rowY + rowHeight);
       }
@@ -1101,8 +1100,7 @@ export class GridRenderer {
           columnX +
           i * treeDepthIndent +
           treeDepthIndent * 0.5 +
-          treeHorizontalPadding +
-          0.5;
+          treeHorizontalPadding;
         context.moveTo(lineX, rowY);
         context.lineTo(lineX, rowY + Math.ceil(rowHeight / 2));
         // extra moveTo prevents halfpixel in corner
