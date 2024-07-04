@@ -185,7 +185,7 @@ class IrisGridPartitionSelector extends Component<
           );
         });
       t.applyFilter(partitionFilters);
-      t.setViewport(0, 10, t.columns);
+      t.setViewport(0, 0, t.columns);
       const data = await this.pending.add(t.getViewportData());
       const newConfig: PartitionConfig = {
         // Core JSAPI returns undefined for null table values,
@@ -304,7 +304,7 @@ class IrisGridPartitionSelector extends Component<
     if (partitionFilters !== null && partitionTables !== null) {
       partitionFilters.forEach((filter, index) => {
         partitionTables[index].applyFilter(filter as dh.FilterCondition[]);
-        partitionTables[index].setViewport(0, 50);
+        partitionTables[index].setViewport(0, partitionTables[index].size);
       });
     }
     const partitionSelectors = model.partitionColumns.map((column, index) => (
