@@ -26,9 +26,6 @@ interface IrisGridPartitionSelectorState {
   keysTable: dh.Table | null;
 
   partitionTables: dh.Table[] | null;
-
-  /** The filters to apply to each partition table */
-  partitionFilters: dh.FilterCondition[][] | null;
 }
 class IrisGridPartitionSelector extends Component<
   IrisGridPartitionSelectorProps,
@@ -51,7 +48,6 @@ class IrisGridPartitionSelector extends Component<
 
       baseTable: null,
       keysTable: null,
-      partitionFilters: null,
       partitionTables: null,
     };
   }
@@ -61,13 +57,7 @@ class IrisGridPartitionSelector extends Component<
 
     try {
       const keysTable = await this.pending.add(
-        model.partitionKeysTable().then(keyTable => {
-          const sorts = model.partitionColumns.map(column =>
-            column.sort().desc()
-          );
-          keyTable.applySort(sorts);
-          return keyTable;
-        }),
+        model.partitionKeysTable().then(keyTable => keyTable),
         t => t.close()
       );
 
@@ -75,6 +65,7 @@ class IrisGridPartitionSelector extends Component<
         t.close()
       );
 
+      // load in initial partition tables so that pickers render correctly
       const partitionTables = await Promise.all(
         model.partitionColumns.map(async (_, i) =>
           this.pending.add(
@@ -83,13 +74,11 @@ class IrisGridPartitionSelector extends Component<
           )
         )
       );
-
-      const partitionFilters = this.getPartitionFilters(partitionTables);
+      this.updatePartitionOptions();
       this.setState({
         isLoading: false,
         keysTable,
         baseTable,
-        partitionFilters,
         partitionTables,
       });
     } catch (e) {
@@ -106,7 +95,7 @@ class IrisGridPartitionSelector extends Component<
     const { partitionConfig } = this.props;
 
     if (prevConfig !== partitionConfig) {
-      this.updatePartitionFilters();
+      this.updatePartitionOptions();
     }
   }
 
@@ -235,23 +224,28 @@ class IrisGridPartitionSelector extends Component<
   }
 
   /**
-   * Update the filters on the partition dropdown tables
+   * Update the options on the partition dropdown tables
    */
-  updatePartitionFilters(): void {
-    const { partitionTables } = this.state;
-    assertNotNull(partitionTables);
+  async updatePartitionOptions(): Promise<void> {
+    const { model } = this.props;
+    const { keysTable } = this.state;
+    const { partitionConfig: prevConfig } = this.props;
 
-    const { partitionConfig } = this.props;
-    const { mode } = partitionConfig;
-    log.debug('updatePartitionFilters', partitionConfig);
-    if (mode !== 'partition') {
-      // We only need to update the filters if the mode is `partitions`
-      // In the other modes, we disable the dropdowns anyway
-      return;
-    }
+    assertNotNull(keysTable);
 
-    const partitionFilters = this.getPartitionFilters(partitionTables);
-    this.setState({ partitionFilters });
+    const partitionFilters = [...prevConfig.partitions].map((partition, i) => {
+      const partitionColumn = keysTable.columns[i];
+      return this.tableUtils.makeNullableEqFilter(partitionColumn, partition);
+    });
+
+    const partitionTables = await Promise.all(
+      model.partitionColumns.map(async (_, i) => {
+        keysTable.applyFilter(partitionFilters.slice(0, i));
+        return keysTable.selectDistinct(model.partitionColumns.slice(0, i + 1));
+      })
+    );
+
+    this.setState({ partitionTables });
   }
 
   getPartitionFilters(partitionTables: dh.Table[]): dh.FilterCondition[][] {
@@ -299,14 +293,8 @@ class IrisGridPartitionSelector extends Component<
 
   render(): JSX.Element {
     const { model, partitionConfig } = this.props;
-    const { isLoading, partitionFilters, partitionTables } = this.state;
+    const { isLoading, partitionTables } = this.state;
 
-    if (partitionFilters !== null && partitionTables !== null) {
-      partitionFilters.forEach((filter, index) => {
-        partitionTables[index].applyFilter(filter as dh.FilterCondition[]);
-        partitionTables[index].setViewport(0, partitionTables[index].size);
-      });
-    }
     const partitionSelectors = model.partitionColumns.map((column, index) => (
       <div key={`selector-${column.name}`} className="column-selector">
         {partitionTables?.[index] && (
