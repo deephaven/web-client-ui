@@ -25,7 +25,7 @@ export class GrpcFileStorage implements FileStorage {
 
   private readonly root: string;
 
-  private readonly separator: string;
+  public readonly separator: string;
 
   /**
    * FileStorage implementation using gRPC

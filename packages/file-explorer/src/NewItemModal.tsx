@@ -55,7 +55,7 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
   static propTypes = {
     isOpen: PropTypes.bool,
     title: PropTypes.string.isRequired,
-    defaultValue: PropTypes.string,
+    defaultValue: PropTypes.string.isRequired,
     type: PropTypes.oneOf(['file', 'directory']).isRequired,
     onSubmit: PropTypes.func,
     onCancel: PropTypes.func,
@@ -66,7 +66,6 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
 
   static defaultProps = {
     isOpen: false,
-    defaultValue: '/',
     notifyOnExtensionChange: false,
     placeholder: '',
     onSubmit: (name: string, isOverwrite?: boolean): void => undefined,
@@ -102,11 +101,11 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
       this.handleExtensionChangeConfirm.bind(this);
     this.handleBreadcrumbSelect = this.handleBreadcrumbSelect.bind(this);
 
-    const { defaultValue } = props;
+    const { defaultValue, storage } = props;
 
     const path = FileUtils.hasPath(defaultValue)
       ? FileUtils.getPath(defaultValue)
-      : '/';
+      : storage.separator;
 
     this.state = {
       isSubmitting: false,
@@ -164,10 +163,10 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
   private isInitialLoad = true;
 
   resetValue(): void {
-    const { defaultValue } = this.props as NewItemModalProps;
+    const { defaultValue, storage } = this.props as NewItemModalProps;
     const path = FileUtils.hasPath(defaultValue)
       ? FileUtils.getPath(defaultValue)
-      : '/';
+      : storage.separator;
     this.setState({
       path,
       value: FileUtils.getBaseName(defaultValue),
@@ -392,14 +391,16 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
   }
 
   renderPathButtons(path: string): React.ReactNode {
-    const pathAsList = path.split('/');
+    const { storage } = this.props;
+    const { separator } = storage;
+    const pathAsList = path.split(separator);
     pathAsList.pop();
     return pathAsList.map((basename, index) => {
       let directoryPath = '';
       for (let i = 0; i < index; i += 1) {
-        directoryPath += `${pathAsList[i]}/`;
+        directoryPath += `${pathAsList[i]}${separator}`;
       }
-      directoryPath += `${basename}/`;
+      directoryPath += `${basename}${separator}`;
 
       return (
         <React.Fragment key={directoryPath}>

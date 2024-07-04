@@ -33,6 +33,7 @@ export type FileListRenderItemProps = RenderItemProps<FileStorageItem> & {
   draggedItems?: FileStorageItem[];
   isDragInProgress: boolean;
   isDropTargetValid: boolean;
+  separator: string;
 
   onDragStart: (index: number, e: React.DragEvent<HTMLDivElement>) => void;
   onDragOver: (index: number, e: React.DragEvent<HTMLDivElement>) => void;
@@ -54,6 +55,7 @@ export function FileListItem(props: FileListRenderItemProps): JSX.Element {
     onDragOver,
     onDragEnd,
     onDrop,
+    separator,
   } = props;
 
   const isDragged =
@@ -73,7 +75,7 @@ export function FileListItem(props: FileListRenderItemProps): JSX.Element {
     isDragInProgress && !isDropTargetValid && dropTargetPath === itemPath;
 
   const icon = getItemIcon(item);
-  const depth = FileUtils.getDepth(item.filename);
+  const depth = FileUtils.getDepth(item.filename, separator);
   const depthLines = Array(depth)
     .fill(null)
     .map((value, index) => (

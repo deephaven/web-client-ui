@@ -46,9 +46,11 @@ export class FileUtils {
   /**
    * Get the depth (how many directories deep it is) of the provided filename with path.
    * @param name The full file name to get the depth of
+   * @param separator The separator to use for the path
+   * @returns The depth of the file
    */
-  static getDepth(name: string): number {
-    if (!FileUtils.hasPath(name)) {
+  static getDepth(name: string, separator: string): number {
+    if (!FileUtils.hasPath(name, separator)) {
       throw new Error(`Invalid path provided: ${name}`);
     }
     const matches = name.match(/\//g) ?? [];
@@ -72,10 +74,11 @@ export class FileUtils {
   /**
    * Get the base name portion of the file, eg '/foo/bar.txt' => 'bar.txt'
    * @param name The full name including path of the file
+   * @param separator The separator to use for the path
    * @returns Just the file name part of the file
    */
-  static getBaseName(name: string): string {
-    return name.split('/').pop() ?? '';
+  static getBaseName(name: string, separator: string): string {
+    return name.split(separator).pop() ?? '';
   }
 
   /**
@@ -137,59 +140,66 @@ export class FileUtils {
   /**
    * Pop the last part of the filename component to return the parent path
    * @param name The file name to get the parent path of
+   * @param separator The separator to use for the path
+   * @returns The parent path of the file
    */
-  static getParent(name: string): string {
-    if (!FileUtils.hasPath(name)) {
+  static getParent(name: string, separator: string): string {
+    if (!FileUtils.hasPath(name, separator)) {
       throw new Error(`Invalid name provided: ${name}`);
     }
 
-    const parts = name.split('/');
+    const parts = name.split(separator);
     while (parts.pop() === '');
     if (parts.length === 0) {
       throw new Error(`No parent for path provided: ${name}`);
     }
-    return `${parts.join('/')}/`;
+    return `${parts.join(separator)}${separator}`;
   }
 
   /**
    * Get the path name portion of the file
    * @param name The full path with or without filename to get the path of
+   * @param separator The separator to use for the path
    * @returns Just the path with out the file name part, including trailing slash
    */
-  static getPath(name: string): string {
-    if (!FileUtils.hasPath(name)) {
+  static getPath(name: string, separator: string): string {
+    if (!FileUtils.hasPath(name, separator)) {
       throw new Error(`Invalid filename provided: ${name}`);
     }
-    const parts = name.split('/');
+    const parts = name.split(separator);
     parts.pop();
-    return `${parts.join('/')}/`;
+    return `${parts.join(separator)}${separator}`;
   }
 
   /**
    * Check if a given file name includes the full path
    * @param name The file name to check
+   * @param separator The separator to use for the path
    * @returns True if it's a full path, false otherwise
    */
-  static hasPath(name: string): boolean {
-    return name.startsWith('/');
+  static hasPath(name: string, separator: string): boolean {
+    return name.startsWith(separator);
   }
 
   /**
    * Check a given file name is a path
    * @param name The file name to check
+   * @param separator The separator to use for the path
    * @returns True if it's a full path, false otherwise
    */
-  static isPath(name: string): boolean {
-    return name.startsWith('/') && name.endsWith('/');
+  static isPath(name: string, separator: string): boolean {
+    return name.startsWith(separator) && name.endsWith(separator);
   }
 
   /**
    * Turns a directory file name into a path. Basically ensures there's a trailing slash
    * @param name The directory name to make a path
+   * @param separator The separator to use for the path
+   * @returns The directory name as a path
    */
-  static makePath(name: string): string {
-    if (!name.endsWith('/')) {
-      return `${name}/`;
+  static makePath(name: string, separator: string): string {
+    if (!name.endsWith(separator)) {
+      return `${name}${separator}`;
     }
     return name;
   }
@@ -246,9 +256,11 @@ export class FileUtils {
    * Reduce the provided paths to the minimum selection.
    * Removes any nested files or directories if a parent is already selected.
    * @param paths The paths to reduce
+   * @param separator The separator to use for the paths
+   * @returns The reduced paths
    */
-  static reducePaths(paths: string[]): string[] {
-    const folders = paths.filter(path => FileUtils.isPath(path));
+  static reducePaths(paths: string[], separator: string): string[] {
+    const folders = paths.filter(path => FileUtils.isPath(path, separator));
     return paths.filter(
       path =>
         !folders.some(folder => path !== folder && path.startsWith(folder))

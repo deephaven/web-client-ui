@@ -51,6 +51,7 @@ export function FileExplorer(props: FileExplorerProps): JSX.Element {
     onSelectionChange,
     rowHeight = DEFAULT_ROW_HEIGHT,
   } = props;
+  const { separator } = storage;
   const [itemsToDelete, setItemsToDelete] = useState<FileStorageItem[]>([]);
   const [table, setTable] = useState<FileStorageTable>();
 
@@ -156,18 +157,18 @@ export function FileExplorer(props: FileExplorerProps): JSX.Element {
     (item: FileStorageItem, newName: string) => {
       let name = item.filename;
       const isDir = isDirectory(item);
-      if (isDir && !name.endsWith('/')) {
-        name = `${name}/`;
+      if (isDir && !name.endsWith(separator)) {
+        name = `${name}${separator}`;
       }
       let destination = `${FileUtils.getParent(name)}${newName}`;
-      if (isDir && !destination.endsWith('/')) {
-        destination = `${destination}/`;
+      if (isDir && !destination.endsWith(separator)) {
+        destination = `${destination}${separator}`;
       }
       log.debug2('handleRename', name, destination);
       storage.moveFile(name, destination).catch(handleError);
       onRename(name, destination);
     },
-    [handleError, onRename, storage]
+    [handleError, onRename, separator, storage]
   );
 
   const handleValidateRename = useCallback(

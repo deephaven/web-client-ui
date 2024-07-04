@@ -85,6 +85,7 @@ export function FileList(props: FileListProps): JSX.Element {
 
   const itemList = useRef<ItemList<FileStorageItem>>(null);
   const fileList = useRef<HTMLDivElement>(null);
+  const { separator } = table;
 
   const getItems = useCallback(
     (ranges: Range[]): FileStorageItem[] => {
@@ -258,13 +259,13 @@ export function FileList(props: FileListProps): JSX.Element {
         log.debug2('handleListDragOver', e);
         setDropTargetItem({
           type: 'directory',
-          filename: '/',
-          basename: '/',
-          id: '/',
+          filename: separator,
+          basename: separator,
+          id: separator,
         });
       }
     },
-    []
+    [separator]
   );
 
   const handleListDrop = useCallback(
@@ -334,14 +335,14 @@ export function FileList(props: FileListProps): JSX.Element {
   const { focusedPath } = props;
   useEffect(() => {
     if (focusedPath !== undefined) {
-      if (focusedPath === '/') {
+      if (focusedPath === separator) {
         table.collapseAll();
       } else {
         table.setExpanded(focusedPath, false);
         table.setExpanded(focusedPath, true);
       }
     }
-  }, [table, focusedPath]);
+  }, [table, focusedPath, separator]);
 
   useEffect(
     function updateTableViewport() {
@@ -397,7 +398,7 @@ export function FileList(props: FileListProps): JSX.Element {
       if (
         dropTargetItem != null &&
         isDirectory(dropTargetItem) &&
-        dropTargetItem.filename !== '/'
+        dropTargetItem.filename !== separator
       ) {
         const timeout = setTimeout(() => {
           if (!dropTargetItem.isExpanded) {
@@ -407,7 +408,7 @@ export function FileList(props: FileListProps): JSX.Element {
         return () => clearTimeout(timeout);
       }
     },
-    [dropTargetItem, table]
+    [dropTargetItem, separator, table]
   );
 
   const renderWrapper = useCallback(

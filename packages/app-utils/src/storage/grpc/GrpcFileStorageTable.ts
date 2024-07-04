@@ -37,7 +37,7 @@ export class GrpcFileStorageTable implements FileStorageTable {
 
   private readonly root: string;
 
-  private readonly separator: string;
+  public readonly separator: string;
 
   private currentSize = 0;
 

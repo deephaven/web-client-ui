@@ -52,6 +52,11 @@ export interface FileStorageTable extends StorageTable<FileStorageItem> {
    * Collapses all directories
    */
   collapseAll: () => void;
+
+  /**
+   * Separator used in this file system
+   */
+  readonly separator: string;
 }
 
 /**
@@ -108,6 +113,9 @@ export interface FileStorage {
    * @param name The full directory path
    */
   createDirectory: (name: string) => Promise<FileStorageItem>;
+
+  /** Retrieve the separator used with this file system */
+  readonly separator: string;
 }
 
 export default FileStorage;
