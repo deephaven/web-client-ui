@@ -40,6 +40,7 @@ export type UsePickerPassthroughProps<TProps> = Omit<
   | 'labelColumn'
   | 'iconColumn'
   | 'settings'
+  | 'additionalFilterFactories'
   | 'onChange'
   | 'onSelectionChange'
 >;
@@ -53,6 +54,7 @@ export function usePickerProps<TProps>({
   keyColumn: keyColumnName,
   labelColumn: labelColumnName,
   iconColumn: iconColumnName,
+  additionalFilterFactories,
   settings,
   onChange,
   onSelectionChange,
@@ -74,8 +76,17 @@ export function usePickerProps<TProps>({
   // applied in `useSearchableViewportData`.)
   const { data: tableCopy } = usePromiseFactory(
     TableUtils.copyTableAndApplyFilters,
-    [tableSource]
+    [tableSource, ...(additionalFilterFactories ?? [])]
   );
+
+  useEffect(() => {
+    console.log(
+      '[TESTING] additionalFilters',
+      additionalFilterFactories,
+      tableCopy?.columns,
+      tableCopy?.size
+    );
+  }, [additionalFilterFactories, tableCopy]);
 
   const keyColumn = useMemo(
     () =>

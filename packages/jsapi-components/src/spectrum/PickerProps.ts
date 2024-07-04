@@ -4,7 +4,7 @@ import {
   SpectrumPickerProps,
 } from '@deephaven/components';
 import { dh as DhType } from '@deephaven/jsapi-types';
-import { Settings } from '@deephaven/jsapi-utils';
+import { FilterConditionFactory, Settings } from '@deephaven/jsapi-utils';
 
 export type PickerWithTableProps<TProps> = Omit<
   PickerPropsT<TProps>,
@@ -20,6 +20,8 @@ export type PickerWithTableProps<TProps> = Omit<
   iconColumn?: string;
 
   settings?: Settings;
+
+  additionalFilterFactories?: FilterConditionFactory[];
 };
 
 export type PickerProps = PickerWithTableProps<

@@ -6,7 +6,7 @@ import { vsChevronRight, vsMerge, vsKey } from '@deephaven/icons';
 import Log from '@deephaven/log';
 import { Picker } from '@deephaven/jsapi-components';
 import type { dh } from '@deephaven/jsapi-types';
-import { TableUtils } from '@deephaven/jsapi-utils';
+import { FilterConditionFactory, TableUtils } from '@deephaven/jsapi-utils';
 import { assertNotNull, Pending, PromiseUtils } from '@deephaven/utils';
 import './IrisGridPartitionSelector.scss';
 import { PartitionConfig, PartitionedGridModel } from './PartitionedGridModel';
@@ -26,7 +26,7 @@ interface IrisGridPartitionSelectorState {
   partitionTables: dh.Table[] | null;
 
   /** The filters to apply to each partition table */
-  partitionFilters: dh.FilterCondition[][] | null;
+  partitionFilters: FilterConditionFactory[][] | null;
 }
 class IrisGridPartitionSelector extends Component<
   IrisGridPartitionSelectorProps,
@@ -145,18 +145,12 @@ class IrisGridPartitionSelector extends Component<
     index: number,
     selectedValue: unknown
   ): Promise<void> {
-    const { model, partitionConfig: prevConfig } = this.props;
+    const { partitionConfig: prevConfig } = this.props;
 
     log.debug('handlePartitionSelect', index, selectedValue, prevConfig);
 
     const newPartitions = [...prevConfig.partitions];
     newPartitions[index] = selectedValue;
-
-    // If it's the last partition changed, we know it's already a valid value, just emit it
-    if (index === model.partitionColumns.length - 1) {
-      this.sendUpdate({ partitions: newPartitions, mode: 'partition' });
-      return;
-    }
 
     const { keysTable } = this.state;
     // Otherwise, we need to get the value from a filtered key table
@@ -184,7 +178,7 @@ class IrisGridPartitionSelector extends Component<
         // Core JSAPI returns undefined for null table values,
         // coalesce with null to differentiate null from no selection in the dropdown
         // https://github.com/deephaven/deephaven-core/issues/5400
-        partitions: t.columns.map(column => data.rows[0].get(column) ?? null),
+        partitions: t.columns.map(column => data.rows[0].get(column)),
         mode: 'partition',
       };
       t.close();
@@ -247,10 +241,11 @@ class IrisGridPartitionSelector extends Component<
     this.setState({ partitionFilters });
   }
 
-  getPartitionFilters(partitionTables: dh.Table[]): dh.FilterCondition[][] {
+  getPartitionFilters(partitionTables: dh.Table[]): FilterConditionFactory[][] {
     const { model, partitionConfig } = this.props;
     const { partitions } = partitionConfig;
     log.debug('getPartitionFilters', partitionConfig);
+    console.log('getPartitionFilters', partitionConfig);
 
     if (partitions.length !== partitionTables.length) {
       throw new Error(
@@ -259,7 +254,7 @@ class IrisGridPartitionSelector extends Component<
     }
 
     // The filters are applied in order, so we need to build up the filters for each partition
-    const partitionFilters: dh.FilterCondition[][] = [];
+    const partitionFilters: FilterConditionFactory[][] = [];
     for (let i = 0; i < partitions.length; i += 1) {
       if (i === 0) {
         // There's no reason to ever filter the first table
@@ -270,10 +265,23 @@ class IrisGridPartitionSelector extends Component<
         const previousColumn = model.partitionColumns[i - 1];
         const partitionFilter = [
           ...previousFilter,
-          this.tableUtils.makeNullableEqFilter(
-            previousColumn,
-            previousPartition
-          ),
+          (table: dh.Table | dh.TreeTable | null | undefined) => {
+            if (table == null) {
+              return null;
+            }
+            const filterConditionTest = this.tableUtils.makeNullableEqFilter(
+              table.findColumn(previousColumn.name),
+              // previousColumn,
+              previousPartition
+            );
+            console.log(
+              'tester',
+              previousColumn,
+              previousPartition,
+              filterConditionTest
+            );
+            return filterConditionTest;
+          },
         ];
         partitionFilters.push(partitionFilter);
       }
@@ -296,11 +304,13 @@ class IrisGridPartitionSelector extends Component<
 
     const { partitions } = partitionConfig;
 
-    if (partitionFilters !== null && partitionTables !== null) {
-      partitionFilters.forEach((filter, index) => {
-        partitionTables[index].applyFilter(filter as dh.FilterCondition[]);
-      });
-    }
+    // if (partitionFilters !== null && partitionTables !== null) {
+    //   partitionFilters.forEach((filter, index) => {
+    //     partitionTables[index].applyFilter(filter as dh.FilterCondition[]);
+    //     // setting the viewport 0,50
+    //   });
+    // }
+    console.log(partitionTables, 'partition table');
     const partitionSelectors = model.partitionColumns.map((column, index) => (
       <div key={`selector-${column.name}`} className="column-selector">
         {partitionTables?.[index] && (
@@ -318,6 +328,7 @@ class IrisGridPartitionSelector extends Component<
             isDisabled={
               (index > 0 && partitionConfig.mode !== 'partition') || isLoading
             }
+            additionalFilterFactories={partitionFilters?.[index]}
           />
         )}
         {model.partitionColumns.length - 1 === index || (
