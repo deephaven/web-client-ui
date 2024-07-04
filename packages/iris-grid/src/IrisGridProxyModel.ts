@@ -317,7 +317,7 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     ) {
       if (partitionConfig.mode === 'keys') {
         modelPromise = this.originalModel
-          .partitionKeysTable()
+          .partitionBaseTable()
           .then(table => makeModel(this.dh, table, this.formatter));
       } else if (partitionConfig.mode === 'merged') {
         modelPromise = this.originalModel

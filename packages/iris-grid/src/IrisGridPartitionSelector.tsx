@@ -322,7 +322,7 @@ class IrisGridPartitionSelector extends Component<
                 ? null
                 : (partitionConfig.partitions[index] as ItemKey)
             }
-            placeholder={'Select a key' as string}
+            placeholder="Select a key"
             labelColumn={partitionTables[index].columns[index].name}
             onChange={this.getCachedChangeCallback(index)}
             isDisabled={isLoading}
