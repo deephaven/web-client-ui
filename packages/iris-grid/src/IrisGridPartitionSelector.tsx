@@ -74,13 +74,12 @@ class IrisGridPartitionSelector extends Component<
           )
         )
       );
-      this.updatePartitionOptions();
       this.setState({
-        isLoading: false,
         keysTable,
         baseTable,
-        partitionTables,
+        // partitionTables,
       });
+      this.updatePartitionOptions();
     } catch (e) {
       if (!PromiseUtils.isCanceled(e)) {
         // Just re-throw the error if it's not a cancel
@@ -245,7 +244,7 @@ class IrisGridPartitionSelector extends Component<
       })
     );
 
-    this.setState({ partitionTables });
+    this.setState({ partitionTables, isLoading: false });
   }
 
   getPartitionFilters(partitionTables: dh.Table[]): dh.FilterCondition[][] {
@@ -313,7 +312,7 @@ class IrisGridPartitionSelector extends Component<
             placeholder="Select a key"
             labelColumn={partitionTables[index].columns[index].name}
             onChange={this.getCachedChangeCallback(index)}
-            isDisabled={isLoading}
+            isDisabled={isLoading || model.rowCount === 0}
           />
         )}
         {model.partitionColumns.length - 1 === index || (
@@ -334,7 +333,7 @@ class IrisGridPartitionSelector extends Component<
             }
             icon={vsKey}
             active={partitionConfig.mode === 'keys'}
-            disabled={isLoading}
+            disabled={isLoading || model.rowCount === 0}
           >
             Partitions
           </Button>
@@ -344,7 +343,7 @@ class IrisGridPartitionSelector extends Component<
             tooltip="View all partitions as one merged table"
             icon={<FontAwesomeIcon icon={vsMerge} rotation={90} />}
             active={partitionConfig.mode === 'merged'}
-            disabled={isLoading}
+            disabled={isLoading || model.rowCount === 0}
           >
             {model.isPartitionAwareSourceTable ? 'Coalesce' : 'Merge'}
           </Button>
