@@ -57,6 +57,8 @@ export interface WorkspaceSettings {
   defaultNotebookSettings: {
     isMinimapEnabled?: boolean;
   };
+  webgl: boolean;
+  webglEditable: boolean;
 }
 
 export interface WorkspaceData {

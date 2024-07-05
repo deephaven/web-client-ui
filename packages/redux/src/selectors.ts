@@ -138,6 +138,14 @@ export const getShortcutOverrides = <State extends RootState>(
   store: State
 ): Settings<State>['shortcutOverrides'] => getSettings(store).shortcutOverrides;
 
+export const getWebGL = <State extends RootState>(
+  store: State
+): Settings<State>['webgl'] => getSettings(store).webgl;
+
+export const getWebGLEditable = <State extends RootState>(
+  store: State
+): Settings<State>['webglEditable'] => getSettings(store).webglEditable;
+
 export const getDefaultNotebookSettings = <State extends RootState>(
   store: State
 ): Settings<State>['defaultNotebookSettings'] =>

@@ -17,7 +17,7 @@ import type {
   DateTimeColumnFormatter,
   Formatter,
 } from '@deephaven/jsapi-utils';
-import ChartModel, { ChartEvent } from './ChartModel';
+import ChartModel, { ChartEvent, RenderOptions } from './ChartModel';
 import ChartUtils, {
   AxisTypeMap,
   ChartModelSettings,
@@ -219,7 +219,8 @@ class FigureChartModel extends ChartModel {
       series,
       axisTypeMap,
       ChartUtils.getSeriesVisibility(series.name, this.settings),
-      showLegend
+      showLegend,
+      this.renderOptions?.webgl ?? true
     );
 
     this.seriesDataMap.set(series.name, seriesData);
@@ -533,6 +534,13 @@ class FigureChartModel extends ChartModel {
     // Unsubscribe and resubscribe to trigger a data update
     // Data may need to be translated again because of the new formatter
     this.resubscribe();
+  }
+
+  setRenderOptions(renderOptions: RenderOptions): void {
+    super.setRenderOptions(renderOptions);
+
+    // Reset all the series to re-render them with the correct rendering options
+    this.initAllSeries();
   }
 
   setDownsamplingDisabled(isDownsamplingDisabled: boolean): void {

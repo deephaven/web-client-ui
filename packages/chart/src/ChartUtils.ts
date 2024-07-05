@@ -681,17 +681,22 @@ class ChartUtils {
    * Converts the Iris plot style into a plotly chart type
    * @param plotStyle The plotStyle to use, see dh.plot.SeriesPlotStyle
    * @param isBusinessTime If the plot is using business time for an axis
+   * @param allowWebGL If WebGL is allowedd
    */
   getPlotlyChartType(
     plotStyle: DhType.plot.SeriesPlotStyle,
-    isBusinessTime: boolean
+    isBusinessTime: boolean,
+    allowWebGL: boolean
   ): PlotType | undefined {
     const { dh } = this;
     switch (plotStyle) {
       case dh.plot.SeriesPlotStyle.SCATTER:
       case dh.plot.SeriesPlotStyle.LINE:
-        // scattergl mode is more performant, but doesn't support the rangebreaks we need for businessTime calendars
-        return !isBusinessTime && IS_WEBGL_SUPPORTED ? 'scattergl' : 'scatter';
+        // scattergl mode is more performant (usually), but doesn't support the rangebreaks we need for businessTime calendars
+        // In some cases, WebGL is less performant (like in virtual desktop environments), so we also allow the option of the user explicitly disabling it even if it's supported
+        return !isBusinessTime && IS_WEBGL_SUPPORTED && allowWebGL
+          ? 'scattergl'
+          : 'scatter';
       case dh.plot.SeriesPlotStyle.BAR:
       case dh.plot.SeriesPlotStyle.STACKED_BAR:
         return 'bar';
@@ -871,7 +876,8 @@ class ChartUtils {
     series: DhType.plot.Series,
     axisTypeMap: AxisTypeMap,
     seriesVisibility: boolean | 'legendonly',
-    showLegend: boolean | null = null
+    showLegend: boolean | null = null,
+    allowWebGL = true
   ): Partial<PlotData> {
     const {
       name,
@@ -888,7 +894,7 @@ class ChartUtils {
     const isBusinessTime = sources.some(
       source => source.axis?.businessCalendar
     );
-    const type = this.getChartType(plotStyle, isBusinessTime);
+    const type = this.getChartType(plotStyle, isBusinessTime, allowWebGL);
     const mode = this.getPlotlyChartMode(
       plotStyle,
       isLinesVisible ?? undefined,
@@ -1019,7 +1025,8 @@ class ChartUtils {
 
   getChartType(
     plotStyle: DhType.plot.SeriesPlotStyle,
-    isBusinessTime: boolean
+    isBusinessTime: boolean,
+    allowWebGL: boolean
   ): PlotType | undefined {
     const { dh } = this;
     switch (plotStyle) {
@@ -1028,7 +1035,7 @@ class ChartUtils {
         // plot.ly to calculate the bins and sum values, just convert it to a bar chart
         return 'bar';
       default:
-        return this.getPlotlyChartType(plotStyle, isBusinessTime);
+        return this.getPlotlyChartType(plotStyle, isBusinessTime, allowWebGL);
     }
   }
 
