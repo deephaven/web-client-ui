@@ -13,6 +13,7 @@ import {
 } from '@deephaven/dashboard-core-plugins';
 import { useApi, useClient } from '@deephaven/jsapi-bootstrap';
 import { getSessionDetails, loadSessionWrapper } from '@deephaven/jsapi-utils';
+import { FileStorage, FileStorageContext } from '@deephaven/file-explorer';
 import Log from '@deephaven/log';
 import { PouchCommandHistoryStorage } from '@deephaven/pouch-storage';
 import {
@@ -28,6 +29,7 @@ import {
   setWorkspaceStorage,
   setServerConfigValues,
   setUser,
+  getFileStorage,
 } from '@deephaven/redux';
 import {
   LocalWorkspaceStorage,
@@ -54,6 +56,9 @@ function AppInit(): JSX.Element {
   const serverConfig = useServerConfig();
   const user = useUser();
   const workspace = useSelector<RootState>(getWorkspace);
+  const fileStorage = useSelector<RootState>(
+    getFileStorage
+  ) as FileStorage | null;
   const dispatch = useDispatch();
 
   // General error means the app is dead and is unlikely to recover
@@ -88,7 +93,7 @@ function AppInit(): JSX.Element {
             layoutRoot,
             fileSeparator
           );
-          const fileStorage = new GrpcFileStorage(
+          const grpcFileStorage = new GrpcFileStorage(
             api,
             storageService,
             notebookRoot,
@@ -129,7 +134,7 @@ function AppInit(): JSX.Element {
           dispatch(setServerConfigValues(serverConfig));
           dispatch(setCommandHistoryStorage(commandHistoryStorage));
           dispatch(setDashboardData(DEFAULT_DASHBOARD_ID, dashboardData));
-          dispatch(setFileStorage(fileStorage));
+          dispatch(setFileStorage(grpcFileStorage));
           dispatch(setLayoutStorage(layoutStorage));
           dispatch(setDashboardConnection(DEFAULT_DASHBOARD_ID, connection));
           if (sessionWrapper !== undefined) {
@@ -160,14 +165,14 @@ function AppInit(): JSX.Element {
   const errorMessage = error != null ? `${error}` : null;
 
   return (
-    <>
+    <FileStorageContext.Provider value={fileStorage}>
       {isLoaded && <App />}
       <LoadingOverlay
         isLoading={isLoading && errorMessage == null}
         isLoaded={isLoaded}
         errorMessage={errorMessage}
       />
-    </>
+    </FileStorageContext.Provider>
   );
 }
 

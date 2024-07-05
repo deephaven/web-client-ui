@@ -4,10 +4,13 @@ import FileUtils from './FileUtils';
 
 export const DEFAULT_ROW_HEIGHT = 26;
 
-export function getPathFromItem(file: FileStorageItem): string {
+export function getPathFromItem(
+  file: FileStorageItem,
+  separator: string
+): string {
   return isDirectory(file)
-    ? FileUtils.makePath(file.filename)
-    : FileUtils.getPath(file.filename);
+    ? FileUtils.makePath(file.filename, separator)
+    : FileUtils.getPath(file.filename, separator);
 }
 
 /**
@@ -15,16 +18,17 @@ export function getPathFromItem(file: FileStorageItem): string {
  */
 export function getMoveOperation(
   draggedItems: FileStorageItem[],
-  targetItem: FileStorageItem
+  targetItem: FileStorageItem,
+  separator: string
 ): { files: FileStorageItem[]; targetPath: string } {
   if (draggedItems.length === 0 || targetItem == null) {
     throw new Error('No items to move');
   }
 
-  const targetPath = getPathFromItem(targetItem);
+  const targetPath = getPathFromItem(targetItem, separator);
   if (
     draggedItems.some(
-      ({ filename }) => FileUtils.getPath(filename) === targetPath
+      ({ filename }) => FileUtils.getPath(filename, separator) === targetPath
     )
   ) {
     // Cannot drop if target is one of the dragged items is already in the target folder
@@ -34,7 +38,7 @@ export function getMoveOperation(
     draggedItems.some(
       item =>
         isDirectory(item) &&
-        targetPath.startsWith(FileUtils.makePath(item.filename))
+        targetPath.startsWith(FileUtils.makePath(item.filename, separator))
     )
   ) {
     // Cannot drop if target is a child of one of the directories being moved

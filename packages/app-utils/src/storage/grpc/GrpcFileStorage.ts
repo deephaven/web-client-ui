@@ -59,7 +59,7 @@ export class GrpcFileStorage implements FileStorage {
       type: 'directory',
       id: path,
       filename: path,
-      basename: FileUtils.getBaseName(path),
+      basename: FileUtils.getBaseName(path, this.separator),
     };
   }
 
@@ -90,7 +90,7 @@ export class GrpcFileStorage implements FileStorage {
     const content = await fileContents.text();
     return {
       filename: name,
-      basename: FileUtils.getBaseName(name),
+      basename: FileUtils.getBaseName(name, this.separator),
       content,
     };
   }
@@ -120,8 +120,8 @@ export class GrpcFileStorage implements FileStorage {
 
   async info(name: string): Promise<FileStorageItem> {
     const allItems = await this.storageService.listItems(
-      this.addRoot(FileUtils.getPath(name)),
-      FileUtils.getBaseName(name)
+      this.addRoot(FileUtils.getPath(name, this.separator)),
+      FileUtils.getBaseName(name, this.separator)
     );
     if (allItems.length === 0) {
       throw new FileNotFoundError();

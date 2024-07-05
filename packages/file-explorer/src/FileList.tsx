@@ -13,6 +13,7 @@ import { FileStorageItem, FileStorageTable, isDirectory } from './FileStorage';
 import './FileList.scss';
 import { DEFAULT_ROW_HEIGHT, getMoveOperation } from './FileListUtils';
 import { FileListItem, FileListRenderItemProps } from './FileListItem';
+import useFileSeparator from './useFileSeparator';
 
 const log = Log.module('FileList');
 
@@ -85,7 +86,7 @@ export function FileList(props: FileListProps): JSX.Element {
 
   const itemList = useRef<ItemList<FileStorageItem>>(null);
   const fileList = useRef<HTMLDivElement>(null);
-  const { separator } = table;
+  const separator = useFileSeparator();
 
   const getItems = useCallback(
     (ranges: Range[]): FileStorageItem[] => {
@@ -154,7 +155,8 @@ export function FileList(props: FileListProps): JSX.Element {
       try {
         const { files, targetPath } = getMoveOperation(
           draggedItems,
-          dropTargetItem
+          dropTargetItem,
+          separator
         );
         onMove?.(files, targetPath);
         if (itemIndex != null) {
@@ -165,7 +167,7 @@ export function FileList(props: FileListProps): JSX.Element {
         log.error('Unable to complete move', err);
       }
     },
-    [draggedItems, dropTargetItem, onMove]
+    [draggedItems, dropTargetItem, onMove, separator]
   );
 
   const handleSelect = useCallback(
@@ -323,14 +325,14 @@ export function FileList(props: FileListProps): JSX.Element {
     }
 
     try {
-      getMoveOperation(draggedItems, dropTargetItem);
+      getMoveOperation(draggedItems, dropTargetItem, separator);
       log.debug('handleValidateDropTarget true');
       return true;
     } catch (e) {
       log.debug('handleValidateDropTarget false');
       return false;
     }
-  }, [draggedItems, dropTargetItem]);
+  }, [draggedItems, dropTargetItem, separator]);
 
   const { focusedPath } = props;
   useEffect(() => {

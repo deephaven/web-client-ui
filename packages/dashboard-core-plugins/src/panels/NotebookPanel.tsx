@@ -162,8 +162,11 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     defaultNotebookSettings: { isMinimapEnabled: true },
   };
 
-  static languageFromFileName(fileName: string): string | null {
-    const extension = FileUtils.getExtension(fileName).toLowerCase();
+  static languageFromFileName(
+    fileName: string,
+    separator: string
+  ): string | null {
+    const extension = FileUtils.getExtension(fileName, separator).toLowerCase();
     switch (extension) {
       case 'py':
       case 'python':
@@ -238,7 +241,13 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
 
     this.tabInitOnce = false;
 
-    const { isDashboardActive, session, sessionLanguage, panelState } = props;
+    const {
+      isDashboardActive,
+      session,
+      sessionLanguage,
+      panelState,
+      fileStorage,
+    } = props;
 
     let settings: editor.IStandaloneEditorConstructionOptions = {
       value: '',
@@ -258,7 +267,8 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     // Not showing the unsaved indicator for null file id and editor content === '',
     // may need to implement some other indication that this notebook has never been saved
     const hasFileId =
-      fileMetadata != null && FileUtils.hasPath(fileMetadata.itemName);
+      fileMetadata != null &&
+      FileUtils.hasPath(fileMetadata.itemName, fileStorage.separator);
 
     // Unsaved if file id != null and content != null
     // OR file id is null AND content is not null or ''
@@ -463,6 +473,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     assertNotNull(fileMetadata);
     const { id } = fileMetadata;
     const { fileStorage } = this.props;
+    const { separator } = fileStorage;
     this.pending
       .add(fileStorage.loadFile(id))
       .then(loadedFile => {
@@ -472,11 +483,12 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
         if (itemName !== prevItemName) {
           const { metadata } = this.props;
           const { id: tabId } = metadata;
-          this.renameTab(tabId, FileUtils.getBaseName(itemName));
+          this.renameTab(tabId, FileUtils.getBaseName(itemName, separator));
         }
         const updatedSettings = {
           ...settings,
-          language: NotebookPanel.languageFromFileName(itemName) ?? '',
+          language:
+            NotebookPanel.languageFromFileName(itemName, separator) ?? '',
         };
         if (settings.value == null) {
           updatedSettings.value = loadedFile.content;
@@ -500,7 +512,9 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
    */
   save(): boolean {
     const { fileMetadata } = this.state;
-    if (fileMetadata && FileUtils.hasPath(fileMetadata.itemName)) {
+    const { fileStorage } = this.props;
+    const { separator } = fileStorage;
+    if (fileMetadata && FileUtils.hasPath(fileMetadata.itemName, separator)) {
       const content = this.getNotebookValue();
       if (content !== undefined) {
         this.saveContent(fileMetadata.itemName, content);
@@ -717,6 +731,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   async handleDeleteConfirm(): Promise<void> {
     const { fileStorage, glContainer, glEventHub } = this.props;
     const { fileMetadata } = this.state;
+    const { separator } = fileStorage;
 
     log.debug('handleDeleteConfirm', fileMetadata?.itemName);
     this.setState({ showDeleteModal: false });
@@ -726,7 +741,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     }
 
     if (
-      FileUtils.hasPath(fileMetadata.itemName) &&
+      FileUtils.hasPath(fileMetadata.itemName, separator) &&
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
       (await FileUtils.fileExists(fileStorage, fileMetadata.itemName))
     ) {
@@ -890,8 +905,10 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
 
   handleSaveSuccess(file: File): void {
     const { fileStorage } = this.props;
+    const { separator } = fileStorage;
     const fileMetadata = { id: file.filename, itemName: file.filename };
-    const language = NotebookPanel.languageFromFileName(file.filename) ?? '';
+    const language =
+      NotebookPanel.languageFromFileName(file.filename, separator) ?? '';
     this.setState(state => {
       const { fileMetadata: oldMetadata } = state;
       const settings = {
@@ -901,7 +918,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       log.debug('handleSaveSuccess', fileMetadata, oldMetadata, settings);
       if (
         oldMetadata &&
-        FileUtils.hasPath(oldMetadata.itemName) &&
+        FileUtils.hasPath(oldMetadata.itemName, separator) &&
         oldMetadata.itemName !== fileMetadata.itemName
       ) {
         log.debug('handleSaveSuccess deleting old file', oldMetadata.itemName);
@@ -950,10 +967,15 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       showSaveAsModal: false,
     });
 
-    if (FileUtils.getBaseName(prevItemName) !== FileUtils.getBaseName(name)) {
+    const { fileStorage } = this.props;
+    const { separator } = fileStorage;
+    if (
+      FileUtils.getBaseName(prevItemName, separator) !==
+      FileUtils.getBaseName(name, separator)
+    ) {
       const { metadata } = this.props;
       const { id: tabId } = metadata;
-      this.renameTab(tabId, FileUtils.getBaseName(name));
+      this.renameTab(tabId, FileUtils.getBaseName(name, separator));
     }
 
     this.saveContent(name, content);

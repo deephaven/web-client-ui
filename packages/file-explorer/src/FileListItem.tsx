@@ -8,17 +8,19 @@ import { FileStorageItem, isDirectory } from './FileStorage';
 import './FileList.scss';
 import FileUtils, { MIME_TYPE } from './FileUtils';
 import { getPathFromItem } from './FileListUtils';
+import useFileSeparator from './useFileSeparator';
 
 /**
  * Get the icon definition for a file or folder item
  * @param item Item to get the icon for
+ * @param separator The separator to use for the path
  * @returns Icon definition to pass in the FontAwesomeIcon icon prop
  */
-function getItemIcon(item: FileStorageItem): IconDefinition {
+function getItemIcon(item: FileStorageItem, separator: string): IconDefinition {
   if (isDirectory(item)) {
     return item.isExpanded ? vsFolderOpened : vsFolder;
   }
-  const mimeType = FileUtils.getMimeType(item.basename);
+  const mimeType = FileUtils.getMimeType(item.basename, separator);
   switch (mimeType) {
     case MIME_TYPE.PYTHON:
       return dhPython;
@@ -33,7 +35,6 @@ export type FileListRenderItemProps = RenderItemProps<FileStorageItem> & {
   draggedItems?: FileStorageItem[];
   isDragInProgress: boolean;
   isDropTargetValid: boolean;
-  separator: string;
 
   onDragStart: (index: number, e: React.DragEvent<HTMLDivElement>) => void;
   onDragOver: (index: number, e: React.DragEvent<HTMLDivElement>) => void;
@@ -55,14 +56,16 @@ export function FileListItem(props: FileListRenderItemProps): JSX.Element {
     onDragOver,
     onDragEnd,
     onDrop,
-    separator,
   } = props;
+  const separator = useFileSeparator();
 
   const isDragged =
     draggedItems?.some(draggedItem => draggedItem.id === item.id) ?? false;
-  const itemPath = getPathFromItem(item);
+  const itemPath = getPathFromItem(item, separator);
   const dropTargetPath =
-    isDragInProgress && dropTargetItem ? getPathFromItem(dropTargetItem) : null;
+    isDragInProgress && dropTargetItem
+      ? getPathFromItem(dropTargetItem, separator)
+      : null;
 
   const isExactDropTarget =
     isDragInProgress &&
@@ -74,7 +77,7 @@ export function FileListItem(props: FileListRenderItemProps): JSX.Element {
   const isInvalidDropTarget =
     isDragInProgress && !isDropTargetValid && dropTargetPath === itemPath;
 
-  const icon = getItemIcon(item);
+  const icon = getItemIcon(item, separator);
   const depth = FileUtils.getDepth(item.filename, separator);
   const depthLines = Array(depth)
     .fill(null)

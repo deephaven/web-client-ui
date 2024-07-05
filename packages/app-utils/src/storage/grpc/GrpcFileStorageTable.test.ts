@@ -43,12 +43,8 @@ it('Does not get contents until a viewport is set', () => {
   expect(storageService.listItems).toHaveBeenCalled();
 });
 
-describe('directory expansion tests', () => {
-  function makeFile(
-    name: string,
-    path = '',
-    separator = '/'
-  ): dh.storage.ItemDetails {
+describe.each(['/', `\\`])('directory expansion tests %s', separator => {
+  function makeFile(name: string, path = ''): dh.storage.ItemDetails {
     return {
       basename: name,
       filename: `${path}${separator}${name}`,
@@ -59,32 +55,27 @@ describe('directory expansion tests', () => {
     };
   }
 
-  function makeDirectory(
-    name: string,
-    path = '',
-    separator = '/'
-  ): dh.storage.ItemDetails {
-    const file = makeFile(name, path, separator);
+  function makeDirectory(name: string, path = ''): dh.storage.ItemDetails {
+    const file = makeFile(name, path);
     file.type = 'directory';
     return file;
   }
 
   function makeDirectoryContents(
-    path = '/',
+    path = separator,
     numDirs = 3,
-    numFiles = 2,
-    separator = '/'
+    numFiles = 2
   ): Array<dh.storage.ItemDetails> {
     const results = [] as dh.storage.ItemDetails[];
 
     for (let i = 0; i < numDirs; i += 1) {
       const name = `dir${i}`;
-      results.push(makeDirectory(name, path, separator));
+      results.push(makeDirectory(name, path));
     }
 
     for (let i = 0; i < numFiles; i += 1) {
       const name = `file${i}`;
-      results.push(makeFile(name, path, separator));
+      results.push(makeFile(name, path));
     }
 
     return results;
@@ -100,128 +91,91 @@ describe('directory expansion tests', () => {
 
   beforeEach(() => {
     storageService.listItems = jest.fn(async path => {
-      const depth = path.length > 0 ? FileUtils.getDepth(path) + 1 : 1;
+      const depth =
+        path.length > 0 ? FileUtils.getDepth(path, separator) + 1 : 1;
       const dirContents = makeDirectoryContents(path, 5 - depth, 10 - depth);
       return dirContents;
     });
   });
 
-  it.each(['/'])(
-    `expands multiple directories correctly with '%s' separator`,
-    async separator => {
-      const table = makeTable('', '', separator);
-      const handleUpdate = jest.fn();
-      table.onUpdate(handleUpdate);
-      table.setViewport({ top: 0, bottom: 5 });
+  it(`expands multiple directories correctly`, async () => {
+    const table = makeTable('', '', separator);
+    const handleUpdate = jest.fn();
+    table.onUpdate(handleUpdate);
+    table.setViewport({ top: 0, bottom: 5 });
 
-      jest.runAllTimers();
+    jest.runAllTimers();
 
-      await table.getViewportData();
-      expect(handleUpdate).toHaveBeenCalledWith({
-        offset: 0,
-        items: [
-          expectItem(makeDirectory('dir0', '', separator)),
-          expectItem(makeDirectory('dir1', '', separator)),
-          expectItem(makeDirectory('dir2', '', separator)),
-          expectItem(makeDirectory('dir3', '', separator)),
-          expectItem(makeFile('file0', '', separator)),
-        ],
-      });
-      handleUpdate.mockReset();
+    await table.getViewportData();
+    expect(handleUpdate).toHaveBeenCalledWith({
+      offset: 0,
+      items: [
+        expectItem(makeDirectory('dir0', '')),
+        expectItem(makeDirectory('dir1', '')),
+        expectItem(makeDirectory('dir2', '')),
+        expectItem(makeDirectory('dir3', '')),
+        expectItem(makeFile('file0', '')),
+      ],
+    });
+    handleUpdate.mockReset();
 
-      const dirPath = `${separator}dir1${separator}`;
-      table.setExpanded(dirPath, true);
+    const dirPath = `${separator}dir1${separator}`;
+    table.setExpanded(dirPath, true);
 
-      jest.runAllTimers();
+    jest.runAllTimers();
 
-      await table.getViewportData();
-      expect(handleUpdate).toHaveBeenCalledWith({
-        offset: 0,
-        items: [
-          expectItem(makeDirectory('dir0', '', separator)),
-          expectItem(makeDirectory('dir1', '', separator)),
-          expectItem(
-            makeDirectory(
-              'dir0',
-              makeDirectory('dir1', '', separator).filename,
-              separator
-            )
-          ),
-          expectItem(
-            makeDirectory(
-              'dir1',
-              makeDirectory('dir1', '', separator).filename,
-              separator
-            )
-          ),
-          expectItem(
-            makeDirectory(
-              'dir2',
-              makeDirectory('dir1', '', separator).filename,
-              separator
-            )
-          ),
-        ],
-      });
-      handleUpdate.mockReset();
+    await table.getViewportData();
+    expect(handleUpdate).toHaveBeenCalledWith({
+      offset: 0,
+      items: [
+        expectItem(makeDirectory('dir0', '')),
+        expectItem(makeDirectory('dir1', '')),
+        expectItem(makeDirectory('dir0', makeDirectory('dir1', '').filename)),
+        expectItem(makeDirectory('dir1', makeDirectory('dir1', '').filename)),
+        expectItem(makeDirectory('dir2', makeDirectory('dir1', '').filename)),
+      ],
+    });
+    handleUpdate.mockReset();
 
-      table.setExpanded(`${separator}dir1${separator}dir1${separator}`, true);
+    table.setExpanded(`${separator}dir1${separator}dir1${separator}`, true);
 
-      jest.runAllTimers();
+    jest.runAllTimers();
 
-      await table.getViewportData();
-      expect(handleUpdate).toHaveBeenCalledWith({
-        offset: 0,
-        items: expect.arrayContaining([
-          expectItem(makeDirectory('dir0', '', separator)),
-          expectItem(makeDirectory('dir1', '', separator)),
-          expectItem(
-            makeDirectory(
-              'dir0',
-              makeDirectory('dir1', '', separator).filename,
-              separator
-            )
-          ),
-          expectItem(
-            makeDirectory(
-              'dir1',
-              makeDirectory('dir1', '', separator).filename,
-              separator
-            )
-          ),
-          expectItem(
-            makeDirectory(
-              'dir0',
-              makeDirectory(
-                'dir1',
-                makeDirectory('dir1', '', separator).filename,
-                separator
-              ).filename,
-              separator
-            )
-          ),
-        ]),
-      });
-      handleUpdate.mockReset();
+    await table.getViewportData();
+    expect(handleUpdate).toHaveBeenCalledWith({
+      offset: 0,
+      items: expect.arrayContaining([
+        expectItem(makeDirectory('dir0', '')),
+        expectItem(makeDirectory('dir1', '')),
+        expectItem(makeDirectory('dir0', makeDirectory('dir1', '').filename)),
+        expectItem(makeDirectory('dir1', makeDirectory('dir1', '').filename)),
+        expectItem(
+          makeDirectory(
+            'dir0',
+            makeDirectory('dir1', makeDirectory('dir1', '').filename).filename
+          )
+        ),
+      ]),
+    });
+    handleUpdate.mockReset();
 
-      // Now collapse it all
-      table.setExpanded(`${separator}dir1${separator}`, false);
+    // Now collapse it all
+    table.setExpanded(`${separator}dir1${separator}`, false);
 
-      jest.runAllTimers();
+    jest.runAllTimers();
 
-      await table.getViewportData();
-      expect(handleUpdate).toHaveBeenCalledWith({
-        offset: 0,
-        items: expect.arrayContaining([
-          expectItem(makeDirectory('dir0', '', separator)),
-          expectItem(makeDirectory('dir1', '', separator)),
-          expectItem(makeDirectory('dir2', '', separator)),
-          expectItem(makeDirectory('dir3', '', separator)),
-          expectItem(makeFile('file0', '', separator)),
-        ]),
-      });
-      table.collapseAll();
-      handleUpdate.mockReset();
-    }
-  );
+    await table.getViewportData();
+    expect(handleUpdate).toHaveBeenCalledWith({
+      offset: 0,
+      items: expect.arrayContaining([
+        expectItem(makeDirectory('dir0', '')),
+        expectItem(makeDirectory('dir1', '')),
+        expectItem(makeDirectory('dir2', '')),
+        expectItem(makeDirectory('dir3', '')),
+        expectItem(makeFile('file0', '')),
+      ]),
+    });
+    table.collapseAll();
+    handleUpdate.mockReset();
+  });
 });

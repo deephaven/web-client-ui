@@ -3,22 +3,19 @@ import Log from '@deephaven/log';
 import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { DEFAULT_ROW_HEIGHT } from './FileListUtils';
-import FileStorage, {
-  FileStorageItem,
-  FileStorageTable,
-  isDirectory,
-} from './FileStorage';
+import { FileStorageItem, FileStorageTable, isDirectory } from './FileStorage';
 import './FileExplorer.scss';
 import FileListContainer from './FileListContainer';
 import FileUtils from './FileUtils';
 import FileExistsError from './FileExistsError';
 import FileNotFoundError from './FileNotFoundError';
+import FileStorageContext from './FileStorageContext';
+import useFileStorage from './useFileStorage';
+import useFileSeparator from './useFileSeparator';
 
 const log = Log.module('FileExplorer');
 
 export interface FileExplorerProps {
-  storage: FileStorage;
-
   isMultiSelect?: boolean;
   focusedPath?: string;
 
@@ -39,7 +36,6 @@ export interface FileExplorerProps {
  */
 export function FileExplorer(props: FileExplorerProps): JSX.Element {
   const {
-    storage,
     isMultiSelect = false,
     focusedPath,
     onCopy = () => undefined,
@@ -51,7 +47,8 @@ export function FileExplorer(props: FileExplorerProps): JSX.Element {
     onSelectionChange,
     rowHeight = DEFAULT_ROW_HEIGHT,
   } = props;
-  const { separator } = storage;
+  const storage = useFileStorage();
+  const separator = useFileSeparator();
   const [itemsToDelete, setItemsToDelete] = useState<FileStorageItem[]>([]);
   const [table, setTable] = useState<FileStorageTable>();
 
@@ -114,12 +111,14 @@ export function FileExplorer(props: FileExplorerProps): JSX.Element {
     log.debug('handleDeleteConfirm', itemsToDelete);
     itemsToDelete.forEach(file =>
       storage.deleteFile(
-        isDirectory(file) ? FileUtils.makePath(file.filename) : file.filename
+        isDirectory(file)
+          ? FileUtils.makePath(file.filename, separator)
+          : file.filename
       )
     );
     onDelete(itemsToDelete);
     setItemsToDelete([]);
-  }, [itemsToDelete, onDelete, storage]);
+  }, [itemsToDelete, onDelete, separator, storage]);
 
   const handleDeleteCancel = useCallback(() => {
     log.debug('handleDeleteCancel');
@@ -130,16 +129,20 @@ export function FileExplorer(props: FileExplorerProps): JSX.Element {
     (files: FileStorageItem[], path: string) => {
       const filesToMove = FileUtils.reducePaths(
         files.map(file =>
-          isDirectory(file) ? FileUtils.makePath(file.filename) : file.filename
-        )
+          isDirectory(file)
+            ? FileUtils.makePath(file.filename, separator)
+            : file.filename
+        ),
+        separator
       );
 
       filesToMove.forEach(file => {
-        const newFile = FileUtils.isPath(file)
+        const newFile = FileUtils.isPath(file, separator)
           ? `${path}${FileUtils.getBaseName(
-              file.substring(0, file.length - 1)
-            )}/`
-          : `${path}${FileUtils.getBaseName(file)}`;
+              file.substring(0, file.length - 1),
+              separator
+            )}${separator}`
+          : `${path}${FileUtils.getBaseName(file, separator)}`;
         storage
           .moveFile(file, newFile)
           .then(() => {
@@ -150,7 +153,7 @@ export function FileExplorer(props: FileExplorerProps): JSX.Element {
           .catch(handleError);
       });
     },
-    [handleError, onRename, storage]
+    [handleError, onRename, separator, storage]
   );
 
   const handleRename = useCallback(
@@ -160,7 +163,7 @@ export function FileExplorer(props: FileExplorerProps): JSX.Element {
       if (isDir && !name.endsWith(separator)) {
         name = `${name}${separator}`;
       }
-      let destination = `${FileUtils.getParent(name)}${newName}`;
+      let destination = `${FileUtils.getParent(name, separator)}${newName}`;
       if (isDir && !destination.endsWith(separator)) {
         destination = `${destination}${separator}`;
       }
@@ -179,7 +182,10 @@ export function FileExplorer(props: FileExplorerProps): JSX.Element {
       }
       FileUtils.validateName(newName);
 
-      const newValue = `${FileUtils.getPath(renameItem.filename)}${newName}`;
+      const newValue = `${FileUtils.getPath(
+        renameItem.filename,
+        separator
+      )}${newName}`;
       try {
         const fileInfo = await storage.info(newValue);
         throw new FileExistsError(fileInfo);
@@ -190,7 +196,7 @@ export function FileExplorer(props: FileExplorerProps): JSX.Element {
         // The file does not exist, fine to save at that path
       }
     },
-    [storage]
+    [separator, storage]
   );
 
   const isDeleteConfirmationShown = itemsToDelete.length > 0;
@@ -203,32 +209,34 @@ export function FileExplorer(props: FileExplorerProps): JSX.Element {
 
   return (
     <div className="file-explorer">
-      {table && (
-        <FileListContainer
-          isMultiSelect={isMultiSelect}
-          focusedPath={focusedPath}
-          showContextMenu
-          onCopy={handleCopyFile}
-          onCreateFolder={handleCreateFolder}
-          onCreateFile={handleCreateFile}
-          onMove={handleMove}
-          onDelete={handleDelete}
-          onRename={handleRename}
-          onSelect={onSelect}
-          onSelectionChange={onSelectionChange}
-          rowHeight={rowHeight}
-          table={table}
-          validateRename={handleValidateRename}
+      <FileStorageContext.Provider value={storage}>
+        {table && (
+          <FileListContainer
+            isMultiSelect={isMultiSelect}
+            focusedPath={focusedPath}
+            showContextMenu
+            onCopy={handleCopyFile}
+            onCreateFolder={handleCreateFolder}
+            onCreateFile={handleCreateFile}
+            onMove={handleMove}
+            onDelete={handleDelete}
+            onRename={handleRename}
+            onSelect={onSelect}
+            onSelectionChange={onSelectionChange}
+            rowHeight={rowHeight}
+            table={table}
+            validateRename={handleValidateRename}
+          />
+        )}
+        <BasicModal
+          isOpen={isDeleteConfirmationShown}
+          headerText={deleteConfirmationMessage}
+          bodyText="You cannot undo this action."
+          onCancel={handleDeleteCancel}
+          onConfirm={handleDeleteConfirm}
+          confirmButtonText="Delete"
         />
-      )}
-      <BasicModal
-        isOpen={isDeleteConfirmationShown}
-        headerText={deleteConfirmationMessage}
-        bodyText="You cannot undo this action."
-        onCancel={handleDeleteCancel}
-        onConfirm={handleDeleteConfirm}
-        confirmButtonText="Delete"
-      />
+      </FileStorageContext.Provider>
     </div>
   );
 }

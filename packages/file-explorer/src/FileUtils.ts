@@ -53,7 +53,7 @@ export class FileUtils {
     if (!FileUtils.hasPath(name, separator)) {
       throw new Error(`Invalid path provided: ${name}`);
     }
-    const matches = name.match(/\//g) ?? [];
+    const matches = name.match(new RegExp(`\\${separator}`, 'g')) ?? [];
     return matches.length - 1;
   }
 
@@ -61,10 +61,11 @@ export class FileUtils {
    * Get just the extension of file name.
    * Note that it just returns the last extension, so 'example.tar.gz' would just return 'gz'.
    * @param name The file name with or without path to get the extension of
+   * @param separator The separator to use for the path
    * @returns The file extension
    */
-  static getExtension(name: string): string {
-    const components = this.getBaseName(name).split('.');
+  static getExtension(name: string, separator: string): string {
+    const components = this.getBaseName(name, separator).split('.');
     if (components.length > 1) {
       return components.pop() ?? '';
     }
@@ -117,10 +118,11 @@ export class FileUtils {
   /**
    * Return a MIME type for the provided file
    * @param name The file name to get the type for
+   * @param separator The separator to use for the path
    * @returns A known MIME type if recognized
    */
-  static getMimeType(name: string): MIME_TYPE {
-    const extension = this.getExtension(name).toLowerCase();
+  static getMimeType(name: string, separator: string): MIME_TYPE {
+    const extension = this.getExtension(name, separator).toLowerCase();
     switch (extension) {
       case 'groovy':
         return MIME_TYPE.GROOVY;

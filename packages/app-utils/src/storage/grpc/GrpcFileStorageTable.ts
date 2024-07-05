@@ -119,7 +119,8 @@ export class GrpcFileStorageTable implements FileStorageTable {
         const childTable = new GrpcFileStorageTable(
           this.storageService,
           this.baseRoot,
-          `${this.root}${this.separator}${nextPath}`
+          `${this.root}${this.separator}${nextPath}`,
+          this.separator
         );
         this.childTables.set(nextPath, childTable);
       }
@@ -269,7 +270,8 @@ export class GrpcFileStorageTable implements FileStorageTable {
       const item = items[i];
       const { basename, filename } = item;
       if (
-        filename === this.removeBaseRoot(`${this.root}/${basename}`) &&
+        filename ===
+          this.removeBaseRoot(`${this.root}${this.separator}${basename}`) &&
         item.type === 'directory'
       ) {
         const childTable = this.childTables.get(basename);
