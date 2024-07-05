@@ -27,7 +27,7 @@ export interface PartitionConfig {
   partitions: unknown[];
 
   /** What data to display - the keys table, the merged table, or the selected partition */
-  mode: 'keys' | 'merged' | 'partition';
+  mode: 'keys' | 'merged' | 'partition' | 'loading' | 'empty';
 }
 
 /**

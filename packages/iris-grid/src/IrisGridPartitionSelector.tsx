@@ -77,6 +77,7 @@ class IrisGridPartitionSelector extends Component<
       this.setState({
         keysTable,
         baseTable,
+        isLoading: false,
         // partitionTables,
       });
       this.updatePartitionOptions();
@@ -244,7 +245,7 @@ class IrisGridPartitionSelector extends Component<
       })
     );
 
-    this.setState({ partitionTables, isLoading: false });
+    this.setState({ partitionTables });
   }
 
   getPartitionFilters(partitionTables: dh.Table[]): dh.FilterCondition[][] {
@@ -312,7 +313,7 @@ class IrisGridPartitionSelector extends Component<
             placeholder="Select a key"
             labelColumn={partitionTables[index].columns[index].name}
             onChange={this.getCachedChangeCallback(index)}
-            isDisabled={isLoading || model.rowCount === 0}
+            isDisabled={isLoading || partitionConfig.mode === 'empty'}
           />
         )}
         {model.partitionColumns.length - 1 === index || (
@@ -333,7 +334,7 @@ class IrisGridPartitionSelector extends Component<
             }
             icon={vsKey}
             active={partitionConfig.mode === 'keys'}
-            disabled={isLoading || model.rowCount === 0}
+            disabled={isLoading || partitionConfig.mode === 'empty'}
           >
             Partitions
           </Button>
