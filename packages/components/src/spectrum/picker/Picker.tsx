@@ -50,5 +50,6 @@ export const Picker = React.forwardRef(function Picker(
     />
   );
 });
+Picker.displayName = 'Picker';
 
 export default Picker;
