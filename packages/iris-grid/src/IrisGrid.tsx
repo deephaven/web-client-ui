@@ -897,8 +897,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const changedInputFilters =
       inputFilters !== prevProps.inputFilters
         ? inputFilters.filter(
-          inputFilter => !prevProps.inputFilters.includes(inputFilter)
-        )
+            inputFilter => !prevProps.inputFilters.includes(inputFilter)
+          )
         : [];
     if (changedInputFilters.length > 0) {
       const { advancedSettings } = this.props;
@@ -1382,11 +1382,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       advancedFilters: ReadonlyAdvancedFilterMap,
       searchFilter: DhType.FilterCondition | undefined
     ) => [
-        ...(customFilters ?? []),
-        ...IrisGridUtils.getFiltersFromFilterMap(quickFilters),
-        ...IrisGridUtils.getFiltersFromFilterMap(advancedFilters),
-        ...(searchFilter !== undefined ? [searchFilter] : []),
-      ],
+      ...(customFilters ?? []),
+      ...IrisGridUtils.getFiltersFromFilterMap(quickFilters),
+      ...IrisGridUtils.getFiltersFromFilterMap(advancedFilters),
+      ...(searchFilter !== undefined ? [searchFilter] : []),
+    ],
     { max: 1 }
   );
 
@@ -1786,7 +1786,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     log.debug('Rebuilding filters');
 
     const { model } = this.props;
-    const { advancedFilters, quickFilters } = this.state;
+    const { advancedFilters, quickFilters, partitionConfig } = this.state;
     const { columns, formatter } = model;
 
     const newAdvancedFilters = new Map();
@@ -1814,8 +1814,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         filter: this.makeQuickFilter(column, text, formatter.timeZone),
       });
     });
-
-    this.startLoading('Rebuilding filters...', { resetRanges: true });
+    // If partitionConfig is empty, no need to rebuild filters
+    if (partitionConfig?.mode !== 'empty' && newQuickFilters.size > 0) {
+      this.startLoading('Rebuilding filters...', { resetRanges: true });
+    }
     this.setState({
       quickFilters: newQuickFilters,
       advancedFilters: newAdvancedFilters,
@@ -2073,7 +2075,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             this.setState({
               partitionConfig: { partitions: [], mode: 'empty' },
             });
-            return partitionConfig;
+            return;
           }
           const row = data.rows[0];
           const values = keyTable.columns.map(column => row.get(column));
@@ -2082,7 +2084,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             mode: model.isPartitionAwareSourceTable ? 'partition' : 'keys',
           };
           keyTable.close();
-          return newPartition;
+          this.setState({ partitionConfig: newPartition });
         } catch (e) {
           keyTable.close();
           log.error('Error getting initial partition config', e);
@@ -3156,10 +3158,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         pendingRowCount = Math.max(
           0,
           bottomViewport -
-          (model.rowCount - model.pendingRowCount) -
-          model.floatingTopRowCount -
-          model.floatingBottomRowCount -
-          1
+            (model.rowCount - model.pendingRowCount) -
+            model.floatingTopRowCount -
+            model.floatingBottomRowCount -
+            1
         );
       }
     }
@@ -3490,7 +3492,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.clearAllFilters();
 
     this.startLoading(
-      `Selecting distinct values in ${columnNames.length > 0 ? columnNames.join(', ') : ''
+      `Selecting distinct values in ${
+        columnNames.length > 0 ? columnNames.join(', ') : ''
       }...`
     );
 
@@ -4256,7 +4259,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       gotoValueSelectedFilter,
       partitionConfig,
     } = this.state;
-    if (!isReady) {
+    if (!isReady || partitionConfig?.mode === 'loading') {
       return null;
     }
 
@@ -4298,9 +4301,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     const debounceMs = metrics
       ? Math.min(
-        Math.max(IrisGrid.minDebounce, Math.round(metrics.rowCount / 200)),
-        IrisGrid.maxDebounce
-      )
+          Math.max(IrisGrid.minDebounce, Math.round(metrics.rowCount / 200)),
+          IrisGrid.maxDebounce
+        )
       : IrisGrid.maxDebounce;
 
     if (isFilterBarShown && focusedFilterBarColumn != null && metrics != null) {
@@ -4496,19 +4499,19 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           const xFilterBar = gridX + columnX + columnWidth - 20;
           const style: CSSProperties = isFilterBarShown
             ? {
-              position: 'absolute',
-              top: columnHeaderHeight,
-              left: xFilterBar,
-              width: 20,
-              height: theme.filterBarHeight,
-            }
+                position: 'absolute',
+                top: columnHeaderHeight,
+                left: xFilterBar,
+                width: 20,
+                height: theme.filterBarHeight,
+              }
             : {
-              position: 'absolute',
-              top: 0,
-              left: xColumnHeader,
-              width: columnWidth,
-              height: columnHeaderHeight,
-            };
+                position: 'absolute',
+                top: 0,
+                left: xColumnHeader,
+                width: columnWidth,
+                height: columnHeaderHeight,
+              };
           const modelColumn = this.getModelColumn(columnIndex);
           if (modelColumn != null) {
             const column = model.columns[modelColumn];

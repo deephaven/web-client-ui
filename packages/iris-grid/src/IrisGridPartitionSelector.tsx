@@ -65,20 +65,10 @@ class IrisGridPartitionSelector extends Component<
         t.close()
       );
 
-      // load in initial partition tables so that pickers render correctly
-      const partitionTables = await Promise.all(
-        model.partitionColumns.map(async (_, i) =>
-          this.pending.add(
-            keysTable.selectDistinct(model.partitionColumns.slice(0, i + 1)),
-            t => t.close()
-          )
-        )
-      );
       this.setState({
         keysTable,
         baseTable,
         isLoading: false,
-        // partitionTables,
       });
       this.updatePartitionOptions();
     } catch (e) {

@@ -323,6 +323,11 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
         modelPromise = this.originalModel
           .partitionMergedTable()
           .then(table => makeModel(this.dh, table, this.formatter));
+      } else if (
+        partitionConfig.mode === 'empty' ||
+        partitionConfig.mode === 'loading'
+      ) {
+        // Empty partition
       } else {
         modelPromise = this.originalModel
           .partitionTable(partitionConfig.partitions)
