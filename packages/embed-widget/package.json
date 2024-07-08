@@ -22,7 +22,7 @@
     "@deephaven/dashboard-core-plugins": "file:../dashboard-core-plugins",
     "@deephaven/jsapi-bootstrap": "file:../jsapi-bootstrap",
     "@deephaven/jsapi-components": "file:../jsapi-components",
-    "@deephaven/jsapi-types": "1.0.0-dev0.34.0",
+    "@deephaven/jsapi-types": "^1.0.0-dev0.34.0",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
     "@deephaven/plugin": "file:../plugin",
