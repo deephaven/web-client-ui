@@ -47,11 +47,7 @@ function LoadingOverlay({
           className={classNames(
             'iris-panel-message-overlay',
             'fill-parent-absolute',
-<<<<<<< Updated upstream
-            { 'iris-panel-scrim-background': !isLoaded }
-=======
             { [scrimClassName]: isLoaded }
->>>>>>> Stashed changes
           )}
         >
           <div className="message-content">

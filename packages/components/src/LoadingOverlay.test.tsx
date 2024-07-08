@@ -3,17 +3,17 @@ import { render, screen } from '@testing-library/react';
 import LoadingOverlay from './LoadingOverlay';
 
 describe('LoadingOverlay', () => {
-  it('renders loading spinner and scrim when isLoading is true', () => {
+  it('renders loading spinner and no scrim on initial loading', () => {
     const { container } = render(
       <LoadingOverlay isLoading data-testid="test-overlay" />
     );
     expect(screen.getByTestId('test-overlay-spinner')).toBeInTheDocument();
     expect(
       container.getElementsByClassName('iris-panel-scrim-background').length
-    ).toBe(1);
+    ).toBe(0);
   });
 
-  it('renders error message and scrim when errorMessage is provided', () => {
+  it('renders error message and no scrim when errorMessage is provided on initial loading', () => {
     const errorMessage = 'An error occurred';
     const { container } = render(
       <LoadingOverlay errorMessage={errorMessage} />
@@ -22,13 +22,22 @@ describe('LoadingOverlay', () => {
     expect(errorElement).toBeInTheDocument();
     expect(
       container.getElementsByClassName('iris-panel-scrim-background').length
+    ).toBe(0);
+  });
+
+  it('renders scrim when loaded and errorMessage is provided', () => {
+    const { container } = render(
+      <LoadingOverlay isLoaded errorMessage="ERROR_MESSAGE" />
+    );
+    expect(
+      container.getElementsByClassName('iris-panel-scrim-background').length
     ).toBe(1);
   });
 
-  it('does not render scrim when loaded', () => {
-    const { container } = render(<LoadingOverlay isLoaded />);
+  it('renders scrim when isLoaded is true and loading again', () => {
+    const { container } = render(<LoadingOverlay isLoaded isLoading />);
     expect(
       container.getElementsByClassName('iris-panel-scrim-background').length
-    ).toBe(0);
+    ).toBe(1);
   });
 });
