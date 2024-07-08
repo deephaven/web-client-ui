@@ -1,32 +1,34 @@
+import React from 'react';
 import {
   ComboBox as SpectrumComboBox,
   SpectrumComboBoxProps,
 } from '@adobe/react-spectrum';
-import type { FocusableRef } from '@react-types/shared';
+import type { DOMRef } from '@react-types/shared';
 import cl from 'classnames';
 import type { NormalizedItem } from '../utils';
 import { PickerPropsT, usePickerProps } from '../picker';
+import useMultiRef from '../picker/useMultiRef';
 
 export type ComboBoxProps = PickerPropsT<SpectrumComboBoxProps<NormalizedItem>>;
 
-export function ComboBox({
-  UNSAFE_className,
-  ...props
-}: ComboBoxProps): JSX.Element {
+export const ComboBox = React.forwardRef(function ComboBox(
+  { UNSAFE_className, ...props }: ComboBoxProps,
+  ref: DOMRef<HTMLDivElement>
+): JSX.Element {
   const {
     defaultSelectedKey,
     disabledKeys,
-    ref,
     selectedKey,
+    ref: scrollRef,
     ...comboBoxProps
   } = usePickerProps(props);
-
+  const pickerRef = useMultiRef(ref, scrollRef);
   return (
     <SpectrumComboBox
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...comboBoxProps}
       UNSAFE_className={cl('dh-combobox', UNSAFE_className)}
-      ref={ref as FocusableRef<HTMLElement>}
+      ref={pickerRef}
       // Type assertions are necessary here since Spectrum types don't account
       // for number and boolean key values even though they are valid runtime
       // values.
@@ -41,4 +43,4 @@ export function ComboBox({
       }
     />
   );
-}
+});

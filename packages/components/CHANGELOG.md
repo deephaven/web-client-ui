@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.0](https://github.com/deephaven/web-client-ui/compare/v0.84.0...v0.85.0) (2024-07-04)
+
+### Features
+
+- ComboBox - @deephaven/jsapi-components ([#2077](https://github.com/deephaven/web-client-ui/issues/2077)) ([115e057](https://github.com/deephaven/web-client-ui/commit/115e057114257a186c4a9a006a1958e03b7470c5)), closes [#2074](https://github.com/deephaven/web-client-ui/issues/2074)
+
+### Bug Fixes
+
+- Allow ComboBox to accept the FocusableRef for ref ([#2121](https://github.com/deephaven/web-client-ui/issues/2121)) ([8fe9bad](https://github.com/deephaven/web-client-ui/commit/8fe9bad7889f0fce49ad50415a7cb59d7623a43c))
+- Ref was not being passed through for Picker ([#2122](https://github.com/deephaven/web-client-ui/issues/2122)) ([a11e2ce](https://github.com/deephaven/web-client-ui/commit/a11e2ceaf216d640068562a05fdb156c69481d47))
+
+## [0.84.0](https://github.com/deephaven/web-client-ui/compare/v0.83.0...v0.84.0) (2024-06-28)
+
+### Bug Fixes
+
+- make textValue default to key for Normalized Item ([#2113](https://github.com/deephaven/web-client-ui/issues/2113)) ([bd3e944](https://github.com/deephaven/web-client-ui/commit/bd3e944a53fe577fb48a3c8720c8b9c3881a5a04))
+
 ## [0.83.0](https://github.com/deephaven/web-client-ui/compare/v0.82.0...v0.83.0) (2024-06-25)
 
 ### ⚠ BREAKING CHANGES

@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.0](https://github.com/deephaven/web-client-ui/compare/v0.84.0...v0.85.0) (2024-07-04)
+
+**Note:** Version bump only for package @deephaven/console
+
+## [0.84.0](https://github.com/deephaven/web-client-ui/compare/v0.83.0...v0.84.0) (2024-06-28)
+
+### Bug Fixes
+
+- Console does not scroll to bottom when code run from notebook ([#2114](https://github.com/deephaven/web-client-ui/issues/2114)) ([e75e716](https://github.com/deephaven/web-client-ui/commit/e75e716a2d184e3ff5572fa609301bf6ac35da99))
+
 ## [0.83.0](https://github.com/deephaven/web-client-ui/compare/v0.82.0...v0.83.0) (2024-06-25)
 
 ### Bug Fixes

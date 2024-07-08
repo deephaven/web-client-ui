@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { NormalizedItemData } from '@deephaven/components';
 import { dh } from '@deephaven/jsapi-types';
+import { assertNotNull } from '@deephaven/utils';
 import { getItemKeyColumn, getItemLabelColumn } from './itemUtils';
 
 function defaultFormatKey(value: unknown): string | number | boolean {
@@ -37,7 +38,7 @@ export function useItemRowDeserializer({
   labelColumnName,
   formatValue = defaultFormatValue,
 }: {
-  table: dh.Table;
+  table?: dh.Table | null;
   descriptionColumnName?: string;
   iconColumnName?: string;
   keyColumnName?: string;
@@ -45,30 +46,44 @@ export function useItemRowDeserializer({
   formatValue?: (value: unknown, columnType: string) => string;
 }): (row: dh.Row) => NormalizedItemData {
   const keyColumn = useMemo(
-    () => getItemKeyColumn(table, keyColumnName),
+    () => (table == null ? null : getItemKeyColumn(table, keyColumnName)),
     [keyColumnName, table]
   );
 
   const labelColumn = useMemo(
-    () => getItemLabelColumn(table, keyColumn, labelColumnName),
+    () =>
+      table == null || keyColumn == null
+        ? null
+        : getItemLabelColumn(table, keyColumn, labelColumnName),
     [keyColumn, labelColumnName, table]
   );
 
   const descriptionColumn = useMemo(
     () =>
-      descriptionColumnName == null
+      table == null || descriptionColumnName == null
         ? null
         : table.findColumn(descriptionColumnName),
     [descriptionColumnName, table]
   );
 
   const iconColumn = useMemo(
-    () => (iconColumnName == null ? null : table.findColumn(iconColumnName)),
+    () =>
+      table == null || iconColumnName == null
+        ? null
+        : table.findColumn(iconColumnName),
     [iconColumnName, table]
   );
 
   const deserializeRow = useCallback(
     (row: dh.Row): NormalizedItemData => {
+      // `deserializeRow` can be created on a null `table` which results in null
+      // `keyColumn` + `labelColumn`, but it should never actually be called.
+      // The assumption is that the `table` will eventually be non-null,
+      // `deserializeRow` will be recreated, and then applied to the non-null
+      // table.
+      assertNotNull(keyColumn, 'keyColumn cannot be null.');
+      assertNotNull(labelColumn, 'labelColumn cannot be null.');
+
       const key = defaultFormatKey(row.get(keyColumn));
       const content = formatValue(row.get(labelColumn), labelColumn.type);
 

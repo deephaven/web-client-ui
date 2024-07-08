@@ -1,4 +1,3 @@
-/* eslint class-methods-use-this: "off" */
 import deepEqual from 'fast-deep-equal';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
@@ -8,27 +7,12 @@ import {
   PromiseUtils,
 } from '@deephaven/utils';
 import type { dh as DhType } from '@deephaven/jsapi-types';
-import {
-  EditableGridModel,
-  isEditableGridModel,
-  isExpandableGridModel,
-  ModelIndex,
-  MoveOperation,
-  isDeletableGridModel,
-} from '@deephaven/grid';
 import IrisGridTableModel from './IrisGridTableModel';
 import IrisGridPartitionedTableModel from './IrisGridPartitionedTableModel';
 import IrisGridTreeTableModel from './IrisGridTreeTableModel';
 import IrisGridModel from './IrisGridModel';
-import {
-  ColumnName,
-  UITotalsTableConfig,
-  PendingDataMap,
-  UIRow,
-  PendingDataErrorMap,
-} from './CommonTypes';
+import { ColumnName } from './CommonTypes';
 import { isIrisGridTableModelTemplate } from './IrisGridTableModelTemplate';
-import type ColumnHeaderGroup from './ColumnHeaderGroup';
 import {
   PartitionConfig,
   PartitionedGridModel,
@@ -55,7 +39,11 @@ function makeModel(
 /**
  * Model which proxies calls to other IrisGridModels.
  * This allows for operations that generate new tables, like rollups.
+ * The proxy model will call any methods it has implemented and delegate any
+ * it does not implement to the underlying model.
  */
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
   /**
    * @param dh JSAPI instance
@@ -64,21 +52,21 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
    * @param inputTable Iris input table associated with this table
    */
 
-  dh: typeof DhType;
-
-  originalModel: IrisGridModel;
-
   model: IrisGridModel;
 
-  modelPromise: CancelablePromise<IrisGridModel> | null;
+  dh: typeof DhType;
 
-  rollup: DhType.RollupConfig | null;
+  private originalModel: IrisGridModel;
 
-  partition: PartitionConfig | null;
+  private modelPromise: CancelablePromise<IrisGridModel> | null;
 
-  selectDistinct: ColumnName[];
+  private rollup: DhType.RollupConfig | null;
 
-  currentViewport?: {
+  private partition: PartitionConfig | null;
+
+  private selectDistinct: ColumnName[];
+
+  private currentViewport?: {
     top: number;
     bottom: number;
     columns?: DhType.Column[];
@@ -92,6 +80,12 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
   ) {
     super(dh);
 
+    // The EventTarget methods must be bound to this instance
+    // Otherwise they throw errors because of the Proxy
+    this.addEventListener = this.addEventListener.bind(this);
+    this.removeEventListener = this.removeEventListener.bind(this);
+    this.dispatchEvent = this.dispatchEvent.bind(this);
+
     this.handleModelEvent = this.handleModelEvent.bind(this);
 
     const model = makeModel(dh, table, formatter, inputTable);
@@ -102,6 +96,46 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     this.rollup = null;
     this.partition = null;
     this.selectDistinct = [];
+
+    // eslint-disable-next-line no-constructor-return
+    return new Proxy(this, {
+      // We want to use any properties on the proxy model if defined
+      // If not, then proxy to the underlying model
+      get(target, prop, receiver) {
+        // Does this class have a getter for the prop
+        // Getter functions are on the prototype
+        const proxyHasGetter =
+          Object.getOwnPropertyDescriptor(Object.getPrototypeOf(target), prop)
+            ?.get != null;
+
+        if (proxyHasGetter) {
+          return Reflect.get(target, prop, receiver);
+        }
+
+        // Does this class implement the property
+        const proxyHasProp = Object.prototype.hasOwnProperty.call(target, prop);
+
+        // Does the class implement a function for the property
+        const proxyHasFn = Object.prototype.hasOwnProperty.call(
+          Object.getPrototypeOf(target),
+          prop
+        );
+
+        const trueTarget = proxyHasProp || proxyHasFn ? target : target.model;
+        return Reflect.get(trueTarget, prop);
+      },
+      set(target, prop, value) {
+        const proxyHasSetter =
+          Object.getOwnPropertyDescriptor(Object.getPrototypeOf(target), prop)
+            ?.set != null;
+
+        if (proxyHasSetter) {
+          return Reflect.set(target, prop, value, target);
+        }
+
+        return Reflect.set(target.model, prop, value, target.model);
+      },
+    });
   }
 
   close(): void {
@@ -225,154 +259,12 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     }
   }
 
-  get rowCount(): number {
-    return this.model.rowCount;
-  }
-
-  get columnCount(): number {
-    return this.model.columnCount;
-  }
-
-  get floatingTopRowCount(): number {
-    return this.model.floatingTopRowCount;
-  }
-
-  get floatingBottomRowCount(): number {
-    return this.model.floatingBottomRowCount;
-  }
-
-  get floatingLeftColumnCount(): number {
-    return this.model.floatingLeftColumnCount;
-  }
-
-  get floatingRightColumnCount(): number {
-    return this.model.floatingRightColumnCount;
-  }
-
-  textForCell: IrisGridModel['textForCell'] = (...args) =>
-    this.model.textForCell(...args);
-
-  truncationCharForCell: IrisGridModel['truncationCharForCell'] = (...args) =>
-    this.model.truncationCharForCell(...args);
-
-  textAlignForCell: IrisGridModel['textAlignForCell'] = (...args) =>
-    this.model.textAlignForCell(...args);
-
-  colorForCell: IrisGridModel['colorForCell'] = (...args) =>
-    this.model.colorForCell(...args);
-
-  backgroundColorForCell: IrisGridModel['backgroundColorForCell'] = (...args) =>
-    this.model.backgroundColorForCell(...args);
-
-  textForColumnHeader: IrisGridModel['textForColumnHeader'] = (...args) =>
-    this.model.textForColumnHeader(...args);
-
-  colorForColumnHeader: IrisGridModel['colorForColumnHeader'] = (...args) =>
-    this.model.colorForColumnHeader(...args);
-
-  textForRowHeader: IrisGridModel['textForRowHeader'] = (...args) =>
-    this.model.textForRowHeader(...args);
-
-  textForRowFooter: IrisGridModel['textForRowFooter'] = (...args) =>
-    this.model.textForRowFooter(...args);
-
-  isRowMovable: IrisGridModel['isRowMovable'] = (...args) =>
-    this.model.isRowMovable(...args);
-
-  isColumnMovable: IrisGridModel['isColumnMovable'] = (...args) =>
-    this.model.isColumnMovable(...args);
-
-  isColumnFrozen(x: ModelIndex): boolean {
-    return this.model.isColumnFrozen(x);
-  }
-
-  isColumnSortable(index: number): boolean {
-    return this.model.isColumnSortable(index);
-  }
-
-  get hasExpandableRows(): boolean {
-    if (isExpandableGridModel(this.model)) {
-      return this.model.hasExpandableRows;
-    }
-    return false;
-  }
-
-  get isExpandAllAvailable(): boolean {
-    if (isExpandableGridModel(this.model)) {
-      return this.model.isExpandAllAvailable ?? false;
-    }
-    return false;
-  }
-
-  isRowExpandable: IrisGridTreeTableModel['isRowExpandable'] = (...args) => {
-    if (isExpandableGridModel(this.model)) {
-      return this.model.isRowExpandable(...args);
-    }
-    return false;
-  };
-
-  isRowExpanded: IrisGridTreeTableModel['isRowExpanded'] = (...args) => {
-    if (isExpandableGridModel(this.model)) {
-      return this.model.isRowExpanded(...args);
-    }
-    return false;
-  };
-
-  setRowExpanded: IrisGridTreeTableModel['setRowExpanded'] = (...args) => {
-    if (isExpandableGridModel(this.model)) {
-      return this.model.setRowExpanded(...args);
-    }
-    throw Error('Function setRowExpanded does not exist on IrisGridTableModel');
-  };
-
-  expandAll: IrisGridTreeTableModel['expandAll'] = () => {
-    if (isExpandableGridModel(this.model)) {
-      return this.model.expandAll();
-    }
-    throw Error('Function expandAll does not exist on IrisGridTableModel');
-  };
-
-  collapseAll: IrisGridTreeTableModel['collapseAll'] = () => {
-    if (isExpandableGridModel(this.model)) {
-      return this.model.collapseAll();
-    }
-    throw Error('Function collapseAll does not exist on IrisGridTableModel');
-  };
-
-  depthForRow: IrisGridTreeTableModel['depthForRow'] = (...args) => {
-    if (isExpandableGridModel(this.model)) {
-      return this.model.depthForRow(...args);
-    }
-    return 0;
-    // throw Error('Function depthForRow does not exist on IrisGridTableModel');
-  };
-
-  get isExportAvailable(): boolean {
-    return this.model.isExportAvailable;
-  }
-
-  get isColumnStatisticsAvailable(): boolean {
-    return this.model.isColumnStatisticsAvailable;
-  }
-
-  get isValuesTableAvailable(): boolean {
-    return this.model.isValuesTableAvailable;
-  }
-
   get isCustomColumnsAvailable(): boolean {
     return (
       this.model.isCustomColumnsAvailable &&
       // Disable for selectDistinct tables
       !(this.isSelectDistinctAvailable && this.selectDistinctColumns.length > 0)
     );
-  }
-
-  get isFormatColumnsAvailable(): boolean {
-    return this.model.isFormatColumnsAvailable;
-  }
-
-  get isChartBuilderAvailable(): boolean {
-    return this.model.isChartBuilderAvailable;
   }
 
   get isRollupAvailable(): boolean {
@@ -390,83 +282,8 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     );
   }
 
-  get isTotalsAvailable(): boolean {
-    return this.model.isTotalsAvailable;
-  }
-
-  get isReversible(): boolean {
-    return this.model.isReversible;
-  }
-
-  get columns(): readonly DhType.Column[] {
-    return this.model.columns;
-  }
-
-  get initialMovedColumns(): readonly MoveOperation[] {
-    return this.model.initialMovedColumns;
-  }
-
-  get initialMovedRows(): readonly MoveOperation[] {
-    return this.model.initialMovedRows;
-  }
-
-  get layoutHints(): DhType.LayoutHints | null | undefined {
-    return this.model.layoutHints;
-  }
-
-  get frontColumns(): readonly ColumnName[] {
-    return this.model.frontColumns;
-  }
-
-  get backColumns(): readonly ColumnName[] {
-    return this.model.backColumns;
-  }
-
-  get frozenColumns(): readonly ColumnName[] {
-    return this.model.frozenColumns;
-  }
-
-  get keyColumnSet(): Set<ColumnName> {
-    return this.model.keyColumnSet;
-  }
-
-  getColumnHeaderGroup: IrisGridModel['getColumnHeaderGroup'] = (...args) =>
-    this.model.getColumnHeaderGroup(...args);
-
-  get columnHeaderGroups(): readonly ColumnHeaderGroup[] {
-    return this.model.columnHeaderGroups;
-  }
-
-  set columnHeaderGroups(groups: readonly ColumnHeaderGroup[]) {
-    this.model.columnHeaderGroups = groups;
-  }
-
-  get initialColumnHeaderGroups(): readonly ColumnHeaderGroup[] {
-    return this.model.initialColumnHeaderGroups;
-  }
-
-  getColumnHeaderParentGroup: IrisGridModel['getColumnHeaderParentGroup'] = (
-    ...args
-  ) => this.model.getColumnHeaderParentGroup(...args);
-
-  get columnHeaderGroupMap(): ReadonlyMap<string, ColumnHeaderGroup> {
-    return this.model.columnHeaderGroupMap;
-  }
-
-  get columnHeaderMaxDepth(): number {
-    return this.model.columnHeaderMaxDepth;
-  }
-
-  updateFrozenColumns(columns: readonly ColumnName[]): void {
-    return this.model.updateFrozenColumns(columns);
-  }
-
   get originalColumns(): readonly DhType.Column[] {
     return this.originalModel.columns;
-  }
-
-  get groupedColumns(): readonly DhType.Column[] {
-    return this.model.groupedColumns;
   }
 
   get partitionColumns(): readonly DhType.Column[] {
@@ -474,36 +291,6 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
       return [];
     }
     return this.originalModel.partitionColumns;
-  }
-
-  sourceForCell: IrisGridModel['sourceForCell'] = (...args) =>
-    this.model.sourceForCell(...args);
-
-  getClearFilterRange: IrisGridModel['getClearFilterRange'] = (...args) =>
-    this.model.getClearFilterRange(...args);
-
-  get description(): string {
-    return this.model.description;
-  }
-
-  formatForCell: IrisGridModel['formatForCell'] = (...args) =>
-    this.model.formatForCell(...args);
-
-  valueForCell: IrisGridModel['valueForCell'] = (...args) =>
-    this.model.valueForCell(...args);
-
-  renderTypeForCell: IrisGridModel['renderTypeForCell'] = (...args) =>
-    this.model.renderTypeForCell(...args);
-
-  dataBarOptionsForCell: IrisGridModel['dataBarOptionsForCell'] = (...args) =>
-    this.model.dataBarOptionsForCell(...args);
-
-  get filter(): readonly DhType.FilterCondition[] {
-    return this.model.filter;
-  }
-
-  set filter(filter: readonly DhType.FilterCondition[]) {
-    this.model.filter = filter;
   }
 
   get partitionConfig(): PartitionConfig | null {
@@ -565,41 +352,6 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
       throw new Error('Partitions are not available');
     }
     return this.originalModel.partitionTable(partitions);
-  }
-
-  get formatter(): Formatter {
-    return this.model.formatter;
-  }
-
-  set formatter(formatter: Formatter) {
-    this.model.formatter = formatter;
-  }
-
-  displayString: IrisGridModel['displayString'] = (...args) =>
-    this.model.displayString(...args);
-
-  get sort(): readonly DhType.Sort[] {
-    return this.model.sort;
-  }
-
-  set sort(sort: readonly DhType.Sort[]) {
-    this.model.sort = sort;
-  }
-
-  get customColumns(): readonly ColumnName[] {
-    return this.model.customColumns;
-  }
-
-  set customColumns(customColumns: readonly ColumnName[]) {
-    this.model.customColumns = customColumns;
-  }
-
-  get formatColumns(): readonly DhType.CustomColumn[] {
-    return this.model.formatColumns;
-  }
-
-  set formatColumns(formatColumns: readonly DhType.CustomColumn[]) {
-    this.model.formatColumns = formatColumns;
   }
 
   get rollupConfig(): DhType.RollupConfig | null {
@@ -672,22 +424,6 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     this.setNextModel(modelPromise);
   }
 
-  get table(): DhType.Table | DhType.TreeTable | undefined {
-    if (isIrisGridTableModelTemplate(this.model)) {
-      return this.model.table;
-    }
-
-    return undefined;
-  }
-
-  get totalsConfig(): UITotalsTableConfig | null {
-    return this.model.totalsConfig;
-  }
-
-  set totalsConfig(totalsConfig: UITotalsTableConfig | null) {
-    this.model.totalsConfig = totalsConfig;
-  }
-
   get isFilterRequired(): boolean {
     return this.originalModel.isFilterRequired;
   }
@@ -698,48 +434,6 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
       : false;
   }
 
-  get isEditable(): boolean {
-    return isEditableGridModel(this.model) && this.model.isEditable;
-  }
-
-  get isDeletable(): boolean {
-    return isDeletableGridModel(this.model) && this.model.isDeletable;
-  }
-
-  get isViewportPending(): boolean {
-    return this.model.isViewportPending;
-  }
-
-  isEditableRange: IrisGridTableModel['isEditableRange'] = (
-    ...args
-  ): boolean => {
-    if (isEditableGridModel(this.model)) {
-      return this.model.isEditableRange(...args);
-    }
-    return false;
-  };
-
-  isDeletableRange: IrisGridTableModel['isDeletableRange'] = (
-    ...args
-  ): boolean => {
-    if (isDeletableGridModel(this.model)) {
-      return this.model.isDeletableRange(...args);
-    }
-    return false;
-  };
-
-  isDeletableRanges: IrisGridTableModel['isDeletableRanges'] = (
-    ...args
-  ): boolean => {
-    if (isDeletableGridModel(this.model)) {
-      return this.model.isDeletableRanges(...args);
-    }
-    return false;
-  };
-
-  isFilterable: IrisGridTableModel['isFilterable'] = (...args) =>
-    this.model.isFilterable(...args);
-
   setViewport = (
     top: number,
     bottom: number,
@@ -748,122 +442,6 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
     this.currentViewport = { top, bottom, columns };
     this.model.setViewport(top, bottom, columns);
   };
-
-  snapshot: IrisGridModel['snapshot'] = (...args) =>
-    this.model.snapshot(...args);
-
-  textSnapshot: IrisGridTableModel['textSnapshot'] = (...args) =>
-    this.model.textSnapshot(...args);
-
-  export(): Promise<DhType.Table> {
-    if (TableUtils.isTreeTable(this.model)) {
-      throw new Error("TreeTable has no 'export' property");
-    }
-    return (this.model as IrisGridTableModel).export();
-  }
-
-  valuesTable: IrisGridTableModel['valuesTable'] = (...args) =>
-    this.model.valuesTable(...args);
-
-  columnStatistics(column: DhType.Column): Promise<DhType.ColumnStatistics> {
-    if (TableUtils.isTreeTable(this.model)) {
-      throw new Error("TreeTable has no 'columnStatistics' function");
-    }
-    return (this.model as IrisGridTableModel).columnStatistics(column);
-  }
-
-  editValueForCell: IrisGridTableModel['editValueForCell'] = (...args) => {
-    if (isEditableGridModel(this.model)) {
-      return this.model.editValueForCell(...args);
-    }
-    return '';
-  };
-
-  setValueForCell: IrisGridTableModel['setValueForCell'] = (...args) => {
-    if (isEditableGridModel(this.model)) {
-      return this.model.setValueForCell(...args);
-    }
-    return Promise.reject(new Error('Model is not editable'));
-  };
-
-  setValueForRanges: IrisGridTableModel['setValueForRanges'] = (...args) => {
-    if (isEditableGridModel(this.model)) {
-      return this.model.setValueForRanges(...args);
-    }
-    return Promise.reject(new Error('Model is not editable'));
-  };
-
-  setValues: EditableGridModel['setValues'] = (...args) => {
-    if (isEditableGridModel(this.model)) {
-      return this.model.setValues(...args);
-    }
-    return Promise.resolve();
-  };
-
-  isValidForCell: IrisGridTableModel['isValidForCell'] = (...args) => {
-    if (isEditableGridModel(this.model)) {
-      return this.model.isValidForCell(...args);
-    }
-    return false;
-  };
-
-  delete: IrisGridTableModel['delete'] = (...args) => {
-    if (isDeletableGridModel(this.model)) {
-      return this.model.delete(...args);
-    }
-    return Promise.reject(new Error('Model is not deletable'));
-  };
-
-  get pendingDataMap(): PendingDataMap<UIRow> {
-    return this.model.pendingDataMap;
-  }
-
-  set pendingDataMap(map: PendingDataMap<UIRow>) {
-    this.model.pendingDataMap = map;
-  }
-
-  get pendingRowCount(): number {
-    return this.model.pendingRowCount;
-  }
-
-  set pendingRowCount(count: number) {
-    this.model.pendingRowCount = count;
-  }
-
-  get pendingDataErrors(): PendingDataErrorMap {
-    return this.model.pendingDataErrors;
-  }
-
-  commitPending: IrisGridTableModel['commitPending'] = (...args) =>
-    this.model.commitPending(...args);
-
-  getColumnIndexByName(name: ColumnName): number | undefined {
-    return this.model.getColumnIndexByName(name);
-  }
-
-  async seekRow(
-    startRow: number,
-    column: DhType.Column,
-    valueType: DhType.ValueTypeType,
-    value: unknown,
-    insensitive?: boolean,
-    contains?: boolean,
-    isBackwards?: boolean
-  ): Promise<number> {
-    return this.model.seekRow(
-      startRow,
-      column,
-      valueType,
-      value,
-      insensitive,
-      contains,
-      isBackwards
-    );
-  }
-
-  get isSeekRowAvailable(): boolean {
-    return this.model.isSeekRowAvailable;
-  }
 }
 
 export default IrisGridProxyModel;
