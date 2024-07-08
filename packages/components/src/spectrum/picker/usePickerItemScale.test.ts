@@ -1,7 +1,8 @@
-import { PICKER_ITEM_HEIGHTS, TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/utils';
 import type { ProviderContext } from '@react-types/provider';
 import { renderHook } from '@testing-library/react-hooks';
 import { useSpectrumThemeProvider } from '../../theme';
+import { PICKER_ITEM_HEIGHTS } from '../../UIConstants';
 import { usePickerItemScale } from './usePickerItemScale';
 
 const { asMock } = TestUtils;

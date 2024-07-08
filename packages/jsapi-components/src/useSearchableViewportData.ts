@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { TABLE_ROW_HEIGHT } from '@deephaven/components';
 import type { dh } from '@deephaven/jsapi-types';
 import {
   createSearchTextFilter,
@@ -6,7 +7,6 @@ import {
 } from '@deephaven/jsapi-utils';
 import {
   SEARCH_DEBOUNCE_MS,
-  TABLE_ROW_HEIGHT,
   VIEWPORT_PADDING,
   VIEWPORT_SIZE,
 } from '@deephaven/utils';

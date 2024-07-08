@@ -5,6 +5,7 @@ import {
   Grid,
   Icon,
   Item,
+  LIST_VIEW_ROW_HEIGHTS,
   ListView,
   ListViewNormalized,
   ItemKey,
@@ -18,7 +19,6 @@ import {
   ListActionGroup,
 } from '@deephaven/components';
 import { vsAccount, vsEdit, vsPerson, vsTrash } from '@deephaven/icons';
-import { LIST_VIEW_ROW_HEIGHTS } from '@deephaven/utils';
 import { generateNormalizedItems } from './utils';
 import SampleSection from './SampleSection';
 

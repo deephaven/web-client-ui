@@ -1,5 +1,6 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 import type { DebouncedFunc } from 'lodash';
+import { TABLE_ROW_HEIGHT } from '@deephaven/components';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
   createSearchTextFilter,
@@ -9,7 +10,6 @@ import {
 import { useDebouncedCallback } from '@deephaven/react-hooks';
 import {
   SEARCH_DEBOUNCE_MS,
-  TABLE_ROW_HEIGHT,
   TestUtils,
   VIEWPORT_PADDING,
   VIEWPORT_SIZE,

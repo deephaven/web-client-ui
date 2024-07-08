@@ -1,10 +1,7 @@
-import {
-  EMPTY_FUNCTION,
-  ensureArray,
-  PICKER_TOP_OFFSET,
-} from '@deephaven/utils';
+import { EMPTY_FUNCTION, ensureArray } from '@deephaven/utils';
 import { DOMRef } from '@react-types/shared';
 import { useMemo } from 'react';
+import { PICKER_TOP_OFFSET } from '../../UIConstants';
 import {
   normalizeTooltipOptions,
   wrapItemChildren,
