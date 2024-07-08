@@ -11,6 +11,9 @@ type LoadingOverlayProps = {
   isLoaded?: boolean;
   isLoading?: boolean;
   errorMessage?: string | null;
+  className?: string | null;
+  scrimClassName?: string;
+  timeout?: number | { enter?: number; exit?: number; appear?: number };
   'data-testid'?: string;
 };
 
@@ -21,6 +24,9 @@ function LoadingOverlay({
   isLoaded = false,
   isLoading = true,
   errorMessage = null,
+  className = null,
+  scrimClassName = 'iris-panel-scrim-background',
+  timeout = ThemeExport.transitionMs,
   'data-testid': dataTestId,
 }: LoadingOverlayProps): JSX.Element {
   const messageTestId =
@@ -31,8 +37,8 @@ function LoadingOverlay({
   return (
     <CSSTransition
       in={Boolean(errorMessage) || !isLoaded || isLoading}
-      timeout={ThemeExport.transitionMs}
-      classNames={isLoaded ? 'fade' : ''}
+      timeout={timeout}
+      classNames={classNames(className, { fade: isLoaded })}
       mountOnEnter
       unmountOnExit
     >
@@ -41,7 +47,11 @@ function LoadingOverlay({
           className={classNames(
             'iris-panel-message-overlay',
             'fill-parent-absolute',
+<<<<<<< Updated upstream
             { 'iris-panel-scrim-background': !isLoaded }
+=======
+            { [scrimClassName]: isLoaded }
+>>>>>>> Stashed changes
           )}
         >
           <div className="message-content">
