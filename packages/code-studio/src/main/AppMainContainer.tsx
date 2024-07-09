@@ -50,14 +50,7 @@ import {
   getDashboardConnection,
   NotebookPanel,
 } from '@deephaven/dashboard-core-plugins';
-import {
-  vsGear,
-  dhShapes,
-  dhPanels,
-  vsDebugDisconnect,
-  dhSquareFilled,
-  vsTerminal,
-} from '@deephaven/icons';
+import { vsGear, dhShapes, dhPanels, vsTerminal } from '@deephaven/icons';
 import { getVariableDescriptor } from '@deephaven/jsapi-bootstrap';
 import dh from '@deephaven/jsapi-shim';
 import type { dh as DhType } from '@deephaven/jsapi-types';
