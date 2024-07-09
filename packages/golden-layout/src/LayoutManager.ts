@@ -1,6 +1,5 @@
 import $ from 'jquery';
 import React from 'react';
-import { assertNotNull } from '@deephaven/utils';
 import lm from './base';
 import {
   ColumnItemConfig,
@@ -931,7 +930,12 @@ export class LayoutManager extends EventEmitter {
     }
 
     if ($.isPlainObject(contentItemOrConfig) && contentItemOrConfig.type) {
-      assertNotNull(parent);
+      if (parent == null) {
+        throw new Error(
+          `Parent content item is required: ${contentItemOrConfig.type}`
+        );
+      }
+
       var newContentItem = this.createContentItem(contentItemOrConfig, parent);
       newContentItem.callDownwards('_$init');
       return newContentItem;
