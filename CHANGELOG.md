@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.1](https://github.com/deephaven/web-client-ui/compare/v0.85.0...v0.85.1) (2024-07-08)
+
+### Bug Fixes
+
+- re-export remaining types needed by dh ui from @react-types/shared ([#2132](https://github.com/deephaven/web-client-ui/issues/2132)) ([2119a61](https://github.com/deephaven/web-client-ui/commit/2119a61805fd895adc6b95d53bffb598460c0746))
+
 ## [0.85.0](https://github.com/deephaven/web-client-ui/compare/v0.84.0...v0.85.0) (2024-07-04)
 
 ### Features
