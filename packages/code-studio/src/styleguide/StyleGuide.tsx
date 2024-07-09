@@ -135,14 +135,14 @@ function StyleGuide(): React.ReactElement {
         <Charts />
         <ContextMenuRoot />
         <RandomAreaPlotAnimation />
+        <ErrorViews />
+        <XComponents />
 
         <SampleMenuCategory data-menu-category="Spectrum Components" />
         <SpectrumComponents />
 
         <SampleMenuCategory data-menu-category="Spectrum Comparison" />
         <SpectrumComparison />
-        <XComponents />
-        <ErrorViews />
       </div>
     </div>
   );
