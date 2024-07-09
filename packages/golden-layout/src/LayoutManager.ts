@@ -511,15 +511,15 @@ export class LayoutManager extends EventEmitter {
   ): RowOrColumn;
   createContentItem(
     config: ComponentConfig | ReactComponentConfig,
-    parent: AbstractContentItem
+    parent: AbstractContentItem | null
   ): Component | Stack;
   createContentItem(
     config: ItemConfig,
-    parent: AbstractContentItem
+    parent: AbstractContentItem | null
   ): RowOrColumn | Stack | Component;
   createContentItem(
     config: ItemConfig,
-    parent: AbstractContentItem
+    parent: AbstractContentItem | null
   ): RowOrColumn | Stack | Component {
     var typeErrorMsg, contentItem;
 
@@ -568,16 +568,30 @@ export class LayoutManager extends EventEmitter {
     config.id = config.id ?? getUniqueId();
 
     if (config.type === 'stack') {
+      if (parent == null) {
+        throw new Error(
+          'Stacks can only be created as children of a row or column'
+        );
+      }
+
       // The type narrowing isn't able to infer `parent` if of type `RowOrColumn`,
       // but the type signature of `createContentItem` should enforce this.
       return new Stack(this, config, parent as RowOrColumn);
     }
 
     if (config.type === 'row') {
+      if (parent == null) {
+        throw new Error('Rows require a parent');
+      }
+
       return new RowOrColumn(false, this, config, parent);
     }
 
     if (config.type === 'column') {
+      if (parent == null) {
+        throw new Error('Columns require a parent');
+      }
+
       return new RowOrColumn(true, this, config, parent);
     }
 
@@ -930,13 +944,10 @@ export class LayoutManager extends EventEmitter {
     }
 
     if ($.isPlainObject(contentItemOrConfig) && contentItemOrConfig.type) {
-      if (parent == null) {
-        throw new Error(
-          `Parent content item is required: ${contentItemOrConfig.type}`
-        );
-      }
-
-      var newContentItem = this.createContentItem(contentItemOrConfig, parent);
+      const newContentItem = this.createContentItem(
+        contentItemOrConfig,
+        parent ?? null
+      );
       newContentItem.callDownwards('_$init');
       return newContentItem;
     } else {
