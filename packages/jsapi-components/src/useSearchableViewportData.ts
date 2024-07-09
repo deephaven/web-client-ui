@@ -1,15 +1,10 @@
 import { useMemo, useState } from 'react';
+import { TABLE_ROW_HEIGHT } from '@deephaven/components';
 import type { dh } from '@deephaven/jsapi-types';
 import {
   createSearchTextFilter,
   FilterConditionFactory,
 } from '@deephaven/jsapi-utils';
-import {
-  SEARCH_DEBOUNCE_MS,
-  TABLE_ROW_HEIGHT,
-  VIEWPORT_PADDING,
-  VIEWPORT_SIZE,
-} from '@deephaven/utils';
 import { useDebouncedCallback } from '@deephaven/react-hooks';
 import { useTableUtils } from './useTableUtils';
 import useViewportData, {
@@ -18,6 +13,11 @@ import useViewportData, {
 } from './useViewportData';
 import useFilterConditionFactories from './useFilterConditionFactories';
 import useViewportFilter from './useViewportFilter';
+import {
+  SEARCH_DEBOUNCE_MS,
+  VIEWPORT_PADDING,
+  VIEWPORT_SIZE,
+} from './Constants';
 
 export interface UseSearchableViewportDataProps<TData>
   extends UseViewportDataProps<TData, dh.Table> {

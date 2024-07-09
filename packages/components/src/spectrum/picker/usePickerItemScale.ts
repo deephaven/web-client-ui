@@ -1,5 +1,5 @@
-import { PICKER_ITEM_HEIGHTS } from '@deephaven/utils';
 import { useSpectrumThemeProvider } from '../../theme';
+import { PICKER_ITEM_HEIGHTS } from '../../UIConstants';
 
 /**
  * Get Picker Item height for current scale.

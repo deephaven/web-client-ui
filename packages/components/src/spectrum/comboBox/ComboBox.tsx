@@ -44,3 +44,4 @@ export const ComboBox = React.forwardRef(function ComboBox(
     />
   );
 });
+ComboBox.displayName = 'ComboBox';

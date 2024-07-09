@@ -6,8 +6,8 @@ import {
 } from '@adobe/react-spectrum';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { ACTION_ICON_HEIGHT } from '@deephaven/utils';
 import { Tooltip } from '../popper';
+import { ACTION_ICON_HEIGHT } from '../UIConstants';
 
 export interface IconActionButtonProps
   extends Omit<SpectrumActionButtonProps, 'aria-label' | 'isQuiet' | 'height'> {

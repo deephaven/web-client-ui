@@ -3,12 +3,12 @@ import {
   ItemKey,
   NormalizedItem,
   NormalizedSection,
+  PICKER_TOP_OFFSET,
   usePickerItemScale,
 } from '@deephaven/components';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { usePromiseFactory } from '@deephaven/react-hooks';
-import { PICKER_TOP_OFFSET } from '@deephaven/utils';
 import useFormatter from '../../useFormatter';
 import type { PickerWithTableProps } from '../PickerProps';
 import { getItemKeyColumn, getItemLabelColumn } from './itemUtils';
