@@ -1,27 +1,29 @@
-import type { StackHeaderConfig } from '../items/Stack';
+/** @deprecated Use `ItemConfig` type instead. */
+export type ItemConfigType = ItemConfig;
 
-export type ItemConfigType =
-  | ItemConfig
+export type ItemConfig =
+  | ColumnItemConfig
   | ComponentConfig
-  | ReactComponentConfig;
+  | DefaultItemConfig
+  | ReactComponentConfig
+  | RootItemConfig
+  | RowItemConfig
+  | StackItemConfig;
 
-export interface ItemConfig {
-  /**
-   * The type of the item.
-   */
-  type:
-    | 'default'
-    | 'root'
-    | 'row'
-    | 'column'
-    | 'stack'
-    | 'component'
-    | 'react-component';
+export type ItemConfigTypeValue =
+  | 'column'
+  | 'component'
+  | 'default'
+  | 'react-component'
+  | 'root'
+  | 'row'
+  | 'stack';
 
+export interface ItemConfigAttributes {
   /**
    * An array of configurations for items that will be created as children of this item.
    */
-  content?: (ItemConfig | ItemConfigType)[];
+  content?: ItemConfig[];
 
   /**
    * The width of this item, relative to the other children of its parent in percent
@@ -59,10 +61,43 @@ export interface ItemConfig {
 
   reorderEnabled?: boolean;
 
-  header?: StackHeaderConfig;
+  header?: StackItemHeaderConfig;
 }
 
-export interface ComponentConfig extends ItemConfig {
+export interface DefaultItemConfig extends ItemConfigAttributes {
+  type: 'default';
+}
+
+export interface RowItemConfig extends ItemConfigAttributes {
+  type: 'row';
+}
+
+export interface ColumnItemConfig extends ItemConfigAttributes {
+  type: 'column';
+}
+
+export interface RootItemConfig extends ItemConfigAttributes {
+  type: 'root';
+}
+
+export interface StackItemHeaderConfig {
+  show?: boolean | 'top' | 'left' | 'right' | 'bottom';
+  popout?: string;
+  maximise?: string;
+  close?: string;
+  minimise?: string;
+}
+
+export interface StackItemConfig extends ItemConfigAttributes {
+  type: 'stack';
+  activeItemIndex?: number;
+  header?: StackItemHeaderConfig;
+  hasHeaders?: boolean;
+}
+
+export interface ComponentConfig extends ItemConfigAttributes {
+  type: 'component';
+
   /**
    * The name of the component as specified in layout.registerComponent. Mandatory if type is 'component'.
    */
@@ -75,7 +110,9 @@ export interface ComponentConfig extends ItemConfig {
   componentState: Record<string, unknown>;
 }
 
-export interface ReactComponentConfig extends ItemConfig {
+export interface ReactComponentConfig extends ItemConfigAttributes {
+  type: 'react-component';
+
   componentName?: string;
   /**
    * The name of the component as specified in layout.registerComponent. Mandatory if type is 'react-component'
@@ -100,7 +137,7 @@ export function isReactComponentConfig(
   return (item as ReactComponentConfig).component !== undefined;
 }
 
-export const itemDefaultConfig: ItemConfig = Object.freeze({
+export const itemDefaultConfig: DefaultItemConfig = Object.freeze({
   type: 'default',
   isClosable: true,
   isFocusOnShow: true,

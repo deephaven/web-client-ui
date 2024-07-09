@@ -3,7 +3,7 @@ import AbstractContentItem from './AbstractContentItem';
 import { animFrame } from '../utils';
 import { Splitter } from '../controls';
 import type LayoutManager from '../LayoutManager';
-import type { ItemConfig, ItemConfigType } from '../config';
+import type { ColumnItemConfig, ItemConfig, RowItemConfig } from '../config';
 
 export default class RowOrColumn extends AbstractContentItem {
   isRow: boolean;
@@ -21,9 +21,21 @@ export default class RowOrColumn extends AbstractContentItem {
   private _splitterMaxPosition: number | null = null;
 
   constructor(
+    isColumn: true,
+    layoutManager: LayoutManager,
+    config: ColumnItemConfig,
+    parent: AbstractContentItem
+  );
+  constructor(
+    isColumn: false,
+    layoutManager: LayoutManager,
+    config: RowItemConfig,
+    parent: AbstractContentItem
+  );
+  constructor(
     isColumn: boolean,
     layoutManager: LayoutManager,
-    config: ItemConfigType,
+    config: ColumnItemConfig | RowItemConfig,
     parent: AbstractContentItem
   ) {
     super(
@@ -58,7 +70,7 @@ export default class RowOrColumn extends AbstractContentItem {
    *                           children need to be added in one go and resize is called afterwards
    */
   addChild(
-    contentItem: AbstractContentItem | { type: ItemConfig['type'] },
+    contentItem: AbstractContentItem | ItemConfig,
     index?: number,
     _$suspendResize?: boolean
   ) {

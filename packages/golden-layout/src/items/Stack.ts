@@ -1,7 +1,11 @@
 import $ from 'jquery';
 import AbstractContentItem, { isComponent } from './AbstractContentItem';
 import type LayoutManager from '../LayoutManager';
-import type { ComponentConfig, ItemConfigType } from '../config';
+import type {
+  ItemConfig,
+  StackItemConfig,
+  StackItemHeaderConfig,
+} from '../config';
 import { Header } from '../controls';
 import type RowOrColumn from './RowOrColumn';
 
@@ -31,20 +35,12 @@ type ContentAreaDimensions = {
 
 type BodySegment = keyof ContentAreaDimensions;
 
-export interface StackHeaderConfig {
-  show?: boolean | 'top' | 'left' | 'right' | 'bottom';
-  popout?: string;
-  maximise?: string;
-  close?: string;
-  minimise?: string;
-}
-
 export default class Stack extends AbstractContentItem {
   private _activeContentItem: AbstractContentItem | null = null;
 
-  _header: StackHeaderConfig;
+  _header: StackItemHeaderConfig;
 
-  childElementContainer = $('<div class="lm_items"></div>');
+  childElementContainer = $('<div class="lm_items"></disv>');
   header: Header;
   parent: RowOrColumn;
 
@@ -57,20 +53,15 @@ export default class Stack extends AbstractContentItem {
   _side: boolean | 'top' | 'left' | 'right' | 'bottom';
   _sided: boolean = false;
 
-  config: ComponentConfig & {
-    activeItemIndex?: number;
-  };
+  config: StackItemConfig;
 
   constructor(
     layoutManager: LayoutManager & {
       config: LayoutManager['config'] & {
-        header?: StackHeaderConfig;
+        header?: StackItemHeaderConfig;
       };
     },
-    config: ComponentConfig & {
-      header?: StackHeaderConfig;
-      hasHeaders?: boolean;
-    },
+    config: StackItemConfig,
     parent: RowOrColumn
   ) {
     super(
@@ -176,7 +167,7 @@ export default class Stack extends AbstractContentItem {
     return this.header.activeContentItem;
   }
 
-  addChild(contentItem: AbstractContentItem | ItemConfigType, index?: number) {
+  addChild(contentItem: AbstractContentItem | ItemConfig, index?: number) {
     contentItem = this.layoutManager._$normalizeContentItem(contentItem, this);
     super.addChild(contentItem, index);
     this.childElementContainer.append(contentItem.element);
