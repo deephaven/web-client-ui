@@ -4,7 +4,6 @@ import {
   createXComponent,
   Button,
 } from '@deephaven/components';
-import { sampleSectionIdAndClasses } from './utils';
 import SampleSection from './SampleSection';
 
 type FooComponentProps = { value: string };
