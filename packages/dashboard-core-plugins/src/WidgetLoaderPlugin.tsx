@@ -19,6 +19,7 @@ import {
   type WidgetPlugin,
 } from '@deephaven/plugin';
 import { WidgetPanel } from './panels';
+import { WidgetPanelDescriptor } from './panels/WidgetPanelTypes';
 
 const log = Log.module('WidgetLoaderPlugin');
 
@@ -30,12 +31,17 @@ export function WrapWidgetPlugin(
     const C = plugin.component as any;
     const { metadata } = props;
 
+    const panelDescriptor: WidgetPanelDescriptor = {
+      ...metadata,
+      type: metadata?.type ?? plugin.type,
+      name: metadata?.name ?? 'Widget',
+    };
+
     const hasRef = canHaveRef(C);
 
     return (
       <WidgetPanel
-        widgetName={metadata?.name ?? undefined}
-        widgetType={plugin.title}
+        descriptor={panelDescriptor}
         // eslint-disable-next-line react/jsx-props-no-spreading
         {...props}
       >

@@ -37,6 +37,7 @@ import { GoldenLayout } from './GoldenLayout';
 import { RandomAreaPlotAnimation } from './RandomAreaPlotAnimation';
 import SpectrumComparison from './SpectrumComparison';
 import Pickers from './Pickers';
+import XComponents from './XComponents';
 import ListViews from './ListViews';
 import ErrorViews from './ErrorViews';
 
@@ -140,6 +141,7 @@ function StyleGuide(): React.ReactElement {
 
         <SampleMenuCategory data-menu-category="Spectrum Comparison" />
         <SpectrumComparison />
+        <XComponents />
         <ErrorViews />
       </div>
     </div>

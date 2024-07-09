@@ -37,7 +37,7 @@ export interface DropdownFilterColumn {
 
 export interface DropdownFilterProps {
   column: DropdownFilterColumn;
-  columns: DropdownFilterColumn[];
+  columns: readonly DropdownFilterColumn[];
   onSourceMouseEnter: () => void;
   onSourceMouseLeave: () => void;
   disableLinking: boolean;
@@ -47,7 +47,7 @@ export interface DropdownFilterProps {
   settingsError: string;
   source: LinkPoint;
   value: string | null;
-  values: (string | null)[];
+  values: readonly (string | null)[];
   onChange: (change: {
     column: Partial<dh.Column> | null;
     isValueShown?: boolean;
@@ -159,7 +159,7 @@ export class DropdownFilter extends Component<
   dropdownRef: RefObject<HTMLSelectElement>;
 
   getCompatibleColumns = memoize(
-    (source: LinkPoint, columns: DropdownFilterColumn[]) =>
+    (source: LinkPoint, columns: readonly DropdownFilterColumn[]) =>
       source != null
         ? columns.filter(
             ({ type }) =>
@@ -200,10 +200,11 @@ export class DropdownFilter extends Component<
   );
 
   getSelectedOptionIndex = memoize(
-    (values: (string | null)[], value: string | null) => values.indexOf(value)
+    (values: readonly (string | null)[], value: string | null) =>
+      values.indexOf(value)
   );
 
-  getValueOptions = memoize((values: (string | null)[]) => [
+  getValueOptions = memoize((values: readonly (string | null)[]) => [
     <option value="-1" key="-1">
       {DropdownFilter.PLACEHOLDER}
     </option>,
@@ -218,19 +219,21 @@ export class DropdownFilter extends Component<
     )),
   ]);
 
-  getItemLabel = memoizee((columns: DropdownFilterColumn[], index: number) => {
-    const { name, type } = columns[index];
+  getItemLabel = memoizee(
+    (columns: readonly DropdownFilterColumn[], index: number) => {
+      const { name, type } = columns[index];
 
-    if (
-      (index > 0 && columns[index - 1].name === name) ||
-      (index < columns.length - 1 && columns[index + 1].name === name)
-    ) {
-      const shortType = type.substring(type.lastIndexOf('.') + 1);
-      return `${name} (${shortType})`;
+      if (
+        (index > 0 && columns[index - 1].name === name) ||
+        (index < columns.length - 1 && columns[index + 1].name === name)
+      ) {
+        const shortType = type.substring(type.lastIndexOf('.') + 1);
+        return `${name} (${shortType})`;
+      }
+
+      return name;
     }
-
-    return name;
-  });
+  );
 
   handleColumnChange(eventTargetValue: string): void {
     const value = eventTargetValue;
