@@ -585,40 +585,6 @@ export class LayoutManager extends EventEmitter {
     return new Component(this, config, parent);
   }
 
-  test() {
-    const height = 0;
-    const width = 0;
-    const parent = {};
-
-    const stack = this.createContentItem(
-      {
-        type: 'stack',
-        height,
-        width,
-        // activeItemIndex: 0,
-      },
-      parent as RowOrColumn
-    );
-
-    const newRow = this.createContentItem(
-      {
-        type: 'column',
-        height,
-      },
-      parent as AbstractContentItem
-    );
-
-    const newComponent = this.createContentItem(
-      {
-        type: 'component',
-        componentName: '',
-        // component: ''
-        componentState: {},
-      },
-      parent as AbstractContentItem
-    );
-  }
-
   /**
 	 * Creates a popout window with the specified content and dimensions
 	 *
