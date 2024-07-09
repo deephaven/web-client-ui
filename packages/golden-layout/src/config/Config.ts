@@ -1,10 +1,10 @@
-import type { ItemConfig, ItemConfigType } from './ItemConfig';
+import type { ItemConfig } from './ItemConfig';
 
 export type Config = {
   settings: Partial<Settings>;
   dimensions: Dimensions;
   labels: Labels;
-  content: ItemConfigType[];
+  content: ItemConfig[];
   maximisedItemId?: string;
   openPopouts?: PopoutConfig[];
 };

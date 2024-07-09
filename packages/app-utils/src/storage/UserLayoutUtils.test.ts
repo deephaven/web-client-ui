@@ -1,5 +1,5 @@
 import { FilterSet, Link } from '@deephaven/dashboard-core-plugins';
-import type { ItemConfigType } from '@deephaven/golden-layout';
+import type { ItemConfig } from '@deephaven/golden-layout';
 import LayoutStorage, {
   ExportedLayout,
   ExportedLayoutV1,
@@ -28,7 +28,7 @@ const filterSets: FilterSet[] = [
     panels: [],
   },
 ];
-const layoutConfig: ItemConfigType[] = [
+const layoutConfig: ItemConfig[] = [
   {
     component: 'TestComponent',
     type: 'TestComponentType',

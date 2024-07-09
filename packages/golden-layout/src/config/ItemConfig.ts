@@ -1,6 +1,3 @@
-/** @deprecated Use `ItemConfig` type instead. */
-export type ItemConfigType = ItemConfig;
-
 export type ItemConfig =
   | ColumnItemConfig
   | ComponentConfig
@@ -9,15 +6,6 @@ export type ItemConfig =
   | RootItemConfig
   | RowItemConfig
   | StackItemConfig;
-
-export type ItemConfigTypeValue =
-  | 'column'
-  | 'component'
-  | 'default'
-  | 'react-component'
-  | 'root'
-  | 'row'
-  | 'stack';
 
 export interface ItemConfigAttributes {
   /**
@@ -125,14 +113,12 @@ export interface ReactComponentConfig extends ItemConfigAttributes {
   props?: any;
 }
 
-export function isGLComponentConfig(
-  item: ItemConfigType
-): item is ComponentConfig {
+export function isGLComponentConfig(item: ItemConfig): item is ComponentConfig {
   return (item as ComponentConfig).componentName !== undefined;
 }
 
 export function isReactComponentConfig(
-  item: ItemConfigType
+  item: ItemConfig
 ): item is ReactComponentConfig {
   return (item as ReactComponentConfig).component !== undefined;
 }
