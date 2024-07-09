@@ -40,7 +40,7 @@ export default class Stack extends AbstractContentItem {
 
   _header: StackItemHeaderConfig;
 
-  childElementContainer = $('<div class="lm_items"></disv>');
+  childElementContainer = $('<div class="lm_items"></div>');
   header: Header;
   parent: RowOrColumn;
 
