@@ -1,10 +1,3 @@
-export const ITEM_KEY_PREFIX = 'DH_ITEM_KEY';
-export const SCROLL_DEBOUNCE_MS = 150;
-export const SEARCH_DEBOUNCE_MS = 200;
-export const SPELLCHECK_FALSE_ATTRIBUTE = { spellCheck: false } as const;
-export const VIEWPORT_PADDING = 250;
-export const VIEWPORT_SIZE = 500;
-
 /** @deprecated Use `ACTION_ICON_HEIGHT` from `@deephaven/components` instead. */
 export const ACTION_ICON_HEIGHT = 24;
 
@@ -37,3 +30,18 @@ export const PICKER_TOP_OFFSET = 4;
 
 /** @deprecated Use `TABLE_ROW_HEIGHT` from `@deephaven/components` instead. */
 export const TABLE_ROW_HEIGHT = 33;
+
+/** @deprecated Use `SCROLL_DEBOUNCE_MS` from `@deephaven/jsapi-components` instead. */
+export const SCROLL_DEBOUNCE_MS = 150;
+/** @deprecated Use `SEARCH_DEBOUNCE_MS` from `@deephaven/jsapi-components` instead. */
+export const SEARCH_DEBOUNCE_MS = 200;
+/** @deprecated Use `VIEWPORT_PADDING` from `@deephaven/jsapi-components` instead. */
+export const VIEWPORT_PADDING = 250;
+/** @deprecated Use `VIEWPORT_SIZE` from `@deephaven/jsapi-components` instead. */
+export const VIEWPORT_SIZE = 500;
+
+/** @deprecated Use `ITEM_KEY_PREFIX` from `@deephaven/jsapi-utils` instead. */
+export const ITEM_KEY_PREFIX = 'DH_ITEM_KEY';
+
+/** @deprecated Use `SPELLCHECK_FALSE_ATTRIBUTE` from `@deephaven/react-hooks` instead. */
+export const SPELLCHECK_FALSE_ATTRIBUTE = { spellCheck: false } as const;

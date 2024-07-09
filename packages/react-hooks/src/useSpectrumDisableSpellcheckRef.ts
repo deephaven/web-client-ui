@@ -1,8 +1,9 @@
-import { SPELLCHECK_FALSE_ATTRIBUTE } from '@deephaven/utils';
 import type { DOMRefValue } from '@react-types/shared';
 import { extractSpectrumHTMLElement } from './SpectrumUtils';
 import useMappedRef from './useMappedRef';
 import useSetAttributesCallback from './useSetAttributesCallback';
+
+export const SPELLCHECK_FALSE_ATTRIBUTE = { spellCheck: false } as const;
 
 /**
  * Returns a callback ref that can be assigned to a React Spectrum component.

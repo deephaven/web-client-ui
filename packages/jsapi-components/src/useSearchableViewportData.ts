@@ -5,11 +5,6 @@ import {
   createSearchTextFilter,
   FilterConditionFactory,
 } from '@deephaven/jsapi-utils';
-import {
-  SEARCH_DEBOUNCE_MS,
-  VIEWPORT_PADDING,
-  VIEWPORT_SIZE,
-} from '@deephaven/utils';
 import { useDebouncedCallback } from '@deephaven/react-hooks';
 import { useTableUtils } from './useTableUtils';
 import useViewportData, {
@@ -18,6 +13,11 @@ import useViewportData, {
 } from './useViewportData';
 import useFilterConditionFactories from './useFilterConditionFactories';
 import useViewportFilter from './useViewportFilter';
+import {
+  SEARCH_DEBOUNCE_MS,
+  VIEWPORT_PADDING,
+  VIEWPORT_SIZE,
+} from './Constants';
 
 export interface UseSearchableViewportDataProps<TData>
   extends UseViewportDataProps<TData, dh.Table> {

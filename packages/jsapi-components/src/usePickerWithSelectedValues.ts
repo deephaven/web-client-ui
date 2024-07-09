@@ -11,18 +11,17 @@ import {
   usePromiseFactory,
 } from '@deephaven/react-hooks';
 import { usePickerItemScale } from '@deephaven/components';
-import {
-  KeyedItem,
-  SEARCH_DEBOUNCE_MS,
-  SelectionT,
-  VIEWPORT_PADDING,
-  VIEWPORT_SIZE,
-} from '@deephaven/utils';
+import { KeyedItem, SelectionT } from '@deephaven/utils';
 import useFilterConditionFactories from './useFilterConditionFactories';
 import useViewportData, { UseViewportDataResult } from './useViewportData';
 import useViewportFilter from './useViewportFilter';
 import useTableUtils from './useTableUtils';
 import useTableClose from './useTableClose';
+import {
+  SEARCH_DEBOUNCE_MS,
+  VIEWPORT_PADDING,
+  VIEWPORT_SIZE,
+} from './Constants';
 
 export interface UsePickerWithSelectedValuesResult<TItem, TValue> {
   list: UseViewportDataResult<TItem, dh.Table>;

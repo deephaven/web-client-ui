@@ -8,17 +8,17 @@ import {
   TableUtils,
 } from '@deephaven/jsapi-utils';
 import { useDebouncedCallback } from '@deephaven/react-hooks';
-import {
-  SEARCH_DEBOUNCE_MS,
-  TestUtils,
-  VIEWPORT_PADDING,
-  VIEWPORT_SIZE,
-} from '@deephaven/utils';
+import { TestUtils } from '@deephaven/utils';
 import useSearchableViewportData from './useSearchableViewportData';
 import useViewportData, { UseViewportDataResult } from './useViewportData';
 import useTableUtils from './useTableUtils';
 import useFilterConditionFactories from './useFilterConditionFactories';
 import useViewportFilter from './useViewportFilter';
+import {
+  SEARCH_DEBOUNCE_MS,
+  VIEWPORT_PADDING,
+  VIEWPORT_SIZE,
+} from './Constants';
 
 const { asMock, createMockProxy } = TestUtils;
 
