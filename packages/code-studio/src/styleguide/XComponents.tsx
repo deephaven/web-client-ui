@@ -5,6 +5,7 @@ import {
   Button,
 } from '@deephaven/components';
 import { sampleSectionIdAndClasses } from './utils';
+import SampleSection from './SampleSection';
 
 type FooComponentProps = { value: string };
 
@@ -51,8 +52,7 @@ export function XComponents(): JSX.Element {
   const [value, setValue] = useState('hello');
 
   return (
-    // eslint-disable-next-line react/jsx-props-no-spreading
-    <div {...sampleSectionIdAndClasses('xcomponents')}>
+    <SampleSection name="xcomponents">
       <h2 className="ui-title">XComponents</h2>
       <p>
         XComponents are a way to replace a component with another component
@@ -117,7 +117,7 @@ export function XComponents(): JSX.Element {
           </div>
         </div>
       </div>
-    </div>
+    </SampleSection>
   );
 }
 
