@@ -334,7 +334,7 @@ class IrisGridPartitionSelector extends Component<
             tooltip="View all partitions as one merged table"
             icon={<FontAwesomeIcon icon={vsMerge} rotation={90} />}
             active={partitionConfig.mode === 'merged'}
-            disabled={isLoading || model.rowCount === 0}
+            disabled={isLoading || partitionConfig.mode === 'empty'}
           >
             {model.isPartitionAwareSourceTable ? 'Coalesce' : 'Merge'}
           </Button>
