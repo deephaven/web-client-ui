@@ -1,4 +1,22 @@
-import { ValueOf } from './TypeUtils';
+import { RequireOnly, ValueOf } from './TypeUtils';
+
+describe('RequireOnly', () => {
+  it('should require only the specified keys', () => {
+    type Person = {
+      firstName: string;
+      lastName: string;
+      age: number;
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const y: RequireOnly<Person, 'firstName' | 'lastName'> = {
+      firstName: 'John',
+      lastName: 'Doe',
+    };
+
+    // No assertion since this is a types only test
+  });
+});
 
 describe('ValueOf', () => {
   it('should derive the value type', () => {
