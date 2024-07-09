@@ -244,7 +244,7 @@ class LayoutUtils {
    */
   static getStackForRoot(
     root: ContentItem,
-    config: Partial<ItemConfig> & { component?: string },
+    config: Partial<ItemConfig>,
     createIfNecessary = true,
     matchComponentType = true,
     allowEmptyStack = true
@@ -253,7 +253,7 @@ class LayoutUtils {
     if (!stack && matchComponentType) {
       stack = this.getStackForConfig(
         root,
-        { component: config.component },
+        { component: (config as { component?: string }).component },
         allowEmptyStack
       );
     }
