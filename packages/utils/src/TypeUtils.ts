@@ -39,20 +39,6 @@ export type OnlyOneProp<T> = {
 }[keyof T];
 
 /**
- * Require only a subset of properties from a type. Remaining properties will be
- * marked as optional.
- *
- * e.g.
- * RequireOnly<{
- *   firstName: string;
- *   lastName: string;
- *   age: number;
- * }, 'firstName' | 'lastName'> // { firstName: string; lastName: string; age?: number; }
- */
-export type RequireOnly<T, K extends keyof T> = Partial<T> &
-  Required<Pick<T, K>>;
-
-/**
  * Tuple type.
  * @param T Type of the items in the tuple
  * @param N Length of the tuple
