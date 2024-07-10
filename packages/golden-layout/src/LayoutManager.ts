@@ -4,6 +4,8 @@ import lm from './base';
 import {
   ColumnItemConfig,
   defaultConfig,
+  DefaultItemConfig,
+  RootItemConfig,
   RowItemConfig,
   StackItemConfig,
 } from './config';
@@ -500,13 +502,12 @@ export class LayoutManager extends EventEmitter {
    *
    * @returns Created item
    */
-  createContentItem(config: StackItemConfig, parent: RowOrColumn): Stack;
   createContentItem(
-    config: ColumnItemConfig,
+    config: StackItemConfig,
     parent: AbstractContentItem
-  ): RowOrColumn;
+  ): Stack;
   createContentItem(
-    config: RowItemConfig,
+    config: RowItemConfig | ColumnItemConfig,
     parent: AbstractContentItem
   ): RowOrColumn;
   createContentItem(
@@ -568,15 +569,7 @@ export class LayoutManager extends EventEmitter {
     config.id = config.id ?? getUniqueId();
 
     if (config.type === 'stack') {
-      if (parent == null) {
-        throw new Error(
-          'Stacks can only be created as children of a row or column'
-        );
-      }
-
-      // The type narrowing isn't able to infer `parent` if of type `RowOrColumn`,
-      // but the type signature of `createContentItem` should enforce this.
-      return new Stack(this, config, parent as RowOrColumn);
+      return new Stack(this, config, parent);
     }
 
     if (config.type === 'row') {

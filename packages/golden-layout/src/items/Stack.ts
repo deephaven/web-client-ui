@@ -7,7 +7,7 @@ import type {
   StackItemHeaderConfig,
 } from '../config';
 import { Header } from '../controls';
-import type RowOrColumn from './RowOrColumn';
+import RowOrColumn from './RowOrColumn';
 
 interface HoverDimensions {
   hoverArea: {
@@ -42,11 +42,10 @@ export default class Stack extends AbstractContentItem {
 
   childElementContainer = $('<div class="lm_items"></div>');
   header: Header;
-  parent: RowOrColumn;
+  parent: AbstractContentItem | null;
 
   isStack = true;
 
-  private _dropZones = {};
   private _dropSegment: string | null = null;
   _contentAreaDimensions: ContentAreaDimensions | null = null;
   private _dropIndex: number | undefined;
@@ -62,7 +61,7 @@ export default class Stack extends AbstractContentItem {
       };
     },
     config: StackItemConfig,
-    parent: RowOrColumn
+    parent: AbstractContentItem | null
   ) {
     super(
       layoutManager,
@@ -267,8 +266,9 @@ export default class Stack extends AbstractContentItem {
     const insertBefore =
       this._dropSegment === 'top' || this._dropSegment === 'left';
     const hasCorrectParent =
-      (isVertical && this.parent.isColumn) ||
-      (isHorizontal && this.parent.isRow);
+      this.parent instanceof RowOrColumn &&
+      ((isVertical && this.parent.isColumn) ||
+        (isHorizontal && this.parent.isRow));
     const type = isVertical ? 'column' : 'row';
     const dimension = isVertical ? 'height' : 'width';
 
@@ -293,21 +293,24 @@ export default class Stack extends AbstractContentItem {
      * layd out in the correct way. Just add it as a child
      */
     if (hasCorrectParent) {
-      const index = this.parent.contentItems.indexOf(this);
-      this.parent.addChild(contentItem, insertBefore ? index : index + 1, true);
+      const index = this.parent!.contentItems.indexOf(this);
+
+      // Should be a `RowOrColumn` if `hasCorrectParent` is true
+      (this.parent as RowOrColumn).addChild(
+        contentItem,
+        insertBefore ? index : index + 1,
+        true
+      );
       this.config[dimension] = (this.config[dimension] ?? 0) * 0.5;
       contentItem.config[dimension] = this.config[dimension];
-      this.parent.callDownwards('setSize');
+      this.parent!.callDownwards('setSize');
       /*
        * This handles items that are dropped on top or bottom of a row or left / right of a column. We need
        * to create the appropriate contentItem for them to live in
        */
     } else {
-      const rowOrColumn = this.layoutManager.createContentItem(
-        { type: type },
-        this
-      ) as RowOrColumn;
-      this.parent.replaceChild(this, rowOrColumn);
+      const rowOrColumn = this.layoutManager.createContentItem({ type }, this);
+      this.parent?.replaceChild(this, rowOrColumn);
 
       rowOrColumn.addChild(contentItem, insertBefore ? 0 : undefined, true);
       rowOrColumn.addChild(this, insertBefore ? undefined : 0, true);
