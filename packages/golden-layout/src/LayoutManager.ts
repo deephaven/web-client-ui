@@ -580,18 +580,10 @@ export class LayoutManager extends EventEmitter {
     }
 
     if (config.type === 'row') {
-      if (parent == null) {
-        throw new Error('Rows require a parent');
-      }
-
       return new RowOrColumn(false, this, config, parent);
     }
 
     if (config.type === 'column') {
-      if (parent == null) {
-        throw new Error('Columns require a parent');
-      }
-
       return new RowOrColumn(true, this, config, parent);
     }
 

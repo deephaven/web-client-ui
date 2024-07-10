@@ -9,7 +9,7 @@ export default class RowOrColumn extends AbstractContentItem {
   isRow: boolean;
   isColumn: boolean;
   childElementContainer: JQuery<HTMLElement>;
-  parent: AbstractContentItem;
+  parent: AbstractContentItem | null;
 
   private _splitter: Splitter[] = [];
   private _splitterSize: number;
@@ -24,19 +24,19 @@ export default class RowOrColumn extends AbstractContentItem {
     isColumn: true,
     layoutManager: LayoutManager,
     config: ColumnItemConfig,
-    parent: AbstractContentItem
+    parent: AbstractContentItem | null
   );
   constructor(
     isColumn: false,
     layoutManager: LayoutManager,
     config: RowItemConfig,
-    parent: AbstractContentItem
+    parent: AbstractContentItem | null
   );
   constructor(
     isColumn: boolean,
     layoutManager: LayoutManager,
     config: ColumnItemConfig | RowItemConfig,
-    parent: AbstractContentItem
+    parent: AbstractContentItem | null
   ) {
     super(
       layoutManager,
@@ -169,7 +169,7 @@ export default class RowOrColumn extends AbstractContentItem {
     if (this.contentItems.length === 1 && this.config.isClosable === true) {
       childItem = this.contentItems[0];
       this.contentItems = [];
-      this.parent.replaceChild(this, childItem, true);
+      this.parent?.replaceChild(this, childItem, true);
     } else {
       this.callDownwards('setSize');
       this.emitBubblingEvent('stateChanged');
