@@ -1,4 +1,3 @@
-import { DragEvent } from 'react';
 import deepEqual from 'fast-deep-equal';
 import { nanoid } from 'nanoid';
 import isMatch from 'lodash.ismatch';
@@ -524,7 +523,7 @@ class LayoutUtils {
     replaceConfig?: Partial<ItemConfig>;
     createNewStack?: boolean;
     focusElement?: string;
-    dragEvent?: DragEvent;
+    dragEvent?: MouseEvent;
   } = {}): void {
     // attempt to retain focus after dom manipulation, which can break focus
     const maintainFocusElement = document.activeElement;

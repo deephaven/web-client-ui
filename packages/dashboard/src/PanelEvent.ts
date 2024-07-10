@@ -1,4 +1,4 @@
-import { DragEvent } from 'react';
+import { makeEventFunctions } from '@deephaven/golden-layout';
 
 export type WidgetDescriptor = {
   type: string;
@@ -7,16 +7,26 @@ export type WidgetDescriptor = {
 };
 
 export type PanelOpenEventDetail<T = unknown> = {
-  dragEvent?: DragEvent;
-  fetch?: () => Promise<T>;
+  /** Opening the widget was triggered by dragging from a list. The coordinates are used as the starting location for the drag.  */
+  dragEvent?: MouseEvent;
+
+  /** ID of this panel to use */
   panelId?: string;
+
+  /** Descriptor of the widget. */
   widget: WidgetDescriptor;
+
+  /**
+   * Function to fetch the instance of the widget
+   * @deprecated Use `useWidget` hook with the `widget` descriptor instead
+   */
+  fetch?: () => Promise<T>;
 };
 
 /**
  * Events emitted by panels and to control panels
  */
-export default Object.freeze({
+export const PanelEvent = Object.freeze({
   // Panel has received focus
   FOCUS: 'PanelEvent.FOCUS',
 
@@ -58,3 +68,13 @@ export default Object.freeze({
   // Panel is dropped
   DROPPED: 'PanelEvent.DROPPED',
 });
+
+export const {
+  listen: listenForPanelOpen,
+  emit: emitPanelOpen,
+  useListener: usePanelOpenListener,
+} = makeEventFunctions<PanelOpenEventDetail>(PanelEvent.OPEN);
+
+// TODO: Add the rest of the event functions here. Need to create the correct types for all of them.
+
+export default PanelEvent;
