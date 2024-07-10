@@ -54,7 +54,7 @@ export type PanelComponentType<
   C extends ComponentType<P> = ComponentType<P>,
 > = (ComponentType<P> | WrappedComponentType<P, C>) & PanelStaticMetaData;
 
-export type PanelMetadata = Partial<WidgetDescriptor>;
+export type PanelMetadata = WidgetDescriptor;
 
 export type PanelProps = GLPanelProps & {
   metadata?: PanelMetadata;

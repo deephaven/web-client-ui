@@ -27,12 +27,12 @@ import {
 import Log from '@deephaven/log';
 import { useDashboardPlugins } from '@deephaven/plugin';
 import {
-  PanelEvent,
   getAllDashboardsData,
   listenForCreateDashboard,
   CreateDashboardPayload,
   setDashboardPluginData,
   stopListenForCreateDashboard,
+  emitPanelOpen,
 } from '@deephaven/dashboard';
 import {
   getVariableDescriptor,
@@ -190,7 +190,7 @@ function App(): JSX.Element {
     }
 
     setHasEmittedWidget(true);
-    goldenLayout.eventHub.emit(PanelEvent.OPEN, {
+    emitPanelOpen(goldenLayout.eventHub, {
       fetch,
       widget: getVariableDescriptor(definition),
     });
