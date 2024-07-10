@@ -504,24 +504,31 @@ export class LayoutManager extends EventEmitter {
    */
   createContentItem(
     config: StackItemConfig,
-    parent: AbstractContentItem
+    parent: AbstractContentItem | null
   ): Stack;
   createContentItem(
-    config: RowItemConfig | ColumnItemConfig,
-    parent: AbstractContentItem
+    config: ColumnItemConfig | RowItemConfig,
+    parent: AbstractContentItem | null
   ): RowOrColumn;
   createContentItem(
     config: ComponentConfig | ReactComponentConfig,
     parent: AbstractContentItem | null
   ): Component | Stack;
+  // Default and Root configs will throw an error hence the `never` return type
+  createContentItem(
+    config: DefaultItemConfig | RootItemConfig,
+    parent: AbstractContentItem | null
+  ): never;
+  // This signature is necessary for this function to handle the broader
+  // `ItemConfig` type since it won't be able to narrow the result in such cases.
   createContentItem(
     config: ItemConfig,
     parent: AbstractContentItem | null
-  ): RowOrColumn | Stack | Component;
+  ): Component | RowOrColumn | Stack;
   createContentItem(
     config: ItemConfig,
     parent: AbstractContentItem | null
-  ): RowOrColumn | Stack | Component {
+  ): Component | RowOrColumn | Stack {
     var typeErrorMsg, contentItem;
 
     if (typeof config.type !== 'string') {
