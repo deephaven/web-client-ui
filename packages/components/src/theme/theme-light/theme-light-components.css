@@ -162,4 +162,7 @@
     var(--dh-color-visual-gray) 5%,
     transparent
   );
+
+  /* Switch */
+  --dh-toggle-switch-bg: var(--dh-color-gray-500);
 }
