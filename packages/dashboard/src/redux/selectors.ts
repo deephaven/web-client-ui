@@ -1,9 +1,17 @@
 import {
+  AppStore,
   DashboardData,
   PluginData,
   PluginDataMap,
+  RootDispatch,
   RootState,
 } from '@deephaven/redux';
+import {
+  TypedUseSelectorHook,
+  useDispatch,
+  useSelector,
+  useStore,
+} from 'react-redux';
 import { ClosedPanels, OpenedPanelMap } from '../PanelManager';
 
 const EMPTY_MAP = new Map();
@@ -13,6 +21,13 @@ const EMPTY_OBJECT = Object.freeze({});
 const EMPTY_ARRAY = Object.freeze([]);
 
 type Selector<R> = (state: RootState) => R;
+
+// https://react-redux.js.org/using-react-redux/usage-with-typescript#define-typed-hooks
+// Defined in @deephaven/dashboard, as that's the most common package with React and @deephaven/redux as dependencies
+// We could have another package specifically for this, but it's not really necessary.
+export const useAppDispatch: () => RootDispatch = useDispatch;
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+export const useAppStore: () => AppStore = useStore;
 
 /**
  * Retrieve the data for all dashboards

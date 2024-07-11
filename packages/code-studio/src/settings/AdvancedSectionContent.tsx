@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import {
   Content,
   ContextualHelp,
@@ -7,17 +7,13 @@ import {
   Switch,
   Text,
 } from '@deephaven/components';
-import {
-  getWebGL,
-  getWebGLEditable,
-  RootState,
-  updateSettings,
-} from '@deephaven/redux';
+import { getWebGL, getWebGLEditable, updateSettings } from '@deephaven/redux';
+import { useAppSelector } from '@deephaven/dashboard';
 
 function AdvancedSectionContent(): JSX.Element {
   const dispatch = useDispatch();
-  const webgl = useSelector<RootState>(getWebGL) as boolean;
-  const webglEditable = useSelector<RootState>(getWebGLEditable) as boolean;
+  const webgl = useAppSelector(getWebGL);
+  const webglEditable = useAppSelector(getWebGLEditable);
 
   const handleWebglChange = useCallback(
     newValue => {

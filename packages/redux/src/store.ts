@@ -140,6 +140,8 @@ reducerRegistry.setListener(newReducers => {
   store.replaceReducer(combineReducers(newReducers));
 });
 
-export default store;
+export type AppStore = typeof store;
 
 export type RootDispatch = typeof store.dispatch;
+
+export default store;

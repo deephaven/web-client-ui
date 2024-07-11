@@ -114,5 +114,5 @@ label[class*='spectrum-Radio'] {
 
 span[class*='spectrum-ToggleSwitch-switch'] {
   /* increase contrast of switch in off position */
-  background: var(--dh-color-gray-500);
+  background: var(--dh-toggle-switch-bg);
 }

@@ -199,4 +199,7 @@
 
   /* Editing */
   --dh-color-modified: var(--dh-color-yellow-1300);
+
+  /* Components */
+  --dh-toggle-switch-bg: var(--dh-color-gray-500);
 }

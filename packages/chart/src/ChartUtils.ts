@@ -686,7 +686,7 @@ class ChartUtils {
   getPlotlyChartType(
     plotStyle: DhType.plot.SeriesPlotStyle,
     isBusinessTime: boolean,
-    allowWebGL: boolean
+    allowWebGL = true
   ): PlotType | undefined {
     const { dh } = this;
     switch (plotStyle) {
@@ -1026,7 +1026,7 @@ class ChartUtils {
   getChartType(
     plotStyle: DhType.plot.SeriesPlotStyle,
     isBusinessTime: boolean,
-    allowWebGL: boolean
+    allowWebGL = true
   ): PlotType | undefined {
     const { dh } = this;
     switch (plotStyle) {
