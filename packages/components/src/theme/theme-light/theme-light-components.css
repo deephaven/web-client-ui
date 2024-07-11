@@ -164,5 +164,5 @@
   );
 
   /* Switch */
-  --dh-toggle-switch-bg: var(--dh-color-gray-500);
+  --dh-toggle-switch-bg: var(--dh-color-gray-400);
 }
