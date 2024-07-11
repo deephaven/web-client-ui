@@ -105,11 +105,11 @@ class LayoutUtils {
    * @returns The newly created stack.
    */
   static addStack(parent: ContentItem, columnPreferred = true): Stack {
-    const rowOrColConfig: ItemConfig = {
-      type: columnPreferred ? 'column' : 'row',
-    };
-
     if (isRoot(parent)) {
+      const rowOrColConfig: ItemConfig = {
+        type: columnPreferred ? 'column' : 'row',
+      };
+
       if (parent.contentItems == null || parent.contentItems.length === 0) {
         parent.addChild(rowOrColConfig);
       }

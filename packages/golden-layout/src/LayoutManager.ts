@@ -50,13 +50,30 @@ export type ComponentConstructor<
   new (container: ItemContainer<C>, state: unknown): unknown;
 };
 
-type ItemConfigSupported =
+/**
+ * Item configuration types that are supported inside of `createContentItem` to
+ * create content items. Note that `ReactComponentConfig` is a valid input type,
+ * but it gets converted to `ComponentConfig` inside the method before this
+ * constraint comes into play.
+ */
+type LayoutItemConfig =
   | ColumnItemConfig
   | RowItemConfig
   | StackItemConfig
   | ComponentConfig;
 
-const SUPPORTED_ITEM_TYPES = ['column', 'row', 'stack', 'component'] as const;
+/**
+ * Item configuration `type` values that are supported inside of
+ * `createContentItem` to create content items. Note that `react-component`
+ * is a valid input value, but it gets converted to `component` inside the
+ * method before this constraint comes into play.
+ */
+const LAYOUT_ITEM_CONFIG_TYPES = [
+  'column',
+  'row',
+  'stack',
+  'component',
+] as const satisfies Readonly<LayoutItemConfig['type'][]>;
 
 /**
  * The main class that will be exposed as GoldenLayout.
@@ -71,12 +88,13 @@ export class LayoutManager extends EventEmitter {
   static __lm = lm;
 
   /**
-   * Returns true if given config item config type is supported.
+   * Returns true if the given item config can be used to create a layout item.
+   * (Used internally by `createContentItem`).
    */
-  static isSupportedItemConfig(
-    config: ItemConfig
-  ): config is ItemConfigSupported {
-    return (SUPPORTED_ITEM_TYPES as Readonly<string[]>).includes(config.type);
+  static isLayoutItemConfig(config: ItemConfig): config is LayoutItemConfig {
+    return (LAYOUT_ITEM_CONFIG_TYPES as Readonly<string[]>).includes(
+      config.type
+    );
   }
 
   /**
@@ -541,13 +559,13 @@ export class LayoutManager extends EventEmitter {
         'lm-react-component';
     }
 
-    if (!LayoutManager.isSupportedItemConfig(config)) {
+    if (!LayoutManager.isLayoutItemConfig(config)) {
       typeErrorMsg =
         "Unknown type '" +
         config.type +
         "'. " +
         'Valid types are ' +
-        SUPPORTED_ITEM_TYPES.join(',');
+        LAYOUT_ITEM_CONFIG_TYPES.join(',');
 
       throw new ConfigurationError(typeErrorMsg);
     }

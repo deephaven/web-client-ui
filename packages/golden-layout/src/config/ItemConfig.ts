@@ -1,3 +1,6 @@
+/** @deprecated Use `ItemConfig` instead. */
+export type ItemConfigType = ItemConfig;
+
 export type ItemConfig =
   | ColumnItemConfig
   | ComponentConfig
