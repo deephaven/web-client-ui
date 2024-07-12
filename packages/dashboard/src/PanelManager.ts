@@ -3,7 +3,7 @@ import GoldenLayout from '@deephaven/golden-layout';
 import type {
   Container,
   ContentItem,
-  ItemConfigType,
+  ItemConfig,
   ReactComponentConfig,
 } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
@@ -139,7 +139,7 @@ class PanelManager {
     return Array.from(this.openedMap.values());
   }
 
-  getOpenedPanelConfigs(): (ItemConfigType | null)[] {
+  getOpenedPanelConfigs(): (ItemConfig | null)[] {
     return this.getOpenedPanels().map(panel => {
       const { glContainer } = panel.props;
       return LayoutUtils.getComponentConfigFromContainer(glContainer);
@@ -278,7 +278,7 @@ class PanelManager {
    */
   handleReopen(
     panelConfig: ClosedPanel,
-    replaceConfig?: Partial<ItemConfigType>
+    replaceConfig?: Partial<ItemConfig>
   ): void {
     log.debug2('Reopen:', panelConfig, replaceConfig);
 
