@@ -1789,9 +1789,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const { advancedFilters, quickFilters, partitionConfig } = this.state;
     const { columns, formatter } = model;
 
-    if (advancedFilters.size === 0 && quickFilters.size === 0) {
-      return;
-    }
+    // if (advancedFilters.size === 0 && quickFilters.size === 0) {
+    //   return;
+    // }
 
     const newAdvancedFilters = new Map();
     const newQuickFilters = new Map();
