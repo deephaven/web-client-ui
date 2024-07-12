@@ -1789,6 +1789,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const { advancedFilters, quickFilters, partitionConfig } = this.state;
     const { columns, formatter } = model;
 
+    if (advancedFilters.size === 0 && quickFilters.size === 0) {
+      return;
+    }
+
     const newAdvancedFilters = new Map();
     const newQuickFilters = new Map();
 
@@ -4498,7 +4502,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           const xFilterBar = gridX + columnX + columnWidth - 20;
           const style: CSSProperties = isFilterBarShown
             ? {
-                position: 'ßabsolute',
+                position: 'absolute',
                 top: columnHeaderHeight,
                 left: xFilterBar,
                 width: 20,
