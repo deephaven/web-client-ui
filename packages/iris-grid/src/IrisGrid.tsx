@@ -4262,7 +4262,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       gotoValueSelectedFilter,
       partitionConfig,
     } = this.state;
-    if (!isReady) {
+    if (!isReady || partitionConfig?.mode === 'empty') {
       return null;
     }
 
@@ -4362,12 +4362,12 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
 
     let loadingElement = null;
-    if (loadingText != null && partitionConfig != null) {
+    if (loadingText != null) {
       const loadingStatus = (
         <div className="iris-grid-loading-status">
           <div
             className={classNames('iris-grid-loading-status-bar', {
-              show: loadingSpinnerShown || partitionConfig.mode === 'loading',
+              show: loadingSpinnerShown,
             })}
           >
             {loadingText}

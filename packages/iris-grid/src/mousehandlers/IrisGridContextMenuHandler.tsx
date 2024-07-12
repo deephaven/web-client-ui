@@ -505,7 +505,11 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
       },
     });
 
-    if (isPartitionedGridModel(model) && !model.isPartitionAwareSourceTable) {
+    if (
+      isPartitionedGridModel(model) &&
+      !model.isPartitionAwareSourceTable &&
+      model.isPartitionRequired
+    ) {
       actions.push({
         title: 'View Constituent Table',
         group: IrisGridContextMenuHandler.GROUP_VIEW_CONTENTS,
