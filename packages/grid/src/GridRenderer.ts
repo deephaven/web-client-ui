@@ -1106,12 +1106,12 @@ export class GridRenderer {
               treeHorizontalPadding
           ) + 0.5;
         context.moveTo(lineX, rowY);
-        context.lineTo(lineX, rowY + Math.ceil(rowHeight / 2));
+        context.lineTo(lineX, rowY + Math.floor(rowHeight / 2));
         // extra moveTo prevents halfpixel in corner
-        context.moveTo(lineX - 0.5, rowY + Math.ceil(rowHeight / 2) + 0.5);
+        context.moveTo(lineX - 0.5, rowY + Math.floor(rowHeight / 2) + 0.5);
         context.lineTo(
           lineX + treeDepthIndent - 0.5,
-          rowY + Math.ceil(rowHeight / 2) + 0.5
+          rowY + Math.floor(rowHeight / 2) + 0.5
         );
       }
       context.stroke();
