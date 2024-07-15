@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import type { ComponentConfig, ItemConfigType, ItemConfig } from '../config';
+import type { ComponentConfig, ItemConfig } from '../config';
 import LayoutManager from '../LayoutManager';
 import AbstractContentItem, {
   isComponent,
@@ -14,7 +14,7 @@ export default class Root extends AbstractContentItem {
 
   constructor(
     layoutManager: LayoutManager,
-    config: ComponentConfig | { content: ItemConfigType[] },
+    config: ComponentConfig | { content: ItemConfig[] },
     containerElement: JQuery<HTMLElement>
   ) {
     super(
@@ -30,13 +30,7 @@ export default class Root extends AbstractContentItem {
     this._containerElement.append(this.element);
   }
 
-  addChild(
-    contentItem:
-      | AbstractContentItem
-      | ItemConfigType
-      | { type: ItemConfig['type'] },
-    index?: number
-  ) {
+  addChild(contentItem: AbstractContentItem | ItemConfig, index?: number) {
     if (this.contentItems.length > 0) {
       throw new Error('Root node can only have a single child');
     }

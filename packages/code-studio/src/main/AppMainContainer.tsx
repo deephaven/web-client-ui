@@ -77,7 +77,7 @@ import {
   EMPTY_ARRAY,
 } from '@deephaven/utils';
 import GoldenLayout from '@deephaven/golden-layout';
-import type { ItemConfigType } from '@deephaven/golden-layout';
+import type { ItemConfig } from '@deephaven/golden-layout';
 import { type PluginModuleMap, getDashboardPlugins } from '@deephaven/plugin';
 import {
   AppDashboards,
@@ -755,7 +755,7 @@ export class AppMainContainer extends Component<
 
   getDashboards(): {
     id: string;
-    layoutConfig: ItemConfigType[];
+    layoutConfig: ItemConfig[];
     key?: string;
   }[] {
     const { layoutIteration, tabs } = this.state;
@@ -766,7 +766,7 @@ export class AppMainContainer extends Component<
     return [
       {
         id: DEFAULT_DASHBOARD_ID,
-        layoutConfig: layoutConfig as ItemConfigType[],
+        layoutConfig: layoutConfig as ItemConfig[],
         key: `${DEFAULT_DASHBOARD_ID}-${layoutIteration}`,
       },
       ...tabs
@@ -774,7 +774,7 @@ export class AppMainContainer extends Component<
         .map(tab => ({
           id: tab.key,
           layoutConfig: (allDashboardData[tab.key]?.layoutConfig ??
-            EMPTY_ARRAY) as ItemConfigType[],
+            EMPTY_ARRAY) as ItemConfig[],
           key: `${tab.key}-${layoutIteration}`,
         })),
     ];

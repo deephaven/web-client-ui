@@ -41,16 +41,20 @@ import useChartTheme from './useChartTheme';
 
 const log = Log.module('Chart');
 
-type FormatterSettings = ColumnFormatSettings &
+type ChartSettings = ColumnFormatSettings &
   DateTimeFormatSettings & {
     decimalFormatOptions?: DecimalColumnFormatterOptions;
     integerFormatOptions?: IntegerColumnFormatterOptions;
+    webgl?: boolean;
   };
 
 interface ChartProps {
   model: ChartModel;
   theme: ChartTheme;
-  settings: FormatterSettings;
+
+  /** User settings that are relevant to the chart, e.g. formatter settings */
+  settings: ChartSettings;
+
   isActive: boolean;
   Plotly: typeof Plotly;
   containerRef?: React.RefObject<HTMLDivElement>;
@@ -58,6 +62,8 @@ interface ChartProps {
   onReconnect: () => void;
   onUpdate: (obj: { isLoading: boolean }) => void;
   onError: (error: Error) => void;
+
+  /** Called when the settings for the ChartModel are changed */
   onSettingsChanged: (settings: Partial<ChartModelSettings>) => void;
 }
 
@@ -91,6 +97,7 @@ class Chart extends Component<ChartProps, ChartState> {
       showTimeZone: false,
       showTSeparator: true,
       formatter: [],
+      webgl: true,
     },
     Plotly,
     onDisconnect: (): void => undefined,
@@ -195,7 +202,7 @@ class Chart extends Component<ChartProps, ChartState> {
 
   componentDidUpdate(prevProps: ChartProps): void {
     const { isActive, model, settings, theme } = this.props;
-    this.updateFormatterSettings(settings as FormatterSettings);
+    this.updateFormatterSettings(settings);
 
     if (model !== prevProps.model) {
       this.unsubscribe(prevProps.model);
@@ -238,6 +245,8 @@ class Chart extends Component<ChartProps, ChartState> {
   decimalFormatOptions: DecimalColumnFormatterOptions;
 
   integerFormatOptions: IntegerColumnFormatterOptions;
+
+  webgl?: boolean;
 
   rect?: DOMRect;
 
@@ -612,10 +621,10 @@ class Chart extends Component<ChartProps, ChartState> {
 
   initFormatter(): void {
     const { settings } = this.props;
-    this.updateFormatterSettings(settings as FormatterSettings);
+    this.updateFormatterSettings(settings);
   }
 
-  updateFormatterSettings(settings: FormatterSettings): void {
+  updateFormatterSettings(settings: ChartSettings): void {
     const columnFormats = FormatterUtils.getColumnFormats(settings);
     const dateTimeFormatterOptions =
       FormatterUtils.getDateTimeFormatterOptions(settings);
@@ -633,6 +642,11 @@ class Chart extends Component<ChartProps, ChartState> {
       this.integerFormatOptions = integerFormatOptions;
       this.updateFormatter();
     }
+
+    if (this.webgl !== settings.webgl) {
+      this.webgl = settings.webgl;
+      this.updateRenderOptions();
+    }
   }
 
   updateFormatter(): void {
@@ -645,6 +659,12 @@ class Chart extends Component<ChartProps, ChartState> {
       this.integerFormatOptions
     );
     model.setFormatter(formatter);
+  }
+
+  updateRenderOptions(): void {
+    const { model } = this.props;
+    const renderOptions = { webgl: this.webgl };
+    model.setRenderOptions(renderOptions);
   }
 
   updateDimensions(): void {

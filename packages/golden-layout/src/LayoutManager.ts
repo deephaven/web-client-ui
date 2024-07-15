@@ -1,12 +1,18 @@
 import $ from 'jquery';
 import React from 'react';
 import lm from './base';
-import { defaultConfig } from './config';
+import {
+  ColumnItemConfig,
+  defaultConfig,
+  DefaultItemConfig,
+  RootItemConfig,
+  RowItemConfig,
+  StackItemConfig,
+} from './config';
 import type {
   ItemConfig,
   Config,
   ComponentConfig,
-  ItemConfigType,
   ReactComponentConfig,
 } from './config';
 import type { ItemContainer } from './container';
@@ -45,6 +51,31 @@ export type ComponentConstructor<
 };
 
 /**
+ * Item configuration types that are supported inside of `createContentItem` to
+ * create content items. Note that `ReactComponentConfig` is a valid input type,
+ * but it gets converted to `ComponentConfig` inside the method before this
+ * constraint comes into play.
+ */
+type LayoutItemConfig =
+  | ColumnItemConfig
+  | RowItemConfig
+  | StackItemConfig
+  | ComponentConfig;
+
+/**
+ * Item configuration `type` values that are supported inside of
+ * `createContentItem` to create content items. Note that `react-component`
+ * is a valid input value, but it gets converted to `component` inside the
+ * method before this constraint comes into play.
+ */
+const LAYOUT_ITEM_CONFIG_TYPES = [
+  'column',
+  'row',
+  'stack',
+  'component',
+] as const satisfies Readonly<LayoutItemConfig['type'][]>;
+
+/**
  * The main class that will be exposed as GoldenLayout.
  *
  * @param config
@@ -55,6 +86,16 @@ export class LayoutManager extends EventEmitter {
    * Hook that allows to access private classes
    */
   static __lm = lm;
+
+  /**
+   * Returns true if the given item config can be used to create a layout item.
+   * (Used internally by `createContentItem`).
+   */
+  static isLayoutItemConfig(config: ItemConfig): config is LayoutItemConfig {
+    return (LAYOUT_ITEM_CONFIG_TYPES as Readonly<string[]>).includes(
+      config.type
+    );
+  }
 
   /**
    * Takes a GoldenLayout configuration object and
@@ -119,10 +160,6 @@ export class LayoutManager extends EventEmitter {
   dropTargetIndicator: DropTargetIndicator | null = null;
   tabDropPlaceholder = $('<div class="lm_drop_tab_placeholder"></div>');
 
-  private _typeToItem: {
-    [type: string]: new (...args: any[]) => AbstractContentItem;
-  };
-
   constructor(
     config: Config,
     container: JQuery<HTMLElement> | HTMLElement | undefined
@@ -142,13 +179,6 @@ export class LayoutManager extends EventEmitter {
     if (this.isSubWindow) {
       $('body').css('visibility', 'hidden');
     }
-
-    this._typeToItem = {
-      column: RowOrColumn.bind(this, true),
-      row: RowOrColumn.bind(this, false),
-      stack: Stack,
-      component: Component,
-    };
   }
 
   /**
@@ -237,7 +267,9 @@ export class LayoutManager extends EventEmitter {
      * Content
      */
     const next = function (
-      configNode: ComponentConfig & { [key: string]: unknown },
+      configNode: (ComponentConfig | ReactComponentConfig) & {
+        [key: string]: unknown;
+      },
       item: AbstractContentItem & {
         config: Record<string, unknown>;
       }
@@ -257,7 +289,7 @@ export class LayoutManager extends EventEmitter {
         configNode.content = [];
 
         for (let i = 0; i < item.contentItems.length; i++) {
-          configNode.content[i] = {} as ItemConfigType;
+          configNode.content[i] = {} as ItemConfig;
           next(
             configNode.content[i] as ComponentConfig & Record<string, unknown>,
             item.contentItems[i] as AbstractContentItem & {
@@ -489,9 +521,32 @@ export class LayoutManager extends EventEmitter {
    * @returns Created item
    */
   createContentItem(
-    config: Partial<ComponentConfig> & { type: ItemConfig['type'] },
-    parent?: AbstractContentItem
-  ) {
+    config: StackItemConfig,
+    parent: AbstractContentItem | null
+  ): Stack;
+  createContentItem(
+    config: ColumnItemConfig | RowItemConfig,
+    parent: AbstractContentItem | null
+  ): RowOrColumn;
+  createContentItem(
+    config: ComponentConfig | ReactComponentConfig,
+    parent: AbstractContentItem | null
+  ): Component | Stack;
+  // Default and Root configs will throw an error hence the `never` return type
+  createContentItem(
+    config: DefaultItemConfig | RootItemConfig,
+    parent: AbstractContentItem | null
+  ): never;
+  // This signature is necessary for this function to handle the broader
+  // `ItemConfig` type since it won't be able to narrow the result in such cases.
+  createContentItem(
+    config: ItemConfig,
+    parent: AbstractContentItem | null
+  ): Component | RowOrColumn | Stack;
+  createContentItem(
+    config: ItemConfig,
+    parent: AbstractContentItem | null
+  ): Component | RowOrColumn | Stack {
     var typeErrorMsg, contentItem;
 
     if (typeof config.type !== 'string') {
@@ -499,17 +554,18 @@ export class LayoutManager extends EventEmitter {
     }
 
     if (config.type === 'react-component') {
-      config.type = 'component';
-      config.componentName = 'lm-react-component';
+      (config as unknown as ComponentConfig).type = 'component';
+      (config as unknown as ComponentConfig).componentName =
+        'lm-react-component';
     }
 
-    if (!this._typeToItem[config.type]) {
+    if (!LayoutManager.isLayoutItemConfig(config)) {
       typeErrorMsg =
         "Unknown type '" +
         config.type +
         "'. " +
         'Valid types are ' +
-        Object.keys(this._typeToItem).join(',');
+        LAYOUT_ITEM_CONFIG_TYPES.join(',');
 
       throw new ConfigurationError(typeErrorMsg);
     }
@@ -536,8 +592,20 @@ export class LayoutManager extends EventEmitter {
     }
 
     config.id = config.id ?? getUniqueId();
-    contentItem = new this._typeToItem[config.type](this, config, parent);
-    return contentItem;
+
+    if (config.type === 'stack') {
+      return new Stack(this, config, parent);
+    }
+
+    if (config.type === 'row') {
+      return new RowOrColumn(false, this, config, parent);
+    }
+
+    if (config.type === 'column') {
+      return new RowOrColumn(true, this, config, parent);
+    }
+
+    return new Component(this, config, parent);
   }
 
   /**
@@ -552,16 +620,13 @@ export class LayoutManager extends EventEmitter {
 	 * @returns Created popout
 	 */
   createPopout(
-    configOrContentItem:
-      | ItemConfigType
-      | AbstractContentItem
-      | ItemConfigType[],
+    configOrContentItem: ItemConfig | AbstractContentItem | ItemConfig[],
     dimensions?: { width: number; height: number; left: number; top: number },
     parentId?: string,
     indexInParent?: number
   ): BrowserPopout | undefined {
     let config = configOrContentItem;
-    let configArray: ItemConfigType[] = [];
+    let configArray: ItemConfig[] = [];
     const isItem = configOrContentItem instanceof AbstractContentItem;
     const self = this;
 
@@ -871,8 +936,7 @@ export class LayoutManager extends EventEmitter {
    */
   _$normalizeContentItem(
     contentItemOrConfig:
-      | { type: ItemConfig['type'] }
-      | ItemConfigType
+      | ItemConfig
       | AbstractContentItem
       | (() => AbstractContentItem),
     parent?: AbstractContentItem
@@ -890,7 +954,10 @@ export class LayoutManager extends EventEmitter {
     }
 
     if ($.isPlainObject(contentItemOrConfig) && contentItemOrConfig.type) {
-      var newContentItem = this.createContentItem(contentItemOrConfig, parent);
+      const newContentItem = this.createContentItem(
+        contentItemOrConfig,
+        parent ?? null
+      );
       newContentItem.callDownwards('_$init');
       return newContentItem;
     } else {

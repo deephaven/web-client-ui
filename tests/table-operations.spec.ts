@@ -106,6 +106,14 @@ async function artificialWait(page: Page, tableNumber = 0) {
 
 test.beforeEach(async ({ page }) => {
   await gotoPage(page, '');
+
+  // Fail quickly if console errors are detected
+  page.on('console', msg => {
+    if (msg.type() === 'error') {
+      throw new Error(msg.text());
+    }
+  });
+
   await openTable(page, 'all_types');
 
   const tableOperationsMenu = page.locator(

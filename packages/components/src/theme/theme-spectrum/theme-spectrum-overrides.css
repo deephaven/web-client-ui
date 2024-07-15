@@ -111,3 +111,8 @@ label[class*='spectrum-Radio'] {
     --dh-color-negative-key-focus-bg
   );
 }
+
+span[class*='spectrum-ToggleSwitch-switch'] {
+  /* increase contrast of switch in off position */
+  background: var(--dh-toggle-switch-bg);
+}

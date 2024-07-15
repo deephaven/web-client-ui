@@ -59,6 +59,8 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
       defaultNotebookSettings: {
         isMinimapEnabled: false,
       },
+      webgl: true,
+      webglEditable: true,
     };
     const serverSettings = {
       defaultDateTimeFormat: serverConfigValues?.get('dateTimeFormat'),
@@ -109,6 +111,14 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
               ) as boolean,
             }
           : undefined,
+      webgl: LocalWorkspaceStorage.getBooleanServerConfig(
+        serverConfigValues,
+        'web.webgl'
+      ),
+      webglEditable: LocalWorkspaceStorage.getBooleanServerConfig(
+        serverConfigValues,
+        'web.webgl.editable'
+      ),
     };
 
     const keys = Object.keys(serverSettings) as Array<keyof typeof settings>;

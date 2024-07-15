@@ -1,21 +1,22 @@
 import React, { cloneElement, useCallback, useState } from 'react';
 import {
-  Flex,
-  Item,
-  Picker,
-  ItemKey,
-  Section,
-  Text,
-  PickerNormalized,
   Checkbox,
   ComboBox,
   ComboBoxNormalized,
+  Flex,
+  Item,
+  ItemKey,
+  PICKER_ITEM_HEIGHTS,
+  PICKER_TOP_OFFSET,
+  Picker,
+  PickerNormalized,
+  Section,
+  Text,
 } from '@deephaven/components';
 import { vsPerson } from '@deephaven/icons';
 import { Icon } from '@adobe/react-spectrum';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { getPositionOfSelectedItem } from '@deephaven/react-hooks';
-import { PICKER_ITEM_HEIGHTS, PICKER_TOP_OFFSET } from '@deephaven/utils';
 import { generateItemElements, generateNormalizedItems } from './utils';
 import SampleSection from './SampleSection';
 
@@ -104,8 +105,9 @@ export function Pickers(): JSX.Element {
         {[Picker, ComboBox].map(Component => {
           const label = (suffix: string) =>
             `${Component === Picker ? 'Picker' : 'ComboBox'} (${suffix})`;
+
           return (
-            <Flex key={Component.name} direction="row" gap={14}>
+            <Flex key={Component.displayName} direction="row" gap={14}>
               <Component
                 label={label('Single Child')}
                 tooltip={{ placement: 'bottom-end' }}
