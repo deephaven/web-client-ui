@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.78.5](https://github.com/deephaven/web-client-ui/compare/v0.78.4...v0.78.5) (2024-07-15)
+
+### Bug Fixes
+
+- DH-17199: Filter by value in the tree table context menu always shows null ([#2146](https://github.com/deephaven/web-client-ui/issues/2146)) ([04d3dfe](https://github.com/deephaven/web-client-ui/commit/04d3dfe3ab19f41f4e430537967b82176d3684fd))
+
 ## [0.78.4](https://github.com/deephaven/web-client-ui/compare/v0.78.3...v0.78.4) (2024-07-15)
 
 ### Features
