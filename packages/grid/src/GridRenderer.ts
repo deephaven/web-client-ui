@@ -1082,10 +1082,12 @@ export class GridRenderer {
       context.beginPath();
       for (let i = 0; i < depth - depthDiff; i += 1) {
         const lineX =
-          columnX +
-          i * treeDepthIndent +
-          treeDepthIndent * 0.5 +
-          treeHorizontalPadding;
+          Math.floor(
+            columnX +
+              i * treeDepthIndent +
+              treeDepthIndent * 0.5 +
+              treeHorizontalPadding
+          ) + 0.5; // The 0.5 makes the line crisp https://stackoverflow.com/questions/9311428/draw-single-pixel-line-in-html5-canvas
         context.moveTo(lineX, rowY);
         context.lineTo(lineX, rowY + rowHeight);
       }
@@ -1097,10 +1099,12 @@ export class GridRenderer {
       context.beginPath();
       for (let i = depth - depthDiff; i < depth; i += 1) {
         const lineX =
-          columnX +
-          i * treeDepthIndent +
-          treeDepthIndent * 0.5 +
-          treeHorizontalPadding;
+          Math.floor(
+            columnX +
+              i * treeDepthIndent +
+              treeDepthIndent * 0.5 +
+              treeHorizontalPadding
+          ) + 0.5;
         context.moveTo(lineX, rowY);
         context.lineTo(lineX, rowY + Math.ceil(rowHeight / 2));
         // extra moveTo prevents halfpixel in corner
