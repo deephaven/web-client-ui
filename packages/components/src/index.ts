@@ -54,4 +54,5 @@ export { default as ThemeExport } from './ThemeExport';
 export { default as TimeInput } from './TimeInput';
 export { default as TimeSlider } from './TimeSlider';
 export { default as ToastNotification } from './ToastNotification';
+export * from './UIConstants';
 export { default as UISwitch } from './UISwitch';

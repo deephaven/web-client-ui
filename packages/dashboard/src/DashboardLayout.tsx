@@ -10,7 +10,7 @@ import PropTypes from 'prop-types';
 import GoldenLayout from '@deephaven/golden-layout';
 import type {
   Container,
-  ItemConfigType,
+  ItemConfig,
   ReactComponentConfig,
 } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
@@ -37,7 +37,7 @@ import {
 } from './DashboardPlugin';
 import DashboardPanelWrapper from './DashboardPanelWrapper';
 
-export type DashboardLayoutConfig = ItemConfigType[];
+export type DashboardLayoutConfig = ItemConfig[];
 
 const log = Log.module('DashboardLayout');
 

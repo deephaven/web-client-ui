@@ -1,8 +1,8 @@
 import { ReactElement, ReactNode, useCallback } from 'react';
 import type { SpectrumLabelableProps } from '@react-types/shared';
 import { vsTrash } from '@deephaven/icons';
-import { ACTION_ICON_HEIGHT } from '@deephaven/utils';
 import { ActionButtonDialogTrigger, ConfirmationDialog } from '../dialogs';
+import { ACTION_ICON_HEIGHT } from '../UIConstants';
 
 export interface ConfirmActionButtonProps {
   ariaLabel: string;

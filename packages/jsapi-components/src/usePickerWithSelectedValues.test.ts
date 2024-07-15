@@ -11,12 +11,13 @@ import {
   useDebouncedValue,
   type WindowedListData,
 } from '@deephaven/react-hooks';
-import { KeyedItem, SEARCH_DEBOUNCE_MS, TestUtils } from '@deephaven/utils';
+import { KeyedItem, TestUtils } from '@deephaven/utils';
 import usePickerWithSelectedValues from './usePickerWithSelectedValues';
 import useViewportData, { UseViewportDataResult } from './useViewportData';
 import useViewportFilter from './useViewportFilter';
 import useFilterConditionFactories from './useFilterConditionFactories';
 import useTableUtils from './useTableUtils';
+import { SEARCH_DEBOUNCE_MS } from './Constants';
 
 jest.mock('./useFilterConditionFactories');
 jest.mock('./useTableUtils');

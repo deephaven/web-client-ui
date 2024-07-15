@@ -10,7 +10,7 @@ import {
   useUser,
 } from '@deephaven/app-utils';
 import type GoldenLayout from '@deephaven/golden-layout';
-import type { ItemConfigType } from '@deephaven/golden-layout';
+import type { ItemConfig } from '@deephaven/golden-layout';
 import {
   ContextMenuRoot,
   ErrorBoundary,
@@ -201,10 +201,10 @@ function App(): JSX.Element {
   const dashboardPlugins = useDashboardPlugins();
 
   const layoutConfig = (allDashboardData[dashboardId]?.layoutConfig ??
-    EMPTY_ARRAY) as ItemConfigType[];
+    EMPTY_ARRAY) as ItemConfig[];
 
   const hasMultipleComponents = useMemo(() => {
-    function getComponentCount(config: ItemConfigType[]) {
+    function getComponentCount(config: ItemConfig[]) {
       if (config.length === 0) {
         return 0;
       }

@@ -1,8 +1,11 @@
 import { renderHook } from '@testing-library/react-hooks';
 import { DOMRefValue } from '@react-types/shared';
-import { SPELLCHECK_FALSE_ATTRIBUTE, TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/utils';
 import useSetAttributesCallback from './useSetAttributesCallback';
-import useSpectrumDisableSpellcheckRef from './useSpectrumDisableSpellcheckRef';
+import {
+  SPELLCHECK_FALSE_ATTRIBUTE,
+  useSpectrumDisableSpellcheckRef,
+} from './useSpectrumDisableSpellcheckRef';
 
 jest.mock('./useSetAttributesCallback');
 

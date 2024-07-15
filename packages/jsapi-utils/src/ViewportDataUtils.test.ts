@@ -1,7 +1,8 @@
 import { act } from '@testing-library/react-hooks';
 import { dh } from '@deephaven/jsapi-types';
-import { ITEM_KEY_PREFIX, TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/utils';
 import {
+  ITEM_KEY_PREFIX,
   OnTableUpdatedEvent,
   RowDeserializer,
   ViewportRow,

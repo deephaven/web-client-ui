@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/jsapi-shim",
-  "version": "0.84.0",
+  "version": "0.85.1",
   "description": "Deephaven JSAPI Shim",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -21,7 +21,7 @@
     "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward"
   },
   "dependencies": {
-    "@deephaven/jsapi-types": "1.0.0-dev0.34.0",
+    "@deephaven/jsapi-types": "^1.0.0-dev0.34.0",
     "prop-types": "^15.7.2"
   },
   "files": [

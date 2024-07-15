@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import type { Config, PopoutConfig, ItemConfigType } from '../config';
+import type { Config, PopoutConfig, ItemConfig } from '../config';
 import type Root from '../items/Root';
 import type LayoutManager from '../LayoutManager';
 import { getUniqueId, minifyConfig, EventEmitter } from '../utils';
@@ -31,7 +31,7 @@ type BrowserDimensions = {
 export default class BrowserPopout extends EventEmitter {
   isInitialised = false;
 
-  private _config: ItemConfigType[];
+  private _config: ItemConfig[];
   private _dimensions: BrowserDimensions;
   private _parentId: string;
   private _indexInParent: number;
@@ -41,7 +41,7 @@ export default class BrowserPopout extends EventEmitter {
   private _id = null;
 
   constructor(
-    config: ItemConfigType[],
+    config: ItemConfig[],
     dimensions: BrowserDimensions,
     parentId: string,
     indexInParent: number,
@@ -99,7 +99,7 @@ export default class BrowserPopout extends EventEmitter {
    */
   popIn() {
     let index = this._indexInParent;
-    let childConfig: ItemConfigType | null = null;
+    let childConfig: ItemConfig | null = null;
     let parentItem: AbstractContentItem | null = null;
 
     if (this._parentId) {

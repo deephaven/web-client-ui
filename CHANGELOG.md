@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.2](https://github.com/deephaven/web-client-ui/compare/v0.85.1...v0.85.2) (2024-07-09)
+
+### Bug Fixes
+
+- Fix missing scrim background on LoadingOverlay ([#2098](https://github.com/deephaven/web-client-ui/issues/2098)) ([c9ed895](https://github.com/deephaven/web-client-ui/commit/c9ed895b103ba89b459e413141d38a1f7512dfff))
+
+## [0.85.1](https://github.com/deephaven/web-client-ui/compare/v0.85.0...v0.85.1) (2024-07-08)
+
+### Bug Fixes
+
+- re-export remaining types needed by dh ui from @react-types/shared ([#2132](https://github.com/deephaven/web-client-ui/issues/2132)) ([2119a61](https://github.com/deephaven/web-client-ui/commit/2119a61805fd895adc6b95d53bffb598460c0746))
+
+## [0.85.0](https://github.com/deephaven/web-client-ui/compare/v0.84.0...v0.85.0) (2024-07-04)
+
+### Features
+
+- ComboBox - @deephaven/jsapi-components ([#2077](https://github.com/deephaven/web-client-ui/issues/2077)) ([115e057](https://github.com/deephaven/web-client-ui/commit/115e057114257a186c4a9a006a1958e03b7470c5)), closes [#2074](https://github.com/deephaven/web-client-ui/issues/2074)
+
+### Bug Fixes
+
+- Allow ComboBox to accept the FocusableRef for ref ([#2121](https://github.com/deephaven/web-client-ui/issues/2121)) ([8fe9bad](https://github.com/deephaven/web-client-ui/commit/8fe9bad7889f0fce49ad50415a7cb59d7623a43c))
+- Ref was not being passed through for Picker ([#2122](https://github.com/deephaven/web-client-ui/issues/2122)) ([a11e2ce](https://github.com/deephaven/web-client-ui/commit/a11e2ceaf216d640068562a05fdb156c69481d47))
+
 ## [0.84.0](https://github.com/deephaven/web-client-ui/compare/v0.83.0...v0.84.0) (2024-06-28)
 
 ### ⚠ BREAKING CHANGES

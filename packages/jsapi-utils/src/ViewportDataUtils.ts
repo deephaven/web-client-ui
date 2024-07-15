@@ -2,7 +2,9 @@ import type { Key } from 'react';
 import clamp from 'lodash.clamp';
 import type { dh } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
-import { ITEM_KEY_PREFIX, KeyedItem, ValueOf } from '@deephaven/utils';
+import { KeyedItem, ValueOf } from '@deephaven/utils';
+
+export const ITEM_KEY_PREFIX = 'DH_ITEM_KEY';
 
 export type OnTableUpdatedEvent = CustomEvent<{
   offset: number;
