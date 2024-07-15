@@ -86,3 +86,8 @@ span[class*='spectrum-Radio-label'] {
    */
   margin-top: var(--spectrum-global-dimension-size-85);
 }
+
+span[class*='spectrum-ToggleSwitch-switch'] {
+  /* increase contrast of switch in off position */
+  background: var(--dh-toggle-switch-bg);
+}
