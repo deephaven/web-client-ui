@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.78.4](https://github.com/deephaven/web-client-ui/compare/v0.78.3...v0.78.4) (2024-07-15)
+
+### Features
+
+- Add option to disable WebGL rendering ([#2134](https://github.com/deephaven/web-client-ui/issues/2134)) ([#2143](https://github.com/deephaven/web-client-ui/issues/2143)) ([0d8c6af](https://github.com/deephaven/web-client-ui/commit/0d8c6afbcd935d27c5d6616fca125c9c30ce863a))
+
 ## [0.78.3](https://github.com/deephaven/web-client-ui/compare/v0.78.2...v0.78.3) (2024-07-15)
 
 **Note:** Version bump only for package @deephaven/redux
