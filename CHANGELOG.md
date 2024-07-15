@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.78.3](https://github.com/deephaven/web-client-ui/compare/v0.78.2...v0.78.3) (2024-07-15)
+
+### Bug Fixes
+
+- Console error when opening context menu on tree table ([#2047](https://github.com/deephaven/web-client-ui/issues/2047)) ([#2141](https://github.com/deephaven/web-client-ui/issues/2141)) ([8409a3c](https://github.com/deephaven/web-client-ui/commit/8409a3c15208efb5d6a7ed2bbbe1ad77311861f5))
+- Console error when opening context menu on tree table ([#2047](https://github.com/deephaven/web-client-ui/issues/2047)) ([#2142](https://github.com/deephaven/web-client-ui/issues/2142)) ([dbd6c88](https://github.com/deephaven/web-client-ui/commit/dbd6c887af0707b132cfd2f3e60cb2ad5a375ef3))
+
 ## [0.78.2](https://github.com/deephaven/web-client-ui/compare/v0.78.1...v0.78.2) (2024-06-04)
 
 ### Features

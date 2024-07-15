@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.78.3](https://github.com/deephaven/web-client-ui/compare/v0.78.2...v0.78.3) (2024-07-15)
+
+**Note:** Version bump only for package @deephaven/chart
+
 # [0.78.0](https://github.com/deephaven/web-client-ui/compare/v0.77.0...v0.78.0) (2024-05-16)
 
 **Note:** Version bump only for package @deephaven/chart
