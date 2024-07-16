@@ -15,7 +15,7 @@ const log = Log.module('IrisGridPartitionSelector');
 
 interface IrisGridPartitionSelectorProps {
   model: PartitionedGridModel;
-  partitionConfig: PartitionConfig;
+  partitionConfig?: PartitionConfig;
   onChange: (partitionConfig: PartitionConfig) => void;
 }
 interface IrisGridPartitionSelectorState {
@@ -106,6 +106,7 @@ class IrisGridPartitionSelector extends Component<
     log.debug2('handlePartitionTableClick');
 
     const { partitionConfig } = this.props;
+    assertNotNull(partitionConfig);
 
     const newPartitionConfig = { ...partitionConfig };
     // Toggle between Keys and Partition mode
@@ -118,6 +119,7 @@ class IrisGridPartitionSelector extends Component<
     log.debug2('handleMergeClick');
 
     const { partitionConfig } = this.props;
+    assertNotNull(partitionConfig);
     const newPartitionConfig = { ...partitionConfig };
     // Toggle between Merged and Partition mode
     newPartitionConfig.mode =
@@ -135,6 +137,7 @@ class IrisGridPartitionSelector extends Component<
     selectedValue: unknown
   ): Promise<void> {
     const { partitionConfig: prevConfig } = this.props;
+    assertNotNull(prevConfig);
 
     log.debug('handlePartitionSelect', index, selectedValue, prevConfig);
 
@@ -218,9 +221,12 @@ class IrisGridPartitionSelector extends Component<
    */
   async updatePartitionOptions(): Promise<void> {
     const { model } = this.props;
-    const { keysTable } = this.state;
     const { partitionConfig: prevConfig } = this.props;
+    if (prevConfig == null) {
+      return;
+    }
 
+    const { keysTable } = this.state;
     assertNotNull(keysTable);
 
     const partitionFilters = [...prevConfig.partitions].map((partition, i) => {
@@ -240,6 +246,7 @@ class IrisGridPartitionSelector extends Component<
 
   getPartitionFilters(partitionTables: dh.Table[]): dh.FilterCondition[][] {
     const { model, partitionConfig } = this.props;
+    assertNotNull(partitionConfig);
     const { partitions } = partitionConfig;
     log.debug('getPartitionFilters', partitionConfig);
 
@@ -296,14 +303,14 @@ class IrisGridPartitionSelector extends Component<
             shouldFlip={false}
             keyColumn={partitionTables[index].columns[index].name}
             selectedKey={
-              partitionConfig.mode === 'keys'
-                ? null
-                : (partitionConfig.partitions[index] as ItemKey)
+              partitionConfig?.mode === 'partition'
+                ? (partitionConfig.partitions[index] as ItemKey)
+                : null
             }
             placeholder="Select a key"
             labelColumn={partitionTables[index].columns[index].name}
             onChange={this.getCachedChangeCallback(index)}
-            isDisabled={isLoading || partitionConfig.mode === 'empty'}
+            isDisabled={isLoading || partitionConfig == null}
           />
         )}
         {model.partitionColumns.length - 1 === index || (
@@ -323,8 +330,8 @@ class IrisGridPartitionSelector extends Component<
                 : 'View underlying partition table'
             }
             icon={vsKey}
-            active={partitionConfig.mode === 'keys'}
-            disabled={isLoading || partitionConfig.mode === 'empty'}
+            active={partitionConfig?.mode === 'keys'}
+            disabled={isLoading || partitionConfig == null}
           >
             Partitions
           </Button>
@@ -333,8 +340,8 @@ class IrisGridPartitionSelector extends Component<
             kind="inline"
             tooltip="View all partitions as one merged table"
             icon={<FontAwesomeIcon icon={vsMerge} rotation={90} />}
-            active={partitionConfig.mode === 'merged'}
-            disabled={isLoading || partitionConfig.mode === 'empty'}
+            active={partitionConfig?.mode === 'merged'}
+            disabled={isLoading || partitionConfig == null}
           >
             {model.isPartitionAwareSourceTable ? 'Coalesce' : 'Merge'}
           </Button>

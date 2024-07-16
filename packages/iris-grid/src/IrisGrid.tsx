@@ -1783,15 +1783,16 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    * Rebuilds all the current filters. Necessary if something like the time zone has changed.
    */
   rebuildFilters(): void {
-    log.debug('Rebuilding filters');
-
     const { model } = this.props;
-    const { advancedFilters, quickFilters, partitionConfig } = this.state;
+    const { advancedFilters, quickFilters } = this.state;
     const { columns, formatter } = model;
 
     if (advancedFilters.size === 0 && quickFilters.size === 0) {
+      // No need to rebuild filters if no filters are set
       return;
     }
+
+    log.debug('Rebuilding filters');
 
     const newAdvancedFilters = new Map();
     const newQuickFilters = new Map();
@@ -1818,10 +1819,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         filter: this.makeQuickFilter(column, text, formatter.timeZone),
       });
     });
-    // If partitionConfig is empty, no need to rebuild filters
-    if (partitionConfig?.mode !== 'empty' && newQuickFilters.size > 0) {
-      this.startLoading('Rebuilding filters...', { resetRanges: true });
-    }
+    this.startLoading('Rebuilding filters...', { resetRanges: true });
+
     this.setState({
       quickFilters: newQuickFilters,
       advancedFilters: newAdvancedFilters,
@@ -2032,11 +2031,15 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   async loadPartitionsTable(model: PartitionedGridModel): Promise<void> {
     try {
-      const partitionConfig = await this.getInitialPartitionConfig(model);
-      this.setState(
-        { isSelectingPartition: true, partitionConfig },
-        this.loadTableState
-      );
+      const { partitionConfig } = this.state;
+      if (!partitionConfig) {
+        this.startLoading('Loading partitions...', {
+          loadingCancelShown: false,
+          resetRanges: true,
+        });
+        this.initializePartitionConfig(model);
+      }
+      this.setState({ isSelectingPartition: true }, this.loadTableState);
     } catch (error) {
       if (!PromiseUtils.isCanceled(error)) {
         this.handleTableLoadError(error);
@@ -2045,19 +2048,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   /**
-   * Gets the initial partition config for the currently set model.
-   * Sorts the key table and gets the first key.
-   * If the table is ticking, it will wait for the first tick.
+   * Initialize the partition config to the default partition.
    */
-  async getInitialPartitionConfig(
-    model: PartitionedGridModel
-  ): Promise<PartitionConfig> {
-    const { partitionConfig } = this.state;
-    if (partitionConfig !== undefined) {
-      // User already has a partition selected, just use that
-      return partitionConfig;
-    }
-
+  async initializePartitionConfig(model: PartitionedGridModel): Promise<void> {
     const keyTable = await this.pending.add(
       model.partitionKeysTable(),
       resolved => resolved.close()
@@ -2076,26 +2069,27 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         try {
           const { detail: data } = event;
           if (data.rows.length === 0) {
-            this.setState({
-              partitionConfig: { partitions: [], mode: 'empty' },
-            });
+            // We received an update and the table is still empty. Stop showing the loading spinner so we know
+            this.stopLoading();
             return;
           }
           const row = data.rows[0];
           const values = keyTable.columns.map(column => row.get(column));
           const newPartition: PartitionConfig = {
             partitions: values,
-            mode: model.isPartitionAwareSourceTable ? 'partition' : 'keys',
+            mode: 'partition',
           };
           keyTable.close();
-          this.setState({ partitionConfig: newPartition });
+          this.setState({
+            loadingSpinnerShown: false,
+            partitionConfig: newPartition,
+          });
         } catch (e) {
           keyTable.close();
           log.error('Error getting initial partition config', e);
         }
       }
     );
-    return { partitions: [], mode: 'loading' };
   }
 
   /**
@@ -4262,7 +4256,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       gotoValueSelectedFilter,
       partitionConfig,
     } = this.state;
-    if (!isReady || partitionConfig?.mode === 'loading') {
+    if (!isReady) {
       return null;
     }
 
