@@ -57,6 +57,7 @@ exports[`createDefaultIrisGridTheme should derive the default Iris grid theme 1`
   "headerSeparatorHoverColor": "IrisGridTheme['header-separator-hover-color']",
   "headerSortBarColor": "IrisGridTheme['header-sort-bar-color']",
   "hyperlinkColor": "IrisGridTheme['hyperlink-color']",
+  "iconSize": 16,
   "linkerColumnHoverBackgroundColor": "IrisGridTheme['linker-column-hover-bg']",
   "markerBarColor": "IrisGridTheme['marker-bar-color']",
   "maxColumnWidth": 600,
