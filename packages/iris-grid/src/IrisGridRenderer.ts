@@ -1,6 +1,4 @@
-/* eslint react/destructuring-assignment: "off" */
 /* eslint class-methods-use-this: "off" */
-/* eslint no-param-reassign: "off" */
 import {
   BoundedAxisRange,
   Coordinate,
@@ -69,15 +67,15 @@ export class IrisGridRenderer extends GridRenderer {
 
   protected dataBarCellRenderer = new IrisGridDataBarCellRenderer();
 
-  getSortIcon(sort: dh.Sort | null): Path2D | null {
+  getSortIcon(sort: dh.Sort | null, size: number): Path2D | null {
     if (!sort) {
       return null;
     }
     if (sort.direction === TableUtils.sortDirection.ascending) {
-      return getIcon(ICON_NAMES.SORT_UP);
+      return getIcon(ICON_NAMES.SORT_UP, size);
     }
     if (sort.direction === TableUtils.sortDirection.descending) {
-      return getIcon(ICON_NAMES.SORT_DOWN);
+      return getIcon(ICON_NAMES.SORT_DOWN, size);
     }
     return null;
   }
@@ -135,7 +133,7 @@ export class IrisGridRenderer extends GridRenderer {
     mouseX: Coordinate | null;
     mouseY: Coordinate | null;
     metrics: GridMetrics | undefined;
-    theme: GridThemeType;
+    theme: IrisGridThemeType;
   }): {
     left: Coordinate | null;
     top: Coordinate | null;
@@ -173,6 +171,7 @@ export class IrisGridRenderer extends GridRenderer {
       cellHorizontalPadding,
       overflowButtonColor,
       overflowButtonHoverColor,
+      iconSize,
     } = theme;
 
     context.save();
@@ -191,9 +190,12 @@ export class IrisGridRenderer extends GridRenderer {
     } else if (overflowButtonColor != null) {
       context.fillStyle = overflowButtonColor;
     }
-    const icon = getIcon(ICON_NAMES.CELL_OVERFLOW);
-    if (buttonLeft != null && buttonTop != null) {
-      context.translate(buttonLeft + cellHorizontalPadding, buttonTop + 2);
+    const icon = getIcon(ICON_NAMES.CELL_OVERFLOW, iconSize);
+    if (buttonLeft != null && buttonTop != null && buttonHeight != null) {
+      context.translate(
+        buttonLeft + cellHorizontalPadding,
+        buttonTop + (buttonHeight - iconSize) / 2
+      );
     }
     context.fill(icon);
 
@@ -470,7 +472,8 @@ export class IrisGridRenderer extends GridRenderer {
       fontWidths,
     } = metrics;
 
-    const { headerHorizontalPadding } = theme;
+    const { headerHorizontalPadding, iconSize: themeIconSize } = theme;
+    const iconSize = Math.round(themeIconSize * 0.75); // The vsTriangle icons are a bit bigger than we want
     const columnWidth = getOrThrow(allColumnWidths, index, 0);
     const columnX = getOrThrow(allColumnXs, index) + gridX;
     const modelColumn = modelColumns.get(index);
@@ -491,7 +494,7 @@ export class IrisGridRenderer extends GridRenderer {
       return;
     }
 
-    const icon = this.getSortIcon(sort);
+    const icon = this.getSortIcon(sort, iconSize);
     if (!icon) {
       return;
     }
@@ -506,14 +509,14 @@ export class IrisGridRenderer extends GridRenderer {
     const textWidth = text.length * fontWidth;
     const textRight = gridX + columnX + textWidth + headerHorizontalPadding;
     let { maxX } = bounds;
-    maxX -= headerHorizontalPadding;
-    const defaultX =
-      gridX + columnX + columnWidth - headerHorizontalPadding - 1;
+    maxX -= headerHorizontalPadding; // Right visible edge of the headers
+    // Right edge of the column. The icon has its own horizontal padding
+    const defaultX = gridX + columnX + columnWidth - iconSize;
 
+    // If the text is partially off the screen, put the icon to the right of the text
+    // else put it at the right edge of the column/grid (whichever is smaller)
     const x = textRight > maxX ? textRight + 1 : Math.min(maxX, defaultX);
-    const yOffset =
-      sort.direction === TableUtils.sortDirection.ascending ? -6 : -12;
-    const y = columnHeaderHeight * 0.5 + yOffset;
+    const y = (columnHeaderHeight - iconSize) * 0.5;
 
     context.save();
 
