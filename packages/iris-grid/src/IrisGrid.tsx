@@ -1487,9 +1487,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     return columnIndex != null ? modelColumns.get(columnIndex) : null;
   }
 
-  // the error is switching between row and column being defined
-  // this is because the metrics does not include the value?
-
   getModelRow(rowIndex: GridRangeIndex): ModelIndex | null | undefined {
     const { metrics } = this.state;
     assertNotNull(metrics);
