@@ -7,10 +7,13 @@ export type WidgetDescriptor = {
 };
 
 export type PanelOpenEventDetail<T = unknown> = {
-  /** Opening the widget was triggered by dragging from a list. The coordinates are used as the starting location for the drag.  */
+  /**
+   * Opening the widget was triggered by dragging from a list, such as the Panels dropdown.
+   * The coordinates are used as the starting location for the drag, where we will show the panel until the user drops it in the dashboard.
+   */
   dragEvent?: MouseEvent;
 
-  /** ID of this panel to use */
+  /** ID of the panel to re-use. Will replace any existing panel with this ID. Otherwise a new panel is opened with a randomly generated ID. */
   panelId?: string;
 
   /** Descriptor of the widget. */
@@ -75,6 +78,6 @@ export const {
   useListener: usePanelOpenListener,
 } = makeEventFunctions<PanelOpenEventDetail>(PanelEvent.OPEN);
 
-// TODO: Add the rest of the event functions here. Need to create the correct types for all of them.
+// TODO (#2147): Add the rest of the event functions here. Need to create the correct types for all of them.
 
 export default PanelEvent;
