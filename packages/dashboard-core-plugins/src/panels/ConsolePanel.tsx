@@ -14,6 +14,7 @@ import {
 } from '@deephaven/console';
 import {
   DashboardPanelProps,
+  emitPanelOpen,
   LayoutManagerContext,
   LayoutUtils,
   PanelEvent,
@@ -312,7 +313,7 @@ export class ConsolePanel extends PureComponent<
 
     log.debug('openWidget', openOptions);
 
-    glEventHub.emit(PanelEvent.OPEN, openOptions);
+    emitPanelOpen(glEventHub, openOptions);
   }
 
   addCommand(command: string, focus = true, execute = false): void {

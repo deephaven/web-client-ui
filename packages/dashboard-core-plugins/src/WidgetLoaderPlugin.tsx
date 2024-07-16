@@ -5,12 +5,11 @@ import {
   assertIsDashboardPluginProps,
   DashboardPluginComponentProps,
   DehydratedDashboardPanelProps,
-  PanelEvent,
   PanelOpenEventDetail,
   LayoutUtils,
-  useListener,
   PanelProps,
   canHaveRef,
+  usePanelOpenListener,
 } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import {
@@ -162,7 +161,7 @@ export function WidgetLoaderPlugin(
   /**
    * Listen for panel open events so we know when to open a panel
    */
-  useListener(layout.eventHub, PanelEvent.OPEN, handlePanelOpen);
+  usePanelOpenListener(layout.eventHub, handlePanelOpen);
 
   return null;
 }
