@@ -2173,7 +2173,6 @@ class Grid extends PureComponent<GridProps, GridState> {
       modelColumn = this.getModelColumn(column);
       modelRow = this.getModelRow(row);
     } catch (e) {
-      // eslint-disable-next-line no-console
       return null;
     }
     const inputStyle: CSSProperties | undefined =
