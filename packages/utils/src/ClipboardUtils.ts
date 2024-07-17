@@ -9,8 +9,8 @@ export async function copyToClipboard(text: string): Promise<void> {
     try {
       return await navigator.clipboard.writeText(text);
     } catch {
-      // Ignore error. Fallback to `copyToClipboardExecCommand` same as when
-      // clipboard is not available.
+      // Ignore error. Fallback to `copyToClipboardExecCommand` below
+      // (same as when clipboard is not available).
     }
   }
   copyToClipboardExecCommand(text);
