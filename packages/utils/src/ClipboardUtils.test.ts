@@ -10,7 +10,7 @@ describe('Clipboard', () => {
       Object.assign(navigator, {
         clipboard: {
           // eslint-disable-next-line @typescript-eslint/no-empty-function
-          writeText: () => {},
+          writeText: async () => {},
         },
       });
       jest.spyOn(navigator.clipboard, 'writeText');
@@ -22,7 +22,7 @@ describe('Clipboard', () => {
     it('should call copyToClipboardExecCommand if writeText fails', async () => {
       Object.assign(navigator, {
         clipboard: {
-          writeText: () => {
+          writeText: async () => {
             throw new Error('Could not write text');
           },
         },

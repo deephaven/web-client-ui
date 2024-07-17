@@ -1528,7 +1528,9 @@ class IrisGridTableModelTemplate<
       table = await this.table.copy();
       table.applyFilter([]);
       table.applySort([]);
-      return table.selectDistinct(Array.isArray(columns) ? columns : [columns]);
+      return await table.selectDistinct(
+        Array.isArray(columns) ? columns : [columns]
+      );
     } finally {
       if (table != null) {
         table.close();

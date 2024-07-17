@@ -7,9 +7,9 @@ export async function copyToClipboard(text: string): Promise<void> {
   const { clipboard } = navigator;
   if (clipboard !== undefined) {
     try {
-      return navigator.clipboard.writeText(text);
+      return await navigator.clipboard.writeText(text);
     } catch {
-      return copyToClipboardExecCommand(text);
+      // Ignore error
     }
   }
   copyToClipboardExecCommand(text);
