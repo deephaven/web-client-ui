@@ -729,7 +729,7 @@ export class IrisGridPanel extends PureComponent<
     this.setState(
       () => null,
       () => {
-        const { glEventHub, inputFilters } = this.props;
+        const { glEventHub, inputFilters, metadata } = this.props;
         const table = this.getTableName();
         const { panelState } = this.state;
         const sourcePanelId = LayoutUtils.getIdFromPanel(this);
@@ -743,6 +743,7 @@ export class IrisGridPanel extends PureComponent<
         }
         glEventHub.emit(IrisGridEvent.CREATE_CHART, {
           metadata: {
+            ...metadata,
             settings,
             sourcePanelId,
             table,
