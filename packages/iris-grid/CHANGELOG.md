@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.86.0](https://github.com/deephaven/web-client-ui/compare/v0.85.2...v0.86.0) (2024-07-17)
+
+### Features
+
+- IrisGridTheme iconSize ([#2123](https://github.com/deephaven/web-client-ui/issues/2123)) ([58ee88d](https://github.com/deephaven/web-client-ui/commit/58ee88dc92bfe9a283ebc789c93f23639a954ba3)), closes [#885](https://github.com/deephaven/web-client-ui/issues/885)
+- Partitioned Table UI Enhancements ([#2110](https://github.com/deephaven/web-client-ui/issues/2110)) ([de5ce40](https://github.com/deephaven/web-client-ui/commit/de5ce405dde8d62777f7a17201e121b22fe26fdb)), closes [#2079](https://github.com/deephaven/web-client-ui/issues/2079) [#2066](https://github.com/deephaven/web-client-ui/issues/2066) [#2103](https://github.com/deephaven/web-client-ui/issues/2103) [#2104](https://github.com/deephaven/web-client-ui/issues/2104) [#2105](https://github.com/deephaven/web-client-ui/issues/2105) [#2106](https://github.com/deephaven/web-client-ui/issues/2106) [#2107](https://github.com/deephaven/web-client-ui/issues/2107) [#2108](https://github.com/deephaven/web-client-ui/issues/2108) [#2109](https://github.com/deephaven/web-client-ui/issues/2109) [#2049](https://github.com/deephaven/web-client-ui/issues/2049) [#2120](https://github.com/deephaven/web-client-ui/issues/2120) [#1904](https://github.com/deephaven/web-client-ui/issues/1904)
+
 ## [0.85.2](https://github.com/deephaven/web-client-ui/compare/v0.85.1...v0.85.2) (2024-07-09)
 
 **Note:** Version bump only for package @deephaven/iris-grid

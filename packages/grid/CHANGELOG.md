@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.86.0](https://github.com/deephaven/web-client-ui/compare/v0.85.2...v0.86.0) (2024-07-17)
+
+### Features
+
+- IrisGridTheme iconSize ([#2123](https://github.com/deephaven/web-client-ui/issues/2123)) ([58ee88d](https://github.com/deephaven/web-client-ui/commit/58ee88dc92bfe9a283ebc789c93f23639a954ba3)), closes [#885](https://github.com/deephaven/web-client-ui/issues/885)
+
+### Bug Fixes
+
+- error when edited cell is out of grid viewport ([#2148](https://github.com/deephaven/web-client-ui/issues/2148)) ([3fccd43](https://github.com/deephaven/web-client-ui/commit/3fccd4331526516d443086acd809942ecb2e497d)), closes [#2087](https://github.com/deephaven/web-client-ui/issues/2087)
+
 ## [0.85.2](https://github.com/deephaven/web-client-ui/compare/v0.85.1...v0.85.2) (2024-07-09)
 
 **Note:** Version bump only for package @deephaven/grid

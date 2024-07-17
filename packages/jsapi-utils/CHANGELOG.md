@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.86.0](https://github.com/deephaven/web-client-ui/compare/v0.85.2...v0.86.0) (2024-07-17)
+
+### Features
+
+- Add option to disable WebGL rendering ([#2134](https://github.com/deephaven/web-client-ui/issues/2134)) ([011eb33](https://github.com/deephaven/web-client-ui/commit/011eb33b067412ffb6362237c9f6dc7256476bcd))
+
 ## [0.85.2](https://github.com/deephaven/web-client-ui/compare/v0.85.1...v0.85.2) (2024-07-09)
 
 **Note:** Version bump only for package @deephaven/jsapi-utils
