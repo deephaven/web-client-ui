@@ -49,13 +49,60 @@ export type IrisGridThemeType = GridThemeType & {
   iconSize: number;
 };
 
+export interface IrisGridDensity {
+  cellHorizontalPadding: number;
+  headerHorizontalPadding: number;
+  minColumnWidth: number;
+  rowHeight: number;
+  font: string;
+  headerFont: string;
+  iconSize: number;
+  columnHeaderHeight: number;
+  filterBarHeight: number;
+}
+
+export const NORMAL_DENSITY_THEME = {
+  cellHorizontalPadding: 5,
+  headerHorizontalPadding: 12,
+  minColumnWidth: 55,
+  rowHeight: 19,
+  font: '12px Fira Sans, sans-serif',
+  headerFont: '600 12px Fira Sans, sans-serif',
+  iconSize: 16,
+  columnHeaderHeight: 30,
+  filterBarHeight: 30,
+} satisfies IrisGridDensity;
+
+export const COMPACT_DENSITY_THEME = {
+  cellHorizontalPadding: 2,
+  headerHorizontalPadding: 10,
+  minColumnWidth: 10,
+  rowHeight: 16,
+  font: '11px Fira Sans, sans-serif',
+  headerFont: '600 11px Fira Sans, sans-serif',
+  iconSize: 14,
+  columnHeaderHeight: 24,
+  filterBarHeight: 24,
+} satisfies IrisGridDensity;
+
+export const SPACIOUS_DENSITY_THEME = {
+  ...NORMAL_DENSITY_THEME,
+  cellHorizontalPadding: 7,
+  headerHorizontalPadding: 15,
+  rowHeight: 28,
+} satisfies IrisGridDensity;
+
 /**
  * Derive default Iris grid theme from IrisGridThemeRaw. Note that CSS variables
  * contained in IrisGridThemeRaw are resolved to their actual values. This means
  * that the returned theme is statically defined and does not change when CSS
  * variables change.
+ *
+ * @param density The density of the theme to create
  */
-export function createDefaultIrisGridTheme(): IrisGridThemeType {
+export function createDefaultIrisGridTheme(
+  density: 'compact' | 'normal' | 'spacious' = 'normal'
+): IrisGridThemeType {
   const IrisGridTheme = resolveCssVariablesInRecord(IrisGridThemeRaw);
 
   // row-background-colors is a space-separated list of colors, so we need to
@@ -184,5 +231,8 @@ export function createDefaultIrisGridTheme(): IrisGridThemeType {
     positiveBarColor: IrisGridTheme['positive-bar-color'],
     negativeBarColor: IrisGridTheme['negative-bar-color'],
     markerBarColor: IrisGridTheme['marker-bar-color'],
+
+    ...(density === 'compact' ? COMPACT_DENSITY_THEME : {}),
+    ...(density === 'spacious' ? SPACIOUS_DENSITY_THEME : {}),
   } satisfies IrisGridThemeType);
 }

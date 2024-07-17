@@ -59,6 +59,7 @@ export interface WorkspaceSettings {
   };
   webgl: boolean;
   webglEditable: boolean;
+  gridDensity?: 'compact' | 'normal' | 'spacious';
 }
 
 export interface WorkspaceData {

@@ -25,11 +25,7 @@ export function AppRoot(): JSX.Element {
   // @ts-ignore
   window['__react-beautiful-dnd-disable-dev-warnings'] = true;
 
-  return (
-    <Provider store={store}>
-      <AppRouter />
-    </Provider>
-  );
+  return <AppRouter />;
 }
 
 export default AppRoot;

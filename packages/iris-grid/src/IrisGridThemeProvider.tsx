@@ -14,14 +14,21 @@ export const IrisGridThemeContext =
 
 export interface IrisGridThemeProviderProps {
   children: ReactNode;
+  density?: 'compact' | 'normal' | 'spacious';
 }
 
 export function IrisGridThemeProvider({
   children,
+  density,
 }: IrisGridThemeProviderProps): JSX.Element {
   const { activeThemes } = useTheme();
 
-  const gridTheme = useMemo(createDefaultIrisGridTheme, [activeThemes]);
+  const gridTheme = useMemo(
+    () => createDefaultIrisGridTheme(density),
+    // When the theme changes, we need to update the grid theme which reads CSS variables to JS
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [activeThemes, density]
+  );
 
   return (
     <IrisGridThemeContext.Provider value={gridTheme}>

@@ -126,7 +126,13 @@ import ToastBottomBar from './ToastBottomBar';
 import IrisGridMetricCalculator from './IrisGridMetricCalculator';
 import IrisGridModelUpdater from './IrisGridModelUpdater';
 import IrisGridRenderer from './IrisGridRenderer';
-import { createDefaultIrisGridTheme, IrisGridThemeType } from './IrisGridTheme';
+import {
+  createDefaultIrisGridTheme,
+  IrisGridThemeType,
+  NORMAL_DENSITY_THEME,
+  COMPACT_DENSITY_THEME,
+  SPACIOUS_DENSITY_THEME,
+} from './IrisGridTheme';
 import ColumnStatistics from './ColumnStatistics';
 import './IrisGrid.scss';
 import AdvancedFilterCreator from './AdvancedFilterCreator';
@@ -352,6 +358,8 @@ export interface IrisGridProps {
 
   // Pass in a custom renderer to the grid for advanced use cases
   renderer?: IrisGridRenderer;
+
+  density?: 'compact' | 'normal' | 'spacious';
 }
 
 export interface IrisGridState {
@@ -1396,17 +1404,31 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       floatingRowCount: number
     ): IrisGridThemeType => {
       // If a theme is available via context, use that as the base theme.
-      // If iris-grid is standalone without a context, initialize a default theme.
-      const defaultTheme = contextTheme ?? createDefaultIrisGridTheme();
+      // If iris-grid is standalone without a context, use the default theme.
+      const defaultTheme = createDefaultIrisGridTheme();
+      const baseTheme = contextTheme ?? defaultTheme;
 
       // We only show the row footers when we have floating rows for aggregations
       const rowFooterWidth =
         floatingRowCount > 0
-          ? theme?.rowFooterWidth ?? defaultTheme.rowFooterWidth
+          ? theme?.rowFooterWidth ?? baseTheme.rowFooterWidth
           : 0;
 
+      const { metricCalculator } = this.state;
+      if (metricCalculator != null) {
+        metricCalculator.resetCalculatedColumnWidths();
+        metricCalculator.resetCalculatedRowHeights();
+      }
+
+      const { density } = this.props;
+
       return {
-        ...defaultTheme,
+        // Base theme includes global density settings
+        ...baseTheme,
+        // Explicitly set density overrides base theme
+        ...(density === 'normal' ? NORMAL_DENSITY_THEME : {}),
+        ...(density === 'compact' ? COMPACT_DENSITY_THEME : {}),
+        ...(density === 'spacious' ? SPACIOUS_DENSITY_THEME : {}),
         ...theme,
         autoSelectRow: !isEditable,
         rowFooterWidth,
@@ -4231,6 +4253,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
 
     const theme = this.getTheme();
+    const { columnHeaderHeight: singleColumnHeaderHeight } = theme;
 
     const filter = this.getCachedFilter(
       customFilters,
@@ -4812,7 +4835,13 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               />
             )}
             {!isMenuShown && (
-              <div className="grid-settings-button">
+              <div
+                className="grid-settings-button"
+                style={{
+                  height: `${singleColumnHeaderHeight}px`,
+                  width: `${singleColumnHeaderHeight}px`,
+                }}
+              >
                 <Button
                   kind="ghost"
                   data-testid={`btn-iris-grid-settings-button-${name}`}

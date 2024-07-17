@@ -4,6 +4,8 @@ import '@deephaven/components/scss/BaseStyleSheet.scss';
 import { LoadingOverlay, preloadTheme } from '@deephaven/components';
 import { ApiBootstrap } from '@deephaven/jsapi-bootstrap';
 import logInit from './log/LogInit';
+import { Provider } from 'react-redux';
+import { store } from '@deephaven/redux';
 
 logInit();
 
@@ -59,13 +61,15 @@ async function getCorePlugins() {
 ReactDOM.render(
   <ApiBootstrap apiUrl={apiURL.href} setGlobally>
     <Suspense fallback={<LoadingOverlay />}>
-      <AppBootstrap
-        getCorePlugins={getCorePlugins}
-        serverUrl={apiURL.origin}
-        pluginsUrl={pluginsURL.href}
-      >
-        <AppRoot />
-      </AppBootstrap>
+      <Provider store={store}>
+        <AppBootstrap
+          getCorePlugins={getCorePlugins}
+          serverUrl={apiURL.origin}
+          pluginsUrl={pluginsURL.href}
+        >
+          <AppRoot />
+        </AppBootstrap>
+      </Provider>
     </Suspense>
   </ApiBootstrap>,
   document.getElementById('root')

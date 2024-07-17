@@ -74,8 +74,6 @@ function StyleGuide(): React.ReactElement {
         >
           <h1 style={{ paddingTop: '2rem' }}>Deephaven UI Components</h1>
         </Flex>
-
-        {/* {isIsolatedSection ? null : ( */}
         <Flex
           {...stickyProps}
           UNSAFE_className={
@@ -89,8 +87,6 @@ function StyleGuide(): React.ReactElement {
           {hasMultipleThemes ? <ThemePicker /> : null}
           <SamplesMenu />
         </Flex>
-        {/* )} */}
-        {/* {isIsolatedSection ? null : ( */}
         <Flex
           {...stickyProps}
           UNSAFE_className={
@@ -102,7 +98,6 @@ function StyleGuide(): React.ReactElement {
         >
           <GotoTopButton />
         </Flex>
-        {/* )} */}
 
         <Typograpy />
 

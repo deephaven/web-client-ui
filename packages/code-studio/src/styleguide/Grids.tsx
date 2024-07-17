@@ -22,6 +22,12 @@ function Grids(): ReactElement {
   const [irisGridModel] = useState(
     new MockIrisGridTreeModel(dh, new MockTreeGridModel())
   );
+  const [irisGridCompactModel] = useState(
+    new MockIrisGridTreeModel(dh, new MockTreeGridModel())
+  );
+  const [irisGridSpaciousModel] = useState(
+    new MockIrisGridTreeModel(dh, new MockTreeGridModel())
+  );
   const [model] = useState(new MockGridModel());
   const [theme] = useState<Partial<GridThemeType>>({
     autoSelectRow: true,
@@ -69,6 +75,14 @@ function Grids(): ReactElement {
         <h2 className="ui-title">Iris Grid</h2>
         <SampleSection name="grids-iris" component={Flex} height={500}>
           <IrisGrid model={irisGridModel} />
+        </SampleSection>
+        <h2 className="ui-title">Iris Grid Compact</h2>
+        <SampleSection name="grids-iris" component={Flex} height={500}>
+          <IrisGrid model={irisGridCompactModel} density="compact" />
+        </SampleSection>
+        <h2 className="ui-title">Iris Grid Spacious</h2>
+        <SampleSection name="grids-iris" component={Flex} height={500}>
+          <IrisGrid model={irisGridSpaciousModel} density="spacious" />
         </SampleSection>
       </ThemeContext.Provider>
     </div>

@@ -442,14 +442,15 @@ export class IrisGridRenderer extends GridRenderer {
     boundsProp: { minX: number; maxX: number },
     depth: number
   ): void {
-    const { metrics, model, isMenuShown } = state;
+    const { metrics, model, isMenuShown, theme } = state;
     const { columnHeaderMaxDepth } = model;
     const { width } = metrics;
+    const { columnHeaderHeight } = theme;
     const bounds = {
       ...boundsProp,
       maxX:
         depth === columnHeaderMaxDepth - 1 && boundsProp.maxX === width
-          ? width - (isMenuShown ? 0 : 30) // Account for the menu button
+          ? width - (isMenuShown ? 0 : columnHeaderHeight) // Account for the menu button
           : boundsProp.maxX,
     };
     super.drawColumnHeadersAtDepth(context, state, range, bounds, depth);
