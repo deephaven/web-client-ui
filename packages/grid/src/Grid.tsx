@@ -2167,15 +2167,24 @@ class Grid extends PureComponent<GridProps, GridState> {
           }
         : { opacity: 0 };
 
-    const modelColumn = this.getModelColumn(column);
-    const modelRow = this.getModelRow(row);
+    let modelColumn;
+    let modelRow;
+    try {
+      modelColumn = this.getModelColumn(column);
+      modelRow = this.getModelRow(row);
+    } catch (e) {
+      return null;
+    }
     const inputStyle: CSSProperties | undefined =
       modelColumn != null && modelRow != null
         ? {
             textAlign: model.textAlignForCell(modelColumn, modelRow),
           }
         : undefined;
-    const isValid = model.isValidForCell(modelColumn, modelRow, value);
+    const isValid =
+      modelColumn != null && modelRow != null
+        ? model.isValidForCell(modelColumn, modelRow, value)
+        : false;
 
     return (
       <div style={wrapperStyle}>
