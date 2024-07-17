@@ -112,7 +112,8 @@ export function getDensityTheme(
     case 'spacious':
       return SPACIOUS_DENSITY_THEME;
     default:
-      throw new Error(`Unknown density: ${density}`);
+      log.warn(`Unknown table density: ${density}. Falling back to regular`);
+      return REGULAR_DENSITY_THEME;
   }
 }
 
