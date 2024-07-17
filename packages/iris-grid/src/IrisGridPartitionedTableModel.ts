@@ -32,6 +32,10 @@ class IrisGridPartitionedTableModel
     return true;
   }
 
+  get isPartitionAwareSourceTable(): boolean {
+    return false;
+  }
+
   get isReversible(): boolean {
     return false;
   }
@@ -56,8 +60,28 @@ class IrisGridPartitionedTableModel
     return this.partitionedTable.keyColumns;
   }
 
+  get columnCount(): number {
+    return this.columns.length;
+  }
+
+  getColumnIndexByName(columnName: string): number {
+    return this.columns.findIndex(column => column.name === columnName);
+  }
+
+  textForColumnHeader(
+    column: number,
+    depth?: number | undefined
+  ): string | undefined {
+    return this.columns[column].name ?? '';
+  }
+
   async partitionKeysTable(): Promise<DhType.Table> {
     return this.partitionedTable.getKeyTable();
+  }
+
+  async partitionBaseTable(): Promise<DhType.Table> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (this.partitionedTable as any).getBaseTable();
   }
 
   async partitionMergedTable(): Promise<DhType.Table> {
