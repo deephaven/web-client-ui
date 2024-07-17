@@ -1036,7 +1036,7 @@ class IrisGridTableModelTemplate<
    */
   pendingRow(y: ModelIndex): ModelIndex | null {
     const pendingRow = y - this.floatingTopRowCount - this.table.size;
-    if (pendingRow >= 0 && pendingRow < this.pendingNewRowCount) {
+    if (pendingRow >= 0) {
       return pendingRow;
     }
 
@@ -1885,15 +1885,15 @@ class IrisGridTableModelTemplate<
 
   async setValues(edits: readonly EditOperation[] = []): Promise<void> {
     log.debug('setValues(', edits, ')');
-    if (
-      !edits.every(edit =>
-        this.isEditableRange(
-          GridRange.makeCell(edit.column ?? edit.x, edit.row ?? edit.y)
-        )
-      )
-    ) {
-      throw new Error(`Uneditable ranges ${edits}`);
-    }
+    // if (
+    //   !edits.every(edit =>
+    //     this.isEditableRange(
+    //       GridRange.makeCell(edit.column ?? edit.x, edit.row ?? edit.y)
+    //     )
+    //   )
+    // ) {
+    //   throw new Error(`Uneditable ranges ${edits}`);
+    // }
 
     try {
       const newDataMap = new Map(this.pendingNewDataMap);

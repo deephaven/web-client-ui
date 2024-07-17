@@ -1500,9 +1500,11 @@ class Grid extends PureComponent<GridProps, GridState> {
       if (
         ranges.every(
           range =>
-            GridRange.cellCount([range]) === 1 &&
-            (range.startColumn ?? 0) + tableWidth <= columnCount &&
-            (range.startRow ?? 0) + tableHeight <= rowCount
+            (GridRange.cellCount([range]) === 1 &&
+              (range.startColumn ?? 0) + tableWidth <= columnCount &&
+              (range.startRow ?? 0) + tableHeight <= rowCount) ||
+            (GridRange.rowCount([range]) === tableHeight &&
+              GridRange.columnCount([range]) === tableWidth)
         )
       ) {
         // Remap the selected ranges
@@ -1516,16 +1518,6 @@ class Grid extends PureComponent<GridProps, GridState> {
             )
         );
         this.setSelectedRanges(ranges);
-      }
-
-      if (
-        !ranges.every(
-          range =>
-            GridRange.rowCount([range]) === tableHeight &&
-            GridRange.columnCount([range]) === tableWidth
-        )
-      ) {
-        throw new PasteError('Copy and paste area are not same size.');
       }
 
       const edits: EditOperation[] = [];
