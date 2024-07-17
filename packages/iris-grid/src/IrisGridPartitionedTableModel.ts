@@ -65,7 +65,7 @@ class IrisGridPartitionedTableModel
   }
 
   getColumnIndexByName(columnName: string): number {
-    return this.columns.findIndex(column => column.name === columnName) ?? -1;
+    return this.columns.findIndex(column => column.name === columnName);
   }
 
   textForColumnHeader(
