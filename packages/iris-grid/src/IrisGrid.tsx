@@ -1787,11 +1787,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const { advancedFilters, quickFilters } = this.state;
     const { columns, formatter } = model;
 
-    if (advancedFilters.size === 0 && quickFilters.size === 0) {
-      // No need to rebuild filters if no filters are set
-      return;
-    }
-
     log.debug('Rebuilding filters');
 
     const newAdvancedFilters = new Map();
