@@ -2077,7 +2077,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
           const values = keyTable.columns.map(column => row.get(column));
           const newPartition: PartitionConfig = {
             partitions: values,
-            mode: 'partition',
+            mode: model.isPartitionAwareSourceTable ? 'partition' : 'keys',
           };
           keyTable.close();
           this.setState({
@@ -4730,15 +4730,13 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             unmountOnExit
           >
             <div className="iris-grid-partition-selector-wrapper iris-grid-bar iris-grid-bar-primary">
-              {isPartitionedGridModel(model) &&
-                model.isPartitionRequired &&
-                partitionConfig && (
-                  <IrisGridPartitionSelector
-                    model={model}
-                    partitionConfig={partitionConfig}
-                    onChange={this.handlePartitionChange}
-                  />
-                )}
+              {isPartitionedGridModel(model) && model.isPartitionRequired && (
+                <IrisGridPartitionSelector
+                  model={model}
+                  partitionConfig={partitionConfig}
+                  onChange={this.handlePartitionChange}
+                />
+              )}
             </div>
           </CSSTransition>
           <CSSTransition

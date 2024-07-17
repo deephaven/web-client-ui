@@ -60,6 +60,21 @@ class IrisGridPartitionedTableModel
     return this.partitionedTable.keyColumns;
   }
 
+  get columnCount(): number {
+    return this.columns.length;
+  }
+
+  getColumnIndexByName(columnName: string): number {
+    return this.columns.findIndex(column => column.name === columnName) ?? -1;
+  }
+
+  textForColumnHeader(
+    column: number,
+    depth?: number | undefined
+  ): string | undefined {
+    return this.columns[column].name ?? '';
+  }
+
   async partitionKeysTable(): Promise<DhType.Table> {
     return this.partitionedTable.getKeyTable();
   }
