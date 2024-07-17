@@ -30,7 +30,7 @@ export function ThemeSectionContent(): JSX.Element {
     [dispatch]
   );
 
-  const density = settings.gridDensity ?? 'normal';
+  const density = settings.gridDensity;
 
   assertNotNull(theme, 'ThemeContext value is null');
 

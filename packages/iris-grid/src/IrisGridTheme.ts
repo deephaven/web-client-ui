@@ -61,39 +61,6 @@ export interface IrisGridDensity {
   filterBarHeight: number;
 }
 
-const IrisGridTheme = resolveCssVariablesInRecord(IrisGridThemeRaw);
-
-export const REGULAR_DENSITY_THEME = {
-  cellHorizontalPadding: 5,
-  headerHorizontalPadding: 12,
-  minColumnWidth: 55,
-  rowHeight: parseInt(IrisGridTheme['row-height'], 10) || 19,
-  font: IrisGridTheme.font,
-  headerFont: IrisGridTheme['header-font'],
-  iconSize: 16,
-  columnHeaderHeight: parseInt(IrisGridTheme['header-height'], 10) || 30,
-  filterBarHeight: 30, // includes 1px casing at bottom
-} satisfies IrisGridDensity;
-
-export const COMPACT_DENSITY_THEME = {
-  cellHorizontalPadding: 2,
-  headerHorizontalPadding: 10,
-  minColumnWidth: 10,
-  rowHeight: 16,
-  font: '11px Fira Sans, sans-serif',
-  headerFont: '600 11px Fira Sans, sans-serif',
-  iconSize: 14,
-  columnHeaderHeight: 24,
-  filterBarHeight: 24,
-} satisfies IrisGridDensity;
-
-export const SPACIOUS_DENSITY_THEME = {
-  ...REGULAR_DENSITY_THEME,
-  cellHorizontalPadding: 7,
-  headerHorizontalPadding: 15,
-  rowHeight: 28,
-} satisfies IrisGridDensity;
-
 /**
  * Get the density specific theme settings for a density.
  * @param density Density of the theme to get
@@ -102,6 +69,41 @@ export const SPACIOUS_DENSITY_THEME = {
 export function getDensityTheme(
   density: 'compact' | 'regular' | 'spacious'
 ): IrisGridDensity {
+  // This must be read when the function is called and not in the global scope of the module
+  // Otherwise it initializes w/ a bunch of empty values
+  const IrisGridTheme = resolveCssVariablesInRecord(IrisGridThemeRaw);
+
+  const REGULAR_DENSITY_THEME = {
+    cellHorizontalPadding: 5,
+    headerHorizontalPadding: 12,
+    minColumnWidth: 55,
+    rowHeight: parseInt(IrisGridTheme['row-height'], 10) || 19,
+    font: IrisGridTheme.font,
+    headerFont: IrisGridTheme['header-font'],
+    iconSize: 16,
+    columnHeaderHeight: parseInt(IrisGridTheme['header-height'], 10) || 30,
+    filterBarHeight: 30, // includes 1px casing at bottom
+  } satisfies IrisGridDensity;
+
+  const COMPACT_DENSITY_THEME = {
+    cellHorizontalPadding: 2,
+    headerHorizontalPadding: 10,
+    minColumnWidth: 10,
+    rowHeight: 16,
+    font: '11px Fira Sans, sans-serif',
+    headerFont: '600 11px Fira Sans, sans-serif',
+    iconSize: 14,
+    columnHeaderHeight: 24,
+    filterBarHeight: 24,
+  } satisfies IrisGridDensity;
+
+  const SPACIOUS_DENSITY_THEME = {
+    ...REGULAR_DENSITY_THEME,
+    cellHorizontalPadding: 7,
+    headerHorizontalPadding: 15,
+    rowHeight: 28,
+  } satisfies IrisGridDensity;
+
   switch (density) {
     case 'compact':
       return COMPACT_DENSITY_THEME;
@@ -125,6 +127,7 @@ export function getDensityTheme(
 export function createDefaultIrisGridTheme(
   density: 'compact' | 'regular' | 'spacious' = 'regular'
 ): IrisGridThemeType {
+  const IrisGridTheme = resolveCssVariablesInRecord(IrisGridThemeRaw);
   // row-background-colors is a space-separated list of colors, so we need to
   // normalize each color expression in the list individually
   IrisGridTheme['row-background-colors'] = getExpressionRanges(

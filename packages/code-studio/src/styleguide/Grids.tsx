@@ -74,14 +74,14 @@ function Grids(): ReactElement {
         </SampleSection>
         <h2 className="ui-title">Iris Grid</h2>
         <SampleSection name="grids-iris" component={Flex} height={500}>
-          <IrisGrid model={irisGridModel} />
+          <IrisGrid model={irisGridModel} density="regular" />
         </SampleSection>
         <h2 className="ui-title">Iris Grid Compact</h2>
-        <SampleSection name="grids-iris" component={Flex} height={500}>
+        <SampleSection name="grids-iris-compact" component={Flex} height={500}>
           <IrisGrid model={irisGridCompactModel} density="compact" />
         </SampleSection>
         <h2 className="ui-title">Iris Grid Spacious</h2>
-        <SampleSection name="grids-iris" component={Flex} height={500}>
+        <SampleSection name="grids-iris-spacious" component={Flex} height={500}>
           <IrisGrid model={irisGridSpaciousModel} density="spacious" />
         </SampleSection>
       </ThemeContext.Provider>
