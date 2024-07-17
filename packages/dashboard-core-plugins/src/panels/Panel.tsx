@@ -21,7 +21,7 @@ import type {
   ReactComponentConfig,
   Tab,
 } from '@deephaven/golden-layout';
-import { assertNotNull } from '@deephaven/utils';
+import { assertNotNull, EMPTY_ARRAY } from '@deephaven/utils';
 import Log from '@deephaven/log';
 import type { dh } from '@deephaven/jsapi-types';
 import { ConsoleEvent, InputFilterEvent, TabEvent } from '../events';
@@ -41,30 +41,30 @@ interface PanelProps {
   children: ReactNode;
   glContainer: Container;
   glEventHub: EventEmitter;
-  className: string;
-  onFocus: FocusEventHandler<HTMLDivElement>;
-  onBlur: FocusEventHandler<HTMLDivElement>;
-  onTab: (tab: Tab) => void;
-  onTabClicked: (e: MouseEvent) => void;
-  onClearAllFilters: (...args: unknown[]) => void;
-  onHide: (...args: unknown[]) => void;
-  onResize: (...args: unknown[]) => void;
-  onSessionClose: (session: dh.IdeSession) => void;
-  onSessionOpen: (
+  className?: string;
+  onFocus?: FocusEventHandler<HTMLDivElement>;
+  onBlur?: FocusEventHandler<HTMLDivElement>;
+  onTab?: (tab: Tab) => void;
+  onTabClicked?: (e: MouseEvent) => void;
+  onClearAllFilters?: (...args: unknown[]) => void;
+  onHide?: (...args: unknown[]) => void;
+  onResize?: (...args: unknown[]) => void;
+  onSessionClose?: (session: dh.IdeSession) => void;
+  onSessionOpen?: (
     session: dh.IdeSession,
     { language, sessionId }: { language: string; sessionId: string }
   ) => void;
-  onBeforeShow: (...args: unknown[]) => void;
-  onShow: (...args: unknown[]) => void;
-  onTabBlur: (...args: unknown[]) => void;
-  onTabFocus: (...args: unknown[]) => void;
-  renderTabTooltip: () => ReactNode;
-  additionalActions: ContextAction[];
-  errorMessage: string;
-  isLoading: boolean;
-  isLoaded: boolean;
-  isClonable: boolean;
-  isRenamable: boolean;
+  onBeforeShow?: (...args: unknown[]) => void;
+  onShow?: (...args: unknown[]) => void;
+  onTabBlur?: (...args: unknown[]) => void;
+  onTabFocus?: (...args: unknown[]) => void;
+  renderTabTooltip?: () => ReactNode;
+  additionalActions?: ContextAction[];
+  errorMessage?: string;
+  isLoading?: boolean;
+  isLoaded?: boolean;
+  isClonable?: boolean;
+  isRenamable?: boolean;
 }
 
 interface PanelState {
@@ -78,30 +78,6 @@ interface PanelState {
  * Focus, Resize, Show, Session open/close, client disconnect/reconnect.
  */
 class Panel extends PureComponent<PanelProps, PanelState> {
-  static defaultProps = {
-    className: '',
-    onTab: (): void => undefined,
-    onTabClicked: (): void => undefined,
-    onClearAllFilters: (): void => undefined,
-    onFocus: (): void => undefined,
-    onBlur: (): void => undefined,
-    onHide: (): void => undefined,
-    onResize: (): void => undefined,
-    onSessionClose: (): void => undefined,
-    onSessionOpen: (): void => undefined,
-    onBeforeShow: (): void => undefined,
-    onShow: (): void => undefined,
-    onTabBlur: (): void => undefined,
-    onTabFocus: (): void => undefined,
-    renderTabTooltip: null,
-    additionalActions: [],
-    errorMessage: null,
-    isLoading: false,
-    isLoaded: true,
-    isClonable: false,
-    isRenamable: false,
-  };
-
   constructor(props: PanelProps) {
     super(props);
 
@@ -193,17 +169,17 @@ class Panel extends PureComponent<PanelProps, PanelState> {
     this.forceUpdate();
 
     const { onTab } = this.props;
-    onTab(tab);
+    onTab?.(tab);
   }
 
   handleTabClicked(e: MouseEvent): void {
     const { onTabClicked } = this.props;
-    onTabClicked(e);
+    onTabClicked?.(e);
   }
 
   handleClearAllFilters(...args: unknown[]): void {
     const { onClearAllFilters } = this.props;
-    onClearAllFilters(...args);
+    onClearAllFilters?.(...args);
   }
 
   handleFocus(event: FocusEvent<HTMLDivElement>): void {
@@ -211,27 +187,27 @@ class Panel extends PureComponent<PanelProps, PanelState> {
     glEventHub.emit(PanelEvent.FOCUS, componentPanel ?? this);
 
     const { onFocus } = this.props;
-    onFocus(event);
+    onFocus?.(event);
   }
 
   handleBlur(event: FocusEvent<HTMLDivElement>): void {
     const { onBlur } = this.props;
-    onBlur(event);
+    onBlur?.(event);
   }
 
   handleHide(...args: unknown[]): void {
     const { onHide } = this.props;
-    onHide(...args);
+    onHide?.(...args);
   }
 
   handleResize(...args: unknown[]): void {
     const { onResize } = this.props;
-    onResize(...args);
+    onResize?.(...args);
   }
 
   handleSessionClosed(session: dh.IdeSession): void {
     const { onSessionClose } = this.props;
-    onSessionClose(session);
+    onSessionClose?.(session);
   }
 
   handleSessionOpened(
@@ -239,27 +215,27 @@ class Panel extends PureComponent<PanelProps, PanelState> {
     params: { language: string; sessionId: string }
   ): void {
     const { onSessionOpen } = this.props;
-    onSessionOpen(session, params);
+    onSessionOpen?.(session, params);
   }
 
   handleBeforeShow(...args: unknown[]): void {
     const { onBeforeShow } = this.props;
-    onBeforeShow(...args);
+    onBeforeShow?.(...args);
   }
 
   handleShow(...args: unknown[]): void {
     const { onShow } = this.props;
-    onShow(...args);
+    onShow?.(...args);
   }
 
   handleTabBlur(...args: unknown[]): void {
     const { onTabBlur } = this.props;
-    onTabBlur(...args);
+    onTabBlur?.(...args);
   }
 
   handleTabFocus(...args: unknown[]): void {
     const { onTabFocus } = this.props;
-    onTabFocus(...args);
+    onTabFocus?.(...args);
   }
 
   handleRenameCancel(): void {
@@ -314,8 +290,12 @@ class Panel extends PureComponent<PanelProps, PanelState> {
     };
   }
 
-  getAdditionActions = memoize(
-    (actions: ContextAction[], isClonable: boolean, isRenamable: boolean) => {
+  getAdditionalActions = memoize(
+    (
+      actions: readonly ContextAction[],
+      isClonable: boolean,
+      isRenamable: boolean
+    ) => {
       const additionalActions = [];
       if (isClonable) {
         additionalActions.push(this.getCloneAction());
@@ -334,13 +314,14 @@ class Panel extends PureComponent<PanelProps, PanelState> {
       renderTabTooltip,
       glContainer,
       glEventHub,
-      additionalActions,
+      additionalActions = EMPTY_ARRAY,
       errorMessage,
-      isLoaded,
-      isLoading,
-      isClonable,
-      isRenamable,
+      isLoaded = true,
+      isLoading = false,
+      isClonable = false,
+      isRenamable = false,
     } = this.props;
+
     const { tab: glTab } = glContainer;
     const { showRenameDialog, title, isWithinPanel } = this.state;
 
@@ -364,7 +345,7 @@ class Panel extends PureComponent<PanelProps, PanelState> {
               <PanelContextMenu
                 glContainer={glContainer}
                 glEventHub={glEventHub}
-                additionalActions={this.getAdditionActions(
+                additionalActions={this.getAdditionalActions(
                   additionalActions,
                   isClonable,
                   isRenamable

@@ -1,39 +1,30 @@
-import React, { ReactNode, ReactElement } from 'react';
-import PropTypes from 'prop-types';
-import { CopyButton } from '@deephaven/components';
-import { GLPropTypes, LayoutUtils } from '@deephaven/dashboard';
+import React, { ReactElement } from 'react';
+import { CopyButton, createXComponent } from '@deephaven/components';
 import './WidgetPanelTooltip.scss';
-import type { Container } from '@deephaven/golden-layout';
+import { WidgetPanelTooltipProps } from './WidgetPanelTypes';
 
-interface WidgetPanelTooltipProps {
-  glContainer: Container;
-  widgetType: string;
-  widgetName: string;
-  description: string;
-  children: ReactNode;
-}
 function WidgetPanelTooltip(props: WidgetPanelTooltipProps): ReactElement {
-  const { widgetType, widgetName, glContainer, description, children } = props;
-  const panelTitle = LayoutUtils.getTitleFromContainer(glContainer);
+  const { children, descriptor } = props;
+  const { name, type, description, displayName } = descriptor;
 
   return (
     <div className="tab-tooltip-grid-container">
-      <span className="tab-tooltip-title">{widgetType} Name</span>
+      <span className="tab-tooltip-title">{type} Name</span>
       <div className="tab-tooltip-name-wrapper">
-        <span className="tab-tooltip-name">{widgetName}</span>
+        <span className="tab-tooltip-name">{name}</span>
         <CopyButton
           className="tab-tooltip-copy"
           tooltip="Copy name"
-          copy={widgetName}
+          copy={name}
         />
       </div>
-      {widgetName !== panelTitle && (
+      {name !== displayName && Boolean(displayName) && (
         <>
           <span className="tab-tooltip-title">Display Name</span>
-          <span className="tab-tooltip-name">{panelTitle}</span>
+          <span className="tab-tooltip-name">{displayName}</span>
         </>
       )}
-      {description && (
+      {Boolean(description) && (
         <div className="tab-tooltip-description">{description}</div>
       )}
       {children}
@@ -41,19 +32,6 @@ function WidgetPanelTooltip(props: WidgetPanelTooltipProps): ReactElement {
   );
 }
 
-WidgetPanelTooltip.propTypes = {
-  glContainer: GLPropTypes.Container.isRequired,
-  widgetType: PropTypes.string,
-  widgetName: PropTypes.string,
-  description: PropTypes.string,
-  children: PropTypes.node,
-};
+const XWidgetPanelTooltip = createXComponent(WidgetPanelTooltip);
 
-WidgetPanelTooltip.defaultProps = {
-  widgetType: '',
-  widgetName: '',
-  description: null,
-  children: null,
-};
-
-export default WidgetPanelTooltip;
+export default XWidgetPanelTooltip;

@@ -30,6 +30,7 @@ import {
   DashboardUtils,
   DEFAULT_DASHBOARD_ID,
   DehydratedDashboardPanelProps,
+  emitPanelOpen,
   getAllDashboardsData,
   getDashboardData,
   listenForCreateDashboard,
@@ -75,8 +76,9 @@ import {
   copyToClipboard,
   PromiseUtils,
   EMPTY_ARRAY,
+  assertNotNull,
 } from '@deephaven/utils';
-import GoldenLayout from '@deephaven/golden-layout';
+import GoldenLayout, { EventHub } from '@deephaven/golden-layout';
 import type { ItemConfig } from '@deephaven/golden-layout';
 import { type PluginModuleMap, getDashboardPlugins } from '@deephaven/plugin';
 import {
@@ -394,10 +396,15 @@ export class AppMainContainer extends Component<
     this.emitLayoutEvent(PanelEvent.REOPEN_LAST);
   }
 
-  emitLayoutEvent(event: string, ...args: unknown[]): void {
+  getActiveEventHub(): EventHub {
     const { activeTabKey } = this.state;
     const layout = this.dashboardLayouts.get(activeTabKey);
-    layout?.eventHub.emit(event, ...args);
+    assertNotNull(layout, 'No active layout found');
+    return layout.eventHub;
+  }
+
+  emitLayoutEvent(event: string, ...args: unknown[]): void {
+    this.getActiveEventHub().emit(event, ...args);
   }
 
   handleCancelResetLayoutPrompt(): void {
@@ -702,10 +709,10 @@ export class AppMainContainer extends Component<
     dragEvent?: WindowMouseEvent
   ): void {
     const { connection } = this.props;
-    this.emitLayoutEvent(PanelEvent.OPEN, {
+    emitPanelOpen(this.getActiveEventHub(), {
+      widget: getVariableDescriptor(widget),
       dragEvent,
       fetch: async () => connection?.getObject(widget),
-      widget: getVariableDescriptor(widget),
     });
   }
 

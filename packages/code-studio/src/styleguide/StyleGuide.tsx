@@ -39,6 +39,7 @@ import SpectrumComparison from './SpectrumComparison';
 import Pickers from './Pickers';
 import ListViews from './ListViews';
 import ErrorViews from './ErrorViews';
+import XComponents from './XComponents';
 
 const stickyProps = {
   position: 'sticky',
@@ -134,13 +135,14 @@ function StyleGuide(): React.ReactElement {
         <Charts />
         <ContextMenuRoot />
         <RandomAreaPlotAnimation />
+        <ErrorViews />
+        <XComponents />
 
         <SampleMenuCategory data-menu-category="Spectrum Components" />
         <SpectrumComponents />
 
         <SampleMenuCategory data-menu-category="Spectrum Comparison" />
         <SpectrumComparison />
-        <ErrorViews />
       </div>
     </div>
   );
