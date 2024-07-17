@@ -56,6 +56,7 @@ import './IrisGridContextMenuHandler.scss';
 import SHORTCUTS from '../IrisGridShortcuts';
 import IrisGrid from '../IrisGrid';
 import { QuickFilter } from '../CommonTypes';
+import { isPartitionedGridModel } from '../PartitionedGridModel';
 
 const log = Log.module('IrisGridContextMenuHandler');
 
@@ -504,6 +505,17 @@ class IrisGridContextMenuHandler extends GridMouseHandler {
         });
       },
     });
+
+    if (isPartitionedGridModel(model) && !model.isPartitionAwareSourceTable) {
+      actions.push({
+        title: 'View Constituent Table',
+        group: IrisGridContextMenuHandler.GROUP_VIEW_CONTENTS,
+        order: 40,
+        action: () => {
+          irisGrid.selectPartitionKeyFromTable(rowIndex);
+        },
+      });
+    }
 
     return actions;
   }
