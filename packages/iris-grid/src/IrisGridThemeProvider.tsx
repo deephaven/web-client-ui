@@ -14,7 +14,8 @@ export const IrisGridThemeContext =
 
 export interface IrisGridThemeProviderProps {
   children: ReactNode;
-  density?: 'compact' | 'normal' | 'spacious';
+  /* The density of the grid. Defaults to regular */
+  density?: 'compact' | 'regular' | 'spacious';
 }
 
 export function IrisGridThemeProvider({

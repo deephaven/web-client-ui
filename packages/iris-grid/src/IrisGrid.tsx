@@ -129,9 +129,7 @@ import IrisGridRenderer from './IrisGridRenderer';
 import {
   createDefaultIrisGridTheme,
   IrisGridThemeType,
-  NORMAL_DENSITY_THEME,
-  COMPACT_DENSITY_THEME,
-  SPACIOUS_DENSITY_THEME,
+  getDensityTheme,
 } from './IrisGridTheme';
 import ColumnStatistics from './ColumnStatistics';
 import './IrisGrid.scss';
@@ -359,7 +357,7 @@ export interface IrisGridProps {
   // Pass in a custom renderer to the grid for advanced use cases
   renderer?: IrisGridRenderer;
 
-  density?: 'compact' | 'normal' | 'spacious';
+  density?: 'compact' | 'regular' | 'spacious';
 }
 
 export interface IrisGridState {
@@ -537,6 +535,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     canDownloadCsv: true,
     frozenColumns: null,
     theme: null,
+    // Do not set a default density prop since we need to know if it overrides the global density setting
+    density: undefined,
     canToggleSearch: true,
     mouseHandlers: EMPTY_ARRAY,
     keyHandlers: EMPTY_ARRAY,
@@ -1422,13 +1422,17 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
       const { density } = this.props;
 
+      // Only get theme for explicitly set density
+      let densityTheme = {};
+      if (density != null) {
+        densityTheme = getDensityTheme(density);
+      }
+
       return {
         // Base theme includes global density settings
         ...baseTheme,
         // Explicitly set density overrides base theme
-        ...(density === 'normal' ? NORMAL_DENSITY_THEME : {}),
-        ...(density === 'compact' ? COMPACT_DENSITY_THEME : {}),
-        ...(density === 'spacious' ? SPACIOUS_DENSITY_THEME : {}),
+        ...densityTheme,
         ...theme,
         autoSelectRow: !isEditable,
         rowFooterWidth,

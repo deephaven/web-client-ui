@@ -7,20 +7,19 @@ import {
   useTheme,
 } from '@deephaven/components';
 import { assertNotNull } from '@deephaven/utils';
-import { useDispatch, useSelector } from 'react-redux';
-import { getSettings, updateSettings, type RootState } from '@deephaven/redux';
+import { useDispatch } from 'react-redux';
+import { getSettings, updateSettings } from '@deephaven/redux';
+import { useAppSelector } from '@deephaven/dashboard';
 
 export function ThemeSectionContent(): JSX.Element {
   const theme = useTheme();
-  const settings = useSelector<RootState, ReturnType<typeof getSettings>>(
-    getSettings
-  );
+  const settings = useAppSelector(getSettings);
   const dispatch = useDispatch();
 
   const updateDensity = useCallback(
     (density: ItemKey | null) => {
       if (
-        density !== 'normal' &&
+        density !== 'regular' &&
         density !== 'compact' &&
         density !== 'spacious'
       ) {
@@ -39,11 +38,11 @@ export function ThemeSectionContent(): JSX.Element {
     <>
       <ThemePicker />
       <Picker
-        label="Choose grid density"
+        label="Default table density"
         selectedKey={density}
         onChange={updateDensity}
       >
-        <Item key="normal">Normal</Item>
+        <Item key="regular">Regular</Item>
         <Item key="compact">Compact</Item>
         <Item key="spacious">Spacious</Item>
       </Picker>

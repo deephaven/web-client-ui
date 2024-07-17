@@ -4,8 +4,8 @@ import { MonacoThemeProvider } from '@deephaven/console';
 import { ThemeProvider } from '@deephaven/components';
 import { IrisGridThemeProvider } from '@deephaven/iris-grid';
 import { getThemeDataFromPlugins, PluginsContext } from '@deephaven/plugin';
-import { useSelector } from 'react-redux';
-import { getSettings, type RootState } from '@deephaven/redux';
+import { getSettings } from '@deephaven/redux';
+import { useAppSelector } from '@deephaven/dashboard';
 
 export interface ThemeBootstrapProps {
   children: React.ReactNode;
@@ -23,9 +23,7 @@ export function ThemeBootstrap({ children }: ThemeBootstrapProps): JSX.Element {
     [pluginModules]
   );
 
-  const settings = useSelector<RootState, ReturnType<typeof getSettings>>(
-    getSettings
-  );
+  const settings = useAppSelector(getSettings);
 
   return (
     <ThemeProvider themes={themes}>

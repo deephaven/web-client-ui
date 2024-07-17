@@ -61,16 +61,18 @@ export interface IrisGridDensity {
   filterBarHeight: number;
 }
 
-export const NORMAL_DENSITY_THEME = {
+const IrisGridTheme = resolveCssVariablesInRecord(IrisGridThemeRaw);
+
+export const REGULAR_DENSITY_THEME = {
   cellHorizontalPadding: 5,
   headerHorizontalPadding: 12,
   minColumnWidth: 55,
-  rowHeight: 19,
-  font: '12px Fira Sans, sans-serif',
-  headerFont: '600 12px Fira Sans, sans-serif',
+  rowHeight: parseInt(IrisGridTheme['row-height'], 10) || 19,
+  font: IrisGridTheme.font,
+  headerFont: IrisGridTheme['header-font'],
   iconSize: 16,
-  columnHeaderHeight: 30,
-  filterBarHeight: 30,
+  columnHeaderHeight: parseInt(IrisGridTheme['header-height'], 10) || 30,
+  filterBarHeight: 30, // includes 1px casing at bottom
 } satisfies IrisGridDensity;
 
 export const COMPACT_DENSITY_THEME = {
@@ -86,11 +88,31 @@ export const COMPACT_DENSITY_THEME = {
 } satisfies IrisGridDensity;
 
 export const SPACIOUS_DENSITY_THEME = {
-  ...NORMAL_DENSITY_THEME,
+  ...REGULAR_DENSITY_THEME,
   cellHorizontalPadding: 7,
   headerHorizontalPadding: 15,
   rowHeight: 28,
 } satisfies IrisGridDensity;
+
+/**
+ * Get the density specific theme settings for a density.
+ * @param density Density of the theme to get
+ * @returns Density specific theme settings
+ */
+export function getDensityTheme(
+  density: 'compact' | 'regular' | 'spacious'
+): IrisGridDensity {
+  switch (density) {
+    case 'compact':
+      return COMPACT_DENSITY_THEME;
+    case 'regular':
+      return REGULAR_DENSITY_THEME;
+    case 'spacious':
+      return SPACIOUS_DENSITY_THEME;
+    default:
+      throw new Error(`Unknown density: ${density}`);
+  }
+}
 
 /**
  * Derive default Iris grid theme from IrisGridThemeRaw. Note that CSS variables
@@ -101,10 +123,8 @@ export const SPACIOUS_DENSITY_THEME = {
  * @param density The density of the theme to create
  */
 export function createDefaultIrisGridTheme(
-  density: 'compact' | 'normal' | 'spacious' = 'normal'
+  density: 'compact' | 'regular' | 'spacious' = 'regular'
 ): IrisGridThemeType {
-  const IrisGridTheme = resolveCssVariablesInRecord(IrisGridThemeRaw);
-
   // row-background-colors is a space-separated list of colors, so we need to
   // normalize each color expression in the list individually
   IrisGridTheme['row-background-colors'] = getExpressionRanges(
@@ -125,7 +145,6 @@ export function createDefaultIrisGridTheme(
     backgroundColor: IrisGridTheme['grid-bg'],
     white: IrisGridTheme.white,
     black: IrisGridTheme.black,
-    font: IrisGridTheme.font,
     headerBackgroundColor: IrisGridTheme['header-bg'],
     headerColor: IrisGridTheme['header-color'],
     headerSeparatorColor: IrisGridTheme['header-separator-color'],
@@ -135,7 +154,6 @@ export function createDefaultIrisGridTheme(
     headerSortBarColor: IrisGridTheme['header-sort-bar-color'],
     headerReverseBarColor: IrisGridTheme['header-reverse-bar-color'],
     headerBarCasingColor: IrisGridTheme['header-bar-casing-color'],
-    headerFont: IrisGridTheme['header-font'],
     rowBackgroundColors: IrisGridTheme['row-background-colors'],
     rowHoverBackgroundColor: IrisGridTheme['row-hover-bg'],
     selectionColor: IrisGridTheme['selection-color'],
@@ -183,21 +201,16 @@ export function createDefaultIrisGridTheme(
     gridRowColor: null,
     groupedColumnDividerColor: IrisGridTheme['grouped-column-divider-color'],
     columnHoverBackgroundColor: null,
-    headerHorizontalPadding: 12,
     scrollBarSize: 13,
     scrollBarHoverSize: 16, // system default scrollbar width is 17
     minScrollHandleSize: 24,
-    rowHeight: parseInt(IrisGridTheme['row-height'], 10) || 19, // IrisGrid test breaks without the fallback value
     columnWidth: 100,
     rowHeaderWidth: 0,
     rowFooterWidth: 60,
-    columnHeaderHeight: parseInt(IrisGridTheme['header-height'], 10) || 30,
-    filterBarHeight: 30, // includes 1px casing at bottom
     filterBarCollapsedHeight: 5, // includes 1px casing at bottom
     sortHeaderBarHeight: 2,
     reverseHeaderBarHeight: 4,
     filterBarHorizontalPadding: 4,
-    iconSize: 16,
 
     activeCellSelectionBorderWidth:
       parseInt(IrisGridTheme['active-cell-selection-border-width'], 10) || 2,
@@ -232,7 +245,6 @@ export function createDefaultIrisGridTheme(
     negativeBarColor: IrisGridTheme['negative-bar-color'],
     markerBarColor: IrisGridTheme['marker-bar-color'],
 
-    ...(density === 'compact' ? COMPACT_DENSITY_THEME : {}),
-    ...(density === 'spacious' ? SPACIOUS_DENSITY_THEME : {}),
+    ...getDensityTheme(density),
   } satisfies IrisGridThemeType);
 }

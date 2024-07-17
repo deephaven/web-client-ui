@@ -1,11 +1,11 @@
 import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom';
-import '@deephaven/components/scss/BaseStyleSheet.scss';
+import { Provider } from 'react-redux';
 import { LoadingOverlay, preloadTheme } from '@deephaven/components';
 import { ApiBootstrap } from '@deephaven/jsapi-bootstrap';
-import logInit from './log/LogInit';
-import { Provider } from 'react-redux';
 import { store } from '@deephaven/redux';
+import '@deephaven/components/scss/BaseStyleSheet.scss';
+import logInit from './log/LogInit';
 
 logInit();
 

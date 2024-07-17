@@ -15,11 +15,7 @@ import {
   Button,
   CopyButton,
   GLOBAL_SHORTCUTS,
-  Item,
   Logo,
-  Picker,
-  ThemeContext,
-  ThemePicker,
   Tooltip,
 } from '@deephaven/components';
 import { ServerConfigValues, User } from '@deephaven/redux';
@@ -28,7 +24,6 @@ import {
   BROADCAST_LOGOUT_MESSAGE,
   makeMessage,
 } from '@deephaven/jsapi-utils';
-import { assertNotNull } from '@deephaven/utils';
 import { PluginModuleMap } from '@deephaven/plugin';
 import FormattingSectionContent from './FormattingSectionContent';
 import LegalNotice from './LegalNotice';
