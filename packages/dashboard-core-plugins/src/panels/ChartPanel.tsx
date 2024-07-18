@@ -6,6 +6,7 @@ import debounce from 'lodash.debounce';
 import {
   Chart,
   ChartModel,
+  ChartModelFactory,
   ChartModelSettings,
   ChartUtils,
   FilterMap,
@@ -648,12 +649,8 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
       const { settings } = metadata;
       this.pending
         .add(
-          dh.plot.Figure.create(
-            new ChartUtils(dh).makeFigureSettings(
-              settings,
-              source
-            ) as unknown as dh.plot.FigureDescriptor
-          )
+          ChartModelFactory.makeFigureFromSettings(dh, settings, source),
+          resolved => resolved.close()
         )
         .then(figure => {
           if (isFigureChartModel(model)) {
