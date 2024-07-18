@@ -19,11 +19,7 @@ import {
   ShortcutRegistry,
 } from '@deephaven/components'; // Use the loading spinner from the Deephaven components package
 import type { dh } from '@deephaven/jsapi-types';
-import {
-  fetchVariableDefinition,
-  getSessionDetails,
-  loadSessionWrapper,
-} from '@deephaven/jsapi-utils';
+import { fetchVariableDefinition } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { useDashboardPlugins } from '@deephaven/plugin';
 import {
@@ -88,12 +84,6 @@ function App(): JSX.Element {
             throw new Error('Missing URL parameter "name"');
           }
 
-          const sessionDetails = await getSessionDetails();
-          const sessionWrapper = await loadSessionWrapper(
-            api,
-            connection,
-            sessionDetails
-          );
           const storageService = client.getStorageService();
           const layoutStorage = new GrpcLayoutStorage(
             storageService,
@@ -101,7 +91,7 @@ function App(): JSX.Element {
           );
           const workspaceStorage = new LocalWorkspaceStorage(layoutStorage);
           const loadedWorkspace = await workspaceStorage.load({
-            isConsoleAvailable: sessionWrapper !== undefined,
+            isConsoleAvailable: false,
           });
           const {
             data: { settings },
