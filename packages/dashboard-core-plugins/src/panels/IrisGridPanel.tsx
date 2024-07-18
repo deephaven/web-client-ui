@@ -423,7 +423,7 @@ export class IrisGridPanel extends PureComponent<
         return null;
       }
 
-      // TODO: Find a better way to handle deprecated panel prop
+      // TODO #2093: Find a better way to handle deprecated panel prop
       const deprecatedProps = {
         panel: this,
       };
