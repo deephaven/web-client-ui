@@ -21,6 +21,23 @@ exports[`createDefaultIrisGridTheme should derive the default Iris grid theme 1`
   "contextMenuSortIconColor": "IrisGridTheme['context-menu-sort-icon-color']",
   "dataBarHorizontalPadding": 90,
   "dateColor": "IrisGridTheme['date-color']",
+  "density": {
+    "compact": {
+      "cellHorizontalPadding": 2,
+      "columnHeaderHeight": 24,
+      "font": "11px Fira Sans, sans-serif",
+      "headerFont": "600 11px Fira Sans, sans-serif",
+      "headerHorizontalPadding": 10,
+      "iconSize": 14,
+      "minColumnWidth": 10,
+      "rowHeight": 16,
+    },
+    "spacious": {
+      "cellHorizontalPadding": 7,
+      "headerHorizontalPadding": 15,
+      "rowHeight": 28,
+    },
+  },
   "errorTextColor": "IrisGridTheme['error-text-color']",
   "filterBarActiveBackgroundColor": "IrisGridTheme['filter-bar-active-bg']",
   "filterBarActiveColor": "IrisGridTheme['filter-bar-active-color']",

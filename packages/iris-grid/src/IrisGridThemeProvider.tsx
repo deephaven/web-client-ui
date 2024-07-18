@@ -9,8 +9,10 @@ import { createDefaultIrisGridTheme, IrisGridThemeType } from './IrisGridTheme';
  */
 export type IrisGridThemeContextValue = IrisGridThemeType;
 
-export const IrisGridThemeContext =
-  createContext<IrisGridThemeContextValue | null>(null);
+export const IrisGridThemeContext = createContext<{
+  theme: IrisGridThemeContextValue | null;
+  density: 'compact' | 'regular' | 'spacious';
+}>({ theme: null, density: 'regular' });
 
 export interface IrisGridThemeProviderProps {
   children: ReactNode;
@@ -20,19 +22,24 @@ export interface IrisGridThemeProviderProps {
 
 export function IrisGridThemeProvider({
   children,
-  density,
+  density = 'regular',
 }: IrisGridThemeProviderProps): JSX.Element {
   const { activeThemes } = useTheme();
 
   const gridTheme = useMemo(
-    () => createDefaultIrisGridTheme(density),
+    () => createDefaultIrisGridTheme(),
     // When the theme changes, we need to update the grid theme which reads CSS variables to JS
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [activeThemes, density]
+    [activeThemes]
+  );
+
+  const contextValue = useMemo(
+    () => ({ theme: gridTheme, density }),
+    [gridTheme, density]
   );
 
   return (
-    <IrisGridThemeContext.Provider value={gridTheme}>
+    <IrisGridThemeContext.Provider value={contextValue}>
       {children}
     </IrisGridThemeContext.Provider>
   );

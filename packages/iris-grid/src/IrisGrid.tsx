@@ -126,11 +126,7 @@ import ToastBottomBar from './ToastBottomBar';
 import IrisGridMetricCalculator from './IrisGridMetricCalculator';
 import IrisGridModelUpdater from './IrisGridModelUpdater';
 import IrisGridRenderer from './IrisGridRenderer';
-import {
-  createDefaultIrisGridTheme,
-  IrisGridThemeType,
-  getDensityTheme,
-} from './IrisGridTheme';
+import { createDefaultIrisGridTheme, IrisGridThemeType } from './IrisGridTheme';
 import ColumnStatistics from './ColumnStatistics';
 import './IrisGrid.scss';
 import AdvancedFilterCreator from './AdvancedFilterCreator';
@@ -460,6 +456,9 @@ export interface IrisGridState {
 
 class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   static contextType = IrisGridThemeContext;
+
+  // eslint-disable-next-line react/static-property-placement, react/sort-comp
+  declare context: React.ContextType<typeof IrisGridThemeContext>;
 
   static minDebounce = 150;
 
@@ -1401,12 +1400,12 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       contextTheme: IrisGridThemeType | null,
       theme: Partial<IrisGridThemeType> | null,
       isEditable: boolean,
-      floatingRowCount: number
+      floatingRowCount: number,
+      density: 'compact' | 'regular' | 'spacious'
     ): IrisGridThemeType => {
       // If a theme is available via context, use that as the base theme.
       // If iris-grid is standalone without a context, use the default theme.
-      const defaultTheme = createDefaultIrisGridTheme();
-      const baseTheme = contextTheme ?? defaultTheme;
+      const baseTheme = contextTheme ?? createDefaultIrisGridTheme();
 
       // We only show the row footers when we have floating rows for aggregations
       const rowFooterWidth =
@@ -1420,18 +1419,16 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         metricCalculator.resetCalculatedRowHeights();
       }
 
-      const { density } = this.props;
-
-      // Only get theme for explicitly set density
       let densityTheme = {};
-      if (density != null) {
-        densityTheme = getDensityTheme(density);
+      if (density === 'compact') {
+        densityTheme = baseTheme.density.compact;
+      }
+      if (density === 'spacious') {
+        densityTheme = baseTheme.density.spacious;
       }
 
       return {
-        // Base theme includes global density settings
         ...baseTheme,
-        // Explicitly set density overrides base theme
         ...densityTheme,
         ...theme,
         autoSelectRow: !isEditable,
@@ -1525,13 +1522,15 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   getTheme(): IrisGridThemeType {
-    const { model, theme } = this.props;
+    const { model, theme, density } = this.props;
+    const { theme: contextTheme, density: contextDensity } = this.context;
 
     return this.getCachedTheme(
-      this.context,
+      contextTheme,
       theme,
       (isEditableGridModel(model) && model.isEditable) ?? false,
-      model.floatingTopRowCount + model.floatingBottomRowCount
+      model.floatingTopRowCount + model.floatingBottomRowCount,
+      density ?? contextDensity
     );
   }
 
