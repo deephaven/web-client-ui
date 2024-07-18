@@ -28,7 +28,6 @@ export function ChartBuilderPlugin(
 ): JSX.Element | null {
   assertIsDashboardPluginProps(props);
   const { id, layout } = props;
-  const dh = useApi();
 
   const handleCreateChart = useCallback(
     ({
@@ -45,8 +44,7 @@ export function ChartBuilderPlugin(
       table: dh.Table;
     }) => {
       const { settings } = metadata;
-      const makeModel = (): Promise<ChartModel> =>
-        ChartModelFactory.makeModelFromSettings(dh, settings, table);
+      const fetchTable = async () => table;
       const title = ChartUtils.titleFromSettings(settings);
 
       const config = {
@@ -56,7 +54,7 @@ export function ChartBuilderPlugin(
           localDashboardId: id,
           id: panelId,
           metadata,
-          makeModel,
+          fetch: fetchTable,
         },
         title,
         id: panelId,
@@ -65,7 +63,7 @@ export function ChartBuilderPlugin(
       const { root } = layout;
       LayoutUtils.openComponent({ root, config });
     },
-    [dh, id, layout]
+    [id, layout]
   );
 
   useListener(layout.eventHub, IrisGridEvent.CREATE_CHART, handleCreateChart);

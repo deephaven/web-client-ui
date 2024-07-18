@@ -50,7 +50,7 @@ async function createChartModel(
     }
   }
 
-  if (tableName != null) {
+  if (tableName != null && tableName !== '') {
     const table = (await panelFetch()) as DhType.Table;
     new IrisGridUtils(dh).applyTableSettings(
       table,
