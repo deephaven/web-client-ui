@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.86.1](https://github.com/deephaven/web-client-ui/compare/v0.86.0...v0.86.1) (2024-07-18)
+
+### Bug Fixes
+
+- add back panel prop to IrisGrid Plugin ([#2155](https://github.com/deephaven/web-client-ui/issues/2155)) ([6362eb7](https://github.com/deephaven/web-client-ui/commit/6362eb7b5292209abd9d473792cf3ecb55ade452)), closes [#2093](https://github.com/deephaven/web-client-ui/issues/2093)
+- Remove the session wrapper from the embedded widget app ([#2158](https://github.com/deephaven/web-client-ui/issues/2158)) ([b76c1d7](https://github.com/deephaven/web-client-ui/commit/b76c1d73325ef38b1d9e10619b1bc806e430c409))
+
 ## [0.86.0](https://github.com/deephaven/web-client-ui/compare/v0.85.2...v0.86.0) (2024-07-17)
 
 ### Features
