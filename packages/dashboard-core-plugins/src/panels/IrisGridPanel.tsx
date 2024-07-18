@@ -422,6 +422,11 @@ export class IrisGridPanel extends PureComponent<
         return null;
       }
 
+      // TODO #2093: Find a better way to handle deprecated panel prop
+      const deprecatedProps = {
+        panel: this,
+      };
+
       return (
         <div className="iris-grid-plugin">
           <Plugin
@@ -432,6 +437,8 @@ export class IrisGridPanel extends PureComponent<
             table={model.table}
             onStateChange={this.handlePluginStateChange}
             pluginState={pluginState}
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            {...deprecatedProps}
           />
         </div>
       );
