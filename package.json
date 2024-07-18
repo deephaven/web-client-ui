@@ -181,6 +181,7 @@
     "@deephaven/storage": "file:packages/storage",
     "@deephaven/stylelint-config": "file:packages/stylelint-config",
     "@deephaven/tsconfig": "file:packages/tsconfig",
-    "@deephaven/utils": "file:packages/utils"
+    "@deephaven/utils": "file:packages/utils",
+    "browserslist": "^4.23.2"
   }
 }
