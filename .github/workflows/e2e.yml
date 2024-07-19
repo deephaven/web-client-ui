@@ -37,6 +37,7 @@ jobs:
         with:
           name: image-cache
           path: e2e-ci.tar.gz
+          compression-level: 0
           retention-days: 1
 
   e2e-tests:
