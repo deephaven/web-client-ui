@@ -8,7 +8,6 @@ import {
   ChartModel,
   ChartModelFactory,
   ChartModelSettings,
-  ChartUtils,
   FilterMap,
   isFigureChartModel,
 } from '@deephaven/chart';

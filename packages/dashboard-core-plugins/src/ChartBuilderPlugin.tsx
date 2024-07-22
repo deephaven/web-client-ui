@@ -1,17 +1,11 @@
 import { useCallback } from 'react';
-import {
-  ChartModel,
-  ChartModelFactory,
-  ChartModelSettings,
-  ChartUtils,
-} from '@deephaven/chart';
+import { ChartModelSettings, ChartUtils } from '@deephaven/chart';
 import {
   assertIsDashboardPluginProps,
   DashboardPluginComponentProps,
   LayoutUtils,
   useListener,
 } from '@deephaven/dashboard';
-import { useApi } from '@deephaven/jsapi-bootstrap';
 import type { dh } from '@deephaven/jsapi-types';
 import { nanoid } from 'nanoid';
 import { IrisGridEvent } from './events';
