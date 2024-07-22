@@ -1422,8 +1422,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       let densityTheme = {};
       if (density === 'compact') {
         densityTheme = baseTheme.density.compact;
-      }
-      if (density === 'spacious') {
+      } else if (density === 'spacious') {
         densityTheme = baseTheme.density.spacious;
       }
 
