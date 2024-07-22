@@ -352,6 +352,8 @@ export interface IrisGridProps {
 
   // Pass in a custom renderer to the grid for advanced use cases
   renderer?: IrisGridRenderer;
+
+  density?: 'compact' | 'regular' | 'spacious';
 }
 
 export interface IrisGridState {
@@ -455,6 +457,9 @@ export interface IrisGridState {
 class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   static contextType = IrisGridThemeContext;
 
+  // eslint-disable-next-line react/static-property-placement, react/sort-comp
+  declare context: React.ContextType<typeof IrisGridThemeContext>;
+
   static minDebounce = 150;
 
   static maxDebounce = 500;
@@ -529,6 +534,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     canDownloadCsv: true,
     frozenColumns: null,
     theme: null,
+    // Do not set a default density prop since we need to know if it overrides the global density setting
+    density: undefined,
     canToggleSearch: true,
     mouseHandlers: EMPTY_ARRAY,
     keyHandlers: EMPTY_ARRAY,
@@ -1393,20 +1400,35 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       contextTheme: IrisGridThemeType | null,
       theme: Partial<IrisGridThemeType> | null,
       isEditable: boolean,
-      floatingRowCount: number
+      floatingRowCount: number,
+      density: 'compact' | 'regular' | 'spacious'
     ): IrisGridThemeType => {
       // If a theme is available via context, use that as the base theme.
-      // If iris-grid is standalone without a context, initialize a default theme.
-      const defaultTheme = contextTheme ?? createDefaultIrisGridTheme();
+      // If iris-grid is standalone without a context, use the default theme.
+      const baseTheme = contextTheme ?? createDefaultIrisGridTheme();
 
       // We only show the row footers when we have floating rows for aggregations
       const rowFooterWidth =
         floatingRowCount > 0
-          ? theme?.rowFooterWidth ?? defaultTheme.rowFooterWidth
+          ? theme?.rowFooterWidth ?? baseTheme.rowFooterWidth
           : 0;
 
+      const { metricCalculator } = this.state;
+      if (metricCalculator != null) {
+        metricCalculator.resetCalculatedColumnWidths();
+        metricCalculator.resetCalculatedRowHeights();
+      }
+
+      let densityTheme = {};
+      if (density === 'compact') {
+        densityTheme = baseTheme.density.compact;
+      } else if (density === 'spacious') {
+        densityTheme = baseTheme.density.spacious;
+      }
+
       return {
-        ...defaultTheme,
+        ...baseTheme,
+        ...densityTheme,
         ...theme,
         autoSelectRow: !isEditable,
         rowFooterWidth,
@@ -1499,13 +1521,15 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   getTheme(): IrisGridThemeType {
-    const { model, theme } = this.props;
+    const { model, theme, density } = this.props;
+    const { theme: contextTheme, density: contextDensity } = this.context;
 
     return this.getCachedTheme(
-      this.context,
+      contextTheme,
       theme,
       (isEditableGridModel(model) && model.isEditable) ?? false,
-      model.floatingTopRowCount + model.floatingBottomRowCount
+      model.floatingTopRowCount + model.floatingBottomRowCount,
+      density ?? contextDensity
     );
   }
 
@@ -4231,6 +4255,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
 
     const theme = this.getTheme();
+    const { columnHeaderHeight: singleColumnHeaderHeight } = theme;
 
     const filter = this.getCachedFilter(
       customFilters,
@@ -4812,7 +4837,13 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               />
             )}
             {!isMenuShown && (
-              <div className="grid-settings-button">
+              <div
+                className="grid-settings-button"
+                style={{
+                  height: `${singleColumnHeaderHeight}px`,
+                  width: `${singleColumnHeaderHeight}px`,
+                }}
+              >
                 <Button
                   kind="ghost"
                   data-testid={`btn-iris-grid-settings-button-${name}`}

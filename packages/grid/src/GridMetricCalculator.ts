@@ -1845,6 +1845,14 @@ export class GridMetricCalculator {
   }
 
   /**
+   * Resets all the calculated column widths
+   * Useful if the theme minimum column width changes
+   */
+  resetCalculatedColumnWidths(): void {
+    this.calculatedColumnWidths = new Map();
+  }
+
+  /**
    * Sets the width for the specified row
    * @param row The row model index to set
    * @param size The size to set it to
@@ -1867,6 +1875,14 @@ export class GridMetricCalculator {
     userRowHeights.delete(row);
     this.userRowHeights = userRowHeights;
     this.calculatedRowHeights.delete(row);
+  }
+
+  /**
+   * Resets all the calculated row heights
+   * Useful if the theme row height changes
+   */
+  resetCalculatedRowHeights(): void {
+    this.calculatedRowHeights = new Map();
   }
 }
 
