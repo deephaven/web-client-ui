@@ -1,10 +1,11 @@
-import { forwardRef, useMemo } from 'react';
-import { useApi } from '@deephaven/jsapi-bootstrap';
+import { forwardRef, useContext, useMemo } from 'react';
+import { DeferredApiContext } from '@deephaven/jsapi-bootstrap';
 import { ChartModel, ChartModelFactory } from '@deephaven/chart';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { IrisGridUtils } from '@deephaven/iris-grid';
 import { getTimeZone, store } from '@deephaven/redux';
 import { WidgetPanelProps } from '@deephaven/plugin';
+import { assertNotNull } from '@deephaven/utils';
 import {
   ChartPanelMetadata,
   GLChartPanelState,
@@ -68,7 +69,7 @@ async function createChartModel(
 
 export const ChartPanelPlugin = forwardRef(
   (props: WidgetPanelProps<DhType.plot.Figure>, ref: React.Ref<ChartPanel>) => {
-    const dh = useApi();
+    const deferredApi = useContext(DeferredApiContext);
 
     const panelState = isChartPanelDehydratedProps(props)
       ? (props as unknown as ChartPanelProps).panelState
@@ -80,10 +81,17 @@ export const ChartPanelPlugin = forwardRef(
       () => ({
         metadata: metadata as ChartPanelMetadata,
         localDashboardId,
-        makeModel: () => {
+        makeModel: async () => {
           if (metadata == null) {
             throw new Error('Metadata is required for chart panel');
           }
+
+          const dh =
+            typeof deferredApi === 'function'
+              ? await deferredApi(metadata)
+              : deferredApi;
+
+          assertNotNull(dh, `Cannot find API for metadata: ${metadata}`);
 
           return createChartModel(
             dh,
@@ -93,7 +101,7 @@ export const ChartPanelPlugin = forwardRef(
           );
         },
       }),
-      [metadata, localDashboardId, dh, panelFetch, panelState]
+      [metadata, localDashboardId, deferredApi, panelFetch, panelState]
     );
 
     // eslint-disable-next-line react/jsx-props-no-spreading
