@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.87.0](https://github.com/deephaven/web-client-ui/compare/v0.86.1...v0.87.0) (2024-07-22)
+
+### ⚠ BREAKING CHANGES
+
+- Fix any try / catch blocks that return non-awaited
+  Promises
+
+### Bug Fixes
+
+- Enabled @typescript-eslint/return-await rule and fixed offending code ([#2157](https://github.com/deephaven/web-client-ui/issues/2157)) ([7875d03](https://github.com/deephaven/web-client-ui/commit/7875d03fdbe2dfa1c051c6dfa42cc1d9e7469afb)), closes [#2154](https://github.com/deephaven/web-client-ui/issues/2154)
+
 ## [0.86.0](https://github.com/deephaven/web-client-ui/compare/v0.85.2...v0.86.0) (2024-07-17)
 
 **Note:** Version bump only for package @deephaven/utils
