@@ -61,6 +61,7 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
       },
       webgl: true,
       webglEditable: true,
+      gridDensity: 'regular' as const,
     };
     const serverSettings = {
       defaultDateTimeFormat: serverConfigValues?.get('dateTimeFormat'),
@@ -121,7 +122,9 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
       ),
     };
 
-    const keys = Object.keys(serverSettings) as Array<keyof typeof settings>;
+    const keys = Object.keys(serverSettings) as Array<
+      keyof typeof serverSettings
+    >;
     for (let i = 0; i < keys.length; i += 1) {
       const key = keys[i];
       if (serverSettings[key] !== undefined) {

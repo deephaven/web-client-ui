@@ -16,8 +16,6 @@ import {
   CopyButton,
   GLOBAL_SHORTCUTS,
   Logo,
-  ThemeContext,
-  ThemePicker,
   Tooltip,
 } from '@deephaven/components';
 import { ServerConfigValues, User } from '@deephaven/redux';
@@ -26,7 +24,6 @@ import {
   BROADCAST_LOGOUT_MESSAGE,
   makeMessage,
 } from '@deephaven/jsapi-utils';
-import { assertNotNull } from '@deephaven/utils';
 import { PluginModuleMap } from '@deephaven/plugin';
 import FormattingSectionContent from './FormattingSectionContent';
 import LegalNotice from './LegalNotice';
@@ -40,6 +37,7 @@ import {
   getFormattedVersionInfo,
 } from './SettingsUtils';
 import AdvancedSectionContent from './AdvancedSectionContent';
+import ThemeSectionContent from './ThemeSectionContent';
 
 interface SettingsMenuProps {
   serverConfigValues: ServerConfigValues;
@@ -258,33 +256,23 @@ export class SettingsMenu extends Component<
             <ColumnSpecificSectionContent scrollTo={this.handleScrollTo} />
           </SettingsMenuSection>
 
-          <ThemeContext.Consumer>
-            {contextValue => {
-              assertNotNull(contextValue, 'ThemeContext value is null');
-
-              return contextValue.themes.length > 1 ? (
-                <SettingsMenuSection
-                  sectionKey={SettingsMenu.THEME_SECTION_KEY}
-                  isExpanded={this.isSectionExpanded(
-                    SettingsMenu.THEME_SECTION_KEY
-                  )}
-                  onToggle={this.handleSectionToggle}
-                  title={
-                    <>
-                      <FontAwesomeIcon
-                        icon={vsPaintcan}
-                        transform="grow-4"
-                        className="mr-2"
-                      />
-                      Theme
-                    </>
-                  }
-                >
-                  <ThemePicker />
-                </SettingsMenuSection>
-              ) : null;
-            }}
-          </ThemeContext.Consumer>
+          <SettingsMenuSection
+            sectionKey={SettingsMenu.THEME_SECTION_KEY}
+            isExpanded={this.isSectionExpanded(SettingsMenu.THEME_SECTION_KEY)}
+            onToggle={this.handleSectionToggle}
+            title={
+              <>
+                <FontAwesomeIcon
+                  icon={vsPaintcan}
+                  transform="grow-4"
+                  className="mr-2"
+                />
+                Theme
+              </>
+            }
+          >
+            <ThemeSectionContent />
+          </SettingsMenuSection>
 
           <SettingsMenuSection
             sectionKey={SettingsMenu.SHORTCUT_SECTION_KEY}
