@@ -23,10 +23,9 @@ exports[`createDefaultIrisGridTheme should derive the default Iris grid theme 1`
   "dateColor": "IrisGridTheme['date-color']",
   "density": {
     "compact": {
-      "cellHorizontalPadding": 2,
-      "columnHeaderHeight": 24,
+      "cellHorizontalPadding": 5,
+      "columnHeaderHeight": 26,
       "font": "11px Fira Sans, sans-serif",
-      "headerFont": "600 11px Fira Sans, sans-serif",
       "headerHorizontalPadding": 10,
       "iconSize": 14,
       "minColumnWidth": 10,
@@ -46,6 +45,7 @@ exports[`createDefaultIrisGridTheme should derive the default Iris grid theme 1`
   "filterBarExpandedActiveBackgroundColor": "IrisGridTheme['filter-bar-expanded-active-bg']",
   "filterBarExpandedActiveCellBackgroundColor": "IrisGridTheme['filter-bar-expanded-active-cell-bg']",
   "filterBarExpandedBackgroundColor": "IrisGridTheme['filter-bar-expanded-bg']",
+  "filterBarFont": "IrisGridTheme['font']",
   "filterBarHeight": 30,
   "filterBarHorizontalPadding": 4,
   "filterBarSeparatorColor": "IrisGridTheme['filter-bar-separator-color']",

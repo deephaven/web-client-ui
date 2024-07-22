@@ -11,18 +11,8 @@ import IrisGridThemeRaw from './IrisGridTheme.module.scss';
 
 const log = Log.module('IrisGridTheme');
 
-interface IrisGridDensity {
-  cellHorizontalPadding: number;
-  headerHorizontalPadding: number;
-  minColumnWidth: number;
-  rowHeight: number;
-  font: string;
-  headerFont: string;
-  iconSize: number;
-  columnHeaderHeight: number;
-}
-
 export type IrisGridThemeType = GridThemeType & {
+  filterBarFont: string;
   filterBarCollapsedHeight: number;
   filterBarHeight: number;
   reverseHeaderBarHeight: number;
@@ -59,8 +49,8 @@ export type IrisGridThemeType = GridThemeType & {
   floatingGridRowColor: NullableGridColor;
   iconSize: number;
   density: {
-    compact: Partial<IrisGridDensity>;
-    spacious: Partial<IrisGridDensity>;
+    compact: Partial<Omit<IrisGridThemeType, 'density'>>;
+    spacious: Partial<Omit<IrisGridThemeType, 'density'>>;
   };
 };
 
@@ -94,6 +84,7 @@ export function createDefaultIrisGridTheme(): IrisGridThemeType {
     white: IrisGridTheme.white,
     black: IrisGridTheme.black,
     font: IrisGridTheme.font,
+    filterBarFont: IrisGridTheme.font,
     headerBackgroundColor: IrisGridTheme['header-bg'],
     headerColor: IrisGridTheme['header-color'],
     headerSeparatorColor: IrisGridTheme['header-separator-color'],
@@ -202,14 +193,13 @@ export function createDefaultIrisGridTheme(): IrisGridThemeType {
 
     density: {
       compact: {
-        cellHorizontalPadding: 2,
+        cellHorizontalPadding: 5, // Same as regular set in GridTheme
         headerHorizontalPadding: 10,
         minColumnWidth: 10,
         rowHeight: 16,
         font: '11px Fira Sans, sans-serif',
-        headerFont: '600 11px Fira Sans, sans-serif',
         iconSize: 14,
-        columnHeaderHeight: 24,
+        columnHeaderHeight: 26,
       },
       spacious: {
         cellHorizontalPadding: 7,

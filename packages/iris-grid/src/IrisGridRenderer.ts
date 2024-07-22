@@ -573,7 +573,7 @@ export class IrisGridRenderer extends GridRenderer {
 
     context.save();
 
-    context.font = theme.font;
+    context.font = theme.filterBarFont;
     context.textAlign = 'left';
 
     if (
