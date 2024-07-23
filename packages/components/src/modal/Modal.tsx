@@ -102,7 +102,9 @@ function Modal({
 
   return element.current
     ? ReactDOM.createPortal(
-        <SpectrumThemeProvider isPortal>
+        // Without the zIndex and position props
+        // the modal is rendered on top of nested DatePicker popovers
+        <SpectrumThemeProvider isPortal zIndex={0} position="relative">
           <CSSTransition
             appear
             mountOnEnter

@@ -9,7 +9,12 @@
   color: var(--dh-color-text);
 
   .spectrum-theme-provider {
-    display: contents;
+    // This is important for portals with rounded corners (e.g. Popover) so that
+    // the underlying background color shows.
+    --dh-spectrum-theme-provider-bg: unset;
+
+    background-color: var(--dh-spectrum-theme-provider-bg);
+    color: var(--dh-color-text);
   }
 }
 
