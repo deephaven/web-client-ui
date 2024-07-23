@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.3](https://github.com/deephaven/web-client-ui/compare/v0.85.2...v0.85.3) (2024-07-23)
+
+### Bug Fixes
+
+- Remove the session wrapper from the embedded widget app ([#2158](https://github.com/deephaven/web-client-ui/issues/2158)) ([6e32abe](https://github.com/deephaven/web-client-ui/commit/6e32abe16c3ca1bfef2d207de9ac75cdb92e32ec))
+
 ## [0.85.2](https://github.com/deephaven/web-client-ui/compare/v0.85.1...v0.85.2) (2024-07-09)
 
 **Note:** Version bump only for package @deephaven/embed-widget

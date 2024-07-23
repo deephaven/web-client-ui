@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.3](https://github.com/deephaven/web-client-ui/compare/v0.85.2...v0.85.3) (2024-07-23)
+
+### Bug Fixes
+
+- add back panel prop to IrisGrid Plugin ([#2155](https://github.com/deephaven/web-client-ui/issues/2155)) ([f859e13](https://github.com/deephaven/web-client-ui/commit/f859e13d3fcee76b17a42a79d6777a3620eef382)), closes [#2093](https://github.com/deephaven/web-client-ui/issues/2093)
+
 ## [0.85.2](https://github.com/deephaven/web-client-ui/compare/v0.85.1...v0.85.2) (2024-07-09)
 
 **Note:** Version bump only for package @deephaven/dashboard-core-plugins
