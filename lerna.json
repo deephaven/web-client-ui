@@ -3,7 +3,7 @@
   "version": "0.85.2",
   "command": {
     "publish": {
-      "distTag": "latest"
+      "distTag": "release-v0.85"
     },
     "version": {
       "changelogPreset": "conventionalcommits"
