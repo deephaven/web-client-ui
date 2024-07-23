@@ -8,6 +8,19 @@ import MissingPartitionError, {
 } from './MissingPartitionError';
 import { PartitionedGridModelProvider } from './PartitionedGridModel';
 
+type PartitionedTableWithBaseTable = DhType.PartitionedTable & {
+  getBaseTable: () => DhType.Table;
+};
+
+function isPartitionedTableWithBaseTable(
+  partitionedTable: DhType.PartitionedTable
+): partitionedTable is PartitionedTableWithBaseTable {
+  return (
+    'getBaseTable' in partitionedTable &&
+    typeof partitionedTable.getBaseTable === 'function'
+  );
+}
+
 class IrisGridPartitionedTableModel
   extends EmptyIrisGridModel
   implements PartitionedGridModelProvider
@@ -80,8 +93,11 @@ class IrisGridPartitionedTableModel
   }
 
   async partitionBaseTable(): Promise<DhType.Table> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (this.partitionedTable as any).getBaseTable();
+    if (isPartitionedTableWithBaseTable(this.partitionedTable)) {
+      return this.partitionedTable.getBaseTable();
+    }
+    // Fallback to the key table if the base table API is not available
+    return this.partitionedTable.getKeyTable();
   }
 
   async partitionMergedTable(): Promise<DhType.Table> {
