@@ -21,8 +21,10 @@ export {
 
 export type { CalendarDate, CalendarDateTime, ZonedDateTime };
 
+// This is the type for the DatePicker value
 export type DateValue = CalendarDate | CalendarDateTime | ZonedDateTime;
 
+// This is the type for DatePicker onChange
 export type MappedDateValue<T> = T extends ZonedDateTime
   ? ZonedDateTime
   : T extends CalendarDateTime
