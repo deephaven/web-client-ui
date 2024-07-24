@@ -1,6 +1,7 @@
 // This is a dev dependency for building, so importing dev deps is fine
 /* eslint-disable import/no-extraneous-dependencies */
 import { defineConfig, loadEnv } from 'vite';
+import browserslistToEsbuild from 'browserslist-to-esbuild';
 import react from '@vitejs/plugin-react-swc';
 import path from 'path';
 
@@ -100,7 +101,9 @@ export default defineConfig(({ mode }) => {
       outDir: path.resolve(__dirname, env.VITE_BUILD_PATH),
       emptyOutDir: true,
       sourcemap: true,
-      target: 'esnext',
+      build: {
+        target: browserslistToEsbuild(),
+      },
       rollupOptions: {
         output: {
           manualChunks: id => {
@@ -143,5 +146,14 @@ export default defineConfig(({ mode }) => {
       devSourcemap: true,
     },
     plugins: [react()],
+    esbuild: {
+      /**
+       * Prevents ESBuild to throw when using a feature not supported by the
+       * list of supported browsers coming from the `browserslist` file.
+       */
+      supported: {
+        'top-level-await': true,
+      },
+    },
   };
 });
