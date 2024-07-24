@@ -1497,14 +1497,13 @@ class Grid extends PureComponent<GridProps, GridState> {
       const { columnCount, rowCount } = model;
       let ranges = selectedRanges;
       // If each cell is a single selection, we need to update the selection to map to the newly pasted data
+      // Check for
       if (
         ranges.every(
           range =>
-            (GridRange.cellCount([range]) === 1 &&
-              (range.startColumn ?? 0) + tableWidth <= columnCount &&
-              (range.startRow ?? 0) + tableHeight <= rowCount) ||
-            (GridRange.rowCount([range]) === tableHeight &&
-              GridRange.columnCount([range]) === tableWidth)
+            GridRange.cellCount([range]) === 1 &&
+            (range.startColumn ?? 0) + tableWidth <= columnCount &&
+            (range.startRow ?? 0) + tableHeight <= rowCount
         )
       ) {
         // Remap the selected ranges
