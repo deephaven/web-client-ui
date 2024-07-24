@@ -1,3 +1,9 @@
+import {
+  CalendarDate,
+  CalendarDateTime,
+  ZonedDateTime,
+} from '@internationalized/date';
+
 export {
   Calendar,
   type SpectrumCalendarProps as CalendarProps,
@@ -12,3 +18,15 @@ export {
   TimeField,
   type SpectrumTimeFieldProps as TimeFieldProps,
 } from '@adobe/react-spectrum';
+
+export type { CalendarDate, CalendarDateTime, ZonedDateTime };
+
+export type DateValue = CalendarDate | CalendarDateTime | ZonedDateTime;
+
+export type MappedDateValue<T> = T extends ZonedDateTime
+  ? ZonedDateTime
+  : T extends CalendarDateTime
+  ? CalendarDateTime
+  : T extends CalendarDate
+  ? CalendarDate
+  : never;
