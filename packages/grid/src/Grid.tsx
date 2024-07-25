@@ -1909,7 +1909,11 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     // Check if at the top and attempting to scroll up
     // Or at the bottom and attempting to scroll down
-    if ((top === 0 && deltaY < 0) || (top >= rowCount - 1 && deltaY > 0)) {
+    if (
+      (top === 0 && deltaY < 0) ||
+      (top >= rowCount - scrollableContentHeight / metrics.rowHeight &&
+        deltaY > 0)
+    ) {
       event.stopPropagation();
       return;
     }
@@ -2057,11 +2061,8 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     this.setViewState({ top, left, leftOffset, topOffset });
 
-    // Check if we're at the top or bottom of the grid
-    if (top >= 0 && topOffset !== 0) {
-      event.stopPropagation();
-      event.preventDefault();
-    }
+    event.stopPropagation();
+    event.preventDefault();
   }
 
   /**
