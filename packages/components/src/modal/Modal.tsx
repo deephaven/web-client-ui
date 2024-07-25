@@ -9,6 +9,7 @@ import React, {
 import ReactDOM from 'react-dom';
 import { CSSTransition } from 'react-transition-group';
 import ThemeExport from '../ThemeExport';
+import { SpectrumThemeProvider } from '../theme/SpectrumThemeProvider';
 
 interface ModalProps {
   className?: string;
@@ -101,7 +102,9 @@ function Modal({
 
   return element.current
     ? ReactDOM.createPortal(
-        <>
+        // Without the zIndex and position props
+        // the modal is rendered on top of nested DatePicker popovers
+        <SpectrumThemeProvider isPortal zIndex={0} position="relative">
           <CSSTransition
             appear
             mountOnEnter
@@ -171,7 +174,7 @@ function Modal({
               </div>
             </div>
           </CSSTransition>
-        </>,
+        </SpectrumThemeProvider>,
         element.current
       )
     : null;
