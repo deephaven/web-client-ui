@@ -1909,7 +1909,14 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     // Check if at the top and attempting to scroll up
     // Or at the bottom and attempting to scroll down
-    if ((top === 0 && deltaY < 0) || (top === lastTop && deltaY > 0)) {
+    // Or at the left and attempting to scroll left
+    // Or at the right and attempting to scroll right
+    if (
+      (top === 0 && deltaY < 0) ||
+      (top === lastTop && deltaY > 0) ||
+      (left === 0 && deltaX < 0) ||
+      (left === lastLeft && deltaX > 0)
+    ) {
       return;
     }
 
