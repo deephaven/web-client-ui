@@ -9,6 +9,8 @@ export interface SpectrumThemeProviderProps {
   isPortal?: boolean;
   theme?: Theme;
   colorScheme?: 'light' | 'dark';
+  zIndex?: number;
+  position?: 'static' | 'absolute' | 'fixed' | 'relative' | 'sticky';
 }
 
 /**
@@ -23,6 +25,8 @@ export function SpectrumThemeProvider({
   isPortal = false,
   theme = themeDHDefault,
   colorScheme,
+  zIndex,
+  position,
 }: SpectrumThemeProviderProps): JSX.Element {
   // a unique ID is used per provider to force it to render the theme wrapper element inside portals
   // based on https://github.com/adobe/react-spectrum/issues/1697#issuecomment-999827266
@@ -34,6 +38,8 @@ export function SpectrumThemeProvider({
       UNSAFE_className="spectrum-theme-provider"
       theme={theme}
       colorScheme={colorScheme}
+      zIndex={zIndex}
+      position={position}
       data-unique-id={id}
     >
       {children}
