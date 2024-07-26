@@ -25,7 +25,7 @@ interface ModalProps {
 }
 
 function Modal({
-  className = '',
+  className,
   children,
   role = 'role',
   keyboard = true,
@@ -153,7 +153,7 @@ function Modal({
               style={{ display: 'block' }}
             >
               <div
-                className={classNames(`modal-dialog ${className}`, {
+                className={classNames('modal-dialog', className, {
                   'modal-lg': size === 'lg',
                   'modal-sm': size === 'sm',
                   'modal-xl': size === 'xl',
