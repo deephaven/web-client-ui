@@ -1,4 +1,5 @@
 import React, { CSSProperties, ReactElement, ReactNode } from 'react';
+import classNames from 'classnames';
 
 interface ModalBodyProps {
   className?: string;
@@ -8,13 +9,17 @@ interface ModalBodyProps {
 }
 
 function ModalBody({
-  className = 'modal-body',
+  className,
   style,
   children,
   'data-testid': dataTestId,
 }: ModalBodyProps): ReactElement {
   return (
-    <div className={className} data-testid={dataTestId} style={style}>
+    <div
+      className={classNames('modal-body', className)}
+      data-testid={dataTestId}
+      style={style}
+    >
       {children}
     </div>
   );
