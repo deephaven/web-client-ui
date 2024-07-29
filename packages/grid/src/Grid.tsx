@@ -1326,6 +1326,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       const { columnCount, rowCount } = model;
       let ranges = selectedRanges;
       // If each cell is a single selection, we need to update the selection to map to the newly pasted data
+      // Check for
       if (
         ranges.every(
           range =>
@@ -1345,16 +1346,6 @@ class Grid extends PureComponent<GridProps, GridState> {
             )
         );
         this.setSelectedRanges(ranges);
-      }
-
-      if (
-        !ranges.every(
-          range =>
-            GridRange.rowCount([range]) === tableHeight &&
-            GridRange.columnCount([range]) === tableWidth
-        )
-      ) {
-        throw new PasteError('Copy and paste area are not same size.');
       }
 
       const edits: EditOperation[] = [];

@@ -37,9 +37,8 @@ class IrisGridTableModel extends IrisGridModel {
     this.handleTableUpdate = this.handleTableUpdate.bind(this);
     this.handleTotalsUpdate = this.handleTotalsUpdate.bind(this);
     this.handleRequestFailed = this.handleRequestFailed.bind(this);
-    this.handleCustomColumnsChanged = this.handleCustomColumnsChanged.bind(
-      this
-    );
+    this.handleCustomColumnsChanged =
+      this.handleCustomColumnsChanged.bind(this);
     this.setViewport = throttle(
       this.setViewport.bind(this),
       SET_VIEWPORT_THROTTLE
@@ -654,7 +653,7 @@ class IrisGridTableModel extends IrisGridModel {
    */
   pendingRow(y) {
     const pendingRow = y - this.floatingTopRowCount - this.table.size;
-    if (pendingRow >= 0 && pendingRow < this.pendingNewRowCount) {
+    if (pendingRow >= 0) {
       return pendingRow;
     }
 
@@ -726,10 +725,8 @@ class IrisGridTableModel extends IrisGridModel {
     const operationMap = this.totals?.operationMap;
     for (let c = 0; c < columns.length; c += 1) {
       const column = columns[c];
-      const [
-        name,
-        operation = operationMap?.[name]?.[0] ?? defaultOperation,
-      ] = column.name.split('__');
+      const [name, operation = operationMap?.[name]?.[0] ?? defaultOperation] =
+        column.name.split('__');
       if (!dataMap.has(operation)) {
         dataMap.set(operation, { data: new Map() });
       }
@@ -1260,18 +1257,40 @@ class IrisGridTableModel extends IrisGridModel {
   }
 
   isEditableRange(range) {
-    return (
-      this.inputTable != null &&
-      GridRange.isBounded(range) &&
-      ((this.isPendingRow(range.startRow) && this.isPendingRow(range.endRow)) ||
-        (range.startColumn >= this.inputTable.keyColumns.length &&
-          range.endColumn >= this.inputTable.keyColumns.length)) &&
-      range.startRow >= this.floatingTopRowCount &&
-      range.startRow <
-        this.floatingTopRowCount + this.table.size + this.pendingRowCount &&
-      range.endRow <
-        this.floatingTopRowCount + this.table.size + this.pendingRowCount
-    );
+    // Make sure we have an input table and a valid range
+    if (
+      this.inputTable == null ||
+      range.startRow == null ||
+      range.endRow == null
+    ) {
+      return false;
+    }
+
+    // Check that the edit is in the editable range
+    // If an input table has keyed columns, the non-key columns are always editable
+    // If an input table does not have key columns, it is append only and existing rows cannot be editable
+    // Pending rows are always editable
+    const isPendingRange =
+      this.isPendingRow(range.startRow) && this.isPendingRow(range.endRow);
+
+    let isKeyColumnInRange = false;
+
+    // Check if any of the columns in grid range are key columns
+    const bound = range.endColumn ?? this.table.size;
+    for (let column = range.startColumn; column <= bound; column += 1) {
+      if (this.isKeyColumn(column)) {
+        isKeyColumnInRange = true;
+        break;
+      }
+    }
+
+    if (
+      !(isPendingRange || (this.keyColumnSet.size !== 0 && !isKeyColumnInRange))
+    ) {
+      return false;
+    }
+
+    return true;
   }
 
   isDeletableRange(range) {
