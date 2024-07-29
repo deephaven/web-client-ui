@@ -99,7 +99,7 @@ export default defineConfig(({ mode }) => {
     build: {
       outDir: path.resolve(__dirname, env.VITE_BUILD_PATH),
       emptyOutDir: true,
-      sourcemap: true,
+      sourcemap: env.VITE_SOURCEMAP !== 'false',
       target: 'esnext',
       rollupOptions: {
         output: {

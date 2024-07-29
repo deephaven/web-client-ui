@@ -84,7 +84,7 @@ export default defineConfig(({ mode }) => {
     build: {
       outDir: env.VITE_BUILD_PATH,
       emptyOutDir: true,
-      sourcemap: true,
+      sourcemap: env.VITE_SOURCEMAP !== 'false',
       rollupOptions: {
         output: {
           manualChunks: id => {

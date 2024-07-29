@@ -61,4 +61,4 @@ RUN SKIP_POSTINSTALL=1 npm ci
 COPY . .
 
 # Now build the app with our playwright.css included
-RUN VITE_PLAYWRIGHT_CSS=1 npm run build
+RUN VITE_PLAYWRIGHT_CSS=1 VITE_SOURCEMAP=false npm run build
