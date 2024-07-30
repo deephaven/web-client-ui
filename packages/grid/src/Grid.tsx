@@ -1908,18 +1908,6 @@ class Grid extends PureComponent<GridProps, GridState> {
       metrics.rowHeight
     );
 
-    // Check if we're at the edge of the grid and attempting to scroll
-    const willScrollX =
-      ((left > 0 || leftOffset > 0) && deltaX < 0) ||
-      (left < lastLeft && deltaX > 0);
-    const willScrollY =
-      ((top > 0 || topOffset > 0) && deltaY < 0) ||
-      (top < lastTop && deltaY > 0);
-
-    if (!willScrollX && !willScrollY) {
-      return;
-    }
-
     // iterate through each column to determine column width and figure out how far to scroll
     // get column width of next column to scroll to, and subract it from the remaining distance to travel
     while (hasHorizontalBar && deltaX !== 0) {
