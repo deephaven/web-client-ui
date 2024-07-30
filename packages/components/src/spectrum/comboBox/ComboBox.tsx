@@ -5,9 +5,9 @@ import {
 } from '@adobe/react-spectrum';
 import type { DOMRef } from '@react-types/shared';
 import cl from 'classnames';
+import { useMergeRef } from '@deephaven/react-hooks';
 import type { NormalizedItem } from '../utils';
 import { PickerPropsT, usePickerProps } from '../picker';
-import useMultiRef from '../picker/useMultiRef';
 
 export type ComboBoxProps = PickerPropsT<SpectrumComboBoxProps<NormalizedItem>>;
 
@@ -22,7 +22,7 @@ export const ComboBox = React.forwardRef(function ComboBox(
     ref: scrollRef,
     ...comboBoxProps
   } = usePickerProps(props);
-  const pickerRef = useMultiRef(ref, scrollRef);
+  const pickerRef = useMergeRef(ref, scrollRef);
   return (
     <SpectrumComboBox
       // eslint-disable-next-line react/jsx-props-no-spreading

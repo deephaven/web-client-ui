@@ -28,6 +28,7 @@ import {
   ModeBarButtonAny,
 } from 'plotly.js';
 import type { PlotParams } from 'react-plotly.js';
+import { mergeRefs } from '@deephaven/react-hooks';
 import { bindAllMethods } from '@deephaven/utils';
 import createPlotlyComponent from './plotly/createPlotlyComponent';
 import Plotly from './plotly/Plotly';
@@ -57,7 +58,7 @@ interface ChartProps {
 
   isActive: boolean;
   Plotly: typeof Plotly;
-  containerRef?: React.RefObject<HTMLDivElement>;
+  containerRef?: React.Ref<HTMLDivElement>;
   onDisconnect: () => void;
   onReconnect: () => void;
   onUpdate: (obj: { isLoading: boolean }) => void;
@@ -156,7 +157,8 @@ class Chart extends Component<ChartProps, ChartState> {
 
     this.PlotComponent = createPlotlyComponent(props.Plotly);
     this.plot = React.createRef();
-    this.plotWrapper = props.containerRef ?? React.createRef();
+    this.plotWrapper = React.createRef();
+    this.plotWrapperMerged = mergeRefs(this.plotWrapper, props.containerRef);
     this.columnFormats = [];
     this.dateTimeFormatterOptions = {};
     this.decimalFormatOptions = {};
@@ -237,6 +239,8 @@ class Chart extends Component<ChartProps, ChartState> {
   plot: RefObject<typeof this.PlotComponent>;
 
   plotWrapper: RefObject<HTMLDivElement>;
+
+  plotWrapperMerged: React.RefCallback<HTMLDivElement>;
 
   columnFormats?: FormattingRule[];
 
@@ -713,7 +717,7 @@ class Chart extends Component<ChartProps, ChartState> {
     const isPlotShown = data != null;
 
     return (
-      <div className="h-100 w-100 chart-wrapper" ref={this.plotWrapper}>
+      <div className="h-100 w-100 chart-wrapper" ref={this.plotWrapperMerged}>
         {isPlotShown && (
           <PlotComponent
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment

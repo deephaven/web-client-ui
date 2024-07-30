@@ -1,12 +1,52 @@
+import React from 'react';
 import { renderHook } from '@testing-library/react-hooks';
-import useMultiRef from './useMultiRef';
+import { useMergeRef, mergeRefs } from './useMergeRef';
 
-describe('useMultiRef', () => {
+describe('mergeRefs', () => {
+  it('merges ref objects', () => {
+    const refA = React.createRef();
+    const refB = React.createRef();
+    const mergedRef = mergeRefs(refA, refB);
+
+    const refValue = {};
+    mergedRef(refValue);
+    expect(refA.current).toBe(refValue);
+    expect(refB.current).toBe(refValue);
+  });
+
+  it('merges ref callbacks', () => {
+    const refA: React.RefCallback<unknown> = jest.fn();
+    const refB: React.RefCallback<unknown> = jest.fn();
+    const mergedRef = mergeRefs(refA, refB);
+
+    const refValue = {};
+    mergedRef(refValue);
+    expect(refA).toHaveBeenCalledWith(refValue);
+    expect(refB).toHaveBeenCalledWith(refValue);
+  });
+
+  it('ignores null/undefined refs', () => {
+    const refA = React.createRef();
+    const refB: React.RefCallback<unknown> = jest.fn();
+    const refC = null;
+    const refD = undefined;
+    const mergedRef = mergeRefs(refA, refB, refC, refD);
+
+    const refValue = {};
+    mergedRef(refValue);
+    expect(refA.current).toBe(refValue);
+    expect(refB).toHaveBeenCalledWith(refValue);
+    expect(refC).toBe(null);
+    expect(refD).toBe(undefined);
+  });
+});
+
+describe('useMergeRef', () => {
   it('should assign the ref to all refs passed in', () => {
     const ref1 = jest.fn();
     const ref2 = jest.fn();
     const ref3 = jest.fn();
-    const { result } = renderHook(() => useMultiRef(ref1, ref2, ref3));
+    const { result } = renderHook(() => useMergeRef(ref1, ref2, ref3));
     const multiRef = result.current;
     const element = document.createElement('div');
     multiRef(element);
@@ -19,7 +59,7 @@ describe('useMultiRef', () => {
     const ref1 = jest.fn();
     const ref2 = jest.fn();
     const ref3 = jest.fn();
-    const { result } = renderHook(() => useMultiRef(ref1, ref2, ref3));
+    const { result } = renderHook(() => useMergeRef(ref1, ref2, ref3));
     const multiRef = result.current;
     multiRef(null);
     expect(ref1).toHaveBeenCalledWith(null);
@@ -32,7 +72,7 @@ describe('useMultiRef', () => {
     const ref2 = { current: null };
     const ref3 = { current: null };
     const { result } = renderHook(() =>
-      useMultiRef<HTMLDivElement | null>(ref1, ref2, ref3)
+      useMergeRef<HTMLDivElement | null>(ref1, ref2, ref3)
     );
     const multiRef = result.current;
     const element = document.createElement('div');
@@ -47,7 +87,7 @@ describe('useMultiRef', () => {
     const ref2 = { current: null };
     const ref3 = jest.fn();
     const { result } = renderHook(() =>
-      useMultiRef<HTMLDivElement | null>(ref1, ref2, ref3)
+      useMergeRef<HTMLDivElement | null>(ref1, ref2, ref3)
     );
     const multiRef = result.current;
     const element = document.createElement('div');
