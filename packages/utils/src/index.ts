@@ -27,4 +27,3 @@ export { default as ValidationError } from './ValidationError';
 export { default as TestUtils } from './TestUtils';
 export * from './TestUtils';
 export * from './UIConstants';
-export * from './mergeRefs';

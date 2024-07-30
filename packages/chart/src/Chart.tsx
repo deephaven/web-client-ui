@@ -28,7 +28,8 @@ import {
   ModeBarButtonAny,
 } from 'plotly.js';
 import type { PlotParams } from 'react-plotly.js';
-import { bindAllMethods, mergeRefs } from '@deephaven/utils';
+import { mergeRefs } from '@deephaven/react-hooks';
+import { bindAllMethods } from '@deephaven/utils';
 import createPlotlyComponent from './plotly/createPlotlyComponent';
 import Plotly from './plotly/Plotly';
 import ChartModel from './ChartModel';
