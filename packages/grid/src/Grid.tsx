@@ -1896,6 +1896,7 @@ class Grid extends PureComponent<GridProps, GridState> {
       hasVerticalBar,
     } = metrics;
     let { top, left, topOffset, leftOffset } = metrics;
+    const initialMetrics = metrics;
 
     const theme = this.getTheme();
 
@@ -1909,9 +1910,11 @@ class Grid extends PureComponent<GridProps, GridState> {
 
     // Check if we're at the edge of the grid and attempting to scroll
     const willScrollX =
-      (left > 0 && deltaX < 0) || (left < lastLeft && deltaX > 0);
+      ((left > 0 || leftOffset > 0) && deltaX < 0) ||
+      (left < lastLeft && deltaX > 0);
     const willScrollY =
-      (top > 0 && deltaY < 0) || (top < lastTop && deltaY > 0);
+      ((top > 0 || topOffset > 0) && deltaY < 0) ||
+      (top < lastTop && deltaY > 0);
 
     if (!willScrollX && !willScrollY) {
       return;
@@ -2058,10 +2061,16 @@ class Grid extends PureComponent<GridProps, GridState> {
       }
     }
 
-    this.setViewState({ top, left, leftOffset, topOffset });
-
-    event.stopPropagation();
-    event.preventDefault();
+    if (
+      initialMetrics.top !== top ||
+      initialMetrics.left !== left ||
+      initialMetrics.topOffset !== topOffset ||
+      initialMetrics.leftOffset !== leftOffset
+    ) {
+      this.setViewState({ top, left, topOffset, leftOffset });
+      event.stopPropagation();
+      event.preventDefault();
+    }
   }
 
   /**
