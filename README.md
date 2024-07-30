@@ -268,6 +268,14 @@ npx source-map-explorer 'packages/code-studio/build/static/js/*.js'
 
 ## Browser Support
 
-Support is best for [Google Chrome](https://www.google.com/intl/en_ca/chrome/) and Chromium based browsers (such as [Microsoft Edge based on Chromium](https://www.microsoft.com/en-us/edge)). We try and maintain compatibility with [Mozilla Firefox](https://www.mozilla.org/en-CA/firefox/new/) and [Apple Safari](https://www.apple.com/ca/safari/) as well.
+Support is best for [Google Chrome](https://www.google.com/intl/en_ca/chrome/) and Chromium based browsers (such as [Microsoft Edge based on Chromium](https://www.microsoft.com/en-us/edge)). We also maintain compatibility with [Mozilla Firefox](https://www.mozilla.org/en-CA/firefox/new/) and [Apple Safari](https://www.apple.com/ca/safari/).
+
+Officially, the following browsers and corresponding configurations are supported:
+
+- Chrome: Versions from the last 0.5 years
+- Edge: Versions from the last 0.5 years
+- Opera: Versions from the last 0.5 years
+- Firefox: Versions from the last 0.5 years, including Firefox ESR
+- Safari: Versions from the last 1 year
 
 If you encounter an issue specific to a browser, check that your browser is up to date, then check issues labeled with [firefox](https://github.com/deephaven/web-client-ui/labels/firefox) or [safari](https://github.com/deephaven/web-client-ui/labels/safari) for a list of known browser compatibility issues before reporting the issue.
