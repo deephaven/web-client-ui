@@ -5,9 +5,9 @@ import {
 import type { DOMRef } from '@react-types/shared';
 import cl from 'classnames';
 import React from 'react';
+import { useMergeRef } from '@deephaven/react-hooks';
 import type { NormalizedItem } from '../utils';
 import type { PickerProps } from './PickerProps';
-import useMultiRef from './useMultiRef';
 import { usePickerProps } from './usePickerProps';
 
 /**
@@ -28,7 +28,7 @@ export const Picker = React.forwardRef(function Picker(
     ref: scrollRef,
     ...pickerProps
   } = usePickerProps(props);
-  const pickerRef = useMultiRef(ref, scrollRef);
+  const pickerRef = useMergeRef(ref, scrollRef);
   return (
     <SpectrumPicker
       // eslint-disable-next-line react/jsx-props-no-spreading
