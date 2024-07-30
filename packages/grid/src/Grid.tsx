@@ -2039,10 +2039,16 @@ class Grid extends PureComponent<GridProps, GridState> {
       }
     }
 
-    this.setViewState({ top, left, leftOffset, topOffset });
-
-    event.stopPropagation();
-    event.preventDefault();
+    if (
+      metrics.top !== top ||
+      metrics.left !== left ||
+      metrics.topOffset !== topOffset ||
+      metrics.leftOffset !== leftOffset
+    ) {
+      this.setViewState({ top, left, topOffset, leftOffset });
+      event.stopPropagation();
+      event.preventDefault();
+    }
   }
 
   /**
