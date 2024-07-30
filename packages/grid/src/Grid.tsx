@@ -1896,7 +1896,6 @@ class Grid extends PureComponent<GridProps, GridState> {
       hasVerticalBar,
     } = metrics;
     let { top, left, topOffset, leftOffset } = metrics;
-    const initialMetrics = metrics;
 
     const theme = this.getTheme();
 
@@ -2050,10 +2049,10 @@ class Grid extends PureComponent<GridProps, GridState> {
     }
 
     if (
-      initialMetrics.top !== top ||
-      initialMetrics.left !== left ||
-      initialMetrics.topOffset !== topOffset ||
-      initialMetrics.leftOffset !== leftOffset
+      metrics.top !== top ||
+      metrics.left !== left ||
+      metrics.topOffset !== topOffset ||
+      metrics.leftOffset !== leftOffset
     ) {
       this.setViewState({ top, left, topOffset, leftOffset });
       event.stopPropagation();
