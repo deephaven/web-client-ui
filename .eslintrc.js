@@ -21,11 +21,40 @@ module.exports = {
         'no-restricted-imports': [
           'error',
           {
-            name: packageName,
-            message: 'Forbid importing from owning @deephaven package.',
+            paths: [
+              {
+                name: packageName,
+                message: 'Forbid importing from owning @deephaven package.',
+              },
+            ],
           },
         ],
       },
     })),
+    {
+      files: ['**/*.@(ts|tsx)'],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            paths: [
+              {
+                name: '@adobe/react-spectrum',
+                message: 'Forbid importing from @adobe/react-spectrum.',
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      files: [
+        'packages/components/src/theme/**/*.@(ts|tsx)',
+        'packages/components/src/spectrum/**/*.@(ts|tsx)',
+      ],
+      rules: {
+        'no-restricted-imports': 'off',
+      },
+    },
   ],
 };
