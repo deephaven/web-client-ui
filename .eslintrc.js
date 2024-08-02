@@ -10,7 +10,7 @@ module.exports = {
     ...packageNames.map(packageName => ({
       files: [`packages/${packageManifest.get(packageName)}/**/*.@(ts|tsx)`],
       parserOptions: {
-        project: ['./tsconfig.eslint.json', './packages/**/tsconfig.json'],
+        project: ['./tsconfig.eslint.json', './packages/*/tsconfig.json'],
         tsconfigRootDir: __dirname,
       },
       rules: {
