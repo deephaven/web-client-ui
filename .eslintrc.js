@@ -5,7 +5,7 @@ const { packageNames, packageManifest } = buildPackageManifest();
 module.exports = {
   root: true,
   extends: ['@deephaven/eslint-config'],
-  ignorePatterns: ['packages/golden-layout/*', 'jest.config.js'],
+  ignorePatterns: ['packages/golden-layout/*', 'jest.config.*'],
   overrides: [
     ...packageNames.map(packageName => ({
       files: [`packages/${packageManifest.get(packageName)}/**/*.@(ts|tsx)`],
