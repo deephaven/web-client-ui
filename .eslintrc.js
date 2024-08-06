@@ -14,7 +14,6 @@ module.exports = {
         tsconfigRootDir: __dirname,
       },
     },
-    // For each @deephaven package, forbid importing from itself
     ...packageNames.map(packageName => ({
       files: [`packages/${packageManifest.get(packageName)}/**/*.@(ts|tsx)`],
       rules: {
@@ -24,8 +23,30 @@ module.exports = {
             name: packageName,
             message: 'Forbid importing from owning @deephaven package.',
           },
+          {
+            name: '@adobe/react-spectrum',
+            message:
+              'Import from @deephaven/components instead of @adobe/react-spectrum.',
+          },
         ],
       },
+      overrides: [
+        {
+          files: [
+            'packages/components/src/spectrum/**/*.@(ts|tsx)',
+            'packages/components/src/theme/**/*.@(ts|tsx)',
+          ],
+          rules: {
+            'no-restricted-imports': [
+              'error',
+              {
+                name: packageName,
+                message: 'Forbid importing from owning @deephaven package.',
+              },
+            ],
+          },
+        },
+      ],
     })),
   ],
 };
