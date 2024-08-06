@@ -1,19 +1,15 @@
-import { forwardRef, useMemo } from 'react';
-import {
-  ObjectFetcher,
-  useApi,
-  useObjectFetcher,
-} from '@deephaven/jsapi-bootstrap';
+import { forwardRef, useContext, useMemo } from 'react';
+import { DeferredApiContext } from '@deephaven/jsapi-bootstrap';
 import { ChartModel, ChartModelFactory } from '@deephaven/chart';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { IrisGridUtils } from '@deephaven/iris-grid';
 import { getTimeZone, store } from '@deephaven/redux';
 import { WidgetPanelProps } from '@deephaven/plugin';
+import { assertNotNull } from '@deephaven/utils';
 import {
   ChartPanelMetadata,
   GLChartPanelState,
   isChartPanelDehydratedProps,
-  isChartPanelFigureMetadata,
   isChartPanelTableMetadata,
 } from './panels';
 import ConnectedChartPanel, {
@@ -23,27 +19,21 @@ import ConnectedChartPanel, {
 
 async function createChartModel(
   dh: typeof DhType,
-  fetchObject: ObjectFetcher,
   metadata: ChartPanelMetadata,
-  fetchFigure: () => Promise<DhType.plot.Figure>,
+  panelFetch: () => Promise<DhType.plot.Figure | DhType.Table>,
   panelState?: GLChartPanelState
 ): Promise<ChartModel> {
   let settings;
   let tableName;
-  let figureName;
   let tableSettings;
 
   if (isChartPanelTableMetadata(metadata)) {
     settings = metadata.settings;
     tableName = metadata.table;
-    figureName = undefined;
     tableSettings = metadata.tableSettings;
   } else {
     settings = {};
     tableName = '';
-    figureName = isChartPanelFigureMetadata(metadata)
-      ? metadata.figure
-      : metadata.name;
     tableSettings = {};
   }
   if (panelState != null) {
@@ -53,9 +43,6 @@ async function createChartModel(
     if (panelState.table != null) {
       tableName = panelState.table;
     }
-    if (panelState.figure != null) {
-      figureName = panelState.figure;
-    }
     if (panelState.settings != null) {
       settings = {
         ...settings,
@@ -64,53 +51,25 @@ async function createChartModel(
     }
   }
 
-  if (figureName == null && tableName == null) {
-    const figure = await fetchFigure();
+  if (tableName != null && tableName !== '') {
+    const table = (await panelFetch()) as DhType.Table;
+    new IrisGridUtils(dh).applyTableSettings(
+      table,
+      tableSettings,
+      getTimeZone(store.getState())
+    );
 
-    return ChartModelFactory.makeModel(dh, settings, figure);
+    return ChartModelFactory.makeModelFromSettings(dh, settings, table);
   }
 
-  if (figureName != null) {
-    let figure: DhType.plot.Figure;
+  const figure = (await panelFetch()) as DhType.plot.Figure;
 
-    if (metadata.type === dh.VariableType.FIGURE) {
-      const descriptor = {
-        ...metadata,
-        name: figureName,
-        type: dh.VariableType.FIGURE,
-      };
-      figure = await fetchObject<DhType.plot.Figure>(descriptor);
-    } else {
-      figure = await fetchFigure();
-    }
-
-    return ChartModelFactory.makeModel(dh, settings, figure);
-  }
-
-  const descriptor = {
-    ...metadata,
-    name: tableName,
-    type: dh.VariableType.TABLE,
-  };
-  const table = await fetchObject<DhType.Table>(descriptor);
-  new IrisGridUtils(dh).applyTableSettings(
-    table,
-    tableSettings,
-    getTimeZone(store.getState())
-  );
-
-  return ChartModelFactory.makeModelFromSettings(
-    dh,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    settings as any,
-    table
-  );
+  return ChartModelFactory.makeModel(dh, settings, figure);
 }
 
 export const ChartPanelPlugin = forwardRef(
   (props: WidgetPanelProps<DhType.plot.Figure>, ref: React.Ref<ChartPanel>) => {
-    const dh = useApi();
-    const fetchObject = useObjectFetcher();
+    const deferredApi = useContext(DeferredApiContext);
 
     const panelState = isChartPanelDehydratedProps(props)
       ? (props as unknown as ChartPanelProps).panelState
@@ -122,21 +81,27 @@ export const ChartPanelPlugin = forwardRef(
       () => ({
         metadata: metadata as ChartPanelMetadata,
         localDashboardId,
-        makeModel: () => {
+        makeModel: async () => {
           if (metadata == null) {
             throw new Error('Metadata is required for chart panel');
           }
 
+          const dh =
+            typeof deferredApi === 'function'
+              ? await deferredApi(metadata)
+              : deferredApi;
+
+          assertNotNull(dh, `Cannot find API for metadata: ${metadata}`);
+
           return createChartModel(
             dh,
-            fetchObject,
             metadata as ChartPanelMetadata,
             panelFetch,
             panelState
           );
         },
       }),
-      [metadata, localDashboardId, dh, fetchObject, panelFetch, panelState]
+      [metadata, localDashboardId, deferredApi, panelFetch, panelState]
     );
 
     // eslint-disable-next-line react/jsx-props-no-spreading

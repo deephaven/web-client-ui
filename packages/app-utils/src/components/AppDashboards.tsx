@@ -5,10 +5,7 @@ import {
   DehydratedDashboardPanelProps,
   LazyDashboard,
 } from '@deephaven/dashboard';
-import {
-  sanitizeVariableDescriptor,
-  useObjectFetcher,
-} from '@deephaven/jsapi-bootstrap';
+import { useObjectFetcher } from '@deephaven/jsapi-bootstrap';
 import LayoutManager, {
   ItemConfig,
   Settings as LayoutSettings,
@@ -44,9 +41,8 @@ export function AppDashboards({
       const { metadata } = hydrateProps;
       try {
         if (metadata != null) {
-          const widget = sanitizeVariableDescriptor(metadata);
           return {
-            fetch: async () => fetchObject(widget),
+            fetch: async () => fetchObject(metadata),
             ...hydrateProps,
             localDashboardId: id,
           };
