@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.88.0](https://github.com/deephaven/web-client-ui/compare/v0.87.0...v0.88.0) (2024-08-06)
+
+### Features
+
+- Allow ref callback for Chart and ChartPanel ([#2174](https://github.com/deephaven/web-client-ui/issues/2174)) ([56d1fa9](https://github.com/deephaven/web-client-ui/commit/56d1fa9ba00d319794d686365be245c757ad2178))
+
 ## [0.87.0](https://github.com/deephaven/web-client-ui/compare/v0.86.1...v0.87.0) (2024-07-22)
 
 **Note:** Version bump only for package @deephaven/dashboard-core-plugins

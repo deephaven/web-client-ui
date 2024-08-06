@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.88.0](https://github.com/deephaven/web-client-ui/compare/v0.87.0...v0.88.0) (2024-08-06)
+
+### Bug Fixes
+
+- Input Tables cannot paste more rows than number of visible rows ([#2152](https://github.com/deephaven/web-client-ui/issues/2152)) ([1d51585](https://github.com/deephaven/web-client-ui/commit/1d515850af5affe2ec3ce116cc526097f1c4f389))
+- Propogation of Scroll Events when Scroll Position is at a Boundary ([#2166](https://github.com/deephaven/web-client-ui/issues/2166)) ([cb72d29](https://github.com/deephaven/web-client-ui/commit/cb72d294f162a0ca06758692c675b2aeee732a83)), closes [#2101](https://github.com/deephaven/web-client-ui/issues/2101)
+
 ## [0.87.0](https://github.com/deephaven/web-client-ui/compare/v0.86.1...v0.87.0) (2024-07-22)
 
 ### Features

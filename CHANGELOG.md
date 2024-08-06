@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.88.0](https://github.com/deephaven/web-client-ui/compare/v0.87.0...v0.88.0) (2024-08-06)
+
+### Features
+
+- Allow ref callback for Chart and ChartPanel ([#2174](https://github.com/deephaven/web-client-ui/issues/2174)) ([56d1fa9](https://github.com/deephaven/web-client-ui/commit/56d1fa9ba00d319794d686365be245c757ad2178))
+- Export Internationalized Date Types for DatePicker ([#2170](https://github.com/deephaven/web-client-ui/issues/2170)) ([7fb4f64](https://github.com/deephaven/web-client-ui/commit/7fb4f64bf9822c95faa961c53f480da4ea9e0401))
+
+### Bug Fixes
+
+- Check for the getBaseTable API before calling it ([#2168](https://github.com/deephaven/web-client-ui/issues/2168)) ([a5cb947](https://github.com/deephaven/web-client-ui/commit/a5cb94745797e5568826c26ed0cf8e60131326d2))
+- DH-17454: Combine modal classes instead of replacing ([#2173](https://github.com/deephaven/web-client-ui/issues/2173)) ([a2d5d5f](https://github.com/deephaven/web-client-ui/commit/a2d5d5f9a63ab2d7ec37b95c716f4bf1ae03b9b8))
+- DH-17454: Wrap Modal in SpectrumThemeProvider ([#2169](https://github.com/deephaven/web-client-ui/issues/2169)) ([0058b18](https://github.com/deephaven/web-client-ui/commit/0058b1801c1bfb21e3961a31a8a1c7a27443abb4))
+- Input Tables cannot paste more rows than number of visible rows ([#2152](https://github.com/deephaven/web-client-ui/issues/2152)) ([1d51585](https://github.com/deephaven/web-client-ui/commit/1d515850af5affe2ec3ce116cc526097f1c4f389))
+- Propogation of Scroll Events when Scroll Position is at a Boundary ([#2166](https://github.com/deephaven/web-client-ui/issues/2166)) ([cb72d29](https://github.com/deephaven/web-client-ui/commit/cb72d294f162a0ca06758692c675b2aeee732a83)), closes [#2101](https://github.com/deephaven/web-client-ui/issues/2101)
+- Restrict officially supported browserlist ([#2159](https://github.com/deephaven/web-client-ui/issues/2159)) ([5b06ecc](https://github.com/deephaven/web-client-ui/commit/5b06eccca1c2dff625bae34e3801940f19e7bb56)), closes [#1752](https://github.com/deephaven/web-client-ui/issues/1752)
+
 ## [0.87.0](https://github.com/deephaven/web-client-ui/compare/v0.86.1...v0.87.0) (2024-07-22)
 
 ### ⚠ BREAKING CHANGES

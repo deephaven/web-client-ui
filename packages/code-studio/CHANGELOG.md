@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.88.0](https://github.com/deephaven/web-client-ui/compare/v0.87.0...v0.88.0) (2024-08-06)
+
+### Bug Fixes
+
+- Restrict officially supported browserlist ([#2159](https://github.com/deephaven/web-client-ui/issues/2159)) ([5b06ecc](https://github.com/deephaven/web-client-ui/commit/5b06eccca1c2dff625bae34e3801940f19e7bb56)), closes [#1752](https://github.com/deephaven/web-client-ui/issues/1752)
+
 ## [0.87.0](https://github.com/deephaven/web-client-ui/compare/v0.86.1...v0.87.0) (2024-07-22)
 
 ### Features
