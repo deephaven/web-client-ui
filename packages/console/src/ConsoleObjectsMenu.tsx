@@ -8,6 +8,7 @@ import {
 } from '@deephaven/components';
 import { vsGraph, vsTriangleDown } from '@deephaven/icons';
 import type { dh as DhType } from '@deephaven/jsapi-types';
+import { EMPTY_FUNCTION } from '@deephaven/utils';
 import { ObjectIcon } from './common';
 
 interface ConsoleObjectsMenuProps {
@@ -40,7 +41,7 @@ function ConsoleObjectsMenu({
     };
     const filteredObjects = filterText
       ? objects.filter(
-          ({ title }: { title?: string }) =>
+          ({ title }) =>
             title != null &&
             title.toLowerCase().includes(filterText.toLowerCase())
         )
@@ -60,9 +61,7 @@ function ConsoleObjectsMenu({
       aria-label="Objects"
       kind="ghost"
       disabled={objects.length === 0}
-      onClick={() => {
-        // no-op: click is handled in `DropdownMenu`
-      }}
+      onClick={EMPTY_FUNCTION}
       tooltip={objects.length === 0 ? 'No objects available' : 'Objects'}
       icon={
         <div className="fa-md fa-layers">
@@ -78,7 +77,9 @@ function ConsoleObjectsMenu({
       <DropdownMenu
         actions={actions}
         onMenuOpened={() => searchRef.current?.focus()}
-        onMenuClosed={() => setFilterText('')}
+        onMenuClosed={() => {
+          searchRef.current?.focus();
+        }}
         options={{ initialKeyboardIndex: 1 }}
         popperOptions={{ placement: 'bottom-end' }}
       />

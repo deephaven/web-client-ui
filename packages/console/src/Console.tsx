@@ -56,8 +56,8 @@ interface ConsoleProps {
   /** Additional children to show in the objects menu */
   statusBarChildren: ReactNode;
 
-  /** Hide the objects menu in the status bar. Defaults to false. */
-  hideObjectsMenu?: boolean;
+  /** Show the objects menu in the status bar. Defaults to true. */
+  showObjectsMenu?: boolean;
 
   settings: Partial<Settings>;
   focusCommandHistory: () => void;
@@ -148,6 +148,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     unzip: null,
     supportsType: defaultSupportsType,
     iconForType: defaultIconForType,
+    showObjectsMenu: true,
   };
 
   static LOG_THROTTLE = 500;
@@ -996,7 +997,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
       unzip,
       supportsType,
       iconForType,
-      hideObjectsMenu,
+      showObjectsMenu,
     } = this.props;
     const {
       consoleHeight,
@@ -1025,7 +1026,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
             overflowActions={this.handleOverflowActions}
           >
             {statusBarChildren}
-            {hideObjectsMenu !== true && (
+            {showObjectsMenu === true && (
               <ConsoleObjectsMenu
                 openObject={openObject}
                 objects={consoleMenuObjects}

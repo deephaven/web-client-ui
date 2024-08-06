@@ -16,6 +16,7 @@ import {
   Tooltip,
 } from '@deephaven/components';
 import './ConsoleStatusBar.scss';
+import { EMPTY_FUNCTION } from '@deephaven/utils';
 
 const POPPER_OPTIONS: PopperOptions = { placement: 'bottom-end' };
 
@@ -32,19 +33,19 @@ function ConsoleStatusBar({
   session,
   overflowActions,
 }: ConsoleStatusBarProps): ReactElement {
-  const [isCommandRunning, setIsCommandRunning] = useState(false);
+  const [pendingCommandCount, setPendingCommandCount] = useState(0);
 
   const handleCommandStarted = useCallback(async (event: CustomEvent) => {
-    setIsCommandRunning(true);
+    setPendingCommandCount(count => count + 1);
 
-    const { result } = event.detail;
     try {
+      const { result } = event.detail;
       await result;
     } catch (error) {
       // No-op, fall through
     }
 
-    setIsCommandRunning(false);
+    setPendingCommandCount(count => count - 1);
   }, []);
 
   useEffect(
@@ -66,7 +67,7 @@ function ConsoleStatusBar({
 
   let statusIconClass = null;
   let tooltipText = null;
-  if (isCommandRunning) {
+  if (pendingCommandCount > 0) {
     // Connected, Pending
     statusIconClass = 'console-status-icon-pending';
     tooltipText = 'Worker is busy';
@@ -93,9 +94,7 @@ function ConsoleStatusBar({
           icon={vsKebabVertical}
           tooltip="More Actions..."
           aria-label="More Actions..."
-          onClick={() => {
-            // no-op: click is handled in `DropdownMenu`
-          }}
+          onClick={EMPTY_FUNCTION}
         >
           <DropdownMenu
             actions={overflowActions}
