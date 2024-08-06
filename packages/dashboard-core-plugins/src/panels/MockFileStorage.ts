@@ -11,12 +11,15 @@ import MockFileStorageTable from './MockFileStorageTable';
 export class MockFileStorage implements FileStorage {
   private items: FileStorageItem[];
 
-  constructor(items: FileStorageItem[]) {
+  public readonly separator: string;
+
+  constructor(items: FileStorageItem[], separator = '/') {
     this.items = items;
+    this.separator = separator;
   }
 
   async getTable(): Promise<FileStorageTable> {
-    return new MockFileStorageTable(this.items);
+    return new MockFileStorageTable(this.items, this.separator);
   }
 
   /* eslint-disable class-methods-use-this */
@@ -40,7 +43,7 @@ export class MockFileStorage implements FileStorage {
     for (let i = 0; i < this.items.length; i += 1) {
       if (this.items[i].filename === name) {
         this.items[i].filename = newName;
-        this.items[i].basename = FileUtils.getBaseName(newName);
+        this.items[i].basename = FileUtils.getBaseName(newName, this.separator);
         this.items[i].id = newName;
         break;
       }

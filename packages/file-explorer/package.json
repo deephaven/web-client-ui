@@ -25,6 +25,7 @@
     "@deephaven/components": "file:../components",
     "@deephaven/icons": "file:../icons",
     "@deephaven/log": "file:../log",
+    "@deephaven/react-hooks": "file:../react-hooks",
     "@deephaven/storage": "file:../storage",
     "@deephaven/utils": "file:../utils",
     "@fortawesome/fontawesome-svg-core": "^6.2.1",

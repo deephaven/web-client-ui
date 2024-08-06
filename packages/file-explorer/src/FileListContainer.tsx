@@ -9,6 +9,7 @@ import SHORTCUTS from './FileExplorerShortcuts';
 import './FileExplorer.scss';
 import FileUtils from './FileUtils';
 import FileListItemEditor from './FileListItemEditor';
+import useFileSeparator from './useFileSeparator';
 
 export interface FileListContainerProps {
   showContextMenu?: boolean;
@@ -54,6 +55,7 @@ export function FileListContainer(props: FileListContainerProps): JSX.Element {
   const [renameItem, setRenameItem] = useState<FileStorageItem>();
   const [selectedItems, setSelectedItems] = useState([] as FileStorageItem[]);
   const [focusedItem, setFocusedItem] = useState<FileStorageItem>();
+  const separator = useFileSeparator();
 
   const handleSelectionChange = useCallback(
     newSelectedItems => {
@@ -85,9 +87,9 @@ export function FileListContainer(props: FileListContainerProps): JSX.Element {
 
   const handleNewFolderAction = useCallback(() => {
     if (focusedItem) {
-      onCreateFolder?.(FileUtils.getPath(focusedItem.filename));
+      onCreateFolder?.(FileUtils.getPath(focusedItem.filename, separator));
     }
-  }, [focusedItem, onCreateFolder]);
+  }, [focusedItem, onCreateFolder, separator]);
 
   const handleRenameAction = useCallback(() => {
     if (focusedItem) {

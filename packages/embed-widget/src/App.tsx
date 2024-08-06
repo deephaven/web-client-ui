@@ -85,9 +85,11 @@ function App(): JSX.Element {
           }
 
           const storageService = client.getStorageService();
+          const layoutRoot =
+            serverConfig.get('web.storage.layout.directory') ?? '';
           const layoutStorage = new GrpcLayoutStorage(
             storageService,
-            import.meta.env.VITE_STORAGE_PATH_LAYOUTS ?? ''
+            layoutRoot
           );
           const workspaceStorage = new LocalWorkspaceStorage(layoutStorage);
           const loadedWorkspace = await workspaceStorage.load({

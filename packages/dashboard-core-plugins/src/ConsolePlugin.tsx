@@ -10,7 +10,7 @@ import {
   useListener,
   usePanelRegistration,
 } from '@deephaven/dashboard';
-import { FileUtils } from '@deephaven/file-explorer';
+import { FileUtils, useFileSeparator } from '@deephaven/file-explorer';
 import { CloseOptions, isComponent } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
 import { useCallback, useRef, useState } from 'react';
@@ -73,6 +73,7 @@ export function ConsolePlugin(
   const [previewFileMap, setPreviewFileMap] = useState(
     new Map<string, string>()
   );
+  const separator = useFileSeparator();
 
   const dispatch = useDispatch();
 
@@ -204,7 +205,7 @@ export function ConsolePlugin(
         return;
       }
 
-      renamePanel(panelId, FileUtils.getBaseName(newName));
+      renamePanel(panelId, FileUtils.getBaseName(newName, separator));
     },
     [
       openFileMap,
@@ -214,6 +215,7 @@ export function ConsolePlugin(
       addPreviewFileMapEntry,
       deleteOpenFileMapEntry,
       deletePreviewFileMapEntry,
+      separator,
     ]
   );
 
@@ -314,10 +316,13 @@ export function ConsolePlugin(
     [layout.root, openFileMap, previewFileMap, unregisterFilePanel]
   );
 
-  const getNotebookTitle = useCallback(fileMetadata => {
-    const { itemName } = fileMetadata;
-    return FileUtils.getBaseName(itemName);
-  }, []);
+  const getNotebookTitle = useCallback(
+    fileMetadata => {
+      const { itemName } = fileMetadata;
+      return FileUtils.getBaseName(itemName, separator);
+    },
+    [separator]
+  );
 
   const fileIsOpen = useCallback(
     (fileMetadata: FileMetadata) => {

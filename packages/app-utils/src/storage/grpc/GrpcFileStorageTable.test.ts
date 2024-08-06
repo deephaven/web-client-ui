@@ -3,8 +3,12 @@ import type { dh } from '@deephaven/jsapi-types';
 import GrpcFileStorageTable from './GrpcFileStorageTable';
 
 let storageService: dh.storage.StorageService;
-function makeTable(baseRoot = '', root = ''): GrpcFileStorageTable {
-  return new GrpcFileStorageTable(storageService, baseRoot, root);
+function makeTable(
+  baseRoot = '',
+  root = '',
+  separator = '/'
+): GrpcFileStorageTable {
+  return new GrpcFileStorageTable(storageService, baseRoot, root, separator);
 }
 
 function makeStorageService(): dh.storage.StorageService {
@@ -39,11 +43,11 @@ it('Does not get contents until a viewport is set', () => {
   expect(storageService.listItems).toHaveBeenCalled();
 });
 
-describe('directory expansion tests', () => {
+describe.each(['/', `\\`])('directory expansion tests %s', separator => {
   function makeFile(name: string, path = ''): dh.storage.ItemDetails {
     return {
       basename: name,
-      filename: `${path}/${name}`,
+      filename: `${path}${separator}${name}`,
       dirname: path,
       etag: '',
       size: 1,
@@ -58,7 +62,7 @@ describe('directory expansion tests', () => {
   }
 
   function makeDirectoryContents(
-    path = '/',
+    path = separator,
     numDirs = 3,
     numFiles = 2
   ): Array<dh.storage.ItemDetails> {
@@ -87,15 +91,15 @@ describe('directory expansion tests', () => {
 
   beforeEach(() => {
     storageService.listItems = jest.fn(async path => {
-      const depth = path.length > 0 ? FileUtils.getDepth(path) + 1 : 1;
+      const depth =
+        path.length > 0 ? FileUtils.getDepth(path, separator) + 1 : 1;
       const dirContents = makeDirectoryContents(path, 5 - depth, 10 - depth);
-      // console.log('dirContents for ', path, dirContents);
       return dirContents;
     });
   });
 
-  it('expands multiple directories correctly', async () => {
-    const table = makeTable();
+  it(`expands multiple directories correctly`, async () => {
+    const table = makeTable('', '', separator);
     const handleUpdate = jest.fn();
     table.onUpdate(handleUpdate);
     table.setViewport({ top: 0, bottom: 5 });
@@ -106,16 +110,17 @@ describe('directory expansion tests', () => {
     expect(handleUpdate).toHaveBeenCalledWith({
       offset: 0,
       items: [
-        expectItem(makeDirectory('dir0')),
-        expectItem(makeDirectory('dir1')),
-        expectItem(makeDirectory('dir2')),
-        expectItem(makeDirectory('dir3')),
-        expectItem(makeFile('file0')),
+        expectItem(makeDirectory('dir0', '')),
+        expectItem(makeDirectory('dir1', '')),
+        expectItem(makeDirectory('dir2', '')),
+        expectItem(makeDirectory('dir3', '')),
+        expectItem(makeFile('file0', '')),
       ],
     });
     handleUpdate.mockReset();
 
-    table.setExpanded('/dir1/', true);
+    const dirPath = `${separator}dir1${separator}`;
+    table.setExpanded(dirPath, true);
 
     jest.runAllTimers();
 
@@ -123,16 +128,16 @@ describe('directory expansion tests', () => {
     expect(handleUpdate).toHaveBeenCalledWith({
       offset: 0,
       items: [
-        expectItem(makeDirectory('dir0')),
-        expectItem(makeDirectory('dir1')),
-        expectItem(makeDirectory('dir0', '/dir1')),
-        expectItem(makeDirectory('dir1', '/dir1')),
-        expectItem(makeDirectory('dir2', '/dir1')),
+        expectItem(makeDirectory('dir0', '')),
+        expectItem(makeDirectory('dir1', '')),
+        expectItem(makeDirectory('dir0', makeDirectory('dir1', '').filename)),
+        expectItem(makeDirectory('dir1', makeDirectory('dir1', '').filename)),
+        expectItem(makeDirectory('dir2', makeDirectory('dir1', '').filename)),
       ],
     });
     handleUpdate.mockReset();
 
-    table.setExpanded('/dir1/dir1/', true);
+    table.setExpanded(`${separator}dir1${separator}dir1${separator}`, true);
 
     jest.runAllTimers();
 
@@ -140,17 +145,22 @@ describe('directory expansion tests', () => {
     expect(handleUpdate).toHaveBeenCalledWith({
       offset: 0,
       items: expect.arrayContaining([
-        expectItem(makeDirectory('dir0')),
-        expectItem(makeDirectory('dir1')),
-        expectItem(makeDirectory('dir0', '/dir1')),
-        expectItem(makeDirectory('dir1', '/dir1')),
-        expectItem(makeDirectory('dir0', '/dir1/dir1')),
+        expectItem(makeDirectory('dir0', '')),
+        expectItem(makeDirectory('dir1', '')),
+        expectItem(makeDirectory('dir0', makeDirectory('dir1', '').filename)),
+        expectItem(makeDirectory('dir1', makeDirectory('dir1', '').filename)),
+        expectItem(
+          makeDirectory(
+            'dir0',
+            makeDirectory('dir1', makeDirectory('dir1', '').filename).filename
+          )
+        ),
       ]),
     });
     handleUpdate.mockReset();
 
     // Now collapse it all
-    table.setExpanded('/dir1/', false);
+    table.setExpanded(`${separator}dir1${separator}`, false);
 
     jest.runAllTimers();
 
@@ -158,13 +168,14 @@ describe('directory expansion tests', () => {
     expect(handleUpdate).toHaveBeenCalledWith({
       offset: 0,
       items: expect.arrayContaining([
-        expectItem(makeDirectory('dir0')),
-        expectItem(makeDirectory('dir1')),
-        expectItem(makeDirectory('dir2')),
-        expectItem(makeDirectory('dir3')),
-        expectItem(makeFile('file0')),
+        expectItem(makeDirectory('dir0', '')),
+        expectItem(makeDirectory('dir1', '')),
+        expectItem(makeDirectory('dir2', '')),
+        expectItem(makeDirectory('dir3', '')),
+        expectItem(makeFile('file0', '')),
       ]),
     });
+    table.collapseAll();
     handleUpdate.mockReset();
   });
 });

@@ -9,11 +9,12 @@ import {
 import userEvent from '@testing-library/user-event';
 import {
   DirectoryStorageItem,
+  FileStorageContext,
   FileStorageItem,
 } from '@deephaven/file-explorer';
 import type { Container } from '@deephaven/golden-layout';
 import { TestUtils } from '@deephaven/utils';
-import { FileExplorerPanel, FileExplorerPanelProps } from './FileExplorerPanel';
+import { FileExplorerPanel } from './FileExplorerPanel';
 import MockFileStorage from './MockFileStorage';
 
 function makeFileName(index = 0): string {
@@ -81,16 +82,18 @@ const container: Partial<Container> = {
   off: () => undefined,
 };
 
-function makeContainer({ fileStorage }: Partial<FileExplorerPanelProps> = {}) {
+function makeContainer({ fileStorage }: { fileStorage: MockFileStorage }) {
   return render(
-    <FileExplorerPanel
-      glContainer={container}
-      glEventHub={eventHub}
-      localDashboardId="TEST DASHBOARD"
-      fileStorage={fileStorage}
-      language="TEST LANGUAGE"
-      dispatch={undefined}
-    />
+    <FileStorageContext.Provider value={fileStorage}>
+      <FileExplorerPanel
+        glContainer={container}
+        glEventHub={eventHub}
+        localDashboardId="TEST DASHBOARD"
+        fileStorage={fileStorage}
+        language="TEST LANGUAGE"
+        dispatch={undefined}
+      />
+    </FileStorageContext.Provider>
   );
 }
 
@@ -134,7 +137,7 @@ describe('selects and expands directory for NewItemModal correctly', () => {
     files = makeFiles();
     files.push(makeNested([2], 2));
     files.push(makeNested([0, 3], 4));
-    items = dirs.concat(files);
+    items = [...dirs, ...files];
 
     const fileStorage = new MockFileStorage(items);
     makeContainer({ fileStorage });
