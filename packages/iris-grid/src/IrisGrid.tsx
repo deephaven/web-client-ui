@@ -523,6 +523,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       truncateNumbersWithPound: false,
       showEmptyStrings: true,
       showNullStrings: true,
+      showExtraGroupColumn: true,
       formatter: EMPTY_ARRAY,
       decimalFormatOptions: PropTypes.shape({
         defaultFormatString: PropTypes.string,
@@ -637,6 +638,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     this.truncateNumbersWithPound = false;
     this.showEmptyStrings = true;
     this.showNullStrings = true;
+    this.showExtraGroupColumn = true;
 
     // When the loading scrim started/when it should extend to the end of the screen.
     this.tableSaver = null;
@@ -1022,6 +1024,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   showEmptyStrings: boolean;
 
   showNullStrings: boolean;
+
+  showExtraGroupColumn: boolean;
 
   // When the loading scrim started/when it should extend to the end of the screen.
   loadingScrimStartTime?: number;
@@ -1870,6 +1874,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     const showEmptyStrings = settings?.showEmptyStrings ?? true;
     const showNullStrings = settings?.showNullStrings ?? true;
+    const showExtraGroupColumn = settings?.showExtraGroupColumn ?? false;
 
     const isColumnFormatChanged = !deepEqual(
       this.globalColumnFormats,
@@ -1892,6 +1897,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     const isShowEmptyStringsChanged =
       this.showEmptyStrings !== showEmptyStrings;
     const isShowNullStringsChanged = this.showNullStrings !== showNullStrings;
+    const isShowExtraGroupColumnChanged =
+      this.showExtraGroupColumn !== showExtraGroupColumn;
 
     if (
       isColumnFormatChanged ||
@@ -1900,7 +1907,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       isIntegerFormattingChanged ||
       isTruncateNumbersChanged ||
       isShowEmptyStringsChanged ||
-      isShowNullStringsChanged
+      isShowNullStringsChanged ||
+      isShowExtraGroupColumnChanged
     ) {
       this.globalColumnFormats = globalColumnFormats;
       this.dateTimeFormatterOptions = dateTimeFormatterOptions;
@@ -1909,6 +1917,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.truncateNumbersWithPound = truncateNumbersWithPound;
       this.showEmptyStrings = showEmptyStrings;
       this.showNullStrings = showNullStrings;
+      this.showExtraGroupColumn = showExtraGroupColumn;
       this.updateFormatter({}, forceUpdate);
 
       if (isDateFormattingChanged && forceUpdate) {
@@ -1977,7 +1986,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.integerFormatOptions,
       this.truncateNumbersWithPound,
       this.showEmptyStrings,
-      this.showNullStrings
+      this.showNullStrings,
+      this.showExtraGroupColumn
     );
 
     log.debug('updateFormatter', this.globalColumnFormats, mergedColumnFormats);

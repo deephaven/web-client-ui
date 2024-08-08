@@ -44,8 +44,12 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     inputTable: DhType.InputTable | null = null
   ) {
     super(dh, table, formatter, inputTable);
+    console.log(
+      'IrisGridTreeTableModel constructor',
+      this.formatter.showExtraGroupColumn
+    );
     this.virtualColumns =
-      table.groupedColumns.length > 1
+      table.groupedColumns.length > 1 && this.formatter.showExtraGroupColumn
         ? [
             {
               name: '__DH_UI_GROUP__',
@@ -203,10 +207,20 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   }
 
   get columns(): DhType.Column[] {
-    return this.getCachedColumns(this.virtualColumns, super.columns);
+    return this.getCachedColumns(
+      // this.formatter.showExtraGroupColumn ? this.virtualColumns : [],
+      this.virtualColumns,
+      super.columns
+    );
   }
 
   get groupedColumns(): readonly DhType.Column[] {
+    // console.log(
+    //   'this.formatter.showExtraGroupColumn',
+    //   this.formatter.showExtraGroupColumn,
+    //   'this.virtualColumns',
+    //   this.virtualColumns
+    // );
     return this.getCachedGroupColumns(
       this.virtualColumns,
       this.table.groupedColumns
@@ -321,14 +335,20 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     (
       virtualColumns: readonly DhType.Column[],
       tableColumns: readonly DhType.Column[]
-    ) => [...virtualColumns, ...tableColumns]
+    ) => [
+      ...(this.formatter.showExtraGroupColumn ? virtualColumns : []),
+      ...tableColumns,
+    ]
   );
 
   getCachedGroupColumns = memoize(
     (
       virtualColumns: readonly DhType.Column[],
       tableGroupedColumns: readonly DhType.Column[]
-    ) => [...virtualColumns, ...tableGroupedColumns]
+    ) => [
+      ...(this.formatter.showExtraGroupColumn ? virtualColumns : []),
+      ...tableGroupedColumns,
+    ]
   );
 
   getCachedFilterableColumnSet = memoize(

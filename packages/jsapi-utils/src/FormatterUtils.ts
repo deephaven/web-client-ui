@@ -26,6 +26,7 @@ export function createFormatterFromSettings(
     truncateNumbersWithPound,
     showEmptyStrings,
     showNullStrings,
+    showExtraGroupColumn,
   } = settings ?? {};
 
   return new Formatter(
@@ -36,7 +37,8 @@ export function createFormatterFromSettings(
     defaultIntegerFormatOptions,
     truncateNumbersWithPound,
     showEmptyStrings,
-    showNullStrings
+    showNullStrings,
+    showExtraGroupColumn
   );
 }
 

@@ -49,6 +49,7 @@ export interface WorkspaceSettings {
   truncateNumbersWithPound: boolean;
   showEmptyStrings: boolean;
   showNullStrings: boolean;
+  showExtraGroupColumn: boolean;
   disableMoveConfirmation: boolean;
   shortcutOverrides?: {
     windows?: { [id: string]: ValidKeyState };
