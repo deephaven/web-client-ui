@@ -28,6 +28,7 @@ import {
   getTruncateNumbersWithPound,
   getShowEmptyStrings,
   getShowNullStrings,
+  getShowExtraGroupColumn,
   updateSettings as updateSettingsAction,
   RootState,
   WorkspaceSettings,
@@ -56,6 +57,7 @@ interface FormattingSectionContentProps {
   truncateNumbersWithPound: boolean;
   showEmptyStrings: boolean;
   showNullStrings: boolean;
+  showExtraGroupColumn: boolean;
   updateSettings: (settings: Partial<WorkspaceSettings>) => void;
   defaultDecimalFormatOptions: FormatOption;
   defaultIntegerFormatOptions: FormatOption;
@@ -72,6 +74,7 @@ interface FormattingSectionContentState {
   truncateNumbersWithPound: boolean;
   showEmptyStrings: boolean;
   showNullStrings: boolean;
+  showExtraGroupColumn: boolean;
   timestampAtMenuOpen: Date;
 }
 
@@ -113,6 +116,8 @@ export class FormattingSectionContent extends PureComponent<
       this.handleShowEmptyStringsChange.bind(this);
     this.handleShowNullStringsChange =
       this.handleShowNullStringsChange.bind(this);
+    this.handleShowExtraGroupColumnChange =
+      this.handleShowExtraGroupColumnChange.bind(this);
 
     const {
       defaultDateTimeFormat,
@@ -124,6 +129,7 @@ export class FormattingSectionContent extends PureComponent<
       truncateNumbersWithPound,
       showEmptyStrings,
       showNullStrings,
+      showExtraGroupColumn,
     } = props;
 
     this.containerRef = React.createRef();
@@ -139,6 +145,7 @@ export class FormattingSectionContent extends PureComponent<
       truncateNumbersWithPound,
       showEmptyStrings,
       showNullStrings,
+      showExtraGroupColumn,
       timestampAtMenuOpen: new Date(),
     };
   }
@@ -330,6 +337,16 @@ export class FormattingSectionContent extends PureComponent<
     this.queueUpdate(update);
   }
 
+  handleShowExtraGroupColumnChange(): void {
+    const { showExtraGroupColumn } = this.state;
+    const update = {
+      showExtraGroupColumn: !showExtraGroupColumn,
+    };
+    console.log('After updating state constructor', showExtraGroupColumn);
+    this.setState(update);
+    this.queueUpdate(update);
+  }
+
   commitChanges(): void {
     const { updateSettings } = this.props;
     const updates = this.pendingUpdates.reduce(
@@ -356,6 +373,7 @@ export class FormattingSectionContent extends PureComponent<
       truncateNumbersWithPound,
       showEmptyStrings,
       showNullStrings,
+      showExtraGroupColumn,
     } = this.state;
 
     const {
@@ -596,6 +614,23 @@ export class FormattingSectionContent extends PureComponent<
               </Checkbox>
             </div>
           </div>
+
+          <div className="form-row mb-3">
+            <label
+              className="col-form-label col-3"
+              htmlFor="default-integer-format-input"
+            >
+              Rollup
+            </label>
+            <div className="col pr-0 pt-2">
+              <Checkbox
+                checked={showExtraGroupColumn ?? null}
+                onChange={this.handleShowExtraGroupColumnChange}
+              >
+                Show extra &quot;group&quot; column
+              </Checkbox>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -614,6 +649,7 @@ const mapStateToProps = (
   truncateNumbersWithPound: getTruncateNumbersWithPound(state),
   showEmptyStrings: getShowEmptyStrings(state),
   showNullStrings: getShowNullStrings(state),
+  showExtraGroupColumn: getShowExtraGroupColumn(state),
   timeZone: getTimeZone(state),
   defaults: getDefaultSettings(state),
 });

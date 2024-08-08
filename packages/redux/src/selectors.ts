@@ -129,6 +129,11 @@ export const getShowNullStrings = <State extends RootState = RootState>(
   store: State
 ): Settings<State>['showNullStrings'] => getSettings(store).showNullStrings;
 
+export const getShowExtraGroupColumn = <State extends RootState = RootState>(
+  store: State
+): Settings<State>['showExtraGroupColumn'] =>
+  getSettings(store).showExtraGroupColumn;
+
 export const getDisableMoveConfirmation = <State extends RootState>(
   store: State
 ): Settings<State>['disableMoveConfirmation'] =>

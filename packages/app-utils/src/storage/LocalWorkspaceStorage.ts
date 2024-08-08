@@ -56,6 +56,7 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
       truncateNumbersWithPound: false,
       showEmptyStrings: true,
       showNullStrings: true,
+      showExtraGroupColumn: true,
       defaultNotebookSettings: {
         isMinimapEnabled: false,
       },
@@ -103,6 +104,7 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
         serverConfigValues,
         'showNullStrings'
       ),
+      showExtraGroupColumn: true,
       defaultNotebookSettings:
         serverConfigValues?.get('isMinimapEnabled') !== undefined
           ? {
