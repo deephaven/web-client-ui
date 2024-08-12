@@ -342,7 +342,6 @@ export class FormattingSectionContent extends PureComponent<
     const update = {
       showExtraGroupColumn: !showExtraGroupColumn,
     };
-    console.log('After updating state constructor', showExtraGroupColumn);
     this.setState(update);
     this.queueUpdate(update);
   }

@@ -75,6 +75,9 @@ export function isCustomColumnFormatDefined(
   columnName: string,
   columnType: string
 ): boolean {
+  if (formatter == null) {
+    return false;
+  }
   const columnFormat = formatter.getColumnFormat(columnType, columnName);
   return (
     columnFormat != null &&

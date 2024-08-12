@@ -9,10 +9,10 @@ import {
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
-import { assertNotNull } from '@deephaven/utils';
+import { assertNotNull, EventShimCustomEvent } from '@deephaven/utils';
 import { UIRow, ColumnName, CellData } from './CommonTypes';
 import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
-import { DisplayColumn } from './IrisGridModel';
+import IrisGridModel, { DisplayColumn } from './IrisGridModel';
 
 const log = Log.module('IrisGridTreeTableModel');
 
@@ -44,11 +44,7 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     inputTable: DhType.InputTable | null = null
   ) {
     super(dh, table, formatter, inputTable);
-    console.log(
-      'IrisGridTreeTableModel constructor',
-      this.formatter.showExtraGroupColumn
-    );
-    this.virtualColumns = this.formatter.showExtraGroupColumn
+    this.virtualColumns = formatter.showExtraGroupColumn
       ? [
           {
             name: '__DH_UI_GROUP__',
@@ -88,11 +84,12 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
       : [];
   }
 
-  updateFormatterSetting(newFormatter: Formatter): void {
+  set formatter(newFormatter: Formatter) {
+    const oldFormatter = super.formatter;
+    super.formatter = newFormatter;
     if (
-      this.formatter.showExtraGroupColumn !== newFormatter.showExtraGroupColumn
+      newFormatter.showExtraGroupColumn !== oldFormatter.showExtraGroupColumn
     ) {
-      this.formatter.showExtraGroupColumn = newFormatter.showExtraGroupColumn;
       this.updateVirtualColumns();
     }
   }
@@ -136,6 +133,11 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
           },
         ]
       : [];
+    this.dispatchEvent(
+      new EventShimCustomEvent(IrisGridModel.EVENT.COLUMNS_CHANGED, {
+        detail: this.columns,
+      })
+    );
   }
 
   applyBufferedViewport(
@@ -254,32 +256,19 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   }
 
   get columns(): DhType.Column[] {
-    return this.getCachedColumns(
-      this.formatter.showExtraGroupColumn ? this.virtualColumns : [],
-      // this.virtualColumns,
-      super.columns
-    );
+    return this.getCachedColumns(this.virtualColumns, super.columns);
   }
 
   get groupedColumns(): readonly DhType.Column[] {
-    console.log(
-      'this.formatter.showExtraGroupColumn',
-      this.formatter.showExtraGroupColumn,
-      'this.virtualColumns',
-      this.virtualColumns
-    );
     return this.getCachedGroupColumns(
-      this.formatter.showExtraGroupColumn ? this.virtualColumns : [],
-      // this.virtualColumns,
+      this.virtualColumns,
       this.table.groupedColumns
     );
   }
 
   sourceForCell(column: ModelIndex, row: ModelIndex): GridCell {
-    // if (this.formatter.showExtraGroupColumn) {
     if (column >= this.virtualColumns.length) {
       return { column, row };
-      // }
     }
     const depth = this.depthForRow(row);
     return { column: column + depth, row };
@@ -385,20 +374,14 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     (
       virtualColumns: readonly DhType.Column[],
       tableColumns: readonly DhType.Column[]
-    ) => [
-      ...(this.formatter.showExtraGroupColumn ? virtualColumns : []),
-      ...tableColumns,
-    ]
+    ) => [...virtualColumns, ...tableColumns]
   );
 
   getCachedGroupColumns = memoize(
     (
       virtualColumns: readonly DhType.Column[],
       tableGroupedColumns: readonly DhType.Column[]
-    ) => [
-      ...(this.formatter.showExtraGroupColumn ? virtualColumns : []),
-      ...tableGroupedColumns,
-    ]
+    ) => [...virtualColumns, ...tableGroupedColumns]
   );
 
   getCachedFilterableColumnSet = memoize(
