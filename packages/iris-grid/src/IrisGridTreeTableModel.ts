@@ -44,7 +44,7 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     inputTable: DhType.InputTable | null = null
   ) {
     super(dh, table, formatter, inputTable);
-    this.virtualColumns = formatter.showExtraGroupColumn
+    this.virtualColumns = this.formatter.showExtraGroupColumn
       ? [
           {
             name: '__DH_UI_GROUP__',
@@ -92,6 +92,10 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     ) {
       this.updateVirtualColumns();
     }
+  }
+
+  get formatter(): Formatter {
+    return super.formatter;
   }
 
   updateVirtualColumns(): void {
