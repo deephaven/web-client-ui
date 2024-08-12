@@ -104,7 +104,10 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
         serverConfigValues,
         'showNullStrings'
       ),
-      showExtraGroupColumn: true,
+      showExtraGroupColumn: LocalWorkspaceStorage.getBooleanServerConfig(
+        serverConfigValues,
+        'showExtraGroupColumn'
+      ),
       defaultNotebookSettings:
         serverConfigValues?.get('isMinimapEnabled') !== undefined
           ? {

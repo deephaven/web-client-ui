@@ -48,47 +48,94 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
       'IrisGridTreeTableModel constructor',
       this.formatter.showExtraGroupColumn
     );
-    this.virtualColumns =
-      table.groupedColumns.length > 1 && this.formatter.showExtraGroupColumn
-        ? [
-            {
-              name: '__DH_UI_GROUP__',
-              displayName: 'Group',
-              type: TableUtils.dataType.STRING,
-              constituentType: TableUtils.dataType.STRING,
-              isPartitionColumn: false,
-              isSortable: false,
-              isProxy: true,
-              description: 'Key column',
-              index: -1,
-              filter: () => {
-                throw new Error('Filter not implemented for virtual column');
-              },
-              sort: () => {
-                throw new Error('Sort not implemented virtual column');
-              },
-              formatColor: () => {
-                throw new Error('Color not implemented for virtual column');
-              },
-              get: () => {
-                throw new Error('get not implemented for virtual column');
-              },
-              getFormat: () => {
-                throw new Error('getFormat not implemented for virtual column');
-              },
-              formatNumber: () => {
-                throw new Error(
-                  'formatNumber not implemented for virtual column'
-                );
-              },
-              formatDate: () => {
-                throw new Error(
-                  'formatDate not implemented for virtual column'
-                );
-              },
+    this.virtualColumns = this.formatter.showExtraGroupColumn
+      ? [
+          {
+            name: '__DH_UI_GROUP__',
+            displayName: 'Group',
+            type: TableUtils.dataType.STRING,
+            constituentType: TableUtils.dataType.STRING,
+            isPartitionColumn: false,
+            isSortable: false,
+            isProxy: true,
+            description: 'Key column',
+            index: -1,
+            filter: () => {
+              throw new Error('Filter not implemented for virtual column');
             },
-          ]
-        : [];
+            sort: () => {
+              throw new Error('Sort not implemented virtual column');
+            },
+            formatColor: () => {
+              throw new Error('Color not implemented for virtual column');
+            },
+            get: () => {
+              throw new Error('get not implemented for virtual column');
+            },
+            getFormat: () => {
+              throw new Error('getFormat not implemented for virtual column');
+            },
+            formatNumber: () => {
+              throw new Error(
+                'formatNumber not implemented for virtual column'
+              );
+            },
+            formatDate: () => {
+              throw new Error('formatDate not implemented for virtual column');
+            },
+          },
+        ]
+      : [];
+  }
+
+  updateFormatterSetting(newFormatter: Formatter): void {
+    if (
+      this.formatter.showExtraGroupColumn !== newFormatter.showExtraGroupColumn
+    ) {
+      this.formatter.showExtraGroupColumn = newFormatter.showExtraGroupColumn;
+      this.updateVirtualColumns();
+    }
+  }
+
+  updateVirtualColumns(): void {
+    this.virtualColumns = this.formatter.showExtraGroupColumn
+      ? [
+          {
+            name: '__DH_UI_GROUP__',
+            displayName: 'Group',
+            type: TableUtils.dataType.STRING,
+            constituentType: TableUtils.dataType.STRING,
+            isPartitionColumn: false,
+            isSortable: false,
+            isProxy: true,
+            description: 'Key column',
+            index: -1,
+            filter: () => {
+              throw new Error('Filter not implemented for virtual column');
+            },
+            sort: () => {
+              throw new Error('Sort not implemented virtual column');
+            },
+            formatColor: () => {
+              throw new Error('Color not implemented for virtual column');
+            },
+            get: () => {
+              throw new Error('get not implemented for virtual column');
+            },
+            getFormat: () => {
+              throw new Error('getFormat not implemented for virtual column');
+            },
+            formatNumber: () => {
+              throw new Error(
+                'formatNumber not implemented for virtual column'
+              );
+            },
+            formatDate: () => {
+              throw new Error('formatDate not implemented for virtual column');
+            },
+          },
+        ]
+      : [];
   }
 
   applyBufferedViewport(
@@ -208,28 +255,31 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
 
   get columns(): DhType.Column[] {
     return this.getCachedColumns(
-      // this.formatter.showExtraGroupColumn ? this.virtualColumns : [],
-      this.virtualColumns,
+      this.formatter.showExtraGroupColumn ? this.virtualColumns : [],
+      // this.virtualColumns,
       super.columns
     );
   }
 
   get groupedColumns(): readonly DhType.Column[] {
-    // console.log(
-    //   'this.formatter.showExtraGroupColumn',
-    //   this.formatter.showExtraGroupColumn,
-    //   'this.virtualColumns',
-    //   this.virtualColumns
-    // );
+    console.log(
+      'this.formatter.showExtraGroupColumn',
+      this.formatter.showExtraGroupColumn,
+      'this.virtualColumns',
+      this.virtualColumns
+    );
     return this.getCachedGroupColumns(
-      this.virtualColumns,
+      this.formatter.showExtraGroupColumn ? this.virtualColumns : [],
+      // this.virtualColumns,
       this.table.groupedColumns
     );
   }
 
   sourceForCell(column: ModelIndex, row: ModelIndex): GridCell {
+    // if (this.formatter.showExtraGroupColumn) {
     if (column >= this.virtualColumns.length) {
       return { column, row };
+      // }
     }
     const depth = this.depthForRow(row);
     return { column: column + depth, row };
