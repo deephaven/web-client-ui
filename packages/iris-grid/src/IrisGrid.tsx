@@ -1874,7 +1874,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
     const showEmptyStrings = settings?.showEmptyStrings ?? true;
     const showNullStrings = settings?.showNullStrings ?? true;
-    const showExtraGroupColumn = settings?.showExtraGroupColumn ?? false;
+    const showExtraGroupColumn = settings?.showExtraGroupColumn ?? true;
 
     const isColumnFormatChanged = !deepEqual(
       this.globalColumnFormats,

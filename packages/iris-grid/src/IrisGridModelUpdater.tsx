@@ -48,7 +48,7 @@ interface IrisGridModelUpdaterProps {
 const IrisGridModelUpdater = React.memo(
   ({
     model,
-    modelColumns,
+    modelColumns: propModelColumns,
     top,
     bottom,
     left,
@@ -71,6 +71,10 @@ const IrisGridModelUpdater = React.memo(
     columnHeaderGroups,
     partitionConfig,
   }: IrisGridModelUpdaterProps) => {
+    if (model.formatter !== formatter) {
+      model.formatter = formatter;
+    }
+    const modelColumns = model.columns;
     const columns = useMemo(
       () =>
         IrisGridUtils.getModelViewportColumns(
@@ -107,12 +111,6 @@ const IrisGridModelUpdater = React.memo(
         model.sort = sortsForModel;
       },
       [model, sorts, reverseType]
-    );
-    useEffect(
-      function updateFormatter() {
-        model.formatter = formatter;
-      },
-      [model, formatter]
     );
     useEffect(
       function updateCustomColumns() {
