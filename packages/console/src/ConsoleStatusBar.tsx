@@ -50,17 +50,10 @@ function ConsoleStatusBar({
 
   useEffect(
     function startListening() {
-      session.addEventListener(
+      return session.addEventListener(
         dh.IdeSession.EVENT_COMMANDSTARTED,
         handleCommandStarted
       );
-
-      return function stopListening() {
-        session.removeEventListener(
-          dh.IdeSession.EVENT_COMMANDSTARTED,
-          handleCommandStarted
-        );
-      };
     },
     [dh, handleCommandStarted, session]
   );
@@ -94,6 +87,7 @@ function ConsoleStatusBar({
           icon={vsKebabVertical}
           tooltip="More Actions..."
           aria-label="More Actions..."
+          // no-op: click is handled in `DropdownMenu`
           onClick={EMPTY_FUNCTION}
         >
           <DropdownMenu

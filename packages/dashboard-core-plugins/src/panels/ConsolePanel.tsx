@@ -440,7 +440,7 @@ export class ConsolePanel extends PureComponent<
                 />
               </>
             }
-            showObjectsMenu={false}
+            // showObjectsMenu={false}
             scope={sessionId}
             timeZone={timeZone}
             objectMap={objectMap}

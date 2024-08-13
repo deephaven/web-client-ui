@@ -1,4 +1,10 @@
-import React, { ReactElement, useMemo, useRef, useState } from 'react';
+import React, {
+  ReactElement,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   Button,
@@ -8,6 +14,7 @@ import {
 } from '@deephaven/components';
 import { vsGraph, vsTriangleDown } from '@deephaven/icons';
 import type { dh as DhType } from '@deephaven/jsapi-types';
+import { useDebouncedCallback } from '@deephaven/react-hooks';
 import { EMPTY_FUNCTION } from '@deephaven/utils';
 import { ObjectIcon } from './common';
 
@@ -16,12 +23,27 @@ interface ConsoleObjectsMenuProps {
   objects: readonly DhType.ide.VariableDefinition[];
 }
 
+const RESET_FILTER_DELAY = 5000;
+
 function ConsoleObjectsMenu({
   openObject,
   objects,
 }: ConsoleObjectsMenuProps): ReactElement {
   const [filterText, setFilterText] = useState('');
   const searchRef = useRef<SearchInput>(null);
+
+  const resetFilter = useDebouncedCallback(() => {
+    setFilterText('');
+  }, RESET_FILTER_DELAY);
+
+  const handleMenuOpen = useCallback(() => {
+    resetFilter.cancel();
+    searchRef.current?.select();
+  }, [resetFilter]);
+
+  const handleMenuClose = useCallback(() => {
+    resetFilter();
+  }, [resetFilter]);
 
   const actions: DropdownActions = useMemo(() => {
     if (objects.length === 0) {
@@ -61,6 +83,7 @@ function ConsoleObjectsMenu({
       aria-label="Objects"
       kind="ghost"
       disabled={objects.length === 0}
+      // no-op: click is handled in `DropdownMenu`
       onClick={EMPTY_FUNCTION}
       tooltip={objects.length === 0 ? 'No objects available' : 'Objects'}
       icon={
@@ -76,10 +99,8 @@ function ConsoleObjectsMenu({
     >
       <DropdownMenu
         actions={actions}
-        onMenuOpened={() => searchRef.current?.focus()}
-        onMenuClosed={() => {
-          searchRef.current?.focus();
-        }}
+        onMenuOpened={handleMenuOpen}
+        onMenuClosed={handleMenuClose}
         options={{ initialKeyboardIndex: 1 }}
         popperOptions={{ placement: 'bottom-end' }}
       />

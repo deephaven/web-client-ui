@@ -53,7 +53,7 @@ const DEFAULT_SETTINGS: Settings = {
 interface ConsoleProps {
   dh: typeof DhType;
 
-  /** Additional children to show in the status bar*/
+  /** Additional children to show in the status bar */
   statusBarChildren: ReactNode;
 
   /** Show the objects menu in the status bar. Defaults to true. */
