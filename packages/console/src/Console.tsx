@@ -34,6 +34,7 @@ import {
   CommandHistoryStorage,
   CommandHistoryStorageItem,
 } from './command-history';
+import ConsoleObjectsMenu from './ConsoleObjectsMenu';
 
 const log = Log.module('Console');
 
@@ -51,7 +52,13 @@ const DEFAULT_SETTINGS: Settings = {
 
 interface ConsoleProps {
   dh: typeof DhType;
+
+  /** Additional children to show in the status bar */
   statusBarChildren: ReactNode;
+
+  /** Show the objects menu in the status bar. Defaults to true. */
+  showObjectsMenu?: boolean;
+
   settings: Partial<Settings>;
   focusCommandHistory: () => void;
 
@@ -141,6 +148,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
     unzip: null,
     supportsType: defaultSupportsType,
     iconForType: defaultIconForType,
+    showObjectsMenu: true,
   };
 
   static LOG_THROTTLE = 500;
@@ -905,9 +913,8 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
   }
 
   getObjects = memoize(
-    (objectMap: Map<string, DhType.ide.VariableDefinition>) => [
-      ...objectMap.values(),
-    ]
+    (objectMap: Map<string, DhType.ide.VariableDefinition>) =>
+      Array.from(objectMap.values())
   );
 
   getContextActions = memoize(
@@ -990,6 +997,7 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
       unzip,
       supportsType,
       iconForType,
+      showObjectsMenu,
     } = this.props;
     const {
       consoleHeight,
@@ -1016,10 +1024,14 @@ export class Console extends PureComponent<ConsoleProps, ConsoleState> {
             dh={dh}
             session={session}
             overflowActions={this.handleOverflowActions}
-            openObject={openObject}
-            objects={consoleMenuObjects}
           >
             {statusBarChildren}
+            {showObjectsMenu === true && (
+              <ConsoleObjectsMenu
+                openObject={openObject}
+                objects={consoleMenuObjects}
+              />
+            )}
           </ConsoleStatusBar>
           <div
             className="console-csv-container"
