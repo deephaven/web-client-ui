@@ -6,15 +6,21 @@ const irisGridTestUtils = new IrisGridTestUtils(dh);
 
 describe('IrisGridTreeTableModel virtual columns', () => {
   const expectedVirtualColumn = expect.objectContaining({
-    name: '__DH_UI_GROUP__',
+    constituentType: 'string',
+    description: 'Key column',
     displayName: 'Group',
+    index: -1,
+    isPartitionColumn: false,
     isProxy: true,
+    isSortable: false,
+    name: '__DH_UI_GROUP__',
+    type: 'string',
   });
   const columns = irisGridTestUtils.makeColumns();
 
   test.each([
-    [0, columns, columns],
-    [1, columns, columns],
+    [1, columns, [expectedVirtualColumn, ...columns]],
+    [1, columns, [expectedVirtualColumn, ...columns]],
     [2, columns, [expectedVirtualColumn, ...columns]],
     [columns.length, columns, [expectedVirtualColumn, ...columns]],
   ])(
