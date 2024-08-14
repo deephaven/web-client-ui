@@ -63,12 +63,16 @@ const LAYOUT_SETTINGS = {
 function App(): JSX.Element {
   const [error, setError] = useState<string>();
   const [definition, setDefinition] = useState<dh.ide.VariableDefinition>();
+  const [sharedObject, setSharedObject] = useState<any>();
   const searchParams = useMemo(
     () => new URLSearchParams(window.location.search),
     []
   );
   // Get the widget name from the query param `name`.
   const name = searchParams.get('name');
+  // Get the type of shared object from the query param,
+  // which is necessary if the widget is shared.
+  const shared = searchParams.get('shared');
   const api = useApi();
   const connection = useConnection();
   const client = useClient();
@@ -115,13 +119,26 @@ function App(): JSX.Element {
             )
           );
 
-          log.debug(`Loading widget definition for ${name}...`);
+          if (shared != null) {
+            log.debug(`Loading shared object for ${name}...`);
 
-          const newDefinition = await fetchVariableDefinition(connection, name);
+            const obj = await connection.getSharedObject(name, shared);
 
-          setDefinition(newDefinition);
+            setSharedObject(obj);
 
-          log.debug(`Widget definition successfully loaded for ${name}`);
+            log.debug(`Shared object successfully loaded for ${name}`);
+          } else {
+            log.debug(`Loading widget definition for ${name}...`);
+
+            const newDefinition = await fetchVariableDefinition(
+              connection,
+              name
+            );
+
+            setDefinition(newDefinition);
+
+            log.debug(`Widget definition successfully loaded for ${name}`);
+          }
         } catch (e: unknown) {
           log.error(`Unable to load widget definition for ${name}`, e);
           setError(`${e}`);
@@ -132,17 +149,24 @@ function App(): JSX.Element {
     [api, client, connection, dispatch, name, serverConfig, user]
   );
 
-  const isLoaded = definition != null && error == null;
-  const isLoading = definition == null && error == null;
+  const isLoaded =
+    (definition != null || sharedObject != null) && error == null;
+  const isLoading = definition == null && sharedObject == null && error == null;
 
   const fetch = useMemo(() => {
-    if (definition == null) {
+    if (definition == null && sharedObject == null) {
       return async () => {
-        throw new Error('Definition is null');
+        throw new Error('Definition and shared object are null');
       };
     }
-    return () => connection.getObject(definition);
-  }, [connection, definition]);
+    return () => {
+      if (sharedObject != null) {
+        return sharedObject;
+      } else if (definition != null) {
+        return connection.getObject(definition);
+      }
+    };
+  }, [connection, definition, sharedObject]);
 
   const [goldenLayout, setGoldenLayout] = useState<GoldenLayout | null>(null);
   const [dashboardId, setDashboardId] = useState('default-embed-widget'); // Can't be DEFAULT_DASHBOARD_ID because its dashboard layout is not stored in dashboardData
@@ -175,16 +199,40 @@ function App(): JSX.Element {
   const [hasEmittedWidget, setHasEmittedWidget] = useState(false);
 
   const handleDashboardInitialized = useCallback(() => {
-    if (goldenLayout == null || definition == null || hasEmittedWidget) {
+    if (
+      goldenLayout == null ||
+      (definition == null && sharedObject == null) ||
+      hasEmittedWidget
+    ) {
+      return;
+    }
+    setHasEmittedWidget(true);
+
+    let widget = null;
+    if (sharedObject != null) {
+      widget = {
+        type: shared,
+        name: name,
+      } as dh.ide.VariableDescriptor;
+    } else if (definition != null) {
+      widget = getVariableDescriptor(definition);
+    } else {
       return;
     }
 
-    setHasEmittedWidget(true);
     emitPanelOpen(goldenLayout.eventHub, {
       fetch,
-      widget: getVariableDescriptor(definition),
+      widget: widget,
     });
-  }, [goldenLayout, definition, fetch, hasEmittedWidget]);
+  }, [
+    goldenLayout,
+    definition,
+    fetch,
+    hasEmittedWidget,
+    name,
+    shared,
+    sharedObject,
+  ]);
 
   const allDashboardData = useSelector(getAllDashboardsData);
 
