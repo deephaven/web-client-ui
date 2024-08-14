@@ -197,6 +197,13 @@ export type GridState = {
   // Whether we're stuck to the bottom or the right
   isStuckToBottom: boolean;
   isStuckToRight: boolean;
+
+  /**
+   * Errors thrown during a render animation frame.
+   * These are not caught by the grid panel,
+   * so we need to throw them in componentDidUpdate
+   */
+  renderError?: unknown;
 };
 
 /**
@@ -497,6 +504,13 @@ class Grid extends PureComponent<GridProps, GridState> {
   }
 
   componentDidUpdate(prevProps: GridProps, prevState: GridState): void {
+    const { renderError } = this.state;
+
+    // Render errors mean we can't recover
+    if (renderError != null) {
+      throw renderError;
+    }
+
     const changedProps = getChangedKeys(prevProps, this.props);
     const changedState = getChangedKeys(prevState, this.state);
     // We don't need to bother re-checking any of the metrics if only the children have changed
@@ -811,7 +825,12 @@ class Grid extends PureComponent<GridProps, GridState> {
     this.animationFrame = requestAnimationFrame(() => {
       this.animationFrame = null;
 
-      this.updateCanvas();
+      try {
+        this.updateCanvas();
+      } catch (e) {
+        // Errors thrown from the animation frame are uncaught by the grid panel
+        this.setState({ renderError: e });
+      }
     });
   }
 
