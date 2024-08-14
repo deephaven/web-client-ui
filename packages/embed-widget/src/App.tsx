@@ -63,7 +63,8 @@ const LAYOUT_SETTINGS = {
 function App(): JSX.Element {
   const [error, setError] = useState<string>();
   const [definition, setDefinition] = useState<dh.ide.VariableDefinition>();
-  const [sharedObject, setSharedObject] = useState<any>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [sharedObject, setSharedObject] = useState<Promise<any>>();
   const searchParams = useMemo(
     () => new URLSearchParams(window.location.search),
     []
@@ -123,6 +124,7 @@ function App(): JSX.Element {
             log.debug(`Loading shared object for ${name}...`);
 
             const obj = await connection.getSharedObject(name, shared);
+            console.log(typeof obj);
 
             setSharedObject(obj);
 
@@ -146,7 +148,7 @@ function App(): JSX.Element {
       }
       initApp();
     },
-    [api, client, connection, dispatch, name, serverConfig, user]
+    [api, client, connection, dispatch, name, serverConfig, user, shared]
   );
 
   const isLoaded =
@@ -162,9 +164,11 @@ function App(): JSX.Element {
     return () => {
       if (sharedObject != null) {
         return sharedObject;
-      } else if (definition != null) {
+      }
+      if (definition != null) {
         return connection.getObject(definition);
       }
+      throw new Error('Definition and shared object are null');
     };
   }, [connection, definition, sharedObject]);
 
@@ -212,7 +216,7 @@ function App(): JSX.Element {
     if (sharedObject != null) {
       widget = {
         type: shared,
-        name: name,
+        name,
       } as dh.ide.VariableDescriptor;
     } else if (definition != null) {
       widget = getVariableDescriptor(definition);
@@ -222,7 +226,7 @@ function App(): JSX.Element {
 
     emitPanelOpen(goldenLayout.eventHub, {
       fetch,
-      widget: widget,
+      widget,
     });
   }, [
     goldenLayout,
