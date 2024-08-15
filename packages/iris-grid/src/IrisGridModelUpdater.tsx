@@ -1,6 +1,6 @@
 /* eslint-disable react/require-default-props */
 /* eslint-disable no-param-reassign */
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import type { dh } from '@deephaven/jsapi-types';
 import { ModelIndex, MoveOperation } from '@deephaven/grid';
 import { Formatter, ReverseType, TableUtils } from '@deephaven/jsapi-utils';
