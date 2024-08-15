@@ -4820,7 +4820,6 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             {isVisible && (
               <IrisGridModelUpdater
                 model={model}
-                modelColumns={model.columns}
                 top={top}
                 bottom={bottom}
                 left={left}
