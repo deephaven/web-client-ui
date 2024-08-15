@@ -423,6 +423,12 @@ export class IrisGridPanel extends PureComponent<
         return null;
       }
 
+      // TODO #2093: Find a better way to handle deprecated panel prop
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const deprecatedProps = {
+        panel: this,
+      };
+
       return (
         <div className="iris-grid-plugin">
           <Plugin
