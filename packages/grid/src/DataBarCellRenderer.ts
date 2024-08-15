@@ -67,8 +67,6 @@ class DataBarCellRenderer extends CellRenderer {
     }
   );
 
-  private heightOfDigits?: number;
-
   drawCellContent(
     context: CanvasRenderingContext2D,
     state: GridRenderState,
@@ -139,12 +137,6 @@ class DataBarCellRenderer extends CellRenderer {
       dataBarWidth,
     } = this.getDataBarRenderMetrics(context, state, column, row);
 
-    if (this.heightOfDigits === undefined) {
-      const { actualBoundingBoxAscent, actualBoundingBoxDescent } =
-        context.measureText('1234567890');
-      this.heightOfDigits = actualBoundingBoxAscent + actualBoundingBoxDescent;
-    }
-
     context.save();
     context.textAlign = textAlign;
     if (hasGradient) {
@@ -156,15 +148,11 @@ class DataBarCellRenderer extends CellRenderer {
         ? dataBarColor[0]
         : dataBarColor;
     }
-    context.textBaseline = 'top';
+    context.textBaseline = 'middle';
     context.font = theme.font;
 
     if (valuePlacement !== 'hide') {
-      context.fillText(
-        truncatedText,
-        textX,
-        rowY + (rowHeight - this.heightOfDigits) / 2
-      );
+      context.fillText(truncatedText, textX, rowY + rowHeight * 0.5);
     }
 
     // Draw bar
