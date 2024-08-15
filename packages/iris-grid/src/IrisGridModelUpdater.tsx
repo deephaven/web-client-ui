@@ -1,11 +1,11 @@
 /* eslint-disable react/require-default-props */
 /* eslint-disable no-param-reassign */
-import React, { DependencyList, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import type { dh } from '@deephaven/jsapi-types';
 import { ModelIndex, MoveOperation } from '@deephaven/grid';
 import { Formatter, ReverseType, TableUtils } from '@deephaven/jsapi-utils';
 import { EMPTY_ARRAY, EMPTY_MAP } from '@deephaven/utils';
-import { usePrevious } from '@deephaven/react-hooks';
+import { useOnChange } from '@deephaven/react-hooks';
 import IrisGridUtils from './IrisGridUtils';
 import { ColumnName, UITotalsTableConfig, PendingDataMap } from './CommonTypes';
 import IrisGridModel from './IrisGridModel';
@@ -16,19 +16,6 @@ import {
 } from './PartitionedGridModel';
 
 const COLUMN_BUFFER_PAGES = 1;
-
-/**
- * Custom hook that triggers a callback function when any of the dependencies change.
- *
- * @param callback - The function to be called when the dependencies change.
- * @param deps - The list of dependencies to watch for changes.
- */
-function useOnChange(callback: () => void, deps: DependencyList): void {
-  const prevDeps = usePrevious(deps);
-  if (prevDeps === undefined || !deps.every((dep, i) => dep === prevDeps[i])) {
-    callback();
-  }
-}
 
 interface IrisGridModelUpdaterProps {
   model: IrisGridModel;
@@ -58,8 +45,7 @@ interface IrisGridModelUpdaterProps {
 /**
  * React component to keep IrisGridModel in sync
  */
-// eslint-disable-next-line react/function-component-definition
-const IrisGridModelUpdater = ({
+function IrisGridModelUpdater({
   model,
   top,
   bottom,
@@ -82,7 +68,7 @@ const IrisGridModelUpdater = ({
   formatColumns,
   columnHeaderGroups,
   partitionConfig,
-}: IrisGridModelUpdaterProps): JSX.Element | null => {
+}: IrisGridModelUpdaterProps): JSX.Element | null {
   if (model.formatter !== formatter) {
     model.formatter = formatter;
   }
@@ -205,7 +191,7 @@ const IrisGridModelUpdater = ({
   );
 
   return null;
-};
+}
 
 IrisGridModelUpdater.displayName = 'IrisGridModelUpdater';
 
