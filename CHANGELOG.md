@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.89.0](https://github.com/deephaven/web-client-ui/compare/v0.88.0...v0.89.0) (2024-08-15)
+
+### Features
+
+- Refactor console objects menu ([#2013](https://github.com/deephaven/web-client-ui/issues/2013)) ([8251180](https://github.com/deephaven/web-client-ui/commit/825118048326d3622aec2e4b851d81e8b7d93e35)), closes [#1884](https://github.com/deephaven/web-client-ui/issues/1884)
+
+### Bug Fixes
+
+- Errors thrown during a grid update are not caught ([#2188](https://github.com/deephaven/web-client-ui/issues/2188)) ([2e59b92](https://github.com/deephaven/web-client-ui/commit/2e59b92b8ceac211c1d27931513e57136a9fa42c))
+- Proxy model not setting defined values in parent class ([#2187](https://github.com/deephaven/web-client-ui/issues/2187)) ([5f9cf7f](https://github.com/deephaven/web-client-ui/commit/5f9cf7f4f39cb19f680e38f907d67201389fea7f))
+- Restrict @adobe/spectrum imports ([#2179](https://github.com/deephaven/web-client-ui/issues/2179)) ([a257296](https://github.com/deephaven/web-client-ui/commit/a257296f1433d158439e6ea1b341c81551a38c11)), closes [#1908](https://github.com/deephaven/web-client-ui/issues/1908)
+
 ## [0.88.0](https://github.com/deephaven/web-client-ui/compare/v0.87.0...v0.88.0) (2024-08-06)
 
 ### Features
