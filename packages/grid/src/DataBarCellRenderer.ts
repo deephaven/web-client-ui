@@ -4,7 +4,7 @@ import CellRenderer from './CellRenderer';
 import { isExpandableGridModel } from './ExpandableGridModel';
 import { isDataBarGridModel } from './DataBarGridModel';
 import { ModelIndex, VisibleIndex, VisibleToModelMap } from './GridMetrics';
-import GridColorUtils, { Oklab } from './GridColorUtils';
+import GridColorUtils from './GridColorUtils';
 import GridUtils from './GridUtils';
 import memoizeClear from './memoizeClear';
 import { DEFAULT_FONT_WIDTH, GridRenderState } from './GridRendererTypes';
@@ -31,6 +31,42 @@ interface DataBarRenderMetrics {
   markerXs: number[];
 }
 class DataBarCellRenderer extends CellRenderer {
+  static getGradient = memoizeClear(
+    (width: number, colors: string[]): CanvasGradient => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (ctx == null) {
+        throw new Error('Failed to create canvas context');
+      }
+      if (Number.isNaN(width)) {
+        return ctx.createLinearGradient(0, 0, 0, 0);
+      }
+      const gradient = ctx.createLinearGradient(0, 0, width, 0);
+      const oklabColors = colors.map(color =>
+        GridColorUtils.linearSRGBToOklab(GridColorUtils.hexToRgb(color))
+      );
+      for (let i = 0; i < width; i += 1) {
+        const colorStop = i / width;
+        const colorChangeInterval = 1 / (colors.length - 1);
+        const leftColorIndex = Math.floor(colorStop / colorChangeInterval);
+        const color = GridColorUtils.lerpColor(
+          oklabColors[leftColorIndex],
+          oklabColors[leftColorIndex + 1],
+          (colorStop % colorChangeInterval) / colorChangeInterval
+        );
+        gradient.addColorStop(
+          i / width,
+          GridColorUtils.rgbToHex(GridColorUtils.OklabToLinearSRGB(color))
+        );
+      }
+      return gradient;
+    },
+    {
+      max: 1000,
+      primitive: true, // Stringify the arguments for memoization. Lets the color arrays be different arrays in memory, but still cache hit
+    }
+  );
+
   private heightOfDigits?: number;
 
   drawCellContent(
@@ -87,7 +123,7 @@ class DataBarCellRenderer extends CellRenderer {
       value,
     } = model.dataBarOptionsForCell(modelColumn, modelRow, theme);
 
-    const hasGradient = Array.isArray(dataBarColor);
+    const hasGradient = Array.isArray(dataBarColor) && dataBarColor.length > 1;
     if (columnMin == null || columnMax == null) {
       return;
     }
@@ -116,7 +152,9 @@ class DataBarCellRenderer extends CellRenderer {
         value >= 0 ? dataBarColor[dataBarColor.length - 1] : dataBarColor[0];
       context.fillStyle = color;
     } else {
-      context.fillStyle = dataBarColor;
+      context.fillStyle = Array.isArray(dataBarColor)
+        ? dataBarColor[0]
+        : dataBarColor;
     }
     context.textBaseline = 'top';
     context.font = theme.font;
@@ -133,113 +171,61 @@ class DataBarCellRenderer extends CellRenderer {
     if (hasGradient) {
       // Draw gradient bar
 
-      const dataBarColorsOklab: Oklab[] = dataBarColor.map(color =>
-        GridColorUtils.linearSRGBToOklab(GridColorUtils.hexToRgb(color))
-      );
-
       context.save();
 
       context.beginPath();
 
-      context.roundRect(dataBarX, dataBarY, dataBarWidth, rowHeight - 2, 1);
+      context.roundRect(dataBarX, rowY + 1, dataBarWidth, rowHeight - 2, 1);
       context.clip();
+      context.globalAlpha = opacity;
 
+      let gradientWidth = 0;
+      let gradientX = 0;
+      context.save();
+
+      // Translate the context so its origin is at the start of the gradient
+      // and increasing x value moves towards the end of the gradient.
+      // For RTL, scale x by -1 to flip across the x-axis
       if (value < 0) {
         if (direction === 'LTR') {
-          const totalGradientWidth = Math.round(
+          gradientWidth = Math.round(
             (Math.abs(columnMin) / totalValueRange) * maxWidth
           );
-          const partGradientWidth =
-            totalGradientWidth / (dataBarColor.length - 1);
-          let gradientX = Math.round(leftmostPosition);
-          for (let i = 0; i < dataBarColor.length - 1; i += 1) {
-            const leftColor = dataBarColorsOklab[i];
-            const rightColor = dataBarColorsOklab[i + 1];
-            this.drawGradient(
-              context,
-              leftColor,
-              rightColor,
-              gradientX,
-              rowY + 1,
-              partGradientWidth,
-              rowHeight
-            );
-
-            gradientX += partGradientWidth;
-          }
+          gradientX = Math.round(leftmostPosition);
+          context.translate(gradientX, 0);
         } else if (direction === 'RTL') {
-          const totalGradientWidth = Math.round(
+          gradientWidth = Math.round(
             maxWidth - (Math.abs(columnMax) / totalValueRange) * maxWidth
           );
-          const partGradientWidth =
-            totalGradientWidth / (dataBarColor.length - 1);
-          let gradientX = Math.round(zeroPosition);
-          for (let i = dataBarColor.length - 1; i > 0; i -= 1) {
-            const leftColor = dataBarColorsOklab[i];
-            const rightColor = dataBarColorsOklab[i - 1];
-            this.drawGradient(
-              context,
-              leftColor,
-              rightColor,
-              gradientX,
-              rowY + 1,
-              partGradientWidth,
-              rowHeight
-            );
-
-            gradientX += partGradientWidth;
-          }
+          gradientX = Math.round(zeroPosition);
+          context.translate(gradientX + gradientWidth, 0);
+          context.scale(-1, 1);
         }
       } else if (direction === 'LTR') {
         // Value is greater than or equal to 0
-        const totalGradientWidth =
+        gradientWidth =
           Math.round(
             maxWidth - (Math.abs(columnMin) / totalValueRange) * maxWidth
           ) - 1;
-        const partGradientWidth =
-          totalGradientWidth / (dataBarColor.length - 1);
-        let gradientX = Math.round(zeroPosition);
-
-        for (let i = 0; i < dataBarColor.length - 1; i += 1) {
-          const leftColor = dataBarColorsOklab[i];
-          const rightColor = dataBarColorsOklab[i + 1];
-          this.drawGradient(
-            context,
-            leftColor,
-            rightColor,
-            gradientX,
-            rowY + 1,
-            partGradientWidth,
-            rowHeight - 2
-          );
-
-          gradientX += partGradientWidth;
-        }
+        gradientX = Math.round(zeroPosition);
+        context.translate(gradientX, 0);
       } else if (direction === 'RTL') {
         // Value is greater than or equal to 0
-        const totalGradientWidth = Math.round(
+        gradientWidth = Math.round(
           (Math.abs(columnMax) / totalValueRange) * maxWidth
         );
-        const partGradientWidth =
-          totalGradientWidth / (dataBarColor.length - 1);
-        let gradientX = Math.round(leftmostPosition);
-
-        for (let i = dataBarColor.length - 1; i > 0; i -= 1) {
-          const leftColor = dataBarColorsOklab[i];
-          const rightColor = dataBarColorsOklab[i - 1];
-          this.drawGradient(
-            context,
-            leftColor,
-            rightColor,
-            gradientX,
-            rowY + 1,
-            partGradientWidth,
-            rowHeight - 2
-          );
-
-          gradientX += partGradientWidth;
-        }
+        gradientX = Math.round(leftmostPosition);
+        context.translate(gradientX + gradientWidth, 0);
+        context.scale(-1, 1);
       }
+
+      const gradient = DataBarCellRenderer.getGradient(
+        gradientWidth,
+        dataBarColor
+      );
+      context.fillStyle = gradient;
+      context.fillRect(0, rowY + 1, gradientWidth, rowHeight);
+      context.restore(); // Restore gradient translate/scale
 
       // restore clip
       context.restore();
@@ -531,47 +517,6 @@ class DataBarCellRenderer extends CellRenderer {
       dataBarWidth,
       markerXs,
     };
-  }
-
-  drawGradient(
-    context: CanvasRenderingContext2D,
-    leftColor: Oklab,
-    rightColor: Oklab,
-    x: number,
-    y: number,
-    width: number,
-    height: number
-  ): void {
-    let currentColor = leftColor;
-    // Increase by 0.5 because half-pixel will render weird on different zooms
-    for (let currentX = x; currentX <= x + width; currentX += 0.5) {
-      this.drawGradientPart(
-        context,
-        currentX,
-        y,
-        1,
-        height,
-        GridColorUtils.rgbToHex(GridColorUtils.OklabToLinearSRGB(currentColor))
-      );
-
-      currentColor = GridColorUtils.lerpColor(
-        leftColor,
-        rightColor,
-        (currentX - x) / width
-      );
-    }
-  }
-
-  drawGradientPart(
-    context: CanvasRenderingContext2D,
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-    color: string
-  ): void {
-    context.fillStyle = color;
-    context.fillRect(x, y, width, height);
   }
 
   /**
