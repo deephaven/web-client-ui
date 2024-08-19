@@ -16,6 +16,39 @@ import IrisGridModel, { DisplayColumn } from './IrisGridModel';
 
 const log = Log.module('IrisGridTreeTableModel');
 
+const VirtualGroupColumn = Object.freeze({
+  name: '__DH_UI_GROUP__',
+  displayName: 'Group',
+  type: TableUtils.dataType.STRING,
+  constituentType: TableUtils.dataType.STRING,
+  isPartitionColumn: false,
+  isSortable: false,
+  isProxy: true,
+  description: 'Key column',
+  index: -1,
+  filter: () => {
+    throw new Error('Filter not implemented for virtual column');
+  },
+  sort: () => {
+    throw new Error('Sort not implemented virtual column');
+  },
+  formatColor: () => {
+    throw new Error('Color not implemented for virtual column');
+  },
+  get: () => {
+    throw new Error('get not implemented for virtual column');
+  },
+  getFormat: () => {
+    throw new Error('getFormat not implemented for virtual column');
+  },
+  formatNumber: () => {
+    throw new Error('formatNumber not implemented for virtual column');
+  },
+  formatDate: () => {
+    throw new Error('formatDate not implemented for virtual column');
+  },
+});
+
 export interface UITreeRow extends UIRow {
   isExpanded: boolean;
   hasChildren: boolean;
@@ -45,42 +78,7 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   ) {
     super(dh, table, formatter, inputTable);
     this.virtualColumns = this.formatter.showExtraGroupColumn
-      ? [
-          {
-            name: '__DH_UI_GROUP__',
-            displayName: 'Group',
-            type: TableUtils.dataType.STRING,
-            constituentType: TableUtils.dataType.STRING,
-            isPartitionColumn: false,
-            isSortable: false,
-            isProxy: true,
-            description: 'Key column',
-            index: -1,
-            filter: () => {
-              throw new Error('Filter not implemented for virtual column');
-            },
-            sort: () => {
-              throw new Error('Sort not implemented virtual column');
-            },
-            formatColor: () => {
-              throw new Error('Color not implemented for virtual column');
-            },
-            get: () => {
-              throw new Error('get not implemented for virtual column');
-            },
-            getFormat: () => {
-              throw new Error('getFormat not implemented for virtual column');
-            },
-            formatNumber: () => {
-              throw new Error(
-                'formatNumber not implemented for virtual column'
-              );
-            },
-            formatDate: () => {
-              throw new Error('formatDate not implemented for virtual column');
-            },
-          },
-        ]
+      ? [VirtualGroupColumn]
       : [];
   }
 
@@ -100,42 +98,7 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
 
   updateVirtualColumns(): void {
     this.virtualColumns = this.formatter.showExtraGroupColumn
-      ? [
-          {
-            name: '__DH_UI_GROUP__',
-            displayName: 'Group',
-            type: TableUtils.dataType.STRING,
-            constituentType: TableUtils.dataType.STRING,
-            isPartitionColumn: false,
-            isSortable: false,
-            isProxy: true,
-            description: 'Key column',
-            index: -1,
-            filter: () => {
-              throw new Error('Filter not implemented for virtual column');
-            },
-            sort: () => {
-              throw new Error('Sort not implemented virtual column');
-            },
-            formatColor: () => {
-              throw new Error('Color not implemented for virtual column');
-            },
-            get: () => {
-              throw new Error('get not implemented for virtual column');
-            },
-            getFormat: () => {
-              throw new Error('getFormat not implemented for virtual column');
-            },
-            formatNumber: () => {
-              throw new Error(
-                'formatNumber not implemented for virtual column'
-              );
-            },
-            formatDate: () => {
-              throw new Error('formatDate not implemented for virtual column');
-            },
-          },
-        ]
+      ? [VirtualGroupColumn]
       : [];
     this.dispatchEvent(
       new EventShimCustomEvent(IrisGridModel.EVENT.COLUMNS_CHANGED, {
