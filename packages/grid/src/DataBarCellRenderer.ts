@@ -155,17 +155,15 @@ class DataBarCellRenderer extends CellRenderer {
       context.fillText(truncatedText, textX, rowY + rowHeight * 0.5);
     }
 
+    context.save();
+    context.beginPath();
+    context.roundRect(dataBarX, rowY + 1, dataBarWidth, rowHeight - 2, 1);
+    context.clip();
+    context.globalAlpha = opacity;
+
     // Draw bar
     if (hasGradient) {
       // Draw gradient bar
-
-      context.save();
-
-      context.beginPath();
-
-      context.roundRect(dataBarX, rowY + 1, dataBarWidth, rowHeight - 2, 1);
-      context.clip();
-      context.globalAlpha = opacity;
 
       let gradientWidth = 0;
       let gradientX = 0;
@@ -212,30 +210,25 @@ class DataBarCellRenderer extends CellRenderer {
         dataBarColor
       );
       context.fillStyle = gradient;
-      context.fillRect(0, rowY + 1, gradientWidth, rowHeight);
+      context.fillRect(0, dataBarY, gradientWidth, rowHeight);
       context.restore(); // Restore gradient translate/scale
-
-      // restore clip
-      context.restore();
     } else {
       // Draw normal bar
-      context.save();
-
-      context.globalAlpha = opacity;
       context.beginPath();
-      context.roundRect(dataBarX, dataBarY, dataBarWidth, rowHeight - 2, 1);
+      context.roundRect(dataBarX, dataBarY, dataBarWidth, rowHeight, 1);
       context.fill();
-
-      context.restore();
     }
 
     // Draw markers
     if (maxWidth > 0) {
       markerXs.forEach((markerX, index) => {
         context.fillStyle = markers[index].color;
-        context.fillRect(markerX, dataBarY, 1, rowHeight - 2);
+        context.fillRect(markerX, dataBarY, 1, rowHeight);
       });
     }
+
+    // restore clip
+    context.restore();
 
     const shouldRenderDashedLine = !(
       axis === 'directional' &&
@@ -497,7 +490,7 @@ class DataBarCellRenderer extends CellRenderer {
     return {
       maxWidth,
       x: dataBarX,
-      y: y + 1.5,
+      y,
       zeroPosition,
       leftmostPosition,
       rightmostPosition,

@@ -320,21 +320,16 @@ export function resolveCssVariablesInRecord<T extends Record<string, string>>(
 
   const result = {} as T;
   recordArray.forEach(([key, value], i) => {
-    // only resolve if it contains a css var expression
-    if (!value.includes(CSS_VAR_EXPRESSION_PREFIX)) {
-      (result as Record<string, string>)[key] = value;
-      return;
-    }
     // resolves any variables in the expression
     let resolved = tempPropElComputedStyle.getPropertyValue(
       `--${TMP_CSS_PROP_PREFIX}-${i}`
     );
     if (
-      // skip if resolved is already hex
-      !/^#[0-9A-F]{6}[0-9a-f]{0,2}$/i.test(resolved) &&
       // only try to normalize things that are valid colors
       // otherwise non-colors will be made #00000000
-      CSS.supports('color', resolved)
+      CSS.supports('color', resolved) &&
+      // skip if resolved is already hex
+      !/^#[0-9A-F]{6}[0-9a-f]{0,2}$/i.test(resolved)
     ) {
       // getting the computed background color is necessary
       // because resolved can still contain a color-mix() function
