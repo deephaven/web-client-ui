@@ -21,7 +21,7 @@
     "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward"
   },
   "dependencies": {
-    "@deephaven/components": "file:../components",
+    "@adobe/react-spectrum": "3.35.1",
     "@deephaven/log": "file:../log",
     "@deephaven/utils": "file:../utils",
     "lodash.debounce": "^4.0.8",

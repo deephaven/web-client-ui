@@ -4,6 +4,7 @@ import {
   ComboBox,
   ComboBoxNormalized,
   Flex,
+  Icon,
   Item,
   ItemKey,
   PICKER_ITEM_HEIGHTS,
@@ -14,7 +15,6 @@ import {
   Text,
 } from '@deephaven/components';
 import { vsPerson } from '@deephaven/icons';
-import { Icon } from '@adobe/react-spectrum';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { getPositionOfSelectedItem } from '@deephaven/react-hooks';
 import { generateItemElements, generateNormalizedItems } from './utils';

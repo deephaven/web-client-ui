@@ -1,4 +1,5 @@
-import type { TextFieldProps } from '@deephaven/components';
+// eslint-disable-next-line no-restricted-imports
+import type { SpectrumTextFieldProps } from '@adobe/react-spectrum';
 import { KeyedItem } from '@deephaven/utils';
 import type { DOMRefValue } from '@react-types/shared';
 
@@ -11,7 +12,7 @@ import type { DOMRefValue } from '@react-types/shared';
 export function createValidationProps(
   isValid: boolean,
   errorMessage: string
-): Pick<TextFieldProps, 'validationState' | 'errorMessage'> {
+): Pick<SpectrumTextFieldProps, 'validationState' | 'errorMessage'> {
   if (isValid) {
     return {};
   }
