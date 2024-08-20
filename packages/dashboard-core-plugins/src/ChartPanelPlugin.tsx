@@ -1,5 +1,5 @@
-import { forwardRef, useContext, useMemo } from 'react';
-import { DeferredApiContext } from '@deephaven/jsapi-bootstrap';
+import { forwardRef, useMemo } from 'react';
+import { useDeferredApi } from '@deephaven/jsapi-bootstrap';
 import { ChartModel, ChartModelFactory } from '@deephaven/chart';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { IrisGridUtils } from '@deephaven/iris-grid';
@@ -23,18 +23,14 @@ async function createChartModel(
   panelFetch: () => Promise<DhType.plot.Figure | DhType.Table>,
   panelState?: GLChartPanelState
 ): Promise<ChartModel> {
-  let settings;
-  let tableName;
-  let tableSettings;
+  let settings = {};
+  let tableName = '';
+  let tableSettings = {};
 
   if (isChartPanelTableMetadata(metadata)) {
     settings = metadata.settings;
     tableName = metadata.table;
     tableSettings = metadata.tableSettings;
-  } else {
-    settings = {};
-    tableName = '';
-    tableSettings = {};
   }
   if (panelState != null) {
     if (panelState.tableSettings != null) {
@@ -69,30 +65,19 @@ async function createChartModel(
 
 export const ChartPanelPlugin = forwardRef(
   (props: WidgetPanelProps<DhType.plot.Figure>, ref: React.Ref<ChartPanel>) => {
-    const deferredApi = useContext(DeferredApiContext);
-
     const panelState = isChartPanelDehydratedProps(props)
       ? (props as unknown as ChartPanelProps).panelState
       : undefined;
 
     const { fetch: panelFetch, metadata, localDashboardId } = props;
+    const [dh, error] = useDeferredApi(metadata ?? null);
 
     const hydratedProps = useMemo(
       () => ({
         metadata: metadata as ChartPanelMetadata,
         localDashboardId,
         makeModel: async () => {
-          if (metadata == null) {
-            throw new Error('Metadata is required for chart panel');
-          }
-
-          const dh =
-            typeof deferredApi === 'function'
-              ? await deferredApi(metadata)
-              : deferredApi;
-
-          assertNotNull(dh, `Cannot find API for metadata: ${metadata}`);
-
+          assertNotNull(dh, `Cannot find API: ${error}`);
           return createChartModel(
             dh,
             metadata as ChartPanelMetadata,
@@ -101,7 +86,7 @@ export const ChartPanelPlugin = forwardRef(
           );
         },
       }),
-      [metadata, localDashboardId, deferredApi, panelFetch, panelState]
+      [dh, error, metadata, localDashboardId, panelFetch, panelState]
     );
 
     // eslint-disable-next-line react/jsx-props-no-spreading
