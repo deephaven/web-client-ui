@@ -5,6 +5,7 @@ import type {
   IrisGridContextMenuData,
   IrisGridModel,
 } from '@deephaven/iris-grid';
+import { GridRange } from '@deephaven/grid';
 import type { ResolvableContextAction } from '@deephaven/components';
 import type { dh } from '@deephaven/jsapi-types';
 
@@ -34,6 +35,16 @@ export interface TablePluginProps<S = unknown> {
    * The table this plugin was associated with.
    */
   table: dh.Table;
+
+  /**
+   * The name of the table this plugin is associated with.
+   */
+  tableName: string;
+
+  /**
+   * The currently selected ranges in the table.
+   */
+  selectedRanges: readonly GridRange[] | undefined;
 
   /**
    * Notify of a state change in the plugin state. Will be saved with the panel data.

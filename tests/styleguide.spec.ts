@@ -37,6 +37,8 @@ const sampleSectionIds: string[] = [
   'sample-section-grids-async',
   'sample-section-grids-tree',
   'sample-section-grids-iris',
+  'sample-section-grids-iris-compact',
+  'sample-section-grids-iris-spacious',
   'sample-section-charts',
   'sample-section-error-views',
   'sample-section-xcomponents',

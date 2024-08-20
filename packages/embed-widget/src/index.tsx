@@ -1,8 +1,6 @@
 import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom';
-import { Provider } from 'react-redux';
-import { store } from '@deephaven/redux';
-import '@deephaven/components/scss/BaseStyleSheet.scss';
+import '@deephaven/components/scss/BaseStyleSheet.scss'; // Do NOT move any lower. This needs to be imported before any other styles
 import { LoadingOverlay, preloadTheme } from '@deephaven/components';
 import { ApiBootstrap } from '@deephaven/jsapi-bootstrap';
 import './index.scss';
@@ -56,9 +54,7 @@ ReactDOM.render(
         serverUrl={apiURL.origin}
         pluginsUrl={pluginsURL.href}
       >
-        <Provider store={store}>
-          <App />
-        </Provider>
+        <App />
       </AppBootstrap>
     </Suspense>
   </ApiBootstrap>,

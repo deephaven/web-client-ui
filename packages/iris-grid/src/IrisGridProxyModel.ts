@@ -129,7 +129,9 @@ class IrisGridProxyModel extends IrisGridModel implements PartitionedGridModel {
           Object.getOwnPropertyDescriptor(Object.getPrototypeOf(target), prop)
             ?.set != null;
 
-        if (proxyHasSetter) {
+        const proxyHasProp = Object.prototype.hasOwnProperty.call(target, prop);
+
+        if (proxyHasSetter || proxyHasProp) {
           return Reflect.set(target, prop, value, target);
         }
 

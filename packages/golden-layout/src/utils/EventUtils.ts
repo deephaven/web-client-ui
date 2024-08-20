@@ -1,20 +1,23 @@
-import EventEmitter from './EventEmitter';
 import { useEffect } from 'react';
+import EventEmitter from './EventEmitter';
 
+type AsArray<P> = P extends unknown[] ? P : [P];
+
+export type EventHandlerFunction<P = []> = (...parameters: AsArray<P>) => void;
 export type EventListenerRemover = () => void;
-export type EventListenFunction<TPayload = unknown> = (
+export type EventListenFunction<TParameters = []> = (
   eventEmitter: EventEmitter,
-  handler: (p: TPayload) => void
+  handler: EventHandlerFunction<TParameters>
 ) => EventListenerRemover;
 
-export type EventEmitFunction<TPayload = unknown> = (
+export type EventEmitFunction<TParameters = []> = (
   eventEmitter: EventEmitter,
-  payload: TPayload
+  ...parameters: AsArray<TParameters>
 ) => void;
 
-export type EventListenerHook<TPayload = unknown> = (
+export type EventListenerHook<TParameters = []> = (
   eventEmitter: EventEmitter,
-  handler: (p: TPayload) => void
+  handler: EventHandlerFunction<TParameters>
 ) => void;
 
 /**
@@ -24,10 +27,10 @@ export type EventListenerHook<TPayload = unknown> = (
  * @param handler The handler to call when the event is emitted
  * @returns A function to stop listening for the event
  */
-export function listenForEvent<TPayload>(
+export function listenForEvent<TParameters = []>(
   eventEmitter: EventEmitter,
   event: string,
-  handler: (p: TPayload) => void
+  handler: EventHandlerFunction<TParameters>
 ): EventListenerRemover {
   eventEmitter.on(event, handler);
   return () => {
@@ -35,24 +38,24 @@ export function listenForEvent<TPayload>(
   };
 }
 
-export function makeListenFunction<TPayload>(
+export function makeListenFunction<TParameters = []>(
   event: string
-): EventListenFunction<TPayload> {
+): EventListenFunction<TParameters> {
   return (eventEmitter, handler) =>
     listenForEvent(eventEmitter, event, handler);
 }
 
-export function makeEmitFunction<TPayload>(
+export function makeEmitFunction<TParameters = []>(
   event: string
-): EventEmitFunction<TPayload> {
-  return (eventEmitter, payload) => {
-    eventEmitter.emit(event, payload);
+): EventEmitFunction<TParameters> {
+  return (eventEmitter, ...parameters) => {
+    eventEmitter.emit(event, ...parameters);
   };
 }
 
-export function makeUseListenerFunction<TPayload>(
+export function makeUseListenerFunction<TParameters = []>(
   event: string
-): EventListenerHook<TPayload> {
+): EventListenerHook<TParameters> {
   return (eventEmitter, handler) => {
     useEffect(
       () => listenForEvent(eventEmitter, event, handler),
@@ -66,14 +69,16 @@ export function makeUseListenerFunction<TPayload>(
  * @param event Name of the event to create functions for
  * @returns Listener, Emitter, and Hook functions for the event
  */
-export function makeEventFunctions<TPayload>(event: string): {
-  listen: EventListenFunction<TPayload>;
-  emit: EventEmitFunction<TPayload>;
-  useListener: EventListenerHook<TPayload>;
+export function makeEventFunctions<TParameters = []>(
+  event: string
+): {
+  listen: EventListenFunction<TParameters>;
+  emit: EventEmitFunction<TParameters>;
+  useListener: EventListenerHook<TParameters>;
 } {
   return {
-    listen: makeListenFunction<TPayload>(event),
-    emit: makeEmitFunction<TPayload>(event),
-    useListener: makeUseListenerFunction<TPayload>(event),
+    listen: makeListenFunction<TParameters>(event),
+    emit: makeEmitFunction<TParameters>(event),
+    useListener: makeUseListenerFunction<TParameters>(event),
   };
 }
