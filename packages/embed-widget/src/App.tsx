@@ -120,8 +120,6 @@ function App(): JSX.Element {
             )
           );
 
-          console.log('user', user);
-
           if (isShared === 'true') {
             log.debug(`Checking if shared parameters are valid...`);
 
@@ -164,7 +162,8 @@ function App(): JSX.Element {
     ]
   );
 
-  const isLoaded = (definition != null || sharedReady != false) && error == null;
+  const isLoaded =
+    (definition != null || sharedReady != false) && error == null;
   const isLoading = definition == null && sharedReady == false && error == null;
 
   type ConnectionWithGetSharedObject = dh.IdeConnection & {
