@@ -1,6 +1,6 @@
-const TabEvent = {
+const TabEvent = Object.freeze({
   focus: 'TabEvent.focus',
   blur: 'TabEvent.blur',
-} as const;
+});
 
 export default TabEvent;
