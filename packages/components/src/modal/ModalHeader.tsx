@@ -1,4 +1,5 @@
 import React, { CSSProperties, ReactElement, ReactNode } from 'react';
+import classNames from 'classnames';
 
 interface ModalHeaderProps {
   className?: string;
@@ -18,7 +19,7 @@ function ModalHeader({
   'data-testid': dataTestId,
 }: ModalHeaderProps): ReactElement {
   return (
-    <div className={`modal-header ${className}`} style={style}>
+    <div className={classNames('modal-header', className)} style={style}>
       <h5 className="modal-title">{children}</h5>
       {closeButton && (
         <button

@@ -1,4 +1,5 @@
 import React, { ReactElement, ReactNode } from 'react';
+import classNames from 'classnames';
 
 interface ModalFooterProps {
   className?: string;
@@ -7,12 +8,15 @@ interface ModalFooterProps {
 }
 
 function ModalFooter({
-  className = 'modal-footer',
+  className,
   children,
   'data-testid': dataTestId,
 }: ModalFooterProps): ReactElement {
   return (
-    <div className={className} data-testid={dataTestId}>
+    <div
+      className={classNames('modal-footer', className)}
+      data-testid={dataTestId}
+    >
       {children}
     </div>
   );
