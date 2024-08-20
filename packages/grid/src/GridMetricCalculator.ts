@@ -974,8 +974,8 @@ export class GridMetricCalculator {
     let y = 0;
     let row = top;
     const rowHeights = new Map();
-    const { rowCount } = model;
-    while (y < height + topOffset && row < rowCount) {
+    const { rowCount, floatingBottomRowCount } = model;
+    while (y < height + topOffset && row < rowCount - floatingBottomRowCount) {
       const rowHeight = this.getVisibleRowHeight(row, state);
       rowHeights.set(row, rowHeight);
       y += rowHeight;
@@ -1039,8 +1039,11 @@ export class GridMetricCalculator {
     let x = 0;
     let column = left;
     const columnWidths = new Map();
-    const { columnCount } = model;
-    while (x < width + leftOffset && column < columnCount) {
+    const { columnCount, floatingRightColumnCount } = model;
+    while (
+      x < width + leftOffset &&
+      column < columnCount - floatingRightColumnCount
+    ) {
       const columnWidth = this.getVisibleColumnWidth(
         column,
         state,
