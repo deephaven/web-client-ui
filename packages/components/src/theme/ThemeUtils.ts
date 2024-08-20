@@ -324,11 +324,14 @@ export function resolveCssVariablesInRecord<T extends Record<string, string>>(
     let resolved = tempPropElComputedStyle.getPropertyValue(
       `--${TMP_CSS_PROP_PREFIX}-${i}`
     );
+
+    const containsCssVar = value.includes(CSS_VAR_EXPRESSION_PREFIX);
+    const isColor = CSS.supports('color', resolved);
+
     if (
-      // only try to normalize things that are valid colors
+      // only try to normalize non-hex strings that are valid colors
       // otherwise non-colors will be made #00000000
-      CSS.supports('color', resolved) &&
-      // skip if resolved is already hex
+      isColor &&
       !/^#[0-9A-F]{6}[0-9a-f]{0,2}$/i.test(resolved)
     ) {
       // getting the computed background color is necessary
@@ -339,7 +342,8 @@ export function resolveCssVariablesInRecord<T extends Record<string, string>>(
       // convert color to hex, which is what monaco and plotly require
       resolved = ColorUtils.normalizeCssColor(color, isAlphaOptional);
     }
-    (result as Record<string, string>)[key] = resolved;
+    (result as Record<string, string>)[key] =
+      containsCssVar || isColor ? resolved : value;
   });
 
   // Remove the temporary div
