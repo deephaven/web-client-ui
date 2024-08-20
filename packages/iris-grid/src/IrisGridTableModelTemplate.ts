@@ -1174,11 +1174,6 @@ class IrisGridTableModelTemplate<
       const column = columns[c];
 
       const index = this.getColumnIndexByName(column.name);
-      // console.log(column.name, index);
-      // if (index == null) {
-      //   continue;
-      // }
-      // assertNotNull(index);
       data.set(index ?? column.name, {
         value: row.get(column),
         format: row.getFormat(column),
