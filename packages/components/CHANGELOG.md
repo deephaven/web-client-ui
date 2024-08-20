@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.85.4](https://github.com/deephaven/web-client-ui/compare/v0.85.3...v0.85.4) (2024-08-20)
+
+### Bug Fixes
+
+- DH-17454: Fix Spectrum component theming in modal dialogs ([#2197](https://github.com/deephaven/web-client-ui/issues/2197)) ([478ca85](https://github.com/deephaven/web-client-ui/commit/478ca85ef396b11310a65674d4b66f7551243087)), closes [#2173](https://github.com/deephaven/web-client-ui/issues/2173) [#2169](https://github.com/deephaven/web-client-ui/issues/2169)
+
 ## [0.85.3](https://github.com/deephaven/web-client-ui/compare/v0.85.2...v0.85.3) (2024-07-23)
 
 ### Features
