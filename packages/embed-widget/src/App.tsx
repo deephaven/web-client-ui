@@ -63,8 +63,7 @@ const LAYOUT_SETTINGS = {
 function App(): JSX.Element {
   const [error, setError] = useState<string>();
   const [definition, setDefinition] = useState<dh.ide.VariableDefinition>();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [sharedObject, setSharedObject] = useState<Promise<any>>();
+  const [sharedReady, setSharedReady] = useState<boolean>(false);
   const searchParams = useMemo(
     () => new URLSearchParams(window.location.search),
     []
@@ -73,7 +72,8 @@ function App(): JSX.Element {
   const name = searchParams.get('name');
   // Get the type of shared object from the query param,
   // which is necessary if the widget is shared.
-  const shared = searchParams.get('shared');
+  const type = searchParams.get('type');
+  const isShared = searchParams.get('isShared');
   const api = useApi();
   const connection = useConnection();
   const client = useClient();
@@ -120,15 +120,18 @@ function App(): JSX.Element {
             )
           );
 
-          if (shared != null) {
-            log.debug(`Loading shared object for ${name}...`);
+          console.log('user', user);
 
-            const obj = await connection.getSharedObject(name, shared);
-            console.log(typeof obj);
+          if (isShared === 'true') {
+            log.debug(`Checking if shared parameters are valid...`);
 
-            setSharedObject(obj);
+            if (type == null) {
+              throw new Error('Missing URL parameter "type"');
+            }
 
-            log.debug(`Shared object successfully loaded for ${name}`);
+            setSharedReady(true);
+
+            log.debug(`Shared parameters are valid`);
           } else {
             log.debug(`Loading widget definition for ${name}...`);
 
@@ -148,29 +151,56 @@ function App(): JSX.Element {
       }
       initApp();
     },
-    [api, client, connection, dispatch, name, serverConfig, user, shared]
+    [
+      api,
+      client,
+      connection,
+      dispatch,
+      name,
+      serverConfig,
+      user,
+      isShared,
+      type,
+    ]
   );
 
-  const isLoaded =
-    (definition != null || sharedObject != null) && error == null;
-  const isLoading = definition == null && sharedObject == null && error == null;
+  const isLoaded = (definition != null || sharedReady != false) && error == null;
+  const isLoading = definition == null && sharedReady == false && error == null;
+
+  type ConnectionWithGetSharedObject = dh.IdeConnection & {
+    getSharedObject(name: string, type: string): Promise<unknown>;
+  };
+
+  function isConnectionWithGetSharedObject(
+    connection: dh.IdeConnection
+  ): connection is ConnectionWithGetSharedObject {
+    return (
+      'getSharedObject' in connection &&
+      typeof connection.getSharedObject === 'function'
+    );
+  }
 
   const fetch = useMemo(() => {
-    if (definition == null && sharedObject == null) {
+    if (definition == null && !sharedReady) {
       return async () => {
-        throw new Error('Definition and shared object are null');
+        throw new Error('Definition is null');
       };
     }
     return () => {
-      if (sharedObject != null) {
-        return sharedObject;
+      if (name != null && type != null) {
+        if (isConnectionWithGetSharedObject(connection)) {
+          return connection.getSharedObject(name, type);
+        }
+        throw new Error(
+          'Connection does not have getSharedObject method. Cannot fetch shared object.'
+        );
       }
       if (definition != null) {
         return connection.getObject(definition);
       }
-      throw new Error('Definition and shared object are null');
+      throw new Error('Definition is null or shared parameters are not set');
     };
-  }, [connection, definition, sharedObject]);
+  }, [connection, definition, sharedReady, name, type]);
 
   const [goldenLayout, setGoldenLayout] = useState<GoldenLayout | null>(null);
   const [dashboardId, setDashboardId] = useState('default-embed-widget'); // Can't be DEFAULT_DASHBOARD_ID because its dashboard layout is not stored in dashboardData
@@ -205,7 +235,7 @@ function App(): JSX.Element {
   const handleDashboardInitialized = useCallback(() => {
     if (
       goldenLayout == null ||
-      (definition == null && sharedObject == null) ||
+      (definition == null && sharedReady == null) ||
       hasEmittedWidget
     ) {
       return;
@@ -213,9 +243,9 @@ function App(): JSX.Element {
     setHasEmittedWidget(true);
 
     let widget = null;
-    if (sharedObject != null) {
+    if (sharedReady != null) {
       widget = {
-        type: shared,
+        type,
         name,
       } as dh.ide.VariableDescriptor;
     } else if (definition != null) {
@@ -234,8 +264,8 @@ function App(): JSX.Element {
     fetch,
     hasEmittedWidget,
     name,
-    shared,
-    sharedObject,
+    type,
+    sharedReady,
   ]);
 
   const allDashboardData = useSelector(getAllDashboardsData);
