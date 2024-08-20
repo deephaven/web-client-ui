@@ -246,6 +246,8 @@ export function isDHColorValue(value: string): value is DHColorValue {
  * ex. colorValueStyle('red') => 'red'
  * ex. colorValueStyle('#F00') => '#F00'
  */
+export function colorValueStyle(value: string): string;
+export function colorValueStyle(value: string | undefined): string | undefined;
 export function colorValueStyle(value: string | undefined): string | undefined {
   if (value != null && isDHColorValue(value)) {
     return `var(--dh-color-${value})`;
