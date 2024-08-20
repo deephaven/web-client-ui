@@ -27,7 +27,7 @@ export type EventListenerHook<TParameters = []> = (
  * @param handler The handler to call when the event is emitted
  * @returns A function to stop listening for the event
  */
-export function listenForEvent<TParameters>(
+export function listenForEvent<TParameters = []>(
   eventEmitter: EventEmitter,
   event: string,
   handler: EventHandlerFunction<TParameters>
@@ -38,14 +38,14 @@ export function listenForEvent<TParameters>(
   };
 }
 
-export function makeListenFunction<TParameters>(
+export function makeListenFunction<TParameters = []>(
   event: string
 ): EventListenFunction<TParameters> {
   return (eventEmitter, handler) =>
     listenForEvent(eventEmitter, event, handler);
 }
 
-export function makeEmitFunction<TParameters>(
+export function makeEmitFunction<TParameters = []>(
   event: string
 ): EventEmitFunction<TParameters> {
   return (eventEmitter, ...parameters) => {
@@ -53,7 +53,7 @@ export function makeEmitFunction<TParameters>(
   };
 }
 
-export function makeUseListenerFunction<TParameters>(
+export function makeUseListenerFunction<TParameters = []>(
   event: string
 ): EventListenerHook<TParameters> {
   return (eventEmitter, handler) => {
@@ -69,7 +69,9 @@ export function makeUseListenerFunction<TParameters>(
  * @param event Name of the event to create functions for
  * @returns Listener, Emitter, and Hook functions for the event
  */
-export function makeEventFunctions<TParameters>(event: string): {
+export function makeEventFunctions<TParameters = []>(
+  event: string
+): {
   listen: EventListenFunction<TParameters>;
   emit: EventEmitFunction<TParameters>;
   useListener: EventListenerHook<TParameters>;
