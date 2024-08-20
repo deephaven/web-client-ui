@@ -1,20 +1,23 @@
 import { useEffect } from 'react';
 import EventEmitter from './EventEmitter';
 
+export type EventHandlerFunction<P = []> = (
+  ...parameters: P extends unknown[] ? P : [P]
+) => void;
 export type EventListenerRemover = () => void;
-export type EventListenFunction<TParameters extends unknown[] = []> = (
+export type EventListenFunction<TParameters = []> = (
   eventEmitter: EventEmitter,
-  handler: (...parameters: TParameters) => void
+  handler: EventHandlerFunction<TParameters>
 ) => EventListenerRemover;
 
-export type EventEmitFunction<TParameters extends unknown[] = []> = (
+export type EventEmitFunction<TParameters = []> = (
   eventEmitter: EventEmitter,
-  ...parameters: TParameters
+  ...parameters: TParameters extends unknown[] ? TParameters : [TParameters]
 ) => void;
 
-export type EventListenerHook<TParameters extends unknown[] = []> = (
+export type EventListenerHook<TParameters = []> = (
   eventEmitter: EventEmitter,
-  handler: (...parameters: TParameters) => void
+  handler: EventHandlerFunction<TParameters>
 ) => void;
 
 /**
@@ -24,10 +27,10 @@ export type EventListenerHook<TParameters extends unknown[] = []> = (
  * @param handler The handler to call when the event is emitted
  * @returns A function to stop listening for the event
  */
-export function listenForEvent<TParameters extends unknown[]>(
+export function listenForEvent<TParameters>(
   eventEmitter: EventEmitter,
   event: string,
-  handler: (...p: TParameters) => void
+  handler: EventHandlerFunction<TParameters>
 ): EventListenerRemover {
   eventEmitter.on(event, handler);
   return () => {
@@ -35,14 +38,14 @@ export function listenForEvent<TParameters extends unknown[]>(
   };
 }
 
-export function makeListenFunction<TParameters extends unknown[]>(
+export function makeListenFunction<TParameters>(
   event: string
 ): EventListenFunction<TParameters> {
   return (eventEmitter, handler) =>
     listenForEvent(eventEmitter, event, handler);
 }
 
-export function makeEmitFunction<TParameters extends unknown[]>(
+export function makeEmitFunction<TParameters>(
   event: string
 ): EventEmitFunction<TParameters> {
   return (eventEmitter, ...parameters) => {
@@ -50,7 +53,7 @@ export function makeEmitFunction<TParameters extends unknown[]>(
   };
 }
 
-export function makeUseListenerFunction<TParameters extends unknown[]>(
+export function makeUseListenerFunction<TParameters>(
   event: string
 ): EventListenerHook<TParameters> {
   return (eventEmitter, handler) => {
@@ -66,9 +69,7 @@ export function makeUseListenerFunction<TParameters extends unknown[]>(
  * @param event Name of the event to create functions for
  * @returns Listener, Emitter, and Hook functions for the event
  */
-export function makeEventFunctions<TParameters extends unknown[]>(
-  event: string
-): {
+export function makeEventFunctions<TParameters>(event: string): {
   listen: EventListenFunction<TParameters>;
   emit: EventEmitFunction<TParameters>;
   useListener: EventListenerHook<TParameters>;
