@@ -23,18 +23,21 @@ module.exports = {
             name: packageName,
             message: 'Forbid importing from owning @deephaven package.',
           },
-          {
-            name: '@adobe/react-spectrum',
-            message:
-              'Import from @deephaven/components instead of @adobe/react-spectrum.',
-          },
-        ],
+          packageName !== '@dseephaven/components'
+            ? {
+                name: '@adobe/react-spectrum',
+                message:
+                  'Import from @deephaven/components instead of @adobe/react-spectrum.',
+              }
+            : null,
+        ].filter(Boolean),
       },
       overrides: [
         {
           files: [
             'packages/components/src/spectrum/**/*.@(ts|tsx)',
             'packages/components/src/theme/**/*.@(ts|tsx)',
+            'packages/code-studio/src/styleguide/**/*.@(ts|tsx)',
           ],
           rules: {
             'no-restricted-imports': [

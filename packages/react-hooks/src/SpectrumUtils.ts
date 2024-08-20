@@ -1,4 +1,4 @@
-import type { SpectrumTextFieldProps } from '@adobe/react-spectrum';
+import type { TextFieldProps } from '@deephaven/components';
 import { KeyedItem } from '@deephaven/utils';
 import type { DOMRefValue } from '@react-types/shared';
 
@@ -11,7 +11,7 @@ import type { DOMRefValue } from '@react-types/shared';
 export function createValidationProps(
   isValid: boolean,
   errorMessage: string
-): Pick<SpectrumTextFieldProps, 'validationState' | 'errorMessage'> {
+): Pick<TextFieldProps, 'validationState' | 'errorMessage'> {
   if (isValid) {
     return {};
   }

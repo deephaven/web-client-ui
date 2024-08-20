@@ -1,4 +1,4 @@
-import { ListData } from '@adobe/react-spectrum';
+import type { ListData } from '@deephaven/components';
 import { Key, useCallback, useMemo, useState } from 'react';
 
 /**
