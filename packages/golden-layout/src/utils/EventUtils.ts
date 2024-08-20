@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import EventEmitter from './EventEmitter';
 
-export type EventHandlerFunction<P = []> = (
-  ...parameters: P extends unknown[] ? P : [P]
-) => void;
+type AsArray<P> = P extends unknown[] ? P : [P];
+
+export type EventHandlerFunction<P = []> = (...parameters: AsArray<P>) => void;
 export type EventListenerRemover = () => void;
 export type EventListenFunction<TParameters = []> = (
   eventEmitter: EventEmitter,
@@ -12,7 +12,7 @@ export type EventListenFunction<TParameters = []> = (
 
 export type EventEmitFunction<TParameters = []> = (
   eventEmitter: EventEmitter,
-  ...parameters: TParameters extends unknown[] ? TParameters : [TParameters]
+  ...parameters: AsArray<TParameters>
 ) => void;
 
 export type EventListenerHook<TParameters = []> = (
