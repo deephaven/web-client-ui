@@ -500,6 +500,12 @@ class DataBarCellRenderer extends CellRenderer {
     };
   }
 
+  getCachedWidth = memoizeClear(
+    (context: CanvasRenderingContext2D, text: string): number =>
+      context.measureText(text).width,
+    { max: 10000 }
+  );
+
   /**
    * Returns the width of the widest value in pixels
    */
@@ -516,7 +522,7 @@ class DataBarCellRenderer extends CellRenderer {
         const row = visibleRows[i];
         const modelRow = getOrThrow(modelRows, row);
         const text = model.textForCell(column, modelRow);
-        widestValue = Math.max(widestValue, context.measureText(text).width);
+        widestValue = Math.max(widestValue, this.getCachedWidth(context, text));
       }
 
       return widestValue;
