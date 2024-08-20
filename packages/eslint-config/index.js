@@ -96,6 +96,10 @@ module.exports = {
         '@typescript-eslint/default-param-last': ['error'],
         '@typescript-eslint/explicit-module-boundary-types': 'error',
         '@typescript-eslint/method-signature-style': 'error',
+        // `no-return-await` needs to be disabled when enabling `@typescript-eslint/return-await`
+        // to avoid incorrectly reporting errors
+        'no-return-await': 'off',
+        '@typescript-eslint/return-await': 'error',
       },
     },
     {

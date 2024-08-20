@@ -3,6 +3,54 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.89.0](https://github.com/deephaven/web-client-ui/compare/v0.88.0...v0.89.0) (2024-08-15)
+
+**Note:** Version bump only for package @deephaven/embed-widget
+
+## [0.88.0](https://github.com/deephaven/web-client-ui/compare/v0.87.0...v0.88.0) (2024-08-06)
+
+**Note:** Version bump only for package @deephaven/embed-widget
+
+## [0.87.0](https://github.com/deephaven/web-client-ui/compare/v0.86.1...v0.87.0) (2024-07-22)
+
+### Features
+
+- Adjustable grid density ([#2151](https://github.com/deephaven/web-client-ui/issues/2151)) ([6bb11f9](https://github.com/deephaven/web-client-ui/commit/6bb11f9a527310801041011be3be78cae07a8bc8)), closes [#885](https://github.com/deephaven/web-client-ui/issues/885)
+
+## [0.86.1](https://github.com/deephaven/web-client-ui/compare/v0.86.0...v0.86.1) (2024-07-18)
+
+### Bug Fixes
+
+- Remove the session wrapper from the embedded widget app ([#2158](https://github.com/deephaven/web-client-ui/issues/2158)) ([b76c1d7](https://github.com/deephaven/web-client-ui/commit/b76c1d73325ef38b1d9e10619b1bc806e430c409))
+
+## [0.86.0](https://github.com/deephaven/web-client-ui/compare/v0.85.2...v0.86.0) (2024-07-17)
+
+### Features
+
+- Core plugins refactor, XComponent framework ([#2150](https://github.com/deephaven/web-client-ui/issues/2150)) ([2571fad](https://github.com/deephaven/web-client-ui/commit/2571faddee86d3c93e7814eb9034e606578ac040))
+
+## [0.85.2](https://github.com/deephaven/web-client-ui/compare/v0.85.1...v0.85.2) (2024-07-09)
+
+**Note:** Version bump only for package @deephaven/embed-widget
+
+## [0.85.1](https://github.com/deephaven/web-client-ui/compare/v0.85.0...v0.85.1) (2024-07-08)
+
+**Note:** Version bump only for package @deephaven/embed-widget
+
+## [0.85.0](https://github.com/deephaven/web-client-ui/compare/v0.84.0...v0.85.0) (2024-07-04)
+
+**Note:** Version bump only for package @deephaven/embed-widget
+
+## [0.84.0](https://github.com/deephaven/web-client-ui/compare/v0.83.0...v0.84.0) (2024-06-28)
+
+**Note:** Version bump only for package @deephaven/embed-widget
+
+## [0.83.0](https://github.com/deephaven/web-client-ui/compare/v0.82.0...v0.83.0) (2024-06-25)
+
+### Features
+
+- Embed widget loading workspace settings ([#2068](https://github.com/deephaven/web-client-ui/issues/2068)) ([b090f20](https://github.com/deephaven/web-client-ui/commit/b090f200b38a7ecab1056b17f445c2af3ae09a41)), closes [#1964](https://github.com/deephaven/web-client-ui/issues/1964)
+
 ## [0.82.0](https://github.com/deephaven/web-client-ui/compare/v0.81.2...v0.82.0) (2024-06-11)
 
 ### Bug Fixes

@@ -1,10 +1,10 @@
 import { FilterSet, Link } from '@deephaven/dashboard-core-plugins';
-import type { ItemConfigType } from '@deephaven/golden-layout';
+import type { ItemConfig } from '@deephaven/golden-layout';
 import LayoutStorage, {
   ExportedLayout,
   ExportedLayoutV1,
   ExportedLayoutV2,
-} from '../storage/LayoutStorage';
+} from './LayoutStorage';
 import UserLayoutUtils, {
   DEFAULT_LAYOUT_CONFIG,
   DEFAULT_LAYOUT_CONFIG_NO_CONSOLE,
@@ -28,7 +28,7 @@ const filterSets: FilterSet[] = [
     panels: [],
   },
 ];
-const layoutConfig: ItemConfigType[] = [
+const layoutConfig: ItemConfig[] = [
   {
     component: 'TestComponent',
     type: 'TestComponentType',

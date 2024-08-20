@@ -9,9 +9,8 @@ import {
   PanelDehydrateFunction,
   PanelHydrateFunction,
 } from '../DashboardPlugin';
-import PanelEvent, { PanelOpenEventDetail } from '../PanelEvent';
+import { PanelOpenEventDetail, usePanelOpenListener } from '../PanelEvent';
 import LayoutUtils from './LayoutUtils';
-import useListener from './useListener';
 import usePanelRegistration from './usePanelRegistration';
 
 /**
@@ -88,7 +87,7 @@ export function useDashboardPanel<
   /**
    * Listen for panel open events so we know when to open a panel
    */
-  useListener(layout.eventHub, PanelEvent.OPEN, handlePanelOpen);
+  usePanelOpenListener(layout.eventHub, handlePanelOpen);
 }
 
 export default useDashboardPanel;

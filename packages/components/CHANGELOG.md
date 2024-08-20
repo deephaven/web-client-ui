@@ -3,6 +3,110 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.89.0](https://github.com/deephaven/web-client-ui/compare/v0.88.0...v0.89.0) (2024-08-15)
+
+### Features
+
+- Refactor console objects menu ([#2013](https://github.com/deephaven/web-client-ui/issues/2013)) ([8251180](https://github.com/deephaven/web-client-ui/commit/825118048326d3622aec2e4b851d81e8b7d93e35)), closes [#1884](https://github.com/deephaven/web-client-ui/issues/1884)
+
+## [0.88.0](https://github.com/deephaven/web-client-ui/compare/v0.87.0...v0.88.0) (2024-08-06)
+
+### Features
+
+- Allow ref callback for Chart and ChartPanel ([#2174](https://github.com/deephaven/web-client-ui/issues/2174)) ([56d1fa9](https://github.com/deephaven/web-client-ui/commit/56d1fa9ba00d319794d686365be245c757ad2178))
+- Export Internationalized Date Types for DatePicker ([#2170](https://github.com/deephaven/web-client-ui/issues/2170)) ([7fb4f64](https://github.com/deephaven/web-client-ui/commit/7fb4f64bf9822c95faa961c53f480da4ea9e0401))
+
+### Bug Fixes
+
+- DH-17454: Combine modal classes instead of replacing ([#2173](https://github.com/deephaven/web-client-ui/issues/2173)) ([a2d5d5f](https://github.com/deephaven/web-client-ui/commit/a2d5d5f9a63ab2d7ec37b95c716f4bf1ae03b9b8))
+- DH-17454: Wrap Modal in SpectrumThemeProvider ([#2169](https://github.com/deephaven/web-client-ui/issues/2169)) ([0058b18](https://github.com/deephaven/web-client-ui/commit/0058b1801c1bfb21e3961a31a8a1c7a27443abb4))
+
+## [0.87.0](https://github.com/deephaven/web-client-ui/compare/v0.86.1...v0.87.0) (2024-07-22)
+
+**Note:** Version bump only for package @deephaven/components
+
+## [0.86.0](https://github.com/deephaven/web-client-ui/compare/v0.85.2...v0.86.0) (2024-07-17)
+
+### Features
+
+- Add option to disable WebGL rendering ([#2134](https://github.com/deephaven/web-client-ui/issues/2134)) ([011eb33](https://github.com/deephaven/web-client-ui/commit/011eb33b067412ffb6362237c9f6dc7256476bcd))
+- Core plugins refactor, XComponent framework ([#2150](https://github.com/deephaven/web-client-ui/issues/2150)) ([2571fad](https://github.com/deephaven/web-client-ui/commit/2571faddee86d3c93e7814eb9034e606578ac040))
+
+## [0.85.2](https://github.com/deephaven/web-client-ui/compare/v0.85.1...v0.85.2) (2024-07-09)
+
+### Bug Fixes
+
+- Fix missing scrim background on LoadingOverlay ([#2098](https://github.com/deephaven/web-client-ui/issues/2098)) ([c9ed895](https://github.com/deephaven/web-client-ui/commit/c9ed895b103ba89b459e413141d38a1f7512dfff))
+
+## [0.85.1](https://github.com/deephaven/web-client-ui/compare/v0.85.0...v0.85.1) (2024-07-08)
+
+### Bug Fixes
+
+- re-export remaining types needed by dh ui from @react-types/shared ([#2132](https://github.com/deephaven/web-client-ui/issues/2132)) ([2119a61](https://github.com/deephaven/web-client-ui/commit/2119a61805fd895adc6b95d53bffb598460c0746))
+
+## [0.85.0](https://github.com/deephaven/web-client-ui/compare/v0.84.0...v0.85.0) (2024-07-04)
+
+### Features
+
+- ComboBox - @deephaven/jsapi-components ([#2077](https://github.com/deephaven/web-client-ui/issues/2077)) ([115e057](https://github.com/deephaven/web-client-ui/commit/115e057114257a186c4a9a006a1958e03b7470c5)), closes [#2074](https://github.com/deephaven/web-client-ui/issues/2074)
+
+### Bug Fixes
+
+- Allow ComboBox to accept the FocusableRef for ref ([#2121](https://github.com/deephaven/web-client-ui/issues/2121)) ([8fe9bad](https://github.com/deephaven/web-client-ui/commit/8fe9bad7889f0fce49ad50415a7cb59d7623a43c))
+- Ref was not being passed through for Picker ([#2122](https://github.com/deephaven/web-client-ui/issues/2122)) ([a11e2ce](https://github.com/deephaven/web-client-ui/commit/a11e2ceaf216d640068562a05fdb156c69481d47))
+
+## [0.84.0](https://github.com/deephaven/web-client-ui/compare/v0.83.0...v0.84.0) (2024-06-28)
+
+### Bug Fixes
+
+- make textValue default to key for Normalized Item ([#2113](https://github.com/deephaven/web-client-ui/issues/2113)) ([bd3e944](https://github.com/deephaven/web-client-ui/commit/bd3e944a53fe577fb48a3c8720c8b9c3881a5a04))
+
+## [0.83.0](https://github.com/deephaven/web-client-ui/compare/v0.82.0...v0.83.0) (2024-06-25)
+
+### ⚠ BREAKING CHANGES
+
+- ComboBox component has been replaced.
+  To migrate to new version:
+
+* Passing children is used instead of `options` prop to define dropdown
+  items. For cases where option value and display are the same, passing an
+  array of values as `children` will work. For cases where value and
+  display differ, `Item` elements must be passed as children. e.g. `<Item
+key={value}>{display}</Item>`
+  e.g.
+
+```typescript
+// values will be used for display + value
+const items = useMemo(
+  () => ['Aaa', 'Bbb', 'Ccc'],
+  []
+)
+<ComboBox>{items}</ComboBox>
+```
+
+```typescript
+<ComboBox>
+  <Item key="aaa">Aaa</Item>
+  <Item key="bbb">Bbb</Item>
+  <Item key="ccc">Ccc</Item>
+</ComboBox>
+```
+
+- The `spellcheck=false` prop is no longer supported or needed
+- `searchPlaceholder` and `inputPlaceholder` props are no longer
+  supported and should be omitted. There is an optional `description` prop
+  for cases where a descriptive label is desired. There is also a `label`
+  prop for the primary component label.
+
+### Features
+
+- ComboBox - @deephaven/components ([#2067](https://github.com/deephaven/web-client-ui/issues/2067)) ([640e002](https://github.com/deephaven/web-client-ui/commit/640e002f85ea86961a22695c9c7659ca5d1de1ee)), closes [#2065](https://github.com/deephaven/web-client-ui/issues/2065)
+- ComboBoxNormalized - windowed data component ([#2072](https://github.com/deephaven/web-client-ui/issues/2072)) ([a30341a](https://github.com/deephaven/web-client-ui/commit/a30341a728625dc7fdc2b0a54b88dfc737977b7a)), closes [#2071](https://github.com/deephaven/web-client-ui/issues/2071)
+
+### Bug Fixes
+
+- view border styling ([#2063](https://github.com/deephaven/web-client-ui/issues/2063)) ([6f99e6b](https://github.com/deephaven/web-client-ui/commit/6f99e6b764a63e31aec36d435ec62926d109955e))
+
 ## [0.82.0](https://github.com/deephaven/web-client-ui/compare/v0.81.2...v0.82.0) (2024-06-11)
 
 ### Bug Fixes

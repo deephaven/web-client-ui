@@ -3,6 +3,93 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.89.0](https://github.com/deephaven/web-client-ui/compare/v0.88.0...v0.89.0) (2024-08-15)
+
+**Note:** Version bump only for package @deephaven/utils
+
+## [0.88.0](https://github.com/deephaven/web-client-ui/compare/v0.87.0...v0.88.0) (2024-08-06)
+
+**Note:** Version bump only for package @deephaven/utils
+
+## [0.87.0](https://github.com/deephaven/web-client-ui/compare/v0.86.1...v0.87.0) (2024-07-22)
+
+### ⚠ BREAKING CHANGES
+
+- Fix any try / catch blocks that return non-awaited
+  Promises
+
+### Bug Fixes
+
+- Enabled @typescript-eslint/return-await rule and fixed offending code ([#2157](https://github.com/deephaven/web-client-ui/issues/2157)) ([7875d03](https://github.com/deephaven/web-client-ui/commit/7875d03fdbe2dfa1c051c6dfa42cc1d9e7469afb)), closes [#2154](https://github.com/deephaven/web-client-ui/issues/2154)
+
+## [0.86.0](https://github.com/deephaven/web-client-ui/compare/v0.85.2...v0.86.0) (2024-07-17)
+
+**Note:** Version bump only for package @deephaven/utils
+
+## [0.85.2](https://github.com/deephaven/web-client-ui/compare/v0.85.1...v0.85.2) (2024-07-09)
+
+**Note:** Version bump only for package @deephaven/utils
+
+## [0.85.0](https://github.com/deephaven/web-client-ui/compare/v0.84.0...v0.85.0) (2024-07-04)
+
+**Note:** Version bump only for package @deephaven/utils
+
+## [0.84.0](https://github.com/deephaven/web-client-ui/compare/v0.83.0...v0.84.0) (2024-06-28)
+
+### ⚠ BREAKING CHANGES
+
+- - @deephaven/jsapi-components - The contract of
+    `useSearchableViewportData` to be more consistent with
+    `useViewportData`. `usePickerWithSelectedValues` now requires
+    `timeZone`.
+
+* @deephaven/jsapi-utils - `createSearchTextFilter` requires `timeZone`
+
+### Features
+
+- useSearchableViewportData - support non-text filters ([#2092](https://github.com/deephaven/web-client-ui/issues/2092)) ([7009e21](https://github.com/deephaven/web-client-ui/commit/7009e2142d6f1624d0810a027e19e3a2b567e38a)), closes [#2102](https://github.com/deephaven/web-client-ui/issues/2102) [#2091](https://github.com/deephaven/web-client-ui/issues/2091)
+
+## [0.83.0](https://github.com/deephaven/web-client-ui/compare/v0.82.0...v0.83.0) (2024-06-25)
+
+### ⚠ BREAKING CHANGES
+
+- ComboBox component has been replaced.
+  To migrate to new version:
+
+* Passing children is used instead of `options` prop to define dropdown
+  items. For cases where option value and display are the same, passing an
+  array of values as `children` will work. For cases where value and
+  display differ, `Item` elements must be passed as children. e.g. `<Item
+key={value}>{display}</Item>`
+  e.g.
+
+```typescript
+// values will be used for display + value
+const items = useMemo(
+  () => ['Aaa', 'Bbb', 'Ccc'],
+  []
+)
+<ComboBox>{items}</ComboBox>
+```
+
+```typescript
+<ComboBox>
+  <Item key="aaa">Aaa</Item>
+  <Item key="bbb">Bbb</Item>
+  <Item key="ccc">Ccc</Item>
+</ComboBox>
+```
+
+- The `spellcheck=false` prop is no longer supported or needed
+- `searchPlaceholder` and `inputPlaceholder` props are no longer
+  supported and should be omitted. There is an optional `description` prop
+  for cases where a descriptive label is desired. There is also a `label`
+  prop for the primary component label.
+
+### Features
+
+- ComboBox - @deephaven/components ([#2067](https://github.com/deephaven/web-client-ui/issues/2067)) ([640e002](https://github.com/deephaven/web-client-ui/commit/640e002f85ea86961a22695c9c7659ca5d1de1ee)), closes [#2065](https://github.com/deephaven/web-client-ui/issues/2065)
+
 ## [0.82.0](https://github.com/deephaven/web-client-ui/compare/v0.81.2...v0.82.0) (2024-06-11)
 
 **Note:** Version bump only for package @deephaven/utils

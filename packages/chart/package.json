@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/chart",
-  "version": "0.82.0",
+  "version": "0.89.0",
   "description": "Deephaven Chart",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -29,7 +29,7 @@
   "dependencies": {
     "@deephaven/components": "file:../components",
     "@deephaven/icons": "file:../icons",
-    "@deephaven/jsapi-types": "1.0.0-dev0.34.0",
+    "@deephaven/jsapi-types": "^1.0.0-dev0.34.0",
     "@deephaven/jsapi-utils": "file:../jsapi-utils",
     "@deephaven/log": "file:../log",
     "@deephaven/react-hooks": "file:../react-hooks",

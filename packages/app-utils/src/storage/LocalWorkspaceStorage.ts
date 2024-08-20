@@ -12,7 +12,7 @@ import {
   DecimalColumnFormatter,
   IntegerColumnFormatter,
 } from '@deephaven/jsapi-utils';
-import UserLayoutUtils from '../main/UserLayoutUtils';
+import UserLayoutUtils from './UserLayoutUtils';
 import LayoutStorage from './LayoutStorage';
 
 const log = Log.module('LocalWorkspaceStorage');
@@ -59,6 +59,9 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
       defaultNotebookSettings: {
         isMinimapEnabled: false,
       },
+      webgl: true,
+      webglEditable: true,
+      gridDensity: 'regular' as const,
     };
     const serverSettings = {
       defaultDateTimeFormat: serverConfigValues?.get('dateTimeFormat'),
@@ -109,9 +112,19 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
               ) as boolean,
             }
           : undefined,
+      webgl: LocalWorkspaceStorage.getBooleanServerConfig(
+        serverConfigValues,
+        'web.webgl'
+      ),
+      webglEditable: LocalWorkspaceStorage.getBooleanServerConfig(
+        serverConfigValues,
+        'web.webgl.editable'
+      ),
     };
 
-    const keys = Object.keys(serverSettings) as Array<keyof typeof settings>;
+    const keys = Object.keys(serverSettings) as Array<
+      keyof typeof serverSettings
+    >;
     for (let i = 0; i < keys.length; i += 1) {
       const key = keys[i];
       if (serverSettings[key] !== undefined) {

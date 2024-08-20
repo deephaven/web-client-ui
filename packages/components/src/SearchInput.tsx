@@ -55,6 +55,10 @@ class SearchInput extends PureComponent<SearchInputProps> {
     this.inputField.current?.focus();
   }
 
+  select(): void {
+    this.inputField.current?.select();
+  }
+
   inputField: React.RefObject<HTMLInputElement>;
 
   searchChangeSelection: React.RefObject<HTMLDivElement>;

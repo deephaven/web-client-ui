@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import type { ItemConfigType } from '../config';
+import type { ItemConfig } from '../config';
 import type LayoutManager from '../LayoutManager';
 import { DragListener } from '../utils';
 import DragProxy from './DragProxy';
@@ -14,13 +14,13 @@ import DragProxy from './DragProxy';
  */
 export default class DragSource {
   _element: JQuery<HTMLElement>;
-  _itemConfig: ItemConfigType | (() => ItemConfigType);
+  _itemConfig: ItemConfig | (() => ItemConfig);
   _layoutManager: LayoutManager;
   _dragListener: DragListener;
 
   constructor(
     element: JQuery<HTMLElement>,
-    itemConfig: ItemConfigType | (() => ItemConfigType),
+    itemConfig: ItemConfig | (() => ItemConfig),
     layoutManager: LayoutManager
   ) {
     this._element = element;

@@ -1,4 +1,5 @@
 import {
+  LIST_VIEW_ROW_HEIGHTS,
   ListViewNormalized,
   ListViewNormalizedProps,
   NormalizedItemData,
@@ -6,7 +7,6 @@ import {
 } from '@deephaven/components';
 import { dh as DhType } from '@deephaven/jsapi-types';
 import { Settings } from '@deephaven/jsapi-utils';
-import { LIST_VIEW_ROW_HEIGHTS } from '@deephaven/utils';
 import useFormatter from '../useFormatter';
 import useViewportData from '../useViewportData';
 import { useItemRowDeserializer } from './utils';

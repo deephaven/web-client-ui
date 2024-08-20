@@ -7,6 +7,12 @@ import type { Layout, Data } from 'plotly.js';
 import { FilterColumnMap, FilterMap } from './ChartUtils';
 
 export type ChartEvent = CustomEvent;
+
+export type RenderOptions = {
+  /** Allow WebGL as an option. Defaults to `true`, explicitly set to `false` to disable. */
+  webgl?: boolean;
+};
+
 /**
  * Model for a Chart
  * All of these methods should return very quickly.
@@ -41,7 +47,10 @@ class ChartModel {
 
   listeners: ((event: ChartEvent) => void)[];
 
+  /** Formatter settings for the chart, such as how to format dates and numbers */
   formatter?: Formatter;
+
+  renderOptions?: RenderOptions;
 
   rect?: DOMRect;
 
@@ -84,6 +93,14 @@ class ChartModel {
    */
   setFormatter(formatter: Formatter): void {
     this.formatter = formatter;
+  }
+
+  /**
+   * Set additional options for rendering the chart
+   * @param renderOptions Options for rendering the chart
+   */
+  setRenderOptions(renderOptions: RenderOptions): void {
+    this.renderOptions = renderOptions;
   }
 
   /**

@@ -37,14 +37,17 @@ const sampleSectionIds: string[] = [
   'sample-section-grids-async',
   'sample-section-grids-tree',
   'sample-section-grids-iris',
+  'sample-section-grids-iris-compact',
+  'sample-section-grids-iris-spacious',
   'sample-section-charts',
+  'sample-section-error-views',
+  'sample-section-xcomponents',
   'sample-section-spectrum-buttons',
   'sample-section-spectrum-collections',
   'sample-section-spectrum-content',
   'sample-section-spectrum-forms',
   'sample-section-spectrum-overlays',
   'sample-section-spectrum-well',
-  'sample-section-error-views',
 ];
 const buttonSectionIds: string[] = [
   'sample-section-buttons-regular',

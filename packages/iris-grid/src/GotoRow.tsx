@@ -22,15 +22,9 @@ import classNames from 'classnames';
 import './GotoRow.scss';
 import { nanoid } from 'nanoid';
 import IrisGridModel from './IrisGridModel';
-import IrisGridProxyModel from './IrisGridProxyModel';
 import IrisGridBottomBar from './IrisGridBottomBar';
 import { ColumnName } from './CommonTypes';
-
-function isIrisGridProxyModel(
-  model: IrisGridModel
-): model is IrisGridProxyModel {
-  return (model as IrisGridProxyModel).model !== undefined;
-}
+import { isIrisGridTableModelTemplate } from './IrisGridTableModelTemplate';
 
 const DEFAULT_FORMAT_STRING = '###,##0';
 
@@ -90,7 +84,7 @@ const GotoRow = forwardRef<GotoRowElement, GotoRowProps>(
     const [isGotoRowActive, setIsGotoRowActive] = useState(false);
     let columns: dh.Column[] = [];
 
-    if (isIrisGridProxyModel(model) && model.table !== undefined) {
+    if (isIrisGridTableModelTemplate(model)) {
       ({ columns } = model.table);
     }
 

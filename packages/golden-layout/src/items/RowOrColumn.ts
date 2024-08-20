@@ -3,13 +3,13 @@ import AbstractContentItem from './AbstractContentItem';
 import { animFrame } from '../utils';
 import { Splitter } from '../controls';
 import type LayoutManager from '../LayoutManager';
-import type { ItemConfig, ItemConfigType } from '../config';
+import type { ColumnItemConfig, ItemConfig, RowItemConfig } from '../config';
 
 export default class RowOrColumn extends AbstractContentItem {
   isRow: boolean;
   isColumn: boolean;
   childElementContainer: JQuery<HTMLElement>;
-  parent: AbstractContentItem;
+  parent: AbstractContentItem | null;
 
   private _splitter: Splitter[] = [];
   private _splitterSize: number;
@@ -21,10 +21,22 @@ export default class RowOrColumn extends AbstractContentItem {
   private _splitterMaxPosition: number | null = null;
 
   constructor(
+    isColumn: true,
+    layoutManager: LayoutManager,
+    config: ColumnItemConfig,
+    parent: AbstractContentItem | null
+  );
+  constructor(
+    isColumn: false,
+    layoutManager: LayoutManager,
+    config: RowItemConfig,
+    parent: AbstractContentItem | null
+  );
+  constructor(
     isColumn: boolean,
     layoutManager: LayoutManager,
-    config: ItemConfigType,
-    parent: AbstractContentItem
+    config: ColumnItemConfig | RowItemConfig,
+    parent: AbstractContentItem | null
   ) {
     super(
       layoutManager,
@@ -58,7 +70,7 @@ export default class RowOrColumn extends AbstractContentItem {
    *                           children need to be added in one go and resize is called afterwards
    */
   addChild(
-    contentItem: AbstractContentItem | { type: ItemConfig['type'] },
+    contentItem: AbstractContentItem | ItemConfig,
     index?: number,
     _$suspendResize?: boolean
   ) {
@@ -157,7 +169,7 @@ export default class RowOrColumn extends AbstractContentItem {
     if (this.contentItems.length === 1 && this.config.isClosable === true) {
       childItem = this.contentItems[0];
       this.contentItems = [];
-      this.parent.replaceChild(this, childItem, true);
+      this.parent?.replaceChild(this, childItem, true);
     } else {
       this.callDownwards('setSize');
       this.emitBubblingEvent('stateChanged');

@@ -26,6 +26,8 @@ export interface NumberFormatSettings {
 export interface Settings
   extends ColumnFormatSettings,
     DateTimeFormatSettings,
-    NumberFormatSettings {}
+    NumberFormatSettings {
+  webgl?: boolean;
+}
 
 export default Settings;

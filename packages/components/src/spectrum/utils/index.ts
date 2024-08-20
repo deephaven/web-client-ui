@@ -2,6 +2,8 @@ export * from './itemUtils';
 export * from './itemWrapperUtils';
 export * from './propsUtils';
 export * from './themeUtils';
+export * from './useOnChangeTrackUncontrolled';
 export * from './useRenderNormalizedItem';
+export * from './useStaticItemInitialScrollPosition';
 export * from './useStringifiedMultiSelection';
 export * from './useStringifiedSelection';

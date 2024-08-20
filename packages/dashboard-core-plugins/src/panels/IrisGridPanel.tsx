@@ -90,6 +90,7 @@ import {
   isIrisGridPanelMetadata,
   isLegacyIrisGridPanelMetadata,
 } from './IrisGridPanelTypes';
+import { WidgetPanelDescriptor } from './WidgetPanelTypes';
 
 const log = Log.module('IrisGridPanel');
 
@@ -422,6 +423,12 @@ export class IrisGridPanel extends PureComponent<
         return null;
       }
 
+      // TODO #2093: Find a better way to handle deprecated panel prop
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const deprecatedProps = {
+        panel: this,
+      };
+
       return (
         <div className="iris-grid-plugin">
           <Plugin
@@ -430,6 +437,8 @@ export class IrisGridPanel extends PureComponent<
             fetchColumns={this.handlePluginFetchColumns}
             model={model}
             table={model.table}
+            tableName={this.getTableName()}
+            selectedRanges={this.irisGrid.current?.state.selectedRanges}
             onStateChange={this.handlePluginStateChange}
             pluginState={pluginState}
           />
@@ -534,6 +543,22 @@ export class IrisGridPanel extends PureComponent<
       gridState,
       pluginState,
     })
+  );
+
+  getWidgetPanelDescriptor = memoize(
+    (
+      metadata: IrisGridPanelProps['metadata'],
+      description?: string
+    ): WidgetPanelDescriptor => {
+      const name = getTableNameFromMetadata(metadata);
+      return {
+        type: 'Table',
+        displayType: 'Table',
+        ...metadata,
+        name,
+        description,
+      };
+    }
   );
 
   initModel(): void {
@@ -712,7 +737,7 @@ export class IrisGridPanel extends PureComponent<
     this.setState(
       () => null,
       () => {
-        const { glEventHub, inputFilters } = this.props;
+        const { glEventHub, inputFilters, metadata } = this.props;
         const table = this.getTableName();
         const { panelState } = this.state;
         const sourcePanelId = LayoutUtils.getIdFromPanel(this);
@@ -726,6 +751,7 @@ export class IrisGridPanel extends PureComponent<
         }
         glEventHub.emit(IrisGridEvent.CREATE_CHART, {
           metadata: {
+            ...metadata,
             settings,
             sourcePanelId,
             table,
@@ -1235,13 +1261,16 @@ export class IrisGridPanel extends PureComponent<
     } = this.state;
     const errorMessage =
       error != null ? `Unable to open table. ${error}` : undefined;
-    const name = getTableNameFromMetadata(metadata);
     const description = model?.description ?? undefined;
     const pluginState = panelState?.pluginState ?? null;
     const childrenContent =
       children ?? this.getPluginContent(Plugin, model, pluginState);
     const { permissions } = user;
     const { canCopy, canDownloadCsv } = permissions;
+    const widgetPanelDescriptor = this.getWidgetPanelDescriptor(
+      metadata,
+      description
+    );
 
     return (
       <WidgetPanel
@@ -1256,16 +1285,12 @@ export class IrisGridPanel extends PureComponent<
         onShow={this.handleShow}
         onTabFocus={this.handleShow}
         onTabClicked={this.handleTabClicked}
-        widgetName={name}
-        widgetType="Table"
-        description={description}
         componentPanel={this}
+        descriptor={widgetPanelDescriptor}
         renderTabTooltip={() => (
           <IrisGridPanelTooltip
+            descriptor={widgetPanelDescriptor}
             model={model}
-            widgetName={name}
-            glContainer={glContainer}
-            description={description}
           />
         )}
       >

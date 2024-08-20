@@ -116,6 +116,7 @@ import {
   IrisGridContextMenuHandler,
   IrisGridCopyCellMouseHandler,
   IrisGridDataSelectMouseHandler,
+  IrisGridPartitionedTableMouseHandler,
   IrisGridFilterMouseHandler,
   IrisGridRowTreeMouseHandler,
   IrisGridSortMouseHandler,
@@ -352,6 +353,8 @@ export interface IrisGridProps {
 
   // Pass in a custom renderer to the grid for advanced use cases
   renderer?: IrisGridRenderer;
+
+  density?: 'compact' | 'regular' | 'spacious';
 }
 
 export interface IrisGridState {
@@ -455,6 +458,9 @@ export interface IrisGridState {
 class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   static contextType = IrisGridThemeContext;
 
+  // eslint-disable-next-line react/static-property-placement, react/sort-comp
+  declare context: React.ContextType<typeof IrisGridThemeContext>;
+
   static minDebounce = 150;
 
   static maxDebounce = 500;
@@ -529,6 +535,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     canDownloadCsv: true,
     frozenColumns: null,
     theme: null,
+    // Do not set a default density prop since we need to know if it overrides the global density setting
+    density: undefined,
     canToggleSearch: true,
     mouseHandlers: EMPTY_ARRAY,
     keyHandlers: EMPTY_ARRAY,
@@ -734,6 +742,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       new IrisGridContextMenuHandler(this, dh),
       new IrisGridDataSelectMouseHandler(this),
       new PendingMouseHandler(this),
+      new IrisGridPartitionedTableMouseHandler(this),
     ];
     if (canCopy) {
       keyHandlers.push(new CopyKeyHandler(this));
@@ -1393,20 +1402,35 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       contextTheme: IrisGridThemeType | null,
       theme: Partial<IrisGridThemeType> | null,
       isEditable: boolean,
-      floatingRowCount: number
+      floatingRowCount: number,
+      density: 'compact' | 'regular' | 'spacious'
     ): IrisGridThemeType => {
       // If a theme is available via context, use that as the base theme.
-      // If iris-grid is standalone without a context, initialize a default theme.
-      const defaultTheme = contextTheme ?? createDefaultIrisGridTheme();
+      // If iris-grid is standalone without a context, use the default theme.
+      const baseTheme = contextTheme ?? createDefaultIrisGridTheme();
 
       // We only show the row footers when we have floating rows for aggregations
       const rowFooterWidth =
         floatingRowCount > 0
-          ? theme?.rowFooterWidth ?? defaultTheme.rowFooterWidth
+          ? theme?.rowFooterWidth ?? baseTheme.rowFooterWidth
           : 0;
 
+      const { metricCalculator } = this.state;
+      if (metricCalculator != null) {
+        metricCalculator.resetCalculatedColumnWidths();
+        metricCalculator.resetCalculatedRowHeights();
+      }
+
+      let densityTheme = {};
+      if (density === 'compact') {
+        densityTheme = baseTheme.density.compact;
+      } else if (density === 'spacious') {
+        densityTheme = baseTheme.density.spacious;
+      }
+
       return {
-        ...defaultTheme,
+        ...baseTheme,
+        ...densityTheme,
         ...theme,
         autoSelectRow: !isEditable,
         rowFooterWidth,
@@ -1498,14 +1522,16 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     return rowIndex != null ? modelRows.get(rowIndex) : null;
   }
 
-  getTheme(): Partial<IrisGridThemeType> {
-    const { model, theme } = this.props;
+  getTheme(): IrisGridThemeType {
+    const { model, theme, density } = this.props;
+    const { theme: contextTheme, density: contextDensity } = this.context;
 
     return this.getCachedTheme(
-      this.context,
+      contextTheme,
       theme,
       (isEditableGridModel(model) && model.isEditable) ?? false,
-      model.floatingTopRowCount + model.floatingBottomRowCount
+      model.floatingTopRowCount + model.floatingBottomRowCount,
+      density ?? contextDensity
     );
   }
 
@@ -1781,11 +1807,11 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
    * Rebuilds all the current filters. Necessary if something like the time zone has changed.
    */
   rebuildFilters(): void {
-    log.debug('Rebuilding filters');
-
     const { model } = this.props;
     const { advancedFilters, quickFilters } = this.state;
     const { columns, formatter } = model;
+
+    log.debug('Rebuilding filters');
 
     const newAdvancedFilters = new Map();
     const newQuickFilters = new Map();
@@ -1812,8 +1838,8 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
         filter: this.makeQuickFilter(column, text, formatter.timeZone),
       });
     });
-
     this.startLoading('Rebuilding filters...', { resetRanges: true });
+
     this.setState({
       quickFilters: newQuickFilters,
       advancedFilters: newAdvancedFilters,
@@ -2024,11 +2050,15 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   async loadPartitionsTable(model: PartitionedGridModel): Promise<void> {
     try {
-      const partitionConfig = await this.getInitialPartitionConfig(model);
-      this.setState(
-        { isSelectingPartition: true, partitionConfig },
-        this.loadTableState
-      );
+      const { partitionConfig } = this.state;
+      if (!partitionConfig) {
+        this.startLoading('Loading partitions...', {
+          loadingCancelShown: false,
+          resetRanges: true,
+        });
+        this.initializePartitionConfig(model);
+      }
+      this.setState({ isSelectingPartition: true }, this.loadTableState);
     } catch (error) {
       if (!PromiseUtils.isCanceled(error)) {
         this.handleTableLoadError(error);
@@ -2037,19 +2067,9 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
   }
 
   /**
-   * Gets the initial partition config for the currently set model.
-   * Sorts the key table and gets the first key.
-   * If the table is ticking, it will wait for the first tick.
+   * Initialize the partition config to the default partition.
    */
-  async getInitialPartitionConfig(
-    model: PartitionedGridModel
-  ): Promise<PartitionConfig> {
-    const { partitionConfig } = this.state;
-    if (partitionConfig !== undefined) {
-      // User already has a partition selected, just use that
-      return partitionConfig;
-    }
-
+  async initializePartitionConfig(model: PartitionedGridModel): Promise<void> {
     const keyTable = await this.pending.add(
       model.partitionKeysTable(),
       resolved => resolved.close()
@@ -2060,37 +2080,63 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     keyTable.applySort(sorts);
     keyTable.setViewport(0, 0);
 
-    return new Promise((resolve, reject) => {
-      // We want to wait for the first UPDATED event instead of just getting viewport data here
-      // It's possible that the key table does not have any rows of data yet, so just wait until it does have one
-      keyTable.addEventListener(
-        dh.Table.EVENT_UPDATED,
-        (event: CustomEvent<DhType.ViewportData>) => {
-          try {
-            const { detail: data } = event;
-            if (data.rows.length === 0) {
-              // Table is empty, wait for the next updated event
-              return;
-            }
-            const row = data.rows[0];
-            // Core JSAPI returns undefined for null table values, IrisGridPartitionSelector expects null
-            // https://github.com/deephaven/deephaven-core/issues/5400
-            const values = keyTable.columns.map(
-              column => row.get(column) ?? null
-            );
-            const newPartition: PartitionConfig = {
-              partitions: values,
-              mode: 'partition',
-            };
-            keyTable.close();
-            resolve(newPartition);
-          } catch (e) {
-            keyTable.close();
-            reject(e);
+    // We want to wait for the first UPDATED event instead of just getting viewport data here
+    // It's possible that the key table does not have any rows of data yet, so just wait until it does have one
+    keyTable.addEventListener(
+      dh.Table.EVENT_UPDATED,
+      (event: CustomEvent<DhType.ViewportData>) => {
+        try {
+          const { detail: data } = event;
+          if (data.rows.length === 0) {
+            // We received an update and the table is still empty. Stop showing the loading spinner so we know
+            this.stopLoading();
+            return;
           }
+          const row = data.rows[0];
+          const values = keyTable.columns.map(column => row.get(column));
+          const newPartition: PartitionConfig = {
+            partitions: values,
+            mode: model.isPartitionAwareSourceTable ? 'partition' : 'keys',
+          };
+          keyTable.close();
+          this.setState({
+            loadingSpinnerShown: false,
+            partitionConfig: newPartition,
+          });
+        } catch (e) {
+          keyTable.close();
+          log.error('Error getting initial partition config', e);
         }
+      }
+    );
+  }
+
+  /**
+   * Selects a partition key from the table based on the provided row index.
+   *
+   * @param rowIndex The index of the row from which the partition will be selected.
+   * @returns A promise that resolves when the partition key has been successfully selected.
+   */
+  selectPartitionKeyFromTable(rowIndex: GridRangeIndex): void {
+    const { model } = this.props;
+    assertNotNull(rowIndex);
+    if (isPartitionedGridModel(model)) {
+      const data = this.getRowDataMap(rowIndex);
+      const partitionColumnSet = new Set(
+        model.partitionColumns.map(column => column.name)
       );
-    });
+      const values = Object.entries(data)
+        .filter(([key, _]) => partitionColumnSet.has(key))
+        .map(([key, columnData]) => columnData.value);
+      const newPartition: PartitionConfig = {
+        partitions: values,
+        mode: 'partition',
+      };
+      this.setState({
+        isSelectingPartition: true,
+        partitionConfig: newPartition,
+      });
+    }
   }
 
   copyCell(
@@ -2532,7 +2578,10 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
 
   handlePartitionChange(partitionConfig: PartitionConfig): void {
     this.startLoading('Partitioning...');
-    this.setState({ partitionConfig });
+    const { partitionConfig: prevConfig } = this.state;
+    if (prevConfig !== partitionConfig) {
+      this.setState({ partitionConfig });
+    }
   }
 
   handleTableLoadError(error: unknown): void {
@@ -4231,6 +4280,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }
 
     const theme = this.getTheme();
+    const { columnHeaderHeight: singleColumnHeaderHeight } = theme;
 
     const filter = this.getCachedFilter(
       customFilters,
@@ -4700,15 +4750,13 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
             unmountOnExit
           >
             <div className="iris-grid-partition-selector-wrapper iris-grid-bar iris-grid-bar-primary">
-              {isPartitionedGridModel(model) &&
-                model.isPartitionRequired &&
-                partitionConfig && (
-                  <IrisGridPartitionSelector
-                    model={model}
-                    partitionConfig={partitionConfig}
-                    onChange={this.handlePartitionChange}
-                  />
-                )}
+              {isPartitionedGridModel(model) && model.isPartitionRequired && (
+                <IrisGridPartitionSelector
+                  model={model}
+                  partitionConfig={partitionConfig}
+                  onChange={this.handlePartitionChange}
+                />
+              )}
             </div>
           </CSSTransition>
           <CSSTransition
@@ -4812,7 +4860,13 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
               />
             )}
             {!isMenuShown && (
-              <div className="grid-settings-button">
+              <div
+                className="grid-settings-button"
+                style={{
+                  height: `${singleColumnHeaderHeight}px`,
+                  width: `${singleColumnHeaderHeight}px`,
+                }}
+              >
                 <Button
                   kind="ghost"
                   data-testid={`btn-iris-grid-settings-button-${name}`}
