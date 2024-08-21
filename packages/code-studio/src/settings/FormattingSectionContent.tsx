@@ -614,16 +614,16 @@ export class FormattingSectionContent extends PureComponent<
             </div>
           </div>
 
-          <div className="form-row mb-3">
+          <div className="form-row mb-3" id="show_extra_group_column_div">
             <label
               className="col-form-label col-3"
               htmlFor="default-integer-format-input"
             >
               Rollup
             </label>
-            <div className="col pr-0 pt-2">
+            <div className="col pr-0 pt-2" id="show_extra_grou_column_cb">
               <Checkbox
-                checked={showExtraGroupColumn ?? null}
+                checked={showExtraGroupColumn}
                 onChange={this.handleShowExtraGroupColumnChange}
               >
                 Show extra &quot;group&quot; column
