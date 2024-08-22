@@ -71,7 +71,6 @@ describe('createFormatterFromSettings', () => {
         truncateNumbersWithPound,
         showEmptyStrings,
         showNullStrings,
-        showExtraGroupColumn,
       } = settings ?? {};
 
       const actual = createFormatterFromSettings(dh, settings);
@@ -84,8 +83,7 @@ describe('createFormatterFromSettings', () => {
         defaultIntegerFormatOptions,
         truncateNumbersWithPound,
         showEmptyStrings,
-        showNullStrings,
-        showExtraGroupColumn
+        showNullStrings
       );
       expect(actual).toBeInstanceOf(FormatterActual);
     }
