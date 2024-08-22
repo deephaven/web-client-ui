@@ -76,7 +76,7 @@ export const {
   listen: listenForPanelOpen,
   emit: emitPanelOpen,
   useListener: usePanelOpenListener,
-} = makeEventFunctions<PanelOpenEventDetail>(PanelEvent.OPEN);
+} = makeEventFunctions<[detail: PanelOpenEventDetail]>(PanelEvent.OPEN);
 
 // TODO (#2147): Add the rest of the event functions here. Need to create the correct types for all of them.
 

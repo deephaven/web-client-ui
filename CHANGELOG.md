@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.90.0](https://github.com/deephaven/web-client-ui/compare/v0.89.0...v0.90.0) (2024-08-21)
+
+### ⚠ BREAKING CHANGES
+
+- Delete unused event types: `openPQObject`,
+  `openControl`, `reload`, `clearAllFilters`.
+
+### Bug Fixes
+
+- GridMetrics including totals rows in visible rows when scrolled to bottom ([#2194](https://github.com/deephaven/web-client-ui/issues/2194)) ([d409e96](https://github.com/deephaven/web-client-ui/commit/d409e96bc0c191e4d1766397ef1e5334af0102dd))
+- makeEventFunctions take an array of parameters ([#2186](https://github.com/deephaven/web-client-ui/issues/2186)) ([f5b01fd](https://github.com/deephaven/web-client-ui/commit/f5b01fdd69de13233f9e08ef76979e7c07b1759c))
+- TablePlugin needs to know table name and selected range ([#2181](https://github.com/deephaven/web-client-ui/issues/2181)) ([0b37477](https://github.com/deephaven/web-client-ui/commit/0b3747782958dc8e432fabda89ac0bce25ac9c22)), closes [#2093](https://github.com/deephaven/web-client-ui/issues/2093)
+
+### Code Refactoring
+
+- Change TabEvent to object literal, add TabEventMap ([#2191](https://github.com/deephaven/web-client-ui/issues/2191)) ([419f95d](https://github.com/deephaven/web-client-ui/commit/419f95d05c5db52e7b068398d6d2520b77c6aad3))
+
 ## [0.89.0](https://github.com/deephaven/web-client-ui/compare/v0.88.0...v0.89.0) (2024-08-15)
 
 ### Features

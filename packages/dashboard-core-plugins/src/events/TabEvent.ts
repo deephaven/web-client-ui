@@ -1,15 +1,6 @@
-class TabEvent {
-  static focus = 'TabEvent.focus';
-
-  static blur = 'TabEvent.blur';
-
-  static openPQObject = 'TabEvent.openPQObject';
-
-  static openControl = 'TabEvent.openControl';
-
-  static reload = 'TabEvent.reload';
-
-  static clearAllFilters = 'TabEvent.clearAllFilters';
-}
+const TabEvent = Object.freeze({
+  focus: 'TabEvent.focus',
+  blur: 'TabEvent.blur',
+});
 
 export default TabEvent;
