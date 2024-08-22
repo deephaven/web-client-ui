@@ -72,6 +72,7 @@ function IrisGridModelUpdater({
   partitionConfig,
   showExtraGroupColumn,
 }: IrisGridModelUpdaterProps): JSX.Element | null {
+  const { isTotalsAvailable, isRollupAvailable } = model;
   // Check for showExtraGroupColumn before memoizing columns, since updating it will change the columns
   useOnChange(() => {
     if (isIrisGridTreeTableModel(model) && showExtraGroupColumn != null) {
@@ -139,12 +140,11 @@ function IrisGridModelUpdater({
   );
   useOnChange(
     function updateRollupCOnfig() {
-      if (model.isRollupAvailable) {
+      if (isRollupAvailable) {
         model.rollupConfig = rollupConfig;
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, model.rollupConfig, rollupConfig]
+    [model, isRollupAvailable, rollupConfig]
   );
   useOnChange(
     function updateSelectDistinctColumns() {
@@ -156,12 +156,11 @@ function IrisGridModelUpdater({
   );
   useOnChange(
     function updateTotalsConfig() {
-      if (model.isTotalsAvailable) {
+      if (isTotalsAvailable) {
         model.totalsConfig = totalsConfig;
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, model.isTotalsAvailable, totalsConfig]
+    [model, isTotalsAvailable, totalsConfig]
   );
   useOnChange(
     function updatePendingRowCount() {
