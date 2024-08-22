@@ -1986,8 +1986,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
       this.integerFormatOptions,
       this.truncateNumbersWithPound,
       this.showEmptyStrings,
-      this.showNullStrings,
-      this.showExtraGroupColumn
+      this.showNullStrings
     );
 
     log.debug('updateFormatter', this.globalColumnFormats, mergedColumnFormats);
@@ -4866,6 +4865,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
                 frozenColumns={frozenColumns}
                 columnHeaderGroups={columnHeaderGroups}
                 partitionConfig={partitionConfig}
+                showExtraGroupColumn={this.showExtraGroupColumn}
               />
             )}
             {!isMenuShown && (

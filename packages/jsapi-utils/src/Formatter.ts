@@ -86,8 +86,7 @@ export class Formatter {
     >[1],
     truncateNumbersWithPound = false,
     showEmptyStrings = true,
-    showNullStrings = true,
-    showExtraGroupColumn = true
+    showNullStrings = true
   ) {
     // Formatting order:
     // - columnFormatMap[type][name]
@@ -121,7 +120,6 @@ export class Formatter {
 
     this.showEmptyStrings = showEmptyStrings;
     this.showNullStrings = showNullStrings;
-    this.showExtraGroupColumn = showExtraGroupColumn;
   }
 
   defaultColumnFormatter: TableColumnFormatter;
@@ -135,8 +133,6 @@ export class Formatter {
   showEmptyStrings: boolean;
 
   showNullStrings: boolean;
-
-  showExtraGroupColumn: boolean;
 
   /**
    * Gets columnFormatMap indexed by name for a given column type, creates new Map entry if necessary

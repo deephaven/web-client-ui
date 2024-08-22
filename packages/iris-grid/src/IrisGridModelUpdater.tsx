@@ -14,6 +14,7 @@ import {
   PartitionConfig,
   isPartitionedGridModel,
 } from './PartitionedGridModel';
+import { isIrisGridTreeTableModel } from './IrisGridTreeTableModel';
 
 const COLUMN_BUFFER_PAGES = 1;
 
@@ -40,6 +41,7 @@ interface IrisGridModelUpdaterProps {
   pendingRowCount?: number;
   pendingDataMap?: PendingDataMap;
   partitionConfig?: PartitionConfig;
+  showExtraGroupColumn?: boolean;
 }
 
 /**
@@ -68,10 +70,15 @@ function IrisGridModelUpdater({
   formatColumns,
   columnHeaderGroups,
   partitionConfig,
+  showExtraGroupColumn,
 }: IrisGridModelUpdaterProps): JSX.Element | null {
-  if (model.formatter !== formatter) {
-    model.formatter = formatter;
-  }
+  // Check for showExtraGroupColumn before memoizing columns, since updating it will change the columns
+  useOnChange(() => {
+    if (isIrisGridTreeTableModel(model) && showExtraGroupColumn != null) {
+      model.showExtraGroupColumn = showExtraGroupColumn;
+    }
+  }, [model, showExtraGroupColumn]);
+
   const columns = useMemo(
     () =>
       IrisGridUtils.getModelViewportColumns(
@@ -92,7 +99,6 @@ function IrisGridModelUpdater({
       alwaysFetchColumns,
     ]
   );
-
   useOnChange(
     function updateFilter() {
       model.filter = filter;

@@ -63,12 +63,20 @@ function isLayoutTreeTable(table: DhType.TreeTable): table is LayoutTreeTable {
   return (table as LayoutTreeTable).layoutHints !== undefined;
 }
 
+export function isIrisGridTreeTableModel(
+  tableModel: IrisGridModel
+): tableModel is IrisGridTreeTableModel {
+  return (tableModel as IrisGridTreeTableModel).showExtraGroupColumn != null;
+}
+
 class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   DhType.TreeTable,
   UITreeRow
 > {
   /** We keep a virtual column at the front that tracks the "group" that is expanded */
   private virtualColumns: DisplayColumn[];
+
+  private showExtraGroupCol = true;
 
   constructor(
     dh: typeof DhType,
@@ -77,29 +85,24 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     inputTable: DhType.InputTable | null = null
   ) {
     super(dh, table, formatter, inputTable);
-    this.virtualColumns = this.formatter.showExtraGroupColumn
-      ? [VirtualGroupColumn]
-      : [];
+
+    this.virtualColumns = this.showExtraGroupColumn ? [VirtualGroupColumn] : [];
   }
 
-  set formatter(newFormatter: Formatter) {
-    const oldFormatter = super.formatter;
-    super.formatter = newFormatter;
-    if (
-      newFormatter.showExtraGroupColumn !== oldFormatter.showExtraGroupColumn
-    ) {
-      this.updateVirtualColumns();
+  get showExtraGroupColumn(): boolean {
+    return this.showExtraGroupCol;
+  }
+
+  set showExtraGroupColumn(showExtraGroupCol: boolean) {
+    if (this.showExtraGroupCol === showExtraGroupCol) {
+      return;
     }
-  }
-
-  get formatter(): Formatter {
-    return super.formatter;
+    this.showExtraGroupCol = showExtraGroupCol;
+    this.updateVirtualColumns();
   }
 
   updateVirtualColumns(): void {
-    this.virtualColumns = this.formatter.showExtraGroupColumn
-      ? [VirtualGroupColumn]
-      : [];
+    this.virtualColumns = this.showExtraGroupColumn ? [VirtualGroupColumn] : [];
     this.dispatchEvent(
       new EventShimCustomEvent(IrisGridModel.EVENT.COLUMNS_CHANGED, {
         detail: this.columns,
