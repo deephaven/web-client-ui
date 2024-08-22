@@ -143,6 +143,7 @@ function IrisGridModelUpdater({
         model.rollupConfig = rollupConfig;
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, model.isRollupAvailable, rollupConfig]
   );
   useOnChange(
@@ -159,6 +160,7 @@ function IrisGridModelUpdater({
         model.totalsConfig = totalsConfig;
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [model, model.isTotalsAvailable, totalsConfig]
   );
   useOnChange(
