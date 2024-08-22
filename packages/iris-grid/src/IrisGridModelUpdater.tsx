@@ -143,8 +143,7 @@ function IrisGridModelUpdater({
         model.rollupConfig = rollupConfig;
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, model.isRollupAvailable, rollupConfig]
+    [model, rollupConfig]
   );
   useOnChange(
     function updateSelectDistinctColumns() {
@@ -160,8 +159,7 @@ function IrisGridModelUpdater({
         model.totalsConfig = totalsConfig;
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, model.isTotalsAvailable, totalsConfig]
+    [model, totalsConfig]
   );
   useOnChange(
     function updatePendingRowCount() {
