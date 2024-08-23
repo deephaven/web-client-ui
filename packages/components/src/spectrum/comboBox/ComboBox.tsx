@@ -11,6 +11,8 @@ import { PickerPropsT, usePickerProps } from '../picker';
 
 export type ComboBoxProps = PickerPropsT<SpectrumComboBoxProps<NormalizedItem>>;
 
+export { SpectrumComboBox };
+
 export const ComboBox = React.forwardRef(function ComboBox(
   { UNSAFE_className, ...props }: ComboBoxProps,
   ref: DOMRef<HTMLDivElement>

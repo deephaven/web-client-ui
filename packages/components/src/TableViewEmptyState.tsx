@@ -1,12 +1,7 @@
 import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  Content,
-  Heading,
-  Icon,
-  IllustratedMessage,
-} from '@adobe/react-spectrum';
 import { vsEmptyWindow } from '@deephaven/icons';
+import { Content, Heading, Icon, IllustratedMessage } from './spectrum';
 
 const DEFAULT_DELAY_MS = 500;
 

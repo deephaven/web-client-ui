@@ -10,7 +10,7 @@ import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import { assertNotNull, EventShimCustomEvent } from '@deephaven/utils';
-import { UIRow, ColumnName, CellData } from './CommonTypes';
+import { UIRow, ColumnName } from './CommonTypes';
 import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
 import IrisGridModel, { DisplayColumn } from './IrisGridModel';
 
@@ -152,7 +152,7 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   extractViewportRow(row: DhType.TreeRow, columns: DhType.Column[]): UITreeRow {
     const { isExpanded, hasChildren, depth } = row;
     const extractedRow = super.extractViewportRow(row, columns);
-    const modifiedData = new Map<ModelIndex, CellData>(extractedRow.data);
+    const modifiedData = new Map(extractedRow.data);
     if (hasChildren) {
       for (let i = 0; i < this.virtualColumns.length; i += 1) {
         const key = i + (depth - 1) + (this.virtualColumns.length - 1);

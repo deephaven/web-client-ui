@@ -7,6 +7,7 @@ import react from 'react';
 import * as redux from 'redux';
 import * as reactRedux from 'react-redux';
 import ReactDOM from 'react-dom';
+// eslint-disable-next-line no-restricted-imports
 import * as AdobeReactSpectrum from '@adobe/react-spectrum';
 import * as DeephavenAuthPlugins from '@deephaven/auth-plugins';
 import * as DeephavenChart from '@deephaven/chart';
