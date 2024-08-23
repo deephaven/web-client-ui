@@ -25,8 +25,11 @@ module.exports = {
           },
           {
             name: '@adobe/react-spectrum',
-            message:
-              'Import from @deephaven/components instead of @adobe/react-spectrum.',
+            message: `Import from ${
+              packageName === '@deephaven/components'
+                ? './spectrum'
+                : '@deephaven/components'
+            } instead of @adobe/react-spectrum.`,
           },
         ],
       },

@@ -6,9 +6,8 @@ import {
   dhSquareFilled,
   dhAddSmall,
 } from '@deephaven/icons';
-import { Icon } from '@adobe/react-spectrum';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button } from '@deephaven/components';
+import { Button, Icon } from '@deephaven/components';
 import PropTypes from 'prop-types';
 import SampleSection from './SampleSection';
 

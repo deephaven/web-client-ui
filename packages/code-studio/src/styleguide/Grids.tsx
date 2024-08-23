@@ -8,7 +8,7 @@ import {
 } from '@deephaven/grid';
 import { IrisGrid } from '@deephaven/iris-grid';
 import { useApi } from '@deephaven/jsapi-bootstrap';
-import { Flex } from '@adobe/react-spectrum';
+import { Flex } from '@deephaven/components';
 import MockIrisGridTreeModel from './MockIrisGridTreeModel';
 import StaticExample from './grid-examples/StaticExample';
 import QuadrillionExample from './grid-examples/QuadrillionExample';
