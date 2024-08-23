@@ -86,7 +86,10 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   ) {
     super(dh, table, formatter, inputTable);
 
-    this.virtualColumns = this.showExtraGroupColumn ? [VirtualGroupColumn] : [];
+    this.virtualColumns =
+      this.showExtraGroupColumn && table.groupedColumns.length > 1
+        ? [VirtualGroupColumn]
+        : [];
   }
 
   get showExtraGroupColumn(): boolean {
@@ -102,7 +105,10 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   }
 
   updateVirtualColumns(): void {
-    this.virtualColumns = this.showExtraGroupColumn ? [VirtualGroupColumn] : [];
+    this.virtualColumns =
+      this.showExtraGroupColumn && this.table.groupedColumns.length > 1
+        ? [VirtualGroupColumn]
+        : [];
     this.dispatchEvent(
       new EventShimCustomEvent(IrisGridModel.EVENT.COLUMNS_CHANGED, {
         detail: this.columns,
