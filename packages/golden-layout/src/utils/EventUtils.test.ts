@@ -45,7 +45,7 @@ describe('EventUtils', () => {
 
   it('makeEmitFunction', () => {
     const event = 'test';
-    const emit = makeEmitFunction(event);
+    const emit = makeEmitFunction<unknown>(event);
     const payload = { test: 'test' };
     emit(eventEmitter, payload);
     expect(eventEmitter.emit).toHaveBeenCalledWith(event, payload);
@@ -109,30 +109,93 @@ describe('EventUtils', () => {
   });
 
   describe('makeEventFunctions', () => {
-    const event = 'test';
-    const { listen, emit, useListener } = makeEventFunctions(event);
-    const handler = jest.fn();
+    describe('makeEventFunctions without payload', () => {
+      const event = 'test';
+      const { listen, emit, useListener } = makeEventFunctions(event);
+      const handler = jest.fn();
 
-    it('listen', () => {
-      listen(eventEmitter, handler);
-      expect(eventEmitter.on).toHaveBeenCalledWith(event, handler);
-      expect(eventEmitter.off).not.toHaveBeenCalled();
+      it('listen', () => {
+        listen(eventEmitter, handler);
+        expect(eventEmitter.on).toHaveBeenCalledWith(event, handler);
+        expect(eventEmitter.off).not.toHaveBeenCalled();
+      });
+
+      it('emit', () => {
+        emit(eventEmitter);
+        expect(eventEmitter.emit).toHaveBeenCalledWith(event);
+      });
+
+      it('useListener', () => {
+        const { unmount } = renderHook(() =>
+          useListener(eventEmitter, handler)
+        );
+        expect(eventEmitter.on).toHaveBeenCalledWith(event, handler);
+        expect(eventEmitter.off).not.toHaveBeenCalled();
+        jest.clearAllMocks();
+        unmount();
+        expect(eventEmitter.on).not.toHaveBeenCalledWith(event, handler);
+        expect(eventEmitter.off).toHaveBeenCalledWith(event, handler);
+      });
     });
+    describe('makeEventFunctions with payload', () => {
+      type Payload = { test: string };
+      const event = 'test';
+      const { listen, emit, useListener } = makeEventFunctions<Payload>(event);
+      const handler = jest.fn();
 
-    it('emit', () => {
-      const payload = { test: 'test' };
-      emit(eventEmitter, payload);
-      expect(eventEmitter.emit).toHaveBeenCalledWith(event, payload);
+      it('listen', () => {
+        listen(eventEmitter, handler);
+        expect(eventEmitter.on).toHaveBeenCalledWith(event, handler);
+        expect(eventEmitter.off).not.toHaveBeenCalled();
+      });
+
+      it('emit', () => {
+        const payload: Payload = { test: 'test' };
+        emit(eventEmitter, payload);
+        expect(eventEmitter.emit).toHaveBeenCalledWith(event, payload);
+      });
+
+      it('useListener', () => {
+        const { unmount } = renderHook(() =>
+          useListener(eventEmitter, handler)
+        );
+        expect(eventEmitter.on).toHaveBeenCalledWith(event, handler);
+        expect(eventEmitter.off).not.toHaveBeenCalled();
+        jest.clearAllMocks();
+        unmount();
+        expect(eventEmitter.on).not.toHaveBeenCalledWith(event, handler);
+        expect(eventEmitter.off).toHaveBeenCalledWith(event, handler);
+      });
     });
+    describe('makeEventFunctions with multiple parameters', () => {
+      type Payload = [number, string];
+      const event = 'test';
+      const { listen, emit, useListener } = makeEventFunctions<Payload>(event);
+      const handler = jest.fn();
 
-    it('useListener', () => {
-      const { unmount } = renderHook(() => useListener(eventEmitter, handler));
-      expect(eventEmitter.on).toHaveBeenCalledWith(event, handler);
-      expect(eventEmitter.off).not.toHaveBeenCalled();
-      jest.clearAllMocks();
-      unmount();
-      expect(eventEmitter.on).not.toHaveBeenCalledWith(event, handler);
-      expect(eventEmitter.off).toHaveBeenCalledWith(event, handler);
+      it('listen', () => {
+        listen(eventEmitter, handler);
+        expect(eventEmitter.on).toHaveBeenCalledWith(event, handler);
+        expect(eventEmitter.off).not.toHaveBeenCalled();
+      });
+
+      it('emit', () => {
+        const payload: Payload = [1, 'test'];
+        emit(eventEmitter, ...payload);
+        expect(eventEmitter.emit).toHaveBeenCalledWith(event, ...payload);
+      });
+
+      it('useListener', () => {
+        const { unmount } = renderHook(() =>
+          useListener(eventEmitter, handler)
+        );
+        expect(eventEmitter.on).toHaveBeenCalledWith(event, handler);
+        expect(eventEmitter.off).not.toHaveBeenCalled();
+        jest.clearAllMocks();
+        unmount();
+        expect(eventEmitter.on).not.toHaveBeenCalledWith(event, handler);
+        expect(eventEmitter.off).toHaveBeenCalledWith(event, handler);
+      });
     });
   });
 });

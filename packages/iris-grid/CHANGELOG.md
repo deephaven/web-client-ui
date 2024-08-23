@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.90.0](https://github.com/deephaven/web-client-ui/compare/v0.89.0...v0.90.0) (2024-08-21)
+
+**Note:** Version bump only for package @deephaven/iris-grid
+
+## [0.89.0](https://github.com/deephaven/web-client-ui/compare/v0.88.0...v0.89.0) (2024-08-15)
+
+### Bug Fixes
+
+- Proxy model not setting defined values in parent class ([#2187](https://github.com/deephaven/web-client-ui/issues/2187)) ([5f9cf7f](https://github.com/deephaven/web-client-ui/commit/5f9cf7f4f39cb19f680e38f907d67201389fea7f))
+
 ## [0.88.0](https://github.com/deephaven/web-client-ui/compare/v0.87.0...v0.88.0) (2024-08-06)
 
 ### Bug Fixes

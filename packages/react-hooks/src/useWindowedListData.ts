@@ -1,4 +1,5 @@
-import { ListData } from '@adobe/react-spectrum';
+// eslint-disable-next-line no-restricted-imports
+import type { ListData } from '@adobe/react-spectrum';
 import { Key, useCallback, useMemo, useState } from 'react';
 
 /**
