@@ -93,11 +93,11 @@ class DataBarCellRenderer extends CellRenderer {
     const rowY = getOrThrow(allRowYs, row);
     const textAlign = model.textAlignForCell(modelColumn, modelRow);
     const text = model.textForCell(modelColumn, modelRow);
-    const { x: textX, width: textWidth } = GridUtils.getTextRenderMetrics(
-      state,
-      column,
-      row
-    );
+    const {
+      x: textX,
+      y: textY,
+      width: textWidth,
+    } = GridUtils.getTextRenderMetrics(state, column, row);
 
     const fontWidth = fontWidths?.get(context.font) ?? DEFAULT_FONT_WIDTH;
     const truncationChar = model.truncationCharForCell(modelColumn, modelRow);
@@ -152,12 +152,21 @@ class DataBarCellRenderer extends CellRenderer {
     context.font = theme.font;
 
     if (valuePlacement !== 'hide') {
-      context.fillText(truncatedText, textX, rowY + rowHeight * 0.5);
+      context.fillText(truncatedText, textX, textY);
     }
+
+    const hasRowDividers = theme.gridRowColor != null;
+    const yOffset = hasRowDividers ? 2 : 1;
 
     context.save();
     context.beginPath();
-    context.roundRect(dataBarX, rowY + 1, dataBarWidth, rowHeight - 2, 1);
+    context.roundRect(
+      dataBarX,
+      rowY + yOffset, // yOffset includes 1px for top padding
+      dataBarWidth,
+      rowHeight - 1 - yOffset, // 1px for bottom padding
+      1
+    );
     context.clip();
     context.globalAlpha = opacity;
 
