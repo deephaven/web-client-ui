@@ -59,7 +59,12 @@ export type InputFilter = {
 };
 
 export interface UIRow {
-  data: Map<ModelIndex, CellData>;
+  /**
+   * The data in the row indexed by column number.
+   * If a column is not part of the columns array (i.e. it's hidden by the model/table),
+   * then it will be included by its name instead of index.
+   */
+  data: Map<ModelIndex | ColumnName, CellData>;
 }
 
 export type UIViewportData<R extends UIRow = UIRow> = {

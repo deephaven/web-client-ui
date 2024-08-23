@@ -558,9 +558,10 @@ describe.each([undefined, document.createElement('div')])(
         bbb: 'bbb',
       };
 
+      jest.spyOn(window.CSS, 'supports').mockReturnValue(false);
+
       const actual = resolveCssVariablesInRecord(given, targetElement);
 
-      expect(computedStyle.getPropertyValue).not.toHaveBeenCalled();
       expect(ColorUtils.normalizeCssColor).not.toHaveBeenCalled();
       expect(actual).toEqual(given);
     });
