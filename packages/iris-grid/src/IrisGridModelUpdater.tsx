@@ -117,6 +117,12 @@ function IrisGridModelUpdater({
     [model, sorts, reverseType]
   );
   useOnChange(
+    function updateFormatter() {
+      model.formatter = formatter;
+    },
+    [model, formatter]
+  );
+  useOnChange(
     function updateCustomColumns() {
       if (model.isCustomColumnsAvailable) {
         model.customColumns = customColumns;
