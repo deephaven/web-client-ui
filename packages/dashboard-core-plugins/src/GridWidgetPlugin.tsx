@@ -1,42 +1,34 @@
-import { useEffect, useState } from 'react';
 import { type WidgetComponentProps } from '@deephaven/plugin';
 import { type dh } from '@deephaven/jsapi-types';
-import { useApi } from '@deephaven/jsapi-bootstrap';
-import {
-  IrisGrid,
-  IrisGridModelFactory,
-  type IrisGridModel,
-} from '@deephaven/iris-grid';
+import { IrisGrid } from '@deephaven/iris-grid';
 import { useSelector } from 'react-redux';
 import { getSettings, RootState } from '@deephaven/redux';
+import { LoadingOverlay } from '@deephaven/components';
+import { getErrorMessage } from '@deephaven/utils';
+import { useIrisGridModel } from './useIrisGridModel';
 
-export function GridWidgetPlugin(
-  props: WidgetComponentProps<dh.Table>
-): JSX.Element | null {
-  const dh = useApi();
+export function GridWidgetPlugin({
+  fetch,
+}: WidgetComponentProps<dh.Table>): JSX.Element | null {
   const settings = useSelector(getSettings<RootState>);
-  const [model, setModel] = useState<IrisGridModel>();
 
-  const { fetch } = props;
+  const fetchResult = useIrisGridModel(fetch);
 
-  useEffect(() => {
-    let cancelled = false;
-    async function init() {
-      const table = await fetch();
-      const newModel = await IrisGridModelFactory.makeModel(dh, table);
-      if (!cancelled) {
-        setModel(newModel);
-      }
-    }
+  if (fetchResult.status === 'loading') {
+    return <LoadingOverlay isLoading />;
+  }
 
-    init();
+  if (fetchResult.status === 'error') {
+    return (
+      <LoadingOverlay
+        errorMessage={getErrorMessage(fetchResult.error)}
+        isLoading={false}
+      />
+    );
+  }
 
-    return () => {
-      cancelled = true;
-    };
-  }, [dh, fetch]);
-
-  return model ? <IrisGrid model={model} settings={settings} /> : null;
+  const { model } = fetchResult;
+  return <IrisGrid model={model} settings={settings} />;
 }
 
 export default GridWidgetPlugin;
