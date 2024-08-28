@@ -79,7 +79,16 @@ describe('ThemeProvider', () => {
     'should load themes based on override, preload data or default: %o, %s, %s',
     (themes, preloadData, overrideKey) => {
       asMock(getThemeKeyOverride).mockReturnValue(overrideKey);
-      asMock(getThemePreloadData).mockReturnValue(preloadData);
+
+      if (overrideKey == null) {
+        asMock(getThemePreloadData).mockReturnValue(preloadData);
+      } else {
+        asMock(getThemePreloadData).mockImplementation(() => {
+          throw new Error(
+            'getThemePreloadData should not be called when overrideKey is set'
+          );
+        });
+      }
 
       const component = render(
         <ThemeProvider themes={themes}>
