@@ -31,7 +31,10 @@ jest.mock('./ThemeUtils', () => {
   };
 });
 
-const customThemes = [{ themeKey: 'themeA' }] as [ThemeData];
+const customThemes = [
+  { themeKey: 'themeA' },
+  { themeKey: 'themeOverrideKey' },
+] as ThemeData[];
 const preloadA: ThemePreloadData = { themeKey: 'themeA' };
 
 beforeEach(() => {
@@ -73,7 +76,7 @@ describe('ThemeProvider', () => {
     [customThemes, null, 'themeOverrideKey'],
     [customThemes, preloadA, 'themeOverrideKey'],
   ] as const)(
-    'should load themes based on override, preload data or default: %s, %s, %s',
+    'should load themes based on override, preload data or default: %o, %s, %s',
     (themes, preloadData, overrideKey) => {
       asMock(getThemeKeyOverride).mockReturnValue(overrideKey);
       asMock(getThemePreloadData).mockReturnValue(preloadData);
@@ -114,7 +117,7 @@ describe('ThemeProvider', () => {
     [customThemes, null],
     [customThemes, preloadA],
   ] as const)(
-    'should set preload data when active themes change: %s, %s',
+    'should set preload data when active themes change: %o, %s',
     (themes, preloadData) => {
       asMock(getThemePreloadData).mockReturnValue(preloadData);
 
@@ -135,7 +138,7 @@ describe('ThemeProvider', () => {
     }
   );
 
-  describe.each([null, customThemes])('setSelectedThemeKey: %s', themes => {
+  describe.each([null, customThemes])('setSelectedThemeKey: %o', themes => {
     it.each([DEFAULT_LIGHT_THEME_KEY, customThemes[0].themeKey])(
       'should change selected theme: %s',
       themeKey => {
