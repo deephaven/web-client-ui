@@ -12,6 +12,7 @@ import {
   getThemePreloadData,
   setThemePreloadData,
   overrideSVGFillColors,
+  getThemeKeyOverride,
 } from './ThemeUtils';
 import { SpectrumThemeProvider } from './SpectrumThemeProvider';
 import './theme-svg.scss';
@@ -47,8 +48,13 @@ export function ThemeProvider({
 
   const [value, setValue] = useState<ThemeContextValue | null>(null);
 
+  const themeKeyOverride = useMemo(() => getThemeKeyOverride(), []);
+
   const [selectedThemeKey, setSelectedThemeKey] = useState<string>(
-    () => getThemePreloadData()?.themeKey ?? DEFAULT_DARK_THEME_KEY
+    () =>
+      themeKeyOverride ??
+      getThemePreloadData()?.themeKey ??
+      DEFAULT_DARK_THEME_KEY
   );
 
   // Calculate active themes once a non-null themes array is provided.

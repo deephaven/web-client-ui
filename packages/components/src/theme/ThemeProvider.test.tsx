@@ -12,6 +12,7 @@ import {
   calculatePreloadStyleContent,
   getActiveThemes,
   getDefaultBaseThemes,
+  getThemeKeyOverride,
   getThemePreloadData,
   setThemePreloadData,
 } from './ThemeUtils';
@@ -24,6 +25,7 @@ jest.mock('./ThemeUtils', () => {
   return {
     ...actual,
     calculatePreloadStyleContent: jest.fn(),
+    getThemeKeyOverride: jest.fn(),
     getThemePreloadData: jest.fn(actual.getThemePreloadData),
     setThemePreloadData: jest.fn(),
   };
@@ -40,6 +42,10 @@ beforeEach(() => {
   asMock(calculatePreloadStyleContent)
     .mockName('calculatePreloadStyleContent')
     .mockReturnValue(':root{mock-preload-content}');
+
+  asMock(getThemeKeyOverride)
+    .mockName('getThemeKeyOverride')
+    .mockReturnValue(null);
 
   asMock(getThemePreloadData).mockName('getThemePreloadData');
   asMock(setThemePreloadData).mockName('setThemePreloadData');
@@ -58,13 +64,18 @@ describe('ThemeProvider', () => {
   });
 
   it.each([
-    [null, null],
-    [null, preloadA],
-    [customThemes, null],
-    [customThemes, preloadA],
+    [null, null, null],
+    [null, preloadA, null],
+    [customThemes, null, null],
+    [customThemes, preloadA, null],
+    [null, null, 'themeOverrideKey'],
+    [null, preloadA, 'themeOverrideKey'],
+    [customThemes, null, 'themeOverrideKey'],
+    [customThemes, preloadA, 'themeOverrideKey'],
   ] as const)(
-    'should load themes based on preload data or default: %s, %s',
-    (themes, preloadData) => {
+    'should load themes based on override, preload data or default: %s, %s, %s',
+    (themes, preloadData, overrideKey) => {
+      asMock(getThemeKeyOverride).mockReturnValue(overrideKey);
       asMock(getThemePreloadData).mockReturnValue(preloadData);
 
       const component = render(
@@ -79,14 +90,17 @@ describe('ThemeProvider', () => {
         expect(themeContextValueRef.current.activeThemes).toBeNull();
       } else {
         expect(themeContextValueRef.current.activeThemes).toEqual(
-          getActiveThemes(preloadData?.themeKey ?? DEFAULT_DARK_THEME_KEY, {
-            base: getDefaultBaseThemes(),
-            custom: themes,
-          })
+          getActiveThemes(
+            overrideKey ?? preloadData?.themeKey ?? DEFAULT_DARK_THEME_KEY,
+            {
+              base: getDefaultBaseThemes(),
+              custom: themes,
+            }
+          )
         );
 
         expect(themeContextValueRef.current.selectedThemeKey).toEqual(
-          preloadData?.themeKey ?? DEFAULT_DARK_THEME_KEY
+          overrideKey ?? preloadData?.themeKey ?? DEFAULT_DARK_THEME_KEY
         );
       }
 
@@ -115,7 +129,7 @@ describe('ThemeProvider', () => {
       } else {
         expect(setThemePreloadData).toHaveBeenCalledWith({
           themeKey: preloadData?.themeKey ?? DEFAULT_DARK_THEME_KEY,
-          preloadStyleContent: calculatePreloadStyleContent(),
+          preloadStyleContent: calculatePreloadStyleContent({}),
         });
       }
     }

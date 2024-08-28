@@ -15,6 +15,7 @@ import {
   SVG_ICON_MANUAL_COLOR_MAP,
   ThemeCssVariableName,
   ThemeIconsRequiringManualColorChanges,
+  THEME_KEY_OVERRIDE_QUERY_PARAM,
 } from './ThemeModel';
 
 const log = Log.module('ThemeUtils');
@@ -176,6 +177,16 @@ export function getDefaultBaseThemes(): ThemeData[] {
       styleContent: themeLight,
     },
   ];
+}
+
+/**
+ * A theme key override can be set via a query parameter to force a specific
+ * theme selection. Useful for embedded widget scenarios that don't expose the
+ * theme selector.
+ */
+export function getThemeKeyOverride(): string | null {
+  const searchParams = new URLSearchParams(window.location.search);
+  return searchParams.get(THEME_KEY_OVERRIDE_QUERY_PARAM);
 }
 
 /**
