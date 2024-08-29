@@ -99,7 +99,7 @@ exports[`ThemeProvider setSelectedThemeKey: null should change selected theme: t
 </body>
 `;
 
-exports[`ThemeProvider should load themes based on default selected theme key: [
+exports[`ThemeProvider should load themes based on default selected theme key. customThemes: [
   { themeKey: 'themeA' },
   { themeKey: 'mockDefaultSelectedThemeKey' },
   [length]: 2
@@ -133,7 +133,7 @@ exports[`ThemeProvider should load themes based on default selected theme key: [
 </body>
 `;
 
-exports[`ThemeProvider should load themes based on default selected theme key: null 1`] = `
+exports[`ThemeProvider should load themes based on default selected theme key. customThemes: null 1`] = `
 <body>
   <div>
     <div

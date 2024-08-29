@@ -60,7 +60,7 @@ describe('ThemeProvider', () => {
   });
 
   it.each([null, customThemes])(
-    'should load themes based on default selected theme key: %o',
+    'should load themes based on default selected theme key. customThemes: %o',
     themes => {
       const component = render(
         <ThemeProvider themes={themes}>
