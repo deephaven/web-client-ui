@@ -10,6 +10,7 @@ import {
   ThemePreloadColorVariable,
   ThemeRegistrationData,
   THEME_CACHE_LOCAL_STORAGE_KEY,
+  THEME_KEY_OVERRIDE_QUERY_PARAM,
 } from './ThemeModel';
 import {
   calculatePreloadStyleContent,
@@ -17,6 +18,7 @@ import {
   extractDistinctCssVariableExpressions,
   getActiveThemes,
   getDefaultBaseThemes,
+  getDefaultSelectedThemeKey,
   getExpressionRanges,
   getThemeKey,
   getThemePreloadData,
@@ -237,6 +239,44 @@ describe('getActiveThemes', () => {
     );
     expect(actual).toEqual([mockTheme.base, mockTheme.custom]);
   });
+});
+
+describe('getDefaultSelectedThemeKey', () => {
+  const origLocation = window.location;
+
+  beforeEach(() => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    delete window.location;
+    window.location = {
+      search: '',
+    } as unknown as Location;
+  });
+
+  afterEach(() => {
+    window.location = origLocation;
+  });
+
+  it.each([
+    ['overrideKey', 'preloadKey', 'overrideKey'],
+    [undefined, 'preloadKey', 'preloadKey'],
+    [undefined, undefined, DEFAULT_DARK_THEME_KEY],
+  ])(
+    'should coalesce overide key -> preload key -> default key: %s, %s, %s',
+    (overrideKey, preloadKey, expected) => {
+      if (overrideKey != null) {
+        window.location.search = `?${THEME_KEY_OVERRIDE_QUERY_PARAM}=${overrideKey}`;
+      }
+
+      localStorage.setItem(
+        THEME_CACHE_LOCAL_STORAGE_KEY,
+        JSON.stringify({ themeKey: preloadKey })
+      );
+
+      const actual = getDefaultSelectedThemeKey();
+      expect(actual).toEqual(expected);
+    }
+  );
 });
 
 describe('getExpressionRanges', () => {
