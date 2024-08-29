@@ -2,18 +2,12 @@ import React from 'react';
 import { act, render } from '@testing-library/react';
 import { assertNotNull, TestUtils } from '@deephaven/utils';
 import { ThemeContextValue, ThemeProvider } from './ThemeProvider';
-import {
-  DEFAULT_DARK_THEME_KEY,
-  DEFAULT_LIGHT_THEME_KEY,
-  ThemeData,
-  ThemePreloadData,
-} from './ThemeModel';
+import { DEFAULT_LIGHT_THEME_KEY, ThemeData } from './ThemeModel';
 import {
   calculatePreloadStyleContent,
   getActiveThemes,
   getDefaultBaseThemes,
-  getThemeKeyOverride,
-  getThemePreloadData,
+  getDefaultSelectedThemeKey,
   setThemePreloadData,
 } from './ThemeUtils';
 import { useTheme } from './useTheme';
@@ -25,17 +19,17 @@ jest.mock('./ThemeUtils', () => {
   return {
     ...actual,
     calculatePreloadStyleContent: jest.fn(),
+    getDefaultSelectedThemeKey: jest.fn(),
     getThemeKeyOverride: jest.fn(),
-    getThemePreloadData: jest.fn(actual.getThemePreloadData),
     setThemePreloadData: jest.fn(),
   };
 });
 
 const customThemes = [
   { themeKey: 'themeA' },
-  { themeKey: 'themeOverrideKey' },
+  { themeKey: 'mockDefaultSelectedThemeKey' },
 ] as ThemeData[];
-const preloadA: ThemePreloadData = { themeKey: 'themeA' };
+const defaultSelectedThemeKey = 'mockDefaultSelectedThemeKey';
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -46,11 +40,10 @@ beforeEach(() => {
     .mockName('calculatePreloadStyleContent')
     .mockReturnValue(':root{mock-preload-content}');
 
-  asMock(getThemeKeyOverride)
-    .mockName('getThemeKeyOverride')
-    .mockReturnValue(null);
+  asMock(getDefaultSelectedThemeKey)
+    .mockName('getDefaultSelectedThemeKey')
+    .mockReturnValue(defaultSelectedThemeKey);
 
-  asMock(getThemePreloadData).mockName('getThemePreloadData');
   asMock(setThemePreloadData).mockName('setThemePreloadData');
 });
 
@@ -66,30 +59,9 @@ describe('ThemeProvider', () => {
     themeContextValueRef.current = null;
   });
 
-  it.each([
-    [null, null, null],
-    [null, preloadA, null],
-    [customThemes, null, null],
-    [customThemes, preloadA, null],
-    [null, null, 'themeOverrideKey'],
-    [null, preloadA, 'themeOverrideKey'],
-    [customThemes, null, 'themeOverrideKey'],
-    [customThemes, preloadA, 'themeOverrideKey'],
-  ] as const)(
-    'should load themes based on override, preload data or default: %o, %s, %s',
-    (themes, preloadData, overrideKey) => {
-      asMock(getThemeKeyOverride).mockReturnValue(overrideKey);
-
-      if (overrideKey == null) {
-        asMock(getThemePreloadData).mockReturnValue(preloadData);
-      } else {
-        asMock(getThemePreloadData).mockImplementation(() => {
-          throw new Error(
-            'getThemePreloadData should not be called when overrideKey is set'
-          );
-        });
-      }
-
+  it.each([null, customThemes])(
+    'should load themes based on default selected theme key: %o',
+    themes => {
       const component = render(
         <ThemeProvider themes={themes}>
           <MockChild />
@@ -102,17 +74,14 @@ describe('ThemeProvider', () => {
         expect(themeContextValueRef.current.activeThemes).toBeNull();
       } else {
         expect(themeContextValueRef.current.activeThemes).toEqual(
-          getActiveThemes(
-            overrideKey ?? preloadData?.themeKey ?? DEFAULT_DARK_THEME_KEY,
-            {
-              base: getDefaultBaseThemes(),
-              custom: themes,
-            }
-          )
+          getActiveThemes(defaultSelectedThemeKey, {
+            base: getDefaultBaseThemes(),
+            custom: themes,
+          })
         );
 
         expect(themeContextValueRef.current.selectedThemeKey).toEqual(
-          overrideKey ?? preloadData?.themeKey ?? DEFAULT_DARK_THEME_KEY
+          defaultSelectedThemeKey
         );
       }
 
@@ -120,16 +89,9 @@ describe('ThemeProvider', () => {
     }
   );
 
-  it.each([
-    [null, null],
-    [null, preloadA],
-    [customThemes, null],
-    [customThemes, preloadA],
-  ] as const)(
-    'should set preload data when active themes change: %o, %s',
-    (themes, preloadData) => {
-      asMock(getThemePreloadData).mockReturnValue(preloadData);
-
+  it.each([null, customThemes] as const)(
+    'should set preload data when active themes change: %o',
+    themes => {
       render(
         <ThemeProvider themes={themes}>
           <MockChild />
@@ -140,7 +102,7 @@ describe('ThemeProvider', () => {
         expect(setThemePreloadData).not.toHaveBeenCalled();
       } else {
         expect(setThemePreloadData).toHaveBeenCalledWith({
-          themeKey: preloadData?.themeKey ?? DEFAULT_DARK_THEME_KEY,
+          themeKey: defaultSelectedThemeKey,
           preloadStyleContent: calculatePreloadStyleContent({}),
         });
       }

@@ -2,7 +2,7 @@
 
 exports[`ThemeProvider setSelectedThemeKey: [
   { themeKey: 'themeA' },
-  { themeKey: 'themeOverrideKey' },
+  { themeKey: 'mockDefaultSelectedThemeKey' },
   [length]: 2
 ] should change selected theme: default-light 1`] = `
 <body>
@@ -33,7 +33,7 @@ exports[`ThemeProvider setSelectedThemeKey: [
 
 exports[`ThemeProvider setSelectedThemeKey: [
   { themeKey: 'themeA' },
-  { themeKey: 'themeOverrideKey' },
+  { themeKey: 'mockDefaultSelectedThemeKey' },
   [length]: 2
 ] should change selected theme: themeA 1`] = `
 <body>
@@ -99,11 +99,11 @@ exports[`ThemeProvider setSelectedThemeKey: null should change selected theme: t
 </body>
 `;
 
-exports[`ThemeProvider should load themes based on override, preload data or default: [
+exports[`ThemeProvider should load themes based on default selected theme key: [
   { themeKey: 'themeA' },
-  { themeKey: 'themeOverrideKey' },
+  { themeKey: 'mockDefaultSelectedThemeKey' },
   [length]: 2
-], { themeKey: 'themeA' }, null 1`] = `
+] 1`] = `
 <body>
   <div>
     <style
@@ -117,7 +117,7 @@ exports[`ThemeProvider should load themes based on override, preload data or def
 ./theme-dark-components.css?raw
     </style>
     <style
-      data-theme-key="themeA"
+      data-theme-key="mockDefaultSelectedThemeKey"
     />
     <div
       class="spectrum-theme-provider JuTe6q_spectrum _5QszkG_spectrum _5QszkG_i18nFontFamily PFjRbG_spectrum--light theme-spectrum-palette theme-spectrum-alias HAZavG_spectrum--large zA6MfG_spectrum zA6MfG_spectrum--dark zA6MfG_spectrum--darkest zA6MfG_spectrum--large zA6MfG_spectrum--light zA6MfG_spectrum--lightest zA6MfG_spectrum--medium"
@@ -133,157 +133,7 @@ exports[`ThemeProvider should load themes based on override, preload data or def
 </body>
 `;
 
-exports[`ThemeProvider should load themes based on override, preload data or default: [
-  { themeKey: 'themeA' },
-  { themeKey: 'themeOverrideKey' },
-  [length]: 2
-], { themeKey: 'themeA' }, themeOverrideKey 1`] = `
-<body>
-  <div>
-    <style
-      data-theme-key="default-dark"
-    >
-      ./theme-dark-palette.css?raw
-./theme-dark-semantic.css?raw
-./theme-dark-semantic-chart.css?raw
-./theme-dark-semantic-editor.css?raw
-./theme-dark-semantic-grid.css?raw
-./theme-dark-components.css?raw
-    </style>
-    <style
-      data-theme-key="themeOverrideKey"
-    />
-    <div
-      class="spectrum-theme-provider JuTe6q_spectrum _5QszkG_spectrum _5QszkG_i18nFontFamily PFjRbG_spectrum--light theme-spectrum-palette theme-spectrum-alias HAZavG_spectrum--large zA6MfG_spectrum zA6MfG_spectrum--dark zA6MfG_spectrum--darkest zA6MfG_spectrum--large zA6MfG_spectrum--light zA6MfG_spectrum--lightest zA6MfG_spectrum--medium"
-      dir="ltr"
-      lang="en-US"
-      style="isolation: isolate; color-scheme: light;"
-    >
-      <div>
-        Child
-      </div>
-    </div>
-  </div>
-</body>
-`;
-
-exports[`ThemeProvider should load themes based on override, preload data or default: [
-  { themeKey: 'themeA' },
-  { themeKey: 'themeOverrideKey' },
-  [length]: 2
-], null, null 1`] = `
-<body>
-  <div>
-    <style
-      data-theme-key="default-dark"
-    >
-      ./theme-dark-palette.css?raw
-./theme-dark-semantic.css?raw
-./theme-dark-semantic-chart.css?raw
-./theme-dark-semantic-editor.css?raw
-./theme-dark-semantic-grid.css?raw
-./theme-dark-components.css?raw
-    </style>
-    <div
-      class="spectrum-theme-provider JuTe6q_spectrum _5QszkG_spectrum _5QszkG_i18nFontFamily PFjRbG_spectrum--light theme-spectrum-palette theme-spectrum-alias HAZavG_spectrum--large zA6MfG_spectrum zA6MfG_spectrum--dark zA6MfG_spectrum--darkest zA6MfG_spectrum--large zA6MfG_spectrum--light zA6MfG_spectrum--lightest zA6MfG_spectrum--medium"
-      dir="ltr"
-      lang="en-US"
-      style="isolation: isolate; color-scheme: light;"
-    >
-      <div>
-        Child
-      </div>
-    </div>
-  </div>
-</body>
-`;
-
-exports[`ThemeProvider should load themes based on override, preload data or default: [
-  { themeKey: 'themeA' },
-  { themeKey: 'themeOverrideKey' },
-  [length]: 2
-], null, themeOverrideKey 1`] = `
-<body>
-  <div>
-    <style
-      data-theme-key="default-dark"
-    >
-      ./theme-dark-palette.css?raw
-./theme-dark-semantic.css?raw
-./theme-dark-semantic-chart.css?raw
-./theme-dark-semantic-editor.css?raw
-./theme-dark-semantic-grid.css?raw
-./theme-dark-components.css?raw
-    </style>
-    <style
-      data-theme-key="themeOverrideKey"
-    />
-    <div
-      class="spectrum-theme-provider JuTe6q_spectrum _5QszkG_spectrum _5QszkG_i18nFontFamily PFjRbG_spectrum--light theme-spectrum-palette theme-spectrum-alias HAZavG_spectrum--large zA6MfG_spectrum zA6MfG_spectrum--dark zA6MfG_spectrum--darkest zA6MfG_spectrum--large zA6MfG_spectrum--light zA6MfG_spectrum--lightest zA6MfG_spectrum--medium"
-      dir="ltr"
-      lang="en-US"
-      style="isolation: isolate; color-scheme: light;"
-    >
-      <div>
-        Child
-      </div>
-    </div>
-  </div>
-</body>
-`;
-
-exports[`ThemeProvider should load themes based on override, preload data or default: null, { themeKey: 'themeA' }, null 1`] = `
-<body>
-  <div>
-    <div
-      class="spectrum-theme-provider JuTe6q_spectrum _5QszkG_spectrum _5QszkG_i18nFontFamily PFjRbG_spectrum--light theme-spectrum-palette theme-spectrum-alias HAZavG_spectrum--large zA6MfG_spectrum zA6MfG_spectrum--dark zA6MfG_spectrum--darkest zA6MfG_spectrum--large zA6MfG_spectrum--light zA6MfG_spectrum--lightest zA6MfG_spectrum--medium"
-      dir="ltr"
-      lang="en-US"
-      style="isolation: isolate; color-scheme: light;"
-    >
-      <div>
-        Child
-      </div>
-    </div>
-  </div>
-</body>
-`;
-
-exports[`ThemeProvider should load themes based on override, preload data or default: null, { themeKey: 'themeA' }, themeOverrideKey 1`] = `
-<body>
-  <div>
-    <div
-      class="spectrum-theme-provider JuTe6q_spectrum _5QszkG_spectrum _5QszkG_i18nFontFamily PFjRbG_spectrum--light theme-spectrum-palette theme-spectrum-alias HAZavG_spectrum--large zA6MfG_spectrum zA6MfG_spectrum--dark zA6MfG_spectrum--darkest zA6MfG_spectrum--large zA6MfG_spectrum--light zA6MfG_spectrum--lightest zA6MfG_spectrum--medium"
-      dir="ltr"
-      lang="en-US"
-      style="isolation: isolate; color-scheme: light;"
-    >
-      <div>
-        Child
-      </div>
-    </div>
-  </div>
-</body>
-`;
-
-exports[`ThemeProvider should load themes based on override, preload data or default: null, null, null 1`] = `
-<body>
-  <div>
-    <div
-      class="spectrum-theme-provider JuTe6q_spectrum _5QszkG_spectrum _5QszkG_i18nFontFamily PFjRbG_spectrum--light theme-spectrum-palette theme-spectrum-alias HAZavG_spectrum--large zA6MfG_spectrum zA6MfG_spectrum--dark zA6MfG_spectrum--darkest zA6MfG_spectrum--large zA6MfG_spectrum--light zA6MfG_spectrum--lightest zA6MfG_spectrum--medium"
-      dir="ltr"
-      lang="en-US"
-      style="isolation: isolate; color-scheme: light;"
-    >
-      <div>
-        Child
-      </div>
-    </div>
-  </div>
-</body>
-`;
-
-exports[`ThemeProvider should load themes based on override, preload data or default: null, null, themeOverrideKey 1`] = `
+exports[`ThemeProvider should load themes based on default selected theme key: null 1`] = `
 <body>
   <div>
     <div
