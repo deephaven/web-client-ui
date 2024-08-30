@@ -283,7 +283,7 @@ export class SettingsMenu extends Component<
               <>
                 <FontAwesomeIcon
                   icon={vsRecordKeys}
-                  transform="grow-2"
+                  transform="grow-4"
                   className="mr-2"
                 />
                 Keyboard Shortcuts

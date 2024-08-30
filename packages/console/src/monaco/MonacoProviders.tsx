@@ -6,7 +6,7 @@ import * as monaco from 'monaco-editor';
 import throttle from 'lodash.throttle';
 import Log from '@deephaven/log';
 import type { dh } from '@deephaven/jsapi-types';
-import init, { Workspace, type Diagnostic } from './ruff/ruff_wasm';
+import init, { Workspace, type Diagnostic } from '@astral-sh/ruff-wasm-web';
 
 const log = Log.module('MonacoCompletionProvider');
 

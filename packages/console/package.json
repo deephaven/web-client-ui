@@ -23,6 +23,7 @@
     "build:sass": "sass --embed-sources --load-path=../../node_modules ./src:./dist"
   },
   "dependencies": {
+    "@astral-sh/ruff-wasm-web": "^0.6.2",
     "@deephaven/chart": "file:../chart",
     "@deephaven/components": "file:../components",
     "@deephaven/icons": "file:../icons",

@@ -619,6 +619,13 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
           group: ContextActions.groups.low,
           order: 10,
         });
+        // actions.push({
+        //   title: 'Format on Save',
+        //   icon: vsCheck,
+        //   action: this.handle,
+        //   group: ContextActions.groups.low,
+        //   order: 15,
+        // });
       }
 
       return actions;
