@@ -125,6 +125,8 @@ interface NotebookPanelState {
   scriptCode: string;
 
   itemName?: string;
+
+  formatOnSave: boolean;
 }
 
 class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
@@ -296,6 +298,8 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       showSaveAsModal: false,
 
       scriptCode: '',
+
+      formatOnSave: false,
     };
 
     log.debug('constructor', props, this.state);
@@ -563,7 +567,11 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   );
 
   getOverflowActions = memoize(
-    (isMinimapEnabled: boolean, isWordWrapEnabled: boolean) => {
+    (
+      isMinimapEnabled: boolean,
+      isWordWrapEnabled: boolean,
+      formatOnSave: boolean
+    ) => {
       const actions: DropdownAction[] = [
         {
           title: 'Find',
@@ -619,13 +627,13 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
           group: ContextActions.groups.low,
           order: 10,
         });
-        // actions.push({
-        //   title: 'Format on Save',
-        //   icon: vsCheck,
-        //   action: this.handle,
-        //   group: ContextActions.groups.low,
-        //   order: 15,
-        // });
+        actions.push({
+          title: 'Format on Save',
+          icon: formatOnSave ? vsCheck : undefined,
+          action: () => this.setState({ formatOnSave: !formatOnSave }),
+          group: ContextActions.groups.low,
+          order: 15,
+        });
       }
 
       return actions;
@@ -999,10 +1007,10 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   }
 
   async handleSaveFromShortcut(): Promise<void> {
-    // TODO: Check if the user has enabled format on save
-    // if (formatOnSave) {
-    //   await this.handleFormat();
-    // }
+    // TODO: Check if the user has enabled format on save from redux
+    if (this.state.formatOnSave) {
+      await this.handleFormat();
+    }
     this.save();
   }
 
@@ -1214,13 +1222,14 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
 
   getDropdownOverflowActions(): DropdownAction[] {
     const { notebookSettings } = this.props;
-    const { settings: initialSettings } = this.state;
+    const { settings: initialSettings, formatOnSave } = this.state;
     return this.getOverflowActions(
       notebookSettings.isMinimapEnabled ?? false,
       this.getSettings(
         initialSettings,
         notebookSettings.isMinimapEnabled ?? false
-      ).wordWrap === 'on'
+      ).wordWrap === 'on',
+      formatOnSave
     );
   }
 
