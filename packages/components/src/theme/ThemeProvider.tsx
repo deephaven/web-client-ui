@@ -1,17 +1,13 @@
 import { createContext, ReactNode, useEffect, useMemo, useState } from 'react';
 import Log from '@deephaven/log';
-import {
-  DEFAULT_DARK_THEME_KEY,
-  DEFAULT_PRELOAD_DATA_VARIABLES,
-  ThemeData,
-} from './ThemeModel';
+import { DEFAULT_PRELOAD_DATA_VARIABLES, ThemeData } from './ThemeModel';
 import {
   calculatePreloadStyleContent,
   getActiveThemes,
   getDefaultBaseThemes,
-  getThemePreloadData,
   setThemePreloadData,
   overrideSVGFillColors,
+  getDefaultSelectedThemeKey,
 } from './ThemeUtils';
 import { SpectrumThemeProvider } from './SpectrumThemeProvider';
 import './theme-svg.scss';
@@ -48,7 +44,7 @@ export function ThemeProvider({
   const [value, setValue] = useState<ThemeContextValue | null>(null);
 
   const [selectedThemeKey, setSelectedThemeKey] = useState<string>(
-    () => getThemePreloadData()?.themeKey ?? DEFAULT_DARK_THEME_KEY
+    getDefaultSelectedThemeKey
   );
 
   // Calculate active themes once a non-null themes array is provided.

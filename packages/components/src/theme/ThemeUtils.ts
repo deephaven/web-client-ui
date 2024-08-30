@@ -15,6 +15,7 @@ import {
   SVG_ICON_MANUAL_COLOR_MAP,
   ThemeCssVariableName,
   ThemeIconsRequiringManualColorChanges,
+  THEME_KEY_OVERRIDE_QUERY_PARAM,
 } from './ThemeModel';
 
 const log = Log.module('ThemeUtils');
@@ -176,6 +177,31 @@ export function getDefaultBaseThemes(): ThemeData[] {
       styleContent: themeLight,
     },
   ];
+}
+
+/**
+ * Get the default selected theme key. Precedence is:
+ * 1. Theme key override query parameter
+ * 2. Theme key from preload data
+ * 3. Default dark theme key
+ * @returns The default selected theme key
+ */
+export function getDefaultSelectedThemeKey(): string {
+  return (
+    getThemeKeyOverride() ??
+    getThemePreloadData()?.themeKey ??
+    DEFAULT_DARK_THEME_KEY
+  );
+}
+
+/**
+ * A theme key override can be set via a query parameter to force a specific
+ * theme selection. Useful for embedded widget scenarios that don't expose the
+ * theme selector.
+ */
+export function getThemeKeyOverride(): string | null {
+  const searchParams = new URLSearchParams(window.location.search);
+  return searchParams.get(THEME_KEY_OVERRIDE_QUERY_PARAM);
 }
 
 /**
