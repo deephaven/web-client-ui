@@ -38,7 +38,7 @@ import {
   updateSettings as updateSettingsAction,
   RootState,
   WorkspaceSettings,
-  getDefaultNotebookSettings,
+  getNotebookSettings,
 } from '@deephaven/redux';
 import classNames from 'classnames';
 import debounce from 'lodash.debounce';
@@ -81,7 +81,7 @@ interface PanelState {
 }
 
 interface NotebookPanelMappedProps {
-  defaultNotebookSettings: NotebookSetting;
+  notebookSettings: NotebookSetting;
   fileStorage: FileStorage;
   session?: dh.IdeSession;
   sessionLanguage?: string;
@@ -159,7 +159,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     isPreview: false,
     session: null,
     sessionLanguage: null,
-    defaultNotebookSettings: { isMinimapEnabled: true },
+    notebookSettings: { isMinimapEnabled: true },
   };
 
   static languageFromFileName(fileName: string): string | null {
@@ -320,7 +320,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   ): void {
     const { isPreview, settings } = this.state;
     const { wordWrap } = settings;
-    const { defaultNotebookSettings } = this.props;
+    const { notebookSettings } = this.props;
     if (isPreview !== prevState.isPreview) {
       this.setPreviewStatus();
     }
@@ -329,8 +329,8 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       this.debouncedSavePanelState();
     }
     if (
-      defaultNotebookSettings.isMinimapEnabled !==
-      prevProps.defaultNotebookSettings.isMinimapEnabled
+      notebookSettings.isMinimapEnabled !==
+      prevProps.notebookSettings.isMinimapEnabled
     ) {
       this.updateEditorMinimap();
     }
@@ -805,18 +805,18 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
 
   updateEditorMinimap(): void {
     if (this.editor) {
-      const { defaultNotebookSettings } = this.props;
+      const { notebookSettings } = this.props;
       this.editor.updateOptions({
-        minimap: { enabled: defaultNotebookSettings.isMinimapEnabled },
+        minimap: { enabled: notebookSettings.isMinimapEnabled },
       });
     }
   }
 
   handleMinimapChange(): void {
-    const { defaultNotebookSettings, updateSettings } = this.props;
+    const { notebookSettings, updateSettings } = this.props;
     const newSettings = {
-      defaultNotebookSettings: {
-        isMinimapEnabled: !(defaultNotebookSettings.isMinimapEnabled ?? false),
+      notebookSettings: {
+        isMinimapEnabled: !(notebookSettings.isMinimapEnabled ?? false),
       },
     };
     updateSettings(newSettings);
@@ -1213,13 +1213,13 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   }
 
   getDropdownOverflowActions(): DropdownAction[] {
-    const { defaultNotebookSettings } = this.props;
+    const { notebookSettings } = this.props;
     const { settings: initialSettings } = this.state;
     return this.getOverflowActions(
-      defaultNotebookSettings.isMinimapEnabled ?? false,
+      notebookSettings.isMinimapEnabled ?? false,
       this.getSettings(
         initialSettings,
-        defaultNotebookSettings.isMinimapEnabled ?? false
+        notebookSettings.isMinimapEnabled ?? false
       ).wordWrap === 'on'
     );
   }
@@ -1230,7 +1230,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       glContainer,
       glContainer: { tab },
       glEventHub,
-      defaultNotebookSettings,
+      notebookSettings,
     } = this.props;
     const {
       changeCount,
@@ -1256,7 +1256,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     const isExistingItem = fileMetadata?.id != null;
     const settings = this.getSettings(
       initialSettings,
-      defaultNotebookSettings.isMinimapEnabled ?? false
+      notebookSettings.isMinimapEnabled ?? false
     );
     const isSessionConnected = session != null;
     const isLanguageMatching = sessionLanguage === settings.language;
@@ -1470,7 +1470,7 @@ const mapStateToProps = (
   ownProps: { localDashboardId: string }
 ): NotebookPanelMappedProps => {
   const fileStorage = getFileStorage(state);
-  const defaultNotebookSettings = getDefaultNotebookSettings(state);
+  const notebookSettings = getNotebookSettings(state);
   const sessionWrapper = getDashboardSessionWrapper(
     state,
     ownProps.localDashboardId
@@ -1480,7 +1480,7 @@ const mapStateToProps = (
   const { type: sessionLanguage } = sessionConfig ?? {};
   return {
     fileStorage,
-    defaultNotebookSettings,
+    notebookSettings,
     session,
     sessionLanguage,
   };

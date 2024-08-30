@@ -55,7 +55,7 @@ export interface WorkspaceSettings {
     windows?: { [id: string]: ValidKeyState };
     mac?: { [id: string]: ValidKeyState };
   };
-  defaultNotebookSettings: {
+  notebookSettings: {
     isMinimapEnabled?: boolean;
   };
   webgl: boolean;

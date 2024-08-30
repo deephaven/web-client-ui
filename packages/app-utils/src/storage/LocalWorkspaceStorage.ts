@@ -57,13 +57,13 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
       showEmptyStrings: true,
       showNullStrings: true,
       showExtraGroupColumn: true,
-      defaultNotebookSettings: {
+      notebookSettings: {
         isMinimapEnabled: false,
       },
       webgl: true,
       webglEditable: true,
-      gridDensity: 'regular' as const,
-    };
+      gridDensity: 'regular',
+    } satisfies WorkspaceSettings;
     const serverSettings = {
       defaultDateTimeFormat: serverConfigValues?.get('dateTimeFormat'),
       formatter: [],
@@ -108,13 +108,13 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
         serverConfigValues,
         'showExtraGroupColumn'
       ),
-      defaultNotebookSettings:
+      notebookSettings:
         serverConfigValues?.get('isMinimapEnabled') !== undefined
           ? {
               isMinimapEnabled: LocalWorkspaceStorage.getBooleanServerConfig(
                 serverConfigValues,
                 'isMinimapEnabled'
-              ) as boolean,
+              ),
             }
           : undefined,
       webgl: LocalWorkspaceStorage.getBooleanServerConfig(
