@@ -21,6 +21,7 @@ export interface NumberFormatSettings {
   truncateNumbersWithPound?: boolean;
   showEmptyStrings?: boolean;
   showNullStrings?: boolean;
+  showExtraGroupColumn?: boolean;
 }
 
 export interface Settings

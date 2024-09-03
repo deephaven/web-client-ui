@@ -7,6 +7,7 @@ export * from './useCheckOverflow';
 export * from './useContentRect';
 export { default as useContextOrThrow } from './useContextOrThrow';
 export * from './useDebouncedCallback';
+export * from './useOnChange';
 export * from './useThrottledCallback';
 export * from './useDelay';
 export * from './useDependentState';
