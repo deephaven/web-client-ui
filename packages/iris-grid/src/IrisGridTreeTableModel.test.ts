@@ -19,8 +19,8 @@ describe('IrisGridTreeTableModel virtual columns', () => {
   const columns = irisGridTestUtils.makeColumns();
 
   test.each([
-    [1, columns, [...columns]],
-    [1, columns, [...columns]],
+    [0, columns, columns],
+    [1, columns, columns],
     [2, columns, [expectedVirtualColumn, ...columns]],
     [columns.length, columns, [expectedVirtualColumn, ...columns]],
   ])(
