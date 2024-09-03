@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.92.0](https://github.com/deephaven/web-client-ui/compare/v0.91.0...v0.92.0) (2024-09-03)
+
+### Features
+
+- Make rollup group behaviour a setting in the global settings menu ([#2183](https://github.com/deephaven/web-client-ui/issues/2183)) ([bc8d5f2](https://github.com/deephaven/web-client-ui/commit/bc8d5f24ac7f883c0f9d65ba47901f83f996e95c)), closes [#2128](https://github.com/deephaven/web-client-ui/issues/2128)
+- Set selected theme via query string param ([#2204](https://github.com/deephaven/web-client-ui/issues/2204)) ([89ede66](https://github.com/deephaven/web-client-ui/commit/89ede667c56746b3ff17cc7ecb6d9153aa6c2edc)), closes [#2203](https://github.com/deephaven/web-client-ui/issues/2203)
+
+### Bug Fixes
+
+- DH-17292 Handle disconnect from GridWidgetPlugin ([#2086](https://github.com/deephaven/web-client-ui/issues/2086)) ([0a924cd](https://github.com/deephaven/web-client-ui/commit/0a924cd5fe13e16642c50a59842c361bfff3788e))
+- Invalid import in @deephaven/components for webpack ([#2200](https://github.com/deephaven/web-client-ui/issues/2200)) ([dcc95f6](https://github.com/deephaven/web-client-ui/commit/dcc95f69ff3a94a0558093ed699f8147096b2556)), closes [#2192](https://github.com/deephaven/web-client-ui/issues/2192)
+
 ## [0.91.0](https://github.com/deephaven/web-client-ui/compare/v0.90.0...v0.91.0) (2024-08-23)
 
 ### Features

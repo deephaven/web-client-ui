@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.92.0](https://github.com/deephaven/web-client-ui/compare/v0.91.0...v0.92.0) (2024-09-03)
+
+### Bug Fixes
+
+- DH-17292 Handle disconnect from GridWidgetPlugin ([#2086](https://github.com/deephaven/web-client-ui/issues/2086)) ([0a924cd](https://github.com/deephaven/web-client-ui/commit/0a924cd5fe13e16642c50a59842c361bfff3788e))
+
 ## [0.91.0](https://github.com/deephaven/web-client-ui/compare/v0.90.0...v0.91.0) (2024-08-23)
 
 **Note:** Version bump only for package @deephaven/dashboard-core-plugins
