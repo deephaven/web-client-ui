@@ -10,7 +10,7 @@ import WidgetPanelTooltip from './WidgetPanelTooltip';
 import './WidgetPanel.scss';
 import { WidgetPanelDescriptor } from './WidgetPanelTypes';
 
-type WidgetPanelProps = {
+export type WidgetPanelProps = {
   children: ReactNode;
 
   descriptor: WidgetPanelDescriptor;
