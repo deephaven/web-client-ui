@@ -1,4 +1,3 @@
-import { DragEvent } from 'react';
 import deepEqual from 'fast-deep-equal';
 import { nanoid } from 'nanoid';
 import isMatch from 'lodash.ismatch';
@@ -16,7 +15,6 @@ import type {
   Container,
   ContentItem,
   ItemConfig,
-  ItemConfigType,
   ReactComponentConfig,
   Stack,
   Tab,
@@ -38,12 +36,12 @@ export type StackItemConfig = ItemConfig & {
   activeItemIndex?: number;
 };
 
-function isComponentConfig(config: ItemConfigType): config is ComponentConfig {
+function isComponentConfig(config: ItemConfig): config is ComponentConfig {
   return (config as ComponentConfig).componentName !== undefined;
 }
 
 export function isReactComponentConfig(
-  config: ItemConfigType
+  config: ItemConfig
 ): config is ReactComponentConfig {
   const reactConfig = config as ReactComponentConfig;
   // Golden layout sets the type to 'component' and componentName to 'lm-react-component' in `createContentItem`, then changes it back in `toConfig`
@@ -60,13 +58,13 @@ function isHTMLElement(element: Element): element is HTMLElement {
   return (element as HTMLElement).focus !== undefined;
 }
 
-function isStackItemConfig(config: ItemConfigType): config is StackItemConfig {
+function isStackItemConfig(config: ItemConfig): config is StackItemConfig {
   return config.type === 'stack';
 }
 class LayoutUtils {
   static DEFAULT_FOCUS_SELECTOR = 'input, select, textarea, button';
 
-  static activateTab(root: ContentItem, config: Partial<ItemConfigType>): void {
+  static activateTab(root: ContentItem, config: Partial<ItemConfig>): void {
     const stack = LayoutUtils.getStackForRoot(root, config, false);
     if (!stack) {
       log.error('Could not find stack for config', config);
@@ -106,17 +104,20 @@ class LayoutUtils {
    * @returns The newly created stack.
    */
   static addStack(parent: ContentItem, columnPreferred = true): Stack {
-    const type = columnPreferred ? 'column' : 'row';
     if (isRoot(parent)) {
+      const rowOrColConfig: ItemConfig = {
+        type: columnPreferred ? 'column' : 'row',
+      };
+
       if (parent.contentItems == null || parent.contentItems.length === 0) {
-        parent.addChild({ type });
+        parent.addChild(rowOrColConfig);
       }
 
       const child = parent.contentItems[0];
       const isCorrectType = columnPreferred ? child.isColumn : child.isRow;
       if (!isCorrectType) {
         parent.removeChild(child, true);
-        parent.addChild({ type });
+        parent.addChild(rowOrColConfig);
 
         // The addChild may cause the element that has focus to be removed from the DOM, which changes focus to the body
         // Try and maintain the focus as best we can. The unfocused element may still send a blur/focus event so that needs to be handled correctly.
@@ -142,7 +143,10 @@ class LayoutUtils {
       ? newParent.isColumn
       : newParent.isRow;
     if (!isCorrectType) {
-      parent.addChild({ type: !columnPreferred ? 'column' : 'row' });
+      const inverseRowOrColConfig: ItemConfig = {
+        type: !columnPreferred ? 'column' : 'row',
+      };
+      parent.addChild(inverseRowOrColConfig);
       parent.removeChild(newParent, true);
       parent.contentItems[parent.contentItems.length - 1].addChild(newParent);
       newParent = parent.contentItems[parent.contentItems.length - 1];
@@ -197,7 +201,7 @@ class LayoutUtils {
    */
   static getStackForConfig(
     item: ContentItem,
-    config: Partial<ItemConfigType> = {},
+    config: Partial<ItemConfig> = {},
     allowEmptyStack = false
   ): Stack | null {
     if (allowEmptyStack && isStack(item) && item.contentItems.length === 0) {
@@ -239,7 +243,7 @@ class LayoutUtils {
    */
   static getStackForRoot(
     root: ContentItem,
-    config: Partial<ReactComponentConfig>,
+    config: Partial<ItemConfig>,
     createIfNecessary = true,
     matchComponentType = true,
     allowEmptyStack = true
@@ -248,7 +252,7 @@ class LayoutUtils {
     if (!stack && matchComponentType) {
       stack = this.getStackForConfig(
         root,
-        { component: config.component },
+        { component: (config as { component?: string }).component },
         allowEmptyStack
       );
     }
@@ -300,7 +304,7 @@ class LayoutUtils {
    */
   static getContentItemInStack(
     stack: ContentItem | null,
-    config: Partial<ItemConfigType>
+    config: Partial<ItemConfig>
   ): ContentItem | null {
     if (!stack) {
       return null;
@@ -322,10 +326,10 @@ class LayoutUtils {
    * @returns Dehydrated config
    */
   static dehydrateLayoutConfig(
-    config: ItemConfigType[],
+    config: ItemConfig[],
     dehydrateComponent: (
       componentName: string,
-      config: ItemConfigType
+      config: ItemConfig
     ) => PanelConfig
   ): (PanelConfig | ItemConfig)[] {
     if (config == null || !config.length) {
@@ -516,10 +520,10 @@ class LayoutUtils {
     config?: Partial<ReactComponentConfig>;
     stack?: Stack;
     replaceExisting?: boolean;
-    replaceConfig?: Partial<ItemConfigType>;
+    replaceConfig?: Partial<ItemConfig>;
     createNewStack?: boolean;
     focusElement?: string;
-    dragEvent?: DragEvent;
+    dragEvent?: MouseEvent;
   } = {}): void {
     // attempt to retain focus after dom manipulation, which can break focus
     const maintainFocusElement = document.activeElement;
@@ -600,7 +604,7 @@ class LayoutUtils {
    */
   static openComponentInStack(
     stack: Stack | null,
-    config: ItemConfigType & Record<string, unknown>,
+    config: ItemConfig & Record<string, unknown>,
     replaceExisting = true
   ): void {
     const maintainFocusElement = document.activeElement; // attempt to retain focus after dom manipulation, which can break focus
@@ -676,7 +680,7 @@ class LayoutUtils {
 
   static renameComponent(
     root: ContentItem,
-    config: Partial<ItemConfigType>,
+    config: Partial<ItemConfig>,
     newTitle: string
   ): void {
     const stack = LayoutUtils.getStackForRoot(root, config, false);
@@ -727,7 +731,7 @@ class LayoutUtils {
    * @param config Panel config
    * @returns Panel state
    */
-  static getPanelComponentState(config: ItemConfigType): unknown {
+  static getPanelComponentState(config: ItemConfig): unknown {
     if (isComponentConfig(config)) {
       return config.componentState?.panelState;
     }
@@ -766,7 +770,7 @@ class LayoutUtils {
    */
   static getComponentConfigFromContainer(
     container?: Container
-  ): ItemConfigType | null {
+  ): ItemConfig | null {
     if (container) {
       if (container.tab != null && container.tab.contentItem != null) {
         return container.tab.contentItem.config;

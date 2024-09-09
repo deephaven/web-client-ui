@@ -49,6 +49,7 @@ export interface WorkspaceSettings {
   truncateNumbersWithPound: boolean;
   showEmptyStrings: boolean;
   showNullStrings: boolean;
+  showExtraGroupColumn: boolean;
   disableMoveConfirmation: boolean;
   shortcutOverrides?: {
     windows?: { [id: string]: ValidKeyState };
@@ -57,6 +58,9 @@ export interface WorkspaceSettings {
   defaultNotebookSettings: {
     isMinimapEnabled?: boolean;
   };
+  webgl: boolean;
+  webglEditable: boolean;
+  gridDensity: 'compact' | 'regular' | 'spacious';
 }
 
 export interface WorkspaceData {
@@ -138,6 +142,8 @@ reducerRegistry.setListener(newReducers => {
   store.replaceReducer(combineReducers(newReducers));
 });
 
-export default store;
+export type AppStore = typeof store;
 
 export type RootDispatch = typeof store.dispatch;
+
+export default store;

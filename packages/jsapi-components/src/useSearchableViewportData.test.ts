@@ -1,24 +1,24 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 import type { DebouncedFunc } from 'lodash';
-import type { FilterCondition, Table } from '@deephaven/jsapi-types';
+import { TABLE_ROW_HEIGHT } from '@deephaven/components';
+import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
   createSearchTextFilter,
   FilterConditionFactory,
   TableUtils,
 } from '@deephaven/jsapi-utils';
 import { useDebouncedCallback } from '@deephaven/react-hooks';
-import {
-  SEARCH_DEBOUNCE_MS,
-  TABLE_ROW_HEIGHT,
-  TestUtils,
-  VIEWPORT_PADDING,
-  VIEWPORT_SIZE,
-} from '@deephaven/utils';
+import { TestUtils } from '@deephaven/utils';
 import useSearchableViewportData from './useSearchableViewportData';
 import useViewportData, { UseViewportDataResult } from './useViewportData';
 import useTableUtils from './useTableUtils';
 import useFilterConditionFactories from './useFilterConditionFactories';
 import useViewportFilter from './useViewportFilter';
+import {
+  SEARCH_DEBOUNCE_MS,
+  VIEWPORT_PADDING,
+  VIEWPORT_SIZE,
+} from './Constants';
 
 const { asMock, createMockProxy } = TestUtils;
 
@@ -43,19 +43,23 @@ beforeEach(() => {
 describe('useSearchableViewportData: %s', () => {
   type SearchTextChangeHandler = DebouncedFunc<(value: string) => void>;
 
-  const table = createMockProxy<Table>();
-  const columnNames = ['Aaa', 'Bbb', 'Ccc'];
+  const table = createMockProxy<DhType.Table>();
+  const searchColumnNames = ['Aaa', 'Bbb', 'Ccc'];
   const additionalFilterConditionFactories = [
     jest.fn(),
     jest.fn(),
   ] as FilterConditionFactory[];
 
+  const mockTimeZone = 'mock.timeZone';
+
   const mockResult = {
     createSearchTextFilter: jest.fn() as FilterConditionFactory,
     useDebouncedCallback: jest.fn() as unknown as SearchTextChangeHandler,
-    useFilterConditionFactories: [] as FilterCondition[],
+    useFilterConditionFactories: [] as DhType.FilterCondition[],
     useTableUtils: createMockProxy<TableUtils>(),
-    useViewportData: createMockProxy<UseViewportDataResult<unknown, Table>>({
+    useViewportData: createMockProxy<
+      UseViewportDataResult<unknown, DhType.Table>
+    >({
       table,
     }),
   };
@@ -82,7 +86,10 @@ describe('useSearchableViewportData: %s', () => {
     asMock(useViewportData)
       .mockName('useViewportData')
       .mockReturnValue(
-        mockResult.useViewportData as UseViewportDataResult<unknown, Table>
+        mockResult.useViewportData as UseViewportDataResult<
+          unknown,
+          DhType.Table
+        >
       );
 
     asMock(createSearchTextFilter)
@@ -96,11 +103,12 @@ describe('useSearchableViewportData: %s', () => {
 
   it('should create windowed viewport for list data', () => {
     const { result } = renderHook(() =>
-      useSearchableViewportData(
+      useSearchableViewportData({
         table,
-        columnNames,
-        ...additionalFilterConditionFactories
-      )
+        searchColumnNames,
+        additionalFilterConditionFactories,
+        timeZone: mockTimeZone,
+      })
     );
 
     expect(useViewportData).toHaveBeenCalledWith({
@@ -116,25 +124,27 @@ describe('useSearchableViewportData: %s', () => {
     );
 
     expect(result.current).toEqual({
-      list: mockResult.useViewportData,
+      ...mockResult.useViewportData,
       onSearchTextChange: mockResult.useDebouncedCallback,
     });
   });
 
   it('should filter data based on search text', () => {
     const { result } = renderHook(() =>
-      useSearchableViewportData(
+      useSearchableViewportData({
         table,
-        columnNames,
-        ...additionalFilterConditionFactories
-      )
+        searchColumnNames,
+        additionalFilterConditionFactories,
+        timeZone: mockTimeZone,
+      })
     );
 
     const testCommon = (expectedSearchText: string) => {
       expect(createSearchTextFilter).toHaveBeenCalledWith(
         mockResult.useTableUtils,
-        columnNames,
-        expectedSearchText
+        searchColumnNames,
+        expectedSearchText,
+        mockTimeZone
       );
 
       expect(useFilterConditionFactories).toHaveBeenCalledWith(

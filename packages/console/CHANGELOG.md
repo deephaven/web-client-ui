@@ -3,6 +3,80 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.92.0](https://github.com/deephaven/web-client-ui/compare/v0.91.0...v0.92.0) (2024-09-03)
+
+**Note:** Version bump only for package @deephaven/console
+
+## [0.91.0](https://github.com/deephaven/web-client-ui/compare/v0.90.0...v0.91.0) (2024-08-23)
+
+**Note:** Version bump only for package @deephaven/console
+
+## [0.90.0](https://github.com/deephaven/web-client-ui/compare/v0.89.0...v0.90.0) (2024-08-21)
+
+**Note:** Version bump only for package @deephaven/console
+
+## [0.89.0](https://github.com/deephaven/web-client-ui/compare/v0.88.0...v0.89.0) (2024-08-15)
+
+### Features
+
+- Refactor console objects menu ([#2013](https://github.com/deephaven/web-client-ui/issues/2013)) ([8251180](https://github.com/deephaven/web-client-ui/commit/825118048326d3622aec2e4b851d81e8b7d93e35)), closes [#1884](https://github.com/deephaven/web-client-ui/issues/1884)
+
+## [0.88.0](https://github.com/deephaven/web-client-ui/compare/v0.87.0...v0.88.0) (2024-08-06)
+
+**Note:** Version bump only for package @deephaven/console
+
+## [0.87.0](https://github.com/deephaven/web-client-ui/compare/v0.86.1...v0.87.0) (2024-07-22)
+
+**Note:** Version bump only for package @deephaven/console
+
+## [0.86.0](https://github.com/deephaven/web-client-ui/compare/v0.85.2...v0.86.0) (2024-07-17)
+
+**Note:** Version bump only for package @deephaven/console
+
+## [0.85.2](https://github.com/deephaven/web-client-ui/compare/v0.85.1...v0.85.2) (2024-07-09)
+
+**Note:** Version bump only for package @deephaven/console
+
+## [0.85.1](https://github.com/deephaven/web-client-ui/compare/v0.85.0...v0.85.1) (2024-07-08)
+
+**Note:** Version bump only for package @deephaven/console
+
+## [0.85.0](https://github.com/deephaven/web-client-ui/compare/v0.84.0...v0.85.0) (2024-07-04)
+
+**Note:** Version bump only for package @deephaven/console
+
+## [0.84.0](https://github.com/deephaven/web-client-ui/compare/v0.83.0...v0.84.0) (2024-06-28)
+
+### Bug Fixes
+
+- Console does not scroll to bottom when code run from notebook ([#2114](https://github.com/deephaven/web-client-ui/issues/2114)) ([e75e716](https://github.com/deephaven/web-client-ui/commit/e75e716a2d184e3ff5572fa609301bf6ac35da99))
+
+## [0.83.0](https://github.com/deephaven/web-client-ui/compare/v0.82.0...v0.83.0) (2024-06-25)
+
+### Bug Fixes
+
+- Console scroll bar following dynamic output ([#2076](https://github.com/deephaven/web-client-ui/issues/2076)) ([a91e4f3](https://github.com/deephaven/web-client-ui/commit/a91e4f348fc23618f10ac1d8c3a87bf237eb7bbd))
+
+## [0.82.0](https://github.com/deephaven/web-client-ui/compare/v0.81.2...v0.82.0) (2024-06-11)
+
+**Note:** Version bump only for package @deephaven/console
+
+## [0.81.2](https://github.com/deephaven/web-client-ui/compare/v0.81.1...v0.81.2) (2024-06-06)
+
+**Note:** Version bump only for package @deephaven/console
+
+## [0.81.1](https://github.com/deephaven/web-client-ui/compare/v0.81.0...v0.81.1) (2024-06-04)
+
+**Note:** Version bump only for package @deephaven/console
+
+## [0.81.0](https://github.com/deephaven/web-client-ui/compare/v0.80.1...v0.81.0) (2024-06-04)
+
+**Note:** Version bump only for package @deephaven/console
+
+## [0.80.1](https://github.com/deephaven/web-client-ui/compare/v0.80.0...v0.80.1) (2024-06-04)
+
+**Note:** Version bump only for package @deephaven/console
+
 # [0.80.0](https://github.com/deephaven/web-client-ui/compare/v0.79.0...v0.80.0) (2024-06-03)
 
 **Note:** Version bump only for package @deephaven/console

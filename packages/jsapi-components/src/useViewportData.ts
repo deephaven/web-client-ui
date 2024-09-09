@@ -13,11 +13,12 @@ import {
   useOnScrollOffsetChangeCallback,
   WindowedListData,
 } from '@deephaven/react-hooks';
-import { KeyedItem, SCROLL_DEBOUNCE_MS } from '@deephaven/utils';
+import { KeyedItem } from '@deephaven/utils';
 import useInitializeViewportData from './useInitializeViewportData';
 import useSetPaddedViewportCallback from './useSetPaddedViewportCallback';
 import useTableSize from './useTableSize';
 import useTableListener from './useTableListener';
+import { SCROLL_DEBOUNCE_MS } from './Constants';
 
 const log = Log.module('useViewportData');
 
@@ -29,8 +30,8 @@ export interface UseViewportDataProps<
   table: TTable | null;
   itemHeight?: number;
   scrollDebounce?: number;
-  viewportSize?: number;
   viewportPadding?: number;
+  viewportSize?: number;
   deserializeRow?: RowDeserializer<TItem>;
 }
 

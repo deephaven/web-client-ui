@@ -9,14 +9,13 @@ import {
   vsPaintcan,
   dhUserIncognito,
   dhUser,
+  vsTools,
 } from '@deephaven/icons';
 import {
   Button,
   CopyButton,
   GLOBAL_SHORTCUTS,
   Logo,
-  ThemeContext,
-  ThemePicker,
   Tooltip,
 } from '@deephaven/components';
 import { ServerConfigValues, User } from '@deephaven/redux';
@@ -25,7 +24,6 @@ import {
   BROADCAST_LOGOUT_MESSAGE,
   makeMessage,
 } from '@deephaven/jsapi-utils';
-import { assertNotNull } from '@deephaven/utils';
 import { PluginModuleMap } from '@deephaven/plugin';
 import FormattingSectionContent from './FormattingSectionContent';
 import LegalNotice from './LegalNotice';
@@ -38,6 +36,8 @@ import {
   getFormattedPluginInfo,
   getFormattedVersionInfo,
 } from './SettingsUtils';
+import AdvancedSectionContent from './AdvancedSectionContent';
+import ThemeSectionContent from './ThemeSectionContent';
 
 interface SettingsMenuProps {
   serverConfigValues: ServerConfigValues;
@@ -67,6 +67,8 @@ export class SettingsMenu extends Component<
   static SHORTCUT_SECTION_KEY = 'SettingsMenu.shortcuts';
 
   static THEME_SECTION_KEY = 'SettingsMenu.theme';
+
+  static ADVANCED_SECTION_KEY = 'SettingsMenu.advanced';
 
   static focusFirstInputInContainer(container: HTMLDivElement | null): void {
     const input = container?.querySelector('input, select, textarea');
@@ -254,33 +256,23 @@ export class SettingsMenu extends Component<
             <ColumnSpecificSectionContent scrollTo={this.handleScrollTo} />
           </SettingsMenuSection>
 
-          <ThemeContext.Consumer>
-            {contextValue => {
-              assertNotNull(contextValue, 'ThemeContext value is null');
-
-              return contextValue.themes.length > 1 ? (
-                <SettingsMenuSection
-                  sectionKey={SettingsMenu.THEME_SECTION_KEY}
-                  isExpanded={this.isSectionExpanded(
-                    SettingsMenu.THEME_SECTION_KEY
-                  )}
-                  onToggle={this.handleSectionToggle}
-                  title={
-                    <>
-                      <FontAwesomeIcon
-                        icon={vsPaintcan}
-                        transform="grow-4"
-                        className="mr-2"
-                      />
-                      Theme
-                    </>
-                  }
-                >
-                  <ThemePicker />
-                </SettingsMenuSection>
-              ) : null;
-            }}
-          </ThemeContext.Consumer>
+          <SettingsMenuSection
+            sectionKey={SettingsMenu.THEME_SECTION_KEY}
+            isExpanded={this.isSectionExpanded(SettingsMenu.THEME_SECTION_KEY)}
+            onToggle={this.handleSectionToggle}
+            title={
+              <>
+                <FontAwesomeIcon
+                  icon={vsPaintcan}
+                  transform="grow-4"
+                  className="mr-2"
+                />
+                Theme
+              </>
+            }
+          >
+            <ThemeSectionContent />
+          </SettingsMenuSection>
 
           <SettingsMenuSection
             sectionKey={SettingsMenu.SHORTCUT_SECTION_KEY}
@@ -289,13 +281,36 @@ export class SettingsMenu extends Component<
             )}
             title={
               <>
-                <FontAwesomeIcon icon={vsRecordKeys} transform="grow-2" />{' '}
+                <FontAwesomeIcon
+                  icon={vsRecordKeys}
+                  transform="grow-2"
+                  className="mr-2"
+                />
                 Keyboard Shortcuts
               </>
             }
             onToggle={this.handleSectionToggle}
           >
             <ShortcutSectionContent />
+          </SettingsMenuSection>
+          <SettingsMenuSection
+            sectionKey={SettingsMenu.ADVANCED_SECTION_KEY}
+            isExpanded={this.isSectionExpanded(
+              SettingsMenu.ADVANCED_SECTION_KEY
+            )}
+            title={
+              <>
+                <FontAwesomeIcon
+                  icon={vsTools}
+                  transform="grow-4"
+                  className="mr-2"
+                />
+                Advanced
+              </>
+            }
+            onToggle={this.handleSectionToggle}
+          >
+            <AdvancedSectionContent />
           </SettingsMenuSection>
 
           <div className="app-settings-footer">

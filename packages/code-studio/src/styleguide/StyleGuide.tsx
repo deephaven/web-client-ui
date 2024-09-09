@@ -39,6 +39,7 @@ import SpectrumComparison from './SpectrumComparison';
 import Pickers from './Pickers';
 import ListViews from './ListViews';
 import ErrorViews from './ErrorViews';
+import XComponents from './XComponents';
 
 const stickyProps = {
   position: 'sticky',
@@ -74,8 +75,6 @@ function StyleGuide(): React.ReactElement {
         >
           <h1 style={{ paddingTop: '2rem' }}>Deephaven UI Components</h1>
         </Flex>
-
-        {/* {isIsolatedSection ? null : ( */}
         <Flex
           {...stickyProps}
           UNSAFE_className={
@@ -89,8 +88,6 @@ function StyleGuide(): React.ReactElement {
           {hasMultipleThemes ? <ThemePicker /> : null}
           <SamplesMenu />
         </Flex>
-        {/* )} */}
-        {/* {isIsolatedSection ? null : ( */}
         <Flex
           {...stickyProps}
           UNSAFE_className={
@@ -102,7 +99,6 @@ function StyleGuide(): React.ReactElement {
         >
           <GotoTopButton />
         </Flex>
-        {/* )} */}
 
         <Typograpy />
 
@@ -134,13 +130,14 @@ function StyleGuide(): React.ReactElement {
         <Charts />
         <ContextMenuRoot />
         <RandomAreaPlotAnimation />
+        <ErrorViews />
+        <XComponents />
 
         <SampleMenuCategory data-menu-category="Spectrum Components" />
         <SpectrumComponents />
 
         <SampleMenuCategory data-menu-category="Spectrum Comparison" />
         <SpectrumComparison />
-        <ErrorViews />
       </div>
     </div>
   );

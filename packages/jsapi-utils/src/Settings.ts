@@ -21,11 +21,14 @@ export interface NumberFormatSettings {
   truncateNumbersWithPound?: boolean;
   showEmptyStrings?: boolean;
   showNullStrings?: boolean;
+  showExtraGroupColumn?: boolean;
 }
 
 export interface Settings
   extends ColumnFormatSettings,
     DateTimeFormatSettings,
-    NumberFormatSettings {}
+    NumberFormatSettings {
+  webgl?: boolean;
+}
 
 export default Settings;

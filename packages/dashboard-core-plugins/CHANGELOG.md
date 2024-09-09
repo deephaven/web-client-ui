@@ -3,6 +3,101 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.92.0](https://github.com/deephaven/web-client-ui/compare/v0.91.0...v0.92.0) (2024-09-03)
+
+### Bug Fixes
+
+- DH-17292 Handle disconnect from GridWidgetPlugin ([#2086](https://github.com/deephaven/web-client-ui/issues/2086)) ([0a924cd](https://github.com/deephaven/web-client-ui/commit/0a924cd5fe13e16642c50a59842c361bfff3788e))
+
+## [0.91.0](https://github.com/deephaven/web-client-ui/compare/v0.90.0...v0.91.0) (2024-08-23)
+
+**Note:** Version bump only for package @deephaven/dashboard-core-plugins
+
+## [0.90.0](https://github.com/deephaven/web-client-ui/compare/v0.89.0...v0.90.0) (2024-08-21)
+
+### ⚠ BREAKING CHANGES
+
+- Delete unused event types: `openPQObject`,
+  `openControl`, `reload`, `clearAllFilters`.
+
+### Bug Fixes
+
+- TablePlugin needs to know table name and selected range ([#2181](https://github.com/deephaven/web-client-ui/issues/2181)) ([0b37477](https://github.com/deephaven/web-client-ui/commit/0b3747782958dc8e432fabda89ac0bce25ac9c22)), closes [#2093](https://github.com/deephaven/web-client-ui/issues/2093)
+
+### Code Refactoring
+
+- Change TabEvent to object literal, add TabEventMap ([#2191](https://github.com/deephaven/web-client-ui/issues/2191)) ([419f95d](https://github.com/deephaven/web-client-ui/commit/419f95d05c5db52e7b068398d6d2520b77c6aad3))
+
+## [0.89.0](https://github.com/deephaven/web-client-ui/compare/v0.88.0...v0.89.0) (2024-08-15)
+
+### Features
+
+- Refactor console objects menu ([#2013](https://github.com/deephaven/web-client-ui/issues/2013)) ([8251180](https://github.com/deephaven/web-client-ui/commit/825118048326d3622aec2e4b851d81e8b7d93e35)), closes [#1884](https://github.com/deephaven/web-client-ui/issues/1884)
+
+## [0.88.0](https://github.com/deephaven/web-client-ui/compare/v0.87.0...v0.88.0) (2024-08-06)
+
+### Features
+
+- Allow ref callback for Chart and ChartPanel ([#2174](https://github.com/deephaven/web-client-ui/issues/2174)) ([56d1fa9](https://github.com/deephaven/web-client-ui/commit/56d1fa9ba00d319794d686365be245c757ad2178))
+
+## [0.87.0](https://github.com/deephaven/web-client-ui/compare/v0.86.1...v0.87.0) (2024-07-22)
+
+**Note:** Version bump only for package @deephaven/dashboard-core-plugins
+
+## [0.86.1](https://github.com/deephaven/web-client-ui/compare/v0.86.0...v0.86.1) (2024-07-18)
+
+### Bug Fixes
+
+- add back panel prop to IrisGrid Plugin ([#2155](https://github.com/deephaven/web-client-ui/issues/2155)) ([6362eb7](https://github.com/deephaven/web-client-ui/commit/6362eb7b5292209abd9d473792cf3ecb55ade452)), closes [#2093](https://github.com/deephaven/web-client-ui/issues/2093)
+
+## [0.86.0](https://github.com/deephaven/web-client-ui/compare/v0.85.2...v0.86.0) (2024-07-17)
+
+### Features
+
+- Core plugins refactor, XComponent framework ([#2150](https://github.com/deephaven/web-client-ui/issues/2150)) ([2571fad](https://github.com/deephaven/web-client-ui/commit/2571faddee86d3c93e7814eb9034e606578ac040))
+
+## [0.85.2](https://github.com/deephaven/web-client-ui/compare/v0.85.1...v0.85.2) (2024-07-09)
+
+**Note:** Version bump only for package @deephaven/dashboard-core-plugins
+
+## [0.85.1](https://github.com/deephaven/web-client-ui/compare/v0.85.0...v0.85.1) (2024-07-08)
+
+**Note:** Version bump only for package @deephaven/dashboard-core-plugins
+
+## [0.85.0](https://github.com/deephaven/web-client-ui/compare/v0.84.0...v0.85.0) (2024-07-04)
+
+**Note:** Version bump only for package @deephaven/dashboard-core-plugins
+
+## [0.84.0](https://github.com/deephaven/web-client-ui/compare/v0.83.0...v0.84.0) (2024-06-28)
+
+**Note:** Version bump only for package @deephaven/dashboard-core-plugins
+
+## [0.83.0](https://github.com/deephaven/web-client-ui/compare/v0.82.0...v0.83.0) (2024-06-25)
+
+**Note:** Version bump only for package @deephaven/dashboard-core-plugins
+
+## [0.82.0](https://github.com/deephaven/web-client-ui/compare/v0.81.2...v0.82.0) (2024-06-11)
+
+**Note:** Version bump only for package @deephaven/dashboard-core-plugins
+
+## [0.81.2](https://github.com/deephaven/web-client-ui/compare/v0.81.1...v0.81.2) (2024-06-06)
+
+**Note:** Version bump only for package @deephaven/dashboard-core-plugins
+
+## [0.81.1](https://github.com/deephaven/web-client-ui/compare/v0.81.0...v0.81.1) (2024-06-04)
+
+**Note:** Version bump only for package @deephaven/dashboard-core-plugins
+
+## [0.81.0](https://github.com/deephaven/web-client-ui/compare/v0.80.1...v0.81.0) (2024-06-04)
+
+**Note:** Version bump only for package @deephaven/dashboard-core-plugins
+
+## [0.80.1](https://github.com/deephaven/web-client-ui/compare/v0.80.0...v0.80.1) (2024-06-04)
+
+### Bug Fixes
+
+- CSV Drag and Drop Console Error ([#2052](https://github.com/deephaven/web-client-ui/issues/2052)) ([85811dd](https://github.com/deephaven/web-client-ui/commit/85811dd64f1cb04fedc85d1f674ec90a2ea1556c))
+
 # [0.80.0](https://github.com/deephaven/web-client-ui/compare/v0.79.0...v0.80.0) (2024-06-03)
 
 **Note:** Version bump only for package @deephaven/dashboard-core-plugins

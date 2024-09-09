@@ -75,6 +75,7 @@ async function createChartModel(
 
     if (metadata.type === dh.VariableType.FIGURE) {
       const descriptor = {
+        ...metadata,
         name: figureName,
         type: dh.VariableType.FIGURE,
       };
@@ -87,6 +88,7 @@ async function createChartModel(
   }
 
   const descriptor = {
+    ...metadata,
     name: tableName,
     type: dh.VariableType.TABLE,
   };

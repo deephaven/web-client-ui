@@ -15,6 +15,7 @@ import {
   SVG_ICON_MANUAL_COLOR_MAP,
   ThemeCssVariableName,
   ThemeIconsRequiringManualColorChanges,
+  THEME_KEY_OVERRIDE_QUERY_PARAM,
 } from './ThemeModel';
 
 const log = Log.module('ThemeUtils');
@@ -179,6 +180,31 @@ export function getDefaultBaseThemes(): ThemeData[] {
 }
 
 /**
+ * Get the default selected theme key. Precedence is:
+ * 1. Theme key override query parameter
+ * 2. Theme key from preload data
+ * 3. Default dark theme key
+ * @returns The default selected theme key
+ */
+export function getDefaultSelectedThemeKey(): string {
+  return (
+    getThemeKeyOverride() ??
+    getThemePreloadData()?.themeKey ??
+    DEFAULT_DARK_THEME_KEY
+  );
+}
+
+/**
+ * A theme key override can be set via a query parameter to force a specific
+ * theme selection. Useful for embedded widget scenarios that don't expose the
+ * theme selector.
+ */
+export function getThemeKeyOverride(): string | null {
+  const searchParams = new URLSearchParams(window.location.search);
+  return searchParams.get(THEME_KEY_OVERRIDE_QUERY_PARAM);
+}
+
+/**
  * Get the preload data from local storage or null if it does not exist or is
  * invalid
  */
@@ -320,21 +346,19 @@ export function resolveCssVariablesInRecord<T extends Record<string, string>>(
 
   const result = {} as T;
   recordArray.forEach(([key, value], i) => {
-    // only resolve if it contains a css var expression
-    if (!value.includes(CSS_VAR_EXPRESSION_PREFIX)) {
-      (result as Record<string, string>)[key] = value;
-      return;
-    }
     // resolves any variables in the expression
     let resolved = tempPropElComputedStyle.getPropertyValue(
       `--${TMP_CSS_PROP_PREFIX}-${i}`
     );
+
+    const containsCssVar = value.includes(CSS_VAR_EXPRESSION_PREFIX);
+    const isColor = CSS.supports('color', resolved);
+
     if (
-      // skip if resolved is already hex
-      !/^#[0-9A-F]{6}[0-9a-f]{0,2}$/i.test(resolved) &&
-      // only try to normalize things that are valid colors
+      // only try to normalize non-hex strings that are valid colors
       // otherwise non-colors will be made #00000000
-      CSS.supports('color', resolved)
+      isColor &&
+      !/^#[0-9A-F]{6}[0-9a-f]{0,2}$/i.test(resolved)
     ) {
       // getting the computed background color is necessary
       // because resolved can still contain a color-mix() function
@@ -344,7 +368,8 @@ export function resolveCssVariablesInRecord<T extends Record<string, string>>(
       // convert color to hex, which is what monaco and plotly require
       resolved = ColorUtils.normalizeCssColor(color, isAlphaOptional);
     }
-    (result as Record<string, string>)[key] = resolved;
+    (result as Record<string, string>)[key] =
+      containsCssVar || isColor ? resolved : value;
   });
 
   // Remove the temporary div

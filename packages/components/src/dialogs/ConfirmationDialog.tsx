@@ -1,16 +1,16 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import { ReactElement, ReactNode } from 'react';
+import type { SpectrumLabelableProps } from '@react-types/shared';
+import { useFormWithDetachedSubmitButton } from '@deephaven/react-hooks';
 import {
-  Button,
+  SpectrumButton,
   ButtonGroup,
   Content,
   Dialog,
   Divider,
   Form,
-} from '@adobe/react-spectrum';
-import type { SpectrumLabelableProps } from '@react-types/shared';
-import { useFormWithDetachedSubmitButton } from '@deephaven/react-hooks';
-import { Heading } from '../spectrum';
+  Heading,
+} from '../spectrum';
 import styles from '../SpectrumComponent.module.scss';
 
 export interface ConfirmationDialogProps {
@@ -50,10 +50,10 @@ export function ConfirmationDialog({
         </Form>
       </Content>
       <ButtonGroup>
-        <Button variant="secondary" onPress={onCancel}>
+        <SpectrumButton variant="secondary" onPress={onCancel}>
           Cancel
-        </Button>
-        <Button
+        </SpectrumButton>
+        <SpectrumButton
           {...submitButtonProps}
           // eslint-disable-next-line react/style-prop-object
           style="fill"
@@ -62,7 +62,7 @@ export function ConfirmationDialog({
           type="submit"
         >
           {confirmationButtonLabel}
-        </Button>
+        </SpectrumButton>
       </ButtonGroup>
     </Dialog>
   );

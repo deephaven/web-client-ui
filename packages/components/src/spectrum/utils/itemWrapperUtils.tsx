@@ -5,6 +5,7 @@ import { dh as dhIcons } from '@deephaven/icons';
 import { isElementOfType } from '@deephaven/react-hooks';
 import { ensureArray, NON_BREAKING_SPACE } from '@deephaven/utils';
 import {
+  getItemTextValue,
   isItemElement,
   isSectionElement,
   ItemElement,
@@ -66,10 +67,7 @@ export function wrapItemChildren<T>(
       }
 
       const key = item.key ?? item.props.textValue;
-      const textValue =
-        item.props.textValue === ''
-          ? ITEM_EMPTY_STRING_TEXT_VALUE
-          : item.props.textValue;
+      const textValue = getItemTextValue(item);
 
       // Wrap in `ItemContent` so we can support tooltips and handle text
       // overflow

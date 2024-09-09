@@ -8,6 +8,19 @@ import MissingPartitionError, {
 } from './MissingPartitionError';
 import { PartitionedGridModelProvider } from './PartitionedGridModel';
 
+type PartitionedTableWithBaseTable = DhType.PartitionedTable & {
+  getBaseTable: () => DhType.Table;
+};
+
+function isPartitionedTableWithBaseTable(
+  partitionedTable: DhType.PartitionedTable
+): partitionedTable is PartitionedTableWithBaseTable {
+  return (
+    'getBaseTable' in partitionedTable &&
+    typeof partitionedTable.getBaseTable === 'function'
+  );
+}
+
 class IrisGridPartitionedTableModel
   extends EmptyIrisGridModel
   implements PartitionedGridModelProvider
@@ -30,6 +43,10 @@ class IrisGridPartitionedTableModel
 
   get isPartitionRequired(): boolean {
     return true;
+  }
+
+  get isPartitionAwareSourceTable(): boolean {
+    return false;
   }
 
   get isReversible(): boolean {
@@ -56,7 +73,30 @@ class IrisGridPartitionedTableModel
     return this.partitionedTable.keyColumns;
   }
 
+  get columnCount(): number {
+    return this.columns.length;
+  }
+
+  getColumnIndexByName(columnName: string): number {
+    return this.columns.findIndex(column => column.name === columnName);
+  }
+
+  textForColumnHeader(
+    column: number,
+    depth?: number | undefined
+  ): string | undefined {
+    return this.columns[column].name ?? '';
+  }
+
   async partitionKeysTable(): Promise<DhType.Table> {
+    return this.partitionedTable.getKeyTable();
+  }
+
+  async partitionBaseTable(): Promise<DhType.Table> {
+    if (isPartitionedTableWithBaseTable(this.partitionedTable)) {
+      return this.partitionedTable.getBaseTable();
+    }
+    // Fallback to the key table if the base table API is not available
     return this.partitionedTable.getKeyTable();
   }
 

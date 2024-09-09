@@ -8,7 +8,7 @@ import {
 } from '@deephaven/grid';
 import { IrisGrid } from '@deephaven/iris-grid';
 import { useApi } from '@deephaven/jsapi-bootstrap';
-import { Flex } from '@adobe/react-spectrum';
+import { Flex } from '@deephaven/components';
 import MockIrisGridTreeModel from './MockIrisGridTreeModel';
 import StaticExample from './grid-examples/StaticExample';
 import QuadrillionExample from './grid-examples/QuadrillionExample';
@@ -20,6 +20,12 @@ import SampleSection from './SampleSection';
 function Grids(): ReactElement {
   const dh = useApi();
   const [irisGridModel] = useState(
+    new MockIrisGridTreeModel(dh, new MockTreeGridModel())
+  );
+  const [irisGridCompactModel] = useState(
+    new MockIrisGridTreeModel(dh, new MockTreeGridModel())
+  );
+  const [irisGridSpaciousModel] = useState(
     new MockIrisGridTreeModel(dh, new MockTreeGridModel())
   );
   const [model] = useState(new MockGridModel());
@@ -68,7 +74,15 @@ function Grids(): ReactElement {
         </SampleSection>
         <h2 className="ui-title">Iris Grid</h2>
         <SampleSection name="grids-iris" component={Flex} height={500}>
-          <IrisGrid model={irisGridModel} />
+          <IrisGrid model={irisGridModel} density="regular" />
+        </SampleSection>
+        <h2 className="ui-title">Iris Grid Compact</h2>
+        <SampleSection name="grids-iris-compact" component={Flex} height={500}>
+          <IrisGrid model={irisGridCompactModel} density="compact" />
+        </SampleSection>
+        <h2 className="ui-title">Iris Grid Spacious</h2>
+        <SampleSection name="grids-iris-spacious" component={Flex} height={500}>
+          <IrisGrid model={irisGridSpaciousModel} density="spacious" />
         </SampleSection>
       </ThemeContext.Provider>
     </div>

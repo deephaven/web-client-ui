@@ -1,4 +1,5 @@
 import { KeyedItem, TestUtils } from '@deephaven/utils';
+import type { DOMRefValue } from '@react-types/shared';
 import {
   createValidationProps,
   extractSpectrumHTMLElement,
@@ -8,7 +9,6 @@ import {
   findSpectrumPopoverScrollArea,
   getPositionOfSelectedItem,
   identityExtractHTMLElement,
-  ReactSpectrumComponent,
 } from './SpectrumUtils';
 
 const { asMock, createMockProxy } = TestUtils;
@@ -31,7 +31,7 @@ describe('createValidationProps', () => {
 describe('extractSpectrumHTMLElement', () => {
   const mock = {
     element: createMockProxy<HTMLDivElement>(),
-    ref: createMockProxy<ReactSpectrumComponent>(),
+    ref: createMockProxy<DOMRefValue>(),
   };
 
   beforeEach(() => {
@@ -49,7 +49,7 @@ describe('extractSpectrumHTMLElement', () => {
 
 describe('extractSpectrumLastChildHTMLElement', () => {
   const mock = {
-    ref: createMockProxy<ReactSpectrumComponent>(),
+    ref: createMockProxy<DOMRefValue>(),
   };
 
   it('should return null if ref is null', () => {
@@ -86,8 +86,8 @@ describe('extractSpectrumLastChildHTMLElement', () => {
 
 describe.each([
   // General popover function
-  ['i', findSpectrumPopoverScrollArea],
-  ['span', findSpectrumPopoverScrollArea],
+  ['i', findSpectrumPopoverScrollArea<keyof HTMLElementTagNameMap>],
+  ['span', findSpectrumPopoverScrollArea<keyof HTMLElementTagNameMap>],
   // Specific consumer functions
   ['input', findSpectrumComboBoxScrollArea],
   ['button', findSpectrumPickerScrollArea],
@@ -128,7 +128,7 @@ describe.each([
       'should find `aria-controls` element of trigger element',
       (hasRef, hasTrigger, hasPopup, shouldFind) => {
         const ref = hasRef
-          ? createMockProxy<ReactSpectrumComponent>({
+          ? createMockProxy<DOMRefValue>({
               UNSAFE_getDOMNode: () => el.component,
             })
           : null;

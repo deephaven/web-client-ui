@@ -6,3 +6,4 @@ export { default as ReactComponentHandler } from './ReactComponentHandler';
 export * from './ConfigMinifier';
 export { default as BubblingEvent } from './BubblingEvent';
 export { default as EventHub } from './EventHub';
+export * from './EventUtils';

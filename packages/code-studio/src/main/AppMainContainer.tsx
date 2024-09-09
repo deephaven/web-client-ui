@@ -13,16 +13,12 @@ import { nanoid } from 'nanoid';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   ContextActions,
-  ThemeExport,
   GLOBAL_SHORTCUTS,
   Popper,
   ContextAction,
   Button,
-  InfoModal,
-  LoadingSpinner,
   Logo,
   BasicModal,
-  DebouncedModal,
   NavTabList,
   type NavTabItem,
   SlideTransition,
@@ -34,6 +30,7 @@ import {
   DashboardUtils,
   DEFAULT_DASHBOARD_ID,
   DehydratedDashboardPanelProps,
+  emitPanelOpen,
   getAllDashboardsData,
   getDashboardData,
   listenForCreateDashboard,
@@ -54,14 +51,7 @@ import {
   getDashboardConnection,
   NotebookPanel,
 } from '@deephaven/dashboard-core-plugins';
-import {
-  vsGear,
-  dhShapes,
-  dhPanels,
-  vsDebugDisconnect,
-  dhSquareFilled,
-  vsTerminal,
-} from '@deephaven/icons';
+import { vsGear, dhShapes, dhPanels, vsTerminal } from '@deephaven/icons';
 import { getVariableDescriptor } from '@deephaven/jsapi-bootstrap';
 import dh from '@deephaven/jsapi-shim';
 import type { dh as DhType } from '@deephaven/jsapi-types';
@@ -86,19 +76,22 @@ import {
   copyToClipboard,
   PromiseUtils,
   EMPTY_ARRAY,
+  assertNotNull,
 } from '@deephaven/utils';
-import GoldenLayout from '@deephaven/golden-layout';
-import type { ItemConfigType } from '@deephaven/golden-layout';
+import GoldenLayout, { EventHub } from '@deephaven/golden-layout';
+import type { ItemConfig } from '@deephaven/golden-layout';
 import { type PluginModuleMap, getDashboardPlugins } from '@deephaven/plugin';
-import { AppDashboards } from '@deephaven/app-utils';
+import {
+  AppDashboards,
+  LayoutStorage,
+  UserLayoutUtils,
+} from '@deephaven/app-utils';
 import JSZip from 'jszip';
 import SettingsMenu from '../settings/SettingsMenu';
 import AppControlsMenu from './AppControlsMenu';
 import { getLayoutStorage, getServerConfigValues } from '../redux';
 import './AppMainContainer.scss';
 import WidgetList, { WindowMouseEvent } from './WidgetList';
-import UserLayoutUtils from './UserLayoutUtils';
-import LayoutStorage from '../storage/LayoutStorage';
 import { getFormattedVersionInfo } from '../settings/SettingsUtils';
 import EmptyDashboard from './EmptyDashboard';
 
@@ -140,8 +133,6 @@ interface AppMainContainerProps {
 
 interface AppMainContainerState {
   contextActions: ContextAction[];
-  isAuthFailed: boolean;
-  isDisconnected: boolean;
   isPanelsMenuShown: boolean;
   isResetLayoutPromptShown: boolean;
   isSettingsMenuShown: boolean;
@@ -245,8 +236,6 @@ export class AppMainContainer extends Component<
           isGlobal: true,
         },
       ],
-      isAuthFailed: false,
-      isDisconnected: false,
       isPanelsMenuShown: false,
       isResetLayoutPromptShown: false,
       isSettingsMenuShown: false,
@@ -266,7 +255,6 @@ export class AppMainContainer extends Component<
   componentDidMount(): void {
     this.initWidgets();
     this.initDashboardData();
-    this.startListeningForDisconnect();
 
     window.addEventListener(
       'beforeunload',
@@ -286,7 +274,6 @@ export class AppMainContainer extends Component<
 
   componentWillUnmount(): void {
     this.deinitWidgets();
-    this.stopListeningForDisconnect();
 
     this.dashboardLayouts.forEach(layout => {
       stopListenForCreateDashboard(layout.eventHub, this.handleCreateDashboard);
@@ -409,10 +396,15 @@ export class AppMainContainer extends Component<
     this.emitLayoutEvent(PanelEvent.REOPEN_LAST);
   }
 
-  emitLayoutEvent(event: string, ...args: unknown[]): void {
+  getActiveEventHub(): EventHub {
     const { activeTabKey } = this.state;
     const layout = this.dashboardLayouts.get(activeTabKey);
-    layout?.eventHub.emit(event, ...args);
+    assertNotNull(layout, 'No active layout found');
+    return layout.eventHub;
+  }
+
+  emitLayoutEvent(event: string, ...args: unknown[]): void {
+    this.getActiveEventHub().emit(event, ...args);
   }
 
   handleCancelResetLayoutPrompt(): void {
@@ -637,21 +629,6 @@ export class AppMainContainer extends Component<
     }
   }
 
-  handleDisconnect(): void {
-    log.info('Disconnected from server');
-    this.setState({ isDisconnected: true });
-  }
-
-  handleReconnect(): void {
-    log.info('Reconnected to server');
-    this.setState({ isDisconnected: false });
-  }
-
-  handleReconnectAuthFailed(): void {
-    log.warn('Reconnect authentication failed');
-    this.setState({ isAuthFailed: true });
-  }
-
   /**
    * Import the provided file and set it in the workspace data (which should then load it in the dashboard)
    * @param file JSON file to import
@@ -722,46 +699,6 @@ export class AppMainContainer extends Component<
     }
   }
 
-  startListeningForDisconnect(): void {
-    const { connection } = this.props;
-    if (connection == null) {
-      return;
-    }
-
-    connection.addEventListener(
-      dh.IdeConnection.EVENT_DISCONNECT,
-      this.handleDisconnect
-    );
-    connection.addEventListener(
-      dh.IdeConnection.EVENT_RECONNECT,
-      this.handleReconnect
-    );
-    connection.addEventListener(
-      dh.CoreClient.EVENT_RECONNECT_AUTH_FAILED,
-      this.handleReconnectAuthFailed
-    );
-  }
-
-  stopListeningForDisconnect(): void {
-    const { connection } = this.props;
-    if (connection == null) {
-      return;
-    }
-
-    connection.removeEventListener(
-      dh.IdeConnection.EVENT_DISCONNECT,
-      this.handleDisconnect
-    );
-    connection.removeEventListener(
-      dh.IdeConnection.EVENT_RECONNECT,
-      this.handleReconnect
-    );
-    connection.removeEventListener(
-      dh.CoreClient.EVENT_RECONNECT_AUTH_FAILED,
-      this.handleReconnectAuthFailed
-    );
-  }
-
   /**
    * Open a widget up, using a drag event if specified.
    * @param widget The widget to open
@@ -772,10 +709,10 @@ export class AppMainContainer extends Component<
     dragEvent?: WindowMouseEvent
   ): void {
     const { connection } = this.props;
-    this.emitLayoutEvent(PanelEvent.OPEN, {
+    emitPanelOpen(this.getActiveEventHub(), {
+      widget: getVariableDescriptor(widget),
       dragEvent,
       fetch: async () => connection?.getObject(widget),
-      widget: getVariableDescriptor(widget),
     });
   }
 
@@ -825,7 +762,7 @@ export class AppMainContainer extends Component<
 
   getDashboards(): {
     id: string;
-    layoutConfig: ItemConfigType[];
+    layoutConfig: ItemConfig[];
     key?: string;
   }[] {
     const { layoutIteration, tabs } = this.state;
@@ -836,7 +773,7 @@ export class AppMainContainer extends Component<
     return [
       {
         id: DEFAULT_DASHBOARD_ID,
-        layoutConfig: layoutConfig as ItemConfigType[],
+        layoutConfig: layoutConfig as ItemConfig[],
         key: `${DEFAULT_DASHBOARD_ID}-${layoutIteration}`,
       },
       ...tabs
@@ -844,7 +781,7 @@ export class AppMainContainer extends Component<
         .map(tab => ({
           id: tab.key,
           layoutConfig: (allDashboardData[tab.key]?.layoutConfig ??
-            EMPTY_ARRAY) as ItemConfigType[],
+            EMPTY_ARRAY) as ItemConfig[],
           key: `${tab.key}-${layoutIteration}`,
         })),
     ];
@@ -856,8 +793,6 @@ export class AppMainContainer extends Component<
     const { canUsePanels } = permissions;
     const {
       contextActions,
-      isAuthFailed,
-      isDisconnected,
       isPanelsMenuShown,
       isResetLayoutPromptShown,
       isSettingsMenuShown,
@@ -950,27 +885,9 @@ export class AppMainContainer extends Component<
               icon={
                 <span className="fa-layers">
                   <FontAwesomeIcon icon={vsGear} transform="grow-3" />
-                  {isDisconnected && !isAuthFailed && (
-                    <>
-                      <FontAwesomeIcon
-                        icon={dhSquareFilled}
-                        color={ThemeExport.background}
-                        transform="grow-2 right-8 down-8.5 rotate-45"
-                      />
-                      <FontAwesomeIcon
-                        icon={vsDebugDisconnect}
-                        color={ThemeExport.danger}
-                        transform="shrink-5 right-6 down-6"
-                      />
-                    </>
-                  )}
                 </span>
               }
-              tooltip={
-                isDisconnected && !isAuthFailed
-                  ? 'Server disconnected'
-                  : 'User Settings'
-              }
+              tooltip="User Settings"
             />
           </div>
         </div>
@@ -1016,20 +933,6 @@ export class AppMainContainer extends Component<
           onChange={this.handleImportLayoutFiles}
           data-testid="input-import-layout"
         />
-        <DebouncedModal
-          isOpen={isDisconnected && !isAuthFailed}
-          debounceMs={1000}
-        >
-          <InfoModal
-            icon={vsDebugDisconnect}
-            title={
-              <>
-                <LoadingSpinner /> Attempting to reconnect...
-              </>
-            }
-            subtitle="Please check your network connection."
-          />
-        </DebouncedModal>
         <BasicModal
           confirmButtonText="Reset"
           onConfirm={this.handleConfirmResetLayoutPrompt}
@@ -1046,13 +949,6 @@ export class AppMainContainer extends Component<
               ? 'Do you want to reset your layout? Your existing layout will be lost.'
               : 'Do you want to reset your layout? Any unsaved notebooks will be lost.'
           }
-        />
-        <BasicModal
-          confirmButtonText="Refresh"
-          onConfirm={AppMainContainer.handleRefresh}
-          isOpen={isAuthFailed}
-          headerText="Authentication failed"
-          bodyText="Credentials are invalid. Please refresh your browser to try and reconnect."
         />
       </div>
     );

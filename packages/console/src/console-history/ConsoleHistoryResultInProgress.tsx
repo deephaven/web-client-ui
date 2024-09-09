@@ -37,18 +37,18 @@ class ConsoleHistoryResultInProgress extends Component<
   }
 
   componentDidMount(): void {
-    this.timer = setInterval(this.updateElapsed, 1000);
+    this.timer = window.setInterval(this.updateElapsed, 1000);
   }
 
   componentWillUnmount(): void {
-    if (this.timer) {
+    if (this.timer != null) {
       clearInterval(this.timer);
     }
 
     this.timer = undefined;
   }
 
-  timer?: NodeJS.Timer;
+  timer?: number;
 
   startTime: number;
 

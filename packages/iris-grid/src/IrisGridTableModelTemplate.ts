@@ -458,10 +458,7 @@ class IrisGridTableModelTemplate<
   }
 
   get isDeletable(): boolean {
-    if (this.inputTable !== null) {
-      return this.inputTable?.keyColumns.length > 0;
-    }
-    return false;
+    return this.keyColumnSet.size > 0;
   }
 
   get isViewportPending(): boolean {
@@ -802,7 +799,7 @@ class IrisGridTableModelTemplate<
           frontIndex += 1;
         });
 
-        let backIndex = this.columnMap.size - 1;
+        let backIndex = this.columns.length - 1;
         backColumns?.forEach(name => {
           if (usedColumns.has(name)) {
             throw new Error(
@@ -900,18 +897,6 @@ class IrisGridTableModelTemplate<
     return this.getMemoizedInitialColumnHeaderGroups(
       this.layoutHints ?? undefined
     );
-  }
-
-  getMemoizedColumnMap = memoize(
-    (tableColumns: DhType.Column[]): Map<string, DhType.Column> => {
-      const columnMap = new Map();
-      tableColumns.forEach(col => columnMap.set(col.name, col));
-      return columnMap;
-    }
-  );
-
-  get columnMap(): Map<ColumnName, DhType.Column> {
-    return this.getMemoizedColumnMap(this.table.columns);
   }
 
   get columnHeaderMaxDepth(): number {
@@ -1039,7 +1024,7 @@ class IrisGridTableModelTemplate<
    */
   pendingRow(y: ModelIndex): ModelIndex | null {
     const pendingRow = y - this.floatingTopRowCount - this.table.size;
-    if (pendingRow >= 0 && pendingRow < this.pendingNewRowCount) {
+    if (pendingRow >= 0) {
       return pendingRow;
     }
 
@@ -1172,13 +1157,12 @@ class IrisGridTableModelTemplate<
   }
 
   extractViewportRow(row: DhType.Row, columns: DhType.Column[]): R {
-    const data = new Map<ModelIndex, CellData>();
+    const data = new Map<ModelIndex | ColumnName, CellData>();
     for (let c = 0; c < columns.length; c += 1) {
       const column = columns[c];
 
       const index = this.getColumnIndexByName(column.name);
-      assertNotNull(index);
-      data.set(index, {
+      data.set(index ?? column.name, {
         value: row.get(column),
         format: row.getFormat(column),
       });
@@ -1531,7 +1515,9 @@ class IrisGridTableModelTemplate<
       table = await this.table.copy();
       table.applyFilter([]);
       table.applySort([]);
-      return table.selectDistinct(Array.isArray(columns) ? columns : [columns]);
+      return await table.selectDistinct(
+        Array.isArray(columns) ? columns : [columns]
+      );
     } finally {
       if (table != null) {
         table.close();
@@ -1625,7 +1611,7 @@ class IrisGridTableModelTemplate<
   }
 
   isKeyColumn(x: ModelIndex): boolean {
-    return x < (this.inputTable?.keyColumns.length ?? 0);
+    return this.keyColumnSet.has(this.columns[x].name);
   }
 
   isRowMovable(): boolean {
@@ -1634,7 +1620,11 @@ class IrisGridTableModelTemplate<
 
   isEditableRange(range: GridRange): boolean {
     // Make sure we have an input table and a valid range
-    if (this.inputTable == null || !GridRange.isBounded(range)) {
+    if (
+      this.inputTable == null ||
+      range.startRow == null ||
+      range.endRow == null
+    ) {
       return false;
     }
 
@@ -1644,24 +1634,20 @@ class IrisGridTableModelTemplate<
     // Pending rows are always editable
     const isPendingRange =
       this.isPendingRow(range.startRow) && this.isPendingRow(range.endRow);
-    if (
-      !(
-        isPendingRange ||
-        (this.inputTable.keyColumns.length !== 0 &&
-          range.startColumn >= this.inputTable.keyColumns.length &&
-          range.endColumn >= this.inputTable.keyColumns.length)
-      )
-    ) {
-      return false;
+
+    let isKeyColumnInRange = false;
+    assertNotNull(range.startColumn);
+    // Check if any of the columns in grid range are key columns
+    const bound = range.endColumn ?? this.table.size;
+    for (let column = range.startColumn; column <= bound; column += 1) {
+      if (this.isKeyColumn(column)) {
+        isKeyColumnInRange = true;
+        break;
+      }
     }
 
-    // Editing the aggregations/totals which are floating above/below is not allowed
     if (
-      range.startRow < this.floatingTopRowCount ||
-      range.startRow >=
-        this.floatingTopRowCount + this.table.size + this.pendingRowCount ||
-      range.endRow >=
-        this.floatingTopRowCount + this.table.size + this.pendingRowCount
+      !(isPendingRange || (this.keyColumnSet.size !== 0 && !isKeyColumnInRange))
     ) {
       return false;
     }
@@ -2047,8 +2033,11 @@ class IrisGridTableModelTemplate<
       this.pendingNewDataMap.forEach(row => {
         const newRow: Record<ColumnName, unknown> = {};
         row.data.forEach(({ value }, columnIndex) => {
-          const column = this.columns[columnIndex];
-          newRow[column.name] = value;
+          const columnName =
+            typeof columnIndex === 'string'
+              ? columnIndex
+              : this.columns[columnIndex].name;
+          newRow[columnName] = value;
         });
         newRows.push(newRow);
       });

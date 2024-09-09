@@ -1,16 +1,12 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import {
-  ActionButton,
-  Icon,
-  SpectrumActionButtonProps,
-} from '@adobe/react-spectrum';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { ACTION_ICON_HEIGHT } from '@deephaven/utils';
+import { ActionButton, Icon, ActionButtonProps } from '../spectrum';
 import { Tooltip } from '../popper';
+import { ACTION_ICON_HEIGHT } from '../UIConstants';
 
 export interface IconActionButtonProps
-  extends Omit<SpectrumActionButtonProps, 'aria-label' | 'isQuiet' | 'height'> {
+  extends Omit<ActionButtonProps, 'aria-label' | 'isQuiet' | 'height'> {
   icon: IconProp;
   label: string;
   tooltip?: string;

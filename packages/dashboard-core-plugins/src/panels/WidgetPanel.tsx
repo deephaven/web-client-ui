@@ -3,44 +3,45 @@ import classNames from 'classnames';
 import memoize from 'memoize-one';
 import { PanelComponent } from '@deephaven/dashboard';
 import type { Container, EventEmitter } from '@deephaven/golden-layout';
-import { ContextActions } from '@deephaven/components';
+import { ContextActions, createXComponent } from '@deephaven/components';
 import { copyToClipboard } from '@deephaven/utils';
 import Panel from './Panel';
 import WidgetPanelTooltip from './WidgetPanelTooltip';
 import './WidgetPanel.scss';
+import { WidgetPanelDescriptor } from './WidgetPanelTypes';
 
-interface WidgetPanelProps {
+export type WidgetPanelProps = {
   children: ReactNode;
+
+  descriptor: WidgetPanelDescriptor;
   componentPanel?: PanelComponent;
 
   glContainer: Container;
   glEventHub: EventEmitter;
 
-  className: string;
-  errorMessage: string;
-  isClonable: boolean;
-  isDisconnected: boolean;
-  isLoading: boolean;
-  isLoaded: boolean;
-  isRenamable: boolean;
-  showTabTooltip: boolean;
-  widgetName: string;
-  widgetType: string;
-  renderTabTooltip: () => ReactNode;
-  description: string;
+  className?: string;
+  errorMessage?: string;
+  isClonable?: boolean;
+  isDisconnected?: boolean;
+  isLoading?: boolean;
+  isLoaded?: boolean;
+  isRenamable?: boolean;
+  showTabTooltip?: boolean;
 
-  onFocus: () => void;
-  onBlur: () => void;
-  onHide: () => void;
-  onClearAllFilters: () => void;
-  onResize: () => void;
-  onSessionClose: (...args: unknown[]) => void;
-  onSessionOpen: (...args: unknown[]) => void;
-  onShow: () => void;
-  onTabBlur: () => void;
-  onTabFocus: () => void;
-  onTabClicked: () => void;
-}
+  renderTabTooltip?: () => ReactNode;
+
+  onFocus?: () => void;
+  onBlur?: () => void;
+  onHide?: () => void;
+  onClearAllFilters?: () => void;
+  onResize?: () => void;
+  onSessionClose?: (...args: unknown[]) => void;
+  onSessionOpen?: (...args: unknown[]) => void;
+  onShow?: () => void;
+  onTabBlur?: () => void;
+  onTabFocus?: () => void;
+  onTabClicked?: () => void;
+};
 
 interface WidgetPanelState {
   isClientDisconnected: boolean;
@@ -55,29 +56,12 @@ interface WidgetPanelState {
 class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
   static defaultProps = {
     className: '',
-    errorMessage: null,
     isClonable: true,
     isDisconnected: false,
     isLoading: false,
     isLoaded: true,
     isRenamable: true,
     showTabTooltip: true,
-    widgetName: 'Widget',
-    widgetType: 'Widget',
-    renderTabTooltip: null,
-    description: '',
-
-    onFocus: (): void => undefined,
-    onBlur: (): void => undefined,
-    onHide: (): void => undefined,
-    onClearAllFilters: (): void => undefined,
-    onResize: (): void => undefined,
-    onSessionClose: (): void => undefined,
-    onSessionOpen: (): void => undefined,
-    onShow: (): void => undefined,
-    onTabBlur: (): void => undefined,
-    onTabFocus: (): void => undefined,
-    onTabClicked: (): void => undefined,
   };
 
   constructor(props: WidgetPanelProps) {
@@ -97,19 +81,19 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
   }
 
   handleCopyName(): void {
-    const { widgetName } = this.props;
-    copyToClipboard(widgetName);
+    const { descriptor } = this.props;
+    copyToClipboard(descriptor.name);
   }
 
   getErrorMessage(): string | undefined {
-    const { errorMessage } = this.props;
+    const { descriptor, errorMessage } = this.props;
     const {
       isClientDisconnected,
       isPanelDisconnected,
       isWidgetDisconnected,
       isWaitingForReconnect,
     } = this.state;
-    if (errorMessage) {
+    if (errorMessage != null && errorMessage !== '') {
       return `${errorMessage}`;
     }
     if (isClientDisconnected && isPanelDisconnected && isWaitingForReconnect) {
@@ -119,35 +103,30 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
       return 'Disconnected from server.';
     }
     if (isPanelDisconnected) {
-      const { widgetName, widgetType } = this.props;
-      return `Variable "${widgetName}" not set.\n${widgetType} does not exist yet.`;
+      const { name, type } = descriptor;
+      return `Variable "${name}" not set.\n${type} does not exist yet.`;
     }
     if (isWidgetDisconnected) {
-      const { widgetName } = this.props;
-      return `${widgetName} is unavailable.`;
+      return `${descriptor.name} is unavailable.`;
     }
     return undefined;
   }
 
   getCachedRenderTabTooltip = memoize(
-    (
-      showTabTooltip: boolean,
-      glContainer: Container,
-      widgetType: string,
-      widgetName: string,
-      description: string
-    ) =>
+    (showTabTooltip: boolean, descriptor: WidgetPanelDescriptor) =>
       showTabTooltip
-        ? () => (
-            <WidgetPanelTooltip
-              glContainer={glContainer}
-              widgetType={widgetType}
-              widgetName={widgetName}
-              description={description}
-            />
-          )
-        : null
+        ? () => <WidgetPanelTooltip descriptor={descriptor} />
+        : undefined
   );
+
+  getCachedActions = memoize((descriptor: WidgetPanelDescriptor) => [
+    {
+      title: `Copy ${descriptor.displayType ?? descriptor.type} Name`,
+      group: ContextActions.groups.medium,
+      order: 20,
+      action: this.handleCopyName,
+    },
+  ]);
 
   handleSessionClosed(...args: unknown[]): void {
     const { onSessionClose } = this.props;
@@ -156,12 +135,12 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
       isPanelDisconnected: true,
       isWaitingForReconnect: false,
     });
-    onSessionClose(...args);
+    onSessionClose?.(...args);
   }
 
   handleSessionOpened(...args: unknown[]): void {
     const { onSessionOpen } = this.props;
-    onSessionOpen(...args);
+    onSessionOpen?.(...args);
   }
 
   render(): ReactElement {
@@ -169,6 +148,7 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
       children,
       className,
       componentPanel,
+      descriptor,
       isLoaded,
       isLoading,
       glContainer,
@@ -176,11 +156,8 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
       isDisconnected,
       isClonable,
       isRenamable,
-      showTabTooltip,
+      showTabTooltip = false,
       renderTabTooltip,
-      widgetType,
-      widgetName,
-      description,
 
       onClearAllFilters,
       onHide,
@@ -198,22 +175,9 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
     const errorMessage = this.getErrorMessage();
     const doRenderTabTooltip =
       renderTabTooltip ??
-      this.getCachedRenderTabTooltip(
-        showTabTooltip,
-        glContainer,
-        widgetType,
-        widgetName,
-        description
-      );
+      this.getCachedRenderTabTooltip(showTabTooltip, descriptor);
 
-    const additionalActions = [
-      {
-        title: `Copy ${widgetType} Name`,
-        group: ContextActions.groups.medium,
-        order: 20,
-        action: this.handleCopyName,
-      },
-    ];
+    const additionalActions = this.getCachedActions(descriptor);
 
     return (
       <Panel
@@ -251,4 +215,6 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
   }
 }
 
-export default WidgetPanel;
+const XWidgetPanel = createXComponent(WidgetPanel);
+
+export default XWidgetPanel;

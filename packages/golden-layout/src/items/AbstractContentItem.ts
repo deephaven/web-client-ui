@@ -1,7 +1,7 @@
 import { animFrame, BubblingEvent, EventEmitter } from '../utils';
 import { ConfigurationError } from '../errors';
 import { itemDefaultConfig } from '../config';
-import type { ItemConfig, ItemConfigType } from '../config';
+import type { ItemConfig } from '../config';
 import type LayoutManager from '../LayoutManager';
 import type Tab from '../controls/Tab';
 import type Stack from './Stack';
@@ -29,13 +29,6 @@ export type ItemArea<C = AbstractContentItem> = {
   side: 'left' | 'right' | 'top' | 'bottom' | '';
   contentItem: C;
 };
-
-type AbstractItemConfig =
-  | ItemConfig
-  | {
-      type: ItemConfig['type'];
-      content: ItemConfigType[];
-    };
 
 /**
  * This is the baseclass that all content items inherit from.
@@ -83,7 +76,7 @@ export default abstract class AbstractContentItem extends EventEmitter {
 
   constructor(
     layoutManager: LayoutManager,
-    config: AbstractItemConfig,
+    config: ItemConfig,
     parent: AbstractContentItem | null,
     element: JQuery<HTMLElement>
   ) {
@@ -200,13 +193,7 @@ export default abstract class AbstractContentItem extends EventEmitter {
    * @param contentItem
    * @param index If omitted item will be appended
    */
-  addChild(
-    contentItem:
-      | AbstractContentItem
-      | ItemConfigType
-      | { type: ItemConfig['type'] },
-    index?: number
-  ) {
+  addChild(contentItem: AbstractContentItem | ItemConfig, index?: number) {
     contentItem = this.layoutManager._$normalizeContentItem(contentItem, this);
     if (index === undefined) {
       index = this.contentItems.length;
@@ -565,7 +552,7 @@ export default abstract class AbstractContentItem extends EventEmitter {
    * PLEASE NOTE, please see addChild for adding contentItems add runtime
    * @param   {configuration item node} config
    */
-  _createContentItems(config: AbstractItemConfig) {
+  _createContentItems(config: ItemConfig) {
     var oContentItem;
 
     if (!(config.content instanceof Array)) {
@@ -586,10 +573,10 @@ export default abstract class AbstractContentItem extends EventEmitter {
    * @param config
    * @returns extended config
    */
-  _extendItemNode(config: AbstractItemConfig) {
+  _extendItemNode<TConfig extends ItemConfig>(config: TConfig) {
     for (let [key, value] of Object.entries(itemDefaultConfig)) {
       // This just appeases TS
-      const k = key as keyof AbstractItemConfig;
+      const k = key as keyof TConfig;
       if (config[k] === undefined) {
         config[k] = value;
       }

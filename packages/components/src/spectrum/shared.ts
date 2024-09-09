@@ -15,7 +15,12 @@ import type {
 } from '@react-types/shared';
 
 export { Item } from '@adobe/react-spectrum';
-export type { ItemProps } from '@react-types/shared';
+export type {
+  ItemProps,
+  Orientation,
+  PressEvent,
+  SelectionMode,
+} from '@react-types/shared';
 
 /*
  * We support primitive values as shorthand for `Item` elements in certain

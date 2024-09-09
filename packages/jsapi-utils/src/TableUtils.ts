@@ -7,6 +7,7 @@ import {
 import Log from '@deephaven/log';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
+  assertNotNull,
   bindAllMethods,
   CancelablePromise,
   PromiseUtils,
@@ -1687,6 +1688,67 @@ export class TableUtils {
       case FilterType.invoke:
       default:
         throw new Error(`Unexpected filter operation: ${operation}`);
+    }
+  }
+
+  /**
+   * Create a filter condition that can search a column by a given `searchText`
+   * value.
+   * @param column The column to search
+   * @param searchText The text to search for
+   * @param timeZone The time zone to make this filter in if it is a date type. E.g. America/New_York
+   * @returns The filter condition that can be applied to the column
+   */
+  makeSearchTextFilter(
+    column: DhType.Column,
+    searchText: string,
+    timeZone: string
+  ): DhType.FilterCondition {
+    const valueType = this.getValueType(column.type);
+
+    try {
+      if (valueType === this.dh.ValueType.BOOLEAN) {
+        const maybeFilterCondition = this.makeQuickBooleanFilter(
+          column,
+          searchText
+        );
+        assertNotNull(maybeFilterCondition);
+        return maybeFilterCondition;
+      }
+
+      if (valueType === this.dh.ValueType.DATETIME) {
+        return this.makeQuickDateFilterWithOperation(
+          column,
+          DateUtils.trimDateTimeStringTimeZone(searchText),
+          'eq',
+          timeZone
+        );
+      }
+
+      if (valueType === this.dh.ValueType.NUMBER) {
+        const maybeFilterCondition = this.makeQuickNumberFilter(
+          column,
+          searchText
+        );
+        assertNotNull(maybeFilterCondition);
+        return maybeFilterCondition;
+      }
+
+      // Treat big numbers as strings
+      if (
+        TableUtils.isBigDecimalType(column.type) ||
+        TableUtils.isBigIntegerType(column.type)
+      ) {
+        return column
+          .filter()
+          .eq(this.makeFilterValue(column.type, searchText));
+      }
+
+      return column
+        .filter()
+        .containsIgnoreCase(this.makeFilterValue(column.type, searchText));
+    } catch {
+      return this.makeNeverFilter(column);
     }
   }
 

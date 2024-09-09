@@ -9,12 +9,14 @@ import React, {
 import ReactDOM from 'react-dom';
 import { CSSTransition } from 'react-transition-group';
 import ThemeExport from '../ThemeExport';
+import { SpectrumThemeProvider } from '../theme/SpectrumThemeProvider';
 
 interface ModalProps {
   className?: string;
   children?: ReactNode;
   role?: string;
   keyboard?: boolean;
+  clickOutside?: boolean;
   isOpen?: boolean;
   centered?: boolean;
   size?: 'sm' | 'lg' | 'xl' | undefined;
@@ -25,10 +27,11 @@ interface ModalProps {
 }
 
 function Modal({
-  className = '',
+  className,
   children,
   role = 'role',
   keyboard = true,
+  clickOutside = true,
   isOpen = false,
   centered = false,
   size,
@@ -101,7 +104,9 @@ function Modal({
 
   return element.current
     ? ReactDOM.createPortal(
-        <>
+        // Without the zIndex and position props
+        // the modal is rendered on top of nested DatePicker popovers
+        <SpectrumThemeProvider isPortal zIndex={0} position="relative">
           <CSSTransition
             appear
             mountOnEnter
@@ -143,6 +148,7 @@ function Modal({
               onMouseUp={e => {
                 if (
                   backgroundClicked &&
+                  clickOutside &&
                   e.target === background.current &&
                   toggle !== undefined
                 ) {
@@ -153,7 +159,7 @@ function Modal({
               style={{ display: 'block' }}
             >
               <div
-                className={classNames(`modal-dialog ${className}`, {
+                className={classNames('modal-dialog', className, {
                   'modal-lg': size === 'lg',
                   'modal-sm': size === 'sm',
                   'modal-xl': size === 'xl',
@@ -171,7 +177,7 @@ function Modal({
               </div>
             </div>
           </CSSTransition>
-        </>,
+        </SpectrumThemeProvider>,
         element.current
       )
     : null;

@@ -105,7 +105,7 @@ describe.each([
     it.each([
       [
         { key: 'mock.key', textValue: undefined },
-        'Empty',
+        'mock.key',
         'wrapIcon(undefined, illustration)',
         'wrapPrimitiveWithText(undefined, undefined)',
         'wrapPrimitiveWithText(undefined, description)',
@@ -114,6 +114,16 @@ describe.each([
         {
           key: 'mock.key',
           item: { content: 'mock.content', textValue: undefined },
+        },
+        'mock.key',
+        'wrapIcon(undefined, illustration)',
+        'wrapPrimitiveWithText(mock.content, undefined)',
+        'wrapPrimitiveWithText(undefined, description)',
+      ],
+      [
+        {
+          key: 'mock.key',
+          item: { content: 'mock.content', textValue: '' },
         },
         'Empty',
         'wrapIcon(undefined, illustration)',
@@ -132,15 +142,30 @@ describe.each([
       ],
       [
         {
-          key: 'mock.key',
+          key: '',
           item: {
-            textValue: 'mock.textValue',
+            textValue: undefined,
             icon: 'mock.icon',
             content: 'mock.content',
             description: 'mock.description',
           },
         },
-        'mock.textValue',
+        'Empty',
+        'wrapIcon(mock.icon, illustration)',
+        'wrapPrimitiveWithText(mock.content, undefined)',
+        'wrapPrimitiveWithText(mock.description, description)',
+      ],
+      [
+        {
+          key: undefined,
+          item: {
+            textValue: undefined,
+            icon: 'mock.icon',
+            content: 'mock.content',
+            description: 'mock.description',
+          },
+        },
+        undefined,
         'wrapIcon(mock.icon, illustration)',
         'wrapPrimitiveWithText(mock.content, undefined)',
         'wrapPrimitiveWithText(mock.description, description)',

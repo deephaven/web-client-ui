@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect } from 'react';
+// eslint-disable-next-line no-restricted-imports
 import { Button, Icon } from '@adobe/react-spectrum';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsChevronUp } from '@deephaven/icons';

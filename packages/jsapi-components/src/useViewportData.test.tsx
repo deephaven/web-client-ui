@@ -6,17 +6,15 @@ import {
   ViewportRow,
   generateEmptyKeyedItems,
   isClosed,
+  ITEM_KEY_PREFIX,
 } from '@deephaven/jsapi-utils';
 import { useOnScrollOffsetChangeCallback } from '@deephaven/react-hooks';
-import {
-  ITEM_KEY_PREFIX,
-  SCROLL_DEBOUNCE_MS,
-  TestUtils,
-} from '@deephaven/utils';
+import { TestUtils } from '@deephaven/utils';
 import useViewportData, { UseViewportDataProps } from './useViewportData';
 import { makeApiContextWrapper } from './HookTestUtils';
 import { useTableSize } from './useTableSize';
 import { useSetPaddedViewportCallback } from './useSetPaddedViewportCallback';
+import { SCROLL_DEBOUNCE_MS } from './Constants';
 
 jest.mock('@deephaven/react-hooks', () => ({
   ...jest.requireActual('@deephaven/react-hooks'),

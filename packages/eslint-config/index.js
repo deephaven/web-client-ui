@@ -20,6 +20,12 @@ module.exports = {
     'react/jsx-uses-react': 'error',
     'react/jsx-uses-vars': 'error',
     'react/jsx-filename-extension': [1, { extensions: ['.jsx', '.tsx'] }],
+    'react-hooks/exhaustive-deps': [
+      'warn',
+      {
+        additionalHooks: '(useOnChange)',
+      },
+    ],
     'react/react-in-jsx-scope': 'off',
     'react/sort-comp': [
       2,
@@ -96,6 +102,10 @@ module.exports = {
         '@typescript-eslint/default-param-last': ['error'],
         '@typescript-eslint/explicit-module-boundary-types': 'error',
         '@typescript-eslint/method-signature-style': 'error',
+        // `no-return-await` needs to be disabled when enabling `@typescript-eslint/return-await`
+        // to avoid incorrectly reporting errors
+        'no-return-await': 'off',
+        '@typescript-eslint/return-await': 'error',
       },
     },
     {

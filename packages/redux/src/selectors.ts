@@ -129,6 +129,11 @@ export const getShowNullStrings = <State extends RootState = RootState>(
   store: State
 ): Settings<State>['showNullStrings'] => getSettings(store).showNullStrings;
 
+export const getShowExtraGroupColumn = <State extends RootState = RootState>(
+  store: State
+): Settings<State>['showExtraGroupColumn'] =>
+  getSettings(store).showExtraGroupColumn;
+
 export const getDisableMoveConfirmation = <State extends RootState>(
   store: State
 ): Settings<State>['disableMoveConfirmation'] =>
@@ -137,6 +142,14 @@ export const getDisableMoveConfirmation = <State extends RootState>(
 export const getShortcutOverrides = <State extends RootState>(
   store: State
 ): Settings<State>['shortcutOverrides'] => getSettings(store).shortcutOverrides;
+
+export const getWebGL = <State extends RootState>(
+  store: State
+): Settings<State>['webgl'] => getSettings(store).webgl;
+
+export const getWebGLEditable = <State extends RootState>(
+  store: State
+): Settings<State>['webglEditable'] => getSettings(store).webglEditable;
 
 export const getDefaultNotebookSettings = <State extends RootState>(
   store: State

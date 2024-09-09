@@ -10,7 +10,7 @@ import {
   useObjectFetcher,
 } from '@deephaven/jsapi-bootstrap';
 import LayoutManager, {
-  ItemConfigType,
+  ItemConfig,
   Settings as LayoutSettings,
 } from '@deephaven/golden-layout';
 import { LoadingOverlay } from '@deephaven/components';
@@ -18,7 +18,7 @@ import { LoadingOverlay } from '@deephaven/components';
 interface AppDashboardsProps {
   dashboards: {
     id: string;
-    layoutConfig: ItemConfigType[];
+    layoutConfig: ItemConfig[];
     layoutSettings?: Partial<LayoutSettings>;
     key?: string;
   }[];

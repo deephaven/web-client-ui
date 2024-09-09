@@ -18,14 +18,14 @@ export default class Component extends AbstractContentItem {
 
   container: ItemContainer;
 
-  parent: AbstractContentItem;
+  parent: AbstractContentItem | null;
 
   instance: unknown;
 
   constructor(
     layoutManager: LayoutManager,
     config: ComponentConfig,
-    parent: AbstractContentItem
+    parent: AbstractContentItem | null
   ) {
     // Extend before super so the AbstractContentItem defualts aren't applied first
     Object.entries(
@@ -66,7 +66,7 @@ export default class Component extends AbstractContentItem {
   }
 
   close() {
-    this.parent.removeChild(this);
+    this.parent?.removeChild(this);
   }
 
   setSize() {

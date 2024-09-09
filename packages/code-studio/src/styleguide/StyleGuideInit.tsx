@@ -8,9 +8,11 @@ import {
   RootState,
   setWorkspace as setWorkspaceAction,
 } from '@deephaven/redux';
+import {
+  type ExportedLayout,
+  LocalWorkspaceStorage,
+} from '@deephaven/app-utils';
 import StyleGuide from './StyleGuide';
-import LocalWorkspaceStorage from '../storage/LocalWorkspaceStorage';
-import { ExportedLayout } from '../storage/LayoutStorage';
 
 /**
  * Initialize data needed for the styleguide
