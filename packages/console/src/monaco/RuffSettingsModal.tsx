@@ -1,5 +1,6 @@
 import React, { useCallback, useRef, useState } from 'react';
 import * as monaco from 'monaco-editor';
+import { Workspace } from '@astral-sh/ruff-wasm-web';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   ActionButton,
@@ -17,12 +18,14 @@ import { useDebouncedCallback } from '@deephaven/react-hooks';
 import { assertNotNull, EMPTY_FUNCTION } from '@deephaven/utils';
 import Editor from '../notebook/Editor';
 import RUFF_DEFAULT_SETTINGS from './RuffDefaultSettings';
+import ruffSchema from './ruffSchema';
 import './RuffSettingsModal.scss';
 
 interface RuffSettingsModalProps {
   text: string;
   isOpen: boolean;
-  onClose: (value: Record<string, unknown>) => void;
+  onClose: () => void;
+  onSave: (value: Record<string, unknown>) => void;
 }
 
 const formattedDefault = JSON.stringify(RUFF_DEFAULT_SETTINGS, null, 2);
@@ -31,32 +34,36 @@ export default function RuffSettingsModal({
   text,
   isOpen,
   onClose,
+  onSave,
 }: RuffSettingsModalProps): React.ReactElement | null {
-  const [isOpened, setIsOpened] = useState(false);
-  const [isValid, setIsValid] = useState(true);
+  const [isValid, setIsValid] = useState(false);
+  const [isDefault, setIsDefault] = useState(false);
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>();
+  const [ruffVersion] = useState(() => Workspace.version() ?? '');
 
-  function handleToggle(): void {
-    if (isOpened) {
-      let value = JSON.parse(text);
+  const handleClose = useCallback((): void => {
+    if (isOpen) {
+      onClose();
+      editorRef.current = undefined;
+    }
+  }, [isOpen, onClose]);
+
+  const handleSave = useCallback((): void => {
+    if (isOpen) {
       try {
-        value = JSON.parse(editorRef.current?.getModel()?.getValue() ?? '');
+        onSave(JSON.parse(editorRef.current?.getModel()?.getValue() ?? ''));
       } catch {
         // no-op
       }
-      onClose(value);
-      editorRef.current = undefined;
+      handleClose();
     }
-  }
+  }, [isOpen, handleClose, onSave]);
 
-  function handleReset(): void {
+  const handleReset = useCallback((): void => {
     const model = editorRef.current?.getModel();
     assertNotNull(model);
     model.setValue(formattedDefault);
-  }
-
-  const isDefault =
-    editorRef.current?.getModel()?.getValue() === formattedDefault;
+  }, []);
 
   const validate = useCallback(val => {
     try {
@@ -65,6 +72,9 @@ export default function RuffSettingsModal({
     } catch {
       setIsValid(false);
     }
+    setIsDefault(
+      editorRef.current?.getModel()?.getValue() === formattedDefault
+    );
   }, []);
 
   const debouncedValidate = useDebouncedCallback(validate, 500, {
@@ -81,6 +91,8 @@ export default function RuffSettingsModal({
         debouncedValidate(model.getValue());
       });
 
+      debouncedValidate(model.getValue());
+
       // Register the ruff schema so users get validation and completion
       monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
         validate: true,
@@ -89,13 +101,7 @@ export default function RuffSettingsModal({
           {
             uri: 'json://ruff-schema',
             fileMatch: [model.uri.toString()],
-            schema: {
-              allOf: [
-                {
-                  $ref: 'https://raw.githubusercontent.com/astral-sh/ruff/main/ruff.schema.json',
-                },
-              ],
-            },
+            schema: ruffSchema,
           },
         ],
       });
@@ -103,7 +109,7 @@ export default function RuffSettingsModal({
     [debouncedValidate]
   );
 
-  if (!isOpen && !isOpened) {
+  if (!isOpen) {
     return null;
   }
 
@@ -112,19 +118,15 @@ export default function RuffSettingsModal({
       isOpen={isOpen}
       centered
       keyboard
-      // toggle={handleToggle}
-      onOpened={() => {
-        setIsOpened(true);
-        setIsValid(true);
-      }}
-      onClosed={() => {
-        setIsOpened(false);
-      }}
+      clickOutside={false}
+      toggle={handleClose}
       size="lg"
       className="ruff-settings-modal"
     >
       <ModalHeader closeButton={false}>
-        <span className="settings-modal-title mr-auto">Ruff Settings</span>
+        <span className="settings-modal-title mr-auto">
+          Ruff v{ruffVersion} Settings
+        </span>
 
         <Link href="https://docs.astral.sh/ruff/settings/" target="_blank">
           <Button kind="ghost" onClick={EMPTY_FUNCTION} icon={vsLinkExternal}>
@@ -132,11 +134,7 @@ export default function RuffSettingsModal({
           </Button>
         </Link>
 
-        <ActionButton
-          isDisabled={isDefault}
-          onPress={handleReset}
-          UNSAFE_style={{ alignSelf: 'flex-end' }}
-        >
+        <ActionButton isDisabled={isDefault} onPress={handleReset}>
           <Icon>
             <FontAwesomeIcon icon={vsDiscard} />
           </Icon>
@@ -157,7 +155,7 @@ export default function RuffSettingsModal({
         />
       </ModalBody>
       <ModalFooter>
-        <Button kind="secondary" data-dismiss="modal" onClick={() => false}>
+        <Button kind="secondary" data-dismiss="modal" onClick={handleClose}>
           Cancel
         </Button>
         <Button
@@ -165,7 +163,7 @@ export default function RuffSettingsModal({
           data-dismiss="modal"
           tooltip={!isValid ? 'Cannot save invalid JSON' : undefined}
           disabled={!isValid}
-          onClick={() => false}
+          onClick={handleSave}
         >
           Save
         </Button>

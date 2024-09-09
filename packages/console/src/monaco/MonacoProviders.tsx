@@ -39,9 +39,9 @@ class MonacoProviders extends PureComponent<
       return MonacoProviders.initRuffPromise;
     }
 
-    log.debug('Initializing Ruff');
-
     MonacoProviders.initRuffPromise = init().then(() => {
+      log.debug('Initialized Ruff', Workspace.version());
+
       MonacoProviders.setRuffSettings();
     });
 

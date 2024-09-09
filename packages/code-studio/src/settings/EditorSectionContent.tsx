@@ -63,14 +63,17 @@ export function EditorSectionContent(): JSX.Element {
 
   const [isRuffSettingsOpen, setIsRuffSettingsOpen] = useState(false);
 
-  const handleRuffSettingsClose = useCallback(
+  const handleRuffSettingsClose = useCallback(() => {
+    setIsRuffSettingsOpen(false);
+  }, []);
+
+  const handleRuffSettingsSave = useCallback(
     (v: Record<string, unknown>) => {
-      setIsRuffSettingsOpen(false);
       handleRuffConfigChange(v);
-      console.log(v);
       setVal(JSON.stringify(v, null, 2));
+      handleRuffSettingsClose();
     },
-    [handleRuffConfigChange]
+    [handleRuffConfigChange, handleRuffSettingsClose]
   );
 
   return (
@@ -111,6 +114,7 @@ export function EditorSectionContent(): JSX.Element {
           text={val}
           isOpen={isRuffSettingsOpen}
           onClose={handleRuffSettingsClose}
+          onSave={handleRuffSettingsSave}
         />
       )}
     </>

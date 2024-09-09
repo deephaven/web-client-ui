@@ -35,7 +35,6 @@ import {
 } from '@deephaven/icons';
 import {
   getFileStorage,
-  updateSettings as updateSettingsAction,
   updateNotebookSettings as updateNotebookSettingsAction,
   RootState,
   WorkspaceSettings,
@@ -97,7 +96,6 @@ interface NotebookPanelProps
   metadata: Metadata;
   panelState: PanelState;
   notebooksUrl: string;
-  updateSettings: (settings: Partial<WorkspaceSettings>) => void;
   updateNotebookSettings: (
     settings: Partial<WorkspaceSettings['notebookSettings']>
   ) => void;
@@ -213,7 +211,6 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.handleSave = this.handleSave.bind(this);
     this.handleSaveAsCancel = this.handleSaveAsCancel.bind(this);
     this.handleSaveAsSubmit = this.handleSaveAsSubmit.bind(this);
-    this.handleSaveFromShortcut = this.handleSaveFromShortcut.bind(this);
     this.handleSaveError = this.handleSaveError.bind(this);
     this.handleSaveSuccess = this.handleSaveSuccess.bind(this);
     this.handleSessionOpened = this.handleSessionOpened.bind(this);
@@ -926,8 +923,13 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.setState({ error, isLoading: false });
   }
 
-  handleSave(): void {
+  async handleSave(): Promise<void> {
     log.debug('handleSave');
+    const { notebookSettings } = this.props;
+    const { formatOnSave = false } = notebookSettings;
+    if (formatOnSave) {
+      await this.handleFormat();
+    }
     this.save();
   }
 
@@ -1016,15 +1018,6 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
         ?.getAction('editor.action.formatDocument')
         ?.run();
     }
-  }
-
-  async handleSaveFromShortcut(): Promise<void> {
-    const { notebookSettings } = this.props;
-    const { formatOnSave = false } = notebookSettings;
-    if (formatOnSave) {
-      await this.handleFormat();
-    }
-    this.save();
   }
 
   handleRenameFile(
@@ -1286,7 +1279,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     const toolbarDisabled = !isLoaded;
     const contextActions = [
       {
-        action: this.handleSaveFromShortcut,
+        action: this.handleSave,
         shortcut: GLOBAL_SHORTCUTS.SAVE,
       },
       {
@@ -1510,7 +1503,6 @@ const mapStateToProps = (
 const ConnectedNotebookPanel = connect(
   mapStateToProps,
   {
-    updateSettings: updateSettingsAction,
     updateNotebookSettings: updateNotebookSettingsAction,
   },
   null,
