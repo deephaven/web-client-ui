@@ -7,6 +7,7 @@ import throttle from 'lodash.throttle';
 import Log from '@deephaven/log';
 import type { dh } from '@deephaven/jsapi-types';
 import init, { Workspace, type Diagnostic } from '@astral-sh/ruff-wasm-web';
+import RUFF_DEFAULT_SETTINGS from './RuffDefaultSettings';
 
 const log = Log.module('MonacoCompletionProvider');
 
@@ -15,52 +16,6 @@ interface MonacoProviderProps {
   session: dh.IdeSession;
   language: string;
 }
-
-const DEFAULT_RUFF_SETTINGS = {
-  preview: true,
-  'target-version': 'py38',
-  'line-length': 88,
-  'indent-width': 4,
-  format: {
-    'indent-style': 'space',
-    'quote-style': 'double',
-  },
-  lint: {
-    'flake8-implicit-str-concat': {
-      'allow-multiline': false,
-    },
-    // More info on rules at https://docs.astral.sh/ruff/rules/
-    ignore: ['ISC003'], // Ignoring this rule permits explicit string concatenation
-    select: [
-      'F', // Pyflakes
-      'E1', // Pycodestyle indentation errors
-      'E9', // Pycodestyle syntax errors
-      'E711', // Pycodestyle comparison to None
-      'W291', // Pycodestyle trailing whitespace
-      'W293', // Pycodestyle blank line contains whitespace
-      'W605', // Pycodestyle invalid escape sequence
-      'B', // flake8-bugbear
-      'A', // flake8-builtins
-      'COM818', // flake8-commas trailing comma on bare tuple
-      'ISC', // flake8-implicit-str-concat
-      'PLE', // pylint errors
-      'RUF001', // ambiguous-unicode-character-string
-      'RUF021', // parenthesize-chained-operators
-      'RUF027', // missing-f-string-syntax
-      'PLR1704', // Redefined argument from local
-      'LOG', // flake8-logging
-      'ASYNC', // flake8-async
-      'RET501', // unnecessary-return-none
-      'RET502', // implicit-return-value
-      'RET503', // implicit-return
-      'PLC2401', // non-ascii-name
-      'PLC2403', // non-ascii-import-name
-      'NPY', // NumPy-specific rules
-      'PERF', // Perflint
-      'C4', // flake8-comprehensions
-    ],
-  },
-};
 
 /**
  * Registers a completion provider with monaco for the language and session provided.
@@ -72,6 +27,8 @@ class MonacoProviders extends PureComponent<
   static workspace?: Workspace;
 
   static initRuffPromise?: Promise<void>;
+
+  static isRuffEnabled = true;
 
   /**
    * Loads and initializes Ruff.
@@ -92,7 +49,7 @@ class MonacoProviders extends PureComponent<
   }
 
   static async setRuffSettings(
-    settings: Record<string, unknown> = DEFAULT_RUFF_SETTINGS
+    settings: Record<string, unknown> = RUFF_DEFAULT_SETTINGS
   ): Promise<void> {
     await MonacoProviders.initRuff();
 
@@ -105,6 +62,11 @@ class MonacoProviders extends PureComponent<
   }
 
   static lintPython(model: monaco.editor.ITextModel): void {
+    if (!MonacoProviders.isRuffEnabled) {
+      monaco.editor.setModelMarkers(model, 'ruff', []);
+      return;
+    }
+
     if (!MonacoProviders.workspace) {
       return;
     }

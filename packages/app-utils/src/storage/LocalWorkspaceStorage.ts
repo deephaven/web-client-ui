@@ -59,6 +59,11 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
       showExtraGroupColumn: true,
       notebookSettings: {
         isMinimapEnabled: false,
+        formatOnSave: false,
+        ruffSettings: {
+          isEnabled: true,
+          // Omit default config so default settings are used if the user never changes them
+        },
       },
       webgl: true,
       webglEditable: true,

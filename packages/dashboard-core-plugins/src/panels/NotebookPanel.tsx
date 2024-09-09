@@ -36,6 +36,7 @@ import {
 import {
   getFileStorage,
   updateSettings as updateSettingsAction,
+  updateNotebookSettings as updateNotebookSettingsAction,
   RootState,
   WorkspaceSettings,
   getNotebookSettings,
@@ -67,6 +68,7 @@ interface Metadata extends PanelMetadata {
 }
 interface NotebookSetting {
   isMinimapEnabled?: boolean;
+  formatOnSave?: boolean;
 }
 
 interface FileMetadata {
@@ -96,6 +98,9 @@ interface NotebookPanelProps
   panelState: PanelState;
   notebooksUrl: string;
   updateSettings: (settings: Partial<WorkspaceSettings>) => void;
+  updateNotebookSettings: (
+    settings: Partial<WorkspaceSettings['notebookSettings']>
+  ) => void;
 }
 
 interface NotebookPanelState {
@@ -195,6 +200,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.handleFind = this.handleFind.bind(this);
     this.handleMinimapChange = this.handleMinimapChange.bind(this);
     this.handleWordWrapChange = this.handleWordWrapChange.bind(this);
+    this.handleFormatOnSaveChange = this.handleFormatOnSaveChange.bind(this);
     this.handleLinkClick = this.handleLinkClick.bind(this);
     this.handleLoadSuccess = this.handleLoadSuccess.bind(this);
     this.handleLoadError = this.handleLoadError.bind(this);
@@ -630,7 +636,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
         actions.push({
           title: 'Format on Save',
           icon: formatOnSave ? vsCheck : undefined,
-          action: () => this.setState({ formatOnSave: !formatOnSave }),
+          action: this.handleFormatOnSaveChange,
           group: ContextActions.groups.low,
           order: 15,
         });
@@ -821,13 +827,11 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   }
 
   handleMinimapChange(): void {
-    const { notebookSettings, updateSettings } = this.props;
+    const { notebookSettings, updateNotebookSettings } = this.props;
     const newSettings = {
-      notebookSettings: {
-        isMinimapEnabled: !(notebookSettings.isMinimapEnabled ?? false),
-      },
+      isMinimapEnabled: !(notebookSettings.isMinimapEnabled ?? false),
     };
-    updateSettings(newSettings);
+    updateNotebookSettings(newSettings);
   }
 
   updateEditorWordWrap(): void {
@@ -853,6 +857,14 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
         };
       });
     }
+  }
+
+  handleFormatOnSaveChange(): void {
+    const { notebookSettings, updateNotebookSettings } = this.props;
+    const newSettings = {
+      formatOnSave: !(notebookSettings.formatOnSave ?? false),
+    };
+    updateNotebookSettings(newSettings);
   }
 
   /**
@@ -1007,8 +1019,9 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   }
 
   async handleSaveFromShortcut(): Promise<void> {
-    // TODO: Check if the user has enabled format on save from redux
-    if (this.state.formatOnSave) {
+    const { notebookSettings } = this.props;
+    const { formatOnSave = false } = notebookSettings;
+    if (formatOnSave) {
       await this.handleFormat();
     }
     this.save();
@@ -1222,14 +1235,13 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
 
   getDropdownOverflowActions(): DropdownAction[] {
     const { notebookSettings } = this.props;
-    const { settings: initialSettings, formatOnSave } = this.state;
+    const { isMinimapEnabled, formatOnSave } = notebookSettings;
+    const { settings: initialSettings } = this.state;
     return this.getOverflowActions(
-      notebookSettings.isMinimapEnabled ?? false,
-      this.getSettings(
-        initialSettings,
-        notebookSettings.isMinimapEnabled ?? false
-      ).wordWrap === 'on',
-      formatOnSave
+      isMinimapEnabled ?? false,
+      this.getSettings(initialSettings, isMinimapEnabled ?? false).wordWrap ===
+        'on',
+      formatOnSave ?? false
     );
   }
 
@@ -1497,7 +1509,10 @@ const mapStateToProps = (
 
 const ConnectedNotebookPanel = connect(
   mapStateToProps,
-  { updateSettings: updateSettingsAction },
+  {
+    updateSettings: updateSettingsAction,
+    updateNotebookSettings: updateNotebookSettingsAction,
+  },
   null,
   { forwardRef: true }
 )(NotebookPanel);

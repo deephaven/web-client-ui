@@ -57,6 +57,11 @@ export interface WorkspaceSettings {
   };
   notebookSettings: {
     isMinimapEnabled?: boolean;
+    formatOnSave?: boolean;
+    ruffSettings?: {
+      isEnabled?: boolean;
+      config?: Record<string, unknown>;
+    };
   };
   webgl: boolean;
   webglEditable: boolean;
