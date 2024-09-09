@@ -27,12 +27,7 @@ export function useDebouncedCallback<TArgs extends unknown[], TResult>(
     [callback, debounceMs, leading, trailing, maxWait]
   );
 
-  console.log(leading, trailing);
-
-  useEffect(() => {
-    console.log('cancel');
-    return () => debouncedCallback.cancel();
-  }, [debouncedCallback]);
+  useEffect(() => () => debouncedCallback.cancel(), [debouncedCallback]);
 
   return debouncedCallback;
 }
