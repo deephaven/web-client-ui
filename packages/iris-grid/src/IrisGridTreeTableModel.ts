@@ -9,12 +9,45 @@ import {
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
-import { assertNotNull } from '@deephaven/utils';
-import { UIRow, ColumnName, CellData } from './CommonTypes';
+import { assertNotNull, EventShimCustomEvent } from '@deephaven/utils';
+import { UIRow, ColumnName } from './CommonTypes';
 import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
-import { DisplayColumn } from './IrisGridModel';
+import IrisGridModel, { DisplayColumn } from './IrisGridModel';
 
 const log = Log.module('IrisGridTreeTableModel');
+
+const VirtualGroupColumn = Object.freeze({
+  name: '__DH_UI_GROUP__',
+  displayName: 'Group',
+  type: TableUtils.dataType.STRING,
+  constituentType: TableUtils.dataType.STRING,
+  isPartitionColumn: false,
+  isSortable: false,
+  isProxy: true,
+  description: 'Key column',
+  index: -1,
+  filter: () => {
+    throw new Error('Filter not implemented for virtual column');
+  },
+  sort: () => {
+    throw new Error('Sort not implemented virtual column');
+  },
+  formatColor: () => {
+    throw new Error('Color not implemented for virtual column');
+  },
+  get: () => {
+    throw new Error('get not implemented for virtual column');
+  },
+  getFormat: () => {
+    throw new Error('getFormat not implemented for virtual column');
+  },
+  formatNumber: () => {
+    throw new Error('formatNumber not implemented for virtual column');
+  },
+  formatDate: () => {
+    throw new Error('formatDate not implemented for virtual column');
+  },
+});
 
 export interface UITreeRow extends UIRow {
   isExpanded: boolean;
@@ -30,12 +63,20 @@ function isLayoutTreeTable(table: DhType.TreeTable): table is LayoutTreeTable {
   return (table as LayoutTreeTable).layoutHints !== undefined;
 }
 
+export function isIrisGridTreeTableModel(
+  tableModel: IrisGridModel
+): tableModel is IrisGridTreeTableModel {
+  return (tableModel as IrisGridTreeTableModel).showExtraGroupColumn != null;
+}
+
 class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   DhType.TreeTable,
   UITreeRow
 > {
   /** We keep a virtual column at the front that tracks the "group" that is expanded */
   private virtualColumns: DisplayColumn[];
+
+  private showExtraGroupCol = true;
 
   constructor(
     dh: typeof DhType,
@@ -44,47 +85,35 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
     inputTable: DhType.InputTable | null = null
   ) {
     super(dh, table, formatter, inputTable);
+
     this.virtualColumns =
-      table.groupedColumns.length > 1
-        ? [
-            {
-              name: '__DH_UI_GROUP__',
-              displayName: 'Group',
-              type: TableUtils.dataType.STRING,
-              constituentType: TableUtils.dataType.STRING,
-              isPartitionColumn: false,
-              isSortable: false,
-              isProxy: true,
-              description: 'Key column',
-              index: -1,
-              filter: () => {
-                throw new Error('Filter not implemented for virtual column');
-              },
-              sort: () => {
-                throw new Error('Sort not implemented virtual column');
-              },
-              formatColor: () => {
-                throw new Error('Color not implemented for virtual column');
-              },
-              get: () => {
-                throw new Error('get not implemented for virtual column');
-              },
-              getFormat: () => {
-                throw new Error('getFormat not implemented for virtual column');
-              },
-              formatNumber: () => {
-                throw new Error(
-                  'formatNumber not implemented for virtual column'
-                );
-              },
-              formatDate: () => {
-                throw new Error(
-                  'formatDate not implemented for virtual column'
-                );
-              },
-            },
-          ]
+      this.showExtraGroupColumn && table.groupedColumns.length > 1
+        ? [VirtualGroupColumn]
         : [];
+  }
+
+  get showExtraGroupColumn(): boolean {
+    return this.showExtraGroupCol;
+  }
+
+  set showExtraGroupColumn(showExtraGroupCol: boolean) {
+    if (this.showExtraGroupCol === showExtraGroupCol) {
+      return;
+    }
+    this.showExtraGroupCol = showExtraGroupCol;
+    this.updateVirtualColumns();
+  }
+
+  updateVirtualColumns(): void {
+    this.virtualColumns =
+      this.showExtraGroupColumn && this.table.groupedColumns.length > 1
+        ? [VirtualGroupColumn]
+        : [];
+    this.dispatchEvent(
+      new EventShimCustomEvent(IrisGridModel.EVENT.COLUMNS_CHANGED, {
+        detail: this.columns,
+      })
+    );
   }
 
   applyBufferedViewport(
@@ -129,7 +158,7 @@ class IrisGridTreeTableModel extends IrisGridTableModelTemplate<
   extractViewportRow(row: DhType.TreeRow, columns: DhType.Column[]): UITreeRow {
     const { isExpanded, hasChildren, depth } = row;
     const extractedRow = super.extractViewportRow(row, columns);
-    const modifiedData = new Map<ModelIndex, CellData>(extractedRow.data);
+    const modifiedData = new Map(extractedRow.data);
     if (hasChildren) {
       for (let i = 0; i < this.virtualColumns.length; i += 1) {
         const key = i + (depth - 1) + (this.virtualColumns.length - 1);

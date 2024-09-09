@@ -1,5 +1,5 @@
-import { ActionBar } from '@adobe/react-spectrum';
 import type { StyleProps } from '@react-types/shared';
+import { ActionBar } from './spectrum';
 import commonStyles from './SpectrumComponent.module.scss';
 
 export interface BulkActionBarProps {

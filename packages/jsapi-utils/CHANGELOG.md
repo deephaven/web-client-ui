@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.92.0](https://github.com/deephaven/web-client-ui/compare/v0.91.0...v0.92.0) (2024-09-03)
+
+### Features
+
+- Make rollup group behaviour a setting in the global settings menu ([#2183](https://github.com/deephaven/web-client-ui/issues/2183)) ([bc8d5f2](https://github.com/deephaven/web-client-ui/commit/bc8d5f24ac7f883c0f9d65ba47901f83f996e95c)), closes [#2128](https://github.com/deephaven/web-client-ui/issues/2128)
+
+## [0.91.0](https://github.com/deephaven/web-client-ui/compare/v0.90.0...v0.91.0) (2024-08-23)
+
+**Note:** Version bump only for package @deephaven/jsapi-utils
+
+## [0.90.0](https://github.com/deephaven/web-client-ui/compare/v0.89.0...v0.90.0) (2024-08-21)
+
+**Note:** Version bump only for package @deephaven/jsapi-utils
+
 ## [0.89.0](https://github.com/deephaven/web-client-ui/compare/v0.88.0...v0.89.0) (2024-08-15)
 
 **Note:** Version bump only for package @deephaven/jsapi-utils

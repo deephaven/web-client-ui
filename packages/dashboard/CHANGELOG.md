@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.92.0](https://github.com/deephaven/web-client-ui/compare/v0.91.0...v0.92.0) (2024-09-03)
+
+**Note:** Version bump only for package @deephaven/dashboard
+
+## [0.91.0](https://github.com/deephaven/web-client-ui/compare/v0.90.0...v0.91.0) (2024-08-23)
+
+**Note:** Version bump only for package @deephaven/dashboard
+
+## [0.90.0](https://github.com/deephaven/web-client-ui/compare/v0.89.0...v0.90.0) (2024-08-21)
+
+### Bug Fixes
+
+- makeEventFunctions take an array of parameters ([#2186](https://github.com/deephaven/web-client-ui/issues/2186)) ([f5b01fd](https://github.com/deephaven/web-client-ui/commit/f5b01fdd69de13233f9e08ef76979e7c07b1759c))
+
 ## [0.89.0](https://github.com/deephaven/web-client-ui/compare/v0.88.0...v0.89.0) (2024-08-15)
 
 **Note:** Version bump only for package @deephaven/dashboard

@@ -1,4 +1,5 @@
 import React, { Key, useCallback, useEffect, useState } from 'react';
+// eslint-disable-next-line no-restricted-imports
 import {
   ActionButton,
   Icon,

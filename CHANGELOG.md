@@ -3,6 +3,41 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.92.0](https://github.com/deephaven/web-client-ui/compare/v0.91.0...v0.92.0) (2024-09-03)
+
+### Features
+
+- Make rollup group behaviour a setting in the global settings menu ([#2183](https://github.com/deephaven/web-client-ui/issues/2183)) ([bc8d5f2](https://github.com/deephaven/web-client-ui/commit/bc8d5f24ac7f883c0f9d65ba47901f83f996e95c)), closes [#2128](https://github.com/deephaven/web-client-ui/issues/2128)
+- Set selected theme via query string param ([#2204](https://github.com/deephaven/web-client-ui/issues/2204)) ([89ede66](https://github.com/deephaven/web-client-ui/commit/89ede667c56746b3ff17cc7ecb6d9153aa6c2edc)), closes [#2203](https://github.com/deephaven/web-client-ui/issues/2203)
+
+### Bug Fixes
+
+- DH-17292 Handle disconnect from GridWidgetPlugin ([#2086](https://github.com/deephaven/web-client-ui/issues/2086)) ([0a924cd](https://github.com/deephaven/web-client-ui/commit/0a924cd5fe13e16642c50a59842c361bfff3788e))
+- Invalid import in @deephaven/components for webpack ([#2200](https://github.com/deephaven/web-client-ui/issues/2200)) ([dcc95f6](https://github.com/deephaven/web-client-ui/commit/dcc95f69ff3a94a0558093ed699f8147096b2556)), closes [#2192](https://github.com/deephaven/web-client-ui/issues/2192)
+
+## [0.91.0](https://github.com/deephaven/web-client-ui/compare/v0.90.0...v0.91.0) (2024-08-23)
+
+### Features
+
+- Deephaven UI table databar support ([#2190](https://github.com/deephaven/web-client-ui/issues/2190)) ([b5ce598](https://github.com/deephaven/web-client-ui/commit/b5ce598478797125371ae0952ab6e84aca07efba))
+
+## [0.90.0](https://github.com/deephaven/web-client-ui/compare/v0.89.0...v0.90.0) (2024-08-21)
+
+### ⚠ BREAKING CHANGES
+
+- Delete unused event types: `openPQObject`,
+  `openControl`, `reload`, `clearAllFilters`.
+
+### Bug Fixes
+
+- GridMetrics including totals rows in visible rows when scrolled to bottom ([#2194](https://github.com/deephaven/web-client-ui/issues/2194)) ([d409e96](https://github.com/deephaven/web-client-ui/commit/d409e96bc0c191e4d1766397ef1e5334af0102dd))
+- makeEventFunctions take an array of parameters ([#2186](https://github.com/deephaven/web-client-ui/issues/2186)) ([f5b01fd](https://github.com/deephaven/web-client-ui/commit/f5b01fdd69de13233f9e08ef76979e7c07b1759c))
+- TablePlugin needs to know table name and selected range ([#2181](https://github.com/deephaven/web-client-ui/issues/2181)) ([0b37477](https://github.com/deephaven/web-client-ui/commit/0b3747782958dc8e432fabda89ac0bce25ac9c22)), closes [#2093](https://github.com/deephaven/web-client-ui/issues/2093)
+
+### Code Refactoring
+
+- Change TabEvent to object literal, add TabEventMap ([#2191](https://github.com/deephaven/web-client-ui/issues/2191)) ([419f95d](https://github.com/deephaven/web-client-ui/commit/419f95d05c5db52e7b068398d6d2520b77c6aad3))
+
 ## [0.89.0](https://github.com/deephaven/web-client-ui/compare/v0.88.0...v0.89.0) (2024-08-15)
 
 ### Features

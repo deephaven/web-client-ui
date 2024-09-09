@@ -101,7 +101,7 @@ export class CommandHistoryItemTooltip extends Component<
     this.stopTimer();
   }
 
-  timer?: NodeJS.Timer;
+  timer?: number;
 
   cleanup?: StorageListenerRemover;
 
@@ -119,11 +119,11 @@ export class CommandHistoryItemTooltip extends Component<
   startTimer(): void {
     this.stopTimer();
 
-    this.timer = setInterval(this.handleTimeout, 1000);
+    this.timer = window.setInterval(this.handleTimeout, 1000);
   }
 
   stopTimer(): void {
-    if (this.timer) {
+    if (this.timer != null) {
       clearInterval(this.timer);
       this.timer = undefined;
     }

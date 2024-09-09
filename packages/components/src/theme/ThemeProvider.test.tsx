@@ -2,17 +2,12 @@ import React from 'react';
 import { act, render } from '@testing-library/react';
 import { assertNotNull, TestUtils } from '@deephaven/utils';
 import { ThemeContextValue, ThemeProvider } from './ThemeProvider';
-import {
-  DEFAULT_DARK_THEME_KEY,
-  DEFAULT_LIGHT_THEME_KEY,
-  ThemeData,
-  ThemePreloadData,
-} from './ThemeModel';
+import { DEFAULT_LIGHT_THEME_KEY, ThemeData } from './ThemeModel';
 import {
   calculatePreloadStyleContent,
   getActiveThemes,
   getDefaultBaseThemes,
-  getThemePreloadData,
+  getDefaultSelectedThemeKey,
   setThemePreloadData,
 } from './ThemeUtils';
 import { useTheme } from './useTheme';
@@ -24,13 +19,17 @@ jest.mock('./ThemeUtils', () => {
   return {
     ...actual,
     calculatePreloadStyleContent: jest.fn(),
-    getThemePreloadData: jest.fn(actual.getThemePreloadData),
+    getDefaultSelectedThemeKey: jest.fn(),
+    getThemeKeyOverride: jest.fn(),
     setThemePreloadData: jest.fn(),
   };
 });
 
-const customThemes = [{ themeKey: 'themeA' }] as [ThemeData];
-const preloadA: ThemePreloadData = { themeKey: 'themeA' };
+const customThemes = [
+  { themeKey: 'themeA' },
+  { themeKey: 'mockDefaultSelectedThemeKey' },
+] as ThemeData[];
+const defaultSelectedThemeKey = 'mockDefaultSelectedThemeKey';
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -41,7 +40,10 @@ beforeEach(() => {
     .mockName('calculatePreloadStyleContent')
     .mockReturnValue(':root{mock-preload-content}');
 
-  asMock(getThemePreloadData).mockName('getThemePreloadData');
+  asMock(getDefaultSelectedThemeKey)
+    .mockName('getDefaultSelectedThemeKey')
+    .mockReturnValue(defaultSelectedThemeKey);
+
   asMock(setThemePreloadData).mockName('setThemePreloadData');
 });
 
@@ -57,16 +59,9 @@ describe('ThemeProvider', () => {
     themeContextValueRef.current = null;
   });
 
-  it.each([
-    [null, null],
-    [null, preloadA],
-    [customThemes, null],
-    [customThemes, preloadA],
-  ] as const)(
-    'should load themes based on preload data or default: %s, %s',
-    (themes, preloadData) => {
-      asMock(getThemePreloadData).mockReturnValue(preloadData);
-
+  it.each([null, customThemes])(
+    'should load themes based on default selected theme key. customThemes: %o',
+    themes => {
       const component = render(
         <ThemeProvider themes={themes}>
           <MockChild />
@@ -79,14 +74,14 @@ describe('ThemeProvider', () => {
         expect(themeContextValueRef.current.activeThemes).toBeNull();
       } else {
         expect(themeContextValueRef.current.activeThemes).toEqual(
-          getActiveThemes(preloadData?.themeKey ?? DEFAULT_DARK_THEME_KEY, {
+          getActiveThemes(defaultSelectedThemeKey, {
             base: getDefaultBaseThemes(),
             custom: themes,
           })
         );
 
         expect(themeContextValueRef.current.selectedThemeKey).toEqual(
-          preloadData?.themeKey ?? DEFAULT_DARK_THEME_KEY
+          defaultSelectedThemeKey
         );
       }
 
@@ -94,16 +89,9 @@ describe('ThemeProvider', () => {
     }
   );
 
-  it.each([
-    [null, null],
-    [null, preloadA],
-    [customThemes, null],
-    [customThemes, preloadA],
-  ] as const)(
-    'should set preload data when active themes change: %s, %s',
-    (themes, preloadData) => {
-      asMock(getThemePreloadData).mockReturnValue(preloadData);
-
+  it.each([null, customThemes] as const)(
+    'should set preload data when active themes change: %o',
+    themes => {
       render(
         <ThemeProvider themes={themes}>
           <MockChild />
@@ -114,14 +102,14 @@ describe('ThemeProvider', () => {
         expect(setThemePreloadData).not.toHaveBeenCalled();
       } else {
         expect(setThemePreloadData).toHaveBeenCalledWith({
-          themeKey: preloadData?.themeKey ?? DEFAULT_DARK_THEME_KEY,
-          preloadStyleContent: calculatePreloadStyleContent(),
+          themeKey: defaultSelectedThemeKey,
+          preloadStyleContent: calculatePreloadStyleContent({}),
         });
       }
     }
   );
 
-  describe.each([null, customThemes])('setSelectedThemeKey: %s', themes => {
+  describe.each([null, customThemes])('setSelectedThemeKey: %o', themes => {
     it.each([DEFAULT_LIGHT_THEME_KEY, customThemes[0].themeKey])(
       'should change selected theme: %s',
       themeKey => {

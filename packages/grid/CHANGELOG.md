@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.92.0](https://github.com/deephaven/web-client-ui/compare/v0.91.0...v0.92.0) (2024-09-03)
+
+**Note:** Version bump only for package @deephaven/grid
+
+## [0.91.0](https://github.com/deephaven/web-client-ui/compare/v0.90.0...v0.91.0) (2024-08-23)
+
+### Features
+
+- Deephaven UI table databar support ([#2190](https://github.com/deephaven/web-client-ui/issues/2190)) ([b5ce598](https://github.com/deephaven/web-client-ui/commit/b5ce598478797125371ae0952ab6e84aca07efba))
+
+## [0.90.0](https://github.com/deephaven/web-client-ui/compare/v0.89.0...v0.90.0) (2024-08-21)
+
+### Bug Fixes
+
+- GridMetrics including totals rows in visible rows when scrolled to bottom ([#2194](https://github.com/deephaven/web-client-ui/issues/2194)) ([d409e96](https://github.com/deephaven/web-client-ui/commit/d409e96bc0c191e4d1766397ef1e5334af0102dd))
+
 ## [0.89.0](https://github.com/deephaven/web-client-ui/compare/v0.88.0...v0.89.0) (2024-08-15)
 
 ### Bug Fixes

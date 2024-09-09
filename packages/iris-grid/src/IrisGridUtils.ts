@@ -1470,17 +1470,19 @@ class IrisGridUtils {
     pendingDataMap: ReadonlyMap<
       ModelIndex,
       {
-        data: Map<ModelIndex, CellData | string>;
+        data: Map<ModelIndex | ColumnName, CellData | string>;
       }
     >
   ): DehydratedPendingDataMap<CellData | string | null> {
     return [...pendingDataMap].map(([rowIndex, { data }]) => [
       rowIndex,
       {
-        data: [...data].map(([c, value]) => [
-          columns[c].name,
-          this.dehydrateValue(value, columns[c].type),
-        ]),
+        data: [...data]
+          .filter(([c]) => typeof c === 'number')
+          .map(([c, value]) => [
+            columns[c as number].name,
+            this.dehydrateValue(value, columns[c as number].type),
+          ]),
       },
     ]);
   }

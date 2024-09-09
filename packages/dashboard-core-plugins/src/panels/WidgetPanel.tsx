@@ -1,15 +1,47 @@
-import React, { PureComponent, ReactElement } from 'react';
+import React, { PureComponent, ReactElement, ReactNode } from 'react';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
 import { ContextActions, createXComponent } from '@deephaven/components';
+import { PanelComponent } from '@deephaven/dashboard';
+import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import { copyToClipboard } from '@deephaven/utils';
 import Panel from './Panel';
 import WidgetPanelTooltip from './WidgetPanelTooltip';
 import './WidgetPanel.scss';
-import {
-  InnerWidgetPanelProps,
-  WidgetPanelDescriptor,
-} from './WidgetPanelTypes';
+import { WidgetPanelDescriptor } from './WidgetPanelTypes';
+
+export type WidgetPanelProps = {
+  children: ReactNode;
+
+  descriptor: WidgetPanelDescriptor;
+  componentPanel?: PanelComponent;
+
+  glContainer: Container;
+  glEventHub: EventEmitter;
+
+  className?: string;
+  errorMessage?: string;
+  isClonable?: boolean;
+  isDisconnected?: boolean;
+  isLoading?: boolean;
+  isLoaded?: boolean;
+  isRenamable?: boolean;
+  showTabTooltip?: boolean;
+
+  renderTabTooltip?: () => ReactNode;
+
+  onFocus?: () => void;
+  onBlur?: () => void;
+  onHide?: () => void;
+  onClearAllFilters?: () => void;
+  onResize?: () => void;
+  onSessionClose?: (...args: unknown[]) => void;
+  onSessionOpen?: (...args: unknown[]) => void;
+  onShow?: () => void;
+  onTabBlur?: () => void;
+  onTabFocus?: () => void;
+  onTabClicked?: () => void;
+};
 
 interface WidgetPanelState {
   isClientDisconnected: boolean;
@@ -21,10 +53,7 @@ interface WidgetPanelState {
 /**
  * Widget panel component that has a loading spinner and displays an error message when set
  */
-class WidgetPanel extends PureComponent<
-  InnerWidgetPanelProps,
-  WidgetPanelState
-> {
+class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
   static defaultProps = {
     className: '',
     isClonable: true,
@@ -35,7 +64,7 @@ class WidgetPanel extends PureComponent<
     showTabTooltip: true,
   };
 
-  constructor(props: InnerWidgetPanelProps) {
+  constructor(props: WidgetPanelProps) {
     super(props);
 
     this.handleSessionClosed = this.handleSessionClosed.bind(this);

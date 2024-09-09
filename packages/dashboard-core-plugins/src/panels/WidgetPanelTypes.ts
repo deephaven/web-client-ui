@@ -1,6 +1,4 @@
 import { ReactNode } from 'react';
-import { PanelComponent } from '@deephaven/dashboard';
-import type { Container, EventEmitter } from '@deephaven/golden-layout';
 
 export type WidgetPanelDescriptor = {
   /** Type of the widget. */
@@ -25,37 +23,4 @@ export type WidgetPanelTooltipProps = {
 
   /** Children to render within this tooltip */
   children?: ReactNode;
-};
-
-export type InnerWidgetPanelProps = {
-  children: ReactNode;
-
-  descriptor: WidgetPanelDescriptor;
-  componentPanel?: PanelComponent;
-
-  glContainer: Container;
-  glEventHub: EventEmitter;
-
-  className?: string;
-  errorMessage?: string;
-  isClonable?: boolean;
-  isDisconnected?: boolean;
-  isLoading?: boolean;
-  isLoaded?: boolean;
-  isRenamable?: boolean;
-  showTabTooltip?: boolean;
-
-  renderTabTooltip?: () => ReactNode;
-
-  onFocus?: () => void;
-  onBlur?: () => void;
-  onHide?: () => void;
-  onClearAllFilters?: () => void;
-  onResize?: () => void;
-  onSessionClose?: (...args: unknown[]) => void;
-  onSessionOpen?: (...args: unknown[]) => void;
-  onShow?: () => void;
-  onTabBlur?: () => void;
-  onTabFocus?: () => void;
-  onTabClicked?: () => void;
 };

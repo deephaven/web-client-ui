@@ -1,7 +1,6 @@
-import CSSTransition, {
-  CSSTransitionProps,
-} from 'react-transition-group/CSSTransition';
-import { EndHandler } from 'react-transition-group/Transition';
+import { CSSTransition } from 'react-transition-group';
+import type { CSSTransitionProps } from 'react-transition-group/CSSTransition';
+import type { EndHandler } from 'react-transition-group/Transition';
 import classNames from 'classnames';
 import ThemeExport from '../ThemeExport';
 

@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import type { SpectrumTextFieldProps } from '@adobe/react-spectrum';
 import { KeyedItem } from '@deephaven/utils';
 import type { DOMRefValue } from '@react-types/shared';

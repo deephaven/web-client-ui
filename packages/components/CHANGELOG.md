@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.92.0](https://github.com/deephaven/web-client-ui/compare/v0.91.0...v0.92.0) (2024-09-03)
+
+### Features
+
+- Set selected theme via query string param ([#2204](https://github.com/deephaven/web-client-ui/issues/2204)) ([89ede66](https://github.com/deephaven/web-client-ui/commit/89ede667c56746b3ff17cc7ecb6d9153aa6c2edc)), closes [#2203](https://github.com/deephaven/web-client-ui/issues/2203)
+
+### Bug Fixes
+
+- Invalid import in @deephaven/components for webpack ([#2200](https://github.com/deephaven/web-client-ui/issues/2200)) ([dcc95f6](https://github.com/deephaven/web-client-ui/commit/dcc95f69ff3a94a0558093ed699f8147096b2556)), closes [#2192](https://github.com/deephaven/web-client-ui/issues/2192)
+
+## [0.91.0](https://github.com/deephaven/web-client-ui/compare/v0.90.0...v0.91.0) (2024-08-23)
+
+### Features
+
+- Deephaven UI table databar support ([#2190](https://github.com/deephaven/web-client-ui/issues/2190)) ([b5ce598](https://github.com/deephaven/web-client-ui/commit/b5ce598478797125371ae0952ab6e84aca07efba))
+
+## [0.90.0](https://github.com/deephaven/web-client-ui/compare/v0.89.0...v0.90.0) (2024-08-21)
+
+**Note:** Version bump only for package @deephaven/components
+
 ## [0.89.0](https://github.com/deephaven/web-client-ui/compare/v0.88.0...v0.89.0) (2024-08-15)
 
 ### Features

@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import { Key, useCallback } from 'react';
-import { ComboBox, Item, SpectrumComboBoxProps } from '@adobe/react-spectrum';
 import type { DOMRefValue, FocusableRef } from '@react-types/shared';
+import { SpectrumComboBox, Item, SpectrumComboBoxProps } from './spectrum';
 import TextWithTooltip from './TextWithTooltip';
 
 export interface SearchableComboboxProps<TItem, TKey extends Key>
@@ -36,7 +36,7 @@ export function SearchableCombobox<TItem, TKey extends Key>({
   );
 
   return (
-    <ComboBox
+    <SpectrumComboBox
       {...props}
       // The `ref`prop type defined by React Spectrum is incorrect here
       ref={scrollRef as unknown as FocusableRef<HTMLElement>}
@@ -46,7 +46,7 @@ export function SearchableCombobox<TItem, TKey extends Key>({
       onSelectionChange={props.onSelectionChange as (key: Key | null) => void}
     >
       {renderItem}
-    </ComboBox>
+    </SpectrumComboBox>
   );
 }
 
