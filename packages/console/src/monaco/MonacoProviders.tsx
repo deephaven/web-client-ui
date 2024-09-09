@@ -39,7 +39,7 @@ class MonacoProviders extends PureComponent<
       return MonacoProviders.initRuffPromise;
     }
 
-    MonacoProviders.initRuffPromise = init().then(() => {
+    MonacoProviders.initRuffPromise = init({}).then(() => {
       log.debug('Initialized Ruff', Workspace.version());
 
       MonacoProviders.setRuffSettings();
