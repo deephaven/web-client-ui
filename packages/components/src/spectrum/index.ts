@@ -26,6 +26,7 @@ export * from './picker';
 export * from './Heading';
 export * from './Text';
 export * from './View';
+export * from './CheckboxGroup';
 
 /**
  * Custom DH spectrum utils
