@@ -1,9 +1,10 @@
 import {
-  Checkbox,
   CheckboxGroup as SpectrumCheckboxGroup,
   SpectrumCheckboxGroupProps,
 } from '@adobe/react-spectrum';
+import { isElementOfType } from '@deephaven/react-hooks';
 import React, { useMemo } from 'react';
+import Checkbox from '../Checkbox';
 
 /**
  * Augmented version of the Spectrum CheckboxGroup component that supports
@@ -16,24 +17,18 @@ export function CheckboxGroup({
   const wrappedChildren = useMemo(
     () =>
       React.Children.map(children, child => {
-        if (typeof child === 'function') {
+        if (isElementOfType(child, Checkbox)) {
           return child;
         }
-        return <Checkbox>{child}</Checkbox>;
+        return <Checkbox checked={false}>{child}</Checkbox>;
       }),
     [children]
   );
 
   return (
-    <SpectrumCheckboxGroup
-      // eslint-disable-next-line react/jsx-props-no-spreading
-      {...props}
-      // eslint-disable-next-line react/no-children-prop
-      children={wrappedChildren}
-    />
+    // eslint-disable-next-line react/jsx-props-no-spreading
+    <SpectrumCheckboxGroup {...props}>{wrappedChildren}</SpectrumCheckboxGroup>
   );
 }
-
-CheckboxGroup.displayName = 'CheckboxGroup';
 
 export default CheckboxGroup;
