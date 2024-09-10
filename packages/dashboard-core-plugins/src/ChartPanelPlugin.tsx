@@ -1,4 +1,4 @@
-import { forwardRef, useMemo } from 'react';
+import { forwardRef, useCallback } from 'react';
 import { useDeferredApi } from '@deephaven/jsapi-bootstrap';
 import { ChartModel, ChartModelFactory } from '@deephaven/chart';
 import type { dh as DhType } from '@deephaven/jsapi-types';
@@ -70,27 +70,36 @@ export const ChartPanelPlugin = forwardRef(
       : undefined;
 
     const { fetch: panelFetch, metadata, localDashboardId } = props;
-    const [dh, error] = useDeferredApi(metadata ?? null);
+    assertNotNull(metadata);
+    const [dh, error] = useDeferredApi(metadata);
 
-    const hydratedProps = useMemo(
-      () => ({
-        metadata: metadata as ChartPanelMetadata,
-        localDashboardId,
-        makeModel: async () => {
-          assertNotNull(dh, `Cannot find API: ${error}`);
-          return createChartModel(
-            dh,
-            metadata as ChartPanelMetadata,
-            panelFetch,
-            panelState
-          );
-        },
-      }),
-      [dh, error, metadata, localDashboardId, panelFetch, panelState]
+    const makeModel = useCallback(async () => {
+      if (error != null) {
+        throw error;
+      }
+      if (dh == null) {
+        return new Promise<ChartModel>(() => {
+          // We don't have the API yet, just return an unresolved promise so it shows as loading
+        });
+      }
+      return createChartModel(
+        dh,
+        metadata as ChartPanelMetadata,
+        panelFetch,
+        panelState
+      );
+    }, [dh, error, metadata, panelFetch, panelState]);
+
+    return (
+      <ConnectedChartPanel
+        ref={ref}
+        // eslint-disable-next-line react/jsx-props-no-spreading
+        {...props}
+        metadata={metadata}
+        localDashboardId={localDashboardId}
+        makeModel={makeModel}
+      />
     );
-
-    // eslint-disable-next-line react/jsx-props-no-spreading
-    return <ConnectedChartPanel ref={ref} {...props} {...hydratedProps} />;
   }
 );
 

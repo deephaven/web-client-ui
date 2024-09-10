@@ -286,12 +286,12 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     const { columnMap, model, filterMap, filterValueMap, isLinked, settings } =
       this.state;
 
-    if (!model) {
-      return;
-    }
-
     if (makeModel !== prevProps.makeModel) {
       this.initModel();
+    }
+
+    if (model == null) {
+      return;
     }
 
     if (columnMap !== prevState.columnMap) {
@@ -351,6 +351,8 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     this.setState({ isLoading: true, isLoaded: false, error: undefined });
 
     const { makeModel } = this.props;
+
+    this.pending.cancel();
 
     this.pending
       .add(makeModel(), resolved => {
