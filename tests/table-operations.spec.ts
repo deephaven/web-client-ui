@@ -108,12 +108,11 @@ test.beforeEach(async ({ page }) => {
   await gotoPage(page, '');
 
   // Fail quickly if console errors are detected
-  // TODO: These shouldn't be disabled
-  // page.on('console', msg => {
-  //   if (msg.type() === 'error') {
-  //     throw new Error(msg.text());
-  //   }
-  // });
+  page.on('console', msg => {
+    if (msg.type() === 'error') {
+      throw new Error(msg.text());
+    }
+  });
 
   await openTable(page, 'all_types');
 
