@@ -16,6 +16,11 @@ async function getGridLocation(page: Page) {
   const grid = await page.locator('.iris-grid-panel .iris-grid');
   const gridLocation = await grid.boundingBox();
   expect(gridLocation).not.toBeNull();
+  if (gridLocation === null) {
+    throw new Error('Grid location is null');
+  }
+  // TODO: We shouldn't need this wait. We seem to be thinking the grid is loaded before it actually is.
+  await page.waitForTimeout(100);
   return gridLocation;
 }
 
@@ -78,7 +83,6 @@ function runSpecialSelectFilter(
     await gotoPage(page, '');
     await openTable(page, `multiselect_${columnType}`);
     const gridLocation = await getGridLocation(page);
-    if (gridLocation === null) return;
 
     await page.mouse.click(
       gridLocation.x + 1,
@@ -105,7 +109,6 @@ function runMultiSelectFilter(
     await gotoPage(page, '');
     await openTable(page, `multiselect_${columnType}`);
     const gridLocation = await getGridLocation(page);
-    if (gridLocation === null) return;
 
     // activate the quick filter to get that text as well
     await test.step('Show quick filter step', async () => {
@@ -168,7 +171,6 @@ test('char formatting, non selected right click, preview formatting', async ({
   await gotoPage(page, '');
   await openTable(page, 'multiselect_char');
   const gridLocation = await getGridLocation(page);
-  if (gridLocation === null) return;
 
   // select row 2, 4
   await page.keyboard.down('Control');
