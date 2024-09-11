@@ -1,9 +1,9 @@
 import React, { PureComponent, ReactElement, ReactNode } from 'react';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
+import { ContextActions, createXComponent } from '@deephaven/components';
 import { PanelComponent } from '@deephaven/dashboard';
 import type { Container, EventEmitter } from '@deephaven/golden-layout';
-import { ContextActions, createXComponent } from '@deephaven/components';
 import { copyToClipboard } from '@deephaven/utils';
 import Panel from './Panel';
 import WidgetPanelTooltip from './WidgetPanelTooltip';

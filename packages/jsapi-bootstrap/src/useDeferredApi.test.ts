@@ -29,7 +29,10 @@ describe('useDeferredApi', () => {
     expect(result.current).toEqual([dh1, null]);
 
     const { result: result2 } = renderHook(() =>
-      useDeferredApi({ type: 'foo', foo: 'bar' })
+      useDeferredApi({
+        type: 'foo',
+        foo: 'bar',
+      } as DhType.ide.VariableDescriptor)
     );
     expect(result2.current).toEqual([dh1, null]);
   });
@@ -66,6 +69,12 @@ describe('useDeferredApi', () => {
     asMock(useContext).mockReturnValue(null);
 
     const { result } = renderHook(() => useDeferredApi(objectMetadata));
+    expect(result.current).toEqual([null, expect.any(Error)]);
+  });
+
+  it('returns an error if the metadata is null', async () => {
+    asMock(useContext).mockReturnValue(dh1);
+    const { result } = renderHook(() => useDeferredApi(null));
     expect(result.current).toEqual([null, expect.any(Error)]);
   });
 });
