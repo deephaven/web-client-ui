@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.93.0](https://github.com/deephaven/web-client-ui/compare/v0.92.0...v0.93.0) (2024-09-12)
+
+### Features
+
+- Add clickOutside prop to Modal ([#2214](https://github.com/deephaven/web-client-ui/issues/2214)) ([d78ad6d](https://github.com/deephaven/web-client-ui/commit/d78ad6d0e883a4c4c76078ae8b09c611fab35ae9))
+
 ## [0.92.0](https://github.com/deephaven/web-client-ui/compare/v0.91.0...v0.92.0) (2024-09-03)
 
 ### Features

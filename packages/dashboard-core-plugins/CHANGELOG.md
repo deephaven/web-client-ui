@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.93.0](https://github.com/deephaven/web-client-ui/compare/v0.92.0...v0.93.0) (2024-09-12)
+
+### Bug Fixes
+
+- ChartBuilderPlugin fixes for charts built from PPQs in Enterprise ([#2167](https://github.com/deephaven/web-client-ui/issues/2167)) ([99b8d59](https://github.com/deephaven/web-client-ui/commit/99b8d5952ba325bf74d2d16ed39eb7a2e897d196))
+- Publish WidgetPanelProps ([#2210](https://github.com/deephaven/web-client-ui/issues/2210)) ([7331976](https://github.com/deephaven/web-client-ui/commit/7331976004ed9b33fca9d97919d359dd881e8d0a)), closes [/github.com/deephaven-ent/iris/pull/2114/files#diff-536d6ac232028a4ebbafc5ca79bb1a22844488a4b628196e43056379f9326a90R17](https://github.com/deephaven//github.com/deephaven-ent/iris/pull/2114/files/issues/diff-536d6ac232028a4ebbafc5ca79bb1a22844488a4b628196e43056379f9326a90R17)
+
 ## [0.92.0](https://github.com/deephaven/web-client-ui/compare/v0.91.0...v0.92.0) (2024-09-03)
 
 ### Bug Fixes

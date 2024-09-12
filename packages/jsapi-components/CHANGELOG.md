@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.93.0](https://github.com/deephaven/web-client-ui/compare/v0.92.0...v0.93.0) (2024-09-12)
+
+### Bug Fixes
+
+- Use correct offset in snapshot ([#2217](https://github.com/deephaven/web-client-ui/issues/2217)) ([a479d6c](https://github.com/deephaven/web-client-ui/commit/a479d6c5f907f53aaa6500845ea168ab0eb9bb09))
+
 ## [0.92.0](https://github.com/deephaven/web-client-ui/compare/v0.91.0...v0.92.0) (2024-09-03)
 
 **Note:** Version bump only for package @deephaven/jsapi-components

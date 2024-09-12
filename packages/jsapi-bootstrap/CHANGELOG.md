@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.93.0](https://github.com/deephaven/web-client-ui/compare/v0.92.0...v0.93.0) (2024-09-12)
+
+### Bug Fixes
+
+- ChartBuilderPlugin fixes for charts built from PPQs in Enterprise ([#2167](https://github.com/deephaven/web-client-ui/issues/2167)) ([99b8d59](https://github.com/deephaven/web-client-ui/commit/99b8d5952ba325bf74d2d16ed39eb7a2e897d196))
+
 ## [0.92.0](https://github.com/deephaven/web-client-ui/compare/v0.91.0...v0.92.0) (2024-09-03)
 
 **Note:** Version bump only for package @deephaven/jsapi-bootstrap
