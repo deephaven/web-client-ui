@@ -34,6 +34,7 @@ const nodeModulesToTransform = [
   'web-namespaces',
   'hastscript',
   'nanoid',
+  '@astral-sh/ruff-wasm-web',
 ];
 
 module.exports = {

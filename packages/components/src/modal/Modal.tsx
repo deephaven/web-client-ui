@@ -73,8 +73,7 @@ function Modal({
         onOpened();
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isOpen]
+    [onOpened, isOpen]
   );
 
   useEffect(
@@ -83,8 +82,7 @@ function Modal({
         onClosed();
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isOpen]
+    [onClosed, isOpen]
   );
 
   if (isOpen && !element.current) {

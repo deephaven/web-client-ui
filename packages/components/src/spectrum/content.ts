@@ -7,6 +7,8 @@ export {
   type SpectrumDividerProps as DividerProps,
   Footer,
   type FooterProps,
+  Header,
+  type HeaderProps,
   IllustratedMessage,
   type SpectrumIllustratedMessageProps as IllustratedMessageProps,
   Image,

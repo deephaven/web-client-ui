@@ -525,6 +525,14 @@ class MonacoUtils {
       links: newTokens,
     };
   }
+
+  static generateConsoleUri(): monaco.Uri {
+    return monaco.Uri.parse(`inmemory://dh-console/${nanoid()}`);
+  }
+
+  static isConsoleModel(model: monaco.editor.ITextModel): boolean {
+    return model.uri.toString().startsWith('inmemory://dh-console/');
+  }
 }
 
 export default MonacoUtils;

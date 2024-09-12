@@ -8,6 +8,7 @@ import Log from '@deephaven/log';
 import type { dh } from '@deephaven/jsapi-types';
 import init, { Workspace, type Diagnostic } from '@astral-sh/ruff-wasm-web';
 import RUFF_DEFAULT_SETTINGS from './RuffDefaultSettings';
+import MonacoUtils from './MonacoUtils';
 
 const log = Log.module('MonacoCompletionProvider');
 
@@ -61,6 +62,21 @@ class MonacoProviders extends PureComponent<
       .forEach(MonacoProviders.lintPython);
   }
 
+  static getDiagnostics(model: monaco.editor.ITextModel): Diagnostic[] {
+    if (!MonacoProviders.workspace) {
+      return [];
+    }
+
+    const diagnostics = MonacoProviders.workspace.check(
+      model.getValue()
+    ) as Diagnostic[];
+    if (MonacoUtils.isConsoleModel(model)) {
+      // Only want SyntaxErrors for console which have no code
+      return diagnostics.filter(d => d.code == null);
+    }
+    return diagnostics;
+  }
+
   static lintPython(model: monaco.editor.ITextModel): void {
     if (!MonacoProviders.isRuffEnabled) {
       monaco.editor.setModelMarkers(model, 'ruff', []);
@@ -74,15 +90,15 @@ class MonacoProviders extends PureComponent<
     monaco.editor.setModelMarkers(
       model,
       'ruff',
-      MonacoProviders.workspace.check(model.getValue()).map((d: Diagnostic) => {
-        // Unused variable or import. Mark as warning and unnecessary to
+      MonacoProviders.getDiagnostics(model).map((d: Diagnostic) => {
+        // Unused variable or import. Mark as warning and unnecessary to fade the text
         const isUnnecessary = d.code === 'F401' || d.code === 'F841';
         return {
           startLineNumber: d.location.row,
           startColumn: d.location.column,
           endLineNumber: d.end_location.row,
           endColumn: d.end_location.column,
-          message: `${d.code}: ${d.message}`,
+          message: d.code != null ? `${d.code}: ${d.message}` : d.message, // SyntaxError has no code
           severity: isUnnecessary
             ? monaco.MarkerSeverity.Warning
             : monaco.MarkerSeverity.Error,
@@ -207,9 +223,7 @@ class MonacoProviders extends PureComponent<
       };
     }
 
-    const diagnostics = (
-      MonacoProviders.workspace.check(model.getValue()) as Diagnostic[]
-    ).filter(d => {
+    const diagnostics = MonacoProviders.getDiagnostics(model).filter(d => {
       const diagnosticRange = new monaco.Range(
         d.location.row,
         d.location.column,
