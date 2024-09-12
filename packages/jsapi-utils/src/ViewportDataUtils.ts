@@ -9,12 +9,10 @@ export const ITEM_KEY_PREFIX = 'DH_ITEM_KEY';
 export type OnTableUpdatedEvent = CustomEvent<{
   offset: number;
   columns: dh.Column[];
-  rows: ViewportRow[];
+  rows: dh.Row[];
 }>;
 
-export type RowDeserializer<T> = (row: ViewportRow, columns: dh.Column[]) => T;
-
-export type ViewportRow = dh.Row & { offsetInSnapshot: number };
+export type RowDeserializer<T> = (row: dh.Row, columns: dh.Column[]) => T;
 
 const log = Log.module('ViewportDataUtils');
 
@@ -27,21 +25,6 @@ const log = Log.module('ViewportDataUtils');
  */
 export function createKeyedItemKey(index: number): string {
   return `${ITEM_KEY_PREFIX}_${index}`;
-}
-
-/**
- * Create a unique string key for a row based on its ordinal position in its
- * source table. This is calculated based on it's offset in the viewport
- * (row.offsetInSnapshot) + the offset of the snapshot.
- * @param row Row from a Table update event.
- * @param offset Offset of the current viewport.
- * @returns Unique string key for the ordinal position of the given row.
- */
-export function createKeyFromOffsetRow(
-  row: ViewportRow,
-  offset: number
-): string {
-  return createKeyedItemKey(row.offsetInSnapshot + offset);
 }
 
 /**
@@ -66,9 +49,9 @@ export function createOnTableUpdatedHandler<T>(
 
     const updateKeyMap = new Map<Key, KeyedItem<T>>();
 
-    rows.forEach(row => {
+    rows.forEach((row, offsetInSnapshot) => {
       const item = deserializeRow(row, columns);
-      const key = createKeyFromOffsetRow(row, offset);
+      const key = createKeyedItemKey(offset + offsetInSnapshot);
       updateKeyMap.set(key, { key, item });
     });
 
@@ -86,7 +69,7 @@ export function createOnTableUpdatedHandler<T>(
  * @returns A key / value object for the row.
  */
 export function defaultRowDeserializer<T>(
-  row: ViewportRow,
+  row: dh.Row,
   columns: dh.Column[]
 ): T {
   return columns.reduce((result, col) => {
