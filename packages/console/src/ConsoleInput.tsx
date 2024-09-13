@@ -224,7 +224,6 @@ export class ConsoleInput extends PureComponent<
       const position = commandEditor?.getPosition();
       assertNotNull(position);
       const { lineNumber } = position;
-      const model = commandEditor?.getModel();
       if (
         keyEvent.code === 'ArrowUp' &&
         !this.isSuggestionMenuPopulated() &&

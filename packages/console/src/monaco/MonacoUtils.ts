@@ -23,6 +23,8 @@ import MonacoProviders from './MonacoProviders';
 
 const log = Log.module('MonacoUtils');
 
+const CONSOLE_URI_PREFIX = 'inmemory://dh-console/';
+
 declare global {
   interface Window {
     MonacoEnvironment?: Environment;
@@ -526,12 +528,21 @@ class MonacoUtils {
     };
   }
 
+  /**
+   * Generates a console URI for use with monaco.
+   * @returns A new console URI
+   */
   static generateConsoleUri(): monaco.Uri {
-    return monaco.Uri.parse(`inmemory://dh-console/${nanoid()}`);
+    return monaco.Uri.parse(`${CONSOLE_URI_PREFIX}${nanoid()}`);
   }
 
+  /**
+   * Checks if a model is a console model based on its URI.
+   * @param model The monaco model to check
+   * @returns If the model is a console model
+   */
   static isConsoleModel(model: monaco.editor.ITextModel): boolean {
-    return model.uri.toString().startsWith('inmemory://dh-console/');
+    return model.uri.toString().startsWith(CONSOLE_URI_PREFIX);
   }
 }
 

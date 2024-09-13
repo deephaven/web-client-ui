@@ -56,6 +56,11 @@ class MonacoProviders extends PureComponent<
 
     MonacoProviders.workspace = new Workspace(settings);
 
+    if (!MonacoProviders.isRuffEnabled) {
+      monaco.editor.removeAllMarkers('ruff');
+      return;
+    }
+
     monaco.editor
       .getModels()
       .filter(m => m.getLanguageId() === 'python')
@@ -79,7 +84,6 @@ class MonacoProviders extends PureComponent<
 
   static lintPython(model: monaco.editor.ITextModel): void {
     if (!MonacoProviders.isRuffEnabled) {
-      monaco.editor.setModelMarkers(model, 'ruff', []);
       return;
     }
 

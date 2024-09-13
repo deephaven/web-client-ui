@@ -28,7 +28,34 @@ interface RuffSettingsModalProps {
   onSave: (value: Record<string, unknown>) => void;
 }
 
-const formattedDefault = JSON.stringify(RUFF_DEFAULT_SETTINGS, null, 2);
+const FORMATTED_DEFAULT_SETTINGS = JSON.stringify(
+  RUFF_DEFAULT_SETTINGS,
+  null,
+  2
+);
+
+const RUFF_SETTINGS_URI = monaco.Uri.parse(
+  'inmemory://dh-config/ruff-settings.json'
+);
+
+function registerRuffSchema(): void {
+  const { schemas = [] } =
+    monaco.languages.json.jsonDefaults.diagnosticsOptions;
+
+  if (!schemas.some(schema => schema.uri === 'json://ruff-schema')) {
+    // Register the ruff schema so users get validation and completion
+    monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+      schemas: [
+        ...schemas,
+        {
+          uri: 'json://ruff-schema',
+          fileMatch: [RUFF_SETTINGS_URI.toString()],
+          schema: ruffSchema,
+        },
+      ],
+    });
+  }
+}
 
 export default function RuffSettingsModal({
   text,
@@ -40,13 +67,17 @@ export default function RuffSettingsModal({
   const [isDefault, setIsDefault] = useState(false);
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>();
   const [ruffVersion] = useState(() => Workspace.version() ?? '');
+  const [model] = useState(() =>
+    monaco.editor.createModel(text, 'json', RUFF_SETTINGS_URI)
+  );
 
   const handleClose = useCallback((): void => {
     if (isOpen) {
       onClose();
       editorRef.current = undefined;
+      model.dispose();
     }
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, model]);
 
   const handleSave = useCallback((): void => {
     if (isOpen) {
@@ -60,10 +91,9 @@ export default function RuffSettingsModal({
   }, [isOpen, handleClose, onSave]);
 
   const handleReset = useCallback((): void => {
-    const model = editorRef.current?.getModel();
     assertNotNull(model);
-    model.setValue(formattedDefault);
-  }, []);
+    model.setValue(FORMATTED_DEFAULT_SETTINGS);
+  }, [model]);
 
   const validate = useCallback(val => {
     try {
@@ -73,7 +103,7 @@ export default function RuffSettingsModal({
       setIsValid(false);
     }
     setIsDefault(
-      editorRef.current?.getModel()?.getValue() === formattedDefault
+      editorRef.current?.getModel()?.getValue() === FORMATTED_DEFAULT_SETTINGS
     );
   }, []);
 
@@ -84,29 +114,15 @@ export default function RuffSettingsModal({
   const onEditorInitialized = useCallback(
     (editor: monaco.editor.IStandaloneCodeEditor): void => {
       editorRef.current = editor;
-      const model = editor.getModel();
-      assertNotNull(model);
 
       model.onDidChangeContent(() => {
         debouncedValidate(model.getValue());
       });
 
+      registerRuffSchema();
       debouncedValidate(model.getValue());
-
-      // Register the ruff schema so users get validation and completion
-      monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
-        validate: true,
-        enableSchemaRequest: true,
-        schemas: [
-          {
-            uri: 'json://ruff-schema',
-            fileMatch: [model.uri.toString()],
-            schema: ruffSchema,
-          },
-        ],
-      });
     },
-    [debouncedValidate]
+    [debouncedValidate, model]
   );
 
   if (!isOpen) {
@@ -151,6 +167,7 @@ export default function RuffSettingsModal({
             padding: { bottom: 16 },
             lineNumbers: 'on',
             overviewRulerLanes: 0,
+            model,
           }}
         />
       </ModalBody>
