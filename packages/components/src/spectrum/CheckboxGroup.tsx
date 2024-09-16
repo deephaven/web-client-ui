@@ -1,10 +1,14 @@
+import { isElementOfType } from '@deephaven/react-hooks';
+import React, { ReactNode, useMemo, useState } from 'react';
 import {
   CheckboxGroup as SpectrumCheckboxGroup,
   SpectrumCheckboxGroupProps,
 } from '@adobe/react-spectrum';
-import { isElementOfType } from '@deephaven/react-hooks';
-import React, { useMemo } from 'react';
 import Checkbox from '../Checkbox';
+
+export type CheckboxGroupProps = {
+  children: ReactNode;
+} & Omit<SpectrumCheckboxGroupProps, 'children'>;
 
 /**
  * Augmented version of the Spectrum CheckboxGroup component that supports
@@ -13,16 +17,37 @@ import Checkbox from '../Checkbox';
 export function CheckboxGroup({
   children,
   ...props
-}: SpectrumCheckboxGroupProps): JSX.Element {
+}: CheckboxGroupProps): JSX.Element {
+  const [checkedState, setCheckedState] = useState<{ [key: number]: boolean }>(
+    {}
+  );
+
+  const handleCheckboxChange = (index: number) => {
+    setCheckedState(prevState => ({
+      ...prevState,
+      [index]: !prevState[index],
+    }));
+  };
+
   const wrappedChildren = useMemo(
     () =>
-      React.Children.map(children, child => {
+      React.Children.map(children, (child, index) => {
         if (isElementOfType(child, Checkbox)) {
-          return child;
+          return React.cloneElement(child, {
+            checked: checkedState[index] || false,
+            onChange: () => handleCheckboxChange(index),
+          });
         }
-        return <Checkbox checked={false}>{child}</Checkbox>;
-      }),
-    [children]
+        return (
+          <Checkbox
+            checked={checkedState[index] || false}
+            onChange={() => handleCheckboxChange(index)}
+          >
+            {String(child)}
+          </Checkbox>
+        );
+      }) || [],
+    [children, checkedState]
   );
 
   return (
