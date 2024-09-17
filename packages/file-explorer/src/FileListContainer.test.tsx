@@ -7,6 +7,13 @@ import { ContextMenuRoot } from '@deephaven/components';
 import { FileStorageItem, FileStorageTable } from './FileStorage';
 import FileListContainer, { FileListContainerProps } from './FileListContainer';
 import { makeFiles } from './FileTestUtils';
+import useFileStorage from './useFileStorage';
+
+jest.mock('./useFileStorage');
+
+// jest.mock('./useFileStorage', () => ({
+//   useFileStorage: jest.fn(() => new MockFileStorage([])),
+// }));
 
 const renderFileListContainer = async ({
   table = {} as FileStorageTable,
@@ -37,6 +44,7 @@ const renderFileListContainer = async ({
 it('mounts properly and shows file list', async () => {
   const files = makeFiles();
   const fileStorage = new MockFileStorage(files);
+  TestUtils.asMock(useFileStorage).mockReturnValue(fileStorage);
   const table = await fileStorage.getTable();
   renderFileListContainer({ table });
 
@@ -98,6 +106,7 @@ describe('renders correct context menu actions', () => {
     user = userEvent.setup();
     files = makeFiles();
     const fileStorage = new MockFileStorage(files);
+    TestUtils.asMock(useFileStorage).mockReturnValue(fileStorage);
     table = await fileStorage.getTable();
   });
 

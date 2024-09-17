@@ -109,13 +109,13 @@ export class FileExplorerPanel extends React.Component<
     this.handleShow = this.handleShow.bind(this);
     this.handleSelectionChange = this.handleSelectionChange.bind(this);
 
-    const { session, language } = props;
+    const { session, fileStorage, language } = props;
     this.state = {
       isShown: false,
       language,
       session,
       showCreateFolder: false,
-      focusedFilePath: '/',
+      focusedFilePath: fileStorage.separator,
     };
   }
 
@@ -183,12 +183,14 @@ export class FileExplorerPanel extends React.Component<
   }
 
   handleSelectionChange(selectedItems: FileStorageItem[]): void {
-    let path = '/';
+    const { fileStorage } = this.props;
+    const { separator } = fileStorage;
+    let path = separator;
     if (selectedItems.length === 1) {
       if (selectedItems[0].type === 'directory') {
-        path = FileUtils.makePath(selectedItems[0].filename);
+        path = FileUtils.makePath(selectedItems[0].filename, separator);
       } else {
-        path = FileUtils.getPath(selectedItems[0].filename);
+        path = FileUtils.getPath(selectedItems[0].filename, separator);
       }
     }
     this.setState({ focusedFilePath: path });
@@ -271,7 +273,6 @@ export class FileExplorerPanel extends React.Component<
         {isShown && (
           <FileExplorer
             isMultiSelect
-            storage={fileStorage}
             onCopy={this.handleCopyFile}
             onCreateFile={this.handleCreateFile}
             onCreateFolder={this.handleCreateDirectory}

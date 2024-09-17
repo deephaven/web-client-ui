@@ -19,8 +19,11 @@ export class MockFileStorageTable implements FileStorageTable {
 
   private onUpdateCallback?: ViewportUpdateCallback<FileStorageItem>;
 
-  constructor(items: FileStorageItem[]) {
+  public readonly separator: string;
+
+  constructor(items: FileStorageItem[], separator = '/') {
     this.items = items;
+    this.separator = separator;
   }
 
   /* eslint-disable class-methods-use-this */

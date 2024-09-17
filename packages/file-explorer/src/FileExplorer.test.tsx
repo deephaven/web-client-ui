@@ -14,29 +14,25 @@ import FileStorage, {
 } from './FileStorage';
 import FileExplorer, { FileExplorerProps } from './FileExplorer';
 import { makeDirectories, makeFiles, makeNested } from './FileTestUtils';
+import useFileStorage from './useFileStorage';
+
+const { asMock, createMockProxy } = TestUtils;
+jest.mock('./useFileStorage');
 
 function makeMockFileStorage(): FileStorage {
-  return {
-    getTable: jest.fn(),
-    saveFile: jest.fn(),
-    loadFile: jest.fn(),
-    deleteFile: jest.fn(),
-    moveFile: jest.fn(),
-    info: jest.fn(),
-    createDirectory: jest.fn(),
-  };
+  return createMockProxy<FileStorage>({
+    separator: '/',
+  });
 }
 
 function renderFileExplorer({
-  storage,
   onSelect = jest.fn(),
   onRename = jest.fn(),
   onDelete = jest.fn(),
-}: Partial<FileExplorerProps> & Pick<FileExplorerProps, 'storage'>) {
+}: Partial<FileExplorerProps> = {}) {
   return render(
     <>
       <FileExplorer
-        storage={storage}
         onSelect={onSelect}
         onRename={onRename}
         onDelete={onDelete}
@@ -47,7 +43,8 @@ function renderFileExplorer({
 }
 
 it('mounts and unmounts successfully without crashing', () => {
-  renderFileExplorer({ storage: makeMockFileStorage() });
+  asMock(useFileStorage).mockReturnValue(makeMockFileStorage());
+  renderFileExplorer();
 });
 
 it('mounts properly and shows file list', async () => {
@@ -55,7 +52,9 @@ it('mounts properly and shows file list', async () => {
 
   const storage = new MockFileStorage(files);
 
-  renderFileExplorer({ storage });
+  asMock(useFileStorage).mockReturnValue(storage);
+
+  renderFileExplorer();
 
   const foundItems = await screen.findAllByRole('listitem');
   expect(foundItems).toHaveLength(files.length);
@@ -88,10 +87,11 @@ describe('context menu actions work properly', () => {
     files = makeFiles();
     files.push(makeNested([2], 2));
     files.push(makeNested([0, 3], 4));
-    items = dirs.concat(files);
+    items = [...dirs, ...files];
 
     const fileStorage = new MockFileStorage(items);
-    renderFileExplorer({ storage: fileStorage, onRename, onDelete });
+    asMock(useFileStorage).mockReturnValue(fileStorage);
+    renderFileExplorer({ onRename, onDelete });
     const foundItems = await screen.findAllByRole('listitem');
     expect(foundItems).toHaveLength(items.length);
   });

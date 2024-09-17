@@ -55,7 +55,7 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
   static propTypes = {
     isOpen: PropTypes.bool,
     title: PropTypes.string.isRequired,
-    defaultValue: PropTypes.string,
+    defaultValue: PropTypes.string.isRequired,
     type: PropTypes.oneOf(['file', 'directory']).isRequired,
     onSubmit: PropTypes.func,
     onCancel: PropTypes.func,
@@ -66,7 +66,6 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
 
   static defaultProps = {
     isOpen: false,
-    defaultValue: '/',
     notifyOnExtensionChange: false,
     placeholder: '',
     onSubmit: (name: string, isOverwrite?: boolean): void => undefined,
@@ -102,19 +101,20 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
       this.handleExtensionChangeConfirm.bind(this);
     this.handleBreadcrumbSelect = this.handleBreadcrumbSelect.bind(this);
 
-    const { defaultValue } = props;
+    const { defaultValue, storage } = props;
+    const { separator } = storage;
 
-    const path = FileUtils.hasPath(defaultValue)
-      ? FileUtils.getPath(defaultValue)
-      : '/';
+    const path = FileUtils.hasPath(defaultValue, separator)
+      ? FileUtils.getPath(defaultValue, separator)
+      : separator;
 
     this.state = {
       isSubmitting: false,
       path,
-      prevExtension: FileUtils.getExtension(defaultValue),
+      prevExtension: FileUtils.getExtension(defaultValue, separator),
       showExtensionChangeModal: false,
       showOverwriteModal: false,
-      value: FileUtils.getBaseName(defaultValue),
+      value: FileUtils.getBaseName(defaultValue, separator),
     };
   }
 
@@ -164,15 +164,16 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
   private isInitialLoad = true;
 
   resetValue(): void {
-    const { defaultValue } = this.props as NewItemModalProps;
-    const path = FileUtils.hasPath(defaultValue)
-      ? FileUtils.getPath(defaultValue)
-      : '/';
+    const { defaultValue, storage } = this.props as NewItemModalProps;
+    const { separator } = storage;
+    const path = FileUtils.hasPath(defaultValue, separator)
+      ? FileUtils.getPath(defaultValue, separator)
+      : storage.separator;
     this.setState({
       path,
-      value: FileUtils.getBaseName(defaultValue),
+      value: FileUtils.getBaseName(defaultValue, separator),
       validationError: undefined,
-      prevExtension: FileUtils.getExtension(defaultValue),
+      prevExtension: FileUtils.getExtension(defaultValue, separator),
       isSubmitting: false,
     });
   }
@@ -240,13 +241,15 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
   }
 
   handleSelect(item: FileStorageItem): void {
+    const { storage } = this.props;
+    const { separator } = storage;
     log.debug('handleSelect', item);
     if (item.type === 'directory') {
-      this.setState({ path: FileUtils.makePath(item.filename) });
+      this.setState({ path: FileUtils.makePath(item.filename, separator) });
     } else {
       // Use selected item name and folder and focus the input
       const value = item.basename;
-      const path = FileUtils.getPath(item.filename);
+      const path = FileUtils.getPath(item.filename, separator);
       this.setState({ value, path }, () => {
         this.focusRenameInput();
       });
@@ -338,9 +341,10 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
 
   submitModal(skipExtensionCheck = false): void {
     this.setState(({ prevExtension, value, path }) => {
-      const { notifyOnExtensionChange, type } = this.props;
+      const { notifyOnExtensionChange, storage, type } = this.props;
+      const { separator } = storage;
       log.debug('submitModal', prevExtension, value);
-      const newExtension = FileUtils.getExtension(value);
+      const newExtension = FileUtils.getExtension(value, separator);
       if (
         notifyOnExtensionChange &&
         !skipExtensionCheck &&
@@ -392,14 +396,16 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
   }
 
   renderPathButtons(path: string): React.ReactNode {
-    const pathAsList = path.split('/');
+    const { storage } = this.props;
+    const { separator } = storage;
+    const pathAsList = path.split(separator);
     pathAsList.pop();
     return pathAsList.map((basename, index) => {
       let directoryPath = '';
       for (let i = 0; i < index; i += 1) {
-        directoryPath += `${pathAsList[i]}/`;
+        directoryPath += `${pathAsList[i]}${separator}`;
       }
-      directoryPath += `${basename}/`;
+      directoryPath += `${basename}${separator}`;
 
       return (
         <React.Fragment key={directoryPath}>
@@ -424,7 +430,7 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
   }
 
   render(): React.ReactNode {
-    const { storage, isOpen, onCancel, placeholder, title, type } = this.props;
+    const { isOpen, onCancel, placeholder, title, type } = this.props;
     const {
       isSubmitting,
       path,
@@ -485,7 +491,6 @@ class NewItemModal extends PureComponent<NewItemModalProps, NewItemModalState> {
                 <div className="flex-grow-1 file-explorer-container">
                   <FileExplorer
                     onSelect={this.handleSelect}
-                    storage={storage}
                     focusedPath={path}
                   />
                 </div>

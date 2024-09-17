@@ -25,6 +25,8 @@ export class GrpcFileStorage implements FileStorage {
 
   private readonly root: string;
 
+  public readonly separator: string;
+
   /**
    * FileStorage implementation using gRPC
    * @param storageService Storage service to use
@@ -33,11 +35,13 @@ export class GrpcFileStorage implements FileStorage {
   constructor(
     dh: typeof DhType,
     storageService: DhType.storage.StorageService,
-    root = ''
+    root = '',
+    separator = '/'
   ) {
     this.dh = dh;
     this.storageService = storageService;
     this.root = root;
+    this.separator = separator;
   }
 
   private removeRoot(filename: string): string {
@@ -55,12 +59,17 @@ export class GrpcFileStorage implements FileStorage {
       type: 'directory',
       id: path,
       filename: path,
-      basename: FileUtils.getBaseName(path),
+      basename: FileUtils.getBaseName(path, this.separator),
     };
   }
 
   async getTable(): Promise<FileStorageTable> {
-    const table = new GrpcFileStorageTable(this.storageService, this.root);
+    const table = new GrpcFileStorageTable(
+      this.storageService,
+      this.root,
+      this.root,
+      this.separator
+    );
     this.tables.push(table);
     return table;
   }
@@ -81,7 +90,7 @@ export class GrpcFileStorage implements FileStorage {
     const content = await fileContents.text();
     return {
       filename: name,
-      basename: FileUtils.getBaseName(name),
+      basename: FileUtils.getBaseName(name, this.separator),
       content,
     };
   }
@@ -111,8 +120,8 @@ export class GrpcFileStorage implements FileStorage {
 
   async info(name: string): Promise<FileStorageItem> {
     const allItems = await this.storageService.listItems(
-      this.addRoot(FileUtils.getPath(name)),
-      FileUtils.getBaseName(name)
+      this.addRoot(FileUtils.getPath(name, this.separator)),
+      FileUtils.getBaseName(name, this.separator)
     );
     if (allItems.length === 0) {
       throw new FileNotFoundError();
