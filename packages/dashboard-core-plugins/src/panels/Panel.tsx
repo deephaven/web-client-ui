@@ -11,6 +11,7 @@ import memoize from 'memoize-one';
 import {
   ContextAction,
   ContextActions,
+  createXComponent,
   LoadingOverlay,
   Tooltip,
 } from '@deephaven/components';
@@ -31,7 +32,7 @@ import './Panel.scss';
 
 const log = Log.module('Panel');
 
-interface PanelProps {
+export type CorePanelProps = {
   /**
    * Reference to the component panel.
    * Will wait until it is set before emitting mount/unmount events.
@@ -65,7 +66,7 @@ interface PanelProps {
   isLoaded?: boolean;
   isClonable?: boolean;
   isRenamable?: boolean;
-}
+};
 
 interface PanelState {
   title?: string | null;
@@ -77,8 +78,8 @@ interface PanelState {
  * Also wires up some triggers for common events:
  * Focus, Resize, Show, Session open/close, client disconnect/reconnect.
  */
-class Panel extends PureComponent<PanelProps, PanelState> {
-  constructor(props: PanelProps) {
+class Panel extends PureComponent<CorePanelProps, PanelState> {
+  constructor(props: CorePanelProps) {
     super(props);
 
     this.handleClearAllFilters = this.handleClearAllFilters.bind(this);
@@ -379,4 +380,6 @@ class Panel extends PureComponent<PanelProps, PanelState> {
   }
 }
 
-export default Panel;
+const XPanel = createXComponent(Panel);
+
+export default XPanel;
