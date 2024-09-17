@@ -160,7 +160,7 @@ export interface WidgetPlugin<T = unknown> extends Plugin {
    * If a react node is provided (including a string), it will be rendered directly.
    * If no icon is specified, the default widget icon will be used.
    */
-  icon?: IconDefinition | React.ReactElement;
+  icon?: IconDefinition | React.ReactElement<unknown>;
 }
 
 export function isWidgetPlugin(plugin: PluginModule): plugin is WidgetPlugin {

@@ -256,7 +256,9 @@ export function isNormalizedItemsWithKeysList<
     return true;
   }
 
-  return !isItemOrSection(node[0]) && 'key' in node[0];
+  return (
+    !isItemOrSection(node[0]) && typeof node[0] === 'object' && 'key' in node[0]
+  );
 }
 
 /**

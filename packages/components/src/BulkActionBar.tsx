@@ -22,7 +22,7 @@ export function BulkActionBar({
       selectedItemCount={selectedItemCount}
       onClearSelection={onClearSelection}
     >
-      {/* */}
+      <span />
     </ActionBar>
   );
 }

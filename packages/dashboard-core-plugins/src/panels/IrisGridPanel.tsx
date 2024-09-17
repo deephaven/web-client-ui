@@ -62,6 +62,7 @@ import {
 import {
   assertNotNull,
   CancelablePromise,
+  EventT,
   PromiseUtils,
 } from '@deephaven/utils';
 import { ResolvableContextAction } from '@deephaven/components';
@@ -703,7 +704,7 @@ export class IrisGridPanel extends PureComponent<
     }
   }
 
-  handleColumnsChanged(event: Event): void {
+  handleColumnsChanged(event: EventT): void {
     const { isModelReady, model, modelQueue } = this.state;
     if (isModelReady) {
       this.sendColumnsChange((event as CustomEvent).detail);
@@ -713,7 +714,7 @@ export class IrisGridPanel extends PureComponent<
     }
   }
 
-  handleTableChanged(event: Event): void {
+  handleTableChanged(event: EventT): void {
     log.debug('handleTableChanged', event);
     const { glEventHub } = this.props;
     const { detail: table } = event as CustomEvent;

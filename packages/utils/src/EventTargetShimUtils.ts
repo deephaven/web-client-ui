@@ -1,5 +1,7 @@
 import type { Event, EventTarget } from 'event-target-shim';
 
+export type EventT<T extends string = string> = Event<T>;
+
 /**
  * A CustomEvent extension which combines the browser CustomEvent and event-target-shim's Event types for type safety
  * CustomEvent does not have a generic type and augmenting the dom types seemed like not the best idea
