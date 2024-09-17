@@ -1,6 +1,6 @@
 /// <reference types="./declaration" />
 
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import { resolveCssVariablesInRecord } from '@deephaven/components';
 import { defaultChartTheme } from './ChartTheme';
 import chartThemeRaw from './ChartTheme.module.scss';

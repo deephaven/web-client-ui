@@ -1,5 +1,5 @@
 import dh from '@deephaven/jsapi-shim';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import ChartModelFactory from './ChartModelFactory';
 import type { ChartTheme } from './ChartTheme';
 import FigureChartModel from './FigureChartModel';

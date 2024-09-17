@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import { renderHook } from '@testing-library/react-hooks';
 import type { FocusableRefValue } from '@react-types/shared';
 import useFormWithDetachedSubmitButton from './useFormWithDetachedSubmitButton';

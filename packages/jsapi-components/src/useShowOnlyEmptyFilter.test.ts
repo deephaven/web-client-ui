@@ -5,7 +5,7 @@ import {
   createShowOnlyEmptyFilterCondition,
   TableUtils,
 } from '@deephaven/jsapi-utils';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import useShowOnlyEmptyFilter from './useShowOnlyEmptyFilter';
 import useTableUtils from './useTableUtils';
 

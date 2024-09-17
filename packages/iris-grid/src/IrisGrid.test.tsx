@@ -2,7 +2,7 @@ import React, { ReactElement } from 'react';
 import TestRenderer from 'react-test-renderer';
 import dh from '@deephaven/jsapi-shim';
 import { DateUtils, Settings } from '@deephaven/jsapi-utils';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import { TypeValue } from '@deephaven/filters';
 import IrisGrid from './IrisGrid';
 import IrisGridTestUtils from './IrisGridTestUtils';

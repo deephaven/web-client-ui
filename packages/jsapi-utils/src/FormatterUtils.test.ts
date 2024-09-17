@@ -1,5 +1,5 @@
 import dh from '@deephaven/jsapi-shim';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import Formatter, { FormattingRule } from './Formatter';
 import FormatterUtils, {
   createFormatterFromSettings,

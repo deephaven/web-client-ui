@@ -19,7 +19,7 @@ import type {
   IdeSession,
   VariableChanges,
 } from '@deephaven/jsapi-types';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import { Workspace, createMockStore } from '@deephaven/redux';
 import userEvent from '@testing-library/user-event';
 import { DEFAULT_DASHBOARD_ID } from '@deephaven/dashboard';

@@ -9,7 +9,7 @@ import React from 'react';
 import { Formatter } from '@deephaven/jsapi-utils';
 import { ApiContext } from '@deephaven/jsapi-bootstrap';
 import dh from '@deephaven/jsapi-shim';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import {
   ColumnSpecificSectionContent,
   ColumnSpecificSectionContentProps,

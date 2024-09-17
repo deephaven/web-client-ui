@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import { act, renderHook } from '@testing-library/react-hooks';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import usePopoverOnScrollRef from './usePopoverOnScrollRef';
 
 const { asMock, createMockProxy } = TestUtils;
