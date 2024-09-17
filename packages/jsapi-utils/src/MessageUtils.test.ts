@@ -1,4 +1,4 @@
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import {
   makeMessage,
   makeResponse,

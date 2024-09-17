@@ -21,6 +21,7 @@
     { "path": "../plugin" },
     { "path": "../react-hooks" },
     { "path": "../redux" },
+    { "path": "../test-utils" },
     { "path": "../utils" }
   ]
 }

@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react-hooks';
 import { HTMLAttributes } from 'react';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import useSetAttributesCallback from './useSetAttributesCallback';
 
 beforeEach(() => {

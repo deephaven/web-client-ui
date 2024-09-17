@@ -66,6 +66,7 @@
     "@deephaven/prettier-config": "file:../prettier-config",
     "@deephaven/redux": "file:../redux",
     "@deephaven/stylelint-config": "file:../stylelint-config",
+    "@deephaven/test-utils": "file:../test-utils",
     "@deephaven/tsconfig": "file:../tsconfig",
     "@deephaven/utils": "file:../utils",
     "@fortawesome/fontawesome-common-types": "^6.1.1",

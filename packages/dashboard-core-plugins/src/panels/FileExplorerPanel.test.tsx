@@ -12,7 +12,7 @@ import {
   FileStorageItem,
 } from '@deephaven/file-explorer';
 import type { Container } from '@deephaven/golden-layout';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import { FileExplorerPanel, FileExplorerPanelProps } from './FileExplorerPanel';
 import MockFileStorage from './MockFileStorage';
 

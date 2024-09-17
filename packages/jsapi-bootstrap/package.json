@@ -29,6 +29,7 @@
     "@deephaven/utils": "file:../utils"
   },
   "devDependencies": {
+    "@deephaven/test-utils": "file:../test-utils",
     "react": "^17.x"
   },
   "peerDependencies": {

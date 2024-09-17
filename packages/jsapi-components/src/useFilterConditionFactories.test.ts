@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react-hooks';
 import type { FilterCondition, Table } from '@deephaven/jsapi-types';
 import { FilterConditionFactory } from '@deephaven/jsapi-utils';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import useFilterConditionFactories from './useFilterConditionFactories';
 
 const { asMock, createMockProxy } = TestUtils;

@@ -11,7 +11,8 @@ import {
   useDebouncedValue,
   type WindowedListData,
 } from '@deephaven/react-hooks';
-import { KeyedItem, TestUtils } from '@deephaven/utils';
+import { KeyedItem } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import usePickerWithSelectedValues from './usePickerWithSelectedValues';
 import useViewportData, { UseViewportDataResult } from './useViewportData';
 import useViewportFilter from './useViewportFilter';

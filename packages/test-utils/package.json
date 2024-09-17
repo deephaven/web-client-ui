@@ -1,36 +1,25 @@
 {
-  "name": "@deephaven/jsapi-utils",
+  "name": "@deephaven/test-utils",
   "version": "0.93.0",
-  "description": "Deephaven JSAPI Utils",
+  "description": "Deephaven Test Utils",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
   "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/deephaven/web-client-ui.git",
-    "directory": "packages/jsapi-utils"
+    "directory": "packages/utils"
   },
+  "source": "src/index.js",
   "main": "dist/index.js",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "source": "src/index.ts",
   "engines": {
     "node": ">=16"
   },
   "scripts": {
     "build": "cross-env NODE_ENV=production run-p build:*",
     "build:babel": "babel ./src --out-dir ./dist --extensions \".ts,.tsx,.js,.jsx\" --source-maps --root-mode upward"
-  },
-  "dependencies": {
-    "@deephaven/filters": "file:../filters",
-    "@deephaven/jsapi-types": "^1.0.0-dev0.34.0",
-    "@deephaven/log": "file:../log",
-    "@deephaven/utils": "file:../utils",
-    "lodash.clamp": "^4.0.3",
-    "nanoid": "^5.0.7"
-  },
-  "devDependencies": {
-    "@deephaven/jsapi-shim": "file:../jsapi-shim",
-    "@deephaven/test-utils": "file:../test-utils"
   },
   "files": [
     "dist"

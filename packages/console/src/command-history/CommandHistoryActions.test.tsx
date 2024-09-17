@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import CommandHistoryActions from './CommandHistoryActions';
 
 const { asMock } = TestUtils;

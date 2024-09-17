@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { useContext } from 'react';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import { useDeferredApi } from './useDeferredApi';
 import { VariableDescriptor } from './useObjectFetcher';
 

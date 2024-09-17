@@ -1,5 +1,3 @@
-import type { Component, FunctionComponent } from 'react';
-
 /**
  * Util type to create a "subtype" of T. Useful for creating subsets of union
  * types.
@@ -16,15 +14,6 @@ import type { Component, FunctionComponent } from 'react';
 export type Extends<T, U extends T> = U extends T ? U : never;
 
 /**
- * Extracts the props type from a React component type.
- */
-export type InferComponentProps<T> = T extends FunctionComponent<infer P>
-  ? P
-  : T extends Component<infer P>
-  ? P
-  : never;
-
-/**
  * Derives a union type where all constituents define 1 property of the original
  * type.
  *
@@ -37,35 +26,6 @@ export type InferComponentProps<T> = T extends FunctionComponent<infer P>
 export type OnlyOneProp<T> = {
   [P in keyof T]: { [ONEPROP in P]: T[ONEPROP] };
 }[keyof T];
-
-/**
- * Tuple type.
- * @param T Type of the items in the tuple
- * @param N Length of the tuple
- */
-export type Tuple<T, N extends number> = N extends 0
-  ? []
-  : N extends 1
-  ? [T]
-  : N extends 2
-  ? [T, T]
-  : N extends 3
-  ? [T, T, T]
-  : N extends 4
-  ? [T, T, T, T]
-  : N extends 5
-  ? [T, T, T, T, T]
-  : N extends 6
-  ? [T, T, T, T, T, T]
-  : N extends 7
-  ? [T, T, T, T, T, T, T]
-  : N extends 8
-  ? [T, T, T, T, T, T, T, T]
-  : N extends 9
-  ? [T, T, T, T, T, T, T, T, T]
-  : N extends 10
-  ? [T, T, T, T, T, T, T, T, T, T]
-  : Array<T>;
 
 /**
  * Remove `Partial` wrapper from a type. Note that this is slightly different

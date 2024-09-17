@@ -8,7 +8,7 @@ import {
   TableUtils,
 } from '@deephaven/jsapi-utils';
 import { useDebouncedCallback } from '@deephaven/react-hooks';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import useSearchableViewportData from './useSearchableViewportData';
 import useViewportData, { UseViewportDataResult } from './useViewportData';
 import useTableUtils from './useTableUtils';

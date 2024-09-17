@@ -7,7 +7,7 @@ import type {
 } from '@deephaven/jsapi-types';
 import dh from '@deephaven/jsapi-shim';
 import { TableUtils } from '@deephaven/jsapi-utils';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import useDebouncedViewportSearch, {
   DEBOUNCE_VIEWPORT_SEARCH_MS,
 } from './useDebouncedViewportSearch';
