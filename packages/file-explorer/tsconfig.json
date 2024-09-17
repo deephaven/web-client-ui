@@ -16,6 +16,7 @@
     {
       "path": "../storage"
     },
+    { "path": "../test-utils" },
     {
       "path": "../utils"
     }

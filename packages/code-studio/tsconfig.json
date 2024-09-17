@@ -32,6 +32,7 @@
     { "path": "../redux" },
     { "path": "../storage" },
     { "path": "../utils" },
-    { "path": "../filters" }
+    { "path": "../filters" },
+    { "path": "../test-utils" }
   ]
 }

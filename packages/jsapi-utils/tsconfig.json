@@ -10,7 +10,7 @@
     { "path": "../filters" },
     { "path": "../jsapi-shim" },
     { "path": "../log" },
-    { "path": "../utils" },
-    { "path": "../test-utils" }
+    { "path": "../test-utils" },
+    { "path": "../utils" }
   ]
 }

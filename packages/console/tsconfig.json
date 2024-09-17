@@ -13,6 +13,7 @@
     { "path": "../jsapi-shim" },
     { "path": "../log" },
     { "path": "../storage" },
+    { "path": "../test-utils" },
     { "path": "../utils" }
   ]
 }

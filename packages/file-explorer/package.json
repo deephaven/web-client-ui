@@ -37,7 +37,8 @@
     "react": ">=16.8.0"
   },
   "devDependencies": {
-    "@deephaven/mocks": "file:../mocks"
+    "@deephaven/mocks": "file:../mocks",
+    "@deephaven/test-utils": "file:../test-utils"
   },
   "files": [
     "dist"
