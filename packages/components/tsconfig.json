@@ -9,6 +9,7 @@
   "references": [
     { "path": "../log" },
     { "path": "../react-hooks" },
-    { "path": "../utils" }
+    { "path": "../utils" },
+    { "path": "../test-utils" }
   ]
 }

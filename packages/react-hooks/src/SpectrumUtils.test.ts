@@ -1,4 +1,5 @@
-import { KeyedItem, TestUtils } from '@deephaven/utils';
+import { KeyedItem } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import type { DOMRefValue } from '@react-types/shared';
 import {
   createValidationProps,

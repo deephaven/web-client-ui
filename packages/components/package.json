@@ -59,6 +59,7 @@
   },
   "devDependencies": {
     "@deephaven/mocks": "file:../mocks",
+    "@deephaven/test-utils": "file:../test-utils",
     "react-redux": "^7.2.4"
   },
   "files": [

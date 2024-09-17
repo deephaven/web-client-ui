@@ -29,7 +29,8 @@
     "nanoid": "^5.0.7"
   },
   "devDependencies": {
-    "@deephaven/jsapi-shim": "file:../jsapi-shim"
+    "@deephaven/jsapi-shim": "file:../jsapi-shim",
+    "@deephaven/test-utils": "file:../test-utils"
   },
   "files": [
     "dist"

@@ -12,7 +12,8 @@ import {
   useMappedSelection,
   WindowedListData,
 } from '@deephaven/react-hooks';
-import { KeyedItem, TestUtils } from '@deephaven/utils';
+import { KeyedItem } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import useDebouncedViewportSelectionFilter, {
   DEBOUNCE_MS,
 } from './useDebouncedViewportSelectionFilter';

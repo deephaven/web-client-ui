@@ -28,6 +28,9 @@
     "lodash.throttle": "^4.1.1",
     "nanoid": "^5.0.7"
   },
+  "devDependencies": {
+    "@deephaven/test-utils": "file:../test-utils"
+  },
   "peerDependencies": {
     "react": ">=16.8.0"
   },

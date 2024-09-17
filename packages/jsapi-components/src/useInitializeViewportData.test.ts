@@ -2,7 +2,8 @@ import { act, renderHook } from '@testing-library/react-hooks';
 import type { dh } from '@deephaven/jsapi-types';
 import { generateEmptyKeyedItems } from '@deephaven/jsapi-utils';
 import { WindowedListData } from '@deephaven/react-hooks';
-import { ITEM_KEY_PREFIX, KeyedItem, TestUtils } from '@deephaven/utils';
+import { ITEM_KEY_PREFIX, KeyedItem } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import useInitializeViewportData from './useInitializeViewportData';
 import useTableSize from './useTableSize';
 
