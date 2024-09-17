@@ -137,7 +137,7 @@ export class LogProxy {
   ): void {
     this.eventTarget.removeEventListener(
       type,
-      listener as Parameters<EventTarget['addEventListener']>[1]
+      listener as Parameters<EventTarget['removeEventListener']>[1]
     );
   }
 }
