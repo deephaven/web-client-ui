@@ -8,7 +8,7 @@ import { assertNotNull } from '@deephaven/utils';
 import MonacoUtils from '../monaco/MonacoUtils';
 import './Editor.scss';
 
-interface EditorProps {
+export interface EditorProps {
   className: string;
   onEditorInitialized: (editor: monaco.editor.IStandaloneCodeEditor) => void;
   onEditorWillDestroy: (editor: monaco.editor.IStandaloneCodeEditor) => void;
