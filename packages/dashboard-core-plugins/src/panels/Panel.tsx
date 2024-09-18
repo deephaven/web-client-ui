@@ -13,6 +13,7 @@ import {
   ContextActions,
   createXComponent,
   LoadingOverlay,
+  ResolvableContextAction,
   Tooltip,
 } from '@deephaven/components';
 import { LayoutUtils, PanelComponent, PanelEvent } from '@deephaven/dashboard';
@@ -60,7 +61,7 @@ export type CorePanelProps = {
   onTabBlur?: (...args: unknown[]) => void;
   onTabFocus?: (...args: unknown[]) => void;
   renderTabTooltip?: () => ReactNode;
-  additionalActions?: ContextAction[];
+  additionalActions?: ResolvableContextAction[];
   errorMessage?: string;
   isLoading?: boolean;
   isLoaded?: boolean;

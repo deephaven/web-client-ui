@@ -10,7 +10,7 @@ export type ResolvableContextAction =
 export type MenuItem = ContextAction | Promise<ContextAction[]>;
 
 export interface ContextAction {
-  title?: string;
+  title?: string | JSX.Element;
   description?: string;
   action?: (event: Event) => void;
   actions?: ResolvableContextAction[];
