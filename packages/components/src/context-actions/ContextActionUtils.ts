@@ -14,7 +14,7 @@ export interface ContextAction {
   description?: string;
   action?: (event: Event) => void;
   actions?: ResolvableContextAction[];
-  icon?: IconDefinition | React.ReactElement;
+  icon?: IconDefinition | React.ReactElement<unknown>;
   iconColor?: string;
   shortcut?: Shortcut;
 

@@ -88,6 +88,7 @@ import {
   PromiseUtils,
   ValidationError,
   getOrThrow,
+  type EventT,
 } from '@deephaven/utils';
 import {
   Type as FilterType,
@@ -3103,7 +3104,7 @@ class IrisGrid extends Component<IrisGridProps, IrisGridState> {
     }));
   }
 
-  handleRequestFailed(event: Event): void {
+  handleRequestFailed(event: EventT): void {
     const { detail: error } = event as CustomEvent;
     log.error('request failed:', error);
     this.stopLoading();

@@ -6,7 +6,7 @@ import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, DragUtils, LoadingSpinner } from '@deephaven/components';
 import { dhNewCircleLargeFilled, vsWarning, vsPass } from '@deephaven/icons';
-import { DbNameValidator } from '@deephaven/utils';
+import { DbNameValidator, EventT } from '@deephaven/utils';
 import CustomColumnInput from './CustomColumnInput';
 import './CustomColumnBuilder.scss';
 import IrisGridModel from '../IrisGridModel';
@@ -211,7 +211,7 @@ class CustomColumnBuilder extends Component<
     );
   }
 
-  handleRequestFailed(event: Event): void {
+  handleRequestFailed(event: EventT): void {
     const customEvent = event as CustomEvent;
     const { isCustomColumnApplying } = this.state;
     if (!isCustomColumnApplying) {
