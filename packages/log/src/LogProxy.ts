@@ -124,7 +124,6 @@ export class LogProxy {
     type: LOG_PROXY_TYPE,
     listener: (event: CustomEvent<unknown[]>) => void
   ): void {
-    // The cast as EventListener is a dumb TypeScript issue
     this.eventTarget.addEventListener(
       type,
       listener as Parameters<EventTarget['addEventListener']>[1]
