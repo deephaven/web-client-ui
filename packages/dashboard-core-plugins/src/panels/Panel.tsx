@@ -294,7 +294,7 @@ class Panel extends PureComponent<CorePanelProps, PanelState> {
 
   getAdditionalActions = memoize(
     (
-      actions: readonly ContextAction[],
+      actions: readonly ResolvableContextAction[],
       isClonable: boolean,
       isRenamable: boolean
     ) => {
