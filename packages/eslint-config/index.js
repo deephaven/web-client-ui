@@ -89,7 +89,10 @@ module.exports = {
       plugins: ['@typescript-eslint'],
       extends: ['plugin:@typescript-eslint/recommended'],
       rules: {
-        '@typescript-eslint/consistent-type-imports': 'error',
+        '@typescript-eslint/consistent-type-imports': [
+          'error',
+          { fixStyle: 'inline-type-imports' },
+        ],
         '@typescript-eslint/default-param-last': ['error'],
         '@typescript-eslint/explicit-module-boundary-types': 'error',
         '@typescript-eslint/method-signature-style': 'error',
