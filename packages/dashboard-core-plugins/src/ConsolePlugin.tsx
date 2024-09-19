@@ -14,6 +14,7 @@ import {
 import { FileUtils } from '@deephaven/file-explorer';
 import { CloseOptions, isComponent } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
+import { getNotebookSettings } from '@deephaven/redux';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { nanoid } from 'nanoid';
@@ -26,7 +27,6 @@ import {
   NotebookPanel,
 } from './panels';
 import { setDashboardConsoleSettings } from './redux';
-import { getNotebookSettings } from '@deephaven/redux';
 
 const log = Log.module('ConsolePlugin');
 
@@ -80,7 +80,6 @@ export function ConsolePlugin(
   const { isEnabled: ruffEnabled = false, config: ruffConfig } = linter;
   useEffect(
     function setRuffSettings() {
-      console.log('setRuffSettings', ruffEnabled, ruffConfig);
       MonacoProviders.isRuffEnabled = ruffEnabled;
       MonacoProviders.setRuffSettings(ruffConfig);
     },
