@@ -89,23 +89,24 @@ module.exports = {
       plugins: ['@typescript-eslint'],
       extends: ['plugin:@typescript-eslint/recommended'],
       rules: {
-        'default-case': 'off', // Typescript checks for exhaustive switch/case and doesn't require a default
-        'consistent-return': 'off', // JS rule which complains if you don't have a default case
-        'no-shadow': 'off',
-        '@typescript-eslint/no-shadow': ['error'],
-        'no-use-before-define': 'off',
-        '@typescript-eslint/no-use-before-define': 'error',
-        'no-useless-constructor': 'off',
-        'react/static-property-placement': ['error', 'static public field'],
-        '@typescript-eslint/strict-boolean-expressions': ['error'],
-        'default-param-last': 'off',
+        '@typescript-eslint/consistent-type-imports': 'error',
         '@typescript-eslint/default-param-last': ['error'],
         '@typescript-eslint/explicit-module-boundary-types': 'error',
         '@typescript-eslint/method-signature-style': 'error',
+        '@typescript-eslint/no-shadow': ['error'],
+        '@typescript-eslint/no-use-before-define': 'error',
+        '@typescript-eslint/return-await': 'error',
+        '@typescript-eslint/strict-boolean-expressions': ['error'],
+        'consistent-return': 'off', // JS rule which complains if you don't have a default case
+        'default-case': 'off', // Typescript checks for exhaustive switch/case and doesn't require a default
+        'default-param-last': 'off',
         // `no-return-await` needs to be disabled when enabling `@typescript-eslint/return-await`
         // to avoid incorrectly reporting errors
         'no-return-await': 'off',
-        '@typescript-eslint/return-await': 'error',
+        'no-shadow': 'off',
+        'no-use-before-define': 'off',
+        'no-useless-constructor': 'off',
+        'react/static-property-placement': ['error', 'static public field'],
       },
     },
     {
