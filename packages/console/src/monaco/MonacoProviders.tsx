@@ -25,11 +25,13 @@ class MonacoProviders extends PureComponent<
   MonacoProviderProps,
   Record<string, never>
 > {
-  static workspace?: Workspace;
+  static ruffWorkspace?: Workspace;
 
   static initRuffPromise?: Promise<void>;
 
   static isRuffEnabled = true;
+
+  static ruffSettings: Record<string, unknown> = RUFF_DEFAULT_SETTINGS;
 
   /**
    * Loads and initializes Ruff.
@@ -43,19 +45,49 @@ class MonacoProviders extends PureComponent<
     MonacoProviders.initRuffPromise = init({}).then(() => {
       log.debug('Initialized Ruff', Workspace.version());
 
-      MonacoProviders.setRuffSettings();
+      MonacoProviders.ruffWorkspace = new Workspace(
+        MonacoProviders.ruffSettings
+      );
+      MonacoProviders.lintAllPython();
     });
 
     return MonacoProviders.initRuffPromise;
   }
 
+  /**
+   * Sets ruff settings
+   * @param settings The ruff settings
+   */
   static async setRuffSettings(
-    settings: Record<string, unknown> = RUFF_DEFAULT_SETTINGS
+    settings: Record<string, unknown> = MonacoProviders.ruffSettings
   ): Promise<void> {
-    await MonacoProviders.initRuff();
+    MonacoProviders.ruffSettings = settings;
 
-    MonacoProviders.workspace = new Workspace(settings);
+    // Ruff has not been initialized yet
+    if (MonacoProviders.ruffWorkspace == null) {
+      return;
+    }
 
+    MonacoProviders.ruffWorkspace = new Workspace(settings);
+    MonacoProviders.lintAllPython();
+  }
+
+  static getDiagnostics(model: monaco.editor.ITextModel): Diagnostic[] {
+    if (!MonacoProviders.ruffWorkspace) {
+      return [];
+    }
+
+    const diagnostics = MonacoProviders.ruffWorkspace.check(
+      model.getValue()
+    ) as Diagnostic[];
+    if (MonacoUtils.isConsoleModel(model)) {
+      // Only want SyntaxErrors for console which have no code
+      return diagnostics.filter(d => d.code == null);
+    }
+    return diagnostics;
+  }
+
+  static lintAllPython(): void {
     if (!MonacoProviders.isRuffEnabled) {
       monaco.editor.removeAllMarkers('ruff');
       return;
@@ -67,27 +99,12 @@ class MonacoProviders extends PureComponent<
       .forEach(MonacoProviders.lintPython);
   }
 
-  static getDiagnostics(model: monaco.editor.ITextModel): Diagnostic[] {
-    if (!MonacoProviders.workspace) {
-      return [];
-    }
-
-    const diagnostics = MonacoProviders.workspace.check(
-      model.getValue()
-    ) as Diagnostic[];
-    if (MonacoUtils.isConsoleModel(model)) {
-      // Only want SyntaxErrors for console which have no code
-      return diagnostics.filter(d => d.code == null);
-    }
-    return diagnostics;
-  }
-
   static lintPython(model: monaco.editor.ITextModel): void {
     if (!MonacoProviders.isRuffEnabled) {
       return;
     }
 
-    if (!MonacoProviders.workspace) {
+    if (!MonacoProviders.ruffWorkspace) {
       return;
     }
 
@@ -218,7 +235,7 @@ class MonacoProviders extends PureComponent<
     model: monaco.editor.ITextModel,
     range: monaco.Range
   ): monaco.languages.ProviderResult<monaco.languages.CodeActionList> {
-    if (!MonacoProviders.workspace) {
+    if (!MonacoProviders.ruffWorkspace) {
       return {
         actions: [],
         dispose: () => {
@@ -353,14 +370,14 @@ class MonacoProviders extends PureComponent<
     options: monaco.languages.FormattingOptions,
     token: monaco.CancellationToken
   ): monaco.languages.ProviderResult<monaco.languages.TextEdit[]> {
-    if (!MonacoProviders.workspace) {
+    if (!MonacoProviders.ruffWorkspace) {
       return;
     }
 
     return [
       {
         range: model.getFullModelRange(),
-        text: MonacoProviders.workspace.format(model.getValue()),
+        text: MonacoProviders.ruffWorkspace.format(model.getValue()),
       },
     ];
   }
@@ -400,7 +417,7 @@ class MonacoProviders extends PureComponent<
     }
 
     if (language === 'python') {
-      if (MonacoProviders.workspace == null) {
+      if (MonacoProviders.ruffWorkspace == null) {
         MonacoProviders.initRuff(); // This will also lint all open editors
       } else {
         MonacoProviders.lintPython(model);

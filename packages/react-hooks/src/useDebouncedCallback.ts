@@ -19,11 +19,22 @@ export function useDebouncedCallback<TArgs extends unknown[], TResult>(
   const { leading = false, trailing = true, maxWait } = options;
   const debouncedCallback = useMemo(
     () =>
-      debounce(callback, debounceMs, {
-        leading,
-        trailing,
-        maxWait,
-      }),
+      debounce(
+        callback,
+        debounceMs,
+        maxWait != null
+          ? // lodash checks `'maxWait' in options`
+            // and lower clamps to the debounce if it exists at all
+            {
+              leading,
+              trailing,
+              maxWait,
+            }
+          : {
+              leading,
+              trailing,
+            }
+      ),
     [callback, debounceMs, leading, trailing, maxWait]
   );
 

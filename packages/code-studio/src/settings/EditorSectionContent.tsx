@@ -17,7 +17,7 @@ export function EditorSectionContent(): JSX.Element {
   const {
     isMinimapEnabled,
     formatOnSave,
-    ruffSettings = {},
+    python: { linter: ruffSettings = {} } = {},
   } = notebookSettings;
   const { isEnabled: ruffEnabled, config: ruffConfig = RUFF_DEFAULT_SETTINGS } =
     ruffSettings;
@@ -38,7 +38,7 @@ export function EditorSectionContent(): JSX.Element {
     (newValue: boolean) => {
       dispatch(
         updateNotebookSettings({
-          ruffSettings: { ...ruffSettings, isEnabled: newValue },
+          python: { linter: { ...ruffSettings, isEnabled: newValue } },
         })
       );
       MonacoProviders.isRuffEnabled = newValue;
@@ -51,7 +51,7 @@ export function EditorSectionContent(): JSX.Element {
     (newValue: Record<string, unknown>) => {
       dispatch(
         updateNotebookSettings({
-          ruffSettings: { ...ruffSettings, config: newValue },
+          python: { linter: { ...ruffSettings, config: newValue } },
         })
       );
       MonacoProviders.setRuffSettings(newValue);

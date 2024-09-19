@@ -12,6 +12,7 @@ import {
   DecimalColumnFormatter,
   IntegerColumnFormatter,
 } from '@deephaven/jsapi-utils';
+import merge from 'lodash.merge';
 import UserLayoutUtils from './UserLayoutUtils';
 import LayoutStorage from './LayoutStorage';
 
@@ -34,6 +35,26 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
       return false;
     }
     return undefined;
+  }
+
+  static getJSONServerConfig(
+    serverConfigValues: Map<string, string> | undefined,
+    key: string
+  ): Record<string, unknown> | undefined {
+    const value = serverConfigValues?.get(key);
+
+    if (value == null) {
+      return undefined;
+    }
+
+    try {
+      return JSON.parse(value);
+    } catch (e) {
+      log.error(
+        `Unable to parse JSON server config for key ${key}. Value: ${value}`
+      );
+      return undefined;
+    }
   }
 
   static makeDefaultWorkspaceSettings(
@@ -60,9 +81,11 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
       notebookSettings: {
         isMinimapEnabled: false,
         formatOnSave: false,
-        ruffSettings: {
-          isEnabled: true,
-          // Omit default config so default settings are used if the user never changes them
+        python: {
+          linter: {
+            isEnabled: true,
+            // Omit default config so default settings are used if the user never changes them
+          },
         },
       },
       webgl: true,
@@ -113,15 +136,28 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
         serverConfigValues,
         'showExtraGroupColumn'
       ),
-      notebookSettings:
-        serverConfigValues?.get('isMinimapEnabled') !== undefined
-          ? {
-              isMinimapEnabled: LocalWorkspaceStorage.getBooleanServerConfig(
-                serverConfigValues,
-                'isMinimapEnabled'
-              ),
-            }
-          : undefined,
+      notebookSettings: {
+        isMinimapEnabled: LocalWorkspaceStorage.getBooleanServerConfig(
+          serverConfigValues,
+          'web.user.notebookSettings.isMinimapEnabled'
+        ),
+        formatOnSave: LocalWorkspaceStorage.getBooleanServerConfig(
+          serverConfigValues,
+          'web.user.notebookSettings.formatOnSave'
+        ),
+        python: {
+          linter: {
+            isEnabled: LocalWorkspaceStorage.getBooleanServerConfig(
+              serverConfigValues,
+              'web.user.notebookSettings.python.linter.isEnabled'
+            ),
+            config: LocalWorkspaceStorage.getJSONServerConfig(
+              serverConfigValues,
+              'web.user.notebookSettings.python.linter.config'
+            ),
+          },
+        },
+      },
       webgl: LocalWorkspaceStorage.getBooleanServerConfig(
         serverConfigValues,
         'web.webgl'
@@ -130,19 +166,9 @@ export class LocalWorkspaceStorage implements WorkspaceStorage {
         serverConfigValues,
         'web.webgl.editable'
       ),
-    };
+    } satisfies Partial<WorkspaceSettings>;
 
-    const keys = Object.keys(serverSettings) as Array<
-      keyof typeof serverSettings
-    >;
-    for (let i = 0; i < keys.length; i += 1) {
-      const key = keys[i];
-      if (serverSettings[key] !== undefined) {
-        // @ts-expect-error override default for defined server settings
-        settings[key] = serverSettings[key];
-      }
-    }
-    return settings;
+    return merge({}, settings, serverSettings);
   }
 
   static async makeWorkspaceData(
