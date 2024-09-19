@@ -16,7 +16,7 @@ $tooltip-container-width: 300px;
   .tab-tooltip-name-wrapper {
     display: flex;
     flex-wrap: nowrap;
-    align-items: first baseline;
+    align-items: center;
     gap: $spacer-1;
   }
 
