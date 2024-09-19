@@ -2,7 +2,6 @@ import React, { PureComponent, ReactElement } from 'react';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
 import {
-  ContextAction,
   ContextActions,
   createXComponent,
   ResolvableContextAction,
