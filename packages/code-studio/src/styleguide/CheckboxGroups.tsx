@@ -1,5 +1,7 @@
 import React from 'react';
-import { Checkbox, CheckboxGroup, Flex, Text } from '@deephaven/components';
+import { CheckboxGroup, Flex, Text } from '@deephaven/components';
+// eslint-disable-next-line no-restricted-imports
+import { Checkbox } from '@adobe/react-spectrum';
 import SampleSection from './SampleSection';
 
 export function CheckboxGroups(): JSX.Element {
@@ -10,16 +12,16 @@ export function CheckboxGroups(): JSX.Element {
         <Flex direction="column">
           <Text>Single Child</Text>
           <CheckboxGroup aria-label="Single Child">
-            <Checkbox checked={false}>Aaa</Checkbox>
+            <Checkbox>Aaa</Checkbox>
           </CheckboxGroup>
         </Flex>
 
         <Flex direction="column">
           <Text>Multiple Children</Text>
           <CheckboxGroup aria-label="Multiple Children">
-            <Checkbox checked={false}>Aaa</Checkbox>
-            <Checkbox checked={false}>Bbb</Checkbox>
-            <Checkbox checked={false}>Ccc</Checkbox>
+            <Checkbox>Aaa</Checkbox>
+            <Checkbox>Bbb</Checkbox>
+            <Checkbox>Ccc</Checkbox>
           </CheckboxGroup>
         </Flex>
 
@@ -33,7 +35,7 @@ export function CheckboxGroups(): JSX.Element {
             {999}
             {true}
             {false}
-            <Checkbox checked={false}>Aaa</Checkbox>
+            <Checkbox>Aaa</Checkbox>
           </CheckboxGroup>
         </Flex>
       </Flex>

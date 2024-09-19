@@ -1,10 +1,10 @@
 import { isElementOfType } from '@deephaven/react-hooks';
 import React, { ReactNode, useMemo, useState } from 'react';
 import {
+  Checkbox,
   CheckboxGroup as SpectrumCheckboxGroup,
   SpectrumCheckboxGroupProps,
 } from '@adobe/react-spectrum';
-import Checkbox from '../Checkbox';
 
 export type CheckboxGroupProps = {
   children: ReactNode;
@@ -34,13 +34,15 @@ export function CheckboxGroup({
       React.Children.map(children, (child, index) => {
         if (isElementOfType(child, Checkbox)) {
           return React.cloneElement(child, {
-            checked: checkedState[index] || false,
+            isSelected: true,
+            value: `checkbox-${index}`,
             onChange: () => handleCheckboxChange(index),
           });
         }
         return (
           <Checkbox
-            checked={checkedState[index] || false}
+            isSelected={checkedState[index] || false}
+            value={`checkbox-${index}`}
             onChange={() => handleCheckboxChange(index)}
           >
             {String(child)}
