@@ -5,7 +5,7 @@ import { dh } from '@deephaven/jsapi-shim';
 import type { CoreClient, LoginOptions } from '@deephaven/jsapi-types';
 import { TestUtils } from '@deephaven/test-utils';
 import AuthPluginParent from './AuthPluginParent';
-import { AuthConfigMap } from './AuthPlugin';
+import { type AuthConfigMap } from './AuthPlugin';
 
 let mockParentResponse: Promise<LoginOptions>;
 jest.mock('@deephaven/jsapi-utils', () => ({

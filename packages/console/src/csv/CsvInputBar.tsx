@@ -1,9 +1,9 @@
 import React, {
-  ChangeEvent,
+  type ChangeEvent,
   Component,
-  FormEvent,
-  ReactElement,
-  RefObject,
+  type FormEvent,
+  type ReactElement,
+  type RefObject,
 } from 'react';
 import classNames from 'classnames';
 import type { JSZipObject } from 'jszip';

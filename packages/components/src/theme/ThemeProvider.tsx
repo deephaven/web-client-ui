@@ -1,6 +1,12 @@
-import { createContext, ReactNode, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import Log from '@deephaven/log';
-import { DEFAULT_PRELOAD_DATA_VARIABLES, ThemeData } from './ThemeModel';
+import { DEFAULT_PRELOAD_DATA_VARIABLES, type ThemeData } from './ThemeModel';
 import {
   calculatePreloadStyleContent,
   getActiveThemes,

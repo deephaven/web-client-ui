@@ -5,8 +5,8 @@ import { act, render, screen } from '@testing-library/react';
 import dh from '@deephaven/jsapi-shim';
 import { MockChartModel } from '@deephaven/chart';
 import type { Container } from '@deephaven/golden-layout';
-import { PanelComponent } from '@deephaven/dashboard';
-import { ChartPanel, ChartPanelMetadata } from './ChartPanel';
+import { type PanelComponent } from '@deephaven/dashboard';
+import { ChartPanel, type ChartPanelMetadata } from './ChartPanel';
 import ChartColumnSelectorOverlay from './ChartColumnSelectorOverlay';
 
 const DASHBOARD_ID = 'TEST_DASHBOARD_ID';

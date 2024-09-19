@@ -1,18 +1,18 @@
-import React, { PureComponent, ReactElement, RefObject } from 'react';
+import React, { PureComponent, type ReactElement, type RefObject } from 'react';
 import classNames from 'classnames';
 import * as monaco from 'monaco-editor';
 import Log from '@deephaven/log';
 import {
   assertNotNull,
-  CancelablePromise,
+  type CancelablePromise,
   PromiseUtils,
 } from '@deephaven/utils';
-import { ViewportData } from '@deephaven/storage';
+import { type ViewportData } from '@deephaven/storage';
 import type { dh } from '@deephaven/jsapi-types';
 import {
-  CommandHistoryStorage,
-  CommandHistoryStorageItem,
-  CommandHistoryTable,
+  type CommandHistoryStorage,
+  type CommandHistoryStorageItem,
+  type CommandHistoryTable,
 } from './command-history';
 import { MonacoProviders, MonacoTheme, MonacoUtils } from './monaco';
 import './ConsoleInput.scss';

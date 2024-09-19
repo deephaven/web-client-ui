@@ -1,11 +1,11 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import {
-  OpenedPanelMap,
-  PanelComponent,
+  type OpenedPanelMap,
+  type PanelComponent,
   PanelManager,
 } from '@deephaven/dashboard';
-import GoldenLayout, { Config } from '@deephaven/golden-layout';
+import GoldenLayout, { type Config } from '@deephaven/golden-layout';
 import LinkerOverlayContent from './LinkerOverlayContent';
 
 const LINKER_OVERLAY_MESSAGE = 'TEST_MESSAGE';

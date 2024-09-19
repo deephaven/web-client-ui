@@ -1,12 +1,12 @@
 /* eslint class-methods-use-this: "off" */
 import { ContextActionUtils } from '@deephaven/components';
 import {
-  Grid,
-  GridMouseEvent,
+  type Grid,
+  type GridMouseEvent,
   GridMouseHandler,
-  GridPoint,
-  GridRangeIndex,
-  EventHandlerResult,
+  type GridPoint,
+  type GridRangeIndex,
+  type EventHandlerResult,
 } from '@deephaven/grid';
 import type IrisGrid from '../IrisGrid';
 

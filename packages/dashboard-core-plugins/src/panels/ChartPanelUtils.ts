@@ -1,4 +1,4 @@
-import { DehydratedDashboardPanelProps } from '@deephaven/dashboard';
+import { type DehydratedDashboardPanelProps } from '@deephaven/dashboard';
 import type {
   ChartPanelMetadata,
   ChartPanelTableMetadata,

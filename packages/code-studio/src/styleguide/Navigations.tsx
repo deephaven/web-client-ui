@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { vsFile, dhTruck, vsListUnordered } from '@deephaven/icons';
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
+import { type IconProp } from '@fortawesome/fontawesome-svg-core';
 import {
   Menu,
   NavTabList,

@@ -1,10 +1,10 @@
-import React, { Component, ReactElement } from 'react';
+import React, { Component, type ReactElement } from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button } from '@deephaven/components';
 import { vsArrowLeft, vsCircleLargeFilled } from '@deephaven/icons';
 import './CommandHistoryActions.scss';
-import { HistoryAction } from './CommandHistoryTypes';
+import { type HistoryAction } from './CommandHistoryTypes';
 
 interface CommandHistoryActionsProps {
   actions: HistoryAction[];

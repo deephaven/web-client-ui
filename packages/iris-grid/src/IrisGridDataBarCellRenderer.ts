@@ -1,10 +1,10 @@
 /* eslint-disable class-methods-use-this */
 import {
-  BoxCoordinates,
-  Coordinate,
+  type BoxCoordinates,
+  type Coordinate,
   DataBarCellRenderer,
 } from '@deephaven/grid';
-import { IrisGridRenderState } from './IrisGridRenderer';
+import { type IrisGridRenderState } from './IrisGridRenderer';
 import IrisGridCellRendererUtils from './IrisGridCellRendererUtils';
 
 class IrisGridDataBarCellRenderer extends DataBarCellRenderer {

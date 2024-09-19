@@ -1,10 +1,14 @@
-import { ContextAction, ContextActions } from '@deephaven/components';
+import { type ContextAction, ContextActions } from '@deephaven/components';
 import { assertNotNull } from '@deephaven/utils';
 import React, { useCallback, useMemo, useState } from 'react';
 import FileList from './FileList';
-import { FileListItem, FileListRenderItemProps } from './FileListItem';
+import { FileListItem, type FileListRenderItemProps } from './FileListItem';
 import { DEFAULT_ROW_HEIGHT } from './FileListUtils';
-import { FileStorageItem, FileStorageTable, isDirectory } from './FileStorage';
+import {
+  type FileStorageItem,
+  type FileStorageTable,
+  isDirectory,
+} from './FileStorage';
 import SHORTCUTS from './FileExplorerShortcuts';
 import './FileExplorer.scss';
 import FileUtils from './FileUtils';

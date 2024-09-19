@@ -25,7 +25,7 @@ import { useDashboardPlugins } from '@deephaven/plugin';
 import {
   getAllDashboardsData,
   listenForCreateDashboard,
-  CreateDashboardPayload,
+  type CreateDashboardPayload,
   setDashboardPluginData,
   stopListenForCreateDashboard,
   emitPanelOpen,

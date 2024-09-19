@@ -2,14 +2,14 @@ import { act, renderHook } from '@testing-library/react-hooks';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import dh from '@deephaven/jsapi-shim';
 import {
-  OnTableUpdatedEvent,
+  type OnTableUpdatedEvent,
   generateEmptyKeyedItems,
   isClosed,
   ITEM_KEY_PREFIX,
 } from '@deephaven/jsapi-utils';
 import { useOnScrollOffsetChangeCallback } from '@deephaven/react-hooks';
 import { TestUtils } from '@deephaven/test-utils';
-import useViewportData, { UseViewportDataProps } from './useViewportData';
+import useViewportData, { type UseViewportDataProps } from './useViewportData';
 import { makeApiContextWrapper } from './HookTestUtils';
 import { useTableSize } from './useTableSize';
 import { useSetPaddedViewportCallback } from './useSetPaddedViewportCallback';

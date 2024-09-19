@@ -1,5 +1,5 @@
 import { renderHook } from '@testing-library/react-hooks';
-import { KeyedItem } from '@deephaven/jsapi-utils';
+import { type KeyedItem } from '@deephaven/jsapi-utils';
 import useFilteredItemsWithDefaultValue from './useFilteredItemsWithDefaultValue';
 
 beforeEach(() => {

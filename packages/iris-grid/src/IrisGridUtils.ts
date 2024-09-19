@@ -1,19 +1,19 @@
 import {
-  GridMetrics,
-  GridRange,
+  type GridMetrics,
+  type GridRange,
   GridUtils,
-  ModelIndex,
-  ModelSizeMap,
-  MoveOperation,
-  VisibleIndex,
+  type ModelIndex,
+  type ModelSizeMap,
+  type MoveOperation,
+  type VisibleIndex,
 } from '@deephaven/grid';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
   DateUtils,
   TableUtils,
-  ReverseType,
-  SortDirection,
-  FormattingRule,
+  type ReverseType,
+  type SortDirection,
+  type FormattingRule,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
@@ -24,27 +24,31 @@ import {
 } from '@deephaven/utils';
 import AggregationUtils from './sidebar/aggregations/AggregationUtils';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
-import { FilterData, IrisGridProps, IrisGridState } from './IrisGrid';
 import {
-  ColumnName,
-  ReadonlyAdvancedFilterMap,
-  ReadonlyQuickFilterMap,
-  InputFilter,
-  CellData,
-  PendingDataMap,
-  UIRow,
-  AdvancedFilterOptions,
+  type FilterData,
+  type IrisGridProps,
+  type IrisGridState,
+} from './IrisGrid';
+import {
+  type ColumnName,
+  type ReadonlyAdvancedFilterMap,
+  type ReadonlyQuickFilterMap,
+  type InputFilter,
+  type CellData,
+  type PendingDataMap,
+  type UIRow,
+  type AdvancedFilterOptions,
 } from './CommonTypes';
-import { UIRollupConfig } from './sidebar/RollupRows';
-import { AggregationSettings } from './sidebar/aggregations/Aggregations';
-import { FormattingRule as SidebarFormattingRule } from './sidebar/conditional-formatting/ConditionalFormattingUtils';
-import IrisGridModel from './IrisGridModel';
+import { type UIRollupConfig } from './sidebar/RollupRows';
+import { type AggregationSettings } from './sidebar/aggregations/Aggregations';
+import { type FormattingRule as SidebarFormattingRule } from './sidebar/conditional-formatting/ConditionalFormattingUtils';
+import type IrisGridModel from './IrisGridModel';
 import type AdvancedSettingsType from './sidebar/AdvancedSettingsType';
 import AdvancedSettings from './sidebar/AdvancedSettings';
 import ColumnHeaderGroup from './ColumnHeaderGroup';
 import {
   isPartitionedGridModelProvider,
-  PartitionConfig,
+  type PartitionConfig,
 } from './PartitionedGridModel';
 
 const log = Log.module('IrisGridUtils');

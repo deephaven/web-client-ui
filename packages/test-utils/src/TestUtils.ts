@@ -1,6 +1,6 @@
 import type userEvent from '@testing-library/user-event';
 import createMockProxy from './MockProxy';
-import { Tuple } from './TypeUtils';
+import { type Tuple } from './TypeUtils';
 
 interface MockContext {
   arc: jest.Mock<void>;

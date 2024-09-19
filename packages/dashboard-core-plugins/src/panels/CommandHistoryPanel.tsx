@@ -1,16 +1,16 @@
-import React, { Component, RefObject } from 'react';
+import React, { Component, type RefObject } from 'react';
 import { connect } from 'react-redux';
-import { ContextAction, ContextActions } from '@deephaven/components';
+import { type ContextAction, ContextActions } from '@deephaven/components';
 import {
   CommandHistory,
-  CommandHistoryStorage,
+  type CommandHistoryStorage,
   SHORTCUTS,
-  CommandHistorySettings,
-  CommandHistoryTable,
+  type CommandHistorySettings,
+  type CommandHistoryTable,
 } from '@deephaven/console';
-import { DashboardPanelProps } from '@deephaven/dashboard';
+import { type DashboardPanelProps } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
-import { getCommandHistoryStorage, RootState } from '@deephaven/redux';
+import { getCommandHistoryStorage, type RootState } from '@deephaven/redux';
 import { assertNotNull, Pending } from '@deephaven/utils';
 import type { dh } from '@deephaven/jsapi-types';
 import { ConsoleEvent, NotebookEvent } from '../events';

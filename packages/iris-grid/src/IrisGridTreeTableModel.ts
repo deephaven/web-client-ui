@@ -1,18 +1,18 @@
 /* eslint class-methods-use-this: "off" */
 import memoize from 'memoize-one';
 import {
-  BoundedAxisRange,
-  GridCell,
+  type BoundedAxisRange,
+  type GridCell,
   GridRange,
-  ModelIndex,
+  type ModelIndex,
 } from '@deephaven/grid';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import { assertNotNull, EventShimCustomEvent } from '@deephaven/utils';
-import { UIRow, ColumnName } from './CommonTypes';
+import { type UIRow, type ColumnName } from './CommonTypes';
 import IrisGridTableModelTemplate from './IrisGridTableModelTemplate';
-import IrisGridModel, { DisplayColumn } from './IrisGridModel';
+import IrisGridModel, { type DisplayColumn } from './IrisGridModel';
 
 const log = Log.module('IrisGridTreeTableModel');
 

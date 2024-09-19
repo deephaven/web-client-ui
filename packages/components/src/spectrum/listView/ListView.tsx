@@ -1,16 +1,16 @@
 import { useMemo } from 'react';
-import { SpectrumListViewProps } from '@adobe/react-spectrum';
+import { type SpectrumListViewProps } from '@adobe/react-spectrum';
 import cl from 'classnames';
 import { EMPTY_FUNCTION } from '@deephaven/utils';
 import {
-  MultipleItemSelectionProps,
-  NormalizedItem,
+  type MultipleItemSelectionProps,
+  type NormalizedItem,
   normalizeTooltipOptions,
-  TooltipOptions,
+  type TooltipOptions,
   wrapItemChildren,
 } from '../utils';
-import { ListViewWrapper, ListViewWrapperProps } from './ListViewWrapper';
-import { ItemElementOrPrimitive } from '../shared';
+import { ListViewWrapper, type ListViewWrapperProps } from './ListViewWrapper';
+import { type ItemElementOrPrimitive } from '../shared';
 
 export type ListViewProps = MultipleItemSelectionProps & {
   children: ItemElementOrPrimitive | ItemElementOrPrimitive[];

@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 import {
   ActionGroup as SpectrumActionGroup,
-  SpectrumActionGroupProps,
+  type SpectrumActionGroupProps,
 } from '@adobe/react-spectrum';
 import cl from 'classnames';
-import { ItemsOrPrimitiveChildren } from './shared';
-import { MultipleItemSelectionProps, wrapItemChildren } from './utils';
+import { type ItemsOrPrimitiveChildren } from './shared';
+import { type MultipleItemSelectionProps, wrapItemChildren } from './utils';
 
 export type ActionGroupProps<T> = Omit<
   SpectrumActionGroupProps<T>,

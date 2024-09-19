@@ -1,5 +1,5 @@
 import React from 'react';
-import MenuItem, { MenuItemDef } from './MenuItem';
+import MenuItem, { type MenuItemDef } from './MenuItem';
 import './Menu.scss';
 
 export type MenuSelectCallback = (itemIndex: number) => void;

@@ -4,7 +4,7 @@ import debounce from 'lodash.debounce';
 import set from 'lodash.set';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
-import { Range } from '@deephaven/utils';
+import { type Range } from '@deephaven/utils';
 import type {
   Annotations,
   Layout,
@@ -17,12 +17,12 @@ import type {
   DateTimeColumnFormatter,
   Formatter,
 } from '@deephaven/jsapi-utils';
-import ChartModel, { ChartEvent, RenderOptions } from './ChartModel';
+import ChartModel, { type ChartEvent, type RenderOptions } from './ChartModel';
 import ChartUtils, {
-  AxisTypeMap,
-  ChartModelSettings,
-  FilterColumnMap,
-  FilterMap,
+  type AxisTypeMap,
+  type ChartModelSettings,
+  type FilterColumnMap,
+  type FilterMap,
 } from './ChartUtils';
 
 const log = Log.module('FigureChartModel');

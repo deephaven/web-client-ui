@@ -1,6 +1,6 @@
 import type { dh } from '@deephaven/jsapi-types';
 import type { SelectionT } from '@deephaven/utils';
-import TableUtils from './TableUtils';
+import type TableUtils from './TableUtils';
 
 export interface FilterConditionFactory {
   (

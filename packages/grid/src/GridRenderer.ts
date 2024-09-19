@@ -4,13 +4,18 @@ import memoizeClear from './memoizeClear';
 import GridUtils from './GridUtils';
 import GridColorUtils from './GridColorUtils';
 import { isExpandableGridModel } from './ExpandableGridModel';
-import { GridColor, GridColorWay, NullableGridColor } from './GridTheme';
-import { Coordinate, VisibleIndex } from './GridMetrics';
+import {
+  type GridColor,
+  type GridColorWay,
+  type NullableGridColor,
+} from './GridTheme';
+import { type Coordinate, type VisibleIndex } from './GridMetrics';
 import { isEditableGridModel } from './EditableGridModel';
 import GridColumnSeparatorMouseHandler from './mouse-handlers/GridColumnSeparatorMouseHandler';
-import { BoundedAxisRange } from './GridAxisRange';
-import { DEFAULT_FONT_WIDTH, GridRenderState } from './GridRendererTypes';
-import CellRenderer, { CellRenderType } from './CellRenderer';
+import { type BoundedAxisRange } from './GridAxisRange';
+import { DEFAULT_FONT_WIDTH, type GridRenderState } from './GridRendererTypes';
+import { type CellRenderType } from './CellRenderer';
+import type CellRenderer from './CellRenderer';
 import DataBarCellRenderer from './DataBarCellRenderer';
 import TextCellRenderer from './TextCellRenderer';
 

@@ -2,7 +2,7 @@ import type { Key } from 'react';
 import clamp from 'lodash.clamp';
 import type { dh } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
-import { KeyedItem, ValueOf } from '@deephaven/utils';
+import { type KeyedItem, type ValueOf } from '@deephaven/utils';
 
 export const ITEM_KEY_PREFIX = 'DH_ITEM_KEY';
 

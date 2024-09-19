@@ -3,11 +3,11 @@
 // background click is just a convenience method, not an actual a11y issue
 
 import React, {
-  ChangeEvent,
+  type ChangeEvent,
   Component,
-  ReactNode,
-  KeyboardEvent,
-  MouseEvent,
+  type ReactNode,
+  type KeyboardEvent,
+  type MouseEvent,
 } from 'react';
 import memoizeOne from 'memoize-one';
 import { nanoid } from 'nanoid';

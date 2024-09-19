@@ -1,6 +1,6 @@
 import dh from '@deephaven/jsapi-shim';
-import IrisGridModel from './IrisGridModel';
-import IrisGridProxyModel from './IrisGridProxyModel';
+import type IrisGridModel from './IrisGridModel';
+import type IrisGridProxyModel from './IrisGridProxyModel';
 import IrisGridTestUtils from './IrisGridTestUtils';
 
 const irisGridTestUtils = new IrisGridTestUtils(dh);

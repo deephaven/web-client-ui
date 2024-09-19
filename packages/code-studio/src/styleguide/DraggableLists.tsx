@@ -2,12 +2,16 @@
 import React, { Component } from 'react';
 import {
   DragDropContext,
-  DragStart,
-  DragUpdate,
-  DropResult,
+  type DragStart,
+  type DragUpdate,
+  type DropResult,
 } from 'react-beautiful-dnd';
 import memoize from 'memoizee';
-import { DragUtils, DraggableItemList, Range } from '@deephaven/components';
+import {
+  DragUtils,
+  DraggableItemList,
+  type Range,
+} from '@deephaven/components';
 import DraggableListInput from './DraggableListInput';
 import SampleSection from './SampleSection';
 

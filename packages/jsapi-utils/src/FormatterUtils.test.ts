@@ -1,21 +1,22 @@
 import dh from '@deephaven/jsapi-shim';
 import { TestUtils } from '@deephaven/test-utils';
-import Formatter, { FormattingRule } from './Formatter';
+import Formatter, { type FormattingRule } from './Formatter';
 import FormatterUtils, {
   createFormatterFromSettings,
   getColumnFormats,
   getDateTimeFormatterOptions,
 } from './FormatterUtils';
 import {
-  TableColumnFormat,
+  type TableColumnFormat,
   TableColumnFormatter,
-  TableColumnFormatType,
+  type TableColumnFormatType,
 } from './formatters';
 import TableUtils from './TableUtils';
-import Settings, {
-  ColumnFormatSettings,
-  DateTimeFormatSettings,
+import {
+  type ColumnFormatSettings,
+  type DateTimeFormatSettings,
 } from './Settings';
+import type Settings from './Settings';
 
 jest.mock('./Formatter', () => {
   const FormatterActual = jest.requireActual('./Formatter').default;

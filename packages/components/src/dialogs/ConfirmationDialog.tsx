@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import { ReactElement, ReactNode } from 'react';
+import { type ReactElement, type ReactNode } from 'react';
 import type { SpectrumLabelableProps } from '@react-types/shared';
 import { useFormWithDetachedSubmitButton } from '@deephaven/react-hooks';
 import {

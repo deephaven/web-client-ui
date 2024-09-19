@@ -1,7 +1,7 @@
-import CellRenderer from './CellRenderer';
-import { VisibleIndex } from './GridMetrics';
-import { GridRenderState } from './GridRendererTypes';
-import { TokenBox } from './GridUtils';
+import type CellRenderer from './CellRenderer';
+import { type VisibleIndex } from './GridMetrics';
+import { type GridRenderState } from './GridRendererTypes';
+import { type TokenBox } from './GridUtils';
 
 export function isTokenBoxCellRenderer(
   cellRenderer: CellRenderer

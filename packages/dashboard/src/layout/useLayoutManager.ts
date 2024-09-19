@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import LayoutManager from '@deephaven/golden-layout';
+import type LayoutManager from '@deephaven/golden-layout';
 import LayoutManagerContext from './LayoutManagerContext';
 
 /**

@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import {
   Item,
-  ItemKey,
+  type ItemKey,
   Picker,
   ThemePicker,
   useTheme,

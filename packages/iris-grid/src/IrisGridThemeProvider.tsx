@@ -1,6 +1,9 @@
 import { useTheme } from '@deephaven/components';
-import { createContext, ReactNode, useMemo } from 'react';
-import { createDefaultIrisGridTheme, IrisGridThemeType } from './IrisGridTheme';
+import { createContext, type ReactNode, useMemo } from 'react';
+import {
+  createDefaultIrisGridTheme,
+  type IrisGridThemeType,
+} from './IrisGridTheme';
 
 /**
  * The context value for the IrisGridThemeProvider.

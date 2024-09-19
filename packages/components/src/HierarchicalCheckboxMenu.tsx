@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { IconDefinition } from '@deephaven/icons';
+import { type IconDefinition } from '@deephaven/icons';
 import classNames from 'classnames';
 import Checkbox from './Checkbox';
 import Popper from './popper/Popper';

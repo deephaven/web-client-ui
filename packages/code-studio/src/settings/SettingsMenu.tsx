@@ -1,4 +1,9 @@
-import React, { Component, Fragment, ReactElement, RefObject } from 'react';
+import React, {
+  Component,
+  Fragment,
+  type ReactElement,
+  type RefObject,
+} from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   vsClose,
@@ -18,13 +23,13 @@ import {
   Logo,
   Tooltip,
 } from '@deephaven/components';
-import { ServerConfigValues, User } from '@deephaven/redux';
+import { type ServerConfigValues, type User } from '@deephaven/redux';
 import {
   BROADCAST_CHANNEL_NAME,
   BROADCAST_LOGOUT_MESSAGE,
   makeMessage,
 } from '@deephaven/jsapi-utils';
-import { PluginModuleMap } from '@deephaven/plugin';
+import { type PluginModuleMap } from '@deephaven/plugin';
 import FormattingSectionContent from './FormattingSectionContent';
 import LegalNotice from './LegalNotice';
 import SettingsMenuSection from './SettingsMenuSection';

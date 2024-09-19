@@ -1,9 +1,9 @@
 import React, {
-  ChangeEvent,
-  FormEvent,
+  type ChangeEvent,
+  type FormEvent,
   PureComponent,
-  ReactElement,
-  RefObject,
+  type ReactElement,
+  type RefObject,
 } from 'react';
 import classNames from 'classnames';
 import { Button, Popper } from '@deephaven/components';

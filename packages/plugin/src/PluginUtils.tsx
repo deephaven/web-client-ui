@@ -6,8 +6,8 @@ import Log from '@deephaven/log';
 import {
   type PluginModule,
   isWidgetPlugin,
-  PluginModuleMap,
-  ThemePlugin,
+  type PluginModuleMap,
+  type ThemePlugin,
   isThemePlugin,
 } from './PluginTypes';
 

@@ -6,18 +6,18 @@ import {
   isNormalizedSection,
   isItemOrSection,
   isSectionElement,
-  NormalizedItem,
-  NormalizedSection,
+  type NormalizedItem,
+  type NormalizedSection,
   normalizeTooltipOptions,
-  ItemOrSection,
-  SectionElement,
+  type ItemOrSection,
+  type SectionElement,
   itemSelectionToStringSet,
   getPositionOfSelectedItemElement,
   isItemElementWithDescription,
   getItemTextValue,
   ITEM_EMPTY_STRING_TEXT_VALUE,
 } from './itemUtils';
-import { Item, ItemElementOrPrimitive, Section } from '../shared';
+import { Item, type ItemElementOrPrimitive, Section } from '../shared';
 import { Text } from '../Text';
 import ItemContent from '../ItemContent';
 

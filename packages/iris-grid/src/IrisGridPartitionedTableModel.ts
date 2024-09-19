@@ -1,12 +1,12 @@
 /* eslint class-methods-use-this: "off" */
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { Formatter } from '@deephaven/jsapi-utils';
-import { ColumnName } from './CommonTypes';
+import { type ColumnName } from './CommonTypes';
 import EmptyIrisGridModel from './EmptyIrisGridModel';
 import MissingPartitionError, {
   isMissingPartitionError,
 } from './MissingPartitionError';
-import { PartitionedGridModelProvider } from './PartitionedGridModel';
+import { type PartitionedGridModelProvider } from './PartitionedGridModel';
 
 type PartitionedTableWithBaseTable = DhType.PartitionedTable & {
   getBaseTable: () => DhType.Table;

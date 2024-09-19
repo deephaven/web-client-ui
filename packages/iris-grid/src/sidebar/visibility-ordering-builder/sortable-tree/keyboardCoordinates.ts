@@ -3,8 +3,8 @@ import {
   closestCorners,
   getFirstCollision,
   KeyboardCode,
-  KeyboardCoordinateGetter,
-  DroppableContainer,
+  type KeyboardCoordinateGetter,
+  type DroppableContainer,
 } from '@dnd-kit/core';
 import type { SensorContext } from './types';
 import { getProjection } from './utilities';

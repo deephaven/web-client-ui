@@ -1,17 +1,17 @@
 import { isElementOfType } from '@deephaven/react-hooks';
-import { Key, ReactElement, useCallback } from 'react';
+import { type Key, type ReactElement, useCallback } from 'react';
 import ActionGroup from '../ActionGroup';
 import ActionMenu from '../ActionMenu';
 import { ItemContent } from '../ItemContent';
-import { ListActionGroup, ListActionGroupProps } from '../ListActionGroup';
-import { ListActionMenu, ListActionMenuProps } from '../ListActionMenu';
+import { ListActionGroup, type ListActionGroupProps } from '../ListActionGroup';
+import { ListActionMenu, type ListActionMenuProps } from '../ListActionMenu';
 import { Item } from '../shared';
 import {
   getItemKey,
   ITEM_EMPTY_STRING_TEXT_VALUE,
-  ItemIconSlot,
-  NormalizedItem,
-  TooltipOptions,
+  type ItemIconSlot,
+  type NormalizedItem,
+  type TooltipOptions,
 } from './itemUtils';
 import { wrapIcon, wrapPrimitiveWithText } from './itemWrapperUtils';
 

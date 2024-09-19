@@ -1,4 +1,4 @@
-import { Type, TypeValue } from './Type';
+import { Type, type TypeValue } from './Type';
 
 export function getLabelForTextFilter(filterType: TypeValue): string {
   switch (filterType) {

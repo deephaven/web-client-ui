@@ -1,8 +1,8 @@
 import React, {
-  ChangeEvent,
+  type ChangeEvent,
   PureComponent,
-  ReactElement,
-  RefObject,
+  type ReactElement,
+  type RefObject,
 } from 'react';
 import { connect } from 'react-redux';
 import { dhNewCircleLargeFilled, vsTrash } from '@deephaven/icons';
@@ -16,8 +16,8 @@ import {
   IntegerColumnFormatter,
   DecimalColumnFormatter,
   TableUtils,
-  TableColumnFormat,
-  FormattingRule,
+  type TableColumnFormat,
+  type FormattingRule,
 } from '@deephaven/jsapi-utils';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
@@ -29,8 +29,8 @@ import {
   getShowTimeZone,
   getShowTSeparator,
   updateSettings as updateSettingsAction,
-  RootState,
-  WorkspaceSettings,
+  type RootState,
+  type WorkspaceSettings,
 } from '@deephaven/redux';
 import { assertNotNull } from '@deephaven/utils';
 import './FormattingSectionContent.scss';
@@ -41,7 +41,7 @@ import {
   isValidFormat,
   removeFormatRuleExtraProps,
   isFormatRuleValidForSave,
-  ValidFormatterItem,
+  type ValidFormatterItem,
 } from './SettingsUtils';
 import type { FormatterItem, FormatOption } from './SettingsUtils';
 import ColumnTypeOptions from './ColumnTypeOptions';

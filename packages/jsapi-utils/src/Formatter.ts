@@ -1,6 +1,6 @@
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { assertInstanceOf } from '@deephaven/utils';
-import TableUtils, { DataType } from './TableUtils';
+import TableUtils, { type DataType } from './TableUtils';
 import {
   BooleanColumnFormatter,
   CharColumnFormatter,
@@ -9,8 +9,8 @@ import {
   DefaultColumnFormatter,
   IntegerColumnFormatter,
   StringColumnFormatter,
-  TableColumnFormat,
-  TableColumnFormatter,
+  type TableColumnFormat,
+  type TableColumnFormatter,
 } from './formatters';
 
 export type ColumnName = string;

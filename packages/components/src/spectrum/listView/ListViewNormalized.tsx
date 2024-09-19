@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import cl from 'classnames';
 import {
-  ListActions,
-  NormalizedItem,
+  type ListActions,
+  type NormalizedItem,
   normalizeTooltipOptions,
   useRenderNormalizedItem,
   useStringifiedMultiSelection,

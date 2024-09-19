@@ -1,4 +1,4 @@
-import { AriaLabelingProps, StyleProps } from '@react-types/shared';
+import { type AriaLabelingProps, type StyleProps } from '@react-types/shared';
 import { separateSpectrumProps } from './propsUtils';
 
 describe('separateSpectrumProps', () => {

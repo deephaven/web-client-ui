@@ -2,7 +2,7 @@ import debounce from 'lodash.debounce';
 import type { dh } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import { useEffect, useMemo } from 'react';
-import { UseViewportDataResult } from './useViewportData';
+import { type UseViewportDataResult } from './useViewportData';
 import useTableUtils from './useTableUtils';
 
 const log = Log.module('useDebouncedViewportSearch');

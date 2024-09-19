@@ -1,10 +1,10 @@
 import {
-  IntegerColumnFormat,
+  type IntegerColumnFormat,
   IntegerColumnFormatter,
 } from '@deephaven/jsapi-utils';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import FormatContextMenuUtils, {
-  FormatContextMenuOption,
+  type FormatContextMenuOption,
 } from './FormatContextMenuUtils';
 
 class IntegerFormatContextMenu {

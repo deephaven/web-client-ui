@@ -3,7 +3,7 @@ import {
   render,
   waitForElementToBeRemoved,
 } from '@testing-library/react';
-import { WorkspaceSettings } from '@deephaven/redux';
+import { type WorkspaceSettings } from '@deephaven/redux';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { Formatter } from '@deephaven/jsapi-utils';
@@ -12,7 +12,7 @@ import dh from '@deephaven/jsapi-shim';
 import { TestUtils } from '@deephaven/test-utils';
 import {
   ColumnSpecificSectionContent,
-  ColumnSpecificSectionContentProps,
+  type ColumnSpecificSectionContentProps,
 } from './ColumnSpecificSectionContent';
 
 const DEFAULT_DECIMAL_STRING = '###,#00.00';

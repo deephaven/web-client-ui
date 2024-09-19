@@ -1,4 +1,4 @@
-import { StorageTable, StorageItem } from '@deephaven/storage';
+import { type StorageTable, type StorageItem } from '@deephaven/storage';
 
 /**
  * Basic metadata of the file

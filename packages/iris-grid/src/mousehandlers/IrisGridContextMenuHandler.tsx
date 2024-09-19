@@ -6,36 +6,36 @@ import {
   vsRemove,
   vsCheck,
   vsFilter,
-  IconDefinition,
+  type IconDefinition,
 } from '@deephaven/icons';
 import debounce from 'lodash.debounce';
 import {
-  ContextAction,
+  type ContextAction,
   ContextActions,
   ContextActionUtils,
   GLOBAL_SHORTCUTS,
-  ResolvableContextAction,
+  type ResolvableContextAction,
 } from '@deephaven/components';
 import {
-  EventHandlerResult,
-  Grid,
+  type EventHandlerResult,
+  type Grid,
   GridMouseHandler,
-  GridPoint,
+  type GridPoint,
   GridRange,
   GridRenderer,
   isDeletableGridModel,
   isEditableGridModel,
   isExpandableGridModel,
-  ModelIndex,
+  type ModelIndex,
 } from '@deephaven/grid';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
   TableColumnFormatter,
   DateTimeColumnFormatter,
   TableUtils,
-  TableColumnFormat,
-  IntegerColumnFormat,
-  SortDirection,
+  type TableColumnFormat,
+  type IntegerColumnFormat,
+  type SortDirection,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import type { DebouncedFunc } from 'lodash';
@@ -53,8 +53,8 @@ import {
 } from '../format-context-menus';
 import './IrisGridContextMenuHandler.scss';
 import SHORTCUTS from '../IrisGridShortcuts';
-import IrisGrid from '../IrisGrid';
-import { QuickFilter } from '../CommonTypes';
+import type IrisGrid from '../IrisGrid';
+import { type QuickFilter } from '../CommonTypes';
 import { isPartitionedGridModel } from '../PartitionedGridModel';
 
 const log = Log.module('IrisGridContextMenuHandler');

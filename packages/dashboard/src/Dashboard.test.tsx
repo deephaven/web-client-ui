@@ -1,7 +1,7 @@
 import React from 'react';
-import { render, RenderResult } from '@testing-library/react';
+import { render, type RenderResult } from '@testing-library/react';
 import { ApiContext } from '@deephaven/jsapi-bootstrap';
-import Dashboard, { DashboardProps } from './Dashboard';
+import Dashboard, { type DashboardProps } from './Dashboard';
 
 const mockDispatch = jest.fn();
 jest.mock('react-redux', () => ({

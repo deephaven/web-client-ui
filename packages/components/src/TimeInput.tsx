@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import Log from '@deephaven/log';
 import { TimeUtils } from '@deephaven/utils';
-import MaskedInput, { SelectionSegment } from './MaskedInput';
+import MaskedInput, { type SelectionSegment } from './MaskedInput';
 import { DEFAULT_GET_PREFERRED_REPLACEMENT_STRING } from './MaskedInputUtils';
 
 export type { SelectionSegment } from './MaskedInput';

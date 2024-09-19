@@ -1,9 +1,9 @@
 import {
-  BroadcastLoginMessage,
-  BroadcastLogoutMessage,
+  type BroadcastLoginMessage,
+  type BroadcastLogoutMessage,
   isBroadcastLoginMessage,
   isBroadcastLogoutMessage,
-  Message,
+  type Message,
 } from '@deephaven/jsapi-utils';
 import { useCallback } from 'react';
 import useBroadcastChannel from './useBroadcastChannel';

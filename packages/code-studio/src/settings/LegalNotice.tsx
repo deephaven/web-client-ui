@@ -1,4 +1,4 @@
-import React, { ReactElement, useState } from 'react';
+import React, { type ReactElement, useState } from 'react';
 import { Button, Modal, ModalBody, ModalHeader } from '@deephaven/components';
 import { vsLaw } from '@deephaven/icons';
 

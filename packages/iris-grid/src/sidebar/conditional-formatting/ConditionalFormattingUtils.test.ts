@@ -5,7 +5,7 @@ import {
   DateCondition,
   FormatStyleType,
   FormatterType,
-  FormattingRule,
+  type FormattingRule,
   getFormatColumns,
   isDateConditionValid,
   StringCondition,

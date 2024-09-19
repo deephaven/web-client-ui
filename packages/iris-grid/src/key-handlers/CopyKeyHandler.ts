@@ -1,5 +1,5 @@
 /* eslint class-methods-use-this: "off" */
-import { KeyboardEvent } from 'react';
+import { type KeyboardEvent } from 'react';
 import { ContextActionUtils } from '@deephaven/components';
 import { KeyHandler } from '@deephaven/grid';
 import type IrisGrid from '../IrisGrid';

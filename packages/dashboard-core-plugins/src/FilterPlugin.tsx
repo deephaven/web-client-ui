@@ -1,9 +1,9 @@
-import { Component, useCallback, useEffect, useState } from 'react';
+import { type Component, useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { nanoid } from 'nanoid';
 import {
   assertIsDashboardPluginProps,
-  DashboardPluginComponentProps,
+  type DashboardPluginComponentProps,
   LayoutUtils,
   PanelEvent,
   updateDashboardData,

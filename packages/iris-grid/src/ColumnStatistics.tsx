@@ -1,14 +1,15 @@
-import React, { Component, Key } from 'react';
+import React, { Component, type Key } from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, CopyButton, LoadingSpinner } from '@deephaven/components';
 import { dhFreeze, dhRefresh, dhSortSlash, vsLock } from '@deephaven/icons';
 import type { dh } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
-import { CancelablePromise, PromiseUtils } from '@deephaven/utils';
+import { type CancelablePromise, PromiseUtils } from '@deephaven/utils';
 import { isExpandableGridModel } from '@deephaven/grid';
 import './ColumnStatistics.scss';
-import IrisGridModel, { DisplayColumn } from './IrisGridModel';
+import { type DisplayColumn } from './IrisGridModel';
+import type IrisGridModel from './IrisGridModel';
 
 const log = Log.module('ColumnStatistics');
 const STATS_LABEL_OVERRIDES: Record<string, string> = {

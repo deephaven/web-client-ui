@@ -1,8 +1,8 @@
 import React, {
-  ChangeEvent,
+  type ChangeEvent,
   PureComponent,
-  ReactElement,
-  RefObject,
+  type ReactElement,
+  type RefObject,
 } from 'react';
 import { connect } from 'react-redux';
 import { vsRefresh } from '@deephaven/icons';
@@ -30,8 +30,8 @@ import {
   getShowNullStrings,
   getShowExtraGroupColumn,
   updateSettings as updateSettingsAction,
-  RootState,
-  WorkspaceSettings,
+  type RootState,
+  type WorkspaceSettings,
   getDefaultSettings,
 } from '@deephaven/redux';
 import './FormattingSectionContent.scss';

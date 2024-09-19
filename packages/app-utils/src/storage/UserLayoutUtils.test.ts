@@ -1,10 +1,11 @@
-import { FilterSet, Link } from '@deephaven/dashboard-core-plugins';
+import { type FilterSet, type Link } from '@deephaven/dashboard-core-plugins';
 import type { ItemConfig } from '@deephaven/golden-layout';
-import LayoutStorage, {
-  ExportedLayout,
-  ExportedLayoutV1,
-  ExportedLayoutV2,
+import {
+  type ExportedLayout,
+  type ExportedLayoutV1,
+  type ExportedLayoutV2,
 } from './LayoutStorage';
+import type LayoutStorage from './LayoutStorage';
 import UserLayoutUtils, {
   DEFAULT_LAYOUT_CONFIG,
   DEFAULT_LAYOUT_CONFIG_NO_CONSOLE,

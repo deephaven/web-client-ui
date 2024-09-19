@@ -4,17 +4,17 @@ import { usePickerItemScale } from '@deephaven/components';
 import {
   createSearchTextFilter,
   createSelectedValuesFilter,
-  FilterConditionFactory,
-  TableUtils,
+  type FilterConditionFactory,
+  type TableUtils,
 } from '@deephaven/jsapi-utils';
 import {
   useDebouncedValue,
   type WindowedListData,
 } from '@deephaven/react-hooks';
-import { KeyedItem } from '@deephaven/utils';
+import { type KeyedItem } from '@deephaven/utils';
 import { TestUtils } from '@deephaven/test-utils';
 import usePickerWithSelectedValues from './usePickerWithSelectedValues';
-import useViewportData, { UseViewportDataResult } from './useViewportData';
+import useViewportData, { type UseViewportDataResult } from './useViewportData';
 import useViewportFilter from './useViewportFilter';
 import useFilterConditionFactories from './useFilterConditionFactories';
 import useTableUtils from './useTableUtils';

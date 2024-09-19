@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable react/no-unused-state */
-import React, { Component, ReactElement, RefObject } from 'react';
+import React, { Component, type ReactElement, type RefObject } from 'react';
 import ConnectedIrisGridPanel, {
   type IrisGridPanel,
   type OwnProps as IrisGridPanelOwnProps,

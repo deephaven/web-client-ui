@@ -9,7 +9,10 @@ import React, {
   useEffect,
 } from 'react';
 import classNames from 'classnames';
-import TimeInput, { SelectionSegment, TimeInputElement } from './TimeInput';
+import TimeInput, {
+  type SelectionSegment,
+  type TimeInputElement,
+} from './TimeInput';
 import StyleExports from './TimeSlider.module.scss';
 import './TimeSlider.scss';
 

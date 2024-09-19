@@ -2,7 +2,7 @@ import { renderHook } from '@testing-library/react-hooks';
 import type { Column, Table } from '@deephaven/jsapi-types';
 import { TestUtils } from '@deephaven/test-utils';
 import useGetItemPosition, {
-  UseGetItemPositionOptions,
+  type UseGetItemPositionOptions,
 } from './useGetItemPosition';
 
 const { asMock, createMockProxy } = TestUtils;

@@ -1,11 +1,11 @@
-import GridMetrics from './GridMetrics';
-import GridModel from './GridModel';
+import type GridMetrics from './GridMetrics';
+import type GridModel from './GridModel';
 import GridRenderer from './GridRenderer';
 import MockGridModel from './MockGridModel';
 import GridTheme from './GridTheme';
-import TextCellRenderer from './TextCellRenderer';
-import { LinkToken } from './GridUtils';
-import { GridRenderState } from './GridRendererTypes';
+import type TextCellRenderer from './TextCellRenderer';
+import { type LinkToken } from './GridUtils';
+import { type GridRenderState } from './GridRendererTypes';
 
 const makeMockContext = (): CanvasRenderingContext2D =>
   // Just return a partial mock

@@ -9,9 +9,9 @@ import dh from '@deephaven/jsapi-shim';
 //   Operator as FilterOperator,
 // } from '@deephaven/filters';
 import AdvancedFilterCreator from './AdvancedFilterCreator';
-import { AdvancedFilterOptions } from './CommonTypes';
+import { type AdvancedFilterOptions } from './CommonTypes';
 import IrisGridTestUtils from './IrisGridTestUtils';
-import IrisGridModel from './IrisGridModel';
+import type IrisGridModel from './IrisGridModel';
 
 const irisGridTestUtils = new IrisGridTestUtils(dh);
 

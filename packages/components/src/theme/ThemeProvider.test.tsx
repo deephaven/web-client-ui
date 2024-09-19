@@ -2,8 +2,8 @@ import React from 'react';
 import { act, render } from '@testing-library/react';
 import { assertNotNull } from '@deephaven/utils';
 import { TestUtils } from '@deephaven/test-utils';
-import { ThemeContextValue, ThemeProvider } from './ThemeProvider';
-import { DEFAULT_LIGHT_THEME_KEY, ThemeData } from './ThemeModel';
+import { type ThemeContextValue, ThemeProvider } from './ThemeProvider';
+import { DEFAULT_LIGHT_THEME_KEY, type ThemeData } from './ThemeModel';
 import {
   calculatePreloadStyleContent,
   getActiveThemes,

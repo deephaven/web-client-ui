@@ -1,24 +1,34 @@
 /* eslint react/no-did-update-set-state: "off" */
 import React, {
-  CSSProperties,
+  type CSSProperties,
   PureComponent,
-  ReactNode,
-  RefObject,
+  type ReactNode,
+  type RefObject,
 } from 'react';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
 import clamp from 'lodash.clamp';
 import { assertNotNull, EMPTY_ARRAY, getChangedKeys } from '@deephaven/utils';
-import GridMetricCalculator, { GridMetricState } from './GridMetricCalculator';
-import GridModel from './GridModel';
-import GridMouseHandler, {
-  GridMouseEvent,
-  GridMouseHandlerFunctionName,
+import GridMetricCalculator, {
+  type GridMetricState,
+} from './GridMetricCalculator';
+import type GridModel from './GridModel';
+import {
+  type GridMouseEvent,
+  type GridMouseHandlerFunctionName,
 } from './GridMouseHandler';
-import GridTheme, { GridTheme as GridThemeType } from './GridTheme';
-import GridRange, { GridRangeIndex, SELECTION_DIRECTION } from './GridRange';
+import type GridMouseHandler from './GridMouseHandler';
+import GridTheme, { type GridTheme as GridThemeType } from './GridTheme';
+import GridRange, {
+  type GridRangeIndex,
+  SELECTION_DIRECTION,
+} from './GridRange';
 import GridRenderer from './GridRenderer';
-import GridUtils, { GridPoint, isLinkToken, Token } from './GridUtils';
+import GridUtils, {
+  type GridPoint,
+  isLinkToken,
+  type Token,
+} from './GridUtils';
 import {
   GridSelectionMouseHandler,
   GridColumnMoveMouseHandler,
@@ -30,14 +40,15 @@ import {
   GridScrollBarCornerMouseHandler,
   GridVerticalScrollBarMouseHandler,
   EditMouseHandler,
-  GridSeparator,
+  type GridSeparator,
   GridTokenMouseHandler,
 } from './mouse-handlers';
 import './Grid.scss';
-import KeyHandler, {
-  GridKeyHandlerFunctionName,
-  GridKeyboardEvent,
+import {
+  type GridKeyHandlerFunctionName,
+  type GridKeyboardEvent,
 } from './KeyHandler';
+import type KeyHandler from './KeyHandler';
 import {
   EditKeyHandler,
   PasteKeyHandler,
@@ -46,26 +57,27 @@ import {
 } from './key-handlers';
 import CellInputField from './CellInputField';
 import PasteError from './errors/PasteError';
-import GridMetrics, {
-  Coordinate,
-  ModelIndex,
-  MoveOperation,
-  VisibleIndex,
+import {
+  type Coordinate,
+  type ModelIndex,
+  type MoveOperation,
+  type VisibleIndex,
 } from './GridMetrics';
+import type GridMetrics from './GridMetrics';
 import { isExpandableGridModel } from './ExpandableGridModel';
 import {
   assertIsEditableGridModel,
-  EditOperation,
+  type EditOperation,
   isEditableGridModel,
 } from './EditableGridModel';
-import { EventHandlerResultOptions } from './EventHandlerResult';
+import { type EventHandlerResultOptions } from './EventHandlerResult';
 import { assertIsDefined } from './errors';
 import ThemeContext from './ThemeContext';
-import { DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
+import { type DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
 import {
-  EditingCell,
-  GridRenderState,
-  EditingCellTextSelectionRange,
+  type EditingCell,
+  type GridRenderState,
+  type EditingCellTextSelectionRange,
 } from './GridRendererTypes';
 
 type LegacyCanvasRenderingContext2D = CanvasRenderingContext2D & {

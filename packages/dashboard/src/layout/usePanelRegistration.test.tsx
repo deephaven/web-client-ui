@@ -2,7 +2,7 @@
 import React from 'react';
 import { renderHook } from '@testing-library/react-hooks';
 import usePanelRegistration from './usePanelRegistration';
-import { PanelProps } from '../DashboardPlugin';
+import { type PanelProps } from '../DashboardPlugin';
 
 /* eslint-disable react/prefer-stateless-function */
 class ClassCOMPONENT extends React.Component<PanelProps> {

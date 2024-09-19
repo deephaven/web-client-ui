@@ -1,9 +1,9 @@
 import {
-  File,
+  type File,
   FileNotFoundError,
-  FileStorage,
-  FileStorageItem,
-  FileStorageTable,
+  type FileStorage,
+  type FileStorageItem,
+  type FileStorageTable,
   FileUtils,
 } from '@deephaven/file-explorer';
 import MockFileStorageTable from './MockFileStorageTable';

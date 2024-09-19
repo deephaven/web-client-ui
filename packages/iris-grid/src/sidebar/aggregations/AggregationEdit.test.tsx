@@ -1,7 +1,7 @@
 import React from 'react';
-import { render, RenderResult, screen } from '@testing-library/react';
+import { render, type RenderResult, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { Aggregation } from './Aggregations';
+import { type Aggregation } from './Aggregations';
 import AggregationEdit from './AggregationEdit';
 import AggregationOperation from './AggregationOperation';
 

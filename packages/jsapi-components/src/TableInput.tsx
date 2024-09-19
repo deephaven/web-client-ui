@@ -14,7 +14,11 @@ import {
 import type { dh } from '@deephaven/jsapi-types';
 import { PromiseUtils } from '@deephaven/utils';
 import Log from '@deephaven/log';
-import { Formatter, FormatterUtils, Settings } from '@deephaven/jsapi-utils';
+import {
+  Formatter,
+  FormatterUtils,
+  type Settings,
+} from '@deephaven/jsapi-utils';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import useTableColumn from './useTableColumn';
 

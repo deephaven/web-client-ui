@@ -1,4 +1,4 @@
-import { WidgetComponentProps } from '@deephaven/plugin';
+import { type WidgetComponentProps } from '@deephaven/plugin';
 import { type dh } from '@deephaven/jsapi-types';
 import IrisGrid from '@deephaven/iris-grid';
 import { LoadingOverlay } from '@deephaven/components';

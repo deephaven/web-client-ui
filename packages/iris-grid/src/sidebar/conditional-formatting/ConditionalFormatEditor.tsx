@@ -7,11 +7,11 @@ import { FormatColumnWhereIcon, FormatRowWhereIcon } from '../icons';
 import ColumnFormatEditor from './ColumnFormatEditor';
 import RowFormatEditor from './RowFormatEditor';
 import {
-  BaseFormatConfig,
+  type BaseFormatConfig,
   FormatterType,
-  FormattingRule,
+  type FormattingRule,
   isSupportedColumn,
-  ModelColumn,
+  type ModelColumn,
 } from './ConditionalFormattingUtils';
 import './ConditionalFormatEditor.scss';
 

@@ -1,16 +1,16 @@
-import { Key, useCallback, useMemo } from 'react';
+import { type Key, useCallback, useMemo } from 'react';
 import { EMPTY_FUNCTION } from '@deephaven/utils';
 import type { DOMRef } from '@react-types/shared';
 import {
   getItemKey,
   isNormalizedSection,
-  NormalizedItem,
-  NormalizedSection,
+  type NormalizedItem,
+  type NormalizedSection,
   normalizeTooltipOptions,
   useRenderNormalizedItem,
   useStringifiedSelection,
 } from '../utils';
-import { PickerNormalizedPropsT } from './PickerProps';
+import { type PickerNormalizedPropsT } from './PickerProps';
 import { usePickerScrollOnOpen } from './usePickerScrollOnOpen';
 import { Section } from '../shared';
 

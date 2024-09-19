@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid';
-import { LayoutUtils, PanelComponent } from '@deephaven/dashboard';
+import { LayoutUtils, type PanelComponent } from '@deephaven/dashboard';
 import { TableUtils } from '@deephaven/jsapi-utils';
-import { TypeValue as FilterTypeValue } from '@deephaven/filters';
+import { type TypeValue as FilterTypeValue } from '@deephaven/filters';
 import Log from '@deephaven/log';
 import { ChartPanel, IrisGridPanel, DropdownFilterPanel } from '../panels';
 

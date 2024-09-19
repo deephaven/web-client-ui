@@ -3,8 +3,8 @@ import type { Column, FilterCondition } from '@deephaven/jsapi-types';
 import {
   createFilterConditionFactory,
   createNotNullOrEmptyFilterCondition,
-  FilterConditionFactory,
-  TableUtils,
+  type FilterConditionFactory,
+  type TableUtils,
 } from '@deephaven/jsapi-utils';
 import { TestUtils } from '@deephaven/test-utils';
 import useNotNullOrEmptyFilter from './useNotNullOrEmptyFilter';

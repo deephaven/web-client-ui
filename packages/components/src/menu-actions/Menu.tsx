@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
 import ContextActionUtils, {
-  ContextAction,
+  type ContextAction,
 } from '../context-actions/ContextActionUtils';
 import ContextMenuItem from '../context-actions/ContextMenuItem';
 

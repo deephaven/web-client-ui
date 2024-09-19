@@ -2,8 +2,8 @@
 import {
   type Grid,
   GridMouseHandler,
-  GridPoint,
-  EventHandlerResult,
+  type GridPoint,
+  type EventHandlerResult,
 } from '@deephaven/grid';
 import type IrisGrid from '../IrisGrid';
 import { isPartitionedGridModel } from '../PartitionedGridModel';

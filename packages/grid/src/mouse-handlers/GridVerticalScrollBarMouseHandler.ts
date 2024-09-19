@@ -1,9 +1,9 @@
 import clamp from 'lodash.clamp';
-import { EventHandlerResult } from '../EventHandlerResult';
-import Grid from '../Grid';
-import { VisibleIndex } from '../GridMetrics';
+import { type EventHandlerResult } from '../EventHandlerResult';
+import type Grid from '../Grid';
+import { type VisibleIndex } from '../GridMetrics';
 import GridMouseHandler from '../GridMouseHandler';
-import { GridPoint } from '../GridUtils';
+import { type GridPoint } from '../GridUtils';
 
 /* eslint class-methods-use-this: "off" */
 class GridVerticalScrollBarMouseHandler extends GridMouseHandler {

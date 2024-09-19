@@ -1,8 +1,8 @@
 import { act, renderHook } from '@testing-library/react-hooks';
-import { ItemKey } from './itemUtils';
+import { type ItemKey } from './itemUtils';
 import {
   useOnChangeTrackUncontrolled,
-  UseOnChangeTrackUncontrolledOptions,
+  type UseOnChangeTrackUncontrolledOptions,
 } from './useOnChangeTrackUncontrolled';
 
 beforeEach(() => {

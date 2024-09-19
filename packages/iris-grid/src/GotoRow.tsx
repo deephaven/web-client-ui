@@ -1,9 +1,9 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsClose, vsArrowUp, vsArrowDown } from '@deephaven/icons';
 import React, {
-  ChangeEvent,
-  KeyboardEvent,
-  ReactElement,
+  type ChangeEvent,
+  type KeyboardEvent,
+  type ReactElement,
   forwardRef,
   useEffect,
   useImperativeHandle,
@@ -14,16 +14,16 @@ import React, {
 import type { dh } from '@deephaven/jsapi-types';
 import {
   Type as FilterType,
-  TypeValue as FilterTypeValue,
+  type TypeValue as FilterTypeValue,
 } from '@deephaven/filters';
 import { Button, DateTimeInput, Select } from '@deephaven/components';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import classNames from 'classnames';
 import './GotoRow.scss';
 import { nanoid } from 'nanoid';
-import IrisGridModel from './IrisGridModel';
+import type IrisGridModel from './IrisGridModel';
 import IrisGridBottomBar from './IrisGridBottomBar';
-import { ColumnName } from './CommonTypes';
+import { type ColumnName } from './CommonTypes';
 import { isIrisGridTableModelTemplate } from './IrisGridTableModelTemplate';
 
 const DEFAULT_FORMAT_STRING = '###,##0';

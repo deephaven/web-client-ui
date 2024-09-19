@@ -1,6 +1,6 @@
-import { BoxCoordinates, Coordinate } from '@deephaven/grid';
+import { type BoxCoordinates, type Coordinate } from '@deephaven/grid';
 import { getIcon } from './IrisGridIcons';
-import { IrisGridRenderState } from './IrisGridRenderer';
+import { type IrisGridRenderState } from './IrisGridRenderer';
 
 class IrisGridCellRendererUtils {
   static drawTreeMarker(

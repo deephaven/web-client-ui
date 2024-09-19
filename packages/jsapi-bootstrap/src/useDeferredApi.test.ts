@@ -3,7 +3,7 @@ import type { dh as DhType } from '@deephaven/jsapi-types';
 import { useContext } from 'react';
 import { TestUtils } from '@deephaven/test-utils';
 import { useDeferredApi } from './useDeferredApi';
-import { VariableDescriptor } from './useObjectFetcher';
+import { type VariableDescriptor } from './useObjectFetcher';
 
 const { asMock, createMockProxy, flushPromises } = TestUtils;
 

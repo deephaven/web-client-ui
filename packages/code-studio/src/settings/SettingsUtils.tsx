@@ -3,14 +3,14 @@ import {
   DateTimeColumnFormatter,
   IntegerColumnFormatter,
   DecimalColumnFormatter,
-  TableColumnFormat,
-  FormattingRule,
+  type TableColumnFormat,
+  type FormattingRule,
 } from '@deephaven/jsapi-utils';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import type { ServerConfigValues } from '@deephaven/redux';
 import Bowser from 'bowser';
-import { PluginModuleMap } from '@deephaven/plugin';
+import { type PluginModuleMap } from '@deephaven/plugin';
 
 const log = Log.module('SettingsUtils');
 

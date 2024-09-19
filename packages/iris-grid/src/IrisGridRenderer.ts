@@ -1,27 +1,27 @@
 /* eslint class-methods-use-this: "off" */
 import {
-  BoundedAxisRange,
-  Coordinate,
+  type BoundedAxisRange,
+  type Coordinate,
   DEFAULT_FONT_WIDTH,
-  GridMetrics,
-  GridRangeIndex,
+  type GridMetrics,
+  type GridRangeIndex,
   GridRenderer,
-  GridRenderState,
-  GridThemeType,
+  type GridRenderState,
+  type GridThemeType,
   GridUtils,
-  VisibleIndex,
+  type VisibleIndex,
 } from '@deephaven/grid';
 import type { dh } from '@deephaven/jsapi-types';
-import { TableUtils, ReverseType } from '@deephaven/jsapi-utils';
+import { TableUtils, type ReverseType } from '@deephaven/jsapi-utils';
 import { assertNotNull, getOrThrow } from '@deephaven/utils';
 import {
-  ReadonlyAdvancedFilterMap,
-  ReadonlyQuickFilterMap,
-  AdvancedFilter,
-  QuickFilter,
+  type ReadonlyAdvancedFilterMap,
+  type ReadonlyQuickFilterMap,
+  type AdvancedFilter,
+  type QuickFilter,
 } from './CommonTypes';
-import { IrisGridThemeType } from './IrisGridTheme';
-import IrisGridModel from './IrisGridModel';
+import { type IrisGridThemeType } from './IrisGridTheme';
+import type IrisGridModel from './IrisGridModel';
 import IrisGridTextCellRenderer from './IrisGridTextCellRenderer';
 import IrisGridDataBarCellRenderer from './IrisGridDataBarCellRenderer';
 import { getIcon } from './IrisGridIcons';

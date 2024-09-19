@@ -10,17 +10,20 @@ import clamp from 'lodash.clamp';
 import {
   DragDropContext,
   Droppable,
-  OnDragEndResponder,
+  type OnDragEndResponder,
 } from 'react-beautiful-dnd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
+import { type IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { vsChevronRight, vsChevronLeft } from '@deephaven/icons';
 import { useResizeObserver } from '@deephaven/react-hooks';
 import DragUtils from '../DragUtils';
 import Button from '../Button';
 import NavTab from './NavTab';
 import './NavTabList.scss';
-import { ContextAction, ResolvableContextAction } from '../context-actions';
+import {
+  type ContextAction,
+  type ResolvableContextAction,
+} from '../context-actions';
 
 // mouse hold timeout to act as hold instead of click
 const CLICK_TIMEOUT = 500;

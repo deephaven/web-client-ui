@@ -1,17 +1,17 @@
-import React, { PureComponent, ReactElement } from 'react';
+import React, { PureComponent, type ReactElement } from 'react';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
 import {
-  ContextAction,
+  type ContextAction,
   ContextActions,
   createXComponent,
 } from '@deephaven/components';
 import type { dh } from '@deephaven/jsapi-types';
 import { copyToClipboard, EMPTY_ARRAY } from '@deephaven/utils';
-import Panel, { CorePanelProps } from './Panel';
+import Panel, { type CorePanelProps } from './Panel';
 import WidgetPanelTooltip from './WidgetPanelTooltip';
 import './WidgetPanel.scss';
-import { WidgetPanelDescriptor } from './WidgetPanelTypes';
+import { type WidgetPanelDescriptor } from './WidgetPanelTypes';
 
 export type WidgetPanelProps = CorePanelProps & {
   descriptor: WidgetPanelDescriptor;

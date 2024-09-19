@@ -2,7 +2,7 @@ import { type WidgetComponentProps } from '@deephaven/plugin';
 import { type dh } from '@deephaven/jsapi-types';
 import { IrisGrid } from '@deephaven/iris-grid';
 import { useSelector } from 'react-redux';
-import { getSettings, RootState } from '@deephaven/redux';
+import { getSettings, type RootState } from '@deephaven/redux';
 import { LoadingOverlay } from '@deephaven/components';
 import { getErrorMessage } from '@deephaven/utils';
 import { useIrisGridModel } from './useIrisGridModel';

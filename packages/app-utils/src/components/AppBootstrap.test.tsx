@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { act, render, screen } from '@testing-library/react';
 import { AUTH_HANDLER_TYPE_ANONYMOUS } from '@deephaven/auth-plugins';
 import { ApiContext } from '@deephaven/jsapi-bootstrap';
-import { PluginModuleMap, PluginsContext } from '@deephaven/plugin';
+import { type PluginModuleMap, PluginsContext } from '@deephaven/plugin';
 import { BROADCAST_LOGIN_MESSAGE } from '@deephaven/jsapi-utils';
 import type {
   CoreClient,

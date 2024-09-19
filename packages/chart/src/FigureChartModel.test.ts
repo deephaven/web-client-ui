@@ -1,5 +1,5 @@
 import dh from '@deephaven/jsapi-shim';
-import { Data } from 'plotly.js';
+import { type Data } from 'plotly.js';
 import ChartTestUtils from './ChartTestUtils';
 import FigureChartModel from './FigureChartModel';
 

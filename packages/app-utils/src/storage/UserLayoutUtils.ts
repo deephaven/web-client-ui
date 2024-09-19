@@ -5,13 +5,14 @@ import {
   LogPanel,
 } from '@deephaven/dashboard-core-plugins';
 import Log from '@deephaven/log';
-import { CustomizableWorkspaceData } from '@deephaven/redux';
-import LayoutStorage, {
-  ExportedLayout,
-  ExportedLayoutV2,
+import { type CustomizableWorkspaceData } from '@deephaven/redux';
+import {
+  type ExportedLayout,
+  type ExportedLayoutV2,
   isLayoutV1,
   isLayoutV2,
 } from './LayoutStorage';
+import type LayoutStorage from './LayoutStorage';
 
 const log = Log.module('UserLayoutUtils');
 

@@ -1,6 +1,6 @@
 import {
   ListView as SpectrumListView,
-  SpectrumListViewProps,
+  type SpectrumListViewProps,
 } from '@adobe/react-spectrum';
 import {
   extractSpectrumHTMLElement,

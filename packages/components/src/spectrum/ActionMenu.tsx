@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 import {
   ActionMenu as SpectrumActionMenu,
-  SpectrumActionMenuProps,
+  type SpectrumActionMenuProps,
 } from '@adobe/react-spectrum';
 import cl from 'classnames';
-import { ItemsOrPrimitiveChildren } from './shared';
-import { ItemKey, wrapItemChildren } from './utils';
+import { type ItemsOrPrimitiveChildren } from './shared';
+import { type ItemKey, wrapItemChildren } from './utils';
 
 export type ActionMenuProps<T> = Omit<
   SpectrumActionMenuProps<T>,
