@@ -31,6 +31,7 @@
     "build:profile": "lerna run build --stream --profile",
     "build:necessary": "lerna run build --scope=@deephaven/icons",
     "analyze": "lerna run analyze",
+    "lint:packages": "eslint \"packages/*/src/**/*.{ts,tsx,js,jsx}\"",
     "preview": "lerna run --scope=@deephaven/{code-studio,embed-widget} preview --stream",
     "preview:app": "lerna run --scope=@deephaven/code-studio preview --stream",
     "prestart": "npm run build:necessary",
