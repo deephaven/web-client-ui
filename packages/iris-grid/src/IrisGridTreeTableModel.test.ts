@@ -78,3 +78,13 @@ describe('IrisGridTreeTableModel layoutHints', () => {
     expect(model.layoutHints).toEqual(undefined);
   });
 });
+
+describe('IrisGridTreeTableModel values table', () => {
+  it('is available for tree tables', () => {
+    const columns = irisGridTestUtils.makeColumns();
+    const table = irisGridTestUtils.makeTreeTable(columns, columns, 100, []);
+    const model = new IrisGridTreeTableModel(dh, table);
+
+    expect(model.isValuesTableAvailable).toBe(true);
+  });
+});
