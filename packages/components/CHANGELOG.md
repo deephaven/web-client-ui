@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.95.0](https://github.com/deephaven/web-client-ui/compare/v0.94.0...v0.95.0) (2024-09-20)
+
+### ⚠ BREAKING CHANGES
+
+- eslint rule will require type only imports where
+  possible
+
+### Bug Fixes
+
+- Widget panel fixes ([#2227](https://github.com/deephaven/web-client-ui/issues/2227)) ([c985e12](https://github.com/deephaven/web-client-ui/commit/c985e1274097860dcbf4690ac8412c9f84831209))
+
+### Code Refactoring
+
+- Added consistent-type-imports eslint rule and ran --fix ([#2230](https://github.com/deephaven/web-client-ui/issues/2230)) ([2744f97](https://github.com/deephaven/web-client-ui/commit/2744f9793aeac2b70e475a725447dcba1b5f294c)), closes [#2229](https://github.com/deephaven/web-client-ui/issues/2229)
+
 ## [0.94.0](https://github.com/deephaven/web-client-ui/compare/v0.93.0...v0.94.0) (2024-09-18)
 
 ### ⚠ BREAKING CHANGES
