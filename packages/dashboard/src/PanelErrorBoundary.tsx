@@ -1,4 +1,4 @@
-import React, { Component, ReactNode } from 'react';
+import React, { Component, type ReactNode } from 'react';
 import { LoadingOverlay } from '@deephaven/components';
 import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';

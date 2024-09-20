@@ -4,9 +4,9 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { IrisGridModelFactory } from '@deephaven/iris-grid';
 import dh from '@deephaven/jsapi-shim';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import type { Container } from '@deephaven/golden-layout';
-import { Workspace } from '@deephaven/redux';
+import { type Workspace } from '@deephaven/redux';
 import { IrisGridPanel } from './IrisGridPanel';
 
 const MockIrisGrid: React.FC & jest.Mock = jest.fn(() => null);

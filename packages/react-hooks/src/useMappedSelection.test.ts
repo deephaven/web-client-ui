@@ -1,8 +1,9 @@
-import { Key } from 'react';
+import { type Key } from 'react';
 import { renderHook } from '@testing-library/react-hooks';
-import { KeyedItem, TestUtils } from '@deephaven/utils';
+import { type KeyedItem } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import { useMappedSelection } from './useMappedSelection';
-import { WindowedListData } from './useWindowedListData';
+import { type WindowedListData } from './useWindowedListData';
 import { mapSelection, optimizeSelection } from './SelectionUtils';
 
 const { asMock, createMockProxy } = TestUtils;

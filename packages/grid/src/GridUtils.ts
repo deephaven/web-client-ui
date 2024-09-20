@@ -1,30 +1,30 @@
-import React from 'react';
+import type React from 'react';
 import clamp from 'lodash.clamp';
 import { find as linkifyFind } from 'linkifyjs';
 import { EMPTY_ARRAY, getOrThrow } from '@deephaven/utils';
-import GridRange, { GridRangeIndex } from './GridRange';
+import GridRange, { type GridRangeIndex } from './GridRange';
 import {
-  BoxCoordinates,
-  Coordinate,
-  CoordinateMap,
-  VisibleIndex,
-  VisibleToModelMap,
-  ModelIndex,
-  ModelSizeMap,
-  MoveOperation,
-  SizeMap,
+  type BoxCoordinates,
+  type Coordinate,
+  type CoordinateMap,
+  type VisibleIndex,
+  type VisibleToModelMap,
+  type ModelIndex,
+  type ModelSizeMap,
+  type MoveOperation,
+  type SizeMap,
 } from './GridMetrics';
 import type { GridMetrics } from './GridMetrics';
-import { GridTheme } from './GridTheme';
-import { GridWheelEvent } from './GridMouseHandler';
+import { type GridTheme } from './GridTheme';
+import { type GridWheelEvent } from './GridMouseHandler';
 import {
-  AxisRange,
-  BoundedAxisRange,
+  type AxisRange,
+  type BoundedAxisRange,
   isBoundedAxisRange,
-  Range,
+  type Range,
 } from './GridAxisRange';
 import { isExpandableGridModel } from './ExpandableGridModel';
-import { GridRenderState } from './GridRendererTypes';
+import { type GridRenderState } from './GridRendererTypes';
 
 export type GridPoint = {
   x: Coordinate;

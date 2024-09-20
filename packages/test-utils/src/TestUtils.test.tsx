@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import TestUtils, { ConsoleMethodName } from './TestUtils';
+import TestUtils, { type ConsoleMethodName } from './TestUtils';
 import createMockProxy from './MockProxy';
 
 beforeEach(() => {

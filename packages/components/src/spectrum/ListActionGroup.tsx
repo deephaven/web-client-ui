@@ -1,5 +1,5 @@
-import { ActionGroupProps } from './ActionGroup';
-import { ItemKey, ItemSelection } from './utils';
+import { type ActionGroupProps } from './ActionGroup';
+import { type ItemKey, type ItemSelection } from './utils';
 
 export interface ListActionGroupProps<T>
   extends Omit<

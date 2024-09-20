@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { ActionButton, Icon, ActionButtonProps } from '../spectrum';
+import { ActionButton, Icon, type ActionButtonProps } from '../spectrum';
 import { Tooltip } from '../popper';
 import { ACTION_ICON_HEIGHT } from '../UIConstants';
 

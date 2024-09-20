@@ -1,5 +1,5 @@
 import { TableUtils } from '@deephaven/jsapi-utils';
-import { DisplayColumn } from '../../IrisGridModel';
+import { type DisplayColumn } from '../../IrisGridModel';
 import AggregationOperation from './AggregationOperation';
 
 export const SELECTABLE_OPTIONS = [

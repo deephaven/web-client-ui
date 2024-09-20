@@ -6,12 +6,12 @@ import type {
   Table,
 } from '@deephaven/jsapi-types';
 import dh from '@deephaven/jsapi-shim';
-import { TableUtils } from '@deephaven/jsapi-utils';
-import { TestUtils } from '@deephaven/utils';
+import { type TableUtils } from '@deephaven/jsapi-utils';
+import { TestUtils } from '@deephaven/test-utils';
 import useDebouncedViewportSearch, {
   DEBOUNCE_VIEWPORT_SEARCH_MS,
 } from './useDebouncedViewportSearch';
-import { UseViewportDataResult } from './useViewportData';
+import { type UseViewportDataResult } from './useViewportData';
 import { makeApiContextWrapper } from './HookTestUtils';
 import useTableUtils from './useTableUtils';
 

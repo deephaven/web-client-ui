@@ -2,21 +2,21 @@
 
 import Log from '@deephaven/log';
 import {
-  StorageTableViewport,
-  StorageListenerRemover,
-  ViewportUpdateCallback,
-  ViewportData,
-  IndexRange,
-  StorageSnapshot,
+  type StorageTableViewport,
+  type StorageListenerRemover,
+  type ViewportUpdateCallback,
+  type ViewportData,
+  type IndexRange,
+  type StorageSnapshot,
 } from '@deephaven/storage';
 import {
-  CancelablePromise,
+  type CancelablePromise,
   CanceledPromiseError,
   PromiseUtils,
 } from '@deephaven/utils';
 import {
-  FileStorageItem,
-  FileStorageTable,
+  type FileStorageItem,
+  type FileStorageTable,
   FileUtils,
 } from '@deephaven/file-explorer';
 import type { dh } from '@deephaven/jsapi-types';

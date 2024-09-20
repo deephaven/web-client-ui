@@ -5,7 +5,10 @@ import {
 import type { GridThemeType } from '@deephaven/grid';
 import { GridTheme } from '@deephaven/grid';
 import Log from '@deephaven/log';
-import { GridColor, NullableGridColor } from '@deephaven/grid/src/GridTheme';
+import {
+  type GridColor,
+  type NullableGridColor,
+} from '@deephaven/grid/src/GridTheme';
 import { ColorUtils } from '@deephaven/utils';
 import IrisGridThemeRaw from './IrisGridTheme.module.scss';
 

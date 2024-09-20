@@ -1,5 +1,5 @@
 import { ValidationError } from '@deephaven/utils';
-import { FileStorageItem } from './FileStorage';
+import { type FileStorageItem } from './FileStorage';
 
 class FileExistsError extends ValidationError {
   isExistingFile = true;

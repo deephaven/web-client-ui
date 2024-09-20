@@ -1,5 +1,5 @@
 import React, {
-  ReactElement,
+  type ReactElement,
   useCallback,
   useMemo,
   useRef,
@@ -8,7 +8,7 @@ import React, {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   Button,
-  DropdownActions,
+  type DropdownActions,
   DropdownMenu,
   SearchInput,
 } from '@deephaven/components';

@@ -1,8 +1,8 @@
 import Log from '@deephaven/log';
 import {
-  DateTimeColumnFormatter,
-  Formatter,
-  TableColumnFormatter,
+  type DateTimeColumnFormatter,
+  type Formatter,
+  type TableColumnFormatter,
   TableUtils,
 } from '@deephaven/jsapi-utils';
 import type { dh as DhType } from '@deephaven/jsapi-types';
@@ -18,8 +18,8 @@ import type {
   MarkerSymbol,
   Template,
 } from 'plotly.js';
-import { assertNotNull, bindAllMethods, Range } from '@deephaven/utils';
-import { ChartTheme } from './ChartTheme';
+import { assertNotNull, bindAllMethods, type Range } from '@deephaven/utils';
+import { type ChartTheme } from './ChartTheme';
 
 export type FilterColumnMap = Map<
   string,

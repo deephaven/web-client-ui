@@ -12,7 +12,7 @@ export default function replaceByIdReducer<S extends Record<string, unknown>>(
   checkIfChanged = true
 ): Reducer<S> {
   return (state = initialState, action?) => {
-    switch (action.type) {
+    switch (action?.type) {
       case type: {
         const { id, payload } = action;
         if (checkIfChanged && deepEqual({ payload }, { payload: state[id] })) {

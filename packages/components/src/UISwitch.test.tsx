@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import UISwitch, { UISwitchProps } from './UISwitch';
+import UISwitch, { type UISwitchProps } from './UISwitch';
 
 function makeUISwitch({
   'data-testid': dataTestId = 'TestUISwitch',

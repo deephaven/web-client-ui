@@ -1,6 +1,6 @@
 import type userEvent from '@testing-library/user-event';
 import createMockProxy from './MockProxy';
-import { Tuple } from './TypeUtils';
+import { type Tuple } from './TypeUtils';
 
 interface MockContext {
   arc: jest.Mock<void>;
@@ -43,7 +43,7 @@ export type PickMethods<T> = {
 
 export type ConsoleMethodName = keyof PickMethods<Console>;
 
-class TestUtils {
+export class TestUtils {
   /**
    * jest.useFakeTimers mocks `process.nextTick` by default. Hold on to a
    * reference to the real function so we can still use it.

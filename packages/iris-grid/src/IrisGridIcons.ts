@@ -4,7 +4,7 @@ import {
   vsTriangleRight,
   vsTriangleUp,
   vsLinkExternal,
-  IconDefinition,
+  type IconDefinition,
 } from '@deephaven/icons';
 
 export type IconName =

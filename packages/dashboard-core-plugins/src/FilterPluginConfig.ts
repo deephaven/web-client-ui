@@ -1,4 +1,4 @@
-import { PluginType, DashboardPlugin } from '@deephaven/plugin';
+import { PluginType, type DashboardPlugin } from '@deephaven/plugin';
 import FilterPlugin from './FilterPlugin';
 
 const FilterPluginConfig: DashboardPlugin = {

@@ -1,4 +1,5 @@
-import React, { useContext } from 'react';
+import type React from 'react';
+import { useContext } from 'react';
 
 /**
  * Fetch a given context or throw an error if it is null or undefined.

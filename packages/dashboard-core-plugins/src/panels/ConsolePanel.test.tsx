@@ -1,11 +1,14 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import { CommandHistoryStorage } from '@deephaven/console';
+import { type CommandHistoryStorage } from '@deephaven/console';
 import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import type { IdeConnection, IdeSession } from '@deephaven/jsapi-types';
 import { dh } from '@deephaven/jsapi-shim';
-import { SessionConfig, SessionWrapper } from '@deephaven/jsapi-utils';
-import { TestUtils } from '@deephaven/utils';
+import {
+  type SessionConfig,
+  type SessionWrapper,
+} from '@deephaven/jsapi-utils';
+import { TestUtils } from '@deephaven/test-utils';
 import { ConsolePanel } from './ConsolePanel';
 
 type IdeSessionConstructor = new (language: string) => IdeSession;

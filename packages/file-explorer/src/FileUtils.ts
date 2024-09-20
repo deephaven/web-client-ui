@@ -1,6 +1,6 @@
 import { ValidationError } from '@deephaven/utils';
 import FileNotFoundError from './FileNotFoundError';
-import { FileStorage } from './FileStorage';
+import { type FileStorage } from './FileStorage';
 
 /**
  * A basic list of some common MIME types.

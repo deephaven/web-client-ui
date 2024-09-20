@@ -30,10 +30,10 @@
  */
 import React, { PureComponent } from 'react';
 import classNames from 'classnames';
-import { PopperOptions } from 'popper.js';
+import { type PopperOptions } from 'popper.js';
 import { Popper } from '../popper';
-import Menu, { MenuOptions } from './Menu';
-import { ContextAction } from '../context-actions/ContextActionUtils';
+import Menu, { type MenuOptions } from './Menu';
+import { type ContextAction } from '../context-actions/ContextActionUtils';
 import './DropdownMenu.scss';
 
 export type DropdownAction = ContextAction & { actions?: never };

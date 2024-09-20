@@ -1,9 +1,9 @@
 import clamp from 'lodash.clamp';
 import { assertNotNull } from '@deephaven/utils';
-import Grid from '../Grid';
-import GridUtils, { GridPoint } from '../GridUtils';
-import GridMouseHandler, { GridMouseEvent } from '../GridMouseHandler';
-import { EventHandlerResult } from '../EventHandlerResult';
+import type Grid from '../Grid';
+import GridUtils, { type GridPoint } from '../GridUtils';
+import GridMouseHandler, { type GridMouseEvent } from '../GridMouseHandler';
+import { type EventHandlerResult } from '../EventHandlerResult';
 import type {
   VisibleIndex,
   ModelIndex,

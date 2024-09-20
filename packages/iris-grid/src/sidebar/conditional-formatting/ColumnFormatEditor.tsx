@@ -3,12 +3,12 @@ import Log from '@deephaven/log';
 import { ComboBox } from '@deephaven/components';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
-  BaseFormatConfig,
-  ChangeCallback,
+  type BaseFormatConfig,
+  type ChangeCallback,
   getDefaultConditionConfigForType,
   getConditionConfig,
   getDefaultStyleConfig,
-  ModelColumn,
+  type ModelColumn,
   FormatStyleType,
 } from './ConditionalFormattingUtils';
 import ConditionEditor from './ConditionEditor';

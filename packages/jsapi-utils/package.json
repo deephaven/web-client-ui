@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/jsapi-utils",
-  "version": "0.92.0",
+  "version": "0.95.0",
   "description": "Deephaven JSAPI Utils",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -29,7 +29,8 @@
     "nanoid": "^5.0.7"
   },
   "devDependencies": {
-    "@deephaven/jsapi-shim": "file:../jsapi-shim"
+    "@deephaven/jsapi-shim": "file:../jsapi-shim",
+    "@deephaven/test-utils": "file:../test-utils"
   },
   "files": [
     "dist"

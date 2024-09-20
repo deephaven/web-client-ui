@@ -1,10 +1,20 @@
 import {
+  type Component,
+  type FunctionComponent,
   isValidElement,
-  JSXElementConstructor,
-  ReactElement,
-  ReactNode,
+  type JSXElementConstructor,
+  type ReactElement,
+  type ReactNode,
 } from 'react';
-import { InferComponentProps } from '@deephaven/utils';
+
+/**
+ * Extracts the props type from a React component type.
+ */
+export type InferComponentProps<T> = T extends FunctionComponent<infer P>
+  ? P
+  : T extends Component<infer P>
+  ? P
+  : never;
 
 /**
  * Check if a node is a React element of a specific type.

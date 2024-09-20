@@ -1,9 +1,13 @@
-import React, { PureComponent, ReactElement } from 'react';
-import { Button, DropdownActions, DropdownMenu } from '@deephaven/components';
+import React, { PureComponent, type ReactElement } from 'react';
+import {
+  Button,
+  type DropdownActions,
+  DropdownMenu,
+} from '@deephaven/components';
 import { vsGear, dhTrashUndo } from '@deephaven/icons';
 import { assertNotNull } from '@deephaven/utils';
 import type { dh } from '@deephaven/jsapi-types';
-import { Placement } from 'popper.js';
+import { type Placement } from 'popper.js';
 import * as monaco from 'monaco-editor';
 import ConsoleUtils from '../common/ConsoleUtils';
 import LogLevel from './LogLevel';

@@ -1,19 +1,19 @@
-import React, { Component, ErrorInfo } from 'react';
-import { connect, ConnectedProps } from 'react-redux';
+import React, { Component, type ErrorInfo } from 'react';
+import { connect, type ConnectedProps } from 'react-redux';
 import { nanoid } from 'nanoid';
 import memoize from 'memoize-one';
 import { FadeTransition } from '@deephaven/components';
 import {
   LayoutUtils,
-  PanelComponent,
+  type PanelComponent,
   PanelEvent,
-  PanelManager,
+  type PanelManager,
 } from '@deephaven/dashboard';
 import type GoldenLayout from '@deephaven/golden-layout';
 import {
   DateTimeColumnFormatter,
   DateUtils,
-  RowDataMap,
+  type RowDataMap,
   TableUtils,
 } from '@deephaven/jsapi-utils';
 import type { dh as DhType } from '@deephaven/jsapi-types';
@@ -24,7 +24,7 @@ import {
   getApi,
   getTimeZone,
   setActiveTool as setActiveToolAction,
-  RootState,
+  type RootState,
 } from '@deephaven/redux';
 import {
   getIsolatedLinkerPanelIdForDashboard,
@@ -40,10 +40,10 @@ import { ChartEvent, IrisGridEvent, InputFilterEvent } from '../events';
 import LinkerOverlayContent from './LinkerOverlayContent';
 import LinkerUtils, {
   isLinkablePanel,
-  Link,
-  LinkColumn,
-  LinkFilterMap,
-  LinkType,
+  type Link,
+  type LinkColumn,
+  type LinkFilterMap,
+  type LinkType,
   isLinkableColumn,
 } from './LinkerUtils';
 

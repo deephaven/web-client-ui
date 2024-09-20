@@ -1,5 +1,5 @@
-import { RowDataMap } from '@deephaven/jsapi-utils';
-import { IrisGridPanel } from '../panels/IrisGridPanel';
+import { type RowDataMap } from '@deephaven/jsapi-utils';
+import { type IrisGridPanel } from '../panels/IrisGridPanel';
 
 export type IrisGridDataSelectedEventCallback = (
   panel: IrisGridPanel,

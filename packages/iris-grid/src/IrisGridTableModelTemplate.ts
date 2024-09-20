@@ -3,40 +3,41 @@
 import memoize from 'memoize-one';
 import throttle from 'lodash.throttle';
 import {
-  DeletableGridModel,
-  EditableGridModel,
-  EditOperation,
+  type DeletableGridModel,
+  type EditableGridModel,
+  type EditOperation,
   GridRange,
   GridUtils,
   memoizeClear,
-  ModelIndex,
-  MoveOperation,
-  VisibleIndex,
+  type ModelIndex,
+  type MoveOperation,
+  type VisibleIndex,
 } from '@deephaven/grid';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import Log from '@deephaven/log';
 import {
-  CancelablePromise,
+  type CancelablePromise,
   EventShimCustomEvent,
   PromiseUtils,
   assertNotNull,
 } from '@deephaven/utils';
 import { TableUtils, Formatter, FormatterUtils } from '@deephaven/jsapi-utils';
-import IrisGridModel, { DisplayColumn } from './IrisGridModel';
+import IrisGridModel, { type DisplayColumn } from './IrisGridModel';
 import AggregationOperation from './sidebar/aggregations/AggregationOperation';
 import IrisGridUtils from './IrisGridUtils';
 import MissingKeyError from './MissingKeyError';
 import {
-  ColumnName,
-  UITotalsTableConfig,
-  UIRow,
-  PendingDataMap,
-  CellData,
-  UIViewportData,
-  PendingDataErrorMap,
+  type ColumnName,
+  type UITotalsTableConfig,
+  type UIRow,
+  type PendingDataMap,
+  type CellData,
+  type UIViewportData,
+  type PendingDataErrorMap,
 } from './CommonTypes';
-import { IrisGridThemeType } from './IrisGridTheme';
-import ColumnHeaderGroup, { isColumnHeaderGroup } from './ColumnHeaderGroup';
+import { type IrisGridThemeType } from './IrisGridTheme';
+import type ColumnHeaderGroup from './ColumnHeaderGroup';
+import { isColumnHeaderGroup } from './ColumnHeaderGroup';
 
 const log = Log.module('IrisGridTableModelTemplate');
 

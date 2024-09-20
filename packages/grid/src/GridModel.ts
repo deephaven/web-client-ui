@@ -1,10 +1,14 @@
-import { EventTarget, Event } from 'event-target-shim';
+import { EventTarget, type Event } from 'event-target-shim';
 import type { IColumnHeaderGroup } from './ColumnHeaderGroup';
-import { ModelIndex } from './GridMetrics';
-import { GridColor, GridTheme, NullableGridColor } from './GridTheme';
+import { type ModelIndex } from './GridMetrics';
+import {
+  type GridColor,
+  type GridTheme,
+  type NullableGridColor,
+} from './GridTheme';
 import memoizeClear from './memoizeClear';
-import GridUtils, { Token } from './GridUtils';
-import { CellRenderType } from './CellRenderer';
+import GridUtils, { type Token } from './GridUtils';
+import { type CellRenderType } from './CellRenderer';
 
 const LINK_TRUNCATION_LENGTH = 5000;
 

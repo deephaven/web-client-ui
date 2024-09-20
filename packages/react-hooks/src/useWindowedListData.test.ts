@@ -1,13 +1,13 @@
 import {
   act,
-  Renderer,
+  type Renderer,
   renderHook,
-  RenderHookResult,
+  type RenderHookResult,
 } from '@testing-library/react-hooks';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import useWindowedListData, {
   defaultGetKey,
-  WindowedListData,
+  type WindowedListData,
 } from './useWindowedListData';
 
 const { asMock } = TestUtils;

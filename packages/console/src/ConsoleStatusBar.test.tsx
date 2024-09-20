@@ -1,9 +1,9 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import dh from '@deephaven/jsapi-shim';
-import { ContextActions, DropdownActions } from '@deephaven/components';
+import { ContextActions, type DropdownActions } from '@deephaven/components';
 import { vsCheck } from '@deephaven/icons';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import userEvent from '@testing-library/user-event';
 import ConsoleStatusBar from './ConsoleStatusBar';
 

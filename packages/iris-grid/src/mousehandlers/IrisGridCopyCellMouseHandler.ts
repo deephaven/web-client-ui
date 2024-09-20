@@ -1,13 +1,13 @@
 import {
-  Grid,
+  type Grid,
   GridMouseHandler,
-  GridPoint,
-  EventHandlerResult,
-  GridMouseEvent,
+  type GridPoint,
+  type EventHandlerResult,
+  type GridMouseEvent,
   GridRange,
 } from '@deephaven/grid';
 import { ContextActionUtils } from '@deephaven/components';
-import IrisGrid from '../IrisGrid';
+import type IrisGrid from '../IrisGrid';
 
 class IrisGridCopyCellMouseHandler extends GridMouseHandler {
   private irisGrid: IrisGrid;

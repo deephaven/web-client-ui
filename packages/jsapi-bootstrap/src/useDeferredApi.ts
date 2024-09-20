@@ -24,8 +24,8 @@ export const DeferredApiContext = createContext<
  * @returns A tuple with the API instance, and an error if one occurred.
  */
 export function useDeferredApi(
-  widget: DhType.ide.VariableDescriptor
-): [typeof DhType | null, unknown | null] {
+  widget: DhType.ide.VariableDescriptor | null
+): [dh: typeof DhType | null, error: unknown | null] {
   const [api, setApi] = useState<typeof DhType | null>(null);
   const [error, setError] = useState<unknown | null>(null);
   const deferredApi = useContext(DeferredApiContext);
@@ -49,7 +49,12 @@ export function useDeferredApi(
     let isCancelled = false;
 
     async function loadApi() {
-      if (typeof deferredApi === 'function') {
+      if (widget == null) {
+        if (!isCancelled) {
+          setApi(null);
+          setError(new Error('No widget provided to useDeferredApi'));
+        }
+      } else if (typeof deferredApi === 'function') {
         try {
           const newApi = await deferredApi(widget);
           if (!isCancelled) {

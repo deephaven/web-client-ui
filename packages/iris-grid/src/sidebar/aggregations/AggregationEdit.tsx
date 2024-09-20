@@ -9,10 +9,10 @@ import {
 } from '@deephaven/components';
 import { dhSortAlphaDown, dhSortAlphaUp } from '@deephaven/icons';
 import { TableUtils } from '@deephaven/jsapi-utils';
-import { Aggregation } from './Aggregations';
+import { type Aggregation } from './Aggregations';
 import { filterValidColumns } from './AggregationUtils';
 import './AggregationEdit.scss';
-import { DisplayColumn } from '../../IrisGridModel';
+import { type DisplayColumn } from '../../IrisGridModel';
 
 interface AggregationEditItem {
   value: string;

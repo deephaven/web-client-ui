@@ -6,7 +6,7 @@ import {
   moveToGroup,
 } from './VisibilityOrderingBuilderUtils';
 import {
-  FlattenedIrisGridTreeItem,
+  type FlattenedIrisGridTreeItem,
   flattenTree,
   getProjection,
   getTreeItems,

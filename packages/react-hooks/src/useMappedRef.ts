@@ -1,4 +1,4 @@
-import { MutableRefObject, useCallback } from 'react';
+import { type MutableRefObject, useCallback } from 'react';
 
 /**
  * Returns a callback ref that will map it's argument

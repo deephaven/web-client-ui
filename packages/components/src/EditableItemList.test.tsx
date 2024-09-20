@@ -1,7 +1,9 @@
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import EditableItemList, { EditableItemListProps } from './EditableItemList';
+import EditableItemList, {
+  type EditableItemListProps,
+} from './EditableItemList';
 
 const INVALID_INPUT_CLASS = 'is-invalid';
 

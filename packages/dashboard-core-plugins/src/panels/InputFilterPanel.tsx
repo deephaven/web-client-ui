@@ -1,11 +1,11 @@
-import React, { Component, RefObject } from 'react';
+import React, { Component, type RefObject } from 'react';
 import { connect } from 'react-redux';
 import debounce from 'lodash.debounce';
 import type { Container, EventEmitter } from '@deephaven/golden-layout';
-import { RootState } from '@deephaven/redux';
+import { type RootState } from '@deephaven/redux';
 import Panel from './Panel';
 import InputFilter, {
-  InputFilterColumn,
+  type InputFilterColumn,
 } from '../controls/input-filter/InputFilter';
 import { InputFilterEvent } from '../events';
 import { getColumnsForDashboard } from '../redux';

@@ -1,8 +1,11 @@
 import { ComboBox as SpectrumComboBox } from '@adobe/react-spectrum';
-import { FocusableRef } from '@react-types/shared';
+import { type FocusableRef } from '@react-types/shared';
 import cl from 'classnames';
-import { PickerNormalizedPropsT, usePickerNormalizedProps } from '../picker';
-import { ComboBoxProps } from './ComboBox';
+import {
+  type PickerNormalizedPropsT,
+  usePickerNormalizedProps,
+} from '../picker';
+import { type ComboBoxProps } from './ComboBox';
 
 export type ComboBoxNormalizedProps = PickerNormalizedPropsT<ComboBoxProps>;
 

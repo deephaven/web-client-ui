@@ -3,12 +3,12 @@ import React, { PureComponent } from 'react';
 import memoize from 'memoizee';
 import {
   FixedSizeList as List,
-  ListOnItemsRenderedProps,
-  ListOnScrollProps,
+  type ListOnItemsRenderedProps,
+  type ListOnScrollProps,
 } from 'react-window';
-import AutoSizer, { Size } from 'react-virtualized-auto-sizer';
+import AutoSizer, { type Size } from 'react-virtualized-auto-sizer';
 import Log from '@deephaven/log';
-import { RangeUtils, Range } from '@deephaven/utils';
+import { RangeUtils, type Range } from '@deephaven/utils';
 import ItemListItem from './ItemListItem';
 import { ContextActionUtils } from './context-actions';
 import './ItemList.scss';

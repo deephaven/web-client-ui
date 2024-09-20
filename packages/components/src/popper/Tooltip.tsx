@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
 import Log from '@deephaven/log';
-import Popper, { PopperOptions, ReferenceObject } from './Popper';
+import Popper, { type PopperOptions, type ReferenceObject } from './Popper';
 
 const log = Log.module('Tooltip');
 

@@ -1,16 +1,16 @@
-import { DashboardPanelProps } from '@deephaven/dashboard';
+import { type DashboardPanelProps } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
-import { getFileStorage, RootState } from '@deephaven/redux';
+import { getFileStorage, type RootState } from '@deephaven/redux';
 import FileExplorer, {
   FileExplorerToolbar,
-  FileStorage,
-  FileStorageItem,
+  type FileStorage,
+  type FileStorageItem,
   FileUtils,
   NewItemModal,
   isDirectory,
 } from '@deephaven/file-explorer';
-import React, { ReactNode } from 'react';
-import { connect, ConnectedProps } from 'react-redux';
+import React, { type ReactNode } from 'react';
+import { connect, type ConnectedProps } from 'react-redux';
 import type { dh } from '@deephaven/jsapi-types';
 import Panel from './Panel';
 import { NotebookEvent } from '../events';

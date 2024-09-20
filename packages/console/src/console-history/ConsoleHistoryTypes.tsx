@@ -1,4 +1,4 @@
-import { CancelablePromise } from '@deephaven/utils';
+import { type CancelablePromise } from '@deephaven/utils';
 import type { dh } from '@deephaven/jsapi-types';
 
 export type ConsoleHistoryError =

@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import { User, UserPermissions } from '@deephaven/redux';
+import { type User, type UserPermissions } from '@deephaven/redux';
 
 export type UserOverride = Partial<Omit<User, 'permissions'>>;
 

@@ -1,10 +1,11 @@
 /* eslint class-methods-use-this: "off" */
 /* eslint no-unused-vars: "off" */
-import EditableGridModel, { EditOperation } from './EditableGridModel';
-import { ModelIndex } from './GridMetrics';
+import { type EditOperation } from './EditableGridModel';
+import type EditableGridModel from './EditableGridModel';
+import { type ModelIndex } from './GridMetrics';
 import GridModel from './GridModel';
 import GridRange from './GridRange';
-import { GridColor, GridTheme } from './GridTheme';
+import { type GridColor, type GridTheme } from './GridTheme';
 
 /**
  * Mock model implementing GridModel for testing out grid functionality

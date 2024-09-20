@@ -2,7 +2,7 @@ import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import CommandHistory from './CommandHistory';
-import { CommandHistoryTable } from './CommandHistoryStorage';
+import { type CommandHistoryTable } from './CommandHistoryStorage';
 
 jest.mock('pouchdb-browser');
 

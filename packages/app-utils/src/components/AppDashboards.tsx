@@ -2,17 +2,15 @@ import React, { useCallback } from 'react';
 import classNames from 'classnames';
 import {
   DashboardUtils,
-  DehydratedDashboardPanelProps,
+  type DehydratedDashboardPanelProps,
   LazyDashboard,
 } from '@deephaven/dashboard';
+import { useObjectFetcher } from '@deephaven/jsapi-bootstrap';
 import {
-  sanitizeVariableDescriptor,
-  useObjectFetcher,
-} from '@deephaven/jsapi-bootstrap';
-import LayoutManager, {
-  ItemConfig,
-  Settings as LayoutSettings,
+  type ItemConfig,
+  type Settings as LayoutSettings,
 } from '@deephaven/golden-layout';
+import type LayoutManager from '@deephaven/golden-layout';
 import { LoadingOverlay } from '@deephaven/components';
 
 interface AppDashboardsProps {
@@ -44,9 +42,8 @@ export function AppDashboards({
       const { metadata } = hydrateProps;
       try {
         if (metadata != null) {
-          const widget = sanitizeVariableDescriptor(metadata);
           return {
-            fetch: async () => fetchObject(widget),
+            fetch: async () => fetchObject(metadata),
             ...hydrateProps,
             localDashboardId: id,
           };

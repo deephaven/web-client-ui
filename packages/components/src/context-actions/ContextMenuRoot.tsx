@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
 import ContextMenu from './ContextMenu';
-import ContextActionUtils, { MenuItem } from './ContextActionUtils';
+import ContextActionUtils, { type MenuItem } from './ContextActionUtils';
 
 type ContextMenuRootProps = Record<string, never> & {
   'data-testid'?: string;

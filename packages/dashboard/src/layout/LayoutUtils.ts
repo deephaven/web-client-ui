@@ -2,12 +2,12 @@ import deepEqual from 'fast-deep-equal';
 import { nanoid } from 'nanoid';
 import isMatch from 'lodash.ismatch';
 import Log from '@deephaven/log';
-import GoldenLayout, {
+import type GoldenLayout from '@deephaven/golden-layout';
+import {
   isComponent,
   isRoot,
   isStack,
   GoldenLayoutThemeExport,
-  GLPanelProps,
 } from '@deephaven/golden-layout';
 import type {
   ComponentConfig,
@@ -19,10 +19,11 @@ import type {
   Stack,
   Tab,
   CloseOptions,
+  GLPanelProps,
 } from '@deephaven/golden-layout';
 import { assertNotNull } from '@deephaven/utils';
-import { DashboardLayoutConfig } from '../DashboardLayout';
-import { PanelConfig } from '../DashboardPlugin';
+import { type DashboardLayoutConfig } from '../DashboardLayout';
+import { type PanelConfig } from '../DashboardPlugin';
 
 const log = Log.module('LayoutUtils');
 

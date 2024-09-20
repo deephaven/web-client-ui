@@ -1,4 +1,4 @@
-import { FormattingRule } from './Formatter';
+import { type FormattingRule } from './Formatter';
 
 export interface ColumnFormatSettings {
   formatter?: FormattingRule[];

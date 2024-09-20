@@ -1,21 +1,21 @@
 /* eslint-disable class-methods-use-this */
 import { getOrThrow } from '@deephaven/utils';
-import { CellRenderType } from './CellRenderer';
+import { type CellRenderType } from './CellRenderer';
 import {
-  AxisOption,
-  ColorMap,
-  ColumnAxisMap,
-  DataBarGridModel,
-  DataBarOptions,
-  DirectionMap,
-  MarkerMap,
-  MaxMap,
-  MinMap,
-  OpacityMap,
-  TextAlignmentMap,
-  ValuePlacementMap,
+  type AxisOption,
+  type ColorMap,
+  type ColumnAxisMap,
+  type DataBarGridModel,
+  type DataBarOptions,
+  type DirectionMap,
+  type MarkerMap,
+  type MaxMap,
+  type MinMap,
+  type OpacityMap,
+  type TextAlignmentMap,
+  type ValuePlacementMap,
 } from './DataBarGridModel';
-import { ModelIndex } from './GridMetrics';
+import { type ModelIndex } from './GridMetrics';
 import GridModel from './GridModel';
 import GridTheme from './GridTheme';
 

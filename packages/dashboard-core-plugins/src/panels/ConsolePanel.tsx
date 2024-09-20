@@ -1,19 +1,19 @@
 // Wrapper for the Console for use in a golden layout container
 // Will probably need to handle window popping out from golden layout here.
-import React, { PureComponent, ReactElement, RefObject } from 'react';
+import React, { PureComponent, type ReactElement, type RefObject } from 'react';
 import { nanoid } from 'nanoid';
 import debounce from 'lodash.debounce';
 import { connect } from 'react-redux';
 import { LoadingOverlay } from '@deephaven/components';
 import {
-  CommandHistoryStorage,
+  type CommandHistoryStorage,
   Console,
   ConsoleConstants,
   HeapUsage,
   ObjectIcon,
 } from '@deephaven/console';
 import {
-  DashboardPanelProps,
+  type DashboardPanelProps,
   emitPanelOpen,
   LayoutManagerContext,
   LayoutUtils,
@@ -21,13 +21,13 @@ import {
 } from '@deephaven/dashboard';
 import type { dh } from '@deephaven/jsapi-types';
 import { getVariableDescriptor } from '@deephaven/jsapi-bootstrap';
-import { SessionWrapper } from '@deephaven/jsapi-utils';
+import { type SessionWrapper } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
   getCommandHistoryStorage,
   getPlugins,
   getTimeZone,
-  RootState,
+  type RootState,
 } from '@deephaven/redux';
 import { assertNotNull } from '@deephaven/utils';
 import {

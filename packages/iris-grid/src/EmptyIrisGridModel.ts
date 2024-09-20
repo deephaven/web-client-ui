@@ -1,19 +1,19 @@
 /* eslint class-methods-use-this: "off" */
 import {
-  GridRange,
-  ModelIndex,
-  MoveOperation,
-  VisibleIndex,
+  type GridRange,
+  type ModelIndex,
+  type MoveOperation,
+  type VisibleIndex,
 } from '@deephaven/grid';
-import { dh as DhType } from '@deephaven/jsapi-types';
-import { ColumnName, Formatter } from '@deephaven/jsapi-utils';
+import { type dh as DhType } from '@deephaven/jsapi-types';
+import { type ColumnName, Formatter } from '@deephaven/jsapi-utils';
 import { EMPTY_ARRAY, EMPTY_MAP } from '@deephaven/utils';
 import IrisGridModel from './IrisGridModel';
-import ColumnHeaderGroup from './ColumnHeaderGroup';
+import type ColumnHeaderGroup from './ColumnHeaderGroup';
 import {
-  PendingDataErrorMap,
-  PendingDataMap,
-  UITotalsTableConfig,
+  type PendingDataErrorMap,
+  type PendingDataMap,
+  type UITotalsTableConfig,
 } from './CommonTypes';
 
 class EmptyIrisGridModel extends IrisGridModel {

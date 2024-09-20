@@ -1,6 +1,6 @@
 import type { ItemConfig } from '@deephaven/golden-layout';
-import { FilterSet, Link } from '@deephaven/dashboard-core-plugins';
-import { PluginDataMap } from '@deephaven/redux';
+import { type FilterSet, type Link } from '@deephaven/dashboard-core-plugins';
+import { type PluginDataMap } from '@deephaven/redux';
 
 /**
  * Have a different version to support legacy layout exports

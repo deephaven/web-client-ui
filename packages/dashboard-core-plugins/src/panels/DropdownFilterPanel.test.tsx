@@ -4,7 +4,7 @@ import type { Container, EventHub } from '@deephaven/golden-layout';
 import dh from '@deephaven/jsapi-shim';
 import {
   DropdownFilterPanel,
-  DropdownFilterPanelProps,
+  type DropdownFilterPanelProps,
 } from './DropdownFilterPanel';
 import DropdownFilter from '../controls/dropdown-filter/DropdownFilter';
 

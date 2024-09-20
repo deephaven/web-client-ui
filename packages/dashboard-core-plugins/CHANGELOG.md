@@ -3,6 +3,44 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.95.0](https://github.com/deephaven/web-client-ui/compare/v0.94.0...v0.95.0) (2024-09-20)
+
+### ⚠ BREAKING CHANGES
+
+- eslint rule will require type only imports where
+  possible
+
+### Bug Fixes
+
+- Widget panel fixes ([#2227](https://github.com/deephaven/web-client-ui/issues/2227)) ([c985e12](https://github.com/deephaven/web-client-ui/commit/c985e1274097860dcbf4690ac8412c9f84831209))
+
+### Code Refactoring
+
+- Added consistent-type-imports eslint rule and ran --fix ([#2230](https://github.com/deephaven/web-client-ui/issues/2230)) ([2744f97](https://github.com/deephaven/web-client-ui/commit/2744f9793aeac2b70e475a725447dcba1b5f294c)), closes [#2229](https://github.com/deephaven/web-client-ui/issues/2229)
+
+## [0.94.0](https://github.com/deephaven/web-client-ui/compare/v0.93.0...v0.94.0) (2024-09-18)
+
+### ⚠ BREAKING CHANGES
+
+- TestUtils has been moved to new package
+  `@deephaven-test-utils`. Consumers will need to install the new package
+  as a dev dependency and update references.
+
+### Features
+
+- Pass through additional actions from WidgetPanel ([#2224](https://github.com/deephaven/web-client-ui/issues/2224)) ([bc720d1](https://github.com/deephaven/web-client-ui/commit/bc720d1789a5e28c99b06d496e58187fb4b26038))
+
+### Code Refactoring
+
+- Split out @deephaven/test-utils package ([#2225](https://github.com/deephaven/web-client-ui/issues/2225)) ([1d027d3](https://github.com/deephaven/web-client-ui/commit/1d027d3f6c0b47910cc0b8285c471e90c5f113a8)), closes [#2185](https://github.com/deephaven/web-client-ui/issues/2185)
+
+## [0.93.0](https://github.com/deephaven/web-client-ui/compare/v0.92.0...v0.93.0) (2024-09-12)
+
+### Bug Fixes
+
+- ChartBuilderPlugin fixes for charts built from PPQs in Enterprise ([#2167](https://github.com/deephaven/web-client-ui/issues/2167)) ([99b8d59](https://github.com/deephaven/web-client-ui/commit/99b8d5952ba325bf74d2d16ed39eb7a2e897d196))
+- Publish WidgetPanelProps ([#2210](https://github.com/deephaven/web-client-ui/issues/2210)) ([7331976](https://github.com/deephaven/web-client-ui/commit/7331976004ed9b33fca9d97919d359dd881e8d0a)), closes [/github.com/deephaven-ent/iris/pull/2114/files#diff-536d6ac232028a4ebbafc5ca79bb1a22844488a4b628196e43056379f9326a90R17](https://github.com/deephaven//github.com/deephaven-ent/iris/pull/2114/files/issues/diff-536d6ac232028a4ebbafc5ca79bb1a22844488a4b628196e43056379f9326a90R17)
+
 ## [0.92.0](https://github.com/deephaven/web-client-ui/compare/v0.91.0...v0.92.0) (2024-09-03)
 
 ### Bug Fixes

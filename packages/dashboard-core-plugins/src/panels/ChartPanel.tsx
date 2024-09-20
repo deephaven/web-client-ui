@@ -1,30 +1,30 @@
-import React, { Component, ReactElement, RefObject } from 'react';
+import React, { Component, type ReactElement, type RefObject } from 'react';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
 import { connect } from 'react-redux';
 import debounce from 'lodash.debounce';
 import {
   Chart,
-  ChartModel,
-  ChartModelSettings,
-  ChartUtils,
-  FilterMap,
+  type ChartModel,
+  ChartModelFactory,
+  type ChartModelSettings,
+  type FilterMap,
   isFigureChartModel,
 } from '@deephaven/chart';
 import type PlotlyType from 'plotly.js';
 import {
-  DashboardPanelProps,
+  type DashboardPanelProps,
   getOpenedPanelMapForDashboard,
   LayoutUtils,
-  PanelComponent,
-  PanelMetadata,
-  PanelProps,
+  type PanelComponent,
+  type PanelMetadata,
+  type PanelProps,
 } from '@deephaven/dashboard';
 import {
   IrisGridUtils,
-  InputFilter,
-  ColumnName,
-  TableSettings,
+  type InputFilter,
+  type ColumnName,
+  type TableSettings,
 } from '@deephaven/iris-grid';
 import type { dh } from '@deephaven/jsapi-types';
 import { FadeTransition } from '@deephaven/components';
@@ -32,9 +32,9 @@ import Log from '@deephaven/log';
 import {
   getActiveTool,
   getSettings,
-  RootState,
+  type RootState,
   setActiveTool as setActiveToolAction,
-  WorkspaceSettings,
+  type WorkspaceSettings,
 } from '@deephaven/redux';
 import {
   assertNotNull,
@@ -53,19 +53,19 @@ import {
   getTableMapForDashboard,
   setDashboardIsolatedLinkerPanelId as setDashboardIsolatedLinkerPanelIdAction,
 } from '../redux';
-import ChartFilterOverlay, { ColumnMap } from './ChartFilterOverlay';
+import ChartFilterOverlay, { type ColumnMap } from './ChartFilterOverlay';
 import ChartColumnSelectorOverlay, {
-  SelectorColumn,
+  type SelectorColumn,
 } from './ChartColumnSelectorOverlay';
 import './ChartPanel.scss';
-import { Link, LinkFilterMap } from '../linker/LinkerUtils';
-import { PanelState as IrisGridPanelState } from './IrisGridPanel';
+import { type Link, type LinkFilterMap } from '../linker/LinkerUtils';
+import { type PanelState as IrisGridPanelState } from './IrisGridPanel';
 import {
   isChartPanelFigureMetadata,
   isChartPanelTableMetadata,
 } from './ChartPanelUtils';
-import { ColumnSelectionValidator } from '../linker/ColumnSelectionValidator';
-import { WidgetPanelDescriptor } from './WidgetPanelTypes';
+import { type ColumnSelectionValidator } from '../linker/ColumnSelectionValidator';
+import { type WidgetPanelDescriptor } from './WidgetPanelTypes';
 
 const log = Log.module('ChartPanel');
 const UPDATE_MODEL_DEBOUNCE = 150;
@@ -286,12 +286,12 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
     const { columnMap, model, filterMap, filterValueMap, isLinked, settings } =
       this.state;
 
-    if (!model) {
-      return;
-    }
-
     if (makeModel !== prevProps.makeModel) {
       this.initModel();
+    }
+
+    if (model == null) {
+      return;
     }
 
     if (columnMap !== prevState.columnMap) {
@@ -348,9 +348,16 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
   pending: Pending;
 
   initModel(): void {
-    this.setState({ isLoading: true, isLoaded: false, error: undefined });
+    this.setState({
+      isLoading: true,
+      isLoaded: false,
+      error: undefined,
+      isDisconnected: false,
+    });
 
     const { makeModel } = this.props;
+
+    this.pending.cancel();
 
     this.pending
       .add(makeModel(), resolved => {
@@ -651,12 +658,8 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
       const { settings } = metadata;
       this.pending
         .add(
-          dh.plot.Figure.create(
-            new ChartUtils(dh).makeFigureSettings(
-              settings,
-              source
-            ) as unknown as dh.plot.FigureDescriptor
-          )
+          ChartModelFactory.makeFigureFromSettings(dh, settings, source),
+          resolved => resolved.close()
         )
         .then(figure => {
           if (isFigureChartModel(model)) {

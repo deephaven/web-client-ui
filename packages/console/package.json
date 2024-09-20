@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/console",
-  "version": "0.92.0",
+  "version": "0.95.0",
   "description": "Deephaven Console",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -53,7 +53,8 @@
   },
   "devDependencies": {
     "@deephaven/jsapi-shim": "file:../jsapi-shim",
-    "@deephaven/mocks": "file:../mocks"
+    "@deephaven/mocks": "file:../mocks",
+    "@deephaven/test-utils": "file:../test-utils"
   },
   "files": [
     "dist"

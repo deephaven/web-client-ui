@@ -1,5 +1,5 @@
+import { TestUtils } from '@deephaven/test-utils';
 import ColorUtils from './ColorUtils';
-import TestUtils from './TestUtils';
 
 const { createMockProxy } = TestUtils;
 

@@ -1,14 +1,18 @@
 import React, { PureComponent } from 'react';
 import classNames from 'classnames';
 import memoize from 'memoizee';
-import { Draggable, Droppable, DraggableChildrenFn } from 'react-beautiful-dnd';
+import {
+  Draggable,
+  Droppable,
+  type DraggableChildrenFn,
+} from 'react-beautiful-dnd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { vsGripper } from '@deephaven/icons';
-import { RangeUtils, Range } from '@deephaven/utils';
+import { RangeUtils, type Range } from '@deephaven/utils';
 import ItemList, {
-  RenderItemProps,
-  DefaultListItem,
-  ItemListProps,
+  type RenderItemProps,
+  type DefaultListItem,
+  type ItemListProps,
 } from './ItemList';
 import { Tooltip } from './popper';
 import './DraggableItemList.scss';

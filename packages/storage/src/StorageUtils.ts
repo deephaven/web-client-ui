@@ -1,10 +1,10 @@
 import { Operator as FilterOperator } from '@deephaven/filters';
 import {
-  FilterConfig,
-  FilterConfigItem,
-  FilterValue,
-  SortConfig,
-  SortDirection,
+  type FilterConfig,
+  type FilterConfigItem,
+  type FilterValue,
+  type SortConfig,
+  type SortDirection,
 } from './Storage';
 
 export class StorageUtils {

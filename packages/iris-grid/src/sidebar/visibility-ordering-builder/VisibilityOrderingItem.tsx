@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhEye, dhEyeSlash, vsGripper } from '@deephaven/icons';
 import { Button, Tooltip } from '@deephaven/components';
 import VisibilityOrderingGroup from './VisibilityOrderingGroup';
-import { FlattenedIrisGridTreeItem } from './sortable-tree/utilities';
+import { type FlattenedIrisGridTreeItem } from './sortable-tree/utilities';
 import type ColumnHeaderGroup from '../../ColumnHeaderGroup';
 
 type VisibilityOrderingItemProps = {

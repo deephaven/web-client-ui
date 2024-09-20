@@ -1,7 +1,7 @@
 import type { dh as DhType } from '@deephaven/jsapi-types';
-import ChartUtils, { ChartModelSettings } from './ChartUtils';
+import ChartUtils, { type ChartModelSettings } from './ChartUtils';
 import FigureChartModel from './FigureChartModel';
-import ChartModel from './ChartModel';
+import type ChartModel from './ChartModel';
 
 class ChartModelFactory {
   /**

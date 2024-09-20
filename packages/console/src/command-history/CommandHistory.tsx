@@ -1,13 +1,18 @@
-import React, { ChangeEvent, Component, ReactElement, RefObject } from 'react';
+import React, {
+  type ChangeEvent,
+  Component,
+  type ReactElement,
+  type RefObject,
+} from 'react';
 import debounce from 'lodash.debounce';
 import {
   ContextActions,
   ItemList,
   SearchInput,
   GLOBAL_SHORTCUTS,
-  RenderItemProps,
+  type RenderItemProps,
 } from '@deephaven/components';
-import { ViewportData } from '@deephaven/storage';
+import { type ViewportData } from '@deephaven/storage';
 import {
   vsFileCode,
   vsFiles,
@@ -15,7 +20,7 @@ import {
   vsPlay,
   vsTerminal,
 } from '@deephaven/icons';
-import { copyToClipboard, Pending, Range } from '@deephaven/utils';
+import { copyToClipboard, Pending, type Range } from '@deephaven/utils';
 import Log from '@deephaven/log';
 import CommandHistoryItem from './CommandHistoryItem';
 import CommandHistoryActions from './CommandHistoryActions';
@@ -24,11 +29,12 @@ import ConsoleConstants from '../common/ConsoleConstants';
 import './CommandHistory.scss';
 import CommandHistoryViewportUpdater from './CommandHistoryViewportUpdater';
 import SHORTCUTS from '../ConsoleShortcuts';
-import CommandHistoryStorage, {
-  CommandHistoryStorageItem,
-  CommandHistoryTable,
+import {
+  type CommandHistoryStorageItem,
+  type CommandHistoryTable,
 } from './CommandHistoryStorage';
-import { ItemAction, HistoryAction } from './CommandHistoryTypes';
+import type CommandHistoryStorage from './CommandHistoryStorage';
+import { type ItemAction, type HistoryAction } from './CommandHistoryTypes';
 
 const log = Log.module('CommandHistory');
 

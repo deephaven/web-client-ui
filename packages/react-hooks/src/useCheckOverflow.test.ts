@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 import type { DOMRefValue } from '@react-types/shared';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import { useCheckOverflow } from './useCheckOverflow';
 
 const { createMockProxy } = TestUtils;

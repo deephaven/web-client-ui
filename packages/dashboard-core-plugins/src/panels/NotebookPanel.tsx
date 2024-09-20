@@ -1,5 +1,5 @@
 // Wrapper for the Notebook for use in a golden layout container
-import React, { Component, ReactElement, Suspense, lazy } from 'react';
+import React, { Component, type ReactElement, Suspense, lazy } from 'react';
 import ReactDOM from 'react-dom';
 import memoize from 'memoize-one';
 import { connect } from 'react-redux';
@@ -12,15 +12,15 @@ import {
   Tooltip,
   GLOBAL_SHORTCUTS,
   Button,
-  DropdownAction,
+  type DropdownAction,
   LoadingOverlay,
 } from '@deephaven/components';
 import { ScriptEditor, ScriptEditorUtils, SHORTCUTS } from '@deephaven/console';
 import {
-  FileStorage,
+  type FileStorage,
   FileUtils,
   NewItemModal,
-  File,
+  type File,
 } from '@deephaven/file-explorer';
 import {
   vsSave,
@@ -36,16 +36,16 @@ import {
 import {
   getFileStorage,
   updateNotebookSettings as updateNotebookSettingsAction,
-  RootState,
-  WorkspaceSettings,
+  type RootState,
+  type WorkspaceSettings,
   getNotebookSettings,
 } from '@deephaven/redux';
 import classNames from 'classnames';
 import debounce from 'lodash.debounce';
 import {
-  DashboardPanelProps,
+  type DashboardPanelProps,
   PanelEvent,
-  PanelMetadata,
+  type PanelMetadata,
 } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import { assertNotNull, Pending, PromiseUtils } from '@deephaven/utils';

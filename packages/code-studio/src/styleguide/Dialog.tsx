@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import {
   HierarchicalCheckboxMenu,
   Popper,
-  HierarchicalCheckboxValueMap,
+  type HierarchicalCheckboxValueMap,
   Button,
 } from '@deephaven/components';
 import SampleSection from './SampleSection';

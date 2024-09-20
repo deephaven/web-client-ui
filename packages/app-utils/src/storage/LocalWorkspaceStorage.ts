@@ -1,11 +1,11 @@
 import Log from '@deephaven/log';
 import {
-  WorkspaceStorage,
-  WorkspaceStorageLoadOptions,
-  CustomizableWorkspaceData,
-  CustomizableWorkspace,
-  WorkspaceSettings,
-  ServerConfigValues,
+  type WorkspaceStorage,
+  type WorkspaceStorageLoadOptions,
+  type CustomizableWorkspaceData,
+  type CustomizableWorkspace,
+  type WorkspaceSettings,
+  type ServerConfigValues,
 } from '@deephaven/redux';
 import {
   DateTimeColumnFormatter,
@@ -14,7 +14,7 @@ import {
 } from '@deephaven/jsapi-utils';
 import merge from 'lodash.merge';
 import UserLayoutUtils from './UserLayoutUtils';
-import LayoutStorage from './LayoutStorage';
+import type LayoutStorage from './LayoutStorage';
 
 const log = Log.module('LocalWorkspaceStorage');
 

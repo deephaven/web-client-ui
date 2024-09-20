@@ -1,8 +1,8 @@
-import { GridUtils, MoveOperation } from '@deephaven/grid';
+import { GridUtils, type MoveOperation } from '@deephaven/grid';
 import clamp from 'lodash.clamp';
 import ColumnHeaderGroup from '../../ColumnHeaderGroup';
-import { FlattenedItem } from './sortable-tree/types';
-import { FlattenedIrisGridTreeItem } from './sortable-tree/utilities';
+import { type FlattenedItem } from './sortable-tree/types';
+import { type FlattenedIrisGridTreeItem } from './sortable-tree/utilities';
 
 /**
  * Moves an item as the result of drag and drop in the visibility ordering builder

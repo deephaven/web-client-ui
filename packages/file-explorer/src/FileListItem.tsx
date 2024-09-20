@@ -1,10 +1,10 @@
 import React from 'react';
-import { Tooltip, RenderItemProps } from '@deephaven/components';
+import { Tooltip, type RenderItemProps } from '@deephaven/components';
 import { dhPython, vsCode, vsFolder, vsFolderOpened } from '@deephaven/icons';
-import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
+import { type IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import classNames from 'classnames';
-import { FileStorageItem, isDirectory } from './FileStorage';
+import { type FileStorageItem, isDirectory } from './FileStorage';
 import './FileList.scss';
 import FileUtils, { MIME_TYPE } from './FileUtils';
 import { getPathFromItem } from './FileListUtils';

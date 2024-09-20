@@ -2,7 +2,7 @@ import deepEqual from 'fast-deep-equal';
 import { Formatter, TableUtils } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import {
-  CancelablePromise,
+  type CancelablePromise,
   EventShimCustomEvent,
   PromiseUtils,
 } from '@deephaven/utils';
@@ -11,11 +11,11 @@ import IrisGridTableModel from './IrisGridTableModel';
 import IrisGridPartitionedTableModel from './IrisGridPartitionedTableModel';
 import IrisGridTreeTableModel from './IrisGridTreeTableModel';
 import IrisGridModel from './IrisGridModel';
-import { ColumnName } from './CommonTypes';
+import { type ColumnName } from './CommonTypes';
 import { isIrisGridTableModelTemplate } from './IrisGridTableModelTemplate';
 import {
-  PartitionConfig,
-  PartitionedGridModel,
+  type PartitionConfig,
+  type PartitionedGridModel,
   isPartitionedGridModelProvider,
 } from './PartitionedGridModel';
 

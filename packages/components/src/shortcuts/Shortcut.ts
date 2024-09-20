@@ -1,8 +1,8 @@
 /* eslint-disable no-underscore-dangle */
 import { EventTarget } from 'event-target-shim';
-import React from 'react';
+import type React from 'react';
 import { Log } from '@deephaven/log';
-import { CustomEventMap, EventShimCustomEvent } from '@deephaven/utils';
+import { type CustomEventMap, EventShimCustomEvent } from '@deephaven/utils';
 import { ContextActionUtils } from '../context-actions';
 
 const log = Log.module('Shortcut');

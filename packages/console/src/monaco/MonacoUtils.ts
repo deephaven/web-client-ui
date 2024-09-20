@@ -3,7 +3,10 @@ import { nanoid } from 'nanoid';
 /**
  * Exports a function for initializing monaco with the deephaven theme/config
  */
-import { resolveCssVariablesInRecord, Shortcut } from '@deephaven/components';
+import {
+  resolveCssVariablesInRecord,
+  type Shortcut,
+} from '@deephaven/components';
 import type { dh } from '@deephaven/jsapi-types';
 import { assertNotNull } from '@deephaven/utils';
 import { find as linkifyFind } from 'linkifyjs';
@@ -18,7 +21,7 @@ import GroovyLang from './lang/groovy';
 import ScalaLang from './lang/scala';
 import DbLang from './lang/db';
 import LogLang from './lang/log';
-import { Language } from './lang/Language';
+import { type Language } from './lang/Language';
 import MonacoProviders from './MonacoProviders';
 
 const log = Log.module('MonacoUtils');

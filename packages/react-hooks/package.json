@@ -1,6 +1,6 @@
 {
   "name": "@deephaven/react-hooks",
-  "version": "0.92.0",
+  "version": "0.95.0",
   "description": "Deephaven React hooks library",
   "author": "Deephaven Data Labs LLC",
   "license": "Apache-2.0",
@@ -27,6 +27,9 @@
     "lodash.debounce": "^4.0.8",
     "lodash.throttle": "^4.1.1",
     "nanoid": "^5.0.7"
+  },
+  "devDependencies": {
+    "@deephaven/test-utils": "file:../test-utils"
   },
   "peerDependencies": {
     "react": ">=16.8.0"

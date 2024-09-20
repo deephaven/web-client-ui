@@ -12,8 +12,8 @@ import {
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import './CrossColumnSearch.scss';
-import { ColumnName } from './CommonTypes';
-import { DisplayColumn } from './IrisGridModel';
+import { type ColumnName } from './CommonTypes';
+import { type DisplayColumn } from './IrisGridModel';
 
 interface CrossColumnSearchProps {
   value: string;

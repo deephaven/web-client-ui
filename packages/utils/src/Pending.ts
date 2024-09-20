@@ -1,4 +1,4 @@
-import { PromiseUtils, CancelablePromise } from './PromiseUtils';
+import { PromiseUtils, type CancelablePromise } from './PromiseUtils';
 
 /**
  * Helper class for managing pending promises.

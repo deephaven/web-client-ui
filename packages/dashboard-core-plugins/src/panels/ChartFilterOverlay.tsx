@@ -1,11 +1,16 @@
-import React, { MouseEvent, ReactElement, useCallback, useMemo } from 'react';
+import React, {
+  type MouseEvent,
+  type ReactElement,
+  useCallback,
+  useMemo,
+} from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button } from '@deephaven/components';
 import { vsPass, vsWarning } from '@deephaven/icons';
 import { TextUtils } from '@deephaven/utils';
-import { ColumnName, InputFilter } from '@deephaven/iris-grid';
+import { type ColumnName, type InputFilter } from '@deephaven/iris-grid';
 import './ChartFilterOverlay.scss';
 
 export type ColumnMap = Map<ColumnName, { name: string; type: string }>;

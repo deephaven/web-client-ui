@@ -1,6 +1,10 @@
 import type { JSZipObject } from 'jszip';
 import { assertNotNull } from '@deephaven/utils';
-import Papa, { Parser, ParseResult, ParseLocalConfig } from 'papaparse';
+import Papa, {
+  type Parser,
+  type ParseResult,
+  type ParseLocalConfig,
+} from 'papaparse';
 // Intentionally using isNaN rather than Number.isNaN
 /* eslint-disable no-restricted-globals */
 import NewTableColumnTypes from './NewTableColumnTypes';

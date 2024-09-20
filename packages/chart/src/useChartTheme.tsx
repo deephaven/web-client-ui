@@ -2,7 +2,7 @@ import { useContextOrThrow } from '@deephaven/react-hooks';
 
 import {
   ChartThemeContext,
-  ChartThemeContextValue,
+  type ChartThemeContextValue,
 } from './ChartThemeProvider';
 
 /**

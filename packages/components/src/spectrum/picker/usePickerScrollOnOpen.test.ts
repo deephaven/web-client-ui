@@ -1,9 +1,9 @@
 import { renderHook } from '@testing-library/react-hooks';
-import { TestUtils } from '@deephaven/utils';
+import { TestUtils } from '@deephaven/test-utils';
 import {
   findSpectrumPickerScrollArea,
   usePopoverOnScrollRef,
-  UsePopoverOnScrollRefResult,
+  type UsePopoverOnScrollRefResult,
 } from '@deephaven/react-hooks';
 import { usePickerScrollOnOpen } from './usePickerScrollOnOpen';
 

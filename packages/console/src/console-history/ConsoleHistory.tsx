@@ -6,7 +6,7 @@ import type { dh } from '@deephaven/jsapi-types';
 import ConsoleHistoryItem from './ConsoleHistoryItem';
 
 import './ConsoleHistory.scss';
-import { ConsoleHistoryActionItem } from './ConsoleHistoryTypes';
+import { type ConsoleHistoryActionItem } from './ConsoleHistoryTypes';
 
 interface ConsoleHistoryProps {
   items: ConsoleHistoryActionItem[];

@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import {
   isDashboardPlugin,
   isLegacyDashboardPlugin,
-  PluginModuleMap,
+  type PluginModuleMap,
   type DashboardPlugin,
   type LegacyDashboardPlugin,
 } from './PluginTypes';

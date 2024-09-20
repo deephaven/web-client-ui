@@ -1,5 +1,5 @@
 import { useMemo, useRef } from 'react';
-import { KeyedItem } from '@deephaven/utils';
+import { type KeyedItem } from '@deephaven/utils';
 
 /**
  * Takes an array of items and adds a default item to the top of the list if:

@@ -1,11 +1,11 @@
 import {
   DateTimeColumnFormatter,
-  Formatter,
-  TableColumnFormat,
+  type Formatter,
+  type TableColumnFormat,
   TableUtils,
 } from '@deephaven/jsapi-utils';
 import FormatContextMenuUtils, {
-  FormatContextMenuOption,
+  type FormatContextMenuOption,
 } from './FormatContextMenuUtils';
 
 class DateTimeFormatContextMenu {

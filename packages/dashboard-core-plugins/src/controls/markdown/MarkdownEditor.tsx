@@ -1,6 +1,6 @@
-import React, { PureComponent, ReactElement } from 'react';
+import React, { PureComponent, type ReactElement } from 'react';
 import Markdown from 'react-markdown';
-import { CodeComponent } from 'react-markdown/lib/ast-to-react';
+import { type CodeComponent } from 'react-markdown/lib/ast-to-react';
 import remarkMath from 'remark-math';
 import rehypeMathjax from 'rehype-mathjax';
 import { Code, Editor } from '@deephaven/console';

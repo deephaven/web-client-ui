@@ -1,21 +1,21 @@
-import React, { Component, ReactElement } from 'react';
+import React, { Component, type ReactElement } from 'react';
 import { connect } from 'react-redux';
 import {
   getOpenedPanelMapForDashboard,
   LayoutUtils,
-  PanelComponent,
+  type PanelComponent,
 } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import type { Container, EventEmitter } from '@deephaven/golden-layout';
 import type { dh } from '@deephaven/jsapi-types';
-import { RootState } from '@deephaven/redux';
+import { type RootState } from '@deephaven/redux';
 import {
-  AdvancedFilter,
-  ColumnName,
-  DehydratedIrisGridState,
-  QuickFilter,
+  type AdvancedFilter,
+  type ColumnName,
+  type DehydratedIrisGridState,
+  type QuickFilter,
 } from '@deephaven/iris-grid';
-import { GridState } from '@deephaven/grid';
+import { type GridState } from '@deephaven/grid';
 import {
   getFilterSetsForDashboard,
   getInputFiltersForDashboard,
@@ -24,17 +24,17 @@ import {
 } from '../redux';
 import Panel from './Panel';
 import FilterSetManager, {
-  ChangeHandlerArgs,
-  FilterSet,
-  FilterSetPanel,
+  type ChangeHandlerArgs,
+  type FilterSet,
+  type FilterSetPanel,
 } from './FilterSetManager';
 import { IrisGridPanel } from './IrisGridPanel';
 import DropdownFilterPanel from './DropdownFilterPanel';
 import InputFilterPanel, {
-  PanelState as InputFilterPanelState,
+  type PanelState as InputFilterPanelState,
 } from './InputFilterPanel';
 import './FilterSetManagerPanel.scss';
-import { FilterChangeEvent } from '../FilterPlugin';
+import { type FilterChangeEvent } from '../FilterPlugin';
 
 const log = Log.module('FilterSetManagerPanel');
 interface IrisGridState {

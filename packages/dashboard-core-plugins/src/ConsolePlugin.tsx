@@ -1,18 +1,18 @@
-import { MonacoProviders, ScriptEditor } from '@deephaven/console';
+import { MonacoProviders, type ScriptEditor } from '@deephaven/console';
 import {
   assertIsDashboardPluginProps,
-  DashboardPluginComponentProps,
+  type DashboardPluginComponentProps,
   DashboardUtils,
-  DehydratedDashboardPanelProps,
+  type DehydratedDashboardPanelProps,
   LayoutUtils,
-  PanelComponent,
-  PanelHydrateFunction,
+  type PanelComponent,
+  type PanelHydrateFunction,
   useAppSelector,
   useListener,
   usePanelRegistration,
 } from '@deephaven/dashboard';
 import { FileUtils } from '@deephaven/file-explorer';
-import { CloseOptions, isComponent } from '@deephaven/golden-layout';
+import { type CloseOptions, isComponent } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
 import { getNotebookSettings } from '@deephaven/redux';
 import { useCallback, useEffect, useRef, useState } from 'react';

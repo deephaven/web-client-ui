@@ -1,6 +1,6 @@
-import { Flex, Grid, View } from '@deephaven/components';
+import { type Flex, type Grid, type View } from '@deephaven/components';
 import type { StyleProps } from '@react-types/shared';
-import React, { CSSProperties, ReactNode } from 'react';
+import React, { type CSSProperties, type ReactNode } from 'react';
 import {
   getSectionIdFromName,
   sampleSectionIdAndClasses,

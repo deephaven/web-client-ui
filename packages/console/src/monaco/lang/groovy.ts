@@ -1,5 +1,5 @@
-import * as monaco from 'monaco-editor';
-import { Language } from './Language';
+import type * as monaco from 'monaco-editor';
+import { type Language } from './Language';
 
 const id = 'groovy';
 

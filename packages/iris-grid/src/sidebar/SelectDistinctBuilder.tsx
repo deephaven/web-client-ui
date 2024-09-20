@@ -1,15 +1,15 @@
-import React, { Component, ReactElement } from 'react';
+import React, { Component, type ReactElement } from 'react';
 import deepEqual from 'fast-deep-equal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { dhNewCircleLargeFilled, vsTrash } from '@deephaven/icons';
 import { Button, Select } from '@deephaven/components';
 import Log from '@deephaven/log';
 import type { dh } from '@deephaven/jsapi-types';
-import { ModelIndex } from '@deephaven/grid';
-import IrisGridModel from '../IrisGridModel';
+import { type ModelIndex } from '@deephaven/grid';
+import type IrisGridModel from '../IrisGridModel';
 
 import './SelectDistinctBuilder.scss';
-import { ColumnName } from '../CommonTypes';
+import { type ColumnName } from '../CommonTypes';
 
 const log = Log.module('SelectDistinctBuilder');
 

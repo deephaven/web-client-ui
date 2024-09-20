@@ -1,12 +1,11 @@
-import React, { useRef, useCallback, ReactElement } from 'react';
+import React, { useRef, useCallback, type ReactElement } from 'react';
 import classNames from 'classnames';
 import { Tooltip } from '@deephaven/components';
 
 import './CommandHistoryItem.scss';
 import CommandHistoryItemTooltip from './CommandHistoryItemTooltip';
-import CommandHistoryStorage, {
-  CommandHistoryStorageItem,
-} from './CommandHistoryStorage';
+import { type CommandHistoryStorageItem } from './CommandHistoryStorage';
+import type CommandHistoryStorage from './CommandHistoryStorage';
 
 interface CommandHistoryItemProps {
   item: CommandHistoryStorageItem;

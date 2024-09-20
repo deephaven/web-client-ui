@@ -1,4 +1,8 @@
-import React, { ChangeEvent, PureComponent, ReactElement } from 'react';
+import React, {
+  type ChangeEvent,
+  PureComponent,
+  type ReactElement,
+} from 'react';
 import classNames from 'classnames';
 import debounce from 'lodash.debounce';
 import { vsFilter, dhFilterFilled } from '@deephaven/icons';

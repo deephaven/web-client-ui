@@ -17,7 +17,7 @@ import Log from '@deephaven/log';
 import { PouchCommandHistoryStorage } from '@deephaven/pouch-storage';
 import {
   getWorkspace,
-  RootState,
+  type RootState,
   setActiveTool,
   setApi,
   setCommandHistoryStorage,
