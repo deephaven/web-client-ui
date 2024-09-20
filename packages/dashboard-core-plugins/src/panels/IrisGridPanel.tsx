@@ -563,7 +563,12 @@ export class IrisGridPanel extends PureComponent<
   );
 
   initModel(): void {
-    this.setState({ isModelReady: false, isLoading: true, error: null });
+    this.setState({
+      isModelReady: false,
+      isLoading: true,
+      error: null,
+      isDisconnected: false,
+    });
     const { makeModel } = this.props;
     if (this.modelPromise != null) {
       this.modelPromise.cancel();

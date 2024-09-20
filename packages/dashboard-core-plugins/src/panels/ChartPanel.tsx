@@ -348,7 +348,12 @@ export class ChartPanel extends Component<ChartPanelProps, ChartPanelState> {
   pending: Pending;
 
   initModel(): void {
-    this.setState({ isLoading: true, isLoaded: false, error: undefined });
+    this.setState({
+      isLoading: true,
+      isLoaded: false,
+      error: undefined,
+      isDisconnected: false,
+    });
 
     const { makeModel } = this.props;
 
