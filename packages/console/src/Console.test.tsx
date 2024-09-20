@@ -3,7 +3,7 @@ import dh from '@deephaven/jsapi-shim';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Console } from './Console';
-import { CommandHistoryStorage } from './command-history';
+import { type CommandHistoryStorage } from './command-history';
 
 function makeMockCommandHistoryStorage(): CommandHistoryStorage {
   return {

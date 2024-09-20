@@ -1,15 +1,15 @@
 import deepEqual from 'deep-equal';
-import { GridUtils, GridRange, MoveOperation } from '@deephaven/grid';
+import { GridUtils, GridRange, type MoveOperation } from '@deephaven/grid';
 import dh from '@deephaven/jsapi-shim';
 import type { Column, Table, Sort } from '@deephaven/jsapi-types';
-import { TypeValue as FilterTypeValue } from '@deephaven/filters';
+import { type TypeValue as FilterTypeValue } from '@deephaven/filters';
 import { DateUtils } from '@deephaven/jsapi-utils';
 import type { AdvancedFilter } from './CommonTypes';
-import { FilterData } from './IrisGrid';
+import { type FilterData } from './IrisGrid';
 import IrisGridTestUtils from './IrisGridTestUtils';
 import IrisGridUtils, {
-  DehydratedSort,
-  LegacyDehydratedSort,
+  type DehydratedSort,
+  type LegacyDehydratedSort,
 } from './IrisGridUtils';
 
 const irisGridUtils = new IrisGridUtils(dh);

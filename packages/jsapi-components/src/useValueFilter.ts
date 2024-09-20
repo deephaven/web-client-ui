@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import {
   createValueFilter,
-  FilterConditionFactory,
+  type FilterConditionFactory,
 } from '@deephaven/jsapi-utils';
 import useTableUtils from './useTableUtils';
 

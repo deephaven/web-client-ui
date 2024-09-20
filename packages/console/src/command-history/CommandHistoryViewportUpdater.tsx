@@ -1,14 +1,14 @@
 import { useEffect, useMemo } from 'react';
 import throttle from 'lodash.throttle';
 import {
-  StorageTableViewport,
-  ViewportData,
-  ViewportUpdateCallback,
+  type StorageTableViewport,
+  type ViewportData,
+  type ViewportUpdateCallback,
 } from '@deephaven/storage';
 import Log from '@deephaven/log';
 import {
-  CommandHistoryStorageItem,
-  CommandHistoryTable,
+  type CommandHistoryStorageItem,
+  type CommandHistoryTable,
 } from './CommandHistoryStorage';
 
 export type CommandHistoryViewportUpdaterProps = {

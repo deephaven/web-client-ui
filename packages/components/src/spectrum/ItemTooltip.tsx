@@ -1,6 +1,6 @@
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { isElementOfType } from '@deephaven/react-hooks';
-import { TooltipOptions } from './utils';
+import { type TooltipOptions } from './utils';
 import { Tooltip } from '../popper';
 import { Flex } from './layout';
 import { Text } from './Text';

@@ -1,4 +1,4 @@
-import React, { Component, ErrorInfo } from 'react';
+import React, { Component, type ErrorInfo } from 'react';
 import classNames from 'classnames';
 import {
   Button,
@@ -6,18 +6,18 @@ import {
   GLOBAL_SHORTCUTS,
   Tooltip,
 } from '@deephaven/components';
-import { LayoutUtils, PanelManager } from '@deephaven/dashboard';
+import { LayoutUtils, type PanelManager } from '@deephaven/dashboard';
 import Log from '@deephaven/log';
 import type { Container } from '@deephaven/golden-layout';
 import { vsGripper } from '@deephaven/icons';
-import { TypeValue as FilterTypeValue } from '@deephaven/filters';
+import { type TypeValue as FilterTypeValue } from '@deephaven/filters';
 import clamp from 'lodash.clamp';
 import {
   isLinkableFromPanel,
-  Link,
-  LinkerCoordinate,
-  LinkPoint,
-  LinkType,
+  type Link,
+  type LinkerCoordinate,
+  type LinkPoint,
+  type LinkType,
 } from './LinkerUtils';
 import LinkerLink from './LinkerLink';
 import './LinkerOverlayContent.scss';

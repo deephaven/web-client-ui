@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import memoizee from 'memoizee';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button, ItemKey } from '@deephaven/components';
+import { Button, type ItemKey } from '@deephaven/components';
 import { vsChevronRight, vsMerge, vsKey } from '@deephaven/icons';
 import Log from '@deephaven/log';
 import { Picker } from '@deephaven/jsapi-components';
@@ -9,7 +9,10 @@ import type { dh } from '@deephaven/jsapi-types';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import { assertNotNull, Pending, PromiseUtils } from '@deephaven/utils';
 import './IrisGridPartitionSelector.scss';
-import { PartitionConfig, PartitionedGridModel } from './PartitionedGridModel';
+import {
+  type PartitionConfig,
+  type PartitionedGridModel,
+} from './PartitionedGridModel';
 
 const log = Log.module('IrisGridPartitionSelector');
 

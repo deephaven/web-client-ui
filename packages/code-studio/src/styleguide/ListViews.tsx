@@ -1,4 +1,4 @@
-import React, { ReactNode, useCallback, useState } from 'react';
+import React, { type ReactNode, useCallback, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { BoxAlignmentStyleProps, StyleProps } from '@react-types/shared';
 import {
@@ -8,11 +8,11 @@ import {
   LIST_VIEW_ROW_HEIGHTS,
   ListView,
   ListViewNormalized,
-  ItemKey,
+  type ItemKey,
   Text,
   Flex,
   Checkbox,
-  ListViewProps,
+  type ListViewProps,
   RadioGroup,
   Radio,
   useSpectrumThemeProvider,

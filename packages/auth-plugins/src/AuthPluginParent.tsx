@@ -6,10 +6,10 @@ import {
   requestParentResponse,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
-import { AuthPlugin, AuthPluginProps } from './AuthPlugin';
+import { type AuthPlugin, type AuthPluginProps } from './AuthPlugin';
 import AuthPluginBase from './AuthPluginBase';
 import {
-  UserPermissionsOverride,
+  type UserPermissionsOverride,
   UserPermissionsOverrideContext,
 } from './UserContexts';
 

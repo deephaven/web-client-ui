@@ -1,7 +1,7 @@
 import React, {
-  ChangeEvent,
-  KeyboardEvent,
-  MouseEvent,
+  type ChangeEvent,
+  type KeyboardEvent,
+  type MouseEvent,
   useCallback,
   useEffect,
   useRef,
@@ -11,7 +11,7 @@ import classNames from 'classnames';
 import Log from '@deephaven/log';
 import { PromiseUtils } from '@deephaven/utils';
 import './FileListItemEditor.scss';
-import { FileStorageItem } from './FileStorage';
+import { type FileStorageItem } from './FileStorage';
 
 const log = Log.module('FileListItemEditor');
 

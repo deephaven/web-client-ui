@@ -1,10 +1,10 @@
 import throttle from 'lodash.throttle';
 import {
   FileNotFoundError,
-  FileStorage,
-  File,
-  FileStorageItem,
-  FileStorageTable,
+  type FileStorage,
+  type File,
+  type FileStorageItem,
+  type FileStorageTable,
   FileUtils,
   isFileType,
 } from '@deephaven/file-explorer';

@@ -1,5 +1,5 @@
-import { ActionMenuProps } from './ActionMenu';
-import { ItemKey } from './utils';
+import { type ActionMenuProps } from './ActionMenu';
+import { type ItemKey } from './utils';
 
 export interface ListActionMenuProps<T>
   extends Omit<ActionMenuProps<T>, 'onAction' | 'onOpenChange'> {

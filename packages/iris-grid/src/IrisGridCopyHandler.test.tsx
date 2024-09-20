@@ -6,11 +6,11 @@ import { copyToClipboard } from '@deephaven/utils';
 import dh from '@deephaven/jsapi-shim';
 import IrisGridTestUtils from './IrisGridTestUtils';
 import IrisGridCopyHandler, {
-  CopyOperation,
-  CopyHeaderOperation,
-  CopyRangesOperation,
+  type CopyOperation,
+  type CopyHeaderOperation,
+  type CopyRangesOperation,
 } from './IrisGridCopyHandler';
-import IrisGridProxyModel from './IrisGridProxyModel';
+import type IrisGridProxyModel from './IrisGridProxyModel';
 
 jest.mock('@deephaven/utils', () => ({
   ...jest.requireActual('@deephaven/utils'),

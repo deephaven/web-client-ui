@@ -1,16 +1,16 @@
 import {
   createKeyedItemKey,
   createSelectedValuesFilter,
-  FilterConditionFactory,
+  type FilterConditionFactory,
 } from '@deephaven/jsapi-utils';
 import {
   isSelectionMaybeInvertedEqual,
   useDebouncedValue,
   useIsEqualMemo,
   useMappedSelection,
-  WindowedListData,
+  type WindowedListData,
 } from '@deephaven/react-hooks';
-import { KeyedItem } from '@deephaven/utils';
+import { type KeyedItem } from '@deephaven/utils';
 import { useMemo } from 'react';
 import useTableUtils from './useTableUtils';
 

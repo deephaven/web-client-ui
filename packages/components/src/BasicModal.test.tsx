@@ -1,7 +1,7 @@
 import React from 'react';
 import userEvent from '@testing-library/user-event';
 import { render } from '@testing-library/react';
-import BasicModal, { BasicModalProps } from './BasicModal';
+import BasicModal, { type BasicModalProps } from './BasicModal';
 
 const DEFAULT_BODY_TEXT = 'DEFAULT_TEXT';
 const DEFAULT_TEST_ID = 'DEFAULT_TEST_ID';

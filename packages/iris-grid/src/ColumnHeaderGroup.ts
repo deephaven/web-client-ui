@@ -1,9 +1,9 @@
 import {
-  MoveOperation,
+  type MoveOperation,
   GridUtils,
-  ModelIndex,
-  BoundedAxisRange,
-  IColumnHeaderGroup,
+  type ModelIndex,
+  type BoundedAxisRange,
+  type IColumnHeaderGroup,
 } from '@deephaven/grid';
 import memoizeOne from 'memoize-one';
 import Log from '@deephaven/log';

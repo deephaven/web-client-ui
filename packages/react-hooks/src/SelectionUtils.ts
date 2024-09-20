@@ -2,9 +2,9 @@ import type { Key } from 'react';
 import type { Selection } from '@react-types/shared';
 import {
   generateRange,
-  KeyedItem,
-  SelectionMaybeInverted,
-  SelectionT,
+  type KeyedItem,
+  type SelectionMaybeInverted,
+  type SelectionT,
 } from '@deephaven/utils';
 
 /**

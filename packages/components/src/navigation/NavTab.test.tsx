@@ -3,9 +3,9 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
   DragDropContext,
-  DropResult,
+  type DropResult,
   Droppable,
-  ResponderProvided,
+  type ResponderProvided,
 } from 'react-beautiful-dnd';
 import NavTab from './NavTab';
 

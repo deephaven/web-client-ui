@@ -1,5 +1,5 @@
 /* eslint no-alert: "off" */
-import React, { CSSProperties } from 'react';
+import React, { type CSSProperties } from 'react';
 import { ErrorView } from '@deephaven/components';
 import SampleSection from './SampleSection';
 

@@ -1,6 +1,6 @@
-import GridRange from './GridRange';
-import { ModelIndex } from './GridMetrics';
-import GridModel from './GridModel';
+import type GridRange from './GridRange';
+import { type ModelIndex } from './GridMetrics';
+import type GridModel from './GridModel';
 import { AssertionError } from './errors';
 
 export function isEditableGridModel(

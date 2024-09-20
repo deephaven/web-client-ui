@@ -1,5 +1,5 @@
 import { EMPTY_FUNCTION, ensureArray } from '@deephaven/utils';
-import { DOMRef } from '@react-types/shared';
+import { type DOMRef } from '@react-types/shared';
 import { useMemo } from 'react';
 import { PICKER_TOP_OFFSET } from '../../UIConstants';
 import {
@@ -7,9 +7,9 @@ import {
   wrapItemChildren,
   useOnChangeTrackUncontrolled,
   useStaticItemInitialScrollPosition,
-  ItemKey,
-  SectionElement,
-  ItemElement,
+  type ItemKey,
+  type SectionElement,
+  type ItemElement,
 } from '../utils';
 import type { PickerPropsT } from './PickerProps';
 import usePickerItemScale from './usePickerItemScale';

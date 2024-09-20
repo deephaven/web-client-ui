@@ -1,17 +1,17 @@
-import { ScriptEditor } from '@deephaven/console';
+import { type ScriptEditor } from '@deephaven/console';
 import {
   assertIsDashboardPluginProps,
-  DashboardPluginComponentProps,
+  type DashboardPluginComponentProps,
   DashboardUtils,
-  DehydratedDashboardPanelProps,
+  type DehydratedDashboardPanelProps,
   LayoutUtils,
-  PanelComponent,
-  PanelHydrateFunction,
+  type PanelComponent,
+  type PanelHydrateFunction,
   useListener,
   usePanelRegistration,
 } from '@deephaven/dashboard';
 import { FileUtils } from '@deephaven/file-explorer';
-import { CloseOptions, isComponent } from '@deephaven/golden-layout';
+import { type CloseOptions, isComponent } from '@deephaven/golden-layout';
 import Log from '@deephaven/log';
 import { useCallback, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';

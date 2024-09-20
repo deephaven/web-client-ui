@@ -2,8 +2,8 @@
 /* eslint no-unused-vars: "off" */
 import MockGridModel from './MockGridModel';
 import memoizeClear from './memoizeClear';
-import ExpandableGridModel from './ExpandableGridModel';
-import { ModelIndex } from './GridMetrics';
+import type ExpandableGridModel from './ExpandableGridModel';
+import { type ModelIndex } from './GridMetrics';
 
 type ChildrenTreeMap = Map<ModelIndex, MockTreeGridModel>;
 

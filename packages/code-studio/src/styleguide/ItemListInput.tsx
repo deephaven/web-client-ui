@@ -1,6 +1,6 @@
 /* eslint no-console: "off" */
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import type PropTypes from 'prop-types';
 import { ItemList } from '@deephaven/components';
 
 interface ItemListInput {

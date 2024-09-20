@@ -1,4 +1,4 @@
-import { FormEvent, useCallback, useMemo } from 'react';
+import { type FormEvent, useCallback, useMemo } from 'react';
 import { nanoid } from 'nanoid';
 import type { FocusableRefValue } from '@react-types/shared';
 

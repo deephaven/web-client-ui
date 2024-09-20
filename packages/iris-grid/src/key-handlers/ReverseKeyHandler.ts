@@ -1,4 +1,4 @@
-import { KeyboardEvent } from 'react';
+import { type KeyboardEvent } from 'react';
 import { KeyHandler } from '@deephaven/grid';
 import { TableUtils } from '@deephaven/jsapi-utils';
 import type IrisGrid from '../IrisGrid';

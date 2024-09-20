@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
-import { NormalizedItemData } from '@deephaven/components';
-import { dh } from '@deephaven/jsapi-types';
+import { type NormalizedItemData } from '@deephaven/components';
+import { type dh } from '@deephaven/jsapi-types';
 import { assertNotNull } from '@deephaven/utils';
 import { getItemKeyColumn, getItemLabelColumn } from './itemUtils';
 

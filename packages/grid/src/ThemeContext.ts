@@ -1,5 +1,5 @@
 import React from 'react';
-import { GridTheme as GridThemeType } from './GridTheme';
+import { type GridTheme as GridThemeType } from './GridTheme';
 
 export type ThemeContextValue = Partial<GridThemeType>;
 

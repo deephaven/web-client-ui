@@ -2,11 +2,15 @@
 
 import { getOrThrow } from '@deephaven/utils';
 import { isEditableGridModel } from '../EditableGridModel';
-import { EventHandlerResult } from '../EventHandlerResult';
-import Grid from '../Grid';
-import GridMouseHandler, { GridMouseEvent } from '../GridMouseHandler';
+import { type EventHandlerResult } from '../EventHandlerResult';
+import type Grid from '../Grid';
+import GridMouseHandler, { type GridMouseEvent } from '../GridMouseHandler';
 import GridRange from '../GridRange';
-import GridUtils, { GridPoint, isLinkToken, TokenBox } from '../GridUtils';
+import GridUtils, {
+  type GridPoint,
+  isLinkToken,
+  type TokenBox,
+} from '../GridUtils';
 import { isTokenBoxCellRenderer } from '../TokenBoxCellRenderer';
 
 class GridTokenMouseHandler extends GridMouseHandler {

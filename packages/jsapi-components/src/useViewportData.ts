@@ -1,19 +1,19 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { dh } from '@deephaven/jsapi-types';
 import {
-  RowDeserializer,
+  type RowDeserializer,
   defaultRowDeserializer,
   isClosed,
   createOnTableUpdatedHandler,
-  OnTableUpdatedEvent,
+  type OnTableUpdatedEvent,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import {
   useOnScrollOffsetChangeCallback,
-  WindowedListData,
+  type WindowedListData,
 } from '@deephaven/react-hooks';
-import { KeyedItem } from '@deephaven/utils';
+import { type KeyedItem } from '@deephaven/utils';
 import useInitializeViewportData from './useInitializeViewportData';
 import useSetPaddedViewportCallback from './useSetPaddedViewportCallback';
 import useTableSize from './useTableSize';

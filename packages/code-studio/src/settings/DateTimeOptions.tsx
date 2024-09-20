@@ -1,4 +1,4 @@
-import React, { ReactElement, useMemo } from 'react';
+import React, { type ReactElement, useMemo } from 'react';
 import {
   Formatter,
   DateTimeColumnFormatter,

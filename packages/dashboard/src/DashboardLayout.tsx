@@ -1,13 +1,13 @@
 import React, {
-  ComponentType,
-  ReactElement,
+  type ComponentType,
+  type ReactElement,
   useCallback,
   useEffect,
   useMemo,
   useState,
 } from 'react';
 import PropTypes from 'prop-types';
-import GoldenLayout from '@deephaven/golden-layout';
+import type GoldenLayout from '@deephaven/golden-layout';
 import type {
   Container,
   ItemConfig,
@@ -16,9 +16,9 @@ import type {
 import Log from '@deephaven/log';
 import { usePrevious, useThrottledCallback } from '@deephaven/react-hooks';
 import { ErrorBoundary } from '@deephaven/components';
-import { RootState } from '@deephaven/redux';
+import { type RootState } from '@deephaven/redux';
 import { useDispatch, useSelector } from 'react-redux';
-import PanelManager, { ClosedPanels } from './PanelManager';
+import PanelManager, { type ClosedPanels } from './PanelManager';
 import PanelErrorBoundary from './PanelErrorBoundary';
 import LayoutUtils from './layout/LayoutUtils';
 import {
@@ -30,10 +30,10 @@ import PanelEvent from './PanelEvent';
 import { GLPropTypes, useListener } from './layout';
 import { getDashboardData, updateDashboardData } from './redux';
 import {
-  PanelComponentType,
-  PanelDehydrateFunction,
-  PanelHydrateFunction,
-  PanelProps,
+  type PanelComponentType,
+  type PanelDehydrateFunction,
+  type PanelHydrateFunction,
+  type PanelProps,
 } from './DashboardPlugin';
 import DashboardPanelWrapper from './DashboardPanelWrapper';
 

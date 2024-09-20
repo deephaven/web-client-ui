@@ -1,5 +1,5 @@
-import React, { ReactElement, useState } from 'react';
-import { Chart, ChartModel, MockChartModel } from '@deephaven/chart';
+import React, { type ReactElement, useState } from 'react';
+import { Chart, type ChartModel, MockChartModel } from '@deephaven/chart';
 import { useApi } from '@deephaven/jsapi-bootstrap';
 import { useSeededRandomNumberCallback } from './utils';
 import SampleSection from './SampleSection';

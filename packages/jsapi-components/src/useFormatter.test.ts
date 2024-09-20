@@ -3,8 +3,8 @@ import { bindAllMethods } from '@deephaven/utils';
 import { TestUtils } from '@deephaven/test-utils';
 import {
   createFormatterFromSettings,
-  Formatter,
-  Settings,
+  type Formatter,
+  type Settings,
 } from '@deephaven/jsapi-utils';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { renderHook } from '@testing-library/react-hooks';

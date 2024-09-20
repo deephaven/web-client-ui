@@ -4,7 +4,7 @@
 import React, { Component } from 'react';
 import Log from '@deephaven/log';
 import ContextActionUtils, {
-  ResolvableContextAction,
+  type ResolvableContextAction,
   isPromise,
 } from './ContextActionUtils';
 import type { ContextAction, ContextActionEvent } from './ContextActionUtils';

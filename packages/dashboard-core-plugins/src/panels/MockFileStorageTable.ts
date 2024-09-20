@@ -1,17 +1,17 @@
 import {
-  FileStorageItem,
-  FileStorageTable,
+  type FileStorageItem,
+  type FileStorageTable,
   isDirectory,
 } from '@deephaven/file-explorer';
 import {
-  ViewportData,
-  IndexRange,
-  StorageSnapshot,
-  StorageTableViewport,
-  FilterConfig,
-  SortConfig,
-  ViewportUpdateCallback,
-  StorageListenerRemover,
+  type ViewportData,
+  type IndexRange,
+  type StorageSnapshot,
+  type StorageTableViewport,
+  type FilterConfig,
+  type SortConfig,
+  type ViewportUpdateCallback,
+  type StorageListenerRemover,
 } from '@deephaven/storage';
 
 export class MockFileStorageTable implements FileStorageTable {

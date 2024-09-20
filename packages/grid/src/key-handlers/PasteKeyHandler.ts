@@ -1,8 +1,8 @@
 /* eslint class-methods-use-this: "off" */
-import { EventHandlerResult } from '../EventHandlerResult';
-import Grid from '../Grid';
+import { type EventHandlerResult } from '../EventHandlerResult';
+import type Grid from '../Grid';
 import GridUtils from '../GridUtils';
-import KeyHandler, { GridKeyboardEvent } from '../KeyHandler';
+import KeyHandler, { type GridKeyboardEvent } from '../KeyHandler';
 
 /**
  * Parse out data from an HTML table. Currently does not support colspan/rowspan

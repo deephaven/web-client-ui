@@ -3,13 +3,13 @@ import { TABLE_ROW_HEIGHT } from '@deephaven/components';
 import type { dh } from '@deephaven/jsapi-types';
 import {
   createSearchTextFilter,
-  FilterConditionFactory,
+  type FilterConditionFactory,
 } from '@deephaven/jsapi-utils';
 import { useDebouncedCallback } from '@deephaven/react-hooks';
 import { useTableUtils } from './useTableUtils';
 import useViewportData, {
-  UseViewportDataProps,
-  UseViewportDataResult,
+  type UseViewportDataProps,
+  type UseViewportDataResult,
 } from './useViewportData';
 import useFilterConditionFactories from './useFilterConditionFactories';
 import useViewportFilter from './useViewportFilter';

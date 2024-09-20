@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { ApiContext } from '@deephaven/jsapi-bootstrap';
 import dh from '@deephaven/jsapi-shim';
 import { DateTimeColumnFormatter } from '@deephaven/jsapi-utils';
-import { WorkspaceSettings } from '@deephaven/redux';
+import { type WorkspaceSettings } from '@deephaven/redux';
 import { assertNotNull } from '@deephaven/utils';
 import { FormattingSectionContent } from './FormattingSectionContent';
 

@@ -1,4 +1,4 @@
-import React, { Component, ReactElement } from 'react';
+import React, { Component, type ReactElement } from 'react';
 import ClassNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -12,8 +12,8 @@ import {
 import {
   GridRange,
   GridUtils,
-  ModelSizeMap,
-  MoveOperation,
+  type ModelSizeMap,
+  type MoveOperation,
 } from '@deephaven/grid';
 import { vsWarning } from '@deephaven/icons';
 import type { dh as DhType } from '@deephaven/jsapi-types';
@@ -21,7 +21,7 @@ import { TimeUtils } from '@deephaven/utils';
 import { nanoid } from 'nanoid';
 import './TableCsvExporter.scss';
 import Log from '@deephaven/log';
-import IrisGridModel from '../IrisGridModel';
+import type IrisGridModel from '../IrisGridModel';
 import IrisGridUtils from '../IrisGridUtils';
 
 const log = Log.module('TableCsvExporter');

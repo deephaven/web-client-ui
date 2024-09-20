@@ -2,9 +2,9 @@ import React, { useCallback, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { LoadingOverlay } from '@deephaven/components';
 import { updateWorkspaceData } from '@deephaven/redux';
-import { Dashboard, DashboardProps } from './Dashboard';
+import { Dashboard, type DashboardProps } from './Dashboard';
 import { updateDashboardData } from './redux';
-import { DashboardLayoutConfig } from './DashboardLayout';
+import { type DashboardLayoutConfig } from './DashboardLayout';
 import { DEFAULT_DASHBOARD_ID } from './DashboardConstants';
 
 export interface LazyDashboardProps extends DashboardProps {

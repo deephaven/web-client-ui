@@ -6,7 +6,7 @@ import {
   Flex,
   Icon,
   Item,
-  ItemKey,
+  type ItemKey,
   PICKER_ITEM_HEIGHTS,
   PICKER_TOP_OFFSET,
   Picker,

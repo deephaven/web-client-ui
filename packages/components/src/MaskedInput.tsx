@@ -1,4 +1,9 @@
-import React, { useMemo, useEffect, useCallback, KeyboardEvent } from 'react';
+import React, {
+  useMemo,
+  useEffect,
+  useCallback,
+  type KeyboardEvent,
+} from 'react';
 import classNames from 'classnames';
 import Log from '@deephaven/log';
 import { useForwardedRef } from '@deephaven/react-hooks';

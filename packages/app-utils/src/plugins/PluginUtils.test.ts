@@ -1,4 +1,4 @@
-import { LegacyPlugin, Plugin, PluginType } from '@deephaven/plugin';
+import { type LegacyPlugin, type Plugin, PluginType } from '@deephaven/plugin';
 import { getPluginModuleValue } from './PluginUtils';
 
 describe('getPluginModuleValue', () => {

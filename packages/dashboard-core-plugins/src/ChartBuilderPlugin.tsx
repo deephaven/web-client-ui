@@ -1,8 +1,8 @@
 import { useCallback } from 'react';
-import { ChartModelSettings, ChartUtils } from '@deephaven/chart';
+import { type ChartModelSettings, ChartUtils } from '@deephaven/chart';
 import {
   assertIsDashboardPluginProps,
-  DashboardPluginComponentProps,
+  type DashboardPluginComponentProps,
   LayoutUtils,
   useListener,
 } from '@deephaven/dashboard';

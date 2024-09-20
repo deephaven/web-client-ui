@@ -4,11 +4,11 @@ import { Button, FadeTransition, LoadingSpinner } from '@deephaven/components';
 import {
   GridRange,
   GridUtils,
-  ModelSizeMap,
-  MoveOperation,
+  type ModelSizeMap,
+  type MoveOperation,
 } from '@deephaven/grid';
 import {
-  CancelablePromise,
+  type CancelablePromise,
   CanceledPromiseError,
   copyToClipboard,
   PromiseUtils,
@@ -18,7 +18,7 @@ import type { dh } from '@deephaven/jsapi-types';
 import IrisGridUtils from './IrisGridUtils';
 import IrisGridBottomBar from './IrisGridBottomBar';
 import './IrisGridCopyHandler.scss';
-import IrisGridModel from './IrisGridModel';
+import type IrisGridModel from './IrisGridModel';
 
 const log = Log.module('IrisGridCopyHandler');
 

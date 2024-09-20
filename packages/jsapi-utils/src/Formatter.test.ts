@@ -7,8 +7,8 @@ import {
   DecimalColumnFormatter,
   DefaultColumnFormatter,
   IntegerColumnFormatter,
-  TableColumnFormat,
-  TableColumnFormatType,
+  type TableColumnFormat,
+  type TableColumnFormatType,
 } from './formatters';
 import TableUtils from './TableUtils';
 

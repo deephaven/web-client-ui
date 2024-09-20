@@ -1,14 +1,14 @@
 import { forwardRef, useCallback } from 'react';
 import { useDeferredApi } from '@deephaven/jsapi-bootstrap';
-import { ChartModel, ChartModelFactory } from '@deephaven/chart';
+import { type ChartModel, ChartModelFactory } from '@deephaven/chart';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import { IrisGridUtils } from '@deephaven/iris-grid';
 import { getTimeZone, store } from '@deephaven/redux';
-import { WidgetPanelProps } from '@deephaven/plugin';
+import { type WidgetPanelProps } from '@deephaven/plugin';
 import { assertNotNull } from '@deephaven/utils';
 import {
-  ChartPanelMetadata,
-  GLChartPanelState,
+  type ChartPanelMetadata,
+  type GLChartPanelState,
   isChartPanelDehydratedProps,
   isChartPanelTableMetadata,
 } from './panels';

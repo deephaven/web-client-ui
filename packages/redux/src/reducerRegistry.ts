@@ -1,4 +1,4 @@
-import { Reducer, ReducersMapObject } from 'redux';
+import { type Reducer, type ReducersMapObject } from 'redux';
 
 export type ReducerRegistryListener = (reducers: ReducersMapObject) => void;
 

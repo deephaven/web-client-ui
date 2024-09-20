@@ -1,5 +1,5 @@
-import { ContextAction } from '@deephaven/components';
-import { IconDefinition } from '@deephaven/icons';
+import { type ContextAction } from '@deephaven/components';
+import { type IconDefinition } from '@deephaven/icons';
 
 export type ItemAction = ContextAction & {
   title: string;

@@ -1,4 +1,4 @@
-import React, { PropsWithChildren } from 'react';
+import React, { type PropsWithChildren } from 'react';
 // We only use react-redux from tests in @deephaven/components, so it is only added as a devDependency
 import { connect } from 'react-redux';
 import {

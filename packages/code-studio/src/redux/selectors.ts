@@ -1,4 +1,4 @@
-import { RootState } from '@deephaven/redux';
+import { type RootState } from '@deephaven/redux';
 import type { LayoutStorage } from '@deephaven/app-utils';
 
 /**

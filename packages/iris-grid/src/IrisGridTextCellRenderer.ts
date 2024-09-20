@@ -1,16 +1,16 @@
 /* eslint-disable class-methods-use-this */
 import {
-  BoxCoordinates,
-  Coordinate,
+  type BoxCoordinates,
+  type Coordinate,
   DEFAULT_FONT_WIDTH,
   getOrThrow,
-  GridMetrics,
+  type GridMetrics,
   GridUtils,
   TextCellRenderer,
-  VisibleIndex,
+  type VisibleIndex,
 } from '@deephaven/grid';
 import { TableUtils } from '@deephaven/jsapi-utils';
-import { IrisGridRenderState } from './IrisGridRenderer';
+import { type IrisGridRenderState } from './IrisGridRenderer';
 import IrisGridCellRendererUtils from './IrisGridCellRendererUtils';
 import type { IrisGridThemeType } from './IrisGridTheme';
 

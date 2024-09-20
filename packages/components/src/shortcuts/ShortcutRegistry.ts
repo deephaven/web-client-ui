@@ -1,8 +1,8 @@
 /* eslint-disable max-classes-per-file */
 import { EventTarget } from 'event-target-shim';
 import { Log } from '@deephaven/log';
-import { CustomEventMap, EventShimCustomEvent } from '@deephaven/utils';
-import Shortcut, { KeyState } from './Shortcut';
+import { type CustomEventMap, EventShimCustomEvent } from '@deephaven/utils';
+import Shortcut, { type KeyState } from './Shortcut';
 
 const log = Log.module('ShortcutRegistry');
 

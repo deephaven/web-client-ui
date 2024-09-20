@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, SwitchMenuItemDef } from '@deephaven/components';
+import { Menu, type SwitchMenuItemDef } from '@deephaven/components';
 import AdvancedSettingsType from './AdvancedSettingsType';
 
 export type AdvancedSettingsMenuCallback = (

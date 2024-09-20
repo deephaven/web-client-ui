@@ -2,7 +2,9 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { DragDropContext, Droppable } from 'react-beautiful-dnd';
-import CustomColumnInput, { CustomColumnInputProps } from './CustomColumnInput';
+import CustomColumnInput, {
+  type CustomColumnInputProps,
+} from './CustomColumnInput';
 
 const TEST_ID = 'TEST_ID';
 

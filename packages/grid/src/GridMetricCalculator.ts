@@ -1,6 +1,6 @@
 import clamp from 'lodash.clamp';
 import { getOrThrow } from '@deephaven/utils';
-import GridModel from './GridModel';
+import type GridModel from './GridModel';
 import type {
   GridMetrics,
   BoxCoordinates,
@@ -14,9 +14,9 @@ import type {
   SizeMap,
 } from './GridMetrics';
 import GridUtils from './GridUtils';
-import { GridFont, GridTheme } from './GridTheme';
+import { type GridFont, type GridTheme } from './GridTheme';
 import { isExpandableGridModel } from './ExpandableGridModel';
-import { DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
+import { type DraggingColumn } from './mouse-handlers/GridColumnMoveMouseHandler';
 
 export { getOrThrow } from '@deephaven/utils';
 /* eslint class-methods-use-this: "off" */

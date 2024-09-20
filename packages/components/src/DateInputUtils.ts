@@ -1,4 +1,4 @@
-import { SelectionSegment } from './MaskedInput';
+import { type SelectionSegment } from './MaskedInput';
 
 export function getNextNumberSegmentValue(
   delta: number,

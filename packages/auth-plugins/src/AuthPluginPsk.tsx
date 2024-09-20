@@ -5,7 +5,7 @@ import { useBroadcastLoginListener } from '@deephaven/jsapi-components';
 import Log from '@deephaven/log';
 import { getErrorMessage } from '@deephaven/utils';
 import Cookies from 'js-cookie';
-import { AuthPlugin, AuthPluginProps } from './AuthPlugin';
+import { type AuthPlugin, type AuthPluginProps } from './AuthPlugin';
 import LoginForm from './LoginForm';
 import Login from './Login';
 import AuthenticationError from './AuthenticationError';

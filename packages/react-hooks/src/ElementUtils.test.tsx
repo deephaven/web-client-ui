@@ -1,5 +1,5 @@
 import { createElement } from 'react';
-import { ItemElement, Item, Text } from '@deephaven/components';
+import { type ItemElement, Item, Text } from '@deephaven/components';
 import { isElementOfType } from './ElementUtils';
 
 beforeEach(() => {

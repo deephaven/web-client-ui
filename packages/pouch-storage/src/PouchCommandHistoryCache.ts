@@ -1,7 +1,7 @@
-import { CommandHistoryStorageItem } from '@deephaven/console';
+import { type CommandHistoryStorageItem } from '@deephaven/console';
 import Log from '@deephaven/log';
-import PouchCommandHistoryTable from './PouchCommandHistoryTable';
-import { PouchStorageItem } from './PouchStorageTable';
+import type PouchCommandHistoryTable from './PouchCommandHistoryTable';
+import { type PouchStorageItem } from './PouchStorageTable';
 
 type CommandHistoryStorageItemFindResponse = PouchDB.Find.FindResponse<
   CommandHistoryStorageItem & PouchStorageItem

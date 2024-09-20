@@ -1,8 +1,8 @@
 /* eslint-disable import/prefer-default-export */
-import React, { CSSProperties, useMemo } from 'react';
-import { AnimateLayoutChanges, useSortable } from '@dnd-kit/sortable';
+import React, { type CSSProperties, useMemo } from 'react';
+import { type AnimateLayoutChanges, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { TreeItem, Props as TreeItemProps } from './TreeItem';
+import { TreeItem, type Props as TreeItemProps } from './TreeItem';
 
 export interface Props<T> extends Omit<TreeItemProps<T>, 'style'> {
   id: string;

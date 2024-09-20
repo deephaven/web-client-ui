@@ -1,6 +1,6 @@
 import { PluginType, type WidgetPlugin } from '@deephaven/plugin';
 import { dhTable } from '@deephaven/icons';
-import { dh } from '@deephaven/jsapi-types';
+import { type dh } from '@deephaven/jsapi-types';
 import { GridWidgetPlugin } from './GridWidgetPlugin';
 import { GridPanelPlugin } from './GridPanelPlugin';
 

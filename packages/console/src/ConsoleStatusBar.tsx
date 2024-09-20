@@ -1,6 +1,6 @@
 import React, {
-  ReactElement,
-  ReactNode,
+  type ReactElement,
+  type ReactNode,
   useCallback,
   useEffect,
   useState,
@@ -10,9 +10,9 @@ import { vsKebabVertical } from '@deephaven/icons';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
   Button,
-  DropdownActions,
+  type DropdownActions,
   DropdownMenu,
-  PopperOptions,
+  type PopperOptions,
   Tooltip,
 } from '@deephaven/components';
 import './ConsoleStatusBar.scss';

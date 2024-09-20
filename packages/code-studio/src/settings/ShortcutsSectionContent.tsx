@@ -3,9 +3,9 @@ import { connect } from 'react-redux';
 import { Shortcut, ShortcutRegistry } from '@deephaven/components';
 import {
   getShortcutOverrides,
-  RootState,
+  type RootState,
   updateSettings as updateSettingsAction,
-  WorkspaceSettings,
+  type WorkspaceSettings,
 } from '@deephaven/redux';
 import ShortcutItem from './ShortcutItem';
 

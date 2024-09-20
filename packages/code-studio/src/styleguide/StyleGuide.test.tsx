@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import { ChartThemeProvider } from '@deephaven/chart';
-import { ThemeData, ThemeProvider } from '@deephaven/components';
+import { type ThemeData, ThemeProvider } from '@deephaven/components';
 import { dh } from '@deephaven/jsapi-shim';
 import { ApiContext } from '@deephaven/jsapi-bootstrap';
 import StyleGuide from './StyleGuide';

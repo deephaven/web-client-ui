@@ -1,5 +1,5 @@
 // Port of https://github.com/react-bootstrap/react-bootstrap/blob/master/src/Collapse.js
-import React, { PureComponent, ReactElement } from 'react';
+import React, { PureComponent, type ReactElement } from 'react';
 import classNames from 'classnames';
 import { UISwitch } from '@deephaven/components';
 import './LogLevelMenuItem.scss';

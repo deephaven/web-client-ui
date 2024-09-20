@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import React, {
-  ReactNode,
+  type ReactNode,
   useCallback,
   useEffect,
   useRef,

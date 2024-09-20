@@ -2,9 +2,9 @@
 /* eslint no-unused-vars: "off" */
 
 import type { dh as DhType } from '@deephaven/jsapi-types';
-import { Formatter } from '@deephaven/jsapi-utils';
+import { type Formatter } from '@deephaven/jsapi-utils';
 import type { Layout, Data } from 'plotly.js';
-import { FilterColumnMap, FilterMap } from './ChartUtils';
+import { type FilterColumnMap, type FilterMap } from './ChartUtils';
 
 export type ChartEvent = CustomEvent;
 

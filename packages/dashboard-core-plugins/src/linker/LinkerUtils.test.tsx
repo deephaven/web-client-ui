@@ -1,10 +1,10 @@
-import { PanelComponent } from '@deephaven/dashboard';
-import { TypeValue as FilterTypeValue } from '@deephaven/filters';
+import { type PanelComponent } from '@deephaven/dashboard';
+import { type TypeValue as FilterTypeValue } from '@deephaven/filters';
 import LinkerUtils, {
-  Link,
-  LinkType,
-  LinkPoint,
-  LinkColumn,
+  type Link,
+  type LinkType,
+  type LinkPoint,
+  type LinkColumn,
   isLinkableColumn,
   isLinkableFromPanel,
   isLinkablePanel,

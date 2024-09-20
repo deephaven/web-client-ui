@@ -1,10 +1,10 @@
 /* eslint class-methods-use-this: "off" */
 import {
   GridMouseHandler,
-  GridPoint,
-  EventHandlerResult,
-  Grid,
-  GridMouseEvent,
+  type GridPoint,
+  type EventHandlerResult,
+  type Grid,
+  type GridMouseEvent,
 } from '@deephaven/grid';
 import type IrisGrid from '../IrisGrid';
 

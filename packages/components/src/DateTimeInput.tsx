@@ -1,7 +1,7 @@
-import React, { KeyboardEvent, useCallback, useState } from 'react';
+import React, { type KeyboardEvent, useCallback, useState } from 'react';
 import classNames from 'classnames';
 import Log from '@deephaven/log';
-import MaskedInput, { SelectionSegment } from './MaskedInput';
+import MaskedInput, { type SelectionSegment } from './MaskedInput';
 import { getNextSegmentValue } from './DateInputUtils';
 import { addSeparators } from './DateTimeInputUtils';
 

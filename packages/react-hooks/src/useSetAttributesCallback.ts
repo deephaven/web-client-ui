@@ -1,4 +1,4 @@
-import { HTMLAttributes, useCallback } from 'react';
+import { type HTMLAttributes, useCallback } from 'react';
 
 /**
  * Returns a callback that sets attributes on elements based on given selectors.

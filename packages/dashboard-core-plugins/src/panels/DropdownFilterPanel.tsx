@@ -1,15 +1,15 @@
-import React, { Component, RefObject } from 'react';
-import { connect, ConnectedProps } from 'react-redux';
+import React, { Component, type RefObject } from 'react';
+import { connect, type ConnectedProps } from 'react-redux';
 import debounce from 'lodash.debounce';
 import deepEqual from 'fast-deep-equal';
 import memoize from 'memoizee';
-import { DashboardPanelProps, LayoutUtils } from '@deephaven/dashboard';
+import { type DashboardPanelProps, LayoutUtils } from '@deephaven/dashboard';
 import type { dh as DhType } from '@deephaven/jsapi-types';
 import {
   DateTimeColumnFormatter,
   Formatter,
   FormatterUtils,
-  FormattingRule,
+  type FormattingRule,
   TableUtils,
 } from '@deephaven/jsapi-utils';
 import Log from '@deephaven/log';
@@ -17,11 +17,11 @@ import {
   getActiveTool,
   getApi,
   getSettings,
-  RootState,
+  type RootState,
 } from '@deephaven/redux';
 import { EMPTY_ARRAY, Pending, PromiseUtils } from '@deephaven/utils';
 import DropdownFilter, {
-  DropdownFilterColumn,
+  type DropdownFilterColumn,
 } from '../controls/dropdown-filter/DropdownFilter';
 import { InputFilterEvent } from '../events';
 import {
@@ -35,8 +35,8 @@ import './DropdownFilterPanel.scss';
 import ToolType from '../linker/ToolType';
 import WidgetPanel from './WidgetPanel';
 import type { Link, LinkPoint } from '../linker/LinkerUtils';
-import { ColumnSelectionValidator } from '../linker/ColumnSelectionValidator';
-import { PanelState as InputFilterPanelState } from './InputFilterPanel';
+import { type ColumnSelectionValidator } from '../linker/ColumnSelectionValidator';
+import { type PanelState as InputFilterPanelState } from './InputFilterPanel';
 
 const log = Log.module('DropdownFilterPanel');
 

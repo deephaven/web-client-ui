@@ -1,4 +1,4 @@
-import { LogProxy, LOG_PROXY_TYPE } from './LogProxy';
+import { type LogProxy, LOG_PROXY_TYPE } from './LogProxy';
 
 type HistoryItem = {
   type: LOG_PROXY_TYPE;

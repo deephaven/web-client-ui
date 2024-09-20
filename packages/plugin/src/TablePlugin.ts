@@ -5,7 +5,7 @@ import type {
   IrisGridContextMenuData,
   IrisGridModel,
 } from '@deephaven/iris-grid';
-import { GridRange } from '@deephaven/grid';
+import { type GridRange } from '@deephaven/grid';
 import type { ResolvableContextAction } from '@deephaven/components';
 import type { dh } from '@deephaven/jsapi-types';
 

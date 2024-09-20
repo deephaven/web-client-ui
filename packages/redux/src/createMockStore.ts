@@ -1,4 +1,4 @@
-import store from './store';
+import type store from './store';
 
 export function createMockStore(): typeof store {
   return {

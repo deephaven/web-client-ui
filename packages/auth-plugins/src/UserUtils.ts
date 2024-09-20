@@ -1,4 +1,4 @@
-import { User, UserPermissions } from '@deephaven/redux';
+import { type User, type UserPermissions } from '@deephaven/redux';
 import Log from '@deephaven/log';
 
 const log = Log.module('UserUtils');

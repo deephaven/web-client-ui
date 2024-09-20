@@ -1,4 +1,4 @@
-import { ValueOf } from './TypeUtils';
+import { type ValueOf } from './TypeUtils';
 
 describe('ValueOf', () => {
   it('should derive the value type', () => {

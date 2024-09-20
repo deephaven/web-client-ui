@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
-import { PopperOptions } from 'popper.js';
+import { type PopperOptions } from 'popper.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { vsCheck, IconDefinition } from '@deephaven/icons';
+import { vsCheck, type IconDefinition } from '@deephaven/icons';
 import { TimeUtils } from '@deephaven/utils';
 import classNames from 'classnames';
-import TimeInput, { TimeInputElement } from './TimeInput';
+import TimeInput, { type TimeInputElement } from './TimeInput';
 import DropdownMenu from './menu-actions/DropdownMenu';
 import './CustomTimeSelect.scss';
 

@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import { Key, useCallback } from 'react';
+import { type Key, useCallback } from 'react';
 import type { DOMRefValue, FocusableRef } from '@react-types/shared';
-import { SpectrumComboBox, Item, SpectrumComboBoxProps } from './spectrum';
+import { SpectrumComboBox, Item, type SpectrumComboBoxProps } from './spectrum';
 import TextWithTooltip from './TextWithTooltip';
 
 export interface SearchableComboboxProps<TItem, TKey extends Key>

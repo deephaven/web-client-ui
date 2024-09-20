@@ -5,14 +5,14 @@ import type {
   PropsWithoutRef,
   RefAttributes,
 } from 'react';
-import { ConnectedComponent } from 'react-redux';
+import { type ConnectedComponent } from 'react-redux';
 import GoldenLayout from '@deephaven/golden-layout';
 import type {
   GLPanelProps,
   ReactComponentConfig,
 } from '@deephaven/golden-layout';
 import PanelManager from './PanelManager';
-import { WidgetDescriptor } from './PanelEvent';
+import { type WidgetDescriptor } from './PanelEvent';
 
 export { isWrappedComponent } from '@deephaven/components';
 

@@ -1,13 +1,18 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
-import React, { ChangeEvent, Component, ReactElement, RefObject } from 'react';
+import React, {
+  type ChangeEvent,
+  Component,
+  type ReactElement,
+  type RefObject,
+} from 'react';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   DragDropContext,
-  DraggableLocation,
-  DragStart,
+  type DraggableLocation,
+  type DragStart,
   Droppable,
-  DropResult,
+  type DropResult,
 } from 'react-beautiful-dnd';
 import {
   Checkbox,
@@ -15,20 +20,20 @@ import {
   DragUtils,
   SearchInput,
   Tooltip,
-  Range,
-  RenderItemProps,
+  type Range,
+  type RenderItemProps,
   Button,
 } from '@deephaven/components';
 import { vsTrash, dhSortAlphaDown, dhSortAlphaUp } from '@deephaven/icons';
-import { TableUtils, SortDirection } from '@deephaven/jsapi-utils';
+import { TableUtils, type SortDirection } from '@deephaven/jsapi-utils';
 import memoize from 'memoizee';
 import debounce from 'lodash.debounce';
 import Log from '@deephaven/log';
 import { assertNotNull } from '@deephaven/utils';
 import './RollupRows.scss';
 import type { dh } from '@deephaven/jsapi-types';
-import IrisGridModel from '../IrisGridModel';
-import { ColumnName } from '../CommonTypes';
+import type IrisGridModel from '../IrisGridModel';
+import { type ColumnName } from '../CommonTypes';
 
 const log = Log.module('RollupRows');
 const DEBOUNCE_SEARCH = 150;

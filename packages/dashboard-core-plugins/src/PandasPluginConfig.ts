@@ -1,4 +1,4 @@
-import { PluginType, WidgetPlugin } from '@deephaven/plugin';
+import { PluginType, type WidgetPlugin } from '@deephaven/plugin';
 import { dhPandas } from '@deephaven/icons';
 import type { dh } from '@deephaven/jsapi-types';
 import { PandasWidgetPlugin } from './PandasWidgetPlugin';

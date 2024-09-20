@@ -5,7 +5,7 @@ import { Button } from '@deephaven/components';
 import { vsTrash, vsGripper } from '@deephaven/icons';
 import { DbNameValidator } from '@deephaven/utils';
 import InputEditor from './InputEditor';
-import { CustomColumnKey } from './CustomColumnBuilder';
+import { type CustomColumnKey } from './CustomColumnBuilder';
 
 export interface CustomColumnInputProps {
   eventKey: string;

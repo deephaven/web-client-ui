@@ -1,4 +1,4 @@
-import { ReactElement } from 'react';
+import { type ReactElement } from 'react';
 import type { SpectrumDialogClose } from '@react-types/dialog';
 import type { StyleProps } from '@react-types/shared';
 import type { IconDefinition } from '@fortawesome/fontawesome-common-types';

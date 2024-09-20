@@ -1,7 +1,7 @@
-import React, { ReactElement, useState } from 'react';
+import React, { type ReactElement, useState } from 'react';
 import {
   Grid,
-  GridThemeType,
+  type GridThemeType,
   MockGridModel,
   MockTreeGridModel,
   ThemeContext,

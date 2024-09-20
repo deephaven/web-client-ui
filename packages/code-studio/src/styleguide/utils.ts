@@ -1,6 +1,10 @@
 import { createElement, useCallback, useEffect, useState } from 'react';
 import cl from 'classnames';
-import { Item, ItemElement, NormalizedItem } from '@deephaven/components';
+import {
+  Item,
+  type ItemElement,
+  type NormalizedItem,
+} from '@deephaven/components';
 import { dh as dhIcons } from '@deephaven/icons';
 
 export const ISOLATED_SECTION_QUERY_CLASS = 'isolated-section-query';

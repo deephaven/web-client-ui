@@ -1,13 +1,13 @@
 /* eslint-disable class-methods-use-this */
 import Log from '@deephaven/log';
 import {
-  CommandHistoryStorage,
-  CommandHistoryStorageData,
-  CommandHistoryStorageItem,
+  type CommandHistoryStorage,
+  type CommandHistoryStorageData,
+  type CommandHistoryStorageItem,
 } from '@deephaven/console';
 import {
-  StorageItemListener,
-  StorageListenerRemover,
+  type StorageItemListener,
+  type StorageListenerRemover,
 } from '@deephaven/storage';
 import PouchCommandHistoryTable from './PouchCommandHistoryTable';
 import PouchCommandHistoryCache from './PouchCommandHistoryCache';
