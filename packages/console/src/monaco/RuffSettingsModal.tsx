@@ -69,7 +69,7 @@ export default function RuffSettingsModal({
   const [ruffVersion] = useState(() => {
     // This throws if using Groovy or Ruff is not loaded
     try {
-      return `v${Workspace.version()}` ?? '';
+      return `v${Workspace.version()}`;
     } catch {
       return '';
     }
