@@ -63,10 +63,6 @@ class IrisGridTableModel
     return this.table.getColumnStatistics != null;
   }
 
-  get isValuesTableAvailable(): boolean {
-    return this.table.selectDistinct != null && this.table.copy != null;
-  }
-
   get isRollupAvailable(): boolean {
     return this.table.rollup != null;
   }

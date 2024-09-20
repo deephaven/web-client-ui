@@ -446,6 +446,10 @@ class IrisGridTableModelTemplate<
       : 0;
   }
 
+  get isValuesTableAvailable(): boolean {
+    return this.table.selectDistinct != null && this.table.copy != null;
+  }
+
   get isChartBuilderAvailable(): boolean {
     return true;
   }
