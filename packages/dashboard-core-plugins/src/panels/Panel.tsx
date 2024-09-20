@@ -13,6 +13,7 @@ import {
   ContextActions,
   createXComponent,
   LoadingOverlay,
+  type ResolvableContextAction,
   Tooltip,
 } from '@deephaven/components';
 import {
@@ -64,7 +65,7 @@ export type CorePanelProps = {
   onTabBlur?: (...args: unknown[]) => void;
   onTabFocus?: (...args: unknown[]) => void;
   renderTabTooltip?: () => ReactNode;
-  additionalActions?: ContextAction[];
+  additionalActions?: ResolvableContextAction[];
   errorMessage?: string;
   isLoading?: boolean;
   isLoaded?: boolean;
@@ -297,7 +298,7 @@ class Panel extends PureComponent<CorePanelProps, PanelState> {
 
   getAdditionalActions = memoize(
     (
-      actions: readonly ContextAction[],
+      actions: readonly ResolvableContextAction[],
       isClonable: boolean,
       isRenamable: boolean
     ) => {

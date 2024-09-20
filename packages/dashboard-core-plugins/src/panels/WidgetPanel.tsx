@@ -2,9 +2,9 @@ import React, { PureComponent, type ReactElement } from 'react';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
 import {
-  type ContextAction,
   ContextActions,
   createXComponent,
+  type ResolvableContextAction,
 } from '@deephaven/components';
 import type { dh } from '@deephaven/jsapi-types';
 import { copyToClipboard, EMPTY_ARRAY } from '@deephaven/utils';
@@ -97,7 +97,7 @@ class WidgetPanel extends PureComponent<WidgetPanelProps, WidgetPanelState> {
   getCachedActions = memoize(
     (
       descriptor: WidgetPanelDescriptor,
-      propsAdditionalActions: readonly ContextAction[] = EMPTY_ARRAY
+      propsAdditionalActions: readonly ResolvableContextAction[] = EMPTY_ARRAY
     ) => [
       ...propsAdditionalActions,
       {
