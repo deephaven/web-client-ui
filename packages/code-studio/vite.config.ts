@@ -135,6 +135,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     optimizeDeps: {
+      exclude: ['@astral-sh/ruff-wasm-web'], // Needed so the wasm file works in dev mode
       esbuildOptions: {
         // Some packages need this to start properly if they reference global
         define: {

@@ -10,6 +10,7 @@ import {
   dhUserIncognito,
   dhUser,
   vsTools,
+  vsFileCode,
 } from '@deephaven/icons';
 import {
   Button,
@@ -38,6 +39,7 @@ import {
 } from './SettingsUtils';
 import AdvancedSectionContent from './AdvancedSectionContent';
 import ThemeSectionContent from './ThemeSectionContent';
+import EditorSectionContent from './EditorSectionContent';
 
 interface SettingsMenuProps {
   serverConfigValues: ServerConfigValues;
@@ -69,6 +71,8 @@ export class SettingsMenu extends Component<
   static THEME_SECTION_KEY = 'SettingsMenu.theme';
 
   static ADVANCED_SECTION_KEY = 'SettingsMenu.advanced';
+
+  static EDITOR_SECTION_KEY = 'SettingsMenu.editor';
 
   static focusFirstInputInContainer(container: HTMLDivElement | null): void {
     const input = container?.querySelector('input, select, textarea');
@@ -275,6 +279,24 @@ export class SettingsMenu extends Component<
           </SettingsMenuSection>
 
           <SettingsMenuSection
+            sectionKey={SettingsMenu.EDITOR_SECTION_KEY}
+            isExpanded={this.isSectionExpanded(SettingsMenu.EDITOR_SECTION_KEY)}
+            onToggle={this.handleSectionToggle}
+            title={
+              <>
+                <FontAwesomeIcon
+                  icon={vsFileCode}
+                  transform="grow-4"
+                  className="mr-2"
+                />
+                Editor
+              </>
+            }
+          >
+            <EditorSectionContent />
+          </SettingsMenuSection>
+
+          <SettingsMenuSection
             sectionKey={SettingsMenu.SHORTCUT_SECTION_KEY}
             isExpanded={this.isSectionExpanded(
               SettingsMenu.SHORTCUT_SECTION_KEY
@@ -283,7 +305,7 @@ export class SettingsMenu extends Component<
               <>
                 <FontAwesomeIcon
                   icon={vsRecordKeys}
-                  transform="grow-2"
+                  transform="grow-4"
                   className="mr-2"
                 />
                 Keyboard Shortcuts

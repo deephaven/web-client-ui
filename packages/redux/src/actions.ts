@@ -24,6 +24,7 @@ import type {
   WorkspaceSettings,
   WorkspaceStorage,
 } from './store';
+import { getSettings } from './selectors';
 
 export interface PayloadAction<P = unknown> extends Action<string> {
   payload: P;
@@ -124,6 +125,24 @@ export const updateWorkspaceData =
       },
     };
     return dispatch(saveWorkspace(newWorkspace));
+  };
+
+export const updateNotebookSettings =
+  (
+    settings: Partial<WorkspaceSettings['notebookSettings']>
+  ): ThunkAction<
+    Promise<CustomizableWorkspace>,
+    RootState,
+    never,
+    PayloadAction<unknown>
+  > =>
+  (dispatch, getState) => {
+    const { notebookSettings } = getSettings(getState());
+    const newNotebookSettings = {
+      ...notebookSettings,
+      ...settings,
+    };
+    return dispatch(updateSettings({ notebookSettings: newNotebookSettings }));
   };
 
 /**

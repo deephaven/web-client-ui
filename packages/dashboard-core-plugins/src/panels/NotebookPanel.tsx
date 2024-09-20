@@ -35,10 +35,10 @@ import {
 } from '@deephaven/icons';
 import {
   getFileStorage,
-  updateSettings as updateSettingsAction,
+  updateNotebookSettings as updateNotebookSettingsAction,
   RootState,
   WorkspaceSettings,
-  getDefaultNotebookSettings,
+  getNotebookSettings,
 } from '@deephaven/redux';
 import classNames from 'classnames';
 import debounce from 'lodash.debounce';
@@ -67,6 +67,7 @@ interface Metadata extends PanelMetadata {
 }
 interface NotebookSetting {
   isMinimapEnabled?: boolean;
+  formatOnSave?: boolean;
 }
 
 interface FileMetadata {
@@ -81,7 +82,7 @@ interface PanelState {
 }
 
 interface NotebookPanelMappedProps {
-  defaultNotebookSettings: NotebookSetting;
+  notebookSettings: NotebookSetting;
   fileStorage: FileStorage;
   session?: dh.IdeSession;
   sessionLanguage?: string;
@@ -95,7 +96,9 @@ interface NotebookPanelProps
   metadata: Metadata;
   panelState: PanelState;
   notebooksUrl: string;
-  updateSettings: (settings: Partial<WorkspaceSettings>) => void;
+  updateNotebookSettings: (
+    settings: Partial<WorkspaceSettings['notebookSettings']>
+  ) => void;
 }
 
 interface NotebookPanelState {
@@ -125,6 +128,8 @@ interface NotebookPanelState {
   scriptCode: string;
 
   itemName?: string;
+
+  formatOnSave: boolean;
 }
 
 class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
@@ -159,7 +164,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     isPreview: false,
     session: null,
     sessionLanguage: null,
-    defaultNotebookSettings: { isMinimapEnabled: true },
+    notebookSettings: { isMinimapEnabled: true },
   };
 
   static languageFromFileName(fileName: string): string | null {
@@ -193,6 +198,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.handleFind = this.handleFind.bind(this);
     this.handleMinimapChange = this.handleMinimapChange.bind(this);
     this.handleWordWrapChange = this.handleWordWrapChange.bind(this);
+    this.handleFormatOnSaveChange = this.handleFormatOnSaveChange.bind(this);
     this.handleLinkClick = this.handleLinkClick.bind(this);
     this.handleLoadSuccess = this.handleLoadSuccess.bind(this);
     this.handleLoadError = this.handleLoadError.bind(this);
@@ -205,7 +211,6 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.handleSave = this.handleSave.bind(this);
     this.handleSaveAsCancel = this.handleSaveAsCancel.bind(this);
     this.handleSaveAsSubmit = this.handleSaveAsSubmit.bind(this);
-    this.handleSaveFromShortcut = this.handleSaveFromShortcut.bind(this);
     this.handleSaveError = this.handleSaveError.bind(this);
     this.handleSaveSuccess = this.handleSaveSuccess.bind(this);
     this.handleSessionOpened = this.handleSessionOpened.bind(this);
@@ -296,6 +301,8 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       showSaveAsModal: false,
 
       scriptCode: '',
+
+      formatOnSave: false,
     };
 
     log.debug('constructor', props, this.state);
@@ -320,7 +327,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   ): void {
     const { isPreview, settings } = this.state;
     const { wordWrap } = settings;
-    const { defaultNotebookSettings } = this.props;
+    const { notebookSettings } = this.props;
     if (isPreview !== prevState.isPreview) {
       this.setPreviewStatus();
     }
@@ -329,8 +336,8 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       this.debouncedSavePanelState();
     }
     if (
-      defaultNotebookSettings.isMinimapEnabled !==
-      prevProps.defaultNotebookSettings.isMinimapEnabled
+      notebookSettings.isMinimapEnabled !==
+      prevProps.notebookSettings.isMinimapEnabled
     ) {
       this.updateEditorMinimap();
     }
@@ -563,7 +570,11 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   );
 
   getOverflowActions = memoize(
-    (isMinimapEnabled: boolean, isWordWrapEnabled: boolean) => {
+    (
+      isMinimapEnabled: boolean,
+      isWordWrapEnabled: boolean,
+      formatOnSave: boolean
+    ) => {
       const actions: DropdownAction[] = [
         {
           title: 'Find',
@@ -618,6 +629,13 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
           action: this.handleFormat,
           group: ContextActions.groups.low,
           order: 10,
+        });
+        actions.push({
+          title: 'Format on Save',
+          icon: formatOnSave ? vsCheck : undefined,
+          action: this.handleFormatOnSaveChange,
+          group: ContextActions.groups.low,
+          order: 15,
         });
       }
 
@@ -798,21 +816,19 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
 
   updateEditorMinimap(): void {
     if (this.editor) {
-      const { defaultNotebookSettings } = this.props;
+      const { notebookSettings } = this.props;
       this.editor.updateOptions({
-        minimap: { enabled: defaultNotebookSettings.isMinimapEnabled },
+        minimap: { enabled: notebookSettings.isMinimapEnabled },
       });
     }
   }
 
   handleMinimapChange(): void {
-    const { defaultNotebookSettings, updateSettings } = this.props;
+    const { notebookSettings, updateNotebookSettings } = this.props;
     const newSettings = {
-      defaultNotebookSettings: {
-        isMinimapEnabled: !(defaultNotebookSettings.isMinimapEnabled ?? false),
-      },
+      isMinimapEnabled: !(notebookSettings.isMinimapEnabled ?? false),
     };
-    updateSettings(newSettings);
+    updateNotebookSettings(newSettings);
   }
 
   updateEditorWordWrap(): void {
@@ -838,6 +854,14 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
         };
       });
     }
+  }
+
+  handleFormatOnSaveChange(): void {
+    const { notebookSettings, updateNotebookSettings } = this.props;
+    const newSettings = {
+      formatOnSave: !(notebookSettings.formatOnSave ?? false),
+    };
+    updateNotebookSettings(newSettings);
   }
 
   /**
@@ -899,8 +923,13 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     this.setState({ error, isLoading: false });
   }
 
-  handleSave(): void {
+  async handleSave(): Promise<void> {
     log.debug('handleSave');
+    const { notebookSettings } = this.props;
+    const { formatOnSave = false } = notebookSettings;
+    if (formatOnSave) {
+      await this.handleFormat();
+    }
     this.save();
   }
 
@@ -989,14 +1018,6 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
         ?.getAction('editor.action.formatDocument')
         ?.run();
     }
-  }
-
-  async handleSaveFromShortcut(): Promise<void> {
-    // TODO: Check if the user has enabled format on save
-    // if (formatOnSave) {
-    //   await this.handleFormat();
-    // }
-    this.save();
   }
 
   handleRenameFile(
@@ -1206,14 +1227,14 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
   }
 
   getDropdownOverflowActions(): DropdownAction[] {
-    const { defaultNotebookSettings } = this.props;
+    const { notebookSettings } = this.props;
+    const { isMinimapEnabled, formatOnSave } = notebookSettings;
     const { settings: initialSettings } = this.state;
     return this.getOverflowActions(
-      defaultNotebookSettings.isMinimapEnabled ?? false,
-      this.getSettings(
-        initialSettings,
-        defaultNotebookSettings.isMinimapEnabled ?? false
-      ).wordWrap === 'on'
+      isMinimapEnabled ?? false,
+      this.getSettings(initialSettings, isMinimapEnabled ?? false).wordWrap ===
+        'on',
+      formatOnSave ?? false
     );
   }
 
@@ -1223,7 +1244,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
       glContainer,
       glContainer: { tab },
       glEventHub,
-      defaultNotebookSettings,
+      notebookSettings,
     } = this.props;
     const {
       changeCount,
@@ -1249,7 +1270,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     const isExistingItem = fileMetadata?.id != null;
     const settings = this.getSettings(
       initialSettings,
-      defaultNotebookSettings.isMinimapEnabled ?? false
+      notebookSettings.isMinimapEnabled ?? false
     );
     const isSessionConnected = session != null;
     const isLanguageMatching = sessionLanguage === settings.language;
@@ -1258,7 +1279,7 @@ class NotebookPanel extends Component<NotebookPanelProps, NotebookPanelState> {
     const toolbarDisabled = !isLoaded;
     const contextActions = [
       {
-        action: this.handleSaveFromShortcut,
+        action: this.handleSave,
         shortcut: GLOBAL_SHORTCUTS.SAVE,
       },
       {
@@ -1463,7 +1484,7 @@ const mapStateToProps = (
   ownProps: { localDashboardId: string }
 ): NotebookPanelMappedProps => {
   const fileStorage = getFileStorage(state);
-  const defaultNotebookSettings = getDefaultNotebookSettings(state);
+  const notebookSettings = getNotebookSettings(state);
   const sessionWrapper = getDashboardSessionWrapper(
     state,
     ownProps.localDashboardId
@@ -1473,7 +1494,7 @@ const mapStateToProps = (
   const { type: sessionLanguage } = sessionConfig ?? {};
   return {
     fileStorage,
-    defaultNotebookSettings,
+    notebookSettings,
     session,
     sessionLanguage,
   };
@@ -1481,7 +1502,9 @@ const mapStateToProps = (
 
 const ConnectedNotebookPanel = connect(
   mapStateToProps,
-  { updateSettings: updateSettingsAction },
+  {
+    updateNotebookSettings: updateNotebookSettingsAction,
+  },
   null,
   { forwardRef: true }
 )(NotebookPanel);

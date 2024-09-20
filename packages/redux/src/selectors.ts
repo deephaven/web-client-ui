@@ -151,10 +151,10 @@ export const getWebGLEditable = <State extends RootState>(
   store: State
 ): Settings<State>['webglEditable'] => getSettings(store).webglEditable;
 
-export const getDefaultNotebookSettings = <State extends RootState>(
+export const getNotebookSettings = <State extends RootState>(
   store: State
-): Settings<State>['defaultNotebookSettings'] =>
-  getSettings(store).defaultNotebookSettings ?? EMPTY_OBJECT;
+): Settings<State>['notebookSettings'] =>
+  getSettings(store).notebookSettings ?? EMPTY_OBJECT;
 
 export const getActiveTool = <State extends RootState>(
   store: State

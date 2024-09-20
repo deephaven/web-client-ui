@@ -6,7 +6,9 @@ import * as monaco from 'monaco-editor';
 import throttle from 'lodash.throttle';
 import Log from '@deephaven/log';
 import type { dh } from '@deephaven/jsapi-types';
-import init, { Workspace, type Diagnostic } from './ruff/ruff_wasm';
+import init, { Workspace, type Diagnostic } from '@astral-sh/ruff-wasm-web';
+import RUFF_DEFAULT_SETTINGS from './RuffDefaultSettings';
+import MonacoUtils from './MonacoUtils';
 
 const log = Log.module('MonacoCompletionProvider');
 
@@ -16,52 +18,6 @@ interface MonacoProviderProps {
   language: string;
 }
 
-const DEFAULT_RUFF_SETTINGS = {
-  preview: true,
-  'target-version': 'py38',
-  'line-length': 88,
-  'indent-width': 4,
-  format: {
-    'indent-style': 'space',
-    'quote-style': 'double',
-  },
-  lint: {
-    'flake8-implicit-str-concat': {
-      'allow-multiline': false,
-    },
-    // More info on rules at https://docs.astral.sh/ruff/rules/
-    ignore: ['ISC003'], // Ignoring this rule permits explicit string concatenation
-    select: [
-      'F', // Pyflakes
-      'E1', // Pycodestyle indentation errors
-      'E9', // Pycodestyle syntax errors
-      'E711', // Pycodestyle comparison to None
-      'W291', // Pycodestyle trailing whitespace
-      'W293', // Pycodestyle blank line contains whitespace
-      'W605', // Pycodestyle invalid escape sequence
-      'B', // flake8-bugbear
-      'A', // flake8-builtins
-      'COM818', // flake8-commas trailing comma on bare tuple
-      'ISC', // flake8-implicit-str-concat
-      'PLE', // pylint errors
-      'RUF001', // ambiguous-unicode-character-string
-      'RUF021', // parenthesize-chained-operators
-      'RUF027', // missing-f-string-syntax
-      'PLR1704', // Redefined argument from local
-      'LOG', // flake8-logging
-      'ASYNC', // flake8-async
-      'RET501', // unnecessary-return-none
-      'RET502', // implicit-return-value
-      'RET503', // implicit-return
-      'PLC2401', // non-ascii-name
-      'PLC2403', // non-ascii-import-name
-      'NPY', // NumPy-specific rules
-      'PERF', // Perflint
-      'C4', // flake8-comprehensions
-    ],
-  },
-};
-
 /**
  * Registers a completion provider with monaco for the language and session provided.
  */
@@ -69,9 +25,13 @@ class MonacoProviders extends PureComponent<
   MonacoProviderProps,
   Record<string, never>
 > {
-  static workspace?: Workspace;
+  static ruffWorkspace?: Workspace;
 
   static initRuffPromise?: Promise<void>;
+
+  static isRuffEnabled = true;
+
+  static ruffSettings: Record<string, unknown> = RUFF_DEFAULT_SETTINGS;
 
   /**
    * Loads and initializes Ruff.
@@ -82,21 +42,56 @@ class MonacoProviders extends PureComponent<
       return MonacoProviders.initRuffPromise;
     }
 
-    log.debug('Initializing Ruff');
+    MonacoProviders.initRuffPromise = init({}).then(() => {
+      log.debug('Initialized Ruff', Workspace.version());
 
-    MonacoProviders.initRuffPromise = init().then(() => {
-      MonacoProviders.setRuffSettings();
+      MonacoProviders.ruffWorkspace = new Workspace(
+        MonacoProviders.ruffSettings
+      );
+      MonacoProviders.lintAllPython();
     });
 
     return MonacoProviders.initRuffPromise;
   }
 
+  /**
+   * Sets ruff settings
+   * @param settings The ruff settings
+   */
   static async setRuffSettings(
-    settings: Record<string, unknown> = DEFAULT_RUFF_SETTINGS
+    settings: Record<string, unknown> = MonacoProviders.ruffSettings
   ): Promise<void> {
-    await MonacoProviders.initRuff();
+    MonacoProviders.ruffSettings = settings;
 
-    MonacoProviders.workspace = new Workspace(settings);
+    // Ruff has not been initialized yet
+    if (MonacoProviders.ruffWorkspace == null) {
+      return;
+    }
+
+    MonacoProviders.ruffWorkspace = new Workspace(settings);
+    MonacoProviders.lintAllPython();
+  }
+
+  static getDiagnostics(model: monaco.editor.ITextModel): Diagnostic[] {
+    if (!MonacoProviders.ruffWorkspace) {
+      return [];
+    }
+
+    const diagnostics = MonacoProviders.ruffWorkspace.check(
+      model.getValue()
+    ) as Diagnostic[];
+    if (MonacoUtils.isConsoleModel(model)) {
+      // Only want SyntaxErrors for console which have no code
+      return diagnostics.filter(d => d.code == null);
+    }
+    return diagnostics;
+  }
+
+  static lintAllPython(): void {
+    if (!MonacoProviders.isRuffEnabled) {
+      monaco.editor.removeAllMarkers('ruff');
+      return;
+    }
 
     monaco.editor
       .getModels()
@@ -105,22 +100,26 @@ class MonacoProviders extends PureComponent<
   }
 
   static lintPython(model: monaco.editor.ITextModel): void {
-    if (!MonacoProviders.workspace) {
+    if (!MonacoProviders.isRuffEnabled) {
+      return;
+    }
+
+    if (!MonacoProviders.ruffWorkspace) {
       return;
     }
 
     monaco.editor.setModelMarkers(
       model,
       'ruff',
-      MonacoProviders.workspace.check(model.getValue()).map((d: Diagnostic) => {
-        // Unused variable or import. Mark as warning and unnecessary to
+      MonacoProviders.getDiagnostics(model).map((d: Diagnostic) => {
+        // Unused variable or import. Mark as warning and unnecessary to fade the text
         const isUnnecessary = d.code === 'F401' || d.code === 'F841';
         return {
           startLineNumber: d.location.row,
           startColumn: d.location.column,
           endLineNumber: d.end_location.row,
           endColumn: d.end_location.column,
-          message: `${d.code}: ${d.message}`,
+          message: d.code != null ? `${d.code}: ${d.message}` : d.message, // SyntaxError has no code
           severity: isUnnecessary
             ? monaco.MarkerSeverity.Warning
             : monaco.MarkerSeverity.Error,
@@ -236,7 +235,7 @@ class MonacoProviders extends PureComponent<
     model: monaco.editor.ITextModel,
     range: monaco.Range
   ): monaco.languages.ProviderResult<monaco.languages.CodeActionList> {
-    if (!MonacoProviders.workspace) {
+    if (!MonacoProviders.ruffWorkspace) {
       return {
         actions: [],
         dispose: () => {
@@ -245,9 +244,7 @@ class MonacoProviders extends PureComponent<
       };
     }
 
-    const diagnostics = (
-      MonacoProviders.workspace.check(model.getValue()) as Diagnostic[]
-    ).filter(d => {
+    const diagnostics = MonacoProviders.getDiagnostics(model).filter(d => {
       const diagnosticRange = new monaco.Range(
         d.location.row,
         d.location.column,
@@ -373,14 +370,14 @@ class MonacoProviders extends PureComponent<
     options: monaco.languages.FormattingOptions,
     token: monaco.CancellationToken
   ): monaco.languages.ProviderResult<monaco.languages.TextEdit[]> {
-    if (!MonacoProviders.workspace) {
+    if (!MonacoProviders.ruffWorkspace) {
       return;
     }
 
     return [
       {
         range: model.getFullModelRange(),
-        text: MonacoProviders.workspace.format(model.getValue()),
+        text: MonacoProviders.ruffWorkspace.format(model.getValue()),
       },
     ];
   }
@@ -420,7 +417,7 @@ class MonacoProviders extends PureComponent<
     }
 
     if (language === 'python') {
-      if (MonacoProviders.workspace == null) {
+      if (MonacoProviders.ruffWorkspace == null) {
         MonacoProviders.initRuff(); // This will also lint all open editors
       } else {
         MonacoProviders.lintPython(model);
