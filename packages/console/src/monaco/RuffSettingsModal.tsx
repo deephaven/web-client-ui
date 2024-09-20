@@ -66,7 +66,14 @@ export default function RuffSettingsModal({
   const [isValid, setIsValid] = useState(false);
   const [isDefault, setIsDefault] = useState(false);
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>();
-  const [ruffVersion] = useState(() => Workspace.version() ?? '');
+  const [ruffVersion] = useState(() => {
+    // This throws if using Groovy or Ruff is not loaded
+    try {
+      return `v${Workspace.version()}` ?? '';
+    } catch {
+      return '';
+    }
+  });
   const [model] = useState(() =>
     monaco.editor.createModel(text, 'json', RUFF_SETTINGS_URI)
   );
@@ -141,7 +148,7 @@ export default function RuffSettingsModal({
     >
       <ModalHeader closeButton={false}>
         <span className="settings-modal-title mr-auto">
-          Ruff v{ruffVersion} Settings
+          Ruff {ruffVersion} Settings
         </span>
 
         <Link href="https://docs.astral.sh/ruff/settings/" target="_blank">
